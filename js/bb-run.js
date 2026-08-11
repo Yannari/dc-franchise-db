@@ -231,6 +231,32 @@ export function weekToEpisode(week) {
     invisibleReveal: week.invisibleReveal ? { ...week.invisibleReveal } : null,
     initialNominees: [...(week.initialNominees || [])],
     finalNominees: [...(week.finalNominees || [])],
+    // ── WHAT THE VETO ITSELF DID ──
+    //
+    // The ceremony records this on the week so that nothing downstream has to
+    // guess it from the two nominee lists — a Coup replaces the whole block and
+    // a detonated Diamond takes somebody down on its own authority, and neither
+    // is the veto's doing. That fix never reached anybody, because the fields
+    // stopped here: the episode record did not carry them, `ep.vetoUsed` came
+    // back undefined, and every reader fell through to the diff it was written
+    // to replace. The Gazette ran "Jules pulls Ireland down" on a week whose
+    // own veto meeting says the medallion went back in the box.
+    //
+    // The two overriding mechanics travel too, so the fallback can still
+    // exclude them on a record too old to carry the flags.
+    // Spread conditionally, never defaulted. Every reader asks `vetoUsed !==
+    // undefined` to decide whether the week can be trusted about its own veto,
+    // so writing a null here would tell them a week played before the ceremony
+    // recorded anything had definitely not used it — hiding a real save.
+    // Absent means "ask the block", which is what it meant before.
+    ...(week.vetoUsed !== undefined ? {
+      vetoUsed: week.vetoUsed,
+      vetoSaved: week.vetoSaved ?? null,
+      vetoSavedAll: [...(week.vetoSavedAll || [])],
+      vetoReplacement: week.vetoReplacement ?? null,
+    } : {}),
+    ...(week.coup ? { coup: { ...week.coup } } : {}),
+    ...(week.diamondDetonation ? { diamondDetonation: { ...week.diamondDetonation } } : {}),
     votes: { ...(week.votes || {}) },
     // The shared vote screen reads votingLog, so a Big Brother ballot is
     // translated once here rather than the player growing a second way to draw
@@ -670,6 +696,12 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
     hoh: weekB.hoh, nominees: [...(weekB.finalNominees || [])],
     vetoWinner: weekB.vetoWinner || null, evicted: weekB.evicted,
     votes: { ...(weekB.votes || {}) }, houseAtStart: [...sideB],
+    // The second half's veto, recorded rather than left to be diffed — same
+    // reason as the first half, and the same absence-means-ask-the-block rule.
+    ...(weekB.vetoUsed !== undefined ? {
+      vetoUsed: weekB.vetoUsed, vetoSaved: weekB.vetoSaved ?? null,
+      vetoSavedAll: [...(weekB.vetoSavedAll || [])],
+    } : {}),
   };
   // Neither half's frozen bookend state is ever read back off the ledger.
   for (const w of [weekA, weekB]) { delete w.openingState; delete w.closingState; }
@@ -996,6 +1028,11 @@ export function simulateBBEpisode() {
       hoh: second.hoh,
       nominees: [...(second.finalNominees || [])],
       vetoWinner: second.vetoWinner || null,
+      // See the note on the other double-eviction record.
+      ...(second.vetoUsed !== undefined ? {
+        vetoUsed: second.vetoUsed, vetoSaved: second.vetoSaved ?? null,
+        vetoSavedAll: [...(second.vetoSavedAll || [])],
+      } : {}),
       evicted: second.evicted,
       votes: { ...(second.votes || {}) },
       houseAtStart: [...(second.houseAtStart || [])],

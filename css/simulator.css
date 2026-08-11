@@ -3032,6 +3032,64 @@
         repeating-linear-gradient(180deg, rgba(255,122,110,.07) 0 1px, transparent 1px 3px);
       animation: rpThemeCoraScan 2.6s linear infinite; }
 
+    /* ── A Summer of Mystery, front of house ────────────────────────────
+       A hotel after midnight, not a haunted house. Mauve and tarnished gold
+       on a black that is faintly violet, deco lettering, and a motif that is
+       lamplight through a doorway rather than anything that pulses at you.
+       The other two go red-adjacent when they turn; this one drains INSTEAD,
+       so it had better be saturated while it lasts. */
+    .rp-theme-summer-of-mystery {
+      --theme-accent:#b08bd6; --theme-glow:#d8bff2;
+      --bbx-danger-rgb:  176,60,96;     /* wine, not blood                    */
+      --bbx-note-rgb:    198,166,110;   /* a note left at the desk            */
+      --bbx-key-rgb:     176,139,214;   /* room keys are the accent here      */
+      --bbx-good-rgb:    110,168,150;   /* verdigris                          */
+      --bbx-info-rgb:    142,150,208;
+      --bbx-dim-rgb:     138,128,152;   /* violet-grey, never neutral         */
+      --bbx-stage-rgb:   30,22,42;      --bbx-stage2-rgb:  14,10,20;
+      --bbx-screen-rgb:  33,24,46;      --bbx-screen2-rgb: 11,9,16;
+      --bbx-card-rgb:    31,23,43;      --bbx-card2-rgb:   16,12,23;
+      --bbx-ink:         #e6e0ee;
+      --bbx-ink-quiet:   #efe4d6;
+      --bbx-faint:       #5a4a70;
+      --bbx-glyph:       #33254a; }
+    .rp-theme-summer-of-mystery .rp-page::after {
+      opacity:.15;
+      background:
+        radial-gradient(52% 30% at 50% -6%, rgba(216,191,242,.30), transparent 68%),
+        radial-gradient(30% 46% at 104% 60%, rgba(198,166,110,.16), transparent 72%);
+      animation: rpThemeMystDrift 13s ease-in-out infinite; }
+    .rp-theme-summer-of-mystery .rp-page h1,
+    .rp-theme-summer-of-mystery .rp-page h2 { letter-spacing:.07em; }
+    @keyframes rpThemeMystDrift { 0%,100% { opacity:.15; } 50% { opacity:.21; } }
+
+    /* ── A Summer of Mystery, the Month of Mayhem ───────────────────────
+       The turn is a DRAIN, not a flare. The mauve goes out of the room and
+       what is left is bone, candle and cold stone — the hotel with the
+       hospitality withdrawn and the author standing in it. Deliberately the
+       opposite move to the other two themes, which both escalate into red. */
+    .rp-theme-summer-of-mystery.is-mood-hostile {
+      --theme-accent:#e8dcc0; --theme-glow:#fff4dc;
+      --bbx-danger-rgb:  150,32,44;
+      --bbx-note-rgb:    232,220,192;
+      --bbx-key-rgb:     226,206,158;
+      --bbx-good-rgb:    132,140,120;
+      --bbx-info-rgb:    166,166,176;
+      --bbx-dim-rgb:     130,126,118;
+      --bbx-stage-rgb:   22,20,20;      --bbx-stage2-rgb:  9,8,8;
+      --bbx-screen-rgb:  24,22,21;      --bbx-screen2-rgb: 8,7,7;
+      --bbx-card-rgb:    23,21,20;      --bbx-card2-rgb:   11,10,10;
+      --bbx-ink:         #f2ecdc;
+      --bbx-ink-quiet:   #f7f0dc;
+      --bbx-faint:       #59544a;
+      --bbx-glyph:       #2b2823; }
+    .rp-theme-summer-of-mystery.is-mood-hostile .rp-page::after {
+      opacity:.2;
+      background:
+        radial-gradient(46% 26% at 50% -8%, rgba(255,244,220,.26), transparent 62%),
+        radial-gradient(80% 60% at 50% 108%, rgba(150,32,44,.20), transparent 70%);
+      animation: rpThemeMystDrift 6s ease-in-out infinite; }
+
     /* Holds for every theme, present and future, regardless of where in this
        section its block was appended — see the note at the top. */
     @media (prefers-reduced-motion: reduce) {

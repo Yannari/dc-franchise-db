@@ -35,6 +35,7 @@ export const DEFAULT_ACCENT = '#f0c040';
 // them.
 import TEMPTATION from './themes-temptation.js';
 import MACHINE from './themes-cora.js';
+import MYSTERY from './themes-mystery.js';
 
 /**
  * Every theme, by id.
@@ -47,6 +48,7 @@ import MACHINE from './themes-cora.js';
 export const BB_THEMES = {
   [TEMPTATION.id]: TEMPTATION,
   [MACHINE.id]: MACHINE,
+  [MYSTERY.id]: MYSTERY,
 };
 
 export const THEME_LIST = Object.keys(BB_THEMES);

@@ -18951,6 +18951,7 @@ export function rpBuildBBTwistAnnouncement(ep, act) {
  */
 export function rpBuildBBThemeBeat(ep, act) {
   if (act?.themeId === 'machine-summer') return _rpThemeBeatCora(ep, act);
+  if (act?.themeId === 'summer-of-mystery') return _rpThemeBeatMystery(ep, act);
   return _rpThemeBeatDen(ep, act);
 }
 
@@ -19072,6 +19073,60 @@ function _rpThemeBeatDen(ep, act) {
       <div class="bbth-eye" aria-hidden="true"></div>
       <div class="bbth-who">${_bbEsc(act?.speaker || '')}</div>
       <div class="bbth-line">&ldquo;${_bbEsc(act?.line || '')}&rdquo;</div>
+    </div>
+  </div>`;
+}
+
+/**
+ * The Mastermind, who is a door rather than an eye.
+ *
+ * The Den watches and CORA scans, and both of those are the same gesture: a
+ * light pointed at the house. This one is the opposite gesture — the thing
+ * addressing the room is a door standing very slightly open in a corridor
+ * nobody can find, with the light coming from the wrong side of it.
+ *
+ * The turn drains the colour out instead of flaring red, which is the whole
+ * visual argument of this theme, so the hostile state widens the door and puts
+ * the light on the floor: the Month of Mayhem is the month the Mastermind stops
+ * being somewhere else in the building.
+ */
+function _rpThemeBeatMystery(ep, act) {
+  const week = ep?.num ?? ep?.episode ?? '';
+  const hostile = act?.mood === 'hostile';
+  return `<div class="rp-page bb-room bb-block bbmy${hostile ? ' is-hostile' : ''}" data-ambient="tribal-tension">
+    <style>
+      .bbmy{--bbmy-glow:var(--theme-accent,#b08bd6);--bbmy-gap:14px}
+      .bbmy.is-hostile{--bbmy-glow:var(--theme-glow,#fff4dc);--bbmy-gap:42px}
+      .bbmy-hall{max-width:1100px;margin:0 auto;padding:44px 24px;text-align:center}
+      .bbmy-door{position:relative;width:150px;height:230px;margin:0 auto 26px;
+        border:2px solid var(--bbmy-glow);border-radius:4px 4px 0 0;
+        background:linear-gradient(180deg, rgba(0,0,0,.86), rgba(0,0,0,.97));
+        box-shadow:0 0 44px rgba(0,0,0,.9) inset;overflow:hidden}
+      /* the gap, and the light coming through it from a room nobody has been in */
+      .bbmy-door::before{content:'';position:absolute;top:0;bottom:0;left:50%;
+        width:var(--bbmy-gap);transform:translateX(-50%);
+        background:linear-gradient(90deg,transparent,var(--bbmy-glow),transparent);
+        filter:blur(3px);opacity:.85;transition:width .6s ease;
+        animation:bbmy-breathe 5.5s ease-in-out infinite}
+      /* the same light, lying across the corridor floor */
+      .bbmy-door::after{content:'';position:absolute;left:50%;bottom:-1px;
+        width:calc(var(--bbmy-gap) * 3);height:10px;transform:translateX(-50%);
+        background:radial-gradient(closest-side, var(--bbmy-glow), transparent);
+        opacity:.5}
+      .bbmy-knob{position:absolute;top:52%;left:18px;width:9px;height:9px;border-radius:50%;
+        background:var(--bbmy-glow);opacity:.6}
+      @keyframes bbmy-breathe{0%,100%{opacity:.6}50%{opacity:1}}
+      @media(prefers-reduced-motion:reduce){.bbmy-door::before{animation:none}}
+      .bbmy-who{font-size:13px;letter-spacing:.34em;text-transform:uppercase;opacity:.75;
+        margin-bottom:16px;color:var(--bbmy-glow)}
+      .bbmy-line{font-size:29px;line-height:1.45;max-width:760px;margin:0 auto;
+        font-family:"Bodoni MT",Didot,Georgia,serif;font-style:italic}
+    </style>
+    ${week === '' ? '' : `<div class="rp-eyebrow">Week ${_bbEsc(String(week))}</div>`}
+    <div class="bbmy-hall">
+      <div class="bbmy-door" aria-hidden="true"><span class="bbmy-knob"></span></div>
+      <div class="bbmy-who">${_bbEsc(act?.speaker || '')}</div>
+      <div class="bbmy-line">&ldquo;${_bbEsc(act?.line || '')}&rdquo;</div>
     </div>
   </div>`;
 }

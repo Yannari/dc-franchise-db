@@ -57,3 +57,72 @@ describe('the model is given the numbers, not just the prose', () => {
     expect(block).not.toContain('`');
   });
 });
+
+
+// ══════════════════════════════════════════════════════════════════════
+// The ledger was on the page, and a source-grep test said so, and it was
+// still not reaching the analysis: it had been added to the EPISODE WRITER's
+// request. Two calls go to the same worker from this page, and only one of
+// them feeds the Control Room. So these assert the FUNCTION, not the file.
+// ══════════════════════════════════════════════════════════════════════
+describe('the analysis call carries the season, not just tonight', () => {
+  const page = readFileSync('current-season.html', 'utf8');
+  /** callAI's body — the call the Control Room and Overview actually draw. */
+  const callAI = (() => {
+    const i = page.indexOf('async function callAI(season, episode, summaryText) {');
+    expect(i, 'callAI is gone').toBeGreaterThan(-1);
+    return page.slice(i, page.indexOf('async function loadCached', i));
+  })();
+
+  it('sends the ballots with the analysis, not only with the episode writer', () => {
+    expect(callAI).toMatch(/_episodeLedger\(season, episode\)/);
+    expect(callAI).toMatch(/body: JSON\.stringify\(\{ season, episode, summaryText, ledger, history \}\)/);
+  });
+
+  it('sends every episode before this one', () => {
+    expect(callAI).toMatch(/_seasonHistory\(season, episode\)/);
+    expect(page).toMatch(/async function _seasonHistory\(season, upto\)/);
+  });
+
+  it('stops at the episode being analysed, so it cannot cite itself', () => {
+    const fn = page.slice(page.indexOf('async function _seasonHistory'),
+      page.indexOf('async function _seasonHistory') + 2000);
+    expect(fn, 'the loop includes the current episode').toMatch(/for \(let i = 1; i < upto; i\+\+\)/);
+  });
+
+  it('degrades to the old behaviour rather than failing the analysis', () => {
+    // A season with nothing synced has no ledger and no history. That must
+    // produce a thinner read, never a broken button.
+    expect(callAI).toMatch(/\.catch\(\(\) => null\)/);
+  });
+
+  it('tells the model the history is comparative, not material to re-tell', () => {
+    const worker = readFileSync('worker/worker-episode-live.js', 'utf8');
+    expect(worker).toMatch(/generateAnalytics\(summaryText, season, episode, env, activeCast = null, ledger = null, history = null\)/);
+    expect(worker).toMatch(/body\.ledger, body\.history/);
+    expect(worker).toMatch(/THE SEASON SO FAR/);
+    expect(worker).toMatch(/Do not re-tell earlier episodes/);
+    expect(worker).toMatch(/A pattern is only a pattern if the record shows it/);
+  });
+});
+
+describe('the Control Room reads a trend', () => {
+  const page = readFileSync('current-season.html', 'utf8');
+
+  it('compares against the episode before, not only the latest', () => {
+    expect(page).toMatch(/const priorObs = records\.length > 1/);
+    expect(page).toMatch(/window\._crTrend/);
+  });
+
+  it('matches rows on the key the observations actually use', () => {
+    // `player`, not `name`. Matching the wrong one returns null for everybody
+    // and renders as "nothing has moved all season".
+    expect(page).toMatch(/\(r\?\.player \?\? r\?\.name\) === who/);
+  });
+
+  it('shows the direction on the row', () => {
+    expect(page).toMatch(/cr-trend up/);
+    expect(page).toMatch(/cr-trend down/);
+    expect(page).toMatch(/cr-streak/);
+  });
+});

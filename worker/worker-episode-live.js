@@ -36,7 +36,7 @@ export default {
       // feed to the site and does no writing.
       return await generateSocialCrowd(body, env);
     } else {
-      return await generateAnalytics(summaryText, season, episode, env, body.activeCast, body.ledger);
+      return await generateAnalytics(summaryText, season, episode, env, body.activeCast, body.ledger, body.history);
     }
   },
 };
@@ -306,7 +306,7 @@ Return ONLY valid JSON matching the schema exactly.
   return await callOpenAI(payload, env);
 }
 
-async function generateAnalytics(summaryText, season, episode, env, activeCast = null, ledger = null) {
+async function generateAnalytics(summaryText, season, episode, env, activeCast = null, ledger = null, history = null) {
   if (!summaryText || typeof summaryText !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
       status: 400,
@@ -757,7 +757,41 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 ═══ MEASURED LEDGER (arithmetic, not narration — outranks the summary above) ═══
 `
     + JSON.stringify(ledger, null, 1) : '';
-  const analyticsInput = `${summaryText}${measured}`;
+
+  // ── THE SEASON SO FAR ──
+  //
+  // This function used to receive one episode and nothing else, so every night
+  // was analysed as though it were the first. That is why the writing read
+  // shallow however the prompt was worded: every claim an analyst makes is
+  // COMPARATIVE — he has been drifting since week two, that alliance loses a
+  // member every time it holds power, she has not been in a winning vote since
+  // the veto — and none of those sentences can be written from tonight alone.
+  //
+  // Two things arrive here. `record` is the running game record, measured over
+  // every week played so far, so a claim about a pattern has something to be
+  // checked against. `reads` are the previous episodes' verdicts, compressed —
+  // enough to notice a contradiction, not enough to rewrite them.
+  const past = history && (history.record || (history.reads || []).length) ? `
+
+═══ THE SEASON SO FAR (measured over every episode before this one) ═══
+${history.record || '(no measured record yet)'}
+
+═══ WHAT WAS SAID ABOUT EARLIER EPISODES ═══
+${(history.reads || []).map(r => `EP ${r.episode}: ${r.summary}`).join('\n') || '(nothing yet)'}
+
+HOW TO USE THIS SECTION:
+- The interesting claim is almost always the COMPARISON. "Third time he has
+  agreed to something he should have refused" beats any description of tonight.
+- A pattern is only a pattern if the record shows it. If somebody has been in
+  one losing vote, that is a bad night, not a drift.
+- Where tonight CONTRADICTS an earlier read, say so plainly and name the
+  episode. A read that quietly changes its mind is worth less than one that
+  admits the turn.
+- Do not re-tell earlier episodes. They have already been written. Use them
+  only to say what is new, what is confirmed and what has been overturned.
+- This is the season BEFORE tonight. Nothing here includes this episode.` : '';
+
+  const analyticsInput = `${summaryText}${measured}${past}`;
 
   // Try GPT-5 first (analytics runs on OpenAI, not the DeepSeek episode-writing path)
   if (env.OPENAI_API_KEY) {

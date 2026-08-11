@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analytics redesign — mockup</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   MOCKUP: Control Room + Overview, rebuilt around a spine.
+   Placeholder data is Season 1 Week 2 — the Interrogation week —
+   so it can be read against the transcript it came from.
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --ground:#0e1116; --panel:#151a21; --panel-2:#1b212a; --line:#252c37;
+  --ink:#dbe2ea; --ink-dim:#9aa5b3; --ink-faint:#6b7684;
+  --accent:#f0a500; --accent-dim:#8a6410;
+  --good:#3fb950; --warn:#d29922; --crit:#f85149; --cool:#58a6ff;
+  --shadow:0 1px 0 rgba(255,255,255,.03), 0 8px 24px rgba(0,0,0,.45);
+}
+:root[data-theme="light"]{
+  --ground:#f6f4f0; --panel:#fffefc; --panel-2:#f0ece5; --line:#ddd6ca;
+  --ink:#1c2027; --ink-dim:#5a6472; --ink-faint:#8b93a0;
+  --accent:#9a6a00; --accent-dim:#d8b25c;
+  --good:#1a7f37; --warn:#9a6700; --crit:#c02b22; --cool:#1e6fd9;
+  --shadow:0 1px 0 rgba(255,255,255,.6), 0 6px 18px rgba(60,50,30,.10);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --ground:#f6f4f0; --panel:#fffefc; --panel-2:#f0ece5; --line:#ddd6ca;
+    --ink:#1c2027; --ink-dim:#5a6472; --ink-faint:#8b93a0;
+    --accent:#9a6a00; --accent-dim:#d8b25c;
+    --good:#1a7f37; --warn:#9a6700; --crit:#c02b22; --cool:#1e6fd9;
+    --shadow:0 1px 0 rgba(255,255,255,.6), 0 6px 18px rgba(60,50,30,.10);
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font:15px/1.6 ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 20px 80px}
+
+/* type roles: serif for the argument, sans for the machinery, mono for digits */
+.ui{font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.num{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+
+.eyebrow{
+  font:600 10px/1 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--ink-faint);
+}
+
+/* ── tabs ─────────────────────────────────────────────── */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:14px 0 22px}
+.tab{
+  appearance:none;border:0;background:none;cursor:pointer;padding:10px 16px;
+  color:var(--ink-faint);font:600 12px/1 ui-sans-serif,-apple-system,sans-serif;
+  letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid transparent;
+}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:focus-visible{outline:2px solid var(--cool);outline-offset:-2px}
+.pane[hidden]{display:none}
+
+/* ── the spine ────────────────────────────────────────── */
+.spine{display:flex;flex-direction:column;gap:26px}
+.block{background:var(--panel);border:1px solid var(--line);border-radius:3px;box-shadow:var(--shadow)}
+.block > header{
+  display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+  padding:12px 18px;border-bottom:1px solid var(--line);
+}
+.block > header h2{
+  margin:0;font:600 12px/1 ui-sans-serif,-apple-system,sans-serif;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ink);
+}
+.block > header .note{font:400 11px/1.4 ui-sans-serif,sans-serif;color:var(--ink-faint)}
+.body{padding:18px}
+
+/* ── 1. the verdict — the page's thesis, so it gets the size ── */
+.verdict{border-left:3px solid var(--accent);padding:22px 26px}
+.verdict .claim{
+  margin:6px 0 12px;font-weight:600;font-size:29px;line-height:1.22;
+  letter-spacing:-.015em;text-wrap:balance;max-width:24ch;
+}
+.verdict p{margin:0 0 10px;max-width:66ch;color:var(--ink-dim)}
+.verdict p strong{color:var(--ink);font-weight:600}
+.verdict .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+
+.chip{
+  display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:2px;
+  border:1px solid var(--line);background:var(--panel-2);
+  font:600 10px/1.5 ui-sans-serif,sans-serif;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-dim);white-space:nowrap;
+}
+.chip.hot{border-color:color-mix(in srgb,var(--crit) 45%,var(--line));color:var(--crit)}
+.chip.cool{border-color:color-mix(in srgb,var(--cool) 45%,var(--line));color:var(--cool)}
+.chip.gold{border-color:var(--accent-dim);color:var(--accent)}
+
+/* ── 2. the vote, built ────────────────────────────────── */
+.tally{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+.tally .big{font-size:34px;font-weight:600;letter-spacing:-.02em}
+.tally .who{color:var(--ink-dim)}
+
+.bar{position:relative;height:38px;display:flex;border-radius:2px;overflow:hidden;
+  background:var(--panel-2);border:1px solid var(--line)}
+.bar span{
+  display:flex;align-items:center;justify-content:center;
+  font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.06em;color:#0e1116;
+}
+.seg-locked{background:var(--ink-dim)}
+.seg-moved{background:var(--accent)}
+.seg-surplus{background:color-mix(in srgb,var(--ink-faint) 40%,transparent);color:var(--ink-dim)}
+.seg-against{background:color-mix(in srgb,var(--crit) 26%,transparent);color:var(--ink-dim)}
+.majority{
+  position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--ink);
+  box-shadow:0 0 0 1px var(--ground);
+}
+.majority b{
+  position:absolute;top:-17px;left:50%;transform:translateX(-50%);
+  font:600 9px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;color:var(--ink);white-space:nowrap;
+}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:26px}
+.legend div{display:flex;gap:8px;align-items:flex-start;max-width:30ch}
+.legend i{width:10px;height:10px;border-radius:1px;margin-top:5px;flex:0 0 auto}
+.legend b{display:block;font:600 11px/1.5 ui-sans-serif,sans-serif;letter-spacing:.05em;text-transform:uppercase}
+.legend p{margin:1px 0 0;font-size:13px;color:var(--ink-dim);line-height:1.45}
+
+.ballots{display:flex;flex-wrap:wrap;gap:5px;margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+.ballot{
+  display:flex;flex-direction:column;gap:2px;padding:6px 9px;border-radius:2px;
+  background:var(--panel-2);border:1px solid var(--line);min-width:88px;
+}
+.ballot .v{font:600 12px/1.2 ui-sans-serif,sans-serif}
+.ballot .t{font:400 10px/1.2 ui-sans-serif,sans-serif;color:var(--ink-faint)}
+.ballot.flip{border-color:var(--accent-dim);background:color-mix(in srgb,var(--accent) 8%,var(--panel-2))}
+.ballot.flip .t{color:var(--accent)}
+.ballot.broke{border-color:color-mix(in srgb,var(--crit) 50%,var(--line))}
+.ballot.broke .t{color:var(--crit)}
+
+/* ── 3. decision points — a real sequence, so numbered ── */
+.decisions{display:flex;flex-direction:column}
+.dec{display:grid;grid-template-columns:44px 1fr;gap:0 18px;padding:20px 0;border-top:1px solid var(--line)}
+.dec:first-child{border-top:0;padding-top:4px}
+.dec .n{font:600 22px/1 ui-sans-serif,sans-serif;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.dec h3{margin:0 0 4px;font-size:18px;font-weight:600;letter-spacing:-.01em}
+.dec .when{font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:9px}
+.dec .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:12px}
+.dec .grid > div{border-left:2px solid var(--line);padding-left:12px}
+.dec .grid b{display:block;font:600 10px/1.6 ui-sans-serif,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+.dec .grid p{margin:2px 0 0;font-size:13.5px;line-height:1.5;color:var(--ink-dim)}
+.dec .grid .taken{border-left-color:var(--accent)}
+.dec .grid .taken b{color:var(--accent)}
+.dec > div > p{margin:0;max-width:70ch;color:var(--ink-dim)}
+
+/* ── 4. cost ──────────────────────────────────────────── */
+.moves{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--line)}
+.move{background:var(--panel);padding:14px 16px}
+.move .pair{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px}
+.move .delta{margin-left:auto;font:600 13px/1 ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.move .delta.down{color:var(--crit)} .move .delta.up{color:var(--good)}
+.move p{margin:6px 0 0;font-size:13.5px;line-height:1.5;color:var(--ink-dim)}
+
+/* ── 5. game tape ─────────────────────────────────────── */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:13.5px}
+th{
+  text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);
+  font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);
+}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-dim)}
+tr:last-child td{border-bottom:0}
+td.name{color:var(--ink);font-weight:600;white-space:nowrap}
+td.read{max-width:34ch}
+
+/* ── CONTROL ROOM: the board ──────────────────────────── */
+.standings{display:flex;flex-direction:column}
+.rank{display:grid;grid-template-columns:38px 1fr auto;gap:0 16px;align-items:start;
+  padding:14px 0;border-top:1px solid var(--line)}
+.rank:first-child{border-top:0}
+.rank .pos{font:600 20px/1.2 ui-sans-serif,sans-serif;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.rank .pos.up{color:var(--good)} .rank .pos.down{color:var(--crit)}
+.rank h3{margin:0 0 3px;font-size:17px;font-weight:600}
+.rank p{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-dim);max-width:62ch}
+.rank .meta{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.rank .drift{font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)}
+
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--line)}
+.fac{background:var(--panel);padding:15px 16px;display:flex;flex-direction:column;gap:9px}
+.fac .top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.fac h3{margin:0;font-size:15px;font-weight:600}
+.fac .votes{font:600 21px/1 ui-monospace,monospace;font-variant-numeric:tabular-nums;color:var(--accent)}
+.fac ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.fac li{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--ink-dim)}
+.fac li .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-faint);flex:0 0 auto}
+.fac li.swing{color:var(--ink)} .fac li.swing .dot{background:var(--accent)}
+.fac li.exposed .dot{background:var(--crit)}
+.fac .read{font-size:12.5px;line-height:1.45;color:var(--ink-faint);border-top:1px solid var(--line);padding-top:9px;margin-top:auto}
+.fac .meter{height:3px;background:var(--panel-2);border-radius:2px;overflow:hidden}
+.fac .meter i{display:block;height:100%;background:var(--accent)}
+
+.pressure{display:flex;flex-direction:column;gap:0}
+.pr{display:grid;grid-template-columns:1fr auto;gap:6px 16px;padding:13px 0;border-top:1px solid var(--line)}
+.pr:first-child{border-top:0;padding-top:2px}
+.pr h3{margin:0;font-size:15px;font-weight:600}
+.pr p{margin:3px 0 0;font-size:13.5px;line-height:1.5;color:var(--ink-dim);max-width:68ch}
+.pr .lvl{align-self:start}
+
+.threads{display:flex;flex-direction:column}
+.th{padding:14px 0;border-top:1px solid var(--line)}
+.th:first-child{border-top:0;padding-top:2px}
+.th h3{margin:0 0 4px;font-size:15px;font-weight:600}
+.th p{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-dim);max-width:70ch}
+.th .trigger{margin-top:7px;font-size:12.5px;color:var(--ink-faint)}
+.th .trigger b{color:var(--accent);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:10px}
+
+.foot{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);
+  font:400 12px/1.6 ui-sans-serif,sans-serif;color:var(--ink-faint);max-width:74ch}
+
+@media (max-width:640px){
+  .verdict .claim{font-size:23px}
+  .dec{grid-template-columns:30px 1fr;gap:0 12px}
+  .rank{grid-template-columns:30px 1fr;gap:0 12px}
+  .rank .meta{grid-column:2;align-items:flex-start;flex-direction:row;margin-top:7px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Mockup · Season 1 · Big Brother</div>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" id="t1" onclick="pick(1)">The Week</button>
+    <button class="tab" role="tab" aria-selected="false" id="t2" onclick="pick(2)">The Board</button>
+  </div>
+
+  <!-- ══════════════ THE WEEK (replaces Overview) ══════════════ -->
+  <div class="pane" id="p1">
+    <div class="spine">
+
+      <section class="block verdict">
+        <div class="eyebrow">Week 2 — the verdict</div>
+        <div class="claim">Nico won the power. Ireland spent it.</div>
+        <p>Nico took the Head of Household in a thirteen-minute endurance hold and never
+        ran the week. <strong>Ireland</strong> held the Interrogation, took the ceremony out of his
+        hands, and moved the block onto Zella — a member of the alliance she is
+        aligned with — without a single houseguest knowing a power had been played.</p>
+        <p>The eviction itself was never close. <strong>Six of the ten votes against Stella
+        never had to be moved</strong>, and the majority was seven, so the week's real work was
+        one conversation, not a campaign. What looks like a coalition decision was a
+        near-consensus that Ireland only had to nudge.</p>
+        <div class="tags">
+          <span class="chip gold">Decided in the room</span>
+          <span class="chip">Plan held</span>
+          <span class="chip cool">Hidden power, undetected</span>
+          <span class="chip hot">1 promise broken</span>
+        </div>
+      </section>
+
+      <section class="block">
+        <header>
+          <h2>How the vote was built</h2>
+          <span class="note">Measured from the ballots — no interpretation</span>
+        </header>
+        <div class="body">
+          <div class="tally">
+            <span class="big num">10–3</span>
+            <span class="who">Stella evicted · 13 voting · majority 7</span>
+          </div>
+
+          <div class="bar" role="img" aria-label="Six votes locked, one moved, three surplus, three against">
+            <span class="seg-locked" style="flex:6">6 LOCKED</span>
+            <span class="seg-moved" style="flex:1">1 MOVED</span>
+            <span class="seg-surplus" style="flex:3">3 SURPLUS</span>
+            <span class="seg-against" style="flex:3">3 AGAINST</span>
+            <span class="majority" style="left:53.84%"><b>MAJORITY · 7</b></span>
+          </div>
+
+          <div class="legend">
+            <div><i class="seg-locked" style="background:var(--ink-dim)"></i>
+              <div><b>Locked</b><p>Named Stella from the start and never wavered. Nobody spent anything on them.</p></div></div>
+            <div><i style="background:var(--accent)"></i>
+              <div><b>Moved</b><p>The only vote that had to be worked. This is the entire cost of the week.</p></div></div>
+            <div><i style="background:color-mix(in srgb,var(--ink-faint) 40%,transparent)"></i>
+              <div><b>Surplus</b><p>Past the majority. Loud, but it changed nothing — and it told the room who is together.</p></div></div>
+            <div><i style="background:color-mix(in srgb,var(--crit) 26%,transparent)"></i>
+              <div><b>Against</b><p>Voted Jules. Three people, three unrelated reasons — not a bloc.</p></div></div>
+          </div>
+
+          <div class="ballots">
+            <div class="ballot"><span class="v">Aaron</span><span class="t">Stella · locked</span></div>
+            <div class="ballot"><span class="v">Amberly</span><span class="t">Stella · locked</span></div>
+            <div class="ballot"><span class="v">Felipe</span><span class="t">Stella · locked</span></div>
+            <div class="ballot"><span class="v">Hasan</span><span class="t">Stella · locked</span></div>
+            <div class="ballot"><span class="v">Misha</span><span class="t">Stella · locked</span></div>
+            <div class="ballot"><span class="v">Nico</span><span class="t">Stella · locked</span></div>
+            <div class="ballot flip"><span class="v">Gyselle</span><span class="t">Stella · moved</span></div>
+            <div class="ballot"><span class="v">Joel</span><span class="t">Stella · surplus</span></div>
+            <div class="ballot"><span class="v">Zella</span><span class="t">Stella · surplus</span></div>
+            <div class="ballot"><span class="v">Tobias</span><span class="t">Stella · surplus</span></div>
+            <div class="ballot broke"><span class="v">Harriett</span><span class="t">Jules · broke a deal</span></div>
+            <div class="ballot"><span class="v">Dylon</span><span class="t">Jules</span></div>
+            <div class="ballot"><span class="v">Natasha</span><span class="t">Jules</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <header>
+          <h2>Decision points</h2>
+          <span class="note">Judged on what was knowable at the time, not on the result</span>
+        </header>
+        <div class="body decisions">
+
+          <article class="dec">
+            <div class="n num">01</div>
+            <div>
+              <div class="when">Before nominations</div>
+              <h3>Ireland plays the Interrogation and names Joel</h3>
+              <p>She could have stayed quiet and kept the power for a week where she was
+              actually in danger. Instead she spent it while safe, to move a block that was
+              not aimed at her.</p>
+              <div class="grid">
+                <div class="taken"><b>Chose</b><p>Named Joel as a decoy Head of Household and redirected the ceremony.</p></div>
+                <div><b>Alternative</b><p>Bank it. She was not a target this week and had no reason to be seen doing anything.</p></div>
+                <div><b>Verdict</b><p>Correct, narrowly. The power expires, Amberly was going up, and nobody traced it. She bought a week for free.</p></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="dec">
+            <div class="n num">02</div>
+            <div>
+              <div class="when">Veto ceremony</div>
+              <h3>Zella goes up as the replacement</h3>
+              <p>The renom hit a member of the alliance Ireland is aligned with — the one
+              decision this week that created a permanent enemy.</p>
+              <div class="grid">
+                <div class="taken"><b>Chose</b><p>Zella, a Power Couple vote, over any of the four unaligned houseguests.</p></div>
+                <div><b>Alternative</b><p>Aaron. Nobody defends him, the week stays quiet, and the alliance never learns it is expendable.</p></div>
+                <div><b>Verdict</b><p>An error, and the season's first real one. It bought nothing — Zella won her way off — and cost the trust the whole plan runs on.</p></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="dec">
+            <div class="n num">03</div>
+            <div>
+              <div class="when">Eviction night</div>
+              <h3>Harriett writes down her own alliance member</h3>
+              <p>The Pipeline was two days old. She had the numbers to keep Stella and chose
+              not to use them.</p>
+              <div class="grid">
+                <div class="taken"><b>Chose</b><p>Voted Jules, breaking the deal she made, and left the room before it was counted.</p></div>
+                <div><b>Alternative</b><p>Vote with the Pipeline. It loses 9–4 anyway, and she keeps a partner and her word.</p></div>
+                <div><b>Verdict</b><p>A cost with no benefit. The vote was never in doubt — she paid full price for a result she was going to get for free.</p></div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <section class="block">
+        <header>
+          <h2>What it cost</h2>
+          <span class="note">Relationships that moved, and the decision that moved them</span>
+        </header>
+        <div class="moves">
+          <div class="move">
+            <div class="pair">Harriett → Jules <span class="delta down num">−4.2</span></div>
+            <p>Wrote his ally's name down after shaking on the Pipeline. He watched her leave the room and did not follow.</p>
+          </div>
+          <div class="move">
+            <div class="pair">Zella → Ireland <span class="delta down num">−3.6</span></div>
+            <p>Put on the block by somebody her own alliance is working with. She does not yet know it was Ireland.</p>
+          </div>
+          <div class="move">
+            <div class="pair">Joel → Jules <span class="delta up num">+2.8</span></div>
+            <p>Used the veto on himself and kept Jules off the replacement list. Jules knows exactly what that was worth.</p>
+          </div>
+          <div class="move">
+            <div class="pair">Nico → Felipe <span class="delta down num">−1.9</span></div>
+            <p>Felipe floated a name Nico should have refused. He agreed too fast, and Felipe has filed it.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <header>
+          <h2>Game tape</h2>
+          <span class="note">Intent, information and action — the result is not treated as decision quality</span>
+        </header>
+        <div class="tablewrap">
+          <table>
+            <thead><tr>
+              <th>Houseguest</th><th>Played</th><th>Knew</th><th>Read</th>
+            </tr></thead>
+            <tbody>
+              <tr><td class="name">Ireland</td>
+                <td>Spent a hidden power from safety</td>
+                <td>Everything. The only person who knew who held power.</td>
+                <td class="read">The best week anybody had, and nobody can credit her for it. Her problem starts the moment somebody counts backwards from the renom.</td></tr>
+              <tr><td class="name">Nico</td>
+                <td>Won HOH, ran nothing</td>
+                <td>Believed Ireland's denial</td>
+                <td class="read">Held the title for a week that happened around him. Failed Felipe's loyalty test without noticing it was one.</td></tr>
+              <tr><td class="name">Zella</td>
+                <td>Won her own way off the block</td>
+                <td>That her alliance did not protect her</td>
+                <td class="read">The only person who converted danger into a result. Now reads as a comp threat, which is a worse problem than the block was.</td></tr>
+              <tr><td class="name">Harriett</td>
+                <td>Broke a two-day-old deal</td>
+                <td>The vote was 10–3 without her</td>
+                <td class="read">Paid for a result she was getting anyway. The house now has evidence about her that will outlive the alliance she broke.</td></tr>
+              <tr><td class="name">Stella</td>
+                <td>Counted on relationships, not commitments</td>
+                <td>Had the count right — 10–3 — and did not believe it</td>
+                <td class="read">Knew the arithmetic and could not make herself act on it. Never asked Harriett for the one thing that would have exposed her.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+    <p class="foot">Every number on this page is measured from the ballots and the roster
+    snapshots. The prose is written against those numbers and cannot contradict them.</p>
+  </div>
+
+  <!-- ══════════════ THE BOARD (replaces Control Room) ══════════════ -->
+  <div class="pane" id="p2" hidden>
+    <div class="spine">
+
+      <section class="block verdict">
+        <div class="eyebrow">After week 2 — the state of the game</div>
+        <div class="claim">Two blocs, one broker, and nobody has noticed her.</div>
+        <p>The Power Couple and the Plot Twist have seven votes between them and have not
+        yet worked out that they want the same six people gone. <strong>Ireland</strong> sits in the
+        second and has been quietly deciding for both.</p>
+        <p>The house has no idea a power was played, which means the season's most
+        important fact is one nobody is looking for.</p>
+      </section>
+
+      <section class="block">
+        <header>
+          <h2>Who is playing the best game</h2>
+          <span class="note">Ranked by game, not by position — the gap is the point</span>
+        </header>
+        <div class="body standings">
+          <article class="rank">
+            <div class="pos num">1</div>
+            <div><h3>Ireland</h3>
+              <p>Holds the only information asymmetry in the house and has spent it once,
+              correctly, for free. Every other player is reasoning about a board that does
+              not exist.</p></div>
+            <div class="meta"><span class="chip gold">Backdoor artist</span><span class="drift">Ceiling: could win</span></div>
+          </article>
+          <article class="rank">
+            <div class="pos num up">2</div>
+            <div><h3>Felipe</h3>
+              <p>Two final twos and a loyalty test he ran on his own partner. He is the only
+              person collecting information rather than allies — and the only one who has
+              noticed Nico is not what he thought.</p></div>
+            <div class="meta"><span class="chip">Social manipulator</span><span class="drift">Ceiling: could win</span></div>
+          </article>
+          <article class="rank">
+            <div class="pos num">3</div>
+            <div><h3>Zella</h3>
+              <p>Beat the block on her own with nobody's help. That is the strongest single
+              act of the season so far, and it is also the reason she will be nominated again.</p></div>
+            <div class="meta"><span class="chip cool">Comp beast</span><span class="drift">Ceiling: best realistic</span></div>
+          </article>
+          <article class="rank">
+            <div class="pos num down">4</div>
+            <div><h3>Nico</h3>
+              <p>Won the biggest competition of the season and converted it into nothing.
+              Holding power you cannot use is worse than not holding it — the house now
+              associates him with a week he did not run.</p></div>
+            <div class="meta"><span class="chip">Comp-dependent</span><span class="drift">Ceiling: best realistic</span></div>
+          </article>
+          <article class="rank">
+            <div class="pos num down">5</div>
+            <div><h3>Harriett</h3>
+              <p>Made a move that cost her a partner and bought her nothing. She is now a
+              known quantity to a house that had no read on her at all.</p></div>
+            <div class="meta"><span class="chip hot">Exposed</span><span class="drift">Ceiling: overperforming</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="block">
+        <header>
+          <h2>The board</h2>
+          <span class="note">Votes each group can actually produce · amber marks a member who is not solid</span>
+        </header>
+        <div class="board">
+          <div class="fac">
+            <div class="top"><h3>The Power Couple</h3><span class="votes">3</span></div>
+            <div class="meter"><i style="width:72%"></i></div>
+            <ul>
+              <li><span class="dot"></span>Natasha</li>
+              <li class="swing"><span class="dot"></span>Gyselle — closer to Hasan</li>
+              <li class="exposed"><span class="dot"></span>Zella — was nominated</li>
+            </ul>
+            <p class="read">Holds together only while Gyselle believes she has no better offer, and Zella believes the block was not personal. Both are one conversation from being false.</p>
+          </div>
+          <div class="fac">
+            <div class="top"><h3>The Plot Twist</h3><span class="votes">4</span></div>
+            <div class="meter"><i style="width:88%"></i></div>
+            <ul>
+              <li><span class="dot"></span>Amberly</li>
+              <li><span class="dot"></span>Tobias</li>
+              <li class="swing"><span class="dot"></span>Ireland — playing her own game</li>
+              <li class="swing"><span class="dot"></span>Jules — knows he is fourth</li>
+            </ul>
+            <p class="read">The strongest group and the most visible one. Everyone outside it is already counting its votes, which is the condition every dominant alliance dies of.</p>
+          </div>
+          <div class="fac">
+            <div class="top"><h3>The pairs</h3><span class="votes">6</span></div>
+            <div class="meter"><i style="width:40%"></i></div>
+            <ul>
+              <li><span class="dot"></span>Felipe + Nico</li>
+              <li><span class="dot"></span>Joel + Jules</li>
+              <li><span class="dot"></span>Aaron + Dylon</li>
+            </ul>
+            <p class="read">Not a bloc and never votes as one — but six people whose first loyalty is to one other person, which is what actually decides a final four.</p>
+          </div>
+          <div class="fac">
+            <div class="top"><h3>Unattached</h3><span class="votes">2</span></div>
+            <div class="meter"><i style="width:18%"></i></div>
+            <ul>
+              <li class="exposed"><span class="dot"></span>Misha — everybody's next problem</li>
+              <li><span class="dot"></span>Harriett — free agent by accident</li>
+            </ul>
+            <p class="read">Both are available to whoever asks first. Misha is named by eleven houseguests as a target and does not appear to know it.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <header>
+          <h2>Who has to move this week</h2>
+          <span class="note">Danger and motive together — a target with no options is not the same as one with three</span>
+        </header>
+        <div class="body pressure">
+          <article class="pr">
+            <div><h3>Misha</h3>
+              <p>Named as a target by eleven of thirteen houseguests and unaware of it.
+              She has one route — trade what she knows about the Pipeline to the Plot Twist
+              before somebody wins power. She has this week and probably not the next.</p></div>
+            <span class="chip hot lvl">Critical</span>
+          </article>
+          <article class="pr">
+            <div><h3>Zella</h3>
+              <p>Came off the block on her own and now has to decide whether the alliance
+              that let her go up is worth staying in. Leaving it is correct and costs her
+              the only three votes she has.</p></div>
+            <span class="chip lvl">Forced choice</span>
+          </article>
+          <article class="pr">
+            <div><h3>Ireland</h3>
+              <p>Nothing is coming for her yet, which is exactly the moment to build a
+              relationship that does not depend on the Plot Twist. The week she needs one,
+              it will be too late to start.</p></div>
+            <span class="chip cool lvl">Opportunity</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="block">
+        <header>
+          <h2>Threads</h2>
+          <span class="note">Each one with the specific thing that ends it</span>
+        </header>
+        <div class="body threads">
+          <article class="th">
+            <h3>Nobody knows who held power in week 2</h3>
+            <p>Ireland took the ceremony from Nico and named Joel as a decoy. The house is
+            running three competing theories and none of them is the right one.</p>
+            <p class="trigger"><b>Ends when</b> anybody asks why a Power Couple member went up in a week the Plot Twist was not in danger.</p>
+          </article>
+          <article class="th">
+            <h3>Felipe is in two final twos</h3>
+            <p>Nico thinks he is locked. Jules thinks he is locked. Felipe has tested one of
+            them and is no longer sure himself.</p>
+            <p class="trigger"><b>Ends when</b> Nico and Jules speak to each other about him — they have no reason to, until one of them is on the block.</p>
+          </article>
+          <article class="th">
+            <h3>The Pipeline died in two days</h3>
+            <p>Harriett broke it herself and the surviving members have stopped sharing
+            information without ever calling it off.</p>
+            <p class="trigger"><b>Ends when</b> Jules decides whether being betrayed by Harriett is worth more to him as a grievance or as leverage.</p>
+          </article>
+        </div>
+      </section>
+
+    </div>
+    <p class="foot">Vote counts, group membership and danger are computed from the season.
+    The reads are written against them.</p>
+  </div>
+
+</div>
+<script>
+function pick(n){
+  for (const i of [1,2]){
+    document.getElementById('p'+i).hidden = (i!==n);
+    document.getElementById('t'+i).setAttribute('aria-selected', String(i===n));
+  }
+}
+</script>
+</body>
+</html>

@@ -25,11 +25,15 @@
 //
 // Returns HTML. Takes a dossier from js/wiki.js and nothing else.
 
+// `short` is the tab label — "TD14", "BB1" — and matches the code js/shows.js
+// already declares for each show, so a third show is named consistently
+// wherever it appears rather than getting a second abbreviation here.
 const SHOW_META = {
-  'total-drama': { name: 'Total Drama', icon: '🎬', accent: '#7d4cff' },
-  'big-brother': { name: 'Big Brother', icon: '📹', accent: '#38bdf8' },
+  'total-drama': { name: 'Total Drama', short: 'TD', icon: '🎬', accent: '#7d4cff' },
+  'big-brother': { name: 'Big Brother', short: 'BB', icon: '📹', accent: '#38bdf8' },
 };
-const meta = f => SHOW_META[f] || { name: f, icon: '📺', accent: '#7d4cff' };
+const meta = f => SHOW_META[f]
+  || { name: f, short: String(f).slice(0, 2).toUpperCase(), icon: '📺', accent: '#7d4cff' };
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -44,80 +48,252 @@ const ordinal = n => {
 /**
  * The infobox: the panel a fandom article opens with.
  *
- * Every row is omitted when it is unknown rather than printed empty — the real
- * ones do the same, and a column of dashes is what made the first version look
- * like a broken table.
+ * TABBED BY SEASON, the way the reference wikis do it — `MH18 | MH7` over one
+ * portrait, then a profile block that is true of the person, then one block per
+ * season that is true only of that season.
+ *
+ * The first version was a single flat list, so somebody's fourth season sat in
+ * the same column as their first and every row had to be prefixed "Season 14
+ * place" to stay unambiguous. Tabs are how the real ones solve that, and they
+ * are also the only way a returnee's two very different games can both be
+ * stated at full detail.
+ *
+ * Newest season first and selected: that is the game somebody arriving from a
+ * link about a current season is reading about.
+ *
+ * Every row is omitted when it is unknown rather than printed empty. The
+ * reference pages print "TBA" in that spot; a column of them is noise, and the
+ * absence says the same thing more honestly.
  */
 function infobox(dossier, show, root) {
   const m = meta(show.format);
-  const rows = [];
-  const row = (label, value) => { if (value) rows.push([label, value]); };
-
   const bio = dossier.bio || {};
-  row('Gender', bio.gender === 'f' ? 'Female' : bio.gender === 'm' ? 'Male' : bio.gender ? 'Non-binary' : '');
-  row('Age', bio.age ? String(bio.age) : '');
-  row('Nationality', [bio.ethnicity, bio.nationality].filter(Boolean).join(' '));
-  row('Archetype', bio.archetype);
-  row('Seasons', `${show.count} (${m.name})`);
-  row('Best finish', show.best < 99 ? ordinal(show.best) : '');
-  row('Wins', show.wins ? String(show.wins) : '');
 
-  // The competition record, which every real character infobox carries and
-  // this one did not — so the panel could say somebody played four seasons of
-  // Big Brother and never once say whether they were any good at it.
+  const rowsOf = pairs => pairs
+    .filter(([, v]) => v !== '' && v !== null && v !== undefined)
+    .map(([k, v]) => `<tr><th>${esc(k)}</th><td>${v}</td></tr>`).join('');
+
+  // ── the person ──
+  const profile = rowsOf([
+    ['Gender', bio.gender === 'f' ? 'Female' : bio.gender === 'm' ? 'Male' : bio.gender ? 'Non-binary' : ''],
+    ['Age', bio.age ? String(bio.age) : ''],
+    ['Nationality', [bio.ethnicity, bio.nationality].filter(Boolean).join(' ')],
+    ['Label', bio.archetype],
+    ['Seasons', `${show.count} (${m.name})`],
+  ]);
+
+  // ── the career, across every season of this show ──
+  //
+  // Kept alongside the per-season blocks, not replaced by them: "four seasons
+  // and eleven competitions" is a different fact from any one season's row, and
+  // it is the one a reader skims for. The per-season blocks say whether that
+  // came from one dominant run or was spread across all of them.
   const t = show.totals || {};
+  const careerPairs = [
+    ['Best finish', show.best < 99 ? ordinal(show.best) : ''],
+    ['Wins', show.wins ? String(show.wins) : ''],
+  ];
   if (show.format === 'big-brother') {
-    row('HOH wins', t.hohWins ? String(t.hohWins) : '');
-    row('Veto wins', t.vetoWins ? String(t.vetoWins) : '');
+    careerPairs.push(['HOH wins', t.hohWins ? String(t.hohWins) : '']);
+    careerPairs.push(['Veto wins', t.vetoWins ? String(t.vetoWins) : '']);
     // Named in full because "BB wins" reads as wins of Big Brother.
-    row('Block Buster wins', t.blockBusterWins ? String(t.blockBusterWins) : '');
+    careerPairs.push(['Block Buster wins', t.blockBusterWins ? String(t.blockBusterWins) : '']);
     if (t.bestBlockBusterStreak > 1) {
-      row('Longest arena run', `${t.bestBlockBusterStreak} weeks running`);
+      careerPairs.push(['Longest arena run', `${t.bestBlockBusterStreak} weeks running`]);
     }
-    row('Times nominated', t.timesNominated ? String(t.timesNominated) : '');
+    careerPairs.push(['Times nominated', t.timesNominated ? String(t.timesNominated) : '']);
   } else {
-    row('Challenge wins', t.challengeWins ? String(t.challengeWins) : '');
+    careerPairs.push(['Challenge wins', t.challengeWins ? String(t.challengeWins) : '']);
   }
-  row('Jury votes', t.juryVotes ? String(t.juryVotes) : '');
+  careerPairs.push(['Jury votes', t.juryVotes ? String(t.juryVotes) : '']);
+  const career = rowsOf(careerPairs);
 
-  // Per-season placement, the way a real infobox lists them.
-  for (const s of show.seasons) {
-    row(`Season ${s.season} place`, `${ordinal(s.placement)}${s.status ? ` · ${esc(s.status)}` : ''}`);
-    if (s.tribe) row(`Season ${s.season} team`, esc(s.tribe));
-  }
+  // ── one block per season, newest first ──
+  const seasons = show.seasons.slice().sort((a, b) => b.season - a.season);
+  const shortOf = s => `${m.short || m.name}${s.season}`;
 
-  const rel = dossier.relationships || {};
-  if (dossier.couple) {
-    row('Relationship', `${esc(dossier.couple.partner)}${dossier.couple.together ? '' : ' (ended)'}`);
-  }
-  if (rel.bonds?.length) {
-    row('Friends', rel.bonds.slice(0, 5).map(b => esc(b.name)).join(', '));
-  }
-  if (rel.rivalries?.length) {
-    row('Rivals', rel.rivalries.map(r => esc(r.rival)).join(', '));
-  }
+  const seasonBlock = s => {
+    const rec = s.record || {};
+    const bb = rec.bb || {};
+    const rounds = (s.weekRows || []).length;
+    const pairs = [
+      ['Status', s.status ? esc(s.status) : ''],
+      ['Place', s.placement ? ordinal(s.placement) : ''],
+      ['Votes against', rec.votesReceived ? String(rec.votesReceived) : ''],
+      ['Votes to win', rec.juryVotes ? String(rec.juryVotes) : ''],
+    ];
+    // Each show counts its own competitions, and neither one's words fit the
+    // other: a camp has no veto and a house has no immunity idol.
+    if (show.format === 'big-brother') {
+      pairs.push(['HOH wins', bb.hohWins ? String(bb.hohWins) : '']);
+      pairs.push(['Veto wins', bb.vetoWins ? String(bb.vetoWins) : '']);
+      pairs.push(['Block Buster wins', bb.blockBusterWins ? String(bb.blockBusterWins) : '']);
+      pairs.push(['Times nominated', bb.timesNominated ? String(bb.timesNominated) : '']);
+    } else {
+      pairs.push(['Challenge wins', rec.challengeWins ? String(rec.challengeWins) : '']);
+      pairs.push(['Immunity wins', rec.immunityWins ? String(rec.immunityWins) : '']);
+      pairs.push(['Idols found', rec.idolsFound ? String(rec.idolsFound) : '']);
+      pairs.push(['Team', s.tribe ? esc(s.tribe) : '']);
+    }
+    pairs.push(['Alliances', (s.alliances || []).map(esc).join(', ')]);
+    pairs.push(['Loyalties', (s.loyalties || []).map(esc).join(', ')]);
+    pairs.push(['Rivals', (s.rivalries || []).map(esc).join(', ')]);
+    // What a real infobox calls Days. Counted in rounds, because rounds are
+    // what this simulator measures — a day count would be invented.
+    pairs.push([show.format === 'big-brother' ? 'Weeks' : 'Episodes', rounds ? String(rounds) : '']);
+    return rowsOf(pairs);
+  };
+
+  const tabs = seasons.length > 1 ? `
+    <div class="wk-ib-tabs" role="tablist">
+      ${seasons.map((s, i) => `<button type="button" class="wk-ib-tab${i === 0 ? ' is-on' : ''}"
+        role="tab" data-ibx-tab="${s.season}" aria-selected="${i === 0}">${esc(shortOf(s))}</button>`).join('')}
+    </div>` : '';
 
   return `
   <aside class="wk-infobox" style="--wk-accent:${m.accent}">
     <div class="wk-ib-title">${esc(dossier.name)}</div>
+    ${tabs}
     <img class="wk-ib-portrait" src="${root}/assets/avatars/${esc(dossier.id)}.png" alt=""
          onerror="this.style.display='none'">
-    <div class="wk-ib-show">${m.icon} ${esc(m.name)}</div>
-    <table class="wk-ib-table">
-      ${rows.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${v}</td></tr>`).join('')}
-    </table>
+    ${profile ? `<div class="wk-ib-head">${m.icon} ${esc(m.short || m.name)} Profile</div>
+      <table class="wk-ib-table">${profile}</table>` : ''}
+    ${career ? `<div class="wk-ib-head">Career</div>
+      <table class="wk-ib-table">${career}</table>` : ''}
+    ${seasons.map((s, i) => `
+      <div class="wk-ib-season${i === 0 ? ' is-on' : ''}" data-ibx-panel="${s.season}">
+        <div class="wk-ib-head">${s.title ? esc(s.title) : `${esc(m.name)} ${s.season}`}</div>
+        <table class="wk-ib-table">${seasonBlock(s)}</table>
+      </div>`).join('')}
   </aside>`;
 }
 
-/** The opening paragraph: who they are, in one sentence of fact. */
-function lead(dossier, show) {
+/**
+ * The lead: who they are, and what they did, in the two paragraphs a fandom
+ * article opens with.
+ *
+ * The first version was one sentence assembled from counters — "was a
+ * contestant on Total Drama, Season 14, winning once" — which is true, reads
+ * like a database row, and is nothing like what those pages actually say.
+ *
+ * The reference shape is two paragraphs doing two different jobs:
+ *
+ *   1. THE RECORD. Which seasons, in order, and how each one ended. Every
+ *      season named and linked, so a returnee's page states their whole career
+ *      before it says anything about one game.
+ *   2. THE GAME. What they actually did — competitions won, who they were with,
+ *      how it ended. Written from the episodes by the wiki fill when it has run
+ *      (`story`), and otherwise measured from the record, which is flatter but
+ *      never wrong.
+ */
+function lead(dossier, show, root) {
   const m = meta(show.format);
-  const bits = [];
-  bits.push(`<strong>${esc(dossier.name)}</strong> was a contestant on <em>${esc(m.name)}</em>`);
-  bits.push(show.count === 1 ? `Season ${show.seasons[0].season}` : `${show.count} seasons`);
-  if (show.wins) bits.push(`winning ${show.wins === 1 ? 'once' : `${show.wins} times`}`);
-  else if (show.best < 99) bits.push(`finishing as high as ${ordinal(show.best)}`);
-  return `<p class="wk-lead">${bits.join(', ')}.</p>`;
+  const seasons = show.seasons.slice().sort((a, b) => a.season - b.season);
+  const link = s => `<a href="${root}/season_ref.html?season=${
+    show.format === 'big-brother' ? `bb-${s.season}` : s.season}"><em>${
+    esc(s.title || `${m.name} ${s.season}`)}</em></a>`;
+
+  // ── 1. the record ──
+  //
+  // Written as one sentence per career length rather than one template with
+  // clauses bolted on. The template version produced "was the runner-up on
+  // Total Drama, who returned for Total Drama 2, finishing 2nd, and later won
+  // All-Stars, and later won Heroes VS Villains VS Civilians" — every fact
+  // correct and the same three words three times.
+  const outcome = s => {
+    if (s.placement === 1) return `the winner of ${link(s)}`;
+    if (s.placement === 2) return `the runner-up on ${link(s)}`;
+    if (s.placement) return `${ordinal(s.placement)} on ${link(s)}`;
+    return `a contestant on ${link(s)}`;
+  };
+  /** "a, b, and c" — with the serial comma the reference pages use. */
+  const joinList = xs => {
+    if (xs.length <= 1) return xs[0] || '';
+    if (xs.length === 2) return `${xs[0]} and ${xs[1]}`;
+    return `${xs.slice(0, -1).join(', ')}, and ${xs[xs.length - 1]}`;
+  };
+
+  const who = `<strong>${esc(dossier.name)}</strong>`;
+  let career;
+  if (seasons.length === 1) {
+    career = `${who} was ${outcome(seasons[0])}.`;
+  } else if (seasons.length === 2) {
+    const [a, b] = seasons;
+    career = b.placement === 1
+      ? `${who} was ${outcome(a)}, and later won ${link(b)}.`
+      : `${who} was ${outcome(a)}, and returned for ${link(b)}, finishing ${ordinal(b.placement)}.`;
+  } else {
+    // Three or more: a count, then the seasons in order. A reader wants the
+    // shape of the career before the itinerary, and it stops the sentence
+    // turning into a list of identical clauses.
+    const wins = seasons.filter(x => x.placement === 1).length;
+    const opener = wins
+      ? `${who} played ${seasons.length} seasons of ${esc(m.name)}, winning ${
+          wins === 1 ? 'once' : `${wins} of them`}`
+      : `${who} played ${seasons.length} seasons of ${esc(m.name)}`;
+    career = `${opener}: ${joinList(seasons.map(outcome))}.`;
+  }
+
+  // ── 2. the game ──
+  //
+  // The most recent season with prose, because that is the one a reader
+  // arriving today is most likely here for; the others have their own sections
+  // further down.
+  const told = seasons.slice().reverse().find(s => s.story);
+  let game = '';
+  if (told) {
+    game = esc(told.story);
+  } else {
+    // Measured. Never as good as the written one, and never absent.
+    const s = seasons[seasons.length - 1];
+    const rec = s.record || {};
+    const bb = rec.bb || {};
+    const did = [];
+    const comps = show.format === 'big-brother'
+      ? (bb.hohWins || 0) + (bb.vetoWins || 0) + (bb.blockBusterWins || 0)
+      : (rec.challengeWins || 0);
+    if (comps) did.push(`won ${comps} competition${comps === 1 ? '' : 's'}`);
+    if ((s.alliances || []).length) {
+      did.push(`played with ${s.alliances.slice(0, 2).map(esc).join(' and ')}`);
+    }
+    if (rec.votesReceived) {
+      did.push(`took ${rec.votesReceived} vote${rec.votesReceived === 1 ? '' : 's'} against them`);
+    }
+    if (did.length) {
+      game = `On ${s.title ? esc(s.title) : `${esc(m.name)} ${s.season}`}, ${esc(dossier.name)} ${
+        did.join(', ')}, finishing ${ordinal(s.placement)}.`;
+    }
+  }
+
+  return `<p class="wk-lead">${career}</p>${game ? `<p class="wk-lead-game">${game}</p>` : ''}`;
+}
+
+/**
+ * Make the infobox's season tabs work.
+ *
+ * Called by the page after the article lands, beside `hydrateGalleries`. The
+ * same reason that one exists: a `<script>` inside injected innerHTML never
+ * runs, so behaviour is attached from outside or not at all.
+ */
+export function hydrateInfobox(host) {
+  const box = host?.querySelector('.wk-infobox');
+  if (!box) return;
+  const tabs = [...box.querySelectorAll('[data-ibx-tab]')];
+  if (!tabs.length) return;                      // one season needs no tabs
+  const panels = [...box.querySelectorAll('[data-ibx-panel]')];
+  for (const tab of tabs) {
+    tab.onclick = () => {
+      const want = tab.getAttribute('data-ibx-tab');
+      for (const t of tabs) {
+        const on = t === tab;
+        t.classList.toggle('is-on', on);
+        t.setAttribute('aria-selected', String(on));
+      }
+      for (const p of panels) {
+        p.classList.toggle('is-on', p.getAttribute('data-ibx-panel') === want);
+      }
+    };
+  }
 }
 
 /**
@@ -415,7 +591,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   <article class="wk-article" style="--wk-accent:${m.accent}">
     ${infobox(dossier, show, root)}
     <div class="wk-main">
-      ${lead(dossier, show)}
+      ${lead(dossier, show, root)}
       ${contents.length > 2 ? `<nav class="wk-contents"><b>Contents</b><ol>${
         contents.map(([id, t]) => `<li><a href="#wk-${id}">${esc(t)}</a></li>`).join('')}</ol></nav>` : ''}
       ${body.join('')}
@@ -521,6 +697,31 @@ export const WIKI_CSS = `
   padding:10px 14px; text-align:center;
 }
 .wk-ib-portrait{ display:block; width:100%; aspect-ratio:1; object-fit:cover; }
+/* Season tabs, sitting under the name plate the way the reference wikis do:
+   one portrait, and the stat block below it changes. */
+.wk-ib-tabs{ display:flex; border-bottom:1px solid var(--stroke); background:var(--panel); }
+.wk-ib-tab{
+  flex:1; padding:7px 4px; font:inherit; font-size:11.5px; font-weight:800;
+  letter-spacing:.05em; text-transform:uppercase; cursor:pointer;
+  background:transparent; color:inherit; opacity:.5; border:0;
+  border-bottom:2px solid transparent;
+}
+.wk-ib-tab:hover{ opacity:.8; }
+.wk-ib-tab.is-on{ opacity:1; border-bottom-color:var(--wk-accent); }
+.wk-ib-tab:focus-visible{ outline:2px solid var(--wk-accent); outline-offset:-2px; }
+/* A section heading inside the box: "Profile", then the season's own title. */
+.wk-ib-head{
+  padding:6px 12px; text-align:center; font-size:11.5px; font-weight:800;
+  letter-spacing:.05em; text-transform:uppercase; opacity:.8;
+  background:color-mix(in srgb, var(--wk-accent) 16%, transparent);
+  border-top:1px solid var(--stroke); border-bottom:1px solid var(--stroke);
+}
+/* Only the selected season's block is shown; the rest stay in the DOM so the
+   tabs are a class toggle rather than a rebuild. */
+.wk-ib-season{ display:none; }
+.wk-ib-season.is-on{ display:block; }
+/* The lead's second paragraph — the game, as opposed to the record. */
+.wk-lead-game{ margin:0 0 14px; font-size:14.5px; line-height:1.7; opacity:.9; }
 .wk-ib-show{
   padding:8px 12px; text-align:center; font-size:12.5px; font-weight:700;
   letter-spacing:.05em; text-transform:uppercase; opacity:.75;

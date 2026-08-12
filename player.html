@@ -736,6 +736,9 @@ function _renderWiki(player) {
   // Pictures after text. The article draws immediately and the gallery fills
   // in behind it — same Worker the profile tab reads, same listing endpoint.
   window.wikiView.hydrateGalleries?.(host, { base: PP_API });
+  // The infobox's season tabs. Attached from here for the same reason as the
+  // gallery: a <script> inside injected innerHTML never runs.
+  window.wikiView.hydrateInfobox?.(host);
 
   // The empty state offers the other show; that button switches article.
   host.querySelectorAll('[data-wiki-show]').forEach(b => {
@@ -2384,11 +2387,11 @@ document.addEventListener('keydown', e => {
   // pages cannot come to disagree about somebody's record.
   import { careersIn, franchiseRecords } from './js/records.js';
   import { buildDossier } from './js/wiki.js';
-  import { renderArticle, hydrateGalleries, WIKI_CSS } from './js/wiki-view.js';
+  import { renderArticle, hydrateGalleries, hydrateInfobox, WIKI_CSS } from './js/wiki-view.js';
   import { currentShow, ALL, rememberShow } from './js/show-switcher.js';
   window.records = { careersIn };
   window.wiki = { buildDossier };
-  window.wikiView = { renderArticle, hydrateGalleries };
+  window.wikiView = { renderArticle, hydrateGalleries, hydrateInfobox };
   window.showSwitcher = window.showSwitcher || { currentShow, ALL, rememberShow };
   document.head.appendChild(Object.assign(document.createElement('style'), { textContent: WIKI_CSS }));
 

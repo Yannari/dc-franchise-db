@@ -145,6 +145,27 @@ export function recordsHeldBy(playerId, milestonesByShow = {}) {
   return held;
 }
 
+/**
+ * Fill each season's LOYALTIES from the relationship engine.
+ *
+ * The reference pages list Alliances and Loyalties as separate rows, and the
+ * distinction is worth keeping: an alliance is a deal with a name, a loyalty is
+ * a person who stayed. Bonds already know which seasons they were formed in, so
+ * this is a join rather than new data.
+ */
+function _withLoyalties(career, relationships) {
+  const bonds = (relationships?.bonds || []);
+  for (const show of career) {
+    for (const s of show.seasons) {
+      s.loyalties = bonds
+        .filter(b => (b.seasons || []).some(x =>
+          Number(x.season) === Number(s.season) && (x.format || 'total-drama') === show.format))
+        .map(b => b.name);
+    }
+  }
+  return career;
+}
+
 /** A non-empty array, or nothing — so a filled field is not replaced by []. */
 function _arr(v) { return Array.isArray(v) && v.length ? v : null; }
 
@@ -237,7 +258,11 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [] } =
       tribe: d.tribe,
       keyMoments: d.keyMoments || [],
       notes: d.notes || [],
-      story: chapter?.text || '',
+      // The season document's own narrative first, then the chapter split out
+      // of players_database. Same precedence as the prose above and for the
+      // same reason: the season document is where a season is written, and the
+      // derived copy is a rebuild of it that can lag a fill by an export.
+      story: rowFor(d)?.row.story || chapter?.text || '',
       // ── THE RECORD, CARRIED THROUGH ────────────────────────────────
       //
       // seasonDetails has held the competition numbers all along and this
@@ -255,6 +280,16 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [] } =
       // article, it simply has no grid in it.
       weekRows: Array.isArray(d.weekRows) ? d.weekRows
         : _weekRowsFromDoc(rowFor(d), player.name),
+      // WHO THEY PLAYED WITH, which the infobox lists per season and the
+      // measured lead names. The season document is preferred for the same
+      // reason as the prose: it is the season's own record.
+      alliances: _arr(rowFor(d)?.row.alliances) || _arr(d.alliances) || [],
+      rivalries: _arr(rowFor(d)?.row.rivalries) || _arr(d.rivalries) || [],
+      // Loyalties are the bonds that held, named on the reference pages as a
+      // separate row from alliances — an alliance is a deal, a loyalty is a
+      // person. Filled from the relationship engine, which reads the same
+      // season documents.
+      loyalties: [],
       // Written from the episodes rather than from the voice profile. Absent
       // until a season has been through the wiki fill.
       personality: rowFor(d)?.row.personality || d.personality || '',
@@ -380,7 +415,7 @@ export function buildDossier(player, {
       bio.archetype,
     ].filter(Boolean).join(' · '),
     personality: personalityOf(player.name, voices),
-    career: careerOf(player, { seasonTitles, seasonDocs }),
+    career: _withLoyalties(careerOf(player, { seasonTitles, seasonDocs }), relationships),
     relationships,
     couple: coupleStatus(relationships),
     records: recordsHeldBy(player.id, milestonesByShow),

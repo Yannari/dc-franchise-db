@@ -386,3 +386,129 @@ describe('reading a filled season', () => {
     expect(html).not.toMatch(/Head of Household|Power of Veto/);
   });
 });
+
+// ── THE LEAD AND THE TABBED INFOBOX ─────────────────────────────────────
+//
+// Modelled on the reference pages: a career sentence naming every season, a
+// paragraph on the game itself, and one infobox whose stat block changes with a
+// season tab. The old version opened "was a contestant on Total Drama, Season
+// 14, winning once" and listed every season's rows in one flat column.
+describe('the lead', () => {
+  const one = { id: 'jade', name: 'Jade', seasonDetails: [
+    { season: 14, format: 'total-drama', placement: 1, status: 'Winner', challengeWins: 3 }] };
+  const twice = { id: 'jesse', name: 'Jesse', seasonDetails: [
+    { season: 7, format: 'total-drama', placement: 1, status: 'Winner' },
+    { season: 18, format: 'total-drama', placement: 5, status: 'Juror' }] };
+
+  const html = p => renderArticle(buildDossier(p, {}), 'total-drama', { root: '.' });
+
+  it('names the season somebody won, and links it', () => {
+    const out = html(one);
+    expect(out).toMatch(/<strong>Jade<\/strong> was the winner of/);
+    expect(out).toMatch(/season_ref\.html\?season=14/);
+  });
+
+  it('states a whole career in order, the way a returnee page opens', () => {
+    const out = html(twice);
+    // Won first, came back later — and the later season is the second clause.
+    expect(out).toMatch(/was the winner of[\s\S]*?and returned for[\s\S]*?finishing 5th/);
+    expect(out.indexOf('season=7')).toBeLessThan(out.indexOf('season=18'));
+  });
+
+  it('says "later won" when the second season was also a win', () => {
+    const twoWins = { id: 'jesse', name: 'Jesse', seasonDetails: [
+      { season: 7, format: 'total-drama', placement: 1 },
+      { season: 12, format: 'total-drama', placement: 1 }] };
+    expect(html(twoWins)).toMatch(/later won/);
+  });
+
+  it('uses the written story for the second paragraph when there is one', () => {
+    const doc = { format: 'total-drama', seasonNumber: 14, votingHistory: [],
+      placements: [{ placement: 1, name: 'Jade', playerSlug: 'jade' }] };
+    const withStory = { ...one, story: 'SEASON 14 — Carnival of Chaos\nShe tested everybody and lost nobody.' };
+    const out = renderArticle(buildDossier(withStory, { seasonDocs: [doc] }), 'total-drama', { root: '.' });
+    expect(out).toMatch(/wk-lead-game/);
+    expect(out).toMatch(/tested everybody and lost nobody/);
+  });
+
+  it('measures the second paragraph when no story was written', () => {
+    const out = html(one);
+    // Flatter, and still true: the counters are the record's own.
+    expect(out).toMatch(/won 3 competitions/);
+  });
+});
+
+describe('the infobox', () => {
+  const twice = { id: 'ireland', name: 'Ireland', seasonDetails: [
+    { season: 4, format: 'big-brother', placement: 3, status: 'Juror', votesReceived: 5,
+      bb: { hohWins: 1, vetoWins: 2 }, alliances: ['The Sanctum'] },
+    { season: 6, format: 'big-brother', placement: 8, status: 'Juror', votesReceived: 7,
+      bb: { timesNominated: 4 } }] };
+  const out = () => renderArticle(buildDossier(twice, {}), 'big-brother', { root: '.' });
+
+  it('gives every season a tab, newest first and selected', () => {
+    const html = out();
+    const tabs = [...html.matchAll(/data-ibx-tab="(\d+)"/g)].map(m => m[1]);
+    expect(tabs).toEqual(['6', '4']);
+    // The newest panel is the one showing.
+    expect(html).toMatch(/class="wk-ib-season is-on" data-ibx-panel="6"/);
+    expect(html).toMatch(/class="wk-ib-season" data-ibx-panel="4"/);
+  });
+
+  it('keeps every season number in its own block', () => {
+    const html = out();
+    const s4 = html.split('data-ibx-panel="4"')[1];
+    expect(s4).toMatch(/<th>HOH wins<\/th><td>1<\/td>/);
+    expect(s4).toMatch(/The Sanctum/);
+    // Season 6 had no HOH win, so the row is absent rather than a zero.
+    const s6 = html.split('data-ibx-panel="6"')[1].split('data-ibx-panel="4"')[0];
+    expect(s6).not.toMatch(/HOH wins/);
+  });
+
+  it('draws no tabs for a single season', () => {
+    const one = { id: 'jade', name: 'Jade',
+      seasonDetails: [{ season: 14, format: 'total-drama', placement: 1 }] };
+    const html = renderArticle(buildDossier(one, {}), 'total-drama', { root: '.' });
+    expect(html).not.toMatch(/wk-ib-tabs/);
+    expect(html).toMatch(/data-ibx-panel="14"/);
+  });
+
+  it('uses the words each show uses for its competitions', () => {
+    expect(out()).not.toMatch(/Challenge wins|Idols found/);
+    const jade = { id: 'jade', name: 'Jade', seasonDetails: [
+      { season: 14, format: 'total-drama', placement: 1, challengeWins: 3, immunityWins: 3 }] };
+    const td = renderArticle(buildDossier(jade, {}), 'total-drama', { root: '.' });
+    expect(td).toMatch(/Challenge wins/);
+    expect(td).not.toMatch(/HOH wins|Veto wins/);
+  });
+});
+
+// Four seasons is where the first version fell apart: it repeated "and later
+// won" for every win after the second.
+describe('a long career in one sentence', () => {
+  const four = { id: 'alejandro', name: 'Alejandro', seasonDetails: [
+    { season: 1, format: 'total-drama', placement: 2 },
+    { season: 2, format: 'total-drama', placement: 2 },
+    { season: 4, format: 'total-drama', placement: 1 },
+    { season: 8, format: 'total-drama', placement: 1 }] };
+
+  it('counts the seasons and the wins, then lists them in order', () => {
+    const html = renderArticle(buildDossier(four, {}), 'total-drama', { root: '.' });
+    const p = html.match(/<p class="wk-lead">([\s\S]*?)<\/p>/)[1].replace(/<[^>]+>/g, '');
+    expect(p).toMatch(/played 4 seasons of Total Drama, winning 2 of them/);
+    // Said once, not once per win.
+    expect((p.match(/winning/g) || []).length).toBe(1);
+    expect(p).not.toMatch(/later won[\s\S]*later won/);
+    // A serial comma list, ending with "and".
+    expect(p).toMatch(/, and /);
+  });
+
+  it('says "winning once" rather than "winning 1 of them"', () => {
+    const three = { id: 'x', name: 'Xan', seasonDetails: [
+      { season: 1, format: 'total-drama', placement: 4 },
+      { season: 2, format: 'total-drama', placement: 1 },
+      { season: 3, format: 'total-drama', placement: 6 }] };
+    const html = renderArticle(buildDossier(three, {}), 'total-drama', { root: '.' });
+    expect(html).toMatch(/winning once/);
+  });
+});

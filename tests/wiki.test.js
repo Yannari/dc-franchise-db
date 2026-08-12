@@ -10,6 +10,7 @@
 // showmance yet, so a relationships block that invented something for everybody
 // would be the most-read part of the page and the least true.
 import { describe, expect, it, beforeAll } from 'vitest';
+import { renderArticle } from '../js/wiki-view.js';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
@@ -175,5 +176,62 @@ describe('what a writer would be handed', () => {
     const changed = JSON.parse(JSON.stringify(find('bowie')));
     changed.seasonDetails.push({ season: 15, placement: 1, format: 'big-brother' });
     expect(dossierHash(buildDossier(changed, { voices, roster }))).not.toBe(dossierHash(d));
+  });
+});
+
+// ── the reference half of a character article ──────────────────────────
+//
+// A fandom page is half prose and half table, and only the prose half existed:
+// seasonDetails has carried the competition numbers all along and careerOf
+// dropped every one, so an article could describe a season at length and never
+// say what the person did in it.
+describe('the record an article is written from', () => {
+  const player = {
+    name: 'Ireland', id: 'ireland', story: '',
+    seasonDetails: [
+      { season: 4, format: 'big-brother', placement: 3, status: 'Juror',
+        challengeWins: 3, votesReceived: 5, juryVotes: 2,
+        bb: { hohWins: 1, vetoWins: 2, blockBusterWins: 3, blockBusterPlayed: 4,
+              blockBusterStreak: 3, timesNominated: 5, timesOnBlock: 2, timesSaved: 1 } },
+      { season: 6, format: 'big-brother', placement: 8, status: 'Juror',
+        challengeWins: 0, votesReceived: 7, juryVotes: 0,
+        bb: { hohWins: 0, vetoWins: 0, blockBusterWins: 1, blockBusterPlayed: 3,
+              blockBusterStreak: 1, timesNominated: 4, timesOnBlock: 3, timesSaved: 0 } },
+    ],
+  };
+
+  it('carries the season record through to the article', () => {
+    const bb = careerOf(player).find(c => c.format === 'big-brother');
+    expect(bb.seasons[0].record.bb.blockBusterWins).toBe(3);
+    expect(bb.seasons[0].record.bb.blockBusterStreak).toBe(3);
+    expect(bb.seasons[1].record.votesReceived).toBe(7);
+  });
+
+  it('totals the career, and takes the best streak rather than the sum', () => {
+    const bb = careerOf(player).find(c => c.format === 'big-brother');
+    expect(bb.totals.hohWins).toBe(1);
+    expect(bb.totals.blockBusterWins).toBe(4);
+    expect(bb.totals.timesNominated).toBe(9);
+    // Three in a row and one on its own is a best of three, not four.
+    expect(bb.totals.bestBlockBusterStreak).toBe(3);
+  });
+
+  it('draws a competition table that says how the arena went', () => {
+    const html = renderArticle({ ...player, career: careerOf(player) }, 'big-brother',
+      { root: '.', allShows: ['big-brother'] });
+    expect(html).toContain('Competition history');
+    // The arena cell carries won-of-played and the run, because a bare 3 says
+    // nothing about whether they kept landing there.
+    expect(html).toMatch(/3 of 4/);
+    expect(html).toMatch(/3 in a row/);
+    // And the infobox names it rather than folding it into "wins".
+    expect(html).toContain('Block Buster wins');
+    expect(html).toContain('Longest arena run');
+  });
+
+  it('gives an article a gallery placeholder to fill', () => {
+    const html = renderArticle({ ...player, career: careerOf(player) }, 'big-brother',
+      { root: '.', allShows: ['big-brother'] });
+    expect(html).toContain('data-wk-gallery="ireland"');
   });
 });

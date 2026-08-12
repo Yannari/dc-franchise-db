@@ -171,6 +171,18 @@ export function careerOf(player, { seasonTitles = new Map() } = {}) {
       keyMoments: d.keyMoments || [],
       notes: d.notes || [],
       story: chapter?.text || '',
+      // ── THE RECORD, CARRIED THROUGH ────────────────────────────────
+      //
+      // seasonDetails has held the competition numbers all along and this
+      // dropped every one of them, so the article could describe a season and
+      // never say what anybody DID in it. A fandom character page is half
+      // prose and half table, and only the prose half existed.
+      record: {
+        challengeWins: d.challengeWins || 0,
+        votesReceived: d.votesReceived || 0,
+        juryVotes: d.juryVotes || 0,
+        ...(d.bb ? { bb: { ...d.bb } } : {}),
+      },
     });
   }
 
@@ -179,6 +191,20 @@ export function careerOf(player, { seasonTitles = new Map() } = {}) {
     entry.count = entry.seasons.length;
     entry.wins = entry.seasons.filter(s => Number(s.placement) === 1).length;
     entry.best = Math.min(...entry.seasons.map(s => Number(s.placement) || 99));
+    // Career totals for the infobox, summed from the same rows the table draws
+    // so the two can never disagree.
+    const sum = pick => entry.seasons.reduce((n, s) => n + (pick(s.record || {}) || 0), 0);
+    entry.totals = {
+      challengeWins: sum(r => r.challengeWins),
+      hohWins: sum(r => r.bb?.hohWins),
+      vetoWins: sum(r => r.bb?.vetoWins),
+      blockBusterWins: sum(r => r.bb?.blockBusterWins),
+      timesNominated: sum(r => r.bb?.timesNominated),
+      juryVotes: sum(r => r.juryVotes),
+      // A best, not a sum — a run does not carry across seasons.
+      bestBlockBusterStreak: entry.seasons.reduce(
+        (n, s) => Math.max(n, s.record?.bb?.blockBusterStreak || 0), 0),
+    };
   }
   return [...byShow.values()].sort((a, b) => b.count - a.count);
 }

@@ -62,6 +62,24 @@ function infobox(dossier, show, root) {
   row('Best finish', show.best < 99 ? ordinal(show.best) : '');
   row('Wins', show.wins ? String(show.wins) : '');
 
+  // The competition record, which every real character infobox carries and
+  // this one did not — so the panel could say somebody played four seasons of
+  // Big Brother and never once say whether they were any good at it.
+  const t = show.totals || {};
+  if (show.format === 'big-brother') {
+    row('HOH wins', t.hohWins ? String(t.hohWins) : '');
+    row('Veto wins', t.vetoWins ? String(t.vetoWins) : '');
+    // Named in full because "BB wins" reads as wins of Big Brother.
+    row('Block Buster wins', t.blockBusterWins ? String(t.blockBusterWins) : '');
+    if (t.bestBlockBusterStreak > 1) {
+      row('Longest arena run', `${t.bestBlockBusterStreak} weeks running`);
+    }
+    row('Times nominated', t.timesNominated ? String(t.timesNominated) : '');
+  } else {
+    row('Challenge wins', t.challengeWins ? String(t.challengeWins) : '');
+  }
+  row('Jury votes', t.juryVotes ? String(t.juryVotes) : '');
+
   // Per-season placement, the way a real infobox lists them.
   for (const s of show.seasons) {
     row(`Season ${s.season} place`, `${ordinal(s.placement)}${s.status ? ` · ${esc(s.status)}` : ''}`);
@@ -100,6 +118,33 @@ function lead(dossier, show) {
   if (show.wins) bits.push(`winning ${show.wins === 1 ? 'once' : `${show.wins} times`}`);
   else if (show.best < 99) bits.push(`finishing as high as ${ordinal(show.best)}`);
   return `<p class="wk-lead">${bits.join(', ')}.</p>`;
+}
+
+/**
+ * Fill any gallery placeholders in a rendered article.
+ *
+ * Called by the page after `renderArticle` lands in the DOM. Silent on
+ * failure: a wiki article without pictures is an article, and an error box
+ * where the pictures should be is worse than the space.
+ */
+export async function hydrateGalleries(host, { base = '' } = {}) {
+  const boxes = [...(host?.querySelectorAll('[data-wk-gallery]') || [])];
+  for (const box of boxes) {
+    const slug = box.getAttribute('data-wk-gallery');
+    if (!slug) continue;
+    try {
+      const res = await fetch(`${base}/api/gallery/${encodeURIComponent(slug)}`);
+      const json = await res.json();
+      const images = (json.images || []).slice(0, 8);
+      if (!images.length) { box.closest('section')?.remove(); continue; }
+      box.innerHTML = images.map(o => `<a class="wk-gitem"
+          href="${base}/gallery/${encodeURIComponent(slug)}/${o.file}" target="_blank" rel="noopener">
+          <img src="${base}/gallery/${encodeURIComponent(slug)}/${o.file}?v=${o.size}" alt="" loading="lazy">
+        </a>`).join('');
+    } catch {
+      box.closest('section')?.remove();
+    }
+  }
 }
 
 /** A show this character has never played. Said plainly, with a way out. */
@@ -172,6 +217,53 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
       </tr>`).join('')}</tbody>
     </table>`);
 
+  // ── COMPETITION HISTORY ────────────────────────────────────────────
+  //
+  // The table half of a character article, and the half that was missing. A
+  // fandom page does not describe a season and stop; it prints what the
+  // person won, how often they were on the block, and how they got off it.
+  //
+  // Big Brother and Total Drama get different columns because they are
+  // different games — one has a block and the other has a tribal council, and
+  // a shared table would have to call both of them "wins".
+  const anyRecord = show.seasons.some(x => x.record
+    && (x.record.challengeWins || x.record.bb));
+  if (anyRecord) {
+    const bb = show.format === 'big-brother';
+    const head = bb
+      ? ['Season', 'HOH', 'Veto', 'Block Buster', 'Nominated', 'On the block', 'Saved', 'Votes against']
+      : ['Season', 'Challenge wins', 'Votes against', 'Jury votes'];
+    const rows = show.seasons.map(x => {
+      const r = x.record || {};
+      const b = r.bb || {};
+      const label = `<a href="${root}/season_ref.html?season=${esc(x.seasonId || x.season)}">${
+        x.title ? esc(x.title) : `Season ${x.season}`}</a>`;
+      // A cell that is zero is a fact — they played and won none — so it is a
+      // dash rather than a 0, which reads as "not recorded".
+      const n = v => (v ? String(v) : '—');
+      return bb
+        ? `<tr><td>${label}</td><td>${n(b.hohWins)}</td><td>${n(b.vetoWins)}</td>
+             <td>${b.blockBusterWins
+               ? `${b.blockBusterWins}${b.blockBusterPlayed ? ` of ${b.blockBusterPlayed}` : ''}${
+                 b.blockBusterStreak > 1 ? ` <em>(${b.blockBusterStreak} in a row)</em>` : ''}`
+               : (b.blockBusterPlayed ? `0 of ${b.blockBusterPlayed}` : '—')}</td>
+             <td>${n(b.timesNominated)}</td><td>${n(b.timesOnBlock)}</td>
+             <td>${n(b.timesSaved)}</td><td>${n(r.votesReceived)}</td></tr>`
+        : `<tr><td>${label}</td><td>${n(r.challengeWins)}</td>
+             <td>${n(r.votesReceived)}</td><td>${n(r.juryVotes)}</td></tr>`;
+    });
+    const t = show.totals || {};
+    const totalRow = bb
+      ? `<tr class="wk-total"><td>Total</td><td>${t.hohWins || 0}</td><td>${t.vetoWins || 0}</td>
+         <td>${t.blockBusterWins || 0}</td><td>${t.timesNominated || 0}</td><td></td><td></td><td></td></tr>`
+      : `<tr class="wk-total"><td>Total</td><td>${t.challengeWins || 0}</td><td></td><td>${t.juryVotes || 0}</td></tr>`;
+    section('competition', 'Competition history', `
+      <table class="wk-table wk-comp">
+        <thead><tr>${head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead>
+        <tbody>${rows.join('')}${show.seasons.length > 1 ? totalRow : ''}</tbody>
+      </table>`);
+  }
+
   // Relationships, when any are on record for this show.
   const rel = dossier.relationships || {};
   const relBits = [];
@@ -200,6 +292,19 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   if (show.wins) trivia.push(`<li>Won ${show.wins === 1 ? 'a season' : `${show.wins} seasons`} of ${esc(m.name)}.</li>`);
   if (show.count > 1) trivia.push(`<li>Played ${show.count} seasons of ${esc(m.name)}.</li>`);
   section('trivia', 'Trivia', trivia.length ? `<ul class="wk-list">${trivia.join('')}</ul>` : '');
+
+  // ── GALLERY ────────────────────────────────────────────────────────
+  //
+  // Listed in this file's own header as part of the layout since it was
+  // written, and never built — so an article ended on trivia while 1,444
+  // images sat in the bucket the profile tab was already reading.
+  //
+  // Loaded from the listing rather than probed: the endpoint exists now, and
+  // guessing 1.png/1.jpg/1.webp per slot is forty-eight requests to find out
+  // there are three pictures. Filled after render, because an article should
+  // not wait on the network to draw its text.
+  section('gallery', 'Gallery',
+    `<div class="wk-gallery" data-wk-gallery="${esc(dossier.id)}"></div>`);
 
   return `
   <article class="wk-article" style="--wk-accent:${m.accent}">
@@ -243,6 +348,20 @@ export const WIKI_CSS = `
   border-bottom:2px solid var(--stroke); font-weight:800;
 }
 .wk-section p{ margin:0 0 10px; line-height:1.72; font-size:15px; }
+/* The competition table: the reference half of the article. Numbers align so
+   a column can be read down, which is the only reason a table beats a
+   sentence. */
+.wk-comp td, .wk-comp th{ text-align:center; }
+.wk-comp td:first-child, .wk-comp th:first-child{ text-align:left; }
+.wk-comp td{ font-variant-numeric:tabular-nums; }
+.wk-comp em{ opacity:.75; font-style:normal; font-size:11px; }
+.wk-total td{ font-weight:700; border-top:2px solid rgba(255,255,255,.16); }
+.wk-gallery{ display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; }
+.wk-gitem{ display:block; aspect-ratio:3/4; overflow:hidden; border-radius:6px;
+  border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); }
+.wk-gitem img{ width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .25s; }
+.wk-gitem:hover img{ transform:scale(1.05); }
 .wk-thin{ opacity:.65; font-style:italic; }
 .wk-list{ margin:8px 0 0; padding-left:20px; }
 .wk-list li{ margin:5px 0; line-height:1.6; font-size:14.5px; }

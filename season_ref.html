@@ -834,29 +834,58 @@ function buildRecords(season){
         </div>`;
       }).join('');
 
-      /* ── 6. trivia, measured ── */
+      /* ── 6. trivia, measured ──
+         Every line here has to be true in the show it is about. The first
+         version was written against Big Brother's record and printed
+         "reached the end without ever being nominated" over a Total Drama
+         season, which has no nominations — the honest equivalent there is
+         never having a vote cast against you, which is a different and
+         rarer thing. Same for competitions: a house counts HOH and veto, a
+         camp counts challenge wins. */
       const trivia = [];
       const most = arr => arr.slice().sort((a, b) => b.n - a.n)[0];
-      const comps = cast.map(p => ({ name: p.name,
-        n: (p.bb?.hohWins || 0) + (p.bb?.vetoWins || 0) + (p.bb?.blockBusterWins || 0) }));
+      const comps = cast.map(p => ({ name: p.name, n: hasBlock
+        ? (p.bb?.hohWins || 0) + (p.bb?.vetoWins || 0) + (p.bb?.blockBusterWins || 0)
+        : (p.challengeWins || 0) }));
       const topComp = most(comps);
-      if (topComp?.n) trivia.push(`${esc(topComp.name)} won the most competitions this season (${topComp.n}).`);
-      const noms = cast.map(p => ({ name: p.name, n: p.bb?.timesNominated || 0 }));
-      const topNom = most(noms);
-      if (topNom?.n) trivia.push(`${esc(topNom.name)} was nominated more than anybody else (${topNom.n} times).`);
-      const arena = cast.map(p => ({ name: p.name, n: p.bb?.blockBusterWins || 0 }));
-      const topArena = most(arena);
-      if (topArena?.n > 1) {
-        trivia.push(`${esc(topArena.name)} won their way off the block ${topArena.n} times.`);
+      if (topComp?.n) {
+        trivia.push(`${esc(topComp.name)} won the most ${hasBlock ? 'competitions' : 'challenges'} this season (${topComp.n}).`);
       }
-      const neverUp = cast.filter(p => p.placement <= 5 && !(p.bb?.timesNominated));
-      if (neverUp.length) {
-        trivia.push(`${neverUp.map(p => esc(p.name)).join(', ')} reached the end without ever being nominated.`);
+      if (hasBlock) {
+        const noms = cast.map(p => ({ name: p.name, n: p.bb?.timesNominated || 0 }));
+        const topNom = most(noms);
+        if (topNom?.n) trivia.push(`${esc(topNom.name)} was nominated more than anybody else (${topNom.n} times).`);
+        const arena = cast.map(p => ({ name: p.name, n: p.bb?.blockBusterWins || 0 }));
+        const topArena = most(arena);
+        if (topArena?.n > 1) {
+          trivia.push(`${esc(topArena.name)} won their way off the block ${topArena.n} times.`);
+        }
+      } else {
+        const got = cast.map(p => ({ name: p.name, n: p.votesReceived || 0 }));
+        const topVotes = most(got);
+        if (topVotes?.n) {
+          trivia.push(`${esc(topVotes.name)} had more votes cast against them than anybody else (${topVotes.n}).`);
+        }
+      }
+      /* Reaching the end untouched. In a house that is never being put on the
+         block; in a camp it is never having a name written down against you. */
+      const untouched = hasBlock
+        ? cast.filter(p => p.placement <= 5 && !(p.bb?.timesNominated))
+        : cast.filter(p => p.placement <= 5 && !(p.votesReceived));
+      if (untouched.length) {
+        trivia.push(`${untouched.map(p => esc(p.name)).join(', ')} reached the end without ever
+          ${hasBlock ? 'being nominated' : 'having a vote cast against them'}.`);
       }
       if (winnerName) {
         const w = cast.find(p => p.name === winnerName);
-        if (w?.bb) trivia.push(`${esc(winnerName)} won with ${w.bb.hohWins || 0} HOH
-          and ${w.bb.vetoWins || 0} veto wins.`);
+        if (hasBlock && w?.bb) {
+          trivia.push(`${esc(winnerName)} won with ${w.bb.hohWins || 0} HOH
+            and ${w.bb.vetoWins || 0} veto wins.`);
+        } else if (w) {
+          trivia.push(`${esc(winnerName)} won with ${w.challengeWins || 0} challenge
+            win${(w.challengeWins || 0) === 1 ? '' : 's'} and ${w.votesReceived || 0}
+            vote${(w.votesReceived || 0) === 1 ? '' : 's'} cast against them.`);
+        }
       }
 
       /* A wiki section: an id, a heading with a rule under it, and an entry

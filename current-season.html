@@ -867,6 +867,28 @@ Owen: This is going to be amazing!"
    * for one season's episodes, so an "all" selection falls through to whatever
    * the simulator is currently running.
    */
+
+  /**
+   * The key an episode transcript is stored under.
+   *
+   * It was `td_episode_s{season}_e{n}` for EVERY show, so Total Drama season 5
+   * and Big Brother season 5 wrote to the same key: generating BB episode 1
+   * overwrote the Total Drama one, and the wiki fill would have read whichever
+   * of the two was written last and attributed it to the other cast.
+   *
+   * Fixed by the rule this file already states twenty lines up — a bare
+   * integer is Total Drama, and every other show gets its own prefix. So the
+   * Total Drama key is untouched and needs no migration, and Big Brother gets
+   * `bb_episode_s5_e1`, which is also readable in the IndexedDB inspector.
+   */
+  function _epKey(season, episode, format) {
+    const fmt = format || _csFormat();
+    const n = Number(season) || 1;
+    const e = Number(episode) || 1;
+    if (fmt === CS_DEFAULT_FORMAT) return `td_episode_s${n}_e${e}`;
+    return `${_csShows()[fmt] || fmt}_episode_s${n}_e${e}`;
+  }
+
   function _csFormat() {
     const picked = window.__SHOWS && window.__SHOWS.current;
     if (picked && _csShows()[picked]) return picked;
@@ -1059,7 +1081,7 @@ Owen: This is going to be amazing!"
   async function _csMigrateAll() {
     try {
       const keys = Object.keys(localStorage).filter(k =>
-        k.startsWith('td_episode_') ||
+        /_episode_s\d+_e\d+$/.test(k) ||
         k.startsWith('AI_SUMMARY_') ||
         k.startsWith('AI_ANALYTICS_') ||
         k.startsWith('AI_CAST_') ||
@@ -1176,7 +1198,7 @@ Owen: This is going to be amazing!"
       say('Reading episode transcripts…');
       const episodes = [];
       for (let i = 1; i <= 40; i++) {
-        const text = await _csGet(`td_episode_s${season}_e${i}`);
+        const text = await _csGet(_epKey(season, i, format));
         if (text && String(text).trim()) episodes.push({ episode: i, transcript: String(text) });
       }
       if (!episodes.length) {
@@ -3138,7 +3160,7 @@ Owen: This is going to be amazing!"
     const episodeEl = document.getElementById('aiEpisode');
     const season = seasonEl ? seasonEl.value : '5';
     const episode = episodeEl ? episodeEl.value : '1';
-    return `td_episode_s${season}_e${episode}`;
+    return _epKey(season, episode);
   }
   
   // Save episode to IndexedDB
@@ -3487,7 +3509,7 @@ async function generateEpisodeAI() {
 
     if (isRecent) {
       // Full transcript for recent episodes
-      const transcriptKey = `td_episode_s${season}_e${i}`;
+      const transcriptKey = _epKey(season, i);
       const savedTranscript = await _csGet(transcriptKey);
       if (savedTranscript) {
         previousEpisodes.push({
@@ -3510,7 +3532,7 @@ async function generateEpisodeAI() {
         });
       } else {
         // Fallback: no summary saved, try transcript at reduced length
-        const transcriptKey = `td_episode_s${season}_e${i}`;
+        const transcriptKey = _epKey(season, i);
         const savedTranscript = await _csGet(transcriptKey);
         if (savedTranscript) {
           previousEpisodes.push({

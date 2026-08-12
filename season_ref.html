@@ -40,6 +40,61 @@
     .sr-tab { padding:9px 18px; border-radius:10px; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; transition:all .2s; border:none; background:none; }
     .sr-tab.on { background:var(--sc-glow); color:var(--sc); box-shadow:0 0 0 1px var(--sc); }
     .sr-tab:hover:not(.on) { color:#fff; background:rgba(255,255,255,.06); }
+
+    /* ── the wiki tab ─────────────────────────────────────────────── */
+    .sr-facts { border-collapse:collapse; margin-bottom:24px; }
+    .sr-facts th { text-align:left; padding:6px 18px 6px 0; color:var(--muted); font-weight:600; font-size:13px; }
+    .sr-facts td { padding:6px 0; font-size:14px; }
+    .sr-twists { margin:0 0 24px; }
+    .sr-twists dt { font-weight:700; color:var(--sc); margin-top:12px; font-size:14px; }
+    .sr-twists dd { margin:4px 0 0; font-size:13.5px; line-height:1.65; color:var(--muted); }
+    /* The memory wall: everybody who walked in, in the order they walked out.
+       Greyed from the week they leave, so it reads as a house emptying. */
+    .sr-wall { display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:10px; margin-bottom:26px; }
+    .sr-wall-cell { display:block; text-align:center; text-decoration:none; padding:8px 4px 10px;
+      border:1px solid rgba(255,255,255,.09); border-radius:10px; background:rgba(255,255,255,.03);
+      transition:transform .2s,border-color .2s; }
+    .sr-wall-cell:hover { transform:translateY(-3px); border-color:var(--sc); }
+    .sr-wall-photo { width:100%; aspect-ratio:1; border-radius:8px; overflow:hidden; margin-bottom:6px;
+      background:rgba(255,255,255,.05); }
+    .sr-wall-photo img { width:100%; height:100%; object-fit:cover; display:block; }
+    .sr-wall-name { font-size:12px; font-weight:700; color:#fff; }
+    .sr-wall-fate { font-size:10px; color:var(--muted); margin-top:1px; }
+    .sr-wall-cell.is-out .sr-wall-photo img { filter:grayscale(1); opacity:.4; }
+    .sr-wall-cell.is-out .sr-wall-name { color:var(--muted); }
+    .sr-wall-cell.is-win { border-color:var(--sc); box-shadow:0 0 0 1px var(--sc), 0 0 24px var(--sc-glow); }
+    /* The grid scrolls on its own rather than widening the article. */
+    .sr-scroll { overflow-x:auto; margin-bottom:10px; }
+    .sr-grid { border-collapse:collapse; min-width:max-content; font-size:11.5px; }
+    .sr-grid th, .sr-grid td { padding:4px 7px; text-align:center; white-space:nowrap;
+      border-bottom:1px solid rgba(255,255,255,.05); }
+    .sr-grid thead th { color:var(--muted); font-size:10px; letter-spacing:.06em; }
+    .sr-grid tbody th { text-align:left; position:sticky; left:0; background:#12091f;
+      font-weight:600; }
+    .sr-grid tbody th a { color:#fff; text-decoration:none; }
+    .sr-grid tbody th a:hover { color:var(--sc); }
+    .sr-grid td.is-hoh { background:rgba(250,204,21,.2); color:#fde68a; font-weight:800; }
+    .sr-grid td.is-veto { background:rgba(56,189,248,.18); color:#bae6fd; font-weight:700; }
+    .sr-grid td.is-arena { background:rgba(79,191,139,.22); color:#a7f3d0; font-weight:800; }
+    .sr-grid td.is-nom { background:rgba(248,113,113,.16); color:#fecaca; }
+    .sr-grid td.is-saved { background:rgba(248,113,113,.07); color:#fca5a5; }
+    .sr-grid td.is-out { background:rgba(248,113,113,.34); color:#fff; font-weight:800; }
+    .sr-grid td.is-gone { background:rgba(255,255,255,.02); }
+    .sr-grid-tot { color:var(--muted); font-variant-numeric:tabular-nums; }
+    .sr-key { display:inline-block; padding:1px 5px; border-radius:3px; font-size:10px; font-weight:800; }
+    .sr-key.is-hoh { background:rgba(250,204,21,.2); color:#fde68a; }
+    .sr-key.is-veto { background:rgba(56,189,248,.18); color:#bae6fd; }
+    .sr-key.is-arena { background:rgba(79,191,139,.22); color:#a7f3d0; }
+    .sr-key.is-nom { background:rgba(248,113,113,.16); color:#fecaca; }
+    .sr-key.is-saved { background:rgba(248,113,113,.07); color:#fca5a5; }
+    .sr-key.is-out { background:rgba(248,113,113,.34); color:#fff; }
+    .sr-week { display:flex; gap:14px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+    .sr-week-n { flex:0 0 74px; font-size:11px; font-weight:800; color:var(--sc);
+      letter-spacing:.06em; text-transform:uppercase; padding-top:2px; }
+    .sr-week-b { flex:1; font-size:13.5px; line-height:1.65; }
+    .sr-trivia { margin:0; padding-left:20px; }
+    .sr-trivia li { font-size:13.5px; line-height:1.7; margin-bottom:6px; }
+    .sr-thin { font-size:13px; color:var(--muted); line-height:1.7; }
     .sr-panel { display:none; }
     .sr-panel.on { display:block; animation:srIn .3s ease; }
     @keyframes srIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
@@ -489,12 +544,228 @@ function buildRecords(season){
     const moments=s.legacy?.memorableMoments||s.highlights||[];
     const narrative=s.legacy?.summary||s.seasonNarrative||'';
 
+
+    /* ══════════════════════════════════════════════════════════════════
+       THE WIKI TAB — the season as a reference article
+       ══════════════════════════════════════════════════════════════════
+
+       The other three tabs are editorial: a narrative, a podium, a timeline.
+       A fandom season page is the opposite half — Twists, the cast wall,
+       the grid, and the week-by-week — and it is the half this site never
+       had. Both reference pages this was modelled on carry the same spine:
+
+         Big Brother 5 (US):  Background · Twists · HouseGuests ·
+                              Voting History · Competition History ·
+                              Game History (week by week) · Trivia
+         Mad House 7:         Overview · Twists · Contestants ·
+                              Voting History · Game History · Trivia
+
+       So the dashboard stays exactly as it is and this is a second reading
+       of the same season, in reference form. Everything below is derived
+       from the season document — nothing here is written by hand, which is
+       why it fills itself in for a season nobody has annotated. */
+    const wikiHTML = (() => {
+      const weeks = Array.isArray(s.weeks) ? s.weeks : [];
+      const cast = (s.placements || []).slice().sort((a, b) => a.placement - b.placement);
+      if (!cast.length) return '<p class="sr-thin">No cast recorded for this season.</p>';
+
+      const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      const av = p => `<img src="assets/avatars/${esc(p.playerSlug)}.png" alt=""
+        onerror="this.style.visibility='hidden'">`;
+
+      /* ── who left when ──
+         The wall greys somebody out from the week they leave, so the grid
+         reads as a house emptying rather than a table with gaps in it. */
+      /* `winner` is an object on a season document — {name, playerSlug, vote,
+         runnerUp, keyStats} — and printing it gave "[object Object]" in the
+         facts table. The name is what this section wants; the rest of it is
+         the Overview tab's job. */
+      const winnerName = typeof s.winner === 'string' ? s.winner : (s.winner?.name || '');
+
+      const outWeek = {};
+      weeks.forEach(w => { if (w.evicted) outWeek[w.evicted] = w.week; });
+
+      /* ── 1. the facts ── */
+      const facts = [
+        ['Cast', `${s.castSize || cast.length} houseguests`],
+        ['Episodes', s.episodeCount || weeks.length || '—'],
+        ['Weeks', weeks.length || '—'],
+        s.jurySize ? ['Jury', `${s.jurySize} members`] : null,
+        winnerName ? ['Winner', esc(winnerName)] : null,
+        cast[1] ? ['Runner-up', esc(cast[1].name)] : null,
+      ].filter(Boolean);
+
+      /* ── 2. twists, derived rather than declared ──
+         The season document does not carry a twist list, so nothing is
+         claimed that the weeks cannot show. A season exported before a
+         field existed simply does not mention it, which is honest — the
+         alternative is a Twists section that says "none" about a season
+         that ran four of them. */
+      const twists = [];
+      const arenaWeeks = weeks.filter(w => w.safetyWinner);
+      if (arenaWeeks.length) {
+        twists.push([`BB Block Buster`, `Three nominees, and a competition on eviction night
+          where one of them wins their way off the block. Played in
+          ${arenaWeeks.length} week${arenaWeeks.length === 1 ? '' : 's'} —
+          ${arenaWeeks.map(w => `${esc(w.safetyWinner)} (wk ${w.week})`).join(', ')}.`]);
+      }
+      const sanctum = weeks.filter(w => w.publicVote);
+      if (sanctum.length) {
+        twists.push(['The Sanctum', `No secret ballot: the house voted in front of each other,
+          one at a time. Week${sanctum.length === 1 ? '' : 's'} ${sanctum.map(w => w.week).join(', ')}.`]);
+      }
+      const threeNom = weeks.filter(w => (w.initialNominees || []).length > 2);
+      if (threeNom.length && !arenaWeeks.length) {
+        twists.push(['Three nominees', `The Head of Household named three in
+          ${threeNom.length} week${threeNom.length === 1 ? '' : 's'}.`]);
+      }
+      const ties = weeks.filter(w => w.tieBreak);
+      if (ties.length) {
+        twists.push(['Tied votes', `The house split evenly ${ties.length}
+          time${ties.length === 1 ? '' : 's'}, and the Head of Household broke it.`]);
+      }
+
+      /* ── 3. the memory wall ──
+         The thing the house looks at every day: everybody who walked in, in
+         the order they walked out. */
+      const wall = cast.slice().sort((a, b) => b.placement - a.placement).map(p => {
+        const gone = outWeek[p.name];
+        const win = p.placement === 1;
+        return `<a class="sr-wall-cell${gone ? ' is-out' : ''}${win ? ' is-win' : ''}"
+            href="player.html?player=${esc(p.playerSlug)}&view=wiki">
+          <div class="sr-wall-photo">${av(p)}</div>
+          <div class="sr-wall-name">${esc(p.name)}</div>
+          <div class="sr-wall-fate">${win ? 'Winner'
+            : gone ? `Week ${gone}` : esc(p.status || `${p.placement}th`)}</div>
+        </a>`;
+      }).join('');
+
+      /* ── 4. the grid ──
+         Cast down the side, weeks across the top, and the cell says the
+         strongest thing that happened to that person that week. The same
+         rule the character article uses: winning the arena outranks being
+         nominated, because being nominated is how you get into it. */
+      const cellFor = (name, w) => {
+        if (w.hoh === name) return ['HOH', 'is-hoh'];
+        if (w.evicted === name) return ['OUT', 'is-out'];
+        if (w.safetyWinner === name) return ['BB', 'is-arena'];
+        if (w.vetoWinner === name) return ['VETO', 'is-veto'];
+        const up = (w.initialNominees || []).includes(name)
+          || (w.blockBeforeSafety || []).includes(name);
+        const stayed = (w.finalNominees || []).includes(name);
+        if (up || stayed) return ['NOM', stayed ? 'is-nom' : 'is-saved'];
+        return ['', ''];
+      };
+      const grid = weeks.length ? `
+        <div class="sr-scroll">
+          <table class="sr-grid">
+            <thead><tr><th>Houseguest</th>${weeks.map(w =>
+              `<th>${w.week}</th>`).join('')}<th>Votes</th></tr></thead>
+            <tbody>${cast.map(p => {
+              const gone = outWeek[p.name];
+              let against = 0;
+              return `<tr>
+                <th><a href="player.html?player=${esc(p.playerSlug)}&view=wiki">${esc(p.name)}</a></th>
+                ${weeks.map(w => {
+                  const left = gone && w.week > gone;
+                  against += (w.votes || {})[p.name] || 0;
+                  if (left) return '<td class="is-gone"></td>';
+                  const [label, cls] = cellFor(p.name, w);
+                  return `<td class="${cls}">${label}</td>`;
+                }).join('')}
+                <td class="sr-grid-tot">${against || ''}</td>
+              </tr>`;
+            }).join('')}</tbody>
+          </table>
+        </div>
+        <p class="sr-thin">
+          <span class="sr-key is-hoh">HOH</span> Head of Household ·
+          <span class="sr-key is-veto">VETO</span> Power of Veto ·
+          ${arenaWeeks.length ? '<span class="sr-key is-arena">BB</span> won the Block Buster · ' : ''}
+          <span class="sr-key is-nom">NOM</span> on the block at the vote ·
+          <span class="sr-key is-saved">NOM</span> nominated and came off ·
+          <span class="sr-key is-out">OUT</span> evicted.
+          The last column is votes received across the season.
+        </p>` : '<p class="sr-thin">No week-by-week record was exported for this season.</p>';
+
+      /* ── 5. week by week ── */
+      const gameHistory = weeks.map(w => {
+        const noms = (w.blockBeforeSafety || w.initialNominees || []);
+        const bits = [];
+        if (w.hoh) bits.push(`<b>${esc(w.hoh)}</b> won Head of Household.`);
+        if (noms.length) bits.push(`${noms.map(esc).join(', ')} went on the block.`);
+        if (w.vetoWinner) bits.push(`<b>${esc(w.vetoWinner)}</b> won the veto.`);
+        if (w.safetyWinner) bits.push(`<b>${esc(w.safetyWinner)}</b> won the Block Buster and came off.`);
+        if (w.finalNominees?.length && w.finalNominees.join() !== noms.join()) {
+          bits.push(`${w.finalNominees.map(esc).join(' and ')} faced the vote.`);
+        }
+        if (w.tieBreak) bits.push('The vote tied.');
+        if (w.evicted) {
+          const tally = Object.entries(w.votes || {}).map(([n, c]) => `${c}`).sort((a, b) => b - a);
+          bits.push(`<b>${esc(w.evicted)}</b> was evicted${tally.length > 1
+            ? `, ${tally[0]}-${tally[1]}` : ''}.`);
+        }
+        return `<div class="sr-week">
+          <div class="sr-week-n">Week ${w.week}</div>
+          <div class="sr-week-b">${bits.join(' ')}</div>
+        </div>`;
+      }).join('');
+
+      /* ── 6. trivia, measured ── */
+      const trivia = [];
+      const most = arr => arr.slice().sort((a, b) => b.n - a.n)[0];
+      const comps = cast.map(p => ({ name: p.name,
+        n: (p.bb?.hohWins || 0) + (p.bb?.vetoWins || 0) + (p.bb?.blockBusterWins || 0) }));
+      const topComp = most(comps);
+      if (topComp?.n) trivia.push(`${esc(topComp.name)} won the most competitions this season (${topComp.n}).`);
+      const noms = cast.map(p => ({ name: p.name, n: p.bb?.timesNominated || 0 }));
+      const topNom = most(noms);
+      if (topNom?.n) trivia.push(`${esc(topNom.name)} was nominated more than anybody else (${topNom.n} times).`);
+      const arena = cast.map(p => ({ name: p.name, n: p.bb?.blockBusterWins || 0 }));
+      const topArena = most(arena);
+      if (topArena?.n > 1) {
+        trivia.push(`${esc(topArena.name)} won their way off the block ${topArena.n} times.`);
+      }
+      const neverUp = cast.filter(p => p.placement <= 5 && !(p.bb?.timesNominated));
+      if (neverUp.length) {
+        trivia.push(`${neverUp.map(p => esc(p.name)).join(', ')} reached the end without ever being nominated.`);
+      }
+      if (winnerName) {
+        const w = cast.find(p => p.name === winnerName);
+        if (w?.bb) trivia.push(`${esc(winnerName)} won with ${w.bb.hohWins || 0} HOH
+          and ${w.bb.vetoWins || 0} veto wins.`);
+      }
+
+      const sec = (title, body, note) => body
+        ? `<div class="sr-sh sr-reveal"><h2>${title}</h2>${note
+            ? `<span class="sr-sh-pill">${note}</span>` : ''}</div>${body}` : '';
+
+      return `
+        ${sec('The season', `<table class="sr-facts">${facts.map(([k, v]) =>
+          `<tr><th>${k}</th><td>${v}</td></tr>`).join('')}</table>`)}
+        ${sec('Twists', twists.length
+          ? `<dl class="sr-twists">${twists.map(([t, d]) =>
+              `<dt>${t}</dt><dd>${d}</dd>`).join('')}</dl>`
+          : `<p class="sr-thin">Nothing in this season's record identifies a twist. Seasons
+             exported before a twist was tracked do not carry it — the weeks below are still
+             complete.</p>`)}
+        ${sec('Houseguests', `<div class="sr-wall">${wall}</div>`,
+          `${cast.length} · in the order they left`)}
+        ${sec('Voting and competition history', grid, weeks.length ? `${weeks.length} weeks` : '')}
+        ${sec('Game history', gameHistory)}
+        ${sec('Trivia', trivia.length
+          ? `<ul class="sr-trivia">${trivia.map(t => `<li>${t}</li>`).join('')}</ul>` : '')}
+      `;
+    })();
+
     document.getElementById('season-content').innerHTML=`
       ${heroHTML}
       <div class="sr-tabs">
         <button class="sr-tab on" onclick="srTab('overview',this)">📊 Overview</button>
         <button class="sr-tab" onclick="srTab('placements',this)">🏆 Placements</button>
         <button class="sr-tab" onclick="srTab('history',this)">📜 Vote History</button>
+        <button class="sr-tab" onclick="srTab('wiki',this)">📖 Wiki</button>
       </div>
 
       <div id="sr-panel-overview" class="sr-panel on">
@@ -555,6 +826,8 @@ function buildRecords(season){
           ${buildStatsTable(s.placements||[])}
         </div>
       </div>
+
+      <div id="sr-panel-wiki" class="sr-panel">${wikiHTML}</div>
 
       <div id="sr-panel-history" class="sr-panel">
         <div class="sr-sh"><h2>Vote History</h2>${s.votingHistory?`<span class="sr-sh-pill">${s.votingHistory.length} episodes</span>`:''}</div>

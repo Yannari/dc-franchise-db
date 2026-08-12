@@ -572,7 +572,31 @@ function buildRecords(season){
        from the season document — nothing here is written by hand, which is
        why it fills itself in for a season nobody has annotated. */
     const wikiHTML = (() => {
-      const weeks = Array.isArray(s.weeks) ? s.weeks : [];
+      /* ── ONE SHAPE FROM TWO SHOWS ──────────────────────────────────
+         Big Brother exports `weeks` — a Head of Household, a block, a veto,
+         a vote. Total Drama exports `votingHistory` — an episode, a boot,
+         and every ballot cast, which it has carried since long before Big
+         Brother existed here.
+         Built on `weeks` alone, this whole tab drew a memory wall and four
+         empty sections for every Total Drama season on the site.
+         So both are normalised to ROUNDS, and each section then asks for
+         what it needs: the voting grid works from either, the competition
+         grid needs a block and a veto and says so when there is not one. */
+      const bbWeeks = Array.isArray(s.weeks) ? s.weeks : [];
+      const tdRounds = (Array.isArray(s.votingHistory) ? s.votingHistory : []).map(ep => ({
+        week: ep.episode,
+        evicted: ep.eliminated,
+        ballots: (ep.votes || []).map(v => ({ voter: v.voter, evict: v.target })),
+        votes: (ep.votes || []).reduce((acc, v) => {
+          if (v.target) acc[v.target] = (acc[v.target] || 0) + 1;
+          return acc;
+        }, {}),
+        initialNominees: [], finalNominees: [],
+      }));
+      const weeks = bbWeeks.length ? bbWeeks : tdRounds;
+      // What the round is CALLED. A Total Drama season has episodes.
+      const roundWord = bbWeeks.length ? 'Week' : 'Episode';
+      const hasBlock = bbWeeks.length > 0;
       const cast = (s.placements || []).slice().sort((a, b) => a.placement - b.placement);
       if (!cast.length) return '<p class="sr-thin">No cast recorded for this season.</p>';
 
@@ -597,7 +621,7 @@ function buildRecords(season){
       const facts = [
         ['Cast', `${s.castSize || cast.length} houseguests`],
         ['Episodes', s.episodeCount || weeks.length || '—'],
-        ['Weeks', weeks.length || '—'],
+        [bbWeeks.length ? 'Weeks' : 'Rounds', weeks.length || '—'],
         s.jurySize ? ['Jury', `${s.jurySize} members`] : null,
         winnerName ? ['Winner', esc(winnerName)] : null,
         cast[1] ? ['Runner-up', esc(cast[1].name)] : null,
@@ -644,7 +668,7 @@ function buildRecords(season){
           <div class="sr-wall-photo">${av(p)}</div>
           <div class="sr-wall-name">${esc(p.name)}</div>
           <div class="sr-wall-fate">${win ? 'Winner'
-            : gone ? `Week ${gone}` : esc(p.status || `${p.placement}th`)}</div>
+            : gone ? `${roundWord} ${gone}` : esc(p.status || `${p.placement}th`)}</div>
         </a>`;
       }).join('');
 
@@ -664,10 +688,10 @@ function buildRecords(season){
         if (up || stayed) return ['NOM', stayed ? 'is-nom' : 'is-saved'];
         return ['', ''];
       };
-      const grid = weeks.length ? `
+      const grid = (hasBlock && weeks.length) ? `
         <div class="sr-scroll">
           <table class="sr-grid">
-            <thead><tr><th>Houseguest</th>${weeks.map(w =>
+            <thead><tr><th>${hasBlock ? 'Houseguest' : 'Contestant'}</th>${weeks.map(w =>
               `<th>${w.week}</th>`).join('')}<th>Votes</th></tr></thead>
             <tbody>${cast.map(p => {
               const gone = outWeek[p.name];
@@ -694,7 +718,11 @@ function buildRecords(season){
           <span class="sr-key is-saved">NOM</span> nominated and came off ·
           <span class="sr-key is-out">OUT</span> evicted.
           The last column is votes received across the season.
-        </p>` : '<p class="sr-thin">No week-by-week record was exported for this season.</p>';
+        </p>` : (weeks.length
+          ? `<p class="sr-thin">This show does not have a block or a veto — its competition
+             record is per player rather than per ${roundWord.toLowerCase()}, and lives on the
+             Placements tab.</p>`
+          : '<p class="sr-thin">No round-by-round record was exported for this season.</p>');
 
       /* ── 4b. the voting history ──
          The table every Big Brother wiki is built around, and the one thing
@@ -743,12 +771,15 @@ function buildRecords(season){
           </table>
         </div>
         <p class="sr-thin">
-          Each cell is who that houseguest voted to evict.
-          <span class="sr-key is-hoh">HOH</span> held the power and did not vote ·
-          <span class="sr-key is-nom">NOM</span> was on the block ·
-          <span class="sr-key is-changed">name</span> moved their vote after the plans were laid ·
-          <span class="sr-key is-tiebreak">name</span> broke a tie.
-          Hover a changed vote to see what they had said they would do.
+          Each cell is who that ${hasBlock ? 'houseguest' : 'contestant'} voted
+          ${hasBlock ? 'to evict' : 'out'}.
+          ${hasBlock ? `<span class="sr-key is-hoh">HOH</span> held the power and did not vote ·
+            <span class="sr-key is-nom">NOM</span> was on the block ·
+            <span class="sr-key is-changed">name</span> moved their vote after the plans were laid ·
+            <span class="sr-key is-tiebreak">name</span> broke a tie.
+            Hover a changed vote to see what they had said they would do.`
+            : `A blank cell is somebody who had immunity, was not at the ceremony, or did not
+               vote that round.`}
         </p>` : '';
 
       /* ── 5. week by week ── */
@@ -769,7 +800,7 @@ function buildRecords(season){
             ? `, ${tally[0]}-${tally[1]}` : ''}.`);
         }
         return `<div class="sr-week">
-          <div class="sr-week-n">Week ${w.week}</div>
+          <div class="sr-week-n">${roundWord} ${w.week}</div>
           <div class="sr-week-b">${bits.join(' ')}</div>
         </div>`;
       }).join('');
@@ -812,10 +843,10 @@ function buildRecords(season){
           : `<p class="sr-thin">Nothing in this season's record identifies a twist. Seasons
              exported before a twist was tracked do not carry it — the weeks below are still
              complete.</p>`)}
-        ${sec('Houseguests', `<div class="sr-wall">${wall}</div>`,
+        ${sec(hasBlock ? 'Houseguests' : 'Contestants', `<div class="sr-wall">${wall}</div>`,
           `${cast.length} · in the order they left`)}
         ${sec('Voting history', votingHistory, hasBallots ? 'who voted for whom' : '')}
-        ${sec('Competition history', grid, weeks.length ? `${weeks.length} weeks` : '')}
+        ${sec('Competition history', grid, hasBlock && weeks.length ? `${weeks.length} weeks` : '')}
         ${!hasBallots && weeks.length ? `<p class="sr-thin">A vote-by-vote history needs the
           ballots, which this season was exported before the record carried. Re-export it and
           the grid of who voted for whom appears here.</p>` : ''}

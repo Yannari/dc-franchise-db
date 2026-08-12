@@ -129,11 +129,38 @@ export async function runCharacterFill({ season, format, root = '', onStatus = (
 
   // ── THE RECORD GOES WITH THE THREAD ────────────────────────────────
   //
-  // The lead paragraph is about what somebody DID; a screenplay only shows
-  // what they said while doing it. Handed scenes alone, a writer has to infer
-  // the counts, which is how an article ends up crediting four competition
-  // wins to somebody who won one. One line each, from the season's own record.
+  // The lead paragraph is about what somebody DID; a screenplay only shows what
+  // they said while doing it. Handed scenes alone, a writer has to infer the
+  // counts, which is how an article ends up crediting four competition wins to
+  // somebody who won one.
+  //
+  // What goes in is everything the season already knows and nothing it does
+  // not. The reference paragraph this is written against reads:
+  //
+  //   "…winning six competitions and forming a dominant alliance with Kasey
+  //    Tate, Leo Li, and Lydia Prescott, his showmance. Despite being
+  //    consistently perceived as a major threat, he strategically navigated the
+  //    game, even enduring a fake eviction before making a triumphant return."
+  //
+  // Two of those clauses need things the counts cannot give: the alliance's
+  // MEMBERS, and the season's turning points. Both exist in the export — the
+  // membership is derivable by cross-referencing who else names the alliance,
+  // and the turning points are `keyMoments`, eight per player, sitting unread.
   const house = format === 'big-brother';
+
+  // Who else named this alliance. The export stores alliances per player as
+  // names, so the roster is the set of players who list the same one — which is
+  // the only place membership exists at all.
+  const membersOf = name => (doc.placements || [])
+    .filter(p => (p.alliances || []).includes(name))
+    .map(p => p.name);
+
+  // A showmance, wherever this show happens to record it.
+  const showmanceOf = row => row.showmance
+    || ((doc.showmances || []).find(sh => (sh.players || []).includes(row.name)) || {})
+      .players?.find(n => n !== row.name)
+    || '';
+
   for (const t of threads) {
     const row = doc.placements.find(p => p.name === t.name);
     if (!row) continue;
@@ -145,6 +172,7 @@ export async function runCharacterFill({ season, format, root = '', onStatus = (
       if (bb.vetoWins) bits.push(`${bb.vetoWins} veto wins`);
       if (bb.blockBusterWins) bits.push(`${bb.blockBusterWins} Block Buster wins`);
       if (bb.timesNominated) bits.push(`nominated ${bb.timesNominated}x`);
+      if (bb.timesSaved) bits.push(`saved by the veto ${bb.timesSaved}x`);
     } else {
       if (row.challengeWins) bits.push(`${row.challengeWins} challenge wins`);
       if (row.immunityWins) bits.push(`${row.immunityWins} individual immunities`);
@@ -152,12 +180,28 @@ export async function runCharacterFill({ season, format, root = '', onStatus = (
     }
     if (row.votesReceived) bits.push(`${row.votesReceived} votes against`);
     if (row.juryVotes) bits.push(`${row.juryVotes} jury votes`);
-    if (row.alliances?.length) bits.push(`alliances: ${row.alliances.join(', ')}`);
-    if (row.showmance) bits.push(`showmance with ${row.showmance}`);
+
+    // Alliances BY MEMBER, so the paragraph can name the people rather than
+    // only the label.
+    for (const a of (row.alliances || [])) {
+      const mates = membersOf(a).filter(n => n !== row.name);
+      bits.push(mates.length ? `in ${a} with ${mates.join(', ')}` : `in ${a}`);
+    }
+    const partner = showmanceOf(row);
+    if (partner) bits.push(`showmance with ${partner}`);
+    if (row.rivalries?.length) bits.push(`rivals: ${row.rivalries.slice(0, 4).join(', ')}`);
+    if (row.gameplayStyle) bits.push(`style: ${row.gameplayStyle}`);
     if (row.placement === 1 && doc.winner?.vote) bits.push(`won the final vote ${doc.winner.vote}`);
     if (row.placement === 1 && doc.winner?.runnerUp) bits.push(`beat ${doc.winner.runnerUp}`);
     t.record = bits.join('; ');
+
+    // The turning points, listed separately because they are events rather
+    // than counts — this is where "endured a fake eviction before making a
+    // triumphant return" comes from, and without them the paragraph can only
+    // describe a scoreboard.
+    if (row.keyMoments?.length) t.moments = row.keyMoments.slice(0, 8);
   }
+
   const spoken = threads.filter(t => t.totals.confessionals + t.totals.lines > 0).length;
   onStatus(`${episodes.length} episodes · ${cast.length} in the cast · ${spoken} speak on camera. Asking the writer…`);
 

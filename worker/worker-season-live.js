@@ -796,6 +796,10 @@ async function generateWikiFill(body, env) {
     // infer them from scenes, which is how an article ends up claiming four
     // competition wins for somebody who won one.
     if (t.record) bits.push(`RECORD: ${t.record}`);
+    // The season's turning points for this player: events rather than counts,
+    // and the only source for a clause like "endured a fake eviction before
+    // making a triumphant return". Facts, so the same rule binds them.
+    if (t.moments?.length) bits.push('MOMENTS:', ...t.moments.map(m => `  - ${m}`));
     if (t.confessionals?.length) bits.push('CONFESSIONALS:', ...t.confessionals.map(c => `  (ep${c.ep}) "${c.text}"`));
     if (t.lines?.length) bits.push('IN THE HOUSE:', ...t.lines.map(c => `  (ep${c.ep}) "${c.text}"`));
     if (t.mentions?.length) bits.push('SEEN DOING:', ...t.mentions.map(c => `  (ep${c.ep}) ${c.text}`));
@@ -814,7 +818,10 @@ about these characters from anywhere else.
 
 RULES
 0. THE RECORD IS NOT NEGOTIABLE. Every number and result in the lead must
-   match that player's RECORD line exactly — how many competitions, what
+   match that player's RECORD and MOMENTS lines exactly. MOMENTS are the
+   season's turning points for that person — the alliance that broke, the idol
+   played, the eviction survived — and are what the middle of the paragraph is
+   built from. Name the people in their alliance; the RECORD lists them — how many competitions, what
    placement, what the final vote was. The screenplay says how it happened; the
    record says what happened. Where they disagree, the record is right.
 1. QUOTE VERBATIM. A quote must appear in that person's thread word for word.

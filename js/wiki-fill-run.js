@@ -98,6 +98,69 @@ async function loadDoc(season, format, root = '') {
 }
 
 /**
+ * One player's season, round by round, from the simulator's own record.
+ *
+ * The screenplay says what somebody said; `keyMoments` is prose a model wrote
+ * about them afterwards. This is neither — it is what the engine recorded: the
+ * night they won something, the night they took votes, the night they went.
+ * Handed all three, the writer can say "survived a 5-3 vote in week four" and
+ * be right about it, and a claim that contradicts this line is checkable.
+ *
+ * Only rounds where something happened to this person, so a quiet middle does
+ * not fill the request with "nothing".
+ */
+export function timelineFor(doc, name) {
+  const out = [];
+
+  for (const w of (doc.weeks || [])) {
+    const noms = w.blockBeforeSafety || w.initialNominees || [];
+    // In the order the week happened, so the line reads as a night rather than
+    // as a set of flags: nominated THEN won the veto is somebody saving
+    // themselves, and the reverse order says nothing.
+    const beats = [];
+    if (w.hoh === name) beats.push('won HOH');
+    if (noms.includes(name)) beats.push('nominated');
+    if (w.vetoWinner === name) beats.push('won the veto');
+    if (w.safetyWinner === name) beats.push('won the Block Buster and came off the block');
+    if ((w.haveNots || []).includes(name)) beats.push('have-not');
+    const ballot = (w.ballots || []).find(b => b.voter === name);
+    if (ballot?.evict) beats.push(`voted to evict ${ballot.evict}`);
+    const against = Number((w.votes || {})[name]) || 0;
+    if (against) beats.push(`took ${against} vote${against === 1 ? '' : 's'}`);
+    if (w.evicted === name) {
+      const tally = Object.values(w.votes || {}).sort((a, b) => b - a);
+      // "5-0" is a different night from "5-4", so an unopposed vote still
+      // states its margin rather than dropping it.
+      beats.push(`EVICTED${tally.length ? ` ${tally[0]}-${tally[1] || 0}` : ''}`);
+    }
+    if (beats.length) out.push(`wk${w.week}: ${beats.join(', ')}`);
+  }
+
+  for (const r of (doc.votingHistory || [])) {
+    const ballots = Array.isArray(r.votes) ? r.votes : [];
+    const beats = [];
+    if (r.winner === name) beats.push('won the challenge');
+    if (r.immunityWinner === name) beats.push('had immunity');
+    const mine = ballots.find(v => v.voter === name);
+    if (mine?.target) beats.push(`voted ${mine.target}`);
+    const against = ballots.filter(v => v.target === name).length;
+    if (against) beats.push(`took ${against} vote${against === 1 ? '' : 's'}`);
+    if (r.eliminated === name) {
+      const counts = {};
+      for (const v of ballots) counts[v.target] = (counts[v.target] || 0) + 1;
+      const tally = Object.values(counts).sort((a, b) => b - a);
+      beats.push(`VOTED OUT${tally.length ? ` ${tally[0]}-${tally[1] || 0}` : ''}`);
+    }
+    if (beats.length) out.push(`ep${r.episode}: ${beats.join(', ')}`);
+  }
+
+  // A long season would otherwise spend most of the request on one person's
+  // ballots. The ends carry the arc: how they started, and how it finished.
+  if (out.length > 14) return [...out.slice(0, 7), '…', ...out.slice(-7)];
+  return out;
+}
+
+/**
  * THE CHARACTER FILL — personality, quotes and trivia for the whole cast.
  *
  * One request for everybody rather than one each: a model that can see the
@@ -199,7 +262,13 @@ export async function runCharacterFill({ season, format, root = '', onStatus = (
     // than counts — this is where "endured a fake eviction before making a
     // triumphant return" comes from, and without them the paragraph can only
     // describe a scoreboard.
+    //
+    // These are AI-written prose from the narrative fill, which is why the
+    // timeline below sits beside them: the timeline is the SIMULATOR'S OWN
+    // record of the same season, round by round, and where the two disagree the
+    // timeline is the one that happened.
     if (row.keyMoments?.length) t.moments = row.keyMoments.slice(0, 8);
+    t.timeline = timelineFor(doc, t.name);
   }
 
   const spoken = threads.filter(t => t.totals.confessionals + t.totals.lines > 0).length;

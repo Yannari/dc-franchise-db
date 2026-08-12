@@ -800,6 +800,10 @@ async function generateWikiFill(body, env) {
     // and the only source for a clause like "endured a fake eviction before
     // making a triumphant return". Facts, so the same rule binds them.
     if (t.moments?.length) bits.push('MOMENTS:', ...t.moments.map(m => `  - ${m}`));
+    // The simulator's own round-by-round record for this person. MOMENTS is
+    // prose a model wrote about the season; this is what the engine recorded,
+    // and where the two disagree this is the one that happened.
+    if (t.timeline?.length) bits.push('TIMELINE:', ...t.timeline.map(x => `  ${x}`));
     if (t.confessionals?.length) bits.push('CONFESSIONALS:', ...t.confessionals.map(c => `  (ep${c.ep}) "${c.text}"`));
     if (t.lines?.length) bits.push('IN THE HOUSE:', ...t.lines.map(c => `  (ep${c.ep}) "${c.text}"`));
     if (t.mentions?.length) bits.push('SEEN DOING:', ...t.mentions.map(c => `  (ep${c.ep}) ${c.text}`));
@@ -821,7 +825,9 @@ RULES
    match that player's RECORD and MOMENTS lines exactly. MOMENTS are the
    season's turning points for that person — the alliance that broke, the idol
    played, the eviction survived — and are what the middle of the paragraph is
-   built from. Name the people in their alliance; the RECORD lists them — how many competitions, what
+   built from. TIMELINE is the engine's own round-by-round record and outranks
+   MOMENTS wherever they disagree. Name the people in their alliance; the
+   RECORD lists them — how many competitions, what
    placement, what the final vote was. The screenplay says how it happened; the
    record says what happened. Where they disagree, the record is right.
 1. QUOTE VERBATIM. A quote must appear in that person's thread word for word.

@@ -85,3 +85,66 @@ describe('the export hook', () => {
     expect(src).toMatch(/if \(committingIsOff\(\)\) \{[\s\S]*?Wiki fill skipped/);
   });
 });
+
+// ── THE SIMULATOR'S OWN ROUND-BY-ROUND RECORD ───────────────────────────
+//
+// Three things describe a season to the writer and they are not equal. The
+// screenplay is what people said. `keyMoments` is prose a model wrote about the
+// season afterwards. This is what the ENGINE recorded — the night somebody won,
+// the night they took votes, the night they went — so a claim in the article
+// that contradicts it is checkable against the export.
+import { timelineFor } from '../js/wiki-fill-run.js';
+
+describe('a player timeline', () => {
+  const HOUSE = { weeks: [
+    { week: 1, hoh: 'Wayne', initialNominees: ['Axel', 'Emmah'], votes: { Axel: 6 },
+      evicted: 'Axel', haveNots: ['Wayne'], ballots: [{ voter: 'Wayne', evict: 'Axel' }] },
+    { week: 2, hoh: 'Raj', initialNominees: ['Wayne', 'Zee'], vetoWinner: 'Wayne',
+      votes: { Zee: 5, Millie: 4 }, evicted: 'Zee', haveNots: [],
+      ballots: [{ voter: 'Wayne', evict: 'Zee' }] },
+    { week: 3, initialNominees: ['Wayne'], votes: { Wayne: 5, Raj: 2 }, evicted: 'Wayne' },
+  ] };
+  const CAMP = { votingHistory: [
+    { episode: 2, winner: 'Jade', eliminated: 'Amelie',
+      votes: [{ voter: 'Jade', target: 'Amelie' }, { voter: 'Amelie', target: 'Jade' }] },
+    { episode: 3, eliminated: 'Jade',
+      votes: [{ voter: 'Ted', target: 'Jade' }, { voter: 'Ivy', target: 'Jade' }] },
+  ] };
+
+  it('records what the house did to somebody, week by week', () => {
+    const t = timelineFor(HOUSE, 'Wayne');
+    expect(t[0]).toBe('wk1: won HOH, have-not, voted to evict Axel');
+    // Nominated and then won the veto: somebody saving themselves, in that
+    // order, because the reverse says nothing.
+    expect(t[1]).toBe('wk2: nominated, won the veto, voted to evict Zee');
+    // Nominated, took the votes, and the night it ended — with the margin.
+    expect(t[2]).toBe('wk3: nominated, took 5 votes, EVICTED 5-2');
+    // A house where nobody voted the other way still states the margin.
+    const sweep = { weeks: [{ week: 1, votes: { Wayne: 7 }, evicted: 'Wayne', ballots: [] }] };
+    expect(timelineFor(sweep, 'Wayne')[0]).toMatch(/EVICTED 7-0/);
+  });
+
+  it('records a camp in the camp', () => {
+    const t = timelineFor(CAMP, 'Jade');
+    expect(t[0]).toBe('ep2: won the challenge, voted Amelie, took 1 vote');
+    expect(t[1]).toBe('ep3: took 2 votes, VOTED OUT 2-0');
+    // No house vocabulary anywhere in it.
+    expect(t.join(' ')).not.toMatch(/HOH|veto|EVICTED|have-not/);
+  });
+
+  it('says nothing about rounds where nothing happened to them', () => {
+    const quiet = { weeks: [{ week: 1, hoh: 'Someone', votes: {}, ballots: [] },
+      { week: 2, hoh: 'Wayne', votes: {}, ballots: [] }] };
+    expect(timelineFor(quiet, 'Wayne')).toEqual(['wk2: won HOH']);
+  });
+
+  it('keeps both ends of a long season rather than the first half', () => {
+    const long = { weeks: Array.from({ length: 30 }, (_, i) => ({
+      week: i + 1, votes: { Wayne: 1 }, ballots: [] })) };
+    const t = timelineFor(long, 'Wayne');
+    expect(t.length).toBe(15);          // 7 + ellipsis + 7
+    expect(t[7]).toBe('…');
+    expect(t[0]).toMatch(/^wk1:/);
+    expect(t[t.length - 1]).toMatch(/^wk30:/);
+  });
+});

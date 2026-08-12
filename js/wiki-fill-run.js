@@ -18,7 +18,7 @@
 
 import { listEpisodes } from './episode-store.js';
 import { gameHistoryPayload, roundLedger, sliceCastThreads } from './wiki-fill.js';
-import { SHOWS, formatPrefix, DEFAULT_FORMAT } from './shows.js';
+import { SHOWS, formatPrefix, showWords, DEFAULT_FORMAT } from './shows.js';
 
 /** The season document's filename, by the site's one naming rule. */
 export function seasonFile(season, format = DEFAULT_FORMAT) {
@@ -131,7 +131,10 @@ export async function runCharacterFill({ season, format, root = '', onStatus = (
 
   const res = await fetch(base, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mode: 'wiki-fill', threads, season, seasonTitle: doc.title || '', format }),
+    // The show's own vocabulary travels with the request, so the writer does
+    // not have to guess from the format and a third show needs no worker edit.
+    body: JSON.stringify({ mode: 'wiki-fill', threads, season,
+      seasonTitle: doc.title || '', format, words: showWords(format) }),
   });
   if (!res.ok) return { ok: false, reason: `worker ${res.status}: ${(await res.text()).slice(0, 200)}` };
   const json = await res.json();
@@ -191,7 +194,8 @@ export async function runGameHistoryFill({ season, format, root = '', onStatus =
   onStatus(`${ledger.length} rounds · ${written} with an episode written. Asking the writer…`);
   const res = await fetch(base, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mode: 'game-history-fill', rounds, season, seasonTitle: doc.title || '', format }),
+    body: JSON.stringify({ mode: 'game-history-fill', rounds, season,
+      seasonTitle: doc.title || '', format, words: showWords(format) }),
   });
   if (!res.ok) return { ok: false, reason: `worker ${res.status}: ${(await res.text()).slice(0, 200)}` };
   const json = await res.json();

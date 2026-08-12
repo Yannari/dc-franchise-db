@@ -14,6 +14,11 @@
 export const SHOWS = {
   'total-drama': {
     prefix: 'td', name: 'Total Drama', short: 'TD', emoji: '🎬',
+    // What this show calls its people, its rounds and leaving. Every page and
+    // prompt that describes a season needs these four words, and hardcoding
+    // them is how a Total Drama season came to be told it had houseguests who
+    // were nominated. A show states its own vocabulary here.
+    words: { player: 'contestant', players: 'contestants', round: 'Episode', exit: 'voted out' },
     // Season-detail fields this show contributes to a career, and the byShow
     // key each lands under. A show declares its own shape here rather than
     // _rebuildByShow branching on the format.
@@ -26,6 +31,7 @@ export const SHOWS = {
   },
   'big-brother': {
     prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹',
+    words: { player: 'houseguest', players: 'houseguests', round: 'Week', exit: 'evicted' },
     careerStats: [
       ['challengeWins', 'totalCompWins'],
       ['bb.hohWins', 'hohWins'],
@@ -43,6 +49,17 @@ const BY_PREFIX = Object.fromEntries(
 
 export function formatPrefix(format) {
   return SHOWS[format]?.prefix || SHOWS[DEFAULT_FORMAT].prefix;
+}
+
+/**
+ * The show's own words, for anything that writes about a season.
+ *
+ * Falls back to the default show's vocabulary so an unregistered format still
+ * produces readable text rather than "undefined was undefined".
+ */
+export function showWords(format) {
+  return { show: showName(format),
+    ...(SHOWS[DEFAULT_FORMAT].words), ...(SHOWS[format]?.words || {}) };
 }
 
 export function showName(format) {

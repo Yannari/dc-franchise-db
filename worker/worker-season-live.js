@@ -698,8 +698,39 @@ Return ONLY valid JSON matching the schema.
  * already called four of them the quiet strategist, and no way to keep two
  * players from being quoted saying the same thing.
  */
+/**
+ * What this show calls its people, its rounds and its exits.
+ *
+ * The two fill prompts hardcoded a two-show world — `format === 'big-brother' ?
+ * 'Big Brother' : 'Total Drama'` — which had two consequences. Total Drama's
+ * cast were addressed as "houseguests" throughout a prompt about a summer camp,
+ * and a third show would have been described to the writer as Total Drama no
+ * matter what it was.
+ *
+ * The client knows its own show, so it sends the words. These are the fallback
+ * for a caller that does not, and the shape any new show fills in: a name, what
+ * one of its players is called, what a round is called, and what leaving is
+ * called. Nothing else in either prompt is show-specific.
+ */
+const SHOW_WORDS = {
+  'big-brother': { show: 'Big Brother', player: 'houseguest', round: 'Week', exit: 'evicted' },
+  'total-drama': { show: 'Total Drama', player: 'contestant', round: 'Episode', exit: 'voted out' },
+};
+
+function showWords(format, sent) {
+  const base = SHOW_WORDS[format] || SHOW_WORDS['total-drama'];
+  // Anything the caller states wins — it is the page that knows which show it
+  // is on, and a show the worker has never heard of is still describable.
+  return {
+    show: sent?.show || base.show,
+    player: sent?.player || base.player,
+    round: sent?.round || base.round,
+    exit: sent?.exit || base.exit,
+  };
+}
+
 async function generateWikiFill(body, env) {
-  const { threads, season, seasonTitle, format } = body;
+  const { threads, season, seasonTitle, format, words } = body;
   if (!Array.isArray(threads) || !threads.length) {
     return new Response(JSON.stringify({ error: "Missing threads" }), {
       status: 400,
@@ -707,7 +738,8 @@ async function generateWikiFill(body, env) {
     });
   }
   const cast = threads.map(t => t.name);
-  const show = format === 'big-brother' ? 'Big Brother' : 'Total Drama';
+  const W = showWords(format, words);
+  const show = W.show;
 
   const schema = {
     type: "object",
@@ -722,11 +754,11 @@ async function generateWikiFill(body, env) {
             name: { type: "string", enum: cast },
             personality: {
               type: "string",
-              description: "2-4 sentences on what this person was LIKE in the house, written from their own words and what they were seen doing. Not their results — a placement is not a personality. How they talk, who they attach to, what they do when cornered, and whether any of that changed as the season went on. Specific to the evidence: if they were barely on camera, say that instead of inventing an interior life."
+              description: "2-4 sentences on what this person was LIKE with the others, written from their own words and what they were seen doing. Not their results — a placement is not a personality. How they talk, who they attach to, what they do when cornered, and whether any of that changed as the season went on. Specific to the evidence: if they were barely on camera, say that instead of inventing an interior life."
             },
             quotes: {
               type: "array",
-              description: "Two or three lines this person actually said, quoted VERBATIM from the transcript. Never paraphrase and never invent. Pick lines that only this houseguest could have said. If they said nothing worth quoting, return an empty array.",
+              description: "Two or three lines this person actually said, quoted VERBATIM from the transcript. Never paraphrase and never invent. Pick lines that only this person could have said. If they said nothing worth quoting, return an empty array.",
               items: {
                 type: "object",
                 additionalProperties: false,
@@ -762,7 +794,7 @@ async function generateWikiFill(body, env) {
 
   const instructions = `
 You are writing the Personality, Quotes and Trivia sections of a fandom wiki
-article for every houseguest of ${show}${seasonTitle ? ` — ${seasonTitle}` : ''}${season ? ` (Season ${season})` : ''}.
+article for every ${W.player} of ${show}${seasonTitle ? ` — ${seasonTitle}` : ''}${season ? ` (Season ${season})` : ''}.
 
 You are given each person's thread through the season: their confessionals
 (spoken alone to camera), their lines in the house, and stage directions that
@@ -784,7 +816,7 @@ RULES
    into a main character because the section looks thin.
 5. Use EXACTLY these names: ${cast.join(', ')}
 
-Return ONLY valid JSON matching the schema, with one entry per houseguest.
+Return ONLY valid JSON matching the schema, with one entry per ${W.player}.
 `.trim();
 
   const payload = {
@@ -815,7 +847,8 @@ async function generateGameHistoryFill(body, env) {
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
   }
-  const show = format === 'big-brother' ? 'Big Brother' : 'Total Drama';
+  const W = showWords(format, body.words);
+  const show = W.show;
   const nums = rounds.map(r => Number(r.n));
 
   const schema = {
@@ -873,7 +906,7 @@ RULES
 4. Write past tense, plainly, the way a wiki does. No second person, no
    "little did they know", no addressing the reader.
 5. Each round is its own paragraph and reads on its own — a reader who
-   arrives at ${show === 'Big Brother' ? 'Week' : 'Episode'} 6 first should still follow it.
+   arrives at ${W.round} 6 first should still follow it.
 
 Return ONLY valid JSON matching the schema, one entry per round given, same numbers.
 `.trim();

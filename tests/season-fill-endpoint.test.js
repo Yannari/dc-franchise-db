@@ -170,3 +170,93 @@ describe('committing a wiki fill', () => {
     expect(json.error).toMatch(/nothing to fill/);
   });
 });
+
+// ── A RE-EXPORT MUST NOT DELETE THE PROSE ───────────────────────────────
+//
+// A season document holds two kinds of thing. The derived half comes out of the
+// simulator on every export. The authored half is written once by the wiki fill
+// from the episode screenplays, which live in one browser's IndexedDB — so if a
+// publish overwrites it, the only copy is gone and has to be paid for again.
+//
+// The export template contains none of the authored fields, because the export
+// has never known about them. Publishing a re-export over a filled season would
+// therefore have wiped every one of them.
+describe('publishing over a filled season', () => {
+  let worker;
+  const FILLED = {
+    seasonNumber: 14,
+    placements: [
+      { placement: 1, name: 'Jade', playerSlug: 'jade',
+        personality: 'Watchful.', quotes: [{ text: 'A clown attacked me.', context: 'x' }],
+        trivia: ['Tested Benji.'] },
+      { placement: 2, name: 'Benji', playerSlug: 'benji', personality: 'Leaks.' },
+    ],
+    gameHistory: [{ n: 2, prose: 'Red struggled.' }],
+    twists: [{ id: 'rescue-island', name: 'Rescue Island', episodes: [2] }],
+  };
+  /** What an export produces: the same season, none of the authored fields. */
+  const FRESH = {
+    seasonNumber: 14,
+    placements: [
+      { placement: 1, name: 'Jade', playerSlug: 'jade', challengeWins: 3 },
+      { placement: 2, name: 'Benji', playerSlug: 'benji', challengeWins: 1 },
+    ],
+  };
+
+  beforeEach(async () => {
+    repo = { 'data/seasons/season14-data.json': JSON.parse(JSON.stringify(FILLED)) };
+    commits = [];
+    global.fetch = githubStub();
+    worker = await loadWorker();
+  });
+
+  async function publish(season) {
+    const req = new Request('https://dc-studio.test/api/publish-season', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ seasonNumber: 14, format: 'total-drama', season }),
+    });
+    const res = await worker.fetch(req, ENV, {});
+    return { status: res.status, json: await res.json().catch(() => null) };
+  }
+
+  it('keeps personality, quotes, trivia, game history and twists', async () => {
+    await publish(JSON.parse(JSON.stringify(FRESH)));
+    const doc = repo['data/seasons/season14-data.json'];
+    const jade = doc.placements.find(p => p.name === 'Jade');
+    expect(jade.personality).toBe('Watchful.');
+    expect(jade.quotes[0].text).toBe('A clown attacked me.');
+    expect(jade.trivia[0]).toBe('Tested Benji.');
+    expect(doc.gameHistory[0].prose).toBe('Red struggled.');
+    expect(doc.twists[0].name).toBe('Rescue Island');
+    // And the export's own half did land.
+    expect(jade.challengeWins).toBe(3);
+  });
+
+  it('lets a fresh value win, because a new fill is meant to replace an old one', async () => {
+    const fresh = JSON.parse(JSON.stringify(FRESH));
+    fresh.placements[0].personality = 'Rewritten.';
+    fresh.gameHistory = [{ n: 2, prose: 'Rewritten prose.' }];
+    fresh.twists = [{ id: 'double', name: 'Double Elimination', episodes: [9] }];
+    await publish(fresh);
+    const doc = repo['data/seasons/season14-data.json'];
+    expect(doc.placements[0].personality).toBe('Rewritten.');
+    expect(doc.gameHistory[0].prose).toBe('Rewritten prose.');
+    expect(doc.twists[0].name).toBe('Double Elimination');
+  });
+
+  it('carries nothing for somebody who was not in the old cast', async () => {
+    const fresh = JSON.parse(JSON.stringify(FRESH));
+    fresh.placements.push({ placement: 3, name: 'Newcomer', playerSlug: 'newcomer' });
+    await publish(fresh);
+    const row = repo['data/seasons/season14-data.json'].placements.find(p => p.name === 'Newcomer');
+    expect(row.personality).toBeUndefined();
+  });
+
+  it('publishes a season that was never filled without inventing fields', async () => {
+    repo['data/seasons/season14-data.json'] = { seasonNumber: 14, placements: [{ placement: 1, name: 'Jade' }] };
+    await publish(JSON.parse(JSON.stringify(FRESH)));
+    const doc = repo['data/seasons/season14-data.json'];
+    expect(doc.gameHistory).toBeUndefined();
+    expect(doc.placements[0].personality).toBeUndefined();
+  });
+});

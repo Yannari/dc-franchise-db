@@ -1157,6 +1157,49 @@ async function socialGet(env, url) {
 // Deliberately NOT publishSeason(): that one ends a season's run, clears the
 // live overlay and rebuilds the derived tables, none of which a prose edit
 // should do. This writes one file and stops.
+/**
+ * Carry a season's AUTHORED fields across a re-export.
+ *
+ * A season document holds two kinds of thing, and only one of them can be
+ * rebuilt. The DERIVED half — placements, votes, competition records, twists —
+ * comes out of the simulator every time the season is exported. The AUTHORED
+ * half is written once by the wiki fill from the episode screenplays:
+ * personality, quotes and trivia per player, and the game history in prose.
+ *
+ * The export template does not contain the authored fields, because the export
+ * has never known about them. So publishing a re-export over a filled season
+ * would silently delete every one of them, and the only copy — the screenplays
+ * are in one browser's IndexedDB — would have to be paid for again.
+ *
+ * They are carried forward here, at the single point every publish passes
+ * through. An incoming value always wins: a fresh fill is meant to replace an
+ * old one. This only fills the silences.
+ */
+function carryAuthoredFields(incoming, existing) {
+  if (!incoming || !existing) return incoming;
+
+  const byName = new Map((existing.placements || []).map(p => [p.name, p]));
+  const bySlug = new Map((existing.placements || [])
+    .filter(p => p.playerSlug).map(p => [p.playerSlug, p]));
+
+  for (const row of (incoming.placements || [])) {
+    const old = byName.get(row.name) || bySlug.get(row.playerSlug);
+    if (!old) continue;                       // a cast that changed is not our business
+    if (!row.personality && old.personality) row.personality = old.personality;
+    if (!(row.quotes || []).length && (old.quotes || []).length) row.quotes = old.quotes;
+    if (!(row.trivia || []).length && (old.trivia || []).length) row.trivia = old.trivia;
+  }
+  if (!(incoming.gameHistory || []).length && (existing.gameHistory || []).length) {
+    incoming.gameHistory = existing.gameHistory;
+  }
+  // Twists ARE derived now, but a season exported before that carried none —
+  // so an incoming list wins and an absent one does not erase what is there.
+  if (!(incoming.twists || []).length && (existing.twists || []).length) {
+    incoming.twists = existing.twists;
+  }
+  return incoming;
+}
+
 async function seasonFill(env, payload = {}) {
   const n = asInt(payload.seasonNumber);
   if (!n) throw new ValidationError('seasonNumber is required');
@@ -1268,7 +1311,12 @@ async function publishSeason(env, payload = {}) {
 
   for (const [path, doc] of docs) {
     const existing = await getFile(env, path);
-    await putFile(env, path, encodeJson(doc),
+    // A re-export must not delete prose it does not know about. Only the season
+    // document has authored fields; the databases are derived end to end.
+    const body = (path.startsWith(`${SEASON_DIR}/`) && existing)
+      ? carryAuthoredFields(doc, decodeJson(existing.content))
+      : doc;
+    await putFile(env, path, encodeJson(body),
       n ? `season ${n}: publish ${path}` : `studio: publish ${path}`, existing && existing.sha);
     wrote.push(path);
   }

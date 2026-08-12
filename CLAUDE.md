@@ -2,6 +2,22 @@
 DC Franchise Simulator — a Survivor-style franchise simulator.
 ES modules, no build step. Open `simulator.html` in a browser.
 
+**Two shows run on this engine**: Total Drama (`total-drama`) and Big Brother
+(`big-brother`). `js/shows.js` is the ONLY source of truth for slugs, prefixes,
+names and per-show vocabulary — 23 files import it. A bare integer in a URL,
+filename or storage key is Total Drama, permanently; every other show is
+prefixed (`bb-1`, `bb_episode_s1_e1`).
+
+**Before adding a show, changing a format, or writing any sentence a screen
+generates about a season, read `docs/ADDING-A-SHOW.md`.** It lists every file
+that branches on show, the eight that still hold their own copy of the show
+list, and §13 has the commands to re-derive all of it when this drifts.
+
+**The recurring bug class it exists for:** one show's vocabulary printed over
+the other. "Reached the end without ever being nominated" over a Total Drama
+season (no nominations); "was evicted" over a camp (it votes people out). Any
+generated sentence must take its words from that show's registry entry.
+
 ## Architecture
 - `simulator.html` — CSS + HTML shell (no JS, loads `js/main.js`)
 - `js/main.js` — entry point, imports all modules, exposes on window for onclick handlers

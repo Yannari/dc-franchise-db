@@ -8,8 +8,14 @@ added *without* this document, and most of what follows is the shape of the
 mistakes that were made doing it — the ones that only surfaced weeks later, on
 a screen nobody thought was show-specific.
 
+**Read this before touching a format, whether you are a person or an agent.**
+The facts below were derived by searching the code, not recalled, and §13 has
+the commands to re-derive every inventory in it. If a list here disagrees with
+what the command prints, the command is right and this file is stale — fix the
+file in the same commit as whatever moved.
+
 **The one-line summary:** the registry in `js/shows.js` is the source of truth,
-about twenty modules already read it and need nothing from you, and everything
+23 modules already read it and need nothing from you, and everything
 that still holds its own copy of the show list is listed in §9. Adding a show is
 a registry entry plus an engine; the work in between is making sure no screen
 falls back to the default show's vocabulary.
@@ -39,7 +45,17 @@ Write both answers down. §6 is a checklist against them.
 ## 1. The registry — `js/shows.js`
 
 One entry. This is the only file that knows slugs, prefixes, display names and
-vocabulary, and about twenty modules read it.
+vocabulary. Twenty-three non-test files import it today:
+
+`awards.html`, `compare.html`, `current-season.html`, `devotees.html`,
+`franchise.html`, `js/core.js`, `js/episode-store.js`, `js/fame.js`,
+`js/show-switcher.js`, `js/site-header.js`, `js/social-page.js`,
+`js/social/adapter.js`, `js/stats-export.js`, `js/wiki-fill-run.js`,
+`js/wiki-view.js`, `leaderboards.html`, `rankings.html`,
+`season-awards_ref.html`, `season_ref.html`, `seasons.html`, `timeline.html`,
+`worker/worker-studio.js`.
+
+Every one of those needs **nothing** from you beyond the entry.
 
 ```js
 'ridonculous-race': {
@@ -232,22 +248,31 @@ These files each hold their own copy of the show list. Every one of them is a
 place a third show can be forgotten, and none of them will error — they will
 just describe your show as Total Drama.
 
-| File | What it duplicates |
-|---|---|
-| `player.html` | four maps: `SHOW_PREFIX`, `NAMES`, `ICONS`, `SHOW_NAMES`, plus a hardcoded `['total-drama', 'big-brother']` fallback list |
-| `js/wiki.js` | `SHOW_NAMES` |
-| `js/wiki-view.js` | `SHOW_META` (name, short, emoji, accent) |
-| `js/social/adapter.js` | `SHOW_WORDS` (deliberate — vocabulary, not identity) |
-| `current-season.html` | `CS_SHOWS` prefix map |
-| `compare.html`, `franchise.html` | label maps |
-| `js/settings.js` | venue list per format |
-| `js/alumni.js`, `js/rankings-update.js` | format lists |
-| `worker/worker-season-live.js` | `SHOW_WORDS` fallback |
+| File | Identifier | Kind |
+|---|---|---|
+| `player.html` | `SHOW_PREFIX` (~681), `NAMES` (~792), `ICONS` (~793), `SHOW_NAMES` (~909, ~918), and a literal `['total-drama', 'big-brother']` (~727) | identity |
+| `js/wiki.js` | `SHOW_NAMES` (~25) | identity |
+| `js/wiki-view.js` | `SHOW_META` — name, short, emoji, accent (~28) | identity + styling |
+| `season_ref.html` | `SHOW_NAMES` (~320) | identity |
+| `current-season.html` | `CS_SHOWS` prefix map (~870) | identity |
+| `compare.html` | `CMP_SHOW_LABEL` (~832) | identity |
+| `franchise.html` | `SHOW_LABEL` (~705) | identity |
+| `js/alumni.js` | `_SHOW_NAMES` (~106) | identity |
+| `js/social/adapter.js` | `SHOW_WORDS` (~40) | **vocabulary — leave it** |
+| `worker/worker-season-live.js` | `SHOW_WORDS` fallback (~716) | **vocabulary — leave it** |
+| `js/settings.js` | venue list per format (~26) | data, per show |
+| `js/rankings-update.js` | per-format ranking config (~360) | data, per show |
+| `js/quick-setup.js` | `CONFIG_SCOPE` + the show picker | data, per show |
 
-**Recommended before you start:** collapse the pure-identity ones (names, icons,
-prefixes) into `js/shows.js` and import them. That is roughly an hour, it is
-mechanical, and it converts nine chances to forget your show into zero. Keep the
-vocabulary maps separate — `social/adapter.js` is right to own its own words.
+Eight of those are pure identity — a name, an icon, a prefix — and belong in the
+registry. The rest are per-show DATA and are right where they are: a show's
+venues, its ranking weights, its vocabulary and its config scope are not
+identity and do not collapse.
+
+**Recommended before you start:** collapse the eight identity maps into
+`js/shows.js` and import them. Roughly an hour, mechanical, and it converts
+eight chances to forget your show into zero. Keep the vocabulary and per-show
+data maps where they are.
 
 ---
 
@@ -300,3 +325,37 @@ Being honest about the parts this document cannot make easy:
   produces episodes in that show's format.
 
 Everything else is a registry entry and a vocabulary block.
+
+---
+
+## 13. Re-deriving every list in this document
+
+Run these before trusting anything above. They are the searches the document was
+built from, so a difference means the code moved and this file did not.
+
+```bash
+# Ignore vendored and worktree copies in all of these, or the counts inflate.
+EX='node_modules|\.claude/'
+
+# Everything that imports the registry (§1). Expect 23 non-test files.
+grep -rln "shows\.js" --include=*.js --include=*.html .   | grep -Ev "$EX" | grep -v "^./tests" | sort
+
+# Everything holding its own show map (§9). Expect the 13 files in that table;
+# anything else is a new duplicate that will silently mis-label a third show.
+grep -rn "'total-drama'" --include=*.html --include=*.js .   | grep -Ev "$EX" | grep -v "^./tests/"   | grep -E "\{ ?'total-drama'|'total-drama':" | grep -v "js/shows.js"   | awk -F: '{print $1}' | sort -u
+
+# Every place the engine or a screen branches on a specific show (§2, §6).
+grep -rn "big-brother" --include=*.js --include=*.html js/ *.html worker/   | grep -Ev "$EX"
+
+# Which files carry the most branching — where a third show costs most.
+grep -rc "big-brother" --include=*.js --include=*.html .   | grep -Ev "$EX" | grep -v "^./tests/" | grep -v ":0$"   | sort -t: -k2 -rn | head -20
+
+# The guards that already enforce per-show correctness (§11).
+ls tests | grep -E "format|show|season-format"
+```
+
+**Counts as of this writing:** 46 non-test files mention `big-brother`; the
+heaviest are `js/core.js` (31 — the twist catalog), `js/quick-setup.js` (22),
+`js/stats-export.js` (18), `js/bb/week.js` (16). The first and last are
+expected — a catalog and a show's own engine. The middle two are the ones worth
+watching: if they grow, per-show behaviour is leaking into shared code.

@@ -303,11 +303,32 @@ The existing ones that will already catch you:
 - `tests/season-format.test.js` — the export adapter matches the engine's shape
 - `tests/wiki.test.js` — each show's article uses its own vocabulary
 
-**Add one guard the codebase does not have yet:** a test that renders a season
-page and a character article for *every* registered format and asserts that no
-other show's vocabulary appears in the output. An allowlist-style guard once let
-five twists ship with no VP screen at all; the same class of hole is what lets a
-new show inherit the default show's words on one screen out of twelve.
+**The vocabulary guard, added 2026-08-12** — the one this section used to say
+was missing:
+
+- `tests/show-vocabulary.test.js` (vitest, runs in `npm test`) walks **every
+  registered format**, renders a character article for a winner *and* for
+  somebody who was eliminated, runs the round ledger and the social vocabulary,
+  and fails if a show's own output contains another show's words. A third show
+  gets this coverage by existing in `js/shows.js` — there is no list in the test
+  to remember to extend.
+- `tests/e2e/show-pages.spec.js` does the same against **the site's real data**,
+  on the season page, for one season per show that actually has rounds. It reads
+  the whole wiki panel minus the AI-written nodes, so it cannot miss a place the
+  page generates text.
+
+Both were verified by putting the shipped bugs back and watching them fail —
+which is the only way to know a guard works. Three things that made the first
+versions pass over a page that was visibly wrong, all worth knowing before you
+write the next guard:
+
+1. **The fixture only rendered a winner**, so the exit cell — where "Evicted"
+   appears — never drew.
+2. **The season chosen had no round data**, so the section under test was empty.
+   A guard that passes because there was nothing to check is worse than none.
+3. **`` `${w}` `` in a template literal is a backspace character**, not a
+   word boundary. The pattern matched nothing and the test passed against a page
+   saying "was evicted" over a Total Drama season.
 
 ---
 

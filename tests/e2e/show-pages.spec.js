@@ -193,3 +193,90 @@ test('the franchise page does not lend one show another show\'s narrative', asyn
   await page.waitForTimeout(1500);
   await expect(page.locator('#evolution-list')).not.toContainText('written for Total Drama');
 });
+
+// ── NO SHOW IS DESCRIBED IN ANOTHER SHOW'S WORDS ─────────────────────────
+//
+// The unit half of this lives in tests/show-vocabulary.test.js and runs against
+// synthetic fixtures. This half runs against the SITE'S OWN DATA, on the page
+// where both of the shipped bugs actually appeared:
+//
+//   "reached the end without ever being nominated"  — over a Total Drama season
+//   "Amelie was evicted, 5-2."                      — over a camp
+//
+// Scoped deliberately to the text the PAGE generates — headings, table headers,
+// the grid legend, the derived facts line under each round, and trivia. The
+// AI-written narrative and per-round prose are excluded: they are somebody's
+// prose rather than the page's, and holding a language model to a word list
+// would make this fail for reasons nobody can fix in the code.
+import { readFileSync } from 'node:fs';
+
+const EXCLUSIVE = {
+  'big-brother': ['head of household', 'power of veto', 'evicted', 'eviction',
+    'houseguest', 'nominated', 'nomination', 'on the block'],
+  'total-drama': ['tribe', 'tribal council', 'campfire', 'immunity challenge',
+    'contestant', 'voted out'],
+};
+
+/**
+ * One published season per registered show — and specifically one that HAS a
+ * round-by-round record.
+ *
+ * The first version picked whichever season came first in the index, which for
+ * Total Drama is season 1: exported before ballots were carried, so its Game
+ * history section renders nothing and the assertion passed over an empty page.
+ * A guard that passes because there was nothing to check is the failure mode
+ * this whole file exists to prevent.
+ */
+function seasonsToCheck() {
+  const db = JSON.parse(readFileSync('seasons_database.json', 'utf8'));
+  const chosen = new Map();
+  for (const s of db.seasons || []) {
+    const format = s.format || 'total-drama';
+    if (chosen.has(format)) continue;
+    const ref = s.seasonId || String(s.seasonNumber);
+    const file = format === 'total-drama'
+      ? `season${s.seasonNumber}-data.json`
+      : `${ref}-data.json`;
+    let doc;
+    try { doc = JSON.parse(readFileSync(`data/seasons/${file}`, 'utf8')); } catch { continue; }
+    const rounds = (doc.weeks || []).length + (doc.votingHistory || []).length;
+    if (rounds) chosen.set(format, ref);
+  }
+  return [...chosen.entries()];
+}
+
+for (const [format, seasonRef] of seasonsToCheck()) {
+  test(`the ${format} season page speaks its own show (${seasonRef})`, async ({ page }) => {
+    await page.goto(`/season_ref.html?season=${seasonRef}`);
+    await page.waitForSelector('.sr-tab', { timeout: 15000 });
+    await page.getByRole('button', { name: /wiki/i }).click();
+    await page.waitForSelector('#sr-panel-wiki .wk-article', { timeout: 15000 });
+
+    // The round-by-round section must actually be on the page. Without this,
+    // a season with no ballots renders nothing and passes for free.
+    expect(await page.locator('#sr-panel-wiki .sr-week').count()).toBeGreaterThan(0);
+
+    // EVERYTHING THE PAGE WROTE, minus the parts a model wrote.
+    //
+    // An allowlist of selectors was the first attempt and it missed the bug: the
+    // derived round line lives in `.sr-week-b` when a season has no written
+    // prose and in `.sr-week-f` when it does, and the allowlist named only the
+    // second. Taking the whole panel and REMOVING the AI-written nodes cannot
+    // miss a place the page generates text, which is the property that matters.
+    const generated = await page.evaluate(() => {
+      const clone = document.querySelector('#sr-panel-wiki').cloneNode(true);
+      // .sr-week-p — the per-round narrative; .wk-lead — the season narrative.
+      clone.querySelectorAll('.sr-week-p, .wk-lead').forEach(el => el.remove());
+      return clone.textContent.replace(/\s+/g, ' ');
+    });
+
+    const forbidden = Object.entries(EXCLUSIVE)
+      .filter(([f]) => f !== format).flatMap(([, list]) => list);
+    // `\\b`, not `\b`: inside a template literal `\b` is the backspace
+    // character, so the pattern becomes "\x08evicted\x08" and matches nothing.
+    // The first version of this line had it wrong and passed against a page
+    // that was visibly saying "was evicted" over a Total Drama season.
+    const found = forbidden.filter(w => new RegExp(`\\b${w}\\b`, 'i').test(generated));
+    expect(found, `${format} page used another show's words: ${found.join(', ')}`).toEqual([]);
+  });
+}

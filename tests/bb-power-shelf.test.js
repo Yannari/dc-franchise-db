@@ -365,9 +365,19 @@ describe('powers get spent by the people who need them', () => {
     // An unspent power at the end of its window is worth exactly nothing, so
     // even a marginal use beats binning it. This was a +0.18 on the Diamond and
     // a +0.22 on the Hex — a rounding error against a decision.
+    //
+    // Refined since: "worth nothing" is only true when spending is FREE. A
+    // secret power reveals nothing, so the argument holds in full. A public one
+    // costs its holder cover, and burning it on a marginal week to avoid wasting
+    // it is a real mistake rather than the safe option — so the last week is
+    // still the decision, but for a public power the decision can be no.
     const marginal = { need: 0.15, nerve: 0.5 };
     expect(spendPull({ ...marginal, weeksLeft: 4 })).toBeLessThan(0.2);
-    expect(spendPull({ ...marginal, weeksLeft: 0 })).toBeGreaterThan(0.55);
+    expect(spendPull({ ...marginal, weeksLeft: 0, exposes: false })).toBeGreaterThan(0.55);
+    // Public: far higher than four weeks out, and still short of a coin flip.
+    const publicLast = spendPull({ ...marginal, weeksLeft: 0, exposes: true });
+    expect(publicLast).toBeGreaterThan(spendPull({ ...marginal, weeksLeft: 4 }) + 0.15);
+    expect(publicLast).toBeLessThan(0.5);
   });
 
   it('gives nobody patience about their own eviction', () => {

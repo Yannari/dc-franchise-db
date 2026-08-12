@@ -57,7 +57,10 @@ export function resolveHaltingHex({ week, evicted, nominees = [], hoh, rng = Mat
     // there is no week after this one to find a better save in.
     pull = spendPull({ need,
       weeksLeft: lastWeek ? 0 : Math.max(1, inst.expiresAfterWeek - week.num),
-      nerve: (st.boldness || 5) / 10 });
+      nerve: (st.boldness || 5) / 10,
+      // Whether playing it tells the house anything. A secret power costs
+      // nothing to reveal, so letting it die buys its holder nothing.
+      exposes: (inst.visibility || 'public') === 'public' });
   }
   if (rng() >= pull) return null;
 

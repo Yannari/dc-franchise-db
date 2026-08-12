@@ -2537,7 +2537,8 @@ export function simulateBBWeek(options = {}) {
       : 0.05;
     const pull = spendPull({ need,
       weeksLeft: Math.max(0, cloud.expiresAfterWeek - week.num),
-      nerve: (st.boldness || 5) / 10 });
+      nerve: (st.boldness || 5) / 10,
+      exposes: (cloud.visibility || 'public') === 'public' });
     cloudPlayed = rng() < pull;
   }
   if (cloudPlayed) {
@@ -4165,7 +4166,10 @@ export function simulateBBWeek(options = {}) {
         }), 0);
       const coupPull = spendPull({ need: coupNeed,
         weeksLeft: Math.max(0, coup.expiresAfterWeek - week.num),
-        nerve: (cst.boldness || 5) / 10 });
+        nerve: (cst.boldness || 5) / 10,
+        // Replacing the whole block in front of everybody is the loudest thing
+        // anybody can do, whatever the instance calls itself.
+        exposes: true });
       if (eligible.length >= 2 && rng() < coupPull) {
         usePower(coup, week.num);
         const coupPlan = chooseNominationPlan(coup.holder, eligible, rng);
@@ -5020,7 +5024,8 @@ export function simulateBBWeek(options = {}) {
         // is a Diamond that was never in the season.
         const pull = spendPull({ need,
           weeksLeft: lastWindowWeek ? 0 : Math.max(1, inst.expiresAfterWeek - week.num),
-          nerve: (hst.boldness || 5) / 10 });
+          nerve: (hst.boldness || 5) / 10,
+          exposes: (inst.visibility || 'public') === 'public' });
         if (rng() < pull) save = ally;
       }
       if (save) {

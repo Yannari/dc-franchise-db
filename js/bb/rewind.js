@@ -78,7 +78,11 @@ export function rewindPull({ holder, evicted, ballots = [], weeksLeft = 0, hoh =
   // What it costs to have your own ballot read out. Never enough to stop
   // somebody saving their own life — a public flip beats an eviction.
   if (!selfSave) need *= (1 - selfExposure(holder, ballots) * 0.55);
-  return spendPull({ need, weeksLeft, nerve });
+  // A Rewind cannot be spent quietly: the house watches the week come back and
+  // knows somebody did it. So spending it always costs the holder cover, and
+  // letting it expire on a night with nothing worth undoing is a real choice
+  // rather than cowardice.
+  return spendPull({ need, weeksLeft, nerve, exposes: true });
 }
 
 const STOP = [

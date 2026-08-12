@@ -143,7 +143,8 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
   const s = pStats(inst.holder) || {};
   const pull = spendPull({ need,
     weeksLeft: Math.max(0, inst.expiresAfterWeek - weekNum),
-    nerve: (s.boldness || 5) / 10 });
+    nerve: (s.boldness || 5) / 10,
+    exposes: (inst.visibility || 'public') === 'public' });
   if (rng() > pull) return null;
 
   usePower(inst, weekNum);
@@ -674,7 +675,8 @@ export function playMysteryVeto({ week, nominees = [], house = [], library = [],
   const st = pStats(inst.holder) || {};
   const pull = spendPull({ need,
     weeksLeft: Math.max(0, inst.expiresAfterWeek - weekNum),
-    nerve: (st.boldness || 5) / 10 });
+    nerve: (st.boldness || 5) / 10,
+    exposes: (inst.visibility || 'public') === 'public' });
   if (rng() > pull) return null;
   // Nobody to use it on at all: it stays in the pocket rather than being spent
   // on whoever was standing nearest.

@@ -424,11 +424,33 @@ export function expiryFor(def, week) {
  * @param weeksLeft evictions left in the window; 0 means tonight or never
  * @param nerve 0..1, usually boldness/10
  */
-export function spendPull({ need = 0, weeksLeft = 0, nerve = 0.5 } = {}) {
+export function spendPull({ need = 0, weeksLeft = 0, nerve = 0.5, exposes = true } = {}) {
   const cl = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   const n = cl(need, 0, 1);
   const b = cl(nerve, 0, 1);
-  if (weeksLeft <= 0) return cl(0.55 + n * 0.42, 0, 0.97);
+  // ── THE LAST WEEK IT EXISTS ──
+  //
+  // Not forced, on purpose. A power carried for a month and never spent is a
+  // real Big Brother outcome and one of the memorable ones — the careful
+  // player waiting for a perfect week that never arrived — and the transcript
+  // already has a screen for exactly that. Forcing it deletes the story and
+  // replaces it with a move nobody chose.
+  //
+  // What decides the floor is what spending COSTS. A secret power reveals
+  // nothing when it is played, so sitting on it until it dies buys its holder
+  // nothing at all: they should nearly always spend. A public one is different
+  // — burning it with no target tells the house you had it and gets you
+  // nothing back, and letting that expire is the correct play rather than a
+  // failure of nerve.
+  //
+  // And nerve finally matters here, which it did not before: this branch
+  // computed boldness and then ignored it, so the bold holder and the timid one
+  // behaved identically in the one week where character should decide it.
+  // A real need still overrides everything and takes both to the ceiling.
+  if (weeksLeft <= 0) {
+    const floor = exposes ? 0.20 + b * 0.25 : 0.60 + b * 0.25;
+    return cl(floor + n * (0.97 - floor), 0, 0.97);
+  }
   const base = n * (1.02 + (b - 0.5) * 0.14);
   const patience = Math.min(1, weeksLeft / 3) * (1 - b) * 0.45 * (1 - n);
   return cl(base - patience, 0.02, 0.97);

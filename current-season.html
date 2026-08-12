@@ -1176,8 +1176,23 @@ Owen: This is going to be amazing!"
     const season = Number(document.getElementById('aiSeason')?.value) || 1;
     const format = _csFormat();
 
-    const workerUrl = getWorkerUrl();
-    if (!workerUrl) { say('⚠️ No Season Builder Worker URL set — add it above first.'); return; }
+    // ── WHICH WORKER ─────────────────────────────────────────────────
+    //
+    // The SEASON worker, beside narrative-fill — not the episode worker, which
+    // is a different deployment with a very similar name and its own field on
+    // this page. Resolved here rather than through getSeasonBuilderWorkerUrl()
+    // because that function is declared inside a later nested scope and is not
+    // reachable from this one; calling it threw ReferenceError before anything
+    // else could run.
+    const workerUrl = (() => {
+      const el = document.getElementById('seasonBuilderWorkerUrl');
+      const raw = (el && el.value.trim())
+        || localStorage.getItem('SEASON_BUILDER_WORKER_URL')
+        || 'https://dc-analytic-seasons.yannari19.workers.dev';
+      let u = raw.trim();
+      if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+      return u.replace(/\/+$/, '');
+    })();
 
     btn?.setAttribute('disabled', 'disabled');
     try {
@@ -1203,6 +1218,27 @@ Owen: This is going to be amazing!"
       }
       if (!episodes.length) {
         say('⚠️ No episode transcripts saved for this season, so there is nothing to read.');
+        return;
+      }
+
+      // ── IS THIS EVEN THE RIGHT WORKER? ────────────────────────────
+      //
+      // Asked for a mode it does not have, the season worker's sibling does
+      // not error — it falls through to generateAnalytics and answers 200
+      // with an analytics object. So a misconfigured URL would look like a
+      // successful call that simply filled nobody in, after paying for it.
+      //
+      // One empty POST first. The right worker says "Missing threads".
+      say('Checking the worker…');
+      const ping = await fetch(workerUrl, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'wiki-fill' }),
+      }).then(r => r.json()).catch(() => ({}));
+      if (!/threads/i.test(String(ping.error || ''))) {
+        say(`⚠️ <code>${workerUrl}</code> does not have the <code>wiki-fill</code> mode.
+             That is usually the episode worker rather than the season one, or the season
+             worker has not been deployed since the mode was added
+             (<code>npm run deploy:seasons</code>).`);
         return;
       }
 
@@ -5907,6 +5943,13 @@ setTimeout(function() {
     return '';
   }
   
+  // The season worker, which is NOT the episode worker. Both are on the same
+  // account with similar names and the page has a field for each, so the way
+  // this goes wrong is silent: point the season builder at dc-analytics and
+  // every mode it does not have falls through to generateAnalytics, which
+  // answers 200 with an analytics object nobody asked for.
+  const SEASON_WORKER_DEFAULT = 'https://dc-analytic-seasons.yannari19.workers.dev';
+
   function getSeasonBuilderWorkerUrl() {
     // Try to get from Season Builder input
     const sbWorkerUrlInput = document.getElementById("seasonBuilderWorkerUrl");
@@ -5920,7 +5963,9 @@ setTimeout(function() {
       return normalizeWorkerUrl(stored);
     }
     
-    return '';
+    // A placeholder in the input is not a value. Without this the field looked
+    // filled in and resolved to the empty string.
+    return SEASON_WORKER_DEFAULT;
   }
   
   function slugify(name) {

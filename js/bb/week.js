@@ -4342,8 +4342,24 @@ export function simulateBBWeek(options = {}) {
         week.mysteryVetoSaved = solo.saves;
         if (duoPartnerDown) week.mysteryVetoDuoDown = [...takenDown];
 
+        // ── SAFE IS SAFE FOR THE WEEK, NOT UNTIL THE NEXT CEREMONY ──
+        //
+        // Whoever the FIRST veto took down was missing from this list, and they
+        // are not in `nominees` either — the ceremony replaced them there. So
+        // when a second veto emptied a chair, the houseguest who had already
+        // saved themselves that same week was eligible to be put straight back
+        // into it. That is not a rule anywhere: a veto save is safety for the
+        // week, and a second veto ceremony does not reopen it.
+        //
+        // Read off the week's own record rather than the ceremony's local
+        // variable, so a duos week — which takes a whole pair down — protects
+        // both of them and not just the one whose name was announced.
+        const savedByFirstVeto = week.vetoUsed
+          ? ((week.vetoSavedAll || []).length ? week.vetoSavedAll
+            : [week.vetoSaved].filter(Boolean))
+          : [];
         const protectedNames2 = [hoh, solo.holder, ...takenDown, ...nominees,
-          ...untouchable].filter(Boolean);
+          ...savedByFirstVeto, ...untouchable].filter(Boolean);
         let seated2 = [];
         try {
           if (duoPartnerDown) {

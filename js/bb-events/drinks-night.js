@@ -56,22 +56,39 @@ export function isDrinksNight(ctx) {
   // Not on the ceremonies themselves, and not on eviction night.
   const eligible = ctx?.act === 'campaign' || ctx?.act === 'house';
   if (!eligible) return false;
-  // ── AN OCCASION, NOT THE WEATHER ──
+  // ── ONCE A SEASON ──
   //
-  // Measured at every eligible week this landed in 78% of them, about six a
-  // season, and the opening scene is the same scene each time: the door opens
-  // on a case of beer. Read six times it stops being a night and becomes
-  // furniture, and the beats it exists to unlock stop feeling like the drink
-  // caused them.
+  // It started at every eligible week — 78% of them, six a season — and the
+  // opening scene is the same scene every time: the door opens on a case of
+  // beer. Every third week brought that to 2.5, which is still two or three
+  // readings of one scene. One is the answer. A season has exactly one night
+  // where the house is allowed to stop being careful, and it should be THE
+  // night rather than a recurring feature.
   //
-  // Every third week, chosen from the week number rather than a roll so a
-  // replayed season drinks on the same nights. Roughly two or three a season,
-  // which is where it reads as the thing that happened this week.
-  if ((Number(week.num) || 0) % 3 !== 2) return false;
+  // Not week two. The whole point of the night is that it lets things out, and
+  // in week two there is nothing in yet — no grudges worth airing, no promise
+  // old enough to break. It waits until the house has a history to spill.
+  const num = Number(week.num) || 0;
+  if (num < 4) return false;
+  const already = gs.bb?._drinksNightWeek;
+  if (already !== undefined && already !== num) return false;
+  // WHICH week, drawn from the season's own salt rather than fixed. Pinned to
+  // week four it happened in week four of every season, which is a schedule
+  // rather than an occasion. The salt is set once per season from that
+  // season's dice, so a replay drinks on the same night and two seasons do not.
+  //
+  // And it is a CEILING, not a promise: the house still has to be big enough,
+  // the act still has to come up, and the beat still has to win against
+  // everything else happening. Seasons where it never happens at all are
+  // correct — some houses simply never get the night.
+  const salt = Number(gs.bb?.seasonSalt) || 0;
+  if (already === undefined && num !== 4 + (salt % 4)) return false;
   // A house too small for a party does not have one. At four people it is not
   // a night, it is four people in a room being careful with each other.
   if ((gs.activePlayers || []).length < 6) return false;
   week._drinksNight = ctx.act;
+  // Claimed for the season, so no later week can open the bar again.
+  if (gs.bb) gs.bb._drinksNightWeek = num;
   return true;
 }
 

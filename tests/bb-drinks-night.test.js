@@ -25,10 +25,12 @@ const ARCH = ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer',
 const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
   'loyalty', 'boldness', 'intuition', 'temperament'];
 
-let beats = [], weeks = 0, nights = 0;
+let beats = [], weeks = 0, nights = 0, seasons = 0;
+const nightWeeks = [];
 
 beforeAll(() => {
-  for (const seed of [3, 11, 23, 41]) {
+  for (const seed of [3, 11, 17, 23, 29, 41, 53, 61]) {
+    seasons++;
     setGs(null);
     setPlayers(NAMES.map((name, i) => ({ name, slug: name.toLowerCase(),
       gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[i],
@@ -40,7 +42,7 @@ beforeAll(() => {
     seasonConfig.twistSchedule = [];
     initGameState();
     globalThis.gs = gs;
-    withSeededRandom(seed, () => { for (let i = 0; i < 8; i++) simulateBBEpisode(); });
+    withSeededRandom(seed, () => { for (let i = 0; i < 9; i++) simulateBBEpisode(); });
     for (const w of gs.bb.weeks) {
       weeks++;
       let had = false;
@@ -50,7 +52,7 @@ beforeAll(() => {
           if (b.eventId === 'drinks-night') had = true;
         }
       }
-      if (had) nights++;
+      if (had) { nights++; nightWeeks.push({ seed, week: w.num }); }
     }
   }
 }, 900000);
@@ -58,20 +60,42 @@ beforeAll(() => {
 const idsOf = prefix => beats.filter(b => String(b.eventId || '').startsWith(prefix));
 
 describe('the night happens, and reaches the transcript', () => {
-  it('is an occasion rather than the weather', () => {
-    // Measured at every eligible week this hit 78% — six a season, and the
-    // opening scene is the same scene each time, so it stopped reading as a
-    // night and started reading as furniture. Two or three a season is where
-    // the beats it unlocks still feel caused by the drink.
-    const perSeason = nights / 4;
-    expect(perSeason, 'too rare to be a rhythm at all').toBeGreaterThan(1.5);
-    expect(perSeason, 'so often it stops being an occasion').toBeLessThan(4);
+  it('happens at most once in a season', () => {
+    // It started at 78% of eligible weeks — six a season — and the opening
+    // scene is the same scene every time. A season gets one night where the
+    // house is allowed to stop being careful, and it should be THE night.
+    const perSeed = {};
+    for (const n of nightWeeks) perSeed[n.seed] = (perSeed[n.seed] || 0) + 1;
+    for (const [seed, count] of Object.entries(perSeed)) {
+      expect(count, `season ${seed} opened the bar ${count} times`).toBe(1);
+    }
   });
 
-  it('drinks on the same nights when a season is replayed', () => {
-    // Chosen from the week number, not a roll, so a seeded replay matches.
+  it('is a ceiling and not a promise', () => {
+    // Some houses never get the night: the house has to be big enough, the act
+    // has to come up, and the beat still has to win against everything else.
+    expect(nights, 'it never happened in any season').toBeGreaterThan(0);
+    expect(nights, 'every season got one, so it is scheduled rather than earned')
+      .toBeLessThan(seasons);
+  });
+
+  it('does not fall on the same week every season', () => {
+    // Pinned to week four it landed in week four of every season, which is a
+    // schedule. Drawn from the season's own salt instead.
+    expect(new Set(nightWeeks.map(n => n.week)).size).toBeGreaterThan(1);
+  });
+
+  it('waits until the house has something to spill', () => {
+    // The night exists to let things out, and in week two there is nothing in
+    // yet: no grudge worth airing, no promise old enough to break.
+    for (const n of nightWeeks) expect(n.week).toBeGreaterThanOrEqual(4);
+  });
+
+  it('drinks on the same night when a season is replayed', () => {
+    // From the season salt, not a roll, so a seeded replay matches itself.
     const src = readFileSync('js/bb-events/drinks-night.js', 'utf8');
-    expect(src).toMatch(/% 3 !== 2/);
+    expect(src).toMatch(/salt % 4/);
+    expect(src).toMatch(/gs\.bb\?\.seasonSalt/);
   });
 
   it('happens at most once a week', () => {
@@ -92,6 +116,7 @@ describe('the night happens, and reaches the transcript', () => {
   });
 
   it('keeps the blow-up rare across the SEASON, not rare within the night', () => {
+    // eslint-disable-next-line no-unused-expressions
     // The measure that matters is how often a house has a public row at all,
     // not what share of drinking nights produce one — on a night the house
     // drinks, the grievance surfacing IS the point. Once nights became an

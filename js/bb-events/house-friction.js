@@ -109,7 +109,6 @@ const theDishes = {
   },
   fire(house, ctx, api) {
     const { culprit, annoyed } = _grating(house, ctx);
-    const p = pronouns(annoyed);
     const text = _variant([
       `${annoyed} has washed up after ${culprit} four days running and today decides not to. The pan sits there until dinner, and by the time somebody finally moves it the whole house knows exactly who was not going to.`,
       `"I am not your mother." ${annoyed} says it lightly and it does not land lightly. ${culprit} says it was one bowl. ${annoyed} says it is never one bowl.`,
@@ -137,7 +136,6 @@ const theFood = {
   },
   fire(house, ctx, api) {
     const { culprit, annoyed } = _grating(house, ctx);
-    const p = pronouns(annoyed);
     const text = _variant([
       `${annoyed} had been saving it. Everybody in this house is saving something, because there is never enough of anything, and ${culprit} ate it without checking whether it was spoken for.`,
       `The last of the good cereal goes at eleven in the morning. ${annoyed} finds the empty box still sitting in the cupboard, which somehow is the part that stings.`,
@@ -165,7 +163,6 @@ const theNoise = {
   },
   fire(house, ctx, api) {
     const { culprit, annoyed } = _grating(house, ctx);
-    const p = pronouns(culprit);
     const text = _variant([
       `${culprit} and two others are still talking at three in the morning, in a room with beds in it, at a volume that is not quite a whisper. ${annoyed} lies there doing the arithmetic on how many hours are left.`,
       `Somebody is singing. Big Brother tells them to stop singing. Somebody starts singing again forty seconds later, and ${annoyed} makes a sound into the pillow that carries further than the singing did.`,
@@ -255,7 +252,7 @@ const theStory = {
       `${teller} tells the story again. Everybody in this room has heard the story. ${tired[0]} mouths the ending along with ${p.obj} and has to look at the floor.`,
       `There is a version of ${teller}'s story that takes four minutes and a version that takes eleven, and tonight is an eleven. ${tired[0]} and ${tired[1] || 'somebody'} have a whole conversation about it with their eyebrows.`,
       `${teller} says "did I ever tell you about—" and three people say yes at the same time, and it is not unkind, quite.`,
-      `The story has grown. It was a good story in week one and now there is a helicopter in it.`,
+      `${teller}'s story has grown. It was a good story in week one. There is a helicopter in it now, and ${tired[0]} has started keeping a private count of the additions.`,
     ], ctx, teller);
     // Being the person everybody has heard enough of costs a little standing.
     api.popDelta(teller, -1);
@@ -287,7 +284,7 @@ const theSnap = {
     const text = _variant([
       `${snapper} snaps at ${at} over something that does not deserve it, hears it happen, and apologises before ${at} has finished being surprised.`,
       `It is not about ${at}. Everybody in the room can tell it is not about ${at}, including ${at}, which is the only reason it does not become a fight.`,
-      `${snapper} has been fine for six weeks and is not fine for about ninety seconds. ${p.Sub} ${p.sub === 'they' ? 'go' : 'goes'} outside afterwards and stands there until it passes.`,
+      `${snapper} has been fine for six weeks and is not fine for about ninety seconds. ${p.Sub} ${p.sub === 'they' ? 'go' : 'goes'} outside afterwards and ${p.sub === 'they' ? 'stand' : 'stands'} there until it passes.`,
       `Somebody asks ${snapper} if ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} alright and gets a much sharper answer than the question deserved.`,
     ], ctx, snapper, at);
     api.addBond(snapper, at, -0.4);
@@ -311,7 +308,6 @@ const theJoke = {
   fire(house, ctx, api) {
     const { culprit, annoyed } = _grating(house, ctx);
     const room = _others(house, culprit, annoyed).slice(0, 3);
-    const p = pronouns(annoyed);
     const text = _variant([
       `${culprit} does an impression of ${annoyed}. It is good, which is the problem. The room laughs and then works out that ${annoyed} is not laughing, and the laugh dies in stages.`,
       `The joke is about something ${annoyed} said in confidence three weeks ago. ${culprit} does not appear to remember that it was in confidence.`,
@@ -344,10 +340,11 @@ const theWorkout = {
   },
   fire(house, ctx, api) {
     const { a, b } = _casualPair(house, ctx);
+    const pb = pronouns(b);
     const text = _variant([
       `${a} is out there at nine every morning and by now ${b} is too, mostly because there is nothing else to do and it is somewhere to be.`,
-      `${a} counts ${b}'s reps out loud and ${b} does four more than ${p2(b)} meant to, which is the entire point of having somebody count.`,
-      `They talk about nothing for forty minutes — training, injuries, a dog one of them used to have — and it is the least strategic conversation either of them has had all week.`,
+      `${a} counts ${b}'s reps out loud and ${b} does four more than ${pb.sub} meant to, which is the entire point of having somebody count.`,
+      `${a} and ${b} talk about nothing for forty minutes — training, an old injury, a dog ${a} had as a child — and it is the least strategic conversation either of them has had all week.`,
       `${b} cannot do the thing ${a} is doing. ${a} shows ${b} how, badly, and they both end up laughing on the grass.`,
     ], ctx, a, b);
     api.addBond(a, b, 1.1);
@@ -358,7 +355,6 @@ const theWorkout = {
   },
 };
 
-function p2(name) { const p = pronouns(name); return p.sub; }
 
 /** Somebody cooks for the house, and it is a position rather than a chore. */
 const theCook = {
@@ -401,7 +397,7 @@ const theGame = {
     const pool = _live(house);
     const players4 = pool.slice(0, 4);
     const text = _variant([
-      `Somebody invents a game. It has eleven rules, four of which were made up to settle an argument, and by evening the whole house is playing it and taking it far too seriously.`,
+      `${players4[0]} invents a game. It has eleven rules, four of which ${players4[1]} made up on the spot to win an argument, and by evening all of them are playing it and taking it far too seriously.`,
       `The card game has a running score now. It is on the wall. ${players4[0]} is winning and will not stop mentioning it.`,
       `Pool, badly, for two hours. ${players4[1]} is inexplicably brilliant at it and nobody can work out why that is annoying.`,
       `They are playing the game again. Nobody remembers who invented it. ${players4[0]} and ${players4[2] || players4[1]} have a genuine argument about a rule that does not exist.`,
@@ -430,7 +426,7 @@ const theRealConversation = {
       `${a} and ${b} end up in the kitchen at three in the morning talking about ${a}'s father, and not one word of it is about this game.`,
       `It starts as small talk and stops being small talk. By the end of it ${b} knows something about ${a} that nobody in this house knows, and ${b} did not ask for it.`,
       `${a} says the thing out loud for the first time in years. ${b} does not do anything clever with it — just listens, and says the right small thing at the end.`,
-      `Neither of them mentions the game once, which after five weeks in this house is close to a holiday.`,
+      `Neither ${a} nor ${b} mentions the game once. After five weeks in this house that is close to a holiday, and both of them notice it afterwards.`,
     ], ctx, a, b);
     api.addBond(a, b, 1.6);
     api.remember(b, a, 'told-me-something-real', 3, { about: 'a late night' });
@@ -454,7 +450,7 @@ const theGrooming = {
     const text = _variant([
       `${b} braids ${a}'s hair on the sofa for an hour and a half. It is the longest anybody has sat still all week and they talk the entire time.`,
       `${a} cuts ${b}'s hair with the house clippers. It goes about as well as that always goes, and ${b} decides to find it funny.`,
-      `Nails, on the bathroom floor, with the worst light in the building. Two people who would not otherwise have spent an hour together spend one.`,
+      `Nails, on the bathroom floor, under the worst light in the building. ${a} and ${b} would not otherwise have spent an hour together, and now they have.`,
       `${b} shaves ${a}'s head on a dare and then has to sit with what ${b} has done. The house is delighted. ${a} is quieter about it.`,
     ], ctx, a, b);
     api.addBond(a, b, 0.9);
@@ -478,9 +474,9 @@ const theHomeTalk = {
     const { a, b } = _casualPair(house, ctx);
     const room = _others(house, a, b).slice(0, 2);
     const text = _variant([
-      `Somebody starts describing their kitchen at home. Within ten minutes four people are doing it, in detail, and the room has gone quiet and warm and slightly unbearable.`,
+      `${a} starts describing the kitchen at home — where the light falls, which cupboard sticks. Within ten minutes ${b} is doing it too, and the room has gone quiet and warm and slightly unbearable.`,
       `${a} works out what day it is at home and what everybody there would be doing. ${b} says please stop, and does not mean it.`,
-      `They talk about food they miss for half an hour. It is the single most emotional conversation of the week and it is about a sandwich.`,
+      `${a} and ${b} talk about food they miss for half an hour. It is the most emotional conversation of the week and the subject of it is a sandwich.`,
       `${a} has missed something — a birthday, a wedding, a first day. ${b} does not try to fix it, which is the correct thing to do and rarer than it sounds.`,
     ], ctx, a, b);
     api.addBond(a, b, 1);
@@ -504,9 +500,9 @@ const theBoredom = {
     const pool = _live(house);
     const [a, b] = pool;
     const text = _variant([
-      `Nothing happens for an entire day. They lie in the sun and talk about absolutely nothing and it is the best day any of them have had in a fortnight.`,
+      `Nothing happens for an entire day. ${a} and ${b} lie in the sun talking about absolutely nothing, and it is the best day either of them has had in a fortnight.`,
       `${a} counts the tiles in the bathroom and reports the number to ${b}, who checks it, and then they argue about the method.`,
-      `The house has run out of things to say to each other and has reached the stage of reading the labels on everything in the storage room out loud.`,
+      `The house has run out of things to say. ${a} reads the back of a washing-up liquid bottle aloud, in full, and ${b} asks for the ingredients again.`,
       `${a} sleeps for fourteen hours. Nobody wakes ${a}, because there is nothing to wake ${a} for.`,
     ], ctx, a, b);
     api.addBond(a, b, 0.3);
@@ -533,7 +529,7 @@ const theInsideJoke = {
       `Something stupid happens at breakfast and by evening it is a whole language. ${inOnIt[0]} only has to say the word and ${inOnIt[1]} is gone.`,
       `The joke is a week old now and has stopped being explainable. ${outside || 'Somebody'} asks what is so funny and gets "you had to be there", which is true and is also a door closing.`,
       `${inOnIt[2]} says it at exactly the wrong moment, during something serious, and three people have to leave the room.`,
-      `Nobody can remember what the joke originally was. It survives anyway, which is more than most alliances in this house manage.`,
+      `Nobody can remember what the joke originally was, ${inOnIt[0]} least of all. It has survived longer than most alliances in this house, and everyone has quietly noticed that.`,
     ], ctx, ...inOnIt);
     for (const a of inOnIt) for (const b of inOnIt) if (a < b) api.addBond(a, b, 0.6);
     // A joke you are not in is a small, real exclusion.

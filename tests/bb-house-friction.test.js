@@ -115,3 +115,69 @@ describe('nothing here is only decoration', () => {
     }
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// The writing itself, checked the way the consequences are.
+//
+// An audit of the first draft found three faults worth guarding against, all
+// of which read as carelessness on screen:
+//
+//   · a card that draws two to four portraits and then says "somebody",
+//     which is the reader being shown faces and told nothing about them
+//   · a pronoun branch that agrees on one side and not the other —
+//     "They go outside and stands there"
+//   · variables declared and never used, which is the tell that a line was
+//     written and then written differently
+// ══════════════════════════════════════════════════════════════════════
+describe('the prose holds up on its own', () => {
+  const src = require('node:fs').readFileSync('js/bb-events/house-friction.js', 'utf8');
+
+  /** Every text variant, per event. */
+  const variantsByEvent = () => {
+    const out = [];
+    const re = /id: '([\w-]+)'[\s\S]*?_variant\(\[([\s\S]*?)\n    \], ctx/g;
+    let m;
+    while ((m = re.exec(src))) {
+      out.push({ id: m[1], variants: [...m[2].matchAll(/`([^`]+)`/g)].map(v => v[1]) });
+    }
+    return out;
+  };
+
+  it('names somebody in every single line', () => {
+    // The card renders a portrait for each name in `players`. A variant that
+    // names nobody puts four faces beside a sentence about "somebody".
+    for (const { id, variants } of variantsByEvent()) {
+      variants.forEach((v, i) => {
+        const refs = [...v.matchAll(/\$\{(\w+)(?:\[\d\])?[^}]*\}/g)]
+          .map(x => x[1]).filter(n => !['p', 'pb', 'ctx'].includes(n));
+        expect(refs.length, `${id} variant ${i + 1} names nobody: "${v.slice(0, 60)}..."`)
+          .toBeGreaterThan(0);
+      });
+    }
+  });
+
+  it('gives every event at least four ways to say it', () => {
+    for (const { id, variants } of variantsByEvent()) {
+      expect(variants.length, `${id} would repeat itself`).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  it('agrees with itself on both sides of a pronoun branch', () => {
+    // "They go outside afterwards and stands there until it passes."
+    const branches = [...src.matchAll(
+      /\$\{p\w*\.Sub\} \$\{p\w*\.sub === 'they' \? '(\w+)' : '(\w+)'\}([^`]{0,120})/g)];
+    for (const b of branches) {
+      const tail = b[3];
+      const dangling = tail.match(/\b(?:and|then)\s+(\w+s)\b/);
+      expect(dangling, `plural subject with a singular verb: "...${tail.slice(0, 70)}"`).toBeNull();
+    }
+  });
+
+  it('declares nothing it does not use', () => {
+    const dead = [];
+    for (const m of src.matchAll(/const (p\w*) = pronouns\((\w+)\);([\s\S]{0,2000}?)(?=\n  \},)/g)) {
+      if (!m[3].includes('${' + m[1] + '.')) dead.push(m[2]);
+    }
+    expect(dead, 'declared and never used: ' + dead.join(', ')).toHaveLength(0);
+  });
+});

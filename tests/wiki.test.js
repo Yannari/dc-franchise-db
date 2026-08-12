@@ -261,6 +261,44 @@ describe('the record an article is written from', () => {
     expect(html).not.toContain('Week by week');
   });
 
+  it('prefers a personality written from the episodes, per season', () => {
+    // The voice profile says how somebody TALKS and exists so the episode
+    // generator has a voice. It is not a description of how they played, and
+    // it was standing in for one.
+    const withPersona = { ...player, seasonDetails: [
+      { ...player.seasonDetails[0], personality: 'Ran the house from the kitchen and never raised her voice.' },
+      { ...player.seasonDetails[1], personality: 'Came back loud and lost the room by week two.' },
+    ] };
+    const html = renderArticle(
+      { ...withPersona, personality: 'clipped, sarcastic', career: careerOf(withPersona) },
+      'big-brother', { root: '.', allShows: ['big-brother'] });
+    expect(html).toContain('Ran the house from the kitchen');
+    expect(html).toContain('Came back loud');
+    // The voice profile does not appear once a season has a real one.
+    expect(html).not.toContain('clipped, sarcastic');
+  });
+
+  it('falls back to the voice profile when no season has been read', () => {
+    const html = renderArticle(
+      { ...player, personality: 'clipped, sarcastic', career: careerOf(player) },
+      'big-brother', { root: '.', allShows: ['big-brother'] });
+    expect(html).toContain('clipped, sarcastic');
+  });
+
+  it('quotes people, which needs the screenplay and nothing else has it', () => {
+    const withQuotes = { ...player, seasonDetails: [
+      { ...player.seasonDetails[0], quotes: [
+        { text: 'Start counting.', context: 'to the house, on her way out the door' },
+        'Mm.',
+      ] }, player.seasonDetails[1]] };
+    const html = renderArticle({ ...withQuotes, career: careerOf(withQuotes) },
+      'big-brother', { root: '.', allShows: ['big-brother'] });
+    expect(html).toContain('Quotes');
+    expect(html).toContain('Start counting.');
+    expect(html).toContain('on her way out the door');
+    expect(html).toContain('Mm.');
+  });
+
   it('gives an article a gallery placeholder to fill', () => {
     const html = renderArticle({ ...player, career: careerOf(player) }, 'big-brother',
       { root: '.', allShows: ['big-brother'] });

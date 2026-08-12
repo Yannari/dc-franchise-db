@@ -184,9 +184,39 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
     body.push(`<section class="wk-section" id="wk-${id}"><h2>${esc(title)}</h2>${html}</section>`);
   };
 
-  // Personality — the voice profile, which is a description of the person.
-  if (dossier.personality) {
+  // ── PERSONALITY ────────────────────────────────────────────────────
+  //
+  // Per season when the episodes have been read, and the voice profile only
+  // as a fallback. Those are different things: a voice profile says how
+  // somebody TALKS and exists so the episode writer has a voice to write in;
+  // this section is meant to say how they were in the house, which only the
+  // screenplay knows.
+  //
+  // One heading per season rather than one for the person, because people do
+  // not play the same way twice and a returnee described once is described
+  // wrong for at least one of their seasons.
+  const written = show.seasons.filter(s2 => s2.personality);
+  if (written.length) {
+    section('personality', 'Personality', written.map(s2 => `
+      ${show.seasons.length > 1
+        ? `<h3 class="wk-sub">${s2.title ? esc(s2.title) : `Season ${s2.season}`}</h3>` : ''}
+      <p>${esc(s2.personality)}</p>`).join(''));
+  } else if (dossier.personality) {
     section('personality', 'Personality', `<p>${esc(dossier.personality)}</p>`);
+  }
+
+  // ── QUOTES ─────────────────────────────────────────────────────────
+  //
+  // Every fandom character page has these and nothing in this project could
+  // produce them until the screenplay was readable: the engine knows somebody
+  // was nominated, it does not know what they said about it.
+  const quoted = show.seasons.filter(s2 => s2.quotes?.length);
+  if (quoted.length) {
+    section('quotes', 'Quotes', quoted.map(s2 => `
+      <ul class="wk-quotes">${s2.quotes.map(q => `<li>
+        <blockquote>&ldquo;${esc(typeof q === 'string' ? q : q.text)}&rdquo;</blockquote>
+        ${typeof q === 'object' && q.context ? `<cite>${esc(q.context)}</cite>` : ''}
+      </li>`).join('')}</ul>`).join(''));
   }
 
   // The biography: one heading per season, in order, exactly as a fandom page
@@ -341,6 +371,12 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   const trivia = (dossier.records || [])
     .filter(r => !r.show || r.show === m.name)
     .map(r => `<li>${esc(r.category)} — ${esc(r.stat)}</li>`);
+  // Facts the episodes support, which is where the interesting ones are: a
+  // record table can say somebody won two vetoes and never that they did it
+  // in the same shirt both times.
+  for (const s2 of show.seasons) {
+    for (const t of s2.trivia || []) trivia.push(`<li>${esc(t)}</li>`);
+  }
   if (show.wins) trivia.push(`<li>Won ${show.wins === 1 ? 'a season' : `${show.wins} seasons`} of ${esc(m.name)}.</li>`);
   if (show.count > 1) trivia.push(`<li>Played ${show.count} seasons of ${esc(m.name)}.</li>`);
   section('trivia', 'Trivia', trivia.length ? `<ul class="wk-list">${trivia.join('')}</ul>` : '');
@@ -425,6 +461,13 @@ export const WIKI_CSS = `
 .wk-c-arena{ background:rgba(79,191,139,.18); color:#a7f3d0; font-weight:700; }
 .wk-c-nom{ background:rgba(248,113,113,.14); color:#fecaca; }
 .wk-c-out{ background:rgba(248,113,113,.3); color:#fff; font-weight:700; }
+.wk-sub{ font-size:15px; margin:14px 0 6px; opacity:.9; }
+.wk-quotes{ list-style:none; margin:0; padding:0; }
+.wk-quotes li{ margin:0 0 14px; }
+.wk-quotes blockquote{ margin:0; padding:8px 0 8px 14px; border-left:3px solid var(--wk-accent);
+  font-size:16px; line-height:1.6; font-style:italic; }
+.wk-quotes cite{ display:block; margin-top:4px; padding-left:17px; font-size:12px;
+  opacity:.6; font-style:normal; }
 .wk-gallery{ display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; }
 .wk-gitem{ display:block; aspect-ratio:3/4; overflow:hidden; border-radius:6px;
   border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); }

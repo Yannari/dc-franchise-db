@@ -187,6 +187,11 @@ export function careerOf(player, { seasonTitles = new Map() } = {}) {
       // normal state — a season nobody has published yet still gets an
       // article, it simply has no grid in it.
       weekRows: Array.isArray(d.weekRows) ? d.weekRows : null,
+      // Written from the episodes rather than from the voice profile. Absent
+      // until a season has been through the wiki fill.
+      personality: d.personality || '',
+      quotes: Array.isArray(d.quotes) ? d.quotes : [],
+      trivia: Array.isArray(d.trivia) ? d.trivia : [],
     });
   }
 

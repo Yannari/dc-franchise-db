@@ -762,6 +762,25 @@ Devin: [flexes] They call me the golden boy. I'm here to prove nice guys can win
           <div id="wiki-fill-status" style="margin-top: 12px; font-size: 13px; opacity: .85;"></div>
         </div>
 
+        <!-- ── FILL THE GAME HISTORY ─────────────────────────────────────
+             The same episodes, read for the season rather than for the
+             people in it. The record supplies the results; the screenplay
+             supplies the week they happened in. -->
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <h3 style="margin-top: 0;">🗓️ Fill the game history</h3>
+          <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
+            The season page's <strong>Game history</strong> is derived from the export, so it
+            can say who won and who left and nothing about how. This sends each round's facts
+            together with that round's episode and writes a paragraph per
+            round — who was campaigning, what was said, who was blindsided. The facts win every
+            disagreement, and a round with no episode written stays a plain two-line entry.
+          </p>
+          <button onclick="fillGameHistoryFromEpisodes()" id="gh-fill-btn" class="btn btn-primary">
+            🗓️ Fill game history for this season
+          </button>
+          <div id="gh-fill-status" style="margin-top: 12px; font-size: 13px; opacity: .85;"></div>
+        </div>
+
         <!-- Manual Transcript Input -->
         <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
           <h3 style="margin-top: 0;">📝 Episode Transcript</h3>
@@ -1271,6 +1290,109 @@ Owen: This is going to be amazing!"
       say(`✅ Wrote ${filled} of ${cast.length} houseguests into <code>${file}</code>, which has just
            downloaded. Drop it into <code>data/seasons/</code> and their wiki articles will have
            Personality, Quotes and Trivia.`);
+    } catch (err) {
+      say(`⚠️ ${String(err?.message || err)}`);
+    } finally {
+      btn?.removeAttribute('disabled');
+    }
+  };
+
+  // ── FILL THE GAME HISTORY FROM THE EPISODES ────────────────────────
+  //
+  // The season wiki's Game history is derived from the export, so it says
+  // "Caleb won Head of Household. Joel was evicted, 6-3." — every word true
+  // and none of it a week. This sends each round's FACTS together with a
+  // digest of that round's screenplay and gets back a paragraph on how the
+  // week actually went, with the record as its skeleton.
+  window.fillGameHistoryFromEpisodes = async function fillGameHistoryFromEpisodes() {
+    const btn = document.getElementById('gh-fill-btn');
+    const out = document.getElementById('gh-fill-status');
+    const say = t => { if (out) out.innerHTML = t; };
+    const season = Number(document.getElementById('aiSeason')?.value) || 1;
+    const format = _csFormat();
+
+    // The season worker, same resolution as the character fill above and for
+    // the same reason: the episode worker has a very similar name and its
+    // own field on this page.
+    const workerUrl = (() => {
+      const el = document.getElementById('seasonBuilderWorkerUrl');
+      const raw = (el && el.value.trim())
+        || localStorage.getItem('SEASON_BUILDER_WORKER_URL')
+        || 'https://dc-analytic-seasons.yannari19.workers.dev';
+      let u = raw.trim();
+      if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+      return u.replace(/\/+$/, '');
+    })();
+
+    btn?.setAttribute('disabled', 'disabled');
+    try {
+      const file = (!format || format === CS_DEFAULT_FORMAT)
+        ? `season${season}-data.json`
+        : `${_csShows()[format]}-${season}-data.json`;
+      say(`Reading <code>data/seasons/${file}</code>…`);
+      const doc = await fetch(`data/seasons/${file}`).then(r => r.ok ? r.json() : null);
+      if (!doc) {
+        say(`⚠️ No season document at <code>data/seasons/${file}</code>. Export the season first.`);
+        return;
+      }
+
+      const { gameHistoryPayload, roundLedger } = await import('./js/wiki-fill.js');
+      const ledger = roundLedger(doc);
+      if (!ledger.length) {
+        say(`⚠️ <code>${file}</code> carries no week-by-week record, so there are no rounds to
+             write about. Re-export the season — the weeks and the ballots go in with it.`);
+        return;
+      }
+
+      say('Reading episode transcripts…');
+      const episodes = [];
+      for (let i = 1; i <= 40; i++) {
+        const text = await _csGet(_epKey(season, i, format));
+        if (text && String(text).trim()) episodes.push({ episode: i, transcript: String(text) });
+      }
+
+      // One request holds the whole season, so each round's share of it
+      // shrinks as the season gets longer rather than the last week being
+      // dropped for being last.
+      const capPerRound = Math.max(1500, Math.min(6000, Math.floor(150000 / ledger.length)));
+      const rounds = gameHistoryPayload(doc, episodes, { capPerRound });
+      const written = rounds.filter(r => r.episode).length;
+
+      // Right worker? Asked for a mode it does not have, the sibling worker
+      // answers 200 with an analytics object rather than an error.
+      say('Checking the worker…');
+      const ping = await fetch(workerUrl, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'game-history-fill' }),
+      }).then(r => r.json()).catch(() => ({}));
+      if (!/rounds/i.test(String(ping.error || ''))) {
+        say(`⚠️ <code>${workerUrl}</code> does not have the <code>game-history-fill</code> mode.
+             That is usually the episode worker rather than the season one, or the season worker
+             has not been deployed since the mode was added (<code>npm run deploy:seasons</code>).`);
+        return;
+      }
+
+      say(`${ledger.length} rounds · ${written} of them have an episode written.<br>Asking the writer…`);
+      const res = await fetch(workerUrl, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'game-history-fill', rounds, season,
+          seasonTitle: doc.title || '', format }),
+      });
+      if (!res.ok) throw new Error(`Worker ${res.status}: ${(await res.text()).slice(0, 200)}`);
+      const json = await res.json();
+      const back = json.rounds || json.result?.rounds || [];
+      if (!back.length) throw new Error('The worker returned no rounds.');
+
+      // Stored beside the record rather than inside it: the weeks stay the
+      // machine's, and this is the prose written about them.
+      doc.gameHistory = ledger.map(r => {
+        const w = back.find(x => Number(x.n) === r.n);
+        return { n: r.n, word: r.word, title: w?.title || '', prose: w?.prose || '' };
+      });
+      downloadJSON(doc, file);
+      say(`✅ Wrote ${doc.gameHistory.filter(r => r.prose).length} of ${ledger.length} rounds into
+           <code>${file}</code>, which has just downloaded. Drop it into <code>data/seasons/</code>
+           and the season's Wiki tab will read the weeks in prose.`);
     } catch (err) {
       say(`⚠️ ${String(err?.message || err)}`);
     } finally {

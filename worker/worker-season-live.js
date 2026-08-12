@@ -23,6 +23,8 @@ export default {
       return await generateNarrativeFill(body, env);
     } else if (mode === "wiki-fill") {
       return await generateWikiFill(body, env);
+    } else if (mode === "game-history-fill") {
+      return await generateGameHistoryFill(body, env);
     } else if (mode === "returnee-history") {
       return await generateReturneeHistory(body, env);
     } else if (mode === "season-data-extraction") {
@@ -790,6 +792,97 @@ Return ONLY valid JSON matching the schema, with one entry per houseguest.
     instructions,
     input: threadText,
     text: { format: { type: "json_schema", name: "wiki_fill", strict: true, schema } },
+  };
+
+  return await callLLM(payload, env);
+}
+
+// ── GAME HISTORY ─────────────────────────────────────────────────────
+//
+// The season article's Game history is derived from the record, which
+// makes it true and thin: "Caleb won Head of Household. Joel was evicted,
+// 6-3." It cannot say the block was set before the veto was over or that
+// the vote moved in the last hour, because the record does not know.
+//
+// The episodes do. So each round arrives here as its FACTS (from the
+// export, non-negotiable) plus a digest of that round's screenplay, and
+// what comes back is one paragraph per round that says how it happened.
+async function generateGameHistoryFill(body, env) {
+  const { rounds, season, seasonTitle, format } = body;
+  if (!Array.isArray(rounds) || !rounds.length) {
+    return new Response(JSON.stringify({ error: "Missing rounds" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+  const show = format === 'big-brother' ? 'Big Brother' : 'Total Drama';
+  const nums = rounds.map(r => Number(r.n));
+
+  const schema = {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      rounds: {
+        type: "array",
+        minItems: rounds.length,
+        maxItems: rounds.length,
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            n: { type: "number", enum: nums },
+            title: {
+              type: "string",
+              description: "A short title for this round, 2-5 words, taken from what actually happened in it. Not a placement and not a pun on somebody's name. Empty string if nothing in the round earns one."
+            },
+            prose: {
+              type: "string",
+              description: "3-6 sentences on how this round went, past tense, in the order it happened. Every result named in FACTS must appear and none may be contradicted. The value you add is everything the record cannot hold: who was pushing which name, what was said out loud, what changed somebody's mind, who did not see it coming. If no episode was written for this round, write two plain sentences from the facts alone and invent nothing."
+            }
+          },
+          required: ["n", "title", "prose"]
+        }
+      }
+    },
+    required: ["rounds"]
+  };
+
+  const NL = String.fromCharCode(10);
+  const roundText = rounds.map(r => {
+    const bits = [`### ${r.word || 'Round'} ${r.n}`, `FACTS: ${(r.facts || []).join('; ') || '(none recorded)'}`];
+    bits.push(r.episode ? `EPISODE:${NL}${r.episode}` : 'EPISODE: (none was written for this round)');
+    return bits.join(NL);
+  }).join(NL + NL);
+
+  const instructions = `
+You are writing the Game history section of a fandom wiki article for
+${show}${seasonTitle ? ` — ${seasonTitle}` : ''}${season ? ` (Season ${season})` : ''}: one entry per round, in order.
+
+Each round comes as FACTS and an EPISODE. They are not equals.
+
+RULES
+1. THE FACTS ARE THE RECORD. They come from the game itself and are already
+   true. Never contradict one, never omit a result, never change a name, a
+   number or an order. If the episode disagrees with the facts, the facts won.
+2. THE EPISODE IS HOW IT HAPPENED. That is the only thing you are adding:
+   the campaigning, the argument in the kitchen, the promise somebody broke,
+   who was blindsided. Do not simply restate the facts in longer words —
+   that section already exists and this one exists because it was not enough.
+3. INVENT NOTHING. A round with no episode gets two flat sentences from its
+   facts. That is a complete and honest entry; a fabricated week is not.
+4. Write past tense, plainly, the way a wiki does. No second person, no
+   "little did they know", no addressing the reader.
+5. Each round is its own paragraph and reads on its own — a reader who
+   arrives at ${show === 'Big Brother' ? 'Week' : 'Episode'} 6 first should still follow it.
+
+Return ONLY valid JSON matching the schema, one entry per round given, same numbers.
+`.trim();
+
+  const payload = {
+    model: "gpt-5.5",
+    instructions,
+    input: roundText,
+    text: { format: { type: "json_schema", name: "game_history_fill", strict: true, schema } },
   };
 
   return await callLLM(payload, env);

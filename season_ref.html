@@ -99,6 +99,13 @@
     .sr-week-n { flex:0 0 74px; font-size:11px; font-weight:800; color:var(--sc);
       letter-spacing:.06em; text-transform:uppercase; padding-top:2px; }
     .sr-week-b { flex:1; font-size:13.5px; line-height:1.65; }
+    /* A written round: a title, the prose, and the record itself kept
+       underneath in small type — the line the section had before, now
+       reading as the citation for the paragraph above it. */
+    .sr-week-t { font-weight:800; font-size:13px; letter-spacing:.01em; margin-bottom:3px; }
+    .sr-week-p { margin:0 0 6px; }
+    .sr-week-f { margin:0; font-size:12px; opacity:.62; line-height:1.55;
+      padding-left:10px; border-left:2px solid rgba(255,255,255,.09); }
     .sr-trivia { margin:0; padding-left:20px; }
     .sr-trivia li { font-size:13.5px; line-height:1.7; margin-bottom:6px; }
     .sr-thin { font-size:13px; color:var(--muted); line-height:1.7; }
@@ -599,6 +606,8 @@ function buildRecords(season){
           if (v.target) acc[v.target] = (acc[v.target] || 0) + 1;
           return acc;
         }, {}),
+        winner: ep.winner || ep.challengeWinner || '',
+        immunityWinner: ep.immunityWinner || '',
         initialNominees: [], finalNominees: [],
       }));
       const weeks = bbWeeks.length ? bbWeeks : tdRounds;
@@ -811,11 +820,28 @@ function buildRecords(season){
                vote that round.`}
         </p>` : '';
 
-      /* ── 5. week by week ── */
+      /* ── 5. week by week ──
+         Two versions of the same round, and the good one is optional.
+
+         DERIVED is built here from the record: true, complete, and unable
+         to say anything about how the week went, because the export does
+         not know. WRITTEN comes from `gameHistory` — the episodes read
+         round by round, with the record handed over as the skeleton the
+         prose is not allowed to contradict.
+
+         A season nobody has run the fill on still gets the derived line,
+         and a round whose episode was never written keeps it too, so this
+         degrades a round at a time rather than all at once. */
+      const written = new Map((Array.isArray(s.gameHistory) ? s.gameHistory : [])
+        .filter(r => r && r.prose).map(r => [Number(r.n), r]));
       const gameHistory = weeks.map(w => {
         const noms = (w.blockBeforeSafety || w.initialNominees || []);
         const bits = [];
         if (w.hoh) bits.push(`<b>${esc(w.hoh)}</b> won Head of Household.`);
+        if (w.winner) bits.push(`<b>${esc(w.winner)}</b> won the challenge.`);
+        if (w.immunityWinner && w.immunityWinner !== w.winner) {
+          bits.push(`<b>${esc(w.immunityWinner)}</b> had immunity.`);
+        }
         if (noms.length) bits.push(`${noms.map(esc).join(', ')} went on the block.`);
         if (w.vetoWinner) bits.push(`<b>${esc(w.vetoWinner)}</b> won the veto.`);
         if (w.safetyWinner) bits.push(`<b>${esc(w.safetyWinner)}</b> won the Block Buster and came off.`);
@@ -828,9 +854,15 @@ function buildRecords(season){
           bits.push(`<b>${esc(w.evicted)}</b> was evicted${tally.length > 1
             ? `, ${tally[0]}-${tally[1]}` : ''}.`);
         }
+        const w2 = written.get(Number(w.week));
+        const body = w2
+          ? `${w2.title ? `<div class="sr-week-t">${esc(w2.title)}</div>` : ''}
+             <p class="sr-week-p">${esc(w2.prose)}</p>
+             <p class="sr-week-f">${bits.join(' ')}</p>`
+          : bits.join(' ');
         return `<div class="sr-week">
           <div class="sr-week-n">${roundWord} ${w.week}</div>
-          <div class="sr-week-b">${bits.join(' ')}</div>
+          <div class="sr-week-b">${body}</div>
         </div>`;
       }).join('');
 

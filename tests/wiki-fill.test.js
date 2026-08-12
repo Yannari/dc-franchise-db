@@ -39,6 +39,28 @@ describe('reading a transcript', () => {
     expect(beats.find(b => b.text === 'Mm.').kind).toBe('dialogue');
   });
 
+  it('reads a wrapped speech as one line, not a line and a stage direction', () => {
+    // The writer hard-wraps. Read literally, half of what somebody said
+    // becomes scenery, and a "verbatim" quote is only its first line.
+    const beats = readTranscript(`[SCENE: HALL]
+Caleb: there is a version
+of tonight where nobody knew.
+`);
+    const caleb = beats.filter(b => b.who === 'Caleb');
+    expect(caleb.length).toBe(1);
+    expect(caleb[0].text).toBe('there is a version of tonight where nobody knew.');
+    expect(beats.some(b => b.kind === 'stage' && /of tonight/.test(b.text))).toBe(false);
+  });
+
+  it('still reads a stage direction that follows a finished line', () => {
+    const beats = readTranscript(`[SCENE: HALL]
+Caleb: Fine.
+He steps down off the counter.
+`);
+    expect(beats.find(b => /steps down/.test(b.text)).kind).toBe('stage');
+    expect(beats.find(b => b.who === 'Caleb').text).toBe('Fine.');
+  });
+
   it('keeps stage directions, which is what people DID', () => {
     const stage = readTranscript(S1).filter(b => b.kind === 'stage');
     expect(stage.some(s => /counting on her fingers/.test(s.text))).toBe(true);
@@ -105,5 +127,85 @@ describe('the payload', () => {
     expect(text.indexOf('CONFESSIONALS')).toBeLessThan(text.indexOf('IN THE HOUSE'));
     expect(text).toContain('### Ireland');
     expect(text).toContain('(ep4)');
+  });
+});
+
+// ── the season's own history ────────────────────────────────────────────
+//
+// The derived Game history is true and thin: it can say who was evicted and
+// by how many, never how the week got there. These are the pieces that let
+// the episodes tell that half without contradicting the record.
+import { episodeDigest, gameHistoryPayload, roundLedger } from '../js/wiki-fill.js';
+
+const LONG = `
+[SCENE: LIVING ROOM — NIGHT]
+Caleb stands on the counter to reach the vote box, and the room goes quiet.
+Caleb: I want to be very clear about something, because there is a version
+of tonight where everybody in this room pretends they did not know.
+Ireland: Mm.
+Joel: Sure.
+Ireland: Yep.
+[CONFESSIONAL: Ireland]
+Ireland: He is on the counter. There is a chair right there and he is on the counter.
+`;
+
+describe('cutting an episode down to a week', () => {
+  it('keeps the scene, the stage direction and the speech, drops the grunts', () => {
+    const d = episodeDigest(LONG, { cap: 500 });
+    expect(d).toMatch(/SCENE: LIVING ROOM/);
+    expect(d).toMatch(/stands on the counter/);
+    expect(d).toMatch(/very clear about something/);
+    expect(d).not.toMatch(/Mm\./);
+  });
+
+  it('keeps what survives in the order it happened', () => {
+    const d = episodeDigest(LONG, { cap: 4000 });
+    expect(d.indexOf('LIVING ROOM')).toBeLessThan(d.indexOf('very clear'));
+    expect(d.indexOf('very clear')).toBeLessThan(d.indexOf('There is a chair'));
+  });
+
+  it('marks a confessional, because it is somebody explaining their own week', () => {
+    expect(episodeDigest(LONG, { cap: 4000 })).toMatch(/Ireland: \(to camera\)/);
+  });
+
+  it('stays inside its budget', () => {
+    expect(episodeDigest(LONG, { cap: 200 }).length).toBeLessThanOrEqual(200);
+  });
+});
+
+describe('the round ledger', () => {
+  const BB = { weeks: [{ week: 1, hoh: 'Caleb', initialNominees: ['Joel', 'Ireland'],
+    vetoWinner: 'Ireland', finalNominees: ['Joel', 'Wayne'],
+    votes: { Joel: 6, Wayne: 3 }, evicted: 'Joel' }] };
+  const TD = { votingHistory: [{ episode: 1, winner: 'Riya', eliminated: 'Dylan',
+    votes: { Dylan: 5, Riya: 1 } }] };
+
+  it('reads a Big Brother week', () => {
+    const [w] = roundLedger(BB);
+    expect(w.word).toBe('Week');
+    expect(w.gone).toBe('Joel');
+    expect(w.facts.join(' | ')).toMatch(/Caleb won Head of Household/);
+    expect(w.facts.join(' | ')).toMatch(/Ireland won the veto/);
+  });
+
+  it('reads a Total Drama round from the same call', () => {
+    const [r] = roundLedger(TD);
+    expect(r.word).toBe('Episode');
+    expect(r.gone).toBe('Dylan');
+    // No nominations anywhere in a camp's record.
+    expect(r.facts.join(' | ')).not.toMatch(/nominated|Head of Household/);
+    expect(r.facts.join(' | ')).toMatch(/Riya won the challenge/);
+  });
+
+  it('asks about a round whose episode was never generated', () => {
+    const rounds = gameHistoryPayload(BB, []);
+    expect(rounds.length).toBe(1);
+    expect(rounds[0].episode).toBe('');
+    expect(rounds[0].facts.length).toBeGreaterThan(0);
+  });
+
+  it('attaches an episode to the round that carries its number', () => {
+    const rounds = gameHistoryPayload(BB, [{ episode: 1, transcript: LONG }]);
+    expect(rounds[0].episode).toMatch(/LIVING ROOM/);
   });
 });

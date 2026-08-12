@@ -1188,6 +1188,31 @@ Owen: This is going to be amazing!"
   // whole cast in a single call, and writes the result into the season
   // document's placements — beside `story` and `keyMoments`, which is where
   // the player page already looks.
+  // ── SAVING WHAT THE FILL COST ──────────────────────────────────────
+  //
+  // Both fills used `downloadJSON`, which is declared in a different scope
+  // in this file and is not reachable from here — so they ran, paid for the
+  // request, and then threw "downloadJSON is not defined" on their last
+  // line, losing the result. Hence a local one.
+  //
+  // The filled document is also parked on `window._lastFill` before the
+  // download is attempted. If the save fails for any reason, the answer is
+  // still in the tab and can be recovered from the console with
+  // `copy(JSON.stringify(_lastFill.doc, null, 2))` rather than paid for
+  // twice.
+  function _fillSave(doc, filename) {
+    window._lastFill = { filename, doc };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)],
+      { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   window.fillWikiFromEpisodes = async function fillWikiFromEpisodes() {
     const btn = document.getElementById('wiki-fill-btn');
     const out = document.getElementById('wiki-fill-status');
@@ -1286,7 +1311,7 @@ Owen: This is going to be amazing!"
         if (p.trivia?.length) row.trivia = p.trivia;
         filled++;
       }
-      downloadJSON(doc, file);
+      _fillSave(doc, file);
       say(`✅ Wrote ${filled} of ${cast.length} houseguests into <code>${file}</code>, which has just
            downloaded. Drop it into <code>data/seasons/</code> and their wiki articles will have
            Personality, Quotes and Trivia.`);
@@ -1389,7 +1414,7 @@ Owen: This is going to be amazing!"
         const w = back.find(x => Number(x.n) === r.n);
         return { n: r.n, word: r.word, title: w?.title || '', prose: w?.prose || '' };
       });
-      downloadJSON(doc, file);
+      _fillSave(doc, file);
       say(`✅ Wrote ${doc.gameHistory.filter(r => r.prose).length} of ${ledger.length} rounds into
            <code>${file}</code>, which has just downloaded. Drop it into <code>data/seasons/</code>
            and the season's Wiki tab will read the weeks in prose.`);

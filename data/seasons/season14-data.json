@@ -71,7 +71,27 @@
         "Richard"
       ],
       "socialScore": 2,
-      "strategicScore": 42.5
+      "strategicScore": 42.5,
+      "personality": "Jade was calm, watchful and deliberately reassuring, often positioning herself as the person who steadied the group while privately admitting she sometimes made things “wobble” to see what happened. She tested people with planted information, kept track of who watched whom, and treated trust as something to measure through leaks and reactions. Her softer attachment to Benji complicated that approach, but even late in the season she still spoke in clipped commands and strategic reads rather than open emotion.",
+      "quotes": [
+        {
+          "text": "I don't break spirits. I just notice things.",
+          "context": "early in the game"
+        },
+        {
+          "text": "Zaid is the only person in this camp I trust with a coconut, a vote, or a plush banana. That's a hierarchy.",
+          "context": "in confessional about Zaid"
+        },
+        {
+          "text": "A clown attacked me.",
+          "context": "in confessional"
+        }
+      ],
+      "trivia": [
+        "She repeatedly used fake information to test Benji, once inventing that Zaid had asked about Spencer’s puzzle numbers and later inventing that Ivy was going after him.",
+        "She described trusting Zaid with “a coconut, a vote, or a plush banana.”",
+        "She kept giving short tactical instructions, including “Keep it hidden,” “Benji watches Hannah. Ivy watches Benji. You watch Ivy,” and “Keep climbing.”"
+      ]
     },
     {
       "placement": 2,
@@ -114,7 +134,27 @@
         "Natalia"
       ],
       "socialScore": 3,
-      "strategicScore": 28
+      "strategicScore": 28,
+      "personality": "Logan came across as earnest, loyal and easily rattled by the pressure of the game. He wanted to be the kind of person who kept a handshake deal, apologized when conditions were worse than expected, and jumped in when Marissa was stuck rather than calculating the cost. His confessionals often showed him second-guessing himself, but in camp he was blunt when honesty was required, including admitting, “I voted for you.”",
+      "quotes": [
+        {
+          "text": "I shook Richard's hand. I told him final two. I'm not the guy who breaks that on night one. I'll write Ted, everyone else can write whoever, it'll work out. [pause] Right?",
+          "context": "in confessional after making a deal with Richard"
+        },
+        {
+          "text": "Marissa disappeared into the ground! One second she was there, the next she was shoulders and anger. I didn’t think. You don’t leave your people in a mud hole.",
+          "context": "in confessional after helping Marissa"
+        },
+        {
+          "text": "I thought we were okay.",
+          "context": "late in the game"
+        }
+      ],
+      "trivia": [
+        "He compared Isabel’s final-two offer to being “invited into a really nice house and realizing there are no windows.”",
+        "He complained that he had only had one funnel cake in forty-eight hours.",
+        "He was repeatedly shown physically helping with camp or challenges, including hauling scrap wood with Natalia and catching a tilting fence with Hannah."
+      ]
     },
     {
       "placement": 3,
@@ -156,7 +196,27 @@
         "Richard"
       ],
       "socialScore": 2,
-      "strategicScore": 44
+      "strategicScore": 44,
+      "personality": "Anastasia was controlled, intense and openly strategic, with a habit of turning social conflict into something she could choreograph. She watched for clues, tracked who had power, and was willing to “edit” the truth if it produced the reaction she wanted. Over time she showed flashes of self-correction, admitting when her comments had not helped, but she never stopped sounding like someone who expected to manage the board.",
+      "quotes": [
+        {
+          "text": "Ted never said that. Ted has never said one word to me about Alessio. But Alessio's face just did the math I wanted it to do. That's not lying. That's editing.",
+          "context": "in confessional about manipulating Alessio"
+        },
+        {
+          "text": "They think that was a fight. That was choreography. I picked Richard because Richard is confused by his own shoes. Nobody watched me leave, because nobody wanted to watch me leave. [pulls out the totem] And I got a friend.",
+          "context": "in confessional after getting the totem"
+        },
+        {
+          "text": "The person I betray tonight is someone I’ll face tomorrow.",
+          "context": "before a vote"
+        }
+      ],
+      "trivia": [
+        "She spent forty-two minutes searching paths, rocks and benches because she believed Richard had grabbed an idol clue.",
+        "She once stood completely still staring at Tristan until he froze mid-laugh.",
+        "She guarded her bag at camp, and later pulled a bag away from Jade hard enough that chalk spilled over Jade’s shirt and face."
+      ]
     },
     {
       "placement": 4,
@@ -194,7 +254,27 @@
         "Logan"
       ],
       "socialScore": 2,
-      "strategicScore": 27.5
+      "strategicScore": 27.5,
+      "personality": "Hannah was sharp, social and observant, often noticing the emotional current of the tribe before others said it aloud. She respected Jade’s steadiness but also watched for cracks in it, and she built a quieter understanding with Ivy that did not need constant declarations. When cornered, she could be blunt and cutting, but she also noticed who needed someone and who was doing the work without asking for credit.",
+      "quotes": [
+        {
+          "text": "Zaid just said \"the vote is obvious tonight\" like the walls don't have ears. The walls have ears, dude. The walls are ME.",
+          "context": "in confessional about overhearing Zaid"
+        },
+        {
+          "text": "Ivy and I have a thing now. Not an alliance — something quieter. Like... we both know we can look at each other and know what the other's thinking. That's rare out here.",
+          "context": "in confessional about Ivy"
+        },
+        {
+          "text": "Starve.",
+          "context": "during a camp exchange"
+        }
+      ],
+      "trivia": [
+        "She called Amelie “first boot” once on the first night and later defended the read in confessional.",
+        "She noticed Jade snapping at her because Jade was usually so calm.",
+        "She and Jade sometimes reacted in sync, including both speaking at the same time in episode 21."
+      ]
     },
     {
       "placement": 5,
@@ -237,7 +317,27 @@
         "Logan"
       ],
       "socialScore": 2,
-      "strategicScore": 33
+      "strategicScore": 33,
+      "personality": "Spencer was analytical, tense and deeply bothered by not having a read on everyone. He treated conversations like data, kept track of who was useful as a person versus as a vote, and hated when someone else spoke as if they controlled his choices. His confidence in his own competence was real, but so was his tendency to spiral when Jade, alliances or challenge mistakes made him feel outmaneuvered.",
+      "quotes": [
+        {
+          "text": "There's eighteen people here. I've clocked sixteen of them. Alessio, I have no read on. He's either the smartest guy in this game or he has a concussion. I cannot tell which and it's eating me alive.",
+          "context": "in his first confessional"
+        },
+        {
+          "text": "I have thrown a coconut before. I have. In my life. Just — not today. Today I am a man who has never seen a coconut.",
+          "context": "in confessional after a bad challenge"
+        },
+        {
+          "text": "Zaid thinks loyalty makes him difficult to manipulate. It doesn’t. It means you have to know which relationship to press.",
+          "context": "in confessional about Zaid"
+        }
+      ],
+      "trivia": [
+        "He found or carried a clipboard almost immediately and stood by the lumber pile without touching the lumber.",
+        "He identified Ivy as “the keystone” to his path forward.",
+        "He gave very dry one-word or near-one-word answers in camp, including “Owl,” “Yes,” “Good,” and “Obviously.”"
+      ]
     },
     {
       "placement": 6,
@@ -277,7 +377,27 @@
         "Anastasia"
       ],
       "socialScore": 0,
-      "strategicScore": 37.5
+      "strategicScore": 37.5,
+      "personality": "Isabel was commanding, resentful and comfortable being the person who took charge when everyone else was emotional or hungry. She collected slights, especially from Marissa, and converted small conversations into names, reads and leverage. She could sound cold even when she admitted a deception was unpleasant, treating enjoyment as irrelevant if the move worked.",
+      "quotes": [
+        {
+          "text": "Somebody has to run this. Everybody's crying about Tribal and about food and nobody's actually DOING anything. So fine. I'll do it. I'll be the mean mom. But we'll eat.",
+          "context": "in confessional about taking charge"
+        },
+        {
+          "text": "Lynda is useful. She gathers people, takes blame naturally and believes our friendship is stronger than it is. I don’t enjoy deceiving her. Fortunately, enjoyment is not required.",
+          "context": "in confessional about Lynda"
+        },
+        {
+          "text": "I’m welcome to survive.",
+          "context": "during a camp exchange"
+        }
+      ],
+      "trivia": [
+        "She fixated on Marissa after Marissa criticized her in front of everyone.",
+        "She grabbed an extinguisher in episode 10.",
+        "She described the Ride or Die as working for exactly one vote."
+      ]
     },
     {
       "placement": 7,
@@ -315,7 +435,27 @@
         "Benji"
       ],
       "socialScore": 2,
-      "strategicScore": 12.5
+      "strategicScore": 12.5,
+      "personality": "Marissa was practical, suspicious and prone to feeling overlooked even while others came to her with problems. She built shelter plans, remembered who searched what, and reacted strongly when she thought someone had left her exposed or blamed her unfairly. Her bond with Logan was one of quiet trust rather than constant strategy talk, while her later conversations with Anastasia showed she could name flaws without pretending they did not exist.",
+      "quotes": [
+        {
+          "text": "What is HAPPENING with everyone today. Did I miss a memo? Is there a memo?",
+          "context": "in confessional during early chaos"
+        },
+        {
+          "text": "Logan and I don't need to talk about it. We look at each other, and we know. That's what happens when you actually trust someone.",
+          "context": "in confessional about Logan"
+        },
+        {
+          "text": "Nobody really asks how I’m doing.",
+          "context": "in camp"
+        }
+      ],
+      "trivia": [
+        "Her first camp line was a detailed lean-to plan using long boards, the shed wall and a tarp.",
+        "She repeatedly said she came into the game alone or came there alone.",
+        "She got lost in the corn and later insisted, after a pause, that this was what happened."
+      ]
     },
     {
       "placement": 8,
@@ -354,7 +494,27 @@
         "Logan"
       ],
       "socialScore": 2,
-      "strategicScore": 20.5
+      "strategicScore": 20.5,
+      "personality": "Zaid tried to be calm, loyal and fair, but his confessionals showed how much strain that role put on him. He cared about promises and people, especially Benji, yet he also admitted when he flinched or voted in a way that made him feel worse. His humor surfaced under pressure, but so did fear that nobody asked how the reliable guy was doing until after he broke.",
+      "quotes": [
+        {
+          "text": "I voted Benji. Alone. Because I didn't want to pull the trigger on Spencer when it looked like it was slipping. That's not a play, that's a flinch. [pause] I flinched.",
+          "context": "in confessional after voting alone"
+        },
+        {
+          "text": "Benji's loyal. Benji's a mess right now, but he's loyal. And a loyal mess is worth ten calm liars. I'll take it.",
+          "context": "in confessional about Benji"
+        },
+        {
+          "text": "[rubs his face] I blew up. I know. I'm supposed to be the calm one, the reliable one, the \"let's all get along\" guy. But you know what? The calm one is tired. And the reliable one is scared. And nobody asks the \"let's all get along\" guy how he's doing until after he loses it.",
+          "context": "in confessional after losing his temper"
+        }
+      ],
+      "trivia": [
+        "His first notable moment was a silent two-second stare with Natalia across the crowd.",
+        "He warned Benji to stop eating grey-centered corn dogs, only for Benji to ask if dizziness meant they were working.",
+        "He described his bond with Ivy as “building another road” rather than replacing anyone."
+      ]
     },
     {
       "placement": 9,
@@ -390,7 +550,27 @@
         "Logan"
       ],
       "socialScore": 1,
-      "strategicScore": 18
+      "strategicScore": 18,
+      "personality": "Ivy was socially aware, flexible and anxious beneath a composed surface. She made multiple final deals, noticed when Hannah withheld information, and understood that Jade and Zaid becoming a “bonded-unit thing” was a problem to solve before it hardened. Her warmth still showed in small gestures, but her confessionals made clear that she was constantly recalculating who was safe, who was too close, and which promise might become dangerous.",
+      "quotes": [
+        {
+          "text": "Amelie's really nice? But she's, like, VERY nice. Like when someone at the mall says your shoes are cute and then follows you into three stores. I love the shoes! I don't want the tour.",
+          "context": "in confessional about Amelie"
+        },
+        {
+          "text": "Spencer just offered me a final two. That's... actually a good deal. Too bad I already have three other final deals. [pauses] Okay, four. Maybe five. The point is, I'm covered.",
+          "context": "in confessional about her deals"
+        },
+        {
+          "text": "I’m not panicking. I’m paying attention. There’s a difference. Hannah usually tells me things, so when she doesn’t, I notice.",
+          "context": "in confessional about Hannah"
+        }
+      ],
+      "trivia": [
+        "She approached Diego on the first day with a candy apple.",
+        "She broke off a small piece of her food and held it out in episode 9.",
+        "She reacted to winning with a shouted “WE WON!”"
+      ]
     },
     {
       "placement": 10,
@@ -428,7 +608,27 @@
         "Anastasia"
       ],
       "socialScore": 2,
-      "strategicScore": 12
+      "strategicScore": 12,
+      "personality": "Richard was loyal, physical and straightforward, with a strong sense that the game should reward work and commitment. He wanted an idol as a “weapon,” but he also talked about loyalty mattering even when it cost him. On Rescue Island, he became a survival-minded presence who kept working, organized when needed, and reminded himself to stay in uniform as long as there was time on the clock.",
+      "quotes": [
+        {
+          "text": "A pot? I got kids at home. I've got pots. I need a WEAPON in this game. An idol is a weapon. And if I find it — nobody has to know how I got the clue.",
+          "context": "in his first confessional"
+        },
+        {
+          "text": "I'd do it again. I'd play the same game. Loyalty matters. Even if it costs me.",
+          "context": "in confessional after being voted out"
+        },
+        {
+          "text": "Getting voted out hurts. I’d be lying if I said it didn’t. But I’m still in uniform, and as long as there’s time on the clock, you keep playing.",
+          "context": "in confessional on Rescue Island"
+        }
+      ],
+      "trivia": [
+        "He lost his idol clue and worried it might be in the shelter he helped Lynda “fix.”",
+        "He denied suspicious behavior by saying, “[to no one] I was whistling.”",
+        "He looped a rope around Tristan’s waist during a Rescue Island scene."
+      ]
     },
     {
       "placement": 11,
@@ -466,7 +666,27 @@
         "Anastasia"
       ],
       "socialScore": 2,
-      "strategicScore": 16.5
+      "strategicScore": 16.5,
+      "personality": "Benji was eager, emotional and desperate to be trusted. He reacted to Jade sharing information with wide-eyed excitement, leaked things he should not have leaked, and carried guilt over writing the wrong name at Tribal. Even when others underestimated him, he noticed injuries, kept the fire going so Jade could sleep, fixed tents, and tried to turn loyalty into something useful.",
+      "quotes": [
+        {
+          "text": "Jade trusts ME with information? Me?! Okay, Benji. Play it cool. Play it — [he's already smiling too wide] — okay I'm not playing it cool. That's fine. That's fine.",
+          "context": "in confessional after Jade tells him information"
+        },
+        {
+          "text": "I lost Diego. I panicked at Tribal and wrote the wrong name and it cost me the best guy in this game. So when Zaid — ZAID — puts his hand out and says \"final two\"... [voice catching] Man. Yeah. I'm not messing this one up.",
+          "context": "in confessional about Zaid"
+        },
+        {
+          "text": "Hannah talks to me like I’m twelve. I’m not twelve. A twelve-year-old probably knows more about rationing, but that’s not the point.",
+          "context": "in confessional about Hannah"
+        }
+      ],
+      "trivia": [
+        "He told Diego information after being told not to tell Diego, then got confused while explaining it.",
+        "He used all the dry firewood to cook one cup of rice.",
+        "He told a long cow joke with a completely serious punchline: “Because I don't feel like walking.”"
+      ]
     },
     {
       "placement": 12,
@@ -505,7 +725,27 @@
         "Richard"
       ],
       "socialScore": 1,
-      "strategicScore": 31
+      "strategicScore": 31,
+      "personality": "Natalia was guarded, observant and quick to remember who had underestimated or excluded her. She clocked Ted and Zaid early, watched Anastasia’s body language closely enough to infer a totem, and used false information as a test. Her frustration often came from feeling blamed while holding things together, but she rarely stopped tracking the board around her.",
+      "quotes": [
+        {
+          "text": "Zaid. Nice hair. Nice face. Watch him.",
+          "context": "in her first confessional"
+        },
+        {
+          "text": "She has the Totem. She didn't say it. But she didn't NOT say it. And she thinks I found out by accident. I did not find out by accident. I've been watching her walk funny for two days.",
+          "context": "in confessional about Anastasia"
+        },
+        {
+          "text": "Isabel thinks he’s hers. Marissa thinks he’s hers. Anastasia thinks he’s hers. Spencer built an alliance around him.",
+          "context": "in camp about Logan"
+        }
+      ],
+      "trivia": [
+        "She locked eyes with Zaid for two full seconds on the first day, and neither of them smiled.",
+        "She noticed Isabel’s cold shoulder in small details, including Isabel saying “mm” like Natalia had coughed on her.",
+        "She was already awake when someone passed her bed in episode 11."
+      ]
     },
     {
       "placement": 13,
@@ -540,7 +780,27 @@
         "Anastasia"
       ],
       "socialScore": 1,
-      "strategicScore": 24
+      "strategicScore": 24,
+      "personality": "Lynda was calm, efficient and quietly ruthless, preferring to set up failures that could be blamed on someone else later. She liked being underestimated as the “mom who tags along,” while privately managing extra votes, partnerships and rifts between other players. Her control frayed as alliances became exhausting and personal, especially when she recognized Isabel using her own methods against her.",
+      "quotes": [
+        {
+          "text": "[tilting head] The thing about a shelter is you don't need it to fall down. You need it to fail LATER. When someone else can be blamed. [pause] I'm not a bad person. I'm just an efficient one.",
+          "context": "in her first confessional"
+        },
+        {
+          "text": "Marissa can yell at me by the horses all day. I'm not sorry. I have an extra vote in my sock and a partner in Alessio and a rift between her and Isabel that is doing more work than any log I could carry. So — [waves funnel cake] enjoy the moral high ground, sweetie.",
+          "context": "in confessional after conflict with Marissa"
+        },
+        {
+          "text": "People think I'm just the mom who tags along. That's fine. Let them think that. I know exactly what I'm doing.",
+          "context": "in confessional"
+        }
+      ],
+      "trivia": [
+        "She stopped in the middle of a path to crouch over a snail.",
+        "She hid an extra vote in her sock.",
+        "She ate something grey and stringy from a paper tray because she had dared herself to."
+      ]
     },
     {
       "placement": 14,
@@ -573,7 +833,27 @@
         "Jade"
       ],
       "socialScore": 0,
-      "strategicScore": 15
+      "strategicScore": 15,
+      "personality": "Alessio was odd, gentle and distracted by details other people barely noticed. He worried about raccoons, snails, rust on carousel bolts and whether he was playing correctly, while also recognizing that Lynda was dangerous. His social reads were quiet and strange rather than forceful, and when conflict hit him he often retreated into short, careful answers.",
+      "quotes": [
+        {
+          "text": "I'm from a place where you don't just... crush stuff. To see. What's inside. I feed raccoons cotton candy. I do NOT autopsy the snails.",
+          "context": "in his first confessional"
+        },
+        {
+          "text": "Lynda's terrifying. She's like a grandma with a knife hidden in her knitting. And she's on my tribe, which is either the best or the worst thing that's happened to me.",
+          "context": "in confessional about Lynda"
+        },
+        {
+          "text": "Perhaps she grew tired of the arrangement. Perhaps I did not notice because I was thinking about the way rust forms around the carousel bolts. That happens sometimes.",
+          "context": "in confessional after Lynda betrays him"
+        }
+      ],
+      "trivia": [
+        "His first scene had him crouched away from the group, watching a raccoon eat cotton candy off the ground.",
+        "He described fog as “persuasive.”",
+        "He remained in his cage watching the timing during episode 16."
+      ]
     },
     {
       "placement": 15,
@@ -603,7 +883,27 @@
       "alliances": [],
       "rivalries": [],
       "socialScore": 1,
-      "strategicScore": 11.5
+      "strategicScore": 11.5,
+      "personality": "Tristan was laid-back on the surface but constantly filing away information. They noticed Amelie overplaying, Spencer supervising instead of carrying lumber, and early pairs forming before the first day had even settled. After isolation and uncertainty, Tristan’s confessionals became less snarky and more direct about wanting people to notice them and making any “almost” vote matter.",
+      "quotes": [
+        {
+          "text": "Amelie's pulling people aside. Spencer and Hannah are making eyes over a pot. And now Jade and Zaid are having a secret walk. Day one, guys. Day ONE. I haven't even brushed my teeth.",
+          "context": "in confessional on day one"
+        },
+        {
+          "text": "She's spiraling. I said it night one — four people in one night. Now it's like nine people in one afternoon. You can't hug your way to the merge. I've tried.",
+          "context": "in confessional about Amelie"
+        },
+        {
+          "text": "Last night, you weren’t the guy I have to beat.",
+          "context": "on Rescue Island"
+        }
+      ],
+      "trivia": [
+        "Anastasia’s silent stare made Tristan freeze mid-laugh on the first day.",
+        "Tristan sat alone by the fire with arms around their knees after a challenge before Benji approached.",
+        "They brought Richard water on Rescue Island."
+      ]
     },
     {
       "placement": 16,
@@ -633,7 +933,27 @@
       "alliances": [],
       "rivalries": [],
       "socialScore": 1,
-      "strategicScore": 8.5
+      "strategicScore": 8.5,
+      "personality": "Diego was physical, proud and trying to prove he belonged without playing dirty. He admitted early that he did not have an alliance or another plan, but he still wanted people to know he had done something. His clean-game instinct mattered to him: even when Jade was an available target, he remembered that she had treated him like a human and refused to write her name.",
+      "quotes": [
+        {
+          "text": "Zaid said Spencer. Okay. I don't have another plan. I don't have an alliance. I nod. I need them to know I was here. That I did something. Anything.",
+          "context": "in confessional about an early vote"
+        },
+        {
+          "text": "[grinning, out of breath] This is what I love about this game. You give me a paintball gun in the woods? I'm dangerous.",
+          "context": "in confessional after a challenge"
+        },
+        {
+          "text": "Three guys shook my hand and wrote my name. And I still don't regret not writing Jade's. That's the game I want to play. I'm not done.",
+          "context": "in confessional after his torch is snuffed"
+        }
+      ],
+      "trivia": [
+        "He walked a cart across the lot like it was a duffel bag on the first day.",
+        "When his trapdoor opened, he calmly stepped down before it fully opened, refusing the drama.",
+        "He said the shelter post split on Rescue Island and offered to restart the fire because he knew how."
+      ]
     },
     {
       "placement": 17,
@@ -663,7 +983,27 @@
       "alliances": [],
       "rivalries": [],
       "socialScore": 1,
-      "strategicScore": 21.5
+      "strategicScore": 21.5,
+      "personality": "Ted was chatty, self-justifying and increasingly urgent once he realized he was in danger. He distinguished “framing” from lying, tried to redirect names, and openly called out the tribe when they voted the way Anastasia wanted. On Rescue Island, his focus turned toward earning a second chance, though he still showed awkward warmth by approaching people with food and admitting when he barely knew them.",
+      "quotes": [
+        {
+          "text": "I didn't lie to Isabel. I didn't. I just... framed something. That's not lying, that's — that's cooking. You take a raw thing and you cook it. [nods to himself] Yeah.",
+          "context": "in his first confessional"
+        },
+        {
+          "text": "Richard just told me I'm on the block. And he's right. I can feel it. I've been quiet all day and it hasn't helped. So tonight I stop being quiet.",
+          "context": "in confessional before a vote"
+        },
+        {
+          "text": "I called it. I called it and you still did it. That's on you.",
+          "context": "to the tribe"
+        }
+      ],
+      "trivia": [
+        "Natalia clocked him immediately as a nice, chatty person with a thought on everyone.",
+        "He covered his face during a Rescue Island scene.",
+        "He later approached carrying two plates of fries."
+      ]
     },
     {
       "placement": 18,
@@ -694,7 +1034,27 @@
       "alliances": [],
       "rivalries": [],
       "socialScore": 1,
-      "strategicScore": 25
+      "strategicScore": 25,
+      "personality": "Amelie began as aggressively friendly, pulling people aside and trying to make “same page” connections until others felt smothered. After being voted out, she reframed herself as tougher and more focused, practicing puzzles and insisting “Sweet Amelie stays on the beach.” She could still be blunt and sarcastic, especially around Rescue Island planning and Ivy’s influence.",
+      "quotes": [
+        {
+          "text": "They think I'm out here crying about it. I'm not crying about it. I'm doing this puzzle in forty-two seconds. Yesterday it was fifty-one. When they open that gate for a duel, I'm walking through it. Sweet Amelie stays on the beach.",
+          "context": "in confessional on Rescue Island"
+        },
+        {
+          "text": "Ivy voted me out. My best friend on Red. I'm going back in there, and when I do — she's gonna wish she'd taken the anvil.",
+          "context": "in confessional about Ivy"
+        },
+        {
+          "text": "Stop saying that like all lies are the same.",
+          "context": "during a later exchange"
+        }
+      ],
+      "trivia": [
+        "She arranged pine needles inside the first Red shelter like a nesting bird.",
+        "Her face went perfectly frozen when the vote turned against her.",
+        "She practiced a puzzle down from fifty-one seconds to forty-two seconds on Rescue Island."
+      ]
     }
   ],
   "votingHistory": [
@@ -1891,5 +2251,121 @@
       "description": "Zaid was the season's most popular player with the fans."
     }
   },
-  "emoji": "[AI_FILL]"
+  "emoji": "[AI_FILL]",
+  "gameHistory": [
+    {
+      "n": 2,
+      "word": "Episode",
+      "title": "Amelie Spiraled",
+      "prose": "Red struggled after the challenge, and Amelie’s intense attempts to connect with everyone made several tribemates uncomfortable. Jade spent the day testing Benji with false information and confirmed that he leaked it, while Zaid hesitated and voted alone rather than joining the main plan. Ivy was reluctant but ultimately wrote Amelie’s name after feeling crowded by her behavior. Amelie was eliminated and sent to Rescue Island, while Red returned to camp aware that Zaid had isolated himself with his vote."
+    },
+    {
+      "n": 3,
+      "word": "Episode",
+      "title": "Ted Spoke Up",
+      "prose": "On Blue, Lynda quietly deepened the rift between Isabel and Marissa by planting a note that made Isabel believe Marissa had insulted her. Ted sensed he was in danger and tried to stop being passive, but Anastasia’s push against him held together despite his warning. Logan wanted to stay loyal to Richard and assumed the numbers would work, while Natalia treated Richard as expendable if needed. Ted was eliminated and went to Rescue Island, where he made it clear he blamed Anastasia for directing the vote."
+    },
+    {
+      "n": 4,
+      "word": "Episode",
+      "title": "Anastasia Found Safety",
+      "prose": "Anastasia staged a public conflict with Richard to get away from Blue camp and search, successfully finding a hidden totem. On Red, Jade continued testing Benji, while Diego, Benji, Tristan, and Zaid discussed targeting Jade before Diego backed away from writing her name. Zaid pushed Tristan as the better long-term target, but the vote did not land there. Diego was eliminated and arrived on Rescue Island with Amelie and Ted."
+    },
+    {
+      "n": 5,
+      "word": "Episode",
+      "title": "Spencer's Note",
+      "prose": "Jade stayed quiet after surviving the previous vote, which made Spencer increasingly anxious and caused him to lash out at Hannah. Zaid offered Benji a final two after Diego’s exit, but Spencer planted a note to make Benji question Zaid’s loyalty. Ivy redirected the anti-Jade vote onto Tristan while keeping Benji out of the true plan, leaving him to think he was following the safer option. Tristan was eliminated and joined the others on Rescue Island."
+    },
+    {
+      "n": 7,
+      "word": "Episode",
+      "title": "Firewall Broken",
+      "prose": "Red built more overlapping deals, with Hannah and Ivy growing closer and Spencer offering Ivy a final two while Benji tried to secure himself with Jade. On Blue, Anastasia tried to repair damage from earlier comments, but Natalia tested her with false information and Lynda remained wary. After Blue lost the challenge, Marissa and Logan appeared aligned on the vote, while Lynda’s choice to turn on her own ally unsettled Natalia. Richard was eliminated and sent to Rescue Island, leaving Lynda isolated and the Blue tribe unsure what her move meant."
+    },
+    {
+      "n": 8,
+      "word": "Episode",
+      "title": "The Team Swap",
+      "prose": "Lynda’s vote against Richard left Alessio feeling betrayed, though she framed it as an ugly move rather than a bad one. Red’s loss put pressure on Ivy, Spencer, and Benji, with Jade and Ivy both weighing Spencer’s value against the danger he posed. At the elimination, Red voted, but the round ended with no contestant eliminated. Instead, Spencer was moved to Blue and Alessio was sent to Red, giving Spencer access to the other half of the game."
+    },
+    {
+      "n": 9,
+      "word": "Episode",
+      "title": "Jade Played Idol",
+      "prose": "After the swap, Alessio tried to fit into Red by working carefully around camp, but he quickly stood out as an outsider. Zaid secretly had an idol and handed it to Jade before elimination, while Red’s relationships around Benji, Hannah, Ivy, and Jade continued to strain. Jade played the idol at the vote, changing the outcome. Alessio was eliminated and sent to Rescue Island."
+    },
+    {
+      "n": 10,
+      "word": "Episode",
+      "title": "Lynda Sent Away",
+      "prose": "Red dealt with the fallout of Jade’s idol play, as Benji and Zaid remained tense and Jade worked to regain trust. On Blue, Natalia, Isabel, Lynda, Anastasia, Logan, Marissa, and Spencer maneuvered around fractured loyalties, with Natalia feeding information and Anastasia keeping her idol unused. The vote produced a tie and then a revote, after which Lynda was sent to Exile rather than leaving the game outright. Blue returned to camp split into separate groups, while Lynda was left alone in the sideshow tent."
+    },
+    {
+      "n": 11,
+      "word": "Episode",
+      "title": "Exile Duel",
+      "prose": "Blue entered the round divided after the previous revote, with Natalia noting that Isabel and Logan had both shifted onto Lynda. Lynda trained alone on Exile while Blue lost again and prepared for another vote, with Spencer encouraging Natalia and making her believe he was voting Isabel. Anastasia considered her hidden idol but did not play it, exposing how much attention the tribe was paying to her bag. Natalia was sent into a duel against Lynda and won, causing Lynda to be eliminated and sent to Rescue Island."
+    },
+    {
+      "n": 12,
+      "word": "Episode",
+      "title": "Benji Saved Zaid",
+      "prose": "The merge was announced, but the former Red and Blue groups still lived with their old divisions during the challenge. Red lost after the elephant challenge, despite Benji pulling Zaid out of danger and helping secure the final ladder piece. Back at camp, Jade and Zaid stayed close, while Ivy tried to hold her position between Benji, Hannah, and the others. Ivy was eliminated and chose the Rescue Island path."
+    },
+    {
+      "n": 14,
+      "word": "Episode",
+      "title": "Extra Vote Exposed",
+      "prose": "At the merged camp, Benji found an Extra Vote at the water pump and hid it from Zaid, worsening the tension between them. During the underwater challenge, Marissa rescued Zaid after he became trapped, while Logan and Isabel won immunity by securing the chest. Before the vote, Anastasia held her bag close and Benji kept touching the Extra Vote, signaling that advantages might decide the round. Anastasia played her Hidden Immunity Idol, Benji used the Extra Vote, and Natalia was eliminated, leaving for Rescue Island without stopping."
+    },
+    {
+      "n": 15,
+      "word": "Episode",
+      "title": "Haunted Mansion Tie",
+      "prose": "Anastasia and Marissa’s bond grew after Natalia’s exit, while Benji remained shaken and isolated from the fight around Logan, Zaid, and the larger group. Anastasia won immunity in the haunted mansion challenge after outlasting Spencer in the final duel. Around camp, Marissa, Logan, Zaid, and Anastasia coordinated, while a note was planted to influence Hannah and the vote fractured badly. Spencer, Zaid, and Benji were forced into a tiebreaker, and Benji was eliminated after falling first."
+    },
+    {
+      "n": 17,
+      "word": "Episode",
+      "title": "Richard Returned Briefly",
+      "prose": "Richard returned to the game but found camp dynamics had already moved on, with Logan’s things occupying his old space and Jade watching him closely. Marissa won immunity in the shark-tank challenge, and afterward several groups formed competing plans around Richard, Hannah, and Logan’s numbers. Logan pushed Richard’s name even though he had worked with him before, while Marissa and Ivy exchanged a look that showed the vote was not simple for them. Richard was eliminated again, leaving Marissa frozen and Logan sitting alone after the vote."
+    },
+    {
+      "n": 18,
+      "word": "Episode",
+      "title": "Auction Vote Steal",
+      "prose": "The auction gave Anastasia a Vote Steal with Marissa’s help, Spencer immunity, Isabel an idol clue, and Zaid an emotional message from home that visibly affected Ivy and Hannah. Ivy tried to build a move with Jade, Hannah, Zaid, and Marissa, but Jade rejected it and Ivy’s fight with Hannah damaged her position. Logan, Jade, Isabel, Marissa, and Anastasia countered while Zaid was caught between Ivy and the rest of the group. Anastasia used the Vote Steal to cast an extra ballot against Ivy, and Ivy was eliminated after an emotional crashout."
+    },
+    {
+      "n": 19,
+      "word": "Episode",
+      "title": "Killer Clown Hunt",
+      "prose": "Zaid struggled after Ivy’s elimination, while Jade pushed hidden food into the open and Spencer rapidly worked the remaining players. In the killer clown challenge, Anastasia secured immunity first, while Zaid was repeatedly attacked and finished last despite keeping his flag. Back at camp, Jade campaigned against Zaid, the Ride or Die group met, and Logan and Isabel considered whether to protect or cut him. An idol was played at Tribal Council, and Zaid was eliminated after another emotional outburst."
+    },
+    {
+      "n": 20,
+      "word": "Episode",
+      "title": "Marissa's Goodbye",
+      "prose": "Anastasia realized her Vote Steal was gone and leaned on Marissa as the two continued working together around camp. Anastasia won immunity in the hedge maze, while Marissa was sent to the pit after answering wrong and later tried to campaign against Isabel. Spencer and Isabel pushed the vote toward Marissa, and Logan did not save her despite her close ties to him and Anastasia. Marissa was eliminated, leaving Anastasia devastated and returning to camp with Marissa’s blanket and the carnival cat beside her."
+    },
+    {
+      "n": 21,
+      "word": "Episode",
+      "title": "Five Separate Spaces",
+      "prose": "After Marissa left, Anastasia withdrew under Marissa’s blanket but briefly reconnected with Logan during the mud punishment. Jade and Logan won immunity together in the Ferris wheel challenge, while Isabel continued trying to position herself with Spencer and Logan. Jade overheard Hannah and Spencer talking and moved with Hannah before Tribal, while Anastasia and Isabel openly clashed. Isabel was eliminated, and the remaining five returned to camp separated into different spaces."
+    },
+    {
+      "n": 22,
+      "word": "Episode",
+      "title": "Fairy Tale Betrayal",
+      "prose": "The final five received letters and briefly softened toward each other before the game resumed. Anastasia won immunity in the fairy-tale challenge after defeating Spencer in the tower duel, while Logan later tried to steer Jade toward voting Hannah. Hannah tested Logan with the forged note and then defended Jade when Spencer, Logan, and Anastasia discussed options near the shelter. At Tribal Council, Spencer kept whispering conflicting plans, Jade flipped, and Spencer was eliminated."
+    },
+    {
+      "n": 24,
+      "word": "Episode",
+      "title": "Bumper Car Immunity",
+      "prose": "After Spencer’s exit, Hannah realized she had been left out of the final decision and the distance between her and Jade became visible in the shelter. Logan and Hannah worked well together around camp, while Jade watched them and Anastasia noticed Jade’s reaction. Jade won immunity in the bumper-car challenge after Logan blocked her from losing the final exchange with Anastasia. Jade voted for Anastasia, but the vote sent Hannah out instead, and Hannah was eliminated after a quiet goodbye to the arena and the remaining players."
+    }
+  ]
 }

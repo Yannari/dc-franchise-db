@@ -1200,6 +1200,48 @@ Owen: This is going to be amazing!"
   // still in the tab and can be recovered from the console with
   // `copy(JSON.stringify(_lastFill.doc, null, 2))` rather than paid for
   // twice.
+  // ── COMMIT THE FILL STRAIGHT TO THE SITE ───────────────────────────
+  //
+  // Downloading was the whole workflow: run a fill, get a file, run the
+  // other fill, get a second file with the SAME NAME and none of the first
+  // one's work, merge them by hand, upload, wait for the site to sync. Twice.
+  //
+  // The studio worker already commits to the repo, so the fill posts only
+  // what it produced and the merge happens there, against the file as it is
+  // right now. Two fills in any order both land, and nothing has to be
+  // reconciled by hand.
+  //
+  // Same credentials the season export uses (`studio_api_base` /
+  // `studio_api_token`), and the same courtesy: `studio_publish_mode` set to
+  // 'download' means somebody deliberately turned committing off, so this
+  // does not go behind their back. A failure of any kind falls through to
+  // the download, which is the safety net that means a paid-for fill is
+  // never lost to a network.
+  async function _fillCommit(patch, { season, format }) {
+    let base = '', token = '';
+    try {
+      if (localStorage.getItem('studio_publish_mode') === 'download') return null;
+      base = (localStorage.getItem('studio_api_base')
+        || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, '');
+      token = localStorage.getItem('studio_api_token') || '';
+    } catch { return null; }
+    if (!base) return null;
+
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const r = await fetch(base + '/api/season-fill', {
+        method: 'POST', headers,
+        body: JSON.stringify({ seasonNumber: season, format, ...patch }),
+      });
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || `HTTP ${r.status}`);
+      return j;
+    } catch (e) {
+      return { failed: String(e.message || e) };
+    }
+  }
+
   function _fillSave(doc, filename) {
     window._lastFill = { filename, doc };
     const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)],
@@ -1311,10 +1353,24 @@ Owen: This is going to be amazing!"
         if (p.trivia?.length) row.trivia = p.trivia;
         filled++;
       }
+
+      // Straight to the site if committing is on; the download is the net.
+      say(`Wrote ${filled} of ${cast.length}. Saving…`);
+      const sent = await _fillCommit({ players }, { season, format });
+      if (sent && !sent.failed) {
+        const unknown = sent.unknown?.length
+          ? ` ${sent.unknown.length} name(s) were not in the cast and were skipped: ${sent.unknown.join(', ')}.`
+          : '';
+        say(`✅ Committed ${sent.players.length} houseguests to <code>${sent.path}</code>.${unknown}
+             The site rebuilds in about a minute, then their articles have Personality, Quotes
+             and Trivia.`);
+        return;
+      }
       _fillSave(doc, file);
       say(`✅ Wrote ${filled} of ${cast.length} houseguests into <code>${file}</code>, which has just
-           downloaded. Drop it into <code>data/seasons/</code> and their wiki articles will have
-           Personality, Quotes and Trivia.`);
+           downloaded${sent?.failed ? ` (could not commit: ${sent.failed})` : ''}. Drop it into
+           <code>data/seasons/</code> and their wiki articles will have Personality, Quotes
+           and Trivia.`);
     } catch (err) {
       say(`⚠️ ${String(err?.message || err)}`);
     } finally {
@@ -1414,10 +1470,19 @@ Owen: This is going to be amazing!"
         const w = back.find(x => Number(x.n) === r.n);
         return { n: r.n, word: r.word, title: w?.title || '', prose: w?.prose || '' };
       });
+      const wrote = doc.gameHistory.filter(r => r.prose).length;
+      say(`Wrote ${wrote} of ${ledger.length}. Saving…`);
+      const sent = await _fillCommit({ gameHistory: doc.gameHistory }, { season, format });
+      if (sent && !sent.failed) {
+        say(`✅ Committed ${sent.rounds} rounds to <code>${sent.path}</code>. The site rebuilds in
+             about a minute, then the season's Wiki tab reads the ${ledger[0].word.toLowerCase()}s
+             in prose.`);
+        return;
+      }
       _fillSave(doc, file);
-      say(`✅ Wrote ${doc.gameHistory.filter(r => r.prose).length} of ${ledger.length} rounds into
-           <code>${file}</code>, which has just downloaded. Drop it into <code>data/seasons/</code>
-           and the season's Wiki tab will read the weeks in prose.`);
+      say(`✅ Wrote ${wrote} of ${ledger.length} rounds into <code>${file}</code>, which has just
+           downloaded${sent?.failed ? ` (could not commit: ${sent.failed})` : ''}. Drop it into
+           <code>data/seasons/</code> and the season's Wiki tab will read the weeks in prose.`);
     } catch (err) {
       say(`⚠️ ${String(err?.message || err)}`);
     } finally {

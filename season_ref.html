@@ -851,7 +851,8 @@ function buildRecords(season){
         if (w.tieBreak) bits.push('The vote tied.');
         if (w.evicted) {
           const tally = Object.entries(w.votes || {}).map(([n, c]) => `${c}`).sort((a, b) => b - a);
-          bits.push(`<b>${esc(w.evicted)}</b> was evicted${tally.length > 1
+          // A house evicts; a camp votes somebody out.
+          bits.push(`<b>${esc(w.evicted)}</b> was ${hasBlock ? 'evicted' : 'voted out'}${tally.length > 1
             ? `, ${tally[0]}-${tally[1]}` : ''}.`);
         }
         const w2 = written.get(Number(w.week));

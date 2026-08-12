@@ -280,6 +280,14 @@ export default {
         if (url.pathname === '/api/avatar/delete') return json(await avatarDelete(env, body), 200, cors);
         return json({ ok: false, error: 'unknown avatar endpoint' }, 404, cors);
       }
+      if (request.method === 'POST' && url.pathname === '/api/season-fill') {
+        const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
+          return json({ ok: false, error: 'unauthorized' }, 401, cors);
+        }
+        const body = await request.json().catch(() => ({}));
+        return json(await seasonFill(env, body), 200, cors);
+      }
       if (request.method === 'POST' && url.pathname === '/api/character') {
         const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
         if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
@@ -1133,6 +1141,81 @@ async function socialGet(env, url) {
  * Body: { seasonNumber, season, players, seasons, franchise, rankings }
  * Every document is optional except that at least one must be present.
  */
+// ── SEASON FILL: commit what the wiki fills produced ──────────────────
+//
+// The two wiki fills each read the season document, added their own fields
+// and downloaded the result under the same filename. Running both meant two
+// files called season14-data.json, each missing the other's work, merged by
+// hand and uploaded — a download, a wait, an upload, a sync, twice.
+//
+// So the fills post their OUTPUT here and the merge happens server-side,
+// against the file as it is in the repo right now. That is the important
+// part: the browser never sends a whole season document, so a second fill
+// cannot overwrite the first, and a tab left open since yesterday cannot
+// commit a stale season over a finished one.
+//
+// Deliberately NOT publishSeason(): that one ends a season's run, clears the
+// live overlay and rebuilds the derived tables, none of which a prose edit
+// should do. This writes one file and stops.
+async function seasonFill(env, payload = {}) {
+  const n = asInt(payload.seasonNumber);
+  if (!n) throw new ValidationError('seasonNumber is required');
+  const format = payload.format || DEFAULT_FORMAT;
+  if (!SHOWS[format]) {
+    throw new ValidationError(
+      `unknown season format "${format}" — add it to SHOWS in js/shows.js first `
+      + `(known: ${Object.keys(SHOWS).join(', ')})`);
+  }
+  const players = Array.isArray(payload.players) ? payload.players : [];
+  const gameHistory = Array.isArray(payload.gameHistory) ? payload.gameHistory : null;
+  if (!players.length && !gameHistory) {
+    throw new ValidationError('nothing to fill — send players and/or gameHistory');
+  }
+
+  const file = format === DEFAULT_FORMAT
+    ? `season${n}-data.json`
+    : `${formatPrefix(format)}-${n}-data.json`;
+  const path = `${SEASON_DIR}/${file}`;
+
+  const existing = await getFile(env, path);
+  if (!existing) {
+    throw new ValidationError(`no season document at ${path} — export the season before filling it`);
+  }
+  const doc = decodeJson(existing.content);
+  if (!Array.isArray(doc.placements)) {
+    throw new ValidationError(`${path} has no placements — it is not a season document`);
+  }
+
+  // Merge by NAME. A name the season does not have is reported rather than
+  // added: a fill that invented a houseguest is a bug worth seeing, and
+  // appending them would put somebody in the cast who never played.
+  const wrote = { players: [], unknown: [], rounds: 0 };
+  for (const p of players) {
+    const row = doc.placements.find(x => x.name === p.name);
+    if (!row) { wrote.unknown.push(p.name); continue; }
+    if (p.personality) row.personality = p.personality;
+    if (Array.isArray(p.quotes) && p.quotes.length) row.quotes = p.quotes;
+    if (Array.isArray(p.trivia) && p.trivia.length) row.trivia = p.trivia;
+    wrote.players.push(p.name);
+  }
+  if (gameHistory) {
+    // Only rounds with prose. An empty entry would replace a written round
+    // with a blank one when somebody re-runs the fill on a season whose
+    // later episodes are not written yet.
+    const kept = gameHistory.filter(r => r && r.prose);
+    const byN = new Map((Array.isArray(doc.gameHistory) ? doc.gameHistory : []).map(r => [Number(r.n), r]));
+    for (const r of kept) byN.set(Number(r.n), r);
+    doc.gameHistory = [...byN.values()].sort((a, b) => Number(a.n) - Number(b.n));
+    wrote.rounds = kept.length;
+  }
+
+  await putFile(env, path, encodeJson(doc),
+    `season ${n}: wiki fill (${wrote.players.length} players, ${wrote.rounds} rounds)`,
+    existing.sha);
+
+  return { ok: true, path, ...wrote };
+}
+
 async function publishSeason(env, payload = {}) {
   const wrote = [];
   const docs = [];

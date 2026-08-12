@@ -2852,6 +2852,30 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
       // competition of the night left no trace in the record at all.
       blockBeforeSafety: w.blockBeforeSafety || null,
       safetyWinner: w.safetyWinner || null,
+      // ── THE BALLOTS ──────────────────────────────────────────────
+      //
+      // `votes` is a TALLY: how many each nominee received. Every real
+      // Big Brother wiki carries the other thing — the grid of who each
+      // houseguest voted for, week by week — and it could not be built
+      // from a tally, so the season's most characteristic table was the
+      // one piece of the record that never left the engine.
+      //
+      // `stated` is the public position and `changed` says the ballot
+      // moved after the plans were laid, which together are how a
+      // transcript can show somebody voting against what they said in the
+      // room. Both are already on the ballot; neither was exported.
+      ballots: (w.ballots || []).map(b => ({
+        voter: b.voter,
+        voterSlug: _slug(b.voter || ''),
+        evict: b.evict,
+        evictSlug: _slug(b.evict || ''),
+        ...(b.stated && b.stated !== b.evict ? { stated: b.stated } : {}),
+        ...(b.changed ? { changed: true } : {}),
+      })),
+      // The Head of Household breaks a tie, and does not otherwise vote —
+      // which is a different cell on the grid from not voting at all.
+      tieBreakVote: w.tieBreak ? { voter: w.tieBreak.voter, evict: w.tieBreak.evict,
+        anonymous: !!w.tieBreak.anonymous } : null,
       // The public ballot, when there was one. A Sanctum week is the only
       // night the house saw every vote cast, and a tally cannot say that.
       publicVote: !!w.publicVote,

@@ -88,6 +88,13 @@
     .sr-key.is-nom { background:rgba(248,113,113,.16); color:#fecaca; }
     .sr-key.is-saved { background:rgba(248,113,113,.07); color:#fca5a5; }
     .sr-key.is-out { background:rgba(248,113,113,.34); color:#fff; }
+    .sr-votes td { font-size:11px; }
+    .sr-grid td.is-changed { background:rgba(167,139,250,.2); color:#ddd6fe; font-weight:700;
+      cursor:help; }
+    .sr-grid td.is-tiebreak { background:rgba(250,204,21,.28); color:#fde68a; font-weight:800;
+      cursor:help; }
+    .sr-key.is-changed { background:rgba(167,139,250,.2); color:#ddd6fe; }
+    .sr-key.is-tiebreak { background:rgba(250,204,21,.28); color:#fde68a; }
     .sr-week { display:flex; gap:14px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.05); }
     .sr-week-n { flex:0 0 74px; font-size:11px; font-weight:800; color:var(--sc);
       letter-spacing:.06em; text-transform:uppercase; padding-top:2px; }
@@ -689,6 +696,61 @@ function buildRecords(season){
           The last column is votes received across the season.
         </p>` : '<p class="sr-thin">No week-by-week record was exported for this season.</p>';
 
+      /* ── 4b. the voting history ──
+         The table every Big Brother wiki is built around, and the one thing
+         a tally could never produce: WHO EACH HOUSEGUEST VOTED FOR, week by
+         week. It needs `ballots`, which the engine has always had and the
+         export only started carrying today, so a season exported before
+         that says so rather than drawing an empty grid. */
+      const hasBallots = weeks.some(w => (w.ballots || []).length);
+      const voteCell = (name, w) => {
+        if (w.hoh === name) {
+          // The Head of Household does not vote — unless the house tied and
+          // they broke it, which is the most consequential vote of the week
+          // and belongs on the grid rather than in a footnote.
+          const tb = w.tieBreakVote;
+          return tb && tb.voter === name
+            ? [`${esc(tb.evict)}`, 'is-tiebreak', 'broke the tie']
+            : ['HOH', 'is-hoh', 'did not vote'];
+        }
+        const up = (w.finalNominees || []).includes(name)
+          || (w.blockBeforeSafety || []).includes(name);
+        const ballot = (w.ballots || []).find(b => b.voter === name);
+        if (ballot) {
+          return [esc(ballot.evict), ballot.changed ? 'is-changed' : '',
+            ballot.stated ? `said ${ballot.stated}` : (ballot.changed ? 'changed their mind' : '')];
+        }
+        if (w.evicted === name) return ['OUT', 'is-out', 'evicted'];
+        if (up) return ['NOM', 'is-nom', 'on the block, could not vote'];
+        return ['', '', ''];
+      };
+      const votingHistory = hasBallots ? `
+        <div class="sr-scroll">
+          <table class="sr-grid sr-votes">
+            <thead><tr><th>Voted to evict</th>${weeks.map(w =>
+              `<th>${w.week}</th>`).join('')}</tr></thead>
+            <tbody>${cast.map(p => {
+              const gone = outWeek[p.name];
+              return `<tr>
+                <th><a href="player.html?player=${esc(p.playerSlug)}&view=wiki">${esc(p.name)}</a></th>
+                ${weeks.map(w => {
+                  if (gone && w.week > gone) return '<td class="is-gone"></td>';
+                  const [label, cls, title] = voteCell(p.name, w);
+                  return `<td class="${cls}"${title ? ` title="${esc(title)}"` : ''}>${label}</td>`;
+                }).join('')}
+              </tr>`;
+            }).join('')}</tbody>
+          </table>
+        </div>
+        <p class="sr-thin">
+          Each cell is who that houseguest voted to evict.
+          <span class="sr-key is-hoh">HOH</span> held the power and did not vote ·
+          <span class="sr-key is-nom">NOM</span> was on the block ·
+          <span class="sr-key is-changed">name</span> moved their vote after the plans were laid ·
+          <span class="sr-key is-tiebreak">name</span> broke a tie.
+          Hover a changed vote to see what they had said they would do.
+        </p>` : '';
+
       /* ── 5. week by week ── */
       const gameHistory = weeks.map(w => {
         const noms = (w.blockBeforeSafety || w.initialNominees || []);
@@ -752,7 +814,11 @@ function buildRecords(season){
              complete.</p>`)}
         ${sec('Houseguests', `<div class="sr-wall">${wall}</div>`,
           `${cast.length} · in the order they left`)}
-        ${sec('Voting and competition history', grid, weeks.length ? `${weeks.length} weeks` : '')}
+        ${sec('Voting history', votingHistory, hasBallots ? 'who voted for whom' : '')}
+        ${sec('Competition history', grid, weeks.length ? `${weeks.length} weeks` : '')}
+        ${!hasBallots && weeks.length ? `<p class="sr-thin">A vote-by-vote history needs the
+          ballots, which this season was exported before the record carried. Re-export it and
+          the grid of who voted for whom appears here.</p>` : ''}
         ${sec('Game history', gameHistory)}
         ${sec('Trivia', trivia.length
           ? `<ul class="sr-trivia">${trivia.map(t => `<li>${t}</li>`).join('')}</ul>` : '')}

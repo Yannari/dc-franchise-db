@@ -612,7 +612,14 @@ export function renderGameState() {
       const anchor = document.getElementById('export-season-btn');
       if (anchor) anchor.parentElement.insertBefore(narrBtn, anchor.nextSibling);
     }
-  } else if (gs.phase === 'finale') {
+  } else if (gs.phase === 'finale'
+      || (isBigBrotherSeason() && houseIsAtFinale()
+        && !(gs.episodeHistory || []).some(e => e?.isFinale))) {
+    // Big Brother never sets gs.phase to 'finale' — the house shrinks to its
+    // finale size and the week engine simply stops having anything to run. So
+    // the button kept offering "Simulate Episode 12" on a night that is the
+    // finale, and the one week of the season that plays differently was the
+    // one the button described as ordinary.
     btn.textContent = `Simulate Finale (Ep. ${gs.episode+1})`; btn.disabled = false;
     if (sim5Btn) sim5Btn.style.display = 'none';
     if (simAllBtn) simAllBtn.style.display = 'none';
@@ -1042,10 +1049,21 @@ export function simulateMultipleEpisodes(count) {
   const max = count || 999;
   let ran = 0;
   const runOne = () => {
-    // A Big Brother season ends at its finale size rather than at one player,
-    // so the loop has to stop there. Otherwise it calls simulateNext forever
-    // against a house that will not shrink — once per alert.
-    const bbDone = isBigBrotherSeason() && houseIsAtFinale();
+    // ── STOP WHEN THE SEASON IS OVER, NOT WHEN THE HOUSE IS SMALL ──
+    //
+    // This stopped the moment the house reached finale size, which is the week
+    // BEFORE the finale — so Sim All ran a whole season and then quietly
+    // declined to play the last night, leaving the winner undecided with no
+    // message saying why.
+    //
+    // The runaway it was written to prevent is real but is guarded elsewhere:
+    // simulateNext falls through to runBBFinale at finale size, and the finale
+    // sets gs.phase to 'complete', which the condition below already stops on.
+    // What is needed is one more pass, not none — so this now only bites if a
+    // finale has somehow already been played and the house is still sitting at
+    // finale size, which would be the genuine loop.
+    const bbFinalePlayed = (gs.episodeHistory || []).some(e => e?.isFinale);
+    const bbDone = isBigBrotherSeason() && houseIsAtFinale() && bbFinalePlayed;
     if (ran >= max || bbDone || gs.phase === 'complete' || gs.activePlayers.length <= 1) {
       renderRunTab();
       document.getElementById('run-main').scrollTop = 0;

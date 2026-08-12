@@ -5,6 +5,7 @@ import {
   addBBRelationship, addBBShowmanceSpark, rememberBBStrategy, setBBTarget,
 } from './shared-strategy.js';
 import { makeEndgameDeal, makeJuryPact, breakDeal, exposeDeal, tierOf } from './deals.js';
+import { isDrinksNight, nightModifier } from '../bb-events/drinks-night.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -391,6 +392,16 @@ function validateBeat(event, beat, ctx) {
   return { ...beat, eventId: event.id, category: event.category, location: _roomFor(event, beat, ctx) };
 }
 
+/** How much tonight bends an event's own weight. 1 on an ordinary night. */
+function _nightFactor(ctx, event) {
+  try {
+    if (!isDrinksNight(ctx)) return 1;
+    // The night's own beats are not modified by the night.
+    if (String(event.id || '').startsWith('drinks-')) return 1;
+    return nightModifier(event.category || '', event.id || '');
+  } catch { return 1; }
+}
+
 export function scheduleHouseBeats(events, house, ctx, options = {}) {
   if (!Array.isArray(events) || !events.length) return [];
   const rng = options.rng || Math.random;
@@ -420,7 +431,20 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
     // so across an act both of them are seen holding it.
     if ((ctx.hohs || []).length === 2) beatCtx.hoh = ctx.hohs[beat % 2];
     const usable = events.filter(event => event?.id && typeof event.weight === 'function' && typeof event.fire === 'function')
-      .map(event => ({ event, uses: uses.get(event.id) || 0, weight: Math.max(0, Number(event.weight(house, beatCtx)) || 0) }))
+      .map(event => ({
+        event, uses: uses.get(event.id) || 0,
+        // ── THE NIGHT CHANGES THE ODDS, NOT THE CATALOGUE ──
+        //
+        // A drinks night written as one more card would add a pleasant evening
+        // and change nothing. What alcohol actually does to a house is make the
+        // events that were already sitting under the threshold fire: the row
+        // that had been coming all week, the thing somebody had decided not to
+        // say. So it multiplies what is already here — arguments and confessions
+        // up, careful vote-counting down — and adds only the few beats that need
+        // the drink to make sense.
+        weight: Math.max(0, Number(event.weight(house, beatCtx)) || 0)
+          * _nightFactor(beatCtx, event),
+      }))
       .filter(entry => entry.weight > 0);
     // Fresh events are not merely preferred, they are exhausted first. Only
     // once nothing new is eligible does an event get a second airing, so a

@@ -212,7 +212,7 @@ const drunkConfession = {
       `${teller} tells ${listener} something ${p.sub} had decided at the start of the week not to tell anybody. It is not a lie and it is not a strategy, which is what makes it dangerous.`,
       `Halfway through a conversation about nothing, ${teller} says the quiet part: who ${p.sub} actually ${p.sub === 'they' ? 'trust' : 'trusts'}, and who ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} not. ${listener} does not have to ask a single question.`,
       `"Can I tell you something?" ${teller} asks, and ${listener} says yes, and what follows is the most honest ninety seconds either of them has had in this house.`,
-      `${teller} means to say one small thing to ${listener} and says four large ones. ${p.Sub} ${p.sub === 'they' ? 'know' : 'knows'} it while it is happening and keeps going anyway.`,
+      `${teller} means to say one small thing to ${listener} and says four large ones. ${p.Sub} ${p.sub === 'they' ? 'know' : 'knows'} it while it is happening and ${p.sub === 'they' ? 'keep' : 'keeps'} going anyway.`,
     ], ctx, teller, listener);
 
     // Told is told. The listener knows it in the morning whatever the teller

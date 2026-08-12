@@ -236,32 +236,68 @@ function lead(dossier, show, root) {
 
   // ── 2. the game ──
   //
-  // The most recent season with prose, because that is the one a reader
-  // arriving today is most likely here for; the others have their own sections
-  // further down.
-  const told = seasons.slice().reverse().find(s => s.story);
+  // MEASURED, ALWAYS — never the season's narrative.
+  //
+  // This paragraph used to print `story`, which is also what the season's own
+  // Summary section prints, so a one-season article said the same six sentences
+  // twice with a contents box between them.
+  //
+  // They were never the same job. The reference lead reads "winning six
+  // competitions and forming a dominant alliance with Kasey Tate, Leo Li, and
+  // Lydia Prescott, his showmance … a 4 to 3 decision" — the record, in a
+  // sentence. The narrative is the section below, where a reader who wants the
+  // whole season goes.
+  //
+  // The season summarised is the one they are known for: the win if there is
+  // one, then the best finish, then the most recent.
+  const notable = seasons.find(s => s.placement === 1)
+    || seasons.slice().sort((a, b) => (a.placement || 99) - (b.placement || 99))[0]
+    || seasons[seasons.length - 1];
+
   let game = '';
-  if (told) {
-    game = esc(told.story);
-  } else {
-    // Measured. Never as good as the written one, and never absent.
-    const s = seasons[seasons.length - 1];
-    const rec = s.record || {};
+  if (notable) {
+    const rec = notable.record || {};
     const bb = rec.bb || {};
     const did = [];
-    const comps = show.format === 'big-brother'
-      ? (bb.hohWins || 0) + (bb.vetoWins || 0) + (bb.blockBusterWins || 0)
-      : (rec.challengeWins || 0);
-    if (comps) did.push(`won ${comps} competition${comps === 1 ? '' : 's'}`);
-    if ((s.alliances || []).length) {
-      did.push(`played with ${s.alliances.slice(0, 2).map(esc).join(' and ')}`);
+
+    // Competitions, in the words of the show that ran them.
+    if (show.format === 'big-brother') {
+      const parts = [];
+      if (bb.hohWins) parts.push(`${bb.hohWins} Head of Household${bb.hohWins === 1 ? '' : 's'}`);
+      if (bb.vetoWins) parts.push(`${bb.vetoWins} ${bb.vetoWins === 1 ? 'veto' : 'vetoes'}`);
+      if (bb.blockBusterWins) parts.push(`${bb.blockBusterWins} Block Buster${bb.blockBusterWins === 1 ? '' : 's'}`);
+      if (parts.length) did.push(`won ${joinList(parts)}`);
+    } else {
+      const wins = rec.challengeWins || 0;
+      const imm = rec.immunityWins || 0;
+      if (wins) {
+        did.push(`won ${wins} challenge${wins === 1 ? '' : 's'}${
+          imm ? `, ${imm} of them for immunity` : ''}`);
+      }
     }
+
+    // Who they played with. Named, because the alliance is the story of a
+    // season far more often than the competition record is.
+    if ((notable.alliances || []).length) {
+      did.push(`played with ${joinList(notable.alliances.slice(0, 3).map(esc))}`);
+    } else if ((notable.loyalties || []).length) {
+      did.push(`stayed close to ${joinList(notable.loyalties.slice(0, 3).map(esc))}`);
+    }
+    if (notable.showmance) did.push(`was in a showmance with ${esc(notable.showmance)}`);
+
+    // What it cost them, and how it ended.
     if (rec.votesReceived) {
       did.push(`took ${rec.votesReceived} vote${rec.votesReceived === 1 ? '' : 's'} against them`);
     }
+    const ending = notable.placement === 1
+      ? (rec.juryVotes ? `winning the jury vote with ${rec.juryVotes} vote${rec.juryVotes === 1 ? '' : 's'}`
+        : 'winning the season')
+      : `finishing ${ordinal(notable.placement)}`;
+
     if (did.length) {
-      game = `On ${s.title ? esc(s.title) : `${esc(m.name)} ${s.season}`}, ${esc(dossier.name)} ${
-        did.join(', ')}, finishing ${ordinal(s.placement)}.`;
+      game = `${seasons.length > 1 ? `On ${notable.title
+        ? esc(notable.title) : `${esc(m.name)} ${notable.season}`}, ${esc(dossier.name)}`
+        : esc(dossier.name)} ${joinList(did)}, ${ending}.`;
     }
   }
 

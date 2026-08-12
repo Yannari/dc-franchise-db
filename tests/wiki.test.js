@@ -425,19 +425,23 @@ describe('the lead', () => {
     expect(html(twoWins)).toMatch(/later won/);
   });
 
-  it('uses the written story for the second paragraph when there is one', () => {
+  // THE DUPLICATION BUG. The lead printed `story`, which is also what the
+  // season's Summary section prints — so a one-season article said the same six
+  // sentences twice, with a contents box between them.
+  it('never repeats the narrative the Summary section already carries', () => {
     const doc = { format: 'total-drama', seasonNumber: 14, votingHistory: [],
-      placements: [{ placement: 1, name: 'Jade', playerSlug: 'jade' }] };
-    const withStory = { ...one, story: 'SEASON 14 — Carnival of Chaos\nShe tested everybody and lost nobody.' };
-    const out = renderArticle(buildDossier(withStory, { seasonDocs: [doc] }), 'total-drama', { root: '.' });
-    expect(out).toMatch(/wk-lead-game/);
-    expect(out).toMatch(/tested everybody and lost nobody/);
+      placements: [{ placement: 1, name: 'Jade', playerSlug: 'jade',
+        story: 'She tested everybody and lost nobody.' }] };
+    const out = renderArticle(buildDossier(one, { seasonDocs: [doc] }), 'total-drama', { root: '.' });
+    const leadGame = out.match(/<p class="wk-lead-game">([\s\S]*?)<\/p>/)?.[1] || '';
+    expect(leadGame).not.toMatch(/tested everybody/);
+    // It is in the article — once, under Summary.
+    expect((out.match(/tested everybody and lost nobody/g) || []).length).toBe(1);
   });
 
-  it('measures the second paragraph when no story was written', () => {
+  it('summarises the record instead, the way the reference lead does', () => {
     const out = html(one);
-    // Flatter, and still true: the counters are the record's own.
-    expect(out).toMatch(/won 3 competitions/);
+    expect(out).toMatch(/won 3 challenges/);
   });
 });
 

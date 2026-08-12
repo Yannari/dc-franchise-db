@@ -18,6 +18,7 @@ import { EDITORIAL_SOCIAL_EVENTS } from './editorial-social.js';
 import { DEALS_EVENTS } from './deals.js';
 import { HOUSE_LIFE_EVENTS } from './house-life.js';
 import { DRINKS_EVENTS } from './drinks-night.js';
+import { FRICTION_EVENTS } from './house-friction.js';
 import { PHASE_EVENTS } from './phases.js';
 import { VENUE_EVENTS } from './venue.js';
 import { POWER_EVENTS } from './power.js';
@@ -67,6 +68,7 @@ export const HOUSE_EVENTS = [
   ...DEALS_EVENTS,
   ...HOUSE_LIFE_EVENTS,
   ...DRINKS_EVENTS,
+  ...FRICTION_EVENTS,
   ...PHASE_EVENTS,
   ...VENUE_EVENTS,
   ...POWER_EVENTS,

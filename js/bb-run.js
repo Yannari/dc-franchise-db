@@ -16,6 +16,7 @@
 
 import { gs, seasonConfig, seasonFormat, resolveTwistSchedule, TWIST_CATALOG } from './core.js';
 import { simulateBBWeek } from './bb/week.js';
+import { generateBBStructuredText } from './bb-structured.js';
 import { juryOpensAt, juryLines, isSeatedJuror } from './bb/jury.js';
 import { applyGoodbyeMessages } from './bb/jury-sentiment.js';
 import { lastWordsLines } from './bb/last-words.js';
@@ -718,6 +719,9 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
   carryGoodbyesToJury(ep, weekA.num);
   ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText
     ? window.generateSummaryText(ep) : '';
+  // Same as the other two paths: the week in the writer's shape, beside the
+  // transcript rather than instead of it.
+  try { ep.structuredText = generateBBStructuredText(ep); } catch { ep.structuredText = ''; }
   try { updateEditLayer(ep); } catch { /* the edit never blocks the week */ }
   gs.episodeHistory ||= [];
   // ── the number the rest of the app reads ──
@@ -1067,6 +1071,15 @@ export function simulateBBEpisode() {
   ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText
     ? window.generateSummaryText(ep)
     : summariseWeek(week);
+  // ── THE SAME WEEK, ALREADY IN THE WRITER'S SHAPE ──
+  //
+  // Kept ALONGSIDE the transcript rather than replacing it. The transcript is
+  // the complete retranscription the viewing party is checked against; this is
+  // the same week arranged into the document the AI is asked to produce, with
+  // the facts filled in and the slots that need writing marked. Roughly half
+  // the size, and the model stops spending its output moving facts between two
+  // arrangements — which is where it kept dropping them.
+  try { ep.structuredText = generateBBStructuredText(ep); } catch { ep.structuredText = ''; }
 
   // The episode record now owns the bookend snapshots; the weeks ledger only
   // ever gets read back for its scalars, ballots and alliance changes, so a
@@ -1734,6 +1747,15 @@ export function runBBFinale() {
   ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText
     ? window.generateSummaryText(ep)
     : generateBBFinaleText(ep);
+  // ── THE SAME WEEK, ALREADY IN THE WRITER'S SHAPE ──
+  //
+  // Kept ALONGSIDE the transcript rather than replacing it. The transcript is
+  // the complete retranscription the viewing party is checked against; this is
+  // the same week arranged into the document the AI is asked to produce, with
+  // the facts filled in and the slots that need writing marked. Roughly half
+  // the size, and the model stops spending its output moving facts between two
+  // arrangements — which is where it kept dropping them.
+  try { ep.structuredText = generateBBStructuredText(ep); } catch { ep.structuredText = ''; }
   try { updateEditLayer(ep); finalizeEditSeason(); } catch { /* the edit never blocks the finale */ }
   gs.episodeHistory ||= [];
   // ── the number the rest of the app reads ──

@@ -2555,7 +2555,15 @@ Owen: This is going to be amazing!"
       const rows = Array.isArray(state?.episodeHistory) ? state.episodeHistory : [];
       return rows
         .filter(ep => Number(ep?.num) > 0 && String(ep?.summaryText || '').trim())
-        .map(ep => ({ num: Number(ep.num), summary: String(ep.summaryText).trim(), record: ep }))
+        // ── PREFER THE STRUCTURED WEEK WHEN THE SIMULATOR MADE ONE ──
+        //
+        // Same facts, same beats, arranged as the document the writer is asked
+        // to produce — so the model fills slots instead of rebuilding, which is
+        // both cheaper and where the errors came from. Falls back to the full
+        // transcript for a season simulated before this existed.
+        .map(ep => ({ num: Number(ep.num),
+          summary: String(ep.structuredText || ep.summaryText || '').trim(),
+          record: ep }))
         .sort((a, b) => a.num - b.num);
     }
 
@@ -3069,6 +3077,16 @@ Owen: This is going to be amazing!"
   // Detects simulator output specifically (needs enhance step before episode generation)
   // Rich/enhanced summaries have narrative sections like ## PRE-CHALLENGE STATUS
   function isSimulatorSummary(text) {
+    // ── AN EXPLICIT FLAG, NOT A GUESS AT SHAPE ──
+    //
+    // Everything below sniffs for Total Drama markers and for the ABSENCE of
+    // narrative headers, which was a fair heuristic while the simulator only
+    // ever emitted its own transcript. The moment it emits a pre-structured
+    // document — with the facts already under the right headings — that
+    // heuristic reads it as finished and the enhance step silently never runs.
+    // Nothing on screen would say so; the analysis would just quietly get the
+    // raw thing.
+    if (text.includes('=== SOURCE: SIMULATOR-STRUCTURED ===')) return true;
     return isStructuredSummary(text) && (
       text.includes('INDIVIDUAL TARGETS:') ||
       text.includes('GROUP TARGETS:') ||

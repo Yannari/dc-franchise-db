@@ -126,6 +126,38 @@ export async function runCharacterFill({ season, format, root = '', onStatus = (
   }
 
   const threads = sliceCastThreads(episodes, cast);
+
+  // ── THE RECORD GOES WITH THE THREAD ────────────────────────────────
+  //
+  // The lead paragraph is about what somebody DID; a screenplay only shows
+  // what they said while doing it. Handed scenes alone, a writer has to infer
+  // the counts, which is how an article ends up crediting four competition
+  // wins to somebody who won one. One line each, from the season's own record.
+  const house = format === 'big-brother';
+  for (const t of threads) {
+    const row = doc.placements.find(p => p.name === t.name);
+    if (!row) continue;
+    const bb = row.bb || {};
+    const bits = [`placed ${row.placement}`];
+    if (row.status) bits.push(String(row.status).toLowerCase());
+    if (house) {
+      if (bb.hohWins) bits.push(`${bb.hohWins} HOH wins`);
+      if (bb.vetoWins) bits.push(`${bb.vetoWins} veto wins`);
+      if (bb.blockBusterWins) bits.push(`${bb.blockBusterWins} Block Buster wins`);
+      if (bb.timesNominated) bits.push(`nominated ${bb.timesNominated}x`);
+    } else {
+      if (row.challengeWins) bits.push(`${row.challengeWins} challenge wins`);
+      if (row.immunityWins) bits.push(`${row.immunityWins} individual immunities`);
+      if (row.idolsFound) bits.push(`${row.idolsFound} idols found`);
+    }
+    if (row.votesReceived) bits.push(`${row.votesReceived} votes against`);
+    if (row.juryVotes) bits.push(`${row.juryVotes} jury votes`);
+    if (row.alliances?.length) bits.push(`alliances: ${row.alliances.join(', ')}`);
+    if (row.showmance) bits.push(`showmance with ${row.showmance}`);
+    if (row.placement === 1 && doc.winner?.vote) bits.push(`won the final vote ${doc.winner.vote}`);
+    if (row.placement === 1 && doc.winner?.runnerUp) bits.push(`beat ${doc.winner.runnerUp}`);
+    t.record = bits.join('; ');
+  }
   const spoken = threads.filter(t => t.totals.confessionals + t.totals.lines > 0).length;
   onStatus(`${episodes.length} episodes · ${cast.length} in the cast · ${spoken} speak on camera. Asking the writer…`);
 
@@ -147,6 +179,7 @@ export async function runCharacterFill({ season, format, root = '', onStatus = (
   for (const p of players) {
     const row = doc.placements.find(x => x.name === p.name);
     if (!row) continue;
+    if (p.lead) row.lead = p.lead;
     if (p.personality) row.personality = p.personality;
     if (p.quotes?.length) row.quotes = p.quotes;
     if (p.trivia?.length) row.trivia = p.trivia;

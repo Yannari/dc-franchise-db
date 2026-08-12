@@ -1185,6 +1185,7 @@ function carryAuthoredFields(incoming, existing) {
   for (const row of (incoming.placements || [])) {
     const old = byName.get(row.name) || bySlug.get(row.playerSlug);
     if (!old) continue;                       // a cast that changed is not our business
+    if (!row.lead && old.lead) row.lead = old.lead;
     if (!row.personality && old.personality) row.personality = old.personality;
     if (!(row.quotes || []).length && (old.quotes || []).length) row.quotes = old.quotes;
     if (!(row.trivia || []).length && (old.trivia || []).length) row.trivia = old.trivia;
@@ -1236,6 +1237,7 @@ async function seasonFill(env, payload = {}) {
   for (const p of players) {
     const row = doc.placements.find(x => x.name === p.name);
     if (!row) { wrote.unknown.push(p.name); continue; }
+    if (p.lead) row.lead = p.lead;
     if (p.personality) row.personality = p.personality;
     if (Array.isArray(p.quotes) && p.quotes.length) row.quotes = p.quotes;
     if (Array.isArray(p.trivia) && p.trivia.length) row.trivia = p.trivia;

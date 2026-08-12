@@ -441,7 +441,9 @@ describe('the lead', () => {
 
   it('summarises the record instead, the way the reference lead does', () => {
     const out = html(one);
-    expect(out).toMatch(/won 3 challenges/);
+    // Prose, with the count spelled out the way a paragraph does it.
+    expect(out).toMatch(/winning three challenges/);
+    expect(out).toMatch(/During .* time on the show/);
   });
 });
 
@@ -596,5 +598,63 @@ describe('the section tree', () => {
     const out = renderArticle(buildDossier(twice, { seasonDocs: [HOUSE] }), 'big-brother', { root: '.' });
     expect(out).toMatch(/<h2>Appearances<\/h2>/);
     expect(out).toMatch(/<h2>Competition history<\/h2>/);
+  });
+});
+
+// ── THE LEAD, WRITTEN AND MEASURED ──────────────────────────────────────
+//
+// Two versions of the same paragraph. The measured one is assembled from
+// counters and always exists; the written one comes from the wiki fill, in the
+// register of the reference pages, and wins whenever it is there.
+describe('the game paragraph', () => {
+  const JADE = { id: 'jade', name: 'Jade', seasonDetails: [{
+    season: 14, format: 'total-drama', placement: 1, status: 'Winner',
+    challengeWins: 3, immunityWins: 3, votesReceived: 10,
+    alliances: ['The Anchor'], unbreakableBonds: ['Benji', 'Hannah'] }] };
+  const DOC = { format: 'total-drama', seasonNumber: 14, votingHistory: [],
+    winner: { name: 'Jade', vote: '', runnerUp: 'Logan' },
+    placements: [{ placement: 1, name: 'Jade', playerSlug: 'jade' }] };
+  const out = (player, doc = DOC) => renderArticle(
+    buildDossier(player, { seasonDocs: [doc] }), 'total-drama', { root: '.' });
+  const para = html => (html.match(/<p class="wk-lead-game">([\s\S]*?)<\/p>/)?.[1] || '');
+
+  it('writes prose, not a list of counters', () => {
+    const p = para(out(JADE));
+    expect(p).toMatch(/During .* time on the show/);
+    expect(p).toMatch(/winning three challenges/);       // spelled out
+    expect(p).toMatch(/forming a dominant alliance in <em>The Anchor<\/em>/);
+    expect(p).toMatch(/with Benji and Hannah/);
+  });
+
+  it('links the season it is talking about', () => {
+    expect(para(out(JADE))).toMatch(/<a href="\.\/season_ref\.html\?season=14"/);
+  });
+
+  it('says how the vote went when the season recorded one', () => {
+    const doc = { ...DOC, winner: { ...DOC.winner, vote: 'Jade 4 — Logan 3' } };
+    expect(para(out(JADE, doc))).toMatch(/a close final vote[\s\S]*4 to 3 decision over Logan/);
+  });
+
+  it('calls a landslide what it is', () => {
+    const doc = { ...DOC, winner: { ...DOC.winner, vote: 'Jade 7 — Logan 1' } };
+    const p = para(out(JADE, doc));
+    expect(p).toMatch(/the final vote/);
+    expect(p).not.toMatch(/close final vote/);
+  });
+
+  it('prefers the written lead once the fill has run', () => {
+    const doc = { ...DOC, placements: [{ ...DOC.placements[0],
+      lead: 'During her time on the show, Jade read the carnival better than anybody in it.' }] };
+    const p = para(out(JADE, doc));
+    expect(p).toMatch(/read the carnival better than anybody/);
+    // And the assembled one is gone rather than printed underneath it.
+    expect(p).not.toMatch(/winning three challenges/);
+  });
+
+  it('uses the pronoun the roster gives, and they/them when it gives none', () => {
+    const withGender = buildDossier(JADE, { seasonDocs: [DOC],
+      roster: { players: [{ slug: 'jade', gender: 'f' }] } });
+    expect(para(renderArticle(withGender, 'total-drama', { root: '.' }))).toMatch(/During her time/);
+    expect(para(out(JADE))).toMatch(/During their time/);
   });
 });

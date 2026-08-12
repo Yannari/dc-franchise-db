@@ -317,6 +317,15 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [] } =
       // article, it simply has no grid in it.
       weekRows: _weekRowsFromDoc(rowFor(d), player.name)
         || (Array.isArray(d.weekRows) ? d.weekRows : null),
+      // ── HOW THE SEASON ENDED ─────────────────────────────────────
+      //
+      // The lead's second paragraph closes the way the reference pages do —
+      // "in a close final vote, he emerged victorious with a 4 to 3 decision"
+      // — which needs the tally and the person they beat. Both are on the
+      // season document's winner block and neither was carried through.
+      finalVote: rowFor(d)?.doc?.winner?.vote || '',
+      runnerUp: rowFor(d)?.doc?.winner?.runnerUp || '',
+      showmance: rowFor(d)?.row?.showmance || d.showmance || '',
       // WHO THEY PLAYED WITH, which the infobox lists per season and the
       // measured lead names. The season document is preferred for the same
       // reason as the prose: it is the season's own record.
@@ -329,6 +338,10 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [] } =
       loyalties: [],
       // Written from the episodes rather than from the voice profile. Absent
       // until a season has been through the wiki fill.
+      // The article's opening paragraph, written from the episodes and the
+      // record together. Absent until the fill has run, and the measured
+      // version in wiki-view stands in until it does.
+      lead: rowFor(d)?.row.lead || d.lead || '',
       personality: rowFor(d)?.row.personality || d.personality || '',
       quotes: _arr(rowFor(d)?.row.quotes) || _arr(d.quotes) || [],
       trivia: _arr(rowFor(d)?.row.trivia) || _arr(d.trivia) || [],

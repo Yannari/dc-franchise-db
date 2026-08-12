@@ -169,6 +169,25 @@ function infobox(dossier, show, root) {
 }
 
 /**
+ * The final vote, as two numbers.
+ *
+ * The winner block writes it as prose — "Wayne 4 — Priya 3 — Zee 0" for the
+ * house, "6-3" for a camp — because it is written for a reader. The lead needs
+ * the margin to say "a 4 to 3 decision", and whether it was close enough to
+ * call it one.
+ */
+function _finalTally(vote, winnerName) {
+  const raw = String(vote || '');
+  if (!raw.trim()) return null;
+  const nums = (raw.match(/\d+/g) || []).map(Number);
+  if (nums.length < 2) return null;
+  const sorted = [...nums].sort((a, b) => b - a);
+  const [a, b] = sorted;
+  if (!a && !b) return null;
+  return { a, b, close: a - b <= 1 };
+}
+
+/**
  * The lead: who they are, and what they did, in the two paragraphs a fandom
  * article opens with.
  *
@@ -236,69 +255,142 @@ function lead(dossier, show, root) {
 
   // ── 2. the game ──
   //
-  // MEASURED, ALWAYS — never the season's narrative.
+  // PROSE, NOT A LIST OF COUNTERS.
   //
-  // This paragraph used to print `story`, which is also what the season's own
-  // Summary section prints, so a one-season article said the same six sentences
-  // twice with a contents box between them.
+  // The first version printed the season's narrative, which the Summary
+  // section also prints, so the article said it twice. The second version
+  // fixed the duplication and replaced it with "won 3 challenges, played with
+  // The Anchor, The Power Couple, and The Double Edge, and took 10 votes
+  // against them" — accurate, and a comma-list rather than a paragraph.
   //
-  // They were never the same job. The reference lead reads "winning six
-  // competitions and forming a dominant alliance with Kasey Tate, Leo Li, and
-  // Lydia Prescott, his showmance … a 4 to 3 decision" — the record, in a
-  // sentence. The narrative is the section below, where a reader who wants the
-  // whole season goes.
+  // The reference reads:
   //
-  // The season summarised is the one they are known for: the win if there is
-  // one, then the best finish, then the most recent.
+  //   "During his time on the show, Jesse proved to be a formidable and
+  //    versatile competitor in Mad House 7, winning six competitions and
+  //    forming a dominant alliance with Kasey Tate, Leo Li, and Lydia
+  //    Prescott, his showmance. Despite being consistently perceived as a
+  //    major threat, he strategically navigated the game … In a close final
+  //    vote, he emerged victorious with a 4 to 3 decision."
+  //
+  // Four sentences that each do one job: what kind of competitor, what they
+  // had to survive, how far they got, and how it ended. Every clause below is
+  // driven by a number the record actually holds — the adjectives change with
+  // the counts rather than decorating them — so nothing here is a claim the
+  // season cannot support.
   const notable = seasons.find(s => s.placement === 1)
     || seasons.slice().sort((a, b) => (a.placement || 99) - (b.placement || 99))[0]
     || seasons[seasons.length - 1];
 
+  // WRITTEN IF THE FILL HAS RUN.
+  //
+  // The measured paragraph below is assembled from counters, and it reads like
+  // it: correct, and never quite prose. The wiki fill writes this one from the
+  // episodes and the record together, in the register of the reference pages,
+  // and it wins whenever it exists.
+  const written = (seasons.find(s => s.placement === 1) || seasons[seasons.length - 1] || {}).lead
+    || seasons.slice().reverse().find(s => s.lead)?.lead || '';
+
   let game = '';
-  if (notable) {
+  if (written) {
+    game = esc(written);
+  } else if (notable) {
     const rec = notable.record || {};
     const bb = rec.bb || {};
-    const did = [];
+    const g = (dossier.bio || {}).gender;
+    // They/them unless the roster says otherwise: a wrong guess misgenders a
+    // character on their own page, and the neutral never does.
+    const P = g === 'f' ? { sub: 'she', obj: 'her', pos: 'her' }
+      : g === 'm' ? { sub: 'he', obj: 'him', pos: 'his' }
+      : { sub: 'they', obj: 'them', pos: 'their' };
+    const Cap = w => w.charAt(0).toUpperCase() + w.slice(1);
+    const was = P.sub === 'they' ? 'were' : 'was';
+    const has = P.sub === 'they' ? 'have' : 'has';
+    const name = esc(dossier.name);
+    const first = name.split(/\s+/)[0];
 
-    // Competitions, in the words of the show that ran them.
-    if (show.format === 'big-brother') {
-      const parts = [];
-      if (bb.hohWins) parts.push(`${bb.hohWins} Head of Household${bb.hohWins === 1 ? '' : 's'}`);
-      if (bb.vetoWins) parts.push(`${bb.vetoWins} ${bb.vetoWins === 1 ? 'veto' : 'vetoes'}`);
-      if (bb.blockBusterWins) parts.push(`${bb.blockBusterWins} Block Buster${bb.blockBusterWins === 1 ? '' : 's'}`);
-      if (parts.length) did.push(`won ${joinList(parts)}`);
+    const comps = show.format === 'big-brother'
+      ? (bb.hohWins || 0) + (bb.vetoWins || 0) + (bb.blockBusterWins || 0)
+      : (rec.challengeWins || 0);
+    const compWord = show.format === 'big-brother' ? 'competition' : 'challenge';
+    // Spelled out to nine, the way prose does it and a scoreboard does not.
+    const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+    const num = n => (n < WORDS.length ? WORDS[n] : String(n));
+
+    const sentences = [];
+
+    // 1. WHAT KIND OF COMPETITOR. The adjective is the count's, not mine.
+    const calibre = comps >= 6 ? 'a formidable and versatile competitor'
+      : comps >= 4 ? 'a genuine threat in the competitions'
+      : comps >= 2 ? 'a capable competitor'
+      : comps === 1 ? 'a competitor who picked their moment'
+      : '';
+    const mates = (notable.loyalties || []).slice(0, 3).map(esc);
+    const named = (notable.alliances || []).slice(0, 3).map(x => `<em>${esc(x)}</em>`);
+    const allianceBit = named.length === 1
+      ? `forming a dominant alliance in ${named[0]}${mates.length ? ` with ${joinList(mates)}` : ''}`
+      : named.length
+        ? `playing through ${joinList(named)}${mates.length ? ` alongside ${joinList(mates)}` : ''}`
+        : (mates.length ? `building ${P.pos} game around ${joinList(mates)}` : '');
+    const showmanceBit = notable.showmance
+      ? `${mates.includes(esc(notable.showmance)) ? '' : `, with ${esc(notable.showmance)} as ${P.pos} showmance`}`
+      : '';
+
+    const opener = [];
+    if (calibre) {
+      opener.push(`${first} proved to be ${calibre} in ${link(notable)}, winning ${
+        num(comps)} ${compWord}${comps === 1 ? '' : 's'}`);
     } else {
-      const wins = rec.challengeWins || 0;
-      const imm = rec.immunityWins || 0;
-      if (wins) {
-        did.push(`won ${wins} challenge${wins === 1 ? '' : 's'}${
-          imm ? `, ${imm} of them for immunity` : ''}`);
-      }
+      opener.push(`${first} played ${link(notable)} without winning a ${compWord}`);
+    }
+    if (allianceBit) opener.push(allianceBit);
+    sentences.push(`During ${P.pos} time on the show, ${opener.join(' and ')}${showmanceBit}.`);
+
+    // 2. WHAT THEY HAD TO SURVIVE. A season nobody voted for is a different
+    //    season from one somebody survived, and the record knows which it was.
+    const against = rec.votesReceived || 0;
+    const noms = bb.timesNominated || 0;
+    const survived = [];
+    if (noms >= 3) survived.push(`nominated ${num(noms)} times`);
+    if (bb.timesSaved) survived.push(`saved by the veto ${bb.timesSaved === 1 ? 'once' : `${num(bb.timesSaved)} times`}`);
+    if (bb.blockBusterWins) survived.push(`winning ${P.pos} way off the block ${bb.blockBusterWins === 1 ? 'once' : `${num(bb.blockBusterWins)} times`}`);
+    if (rec.idolsFound) survived.push(`finding ${rec.idolsFound === 1 ? 'an idol' : `${num(rec.idolsFound)} idols`}`);
+    if (survived.length) {
+      sentences.push(`${Cap(P.sub)} ${was} ${joinList(survived)}${
+        against ? `, taking ${num(against)} vote${against === 1 ? '' : 's'} along the way` : ''}.`);
+    } else if (against >= 5) {
+      sentences.push(`Read as a threat for most of the season, ${P.sub} still absorbed ${
+        num(against)} votes without ever being sent home early.`);
+    } else if (against) {
+      sentences.push(`Only ${num(against)} vote${against === 1 ? ' was' : 's were'} ever cast against ${P.obj}.`);
     }
 
-    // Who they played with. Named, because the alliance is the story of a
-    // season far more often than the competition record is.
-    if ((notable.alliances || []).length) {
-      did.push(`played with ${joinList(notable.alliances.slice(0, 3).map(esc))}`);
-    } else if ((notable.loyalties || []).length) {
-      did.push(`stayed close to ${joinList(notable.loyalties.slice(0, 3).map(esc))}`);
+    // 3 & 4. HOW IT ENDED. The tally when there is one — "a 4 to 3 decision"
+    //    is the sentence those pages are remembered for.
+    const tally = _finalTally(notable.finalVote, dossier.name);
+    if (notable.placement === 1) {
+      const beat = notable.runnerUp ? ` over ${esc(String(notable.runnerUp).split(' & ')[0])}` : '';
+      sentences.push(tally
+        ? `In ${tally.close ? 'a close final vote' : 'the final vote'}, ${P.sub} emerged victorious with a ${
+            tally.a} to ${tally.b} decision${beat}.`
+        : `${Cap(P.sub)} won the season${beat}.`);
+    } else if (notable.placement === 2) {
+      sentences.push(`${Cap(P.sub)} reached the end and finished as the runner-up.`);
+    } else if (notable.placement) {
+      sentences.push(`${Cap(P.sub)} finished ${ordinal(notable.placement)}${
+        notable.status ? ` as ${/^[aeiou]/i.test(notable.status) ? 'an' : 'a'} ${esc(String(notable.status).toLowerCase())}` : ''}.`);
     }
-    if (notable.showmance) did.push(`was in a showmance with ${esc(notable.showmance)}`);
 
-    // What it cost them, and how it ended.
-    if (rec.votesReceived) {
-      did.push(`took ${rec.votesReceived} vote${rec.votesReceived === 1 ? '' : 's'} against them`);
+    // The rest of a career, so the paragraph is about the person and not only
+    // their best season.
+    const others = seasons.filter(s => s !== notable);
+    if (others.length) {
+      const wonOthers = others.filter(s => s.placement === 1);
+      sentences.push(wonOthers.length
+        ? `${first} went on to win ${joinList(wonOthers.map(link))} as well.`
+        : `${first} also played ${joinList(others.map(link))}.`);
     }
-    const ending = notable.placement === 1
-      ? (rec.juryVotes ? `winning the jury vote with ${rec.juryVotes} vote${rec.juryVotes === 1 ? '' : 's'}`
-        : 'winning the season')
-      : `finishing ${ordinal(notable.placement)}`;
 
-    if (did.length) {
-      game = `${seasons.length > 1 ? `On ${notable.title
-        ? esc(notable.title) : `${esc(m.name)} ${notable.season}`}, ${esc(dossier.name)}`
-        : esc(dossier.name)} ${joinList(did)}, ${ending}.`;
-    }
+    game = sentences.join(' ');
   }
 
   return `<p class="wk-lead">${career}</p>${game ? `<p class="wk-lead-game">${game}</p>` : ''}`;

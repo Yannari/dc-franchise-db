@@ -752,6 +752,10 @@ async function generateWikiFill(body, env) {
           additionalProperties: false,
           properties: {
             name: { type: "string", enum: cast },
+            lead: {
+              type: "string",
+              description: "The article's OPENING PARAGRAPH about this season: 3-5 sentences of flowing encyclopaedia prose, past tense, third person. Model it on this exact register: 'During his time on the show, Jesse proved to be a formidable and versatile competitor in Mad House 7, winning six competitions and forming a dominant alliance with Kasey Tate, Leo Li, and Lydia Prescott, his showmance. Despite being consistently perceived as a major threat, he strategically navigated the game, even enduring a fake eviction before making a triumphant return. His dominance persisted, ultimately earning him a place in the Final 2. In a close final vote, he emerged victorious with a 4 to 3 decision.' Use ONLY the numbers, names and results given in that player's RECORD block, and the events of their thread — every count you state must match the record exactly. Do not restate their personality (a separate field) and do not retell the whole season beat by beat (a separate section does that). Name the people they played with. Say how it ended."
+            },
             personality: {
               type: "string",
               description: "2-4 sentences on what this person was LIKE with the others, written from their own words and what they were seen doing. Not their results — a placement is not a personality. How they talk, who they attach to, what they do when cornered, and whether any of that changed as the season went on. Specific to the evidence: if they were barely on camera, say that instead of inventing an interior life."
@@ -785,6 +789,13 @@ async function generateWikiFill(body, env) {
   const NL = String.fromCharCode(10);
   const threadText = threads.map(t => {
     const bits = [`### ${t.name}`];
+    // THE RECORD, above their dialogue.
+    //
+    // The lead paragraph is about what somebody DID, and the screenplay only
+    // shows what they said while doing it. Without the counts the model has to
+    // infer them from scenes, which is how an article ends up claiming four
+    // competition wins for somebody who won one.
+    if (t.record) bits.push(`RECORD: ${t.record}`);
     if (t.confessionals?.length) bits.push('CONFESSIONALS:', ...t.confessionals.map(c => `  (ep${c.ep}) "${c.text}"`));
     if (t.lines?.length) bits.push('IN THE HOUSE:', ...t.lines.map(c => `  (ep${c.ep}) "${c.text}"`));
     if (t.mentions?.length) bits.push('SEEN DOING:', ...t.mentions.map(c => `  (ep${c.ep}) ${c.text}`));
@@ -802,6 +813,10 @@ name them. This is ALL the evidence. Do not use anything you think you know
 about these characters from anywhere else.
 
 RULES
+0. THE RECORD IS NOT NEGOTIABLE. Every number and result in the lead must
+   match that player's RECORD line exactly — how many competitions, what
+   placement, what the final vote was. The screenplay says how it happened; the
+   record says what happened. Where they disagree, the record is right.
 1. QUOTE VERBATIM. A quote must appear in that person's thread word for word.
    If you cannot find a good one, return an empty array. An invented quote is
    the worst thing you can produce here.

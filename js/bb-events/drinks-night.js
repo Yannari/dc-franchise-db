@@ -56,6 +56,18 @@ export function isDrinksNight(ctx) {
   // Not on the ceremonies themselves, and not on eviction night.
   const eligible = ctx?.act === 'campaign' || ctx?.act === 'house';
   if (!eligible) return false;
+  // ── AN OCCASION, NOT THE WEATHER ──
+  //
+  // Measured at every eligible week this landed in 78% of them, about six a
+  // season, and the opening scene is the same scene each time: the door opens
+  // on a case of beer. Read six times it stops being a night and becomes
+  // furniture, and the beats it exists to unlock stop feeling like the drink
+  // caused them.
+  //
+  // Every third week, chosen from the week number rather than a roll so a
+  // replayed season drinks on the same nights. Roughly two or three a season,
+  // which is where it reads as the thing that happened this week.
+  if ((Number(week.num) || 0) % 3 !== 2) return false;
   // A house too small for a party does not have one. At four people it is not
   // a night, it is four people in a room being careful with each other.
   if ((gs.activePlayers || []).length < 6) return false;

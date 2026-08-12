@@ -58,9 +58,20 @@ beforeAll(() => {
 const idsOf = prefix => beats.filter(b => String(b.eventId || '').startsWith(prefix));
 
 describe('the night happens, and reaches the transcript', () => {
-  it('is a weekly rhythm rather than a rarity', () => {
-    expect(nights / weeks).toBeGreaterThan(0.5);
-    expect(nights / weeks, 'a house cannot drink every single night').toBeLessThan(0.95);
+  it('is an occasion rather than the weather', () => {
+    // Measured at every eligible week this hit 78% — six a season, and the
+    // opening scene is the same scene each time, so it stopped reading as a
+    // night and started reading as furniture. Two or three a season is where
+    // the beats it unlocks still feel caused by the drink.
+    const perSeason = nights / 4;
+    expect(perSeason, 'too rare to be a rhythm at all').toBeGreaterThan(1.5);
+    expect(perSeason, 'so often it stops being an occasion').toBeLessThan(4);
+  });
+
+  it('drinks on the same nights when a season is replayed', () => {
+    // Chosen from the week number, not a roll, so a seeded replay matches.
+    const src = readFileSync('js/bb-events/drinks-night.js', 'utf8');
+    expect(src).toMatch(/% 3 !== 2/);
   });
 
   it('happens at most once a week', () => {
@@ -80,9 +91,14 @@ describe('the night happens, and reaches the transcript', () => {
     }
   });
 
-  it('keeps the blow-up rarer than the night', () => {
-    // It should be the week the thing finally boils over, not the weather.
-    expect(idsOf('drinks-grievance').length).toBeLessThan(nights);
+  it('keeps the blow-up rare across the SEASON, not rare within the night', () => {
+    // The measure that matters is how often a house has a public row at all,
+    // not what share of drinking nights produce one — on a night the house
+    // drinks, the grievance surfacing IS the point. Once nights became an
+    // occasion this asserted the wrong thing: it demanded fewer blow-ups than
+    // nights, which would mean some drinks nights are just a quiet evening.
+    expect(idsOf('drinks-grievance').length / weeks,
+      'a screaming row most weeks is the weather, not a grievance').toBeLessThan(0.5);
   });
 
   it('changes something every time, per the house rule', () => {

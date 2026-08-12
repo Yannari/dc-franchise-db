@@ -2525,6 +2525,49 @@ export async function exportAndFillNarratives(onStatus) {
  *
  * Throws with a message meant to be shown to whoever pressed the button.
  */
+/**
+ * Every alliance a houseguest was named in, across the season.
+ *
+ * READ FROM LIVE STATE, not from the weeks. A week carries `openingState` and
+ * `closingState` while it is being played and both are deleted the moment it
+ * finishes (bb-run.js) and stripped again on save (savestate.js) — they were
+ * the largest thing in the file and nothing read them. Reading a week snapshot
+ * here would have returned an empty list for every houseguest in every season,
+ * silently, which reads as "played alone" rather than as a bug.
+ *
+ * `gs.namedAlliances` keeps dissolved alliances with a flag rather than
+ * removing them, so it is the whole season and not just what survived to the
+ * finale — which is the point: the group that ran the first month counts.
+ */
+function _bbAlliancesOf(name) {
+  return (gs.namedAlliances || [])
+    .filter(a => (a.members || []).includes(name) && a.name)
+    .map(a => a.name);
+}
+
+/** Who they were against — the Rivals twist pairs, which is what a house records. */
+function _bbRivalsOf(name) {
+  const out = new Set();
+  for (const r of _extractRivalries()) {
+    if (r.players.includes(name)) {
+      for (const other of r.players) if (other !== name) out.add(other);
+    }
+  }
+  return [...out];
+}
+
+/**
+ * The showmance, if there was one: the partner's name, or an empty string.
+ *
+ * Broken ones count. "Together until week six" is a fact about somebody's
+ * season, and a page that only lists showmances that survived describes a
+ * different house from the one that was played.
+ */
+function _bbShowmanceOf(name) {
+  const sh = (gs.showmances || []).find(x => (x.players || []).includes(name));
+  return sh ? ((sh.players || []).find(n => n !== name) || '') : '';
+}
+
 export function buildBigBrotherSeasonDocument(seasonNumber) {
   const weeks = gs.bb?.weeks || [];
   if (!weeks.length) throw new Error('No Big Brother weeks have been played yet.');
@@ -2867,6 +2910,19 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
         demiseKind: '[AI_FILL]',
         optimalLine: '[AI_FILL]',
         ceiling: '[AI_FILL]',
+        // ── WHO THEY PLAYED WITH ─────────────────────────────────
+        //
+        // Total Drama has carried these per player for years and Big Brother
+        // never did, so a houseguest's article could name their whole
+        // competition record and not one person they played it with — on the
+        // show where that is the entire game.
+        //
+        // Read from the last week's snapshot rather than from live state: a
+        // season exported after the finale still has to describe alliances
+        // that dissolved in week four.
+        alliances: _bbAlliancesOf(name),
+        rivalries: _bbRivalsOf(name),
+        showmance: _bbShowmanceOf(name),
         // Big Brother only — nested so it cannot be mistaken for Total Drama stats.
         bb: {
           hohWins: bb.hohWins || 0,
@@ -2942,6 +2998,16 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
       // which is a different cell on the grid from not voting at all.
       tieBreakVote: w.tieBreak ? { voter: w.tieBreak.voter, evict: w.tieBreak.evict,
         anonymous: !!w.tieBreak.anonymous } : null,
+      // ── THE HAVE-NOTS ────────────────────────────────────────────
+      //
+      // Who slept in the have-not room and ate slop that week. The engine has
+      // recorded it since have-nots existed (`week.haveNots`) and the export
+      // dropped it, so the season's Have/Have-Not History — a table every real
+      // Big Brother wiki carries — could not be drawn at all.
+      //
+      // Names only. WHY somebody was picked belongs to the week's own events,
+      // where the reason is already narrated; a record needs to know who.
+      haveNots: [...(w.haveNots || [])],
       // The public ballot, when there was one. A Sanctum week is the only
       // night the house saw every vote cast, and a tally cannot say that.
       publicVote: !!w.publicVote,

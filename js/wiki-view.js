@@ -352,12 +352,29 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   }
 
   const m = meta(format);
-  const contents = [];
-  const body = [];
+  // ── THE SECTION TREE ───────────────────────────────────────────────
+  //
+  // A fandom article is not a flat list of sections: a season is a heading
+  // with the season's own sub-headings under it — Summary, Have/Have-Not
+  // History, Voting History, Competition history — and the contents box
+  // numbers them 2.1, 2.2, 2.3. Flat, every one of those had to carry the
+  // season's name in its own title to stay unambiguous, which is how the
+  // article ended up with "Week by week — Total Drama All-Stars" as a
+  // top-level heading beside "Competition history".
+  //
+  // `section` opens a top-level one and returns a handle; `sub` hangs a
+  // subsection off it. Both ignore empty content, so a season with nothing
+  // recorded contributes no heading at all.
+  const tree = [];
   const section = (id, title, html) => {
-    if (!html) return;
-    contents.push([id, title]);
-    body.push(`<section class="wk-section" id="wk-${id}"><h2>${esc(title)}</h2>${html}</section>`);
+    if (!html && html !== null) return null;
+    const node = { id, title, html: html || '', subs: [] };
+    tree.push(node);
+    return node;
+  };
+  const sub = (node, id, title, html) => {
+    if (!node || !html) return;
+    node.subs.push({ id, title, html });
   };
 
   // ── PERSONALITY ────────────────────────────────────────────────────
@@ -395,148 +412,163 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
       </li>`).join('')}</ul>`).join(''));
   }
 
-  // The biography: one heading per season, in order, exactly as a fandom page
-  // does it. This is the separation that was missing.
-  for (const s of show.seasons) {
-    const title = s.title ? `Season ${s.season}: ${s.title}` : `Season ${s.season}`;
-    const parts = [];
-    if (s.story) parts.push(`<p>${esc(s.story)}</p>`);
-    if (s.keyMoments?.length) {
-      parts.push(`<ul class="wk-list">${s.keyMoments.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`);
+  // ── ONE SECTION PER SEASON ─────────────────────────────────────────
+  //
+  // The shape the reference pages use: "The Mad House 7" as a heading, and
+  // everything about that season underneath it. A returnee gets one of these
+  // per season, so their two games are never interleaved.
+  const isHouse = show.format === 'big-brother';
+  const roundWord = isHouse ? 'Week' : 'Episode';
+
+  for (const s2 of show.seasons) {
+    // The reference wiki writes "The Mad House 7" because its season titles are
+    // bare numbers. Ours already carry the show's name, so the article prefix
+    // produced "The Total Drama All-Stars". The title stands on its own.
+    const node = section(`s${s2.season}`,
+      s2.title || `${m.name} ${s2.season}`, null);   // section() escapes it
+
+    // 2.1 Summary — the season's narrative, and the moments that made it.
+    const summary = [];
+    if (s2.story) summary.push(`<p>${esc(s2.story)}</p>`);
+    if (s2.keyMoments?.length) {
+      summary.push(`<ul class="wk-list">${s2.keyMoments.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`);
     }
-    if (!parts.length) {
-      parts.push(`<p class="wk-thin">Placed ${ordinal(s.placement)}${s.status ? ` · ${esc(s.status)}` : ''}. No episode-by-episode record was published for this season.</p>`);
+    if (!summary.length) {
+      summary.push(`<p class="wk-thin">Placed ${ordinal(s2.placement)}${
+        s2.status ? ` · ${esc(s2.status)}` : ''}. No narrative has been written for this season yet.</p>`);
     }
-    section(`s${s.season}`, title, parts.join(''));
+    sub(node, `s${s2.season}-summary`, 'Summary', summary.join(''));
+
+    const rows = s2.weekRows || [];
+
+    // 2.2 Have/Have-Not History — the house only, and only when the season
+    // recorded it. A season exported before have-nots were carried has none,
+    // and an empty grid would read as "never a have-not", which is a claim.
+    if (isHouse && rows.some(w => w.haveNot)) {
+      sub(node, `s${s2.season}-havenot`, 'Have/Have-Not History', `
+        <div class="wk-scroll">
+          <table class="wk-table wk-weeks">
+            <thead><tr><th>Week</th>${rows.map(w => `<th>${w.week}</th>`).join('')}</tr></thead>
+            <tbody><tr><th>${esc(dossier.name)}</th>${rows.map(w =>
+              `<td class="${w.haveNot ? 'wk-c-out' : ''}">${w.haveNot ? 'Have-Not' : 'Have'}</td>`).join('')}</tr></tbody>
+          </table>
+        </div>
+        <p class="wk-thin">${rows.filter(w => w.haveNot).length} week${
+          rows.filter(w => w.haveNot).length === 1 ? '' : 's'} on slop.</p>`);
+    }
+
+    // 2.3 Voting History — the grid, and the ballot they cast.
+    if (rows.length) {
+      const cell = w => {
+        if (w.hoh) return ['HOH', 'wk-c-hoh'];
+        if (w.evicted) return [isHouse ? 'Evicted' : 'Voted out', 'wk-c-out'];
+        if (w.arenaWon) return ['Block Buster', 'wk-c-arena'];
+        if (w.veto) return ['Veto', 'wk-c-veto'];
+        if (w.onBlock || w.nominated) return ['Nominated', 'wk-c-nom'];
+        return ['', ''];
+      };
+      const marked = rows.some(w => cell(w)[0]);
+      const votedAny = rows.some(w => w.votedFor);
+      sub(node, `s${s2.season}-votes`, 'Voting History', `
+        <div class="wk-scroll">
+          <table class="wk-table wk-weeks">
+            <thead><tr><th>${roundWord}</th>${rows.map(w => `<th>${w.week}</th>`).join('')}</tr></thead>
+            <tbody>
+              ${marked ? `<tr><th>${esc(dossier.name)}</th>${rows.map(w => {
+                const [label, cls] = cell(w);
+                return `<td class="${cls}">${label}</td>`;
+              }).join('')}</tr>` : ''}
+              ${votedAny ? `<tr class="wk-weeks-sub"><th>Voted for</th>${rows.map(w =>
+                `<td>${esc(w.votedFor || '')}</td>`).join('')}</tr>` : ''}
+              <tr class="wk-weeks-sub"><th>Votes against</th>${rows.map(w =>
+                `<td>${w.votesAgainst || ''}</td>`).join('')}</tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="wk-thin">${(() => {
+          const bits = [];
+          const n = f => rows.filter(f).length;
+          if (n(w => w.hoh)) bits.push(`${n(w => w.hoh)}x Head of Household`);
+          if (n(w => w.veto)) bits.push(`${n(w => w.veto)}x Power of Veto`);
+          if (n(w => w.arenaPlayed)) bits.push(`in the Block Buster ${n(w => w.arenaPlayed)}x, winning ${n(w => w.arenaWon)}`);
+          if (n(w => w.nominated)) bits.push(`nominated ${n(w => w.nominated)}x`);
+          const against = rows.reduce((t, w) => t + (w.votesAgainst || 0), 0);
+          bits.push(`${rows.length} ${rows.length === 1 ? roundWord.toLowerCase() : `${roundWord.toLowerCase()}s`} played`);
+          bits.push(against ? `${against} vote${against === 1 ? '' : 's'} cast against them`
+            : 'never had a vote cast against them');
+          return esc(bits.join(' · '));
+        })()}</p>`);
+    }
+
+    // 2.4 Competition history — this season's record, on its own.
+    const r = s2.record || {};
+    const b = r.bb || {};
+    const comp = isHouse
+      ? [['HOH wins', b.hohWins], ['Veto wins', b.vetoWins],
+         ['Block Buster wins', b.blockBusterWins], ['Times nominated', b.timesNominated],
+         ['Times on the block', b.timesOnBlock], ['Saved by the veto', b.timesSaved]]
+      : [['Challenge wins', r.challengeWins], ['Immunity wins', r.immunityWins],
+         ['Reward wins', r.rewardWins], ['Idols found', r.idolsFound]];
+    const compRows = comp.filter(([, v]) => v);
+    if (compRows.length) {
+      sub(node, `s${s2.season}-comps`, 'Competition history', `
+        <table class="wk-table">
+          <tbody>${compRows.map(([k, v]) =>
+            `<tr><th>${esc(k)}</th><td>${v}</td></tr>`).join('')}</tbody>
+        </table>`);
+    }
   }
 
-  // Appearances — the table a fandom article closes its biography with.
-  section('appearances', 'Appearances', `
-    <table class="wk-table">
-      <thead><tr><th>Season</th><th>Placement</th><th>Status</th><th>Team</th></tr></thead>
-      <tbody>${show.seasons.map(s => `<tr>
-        <td><a href="${root}/season_ref.html?season=${esc(s.seasonId || s.season)}">${
-          s.title ? esc(s.title) : `Season ${s.season}`}</a></td>
-        <td>${ordinal(s.placement)}</td>
-        <td>${esc(s.status || '—')}</td>
-        <td>${esc(s.tribe || '—')}</td>
-      </tr>`).join('')}</tbody>
-    </table>`);
+  // ── THE CAREER TABLES ──────────────────────────────────────────────
+  //
+  // Only for somebody who played more than once: for a single season they
+  // would repeat what the section above just said, row for row.
+  if (show.seasons.length > 1) {
+    section('appearances', 'Appearances', `
+      <table class="wk-table">
+        <thead><tr><th>Season</th><th>Placement</th><th>Status</th><th>Team</th></tr></thead>
+        <tbody>${show.seasons.map(x => `<tr>
+          <td><a href="${root}/season_ref.html?season=${esc(x.seasonId || x.season)}">${
+            x.title ? esc(x.title) : `Season ${x.season}`}</a></td>
+          <td>${ordinal(x.placement)}</td>
+          <td>${esc(x.status || '—')}</td>
+          <td>${esc(x.tribe || '—')}</td>
+        </tr>`).join('')}</tbody>
+      </table>`);
 
-  // ── COMPETITION HISTORY ────────────────────────────────────────────
-  //
-  // The table half of a character article, and the half that was missing. A
-  // fandom page does not describe a season and stop; it prints what the
-  // person won, how often they were on the block, and how they got off it.
-  //
-  // Big Brother and Total Drama get different columns because they are
-  // different games — one has a block and the other has a tribal council, and
-  // a shared table would have to call both of them "wins".
-  const anyRecord = show.seasons.some(x => x.record
-    && (x.record.challengeWins || x.record.bb));
-  if (anyRecord) {
-    const bb = show.format === 'big-brother';
-    const head = bb
-      ? ['Season', 'HOH', 'Veto', 'Block Buster', 'Nominated', 'On the block', 'Saved', 'Votes against']
+    const t = show.totals || {};
+    const head = isHouse
+      ? ['Season', 'HOH', 'Veto', 'Block Buster', 'Nominated', 'Votes against']
       : ['Season', 'Challenge wins', 'Votes against', 'Jury votes'];
+    const n = v => (v ? String(v) : '—');
     const rows = show.seasons.map(x => {
-      const r = x.record || {};
-      const b = r.bb || {};
+      const rr = x.record || {};
+      const bb = rr.bb || {};
       const label = `<a href="${root}/season_ref.html?season=${esc(x.seasonId || x.season)}">${
         x.title ? esc(x.title) : `Season ${x.season}`}</a>`;
-      // A cell that is zero is a fact — they played and won none — so it is a
-      // dash rather than a 0, which reads as "not recorded".
-      const n = v => (v ? String(v) : '—');
-      return bb
-        ? `<tr><td>${label}</td><td>${n(b.hohWins)}</td><td>${n(b.vetoWins)}</td>
-             <td>${b.blockBusterWins
-               ? `${b.blockBusterWins}${b.blockBusterPlayed ? ` of ${b.blockBusterPlayed}` : ''}${
-                 b.blockBusterStreak > 1 ? ` <em>(${b.blockBusterStreak} in a row)</em>` : ''}`
-               : (b.blockBusterPlayed ? `0 of ${b.blockBusterPlayed}` : '—')}</td>
-             <td>${n(b.timesNominated)}</td><td>${n(b.timesOnBlock)}</td>
-             <td>${n(b.timesSaved)}</td><td>${n(r.votesReceived)}</td></tr>`
-        : `<tr><td>${label}</td><td>${n(r.challengeWins)}</td>
-             <td>${n(r.votesReceived)}</td><td>${n(r.juryVotes)}</td></tr>`;
+      // The arena cell says how often they went in as well as how often they
+      // came out — "3 of 4" is a different player from "3 of 8" — and a run of
+      // them in consecutive weeks is the thing a season gets remembered for.
+      const arena = bb.blockBusterWins
+        ? `${bb.blockBusterWins}${bb.blockBusterPlayed ? ` of ${bb.blockBusterPlayed}` : ''}${
+            bb.blockBusterStreak > 1 ? ` <em>(${bb.blockBusterStreak} in a row)</em>` : ''}`
+        : (bb.blockBusterPlayed ? `0 of ${bb.blockBusterPlayed}` : '—');
+      return isHouse
+        ? `<tr><td>${label}</td><td>${n(bb.hohWins)}</td><td>${n(bb.vetoWins)}</td>
+             <td>${arena}</td><td>${n(bb.timesNominated)}</td>
+             <td>${n(rr.votesReceived)}</td></tr>`
+        : `<tr><td>${label}</td><td>${n(rr.challengeWins)}</td>
+             <td>${n(rr.votesReceived)}</td><td>${n(rr.juryVotes)}</td></tr>`;
     });
-    const t = show.totals || {};
-    const totalRow = bb
+    const totalRow = isHouse
       ? `<tr class="wk-total"><td>Total</td><td>${t.hohWins || 0}</td><td>${t.vetoWins || 0}</td>
-         <td>${t.blockBusterWins || 0}</td><td>${t.timesNominated || 0}</td><td></td><td></td><td></td></tr>`
+         <td>${t.blockBusterWins || 0}</td><td>${t.timesNominated || 0}</td><td></td></tr>`
       : `<tr class="wk-total"><td>Total</td><td>${t.challengeWins || 0}</td><td></td><td>${t.juryVotes || 0}</td></tr>`;
     section('competition', 'Competition history', `
       <table class="wk-table wk-comp">
         <thead><tr>${head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead>
-        <tbody>${rows.join('')}${show.seasons.length > 1 ? totalRow : ''}</tbody>
+        <tbody>${rows.join('')}${totalRow}</tbody>
       </table>`);
-  }
-
-  // ── WEEK BY WEEK ───────────────────────────────────────────────────
-  //
-  // The most characteristic thing on a fandom character page: a row of weeks
-  // with what happened to this person in each. It is the table people screenshot
-  // and argue about, and it is what turns a placement into a game.
-  //
-  // One cell per week, and the cell says the STRONGEST thing that happened —
-  // winning the arena outranks being nominated, because being nominated is how
-  // you get into the arena. A week with nothing in it is left blank rather
-  // than filled with "safe", so the grid reads as a shape.
-  for (const sn of show.seasons) {
-    if (!sn.weekRows?.length) continue;
-    // A camp has no block: its round says who they wrote down and who wrote
-    // them down, which is the whole of a Total Drama round on the record.
-    const isCamp = sn.weekRows.some(w => w.votedFor !== undefined) && !sn.weekRows.some(w => w.hoh || w.onBlock || w.veto);
-    const roundWord = isCamp ? 'Episode' : 'Week';
-    const cell = w => {
-      if (w.hoh) return ['HOH', 'wk-c-hoh'];
-      if (w.evicted) return [isCamp ? 'Voted out' : 'Evicted', 'wk-c-out'];
-      if (w.arenaWon) return ['Block Buster', 'wk-c-arena'];
-      if (w.veto) return ['Veto', 'wk-c-veto'];
-      if (w.onBlock) return ['Nominated', 'wk-c-nom'];
-      if (w.nominated) return ['Nominated', 'wk-c-nom'];
-      return ['', ''];
-    };
-    const rows = sn.weekRows;
-    const title = show.seasons.length > 1
-      ? `${roundWord} by ${roundWord.toLowerCase()} — ${sn.title ? esc(sn.title) : `Season ${sn.season}`}`
-      : `${roundWord} by ${roundWord.toLowerCase()}`;
-    section(`weeks${sn.season}`, title, `
-      <div class="wk-scroll">
-        <table class="wk-table wk-weeks">
-          <thead><tr><th>${roundWord}</th>${rows.map(w => `<th>${w.week}</th>`).join('')}</tr></thead>
-          <tbody>
-            ${
-              // A camp's record holds no power to mark, so this row says one
-              // thing: the round it ended. For a winner it says nothing at all,
-              // and nineteen blank cells read as a broken table rather than as
-              // an unbroken run — so the row is dropped instead of drawn empty.
-              (isCamp && !rows.some(w => cell(w)[0])) ? '' : `
-            <tr><th>${esc(dossier.name)}</th>${rows.map(w => {
-              const [label, cls] = cell(w);
-              return `<td class="${cls}">${label}</td>`;
-            }).join('')}</tr>`}
-            ${isCamp ? `<tr class="wk-weeks-sub"><th>Voted for</th>${rows.map(w =>
-              `<td>${esc(w.votedFor || '')}</td>`).join('')}</tr>` : ''}
-            <tr class="wk-weeks-sub"><th>Votes against</th>${rows.map(w =>
-              `<td>${w.votesAgainst || ''}</td>`).join('')}</tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="wk-thin">${(() => {
-        const arena = rows.filter(w => w.arenaPlayed).length;
-        const won = rows.filter(w => w.arenaWon).length;
-        const bits = [];
-        if (rows.filter(w => w.hoh).length) bits.push(`${rows.filter(w => w.hoh).length}x Head of Household`);
-        if (rows.filter(w => w.veto).length) bits.push(`${rows.filter(w => w.veto).length}x Power of Veto`);
-        if (arena) bits.push(`in the Block Buster ${arena}x, winning ${won}`);
-        const nominated = rows.filter(w => w.nominated).length;
-        if (nominated) bits.push(`nominated ${nominated}x`);
-        if (isCamp) {
-          const total = rows.reduce((n, w) => n + (w.votesAgainst || 0), 0);
-          bits.push(`${rows.length} ${rows.length === 1 ? 'round' : 'rounds'} played`);
-          bits.push(total ? `${total} vote${total === 1 ? '' : 's'} cast against them` : 'never had a vote cast against them');
-        }
-        return bits.length ? esc(bits.join(' · ')) : '';
-      })()}</p>`);
   }
 
   // Relationships, when any are on record for this show.
@@ -587,14 +619,28 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   section('gallery', 'Gallery',
     `<div class="wk-gallery" data-wk-gallery="${esc(dossier.id)}"></div>`);
 
+  // A section with neither content nor subsections is a heading over nothing.
+  const drawn = tree.filter(node => node.html || node.subs.length);
+
+  const bodyHtml = drawn.map(node => `
+    <section class="wk-section" id="wk-${node.id}">
+      <h2>${esc(node.title)}</h2>
+      ${node.html}
+      ${node.subs.map(x => `<section class="wk-subsection" id="wk-${x.id}">
+        <h3>${esc(x.title)}</h3>${x.html}</section>`).join('')}
+    </section>`).join('');
+
+  const contentsHtml = drawn.map(node => `<li><a href="#wk-${node.id}">${esc(node.title)}</a>${
+    node.subs.length ? `<ol>${node.subs.map(x =>
+      `<li><a href="#wk-${x.id}">${esc(x.title)}</a></li>`).join('')}</ol>` : ''}</li>`).join('');
+
   return `
   <article class="wk-article" style="--wk-accent:${m.accent}">
     ${infobox(dossier, show, root)}
     <div class="wk-main">
       ${lead(dossier, show, root)}
-      ${contents.length > 2 ? `<nav class="wk-contents"><b>Contents</b><ol>${
-        contents.map(([id, t]) => `<li><a href="#wk-${id}">${esc(t)}</a></li>`).join('')}</ol></nav>` : ''}
-      ${body.join('')}
+      ${drawn.length > 2 ? `<nav class="wk-contents"><b>Contents</b><ol>${contentsHtml}</ol></nav>` : ''}
+      ${bodyHtml}
     </div>
   </article>`;
 }
@@ -620,6 +666,19 @@ export const WIKI_CSS = `
 .wk-contents b{ display:block; font-size:12px; letter-spacing:.09em; text-transform:uppercase; opacity:.6; margin-bottom:6px; }
 .wk-contents ol{ margin:0; padding-left:20px; }
 .wk-contents li{ margin:3px 0; font-size:14px; }
+/* Nested contents: 2.1, 2.2 under 2. Numbered by the browser so the numbers
+   cannot disagree with the order they are drawn in. */
+.wk-contents ol{ counter-reset:wk-toc; list-style:none; padding-left:18px; }
+.wk-contents li{ counter-increment:wk-toc; }
+.wk-contents li::before{ content:counters(wk-toc, '.') '  '; opacity:.45; font-variant-numeric:tabular-nums; }
+.wk-contents > ol{ padding-left:4px; }
+.wk-contents ol ol{ margin:2px 0 4px; font-size:13.5px; opacity:.92; }
+/* A subsection inside a season. */
+.wk-subsection{ margin:14px 0 0; }
+.wk-subsection h3{
+  font-size:14px; margin:0 0 8px; letter-spacing:.02em;
+  padding-bottom:4px; border-bottom:1px solid var(--stroke);
+}
 .wk-contents a{ color:var(--wk-accent); text-decoration:none; }
 .wk-contents a:hover{ text-decoration:underline; }
 

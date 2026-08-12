@@ -172,16 +172,56 @@ function _arr(v) { return Array.isArray(v) && v.length ? v : null; }
 /**
  * One player's round-by-round history, from the season document.
  *
- * This existed for Big Brother only, because it was built from `weeks` — a
- * Head of Household, a block, a veto. Total Drama has none of those, so
- * every Total Drama article had the section missing entirely rather than
- * showing the thing a camp DOES have: who they wrote down, who wrote them
- * down, and the night it caught up with them.
+ * BOTH SHOWS, from their own record. `weekRows` was read off the players
+ * database and nothing has ever written it there, so the grid — the most
+ * characteristic table on a character page — drew for nobody. Total Drama had
+ * no `weeks` to build one from either, so a camp article was missing the
+ * section entirely rather than showing what a camp does have: who they wrote
+ * down, who wrote them down, and the round it caught up with them.
+ *
+ * One vocabulary for both, because one renderer draws both. `hoh`, `veto`,
+ * `onBlock`, `evicted`, `votesAgainst`, `haveNot` are the house's words; a camp
+ * simply leaves the ones it has no concept of unset.
  */
 function _weekRowsFromDoc(found, name) {
   if (!found) return null;
   const doc = found.doc;
-  if (Array.isArray(doc.weeks) && doc.weeks.length) return null;   // the house's own builder owns these
+
+  // ── the house ──
+  const weeks = Array.isArray(doc.weeks) ? doc.weeks : [];
+  if (weeks.length) {
+    const rows = [];
+    let gone = false;
+    for (const w of weeks) {
+      if (gone) break;
+      const noms = w.blockBeforeSafety || w.initialNominees || [];
+      const finalNoms = w.finalNominees || [];
+      const ballot = (w.ballots || []).find(b => b.voter === name);
+      const out = w.evicted === name;
+      rows.push({
+        week: Number(w.week),
+        hoh: w.hoh === name,
+        veto: w.vetoWinner === name,
+        // Played the arena and won their way off the block, which outranks
+        // having been nominated — being nominated is how you get into it.
+        arenaPlayed: noms.includes(name) && !!w.safetyWinner,
+        arenaWon: w.safetyWinner === name,
+        onBlock: finalNoms.includes(name),
+        nominated: noms.includes(name),
+        // Slop and the have-not room. Exported since today; a season published
+        // before that simply has none, which reads as "never a have-not" and is
+        // why the section is dropped when no week records anybody.
+        haveNot: (w.haveNots || []).includes(name),
+        votesAgainst: Number((w.votes || {})[name]) || 0,
+        votedFor: ballot?.evict || '',
+        evicted: out,
+      });
+      if (out) gone = true;
+    }
+    return rows.length ? rows : null;
+  }
+
+  // ── the camp ──
   const rounds = Array.isArray(doc.votingHistory) ? doc.votingHistory : [];
   if (!rounds.length) return null;
 
@@ -193,9 +233,6 @@ function _weekRowsFromDoc(found, name) {
     const mine = ballots.find(v => v.voter === name);
     const against = ballots.filter(v => v.target === name).length;
     const out = r.eliminated === name;
-    // Named the way the house's rows are named, because one renderer draws
-    // both: `evicted` and `votesAgainst` are the grid's own vocabulary.
-    // `votedFor` is the camp's addition — a ballot is public in the record.
     rows.push({
       week: Number(r.episode),
       evicted: out,
@@ -278,8 +315,8 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [] } =
       // The per-week row, when the season document was reachable. Absent is a
       // normal state — a season nobody has published yet still gets an
       // article, it simply has no grid in it.
-      weekRows: Array.isArray(d.weekRows) ? d.weekRows
-        : _weekRowsFromDoc(rowFor(d), player.name),
+      weekRows: _weekRowsFromDoc(rowFor(d), player.name)
+        || (Array.isArray(d.weekRows) ? d.weekRows : null),
       // WHO THEY PLAYED WITH, which the infobox lists per season and the
       // measured lead names. The season document is preferred for the same
       // reason as the prose: it is the season's own record.

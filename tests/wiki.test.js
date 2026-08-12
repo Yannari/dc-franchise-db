@@ -244,7 +244,8 @@ describe('the record an article is written from', () => {
       ] }] };
     const html = renderArticle({ ...withWeeks, career: careerOf(withWeeks) }, 'big-brother',
       { root: '.', allShows: ['big-brother'] });
-    expect(html).toContain('Week by week');
+    // The grid lives under the season's own Voting History heading now.
+    expect(html).toContain('Voting History');
     expect(html).toContain('wk-c-hoh');
     expect(html).toContain('wk-c-arena');
     expect(html).toContain('wk-c-out');
@@ -379,7 +380,9 @@ describe('reading a filled season', () => {
   it('draws the camp grid with the ballot in it', () => {
     const dossier = buildDossier(PLAYER, { seasonDocs: [DOC] });
     const html = renderArticle(dossier, 'total-drama', { root: '.' });
-    expect(html).toMatch(/Episode by episode/);
+    // Under the season's own heading now, with the round word the camp uses.
+    expect(html).toMatch(/Voting History/);
+    expect(html).toMatch(/<th>Episode<\/th>/);
     expect(html).toMatch(/Voted for/);
     expect(html).toMatch(/A clown attacked me/);
     // Big Brother's vocabulary must not appear on a camp's grid.
@@ -510,5 +513,84 @@ describe('a long career in one sentence', () => {
       { season: 3, format: 'total-drama', placement: 6 }] };
     const html = renderArticle(buildDossier(three, {}), 'total-drama', { root: '.' });
     expect(html).toMatch(/winning once/);
+  });
+});
+
+// ── THE SECTION TREE ────────────────────────────────────────────────────
+//
+// A fandom article nests: "The Mad House 7" is a heading, and Summary,
+// Have/Have-Not History and Voting History are 2.1, 2.2, 2.3 underneath it.
+// Flat, every one of those had to carry the season's name in its own title to
+// stay unambiguous — which is how "Week by week — Total Drama All-Stars" ended
+// up as a top-level heading beside "Competition history".
+describe('the section tree', () => {
+  const HOUSE = {
+    format: 'big-brother', seasonNumber: 1,
+    placements: [{ placement: 1, name: 'Wayne', playerSlug: 'wayne' }],
+    weeks: [
+      { week: 1, hoh: 'Wayne', initialNominees: ['Axel', 'Emmah'], finalNominees: ['Axel', 'Emmah'],
+        votes: { Axel: 6 }, evicted: 'Axel', haveNots: ['Wayne'],
+        ballots: [{ voter: 'Wayne', evict: 'Axel' }] },
+      { week: 2, hoh: 'Raj', vetoWinner: 'Wayne', initialNominees: ['Wayne', 'Zee'],
+        finalNominees: ['Zee', 'Millie'], votes: { Millie: 5, Zee: 4 }, evicted: 'Millie',
+        haveNots: [], ballots: [{ voter: 'Wayne', evict: 'Millie' }] },
+    ],
+  };
+  const WAYNE = { id: 'wayne', name: 'Wayne', seasonDetails: [
+    { season: 1, format: 'big-brother', placement: 1, status: 'Winner',
+      bb: { hohWins: 1, vetoWins: 1 } }] };
+
+  const html = () => renderArticle(buildDossier(WAYNE, { seasonDocs: [HOUSE] }),
+    'big-brother', { root: '.' });
+
+  it('makes the season a heading with its own subsections', () => {
+    const out = html();
+    expect(out).toMatch(/<h2>Big Brother 1<\/h2>/);
+    expect(out).toMatch(/<h3>Summary<\/h3>/);
+    expect(out).toMatch(/<h3>Voting History<\/h3>/);
+  });
+
+  it('nests them in the contents, so they number 2.1 and 2.2', () => {
+    const out = html();
+    const toc = out.match(/<nav class="wk-contents">([\s\S]*?)<\/nav>/)?.[1] || '';
+    // A list inside a list is what the numbering is drawn from.
+    expect(toc).toMatch(/<ol>[\s\S]*<ol>/);
+    expect(toc).toMatch(/#wk-s1-summary/);
+    expect(toc).toMatch(/#wk-s1-votes/);
+  });
+
+  // The reason the exporter changed at all.
+  it('draws Have/Have-Not History when the season recorded have-nots', () => {
+    const out = html();
+    expect(out).toMatch(/Have\/Have-Not History/);
+    expect(out).toMatch(/Have-Not/);
+    expect(out).toMatch(/1 week on slop/);
+  });
+
+  it('leaves it out for a season exported before have-nots were carried', () => {
+    const older = { ...HOUSE, weeks: HOUSE.weeks.map(({ haveNots, ...w }) => w) };
+    const out = renderArticle(buildDossier(WAYNE, { seasonDocs: [older] }), 'big-brother', { root: '.' });
+    // Absent, not an empty grid: every cell reading "Have" would be a claim
+    // the record never made.
+    expect(out).not.toMatch(/Have\/Have-Not History/);
+    expect(out).toMatch(/Voting History/);
+  });
+
+  it('builds the house grid from the season document, which nothing did before', () => {
+    const out = html();
+    const grid = out.match(/<h3>Voting History<\/h3>([\s\S]*?)<\/section>/)[1];
+    expect(grid).toMatch(/<th>Week<\/th>/);
+    expect(grid).toMatch(/HOH/);
+    expect(grid).toMatch(/Veto/);
+    expect(grid).toMatch(/1x Head of Household/);
+  });
+
+  it('keeps the career tables for a returnee and drops them for one season', () => {
+    expect(html()).not.toMatch(/<h2>Appearances<\/h2>/);
+    const twice = { ...WAYNE, seasonDetails: [...WAYNE.seasonDetails,
+      { season: 4, format: 'big-brother', placement: 6, bb: { hohWins: 1 } }] };
+    const out = renderArticle(buildDossier(twice, { seasonDocs: [HOUSE] }), 'big-brother', { root: '.' });
+    expect(out).toMatch(/<h2>Appearances<\/h2>/);
+    expect(out).toMatch(/<h2>Competition history<\/h2>/);
   });
 });

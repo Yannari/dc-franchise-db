@@ -305,3 +305,84 @@ describe('the record an article is written from', () => {
     expect(html).toContain('data-wk-gallery="ireland"');
   });
 });
+
+// ── THE SEASON DOCUMENT IS WHERE THE PROSE LIVES ────────────────────────
+//
+// `players_database.json` is derived — rebuilt by an export — and holds the
+// numbers. A season's written personality, quotes and trivia are written into
+// the season document by the wiki fill, and the article read only the derived
+// copy. So a season that HAD been filled showed the voice profile and no
+// quotes: the writing was in a file nothing on the page opened.
+describe('reading a filled season', () => {
+  const PLAYER = {
+    id: 'jade', name: 'Jade',
+    seasonDetails: [{ season: 14, format: 'total-drama', placement: 1, status: 'Winner' }],
+  };
+  const DOC = {
+    format: 'total-drama', seasonNumber: 14,
+    placements: [{ placement: 1, name: 'Jade', playerSlug: 'jade',
+      personality: 'Calm, watchful and deliberately reassuring.',
+      quotes: [{ text: 'A clown attacked me.', context: 'in confessional' }],
+      trivia: ['Trusted Zaid with a coconut, a vote, or a plush banana.'] }],
+    votingHistory: [
+      { episode: 2, eliminated: 'Amelie',
+        votes: [{ voter: 'Jade', target: 'Amelie' }, { voter: 'Amelie', target: 'Jade' }] },
+      { episode: 3, eliminated: 'Ted',
+        votes: [{ voter: 'Jade', target: 'Ted' }, { voter: 'Ted', target: 'Jade' }] },
+    ],
+  };
+
+  it('takes personality, quotes and trivia from the season document', () => {
+    const [show] = careerOf(PLAYER, { seasonDocs: [DOC] });
+    const s14 = show.seasons[0];
+    expect(s14.personality).toMatch(/deliberately reassuring/);
+    expect(s14.quotes[0].text).toBe('A clown attacked me.');
+    expect(s14.trivia[0]).toMatch(/plush banana/);
+  });
+
+  it('falls back to the derived copy when no document is loaded', () => {
+    const derived = { ...PLAYER, seasonDetails: [{ ...PLAYER.seasonDetails[0],
+      personality: 'From the players database.' }] };
+    const [show] = careerOf(derived, {});
+    expect(show.seasons[0].personality).toBe('From the players database.');
+  });
+
+  it('never lets an empty field in the document blank a filled one', () => {
+    const doc = { ...DOC, placements: [{ ...DOC.placements[0], quotes: [], trivia: [] }] };
+    const derived = { ...PLAYER, seasonDetails: [{ ...PLAYER.seasonDetails[0],
+      quotes: [{ text: 'kept', context: 'kept' }] }] };
+    const [show] = careerOf(derived, { seasonDocs: [doc] });
+    expect(show.seasons[0].quotes[0].text).toBe('kept');
+  });
+
+  // A camp has no weeks, so the round-by-round section was missing entirely
+  // from every Total Drama article rather than showing what a camp DOES have.
+  it('builds a round-by-round history for a show with no weeks', () => {
+    const [show] = careerOf(PLAYER, { seasonDocs: [DOC] });
+    const rows = show.seasons[0].weekRows;
+    expect(rows.map(r => r.week)).toEqual([2, 3]);
+    expect(rows[0].votedFor).toBe('Amelie');
+    expect(rows[0].votesAgainst).toBe(1);
+    expect(rows.some(r => r.evicted)).toBe(false);   // she won
+  });
+
+  it('stops the history at the round they left', () => {
+    const doc = { ...DOC, placements: [{ placement: 5, name: 'Ted', playerSlug: 'ted' }] };
+    const ted = { id: 'ted', name: 'Ted',
+      seasonDetails: [{ season: 14, format: 'total-drama', placement: 5 }] };
+    const [show] = careerOf(ted, { seasonDocs: [doc] });
+    const rows = show.seasons[0].weekRows;
+    expect(rows.length).toBe(2);
+    expect(rows[1].evicted).toBe(true);
+  });
+
+  it('draws the camp grid with the ballot in it', () => {
+    const dossier = buildDossier(PLAYER, { seasonDocs: [DOC] });
+    const html = renderArticle(dossier, 'total-drama', { root: '.' });
+    expect(html).toMatch(/Episode by episode/);
+    expect(html).toMatch(/Voted for/);
+    expect(html).toMatch(/A clown attacked me/);
+    // Big Brother's vocabulary must not appear on a camp's grid.
+    expect(html).not.toMatch(/Head of Household|Power of Veto/);
+  });
+});

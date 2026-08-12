@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════
 // stats-export.js — Per-player data extraction for end-of-season export
 // ══════════════════════════════════════════════════════════════════════
-import { gs, players, seasonConfig } from './core.js';
+import { gs, players, seasonConfig, TWIST_CATALOG } from './core.js';
 import { summariseWeek } from './bb-run.js';
 import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
@@ -1527,6 +1527,7 @@ export function extractSeasonTemplate() {
     showmances: _extractShowmances(),
     alliances: _extractAlliances(),
     finalTribalCouncil: _extractFinalTribalCouncil(),
+    twists: _extractTwists(),
     seasonNarrative: '[AI_FILL]',
     awards: '[AI_FILL]',
     emoji: '[AI_FILL]'
@@ -2896,10 +2897,67 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
     showmances: _extractShowmances(),
     alliances: _extractAlliances(),
     rivalries: _extractRivalries(),
+    twists: _extractTwists(),
     seasonNarrative: '[AI_FILL]',
     awards: '[AI_FILL]',
     emoji: '[AI_FILL]',
   };
+}
+
+/**
+ * The twists this season actually ran.
+ *
+ * Nothing in the export carried them, so every season page's Twists section
+ * said "nothing in this season's record identifies a twist" about seasons that
+ * ran a dozen. Two sources, and they answer different questions:
+ *
+ *   - `seasonConfig.twistSchedule` is the PLAN: which twist was booked on
+ *     which episode, by id, so the catalog can supply its name and what it
+ *     does. Only episodes the season actually reached are counted — a twist
+ *     booked for episode 30 of a season that ended at 26 never happened.
+ *   - `ep.twists` is what FIRED, including the ones nothing scheduled (a fan
+ *     vote return, a jury elimination). Recorded by type; a type the catalog
+ *     does not know is still reported, because it happened.
+ *
+ * Grouped by twist rather than by episode: a wiki's Twists section is a list
+ * of the season's rules, with the rounds each one applied to.
+ */
+function _extractTwists() {
+  const eps = (gs.episodeHistory || []).length;
+  const seen = new Map();   // id -> { id, name, emoji, desc, category, episodes:[] }
+
+  const add = (id, epNum, known) => {
+    if (!id) return;
+    if (!seen.has(id)) {
+      const c = known || TWIST_CATALOG.find(t => t.id === id) || null;
+      seen.set(id, {
+        id,
+        name: c?.name || String(id).replace(/[-_]/g, ' ').replace(/\b\w/g, m => m.toUpperCase()),
+        emoji: c?.emoji || '',
+        desc: c?.desc || '',
+        category: c?.category || '',
+        // A twist the catalog does not know still gets listed, flagged so a
+        // reader is not told the engine has a card it does not have.
+        inCatalog: !!c,
+        episodes: [],
+      });
+    }
+    const row = seen.get(id);
+    if (epNum && !row.episodes.includes(epNum)) row.episodes.push(epNum);
+  };
+
+  for (const t of (seasonConfig.twistSchedule || []).filter(Boolean)) {
+    const epNum = Number(t.episode);
+    if (!Number.isFinite(epNum) || epNum > eps) continue;   // booked but never reached
+    add(t.type, epNum);
+  }
+  (gs.episodeHistory || []).forEach((ep, i) => {
+    for (const fired of (ep?.twists || [])) add(fired?.type, i + 1);
+  });
+
+  return [...seen.values()]
+    .map(t => ({ ...t, episodes: t.episodes.sort((a, b) => a - b) }))
+    .sort((a, b) => (a.episodes[0] || 0) - (b.episodes[0] || 0));
 }
 
 /**

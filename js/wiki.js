@@ -145,6 +145,47 @@ export function recordsHeldBy(playerId, milestonesByShow = {}) {
   return held;
 }
 
+/** A non-empty array, or nothing — so a filled field is not replaced by []. */
+function _arr(v) { return Array.isArray(v) && v.length ? v : null; }
+
+/**
+ * One player's round-by-round history, from the season document.
+ *
+ * This existed for Big Brother only, because it was built from `weeks` — a
+ * Head of Household, a block, a veto. Total Drama has none of those, so
+ * every Total Drama article had the section missing entirely rather than
+ * showing the thing a camp DOES have: who they wrote down, who wrote them
+ * down, and the night it caught up with them.
+ */
+function _weekRowsFromDoc(found, name) {
+  if (!found) return null;
+  const doc = found.doc;
+  if (Array.isArray(doc.weeks) && doc.weeks.length) return null;   // the house's own builder owns these
+  const rounds = Array.isArray(doc.votingHistory) ? doc.votingHistory : [];
+  if (!rounds.length) return null;
+
+  const rows = [];
+  let gone = false;
+  for (const r of rounds) {
+    if (gone) break;
+    const ballots = Array.isArray(r.votes) ? r.votes : [];
+    const mine = ballots.find(v => v.voter === name);
+    const against = ballots.filter(v => v.target === name).length;
+    const out = r.eliminated === name;
+    // Named the way the house's rows are named, because one renderer draws
+    // both: `evicted` and `votesAgainst` are the grid's own vocabulary.
+    // `votedFor` is the camp's addition — a ballot is public in the record.
+    rows.push({
+      week: Number(r.episode),
+      evicted: out,
+      votesAgainst: against,
+      votedFor: mine?.target || '',
+    });
+    if (out) gone = true;
+  }
+  return rows.length ? rows : null;
+}
+
 /**
  * Their career, one entry per show.
  *
@@ -152,9 +193,35 @@ export function recordsHeldBy(playerId, milestonesByShow = {}) {
  * Big Brother season is two careers, and a single chronological list says the
  * opposite.
  */
-export function careerOf(player, { seasonTitles = new Map() } = {}) {
+export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [] } = {}) {
   const byShow = new Map();
   const story = splitStory(player.story);
+
+  // ── THE SEASON DOCUMENT OUTRANKS THE PLAYERS DATABASE ──────────────
+  //
+  // Two records describe the same season. `players_database.json` is
+  // DERIVED — rebuilt by an export — and holds the numbers. The season
+  // document in data/seasons is where a season's prose is written, and the
+  // wiki fill writes into it directly.
+  //
+  // The article read only the derived copy, so a filled season showed the
+  // voice profile and no quotes: the fill had landed somewhere nothing on
+  // this page was looking. Prose now comes from the season document when it
+  // is loaded, and the derived copy remains the fallback for a season whose
+  // document is not to hand.
+  const docRow = new Map();
+  for (const doc of seasonDocs) {
+    if (!doc || !Array.isArray(doc.placements)) continue;
+    const row = doc.placements.find(p =>
+      p.name === player.name || (p.playerSlug && p.playerSlug === player.id));
+    if (!row) continue;
+    const n = Number(doc.seasonNumber ?? doc.season);
+    if (Number.isFinite(n)) docRow.set(`${doc.format || ''}:${n}`, { row, doc });
+  }
+  /** The season document's row for one appearance, whichever way it is keyed. */
+  const rowFor = d => docRow.get(`${fmtOf(d)}:${Number(d.season)}`)
+    || docRow.get(`:${Number(d.season)}`)
+    || null;
 
   for (const d of player.seasonDetails || []) {
     const f = fmtOf(d);
@@ -186,12 +253,13 @@ export function careerOf(player, { seasonTitles = new Map() } = {}) {
       // The per-week row, when the season document was reachable. Absent is a
       // normal state — a season nobody has published yet still gets an
       // article, it simply has no grid in it.
-      weekRows: Array.isArray(d.weekRows) ? d.weekRows : null,
+      weekRows: Array.isArray(d.weekRows) ? d.weekRows
+        : _weekRowsFromDoc(rowFor(d), player.name),
       // Written from the episodes rather than from the voice profile. Absent
       // until a season has been through the wiki fill.
-      personality: d.personality || '',
-      quotes: Array.isArray(d.quotes) ? d.quotes : [],
-      trivia: Array.isArray(d.trivia) ? d.trivia : [],
+      personality: rowFor(d)?.row.personality || d.personality || '',
+      quotes: _arr(rowFor(d)?.row.quotes) || _arr(d.quotes) || [],
+      trivia: _arr(rowFor(d)?.row.trivia) || _arr(d.trivia) || [],
     });
   }
 
@@ -312,7 +380,7 @@ export function buildDossier(player, {
       bio.archetype,
     ].filter(Boolean).join(' · '),
     personality: personalityOf(player.name, voices),
-    career: careerOf(player, { seasonTitles }),
+    career: careerOf(player, { seasonTitles, seasonDocs }),
     relationships,
     couple: coupleStatus(relationships),
     records: recordsHeldBy(player.id, milestonesByShow),

@@ -665,32 +665,47 @@ function buildRecords(season){
         cast[1] ? ['Runner-up', esc(cast[1].name)] : null,
       ].filter(Boolean);
 
-      /* ── 2. twists, derived rather than declared ──
-         The season document does not carry a twist list, so nothing is
-         claimed that the weeks cannot show. A season exported before a
-         field existed simply does not mention it, which is honest — the
-         alternative is a Twists section that says "none" about a season
-         that ran four of them. */
-      const twists = [];
+      /* ── 2. twists ──
+         DECLARED if the export carried them, derived from the weeks if not.
+
+         The export used to carry no twist list at all, which is why this
+         section told a Total Drama season that ran a dozen of them that
+         "nothing in this season's record identifies a twist". It carries
+         them now — the plan joined to what actually fired — so a season
+         exported from today says what it ran, with the episodes it ran on,
+         and older seasons keep the derived version below. */
+      const declared = (Array.isArray(s.twists) ? s.twists : [])
+        .filter(t => t && (t.name || t.id));
+      const twists = declared.map(t => {
+        const eps = (t.episodes || []).filter(Boolean);
+        const when = eps.length
+          ? ` ${roundWord}${eps.length === 1 ? '' : 's'} ${eps.join(', ')}.`
+          : '';
+        return [`${t.emoji ? `${esc(t.emoji)} ` : ''}${esc(t.name)}`,
+          `${esc(t.desc || 'No description is recorded for this twist.')}${when}`];
+      });
+      // Derived only when the export declared nothing — otherwise the same
+      // twist would be listed twice, once by name and once by its symptom.
+      const derive = !declared.length;
       const arenaWeeks = weeks.filter(w => w.safetyWinner);
-      if (arenaWeeks.length) {
+      if (derive && arenaWeeks.length) {
         twists.push([`BB Block Buster`, `Three nominees, and a competition on eviction night
           where one of them wins their way off the block. Played in
           ${arenaWeeks.length} week${arenaWeeks.length === 1 ? '' : 's'} —
           ${arenaWeeks.map(w => `${esc(w.safetyWinner)} (wk ${w.week})`).join(', ')}.`]);
       }
       const sanctum = weeks.filter(w => w.publicVote);
-      if (sanctum.length) {
+      if (derive && sanctum.length) {
         twists.push(['The Sanctum', `No secret ballot: the house voted in front of each other,
           one at a time. Week${sanctum.length === 1 ? '' : 's'} ${sanctum.map(w => w.week).join(', ')}.`]);
       }
       const threeNom = weeks.filter(w => (w.initialNominees || []).length > 2);
-      if (threeNom.length && !arenaWeeks.length) {
+      if (derive && threeNom.length && !arenaWeeks.length) {
         twists.push(['Three nominees', `The Head of Household named three in
           ${threeNom.length} week${threeNom.length === 1 ? '' : 's'}.`]);
       }
       const ties = weeks.filter(w => w.tieBreak);
-      if (ties.length) {
+      if (derive && ties.length) {
         twists.push(['Tied votes', `The house split evenly ${ties.length}
           time${ties.length === 1 ? '' : 's'}, and the Head of Household broke it.`]);
       }
@@ -756,11 +771,33 @@ function buildRecords(season){
           <span class="sr-key is-saved">NOM</span> nominated and came off ·
           <span class="sr-key is-out">OUT</span> evicted.
           The last column is votes received across the season.
-        </p>` : (weeks.length
-          ? `<p class="sr-thin">This show does not have a block or a veto — its competition
-             record is per player rather than per ${roundWord.toLowerCase()}, and lives on the
-             Placements tab.</p>`
-          : '<p class="sr-thin">No round-by-round record was exported for this season.</p>');
+        </p>` : (cast.some(p => (p.challengeWins || 0) + (p.immunityWins || 0) + (p.rewardWins || 0) + (p.idolsFound || 0))
+          ? `<div class="sr-scroll">
+              <table class="sr-grid sr-comp">
+                <thead><tr><th>Contestant</th><th>Challenge wins</th><th>Immunity</th>
+                  <th>Rewards</th><th>Idols</th><th>Advantages</th><th>Votes against</th></tr></thead>
+                <tbody>${cast.map(p => `<tr>
+                  <th><a href="player.html?player=${esc(p.playerSlug)}&view=wiki">${esc(p.name)}</a></th>
+                  <td>${p.challengeWins || ''}</td>
+                  <td>${p.immunityWins || ''}</td>
+                  <td>${p.rewardWins || ''}</td>
+                  <td>${p.idolsFound || ''}</td>
+                  <td>${(p.advPlayed || 0) + (p.advHeld || 0) || ''}</td>
+                  <td class="sr-grid-tot">${p.votesReceived || ''}</td>
+                </tr>`).join('')}</tbody>
+              </table>
+            </div>
+            <p class="sr-thin">
+              A camp has no block and no veto, so its competition record is per contestant rather
+              than per ${roundWord.toLowerCase()}: challenge wins across the season, of which the
+              individual immunity wins are the ones that could not be taken away, plus rewards,
+              idols found, advantages played or still in hand at the end, and votes cast against
+              them. Ordered by finish.
+            </p>`
+          : (weeks.length
+            ? `<p class="sr-thin">Nothing in this season's record counts a competition. A season
+               exported before the per-player challenge record existed does not carry it.</p>`
+            : '<p class="sr-thin">No round-by-round record was exported for this season.</p>'));
 
       /* ── 4b. the voting history ──
          The table every Big Brother wiki is built around, and the one thing

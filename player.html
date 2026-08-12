@@ -667,15 +667,59 @@ function _wireViewTabs(player) {
   if (new URLSearchParams(location.search).get('view') === 'wiki') show('wiki');
 }
 
+/**
+ * The season documents for the seasons this person actually played.
+ *
+ * The article used to be built from `players_database.json` alone — a DERIVED
+ * copy, rebuilt by an export. A season's prose lives in its own document in
+ * data/seasons, which is also where the wiki fill writes, so a filled season
+ * showed the voice profile and no quotes: the writing was in a file nothing on
+ * this page opened. Two or three fetches, only for the seasons on their record.
+ */
+async function _loadSeasonDocs(player) {
+  if (window.__seasonDocs) return window.__seasonDocs;
+  const SHOW_PREFIX = { 'total-drama': '', 'big-brother': 'bb' };
+  const wanted = new Map();
+  for (const d of player.seasonDetails || []) {
+    const n = Number(d.season);
+    if (!Number.isFinite(n)) continue;
+    const fmt = d.format || 'total-drama';
+    // Total Drama keeps the bare filename; every other show is namespaced.
+    // Same rule the export and the studio worker use.
+    const pre = SHOW_PREFIX[fmt] ?? fmt.split('-').map(w => w[0]).join('');
+    wanted.set(`${fmt}:${n}`, { fmt, n, file: pre ? `${pre}-${n}-data.json` : `season${n}-data.json` });
+  }
+  const docs = await Promise.all([...wanted.values()].map(async ({ fmt, n, file }) => {
+    try {
+      const doc = await fetch(`data/seasons/${file}`).then(r => r.ok ? r.json() : null);
+      // Stamped with what was asked for, so a document that does not name its
+      // own show still matches the right appearance.
+      return doc ? { ...doc, format: fmt, seasonNumber: doc.seasonNumber ?? n } : null;
+    } catch { return null; }
+  }));
+  window.__seasonDocs = docs.filter(Boolean);
+  return window.__seasonDocs;
+}
+
 function _renderWiki(player) {
   const host = document.getElementById('pp-view-wiki');
   if (!host || !window.wiki?.buildDossier || !window.wikiView?.renderArticle) return;
+
+  // First paint can use whatever is already loaded; the documents arrive and
+  // it draws again with the written prose in it.
+  if (!window.__seasonDocs) {
+    _loadSeasonDocs(player).then(docs => { if (docs.length) _renderWiki(player); });
+  }
 
   const dossier = window.wiki.buildDossier(player, {
     voices: window.__voices || {},
     roster: window.__roster || [],
     seasonTitles: window.__seasonTitles || new Map(),
     milestonesByShow: window.__milestones || {},
+    // The seasons this person played, as documents. Fetched once and cached on
+    // window; the article draws without them and redraws when they land, so a
+    // slow network costs nothing but a moment of the derived text.
+    seasonDocs: window.__seasonDocs || [],
   });
   if (!dossier) return;
 

@@ -306,9 +306,13 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   // than filled with "safe", so the grid reads as a shape.
   for (const sn of show.seasons) {
     if (!sn.weekRows?.length) continue;
+    // A camp has no block: its round says who they wrote down and who wrote
+    // them down, which is the whole of a Total Drama round on the record.
+    const isCamp = sn.weekRows.some(w => w.votedFor !== undefined) && !sn.weekRows.some(w => w.hoh || w.onBlock || w.veto);
+    const roundWord = isCamp ? 'Episode' : 'Week';
     const cell = w => {
       if (w.hoh) return ['HOH', 'wk-c-hoh'];
-      if (w.evicted) return ['Evicted', 'wk-c-out'];
+      if (w.evicted) return [isCamp ? 'Voted out' : 'Evicted', 'wk-c-out'];
       if (w.arenaWon) return ['Block Buster', 'wk-c-arena'];
       if (w.veto) return ['Veto', 'wk-c-veto'];
       if (w.onBlock) return ['Nominated', 'wk-c-nom'];
@@ -317,17 +321,25 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
     };
     const rows = sn.weekRows;
     const title = show.seasons.length > 1
-      ? `Week by week — ${sn.title ? esc(sn.title) : `Season ${sn.season}`}`
-      : 'Week by week';
+      ? `${roundWord} by ${roundWord.toLowerCase()} — ${sn.title ? esc(sn.title) : `Season ${sn.season}`}`
+      : `${roundWord} by ${roundWord.toLowerCase()}`;
     section(`weeks${sn.season}`, title, `
       <div class="wk-scroll">
         <table class="wk-table wk-weeks">
-          <thead><tr><th>Week</th>${rows.map(w => `<th>${w.week}</th>`).join('')}</tr></thead>
+          <thead><tr><th>${roundWord}</th>${rows.map(w => `<th>${w.week}</th>`).join('')}</tr></thead>
           <tbody>
+            ${
+              // A camp's record holds no power to mark, so this row says one
+              // thing: the round it ended. For a winner it says nothing at all,
+              // and nineteen blank cells read as a broken table rather than as
+              // an unbroken run — so the row is dropped instead of drawn empty.
+              (isCamp && !rows.some(w => cell(w)[0])) ? '' : `
             <tr><th>${esc(dossier.name)}</th>${rows.map(w => {
               const [label, cls] = cell(w);
               return `<td class="${cls}">${label}</td>`;
-            }).join('')}</tr>
+            }).join('')}</tr>`}
+            ${isCamp ? `<tr class="wk-weeks-sub"><th>Voted for</th>${rows.map(w =>
+              `<td>${esc(w.votedFor || '')}</td>`).join('')}</tr>` : ''}
             <tr class="wk-weeks-sub"><th>Votes against</th>${rows.map(w =>
               `<td>${w.votesAgainst || ''}</td>`).join('')}</tr>
           </tbody>
@@ -342,6 +354,11 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
         if (arena) bits.push(`in the Block Buster ${arena}x, winning ${won}`);
         const nominated = rows.filter(w => w.nominated).length;
         if (nominated) bits.push(`nominated ${nominated}x`);
+        if (isCamp) {
+          const total = rows.reduce((n, w) => n + (w.votesAgainst || 0), 0);
+          bits.push(`${rows.length} ${rows.length === 1 ? 'round' : 'rounds'} played`);
+          bits.push(total ? `${total} vote${total === 1 ? '' : 's'} cast against them` : 'never had a vote cast against them');
+        }
         return bits.length ? esc(bits.join(' · ')) : '';
       })()}</p>`);
   }

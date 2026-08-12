@@ -229,6 +229,38 @@ describe('the record an article is written from', () => {
     expect(html).toContain('Longest arena run');
   });
 
+  it('draws the week grid, with the strongest thing that happened in each cell', () => {
+    // The table people screenshot. Winning the arena outranks being nominated,
+    // because being nominated is HOW you get into the arena — a cell that said
+    // "Nominated" for the week somebody won their way off it would be telling
+    // the story backwards.
+    const withWeeks = { ...player, seasonDetails: [{ ...player.seasonDetails[0],
+      weekRows: [
+        { week: 1, hoh: true, votesAgainst: 0 },
+        { week: 2, nominated: true, onBlock: true, votesAgainst: 3 },
+        { week: 3, nominated: true, arenaPlayed: true, arenaWon: true, votesAgainst: 0 },
+        { week: 4, veto: true, votesAgainst: 0 },
+        { week: 5, nominated: true, onBlock: true, evicted: true, votesAgainst: 6 },
+      ] }] };
+    const html = renderArticle({ ...withWeeks, career: careerOf(withWeeks) }, 'big-brother',
+      { root: '.', allShows: ['big-brother'] });
+    expect(html).toContain('Week by week');
+    expect(html).toContain('wk-c-hoh');
+    expect(html).toContain('wk-c-arena');
+    expect(html).toContain('wk-c-out');
+    // The week they won the arena reads as the arena, not as a nomination.
+    const cells = html.match(/<td class="wk-c-[a-z]*">[^<]*<\/td>/g) || [];
+    expect(cells[2]).toContain('Block Buster');
+    // And the summary underneath counts what the row shows.
+    expect(html).toMatch(/in the Block Buster 1x, winning 1/);
+  });
+
+  it('leaves the grid out when no season document was reachable', () => {
+    const html = renderArticle({ ...player, career: careerOf(player) }, 'big-brother',
+      { root: '.', allShows: ['big-brother'] });
+    expect(html).not.toContain('Week by week');
+  });
+
   it('gives an article a gallery placeholder to fill', () => {
     const html = renderArticle({ ...player, career: careerOf(player) }, 'big-brother',
       { root: '.', allShows: ['big-brother'] });

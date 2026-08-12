@@ -447,6 +447,32 @@ if (!playerId) {
           if (match.alliances && match.alliances.length && (!sd.alliances || !sd.alliances.length)) sd.alliances = match.alliances;
           if (match.rivalries && match.rivalries.length && (!sd.rivalries || !sd.rivalries.length)) sd.rivalries = match.rivalries;
           if (match.strategicRank && !sd.strategicRank) sd.strategicRank = match.strategicRank;
+          // ── THE WEEK-BY-WEEK ROW ──────────────────────────────────
+          //
+          // A wiki article's most characteristic table is what happened to
+          // this person each week, and the season document has carried the
+          // weeks all along. Reduced to THIS player here, next to the other
+          // per-season merges, so the dossier stays a document about one
+          // character rather than a copy of the season.
+          const weeks = Array.isArray(sData.weeks) ? sData.weeks : [];
+          if (weeks.length && player.name) {
+            const me = player.name;
+            sd.weekRows = weeks.map(w => {
+              const arena = w.blockBeforeSafety || [];
+              const nominated = (w.initialNominees || []).includes(me) || arena.includes(me);
+              return {
+                week: w.week,
+                hoh: w.hoh === me,
+                veto: w.vetoWinner === me,
+                arenaWon: w.safetyWinner === me,
+                arenaPlayed: arena.includes(me),
+                nominated,
+                onBlock: (w.finalNominees || []).includes(me),
+                evicted: w.evicted === me,
+                votesAgainst: (w.votes || {})[me] || 0,
+              };
+            });
+          }
         })
         .catch(() => null);
     });

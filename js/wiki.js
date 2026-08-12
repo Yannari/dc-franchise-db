@@ -183,6 +183,10 @@ export function careerOf(player, { seasonTitles = new Map() } = {}) {
         juryVotes: d.juryVotes || 0,
         ...(d.bb ? { bb: { ...d.bb } } : {}),
       },
+      // The per-week row, when the season document was reachable. Absent is a
+      // normal state — a season nobody has published yet still gets an
+      // article, it simply has no grid in it.
+      weekRows: Array.isArray(d.weekRows) ? d.weekRows : null,
     });
   }
 

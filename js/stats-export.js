@@ -2843,6 +2843,18 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
       voteChanges: w.voteChanges,
       tieBreak: w.tieBreak,
       evicted: w.evicted,
+      // ── THE ARENA ────────────────────────────────────────────────
+      //
+      // Who was on the block when the Block Buster was played, and who won
+      // their way out of it. Without these two, a week where somebody saved
+      // themselves exports as a week where they were simply never nominated —
+      // `finalNominees` has already had them removed — so the most-watched
+      // competition of the night left no trace in the record at all.
+      blockBeforeSafety: w.blockBeforeSafety || null,
+      safetyWinner: w.safetyWinner || null,
+      // The public ballot, when there was one. A Sanctum week is the only
+      // night the house saw every vote cast, and a tally cannot say that.
+      publicVote: !!w.publicVote,
       // WHICH COMPETITION IT WAS.
       //
       // The engine has always known — `week.hohCompetition` carries the name,

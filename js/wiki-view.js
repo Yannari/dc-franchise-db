@@ -264,6 +264,58 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
       </table>`);
   }
 
+  // ── WEEK BY WEEK ───────────────────────────────────────────────────
+  //
+  // The most characteristic thing on a fandom character page: a row of weeks
+  // with what happened to this person in each. It is the table people screenshot
+  // and argue about, and it is what turns a placement into a game.
+  //
+  // One cell per week, and the cell says the STRONGEST thing that happened —
+  // winning the arena outranks being nominated, because being nominated is how
+  // you get into the arena. A week with nothing in it is left blank rather
+  // than filled with "safe", so the grid reads as a shape.
+  for (const sn of show.seasons) {
+    if (!sn.weekRows?.length) continue;
+    const cell = w => {
+      if (w.hoh) return ['HOH', 'wk-c-hoh'];
+      if (w.evicted) return ['Evicted', 'wk-c-out'];
+      if (w.arenaWon) return ['Block Buster', 'wk-c-arena'];
+      if (w.veto) return ['Veto', 'wk-c-veto'];
+      if (w.onBlock) return ['Nominated', 'wk-c-nom'];
+      if (w.nominated) return ['Nominated', 'wk-c-nom'];
+      return ['', ''];
+    };
+    const rows = sn.weekRows;
+    const title = show.seasons.length > 1
+      ? `Week by week — ${sn.title ? esc(sn.title) : `Season ${sn.season}`}`
+      : 'Week by week';
+    section(`weeks${sn.season}`, title, `
+      <div class="wk-scroll">
+        <table class="wk-table wk-weeks">
+          <thead><tr><th>Week</th>${rows.map(w => `<th>${w.week}</th>`).join('')}</tr></thead>
+          <tbody>
+            <tr><th>${esc(dossier.name)}</th>${rows.map(w => {
+              const [label, cls] = cell(w);
+              return `<td class="${cls}">${label}</td>`;
+            }).join('')}</tr>
+            <tr class="wk-weeks-sub"><th>Votes against</th>${rows.map(w =>
+              `<td>${w.votesAgainst || ''}</td>`).join('')}</tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="wk-thin">${(() => {
+        const arena = rows.filter(w => w.arenaPlayed).length;
+        const won = rows.filter(w => w.arenaWon).length;
+        const bits = [];
+        if (rows.filter(w => w.hoh).length) bits.push(`${rows.filter(w => w.hoh).length}x Head of Household`);
+        if (rows.filter(w => w.veto).length) bits.push(`${rows.filter(w => w.veto).length}x Power of Veto`);
+        if (arena) bits.push(`in the Block Buster ${arena}x, winning ${won}`);
+        const nominated = rows.filter(w => w.nominated).length;
+        if (nominated) bits.push(`nominated ${nominated}x`);
+        return bits.length ? esc(bits.join(' · ')) : '';
+      })()}</p>`);
+  }
+
   // Relationships, when any are on record for this show.
   const rel = dossier.relationships || {};
   const relBits = [];
@@ -353,9 +405,26 @@ export const WIKI_CSS = `
    sentence. */
 .wk-comp td, .wk-comp th{ text-align:center; }
 .wk-comp td:first-child, .wk-comp th:first-child{ text-align:left; }
+/* A season called "Big Brother Season 1: The House That Kept Receipts" was
+   wrapping one word per line in a 60px column and pushing the row eight lines
+   tall. The title gets the room; the numbers do not need it. */
+.wk-comp td:first-child{ min-width:200px; }
+.wk-comp{ table-layout:auto; }
 .wk-comp td{ font-variant-numeric:tabular-nums; }
 .wk-comp em{ opacity:.75; font-style:normal; font-size:11px; }
 .wk-total td{ font-weight:700; border-top:2px solid rgba(255,255,255,.16); }
+/* The week grid scrolls sideways on its own rather than pushing the article
+   wide — a seventeen-week season is a lot of columns on a phone. */
+.wk-scroll{ overflow-x:auto; margin-bottom:8px; }
+.wk-weeks{ min-width:max-content; }
+.wk-weeks th, .wk-weeks td{ text-align:center; white-space:nowrap; font-size:12px; padding:5px 8px; }
+.wk-weeks tbody th{ text-align:left; position:sticky; left:0; background:#151226; }
+.wk-weeks-sub td, .wk-weeks-sub th{ opacity:.65; font-size:11px; }
+.wk-c-hoh{ background:rgba(250,204,21,.16); color:#fde68a; font-weight:700; }
+.wk-c-veto{ background:rgba(56,189,248,.16); color:#bae6fd; font-weight:700; }
+.wk-c-arena{ background:rgba(79,191,139,.18); color:#a7f3d0; font-weight:700; }
+.wk-c-nom{ background:rgba(248,113,113,.14); color:#fecaca; }
+.wk-c-out{ background:rgba(248,113,113,.3); color:#fff; font-weight:700; }
 .wk-gallery{ display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; }
 .wk-gitem{ display:block; aspect-ratio:3/4; overflow:hidden; border-radius:6px;
   border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); }

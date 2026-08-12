@@ -2563,10 +2563,75 @@ export function buildBigBrotherSeasonDocument(seasonNumber) {
  * the button worked, it just ran an exporter that reads tribes and challenge
  * records off a house that has neither. One entry point, one decision.
  */
+// ── WRITING THE WIKI AS PART OF THE EXPORT ───────────────────────────
+//
+// Filling a season used to mean leaving the simulator for current-season.html,
+// pressing two buttons, and merging two downloads by hand. The export already
+// knows the season, the show and how to publish, and the fills need exactly
+// that plus the transcripts — which are in IndexedDB, readable from any page.
+//
+// Off by default and remembered. An export is re-run for reasons that have
+// nothing to do with prose (a missing field, a re-sync), and every fill is two
+// paid calls that would also overwrite anything written by hand since.
+const WIKI_FILL_FLAG = 'wiki_fill_on_export';
+
+export function wikiFillOnExport() {
+  try { return localStorage.getItem(WIKI_FILL_FLAG) === 'on'; } catch { return false; }
+}
+
+export function setWikiFillOnExport(on) {
+  try {
+    if (on) localStorage.setItem(WIKI_FILL_FLAG, 'on');
+    else localStorage.removeItem(WIKI_FILL_FLAG);
+  } catch { /* private browsing */ }
+  return wikiFillOnExport();
+}
+
+/**
+ * Run both fills after an export has published the season document.
+ *
+ * The season document has to be in the repo first: the fill posts only what it
+ * produced and the worker merges it into the file that is there. So this runs
+ * AFTER the export, and says so plainly when publishing is off rather than
+ * spending two calls on an answer it cannot save.
+ */
+async function _fillWikiAfterExport(onStatus) {
+  const _status = onStatus || (() => {});
+  const { committingIsOff, runBothFills } = await import('./wiki-fill-run.js');
+  if (committingIsOff()) {
+    _status('Wiki fill skipped: publishing is off, so there is nothing to write into. '
+      + 'Turn publishing on, or use the buttons on the Current Season page to get a file.');
+    return null;
+  }
+  const season = _getSeasonNumber();
+  const format = seasonFormat(seasonConfig) || DEFAULT_FORMAT;
+  const out = await runBothFills({ season, format, onStatus: t => _status(`Wiki: ${t}`) });
+
+  const bits = [];
+  for (const r of [out.characters, out.gameHistory]) {
+    if (!r) continue;
+    if (!r.ok) { bits.push(`${r.reason}`); continue; }
+    if (r.sent?.failed) { bits.push(`wrote ${r.filled} but could not commit (${r.sent.failed})`); continue; }
+    bits.push(r.kind === 'characters'
+      ? `${r.filled} of ${r.cast} in the cast`
+      : `${r.filled} of ${r.rounds} rounds`);
+  }
+  _status(`Wiki fill: ${bits.join(' · ')}`);
+  return out;
+}
+
 export async function exportSeason(onStatus) {
-  return seasonConfig?.format === 'big-brother'
-    ? exportAndFillBigBrotherSeason(onStatus)
-    : exportAndFillNarratives(onStatus);
+  const out = seasonConfig?.format === 'big-brother'
+    ? await exportAndFillBigBrotherSeason(onStatus)
+    : await exportAndFillNarratives(onStatus);
+  // The prose comes after the record, because the fill patches the committed
+  // document. A failure here never fails the export — the season is already
+  // published and the fill can be run again from the Current Season page.
+  if (wikiFillOnExport()) {
+    try { await _fillWikiAfterExport(onStatus); }
+    catch (e) { (onStatus || (() => {}))(`Wiki fill failed: ${e.message || e}`); }
+  }
+  return out;
 }
 
 export async function exportAndFillBigBrotherSeason(onStatus) {

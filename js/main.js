@@ -360,6 +360,14 @@ async function init() {
   if (_sfCb2) _sfCb2.checked = _sfSaved2;
   _spoilerFree = _sfSaved2;
 
+  // Whether Export Season also writes the wiki from the episodes. Remembered,
+  // so finale night is one button and a re-export does not quietly spend two
+  // AI calls on prose nobody asked to rewrite.
+  try {
+    const _wfCb = document.getElementById('wiki-fill-on-export');
+    if (_wfCb) _wfCb.checked = statsExportMod.wikiFillOnExport();
+  } catch {}
+
   // Restore last active tab — a refresh should land you where you were, not
   // force the Season Hub. Hub stays the fallback for an active season.
   const _savedTab = localStorage.getItem('simulator_activeTab');

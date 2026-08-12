@@ -1176,72 +1176,24 @@ Owen: This is going to be amazing!"
     }
 
   
-  // ── FILL THE WIKI FROM THE EPISODES ────────────────────────────────
+  // ── THE TWO FILLS ──────────────────────────────────────────────────
   //
-  // Everything a character article says about who somebody WAS has been
-  // written from `summaryText` — the simulator's own prose, which knows the
-  // vote was ten to two and cannot know that Ireland answers in single
-  // syllables before coffee. The screenplay knows, and it has been sitting in
-  // IndexedDB unread by anything but the episode player.
-  //
-  // Reads the season's transcripts, cuts one thread per houseguest, sends the
-  // whole cast in a single call, and writes the result into the season
-  // document's placements — beside `story` and `keyMoments`, which is where
-  // the player page already looks.
+  // Both used to be written out longhand here: resolve the worker, read the
+  // document, read the transcripts, check the mode, post, merge, save. Tying
+  // the same thing to Export Season would have meant a second copy of all of
+  // it, so the orchestration moved to js/wiki-fill-run.js and these two
+  // handlers keep what is genuinely theirs — the status line, and the download
+  // that catches a fill nobody could commit.
   // ── SAVING WHAT THE FILL COST ──────────────────────────────────────
   //
-  // Both fills used `downloadJSON`, which is declared in a different scope
-  // in this file and is not reachable from here — so they ran, paid for the
-  // request, and then threw "downloadJSON is not defined" on their last
-  // line, losing the result. Hence a local one.
+  // `downloadJSON` is declared in a scope this code cannot reach, so both
+  // fills once ran the whole way, paid for the request, and died on their last
+  // line with "downloadJSON is not defined". Hence a local one.
   //
-  // The filled document is also parked on `window._lastFill` before the
-  // download is attempted. If the save fails for any reason, the answer is
-  // still in the tab and can be recovered from the console with
-  // `copy(JSON.stringify(_lastFill.doc, null, 2))` rather than paid for
-  // twice.
-  // ── COMMIT THE FILL STRAIGHT TO THE SITE ───────────────────────────
-  //
-  // Downloading was the whole workflow: run a fill, get a file, run the
-  // other fill, get a second file with the SAME NAME and none of the first
-  // one's work, merge them by hand, upload, wait for the site to sync. Twice.
-  //
-  // The studio worker already commits to the repo, so the fill posts only
-  // what it produced and the merge happens there, against the file as it is
-  // right now. Two fills in any order both land, and nothing has to be
-  // reconciled by hand.
-  //
-  // Same credentials the season export uses (`studio_api_base` /
-  // `studio_api_token`), and the same courtesy: `studio_publish_mode` set to
-  // 'download' means somebody deliberately turned committing off, so this
-  // does not go behind their back. A failure of any kind falls through to
-  // the download, which is the safety net that means a paid-for fill is
-  // never lost to a network.
-  async function _fillCommit(patch, { season, format }) {
-    let base = '', token = '';
-    try {
-      if (localStorage.getItem('studio_publish_mode') === 'download') return null;
-      base = (localStorage.getItem('studio_api_base')
-        || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, '');
-      token = localStorage.getItem('studio_api_token') || '';
-    } catch { return null; }
-    if (!base) return null;
-
-    try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) headers.Authorization = `Bearer ${token}`;
-      const r = await fetch(base + '/api/season-fill', {
-        method: 'POST', headers,
-        body: JSON.stringify({ seasonNumber: season, format, ...patch }),
-      });
-      const j = await r.json().catch(() => null);
-      if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || `HTTP ${r.status}`);
-      return j;
-    } catch (e) {
-      return { failed: String(e.message || e) };
-    }
-  }
-
+  // The document is parked on `window._lastFill` before the download is
+  // attempted: if the save fails for any other reason the answer is still in
+  // the tab, recoverable with `copy(JSON.stringify(_lastFill.doc, null, 2))`
+  // rather than paid for twice.
   function _fillSave(doc, filename) {
     window._lastFill = { filename, doc };
     const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)],
@@ -1255,240 +1207,48 @@ Owen: This is going to be amazing!"
     URL.revokeObjectURL(url);
   }
 
-  window.fillWikiFromEpisodes = async function fillWikiFromEpisodes() {
-    const btn = document.getElementById('wiki-fill-btn');
-    const out = document.getElementById('wiki-fill-status');
+  async function _runFill(which, btnId, statusId) {
+    const btn = document.getElementById(btnId);
+    const out = document.getElementById(statusId);
     const say = t => { if (out) out.innerHTML = t; };
     const season = Number(document.getElementById('aiSeason')?.value) || 1;
     const format = _csFormat();
 
-    // ── WHICH WORKER ─────────────────────────────────────────────────
-    //
-    // The SEASON worker, beside narrative-fill — not the episode worker, which
-    // is a different deployment with a very similar name and its own field on
-    // this page. Resolved here rather than through getSeasonBuilderWorkerUrl()
-    // because that function is declared inside a later nested scope and is not
-    // reachable from this one; calling it threw ReferenceError before anything
-    // else could run.
-    const workerUrl = (() => {
-      const el = document.getElementById('seasonBuilderWorkerUrl');
-      const raw = (el && el.value.trim())
-        || localStorage.getItem('SEASON_BUILDER_WORKER_URL')
-        || 'https://dc-analytic-seasons.yannari19.workers.dev';
-      let u = raw.trim();
-      if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
-      return u.replace(/\/+$/, '');
-    })();
-
     btn?.setAttribute('disabled', 'disabled');
     try {
-      // The season document names the cast and is where the result goes back.
-      const file = (!format || format === CS_DEFAULT_FORMAT)
-        ? `season${season}-data.json`
-        : `${_csShows()[format]}-${season}-data.json`;
-      say(`Reading <code>data/seasons/${file}</code>…`);
-      const doc = await fetch(`data/seasons/${file}`).then(r => r.ok ? r.json() : null);
-      if (!doc || !Array.isArray(doc.placements)) {
-        say(`⚠️ No season document at <code>data/seasons/${file}</code>. Export the season first.`);
-        return;
-      }
-      const cast = doc.placements.map(p => p.name).filter(Boolean);
+      const run = await import('./js/wiki-fill-run.js');
+      const fn = which === 'characters' ? run.runCharacterFill : run.runGameHistoryFill;
+      const r = await fn({ season, format, onStatus: say });
+      if (!r.ok) { say(`⚠️ ${r.reason}`); return; }
 
-      // Every transcript this season has. Gaps are normal — an episode nobody
-      // generated simply is not in the thread.
-      say('Reading episode transcripts…');
-      const episodes = [];
-      for (let i = 1; i <= 40; i++) {
-        const text = await _csGet(_epKey(season, i, format));
-        if (text && String(text).trim()) episodes.push({ episode: i, transcript: String(text) });
-      }
-      if (!episodes.length) {
-        say('⚠️ No episode transcripts saved for this season, so there is nothing to read.');
-        return;
-      }
+      const what = which === 'characters'
+        ? `${r.filled} of ${r.cast} in the cast`
+        : `${r.filled} of ${r.rounds} rounds`;
 
-      // ── IS THIS EVEN THE RIGHT WORKER? ────────────────────────────
-      //
-      // Asked for a mode it does not have, the season worker's sibling does
-      // not error — it falls through to generateAnalytics and answers 200
-      // with an analytics object. So a misconfigured URL would look like a
-      // successful call that simply filled nobody in, after paying for it.
-      //
-      // One empty POST first. The right worker says "Missing threads".
-      say('Checking the worker…');
-      const ping = await fetch(workerUrl, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'wiki-fill' }),
-      }).then(r => r.json()).catch(() => ({}));
-      if (!/threads/i.test(String(ping.error || ''))) {
-        say(`⚠️ <code>${workerUrl}</code> does not have the <code>wiki-fill</code> mode.
-             That is usually the episode worker rather than the season one, or the season
-             worker has not been deployed since the mode was added
-             (<code>npm run deploy:seasons</code>).`);
-        return;
-      }
-
-      const { sliceCastThreads } = await import('./js/wiki-fill.js');
-      const threads = sliceCastThreads(episodes, cast);
-      const spoken = threads.filter(t => t.totals.confessionals + t.totals.lines > 0).length;
-      say(`${episodes.length} episodes · ${cast.length} houseguests · ${spoken} of them speak on camera.<br>Asking the writer…`);
-
-      const res = await fetch(workerUrl, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'wiki-fill', threads, season,
-          seasonTitle: doc.title || '', format }),
-      });
-      if (!res.ok) throw new Error(`Worker ${res.status}: ${(await res.text()).slice(0, 200)}`);
-      const json = await res.json();
-      const players = json.players || json.result?.players || [];
-      if (!players.length) throw new Error('The worker returned no players.');
-
-      // Merge by name into the document the player page already reads.
-      let filled = 0;
-      for (const p of players) {
-        const row = doc.placements.find(x => x.name === p.name);
-        if (!row) continue;
-        if (p.personality) row.personality = p.personality;
-        if (p.quotes?.length) row.quotes = p.quotes;
-        if (p.trivia?.length) row.trivia = p.trivia;
-        filled++;
-      }
-
-      // Straight to the site if committing is on; the download is the net.
-      say(`Wrote ${filled} of ${cast.length}. Saving…`);
-      const sent = await _fillCommit({ players }, { season, format });
-      if (sent && !sent.failed) {
-        const unknown = sent.unknown?.length
-          ? ` ${sent.unknown.length} name(s) were not in the cast and were skipped: ${sent.unknown.join(', ')}.`
+      // Committed: the site has it, and there is nothing to file by hand.
+      if (r.sent && !r.sent.failed && !r.sent.skipped) {
+        const unknown = r.sent.unknown?.length
+          ? ` ${r.sent.unknown.length} name(s) were not in the cast and were skipped: ${r.sent.unknown.join(', ')}.`
           : '';
-        say(`✅ Committed ${sent.players.length} houseguests to <code>${sent.path}</code>.${unknown}
-             The site rebuilds in about a minute, then their articles have Personality, Quotes
-             and Trivia.`);
+        say(`✅ Committed ${what} to <code>${r.sent.path}</code>.${unknown}
+             The site rebuilds in about a minute.`);
         return;
       }
-      _fillSave(doc, file);
-      say(`✅ Wrote ${filled} of ${cast.length} houseguests into <code>${file}</code>, which has just
-           downloaded${sent?.failed ? ` (could not commit: ${sent.failed})` : ''}. Drop it into
-           <code>data/seasons/</code> and their wiki articles will have Personality, Quotes
-           and Trivia.`);
+      // Otherwise the answer still exists and must not be lost to a network.
+      _fillSave(r.doc, r.file);
+      const why = r.sent?.failed ? ` (could not commit: ${r.sent.failed})`
+        : r.sent?.skipped ? ' (download-only mode)' : '';
+      say(`✅ Wrote ${what} into <code>${r.file}</code>, which has just downloaded${why}.
+           Drop it into <code>data/seasons/</code>.`);
     } catch (err) {
       say(`⚠️ ${String(err?.message || err)}`);
     } finally {
       btn?.removeAttribute('disabled');
     }
-  };
+  }
 
-  // ── FILL THE GAME HISTORY FROM THE EPISODES ────────────────────────
-  //
-  // The season wiki's Game history is derived from the export, so it says
-  // "Caleb won Head of Household. Joel was evicted, 6-3." — every word true
-  // and none of it a week. This sends each round's FACTS together with a
-  // digest of that round's screenplay and gets back a paragraph on how the
-  // week actually went, with the record as its skeleton.
-  window.fillGameHistoryFromEpisodes = async function fillGameHistoryFromEpisodes() {
-    const btn = document.getElementById('gh-fill-btn');
-    const out = document.getElementById('gh-fill-status');
-    const say = t => { if (out) out.innerHTML = t; };
-    const season = Number(document.getElementById('aiSeason')?.value) || 1;
-    const format = _csFormat();
-
-    // The season worker, same resolution as the character fill above and for
-    // the same reason: the episode worker has a very similar name and its
-    // own field on this page.
-    const workerUrl = (() => {
-      const el = document.getElementById('seasonBuilderWorkerUrl');
-      const raw = (el && el.value.trim())
-        || localStorage.getItem('SEASON_BUILDER_WORKER_URL')
-        || 'https://dc-analytic-seasons.yannari19.workers.dev';
-      let u = raw.trim();
-      if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
-      return u.replace(/\/+$/, '');
-    })();
-
-    btn?.setAttribute('disabled', 'disabled');
-    try {
-      const file = (!format || format === CS_DEFAULT_FORMAT)
-        ? `season${season}-data.json`
-        : `${_csShows()[format]}-${season}-data.json`;
-      say(`Reading <code>data/seasons/${file}</code>…`);
-      const doc = await fetch(`data/seasons/${file}`).then(r => r.ok ? r.json() : null);
-      if (!doc) {
-        say(`⚠️ No season document at <code>data/seasons/${file}</code>. Export the season first.`);
-        return;
-      }
-
-      const { gameHistoryPayload, roundLedger } = await import('./js/wiki-fill.js');
-      const ledger = roundLedger(doc);
-      if (!ledger.length) {
-        say(`⚠️ <code>${file}</code> carries no week-by-week record, so there are no rounds to
-             write about. Re-export the season — the weeks and the ballots go in with it.`);
-        return;
-      }
-
-      say('Reading episode transcripts…');
-      const episodes = [];
-      for (let i = 1; i <= 40; i++) {
-        const text = await _csGet(_epKey(season, i, format));
-        if (text && String(text).trim()) episodes.push({ episode: i, transcript: String(text) });
-      }
-
-      // One request holds the whole season, so each round's share of it
-      // shrinks as the season gets longer rather than the last week being
-      // dropped for being last.
-      const capPerRound = Math.max(1500, Math.min(6000, Math.floor(150000 / ledger.length)));
-      const rounds = gameHistoryPayload(doc, episodes, { capPerRound });
-      const written = rounds.filter(r => r.episode).length;
-
-      // Right worker? Asked for a mode it does not have, the sibling worker
-      // answers 200 with an analytics object rather than an error.
-      say('Checking the worker…');
-      const ping = await fetch(workerUrl, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'game-history-fill' }),
-      }).then(r => r.json()).catch(() => ({}));
-      if (!/rounds/i.test(String(ping.error || ''))) {
-        say(`⚠️ <code>${workerUrl}</code> does not have the <code>game-history-fill</code> mode.
-             That is usually the episode worker rather than the season one, or the season worker
-             has not been deployed since the mode was added (<code>npm run deploy:seasons</code>).`);
-        return;
-      }
-
-      say(`${ledger.length} rounds · ${written} of them have an episode written.<br>Asking the writer…`);
-      const res = await fetch(workerUrl, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'game-history-fill', rounds, season,
-          seasonTitle: doc.title || '', format }),
-      });
-      if (!res.ok) throw new Error(`Worker ${res.status}: ${(await res.text()).slice(0, 200)}`);
-      const json = await res.json();
-      const back = json.rounds || json.result?.rounds || [];
-      if (!back.length) throw new Error('The worker returned no rounds.');
-
-      // Stored beside the record rather than inside it: the weeks stay the
-      // machine's, and this is the prose written about them.
-      doc.gameHistory = ledger.map(r => {
-        const w = back.find(x => Number(x.n) === r.n);
-        return { n: r.n, word: r.word, title: w?.title || '', prose: w?.prose || '' };
-      });
-      const wrote = doc.gameHistory.filter(r => r.prose).length;
-      say(`Wrote ${wrote} of ${ledger.length}. Saving…`);
-      const sent = await _fillCommit({ gameHistory: doc.gameHistory }, { season, format });
-      if (sent && !sent.failed) {
-        say(`✅ Committed ${sent.rounds} rounds to <code>${sent.path}</code>. The site rebuilds in
-             about a minute, then the season's Wiki tab reads the ${ledger[0].word.toLowerCase()}s
-             in prose.`);
-        return;
-      }
-      _fillSave(doc, file);
-      say(`✅ Wrote ${wrote} of ${ledger.length} rounds into <code>${file}</code>, which has just
-           downloaded${sent?.failed ? ` (could not commit: ${sent.failed})` : ''}. Drop it into
-           <code>data/seasons/</code> and the season's Wiki tab will read the weeks in prose.`);
-    } catch (err) {
-      say(`⚠️ ${String(err?.message || err)}`);
-    } finally {
-      btn?.removeAttribute('disabled');
-    }
-  };
+  window.fillWikiFromEpisodes = () => _runFill('characters', 'wiki-fill-btn', 'wiki-fill-status');
+  window.fillGameHistoryFromEpisodes = () => _runFill('gameHistory', 'gh-fill-btn', 'gh-fill-status');
 
   function slugify(name) {
       return (name || "")

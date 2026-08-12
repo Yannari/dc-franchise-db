@@ -1076,18 +1076,6 @@
             <div class="season-controls-label">Season Save</div>
             <button class="btn btn-secondary btn-sm" onclick="saveSeasonToStorage()" style="margin-bottom:2px;width:100%">Save Season</button>
             <button class="btn btn-secondary btn-sm" onclick="exportSeason()" style="margin-bottom:2px;width:100%">Export Season</button>
-            <!-- ── WRITE THE WIKI FROM THE EPISODES ──────────────────────
-                 Off by default and remembered, because a fill is two paid
-                 calls and an export gets re-run for reasons that have
-                 nothing to do with prose. Ticked, Export Season also writes
-                 every houseguest's personality, quotes and trivia and a
-                 paragraph per round — which is what you want on finale
-                 night and not on the fourth re-export of the same season. -->
-            <label class="season-controls-note" style="display:flex;gap:6px;align-items:flex-start;margin:2px 0 6px;cursor:pointer"
-                   title="Reads this season's episode transcripts and writes the wiki: personality, quotes and trivia for the whole cast, and the game history round by round. Needs the episodes to have been generated, and publishing to be on.">
-              <input type="checkbox" id="wiki-fill-on-export" onchange="setWikiFillOnExport(this.checked)" style="margin-top:2px">
-              <span>Also write the wiki from the episodes <em>(2 AI calls)</em></span>
-            </label>
             <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-season-file').click()" style="margin-bottom:2px;width:100%">Import Season</button>
             <input type="file" id="import-season-file" accept=".json" style="display:none" onchange="importSeason(event)">
             <select id="season-save-list" class="form-select" style="font-size:10px;margin-top:2px" onchange="loadSeasonFromStorage(this.value)"><option value="">— Load saved season —</option></select>

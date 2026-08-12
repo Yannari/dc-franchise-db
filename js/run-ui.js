@@ -39,6 +39,50 @@ function _addPublishToggle(exportBtn) {
   exportBtn.parentElement.insertBefore(wrap, exportBtn.nextSibling);
 }
 
+/**
+ * "Also write the wiki from the episodes" — beside the export button.
+ *
+ * Injected here rather than written into simulator.html because THIS is where
+ * the export button lives: the Season Hub builds it, and the publish toggle
+ * above is attached the same way. A checkbox added to the static Season Save
+ * panel further down the sidebar is a checkbox next to a different Export
+ * button, which is where this one was first put and never seen.
+ *
+ * Off by default and remembered. An export gets re-run for reasons that have
+ * nothing to do with prose — a missing field, a re-sync — and each fill is two
+ * paid calls.
+ */
+function _addWikiFillToggle(exportBtn) {
+  if (document.getElementById('wiki-fill-on-export')) return;
+  const wrap = document.createElement('label');
+  wrap.style.cssText = 'display:flex;align-items:flex-start;gap:6px;margin-top:4px;'
+    + 'font-size:11px;opacity:0.75;cursor:pointer;user-select:none;line-height:1.4;';
+  wrap.title = "Reads this season's episode transcripts and writes the wiki: personality, "
+    + 'quotes and trivia for the whole cast, and the game history round by round. '
+    + 'Needs the episodes to have been generated, and publishing to be on.';
+  const box = document.createElement('input');
+  box.type = 'checkbox';
+  box.id = 'wiki-fill-on-export';
+  box.style.cssText = 'cursor:pointer;margin:2px 0 0;';
+  try { box.checked = !!window.wikiFillOnExport?.(); } catch { box.checked = false; }
+  const text = document.createElement('span');
+  const label = () => box.checked
+    ? 'Also writes the wiki from the episodes (2 AI calls)'
+    : 'Also write the wiki from the episodes (2 AI calls)';
+  text.textContent = label();
+  box.onchange = () => {
+    window.setWikiFillOnExport?.(box.checked);
+    text.textContent = label();
+  };
+  wrap.appendChild(box);
+  wrap.appendChild(text);
+  // After the publish toggle when there is one, so the two settings read as a
+  // pair: where the export goes, and whether it also writes the prose.
+  const publish = document.getElementById('export-download-only');
+  const after = publish?.parentElement || exportBtn;
+  after.parentElement.insertBefore(wrap, after.nextSibling);
+}
+
 export let _spoilerFree = false;
 export function set_spoilerFree(v) { _spoilerFree = v; }
 
@@ -429,6 +473,7 @@ export function renderGameState() {
         };
         btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
         _addPublishToggle(exportBtn);
+        _addWikiFillToggle(exportBtn);
       }
       let narrBtn = document.getElementById('rankings-narration-btn');
       if (!narrBtn) {
@@ -543,6 +588,7 @@ export function renderGameState() {
       };
       btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
       _addPublishToggle(exportBtn);
+      _addWikiFillToggle(exportBtn);
     }
     let narrBtn = document.getElementById('rankings-narration-btn');
     if (!narrBtn) {

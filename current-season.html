@@ -742,6 +742,26 @@ Devin: [flexes] They call me the golden boy. I'm here to prove nice guys can win
           </button>
         </div>
 
+        <!-- ── FILL THE WIKI FROM THE EPISODES ──────────────────────────
+             The narrative fill has always been sent the simulator's own
+             summaries. The screenplay — the thing with the dialogue in it —
+             lives in IndexedDB and has never been read by anything that
+             writes a character article. This reads all of it. -->
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <h3 style="margin-top: 0;">📖 Fill the wiki from the episodes</h3>
+          <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
+            Reads every episode transcript saved for this season, cuts each houseguest's own
+            thread out of it — their confessionals, their lines, what they were seen doing —
+            and writes the <strong>Personality</strong>, <strong>Quotes</strong> and
+            <strong>Trivia</strong> sections of their wiki article. One call for the whole
+            cast, so nobody gets described the same way twice.
+          </p>
+          <button onclick="fillWikiFromEpisodes()" id="wiki-fill-btn" class="btn btn-primary">
+            📖 Fill wiki for this season
+          </button>
+          <div id="wiki-fill-status" style="margin-top: 12px; font-size: 13px; opacity: .85;"></div>
+        </div>
+
         <!-- Manual Transcript Input -->
         <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
           <h3 style="margin-top: 0;">📝 Episode Transcript</h3>
@@ -1114,7 +1134,93 @@ Owen: This is going to be amazing!"
       return url.replace(/\/+$/, "");
     }
 
-    function slugify(name) {
+  
+  // ── FILL THE WIKI FROM THE EPISODES ────────────────────────────────
+  //
+  // Everything a character article says about who somebody WAS has been
+  // written from `summaryText` — the simulator's own prose, which knows the
+  // vote was ten to two and cannot know that Ireland answers in single
+  // syllables before coffee. The screenplay knows, and it has been sitting in
+  // IndexedDB unread by anything but the episode player.
+  //
+  // Reads the season's transcripts, cuts one thread per houseguest, sends the
+  // whole cast in a single call, and writes the result into the season
+  // document's placements — beside `story` and `keyMoments`, which is where
+  // the player page already looks.
+  window.fillWikiFromEpisodes = async function fillWikiFromEpisodes() {
+    const btn = document.getElementById('wiki-fill-btn');
+    const out = document.getElementById('wiki-fill-status');
+    const say = t => { if (out) out.innerHTML = t; };
+    const season = Number(document.getElementById('aiSeason')?.value) || 1;
+    const format = _csFormat();
+
+    const workerUrl = getWorkerUrl();
+    if (!workerUrl) { say('⚠️ No Season Builder Worker URL set — add it above first.'); return; }
+
+    btn?.setAttribute('disabled', 'disabled');
+    try {
+      // The season document names the cast and is where the result goes back.
+      const file = (!format || format === CS_DEFAULT_FORMAT)
+        ? `season${season}-data.json`
+        : `${_csShows()[format]}-${season}-data.json`;
+      say(`Reading <code>data/seasons/${file}</code>…`);
+      const doc = await fetch(`data/seasons/${file}`).then(r => r.ok ? r.json() : null);
+      if (!doc || !Array.isArray(doc.placements)) {
+        say(`⚠️ No season document at <code>data/seasons/${file}</code>. Export the season first.`);
+        return;
+      }
+      const cast = doc.placements.map(p => p.name).filter(Boolean);
+
+      // Every transcript this season has. Gaps are normal — an episode nobody
+      // generated simply is not in the thread.
+      say('Reading episode transcripts…');
+      const episodes = [];
+      for (let i = 1; i <= 40; i++) {
+        const text = await _csGet(`td_episode_s${season}_e${i}`);
+        if (text && String(text).trim()) episodes.push({ episode: i, transcript: String(text) });
+      }
+      if (!episodes.length) {
+        say('⚠️ No episode transcripts saved for this season, so there is nothing to read.');
+        return;
+      }
+
+      const { sliceCastThreads } = await import('./js/wiki-fill.js');
+      const threads = sliceCastThreads(episodes, cast);
+      const spoken = threads.filter(t => t.totals.confessionals + t.totals.lines > 0).length;
+      say(`${episodes.length} episodes · ${cast.length} houseguests · ${spoken} of them speak on camera.<br>Asking the writer…`);
+
+      const res = await fetch(workerUrl, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'wiki-fill', threads, season,
+          seasonTitle: doc.title || '', format }),
+      });
+      if (!res.ok) throw new Error(`Worker ${res.status}: ${(await res.text()).slice(0, 200)}`);
+      const json = await res.json();
+      const players = json.players || json.result?.players || [];
+      if (!players.length) throw new Error('The worker returned no players.');
+
+      // Merge by name into the document the player page already reads.
+      let filled = 0;
+      for (const p of players) {
+        const row = doc.placements.find(x => x.name === p.name);
+        if (!row) continue;
+        if (p.personality) row.personality = p.personality;
+        if (p.quotes?.length) row.quotes = p.quotes;
+        if (p.trivia?.length) row.trivia = p.trivia;
+        filled++;
+      }
+      downloadJSON(doc, file);
+      say(`✅ Wrote ${filled} of ${cast.length} houseguests into <code>${file}</code>, which has just
+           downloaded. Drop it into <code>data/seasons/</code> and their wiki articles will have
+           Personality, Quotes and Trivia.`);
+    } catch (err) {
+      say(`⚠️ ${String(err?.message || err)}`);
+    } finally {
+      btn?.removeAttribute('disabled');
+    }
+  };
+
+  function slugify(name) {
       return (name || "")
         .toLowerCase()
         .trim()

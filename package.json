@@ -20,7 +20,8 @@
     "test:all": "vitest run && playwright test",
     "deploy": "wrangler deploy --config worker/wrangler.toml",
     "deploy:analytics": "wrangler deploy --config worker/wrangler-analytics.toml",
-    "deploy:all": "npm run deploy && npm run deploy:analytics",
+    "deploy:seasons": "wrangler deploy --config worker/wrangler-season.toml",
+    "deploy:all": "npm run deploy && npm run deploy:analytics && npm run deploy:seasons",
     "preview": "wrangler dev --config worker/wrangler.toml"
   },
   "repository": {

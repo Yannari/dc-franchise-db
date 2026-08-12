@@ -21,6 +21,8 @@ export default {
       return await generateEpisode(summaryText, season, episode, env, previousEpisodes);
     } else if (mode === "narrative-fill") {
       return await generateNarrativeFill(body, env);
+    } else if (mode === "wiki-fill") {
+      return await generateWikiFill(body, env);
     } else if (mode === "returnee-history") {
       return await generateReturneeHistory(body, env);
     } else if (mode === "season-data-extraction") {
@@ -673,6 +675,121 @@ Return ONLY valid JSON matching the schema.
     instructions,
     input: episodeSummaries,
     text: { format: { type: "json_schema", name: "narrative_fill", strict: true, schema } },
+  };
+
+  return await callLLM(payload, env);
+}
+
+
+/**
+ * WIKI FILL — who these people were, read off the screenplay.
+ *
+ * Every other mode here is handed `summaryText`: the simulator's own prose,
+ * which knows that Amberly left ten votes to two and cannot know that Ireland
+ * answers in single syllables before coffee. This one is handed each
+ * houseguest's THREAD — their confessionals, their lines, and the stage
+ * directions that name them, sampled across the whole season — and asked for
+ * the three things a character article has that a stat page does not.
+ *
+ * The whole cast arrives in one call on purpose. A model that can see eighteen
+ * people writes them apart; asked one at a time it has no way to know it has
+ * already called four of them the quiet strategist, and no way to keep two
+ * players from being quoted saying the same thing.
+ */
+async function generateWikiFill(body, env) {
+  const { threads, season, seasonTitle, format } = body;
+  if (!Array.isArray(threads) || !threads.length) {
+    return new Response(JSON.stringify({ error: "Missing threads" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+  const cast = threads.map(t => t.name);
+  const show = format === 'big-brother' ? 'Big Brother' : 'Total Drama';
+
+  const schema = {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      players: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            name: { type: "string", enum: cast },
+            personality: {
+              type: "string",
+              description: "2-4 sentences on what this person was LIKE in the house, written from their own words and what they were seen doing. Not their results — a placement is not a personality. How they talk, who they attach to, what they do when cornered, and whether any of that changed as the season went on. Specific to the evidence: if they were barely on camera, say that instead of inventing an interior life."
+            },
+            quotes: {
+              type: "array",
+              description: "Two or three lines this person actually said, quoted VERBATIM from the transcript. Never paraphrase and never invent. Pick lines that only this houseguest could have said. If they said nothing worth quoting, return an empty array.",
+              items: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  text: { type: "string" },
+                  context: { type: "string", description: "A short phrase for when or to whom, e.g. 'in the diary room after the veto'." }
+                },
+                required: ["text", "context"]
+              }
+            },
+            trivia: {
+              type: "array",
+              description: "1-3 specific facts an episode supports. Small and concrete beats broad and flattering — a running joke, a habit, a thing they said twice. No stats: the record already has those.",
+              items: { type: "string" }
+            }
+          },
+          required: ["name", "personality", "quotes", "trivia"]
+        }
+      }
+    },
+    required: ["players"]
+  };
+
+  const NL = String.fromCharCode(10);
+  const threadText = threads.map(t => {
+    const bits = [`### ${t.name}`];
+    if (t.confessionals?.length) bits.push('CONFESSIONALS:', ...t.confessionals.map(c => `  (ep${c.ep}) "${c.text}"`));
+    if (t.lines?.length) bits.push('IN THE HOUSE:', ...t.lines.map(c => `  (ep${c.ep}) "${c.text}"`));
+    if (t.mentions?.length) bits.push('SEEN DOING:', ...t.mentions.map(c => `  (ep${c.ep}) ${c.text}`));
+    if (!t.confessionals?.length && !t.lines?.length) bits.push('(no dialogue recorded — they barely spoke on camera)');
+    return bits.join(NL);
+  }).join(NL + NL);
+
+  const instructions = `
+You are writing the Personality, Quotes and Trivia sections of a fandom wiki
+article for every houseguest of ${show}${seasonTitle ? ` — ${seasonTitle}` : ''}${season ? ` (Season ${season})` : ''}.
+
+You are given each person's thread through the season: their confessionals
+(spoken alone to camera), their lines in the house, and stage directions that
+name them. This is ALL the evidence. Do not use anything you think you know
+about these characters from anywhere else.
+
+RULES
+1. QUOTE VERBATIM. A quote must appear in that person's thread word for word.
+   If you cannot find a good one, return an empty array. An invented quote is
+   the worst thing you can produce here.
+2. WRITE THEM APART. You can see the whole cast at once, which is the point:
+   no two of these people should get the same description. If two are quiet,
+   say how they are quiet differently.
+3. PERSONALITY IS NOT RESULTS. Never write "finished third" or "won two
+   competitions" — the article already has a stats table. Write what they were
+   like to be in a house with.
+4. EVIDENCE OVER FLATTERY. Somebody with four lines gets two sentences that
+   admit how little they were on camera. Do not promote a background player
+   into a main character because the section looks thin.
+5. Use EXACTLY these names: ${cast.join(', ')}
+
+Return ONLY valid JSON matching the schema, with one entry per houseguest.
+`.trim();
+
+  const payload = {
+    model: "gpt-5.5",
+    instructions,
+    input: threadText,
+    text: { format: { type: "json_schema", name: "wiki_fill", strict: true, schema } },
   };
 
   return await callLLM(payload, env);

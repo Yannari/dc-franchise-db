@@ -435,6 +435,13 @@ export const WIKI_CSS = `
   font-size:20px; margin:0 0 10px; padding-bottom:6px;
   border-bottom:2px solid var(--stroke); font-weight:800;
 }
+/* A note beside a heading is an aside, not part of the title — set at label
+   size and weight so "Contestants" reads as the heading and "20 · in the
+   order they left" reads as the caption it is. */
+.wk-section h2 .wk-count{
+  font-size:11.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+  opacity:.55; margin-left:8px; vertical-align:middle;
+}
 .wk-section p{ margin:0 0 10px; line-height:1.72; font-size:15px; }
 /* The competition table: the reference half of the article. Numbers align so
    a column can be read down, which is the only reason a table beats a

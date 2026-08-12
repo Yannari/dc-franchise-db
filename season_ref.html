@@ -296,6 +296,14 @@ window._showsReady = new Promise(resolve => { window._showsResolve = resolve; })
 <script type="module">
   import { parseSeasonRef, seasonId, DEFAULT_FORMAT } from './js/shows.js';
   window.shows = { parseSeasonRef, seasonId, DEFAULT_FORMAT };
+  /* The wiki tab is an ARTICLE, and the site already has an article
+     stylesheet — the one the character pages use. Borrowing it rather than
+     writing a second one is the whole reason the two read as the same
+     encyclopaedia rather than as a dashboard with a wiki-shaped tab in it. */
+  import { WIKI_CSS } from './js/wiki-view.js';
+  const wkStyle = document.createElement('style');
+  wkStyle.textContent = WIKI_CSS;
+  document.head.appendChild(wkStyle);
   window._showsResolve(window.shows);
 </script>
 
@@ -604,6 +612,15 @@ function buildRecords(season){
         ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
       const av = p => `<img src="assets/avatars/${esc(p.playerSlug)}.png" alt=""
         onerror="this.style.visibility='hidden'">`;
+      /* "3th" and "2th" were on the wall. A placement is an ordinal and
+         `${n}th` is only right two thirds of the time. */
+      const ord = n => {
+        const v = Number(n);
+        if (!Number.isFinite(v)) return '—';
+        const t = v % 100;
+        if (t >= 11 && t <= 13) return `${v}th`;
+        return `${v}${['th', 'st', 'nd', 'rd'][v % 10] || 'th'}`;
+      };
 
       /* ── who left when ──
          The wall greys somebody out from the week they leave, so the grid
@@ -614,12 +631,24 @@ function buildRecords(season){
          the Overview tab's job. */
       const winnerName = typeof s.winner === 'string' ? s.winner : (s.winner?.name || '');
 
+      /* A FINALIST IS NEVER EVICTED, whatever the last round says.
+         Total Drama's final vote is recorded like any other — a round with an
+         "eliminated" on it — so the winner came out of this loop marked as
+         gone, and the wall greyed the champion out and blanked his last
+         columns in the grid. Anybody who reached the end is held out of it. */
+      const finalists = new Set([
+        ...(s.finalists || []).map(f => f.name || f).filter(Boolean),
+        ...(winnerName ? [winnerName] : []),
+        ...cast.filter(p => p.placement === 1).map(p => p.name),
+      ]);
       const outWeek = {};
-      weeks.forEach(w => { if (w.evicted) outWeek[w.evicted] = w.week; });
+      weeks.forEach(w => {
+        if (w.evicted && !finalists.has(w.evicted)) outWeek[w.evicted] = w.week;
+      });
 
       /* ── 1. the facts ── */
       const facts = [
-        ['Cast', `${s.castSize || cast.length} houseguests`],
+        ['Cast', `${s.castSize || cast.length} ${hasBlock ? 'houseguests' : 'contestants'}`],
         ['Episodes', s.episodeCount || weeks.length || '—'],
         [bbWeeks.length ? 'Weeks' : 'Rounds', weeks.length || '—'],
         s.jurySize ? ['Jury', `${s.jurySize} members`] : null,
@@ -668,7 +697,7 @@ function buildRecords(season){
           <div class="sr-wall-photo">${av(p)}</div>
           <div class="sr-wall-name">${esc(p.name)}</div>
           <div class="sr-wall-fate">${win ? 'Winner'
-            : gone ? `${roundWord} ${gone}` : esc(p.status || `${p.placement}th`)}</div>
+            : gone ? `${roundWord} ${gone}` : esc(p.status || ord(p.placement))}</div>
         </a>`;
       }).join('');
 
@@ -689,8 +718,8 @@ function buildRecords(season){
         return ['', ''];
       };
       const grid = (hasBlock && weeks.length) ? `
-        <div class="sr-scroll">
-          <table class="sr-grid">
+        <div class="wk-scroll">
+          <table class="wk-table wk-weeks">
             <thead><tr><th>${hasBlock ? 'Houseguest' : 'Contestant'}</th>${weeks.map(w =>
               `<th>${w.week}</th>`).join('')}<th>Votes</th></tr></thead>
             <tbody>${cast.map(p => {
@@ -753,8 +782,8 @@ function buildRecords(season){
         return ['', '', ''];
       };
       const votingHistory = hasBallots ? `
-        <div class="sr-scroll">
-          <table class="sr-grid sr-votes">
+        <div class="wk-scroll">
+          <table class="wk-table wk-weeks sr-votes">
             <thead><tr><th>Voted to evict</th>${weeks.map(w =>
               `<th>${w.week}</th>`).join('')}</tr></thead>
             <tbody>${cast.map(p => {
@@ -830,13 +859,32 @@ function buildRecords(season){
           and ${w.bb.vetoWins || 0} veto wins.`);
       }
 
-      const sec = (title, body, note) => body
-        ? `<div class="sr-sh sr-reveal"><h2>${title}</h2>${note
-            ? `<span class="sr-sh-pill">${note}</span>` : ''}</div>${body}` : '';
+      /* A wiki section: an id, a heading with a rule under it, and an entry
+         in the contents box. The dashboard's `sr-sh` header — a display font
+         with a coloured pill beside it — is the house style of the other
+         three tabs and is exactly what made this one read as a dashboard
+         wearing a wiki label. */
+      const toc = [];
+      const sec = (title, body, note) => {
+        if (!body) return '';
+        const id = 'wk-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        toc.push([id, title]);
+        return `<section class="wk-section" id="${id}">
+          <h2>${title}${note ? ` <span class="wk-count">${note}</span>` : ''}</h2>
+          ${body}</section>`;
+      };
 
-      return `
-        ${sec('The season', `<table class="sr-facts">${facts.map(([k, v]) =>
-          `<tr><th>${k}</th><td>${v}</td></tr>`).join('')}</table>`)}
+      const showLabel = hasBlock ? 'Big Brother' : 'Total Drama';
+      const infobox = `<aside class="wk-infobox">
+        <div class="wk-ib-title">${esc(s.title || (roundWord + ' season'))}</div>
+        <div class="wk-ib-show">${showLabel}</div>
+        <table class="wk-ib-table">
+          ${facts.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('')}
+        </table>
+      </aside>`;
+
+      const body = `
+        ${s.subtitle ? `<p class="wk-lead">${esc(s.subtitle)}</p>` : ''}
         ${sec('Twists', twists.length
           ? `<dl class="sr-twists">${twists.map(([t, d]) =>
               `<dt>${t}</dt><dd>${d}</dd>`).join('')}</dl>`
@@ -852,8 +900,20 @@ function buildRecords(season){
           the grid of who voted for whom appears here.</p>` : ''}
         ${sec('Game history', gameHistory)}
         ${sec('Trivia', trivia.length
-          ? `<ul class="sr-trivia">${trivia.map(t => `<li>${t}</li>`).join('')}</ul>` : '')}
+          ? `<ul class="wk-list">${trivia.map(t => `<li>${t}</li>`).join('')}</ul>` : '')}
       `;
+
+      /* Contents first, then the sections it lists — so it has to be built
+         after them and spliced in, which is why the body is a variable. */
+      const contents = toc.length > 2
+        ? `<nav class="wk-contents"><b>Contents</b><ol>${toc.map(([id, t]) =>
+            `<li><a href="#${id}">${esc(t)}</a></li>`).join('')}</ol></nav>`
+        : '';
+
+      return `<article class="wk-article">
+        ${infobox}
+        <div class="wk-main">${contents}${body}</div>
+      </article>`;
     })();
 
     document.getElementById('season-content').innerHTML=`

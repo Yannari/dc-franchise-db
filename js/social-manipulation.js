@@ -29,16 +29,19 @@ export function _generateExposeSchemer(exposer, schemer, victim, group, ep, _rp)
   gs.popularity[schemer] = (gs.popularity[schemer] || 0) - 2;
   return {
     type: 'exposeSchemer',
-    players: [exposer, schemer, ...(victim ? [victim] : [])],
+    players: [exposer, schemer, ...(victim ? [victim] : []),
+      ...group.filter(p => p !== exposer && p !== schemer && p !== victim)],
     text: _rp(exposeTexts),
     consequences: `${schemer} exposed — heat +2.0 for 3 eps. ${exposer} gains sympathy.`,
     badgeText: 'EXPOSED', badgeClass: 'gold'
   };
 }
 
-export function _generateComfortVictim(victim, group, ep, _rp) {
+export function _generateComfortVictim(victim, group, ep, _rp, exclude = []) {
   if (!victim) return null;
-  const compassionate = group.filter(p => p !== victim && (pStats(p).loyalty >= 6 || getBond(p, victim) >= 3));
+  const barred = new Set(exclude || []);
+  const compassionate = group.filter(p => p !== victim && !barred.has(p)
+    && (pStats(p).loyalty >= 6 || getBond(p, victim) >= 3));
   if (!compassionate.length) return null;
   const comforter = compassionate.reduce((best, p) => {
     const score = pStats(p).loyalty * 0.4 + getBond(p, victim) * 0.3 + pStats(p).social * 0.3;
@@ -108,8 +111,9 @@ export function _generateForgeNote(schemer, target, group, ep, _rp) {
       consequences: `Bond ${reader}↔${alleged} ${bondDrop.toFixed(1)}.`,
       badgeText: 'FORGED NOTE', badgeClass: 'red'
     });
-    const comfort = _generateComfortVictim(alleged, group, ep, _rp);
-    if (comfort) results.push(comfort);
+    // The alleged person may not even know the forged note exists. A quiet
+    // bond shift cannot be followed by “after the confrontation” when no
+    // confrontation occurred.
   } else if (resistance > belief + 0.5) {
     // Detected — schemer exposed
     addBond(reader, schemer, -1.0);
@@ -203,7 +207,7 @@ export function _generateSpreadLies(schemer, target, group, ep, _rp) {
         badgeText: 'CONFRONTATION', badgeClass: 'red'
       });
     }
-    const comfort = _generateComfortVictim(accused, group, ep, _rp);
+    const comfort = _generateComfortVictim(accused, group, ep, _rp, [schemer, listener]);
     if (comfort) results.push(comfort);
   } else {
     // Not believed — listener warns accused, schemer loses trust
@@ -337,7 +341,8 @@ export function _generateKissTrap(schemer, target, group, ep, _rp) {
     }
   });
 
-  const comfort = _generateComfortVictim(witness, group, ep, _rp);
+  const comfort = _generateComfortVictim(witness, group, ep, _rp,
+    [schemer, accomplice, kissTarget]);
   if (comfort) results.push(comfort);
   return results;
 }
@@ -361,7 +366,8 @@ export function _generateWhisperCampaign(schemer, target, group, ep, _rp) {
   const detected = pStats(target).intuition * 0.06 > sStats.strategic * 0.05;
   if (detected) {
     const exposeEvt = _generateExposeSchemer(target, schemer, null, group, ep, _rp);
-    if (exposeEvt) results.push(exposeEvt);
+    if (exposeEvt) results.push({ ...exposeEvt, type: 'whisperCampaignExposed',
+      players: [target, schemer, ...group.filter(p => p !== target && p !== schemer)] });
   }
   const whisperTexts = [
     `${schemer} works the camp methodically — a quiet word here, a sideways comment there. Nobody realizes it's coordinated. By nightfall, ${target}'s name carries a different weight.`,

@@ -420,15 +420,25 @@ const grudgeHardens = {
     const worst = memoriesOf(a).filter(m => m.subject === enemy)
       .sort((x, y) => (y.strength || 1) - (x.strength || 1))[0];
     const kind = worst?.type || 'betrayal';
+    const grievance = ({
+      'would-not-let-it-go': 'refusal to let the argument die',
+      'apology-refused': 'rejected apology',
+      petty: 'constant needling',
+      humiliation: 'public humiliation',
+      'threatened-me-live': 'threat on eviction night',
+      'saw-them-fight': 'last blow-up',
+      abandonment: 'disappearance when the vote got difficult',
+    })[kind] || String(kind).replaceAll('-', ' ');
 
     const text = _variant([
-      `${a} tells a close ally that ${enemy}'s ${kind} changed everything. ${a} is done arguing about it; now they want ${enemy} out.`,
+      `${a} tells an ally that ${enemy}'s ${grievance} settled it. ${a} is no longer asking for an explanation; `
+        + `${a} is asking whether the votes exist to send ${enemy} home.`,
       `${a} is friendly to ${enemy} at dinner, then waits until ${enemy} leaves and says, “The next time I have power, they're going up.”`,
       `“I'm over it,” ${a} says when ${enemy}'s name comes up. A minute later, ${a} is listing every reason ${enemy} cannot stay.`,
       `${a} goes over what ${enemy} did, who helped and who knew. By the end of the conversation, ${a} has decided exactly when to take the shot.`,
     ], ctx, a, enemy);
 
-    api.setTarget(a, enemy, `has not forgiven the ${kind}`);
+    api.setTarget(a, enemy, `has not forgiven the ${grievance}`);
     api.suspicion(a, enemy, 1.5);
     api.remember(a, enemy, 'resolve', 2, { about: kind });
     return { text, players: [a, enemy], badgeText: 'GRUDGE HARDENS', badgeClass: 'red' };
@@ -480,18 +490,17 @@ const driftingOut = {
     const p = pronouns(a);
     const nearest = closestTo(a, _others(house, a));
     const text = _variant([
-      `${a} walks into the bedroom and nobody stops talking. After a minute, ${a} realizes the group is making plans without asking what ${p.sub} thinks.`,
-      `${a} asks two different people where the vote stands and gets the same vague answer. For the first time, ${a} wonders whether being left alone means being left out.`,
-      `While washing dishes, ${a} realizes ${p.sub} has gone the entire stretch without a private conversation. ${a} dries ${p.posAdj} hands and goes looking for one.`,
-      `Everybody is friendly with ${a}, but nobody has brought ${p.obj} into a plan. That night, ${a} decides to stop waiting for an invitation.`,
-    ], ctx, a);
+      `${a} walks into the bedroom and the conversation keeps going, but nobody asks what ${p.sub} thinks. Later, ${a} corners ${nearest} and says, “If there is a plan, I need to be in the room when it is made.”`,
+      `${a} asks two people where the vote stands and gets the same vague answer twice. ${a} takes ${nearest} aside and asks the question a third time. This time, ${nearest} gives ${pronouns(a).obj} a name.`,
+      `${a} realizes ${p.sub} has gone all day without one private game conversation. ${a} dries ${p.posAdj} hands, finds ${nearest} and says, “Tell me what I missed.”`,
+      `Everybody is friendly with ${a}, but nobody has brought ${p.obj} into a plan. ${a} stops waiting for an invitation and asks ${nearest} directly whether there is room for ${pronouns(a).obj}.`,
+    ], ctx, a, nearest);
 
     // Drifting is not neutral: it is a decision to fix it, aimed at the nearest hand.
     if (nearest) {
       api.addBond(a, nearest, 0.9);
       api.remember(a, nearest, 'reach', 1, {});
     }
-    api.popDelta(a, -1);
     return { text, players: [a, nearest].filter(Boolean), badgeText: 'ADRIFT', badgeClass: 'grey' };
   },
 };

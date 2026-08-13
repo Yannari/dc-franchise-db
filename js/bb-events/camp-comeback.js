@@ -119,12 +119,12 @@ const theOnlyHonestVoice = {
         + `worked out and nobody will say — because there is nothing left in this house that can be done to ${p.obj}.`,
       `A camper cannot be nominated, cannot be voted out and cannot be bought, so when ${who} tells the room `
         + `exactly what ${mark} has been doing, the room has to deal with the fact that ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} no reason to lie.`,
-      `${mark} has spent weeks managing what people believe. ${who} undoes a fortnight of it in one sentence `
+      `${mark} has spent weeks managing what people believe. ${who} undoes days of that work in one sentence `
         + 'over the washing up, and cannot be punished for it.',
       `"What are you going to do, evict me?" ${who} does not even say it unkindly. ${mark} has no answer, `
         + 'which the rest of the table also notices.',
     ], ctx, who, mark);
-    api.suspicion(mark, who, 1.4);
+    api.addBond(mark, who, -0.8);
     for (const n of _others(house, mark).slice(0, 3)) api.suspicion(n, mark, 0.8);
     api.popDelta(who, 1.5);
     return { text, players: [who, mark], badgeText: 'NOTHING LEFT TO LOSE', badgeClass: 'gold' };
@@ -144,13 +144,13 @@ const oneIsComingBack = {
     if (!cast) return null;
     const { camp, worried, threat } = cast;
     const text = _variant([
-      `${worried} does the count out loud: ${camp.length} of them in that room, one door, and every single `
-        + `one of them knows exactly who voted for what. ${threat} is the name that keeps coming back.`,
+      `${worried} does the count out loud: ${camp.length} people comparing what they were promised before `
+        + `they left, and one of them coming back through the door. ${threat} is the name that keeps coming up.`,
       `The house has started being extremely warm to the camp, which is the clearest possible signal that `
         + 'everybody has worked out one of them is coming back.',
-      `"Whoever walks out of that room has nine weeks of receipts." ${worried} says it once and then cannot `
+      `“Whoever walks out of that room has receipts on all of us.” ${worried} says it once and then cannot `
         + 'stop thinking about which of their own conversations are on the list.',
-      `${threat} has been quiet, pleasant and completely attentive for a fortnight, and ${worried} finds that `
+      `${threat} has been quiet, pleasant and completely attentive since entering camp, and ${worried} finds that `
         + 'considerably more frightening than the ones who have been angry.',
     ], ctx, worried, threat);
     api.suspicion(worried, threat, 1.2);
@@ -173,12 +173,11 @@ const theCampRoom = {
     const p = pronouns(who);
     const friend = closestTo(who, _others(house, ...camp)) || _others(house, ...camp)[0];
     const text = _variant([
-      `${who} watches the veto competition on a small television in a room ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} not allowed to leave, `
-        + 'and gets every answer right out loud, to nobody.',
+      `${who} watches a competition replay on the camp-room television and calls every mistake before it happens. Nobody playing can hear ${p.obj}.`,
       `The camp room has a bad bed, a small screen and no door onto the game. ${who} has started narrating `
         + `the competitions to ${camp.length > 1 ? 'the others' : 'the wall'} like a man commentating on his own funeral.`,
       `${friend ? `${friend} comes and sits in the camp room for an hour, which nobody asked ${friend} to do` : `${who} sits in the camp room alone`}. `
-        + 'It is the kindest thing that happens all week and it changes nothing about the vote.',
+        + 'It is the kindest thing that happens all week and changes nothing about where ${who} sleeps that night.',
       `${who} knows the whole house better than anybody still playing it, from a bed nobody else would sleep in.`,
     ], ctx, who, friend);
     if (friend) api.addBond(who, friend, 0.7);

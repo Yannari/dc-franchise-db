@@ -121,7 +121,7 @@ function _lastSplit(ctx) {
   const now = ctx?.week?.num || 0;
   for (let i = weeks.length - 1; i >= 0; i--) {
     const w = weeks[i];
-    if (w && w.num < now && w.splitSide) return w;
+    if (w && w.num < now && now - w.num <= 1 && w.splitSide) return w;
   }
   return null;
 }
@@ -150,7 +150,7 @@ const pickedLast = {
     const { picked, by } = cast;
     const p = pronouns(picked);
     const text = _variant([
-      `${picked} was the last name called, and everybody standing in that room heard the order it was called in. ${p.Sub} ${p.sub === 'they' ? 'say' : 'says'} it does not matter about four times, which is three more than somebody who meant it.`,
+      `${picked} was the last name called, and everybody standing in that room heard the order. ${p.Sub} ${p.sub === 'they' ? 'say' : 'says'} it does not matter before anybody asks, which is how the room knows it does.`,
       `Being picked last is a fact with a number attached, and ${picked} has the number. ${by} chose everybody else first and now has to live in a very small house with the evidence.`,
       `${picked} laughs about going last. The laugh is fine. The look at ${by} immediately afterwards is the part worth watching.`,
       `Nobody says anything about the order the sides were picked in, which is how ${picked} knows everybody else remembers it too.`,
@@ -311,13 +311,13 @@ const comparingWeeks = {
     // Whoever is best at this gets to decide what last week was.
     const spun = pStats(teller).strategic >= 6 && pStats(asker).intuition < 7;
     const text = spun ? _variant([
-      `${asker} asks ${teller} what actually happened on the other side, and gets an account that is complete, coherent, and shaped. There is no way to check any of it, which ${teller} has clearly thought about.`,
+      `${asker} asks ${teller} what happened on the other side. ${teller} gives a clean account with every name and decision in place, then redirects each follow-up to a detail that makes ${pronouns(teller).obj} look better.`,
       `${teller} tells this half of the house about last week in the order that suits ${pronouns(teller).obj} best. Every fact in it is true. The sentence they add up to is not.`,
       `"You had to be there." ${teller} says it about four different moments, and each time it closes a question ${asker} was halfway through asking.`,
     ], ctx, asker, teller) : _variant([
       `${asker} pushes ${teller} on the other side's week and catches a gap — a name that comes up twice and gets explained differently both times.`,
       `The two halves compare notes and the notes do not match. Nobody can prove which version is wrong, which is somehow worse than knowing.`,
-      `${asker} listens to ${teller}'s account of last week and quietly decides it is about eighty percent true, then spends the evening working out which fifth is not.`,
+      `${asker} listens to ${teller}'s account, then asks the same two questions in reverse order. One answer changes. ${asker} does not challenge it yet.`,
     ], ctx, asker, teller);
     api.suspicion(asker, teller, spun ? 0.4 : 1.3);
     if (!spun) api.addBond(asker, teller, -0.4);

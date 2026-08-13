@@ -161,7 +161,7 @@ const performedInnocence = {
     const text = overplayed ? _variant([
       `${hoh} speculates about the nominations a little too fluently — theories with suspects, motives, a timeline. ${watcher} listens and thinks: nobody innocent has done this much homework.`,
       `${hoh} is the loudest voice in the whodunit conversation, which ${watcher} notices is also the cheapest place to hide. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} not hiding it well.`,
-      `${hoh} asks "but who do YOU think it was?" for the fourth time today. ${watcher} starts counting how many times ${p.sub} ${p.sub === 'they' ? 'ask' : 'asks'}, and the count itself becomes the answer.`,
+      `${hoh} keeps answering every theory with "but who do YOU think it was?" ${watcher} notices how often ${p.sub} redirects the question and starts wondering what ${p.sub} is steering away from.`,
       `${watcher} invents a false detail about how the secret HOH submitted the nominations. Everyone looks confused except ${hoh}, who is careful not to react. That restraint makes ${watcher} suspicious.`,
     ], ctx, hoh, watcher) : _variant([
       `${hoh} complains about the mystery exactly as much as everybody else — no more, no less — and joins the wrong theory with real enthusiasm. It is a flawless performance, and nobody claps.`,
@@ -197,8 +197,8 @@ const alibiPact = {
     if (!b) return null;
     const text = _variant([
       `${a} and ${b} compare where they were before the anonymous nominations appeared. Neither remembers the entire morning, so they agree to say they were together if either is accused of being the Invisible HOH.`,
-      `"You vouch for me, I vouch for you." ${a} and ${b} shake on a shared alibi, which is a small conspiracy in defence of two innocent people — probably.`,
-      `${a} and ${b} rehearse the same account of nomination morning: the kitchen first, then the backyard, always together. The extra details make the alibi sound overly coordinated.`,
+      `"You vouch for me, I vouch for you." ${a} and ${b} shake on a shared alibi. Neither asks whether the other is telling the truth.`,
+      `${a} and ${b} rehearse the same account of nomination morning: the kitchen first, then the backyard, always together. By the third correction, it sounds rehearsed because it is.`,
       `${a} tells the room that ${b} could not be the Invisible HOH because they spent nomination morning together. ${b} immediately returns the favour, drawing new suspicion to both of them.`,
     ], ctx, a, b);
     api.addBond(a, b, 0.5);

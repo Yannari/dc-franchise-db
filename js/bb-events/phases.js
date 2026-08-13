@@ -65,7 +65,8 @@ const openField = {
     const [a, b] = [pool[0], pool[1]];
     const p = pronouns(a);
     const text = _variant([
-      `Nobody has power for another few hours, and it is the only time all week the house talks like people rather than positions. ${a} and ${b} get further in one conversation than they have since the last competition.`,
+      `${a} and ${b} make breakfast while everyone waits for the HOH competition. They begin by joking about `
+        + `last week and end up quietly comparing who each of them would nominate.`,
       `${a} works out that this is the last hour ${p.sub} is safe by default, and spends it doing nothing at all about that.`,
       `The house gets louder as everyone waits for the competition. ${a} and ${b} sit in the kitchen joking with anyone too nervous to stay alone.`,
       `Everybody is equal for exactly as long as it takes to run one competition, and ${a} is the only person in the room who seems to know it.`,
@@ -90,8 +91,10 @@ const prePositioning = {
     const p = pronouns(a);
     const text = _variant([
       `${a} pulls ${b} aside before the competition. “If either of us wins, ${mark} goes up. Agreed?” ${b} agrees and asks whether anyone else knows.`,
-      `"I'm not saying I'll win," ${a} tells ${b}. "I'm saying if I do, you already know what happens." It is the cheapest deal in the game — made before anyone has anything to trade.`,
-      `${a} gets a commitment out of ${b} while it is still free. By tonight it will not be free, and ${p.sub} knows exactly how much it will be worth then.`,
+      `"I'm not saying I'll win," ${a} tells ${b}. "I'm saying if I do, ${mark} goes up." ${b} agrees, `
+        + `then asks what happens if ${b} wins instead.`,
+      `${a} asks ${b} for a promise before either of them has power: if ${mark} loses, ${mark} touches the block. `
+        + `${b} agrees, then immediately asks whether the promise works both ways.`,
       `The competition has not started and ${a} has already told three people the same thing about ${mark}. That is not a plan yet. It is groundwork.`,
     ], ctx, a, b, mark);
     api.addBond(a, b, 0.7);
@@ -116,7 +119,8 @@ const scramble = {
     const text = desperate ? _variant([
       `${scrambler} is up the stairs before ${hoh} has finished celebrating, and the conversation is not subtle. Neither of them pretends it is about anything but survival.`,
       `"We're good, right?" ${hoh} says something reassuring. ${scrambler} leaves knowing ${p.sub} got nothing at all and having to act as though ${p.sub} did.`,
-      `${scrambler} has barely spoken to ${hoh} until now and tries to make up for all of it in one afternoon, which fools nobody including ${pronouns(hoh).obj}.`,
+      `${scrambler} has barely spoken to ${hoh} until now. The sudden HOH-room visit lasts forty minutes, `
+        + `and ${hoh} asks in the Diary Room why none of those questions came yesterday.`,
       `The queue outside the HOH room is not literal, but ${scrambler} is definitely in it, and definitely aware of who is ahead of ${p.obj}.`,
     ], ctx, scrambler, hoh) : _variant([
       `${scrambler} goes up to congratulate ${hoh} and stays an hour. Nothing is promised. Everything is understood.`,
@@ -288,10 +292,14 @@ const lastNightEqual = {
     const group = _leastSeen(house).slice(0, 3);
     const [a, b, c] = group;
     const text = _variant([
-      `${a}, ${b} and ${c} stay up knowing one of them will have power by lunchtime and none of them knows which. It makes everybody unusually pleasant.`,
-      `Nobody has done anything to anybody yet this week. ${a} points this out as though it is a joke, and ${b} laughs as though it is.`,
-      `The last hour before a competition is the friendliest the house ever gets, and ${a} has noticed the pattern well enough to distrust it.`,
-      `${a} makes food for people who may eventually be voting on ${pronouns(a).obj}, and does it well.`,
+      `${a}, ${b} and ${c} stay up discussing the HOH competition. Each one says the other two would be safe `
+        + `if they won. Nobody asks whether that promise includes a replacement nomination.`,
+      `${a} asks ${b} where the vote would land if nominations stayed the same. ${c} interrupts with a `
+        + `different name, and breakfast becomes the first vote count of the week.`,
+      `${a}, ${b} and ${c} play cards before the competition. Every joke about winning contains a small promise `
+        + `about safety, and all three notice who refuses to make one.`,
+      `${a} makes breakfast while ${b} and ${c} compare possible competition types. By the time the plates are `
+        + `clear, all three have quietly agreed which result would be worst for them.`,
     ], ctx, a, b, c);
     for (const x of group) for (const y of group) if (x !== y) api.addBond(x, y, 0.35);
     api.popDelta(a, 1);
@@ -341,7 +349,7 @@ const hohRoomReveal = {
     const excluded = furthestFrom(hoh, _others(house, hoh, ...invited));
     const text = _variant([
       `The whole house crowds into the HOH room for the photographs, and everyone privately notes which two are still in there an hour later. It is ${invited.join(' and ')}.`,
-      `${hoh} reads out the letter from home and the room is genuinely kind for four minutes. Then the door shuts on everybody except ${invited[0]}.`,
+      `${hoh} reads out the letter from home and the room is genuinely kind for a few minutes. Later, the crowd thins until only ${invited.join(' and ')} remain upstairs.`,
       `${hoh} gets the only room with a lock and discovers ${p.sub} has more close friends today than ${p.sub} had before the competition.`,
       `${excluded} is in the HOH room for the photographs and gone before the letter. ${pronouns(excluded).Sub} counts the people who stayed.`,
     ], ctx, hoh, ...invited);
@@ -351,7 +359,9 @@ const hohRoomReveal = {
       api.suspicion(excluded, hoh, 0.9);
     }
     api.popDelta(hoh, 2);
-    return { text, players: [hoh, ...invited].filter(Boolean), badgeText: 'THE HOH ROOM', badgeClass: 'gold' };
+    return { text, players: [hoh, ...invited, excluded]
+      .filter((n, i, all) => n && all.indexOf(n) === i),
+      badgeText: 'THE HOH ROOM', badgeClass: 'gold' };
   },
 };
 
@@ -480,9 +490,12 @@ const replacementFear = {
       .sort((a, b) => bond(a, ctx.hoh) - bond(b, ctx.hoh))[0];
     const p = pronouns(exposed);
     const text = _variant([
-      `If the veto gets used, somebody has to go up in the empty chair, and ${exposed} has worked out that ${p.sub} is the obvious somebody.`,
-      `${exposed} spends the day being extremely helpful to ${ctx.hoh}, which fools nobody and is not really meant to.`,
-      `Nobody has said ${exposed}'s name all morning. When ${p.sub} enters a room, people keep changing the subject.`,
+      `If the veto gets used, somebody has to fill the empty chair. ${exposed} reviews ${p.posAdj} last three `
+        + `conversations with ${ctx.hoh} and cannot find a single promise of safety.`,
+      `${exposed} makes ${ctx.hoh} breakfast and offers to clean the HOH bathroom. ${ctx.hoh} accepts the food, `
+        + `declines the cleaning, and later tells the room the sudden generosity feels like a campaign.`,
+      `Nobody has said ${exposed}'s name to ${p.obj}. When ${exposed} enters the HOH room, ${ctx.hoh} `
+        + `changes the subject before the empty replacement chair can come up.`,
       `${exposed} would quite like the veto not to be used and cannot say so to anybody without explaining why ${p.sub} is worried.`,
     ], ctx, exposed);
     api.suspicion(exposed, ctx.hoh, 1.1);

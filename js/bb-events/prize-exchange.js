@@ -23,9 +23,9 @@
 //
 // The act carries `steals` with `kind` and `gave`, so which of these fired is
 // a fact about the week rather than a guess.
-import { gs } from '../core.js';
 import { pronouns } from '../players.js';
 import { pStats, band, closestTo } from './_read.js';
+import { BB_PUNISHMENTS } from '../bb/punishments.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
@@ -37,20 +37,11 @@ const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
 
 /**
- * The exchange this week, or last — the fallout of a public trade outlives the
- * night it happened, and the campaign that follows it is where it gets used.
+ * The live exchange. These scenes refer to the current block, current veto and
+ * punishments just assigned, so joining last week's exchange to this week's
+ * nominees creates a convincing but entirely false story.
  */
-function _exchange(ctx) {
-  const live = ctx?.week?.prizeExchange;
-  if (live) return live;
-  const weeks = gs?.bb?.weeks || [];
-  const now = ctx?.week?.num || 0;
-  for (let i = weeks.length - 1; i >= 0; i--) {
-    const w = weeks[i];
-    if (w && w.num <= now && now - w.num <= 1 && w.prizeExchange) return w.prizeExchange;
-  }
-  return null;
-}
+const _exchange = ctx => ctx?.week?.prizeExchange || null;
 
 /** Somebody who was on the block and walked away holding a prize instead. */
 const _soldOutCast = (house, ctx) => {
@@ -90,7 +81,8 @@ const _costumeCast = (house, ctx) => {
   const who = worn[0];
   const other = _others(house, who.name)
     .sort((a, b) => pStats(a).temperament - pStats(b).temperament)[0];
-  return other ? { ex, who: who.name, item: who.punishment, other, all: worn } : null;
+  const def = BB_PUNISHMENTS[who.id] || null;
+  return other ? { ex, who: who.name, item: who.punishment, def, other, all: worn } : null;
 };
 
 // ── the money, in front of a jury ─────────────────────────────────────
@@ -113,8 +105,7 @@ const choseTheMoney = {
         + 'It does not need anything added to it.',
       `${who} explains the choice to anybody who will listen, and the explanation gets longer every time, `
         + `which ${judge} finds more revealing than the choice did.`,
-      `There was one thing on that table that could have saved ${who} and ${p.sub} came away with ${item}. `
-        + `${judge} will still be able to describe this moment in nine weeks.`,
+      `There was one thing on that table that could have saved ${who}, and ${p.sub} came away with ${item}. ${judge} says this is the story jurors will hear if ${who} reaches the end.`,
     ], ctx, who, judge);
     api.popDelta(who, -1);
     api.suspicion(judge, who, 0.8);
@@ -195,17 +186,14 @@ const outOfTheBoxes = {
   fire(house, ctx, api) {
     const cast = _costumeCast(house, ctx);
     if (!cast) return null;
-    const { who, item, other, all } = cast;
-    const p = pronouns(who);
+    const { who, item, def, other, all } = cast;
+    const serving = def?.verb ? `${def.verb} ${item}` : `serving ${item}`;
     const text = _variant([
-      `${who} opened a box at a competition and is in ${item} because of it. ${other} keeps pointing out `
-        + `that ${p.sub} did not have to open that one, which is not true and is not the point.`,
+      `${who} left the competition ${serving}. ${other} keeps pointing out that ${who} did not have to take that box, which is not true and does not make the week easier.`,
       `${all.length > 1 ? `${all.map(x => x.name).join(' and ')} are` : `${who} is`} paying for a competition `
         + `that was over on Wednesday, and will still be paying on Thursday when it matters.`,
-      `The costume was luck. What it costs ${who} for the rest of the week is not: nobody negotiates with `
-        + `${item}, and ${other} has noticed how much easier that makes this week.`,
-      `${who} unwrapped ${item} in front of everybody and has to live in it. ${other} finds it funny for `
-        + 'about a day and useful for the rest of them.',
+      `${who} drew ${item} by luck. The cost is predictable: every summons, restriction or interruption gives ${other} another chance to finish a conversation without ${who}.`,
+      `${who} unwrapped ${item} in front of everybody and now has to serve it. ${other} finds it funny for about a day and strategically useful for the rest of the week.`,
     ], ctx, who, other);
     api.popDelta(who, 1);
     api.suspicion(other, who, -0.3);

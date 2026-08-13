@@ -133,7 +133,7 @@ function _bbResultText(result, salt = '') {
       const [first, second, third] = p;
       if (result.badgeText === 'CONFRONTATION') {
         return _textPick([
-          `${first} confronts ${second} in the kitchen about what they were told. ${second} denies it, asks who started the story and gets no answer.`,
+          `${first} confronts ${second} in the kitchen: somebody said ${second} was pushing ${first}'s name. ${second} denies it, asks who started the story and gets no answer.`,
           `${first} waits until everyone is in the living room, then asks ${second} to repeat the comment directly to ${first}. ${second} says the comment never happened.`,
           `${first} corners ${second} near the storage room. Both start talking over each other, and several houseguests come inside to hear what started it.`,
           `${first} asks ${second} one calm question. ${second}'s confused answer makes it clear they have heard two completely different versions of the same conversation.`,
@@ -209,6 +209,15 @@ function _bbResultText(result, salt = '') {
       }
       return _textPick(lines, result, salt);
     }
+    case 'whisperCampaignExposed': {
+      const [target, schemer] = p;
+      return _textPick([
+        `${target} compares what people have been asking about ${pronouns(target).obj} and finds the same phrasing in three different rooms. The questions all trace back to ${schemer}.`,
+        `${target} asks who first raised ${pronouns(target).posAdj} name. One person says ${schemer}; then another does. By dinner the “independent concerns” have a common source.`,
+        `${target} catches ${schemer} making the same careful suggestion to somebody else. Instead of confronting ${schemer} privately, ${target} asks the room who heard it first.`,
+        `${target} puts the conversations in order: a warning at breakfast, the same doubt in the backyard, the same name before bed. ${schemer} is at the beginning of all three.`,
+      ], result, salt);
+    }
     case 'whisperCampaign': {
       const [schemer, target] = p;
       return _textPick([
@@ -277,7 +286,7 @@ function _bbResultText(result, salt = '') {
           `${schemer} waits until ${accomplice} gets ${witness} into the backyard, then corners ${kissTarget} in the bedroom. ${witness} returns before either hears the door.`,
           `${accomplice} keeps ${witness} busy with a fake problem while ${schemer} flirts openly with ${kissTarget}. Another houseguest sends ${witness} back inside.`,
           `${schemer} asks ${kissTarget} for a private talk after ${accomplice} leads ${witness} away. ${witness} comes back and catches the end of it.`,
-          `${accomplice} tells ${witness} that production needs ${pronouns(witness).obj} in another room. The excuse buys ${schemer} only a few minutes with ${kissTarget}, but it is enough.`,
+          `${accomplice} asks ${witness} to help carry laundry in from the backyard. By the time ${witness} realizes the job could have waited, ${schemer} is alone with ${kissTarget}.`,
         ], result, salt);
       }
       const [witness, partner] = p;
@@ -305,7 +314,16 @@ function _bbResultText(result, salt = '') {
  * what they are.
  */
 function _fold(results, badgeText, badgeClass, salt = '') {
-  const list = (results || []).filter(r => r && r.text);
+  const list = (results || []).filter(r => r && r.text)
+    // Some shared generators append the triggering action after its detection
+    // result. A house cannot expose a whisper campaign before it happens.
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => {
+      const after = r => (r.type === 'exposeSchemer' || r.type === 'whisperCampaignExposed')
+        ? 1 : r.type === 'comfortVictim' ? 2 : 0;
+      return after(a.item) - after(b.item) || a.index - b.index;
+    })
+    .map(({ item }) => item);
   if (!list.length) return null;
   // The badge names the PRIMARY action, not the last thing that happened as a
   // consequence of it — a kiss trap that ends with somebody being consoled is
@@ -582,9 +600,14 @@ const exposeSchemer = {
     if (!exposer || !victim) {
       return _quietBeat(`Somebody in this house is lying and nobody can prove which one.`, []);
     }
-    return _run(ctx, ep => [_generateExposeSchemer(exposer, schemer, victim, house, ep, _pick)],
+    const beat = _run(ctx, ep => [_generateExposeSchemer(exposer, schemer, victim, house, ep, _pick)],
       'EXPOSED', 'gold',
       _quietBeat(`${exposer} is almost sure about ${schemer}, and almost is not enough to say out loud.`, [exposer, schemer]), rng);
+    // This is explicitly a public exposure, and the shared generator changes
+    // every houseguest's relationship with the schemer. Show the room that
+    // witnessed it instead of making those consequences appear off-screen.
+    if (beat.badgeText !== 'NOTHING COMES OF IT') beat.players = [...house];
+    return beat;
   },
 };
 
@@ -680,7 +703,7 @@ const falseAccusation = {
       // double-dealing in week three can genuinely be doing it by week ten.
       partnersAtClaim: doubleDealPartners(mark).length,
     });
-    return { text, players: [liar, mark],
+    return { text, players: [liar, mark, ...audience],
       badgeText: convinced.length ? 'A LIE THAT LANDS' : 'NOBODY BUYS IT',
       badgeClass: convinced.length ? 'orange' : 'grey' };
   },
@@ -723,7 +746,9 @@ const accusationCollapses = {
     api.setTarget(mark, liar, `invented an accusation about ${mark}`);
     api.popDelta(liar, -3);
     api.popDelta(mark, 1);
-    return { text, players: [checker, liar, mark],
+    // Everyone hears the correction and every remaining houseguest receives
+    // the corresponding suspicion, bond and memory effects.
+    return { text, players: [...house],
       badgeText: 'IT WAS NEVER TRUE', badgeClass: 'red' };
   },
 };

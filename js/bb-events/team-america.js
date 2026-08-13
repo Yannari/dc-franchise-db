@@ -52,6 +52,7 @@ const _mission = ctx => {
 };
 
 const _tellCast = (house, ctx) => {
+  if (!_mission(ctx)) return null;
   const team = _team(house);
   if (team.length < 2) return null;
   const watcher = _others(house, ...team)
@@ -69,6 +70,7 @@ const _saboteurCast = (house, ctx) => {
   return accuser && blamed ? { m, accuser, blamed } : null;
 };
 const _reluctantCast = (house, ctx) => {
+  if (!_mission(ctx)) return null;
   const team = _team(house);
   if (team.length < 2) return null;
   // Two members who genuinely dislike each other, obliged to keep meeting.
@@ -109,8 +111,7 @@ const theTell = {
         + 'them can give a reason for it that sounds like a reason.',
       `"They are not even friends." ${watcher} says it to nobody, about ${named}, and then cannot stop `
         + 'turning it over — people who are not friends do not keep finding each other.',
-      `${named} have nothing in common, no history and no obvious reason to talk, which is precisely why `
-        + `${watcher} noticed the third time it happened.`,
+      `${named} are not usually a group, which is precisely why ${watcher} notices when they disappear into the same room again.`,
       `Every alliance in this house announced itself eventually. ${watcher} is fairly sure one of them has `
         + `not, and is fairly sure it involves ${team[0]}.`,
     ], ctx, named, watcher);

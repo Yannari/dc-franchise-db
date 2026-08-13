@@ -45,7 +45,7 @@ const isolationCheckIn={
       `${avoider} finds ${isolated} alone at the kitchen table and admits to keeping a distance. ${isolated} asks whether that was personal or strategic. ${avoider} answers without hiding behind the house.`,
       `${isolated} asks ${avoider} why every conversation stopped after nominations. In the kitchen, with nobody else there, ${avoider} finally gives a real answer.`,
       `${avoider} brings ${isolated} coffee and says, “I handled this badly.” ${isolated} does not let the apology erase the week, but does let ${avoider} sit down.`,
-      `${isolated} tells ${avoider} that being ignored felt worse than being nominated. ${avoider} listens, apologizes and stays at the kitchen table after the hard part is over.`,
+      `${isolated} tells ${avoider} that being ignored felt worse than being nominated. ${avoider} listens, apologises and stays at the kitchen table after the hard part is over.`,
     ]:[
       `${isolated} corners ${avoider} in the kitchen and asks why ${avoider} disappeared after nominations. ${avoider} says everybody needed space. ${isolated} asks why only one person was expected to take it.`,
       `${avoider} tries to explain the distance as “just the week.” ${isolated} asks when the week started requiring unanswered questions.`,

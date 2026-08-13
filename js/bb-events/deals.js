@@ -315,9 +315,9 @@ const defectionOffer = {
     const loyal = pStats(mark).loyalty >= 6 || isNice(mark);
     const text = loyal ? _variant([
       `${outsider} makes the offer and ${mark} turns it down without needing to think, then spends the rest of the night thinking about it.`,
-      `"You're fourth in that group and you know it." ${mark} knows it. ${p.Sub} says no anyway, which tells ${outsider} something useful.`,
+      `"You're fourth in that group and you know it." ${mark} does not argue with the number. ${p.Sub} turns the offer down anyway, and ${outsider} leaves knowing loyalty—not ignorance—is keeping ${p.obj} there.`,
       `${mark} listens to the whole pitch out of politeness and reports most of it to ${alliance?.name || 'the others'} within the hour. Most of it.`,
-      `${outsider} is offering a better position in a worse alliance and ${mark} can see the shape of it too clearly to take it.`,
+      `${outsider} offers ${mark} a better seat in a group ${p.sub} trusts less. ${mark} says, “Fourth with people I know is still better than second with you.”`,
     ], ctx, mark, outsider) : _variant([
       `${outsider} lays out where ${mark} actually stands in that alliance, with numbers, and ${mark} does not enjoy how accurate it is.`,
       `"They'll take you to fourth and no further." It is true. ${mark} has known it for a while and has been waiting for somebody to say it out loud.`,
@@ -464,11 +464,13 @@ const competingDeals = {
   id: 'deals-competing',
   category: 'deals',
   weight(house, ctx) {
+    if (ctx?.week?._competingDealsAired) return 0;
     // Somebody in two final twos at once is a collision waiting to happen.
     const doubled = house.find(n => _others(house, n).filter(m => remembers(n, m, 'final-two')).length >= 2);
     return doubled ? _w(12, ctx) : 0;
   },
   fire(house, ctx, api) {
+    if (ctx?.week) ctx.week._competingDealsAired = true;
     const player = house.find(n => _others(house, n).filter(m => remembers(n, m, 'final-two')).length >= 2);
     const partners = _others(house, player).filter(m => remembers(player, m, 'final-two')).slice(0, 2);
     const [x, y] = partners;
@@ -476,7 +478,8 @@ const competingDeals = {
     const text = _variant([
       `${player} has promised the end of the game to two different people and both of them mentioned it today, four hours apart, in almost identical words.`,
       `${x} tells ${player} they are still final two. Later, ${y} says the same thing. ${player} realizes both deals are about to be compared.`,
-      `Two final twos. One ${player}. ${p.Sub} has been managing it beautifully for a fortnight and can feel the exact week it stops being manageable.`,
+      `${player} gives ${x} one boot order and ${y} a different one. Halfway through the second conversation, `
+        + `${p.sub} forgets which version puts ${x} in fourth.`,
       `${player} realises, mid-conversation with ${x}, that ${p.sub} cannot remember which version of the plan ${p.sub} told ${y}.`,
     ], ctx, player, x, y);
 
@@ -618,7 +621,8 @@ const hedgedDeal = {
     const text = _variant([
       `${mark} asks ${a} the question directly — final two, the pair of us — and ${a} says yes without hesitating. ${p.Sub} already said yes to ${existing} weeks ago. One of those conversations was a lie and ${p.sub} ${does} not yet know which.`,
       `${a} shakes on a final two with ${mark}. It is the second one ${p.sub} ${holds}. ${p.Sub} ${tells} ${p.ref} it is insurance rather than a lie, which is what everybody who does this tells themselves.`,
-      `"Me and you at the end." ${mark} means it completely. ${a} says it back and means it about sixty percent, which is still more than ${p.sub} meant it with ${existing}.`,
+      `"Me and you at the end," ${mark} says. ${a} agrees, but avoids naming who leaves before them. `
+        + `That missing name is where the first final two with ${existing} is hiding.`,
       `${a} makes a second final two with ${mark} and walks out doing the arithmetic. Two deals, one seat. Somebody finds out eventually.`,
     ], ctx, a, mark, existing);
     api.addBond(a, mark, 1.3);
@@ -706,7 +710,8 @@ const reaffirmDeal = {
       `${a} finds ${b} alone and says it again, plainly: still us, still the end. ${b} does not need to hear it and is glad to anyway.`,
       `Neither of them says much. ${a} bumps ${b}'s shoulder on the way past and ${b} nods once. Weeks in, that is the entire conversation and it is enough.`,
       `"We good?" "We're good." ${a} and ${b} have had this exchange a dozen times and it has not stopped being true yet.`,
-      `${a} runs the next few evictions past ${b} out loud — who goes, in what order, who they need. ${b} corrects one name. That is the whole disagreement.`,
+      `${a} and ${b} compare their preferred boot orders. They disagree over one name, argue the timing for `
+        + `five minutes, and leave with a plan both can actually repeat.`,
     ], ctx, a, b) : _variant([
       `${a} asks ${b} whether they are still good, and listens to how long the pause is. It is not long. It is not nothing, either.`,
       `"Still us, right?" ${b} says all the right words. ${a} walks away not entirely convinced and unable to say which word did it.`,

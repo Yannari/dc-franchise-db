@@ -18,7 +18,12 @@ export const SHOWS = {
     // prompt that describes a season needs these four words, and hardcoding
     // them is how a Total Drama season came to be told it had houseguests who
     // were nominated. A show states its own vocabulary here.
-    words: { player: 'contestant', players: 'contestants', round: 'Episode', exit: 'voted out' },
+    // `comp` and friends are here because the finale writes about what a
+    // finalist WON, and a Big Brother jury does not sit through challenges or
+    // hand out immunity. A juror was saying "three individual immunities" and
+    // "challenge beast" about a houseguest's Heads of Household.
+    words: { player: 'contestant', players: 'contestants', round: 'Episode', exit: 'voted out',
+      comp: 'challenge', comps: 'immunity wins', compBeast: 'challenge beast', compWon: 'immunities' },
     // Season-detail fields this show contributes to a career, and the byShow
     // key each lands under. A show declares its own shape here rather than
     // _rebuildByShow branching on the format.
@@ -31,7 +36,8 @@ export const SHOWS = {
   },
   'big-brother': {
     prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹',
-    words: { player: 'houseguest', players: 'houseguests', round: 'Week', exit: 'evicted' },
+    words: { player: 'houseguest', players: 'houseguests', round: 'Week', exit: 'evicted',
+      comp: 'competition', comps: 'competition wins', compBeast: 'comp beast', compWon: 'competitions' },
     careerStats: [
       ['challengeWins', 'totalCompWins'],
       ['bb.hohWins', 'hohWins'],

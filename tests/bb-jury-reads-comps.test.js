@@ -110,6 +110,79 @@ describe('a Big Brother jury can see a competition record', () => {
       .toBeLessThan(0.35);
   });
 
+  it('speaks Big Brother, not Total Drama', () => {
+    // The finale writes about what a finalist WON, and Big Brother has no
+    // challenges, no immunity, no tribe and no merge. A juror was calling a
+    // houseguest a "challenge beast" with "three individual immunities" about
+    // their Heads of Household — and the branch only became reachable in this
+    // format when the comp record was fixed to be readable at all.
+    const BAD = /immunit|challenge|tribe|pre-merge|merge|camp|fishing|foraging|tribal/i;
+    const said = [];
+    for (let i = 0; i < 40; i++) {
+      house('big-brother');
+      gs.bb.stats.Ace.hohWins = 4;
+      gs.bb.stats.Ace.vetoWins = 2;
+      gs.bb.stats.Bea.hohWins = 1;
+      withSeededRandom(900 + i, () => {
+        (simulateJuryVote(['Ace', 'Bea']).reasoning || []).forEach(r => said.push(String(r.reason || '')));
+      });
+    }
+    expect(said.length, 'no reasons were generated at all').toBeGreaterThan(50);
+    const wrong = said.filter(r => BAD.test(r));
+    expect(wrong, `Total Drama vocabulary in a Big Brother finale: ${wrong[0] || ''}`).toEqual([]);
+  });
+
+  it('never reads an internal ledger label out loud', () => {
+    // `respectReason` and `grievanceReason` are written for a dimension ledger,
+    // third person and machine-shaped — "Bowie dominated a challenge",
+    // "blindsided/crossed by Emmah". They were being capitalised and spliced
+    // into a juror's quote, which is how a slash ended up in somebody's speech.
+    const said = [];
+    for (let i = 0; i < 40; i++) {
+      house('big-brother');
+      gs.bb.stats.Ace.hohWins = 3;
+      withSeededRandom(1300 + i, () => {
+        (simulateJuryVote(['Ace', 'Bea']).reasoning || []).forEach(r => said.push(String(r.reason || '')));
+      });
+    }
+    for (const line of said) {
+      expect(line, `a ledger label reached the screen: ${line}`).not.toMatch(/\w\/\w/);
+      // Every reason is a sentence somebody says, not a summary fragment.
+      expect(line[0], `a reason starts lowercase, so it is a label: ${line}`)
+        .toBe(line[0].toUpperCase());
+    }
+  });
+
+  it('nine jurors do not say the same sentence twice', () => {
+    // The picker hashes juror + finalist, so two jurors could land on one
+    // template — and did, for OPPOSITE finalists, both insisting the other was
+    // "still the strongest game up there".
+    let repeats = 0;
+    for (let i = 0; i < 40; i++) {
+      house('big-brother');
+      gs.jury = NAMES.slice(2, 9);
+      // A jury of seven identical strangers is not a jury — every one of them
+      // lands in the same branch and drains its pool, which is exhaustion
+      // rather than the collision this is about. A real panel is a spread of
+      // feeling, so this one is too.
+      gs.jury.forEach((juror, k) => {
+        addBond(juror, 'Ace', [6, -3, 2, 0, 5, -1, 3][k % 7]);
+        addBond(juror, 'Bea', [-2, 4, 0, 3, -4, 2, 1][k % 7]);
+        gs.jurorHistory[juror] = {
+          voters: k % 2 ? ['Ace'] : ['Bea'],
+          finalBonds: { Ace: [4, -2, 1, 0, 3, -1, 2][k % 7], Bea: [-1, 3, 0, 2, -3, 1, 0][k % 7] },
+        };
+      });
+      withSeededRandom(1700 + i, () => {
+        const reasons = (simulateJuryVote(['Ace', 'Bea']).reasoning || [])
+          .map(r => String(r.reason || '').split('Ace').join('~').split('Bea').join('~'));
+        const seen = new Set();
+        reasons.forEach(r => { if (r && seen.has(r)) repeats++; seen.add(r); });
+      });
+    }
+    expect(repeats, `${repeats} jurors repeated another juror's line word for word`).toBe(0);
+  });
+
   it('Total Drama is untouched — five wins are worth less there than here', () => {
     // The vote is shared code, so the claim has to be made as a COMPARISON at
     // the same raw count rather than against an absolute number: these two

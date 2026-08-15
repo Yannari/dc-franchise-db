@@ -2,6 +2,7 @@
 import { gs, gsCheckpoints, seasonConfig, players, repairGsSets } from './core.js';
 import { _idbPut } from './savestate.js';
 import { pStats, pronouns } from './players.js';
+import { showWords } from './shows.js';
 import { getBond, addBond } from './bonds.js';
 import { getRelationshipDimensions } from './relationships.js';
 import { getIntentions } from './intentions.js';
@@ -2612,10 +2613,31 @@ function _juryCompRecord(name) {
  *   step 1.1,  cap 6            42% / 42%   ← here
  *   step 1.4,  cap 7            46% / 38%   — starts buying finales outright
  *
- * Level is the target rather than a majority. A competition record should make
- * a finalist a real contender and should not decide the night on its own: at
- * this setting two of those twenty-six seasons were still won by somebody
- * three or more competitions behind, which is the result the format exists for.
+ * ── and then the same sweep at the DEFAULT jury of nine ──
+ *
+ * The table above was measured on a seven-person jury, which is not what
+ * core.js ships. At nine it reads completely differently, and the control is
+ * the important row:
+ *
+ *   comps worth NOTHING         54% more   ← the baseline
+ *   step 0.55 / 0.7             58%
+ *   step 0.85 / 1.1             63%
+ *
+ * A blind jury already favours the better competitor at that size, because
+ * people who win competitions tend to be people who play well. So the résumé
+ * is worth roughly nine points on top of a fifty-four point baseline — it
+ * makes a record matter without manufacturing the effect.
+ *
+ * Jury size moves this far more than the weight does, and the reason is worth
+ * knowing: `seatedJury` keeps the MOST RECENT evictees, and the last people
+ * out are the ones the late-game competition winner personally put on the
+ * block. A small jury is therefore a bitter one, and a large jury dilutes that
+ * with people who were gone before the winner had any power to use on them.
+ *
+ * Level is the target rather than a majority, and the aggregate is a coarse
+ * proxy for what actually matters — which is pinned in the guard instead: a
+ * finalist with eight competitions still loses to one the jury simply likes
+ * more than two thirds of the time.
  */
 const JURY_COMP_STEP = 1.1;
 const JURY_COMP_CAP = 6;
@@ -2646,6 +2668,19 @@ export function simulateJuryVote(finalists, adjustments = null) {
 
   const votes = Object.fromEntries(finalists.map(f => [f, 0]));
   const reasoning = [];
+  // What this show calls the things a finalist won.
+  const W = showWords(seasonConfig.format);
+  // Which reason has already been spoken tonight.
+  //
+  // `_jrPick` hashes the juror and the finalist, so two jurors could land on
+  // the same template — and did: one finale had two jurors voting for OPPOSITE
+  // finalists, both saying "but he is still the strongest game up there". They
+  // are allowed to disagree; they are not allowed to disagree in identical
+  // words. Signatures blank out the names first, or the same sentence about
+  // two different people looks like two different sentences.
+  const spoken = new Set();
+  const _sigOf = line => finalists
+    .reduce((t, f) => t.split(f).join('~'), String(line || ''));
 
   jury.forEach(juror => {
     const jS = pStats(juror);
@@ -2727,7 +2762,13 @@ export function simulateJuryVote(finalists, adjustments = null) {
     const _jrHistory = gs.jurorHistory?.[juror];
     const _jrVotedOut = _jrHistory?.voters?.includes(pick);
     const _jrFp = pronouns(pick);
-    const _jrPick = arr => arr[([...juror+pick].reduce((a,c)=>a+c.charCodeAt(0),0)+gs.episode*7)%arr.length];
+    const _jrPick = arr => {
+      const fresh = arr.filter(x => !spoken.has(_sigOf(x)));
+      const pool = fresh.length ? fresh : arr;
+      const line = pool[([...juror + pick].reduce((a, c) => a + c.charCodeAt(0), 0) + gs.episode * 7) % pool.length];
+      spoken.add(_sigOf(line));
+      return line;
+    };
     // Compute finalist stats for reasoning
     // The same record the score was built from, so the reason a juror gives
     // cannot cite a different season from the one they just voted on.
@@ -2737,7 +2778,6 @@ export function simulateJuryVote(finalists, adjustments = null) {
     const _jrPosJurorBonds = (gs.jury || []).filter(j => getBond(j, pick) >= 1).length;
     const _jrShowmance = gs.showmances?.find(sm => sm.players.includes(pick) && sm.phase !== 'broken-up' && sm.players.includes(juror));
     const _jrLayer = _juryLayerRead(juror, pick);
-    const _cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
     let _jrReason;
     // Showmance partner — strongest emotional pull, takes priority
     if (_jrShowmance) {
@@ -2751,7 +2791,7 @@ export function simulateJuryVote(finalists, adjustments = null) {
     //    legacy resume lines when that history exists. ──
     } else if (_jrLayer.brokePromise && _jrLayer.respect >= 4) {
       _jrReason = _jrPick([
-        `${pick} looked me in the eye, said we were going to the end together — then wrote my name down. I hated ${_jrFp.obj} for it. But that is exactly the move that got ${_jrFp.obj} here, and I won't punish a winner for winning.${_jrLayer.grievanceReason ? ` ${_cap(_jrLayer.grievanceReason)}.` : ''}`,
+        `${pick} looked me in the eye, said we were going to the end together — then wrote my name down. I hated ${_jrFp.obj} for it. But that is exactly the move that got ${_jrFp.obj} here, and I won't punish a winner for winning.`,
         `The cut still stings. ${pick} broke our deal at the worst possible moment for me — and the best possible moment for ${_jrFp.pos} game. I came to reward the best player, not my feelings.`,
         `I'm bitter and I'm honest about it: ${pick} played me, and ${_jrFp.sub} played me perfectly. That's a winner's résumé.`,
       ]);
@@ -2767,7 +2807,7 @@ export function simulateJuryVote(finalists, adjustments = null) {
       ]);
     } else if (_jrLayer.respectedThreat && _jrLayer.strategicJuror) {
       _jrReason = _jrPick([
-        `${pick} scared me the entire game — and I mean that as a compliment. I never had control while ${_jrFp.sub} ${_jrFp.sub==='they'?'were':'was'} in the room. You reward the player you couldn't touch.${_jrLayer.respectReason ? ` ${_cap(_jrLayer.respectReason)}.` : ''}`,
+        `${pick} scared me the entire game — and I mean that as a compliment. I never had control while ${_jrFp.sub} ${_jrFp.sub==='they'?'were':'was'} in the room. You reward the player you couldn't touch.`,
         `I didn't like sitting across from ${pick} — ${_jrFp.sub} ${_jrFp.sub==='they'?'were':'was'} always two moves ahead and dangerous with it. That's exactly why ${_jrFp.sub} ${_jrFp.sub==='they'?'get':'gets'} my vote. Fear is just respect you haven't admitted yet.`,
       ]);
     } else if (_jrLayer.straightShooter && _jrLayer.trustReason) {
@@ -2783,46 +2823,55 @@ export function simulateJuryVote(finalists, adjustments = null) {
       ]);
     } else if (_jrLayer.respect >= 5 && _jrLayer.respectReason) {
       _jrReason = _jrPick([
-        `I'm voting on gameplay, and ${pick} earned it — ${_jrLayer.respectReason}. Sharpest game sitting up there.`,
-        `${_cap(_jrLayer.respectReason)}. That's the moment ${pick} won my vote. Pure strategy, and I respect it.`,
+        `I'm voting on gameplay. ${pick} made a read on this house I did not see coming, and ${_jrFp.sub} made it stick. Sharpest game sitting up there.`,
+        `There was a moment out there where ${pick} was three steps ahead of all of us. That is when ${_jrFp.sub} won my vote. Pure strategy, and I respect it.`,
       ]);
     } else if (_jrLayer.resentment >= 5) {
       _jrReason = _jrPick([
-        `Let me be clear — I don't like how ${pick} played me.${_jrLayer.grievanceReason ? ` ${_cap(_jrLayer.grievanceReason)}.` : ''} But ${_jrFp.sub} ${_jrFp.sub==='they'?'are':'is'} still the strongest game up there, and I won't let a grudge hand the title to the wrong person.`,
+        `Let me be clear — I don't like how ${pick} played me, and I am not going to stand here and pretend otherwise. But ${_jrFp.sub} played the better game of the two sitting up there, and I won't let a grudge hand the title to somebody who did less.`,
         `This vote costs me something. ${pick} burned me and I haven't forgotten it. I'm voting for ${_jrFp.obj} anyway, because the game earned it even if my pride didn't.`,
+        `I have spent weeks on that bench being angry at ${pick}. I am still angry. I am also not stupid, and the vote is for the game.`,
+        `Ask me if I like ${pick} and you will get an honest answer you won't enjoy. Ask me who played this better and you get the same name.`,
+        `${pick} did me dirty and did it well. I can hold both of those, and only one of them is what this vote is for.`,
       ]);
     } else if (_jrVotedOut && _jrBond >= 2) {
       _jrReason = _jrPick([
         `${pick} voted me out — and I'm voting for ${_jrFp.obj} to win. That's how good ${_jrFp.pos} game was.`,
         `${pick} ended my game. I hated it then. But watching from the bench, I see it was the right move. That's why ${_jrFp.sub} ${_jrFp.sub==='they'?'get':'gets'} my vote.`,
         `I was bitter. I'm not anymore. ${pick} played the best game and I can admit that now.`,
+        `${pick} took my game from me and did it without insulting me on the way out. That matters more than people think.`,
+        `I have had a long time to be annoyed about this and all I have come up with is that ${_jrFp.sub} ${_jrFp.sub === 'they' ? 'were' : 'was'} right to do it.`,
       ]);
     } else if (_jrVotedOut && _jrBond < 0) {
       _jrReason = _jrPick([
         `${pick} didn't vote me out. That matters more than people think. Loyalty deserves to be rewarded.`,
         `I looked at who sent me home and who didn't. ${pick} wasn't part of that vote. ${_jrFp.Sub} ${_jrFp.sub==='they'?'have':'has'} my respect.`,
         `${pick} kept ${_jrFp.pos} hands clean when others didn't. That's the kind of game I want to reward.`,
+        `I went through every vote in my head on that bench. ${pick}'s name was never on the wrong side of mine.`,
       ]);
     } else if (_jrBond >= 4) {
       _jrReason = _jrPick([
         `${pick} and I had something real out there. I'm voting for ${_jrFp.obj} because ${_jrFp.sub} earned it — as a player and as a person.`,
         `I trust ${pick}. I've trusted ${_jrFp.obj} since the beginning. My vote reflects that.`,
         `${pick} was my closest ally. ${_jrFp.Sub} played hard and ${_jrFp.sub} played honest. That's enough for me.`,
-        `gratitude and respect — ${pick} never wrote my name`,
+        `${pick} never wrote my name down. Not once, all season. I know exactly what that was worth to ${_jrFp.obj} and I am paying it back.`,
+        `Everybody in this house lied to me at some point except ${pick}. That is not nothing. That is the whole thing, actually.`,
+        `I would have taken ${pick} to the end and ${_jrFp.sub} would have taken me. Neither of us got the chance. ${_jrFp.Sub} still gets my vote.`,
+        `When I had nobody, ${pick} sat with me. You can call that a strategy if you like. It worked, and it was also true.`,
       ]);
     } else if (jS.strategic >= 7) {
       _jrReason = _jrPick([
         `${pick} played the most complete game. Strategic, social, physical — ${_jrFp.sub} checked every box.`,
         `I'm voting for the best game, not the best person. ${pick} controlled more votes than anyone up there.`,
         `From the jury bench, it's clear: ${pick} made the moves that shaped this season. That deserves the win.`,
-        `respected ${pick}'s game and felt a genuine connection`,
+        `I respected ${pick}'s game long before I liked ${_jrFp.obj}, and by the end I did both. That is a rare thing to manage in here.`,
         `${pick} outplayed everyone sitting next to ${_jrFp.obj}. The jury should reward gameplay, not feelings.`,
       ]);
     } else if (_jrImmWins >= 3) {
       _jrReason = _jrPick([
-        `${_jrImmWins} individual immunities. ${pick} won when it mattered. You can't argue with someone who earned their safety that many times.`,
-        `${pick} is a challenge beast — ${_jrImmWins} immunity wins. ${_jrFp.Sub} didn't need alliances to survive. ${_jrFp.Sub} just kept winning.`,
-        `I respect dominance. ${pick} won ${_jrImmWins} immunities. That's not luck — that's will. My vote goes to the competitor.`,
+        `${_jrImmWins} ${W.comps}. ${pick} won when it mattered. You can't argue with somebody who earned their own safety that many times.`,
+        `${pick} is a ${W.compBeast} — ${_jrImmWins} ${W.comps}. ${_jrFp.Sub} didn't need anybody's permission to survive. ${_jrFp.Sub} just kept winning.`,
+        `I respect dominance. ${pick} won ${_jrImmWins} ${W.compWon}. That's not luck — that's will. My vote goes to the competitor.`,
       ]);
     } else if (_jrPreMergeVotes >= 4) {
       _jrReason = _jrPick([
@@ -2847,7 +2896,7 @@ export function simulateJuryVote(finalists, adjustments = null) {
         `${pick} treated people well. In this game, that's rare. My vote is personal — and I'm okay with that.`,
         `I like ${pick}. I think ${_jrFp.sub} played a good game. That combination gets my vote.`,
         `${pick} was genuine out there. Not everyone can say that. My vote reflects who I connected with.`,
-        `strong personal loyalty — felt closest to ${pick}`,
+        `Of everybody in that house, ${pick} is the one I felt closest to. I am not going to apologise for voting like it.`,
       ]);
     } else {
       // No strong personal signal — the juror falls back on what they value most.

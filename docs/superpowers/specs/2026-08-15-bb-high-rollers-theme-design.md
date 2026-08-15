@@ -55,8 +55,23 @@ fetches 402 — see `reference_bb_wiki_api`).
 
 Load-bearing details in that paragraph, all of which the design honours:
 
-- Income is an **audience** vote, tiered 100 / 75 / 50. Money follows who is
-  *watched*, not who is good.
+- Income is an **audience** vote, tiered in three bands — the top three, the
+  next three, and everybody else. Money follows who is *watched*, not who is
+  good.
+
+  **Amended 2026-08-15: the amounts are rescaled to 18 / 14 / 10.** The shape,
+  the tier names and the canon prices (Roulette 125, Derby 50, Coin 250) all
+  stand. The broadcast paid $100/$75/$50 for *three weeks only*, so a houseguest
+  finished that stretch on 150–300 against a 250 Coin and buying one thing cost
+  them everything else. This simulator pays every week from week one — the
+  announced tiers are the audience leak the theme is built on, and a leak that
+  fires three times is not that theme — so the broadcast amounts across a normal
+  16–20 week cast hand everybody 700–1300 against a 425 menu and nobody ever has
+  to choose. The rescale restores the sacrifice: 16 weeks at the top is ~288
+  (one Coin and nothing else all season), 16 weeks on the floor is ~160 (a
+  Roulette, never a Coin), and a 9-week season cannot reach the Coin at all,
+  which is correct — a short season is a poor house. `PAYOUT_TIERS` and
+  `FLOOR_TIER` in `js/bb/bb-bucks.js` are the only place the numbers live.
 - Bucks **carry over**. Saving is a strategy.
 - **Paying is not winning.** You buy a seat at a game; the game can beat you.
 - A purchased twist is **usable only that week**, so nothing bought can be

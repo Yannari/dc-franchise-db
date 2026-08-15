@@ -250,7 +250,11 @@ describe('every act the engine emits reaches both transcripts', () => {
       expect((text.match(/AUDIENCE PAYS/gi) || []).length,
         `${what} wrote the payout more than once`).toBe(1);
       expect(text, `${what} named nobody in the top tier`).toContain(top[0].name);
-      expect(text, `${what} did not print what the top tier was paid`).toContain('100');
+      // The amount comes off the act rather than being typed here. It was
+      // `'100'`, which is a private copy of the tier table: rescaling the tiers
+      // in `bb-bucks.js` left this asserting a number the season no longer pays.
+      expect(text, `${what} did not print what the top tier was paid`)
+        .toContain(String(top[0].amount));
       if (floor.length) expect(text, `${what} dropped the floor tier`).toContain(floor[0].name);
       // THE LEDGER IS PRIVATE. A transcript may say what somebody was PAID
       // this week; it may never say what anybody HAS. The number is checked

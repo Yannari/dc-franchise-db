@@ -8,9 +8,9 @@
 //
 // The part that makes a season is the MONEY, and it arrives long before the
 // room does. Every week America voted a payout to the entire cast in tiers —
-// a hundred to three of them, seventy-five to three more, fifty to everybody
-// else — and the totals CARRIED and were ANNOUNCED. That is the twist nobody
-// talks about, and it is the one this simulator has been missing a shape for:
+// the top three, the next three, and everybody else — and the totals CARRIED
+// and were ANNOUNCED. That is the twist nobody talks about, and it is the one
+// this simulator has been missing a shape for:
 //
 //   it is an audience signal the room can read.
 //
@@ -18,7 +18,7 @@
 // moves, the edit notices, and the houseguests never find out. Here the vote
 // is read out on the floor every week, so a player who is being watched
 // LEARNS they are being watched, and so does everybody standing next to them.
-// A hundred-dollar week is a target painted by strangers. That single fact
+// A top-tier week is a target painted by strangers. That single fact
 // changes how a room reads itself, and it needed no new room to do it.
 //
 // So this theme ships the economy and only the economy. `books: []` is not an

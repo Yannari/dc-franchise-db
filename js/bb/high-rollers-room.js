@@ -75,17 +75,21 @@ export const ROOM_GAMES = Object.freeze([
   }),
 ]);
 
-/**
- * How many seats the room has in a week.
- *
- * The room is a room: one table, one wheel, one operator, and a night. Without
- * a cap the door is not a decision at all — every houseguest who can afford the
- * price walks in on the same night, the whole house plays every game the week
- * it opens, and the format is over by the second time it appears. Three seats
- * means somebody who hesitated finds the table full, which is a real cost for
- * hesitating and the reason a nominee moves first.
- */
-export const SEATS_PER_WEEK = 3;
+// ── THERE IS NO SEAT CAP, AND THAT IS THE POINT ─────────────────────────
+//
+// An earlier draft of this module rationed the room to three seats a week. It
+// was papering over a broken economy: the tiers were paying $100/$75/$50 from
+// week one, so by the time the room opened everybody in the house could afford
+// everything on the menu and the only thing left to limit the door was an
+// invented queue.
+//
+// The tiers were rescaled instead (see `PAYOUT_TIERS`), and with a real economy
+// behind it the cap is not just unnecessary but wrong. Canon has no seat limit —
+// in BB23 week 7 Alyssa was the ONLY houseguest to play the Chopping Block
+// Roulette, and what kept everybody else out was that they could not afford it.
+// MONEY is the limiter, plus one entry per game per season. Those two together
+// do the whole job, and they do it as a consequence of decisions people made in
+// week three rather than as a rule about furniture.
 
 /** The record of who has burned which seat. Created on first touch, like the ledger. */
 function plays() {
@@ -212,13 +216,6 @@ const SHORT = [
   (n, p) => `${n} is short. ${p.Sub} has been paid every week of this season and spent the ones that mattered on nothing ${p.sub} can name.`,
 ];
 
-const FULL = [
-  (n, p) => `${n} arrives at the door a beat too late. The table is full and the room does not care who ${p.sub} is.`,
-  (n) => `There is no seat left for ${n}, who hesitated for an hour and paid for it without spending anything.`,
-  (n, p) => `${n} is turned away — the room seats a table, not a house, and ${p.sub} was fourth.`,
-  (n, p) => `The door does not open for ${n}. ${p.Sub} goes back and sits down and is careful about ${p.posAdj} face.`,
-];
-
 const pick = (pool, rng) => pool[Math.floor(rng() * pool.length) % pool.length];
 const beat = (text, who, badgeText, badgeClass = 'twist') =>
   ({ type: 'high-rollers-room', text, players: [...who].filter(Boolean), badgeText, badgeClass });
@@ -264,11 +261,27 @@ export function openRoom({ week, house = [], hoh = null, nominees = [], vetoHold
   // that opened to people who could not pay for it is not the same event as a
   // room nobody approached.
   //
-  // `weeksLeft` is how many more evictions this room could still open for, so
-  // `spendPull`'s patience term means what it means everywhere else: a
-  // houseguest can wait for a better week, until there are no better weeks
-  // left. `exposes: true` always — walking through that door is the loudest
-  // thing anybody does all week.
+  // `exposes: true` always — walking through that door is the loudest thing
+  // anybody does all week.
+  //
+  // ── weeksLeft, and why it is not a countdown like everywhere else ──
+  //
+  // Every other `spendPull` caller derives this from a real expiry:
+  // `expiresAfterWeek - week.num`, the fuse burning on a power somebody is
+  // holding. The room has no expiry. It does not run out, it is not held, and
+  // there is nothing on it to count down.
+  //
+  // What DOES run out is the season, so house size stands in for it: three is
+  // the finale, so `room.length - 3` is roughly how many more times this door
+  // can open before there is no game left to buy safety in. That makes
+  // `spendPull`'s patience term mean here what it means everywhere else — a
+  // houseguest can hold out for a better week until there are no better weeks —
+  // and it makes the endgame urgent, which is right for a room that shuts when
+  // the season does.
+  //
+  // It is a stand-in and not a measurement. Written down because it is invented,
+  // and an invented mapping that nobody flagged is how a heuristic becomes a
+  // rule nobody can find.
   const weeksLeft = Math.max(0, room.length - 3);
   const approached = [];
   for (const name of candidates) {
@@ -278,8 +291,10 @@ export function openRoom({ week, house = [], hoh = null, nominees = [], vetoHold
   }
   if (!approached.length) return null;
 
-  // Whoever wants it most gets to the door first. A nominee is not politely
-  // queueing behind a floater who is idly curious.
+  // Whoever wants it most gets to the door first. With no seat cap this decides
+  // only the ORDER of the night rather than who gets in, and it is still worth
+  // doing: the transcript should open on the nominee who could not wait, not on
+  // a floater who wandered in out of curiosity.
   approached.sort((a, b) => b.need - a.need);
 
   const entries = [];
@@ -288,11 +303,6 @@ export function openRoom({ week, house = [], hoh = null, nominees = [], vetoHold
 
   for (const { name } of approached) {
     const p = pronouns(name);
-    if (entries.length >= SEATS_PER_WEEK) {
-      declined.push({ name, gameId: game.id, reason: 'table-full' });
-      beats.push(beat(pick(FULL, rng)(name, p), [name], 'TURNED AWAY', 'grey'));
-      continue;
-    }
     if (!canAfford(name, game.price)) {
       declined.push({ name, gameId: game.id, reason: 'short' });
       beats.push(beat(pick(SHORT, rng)(name, p, game.price), [name], 'CANNOT PAY', 'grey'));

@@ -4,7 +4,7 @@ import { gs, players, seasonConfig, relationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
-import { balance } from '../js/bb/bb-bucks.js';
+import { balance, PAYOUT_TIERS, FLOOR_TIER, PAYOUT_AMOUNTS } from '../js/bb/bb-bucks.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 import { themeById, advanceThemeArc } from '../js/bb/themes.js';
@@ -33,6 +33,12 @@ function house({ theme = 'high-rollers', twistSchedule = [] } = {}) {
   seasonConfig.twistSchedule = twistSchedule;
 }
 
+// Amounts come from the module, never from a copy here. The tiers were
+// rescaled once already; a test holding its own numbers is what makes the next
+// rescale a hunt.
+const [TOP, MID] = PAYOUT_TIERS;
+const FLOOR = FLOOR_TIER;
+
 /** Every payout act anywhere in the season, across BOTH halves of a split night. */
 const bucksActs = () => (gs.bb.weeks || []).flatMap(w => (w.acts || [])
   .filter(a => a.type === 'bb-bucks'));
@@ -42,7 +48,7 @@ describe('the floor pays every week', () => {
     withSeededRandom(7, () => {
       house();
       simulateBBEpisode();
-      expect(NAMES.every(n => balance(n) >= 50)).toBe(true);
+      expect(NAMES.every(n => balance(n) >= FLOOR.amount)).toBe(true);
     });
   });
 
@@ -101,15 +107,17 @@ describe('the floor pays every week', () => {
 // later — so a double or half payout is baked in long before anything can
 // notice it. Both of these failed before the guard went in.
 describe('the floor pays once a week, however many cycles the week runs', () => {
-  // A payout is well-formed when it is exactly the canon tier set over the
-  // undivided house: three at 100, three at 75, everybody else at 50. It
-  // catches BOTH failure modes at once — paying twice doubles the amounts, and
-  // paying per side draws two complete tier sets, so six people hold 100.
+  // A payout is well-formed when it is exactly ONE canon tier set over the
+  // undivided house: three on the top amount, three on the middle, everybody
+  // else on the floor. It catches BOTH failure modes at once — paying twice
+  // doubles every balance off the tier amounts entirely, and paying per side
+  // draws two complete tier sets, so six people hold the top amount.
   const expectExactlyOneTierSet = names => {
     const paid = names.map(n => balance(n));
-    expect(paid.filter(b => b === 100)).toHaveLength(3);
-    expect(paid.filter(b => b === 75)).toHaveLength(3);
-    expect(paid.filter(b => b === 50)).toHaveLength(names.length - 6);
+    expect(paid.filter(b => b === TOP.amount)).toHaveLength(TOP.count);
+    expect(paid.filter(b => b === MID.amount)).toHaveLength(MID.count);
+    expect(paid.filter(b => b === FLOOR.amount))
+      .toHaveLength(names.length - TOP.count - MID.count);
   };
 
   it('pays once on a double eviction night, not once per cycle', () => {
@@ -133,7 +141,7 @@ describe('the floor pays once a week, however many cycles the week runs', () => 
       // The point of the fix: twelve people split into two sixes. Per-side,
       // each half is under the seven-houseguest floor and `awardWeeklyBucks`
       // returned null for both — the entire house went unpaid in silence.
-      expect(NAMES.every(n => balance(n) >= 50)).toBe(true);
+      expect(NAMES.every(n => balance(n) >= FLOOR.amount)).toBe(true);
       expectExactlyOneTierSet(NAMES);
       // And the act names the undivided house, not one half of it.
       expect(bucksActs()[0].payouts).toHaveLength(NAMES.length);
@@ -395,32 +403,57 @@ describe('the chip band', () => {
   const band = (html) => (html.match(/<section class="bbcp"[\s\S]*?<\/section>/) || [])[0] || '';
   const houseLife = (screens) => screens.filter(s => s.label === 'House Life')
     .map(s => s.html).join('');
+  /**
+   * The band as a VIEWER reads it: tag names and attribute values stripped,
+   * text content kept.
+   *
+   * The chip is drawn as SVG, and its geometry is full of two-digit numbers —
+   * `cx="32"`, `r="30"`, `stroke-width="6"`. Searching the raw markup for a
+   * balance therefore hits circle coordinates and reports a privacy leak that
+   * is not on the screen. What must never appear is a number somebody can READ,
+   * which is exactly the text nodes.
+   */
+  const readable = (html) => html.replace(/<[^>]+>/g, ' ');
 
   it('shows the week\'s payout on House Life and never a balance', () => {
     withSeededRandom(7, () => {
       house();
       simulateBBEpisode();
-      simulateBBEpisode();   // week 2, so balances are 100-200 and distinct from payouts
+      simulateBBEpisode();   // week 2: balances are two payouts deep, so distinct from one
       const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
       const screens = buildVPScreens(ep);
       const html = screens.map(s => s.html).join('');
       const chips = band(houseLife(screens));
+      const chipText = readable(chips);
 
       // It rendered at all — without this the privacy case below is vacuous.
       expect(chips, 'no chip band on any House Life screen').toBeTruthy();
       expect(chips).toMatch(/THE FLOOR PAYS|CHIP COUNT/i);
       // Three tiers, and everybody standing in one of them.
-      for (const amount of [100, 75, 50]) expect(chips).toContain(String(amount));
+      for (const amount of PAYOUT_AMOUNTS) expect(chipText).toContain(String(amount));
       const paid = ep.acts.find(a => a.type === 'bb-bucks').payouts;
       for (const p of paid) expect(chips).toContain(p.name);
 
-      // A payout is 50, 75 or 100. A week-2 balance is not, and must not appear
-      // — not in the band, and not anywhere else the player drew this week.
-      const balances = ep.bucksLedger.map(l => l.balance).filter(b => ![0, 50, 75, 100].includes(b));
+      // A payout is one of the tier amounts. A week-2 balance is not, and must
+      // appear on neither surface that holds payout data: the band, and the
+      // payout screen itself.
+      //
+      // This used to sweep the WHOLE episode's markup for `>balance<`. That
+      // worked only while a payout was a three-figure number: once the tiers
+      // were rescaled a balance became two digits, and `>24<` matches a comp
+      // tally, a day count and an alliance size on screens that have never seen
+      // the ledger. A false leak on an unrelated screen is not a weaker
+      // assertion made safe, it is a broken one — so this checks the two
+      // surfaces that could actually leak, and checks them as READABLE TEXT.
+      const payScreen = readable(screens.filter(s => s.label === 'The Audience Pays')
+        .map(s => s.html).join(''));
+      expect(payScreen, 'no payout screen was drawn').toBeTruthy();
+      const balances = ep.bucksLedger.map(l => l.balance)
+        .filter(b => ![0, ...PAYOUT_AMOUNTS].includes(b));
       expect(balances.length, 'week 2 produced no balance distinct from a payout').toBeGreaterThan(0);
       for (const b of balances) {
-        expect(html).not.toContain(`>${b}<`);
-        expect(chips, `the band printed the balance ${b}`).not.toContain(String(b));
+        expect(chipText, `the band printed the balance ${b}`).not.toContain(String(b));
+        expect(payScreen, `the payout screen printed the balance ${b}`).not.toContain(String(b));
       }
     });
   });

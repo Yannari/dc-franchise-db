@@ -13,7 +13,7 @@ import { setGs } from '../js/core.js';
 // jsdom, where the module URL is not a file: URL and `fileURLToPath` throws.
 // This is the same door `tests/bb-themes.test.js` opens the markup through.
 import { readFileSync } from 'node:fs';
-import { rpBuildBBThemeBeat } from '../js/vp-screens.js';
+import { rpBuildBBThemeBeat, buildVPScreens } from '../js/vp-screens.js';
 import { BED_CATALOG } from '../js/audio.js';
 
 const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly',
@@ -314,5 +314,84 @@ describe('the Pit Boss draws its own screen', () => {
 
   it('renders with no week on the episode at all', () => {
     expect(() => rpBuildBBThemeBeat({}, act())).not.toThrow();
+  });
+});
+
+// ── the chip band ──────────────────────────────────────────────────────
+//
+// The band on House Life says WHAT THE FLOOR PAID THIS WEEK — the three tiers
+// and who stood in each — and nothing else. It may never show a balance. That
+// is the canon call the spec made: a houseguest knows their own savings and
+// nobody has a scoreboard of everybody else's, and the inference the house
+// makes off the announced tiers is the whole twist.
+//
+// The brief's draft of this asserted only that no balance appeared, which a
+// band that renders NOTHING AT ALL passes perfectly. Both halves are asserted
+// here: the band is on the screen, AND no balance is anywhere near it.
+describe('the chip band', () => {
+  /** Just the band, sliced off the House Life screen. Its <style> is outside. */
+  const band = (html) => (html.match(/<section class="bbcp"[\s\S]*?<\/section>/) || [])[0] || '';
+  const houseLife = (screens) => screens.filter(s => s.label === 'House Life')
+    .map(s => s.html).join('');
+
+  it('shows the week\'s payout on House Life and never a balance', () => {
+    withSeededRandom(7, () => {
+      house();
+      simulateBBEpisode();
+      simulateBBEpisode();   // week 2, so balances are 100-200 and distinct from payouts
+      const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
+      const screens = buildVPScreens(ep);
+      const html = screens.map(s => s.html).join('');
+      const chips = band(houseLife(screens));
+
+      // It rendered at all — without this the privacy case below is vacuous.
+      expect(chips, 'no chip band on any House Life screen').toBeTruthy();
+      expect(chips).toMatch(/THE FLOOR PAYS|CHIP COUNT/i);
+      // Three tiers, and everybody standing in one of them.
+      for (const amount of [100, 75, 50]) expect(chips).toContain(String(amount));
+      const paid = ep.acts.find(a => a.type === 'bb-bucks').payouts;
+      for (const p of paid) expect(chips).toContain(p.name);
+
+      // A payout is 50, 75 or 100. A week-2 balance is not, and must not appear
+      // — not in the band, and not anywhere else the player drew this week.
+      const balances = ep.bucksLedger.map(l => l.balance).filter(b => ![0, 50, 75, 100].includes(b));
+      expect(balances.length, 'week 2 produced no balance distinct from a payout').toBeGreaterThan(0);
+      for (const b of balances) {
+        expect(html).not.toContain(`>${b}<`);
+        expect(chips, `the band printed the balance ${b}`).not.toContain(String(b));
+      }
+    });
+  });
+
+  it('draws nothing at all on a season with no economy', () => {
+    withSeededRandom(7, () => {
+      house({ theme: 'none' });
+      simulateBBEpisode();
+      const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
+      expect(band(houseLife(buildVPScreens(ep)))).toBe('');
+    });
+  });
+
+  it('draws with CSS and SVG, never emoji', () => {
+    withSeededRandom(7, () => {
+      house();
+      simulateBBEpisode();
+      const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
+      const chips = band(houseLife(buildVPScreens(ep)));
+      expect(chips).toBeTruthy();
+      expect(chips).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
+    });
+  });
+
+  it('escapes the names rather than letting them be markup', () => {
+    withSeededRandom(7, () => {
+      house();
+      simulateBBEpisode();
+      const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
+      const act = ep.acts.find(a => a.type === 'bb-bucks');
+      act.payouts[0].name = '<script>x</script>';
+      const chips = band(houseLife(buildVPScreens(ep)));
+      expect(chips).not.toContain('<script>x</script>');
+    });
   });
 });

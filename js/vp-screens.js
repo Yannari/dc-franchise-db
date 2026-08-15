@@ -16512,6 +16512,103 @@ function _bbPowerBand(ep) {
   </section>`;
 }
 
+/**
+ * "The floor pays" — the week's announced payout, on the wall all week.
+ *
+ * The gap this fills is the same one `_bbPowerBand` fills for powers: the
+ * payout is read out once, on its own screen, and then the house spends five
+ * days acting on it. A viewer reading Thursday's feed has no way back to who
+ * was paid what on Monday, and that number is the reason half the room is
+ * being nice to somebody.
+ *
+ * THE THING THIS BAND MUST NEVER DO is show a balance. The ledger is private
+ * per canon — a houseguest knows their own savings and nobody has a scoreboard
+ * of everybody else's — and the inference the house makes off three announced
+ * tiers is the entire twist. So the data source is the week's `bb-bucks` act,
+ * which holds only what was PAID this week, and never `ep.bucksLedger`, which
+ * is a snapshot of balances kept for the audience's own panel. If this function
+ * ever grows a `bucksLedger` read, it has stopped being this band.
+ */
+function _bbChipBand(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'bb-bucks');
+  if (!act) return '';
+  const paid = (act.payouts || []).filter(p => p && p.name);
+  if (!paid.length) return '';
+
+  const TIERS = [
+    { key: 'top', cls: 'is-top', label: 'TOP OF THE VOTE',
+      why: 'the three the audience watched most' },
+    { key: 'middle', cls: 'is-mid', label: 'THE NEXT THREE', why: 'seen, but not first' },
+    { key: 'floor', cls: 'is-floor', label: 'THE FLOOR',
+      why: 'the amount you get for being in the building' },
+  ];
+  const rows = TIERS.map(t => ({ ...t, won: paid.filter(p => p.tier === t.key) }))
+    .filter(t => t.won.length);
+  if (!rows.length) return '';
+
+  // A chip, drawn rather than typed: rim, six edge spots as a dashed stroke,
+  // an inset face, and the denomination struck into it. 182.2 is the r=27
+  // circumference, so twelve equal segments put six spots evenly round the rim
+  // — an arbitrary dasharray leaves one spot sliced in half at twelve o'clock.
+  const chip = (amount) => `<svg class="bbcp-chip" viewBox="0 0 64 64" aria-hidden="true">
+    <circle class="bbcp-body" cx="32" cy="32" r="30"/>
+    <circle class="bbcp-spots" cx="32" cy="32" r="27" stroke-dasharray="15.18 15.18"/>
+    <circle class="bbcp-face" cx="32" cy="32" r="21"/>
+    <circle class="bbcp-ring" cx="32" cy="32" r="23"/>
+    <text class="bbcp-den" x="32" y="32" dominant-baseline="central">${_bbEsc(amount)}</text>
+  </svg>`;
+
+  const board = rows.map(t => `<div class="bbcp-row ${t.cls}">
+    <div class="bbcp-stack">${chip(t.won[0].amount)}</div>
+    <div class="bbcp-who">
+      <div class="bbcp-tier"><b>${t.label}</b><i>${t.why}</i></div>
+      <div class="bbcp-names">${t.won.map(p => `<span class="bbcp-hg">
+        ${_bbAvatar(p.name, 22)}<em>${_bbEsc(p.name)}</em></span>`).join('')}</div>
+    </div>
+  </div>`).join('');
+
+  return `<style>
+  .bbcp{margin:12px 0 6px;border:1px solid rgba(201,162,39,.26);border-radius:9px;
+    background:linear-gradient(180deg,rgba(58,44,12,.26),rgba(8,10,14,.60));padding:0 12px 11px}
+  .bbcp-rail{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 -12px 10px;
+    padding:8px 12px;border-bottom:2px solid rgba(201,162,39,.35);
+    background:linear-gradient(180deg,rgba(240,213,133,.20),rgba(201,162,39,.05));
+    border-radius:8px 8px 0 0}
+  .bbcp-rail b{font-size:10px;letter-spacing:2.6px;color:var(--theme-accent,#f0d585)}
+  .bbcp-rail i{font-style:normal;font-size:9.5px;letter-spacing:.4px;color:#8b93a2}
+  .bbcp-row{display:flex;align-items:center;gap:12px;padding:7px 0;
+    border-bottom:1px dashed rgba(255,255,255,.07)}
+  .bbcp-row:last-child{border-bottom:0}
+  .bbcp-stack{flex:none;filter:drop-shadow(0 3px 0 rgba(0,0,0,.45))}
+  .bbcp-chip{width:46px;height:46px;display:block}
+  .bbcp-body{fill:#2a2118;stroke:rgba(0,0,0,.55);stroke-width:1}
+  .bbcp-spots{fill:none;stroke:#c9a227;stroke-width:6}
+  .bbcp-face{fill:#161b22}
+  .bbcp-ring{fill:none;stroke:rgba(240,213,133,.55);stroke-width:1}
+  .bbcp-den{fill:#f0d585;font-size:17px;font-weight:700;text-anchor:middle;letter-spacing:.5px}
+  .bbcp-row.is-mid .bbcp-spots{stroke:#9c3a46}
+  .bbcp-row.is-mid .bbcp-ring{stroke:rgba(226,150,160,.5)}
+  .bbcp-row.is-mid .bbcp-den{fill:#e296a0}
+  .bbcp-row.is-floor .bbcp-spots{stroke:#6f7b8b}
+  .bbcp-row.is-floor .bbcp-ring{stroke:rgba(180,192,208,.45)}
+  .bbcp-row.is-floor .bbcp-den{fill:#b4c0d0}
+  .bbcp-who{flex:1;min-width:0}
+  .bbcp-tier{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+  .bbcp-tier b{font-size:9.5px;letter-spacing:1.8px;color:#e6edf3}
+  .bbcp-tier i{font-style:italic;font-size:10px;color:#7d8898}
+  .bbcp-names{display:flex;flex-wrap:wrap;gap:6px}
+  .bbcp-hg{display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 3px;
+    border:1px solid rgba(255,255,255,.10);border-radius:999px;background:rgba(9,11,15,.72)}
+  .bbcp-hg .bb-av{border-radius:50%;flex:none}
+  .bbcp-hg em{font-style:normal;font-size:11.5px;color:#e6edf3;white-space:nowrap}
+  </style>
+  <section class="bbcp">
+    <div class="bbcp-rail"><b>THE FLOOR PAYS</b>
+      <i>this week&rsquo;s announced payout &mdash; what anybody has saved is nobody else&rsquo;s business</i></div>
+    ${board}
+  </section>`;
+}
+
 export function rpBuildBBHouseLife(ep, act, slot) {
   const phase = act?.phase || 'pre-hoh';
   const meta = _BB_PHASE_META[phase] || _BB_PHASE_META['pre-hoh'];
@@ -16547,7 +16644,8 @@ export function rpBuildBBHouseLife(ep, act, slot) {
         <span class="bbf-hud-sp">${house.length} IN THE HOUSE</span>
       </div>
       ${_bbMemoryWall(house, { status, notYet: act?._preArrival ? _bbNotYetArrived(ep) : [] })}
-      ${_bbPowerBand(ep)}`;
+      ${_bbPowerBand(ep)}
+      ${_bbChipBand(ep)}`;
 
   if (beats.length) {
     // A camera bank, so the stretch can be taken in before it is read: which

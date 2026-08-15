@@ -44,6 +44,11 @@ const STEP_MAPS = {
   'bb-endurance-soak': ['heats'],
 };
 
+// Pure Chance carries a LIST rather than a map — the drop order, which the
+// board draws as its queue — and it is merged the same way and can be clobbered
+// the same way, so it is checked the same way.
+const STEP_LISTS = { 'bb-luck-draw': ['order'] };
+
 describe('per-player step maps survive every step', () => {
   beforeEach(() => {
     seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
@@ -88,6 +93,28 @@ describe('per-player step maps survive every step', () => {
           expect(Object.keys(last[key] || {}).length,
             `${id}: the final step's ${key} is not a full map`).toBe(participants.length);
         }
+      }
+    });
+  }
+
+  for (const [id, keys] of Object.entries(STEP_LISTS)) {
+    it(`${id} never lets a step clobber ${keys.join('/')}`, () => {
+      const participants = NAMES.slice(0, 8);
+      for (const seed of [7, 77, 313]) {
+        const r = runBBCompetition({
+          type: 'hoh', participants, house: NAMES, library: BB_COMPETITIONS,
+          forcedId: id, rng: rngFor(seed), week: { num: 4, houseAtStart: NAMES },
+          nominees: [NAMES[1]], hoh: NAMES[0],
+        });
+        const steps = r.detail?.steps || [];
+        expect(steps.length).toBeGreaterThan(2);
+        steps.forEach((s, i) => {
+          for (const key of keys) {
+            expect(Array.isArray(s[key]),
+              `${id} seed ${seed} step ${i} (${s.kind}): ${key} is not a list`).toBe(true);
+            expect(s[key], `${id} step ${i}: ${key} lost somebody`).toHaveLength(participants.length);
+          }
+        });
       }
     });
   }

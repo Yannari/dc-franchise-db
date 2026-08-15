@@ -242,6 +242,17 @@ export const finalWall = {
     const out = [];          // first off the wall, first in the list
     const tiebreaks = {};
     const deals = [];
+    // One step per beat, carrying who was still up and what just passed
+    // between which two of them.
+    //
+    // The competition's content is the talk — three people who cannot get away
+    // from each other for six hours — and the narration can only say one line
+    // of it at a time. A screen that wants to draw the STANDING between the
+    // three needs those exchanges indexed rather than only printed. Declared
+    // after `field` because the snapshot reads it. No outcome moves.
+    const steps = [];
+    const addStep = (step, hrs) => steps.push({ ...step, hours: hrs, standing: field.map(f => f.name) });
+    addStep({ kind: 'open' }, 0);
     let hours = 0;
     let round = 0;
     let offerMade = false;
@@ -326,6 +337,8 @@ export const finalWall = {
           };
           out.push(weakest.name);
           field = rolls.filter(r => r.name !== weakest.name).map(({ name, hold, fatigue }) => ({ name, hold, fatigue }));
+          addStep({ kind: 'deal', from: strongest.name, to: weakest.name,
+            chance: round2(read.chance) }, hours);
           continue;
         }
 
@@ -337,15 +350,19 @@ export const finalWall = {
           // Being turned down in front of the third person costs something.
           api.addBond(strongest.name, weakest.name, -0.8);
           api.popDelta(weakest.name, 2);
+          addStep({ kind: 'refused', from: strongest.name, to: weakest.name,
+            chance: round2(read.chance) }, hours);
         } else if (rng() < 0.5) {
           const pair = [rolls[0].name, rolls[1].name];
           beats.push(beat(line('', WALL_SOLIDARITY, pair[0], pair[1]), pair, 'UP THERE TOGETHER', 'green'));
           api.addBond(pair[0], pair[1], 0.6);
+          addStep({ kind: 'solidarity', from: pair[0], to: pair[1] }, hours);
         } else {
           const target = rolls[0].name === strongest.name ? rolls[1].name : rolls[0].name;
           beats.push(beat(line('', WALL_TAUNT, strongest.name, target), [strongest.name, target], 'MIND GAMES', 'red'));
           api.addBond(strongest.name, target, -1);
           api.popDelta(strongest.name, -1);
+          addStep({ kind: 'taunt', from: strongest.name, to: target }, hours);
         }
       }
 
@@ -369,11 +386,15 @@ export const finalWall = {
         };
         out.push(faller.name);
         field = rolls.slice(1).map(({ name, hold, fatigue }) => ({ name, hold, fatigue }));
+        addStep({ kind: 'fall', who: faller.name, grip: round2(faller.grip),
+          hazard: hazard.label }, hours);
       } else {
         beats.push(beat(
           line(`${hourMark ? `${hourMark.line} ` : ''}${hazard.line} `, WALL_HOLD, faller.name, p),
           [faller.name], hazard.label, 'challenge'));
         field = rolls.map(({ name, hold, fatigue }) => ({ name, hold, fatigue }));
+        addStep({ kind: 'hold', who: faller.name, grip: round2(faller.grip),
+          hazard: hazard.label }, hours);
       }
     }
 
@@ -391,6 +412,7 @@ export const finalWall = {
     beats.push(beat(
       `After ${held}, ${winner} is the only one still on the wall. ${wp.Sub} ${vb(wp, 'has', 'have')} the first seat in part three, and ${wp.sub} ${vb(wp, 'watches', 'watch')} part two from the sofa like everybody else.`,
       [winner], 'WINS PART ONE', 'gold'));
+    steps.push({ kind: 'win', who: winner, hours, standing: [winner] });
     api.popDelta(winner, 3);
     api.record(winner, 'final-wall-win', { hours, deliberateDrops: deals.length });
 
@@ -409,6 +431,11 @@ export const finalWall = {
     return toResult(entries, {
       luck,
       beats, breakdown, variant: 'final-wall',
+      detail: {
+        steps, hours, cast: [...participants],
+        deals: deals.map(x => ({ ...x })),
+        finished: deals.length ? 'talked-down' : 'last-holding',
+      },
       text: `${winner} holds the wall for ${held} and takes part one of the final Head of Household.`
         + (deals.length ? ` ${deals[0].to} came down on a promise from ${deals[0].from}.` : ''),
     });

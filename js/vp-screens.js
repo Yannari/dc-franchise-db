@@ -90,6 +90,7 @@ import { rpBuildSigHoldTheLine } from './vp-bb-sig/hold-the-line.js';
 import { rpBuildSigCutAndCover } from './vp-bb-sig/cut-and-cover.js';
 import { rpBuildSigPureChance } from './vp-bb-sig/pure-chance.js';
 import { rpBuildSigFinalRun } from './vp-bb-sig/final-run.js';
+import { rpBuildSigFinalWall } from './vp-bb-sig/final-wall.js';
 import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
 import { rpBuildBBSplitHouse } from './vp-bb-split.js';
 import { rpBuildBBRoadkill } from './vp-bb-roadkill.js';
@@ -17281,6 +17282,10 @@ const _BB_SIG_BUILDERS = {
   // 'hoh' and handed to this dispatcher, so a finale set piece resolves here
   // exactly like a weekly competition.
   'final-run': rpBuildSigFinalRun,
+  // Part one. The wall is the room; the negotiation between the three of them
+  // is the competition, and the screen draws that rather than the apparatus —
+  // the apparatus is the part it shares with the weekly Wall.
+  'final-wall': rpBuildSigFinalWall,
 };
 
 export function rpBuildBBComp(ep, actType) {

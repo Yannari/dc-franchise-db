@@ -96,7 +96,19 @@ const _STYLE = `<style>
   border:1px solid rgba(255,255,255,.1)}
 .sigdrop .pc-side-h{font-family:'Sora',sans-serif;font-size:10.5px;letter-spacing:3px;font-weight:700;color:#fff}
 .sigdrop .pc-side-s{font-size:10.5px;color:var(--pc-dim);margin:3px 0 10px;line-height:1.5}
+
+/* Faces. The helper only sets width/height inline, so each screen carries the
+   rest — otherwise a portrait renders as an unstyled box wherever the host
+   page's global rule is not in scope. */
+.sigdrop .bb-av{display:inline-grid;place-items:center;overflow:hidden;border-radius:3px;
+  background:rgba(0,0,0,.25);flex:none;position:relative}
+.sigdrop .bb-av img{width:100%;height:100%;object-fit:cover;display:block}
+.sigdrop .bb-av i{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+  font-style:normal;font-weight:700;font-size:11px;opacity:.75}
+
 .sigdrop .pc-srow{display:flex;align-items:center;gap:7px;font-size:11.5px;margin-bottom:6px;color:#cfc4d6}
+.sigdrop .pc-srow .bb-av{border:1px solid rgba(255,255,255,.2)}
+.sigdrop .pc-q .bb-av{vertical-align:-3px;margin-right:3px;border-radius:2px}
 .sigdrop .pc-srow span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sigdrop .pc-srow em{font-style:normal;font-size:11px;color:#fff;font-variant-numeric:tabular-nums;font-weight:600}
 .sigdrop .pc-srow.is-lead em{color:var(--pc-amber)}
@@ -275,12 +287,13 @@ export function rpBuildSigPureChance(ep, actType, u = {}) {
 
   const queue = order.map((name, i) => {
     const cls = i < dropped ? 'done' : (name === nextUp && !done ? 'now' : '');
-    return `<span class="pc-q ${cls}">${esc(name)}${i < dropped && !sealed ? ` · ${scored[name] ?? ''}` : ''}</span>`;
+    return `<span class="pc-q ${cls}">${avatar(name, 14)}${esc(name)}${i < dropped && !sealed ? ` · ${scored[name] ?? ''}` : ''}</span>`;
   }).join('');
 
   const sideRows = Object.entries(scored)
     .sort((a, b) => b[1] - a[1])
     .map(([name, v]) => `<div class="pc-srow ${lead && name === lead.name ? 'is-lead' : ''} ${v >= 400 ? 'is-big' : ''}">
+      ${avatar(name, 18)}
       <i style="width:9px;height:9px;border-radius:50%;flex:none;background:hsl(${hueOf(name)} 68% 52%)"></i>
       <span>${esc(name)}</span><em>${sealed ? MASK : v}</em></div>`).join('');
 

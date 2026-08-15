@@ -94,7 +94,19 @@ const _STYLE = `<style>
 .sigcut .cv-tiles i.on{box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 1px 2px rgba(0,0,0,.18)}
 .sigcut .cv-bd.is-tear .cv-tiles i{animation:cvShake .4s ease both}
 @keyframes cvShake{0%,100%{transform:none}30%{transform:translate(1px,-1px)}60%{transform:translate(-1px,1px)}}
-.sigcut .cv-bd-n{display:flex;align-items:baseline;gap:5px;font-size:10.5px;font-weight:600;color:var(--cv-ink)}
+
+/* Faces. The helper only sets width/height inline, so each screen carries the
+   rest — otherwise a portrait renders as an unstyled box wherever the host
+   page's global rule is not in scope. */
+.sigcut .bb-av{display:inline-grid;place-items:center;overflow:hidden;border-radius:3px;
+  background:rgba(0,0,0,.25);flex:none;position:relative}
+.sigcut .bb-av img{width:100%;height:100%;object-fit:cover;display:block}
+.sigcut .bb-av i{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+  font-style:normal;font-weight:700;font-size:11px;opacity:.75}
+
+.sigcut .cv-bd-n{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--cv-ink)}
+.sigcut .cv-bd-n .bb-av{border:1px solid rgba(20,32,28,.28)}
+.sigcut .cv-srow .bb-av{border:1px solid rgba(20,32,28,.2)}
 .sigcut .cv-bd-n span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sigcut .cv-bd-n em{font-style:normal;font-size:9.5px;color:var(--cv-dim);font-variant-numeric:tabular-nums}
 .sigcut .cv-bd.is-done{outline:2px solid var(--cv-mark);outline-offset:1px}
@@ -227,7 +239,7 @@ export function rpBuildSigCutAndCover(ep, actType, u = {}) {
         : `<span class="cv-flag"></span>`;
     return `<div class="cv-bd ${buzzed === name ? 'is-done' : ''} ${tearing === name ? 'is-tear' : ''}">
       <div class="cv-tiles">${tiles}</div>
-      <div class="cv-bd-n"><span>${esc(name)}</span><em>${sealed ? MASK : `${n}/${TILES}`}</em></div>
+      <div class="cv-bd-n">${avatar(name, 18)}<span>${esc(name)}</span><em>${sealed ? MASK : `${n}/${TILES}`}</em></div>
       ${flag}
     </div>`;
   }).join('');
@@ -267,6 +279,7 @@ export function rpBuildSigCutAndCover(ep, actType, u = {}) {
     .sort((a, b) => (Number(placed[b]) || 0) - (Number(placed[a]) || 0))
     .slice(0, 10)
     .map(name => `<div class="cv-srow">
+      ${avatar(name, 18)}
       <i class="cv-chip" style="background:hsl(${hueOf(name)} 58% 52%)"></i>
       <span>${esc(name)}</span>
       <em>${idx < 0 ? '—' : sealed ? MASK : `${Math.round(Number(placed[name]) || 0)}/${TILES}`}</em></div>`).join('');

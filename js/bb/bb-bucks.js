@@ -115,10 +115,18 @@ function drawWeighted(pool, n, rng) {
  * still get output that is deterministic and stable for that week. `week` is
  * destructured before `rng`, so the default can read it.
  *
+ * The season's salt is in the key for the same reason `themeVoice` puts it in
+ * its own: keyed on the week number alone, the fallback is a pure function of
+ * "week 4", so every season anybody ever runs would draw the tiers in the
+ * identical order for a given popularity map — the audience would have a script
+ * rather than a vote. The salt is drawn once per season from the season's dice
+ * (`gs.bb.seasonSalt`, in week.js) and is itself stable under replay. A season
+ * that has not drawn one yet falls back to 0 and simply draws unsalted.
+ *
  * @returns {object|null} the act, or null in a house too small for tiers
  */
 export function awardWeeklyBucks({ week, house = [],
-  rng = stableRng('bb-bucks', week?.num || 0) } = {}) {
+  rng = stableRng('bb-bucks', gs?.bb?.seasonSalt || 0, week?.num || 0) } = {}) {
   const room = house.filter(Boolean);
   // Seven is the smallest house the canon tiers describe. At six the "top
   // three" and the "next three" are the entire room, nobody stands on the

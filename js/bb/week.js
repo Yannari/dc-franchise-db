@@ -1425,9 +1425,38 @@ export function simulateBBWeek(options = {}) {
   // fail SILENTLY, paying nobody all season with no error to show for it.
   // Nothing has nominated, competed or voted yet, so the payout still lands
   // ahead of every decision it is supposed to inform.
-  if (currentTheme()?.economy === 'bb-bucks') {
+  //
+  // ── ONCE PER CALENDAR WEEK, OVER THE UNDIVIDED HOUSE ──
+  //
+  // `simulateBBWeek` is a CYCLE, not a week, and two twists run it more than
+  // once for one night. Unguarded, both corrupted a ledger that persists into
+  // the save and gets spent weeks later:
+  //
+  //   • A double eviction runs a second cycle the same night, so the house was
+  //     paid TWICE — two acts, two transcript sections, two VP screens.
+  //   • A split house runs each half as its own cycle. Each side of ≥7 drew a
+  //     COMPLETE tier set, so six people took the top hundred instead of
+  //     three; and a side of ≤6 returned null, so half the house was silently
+  //     never paid at all.
+  //
+  // So: pay on the FIRST cycle only, over the roster the audience actually
+  // voted on — which on a split week is both halves, because the vote is not
+  // behind the wall even though the game is. `segment` is 1 on side A, 2 on
+  // side B and 2 on either flavour of second cycle; a plain week has none.
+  // `compressed` is belt-and-braces (it implies segment 2), and it is checked
+  // explicitly because the `week-in-one` double eviction runs its second cycle
+  // UNCOMPRESSED — guarding on `compressed` alone would still have paid twice.
+  const _payThisCycle = !compressed && (week.segment == null || week.segment === 1);
+  // Side A's cycle pays for everybody, so the tiers are drawn over twelve
+  // people rather than twice over six. Deduped defensively: nothing should put
+  // a name on both sides of the wall, and a double payout is exactly the bug
+  // this block is fixing.
+  const _calendarHouse = week.splitOther?.length
+    ? [...new Set([...house, ...week.splitOther])]
+    : house;
+  if (_payThisCycle && currentTheme()?.economy === 'bb-bucks') {
     try {
-      const payout = awardWeeklyBucks({ week, house, rng });
+      const payout = awardWeeklyBucks({ week, house: _calendarHouse, rng });
       if (payout) week.acts.push(addBeats(payout, { players: payout.payouts.map(p => p.name).slice(0, 4) }));
     } catch { /* money is not load-bearing for the week */ }
   }
@@ -5835,7 +5864,11 @@ export function simulateBBWeek(options = {}) {
   // The same argument for the money. PRIVATE: this is a snapshot for a later
   // surface and for a replay, never something the house is shown — what the
   // room was told is the announced tiers, which live on the act.
-  week.bucksLedger = bucksLedgerFor(house);
+  //
+  // Over the UNDIVIDED house for the same reason the payout is: only side A's
+  // week reaches `weekToEpisode`, so snapshotting `house` on a split night
+  // carried six names onto the episode and lost the other six.
+  week.bucksLedger = bucksLedgerFor(_calendarHouse);
   // Powers whose holder just left, or whose window just closed, end here.
   // ── what quietly left the game ──
   //

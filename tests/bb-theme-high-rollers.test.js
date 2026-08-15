@@ -24,14 +24,18 @@ const CAST = NAMES.map((name, i) => ({
   name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[i],
 }));
 
-function house({ theme = 'high-rollers' } = {}) {
+function house({ theme = 'high-rollers', twistSchedule = [] } = {}) {
   seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
   Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
     ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
   Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
     bbHaveNots: 'off', bbSafetyMode: 'off', theme });
-  seasonConfig.twistSchedule = [];
+  seasonConfig.twistSchedule = twistSchedule;
 }
+
+/** Every payout act anywhere in the season, across BOTH halves of a split night. */
+const bucksActs = () => (gs.bb.weeks || []).flatMap(w => (w.acts || [])
+  .filter(a => a.type === 'bb-bucks'));
 
 describe('the floor pays every week', () => {
   it('pays the house on a High Roller\'s season', () => {
@@ -86,6 +90,64 @@ describe('the floor pays every week', () => {
       const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
       expect(Array.isArray(ep.bucksLedger)).toBe(true);
       expect(ep.bucksLedger.length).toBe(NAMES.length);
+    });
+  });
+});
+
+// ── once per CALENDAR week, not once per cycle ───────────────────────────
+//
+// `simulateBBWeek` is a cycle. Two twists run it twice for one night, and the
+// payout writes to a ledger that persists into the save and is spent weeks
+// later — so a double or half payout is baked in long before anything can
+// notice it. Both of these failed before the guard went in.
+describe('the floor pays once a week, however many cycles the week runs', () => {
+  // A payout is well-formed when it is exactly the canon tier set over the
+  // undivided house: three at 100, three at 75, everybody else at 50. It
+  // catches BOTH failure modes at once — paying twice doubles the amounts, and
+  // paying per side draws two complete tier sets, so six people hold 100.
+  const expectExactlyOneTierSet = names => {
+    const paid = names.map(n => balance(n));
+    expect(paid.filter(b => b === 100)).toHaveLength(3);
+    expect(paid.filter(b => b === 75)).toHaveLength(3);
+    expect(paid.filter(b => b === 50)).toHaveLength(names.length - 6);
+  };
+
+  it('pays once on a double eviction night, not once per cycle', () => {
+    withSeededRandom(7, () => {
+      house({ twistSchedule: [{ id: 't1', episode: 1, type: 'bb-double-eviction' }] });
+      simulateBBEpisode();
+      // Two week records for one night is correct and stays — the stats, the
+      // jury and the comp history all need to see two HOHs. Only the money is
+      // supposed to happen once.
+      expect(gs.bb.weeks.length).toBe(2);
+      expect(bucksActs()).toHaveLength(1);
+      expectExactlyOneTierSet(NAMES);
+    });
+  });
+
+  it('pays the whole house once on a split week, not each side its own tier set', () => {
+    withSeededRandom(7, () => {
+      house({ twistSchedule: [{ id: 't1', episode: 1, type: 'bb-split-house' }] });
+      simulateBBEpisode();
+      expect(bucksActs()).toHaveLength(1);
+      // The point of the fix: twelve people split into two sixes. Per-side,
+      // each half is under the seven-houseguest floor and `awardWeeklyBucks`
+      // returned null for both — the entire house went unpaid in silence.
+      expect(NAMES.every(n => balance(n) >= 50)).toBe(true);
+      expectExactlyOneTierSet(NAMES);
+      // And the act names the undivided house, not one half of it.
+      expect(bucksActs()[0].payouts).toHaveLength(NAMES.length);
+    });
+  });
+
+  it('carries every houseguest onto the episode on a split week', () => {
+    withSeededRandom(7, () => {
+      house({ twistSchedule: [{ id: 't1', episode: 1, type: 'bb-split-house' }] });
+      simulateBBEpisode();
+      // Only side A's week reaches `weekToEpisode`, so a ledger snapshotted
+      // over `house` carried six names and quietly dropped the other six.
+      const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
+      expect(ep.bucksLedger.map(l => l.name).sort()).toEqual([...NAMES].sort());
     });
   });
 });

@@ -183,15 +183,22 @@ export default {
   // point in the season where the money stopped being a novelty and started
   // being a position.
   //
-  // Both anchor forms, and both are load-bearing. `frac` reads the season
-  // proportionally, which is right for a long cast and WRONG for a short one:
-  // on nine weeks, 0.55 lands at week five, which is fine — but on a season
-  // that runs shorter than its cast predicted, a proportional turn drifts into
-  // an endgame that has already started, and the floor goes cold in the same
-  // week it goes quiet. The `fromEnd` is the backstop: eight from the end, the
-  // turn happens with a real stretch of season left to be cold in. Whichever
-  // fires first is the one that matters; the second is a no-op on a mood that
-  // is already set.
+  // Both anchor forms, and whichever resolves EARLIER is the one that sets the
+  // mood; the other is a no-op on a mood already set. Do the arithmetic before
+  // reading these as a rule and a fallback, because it is the other way round:
+  // `frac: 0.55` lands on `round(0.55 × weeks)` and `fromEnd: 8` lands on
+  // `weeks - 7`, so a nine-week season turns at week 2 against week 5, and a
+  // fourteen-week season at week 7 against week 8. `fromEnd` is at or ahead of
+  // `frac` on every season up to sixteen weeks, which makes it the PRIMARY
+  // anchor in practice; `frac` only takes over at seventeen weeks and beyond.
+  //
+  // That is the design landing right rather than a misfire. `fromEnd: 8` is a
+  // HOUSE-SIZE anchor wearing a calendar's clothes — eight from the end is a
+  // final eleven, and a final eleven is precisely the room the broadcast opened
+  // the back room to. On a short season the turn arriving early is correct: the
+  // house got small early, so the money got serious early. `frac` stays for the
+  // long seasons, where eight-from-the-end would leave the floor novelty-warm
+  // most of the way through a season that stopped being a novelty months ago.
   arc: [
     { at: { frac: 0.55 }, mood: 'hostile' },
     { at: { fromEnd: 8 }, mood: 'hostile' },

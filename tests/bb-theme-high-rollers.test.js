@@ -7,8 +7,9 @@ import { simulateBBEpisode } from '../js/bb-run.js';
 import { balance, PAYOUT_TIERS, FLOOR_TIER, PAYOUT_AMOUNTS } from '../js/bb/bb-bucks.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
-import { themeById, advanceThemeArc } from '../js/bb/themes.js';
-import { setGs } from '../js/core.js';
+import { themeById, advanceThemeArc, stampThemeArc, reanchorThemeArc } from '../js/bb/themes.js';
+import { setGs, TWIST_CATALOG } from '../js/core.js';
+import { simulateBBFinale } from '../js/bb-finale.js';
 // Read from the repo root rather than off `import.meta.url`: the suite runs in
 // jsdom, where the module URL is not a file: URL and `fileURLToPath` throws.
 // This is the same door `tests/bb-themes.test.js` opens the markup through.
@@ -221,15 +222,200 @@ describe('the descriptor', () => {
     }
   });
 
-  it('books no twists yet — the room is Plan 2', () => {
-    expect(theme().books).toEqual([]);
-    expect(theme().arc.some(a => a.book)).toBe(false);
-  });
-
   it('is offered in the config select, which is hand-written markup', () => {
     const html = readFileSync('simulator.html', 'utf8');
     const select = html.match(/<select id="cfg-theme"[\s\S]*?<\/select>/)[0];
     expect(select).toContain('value="high-rollers"');
+  });
+});
+
+// ── the arc actually books something ───────────────────────────────────
+//
+// The theme shipped `books: []` while the room was unbuilt, so picking it
+// stamped an EMPTY timeline beside three themes that stamp a schedule. The room
+// exists now, and so did the Coin and the wrapped-box veto all along.
+//
+// The load-bearing case in here is the cast sweep. `fromEnd: n` is a HOUSE-SIZE
+// anchor whose week is only a prediction until `reanchorThemeArc` moves it onto
+// the week the house really reaches that size, and this arc asks for three
+// consecutive end-anchored bookings — more than any other theme on the shelf.
+describe('the floor has a schedule', () => {
+  const theme = () => themeById('high-rollers');
+  const arcBooks = () => theme().arc.filter(a => a.book).map(a => a.book);
+
+  /** A fresh, unplayed season on this theme with its arc laid down. */
+  const stamp = (cast) => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = 'high-rollers';
+    seasonConfig.twistSchedule = [];
+    seasonConfig.themeArcStamped = '';
+    setGs({ bb: { weeks: [] } });
+    stampThemeArc(cast);
+    return seasonConfig.twistSchedule;
+  };
+
+  /**
+   * Play the season's HOUSE SIZE, week by week, and report what fired when.
+   *
+   * This is the only honest way to ask where an end-anchored card lands: the
+   * stamped `episode` is a guess, and `reanchorThemeArc` is what corrects it —
+   * one card a week, largest anchor first.
+   */
+  const walk = (cast, { doubleAt = 0 } = {}) => {
+    const fired = [];
+    let house = cast;
+    for (let ep = 1; house > 3 && ep < 40; ep++) {
+      for (const e of reanchorThemeArc(ep, house)) fired.push({ ep, house, type: e.type });
+      house -= (ep === doubleAt ? 2 : 1);
+    }
+    return fired;
+  };
+
+  it('books the three twists the floor owns', () => {
+    expect(theme().books).toEqual(expect.arrayContaining([
+      'bb-prizes-and-punishments', 'bb-high-rollers-room', 'bb-coin-of-destiny']));
+    // And `books` is a claim about the arc, not a wish beside it.
+    for (const id of theme().books) expect(arcBooks()).toContain(id);
+    for (const id of arcBooks()) expect(theme().books).toContain(id);
+  });
+
+  it('books only cards the catalogue has', () => {
+    const ids = new Set(TWIST_CATALOG.map(c => c.id));
+    for (const id of arcBooks()) expect(ids, `${id} is a real twist`).toContain(id);
+  });
+
+  it('opens the room three times and sells the Coin once', () => {
+    const counts = arcBooks().reduce((m, id) => ({ ...m, [id]: (m[id] || 0) + 1 }), {});
+    expect(counts['bb-high-rollers-room']).toBe(3);
+    expect(counts['bb-coin-of-destiny']).toBe(1);
+    expect(counts['bb-prizes-and-punishments']).toBe(1);
+  });
+
+  // Not changed by this task and asserted so they cannot be: `fromEnd: 8` is the
+  // anchor that really fires below seventeen weeks, and it is the same house the
+  // room opens on. The turn and the door are the same night on purpose.
+  it('keeps both mood anchors exactly where they were', () => {
+    const moods = theme().arc.filter(a => a.mood).map(a => a.at);
+    expect(moods).toEqual([{ frac: 0.55 }, { fromEnd: 8 }]);
+  });
+
+  // ── the sweep the brief asks for ────────────────────────────────────────
+  it('opens the room at a final eleven, ten and nine at every cast from 12 to 20', () => {
+    for (let cast = 12; cast <= 20; cast++) {
+      stamp(cast);
+      const rooms = walk(cast).filter(f => f.type === 'bb-high-rollers-room');
+      expect(rooms.map(r => r.house), `cast ${cast}`).toEqual([11, 10, 9]);
+      // In order, on three separate weeks — never two doors in one night.
+      const weeks = rooms.map(r => r.ep);
+      expect(new Set(weeks).size, `cast ${cast}: two room nights collided`).toBe(3);
+      expect([...weeks].sort((a, b) => a - b), `cast ${cast}`).toEqual(weeks);
+    }
+  });
+
+  it('sells the Coin the week after the room closes, at every cast from 12 to 20', () => {
+    for (let cast = 12; cast <= 20; cast++) {
+      stamp(cast);
+      const fired = walk(cast);
+      const coin = fired.filter(f => f.type === 'bb-coin-of-destiny');
+      expect(coin.map(c => c.house), `cast ${cast}`).toEqual([8]);
+      expect(coin[0].ep, `cast ${cast}`)
+        .toBeGreaterThan(fired.filter(f => f.type === 'bb-high-rollers-room').pop().ep);
+    }
+  });
+
+  // The wrapped boxes are the one fixed-week act, and every act below them is
+  // end-anchored: on a nine-week season `fromEnd: 8` IS week two, so booking
+  // them any later than week one drops a room night on the small casts. This is
+  // the case that measured it — week 3 lost a night on casts 12 and 13.
+  it('never drops a card off the front of a short season', () => {
+    for (let cast = 12; cast <= 20; cast++) {
+      const sched = stamp(cast);
+      const types = sched.map(t => t.type);
+      expect(types.filter(t => t === 'bb-high-rollers-room'), `cast ${cast}: a room night was dropped`)
+        .toHaveLength(3);
+      expect(types, `cast ${cast}`).toContain('bb-prizes-and-punishments');
+      expect(types, `cast ${cast}`).toContain('bb-coin-of-destiny');
+      expect(sched.find(t => t.type === 'bb-prizes-and-punishments').episode).toBe(1);
+    }
+  });
+
+  // A double eviction is a house size skipped, and `reanchorThemeArc` fires at
+  // most one card a week — so the run goes LATE rather than losing a night.
+  // Measured rather than assumed, because three consecutive end-anchored cards
+  // is more than any other theme asks of that machinery.
+  it('keeps all three room nights when a double eviction skips a house size', () => {
+    for (let cast = 12; cast <= 20; cast++) {
+      for (let de = 1; de <= cast - 5; de++) {
+        stamp(cast);
+        const rooms = walk(cast, { doubleAt: de }).filter(f => f.type === 'bb-high-rollers-room');
+        expect(rooms, `cast ${cast}, double on week ${de}`).toHaveLength(3);
+        // Still in order, still one a week, still never above the anchor.
+        const houses = rooms.map(r => r.house);
+        expect(houses[0], `cast ${cast}, double ${de}`).toBeLessThanOrEqual(11);
+        expect([...houses].sort((a, b) => b - a), `cast ${cast}, double ${de}`).toEqual(houses);
+        expect(new Set(rooms.map(r => r.ep)).size).toBe(3);
+      }
+    }
+  });
+
+  // ── nothing booked that the resolver would throw away ───────────────────
+  it('books nothing its own cards refuse', () => {
+    const booked = new Set(arcBooks());
+    for (const id of booked) {
+      const card = TWIST_CATALOG.find(c => c.id === id);
+      for (const foe of card.incompatible || []) {
+        expect(booked, `${id} refuses ${foe}, and the arc books both`).not.toContain(foe);
+      }
+    }
+    // The two the room names, spelled out: no veto meeting, and no second house.
+    expect(booked.has('bb-instant-eviction')).toBe(false);
+    expect(booked.has('bb-split-house')).toBe(false);
+  });
+
+  it('puts no two of its cards on one week at any cast from 12 to 20', () => {
+    for (let cast = 12; cast <= 20; cast++) {
+      const weeks = stamp(cast).map(t => t.episode);
+      expect(new Set(weeks).size, `cast ${cast}: two theme cards share a week`)
+        .toBe(weeks.length);
+    }
+  });
+});
+
+// ── and it runs ────────────────────────────────────────────────────────
+//
+// Everything above is arithmetic on a schedule. This plays the season the
+// schedule describes: the door opens on the weeks the arc booked, and the
+// season reaches its last night without throwing.
+describe('a themed season plays the arc it stamped', () => {
+  it('opens the room on the weeks it booked and reaches the finale', () => {
+    withSeededRandom(31, () => {
+      house();
+      seasonConfig.themeArcStamped = '';
+      stampThemeArc(CAST.length);
+      const booked = seasonConfig.twistSchedule
+        .filter(t => t.type === 'bb-high-rollers-room').map(t => t.episode);
+      expect(booked).toHaveLength(3);
+
+      let guard = 0;
+      while (gs.activePlayers.length > 3 && guard++ < 20) {
+        if (!simulateBBEpisode()) break;
+      }
+      const opened = (gs.bb.weeks || []).filter(w => w.highRollers).map(w => w.num);
+      expect(opened, 'the door never opened').toHaveLength(3);
+      // The weeks it opened on are the weeks the schedule ended up holding —
+      // which is `reanchorThemeArc`'s corrected number, not the stamped guess.
+      const final = seasonConfig.twistSchedule
+        .filter(t => t.type === 'bb-high-rollers-room').map(t => t.episode);
+      expect(opened).toEqual(final);
+      // And the house was the size the anchors were written for.
+      for (const w of (gs.bb.weeks || []).filter(x => x.highRollers)) {
+        const size = (w.houseAtStart || []).length;
+        expect([11, 10, 9], `the room opened at a house of ${size}`).toContain(size);
+      }
+
+      expect(() => simulateBBFinale()).not.toThrow();
+      expect(gs.bb.weeks.length).toBeGreaterThan(3);
+    });
   });
 });
 

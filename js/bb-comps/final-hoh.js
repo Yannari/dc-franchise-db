@@ -180,7 +180,14 @@ function offerRead(target, offerer, { hours, grip, rng }) {
 
 export const finalWall = {
   id: 'bb-final-part-one',
-  name: 'The Wall',
+  // Renamed off "The Wall", which is what the weekly endurance competition in
+  // signature.js is called. Two competitions sharing a literal name is worse
+  // than two sharing a mechanic: every transcript line, badge, timeline pill
+  // and picker dropdown prints a name, and a reader had no way of telling
+  // which one they were looking at. `finalRole` exists as a workaround for
+  // exactly this and only helped the code, never the reader. The id is
+  // unchanged, so pinned weeks and recorded seasons still resolve.
+  name: 'Nowhere Else to Be',
   category: 'endurance',
   types: ['final'],
   // Which of the two slots this can serve. The finale draws part one from every
@@ -494,6 +501,14 @@ export const finalRun = {
     const luck = {};   // banked per player, merged into the breakdown downstream
     const beats = [];
     const breakdown = {};
+    // One step per beat, carrying the state of the course at that moment.
+    //
+    // The narration alone cannot drive a screen that draws two runs against
+    // each other: it says what happened to one houseguest at one section, and
+    // the interesting thing is where the OTHER one was at the same point. The
+    // splits already exist, so this is the same data indexed by card. Nothing
+    // here changes a single outcome.
+    const steps = [];
     // Every houseguest handed to it runs, rather than the first two.
     //
     // The finale only ever sends the two who lost the wall, so slicing to two
@@ -507,6 +522,7 @@ export const finalRun = {
         ? `${runners[0]} and ${runners[1]} run this one alone. Same course, same clock, and neither of them gets to see the other one do it.`
         : `${runners.length} houseguests run this one alone, one at a time. Same course, same clock, and nobody watches anybody else do it.`,
       runners, 'PART TWO', 'gold'));
+    steps.push({ kind: 'open', runners: [...runners] });
 
     const runs = runners.map(name => {
       const p = pronouns(name);
@@ -551,6 +567,11 @@ export const finalRun = {
             : say(RUN_FAST)(name, p, seg.noun);
         beats.push(beat(`${seg.line(name)} ${line}`, [name],
           i === misreadAt ? 'PENALTY' : seg.label, i === misreadAt ? 'red' : 'challenge'));
+        steps.push({
+          kind: 'segment', who: name, key: seg.key, label: seg.label, index: i,
+          seconds: Math.round(secs), stumbled, penalty: Math.round(penalty),
+          elapsed: Math.round(total),
+        });
       });
 
       breakdown[name] = {
@@ -568,6 +589,8 @@ export const finalRun = {
     if (half.length === 2 && half[1].at - half[0].at > 12) {
       beats.push(beat(choose(rng, RUN_LEAD)(half[0].name, half[1].name, gapWords(half[1].at - half[0].at)),
         [half[0].name, half[1].name], 'AT THE SPLIT', 'grey'));
+      steps.push({ kind: 'split', ahead: half[0].name, behind: half[1].name,
+        gap: Math.round(half[1].at - half[0].at) });
     }
 
     runs.sort((a, b) => a.total - b.total);
@@ -583,6 +606,9 @@ export const finalRun = {
           ? `${winner.name} posts ${clock(winner.total)}. ${loser.name} posts ${clock(loser.total)} — and the ${loser.misread.penalty} seconds ${loser.p.sub} ${vb(loser.p, 'spent', 'spend')} rebuilding ${loser.p.posAdj} own mistake at ${loser.misread.segment.toLowerCase()} is more than the ${gapWords(margin)} that separates them. ${loser.p.Sub} ${vb(loser.p, 'was', 'were')} the faster houseguest tonight and it does not count for anything.`
           : `${winner.name} posts ${clock(winner.total)} to ${loser.name}'s ${clock(loser.total)} — ${gapWords(margin)} in it, and ${gapWords(margin)} is all it needs to be.`,
         [winner.name, loser.name], stolen ? 'LOST ON THE RULES' : 'THE TIMES', stolen ? 'red' : 'gold'));
+      steps.push({ kind: 'times', who: winner.name, other: loser.name, stolen,
+        margin: Math.round(margin), winnerTotal: Math.round(winner.total),
+        loserTotal: Math.round(loser.total) });
       if (stolen) {
         // Losing a final HOH to your own reading is a specific kind of public,
         // and the house watches the tape with you.
@@ -594,6 +620,7 @@ export const finalRun = {
     beats.push(beat(
       `${winner.name} takes part two and goes through to face the wall winner. ${wp.Sub} ${vb(wp, 'gets', 'get')} one night to think about the questions.`,
       [winner.name], 'WINS PART TWO', 'gold'));
+    steps.push({ kind: 'win', who: winner.name, seconds: Math.round(winner.total) });
     api.popDelta(winner.name, 2);
     api.record(winner.name, 'final-run-win', { seconds: Math.round(winner.total) });
 
@@ -607,6 +634,12 @@ export const finalRun = {
     return toResult(entries, {
       luck,
       beats, breakdown, variant: 'final-run',
+      detail: {
+        steps,
+        segments: RUN_SEGMENTS.map(seg => ({ key: seg.key, label: seg.label, base: seg.base })),
+        runners: [...runners],
+        finished: 'timed',
+      },
       text: `${winner.name} runs ${clock(winner.total)} and takes part two of the final Head of Household.`,
     });
   },

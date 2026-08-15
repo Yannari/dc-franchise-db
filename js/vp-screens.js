@@ -89,6 +89,7 @@ import { rpBuildSigColdComfort } from './vp-bb-sig/cold-comfort.js';
 import { rpBuildSigHoldTheLine } from './vp-bb-sig/hold-the-line.js';
 import { rpBuildSigCutAndCover } from './vp-bb-sig/cut-and-cover.js';
 import { rpBuildSigPureChance } from './vp-bb-sig/pure-chance.js';
+import { rpBuildSigFinalRun } from './vp-bb-sig/final-run.js';
 import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
 import { rpBuildBBSplitHouse } from './vp-bb-split.js';
 import { rpBuildBBRoadkill } from './vp-bb-roadkill.js';
@@ -17276,6 +17277,10 @@ const _BB_SIG_BUILDERS = {
   'puzzle': rpBuildSigCutAndCover,
   // The peg board. Declines on a season saved before the drops were sequenced.
   'crapshoot': rpBuildSigPureChance,
+  // Part two of the final Head of Household. Finale acts are re-labelled to
+  // 'hoh' and handed to this dispatcher, so a finale set piece resolves here
+  // exactly like a weekly competition.
+  'final-run': rpBuildSigFinalRun,
 };
 
 export function rpBuildBBComp(ep, actType) {

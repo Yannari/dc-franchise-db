@@ -20,6 +20,7 @@
 // facts and a lot of inference, which is a better shape than a public number
 // that removes the inference.
 import { gs } from '../core.js';
+import { stableRng } from './knowledge.js';
 
 /**
  * The canon tiers, frozen.
@@ -108,12 +109,20 @@ function drawWeighted(pool, n, rng) {
 /**
  * The week's payout.
  *
+ * The rng defaults to the week's own seeded generator rather than Math.random.
+ * An unseeded draw anywhere in a season means the same seed stops producing the
+ * same house, which the replay guards catch — so a caller who omits `rng` must
+ * still get output that is deterministic and stable for that week. `week` is
+ * destructured before `rng`, so the default can read it.
+ *
  * @returns {object|null} the act, or null in a house too small for tiers
  */
-export function awardWeeklyBucks({ week, house = [], rng = Math.random } = {}) {
+export function awardWeeklyBucks({ week, house = [],
+  rng = stableRng('bb-bucks', week?.num || 0) } = {}) {
   const room = house.filter(Boolean);
-  // Six is the smallest house the canon tiers describe. Below it the "top
-  // three" and the "next three" are the whole room and the vote says nothing.
+  // Seven is the smallest house the canon tiers describe. At six the "top
+  // three" and the "next three" are the entire room, nobody stands on the
+  // floor tier, and a vote that pays everybody a prize says nothing.
   if (room.length < 7) return null;
 
   const payouts = [];

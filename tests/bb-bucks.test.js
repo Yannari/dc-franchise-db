@@ -102,6 +102,24 @@ describe('the weekly payout', () => {
     expect(act.beats.some(b => b.text.includes('500'))).toBe(false);
   });
 
+  it('is deterministic with no rng passed, because the season is seeded', () => {
+    // The default rng must be the week's seeded generator, never Math.random —
+    // an unseeded draw makes the same seed stop producing the same house.
+    const first = awardWeeklyBucks({ week: { num: 4 }, house: HOUSE });
+    setGs({ bb: { weeks: [], bucks: {} }, popularity: {} });
+    const second = awardWeeklyBucks({ week: { num: 4 }, house: HOUSE });
+    expect(second.payouts).toEqual(first.payouts);
+    expect(second.beats.map(b => b.text)).toEqual(first.beats.map(b => b.text));
+  });
+
+  it('pays a different week differently, so the seed is week-stable not fixed', () => {
+    const four = awardWeeklyBucks({ week: { num: 4 }, house: HOUSE });
+    setGs({ bb: { weeks: [], bucks: {} }, popularity: {} });
+    const five = awardWeeklyBucks({ week: { num: 5 }, house: HOUSE });
+    const topOf = act => act.payouts.filter(p => p.tier === 'top').map(p => p.name).sort();
+    expect(topOf(five)).not.toEqual(topOf(four));
+  });
+
   it('frozen tiers, so nothing downstream can retune canon by accident', () => {
     expect(Object.isFrozen(PAYOUT_TIERS)).toBe(true);
   });

@@ -3097,6 +3097,86 @@
         repeating-linear-gradient(90deg, rgba(232,220,192,.045) 0 1px, transparent 1px 34px);
       animation: rpThemeMystDrift 6s ease-in-out infinite; }
 
+    /* ── High Roller's ──────────────────────────────────────────────────
+       A card room after hours, lit from the table up: brass on black
+       lacquer. NOT felt green — Mystery owns green, and two themes sharing
+       a surface means a glance at the reader cannot tell you which season
+       you are in. Gold is also the honest colour, because this season is
+       about the money rather than the game the money buys into. */
+    .rp-theme-high-rollers {
+      --theme-accent:#c9a227; --theme-glow:#f0d585;
+      --bbx-danger-rgb:  168,38,44;     /* the red on the layout              */
+      --bbx-note-rgb:    201,162,39;    /* everything written down is brass   */
+      --bbx-key-rgb:     240,213,133;   /* chips, and the keys are chips too  */
+      --bbx-good-rgb:    212,175,55;    /* winning here is gold, never green  */
+      --bbx-info-rgb:    170,158,132;
+      --bbx-dim-rgb:     124,113,92;    /* warm grey — no cold tones anywhere */
+      --bbx-stage-rgb:   26,19,13;      --bbx-stage2-rgb:  11,7,8;
+      --bbx-screen-rgb:  28,21,14;      --bbx-screen2-rgb: 10,7,7;
+      --bbx-card-rgb:    27,20,14;      --bbx-card2-rgb:   13,9,8;
+      --bbx-ink:         #f2e6c8;
+      --bbx-ink-quiet:   #f7eed6;
+      --bbx-faint:       #5c5040;
+      --bbx-glyph:       #2a211a; }
+    .rp-theme-high-rollers .rp-page::after {
+      opacity:.16;
+      background:
+        radial-gradient(46% 28% at 50% -8%, rgba(240,213,133,.24), transparent 66%),
+        radial-gradient(70% 54% at 50% 108%, rgba(168,38,44,.14), transparent 72%),
+        repeating-linear-gradient(90deg, rgba(201,162,39,.05) 0 1px, transparent 1px 28px);
+      animation: rpThemeRollDrift 11s ease-in-out infinite; }
+    .rp-theme-high-rollers .rp-page h1,
+    .rp-theme-high-rollers .rp-page h2 {
+      letter-spacing:.13em; text-transform:uppercase;
+      font-family:"Copperplate Gothic Bold",Copperplate,"Cinzel",Georgia,serif; }
+    @keyframes rpThemeRollDrift { 0%,100% { opacity:.16; } 50% { opacity:.22; } }
+
+    /* ── High Roller's, once the comps stop ─────────────────────────────
+       The turn is not anger, it is ACCOUNTING — so the reader does not move
+       to the front of the room in a worse mood, it moves to a DIFFERENT ROOM:
+       the count room behind the floor, where the money is actually weighed.
+       Steel tables, no lamps, hard blue-white fluorescent overhead, and every
+       warm tone in the building left on the other side of the door.
+
+       This is the whole visual argument of the theme, and it is the reason it
+       could exist beside three others: the Den flares red, CORA flares red,
+       and Summer of Mystery drains to bone. NOTHING on the shelf escalates
+       COLD. A reviewer holding the two High Roller's blocks side by side
+       should see the temperature flip without reading a single token name —
+       every surface goes from red-over-blue to blue-over-red. */
+    .rp-theme-high-rollers.is-mood-hostile {
+      --theme-accent:#8fb4d0; --theme-glow:#dff0ff;   /* the tube, not the lamp */
+      --bbx-danger-rgb:  212,74,86;     /* an alarm on a wall, not a felt red */
+      --bbx-note-rgb:    176,200,216;   /* the ledger is printed, not written */
+      --bbx-key-rgb:     214,230,240;   /* chips are counted now, not played  */
+      --bbx-good-rgb:    96,178,196;    /* even winning reads as a total       */
+      --bbx-info-rgb:    150,178,200;
+      --bbx-dim-rgb:     132,146,158;   /* cold grey — the warm grey is gone   */
+      --bbx-stage-rgb:   14,20,26;      --bbx-stage2-rgb:  6,9,12;
+      --bbx-screen-rgb:  16,22,28;      --bbx-screen2-rgb: 6,9,12;
+      --bbx-card-rgb:    15,21,27;      --bbx-card2-rgb:   8,11,14;
+      --bbx-ink:         #e6f0f6;
+      --bbx-ink-quiet:   #f2f8fc;
+      --bbx-faint:       #3e4c56;
+      --bbx-glyph:       #16202a; }
+    /* Overhead tubes rather than table lamps: the glow comes from the CEILING
+       in flat bands, the floor is unlit, and the brass pinstripe is now the
+       gap between two ceiling panels. */
+    .rp-theme-high-rollers.is-mood-hostile .rp-page::after {
+      opacity:.26;
+      background:
+        linear-gradient(180deg, rgba(223,240,255,.30), transparent 20%),
+        radial-gradient(78% 40% at 50% -6%, rgba(143,180,208,.26), transparent 66%),
+        repeating-linear-gradient(90deg, rgba(223,240,255,.06) 0 1px, transparent 1px 28px);
+      animation: rpThemeRollCount 4.5s ease-in-out infinite; }
+    /* A fluorescent does not breathe like a lamp, it holds and ticks. */
+    @keyframes rpThemeRollCount {
+      0%,100% { opacity:.26; } 47% { opacity:.29; } 49% { opacity:.16; } 51% { opacity:.30; } }
+    /* And the people are lit by it too — the warmth comes out of the faces at
+       the same moment it comes out of the room. */
+    .rp-theme-high-rollers.is-mood-hostile .rp-page .bb-av img {
+      filter: saturate(.5) contrast(1.1) brightness(.96); }
+
     /* Holds for every theme, present and future, regardless of where in this
        section its block was appended — see the note at the top. */
     @media (prefers-reduced-motion: reduce) {

@@ -16515,6 +16515,103 @@ function _bbPowerBand(ep) {
   </section>`;
 }
 
+/**
+ * "The floor pays" — the week's announced payout, on the wall all week.
+ *
+ * The gap this fills is the same one `_bbPowerBand` fills for powers: the
+ * payout is read out once, on its own screen, and then the house spends five
+ * days acting on it. A viewer reading Thursday's feed has no way back to who
+ * was paid what on Monday, and that number is the reason half the room is
+ * being nice to somebody.
+ *
+ * THE THING THIS BAND MUST NEVER DO is show a balance. The ledger is private
+ * per canon — a houseguest knows their own savings and nobody has a scoreboard
+ * of everybody else's — and the inference the house makes off three announced
+ * tiers is the entire twist. So the data source is the week's `bb-bucks` act,
+ * which holds only what was PAID this week, and never `ep.bucksLedger`, which
+ * is a snapshot of balances kept for the audience's own panel. If this function
+ * ever grows a `bucksLedger` read, it has stopped being this band.
+ */
+function _bbChipBand(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'bb-bucks');
+  if (!act) return '';
+  const paid = (act.payouts || []).filter(p => p && p.name);
+  if (!paid.length) return '';
+
+  const TIERS = [
+    { key: 'top', cls: 'is-top', label: 'TOP OF THE VOTE',
+      why: 'the three the audience watched most' },
+    { key: 'middle', cls: 'is-mid', label: 'THE NEXT THREE', why: 'seen, but not first' },
+    { key: 'floor', cls: 'is-floor', label: 'THE FLOOR',
+      why: 'the amount you get for being in the building' },
+  ];
+  const rows = TIERS.map(t => ({ ...t, won: paid.filter(p => p.tier === t.key) }))
+    .filter(t => t.won.length);
+  if (!rows.length) return '';
+
+  // A chip, drawn rather than typed: rim, six edge spots as a dashed stroke,
+  // an inset face, and the denomination struck into it. 182.2 is the r=27
+  // circumference, so twelve equal segments put six spots evenly round the rim
+  // — an arbitrary dasharray leaves one spot sliced in half at twelve o'clock.
+  const chip = (amount) => `<svg class="bbcp-chip" viewBox="0 0 64 64" aria-hidden="true">
+    <circle class="bbcp-body" cx="32" cy="32" r="30"/>
+    <circle class="bbcp-spots" cx="32" cy="32" r="27" stroke-dasharray="15.18 15.18"/>
+    <circle class="bbcp-face" cx="32" cy="32" r="21"/>
+    <circle class="bbcp-ring" cx="32" cy="32" r="23"/>
+    <text class="bbcp-den" x="32" y="32" dominant-baseline="central">${_bbEsc(amount)}</text>
+  </svg>`;
+
+  const board = rows.map(t => `<div class="bbcp-row ${t.cls}">
+    <div class="bbcp-stack">${chip(t.won[0].amount)}</div>
+    <div class="bbcp-who">
+      <div class="bbcp-tier"><b>${t.label}</b><i>${t.why}</i></div>
+      <div class="bbcp-names">${t.won.map(p => `<span class="bbcp-hg">
+        ${_bbAvatar(p.name, 22)}<em>${_bbEsc(p.name)}</em></span>`).join('')}</div>
+    </div>
+  </div>`).join('');
+
+  return `<style>
+  .bbcp{margin:12px 0 6px;border:1px solid rgba(201,162,39,.26);border-radius:9px;
+    background:linear-gradient(180deg,rgba(58,44,12,.26),rgba(8,10,14,.60));padding:0 12px 11px}
+  .bbcp-rail{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 -12px 10px;
+    padding:8px 12px;border-bottom:2px solid rgba(201,162,39,.35);
+    background:linear-gradient(180deg,rgba(240,213,133,.20),rgba(201,162,39,.05));
+    border-radius:8px 8px 0 0}
+  .bbcp-rail b{font-size:10px;letter-spacing:2.6px;color:var(--theme-accent,#f0d585)}
+  .bbcp-rail i{font-style:normal;font-size:9.5px;letter-spacing:.4px;color:#8b93a2}
+  .bbcp-row{display:flex;align-items:center;gap:12px;padding:7px 0;
+    border-bottom:1px dashed rgba(255,255,255,.07)}
+  .bbcp-row:last-child{border-bottom:0}
+  .bbcp-stack{flex:none;filter:drop-shadow(0 3px 0 rgba(0,0,0,.45))}
+  .bbcp-chip{width:46px;height:46px;display:block}
+  .bbcp-body{fill:#2a2118;stroke:rgba(0,0,0,.55);stroke-width:1}
+  .bbcp-spots{fill:none;stroke:#c9a227;stroke-width:6}
+  .bbcp-face{fill:#161b22}
+  .bbcp-ring{fill:none;stroke:rgba(240,213,133,.55);stroke-width:1}
+  .bbcp-den{fill:#f0d585;font-size:17px;font-weight:700;text-anchor:middle;letter-spacing:.5px}
+  .bbcp-row.is-mid .bbcp-spots{stroke:#9c3a46}
+  .bbcp-row.is-mid .bbcp-ring{stroke:rgba(226,150,160,.5)}
+  .bbcp-row.is-mid .bbcp-den{fill:#e296a0}
+  .bbcp-row.is-floor .bbcp-spots{stroke:#6f7b8b}
+  .bbcp-row.is-floor .bbcp-ring{stroke:rgba(180,192,208,.45)}
+  .bbcp-row.is-floor .bbcp-den{fill:#b4c0d0}
+  .bbcp-who{flex:1;min-width:0}
+  .bbcp-tier{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+  .bbcp-tier b{font-size:9.5px;letter-spacing:1.8px;color:#e6edf3}
+  .bbcp-tier i{font-style:italic;font-size:10px;color:#7d8898}
+  .bbcp-names{display:flex;flex-wrap:wrap;gap:6px}
+  .bbcp-hg{display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 3px;
+    border:1px solid rgba(255,255,255,.10);border-radius:999px;background:rgba(9,11,15,.72)}
+  .bbcp-hg .bb-av{border-radius:50%;flex:none}
+  .bbcp-hg em{font-style:normal;font-size:11.5px;color:#e6edf3;white-space:nowrap}
+  </style>
+  <section class="bbcp">
+    <div class="bbcp-rail"><b>THE FLOOR PAYS</b>
+      <i>this week&rsquo;s announced payout &mdash; what anybody has saved is nobody else&rsquo;s business</i></div>
+    ${board}
+  </section>`;
+}
+
 export function rpBuildBBHouseLife(ep, act, slot) {
   const phase = act?.phase || 'pre-hoh';
   const meta = _BB_PHASE_META[phase] || _BB_PHASE_META['pre-hoh'];
@@ -16550,7 +16647,8 @@ export function rpBuildBBHouseLife(ep, act, slot) {
         <span class="bbf-hud-sp">${house.length} IN THE HOUSE</span>
       </div>
       ${_bbMemoryWall(house, { status, notYet: act?._preArrival ? _bbNotYetArrived(ep) : [] })}
-      ${_bbPowerBand(ep)}`;
+      ${_bbPowerBand(ep)}
+      ${_bbChipBand(ep)}`;
 
   if (beats.length) {
     // A camera bank, so the stretch can be taken in before it is read: which
@@ -18970,6 +19068,7 @@ export function rpBuildBBTwistAnnouncement(ep, act) {
 export function rpBuildBBThemeBeat(ep, act) {
   if (act?.themeId === 'machine-summer') return _rpThemeBeatCora(ep, act);
   if (act?.themeId === 'summer-of-mystery') return _rpThemeBeatMystery(ep, act);
+  if (act?.themeId === 'high-rollers') return _rpThemeBeatPitBoss(ep, act);
   return _rpThemeBeatDen(ep, act);
 }
 
@@ -19283,6 +19382,194 @@ function _rpThemeBeatMystery(ep, act) {
           <rect x="62" y="11.4" width="3" height="6" rx="1" fill="${gold}" opacity=".85"/>
           <rect x="69" y="11.4" width="3" height="4" rx="1" fill="${gold}" opacity=".85"/>
         </svg>
+      </div>
+    </div>
+  </div>`;
+}
+
+/**
+ * The Pit Boss, who is a TABLE rather than a face.
+ *
+ * The other three antagonists are all a light pointed at the house — the Den's
+ * eye, CORA's panel, the Mastermind's door. This one never appears at all,
+ * because a pit boss is not a presence in a casino, it is the fact that the
+ * room is being run. So the screen is the thing it runs: a half-round table
+ * under the floor lamps, brass rail, five seats with money on them, and the
+ * line set across the felt the way a floor announcement is set — tracked out,
+ * over a hairline, addressed to nobody in particular.
+ *
+ * The hostile beat does not redden this table, it MOVES it: the same furniture
+ * seen in the count room behind the floor, lit by a fluorescent tube instead
+ * of a lamp, rail gone to steel, chips stacked into columns to be weighed
+ * rather than scattered across the seats. The theme's whole argument is that
+ * escalation here is cold, and this is where a reader sees it in one glance.
+ *
+ * SVG and CSS only, no emoji, still under reduced motion.
+ */
+function _rpThemeBeatPitBoss(ep, act) {
+  const week = ep?.num ?? ep?.episode ?? '';
+  const hostile = act?.mood === 'hostile';
+  const brass = hostile ? '#8fb4d0' : '#c9a227';
+  const lamp = hostile ? '#dff0ff' : '#f0d585';
+
+  // ── the table, in one shape ───────────────────────────────────────────
+  //
+  // A half-round: the dealer's straight edge across the top, the players'
+  // curve towards the viewer. Everything else on the felt is computed off the
+  // same ellipse, so the seats sit ON the arc rather than near it.
+  const CX = 310, CY = 152, RX = 182, RY = 156;
+  const seatAt = (t) => ({
+    x: CX + RX * Math.cos((t * Math.PI) / 180),
+    y: CY + RY * Math.sin((t * Math.PI) / 180),
+  });
+
+  // Deterministic stacks: the same beat draws the same money every rebuild, so
+  // a re-render does not quietly re-bet the table.
+  let h = 0;
+  for (const ch of `${act?.hook || ''}${week}${act?.line?.length || 0}`) {
+    h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  }
+  const seats = [24, 57, 90, 123, 156].map((t, i) => {
+    h = (h * 1103515245 + 12345) >>> 0;
+    const p = seatAt(t);
+    // On the floor the money sits in the betting circle in ones and twos; in
+    // the count room it has been racked into a column.
+    const n = hostile ? 4 + (h % 7) : 1 + (h % 4);
+    const chips = Array.from({ length: n }, (_, k) => `
+      <ellipse cx="${p.x.toFixed(1)}" cy="${(p.y - 3 - k * 3.4).toFixed(1)}" rx="13" ry="4.6"
+               class="bbhr-chip" style="animation-delay:${(i * 0.28 + k * 0.09).toFixed(2)}s"/>`).join('');
+    return `<g class="bbhr-seat">
+      <ellipse cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" rx="21" ry="8"
+               fill="none" stroke="${brass}" stroke-width=".9" opacity=".42"/>
+      ${chips}
+    </g>`;
+  }).join('');
+
+  // The layout arc — the printed line on the felt the bets sit behind.
+  const layout = `M ${(CX - RX * 0.86).toFixed(1)},${(CY + RY * 0.30).toFixed(1)}
+    A ${(RX * 0.86).toFixed(1)},${(RY * 0.72).toFixed(1)} 0 0 0
+      ${(CX + RX * 0.86).toFixed(1)},${(CY + RY * 0.30).toFixed(1)}`;
+
+  const plaque = hostile
+    ? ['Table closed', 'Count in progress']
+    : ['No limit', 'The floor is open'];
+  const label = { open: 'The floor', noms: 'The book', veto: 'The re-buy',
+    vote: 'The count', finale: 'Last table', crown: 'Settled' }[act?.hook] || 'The floor';
+
+  return `<div class="rp-page bb-room bb-block bbhr${hostile ? ' is-hostile' : ''}" data-ambient="tribal-tension">
+    <style>
+      .bbhr{--bbhr-brass:${brass};--bbhr-lamp:${lamp};
+        max-width:1100px;margin:0 auto;padding:26px 24px 44px;text-align:center}
+      .bbhr-sign{font-family:"Copperplate Gothic Bold",Copperplate,"Cinzel",Georgia,serif;
+        letter-spacing:.42em;font-size:14px;text-transform:uppercase;color:var(--bbhr-brass);
+        text-shadow:0 0 18px var(--bbhr-brass);margin-bottom:2px}
+      .bbhr.is-hostile .bbhr-sign{text-shadow:0 0 10px var(--bbhr-lamp);letter-spacing:.5em}
+      .bbhr-rule{width:230px;height:1px;margin:12px auto 18px;
+        background:linear-gradient(90deg,transparent,var(--bbhr-brass),transparent);opacity:.7}
+      .bbhr-svg{width:100%;max-width:660px;height:auto;display:block;margin:0 auto;
+        border:1px solid color-mix(in srgb,var(--bbhr-brass) 24%,transparent)}
+      /* Chips settle onto the felt one stack at a time; in the count room they
+         are already stacked and only the tube moves. */
+      .bbhr-chip{fill:var(--bbhr-brass);opacity:.9;
+        animation:bbhrSettle 4.6s ease-in-out infinite}
+      @keyframes bbhrSettle{0%,100%{opacity:.72}50%{opacity:1}}
+      .bbhr.is-hostile .bbhr-chip{animation:none;opacity:.85;fill:var(--bbhr-lamp)}
+      .bbhr-tube{animation:bbhrTick 4.5s steps(1) infinite}
+      @keyframes bbhrTick{0%,46%,52%,100%{opacity:.9}48%,50%{opacity:.35}}
+      .bbhr-glow{animation:bbhrBreathe 6s ease-in-out infinite}
+      @keyframes bbhrBreathe{0%,100%{opacity:.55}50%{opacity:.92}}
+      @media(prefers-reduced-motion:reduce){
+        .bbhr-chip,.bbhr-tube,.bbhr-glow{animation:none}}
+      /* The announcement: a floor call, not a speech. Tracked out over the
+         felt, with the marker buttons the pit uses to open and close a game. */
+      .bbhr-card{position:relative;max-width:720px;margin:24px auto 0;padding:24px 30px 26px;
+        background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
+        border:1px solid color-mix(in srgb,var(--bbhr-brass) 32%,transparent)}
+      .bbhr-card::before,.bbhr-card::after{content:'';position:absolute;width:9px;height:9px;
+        border-radius:50%;border:1px solid var(--bbhr-brass);opacity:.6}
+      .bbhr-card::before{top:8px;left:8px}
+      .bbhr-card::after{bottom:8px;right:8px}
+      .bbhr-who{font-size:11px;letter-spacing:.36em;text-transform:uppercase;
+        color:var(--bbhr-brass);opacity:.88;margin-bottom:12px}
+      .bbhr-line{font-size:26px;line-height:1.5;margin:0;font-style:italic}
+      .bbhr-plaque{margin-top:18px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+        opacity:.62;display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+      .bbhr-plaque b{font-weight:600;color:var(--bbhr-brass)}
+    </style>
+    ${week === '' ? '' : `<div class="rp-eyebrow">Week ${_bbEsc(String(week))}</div>`}
+    <div class="bbhr-hall">
+      <div class="bbhr-sign">${hostile ? 'The count room' : "High roller's"}</div>
+      <div class="bbhr-rule"></div>
+
+      <svg class="bbhr-svg" viewBox="0 0 620 380" role="img"
+           aria-label="${hostile
+             ? 'A card table in a count room under a fluorescent tube, its chips racked'
+             : 'A card table under low lamplight, brass rail, money on every seat'}">
+        <defs>
+          <radialGradient id="bbhrLamp">
+            <stop offset="0%" stop-color="${lamp}" stop-opacity="${hostile ? '.34' : '.55'}"/>
+            <stop offset="100%" stop-color="${lamp}" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="bbhrFelt" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${hostile ? '#22333d' : '#33251a'}"/>
+            <stop offset="100%" stop-color="${hostile ? '#0c141b' : '#140d0a'}"/>
+          </linearGradient>
+          <filter id="bbhrBlur"><feGaussianBlur stdDeviation="${hostile ? 7 : 11}"/></filter>
+        </defs>
+
+        <rect width="620" height="380" fill="${hostile ? '#080d12' : '#0b0708'}"/>
+
+        <!-- what is overhead: a lamp hanging over the felt, or a tube bolted
+             to a ceiling that was never meant to be looked at -->
+        ${hostile ? `
+        <rect x="176" y="26" width="268" height="9" rx="2" fill="${lamp}" opacity=".9"
+              class="bbhr-tube"/>
+        <rect x="170" y="21" width="280" height="4" rx="2" fill="#4d5c66" opacity=".8"/>
+        <polygon points="176,35 444,35 556,300 64,300" fill="url(#bbhrLamp)" class="bbhr-tube"/>`
+        : `
+        <ellipse cx="310" cy="30" rx="54" ry="16" fill="none" stroke="${brass}"
+                 stroke-width="1.2" opacity=".5"/>
+        <ellipse cx="310" cy="34" rx="46" ry="12" fill="${lamp}" opacity=".5"
+                 filter="url(#bbhrBlur)" class="bbhr-glow"/>
+        <ellipse cx="310" cy="250" rx="290" ry="150" fill="url(#bbhrLamp)" class="bbhr-glow"/>`}
+
+        <!-- the rail, then the felt inside it -->
+        <path d="M ${CX + RX + 13},${CY - 4} A ${RX + 13},${RY + 13} 0 0 1 ${CX - RX - 13},${CY - 4}"
+              fill="none" stroke="${hostile ? '#5d6f7b' : brass}" stroke-width="4.5" opacity=".62"
+              stroke-linecap="round"/>
+        <line x1="${CX - RX - 13}" y1="${CY - 4}" x2="${CX + RX + 13}" y2="${CY - 4}"
+              stroke="${hostile ? '#5d6f7b' : brass}" stroke-width="4.5" opacity=".4"
+              stroke-linecap="round"/>
+        <path d="M ${CX - RX},${CY} L ${CX + RX},${CY} A ${RX},${RY} 0 0 1 ${CX - RX},${CY} Z"
+              fill="url(#bbhrFelt)" stroke="${brass}" stroke-width=".8" opacity=".97"/>
+
+        <!-- the printed layout, and the seats behind it -->
+        <path d="${layout}" fill="none" stroke="${brass}" stroke-width=".9" opacity=".3"/>
+        ${seats}
+
+        <!-- the dealer's side: the shoe, and the marker the pit drops on a
+             table it has stopped paying -->
+        <rect x="272" y="${CY - 30}" width="76" height="21" rx="3"
+              fill="${hostile ? '#16222b' : '#181009'}" stroke="${brass}"
+              stroke-width=".9" opacity=".9"/>
+        <line x1="284" y1="${CY - 24}" x2="336" y2="${CY - 24}" stroke="${brass}"
+              stroke-width=".8" opacity=".45"/>
+        ${hostile ? `
+        <rect x="${CX - 26}" y="${CY + RY * 0.62}" width="52" height="15" rx="2"
+              fill="${lamp}" opacity=".82"/>
+        <line x1="${CX - 18}" y1="${CY + RY * 0.62 + 7.5}" x2="${CX + 18}"
+              y2="${CY + RY * 0.62 + 7.5}" stroke="#0b1218" stroke-width="1.6" opacity=".8"/>`
+        : ''}
+      </svg>
+
+      <div class="bbhr-card">
+        <div class="bbhr-who">${_bbEsc(act?.speaker || '')}</div>
+        <p class="bbhr-line">&ldquo;${_bbEsc(act?.line || '')}&rdquo;</p>
+        <div class="bbhr-plaque">
+          <span>${_bbEsc(label)}</span>
+          <span><b>${_bbEsc(plaque[0])}</b></span>
+          <span>${_bbEsc(plaque[1])}</span>
+        </div>
       </div>
     </div>
   </div>`;
@@ -22060,6 +22347,61 @@ function _bbOrdinalish(place) {
   return String(place);
 }
 
+/**
+ * The weekly payout — three tiers, read out to the house.
+ *
+ * The screen is the ANNOUNCEMENT, which is the only part of this twist the
+ * house ever sees: three rows, the names in each, and the amount that row was
+ * paid. It draws no balances and it must not — the ledger is private per canon
+ * (a houseguest knows their own savings and nobody has a scoreboard of
+ * everybody else's), and the inference the house makes from the tiers is the
+ * whole point of the twist. `bucksLedgerFor` belongs to the audience's panel.
+ */
+export function rpBuildBBBucks(ep, act) {
+  if (!act) return '';
+  const paid = act.payouts || [];
+  const TIERS = [
+    { key: 'top', label: 'TOP OF THE VOTE', badge: 'PAID AT THE TOP', cls: 'gold',
+      why: 'the three the audience watched most this week' },
+    { key: 'middle', label: 'THE NEXT THREE', badge: 'PAID IN THE MIDDLE', cls: 'blue',
+      why: 'seen, but not first' },
+    { key: 'floor', label: 'THE FLOOR', badge: 'PAID THE FLOOR', cls: 'grey',
+      why: 'the amount you get for being in the building' },
+  ];
+  const rows = TIERS.map(t => ({ ...t, won: paid.filter(p => p.tier === t.key) }))
+    .filter(t => t.won.length);
+  const board = rows.map(t => `<div style="display:flex;align-items:center;gap:12px;padding:8px 12px;
+      margin-bottom:6px;border:1px solid var(--border);border-radius:6px;background:rgba(0,0,0,.25)">
+    <div style="font-family:var(--bbx-display);font-size:20px;min-width:64px;color:var(--bbx-key)">
+      $${_bbEsc(t.won[0].amount)}</div>
+    <div style="flex:1">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim)">${_bbEsc(t.label)}</div>
+      <div style="font-size:13px;color:var(--text)">${t.won.map(p => _bbEsc(p.name)).join(', ')}</div>
+    </div>
+  </div>`).join('');
+
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'THE AUDIENCE PAYS',
+    subtitle: 'The vote is announced. What anybody has saved is nobody else’s business.',
+    accent: 'var(--bbx-key)', room: 'bb-power',
+    stateKey: `bb_bucks_${ep.num}`,
+    header: `<div style="max-width:640px;margin:0 auto 16px">${board}</div>`,
+    scenes: [
+      ...rows.map(t => ({
+        text: `<strong>${t.won.map(p => _bbEsc(p.name)).join('</strong>, <strong>')}</strong> `
+          + `${t.won.length === 1 ? 'is' : 'are'} paid $${_bbEsc(t.won[0].amount)} — ${t.why}.`,
+        players: t.won.map(p => p.name), badgeText: t.badge, badgeClass: t.cls,
+      })),
+      { text: 'Nobody is told what anybody else has put away. The house is told who was paid, '
+          + 'and spends the rest of the week doing that arithmetic out loud.',
+        players: [], badgeText: 'THE LEDGER STAYS SHUT', badgeClass: 'grey' },
+      ...(act.beats || []).map(b => ({ text: b.text, players: b.players,
+        badgeText: b.badgeText, badgeClass: b.badgeClass })),
+      ..._bbBeats(act),
+    ],
+  });
+}
+
 export function rpBuildBBHaveNots(ep) {
   const act = (ep.acts || []).find(a => a.type === 'have-nots');
   if (!act) return '';
@@ -22246,6 +22588,12 @@ function _bbCycleScreens(view, screens, suffix = '') {
       }
       case 'have-nots':
         screens.push({ id: id('bb-havenots'), label: 'Have-Nots', html: rpBuildBBHaveNots(view) });
+        break;
+      // The weekly payout. The screen draws the announcement — three tiers and
+      // the amount each was paid — and never a balance, which stays private.
+      case 'bb-bucks':
+        screens.push({ id: id('bb-bucks'), label: 'The Audience Pays',
+          html: rpBuildBBBucks(view, act) });
         break;
       // One screen per thing the antagonist says. The hook is in the id
       // because a week can hear from it four times — open, noms, veto, vote —

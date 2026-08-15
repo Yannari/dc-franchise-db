@@ -229,6 +229,10 @@ export function weekToEpisode(week) {
     // replayed week has to show the state as it was then rather than the
     // season-long ledger as it is now.
     powerLedger: (week.powerLedger || []).map(p => ({ ...p })),
+    // What everybody had banked at the end of this week. Copied, not shared,
+    // because the week's ledger keeps growing and a replayed week has to show
+    // the money as it stood then. Private, exactly like the week's copy.
+    bucksLedger: (week.bucksLedger || []).map(l => ({ ...l })),
     invisibleReveal: week.invisibleReveal ? { ...week.invisibleReveal } : null,
     initialNominees: [...(week.initialNominees || [])],
     finalNominees: [...(week.finalNominees || [])],
@@ -1621,6 +1625,27 @@ export function summariseWeek(week) {
         line(`${String(act.speaker || '').toUpperCase()}`);
         line(`  "${act.line}"`);
         break;
+      // THE AUDIENCE PAYS — the vote, and only the vote.
+      //
+      // What the house is told is who was paid this week and how much, because
+      // the tiers are read out: that is the leak the twist is built on, and the
+      // whole room can act on it. What nobody is ever told is what anybody has
+      // SAVED. So this prints the three tiers and their amounts and never a
+      // balance — here, in the backlog, or on the screen. `bucksLedgerFor` is
+      // for the audience's own panel, not for a transcript the house lives in.
+      case 'bb-bucks': {
+        const paid = act.payouts || [];
+        line('');
+        line('THE AUDIENCE PAYS');
+        for (const tier of ['top', 'middle', 'floor']) {
+          const won = paid.filter(p => p.tier === tier);
+          if (!won.length) continue;
+          line(`  $${won[0].amount}: ${won.map(p => p.name).join(', ')}`);
+        }
+        line('  The tiers are read out, so every houseguest leaves that room knowing exactly who the audience is watching.');
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
       case 'twist-announcement':
         line('');
         if (act.themeAnnouncer) {
@@ -1684,6 +1709,36 @@ export function summariseWeek(week) {
         line(`  Fastest turn of the night: ${act.hoh} — the new Head of Household.`);
         // The act's own beats, which the transcript guard is right to want:
         // the summary above says what happened, the beat says what it was like.
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
+      // ── YOU GO, THEY GO ──
+      //
+      // Three acts. The rules in `act.rules` are already written for the
+      // viewer, so they are printed as they came; the pairs underneath are the
+      // structure the beats assume the reader can see.
+      case 'duo-week-open': {
+        line('');
+        line('YOU GO, THEY GO');
+        for (const r of act.rules || []) line(`  ${r}`);
+        for (const [a, b] of act.pairs || []) line(`  ${a} — ${b}`);
+        if (act.solo) line(`  ${act.solo} has no partner, and cannot be nominated this week.`);
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
+      case 'duo-week-events': {
+        line('');
+        line('CHAINED');
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
+      // The only place a reader finds out that the second name at the door was
+      // never voted for.
+      case 'duo-week-eviction': {
+        line('');
+        line('AND THEIR PARTNER');
+        line(`  ${act.evicted} is evicted. ${act.taken} is evicted with `
+          + `${act.gotNothing ? 'no votes at all' : `${act.votesAgainstTaken} vote${act.votesAgainstTaken === 1 ? '' : 's'}`}.`);
         for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
         break;
       }

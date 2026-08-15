@@ -5664,6 +5664,24 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      // THE AUDIENCE PAYS. The tiers are public — they are announced to the
+      // house — and the ledger is not. This prints what each houseguest was
+      // PAID this week and never what anybody has saved; a balance is a private
+      // fact the reader is not entitled to from a week's transcript.
+      case 'bb-bucks': {
+        const paid = act.payouts || [];
+        sec('THE AUDIENCE PAYS');
+        for (const tier of ['top', 'middle', 'floor']) {
+          const won = paid.filter(p => p.tier === tier);
+          if (!won.length) continue;
+          ln(`  $${won[0].amount} — ${won.map(p => p.name).join(', ')}`);
+        }
+        ln('');
+        ln('  The vote is read out tier by tier, and everybody in that room now knows who the audience is watching.');
+        beats(act);
+        break;
+      }
+
       case 'twist-announcement':
         sec(act.themeAnnouncer?.speaker || 'TWIST ANNOUNCEMENT');
         ln('  "Houseguests, please gather in the living room."');

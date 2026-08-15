@@ -43,6 +43,8 @@ const THEMED = [
   // Batch two.
   'bb-stamina-dizzy-discs', 'bb-stamina-log-roll', 'bb-stamina-hold-up',
   'bb-hand-caged-eggs', 'bb-hand-laser-maze', 'bb-hand-water-rescue',
+  // The overnight one.
+  'bb-endurance-soak',
 ];
 
 describe('themed competition screens render', () => {
@@ -174,14 +176,17 @@ describe('every new Block Buster game draws its own instrument', () => {
 // draws, and nothing anywhere says the screen is missing. This closes that —
 // every variant a competition can emit must resolve to a screen, and every
 // screen must be exercised by the list above.
-// Four competitions predate the themed screens and tag a variant that has no
-// builder: 'wall', 'soak', 'puzzle' and 'crapshoot'. They are not broken — the
-// lookup misses and the generic board draws, which is the designed fallback —
-// but the tag is a promise the library does not keep, and until this list was
-// written nothing anywhere said so. Delete an entry when its screen is built;
-// the first test below will fail if anybody adds a fifth.
+// Three competitions predate the themed screens and tag a variant that has no
+// builder: 'wall', 'puzzle' and 'crapshoot'. They are not broken — the lookup
+// misses and the generic board draws, which is the designed fallback — but the
+// tag is a promise the library does not keep, and until this list was written
+// nothing anywhere said so. Delete an entry when its screen is built; the first
+// test below will fail if anybody adds another.
+//
+// 'soak' (Cold Comfort) came off this list when the overnight competition was
+// rebuilt to run the night hour by hour and got its ice screen.
 const VARIANT_WITHOUT_SCREEN = new Set([
-  'bb-endurance-wall', 'bb-endurance-soak', 'bb-mental-puzzle', 'bb-luck-draw',
+  'bb-endurance-wall', 'bb-mental-puzzle', 'bb-luck-draw',
 ]);
 
 describe('every variant a competition emits has a screen behind it', () => {

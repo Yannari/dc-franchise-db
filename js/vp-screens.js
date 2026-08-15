@@ -85,6 +85,7 @@ import { rpBuildSigSlipperySlope } from './vp-bb-sig/slippery-slope.js';
 import { rpBuildSigKnockout } from './vp-bb-sig/knockout.js';
 import { rpBuildSigKnightMoves } from './vp-bb-sig/knight-moves.js';
 import { rpBuildSigOnTilt } from './vp-bb-sig/on-tilt.js';
+import { rpBuildSigColdComfort } from './vp-bb-sig/cold-comfort.js';
 import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
 import { rpBuildBBSplitHouse } from './vp-bb-split.js';
 import { rpBuildBBRoadkill } from './vp-bb-roadkill.js';
@@ -17160,6 +17161,11 @@ const _BB_SIG_BUILDERS = {
   'solveforx': rpBuildSigSolveForX,
   'knightmoves': rpBuildSigKnightMoves,
   'ontilt': rpBuildSigOnTilt,
+  // The overnight endurance competition. It kept its original 'soak' tag so a
+  // season saved before the rewrite still resolves here; the builder declines
+  // when the hour-by-hour data is absent and that week drops to the generic
+  // board rather than drawing an empty yard.
+  'soak': rpBuildSigColdComfort,
 };
 
 export function rpBuildBBComp(ep, actType) {

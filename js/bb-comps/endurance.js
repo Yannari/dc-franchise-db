@@ -14,6 +14,7 @@
 import { pronouns } from '../players.js';
 import { scoreField, toResult, beat, margin, makePicker, THROW_LINES, vb } from './_shared.js';
 import { bond } from '../bb-events/_read.js';
+import { coldComfort } from './cold-comfort.js';
 
 const WALL_DROP = [
   (n, p) => `${n} goes at the first serious tilt — no drama, just gone, and ${p.sub} ${vb(p, 'is', 'are')} honest enough to admit ${p.sub} ${vb(p, 'was', 'were')} never winning this one.`,
@@ -101,59 +102,11 @@ export const pressureWall = {
   },
 };
 
-const SOAK_LINES = [
-  n => `${n} takes a full wave to the face and does not flinch. Somewhere a producer is delighted.`,
-  n => `${n} is starting to shiver, which in this competition is the beginning of the end.`,
-  n => `${n} laughs at the cold, once, and then stops finding it funny.`,
-  n => `${n} has water in both ears and cannot hear the count any more, which turns out not to matter.`,
-];
+// Cold Comfort used to live here as a second `scoreField` roll with a different
+// set of drop lines on it. It now runs its own night hour by hour and has its
+// own file; this keeps the import so the pool below reads as the whole
+// endurance shelf rather than half of one.
+export const ENDURANCE_COMPS = [pressureWall, coldComfort];
 
-export const coldSoak = {
-  id: 'bb-endurance-soak',
-  name: 'Cold Comfort',
-  category: 'endurance',
-  types: ['hoh', 'veto', 'arena'],
-  desc: 'Houseguests stand on platforms barely wider than their own feet while cold water and wind hit them in timed waves, hour after hour, usually through the night. Nothing about it is difficult. It is only cold, and it does not stop, and that turns out to be worse. Stepping off the platform ends a run, and the last houseguest still standing on theirs wins.',
-  // Same correction as Hold the Line, and this one had it worst: a competition
-  // whose entire subject is being cold for a long time was reading a short
-  // fuse as an inability to stand there.
-  stats: { endurance: 0.48, temperament: 0.20, boldness: 0.18, physical: 0.14 },
-  roles: {
-    capacity: { endurance: 0.60, boldness: 0.22, physical: 0.18 },
-    steadiness: { temperament: 1 },
-  },
-  simulate(participants, context, api, rng) {
-    const { entries, breakdown } = scoreField(participants, {
-      mix: this.roles.capacity, swingBy: this.roles.steadiness, luck: 2.6, context, rng,
-    });
-    const beats = [];
-    const say = makePicker(rng);
-    beats.push(beat(
-      `It is not a hard competition. It is only a cold one, for a very long time, which turns out to be worse.`,
-      participants.slice(0, 2), 'THE SOAK'));
-
-    [...entries].reverse().slice(0, Math.max(1, entries.length - 1)).forEach((e, i) => {
-      if (e.threw) {
-        beats.push(beat(say(THROW_LINES)(e.name), [e.name], 'THREW IT', 'grey'));
-        return;
-      }
-      if (i % 2 === 0 || i > entries.length - 4) {
-        beats.push(beat(say(SOAK_LINES)(e.name), [e.name], i === 0 ? 'FIRST OUT' : 'STEPS OUT'));
-      }
-    });
-
-    const winner = entries[0];
-    const wp = pronouns(winner.name);
-    beats.push(beat(`${winner.name} is still on ${wp.posAdj} platform when the last opponent steps off.`,
-      [winner.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
-    api.popDelta(winner.name, 2);
-    api.record(winner.name, 'endurance-win', {});
-
-    return toResult(entries, {
-      beats, breakdown, variant: 'soak',
-      text: `${winner.name} outlasts the house in Cold Comfort.`,
-    });
-  },
-};
-
-export const ENDURANCE_COMPS = [pressureWall, coldSoak];
+/** Re-exported: this was Cold Comfort's home before it earned a file. */
+export { coldComfort, coldComfort as coldSoak };

@@ -6,6 +6,7 @@ import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { credit, balance } from '../js/bb/bb-bucks.js';
 import { openRoom, hasPlayed, ROOM_GAMES } from '../js/bb/high-rollers-room.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
+import { resolveBBCampaignAct } from '../js/bb/shared-strategy.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -326,8 +327,12 @@ describe('the Roulette rewrites the block at the veto ceremony', () => {
           `week ${w.num}: ${win.name} won the Roulette and entered no protection list`)
           .toContain(win.name);
         // A winner who was never on the block must not be able to arrive on it.
-        // (A winner who WAS a nominee and whose block change could not be spent
-        // stays where they were sitting — the game says so itself.)
+        //
+        // A winner who WAS a nominee is scoped out, and it is a KNOWN GAP rather
+        // than a design decision — see `the corner the engine will not take`
+        // below, which pins the invariant that blocks the fix. The scope is
+        // narrow on purpose: this case still guards the failure that mattered,
+        // a non-nominee paying 125 and being seated as the replacement.
         if (!(w.initialNominees || []).includes(win.name)) {
           expect(w.finalNominees || [],
             `${win.name} bought safety and the ceremony seated them anyway`)
@@ -336,5 +341,27 @@ describe('the Roulette rewrites the block at the veto ceremony', () => {
       }
     }
     expect(seen, 'no seed in thirty produced a Roulette winner').toBeGreaterThan(0);
+  });
+
+  // ── the corner the engine will not take ──
+  //
+  // A nominee-winner whose week hits the game's `NO CHAIR TO FILL` branch stays
+  // on the block: `runRoulette` returns before `chooseRemoval`, so the
+  // self-removal it performs for a nominee-winner never runs, and `rouletteSafe`
+  // does nothing for a name already in a nominee slot.
+  //
+  // The obvious fix is to empty the chair the way BB15's America's Nominee does
+  // — and it was implemented and measured, and it takes the episode down. This
+  // pins WHY, so the next person to reach for that fix finds the reason instead
+  // of rediscovering it: a one-name block is refused outright, and America's
+  // Nominee only survives it by emptying a chair off a block of THREE.
+  it('refuses a one-name block, which is why the chair is not emptied', () => {
+    expect(() => resolveBBCampaignAct({
+      nominees: ['Bowie'], ballots: ['Chase', 'Ripper'], house: NAMES, rng: seq([0.5]),
+    })).toThrow(/at least two nominees/);
+    // And the shape that IS supported, so this is not asserting a broken import.
+    expect(() => resolveBBCampaignAct({
+      nominees: ['Bowie', 'Chase'], ballots: ['Ripper', 'Scary'], house: NAMES, rng: seq([0.5]),
+    })).not.toThrow();
   });
 });

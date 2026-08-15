@@ -4082,6 +4082,31 @@ export function simulateBBWeek(options = {}) {
         // block change. The winner keeps what they bought regardless.
         week.rouletteVoid = { winner, down, up };
       }
+
+      // ── THE ONE CORNER THIS CANNOT FIX, AND WHY IT IS NOT FIXED HERE ──
+      //
+      // A winner who was ALREADY a nominee and whose week hits the game's
+      // `NO CHAIR TO FILL` branch stays on the block. `runRoulette` returns
+      // early there, BEFORE `chooseRemoval`, so the self-removal that function
+      // performs for a nominee-winner never runs; and `rouletteSafe` cannot
+      // rescue them, because it is read by replacement choosers and does
+      // nothing for a name already sitting in a nominee slot. They paid 125,
+      // won, and go to the vote still nominated while the copy promises safety.
+      //
+      // The obvious fix — empty the chair the way BB15's America's Nominee does
+      // a few lines down — was implemented and MEASURED, and it does not work
+      // here. `resolveBBCampaignAct` (js/bb/shared-strategy.js:1251) throws
+      // `A Big Brother campaign requires at least two nominees.` and takes the
+      // whole episode down with it. America's Nominee never trips that
+      // invariant because it empties a chair off a block of THREE and leaves
+      // two; this path empties one off a block of two and leaves one. Twenty-one
+      // weeks across house sizes 4, 5 and 6 threw, out of 120 seeded runs.
+      //
+      // So the honest state is: the block does not move, the winner keeps every
+      // protection this ceremony can give them, and the promise in the copy is
+      // wider than the mechanic in this one corner. Fixing it properly is a
+      // decision about the COPY or about that invariant, and neither is this
+      // task's to make. Written down rather than left for somebody to rediscover.
       week.rouletteSafe = [...new Set(rouletteSafe)];
     }
 

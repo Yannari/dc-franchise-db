@@ -42,7 +42,7 @@
 export default {
   id: 'high-rollers',
   name: "High Roller's",
-  tagline: 'The drinks are on the floor. So is everything else.',
+  tagline: 'The drinks are comped. Every move is counted.',
   house: 'bb-resort',
 
   // ── THE FLAG THAT MAKES ANY OF THIS HAPPEN ────────────────────────────
@@ -84,16 +84,16 @@ export default {
         neutral: [
           'Week {week}. The floor is open, the drinks are comped, and the room is very glad you came.',
           'Good evening. Week {week}. Everything in this room is on the floor tonight. Enjoy yourselves.',
-          'Week {week}. The Pit Boss has your names, your seats and your totals. Two of those you already knew.',
-          'Week {week} opens. Play loose. Nobody has ever been asked to leave this room for winning.',
-          'Week {week}. The floor thanks you for your custom. It has been counting since Sunday, which is simply what a floor does.',
+          'Week {week}. The Pit Boss knows your names, your seats and your totals. Make yourselves comfortable.',
+          'Week {week} begins. Play boldly. Winners are always welcome at this table.',
+          'Welcome to Week {week}. The floor hopes you enjoy your stay. Your drinks are comped; your wagers are not.',
         ],
         hostile: [
           'Week {week}. The comps have stopped. The Pit Boss is working the room with a ledger now.',
-          'Week {week}. Bar tabs are closed. Markers are being called in. Nothing has changed except what you are being told.',
-          'Week {week}. The floor has finished being generous with you and has moved on to being accurate.',
-          'Week {week}. Every drink you were bought is a line in the count, and the count is being read back.',
-          'Week {week}. The room does not want anything from you that it has not already been owed.',
+          'Week {week}. The bar is closed, and every outstanding marker is due.',
+          'Week {week}. The floor is done extending courtesies. From here on, only the numbers matter.',
+          'Week {week}. The complimentary drinks are over. The accounting begins.',
+          'Week {week}. The room kept a record of every risk you took. Now it is balancing the books.',
         ],
       },
       noms: {
@@ -101,70 +101,70 @@ export default {
           '{hoh} has seated {nominees}. The floor has no opinion and an excellent memory.',
           '{nominees} take the two chairs. The Pit Boss would like it noted that the drinks remain comped for both.',
           '{hoh} names {nominees}, and the room paid attention to the pause before the second one.',
-          '{nominees}. Two chairs, one table, and an audience out there with money in its hand.',
+          '{nominees}. Two chairs, one eviction vote, and an audience already placing its bets.',
         ],
         hostile: [
           '{hoh} seats {nominees}. The floor has already priced both of them.',
-          '{nominees} are on the table. The Pit Boss is not interested in who put them there — only in what they are worth by Thursday.',
-          '{hoh} thinks this is {hoh}\'s week. The edge is not a thing you get to hold for a week.',
-          '{nominees}. The count says one of them has been overpaid for a while now.',
+          '{nominees} take the two chairs. The floor only cares which one is still seated after the vote.',
+          '{hoh} may control the nominations, but nobody controls how the cards fall.',
+          '{nominees}. The floor has run the numbers, and neither of them should feel comfortable.',
         ],
       },
       veto: {
         neutral: [
           '{veto} takes the veto, and the floor is delighted for them. Genuinely.',
           'The veto goes to {veto}. A very good night at this table. The Pit Boss enjoys a good night.',
-          '{veto} wins something real tonight — and the room saw the whole thing, which is the part that costs.',
-          'A veto to {veto}. Small edges are the best kind. They are the ones nobody resents you for.',
+          '{veto} wins the veto tonight. The prize is safety; the price is everyone seeing them win it.',
+          'The veto belongs to {veto}. A small advantage can change the whole game.',
         ],
         hostile: [
           '{veto} holds the veto. It does not change the count, it only changes the order.',
           'The veto to {veto}. A player winning one hand has never once bothered a floor.',
-          '{veto} bought a week. The Pit Boss would ask what they paid for it, but the room already knows.',
-          'A necklace, at this stage of the night. The edge is somewhere else entirely and always was.',
+          '{veto} won the veto. The floor has already added that victory to everyone else\'s calculations.',
+          '{veto} has the necklace. Safety is valuable precisely because it never lasts.',
         ],
       },
       vote: {
         neutral: [
           '{evicted} leaves, {margin}. The floor settles their tab and wishes them very well.',
-          '{margin}. {evicted} cashes out. What they were holding stays in this room — it always does.',
-          '{evicted} is evicted on a {margin}. Somebody at that table was voted more money than they were voted friends.',
+          '{margin}. {evicted} cashes out, and the game continues without them.',
+          '{evicted} is evicted by a vote of {margin}. Popular with the audience did not mean safe in the room.',
           '{margin}, and {evicted} goes. The Pit Boss thanks them for their custom and means it.',
         ],
         hostile: [
           '{evicted} is evicted, {margin}. That marker is settled.',
           '{margin}. {evicted} was owed and has been collected. The floor is not cruel. It is only exact.',
           '{evicted} goes, and the count did not need the vote to be close, so it was not.',
-          '{margin}. Somebody in that room was paid for this on Sunday and is still sitting down.',
+          '{margin}. {evicted} leaves, while the players responsible remain comfortably seated.',
         ],
       },
 
       // ── THE LAST NIGHT ────────────────────────────────────────────────
       finale: {
         neutral: [
-          '{finalists}. The three biggest stacks in the room, and only one of them was ever anybody\'s money.',
+          '{finalists}. Three players remain, and only one can leave with the grand prize.',
           'The last night on the floor. {finalists} are still seated, and the drinks are still comped for exactly one more hour.',
-          '{finalists}. The Pit Boss has watched every one of them get paid on a Sunday and pretend they had not noticed.',
-          'Three left. The room ran all summer and the floor did not have to do a single thing to it.',
+          '{finalists}. The audience showed its hand every week. These three were clever enough to read it.',
+          'Three remain. They survived every wager, every vote and every shift in the odds.',
         ],
         hostile: [
           '{finalists}. Every marker in this room comes due tonight, and only one of them gets to be settled in their favour.',
           'The last night. {finalists} are what is left after the count, and the count was never on their side.',
           '{finalists}. The Pit Boss has the ledger open. Three names, one payout, and a lot of arithmetic in between.',
-          'Three chairs. The edge has been on the floor since the first Sunday and none of them ever played against it.',
+          'Three chairs remain. The edge was never theirs; they only borrowed it when they could.',
         ],
       },
       crown: {
         neutral: [
-          '{winner} wins. The floor pays out, the floor congratulates you, and the floor opens again on Sunday. Goodnight from the room.',
-          'The jury pays {winner}. Every week somebody out there sent this room money and told it who they were watching, and nobody once thought to be frightened of that. Goodnight.',
+          '{winner} wins. The floor pays out, offers its congratulations and closes the table. Goodnight.',
+          'The jury awards the game to {winner}. The audience revealed its favorites all season, and tonight the players have revealed theirs. Goodnight.',
           '{winner} takes the cheque. The Pit Boss would like it on the record that the drinks were always comped and always counted. Goodnight from the floor.',
           '{winner} wins, and the room is already being reset for people who have not arrived yet. Safe travels.',
         ],
         hostile: [
           '{winner} wins. The floor is settled, the markers are closed, and not one of you asked all summer who was paying for the drinks. Goodnight.',
           'The jury pays {winner}. The Pit Boss is content to let somebody else carry the cheque out — the edge never leaves the room. Goodnight.',
-          '{winner}. Every Sunday this floor told you exactly who the audience was watching, out loud, and you all decided that was a gift. Goodnight.',
+          '{winner}. Every week, the audience told you exactly whom it was watching. That information was never a gift; it was another wager. Goodnight.',
           '{winner} wins. The count is closed. The room is not, and it never has been.',
         ],
       },

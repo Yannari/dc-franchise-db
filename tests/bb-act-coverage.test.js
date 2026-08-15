@@ -19,6 +19,9 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
 import { rpBuildBBAppStore, rpBuildBBDebug, buildVPScreens } from '../js/vp-screens.js';
+import { generateBBSummaryText } from '../js/text-backlog.js';
+import { awardWeeklyBucks, credit } from '../js/bb/bb-bucks.js';
+import { themeById } from '../js/bb/themes.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -121,6 +124,26 @@ describe('every act the engine emits reaches both transcripts', () => {
     }
     expect([...seen], 'the themed pass emitted no antagonist act').toContain('theme-beat');
 
+    // ── High Roller's ──
+    //
+    // The money theme emits an act no other season can (`bb-bucks`), so it gets
+    // a pass of its own rather than riding on the temptation one. The theme id
+    // is not REGISTERED yet — that lands with the theme itself — so until it
+    // does, `seasonConfig.theme` resolves to nothing and this pass plays an
+    // ordinary week and adds nothing new. It is written now, and armed by
+    // `themeById`, so the day the theme is registered this loop starts feeding
+    // `bb-bucks` into the checks below instead of somebody having to remember
+    // to come back and add it. The assertion is conditional on registration and
+    // not on emission: a registered theme that stops paying fails here.
+    for (let seed = 1; seed <= 3; seed++) {
+      house([], { theme: 'high-rollers' });
+      const ep = withSeededRandom(seed * 29, () => simulateBBEpisode());
+      for (const act of ep.acts || []) if (act?.type) seen.add(act.type);
+    }
+    if (themeById('high-rollers')) {
+      expect([...seen], "the High Roller's pass emitted no payout").toContain('bb-bucks');
+    }
+
     expect(seen.size, 'no acts were collected — the harness is broken').toBeGreaterThan(8);
 
     const runText = src('../js/bb-run.js');
@@ -183,6 +206,63 @@ describe('every act the engine emits reaches both transcripts', () => {
     // moment it reached fifteen twists. It is slow because it is thorough, not
     // because anything is wrong.
   }, 300000);
+
+  // The payout, in all three writers — and the ledger in none of them.
+  //
+  // The loop above cannot exercise this yet: the `high-rollers` theme is not
+  // registered, so no season emits the act. Rather than leave the three cases
+  // unverified until it is, the act is built by its own module — the same
+  // function the week calls, so the same shape — dropped onto a REAL week, and
+  // each writer is asked to write it.
+  it("writes the High Roller's payout in both transcripts and on screen", () => {
+    house([], { theme: 'high-rollers' });
+    const ep = withSeededRandom(11, () => simulateBBEpisode());
+    const week = gs.bb.weeks[gs.bb.weeks.length - 1];
+
+    const already = (ep.acts || []).find(a => a.type === 'bb-bucks');
+    const act = already || awardWeeklyBucks({ week, house: gs.activePlayers || [] });
+    expect(act, 'the payout act could not be built').toBeTruthy();
+    // The week and the episode share one acts array on an ordinary week, so
+    // this is guarded — pushing to both put the section into each transcript
+    // twice and would have made a duplicate look like coverage.
+    if (!already) {
+      ep.acts.push(act);
+      if (week.acts !== ep.acts) week.acts.push(act);
+    }
+
+    // A balance nobody is allowed to print. Distinctive on purpose: if any
+    // writer ever reads the ledger instead of the week's payouts, this number
+    // turns up in its output.
+    for (const name of gs.activePlayers || []) credit(name, 4242);
+
+    const top = act.payouts.filter(p => p.tier === 'top');
+    const floor = act.payouts.filter(p => p.tier === 'floor');
+    expect(top.length, 'no top tier was paid').toBeGreaterThan(0);
+
+    const runText = summariseWeek(week);
+    const backlog = generateBBSummaryText(ep);
+    const screen = (buildVPScreens(ep) || []).find(s => s.label === 'The Audience Pays');
+    expect(screen, 'buildVPScreens drew nothing for the payout').toBeTruthy();
+
+    for (const [what, text] of [['the run transcript', runText],
+      ['the backlog', backlog], ['the screen', screen.html]]) {
+      expect(text, `${what} never wrote the payout`).toMatch(/AUDIENCE PAYS/i);
+      expect((text.match(/AUDIENCE PAYS/gi) || []).length,
+        `${what} wrote the payout more than once`).toBe(1);
+      expect(text, `${what} named nobody in the top tier`).toContain(top[0].name);
+      expect(text, `${what} did not print what the top tier was paid`).toContain('100');
+      if (floor.length) expect(text, `${what} dropped the floor tier`).toContain(floor[0].name);
+      // THE LEDGER IS PRIVATE. A transcript may say what somebody was PAID
+      // this week; it may never say what anybody HAS. The number is checked
+      // against the whole output — no part of a week may print it — and the
+      // words are checked against the payout's own block, because "the balance
+      // of power" is a perfectly innocent phrase elsewhere in a week.
+      expect(text, `${what} leaked a balance`).not.toContain('4242');
+      const from = text.toUpperCase().indexOf('AUDIENCE PAYS');
+      expect(text.slice(from, from + 1400), `${what} named the private number`)
+        .not.toMatch(/\bbalances?\b|\bsavings\b|\bin the bank\b/i);
+    }
+  });
 
   it('writing the App Store transcript did not leak who won', () => {
     // The grants are holder-secret. Adding the missing transcript is only

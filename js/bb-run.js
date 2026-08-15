@@ -1615,6 +1615,27 @@ export function summariseWeek(week) {
         line(`${String(act.speaker || '').toUpperCase()}`);
         line(`  "${act.line}"`);
         break;
+      // THE AUDIENCE PAYS — the vote, and only the vote.
+      //
+      // What the house is told is who was paid this week and how much, because
+      // the tiers are read out: that is the leak the twist is built on, and the
+      // whole room can act on it. What nobody is ever told is what anybody has
+      // SAVED. So this prints the three tiers and their amounts and never a
+      // balance — here, in the backlog, or on the screen. `bucksLedgerFor` is
+      // for the audience's own panel, not for a transcript the house lives in.
+      case 'bb-bucks': {
+        const paid = act.payouts || [];
+        line('');
+        line('THE AUDIENCE PAYS');
+        for (const tier of ['top', 'middle', 'floor']) {
+          const won = paid.filter(p => p.tier === tier);
+          if (!won.length) continue;
+          line(`  $${won[0].amount}: ${won.map(p => p.name).join(', ')}`);
+        }
+        line('  The tiers are read out, so every houseguest leaves that room knowing exactly who the audience is watching.');
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
       case 'twist-announcement':
         line('');
         if (act.themeAnnouncer) {

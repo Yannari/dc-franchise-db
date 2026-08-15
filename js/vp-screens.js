@@ -22048,6 +22048,61 @@ function _bbOrdinalish(place) {
   return String(place);
 }
 
+/**
+ * The weekly payout — three tiers, read out to the house.
+ *
+ * The screen is the ANNOUNCEMENT, which is the only part of this twist the
+ * house ever sees: three rows, the names in each, and the amount that row was
+ * paid. It draws no balances and it must not — the ledger is private per canon
+ * (a houseguest knows their own savings and nobody has a scoreboard of
+ * everybody else's), and the inference the house makes from the tiers is the
+ * whole point of the twist. `bucksLedgerFor` belongs to the audience's panel.
+ */
+export function rpBuildBBBucks(ep, act) {
+  if (!act) return '';
+  const paid = act.payouts || [];
+  const TIERS = [
+    { key: 'top', label: 'TOP OF THE VOTE', badge: 'PAID AT THE TOP', cls: 'gold',
+      why: 'the three the audience watched most this week' },
+    { key: 'middle', label: 'THE NEXT THREE', badge: 'PAID IN THE MIDDLE', cls: 'blue',
+      why: 'seen, but not first' },
+    { key: 'floor', label: 'THE FLOOR', badge: 'PAID THE FLOOR', cls: 'grey',
+      why: 'the amount you get for being in the building' },
+  ];
+  const rows = TIERS.map(t => ({ ...t, won: paid.filter(p => p.tier === t.key) }))
+    .filter(t => t.won.length);
+  const board = rows.map(t => `<div style="display:flex;align-items:center;gap:12px;padding:8px 12px;
+      margin-bottom:6px;border:1px solid var(--border);border-radius:6px;background:rgba(0,0,0,.25)">
+    <div style="font-family:var(--bbx-display);font-size:20px;min-width:64px;color:var(--bbx-key)">
+      $${_bbEsc(t.won[0].amount)}</div>
+    <div style="flex:1">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim)">${_bbEsc(t.label)}</div>
+      <div style="font-size:13px;color:var(--text)">${t.won.map(p => _bbEsc(p.name)).join(', ')}</div>
+    </div>
+  </div>`).join('');
+
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'THE AUDIENCE PAYS',
+    subtitle: 'The vote is announced. What anybody has saved is nobody else’s business.',
+    accent: 'var(--bbx-key)', room: 'bb-power',
+    stateKey: `bb_bucks_${ep.num}`,
+    header: `<div style="max-width:640px;margin:0 auto 16px">${board}</div>`,
+    scenes: [
+      ...rows.map(t => ({
+        text: `<strong>${t.won.map(p => _bbEsc(p.name)).join('</strong>, <strong>')}</strong> `
+          + `${t.won.length === 1 ? 'is' : 'are'} paid $${_bbEsc(t.won[0].amount)} — ${t.why}.`,
+        players: t.won.map(p => p.name), badgeText: t.badge, badgeClass: t.cls,
+      })),
+      { text: 'Nobody is told what anybody else has put away. The house is told who was paid, '
+          + 'and spends the rest of the week doing that arithmetic out loud.',
+        players: [], badgeText: 'THE LEDGER STAYS SHUT', badgeClass: 'grey' },
+      ...(act.beats || []).map(b => ({ text: b.text, players: b.players,
+        badgeText: b.badgeText, badgeClass: b.badgeClass })),
+      ..._bbBeats(act),
+    ],
+  });
+}
+
 export function rpBuildBBHaveNots(ep) {
   const act = (ep.acts || []).find(a => a.type === 'have-nots');
   if (!act) return '';
@@ -22234,6 +22289,12 @@ function _bbCycleScreens(view, screens, suffix = '') {
       }
       case 'have-nots':
         screens.push({ id: id('bb-havenots'), label: 'Have-Nots', html: rpBuildBBHaveNots(view) });
+        break;
+      // The weekly payout. The screen draws the announcement — three tiers and
+      // the amount each was paid — and never a balance, which stays private.
+      case 'bb-bucks':
+        screens.push({ id: id('bb-bucks'), label: 'The Audience Pays',
+          html: rpBuildBBBucks(view, act) });
         break;
       // One screen per thing the antagonist says. The hook is in the id
       // because a week can hear from it four times — open, noms, veto, vote —

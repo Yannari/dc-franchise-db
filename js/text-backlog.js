@@ -5682,6 +5682,42 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      // THE HIGH ROLLER'S ROOM. The door is public — the house watched every
+      // one of these people stand up — and the ledger is not. This prints the
+      // PRICE, which is painted on the door, and who paid it. It never prints
+      // what anybody has; `roomLedgerFor` belongs to the Debug panel.
+      //
+      // The block does not move here. The room opens after nominations and the
+      // wheel is spun in the same pass, but the swap is not applied until the
+      // veto meeting — so this is the seat and the spin, and the ceremony case
+      // below carries the block changing.
+      case 'high-rollers-room': {
+        const entries = act.entries || [];
+        const winner = entries.find(e => e && e.won);
+        sec("THE HIGH ROLLER'S ROOM");
+        ln(`  The door in the hallway is open. Tonight it sells one thing: ${act.gameName},`);
+        ln(`  at ${act.price} a seat, once a season, and the money goes on the way in.`);
+        ln('');
+        if (entries.length) ln(`  Paid and played: ${entries.map(e => e.name).join(', ')}.`);
+        if ((act.declined || []).length) {
+          ln(`  Reached the door and could not cover the ${act.price}: ${act.declined.map(d => d.name).join(', ')}.`);
+        }
+        if (winner) {
+          // What a win actually grants, stated the way the game's own beats
+          // state it. NOT "safe for the week" — the removal and the spin need
+          // a legal chair, and only this half is unconditional.
+          ln(`  ${winner.name} wins ${act.gameName}. Nobody can name ${winner.name} as a replacement`);
+          ln(`  nominee between now and Thursday, and the block itself waits for the veto meeting.`);
+          const beaten = entries.filter(e => e !== winner).map(e => e.name);
+          if (beaten.length) ln(`  Paid the same ${act.price} for none of it: ${beaten.join(', ')}.`);
+        } else if (entries.length) {
+          ln(`  Nobody clears it. ${entries.length === 1 ? 'One seat sold' : `All ${entries.length} seats sold`}, no winner, no refund.`);
+        }
+        ln('');
+        beats(act);
+        break;
+      }
+
       case 'twist-announcement':
         sec(act.themeAnnouncer?.speaker || 'TWIST ANNOUNCEMENT');
         ln('  "Houseguests, please gather in the living room."');
@@ -5698,6 +5734,21 @@ export function generateBBSummaryText(ep) {
 
       case 'veto-ceremony':
         sec('VETO CEREMONY');
+        // The Roulette was won in the High Roller's Room two days ago, and this
+        // is the meeting it lands at — so it is read out before the medallion,
+        // which is the order the block actually changes in. Read off the act
+        // (`week.js` copies it there) rather than `rouletteSafe`, which carries
+        // the winner as well as the rescued nominee.
+        if (act.roulette) {
+          ln(`  The Chopping Block Roulette is spent first. ${act.roulette.winner} takes ${act.roulette.down} off the block,`);
+          ln(`  and no ceremony between now and Thursday can put ${act.roulette.down} back up there.`);
+          ln(`  The wheel fills the chair itself: ${act.roulette.up} goes up, named by nobody in this house.`);
+        } else if (act.rouletteVoid) {
+          ln(`  ${act.rouletteVoid.winner} won the Chopping Block Roulette and the block will not take it.`);
+          ln(`  ${act.rouletteVoid.down} was to come down and ${act.rouletteVoid.up} to go up; by the time the room sat`);
+          ln(`  down neither name was still legal, so nothing moves. ${act.rouletteVoid.winner} keeps the half that`);
+          ln(`  cannot be voided — no replacement chair this week can be filled with ${act.rouletteVoid.winner}'s name.`);
+        }
         if (act.diamond) ln(`  DIAMOND POWER OF VETO — if used, the veto holder (${act.holder}), not the Head of Household, names the replacement.`);
         if (act.used) {
           ln(`  The veto is used on ${act.saved}.`);

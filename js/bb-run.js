@@ -1646,6 +1646,46 @@ export function summariseWeek(week) {
         for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
         break;
       }
+      // THE HIGH ROLLER'S ROOM — the door, the price, and the seat.
+      //
+      // What this section is allowed to print is the same short list the
+      // `bb-bucks` case above works from: a PRICE, which is painted on the
+      // door, and who the house watched walk through it. Never a balance.
+      // `roomLedgerFor` is the Debug panel's, not a transcript's.
+      //
+      // ── AND IT DOES NOT MOVE THE BLOCK ──
+      //
+      // The room opens after nominations; the Chopping Block Roulette is spun
+      // in the same pass because the money has to leave on the way in, but the
+      // block does not actually move until the veto meeting. So this is the
+      // seat and the spin, and the ceremony below carries the swap. Writing
+      // "comes off the block" here would put it two days early.
+      case 'high-rollers-room': {
+        const entries = act.entries || [];
+        const winner = entries.find(e => e && e.won);
+        line('');
+        line("THE HIGH ROLLER'S ROOM");
+        line(`  Tonight's game: ${act.gameName}. ${act.price} to sit down, and the seat is sold once a season.`);
+        if (entries.length) {
+          line(`  Walked in and paid: ${entries.map(e => e.name).join(', ')}.`);
+        }
+        if ((act.declined || []).length) {
+          line(`  Got to the door and could not pay: ${act.declined.map(d => d.name).join(', ')}.`);
+        }
+        if (winner) {
+          // The one sentence this whole slice exists to get right. Winning is
+          // NOT "safe for the week" — it is a name no replacement chair can be
+          // filled with, plus a block change that only happens if there is a
+          // legal chair to fill. Both halves land at the veto meeting.
+          line(`  ${winner.name} WINS ${act.gameName}. No replacement chair this week can be filled with ${winner.name}'s name.`);
+          const beaten = entries.filter(e => e !== winner).map(e => e.name);
+          if (beaten.length) line(`  Paid the same ${act.price} and won nothing: ${beaten.join(', ')}.`);
+        } else if (entries.length) {
+          line(`  Nobody wins it. ${entries.length === 1 ? 'The one entry is' : `All ${entries.length} entries are`} out of pocket and exactly as exposed as before.`);
+        }
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
       case 'twist-announcement':
         line('');
         if (act.themeAnnouncer) {
@@ -1662,6 +1702,27 @@ export function summariseWeek(week) {
       case 'veto-ceremony':
         line('');
         line('VETO CEREMONY');
+        // ── THE WHEEL LANDS HERE, BEFORE THE MEDALLION ──
+        //
+        // The Roulette was won two days ago in the High Roller's Room, and
+        // this is the meeting where it is spent — so the swap is read out
+        // ahead of the veto, which is the order the block actually changes in.
+        //
+        // `week.rouletteSwap` and never `week.rouletteSafe`: the safe list
+        // carries the WINNER as well as the rescued nominee, so reading it as
+        // "who came down" names one person too many.
+        if (week.rouletteSwap) {
+          const r = week.rouletteSwap;
+          line(`  THE CHOPPING BLOCK ROULETTE — ${r.winner} spends the win. ${r.down} comes off the block, and no ceremony between now and Thursday can put ${r.down} back up.`);
+          line(`  The wheel fills the empty chair: ${r.up} is a replacement nominee, chosen by nobody.`);
+        } else if (week.rouletteVoid) {
+          // A win that could not be spent. Recorded rather than swallowed —
+          // somebody paid 125 for this and the viewer is owed the fact that
+          // the names stopped being legal before the meeting could use them.
+          const r = week.rouletteVoid;
+          line(`  THE CHOPPING BLOCK ROULETTE — ${r.winner} won it and the block will not take it. ${r.down} was to come down and ${r.up} to go up, and by the time the room sat down neither name was still legal.`);
+          line(`  ${r.winner} keeps the half that cannot be voided: no replacement chair this week can be filled with ${r.winner}'s name.`);
+        }
         if (act.diamond) line(`  DIAMOND POWER OF VETO — if used, the veto holder (${act.holder}), not the Head of Household, names the replacement.`);
         if (act.used) {
           line(`  The veto is used on ${act.saved}.`);

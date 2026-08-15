@@ -4514,6 +4514,20 @@ export function simulateBBWeek(options = {}) {
       // Priya and Raj — so the name it reads out comes from the wall, not from
       // the step that got overruled.
       replacementNames: week.duoVetoSwap ? [...week.duoVetoSwap.up] : (replacement ? [replacement] : []),
+      // THE WHEEL, CARRIED ON THE ACT THAT SPENDS IT.
+      //
+      // The Roulette is won in the High Roller's Room two days earlier and
+      // lands HERE — this is the meeting where the block moves. `summariseWeek`
+      // is handed the week and can read `week.rouletteSwap` for itself, but the
+      // text backlog and the viewing party are both built from the EPISODE and
+      // only ever see acts, so the outcome has to ride on one. Copied the same
+      // way `duoDown`/`duoUp` above copy the duo swap, and for the same reason.
+      //
+      // Deliberately NOT `week.rouletteSafe`: that list holds the winner as
+      // well as the rescued nominee, and a writer reading it as "who came
+      // down" names one person too many.
+      roulette: week.rouletteSwap ? { ...week.rouletteSwap } : null,
+      rouletteVoid: week.rouletteVoid ? { ...week.rouletteVoid } : null,
       saved: vetoDecision.save, replacement, holder: vetoWinner,
       diamond, chairAuthority, anonymous: hohSecret && !diamond,
       reason: vetoDecision.reason, why: vetoDecision.why, replacementWhy,

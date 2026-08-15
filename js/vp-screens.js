@@ -20499,8 +20499,18 @@ export function rpBuildBBCeremony(ep) {
   const isDiamond = !!act?.diamond;
   const namer = (isDiamond ? act?.chairAuthority : hoh) || hoh;
   const pleaders = startNoms.filter(n => n !== holder);
+  // ── THE WHEEL LANDS AT THIS MEETING ──
+  //
+  // Won two days ago in the High Roller's Room, spent here: the block does not
+  // move until the veto meeting, so the swap is the first thing read out, ahead
+  // of the medallion. `act.roulette` is copied off `week.rouletteSwap` by
+  // week.js — deliberately not `rouletteSafe`, which carries the WINNER as well
+  // as the rescued nominee and would name one person too many.
+  const roulette = act?.roulette || null;
+  const rouletteVoid = !roulette && act?.rouletteVoid ? act.rouletteVoid : null;
   const steps = [
     { kind: 'open' },
+    ...(roulette || rouletteVoid ? [{ kind: 'roulette' }] : []),
     ...(isDiamond ? [{ kind: 'diamond-rule' }] : []),
     ...pleaders.map(name => ({ kind: 'plea', name })),
     { kind: 'stand' },
@@ -20612,6 +20622,16 @@ export function rpBuildBBCeremony(ep) {
         return `<div class="bbns-card is-open">
           <div class="bbns-card-h">${holder ? _bbAvatar(holder, 30) : ''}<span class="bbns-pill grey">THE VETO MEETING</span></div>
           <div class="bbns-card-b">The house gathers in the living room, and <strong>${_bbEsc(holder)}</strong> stands with the medallion. "This is the veto meeting. ${startNoms.map(_bbEsc).join(' and ')}${startNoms.length > 1 ? ' have' : ' has'} been nominated for eviction, but I have the power to veto one of the nominations.${pleaders.length ? ' I’ve decided to give each of you the chance to say why I should use the veto on you.' : ''}"${selfSave ? ` ${_bbEsc(holder)} is one of the nominees, and everybody in the room already knows how this half of it ends.` : ''}</div></div>`;
+      case 'roulette':
+        return roulette
+          ? `<div class="bbns-card is-key">
+              <div class="bbns-card-h">${_bbAvatar(roulette.winner, 30)}${_bbAvatar(roulette.down, 30)}${_bbAvatar(roulette.up, 30)}<span class="bbns-pill gold">THE CHOPPING BLOCK ROULETTE</span></div>
+              <div class="bbns-card-b">Before the medallion, the wheel. <strong>${_bbEsc(roulette.winner)}</strong> paid for this two days ago and spends it now: <strong>${_bbEsc(roulette.down)}</strong> comes off the block, and no ceremony between now and Thursday can put ${_bbEsc(roulette.down)} back up there.
+                <span class="bbta-sting">The empty chair is filled by the wheel and by nothing else. It stops on ${_bbEsc(roulette.up)} — not named by the Head of Household, not asked for by anybody, and there is not one person in this house ${_bbEsc(roulette.up)} can be angry at for it.</span></div></div>`
+          : `<div class="bbns-card is-key">
+              <div class="bbns-card-h">${_bbAvatar(rouletteVoid.winner, 30)}<span class="bbns-pill grey">THE WHEEL CANNOT BE SPENT</span></div>
+              <div class="bbns-card-b"><strong>${_bbEsc(rouletteVoid.winner)}</strong> won the Chopping Block Roulette, and the block will not take it. ${_bbEsc(rouletteVoid.down)} was to come down and ${_bbEsc(rouletteVoid.up)} to go up; by the time the room sat down neither name was still legal, so nothing moves.
+                <span class="bbta-sting">What ${_bbEsc(rouletteVoid.winner)} keeps is the half that cannot be voided: no replacement chair this week can be filled with ${_bbEsc(rouletteVoid.winner)}'s name.</span></div></div>`;
       case 'plea':
         return `<div class="bbns-card is-key">
           <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill blue">${_bbEsc(step.name).toUpperCase()} SPEAKS</span></div>
@@ -22407,6 +22427,225 @@ export function rpBuildBBBucks(ep, act) {
   });
 }
 
+/**
+ * The wheel, drawn rather than typed.
+ *
+ * Twelve pockets, alternating brass and lacquer, studs on the rim and a hub
+ * that carries whatever the wheel stopped on. CSS/SVG primitives throughout —
+ * no emoji anywhere on a Big Brother screen — and the geometry is computed so
+ * the twelve pockets close exactly rather than leaving a hairline at the top.
+ */
+function _bbRouletteWheel(landed) {
+  const N = 12, R = 54, cx = 60, cy = 60;
+  const pt = (a, r) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  const pockets = [];
+  for (let i = 0; i < N; i++) {
+    const a0 = (i / N) * Math.PI * 2 - Math.PI / 2;
+    const a1 = ((i + 1) / N) * Math.PI * 2 - Math.PI / 2;
+    const [x0, y0] = pt(a0, R);
+    const [x1, y1] = pt(a1, R);
+    pockets.push(`<path class="hrw-p ${i % 2 ? 'is-dark' : 'is-brass'}"
+      d="M${cx} ${cy} L${x0.toFixed(2)} ${y0.toFixed(2)} A${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z"/>`);
+  }
+  const studs = [];
+  for (let i = 0; i < N; i++) {
+    const [x, y] = pt((i / N) * Math.PI * 2 - Math.PI / 2, R - 5);
+    studs.push(`<circle class="hrw-stud" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2"/>`);
+  }
+  // 148 tall rather than 126: the rim reaches y=118, so a caption baseline at
+  // 120 sat straight on top of it and the spun name was drawn through the
+  // pockets. Caught by rendering it, which no assertion here would have.
+  return `<div class="hrw-box">
+    <svg class="hrw" viewBox="0 0 120 122" aria-hidden="true">
+      <circle class="hrw-rim" cx="${cx}" cy="${cy}" r="58"/>
+      ${pockets.join('')}
+      ${studs.join('')}
+      <circle class="hrw-ring" cx="${cx}" cy="${cy}" r="${R}"/>
+      <circle class="hrw-hub" cx="${cx}" cy="${cy}" r="22"/>
+      <circle class="hrw-hubring" cx="${cx}" cy="${cy}" r="24"/>
+      <path class="hrw-cross" d="M${cx} ${cy - 16} L${cx} ${cy + 16} M${cx - 16} ${cy} L${cx + 16} ${cy}"/>
+      <path class="hrw-point" d="M${cx - 7} 2 L${cx + 7} 2 L${cx} 14 Z"/>
+    </svg>
+    <div class="hrw-cap">${landed
+      ? `<b>STOPPED ON</b><em>${_bbEsc(landed)}</em>`
+      : '<b>THE WHEEL</b><em>no spin tonight</em>'}</div>
+  </div>`;
+}
+
+/**
+ * THE HIGH ROLLER'S ROOM — a door in the hallway, a table, and a price.
+ *
+ * The screen is the ROOM, not the block: a lacquered table with the entry fee
+ * struck into it in brass, the wheel beside it, and one chip per houseguest who
+ * walked through that door. That is the whole of what the house saw.
+ *
+ * TWO THINGS THIS SCREEN MUST NEVER DO.
+ *
+ * It must never print a BALANCE. It may say what a game COST (the price is
+ * painted on the door) and what somebody was PAID this week (an announced
+ * tier), because the house knows both. Nobody holds a scoreboard of anybody
+ * else's savings, and the arithmetic the house does off the announced numbers
+ * is the whole twist. `roomLedgerFor` and `ep.bucksLedger` are the Debug
+ * panel's, exactly as `_bbChipBand` says of the ledger it refuses to read.
+ *
+ * And it must never say "safe for the week". Winning the Roulette grants one
+ * unconditional thing — no replacement chair this week can be filled with the
+ * winner's name — plus a removal and a spin that happen only when there is a
+ * legal chair to land on. The room opens after nominations and the block does
+ * not move until the veto meeting, so this screen draws the seat and the spin
+ * and the ceremony draws the block changing.
+ */
+export function rpBuildBBHighRollersRoom(ep, act) {
+  if (!act) return '';
+  const entries = act.entries || [];
+  const declined = act.declined || [];
+  const winner = entries.find(e => e && e.won) || null;
+  const beaten = entries.filter(e => e !== winner);
+  const landed = winner?.replacement || null;
+  const down = winner?.removed || null;
+
+  // One chip per person the house watched, drawn as a casino chip with the
+  // price struck into it. Paid-and-won reads gold; paid-and-lost reads spent;
+  // could-not-pay is a chip that never left the rail.
+  const chip = (name, cls, tag) => `<div class="hrr-seat ${cls}">
+    <div class="hrr-chip">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle class="hrr-chip-body" cx="32" cy="32" r="30"/>
+        <circle class="hrr-chip-spots" cx="32" cy="32" r="27" stroke-dasharray="15.18 15.18"/>
+        <circle class="hrr-chip-face" cx="32" cy="32" r="21"/>
+        <circle class="hrr-chip-ring" cx="32" cy="32" r="23"/>
+        <text class="hrr-chip-den" x="32" y="32" dominant-baseline="central">${_bbEsc(act.price)}</text>
+      </svg>
+    </div>
+    <div class="hrr-face">${_bbAvatar(name, 34)}</div>
+    <div class="hrr-name">${_bbEsc(name)}</div>
+    <div class="hrr-tag">${tag}</div>
+  </div>`;
+
+  const seats = [
+    ...(winner ? [chip(winner.name, 'is-won', 'PAID AND WON')] : []),
+    ...beaten.map(e => chip(e.name, 'is-lost', 'PAID AND LOST')),
+    ...declined.map(d => chip(d.name, 'is-short', 'COULD NOT PAY')),
+  ].join('');
+
+  const header = `<style>
+  .hrr{max-width:720px;margin:0 auto 16px}
+  .hrr-table{position:relative;border-radius:120px/68px;padding:20px 22px 18px;
+    background:radial-gradient(120% 90% at 50% 0%,rgba(58,44,12,.55),rgba(10,7,7,.96) 68%);
+    border:2px solid rgba(201,162,39,.55);
+    box-shadow:inset 0 0 0 6px rgba(9,7,6,.9),inset 0 0 34px rgba(0,0,0,.85),0 14px 34px rgba(0,0,0,.55)}
+  .hrr-felt{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap}
+  .hrr-plate{text-align:center;min-width:186px}
+  .hrr-plate .hrr-game{font-family:"Copperplate Gothic Bold",Copperplate,Cinzel,Georgia,serif;
+    font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#f0d585;line-height:1.35}
+  .hrr-plate .hrr-rule{height:1px;margin:8px auto;width:120px;
+    background:linear-gradient(90deg,transparent,rgba(201,162,39,.8),transparent)}
+  .hrr-price{display:inline-flex;align-items:baseline;gap:4px;padding:5px 16px;border-radius:999px;
+    border:1px solid rgba(240,213,133,.55);background:rgba(9,7,6,.75)}
+  .hrr-price b{font-family:"Copperplate Gothic Bold",Copperplate,Cinzel,Georgia,serif;
+    font-size:26px;color:#f0d585;letter-spacing:.06em}
+  .hrr-price i{font-style:normal;font-size:8.5px;letter-spacing:.24em;color:#a28f63}
+  .hrr-note{margin-top:9px;font-size:9px;letter-spacing:.2em;color:#7c715c;text-transform:uppercase}
+  .hrw-box{flex:none;text-align:center}
+  .hrw{width:126px;height:128px;display:block;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))}
+  .hrw-cap{margin-top:5px;line-height:1.3}
+  .hrw-cap b{display:block;font-size:8px;letter-spacing:.24em;color:#8a7c60}
+  .hrw-cap em{font-style:normal;font-size:12px;color:#f0d585;letter-spacing:.04em}
+  .hrw-rim{fill:#0b0708;stroke:rgba(201,162,39,.5);stroke-width:2}
+  .hrw-p.is-brass{fill:#7a6220}
+  .hrw-p.is-dark{fill:#150f0c}
+  .hrw-p{stroke:rgba(9,7,6,.9);stroke-width:.6}
+  .hrw-stud{fill:#f0d585;opacity:.75}
+  .hrw-ring{fill:none;stroke:rgba(240,213,133,.6);stroke-width:1.2}
+  .hrw-hub{fill:#120c0a}
+  .hrw-hubring{fill:none;stroke:rgba(201,162,39,.65);stroke-width:1.4}
+  .hrw-cross{stroke:rgba(240,213,133,.5);stroke-width:1.4;fill:none}
+  .hrw-point{fill:#c9a227;stroke:#f0d585;stroke-width:.8}
+  .hrw-landed{fill:#f0d585;font-size:11px;letter-spacing:.12em}
+  .hrr-seats{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px}
+  .hrr-seat{width:104px;text-align:center;padding:9px 6px 8px;border-radius:8px;
+    border:1px solid rgba(201,162,39,.22);background:rgba(9,7,6,.6)}
+  .hrr-seat .hrr-chip svg{width:38px;height:38px;display:block;margin:0 auto}
+  .hrr-chip-body{fill:#2a2118;stroke:rgba(0,0,0,.6);stroke-width:1}
+  .hrr-chip-spots{fill:none;stroke:#c9a227;stroke-width:6}
+  .hrr-chip-face{fill:#120c0a}
+  .hrr-chip-ring{fill:none;stroke:rgba(240,213,133,.5);stroke-width:1}
+  .hrr-chip-den{fill:#f0d585;font-size:17px;font-weight:700;text-anchor:middle}
+  .hrr-face{margin:6px 0 3px}
+  .hrr-face .bb-av{border-radius:50%}
+  .hrr-name{font-size:11.5px;color:#f2e6c8}
+  .hrr-tag{font-size:8px;letter-spacing:.16em;color:#8a7c60;margin-top:2px}
+  .hrr-seat.is-won{border-color:rgba(240,213,133,.7);background:rgba(58,44,12,.42);
+    box-shadow:0 0 18px rgba(201,162,39,.22)}
+  .hrr-seat.is-won .hrr-tag{color:#f0d585}
+  .hrr-seat.is-lost{opacity:.72}
+  .hrr-seat.is-lost .hrr-chip svg{opacity:.42}
+  .hrr-seat.is-short{opacity:.55;border-style:dashed}
+  .hrr-seat.is-short .hrr-chip svg{opacity:.2}
+  </style>
+  <section class="hrr">
+    <div class="hrr-table"><div class="hrr-felt">
+      <div class="hrr-plate">
+        <div class="hrr-game">${_bbEsc(act.gameName || 'The House Game')}</div>
+        <div class="hrr-rule"></div>
+        <div class="hrr-price"><b>${_bbEsc(act.price)}</b><i>BB bucks to sit down</i></div>
+        <div class="hrr-note">one seat &middot; once a season &middot; no refunds</div>
+      </div>
+      ${_bbRouletteWheel(landed)}
+    </div></div>
+    ${seats ? `<div class="hrr-seats">${seats}</div>` : ''}
+  </section>`;
+
+  const scenes = [
+    { text: `A door in the hallway, and a price painted on it. Tonight the room sells one thing: `
+        + `<strong>${_bbEsc(act.gameName)}</strong>, ${_bbEsc(act.price)} a seat, and the seat is sold once a season.`,
+      players: [], badgeText: 'THE ROOM OPENS', badgeClass: 'gold' },
+    { text: 'The money leaves on the way in. Paying is not winning, and everybody at the kitchen table '
+        + 'can see exactly who got up to go and do it.',
+      players: entries.map(e => e.name), badgeText: 'PAID ON THE DOOR', badgeClass: 'grey' },
+    ...(winner ? [{
+      // The wording rule, on the screen. Not "safe for the week": the half that
+      // is unconditional is the replacement chair, and the block itself does
+      // not move until the veto meeting two days from now.
+      text: `<strong>${_bbEsc(winner.name)}</strong> wins it. No replacement chair this week can be filled `
+        + `with ${_bbEsc(winner.name)}'s name — that half is unconditional and nothing in the rest of the week can void it.`
+        + (down && landed
+          // `bbta-sting`, not `bbh-why`: the latter is a one-line flex aside
+          // (nowrap, 40% max-width, ellipsis) and swallows a sentence this
+          // long. Seen by rendering it — the tail escaped the card entirely.
+          ? ` <span class="bbta-sting">The wheel also came up with two names: ${_bbEsc(down)} to come off the block and `
+            + `${_bbEsc(landed)} to fill the chair. Neither happens tonight — the block does not move until the veto meeting.</span>`
+          : ' <span class="bbta-sting">There was no legal chair to fill, so the removal and the spin do not happen at all. '
+            + 'The block stands exactly as it was.</span>'),
+      players: [winner.name], badgeText: 'PAID AND WON', badgeClass: 'gold' }] : []),
+    ...(beaten.length ? [{
+      text: `${beaten.map(e => `<strong>${_bbEsc(e.name)}</strong>`).join(', ')} paid the same ${_bbEsc(act.price)} `
+        + `and ${beaten.length === 1 ? 'gets' : 'get'} none of it. The seat is burned for the season either way.`,
+      players: beaten.map(e => e.name), badgeText: 'PAID AND LOST', badgeClass: 'bad' }] : []),
+    ...(!winner && entries.length ? [{
+      text: `${entries.length === 1 ? 'One seat sold' : `All ${entries.length} seats sold`}, and nobody clears it. `
+        + 'The block does not move, the week does not change, and the money is not coming back.',
+      players: entries.map(e => e.name), badgeText: 'NO WINNER', badgeClass: 'bad' }] : []),
+    ...(declined.length ? [{
+      text: `${declined.map(d => `<strong>${_bbEsc(d.name)}</strong>`).join(', ')} got as far as the door and `
+        + `turned around at the ${_bbEsc(act.price)}. Nobody is told what anybody has put away — only that `
+        + `${declined.length === 1 ? 'somebody' : 'these houseguests'} could not cover it tonight.`,
+      players: declined.map(d => d.name), badgeText: 'COULD NOT PAY', badgeClass: 'grey' }] : []),
+    ...(act.beats || []).map(b => ({ text: b.text, players: b.players,
+      badgeText: b.badgeText, badgeClass: b.badgeClass })),
+    ..._bbBeats(act),
+  ];
+
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: "THE HIGH ROLLER'S ROOM",
+    subtitle: 'The price is on the door. What anybody has saved is nobody else’s business.',
+    accent: 'var(--bbx-key)', room: 'bb-power',
+    stateKey: `bb_hrr_${ep.num}`,
+    header,
+    scenes,
+  });
+}
+
 export function rpBuildBBHaveNots(ep) {
   const act = (ep.acts || []).find(a => a.type === 'have-nots');
   if (!act) return '';
@@ -22599,6 +22838,13 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'bb-bucks':
         screens.push({ id: id('bb-bucks'), label: 'The Audience Pays',
           html: rpBuildBBBucks(view, act) });
+        break;
+      // The door in the hallway. The screen is the ROOM — the table, the price
+      // struck into it and the wheel — and never a balance. The block it may
+      // eventually move is drawn at the veto ceremony, where it actually moves.
+      case 'high-rollers-room':
+        screens.push({ id: id('bb-highrollers'), label: "High Roller's Room",
+          html: rpBuildBBHighRollersRoom(view, act) });
         break;
       // One screen per thing the antagonist says. The hook is in the id
       // because a week can hear from it four times — open, noms, veto, vote —

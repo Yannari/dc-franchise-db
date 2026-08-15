@@ -1677,6 +1677,36 @@ export function summariseWeek(week) {
         for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
         break;
       }
+      // ── YOU GO, THEY GO ──
+      //
+      // Three acts. The rules in `act.rules` are already written for the
+      // viewer, so they are printed as they came; the pairs underneath are the
+      // structure the beats assume the reader can see.
+      case 'duo-week-open': {
+        line('');
+        line('YOU GO, THEY GO');
+        for (const r of act.rules || []) line(`  ${r}`);
+        for (const [a, b] of act.pairs || []) line(`  ${a} — ${b}`);
+        if (act.solo) line(`  ${act.solo} has no partner, and cannot be nominated this week.`);
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
+      case 'duo-week-events': {
+        line('');
+        line('CHAINED');
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
+      // The only place a reader finds out that the second name at the door was
+      // never voted for.
+      case 'duo-week-eviction': {
+        line('');
+        line('AND THEIR PARTNER');
+        line(`  ${act.evicted} is evicted. ${act.taken} is evicted with `
+          + `${act.gotNothing ? 'no votes at all' : `${act.votesAgainstTaken} vote${act.votesAgainstTaken === 1 ? '' : 's'}`}.`);
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
       case 'eviction': {
         line('');
         line('EVICTION NIGHT');

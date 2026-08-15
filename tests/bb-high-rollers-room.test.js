@@ -20,12 +20,15 @@ const CAST = NAMES.map((name, i) => ({
 // Deterministic rng; callers pass their own sequence.
 const seq = values => { let i = 0; return () => values[i++ % values.length]; };
 
-// A real mid-season house, not a rich one. The tiers pay 18/14/10 a week, so by
-// the time the room opens a top-tier darling has saved enough for exactly one
-// game and a floor houseguest has not. That spread is the whole limiter: there
-// is no seat cap in this room, and there does not need to be one.
-const SAVER = 160;    // ~nine weeks at the top of the vote
-const BROKE = 90;     // ~nine weeks on the floor — short of the 125 price
+// A real mid-season house, not a rich one. The tiers pay 26/20/14 a week, so
+// these are a houseguest the audience has been paying well — enough for exactly
+// one game — and one it has not, who is short of the door. That spread is the
+// whole limiter: there is no seat cap in this room, and there does not need to
+// be one. Written as literals rather than derived from `PAYOUT_TIERS`, because
+// what these two numbers have to be is "over 125" and "under 125" and a rescale
+// must not silently turn the broke half of this house into buyers.
+const SAVER = 160;    // comfortably over the 125 price
+const BROKE = 90;     // comfortably under it
 
 beforeEach(() => {
   seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
@@ -401,6 +404,74 @@ describe('the Roulette rewrites the block at the veto ceremony', () => {
       checked++;
     }
     expect(checked).toBe(6);
+  });
+
+  // ── THE OTHER FALSE PROMISE: A BLOCK THAT HAS NOT MOVED YET ────────────
+  //
+  // The sweep above only walks the NO-CHAIR pools, because that is the board it
+  // drives. The WINNING board has the same defect class and had it in shipped
+  // copy: these beats ride out on the ROOM act, which is the night the door
+  // opens — after nominations, before the veto competition. The engine does not
+  // move the block until the veto ceremony (`js/bb/week.js`), and it can VOID
+  // the swap entirely when a name has stopped being legal by then, which is
+  // routine rather than rare because the spun replacement can go on to win the
+  // veto.
+  //
+  // So the removal and landing beats may not narrate the block as already
+  // moved. The pinned form is: the WHEEL HAS DECIDED, the CEREMONY PERFORMS IT.
+  // Every variant of both pools is swept, because a promise the mechanics do
+  // not keep is a defect in any one of them.
+  it('never says the block has already moved — the ceremony performs it', () => {
+    let checked = 0;
+    for (const v of [0, 0.2, 0.4, 0.6, 0.8, 0.99]) {
+      const out = runRoulette({
+        entrants: ['Bowie'], house: NAMES, nominees: ['Chase', 'Ripper'],
+        hoh: 'Scary', rng: seq([0, v, v, v, v]),
+      });
+      expect(out.winner, 'the entrant did not clear the standard — pick a kinder roll').toBe('Bowie');
+      expect(out.removed, 'this board has an eligible chair; the swap should exist').toBeTruthy();
+      expect(out.replacement).toBeTruthy();
+
+      for (const b of out.beats) {
+        // The banned promise, in every form three fix rounds removed it in.
+        expect(b.text, `a beat still promises safety for the week: ${b.text}`)
+          .not.toMatch(/safe for the week|safe for the rest of the week|no way back up|does not have to survive|off every list/i);
+      }
+
+      // The removal and the landing must both name the event that performs
+      // them. "Thursday" is the week's horizon (how long the replacement-chair
+      // protection lasts), never the thing that moves the block — the ceremony
+      // is the veto meeting and the vote is Thursday.
+      const off = out.beats.find(b => b.badgeText === 'OFF THE BLOCK');
+      const up = out.beats.find(b => b.badgeText === 'THE WHEEL DECIDES');
+      expect(off, 'no beat narrated the removal').toBeTruthy();
+      expect(up, 'no beat narrated the spin').toBeTruthy();
+      expect(off.text, `variant ${v}: the removal beat does not defer to the ceremony`)
+        .toMatch(/ceremony/i);
+      expect(up.text, `variant ${v}: the landing beat does not defer to the ceremony`)
+        .toMatch(/ceremony/i);
+      checked++;
+    }
+    // And the same over a NOMINEE winner, which is the only board that reaches
+    // `REMOVED_SELF` — the pool the swept board above cannot touch.
+    for (const v of [0, 0.2, 0.4, 0.6, 0.8, 0.99]) {
+      const out = runRoulette({
+        entrants: ['Chase'], house: NAMES, nominees: ['Chase', 'Ripper'],
+        hoh: 'Scary', rng: seq([0, v, v, v, v]),
+      });
+      expect(out.winner).toBe('Chase');
+      expect(out.removed, 'a nominee winner takes themselves down').toBe('Chase');
+      for (const b of out.beats) {
+        expect(b.text, `a beat still promises safety for the week: ${b.text}`)
+          .not.toMatch(/safe for the week|safe for the rest of the week|no way back up|does not have to survive|off every list/i);
+      }
+      const off = out.beats.find(b => b.badgeText === 'OFF THE BLOCK');
+      expect(off, 'no beat narrated the self-removal').toBeTruthy();
+      expect(off.text, `variant ${v}: the self-removal beat does not defer to the ceremony`)
+        .toMatch(/ceremony/i);
+      checked++;
+    }
+    expect(checked).toBe(12);
   });
 
   it('refuses a one-name block, which is why the chair is not emptied', () => {

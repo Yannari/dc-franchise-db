@@ -3667,6 +3667,30 @@ export function simulateBBWeek(options = {}) {
     } catch {
       // The week runs without the room. Nothing downstream requires it: the
       // ceremony reads `week.highRollers?.entries` and finds nothing.
+      //
+      // ── THE EXPOSURE THIS CATCH CARRIES, STATED RATHER THAN HIDDEN ──
+      //
+      // `openRoom` charges on the way in: it calls `spend` and `recordPlay` for
+      // every entrant in its first pass, BEFORE the game resolves. So a throw
+      // out of the resolver (or anything after the door) lands here with `gs`
+      // already mutated — houseguests down 125 with their one seat at that game
+      // burned for the season — and this line then deletes the act, so there is
+      // no beat, no transcript line and nothing on any screen. The money is
+      // gone invisibly, which is worse than a loud failure.
+      //
+      // Not rolled back, deliberately, and the reason is the room's own rule:
+      // the money leaving on the way in is never refunded, and week.js is the
+      // wrong place to reverse it anyway — it would need `openRoom` to publish
+      // who it charged before it failed, which is new state on `gs` and a new
+      // serialisation surface for a branch that cannot fire today (the only
+      // resolver on the menu, `rouletteResolver`, has no throwing path). The
+      // alternative — synthesising an all-lose night — invents a result nobody
+      // played for.
+      //
+      // If a second game lands on the menu, or the Roulette grows a path that
+      // can throw, this stops being theoretical: fix it in `high-rollers-room.js`
+      // by making PASS TWO resilient, so the act (and the losses it narrates)
+      // survives the resolver rather than being swallowed here.
       week.highRollers = null;
     }
   }

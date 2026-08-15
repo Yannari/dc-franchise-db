@@ -68,15 +68,37 @@ describe('the weekly payout', () => {
   });
 
   // A whole season's income must not comfortably clear the menu, or a purchase
-  // stops being a sacrifice and the room becomes a shop. Sixteen weeks at the
-  // top tier should just about reach the 250 Coin and nothing beyond it; a
-  // floor houseguest should never get there at all.
+  // stops being a sacrifice and the room becomes a shop.
+  //
+  // THE SEASON MODEL, WHICH THIS TEST PREVIOUSLY GOT WRONG BY ~40%.
+  // It asserted "16 weeks" against a cast of 16, reading the season length off
+  // `stampThemeArc` (`cast - 3` = 13) and then not even that. The weeks that
+  // actually PAY are fewer again, because `awardWeeklyBucks` returns null below
+  // a house of seven: at one eviction a week that is `cast - 6` weeks, ten on a
+  // cast of sixteen. Written as a derivation rather than a literal so the next
+  // rescale is checked against the real season and not a remembered one.
+  const payoutWeeks = cast => Math.max(0, cast - 6);
+
   it('prices a season so that the most-watched houseguest can afford ONE big thing', () => {
-    const WEEKS = 16, COIN = 250, ROULETTE = 125;
-    expect(TOP.amount * WEEKS).toBeGreaterThanOrEqual(COIN);
-    expect(TOP.amount * WEEKS).toBeLessThan(COIN + ROULETTE);
-    expect(FLOOR.amount * WEEKS).toBeLessThan(COIN);
-    expect(FLOOR.amount * WEEKS).toBeGreaterThanOrEqual(ROULETTE);
+    const COIN = 250, ROULETTE = 125;
+    const W = payoutWeeks(16);                         // ten
+    expect(W).toBe(10);
+    // The ceiling — every week at the top of the vote, which nobody achieves —
+    // is one Coin and nothing else. Above `COIN + ROULETTE` and the season's
+    // best-loved houseguest stops having to choose.
+    expect(TOP.amount * W).toBeGreaterThanOrEqual(COIN);
+    expect(TOP.amount * W).toBeLessThan(COIN + ROULETTE);
+    // The floor is a Roulette and never a Coin, on the LONG cast. On sixteen a
+    // floor-every-week houseguest banks 140 — over the price of the wheel, and
+    // a long way under the Coin.
+    expect(FLOOR.amount * payoutWeeks(20)).toBeLessThan(COIN);
+    expect(FLOOR.amount * W).toBeGreaterThanOrEqual(ROULETTE);
+    // And the room has to be attendable while it is OPEN, which is the failure
+    // 18/14/10 shipped with: the three nights are anchored at houses 11/10/9,
+    // so on a cast of sixteen they land on weeks 6, 7 and 8 with that many
+    // payouts banked. A middling houseguest — the floor plus a couple of good
+    // weeks — must be able to walk through that door by the third night.
+    expect(FLOOR.amount * 8 + (TOP.amount - FLOOR.amount) * 2).toBeGreaterThanOrEqual(ROULETTE);
   });
 
   it('pays every houseguest exactly once', () => {

@@ -43,23 +43,53 @@ import { stableRng } from './knowledge.js';
  * has to ration is a scoreboard.
  *
  * So the tiers are rescaled and the canon PRICES are kept (Roulette 125, Derby
- * 50, Coin 250), which puts the season back where the show had it:
+ * 50, Coin 250).
  *
- *   16 weeks, top tier    ~288 — can buy the Coin, and then nothing else, ever
- *   16 weeks, floor       ~160 — can buy the Roulette; will never see the Coin
- *    9 weeks, anybody     under 170 — the Coin is not in this season at all
+ * ── THE ARITHMETIC, DONE PROPERLY THIS TIME ────────────────────────────
  *
- * A short season being a poor house is correct rather than a rough edge: fewer
- * weeks of an audience watching you is less money, and the room shrinks to
- * match.
+ * The first rescale set 18/14/10 on a season model that was wrong by about
+ * forty per cent, so it is written out here in full rather than summarised:
+ *
+ *   A season is `cast - 3` weeks (`stampThemeArc`, js/bb/themes.js).
+ *   This function pays NOTHING below a house of seven, so the weeks that
+ *   actually pay are `cast - 6`, not `cast - 3`.
+ *   The room's three nights are anchored `fromEnd` 8/7/6, which is weeks
+ *   `cast-10`, `cast-9`, `cast-8` — houses of ELEVEN, TEN and NINE.
+ *   The payout runs early in the week (week.js), so the night's own payout is
+ *   already banked when the door opens: N payouts standing at week N.
+ *
+ * Measured over 40,000 seasons per cast, uniform draws (the default popularity
+ * map makes every weight equal), at 26/20/14:
+ *
+ *   cast 20 — 14 payout weeks. Nights at weeks 10/11/12: mean 176 / 196 / 216.
+ *             The whole house can enter on NIGHT ONE.
+ *   cast 16 — 10 payout weeks. Nights at weeks 6/7/8: mean 108 / 128 / 148,
+ *             and 12% / 57% / 94% of the house holding the 125.
+ *   cast 12 —  6 payout weeks. Nights at weeks 2/3/4: mean 37 / 57 / 77.
+ *             NOBODY can enter, on any of the three nights.
+ *
+ * The cast-12 door opening onto an empty floor is NOT a tier problem and must
+ * not be fixed by raising these: the nights are end-anchored, so on a short
+ * season they land in weeks two, three and four, and no weekly amount that
+ * leaves the room affordable at cast 16 can also bank 125 by week two. Making
+ * a twelve reach the room means moving the ANCHORS or the PRICE. `ROOM_EMPTY`
+ * in high-rollers-room.js narrates the empty floor, which is the honest way to
+ * carry it until then.
+ *
+ * The 250 Coin, for the plan that prices it into the room: unreachable at cast
+ * 16 (mean 169 on its night, 0 seasons in 40,000 with anybody at 250) and
+ * reachable at cast 20 (mean 236, somebody holds 250 in 88% of seasons). It
+ * first becomes reachable at all around cast 18, and only rarely (3%). So the
+ * Coin is a big-cast product, and anybody who spent 125 on a Roulette has put
+ * it out of reach for the season — which is the choice the theme wants.
  *
  * Nothing downstream may hardcode these. Every surface — the transcripts, the
  * chip band, the tests — reads them from here, so the next rescale is this
  * constant and nothing else.
  */
 export const PAYOUT_TIERS = Object.freeze([
-  Object.freeze({ count: 3, amount: 18, tier: 'top' }),
-  Object.freeze({ count: 3, amount: 14, tier: 'middle' }),
+  Object.freeze({ count: 3, amount: 26, tier: 'top' }),
+  Object.freeze({ count: 3, amount: 20, tier: 'middle' }),
 ]);
 
 /**
@@ -71,7 +101,7 @@ export const PAYOUT_TIERS = Object.freeze([
  * `count` and this one is "the rest", and folding it in would make every
  * consumer that iterates the tiers pay the floor three times.
  */
-export const FLOOR_TIER = Object.freeze({ amount: 10, tier: 'floor' });
+export const FLOOR_TIER = Object.freeze({ amount: 14, tier: 'floor' });
 const FLOOR = FLOOR_TIER;
 
 /** Every amount the floor can pay, high to low. For anything asserting on them. */

@@ -215,35 +215,58 @@ function chooseRemoval({ name, nominees, rng }) {
 //   3. if no eligible chair exists the block does not move at all — nobody
 //      down, nobody up — and a winner who was already nominated stays nominated.
 
+// ── AND NOTHING IN HERE SAYS THE BLOCK HAS ALREADY MOVED ────────────────
+//
+// These beats ride out on the ROOM act, which happens the night the door
+// opens — after nominations and BEFORE the veto competition. The engine does
+// not touch the block until the veto ceremony (`js/bb/week.js`, the
+// `_roulette` block), which is two days of house later and can decline to
+// perform any of it: `week.rouletteVoid` is set when a name has stopped being
+// legal by then, most often because the name the wheel spun went on to WIN the
+// veto. That is not a corner — the wheel spins before the veto is played, so
+// every winning week is a week where the swap is still pending.
+//
+// So the tense is fixed, in all four pools: THE WHEEL HAS DECIDED, THE
+// CEREMONY PERFORMS IT. A removal beat says the name is coming down at the
+// ceremony; a landing beat says the ceremony will seat that name. None of them
+// says a nominee "is safe", "is off the block" or "is a replacement nominee",
+// because at the moment the house hears these sentences none of that is true
+// yet and on a void week none of it becomes true at all.
+//
+// The house-facing word for the performing event is "the ceremony" (or "the
+// veto ceremony"). "Thursday" is used only as the week's HORIZON — how long the
+// replacement-chair protection lasts — never as the thing that moves the block,
+// because the ceremony is the veto meeting and the vote is Thursday.
+
 const WON = [
-  (n, p) => `The wheel comes up for ${n}. No ceremony this week can write ${p.posAdj} name into an empty chair, ${p.sub} is holding the block in ${p.posAdj} hands, and ${p.sub} has not chosen a single thing about what happens next.`,
-  (n, p) => `${n} wins the Chopping Block Roulette. Nobody can name ${p.obj} as a replacement nominee between now and Thursday, and ${p.sub} is the one person in this house who gets to take somebody off that block.`,
-  (n, p) => `It lands. ${n} bought a seat at a wheel and the wheel paid — a name no replacement chair can be filled with, and the power to empty one.`,
+  (n, p) => `The wheel comes up for ${n}. No ceremony between now and Thursday can write ${p.posAdj} name into a replacement chair, the wheel has decided the rest of it, and ${p.sub} has not chosen a single thing about what happens next.`,
+  (n, p) => `${n} wins the Chopping Block Roulette. Nobody can name ${p.obj} as a replacement nominee between now and Thursday, and if there is a legal name left for the chair, one of those nominees is coming down at the ceremony.`,
+  (n, p) => `It lands. ${n} bought a seat at a wheel and the wheel paid — a name no replacement chair can be filled with, and, chair permitting, a block that will not look the same after the ceremony.`,
   (n, p) => `${n} clears it. ${p.Sub} came in with a hundred and twenty-five and comes out untouchable at the replacement chair, whatever else this week decides to do to ${p.obj}.`,
-  (n, p) => `The Roulette goes ${n}'s way. Whoever comes down today it will not be ${p.obj} going up in their place — and ${p.sub} is about to rearrange the block for a house that did not ask ${p.obj} to.`,
+  (n, p) => `The Roulette goes ${n}'s way. Whoever the wheel has picked to come down, it will not be ${p.obj} going up in their place — and it is the ceremony that has to carry any of it out.`,
 ];
 
 const REMOVED_SELF = [
-  (n, p, w) => `${n} takes ${p.ref} down. ${p.Sub} was on that block an hour ago and now ${p.sub} is the one thing on it nobody can touch.`,
-  (n, p, w) => `The first name off the block is ${n}'s own. ${w} put ${p.obj} there on Sunday and does not get to put ${p.obj} back.`,
-  (n, p) => `${n} steps off ${p.posAdj} own block. It is the shortest walk anybody has made all week and the loudest.`,
-  (n, p, w) => `${n} comes down. ${w} watches it happen from six feet away, which is as close as ${w} will get to having a say in any of this.`,
+  (n, p, w) => `The name the wheel takes off that block is ${n}'s own. ${p.Sub} is a nominee right up until the ceremony, and after it ${p.sub} is a name no ceremony this week can put back.`,
+  (n, p, w) => `${n} has taken ${p.ref} down, and the ceremony is where the house gets to watch it. ${w} put ${p.obj} there on Sunday and does not get to put ${p.obj} back.`,
+  (n, p) => `${n} is stepping off ${p.posAdj} own block at the ceremony. It will be the shortest walk anybody makes all week and the loudest.`,
+  (n, p, w) => `${n} comes down when the ceremony says so, and not a moment before. ${w} will watch it happen from six feet away, which is as close as ${w} ever gets to having a say in any of this.`,
 ];
 
 const REMOVED_OTHER = [
-  (n, p, saved, w) => `${n} takes ${saved} off the block. ${saved} is safe for the rest of the week — no chair, no ceremony, no way back up — and ${w} has to stand there for it.`,
-  (n, p, saved) => `${n} says ${saved}'s name. That is ${saved} done with the block until Thursday, and done with it for good.`,
-  (n, p, saved, w) => `The chair ${saved} was sitting in is empty. ${n} emptied it, and ${w} did not get asked.`,
-  (n, p, saved) => `${n} pulls ${saved} down. ${p.Sub} does not explain it, and by the time anybody asks, the wheel is already turning again.`,
-  (n, p, saved, w) => `${saved} comes off the block. ${n} bought the right to do that, and ${w} spends the rest of the ceremony working out what it cost ${p.obj} in ${w === n ? 'money' : 'goodwill'}.`,
+  (n, p, saved, w) => `${n} takes ${saved} off the block — not tonight, but at the ceremony, which is the first moment any of this stops being a wheel. ${w} has until then to watch it coming.`,
+  (n, p, saved) => `${n} says ${saved}'s name. That is ${saved} due to come down at the ceremony, and it is not ${n}'s to take back or anybody else's to argue with.`,
+  (n, p, saved, w) => `The chair ${saved} is sitting in will be empty by the end of the ceremony. ${n} is the one emptying it, and ${w} did not get asked.`,
+  (n, p, saved) => `${n} pulls ${saved}'s name out of the wheel. ${p.Sub} does not explain it, and by the time anybody asks, the wheel is turning again — the ceremony is where it comes to rest.`,
+  (n, p, saved, w) => `${saved} is coming off the block at the ceremony. ${n} bought the right to do that, and ${w} will spend the rest of the week working out what it cost ${p.obj} in ${w === n ? 'money' : 'goodwill'}.`,
 ];
 
 const LANDED = [
-  (r, rp, n) => `The wheel slows, and it stops on ${r}. Nobody put ${rp.obj} there. Not ${n}, not the Head of Household, not a plan anybody made — the room did it, and the room does not explain itself.`,
-  (r, rp) => `It lands on ${r}. ${rp.Sub} is a replacement nominee, chosen by nothing, and there is not one person in this house ${rp.sub} can be angry at for it.`,
-  (r, rp, n) => `${r}. ${rp.Sub} has been sitting on the sofa all afternoon with nothing to do with any of this, and now ${rp.sub} is on the block, and ${n} is as surprised as ${rp.sub} is.`,
-  (r, rp) => `The wheel picks ${r}. No hand on it, no name whispered, no deal behind it. Just a chair that needed filling and a house full of people who all had exactly the same odds.`,
-  (r, rp, n, w) => `${r} goes up. ${w} has spent all week building a plan around who sits in that chair, and the chair was filled by a wheel.`,
+  (r, rp, n) => `The wheel slows, and it stops on ${r}. Nobody put ${rp.obj} there. Not ${n}, not the Head of Household, not a plan anybody made — and at the ceremony that name gets read out as though somebody had.`,
+  (r, rp) => `It lands on ${r}. ${rp.Sub} is the replacement nominee the ceremony will seat, chosen by nothing, and there is not one person in this house ${rp.sub} can be angry at for it.`,
+  (r, rp, n) => `${r}. ${rp.Sub} has been sitting on the sofa all afternoon with nothing to do with any of this, and at the ceremony ${rp.sub} goes up, and ${n} is as surprised as ${rp.sub} is.`,
+  (r, rp) => `The wheel picks ${r}. No hand on it, no name whispered, no deal behind it. Just a chair that will need filling at the ceremony and a house full of people who all had exactly the same odds.`,
+  (r, rp, n, w) => `${r} is the name that will be in that chair when the ceremony is over. ${w} has spent all week building a plan around who sits in it, and it is being filled by a wheel.`,
 ];
 
 // The cruellest night this game has, and it is stated rather than softened.
@@ -411,6 +434,16 @@ export function runRoulette({ entrants = [], house = [], nominees = [], hoh = nu
     // fire today — but an undefined name reaching the ceremony is the exact
     // failure this module is written to make impossible, and a guard is cheaper
     // than a dead season.
+    //
+    // IF YOU EVER MAKE THIS REACHABLE, MOVE THE REMOVAL BELOW THE SPIN.
+    // The `OFF THE BLOCK` beat six lines up has already told the house a
+    // nominee is coming down, and this branch returns `removed: null` — so the
+    // night would narrate a removal the ceremony then never performs, which is
+    // the same defect the tense fix in the narration pools exists to close.
+    // Any change that lets `spinReplacement` fail on a non-empty `eligible`
+    // (a filter added inside it, a pool mutated between the two calls) has to
+    // push the removal beat below this point, so nothing is promised until
+    // both halves of the power are known to exist.
     beats.push(beat(pick(NO_CHAIR, draw)(name, p, noms.includes(name)), [name], 'NO CHAIR TO FILL', 'grey'));
     return { winner: name, removed: null, replacement: null, results, beats };
   }

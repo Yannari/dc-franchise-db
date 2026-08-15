@@ -285,7 +285,10 @@ const SHORT = [
 const ROOM_EMPTY = [
   (price) => `The High Roller's Room is open all night and not one person sits down in it. The price is ${price} and this house does not have it, which is a thing everybody now knows about everybody.`,
   (price, n) => `${n === 1 ? 'One houseguest walks' : `${n} houseguests walk`} up to that door tonight and ${n === 1 ? 'walks' : 'walk'} away from it again. The room takes ${price} to enter and the room stays empty.`,
-  (price) => `Nobody plays. The door is open, the ${price} is the ${price}, and a house that spent the season being paid in tens is standing on the wrong side of it.`,
+  // No amount is spelled out here on purpose: prose that names a tier is a
+  // silent second copy of `PAYOUT_TIERS`, and this line already said "tens"
+  // through one rescale that had stopped paying tens.
+  (price) => `Nobody plays. The door is open, the ${price} is the ${price}, and a house that has spent the season being paid in small change is standing on the wrong side of it.`,
   (price) => `The room opens onto an empty floor. Everybody who wanted in tonight counted what they had, came up short of ${price}, and went back to pretending they were never interested.`,
 ];
 

@@ -59,6 +59,22 @@
 // undefined) and the game's own beats are folded into the act's beats in the
 // order they happened. Task 3 reads the entries; nothing in here interprets
 // them, because the door still does not own the game.
+//
+// ── AND THEN WIDENED AGAIN: FIELD GAMES ─────────────────────────────────
+//
+// A resolver may also carry `resolvesField = true`, which means "I am a
+// COMPETITION, do not call me once per entrant — call me once with all of
+// them". It is handed `entrants` and returns `{results: {name: outcome}, beats}`.
+//
+// The Chopping Block Roulette is one of these and it has to be: at most one
+// person wins it, the highest score above the standard, and no amount of
+// stitching per-entrant results together afterwards can express that. The Veto
+// Derby (a later plan) is a field game too and pays out to its top six, which
+// is why this is a general contract and not a Roulette-shaped hole.
+//
+// The consequence for the room is that the door is now a separate PASS from the
+// game: everybody who is getting in gets in and pays, THEN the game runs, then
+// the verdicts are narrated. The money still leaves on the way in.
 
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
@@ -288,10 +304,13 @@ const beat = (text, who, badgeText, badgeClass = 'twist') =>
  * @param protectedNames everybody the week has already made safe — passed
  *                  straight through to the game, which needs it to know who
  *                  cannot be seated in a replacement chair.
- * @param play      injected game resolver
+ * @param play      injected game resolver. Per-entrant form:
  *                  `({name, game, week, house, nominees, hoh, protectedNames, rng})`
- *                  returning either a boolean or `{won, removed, replacement,
- *                  beats}`. Without it the menu id picks the engine.
+ *                  returning a boolean or `{won, removed, replacement, beats}`.
+ *                  Field form (`resolver.resolvesField === true`): called once
+ *                  with `{entrants, ...board, rng}` and returning
+ *                  `{results: {name: outcome}, beats}`. Without it the menu id
+ *                  picks the engine.
  * @param rng       the entry dice. Defaults to the week's seeded generator,
  *                  never Math.random — an unseeded draw anywhere in a season
  *                  means the same seed stops producing the same house, which
@@ -363,6 +382,14 @@ export function openRoom({ week, house = [], hoh = null, nominees = [], vetoHold
   const declined = [];
   const beats = [];
 
+  const seated = [];
+
+  // ── PASS ONE: THE DOOR ──
+  //
+  // Everybody who is getting in gets in, and pays, before any game runs. This
+  // pass is the whole of what the room owns, and separating it from the result
+  // is what lets a game be a COMPETITION: the Roulette cannot know who won
+  // until it knows who is in the room, so the room has to fill the room first.
   for (const { name } of approached) {
     const p = pronouns(name);
     if (!canAfford(name, game.price)) {
@@ -387,34 +414,60 @@ export function openRoom({ week, house = [], hoh = null, nominees = [], vetoHold
     // which is the tooth in the rule.
     recordPlay(name, game.id);
     beats.push(beat(pick(WALKED_IN, rng)(name, p, game.price), [name], 'WALKED IN', 'twist'));
+    seated.push(name);
+  }
 
-    // The game itself belongs to whoever injected it. The fallback draws on its
-    // own seeded dice rather than the caller's entry sequence, so a caller
-    // steering who walks in does not thereby steer who wins.
-    const gameRng = stableRng('high-rollers-game', gs?.bb?.seasonSalt || 0, week?.num || 0, game.id, name);
-    const resolver = play || GAME_ENGINES[game.id] || defaultPlay;
-    const outcome = normaliseOutcome(resolver({
-      name, game, week, rng: gameRng,
-      // The board, handed over whole. The door does not decide any of it — it
-      // only knows it, and a game that needs to know who is already safe
-      // should not have to go and read the week for itself.
-      house: room, hoh, nominees, protectedNames,
-    }));
-    const won = outcome.won;
+  // ── PASS TWO: THE GAME ──
+  //
+  // The board, handed over whole. The door does not decide any of it — it only
+  // knows it, and a game that needs to know who is already safe should not have
+  // to go and read the week for itself. The game's dice are its own, seeded but
+  // separate from the entry sequence, so a caller steering who walks in does
+  // not thereby steer who wins.
+  const resolver = play || GAME_ENGINES[game.id] || defaultPlay;
+  const board = { game, week, house: room, hoh, nominees, protectedNames };
+  const outcomes = {};   // name -> normalised outcome
+  const gameBeats = [];
 
-    // `removed` and `replacement` ride out on the entry as plain strings or
-    // null. Task 3 wires them into the nomination ceremony; nothing in this
-    // module reads them, because the door still does not own the game.
-    entries.push({ name, gameId: game.id, price: game.price, won,
+  if (seated.length && resolver.resolvesField) {
+    // A FIELD GAME. One call, all the entrants, one set of results. The
+    // Roulette is one: at most one person wins it, and it cannot know which
+    // until it has seen every score. Per-entrant resolution could not express
+    // that no matter how the results were stitched together afterwards.
+    const fieldRng = stableRng('high-rollers-game', gs?.bb?.seasonSalt || 0, week?.num || 0, game.id, 'field');
+    const field = resolver({ ...board, entrants: [...seated], rng: fieldRng }) || {};
+    for (const name of seated) outcomes[name] = normaliseOutcome(field.results?.[name]);
+    for (const b of (Array.isArray(field.beats) ? field.beats : [])) gameBeats.push(b);
+  } else {
+    // A PER-ENTRANT GAME, the original contract. Each seat resolves alone on
+    // its own dice, and a boolean is still a perfectly good answer.
+    for (const name of seated) {
+      const gameRng = stableRng('high-rollers-game', gs?.bb?.seasonSalt || 0, week?.num || 0, game.id, name);
+      const outcome = normaliseOutcome(resolver({ ...board, name, rng: gameRng }));
+      outcomes[name] = outcome;
+      for (const b of outcome.beats) gameBeats.push(b);
+    }
+  }
+
+  // ── PASS THREE: WHAT THE HOUSE SAW ──
+  //
+  // `removed` and `replacement` ride out on the entry as plain strings or null.
+  // In a field game exactly ONE entry can carry them, because exactly one
+  // person won; every other entry that week is a loss. Task 3 wires the names
+  // into the nomination ceremony; nothing in this module reads them, because
+  // the door still does not own the game.
+  for (const name of seated) {
+    const outcome = outcomes[name] || normaliseOutcome(false);
+    const p = pronouns(name);
+    entries.push({ name, gameId: game.id, price: game.price, won: outcome.won,
       removed: outcome.removed, replacement: outcome.replacement });
-    beats.push(won
+    beats.push(outcome.won
       ? beat(pick(WON, rng)(name, p), [name], 'PAID AND WON', 'gold')
       : beat(pick(LOST, rng)(name, p, game.price), [name], 'PAID AND LOST', 'bad'));
-    // The game's own beats come after the room's verdict, in the order the
-    // game produced them — the house sees somebody come out of that room
-    // before it sees what they came out with.
-    for (const b of outcome.beats) beats.push(b);
   }
+  // The game's own beats come after the room's verdicts — the house sees who
+  // came out of that room before it hears what happened inside it.
+  for (const b of gameBeats) beats.push(b);
 
   // ── THE DOOR OPENED AND NOBODY COULD PAY ────────────────────────────
   //

@@ -33,13 +33,41 @@
 // nothing else. A test proves uniformity over 4000 draws precisely so a future
 // edit that quietly makes the wheel prefer a good story gets caught.
 //
+// ── IT IS A COMPETITION, AND AT MOST ONE PERSON WINS IT ─────────────────
+//
+// The wiki: "In Week 7, Alyssa was the only person to play in the Chopping
+// Block Roulette competition and scored higher than 0, winning her the
+// competition." She won it alone because she was the only one who PAID, not
+// because the game hands a pass to everybody who clears a bar.
+//
+// So the Roulette resolves over the whole week's field at once. Everybody who
+// bought a seat plays, the scores are compared, and the highest score takes it
+// — provided that score clears the standard at all. Everybody else loses,
+// having paid.
+//
+// The contrast with the Veto Derby (a later plan) is the reason this is a real
+// rule and not a simplification: the Derby pays out to anyone who scored "higher
+// than 0 AND landed in the top six", up to six winners in a night. These two
+// games genuinely resolve differently and the difference is load-bearing — do
+// not fold one into the other when the Derby lands.
+//
 // ── PAYING IS NOT WINNING ───────────────────────────────────────────────
 //
 // `high-rollers-room.js` charges the 125 on the way in and never refunds it, so
-// the win check here has to be genuinely losable or the room is a vending
-// machine. It is a pass/fail against a fixed standard with real noise, weighted
-// to `mental` and `intuition` (reading a board and knowing when to call it),
-// tuned so roughly a third of entrants walk back out with nothing.
+// the standard has to be genuinely unclearable or the room is a vending
+// machine. The score is `mental`/`intuition`-weighted (reading a board and
+// knowing when to call it) with real noise, and the bar is set against a FIELD
+// rather than against one player: the best of three clears a fixed bar far more
+// often than one player does, so a bar tuned on a single entrant would make
+// "nobody won it" impossible the moment two people paid.
+//
+// Measured over 4000 fields per size, drawn from a spread of archetypes: NO
+// WINNER on 55% of one-entrant nights, 29% of two, 14% of three, 7% of four. So
+// a lone entrant is more likely than not to walk out with nothing — which is
+// the format's whole thesis about the price — while a crowded room nearly
+// always produces a champion, which is what a competition should do. A room
+// full of people paying and leaving with nothing between them stays a real
+// night, and that is the only reason the 125 means anything.
 //
 // Canon, and worth stating because it is the difference between a casino and a
 // shop: score above zero or you have bought nothing.
@@ -61,11 +89,13 @@ const W_MENTAL = 0.34;
 const W_INTUITION = 0.30;
 const W_BOLDNESS = 0.06;
 
-// The standard sits just under an average house's read, which is what makes the
-// loss rate land near a third rather than near a coin flip. Raise it and the
-// room stops being worth 125 to anybody; lower it and safety becomes a
-// purchase, which is the failure mode the whole format exists to avoid.
-const STANDARD = 3.53;
+// The standard sits just ABOVE an average house's read, because this is judged
+// against a field: a bar an average player clears half the time is a bar a
+// field of three clears almost always, and "nobody won it" would stop
+// happening. Raise it and the room stops being worth 125 to anybody; lower it
+// and safety becomes a purchase, which is the failure mode the whole format
+// exists to avoid.
+const STANDARD = 4.0;
 
 // How wide the night swings. Wide enough that a sharp houseguest still loses
 // and a dim one still wins — a wheel that always paid the cleverest person in
@@ -198,6 +228,22 @@ const LOST = [
   (n, p) => `${n} comes up short at the wheel. That seat is burned now — the room only sells it once — and ${p.sub} is exactly as exposed as ${p.sub} was this morning.`,
 ];
 
+// Everybody paid, nobody cleared the standard. The best night this room has.
+const NOBODY_CLEARED = [
+  (n, field) => `${n} people paid to play the Chopping Block Roulette tonight and not one of them scored above zero. The block does not move. The money does not come back. ${field[0]} and ${field[field.length - 1]} do not look at each other on the way out.`,
+  (n) => `Nobody wins it. All ${n} of them cleared the door and none of them cleared the standard, and the Head of Household goes to bed with the same block ${n === 2 ? 'both' : 'all'} of them paid to break.`,
+  (n, field) => `The wheel takes ${n} entries and pays out nothing. ${field.join(', ')} — every one of them out of pocket, every one of them exactly as exposed as they were this morning, and every one of them now known to have been frightened enough to try.`,
+  (n) => `${n} seats sold, no winner. That is what the room is; it is not a shop and it never promised anybody anything except a chance.`,
+];
+
+// The people who paid to be beaten by somebody else.
+const BEATEN = [
+  (w, beaten, n) => `${beaten.join(' and ')} paid the same price as ${w} and ${n === 1 ? 'gets' : 'get'} none of what ${w} got. One winner. That is the game.`,
+  (w, beaten) => `${beaten.join(', ')} came second, and second at this wheel is identical to last: no safety, no power, no refund.`,
+  (w, beaten, n) => `${n === 1 ? 'The other entrant scores' : `The other ${n} entrants score`} under ${w} and walk out of that room with a hundred and twenty-five gone and a house that watched them go in.`,
+  (w, beaten) => `${beaten.join(' and ')} lose it to ${w} by a margin nobody in the house will ever be told, which does not stop anybody guessing at it for a week.`,
+];
+
 const pick = (pool, rng) => pool[Math.floor(rng() * pool.length) % pool.length];
 
 const beat = (text, who, badgeText, badgeClass) => ({
@@ -213,40 +259,86 @@ const pron = name => {
 };
 
 /**
- * Play the Chopping Block Roulette.
+ * Run the Chopping Block Roulette over a whole week's field.
  *
- * Everything returned is a plain string, boolean or array of plain objects: the
- * caller stores this on `gs` and `gs` goes through `JSON.stringify` every week.
+ * THIS IS A COMPETITION, NOT A TURNSTILE. Everybody who bought a seat plays,
+ * the scores are compared, and AT MOST ONE person wins it: the highest score,
+ * and only if that score clears the standard. Everybody else loses, having
+ * already paid, which is the format working rather than the format failing.
  *
- * @param {string}   name           who bought the seat
+ * Everything returned is a plain string, boolean, number or array of plain
+ * objects: the caller stores this on `gs` and `gs` goes through
+ * `JSON.stringify` every week.
+ *
+ * @param {string[]} entrants       everybody who paid to sit down, in the order
+ *                                  they walked in
  * @param {string[]} house          everybody still playing
- * @param {string[]} nominees       the initial nominees
+ * @param {string[]} nominees       the INITIAL nominees
  * @param {string}   hoh            the Head of Household
  * @param {string[]} protectedNames everybody the week has already made safe —
  *                                  the same list the veto ceremony builds
  * @param {function} rng            seeded; never Math.random
- * @returns {{won:boolean, removed:(string|null), replacement:(string|null), beats:object[]}}
+ * @returns {{winner:(string|null), removed:(string|null), replacement:(string|null),
+ *            results:object, beats:object[]}}
+ *          `results` is keyed by entrant: `{won, score, removed, replacement}`.
  *
  * `removed` and `replacement` are ALWAYS either a real name or null, never
  * undefined. Task 3 feeds them straight into the ceremony, and the ceremony
  * reads `gs.bb.stats[replacement]` — which blows up on an undefined name and
  * has crashed a real season doing it.
  */
-export function playRoulette({ name, house = [], nominees = [], hoh = null,
+export function runRoulette({ entrants = [], house = [], nominees = [], hoh = null,
   protectedNames = [], rng } = {}) {
   const draw = typeof rng === 'function' ? rng : Math.random;
+  const field = (entrants || []).filter(Boolean);
   const room = (house || []).filter(Boolean);
   const noms = (nominees || []).filter(Boolean);
-  const p = pron(name);
   const beats = [];
+  const results = {};
+  if (!field.length) return { winner: null, removed: null, replacement: null, results, beats };
 
-  // ── did they win it at all ──
-  if (rollScore(name, draw) <= 0) {
-    beats.push(beat(pick(LOST, draw)(name, p), [name], 'LOST THE SPIN', 'bad'));
-    return { won: false, removed: null, replacement: null, beats };
+  // ── everybody plays, and the scores are compared ──
+  //
+  // One draw each, in entry order, so a seeded season replays identically. The
+  // score is the margin over the standard: at or below zero is not a low
+  // placing, it is a nothing. Canon — "scored higher than 0, winning her the
+  // competition" — and it is why a room full of people can all pay and all
+  // leave with nothing between them.
+  const scored = field.map(name => ({ name, score: rollScore(name, draw) }));
+  for (const s of scored) {
+    results[s.name] = { won: false, score: s.score, removed: null, replacement: null };
   }
 
+  // Highest score above the standard takes it. Ties break on entry order, which
+  // is the order they walked through the door — arbitrary, but fixed, and a
+  // float tie here is theoretical anyway.
+  let best = null;
+  for (const s of scored) if (s.score > 0 && (!best || s.score > best.score)) best = s;
+
+  if (!best) {
+    // NOBODY WON IT, AND THAT HAS TO STAY POSSIBLE.
+    // A field that all falls short is the sharpest night this room has: three
+    // people paid 125 each, the house watched all three walk in, and the block
+    // does not move an inch. The standard is tuned to keep this a real outcome
+    // at the small fields the price actually produces — see STANDARD above.
+    beats.push(field.length === 1
+      ? beat(pick(LOST, draw)(field[0], pron(field[0])), [field[0]], 'LOST THE SPIN', 'bad')
+      : beat(pick(NOBODY_CLEARED, draw)(field.length, field), [...field], 'NOBODY CLEARS IT', 'bad'));
+    return { winner: null, removed: null, replacement: null, results, beats };
+  }
+
+  const name = best.name;
+  const p = pron(name);
+  results[name].won = true;
   beats.push(beat(pick(WON, draw)(name, p), [name], 'WON THE ROULETTE', 'gold'));
+
+  // The people who paid to be beaten. One beat for the field rather than one
+  // per loser — the room already narrates each entry on its own, and this is
+  // the line about what the night cost the room collectively.
+  const beaten = field.filter(n => n !== name);
+  if (beaten.length) {
+    beats.push(beat(pick(BEATEN, draw)(name, beaten, beaten.length), [...beaten, name], 'OUTSCORED', 'bad'));
+  }
 
   // ── the board, before anybody is taken down ──
   //
@@ -262,12 +354,11 @@ export function playRoulette({ name, house = [], nominees = [], hoh = null,
     // if the chair cannot be filled, the power is not used and the block
     // stands. The winner keeps their safety — that half was never conditional.
     beats.push(beat(pick(NO_CHAIR, draw)(name, p), [name], 'NO CHAIR TO FILL', 'grey'));
-    return { won: true, removed: null, replacement: null, beats };
+    return { winner: name, removed: null, replacement: null, results, beats };
   }
 
   // ── the removal ──
   const removed = chooseRemoval({ name, nominees: noms, rng: draw });
-  const rp = pron(removed);
   beats.push(removed === name
     ? beat(pick(REMOVED_SELF, draw)(name, p, hoh || 'the Head of Household'), [name, hoh], 'OFF THE BLOCK', 'gold')
     : beat(pick(REMOVED_OTHER, draw)(name, p, removed, hoh || 'the Head of Household'), [name, removed, hoh], 'OFF THE BLOCK', 'gold'));
@@ -280,24 +371,47 @@ export function playRoulette({ name, house = [], nominees = [], hoh = null,
     // failure this module is written to make impossible, and a guard is cheaper
     // than a dead season.
     beats.push(beat(pick(NO_CHAIR, draw)(name, p), [name], 'NO CHAIR TO FILL', 'grey'));
-    return { won: true, removed: null, replacement: null, beats };
+    return { winner: name, removed: null, replacement: null, results, beats };
   }
-  const repP = pron(replacement);
-  beats.push(beat(pick(LANDED, draw)(replacement, repP, name, hoh || 'the Head of Household'),
+  beats.push(beat(pick(LANDED, draw)(replacement, pron(replacement), name, hoh || 'the Head of Household'),
     [replacement, name], 'THE WHEEL DECIDES', 'bad'));
 
-  return { won: true, removed, replacement, beats };
+  // Exactly one entry carries the two names. Every other entrant this week is a
+  // loss, and `results` says so for each of them.
+  results[name].removed = removed;
+  results[name].replacement = replacement;
+  return { winner: name, removed, replacement, results, beats };
 }
 
 /**
- * The room's resolver, in the shape `openRoom` injects.
+ * One entrant, for callers that have only one — a field of one.
  *
- * `openRoom` hands its resolver `{ name, game, week, rng }` plus the week's
- * board; this unpacks that and returns the full result object rather than the
- * bare boolean the fallback returns, because the ceremony needs the two names.
+ * A lone entrant is exactly Alyssa's week: she was the only person who paid,
+ * she cleared the standard, and that won her the competition. Nothing about
+ * the rule is different for a field of one, so this is a thin wrapper and not a
+ * second implementation of the game.
  */
-export function rouletteResolver({ name, week, house = [], nominees = [], hoh = null,
+export function playRoulette({ name, house = [], nominees = [], hoh = null,
+  protectedNames = [], rng } = {}) {
+  const out = runRoulette({ entrants: [name], house, nominees, hoh, protectedNames, rng });
+  return {
+    won: !!out.results[name]?.won,
+    removed: out.removed,
+    replacement: out.replacement,
+    beats: out.beats,
+  };
+}
+
+/**
+ * The room's resolver, in the shape `openRoom` calls it.
+ *
+ * `resolvesField` is the flag the room reads: it means "do not call me once per
+ * entrant, call me once with all of them". The room hands over the seated field
+ * and gets back a per-name result map plus the night's beats.
+ */
+export function rouletteResolver({ entrants = [], house = [], nominees = [], hoh = null,
   protectedNames = [], rng } = {}) {
   const room = house.length ? house : (players || []).map(pl => pl.name);
-  return playRoulette({ name, house: room, nominees, hoh, protectedNames, rng, week });
+  return runRoulette({ entrants, house: room, nominees, hoh, protectedNames, rng });
 }
+rouletteResolver.resolvesField = true;

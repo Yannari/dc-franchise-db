@@ -2418,10 +2418,35 @@ export function generateFinaleSummaryText(ep) {
 // The seated jury respects the configured jurySize: only the most recent N
 // eliminees sit (earlier post-merge boots are pre-jury). Without this the jury
 // was every post-merge eliminee, ignoring the setting.
+/**
+ * A Big Brother jury votes in odd numbers.
+ *
+ * Nothing enforced that anywhere: `jurySize` is read straight off the config,
+ * the cast screen takes whatever integer is typed into it, and a short season
+ * can seat fewer people than the config asks for. An even jury can therefore
+ * deadlock, and the deadlock had no rule behind it — the winner fell out of
+ * `finalTwo.sort()` keeping index 0 on a zero comparator, which silently
+ * handed every tie to the final Head of Household with nothing on any screen
+ * saying so.
+ *
+ * Odd is the prevention. When a jury would seat an even number, the FIRST
+ * person evicted into it loses the vote — the same direction the size clamp
+ * below already truncates in, keeping the most recent evictees.
+ *
+ * Total Drama is deliberately left alone. Its finale runs its own tiebreak
+ * ladder — a revote, a shared title, a deciding vote from the finalist who was
+ * cut — and it can seat three finalists, so ties there are reachable on an odd
+ * jury too and the ladder is load-bearing rather than dead.
+ */
+function oddSeats(jury) {
+  if (seasonConfig.format !== 'big-brother') return jury;
+  return jury.length % 2 === 0 ? jury.slice(1) : jury;
+}
+
 export function seatedJury() {
   const jury = [...new Set(gs.jury || [])];
   const size = seasonConfig.jurySize;
-  return (size && jury.length > size) ? jury.slice(-size) : jury;
+  return oddSeats((size && jury.length > size) ? jury.slice(-size) : jury);
 }
 
 // What this juror actually respects in a game — derived from their stats and

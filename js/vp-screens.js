@@ -26075,10 +26075,15 @@ export function rpBuildBBJuryVote(ep) {
     <div class="bbjv-conf">${Array.from({ length: 26 }, (_, i) =>
       `<i style="left:${(i * 3.8) % 100}%;animation-delay:${(i % 9) * 0.22}s;background:${
         ['#f0a500', '#fff', '#58a6ff', '#f85149'][i % 4]}"></i>`).join('')}</div>
-    <div class="bbjv-by">BY A VOTE OF ${tally.map(([, v]) => v).join('–')}</div>
+    <div class="bbjv-by">${act.tiebreak ? 'A TIED JURY' : `BY A VOTE OF ${tally.map(([, v]) => v).join('–')}`}</div>
     <figure>${_bbAvatar(act.winner, 150)}</figure>
     <h3>${_bbEsc(act.winner || '')}</h3>
     <div class="bbjv-wins">WINS THE SEASON</div>
+    ${act.tiebreak?.line
+    // A split jury still produces a winner, and the screen has to say why.
+    // Announcing "BY A VOTE OF 3–3" and then crowning somebody is the screen
+    // keeping a rule to itself.
+    ? `<div class="bbjv-ru" style="color:#f0a500">${_bbEsc(act.tiebreak.line)}</div>` : ''}
     ${act.runnerUp ? `<div class="bbjv-ru">${_bbEsc(act.runnerUp)} finishes second — ${
       (act.votes || {})[act.runnerUp] || 0} vote${((act.votes || {})[act.runnerUp] || 0) === 1 ? '' : 's'}.</div>` : ''}
     ${swung.size ? `<div class="bbjv-swung">${[...swung].join(', ')} decided it in that room tonight.</div>` : ''}

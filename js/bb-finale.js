@@ -631,9 +631,36 @@ export function simulateBBFinale(rng = Math.random) {
   }
   const verdict = simulateJuryVote(finalTwo, adjustments);
   const votes = verdict.votes || {};
-  const winner = finalTwo.slice().sort((a, b) => (votes[b] || 0) - (votes[a] || 0))[0];
+
+  // ── a deadlocked jury ──
+  //
+  // Juries are seated odd (see seatedJury), so this is the case where a season
+  // could not seat enough people to make an odd panel. It still needs an
+  // answer, and it used to have one by accident: `finalTwo.sort()` keeps index
+  // zero when the comparator returns nought, index zero is `[finalHoh, keep]`,
+  // and so every tie in this format has quietly gone to the final Head of
+  // Household with nothing anywhere saying that was a rule.
+  //
+  // It is a rule now, and it is the same answer, because it is the right one:
+  // the jury could not separate them, so it falls to the only thing decided
+  // tonight rather than in the jury house — who won the last competition of
+  // the season and chose the chair they are sitting in. Total Drama's ladder
+  // (a revote, a shared title, a casting vote from the finalist who was cut)
+  // does not transfer: this format pays one person, and the houseguest who was
+  // cut is already the last juror and has already voted.
+  const tiedVote = finalTwo.length === 2
+    && (votes[finalTwo[0]] || 0) === (votes[finalTwo[1]] || 0);
+  const winner = tiedVote
+    ? finalHoh
+    : finalTwo.slice().sort((a, b) => (votes[b] || 0) - (votes[a] || 0))[0];
   const runnerUp = finalTwo.find(n => n !== winner) || null;
   acts.push({ type: 'jury-vote', jury, votes, reasoning: verdict.reasoning || [], winner, runnerUp,
+    // Stated, so every surface can say why a tied vote produced a winner.
+    tiebreak: tiedVote
+      ? { rule: 'final-hoh', winner, count: votes[finalTwo[0]] || 0,
+        line: `The jury splits ${votes[finalTwo[0]] || 0}–${votes[finalTwo[1]] || 0} and cannot separate them. `
+          + `It goes to ${winner}, who won the final Head of Household and chose this chair.` }
+      : null,
     // What the jury house taught them, so the screen can say so.
     learned: juryLearned,
     // And who changed their mind in the chairs tonight, so the vote can be read

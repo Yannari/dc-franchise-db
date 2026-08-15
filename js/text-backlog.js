@@ -6164,6 +6164,9 @@ export function generateBBFinaleText(ep) {
       Object.entries(act.votes || {}).forEach(([name, count]) =>
         ln(`  ${name}: ${count} vote${count === 1 ? '' : 's'}`));
       ln('');
+      // A tie has a rule and the transcript states it. Without this the reader
+      // sees an even split and then a winner, with nothing joining the two.
+      if (act.tiebreak?.line) ln(`  ${act.tiebreak.line}`);
       ln(`  ${act.winner} wins the season.`);
       if (act.runnerUp) ln(`  ${act.runnerUp} finishes second.`);
     }

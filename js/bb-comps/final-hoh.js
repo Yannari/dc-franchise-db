@@ -187,7 +187,15 @@ export const finalWall = {
   // which one they were looking at. `finalRole` exists as a workaround for
   // exactly this and only helped the code, never the reader. The id is
   // unchanged, so pinned weeks and recorded seasons still resolve.
-  name: 'Nowhere Else to Be',
+  //
+  // Named for the mechanic rather than the rig, because the rig is the part
+  // it shares with a competition that already exists. Three people hang here
+  // for hours with nothing to do but work on each other — the solidarity and
+  // the mind games fire every round — and the sharpest version of that is
+  // talking a rival into dropping for a promise the final cut then has to
+  // honour or break. Nothing else in the format lets the losing move be the
+  // right one.
+  name: 'Talk Them Down',
   category: 'endurance',
   types: ['final'],
   // Which of the two slots this can serve. The finale draws part one from every

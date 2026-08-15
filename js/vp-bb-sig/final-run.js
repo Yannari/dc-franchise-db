@@ -68,6 +68,15 @@ const _STYLE = `<style>
 .sigrun .fr-cl{display:flex;align-items:center;gap:9px;padding:6px 14px;border-radius:2px;
   border:1px solid var(--fr-line);background:rgba(6,12,16,.7)}
 .sigrun .fr-cl i{width:9px;height:9px;border-radius:2px;flex:none}
+/* Faces, not swatches. Two runners and a whole screen about the two of them —
+   identifying each by a coloured square was the weakest thing here. */
+.sigrun .bb-av{display:inline-grid;place-items:center;overflow:hidden;border-radius:3px;
+  background:#16242e;flex:none;position:relative}
+.sigrun .bb-av img{width:100%;height:100%;object-fit:cover;display:block}
+.sigrun .bb-av i{position:absolute;display:none;align-items:center;justify-content:center;
+  inset:0;font-style:normal;font-weight:700;color:#9fb1bf;font-size:12px}
+.sigrun .fr-cl .bb-av{border:2px solid currentColor}
+.sigrun .fr-lane-n .bb-av{border:1px solid rgba(255,255,255,.25)}
 .sigrun .fr-cl b{font-family:'Archivo Narrow',sans-serif;font-size:22px;font-weight:700;
   font-variant-numeric:tabular-nums;letter-spacing:1px}
 .sigrun .fr-cl span{font-size:10.5px;color:var(--fr-dim)}
@@ -241,7 +250,7 @@ export function rpBuildSigFinalRun(ep, actType, u = {}) {
       : '';
 
     return `<div class="fr-lane">
-      <div class="fr-lane-n"><i style="background:${hue(ri)}"></i>
+      <div class="fr-lane-n">${avatar(name, 22)}<i style="background:${hue(ri)}"></i>
         <span>${esc(name)}</span>
         <em>${sealed ? MASK : complete(name) ? clock(elapsed(name)) : mine.length ? `${clock(elapsed(name))}…` : '—'}</em></div>
       <div class="fr-bar">${segsHtml}</div>
@@ -291,8 +300,8 @@ export function rpBuildSigFinalRun(ep, actType, u = {}) {
     return `<div class="fr-srow"><span>${esc(seg.label.replace('THE ', ''))}</span>${cells}</div>`;
   }).join('');
 
-  const clocks = runners.map((name, ri) => `<div class="fr-cl">
-      <i style="background:${hue(ri)}"></i>
+  const clocks = runners.map((name, ri) => `<div class="fr-cl" style="color:${hue(ri)}">
+      ${avatar(name, 34)}
       <b style="color:${hue(ri)}">${sealed ? MASK : complete(name) ? clock(elapsed(name)) : mine0(runSoFar[name]) ? `${clock(elapsed(name))}` : '—:—'}</b>
       <span>${esc(name)}${complete(name) ? '' : runSoFar[name].length ? ' · running' : ' · to run'}</span>
     </div>`).join('');

@@ -229,6 +229,10 @@ export function weekToEpisode(week) {
     // replayed week has to show the state as it was then rather than the
     // season-long ledger as it is now.
     powerLedger: (week.powerLedger || []).map(p => ({ ...p })),
+    // What everybody had banked at the end of this week. Copied, not shared,
+    // because the week's ledger keeps growing and a replayed week has to show
+    // the money as it stood then. Private, exactly like the week's copy.
+    bucksLedger: (week.bucksLedger || []).map(l => ({ ...l })),
     invisibleReveal: week.invisibleReveal ? { ...week.invisibleReveal } : null,
     initialNominees: [...(week.initialNominees || [])],
     finalNominees: [...(week.finalNominees || [])],

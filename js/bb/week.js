@@ -77,8 +77,9 @@ import { runPremiereMystery } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
-import { advanceThemeArc, installTheme, themeBeat, themeState,
+import { advanceThemeArc, currentTheme, installTheme, themeBeat, themeState,
   themeTwistAnnouncement } from './themes.js';
+import { awardWeeklyBucks, bucksLedgerFor } from './bb-bucks.js';
 import { resolveWeekTwistState } from './twist-contract.js';
 import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
   announceSaboteur, runSaboteurAccusation, saboteurState } from './saboteur.js';
@@ -1406,6 +1407,30 @@ export function simulateBBWeek(options = {}) {
     _capBondDeltas(bondsBefore);
     return act;
   };
+
+  // ── the audience pays the house ──
+  //
+  // Gated on the theme DECLARING an economy rather than on its id: a theme is
+  // a schedule, a voice and a skin, and the engine asking "does this season
+  // run on money?" is how the fifth theme gets a currency without a sixth
+  // engine edit. It also keeps an unthemed season exactly as it was.
+  //
+  // First thing in the week, before anybody nominates anybody, because the
+  // payout is information — it tells the room who the audience is watching,
+  // and the room is allowed to act on that all week.
+  //
+  // It sits here rather than up beside `week.blocReads` for one mechanical
+  // reason: `addBeats` is a `const` declared just above, so calling it any
+  // earlier is a temporal dead zone — and inside this try/catch that would
+  // fail SILENTLY, paying nobody all season with no error to show for it.
+  // Nothing has nominated, competed or voted yet, so the payout still lands
+  // ahead of every decision it is supposed to inform.
+  if (currentTheme()?.economy === 'bb-bucks') {
+    try {
+      const payout = awardWeeklyBucks({ week, house, rng });
+      if (payout) week.acts.push(addBeats(payout, { players: payout.payouts.map(p => p.name).slice(0, 4) }));
+    } catch { /* money is not load-bearing for the week */ }
+  }
 
   /**
    * A stretch of house life, as its own act.
@@ -5807,6 +5832,10 @@ export function simulateBBWeek(options = {}) {
   // between the night it was granted and the night it fires is the Debug
   // panel, which is not a thing anybody watches.
   week.powerLedger = powerLedgerFor(week.num);
+  // The same argument for the money. PRIVATE: this is a snapshot for a later
+  // surface and for a replay, never something the house is shown — what the
+  // room was told is the announced tiers, which live on the act.
+  week.bucksLedger = bucksLedgerFor(house);
   // Powers whose holder just left, or whose window just closed, end here.
   // ── what quietly left the game ──
   //

@@ -700,6 +700,16 @@ export const TWIST_CATALOG = [
     //     touched.
     // No `incompatibleModes`: the Block Buster puts a third houseguest up every
     // week and the swap leaves the block at three, so its arena still runs.
+    //
+    // ── THE ONE THING THAT CAN STILL OVERTURN THE WHEEL ──
+    //
+    // The Coup d'État. Its protection list (`protectedNow`, week.js) deliberately
+    // ignores every week-long safety in the game — a Golden Key, the crown's
+    // cover for a duo partner and the Battle of the Block's saved pair are all
+    // seatable by it — and the wheel's rescue is treated the same way rather
+    // than being given a privilege the older powers do not have. The loudest
+    // power in the format is allowed to empty a block somebody bought. Noted
+    // here so the next reader does not re-derive it and "fix" it.
     incompatible:['bb-instant-eviction', 'bb-split-house'],
     incompatibleModes:[] },
   { id:'bb-whacktivity', emoji:'🚪', name:'Whacktivity', format:'big-brother',

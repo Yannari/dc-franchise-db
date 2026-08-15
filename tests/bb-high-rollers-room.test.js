@@ -208,15 +208,55 @@ describe('the room opens once, on the night after nominations', () => {
   // The sharp one: a `week-in-one` double runs its SECOND cycle UNCOMPRESSED, so
   // a `!compressed` guard opens the room twice in one night and charges the
   // house twice.
+  //
+  // Counting ACTS is not enough here, twice over. Entry is a `spendPull` roll,
+  // so a run where nobody walks to the door passes `n <= 1` while testing
+  // nothing — hence the `opened` guard the siblings carry. And double-NARRATING
+  // is only the symptom: the harm is double-CHARGING, so the ledger is
+  // reconciled to the last chip.
   it('opens once on a week-in-one double, whose second cycle is NOT compressed', () => {
+    let opened = 0;
     for (let seed = 1; seed <= 5; seed++) {
-      play(seed * 11, [...ROOM_WEEK,
+      const weeks = play(seed * 11, [...ROOM_WEEK,
         { episode: 1, type: 'bb-double-eviction', deStyle: 'week-in-one' }]);
-      const n = roomActs().length;
-      expect(n, `seed ${seed}: the door opened ${n} times on one night`).toBeLessThanOrEqual(1);
+      const acts = roomActs();
+      expect(acts.length, `seed ${seed}: the door opened ${acts.length} times on one night`)
+        .toBeLessThanOrEqual(1);
+      if (acts.length === 1) opened++;
+      expectLedgerCharged(weeks);
     }
+    expect(opened, 'the room never opened on a week-in-one night — the gate is untested')
+      .toBeGreaterThan(0);
   });
 });
+
+/**
+ * Every houseguest's balance, reconciled from what they were given, what the
+ * audience paid them and what the room took.
+ *
+ * This is the assertion that actually guards the double-charge: a second cycle
+ * that opens the door again bills somebody a second 125 and the arithmetic
+ * stops closing. Reading it off the acts rather than off a hard-coded number
+ * means it keeps working when the tiers are rescaled again.
+ */
+function expectLedgerCharged(weeks) {
+  const acts = (weeks || []).flatMap(w => w.acts || []);
+  const paid = {};
+  for (const a of acts.filter(x => x.type === 'bb-bucks')) {
+    for (const p of a.payouts || []) paid[p.name] = (paid[p.name] || 0) + p.amount;
+  }
+  const spent = {};
+  for (const a of acts.filter(x => x.type === 'high-rollers-room')) {
+    for (const e of a.entries || []) spent[e.name] = (spent[e.name] || 0) + e.price;
+  }
+  for (const name of HOUSE_NAMES) {
+    expect(balance(name), `${name}'s ledger does not reconcile — somebody was billed twice`)
+      .toBe(500 + (paid[name] || 0) - (spent[name] || 0));
+    // And nobody bought the same seat twice, however many cycles ran.
+    expect(spent[name] || 0, `${name} paid for more than one seat in one night`)
+      .toBeLessThanOrEqual(ROOM_GAMES[0].price);
+  }
+}
 
 describe('the Roulette rewrites the block at the veto ceremony', () => {
   // One winning week, found by seed, and then every consequence asserted off it.
@@ -252,5 +292,49 @@ describe('the Roulette rewrites the block at the veto ceremony', () => {
     // buys nothing at all.
     expect(w.finalNominees, 'the veto ceremony re-nominated the person the wheel saved')
       .not.toContain(down);
+  });
+
+  it('records the wheel as a route off the block, like every other one', () => {
+    const w = winningWeek();
+    expect(w).toBeTruthy();
+    // `winningWeek` returns the moment it finds one, so `gs` is still that
+    // season. The veto, the mystery veto, the Block Buster and the emptied
+    // America's chair all credit this; the wheel has to as well, or a career
+    // record under-counts every houseguest the room ever pulled down.
+    expect(gs.bb.stats[w.rouletteSwap.down].timesSaved,
+      'the houseguest the wheel took down was never credited with the save')
+      .toBeGreaterThanOrEqual(1);
+  });
+
+  // ── the half of the power that is never conditional ──
+  //
+  // The catalog `desc`, the twist announcement and the game's own beats all say
+  // the winner is safe for the week. For one revision the engine wrote down the
+  // NOMINEE'S safety and nothing else, so a non-nominee could pay 125, take an
+  // ally off the block, and be named as the replacement an hour later. Asserted
+  // over every winning week thirty seeds produce, spent and void alike, rather
+  // than off one — the void branch is the one that had nothing in it at all.
+  it('makes the winner safe on every branch, spent or void', () => {
+    let seen = 0;
+    for (let seed = 1; seed <= 30; seed++) {
+      for (const w of play(seed * 7)) {
+        const act = (w.acts || []).find(a => a.type === 'high-rollers-room');
+        const win = ((act?.entries) || []).find(e => e.won);
+        if (!win) continue;
+        seen++;
+        expect(w.rouletteSafe || [],
+          `week ${w.num}: ${win.name} won the Roulette and entered no protection list`)
+          .toContain(win.name);
+        // A winner who was never on the block must not be able to arrive on it.
+        // (A winner who WAS a nominee and whose block change could not be spent
+        // stays where they were sitting — the game says so itself.)
+        if (!(w.initialNominees || []).includes(win.name)) {
+          expect(w.finalNominees || [],
+            `${win.name} bought safety and the ceremony seated them anyway`)
+            .not.toContain(win.name);
+        }
+      }
+    }
+    expect(seen, 'no seed in thirty produced a Roulette winner').toBeGreaterThan(0);
   });
 });

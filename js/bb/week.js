@@ -4007,19 +4007,41 @@ export function simulateBBWeek(options = {}) {
     // then reasons about is the post-Roulette block, which is the whole point.
     // Resolved before `shouldUseVeto` for exactly that reason.
     //
-    // The two names were decided in the room. Everything below is the ceremony
-    // checking they are still legal — the block can have moved since (a Hacker
-    // hack, a Battle of the Block collapse) and a name that has stopped being
-    // legal is not forced through.
-    const _roulette = (week.highRollers?.entries || [])
-      .find(e => e && e.won && e.removed && e.replacement);
+    // ── THE WINNER'S OWN SAFETY IS THE HALF THAT IS NEVER CONDITIONAL ──
+    //
+    // Won it, and three things happen: you are safe, one nominee comes down,
+    // and the wheel fills the chair. Only the last two can fail. The catalog
+    // `desc`, the twist announcement and the game's own beats all say "safe for
+    // the week" out loud, and for one revision the engine wrote down the
+    // NOMINEE'S safety and nothing else — so a non-nominee could pay 125, take
+    // an ally off the block, and be named as the replacement an hour later by a
+    // `chooseReplacement` that had never heard of them. A generated sentence
+    // the mechanics do not honour is this codebase's defining bug, and this is
+    // the line that stops it: the winner is safe on EVERY branch below.
+    //
+    // So the entry is looked up on `won` alone rather than on the two names.
+    // A win with no legal chair to fill (`NO CHAIR TO FILL` in the game) carries
+    // `removed: null, replacement: null` and would otherwise have been skipped
+    // entirely, taking the winner's safety with it.
+    const _roulette = (week.highRollers?.entries || []).find(e => e && e.won);
     if (_roulette) {
+      const winner = _roulette.name;
       const down = _roulette.removed;
       const up = _roulette.replacement;
+      // The safety half, first and unconditionally. Guarded on `house` only
+      // because a name that is not playing cannot be protected from anything.
+      const rouletteSafe = house.includes(winner) ? [winner] : [];
+
+      // The block half. Everything here is the ceremony checking the two names
+      // are still legal — the block can have moved since the room closed (a
+      // Hacker hack, a Battle of the Block collapse) and a name that has
+      // stopped being legal is not forced through.
+      //
       // Every one of these is a real condition and none of them is paranoia.
       // `gs.bb.stats[up]` last, because it is the one that kills a season: an
       // undefined name reaching `timesNominated++` throws out of the whole week.
-      const legal = down !== up
+      const legal = !!down && !!up
+        && down !== up
         && nominees.includes(down)
         && house.includes(up) && !nominees.includes(up)
         && up !== hoh && up !== vetoWinner
@@ -4029,7 +4051,13 @@ export function simulateBBWeek(options = {}) {
       if (legal) {
         nominees = nominees.map(name => (name === down ? up : name));
         gs.bb.stats[up].timesNominated++;
-        // ── SAFE FOR THE REST OF THE WEEK, NOT FOR THIS CEREMONY ──
+        // Every other route off the block records the save — the veto, the
+        // mystery veto, the Block Buster, the emptied America's chair. The
+        // wheel is a route off the block, so it records one too; without it a
+        // career record under-counts and anything reading `timesSaved` is
+        // looking at a save that never happened.
+        if (gs.bb.stats[down]) gs.bb.stats[down].timesSaved++;
+        // ── AND SAFE FOR THE REST OF THE WEEK, NOT FOR THIS CEREMONY ──
         //
         // Canon, and the difference between this and the Hacker's stay of
         // execution: a houseguest the hacker takes down can be put straight
@@ -4037,18 +4065,24 @@ export function simulateBBWeek(options = {}) {
         // the week so every replacement chooser that runs after this point
         // reads it — without it the veto's own chooser can re-seat them, and
         // the power a houseguest paid 125 for buys nothing at all.
-        week.rouletteSafe = [down];
-        week.rouletteSwap = { winner: _roulette.name, down, up };
+        if (!rouletteSafe.includes(down)) rouletteSafe.push(down);
+        week.rouletteSwap = { winner, down, up };
         // The block as the wheel left it, for the transcripts and the tests.
         week.rouletteBlock = [...nominees];
         setSpotlight({ nominees: [...nominees] });
         revise('noms', { hoh, nominees: [...nominees] });
-      } else {
+      } else if (down || up) {
         // The wheel won and the names stopped being spendable. Recorded rather
         // than swallowed: somebody paid for this, and a viewer is owed the fact
         // that it could not be used.
-        week.rouletteVoid = { winner: _roulette.name, down, up };
+        //
+        // NOT an edge case, which is why the safety above is set outside this
+        // branch: the wheel spins BEFORE the veto competition is played, so any
+        // spun replacement who then goes and wins the veto voids the whole
+        // block change. The winner keeps what they bought regardless.
+        week.rouletteVoid = { winner, down, up };
       }
+      week.rouletteSafe = [...new Set(rouletteSafe)];
     }
 
     let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house, diamond, hohSecret });

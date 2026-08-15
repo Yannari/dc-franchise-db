@@ -3097,6 +3097,66 @@
         repeating-linear-gradient(90deg, rgba(232,220,192,.045) 0 1px, transparent 1px 34px);
       animation: rpThemeMystDrift 6s ease-in-out infinite; }
 
+    /* ── High Roller's ──────────────────────────────────────────────────
+       A card room after hours, lit from the table up: brass on black
+       lacquer. NOT felt green — Mystery owns green, and two themes sharing
+       a surface means a glance at the reader cannot tell you which season
+       you are in. Gold is also the honest colour, because this season is
+       about the money rather than the game the money buys into. */
+    .rp-theme-high-rollers {
+      --theme-accent:#c9a227; --theme-glow:#f0d585;
+      --bbx-danger-rgb:  168,38,44;     /* the red on the layout              */
+      --bbx-note-rgb:    201,162,39;    /* everything written down is brass   */
+      --bbx-key-rgb:     240,213,133;   /* chips, and the keys are chips too  */
+      --bbx-good-rgb:    212,175,55;    /* winning here is gold, never green  */
+      --bbx-info-rgb:    170,158,132;
+      --bbx-dim-rgb:     124,113,92;    /* warm grey — no cold tones anywhere */
+      --bbx-stage-rgb:   26,19,13;      --bbx-stage2-rgb:  11,7,8;
+      --bbx-screen-rgb:  28,21,14;      --bbx-screen2-rgb: 10,7,7;
+      --bbx-card-rgb:    27,20,14;      --bbx-card2-rgb:   13,9,8;
+      --bbx-ink:         #f2e6c8;
+      --bbx-ink-quiet:   #f7eed6;
+      --bbx-faint:       #5c5040;
+      --bbx-glyph:       #2a211a; }
+    .rp-theme-high-rollers .rp-page::after {
+      opacity:.16;
+      background:
+        radial-gradient(46% 28% at 50% -8%, rgba(240,213,133,.24), transparent 66%),
+        radial-gradient(70% 54% at 50% 108%, rgba(168,38,44,.14), transparent 72%),
+        repeating-linear-gradient(90deg, rgba(201,162,39,.05) 0 1px, transparent 1px 28px);
+      animation: rpThemeRollDrift 11s ease-in-out infinite; }
+    .rp-theme-high-rollers .rp-page h1,
+    .rp-theme-high-rollers .rp-page h2 {
+      letter-spacing:.13em; text-transform:uppercase;
+      font-family:"Copperplate Gothic Bold",Copperplate,"Cinzel",Georgia,serif; }
+    @keyframes rpThemeRollDrift { 0%,100% { opacity:.16; } 50% { opacity:.22; } }
+
+    /* The turn is not anger, it is ACCOUNTING: the comps stop. So the warmth
+       comes out of the light and the brass hardens — the same room with the
+       hospitality withdrawn and the ledger open on the table. */
+    .rp-theme-high-rollers.is-mood-hostile {
+      --theme-accent:#e0bf52; --theme-glow:#ffe9a6;
+      --bbx-danger-rgb:  186,32,38;
+      --bbx-note-rgb:    224,191,82;
+      --bbx-key-rgb:     224,191,82;
+      --bbx-good-rgb:    186,156,64;
+      --bbx-info-rgb:    150,140,120;
+      --bbx-dim-rgb:     104,94,78;
+      --bbx-stage-rgb:   18,13,10;      --bbx-stage2-rgb:  7,5,5;
+      --bbx-screen-rgb:  20,15,11;      --bbx-screen2-rgb: 7,5,5;
+      --bbx-card-rgb:    19,14,10;      --bbx-card2-rgb:   9,7,6;
+      --bbx-ink:         #f6ecd2;
+      --bbx-ink-quiet:   #fbf4dd;
+      --bbx-faint:       #4c4234;
+      --bbx-glyph:       #241c15; }
+    .rp-theme-high-rollers.is-mood-hostile .rp-page::after {
+      opacity:.24;
+      background:
+        radial-gradient(40% 22% at 50% -10%, rgba(255,233,166,.26), transparent 60%),
+        radial-gradient(88% 64% at 50% 112%, rgba(186,32,38,.24), transparent 68%),
+        repeating-linear-gradient(90deg, rgba(224,191,82,.05) 0 1px, transparent 1px 28px);
+      animation: rpThemeRollDrift 5s ease-in-out infinite; }
+
     /* Holds for every theme, present and future, regardless of where in this
        section its block was appended — see the note at the top. */
     @media (prefers-reduced-motion: reduce) {

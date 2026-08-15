@@ -22528,56 +22528,76 @@ export function rpBuildBBHighRollersRoom(ep, act) {
     ...declined.map(d => chip(d.name, 'is-short', 'COULD NOT PAY')),
   ].join('');
 
+  // Painted in the weekly tokens, never in brass literals — the same way
+  // `rpBuildBBBucks` above paints. This theme is the only one on the shelf that
+  // escalates COLD: `.rp-theme-high-rollers.is-mood-hostile` reassigns
+  // --bbx-key/--bbx-note/--bbx-dim from brass to fluorescent and the surfaces
+  // to steel, and a screen that spelled its gold out in hex would stay warm
+  // after the season turned, sitting beside siblings that had all gone cold.
+  // The room is the worst screen to get that wrong on, because the room is
+  // where the money stops being hospitality and starts being accounting.
+  //
+  // The literals that REMAIN are deliberate and each says why. As a rule:
+  // rgba(0,0,0,…) is absence of light — a bevel, a cast shadow, a stroke that
+  // separates two shapes — and absence of light carries no mood tint.
   const header = `<style>
   .hrr{max-width:720px;margin:0 auto 16px}
   .hrr-table{position:relative;border-radius:120px/68px;padding:20px 22px 18px;
-    background:radial-gradient(120% 90% at 50% 0%,rgba(58,44,12,.55),rgba(10,7,7,.96) 68%);
-    border:2px solid rgba(201,162,39,.55);
-    box-shadow:inset 0 0 0 6px rgba(9,7,6,.9),inset 0 0 34px rgba(0,0,0,.85),0 14px 34px rgba(0,0,0,.55)}
+    background:radial-gradient(120% 90% at 50% 0%,rgba(var(--bbx-note-rgb),.22),rgba(var(--bbx-card2-rgb),.96) 68%);
+    border:2px solid rgba(var(--bbx-note-rgb),.55);
+    /* Literal blacks kept: the inner bevel and the drop shadow are the table's
+       thickness, not its finish, and a shadow does not change colour with the
+       lighting rig. */
+    box-shadow:inset 0 0 0 6px rgba(0,0,0,.9),inset 0 0 34px rgba(0,0,0,.85),0 14px 34px rgba(0,0,0,.55)}
   .hrr-felt{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap}
   .hrr-plate{text-align:center;min-width:186px}
   .hrr-plate .hrr-game{font-family:"Copperplate Gothic Bold",Copperplate,Cinzel,Georgia,serif;
-    font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#f0d585;line-height:1.35}
+    font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:var(--bbx-key);line-height:1.35}
   .hrr-plate .hrr-rule{height:1px;margin:8px auto;width:120px;
-    background:linear-gradient(90deg,transparent,rgba(201,162,39,.8),transparent)}
+    background:linear-gradient(90deg,transparent,rgba(var(--bbx-note-rgb),.8),transparent)}
   .hrr-price{display:inline-flex;align-items:baseline;gap:4px;padding:5px 16px;border-radius:999px;
-    border:1px solid rgba(240,213,133,.55);background:rgba(9,7,6,.75)}
+    border:1px solid rgba(var(--bbx-key-rgb),.55);background:rgba(var(--bbx-card2-rgb),.75)}
   .hrr-price b{font-family:"Copperplate Gothic Bold",Copperplate,Cinzel,Georgia,serif;
-    font-size:26px;color:#f0d585;letter-spacing:.06em}
-  .hrr-price i{font-style:normal;font-size:8.5px;letter-spacing:.24em;color:#a28f63}
-  .hrr-note{margin-top:9px;font-size:9px;letter-spacing:.2em;color:#7c715c;text-transform:uppercase}
+    font-size:26px;color:var(--bbx-key);letter-spacing:.06em}
+  .hrr-price i{font-style:normal;font-size:8.5px;letter-spacing:.24em;color:var(--bbx-info)}
+  .hrr-note{margin-top:9px;font-size:9px;letter-spacing:.2em;color:var(--bbx-dim);text-transform:uppercase}
   .hrw-box{flex:none;text-align:center}
   .hrw{width:126px;height:128px;display:block;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))}
   .hrw-cap{margin-top:5px;line-height:1.3}
-  .hrw-cap b{display:block;font-size:8px;letter-spacing:.24em;color:#8a7c60}
-  .hrw-cap em{font-style:normal;font-size:12px;color:#f0d585;letter-spacing:.04em}
-  .hrw-rim{fill:#0b0708;stroke:rgba(201,162,39,.5);stroke-width:2}
-  .hrw-p.is-brass{fill:#7a6220}
-  .hrw-p.is-dark{fill:#150f0c}
-  .hrw-p{stroke:rgba(9,7,6,.9);stroke-width:.6}
-  .hrw-stud{fill:#f0d585;opacity:.75}
-  .hrw-ring{fill:none;stroke:rgba(240,213,133,.6);stroke-width:1.2}
-  .hrw-hub{fill:#120c0a}
-  .hrw-hubring{fill:none;stroke:rgba(201,162,39,.65);stroke-width:1.4}
-  .hrw-cross{stroke:rgba(240,213,133,.5);stroke-width:1.4;fill:none}
-  .hrw-point{fill:#c9a227;stroke:#f0d585;stroke-width:.8}
-  .hrw-landed{fill:#f0d585;font-size:11px;letter-spacing:.12em}
+  .hrw-cap b{display:block;font-size:8px;letter-spacing:.24em;color:var(--bbx-dim)}
+  .hrw-cap em{font-style:normal;font-size:12px;color:var(--bbx-key);letter-spacing:.04em}
+  .hrw-rim{fill:rgb(var(--bbx-stage2-rgb));stroke:rgba(var(--bbx-note-rgb),.5);stroke-width:2}
+  /* The brass pocket is the accent at .6 over the lacquer beneath it rather
+     than a second, darker hex — one token, one place to turn cold. */
+  .hrw-p.is-brass{fill:rgba(var(--bbx-note-rgb),.6)}
+  .hrw-p.is-dark{fill:rgb(var(--bbx-card2-rgb))}
+  /* Literal black kept: the hairline between two pockets is a seam, not paint. */
+  .hrw-p{stroke:rgba(0,0,0,.9);stroke-width:.6}
+  .hrw-stud{fill:var(--bbx-key);opacity:.75}
+  .hrw-ring{fill:none;stroke:rgba(var(--bbx-key-rgb),.6);stroke-width:1.2}
+  .hrw-hub{fill:rgb(var(--bbx-card2-rgb))}
+  .hrw-hubring{fill:none;stroke:rgba(var(--bbx-note-rgb),.65);stroke-width:1.4}
+  .hrw-cross{stroke:rgba(var(--bbx-key-rgb),.5);stroke-width:1.4;fill:none}
+  .hrw-point{fill:var(--bbx-note);stroke:var(--bbx-key);stroke-width:.8}
   .hrr-seats{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px}
   .hrr-seat{width:104px;text-align:center;padding:9px 6px 8px;border-radius:8px;
-    border:1px solid rgba(201,162,39,.22);background:rgba(9,7,6,.6)}
+    border:1px solid rgba(var(--bbx-note-rgb),.22);background:rgba(var(--bbx-card2-rgb),.6)}
   .hrr-seat .hrr-chip svg{width:38px;height:38px;display:block;margin:0 auto}
-  .hrr-chip-body{fill:#2a2118;stroke:rgba(0,0,0,.6);stroke-width:1}
-  .hrr-chip-spots{fill:none;stroke:#c9a227;stroke-width:6}
-  .hrr-chip-face{fill:#120c0a}
-  .hrr-chip-ring{fill:none;stroke:rgba(240,213,133,.5);stroke-width:1}
-  .hrr-chip-den{fill:#f0d585;font-size:17px;font-weight:700;text-anchor:middle}
+  /* --bbx-glyph is the theme's own unlit-surface tone — brown clay warm, steel
+     cold — which is exactly what a chip body is. Its stroke stays literal
+     black: that is the moulded edge catching no light. */
+  .hrr-chip-body{fill:var(--bbx-glyph);stroke:rgba(0,0,0,.6);stroke-width:1}
+  .hrr-chip-spots{fill:none;stroke:var(--bbx-note);stroke-width:6}
+  .hrr-chip-face{fill:rgb(var(--bbx-card2-rgb))}
+  .hrr-chip-ring{fill:none;stroke:rgba(var(--bbx-key-rgb),.5);stroke-width:1}
+  .hrr-chip-den{fill:var(--bbx-key);font-size:17px;font-weight:700;text-anchor:middle}
   .hrr-face{margin:6px 0 3px}
   .hrr-face .bb-av{border-radius:50%}
-  .hrr-name{font-size:11.5px;color:#f2e6c8}
-  .hrr-tag{font-size:8px;letter-spacing:.16em;color:#8a7c60;margin-top:2px}
-  .hrr-seat.is-won{border-color:rgba(240,213,133,.7);background:rgba(58,44,12,.42);
-    box-shadow:0 0 18px rgba(201,162,39,.22)}
-  .hrr-seat.is-won .hrr-tag{color:#f0d585}
+  .hrr-name{font-size:11.5px;color:var(--bbx-ink)}
+  .hrr-tag{font-size:8px;letter-spacing:.16em;color:var(--bbx-dim);margin-top:2px}
+  .hrr-seat.is-won{border-color:rgba(var(--bbx-key-rgb),.7);background:rgba(var(--bbx-note-rgb),.16);
+    box-shadow:0 0 18px rgba(var(--bbx-note-rgb),.22)}
+  .hrr-seat.is-won .hrr-tag{color:var(--bbx-key)}
   .hrr-seat.is-lost{opacity:.72}
   .hrr-seat.is-lost .hrr-chip svg{opacity:.42}
   .hrr-seat.is-short{opacity:.55;border-style:dashed}

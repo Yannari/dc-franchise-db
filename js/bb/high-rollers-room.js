@@ -41,9 +41,24 @@
 //
 // This module owns the DOOR — who walks in, what it costs them, and what the
 // house saw. It deliberately does not own the game. `openRoom` takes an
-// injected `play` function and Task 2's Chopping Block Roulette supplies it;
-// with nothing injected it falls back to a plain stat-and-noise draw so the
-// door can be tested without a wheel behind it.
+// injected `play` function; with nothing injected it looks the game up in
+// `GAME_ENGINES` below, and with nothing there either it falls back to a plain
+// stat-and-noise draw so the door can be tested without a wheel behind it.
+//
+// ── THE RESOLVER SEAM, WIDENED ──────────────────────────────────────────
+//
+// The seam originally returned a bare boolean: won, or did not. That was enough
+// for a fallback draw and is not enough for a real game. The Chopping Block
+// Roulette produces a WIN plus two names — who came down and who the wheel put
+// up — and both have to reach the nomination ceremony intact.
+//
+// So a resolver may now return either a boolean or an object `{won, removed,
+// replacement, beats}`. Booleans are normalised up, so the fallback and any
+// older injected resolver still work unchanged. The names ride out on the
+// entry (`entry.removed` / `entry.replacement`, always a string or null, never
+// undefined) and the game's own beats are folded into the act's beats in the
+// order they happened. Task 3 reads the entries; nothing in here interprets
+// them, because the door still does not own the game.
 
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
@@ -51,6 +66,7 @@ import { getBond } from '../bonds.js';
 import { balance, canAfford, spend } from './bb-bucks.js';
 import { spendPull } from './powers.js';
 import { stableRng } from './knowledge.js';
+import { rouletteResolver } from './chopping-block-roulette.js';
 
 /**
  * The menu, frozen.
@@ -181,6 +197,37 @@ function defaultPlay({ name, rng }) {
   return rng() < chance;
 }
 
+/**
+ * Which engine actually runs which game on the menu.
+ *
+ * Keyed by the menu id, so a priced entry with no engine behind it resolves to
+ * the fallback draw rather than to nothing at all — a week where somebody spent
+ * a hundred and twenty-five and no code ran is the one outcome this room must
+ * never produce.
+ */
+const GAME_ENGINES = {
+  'chopping-block-roulette': rouletteResolver,
+};
+
+/**
+ * Normalise whatever a resolver handed back into the one shape the room stores.
+ *
+ * Booleans in, object out. `removed` and `replacement` are coerced to a name or
+ * null — never undefined, because these travel to the nomination ceremony and
+ * `gs.bb.stats[undefined]` is a dead season.
+ */
+function normaliseOutcome(result) {
+  if (typeof result === 'boolean' || result == null) {
+    return { won: !!result, removed: null, replacement: null, beats: [] };
+  }
+  return {
+    won: !!result.won,
+    removed: result.removed ?? null,
+    replacement: result.replacement ?? null,
+    beats: Array.isArray(result.beats) ? result.beats : [],
+  };
+}
+
 // ── narration ──────────────────────────────────────────────────────────
 //
 // Four variants minimum per category, this project's standard, and not one of
@@ -216,6 +263,16 @@ const SHORT = [
   (n, p) => `${n} is short. ${p.Sub} has been paid every week of this season and spent the ones that mattered on nothing ${p.sub} can name.`,
 ];
 
+// The night the door opened onto nobody. Names the PRICE, which is painted on
+// the door, and a COUNT of who turned around, which the house watched happen —
+// never a balance, which is nobody's business but the person holding it.
+const ROOM_EMPTY = [
+  (price) => `The High Roller's Room is open all night and not one person sits down in it. The price is ${price} and this house does not have it, which is a thing everybody now knows about everybody.`,
+  (price, n) => `${n === 1 ? 'One houseguest walks' : `${n} houseguests walk`} up to that door tonight and ${n === 1 ? 'walks' : 'walk'} away from it again. The room takes ${price} to enter and the room stays empty.`,
+  (price) => `Nobody plays. The door is open, the ${price} is the ${price}, and a house that spent the season being paid in tens is standing on the wrong side of it.`,
+  (price) => `The room opens onto an empty floor. Everybody who wanted in tonight counted what they had, came up short of ${price}, and went back to pretending they were never interested.`,
+];
+
 const pick = (pool, rng) => pool[Math.floor(rng() * pool.length) % pool.length];
 const beat = (text, who, badgeText, badgeClass = 'twist') =>
   ({ type: 'high-rollers-room', text, players: [...who].filter(Boolean), badgeText, badgeClass });
@@ -228,8 +285,13 @@ const beat = (text, who, badgeText, badgeClass = 'twist') =>
  * @param hoh       excluded from the door — see below
  * @param nominees  the market
  * @param game      which entry on the menu; defaults to the only one there is
- * @param play      injected game resolver `({name, game, rng}) => boolean`.
- *                  Task 2's Roulette. Without it a plain draw stands in.
+ * @param protectedNames everybody the week has already made safe — passed
+ *                  straight through to the game, which needs it to know who
+ *                  cannot be seated in a replacement chair.
+ * @param play      injected game resolver
+ *                  `({name, game, week, house, nominees, hoh, protectedNames, rng})`
+ *                  returning either a boolean or `{won, removed, replacement,
+ *                  beats}`. Without it the menu id picks the engine.
  * @param rng       the entry dice. Defaults to the week's seeded generator,
  *                  never Math.random — an unseeded draw anywhere in a season
  *                  means the same seed stops producing the same house, which
@@ -237,7 +299,7 @@ const beat = (text, who, badgeText, badgeClass = 'twist') =>
  * @returns {object|null} the act, or null on a night nobody went near the door
  */
 export function openRoom({ week, house = [], hoh = null, nominees = [], vetoHolder = null,
-  game = ROOM_GAMES[0], play = null,
+  protectedNames = [], game = ROOM_GAMES[0], play = null,
   rng = stableRng('high-rollers-room', gs?.bb?.seasonSalt || 0, week?.num || 0) } = {}) {
   const room = house.filter(Boolean);
   if (!game) return null;
@@ -330,14 +392,41 @@ export function openRoom({ week, house = [], hoh = null, nominees = [], vetoHold
     // own seeded dice rather than the caller's entry sequence, so a caller
     // steering who walks in does not thereby steer who wins.
     const gameRng = stableRng('high-rollers-game', gs?.bb?.seasonSalt || 0, week?.num || 0, game.id, name);
-    const won = play
-      ? !!play({ name, game, week, rng: gameRng })
-      : defaultPlay({ name, rng: gameRng });
+    const resolver = play || GAME_ENGINES[game.id] || defaultPlay;
+    const outcome = normaliseOutcome(resolver({
+      name, game, week, rng: gameRng,
+      // The board, handed over whole. The door does not decide any of it — it
+      // only knows it, and a game that needs to know who is already safe
+      // should not have to go and read the week for itself.
+      house: room, hoh, nominees, protectedNames,
+    }));
+    const won = outcome.won;
 
-    entries.push({ name, gameId: game.id, price: game.price, won });
+    // `removed` and `replacement` ride out on the entry as plain strings or
+    // null. Task 3 wires them into the nomination ceremony; nothing in this
+    // module reads them, because the door still does not own the game.
+    entries.push({ name, gameId: game.id, price: game.price, won,
+      removed: outcome.removed, replacement: outcome.replacement });
     beats.push(won
       ? beat(pick(WON, rng)(name, p), [name], 'PAID AND WON', 'gold')
       : beat(pick(LOST, rng)(name, p, game.price), [name], 'PAID AND LOST', 'bad'));
+    // The game's own beats come after the room's verdict, in the order the
+    // game produced them — the house sees somebody come out of that room
+    // before it sees what they came out with.
+    for (const b of outcome.beats) beats.push(b);
+  }
+
+  // ── THE DOOR OPENED AND NOBODY COULD PAY ────────────────────────────
+  //
+  // A real outcome of the rescaled economy, and worth a sentence. In a short
+  // season the house may never bank the 125, so people can want the room all
+  // week, walk to it, and every one of them turn around at the price. Without
+  // this the transcript carries a handful of individual "cannot pay" beats and
+  // no line saying what the night actually was: a room that opened onto
+  // nobody. That is the format's own joke about itself and it should be told.
+  if (!entries.length && declined.length) {
+    beats.push(beat(pick(ROOM_EMPTY, rng)(game.price, declined.length),
+      declined.map(d => d.name), 'ROOM STAYS EMPTY', 'grey'));
   }
 
   return {

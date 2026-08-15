@@ -4,11 +4,12 @@ import { gs, players, seasonConfig, relationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
-import { balance } from '../js/bb/bb-bucks.js';
+import { balance, PAYOUT_TIERS, FLOOR_TIER, PAYOUT_AMOUNTS } from '../js/bb/bb-bucks.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
-import { themeById, advanceThemeArc } from '../js/bb/themes.js';
-import { setGs } from '../js/core.js';
+import { themeById, advanceThemeArc, stampThemeArc, reanchorThemeArc } from '../js/bb/themes.js';
+import { setGs, TWIST_CATALOG } from '../js/core.js';
+import { simulateBBFinale } from '../js/bb-finale.js';
 // Read from the repo root rather than off `import.meta.url`: the suite runs in
 // jsdom, where the module URL is not a file: URL and `fileURLToPath` throws.
 // This is the same door `tests/bb-themes.test.js` opens the markup through.
@@ -33,6 +34,12 @@ function house({ theme = 'high-rollers', twistSchedule = [] } = {}) {
   seasonConfig.twistSchedule = twistSchedule;
 }
 
+// Amounts come from the module, never from a copy here. The tiers were
+// rescaled once already; a test holding its own numbers is what makes the next
+// rescale a hunt.
+const [TOP, MID] = PAYOUT_TIERS;
+const FLOOR = FLOOR_TIER;
+
 /** Every payout act anywhere in the season, across BOTH halves of a split night. */
 const bucksActs = () => (gs.bb.weeks || []).flatMap(w => (w.acts || [])
   .filter(a => a.type === 'bb-bucks'));
@@ -42,7 +49,7 @@ describe('the floor pays every week', () => {
     withSeededRandom(7, () => {
       house();
       simulateBBEpisode();
-      expect(NAMES.every(n => balance(n) >= 50)).toBe(true);
+      expect(NAMES.every(n => balance(n) >= FLOOR.amount)).toBe(true);
     });
   });
 
@@ -101,15 +108,17 @@ describe('the floor pays every week', () => {
 // later — so a double or half payout is baked in long before anything can
 // notice it. Both of these failed before the guard went in.
 describe('the floor pays once a week, however many cycles the week runs', () => {
-  // A payout is well-formed when it is exactly the canon tier set over the
-  // undivided house: three at 100, three at 75, everybody else at 50. It
-  // catches BOTH failure modes at once — paying twice doubles the amounts, and
-  // paying per side draws two complete tier sets, so six people hold 100.
+  // A payout is well-formed when it is exactly ONE canon tier set over the
+  // undivided house: three on the top amount, three on the middle, everybody
+  // else on the floor. It catches BOTH failure modes at once — paying twice
+  // doubles every balance off the tier amounts entirely, and paying per side
+  // draws two complete tier sets, so six people hold the top amount.
   const expectExactlyOneTierSet = names => {
     const paid = names.map(n => balance(n));
-    expect(paid.filter(b => b === 100)).toHaveLength(3);
-    expect(paid.filter(b => b === 75)).toHaveLength(3);
-    expect(paid.filter(b => b === 50)).toHaveLength(names.length - 6);
+    expect(paid.filter(b => b === TOP.amount)).toHaveLength(TOP.count);
+    expect(paid.filter(b => b === MID.amount)).toHaveLength(MID.count);
+    expect(paid.filter(b => b === FLOOR.amount))
+      .toHaveLength(names.length - TOP.count - MID.count);
   };
 
   it('pays once on a double eviction night, not once per cycle', () => {
@@ -133,7 +142,7 @@ describe('the floor pays once a week, however many cycles the week runs', () => 
       // The point of the fix: twelve people split into two sixes. Per-side,
       // each half is under the seven-houseguest floor and `awardWeeklyBucks`
       // returned null for both — the entire house went unpaid in silence.
-      expect(NAMES.every(n => balance(n) >= 50)).toBe(true);
+      expect(NAMES.every(n => balance(n) >= FLOOR.amount)).toBe(true);
       expectExactlyOneTierSet(NAMES);
       // And the act names the undivided house, not one half of it.
       expect(bucksActs()[0].payouts).toHaveLength(NAMES.length);
@@ -213,15 +222,200 @@ describe('the descriptor', () => {
     }
   });
 
-  it('books no twists yet — the room is Plan 2', () => {
-    expect(theme().books).toEqual([]);
-    expect(theme().arc.some(a => a.book)).toBe(false);
-  });
-
   it('is offered in the config select, which is hand-written markup', () => {
     const html = readFileSync('simulator.html', 'utf8');
     const select = html.match(/<select id="cfg-theme"[\s\S]*?<\/select>/)[0];
     expect(select).toContain('value="high-rollers"');
+  });
+});
+
+// ── the arc actually books something ───────────────────────────────────
+//
+// The theme shipped `books: []` while the room was unbuilt, so picking it
+// stamped an EMPTY timeline beside three themes that stamp a schedule. The room
+// exists now, and so did the Coin and the wrapped-box veto all along.
+//
+// The load-bearing case in here is the cast sweep. `fromEnd: n` is a HOUSE-SIZE
+// anchor whose week is only a prediction until `reanchorThemeArc` moves it onto
+// the week the house really reaches that size, and this arc asks for three
+// consecutive end-anchored bookings — more than any other theme on the shelf.
+describe('the floor has a schedule', () => {
+  const theme = () => themeById('high-rollers');
+  const arcBooks = () => theme().arc.filter(a => a.book).map(a => a.book);
+
+  /** A fresh, unplayed season on this theme with its arc laid down. */
+  const stamp = (cast) => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = 'high-rollers';
+    seasonConfig.twistSchedule = [];
+    seasonConfig.themeArcStamped = '';
+    setGs({ bb: { weeks: [] } });
+    stampThemeArc(cast);
+    return seasonConfig.twistSchedule;
+  };
+
+  /**
+   * Play the season's HOUSE SIZE, week by week, and report what fired when.
+   *
+   * This is the only honest way to ask where an end-anchored card lands: the
+   * stamped `episode` is a guess, and `reanchorThemeArc` is what corrects it —
+   * one card a week, largest anchor first.
+   */
+  const walk = (cast, { doubleAt = 0 } = {}) => {
+    const fired = [];
+    let house = cast;
+    for (let ep = 1; house > 3 && ep < 40; ep++) {
+      for (const e of reanchorThemeArc(ep, house)) fired.push({ ep, house, type: e.type });
+      house -= (ep === doubleAt ? 2 : 1);
+    }
+    return fired;
+  };
+
+  it('books the three twists the floor owns', () => {
+    expect(theme().books).toEqual(expect.arrayContaining([
+      'bb-prizes-and-punishments', 'bb-high-rollers-room', 'bb-coin-of-destiny']));
+    // And `books` is a claim about the arc, not a wish beside it.
+    for (const id of theme().books) expect(arcBooks()).toContain(id);
+    for (const id of arcBooks()) expect(theme().books).toContain(id);
+  });
+
+  it('books only cards the catalogue has', () => {
+    const ids = new Set(TWIST_CATALOG.map(c => c.id));
+    for (const id of arcBooks()) expect(ids, `${id} is a real twist`).toContain(id);
+  });
+
+  it('opens the room three times and sells the Coin once', () => {
+    const counts = arcBooks().reduce((m, id) => ({ ...m, [id]: (m[id] || 0) + 1 }), {});
+    expect(counts['bb-high-rollers-room']).toBe(3);
+    expect(counts['bb-coin-of-destiny']).toBe(1);
+    expect(counts['bb-prizes-and-punishments']).toBe(1);
+  });
+
+  // Not changed by this task and asserted so they cannot be: `fromEnd: 8` is the
+  // anchor that really fires below seventeen weeks, and it is the same house the
+  // room opens on. The turn and the door are the same night on purpose.
+  it('keeps both mood anchors exactly where they were', () => {
+    const moods = theme().arc.filter(a => a.mood).map(a => a.at);
+    expect(moods).toEqual([{ frac: 0.55 }, { fromEnd: 8 }]);
+  });
+
+  // ── the sweep the brief asks for ────────────────────────────────────────
+  it('opens the room at a final eleven, ten and nine at every cast from 12 to 20', () => {
+    for (let cast = 12; cast <= 20; cast++) {
+      stamp(cast);
+      const rooms = walk(cast).filter(f => f.type === 'bb-high-rollers-room');
+      expect(rooms.map(r => r.house), `cast ${cast}`).toEqual([11, 10, 9]);
+      // In order, on three separate weeks — never two doors in one night.
+      const weeks = rooms.map(r => r.ep);
+      expect(new Set(weeks).size, `cast ${cast}: two room nights collided`).toBe(3);
+      expect([...weeks].sort((a, b) => a - b), `cast ${cast}`).toEqual(weeks);
+    }
+  });
+
+  it('sells the Coin the week after the room closes, at every cast from 12 to 20', () => {
+    for (let cast = 12; cast <= 20; cast++) {
+      stamp(cast);
+      const fired = walk(cast);
+      const coin = fired.filter(f => f.type === 'bb-coin-of-destiny');
+      expect(coin.map(c => c.house), `cast ${cast}`).toEqual([8]);
+      expect(coin[0].ep, `cast ${cast}`)
+        .toBeGreaterThan(fired.filter(f => f.type === 'bb-high-rollers-room').pop().ep);
+    }
+  });
+
+  // The wrapped boxes are the one fixed-week act, and every act below them is
+  // end-anchored: on a nine-week season `fromEnd: 8` IS week two, so booking
+  // them any later than week one drops a room night on the small casts. This is
+  // the case that measured it — week 3 lost a night on casts 12 and 13.
+  it('never drops a card off the front of a short season', () => {
+    for (let cast = 12; cast <= 20; cast++) {
+      const sched = stamp(cast);
+      const types = sched.map(t => t.type);
+      expect(types.filter(t => t === 'bb-high-rollers-room'), `cast ${cast}: a room night was dropped`)
+        .toHaveLength(3);
+      expect(types, `cast ${cast}`).toContain('bb-prizes-and-punishments');
+      expect(types, `cast ${cast}`).toContain('bb-coin-of-destiny');
+      expect(sched.find(t => t.type === 'bb-prizes-and-punishments').episode).toBe(1);
+    }
+  });
+
+  // A double eviction is a house size skipped, and `reanchorThemeArc` fires at
+  // most one card a week — so the run goes LATE rather than losing a night.
+  // Measured rather than assumed, because three consecutive end-anchored cards
+  // is more than any other theme asks of that machinery.
+  it('keeps all three room nights when a double eviction skips a house size', () => {
+    for (let cast = 12; cast <= 20; cast++) {
+      for (let de = 1; de <= cast - 5; de++) {
+        stamp(cast);
+        const rooms = walk(cast, { doubleAt: de }).filter(f => f.type === 'bb-high-rollers-room');
+        expect(rooms, `cast ${cast}, double on week ${de}`).toHaveLength(3);
+        // Still in order, still one a week, still never above the anchor.
+        const houses = rooms.map(r => r.house);
+        expect(houses[0], `cast ${cast}, double ${de}`).toBeLessThanOrEqual(11);
+        expect([...houses].sort((a, b) => b - a), `cast ${cast}, double ${de}`).toEqual(houses);
+        expect(new Set(rooms.map(r => r.ep)).size).toBe(3);
+      }
+    }
+  });
+
+  // ── nothing booked that the resolver would throw away ───────────────────
+  it('books nothing its own cards refuse', () => {
+    const booked = new Set(arcBooks());
+    for (const id of booked) {
+      const card = TWIST_CATALOG.find(c => c.id === id);
+      for (const foe of card.incompatible || []) {
+        expect(booked, `${id} refuses ${foe}, and the arc books both`).not.toContain(foe);
+      }
+    }
+    // The two the room names, spelled out: no veto meeting, and no second house.
+    expect(booked.has('bb-instant-eviction')).toBe(false);
+    expect(booked.has('bb-split-house')).toBe(false);
+  });
+
+  it('puts no two of its cards on one week at any cast from 12 to 20', () => {
+    for (let cast = 12; cast <= 20; cast++) {
+      const weeks = stamp(cast).map(t => t.episode);
+      expect(new Set(weeks).size, `cast ${cast}: two theme cards share a week`)
+        .toBe(weeks.length);
+    }
+  });
+});
+
+// ── and it runs ────────────────────────────────────────────────────────
+//
+// Everything above is arithmetic on a schedule. This plays the season the
+// schedule describes: the door opens on the weeks the arc booked, and the
+// season reaches its last night without throwing.
+describe('a themed season plays the arc it stamped', () => {
+  it('opens the room on the weeks it booked and reaches the finale', () => {
+    withSeededRandom(31, () => {
+      house();
+      seasonConfig.themeArcStamped = '';
+      stampThemeArc(CAST.length);
+      const booked = seasonConfig.twistSchedule
+        .filter(t => t.type === 'bb-high-rollers-room').map(t => t.episode);
+      expect(booked).toHaveLength(3);
+
+      let guard = 0;
+      while (gs.activePlayers.length > 3 && guard++ < 20) {
+        if (!simulateBBEpisode()) break;
+      }
+      const opened = (gs.bb.weeks || []).filter(w => w.highRollers).map(w => w.num);
+      expect(opened, 'the door never opened').toHaveLength(3);
+      // The weeks it opened on are the weeks the schedule ended up holding —
+      // which is `reanchorThemeArc`'s corrected number, not the stamped guess.
+      const final = seasonConfig.twistSchedule
+        .filter(t => t.type === 'bb-high-rollers-room').map(t => t.episode);
+      expect(opened).toEqual(final);
+      // And the house was the size the anchors were written for.
+      for (const w of (gs.bb.weeks || []).filter(x => x.highRollers)) {
+        const size = (w.houseAtStart || []).length;
+        expect([11, 10, 9], `the room opened at a house of ${size}`).toContain(size);
+      }
+
+      expect(() => simulateBBFinale()).not.toThrow();
+      expect(gs.bb.weeks.length).toBeGreaterThan(3);
+    });
   });
 });
 
@@ -395,32 +589,57 @@ describe('the chip band', () => {
   const band = (html) => (html.match(/<section class="bbcp"[\s\S]*?<\/section>/) || [])[0] || '';
   const houseLife = (screens) => screens.filter(s => s.label === 'House Life')
     .map(s => s.html).join('');
+  /**
+   * The band as a VIEWER reads it: tag names and attribute values stripped,
+   * text content kept.
+   *
+   * The chip is drawn as SVG, and its geometry is full of two-digit numbers —
+   * `cx="32"`, `r="30"`, `stroke-width="6"`. Searching the raw markup for a
+   * balance therefore hits circle coordinates and reports a privacy leak that
+   * is not on the screen. What must never appear is a number somebody can READ,
+   * which is exactly the text nodes.
+   */
+  const readable = (html) => html.replace(/<[^>]+>/g, ' ');
 
   it('shows the week\'s payout on House Life and never a balance', () => {
     withSeededRandom(7, () => {
       house();
       simulateBBEpisode();
-      simulateBBEpisode();   // week 2, so balances are 100-200 and distinct from payouts
+      simulateBBEpisode();   // week 2: balances are two payouts deep, so distinct from one
       const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
       const screens = buildVPScreens(ep);
       const html = screens.map(s => s.html).join('');
       const chips = band(houseLife(screens));
+      const chipText = readable(chips);
 
       // It rendered at all — without this the privacy case below is vacuous.
       expect(chips, 'no chip band on any House Life screen').toBeTruthy();
       expect(chips).toMatch(/THE FLOOR PAYS|CHIP COUNT/i);
       // Three tiers, and everybody standing in one of them.
-      for (const amount of [100, 75, 50]) expect(chips).toContain(String(amount));
+      for (const amount of PAYOUT_AMOUNTS) expect(chipText).toContain(String(amount));
       const paid = ep.acts.find(a => a.type === 'bb-bucks').payouts;
       for (const p of paid) expect(chips).toContain(p.name);
 
-      // A payout is 50, 75 or 100. A week-2 balance is not, and must not appear
-      // — not in the band, and not anywhere else the player drew this week.
-      const balances = ep.bucksLedger.map(l => l.balance).filter(b => ![0, 50, 75, 100].includes(b));
+      // A payout is one of the tier amounts. A week-2 balance is not, and must
+      // appear on neither surface that holds payout data: the band, and the
+      // payout screen itself.
+      //
+      // This used to sweep the WHOLE episode's markup for `>balance<`. That
+      // worked only while a payout was a three-figure number: once the tiers
+      // were rescaled a balance became two digits, and `>24<` matches a comp
+      // tally, a day count and an alliance size on screens that have never seen
+      // the ledger. A false leak on an unrelated screen is not a weaker
+      // assertion made safe, it is a broken one — so this checks the two
+      // surfaces that could actually leak, and checks them as READABLE TEXT.
+      const payScreen = readable(screens.filter(s => s.label === 'The Audience Pays')
+        .map(s => s.html).join(''));
+      expect(payScreen, 'no payout screen was drawn').toBeTruthy();
+      const balances = ep.bucksLedger.map(l => l.balance)
+        .filter(b => ![0, ...PAYOUT_AMOUNTS].includes(b));
       expect(balances.length, 'week 2 produced no balance distinct from a payout').toBeGreaterThan(0);
       for (const b of balances) {
-        expect(html).not.toContain(`>${b}<`);
-        expect(chips, `the band printed the balance ${b}`).not.toContain(String(b));
+        expect(chipText, `the band printed the balance ${b}`).not.toContain(String(b));
+        expect(payScreen, `the payout screen printed the balance ${b}`).not.toContain(String(b));
       }
     });
   });

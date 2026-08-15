@@ -55,8 +55,69 @@ fetches 402 — see `reference_bb_wiki_api`).
 
 Load-bearing details in that paragraph, all of which the design honours:
 
-- Income is an **audience** vote, tiered 100 / 75 / 50. Money follows who is
-  *watched*, not who is good.
+- Income is an **audience** vote, tiered in three bands — the top three, the
+  next three, and everybody else. Money follows who is *watched*, not who is
+  good.
+
+  **Amended 2026-08-15: the amounts are rescaled to 26 / 20 / 14.** The shape,
+  the tier names and the canon prices (Roulette 125, Derby 50, Coin 250) all
+  stand. The broadcast paid $100/$75/$50 for *three weeks only*, so a houseguest
+  finished that stretch on 150–300 against a 250 Coin and buying one thing cost
+  them everything else. This simulator pays every week from week one — the
+  announced tiers are the audience leak the theme is built on, and a leak that
+  fires three times is not that theme — so the broadcast amounts across a normal
+  16–20 week cast hand everybody 700–1300 against a 425 menu and nobody ever has
+  to choose.
+
+  **The first rescale (18/14/10) was justified with arithmetic that was wrong by
+  ~40%, and the corrected model is below.** It matters beyond this line: the
+  Veto Derby and the Coin of Destiny are priced against it.
+
+  The real season model:
+
+  | quantity | value | source |
+  |---|---|---|
+  | season length | `cast - 3` weeks | `stampThemeArc`, `js/bb/themes.js` |
+  | weeks that actually pay | `cast - 6` | `awardWeeklyBucks` pays nothing below a house of **seven** (`js/bb/bb-bucks.js`) |
+  | room nights | `fromEnd` 8 / 7 / 6 = weeks `cast-10` / `cast-9` / `cast-8` | `js/bb/themes-high-rollers.js` |
+  | houses on those nights | **11 / 10 / 9** | one eviction a week |
+  | payouts banked at a night | N, at week N | the payout runs early in the week (`js/bb/week.js`), before the door opens |
+
+  Measured, 40,000 simulated seasons per cast, uniform draws (the default
+  popularity map gives every houseguest the same weight), at **26 / 20 / 14**:
+
+  | cast | payout weeks | floor-every-week lifetime | top-every-week ceiling | night 1 (house 11) | night 2 (house 10) | night 3 (house 9) |
+  |---|---|---|---|---|---|---|
+  | 12 | 6 | 84 | 156 | wk 2 — mean **37**, 0% can enter | wk 3 — mean **57**, 0% | wk 4 — mean **77**, 0% |
+  | 16 | 10 | 140 | 260 | wk 6 — mean **108**, 12% | wk 7 — mean **128**, 57% | wk 8 — mean **148**, 94% |
+  | 20 | 14 | 196 | 364 | wk 10 — mean **176**, 100% | wk 11 — mean **196**, 100% | wk 12 — mean **216**, 100% |
+
+  ("% " is the share of the standing house holding the 125 that night.)
+
+  The retune hits its target at the casts it was aimed at: at **cast 16** the
+  room is a real market on night two and nearly the whole house on night three;
+  at **cast 20** everybody can enter on night one. Casts 14–18 interpolate
+  smoothly (cast 14: 0 / 1 / 20%; cast 18: 87 / 100 / 100%).
+
+  **Casts 12 and 13 still cannot enter at all, and that is not a tier problem.**
+  The nights are end-anchored, so on a short season they land in weeks 2–5, and
+  no weekly amount that keeps the room affordable at cast 16 can also bank 125
+  by week two. Getting a twelve into the room means moving the **anchors** or
+  the **price**, not these numbers. `ROOM_EMPTY` in `js/bb/high-rollers-room.js`
+  narrates the empty floor, which is the honest way to carry it until then.
+
+  **The 250 Coin, for the plan that prices it into the room.** On its own night
+  (`fromEnd` 5): cast 12 mean 98 and cast 16 mean 169, with **zero** seasons in
+  40,000 producing anybody at 250; cast 18 mean 203, somebody at 250 in **3%**
+  of seasons; cast 20 mean 236, somebody at 250 in **88%**. So at 26/20/14 the
+  Coin is a **big-cast product** — effectively unreachable below cast 18 — and
+  anybody who spent 125 on a Roulette has put it out of reach for the rest of
+  the season, which is the choice the theme exists to force. Plan 4 should price
+  the Coin knowing that at cast 16 a 250 buy-in is a menu item nobody will ever
+  take.
+
+  `PAYOUT_TIERS` and `FLOOR_TIER` in `js/bb/bb-bucks.js` are the only place the
+  numbers live.
 - Bucks **carry over**. Saving is a strategy.
 - **Paying is not winning.** You buy a seat at a game; the game can beat you.
 - A purchased twist is **usable only that week**, so nothing bought can be

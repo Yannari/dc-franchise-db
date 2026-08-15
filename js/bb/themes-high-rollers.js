@@ -8,9 +8,9 @@
 //
 // The part that makes a season is the MONEY, and it arrives long before the
 // room does. Every week America voted a payout to the entire cast in tiers —
-// a hundred to three of them, seventy-five to three more, fifty to everybody
-// else — and the totals CARRIED and were ANNOUNCED. That is the twist nobody
-// talks about, and it is the one this simulator has been missing a shape for:
+// the top three, the next three, and everybody else — and the totals CARRIED
+// and were ANNOUNCED. That is the twist nobody talks about, and it is the one
+// this simulator has been missing a shape for:
 //
 //   it is an audience signal the room can read.
 //
@@ -18,13 +18,17 @@
 // moves, the edit notices, and the houseguests never find out. Here the vote
 // is read out on the floor every week, so a player who is being watched
 // LEARNS they are being watched, and so does everybody standing next to them.
-// A hundred-dollar week is a target painted by strangers. That single fact
+// A top-tier week is a target painted by strangers. That single fact
 // changes how a room reads itself, and it needed no new room to do it.
 //
-// So this theme ships the economy and only the economy. `books: []` is not an
-// oversight — the wheel, the third chair and the safety purchase are a later
-// plan, and a theme that books a twist with no engine behind it ships a week
-// where nothing happens and nobody can tell why.
+// The economy is still the spine. What sits on top of it now is the FLOOR: the
+// room the money buys into (`js/bb/high-rollers-room.js`, opened three times at
+// the canon final eleven, ten and nine), the Coin bought on its own buy-in, and
+// the wrapped-box veto that asks the casino's own question out loud on night
+// one. Every id in `books` has an engine behind it and a dispatch in
+// `js/bb/week.js`; a theme that books a card with nothing behind it ships a
+// week where the timeline says something happens and nothing does, which is
+// what `books: []` was protecting against while the room was unbuilt.
 //
 // ── THE ANTAGONIST, AND WHY IT IS TWO THINGS ────────────────────────────
 //
@@ -171,14 +175,10 @@ export default {
     },
   },
 
-  // ── THE ARC: THE MOOD TURN, AND NOTHING ELSE ────────────────────────────
+  // ── THE ARC: THE TURN, AND THE THREE NIGHTS THE FLOOR SELLS ─────────────
   //
-  // No bookings. On purpose, and see the header: the wheel and the third chair
-  // are a later plan, and a theme that books a card with no engine behind it
-  // ships a week where the timeline says something happens and nothing does.
-  //
-  // What IS here is the turn, which needs no engine because it is a register
-  // change: the comps stop and the markers get called in. It sits a little
+  // The turn first, because it needs no engine — it is a register change: the
+  // comps stop and the markers get called in. It sits a little
   // past halfway, which is where the broadcast opened the back room — the
   // point in the season where the money stopped being a novelty and started
   // being a position.
@@ -199,13 +199,64 @@ export default {
   // house got small early, so the money got serious early. `frac` stays for the
   // long seasons, where eight-from-the-end would leave the floor novelty-warm
   // most of the way through a season that stopped being a novelty months ago.
+  //
+  // ── WHY THE WRAPPED BOXES ARE ON WEEK ONE AND NOT WEEK THREE ──────────
+  //
+  // `themeScheduleEntries` is a RUNNING ORDER: an act whose week resolves at or
+  // before the act above it is dropped, not shifted. Prizes and Punishments is
+  // the only fixed-week act here and every act under it is end-anchored, so the
+  // gap between them is the cast size — and the gap closes on a small house. At
+  // a cast of twelve the season is nine weeks and `fromEnd: 8` IS week two; at
+  // thirteen it is week three. Booked on week three, the first room night is
+  // dropped on both of those casts and the floor opens at a final ten having
+  // silently skipped the final eleven. Measured, at every cast from twelve to
+  // twenty: week 3 loses a room night on casts 12 and 13, week 2 loses one on
+  // cast 12, week 1 loses none.
+  //
+  // Week one is also where it belongs. The boxes are the theme's thesis stated
+  // before anybody has a reason to distrust it — a veto competition that stops
+  // awarding the veto and starts asking what you actually came here for, on the
+  // one night the answer is still allowed to be "the money". Everything the
+  // room charges for later is that same question with a price on it.
   arc: [
+    // The wrapped-box veto. Already built and wired (`js/bb/week.js` dispatches
+    // it; `js/bb-events/prize-exchange.js` remembers who took the cash).
+    { at: { week: 1 }, book: 'bb-prizes-and-punishments' },
+
     { at: { frac: 0.55 }, mood: 'hostile' },
     { at: { fromEnd: 8 }, mood: 'hostile' },
+
+    // ── THE ROOM, THREE NIGHTS, AT THE HOUSE SIZES THE BROADCAST USED ────
+    //
+    // `fromEnd` 8/7/6 is a final eleven, ten and nine — the run the room ran on
+    // the broadcast, and the reason the mood turn shares the eight anchor. They
+    // are written as three separate acts rather than a `every: 1` recurrence so
+    // each one carries its own `atHouse` and `reanchorThemeArc` can correct all
+    // three independently against the house that is really standing.
+    //
+    // Three consecutive end-anchored bookings is more than any other theme asks
+    // of that machinery, and it fires AT MOST ONE card a week, so a night that
+    // skips a house size (a double eviction the user books) pushes the run late
+    // rather than dropping any of it — the three nights still happen, in order,
+    // one house smaller each. Measured across casts twelve to twenty.
+    //
+    // Each night is cheap for the house to attend and expensive to lose: the
+    // seat is burned per houseguest whatever the result, so the room empties out
+    // as the run goes on, which is the shape it should have.
+    { at: { fromEnd: 8 }, book: 'bb-high-rollers-room' },
+    { at: { fromEnd: 7 }, book: 'bb-high-rollers-room' },
+    { at: { fromEnd: 6 }, book: 'bb-high-rollers-room' },
+
+    // The Coin, one week after the room closes: the floor's last product, sold
+    // on its own buy-in rather than out of the room. Pricing it INTO the room at
+    // 250 is a later plan; until then the buy-in is a probability and this is
+    // still the on-theme card the season was missing.
+    { at: { fromEnd: 5 }, book: 'bb-coin-of-destiny' },
   ],
 
-  // Empty, all four, and each for its own reason:
-  //   books    — nothing to book yet (above).
+  // What the arc owns, and what it deliberately leaves alone:
+  //   books    — the three above. `tests/bb-themes.test.js` holds every id in
+  //              here to `TWIST_CATALOG`, and each has an engine and a dispatch.
   //   weights  — the season's identity is the payout, not a twist affinity.
   //              Weighting cards this theme does not own would make it a
   //              flavour of the base game rather than a season about money.
@@ -213,7 +264,7 @@ export default {
   //              that already ran; every other twist runs on top of it intact.
   //   exclusive— nothing here is exclusive: the payout is the theme, and it is
   //              gated by `economy` rather than by a card only this theme has.
-  books: [],
+  books: ['bb-prizes-and-punishments', 'bb-high-rollers-room', 'bb-coin-of-destiny'],
   weights: {},
   bans: [],
   exclusive: [],

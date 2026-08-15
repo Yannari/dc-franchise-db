@@ -2,7 +2,13 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { gs, setGs } from '../js/core.js';
 import { balance, canAfford, spend, credit, bucksLedgerFor,
-  awardWeeklyBucks, PAYOUT_TIERS } from '../js/bb/bb-bucks.js';
+  awardWeeklyBucks, PAYOUT_TIERS, FLOOR_TIER } from '../js/bb/bb-bucks.js';
+
+// Read the amounts from the module rather than restating them. A test that
+// copies the tiers is a second source of truth for them, and the whole reason
+// the tiers were rescalable in one line is that nothing downstream owns a copy.
+const [TOP, MID] = PAYOUT_TIERS;
+const FLOOR = FLOOR_TIER;
 
 const HOUSE = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly'];
 
@@ -29,10 +35,10 @@ describe('the ledger', () => {
   });
 
   it('refuses to spend money that is not there', () => {
-    credit('Bowie', 50);
+    credit('Bowie', 60);
     expect(canAfford('Bowie', 125)).toBe(false);
     expect(spend('Bowie', 125)).toBe(false);
-    expect(balance('Bowie')).toBe(50);
+    expect(balance('Bowie')).toBe(60);
   });
 
   it('spends what is there', () => {
@@ -49,12 +55,50 @@ describe('the ledger', () => {
 });
 
 describe('the weekly payout', () => {
-  it('pays the canon tiers: three at 100, three at 75, the rest at 50', () => {
+  // The canon SHAPE — three, three, and the rest — with amounts read from the
+  // module. The amounts were rescaled off the broadcast's $100/$75/$50 because
+  // this simulator pays every week rather than only during the three weeks the
+  // room was open; the shape is untouched.
+  it('pays the canon shape: three at the top, three in the middle, the rest on the floor', () => {
     const act = awardWeeklyBucks({ week: { num: 1 }, house: HOUSE, rng: seq([0.1, 0.4, 0.7]) });
     const amounts = act.payouts.map(p => p.amount).sort((a, b) => b - a);
-    expect(amounts.filter(a => a === 100)).toHaveLength(3);
-    expect(amounts.filter(a => a === 75)).toHaveLength(3);
-    expect(amounts.filter(a => a === 50)).toHaveLength(HOUSE.length - 6);
+    expect(amounts.filter(a => a === TOP.amount)).toHaveLength(TOP.count);
+    expect(amounts.filter(a => a === MID.amount)).toHaveLength(MID.count);
+    expect(amounts.filter(a => a === FLOOR.amount)).toHaveLength(HOUSE.length - TOP.count - MID.count);
+  });
+
+  // A whole season's income must not comfortably clear the menu, or a purchase
+  // stops being a sacrifice and the room becomes a shop.
+  //
+  // THE SEASON MODEL, WHICH THIS TEST PREVIOUSLY GOT WRONG BY ~40%.
+  // It asserted "16 weeks" against a cast of 16, reading the season length off
+  // `stampThemeArc` (`cast - 3` = 13) and then not even that. The weeks that
+  // actually PAY are fewer again, because `awardWeeklyBucks` returns null below
+  // a house of seven: at one eviction a week that is `cast - 6` weeks, ten on a
+  // cast of sixteen. Written as a derivation rather than a literal so the next
+  // rescale is checked against the real season and not a remembered one.
+  const payoutWeeks = cast => Math.max(0, cast - 6);
+
+  it('prices a season so that the most-watched houseguest can afford ONE big thing', () => {
+    const COIN = 250, ROULETTE = 125;
+    const W = payoutWeeks(16);                         // ten
+    expect(W).toBe(10);
+    // The ceiling — every week at the top of the vote, which nobody achieves —
+    // is one Coin and nothing else. Above `COIN + ROULETTE` and the season's
+    // best-loved houseguest stops having to choose.
+    expect(TOP.amount * W).toBeGreaterThanOrEqual(COIN);
+    expect(TOP.amount * W).toBeLessThan(COIN + ROULETTE);
+    // The floor is a Roulette and never a Coin, on the LONG cast. On sixteen a
+    // floor-every-week houseguest banks 140 — over the price of the wheel, and
+    // a long way under the Coin.
+    expect(FLOOR.amount * payoutWeeks(20)).toBeLessThan(COIN);
+    expect(FLOOR.amount * W).toBeGreaterThanOrEqual(ROULETTE);
+    // And the room has to be attendable while it is OPEN, which is the failure
+    // 18/14/10 shipped with: the three nights are anchored at houses 11/10/9,
+    // so on a cast of sixteen they land on weeks 6, 7 and 8 with that many
+    // payouts banked. A middling houseguest — the floor plus a couple of good
+    // weeks — must be able to walk through that door by the third night.
+    expect(FLOOR.amount * 8 + (TOP.amount - FLOOR.amount) * 2).toBeGreaterThanOrEqual(ROULETTE);
   });
 
   it('pays every houseguest exactly once', () => {
@@ -67,8 +111,9 @@ describe('the weekly payout', () => {
     const afterOne = HOUSE.map(balance);
     awardWeeklyBucks({ week: { num: 2 }, house: HOUSE, rng: seq([0.3, 0.6, 0.8]) });
     HOUSE.forEach((name, i) => expect(balance(name)).toBeGreaterThan(afterOne[i] - 1));
-    // Nobody can be poorer after a payout than before one.
-    expect(HOUSE.every(n => balance(n) >= 100)).toBe(true);
+    // Nobody can be poorer after a payout than before one: two weeks on the
+    // floor is the least anybody in that house can be holding.
+    expect(HOUSE.every(n => balance(n) >= FLOOR.amount * 2)).toBe(true);
   });
 
   it('leans towards the houseguests the audience actually likes', () => {
@@ -78,8 +123,8 @@ describe('the weekly payout', () => {
       gs.bb.bucks = {};
       const rng = seq([(s % 10) / 10, ((s * 3) % 10) / 10, ((s * 7) % 10) / 10]);
       const act = awardWeeklyBucks({ week: { num: 1 }, house: HOUSE, rng });
-      const hundreds = act.payouts.filter(p => p.amount === 100).map(p => p.name);
-      top += hundreds.filter(n => ['Bowie', 'Chase', 'Ripper'].includes(n)).length;
+      const paidTop = act.payouts.filter(p => p.tier === 'top').map(p => p.name);
+      top += paidTop.filter(n => ['Bowie', 'Chase', 'Ripper'].includes(n)).length;
     }
     // 3 of 8 at random would be ~67 over 60 draws of 3. Weighted must beat that clearly.
     expect(top).toBeGreaterThan(90);

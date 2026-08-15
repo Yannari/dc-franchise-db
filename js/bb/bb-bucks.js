@@ -23,18 +23,91 @@ import { gs } from '../core.js';
 import { stableRng } from './knowledge.js';
 
 /**
- * The canon tiers, frozen.
+ * The tiers, frozen.
  *
- * "The three houseguests who received the most votes would receive $100 in BB
- * Bucks. The next three would receive $75, and the remaining houseguests would
- * receive $50." Everybody is paid something every week, which is what makes
- * saving possible for the people the audience is ignoring — slowly.
+ * The SHAPE is canon and untouched: three at the top, three in the middle, and
+ * everybody else on the floor, paid every single week. The AMOUNTS are not the
+ * broadcast's, and the reason is arithmetic rather than taste.
+ *
+ * On the show the audience only paid during the three weeks the High Roller's
+ * Room was open. A houseguest finished that stretch holding somewhere around
+ * 150 to 300 against a 250 Coin, so buying the Coin cost them everything else
+ * they would ever have — which is what made walking into that room a decision
+ * instead of an errand.
+ *
+ * This simulator pays from week one, every week, because the announced tiers
+ * are the audience leak the whole theme is built on and a season that only
+ * leaks three times is not that theme. But paying $100/$75/$50 across the
+ * sixteen-odd weeks of a normal cast hands everybody 700 to 1300 against a menu
+ * that tops out at 425. Nobody would ever have to choose, and a currency nobody
+ * has to ration is a scoreboard.
+ *
+ * So the tiers are rescaled and the canon PRICES are kept (Roulette 125, Derby
+ * 50, Coin 250).
+ *
+ * ── THE ARITHMETIC, DONE PROPERLY THIS TIME ────────────────────────────
+ *
+ * The first rescale set 18/14/10 on a season model that was wrong by about
+ * forty per cent, so it is written out here in full rather than summarised:
+ *
+ *   A season is `cast - 3` weeks (`stampThemeArc`, js/bb/themes.js).
+ *   This function pays NOTHING below a house of seven, so the weeks that
+ *   actually pay are `cast - 6`, not `cast - 3`.
+ *   The room's three nights are anchored `fromEnd` 8/7/6, which is weeks
+ *   `cast-10`, `cast-9`, `cast-8` — houses of ELEVEN, TEN and NINE.
+ *   The payout runs early in the week (week.js), so the night's own payout is
+ *   already banked when the door opens: N payouts standing at week N.
+ *
+ * Measured over 40,000 seasons per cast, uniform draws (the default popularity
+ * map makes every weight equal), at 26/20/14:
+ *
+ *   cast 20 — 14 payout weeks. Nights at weeks 10/11/12: mean 176 / 196 / 216.
+ *             The whole house can enter on NIGHT ONE.
+ *   cast 16 — 10 payout weeks. Nights at weeks 6/7/8: mean 108 / 128 / 148,
+ *             and 12% / 57% / 94% of the house holding the 125.
+ *   cast 12 —  6 payout weeks. Nights at weeks 2/3/4: mean 37 / 57 / 77.
+ *             NOBODY can enter, on any of the three nights.
+ *
+ * The cast-12 door opening onto an empty floor is NOT a tier problem and must
+ * not be fixed by raising these: the nights are end-anchored, so on a short
+ * season they land in weeks two, three and four, and no weekly amount that
+ * leaves the room affordable at cast 16 can also bank 125 by week two. Making
+ * a twelve reach the room means moving the ANCHORS or the PRICE. `ROOM_EMPTY`
+ * in high-rollers-room.js narrates the empty floor, which is the honest way to
+ * carry it until then.
+ *
+ * The 250 Coin, for the plan that prices it into the room: unreachable at cast
+ * 16 (mean 169 on its night, 0 seasons in 40,000 with anybody at 250) and
+ * reachable at cast 20 (mean 236, somebody holds 250 in 88% of seasons). It
+ * first becomes reachable at all around cast 18, and only rarely (3%). So the
+ * Coin is a big-cast product, and anybody who spent 125 on a Roulette has put
+ * it out of reach for the season — which is the choice the theme wants.
+ *
+ * Nothing downstream may hardcode these. Every surface — the transcripts, the
+ * chip band, the tests — reads them from here, so the next rescale is this
+ * constant and nothing else.
  */
 export const PAYOUT_TIERS = Object.freeze([
-  Object.freeze({ count: 3, amount: 100, tier: 'top' }),
-  Object.freeze({ count: 3, amount: 75, tier: 'middle' }),
+  Object.freeze({ count: 3, amount: 26, tier: 'top' }),
+  Object.freeze({ count: 3, amount: 20, tier: 'middle' }),
 ]);
-const FLOOR = Object.freeze({ amount: 50, tier: 'floor' });
+
+/**
+ * What everybody not in a counted tier is paid.
+ *
+ * Exported for the same reason the tiers are: it is an amount, and an amount
+ * that lives in one file is an amount a test can assert against without copying
+ * it. It is deliberately NOT an entry in `PAYOUT_TIERS` — the two above have a
+ * `count` and this one is "the rest", and folding it in would make every
+ * consumer that iterates the tiers pay the floor three times.
+ */
+export const FLOOR_TIER = Object.freeze({ amount: 14, tier: 'floor' });
+const FLOOR = FLOOR_TIER;
+
+/** Every amount the floor can pay, high to low. For anything asserting on them. */
+export const PAYOUT_AMOUNTS = Object.freeze([
+  ...PAYOUT_TIERS.map(t => t.amount), FLOOR_TIER.amount,
+]);
 
 /** The ledger, created on first touch so a pre-feature save can grow one. */
 function ledger() {
@@ -69,17 +142,21 @@ export function bucksLedgerFor(house = gs.activePlayers || []) {
   return house.filter(Boolean).map(name => ({ name, balance: balance(name) }));
 }
 
+// The amount is passed in rather than written into the sentence. These lines
+// spelled their numbers out — "a hundred", "fifty" — which meant the prose was
+// a second, silent copy of `PAYOUT_TIERS` that no test could see drift, and one
+// of them had already drifted into saying the FLOOR paid a hundred.
 const TOP_LINE = [
-  n => `${n} takes the top of the vote and a hundred with it, which is the audience telling this house something it did not ask to be told.`,
-  n => `A hundred for ${n}. Somebody out there is watching ${n} more closely than anybody in that room is.`,
+  (n, amt) => `${n} takes the top of the vote and $${amt} with it, which is the audience telling this house something it did not ask to be told.`,
+  (n, amt) => `$${amt} for ${n}. Somebody out there is watching ${n} more closely than anybody in that room is.`,
   n => `${n} is paid at the top. The number is public and so, therefore, is how much the audience likes ${n}.`,
-  n => `The floor pays ${n} a hundred, and every houseguest does that arithmetic in silence.`,
+  (n, amt) => `The floor pays ${n} the top tier, $${amt}, and every houseguest does that arithmetic in silence.`,
 ];
 const FLOOR_LINE = [
-  n => `${n} is paid fifty, which is the floor, and the floor is a verdict.`,
-  n => `Fifty for ${n} — the amount you get for being in the building.`,
+  (n, amt) => `${n} is paid $${amt}, which is the floor, and the floor is a verdict.`,
+  (n, amt) => `$${amt} for ${n} — the amount you get for being in the building.`,
   n => `${n} collects the minimum and says nothing about it, which is the correct play and does not help.`,
-  n => `The floor pays ${n} fifty. Saving it is now a plan rather than a preference.`,
+  (n, amt) => `The floor pays ${n} $${amt}. Saving it is now a plan rather than a preference.`,
 ];
 
 /**
@@ -152,15 +229,15 @@ export function awardWeeklyBucks({ week, house = [],
   // reading of the whole ledger. And a beat may never state a balance — only
   // what was paid this week, which is the part the house was told.
   const beats = [];
-  const topName = payouts.find(p => p.tier === 'top')?.name;
-  const floorName = payouts.find(p => p.tier === 'floor')?.name;
-  if (topName) {
-    beats.push({ text: TOP_LINE[Math.floor(rng() * TOP_LINE.length)](topName),
-      players: [topName], badgeText: 'PAID AT THE TOP', badgeClass: 'gold' });
+  const top = payouts.find(p => p.tier === 'top');
+  const floor = payouts.find(p => p.tier === 'floor');
+  if (top) {
+    beats.push({ text: TOP_LINE[Math.floor(rng() * TOP_LINE.length)](top.name, top.amount),
+      players: [top.name], badgeText: 'PAID AT THE TOP', badgeClass: 'gold' });
   }
-  if (floorName) {
-    beats.push({ text: FLOOR_LINE[Math.floor(rng() * FLOOR_LINE.length)](floorName),
-      players: [floorName], badgeText: 'PAID THE FLOOR', badgeClass: 'grey' });
+  if (floor) {
+    beats.push({ text: FLOOR_LINE[Math.floor(rng() * FLOOR_LINE.length)](floor.name, floor.amount),
+      players: [floor.name], badgeText: 'PAID THE FLOOR', badgeClass: 'grey' });
   }
 
   return { type: 'bb-bucks', week: week?.num || 0, secret: false, payouts, beats };

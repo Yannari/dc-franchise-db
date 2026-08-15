@@ -2527,6 +2527,92 @@ export function _juryLayerRead(juror, finalist) {
 }
 
 /**
+ * What a finalist actually won, in whichever show this season is.
+ *
+ * ── the bug this exists for ──
+ *
+ * Two of the résumé terms below were written against Total Drama's episode
+ * shape: `e.immunityWinner` where `e.challengeType === 'individual'`, and
+ * `playerStates[x].votesReceived`. A Big Brother season writes neither. It
+ * records competition wins on `gs.bb.stats` and it never sets a challengeType
+ * at all, so for four seasons of Big Brother BOTH terms evaluated to zero for
+ * every finalist — the jury could not see a single Head of Household or veto
+ * anybody had ever won.
+ *
+ * Measured over twenty-six played seasons before the fix: the finalist with
+ * FEWER competition wins took the vote sixteen times against six. A ten-comp
+ * finalist lost 5–2. That is not a bitter jury, which is what it looked like
+ * from the outside — it is a jury being handed a blank résumé and voting on
+ * the only thing it could still see, while the comp winner paid full price in
+ * bitterness for every person they had put on the block.
+ *
+ * `survived` is the same idea for the other half: Total Drama counts votes
+ * received, Big Brother counts times sat on the block and lived. Both mean
+ * "kept getting targeted and kept coming back".
+ */
+function _juryCompRecord(name) {
+  if (seasonConfig.format === 'big-brother') {
+    const st = gs.bb?.stats?.[name] || {};
+    return {
+      wins: (Number(st.hohWins) || 0) + (Number(st.vetoWins) || 0)
+        + (Number(st.blockBusterWins) || 0),
+      survived: Number(st.timesOnTheBlock) || 0,
+    };
+  }
+  return {
+    wins: (gs.episodeHistory || []).filter(e => e.immunityWinner === name
+      && e.challengeType === 'individual').length,
+    survived: Number(gs.playerStates?.[name]?.votesReceived) || 0,
+  };
+}
+
+/**
+ * What a competition résumé is worth to a jury, per show.
+ *
+ * Total Drama keeps the tiers it has always had, to the digit: one immunity an
+ * episode, and five of them is the ceiling worth 0.8.
+ *
+ * Big Brother needs its own curve and gets one, because the same raw number
+ * means something different there. A Big Brother season runs roughly thirty
+ * competitions across two slots a week, so one win is a good night rather than
+ * a résumé and five is a season nobody in that house will shut up about. The
+ * ceiling is higher for the same reason — with Total Drama's cap of 0.8, a
+ * ten-comp season was worth less to a juror than one point of bond, less than
+ * being a `hero`, and less than the function's own random term. It has to be
+ * possible to win this on competitions.
+ *
+ * It is deliberately still LOSABLE. Bond is uncapped and multiplied by 1.5, so
+ * a finalist who is three or four points better with the jury beats a comp
+ * beast every time, which is the outcome the format is famous for.
+ *
+ * ── how these two numbers were chosen ──
+ *
+ * By playing seasons, not by taste. Twenty-six full Big Brother seasons on
+ * fixed seeds, counting how often the finalist with MORE competition wins took
+ * the vote:
+ *
+ *   dead reads (what shipped)   23% more / 62% fewer   — comps anti-correlated
+ *   step 0.5, cap 2.6           23% / 62%              — no ballot moved at all
+ *   step 0.85, cap 5            35% / 50%
+ *   step 1.1,  cap 6            42% / 42%   ← here
+ *   step 1.4,  cap 7            46% / 38%   — starts buying finales outright
+ *
+ * Level is the target rather than a majority. A competition record should make
+ * a finalist a real contender and should not decide the night on its own: at
+ * this setting two of those twenty-six seasons were still won by somebody
+ * three or more competitions behind, which is the result the format exists for.
+ */
+const JURY_COMP_STEP = 1.1;
+const JURY_COMP_CAP = 6;
+function _juryCompValue(wins) {
+  if (seasonConfig.format === 'big-brother') {
+    // One is not a résumé; five is. See the calibration note above.
+    return Math.min(JURY_COMP_CAP, Math.max(0, wins - 1) * JURY_COMP_STEP);
+  }
+  return wins >= 5 ? 0.8 : wins >= 4 ? 0.6 : wins >= 3 ? 0.4 : wins >= 2 ? 0.2 : 0;
+}
+
+/**
  * The last vote.
  *
  * `adjustments` is an optional `{ [juror]: { [finalist]: number } }` of feeling
@@ -2561,12 +2647,14 @@ export function simulateJuryVote(finalists, adjustments = null) {
       const _resumeBonus = _bigMoves === 0 ? -0.6
         : _bigMoves === 1 ? 0
         : Math.min(0.8, _bigMoves * 0.15);
-      // Survival resume: cumulative votes survived — jurors respect someone who kept getting targeted and kept surviving
-      const _totalVotesReceived = gs.playerStates?.[f]?.votesReceived || 0;
-      const _survivalBonus = Math.min(0.5, _totalVotesReceived * 0.04); // 5 votes = 0.2, 10 votes = 0.4, caps at 0.5
-      // Challenge dominance: individual immunity wins impress the jury
-      const _immWins = gs.episodeHistory.filter(e => e.immunityWinner === f && e.challengeType === 'individual').length;
-      const _challengeBonus = _immWins >= 5 ? 0.8 : _immWins >= 4 ? 0.6 : _immWins >= 3 ? 0.4 : _immWins >= 2 ? 0.2 : 0;
+      // Survival resume: kept getting targeted and kept surviving. Votes
+      // received in Total Drama, nights on the block in Big Brother.
+      const _record = _juryCompRecord(f);
+      const _survivalBonus = Math.min(0.5, _record.survived * 0.04); // 5 = 0.2, 10 = 0.4, caps at 0.5
+      // Competition dominance. See _juryCompRecord for why this used to read
+      // zero for every Big Brother finalist who ever sat in those chairs.
+      const _immWins = _record.wins;
+      const _challengeBonus = _juryCompValue(_immWins);
       // Underdog bonus: high votes received in pre-merge but made it to the end — comeback story
       const _preMergeVotes = gs.episodeHistory.filter(e => !e.isMerge && e.challengeType === 'tribe')
         .reduce((s, e) => s + ((e.votingLog || []).filter(v => v.voted === f).length), 0);
@@ -2626,7 +2714,9 @@ export function simulateJuryVote(finalists, adjustments = null) {
     const _jrFp = pronouns(pick);
     const _jrPick = arr => arr[([...juror+pick].reduce((a,c)=>a+c.charCodeAt(0),0)+gs.episode*7)%arr.length];
     // Compute finalist stats for reasoning
-    const _jrImmWins = gs.episodeHistory.filter(e => e.immunityWinner === pick && e.challengeType === 'individual').length;
+    // The same record the score was built from, so the reason a juror gives
+    // cannot cite a different season from the one they just voted on.
+    const _jrImmWins = _juryCompRecord(pick).wins;
     const _jrPreMergeVotes = gs.episodeHistory.filter(e => !e.isMerge && e.challengeType === 'tribe')
       .reduce((s, e) => s + ((e.votingLog || []).filter(v => v.voted === pick).length), 0);
     const _jrPosJurorBonds = (gs.jury || []).filter(j => getBond(j, pick) >= 1).length;

@@ -18958,6 +18958,7 @@ export function rpBuildBBTwistAnnouncement(ep, act) {
 export function rpBuildBBThemeBeat(ep, act) {
   if (act?.themeId === 'machine-summer') return _rpThemeBeatCora(ep, act);
   if (act?.themeId === 'summer-of-mystery') return _rpThemeBeatMystery(ep, act);
+  if (act?.themeId === 'high-rollers') return _rpThemeBeatPitBoss(ep, act);
   return _rpThemeBeatDen(ep, act);
 }
 
@@ -19271,6 +19272,194 @@ function _rpThemeBeatMystery(ep, act) {
           <rect x="62" y="11.4" width="3" height="6" rx="1" fill="${gold}" opacity=".85"/>
           <rect x="69" y="11.4" width="3" height="4" rx="1" fill="${gold}" opacity=".85"/>
         </svg>
+      </div>
+    </div>
+  </div>`;
+}
+
+/**
+ * The Pit Boss, who is a TABLE rather than a face.
+ *
+ * The other three antagonists are all a light pointed at the house — the Den's
+ * eye, CORA's panel, the Mastermind's door. This one never appears at all,
+ * because a pit boss is not a presence in a casino, it is the fact that the
+ * room is being run. So the screen is the thing it runs: a half-round table
+ * under the floor lamps, brass rail, five seats with money on them, and the
+ * line set across the felt the way a floor announcement is set — tracked out,
+ * over a hairline, addressed to nobody in particular.
+ *
+ * The hostile beat does not redden this table, it MOVES it: the same furniture
+ * seen in the count room behind the floor, lit by a fluorescent tube instead
+ * of a lamp, rail gone to steel, chips stacked into columns to be weighed
+ * rather than scattered across the seats. The theme's whole argument is that
+ * escalation here is cold, and this is where a reader sees it in one glance.
+ *
+ * SVG and CSS only, no emoji, still under reduced motion.
+ */
+function _rpThemeBeatPitBoss(ep, act) {
+  const week = ep?.num ?? ep?.episode ?? '';
+  const hostile = act?.mood === 'hostile';
+  const brass = hostile ? '#8fb4d0' : '#c9a227';
+  const lamp = hostile ? '#dff0ff' : '#f0d585';
+
+  // ── the table, in one shape ───────────────────────────────────────────
+  //
+  // A half-round: the dealer's straight edge across the top, the players'
+  // curve towards the viewer. Everything else on the felt is computed off the
+  // same ellipse, so the seats sit ON the arc rather than near it.
+  const CX = 310, CY = 152, RX = 182, RY = 156;
+  const seatAt = (t) => ({
+    x: CX + RX * Math.cos((t * Math.PI) / 180),
+    y: CY + RY * Math.sin((t * Math.PI) / 180),
+  });
+
+  // Deterministic stacks: the same beat draws the same money every rebuild, so
+  // a re-render does not quietly re-bet the table.
+  let h = 0;
+  for (const ch of `${act?.hook || ''}${week}${act?.line?.length || 0}`) {
+    h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  }
+  const seats = [24, 57, 90, 123, 156].map((t, i) => {
+    h = (h * 1103515245 + 12345) >>> 0;
+    const p = seatAt(t);
+    // On the floor the money sits in the betting circle in ones and twos; in
+    // the count room it has been racked into a column.
+    const n = hostile ? 4 + (h % 7) : 1 + (h % 4);
+    const chips = Array.from({ length: n }, (_, k) => `
+      <ellipse cx="${p.x.toFixed(1)}" cy="${(p.y - 3 - k * 3.4).toFixed(1)}" rx="13" ry="4.6"
+               class="bbhr-chip" style="animation-delay:${(i * 0.28 + k * 0.09).toFixed(2)}s"/>`).join('');
+    return `<g class="bbhr-seat">
+      <ellipse cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" rx="21" ry="8"
+               fill="none" stroke="${brass}" stroke-width=".9" opacity=".42"/>
+      ${chips}
+    </g>`;
+  }).join('');
+
+  // The layout arc — the printed line on the felt the bets sit behind.
+  const layout = `M ${(CX - RX * 0.86).toFixed(1)},${(CY + RY * 0.30).toFixed(1)}
+    A ${(RX * 0.86).toFixed(1)},${(RY * 0.72).toFixed(1)} 0 0 0
+      ${(CX + RX * 0.86).toFixed(1)},${(CY + RY * 0.30).toFixed(1)}`;
+
+  const plaque = hostile
+    ? ['Table closed', 'Count in progress']
+    : ['No limit', 'The floor is open'];
+  const label = { open: 'The floor', noms: 'The book', veto: 'The re-buy',
+    vote: 'The count', finale: 'Last table', crown: 'Settled' }[act?.hook] || 'The floor';
+
+  return `<div class="rp-page bb-room bb-block bbhr${hostile ? ' is-hostile' : ''}" data-ambient="tribal-tension">
+    <style>
+      .bbhr{--bbhr-brass:${brass};--bbhr-lamp:${lamp};
+        max-width:1100px;margin:0 auto;padding:26px 24px 44px;text-align:center}
+      .bbhr-sign{font-family:"Copperplate Gothic Bold",Copperplate,"Cinzel",Georgia,serif;
+        letter-spacing:.42em;font-size:14px;text-transform:uppercase;color:var(--bbhr-brass);
+        text-shadow:0 0 18px var(--bbhr-brass);margin-bottom:2px}
+      .bbhr.is-hostile .bbhr-sign{text-shadow:0 0 10px var(--bbhr-lamp);letter-spacing:.5em}
+      .bbhr-rule{width:230px;height:1px;margin:12px auto 18px;
+        background:linear-gradient(90deg,transparent,var(--bbhr-brass),transparent);opacity:.7}
+      .bbhr-svg{width:100%;max-width:660px;height:auto;display:block;margin:0 auto;
+        border:1px solid color-mix(in srgb,var(--bbhr-brass) 24%,transparent)}
+      /* Chips settle onto the felt one stack at a time; in the count room they
+         are already stacked and only the tube moves. */
+      .bbhr-chip{fill:var(--bbhr-brass);opacity:.9;
+        animation:bbhrSettle 4.6s ease-in-out infinite}
+      @keyframes bbhrSettle{0%,100%{opacity:.72}50%{opacity:1}}
+      .bbhr.is-hostile .bbhr-chip{animation:none;opacity:.85;fill:var(--bbhr-lamp)}
+      .bbhr-tube{animation:bbhrTick 4.5s steps(1) infinite}
+      @keyframes bbhrTick{0%,46%,52%,100%{opacity:.9}48%,50%{opacity:.35}}
+      .bbhr-glow{animation:bbhrBreathe 6s ease-in-out infinite}
+      @keyframes bbhrBreathe{0%,100%{opacity:.55}50%{opacity:.92}}
+      @media(prefers-reduced-motion:reduce){
+        .bbhr-chip,.bbhr-tube,.bbhr-glow{animation:none}}
+      /* The announcement: a floor call, not a speech. Tracked out over the
+         felt, with the marker buttons the pit uses to open and close a game. */
+      .bbhr-card{position:relative;max-width:720px;margin:24px auto 0;padding:24px 30px 26px;
+        background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
+        border:1px solid color-mix(in srgb,var(--bbhr-brass) 32%,transparent)}
+      .bbhr-card::before,.bbhr-card::after{content:'';position:absolute;width:9px;height:9px;
+        border-radius:50%;border:1px solid var(--bbhr-brass);opacity:.6}
+      .bbhr-card::before{top:8px;left:8px}
+      .bbhr-card::after{bottom:8px;right:8px}
+      .bbhr-who{font-size:11px;letter-spacing:.36em;text-transform:uppercase;
+        color:var(--bbhr-brass);opacity:.88;margin-bottom:12px}
+      .bbhr-line{font-size:26px;line-height:1.5;margin:0;font-style:italic}
+      .bbhr-plaque{margin-top:18px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+        opacity:.62;display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+      .bbhr-plaque b{font-weight:600;color:var(--bbhr-brass)}
+    </style>
+    ${week === '' ? '' : `<div class="rp-eyebrow">Week ${_bbEsc(String(week))}</div>`}
+    <div class="bbhr-hall">
+      <div class="bbhr-sign">${hostile ? 'The count room' : "High roller's"}</div>
+      <div class="bbhr-rule"></div>
+
+      <svg class="bbhr-svg" viewBox="0 0 620 380" role="img"
+           aria-label="${hostile
+             ? 'A card table in a count room under a fluorescent tube, its chips racked'
+             : 'A card table under low lamplight, brass rail, money on every seat'}">
+        <defs>
+          <radialGradient id="bbhrLamp">
+            <stop offset="0%" stop-color="${lamp}" stop-opacity="${hostile ? '.34' : '.55'}"/>
+            <stop offset="100%" stop-color="${lamp}" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="bbhrFelt" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${hostile ? '#22333d' : '#33251a'}"/>
+            <stop offset="100%" stop-color="${hostile ? '#0c141b' : '#140d0a'}"/>
+          </linearGradient>
+          <filter id="bbhrBlur"><feGaussianBlur stdDeviation="${hostile ? 7 : 11}"/></filter>
+        </defs>
+
+        <rect width="620" height="380" fill="${hostile ? '#080d12' : '#0b0708'}"/>
+
+        <!-- what is overhead: a lamp hanging over the felt, or a tube bolted
+             to a ceiling that was never meant to be looked at -->
+        ${hostile ? `
+        <rect x="176" y="26" width="268" height="9" rx="2" fill="${lamp}" opacity=".9"
+              class="bbhr-tube"/>
+        <rect x="170" y="21" width="280" height="4" rx="2" fill="#4d5c66" opacity=".8"/>
+        <polygon points="176,35 444,35 556,300 64,300" fill="url(#bbhrLamp)" class="bbhr-tube"/>`
+        : `
+        <ellipse cx="310" cy="30" rx="54" ry="16" fill="none" stroke="${brass}"
+                 stroke-width="1.2" opacity=".5"/>
+        <ellipse cx="310" cy="34" rx="46" ry="12" fill="${lamp}" opacity=".5"
+                 filter="url(#bbhrBlur)" class="bbhr-glow"/>
+        <ellipse cx="310" cy="250" rx="290" ry="150" fill="url(#bbhrLamp)" class="bbhr-glow"/>`}
+
+        <!-- the rail, then the felt inside it -->
+        <path d="M ${CX + RX + 13},${CY - 4} A ${RX + 13},${RY + 13} 0 0 1 ${CX - RX - 13},${CY - 4}"
+              fill="none" stroke="${hostile ? '#5d6f7b' : brass}" stroke-width="4.5" opacity=".62"
+              stroke-linecap="round"/>
+        <line x1="${CX - RX - 13}" y1="${CY - 4}" x2="${CX + RX + 13}" y2="${CY - 4}"
+              stroke="${hostile ? '#5d6f7b' : brass}" stroke-width="4.5" opacity=".4"
+              stroke-linecap="round"/>
+        <path d="M ${CX - RX},${CY} L ${CX + RX},${CY} A ${RX},${RY} 0 0 1 ${CX - RX},${CY} Z"
+              fill="url(#bbhrFelt)" stroke="${brass}" stroke-width=".8" opacity=".97"/>
+
+        <!-- the printed layout, and the seats behind it -->
+        <path d="${layout}" fill="none" stroke="${brass}" stroke-width=".9" opacity=".3"/>
+        ${seats}
+
+        <!-- the dealer's side: the shoe, and the marker the pit drops on a
+             table it has stopped paying -->
+        <rect x="272" y="${CY - 30}" width="76" height="21" rx="3"
+              fill="${hostile ? '#16222b' : '#181009'}" stroke="${brass}"
+              stroke-width=".9" opacity=".9"/>
+        <line x1="284" y1="${CY - 24}" x2="336" y2="${CY - 24}" stroke="${brass}"
+              stroke-width=".8" opacity=".45"/>
+        ${hostile ? `
+        <rect x="${CX - 26}" y="${CY + RY * 0.62}" width="52" height="15" rx="2"
+              fill="${lamp}" opacity=".82"/>
+        <line x1="${CX - 18}" y1="${CY + RY * 0.62 + 7.5}" x2="${CX + 18}"
+              y2="${CY + RY * 0.62 + 7.5}" stroke="#0b1218" stroke-width="1.6" opacity=".8"/>`
+        : ''}
+      </svg>
+
+      <div class="bbhr-card">
+        <div class="bbhr-who">${_bbEsc(act?.speaker || '')}</div>
+        <p class="bbhr-line">&ldquo;${_bbEsc(act?.line || '')}&rdquo;</p>
+        <div class="bbhr-plaque">
+          <span>${_bbEsc(label)}</span>
+          <span><b>${_bbEsc(plaque[0])}</b></span>
+          <span>${_bbEsc(plaque[1])}</span>
+        </div>
       </div>
     </div>
   </div>`;

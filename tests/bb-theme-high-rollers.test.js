@@ -13,6 +13,8 @@ import { setGs } from '../js/core.js';
 // jsdom, where the module URL is not a file: URL and `fileURLToPath` throws.
 // This is the same door `tests/bb-themes.test.js` opens the markup through.
 import { readFileSync } from 'node:fs';
+import { rpBuildBBThemeBeat } from '../js/vp-screens.js';
+import { BED_CATALOG } from '../js/audio.js';
 
 const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly',
   'Hicks', 'Emmah', 'Millie', 'Caleb'];
@@ -158,5 +160,159 @@ describe('the descriptor', () => {
     const html = readFileSync('simulator.html', 'utf8');
     const select = html.match(/<select id="cfg-theme"[\s\S]*?<\/select>/)[0];
     expect(select).toContain('value="high-rollers"');
+  });
+});
+
+// ── the skin ───────────────────────────────────────────────────────────
+//
+// The visual thesis of this theme is a TEMPERATURE FLIP. Neutral is a warm
+// high-limit salon — brass on black lacquer, lit from the table up. Hostile is
+// the count room behind it: steel, fluorescent, every warm tone gone. It is the
+// only theme on the shelf that escalates cold (the Den and CORA both go red,
+// Summer of Mystery drains to bone), so "the hostile block is different" is not
+// enough — it has to be different in the one direction that makes the theme
+// legible beside the other three. These cases assert the direction.
+//
+// The brief's draft sliced the block with a lookahead on `\n/* ──` / `\n.rp-theme-`.
+// That was written before the CSS existed: the theme skin section is indented
+// four spaces, so neither alternative can ever match at a line start and the
+// slice ran to the end of the stylesheet. Sliced from the block to the shared
+// reduced-motion rule that closes the section instead, which is the real intent.
+describe('the skin', () => {
+  const css = () => readFileSync('css/simulator.css', 'utf8');
+
+  /** Just the High Roller's rules, from its first selector to the end of the section. */
+  const block = () => {
+    const all = css();
+    const from = all.indexOf('.rp-theme-high-rollers');
+    expect(from, "no High Roller's block in the stylesheet").toBeGreaterThan(-1);
+    const to = all.indexOf('prefers-reduced-motion', from);
+    return all.slice(from, to > -1 ? to : all.length);
+  };
+  const neutral = () => /\.rp-theme-high-rollers\s*\{([^}]*)\}/.exec(block())[1];
+  const hostile = () => /\.rp-theme-high-rollers\.is-mood-hostile\s*\{([^}]*)\}/.exec(block())[1];
+
+  /** The `--bbx-*-rgb` triplets in a rule body, as {token: [r,g,b]}. */
+  const triplets = (body) => Object.fromEntries(
+    [...body.matchAll(/(--bbx-[a-z0-9-]+-rgb)\s*:\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/g)]
+      .map(m => [m[1], [+m[2], +m[3], +m[4]]]));
+
+  it('has its own theme block', () => {
+    expect(css()).toContain('.rp-theme-high-rollers');
+  });
+
+  it('has a hostile block, so the turn is visible and not only audible', () => {
+    expect(css()).toContain('.rp-theme-high-rollers.is-mood-hostile');
+  });
+
+  it('opens warm — brass on black lacquer, no cold tone in the room', () => {
+    const t = triplets(neutral());
+    expect(Object.keys(t).length, 'the neutral block sets no surfaces').toBeGreaterThan(4);
+    // Red over blue on every single one, the layout red included — that is
+    // what "no cold tone anywhere in the room" means as an assertion.
+    for (const [tok, [r, , b]] of Object.entries(t)) {
+      expect(r, `${tok} is warm (r > b) while the floor is still open`).toBeGreaterThan(b);
+    }
+  });
+
+  // The one that carries the thesis. Not "the hostile block differs" — the
+  // hostile block must be COLDER, on every surface it repaints.
+  it('goes COLD when the comps stop, not red like the others', () => {
+    const h = triplets(hostile());
+    const n = triplets(neutral());
+    expect(Object.keys(h).length, 'the hostile block repaints nothing').toBeGreaterThan(4);
+    const surfaces = Object.keys(h).filter(t => /stage|screen|card|dim|info/.test(t));
+    expect(surfaces.length, 'no surface token is repainted for the count room').toBeGreaterThan(4);
+    for (const tok of surfaces) {
+      const [r, , b] = h[tok];
+      expect(b, `${tok} must be cold in the count room (b >= r)`).toBeGreaterThanOrEqual(r);
+      // and colder than it was, which is what makes it a FLIP rather than a
+      // room that happened to already be blue.
+      if (n[tok]) {
+        expect(b - r, `${tok} did not get colder than the salon`)
+          .toBeGreaterThan(n[tok][2] - n[tok][0]);
+      }
+    }
+    // The brass itself is gone. This is the assertion the brief drafted.
+    expect(hostile().toLowerCase()).not.toContain('#c9a227');
+    expect(hostile().toLowerCase()).not.toContain('#f0d585');
+  });
+
+  it('lights the count room with a cold accent, not a warm one', () => {
+    const accent = /--theme-accent\s*:\s*(#[0-9a-f]{6})/i.exec(hostile())[1].toLowerCase();
+    const [r, g, b] = [1, 3, 5].map(i => parseInt(accent.slice(i, i + 2), 16));
+    expect(b, `hostile accent ${accent} is not a fluorescent`).toBeGreaterThanOrEqual(r);
+    expect(g, `hostile accent ${accent} still leans warm`).toBeGreaterThanOrEqual(r);
+  });
+
+  // `tests/bb-themes.test.js` pins this globally; asserted here too because it
+  // is the mistake this block is most likely to grow — a form declared beside
+  // the triplets computes there and bakes a value in before .rp-page sees it.
+  it('declares no colour form of its own, so the forms stay on .rp-page', () => {
+    expect(block()).not.toMatch(/--bbx-[a-z0-9-]+\s*:\s*rgb\(/);
+  });
+});
+
+// ── the Pit Boss's screen ──────────────────────────────────────────────
+//
+// `rpBuildBBThemeBeat` dispatches per theme precisely so a second theme is not
+// a recolour of the first. The Den is an eye, CORA is a wall terminal, the
+// Mastermind is a door. This one is the PIT: a brass rail over felt, and the
+// line set like a floor announcement. On a hostile beat the same table is lit
+// by the count-room fluorescents instead.
+describe('the Pit Boss draws its own screen', () => {
+  const act = (over = {}) => ({
+    type: 'theme-beat', hook: 'open', themeId: 'high-rollers', mood: 'neutral',
+    speaker: 'The Pit Boss', line: 'Week 3. The floor is open.', ...over,
+  });
+
+  it('renders the speaker and the line', () => {
+    const html = rpBuildBBThemeBeat({ num: 3 }, act());
+    expect(html).toContain('The Pit Boss');
+    expect(html).toContain('Week 3. The floor is open.');
+    expect(html).toContain('rp-page');
+  });
+
+  // The whole reason the dispatch exists. Falling through to `_rpThemeBeatDen`
+  // is silent — the screen still renders, it just renders the Den's eye.
+  it('is not the Den fallback wearing a gold accent', () => {
+    const html = rpBuildBBThemeBeat({ num: 3 }, act());
+    expect(html).not.toContain('bbth-eye');
+    expect(html).toMatch(/bbhr/);
+  });
+
+  it('asks for a bed the audio catalogue actually has', () => {
+    const html = rpBuildBBThemeBeat({ num: 3 }, act());
+    const bed = (html.match(/data-ambient="([^"]+)"/) || [])[1];
+    expect(bed, 'the screen names no bed at all').toBeTruthy();
+    expect(Object.keys(BED_CATALOG)).toContain(bed);
+  });
+
+  // Read off the ROOT element's class, not off the whole string: every one of
+  // these screens ships an inline `<style>` that names `.is-hostile` in a
+  // selector, so a substring search passes on the calm beat too.
+  it('turns the table over to the count room on a hostile beat', () => {
+    const rootClass = (html) => html.match(/class="([^"]*)"/)[1];
+    const calm = rpBuildBBThemeBeat({ num: 3 }, act());
+    const cold = rpBuildBBThemeBeat({ num: 9 }, act({ mood: 'hostile' }));
+    expect(rootClass(calm)).not.toContain('is-hostile');
+    expect(rootClass(cold)).toContain('is-hostile');
+    expect(cold).not.toBe(calm);
+  });
+
+  // Project standard: VP visuals are CSS/SVG primitives. An emoji in a themed
+  // screen is the one thing that makes it look like a placeholder.
+  it('draws with CSS and SVG, never emoji', () => {
+    const html = rpBuildBBThemeBeat({ num: 3 }, act({ mood: 'hostile' }));
+    expect(html).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
+  });
+
+  it('escapes what the antagonist says rather than letting it be markup', () => {
+    const html = rpBuildBBThemeBeat({ num: 3 }, act({ line: '<script>x</script>' }));
+    expect(html).not.toContain('<script>x</script>');
+  });
+
+  it('renders with no week on the episode at all', () => {
+    expect(() => rpBuildBBThemeBeat({}, act())).not.toThrow();
   });
 });

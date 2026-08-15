@@ -3131,31 +3131,51 @@
       font-family:"Copperplate Gothic Bold",Copperplate,"Cinzel",Georgia,serif; }
     @keyframes rpThemeRollDrift { 0%,100% { opacity:.16; } 50% { opacity:.22; } }
 
-    /* The turn is not anger, it is ACCOUNTING: the comps stop. So the warmth
-       comes out of the light and the brass hardens — the same room with the
-       hospitality withdrawn and the ledger open on the table. */
+    /* ── High Roller's, once the comps stop ─────────────────────────────
+       The turn is not anger, it is ACCOUNTING — so the reader does not move
+       to the front of the room in a worse mood, it moves to a DIFFERENT ROOM:
+       the count room behind the floor, where the money is actually weighed.
+       Steel tables, no lamps, hard blue-white fluorescent overhead, and every
+       warm tone in the building left on the other side of the door.
+
+       This is the whole visual argument of the theme, and it is the reason it
+       could exist beside three others: the Den flares red, CORA flares red,
+       and Summer of Mystery drains to bone. NOTHING on the shelf escalates
+       COLD. A reviewer holding the two High Roller's blocks side by side
+       should see the temperature flip without reading a single token name —
+       every surface goes from red-over-blue to blue-over-red. */
     .rp-theme-high-rollers.is-mood-hostile {
-      --theme-accent:#e0bf52; --theme-glow:#ffe9a6;
-      --bbx-danger-rgb:  186,32,38;
-      --bbx-note-rgb:    224,191,82;
-      --bbx-key-rgb:     224,191,82;
-      --bbx-good-rgb:    186,156,64;
-      --bbx-info-rgb:    150,140,120;
-      --bbx-dim-rgb:     104,94,78;
-      --bbx-stage-rgb:   18,13,10;      --bbx-stage2-rgb:  7,5,5;
-      --bbx-screen-rgb:  20,15,11;      --bbx-screen2-rgb: 7,5,5;
-      --bbx-card-rgb:    19,14,10;      --bbx-card2-rgb:   9,7,6;
-      --bbx-ink:         #f6ecd2;
-      --bbx-ink-quiet:   #fbf4dd;
-      --bbx-faint:       #4c4234;
-      --bbx-glyph:       #241c15; }
+      --theme-accent:#8fb4d0; --theme-glow:#dff0ff;   /* the tube, not the lamp */
+      --bbx-danger-rgb:  212,74,86;     /* an alarm on a wall, not a felt red */
+      --bbx-note-rgb:    176,200,216;   /* the ledger is printed, not written */
+      --bbx-key-rgb:     214,230,240;   /* chips are counted now, not played  */
+      --bbx-good-rgb:    96,178,196;    /* even winning reads as a total       */
+      --bbx-info-rgb:    150,178,200;
+      --bbx-dim-rgb:     132,146,158;   /* cold grey — the warm grey is gone   */
+      --bbx-stage-rgb:   14,20,26;      --bbx-stage2-rgb:  6,9,12;
+      --bbx-screen-rgb:  16,22,28;      --bbx-screen2-rgb: 6,9,12;
+      --bbx-card-rgb:    15,21,27;      --bbx-card2-rgb:   8,11,14;
+      --bbx-ink:         #e6f0f6;
+      --bbx-ink-quiet:   #f2f8fc;
+      --bbx-faint:       #3e4c56;
+      --bbx-glyph:       #16202a; }
+    /* Overhead tubes rather than table lamps: the glow comes from the CEILING
+       in flat bands, the floor is unlit, and the brass pinstripe is now the
+       gap between two ceiling panels. */
     .rp-theme-high-rollers.is-mood-hostile .rp-page::after {
-      opacity:.24;
+      opacity:.26;
       background:
-        radial-gradient(40% 22% at 50% -10%, rgba(255,233,166,.26), transparent 60%),
-        radial-gradient(88% 64% at 50% 112%, rgba(186,32,38,.24), transparent 68%),
-        repeating-linear-gradient(90deg, rgba(224,191,82,.05) 0 1px, transparent 1px 28px);
-      animation: rpThemeRollDrift 5s ease-in-out infinite; }
+        linear-gradient(180deg, rgba(223,240,255,.30), transparent 20%),
+        radial-gradient(78% 40% at 50% -6%, rgba(143,180,208,.26), transparent 66%),
+        repeating-linear-gradient(90deg, rgba(223,240,255,.06) 0 1px, transparent 1px 28px);
+      animation: rpThemeRollCount 4.5s ease-in-out infinite; }
+    /* A fluorescent does not breathe like a lamp, it holds and ticks. */
+    @keyframes rpThemeRollCount {
+      0%,100% { opacity:.26; } 47% { opacity:.29; } 49% { opacity:.16; } 51% { opacity:.30; } }
+    /* And the people are lit by it too — the warmth comes out of the faces at
+       the same moment it comes out of the room. */
+    .rp-theme-high-rollers.is-mood-hostile .rp-page .bb-av img {
+      filter: saturate(.5) contrast(1.1) brightness(.96); }
 
     /* Holds for every theme, present and future, regardless of where in this
        section its block was appended — see the note at the top. */

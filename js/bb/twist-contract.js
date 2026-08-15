@@ -593,7 +593,7 @@ export const BB_TWIST_CONTRACTS = {
     acquisition: { channel: 'purchase', secrecy: 'public' },
     announcement: {
       name: "The High Roller's Room",
-      rule: 'The High Roller’s Room is open. Any houseguest may buy in for 125 BB Bucks — the money is taken when you walk through that door and it is not coming back, whatever happens inside. Everybody who pays plays the Chopping Block Roulette, and only the highest score wins it, and only if that score is good enough at all. The winner is safe for the week, takes one nominee off the block for good, and then spins for the replacement: every eligible houseguest, equal odds, chosen by nobody. Each game in that room can be played once per houseguest, for the rest of your season, win or lose.',
+      rule: 'The High Roller’s Room is open. Any houseguest may buy in for 125 BB Bucks — the money is taken when you walk through that door and it is not coming back, whatever happens inside. Everybody who pays plays the Chopping Block Roulette, and only the highest score wins it, and only if that score is good enough at all. The winner cannot be named as a replacement nominee for the rest of the week. Then, at the veto meeting, one nominee comes off the block for good and the winner spins for who replaces them: every eligible houseguest, equal odds, chosen by nobody. If there is nobody left who is allowed to take that chair, the block does not move — nobody comes down, nobody goes up, and a winner who is already on the block stays on it. Each game in that room can be played once per houseguest, for the rest of your season, win or lose.',
       sting: 'One of you is about to pay for that door and walk back out of it with nothing.',
     },
   },

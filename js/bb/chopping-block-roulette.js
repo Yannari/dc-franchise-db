@@ -5,13 +5,23 @@
 // The first game you can buy a seat at in the High Roller's Room, and the only
 // competition in this engine whose result is decided by nothing at all.
 //
-// Win it and three things happen at once:
+// Win it and this is what you have bought, stated exactly, because a promise
+// wider than the mechanic is the bug this file has already had once:
 //
-//   1. you are safe for the week;
-//   2. you take ONE initial nominee down, and they are safe for the rest of the
-//      week — they cannot be put back up as the replacement;
-//   3. you SPIN, and the replacement is drawn from every eligible houseguest
-//      with equal odds. Chosen by nobody. Including you.
+//   1. NOBODY CAN NAME YOU AS A REPLACEMENT NOMINEE for the rest of the week.
+//      Unconditional — the same cover a Golden Key holder has at the chair —
+//      and it is the only half that never fails.
+//   2. IF you were on the block AND somebody is eligible for the empty chair,
+//      you come down, and you are safe from the block for the rest of the week.
+//      One initial nominee comes down either way, yours or somebody else's, and
+//      they cannot be put back up as the replacement.
+//   3. THEN you SPIN, and the replacement is drawn from every eligible
+//      houseguest with equal odds. Chosen by nobody. Including you.
+//
+// And when no eligible chair exists, 2 and 3 do not happen at all: nobody comes
+// down, nobody goes up, and a winner who was already nominated STAYS nominated
+// with only (1) to show for the money. See NO_CHAIR below — that outcome is
+// narrated rather than smoothed over, because it is the format's own cruelty.
 //
 // ── WHY THE THIRD ONE IS THE WHOLE POINT ────────────────────────────────
 //
@@ -181,13 +191,36 @@ function chooseRemoval({ name, nominees, rng }) {
 // Four-plus variants per category, this project's standard. Nothing in here
 // names a balance — the room's own canon, and the price is the only figure the
 // house is entitled to know.
+//
+// ── AND NOTHING IN HERE SAYS "SAFE FOR THE WEEK" ────────────────────────
+//
+// It used to, in this pool and in the NO_CHAIR one below, and in the catalog
+// entry and the twist announcement as well. The engine does not deliver it:
+// what a win actually buys is that NOBODY CAN NAME YOU AS A REPLACEMENT
+// NOMINEE for the rest of the week — the protection a Golden Key holder has at
+// the chair — plus the block change, which is conditional on there being a
+// legal name for the wheel to land on.
+//
+// The gap that exposed it: a winner who was already a nominee, on a week with
+// no eligible chair. `runRoulette` returns before `chooseRemoval`, so they do
+// not come down, and the copy was cheerfully telling them they were safe on
+// their way to the vote. Emptying the chair instead was tried and measured and
+// the engine refuses a one-name block (`js/bb/shared-strategy.js:1251` —
+// 21 of 120 seeded episodes died on it), so the COPY is what changed.
+//
+// The rule these beats now state, and the only one they may state:
+//   1. the winner cannot be named as a replacement nominee this week;
+//   2. if they were on the block AND somebody is eligible for the empty chair,
+//      they come down;
+//   3. if no eligible chair exists the block does not move at all — nobody
+//      down, nobody up — and a winner who was already nominated stays nominated.
 
 const WON = [
-  (n, p) => `The wheel comes up for ${n}. ${p.Sub} is safe, ${p.sub} is holding the block in ${p.posAdj} hands, and ${p.sub} has not chosen a single thing about what happens next.`,
-  (n, p) => `${n} wins the Chopping Block Roulette. Safe for the week, and now the one person in this house who gets to take somebody off it.`,
-  (n) => `It lands. ${n} bought a seat at a wheel and the wheel paid — safety, and the power to empty a chair.`,
-  (n, p) => `${n} clears it. ${p.Sub} came in with a hundred and twenty-five and comes out with a week ${p.sub} does not have to survive.`,
-  (n, p) => `The Roulette goes ${n}'s way. ${p.Sub} is off every list that mattered this morning, and ${p.sub} is about to rearrange the block for a house that did not ask ${p.obj} to.`,
+  (n, p) => `The wheel comes up for ${n}. No ceremony this week can write ${p.posAdj} name into an empty chair, ${p.sub} is holding the block in ${p.posAdj} hands, and ${p.sub} has not chosen a single thing about what happens next.`,
+  (n, p) => `${n} wins the Chopping Block Roulette. Nobody can name ${p.obj} as a replacement nominee between now and Thursday, and ${p.sub} is the one person in this house who gets to take somebody off that block.`,
+  (n, p) => `It lands. ${n} bought a seat at a wheel and the wheel paid — a name no replacement chair can be filled with, and the power to empty one.`,
+  (n, p) => `${n} clears it. ${p.Sub} came in with a hundred and twenty-five and comes out untouchable at the replacement chair, whatever else this week decides to do to ${p.obj}.`,
+  (n, p) => `The Roulette goes ${n}'s way. Whoever comes down today it will not be ${p.obj} going up in their place — and ${p.sub} is about to rearrange the block for a house that did not ask ${p.obj} to.`,
 ];
 
 const REMOVED_SELF = [
@@ -213,11 +246,16 @@ const LANDED = [
   (r, rp, n, w) => `${r} goes up. ${w} has spent all week building a plan around who sits in that chair, and the chair was filled by a wheel.`,
 ];
 
+// The cruellest night this game has, and it is stated rather than softened.
+// `onBlock` is the whole reason these take a third argument: a winner who was
+// already nominated does NOT come down here — the two halves of the power
+// happen together or not at all — and a beat that let that pass in silence is
+// the exact defect this pool was rewritten for.
 const NO_CHAIR = [
-  (n) => `${n} wins it — and there is nobody left to spin for. Everybody still in this house is the winner, the Head of Household or already on the block, so the wheel has no names on it. The power does nothing but keep ${n} safe.`,
-  (n, p) => `The Roulette pays ${n} and then runs out of house. There is no eligible replacement, so nobody comes down and nobody goes up; ${p.sub} keeps ${p.posAdj} safety and the block stands exactly as it was.`,
-  (n) => `Won, and unusable. The chair cannot be filled — there is not one houseguest left who is allowed to sit in it — so the block does not move.`,
-  (n, p) => `${n} is safe, and that is all ${p.sub} gets. With this few people left, taking somebody down would leave a chair no legal name can fill, so the rules make the decision and the block stays.`,
+  (n, p, onBlock) => `${n} wins it — and there is nobody left to spin for. Everybody still in this house is the winner, the Head of Household or already on the block, so the wheel has no names on it. Nobody comes down and nobody goes up${onBlock ? `, ${n} included` : ''}. What ${p.sub} keeps is this: no replacement chair this week can be filled with ${p.posAdj} name.`,
+  (n, p, onBlock) => `The Roulette pays ${n} and then runs out of house. There is no eligible replacement, so the removal does not happen either — the two halves come together or not at all${onBlock ? `, and ${p.sub} sits back down in the chair ${p.sub} paid to get out of` : ''}. ${p.Sub} cannot be named as a replacement nominee this week, and that is the whole of what the money bought.`,
+  (n, p, onBlock) => `Won, and all but unusable. The chair cannot be filled — there is not one houseguest left who is allowed to sit in it — so the block stands exactly as it was${onBlock ? `, ${n} still on it` : ''}. The hundred and twenty-five bought one thing: no ceremony between now and Thursday can put ${n} up as a replacement.`,
+  (n, p, onBlock) => `${n} is safe from the replacement chair, and with this few people left that is all ${p.sub} gets. Taking somebody down would leave a seat no legal name could fill, so the rules make the decision and nothing moves${onBlock ? ` — ${n} goes to the vote exactly as nominated as ${p.sub} was this morning` : ''}.`,
 ];
 
 const LOST = [
@@ -350,10 +388,13 @@ export function runRoulette({ entrants = [], house = [], nominees = [], hoh = nu
     protectedNames: (protectedNames || []).filter(Boolean) });
 
   if (!eligible.length || !noms.length) {
-    // The same rule the veto ceremony already applies (`js/bb/week.js:3957`):
-    // if the chair cannot be filled, the power is not used and the block
-    // stands. The winner keeps their safety — that half was never conditional.
-    beats.push(beat(pick(NO_CHAIR, draw)(name, p), [name], 'NO CHAIR TO FILL', 'grey'));
+    // The same rule the veto ceremony already applies: if the chair cannot be
+    // filled, the power is not used and the block stands — which means a winner
+    // who was already a nominee STAYS one, because this returns before
+    // `chooseRemoval` and their self-removal never runs. The beat says so.
+    // What survives unconditionally is the replacement-chair protection, which
+    // is the one thing the ceremony can still give them.
+    beats.push(beat(pick(NO_CHAIR, draw)(name, p, noms.includes(name)), [name], 'NO CHAIR TO FILL', 'grey'));
     return { winner: name, removed: null, replacement: null, results, beats };
   }
 
@@ -370,7 +411,7 @@ export function runRoulette({ entrants = [], house = [], nominees = [], hoh = nu
     // fire today — but an undefined name reaching the ceremony is the exact
     // failure this module is written to make impossible, and a guard is cheaper
     // than a dead season.
-    beats.push(beat(pick(NO_CHAIR, draw)(name, p), [name], 'NO CHAIR TO FILL', 'grey'));
+    beats.push(beat(pick(NO_CHAIR, draw)(name, p, noms.includes(name)), [name], 'NO CHAIR TO FILL', 'grey'));
     return { winner: name, removed: null, replacement: null, results, beats };
   }
   beats.push(beat(pick(LANDED, draw)(replacement, pron(replacement), name, hoh || 'the Head of Household'),

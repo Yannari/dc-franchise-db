@@ -4083,30 +4083,34 @@ export function simulateBBWeek(options = {}) {
         week.rouletteVoid = { winner, down, up };
       }
 
-      // ── THE ONE CORNER THIS CANNOT FIX, AND WHY IT IS NOT FIXED HERE ──
+      // ── THE NO-CHAIR CORNER, AND WHY THE BLOCK IS RIGHT TO NOT MOVE ──
       //
       // A winner who was ALREADY a nominee and whose week hits the game's
       // `NO CHAIR TO FILL` branch stays on the block. `runRoulette` returns
       // early there, BEFORE `chooseRemoval`, so the self-removal that function
       // performs for a nominee-winner never runs; and `rouletteSafe` cannot
       // rescue them, because it is read by replacement choosers and does
-      // nothing for a name already sitting in a nominee slot. They paid 125,
-      // won, and go to the vote still nominated while the copy promises safety.
+      // nothing for a name already sitting in a nominee slot.
       //
-      // The obvious fix — empty the chair the way BB15's America's Nominee does
-      // a few lines down — was implemented and MEASURED, and it does not work
-      // here. `resolveBBCampaignAct` (js/bb/shared-strategy.js:1251) throws
+      // Emptying the chair instead — the way BB15's America's Nominee does a
+      // few lines down — was implemented and MEASURED, and this engine will not
+      // take it. `resolveBBCampaignAct` (js/bb/shared-strategy.js:1251) throws
       // `A Big Brother campaign requires at least two nominees.` and takes the
-      // whole episode down with it. America's Nominee never trips that
-      // invariant because it empties a chair off a block of THREE and leaves
-      // two; this path empties one off a block of two and leaves one. Twenty-one
-      // weeks across house sizes 4, 5 and 6 threw, out of 120 seeded runs.
+      // whole episode with it: 21 of 120 seeded runs across house sizes 4, 5
+      // and 6 died there, none of them reaching a vote. America's Nominee never
+      // trips it because it empties a chair off a block of THREE and lands on
+      // two; this path would empty one off a block of two and land on one.
+      // A legal one-name block is a real engine slice — campaign, vote and
+      // majority over a single nominee are all undefined today — and it is
+      // recorded as one rather than smuggled in here.
       //
-      // So the honest state is: the block does not move, the winner keeps every
-      // protection this ceremony can give them, and the promise in the copy is
-      // wider than the mechanic in this one corner. Fixing it properly is a
-      // decision about the COPY or about that invariant, and neither is this
-      // task's to make. Written down rather than left for somebody to rediscover.
+      // So the block does not move, and the COPY was narrowed to match: the
+      // catalog `desc`, the twist announcement and the game's WON and NO_CHAIR
+      // beats now state what a win actually grants — no replacement chair may
+      // be filled with the winner's name, the removal and the spin happen only
+      // when there is a legal name to land on, and a nominated winner on a
+      // no-chair week stays nominated. `tests/bb-high-rollers-room.test.js`
+      // pins the invariant that forced the call.
       week.rouletteSafe = [...new Set(rouletteSafe)];
     }
 

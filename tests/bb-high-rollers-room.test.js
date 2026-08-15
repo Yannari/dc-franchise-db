@@ -7,6 +7,7 @@ import { credit, balance } from '../js/bb/bb-bucks.js';
 import { openRoom, hasPlayed, ROOM_GAMES } from '../js/bb/high-rollers-room.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { resolveBBCampaignAct } from '../js/bb/shared-strategy.js';
+import { runRoulette } from '../js/bb/chopping-block-roulette.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -326,35 +327,82 @@ describe('the Roulette rewrites the block at the veto ceremony', () => {
         expect(w.rouletteSafe || [],
           `week ${w.num}: ${win.name} won the Roulette and entered no protection list`)
           .toContain(win.name);
-        // A winner who was never on the block must not be able to arrive on it.
-        //
-        // A winner who WAS a nominee is scoped out, and it is a KNOWN GAP rather
-        // than a design decision — see `the corner the engine will not take`
-        // below, which pins the invariant that blocks the fix. The scope is
-        // narrow on purpose: this case still guards the failure that mattered,
-        // a non-nominee paying 125 and being seated as the replacement.
-        if (!(w.initialNominees || []).includes(win.name)) {
-          expect(w.finalNominees || [],
-            `${win.name} bought safety and the ceremony seated them anyway`)
-            .not.toContain(win.name);
+        // A winner who WAS a nominee and whose block change did not happen
+        // stays on the block BY RULE — the removal and the spin are one power
+        // and they happen together or not at all. The copy says exactly that
+        // now, so the case is asserted rather than skipped: the wheel must not
+        // have touched the block at all.
+        if ((w.initialNominees || []).includes(win.name)) {
+          if (!w.rouletteSwap) {
+            expect(w.rouletteBlock,
+              `${win.name}: the wheel moved the block on a week it had no chair to fill`)
+              .toBeUndefined();
+            expect(w.initialNominees,
+              `${win.name} was a nominee and the wheel had nothing to land on — they stay up`)
+              .toContain(win.name);
+          }
+          continue;
         }
+        // And a winner who was never on the block must not be able to arrive on
+        // it — the failure that started all of this.
+        expect(w.finalNominees || [],
+          `${win.name} bought the chair protection and the ceremony seated them anyway`)
+          .not.toContain(win.name);
       }
     }
     expect(seen, 'no seed in thirty produced a Roulette winner').toBeGreaterThan(0);
   });
 
-  // ── the corner the engine will not take ──
+  // ── the invariant that decided the rule above ──
   //
-  // A nominee-winner whose week hits the game's `NO CHAIR TO FILL` branch stays
-  // on the block: `runRoulette` returns before `chooseRemoval`, so the
-  // self-removal it performs for a nominee-winner never runs, and `rouletteSafe`
-  // does nothing for a name already in a nominee slot.
+  // A nominee-winner whose week hits `NO CHAIR TO FILL` stays on the block, and
+  // that is the RULE rather than a gap: the removal and the spin are one power.
   //
-  // The obvious fix is to empty the chair the way BB15's America's Nominee does
-  // — and it was implemented and measured, and it takes the episode down. This
-  // pins WHY, so the next person to reach for that fix finds the reason instead
-  // of rediscovering it: a one-name block is refused outright, and America's
+  // The alternative — empty the chair the way BB15's America's Nominee does —
+  // was implemented and measured, and it takes the episode down. This pins WHY,
+  // so the next person to reach for that fix finds the reason instead of
+  // rediscovering it: a one-name block is refused outright, and America's
   // Nominee only survives it by emptying a chair off a block of THREE.
+  // The season sweep above cannot reach this: a twelve-person house always has
+  // somebody eligible for the chair, so a nominee-winner there always gets the
+  // swap. The rule is driven directly instead — a house of three where the
+  // winner, the HOH and the nominees are everybody, which is exactly the board
+  // that empties the wheel.
+  it('leaves a nominated winner on the block when no chair can be filled, and says so', () => {
+    // Swept across the narration pools rather than sampled once: the draws are
+    // [score, WON pick, NO_CHAIR pick], so varying the second and third walks
+    // every variant of both. A promise the mechanics do not keep is a defect in
+    // ANY variant, and this whole round exists because one of them carried it.
+    let checked = 0;
+    for (const v of [0, 0.2, 0.4, 0.6, 0.8, 0.99]) {
+      const out = runRoulette({
+        entrants: ['Bowie'], house: ['Bowie', 'Chase', 'Ripper'],
+        nominees: ['Bowie', 'Chase'], hoh: 'Ripper', rng: seq([0, v, v]),
+      });
+      expect(out.winner, 'the entrant did not clear the standard — pick a kinder roll').toBe('Bowie');
+      // Rule 3: the removal and the spin are one power, and neither happens.
+      expect(out.removed).toBeNull();
+      expect(out.replacement).toBeNull();
+
+      // No beat anywhere in this night may claim a week of safety.
+      for (const b of out.beats) {
+        expect(b.text, `a beat still promises safety for the week: ${b.text}`)
+          .not.toMatch(/safe for the week|does not have to survive|off every list/i);
+      }
+
+      const chair = out.beats.find(b => b.badgeText === 'NO CHAIR TO FILL');
+      expect(chair, 'no beat narrated the empty board').toBeTruthy();
+      // It must say the winner is still on the block...
+      expect(chair.text, `variant ${v} does not say the nominated winner stays up`)
+        .toMatch(/included|still on it|still nominated|as nominated|sits back down/i);
+      // ...and name what they DID buy.
+      expect(chair.text, `variant ${v} never states the replacement-chair protection`)
+        .toMatch(/replacement/i);
+      checked++;
+    }
+    expect(checked).toBe(6);
+  });
+
   it('refuses a one-name block, which is why the chair is not emptied', () => {
     expect(() => resolveBBCampaignAct({
       nominees: ['Bowie'], ballots: ['Chase', 'Ripper'], house: NAMES, rng: seq([0.5]),

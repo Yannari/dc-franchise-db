@@ -3,6 +3,18 @@
 Date: 2026-08-15
 Status: design, approved for planning
 
+## Status
+
+- **Plan 1 (the money and the theme) — MERGED 2026-08-15, `1784a39c`.** BB Bucks
+  accrue, are announced, and reach three transcripts and a House Life band.
+  Nothing spends them yet.
+- **Plans 2–4 (the room and the games) — the current build.** The user's words
+  on finding the theme thin: *"i thought you was doing the twist too the Veto
+  Derby and Chopping Block Roulette you didnt?"* — correct, and the reason the
+  season currently reads as decor plus a ledger.
+- A separate approved-but-parked design, to build straight after:
+  `2026-08-15-bb-theme-explainer-design.md`.
+
 ## Summary
 
 BB23's High Roller's Room, built as the fourth theme on the season-theme engine
@@ -200,14 +212,21 @@ Changes required:
 BB23's other season-long twist, and it fills weeks 1–4, exactly where a
 three-week endgame cadence would otherwise leave holes.
 
-One player per bloc plays for **solo** safety. Winning is not the decision:
-accepting the safety triggers a **punishment** that may hit the winner, their
-bloc, or the whole house — and their bloc stays vulnerable either way. The
-choice to accept is the mechanic, and it is a public one.
+**AMENDED 2026-08-15, because the original was unbuildable.** It was specced as
+"one player per bloc", on the assumption that `blocs.js` held assigned teams.
+It does not: blocs are **emergent**, derived from alliances and showmances
+(`_buildBlocs` reads `gs.namedAlliances` and `gs.showmances`). BB23's four-team
+phase has no equivalent in this engine, and inventing one is a separate slice —
+the one the Cliques and Coaches themes would also need.
 
-Built on `blocs.js` for the team split and `punishments.js` for the cost. It is
-not the Safety Suite, which is a paid-for-with-nothing solo comp with no bloc
-and no punishment.
+So the Wildcard is adapted to the engine we have, keeping the mechanic and
+dropping the teams: **three houseguests are drawn at random** (the HOH
+excluded) and compete for **solo** safety. Winning is not the decision —
+accepting the safety triggers a **punishment** that may hit the winner or the
+whole house. The choice to accept is the mechanic, and it is public.
+
+Built on `punishments.js` for the cost. It is not the Safety Suite, which is a
+solo comp with no draw and no punishment.
 
 ## 6. The arc
 
@@ -215,13 +234,30 @@ Canon opens the room at a final eleven and runs it three weeks straight. Anchore
 by house size, never by week number, so it lands correctly at any cast:
 
 ```
-{ every: 1, from: 1, untilFromEnd: 9, book: 'bb-wildcard' }   // the early weeks
+{ every: 2, from: 2, untilFromEnd: 9, book: 'bb-wildcard' }   // the early weeks
 { at: { frac: 0.55 }, mood: 'hostile' }                        // the comps stop
 { at: { fromEnd: 8 }, mood: 'hostile' }                        // backstop
 { at: { fromEnd: 8 }, book: 'bb-high-rollers-room' }
 { at: { fromEnd: 7 }, book: 'bb-high-rollers-room' }
 { at: { fromEnd: 6 }, book: 'bb-high-rollers-room' }
 ```
+
+**AMENDED 2026-08-15 — the theme must also book what it already owns.** Plan 1
+shipped `books: []` on the reasoning that a twist with no engine ships a week
+that does nothing. That was right for the Derby and the Roulette and **wrong for
+two twists that were already built and wired**, which is why picking this theme
+stamped an empty timeline while the other three stamp several cards:
+
+- **`bb-coin-of-destiny`** — literally BB23's 250-buck game, implemented in
+  `js/bb/coin-of-destiny.js` and dispatched from `week.js`. The most on-theme
+  twist in the catalog, left on the shelf.
+- **`bb-prizes-and-punishments`** — the wrapped-box veto where somebody takes
+  $5,000 over the only thing that could have saved them. The same "what did you
+  actually come here for" question the casino asks.
+
+Both go into the arc. Until the room is built, the Coin's buy-in remains a
+probability rather than a payment; the room connects them by pricing it at 250
+and taking it from the ledger.
 
 `fromEnd: 8` is a final eleven at every cast, which is the canon opening.
 

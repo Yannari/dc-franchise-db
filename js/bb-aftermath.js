@@ -19,7 +19,8 @@ import { evictionSeatsAJuror, jurorOrdinalFor } from './bb/jury.js';
 import { pronouns, pStats } from './players.js';
 import {
   bond, perceived, trusts, grudge, remembers, targetOf, sharesAlliance,
-  deFactoAllies, isNice, isVillainous, willScheme,
+  deFactoAllies, isNice, isVillainous, willScheme, dislikes,
+  fearOf, respectOf, trustOf,
 } from './bb-events/_read.js';
 
 const _pick = (rng, list) => list[Math.min(list.length - 1, Math.floor(rng() * list.length))];
@@ -234,10 +235,39 @@ function goodbyeMessages(evictee, house, week, rng) {
     const p = pronouns(name);
     const against = votedAgainst.has(name);
     const close = bond(name, evictee) >= 3;
-    const hidden = against && close;              // voted them out and was close
-    const tone = hidden ? 'confession' : against ? 'unapologetic' : close ? 'warm' : 'polite';
+    const betrayedAFriend = against && close;     // voted them out and was close
+    const tone = betrayedAFriend ? 'confession' : against ? 'unapologetic' : close ? 'warm' : 'polite';
     const cameForMe = targetOf(evictee) === name;
     const ranVote = plan?.organizer === name;
+
+    // ── who these two were to each other ──
+    //
+    // Four tones is the shape of a goodbye; it is not the CONTENT of one. Every
+    // message in the pools below was written to be sayable by anybody, which
+    // meant the segment could play six of them without once mentioning that
+    // two of these people were in an alliance, or in a showmance, or had spent
+    // a month openly loathing each other. These are the facts the house
+    // actually has, and each one earns its own lines.
+    const allied = sharesAlliance(name, evictee);
+    const showmance = (gs.showmances || []).some(sh => sh.phase !== 'broken-up' && !sh.broken
+      && (sh.players || []).includes(name) && (sh.players || []).includes(evictee));
+    const enemy = dislikes(name, evictee);
+    // They trusted this person more than this person deserved: the gap between
+    // the real bond and the one on display.
+    // Thresholds measured off played seasons rather than assumed. These
+    // dimensions do not run 0-10: across 576 live pairs `fearOf` sat at 0.24
+    // in the median and topped out at 3.06, and `respectOf` peaked at 6.03.
+    // The first pass asked for 5 of each, which meant the frightened line and
+    // the admiring line could not fire at all. These sit around the 97th
+    // percentile — rare enough to feel like a specific thing to say about a
+    // specific person, common enough to actually happen.
+    const neverSawIt = bond(name, evictee) - perceived(name, evictee) >= 1.5;
+    const scaredOf = fearOf(name, evictee) >= 1.5;
+    const rated = respectOf(name, evictee) >= 3;
+    const arch = players.find(x => x.name === name)?.archetype || '';
+    const nice = isNice(name);
+    const villainous = isVillainous(name);
+    const toJury = evictionSeatsAJuror(house.length);
 
     const unapologetic = [
       `"I voted to evict you because keeping you gave me one more person I couldn't trust and one fewer path to the end. You were good at this game. That was the problem."`,
@@ -254,24 +284,103 @@ function goodbyeMessages(evictee, house, week, rng) {
       `"I helped put this vote together. You were too connected, too difficult to control and too dangerous to leave for next week. I own all of it."`,
       `"This wasn't a vote I followed. I wanted you out, I found the numbers, and I made sure they stayed there. You deserved the truth before I asked for your jury vote."`,
     );
+    if (enemy) unapologetic.push(
+      `"Neither of us is going to pretend. You didn't like me, I didn't like you, and one of us was always going to get to do this first."`,
+      `"I'd tell you this was nothing personal, but you'd know I was lying and I'd know you knew."`,
+      `"You wanted me gone since about week two. You just weren't as good at it."`,
+    );
+    if (scaredOf) unapologetic.push(
+      `"I was frightened of you. That's the whole message. Every week you were still here was a week I spent working out what you were doing."`,
+      `"I never once felt safe with you in this house, and I have thirty-odd days of not sleeping to prove it."`,
+    );
+    if (rated && !enemy) unapologetic.push(
+      `"You're the best player I've sat in a room with. That is not a compliment I can afford to keep paying past tonight."`,
+      `"If I let you keep going, you win this. I'm not going to sit here and pretend I don't know that."`,
+    );
+    if (allied) unapologetic.push(
+      `"We were on the same side of this house, right up until the side got too crowded. I picked the version of it that had me in it."`,
+      `"An alliance is four people agreeing about a fifth. Eventually you run out of fifths, and tonight we ran out."`,
+    );
+    if (villainous) unapologetic.push(
+      `"I'd apologise, but you'd only use it against me on the jury, and I'd deserve that."`,
+      `"You'd have done it to me. The difference between us is about four days and one competition."`,
+    );
+    if (toJury) unapologetic.push(
+      `"You get a vote at the end of this, and I'd rather you cast it hating me for something I actually did than for a version somebody else tells you about."`,
+    );
 
-    const text = hidden ? pickFresh([
+    const confession = [
       `"I wrote your name down. I've been sitting on that for three days and I couldn't say it to your face, which probably tells you everything about how I'm playing this."`,
       `"You were my closest friend in here and I still did it, and I'd like to say I'm sorry but I think I'd do it again."`,
       `"If you're watching this you already know it was me. I hope you understand it eventually. I'd understand if you didn't."`,
-    ]) : against ? pickFresh(unapologetic) : close ? pickFresh([
+    ];
+    if (allied) confession.push(
+      `"We built something in here and I took it apart from the inside, in a room you weren't in, with people you trusted less than you trusted me."`,
+      `"The alliance was real. I want you to know it was real, because it would be easier for you if it hadn't been, and easier for me if you believed that."`,
+    );
+    if (showmance) confession.push(
+      `"There is no version of this where I come out of it well. I know what we were. I did it anyway and I'm going to have to watch this back one day."`,
+      `"I'm going to see you in about four weeks and neither of us knows what that conversation is yet. I'm sorry. I did it and I'm sorry."`,
+    );
+    if (neverSawIt) confession.push(
+      `"You never saw it coming and that was the point. I worked at that. Sitting here saying it out loud is the first honest thing I've done all week."`,
+      `"I let you keep telling me the plan right up to the last hour. I could have stopped you. Stopping you would have cost me the vote."`,
+    );
+    if (nice) confession.push(
+      `"I don't like who I was this week. I did it anyway, so I don't get to say that and have it mean much."`,
+      `"I'm going to be honest because you've earned it: I have felt sick about this since the moment I decided."`,
+    );
+    if (ranVote) confession.push(
+      `"It was mine. Not the house's, not the numbers', mine. I counted it, I built it, and I let you hug me on the way to the chair."`,
+    );
+
+    const warm = [
       `"I fought for you. I lost. I'm sorry — genuinely, I'm sorry."`,
       `"This house is going to be a lot worse without you in it, and I mean that."`,
       `"I kept my word. For whatever it's worth in here, I kept it."`,
       `"You made this house feel less like a set. I'm going to miss that more than I can say on camera."`,
       `"Watch my season for me. Yell at the screen when I do something stupid. You'll know when."`,
-    ]) : pickFresh([
+    ];
+    if (allied) warm.push(
+      `"I voted with you, for you, and against the room, and I'd do it again tomorrow with worse numbers."`,
+      `"Whatever this alliance did or didn't do, you never once made me doubt where you were. That is rarer in here than winning anything."`,
+    );
+    if (showmance) warm.push(
+      `"I'm going to be useless for about a week. Then I'm going to play for both of us. That's the deal, alright?"`,
+      `"None of this was strategy. I know how that sounds on television. I don't care how it sounds."`,
+    );
+    if (rated) warm.push(
+      `"You were better at this than me and you never made me feel it. Do you know how hard that is?"`,
+    );
+    if (toJury) warm.push(
+      `"Go and be brilliant on that jury. Ask the questions I won't be there to ask."`,
+    );
+
+    const polite = [
       `"Good game. I mean that — you made this a lot harder than it needed to be."`,
       `"I don't think we ever really got each other, but I never had a problem with you."`,
       `"Take care out there. Say hello to the jury for me, if it comes to that."`,
       `"We never got our chapter, did we. Maybe outside the walls."`,
       `"You always kept your area of the kitchen clean, and honestly that is more than most."`,
-    ]);
+    ];
+    if (rated) polite.push(
+      `"We barely spoke and I still spent half my week thinking about what you were doing. Take that as the compliment it is."`,
+    );
+    if (enemy) polite.push(
+      `"I didn't vote for you to go, which I suspect surprises you as much as it surprises me."`,
+      `"We were never going to be friends. I'd still rather have played against you than most of the people left in here."`,
+    );
+    if (arch === 'floater' || arch === 'goat') polite.push(
+      `"I've been quiet in here. You were one of about three people who talked to me like that wasn't a problem."`,
+    );
+    if (scaredOf) polite.push(
+      `"You were the one I was watching. I don't think you ever noticed me at all, and that was probably my best week in here."`,
+    );
+
+    const text = betrayedAFriend ? pickFresh(confession)
+      : against ? pickFresh(unapologetic)
+        : close ? pickFresh(warm)
+          : pickFresh(polite);
 
     return { name, tone, against, text };
   });
@@ -507,43 +616,119 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
     usedReacts.add(line);
     return line;
   };
-  const goodbyes = goodbyeMessages(evictee, house, week, rng).map(g => g.tone === 'montage' ? { ...g, react: null } : ({
-    ...g,
-    react: g.tone === 'confession'
-      ? (temperVal <= 4
-        ? freshReact([
-          `${evictee} stands halfway up out of the chair before remembering there is nowhere to go with it.`,
-          `"Play it again." Nobody plays it again. ${evictee} watches the dark screen anyway.`,
-          `${evictee} points at the monitor and starts a sentence three different ways. None of them finish.`,
-          `The audience reacts before ${evictee} does. Then ${evictee} does, and the host lets it run.`,
-        ])
-        : freshReact([
-          `${evictee} watches the whole thing without blinking, then exhales like somebody setting down a heavy thing.`,
-          `A slow nod. "Okay. Okay." The word means about nine different things.`,
-          `${evictee} looks away from the screen exactly once, right at the word that costs the most.`,
-          `"That's the one that gets me." Quietly, to nobody in particular.`,
-        ]))
-      : g.tone === 'unapologetic'
-        ? freshReact([
-          `${evictee} smiles at the screen with no warmth in it whatsoever. The jury exists, and both of them know it.`,
-          `"Noted," ${evictee} says, in the voice people use for lists they intend to keep.`,
-          `${evictee} applauds — three slow claps, precisely as sincere as the message.`,
-          `An eyebrow, nothing else. Some messages answer themselves.`,
-        ])
-        : g.tone === 'warm'
-          ? freshReact([
-            `${evictee} presses ${p.posAdj} sleeve to ${p.posAdj} eyes and waves at the screen like the screen can see.`,
-            `That one lands. ${evictee} needs a second, and the host gives it.`,
-            `"Oh, don't—" ${evictee} laughs and cries at the same time, which is the correct response.`,
-            `${evictee} mouths a thank-you at the monitor. The friendship was real; the game just happened around it.`,
-          ])
-          : freshReact([
-            `${evictee} nods politely at the screen, filing the message under people who were never really in the story.`,
-            `A small smile, nothing behind it. Some goodbyes are just administration.`,
-            `${evictee} tilts a head at the screen — genuinely unsure, for a second, who that was.`,
-            `Polite applause from the audience. ${evictee} matches it exactly.`,
-          ]),
-  }));
+  // Who is in the chair, because the same message lands differently on
+  // different people. Temperament decided the confession reaction and nothing
+  // else was read at all: a villain, a hero and a goat all watched somebody
+  // betray them and produced the same four lines.
+  const evArch = players.find(x => x.name === evictee)?.archetype || '';
+  const evVillain = isVillainous(evictee);
+  const evNice = isNice(evictee);
+  const goodbyes = goodbyeMessages(evictee, house, week, rng).map(g => {
+    if (g.tone === 'montage') return { ...g, react: null };
+    const withThem = bond(g.name, evictee);
+    const wereAllied = sharesAlliance(g.name, evictee);
+
+    const confessionReacts = temperVal <= 4
+      ? [
+        `${evictee} stands halfway up out of the chair before remembering there is nowhere to go with it.`,
+        `"Play it again." Nobody plays it again. ${evictee} watches the dark screen anyway.`,
+        `${evictee} points at the monitor and starts a sentence three different ways. None of them finish.`,
+        `The audience reacts before ${evictee} does. Then ${evictee} does, and the host lets it run.`,
+      ]
+      : [
+        `${evictee} watches the whole thing without blinking, then exhales like somebody setting down a heavy thing.`,
+        `A slow nod. "Okay. Okay." The word means about nine different things.`,
+        `${evictee} looks away from the screen exactly once, right at the word that costs the most.`,
+        `"That's the one that gets me." Quietly, to nobody in particular.`,
+        `${evictee} says "I know" to the screen, twice, and it is not clear ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} talking to the screen.`,
+        `A long breath in. A longer one out. ${evictee} gestures at the monitor as if to say what would you like me to do with that.`,
+        `${evictee} folds both arms and watches it the way you watch weather you have already been caught in.`,
+        `"Yeah." That is all of it. ${evictee} does not add anything and the host does not ask.`,
+      ];
+    if (wereAllied) confessionReacts.push(
+      `"We had an ALLIANCE." ${evictee} says it to the room, not the screen, and the room has no answer.`,
+      `${evictee} counts something off on ${p.posAdj} fingers — weeks, probably — and then stops counting.`,
+    );
+    if (withThem >= 6) confessionReacts.push(
+      `${evictee} says the name once, softly, the way you say a name you are going to keep saying for a while.`,
+    );
+    if (evVillain) confessionReacts.push(
+      `${evictee} laughs — genuinely, warmly — and says "good" out loud. It is not clear ${p.sub} ${p.sub === 'they' ? 'mean' : 'means'} it kindly.`,
+      `"There it is." ${evictee} looks almost relieved to have been right about somebody.`,
+    );
+    if (evNice) confessionReacts.push(
+      `${evictee} nods along like ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} taking notes, then quietly says "that's alright" to a screen that has already gone dark.`,
+    );
+
+    const unapologeticReacts = [
+      `${evictee} smiles at the screen with no warmth in it whatsoever. The jury exists, and both of them know it.`,
+      `"Noted," ${evictee} says, in the voice people use for lists they intend to keep.`,
+      `${evictee} applauds — three slow claps, precisely as sincere as the message.`,
+      `An eyebrow, nothing else. Some messages answer themselves.`,
+      `"Well, that's honest." ${evictee} says it like a scoreline rather than a compliment.`,
+      `${evictee} mouths the last four words along with the screen, having apparently guessed them.`,
+      `A short laugh with nothing funny in it. ${evictee} sits back and lets the tape finish alone.`,
+      `${evictee} looks straight down the barrel of the camera instead of at the monitor. The message was not really the point.`,
+    ];
+    if (evVillain) unapologeticReacts.push(
+      `"Good." ${evictee} means it. Somebody finally played the game at ${p.obj} properly.`,
+      `${evictee} points at the screen and tells the host, flatly, "that one can win it. The rest of them can't."`,
+    );
+    if (temperVal <= 3) unapologeticReacts.push(
+      `${evictee} is talking over the message before it finishes and does not stop when it does.`,
+    );
+    if (evArch === 'goat' || evArch === 'floater') unapologeticReacts.push(
+      `${evictee} shrugs at the monitor. "Fair enough." It is the least dramatic thing anybody has said tonight.`,
+    );
+    if (withThem <= -4) unapologeticReacts.push(
+      `${evictee} was already nodding before the sentence started. No surprises there, and no hard feelings either — they were hard a long time ago.`,
+    );
+
+    const warmReacts = [
+      `${evictee} presses ${p.posAdj} sleeve to ${p.posAdj} eyes and waves at the screen like the screen can see.`,
+      `That one lands. ${evictee} needs a second, and the host gives it.`,
+      `"Oh, don't—" ${evictee} laughs and cries at the same time, which is the correct response.`,
+      `${evictee} mouths a thank-you at the monitor. The friendship was real; the game just happened around it.`,
+      `${evictee} puts a hand flat on the desk and leaves it there until the message has finished.`,
+      `"I love ${p.obj === 'them' ? 'them' : p.obj}." Said to the studio, to the camera, to nobody, entirely without embarrassment.`,
+      `${evictee} points at the screen, unable to speak for a moment, and the audience fills the gap.`,
+      `A wet laugh. "They're going to be furious with me for crying at this."`,
+    ];
+    if (wereAllied) warmReacts.push(
+      `"That's my person." ${evictee} says it to the audience, and the audience says it back.`,
+    );
+    if (evVillain) warmReacts.push(
+      `${evictee} goes very still for a moment, which from ${p.obj} is the same as anybody else falling apart.`,
+    );
+    if (temperVal <= 4) warmReacts.push(
+      `${evictee} makes a noise nobody was ready for and covers ${p.posAdj} whole face with both hands.`,
+    );
+
+    const politeReacts = [
+      `${evictee} nods politely at the screen, filing the message under people who were never really in the story.`,
+      `A small smile, nothing behind it. Some goodbyes are just administration.`,
+      `${evictee} tilts a head at the screen — genuinely unsure, for a second, who that was.`,
+      `Polite applause from the audience. ${evictee} matches it exactly.`,
+      `"That's kind." ${evictee} means it and will not think about it again.`,
+      `${evictee} gives the monitor a thumbs up. The monitor, being a monitor, does not respond.`,
+      `A nod, a beat, and ${evictee} is already looking at the next screen.`,
+      `${evictee} says the name back out loud, the way you do when you are making sure you have it right.`,
+    ];
+    if (withThem <= -4) politeReacts.push(
+      `${evictee} raises both eyebrows at the sheer politeness of it, and lets the silence do the rest.`,
+    );
+    if (evArch === 'social-butterfly' || evArch === 'showmancer') politeReacts.push(
+      `${evictee} says "aw" at somebody ${p.sub} spoke to maybe four times, and means it anyway.`,
+    );
+
+    return {
+      ...g,
+      react: g.tone === 'confession' ? freshReact(confessionReacts)
+        : g.tone === 'unapologetic' ? freshReact(unapologeticReacts)
+          : g.tone === 'warm' ? freshReact(warmReacts)
+            : freshReact(politeReacts),
+    };
+  });
 
   // ── Where the car goes. ──
   //

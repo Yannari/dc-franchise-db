@@ -43,8 +43,8 @@ const THEMED = [
   // Batch two.
   'bb-stamina-dizzy-discs', 'bb-stamina-log-roll', 'bb-stamina-hold-up',
   'bb-hand-caged-eggs', 'bb-hand-laser-maze', 'bb-hand-water-rescue',
-  // The overnight one, and the rope against the winch.
-  'bb-endurance-soak', 'bb-endurance-wall',
+  // The overnight one, the rope against the winch, and the boards.
+  'bb-endurance-soak', 'bb-endurance-wall', 'bb-mental-puzzle',
   // Batch three's grip shelf. These shipped with screens and were never added
   // here, so the second test below has been failing ever since — the screens
   // were fine, the list was not.
@@ -191,7 +191,7 @@ describe('every new Block Buster game draws its own instrument', () => {
 // 'soak' (Cold Comfort) came off this list when the overnight competition was
 // rebuilt to run the night hour by hour and got its ice screen.
 const VARIANT_WITHOUT_SCREEN = new Set([
-  'bb-mental-puzzle', 'bb-luck-draw',
+  'bb-luck-draw',
 ]);
 
 describe('every variant a competition emits has a screen behind it', () => {

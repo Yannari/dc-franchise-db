@@ -1137,6 +1137,16 @@ export function simulateBBEpisode() {
 function _competition(line, comp) {
   if (!comp) return;
   line(`  ${comp.name}${comp.category ? ` (${comp.category})` : ''}`);
+  // The rules, once, above the beats.
+  //
+  // This writer had never printed them for any competition. It did not show
+  // while a competition was four beats long and the last one named the winner
+  // — but the library is being rebuilt to narrate the whole night, and thirty
+  // beats about forced pieces, hauled ground and a slack that never came are
+  // unreadable to somebody who was never told what the machine was. The
+  // narration says what happened; `desc` is the only thing anywhere that says
+  // what they were doing. The other writer has printed it all along.
+  if (comp.desc) line(`  Rules: ${comp.desc}`);
   for (const b of comp.beats || []) line(`    · ${b.text}`);
 }
 

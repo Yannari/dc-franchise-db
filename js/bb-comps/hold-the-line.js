@@ -248,12 +248,18 @@ export const holdTheLine = {
       participants.slice(0, 3), 'THE ROPES'));
     steps.push({ kind: 'open', round: 0, notch: '', pull: 0, standing: state.length, ground: {} });
 
+    // The step's own fields go FIRST and the per-player map last, so nothing a
+    // caller passes can shadow it. Written the other way round, the win step —
+    // which carries a scalar `ground` for the winner — replaced the whole
+    // track with a single number, and the screen drew the final card of the
+    // competition using the previous card's positions. Nothing looked wrong;
+    // the markers were simply one beat behind on the beat that mattered most.
     const say = (text, who, badgeText, badgeClass, step) => {
       beats.push(beat(text, who, badgeText, badgeClass));
       steps.push({
+        ...step,
         standing: standing().length,
         ground: Object.fromEntries(state.map(p => [p.name, Math.round(p.ground)])),
-        ...step,
       });
     };
 
@@ -557,7 +563,7 @@ export const holdTheLine = {
     }
     say(winLine, [champ.name], winBadge, 'gold',
       { kind: 'win', round, who: champ.name, atTheLine, tape, margin,
-        ground: Math.round(champ.ground), worst: Math.round(champ.worst) });
+        finalGround: Math.round(champ.ground), worst: Math.round(champ.worst) });
 
     api.popDelta(champ.name, 2);
     api.record(champ.name, 'endurance-win',

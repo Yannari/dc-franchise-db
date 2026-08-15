@@ -87,6 +87,7 @@ import { rpBuildSigKnightMoves } from './vp-bb-sig/knight-moves.js';
 import { rpBuildSigOnTilt } from './vp-bb-sig/on-tilt.js';
 import { rpBuildSigColdComfort } from './vp-bb-sig/cold-comfort.js';
 import { rpBuildSigHoldTheLine } from './vp-bb-sig/hold-the-line.js';
+import { rpBuildSigCutAndCover } from './vp-bb-sig/cut-and-cover.js';
 import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
 import { rpBuildBBSplitHouse } from './vp-bb-split.js';
 import { rpBuildBBRoadkill } from './vp-bb-roadkill.js';
@@ -17172,6 +17173,8 @@ const _BB_SIG_BUILDERS = {
   // the builder declines on a season saved before the change, which drops that
   // week to the generic board rather than drawing an empty rig.
   'wall': rpBuildSigHoldTheLine,
+  // The jigsaw. Declines on a season saved before the boards were simulated.
+  'puzzle': rpBuildSigCutAndCover,
 };
 
 export function rpBuildBBComp(ep, actType) {

@@ -340,13 +340,18 @@ export const coldComfort = {
     steps.push({ kind: 'open', clock: HOURS[0].clock, hour: 0, standing: state.length, heats: {} });
 
     /** Push a beat and its instrument row together so the two never drift. */
+    // The step's own fields go FIRST and the per-player map last, so nothing a
+    // caller passes can shadow it. The sibling competitions both shipped this
+    // the other way round and both had a step whose scalar quietly replaced the
+    // whole map on the most important card of the night. No step here collides
+    // today; this is so that none ever can.
     const say = (text, players, badgeText, badgeClass, step) => {
       beats.push(beat(text, players, badgeText, badgeClass));
       steps.push({
+        ...step,
         clock: step.clock, hour: step.hour, kind: step.kind,
         standing: standing().length,
         heats: Object.fromEntries(state.map(p => [p.name, Math.round(p.heat)])),
-        ...step,
       });
     };
 

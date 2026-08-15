@@ -11,8 +11,11 @@
 // Eighteen finales on a four-person jury produced six 2–2 ties and the final
 // HOH took all six, which is not a bad outcome and was never a decision.
 //
-// Now: juries seat odd so it should not arise, and when a season cannot seat
-// an odd panel the rule is stated rather than inherited from an array index.
+// The rule is stated now rather than inherited from an array index. Note the
+// fix is ONLY the rule: an earlier attempt also trimmed even juries down to
+// odd so a tie could not occur, which took a vote away from somebody the house
+// had evicted onto that jury and left the finale announcing more jurors than
+// it counted. Everybody seated votes; the tie has an answer.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig, relationships, TWIST_CATALOG } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
@@ -37,30 +40,31 @@ const boot = (format = 'big-brother') => {
 describe('a deadlocked jury', () => {
   beforeEach(() => boot());
 
-  it('cannot normally happen, because a Big Brother jury seats odd', () => {
-    for (const size of [2, 4, 6, 8]) {
-      boot();
-      gs.jury = NAMES.slice(0, size);
-      const seated = seatedJury();
-      expect(seated.length % 2, `${size} jurors seated as ${seated.length}`).toBe(1);
-      // The earliest evictee loses the seat, matching the direction the size
-      // clamp already truncates in.
-      expect(seated).toEqual(NAMES.slice(1, size));
+  it('every juror the season seated gets to vote, odd panel or even', () => {
+    // An even panel was briefly trimmed to an odd one here so a tie could not
+    // happen. It disenfranchised somebody the house had already evicted onto
+    // that jury, and — because the finale shows the jury off the act rather
+    // than off this function — a real season announced eight jurors, read
+    // eight names, printed "8 OF 8 READ" and tallied seven. The missing one
+    // rendered as "Brightly casts a vote" with no vote underneath it.
+    for (const format of ['big-brother', 'total-drama']) {
+      for (const size of [2, 3, 4, 5, 6, 7, 8, 9]) {
+        boot(format);
+        gs.jury = NAMES.slice(0, size);
+        const seated = seatedJury();
+        expect(seated.length, `${format}: ${size} seated became ${seated.length}`).toBe(size);
+        expect(seated).toEqual(NAMES.slice(0, size));
+      }
     }
   });
 
-  it('leaves an odd jury alone, and leaves Total Drama alone entirely', () => {
-    for (const size of [3, 5, 7, 9]) {
-      boot();
-      gs.jury = NAMES.slice(0, size);
-      expect(seatedJury().length).toBe(size);
-    }
-    // Total Drama runs its own tiebreak ladder — a revote, a shared title, a
-    // casting vote from the finalist who was cut — and can seat three
-    // finalists, so ties are reachable there and the ladder is load-bearing.
-    boot('total-drama');
-    gs.jury = NAMES.slice(0, 8);
-    expect(seatedJury().length, 'Total Drama had a juror taken off it').toBe(8);
+  it('still clamps a jury bigger than the configured size', () => {
+    boot();
+    seasonConfig.jurySize = 5;
+    gs.jury = [...NAMES];
+    // The most recent evictees keep their seats, which is the long-standing
+    // behaviour and is not what the odd-panel trim was doing.
+    expect(seatedJury()).toEqual(NAMES.slice(-5));
   });
 
   it('still resolves, by a stated rule, if a season seats an even jury', () => {

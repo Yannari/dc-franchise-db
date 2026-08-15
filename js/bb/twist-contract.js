@@ -577,6 +577,26 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Three things are about to happen in this house and nobody is going to have done them.',
     },
   },
+  'bb-high-rollers-room': {
+    id: 'bb-high-rollers-room', layer: 'scheduled', category: 'distribution',
+    timing: 'post-noms', duration: { weeks: 1 },
+    // No rules delta, and that is the honest answer rather than an omission.
+    // The Roulette does not change the SHAPE of the week: the block is the same
+    // size at the end of the veto meeting as it would have been, the veto is
+    // still a separate decision made at that same meeting, and the vote is
+    // untouched. What changes is who is sitting in one of the chairs, and that
+    // is a fact about this week rather than a rule about it.
+    rules: {},
+    // The second purchase channel, and the only one where the price is paid in
+    // public. The Coin of Destiny buys a private power; this buys a seat at a
+    // game the whole house watched you walk into.
+    acquisition: { channel: 'purchase', secrecy: 'public' },
+    announcement: {
+      name: "The High Roller's Room",
+      rule: 'The High Roller’s Room is open. Any houseguest may buy in for 125 BB Bucks — the money is taken when you walk through that door and it is not coming back, whatever happens inside. Everybody who pays plays the Chopping Block Roulette, and only the highest score wins it, and only if that score is good enough at all. The winner is safe for the week, takes one nominee off the block for good, and then spins for the replacement: every eligible houseguest, equal odds, chosen by nobody. Each game in that room can be played once per houseguest, for the rest of your season, win or lose.',
+      sting: 'One of you is about to pay for that door and walk back out of it with nothing.',
+    },
+  },
   'bb-coin-of-destiny': {
     id: 'bb-coin-of-destiny', layer: 'scheduled', category: 'power-structure',
     timing: 'nominations', duration: { weeks: 1 },

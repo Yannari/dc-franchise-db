@@ -675,6 +675,33 @@ export const TWIST_CATALOG = [
     // a NOMINATION, not the week's shape. Verified by playing it beside each of
     // them: no crashes, and the block never came out the wrong size.
   },
+  { id:'bb-high-rollers-room', emoji:'🎲', name:"The High Roller's Room", format:'big-brother',
+    category:'advantages', phase:'any',
+    desc:'A door opens in the hallway the night the nominations go up, with the price painted on it and a camera on everybody who walks to it. Entry costs 125 BB Bucks and the money is taken on the way IN — before a card is turned, and never refunded. Everybody who paid then plays the Chopping Block Roulette together: they are scored on how well they read a spinning board and call it, and AT MOST ONE person wins, the highest score, and only if it clears the standard — so a room full of paying houseguests can walk back out with nothing between them. Win it and three things happen at the veto meeting: you are safe for the week, you take one of the initial nominees off the block for good, and then you SPIN, and the replacement is drawn from every eligible houseguest with equal odds — chosen by nobody, including you, so the Head of Household loses the block and gets nobody to blame for it. Lose and the seat is burned for the rest of the season: each game in the room can only be played once by each houseguest, win or lose, and the whole house watched how frightened you were.',
+    // ── WHAT IT CAN AND CANNOT SHARE A WEEK WITH ──
+    //
+    // Compatible with everything that shapes the block, on the Den's reasoning
+    // one card up: the Roulette SWAPS a chair, it never adds one. One initial
+    // nominee comes down and one replacement goes up, so the block is exactly
+    // the size the week would have had — two ordinarily, three beside a
+    // Roadkill or under the Block Buster, which is why the arena still has its
+    // three to play for. Roadkill, America's Nominee, the Hacker, the Den and
+    // the Battle of the Block all still own the chairs they owned; the wheel
+    // only ever exchanges one of them for a name nobody chose.
+    //
+    // The two it refuses are refused for the same reason, and it is not the
+    // block: it is that the money would leave and the power could never land.
+    //   • bb-instant-eviction — there is no veto meeting, which is where the
+    //     Roulette resolves. Houseguests would pay 125 for a power with no
+    //     ceremony to spend it at.
+    //   • bb-split-house — each side of the wall runs as its own cycle, and the
+    //     room opens once per CALENDAR week. Half the house would be sold a
+    //     door they can never reach and the other side's block could never be
+    //     touched.
+    // No `incompatibleModes`: the Block Buster puts a third houseguest up every
+    // week and the swap leaves the block at three, so its arena still runs.
+    incompatible:['bb-instant-eviction', 'bb-split-house'],
+    incompatibleModes:[] },
   { id:'bb-whacktivity', emoji:'🚪', name:'Whacktivity', format:'big-brother',
     category:'advantages', phase:'any',
     desc:'Three separate competitions run at once, each one attached to a different power, and every houseguest picks ONE to enter or sits out entirely. Five to a room. You choose your door before you know who else chose it, so the power everybody wants is the one you have to beat four people for — and the Head of Household cannot play. A houseguest alone in a room still has to beat the competition rather than being handed it. Winners are told in private and the house is told nothing, but everybody saw who walked in.',

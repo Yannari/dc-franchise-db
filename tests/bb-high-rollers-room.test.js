@@ -1,9 +1,13 @@
 // The room. Paying is not winning, and the door only opens once per game.
 import { describe, expect, it, beforeEach } from 'vitest';
-import { gs, setGs } from '../js/core.js';
+import { gs, setGs, players, seasonConfig, relationships } from '../js/core.js';
+import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
+import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { credit, balance } from '../js/bb/bb-bucks.js';
 import { openRoom, hasPlayed, ROOM_GAMES } from '../js/bb/high-rollers-room.js';
+import { simulateBBEpisode } from '../js/bb-run.js';
 import { seedGame } from './helpers/setup.js';
+import { withSeededRandom } from './helpers/rng.js';
 
 const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly'];
 const CAST = NAMES.map((name, i) => ({
@@ -127,5 +131,126 @@ describe('the menu', () => {
     credit('Zee', 4242);
     const act = open(seq([0.01]));
     expect((act.beats || []).some(b => b.text.includes('4242'))).toBe(false);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE ROOM IN A REAL WEEK
+// ══════════════════════════════════════════════════════════════════════
+//
+// Everything above tests the door in isolation. These run a whole season
+// through `simulateBBEpisode` and assert the three placement decisions the
+// wiring IS: when the door opens, that it opens once per CALENDAR week rather
+// than once per cycle, and that a Roulette win actually rewrites the block and
+// keeps the person it took down off it for the rest of the week.
+//
+// The money is credited straight onto the ledger rather than earned over nine
+// weeks of payouts: what is under test is the wiring, and a season long enough
+// for anybody to afford the 125 honestly would cost a minute a case.
+
+const HOUSE_NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly',
+  'Hicks', 'Emmah', 'Millie', 'Caleb'];
+const HOUSE_ARCH = ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer', 'floater',
+  'villain', 'loyal-soldier', 'underdog', 'goat', 'hothead', 'wildcard'];
+const HOUSE_CAST = HOUSE_NAMES.map((name, i) => ({
+  name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: HOUSE_ARCH[i],
+}));
+
+const ROOM_WEEK = [{ episode: 1, type: 'bb-high-rollers-room' }];
+
+function season(schedule = ROOM_WEEK, { rich = 500 } = {}) {
+  seedGame(HOUSE_CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+  Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
+    ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+  Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
+    bbHaveNots: 'off', bbSafetyMode: 'off', theme: 'high-rollers' });
+  seasonConfig.twistSchedule = schedule;
+  HOUSE_NAMES.forEach(n => credit(n, rich));
+}
+
+/** Every room act anywhere in the season, across BOTH cycles of a double night. */
+const roomActs = () => (gs.bb.weeks || [])
+  .flatMap(w => (w.acts || []).filter(a => a.type === 'high-rollers-room'));
+
+/** Run one episode on a fixed seed and hand back the week records. */
+const play = (seed, schedule = ROOM_WEEK) => withSeededRandom(seed, () => {
+  season(schedule);
+  simulateBBEpisode();
+  return gs.bb.weeks || [];
+});
+
+describe('the room opens once, on the night after nominations', () => {
+  it('emits exactly one room act on an ordinary week', () => {
+    let opened = 0;
+    for (let seed = 1; seed <= 5; seed++) {
+      play(seed * 11);
+      const n = roomActs().length;
+      expect(n, `seed ${seed}: the door opened ${n} times in one week`).toBeLessThanOrEqual(1);
+      if (n === 1) opened++;
+    }
+    expect(opened, 'the room never opened at all — the twist is not wired').toBeGreaterThan(0);
+  });
+
+  // The whole reason the gate is on `week.segment` rather than on `!compressed`.
+  it('opens once on a fast-forward double eviction, not once per cycle', () => {
+    let opened = 0;
+    for (let seed = 1; seed <= 5; seed++) {
+      const weeks = play(seed * 11, [...ROOM_WEEK,
+        { episode: 1, type: 'bb-double-eviction', deStyle: 'fast-forward' }]);
+      expect(weeks.length, 'a double eviction should still run two cycles').toBe(2);
+      const n = roomActs().length;
+      expect(n, `seed ${seed}: the door opened ${n} times on one night`).toBeLessThanOrEqual(1);
+      if (n === 1) opened++;
+    }
+    expect(opened, 'the room never opened on a double night').toBeGreaterThan(0);
+  });
+
+  // The sharp one: a `week-in-one` double runs its SECOND cycle UNCOMPRESSED, so
+  // a `!compressed` guard opens the room twice in one night and charges the
+  // house twice.
+  it('opens once on a week-in-one double, whose second cycle is NOT compressed', () => {
+    for (let seed = 1; seed <= 5; seed++) {
+      play(seed * 11, [...ROOM_WEEK,
+        { episode: 1, type: 'bb-double-eviction', deStyle: 'week-in-one' }]);
+      const n = roomActs().length;
+      expect(n, `seed ${seed}: the door opened ${n} times on one night`).toBeLessThanOrEqual(1);
+    }
+  });
+});
+
+describe('the Roulette rewrites the block at the veto ceremony', () => {
+  // One winning week, found by seed, and then every consequence asserted off it.
+  // Winning is meant to be uncommon — that is the format — so the search is
+  // wide, and the failure message says so rather than reading as a wiring bug.
+  const winningWeek = () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const weeks = play(seed * 7);
+      const w = weeks.find(x => x.rouletteSwap);
+      if (w) return w;
+    }
+    return null;
+  };
+
+  it('takes the winner\'s nominee down and seats the name the wheel spun', () => {
+    const w = winningWeek();
+    expect(w, 'no seed in thirty produced a Roulette winner').toBeTruthy();
+    const { down, up } = w.rouletteSwap;
+    expect(down, 'the wheel spun the same name it took off the block').not.toBe(up);
+    // It has to have been an INITIAL nominee. The room is handed the block as
+    // the nomination ceremony left it; removing a replacement is not the rule.
+    expect(w.initialNominees, 'the removed name was never an initial nominee').toContain(down);
+    expect(w.rouletteBlock, 'the removed nominee is still on the block').not.toContain(down);
+    expect(w.rouletteBlock, 'the spun replacement never reached the block').toContain(up);
+  });
+
+  it('keeps the removed nominee safe for the REST of the week', () => {
+    const w = winningWeek();
+    expect(w).toBeTruthy();
+    const { down } = w.rouletteSwap;
+    // The gap this closes: without the name in the veto ceremony's protection
+    // list the replacement chooser can put them straight back up, and the power
+    // buys nothing at all.
+    expect(w.finalNominees, 'the veto ceremony re-nominated the person the wheel saved')
+      .not.toContain(down);
   });
 });

@@ -5,6 +5,7 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel, addBond } from '../js/bonds.js';
 import { credit, balance } from '../js/bb/bb-bucks.js';
 import { runSideBets, settleSideBets, SIDE_BET } from '../js/bb/side-bet.js';
+import { simulateBBEpisode } from '../js/bb-run.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -119,6 +120,40 @@ describe('settling', () => {
     const before = getBond(bettor, target);
     settleSideBets(act, 'Chase', { rng: seq([0.001]) });   // everybody gets read
     expect(getBond(bettor, target)).toBeLessThan(before);
+  });
+});
+
+// ── ONE TABLE A WEEK, AND IT ALWAYS SETTLES ─────────────────────────────
+//
+// Found by reading a real backlog, not by a test: the table was opened from
+// inside the campaign block, which runs several times a week, so one episode
+// took three stakes for one opinion and settled only the last of them. The
+// other two took the money and never paid out.
+describe('the table opens once a week', () => {
+  it('emits one side-bet act per episode, and settles it', () => {
+    withSeededRandom(12, () => {
+      seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+      Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
+        ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+      Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
+        bbHaveNots: 'off', bbSafetyMode: 'off', theme: 'high-rollers' });
+      seasonConfig.twistSchedule = [];
+
+      let sawOne = false;
+      for (let i = 0; i < 5 && (gs.activePlayers || []).length > 4; i++) {
+        simulateBBEpisode();
+        const w = (gs.bb.weeks || [])[gs.bb.weeks.length - 1];
+        const tables = (w.acts || []).filter(a => a.type === 'side-bet');
+        expect(tables.length, `week ${w.num} opened the table ${tables.length} times`)
+          .toBeLessThanOrEqual(1);
+        for (const t of tables) {
+          sawOne = true;
+          expect(t.settled, `week ${w.num} took the stakes and never settled`).toBe(true);
+          expect(t.results.length).toBe(t.bets.length);
+        }
+      }
+      expect(sawOne, 'the table never opened, so this proves nothing').toBe(true);
+    });
   });
 });
 

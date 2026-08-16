@@ -22880,6 +22880,13 @@ export function rpBuildBBHighRollersRoom(ep, act) {
     { text: `A door in the hallway, and a price painted on it. Tonight the room sells one thing: `
         + `<strong>${_bbEsc(act.gameName)}</strong>, ${_bbEsc(act.price)} a seat, and the seat is sold once a season.`,
       players: [], badgeText: 'THE ROOM OPENS', badgeClass: 'gold' },
+    // What it BUYS, stated before anybody pays — a viewer got through a whole
+    // season without working out why anybody would want to spin.
+    { text: 'What a seat buys: win it and you take a houseguest off the block — yourself, or somebody '
+        + 'you want to keep — and then a wheel picks their replacement at random. The Head of '
+        + 'Household loses control of their own week, and because nobody chose the new name, nobody '
+        + 'can pin it on you.',
+      players: [], badgeText: 'WHAT IT BUYS', badgeClass: 'blue' },
     { text: 'The money leaves on the way in. Paying is not winning, and everybody at the kitchen table '
         + 'can see exactly who got up to go and do it.',
       players: entries.map(e => e.name), badgeText: 'PAID ON THE DOOR', badgeClass: 'grey' },

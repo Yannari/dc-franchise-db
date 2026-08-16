@@ -5210,14 +5210,21 @@ export function simulateBBWeek(options = {}) {
 
     // ── THE CHEAP TABLE ───────────────────────────────────────────────
     //
-    // Placed here, with the campaign, because that is when a houseguest has
+    // Opens with the FIRST campaign act, because that is when a houseguest has
     // formed an opinion about Thursday and before anybody knows whether it is
-    // right. The money leaves NOW; `settleSideBets` pays out after the vote.
+    // right. The money leaves now; `settleSideBets` pays out after the vote.
     //
-    // Same calendar-week gate as the payout: `simulateBBWeek` runs twice on a
-    // double eviction and once per side on a Split House, and a table that
-    // opened per cycle would take the stake twice for one opinion.
-    if (currentTheme()?.economy === 'bb-bucks'
+    // `campaignIndex === 0` is load-bearing and was learned the hard way: this
+    // block sits inside a loop that runs a campaign act several times a week,
+    // so without it the table opened three times in one episode, took three
+    // stakes for one opinion, and only the last one was ever settled — the
+    // other two took the money and never paid out. Found by reading a real
+    // backlog, not by a test.
+    //
+    // The calendar-week half of the gate is the same one the payout uses:
+    // `simulateBBWeek` runs twice on a double eviction and once per side on a
+    // Split House.
+    if (campaignIndex === 0 && currentTheme()?.economy === 'bb-bucks'
       && !compressed && (week.segment == null || week.segment === 1)) {
       try {
         week.sideBets = runSideBets({ week, house, nominees: [...visibleBlock], rng });

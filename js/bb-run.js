@@ -1721,6 +1721,9 @@ export function summariseWeek(week) {
         line('');
         line("THE HIGH ROLLER'S ROOM");
         line(`  Tonight's game: ${act.gameName}. ${act.price} to sit down, and the seat is sold once a season.`);
+        // Why anybody would want it, said before the result.
+        line('  Winning it takes a houseguest off the block and lets a wheel pick the replacement, '
+          + 'so the Head of Household loses the week and nobody can blame the winner for the new name.');
         if (entries.length) {
           line(`  Walked in and paid: ${entries.map(e => e.name).join(', ')}.`);
         }

@@ -801,7 +801,15 @@ describe('the antagonist is present at the finale', () => {
     expect(finaleChain.slice(0, 400)).toContain("act.type === 'finale-house'");
     const vp = fs.readFileSync('js/vp-screens.js', 'utf8');
     const vpChain = vp.slice(vp.indexOf("act.type === 'theme-beat' && ep.isFinale"));
-    expect(vpChain.slice(0, 500)).toContain("act.type === 'finale-house'");
+    // The window is a proxy for "these two are the same chain", and it is
+    // measured in CHARACTERS, so it fails on prose as readily as on code: a
+    // six-line comment recording why this case must pass `ep` rather than
+    // `view` — the bug that made a themed season's whole finale unrenderable —
+    // pushed `finale-house` past a 500-char limit while changing nothing about
+    // the behaviour it is guarding. Widened rather than made clever; if it
+    // trips again for the same reason, the assertion wants rewriting to walk
+    // the case labels instead of counting characters.
+    expect(vpChain.slice(0, 1200)).toContain("act.type === 'finale-house'");
   });
 
   it('ends its arc at a final five, not at the finale', () => {

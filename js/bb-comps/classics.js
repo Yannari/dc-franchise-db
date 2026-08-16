@@ -324,7 +324,14 @@ const towerOfHanoi = {
       r.luck += noise;
       // Resets are the mechanic. A steady, patient houseguest gets few; a fast
       // confident one gets several and loses the competition to them.
-      const care = clamp(r.skill + noise / 14 - (r.threw ? 0.35 : 0), 0.02, 1);
+      // `noise / 14` was the whole of the luck in this competition, and on the
+      // 0-1 scale `skill` lives on it came to plus or minus 0.09 against a
+      // field spread three times that. The tower was the most deterministic
+      // game in the library — the best puzzler in the yard won it 85% of the
+      // time. The night the houseguest is having, which prepare() has been
+      // rolling and this competition has been ignoring, is what the rest of the
+      // file uses and what this needed.
+      const care = clamp(r.skill + r.form * 3.0 + noise / 6 - (r.threw ? 0.35 : 0), 0.02, 1);
       r.resets = Math.max(0, Math.round((1 - care) * 4.2 + (rng() - 0.4)));
       // Progress up the tower, before the resets are charged against it.
       r.reached = clamp(0.25 + care * 0.95 + (rng() - 0.5) * 0.2, 0, 1);
@@ -393,7 +400,8 @@ const spellingSearch = {
       // divisor that reconciled them was 15 — which left the actual swing at
       // seven percent and made this one of the three most deterministic
       // competitions in the library. Six is the honest conversion.
-      const run = clamp(r.skill + noise / 6 - (r.threw ? 0.35 : 0), 0.02, 1);
+      // Same omission as the tower above: the night was rolled and discarded.
+      const run = clamp(r.skill + r.form * 2.6 + noise / 6 - (r.threw ? 0.35 : 0), 0.02, 1);
       r.tiles = Math.max(3, Math.round(5 + run * 9 + (rng() - 0.5) * 2));
       // Having the letters is not having the word. The gap between the two is
       // where this competition is won.

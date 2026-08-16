@@ -93,4 +93,59 @@ describe('competitions stay winnable by more than one person', () => {
       expect(failures, failures.join(' | ')).toEqual([]);
     });
   }
+
+  // ── the property the count of winners cannot see ──
+  //
+  // A competition can produce twelve different winners across forty runs and
+  // still hand it to the same person every time it is the same person's kind of
+  // competition. What the winner count misses is WHO those winners were: if the
+  // field's best aptitude on the competition's own declared profile converts
+  // four times out of five, then a season of thirty different competitions is a
+  // season with one competitor in it, because a strong all-round stat line is
+  // favoured in most of them.
+  //
+  // Measured on a real sixteen-person roster before this was fixed: the mean
+  // across the library was 41%, half of it sat above 40%, and the worst were
+  // over 75% — Tower of Hanoi at 85%. The season-level consequence is in
+  // tests/bb-comp-domination-audit.test.js, which plays whole seasons and
+  // prints the tables; this is the cheap guard that stops it coming back.
+  //
+  // The ceiling is a ceiling, not a target. Being good at a competition should
+  // be worth a great deal — chance in a field of eight is 12.5% and the library
+  // averages a little under 30% — but no competition may be a coronation.
+  it('no competition simply hands it to the best stat line', () => {
+    const RUNS_PER = 60;
+    const CEILING = 0.45;
+    const failures = [];
+    for (const comp of BB_COMPETITIONS) {
+      const slot = ['hoh', 'veto', 'arena'].find(s => comp.types.includes(s));
+      // A crapshoot declares no profile and so has no favourite to measure.
+      if (!slot || !Object.keys(comp.stats || {}).length) continue;
+      const apt = name => {
+        const stats = CAST.find(p => p.name === name).stats;
+        return Object.entries(comp.stats)
+          .reduce((sum, [stat, w]) => sum + (stats[stat] || 0) * w, 0);
+      };
+      let favourite = 0, ran = 0;
+      for (let i = 0; i < RUNS_PER; i++) {
+        const shuffle = seededRng(i * 7919 + 13);
+        const field = [...NAMES].sort(() => shuffle() - 0.5).slice(0, FIELD);
+        let result;
+        try {
+          result = runBBCompetition({
+            type: slot, participants: field, house: NAMES, library: BB_COMPETITIONS,
+            forcedId: comp.id, rng: seededRng(i * 401 + 9),
+            week: { num: 5, houseAtStart: NAMES },
+            nominees: field.slice(-2), hoh: field[0],
+          });
+        } catch { continue; }
+        ran++;
+        if (!field.some(n => apt(n) > apt(result.winner))) favourite++;
+      }
+      if (!ran) continue;
+      const rate = favourite / ran;
+      if (rate > CEILING) failures.push(`${comp.id}: favourite wins ${Math.round(rate * 100)}%`);
+    }
+    expect(failures, failures.join(' | ')).toEqual([]);
+  });
 });

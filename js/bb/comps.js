@@ -6,6 +6,10 @@ import { gs, seasonConfig } from '../core.js';
 import { pStats } from '../players.js';
 import { addBond } from '../bonds.js';
 import { shouldThrowHoh, shouldThrowVeto, gunningFor } from './strategy.js';
+// The one scoring primitive the written library and the fallback have to agree
+// on. This directory owns selection and validation; that one owns what a stat
+// line is worth, and the fallback having its own answer is how the two drifted.
+import { aptitude } from '../bb-comps/_shared.js';
 
 // 'return' is the Battle Back slot: no scheduler opens it yet, but the
 // signature library already declares which competitions can serve a
@@ -244,7 +248,12 @@ function genericSimulation(comp, participants, context, rng) {
   const scored = participants.map(name => {
     const stats = pStats(name);
     const statComponents = Object.fromEntries(Object.entries(comp.stats).map(([stat, weight]) => [stat, stats[stat] * weight]));
-    const statTotal = Object.values(statComponents).reduce((sum, value) => sum + value, 0);
+    // Squeezed toward the middle of the scale on the same terms as the written
+    // library — see aptitude() in js/bb-comps/_shared.js for the measurement
+    // this comes from. The fallback narrates a fifth of a season's competitions
+    // and had the same problem the written ones did: a raw stat total against a
+    // ±2 roll hands the yard's best line the great majority of them.
+    const statTotal = aptitude(name, comp.stats);
     const randomRoll = (rng() * 4) - 2;
     // Both competitions can be thrown, for different reasons: the HOH to stay
     // small, the veto to stay out of a decision nobody wants to hold.

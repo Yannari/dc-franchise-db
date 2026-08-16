@@ -34,7 +34,7 @@
 
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
-import { aptitude, beat, choose, clamp, makePicker, throwRead, toResult, THROW_LINES, vb } from './_shared.js';
+import { aptitude, beat, choose, clamp, makePicker, nightForm, throwRead, toResult, THROW_LINES, vb } from './_shared.js';
 import { bond } from '../bb-events/_read.js';
 import { dangerLevel, TOO_DESPERATE_TO_STOP } from '../bb/strategy.js';
 
@@ -172,6 +172,11 @@ const OTEV_SLOW = [
   (n, p) => `${n} is quick to the pile and slow off it, and slow off it is the half that counts.`,
 ];
 
+/** Knowing the answer. */
+const OTEV_RECALL = { mental: 0.55, intuition: 0.45 };
+/** Getting back up the ramp with it. */
+const OTEV_SCRAMBLE = { physical: 0.6, endurance: 0.4 };
+
 export const otev = {
   id: 'bb-sig-otev',
   name: 'OTEV',
@@ -192,7 +197,12 @@ export const otev = {
 
     beats.push(beat(`${creature.name} ${creature.bit}`, participants.slice(0, 3), 'OTEV', 'challenge'));
 
-    let field = participants.map(name => ({ name }));
+    // The night, drawn once. The comment below is right that scoring every
+    // round from scratch beats a single sort — but only for the ORDER things
+    // happen in. Across eight rounds the per-round noise averages out and the
+    // pit still empties in stat order, which is why the best line on the
+    // profile was taking this competition 47% of the time.
+    let field = participants.map(name => ({ name, night: nightForm(rng, 1.4) }));
     const out = [];      // first eliminated first
     const tiebreaks = {};
     let round = 0;
@@ -207,10 +217,13 @@ export const otev = {
         : askedBefore(OTEV_FALLBACK_QUESTIONS);
 
       const rolls = field.map(f => {
-        const recall = (stat(f.name, 'mental') * 0.55 + stat(f.name, 'intuition') * 0.45) + noiseRoll(rng, 3.2, luck, f.name);
-        const scramble = (stat(f.name, 'physical') * 0.6 + stat(f.name, 'endurance') * 0.4) + noiseRoll(rng, 2.8, luck, f.name);
+        // Both halves through aptitude() — the two skills stay separate, which
+        // is the competition, but they sit on the same compressed scale as the
+        // rest of the library instead of being hand-summed off raw stats.
+        const recall = aptitude(f.name, OTEV_RECALL) + noiseRoll(rng, 3.2, luck, f.name);
+        const scramble = aptitude(f.name, OTEV_SCRAMBLE) + noiseRoll(rng, 2.8, luck, f.name);
         const wrong = recall < 3.4;
-        const total = recall * 0.5 + scramble * 0.5 - (wrong ? 4.5 : 0) - hn[f.name];
+        const total = recall * 0.5 + scramble * 0.5 + f.night - (wrong ? 4.5 : 0) - hn[f.name];
         return { ...f, recall, scramble, wrong, total };
       });
       rolls.sort((a, b) => a.total - b.total);
@@ -306,6 +319,15 @@ const WALL_GRIND = [
   (n, p) => `${n} works ${p.posAdj} feet back onto the ledge an inch at a time and buys another hour with it.`,
   (n, p) => `Somebody offers ${n} a deal from the ground. ${n} does not look down.`,
   (n, p) => `${n} is shaking in a way that has nothing to do with the cold and everything to do with how long ${p.sub} ${vb(p, 'has', 'have')} been up there.`,
+  // Four is thin for a line that fires once a WAVE. Hold The Line failed the
+  // repetition guard for exactly this shape once its endgame stopped being two
+  // rounds long, and this pool is smaller than the one that broke there.
+  (n, p) => `${n} answers a question from the ground with one word and does not answer the next one at all.`,
+  (n, p) => `${n} has found an angle that works and is refusing to move off it, including to eat.`,
+  (n, p) => `${n} counts something under ${p.posAdj} breath. Nobody can hear what and ${p.sub} ${vb(p, 'does', 'do')} not stop.`,
+  (n, p) => `The wall tips again and ${n} rides it without appearing to notice, which is either composure or the fourth hour talking.`,
+  (n, p) => `${n} laughs at something ${p.sub} ${vb(p, 'has', 'have')} thought of alone, up there, in the dark.`,
+  (n, p) => `${n} has stopped looking at the other platforms entirely. There is only the ledge now.`,
 ];
 
 export const theWall = {
@@ -786,6 +808,11 @@ const MISS_LINES = [
   (n, p) => `${n} spends ${p.posAdj} whole turn on a hunch. The hunch is not correct.`,
 ];
 
+/** Choosing a hiding place nobody will think of. */
+const HIDE_SKILL = { intuition: 0.45, strategic: 0.35, mental: 0.20 };
+/** Working out where somebody else would have put it. */
+const SEARCH_SKILL = { mental: 0.40, intuition: 0.40, physical: 0.20 };
+
 export const hideAndGoVeto = {
   id: 'bb-sig-hide-and-go-veto',
   name: 'Hide and Go Veto',
@@ -794,6 +821,11 @@ export const hideAndGoVeto = {
   weight: () => 1.3,
   desc: 'Every player hides a veto card somewhere in the house, then searches in timed turns while the others wait outside. Every card that is found goes up on the board and its owner is eliminated, and the houseguest whose card is never found wins the Power of Veto.',
   stats: { intuition: 0.34, mental: 0.30, strategic: 0.24, physical: 0.12 },
+  // The two halves of the competition, which are not the same skill. The
+  // declared profile above is their blend — it is what the screen and the Debug
+  // tab describe, and these are what the two phases actually run on.
+  hideSkill: HIDE_SKILL,
+  searchSkill: SEARCH_SKILL,
   simulate(participants, context, api, rng) {
     const luck = {};   // banked by noiseRoll, merged into the breakdown downstream
     const say = makePicker(rng);
@@ -813,7 +845,12 @@ export const hideAndGoVeto = {
     const cards = participants.map(name => {
       // Half the drag lands on the hide, half on the search below — a week of
       // slop dulls both halves of this competition, not one.
-      const quality = (stat(name, 'intuition') * 0.45 + stat(name, 'strategic') * 0.35 + stat(name, 'mental') * 0.20) + noiseRoll(rng, 3.0, luck, name) - hn[name] * 0.5;
+      // Through aptitude() rather than a hand-summed copy: the hide really is a
+      // different skill from the search and keeps its own weights, but both now
+      // sit on the same compressed scale as the rest of the library. Hand-summed
+      // stats bypassed that entirely, which is how this stayed a 59% lock while
+      // everything around it came down.
+      const quality = aptitude(name, HIDE_SKILL) + noiseRoll(rng, 6.0, luck, name) - hn[name] * 0.5;
       return { owner: name, quality, found: false, where: places(HIDING_PLACES) };
     });
     cards.slice(0, Math.min(4, cards.length)).forEach(c => {
@@ -836,7 +873,7 @@ export const hideAndGoVeto = {
         if (cards.filter(c => !c.found).length <= 1) break;
 
         // Cards get easier to find as the clock and the wreckage grow.
-        const power = (stat(searcher, 'mental') * 0.40 + stat(searcher, 'intuition') * 0.40 + stat(searcher, 'physical') * 0.20)
+        const power = aptitude(searcher, SEARCH_SKILL)
           + noiseRoll(rng, 2.6, luck, searcher) + turn * 0.9 - hn[searcher] * 0.5;
         mess[searcher] += 1 + rng();
 
@@ -1115,7 +1152,13 @@ export const beforeOrAfter = {
     const strikesAllowed = participants.length > 6 ? 2 : 1;
     let field = participants.map(name => {
       const t = throwRead(name, context, rng);
-      return { name, apt: aptitude(name, this.stats), strikes: 0, correct: 0, threw: t.threw, threwChance: t.chance };
+      // The night, drawn once. A question-by-question roll is re-drawn twenty
+      // times in a long quiz and averages out to nothing, which left the best
+      // memory in the house winning this 63% of the time. What a viewer
+      // actually sees is somebody sharp getting an early pair wrong and never
+      // recovering — one roll, held for the whole board.
+      return { name, apt: aptitude(name, this.stats) + nightForm(rng, 5.0),
+        strikes: 0, correct: 0, threw: t.threw, threwChance: t.chance };
     });
 
     beats.push(beat(

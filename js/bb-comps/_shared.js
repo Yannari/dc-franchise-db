@@ -20,6 +20,36 @@ import { shouldThrowHoh, shouldThrowVeto, gunningFor } from '../bb/strategy.js';
 
 export const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
+/**
+ * The night a houseguest is having, drawn once and carried.
+ *
+ * ── the failure this is the answer to ──
+ *
+ * A competition that eliminates round after round and re-rolls luck in every
+ * round has, in effect, no luck in it at all. Eight independent draws average
+ * out; what survives to the standings is the stat ladder, in order. Measured
+ * across the library, this is what separated the games where the favourite won
+ * a quarter of the time from the ones where they won three-quarters of it —
+ * not the size of the noise each game declared, but whether that noise had any
+ * chance to persist.
+ *
+ * classics.js reached the same conclusion independently and wrote it as a
+ * comment on its own prepare(): "form is a night, not a shot." This is that
+ * idea, extracted, so the elimination loops can share it.
+ *
+ * Draw once, before the first round, and add it to the carried score. The
+ * per-round noise still belongs where it is — it decides who wobbles in round
+ * four. This decides whether the best competitor in the yard turned up.
+ *
+ * `width` is in whatever units the competition scores in, and should be
+ * something like a third to a half of the spread its aptitude produces across
+ * a full field: enough that a strong houseguest can have a bad night, not so
+ * much that the stat line stops meaning anything.
+ */
+export function nightForm(rng, width) {
+  return (rng() - 0.5) * 2 * width;
+}
+
 /** Pick from a list with the competition's own rng. Rolls once. */
 export function choose(rng, list) {
   return list[Math.min(list.length - 1, Math.floor(rng() * list.length))];
@@ -77,10 +107,64 @@ export const THROW_LINES = [
  */
 export const vb = (pr, singular, plural) => (pr?.sub === 'they' ? plural : singular);
 
+/**
+ * How far apart the best and worst competitor in the house really are.
+ *
+ * ── the bug this exists for ──
+ *
+ * Every competition in the library passed its own upset test: force one game
+ * forty times against a random field and four different houseguests win it.
+ * What none of them measured is the season those games add up to. Measured on
+ * a real sixteen-person roster, the pre-competition favourite — the highest
+ * aptitude in the yard on that competition's OWN declared profile — was
+ * winning 41% of the time against a field of eight, where chance is 12.5%.
+ * Half the library sat above 40% and the worst offenders were over 75%.
+ *
+ * The consequence is the thing you notice while watching rather than while
+ * testing: the same houseguest wins everything. Not because any one game is
+ * rigged for them, but because a roster's strongest all-round line is the
+ * favourite in nearly every game, and being the favourite converted four times
+ * out of ten. Across twenty-six competitions that is a season with one
+ * competitor in it.
+ *
+ * ── why here ──
+ *
+ * There are three scoring idioms in this directory — scoreField, classics.js's
+ * prepare/finish, and a dozen competitions that run their own elimination
+ * loops — and every one of them starts from this function. It is the single
+ * place a change reaches all sixty without sixty separate retunings, and,
+ * unlike adjusting the finished board, it happens BEFORE a competition
+ * narrates, so the beats still describe the result they produced.
+ *
+ * ── what it does ──
+ *
+ * The stat line still decides who is favoured, and by exactly the same order:
+ * this is a monotone squeeze toward the middle of the scale, so nobody
+ * overtakes anybody on aptitude alone. What changes is how much a point of
+ * aptitude is WORTH against the night each competition rolls on top of it. A
+ * raw 9 against a raw 4 used to be a five-point head start on a roll of ±3;
+ * now it is three, which is still a large edge and still usually enough — the
+ * favourite converts around a quarter of the time rather than nearly half.
+ *
+ * Squeezed toward the scale's midpoint rather than the field's average,
+ * deliberately: a competition run by three people should not silently become
+ * more decisive than the same competition run by ten, and several of these
+ * games read absolute skill (a solve rate, a time in seconds) rather than a
+ * rank. The midpoint keeps a middling houseguest's numbers where they were.
+ */
+export const APTITUDE_PIVOT = 5.5;
+export const APTITUDE_SPREAD = 0.62;
+
 /** A player's raw aptitude for this competition, before luck and nerve. */
 export function aptitude(name, mix) {
   const s = pStats(name);
-  return Object.entries(mix).reduce((sum, [stat, weight]) => sum + (s[stat] || 0) * weight, 0);
+  const raw = Object.entries(mix).reduce((sum, [stat, weight]) => sum + (s[stat] || 0) * weight, 0);
+  // Profiles are written to sum to 1, so this is normally just 5.5 — but a
+  // profile that sums to 1.4 has to be squeezed toward 7.7 or the compression
+  // becomes a flat penalty on that competition instead of a narrowing.
+  const total = Object.values(mix).reduce((sum, weight) => sum + weight, 0);
+  const pivot = APTITUDE_PIVOT * (total || 1);
+  return pivot + (raw - pivot) * APTITUDE_SPREAD;
 }
 
 /**

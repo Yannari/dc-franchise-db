@@ -158,6 +158,15 @@ const STRUGGLE = [
   (n, p) => `${n} has been holding the same piece for a while now, turning it, and it has not fitted anywhere yet.`,
   n => `${n} is doing the thing where you try the same piece in the same gap three times in case it changed.`,
   (n, p) => `${n} has stopped looking at anybody else's board, which at this point is less a strategy than an unwillingness to know.`,
+  // Three was not enough for a line that can fire on the same houseguest twice
+  // in one competition. The picker cycles its bag, so a short pool comes back
+  // round and prints the identical sentence about the identical person — which
+  // is exactly what the library's repetition guard exists to catch.
+  (n, p) => `${n} has sorted ${p.posAdj} remaining pieces into two piles, twice, using two different systems.`,
+  n => `${n} takes a section apart that was working, on a hunch, and cannot get it back the way it was.`,
+  (n, p) => `${n} keeps starting sentences at nobody in particular and abandoning them halfway through.`,
+  (n, p) => `${n} steps back from the board to see it whole, looks at it for a long moment, and steps back in no wiser.`,
+  n => `${n} has found two pieces that nearly fit and is refusing, on principle, to accept that nearly is not a thing here.`,
 ];
 
 const WIN_LINES = [

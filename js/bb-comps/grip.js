@@ -66,7 +66,7 @@
 // simulate() means the bars on the screen and the maths behind them describe
 // different competitions.
 import { pronouns } from '../players.js';
-import { aptitude, beat, makePicker, scoreField, toResult, vb, THROW_LINES } from './_shared.js';
+import { aptitude, beat, clamp, makePicker, nightForm, scoreField, toResult, vb, THROW_LINES } from './_shared.js';
 
 /**
  * A readable quantity per houseguest, in the order they actually finished.
@@ -122,9 +122,18 @@ function quantise(entries, { top, floor, jitter = 0, rng = null }) {
  * replacing it — the strongest arms still tend to win, and now they can be
  * beaten by somebody who wanted it more.
  */
-function willingnessOf(name, mix) {
-  const w = aptitude(name, mix);
-  return { willing: Math.round(w * 100) / 100, spend: 0.74 + (w / 10) * 0.40 };
+/**
+ * `rng` is optional and should be passed: without it, willingness is a pure
+ * function of the stat line, and in the competitions that MULTIPLY it by
+ * capacity that means the compounding advantage has no luck in it at all. The
+ * noise scoreField adds to the ceiling then gets multiplied by a constant, so
+ * the same houseguest converts far more often than the ceiling alone suggests
+ * — Get A Grip was handing it to the best line 54% of the time. How much you
+ * are willing to spend on a competition is a thing about tonight.
+ */
+function willingnessOf(name, mix, rng = null) {
+  const w = aptitude(name, mix) + (rng ? nightForm(rng, 3.2) : 0);
+  return { willing: Math.round(w * 100) / 100, spend: 0.74 + (clamp(w, 0, 10) / 10) * 0.40 };
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -180,7 +189,7 @@ export const getAGrip = {
        the Debug tab gets both numbers, because "had more in them" is the most
        interesting thing this competition produces and it was invisible. */
     for (const e of entries) {
-      const { willing, spend } = willingnessOf(e.name, this.roles.willingness);
+      const { willing, spend } = willingnessOf(e.name, this.roles.willingness, rng);
       const held = e.score * spend;
       breakdown[e.name].willingness = willing;
       breakdown[e.name].spend = Math.round(spend * 100) / 100;

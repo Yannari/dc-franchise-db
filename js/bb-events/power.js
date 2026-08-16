@@ -975,6 +975,20 @@ const pawnAsk = {
     const ask = ctx?.week?.pawnAsk;
     if (!ask || !ask.asked?.length || _blockKnown(ctx) || house.length < 6) return 0;
     if (!house.includes(ask.pawn)) return 0;
+    // ── the Head of Household cannot ask themselves ──
+    //
+    // negotiatePawn filters the sitting HOH out of its own ranking, so this is
+    // never true on an ordinary week. It is true on a SPLIT week: the ask is
+    // recorded once on the week while `_hoh(ctx)` resolves against whichever
+    // half is currently being narrated, and the two can land on the same name.
+    // Every line below is a two-hander — "X asks Y to take the chair" — so with
+    // one name it prints a houseguest negotiating with themselves and puts
+    // their face on the card twice.
+    //
+    // Declining to fire rather than repairing the cast: there is no scene here
+    // to tell. A pawn ask needs two people in the room.
+    const hoh = _hoh(ctx);
+    if (!hoh || hoh === ask.pawn) return 0;
     return band(11);
   },
   fire(house, ctx, api) {

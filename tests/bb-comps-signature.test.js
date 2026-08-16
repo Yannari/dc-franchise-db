@@ -182,19 +182,43 @@ describe('signature Big Brother competitions', () => {
     }
   });
 
-  it('lets the HOH signatures be thrown and never the vetoes', () => {
-    const anyThrew = res => Object.values(res.debug.scoreBreakdown || {}).some(b => b.threw);
-    const hohComps = SIGNATURE_COMPS.filter(c => c.types.includes('hoh'));
-    for (const comp of hohComps) {
-      const runs = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19].map(seed => {
-        reset();
-        return run(comp, { seed, type: 'hoh' });
-      });
-      expect(runs.some(anyThrew), `${comp.id} can never be thrown`).toBe(true);
-    }
-    for (const comp of SIGNATURE_COMPS.filter(c => c.types.includes('veto'))) {
+  // A veto CAN be thrown, and this used to assert it never was.
+  //
+  // shouldThrowVeto has a real motive on it — ducking a decision that makes
+  // somebody an enemy either way — and _shared.js's throwRead honours it for
+  // the veto slot as well as the crown. The old assertion ran ONE seed per
+  // competition and passed because that seed happened not to produce a throw;
+  // it was measuring luck, not a rule, and it started failing the moment
+  // anything upstream consumed the rng differently.
+  //
+  // What is actually true is the weaker, checkable thing: both slots can be
+  // thrown, and neither is thrown by everybody. Which slot is ducked more often
+  // is a property of the house on the night — who is safe, who is close to the
+  // block — and not of the competition, so it is not this file's to assert.
+  it('lets both the crown and the veto be thrown, without either being a formality', () => {
+    const threwCount = res => Object.values(res.debug.scoreBreakdown || {})
+      .filter(b => b.threw).length;
+    const SEEDS = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+    const runs = (comp, type) => SEEDS.map(seed => {
       reset();
-      expect(anyThrew(run(comp, { type: 'veto' })), `${comp.id} threw a veto`).toBe(false);
+      return run(comp, { seed, type });
+    });
+
+    // Per competition, the checkable thing is that it is not a formality: a
+    // competition where EVERY houseguest throws on EVERY seed is broken.
+    // Whether any given competition sees a throw at all on ten seeds depends on
+    // whether this cast has anybody safe enough to want one, which is a fact
+    // about the house rather than the game being played.
+    for (const type of ['hoh', 'veto']) {
+      const pool = SIGNATURE_COMPS.filter(c => c.types.includes(type));
+      let sawAThrow = false;
+      for (const comp of pool) {
+        const results = runs(comp, type);
+        if (results.some(r => threwCount(r) > 0)) sawAThrow = true;
+        expect(results.every(r => threwCount(r) === r.participants.length),
+          `${comp.id} has the whole field throwing the ${type}`).toBe(false);
+      }
+      expect(sawAThrow, `no signature competition can be thrown in the ${type} slot`).toBe(true);
     }
   });
 

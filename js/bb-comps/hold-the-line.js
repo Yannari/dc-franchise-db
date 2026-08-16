@@ -91,10 +91,35 @@ const NOTCHES = [
   { label: 'TENTH NOTCH', pull: 20.6,
     line: 'It goes up again and somebody swears loudly enough that it will be bleeped. The rope does not care and the drum does not stop.' },
 ];
-const notchAt = i => NOTCHES[i] || {
+/**
+ * Past the tenth notch, and past the point where two people are left.
+ *
+ * Both of these used to be ONE sentence each, printed once per round for as
+ * long as the situation lasted. That was survivable while the field dropped in
+ * stat order and the endgame was two or three rounds long; when the
+ * competitions stopped being a stat sort the last two started holding out for
+ * five and six notches and the screen printed the same paragraph six times.
+ * Rounds past the ladder are rarer but fail exactly the same way.
+ */
+const BEYOND_LINES = [
+  'The winch has gone past every setting anybody expected it to use, and it is still going up.',
+  'There are no more marked notches. The drum keeps turning anyway and nobody out here can do anything about that.',
+  'Somebody in the control booth is now improvising, and everybody holding a rope has worked that out.',
+  'The load goes up again into a range the machine has no label for. The ropes make a sound they have not made yet.',
+  'It climbs once more. At this point the only question the competition is still asking is which of them lets go first.',
+];
+const LAST_TWO_LINES = [
+  'The winch stops climbing. It does not come off — it simply holds, at a load neither of them can carry for much longer, and now it is only a question of which of the two of them stops being able to first.',
+  'The load does not move. Two people, one constant weight, and a yard that has gone completely silent for it.',
+  'Neither of them has said anything in some minutes. The drum holds where it is and lets the two of them work it out.',
+  'The machine has stopped doing anything at all. It is just there, pulling exactly as hard as it was, waiting.',
+  'Still nothing from the winch. Both of them have found a position and both of them know what it is costing.',
+  'The load holds. One of them adjusts a grip and immediately regrets having moved.',
+];
+const notchAt = (i, beyondSay = null) => NOTCHES[i] || {
   label: `NOTCH ${i + 1}`,
   pull: NOTCHES[NOTCHES.length - 1].pull + (i - NOTCHES.length + 1) * 2.4,
-  line: 'The winch has gone past every setting anybody expected it to use, and it is still going up.',
+  line: beyondSay ? beyondSay(BEYOND_LINES) : BEYOND_LINES[0],
 };
 
 // ── narration ─────────────────────────────────────────────────────────
@@ -158,6 +183,20 @@ const CALL_FALSE = [
   (n, p) => `${n} calls a slack that is not coming, and does not look at anybody while ${p.sub} ${vb(p, 'does', 'do')} it.`,
 ];
 
+/**
+ * The slack arriving. Fires several times a night, so it cannot be one
+ * sentence — it was, and a competition that dropped the drum four times said
+ * the same forty words four times.
+ */
+const SLACK_LINES = [
+  'The drum drops. For about six seconds the ropes have give in them, and every person out here has to decide in that six seconds whether to spend what is left taking ground back or keep it and stay where they are.',
+  'The winch eases. It is not much and it is not long, and it is the only chance anybody out here gets to move forwards instead of backwards.',
+  'The load comes off — not all of it, and not for long. Six seconds of choice, and everybody spends them differently.',
+  'The note of the drum changes and the ropes go soft in eight pairs of hands at once. Whatever anybody does now, they cannot do it twice.',
+  'Slack. The machine breathes out, briefly, and hands the whole field the same question at the same moment.',
+  'The pull drops away and the rope suddenly weighs nothing. Every houseguest out here has about six seconds to decide whether that is an opportunity or a trap.',
+];
+
 const BURNED_BY_CALL = [
   (n, p, liar) => `${n} goes for it on ${liar}'s word and hauls against a machine at full power. ${p.Sub} ${vb(p, 'loses', 'lose')} ground and most of what ${p.sub} had left, and ${vb(p, 'knows', 'know')} exactly whose fault it is.`,
   (n, p, liar) => `${n} trusted the call. There was nothing to haul into, and the rope takes back everything ${p.sub} spent and more. ${p.Sub} ${vb(p, 'looks', 'look')} down the line at ${liar} for a long moment.`,
@@ -216,6 +255,11 @@ export const holdTheLine = {
     const burnSay = makePicker(rng);
     const crewSay = makePicker(rng);
     const threwSay = makePicker(rng);
+    const beyondSay = makePicker(rng);
+    const lastTwoSay = makePicker(rng);
+    const slackSay = makePicker(rng);
+    const trueSay = makePicker(rng);
+    const falseSay = makePicker(rng);
 
     const state = participants.map(name => {
       const s = pStats(name);
@@ -282,11 +326,11 @@ export const holdTheLine = {
       // 52% of all nights finished that way. Held at a constant load they
       // separate on their own holding power, which is what the competition is
       // supposed to be measuring.
-      if (live.length === 2 && duelFrom == null) duelFrom = notchAt(round).pull;
+      if (live.length === 2 && duelFrom == null) duelFrom = notchAt(round, beyondSay).pull;
       const notch = duelFrom != null
-        ? { ...notchAt(round), pull: round1(duelFrom * 0.92), label: 'THE LAST TWO',
-          line: 'The winch stops climbing. It does not come off — it simply holds, at a load neither of them can carry for much longer, and now it is only a question of which of the two of them stops being able to first.' }
-        : notchAt(round);
+        ? { ...notchAt(round, beyondSay), pull: round1(duelFrom * 0.92), label: 'THE LAST TWO',
+          line: lastTwoSay(LAST_TWO_LINES) }
+        : notchAt(round, beyondSay);
 
       say(notch.line, live.slice(0, 4).map(p => p.name), notch.label, 'challenge',
         { kind: 'notch', round: round + 1, notch: notch.label, pull: round1(notch.pull) });
@@ -390,14 +434,15 @@ export const holdTheLine = {
           const lying = willLie(caller.name, rng) && rng() < 0.55;
           lastCall = { by: caller.name, honest: !lying };
           const cp = pron(caller.name);
-          say(lying
-            ? CALL_FALSE[Math.floor(rng() * CALL_FALSE.length)](caller.name, cp)
-            : CALL_TRUE[Math.floor(rng() * CALL_TRUE.length)](caller.name, cp),
+          // Through the pickers, not a bare index: the same houseguest can call
+          // the slack on three different notches, and a flat random draw from
+          // three lines repeats on them.
+          say(lying ? falseSay(CALL_FALSE)(caller.name, cp) : trueSay(CALL_TRUE)(caller.name, cp),
           [caller.name], lying ? 'CALLS IT' : 'CALLS THE SLACK', lying ? 'red' : 'green',
           { kind: 'call', round: round + 1, who: caller.name, honest: !lying });
         }
 
-        say('The drum drops. For about six seconds the ropes have give in them, and every person out here has to decide in that six seconds whether to spend what is left taking ground back or keep it and stay where they are.',
+        say(slackSay(SLACK_LINES),
           live2.map(p => p.name).slice(0, 5), 'SLACK', 'gold',
           { kind: 'slack', round: round + 1 });
 

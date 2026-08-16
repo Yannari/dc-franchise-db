@@ -56,6 +56,14 @@ function statsRead(body) {
   // <comp>.stats)`, which is the declared object itself — so anything declared
   // is by definition read.
   if (/attentionOf\(name, statOf, \w+\.stats\)/.test(body)) return null;
+  // Same exemption, and the one this file was written to encourage: a
+  // competition that calls `aptitude(name, ...)` is reading a profile object
+  // rather than naming stats inline. Passing the declared `stats` reads all of
+  // it by construction; passing a named sub-profile (a competition with two
+  // genuinely different skills in it, like the log roll's feet and hands) is
+  // the same thing spread over more than one object, and the drift guard in
+  // bb-comp-profile-drift.test.js is what holds those to the declared blend.
+  if (/\baptitude\(\s*\w+\s*,/.test(body)) return null;
   return found;
 }
 

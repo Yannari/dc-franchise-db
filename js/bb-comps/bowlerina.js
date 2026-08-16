@@ -26,7 +26,7 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import { pStats, pronouns } from '../players.js';
-import { aptitude, beat, toResult, makePicker, throwRead, clamp, THROW_LINES, vb } from './_shared.js';
+import { aptitude, beat, toResult, makePicker, nightForm, throwRead, clamp, THROW_LINES, vb } from './_shared.js';
 
 const NEUTRAL = { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', ref: 'themselves', Sub: 'They', Obj: 'Them', PosAdj: 'Their' };
 const pron = name => { try { return pronouns(name) || NEUTRAL; } catch { return NEUTRAL; } };
@@ -97,7 +97,13 @@ export const bowlerina = {
       // the competition in one place silently left the other describing a
       // different competition. `aptitude` already sums stat × weight; dividing
       // by ten puts it back on the 0–1 scale the rest of this file expects.
-      const steady = aptitude(name, this.stats) / 10;
+      // Plus the night, drawn once and held for all five frames. Widening the
+      // per-frame aim noise was tried first (see the note further down) and it
+      // cannot fix this: five independent frames average out, and `steady`
+      // feeds the dizziness ratchet as well as the aim, so the same houseguest
+      // gets five separate chances to be the steadiest person in the yard.
+      // Measured before this, the best line on the profile won 76% of them.
+      const steady = clamp(aptitude(name, this.stats) / 10 + nightForm(rng, 0.20), 0.02, 1);
       const haveNot = (context.haveNots || []).includes(name);
 
       let dizzy = 0, total = 0, gutters = 0, collapsed = false, best = null, hnCost = 0, luck = 0;

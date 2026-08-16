@@ -36,7 +36,7 @@
 import { pStats, pronouns } from '../players.js';
 import { dangerLevel, TOO_DESPERATE_TO_STOP } from '../bb/strategy.js';
 import { getBond } from '../bonds.js';
-import { aptitude, beat, toResult, makePicker, throwRead, clamp, THROW_LINES, vb } from './_shared.js';
+import { aptitude, beat, toResult, makePicker, nightForm, throwRead, clamp, THROW_LINES, vb } from './_shared.js';
 
 const NEUTRAL = { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', ref: 'themselves', Sub: 'They', Obj: 'Them', PosAdj: 'Their' };
 const pron = name => { try { return pronouns(name) || NEUTRAL; } catch { return NEUTRAL; } };
@@ -180,7 +180,13 @@ export const slipperySlope = {
       const t = throwRead(name, context, rng);
       // Read off the declared profile rather than restating it — written out
       // twice, the two copies drift the moment either is retuned.
-      const carry = aptitude(name, slipperySlope.stats) / 10;
+      // Plus the night, drawn once. The comment on the upset guard already
+      // named this competition's shape as the problem — eight trips of
+      // per-trip luck average out while the carry advantage applies to every
+      // one of them — and the grab it added gave the field a way back in
+      // without changing that. This is the other half: the carry itself is
+      // what a houseguest has TONIGHT, not a constant.
+      const carry = clamp(aptitude(name, slipperySlope.stats) / 10 + nightForm(rng, 0.17), 0.02, 1);
       return {
         name, carry, fill: 0, trips: 0, spills: 0, fatigue: 0, log: [], hnCost: 0, luck: 0,
         base: Math.round(aptitude(name, slipperySlope.stats) * 100) / 100,

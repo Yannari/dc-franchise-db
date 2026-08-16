@@ -16,7 +16,7 @@
 // play coverage and the finish are the arena's voice, and five games written
 // with their own versions of it would sound like a different show.
 import { pronouns, pStats } from '../players.js';
-import { scoreField, toResult, beat, vb } from './_shared.js';
+import { nightForm, scoreField, toResult, beat, vb } from './_shared.js';
 import { arenaFinish, arenaFalls, arenaPlayByPlay, arenaGrudge, say } from './arena.js';
 import { bond } from '../bb-events/_read.js';
 
@@ -120,7 +120,7 @@ const knightMoves = {
   desc: 'The arena floor is laid out as a giant chequered board and each nominee has to cross it from one corner to the opposite one moving only the way a knight moves — two squares one way and one square across, every time, no exceptions. Squares already stepped on go dark and cannot be used again, so a route that felt safe three moves ago can strand somebody with no legal square to jump to, and being stranded means walking back and starting the crossing over. Nothing here is about speed. First nominee to reach the far corner wins safety.',
   stats: { mental: 0.36, strategic: 0.26, intuition: 0.22, temperament: 0.16 },
   simulate(participants, context, api, rng) {
-    const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 2.4, context, rng });
+    const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 4.0, context, rng });
     const beats = [];
     beats.push(beat(
       'A chequered floor, one legal move, and every square that has been used going dark behind them. The house can see the whole board from the glass and is not allowed to say a word.',
@@ -159,7 +159,7 @@ const instantCrossword = {
   desc: 'Each nominee stands at a floor-sized crossword grid with the clues read aloud over the speakers, every one of them about something that has happened in this house — who said what, who voted how, which day somebody went on slop. Answers are built by carrying lettered blocks to the grid and dropping them in the boxes, so a wrong answer is not just wrong, it is a corner of the grid that has to be pulled apart again before anything crossing it will fit. Whoever has the most correctly filled squares when the horn goes wins safety.',
   stats: { mental: 0.34, intuition: 0.26, social: 0.22, temperament: 0.18 },
   simulate(participants, context, api, rng) {
-    const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 2.5, context, rng });
+    const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3.6, context, rng });
     const beats = [];
     beats.push(beat(
       'Three floor-sized grids and a voice reading clues about the last four weeks of this house. Everything in the puzzle happened in front of them.',

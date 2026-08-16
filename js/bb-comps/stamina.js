@@ -24,7 +24,7 @@
 //   static and entirely about the arms, and the flexible pole means the smallest
 //   tremor is amplified at the far end. The stillest houseguest wins.
 import { pStats, pronouns } from '../players.js';
-import { beat, clamp, makePicker, toResult, vb } from './_shared.js';
+import { aptitude, beat, clamp, makePicker, nightForm, toResult, vb } from './_shared.js';
 
 const round2 = v => Math.round(v * 100) / 100;
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
@@ -107,11 +107,20 @@ export const dizzyDiscs = {
     const breakdown = {};
     participants.forEach(n => { luck[n] = 0; });
 
-    let field = participants.map(name => ({
-      name,
-      grip: stat(name, 'endurance') * 0.55 + stat(name, 'physical') * 0.30 + stat(name, 'boldness') * 0.15,
-      fatigue: 0,
-    }));
+    let field = participants.map(name => {
+      // Drawn once, before the arm makes its first pass, and carried into every
+      // round after it. Without it the per-round swing averages out over eight
+      // sweeps and the discs eliminate the field in strict order of grip —
+      // measured, the strongest houseguest in the yard was taking this 63% of
+      // the time. See nightForm in _shared.js.
+      const night = nightForm(rng, 3.4);
+      luck[name] = round2(night);
+      return {
+        // Through aptitude(), not hand-summed: same weights, same order, on the
+        // library's compressed scale.
+        name, night, grip: aptitude(name, dizzyDiscs.stats), fatigue: 0,
+      };
+    });
     const out = [];
     const tiebreaks = {};
     let round = 0;
@@ -126,7 +135,7 @@ export const dizzyDiscs = {
         f.fatigue += 0.34 + rng() * 0.26;
         const swing = nerve(f.name, rng, 2.4);
         luck[f.name] = round2((luck[f.name] || 0) + swing);
-        return { ...f, hold: f.grip + swing - f.fatigue };
+        return { ...f, hold: f.grip + f.night + swing - f.fatigue };
       });
       rolls.sort((a, b) => a.hold - b.hold);
 
@@ -145,11 +154,11 @@ export const dizzyDiscs = {
           fatigue: round2(weakest.fatigue), score: round2(round), threw: false,
         };
         out.push(weakest.name);
-        field = rolls.slice(1).map(({ name, grip, fatigue }) => ({ name, grip, fatigue }));
+        field = rolls.slice(1).map(({ name, grip, fatigue, night }) => ({ name, grip, fatigue, night }));
       } else {
         beats.push(beat(`${sweeps(DD_SWEEPS)} ${say(DD_HOLD)(weakest.name, p)}`,
           [weakest.name], `ROUND ${round}`, 'challenge'));
-        field = rolls.map(({ name, grip, fatigue }) => ({ name, grip, fatigue }));
+        field = rolls.map(({ name, grip, fatigue, night }) => ({ name, grip, fatigue, night }));
       }
     }
 
@@ -193,6 +202,11 @@ const LR_DROP = [
   (n, p) => `${n} grabs for balance with the string hand, lowering the weight onto the platform.`,
 ];
 
+/** Staying on the log. */
+const LR_FEET = { endurance: 0.45, physical: 0.35, temperament: 0.20 };
+/** Keeping the weight on the string off the platform. */
+const LR_HAND = { temperament: 0.45, intuition: 0.35, endurance: 0.20 };
+
 export const logRoll = {
   id: 'bb-stamina-log-roll',
   name: 'Log Roll',
@@ -219,13 +233,24 @@ export const logRoll = {
     const survived = {};
     const cause = {};
     for (const name of participants) {
-      const feet = stat(name, 'endurance') * 0.45 + stat(name, 'physical') * 0.35 + stat(name, 'temperament') * 0.20;
-      const hand = stat(name, 'temperament') * 0.45 + stat(name, 'intuition') * 0.35 + stat(name, 'endurance') * 0.20;
+      // Two genuinely different skills, so they keep their own weights — but
+      // both go through aptitude() so they sit on the same compressed scale as
+      // everything else, instead of being the one competition in the file
+      // running on raw stats.
+      const feet = aptitude(name, LR_FEET);
+      const hand = aptitude(name, LR_HAND);
       const fw = nerve(name, rng, 2.2);
       const hw = nerve(name, rng, 2.2);
-      luck[name] = round2(fw + hw);
-      const feetMin = Math.max(0.4, (feet + fw) * 1.35);
-      const handMin = Math.max(0.4, (hand + hw) * 1.35);
+      // One night, two clocks. Taking the MIN of two rolls is a variance sink —
+      // a houseguest only wins this by being above the field on both, so two
+      // independent swings cancel each other and the stat ladder decides it.
+      // The night is drawn once and charged to both clocks, which is also how
+      // it works: you do not arrive rested for your feet and exhausted for
+      // your hand. See nightForm in _shared.js.
+      const night = nightForm(rng, 4.5);
+      luck[name] = round2(fw + hw + night * 2);
+      const feetMin = Math.max(0.4, (feet + fw + night) * 1.35);
+      const handMin = Math.max(0.4, (hand + hw + night) * 1.35);
       survived[name] = Math.min(feetMin, handMin);
       cause[name] = feetMin <= handMin ? 'fell' : 'dropped';
       breakdown[name] = {
@@ -316,13 +341,16 @@ export const holdUp = {
       // the weights here are the competition's own declared profile rather than
       // a second one written by hand, which is the drift the library guards
       // against.
-      const aptitude = stat(name, 'temperament') * 0.34 + stat(name, 'endurance') * 0.30
-        + stat(name, 'intuition') * 0.20 + stat(name, 'physical') * 0.16;
+      // Read through aptitude() rather than hand-summed — same profile, same
+      // order, but on the library's compressed scale. Hand-summing was the
+      // reason this stayed the tightest hold in the game at nine distinct
+      // winners while everything around it opened up.
+      const apt = aptitude(name, holdUp.stats);
       const arms = stat(name, 'endurance') * 0.5 + stat(name, 'physical') * 0.5;
       const steady = stat(name, 'temperament') * 0.6 + stat(name, 'intuition') * 0.4;
-      const swing = nerve(name, rng, 2.0);
+      const swing = nerve(name, rng, 2.0) + nightForm(rng, 0.9);
       luck[name] = round2(swing);
-      held[name] = Math.max(0.5, (aptitude + swing) * 1.6);
+      held[name] = Math.max(0.5, (apt + swing) * 1.6);
       breakdown[name] = {
         minutes: round2(held[name]), arms: round2(arms), steadiness: round2(steady),
         score: round2(held[name]), threw: false,

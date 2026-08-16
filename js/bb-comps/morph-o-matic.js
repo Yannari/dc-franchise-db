@@ -25,7 +25,7 @@
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getBond } from '../bonds.js';
-import { aptitude, beat, toResult, makePicker, throwRead, clamp, THROW_LINES, vb } from './_shared.js';
+import { aptitude, beat, toResult, makePicker, nightForm, throwRead, clamp, THROW_LINES, vb } from './_shared.js';
 
 const NEUTRAL = { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', ref: 'themselves', Sub: 'They', Obj: 'Them', PosAdj: 'Their' };
 const pron = name => { try { return pronouns(name) || NEUTRAL; } catch { return NEUTRAL; } };
@@ -123,7 +123,12 @@ export const morphOMatic = {
       // were written out twice — once in `stats` for the screen and the Debug
       // tab, once here for the simulation — so they had already drifted apart
       // and the board described a competition the engine was not running.
-      const skill = aptitude(name, morphOMatic.stats) / 10;
+      // Plus the night. Six morphs each roll their own wobble, and six wobbles
+      // average out — which is why widening them (see the note below) moved
+      // this so little: the miss chance underneath is pure skill and gets six
+      // independent chances to sort the field into order. One roll held across
+      // the whole board is the thing per-face noise cannot be.
+      const skill = clamp(aptitude(name, morphOMatic.stats) / 10 + nightForm(rng, 0.34), 0.03, 1);
       const haveNot = (context.haveNots || []).includes(name);
 
       let time = 0, wrongTotal = 0, ghostOn = null, worst = null, hnCost = 0, luck = 0;

@@ -22,7 +22,7 @@
 // is a mental map and a steady hand.
 import { pronouns } from '../players.js';
 import { pStats } from '../players.js';
-import { beat, clamp, makePicker, toResult, vb } from './_shared.js';
+import { aptitude, beat, clamp, makePicker, nightForm, toResult, vb } from './_shared.js';
 
 const round2 = v => Math.round(v * 100) / 100;
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
@@ -78,9 +78,13 @@ export const punchSlapKick = {
       const p = pronouns(name);
       // Recall under a beating. Temperament is not a flavour term here — a
       // houseguest who rattles loses the sequence they already had.
-      // The declared profile, read straight off the competition.
-      const aptitude = stat(name, 'mental') * 0.38 + stat(name, 'endurance') * 0.24
-        + stat(name, 'boldness') * 0.22 + stat(name, 'intuition') * 0.16;
+      // The declared profile, read straight off the competition — through
+      // aptitude() rather than hand-summed, so this sits on the same compressed
+      // scale as the rest of the library, plus the night. Nine rounds of
+      // re-rolled nerve average out to nothing across a field: the sequence
+      // everybody reaches was falling out in strict order of the stat line and
+      // the best in the yard was taking this 45% of the time.
+      const apt = aptitude(name, punchSlapKick.stats) + nightForm(rng, 1.6);
       const recall = stat(name, 'mental') * 0.55 + stat(name, 'intuition') * 0.15;
       const composure = stat(name, 'endurance') * 0.55 + stat(name, 'boldness') * 0.45;
       let round = 0;
@@ -101,7 +105,7 @@ export const punchSlapKick = {
         // field under the first round's threshold — measured, every houseguest
         // went out on sequence one or two and the veto was decided by a coin
         // flip between people who had all failed.
-        const held = aptitude + roll > difficulty;
+        const held = apt + roll > difficulty;
         if (!held) out = true;
       }
       survived[name] = round - 1;
@@ -189,8 +193,12 @@ export const blackBox = {
     const times = {};
     for (const name of participants) {
       const p = pronouns(name);
-      const feel = stat(name, 'intuition') * 0.40 + stat(name, 'mental') * 0.30
-        + stat(name, 'physical') * 0.20 + stat(name, 'boldness') * 0.10;
+      // Same two corrections as Punch, Slap, Kick above: read the declared
+      // profile through aptitude() instead of a hand-summed copy, and roll the
+      // night once. Five attempts of independent nerve cancel out, which is why
+      // widening them (see the note below) never moved this — what decides the
+      // box is whether a houseguest can map it at all tonight.
+      const feel = aptitude(name, blackBox.stats) + nightForm(rng, 1.5);
       let placed = 0;
       let seconds = 0;
       const attempts = 5;

@@ -1671,6 +1671,23 @@ export function summariseWeek(week) {
         line(`  From here: ${act.registers?.to || act.to}`);
         break;
       }
+      // The cheap table. Who bet is public; the stake and the name are not, so
+      // this prints the fact and the outcome and never anybody's balance.
+      case 'side-bet': {
+        const bets = act.bets || [];
+        if (!bets.length) break;
+        line('');
+        line('THE SIDE BET');
+        line(`  At the rail, ${act.stake} a slip on who goes home: ${bets.map(b => b.name).join(', ')}.`);
+        const won = (act.results || []).filter(r => r.won);
+        if (act.settled) {
+          line(won.length
+            ? `  Paid out: ${won.map(r => r.name).join(', ')}. The rest of it stays with the floor.`
+            : '  Nobody called it. The floor keeps every slip on the table.');
+        }
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
       case 'bb-bucks': {
         const paid = act.payouts || [];
         line('');

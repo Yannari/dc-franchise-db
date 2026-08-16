@@ -22593,6 +22593,55 @@ export function rpBuildBBThemeTurn(ep, act) {
   });
 }
 
+/**
+ * THE SIDE BET — the cheap table, open every week the money is.
+ *
+ * The viewer sees the slips; the house never does. What the room watched was
+ * people walking to the rail, and that is all the transcripts print.
+ */
+export function rpBuildBBSideBet(ep, act) {
+  if (!act || !(act.bets || []).length) return '';
+  const settled = !!act.settled;
+  const byName = new Map((act.results || []).map(r => [r.name, r]));
+  const rows = act.bets.map(b => {
+    const r = byName.get(b.name);
+    const state = !settled ? { txt: 'ON THE TABLE', col: 'var(--bbx-dim)' }
+      : r?.won ? { txt: `PAID ${r.delta > 0 ? `+${r.delta}` : r.delta}`, col: 'var(--bbx-key)' }
+        : { txt: `LOST ${b.stake}`, col: 'var(--bbx-dim)' };
+    return `<tr>
+      <td style="padding:4px 10px 4px 0;font-size:12px;color:var(--text)">${_bbEsc(b.name)}</td>
+      <td style="padding:4px 10px;font-size:12px;color:var(--bbx-dim)">on ${_bbEsc(b.on)}</td>
+      <td style="padding:4px 0;text-align:right;font-size:11px;color:${state.col}">${state.txt}</td>
+    </tr>`;
+  }).join('');
+
+  const won = (act.results || []).filter(r => r.won);
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'THE SIDE BET',
+    subtitle: `${act.stake} a slip on who goes home. The room saw them bet and never saw the name.`,
+    accent: 'var(--bbx-key)', room: 'bb-power',
+    stateKey: `bb_sidebet_${ep.num}`,
+    header: `<div style="max-width:560px;margin:0 auto 16px;padding:10px 12px;
+         border:1px solid var(--border);border-radius:6px;background:rgba(var(--bbx-card2-rgb),.45)">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim);margin-bottom:6px">
+        THE SLIPS — WHICH NOBODY IN THAT HOUSE CAN READ</div>
+      <table style="width:100%;border-collapse:collapse">${rows}</table>
+    </div>`,
+    scenes: [
+      ...(settled
+        ? [{ text: won.length
+          ? `<strong>${won.map(r => _bbEsc(r.name)).join('</strong>, <strong>')}</strong> called it. `
+            + 'Everything else on that table stays with the floor.'
+          : 'Nobody called it. The floor keeps every slip, which is what a floor is for.',
+        players: won.map(r => r.name), badgeText: settled ? 'THE FLOOR SETTLES' : '',
+        badgeClass: won.length ? 'gold' : 'grey' }]
+        : []),
+      ...(act.beats || []).map(b => ({ text: b.text, players: b.players,
+        badgeText: b.badgeText, badgeClass: b.badgeClass })),
+    ],
+  });
+}
+
 export function rpBuildBBBucks(ep, act) {
   if (!act) return '';
   const paid = act.payouts || [];
@@ -23069,6 +23118,11 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'bb-bucks':
         screens.push({ id: id('bb-bucks'), label: 'The Audience Pays',
           html: rpBuildBBBucks(view, act) });
+        break;
+      // The cheap table, open every week the money is.
+      case 'side-bet':
+        screens.push({ id: id('bb-sidebet'), label: 'The Side Bet',
+          html: rpBuildBBSideBet(view, act) });
         break;
       // The card that answers "what am I watching" — drawn once, on night one.
       case 'theme-primer':

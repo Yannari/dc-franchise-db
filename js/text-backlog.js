@@ -5696,6 +5696,24 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      // The cheap table: the fact of the bet is public, the slip is not.
+      case 'side-bet': {
+        const bets = act.bets || [];
+        if (!bets.length) break;
+        sec('THE SIDE BET');
+        ln(`  ${act.stake} a slip on who goes home. At the rail this week: ${bets.map(b => b.name).join(', ')}.`);
+        ln('  Everybody saw them bet. Nobody saw the name they wrote down.');
+        if (act.settled) {
+          const won = (act.results || []).filter(r => r.won);
+          ln('');
+          ln(won.length
+            ? `  Called it: ${won.map(r => r.name).join(', ')}. Everything else stays with the floor.`
+            : '  Nobody called it. The floor keeps the lot.');
+        }
+        beats(act);
+        break;
+      }
+
       case 'bb-bucks': {
         const paid = act.payouts || [];
         sec('THE AUDIENCE PAYS');

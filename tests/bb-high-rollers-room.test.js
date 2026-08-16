@@ -317,14 +317,32 @@ function expectLedgerCharged(weeks) {
     for (const p of a.payouts || []) paid[p.name] = (paid[p.name] || 0) + p.amount;
   }
   const spent = {};
+  const roomSpent = {};
   for (const a of acts.filter(x => x.type === 'high-rollers-room')) {
-    for (const e of a.entries || []) spent[e.name] = (spent[e.name] || 0) + e.price;
+    for (const e of a.entries || []) {
+      spent[e.name] = (spent[e.name] || 0) + e.price;
+      roomSpent[e.name] = (roomSpent[e.name] || 0) + e.price;
+    }
+  }
+  // The cheap table moves money too. Without this the reconciliation read a
+  // ten-buck stake as a second room charge and reported a double-bill that had
+  // not happened — the arithmetic has to know about every till, not just one.
+  for (const a of acts.filter(x => x.type === 'side-bet')) {
+    for (const b of a.bets || []) spent[b.name] = (spent[b.name] || 0) + b.stake;
+    for (const r of a.results || []) {
+      if (r.won) paid[r.name] = (paid[r.name] || 0) + (r.delta + a.stake);
+    }
   }
   for (const name of HOUSE_NAMES) {
     expect(balance(name), `${name}'s ledger does not reconcile — somebody was billed twice`)
       .toBe(500 + (paid[name] || 0) - (spent[name] || 0));
     // And nobody bought the same seat twice, however many cycles ran.
-    expect(spent[name] || 0, `${name} paid for more than one seat in one night`)
+    //
+    // Counted off the ROOM only. `spent` reconciles every till — the door and
+    // the rail both — so folding the side bet into it made a 125 seat plus a
+    // 10 stake read as 135 of seat and reported a double-charge that had not
+    // happened. Two tills, two questions.
+    expect(roomSpent[name] || 0, `${name} paid for more than one seat in one night`)
       .toBeLessThanOrEqual(ROOM_GAMES[0].price);
   }
 }

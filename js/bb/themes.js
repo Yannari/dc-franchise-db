@@ -713,19 +713,23 @@ export function themeTwistAnnouncement(announcement, ctx = {}) {
   const name = String(announcement.name || 'This twist').trim();
   const sting = String(announcement.sting || '').trim();
   const detail = `${name}: ${rule}${sting ? ` ${sting}` : ''}`;
-  const pools = theme.id === 'machine-summer'
-    ? [
-        `Houseguests, CORA has updated this week's rules. ${detail}`,
-        `CORA is making an adjustment. Listen carefully. ${detail}`,
-        `This week requires a new protocol. ${detail}`,
-        `Houseguests, here is the rule CORA has selected for you. ${detail}`,
-      ]
-    : [
-        `Houseguests, the Den has changed the terms of this week. ${detail}`,
-        `Another door has opened, and this is the rule attached to it. ${detail}`,
-        `The Den has something new for the house. Listen before you decide how dangerous it is. ${detail}`,
-        `The house wanted to know what the Den had planned. Here it is. ${detail}`,
-      ];
+  // ── THE WORDS COME FROM THE THEME, NOT FROM A BRANCH IN HERE ──────────
+  //
+  // This used to be `theme.id === 'machine-summer' ? [CORA's lines] : [the
+  // Den's lines]`, which meant every theme that was not CORA announced its
+  // twists in the DEN's voice. A hotel said "the Den has changed the terms of
+  // this week"; a casino said it too. That is the exact bug class this
+  // codebase's own instructions open with — one season's vocabulary printed
+  // over another's — and it was sitting in the engine that exists to prevent
+  // it, which is why the rule is worth restating here: NOTHING in themes.js
+  // may branch on a theme id. A fifth theme brings its own words or it gets
+  // none.
+  //
+  // No pool means no line, deliberately. Falling back to another theme's words
+  // is what this function used to do and is worse than saying nothing.
+  const pools = (theme.primer?.announce || [])
+    .map(line => String(line).replace('{detail}', detail));
+  if (!pools.length) return null;
   const rng = stableRng('theme-twist-announcement', gs?.bb?.seasonSalt || 0,
     theme.id, st.mood, week, announcement.twist, ctx.side || '');
   return {

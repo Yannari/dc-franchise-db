@@ -9,8 +9,9 @@
 // no surface anywhere said what the season was or who was narrating it. The
 // primer is the descriptor's own explanation, aimed at the viewer instead of at
 // the next engineer, and this guard holds every registered theme to having one.
-import { describe, expect, it } from 'vitest';
-import { BB_THEMES, THEME_LIST } from '../js/bb/themes.js';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { BB_THEMES, THEME_LIST, themeTwistAnnouncement } from '../js/bb/themes.js';
+import { gs, seasonConfig, setGs } from '../js/core.js';
 
 describe('every registered theme explains itself', () => {
   for (const id of THEME_LIST) {
@@ -75,5 +76,66 @@ describe('every registered theme explains itself', () => {
     // surface and needs the same rule.
     const p = BB_THEMES['high-rollers'].primer;
     expect(JSON.stringify(p).toLowerCase()).not.toMatch(/\bthe house\b/);
+  });
+});
+
+// ── THE ANNOUNCEMENT VOICE ──────────────────────────────────────────────
+//
+// `themeTwistAnnouncement` used to pick its words with
+// `theme.id === 'machine-summer' ? [CORA's lines] : [the Den's lines]`, so
+// EVERY theme that was not CORA announced its twists in the Den's voice. A
+// hotel said "the Den has changed the terms of this week"; so did a casino.
+// The engine that exists to stop one season's vocabulary printing over
+// another's was the thing doing it.
+describe('a theme announces its own twists in its own words', () => {
+  const TWIST = 'bb-double-eviction';
+  const announcement = {
+    twist: TWIST,
+    name: 'Double Eviction',
+    rule: 'Two houseguests leave tonight.',
+    sting: 'Nobody is told which two.',
+  };
+
+  /** A themed season, mid-run, with this twist booked BY THE THEME this week. */
+  const seasonOn = (id) => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = id;
+    seasonConfig.twistSchedule = [{ episode: 4, type: TWIST, source: 'theme' }];
+    setGs({ bb: { weeks: [], seasonSalt: 11, theme: { id, mood: 'neutral', booked: [], said: [] } } });
+    gs.activePlayers = ['Bowie', 'Chase', 'Ripper'];
+  };
+
+  beforeEach(() => { seasonConfig.twistSchedule = []; });
+
+  for (const id of THEME_LIST) {
+    it(`${id} speaks for itself`, () => {
+      seasonOn(id);
+      const said = themeTwistAnnouncement(announcement, { week: 4 });
+      expect(said, `${id} announced nothing`).toBeTruthy();
+      expect(said.speaker).toBe(BB_THEMES[id].antagonist.name);
+
+      // The line is one of THIS theme's, with the rule interpolated into it.
+      const mine = BB_THEMES[id].primer.announce
+        .map(l => l.replace('{detail}', `${announcement.name}: ${announcement.rule} ${announcement.sting}`));
+      expect(mine).toContain(said.line);
+      expect(said.line).toContain('Two houseguests leave tonight.');
+
+      // And it is nobody else's.
+      for (const other of THEME_LIST.filter(o => o !== id)) {
+        const name = BB_THEMES[other].antagonist?.name;
+        if (name) expect(said.line, `${id} spoke as ${name}`).not.toContain(name);
+      }
+    });
+  }
+
+  it('says nothing at all rather than borrowing another theme\'s words', () => {
+    // The old failure mode was a fallback. A theme with no pool must go quiet.
+    BB_THEMES.mute = { ...BB_THEMES['high-rollers'], id: 'mute', primer: { announce: [] } };
+    try {
+      seasonOn('mute');
+      expect(themeTwistAnnouncement(announcement, { week: 4 })).toBeNull();
+    } finally {
+      delete BB_THEMES.mute;
+    }
   });
 });

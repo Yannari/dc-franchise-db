@@ -14,6 +14,10 @@ import { bKey } from './bonds.js';
 // now. Imported explicitly for the same reason bKey is: a bare global works in
 // the browser and nowhere else, and this band has to survive a headless render.
 import { themeById } from './bb/themes.js';
+// The standings table marks who can afford a seat, and takes the price from the
+// menu rather than keeping a private copy of it — the last rescale found the
+// same number typed into fifteen places.
+import { ROOM_GAMES } from './bb/high-rollers-room.js';
 // The debug screen reports the numbers the house actually decides on, so it
 // reads them from the engine rather than recomputing its own version.
 import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
@@ -16575,6 +16579,78 @@ function _bbThemeBand(ep) {
   </div>`;
 }
 
+/**
+ * CHIP STANDINGS — who is holding what, week by week.
+ *
+ * Written because a viewer could not follow the season: "im not sure what
+ * everyone has week by week cause theres not a table saying the money of every
+ * active houseguest".
+ *
+ * ── WHY THIS DOES NOT BREAK THE PRIVACY RULE ──────────────────────────
+ *
+ * The rule is that no HOUSEGUEST and no in-world line learns a balance, and
+ * that is unchanged: nothing in either transcript prints one, and the chip band
+ * beside this still shows only what was PAID. What was wrong was applying the
+ * house's ignorance to the person watching the show. `_bbPowerBand` already
+ * makes exactly this allowance — it shows the viewer a secret power and labels
+ * it NOBODY KNOWS — and this is that, for money.
+ *
+ * Reads `ep.bucksLedger`, the per-week snapshot, so a replayed week three shows
+ * week three's money. Reading live state here would show every replayed week
+ * the season's final totals, which is the same trap the theme mood fell into.
+ *
+ * The ledger snapshots the house as it stood at the START of the week, so it
+ * includes whoever was evicted that night. That is deliberate: this is a
+ * standings table for THAT week, and the person who left was holding what it
+ * says they were holding while the week was played.
+ */
+function _bbChipStandings(ep) {
+  // The snapshot is taken on EVERY season, themed or not — an unthemed house
+  // gets a ledger of zeros — so the table gates on the season declaring an
+  // economy rather than on the ledger existing. Without this, a Total Drama
+  // beach or a themeless house drew a standings table full of nought.
+  if (!(ep.themeId && themeById(ep.themeId)?.economy)) return '';
+  const ledger = (ep.bucksLedger || []).filter(l => l && l.name);
+  if (!ledger.length) return '';
+  const price = (ROOM_GAMES[0] || {}).price || 0;
+
+  // What moved this week, derived from the week's own acts rather than stored
+  // twice: the payout is the only thing that adds, the room door the only thing
+  // that subtracts.
+  const paid = new Map(((ep.acts || []).find(a => a.type === 'bb-bucks')?.payouts || [])
+    .map(p => [p.name, p.amount]));
+  const spent = new Map();
+  for (const a of ep.acts || []) {
+    if (a.type !== 'high-rollers-room') continue;
+    for (const e of a.entries || []) spent.set(e.name, (spent.get(e.name) || 0) + (e.price || 0));
+  }
+
+  const rows = [...ledger].sort((a, b) => b.balance - a.balance).map(l => {
+    const delta = (paid.get(l.name) || 0) - (spent.get(l.name) || 0);
+    const rich = price && l.balance >= price;
+    const sign = delta > 0 ? '+' : '';
+    return `<tr>
+      <td style="padding:4px 10px 4px 0;font-size:12px;color:var(--text)">${_bbEsc(l.name)}</td>
+      <td style="padding:4px 10px;text-align:right;font-family:var(--bbx-display);font-size:14px;
+          color:${rich ? 'var(--bbx-key)' : 'var(--bbx-dim)'}">${_bbEsc(l.balance)}</td>
+      <td style="padding:4px 0;text-align:right;font-size:11px;color:var(--bbx-dim)">
+        ${delta ? `${sign}${_bbEsc(delta)}` : ''}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div style="margin:0 0 12px;padding:10px 12px;border:1px solid var(--border);
+       border-radius:6px;background:rgba(var(--bbx-card2-rgb),.45)">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+      <span style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim)">CHIP STANDINGS</span>
+      ${price ? `<span style="font-size:10px;color:var(--bbx-dim)">a seat costs ${price}</span>` : ''}
+    </div>
+    <table style="width:100%;border-collapse:collapse">${rows}</table>
+    <div style="margin-top:6px;font-size:10px;color:var(--bbx-dim)">
+      Nobody in that house can see this table. They know what the floor paid out loud, and nothing else.
+    </div>
+  </div>`;
+}
+
 function _bbChipBand(ep) {
   const act = (ep.acts || []).find(a => a.type === 'bb-bucks');
   if (!act) return '';
@@ -16692,7 +16768,8 @@ export function rpBuildBBHouseLife(ep, act, slot) {
       ${_bbMemoryWall(house, { status, notYet: act?._preArrival ? _bbNotYetArrived(ep) : [] })}
       ${_bbPowerBand(ep)}
       ${_bbThemeBand(ep)}
-      ${_bbChipBand(ep)}`;
+      ${_bbChipBand(ep)}
+      ${_bbChipStandings(ep)}`;
 
   if (beats.length) {
     // A camera bank, so the stretch can be taken in before it is read: which

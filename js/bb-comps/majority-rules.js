@@ -136,14 +136,44 @@ const OPEN_LINES = [
   'It looks like a quiz for about forty seconds. Then the first answers go up and it stops looking like a quiz.',
 ];
 
+/**
+ * A houseguest eliminated on the minority side. Safe whatever the round did —
+ * none of these claim anything about how many other people went with them.
+ */
 const OUT_LINES = [
   (n, p) => `${n} answers what ${p.sub} actually believes instead of what the house believes, which is the exact mistake this competition exists to punish.`,
-  (n, p) => `${n} is on the wrong side of it by one, and ${p.sub} ${vb(p, 'knows', 'know')} it before the count even finishes.`,
   (n) => `${n} reads the room badly. It is a small thing to be wrong about and it ends ${n}'s competition.`,
   (n, p) => `${n} changes ${p.posAdj} answer at the last second, away from the one the house gave.`,
-  (n, p) => `The minority is ${n}, alone, holding up a board ${p.sub} ${vb(p, 'was', 'were')} completely sure about.`,
   (n, p) => `${n} goes with ${p.posAdj} gut. ${p.PosAdj} gut has not been in the same conversations as everybody else's.`,
+  (n, p) => `${n} had a reason for that board. The reason was about ${n}, and the question was about everybody else.`,
 ];
+
+/**
+ * ONLY for a round where exactly one board was in the minority.
+ *
+ * "The minority is Tobias, alone" ran on a round that eliminated Tobias AND
+ * Jules, one beat after the other, each written as though the other were not
+ * standing there. A line that counts the room may only be picked when the
+ * count is checked first.
+ */
+const SOLO_OUT_LINES = [
+  (n, p) => `The minority is ${n}, alone, holding up a board ${p.sub} ${vb(p, 'was', 'were')} completely sure about.`,
+  (n, p) => `${n} is on the wrong side of it by ${p.ref === 'themselves' ? 'themself' : p.ref}, which is the loneliest way this competition ends.`,
+  (n) => `One board out of the whole room disagrees, and it belongs to ${n}.`,
+];
+
+/** Small counts read as words in a sentence and as digits on a scoreboard. */
+const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const spell = k => WORD[k] || String(k);
+
+/** Two or more boards going out together, named in one breath. */
+const GROUP_OUT_LINES = [
+  (names, k) => `${names} all read it the same wrong way. ${Spell(k)} boards go down at once and the room gets noticeably smaller.`,
+  (names, k) => `The minority is ${spell(k)} strong — ${names} — and being wrong together is still being wrong.`,
+  (names, k) => `${names} are out on the same question. There is a strange comfort in ${spell(k)} people making an identical mistake, and it lasts about a second.`,
+  (names, k) => `${Spell(k)} boards on the losing side: ${names}. They agreed with each other and with nobody else.`,
+];
+const Spell = k => { const w = spell(k); return w.charAt(0).toUpperCase() + w.slice(1); };
 
 // Both of these end up suffixed with their own question number, which is what
 // actually guarantees uniqueness — a competition may not print the same
@@ -155,6 +185,14 @@ const TIE_LINES = [
   (a, b, x, y) => `Nobody can separate ${a} from ${b} — ${x}–${y}, and the boards stay up.`,
 ];
 
+/**
+ * The verdict on a round nobody was eliminated on BECAUSE EVERY BOARD AGREED.
+ *
+ * These may only be printed when the minority is genuinely empty. They used to
+ * run on every survey round, which is how a round that split five to four came
+ * to be narrated as "Every board in the room says Natasha. Nobody is in the
+ * minority" directly above a board showing four people who said Felipe.
+ */
 const SAFE_LINES = [
   m => `Every board in the room says ${m}. Nobody is in the minority, so nobody goes out — and the house has just told itself something about ${m} out loud.`,
   m => `Unanimous for ${m}. There is a small silence afterwards while ${m} works out what that means.`,
@@ -162,12 +200,39 @@ const SAFE_LINES = [
   m => `Not one board disagrees about ${m}.`,
 ];
 
+/**
+ * The verdict on a SURVEY round that split.
+ *
+ * Nobody goes home, but somebody was wrong, and the screen colours those
+ * boards red where a transcript cannot. So the sentence names them: it is the
+ * only record of why four particular people are about to lose the cut, and
+ * without it that cut arrives out of nowhere.
+ */
+const SURVEY_LINES = [
+  (m, maj, min, names) => `${m} takes it, ${maj}–${min}. ${names} read the room the other way, and the board remembers.`,
+  (m, maj, min, names) => `${maj} boards to ${min} for ${m}. On the wrong side of it: ${names} — safe tonight, marked all the same.`,
+  (m, maj, min, names) => `The house says ${m} by ${maj}–${min}. ${names} guessed against the room and nobody goes home for it yet.`,
+  (m, maj, min, names) => `${m}, ${maj}–${min}. Nobody is eliminated on the survey, but ${names} are now behind on a board they cannot see.`,
+];
+
+/** A survey round that came down to a single board. */
+const SURVEY_CLOSE_LINES = [
+  (m, maj, min, names) => `${m} by one board, ${maj}–${min}. ${names} missed it by the narrowest margin this competition has.`,
+  (m, maj, min, names) => `${maj}–${min}. A single board separates the house, and it leaves ${names} on the wrong side of it.`,
+];
+
+/** Everybody but one or two: the room agreeing loudly at somebody's expense. */
+const SURVEY_LOPSIDED_LINES = [
+  (m, maj, min, names) => `${maj}–${min} for ${m}, which is as close to unanimous as this house gets. ${names} did not see it coming.`,
+  (m, maj, min, names) => `${m} runs away with it, ${maj}–${min}. ${names} alone read the room differently, and everybody can see who.`,
+];
+
 export const majorityRules = {
   id: 'bb-mental-quiz',
   name: 'Majority Rules',
   category: 'quiz',
   types: ['hoh', 'veto', 'tiebreaker'],
-  desc: 'Each round the houseguests are read a superlative and two names, and asked not who they think fits it but who they think the MAJORITY of the house would pick. Everybody locks in at once. The majority survives, the minority is eliminated, and a dead-even split eliminates nobody. The last houseguest standing wins.',
+  desc: 'Every houseguest gets a board and a marker. Each round they are read a superlative and two names, and asked not who they think fits it but who they think the MAJORITY of the house would pick — then everybody reveals at once. The opening questions are the survey: nobody is eliminated, but every board is marked right or wrong, and when the survey ends the houseguests who read the room worst are cut on that score alone. From there it is sudden death, and the smaller side of every question goes out on the spot. Answer honestly instead of predictively and you are gone on a question you knew the true answer to; a dead-even split eliminates nobody and two of those in a row ends the questions. Last houseguest standing wins, or if the questions run out first, the closest answer to a final count-the-room tiebreaker takes it.',
   stats: { intuition: 0.36, social: 0.28, strategic: 0.20, mental: 0.16 },
   weight: () => 1.1,
   simulate(participants, context, api, rng) {
@@ -176,6 +241,9 @@ export const majorityRules = {
     const out = makePicker(rng);
     const tie = makePicker(rng);
     const safe = makePicker(rng);
+    // Keyed by the line itself, so one picker spans all three survey pools
+    // without ever repeating a sentence.
+    const survey = makePicker(rng);
 
     // The room being read: everybody still in the game holds an opinion, not
     // only the people playing. That is the point of the question.
@@ -299,11 +367,29 @@ export const majorityRules = {
     for (let i = 0; i < surveyLen && field.length > 2; i++) {
       const q = askQuestion();
       if (!q) break;
-      beats.push(q.roomMajority
-        ? beat(`${safe(SAFE_LINES)(q.roomMajority)} Nobody goes home on the survey — the board is only keeping score.`,
-          [q.roomMajority], 'ALL SAFE', 'grey')
-        : beat(`${tie(TIE_LINES)(q.a, q.b, q.forA, q.forB)} A dead split scores nobody anything.`,
+      if (!q.roomMajority) {
+        beats.push(beat(`${tie(TIE_LINES)(q.a, q.b, q.forA, q.forB)} A dead split scores nobody anything.`,
           [q.a, q.b], 'DEAD EVEN', 'grey'));
+        continue;
+      }
+      // Who was actually wrong. The screen prints these boards in red; a
+      // transcript has no red, so the sentence has to carry them.
+      const minority = field.filter(f => f.pick !== q.roomMajority).map(f => f.name);
+      const maj = field.length - minority.length;
+      if (!minority.length) {
+        beats.push(beat(
+          `${safe(SAFE_LINES)(q.roomMajority)} Nobody goes home on the survey — the board is only keeping score.`,
+          [q.roomMajority], `SURVEY ${maj}–0`, 'grey'));
+        continue;
+      }
+      const names = minority.length === 1 ? minority[0]
+        : `${minority.slice(0, -1).join(', ')} and ${minority[minority.length - 1]}`;
+      const pool = minority.length === 1 || maj - minority.length >= field.length - 2
+        ? SURVEY_LOPSIDED_LINES
+        : maj - minority.length === 1 ? SURVEY_CLOSE_LINES : SURVEY_LINES;
+      beats.push(beat(
+        survey(pool)(q.roomMajority, maj, minority.length, names),
+        [q.roomMajority, ...minority], `SURVEY ${maj}–${minority.length}`, 'grey'));
     }
 
     // ══ THE CUT ══ the survey board decides who is still playing.
@@ -312,11 +398,17 @@ export const majorityRules = {
       const ranked = [...field].sort((x, y) => (y.correct - x.correct) || (y.luck - x.luck));
       const cut = ranked.slice(keep);
       if (cut.length && cut.length < field.length) {
+        /* The scores, not just the names. A cut that says only "these four
+           finish at the bottom" is asking to be taken on trust — the survey
+           rounds are right there above it and the reader should be able to
+           check the arithmetic. */
+        const score = f => `${f.name} (${f.correct}/${round})`;
+        const kept = ranked.slice(0, keep);
         const line = cut.length === 1
-          ? `${cut[0].name} read this house worst of anybody over ${round} questions and is out of it.`
-          : `${cut.map(f => f.name).join(', ')} finish the survey at the bottom of the board and are out of it.`;
+          ? `${score(cut[0])} read this house worst of anybody over ${round} questions and is out of it.`
+          : `${cut.map(score).join(', ')} finish the survey at the bottom of the board and are out of it.`;
         beats.push(beat(
-          `${line} The rest carry on, and from here the minority goes home every question.`,
+          `${line} ${kept.map(score).join(', ')} carry on, and from here the minority goes home every question.`,
           cut.map(f => f.name), 'THE CUT', 'red'));
         cut.forEach(f => {
           f.outRound = round;
@@ -354,13 +446,28 @@ export const majorityRules = {
           f.outRound = round;
           breakdown[f.name].outRound = round;
           eliminationOrder.push(f.name);
+        });
+
+        /* One board out is a personal story and gets one. Several going down
+           together is a single event and reads as one — told individually,
+           each line describes a room the next line contradicts. */
+        if (wrong.length === 1) {
+          const f = wrong[0];
           const p = pron(f.name);
           beats.push(beat(
             f.threw
               ? `${f.name} answers what ${p.sub} ${vb(p, 'thinks', 'think')} rather than what the house thinks, and goes out on a round ${p.sub} could have read with ${p.posAdj} eyes shut.`
-              : out(OUT_LINES)(f.name, p),
+              : out(rng() < 0.45 ? SOLO_OUT_LINES : OUT_LINES)(f.name, p),
             [f.name], 'MINORITY', 'grey'));
-        });
+        } else {
+          const names = `${wrong.slice(0, -1).map(f => f.name).join(', ')} and ${wrong[wrong.length - 1].name}`;
+          const threw = wrong.filter(f => f.threw).map(f => f.name);
+          beats.push(beat(
+            `${out(GROUP_OUT_LINES)(names, wrong.length)}${threw.length
+              ? ` ${threw.join(' and ')} answered honestly rather than predictively, which is the one way to lose this knowing the true answer.`
+              : ''}`,
+            wrong.map(f => f.name), `MINORITY ${wrong.length} OUT`, 'grey'));
+        }
         field = field.filter(f => !f.outRound);
         deadStreak = 0;
       } else {
@@ -387,7 +494,10 @@ export const majorityRules = {
 
       beats.push(beat(
         a && b
-          ? `Tiebreaker. Of the ${tally.voters.length} houseguests asked, how many said ${a} rather than ${b} for ${sup.text}? Closest answer takes it.`
+          // The two on the board never get a vote on themselves, which is why
+          // the number asked about is short of the house — say so, or it reads
+          // as a miscount to anybody following along.
+          ? `Tiebreaker. The house was polled on ${sup.text}, everybody except the two named: ${tally.voters.length} houseguests. How many of them said ${a} rather than ${b}? Closest answer takes it.`
           : `Tiebreaker. One question, closest answer takes it.`,
         field.map(f => f.name), 'TIEBREAKER'));
 

@@ -69,7 +69,7 @@ describe('Majority Rules runs long enough to be one', () => {
       const cutAt = r.beats.findIndex(b => (b.badgeText || '') === 'THE CUT');
       if (cutAt < 0) continue;                       // short field: no survey
       const before = r.beats.slice(0, cutAt);
-      expect(before.some(b => (b.badgeText || '') === 'MINORITY'),
+      expect(before.some(b => /^MINORITY/.test(b.badgeText || '')),
         'somebody was eliminated during the scoring half').toBe(false);
       // And the survey is not one question long.
       const surveyQs = before.filter(b => /^ROUND /.test(b.badgeText || '')).length;
@@ -175,7 +175,7 @@ describe('Majority Rules runs long enough to be one', () => {
         const tag = b.badgeText || '';
         if (/^ROUND/.test(tag)) rounds++;
         else if (tag === 'ALL SAFE' || tag === 'DEAD EVEN') { dead++; run++; worstStreak = Math.max(worstStreak, run); }
-        else if (tag === 'MINORITY') run = 0;
+        else if (/^MINORITY/.test(tag)) run = 0;
       }
     }
     expect(rounds, 'no sudden-death questions were asked').toBeGreaterThan(50);
@@ -183,6 +183,87 @@ describe('Majority Rules runs long enough to be one', () => {
       .toBeLessThan(0.5);
     // Two dead rounds in a row ends the questions, by rule.
     expect(worstStreak, 'the competition sat on dead rounds').toBeLessThanOrEqual(2);
+  });
+
+  it('no verdict claims a room its own board contradicts', () => {
+    // The defect this exists for: the survey printed SAFE_LINES on every
+    // round that had a majority, so a five-to-four split was narrated as
+    // "Every board in the room says Natasha. Nobody is in the minority"
+    // directly above a board showing four people who said Felipe. The same
+    // shape then turned up one level down, where "The minority is Tobias,
+    // alone" ran on a round that eliminated Tobias AND Jules.
+    //
+    // So: walk the beats, and for any sentence that counts the room, check
+    // the count against the picks recorded for that question.
+    const UNANIMOUS = /Every board in the room|Unanimous for|Not one board disagrees|whole room lands on|Nobody is in the minority/;
+    const ALONE = /, alone,|One board out of the whole room|by (?:him|her|them)self/;
+
+    for (let s = 0; s < 50; s++) {
+      boot();
+      const r = play(s * 19 + 13, 8);
+      const bd = bdOf(r);
+      // Everybody's pick for question q, so a claim can be checked against it.
+      const splitAt = q => {
+        const picks = Object.values(bd).map(v => (v.picks || []).find(pk => pk.q === q)).filter(Boolean);
+        const maj = picks.find(pk => pk.majority)?.majority || null;
+        return { maj, wrong: picks.filter(pk => pk.right === false).length, seen: picks.length };
+      };
+
+      let q = 0;
+      for (const b of r.beats) {
+        const tag = b.badgeText || '';
+        const m = /^ROUND (\d+)/.exec(tag);
+        if (m) { q = Number(m[1]); continue; }
+        const text = b.text || '';
+        if (!q) continue;
+        const { maj, wrong } = splitAt(q);
+        if (!maj) continue;                          // dead-even: no claim to check
+
+        if (UNANIMOUS.test(text)) {
+          expect(wrong, `seed ${s} q${q}: "${text.slice(0, 70)}…" but ${wrong} boards disagreed`)
+            .toBe(0);
+        }
+        // "alone" is about how many went out, which on a survey round is zero
+        // and on a sudden-death round is the size of the minority.
+        if (ALONE.test(text) && /^MINORITY/.test(tag)) {
+          expect(wrong, `seed ${s} q${q}: called it a minority of one, but ${wrong} boards were wrong`)
+            .toBe(1);
+        }
+        // The badge states the split; it must be the split.
+        const sp = /^SURVEY (\d+)–(\d+)$/.exec(tag);
+        if (sp) {
+          expect(Number(sp[2]), `seed ${s} q${q}: badge says ${sp[0]}, boards say ${wrong} wrong`)
+            .toBe(wrong);
+        }
+      }
+    }
+  });
+
+  it('a survey round that split names who was on the wrong side of it', () => {
+    // The screen colours minority boards red. A transcript has no red, so if
+    // the sentence does not carry them the cut arrives out of nowhere.
+    let checked = 0;
+    for (let s = 0; s < 30 && checked < 12; s++) {
+      boot();
+      const r = play(s * 29 + 7, 8);
+      const bd = bdOf(r);
+      let q = 0;
+      for (const b of r.beats) {
+        const m = /^ROUND (\d+)/.exec(b.badgeText || '');
+        if (m) { q = Number(m[1]); continue; }
+        const sp = /^SURVEY \d+–(\d+)$/.exec(b.badgeText || '');
+        if (!sp || Number(sp[1]) === 0) continue;
+        const losers = Object.entries(bd)
+          .filter(([, v]) => (v.picks || []).some(pk => pk.q === q && pk.right === false))
+          .map(([n]) => n);
+        for (const name of losers) {
+          expect(b.text, `q${q}: ${name} was in the minority and the sentence never says so`)
+            .toContain(name);
+        }
+        checked++;
+      }
+    }
+    expect(checked, 'no split survey rounds were produced at all').toBeGreaterThan(5);
   });
 
   it('the screen draws two different people on every question card', () => {

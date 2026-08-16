@@ -5768,8 +5768,19 @@ export function generateBBSummaryText(ep) {
         // (`week.js` copies it there) rather than `rouletteSafe`, which carries
         // the winner as well as the rescued nominee.
         if (act.roulette) {
-          ln(`  The Chopping Block Roulette is spent first. ${act.roulette.winner} takes ${act.roulette.down} off the block,`);
-          ln(`  and no ceremony between now and Thursday can put ${act.roulette.down} back up there.`);
+          // The winner is frequently the person who comes down — a nominee who
+          // wins takes their OWN name off — and "Axel takes Axel off the block"
+          // is what that read as before this branch. Both other places in this
+          // codebase that can save their own holder (the Block Buster, the veto
+          // used on oneself) say "their own name"; so does this.
+          if (act.roulette.down === act.roulette.winner) {
+            const pw = pronouns(act.roulette.winner);
+            ln(`  The Chopping Block Roulette is spent first. ${act.roulette.winner} takes ${pw.posAdj} own name`);
+            ln(`  off the block, and no ceremony between now and Thursday can put ${pw.obj} back up there.`);
+          } else {
+            ln(`  The Chopping Block Roulette is spent first. ${act.roulette.winner} takes ${act.roulette.down} off the block,`);
+            ln(`  and no ceremony between now and Thursday can put ${act.roulette.down} back up there.`);
+          }
           ln(`  The wheel fills the chair itself: ${act.roulette.up} goes up, named by nobody in this house.`);
         } else if (act.rouletteVoid) {
           ln(`  ${act.rouletteVoid.winner} won the Chopping Block Roulette and the block will not take it.`);

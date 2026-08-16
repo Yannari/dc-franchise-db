@@ -20673,7 +20673,9 @@ export function rpBuildBBCeremony(ep) {
         return roulette
           ? `<div class="bbns-card is-key">
               <div class="bbns-card-h">${_bbAvatar(roulette.winner, 30)}${_bbAvatar(roulette.down, 30)}${_bbAvatar(roulette.up, 30)}<span class="bbns-pill gold">THE CHOPPING BLOCK ROULETTE</span></div>
-              <div class="bbns-card-b">Before the medallion, the wheel. <strong>${_bbEsc(roulette.winner)}</strong> paid for this two days ago and spends it now: <strong>${_bbEsc(roulette.down)}</strong> comes off the block, and no ceremony between now and Thursday can put ${_bbEsc(roulette.down)} back up there.
+              <div class="bbns-card-b">Before the medallion, the wheel. <strong>${_bbEsc(roulette.winner)}</strong> paid for this two days ago and spends it now: ${roulette.down === roulette.winner
+                ? `${pv(roulette.winner).posAdj} own name comes off the block`
+                : `<strong>${_bbEsc(roulette.down)}</strong> comes off the block`}, and no ceremony between now and Thursday can put ${roulette.down === roulette.winner ? pv(roulette.winner).obj : _bbEsc(roulette.down)} back up there.
                 <span class="bbta-sting">The empty chair is filled by the wheel and by nothing else. It stops on ${_bbEsc(roulette.up)} — not named by the Head of Household, not asked for by anybody, and there is not one person in this house ${_bbEsc(roulette.up)} can be angry at for it.</span></div></div>`
           : `<div class="bbns-card is-key">
               <div class="bbns-card-h">${_bbAvatar(rouletteVoid.winner, 30)}<span class="bbns-pill grey">THE WHEEL CANNOT BE SPENT</span></div>

@@ -15,6 +15,10 @@
 // involved in a Big Brother week.
 
 import { gs, seasonConfig, seasonFormat, resolveTwistSchedule, TWIST_CATALOG } from './core.js';
+// Imported rather than taken off `window`: main.js spreads the players module
+// onto the global scope, which works in the browser and nowhere else, so a
+// headless render of this transcript would throw on the first pronoun.
+import { pronouns } from './players.js';
 import { simulateBBWeek } from './bb/week.js';
 import { generateBBStructuredText } from './bb-structured.js';
 import { juryOpensAt, juryLines, isSeatedJuror } from './bb/jury.js';
@@ -1747,7 +1751,13 @@ export function summariseWeek(week) {
         // "who came down" names one person too many.
         if (week.rouletteSwap) {
           const r = week.rouletteSwap;
-          line(`  THE CHOPPING BLOCK ROULETTE — ${r.winner} spends the win. ${r.down} comes off the block, and no ceremony between now and Thursday can put ${r.down} back up.`);
+          // A nominee who wins takes their OWN name down, so `down` is very
+          // often `winner` — and naming them twice reads as a bug.
+          const self = r.down === r.winner;
+          const pw = self ? pronouns(r.winner) : null;
+          line(`  THE CHOPPING BLOCK ROULETTE — ${r.winner} spends the win. `
+            + `${self ? `${pw.Sub} come${pw.sub === 'they' ? '' : 's'} off the block` : `${r.down} comes off the block`}, `
+            + `and no ceremony between now and Thursday can put ${self ? pw.obj : r.down} back up.`);
           line(`  The wheel fills the empty chair: ${r.up} is a replacement nominee, chosen by nobody.`);
         } else if (week.rouletteVoid) {
           // A win that could not be spent. Recorded rather than swallowed —

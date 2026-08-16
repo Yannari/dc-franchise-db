@@ -23668,7 +23668,13 @@ export function buildBBWeekScreens(ep) {
       vpScreens.push({
         id: `theme-beat-${act.hook}`,
         label: act.speaker,
-        html: rpBuildBBThemeBeat(view, act),
+        // `ep`, not `view`. There is no `view` in this scope — the finale's own
+        // act chain builds one per case, further down — so this threw
+        // `view is not defined` and the whole finale fell into
+        // buildVPScreens' catch, rendering "This Big Brother week cannot be
+        // replayed" and nothing else. It only fires on a THEMED season's
+        // finale, which is why it survived: every finale test ran unthemed.
+        html: rpBuildBBThemeBeat(ep, act),
       });
     } else if (act.type === 'finale-house') {
       // THE HOUSE'S OWN SCREEN, not a second one written for the same night.

@@ -16,6 +16,7 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { buildVPScreens } from '../js/vp-screens.js';
+import { simulateBBFinale } from '../js/bb-finale.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -233,6 +234,39 @@ describe('the season introduces itself and announces its own turn', () => {
       const html = (buildVPScreens(first) || []).map(s => s.html).join('');
       expect(html).toContain('Hospitality');
       expect(html).not.toContain('Accounting');
+    });
+  });
+
+  // ── THE FINALE MUST RENDER ON A THEMED SEASON ────────────────────────
+  //
+  // It did not. The finale keeps its OWN act chain, separate from the weekly
+  // switch, and its `theme-beat` case passed a `view` that does not exist in
+  // that scope. The ReferenceError fell into buildVPScreens' catch, so the
+  // last night of a themed season drew "This Big Brother week cannot be
+  // replayed" and nothing else — reported from a real season's week 17.
+  //
+  // It survived because every finale test ran UNTHEMED, so the case never
+  // executed. This one is themed on purpose.
+  it('renders the last night of a themed season', () => {
+    withSeededRandom(5, () => {
+      house('high-rollers');
+      for (let i = 0; i < 30 && (gs.activePlayers || []).length > 3; i++) simulateBBEpisode();
+
+      // `simulateBBFinale` RETURNS the episode; it does not push it onto
+      // `episodeHistory`. A first version of this test looked there, found an
+      // ordinary week, rendered it happily and passed against the broken code.
+      const finale = simulateBBFinale();
+      expect(finale, 'no finale episode was produced').toBeTruthy();
+      expect(finale.isFinale, 'that was not the finale').toBe(true);
+      expect((finale.acts || []).some(a => a.type === 'theme-beat'),
+        'the finale carried no theme beat, so this proves nothing').toBe(true);
+
+      const screens = buildVPScreens(finale) || [];
+      const html = screens.map(s => s.html || '').join('');
+      expect(html, 'the finale fell into the replay-failure card')
+        .not.toContain('cannot be replayed');
+      // And it is a real finale, not one screen of apology.
+      expect(screens.length).toBeGreaterThan(1);
     });
   });
 

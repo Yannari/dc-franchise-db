@@ -51,12 +51,19 @@ import { stableRng } from './knowledge.js';
  * undone the economy tuning the room depends on.
  *
  * The fix is odds, not noise. A strong read SHOULD win often; what a floor does
- * with an obvious favourite is shorten the price. Break-even at a 74% hit rate
- * is 1/0.74 ≈ 1.35, so 1.25 leaves the floor a margin of roughly 7% and keeps
- * a bet what it should be: a way to turn a good read into a little money, and a
- * bad one into a seat you can no longer afford.
+ * with an obvious favourite is shorten the price.
+ *
+ * REPRICED AGAIN once the read stopped being a herd. Averaging the room's
+ * sentiment instead of summing it let a bettor's own position actually compete
+ * with it, and the measured hit rate fell from 74% to **68.3%** over 1,152
+ * bets. At 1.25 that is a 15% edge, which is a fleecing rather than a table, so
+ * the price moved out to 1.4: break-even is 1/0.683 ≈ 1.46, leaving the floor
+ * about 4%. Enough that betting all season loses money, little enough that a
+ * good read is worth having.
+ *
+ * With `Math.floor`, a 10 stake returns 14.
  */
-export const SIDE_BET = Object.freeze({ stake: 10, payout: 1.25 });
+export const SIDE_BET = Object.freeze({ stake: 10, payout: 1.4 });
 
 const beat = (text, players, badgeText, badgeClass = 'gold') =>
   ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
@@ -97,12 +104,22 @@ function houseSentiment(house, nominees) {
   const out = new Map();
   for (const nom of nominees) {
     let against = 0;
+    let voters = 0;
     for (const voter of house) {
       if (voter === nom || nominees.includes(voter)) continue;
       // A weak or hostile relationship is a vote waiting to happen.
       against += -getPerceivedBond(voter, nom);
+      voters++;
     }
-    out.set(nom, against);
+    // AVERAGED, NOT SUMMED, AND THIS IS THE WHOLE FIX FOR THE HERD.
+    //
+    // Summed, this ran to about ±100 in a full house while a personal bond
+    // runs ±10 — so the room's opinion outweighed the bettor's own by an order
+    // of magnitude and no amount of weighting or noise could be heard over it.
+    // Every bettor reached the same conclusion and half the tables came back
+    // unanimous. On the same scale as a bond, where they belong, the two terms
+    // actually compete.
+    out.set(nom, voters ? against / voters : 0);
   }
   return out;
 }
@@ -135,16 +152,36 @@ export function runSideBets({ week, house = [], nominees = [], rng } = {}) {
 
     // ── THE READ ──
     //
-    // Their own view of the sentiment, blurred by how well they read a room.
-    // A high-intuition, high-social houseguest sees close to the real number; a
-    // low one is guessing with extra steps. Nobody sees the eviction.
+    // THIS IS A PERSONAL READ, NOT A SHARED ORACLE, AND THE FIRST VERSION GOT
+    // THAT WRONG. It scored every nominee on one global sentiment number and
+    // blurred it per bettor, so six houseguests reading the same number reached
+    // the same conclusion: a real week produced six slips with the identical
+    // name on all six, which reads as the house being psychic rather than
+    // observant. Reported straight off a screen — "are they always betting on
+    // the right person too??"
+    //
+    // A houseguest's real read is dominated by where THEY stand. Somebody tight
+    // with a nominee does not back that nominee to go, whatever the rest of the
+    // room thinks, and somebody who wants them gone believes the votes are
+    // there because they want them to be. So the room's sentiment is only part
+    // of it, weighted by how well this person reads a room, and their own
+    // relationship is the rest. Picks spread, the hit rate falls to something a
+    // person could plausibly manage, and being close to somebody costs you
+    // money — which is the right kind of wrong to be.
+    // All three terms are on the same ±10 scale now, so they genuinely trade
+    // against each other: what the room wants, what I want, and how wrong I am.
     const sharp = ((st.intuition || 5) + (st.social || 5)) / 20;   // 0..1
-    const noiseBand = 14 * (1 - sharp) + 2;
+    const noiseBand = 10 * (1 - sharp) + 3;
     let best = null;
     let bestScore = -Infinity;
     for (const nom of noms) {
       if (nom === name) continue;              // nobody bets on their own exit
-      const seen = (sentiment.get(nom) || 0) + (draw() - 0.5) * noiseBand;
+      // What the room seems to want, seen through this person's eyes...
+      const room = (sentiment.get(nom) || 0) * (0.5 + sharp * 0.9);
+      // ...plus what THEY want, which is the half that makes two houseguests
+      // at the same rail write different names.
+      const mine = -getPerceivedBond(name, nom);
+      const seen = room + mine + (draw() - 0.5) * noiseBand;
       if (seen > bestScore) { bestScore = seen; best = nom; }
     }
     if (!best) continue;
@@ -170,12 +207,26 @@ export function runSideBets({ week, house = [], nominees = [], rng } = {}) {
 /**
  * Settle the week's bets once the house has actually voted.
  *
- * Split from placing them because that is the real order of events: the money
- * leaves before anybody knows, which is what makes it a bet.
+ * ── RETURNS ITS OWN ACT, AND THAT IS THE WHOLE POINT ──────────────────
+ *
+ * The first version mutated the placement act: it pushed the slips before the
+ * vote and then wrote the results into the same object. The screen still sat in
+ * its pre-eviction slot and rendered the FINAL state, so a viewer watching in
+ * order was shown who had been paid, and therefore who had gone home, before
+ * the eviction happened. Reported off a real screen: "i feel like its telling
+ * me the results of the bet before the eviction happen".
+ *
+ * Placing a bet and collecting on it are two scenes on two different nights.
+ * They are two acts now, and the caller pushes this one AFTER the eviction.
  */
 export function settleSideBets(act, evicted, { rng } = {}) {
-  if (!act || act.settled || !evicted) return act;
+  if (!act || act.settled || !evicted) return null;
   const draw = rng || stableRng('side-bet-settle', gs?.bb?.seasonSalt || 0, act.week || 0);
+  const settlement = {
+    type: 'side-bet-settled', week: act.week, secret: false,
+    stake: act.stake, payout: act.payout, evicted,
+    results: [], beats: [],
+  };
 
   for (const b of act.bets || []) {
     const won = b.on === evicted;
@@ -186,9 +237,9 @@ export function settleSideBets(act, evicted, { rng } = {}) {
     // correct character.
     const back = won ? Math.floor(b.stake * SIDE_BET.payout) : 0;
     if (back) credit(b.name, back);
-    act.results.push({ name: b.name, on: b.on, won, delta: back - b.stake });
+    settlement.results.push({ name: b.name, on: b.on, won, delta: back - b.stake });
     const pool = won ? WON : LOST;
-    act.beats.push(beat(pool[Math.floor(draw() * pool.length)](b.name),
+    settlement.beats.push(beat(pool[Math.floor(draw() * pool.length)](b.name),
       [b.name], won ? 'PAID OUT' : 'THE FLOOR KEEPS IT', won ? 'gold' : 'grey'));
   }
 
@@ -204,10 +255,10 @@ export function settleSideBets(act, evicted, { rng } = {}) {
     const catchOdds = Math.min(0.45, 0.06 + (st.intuition || 5) * 0.035);
     if (draw() > catchOdds) continue;
     try { addBond(b.name, b.on, -2); } catch { /* bonds are not load-bearing here */ }
-    act.beats.push(beat(CAUGHT[Math.floor(draw() * CAUGHT.length)](b.name, b.on),
+    settlement.beats.push(beat(CAUGHT[Math.floor(draw() * CAUGHT.length)](b.name, b.on),
       [b.name, b.on], 'READ THE RAIL', 'red'));
   }
 
   act.settled = true;
-  return act;
+  return settlement;
 }

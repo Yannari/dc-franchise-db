@@ -22601,21 +22601,17 @@ export function rpBuildBBThemeTurn(ep, act) {
  */
 export function rpBuildBBSideBet(ep, act) {
   if (!act || !(act.bets || []).length) return '';
-  const settled = !!act.settled;
-  const byName = new Map((act.results || []).map(r => [r.name, r]));
-  const rows = act.bets.map(b => {
-    const r = byName.get(b.name);
-    const state = !settled ? { txt: 'ON THE TABLE', col: 'var(--bbx-dim)' }
-      : r?.won ? { txt: `PAID ${r.delta > 0 ? `+${r.delta}` : r.delta}`, col: 'var(--bbx-key)' }
-        : { txt: `LOST ${b.stake}`, col: 'var(--bbx-dim)' };
-    return `<tr>
+  // THE SLIPS ONLY. No result, no outcome, no hint of Thursday — this screen
+  // is drawn before the vote, and it used to render the SETTLED state because
+  // the settlement was written back into this same act. A viewer watching in
+  // order was shown who had been paid, and therefore who had gone home, before
+  // the eviction played. `side-bet-settled` is a separate act now, drawn after.
+  const rows = act.bets.map(b => `<tr>
       <td style="padding:4px 10px 4px 0;font-size:12px;color:var(--text)">${_bbEsc(b.name)}</td>
       <td style="padding:4px 10px;font-size:12px;color:var(--bbx-dim)">on ${_bbEsc(b.on)}</td>
-      <td style="padding:4px 0;text-align:right;font-size:11px;color:${state.col}">${state.txt}</td>
-    </tr>`;
-  }).join('');
+      <td style="padding:4px 0;text-align:right;font-size:11px;color:var(--bbx-dim)">${_bbEsc(b.stake)} down</td>
+    </tr>`).join('');
 
-  const won = (act.results || []).filter(r => r.won);
   return _bbSceneScreen(ep, {
     eyebrow: `Week ${ep.num}`, title: 'THE SIDE BET',
     subtitle: `${act.stake} a slip on who goes home. The room saw them bet and never saw the name.`,
@@ -22626,16 +22622,54 @@ export function rpBuildBBSideBet(ep, act) {
       <div style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim);margin-bottom:6px">
         THE SLIPS — WHICH NOBODY IN THAT HOUSE CAN READ</div>
       <table style="width:100%;border-collapse:collapse">${rows}</table>
+      <div style="margin-top:6px;font-size:10px;color:var(--bbx-dim)">
+        A correct slip pays ${_bbEsc(Math.floor(act.stake * act.payout))} back on the ${_bbEsc(act.stake)}.
+        A wrong one pays nothing. Nobody knows yet which is which.</div>
+    </div>`,
+    scenes: (act.beats || []).map(b => ({ text: b.text, players: b.players,
+      badgeText: b.badgeText, badgeClass: b.badgeClass })),
+  });
+}
+
+/**
+ * THE FLOOR SETTLES — Thursday, once the house has actually voted.
+ *
+ * Its own screen so it can be drawn AFTER the eviction. Amounts are written in
+ * words rather than as a signed delta: "+2" was on screen for a while and meant
+ * nothing to anybody who had not read the source.
+ */
+export function rpBuildBBSideBetSettled(ep, act) {
+  if (!act || !(act.results || []).length) return '';
+  const back = Math.floor(act.stake * act.payout);
+  const rows = act.results.map(r => `<tr>
+      <td style="padding:4px 10px 4px 0;font-size:12px;color:var(--text)">${_bbEsc(r.name)}</td>
+      <td style="padding:4px 10px;font-size:12px;color:var(--bbx-dim)">on ${_bbEsc(r.on)}</td>
+      <td style="padding:4px 0;text-align:right;font-size:11px;color:${r.won ? 'var(--bbx-key)' : 'var(--bbx-dim)'}">
+        ${r.won ? `takes ${_bbEsc(back)} back` : `loses the ${_bbEsc(act.stake)}`}</td>
+    </tr>`).join('');
+  const won = act.results.filter(r => r.won);
+
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'THE FLOOR SETTLES',
+    subtitle: `${_bbEsc(act.evicted)} is the name on the winning slips.`,
+    accent: 'var(--bbx-key)', room: 'bb-power',
+    stateKey: `bb_sidebet_paid_${ep.num}`,
+    header: `<div style="max-width:560px;margin:0 auto 16px;padding:10px 12px;
+         border:1px solid var(--border);border-radius:6px;background:rgba(var(--bbx-card2-rgb),.45)">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim);margin-bottom:6px">
+        THE SLIPS, TURNED OVER</div>
+      <table style="width:100%;border-collapse:collapse">${rows}</table>
     </div>`,
     scenes: [
-      ...(settled
-        ? [{ text: won.length
-          ? `<strong>${won.map(r => _bbEsc(r.name)).join('</strong>, <strong>')}</strong> called it. `
-            + 'Everything else on that table stays with the floor.'
+      { text: won.length === act.results.length
+        ? `Every slip on the table had the right name on it. The floor pays all ${act.results.length} of them, `
+          + `${back} back on a ${act.stake} stake, and does not enjoy it.`
+        : won.length
+          ? `<strong>${won.map(r => _bbEsc(r.name)).join('</strong>, <strong>')}</strong> called it, and take `
+            + `${back} back on a ${act.stake} stake. Everything else on that table stays with the floor.`
           : 'Nobody called it. The floor keeps every slip, which is what a floor is for.',
-        players: won.map(r => r.name), badgeText: settled ? 'THE FLOOR SETTLES' : '',
-        badgeClass: won.length ? 'gold' : 'grey' }]
-        : []),
+      players: won.map(r => r.name), badgeText: 'THE FLOOR SETTLES',
+      badgeClass: won.length ? 'gold' : 'grey' },
       ...(act.beats || []).map(b => ({ text: b.text, players: b.players,
         badgeText: b.badgeText, badgeClass: b.badgeClass })),
     ],
@@ -23130,6 +23164,11 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'side-bet':
         screens.push({ id: id('bb-sidebet'), label: 'The Side Bet',
           html: rpBuildBBSideBet(view, act) });
+        break;
+      // Thursday's half, drawn after the eviction it depends on.
+      case 'side-bet-settled':
+        screens.push({ id: id('bb-sidebet-paid'), label: 'The Floor Settles',
+          html: rpBuildBBSideBetSettled(view, act) });
         break;
       // The card that answers "what am I watching" — drawn once, on night one.
       case 'theme-primer':

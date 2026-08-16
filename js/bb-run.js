@@ -1679,12 +1679,22 @@ export function summariseWeek(week) {
         line('');
         line('THE SIDE BET');
         line(`  At the rail, ${act.stake} a slip on who goes home: ${bets.map(b => b.name).join(', ')}.`);
-        const won = (act.results || []).filter(r => r.won);
-        if (act.settled) {
-          line(won.length
-            ? `  Paid out: ${won.map(r => r.name).join(', ')}. The rest of it stays with the floor.`
-            : '  Nobody called it. The floor keeps every slip on the table.');
-        }
+        line(`  A correct slip pays ${Math.floor(act.stake * act.payout)} back on the ${act.stake}; a wrong one pays nothing.`);
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
+      // Thursday. Its own act, so the result cannot appear before the vote
+      // that produced it.
+      case 'side-bet-settled': {
+        const res = act.results || [];
+        if (!res.length) break;
+        const won = res.filter(r => r.won);
+        line('');
+        line('THE FLOOR SETTLES');
+        line(`  ${act.evicted} is the name on the winning slips.`);
+        line(won.length
+          ? `  Paid out: ${won.map(r => r.name).join(', ')} — ${Math.floor(act.stake * act.payout)} back on a ${act.stake} stake. The rest stays with the floor.`
+          : '  Nobody called it. The floor keeps every slip on the table.');
         for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
         break;
       }

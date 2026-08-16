@@ -327,8 +327,14 @@ function expectLedgerCharged(weeks) {
   // The cheap table moves money too. Without this the reconciliation read a
   // ten-buck stake as a second room charge and reported a double-bill that had
   // not happened — the arithmetic has to know about every till, not just one.
+  // Stakes leave on the placement act; winnings arrive on the SETTLEMENT act,
+  // which is a separate act pushed after the eviction so the pre-vote screen
+  // cannot spoil it. Reading the payout off the placement act under-counted by
+  // the whole winnings and reported a phantom double-bill.
   for (const a of acts.filter(x => x.type === 'side-bet')) {
     for (const b of a.bets || []) spent[b.name] = (spent[b.name] || 0) + b.stake;
+  }
+  for (const a of acts.filter(x => x.type === 'side-bet-settled')) {
     for (const r of a.results || []) {
       if (r.won) paid[r.name] = (paid[r.name] || 0) + (r.delta + a.stake);
     }

@@ -5779,11 +5779,6 @@ export function simulateBBWeek(options = {}) {
     }
   }
   week.evicted = evicted;
-  // The floor settles up. Split from placing the bets because that is the real
-  // order: the stake left before anybody knew, which is what made it a bet.
-  if (week.sideBets && !week.sideBets.settled) {
-    try { settleSideBets(week.sideBets, evicted, { rng }); } catch { /* the vote stands regardless */ }
-  }
   /* ── AND THEIR PARTNER ──
      The whole twist, in three lines. Whoever took the most votes is evicted
      and the person they were chained to is evicted beside them — on zero
@@ -5963,6 +5958,26 @@ export function simulateBBWeek(options = {}) {
       // reads as the wrong name being called.
       duoVote: week.duoVote || null },
     { nominees: [...nominees], evicted, votes, ballots }));
+
+  // ── THE FLOOR SETTLES ─────────────────────────────────────────────────
+  //
+  // Pushed HERE, after the eviction act, and the position is the whole point.
+  // The settlement first lived inside the placement act, which sits before the
+  // vote — so the betting screen rendered the result and told a viewer watching
+  // in order who had been paid, and therefore who had gone home, in advance.
+  // Splitting it into its own act was only half the fix: pushing it where
+  // `week.evicted` is assigned still put it several hundred lines and three
+  // sections ahead of the eviction the viewer had not seen yet. A backlog read
+  // end to end caught both halves.
+  if (week.sideBets && !week.sideBets.settled) {
+    try {
+      const settled = settleSideBets(week.sideBets, evicted, { rng });
+      if (settled) {
+        week.sideBetResults = settled;
+        week.acts.push(addBeats(settled, { players: settled.results.map(r => r.name).slice(0, 4) }));
+      }
+    } catch { /* the vote stands regardless */ }
+  }
 
   // The second name, read out after the votes, which nobody cast for.
   if (week.duoWeekTaken) {

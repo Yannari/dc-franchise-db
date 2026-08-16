@@ -82,8 +82,8 @@ describe('settling', () => {
   it('pays a correct bet and keeps a wrong one', () => {
     const act = open(seq([0.01, 0.3]));
     const before = Object.fromEntries(act.bets.map(b => [b.name, balance(b.name)]));
-    settleSideBets(act, 'Chase', { rng: seq([0.99]) });   // 0.99 => nobody reads the rail
-    for (const r of act.results) {
+    const settled = settleSideBets(act, 'Chase', { rng: seq([0.99]) });   // 0.99 => nobody reads the rail
+    for (const r of settled.results) {
       const paid = balance(r.name) - before[r.name];
       if (r.on === 'Chase') {
         expect(r.won).toBe(true);
@@ -98,19 +98,20 @@ describe('settling', () => {
     expect(act.settled).toBe(true);
   });
 
-  it('reports every bet exactly once', () => {
+  it('reports every bet exactly once, on its own act', () => {
     const act = open(seq([0.01, 0.3]));
-    settleSideBets(act, 'Chase', { rng: seq([0.99]) });
-    expect(act.results).toHaveLength(act.bets.length);
-    expect(new Set(act.results.map(r => r.name)).size).toBe(act.bets.length);
+    const settled = settleSideBets(act, 'Chase', { rng: seq([0.99]) });
+    expect(settled.type).toBe('side-bet-settled');
+    expect(settled.results).toHaveLength(act.bets.length);
+    expect(new Set(settled.results.map(r => r.name)).size).toBe(act.bets.length);
+    // And the placement act learns NOTHING, because it is drawn before the vote.
+    expect(act.results).toHaveLength(0);
   });
 
   it('cannot be settled twice', () => {
     const act = open(seq([0.01, 0.3]));
-    settleSideBets(act, 'Chase', { rng: seq([0.99]) });
-    const n = act.results.length;
-    settleSideBets(act, 'Chase', { rng: seq([0.99]) });
-    expect(act.results).toHaveLength(n);
+    expect(settleSideBets(act, 'Chase', { rng: seq([0.99]) })).toBeTruthy();
+    expect(settleSideBets(act, 'Chase', { rng: seq([0.99]) })).toBeNull();
   });
 
   it('costs you something when the target reads the rail', () => {
@@ -146,10 +147,31 @@ describe('the table opens once a week', () => {
         const tables = (w.acts || []).filter(a => a.type === 'side-bet');
         expect(tables.length, `week ${w.num} opened the table ${tables.length} times`)
           .toBeLessThanOrEqual(1);
+        const paid = (w.acts || []).filter(a => a.type === 'side-bet-settled');
+        expect(paid.length, `week ${w.num} settled ${paid.length} times`).toBeLessThanOrEqual(1);
         for (const t of tables) {
           sawOne = true;
           expect(t.settled, `week ${w.num} took the stakes and never settled`).toBe(true);
-          expect(t.results.length).toBe(t.bets.length);
+          expect(paid.length, `week ${w.num} took the stakes and never paid out`).toBe(1);
+          expect(paid[0].results.length).toBe(t.bets.length);
+          // THE SPOILER GUARD. The slips act is drawn before the eviction, so
+          // it must never carry the OUTCOME — it once did, and a viewer was
+          // shown who had been paid, and therefore who had gone, in advance.
+          //
+          // Checked on the outcome fields, not on the evictee's name: a bettor
+          // writes that name on a slip before the vote, which is the whole
+          // mechanic and not a leak. The first version of this guard forbade
+          // the name and failed on a correct week.
+          // Checked field by field rather than by stringifying the act: the
+          // beats `addBeats` hangs on it carry their own unrelated `delta`s,
+          // so a whole-object substring search fails on data that has nothing
+          // to do with betting.
+          expect(t.results, 'the pre-vote act is carrying results').toHaveLength(0);
+          expect(t.evicted, 'the pre-vote act names the evictee').toBeUndefined();
+          for (const b of t.bets) {
+            expect(b.won, 'a pre-vote slip knows whether it won').toBeUndefined();
+            expect(b.delta, 'a pre-vote slip knows its payout').toBeUndefined();
+          }
         }
       }
       expect(sawOne, 'the table never opened, so this proves nothing').toBe(true);

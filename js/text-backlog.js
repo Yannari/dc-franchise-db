@@ -5703,19 +5703,30 @@ export function generateBBSummaryText(ep) {
         sec('THE SIDE BET');
         ln(`  ${act.stake} a slip on who goes home. At the rail this week: ${bets.map(b => b.name).join(', ')}.`);
         ln('  Everybody saw them bet. Nobody saw the name they wrote down.');
+        ln(`  A correct slip pays ${Math.floor(act.stake * act.payout)} back on the ${act.stake}. A wrong one pays nothing.`);
         beats(act);
-        // The tally goes AFTER the beats it is a tally OF. It read before them
-        // first, announcing the result and then narrating the bets that led to
-        // it, which is the wrong way round in a transcript.
-        if (act.settled) {
-          const won = (act.results || []).filter(r => r.won);
-          ln('');
-          ln(won.length === bets.length
-            ? `  All ${bets.length} called it, and the floor pays every one of them. Some weeks the room is not hard to read.`
-            : won.length
-              ? `  Called it: ${won.map(r => r.name).join(', ')}. Everything else stays with the floor.`
-              : '  Nobody called it. The floor keeps the lot.');
+        break;
+      }
+
+      // Thursday, after the vote. A separate act from the slips deliberately:
+      // written into the placement act, the result appeared on screen BEFORE
+      // the eviction that decided it.
+      case 'side-bet-settled': {
+        const res = act.results || [];
+        if (!res.length) break;
+        const won = res.filter(r => r.won);
+        sec('THE FLOOR SETTLES');
+        ln(`  ${act.evicted} is the name on the winning slips.`);
+        ln(won.length === res.length
+          ? `  All ${res.length} called it. Some weeks the room is not hard to read.`
+          : won.length
+            ? `  Called it: ${won.map(r => r.name).join(', ')}. The rest of the table stays with the floor.`
+            : '  Nobody called it. The floor keeps the lot.');
+        if (won.length) {
+          ln(`  Each of them staked ${act.stake} and takes ${Math.floor(act.stake * act.payout)} back.`);
         }
+        ln('');
+        beats(act);
         break;
       }
 

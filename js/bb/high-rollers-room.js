@@ -83,6 +83,7 @@ import { balance, canAfford, spend } from './bb-bucks.js';
 import { spendPull } from './powers.js';
 import { stableRng } from './knowledge.js';
 import { rouletteResolver } from './chopping-block-roulette.js';
+import { runDerby } from './veto-derby.js';
 
 /**
  * The menu, frozen.
@@ -97,6 +98,25 @@ import { rouletteResolver } from './chopping-block-roulette.js';
  * there is no object to hold and nothing to sit on. The Derby and the Coin do
  * grant real powers and will fill this in.
  */
+// ── ONE GAME A NIGHT, AND WHY THAT IS NOT WHAT THE BROADCAST DID ────────
+//
+// On BB23 the room held its whole menu open at once and a houseguest chose
+// what to buy. Here the floor sells ONE game a night: the Derby on the first
+// night, the wheel on the two after it. `roomGameForNight` below owns that
+// choice and `js/bb/week.js` calls it.
+//
+// This is an adaptation and is written down as one. Canon's room opened over
+// three WEEKS with the whole board available; ours opens on three nights that
+// are already a compression of those weeks, and the economy makes the
+// difference mostly theoretical — on the first night almost nobody has banked
+// the 125 the wheel costs, so a simultaneous menu would be a menu with one
+// affordable line on it. Selling the cheap table first turns that into
+// something legible: the floor opens with the game everybody can play and
+// escalates to the one that changes a week.
+//
+// If the menu is ever wanted open all at once, the change is in `openRoom` —
+// candidates, affordability and the seat record are all already keyed by game
+// id, so what it needs is a per-houseguest choice rather than a per-night one.
 export const ROOM_GAMES = Object.freeze([
   Object.freeze({
     id: 'chopping-block-roulette',
@@ -105,7 +125,24 @@ export const ROOM_GAMES = Object.freeze([
     powerId: null,
     blurb: 'Spin for safety. The wheel can take you off the block — or take the money and leave you exactly where you were standing.',
   }),
+  Object.freeze({
+    id: 'veto-derby',
+    name: 'The Veto Derby',
+    price: 50,
+    powerId: null,
+    blurb: 'Guess a number, make the top six, and earn the right to back one of the veto players. Back the one who wins and you hold a veto of your own — bought with a guess and somebody else\'s competition.',
+  }),
 ]);
+
+/**
+ * What the floor is selling tonight.
+ *
+ * @param nightsSoFar how many times the room has already opened this season.
+ */
+export function roomGameForNight(nightsSoFar = 0) {
+  const byId = id => ROOM_GAMES.find(g => g.id === id);
+  return nightsSoFar === 0 ? byId('veto-derby') : byId('chopping-block-roulette');
+}
 
 // ── THERE IS NO SEAT CAP, AND THAT IS THE POINT ─────────────────────────
 //
@@ -223,6 +260,10 @@ function defaultPlay({ name, rng }) {
  */
 const GAME_ENGINES = {
   'chopping-block-roulette': rouletteResolver,
+  // Also a field game, and for the opposite reason to the Roulette: that one
+  // has at most ONE winner, this one has up to six, and neither can be decided
+  // one entrant at a time.
+  'veto-derby': runDerby,
 };
 
 /**

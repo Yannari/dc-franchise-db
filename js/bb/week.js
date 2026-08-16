@@ -15,7 +15,7 @@ import { resolveHaltingHex } from './eviction-powers.js';
 import { resolveRewind } from './rewind.js';
 import { runCoinOfDestiny, coinNominations } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
-import { openRoom } from './high-rollers-room.js';
+import { openRoom, roomGameForNight } from './high-rollers-room.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
   carePackageVoteBlock, carePackageBribe, neverNots } from './care-package.js';
 import { punishedHaveNots, applyPunishment, drawPunishment, BB_PUNISHMENTS } from './punishments.js';
@@ -3707,6 +3707,12 @@ export function simulateBBWeek(options = {}) {
         // Nobody holds a veto yet — the competition has not been played.
         vetoHolder: null,
         protectedNames: roomSafe,
+        // WHAT IS ON SALE TONIGHT. The floor runs the cheap table on its first
+        // night and the wheel on the two after it — counted off the weeks that
+        // have already aired rather than off a flag, so a reloaded save cannot
+        // sell the opening game twice.
+        game: roomGameForNight((gs.bb.weeks || [])
+          .filter(w => (w.acts || []).some(a => a.type === 'high-rollers-room')).length),
         // The week's own seeded generator. A bare Math.random anywhere in here
         // and the same seed stops producing the same house.
         rng,

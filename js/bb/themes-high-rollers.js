@@ -73,6 +73,61 @@ export default {
     body: '"Inter", system-ui, sans-serif',
   },
 
+  // ── THE PRIMER: this season, explained to the person watching it ──────
+  //
+  // The header above is written to the next engineer. This is the same season
+  // written to the viewer, and it is the only place anybody is told what a Pit
+  // Boss is — which is the question that started this whole slice.
+  //
+  // TWO RULES FOR EDITING THIS BLOCK.
+  //   1. `rules` must be TRUE of the engine. Every line below was checked
+  //      against `js/bb/bb-bucks.js` (the tiers, and that they pay weekly) and
+  //      `js/bb/high-rollers-room.js` (money leaves on ENTRY, one seat per game
+  //      per season). Do not describe the Veto Derby or a purchasable Coin —
+  //      those are later plans and the viewer must not be promised them.
+  //   2. NEVER write "the house" here. Every other surface in this simulator
+  //      uses that phrase for the roster of houseguests, so this antagonist
+  //      says the floor, the room, the edge. A test sweeps this whole block.
+  primer: {
+    what: 'A season that runs on money. Every week the audience pays out, in public, and what it pays '
+      + 'is a scoreboard of who it is watching. The money is real currency: it carries over, it is '
+      + 'yours until you spend it, and there is a back room that will sell you something with it.',
+    who: 'The Pit Boss works the floor for an owner that never shows itself, never plays, and never '
+      + 'loses. He is a floor manager and he is delighted you came. He comps the drinks, he learns '
+      + 'your name, and he has been counting since the moment you sat down.',
+    rules: [
+      'The audience pays every houseguest every week — the top three get the most, the next three a '
+        + 'little less, everybody else the floor rate. The result is announced, so the room learns '
+        + 'each week who the audience loves.',
+      'Money carries over and is never taken away. Saving is a strategy, and so is spending early.',
+      'Three times late in the season a back room opens, and anybody who can pay may buy a seat at a '
+        + 'game. Walking in is public; what you are holding is not.',
+      'You pay on the way IN. The game can beat you, and losing does not refund the seat — you can pay '
+        + 'in full, in front of everybody, and leave with nothing.',
+      'Each game may be played once per houseguest, for the whole season. Buying in is a door you '
+        + 'close behind you.',
+    ],
+    watch: 'Watch who the audience pays and who it does not, because that is public from week one. Then '
+      + 'watch who spends and who saves — the menu costs more than a season earns, so nobody gets to '
+      + 'buy everything, and every purchase is somebody deciding what they came here for.',
+    register: {
+      neutral: 'Hospitality. The drinks are comped, the floor is glad you came, and it is counting.',
+      hostile: 'Accounting. The comps have stopped and the markers are being called in.',
+    },
+    turn: {
+      headline: 'THE COMPS HAVE STOPPED',
+      body: 'Nothing about the floor gets louder. The generosity simply ends and the arithmetic starts: '
+        + 'the party lighting goes off, the counting lights come on, and every courtesy you were '
+        + 'extended turns out to have been a line in a ledger somebody kept.',
+    },
+    announce: [
+      'The floor has changed the terms of this week. {detail}',
+      'A new game has been chalked up at the rail. Read it before you play it. {detail}',
+      'The Pit Boss would like the room to know the rule. {detail}',
+      'Management has posted an amendment. {detail}',
+    ],
+  },
+
   antagonist: {
     name: 'The Pit Boss',
     mood: 'neutral',

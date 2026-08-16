@@ -45,6 +45,46 @@ export default {
   // been written before the season started is a line the broadcast can already
   // do; `{cursed}` in particular only resolves in a week where somebody really
   // did take something, and it names the person who is paying for it.
+  // ── THE PRIMER: this season, explained to the person watching it ──────
+  //
+  // Everything above this line is written to the next engineer. This block is
+  // the same season written to the viewer, and it is the only place they are
+  // ever told what a Den is. Keep `rules` true of what the arc actually books.
+  primer: {
+    what: 'A season built on offers. Every so often the house is shown something worth having and told '
+      + 'it can be had for nothing — no competition, no catch it can see. Refusing genuinely costs '
+      + 'nothing, and that is the only reason accepting is a decision at all.',
+    who: 'The Den is a room in this house that talks. It never competes, never votes and never lies to '
+      + 'anybody; it simply opens a door, makes an offer, and waits. It is patient, it is delighted '
+      + 'when somebody says yes, and it has never once paid for anything it handed out.',
+    rules: [
+      'One houseguest at a time is taken into the Den alone and offered a real power for free.',
+      'Accepting puts a curse into the house — and the curse never lands on the person who accepted it.',
+      'The house is told that a curse has landed. It is never told who caused it, so it hunts for a '
+        + 'culprit it has no way of identifying.',
+      'Pandora\'s Box turns up late carrying something worse than usual, and the last offer of the '
+        + 'season comes when there is almost nobody left to pay for it.',
+    ],
+    watch: 'Watch who says yes early, while saying yes still looks free. Then watch who pays for it, '
+      + 'because it is never the same person — and watch the house convict somebody innocent of it.',
+    register: {
+      neutral: 'Hospitable. The Den offers, and swears the offer costs you nothing.',
+      hostile: 'The offers keep coming, and the Den has stopped pretending they are free.',
+    },
+    turn: {
+      headline: 'THE OFFERS STOP BEING FREE',
+      body: 'The Den has spent the summer being generous and is finished with it. The same door opens '
+        + 'onto the same offer, and from here the price is named out loud — and it is still not the '
+        + 'person accepting who pays.',
+    },
+    announce: [
+      'Houseguests, the Den has changed the terms of this week. {detail}',
+      'Another door has opened, and this is the rule attached to it. {detail}',
+      'The Den has something new for the house. Listen before you decide how dangerous it is. {detail}',
+      'You wanted to know what the Den had planned. Here it is. {detail}',
+    ],
+  },
+
   antagonist: {
     name: 'The Den',
     mood: 'neutral',

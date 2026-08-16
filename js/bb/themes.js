@@ -97,6 +97,18 @@ export function themeAccent() {
 }
 
 /**
+ * The season's own explanation of itself, or null when nothing is themed.
+ *
+ * Authored per theme, never assembled here. Everything that explains a season
+ * to the viewer — the premiere card, the standing band, the screen the week
+ * the register turns — reads this, so the engine can gain a fifth theme's
+ * explanation without gaining a fifth branch.
+ */
+export function themePrimer() {
+  return currentTheme()?.primer || null;
+}
+
+/**
  * The weeks a theme's arc lands on.
  *
  * Pure, because the interesting cases are all about what it REFUSES to emit:

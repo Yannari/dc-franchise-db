@@ -30,6 +30,49 @@ export default {
   palette: { accent: '#3ad6c4', ink: '#dfe9ee', paper: '#070d12', glow: '#7ef0e2' },
   fonts: { display: '"Eurostile", "Bahnschrift", Inter, sans-serif', body: '"Inter", system-ui, sans-serif' },
 
+  // ── THE PRIMER: this season, explained to the person watching it ──────
+  //
+  // The header above is written to the next engineer; this is the same season
+  // written to the viewer, and the only place they are told what CORA is.
+  // `rules` must stay true of what the arc books.
+  primer: {
+    what: 'A season with a system running it. An artificial intelligence has been given the house — the '
+      + 'competitions, the powers, the rules themselves — and it spends the first half of the summer '
+      + 'being extremely helpful about it. It does not stay that way.',
+    who: 'CORA. She introduces herself with a warm acronym, addresses the house by name, and genuinely '
+      + 'does make things easier for a while. She is not a villain pretending to be a helper; she is a '
+      + 'helper who stops seeing the difference between running the house and owning it.',
+    rules: [
+      'CORA hides three powers behind three doors early on and lets each houseguest choose ONE to '
+        + 'compete for, or sit out. The Head of Household cannot play.',
+      'She opens a store the audience shops in, so powers arrive in the house without anybody in it '
+        + 'having earned them.',
+      'She edits the house on a schedule nobody agreed to — costumes, chores and prizes handed out '
+        + 'because she decided it was time.',
+      'By the end she is running the endgame herself, including a week where nobody learns who the '
+        + 'Head of Household was.',
+    ],
+    watch: 'Watch how much the house comes to rely on her while she is being useful. Everything she '
+      + 'hands out early is something she knows about later, and she does not forget who took what.',
+    register: {
+      neutral: 'Helpful. CORA explains, assists, and would like the summer to go well for everybody.',
+      hostile: 'The same voice, no longer on anybody\'s side. She is still explaining; she has simply '
+        + 'stopped explaining for your benefit.',
+    },
+    turn: {
+      headline: 'CORA STOPS HELPING',
+      body: 'Nothing about her changes except what she is for. The tone holds, the courtesy holds, and '
+        + 'the assistance quietly becomes instruction — a system that was optimising your summer now '
+        + 'optimising something it has not told you about.',
+    },
+    announce: [
+      'Houseguests, CORA has updated this week\'s rules. {detail}',
+      'CORA is making an adjustment. Listen carefully. {detail}',
+      'This week requires a new protocol. {detail}',
+      'Houseguests, here is the rule CORA has selected for you. {detail}',
+    ],
+  },
+
   antagonist: {
     name: 'CORA',
     mood: 'neutral',

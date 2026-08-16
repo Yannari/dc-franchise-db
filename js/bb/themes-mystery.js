@@ -43,6 +43,49 @@ export default {
     body: '"Inter", system-ui, sans-serif',
   },
 
+  // ── THE PRIMER: this season, explained to the person watching it ──────
+  //
+  // The header above explains the season to the next engineer. This is the
+  // same season explained to the viewer, and the only place they are told who
+  // the Mastermind is. `rules` must stay true of what the arc books.
+  primer: {
+    what: 'A season with an author inside it. The house has been dressed as a grand hotel full of doors '
+      + 'that were not there yesterday, and somebody took the host on the first night, stole the '
+      + 'crown, and planted an accomplice in the cast before anybody had unpacked. Then he left them '
+      + 'alone for two months.',
+    who: 'The Mastermind. He is not a houseguest, he is not the building, and he is not playing the '
+      + 'game — he is writing it. For most of the summer the hotel is merely too pleased to have you. '
+      + 'Then he comes back to run the last month himself.',
+    rules: [
+      'Real powers are hidden in the building all season. Nobody is told where, only that they exist, '
+        + 'and looking for one is something everybody else can see you doing.',
+      'One of the cast has been working for him since night one. The others are told somebody is, and '
+        + 'never told who.',
+      'His endgame is a stated number rather than a mood: he takes people out of the game himself '
+        + 'until the count is where he said it would be.',
+      'He takes one week entirely — the ceremonies move to times of his choosing, and the eviction '
+        + 'vote is held in public, in the room, in front of the person being voted out.',
+    ],
+    watch: 'Watch the doors nobody opens. And watch the last month, when a season that has been happening '
+      + 'around the house turns into a season being done to it.',
+    register: {
+      neutral: 'Hospitality. The hotel is delighted you are staying and will not answer a single question.',
+      hostile: 'Authority. He has stopped hiding in the walls and started making the arrangements himself.',
+    },
+    turn: {
+      headline: 'THE MONTH OF MAYHEM',
+      body: 'He is downstairs now, and he is not checking anybody in. What changes is not how the hotel '
+        + 'sounds but who is holding the pen: from here the ceremonies are his, the count is his, and '
+        + 'the ending he named in advance is the one this house is walking towards.',
+    },
+    announce: [
+      'The hotel has revised the terms of your stay. {detail}',
+      'A door has opened on the second floor, and this is what is behind it. {detail}',
+      'The Mastermind would like the house to know the rule, if not the reason. {detail}',
+      'Something in this building has changed, and for once you are being told. {detail}',
+    ],
+  },
+
   antagonist: {
     name: 'The Mastermind',
     mood: 'neutral',

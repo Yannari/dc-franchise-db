@@ -17,6 +17,7 @@ import { gs, seasonConfig } from '../js/core.js';
 import { runBBCompetition } from '../js/bb/comps.js';
 import { BB_COMPETITIONS } from '../js/bb-comps/index.js';
 import { seedGame } from './helpers/setup.js';
+import { rpBuildBBComp, _tvState } from '../js/vp-screens.js';
 
 const ID = 'bb-mental-quiz';
 const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
@@ -127,6 +128,82 @@ describe('Majority Rules runs long enough to be one', () => {
           expect(Array.isArray(pk.pair) && pk.pair.filter(Boolean).length).toBe(2);
           expect(pk.pair).toContain(pk.pick);
         });
+      }
+    }
+  });
+
+  // ── restored guards ──────────────────────────────────────────────────
+  //
+  // These two predate the survey and were lost when this file was rewritten
+  // for it. Both come from defects a played week actually produced, so both
+  // are back — the second one adapted, because its metric changed meaning.
+
+  it('never asks A vs A', () => {
+    // The screen drew "Wayne or Wayne" with both sides flagged as the
+    // majority: the pair was derived from the ANSWERS, and a unanimous round
+    // holds exactly one distinct answer. The pair travels with the record now.
+    let sameName = 0; let rounds = 0;
+    for (let s = 0; s < 60; s++) {
+      boot();
+      const c = play(s * 53 + 7);
+      for (const v of Object.values(bdOf(c))) {
+        for (const pk of (v.picks || [])) if (pk.pair && pk.pair[0] === pk.pair[1]) sameName++;
+      }
+      for (const b of c.beats) {
+        const m = /—\s*(.+?)\s+or\s+(.+?)\s*\?/.exec(b.text || '');
+        if (m) { rounds++; if (m[1].trim() === m[2].trim()) sameName++; }
+      }
+    }
+    expect(rounds, 'no questions were asked at all').toBeGreaterThan(100);
+    expect(sameName, 'a question asked somebody against themselves').toBe(0);
+  });
+
+  it('the elimination half does not stall', () => {
+    // Originally "rarely stalls", counting every ALL SAFE and DEAD EVEN round
+    // across the whole competition and requiring under 35%. The survey now
+    // produces those verdicts DELIBERATELY — nobody goes home on a scored
+    // question — so the old ratio would measure the new design rather than
+    // the defect. Scoped to the half where a stall is still a stall.
+    let dead = 0; let rounds = 0; let worstStreak = 0;
+    for (let s = 0; s < 60; s++) {
+      boot();
+      const c = play(s * 53 + 7);
+      const cutAt = c.beats.findIndex(b => (b.badgeText || '') === 'THE CUT');
+      const tail = cutAt >= 0 ? c.beats.slice(cutAt) : c.beats;
+      let run = 0;
+      for (const b of tail) {
+        const tag = b.badgeText || '';
+        if (/^ROUND/.test(tag)) rounds++;
+        else if (tag === 'ALL SAFE' || tag === 'DEAD EVEN') { dead++; run++; worstStreak = Math.max(worstStreak, run); }
+        else if (tag === 'MINORITY') run = 0;
+      }
+    }
+    expect(rounds, 'no sudden-death questions were asked').toBeGreaterThan(50);
+    expect(dead / rounds, `${(100 * dead / rounds).toFixed(0)}% of sudden-death rounds sent nobody home`)
+      .toBeLessThan(0.5);
+    // Two dead rounds in a row ends the questions, by rule.
+    expect(worstStreak, 'the competition sat on dead rounds').toBeLessThanOrEqual(2);
+  });
+
+  it('the screen draws two different people on every question card', () => {
+    for (const seed of [3, 9, 21]) {
+      boot();
+      const c = play(seed);
+      const act = { type: 'hoh', winner: c.winner,
+        results: c.placements.map(n => ({ name: n, score: c.scores[n] })), competition: c };
+      const ep = { num: 6, acts: [act] };
+      Object.keys(_tvState).forEach(k => delete _tvState[k]);
+      rpBuildBBComp(ep, 'hoh');
+      Object.keys(_tvState).filter(k => k.startsWith('bb_sig_')).forEach(k => { _tvState[k].idx = 999; });
+      const html = rpBuildBBComp(ep, 'hoh') || '';
+      const cards = html.split('<article class="mjr-card mjr-round').slice(1);
+      expect(cards.length, `seed ${seed}: no question cards drawn`).toBeGreaterThan(0);
+      for (const card of cards) {
+        const names = [...card.matchAll(/<figcaption>([^<]*)<\/figcaption>/g)].map(m => m[1].trim());
+        expect(names.length, `seed ${seed}: card had ${names.length} names`).toBe(2);
+        expect(names[0], `seed ${seed}: drew the same person twice`).not.toBe(names[1]);
+        expect((card.match(/mjr-nom-flag/g) || []).length, `seed ${seed}: both sides flagged`)
+          .toBeLessThanOrEqual(1);
       }
     }
   });

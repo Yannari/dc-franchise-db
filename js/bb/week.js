@@ -1503,6 +1503,13 @@ export function simulateBBWeek(options = {}) {
     try {
       const payout = awardWeeklyBucks({ week, house: _calendarHouse, rng });
       if (payout) week.acts.push(addBeats(payout, { players: payout.payouts.map(p => p.name).slice(0, 4) }));
+      // The wallet each houseguest carries INTO the week's decisions, taken
+      // after the audience has paid and before anybody has bet or bought a
+      // seat. House Status · Before draws from this and House Status · After
+      // draws from the end-of-week snapshot, so the two differ for exactly the
+      // people who did something with their money — which is the comparison
+      // worth having.
+      week.bucksLedgerOpen = bucksLedgerFor(_calendarHouse);
     } catch { /* money is not load-bearing for the week */ }
   }
 

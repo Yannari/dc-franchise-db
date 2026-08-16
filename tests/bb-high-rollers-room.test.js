@@ -250,6 +250,69 @@ describe('the chip standings', () => {
   });
 });
 
+// ── MONEY ON THE WALL ───────────────────────────────────────────────────
+//
+// House Status is drawn twice, before the week and after it, and on a season
+// that runs on money each houseguest's purse belongs on both — the difference
+// between the two copies IS the story of who spent something.
+describe('House Status shows what each of them is holding', () => {
+  const statusScreens = (ep) => (buildVPScreens(ep) || [])
+    .filter(s => /House Status/.test(s.label || ''));
+
+  it('puts a purse on both copies of the wall, and they differ once somebody spends', () => {
+    withSeededRandom(31, () => {
+      season([]);
+      // Far enough in that the room has opened and somebody has bought a seat.
+      for (let i = 0; i < 4; i++) simulateBBEpisode();
+      const eps = gs.episodeHistory;
+
+      const spender = eps.find(ep => (ep.acts || [])
+        .some(a => a.type === 'high-rollers-room' && (a.entries || []).length));
+      expect(spender, 'nobody ever bought a seat, so this proves nothing').toBeTruthy();
+
+      const [before, after] = statusScreens(spender);
+      expect(before, 'no House Status · Before').toBeTruthy();
+      expect(after, 'no House Status · After').toBeTruthy();
+
+      // The buyer's opening purse is not the purse they finished with.
+      const buyer = (spender.acts.find(a => a.type === 'high-rollers-room').entries || [])[0].name;
+      const open = (spender.bucksLedgerOpen || []).find(l => l.name === buyer);
+      const close = (spender.bucksLedger || []).find(l => l.name === buyer);
+      expect(open, 'no opening snapshot was taken').toBeTruthy();
+      expect(close.balance, 'the buyer finished the week no poorer')
+        .toBeLessThan(open.balance);
+
+      // One purse per houseguest on each wall. Counted off the chip's own
+      // icon rather than trusting a bare number to be a balance — the wall is
+      // full of small integers and `>26<` would match any of them.
+      const purses = html => (html.match(/<ellipse cx="8" cy="5\.4"/g) || []).length;
+      expect(purses(before.html), 'the opening wall is missing purses')
+        .toBe((spender.bucksLedgerOpen || []).length);
+      expect(purses(after.html), 'the closing wall is missing purses')
+        .toBeGreaterThan(0);
+
+      // And each wall shows its OWN number.
+      expect(before.html).toContain(`>${open.balance}<`);
+      expect(after.html).toContain(`>${close.balance}<`);
+    });
+  });
+
+  it('shows no purse at all on a season with no economy', () => {
+    withSeededRandom(31, () => {
+      seedGame(HOUSE_CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+      Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
+        ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+      Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
+        bbHaveNots: 'off', bbSafetyMode: 'off', theme: 'none' });
+      seasonConfig.twistSchedule = [];
+      simulateBBEpisode();
+      const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
+      const html = statusScreens(ep).map(s => s.html).join('');
+      expect(html, 'an unthemed wall is drawing a purse').not.toContain('<ellipse cx="8" cy="5.4"');
+    });
+  });
+});
+
 describe('the room opens once, on the night after nominations', () => {
   it('emits exactly one room act on an ordinary week', () => {
     let opened = 0;

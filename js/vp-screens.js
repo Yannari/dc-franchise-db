@@ -23981,6 +23981,10 @@ const _BB_ICON = {
   // two shields side by side read as one stat drawn twice.
   buster: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.4V4.2l6-1.6v11.6z"/><path d="M9 7.6h3.4v5.8H9"/><circle cx="7.4" cy="8.4" r=".7" fill="currentColor" stroke="none"/></svg>`,
   alone: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5.6" r="2.4"/><path d="M3.6 13.2c.5-2.4 2.2-3.6 4.4-3.6s3.9 1.2 4.4 3.6"/></svg>`,
+  // What is in their pocket, on a season that runs on money. A chip on its
+  // edge — deliberately not a coin or a note, because the wall is drawn in
+  // outlines and a filled disc would read as the block's target ring.
+  bucks: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="8" cy="5.4" rx="5.2" ry="2.2"/><path d="M2.8 5.4v5.2c0 1.2 2.3 2.2 5.2 2.2s5.2-1 5.2-2.2V5.4"/><path d="M2.8 8c0 1.2 2.3 2.2 5.2 2.2s5.2-1 5.2-2.2"/></svg>`,
 };
 
 const _bbStat = (icon, value, color) =>
@@ -24409,6 +24413,20 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     <div id="${id(key)}" class="rp-camp-toggle-body">${body}</div>
   </div>`;
 
+  // ── WHAT EACH OF THEM IS HOLDING, on a season that runs on money ──────
+  //
+  // Only on a theme that declares an economy: every other season has no
+  // ledger, and a column of zeros on the wall would be worse than no column.
+  //
+  // Drawn from the snapshot that matches THIS copy of the screen — the opening
+  // one is the wallet they carried into the week's decisions, the closing one
+  // is what they finished with — so the two screens differ for exactly the
+  // people who bet or bought something. Read off the episode, never live
+  // state, for the same reason every other number on this wall is.
+  const _hasEconomy = !!(ep.themeId && themeById(ep.themeId)?.economy);
+  const _purse = new Map(((opening ? ep.bucksLedgerOpen : ep.bucksLedger) || [])
+    .filter(l => l && l.name).map(l => [l.name, l.balance]));
+
   const rows = stillIn.map(name => {
     const st = stats[name] || { hoh: 0, veto: 0, block: 0, buster: 0 };
     const mates = alliesOf(name);
@@ -24417,6 +24435,9 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
       ? others.reduce((sum, n) => sum + (typeof getPerceivedBond === 'function' ? getPerceivedBond(n, name) : 0), 0) / others.length
       : 0;
     return { name, mates, ...st,
+      // `null` on a season with no economy, so the chip is simply absent
+      // rather than reading as somebody who is broke.
+      purse: _hasEconomy && _purse.has(name) ? _purse.get(name) : null,
       // A Block Buster win counts toward standing. Winning your own way off
       // the block is a competition win the whole house watched, and it was
       // scoring here as nothing while the nomination it cancelled scored
@@ -24455,6 +24476,7 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
           ${r.block ? _bbStat('block', r.block, '#f85149') : ''}
           ${r.buster ? _bbStat('buster', r.buster, '#d2a8ff') : ''}
           ${r.mates.length ? _bbStat('ally', r.mates.length, '#58a6ff') : _bbStat('alone', null, '#4d545c')}
+          ${r.purse === null || r.purse === undefined ? '' : _bbStat('bucks', r.purse, '#c9a227')}
         </span>
       </div>`).join('')}
     </div></div>`).join('');

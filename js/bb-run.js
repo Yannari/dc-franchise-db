@@ -241,6 +241,10 @@ export function weekToEpisode(week) {
     // because the week's ledger keeps growing and a replayed week has to show
     // the money as it stood then. Private, exactly like the week's copy.
     bucksLedger: (week.bucksLedger || []).map(l => ({ ...l })),
+    // The same picture taken at the top of the week, so House Status · Before
+    // shows the money they walked in with rather than the money they finished
+    // with. Two snapshots, because that screen is drawn twice.
+    bucksLedgerOpen: (week.bucksLedgerOpen || []).map(l => ({ ...l })),
     invisibleReveal: week.invisibleReveal ? { ...week.invisibleReveal } : null,
     initialNominees: [...(week.initialNominees || [])],
     finalNominees: [...(week.finalNominees || [])],

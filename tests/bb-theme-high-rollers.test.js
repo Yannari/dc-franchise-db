@@ -271,9 +271,10 @@ describe('the floor has a schedule', () => {
     return fired;
   };
 
-  it('books the three twists the floor owns', () => {
+  it('books the twists the floor owns', () => {
     expect(theme().books).toEqual(expect.arrayContaining([
-      'bb-prizes-and-punishments', 'bb-high-rollers-room', 'bb-coin-of-destiny']));
+      'bb-prizes-and-punishments', 'bb-high-rollers-room', 'bb-coin-of-destiny',
+      'bb-double-eviction']));
     // And `books` is a claim about the arc, not a wish beside it.
     for (const id of theme().books) expect(arcBooks()).toContain(id);
     for (const id of arcBooks()) expect(theme().books).toContain(id);
@@ -288,7 +289,51 @@ describe('the floor has a schedule', () => {
     const counts = arcBooks().reduce((m, id) => ({ ...m, [id]: (m[id] || 0) + 1 }), {});
     expect(counts['bb-high-rollers-room']).toBe(3);
     expect(counts['bb-coin-of-destiny']).toBe(1);
-    expect(counts['bb-prizes-and-punishments']).toBe(1);
+    expect(counts['bb-double-eviction']).toBe(1);
+    // Two ARC ENTRIES for the boxes — the week-one opener and the cadence that
+    // fills the middle. The cadence is one entry that expands to several weeks.
+    expect(counts['bb-prizes-and-punishments']).toBe(2);
+  });
+
+  // ── THE GAP TEST ──────────────────────────────────────────────────────
+  //
+  // The complaint this exists for, in the user's words: "is it normal that all
+  // the twist happening at jury for this theme and just one or two pre-jury?"
+  // It was not normal. The arc was a fixed list of five acts, four of them
+  // end-anchored, so they clumped against the finale — at a cast of twenty that
+  // left EIGHT weeks between the opener and the next card. Every other theme
+  // carries a cadence for exactly this reason.
+  //
+  // Measured off `walk`, not off the stamped guess, because the stamped week of
+  // an end-anchored card is a prediction until `reanchorThemeArc` corrects it.
+  it('never leaves a long dead stretch, at any cast the show supports', () => {
+    // `walk` only ever reports the END-ANCHORED cards, because
+    // `reanchorThemeArc` is what corrects those and it returns nothing else.
+    // The week-one opener and the cadence are fixed-week entries and land at
+    // their stamped weeks exactly. Measuring with `walk` alone made both
+    // invisible and reported a six-week hole that is not there — so take the
+    // fixed cards from the stamped schedule and the anchored ones from the walk.
+    const FIXED = 'bb-prizes-and-punishments';
+    for (const cast of [12, 14, 16, 18, 20]) {
+      const schedule = stamp(cast);
+      const fixedWeeks = schedule.filter(e => e.type === FIXED).map(e => Number(e.episode));
+      const anchoredWeeks = walk(cast).map(f => f.ep);
+      const weeks = [...new Set([...fixedWeeks, ...anchoredWeeks])].sort((a, b) => a - b);
+      expect(weeks.length, `cast ${cast} fires nothing`).toBeGreaterThan(0);
+      expect(fixedWeeks.length, `cast ${cast} never runs the boxes`).toBeGreaterThan(0);
+
+      // The front: how long the house waits after the opener for a second card.
+      const seasonWeeks = cast - 3;
+      const gaps = [];
+      for (let i = 1; i < weeks.length; i++) gaps.push(weeks[i] - weeks[i - 1]);
+      const worst = Math.max(...gaps, weeks[0]);
+
+      // Four is the cadence's own stride plus one — a season that never goes
+      // longer than that between cards is a season with something always
+      // coming. Eight was the reported failure.
+      expect(worst, `cast ${cast} (${seasonWeeks} weeks) has a ${worst}-week hole; fired ${weeks}`)
+        .toBeLessThanOrEqual(4);
+    }
   });
 
   // Not changed by this task and asserted so they cannot be: `fromEnd: 8` is the

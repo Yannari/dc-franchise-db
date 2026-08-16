@@ -223,6 +223,28 @@ export default {
     // it; `js/bb-events/prize-exchange.js` remembers who took the cash).
     { at: { week: 1 }, book: 'bb-prizes-and-punishments' },
 
+    // ── THE CADENCE, WHICH THIS ARC SHIPPED WITHOUT AND SHOULD NOT HAVE ──
+    //
+    // Every other theme carries one — Mystery `every: 3, from: 6`, CORA and
+    // Temptation `every: 3, from: 5` — and the engine grew the feature for a
+    // measured reason: a fixed list of acts leaves a seventeen-week season
+    // empty for six to nine weeks. This arc was a fixed list of five, four of
+    // them end-anchored, so they clumped against the finale and left week one
+    // alone at the front. At a cast of twenty that was an EIGHT-week dead
+    // stretch before anything happened, reported off a real timeline.
+    //
+    // The boxes are the right card to repeat, for the same reason they open the
+    // season: they are the casino's question wearing a veto competition, and
+    // they cost the house nothing to run. CORA already uses them as its cadence
+    // card, so this is the established shape rather than a new one.
+    //
+    // `untilFromEnd: 9` stops the run BEFORE the room's first night at
+    // `fromEnd: 8`. The running order drops an act that resolves at or before
+    // the act above it, so a cadence that ran any later would start eating room
+    // nights on the small casts — the exact failure the week-one note below
+    // this records.
+    { every: 3, from: 3, untilFromEnd: 9, book: 'bb-prizes-and-punishments' },
+
     { at: { frac: 0.55 }, mood: 'hostile' },
     { at: { fromEnd: 8 }, mood: 'hostile' },
 
@@ -252,6 +274,19 @@ export default {
     // 250 is a later plan; until then the buy-in is a probability and this is
     // still the on-theme card the season was missing.
     { at: { fromEnd: 5 }, book: 'bb-coin-of-destiny' },
+
+    // ── THE FLOOR SETTLES UP ─────────────────────────────────────────────
+    //
+    // The arc used to stop dead here, four or more weeks short of the finale.
+    // Mystery, CORA and Temptation all book something at `fromEnd: 4`, and a
+    // double eviction is what the Pit Boss's hostile register has been
+    // promising since the comps stopped: the floor closing two tables in one
+    // night and calling in what it is owed.
+    //
+    // It sits AFTER the room's run rather than inside it. A double takes TWO,
+    // so booked any earlier it would shift the three room nights down a house
+    // size each and cost them their canon final eleven / ten / nine.
+    { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
   ],
 
   // What the arc owns, and what it deliberately leaves alone:
@@ -264,7 +299,8 @@ export default {
   //              that already ran; every other twist runs on top of it intact.
   //   exclusive— nothing here is exclusive: the payout is the theme, and it is
   //              gated by `economy` rather than by a card only this theme has.
-  books: ['bb-prizes-and-punishments', 'bb-high-rollers-room', 'bb-coin-of-destiny'],
+  books: ['bb-prizes-and-punishments', 'bb-high-rollers-room', 'bb-coin-of-destiny',
+    'bb-double-eviction'],
   weights: {},
   bans: [],
   exclusive: [],

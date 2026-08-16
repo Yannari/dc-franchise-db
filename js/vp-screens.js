@@ -9,6 +9,11 @@
 // failing loudly. Imported explicitly so the screen does not depend on boot
 // order to exist.
 import { bKey } from './bonds.js';
+// The standing band names the season a WEEK belonged to, so it looks the theme
+// up by the id stamped on that episode rather than asking what is installed
+// now. Imported explicitly for the same reason bKey is: a bare global works in
+// the browser and nowhere else, and this band has to survive a headless render.
+import { themeById } from './bb/themes.js';
 // The debug screen reports the numbers the house actually decides on, so it
 // reads them from the engine rather than recomputing its own version.
 import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
@@ -16534,6 +16539,42 @@ function _bbPowerBand(ep) {
  * is a snapshot of balances kept for the audience's own panel. If this function
  * ever grows a `bucksLedger` read, it has stopped being this band.
  */
+/**
+ * WHERE THE SEASON STANDS — a standing line on House Life, every week.
+ *
+ * Who is running this season, and what register they are in RIGHT NOW. The
+ * premiere card carries the rules; this only has to stop a viewer who joined
+ * at week nine from wondering who keeps talking to them.
+ *
+ * Deliberately ONE line rather than four. House Life already carries the power
+ * band and, on a High Roller's week, the chip band — a third full panel would
+ * push the week's actual events below the fold, which was the risk flagged when
+ * this was designed.
+ *
+ * Reads the WEEK's theme and mood off the episode, never live state: a replay
+ * of week two must show the season as it was then, which is the same reason
+ * `themeMood` is stamped per week in the first place.
+ */
+function _bbThemeBand(ep) {
+  const theme = ep?.themeId ? themeById(ep.themeId) : null;
+  if (!theme) return '';
+  const mood = ep.themeMood || 'neutral';
+  const register = theme.primer?.register?.[mood] || '';
+  const speaker = theme.antagonist?.name || '';
+  if (!speaker && !register) return '';
+  const hostile = mood === 'hostile';
+  return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+       margin:0 0 12px;padding:8px 12px;border:1px solid var(--border);border-radius:6px;
+       background:rgba(var(--bbx-card2-rgb),.45);border-left:3px solid var(--bbx-key)">
+    <span style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim)">THIS SEASON</span>
+    <span style="font-family:var(--bbx-display);font-size:14px;color:var(--bbx-key)">
+      ${_bbEsc(theme.name || '')}</span>
+    <span style="font-size:12px;color:var(--text)">${_bbEsc(speaker)}</span>
+    <span style="font-size:11px;color:${hostile ? 'var(--bbx-danger)' : 'var(--bbx-dim)'};
+      flex:1;min-width:200px">${_bbEsc(register)}</span>
+  </div>`;
+}
+
 function _bbChipBand(ep) {
   const act = (ep.acts || []).find(a => a.type === 'bb-bucks');
   if (!act) return '';
@@ -16650,6 +16691,7 @@ export function rpBuildBBHouseLife(ep, act, slot) {
       </div>
       ${_bbMemoryWall(house, { status, notYet: act?._preArrival ? _bbNotYetArrived(ep) : [] })}
       ${_bbPowerBand(ep)}
+      ${_bbThemeBand(ep)}
       ${_bbChipBand(ep)}`;
 
   if (beats.length) {
@@ -22387,6 +22429,91 @@ function _bbOrdinalish(place) {
  * everybody else's), and the inference the house makes from the tiers is the
  * whole point of the twist. `bucksLedgerFor` belongs to the audience's panel.
  */
+/**
+ * THIS SEASON — the card that answers "what am I watching".
+ *
+ * Drawn once, on night one. Before this existed a theme could taunt a house for
+ * seventeen weeks without the audience ever being told what it was, which is
+ * exactly the complaint that produced it: "im just confused on whats the pit
+ * boss etc".
+ *
+ * Every colour is a theme token rather than a literal, so the card wears the
+ * season it is introducing — and still flips if it is ever redrawn after the
+ * register turns. Hardcoded hexes on a themed screen cost a fix round once
+ * already.
+ */
+export function rpBuildBBThemePrimer(ep, act) {
+  if (!act) return '';
+  const p = act.primer || {};
+  const rules = (p.rules || []).map(r => `<li style="margin-bottom:8px">${_bbEsc(r)}</li>`).join('');
+  const header = `<div style="max-width:640px;margin:0 auto 16px">
+    <div style="padding:14px 16px;border:1px solid var(--border);border-radius:6px;
+         background:rgba(var(--bbx-card2-rgb),.55)">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim);margin-bottom:6px">
+        YOUR HOST FOR THE SUMMER</div>
+      <div style="font-family:var(--bbx-display);font-size:20px;color:var(--bbx-key);margin-bottom:8px">
+        ${_bbEsc(act.speaker || '')}</div>
+      <div style="font-size:13px;line-height:1.6;color:var(--text)">${_bbEsc(p.who || '')}</div>
+    </div>
+    ${rules ? `<div style="margin-top:12px;padding:14px 16px;border:1px solid var(--border);
+         border-radius:6px;background:rgba(0,0,0,.25)">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim);margin-bottom:8px">
+        WHAT THIS SEASON DOES DIFFERENTLY</div>
+      <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:var(--text)">
+        ${rules}</ul>
+    </div>` : ''}
+  </div>`;
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: String(act.name || 'THIS SEASON').toUpperCase(),
+    subtitle: act.tagline || '',
+    accent: 'var(--bbx-key)', room: 'bb-power',
+    stateKey: `theme_primer_${ep.num}`,
+    header,
+    scenes: [
+      { text: _bbEsc(p.what || ''), players: [], badgeText: 'THIS SEASON', badgeClass: 'gold' },
+      ...(p.register?.neutral
+        ? [{ text: `The register it opens in: ${_bbEsc(p.register.neutral)}`,
+          players: [], badgeText: 'HOW IT STARTS', badgeClass: 'blue' }]
+        : []),
+      ...(p.watch
+        ? [{ text: `What to watch for: ${_bbEsc(p.watch)}`,
+          players: [], badgeText: 'WHAT TO WATCH', badgeClass: 'grey' }]
+        : []),
+    ],
+  });
+}
+
+/**
+ * THE TURN — the week the antagonist's register changes.
+ *
+ * The single most important thing a theme does, and until this screen existed
+ * it happened in total silence: `advanceThemeArc` moved the mood, the voice
+ * pools quietly started drawing from a different list, and nothing anywhere
+ * said why the room had changed.
+ */
+export function rpBuildBBThemeTurn(ep, act) {
+  if (!act) return '';
+  const side = (label, text, dim) => `<div style="flex:1;padding:12px 14px;border:1px solid var(--border);
+      border-radius:6px;background:rgba(0,0,0,.25);${dim ? 'opacity:.6' : ''}">
+    <div style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim);margin-bottom:6px">${label}</div>
+    <div style="font-size:13px;line-height:1.6;color:var(--text)">${_bbEsc(text || '')}</div>
+  </div>`;
+  const header = `<div style="max-width:640px;margin:0 auto 16px;display:flex;gap:10px;align-items:stretch">
+    ${side('UNTIL NOW', act.registers?.from || act.from, true)}
+    ${side('FROM HERE', act.registers?.to || act.to, false)}
+  </div>`;
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: String(act.headline || 'THE TURN').toUpperCase(),
+    subtitle: `${_bbEsc(act.speaker || '')} is not who they were on Sunday.`,
+    accent: 'var(--bbx-key)', room: 'bb-power',
+    stateKey: `theme_turn_${ep.num}`,
+    header,
+    scenes: [
+      { text: _bbEsc(act.body || ''), players: [], badgeText: 'THE TURN', badgeClass: 'red' },
+    ],
+  });
+}
+
 export function rpBuildBBBucks(ep, act) {
   if (!act) return '';
   const paid = act.payouts || [];
@@ -22863,6 +22990,16 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'bb-bucks':
         screens.push({ id: id('bb-bucks'), label: 'The Audience Pays',
           html: rpBuildBBBucks(view, act) });
+        break;
+      // The card that answers "what am I watching" — drawn once, on night one.
+      case 'theme-primer':
+        screens.push({ id: id('theme-primer'), label: 'This Season',
+          html: rpBuildBBThemePrimer(view, act) });
+        break;
+      // And the night the register changes, which used to happen in silence.
+      case 'theme-turn':
+        screens.push({ id: id('theme-turn'), label: 'The Turn',
+          html: rpBuildBBThemeTurn(view, act) });
         break;
       // The door in the hallway. The screen is the ROOM — the table, the price
       // struck into it and the wheel — and never a balance. The block it may

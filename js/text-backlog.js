@@ -5668,6 +5668,34 @@ export function generateBBSummaryText(ep) {
       // house — and the ledger is not. This prints what each houseguest was
       // PAID this week and never what anybody has saved; a balance is a private
       // fact the reader is not entitled to from a week's transcript.
+      // The season saying what it is, on night one — and the week its
+      // register changes, which used to happen in total silence.
+      case 'theme-primer': {
+        const p = act.primer || {};
+        sec(`THIS SEASON: ${String(act.name || '').toUpperCase()}`);
+        if (act.tagline) ln(`  ${act.tagline}`);
+        ln('');
+        ln(`  ${p.what || ''}`);
+        ln('');
+        ln(`  ${String(act.speaker || '').toUpperCase()}`);
+        ln(`  ${p.who || ''}`);
+        if ((p.rules || []).length) {
+          ln('');
+          ln('  WHAT THIS SEASON DOES DIFFERENTLY');
+          for (const r of p.rules) ln(`    - ${r}`);
+        }
+        if (p.watch) { ln(''); ln(`  WHAT TO WATCH: ${p.watch}`); }
+        break;
+      }
+      case 'theme-turn': {
+        sec(`THE TURN — ${act.headline || ''}`);
+        ln(`  ${act.body || ''}`);
+        ln('');
+        ln(`  Until now: ${act.registers?.from || act.from}`);
+        ln(`  From here: ${act.registers?.to || act.to}`);
+        break;
+      }
+
       case 'bb-bucks': {
         const paid = act.payouts || [];
         sec('THE AUDIENCE PAYS');

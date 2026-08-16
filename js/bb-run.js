@@ -192,6 +192,10 @@ export function weekToEpisode(week) {
     // Debug panel can show hook mutations on replay, not just live.
     twistState: week.twistState || null,
     themeMood: week.themeMood || null,
+    // Which theme this week belonged to, carried for the same reason its mood
+    // is: the standing band must dress a replayed week 2 in the season that
+    // was running THEN, not in whatever the picker says today.
+    themeId: week.themeId || null,
     // The alliance board as it stood this week — who is in what, how firmly,
     // and which member is the crack.
     allianceBoard: (week.allianceBoard || []).map(b => ({ ...b, members: (b.members || []).map(m => ({ ...m })) })),
@@ -1633,6 +1637,36 @@ export function summariseWeek(week) {
       // SAVED. So this prints the three tiers and their amounts and never a
       // balance — here, in the backlog, or on the screen. `bucksLedgerFor` is
       // for the audience's own panel, not for a transcript the house lives in.
+      // ── THE SEASON, EXPLAINED ─────────────────────────────────────────
+      //
+      // A theme used to speak every week without ever saying what it was.
+      // These two say it: the premiere card on night one, and the turn on the
+      // week the register changes — which was, until now, completely silent.
+      case 'theme-primer': {
+        const p = act.primer || {};
+        line('');
+        line(`THIS SEASON: ${String(act.name || '').toUpperCase()}`);
+        if (act.tagline) line(`  ${act.tagline}`);
+        line('');
+        line(`  ${p.what || ''}`);
+        line('');
+        line(`  ${String(act.speaker || '').toUpperCase()}: ${p.who || ''}`);
+        if ((p.rules || []).length) {
+          line('');
+          line('  WHAT THIS SEASON DOES DIFFERENTLY');
+          for (const r of p.rules) line(`    - ${r}`);
+        }
+        if (p.watch) { line(''); line(`  WHAT TO WATCH: ${p.watch}`); }
+        break;
+      }
+      case 'theme-turn': {
+        line('');
+        line(`THE TURN — ${act.headline || ''}`);
+        line(`  ${act.body || ''}`);
+        line(`  Until now: ${act.registers?.from || act.from}`);
+        line(`  From here: ${act.registers?.to || act.to}`);
+        break;
+      }
       case 'bb-bucks': {
         const paid = act.payouts || [];
         line('');

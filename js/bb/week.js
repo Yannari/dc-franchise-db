@@ -79,7 +79,7 @@ import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
 import { advanceThemeArc, currentTheme, installTheme, themeBeat, themeState,
-  themeTwistAnnouncement } from './themes.js';
+  themePrimer, themeTwistAnnouncement } from './themes.js';
 import { awardWeeklyBucks, bucksLedgerFor } from './bb-bucks.js';
 import { resolveWeekTwistState } from './twist-contract.js';
 import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
@@ -1241,6 +1241,9 @@ export function simulateBBWeek(options = {}) {
   const _wholeHouse = house.length + (week.splitSide ? (week.splitOther || []).length : 0);
   week.themeWeek = _themeWeek;
   const _totalWeeks = _themeWeek + Math.max(0, _wholeHouse - 4);
+  // The register BEFORE the arc gets to move it, so the turn below can tell a
+  // change from a restatement.
+  const _moodBefore = themeState()?.mood || null;
   advanceThemeArc(_themeWeek, _totalWeeks);
   // The mood AS IT WAS THIS WEEK, kept on the record.
   //
@@ -1249,6 +1252,46 @@ export function simulateBBWeek(options = {}) {
   // appeared to have happened before it did. A mood is a fact about a week, not
   // about the save file.
   week.themeMood = themeState()?.mood || null;
+  week.themeId = currentTheme()?.id || null;
+
+  // ── THE SEASON EXPLAINS ITSELF ────────────────────────────────────────
+  //
+  // Both acts below exist because a viewer said the themes were unreadable:
+  // they SPOKE every week and never once said what they were. A theme's
+  // antagonist could taunt a house for sixteen weeks without the audience ever
+  // being told what it was or what it wanted.
+  //
+  // Both are gated on the calendar week, not the cycle: `simulateBBWeek` runs
+  // twice on a double eviction and once per side on a Split House, and a
+  // premiere card printed twice on night one is worse than none.
+  const _themeCal = !compressed && (week.segment == null || week.segment === 1);
+  const _primer = themePrimer();
+  if (_themeCal && _primer && _themeWeek === 1) {
+    const th = currentTheme();
+    week.acts.push({
+      type: 'theme-primer', week: week.num, themeId: th.id,
+      name: th.name, tagline: th.tagline || '',
+      speaker: th.antagonist?.name || 'The Voice',
+      primer: JSON.parse(JSON.stringify(_primer)),
+      mood: week.themeMood, players: [], beats: [],
+    });
+  }
+  // A turn is a CHANGE of register, not a week that happens to be hostile.
+  // High Roller's books `hostile` at two anchors on purpose (a proportional
+  // one and a house-size backstop), so a season that announced on every
+  // matching act would announce the same turn twice.
+  if (_themeCal && _primer && _moodBefore && week.themeMood && _moodBefore !== week.themeMood) {
+    const th = currentTheme();
+    week.acts.push({
+      type: 'theme-turn', week: week.num, themeId: th.id,
+      speaker: th.antagonist?.name || 'The Voice',
+      from: _moodBefore, to: week.themeMood,
+      headline: _primer.turn?.headline || '', body: _primer.turn?.body || '',
+      registers: { from: _primer.register?.[_moodBefore] || '',
+        to: _primer.register?.[week.themeMood] || '' },
+      players: [], beats: [],
+    });
+  }
 
   _themeSay(week, 'open', {});
 

@@ -246,8 +246,15 @@ describe('every act the engine emits reaches both transcripts', () => {
 
     for (const [what, text] of [['the run transcript', runText],
       ['the backlog', backlog], ['the screen', screen.html]]) {
-      expect(text, `${what} never wrote the payout`).toMatch(/AUDIENCE PAYS/i);
-      expect((text.match(/AUDIENCE PAYS/gi) || []).length,
+      // Counted CASE-SENSITIVELY, against the section HEADING rather than the
+      // words anywhere in the week. This was `/AUDIENCE PAYS/gi`, which also
+      // matched ordinary prose — the moment a theme's primer card explained
+      // that "the audience pays every houseguest every week", a correct
+      // transcript reported four payouts and this failed. What it is really
+      // asserting is that the payout SECTION is written once, and the heading
+      // is the only upper-case occurrence of it.
+      expect(text, `${what} never wrote the payout`).toMatch(/THE AUDIENCE PAYS/);
+      expect((text.match(/THE AUDIENCE PAYS/g) || []).length,
         `${what} wrote the payout more than once`).toBe(1);
       expect(text, `${what} named nobody in the top tier`).toContain(top[0].name);
       // The amount comes off the act rather than being typed here. It was

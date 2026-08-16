@@ -109,6 +109,61 @@
     .sr-trivia { margin:0; padding-left:20px; }
     .sr-trivia li { font-size:13.5px; line-height:1.7; margin-bottom:6px; }
     .sr-thin { font-size:13px; color:var(--muted); line-height:1.7; }
+    /* ── the power table ──────────────────────────────────────────
+       Who held what, week by week, as faces rather than a name in a cell.
+       The voting grid below it answers "what happened to this person"; this
+       answers "who ran this week", which is the first thing anybody asks of a
+       season they did not watch and the one thing the page never said. */
+    .sr-pow { margin-bottom:28px; }
+    .sr-pow-scroll { overflow-x:auto; padding-bottom:4px; }
+    .sr-pow-t { border-collapse:separate; border-spacing:0 6px; width:100%; min-width:640px; }
+    .sr-pow-t thead th { font-size:10px; letter-spacing:.09em; text-transform:uppercase;
+      color:var(--muted); font-weight:700; padding:0 10px 4px; text-align:left; }
+    .sr-pow-t thead th:first-child { width:64px; }
+    .sr-pow-t tbody tr { background:rgba(255,255,255,.028); }
+    .sr-pow-t tbody tr:hover { background:rgba(255,255,255,.055); }
+    .sr-pow-t td { padding:9px 10px; vertical-align:middle; }
+    .sr-pow-t td:first-child { border-radius:12px 0 0 12px; }
+    .sr-pow-t td:last-child { border-radius:0 12px 12px 0; }
+    .sr-pow-wk { font-size:19px; font-weight:800; color:#fff; line-height:1; }
+    .sr-pow-wk span { display:block; font-size:9px; font-weight:700; letter-spacing:.1em;
+      color:var(--muted); margin-top:3px; white-space:nowrap; }
+    .sr-pow-wk span.is-tied { color:#fbbf24; cursor:help; }
+    /* one face + one name, with the ring saying which power it was */
+    .sr-chip { display:inline-flex; align-items:center; gap:8px; text-decoration:none; min-width:0; }
+    .sr-chip-av { position:relative; width:34px; height:34px; border-radius:50%; overflow:hidden;
+      flex:none; background:rgba(255,255,255,.06); box-shadow:0 0 0 2px var(--ring,rgba(255,255,255,.18)); }
+    .sr-chip-av img { width:100%; height:100%; object-fit:cover; display:block; }
+    .sr-chip-n { font-size:12.5px; font-weight:700; color:#fff; white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis; }
+    .sr-chip:hover .sr-chip-n { color:var(--sc); }
+    .sr-chip.is-hoh   { --ring:#facc15; }
+    .sr-chip.is-veto  { --ring:#38bdf8; }
+    .sr-chip.is-arena { --ring:#c084fc; }
+    .sr-chip.is-out   { --ring:#f87171; }
+    .sr-chip.is-out .sr-chip-av img { filter:grayscale(1); opacity:.55; }
+    .sr-chip.is-out .sr-chip-n { color:#fca5a5; }
+    /* the badge that says which chair it was, for anybody not reading colours */
+    .sr-chip-b { position:absolute; right:-1px; bottom:-1px; width:14px; height:14px; border-radius:50%;
+      display:grid; place-items:center; font-size:8px; font-weight:900; color:#160c22;
+      background:var(--ring); box-shadow:0 0 0 2px #12091f; }
+    /* nominees: smaller, and the one who came down is visibly struck out */
+    .sr-noms { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .sr-nom { position:relative; width:26px; height:26px; border-radius:50%; overflow:hidden;
+      background:rgba(255,255,255,.06); box-shadow:0 0 0 2px rgba(248,113,113,.5); display:block; }
+    .sr-nom img { width:100%; height:100%; object-fit:cover; display:block; }
+    .sr-nom.is-saved { box-shadow:0 0 0 2px rgba(56,189,248,.65); }
+    .sr-nom.is-saved img { filter:grayscale(.7); opacity:.6; }
+    .sr-nom.is-saved::after { content:''; position:absolute; left:-2px; right:-2px; top:11px; height:2px;
+      background:#38bdf8; transform:rotate(-24deg); }
+    /* went up after the veto came down — a different way onto the block */
+    .sr-nom.is-late { box-shadow:0 0 0 2px rgba(251,146,60,.75); }
+    .sr-pow-none { font-size:11.5px; color:rgba(255,255,255,.28); font-style:italic; }
+    .sr-pow-key { display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:10.5px; color:var(--muted); }
+    .sr-pow-key i { width:9px; height:9px; border-radius:50%; display:inline-block; margin-right:5px;
+      vertical-align:-1px; }
+    @media (max-width:700px){ .sr-chip-n { display:none; } .sr-pow-t { min-width:420px; } }
+
     .sr-panel { display:none; }
     .sr-panel.on { display:block; animation:srIn .3s ease; }
     @keyframes srIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
@@ -725,6 +780,106 @@ function buildRecords(season){
         </a>`;
       }).join('');
 
+      /* ── 3b. the power table ──
+         Faces, not names in cells. `byName` resolves a week's plain string
+         back to the cast entry that carries the avatar slug — the weeks
+         record power as names and only the placement list knows the slug. */
+      const byName = Object.fromEntries(cast.map(p => [p.name, p]));
+      const chip = (name, kind, badge) => {
+        if (!name) return '<span class="sr-pow-none">—</span>';
+        const p = byName[name];
+        return `<a class="sr-chip is-${kind}" href="player.html?player=${esc(p?.playerSlug || '')}&view=wiki">
+          <span class="sr-chip-av">${p ? av(p) : ''}<i class="sr-chip-b">${badge}</i></span>
+          <span class="sr-chip-n">${esc(name)}</span></a>`;
+      };
+      /* Everybody who was ever on the block that week, in the order it happened
+         to them: named first, then anybody who arrived as a replacement.
+
+         All three lists are needed and each one alone lies. `initialNominees`
+         and `blockBeforeSafety` lose the replacement — week two of BB1 opens
+         on Brightly and Zee and votes on Millie and Zee, and Millie is the one
+         who goes home, so a table built on the openers never shows the person
+         it evicted. `finalNominees` loses the people the veto took down. */
+      const nomFaces = w => {
+        const opened = [...new Set([...(w.blockBeforeSafety || []), ...(w.initialNominees || [])])];
+        const final = w.finalNominees || [];
+        const all = [...opened, ...final.filter(n => !opened.includes(n))];
+        if (!all.length) return '<span class="sr-pow-none">—</span>';
+        const stayed = new Set(final);
+        const opener = new Set(opened);
+        return `<span class="sr-noms">${all.map(n => {
+          const p = byName[n];
+          const saved = !stayed.has(n);
+          const late = !opener.has(n);
+          const why = saved ? ' — came off the block'
+            : late ? ' — went up as the replacement' : '';
+          return `<a class="sr-nom${saved ? ' is-saved' : ''}${late ? ' is-late' : ''}"
+            title="${esc(n)}${why}"
+            href="player.html?player=${esc(p?.playerSlug || '')}&view=wiki">${p ? av(p) : ''}</a>`;
+        }).join('')}</span>`;
+      };
+      /* The margin, under the week number. "Week" was written there before,
+         directly beneath a column header reading WEEK. */
+      const tally = w => {
+        const v = Object.values(w.votes || {}).filter(n => Number.isFinite(n));
+        // Outside the house there is no margin to quote. A camp resolves a tie
+        // with a revote the raw tally does not record, so "3–3" beside a name
+        // in the voted-out column would be reporting a result that never
+        // happened. The count against the person who left is always true.
+        if (!hasBlock) {
+          const n = (w.votes || {})[w.evicted];
+          return `<span>${Number.isFinite(n) && n > 0 ? `${n} vote${n === 1 ? '' : 's'}` : roundWord.toUpperCase()}</span>`;
+        }
+        if (v.length < 2) return `<span>${roundWord.toUpperCase()}</span>`;
+        const [a, b] = [...v].sort((x, y) => y - x);
+        // A house that splits evenly does not evict anybody; the Head of
+        // Household does, out loud, and that is the week's whole story.
+        const tb = a === b ? w.tieBreak : null;
+        return `<span class="${tb ? 'is-tied' : ''}" title="${tb
+          ? esc(`${a}–${b} tie — ${tb.voter} broke it and evicted ${tb.evict}`)
+          : 'eviction margin'}">${a}–${b}${tb ? ' ⚖' : ''}</span>`;
+      };
+      const anyArena = weeks.some(w => w.safetyWinner);
+      /* A table of who held power needs somebody to have held some. The Total
+         Drama season export records only who was eliminated and who voted —
+         no immunity winner — so a camp would draw a column of dashes beside a
+         column of names, which the voting grid below already says better. The
+         test is the data, not the show: the day those exports carry an
+         immunity winner, this section appears for them on its own. */
+      const hasPower = weeks.some(w => w.hoh || w.immunityWinner || w.winner
+        || w.vetoWinner || w.safetyWinner);
+      const power = hasPower ? `
+        <div class="sr-pow">
+          <div class="sr-pow-scroll">
+            <table class="sr-pow-t">
+              <thead><tr>
+                <th>${roundWord}</th>
+                <th>${hasBlock ? 'Head of Household' : 'Immunity'}</th>
+                ${anyArena ? '<th>Block Buster</th>' : ''}
+                ${hasBlock ? '<th>Power of Veto</th><th>On the block</th>' : ''}
+                <th>${hasBlock ? 'Evicted' : 'Voted out'}</th>
+              </tr></thead>
+              <tbody>${weeks.map(w => `<tr>
+                <td><div class="sr-pow-wk">${w.week}${tally(w)}</div></td>
+                <td>${chip(w.hoh || w.immunityWinner || w.winner, 'hoh', hasBlock ? 'H' : 'I')}</td>
+                ${anyArena ? `<td>${chip(w.safetyWinner, 'arena', 'B')}</td>` : ''}
+                ${hasBlock ? `<td>${chip(w.vetoWinner, 'veto', 'V')}</td><td>${nomFaces(w)}</td>` : ''}
+                <td>${chip(w.evicted, 'out', '✕')}</td>
+              </tr>`).join('')}</tbody>
+            </table>
+          </div>
+          <div class="sr-pow-key">
+            <span><i style="background:#facc15"></i>${hasBlock ? 'Head of Household' : 'Won immunity'}</span>
+            ${anyArena ? '<span><i style="background:#c084fc"></i>Won the Block Buster</span>' : ''}
+            ${hasBlock ? `<span><i style="background:#38bdf8"></i>Power of Veto</span>
+            <span><i style="background:rgba(248,113,113,.6)"></i>On the block at the vote</span>
+            <span><i style="background:#38bdf8"></i>Came off the block</span>
+            <span><i style="background:rgba(251,146,60,.75)"></i>Went up as the replacement</span>
+            <span>The number under each week is the eviction margin; ⚖ marks a tie the Head of Household broke.</span>`
+            : `<span>The number under each ${roundWord.toLowerCase()} is how many votes the eliminated contestant took.</span>`}
+          </div>
+        </div>` : '';
+
       /* ── 4. the grid ──
          Cast down the side, weeks across the top, and the cell says the
          strongest thing that happened to that person that week. The same
@@ -992,6 +1147,7 @@ function buildRecords(season){
              complete.</p>`)}
         ${sec(hasBlock ? 'Houseguests' : 'Contestants', `<div class="sr-wall">${wall}</div>`,
           `${cast.length} · in the order they left`)}
+        ${sec('The power', power, hasPower ? `who ran each ${roundWord.toLowerCase()}` : '')}
         ${sec('Voting history', votingHistory, hasBallots ? 'who voted for whom' : '')}
         ${sec('Competition history', grid, hasBlock && weeks.length ? `${weeks.length} weeks` : '')}
         ${!hasBallots && weeks.length ? `<p class="sr-thin">A vote-by-vote history needs the

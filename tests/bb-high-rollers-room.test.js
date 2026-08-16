@@ -8,6 +8,7 @@ import { openRoom, hasPlayed, ROOM_GAMES } from '../js/bb/high-rollers-room.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { resolveBBCampaignAct } from '../js/bb/shared-strategy.js';
 import { runRoulette } from '../js/bb/chopping-block-roulette.js';
+import { buildVPScreens } from '../js/vp-screens.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -184,6 +185,71 @@ const play = (seed, schedule = ROOM_WEEK) => withSeededRandom(seed, () => {
   return gs.bb.weeks || [];
 });
 
+// ── THE CHIP STANDINGS ──────────────────────────────────────────────────
+//
+// Written because a viewer could not tell what anybody had: "im not sure what
+// everyone has week by week cause theres not a table saying the money of every
+// active houseguest".
+//
+// The in-world rule does not move — no houseguest and no transcript line learns
+// a balance. What changes is that the VIEWER stops being treated as a
+// houseguest, which is the same allowance `_bbPowerBand` already makes when it
+// shows a secret power and labels it NOBODY KNOWS.
+describe('the chip standings', () => {
+  it('shows every houseguest in the week, with what they were holding', () => {
+    withSeededRandom(31, () => {
+      season([]);
+      simulateBBEpisode();
+      const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
+      const html = (buildVPScreens(ep) || []).map(s => s.html || '').join('');
+      expect(html).toContain('CHIP STANDINGS');
+      for (const l of ep.bucksLedger || []) {
+        expect(html, `${l.name} is missing from the standings`).toContain(l.name);
+      }
+      expect((ep.bucksLedger || []).length).toBeGreaterThan(0);
+    });
+  });
+
+  it('shows a replayed week the money THAT week had, not the season\'s final total', () => {
+    withSeededRandom(31, () => {
+      season([]);
+      for (let i = 0; i < 4; i++) simulateBBEpisode();
+      const first = gs.episodeHistory[0];
+      const last = gs.episodeHistory[gs.episodeHistory.length - 1];
+      // Compare ONE houseguest across the two weeks, not the totals: the ledger
+      // covers the house as it stood that week, and the house shrinks, so the
+      // season total FALLS while every individual balance climbs.
+      // And pick somebody who SAVED. A houseguest who bought a seat is 125
+      // poorer four weeks later, which is the engine working, not a bug — the
+      // first version of this test picked one of them and failed.
+      const early = new Map((first.bucksLedger || []).map(l => [l.name, l.balance]));
+      const stillIn = (last.bucksLedger || [])
+        .find(l => early.has(l.name) && l.balance > early.get(l.name));
+      expect(stillIn, 'nobody who was here in week one got richer').toBeTruthy();
+
+      // The week-one screen must not be showing week-four money.
+      const html = (buildVPScreens(first) || []).map(s => s.html || '').join('');
+      expect(html, 'a replayed week one is showing a later balance')
+        .not.toContain(`>${stillIn.balance}<`);
+    });
+  });
+
+  it('draws no standings on a season with no economy', () => {
+    withSeededRandom(31, () => {
+      seedGame(HOUSE_CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+      Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
+        ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+      Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
+        bbHaveNots: 'off', bbSafetyMode: 'off', theme: 'none' });
+      seasonConfig.twistSchedule = [];
+      simulateBBEpisode();
+      const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
+      const html = (buildVPScreens(ep) || []).map(s => s.html || '').join('');
+      expect(html).not.toContain('CHIP STANDINGS');
+    });
+  });
+});
+
 describe('the room opens once, on the night after nominations', () => {
   it('emits exactly one room act on an ordinary week', () => {
     let opened = 0;
@@ -251,14 +317,32 @@ function expectLedgerCharged(weeks) {
     for (const p of a.payouts || []) paid[p.name] = (paid[p.name] || 0) + p.amount;
   }
   const spent = {};
+  const roomSpent = {};
   for (const a of acts.filter(x => x.type === 'high-rollers-room')) {
-    for (const e of a.entries || []) spent[e.name] = (spent[e.name] || 0) + e.price;
+    for (const e of a.entries || []) {
+      spent[e.name] = (spent[e.name] || 0) + e.price;
+      roomSpent[e.name] = (roomSpent[e.name] || 0) + e.price;
+    }
+  }
+  // The cheap table moves money too. Without this the reconciliation read a
+  // ten-buck stake as a second room charge and reported a double-bill that had
+  // not happened — the arithmetic has to know about every till, not just one.
+  for (const a of acts.filter(x => x.type === 'side-bet')) {
+    for (const b of a.bets || []) spent[b.name] = (spent[b.name] || 0) + b.stake;
+    for (const r of a.results || []) {
+      if (r.won) paid[r.name] = (paid[r.name] || 0) + (r.delta + a.stake);
+    }
   }
   for (const name of HOUSE_NAMES) {
     expect(balance(name), `${name}'s ledger does not reconcile — somebody was billed twice`)
       .toBe(500 + (paid[name] || 0) - (spent[name] || 0));
     // And nobody bought the same seat twice, however many cycles ran.
-    expect(spent[name] || 0, `${name} paid for more than one seat in one night`)
+    //
+    // Counted off the ROOM only. `spent` reconciles every till — the door and
+    // the rail both — so folding the side bet into it made a 125 seat plus a
+    // 10 stake read as 135 of seat and reported a double-charge that had not
+    // happened. Two tills, two questions.
+    expect(roomSpent[name] || 0, `${name} paid for more than one seat in one night`)
       .toBeLessThanOrEqual(ROOM_GAMES[0].price);
   }
 }

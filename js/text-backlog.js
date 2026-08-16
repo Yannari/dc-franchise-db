@@ -5696,6 +5696,29 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      // The cheap table: the fact of the bet is public, the slip is not.
+      case 'side-bet': {
+        const bets = act.bets || [];
+        if (!bets.length) break;
+        sec('THE SIDE BET');
+        ln(`  ${act.stake} a slip on who goes home. At the rail this week: ${bets.map(b => b.name).join(', ')}.`);
+        ln('  Everybody saw them bet. Nobody saw the name they wrote down.');
+        beats(act);
+        // The tally goes AFTER the beats it is a tally OF. It read before them
+        // first, announcing the result and then narrating the bets that led to
+        // it, which is the wrong way round in a transcript.
+        if (act.settled) {
+          const won = (act.results || []).filter(r => r.won);
+          ln('');
+          ln(won.length === bets.length
+            ? `  All ${bets.length} called it, and the floor pays every one of them. Some weeks the room is not hard to read.`
+            : won.length
+              ? `  Called it: ${won.map(r => r.name).join(', ')}. Everything else stays with the floor.`
+              : '  Nobody called it. The floor keeps the lot.');
+        }
+        break;
+      }
+
       case 'bb-bucks': {
         const paid = act.payouts || [];
         sec('THE AUDIENCE PAYS');
@@ -5725,6 +5748,13 @@ export function generateBBSummaryText(ep) {
         sec("THE HIGH ROLLER'S ROOM");
         ln(`  The door in the hallway is open. Tonight it sells one thing: ${act.gameName},`);
         ln(`  at ${act.price} a seat, once a season, and the money goes on the way in.`);
+        ln('');
+        // WHAT IT BUYS, before anybody pays for it. A viewer got through a
+        // whole season without working out why anybody would want to spin.
+        ln('  What a seat buys: win it and you take a houseguest off the block — yourself, or');
+        ln('  somebody you want to keep — and a wheel picks their replacement at random. The Head');
+        ln('  of Household loses the week, and nobody can pin the new name on you, because nobody');
+        ln('  chose it.');
         ln('');
         if (entries.length) ln(`  Paid and played: ${entries.map(e => e.name).join(', ')}.`);
         if ((act.declined || []).length) {

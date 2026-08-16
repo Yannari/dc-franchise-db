@@ -14,6 +14,10 @@ import { bKey } from './bonds.js';
 // now. Imported explicitly for the same reason bKey is: a bare global works in
 // the browser and nowhere else, and this band has to survive a headless render.
 import { themeById } from './bb/themes.js';
+// The standings table marks who can afford a seat, and takes the price from the
+// menu rather than keeping a private copy of it — the last rescale found the
+// same number typed into fifteen places.
+import { ROOM_GAMES } from './bb/high-rollers-room.js';
 // The debug screen reports the numbers the house actually decides on, so it
 // reads them from the engine rather than recomputing its own version.
 import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
@@ -16575,6 +16579,78 @@ function _bbThemeBand(ep) {
   </div>`;
 }
 
+/**
+ * CHIP STANDINGS — who is holding what, week by week.
+ *
+ * Written because a viewer could not follow the season: "im not sure what
+ * everyone has week by week cause theres not a table saying the money of every
+ * active houseguest".
+ *
+ * ── WHY THIS DOES NOT BREAK THE PRIVACY RULE ──────────────────────────
+ *
+ * The rule is that no HOUSEGUEST and no in-world line learns a balance, and
+ * that is unchanged: nothing in either transcript prints one, and the chip band
+ * beside this still shows only what was PAID. What was wrong was applying the
+ * house's ignorance to the person watching the show. `_bbPowerBand` already
+ * makes exactly this allowance — it shows the viewer a secret power and labels
+ * it NOBODY KNOWS — and this is that, for money.
+ *
+ * Reads `ep.bucksLedger`, the per-week snapshot, so a replayed week three shows
+ * week three's money. Reading live state here would show every replayed week
+ * the season's final totals, which is the same trap the theme mood fell into.
+ *
+ * The ledger snapshots the house as it stood at the START of the week, so it
+ * includes whoever was evicted that night. That is deliberate: this is a
+ * standings table for THAT week, and the person who left was holding what it
+ * says they were holding while the week was played.
+ */
+function _bbChipStandings(ep) {
+  // The snapshot is taken on EVERY season, themed or not — an unthemed house
+  // gets a ledger of zeros — so the table gates on the season declaring an
+  // economy rather than on the ledger existing. Without this, a Total Drama
+  // beach or a themeless house drew a standings table full of nought.
+  if (!(ep.themeId && themeById(ep.themeId)?.economy)) return '';
+  const ledger = (ep.bucksLedger || []).filter(l => l && l.name);
+  if (!ledger.length) return '';
+  const price = (ROOM_GAMES[0] || {}).price || 0;
+
+  // What moved this week, derived from the week's own acts rather than stored
+  // twice: the payout is the only thing that adds, the room door the only thing
+  // that subtracts.
+  const paid = new Map(((ep.acts || []).find(a => a.type === 'bb-bucks')?.payouts || [])
+    .map(p => [p.name, p.amount]));
+  const spent = new Map();
+  for (const a of ep.acts || []) {
+    if (a.type !== 'high-rollers-room') continue;
+    for (const e of a.entries || []) spent.set(e.name, (spent.get(e.name) || 0) + (e.price || 0));
+  }
+
+  const rows = [...ledger].sort((a, b) => b.balance - a.balance).map(l => {
+    const delta = (paid.get(l.name) || 0) - (spent.get(l.name) || 0);
+    const rich = price && l.balance >= price;
+    const sign = delta > 0 ? '+' : '';
+    return `<tr>
+      <td style="padding:4px 10px 4px 0;font-size:12px;color:var(--text)">${_bbEsc(l.name)}</td>
+      <td style="padding:4px 10px;text-align:right;font-family:var(--bbx-display);font-size:14px;
+          color:${rich ? 'var(--bbx-key)' : 'var(--bbx-dim)'}">${_bbEsc(l.balance)}</td>
+      <td style="padding:4px 0;text-align:right;font-size:11px;color:var(--bbx-dim)">
+        ${delta ? `${sign}${_bbEsc(delta)}` : ''}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div style="margin:0 0 12px;padding:10px 12px;border:1px solid var(--border);
+       border-radius:6px;background:rgba(var(--bbx-card2-rgb),.45)">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+      <span style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim)">CHIP STANDINGS</span>
+      ${price ? `<span style="font-size:10px;color:var(--bbx-dim)">a seat costs ${price}</span>` : ''}
+    </div>
+    <table style="width:100%;border-collapse:collapse">${rows}</table>
+    <div style="margin-top:6px;font-size:10px;color:var(--bbx-dim)">
+      Nobody in that house can see this table. They know what the floor paid out loud, and nothing else.
+    </div>
+  </div>`;
+}
+
 function _bbChipBand(ep) {
   const act = (ep.acts || []).find(a => a.type === 'bb-bucks');
   if (!act) return '';
@@ -16692,7 +16768,8 @@ export function rpBuildBBHouseLife(ep, act, slot) {
       ${_bbMemoryWall(house, { status, notYet: act?._preArrival ? _bbNotYetArrived(ep) : [] })}
       ${_bbPowerBand(ep)}
       ${_bbThemeBand(ep)}
-      ${_bbChipBand(ep)}`;
+      ${_bbChipBand(ep)}
+      ${_bbChipStandings(ep)}`;
 
   if (beats.length) {
     // A camera bank, so the stretch can be taken in before it is read: which
@@ -22516,6 +22593,55 @@ export function rpBuildBBThemeTurn(ep, act) {
   });
 }
 
+/**
+ * THE SIDE BET — the cheap table, open every week the money is.
+ *
+ * The viewer sees the slips; the house never does. What the room watched was
+ * people walking to the rail, and that is all the transcripts print.
+ */
+export function rpBuildBBSideBet(ep, act) {
+  if (!act || !(act.bets || []).length) return '';
+  const settled = !!act.settled;
+  const byName = new Map((act.results || []).map(r => [r.name, r]));
+  const rows = act.bets.map(b => {
+    const r = byName.get(b.name);
+    const state = !settled ? { txt: 'ON THE TABLE', col: 'var(--bbx-dim)' }
+      : r?.won ? { txt: `PAID ${r.delta > 0 ? `+${r.delta}` : r.delta}`, col: 'var(--bbx-key)' }
+        : { txt: `LOST ${b.stake}`, col: 'var(--bbx-dim)' };
+    return `<tr>
+      <td style="padding:4px 10px 4px 0;font-size:12px;color:var(--text)">${_bbEsc(b.name)}</td>
+      <td style="padding:4px 10px;font-size:12px;color:var(--bbx-dim)">on ${_bbEsc(b.on)}</td>
+      <td style="padding:4px 0;text-align:right;font-size:11px;color:${state.col}">${state.txt}</td>
+    </tr>`;
+  }).join('');
+
+  const won = (act.results || []).filter(r => r.won);
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'THE SIDE BET',
+    subtitle: `${act.stake} a slip on who goes home. The room saw them bet and never saw the name.`,
+    accent: 'var(--bbx-key)', room: 'bb-power',
+    stateKey: `bb_sidebet_${ep.num}`,
+    header: `<div style="max-width:560px;margin:0 auto 16px;padding:10px 12px;
+         border:1px solid var(--border);border-radius:6px;background:rgba(var(--bbx-card2-rgb),.45)">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim);margin-bottom:6px">
+        THE SLIPS — WHICH NOBODY IN THAT HOUSE CAN READ</div>
+      <table style="width:100%;border-collapse:collapse">${rows}</table>
+    </div>`,
+    scenes: [
+      ...(settled
+        ? [{ text: won.length
+          ? `<strong>${won.map(r => _bbEsc(r.name)).join('</strong>, <strong>')}</strong> called it. `
+            + 'Everything else on that table stays with the floor.'
+          : 'Nobody called it. The floor keeps every slip, which is what a floor is for.',
+        players: won.map(r => r.name), badgeText: settled ? 'THE FLOOR SETTLES' : '',
+        badgeClass: won.length ? 'gold' : 'grey' }]
+        : []),
+      ...(act.beats || []).map(b => ({ text: b.text, players: b.players,
+        badgeText: b.badgeText, badgeClass: b.badgeClass })),
+    ],
+  });
+}
+
 export function rpBuildBBBucks(ep, act) {
   if (!act) return '';
   const paid = act.payouts || [];
@@ -22754,6 +22880,13 @@ export function rpBuildBBHighRollersRoom(ep, act) {
     { text: `A door in the hallway, and a price painted on it. Tonight the room sells one thing: `
         + `<strong>${_bbEsc(act.gameName)}</strong>, ${_bbEsc(act.price)} a seat, and the seat is sold once a season.`,
       players: [], badgeText: 'THE ROOM OPENS', badgeClass: 'gold' },
+    // What it BUYS, stated before anybody pays — a viewer got through a whole
+    // season without working out why anybody would want to spin.
+    { text: 'What a seat buys: win it and you take a houseguest off the block — yourself, or somebody '
+        + 'you want to keep — and then a wheel picks their replacement at random. The Head of '
+        + 'Household loses control of their own week, and because nobody chose the new name, nobody '
+        + 'can pin it on you.',
+      players: [], badgeText: 'WHAT IT BUYS', badgeClass: 'blue' },
     { text: 'The money leaves on the way in. Paying is not winning, and everybody at the kitchen table '
         + 'can see exactly who got up to go and do it.',
       players: entries.map(e => e.name), badgeText: 'PAID ON THE DOOR', badgeClass: 'grey' },
@@ -22992,6 +23125,11 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'bb-bucks':
         screens.push({ id: id('bb-bucks'), label: 'The Audience Pays',
           html: rpBuildBBBucks(view, act) });
+        break;
+      // The cheap table, open every week the money is.
+      case 'side-bet':
+        screens.push({ id: id('bb-sidebet'), label: 'The Side Bet',
+          html: rpBuildBBSideBet(view, act) });
         break;
       // The card that answers "what am I watching" — drawn once, on night one.
       case 'theme-primer':

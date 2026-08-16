@@ -89,9 +89,16 @@ export default {
   //      uses that phrase for the roster of houseguests, so this antagonist
   //      says the floor, the room, the edge. A test sweeps this whole block.
   primer: {
-    what: 'A season that runs on money. Every week the audience pays out, in public, and what it pays '
-      + 'is a scoreboard of who it is watching. The money is real currency: it carries over, it is '
-      + 'yours until you spend it, and there is a back room that will sell you something with it.',
+    // LEAD WITH WHAT THE MONEY BUYS. The first version of this paragraph said
+    // there was "a back room that will sell you something", and a viewer got
+    // most of the way through a season without working out what the money was
+    // for. Name the purchase, the price and what it does, in that order,
+    // before saying anything clever about audiences.
+    what: 'A season you can buy your way out of trouble in. Every week the audience pays every '
+      + 'houseguest, and that money is yours to keep until you spend it — on a spin, late in the '
+      + 'season, that costs 125 and can take you off the block. Nearly everything else follows from '
+      + 'that one purchase: what the payout is worth, who can afford the room when it opens, and who '
+      + 'gambled away the price of a seat in July.',
     who: 'The Pit Boss works the floor for an owner that never shows itself, never plays, and never '
       + 'loses. He is a floor manager and he is delighted you came. He comps the drinks, he learns '
       + 'your name, and he has been counting since the moment you sat down.',
@@ -100,12 +107,17 @@ export default {
         + 'little less, everybody else the floor rate. The result is announced, so the room learns '
         + 'each week who the audience loves.',
       'Money carries over and is never taken away. Saving is a strategy, and so is spending early.',
-      'Three times late in the season a back room opens, and anybody who can pay may buy a seat at a '
-        + 'game. Walking in is public; what you are holding is not.',
-      'You pay on the way IN. The game can beat you, and losing does not refund the seat — you can pay '
-        + 'in full, in front of everybody, and leave with nothing.',
-      'Each game may be played once per houseguest, for the whole season. Buying in is a door you '
-        + 'close behind you.',
+      'Any week, anybody may stake 10 at the rail on who they think is going home. Get it right and '
+        + 'the floor pays; get it wrong and it is gone. The odds are the floor\'s, so betting loses '
+        + 'money on average — but it is the only thing to do with a wallet before the room opens.',
+      'Three times late in the season a back room opens and sells ONE thing: a spin, for 125. Win it '
+        + 'and you take a houseguest off the block — yourself, or somebody you want to keep — and '
+        + 'then a wheel picks their replacement at random. The Head of Household loses control of '
+        + 'their own week, and because nobody chose the replacement, nobody can pin it on you.',
+      'You pay on the way IN, and the game can beat you. Losing does not refund the seat — you can '
+        + 'pay in full, in front of everybody, and walk out with nothing.',
+      'Each game may be played once per houseguest, for the whole season, and a season earns less '
+        + 'than the menu costs. Buying in is a door you close behind you.',
     ],
     watch: 'Watch who the audience pays and who it does not, because that is public from week one. Then '
       + 'watch who spends and who saves — the menu costs more than a season earns, so nobody gets to '

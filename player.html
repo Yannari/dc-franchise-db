@@ -1081,6 +1081,42 @@ function renderPlayerProfile(fullPlayer) {
   .pc.votes{background:rgba(255,92,122,.09);border-color:rgba(255,92,122,.28);color:#ff7a96;}
   .pc.rank{background:rgba(52,211,153,.09);border-color:rgba(52,211,153,.28);color:#34d399;}
   .pc.style{background:rgba(245,158,11,.09);border-color:rgba(245,158,11,.28);color:#f59e0b;}
+  /* ── the run: one season, week by week, as a strip ──────────────────────
+     A wiki draws this as a table with a row per week and the word "Nominated"
+     typed into a cell, which takes fifteen rows to say a shape you can read in
+     one glance if you draw it instead. Each week is a tile; the colour is how
+     much danger they were in and the badges are what they won. */
+  .pp-run{overflow:hidden;}
+  .pp-run-strip{display:flex;gap:5px;overflow-x:auto;padding:2px 0 8px;}
+  .pp-wk{flex:0 0 auto;width:42px;border-radius:10px;padding:6px 0 0;text-align:center;
+    background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);
+    position:relative;transition:transform .15s,border-color .15s;cursor:default;}
+  .pp-wk:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.3);}
+  .pp-wk-n{font-size:13px;font-weight:800;color:#fff;line-height:1;}
+  .pp-wk-marks{display:flex;justify-content:center;gap:2px;min-height:17px;padding:4px 0 3px;}
+  .pp-wk-marks i{width:15px;height:15px;border-radius:50%;font-style:normal;font-size:9px;
+    font-weight:900;display:grid;place-items:center;color:#160c22;}
+  .m-h{background:#facc15;} .m-v{background:#38bdf8;} .m-b{background:#c084fc;}
+  .m-x{background:rgba(255,255,255,.14);color:#ff9db3;}
+  /* the floor of the tile carries the week's verdict */
+  .pp-wk-bar{height:4px;border-radius:0 0 9px 9px;background:rgba(255,255,255,.07);}
+  .pp-wk.is-pow{background:rgba(250,204,21,.1);border-color:rgba(250,204,21,.3);}
+  .pp-wk.is-pow .pp-wk-bar{background:#facc15;}
+  .pp-wk.is-saved{background:rgba(56,189,248,.09);border-color:rgba(56,189,248,.28);}
+  .pp-wk.is-saved .pp-wk-bar{background:#38bdf8;}
+  .pp-wk.is-nom{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);}
+  .pp-wk.is-nom .pp-wk-bar{background:#f87171;}
+  .pp-wk.is-out{background:rgba(190,24,60,.22);border-color:rgba(244,63,94,.55);}
+  .pp-wk.is-out .pp-wk-bar{background:#f43f5e;}
+  .pp-wk.is-out .pp-wk-n{color:#fda4af;}
+  /* the weeks after they left, drawn flat so the season keeps its length */
+  .pp-wk.is-gone{opacity:.24;}
+  .pp-wk.is-gone .pp-wk-n{font-weight:600;color:var(--muted);}
+  .pp-run-sum{margin:6px 0 0;font-size:12.5px;line-height:1.65;color:#d6cfe0;}
+  .pp-run-sum b{color:#fff;font-weight:700;}
+  .pp-run-key{display:flex;gap:12px;flex-wrap:wrap;margin-top:9px;font-size:10px;
+    letter-spacing:.04em;color:var(--muted);}
+  .pp-run-key i{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;}
   .pp-banner{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;
     margin-bottom:14px;background:linear-gradient(90deg,${tc.color}16 0%,transparent 100%);
     border:1px solid ${tc.color}30;}
@@ -1495,6 +1531,7 @@ function renderPlayerProfile(fullPlayer) {
 
   _wireViewTabs(player);
   ppGalleryBind();
+  _hydrateSeasonRuns(player);
 
   /* Redraw when the show changes. Registered once — the handler re-enters this
      function, and a listener added on every pass would multiply. */
@@ -1620,6 +1657,154 @@ function buildMomentsFromStats(season) {
   return facts.slice(0, 6);
 }
 
+/**
+ * One player's run through one season, week by week.
+ *
+ * The season panels have always held totals — three immunity wins, five votes
+ * against — and totals cannot tell you whether the wins came early and the
+ * votes came at the end, which is the only thing a career is actually made of.
+ * This is the same record with the order left in.
+ *
+ * Reads whatever the season document has. A Big Brother export records the
+ * chairs (`weeks[].hoh`, `vetoWinner`, `safetyWinner`, the block, the evicted);
+ * a Total Drama one records only the ballots, so a camp gets the votes-against
+ * track and no comp badges rather than a strip of empty tiles.
+ *
+ * Returns '' when the person never appears — a name that does not match the
+ * document draws nothing rather than fifteen blanks that look like a season
+ * spent asleep.
+ */
+function _seasonRun(name, doc) {
+  const esc = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  const bbWeeks = Array.isArray(doc?.weeks) ? doc.weeks : [];
+  const rounds = bbWeeks.length ? 'week' : 'episode';
+  let seen = false;
+  const tiles = [];
+  const t = { hoh: 0, veto: 0, arena: 0, nom: 0, saved: 0, votes: 0 };
+  let exit = null, exitWeek = null, lastPresent = 0;
+
+  const rows = bbWeeks.length ? bbWeeks : (Array.isArray(doc?.votingHistory) ? doc.votingHistory : []);
+  if (!rows.length) return '';
+
+  for (const r of rows) {
+    const num = r.week ?? r.episode;
+    const marks = [];
+    let state = 'safe';
+    let why = [];
+
+    if (bbWeeks.length) {
+      const opened = [...(r.blockBeforeSafety || []), ...(r.initialNominees || [])];
+      const final = r.finalNominees || [];
+      const onBlock = opened.includes(name) || final.includes(name);
+      const stayed = final.includes(name);
+      if (r.hoh === name) { t.hoh++; marks.push('<i class="m-h">H</i>'); why.push('won Head of Household'); }
+      if (r.vetoWinner === name) { t.veto++; marks.push('<i class="m-v">V</i>'); why.push('won the veto'); }
+      if (r.safetyWinner === name) { t.arena++; marks.push('<i class="m-b">B</i>'); why.push('won the Block Buster'); }
+      if (marks.length) state = 'pow';
+      if (onBlock) {
+        if (stayed) { t.nom++; state = 'nom'; why.push('on the block at the vote'); }
+        else { t.saved++; state = 'saved'; why.push('nominated, then came off the block'); }
+      }
+      const against = (r.votes || {})[name];
+      if (Number.isFinite(against) && against > 0) {
+        t.votes += against;
+        why.push(`${against} vote${against === 1 ? '' : 's'} to evict`);
+      }
+      if (r.evicted === name) { state = 'out'; exit = 'evicted'; exitWeek = num; why = [...why, 'evicted']; }
+      if (onBlock || marks.length || r.evicted === name) seen = true;
+    } else {
+      // A camp records who voted for whom and nothing else.
+      const against = (r.votes || []).filter(v => v.target === name).length;
+      if (against) {
+        t.votes += against;
+        t.nom++;
+        state = 'nom';
+        marks.push(`<i class="m-x">${against}</i>`);
+        why.push(`${against} vote${against === 1 ? '' : 's'} against`);
+      }
+      if (r.eliminated === name) { state = 'out'; exit = 'voted out'; exitWeek = num; why.push('voted out'); }
+      if (against || r.eliminated === name) seen = true;
+    }
+
+    // Weeks after they left are drawn flat, so the strip keeps the length of
+    // the season and an early exit looks like one.
+    const gone = exitWeek != null && num > exitWeek;
+    if (!gone) lastPresent = num;
+    const label = gone ? 'not in the house' : (why.length ? why.join(' · ') : 'safe, no power');
+    tiles.push(`<div class="pp-wk is-${gone ? 'gone' : state}" title="${
+      esc(`${rounds === 'week' ? 'Week' : 'Episode'} ${num} — ${label}`)}">
+      <div class="pp-wk-n">${num}</div>
+      <div class="pp-wk-marks">${gone ? '' : marks.join('')}</div>
+      <div class="pp-wk-bar"></div></div>`);
+  }
+  if (!seen) return '';
+
+  // ── the sentence under the strip ──
+  const bits = [];
+  const plural = (n, one, many) => `<b>${n}</b> ${n === 1 ? one : many}`;
+  if (t.hoh) bits.push(plural(t.hoh, 'Head of Household', 'Heads of Household'));
+  if (t.arena) bits.push(plural(t.arena, 'Block Buster', 'Block Busters'));
+  if (t.veto) bits.push(plural(t.veto, 'veto', 'vetoes'));
+  const wins = bits.length
+    ? `Won ${bits.join(', ').replace(/, ([^,]*)$/, ' and $1')}.`
+    : (bbWeeks.length ? 'Never held power.' : '');
+  const times = n => n === 1 ? 'once' : n === 2 ? 'twice' : `<b>${n}</b> times`;
+  const upCount = t.nom + t.saved;
+  const block = bbWeeks.length
+    ? (upCount
+      ? ` Nominated ${times(upCount)}${
+        !t.saved ? ''
+          : upCount === 1 ? ', and came off the block'
+            : t.saved === upCount ? ', and came off the block every time'
+              : `, and came off the block <b>${t.saved}</b> of them`}.`
+      : ' Never nominated.')
+    : (t.votes ? ` Took <b>${t.votes}</b> vote${t.votes === 1 ? '' : 's'} across the season.` : ' Never drew a vote.');
+
+  /* How it ended. "Still standing" is true of the person who won it and is a
+     strange way to say so, and the document knows which they were. */
+  const place = (doc.placements || []).find(p => p.name === name)?.placement;
+  const end = exitWeek != null
+    ? ` ${exit === 'evicted' ? 'Evicted' : 'Voted out'} in ${rounds} <b>${exitWeek}</b>.`
+    : place === 1 ? ' <b>Won the season.</b>'
+      : place === 2 ? ' Made it to the end and lost the final vote.'
+        : place ? ` Reached ${rounds} <b>${lastPresent}</b> and finished <b>#${place}</b>.`
+          : ` Still standing at the end of ${rounds} <b>${lastPresent}</b>.`;
+
+  const key = bbWeeks.length
+    ? `<span><i style="background:#facc15"></i>Held power</span>
+       <span><i style="background:#38bdf8"></i>Came off the block</span>
+       <span><i style="background:#f87171"></i>On the block at the vote</span>
+       <span><i style="background:#f43f5e"></i>Gone</span>`
+    : `<span><i style="background:#f87171"></i>Drew votes</span>
+       <span><i style="background:#f43f5e"></i>Gone</span>`;
+
+  return `<div class="pp-pcard pp-run"><h3>The run, ${rounds} by ${rounds}</h3>
+    <div class="pp-run-strip">${tiles.join('')}</div>
+    <p class="pp-run-sum">${wins}${block}${end}</p>
+    <div class="pp-run-key">${key}</div></div>`;
+}
+
+/**
+ * Fill every season panel's run strip once the season documents land.
+ *
+ * The panels render synchronously from the player record; the documents are
+ * three fetches away. So each panel ships an empty slot and this fills the
+ * ones it can, which means a slow network costs the strip and nothing else.
+ */
+function _hydrateSeasonRuns(player) {
+  const slots = document.querySelectorAll('.pp-run-slot');
+  if (!slots.length || typeof _loadSeasonDocs !== 'function') return;
+  _loadSeasonDocs(player).then(docs => {
+    slots.forEach(slot => {
+      const doc = (docs || []).find(d => String(d.seasonNumber) === slot.dataset.season
+        && (d.format || 'total-drama') === slot.dataset.fmt);
+      if (!doc) return;
+      try { slot.innerHTML = _seasonRun(player.name, doc); } catch { /* the panel keeps its totals */ }
+    });
+  }).catch(() => {});
+}
+
 function renderSeasonDetails(season) {
   const isWin = season.placement===1;
   const isRU  = season.placement===2;
@@ -1635,6 +1820,11 @@ function renderSeasonDetails(season) {
       ${season.juryVotes!=null?`<div style="font-size:12px;color:var(--muted)">${season.juryVotes} jury vote${season.juryVotes!==1?'s':''}</div>`:''}
     </div>
   </div>`;
+
+  /* Filled by _hydrateSeasonRuns once the season document arrives. Keyed by
+     show as well as number: BB1 and Total Drama season 1 are both "1". */
+  html += `<div class="pp-run-slot" data-season="${season.season}" data-fmt="${
+    season.format || 'total-drama'}"></div>`;
 
   // Performance chips
   const chips=[];

@@ -200,30 +200,47 @@ export const majorityRules = {
     const supPool = [...SUPERLATIVES];
     const eliminationOrder = [];
     let round = 0;
-    // A round that eliminates nobody is legal and interesting once. With four
-    // left it is also LIKELY — of the three possible splits, only 3-1 sends
-    // anybody home, so 4-0 and 2-2 both stall — and a played week produced
-    // three in a row. Two consecutive dead rounds ends the questions and sends
-    // it to the tiebreaker, which is one of the two endings the rules already
-    // give this competition.
     let deadStreak = 0;
-    const maxRounds = Math.min(supPool.length, Math.max(3, participants.length + 2));
 
-    while (field.length > 2 && round < maxRounds && supPool.length) {
-      round++;
+    // ── why this competition needed a first half ──
+    //
+    // The majority that decides a round is the majority of the LOCK-INS, so
+    // the side that goes home is always the smaller one — which means the
+    // field halves on every single question. Eight houseguests is therefore
+    // three questions and a tiebreaker, arithmetically, however many
+    // superlatives sit in the bank: eight to five to three to two. A
+    // competition that is over in three answers is not a competition.
+    //
+    // So the elimination rounds are now the SECOND half. The first half is a
+    // survey: the same questions and the same read-the-room problem, but
+    // nobody goes home and everybody is quietly being marked. It gives the
+    // segment a body, it gives the house a board to look at, and it means the
+    // people who reach the cut got there over five questions rather than one.
+    //
+    // The screen needs nothing for it. A survey round ends on the ALL SAFE
+    // verdict the rules already produce whenever a question sends nobody home.
+    const surveyLen = field.length > 3
+      ? Math.min(5, Math.max(3, Math.floor(supPool.length / 2)))
+      : 0;
+
+    /**
+     * Ask one question and record every lock-in.
+     *
+     * Shared by both halves, so the survey and the sudden death cannot drift
+     * into being two different competitions.
+     */
+    const askQuestion = () => {
+      if (!supPool.length) return null;
       const sup = supPool.splice(Math.floor(rng() * supPool.length), 1)[0];
 
       // ── the question a producer would actually ask ──
       //
       // Drawn at random, the pair keeps landing on two people the room already
       // agrees about: everybody reads it correctly, nobody is in the minority,
-      // and the round eliminates nobody. Three of those in a row is a dead
-      // competition, and a played week produced exactly that.
-      //
-      // So several pairs are considered and the most CONTESTED one is asked —
-      // the question the house is closest to evenly split on. That is both the
-      // harder question and the one a show would pick, and it makes rounds
-      // eliminate somebody far more often without touching the rules.
+      // and the round eliminates nobody. So several pairs are considered and
+      // the most CONTESTED one is asked — the question the house is closest to
+      // evenly split on. That is both the harder question and the one a show
+      // would pick.
       let a = null, b = null, tally = null;
       for (let attempt = 0; attempt < 6; attempt++) {
         const pool = house.length >= 2 ? [...house] : [...participants];
@@ -234,8 +251,9 @@ export const majorityRules = {
         if (!tally || t.split < tally.split) { a = x; b = y; tally = t; }
         if (tally.split <= 1) break;               // close enough to ask
       }
-      if (!a || !b || !tally) break;
+      if (!a || !b || !tally) return null;
 
+      round++;
       // `tally` is the PRIOR, not the answer — it is what a houseguest is
       // trying to read when they look around the room.
       const obviousness = clamp(tally.split / Math.max(1, tally.voters.length), 0, 1);
@@ -257,14 +275,9 @@ export const majorityRules = {
         f.pick = onPrior ? aim : (aim === a ? b : a);
       });
 
-      // ── and the rule that decides it ──
-      //
       // The majority that matters is the majority of the LOCK-INS, not of the
-      // house survey: the wiki is explicit that those who voted with the
-      // majority remain and those with the minority go out. Which makes the
-      // competition self-referential — you are trying to match the room you are
-      // actually standing in — and guarantees a round can never eliminate more
-      // than half the field, since the bigger side is the side that survives.
+      // house survey: the wiki is explicit that those who answered with the
+      // majority remain and those with the minority go out.
       const forA = field.filter(f => f.pick === a).length;
       const forB = field.length - forA;
       const roomMajority = forA === forB ? null : (forA > forB ? a : b);
@@ -273,16 +286,62 @@ export const majorityRules = {
         const right = roomMajority ? f.pick === roomMajority : null;
         f.picks.push(f.pick);
         // The pair travels with the answer. Deriving it from the answers alone
-        // cannot work: a unanimous round contains only one distinct name, and
-        // the screen drew the question as "Wayne or Wayne".
+        // cannot work: a unanimous round holds only one distinct name, and the
+        // screen drew the question as "Wayne or Wayne".
         breakdown[f.name].picks.push({ q: round, pair: [a, b], pick: f.pick, majority: roomMajority, right });
         if (right) { f.correct++; breakdown[f.name].correct++; }
       });
+
+      return { a, b, forA, forB, roomMajority };
+    };
+
+    // ══ THE SURVEY ══ nobody goes home; everybody is being marked.
+    for (let i = 0; i < surveyLen && field.length > 2; i++) {
+      const q = askQuestion();
+      if (!q) break;
+      beats.push(q.roomMajority
+        ? beat(`${safe(SAFE_LINES)(q.roomMajority)} Nobody goes home on the survey — the board is only keeping score.`,
+          [q.roomMajority], 'ALL SAFE', 'grey')
+        : beat(`${tie(TIE_LINES)(q.a, q.b, q.forA, q.forB)} A dead split scores nobody anything.`,
+          [q.a, q.b], 'DEAD EVEN', 'grey'));
+    }
+
+    // ══ THE CUT ══ the survey board decides who is still playing.
+    if (surveyLen && field.length > 3) {
+      const keep = Math.max(3, Math.ceil(field.length / 2));
+      const ranked = [...field].sort((x, y) => (y.correct - x.correct) || (y.luck - x.luck));
+      const cut = ranked.slice(keep);
+      if (cut.length && cut.length < field.length) {
+        const line = cut.length === 1
+          ? `${cut[0].name} read this house worst of anybody over ${round} questions and is out of it.`
+          : `${cut.map(f => f.name).join(', ')} finish the survey at the bottom of the board and are out of it.`;
+        beats.push(beat(
+          `${line} The rest carry on, and from here the minority goes home every question.`,
+          cut.map(f => f.name), 'THE CUT', 'red'));
+        cut.forEach(f => {
+          f.outRound = round;
+          breakdown[f.name].outRound = round;
+          breakdown[f.name].cutAtSurvey = true;
+          eliminationOrder.push(f.name);
+        });
+        field = field.filter(f => !f.outRound);
+      }
+    }
+
+    // ══ SUDDEN DEATH ══ the real rule: the minority is eliminated.
+    const maxRounds = round + Math.max(3, participants.length);
+    while (field.length > 2 && round < maxRounds && supPool.length) {
+      const q = askQuestion();
+      if (!q) break;
+      const { a, b, forA, forB, roomMajority } = q;
 
       if (!roomMajority) {
         beats.push(beat(
           `${tie(TIE_LINES)(a, b, forA, forB)} Question ${round} eliminates nobody.`,
           [a, b], 'DEAD EVEN', 'grey'));
+        // A round that eliminates nobody is legal and interesting once. Two in
+        // a row ends the questions and sends it to the tiebreaker, which is
+        // one of the two endings the rules already give this competition.
         if (++deadStreak >= 2) break;
         continue;
       }

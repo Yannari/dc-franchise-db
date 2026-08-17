@@ -5965,7 +5965,10 @@ export function generateBBSummaryText(ep) {
         sec('VOTING PLANS');
         ln(`  ${majority} of ${voters.length} decides it.`);
         const STANCE = { dependable: 'locked', leaning: 'leaning', pulled: 'pulled in',
-          conflicted: 'torn', refusing: 'REFUSES', elsewhere: 'answers to another room' };
+          conflicted: 'torn', refusing: 'REFUSES', elsewhere: 'answers to another room',
+          // The room asking a member to cut the person they gave their word
+          // to. Unmapped, these two printed their raw ids into the transcript.
+          'breaks-promise': 'GOES BACK ON THEIR WORD', 'keeps-promise': 'will not do it' };
         if (op?.plans?.length) {
           for (const plan of op.plans) {
             const tag = plan.locked >= plan.majority ? 'HOLDS THE HOUSE'
@@ -5973,8 +5976,14 @@ export function generateBBSummaryText(ep) {
             ln('');
             ln(`  ${plan.alliance} wants out ${plan.target} — ${tag}`);
             ln(`    ${plan.organizer} gathers the room: "${plan.reason}"`);
-            plan.stances.forEach(st => ln(`      ${st.voter}: ${STANCE[st.stance] || st.stance}`
-              + `${st.with ? ` (${st.with})` : ''}`));
+            plan.stances.forEach(st => {
+              ln(`      ${st.voter}: ${STANCE[st.stance] || st.stance}`
+                + `${st.with ? ` (${st.with})` : ''}`
+                + `${st.to ? ` — promised ${st.to}` : ''}`);
+              // The sentence the room said, same as the recruiter's approaches
+              // below get. A label alone says a promise broke and not how.
+              if (st.argument) ln(`        ${st.argument}`);
+            });
             if (plan.outsideSupport.length) ln(`    Already with them without being asked: ${plan.outsideSupport.join(', ')}.`);
             plan.approaches.forEach(a => {
               const OUT = { agrees: 'signs on', refuses: 'turns them down',

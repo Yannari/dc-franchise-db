@@ -1078,9 +1078,21 @@ export function houseVoteCommitment(ballot, nominees) {
   // A wide margin means they were never really torn.
   const clarity = Math.min(1, Math.abs(Number(ballot.margin) || 0) / 4);
 
-  const promised = (gs.sideDeals || []).some(deal => deal.active !== false
+  // ── who the promise was TO, not just that there was one ──
+  //
+  // This was `.some(...)`, so the commitment knew a promise existed and not
+  // who held it. Everything downstream had to guess: the aftermath scene that
+  // exposes a broken word picks "a remaining houseguest with high intuition"
+  // as the wronged party, because the person actually promised was never
+  // written down. Finding the deal instead of testing for one costs nothing
+  // and gives the betrayal a real victim.
+  const voteDeal = (gs.sideDeals || []).find(deal => deal.active !== false && !deal.broken
     && deal.type === 'vote' && deal.players?.includes(voter)
     && (deal.players.includes(keeping) || deal.players.includes(ballot.evict)));
+  const promised = !!voteDeal;
+  const promisedTo = voteDeal
+    ? (voteDeal.players || []).find(n => n !== voter && nominees.includes(n)) || null
+    : null;
 
   const allied = keeping ? bbAllianceStrength(voter, keeping) > 0 : false;
 
@@ -1100,14 +1112,34 @@ export function houseVoteCommitment(ballot, nominees) {
   // only quieter: nobody shook on it, but it is still owed.
   const debt = keeping
     ? Math.max(0, relationshipDecisionProfile(voter, keeping).socialDebt) * 0.03 : 0;
+  // ── the promise, priced separately from the rest of the firmness ──
+  //
+  // `promiseHold` is the part of `strength` that exists ONLY because a promise
+  // was made, and it is published so callers can take it back off.
+  //
+  // Measured before this: 40 of 546 ballots were held by a promised voter and
+  // exactly ONE of them ever moved — 2.5%, against 10.1% for everybody else —
+  // because the median promised voter sat at 0.93 strength and every path that
+  // could move a ballot is gated on `1 - strength`. The flag that creates the
+  // possibility of a broken promise was the same flag that prevented it, so
+  // "went back on their word" was close to excluded by construction.
+  //
+  // It stays in `strength`, because against ordinary drift — a bandwagon, a
+  // room that wants a body, a speech aimed at nobody in particular — a promise
+  // genuinely is a reason not to move. What it must not do is armour somebody
+  // against the person on the other side of that promise arriving to
+  // renegotiate it. See vote-operation.js, where the ask that names the
+  // promise takes this back off and charges loyalty instead.
+  const promiseHold = promised ? 0.3 : 0;
   const strength = clarity * 0.45
-    + (promised ? 0.3 : 0)
+    + promiseHold
     + (allied ? 0.22 : 0)
     + endgameHold
     + debt
     + (s.loyalty / 10) * 0.25;
   return {
     voter, keeping, strength: Math.max(0, Math.min(1, strength)), promised, allied,
+    promisedTo, promiseHold,
     endgameDeal: endgame ? { with: keeping, tier: tierOf(endgame) } : null,
     cuttingPartner: cutting > 0.45 ? ballot.evict : null,
   };

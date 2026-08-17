@@ -313,14 +313,25 @@ function brokenWord(house, ctx) {
     const promised = entry.promised;
     const cast = entry.cast;
     if (!promised || !cast || promised === cast) continue;
-    // Both fields name nominees: the first is who the voter said they would
-    // evict and the second is who they wrote down. Neither nominee is
-    // automatically the recipient of that promise. Use a remaining houseguest
-    // who heard the public count and has the intuition to question it.
-    const watcher = quiet(house.filter(n => n !== voter))
-      .sort((a, b) => pStats(b).intuition - pStats(a).intuition || (a < b ? -1 : 1))[0];
-    if (!watcher || remembers(watcher, voter, 'broke-word-found-out')) continue;
-    return { voter, promisee: watcher, promised, cast, week };
+    // ── the person actually promised, when there is one ──
+    //
+    // `promised` and `cast` both name NOMINEES: who the voter said they would
+    // evict and who they wrote down. Neither is automatically the recipient of
+    // the promise, which is why this used to nominate a bystander — the
+    // highest-intuition houseguest still in the game — as the wronged party.
+    // It read fine and it was fiction.
+    //
+    // The vote operation now records `promisee` whenever a promise was
+    // renegotiated by the person on the other side of it, so the scene can be
+    // about the two people it actually happened between. The bystander stays
+    // as the fallback for the looser cases (a liar, a bandwagon jump), where
+    // nobody in particular was promised anything.
+    const wronged = entry.promisee && house.includes(entry.promisee) && entry.promisee !== voter
+      ? entry.promisee
+      : quiet(house.filter(n => n !== voter))
+        .sort((a, b) => pStats(b).intuition - pStats(a).intuition || (a < b ? -1 : 1))[0];
+    if (!wronged || remembers(wronged, voter, 'broke-word-found-out')) continue;
+    return { voter, promisee: wronged, promised, cast, week, direct: wronged === entry.promisee };
   }
   return null;
 }

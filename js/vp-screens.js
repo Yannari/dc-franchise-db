@@ -20887,6 +20887,11 @@ const _BBOP_STANCE = {
   conflicted: { label: 'TORN', cls: 'gold' },
   refusing:   { label: 'REFUSES', cls: 'red' },
   elsewhere:  { label: 'WITH ANOTHER ROOM', cls: 'grey' },
+  // The room asked this member to cut the person they gave their word to.
+  // Without these two, both answers fell through to the `leaning` default and
+  // the most dramatic thing that happens in a room rendered as "LEANING".
+  'breaks-promise': { label: 'GOES BACK ON IT', cls: 'red' },
+  'keeps-promise':  { label: 'WILL NOT DO IT', cls: 'green' },
 };
 
 function _bbopAlliancePlans(op) {
@@ -20902,12 +20907,33 @@ function _bbopAlliancePlans(op) {
         : `<span class="bbop-tag is-short">${plan.needed} SHORT</span>`;
     const stanceRows = plan.stances.map(s => {
       const meta = _BBOP_STANCE[s.stance] || _BBOP_STANCE.leaning;
-      const note = s.stance === 'elsewhere' && s.with ? ` <i>— answers to ${_bbEsc(s.with)}</i>` : '';
+      let note = s.stance === 'elsewhere' && s.with ? ` <i>— answers to ${_bbEsc(s.with)}</i>` : '';
+      // Who the promise was to, and the sentence the room actually said. The
+      // ask is the whole point of this stance — rendering the label alone
+      // would say somebody broke their word without saying to whom.
+      if (s.to && (s.stance === 'breaks-promise' || s.stance === 'keeps-promise')) {
+        note = ` <i>— ${s.stance === 'breaks-promise' ? 'had promised' : 'promised'} `
+          + `${_bbEsc(s.to)}</i>`;
+      }
       return `<div class="bbop-member">
         ${_bbAvatar(s.voter, 24)}<span class="bbop-mname">${_bbEsc(s.voter)}</span>
         <span class="bbns-pill ${meta.cls}">${meta.label}</span>${note}
       </div>`;
     }).join('');
+    // ── the room asking somebody to go back on their word ──
+    //
+    // Rendered as its own row rather than inside the member pill, because it is
+    // a scene and the pill is a status. Same treatment the recruiter's
+    // approaches get, since it is the same conversation from the other side.
+    const promiseAsks = plan.stances
+      .filter(st => st.argument && (st.stance === 'breaks-promise' || st.stance === 'keeps-promise'))
+      .map(st => `<div class="bbop-approach">
+        <div>${_bbAvatar(plan.organizer, 20)} <strong>${_bbEsc(plan.organizer)}</strong>
+          asks <strong>${_bbEsc(st.voter)}</strong> to cut ${_bbEsc(st.to)}
+          <span class="bbns-pill ${st.stance === 'breaks-promise' ? 'red' : 'green'}">${
+  st.stance === 'breaks-promise' ? 'THEY DO IT' : 'THEY WILL NOT'}</span></div>
+        <div class="bbop-arg">${_bbEsc(st.argument)}</div>
+      </div>`).join('');
     return `<div class="bbop-plan">
       <div class="bbop-plan-h">
         <span class="bbop-aname">${_bbEsc(plan.alliance)}</span>
@@ -20917,6 +20943,7 @@ function _bbopAlliancePlans(op) {
       </div>
       <div class="bbop-organizer">${_bbAvatar(plan.organizer, 22)} <strong>${_bbEsc(plan.organizer)}</strong> gathers the room: “${plan.reason}”</div>
       <div class="bbop-members">${stanceRows}</div>
+      ${promiseAsks}
     </div>`;
   }).join('');
   return `<div class="bbop-sec">

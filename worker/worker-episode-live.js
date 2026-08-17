@@ -1151,6 +1151,42 @@ reference. Use its CRAFT. Ignore its FORMAT.
 ═══════════════════════════════════════════════════════════
 `;
 
+/**
+ * The analytics pipeline's text passes, on OpenAI.
+ *
+ * generateAnalytics runs on OpenAI alone. These two passes -- `summarize` (raw
+ * BrantSteele into a structured summary) and `enhance` (a simulator summary
+ * into a richer one) -- are not a separate feature: current-season.html runs
+ * whichever one applies as STEP 1 and the analytics panels as step 2. So an
+ * Anthropic-only preprocess took the whole feature down one step before the
+ * part that had already been moved, and an out-of-credit Claude account
+ * produced "Error enhancing summary: Anthropic 400" under a panel headed
+ * Analytics.
+ *
+ * Returns the text, or null when OpenAI is unconfigured or could not answer --
+ * null falls through to the Claude stream below it, which is still there.
+ */
+async function openAISummaryText(instructions, input, env) {
+  if (!env.OPENAI_API_KEY) return null;
+  try {
+    const resp = await callOpenAI(
+      { model: "gpt-5.5", instructions, input, max_output_tokens: 16000 },
+      env, { provider: "openai" });
+    if (!resp.ok) return null;
+    const data = await resp.json().catch(() => ({}));
+    if (!data || data.error) return null;
+    // callOpenAI parses JSON when the model returns it and otherwise wraps the
+    // raw text as episodeTranscript, so a plain-prose summary can arrive under
+    // either name depending on what came back.
+    const text = typeof data.summary === "string" ? data.summary
+      : typeof data.episodeTranscript === "string" ? data.episodeTranscript
+        : typeof data.output_text === "string" ? data.output_text : "";
+    return text.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
 async function enhanceSummary(simulatorSummary, season, episode, env, prevSummary = "", franchiseContext = "", seasonSetting = "", quality = false) {
   if (!simulatorSummary || typeof simulatorSummary !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
@@ -1609,6 +1645,15 @@ BANNED patterns (do not use):
     : "";
 
   const input = `${prevContextNote}═══ SIMULATOR EPISODE SUMMARY TO ENHANCE ═══\n${simulatorSummary}`;
+
+  // OpenAI first -- this pass feeds the analytics panels, which are OpenAI
+  // only. Claude below stays as the fallback.
+  const viaOpenAI = await openAISummaryText(instructions, input, env);
+  if (viaOpenAI) {
+    return new Response(JSON.stringify({ summary: viaOpenAI }), {
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
 
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
@@ -2088,6 +2133,16 @@ Rules:
     ? `═══ PREVIOUS EPISODE SUMMARIES — STORY CONTINUITY CONTEXT ═══\nThese are the summaries from the last few episodes. Use them to:\n- Continue every unresolved storyline, conflict, and relationship thread\n- Track who was eliminated and in what order\n- Know the current alliance structure and power dynamics\n- Pick up the ONGOING STORYLINES and COLD OPEN HOOK from the most recent summary\nDo NOT reset storylines between episodes. This season has a continuous narrative.\n\n${prevSummary}\n═══ END PREVIOUS SUMMARIES ═══\n\n`
     : "";
   const input = `${prevContext}═══ CURRENT EPISODE RAW DATA ═══\n${rawText}`;
+
+  // OpenAI first, same reason as enhance: this is step one of an analytics
+  // run, and reading BrantSteele output into a structured summary is
+  // extraction rather than prose, so it does not need the creative model.
+  const viaOpenAI = await openAISummaryText(instructions, input, env);
+  if (viaOpenAI) {
+    return new Response(JSON.stringify({ summary: viaOpenAI }), {
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
 
   // Use heartbeat streaming with GPT-5 to avoid 524/502 timeouts.
   // setInterval sends \n keep-alives while GPT generates; final JSON sent when done.

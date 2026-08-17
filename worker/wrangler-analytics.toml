@@ -12,15 +12,18 @@
 # BOTH, and they do different jobs — one missing key does not degrade the
 # worker, it turns off whichever half of it that key serves:
 #
-#   OPENAI_API_KEY     the analytics panels — the DEFAULT route, taken by any
-#                      request that arrives without a `mode`. OpenAI only. It
-#                      used to fall through to two different Claude legs, so
-#                      the panels could come from any of three models depending
-#                      on which account had credit; without this key the route
-#                      now returns a 500 saying so instead of quietly
-#                      substituting a different model.
-#   ANTHROPIC_API_KEY  the creative modes — episode, summarize, enhance,
-#                      story-digest, social. Unchanged.
+#   OPENAI_API_KEY     the whole analytics run, which is three modes and not
+#                      one. current-season.html does step 1 (`summarize` for
+#                      raw BrantSteele, or `enhance` for a simulator summary)
+#                      and then step 2, the panels — the DEFAULT route, taken
+#                      by any request arriving without a `mode`. The panels are
+#                      OpenAI ONLY and return a 500 naming this secret when it
+#                      is missing. The two step-1 passes prefer OpenAI and
+#                      still fall back to Claude, so they keep working either
+#                      way.
+#   ANTHROPIC_API_KEY  the creative modes — episode, story-digest, social —
+#                      plus the step-1 fallback above. Episode prose is
+#                      unchanged and still Claude-first.
 #
 #   wrangler secret put OPENAI_API_KEY --config wrangler-analytics.toml
 #   wrangler secret put ANTHROPIC_API_KEY --config wrangler-analytics.toml

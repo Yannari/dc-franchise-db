@@ -228,6 +228,98 @@ describe('the Coin costs money', () => {
     }
   });
 
+  it('never names the holder on any surface, even as a chair authority', () => {
+    // The act carries `chairAuthority` so the Diamond Veto can say who named a
+    // replacement. Under the Coin that field is the one thing the house must
+    // never be told, so the ceremony has to declare itself anonymous.
+    let checked = 0;
+    for (let seed = 1; seed <= 30; seed++) {
+      house();
+      const ep = withSeededRandom(seed * 41 + 3, () => simulateBBEpisode());
+      const week = gs.bb.weeks[gs.bb.weeks.length - 1];
+      if (!week?.coinAuthority) continue;
+      checked++;
+      const ceremony = (ep.acts || []).find(a => a.type === 'veto-ceremony');
+      if (ceremony) {
+        expect(ceremony.chairAuthority).toBe(week.coinAuthority);
+        expect(ceremony.anonymous, 'a coin ceremony announced its author').toBe(true);
+      }
+      for (const [label, text] of [
+        ['summariseWeek', summariseWeek(week)],
+        ['generateSummaryText', generateSummaryText(ep)],
+      ]) {
+        for (const claim of [
+          `by ${week.coinAuthority}`,
+          `${week.coinAuthority} names`,
+          `${week.coinAuthority} is named as the replacement`,
+        ]) {
+          expect(text, `${label} named the holder: "${claim}"`).not.toContain(claim);
+        }
+      }
+    }
+    expect(checked, 'no coin ever took a week across 30 seeds').toBeGreaterThan(0);
+  });
+
+  it('keeps the holder and the dethroned HOH off the block all week', () => {
+    let checked = 0;
+    for (let seed = 1; seed <= 30; seed++) {
+      house();
+      const ep = withSeededRandom(seed * 41 + 3, () => simulateBBEpisode());
+      const week = gs.bb.weeks[gs.bb.weeks.length - 1];
+      if (!week?.coinAuthority) continue;
+      checked++;
+      // Canon: the winner is the Head of Household for the week, and a
+      // dethroned Head of Household stays safe. Neither can end up in a chair.
+      expect(week.finalNominees || []).not.toContain(week.coinAuthority);
+      expect(week.finalNominees || []).not.toContain(week.coinDethroned);
+      // And the person the veto saved is not put straight back.
+      const ceremony = (ep.acts || []).find(a => a.type === 'veto-ceremony');
+      if (ceremony?.saved) expect(ceremony.replacement).not.toBe(ceremony.saved);
+    }
+    expect(checked, 'no coin ever took a week across 30 seeds').toBeGreaterThan(0);
+  });
+
+  it('lets a dethroned Head of Household win it back', () => {
+    // Canon is explicit: the dethroned HOH stays safe and competes in the next
+    // Head of Household competition. `outgoingHoh` is what bars somebody from
+    // that competition, so a dethroning must clear it — otherwise the Coin
+    // takes the week AND the chance to get it back, which no rule asks for.
+    let checked = 0;
+    let ordinary = 0;
+    for (let seed = 1; seed <= 30; seed++) {
+      house();
+      withSeededRandom(seed * 41 + 3, () => simulateBBEpisode());
+      const week = gs.bb.weeks[gs.bb.weeks.length - 1];
+      if (week?.coinDethroned) {
+        checked++;
+        expect(gs.bb.outgoingHoh, 'a dethroned HOH was still barred').toBeNull();
+      } else if (week?.hoh && !week.hohSecret && !week.rewound) {
+        ordinary++;
+        // And the ordinary bar is untouched.
+        expect(gs.bb.outgoingHoh).toBe(week.hoh);
+      }
+    }
+    expect(checked, 'nobody was ever dethroned across 30 seeds').toBeGreaterThan(0);
+    expect(ordinary, 'no ordinary week to compare against').toBeGreaterThan(0);
+  });
+
+  it('leaves a week with no coin exactly as it was', () => {
+    // The ceremony this touches is hooked by the Diamond Veto, Roadkill, the
+    // Block Buster, America's Nominee, the Roulette and the Veto Derby. A week
+    // with no coin must not notice that the Coin exists.
+    const run = () => {
+      house();
+      seasonConfig.twistSchedule = [];
+      const ep = withSeededRandom(9091, () => simulateBBEpisode());
+      const week = gs.bb.weeks[gs.bb.weeks.length - 1];
+      return { auth: week.coinAuthority ?? null, text: summariseWeek(week),
+        noms: [...(week.finalNominees || [])] };
+    };
+    const a = run();
+    expect(a.auth).toBeNull();
+    expect(run()).toEqual(a);
+  });
+
   it('names every buyer exactly once', () => {
     const { act } = bought(rich);
     expect(new Set(act.buyers).size).toBe(act.buyers.length);

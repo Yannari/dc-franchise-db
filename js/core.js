@@ -191,10 +191,46 @@ export function activeSeasonModes(cfg) {
 /** The modes a twist cannot run alongside, given the season as configured. */
 export function twistModeClashes(twist, cfg) {
   const on = activeSeasonModes(cfg);
-  return (twist?.incompatibleModes || [])
+  const clashes = (twist?.incompatibleModes || [])
     .filter(id => on.has(id))
     .map(id => SEASON_MODES[id]?.label || id);
+
+  // ── A CARD CAN ALSO BE REFUSED BY WHAT THE SEASON DOES NOT HAVE ───────
+  //
+  // Modes are things a season turns ON. This is the other half: a card whose
+  // engine needs a season-level SYSTEM that is simply absent.
+  //
+  // The High Roller's Room sells games for BB Bucks, and BB Bucks only exist on
+  // a theme that declares an economy. Scheduled anywhere else the door still
+  // opens, because the dispatch only asks whether the card is on the week —
+  // and then every houseguest walks up to a price they have no money for and
+  // turns around. Nothing throws. The week simply spends a section narrating
+  // people failing to buy something, and the timeline gave no warning at all.
+  //
+  // Read through the same function the badge, the add-check and the quick-setup
+  // validator already share, so one answer reaches all three.
+  if (twist?.needsEconomy) {
+    const theme = (typeof cfg?.theme === 'string' && cfg.theme !== 'none') ? cfg.theme : null;
+    // Imported lazily through the registry rather than at module load: core.js
+    // is a leaf and importing the theme registry here would make it one.
+    const hasEconomy = !!(theme && BB_THEME_ECONOMIES[theme]);
+    if (!hasEconomy) clashes.push('no BB Bucks in this season');
+  }
+  return clashes;
 }
+
+/**
+ * Which themes run on money, by id.
+ *
+ * A flat map rather than an import of the theme registry, because `core.js` is
+ * a LEAF — it imports nothing from the project, and `js/bb/themes.js` imports
+ * core. Reaching for the registry here would invert that and take the whole
+ * module graph with it.
+ *
+ * `tests/bb-theme-primers.test.js` holds this to the descriptors, so a fifth
+ * money theme cannot be declared in one place and forgotten in the other.
+ */
+export const BB_THEME_ECONOMIES = { 'high-rollers': 'bb-bucks' };
 
 /**
  * Do these two cards refuse each other?
@@ -677,7 +713,11 @@ export const TWIST_CATALOG = [
   },
   { id:'bb-high-rollers-room', emoji:'🎲', name:"The High Roller's Room", format:'big-brother',
     category:'advantages', phase:'any',
-    desc:'A door opens in the hallway the night the nominations go up, with the price painted on it and a camera on everybody who walks to it. Entry costs 125 BB Bucks and the money is taken on the way IN — before a card is turned, and never refunded. Everybody who paid then plays the Chopping Block Roulette together: they are scored on how well they read a spinning board and call it, and AT MOST ONE person wins, the highest score, and only if it clears the standard. Win it and nobody can name you as a replacement nominee for the rest of the week — that half is unconditional — and then, at the veto meeting, one of the initial nominees comes off the block for good and you SPIN for who replaces them, drawn from every eligible houseguest with equal odds. Chosen by nobody, including you, so the Head of Household loses the block and gets nobody at all to blame for it. What goes wrong: a room full of paying houseguests can walk back out with nothing between them, because only one score can be the highest and it still has to be good enough. The seat is burned for the rest of the season either way — each game in that room is played once per houseguest, win or lose, and the whole house watched how frightened you were. And if there is no houseguest left who is legally allowed to take the empty chair, the block does not move at all: nobody comes down, nobody goes up, and a winner who was already nominated goes to the vote still nominated, having paid a hundred and twenty-five for a protection they did not need.',
+    // Needs a season that runs on money. `twistModeClashes` reads this and the
+    // timeline greys the card out on a season with no economy — the door used
+    // to open regardless, onto a room nobody could pay to enter.
+    needsEconomy: true,
+    desc:'A door opens in the hallway the night the nominations go up, with the price painted on it and a camera on everybody who walks to it. It sells ONE game a night and the money is taken on the way IN — before a card is turned, and never refunded. THE VETO DERBY, 50: everybody who paid guesses a number, and finishing in the top six with a score above zero earns the right to back one of the six veto players. Back the one who goes on to win the veto and you hold a veto of your own, which you spend BEFORE they spend theirs — so the Head of Household can lose two nominees in one meeting and have to refill the block twice. THE CHOPPING BLOCK ROULETTE, 125: everybody who paid is scored on reading a spinning board, and AT MOST ONE wins, the highest score, and only if it clears the standard. Win it and nobody can name you as a replacement nominee for the rest of the week; then one of the initial nominees comes off the block for good and you SPIN for who replaces them, drawn from every eligible houseguest with equal odds — chosen by nobody, including you, so the Head of Household loses the block and gets nobody at all to blame for it. What goes wrong: a room full of paying houseguests can walk back out with nothing between them, and the seat is burned for the rest of the season either way — each game is played once per houseguest, win or lose, and the whole house watched how frightened you were. And if there is no houseguest left legally allowed to take an empty chair, the block does not move at all. This card needs a season that runs on BB Bucks; without one the door opens on a room nobody can pay to enter.',
     // ── WHAT IT CAN AND CANNOT SHARE A WEEK WITH ──
     //
     // Compatible with everything that shapes the block, on the Den's reasoning

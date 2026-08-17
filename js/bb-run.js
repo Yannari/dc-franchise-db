@@ -46,6 +46,10 @@ import { installTheme, reanchorThemeArc } from './bb/themes.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
 export { BB_POWER_DEFINITIONS } from './bb/powers.js';
+// The room's menu, for the Format Designer's per-night game picker. Same route
+// as the power inventory above: re-exported here, put on `window` by main.js,
+// read by run-ui.js as a global.
+export { ROOM_GAMES } from './bb/high-rollers-room.js';
 /** Is this season a Big Brother season? */
 export const isBigBrotherSeason = () => seasonFormat(seasonConfig) === 'big-brother';
 
@@ -904,6 +908,10 @@ export function simulateBBEpisode() {
   // and no new code. The entry's `prize` field is set in the Format Designer.
   const boxEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-pandoras-box');
+  // Which game the floor sells this night, if the author picked one. Empty
+  // means "run the room's own order" — the cheap table first, the wheel after.
+  const roomEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-high-rollers-room');
   // The double eviction has three shapes, chosen on the scheduled entry:
   // 'fast-forward' (the US live hour — a compressed second cycle),
   // 'week-in-one' (BB5/6 — a second FULL cycle inside the same episode),
@@ -976,6 +984,7 @@ export function simulateBBEpisode() {
     battleBackStyle: bbEntry?.bbStyle || 'gauntlet',
     battleBackCompetition: bbFindCompetition(bbEntry?.bbComp),
     pandorasPrize: boxEntry?.prize || undefined,
+    roomGame: roomEntry?.game || undefined,
     temptationOffer: denEntry?.offer || 'random',
     americasNomineeStyle: anEntry?.anStyle === 'mvp' ? 'mvp' : 'direct',
     hiddenPowerId: hpEntry?.hidden || 'the-cloud',

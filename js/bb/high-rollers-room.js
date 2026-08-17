@@ -124,6 +124,19 @@ export const ROOM_GAMES = Object.freeze([
     price: 125,
     powerId: null,
     blurb: 'Spin for safety. The wheel can take you off the block — or take the money and leave you exactly where you were standing.',
+    // WHAT THE HOUSE IS TOLD, per game. The room's contract used to carry one
+    // announcement naming the wheel and its 125, which was read out verbatim on
+    // a night the floor was selling a 50 Derby — the house told the wrong price
+    // for the wrong game, which is this project's oldest bug wearing a new hat.
+    announceRule: 'The High Roller’s Room is open, and tonight it sells the Chopping Block Roulette. '
+      + 'Any houseguest may buy in for 125 BB Bucks — the money is taken when you walk through that door and it '
+      + 'is not coming back, whatever happens inside. Everybody who pays plays, and only the highest score wins '
+      + 'it, and only if that score is good enough at all. The winner cannot be named as a replacement nominee '
+      + 'for the rest of the week. Then, at the veto meeting, one nominee comes off the block for good and the '
+      + 'winner spins for who replaces them: every eligible houseguest, equal odds, chosen by nobody. If there is '
+      + 'nobody left who is allowed to take that chair, the block does not move. Each game in that room can be '
+      + 'played once per houseguest, for the rest of your season, win or lose.',
+    announceSting: 'One of you is about to pay for that door and walk back out of it with nothing.',
   }),
   Object.freeze({
     id: 'veto-derby',
@@ -131,6 +144,15 @@ export const ROOM_GAMES = Object.freeze([
     price: 50,
     powerId: null,
     blurb: 'Guess a number, make the top six, and earn the right to back one of the veto players. Back the one who wins and you hold a veto of your own — bought with a guess and somebody else\'s competition.',
+    announceRule: 'The High Roller’s Room is open, and tonight it sells the Veto Derby. Any houseguest may buy '
+      + 'in for 50 BB Bucks — the money is taken when you walk through that door and it is not coming back. '
+      + 'Everybody who pays writes down a number, and the six who land closest, with a score above zero, earn '
+      + 'the right to back one of the six players drawn for the veto. Back the houseguest who goes on to WIN '
+      + 'that veto and you are handed one of your own, having never played a round of it. You will spend yours '
+      + 'FIRST, and the Head of Household will name a replacement; only then does the person who actually won '
+      + 'the competition make their decision — and they can send the Head of Household back to name a second '
+      + 'one. Each game in that room can be played once per houseguest, for the rest of your season, win or lose.',
+    announceSting: 'Six of you are about to bet on somebody else’s competition, and most of you are wrong.',
   }),
 ]);
 

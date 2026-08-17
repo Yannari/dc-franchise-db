@@ -15,7 +15,7 @@ import { resolveHaltingHex } from './eviction-powers.js';
 import { resolveRewind } from './rewind.js';
 import { runCoinOfDestiny, coinNominations } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
-import { openRoom, roomGameForNight } from './high-rollers-room.js';
+import { openRoom, roomGameForNight, ROOM_GAMES } from './high-rollers-room.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
   carePackageVoteBlock, carePackageBribe, neverNots } from './care-package.js';
 import { punishedHaveNots, applyPunishment, drawPunishment, BB_PUNISHMENTS } from './punishments.js';
@@ -1696,6 +1696,27 @@ export function simulateBBWeek(options = {}) {
           : house.length < 8 ? 'house-too-small'
             : null;
   const botbPossible = botbWanted && !week.botbStoodDown;
+
+  // ── WHAT THE FLOOR IS SELLING, DECIDED BEFORE THE HOUSE IS TOLD ──────
+  //
+  // The room does not open until after nominations, but the rules are read out
+  // hours earlier — so the game has to be chosen HERE, or the announcement
+  // cannot name it. It used to name the wheel and its 125 unconditionally, and
+  // read that out verbatim on a night the floor was selling a 50 Derby: the
+  // wrong price for the wrong game, told to the whole house.
+  //
+  // The author's pick wins if the card carries one; otherwise the room's own
+  // order, counted off the weeks that have already aired.
+  if (twists.has('bb-high-rollers-room')) {
+    week.roomGame = (options.roomGame && ROOM_GAMES.find(g => g.id === options.roomGame))
+      || roomGameForNight((gs.bb.weeks || [])
+        .filter(w => (w.acts || []).some(a => a.type === 'high-rollers-room')).length);
+    for (const a of week.twistState?.announcements || []) {
+      if (a?.twist !== 'bb-high-rollers-room' || !week.roomGame) continue;
+      if (week.roomGame.announceRule) a.rule = week.roomGame.announceRule;
+      if (week.roomGame.announceSting) a.sting = week.roomGame.announceSting;
+    }
+  }
 
   if (!compressed && (week.twistState?.announcements || []).length) {
     // A twist that will not run does not get announced. The house is told the
@@ -3726,8 +3747,10 @@ export function simulateBBWeek(options = {}) {
         // night and the wheel on the two after it — counted off the weeks that
         // have already aired rather than off a flag, so a reloaded save cannot
         // sell the opening game twice.
-        game: roomGameForNight((gs.bb.weeks || [])
-          .filter(w => (w.acts || []).some(a => a.type === 'high-rollers-room')).length),
+        // Chosen up where the announcement is written, so the game the house
+        // was TOLD about is the game it gets. Deciding it twice is how those
+        // two drift apart.
+        game: week.roomGame,
         // The week's own seeded generator. A bare Math.random anywhere in here
         // and the same seed stops producing the same house.
         rng,

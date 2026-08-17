@@ -255,6 +255,7 @@ window.CUE_CATALOG = audioMod.CUE_CATALOG;
 window.BB_SEASON_TWISTS = twistContractMod.BB_SEASON_TWISTS;
 window.seasonTwistDefaults = twistContractMod.seasonTwistDefaults;
 window.BB_POWER_DEFINITIONS = bbRunMod.BB_POWER_DEFINITIONS;  // power inventory — Format Designer stocks the box/shelf from it
+window.ROOM_GAMES = bbRunMod.ROOM_GAMES;                      // the High Roller's Room menu — Format Designer's per-night game picker
 window.CARE_PACKAGES = bbRunMod.CARE_PACKAGES;                // the care package shelf — same job, same reason
 window.BED_CATALOG = audioMod.BED_CATALOG;
 window._vpa = vpUiMod._vpa;

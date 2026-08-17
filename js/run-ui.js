@@ -2110,6 +2110,23 @@ export function renderTimeline() {
             <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;flex:0 0 auto">×</span>
           </span>${h}</span>`;
       }
+      // WHICH GAME THE FLOOR SELLS THAT NIGHT.
+      //
+      // Left alone the room runs its own order — the cheap table the first time
+      // it opens, the wheel every time after — which is what the theme's own
+      // three nights want. This is for hand-authored weeks, where "the room
+      // opens" was not enough to say what you meant.
+      if (t.type === 'bb-high-rollers-room') {
+        const games = (typeof ROOM_GAMES !== 'undefined' && ROOM_GAMES) || [];
+        const chosen = t.game || '';
+        let gameHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','game',this.value)" onclick="event.stopPropagation()" title="Which game the room sells this night" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
+        gameHtml += `<option value="" ${chosen === '' ? 'selected' : ''}>Auto (Derby, then the wheel)</option>`;
+        games.forEach(g => {
+          gameHtml += `<option value="${g.id}" ${g.id === chosen ? 'selected' : ''}>${g.name} — ${g.price}</option>`;
+        });
+        gameHtml += `</select>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${gameHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'bb-pandoras-box') {
         // What goes IN the box — drawn from the power inventory, so every
         // power added there becomes cargo here with no new UI.

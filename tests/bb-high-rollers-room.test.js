@@ -4,7 +4,9 @@ import { gs, setGs, players, seasonConfig, relationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { credit, balance } from '../js/bb/bb-bucks.js';
-import { openRoom, hasPlayed, ROOM_GAMES } from '../js/bb/high-rollers-room.js';
+import { openRoom, hasPlayed, ROOM_GAMES, roomGameForNight } from '../js/bb/high-rollers-room.js';
+import { TWIST_CATALOG, twistModeClashes, BB_THEME_ECONOMIES } from '../js/core.js';
+import { BB_THEMES, THEME_LIST } from '../js/bb/themes.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { resolveBBCampaignAct } from '../js/bb/shared-strategy.js';
 import { runRoulette } from '../js/bb/chopping-block-roulette.js';
@@ -253,6 +255,83 @@ describe('House Status shows what each of them is holding', () => {
       const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
       const html = statusScreens(ep).map(s => s.html).join('');
       expect(html, 'an unthemed wall is drawing a purse').not.toContain('<ellipse cx="8" cy="5.4"');
+    });
+  });
+});
+
+// ── THE CARD ON THE TIMELINE ────────────────────────────────────────────
+describe('the room as a schedulable card', () => {
+  it('is refused by a season with no money system', () => {
+    // The dispatch only asks whether the card is on the week, so without this
+    // the door opened on a season with no BB Bucks and every houseguest walked
+    // up to a price they could not pay. Nothing threw; the week just narrated
+    // people turning around, and the timeline gave no warning.
+    const cat = TWIST_CATALOG.find(c => c.id === 'bb-high-rollers-room');
+    expect(cat, 'the room is not in the catalogue').toBeTruthy();
+    expect(cat.needsEconomy).toBe(true);
+
+    expect(twistModeClashes(cat, { format: 'big-brother', theme: 'none' }))
+      .toContain('no BB Bucks in this season');
+    expect(twistModeClashes(cat, { format: 'big-brother', theme: 'summer-of-mystery' }))
+      .toContain('no BB Bucks in this season');
+    expect(twistModeClashes(cat, { format: 'big-brother', theme: 'high-rollers' }))
+      .not.toContain('no BB Bucks in this season');
+  });
+
+  // core.js is a LEAF — it cannot import the theme registry — so the economy
+  // map is a hand-written copy. This is what stops the copy drifting.
+  it('knows exactly which themes run on money', () => {
+    const declared = Object.keys(BB_THEME_ECONOMIES).sort();
+    const real = THEME_LIST.filter(id => BB_THEMES[id]?.economy).sort();
+    expect(declared, 'core.js and the theme descriptors disagree about who has an economy')
+      .toEqual(real);
+  });
+
+  it('lets an author name the game, and otherwise runs its own order', () => {
+    const ids = ROOM_GAMES.map(g => g.id);
+    expect(ids).toContain('veto-derby');
+    expect(ids).toContain('chopping-block-roulette');
+    // Left alone: the cheap table first, the wheel after.
+    expect(roomGameForNight(0).id).toBe('veto-derby');
+    expect(roomGameForNight(1).id).toBe('chopping-block-roulette');
+    expect(roomGameForNight(2).id).toBe('chopping-block-roulette');
+  });
+
+  // The room's contract carried ONE announcement, naming the wheel and its 125.
+  // Read out on a Derby night it told the house the wrong price for the wrong
+  // game — a generated sentence the mechanics do not honour, which is this
+  // project's oldest bug.
+  it('announces the game it is actually selling, at the price it costs', () => {
+    for (const [gameId, mustSay, mustNotSay] of [
+      ['veto-derby', /Veto Derby/, /Chopping Block Roulette/],
+      ['chopping-block-roulette', /Chopping Block Roulette/, /Veto Derby/],
+    ]) {
+      withSeededRandom(23, () => {
+        season([{ episode: 1, type: 'bb-high-rollers-room', game: gameId }]);
+        simulateBBEpisode();
+        const ann = (gs.bb.weeks || []).flatMap(w => w.acts || [])
+          .filter(a => a.type === 'twist-announcement')
+          .flatMap(a => a.announced || [])
+          .find(a => /High Roller/.test(a.name || ''));
+        expect(ann, `${gameId}: the room was never announced`).toBeTruthy();
+        expect(ann.rule, `${gameId}: the announcement names the wrong game`).toMatch(mustSay);
+        expect(ann.rule, `${gameId}: the announcement names the other game`).not.toMatch(mustNotSay);
+        const price = ROOM_GAMES.find(g => g.id === gameId).price;
+        expect(ann.rule, `${gameId}: the announcement quotes the wrong price`)
+          .toContain(String(price));
+      });
+    }
+  });
+
+  it('sells the game the card asks for, whatever night it is', () => {
+    withSeededRandom(17, () => {
+      season([{ episode: 1, type: 'bb-high-rollers-room', game: 'chopping-block-roulette' }]);
+      simulateBBEpisode();
+      const act = (gs.bb.weeks || []).flatMap(w => w.acts || [])
+        .find(a => a.type === 'high-rollers-room');
+      expect(act, 'the room never opened').toBeTruthy();
+      // Night one would ordinarily sell the Derby.
+      expect(act.gameId || act.gameName).toMatch(/roulette|Roulette/);
     });
   });
 });

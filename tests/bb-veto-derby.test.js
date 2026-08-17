@@ -8,7 +8,12 @@ import { runDerby, placeDerbyBets, resolveDerbyBets, derbySlotHolders,
   DERBY_SLOTS } from '../js/bb/veto-derby.js';
 import { ROOM_GAMES } from '../js/bb/high-rollers-room.js';
 import { stableRng } from '../js/bb/knowledge.js';
+import { credit } from '../js/bb/bb-bucks.js';
+import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
+import { generateBBSummaryText } from '../js/text-backlog.js';
+import { buildVPScreens } from '../js/vp-screens.js';
 import { seedGame } from './helpers/setup.js';
+import { withSeededRandom } from './helpers/rng.js';
 
 const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly',
   'Hicks', 'Emmah'];
@@ -130,6 +135,113 @@ describe('backing one of the six', () => {
     expect(act.settled).toBe(false);
     expect(act.results).toBeUndefined();
     for (const b of act.bets) expect(b.won).toBeUndefined();
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE TWO-HOLDER VETO WEEK
+// ══════════════════════════════════════════════════════════════════════
+//
+// The engine has only ever had one veto holder. Canon: the bettor decides
+// first, the HOH refills, and THEN the competition's winner decides and can
+// force the HOH to refill a second time.
+describe('a veto week with two holders', () => {
+  const HOUSE = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly',
+    'Hicks', 'Emmah', 'Millie', 'Caleb'];
+  const HOUSE_CAST = HOUSE.map((name, i) => ({
+    name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight',
+    archetype: ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer', 'floater',
+      'villain', 'loyal-soldier', 'underdog', 'goat', 'hothead', 'wildcard'][i],
+  }));
+
+  /** A themed season with the room open on week one, so the Derby is on sale. */
+  const season = (theme = 'high-rollers') => {
+    seedGame(HOUSE_CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
+      ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+    Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
+      bbHaveNots: 'off', bbSafetyMode: 'off', theme });
+    seasonConfig.twistSchedule = [{ episode: 1, type: 'bb-high-rollers-room' }];
+    HOUSE.forEach(n => credit(n, 300));
+  };
+
+  /** Hunt seeds for a week where somebody actually cashed a Derby slip. */
+  const twoHolderWeek = () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const w = withSeededRandom(seed * 5, () => {
+        season();
+        simulateBBEpisode();
+        return (gs.bb.weeks || [])[0];
+      });
+      if (w && w.derbyVeto) return w;
+    }
+    return null;
+  };
+
+  it('runs the bettor first, then the competition winner, and refills twice', () => {
+    const w = twoHolderWeek();
+    expect(w, 'no seed in forty produced a cashed Derby slip').toBeTruthy();
+
+    const { holder, saved, replacement } = w.derbyVeto;
+    expect(holder, 'the bettor is not in the house').toBeTruthy();
+    // The bettor is NOT the person who won the competition — they hold a veto
+    // they never competed for, which is the whole point of the bet.
+    expect(holder).not.toBe(w.vetoWinner);
+    expect(w.initialNominees, 'the bettor saved somebody who was never nominated')
+      .toContain(saved);
+    expect(replacement, 'the HOH never refilled the chair').toBeTruthy();
+    expect(replacement).not.toBe(saved);
+
+    // And whatever the ordinary ceremony then did, the first save is not back
+    // on the block — that is the rule the second replacement must respect.
+    expect(w.finalNominees || [], 'the first save was put straight back up')
+      .not.toContain(saved);
+  });
+
+  it('never lets the second replacement re-seat the first save', () => {
+    const w = twoHolderWeek();
+    expect(w).toBeTruthy();
+    expect(w.derbySafe, 'the first save was never protected').toContain(w.derbyVeto.saved);
+    // Every later chooser reads that list.
+    if (w.vetoUsed && w.replacement) expect(w.replacement).not.toBe(w.derbyVeto.saved);
+  });
+
+  // The act-coverage guard cannot help here: it collects the act types its own
+  // seasons happen to emit, and a Derby needs a themed season, a room night and
+  // somebody who both bought a slot and made the top six. It reported green on
+  // a branch where neither Derby act was written anywhere. So this drives the
+  // three writers directly.
+  it('is written by all three writers', () => {
+    const w = twoHolderWeek();
+    expect(w).toBeTruthy();
+    const ep = gs.episodeHistory[gs.episodeHistory.length - 1];
+
+    const run = summariseWeek(w);
+    const backlog = generateBBSummaryText(ep);
+    const screens = (buildVPScreens(ep) || []).map(s => s.html || '').join('');
+
+    for (const [what, text] of [['the run transcript', run], ['the backlog', backlog],
+      ['the screens', screens]]) {
+      expect(text, `${what} never wrote the Derby slips`).toMatch(/DERBY SLIPS|Derby Slips/i);
+      expect(text, `${what} never wrote the settlement`).toMatch(/TURN(ED)? OVER/i);
+      expect(text, `${what} did not name the bettor`).toContain(w.derbyVeto.holder);
+    }
+  });
+
+  it('leaves an ordinary week completely alone', () => {
+    // No economy, no Derby, no second holder — the ceremony must behave as it
+    // always has. This is the guard that matters: five other twists hook it.
+    const w = withSeededRandom(9, () => {
+      season('none');
+      seasonConfig.twistSchedule = [];
+      simulateBBEpisode();
+      return (gs.bb.weeks || [])[0];
+    });
+    expect(w.derbyVeto).toBeUndefined();
+    expect(w.derbyBets).toBeFalsy();
+    expect(w.derbySafe || []).toHaveLength(0);
+    expect((w.finalNominees || []).length, 'an ordinary week lost its block')
+      .toBeGreaterThanOrEqual(2);
   });
 });
 

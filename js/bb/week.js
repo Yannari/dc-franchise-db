@@ -82,6 +82,7 @@ import { advanceThemeArc, currentTheme, installTheme, themeBeat, themeState,
   themePrimer, themeTwistAnnouncement } from './themes.js';
 import { awardWeeklyBucks, bucksLedgerFor } from './bb-bucks.js';
 import { runSideBets, settleSideBets } from './side-bet.js';
+import { derbySlotHolders, placeDerbyBets, resolveDerbyBets } from './veto-derby.js';
 import { resolveWeekTwistState } from './twist-contract.js';
 import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
   announceSaboteur, runSaboteurAccusation, saboteurState } from './saboteur.js';
@@ -3940,6 +3941,26 @@ export function simulateBBWeek(options = {}) {
     // players and the competition ran five, every time.
     vetoPlayers = [...new Set(vetoPlayers)]
       .filter(name => house.includes(name) || name === mysteryGuest?.guest);
+    // ── THE DERBY SLIPS, PLACED ON THE FINAL SIX ──────────────────────
+    //
+    // HERE and not at the draw, which is where it looks like it belongs. The
+    // draw is not the last word on who plays: a mystery guest can bump
+    // somebody out of their own chip, the Hacker can swap a name in, and a
+    // redraw can replace the field wholesale. A slip written at the draw could
+    // therefore back a houseguest who never competes — a bet nobody could win
+    // and nobody could lose. This line is the first point at which the six are
+    // final, and it is still before a single round is played.
+    if (currentTheme()?.economy === 'bb-bucks') {
+      try {
+        const slots = derbySlotHolders(week).filter(n => house.includes(n));
+        week.derbyBets = placeDerbyBets({ week, slots, vetoPlayers: [...vetoPlayers], rng });
+        if (week.derbyBets) {
+          week.acts.push(addBeats(week.derbyBets,
+            { players: week.derbyBets.bets.map(b => b.name).slice(0, 4) }));
+        }
+      } catch { week.derbyBets = null; }
+    }
+
     const vetoCompetition = runBBCompetition({ type:'veto', participants:vetoPlayers, guest: mysteryGuest?.guest || null, excluded:house.filter(name => !vetoPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.veto, nominees, hoh, seed:options.seed, haveNots: week.haveNots || [] });
     const vetoResults = vetoCompetition.placements.map(name => ({ name, score:vetoCompetition.scores[name], threw:!!vetoCompetition.debug.scoreBreakdown[name]?.threw }));
     let vetoWinner = hook(hooks, 'vetoOutcome', vetoCompetition.winner, { week, results:vetoResults, competition:vetoCompetition, nominees: [...nominees] });
@@ -4009,6 +4030,26 @@ export function simulateBBWeek(options = {}) {
     }
     gs.bb.stats[vetoWinner].vetoWins++;
     week.vetoWinner = vetoWinner;
+    // ── AND THE SLIPS ARE TURNED OVER ─────────────────────────────────
+    //
+    // Its own act, pushed after the competition, for the reason the side bet
+    // had to learn twice: a settlement written back into the placement act
+    // renders on a screen drawn BEFORE the event that decided it, and tells
+    // the viewer the result in advance.
+    //
+    // `derbyHolders` is what the ceremony below reads. A name here holds a
+    // veto it never competed for.
+    if (week.derbyBets && !week.derbyBets.settled) {
+      try {
+        const settled = resolveDerbyBets(week.derbyBets, vetoWinner, { rng });
+        if (settled) {
+          week.derbySettled = settled;
+          week.derbyHolders = settled.holders.filter(n => house.includes(n));
+          week.acts.push(addBeats(settled,
+            { players: settled.results.map(r => r.name).slice(0, 4) }));
+        }
+      } catch { week.derbyHolders = []; }
+    }
     setSpotlight({ vetoWinner, vetoPlayers: [...vetoPlayers] });
     week.vetoCompetition = vetoCompetition;
     recordCompDominance(vetoCompetition, house, week.num);
@@ -4195,6 +4236,69 @@ export function simulateBBWeek(options = {}) {
       week.rouletteSafe = [...new Set(rouletteSafe)];
     }
 
+    // ══════════════════════════════════════════════════════════════════
+    // THE DERBY'S VETO GOES FIRST
+    // ══════════════════════════════════════════════════════════════════
+    //
+    // Canon, and the whole reason the Derby is worth building: "Whoever won
+    // their Veto through the bet would make their decision FIRST, and the HoH
+    // would name a replacement if it was used. From there, whoever won their
+    // Veto through the competition then made their decision and could
+    // potentially force the HoH to nominate a replacement A SECOND TIME."
+    //
+    // So a Head of Household can lose two nominees in one meeting and have to
+    // refill the block twice, which is the only week in this game where that
+    // can happen.
+    //
+    // Written as a step BEFORE the ordinary ceremony rather than as a second
+    // pass through it: the block below already knows how to run one holder,
+    // and the Roulette a few dozen lines up already rewrites the block ahead
+    // of it. This mirrors that shape, with the same legality guards, and the
+    // ordinary ceremony then runs unchanged on whatever block this leaves.
+    const derbySafe = [];
+    // A holder who ALSO won the competition holds two vetoes and has one
+    // decision worth making — running them twice would let one person save two
+    // people, which is not what backing a winner buys.
+    const derbyHolder = (week.derbyHolders || [])
+      .find(n => house.includes(n) && n !== vetoWinner) || null;
+    if (derbyHolder) {
+      const d = shouldUseVeto(derbyHolder, nominees, plan, rng,
+        { hoh, house, diamond: false, hohSecret });
+      if (d?.use && nominees.includes(d.save)) {
+        // The chair is the Head of Household's to refill, always — the bet
+        // bought a veto, not a pen.
+        const protectedNow = [hoh, vetoWinner, derbyHolder, d.save,
+          ...(week.botbSafe || []), ...(week.rouletteSafe || []), ...(week.derbySafe || []), ...untouchable,
+          ...nominees.filter(n => n !== d.save)].filter(Boolean);
+        const up = chooseReplacement(hoh, house, protectedNow, plan, rng);
+        // Same chain the wheel uses, ending on `gs.bb.stats[up]` — an undefined
+        // name reaching that is a dead season and has killed a real one.
+        const legal = !!up && house.includes(up) && !protectedNow.includes(up)
+          && !!gs.bb.stats[up];
+        if (legal) {
+          nominees = nominees.map(n => (n === d.save ? up : n));
+          gs.bb.stats[up].timesNominated++;
+          if (gs.bb.stats[d.save]) gs.bb.stats[d.save].timesSaved++;
+          derbySafe.push(d.save);
+          week.derbyVeto = { holder: derbyHolder, saved: d.save, replacement: up,
+            why: d.why || '' };
+          setSpotlight({ nominees: [...nominees] });
+          revise('noms', { hoh, nominees: [...nominees] });
+        } else {
+          // Nobody legal left to seat. Same rule the ordinary ceremony already
+          // applies to itself: the medallion stays in the box and the block
+          // does not move, rather than emptying a chair the engine cannot
+          // refill — `resolveBBCampaignAct` throws on a block of one.
+          week.derbyVetoVoid = { holder: derbyHolder, saved: d.save };
+        }
+      } else {
+        week.derbyVetoUnused = { holder: derbyHolder };
+      }
+    }
+    // Read by every replacement chooser that runs after this point, so the
+    // second holder cannot put back the person the first one took down.
+    week.derbySafe = [...new Set(derbySafe)];
+
     let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house, diamond, hohSecret });
     // A veto that MUST be used stops being a decision about whether and starts
     // being a decision about who — and the holder cannot decline it just
@@ -4233,7 +4337,7 @@ export function simulateBBWeek(options = {}) {
       && !house.some(n => n !== hoh && n !== vetoWinner && !nominees.includes(n)
         // The wheel's rescue is week-long safety, so they are not one of the
         // bodies that makes the chair fillable either.
-        && !(week.rouletteSafe || []).includes(n))) {
+        && !(week.rouletteSafe || []).includes(n) && !(week.derbySafe || []).includes(n))) {
       vetoDecision = { use: false, save: null, reason: 'no-replacement',
         why: `${vetoWinner} could take ${vetoDecision.save} down, but there is no eligible houseguest left to put up in the empty chair. The rules make the decision: the medallion stays in the box.` };
     }
@@ -4261,7 +4365,7 @@ export function simulateBBWeek(options = {}) {
          the name on this list the chooser can put them straight back up an hour
          later, which is the shape of gap this codebase has shipped before —
          the Golden Key holder two comments down was exactly it. */
-      const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...(week.rouletteSafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...keySafe, ...duoCrownSafe, ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
+      const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...(week.rouletteSafe || []), ...(week.derbySafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...keySafe, ...duoCrownSafe, ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
       // The chooser reasons from their OWN plan. An HOH follows the week's
       // nomination plan; a diamond holder follows their own read of the house,
       // which is what makes the twist a hijacking rather than a formality.
@@ -4713,7 +4817,7 @@ export function simulateBBWeek(options = {}) {
             : [week.vetoSaved].filter(Boolean))
           : [];
         const protectedNames2 = [hoh, solo.holder, ...takenDown, ...nominees,
-          ...savedByFirstVeto, ...untouchable, ...(week.rouletteSafe || [])].filter(Boolean);
+          ...savedByFirstVeto, ...untouchable, ...(week.rouletteSafe || []), ...(week.derbySafe || [])].filter(Boolean);
         let seated2 = [];
         try {
           if (duoPartnerDown) {
@@ -4854,7 +4958,7 @@ export function simulateBBWeek(options = {}) {
       const authority = extra.authority === 'veto-holder' ? extra.holder : hoh;
       // Same rule, same reason — see the note on the first veto's chair.
       const protectedNames = [hoh, vetoWinner, extra.holder, dec.save, ...keySafe, ...duoCrownSafe, ...savedThisWeek,
-        ...(week.rouletteSafe || []),
+        ...(week.rouletteSafe || []), ...(week.derbySafe || []),
         ...(week.botbSafe || []), carePackageProtects(week.carePackage),
         ...safetySuiteSafe(week.safetySuite),
         ...nominees.filter(n => n !== dec.save)].filter(Boolean);
@@ -5449,7 +5553,7 @@ export function simulateBBWeek(options = {}) {
         // cannot be renominated onto itself.
         const protectedNames = [hoh, holder, save, other, ...nominees,
           week.vetoWinner, week.vetoDecision?.use ? week.vetoDecision.save : null,
-          ...(week.botbSafe || []), ...(week.rouletteSafe || []), carePackageProtects(week.carePackage),
+          ...(week.botbSafe || []), ...(week.rouletteSafe || []), ...(week.derbySafe || []), carePackageProtects(week.carePackage),
           ...safetySuiteSafe(week.safetySuite)].filter(Boolean);
         const chooserPlan = { target: myTarget || null, pawn: null, backdoorTarget: myTarget || null };
         let replacement = chooseReplacement(holder, house, protectedNames, chooserPlan, rng);

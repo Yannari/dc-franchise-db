@@ -22522,6 +22522,67 @@ export function rpBuildBBThemeTurn(ep, act) {
  * The viewer sees the slips; the house never does. What the room watched was
  * people walking to the rail, and that is all the transcripts print.
  */
+/**
+ * THE DERBY SLIPS — spent on the six, before a round is played.
+ *
+ * Carries no result, for the reason the side bet had to learn twice: a screen
+ * drawn before the competition must not know how the competition went.
+ */
+export function rpBuildBBDerbyBet(ep, act) {
+  if (!act || !(act.bets || []).length) return '';
+  const rows = act.bets.map(b => `<tr>
+      <td style="padding:4px 10px 4px 0;font-size:12px;color:var(--text)">${_bbEsc(b.name)}</td>
+      <td style="padding:4px 0;font-size:12px;color:var(--bbx-key)">backs ${_bbEsc(b.on)}</td>
+    </tr>`).join('');
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'THE DERBY SLIPS',
+    subtitle: 'A slot bought on nomination night, spent now that there are six names to spend it on.',
+    accent: 'var(--bbx-key)', room: 'bb-power',
+    stateKey: `bb_derby_bet_${ep.num}`,
+    header: `<div style="max-width:560px;margin:0 auto 16px;padding:10px 12px;
+         border:1px solid var(--border);border-radius:6px;background:rgba(var(--bbx-card2-rgb),.45)">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--bbx-dim);margin-bottom:6px">
+        THE BOARD — ${_bbEsc((act.players || []).join(' · '))}</div>
+      <table style="width:100%;border-collapse:collapse">${rows}</table>
+      <div style="margin-top:6px;font-size:10px;color:var(--bbx-dim)">
+        Back the one who wins the veto and you hold a veto of your own, without playing a round of it.</div>
+    </div>`,
+    scenes: (act.beats || []).map(b => ({ text: b.text, players: b.players,
+      badgeText: b.badgeText, badgeClass: b.badgeClass })),
+  });
+}
+
+/** THE SLIPS TURN OVER — once the veto competition has a winner. */
+export function rpBuildBBDerbySettled(ep, act) {
+  if (!act || !(act.results || []).length) return '';
+  const rows = act.results.map(r => `<tr>
+      <td style="padding:4px 10px 4px 0;font-size:12px;color:var(--text)">${_bbEsc(r.name)}</td>
+      <td style="padding:4px 10px;font-size:12px;color:var(--bbx-dim)">on ${_bbEsc(r.on)}</td>
+      <td style="padding:4px 0;text-align:right;font-size:11px;color:${r.won ? 'var(--bbx-key)' : 'var(--bbx-dim)'}">
+        ${r.won ? 'holds a veto' : 'nothing'}</td>
+    </tr>`).join('');
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'THE SLIPS TURN OVER',
+    subtitle: `${_bbEsc(act.vetoWinner)} won the veto.`,
+    accent: 'var(--bbx-key)', room: 'bb-power',
+    stateKey: `bb_derby_paid_${ep.num}`,
+    header: `<div style="max-width:560px;margin:0 auto 16px;padding:10px 12px;
+         border:1px solid var(--border);border-radius:6px;background:rgba(var(--bbx-card2-rgb),.45)">
+      <table style="width:100%;border-collapse:collapse">${rows}</table>
+    </div>`,
+    scenes: [
+      { text: (act.holders || []).length
+        ? `<strong>${act.holders.map(_bbEsc).join('</strong>, <strong>')}</strong> backed the winner. `
+          + 'There are two vetoes in this house tonight, and the one nobody competed for goes first.'
+        : 'Nobody backed the winner. Every slip on that board is worth exactly what the paper cost.',
+      players: act.holders || [], badgeText: (act.holders || []).length ? 'A SECOND VETO' : 'ALL DEAD',
+      badgeClass: (act.holders || []).length ? 'gold' : 'grey' },
+      ...(act.beats || []).map(b => ({ text: b.text, players: b.players,
+        badgeText: b.badgeText, badgeClass: b.badgeClass })),
+    ],
+  });
+}
+
 export function rpBuildBBSideBet(ep, act) {
   if (!act || !(act.bets || []).length) return '';
   // THE SLIPS ONLY. No result, no outcome, no hint of Thursday — this screen
@@ -23087,6 +23148,16 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'side-bet':
         screens.push({ id: id('bb-sidebet'), label: 'The Side Bet',
           html: rpBuildBBSideBet(view, act) });
+        break;
+      // The Derby's slips, drawn before the competition — no result on it.
+      case 'derby-bet':
+        screens.push({ id: id('bb-derby-bet'), label: 'The Derby Slips',
+          html: rpBuildBBDerbyBet(view, act) });
+        break;
+      // And turned over once the veto has a winner.
+      case 'derby-bet-settled':
+        screens.push({ id: id('bb-derby-paid'), label: 'The Slips Turn Over',
+          html: rpBuildBBDerbySettled(view, act) });
         break;
       // Thursday's half, drawn after the eviction it depends on.
       case 'side-bet-settled':

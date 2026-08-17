@@ -1687,6 +1687,27 @@ export function summariseWeek(week) {
         for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
         break;
       }
+      // The Derby slips, spent on the final six before a round is played.
+      case 'derby-bet': {
+        const bets = act.bets || [];
+        if (!bets.length) break;
+        line('');
+        line('THE DERBY SLIPS');
+        for (const b of bets) line(`  ${b.name} backs ${b.on}.`);
+        line('  Back the veto winner and you hold a veto of your own, unplayed.');
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
+      case 'derby-bet-settled': {
+        if (!(act.results || []).length) break;
+        line('');
+        line('THE SLIPS ARE TURNED OVER');
+        line(act.holders.length
+          ? `  ${act.vetoWinner} won it, so ${act.holders.join(', ')} hold a veto too.`
+          : `  ${act.vetoWinner} won it, and nobody backed ${act.vetoWinner}. Every slip is dead.`);
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
       // Thursday. Its own act, so the result cannot appear before the vote
       // that produced it.
       case 'side-bet-settled': {

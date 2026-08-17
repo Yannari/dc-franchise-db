@@ -59,11 +59,11 @@ Notes for the implementer:
 - The HOH is still excluded, for the same reason the room excludes them.
 - Default `rng` must become `stableRng('coin-of-destiny', gs?.bb?.seasonSalt || 0, week?.num || 0)`, not `Math.random`.
 
-- [ ] **Step 1: Write the failing test** — a buyer's balance drops by exactly `COIN_PRICE` on entry; a buyer who loses the game is still charged; a winner who calls it wrong is still charged; somebody who cannot afford it never enters and appears in `act.short`; nobody buys in twice in a season; the act names every buyer once.
-- [ ] **Step 2: Run it, watch it fail.**
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Verify** — `npx vitest run tests/bb-coin-of-destiny.test.js tests/bb-bucks.test.js`
-- [ ] **Step 5: Commit** — `feat(bb): the Coin costs money now, and losing does not refund it`
+- [x] **Step 1: Write the failing test** — a buyer's balance drops by exactly `COIN_PRICE` on entry; a buyer who loses the game is still charged; a winner who calls it wrong is still charged; somebody who cannot afford it never enters and appears in `act.short`; nobody buys in twice in a season; the act names every buyer once.
+- [x] **Step 2: Run it, watch it fail.**
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Verify** — `npx vitest run tests/bb-coin-of-destiny.test.js tests/bb-bucks.test.js`
+- [x] **Step 5: Commit** — `feat(bb): the Coin costs money now, and losing does not refund it`
 
 ---
 
@@ -88,12 +88,12 @@ Notes for the implementer:
 - **`gs.bb.stats[name]` on an undefined name throws** and has crashed a real season. Every name reaching it must be checked.
 - An unthemed week, and a themed week with no coin, must run **byte-identically**.
 
-- [ ] **Step 1: Write the failing test** — on a week where the toss was called right and the veto is used, the replacement is chosen by the holder's read and not the HOH's; no surface anywhere in the week names the holder; the dethroned HOH is not renominated; a week with no coin is unchanged.
-- [ ] **Step 2: Run it, watch it fail.**
-- [ ] **Step 3: Implement**, then narrate it in all three writers — the ceremony must say the block moved and that nobody will say whose hand moved it.
-- [ ] **Step 4: MEASURE.** Across casts 12–20, report how often a coin week reaches a veto ceremony where the veto is used, and how often the replacement pool runs out. If a one-name block is ever reachable, STOP and report rather than shipping it.
-- [ ] **Step 5: Verify** — `npx vitest run tests/bb-coin-of-destiny.test.js tests/bb-act-coverage.test.js tests/bb-diamond-veto.test.js tests/bb-veto-variants.test.js tests/bb-veto-derby.test.js`
-- [ ] **Step 6: Commit** — `feat(bb): the coin holder runs the whole week, and nobody learns the name`
+- [x] **Step 1: Write the failing test** — on a week where the toss was called right and the veto is used, the replacement is chosen by the holder's read and not the HOH's; no surface anywhere in the week names the holder; the dethroned HOH is not renominated; a week with no coin is unchanged.
+- [x] **Step 2: Run it, watch it fail.**
+- [x] **Step 3: Implement**, then narrate it in all three writers — the ceremony must say the block moved and that nobody will say whose hand moved it.
+- [x] **Step 4: MEASURE.** Across casts 12–20, report how often a coin week reaches a veto ceremony where the veto is used, and how often the replacement pool runs out. If a one-name block is ever reachable, STOP and report rather than shipping it.
+- [x] **Step 5: Verify** — `npx vitest run tests/bb-coin-of-destiny.test.js tests/bb-act-coverage.test.js tests/bb-diamond-veto.test.js tests/bb-veto-variants.test.js tests/bb-veto-derby.test.js`
+- [x] **Step 6: Commit** — `feat(bb): the coin holder runs the whole week, and nobody learns the name`
 
 ---
 
@@ -111,11 +111,11 @@ Notes for the implementer:
 - **There are TWO of these lines** (`5320` and `6454`, the second on another episode path). Missing one leaves the rule half-applied on whichever path is not exercised by the tests you happen to run.
 - This gives `week.coinDethroned` its first reader. It stays.
 
-- [ ] **Step 1: Write the failing test** — after a week whose HOH was dethroned by the coin, `gs.bb.outgoingHoh` is null and that houseguest is in the next HOH competition's field; after an ordinary week, they are barred exactly as before.
-- [ ] **Step 2: Run it, watch it fail.**
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Verify** — `npx vitest run tests/bb-coin-of-destiny.test.js tests/bb-hoh.test.js`
-- [ ] **Step 5: Commit** — `feat(bb): a dethroned HOH gets to win it back`
+- [x] **Step 1: Write the failing test** — after a week whose HOH was dethroned by the coin, `gs.bb.outgoingHoh` is null and that houseguest is in the next HOH competition's field; after an ordinary week, they are barred exactly as before.
+- [x] **Step 2: Run it, watch it fail.**
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Verify** — `npx vitest run tests/bb-coin-of-destiny.test.js tests/bb-hoh.test.js`
+- [x] **Step 5: Commit** — `feat(bb): a dethroned HOH gets to win it back`
 
 ---
 
@@ -128,12 +128,12 @@ Notes for the implementer:
 - The contract's `announcement.rule` currently promises nominations only. It must now describe the whole week, including the replacement.
 - **Read a real backlog end to end.** Every prose bug on this theme was found that way and none by a test: a nominee named twice, a settlement printed before the vote it settled, a table that opened three times a week. Report what you saw.
 
-- [ ] **Step 1: Write the failing test** — the primer names the Coin and its price; the announcement describes the replacement authority; the banned-phrase sweeps still pass; no surface in a coin week contains the holder's name.
-- [ ] **Step 2: Run it, watch it fail.**
-- [ ] **Step 3: Measure, set the price, write the copy.**
-- [ ] **Step 4: Read the backlog and report.**
-- [ ] **Step 5: Verify** — `npx vitest run tests/bb-theme-primers.test.js tests/bb-coin-of-destiny.test.js tests/bb-act-coverage.test.js tests/bb-themes.test.js`
-- [ ] **Step 6: Commit** — `feat(bb): the floor's last product, priced`
+- [x] **Step 1: Write the failing test** — the primer names the Coin and its price; the announcement describes the replacement authority; the banned-phrase sweeps still pass; no surface in a coin week contains the holder's name.
+- [x] **Step 2: Run it, watch it fail.**
+- [x] **Step 3: Measure, set the price, write the copy.**
+- [x] **Step 4: Read the backlog and report.**
+- [x] **Step 5: Verify** — `npx vitest run tests/bb-theme-primers.test.js tests/bb-coin-of-destiny.test.js tests/bb-act-coverage.test.js tests/bb-themes.test.js`
+- [x] **Step 6: Commit** — `feat(bb): the floor's last product, priced`
 
 ---
 

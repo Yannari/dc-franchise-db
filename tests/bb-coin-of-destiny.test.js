@@ -16,6 +16,7 @@ import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { BB_TWIST_CONTRACTS, resolveWeekTwistState } from '../js/bb/twist-contract.js';
 import { BB_THEMES } from '../js/bb/themes.js';
+import { rpBuildBBCoinOfDestiny } from '../js/vp-bb-coin.js';
 import { COIN_EVENTS } from '../js/bb-events/coin-of-destiny.js';
 import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 import { runCoinOfDestiny, COIN_PRICE } from '../js/bb/coin-of-destiny.js';
@@ -350,6 +351,34 @@ describe('the Coin costs money', () => {
         expect(text, `${label} still quotes the canon price`).not.toContain(stale);
       }
     }
+  });
+
+  it('draws a floor nobody could pay for, without narrating a wrong call', () => {
+    // The viewing party's outcome card says somebody "paid, played and lost",
+    // which is a sentence about a seat that was sold. On an empty floor no seat
+    // was sold and there was no call, so the card has to be a different one.
+    const act = {
+      type: 'coin-of-destiny', week: 6, secret: true, price: COIN_PRICE,
+      buyers: [], short: ['Axel', 'Dave'], declined: ['Zee'], winner: null,
+      calledRight: false, dethroned: null, nominees: [], hoh: 'Millie',
+      beats: [{ text: 'Nobody sits down.', players: ['Axel'], badgeText: 'NOBODY COULD PAY',
+        badgeClass: 'grey' }],
+    };
+    // Cards are click-to-reveal, so a fresh state draws every one of them
+    // hidden and would prove nothing about their contents. Seed the reveal
+    // index past the end so the branch under test is actually rendered.
+    const ep = { num: 6 };
+    const deps = { tvState: { bb_cd_6: { idx: 99 } }, reveal: () => '',
+      esc: s => String(s), avatar: () => '' };
+    const html = rpBuildBBCoinOfDestiny(ep, act, deps);
+    expect(html, 'the empty floor renders nothing at all').toBeTruthy();
+    expect(html, 'narrated a seat that was never sold').not.toContain('paid, played');
+    expect(html).toContain('SHORT');
+    expect(html).toContain(String(COIN_PRICE));
+    // And the ordinary act still draws its own, different, card.
+    const sold = { ...act, buyers: ['Axel'], short: [], winner: 'Axel' };
+    const soldHtml = rpBuildBBCoinOfDestiny(ep, sold, deps);
+    expect(soldHtml).toContain('paid, played');
   });
 
   it('names every buyer exactly once', () => {

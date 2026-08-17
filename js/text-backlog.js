@@ -5071,7 +5071,20 @@ export function generateBBSummaryText(ep) {
 
       case 'coin-of-destiny': {
         sec('THE COIN OF DESTINY');
-        ln(`  Anybody could buy in, and everybody saw who did: ${(act.buyers || []).join(', ') || 'nobody'}.`);
+        if (!act.winner) {
+          // The floor's most expensive product, offered to a house that spent
+          // the money in July. No seat was sold, so there is no call to keep.
+          ln(`  The buy-in was ${act.price}, and anybody could pay it who had it.`);
+          ln(`  ${(act.short || []).join(', ') || 'Nobody'} got as far as the table.`);
+          ln('  Not one of them could make the price. The game is not played,');
+          ln('  and every houseguest now knows exactly what everybody else is holding.');
+          beats(act);
+          break;
+        }
+        ln(`  Anybody could buy in for ${act.price}, and everybody saw who did: ${(act.buyers || []).join(', ') || 'nobody'}.`);
+        if ((act.short || []).length) {
+          ln(`  ${act.short.join(', ')} walked up to it and could not make the price.`);
+        }
         ln(`  ${act.winner} wins the game of skill and is taken out of the room to call the toss.`);
         ln('');
         if (act.calledRight) {

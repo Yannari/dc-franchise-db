@@ -13,7 +13,7 @@ import { runBattleBack } from './battle-back.js';
 import { resolveBonusLife } from './bonus-life.js';
 import { resolveHaltingHex } from './eviction-powers.js';
 import { resolveRewind } from './rewind.js';
-import { runCoinOfDestiny, coinNominations } from './coin-of-destiny.js';
+import { runCoinOfDestiny, coinNominations, COIN_PRICE } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
 import { openRoom, roomGameForNight, ROOM_GAMES } from './high-rollers-room.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
@@ -2973,7 +2973,16 @@ export function simulateBBWeek(options = {}) {
   const coinActive = week.twistState?.rules?.ceremonyAuthority === 'coin-holder'
     && !compressed && house.length >= 5;
   if (coinActive) {
-    const coin = runCoinOfDestiny({ week, house, hoh, nominees: [...nominees], rng });
+    // ── THE PRICE IS A SEASON CAPABILITY, NOT A PROPERTY OF THE TWIST ──
+    //
+    // The Coin is older than BB Bucks and is schedulable on any season. Only a
+    // theme declaring an economy can charge for it, so on every other season
+    // the buy-in is what it always was — a public decision to play, with
+    // nothing to hand over. Gating the twist on the currency instead would
+    // silently delete it from every season that is not High Roller's.
+    const coinPrice = currentTheme()?.economy === 'bb-bucks' ? COIN_PRICE : 0;
+    const coin = runCoinOfDestiny({ week, house, hoh, nominees: [...nominees],
+      price: coinPrice, rng });
     if (coin) {
       const named = coinNominations({ act: coin, house, hoh, untouchable, rng });
       if (named && named.length === 2) {
@@ -2988,7 +2997,8 @@ export function simulateBBWeek(options = {}) {
       }
       week.coin = {
         winner: coin.winner, calledRight: coin.calledRight,
-        buyers: [...coin.buyers], dethroned: coin.dethroned || null,
+        buyers: [...coin.buyers], short: [...(coin.short || [])],
+        price: coin.price ?? null, dethroned: coin.dethroned || null,
         nominees: [...(coin.nominees || [])],
       };
       week.acts.push(addBeats(coin, { nominees: [...(coin.nominees || [])] }));

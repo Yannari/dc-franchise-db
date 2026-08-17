@@ -17,6 +17,8 @@ import { generateSummaryText } from '../js/text-backlog.js';
 import { BB_TWIST_CONTRACTS, resolveWeekTwistState } from '../js/bb/twist-contract.js';
 import { COIN_EVENTS } from '../js/bb-events/coin-of-destiny.js';
 import { HOUSE_EVENTS } from '../js/bb-events/index.js';
+import { runCoinOfDestiny, COIN_PRICE } from '../js/bb/coin-of-destiny.js';
+import { balance, credit } from '../js/bb/bb-bucks.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -122,5 +124,114 @@ describe('the Coin of Destiny', () => {
       }
     }
     expect(seen, 'the house never reacted to the coin').toBeGreaterThan(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE BUY-IN IS A PAYMENT
+// ══════════════════════════════════════════════════════════════════════
+//
+// The Coin used to be bought with a probability: a `pull` off boldness and
+// whether you were on the block, and no money changed hands. It is the
+// floor's most expensive product and it was the only thing on the menu
+// nobody paid for.
+//
+// The rules being asserted here are the room's, deliberately — the Coin is
+// sold on its own night rather than out of the room, but a houseguest must
+// not learn two different sets of rules about what buying in means.
+describe('the Coin costs money', () => {
+  // Everybody rich enough to walk in, so the only thing deciding the door is
+  // whether they wanted to.
+  const rich = (amount = COIN_PRICE * 3) => {
+    house();
+    for (const name of gs.activePlayers) credit(name, amount);
+  };
+
+  // A seeded run that actually produced buyers. Willingness is a draw, so a
+  // single seed can legitimately empty the floor.
+  const bought = (setup, seeds = 40) => {
+    for (let seed = 1; seed <= seeds; seed++) {
+      setup();
+      const before = Object.fromEntries(gs.activePlayers.map(n => [n, balance(n)]));
+      const act = withSeededRandom(seed * 17 + 5, () => runCoinOfDestiny({
+        week: { num: 4 }, house: [...gs.activePlayers],
+        hoh: gs.activePlayers[0], nominees: gs.activePlayers.slice(1, 3),
+      }));
+      if (act && (act.buyers || []).length) return { act, before };
+    }
+    return null;
+  };
+
+  it('takes the price on the way in, from everybody who walked in', () => {
+    const played = bought(rich);
+    expect(played, 'nobody ever bought in across 40 seeds').toBeTruthy();
+    const { act, before } = played;
+    expect(COIN_PRICE).toBeGreaterThan(125);   // above the Roulette: the premium product
+    for (const name of act.buyers) {
+      expect(balance(name), `${name} was not charged`).toBe(before[name] - COIN_PRICE);
+    }
+    // And nobody who stayed on the sofa paid for the privilege.
+    for (const name of gs.activePlayers) {
+      if (act.buyers.includes(name)) continue;
+      expect(balance(name), `${name} paid without playing`).toBe(before[name]);
+    }
+  });
+
+  it('does not refund the loser, or the winner who calls it wrong', () => {
+    // Every buyer but one loses the game outright; that is the shape of a
+    // field with a single winner. If losing refunded, the arithmetic above
+    // would only hold for the winner.
+    const played = bought(rich);
+    const { act, before } = played;
+    const losers = act.buyers.filter(n => n !== act.winner);
+    expect(losers.length, 'a one-entrant field proves nothing here').toBeGreaterThan(0);
+    for (const name of losers) expect(balance(name)).toBe(before[name] - COIN_PRICE);
+    // The winner pays the same whether the toss lands or not.
+    expect(balance(act.winner)).toBe(before[act.winner] - COIN_PRICE);
+  });
+
+  it('lets a houseguest want in and be unable to pay for it', () => {
+    // Nobody can afford it. Willingness is still decided first, so the people
+    // who walked up to the door are a visible thing that happened.
+    let seen = null;
+    for (let seed = 1; seed <= 40 && !seen; seed++) {
+      house();
+      const act = withSeededRandom(seed * 17 + 5, () => runCoinOfDestiny({
+        week: { num: 4 }, house: [...gs.activePlayers],
+        hoh: gs.activePlayers[0], nominees: gs.activePlayers.slice(1, 3),
+      }));
+      if (act && (act.short || []).length) seen = act;
+    }
+    expect(seen, 'a broke house never once approached the table').toBeTruthy();
+    expect(seen.buyers).toHaveLength(0);
+    expect(seen.winner).toBeNull();
+    expect(seen.calledRight).toBe(false);
+    for (const name of seen.short) expect(balance(name)).toBe(0);
+  });
+
+  it('sells one buy-in per houseguest per season', () => {
+    rich();
+    const args = () => ({
+      week: { num: 4 }, house: [...gs.activePlayers],
+      hoh: gs.activePlayers[0], nominees: gs.activePlayers.slice(1, 3),
+    });
+    const first = withSeededRandom(211, () => runCoinOfDestiny(args()));
+    expect(first?.buyers?.length, 'no first sitting to repeat').toBeGreaterThan(0);
+    const seats = new Set(first.buyers);
+    // Run it again in the same season. Anybody who already sat down is barred,
+    // win or lose — the seat is burned, not the outcome.
+    for (let seed = 300; seed < 320; seed++) {
+      const again = withSeededRandom(seed, () => runCoinOfDestiny(args()));
+      for (const name of (again?.buyers || [])) {
+        expect(seats.has(name), `${name} bought a second seat`).toBe(false);
+      }
+    }
+  });
+
+  it('names every buyer exactly once', () => {
+    const { act } = bought(rich);
+    expect(new Set(act.buyers).size).toBe(act.buyers.length);
+    // And nobody is on both lists.
+    for (const name of act.buyers) expect(act.short || []).not.toContain(name);
   });
 });

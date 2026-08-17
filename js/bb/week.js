@@ -5534,9 +5534,15 @@ export function simulateBBWeek(options = {}) {
       p.wrong = (p.believed >= p.majority) !== (p.truth >= p.majority);
     }
   }
+  // Who went back on their word, and — new — WHO TO. `promisee` is set when
+  // the vote operation recorded a promise being renegotiated by the person on
+  // the other side of it; without it the aftermath scene had to nominate a
+  // bystander as the wronged party. Still null for the looser cases (a liar, a
+  // bandwagon jump), where there is no single person who was promised.
   week.voteBroken = ballots
     .filter(b => b.stated !== b.evict && commitments.get(b.voter)?.promised)
-    .map(b => ({ voter: b.voter, promised: b.stated, cast: b.evict }));
+    .map(b => ({ voter: b.voter, promised: b.stated, cast: b.evict,
+      promisee: b.brokePromiseTo || commitments.get(b.voter)?.promisedTo || null }));
 
   // ── The detonation ──
   // A secret Diamond Power of Veto fires HERE — at the live show, after every

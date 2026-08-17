@@ -83,6 +83,63 @@ function approachArgument(recruiter, voter, target, keeping) {
 }
 
 /**
+ * Is this the ask that names the promise, and what does it cost to say yes?
+ *
+ * Shared by both paths a ballot can be asked to move — the room asking its own
+ * member, and a recruiter asking an outsider — because the two used completely
+ * different machinery and a promise had to be unbreakable in BOTH for it to be
+ * unbreakable at all. It was: the member path refused on a hard
+ * `strength >= 0.6` and a promised voter sits at 0.93, so the room simply never
+ * got an answer other than no.
+ *
+ * `resist` takes the promise's own contribution to firmness back off and
+ * charges the two things that should actually hold somebody to their word:
+ * how loyal they are, and what they feel they owe the person they promised.
+ * Everything else about their firmness still counts.
+ */
+export function promiseAsk(commitment, target) {
+  if (!commitment?.promised || !commitment.promisedTo || target !== commitment.promisedTo) {
+    return null;
+  }
+  const voter = commitment.voter;
+  const s = pStats(voter);
+  return {
+    promisee: commitment.promisedTo,
+    resist: ((commitment.strength ?? 0.4) - (commitment.promiseHold || 0)) * 6
+      + s.loyalty * 0.35
+      + Math.max(0, getPerceivedBond(voter, commitment.promisedTo)) * 0.3,
+  };
+}
+
+/** How hard one person is pushing a name at another. Same shape in both paths. */
+function pitchForce(pitcher, voter, rng, week) {
+  const p = pStats(pitcher);
+  return p.social * 0.35 + p.strategic * 0.2
+    + tacticalCooperation(voter, pitcher) * 0.45
+    + Math.max(0, getPerceivedBond(voter, pitcher)) * 0.25 + noise(rng, 3)
+    - socialDrag(pitcher, week);
+}
+
+/**
+ * The pitch that does not pretend the promise is not there.
+ *
+ * Every line names it, because that is the whole difference. A recruiter who
+ * skirts it is making the ordinary ask; this one is asking somebody to go back
+ * on their word and saying so out loud, which is why it can land where the
+ * ordinary ask cannot.
+ */
+function breakPromiseArgument(recruiter, voter, promisee) {
+  return opText([
+    `${recruiter} does not pretend not to know. "You told ${promisee} you had them. I am asking you to not have them."`,
+    `"${promisee} is going to lose this vote whether your name is on it or not." ${recruiter} lets ${voter} sit with the second half of that.`,
+    `${recruiter} points out that ${promisee} made ${voter} exactly one promise back, and asks what it was worth.`,
+    `"Nobody is going to read the votes out and say which one of you lied first." ${recruiter} says it kindly, to ${voter}, about ${promisee}.`,
+    `${recruiter} asks ${voter} whether ${promisee} would take this deal if the block were the other way round. ${voter} does not answer, which is an answer.`,
+    `The pitch to ${voter} is one sentence long: keeping the promise to ${promisee} costs a week, and breaking it costs an apology.`,
+  ], recruiter, voter, promisee, 'break-promise');
+}
+
+/**
  * Steps 2–6 of the operation: alliance meetings, member responses, ballot
  * ownership, the count, and recruitment. Mutates ballots the way the old
  * bloc pass did — but records everything, not just the changes.
@@ -174,6 +231,34 @@ export function runVoteOperation({ ballots = [], nominees = [], hoh = null,
         ballot.assignment = { by: plan.alliance, target: plan.target, kind: 'bloc' };
         continue;
       }
+      // ── the room wants the person this member gave their word to ──
+      //
+      // Resolved here, BEFORE the firmness threshold below, because that
+      // threshold is what made a promise unbreakable: a promised voter sits
+      // around 0.93 and refuses every time. This is the same ask the recruiter
+      // makes to an outsider, priced the same way — the promise stops being a
+      // shield against the person renegotiating it, and loyalty and what they
+      // owe the promisee decide instead. Proportional, so a disloyal member
+      // with a thin bond folds and a loyal one who is close does not.
+      const ask = promiseAsk(c, plan.target);
+      if (ask) {
+        const persuade = pitchForce(plan.organizer, voter, rng, week);
+        // The sentence the room said, carried on the stance. The recruiter path
+        // records its argument on the approach; this path had only a label, so
+        // the whole scene reached the screen as one word.
+        const argument = breakPromiseArgument(plan.organizer, voter, ask.promisee);
+        if (persuade > ask.resist) {
+          ballot.evict = plan.target;
+          ballot.changed = true;
+          ballot.brokePromiseTo = ask.promisee;
+          ballot.assignment = { by: plan.alliance, target: plan.target, kind: 'broke-promise' };
+          plan.stances.push({ voter, stance: 'breaks-promise', to: ask.promisee, argument });
+          moves.push({ voter, target: plan.target, alliance: plan.alliance });
+        } else {
+          plan.stances.push({ voter, stance: 'keeps-promise', to: ask.promisee, argument });
+        }
+        continue;
+      }
       // A firm commitment elsewhere beats the room — that crack is the story.
       if (strength >= 0.6) { plan.stances.push({ voter, stance: 'refusing' }); continue; }
       // An endgame deal with the target makes the move cost something; they go
@@ -233,14 +318,36 @@ export function runVoteOperation({ ballots = [], nominees = [], hoh = null,
         + Math.max(0, getPerceivedBond(voter, recruiter)) * 0.25 + noise(rng, 3)
         // Nobody takes the room seriously while it is dressed as an egg.
         - socialDrag(recruiter, week);
-      const resist = strength * 6 + vStats.loyalty * 0.15 + vStats.intuition * 0.1;
-      const argument = approachArgument(recruiter, voter, plan.target, plan.keeping);
+      // ── the ask that names the promise ──
+      //
+      // The room is asking this voter to vote out the exact person they gave
+      // their word to. That ask is not the same ask as any other, and it must
+      // not be priced as one: a promise cannot be a shield against the person
+      // renegotiating it, or a broken word is unreachable by construction.
+      // (It was: one ballot in 546.)
+      //
+      // So the promise's own contribution to firmness comes back OFF, and what
+      // resists instead is the two things that should — how loyal this person
+      // is, and what they actually feel they owe the one they promised. A
+      // disloyal houseguest with a thin bond is now genuinely gettable; a loyal
+      // one who is close to them is harder than they were before.
+      const ask = promiseAsk(commitments.get(voter), plan.target);
+      const breaking = !!ask;
+      const resist = ask
+        ? ask.resist
+        : strength * 6 + vStats.loyalty * 0.15 + vStats.intuition * 0.1;
+      const argument = ask
+        ? breakPromiseArgument(recruiter, voter, ask.promisee)
+        : approachArgument(recruiter, voter, plan.target, plan.keeping);
       let outcome;
       if (persuade > resist) {
-        outcome = 'agrees';
+        outcome = breaking ? 'breaks-promise' : 'agrees';
         ballot.evict = plan.target;
         ballot.changed = true;
         ballot.recruitedBy = recruiter;
+        // Named, so the aftermath has a real victim instead of whichever
+        // bystander happened to have the highest intuition.
+        if (ask) ballot.brokePromiseTo = ask.promisee;
         ballot.assignment = { by: plan.alliance, target: plan.target, kind: 'recruited', recruiter };
         moves.push({ voter, target: plan.target, alliance: plan.alliance });
       } else {

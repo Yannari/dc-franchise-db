@@ -262,6 +262,18 @@ const vetoHolderWeighs = {
     // themselves.
     if (!ctx?.vetoWinner || _noms(ctx).includes(ctx.vetoWinner)) return 0;
     if (ctx.vetoWinner === ctx.hoh) return 0;
+    // ── AND NOT WHEN NOBODY KNOWS WHOSE WEEK IT IS ──
+    //
+    // The card is built on there being a named person in power to cross: three
+    // of its four lines say the Head of Household's name, and it banks
+    // suspicion and a pressure memory against them. On an anonymous week the
+    // Head of Household is either unknown or — under the Coin — publicly
+    // dethroned, holding neither the block nor anything to threaten with.
+    // Found by reading a backlog: a veto holder was weighing "using it makes an
+    // enemy of Eva" about an HOH the whole house had watched lose the block.
+    // The Coin and the invisible HOH both have their own event families for
+    // a week whose author cannot be named.
+    if (ctx?.week?.hohSecret || ctx?.week?.coinAuthority) return 0;
     return at('post-veto', ctx, 10);
   },
   fire(house, ctx, api) {

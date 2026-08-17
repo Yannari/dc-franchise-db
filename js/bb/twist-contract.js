@@ -612,8 +612,11 @@ export const BB_TWIST_CONTRACTS = {
     acquisition: { channel: 'purchase', secrecy: 'holder-secret' },
     announcement: {
       name: 'The Coin of Destiny',
-      rule: 'Any houseguest may buy into the Coin of Destiny. They play for it, and whoever wins calls a coin toss in private. Call it correctly and they take this week’s nominations away from the Head of Household and make their own — and the house will never be told who did it.',
-      sting: 'Somebody is about to lose their week to a coin, and never learn whose hand threw it.',
+      // The rule used to promise the nominations and stop there, which was the
+      // engine's old behaviour and is half of canon's. It now describes the
+      // whole week, because that is what the winner actually takes.
+      rule: 'Any houseguest may buy into the Coin of Destiny — and where this season has a currency, buying in costs money and the money is taken on the way in. Everybody who pays plays for it, one of them wins, and that one is taken somewhere with no camera and asked to call a coin toss. Call it correctly and they do not simply take this week’s nominations away from the Head of Household: they BECOME the Head of Household for the rest of the week, making the nominations and naming the replacement at the veto meeting as well. The Head of Household they took it from stays safe and competes again next week. The house will never be told who did any of it.',
+      sting: 'Somebody is about to lose their whole week to a coin, and never learn whose hand threw it.',
     },
   },
   // 'bb-veto-redraw' and 'bb-veto-replacement' are NOT here either, and it is

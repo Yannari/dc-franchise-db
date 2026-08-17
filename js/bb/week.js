@@ -4385,7 +4385,21 @@ export function simulateBBWeek(options = {}) {
     // second holder cannot put back the person the first one took down.
     week.derbySafe = [...new Set(derbySafe)];
 
-    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house, diamond, hohSecret });
+    // ── WHO THE VETO HOLDER IS AFRAID OF CROSSING ──
+    //
+    // `shouldUseVeto` prices the anger of the person whose week gets undone,
+    // and halves it on an invisible week because the holder cannot name who
+    // they would be crossing. A coin week is exactly that and was not being
+    // treated as one: found by reading a real backlog, where the veto holder
+    // weighed "using it makes an enemy of Eva" about a Head of Household the
+    // whole house had watched lose the block to somebody else. Nobody in that
+    // room believed Eva chose those two, so nobody should have been pricing
+    // her temper.
+    const coinChair = week.coinAuthority && house.includes(week.coinAuthority)
+      ? week.coinAuthority : null;
+    const anonymousChair = hohSecret || !!coinChair;
+    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng,
+      { hoh, house, diamond, hohSecret: anonymousChair });
     // A veto that MUST be used stops being a decision about whether and starts
     // being a decision about who — and the holder cannot decline it just
     // because the honest answer this week was nobody.
@@ -4415,8 +4429,6 @@ export function simulateBBWeek(options = {}) {
     // pen exactly where the HOH would have held it. `house.includes` because a
     // holder who has left the house cannot name anybody, and `chooseReplacement`
     // on a name that is not there is a dead season.
-    const coinChair = week.coinAuthority && house.includes(week.coinAuthority)
-      ? week.coinAuthority : null;
     const chairAuthority = diamond ? vetoWinner
       : (roadkillChair ? week.roadkill.winner : (coinChair || hoh));
     if (roadkillChair) week.roadkillRefilled = true;

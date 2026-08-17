@@ -95,10 +95,12 @@ export default {
     // for. Name the purchase, the price and what it does, in that order,
     // before saying anything clever about audiences.
     what: 'A season you can buy your way out of trouble in. Every week the audience pays every '
-      + 'houseguest, and that money is yours to keep until you spend it — on a spin, late in the '
-      + 'season, that costs 125 and can take you off the block. Nearly everything else follows from '
-      + 'that one purchase: what the payout is worth, who can afford the room when it opens, and who '
-      + 'gambled away the price of a seat in July.',
+      + 'houseguest, and that money is yours to keep until you spend it. Late on, the floor opens and '
+      + 'starts selling: a bet on somebody else\'s veto for 50, a spin for 125 that can take you off '
+      + 'the block, and finally the Coin of Destiny for 165, which hands you somebody else\'s whole week '
+      + 'without ever telling them you took it. A season earns less than that list costs, so nobody buys '
+      + 'everything. Everything else follows from that: what a payout is worth, who can afford the room '
+      + 'when it opens, and who gambled away the price of a seat in July.',
     who: 'The Pit Boss works the floor for an owner that never shows itself, never plays, and never '
       + 'loses. He is a floor manager and he is delighted you came. He comps the drinks, he learns '
       + 'your name, and he has been counting since the moment you sat down.',
@@ -119,6 +121,14 @@ export default {
         + '— yourself, or somebody you want to keep — and then a wheel picks their replacement at '
         + 'random. The Head of Household loses control of their own week, and because nobody chose '
         + 'the replacement, nobody can pin it on you.',
+      'One week further on, the floor sells the last and dearest thing it has: the Coin of Destiny, at '
+        + '165. Everybody who pays plays for it, one wins, and that one is taken somewhere with no camera '
+        + 'and asked to call a coin toss. Call it right and you do not merely take the nominations — you '
+        + 'ARE the Head of Household for the rest of the week, and you name the replacement at the veto '
+        + 'meeting too. The Head of Household you took it from stays safe and competes again next week. '
+        + 'Call it wrong and you have paid, played and lost in front of everybody.',
+      'Nobody is ever told who called the toss. The room watched the money change hands, so it knows the '
+        + 'list of everyone who wanted the week — and it will never know which of them got it.',
       'You pay on the way IN, and the game can beat you. Losing does not refund the seat — you can '
         + 'pay in full, in front of everybody, and walk out with nothing.',
       'Each game may be played once per houseguest, for the whole season, and a season earns less '
@@ -343,9 +353,13 @@ export default {
     { at: { fromEnd: 6 }, book: 'bb-high-rollers-room' },
 
     // The Coin, one week after the room closes: the floor's last product, sold
-    // on its own buy-in rather than out of the room. Pricing it INTO the room at
-    // 250 is a later plan; until then the buy-in is a probability and this is
-    // still the on-theme card the season was missing.
+    // on its own buy-in rather than out of the room, and priced at 165 against
+    // the same ledger the room bills. It is deliberately the week AFTER the
+    // wheel's last night — anybody who spent 125 on a spin has put this out of
+    // reach, which is the choice the whole economy exists to force.
+    //
+    // NOT canon's 250; the reason is written beside the constant in
+    // `js/bb/coin-of-destiny.js`, and it is measured rather than argued.
     { at: { fromEnd: 5 }, book: 'bb-coin-of-destiny' },
 
     // ── THE FLOOR SETTLES UP ─────────────────────────────────────────────

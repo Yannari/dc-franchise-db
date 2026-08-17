@@ -1346,7 +1346,8 @@ export function summariseWeek(week) {
         }
         line(`  ${act.winner} wins the game and is taken away to call it.`);
         line(act.calledRight
-          ? `  The call is right. The nominations are taken off ${act.hoh}: ${(act.nominees || []).join(' and ')} go up.`
+          ? `  The call is right. The week is taken off ${act.hoh} — nominations and the replacement `
+            + `both: ${(act.nominees || []).join(' and ')} go up.`
           : '  The call is wrong. Nothing changes, and everybody still knows who paid to try.');
         line('  The house is never told who called it.');
         break;

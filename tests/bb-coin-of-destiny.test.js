@@ -15,6 +15,7 @@ import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { BB_TWIST_CONTRACTS, resolveWeekTwistState } from '../js/bb/twist-contract.js';
+import { BB_THEMES } from '../js/bb/themes.js';
 import { COIN_EVENTS } from '../js/bb-events/coin-of-destiny.js';
 import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 import { runCoinOfDestiny, COIN_PRICE } from '../js/bb/coin-of-destiny.js';
@@ -318,6 +319,37 @@ describe('the Coin costs money', () => {
     const a = run();
     expect(a.auth).toBeNull();
     expect(run()).toEqual(a);
+  });
+
+  it('is described to the viewer as the thing it actually does', () => {
+    // Four rounds of copy fixes have gone into this theme and every one of them
+    // was a surface promising a power the engine did not grant. The Coin's own
+    // copy promised the NOMINATIONS and stopped there, which was the engine's
+    // old behaviour and half of the rule.
+    const primer = BB_THEMES['high-rollers']?.primer;
+    expect(primer, 'the theme lost its primer').toBeTruthy();
+    const rules = primer.rules.join(' ');
+    expect(rules).toContain('Coin of Destiny');
+    expect(rules, 'the primer does not say what it costs').toContain(String(COIN_PRICE));
+    // The two halves of canon that the old copy left out.
+    expect(rules).toMatch(/replacement/i);
+    expect(rules).toMatch(/competes again|compete again/i);
+
+    const ann = BB_TWIST_CONTRACTS['bb-coin-of-destiny'].announcement;
+    expect(ann.rule).toMatch(/replacement/i);
+    expect(ann.rule).toMatch(/Head of Household for the rest of the week/i);
+
+    const cat = TWIST_CATALOG.find(t => t.id === 'bb-coin-of-destiny');
+    expect(cat.desc).toContain(String(COIN_PRICE));
+    expect(cat.desc).toMatch(/replacement/i);
+
+    // And the price is not written down twice in two different places.
+    for (const [label, text] of [['primer', rules], ['announcement', ann.rule],
+      ['catalog', cat.desc]]) {
+      for (const stale of ['250 BB Bucks', 'costs 250']) {
+        expect(text, `${label} still quotes the canon price`).not.toContain(stale);
+      }
+    }
   });
 
   it('names every buyer exactly once', () => {

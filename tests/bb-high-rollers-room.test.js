@@ -164,6 +164,15 @@ const HOUSE_CAST = HOUSE_NAMES.map((name, i) => ({
 
 const ROOM_WEEK = [{ episode: 1, type: 'bb-high-rollers-room' }];
 
+// THE WHEEL IS NOT ON SALE ON THE ROOM'S FIRST NIGHT.
+//
+// The floor runs the cheap table (the Veto Derby, 50) the first time it opens
+// and the Chopping Block Roulette on the nights after — see `roomGameForNight`.
+// So every Roulette test has to get the room open TWICE and look at the second
+// night. Scheduling it on week one alone sells a Derby and finds no wheel.
+const WHEEL_WEEKS = [{ episode: 1, type: 'bb-high-rollers-room' },
+  { episode: 2, type: 'bb-high-rollers-room' }];
+
 function season(schedule = ROOM_WEEK, { rich = 500 } = {}) {
   seedGame(HOUSE_CAST, { episode: 0, eliminated: [], namedAlliances: [] });
   Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
@@ -179,9 +188,9 @@ const roomActs = () => (gs.bb.weeks || [])
   .flatMap(w => (w.acts || []).filter(a => a.type === 'high-rollers-room'));
 
 /** Run one episode on a fixed seed and hand back the week records. */
-const play = (seed, schedule = ROOM_WEEK) => withSeededRandom(seed, () => {
+const play = (seed, schedule = ROOM_WEEK, episodes = 1) => withSeededRandom(seed, () => {
   season(schedule);
-  simulateBBEpisode();
+  for (let i = 0; i < episodes; i++) simulateBBEpisode();
   return gs.bb.weeks || [];
 });
 
@@ -357,7 +366,7 @@ describe('the Roulette rewrites the block at the veto ceremony', () => {
   // wide, and the failure message says so rather than reading as a wiring bug.
   const winningWeek = () => {
     for (let seed = 1; seed <= 30; seed++) {
-      const weeks = play(seed * 7);
+      const weeks = play(seed * 7, WHEEL_WEEKS, 2);
       const w = weeks.find(x => x.rouletteSwap);
       if (w) return w;
     }

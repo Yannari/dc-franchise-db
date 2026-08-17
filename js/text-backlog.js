@@ -5708,6 +5708,33 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      // The Derby slips, written once the six are drawn and before a round is
+      // played. Carries no result — that is `derby-bet-settled`, below.
+      case 'derby-bet': {
+        const bets = act.bets || [];
+        if (!bets.length) break;
+        sec('THE DERBY SLIPS');
+        ln(`  The six are drawn, and the slots bought on nomination night are spent on them now.`);
+        for (const b of bets) ln(`  ${b.name} backs ${b.on}.`);
+        ln('');
+        ln('  Back the one who wins the veto and you hold a veto of your own, without');
+        ln('  having played a round of it.');
+        beats(act);
+        break;
+      }
+
+      case 'derby-bet-settled': {
+        const res = act.results || [];
+        if (!res.length) break;
+        sec('THE SLIPS ARE TURNED OVER');
+        ln(`  ${act.vetoWinner} won the veto.`);
+        ln(act.holders.length
+          ? `  ${act.holders.join(', ')} backed ${act.vetoWinner} and now hold a veto too.`
+          : '  Nobody backed the winner. Every slip on that board is worth nothing.');
+        beats(act);
+        break;
+      }
+
       // Thursday, after the vote. A separate act from the slips deliberately:
       // written into the placement act, the result appeared on screen BEFORE
       // the eviction that decided it.

@@ -110,14 +110,20 @@ export default {
       'Any week, anybody may stake 10 at the rail on who they think is going home. Get it right and '
         + 'the floor pays; get it wrong and it is gone. The odds are the floor\'s, so betting loses '
         + 'money on average — but it is the only thing to do with a wallet before the room opens.',
-      'Three times late in the season a back room opens and sells ONE thing: a spin, for 125. Win it '
-        + 'and you take a houseguest off the block — yourself, or somebody you want to keep — and '
-        + 'then a wheel picks their replacement at random. The Head of Household loses control of '
-        + 'their own week, and because nobody chose the replacement, nobody can pin it on you.',
+      'Three times late in the season a back room opens, and it sells one game a night. The first '
+        + 'night is the Veto Derby, at 50: guess a number, finish in the top six, and you earn the '
+        + 'right to back one of the six veto players. Back the one who wins and you hold a veto of '
+        + 'your own — and you spend it BEFORE they spend theirs, so a Head of Household can lose two '
+        + 'nominees in one meeting and have to refill the block twice.',
+      'The nights after that sell the spin, for 125. Win it and you take a houseguest off the block '
+        + '— yourself, or somebody you want to keep — and then a wheel picks their replacement at '
+        + 'random. The Head of Household loses control of their own week, and because nobody chose '
+        + 'the replacement, nobody can pin it on you.',
       'You pay on the way IN, and the game can beat you. Losing does not refund the seat — you can '
         + 'pay in full, in front of everybody, and walk out with nothing.',
       'Each game may be played once per houseguest, for the whole season, and a season earns less '
-        + 'than the menu costs. Buying in is a door you close behind you.',
+        + 'than the menu costs. Buying in is a door you close behind you — and the cheap game comes '
+        + 'first, on the one night most of the room can still afford to walk through it.',
     ],
     watch: 'Watch who the audience pays and who it does not, because that is public from week one. Then '
       + 'watch who spends and who saves — the menu costs more than a season earns, so nobody gets to '

@@ -857,167 +857,64 @@ HOW TO USE THIS SECTION:
 
   const analyticsInput = `${summaryText}${measured}${past}`;
 
-  // Try GPT-5 first (analytics runs on OpenAI, not the DeepSeek episode-writing path)
-  if (env.OPENAI_API_KEY) {
-    let lastData = null, lastGaps = null;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const payload = {
-        model: "gpt-5.5",
-        instructions: attempt === 0 ? instructions : instructions + retryNote(lastGaps),
-        input: analyticsInput,
-        text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
-      };
-      const response = await callOpenAI(payload, env, { provider: "openai" });
-      if (!response.ok) break;
-      const data = await response.json();
-      if (data.error) break;
-      convertAnalyticsData(data);
-      const gaps = coverageGaps(data);
-      if (!Object.keys(gaps).length) {
-        return new Response(JSON.stringify(data), {
-          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-        });
-      }
-      lastData = data; lastGaps = gaps;
-    }
-    // Both attempts incomplete — return the best we have, flagged so the
-    // frontend/ledger can surface it honestly instead of silently thinning.
-    if (lastData) {
-      lastData._coverageWarning = lastGaps;
-      return new Response(JSON.stringify(lastData), {
+  // ── analytics runs on OpenAI, and only on OpenAI ──
+  //
+  // This route is the DEFAULT one: a request that arrives with no `mode` lands
+  // here, which is why it is the generic analytics path. It used to try GPT,
+  // then a structured Claude call, then a Claude Haiku stream, so the panels
+  // could be produced by any of three models depending on which account had
+  // credit that day — and the schema, retry behaviour and coverage handling
+  // were not the same down each leg. Two of them are gone. Analytics is one
+  // model now, and when that model cannot answer, the caller is told so.
+  if (!env.OPENAI_API_KEY) {
+    return new Response(JSON.stringify({
+      error: "Analytics needs OPENAI_API_KEY on this worker.",
+      hint: "wrangler secret put OPENAI_API_KEY --config wrangler-analytics.toml",
+    }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  let lastData = null, lastGaps = null, lastError = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const payload = {
+      model: "gpt-5.5",
+      instructions: attempt === 0 ? instructions : instructions + retryNote(lastGaps),
+      input: analyticsInput,
+      text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
+    };
+    const response = await callOpenAI(payload, env, { provider: "openai" });
+    if (!response.ok) { lastError = response; break; }
+    const data = await response.json();
+    if (data.error) { lastError = new Response(JSON.stringify(data), {
+      status: 502,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    }); break; }
+    convertAnalyticsData(data);
+    const gaps = coverageGaps(data);
+    if (!Object.keys(gaps).length) {
+      return new Response(JSON.stringify(data), {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
     }
+    lastData = data; lastGaps = gaps;
   }
 
-  // Claude backup (structured outputs guarantee the schema; the coverage loop
-  // below still verifies every active player is present). Runs when OpenAI is
-  // unavailable, out of quota, or returned incomplete coverage with no data.
-  if (env.ANTHROPIC_API_KEY) {
-    let lastData = null, lastGaps = null;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const payload = {
-        model: "claude-opus-4-8",
-        instructions: attempt === 0 ? instructions : instructions + retryNote(lastGaps),
-        input: analyticsInput,
-        text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
-      };
-      const response = await callClaude(payload, env);
-      if (!response.ok) break;
-      const data = await response.json();
-      if (data.error) break;
-      convertAnalyticsData(data);
-      const gaps = coverageGaps(data);
-      if (!Object.keys(gaps).length) {
-        return new Response(JSON.stringify(data), {
-          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-        });
-      }
-      lastData = data; lastGaps = gaps;
-    }
-    // Both attempts incomplete — return the best we have, flagged so the
-    // frontend/ledger can surface it honestly instead of silently thinning.
-    if (lastData) {
-      lastData._coverageWarning = lastGaps;
-      return new Response(JSON.stringify(lastData), {
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-      });
-    }
+  // Both attempts came back thin. Return the better of them, FLAGGED, so the
+  // panels can say a player is missing rather than quietly not mentioning them.
+  if (lastData) {
+    lastData._coverageWarning = lastGaps;
+    return new Response(JSON.stringify(lastData), {
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
   }
 
-  // Fallback: Claude streaming (same pattern as summary/episode)
-  const schemaStr = JSON.stringify(schema, null, 2);
-  const claudeInstructions = `${instructions}\n\nReturn ONLY valid JSON matching this exact schema — no markdown, no explanation, no code block:\n${schemaStr}`;
-  const encoder = new TextEncoder();
-  const readable = new ReadableStream({
-    async start(controller) {
-      let heartbeat;
-      try {
-        heartbeat = setInterval(() => {
-          try { controller.enqueue(encoder.encode("\n")); } catch (_) {}
-        }, 5000);
-
-        const resp = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": env.ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
-          },
-          body: JSON.stringify({
-            model: "claude-haiku-4-5-20251001",
-            max_tokens: 16000,
-            stream: true,
-            system: claudeInstructions,
-            // Same input as the primary path, ledger included — a fallback that
-            // reasons off less evidence is a fallback that disagrees with the panels.
-            messages: [{ role: "user", content: analyticsInput }],
-          }),
-        });
-
-        if (!resp.ok) {
-          const errData = await resp.json().catch(() => ({}));
-          clearInterval(heartbeat);
-          controller.enqueue(encoder.encode(JSON.stringify({ error: `Anthropic ${resp.status}: ${errData?.error?.message || JSON.stringify(errData)}` })));
-          controller.close();
-          return;
-        }
-
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let rawBuffer = "";
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          rawBuffer += decoder.decode(value, { stream: true });
-        }
-
-        clearInterval(heartbeat);
-
-        // Extract all text deltas
-        let fullText = "";
-        const regex = /"type":"text_delta","text":"((?:[^"\\]|\\.)*)"/g;
-        let m;
-        while ((m = regex.exec(rawBuffer)) !== null) fullText += m[1];
-        fullText = fullText
-          .replace(/\\n/g, "\n").replace(/\\"/g, '"')
-          .replace(/\\\\/g, "\\").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
-
-        // Parse the JSON Claude returned
-        const jsonMatch = fullText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          controller.enqueue(encoder.encode(JSON.stringify({ error: "Claude returned no valid JSON" })));
-          controller.close();
-          return;
-        }
-        let data;
-        try { data = JSON.parse(jsonMatch[0]); }
-        catch (e) {
-          // JSON likely truncated mid-stream — attempt repair by closing open structures
-          try {
-            data = JSON.parse(repairTruncatedJson(jsonMatch[0]));
-          } catch (e2) {
-            controller.enqueue(encoder.encode(JSON.stringify({ error: "Claude JSON parse failed: " + e.message })));
-            controller.close();
-            return;
-          }
-        }
-
-        convertAnalyticsData(data);
-        // Streaming path can't retry — flag incomplete coverage instead.
-        const _gaps = coverageGaps(data);
-        if (Object.keys(_gaps).length) data._coverageWarning = _gaps;
-        controller.enqueue(encoder.encode(JSON.stringify(data)));
-      } catch (e) {
-        if (heartbeat) clearInterval(heartbeat);
-        controller.enqueue(encoder.encode(JSON.stringify({ error: String(e) })));
-      } finally {
-        controller.close();
-      }
-    },
-  });
-
-  return new Response(readable, {
+  // Nothing usable came back at all. The real error goes to the caller — a
+  // second provider quietly answering in OpenAI's place is exactly what this
+  // route no longer does.
+  return lastError || new Response(JSON.stringify({ error: "Analytics returned no data." }), {
+    status: 502,
     headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
   });
 }
@@ -3164,36 +3061,10 @@ async function callAnthropic(system, userText, env, model = MODELS.creative) {
   });
 }
 
-function repairTruncatedJson(str) {
-  // Remove any trailing incomplete token (partial string, partial key, etc.)
-  let s = str.trimEnd();
-  s = s.replace(/,\s*$/, "");
-
-  let inString = false;
-  for (let i = 0; i < s.length; i++) {
-    if (s[i] === '"' && (i === 0 || s[i - 1] !== '\\')) inString = !inString;
-  }
-  if (inString) {
-    s += '"';
-    s = s.replace(/"([^"]*)"$/, (m) => m + ':null');
-  }
-
-  const stack = [];
-  inString = false;
-  for (let i = 0; i < s.length; i++) {
-    const c = s[i];
-    if (c === '"' && (i === 0 || s[i - 1] !== '\\')) { inString = !inString; continue; }
-    if (inString) continue;
-    if (c === '{') stack.push('}');
-    else if (c === '[') stack.push(']');
-    else if (c === '}' || c === ']') stack.pop();
-  }
-
-  s = s.replace(/,\s*$/, "");
-
-  while (stack.length) s += stack.pop();
-  return s;
-}
+// `repairTruncatedJson` used to live here. It existed only to salvage a
+// half-finished JSON object out of the Claude Haiku stream that analytics
+// fell back to; analytics runs on one model now and asks for structured
+// output, so there is no truncated stream left to repair.
 
 // Switched the OpenAI fallback to DeepSeek (OpenAI-compatible /chat/completions) to cut cost.
 // Keeps the SAME name, arguments, and return shape so all callers work unchanged: it accepts a
@@ -3202,92 +3073,12 @@ function repairTruncatedJson(str) {
 // Anthropic structured outputs reject schema keywords OpenAI strict mode
 // allowed (numeric/string/array constraints). Strip them recursively; keep
 // enum/const/required/additionalProperties, which both providers share.
-function sanitizeSchemaForClaude(node) {
-  if (Array.isArray(node)) { node.forEach(sanitizeSchemaForClaude); return node; }
-  if (!node || typeof node !== "object") return node;
-  for (const key of ["minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf",
-    "minLength", "maxLength", "pattern", "minItems", "maxItems", "uniqueItems",
-    "minProperties", "maxProperties"]) delete node[key];
-  for (const value of Object.values(node)) sanitizeSchemaForClaude(value);
-  return node;
-}
-
-// Transport: Claude Messages API (payload keeps the legacy shape —
-// { model, instructions, input, text: { format: { schema } } } — so the
-// call sites are unchanged from the OpenAI era).
-async function callClaude(payload, env) {
-  const schema = payload?.text?.format?.schema
-    ? sanitizeSchemaForClaude(JSON.parse(JSON.stringify(payload.text.format.schema)))
-    : null;
-  const body = {
-    model: payload.model,
-    max_tokens: 32000,
-    system: payload.instructions,
-    messages: [{ role: "user", content: payload.input }],
-  };
-  if (schema) body.output_config = { format: { type: "json_schema", schema } };
-
-  let resp;
-  try {
-    resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify(body),
-    });
-  } catch (e) {
-    return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
-      status: 502,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
-  }
-
-  const data = await resp.json().catch(() => ({}));
-
-  if (!resp.ok) {
-    return new Response(JSON.stringify(data), {
-      status: resp.status,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
-  }
-
-  // stop_reason "refusal" (safety) or "max_tokens" (truncation) both mean the
-  // JSON contract may not hold — surface an explicit error instead of garbage.
-  if (data?.stop_reason === "refusal") {
-    return new Response(JSON.stringify({ error: "Claude refused the request", stop_details: data.stop_details || null }), {
-      status: 502,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
-  }
-
-  const outText = (data?.content || [])
-    .filter(block => block?.type === "text")
-    .map(block => block.text || "")
-    .join("")
-    .trim();
-
-  let outJson = null;
-  if (outText) {
-    try {
-      outJson = JSON.parse(outText);
-    } catch {
-      // Un-schema'd calls return prose; schema'd calls only land here when
-      // truncated by max_tokens.
-      outJson = data?.stop_reason === "max_tokens"
-        ? { error: "Claude output truncated (max_tokens)" }
-        : { episodeTranscript: outText };
-    }
-  }
-
-  const finalOut = outJson || data;
-
-  return new Response(JSON.stringify(finalOut), {
-    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-  });
-}
+// `callClaude` and `sanitizeSchemaForClaude` used to live here: a Claude
+// Messages transport that spoke the Responses-API payload shape, plus the
+// schema scrubber it needed because Anthropic structured outputs reject
+// keywords OpenAI strict mode allows. Analytics was their only caller in this
+// worker and analytics runs on OpenAI alone now, so both were unreachable.
+// The season worker keeps its own copies, which are still live.
 
 async function callOpenAI(payload, env, opts = {}) {
   // Analytics (and any caller passing { provider: "openai" }) hit the real OpenAI Responses API.

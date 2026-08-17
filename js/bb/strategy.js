@@ -9,6 +9,11 @@ import { housePlan } from './plans.js';
 import { dealBetween, sincerityOf, tierOf } from './deals.js';
 import { believesDeal } from './knowledge.js';
 import { duoPartnerFor } from './duos.js';
+// What the jury line does to a decision: the jury-management scaling below and
+// the pact's weight on a ballot. The third read (pawn acceptance) is in week.js
+// where the ask happens. A fourth was measured and deleted — see the note in
+// jury-pressure.js before adding one.
+import { juryManagementWeight, juryPactKeepPull } from './jury-pressure.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const noise = (rng, amount = 1) => (rng() - 0.5) * amount;
@@ -125,7 +130,10 @@ export function nominationPlanPull(hoh, candidate) {
   // costs nothing to a houseguest who cannot see that far, because plans.js
   // only writes a juryPlan for the players with the skill to think past
   // Thursday, and the whole pull is scaled by strategic on the way out.
-  if (plan.juryPlan?.includes(candidate)) pull -= 1.6;
+  // Scaled by whether there is a jury yet. A constant here said that managing
+  // a jury matters exactly as much in week two — with no jury, and the person
+  // possibly not making it — as it does at final six.
+  if (plan.juryPlan?.includes(candidate)) pull -= 1.6 * juryManagementWeight(gs.activePlayers);
   return pull * weight;
 }
 
@@ -736,6 +744,10 @@ export function initialVotePreference(voter, nominees, rng = Math.random) {
       + (promisedTo(nominee) ? 2.6 : 0)
       + (plan?.shield === nominee ? 1.4 : 0)
       + (plan?.goat === nominee ? 1.1 : 0)
+      // "We get to jury together." Worth less than a final two and less than a
+      // campaign that landed, and live only while the partner is still short of
+      // the line — but no longer worth nothing, which is what it was.
+      + juryPactKeepPull(voter, nominee, gs.activePlayers)
       - (gs.bb?.house?.suspicion?.[`${voter}→${nominee}`] || 0) * 0.25
       + noise(rng, 1);
   };

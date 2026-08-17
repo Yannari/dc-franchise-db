@@ -77,6 +77,9 @@ import { runCallOutChain } from './white-locust.js';
 import { runPremiereMystery } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
+// The pawn ask is where the jury bubble is most visible in a decision: an
+// exposed houseguest a week from a seat takes a chair they would have refused.
+import { bubbleCompliance } from './jury-pressure.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
 import { advanceThemeArc, currentTheme, installTheme, themeBeat, themeState,
   themePrimer, themeTwistAnnouncement } from './themes.js';
@@ -339,8 +342,15 @@ export function negotiatePawn(hoh, house, plan, rng) {
     // Trust in THIS Head of Household, not trust in general.
     const trust = getPerceivedBond(candidate, hoh);
     const burned = strategicMemoryScore(candidate, hoh, gs.bb.weeks.length + 1) < -1 ? 1.6 : 0;
+    // Somebody an eviction or two from a jury seat, and exposed, has a reason
+    // to be useful to whoever is holding the power this week — and a bold one
+    // has the opposite reaction to the same pressure. See js/bb/jury-pressure.js.
+    // `danger` here is the SEAT's deadliness rather than this houseguest's own
+    // exposure, so the exposure term is derived from the house instead.
+    const exposure = Math.min(1, Math.max(0, (danger + burned) / 4));
     const score = stats.loyalty * 0.5 + stats.boldness * 0.3 + trust * 0.7
-      - danger - burned + (rng() - 0.5) * 2;
+      - danger - burned + bubbleCompliance(candidate, house, exposure)
+      + (rng() - 0.5) * 2;
     const accepted = score > 4.6;
     const willing = score > 6.4;
     asked.push({ name: candidate, accepted, willing });

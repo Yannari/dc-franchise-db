@@ -87,6 +87,36 @@ describe('the card', () => {
 });
 
 describe('the chain', () => {
+  // ── the crown that came from nowhere ──
+  //
+  // The resort crowns its Head of Household off the chain, so the week runs
+  // with no Head of Household COMPETITION at all. Slop is chosen worst-first
+  // from that competition's board, and the call read `hohCompetition.placements`
+  // without checking there had been one — so a resort week in a season with
+  // slop switched on threw "Cannot read properties of null" and took the season
+  // down with it.
+  //
+  // It survived because of where the two sides were tested. This file plays the
+  // resort with `bbHaveNots: 'off'`, and the sweep that plays real seasons WITH
+  // slop had never scheduled the resort. Neither harness could see it, which is
+  // the recurring shape in this project rather than an unlucky gap: two paths,
+  // each covering what the other does not.
+  //
+  // Same null on a Split House week, which is also handed its crown.
+  it('runs in a season with slop switched on', () => {
+    house({ bbHaveNots: 'every-week' });
+    const week = playToResort();
+    expect(week, 'the resort never ran with have-nots on').toBeTruthy();
+    expect(chainAct(week), 'the chain act is missing').toBeTruthy();
+    // No board to rank anybody on, so nobody goes on slop and no ceremony is
+    // staged — an empty have-nots act would announce the slop room to nobody.
+    expect(week.haveNots || []).toEqual([]);
+    expect((week.acts || []).some(a => a.type === 'have-nots'),
+      'a week with no competition staged a slop ceremony anyway').toBe(false);
+    // And the week still finished: an eviction on top of the chain's.
+    expect(week.evicted, 'the week never reached its eviction').toBeTruthy();
+  });
+
   it('runs, eliminates exactly one, and crowns the fastest survivor', () => {
     const week = playToResort();
     expect(week, 'the resort never ran').toBeTruthy();

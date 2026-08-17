@@ -2236,7 +2236,21 @@ export function simulateBBWeek(options = {}) {
   // Slop is the first thing a new Head of Household does with power, and the
   // house watches them do it. Chosen before nominations so the week's first
   // grievance is already in the room when the block is named.
-  if (twists.has('bb-have-nots')) {
+  // ── and there is not always a competition to read it off ──
+  //
+  // Slop is chosen from the Head of Household board, worst first. A PRE-CROWNED
+  // week has no board: the White Locust hands the crown to whoever survived the
+  // Call Out Chain, and a Split House week is handed its winner by the episode
+  // that crowned two of them. `hohCompetition` is null in both cases — the
+  // hohResults line above already knows that — and this call dereferenced it
+  // anyway, so a resort week in a season with slop on threw
+  // "Cannot read properties of null" and took the whole season down with it.
+  // Never seen because the resort's own suite plays it without have-nots, and
+  // the sweep that plays real seasons had never scheduled the resort at all.
+  //
+  // No board, no slop that week, and no ceremony either: an empty have-nots act
+  // would draw a room being told who is on slop with nobody named.
+  if (twists.has('bb-have-nots') && hohCompetition) {
     // Read off the competition that just happened, so the two acts are the same
     // story rather than a result followed by an unrelated punishment.
     const slop = chooseHaveNots(hohCompetition.placements, house, options.haveNotCount, hoh,

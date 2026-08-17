@@ -115,6 +115,13 @@ function playSeasons(seeds, scheduleAs = s => s) {
     { twist: 'bb-safety-suite', seeds: [102, 117, 140, 163], weeks: [2] },
     { twist: 'bb-hacker', seeds: [11, 44, 88, 58], weeks: [3, 4] },
     { twist: 'bb-roadkill', seeds: [23, 37, 63, 95], weeks: [3] },
+    // The resort had no row at all, so its four events were reported as dead
+    // code by a sweep that could never have fired them — the exact failure the
+    // note above this table describes, one twist later. They all read
+    // `week.acts` for the chain and fire in the SAME week as it, so one week is
+    // enough; four seeds, because who survives a call-out decides which of the
+    // four there is a scene for.
+    { twist: 'bb-white-locust', seeds: [102, 117, 140, 163], weeks: [3] },
     { twist: 'bb-whacktivity', seeds: [129, 151, 71, 178], weeks: [3, 4] },
     // Weeks 4-5 band.
     { twist: 'bb-care-package', seeds: [23, 37], weeks: [4, 5],
@@ -373,8 +380,17 @@ describe('the Big Brother event library as a whole', () => {
       for (const id of Object.keys(more)) fired[id] = (fired[id] || 0) + more[id];
       never = stillSilent(fired);
     }
+    // The message matters as much as the assertion. "Never fires" reads as
+    // "this event is dead", and the likeliest cause is the opposite: the event
+    // is fine and the sweep has no way to reach it, because the twist that
+    // gates it has no row in SCHEDULE. That is how the four locust-* events sat
+    // red — reported as dead code by a harness that had never once run the
+    // resort — and reading it as a real death is what left them parked.
     expect(never, `never fire in a real season, across ${16 + EXTRA_BATCHES.flat().length} `
-      + `seeded seasons: ${never.join(', ')}`).toEqual([]);
+      + `seeded seasons: ${never.join(', ')}\n`
+      + 'Before treating these as dead: if they are gated on a twist, check that '
+      + 'the twist has a row in the SCHEDULE table in playSeasons(). A family with '
+      + 'no row can never fire here no matter how alive it is.').toEqual([]);
     for (const fam of familyMins) expect(seen(fam), fam.why).toBeGreaterThanOrEqual(fam.min);
   }, 240000);
 

@@ -141,6 +141,12 @@
   </div>
 
   <div class="bar">
+    <select id="resolve-season" title="The season that just ended"></select>
+    <button class="btn" id="resolve">Resolve the off-season</button>
+    <span class="count" id="resolve-note"></span>
+  </div>
+
+  <div class="bar">
     <button class="btn ghost" id="all-yes">Approve everything shown</button>
     <button class="btn ghost" id="all-no">Reject everything shown</button>
     <span class="count" id="tally"></span>
@@ -160,7 +166,9 @@
 <script type="module">
 import { KINDS, kindOf, significanceOf, isTerminal, lineFor, needsApproval, order }
   from './js/life-events.js';
-import { airLabel, airKey } from './js/franchise-calendar.js';
+import { airLabel, airKey, byAirDate } from './js/franchise-calendar.js';
+import { resolveOffSeason, summarise } from './js/life-resolver.js';
+import { careersIn } from './js/records.js';
 
 const $ = s => document.querySelector(s);
 const esc = t => String(t ?? '').replace(/[&<>"]/g, c =>
@@ -176,6 +184,8 @@ const savePolicy = () => { try { localStorage.setItem(POLICY_KEY, JSON.stringify
 let events = [];
 let seasons = [];
 let names = {};
+let careers = [];
+let castBySeason = new Map();
 
 const seasonOf = id => seasons.find(s => s.seasonId === id) || null;
 const rank = () => new Map(seasons.map(s => [s.seasonId, airKey(s)]));
@@ -314,6 +324,58 @@ function syncPolicyInputs() {
   };
 }
 
+// ── run the resolver ──
+//
+// Proposes; never approves. Everything it produces lands in the list below as
+// `proposed`, and nothing reaches a wiki page until it is committed.
+$('#resolve').onclick = () => {
+  const sid = $('#resolve-season').value;
+  const season = seasons.find(s => s.seasonId === sid);
+  if (!season) return;
+  // Refuse to resolve the same gap twice: it would double every roll, and the
+  // second run's events would sit beside the first with no way to tell which
+  // was meant. Clear the old ones first if you want to re-roll.
+  const already = events.filter(e => e.afterSeason === sid);
+  if (already.length && !confirm(
+    `${already.length} events already exist after this season.
+
+`
+    + 'Discard them and resolve again?')) return;
+
+  const kept = events.filter(e => e.afterSeason !== sid);
+  const seasonRank = new Map(seasons.map(s => [s.seasonId, airKey(s)]));
+  const fresh = resolveOffSeason({
+    season, careers, events: kept, seasonRank,
+    cast: castBySeason.get(sid) || [],
+    // Couples come from the record: two people who were a showmance are the
+    // plausible pairs. Nothing here invents a couple out of nothing.
+    pairs: showmancePairs(sid),
+  });
+  events = kept.concat(fresh);
+  const s = summarise(fresh);
+  $('#resolve-note').textContent =
+    `${s.total} proposed — ${Object.entries(s.byTrack).map(([k, v]) => `${v} ${k}`).join(', ')}`;
+  render();
+};
+
+/** Showmances recorded in a season, as pairs of slugs. */
+function showmancePairs(seasonId) {
+  const out = [];
+  const seen = new Set();
+  for (const c of careers) {
+    for (const d of c.details || []) {
+      if (d.seasonId !== seasonId || !d.showmance) continue;
+      const other = careers.find(x => x.name === d.showmance);
+      if (!other) continue;
+      const key = [c.id, other.id].sort().join('|');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push([c.id, other.id]);
+    }
+  }
+  return out;
+}
+
 $('#all-yes').onclick = () => { events.forEach(e => { if (e.status !== 'approved') e.status = 'approved'; }); render(); };
 $('#all-no').onclick = () => { events.forEach(e => { if (e.status === 'proposed') e.status = 'rejected'; }); render(); };
 
@@ -350,6 +412,20 @@ $('#commit').onclick = async () => {
   events = life.events || [];
   seasons = sdb.seasons || [];
   names = Object.fromEntries((pdb.players || []).map(p => [p.id, p.name]));
+  careers = careersIn(pdb, 'all');
+  // Who played each season, so the resolver knows which relationships were
+  // tested. Read from the record rather than asked for.
+  for (const p of pdb.players || []) {
+    for (const d of p.seasonDetails || []) {
+      if (!d.seasonId) continue;
+      if (!castBySeason.has(d.seasonId)) castBySeason.set(d.seasonId, []);
+      castBySeason.get(d.seasonId).push(p.id);
+    }
+  }
+  const sel = $('#resolve-season');
+  sel.innerHTML = seasons.slice().sort(byAirDate).reverse()
+    .map(s => `<option value="${s.seasonId}">${esc(s.title || s.seasonId)} — ${esc(airLabel(s))}</option>`)
+    .join('');
   syncPolicyInputs();
   render();
 })();

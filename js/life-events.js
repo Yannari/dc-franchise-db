@@ -301,7 +301,7 @@ export function lineFor(event, names = {}, reader = null) {
  * is a fact about their life, and an ordering slip should not be able to
  * resurrect them.
  */
-export function deriveState(events = []) {
+export function deriveState(events = [], { seasonRank = null } = {}) {
   const state = {
     relationship: { stage: 'single', with: null },
     education: { stage: 'none' },
@@ -309,10 +309,17 @@ export function deriveState(events = []) {
     terminal: null,
     trackStage: {},
   };
+  // ORDERED BY THE CALENDAR, NOT BY `seq`.
+  //
+  // `seq` restarts at 1 for every off-season the resolver runs, so replaying a
+  // life that spans fifteen gaps by seq alone scrambles it. Found by measuring
+  // rather than reading: a run produced eleven weddings and left nobody
+  // married, because each wedding was being replayed before the dating that
+  // preceded it. approvedFor learned this first; deriveState had not.
   const ordered = events
     .filter(e => e && e.status === 'approved')
     .slice()
-    .sort((a, b) => (a.seq || 0) - (b.seq || 0));
+    .sort(order(seasonRank));
 
   for (const e of ordered) {
     const def = kindOf(e.kind);
@@ -377,12 +384,13 @@ export function order(seasonRank = null) {
  * `player` alone is exactly the mistake that produced two different answers for
  * one relationship.
  */
-export function stateOf(slug, events = []) {
+export function stateOf(slug, events = [], { seasonRank = null } = {}) {
   const mine = events.filter(e => involves(e, slug));
-  const st = deriveState(mine);
+  const st = deriveState(mine, { seasonRank });
   // "with" must be the OTHER person, whichever side of the row they sat on.
   if (st.relationship.with === slug) {
-    const last = mine.filter(e => e.status === 'approved' && kindOf(e.kind)?.track === 'relationship').pop();
+    const last = mine.filter(e => e.status === 'approved' && kindOf(e.kind)?.track === 'relationship')
+      .sort(order(seasonRank)).pop();
     st.relationship.with = last ? (last.player === slug ? last.whom : last.player) : null;
   }
   return st;

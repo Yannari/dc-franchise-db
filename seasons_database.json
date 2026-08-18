@@ -38,7 +38,9 @@
       "castPhotoPath": "assets/cast/s1-cast.png",
       "emoji": "🏝️",
       "format": "total-drama",
-      "seasonId": "td-1"
+      "seasonId": "td-1",
+      "airYear": 2020,
+      "airSlot": "spring"
     },
     {
       "seasonNumber": 2,
@@ -72,7 +74,9 @@
       "castPhotoPath": "assets/cast/s2-cast.png",
       "emoji": "🔁",
       "format": "total-drama",
-      "seasonId": "td-2"
+      "seasonId": "td-2",
+      "airYear": 2020,
+      "airSlot": "fall"
     },
     {
       "seasonNumber": 3,
@@ -106,7 +110,9 @@
       "castPhotoPath": "assets/cast/s3-cast.png",
       "emoji": "🌋",
       "format": "total-drama",
-      "seasonId": "td-3"
+      "seasonId": "td-3",
+      "airYear": 2021,
+      "airSlot": "spring"
     },
     {
       "seasonNumber": 4,
@@ -140,7 +146,9 @@
       "castPhotoPath": "assets/cast/s4-cast.png",
       "emoji": "⭐",
       "format": "total-drama",
-      "seasonId": "td-4"
+      "seasonId": "td-4",
+      "airYear": 2021,
+      "airSlot": "fall"
     },
     {
       "seasonNumber": 5,
@@ -174,7 +182,9 @@
       "castPhotoPath": "assets/cast/s5-cast.png",
       "emoji": "🛟",
       "format": "total-drama",
-      "seasonId": "td-5"
+      "seasonId": "td-5",
+      "airYear": 2022,
+      "airSlot": "spring"
     },
     {
       "seasonNumber": 6,
@@ -211,7 +221,9 @@
       "castPhotoPath": "assets/cast/s6-cast.png",
       "emoji": "🩸",
       "format": "total-drama",
-      "seasonId": "td-6"
+      "seasonId": "td-6",
+      "airYear": 2022,
+      "airSlot": "fall"
     },
     {
       "seasonNumber": 7,
@@ -248,7 +260,9 @@
       "castPhotoPath": "assets/cast/s7-cast.png",
       "emoji": "🤩",
       "format": "total-drama",
-      "seasonId": "td-7"
+      "seasonId": "td-7",
+      "airYear": 2023,
+      "airSlot": "spring"
     },
     {
       "seasonNumber": 8,
@@ -287,7 +301,9 @@
       "castPhotoPath": "assets/cast/s8-cast.png",
       "emoji": "♦️",
       "format": "total-drama",
-      "seasonId": "td-8"
+      "seasonId": "td-8",
+      "airYear": 2023,
+      "airSlot": "fall"
     },
     {
       "seasonNumber": 9,
@@ -324,7 +340,9 @@
       "castPhotoPath": "assets/cast/s9-cast.png",
       "emoji": "🪬",
       "format": "total-drama",
-      "seasonId": "td-9"
+      "seasonId": "td-9",
+      "airYear": 2024,
+      "airSlot": "spring"
     },
     {
       "seasonNumber": 10,
@@ -362,7 +380,9 @@
       "castPhotoPath": "assets/cast/s10-cast.png",
       "emoji": "⚔️",
       "format": "total-drama",
-      "seasonId": "td-10"
+      "seasonId": "td-10",
+      "airYear": 2024,
+      "airSlot": "fall"
     },
     {
       "seasonNumber": 11,
@@ -400,7 +420,9 @@
       "castPhotoPath": "assets/cast/s11-cast.png",
       "emoji": "",
       "format": "total-drama",
-      "seasonId": "td-11"
+      "seasonId": "td-11",
+      "airYear": 2025,
+      "airSlot": "spring"
     },
     {
       "seasonNumber": 12,
@@ -438,7 +460,9 @@
       "castPhotoPath": "assets/cast/s12-cast.png",
       "emoji": "",
       "format": "total-drama",
-      "seasonId": "td-12"
+      "seasonId": "td-12",
+      "airYear": 2025,
+      "airSlot": "fall"
     },
     {
       "seasonNumber": 13,
@@ -476,7 +500,9 @@
       "castPhotoPath": "assets/cast/s13-cast.png",
       "emoji": "",
       "format": "total-drama",
-      "seasonId": "td-13"
+      "seasonId": "td-13",
+      "airYear": 2026,
+      "airSlot": "spring"
     },
     {
       "seasonNumber": 14,
@@ -514,7 +540,9 @@
       "castPhotoPath": "assets/cast/s14-cast.png",
       "emoji": "",
       "format": "total-drama",
-      "seasonId": "td-14"
+      "seasonId": "td-14",
+      "airYear": 2026,
+      "airSlot": "fall"
     },
     {
       "seasonNumber": 1,
@@ -552,7 +580,9 @@
       "theme": "Season 1 is a house built on bad information. The saboteur twist poisons the early weeks, not because Chase earns the most money, but because everyone starts believing the wrong person at the wrong time. Early power swings are brutal: Millie wins an instant HOH and leaves the next week, Raj exposes his Wayne bond too soon, and Bowie becomes the season’s first true tactician by weaponizing rooms, rumors, and replacement nominations. The middle game is a maze of alliances with names that stop meaning what they used to mean: The Undertow, The Wildcard Pact, The Signal, The Guard, and The Outwit Club all protect people until the vote count says they do not. Caleb becomes the comp monster, Priya becomes the strategist, Zee becomes the social survivor, and Wayne becomes the player jurors keep forgiving. By the end, nearly every finalist has betrayed somebody on the jury, but Wayne’s betrayals feel less like contempt and more like survival. Priya wins the final HOH and cuts Zee, the most personal move of the season, only to lose 4–3 to Wayne. It is a season decided by one vote, but built by a hundred small conversations nobody thought mattered at the time.",
       "status": "Complete",
       "castPhotoPath": "assets/cast/bb-1-cast.png",
-      "emoji": ""
+      "emoji": "",
+      "airYear": 2026,
+      "airSlot": "summer"
     }
   ]
 }

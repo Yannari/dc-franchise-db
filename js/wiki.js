@@ -272,7 +272,7 @@ function _weekRowsFromDoc(found, name) {
  * Big Brother season is two careers, and a single chronological list says the
  * opposite.
  */
-export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [] } = {}) {
+export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [], seasonAir = new Map() } = {}) {
   const byShow = new Map();
   const story = splitStory(player.story);
 
@@ -311,6 +311,11 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [] } =
       season: d.season,
       seasonId: d.seasonId,
       title: seasonTitles.get(d.seasonId) || seasonTitles.get(d.season) || chapter?.title || null,
+      // WHEN it aired. Looked up the same way the title is, because it lives
+      // beside it on the season record and a season detail has never carried
+      // either. Absent for a season nobody has placed on the calendar yet, and
+      // every reader below says nothing rather than guessing.
+      air: seasonAir.get(d.seasonId) || seasonAir.get(d.season) || null,
       placement: d.placement,
       status: d.status,
       tribe: d.tribe,
@@ -457,7 +462,7 @@ export function dossierHash(dossier) {
  */
 export function buildDossier(player, {
   voices = {}, roster = [], seasonDocs = [], seasonTitles = new Map(),
-  milestonesByShow = {}, triviaByShow = {},
+  seasonAir = new Map(), milestonesByShow = {}, triviaByShow = {},
 } = {}) {
   if (!player) return null;
   const rosterRow = (roster.players || roster || []).find(r => r.slug === player.id) || {};
@@ -510,7 +515,7 @@ export function buildDossier(player, {
     backstory,
     castingInterview,
     personality: personalityOf(player.name, voices, rosterRow),
-    career: _withLoyalties(careerOf(player, { seasonTitles, seasonDocs }), relationships),
+    career: _withLoyalties(careerOf(player, { seasonTitles, seasonDocs, seasonAir }), relationships),
     relationships,
     couple: coupleStatus(relationships),
     records: recordsHeldBy(player.id, milestonesByShow),

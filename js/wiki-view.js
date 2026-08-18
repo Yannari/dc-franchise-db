@@ -26,6 +26,7 @@
 // Returns HTML. Takes a dossier from js/wiki.js and nothing else.
 
 import { parseInterview } from './casting-interview.js';
+import { airLabel, ageAt } from './franchise-calendar.js';
 
 // `short` is the tab label — "TD14", "BB1" — and matches the code js/shows.js
 // already declares for each show, so a third show is named consistently
@@ -139,6 +140,17 @@ function infobox(dossier, show, root) {
     const bb = rec.bb || {};
     const rounds = (s.weekRows || []).length;
     const pairs = [
+      // WHEN, and HOW OLD THEY WERE THEN.
+      //
+      // A real article says how old somebody was on the season being read, not
+      // how old they are today — and until the franchise had a calendar this
+      // page could only ever say the latter. Both are blank for a season nobody
+      // has placed yet rather than guessed at.
+      ['Aired', airLabel(s.air || {})],
+      ['Age then', (() => {
+        const a = ageAt(bio.birthdate, s.air || {});
+        return a == null ? '' : String(a);
+      })()],
       ['Status', s.status ? esc(s.status) : ''],
       ['Place', s.placement ? ordinal(s.placement) : ''],
       ['Votes against', rec.votesReceived ? String(rec.votesReceived) : ''],
@@ -806,10 +818,11 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   if (show.seasons.length > 1) {
     section('appearances', 'Appearances', `
       <table class="wk-table">
-        <thead><tr><th>Season</th><th>Placement</th><th>Status</th><th>Team</th></tr></thead>
+        <thead><tr><th>Season</th><th>Aired</th><th>Placement</th><th>Status</th><th>Team</th></tr></thead>
         <tbody>${show.seasons.map(x => `<tr>
           <td><a href="${root}/season_ref.html?season=${esc(x.seasonId || x.season)}">${
             x.title ? esc(x.title) : `Season ${x.season}`}</a></td>
+          <td>${esc(airLabel(x.air || {})) || '—'}</td>
           <td>${ordinal(x.placement)}</td>
           <td>${esc(x.status || '—')}</td>
           <td>${esc(x.tribe || '—')}</td>

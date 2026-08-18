@@ -2190,7 +2190,19 @@ function ppGalleryTryNext(i, img, slug) {
     img.src = `${GALLERY_REMOTE}/${slug}/${i}.${_galleryExts[0]}`;
   } else {
     // Exhausted locally AND on R2 — there is genuinely no image here.
-    document.getElementById('ppg-' + i).style.display = 'none';
+    //
+    // HIDE THE SLOT WE WERE GIVEN, not one looked up by id.
+    //
+    // `ppg-<i>` belongs to the profile tab's gallery. These retries are fired
+    // by <img onerror>, which keeps running after the reader switches to the
+    // Wiki tab and the profile markup is replaced — so the lookup returned
+    // null and every exhausted slot threw "Cannot read properties of null".
+    // Seven of them per page load on a character with no art.
+    //
+    // The image element is already in hand and is the thing to hide; the
+    // closest slot is used when there is one, so the frame goes with it.
+    const slot = document.getElementById('ppg-' + i) || img.closest('.pp-gitem') || img;
+    if (slot) slot.style.display = 'none';
   }
 }
 

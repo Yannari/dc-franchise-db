@@ -1,0 +1,41 @@
+name: Nightly simulation tests
+
+# The 42 tests that play whole seasons.
+#
+# They are the only thing in this project that catches an event which is
+# written, registered, wired up and still unreachable — so they are not
+# optional. They are also 103 of the 119 minutes `npm test` used to take, which
+# is why they no longer run on every push: one Studio save is three pushes, so
+# a character created at midday cost six hours of runner time and blocked the
+# Pages deployment behind it.
+#
+# Once a night, and whenever you ask. A regression here is found the next
+# morning instead of never — which is what was actually happening on
+# 2026-08-18, when no run ever finished at all.
+#
+# The file list lives in vitest.slow.js, shared with vitest.config.js so the
+# two halves cannot disagree about which side a test is on.
+
+on:
+  schedule:
+    # 04:00 UTC. Nothing else in this repo is scheduled, so there is nothing to
+    # collide with, and it lands well before a European morning.
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  sim:
+    runs-on: ubuntu-latest
+    # Measured at 103 minutes. Three hours leaves room for a slower runner
+    # without letting a genuine hang sit for six.
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # --reporter=verbose, because the per-file timings printed here are how
+      # vitest.slow.js gets re-derived when it rots.
+      - run: npm run test:sim

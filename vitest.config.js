@@ -1,4 +1,5 @@
 import { defineConfig, defaultExclude } from 'vitest/config';
+import { SLOW_GLOBS } from './vitest.slow.js';
 
 export default defineConfig({
   test: {
@@ -19,7 +20,18 @@ export default defineConfig({
     // run every time.
     //
     // Run them deliberately: npm run audit:events / audit:season / etc.
-    exclude: [...defaultExclude, 'tests/**/*-audit.test.js'],
+    // ── AND THE SEASON-PLAYING TESTS, FOR THE SAME REASON ──
+    //
+    // The exclusion above was made for the audits and the argument extends
+    // exactly: 42 files play whole seasons and cost 103 of the 119 minutes this
+    // suite takes on CI. The other 176 run in 16. They are not deleted or
+    // trimmed — trimming them would weaken the sweeps that catch events which
+    // are written, registered and still unreachable, which is the reason they
+    // exist. They run nightly, and on demand: npm run test:sim
+    //
+    // The list lives in vitest.slow.js so this file and vitest.sim.config.js
+    // cannot drift apart.
+    exclude: [...defaultExclude, 'tests/**/*-audit.test.js', ...SLOW_GLOBS],
     environment: 'jsdom',
     // Several suites here play whole seasons rather than asserting on a
     // fixture — the season audits, and the Big Brother libraries, which are

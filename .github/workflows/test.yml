@@ -20,19 +20,27 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-    # A HUNG SUITE MUST NOT BLOCK DEPLOYMENTS.
+    # A SLOW SUITE MUST NOT BLOCK DEPLOYMENTS.
     #
-    # On 2026-08-18 nothing reached the site for an hour and a half. Not one
-    # thing was wrong with the site, the build, or the repository: `npm test`
-    # hangs — a known habit of the full suite, which eats memory and leaves
-    # orphan workers — and with no timeout here each hung run held a runner for
-    # GitHub's six-hour default. Sixteen were stuck at once, the oldest since
-    # 06:22, and every Pages build simply queued behind them. The moment they
-    # were cancelled a build started and finished in three minutes.
+    # On 2026-08-18 nothing reached the site for an hour and a half. Nothing was
+    # wrong with the site, the build, or the repository — the last successful
+    # Pages build took 51 seconds. The suite was NOT hung either, which is what
+    # it looked like and what the first version of this comment claimed: reading
+    # the log of run 32106627205 showed it still finishing files after 101
+    # minutes, because `npm test` genuinely needed about two hours.
     #
-    # Fifteen minutes is far above a healthy run and far below the point where
-    # one bad run costs anybody a deployment.
-    timeout-minutes: 15
+    # With no timeout, those runs held a runner for GitHub's six-hour default.
+    # Sixteen were stuck at once, the oldest since 06:22, and every Pages build
+    # queued behind them. Cancelling them started a build within seconds.
+    #
+    # The two-hour part is fixed at the source: the 42 season-playing files that
+    # cost 103 of those 119 minutes moved to nightly.yml. What runs here is the
+    # other 276, measured at 16 minutes.
+    #
+    # Thirty is the backstop, not the budget. If a season-playing test lands
+    # here by mistake, CI goes red and names it, rather than quietly costing
+    # twenty minutes on every push — and a push is three per Studio save.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

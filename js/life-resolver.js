@@ -117,6 +117,64 @@ export const RATES = {
   publicLife: 0.45,
 };
 
+/**
+ * Who everybody knows, and how they feel about them.
+ *
+ * ── WHY THIS EXISTS ──
+ *
+ * The first resolver only knew about showmances from the season that had just
+ * ended. Two people who played three seasons together and loathed each other
+ * throughout were no more likely to interact than strangers, which is exactly
+ * backwards: sharing a season IS the relationship, and a returnee has more of
+ * them. The author put it plainly — same-season characters are more likely to
+ * interact, because there is a bond there, positive or negative.
+ *
+ * Built from what the record already holds and nothing was reading:
+ * `alliances` and `unbreakableBonds` are lists of PEOPLE, not alliance names,
+ * and `rivalries` is the same in the other direction.
+ *
+ * Weights are deliberately coarse. This decides WHO a two-person event is
+ * about, never whether one happens, so precision here would be false.
+ */
+export function socialGraph(careers = []) {
+  const byName = new Map(careers.map(c => [c.name, c.id]));
+  const edges = new Map();      // slug -> Map(otherSlug -> weight)
+  const bump = (a, b, w) => {
+    if (!a || !b || a === b) return;
+    if (!edges.has(a)) edges.set(a, new Map());
+    edges.get(a).set(b, (edges.get(a).get(b) || 0) + w);
+  };
+  for (const c of careers) {
+    for (const d of c.details || []) {
+      for (const n of d.unbreakableBonds || []) { const o = byName.get(n); bump(c.id, o, 3); bump(o, c.id, 3); }
+      for (const n of d.alliances || []) { const o = byName.get(n); bump(c.id, o, 1); bump(o, c.id, 1); }
+      for (const n of d.rivalries || []) { const o = byName.get(n); bump(c.id, o, -2); bump(o, c.id, -2); }
+    }
+  }
+  return edges;
+}
+
+/**
+ * Somebody they know, on the side of the ledger this event needs.
+ *
+ * `want` is 'friend' or 'enemy'. Returns null when they have nobody of that
+ * kind — and the caller drops the event rather than pairing them with a
+ * stranger, because "fell out publicly with somebody they have never met" is
+ * worse than no event at all.
+ */
+function knownTo(graph, slug, want, rng) {
+  const row = graph?.get(slug);
+  if (!row) return null;
+  const pool = [...row.entries()].filter(([, w]) => (want === 'enemy' ? w < 0 : w > 0));
+  if (!pool.length) return null;
+  // Weighted by how strongly they feel: the person you fell out with most is
+  // the likeliest to be the one it flares up with again.
+  const total = pool.reduce((n, [, w]) => n + Math.abs(w), 0);
+  let roll = rng() * total;
+  for (const [other, w] of pool) { roll -= Math.abs(w); if (roll <= 0) return other; }
+  return pool[0][0];
+}
+
 /** Kinds a character can have when nothing in particular is going on. */
 const ORDINARY_TRACKS = ['career', 'home', 'small'];
 const RARE_TRACKS = ['health', 'legal', 'money'];
@@ -154,6 +212,9 @@ export function fameOf(career) {
  */
 export function resolveOffSeason({
   season, careers = [], events = [], cast = [], pairs = [], seedSalt = '',
+  // Who knows whom. Built once by the caller and passed in, since it is the
+  // same for every player in one resolution.
+  graph = null,
   // Where each season sits on the franchise calendar. Without it a life that
   // spans several off-seasons replays in the wrong order, because `seq` starts
   // again at 1 on every resolution.
@@ -170,6 +231,21 @@ export function resolveOffSeason({
   // both sides would either duplicate it or, worse, move it two stages.
   const settled = new Set();
   const pairKey = (a, b) => [a, b].sort().join('|');
+  const social = graph || socialGraph(careers);
+
+  /**
+   * The other person for a two-person event, or null to drop it.
+   *
+   * A feud is with somebody you have history with; moving in is with somebody
+   * you like. Falling back to a random name would produce a page saying two
+   * strangers fell out, which reads as noise rather than as a life.
+   */
+  const otherFor = (kind, slug, rng, partner) => {
+    if (kind === 'feud') return knownTo(social, slug, 'enemy', rng);
+    if (kind === 'made-up') return knownTo(social, slug, 'enemy', rng);
+    if (kind === 'flatmates') return partner || knownTo(social, slug, 'friend', rng);
+    return partner || knownTo(social, slug, 'friend', rng);
+  };
 
   let seq = 0;
   const emit = (player, kind, extra = {}) => {
@@ -219,7 +295,10 @@ export function resolveOffSeason({
         emit(slug, 'birth');
       }
     } else if (stage === 'single') {
-      const candidate = pairFor(slug);
+      // A showmance first, then somebody they are genuinely close to. A
+      // relationship with a stranger is the one thing the resolver must not
+      // invent, so with neither, nothing happens.
+      const candidate = pairFor(slug) || knownTo(social, slug, 'friend', rng('who'));
       const ckey = candidate ? pairKey(slug, candidate) : null;
       if (candidate && !settled.has(ckey) && rng('start')() < RATES.advance.single) {
         settled.add(ckey);
@@ -238,17 +317,26 @@ export function resolveOffSeason({
     const ord = rng('ord');
     if (ord() < RATES.ordinary) {
       const k = pick(ord, kindsOn(ORDINARY_TRACKS));
-      if (k) emit(slug, k.key, k.whom ? { whom: pairFor(slug) || partner } : {});
+      if (k) {
+        const whom = k.whom ? otherFor(k.key, slug, ord, partner) : null;
+        if (!k.whom || whom) emit(slug, k.key, k.whom ? { whom } : {});
+      }
     }
     // Fame buys VOLUME and access to the public-life kinds — never a different
     // chance of something hard happening.
     if (ord() < RATES.publicLife * fame) {
       const k = pick(ord, kindsOn(['public', 'franchise']));
-      if (k && !(k.whom && !partner)) emit(slug, k.key, k.whom ? { whom: partner } : {});
+      if (k) {
+        const whom = k.whom ? otherFor(k.key, slug, ord, null) : null;
+        if (!k.whom || whom) emit(slug, k.key, k.whom ? { whom } : {});
+      }
     }
     if (ord() < RATES.extraOrdinary * (0.4 + fame)) {
       const k = pick(ord, kindsOn(ORDINARY_TRACKS));
-      if (k) emit(slug, k.key, k.whom ? { whom: pairFor(slug) || partner } : {});
+      if (k) {
+        const whom = k.whom ? otherFor(k.key, slug, ord, partner) : null;
+        if (!k.whom || whom) emit(slug, k.key, k.whom ? { whom } : {});
+      }
     }
 
     // ── the rare ──

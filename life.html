@@ -167,7 +167,7 @@
 import { KINDS, kindOf, significanceOf, isTerminal, lineFor, needsApproval, order }
   from './js/life-events.js';
 import { airLabel, airKey, byAirDate } from './js/franchise-calendar.js';
-import { resolveOffSeason, summarise } from './js/life-resolver.js';
+import { resolveOffSeason, summarise, socialGraph } from './js/life-resolver.js';
 import { careersIn } from './js/records.js';
 
 const $ = s => document.querySelector(s);
@@ -185,6 +185,7 @@ let events = [];
 let seasons = [];
 let names = {};
 let careers = [];
+let graph = null;
 let castBySeason = new Map();
 
 const seasonOf = id => seasons.find(s => s.seasonId === id) || null;
@@ -345,10 +346,11 @@ $('#resolve').onclick = () => {
   const kept = events.filter(e => e.afterSeason !== sid);
   const seasonRank = new Map(seasons.map(s => [s.seasonId, airKey(s)]));
   const fresh = resolveOffSeason({
-    season, careers, events: kept, seasonRank,
+    season, careers, events: kept, seasonRank, graph,
     cast: castBySeason.get(sid) || [],
-    // Couples come from the record: two people who were a showmance are the
-    // plausible pairs. Nothing here invents a couple out of nothing.
+    // Couples come from the record: a showmance first, and failing that the
+    // graph offers somebody they are genuinely close to. Nothing here pairs
+    // two strangers.
     pairs: showmancePairs(sid),
   });
   events = kept.concat(fresh);
@@ -413,6 +415,10 @@ $('#commit').onclick = async () => {
   seasons = sdb.seasons || [];
   names = Object.fromEntries((pdb.players || []).map(p => [p.id, p.name]));
   careers = careersIn(pdb, 'all');
+  // Who knows whom, from every season anybody played. Built once: it decides
+  // WHO a two-person event is about, so a feud lands on a rival and moving in
+  // lands on a friend, and a returnee has more people to interact with.
+  graph = socialGraph(careers);
   // Who played each season, so the resolver knows which relationships were
   // tested. Read from the record rather than asked for.
   for (const p of pdb.players || []) {

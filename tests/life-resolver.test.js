@@ -7,7 +7,7 @@
 // a document is exactly how the comp-domination and broken-promise rates went
 // wrong before anybody measured them.
 import { describe, expect, it } from 'vitest';
-import { resolveOffSeason, STAGES, RATES, fameOf, summarise } from '../js/life-resolver.js';
+import { resolveOffSeason, STAGES, RATES, fameOf, summarise, socialGraph } from '../js/life-resolver.js';
 import { stateOf, kindOf, approvedFor } from '../js/life-events.js';
 
 const SEASONS = Array.from({ length: 15 }, (_, i) => ({
@@ -200,5 +200,91 @@ describe('most gaps are ordinary', () => {
     const s = summarise(resolveOffSeason({ season: SEASONS[0], careers, pairs, seasonRank: RANK }));
     const ordinary = (s.byTrack.career || 0) + (s.byTrack.home || 0) + (s.byTrack.small || 0);
     expect(ordinary / s.total, 'the off-season is all drama').toBeGreaterThan(0.5);
+  });
+});
+
+// ── who interacts with whom ──
+//
+// The first resolver knew only about showmances from the season that had just
+// ended, so two people who played three seasons together and loathed each other
+// were no likelier to interact than strangers. Sharing a season IS the
+// relationship, and a returnee has more of them.
+//
+// Built from fields the record already held and nothing was reading: alliances
+// and unbreakableBonds are lists of PEOPLE, and rivalries is the same in the
+// other direction.
+describe('a two-person event is with somebody they know', () => {
+  const cast = [
+    { id: 'ally', name: 'Ally', wins: 0, seasonsPlayed: 1, bestPlacement: 5,
+      details: [{ seasonId: 's-1', alliances: ['Pal'], rivalries: ['Foe'] }] },
+    { id: 'pal', name: 'Pal', wins: 0, seasonsPlayed: 1, bestPlacement: 6, details: [] },
+    { id: 'foe', name: 'Foe', wins: 0, seasonsPlayed: 1, bestPlacement: 7, details: [] },
+    { id: 'stranger', name: 'Stranger', wins: 0, seasonsPlayed: 1, bestPlacement: 8, details: [] },
+  ];
+  // The graph is keyed by display name in the record and by slug everywhere
+  // else, which is the seam most likely to silently produce an empty graph.
+  const g = socialGraph(cast);
+
+  it('reads people out of alliances, bonds and rivalries', () => {
+    expect(g.get('ally')?.get('pal'), 'an alliance made no tie').toBeGreaterThan(0);
+    expect(g.get('ally')?.get('foe'), 'a rivalry made no tie').toBeLessThan(0);
+    expect(g.get('pal')?.get('ally'), 'ties are one-directional').toBeGreaterThan(0);
+  });
+
+  it('leaves somebody with no history connected to nobody', () => {
+    expect(g.get('stranger')).toBeUndefined();
+  });
+
+  it('weights an unbreakable bond above an alliance', () => {
+    const strong = socialGraph([{ id: 'x', name: 'X', details: [{ unbreakableBonds: ['Y'] }] },
+      { id: 'y', name: 'Y', details: [] }]);
+    const weak = socialGraph([{ id: 'x', name: 'X', details: [{ alliances: ['Y'] }] },
+      { id: 'y', name: 'Y', details: [] }]);
+    expect(strong.get('x').get('y')).toBeGreaterThan(weak.get('x').get('y'));
+  });
+
+  it('never pairs somebody with the wrong sort of person', () => {
+    // Measured over the whole franchise: a feud lands on a rival, moving in
+    // lands on a friend. "Fell out publicly with somebody they have never met"
+    // is worse than no event at all, so a missing side drops the event.
+    const many = Array.from({ length: 60 }, (_, i) => ({
+      id: `p${i}`, name: `P${i}`, wins: 0, seasonsPlayed: 2, bestPlacement: 4,
+      details: [{ seasonId: 's-1', alliances: [`P${(i + 1) % 60}`], rivalries: [`P${(i + 7) % 60}`] }],
+    }));
+    const graph = socialGraph(many);
+    let wrong = 0; let checked = 0;
+    for (const season of SEASONS) {
+      const out = resolveOffSeason({ season, careers: many, graph, seasonRank: RANK });
+      for (const e of out) {
+        const def = kindOf(e.kind);
+        if (!def?.whom) continue;
+        checked++;
+        const w = graph.get(e.player)?.get(e.whom) ?? 0;
+        const wantsEnemy = e.kind === 'feud' || e.kind === 'made-up';
+        if (wantsEnemy ? w >= 0 : w <= 0) wrong++;
+      }
+    }
+    expect(checked, 'no two-person events were produced at all').toBeGreaterThan(10);
+    expect(wrong, 'somebody fell out with a friend, or moved in with an enemy').toBe(0);
+  });
+
+  it('gives a returnee more of a social life than a one-season player', () => {
+    // The property the author asked for, and emergent rather than a rule:
+    // playing more seasons means knowing more people means more interaction.
+    const mk = (id, seasons) => ({
+      id, name: id.toUpperCase(), wins: 0, seasonsPlayed: seasons, bestPlacement: 4,
+      details: Array.from({ length: seasons }, (_, s) => ({
+        seasonId: `s-${s + 1}`, alliances: [`OLD${s}`], rivalries: [`ENEMY${s}`],
+      })),
+    });
+    const others = [];
+    for (let s = 0; s < 4; s++) {
+      others.push({ id: `old${s}`, name: `OLD${s}`, details: [] });
+      others.push({ id: `enemy${s}`, name: `ENEMY${s}`, details: [] });
+    }
+    const careers = [mk('rookie', 1), mk('vet', 4), ...others];
+    const graph = socialGraph(careers);
+    expect(graph.get('vet').size, 'a four-season player knows no more people than a rookie')
+      .toBeGreaterThan(graph.get('rookie').size);
   });
 });

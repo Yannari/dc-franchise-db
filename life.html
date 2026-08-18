@@ -49,8 +49,25 @@
     justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
   .gap-head .when{color:var(--muted);font-weight:500;font-size:13px}
 
-  .ev{display:grid;grid-template-columns:26px 84px 1fr auto;gap:12px;align-items:start;
+  .ev{display:grid;grid-template-columns:26px auto 84px 1fr auto;gap:12px;align-items:start;
     padding:11px 15px;border-top:1px solid var(--stroke);background:var(--panel)}
+  /* WHO IT IS ABOUT, at a glance.
+     A two-person event shows both faces overlapped, which reads as "these two
+     together" faster than two names do — and the whole point of an inbox is
+     deciding quickly. The ring is the panel colour so the overlap reads as
+     depth rather than as a smudge. */
+  .who{display:flex;align-items:center;margin-top:1px}
+  /* flex:0 0 auto on both, or the flex row squeezes them: the initials
+     fallback measured 26px wide against its declared 32 and went oval. */
+  .who .av{width:32px;height:32px;flex:0 0 auto;border-radius:50%;object-fit:cover;
+    border:2px solid var(--panel-2);background:var(--panel-2);display:block}
+  .who .av + .av{margin-left:-11px}
+  /* The fallback is initials, not a broken-image icon: an avatar that has not
+     been drawn yet is normal here, and a torn page glyph reads as an error. */
+  .who .fb{width:32px;height:32px;flex:0 0 auto;border-radius:50%;border:2px solid var(--panel-2);
+    background:linear-gradient(160deg,#3a3350,#2a2438);display:flex;align-items:center;
+    justify-content:center;font-size:12px;font-weight:800;color:var(--muted)}
+  .who .fb + .fb, .who .av + .fb, .who .fb + .av{margin-left:-11px}
   .ev.is-rejected{opacity:.42}
   .ev input[type=checkbox]{width:17px;height:17px;margin-top:3px;accent-color:var(--accent)}
   .sig{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
@@ -228,6 +245,7 @@ function row(e) {
   const pinned = policy.pinned.includes(e.player);
   return `<div class="ev${e.status === 'rejected' ? ' is-rejected' : ''}">
     <input type="checkbox" data-i="${i}" data-act="toggle" ${e.status === 'approved' ? 'checked' : ''}>
+    <div class="who">${face(e.player)}${e.whom ? face(e.whom) : ''}</div>
     <span class="sig ${sig}">${sig}</span>
     <div>
       <div class="ev-line">${esc(line)}${e.detail ? `<span class="detail">${esc(e.detail)}</span>` : ''}</div>
@@ -242,6 +260,22 @@ function row(e) {
       <button class="mini" data-i="${i}" data-act="pin">${pinned ? 'Unpin' : 'Pin'}</button>
     </div>
   </div>`;
+}
+
+/**
+ * One face, with initials behind it.
+ *
+ * `onerror` swaps the <img> for the initials rather than hiding it, so the row
+ * keeps its shape — a missing avatar must not shuffle the columns of every
+ * other line on the page.
+ */
+function face(slug) {
+  const name = names[slug] || slug || '?';
+  const initials = String(name).split(/[\s-]+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+  const fb = `<div class="fb" title="${esc(name)}">${esc(initials)}</div>`;
+  return `<img class="av" src="assets/avatars/${encodeURIComponent(slug)}.png"
+    alt="${esc(name)}" title="${esc(name)}"
+    onerror="this.outerHTML=${JSON.stringify(fb).replace(/"/g, '&quot;')}">`;
 }
 
 function syncPolicyInputs() {

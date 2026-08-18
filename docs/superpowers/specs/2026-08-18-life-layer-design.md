@@ -155,6 +155,46 @@ The resolver emits events once. Then:
 - the **next season's generator** reads them, so a returnee arrives married,
   divorced, or carrying a grudge.
 
+### 9. Realistic, with nothing excluded
+
+Settled by the author: **nothing is off the table.** Illness, bereavement,
+addiction, estrangement, divorce, a character's own death — all reachable.
+
+The important half of that is not permission, it is **rate**. Allowed-but-common
+is not realistic, it is a soap. Real life is overwhelmingly ordinary with
+occasional things that land hard, and it is the ordinary that makes them land.
+So the generator is weighted so that most gaps for most people produce a job
+change, a move, a holiday and nothing else.
+
+Indicative annual likelihoods, to be tuned against played output rather than
+trusted from this table:
+
+| | roughly |
+|---|---|
+| new job, move, hobby, ordinary post | common — the bulk of every off-season |
+| relationship advances a stage | uncommon per couple |
+| baby | uncommon, and only on a track that reached the right stage |
+| divorce | ~1 in 50 marriages per year |
+| bereavement — losing someone close | occasional |
+| serious illness or injury | rare |
+| the character's own death | very rare, and never for a young character without cause |
+
+**Fame changes visibility, not incidence.** A winner's divorce is a headline and
+a week of feed; a 16th-place boot's divorce is one quiet line on their page.
+The same event, the same likelihood, wildly different volume. This falls out of
+decision 5 rather than needing its own rule.
+
+**Terminal events are mechanical, not decorative.** A death ends that
+character's tracks permanently, removes them from casting pools, and should be
+felt by everyone who had a bond with them — a memorial in the feed, a mention in
+the next season they would have been in. If it is only a line of text it will
+read as a stunt. It is also the clearest case for the irreversible-always-asks
+rule in decision 7: it can never arrive by policy.
+
+A craft note rather than a rule: the writing on the hard ones should be
+restrained. The engine picks the event; the prose should be the shortest true
+sentence about it, not the most dramatic one available.
+
 ## Open questions
 
 - **Which tracks exist**, exactly. Relationship and career are certain; family,
@@ -162,9 +202,6 @@ The resolver emits events once. Then:
 - **Does this feed `franchise_meta`?** Returnee reputation and grudges already
   exist there. A public falling-out in the off-season *is* a grudge, and two
   systems for one idea would be a mistake.
-- **How dark does it go?** "Sad news" was asked for. Illness, bereavement, a
-  character retiring from the franchise for good — a tone decision for the
-  author, not the engine.
 - **Who writes the prose** — templates plus voice (free) or the AI writer
   (already built, costs per call).
 

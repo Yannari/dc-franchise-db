@@ -726,6 +726,25 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Every one of you has exactly one of these. Somebody is about to spend theirs in week one.',
     },
   },
+  'bb-camp-director': {
+    id: 'bb-camp-director', layer: 'season', category: 'power-structure',
+    timing: 'season-opening', duration: { weeks: 1 },
+    // BB21's night one, and the only twist here that hands out power by
+    // ELECTION rather than by a competition or a draw. The house votes before
+    // it knows anybody, so it elects the warm and the harmless — and the job's
+    // first act is to name four people for the backyard, which is the fastest
+    // way this format knows to turn a popular houseguest into a marked one.
+    //
+    // It also takes somebody out before the first crown, which is why it is a
+    // `season-opening` and not a weekly card: there is exactly one night one.
+    rules: { campDirector: true },
+    acquisition: { channel: 'dedicated-competition', secrecy: 'public' },
+    announcement: {
+      name: 'The Camp Director',
+      rule: 'Before anything else happens, the houseguests elect one of their own as Camp Director. The Camp Director then banishes FOUR houseguests to Hit The Road — a competition in the backyard where the slowest is evicted on the spot, before a single Head of Household has been crowned. Nobody competes for this job. It is a vote, taken by people who have known each other for one afternoon.',
+      sting: 'One of you is going home tonight, and the person who sent you there was elected by the room for being pleasant.',
+    },
+  },
   'bb-wildcard': {
     id: 'bb-wildcard', layer: 'scheduled', category: 'safety',
     timing: 'week-opening', duration: { weeks: 1 },

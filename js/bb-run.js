@@ -1415,6 +1415,15 @@ export function summariseWeek(week) {
         }
         break;
       }
+      case 'camp-director': {
+        line('');
+        line('THE CAMP DIRECTOR');
+        line(`  Elected: ${act.director}.`);
+        line(`  Banished to Hit The Road: ${(act.banished || []).join(', ')}.`);
+        for (const t of (act.times || [])) line(`    ${t.name} — ${Number(t.score).toFixed(1)}`);
+        line(`  ${act.evicted} finishes last and is evicted before the first Head of Household.`);
+        break;
+      }
       case 'wildcard': {
         line('');
         line('THE WILDCARD');

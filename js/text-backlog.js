@@ -5272,6 +5272,22 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'camp-director': {
+        sec('THE CAMP DIRECTOR');
+        ln('  Nobody competes for this. The house votes, on its first night, having');
+        ln('  known each other for one afternoon — so it elects whoever seems warmest');
+        ln('  and least dangerous, and then finds out what the job actually is.');
+        ln('');
+        ln(`  ${act.director} is elected Camp Director.`);
+        ln(`  Banished to Hit The Road: ${(act.banished || []).join(', ')}.`);
+        ln('');
+        beats(act);
+        ln('');
+        ln(`  ${act.evicted} finishes last and leaves the house before a single Head of`);
+        ln(`  Household has been crowned. ${(act.survivors || []).join(', ')} walk back inside,`);
+        ln(`  and none of them has to wonder who sent them out there.`);
+        break;
+      }
       case 'wildcard': {
         sec('THE WILDCARD');
         ln('  Nobody enters this one. Three names are drawn before nominations and the');

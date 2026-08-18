@@ -75,6 +75,7 @@ import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
 import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge, stableRng } from './knowledge.js';
 import { runCallOutChain } from './white-locust.js';
+import { runCampDirector } from './camp-director.js';
 import { runPremiereMystery } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
@@ -1912,6 +1913,50 @@ export function simulateBBWeek(options = {}) {
   const yard = out => house.filter(name => name !== gs.bb.outgoingHoh && !out.includes(name));
   if (yard(sittingOut).length < 2) sittingOut = [...rivalsOut];
   if (yard(sittingOut).length < 2) sittingOut = [];
+  // ── NIGHT ONE: THE CAMP DIRECTOR ─────────────────────────────────────
+  //
+  // BB21's opening. The house elects somebody, that somebody banishes four,
+  // the four run Hit The Road and the slowest is gone before the first crown.
+  //
+  // Runs HERE, in front of the competition, for the same reason the Call Out
+  // Chain above does: everything below assumes the yard it is about to play in
+  // still holds everybody, so the roster has to be narrowed before the first
+  // Head of Household is contested. Week one only — the election is a read of
+  // a house that does not know itself yet, and there is no second night one.
+  if (!compressed && week.twistState?.rules?.campDirector && (week.num || 1) === 1) {
+    try {
+      const camp = runCampDirector(week, house, { rng });
+      if (camp) {
+        week.campDirector = {
+          director: camp.director, banished: [...camp.banished],
+          survivors: [...camp.survivors], evicted: camp.evicted,
+        };
+        week.resortEvicted = camp.evicted;
+        // The same three books the Call Out Chain keeps, and for the same
+        // reasons: every roster-scoped system reads gs.activePlayers, a player
+        // off the roster but missing from gs.eliminated is one the placements,
+        // the jury and the finale disagree about, and the local `house` array
+        // is what the competition below is about to be run against.
+        gs.activePlayers = (gs.activePlayers || []).filter(n => n !== camp.evicted);
+        gs.eliminated ||= [];
+        if (!gs.eliminated.includes(camp.evicted)) gs.eliminated.push(camp.evicted);
+        const at = house.indexOf(camp.evicted);
+        if (at >= 0) house.splice(at, 1);
+        // AND ONLY THEN THE BEATS.
+        //
+        // addBeats schedules house life against the LIVE house array, so
+        // pushing this act before narrowing it handed the evicted houseguest
+        // a scene inside the act that evicted them. A real backlog read "Zee
+        // finishes last and is evicted" and then, two lines below it,
+        // "[DOING IT AGAIN] Zee does the dishes again and says nothing again".
+        week.acts.push(addBeats(camp.act,
+          { players: [camp.director, ...camp.banished], evicted: camp.evicted }));
+      }
+    } catch (err) {
+      (week._campDirectorError ||= []).push(String(err?.message || err));
+    }
+  }
+
   // ── PREMIERE NIGHT ───────────────────────────────────────────────────
   //
   // Runs before the relic is read below, because it is what hands the relic

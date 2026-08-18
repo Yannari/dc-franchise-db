@@ -40,6 +40,7 @@ import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
 import { rpBuildBBHidden } from './vp-bb-hidden.js';
 import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
 import { rpBuildBBWildcard } from './vp-bb-wildcard.js';
+import { rpBuildBBCampDirector } from './vp-bb-camp-director.js';
 import { rpBuildBBTimeCapsule } from './vp-bb-time-capsule.js';
 import { rpBuildBBPrizeExchange } from './vp-bb-prize-exchange.js';
 import { rpBuildBBCampComeback, rpBuildBBCampReturn } from './vp-bb-camp.js';
@@ -19122,6 +19123,7 @@ export function rpBuildBBThemeBeat(ep, act) {
   if (act?.themeId === 'machine-summer') return _rpThemeBeatCora(ep, act);
   if (act?.themeId === 'summer-of-mystery') return _rpThemeBeatMystery(ep, act);
   if (act?.themeId === 'high-rollers') return _rpThemeBeatPitBoss(ep, act);
+  if (act?.themeId === 'summer-camp') return _rpThemeBeatCamp(ep, act);
   return _rpThemeBeatDen(ep, act);
 }
 
@@ -19459,6 +19461,148 @@ function _rpThemeBeatMystery(ep, act) {
  *
  * SVG and CSS only, no emoji, still under reduced motion.
  */
+/**
+ * Summer Camp — the yard, and whether anybody is still running it.
+ *
+ * The only one of the five whose hostile register is QUIETER than its neutral
+ * one. Every other theme escalates into a colour; this escalates into ABSENCE,
+ * so the two states are the same camp with the staff taken out of it: the flag
+ * comes down, the activity board goes blank, the warm light of the mess hall
+ * turns to moonlight, and the whistle simply stops being picked up.
+ *
+ * A children's summer camp with the adults removed is the oldest horror setting
+ * there is, and it needs no new vocabulary to arrive.
+ */
+function _rpThemeBeatCamp(ep, act) {
+  const week = ep?.num ?? ep?.episode ?? '';
+  const hostile = act?.mood === 'hostile';
+  const pine = hostile ? '#2c3a41' : '#3f5f3a';
+  const warm = hostile ? '#9fb6c4' : '#fcd34d';
+  const sky = hostile ? '#0a1016' : '#1a1408';
+
+  // Deterministic notices, so a re-render does not repin the board.
+  let h = 0;
+  for (const ch of `${act?.hook || ''}${week}${act?.line?.length || 0}`) {
+    h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  }
+  // Neutral: the board is full and crooked. Hostile: one curled scrap left.
+  const noteCount = hostile ? 1 : 4 + (h % 3);
+  const notes = Array.from({ length: noteCount }, (_, i) => {
+    h = (h * 1103515245 + 12345) >>> 0;
+    const x = 250 + (i % 3) * 46 + (h % 7);
+    const y = 96 + Math.floor(i / 3) * 34 + (h % 5);
+    const rot = ((h >> 3) % 13) - 6;
+    const ruled = hostile ? '' : `<line x1="${x + 5}" y1="${y + 11}" x2="${x + 29}" y2="${y + 11}"
+            stroke="#7b6a45" stroke-width="1" opacity=".55"/>
+      <line x1="${x + 5}" y1="${y + 16}" x2="${x + 23}" y2="${y + 16}"
+            stroke="#7b6a45" stroke-width="1" opacity=".45"/>`;
+    return `<g transform="rotate(${rot} ${x + 17} ${y + 12})">
+      <rect x="${x}" y="${y}" width="34" height="25" rx="1.5"
+            fill="${hostile ? '#5b6873' : '#f4ead2'}" opacity="${hostile ? '.5' : '.94'}"/>
+      <circle cx="${x + 17}" cy="${y + 3}" r="2" fill="#b91c1c" opacity="${hostile ? '.4' : '.95'}"/>
+      ${ruled}
+    </g>`;
+  }).join('');
+
+  // The treeline. The same trees both ways — the camp does not change, only
+  // who is in it — but they lose their warm edge when the lights go.
+  const trees = [30, 78, 126, 172, 452, 500, 548, 592].map((x, i) => {
+    const tall = 54 + ((x * 7 + i * 13) % 34);
+    return `<path d="M ${x},250 L ${x - 17},${250 - tall * 0.55} L ${x - 9},${250 - tall * 0.55}
+      L ${x - 22},${250 - tall} L ${x},${250 - tall - 16} L ${x + 22},${250 - tall}
+      L ${x + 9},${250 - tall * 0.55} L ${x + 17},${250 - tall * 0.55} Z"
+      fill="${pine}" opacity="${hostile ? '.72' : '.9'}"/>`;
+  }).join('');
+
+  const plaque = hostile
+    ? ['No programme', 'Nobody is running it']
+    : ['Full programme', 'Everybody is having fun'];
+  const label = { open: 'Morning call', noms: 'The board', veto: 'Free period',
+    vote: 'Lights out', finale: 'Last night', crown: 'End of summer' }[act?.hook] || 'The yard';
+
+  const moon = hostile
+    ? '<circle cx="86" cy="44" r="15" fill="#c9d6de" opacity=".22"/>'
+    : '<circle cx="540" cy="52" r="26" fill="#fcd34d" opacity=".14"/>';
+  const flag = hostile ? '' : `<path d="M 160,92 L 208,102 L 160,112 Z" fill="${warm}" opacity=".9"/>`;
+  const blank = hostile ? `<text x="314" y="140" text-anchor="middle"
+            font-family="monospace" font-size="9" letter-spacing="2"
+            fill="#5d6f7b" opacity=".8">NOTHING TODAY</text>` : '';
+  // The whistle on its nail. In the second half nobody has picked it up in days.
+  const whistle = hostile
+    ? `<path d="M 402,86 q 10,16 2,30" fill="none" stroke="#3d4c55" stroke-width="1.2" opacity=".7"/>
+      <circle cx="404" cy="120" r="5.5" fill="none" stroke="#3d4c55" stroke-width="1.4" opacity=".7"/>`
+    : `<path d="M 402,86 q 10,16 2,30" fill="none" stroke="${warm}" stroke-width="1.2" opacity=".8"/>
+      <circle cx="404" cy="120" r="5.5" fill="${warm}" opacity=".85"/>`;
+
+  return `<div class="rp-page bb-room bb-block bbsc${hostile ? ' is-hostile' : ''}" data-ambient="tribal-tension">
+    <style>
+      .bbsc{--bbsc-warm:${warm};--bbsc-pine:${pine};
+        max-width:1100px;margin:0 auto;padding:26px 24px 44px;text-align:center}
+      .bbsc-sign{font-family:"Cabin Sketch","Chalkduster","Bradley Hand",Georgia,serif;
+        letter-spacing:.34em;font-size:15px;text-transform:uppercase;color:var(--bbsc-warm);
+        text-shadow:0 0 16px var(--bbsc-warm);margin-bottom:2px}
+      .bbsc.is-hostile .bbsc-sign{text-shadow:none;opacity:.72;letter-spacing:.44em}
+      .bbsc-week{font-family:var(--font-mono,ui-monospace,monospace);font-size:9px;
+        letter-spacing:.3em;color:#8b949e;margin-bottom:14px}
+      .bbsc-yard{display:block;width:100%;max-width:640px;height:auto;margin:0 auto 16px}
+      .bbsc-card{max-width:620px;margin:0 auto;padding:16px 18px 14px;border-radius:8px;
+        background:rgba(18,16,10,.82);border:1px solid rgba(252,211,77,.20)}
+      .bbsc.is-hostile .bbsc-card{background:rgba(10,16,22,.86);border-color:rgba(159,182,196,.18)}
+      .bbsc-who{font-family:"Cabin Sketch","Chalkduster",Georgia,serif;letter-spacing:.22em;
+        font-size:11px;text-transform:uppercase;color:var(--bbsc-warm);margin-bottom:6px}
+      .bbsc-line{font-size:15px;line-height:1.55;color:#f4ead2;margin:0 0 12px}
+      .bbsc.is-hostile .bbsc-line{color:#c9d6de}
+      .bbsc-plaque{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+        font-family:var(--font-mono,monospace);font-size:8.5px;letter-spacing:.16em;
+        color:#8b949e;border-top:1px dashed rgba(252,211,77,.22);padding-top:9px}
+      .bbsc-flame{animation:bbsc-flicker 2.6s ease-in-out infinite;transform-origin:center}
+      @keyframes bbsc-flicker{0%,100%{opacity:.85}45%{opacity:.42}70%{opacity:1}}
+      @media(prefers-reduced-motion:reduce){.bbsc-flame{animation:none}}
+    </style>
+    <div class="bbsc-sign">${hostile ? 'Camp' : 'Welcome to camp'}</div>
+    <div class="bbsc-week">WEEK ${_bbEsc(String(week))}</div>
+
+    <svg class="bbsc-yard" viewBox="0 0 620 260" role="img"
+         aria-label="${hostile ? 'An empty camp yard at night' : 'A camp yard at dusk'}">
+      <rect x="0" y="0" width="620" height="260" fill="${sky}"/>
+      ${moon}
+      ${trees}
+      <rect x="0" y="248" width="620" height="12" fill="${hostile ? '#0e1519' : '#241c0e'}"/>
+
+      <!-- the mess hall: lit and full, or one window and nothing else -->
+      <path d="M 196,196 L 196,150 L 258,120 L 320,150 L 320,196 Z"
+            fill="${hostile ? '#141d24' : '#2a2113'}" stroke="${pine}" stroke-width="1.2"/>
+      <rect x="216" y="164" width="18" height="20" fill="${hostile ? '#1b262e' : warm}"
+            opacity="${hostile ? '.5' : '.85'}"/>
+      <rect x="272" y="164" width="18" height="20" fill="${warm}"
+            opacity="${hostile ? '.62' : '.85'}" class="${hostile ? 'bbsc-flame' : ''}"/>
+
+      <!-- the flagpole. Flying, or bare. -->
+      <line x1="160" y1="196" x2="160" y2="86" stroke="${hostile ? '#4a5a64' : '#8a7550'}" stroke-width="2.4"/>
+      ${flag}
+
+      <!-- THE ACTIVITY BOARD, which is the whole tell -->
+      <rect x="238" y="80" width="152" height="104" rx="3"
+            fill="${hostile ? '#101a20' : '#3a2c17'}" stroke="${hostile ? '#3d4c55' : '#8a7550'}"
+            stroke-width="1.6"/>
+      <line x1="238" y1="92" x2="390" y2="92" stroke="${hostile ? '#3d4c55' : '#8a7550'}" stroke-width="1"/>
+      ${notes}
+      ${blank}
+      ${whistle}
+    </svg>
+
+    <div class="bbsc-card">
+      <div class="bbsc-who">${_bbEsc(act?.speaker || '')}</div>
+      <p class="bbsc-line">&ldquo;${_bbEsc(act?.line || '')}&rdquo;</p>
+      <div class="bbsc-plaque">
+        <span>${_bbEsc(label)}</span>
+        <span><b>${_bbEsc(plaque[0])}</b></span>
+        <span>${_bbEsc(plaque[1])}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
 function _rpThemeBeatPitBoss(ep, act) {
   const week = ep?.num ?? ep?.episode ?? '';
   const hostile = act?.mood === 'hostile';
@@ -23503,6 +23647,12 @@ function _bbCycleScreens(view, screens, suffix = '') {
             : act.phase === 'expired' ? 'Never Found'
               : act.found ? 'Found It' : 'The House Is Looking',
           html: rpBuildBBHidden(view, act, hpDeps) });
+        break;
+      }
+      case 'camp-director': {
+        const cdrDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id('bb-campdirector'), label: 'Camp Director',
+          html: rpBuildBBCampDirector(view, act, cdrDeps) });
         break;
       }
       case 'wildcard': {

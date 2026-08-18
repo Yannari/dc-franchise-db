@@ -37,6 +37,7 @@ import TEMPTATION from './themes-temptation.js';
 import MACHINE from './themes-cora.js';
 import MYSTERY from './themes-mystery.js';
 import HIGH_ROLLERS from './themes-high-rollers.js';
+import SUMMER_CAMP from './themes-summer-camp.js';
 
 /**
  * Every theme, by id.
@@ -51,6 +52,7 @@ export const BB_THEMES = {
   [MACHINE.id]: MACHINE,
   [MYSTERY.id]: MYSTERY,
   [HIGH_ROLLERS.id]: HIGH_ROLLERS,
+  [SUMMER_CAMP.id]: SUMMER_CAMP,
 };
 
 export const THEME_LIST = Object.keys(BB_THEMES);

@@ -3177,6 +3177,77 @@
     .rp-theme-high-rollers.is-mood-hostile .rp-page .bb-av img {
       filter: saturate(.5) contrast(1.1) brightness(.96); }
 
+    /* ── Summer Camp ────────────────────────────────────────────────────
+       Pine, canvas and late sun. The warmest neutral register on the shelf,
+       deliberately: this is the only theme whose ordinary state is genuinely
+       pleasant, and the hostile one only works because of it. */
+    .rp-theme-summer-camp {
+      --theme-accent:#fcd34d; --theme-glow:#fde68a;
+      --bbx-danger-rgb:  185,28,28;     /* the red pin on the noticeboard     */
+      --bbx-note-rgb:    212,175,77;    /* everything is hand-lettered        */
+      --bbx-key-rgb:     253,230,138;   /* late sun through the pines         */
+      --bbx-good-rgb:    132,169,90;    /* the one green on the shelf, and it
+                                           is the trees rather than a tick    */
+      --bbx-info-rgb:    170,158,132;
+      --bbx-dim-rgb:     122,110,84;
+      --bbx-stage-rgb:   24,20,12;      --bbx-stage2-rgb:  12,10,6;
+      --bbx-screen-rgb:  26,22,13;      --bbx-screen2-rgb: 11,9,6;
+      --bbx-card-rgb:    25,21,13;      --bbx-card2-rgb:   13,11,7;
+      --bbx-ink:         #f4ead2;
+      --bbx-ink-quiet:   #fbf3e0;
+      --bbx-faint:       #5a5140;
+      --bbx-glyph:       #241c0e; }
+    .rp-theme-summer-camp .rp-page::after {
+      opacity:.15;
+      background:
+        radial-gradient(48% 30% at 50% -8%, rgba(253,230,138,.26), transparent 66%),
+        radial-gradient(72% 56% at 50% 108%, rgba(63,95,58,.16), transparent 74%);
+      animation: rpThemeCampSun 13s ease-in-out infinite; }
+    .rp-theme-summer-camp .rp-page h1,
+    .rp-theme-summer-camp .rp-page h2 {
+      letter-spacing:.1em; text-transform:uppercase;
+      font-family:"Cabin Sketch","Chalkduster","Bradley Hand",Georgia,serif; }
+    /* Sun through moving branches: slow, uneven, never quite still. */
+    @keyframes rpThemeCampSun { 0%,100% { opacity:.15; } 38% { opacity:.20; } 64% { opacity:.13; } }
+
+    /* ── Summer Camp, once the announcements stop ───────────────────────
+       THE ONLY REGISTER TURN ON THE SHELF THAT GETS QUIETER. The Den flares
+       red, CORA flares red, Summer of Mystery drains to bone and High Roller's
+       goes fluorescent — all four escalate INTO something. This one escalates
+       into absence: the same camp, the same buildings, with the staff removed
+       and the sun off it.
+
+       So there is no new hue and no alarm colour. The accent goes from sun to
+       moonlight, the greens go blue, and the ambient animation stops moving
+       almost entirely, because the thing that was moving was somebody running
+       the place. */
+    .rp-theme-summer-camp.is-mood-hostile {
+      --theme-accent:#9fb6c4; --theme-glow:#c9d6de;   /* moonlight, not sun */
+      --bbx-danger-rgb:  168,64,64;     /* the pin is still there, unlit      */
+      --bbx-note-rgb:    150,170,182;   /* the board is blank and cold        */
+      --bbx-key-rgb:     201,214,222;
+      --bbx-good-rgb:    108,132,124;   /* the pines, without the light on    */
+      --bbx-info-rgb:    140,152,160;
+      --bbx-dim-rgb:     86,98,106;
+      --bbx-stage-rgb:   10,16,22;      --bbx-stage2-rgb:  5,9,13;
+      --bbx-screen-rgb:  11,18,24;      --bbx-screen2-rgb: 5,9,12;
+      --bbx-card-rgb:    11,17,23;      --bbx-card2-rgb:   6,10,14;
+      --bbx-ink:         #dde7ee;
+      --bbx-ink-quiet:   #eef4f8;
+      --bbx-faint:       #45535d;
+      --bbx-glyph:       #0e1519; }
+    .rp-theme-summer-camp.is-mood-hostile .rp-page::after {
+      opacity:.19;
+      background:
+        radial-gradient(40% 26% at 14% -6%, rgba(201,214,222,.20), transparent 68%),
+        radial-gradient(84% 62% at 50% 112%, rgba(10,16,22,.44), transparent 70%);
+      animation: rpThemeCampStill 17s ease-in-out infinite; }
+    /* Barely anything. What was moving before was a person. */
+    @keyframes rpThemeCampStill { 0%,100% { opacity:.19; } 50% { opacity:.21; } }
+    /* And the faces lose the summer with the room. */
+    .rp-theme-summer-camp.is-mood-hostile .rp-page .bb-av img {
+      filter: saturate(.55) contrast(1.06) brightness(.93); }
+
     /* Holds for every theme, present and future, regardless of where in this
        section its block was appended — see the note at the top. */
     @media (prefers-reduced-motion: reduce) {

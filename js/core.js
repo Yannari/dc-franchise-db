@@ -670,6 +670,12 @@ export const TWIST_CATALOG = [
     // anything else that re-routes the veto is out.
     incompatible:['bb-diamond-veto'],
     incompatibleModes:[] },
+  { id:'bb-camp-director', emoji:'🏕️', name:'The Camp Director', format:'big-brother',
+    category:'structural', phase:'any',
+    desc:'Night one, before anything else: the houseguests elect one of their own Camp Director. Nobody competes for it — it is a vote taken by people who have known each other for a single afternoon, so it goes to whoever seems warmest and least dangerous. The Camp Director then banishes FOUR houseguests to Hit The Road, naming them out loud in front of everybody, and those four run a scramble in the backyard where the slowest is evicted immediately, before a single Head of Household has been crowned. The three who survive walk back inside bound together and knowing exactly whose idea it was, and the Camp Director spends the rest of the season having been elected for being likeable and remembered for something else entirely. Runs in week one only.',
+    // Both rewrite who is in the house before the first competition, so they
+    // would be deciding the same field twice.
+    incompatible:['bb-white-locust'] },
   { id:'bb-wildcard', emoji:'🃏', name:'The Wildcard', format:'big-brother',
     category:'advantages', phase:'any',
     desc:'Before nominations, three houseguests are drawn at random — the Head of Household is not in the hat and nobody else chooses to be in it either. They compete, and the winner is offered safety for the week at a price: a punishment, drawn with it. Roughly a third of the time that punishment is billed not to the winner but to EVERY OTHER HOUSEGUEST, who serve it while the winner walks around safe. The winner accepts or refuses out loud in front of the house. Accepting a house-wide price costs real goodwill from every person paying it; refusing costs nothing at all except the claim, made in public, that you did not need saving — which the house will test on Thursday.',

@@ -5272,6 +5272,18 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'nightmare-power': {
+        sec('THE NIGHTMARE POWER');
+        ln('  The nomination ceremony happened hours ago. It does not count any more.');
+        ln('');
+        beats(act);
+        ln('');
+        ln(`  ${(act.voided || []).join(' and ')} are off the block and did nothing to get there.`);
+        ln(`  ${(act.nominees || []).join(' and ')} are on it, and did nothing to get there either.`);
+        ln(`  ${act.hoh} named both pairs and chose neither, and is the only person`);
+        ln('  in this house whose name is attached to any of it.');
+        break;
+      }
       case 'camp-director': {
         sec('THE CAMP DIRECTOR');
         ln('  Nobody competes for this. The house votes, on its first night, having');

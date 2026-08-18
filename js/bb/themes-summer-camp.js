@@ -20,12 +20,13 @@
 //   Whacktivity     weeks 1-3, five to a room, one secret power
 //   Camp Comeback   evictees keep living in the house, then battle to return
 //
-// The one canon piece deliberately NOT here is the Nightmare Power — it voids
-// a completed nomination ceremony and makes the Head of Household name two new
-// nominees on the spot, and nothing in this engine can currently undo a
-// ceremony that has already happened. Whacktivity runs on the powers we do own
-// (the Chaos Power is `veto-redraw`, the Panic Power is `diamond-veto`), and
-// Nightmare is a separate slice.
+// All three canon doors are real now. The Chaos Power is `veto-redraw` and the
+// Panic Power is `diamond-veto`, both of which predate this theme; the Nightmare
+// Power was built for it (`js/bb/nightmare-power.js`) and is the first thing in
+// this engine that can UNDO a ceremony which has already happened. The arc asks
+// for those three BY NAME through the schedule entry rather than taking the
+// shelf's default first three — a Summer Camp running somebody else's powers is
+// a camp skin rather than the season.
 //
 // ── THE ANTAGONIST ────────────────────────────────────────────────────
 //
@@ -83,6 +84,12 @@ export default {
         + 'everybody — and those four run a scramble in the backyard. The slowest is evicted '
         + 'immediately, before a single Head of Household has been crowned. The three who survive walk '
         + 'back inside bound together, and none of them has to wonder whose idea it was.',
+      'The three doors hold three different powers and they are not equal. One VOIDS a nomination '
+        + 'ceremony that has already happened: the camp is woken in the middle of the night, the two '
+        + 'nominees come down, and the Head of Household has to name two different people on the '
+        + 'spot with the first two now untouchable. One forces the veto players to be drawn again. '
+        + 'One hands the veto winner a second veto that also takes the replacement nomination away '
+        + 'from the Head of Household. None of the three is ever traced back to whoever won it.',
       'For the first few weeks, five houseguests at a time choose one of three doors and compete '
         + 'behind it for a secret power. You pick your door before you know who else picked it, so the '
         + 'power everybody wants is the one you have to beat four people for — and only one room opens '
@@ -237,7 +244,8 @@ export default {
     // season busy — the same job the wrapped boxes do on High Roller's.
     // `untilFromEnd: 8` stops it well before the endgame: a secret power won at
     // a final seven is a different, much later twist than the one BB21 ran.
-    { every: 2, from: 2, untilFromEnd: 8, book: 'bb-whacktivity' },
+    { every: 2, from: 2, untilFromEnd: 8, book: 'bb-whacktivity',
+    options: { doors: ['nightmare-power', 'veto-redraw', 'diamond-veto'] } },
 
     // The campers. Booked once, mid-early: it runs across the first four
     // evictions from wherever it starts, so it wants room to finish.
@@ -254,7 +262,8 @@ export default {
     // fortnight is themed — the gap High Roller's shipped with and had to be
     // sent back for. A double takes TWO, so it sits at 4 to leave 2 reachable.
     { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
-    { at: { fromEnd: 2 }, book: 'bb-whacktivity' },
+    { at: { fromEnd: 2 }, book: 'bb-whacktivity',
+    options: { doors: ['nightmare-power', 'veto-redraw', 'diamond-veto'] } },
   ],
 
   books: ['bb-camp-director', 'bb-whacktivity', 'bb-camp-comeback', 'bb-double-eviction'],

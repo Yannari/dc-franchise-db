@@ -117,6 +117,26 @@ export const BB_POWER_DEFINITIONS = {
     moment: 'The veto ceremony, after the veto has been used or not used.',
   },
 
+  // BB21 Whacktivity, and the only thing in this game that can UNDO a ceremony
+  // that has already happened. Everything else here changes what is about to
+  // happen; this reaches backwards.
+  //
+  // The Head of Household keeps the pen and loses the page: the nominations are
+  // void, everybody is woken up, and the same person has to name two DIFFERENT
+  // houseguests on the spot with no time to plan. It is the only power that
+  // makes somebody do their own job twice, in front of everybody, at three in
+  // the morning.
+  'nightmare-power': {
+    id: 'nightmare-power',
+    name: 'The Nightmare Power',
+    rules: { voidNominations: true },
+    useTiming: 'post-noms',
+    // Canon: the first six nomination ceremonies.
+    windowWeeks: 6,
+    blurb: 'Voids a nomination ceremony that has already happened. The house is woken in the middle of the night and the Head of Household must name two new nominees on the spot.',
+    catch: 'The two who came down cannot go back up the same night, so it cannot be aimed twice — and the Head of Household takes the blame for a block they were forced to write.',
+    moment: 'The middle of the night, hours after the nomination ceremony everybody thought was over.',
+  },
   'the-cloud': {
     id: 'the-cloud',
     name: 'The Cloud',

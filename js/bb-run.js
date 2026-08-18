@@ -1415,6 +1415,15 @@ export function summariseWeek(week) {
         }
         break;
       }
+      case 'nightmare-power': {
+        line('');
+        line('THE NIGHTMARE POWER');
+        line('  The house is woken at three in the morning. The nomination ceremony is void.');
+        line(`  ${(act.voided || []).join(' and ')} come off the block.`);
+        line(`  ${act.hoh} must name two new nominees on the spot: ${(act.nominees || []).join(' and ')}.`);
+        line('  The house is never told whose power did it.');
+        break;
+      }
       case 'camp-director': {
         line('');
         line('THE CAMP DIRECTOR');

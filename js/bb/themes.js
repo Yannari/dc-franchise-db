@@ -241,6 +241,18 @@ export function themeScheduleEntries(theme, { weeks = 10, existing = [] } = {}) 
       episode: ep,
       type: act.book,
       source: 'theme',
+      // ── WHAT THE THEME WANTS THIS PARTICULAR CARD TO DO ──
+      //
+      // A booked card is an ordinary schedule entry, and several cards read
+      // their own options off it: Whacktivity reads "doors", the High
+      // Roller's Room reads "game", Pandora's Box reads its prize. Without
+      // this a theme could say WHICH card to play and never which version of
+      // it — so Summer Camp could book Whacktivity and never ask for the
+      // three doors BB21 actually ran, which is the whole reason it books it.
+      //
+      // Spread FIRST, so nothing a theme puts here can overwrite the episode
+      // or the type below it.
+      ...(act.options || {}),
       // ── AN ENDGAME ACT IS ANCHORED TO THE HOUSE, NOT TO A COUNTED-BACK WEEK ──
       //
       // `fromEnd` is written as a house size — 3 is a final six — and the week

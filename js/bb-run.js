@@ -1332,10 +1332,22 @@ export function summariseWeek(week) {
       case 'coin-of-destiny': {
         line('');
         line('THE COIN OF DESTINY');
+        if (!act.winner) {
+          // Approached and could not pay. The seat was never sold, so there is
+          // no game, no call and nothing to keep secret.
+          line(`  The buy-in is ${act.price}. ${(act.short || []).join(', ') || 'Nobody'} `
+            + 'walked up to it, and nobody could pay it.');
+          line('  The table is put away unplayed.');
+          break;
+        }
         line(`  Bought in: ${(act.buyers || []).join(', ') || 'nobody'}.`);
+        if ((act.short || []).length) {
+          line(`  Short at the table: ${act.short.join(', ')}.`);
+        }
         line(`  ${act.winner} wins the game and is taken away to call it.`);
         line(act.calledRight
-          ? `  The call is right. The nominations are taken off ${act.hoh}: ${(act.nominees || []).join(' and ')} go up.`
+          ? `  The call is right. The week is taken off ${act.hoh} — nominations and the replacement `
+            + `both: ${(act.nominees || []).join(' and ')} go up.`
           : '  The call is wrong. Nothing changes, and everybody still knows who paid to try.');
         line('  The house is never told who called it.');
         break;

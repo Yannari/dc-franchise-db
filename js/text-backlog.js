@@ -5071,18 +5071,48 @@ export function generateBBSummaryText(ep) {
 
       case 'coin-of-destiny': {
         sec('THE COIN OF DESTINY');
-        ln(`  Anybody could buy in, and everybody saw who did: ${(act.buyers || []).join(', ') || 'nobody'}.`);
-        ln(`  ${act.winner} wins the game of skill and is taken out of the room to call the toss.`);
-        ln('');
-        if (act.calledRight) {
-          ln(`  The call is right. This week's nominations are taken off ${act.hoh}.`);
-          ln(`  ${(act.nominees || []).join(' and ')} are nominated instead.`);
-          ln(`  ${act.hoh} finds out with everybody else, and is never told whose hand did it.`);
-        } else {
-          ln('  The call is wrong. The nominations stand exactly as they were,');
-          ln(`  and ${act.winner} has paid, played and lost in front of the whole house.`);
+        if (!act.winner) {
+          // The floor's most expensive product, offered to a house that spent
+          // the money in July. No seat was sold, so there is no call to keep.
+          ln(`  The buy-in was ${act.price}, and anybody could pay it who had it.`);
+          // (This branch only exists on a season with a currency — with no
+          // price nobody can be short, so there is always at least one buyer.)
+          ln(`  ${(act.short || []).join(', ') || 'Nobody'} got as far as the table.`);
+          ln('  Not one of them could make the price. The game is not played,');
+          ln('  and every houseguest now knows exactly what everybody else is holding.');
+          beats(act);
+          break;
         }
+        // ── THE SCENE, THEN THE RESULT ──
+        //
+        // `beats(act)` used to run LAST, under the outcome, so this section
+        // opened by announcing that the call was wrong and Jay had lost
+        // everything, and only then played him buying in, winning the game and
+        // walking off to call it. Found by reading a real backlog. The viewing
+        // party had already been fixed for exactly this — its own comment says
+        // the outcome card "used to sit second and told you the nominations had
+        // changed before the beats got round to anybody buying in" — and this
+        // writer was left behind.
+        ln(`  Anybody could buy in${act.price > 0 ? ` for ${act.price}` : ''}, and everybody `
+          + `saw who did: ${(act.buyers || []).join(', ') || 'nobody'}.`);
+        if ((act.short || []).length) {
+          ln(`  ${act.short.join(', ')} walked up to it and could not make the price.`);
+        }
+        ln('');
         beats(act);
+        ln('');
+        // The beats already narrate the game, the call and the rewritten block
+        // — restating them here was the first draft of this fix and read as a
+        // stammer. What is left is the only thing they do NOT carry: what the
+        // rest of the week now looks like.
+        if (act.calledRight) {
+          ln(`  ${act.hoh} keeps the title and nothing that comes with it. The block is not`);
+          ln(`  ${act.hoh}'s, the replacement at the veto meeting will not be ${act.hoh}'s either,`);
+          ln('  and the person running the week is standing in the room with everybody else.');
+        } else {
+          ln('  Nothing about the block changes. What does not go away is the list: every');
+          ln('  houseguest who paid is on it, and the house has no way to cross a name off.');
+        }
         break;
       }
 

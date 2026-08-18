@@ -53,7 +53,11 @@ const _buyerCast = (house, ctx) => {
 };
 const _abstainerCast = (house, ctx) => {
   const c = _coin(ctx);
-  const out = (c?.buyers || []);
+  // Keeping your money and not HAVING it look identical from the sofa and mean
+  // opposite things about somebody's season, so the people who walked up to the
+  // table and came up short are excluded — narrating them as abstainers reads
+  // their worst week of the season as a shrewd decision not to play.
+  const out = [...(c?.buyers || []), ...(c?.short || [])];
   const abstained = house.filter(n => !out.includes(n) && n !== (ctx?.week?.hoh));
   if (!c || abstained.length < 1) return null;
   const who = [...abstained].sort((a, b) => pStats(b).strategic - pStats(a).strategic)[0];

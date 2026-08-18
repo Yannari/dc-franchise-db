@@ -640,7 +640,7 @@ export const TWIST_CATALOG = [
     incompatibleModes:['block-buster'] },
   { id:'bb-coin-of-destiny', emoji:'🪙', name:'The Coin of Destiny', format:'big-brother',
     category:'power', phase:'any',
-    desc:'Any houseguest may buy into the Coin of Destiny, and everybody sees who does. They play for it, and the winner is taken away to call a coin toss in private. Call it right and they take the week’s nominations off the Head of Household and name their own; call it wrong and they have paid, played and lost in front of everybody for nothing. Either way the house is told the nominations changed and never told whose hand did it, so a dethroned Head of Household spends the week looking at everybody who bought in.',
+    desc:'Any houseguest may buy into the Coin of Destiny, and everybody sees who does — on a season with a currency it costs 165 and the money is taken on the way in, whatever happens next. They play for it, and the winner is taken away to call a coin toss in private. Call it right and they do not just take the week’s nominations off the Head of Household: they run the rest of the week as Head of Household themselves, naming the block and the replacement at the veto meeting, while the one they dethroned stays safe and competes again next week. Call it wrong and they have paid, played and lost in front of everybody for nothing. Either way the house is told the block changed and never told whose hand changed it, so a dethroned Head of Household spends the week looking at everybody who bought in.',
     incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-invisible-hoh'],
     incompatibleModes:['block-buster'] },
   { id:'bb-double-veto', emoji:'💠', name:'The Double Veto', format:'big-brother',

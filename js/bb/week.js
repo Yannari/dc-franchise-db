@@ -13,7 +13,7 @@ import { runBattleBack } from './battle-back.js';
 import { resolveBonusLife } from './bonus-life.js';
 import { resolveHaltingHex } from './eviction-powers.js';
 import { resolveRewind } from './rewind.js';
-import { runCoinOfDestiny, coinNominations } from './coin-of-destiny.js';
+import { runCoinOfDestiny, coinNominations, COIN_PRICE } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
 import { openRoom, roomGameForNight, ROOM_GAMES } from './high-rollers-room.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
@@ -2973,7 +2973,16 @@ export function simulateBBWeek(options = {}) {
   const coinActive = week.twistState?.rules?.ceremonyAuthority === 'coin-holder'
     && !compressed && house.length >= 5;
   if (coinActive) {
-    const coin = runCoinOfDestiny({ week, house, hoh, nominees: [...nominees], rng });
+    // ── THE PRICE IS A SEASON CAPABILITY, NOT A PROPERTY OF THE TWIST ──
+    //
+    // The Coin is older than BB Bucks and is schedulable on any season. Only a
+    // theme declaring an economy can charge for it, so on every other season
+    // the buy-in is what it always was — a public decision to play, with
+    // nothing to hand over. Gating the twist on the currency instead would
+    // silently delete it from every season that is not High Roller's.
+    const coinPrice = currentTheme()?.economy === 'bb-bucks' ? COIN_PRICE : 0;
+    const coin = runCoinOfDestiny({ week, house, hoh, nominees: [...nominees],
+      price: coinPrice, rng });
     if (coin) {
       const named = coinNominations({ act: coin, house, hoh, untouchable, rng });
       if (named && named.length === 2) {
@@ -2985,10 +2994,23 @@ export function simulateBBWeek(options = {}) {
         // The dethroning is public and the hand is not, so the grievance has
         // nowhere to land — which is the entire difference from a Coup.
         week.coinDethroned = hoh;
+        // ── AND THE WEEK GOES WITH IT ──
+        //
+        // Canon does not hand the week back after the nomination ceremony: the
+        // winner IS the Head of Household until Thursday, which means the
+        // post-veto replacement is theirs too. Without this the person who was
+        // just dethroned walks into the veto meeting and refills the block they
+        // no longer own — the twist would take a ceremony rather than a week.
+        //
+        // Read by `chairAuthority` at the veto ceremony. Secret: it must never
+        // reach a surface, which is why the ceremony act declares itself
+        // anonymous wherever this is set.
+        week.coinAuthority = coin.winner;
       }
       week.coin = {
         winner: coin.winner, calledRight: coin.calledRight,
-        buyers: [...coin.buyers], dethroned: coin.dethroned || null,
+        buyers: [...coin.buyers], short: [...(coin.short || [])],
+        price: coin.price ?? null, dethroned: coin.dethroned || null,
         nominees: [...(coin.nominees || [])],
       };
       week.acts.push(addBeats(coin, { nominees: [...(coin.nominees || [])] }));
@@ -3594,7 +3616,16 @@ export function simulateBBWeek(options = {}) {
     return guess;
   };
 
-  const _invisibleGuess = who => {
+  // ── WHO THEY BLAME, AND WHO ACTUALLY DID IT ──
+  //
+  // `truth` used to be hard-coded to the Head of Household, because the only
+  // anonymous week this engine had was an invisible HOH — the hidden hand and
+  // the HOH were the same person. The Coin breaks that: the hand belongs to
+  // whoever bought the week, and the HOH is the person it was taken FROM. With
+  // the truth still pinned to `hoh`, a houseguest who guessed "correctly" would
+  // be pointed at the one person in the house who is provably innocent, and
+  // `week.hohGuesses` would record that as a read rather than as a miss.
+  const _invisibleGuess = (who, truth = hoh) => {
     week.hohGuesses ||= [];
     const prior = week.hohGuesses.find(g => g.who === who);
     if (prior) return prior.guess;
@@ -3602,12 +3633,12 @@ export function simulateBBWeek(options = {}) {
     const candidates = house.filter(n => n !== who && !blockNow.includes(n));
     const st = pStats(who);
     const correct = rng() < Math.min(0.75, 0.22 + st.intuition * 0.05);
-    let guess = hoh;
+    let guess = truth;
     if (!correct) {
-      guess = candidates.filter(n => n !== hoh)
-        .sort((a, b) => getPerceivedBond(who, a) - getPerceivedBond(who, b))[0] || hoh;
+      guess = candidates.filter(n => n !== truth)
+        .sort((a, b) => getPerceivedBond(who, a) - getPerceivedBond(who, b))[0] || truth;
     }
-    week.hohGuesses.push({ who, guess, correct: guess === hoh });
+    week.hohGuesses.push({ who, guess, correct: guess === truth });
     return guess;
   };
 
@@ -3644,7 +3675,15 @@ export function simulateBBWeek(options = {}) {
   // so — which reads as alliances not mattering. When the HOH's alliance
   // walked away clean, the ceremony names it, with the small real
   // consequence that being protected in public is: the members notice.
-  if (!hohSecret) {
+  // ── AND NOT ON A COIN WEEK EITHER ──
+  //
+  // This beat reads a block for the shape of the HOH's alliance and says "what
+  // ${hoh} just did for them". On a coin week the HOH did not choose a single
+  // name on that block — it was taken off them by somebody nobody can identify
+  // — so the sentence is false in the one way this project cares most about:
+  // it hands the house a confident, wrong answer about who is protecting whom.
+  // The coin's own event family already covers a rewritten block.
+  if (!hohSecret && !week.coinAuthority) {
     const hohBloc = (gs.namedAlliances || [])
       .filter(a => a.active !== false && !a.dissolved && (a.members || []).includes(hoh))
       .map(a => ({ ...a, inHouse: (a.members || []).filter(m => house.includes(m)) }))
@@ -4346,7 +4385,21 @@ export function simulateBBWeek(options = {}) {
     // second holder cannot put back the person the first one took down.
     week.derbySafe = [...new Set(derbySafe)];
 
-    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house, diamond, hohSecret });
+    // ── WHO THE VETO HOLDER IS AFRAID OF CROSSING ──
+    //
+    // `shouldUseVeto` prices the anger of the person whose week gets undone,
+    // and halves it on an invisible week because the holder cannot name who
+    // they would be crossing. A coin week is exactly that and was not being
+    // treated as one: found by reading a real backlog, where the veto holder
+    // weighed "using it makes an enemy of Eva" about a Head of Household the
+    // whole house had watched lose the block to somebody else. Nobody in that
+    // room believed Eva chose those two, so nobody should have been pricing
+    // her temper.
+    const coinChair = week.coinAuthority && house.includes(week.coinAuthority)
+      ? week.coinAuthority : null;
+    const anonymousChair = hohSecret || !!coinChair;
+    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng,
+      { hoh, house, diamond, hohSecret: anonymousChair });
     // A veto that MUST be used stops being a decision about whether and starts
     // being a decision about who — and the holder cannot decline it just
     // because the honest answer this week was nobody.
@@ -4369,7 +4422,15 @@ export function simulateBBWeek(options = {}) {
     const americasChair = !!week.americasNominee
       && vetoDecision?.use && vetoDecision?.save === week.americasNominee.nominee;
     const roadkillChair = !!week.roadkill && vetoDecision?.save === week.roadkill.nominee;
-    const chairAuthority = diamond ? vetoWinner : (roadkillChair ? week.roadkill.winner : hoh);
+    // The Coin sits under both of the exceptions above and over the Head of
+    // Household, which is the order the rules give it. A Diamond holder and a
+    // Roadkill chair are both won THIS week for THIS ceremony and neither was
+    // ever the HOH's to fill; the Coin only replaces the HOH, so it takes the
+    // pen exactly where the HOH would have held it. `house.includes` because a
+    // holder who has left the house cannot name anybody, and `chooseReplacement`
+    // on a name that is not there is a dead season.
+    const chairAuthority = diamond ? vetoWinner
+      : (roadkillChair ? week.roadkill.winner : (coinChair || hoh));
     if (roadkillChair) week.roadkillRefilled = true;
     let replacement = null;
     let replacementWhy = '';
@@ -4412,7 +4473,12 @@ export function simulateBBWeek(options = {}) {
          the name on this list the chooser can put them straight back up an hour
          later, which is the shape of gap this codebase has shipped before —
          the Golden Key holder two comments down was exactly it. */
-      const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...(week.rouletteSafe || []), ...(week.derbySafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...keySafe, ...duoCrownSafe, ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
+      // `coinChair` is in here for the same reason `hoh` is: a Head of
+      // Household cannot be renominated, and for this week that is who the coin
+      // holder is. Without it `chooseReplacement` can hand the holder the pen
+      // and have them write their own name — and the dethroned HOH stays in the
+      // list too, because canon leaves them safe for the week they lost.
+      const protectedNames = [hoh, coinChair, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...(week.rouletteSafe || []), ...(week.derbySafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...keySafe, ...duoCrownSafe, ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
       // The chooser reasons from their OWN plan. An HOH follows the week's
       // nomination plan; a diamond holder follows their own read of the house,
       // which is what makes the twist a hijacking rather than a formality.
@@ -4761,7 +4827,11 @@ export function simulateBBWeek(options = {}) {
       roulette: week.rouletteSwap ? { ...week.rouletteSwap } : null,
       rouletteVoid: week.rouletteVoid ? { ...week.rouletteVoid } : null,
       saved: vetoDecision.save, replacement, holder: vetoWinner,
-      diamond, chairAuthority, anonymous: hohSecret && !diamond,
+      // A coin week is an anonymous week. The act carries `chairAuthority` so
+      // the Diamond Veto can say who named a replacement — under the Coin that
+      // is the one fact the house must never be given, so the flag that hides
+      // it covers both cases.
+      diamond, chairAuthority, anonymous: (hohSecret || !!coinChair) && !diamond,
       reason: vetoDecision.reason, why: vetoDecision.why, replacementWhy,
       // The block as the CEREMONY left it. `nominees` may already have been
       // rewritten by a Coup d'Etat below, and reporting that here had the
@@ -5074,7 +5144,13 @@ export function simulateBBWeek(options = {}) {
       // holder just rewrote, and the replacement knows exactly whose voice
       // said their name. On an invisible week nobody's voice said it, so the
       // grievance lands on the replacement's own guess — right or wrong.
-      const namer = (hohSecret && !diamond) ? _invisibleGuess(replacement) : chairAuthority;
+      // On an invisible week nobody's voice said the name, so the grievance
+      // lands on the replacement's own guess — right or wrong. A coin week is
+      // exactly that case: the block moved and the hand did not show. Miss this
+      // and the whole twist inverts, because the fallout writes the holder's
+      // name into the transcript as the person who renominated you.
+      const namer = ((hohSecret || coinChair) && !diamond)
+        ? _invisibleGuess(replacement, coinChair || hoh) : chairAuthority;
       const ceremonyAct = _lastStagedAct(week);
       const mentioned = !ceremonyAct
         || (ceremonyAct.socialBeats || []).some(b => (b.players || []).includes(replacement));
@@ -5317,7 +5393,16 @@ export function simulateBBWeek(options = {}) {
   // Household to bar from next week's competition. Without this the line below
   // would hand the crown straight back to somebody the twist just took it from,
   // one screen after telling the house they were never crowned.
-  gs.bb.outgoingHoh = (week.hohSecret || week.rewound) ? null : hoh;
+  // ── A DETHRONED HEAD OF HOUSEHOLD IS NOT AN OUTGOING ONE ──
+  //
+  // `outgoingHoh` is what bars somebody from the next competition, and it has
+  // always carried two exemptions for people who did not get the reign it is
+  // recording — an invisible HOH and a rewound week. A coin week is a third of
+  // exactly that kind. Canon is explicit that the dethroned HOH stays safe and
+  // competes in the next Head of Household; without this we take their week
+  // AND the chance to win it back, which is a punishment nothing in the rules
+  // asks for and which no surface ever explains to the viewer.
+  gs.bb.outgoingHoh = (week.hohSecret || week.rewound || week.coinDethroned) ? null : hoh;
     gs.bb.weeks.push(week);
     // One episode, however many cycles it took. A double eviction runs the week
   // engine twice and a Split House runs it once per side, so an unconditional
@@ -6457,7 +6542,16 @@ export function simulateBBWeek(options = {}) {
   // Household to bar from next week's competition. Without this the line below
   // would hand the crown straight back to somebody the twist just took it from,
   // one screen after telling the house they were never crowned.
-  gs.bb.outgoingHoh = (week.hohSecret || week.rewound) ? null : hoh;
+  // ── A DETHRONED HEAD OF HOUSEHOLD IS NOT AN OUTGOING ONE ──
+  //
+  // `outgoingHoh` is what bars somebody from the next competition, and it has
+  // always carried two exemptions for people who did not get the reign it is
+  // recording — an invisible HOH and a rewound week. A coin week is a third of
+  // exactly that kind. Canon is explicit that the dethroned HOH stays safe and
+  // competes in the next Head of Household; without this we take their week
+  // AND the chance to win it back, which is a punishment nothing in the rules
+  // asks for and which no surface ever explains to the viewer.
+  gs.bb.outgoingHoh = (week.hohSecret || week.rewound || week.coinDethroned) ? null : hoh;
   gs.bb.weeks.push(week);
   // One episode, however many cycles it took. A double eviction runs the week
   // engine twice and a Split House runs it once per side, so an unconditional

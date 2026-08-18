@@ -96,6 +96,13 @@ export function rpBuildBBCoinOfDestiny(ep, act, deps) {
   const AV = (n, px) => (typeof deps.avatar === 'function' ? deps.avatar(n, px) : '');
   const buyers = act.buyers || [];
   const declined = act.declined || [];
+  // Walked up and could not make the price. A third state, and the one this
+  // theme is really about — "KEPT IT" and "COULDN'T" look identical from the
+  // sofa and mean opposite things about somebody's season.
+  const short = act.short || [];
+  // No seat was sold, so there was no game and no call. Distinct from a wrong
+  // call, which the vault card below used to narrate over the top of it.
+  const unplayed = !act.winner;
 
   const COIN = `<svg class="bbcd-coin" viewBox="0 0 160 150" role="img"
       aria-label="A coin turning in a room with no camera">
@@ -113,13 +120,15 @@ export function rpBuildBBCoinOfDestiny(ep, act, deps) {
   // so the counter is faces rather than a list — you can read who thought they
   // were in trouble at a glance, which is the read the house actually gets.
   const COUNTER = `<div class="bbcd-counter">${
-  [...buyers.map(n => ({ n, paid: true })), ...declined.map(n => ({ n, paid: false }))]
-    .map(({ n, paid }) => `
-      <div class="bbcd-buyer ${!paid ? 'is-out' : ''} ${called && n === act.winner ? 'is-winner' : ''}"
+  [...buyers.map(n => ({ n, tag: 'PAID', paid: true })),
+    ...short.map(n => ({ n, tag: 'SHORT', paid: false })),
+    ...declined.map(n => ({ n, tag: 'KEPT IT', paid: false }))]
+    .map(({ n, tag, paid }) => `
+      <div class="bbcd-buyer ${!paid ? 'is-out' : ''} ${called && act.winner && n === act.winner ? 'is-winner' : ''}"
         title="${esc(n)}">
         <div class="bbcd-face">${AV(n, 44)}</div>
         <div class="bbcd-nm">${esc(n)}</div>
-        <div class="bbcd-paid">${paid ? 'PAID' : 'KEPT IT'}</div>
+        <div class="bbcd-paid">${tag}</div>
       </div>`).join('') || '<div class="bbcd-nm">nobody came to the counter</div>'}</div>`;
 
   // The crown, and whether the call took it. A dethroned Head of Household is
@@ -140,10 +149,24 @@ export function rpBuildBBCoinOfDestiny(ep, act, deps) {
   const card = (step, i) => {
     if (i > state.idx) return _hidden();
     if (step.kind === 'ledger') {
+      if (unplayed) {
+        return _card('THE PRICE WAS THE WHOLE GAME',
+          `The buy-in was ${act.price}. ${short.length} ${short.length === 1 ? 'houseguest' : 'houseguests'}
+           got as far as the table and not one of them could make it — so the most expensive thing this
+           season sells was decided by what people did with their money in weeks nobody remembers.`, 'grey');
+      }
       return _card('EVERYBODY SAW WHO PAID',
         `Buying in is a sentence with exactly one meaning, and ${(act.buyers || []).length} people said it
-         out loud with money. Paying does not make you the one who called it — but it does tell the house
-         precisely how safe you thought you were.`, 'gold');
+         out loud with money at ${act.price} a seat. Paying does not make you the one who called it — but it
+         does tell the house precisely how safe you thought you were.`, 'gold');
+    }
+    if (step.kind === 'vault' && unplayed) {
+      return _card('THE COIN IS NEVER TURNED',
+        `No seat was sold, so there was no game and there was no call. The Head of Household keeps the week
+         they already had, and nobody has to be suspected of anything.
+         <br><br>Which is its own information. Everybody at that table just showed the house what they are
+         holding, and the house does not forget a number like that.`,
+        'grey', 'is-final', short.slice(0, 4));
     }
     if (step.kind === 'vault') {
       return _card('AND NOBODY SAW THE CALL',

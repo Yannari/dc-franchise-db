@@ -872,6 +872,51 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   }
   section('relationships', 'Relationships', relBits.join(''));
 
+  // ── THE OTHER SHOWS ────────────────────────────────────────────────
+  //
+  // The reference pages carry this as a heading per show — "Big Brother (US)",
+  // "Charm School" — under a "Post <show>" banner, saying what somebody did
+  // once their season was over.
+  //
+  // Ours is scoped to one show on purpose: a character's Big Brother article
+  // and their Total Drama article are different articles. But that scoping
+  // created a hole. Eighteen players have now played both, effectively the
+  // whole Big Brother season 1 cast, and their Total Drama pages said nothing
+  // about it — the other career existed, on the same dossier, and was rendered
+  // nowhere.
+  //
+  // Written from the record rather than authored: every clause below is a
+  // field. What the reference ALSO carries here — talk show appearances,
+  // hosting a later season's competition, an engagement after the finale — is
+  // a different kind of data this project does not have, and inventing it is
+  // exactly what the derived half exists to avoid.
+  {
+    const others = (dossier.career || [])
+      .filter(c => c.format !== format && c.seasons?.length);
+    for (const other of others) {
+      const om = meta(other.format);
+      const outcome = x => {
+        if (x.placement === 1) return 'winning the season';
+        if (x.placement === 2) return 'finishing as the runner-up';
+        // "as a member of the jury" is the reference's phrasing and the record
+        // holds it; the jury NUMBER would need the rest of that season's cast,
+        // which this article does not have and will not guess at.
+        const jury = /jur/i.test(x.status || '') ? ' as a member of the jury' : '';
+        return x.placement ? `finishing ${ordinal(x.placement)}${jury}` : 'competing';
+      };
+      const sentences = other.seasons.slice().sort((a, b) => a.season - b.season).map(x => {
+        const label = `<a href="${root}/season_ref.html?season=${esc(x.seasonId || x.season)}"><em>${
+          x.title ? esc(x.title) : `${esc(om.name)} ${x.season}`}</em></a>`;
+        return `<li>${esc(dossier.name)} competed on ${label}, ${outcome(x)}.</li>`;
+      });
+      section(`elsewhere-${other.format}`, om.name, `
+        <ul class="wk-list">${sentences.join('')}</ul>
+        <p><button type="button" class="wk-btn" data-wiki-show="${esc(other.format)}">${
+          om.icon} Read the ${esc(om.name)} article</button></p>`);
+    }
+  }
+
+
   // Trivia — records held, and the facts worth knowing.
   const trivia = (dossier.records || [])
     .filter(r => !r.show || r.show === m.name)

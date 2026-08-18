@@ -685,3 +685,76 @@ describe('the game paragraph', () => {
     expect(para(out(JADE))).toMatch(/During their time/);
   });
 });
+
+// ── THE OTHER SHOWS ──
+//
+// The reference pages carry "Big Brother (US)" and "Charm School" as headings
+// on a Mad House character's page, saying what they did elsewhere.
+//
+// Scoping each article to one show was deliberate — a character's Big Brother
+// article and their Total Drama article are different articles — but it left a
+// hole. Eighteen players have now played both, effectively the whole Big
+// Brother season 1 cast, and their Total Drama pages said nothing about it.
+// The other career was on the same dossier the whole time and rendered nowhere.
+describe('an article says what they did on the other show', () => {
+  const crossover = {
+    id: 'caleb', name: 'Caleb', bio: {},
+    career: [
+      { format: 'total-drama', count: 1, wins: 0, best: 15, totals: {},
+        seasons: [{ season: 9, seasonId: 'td-9', title: 'Land of Powers', placement: 15, status: 'Juror', record: {} }] },
+      { format: 'big-brother', count: 1, wins: 0, best: 4, totals: {},
+        seasons: [{ season: 1, seasonId: 'bb-1', title: 'The House That Kept Receipts', placement: 4, status: 'Jury', record: {} }] },
+    ],
+  };
+  const opts = { root: '.', allShows: ['total-drama', 'big-brother'] };
+
+  it('names the other show as its own section, from the record', () => {
+    const html = renderArticle(crossover, 'total-drama', opts);
+    expect(html, 'no Big Brother section on a crossover player').toMatch(/id="wk-elsewhere-big-brother"/);
+    expect(html).toMatch(/Caleb competed on/);
+    expect(html).toContain('The House That Kept Receipts');
+    expect(html, 'the placement is not stated').toMatch(/finishing 4th/);
+  });
+
+  it('works in the other direction too', () => {
+    const html = renderArticle(crossover, 'big-brother', opts);
+    expect(html).toMatch(/id="wk-elsewhere-total-drama"/);
+    expect(html).toContain('Land of Powers');
+    expect(html, 'a Big Brother page is describing its own season as elsewhere')
+      .not.toContain('The House That Kept Receipts</em>, finishing 4th');
+  });
+
+  it('offers a way into that article', () => {
+    // The same hook the empty state uses, so the page already knows how to
+    // switch — no second mechanism.
+    expect(renderArticle(crossover, 'total-drama', opts))
+      .toMatch(/data-wiki-show="big-brother"/);
+  });
+
+  it('says nothing at all for somebody who played one show', () => {
+    const single = { ...crossover, career: [crossover.career[0]] };
+    expect(renderArticle(single, 'total-drama', opts)).not.toMatch(/wk-elsewhere-/);
+  });
+
+  it('states jury standing only when the record says so', () => {
+    // "as a member of the jury" is the reference's phrasing and the status
+    // field holds it. The jury NUMBER would need the rest of that season's
+    // cast, which this article does not have and must not guess at.
+    const html = renderArticle(crossover, 'total-drama', opts);
+    expect(html).toMatch(/as a member of the jury/);
+    expect(html, 'invented a jury position').not.toMatch(/first member of the jury|third member/);
+
+    const preMerge = JSON.parse(JSON.stringify(crossover));
+    preMerge.career[1].seasons[0].status = 'Pre-Merge';
+    expect(renderArticle(preMerge, 'total-drama', opts))
+      .not.toMatch(/as a member of the jury/);
+  });
+
+  it('says winning and runner-up in words, not placements', () => {
+    const won = JSON.parse(JSON.stringify(crossover));
+    won.career[1].seasons[0].placement = 1;
+    expect(renderArticle(won, 'total-drama', opts)).toMatch(/winning the season/);
+    won.career[1].seasons[0].placement = 2;
+    expect(renderArticle(won, 'total-drama', opts)).toMatch(/finishing as the runner-up/);
+  });
+});

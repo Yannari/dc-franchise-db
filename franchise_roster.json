@@ -3084,8 +3084,11 @@
       },
       "sexuality": "straight",
       "age": 21,
+      "birthdate": "2005-05-14",
       "ethnicity": "Asian",
-      "nationality": "Canadian"
+      "nationality": "Canadian",
+      "hometown": "Toronto",
+      "occupation": "Dental Assistant"
     },
     {
       "name": "Jane",

@@ -80,11 +80,19 @@ export default {
   // Boss is — which is the question that started this whole slice.
   //
   // TWO RULES FOR EDITING THIS BLOCK.
-  //   1. `rules` must be TRUE of the engine. Every line below was checked
-  //      against `js/bb/bb-bucks.js` (the tiers, and that they pay weekly) and
-  //      `js/bb/high-rollers-room.js` (money leaves on ENTRY, one seat per game
-  //      per season). Do not describe the Veto Derby or a purchasable Coin —
-  //      those are later plans and the viewer must not be promised them.
+  //   1. `rules` must be TRUE of the engine, and every line below was checked
+  //      against the module that implements it: `bb-bucks.js` (the tiers, paid
+  //      weekly), `side-bet.js` (the stake and that the odds favour the floor),
+  //      `high-rollers-room.js` (money leaves on ENTRY, one seat per game per
+  //      season), `veto-derby.js`, `chopping-block-roulette.js`,
+  //      `coin-of-destiny.js` (the price, and that the winner runs the WEEK)
+  //      and `wildcard.js` (drawn not chosen, and who the bill goes to).
+  //      EVERY CARD THIS THEME BOOKS MUST APPEAR HERE. An audit found three
+  //      that did not — the wrapped boxes, which this arc books more often than
+  //      anything else, the double eviction, and the fact that the chip
+  //      standings are shown to the VIEWER and not to the room. A card the
+  //      viewer meets with no explanation is the whole reason this block was
+  //      written in the first place.
   //   2. NEVER write "the house" here. Every other surface in this simulator
   //      uses that phrase for the roster of houseguests, so this antagonist
   //      says the floor, the room, the edge. A test sweeps this whole block.
@@ -104,6 +112,12 @@ export default {
     who: 'The Pit Boss works the floor for an owner that never shows itself, never plays, and never '
       + 'loses. He is a floor manager and he is delighted you came. He comps the drinks, he learns '
       + 'your name, and he has been counting since the moment you sat down.',
+    // ORDERED THE WAY THE SEASON HAPPENS, not by importance. A viewer reads
+    // this once, before week one, and then meets these cards in this order: the
+    // payout every week from the start, the early-weeks cards, the floor's menu
+    // in the order the floor sells it, and the endgame. An earlier draft led
+    // with the two newest cards and pushed the payout — which is the thing
+    // everything else is priced against — into the middle of the list.
     rules: [
       'The audience pays every houseguest every week — the top three get the most, the next three a '
         + 'little less, everybody else the floor rate. The result is announced, so the room learns '
@@ -112,6 +126,15 @@ export default {
       'Any week, anybody may stake 10 at the rail on who they think is going home. Get it right and '
         + 'the floor pays; get it wrong and it is gone. The odds are the floor\'s, so betting loses '
         + 'money on average — but it is the only thing to do with a wallet before the room opens.',
+      'Some weeks three houseguests are DRAWN, at random, before nominations — the Head of Household is '
+        + 'not in the hat and nobody else volunteers for it. They compete, and whoever wins is offered '
+        + 'safety for the week at a price: a punishment. About a third of the time that punishment is '
+        + 'billed to everybody ELSE instead of to the winner. Taking it is said out loud in front of the '
+        + 'people who will be serving it; turning it down costs nothing at all, and says a great deal.',
+      'Some veto competitions do not award the veto. They set the order in which people pick a wrapped '
+        + 'box, and the veto is in exactly one of them — the rest hold cash, trips and punishments, and a '
+        + 'later picker can steal what somebody has already opened. It is this season asking its own '
+        + 'question with the money made literal: what did you actually come here for?',
       'Three times late in the season a back room opens, and it sells one game a night. The first '
         + 'night is the Veto Derby, at 50: guess a number, finish in the top six, and you earn the '
         + 'right to back one of the six veto players. Back the one who wins and you hold a veto of '
@@ -134,6 +157,13 @@ export default {
       'Each game may be played once per houseguest, for the whole season, and a season earns less '
         + 'than the menu costs. Buying in is a door you close behind you — and the cheap game comes '
         + 'first, on the one night most of the room can still afford to walk through it.',
+      'Near the end, the floor closes two tables in one night: a double eviction, played at speed, with '
+        + 'the whole week — competition, nominations, veto and vote — run in a single sitting. Nobody '
+        + 'gets days to count anything.',
+      'One asymmetry worth knowing, because it is the only place this screen tells you more than the '
+        + 'players get: YOU are shown what everybody is holding, week by week. They are not. They saw '
+        + 'each payout read out and they saw who walked to the table, and from that they have to guess '
+        + 'the rest — so a houseguest who looks broke may simply have been quiet.',
     ],
     watch: 'Watch who the audience pays and who it does not, because that is public from week one. Then '
       + 'watch who spends and who saves — the menu costs more than a season earns, so nobody gets to '
@@ -328,6 +358,22 @@ export default {
     // this records.
     { every: 3, from: 3, untilFromEnd: 9, book: 'bb-prizes-and-punishments' },
 
+    // ── THE WILDCARD, AND WHY IT SHARES THE CADENCE WINDOW ────────────────
+    //
+    // The early weeks were the arc's thinnest stretch and the boxes were
+    // carrying them alone. This is the other half of BB23's season and it fits
+    // the floor exactly: a name comes out of a hat, and safety is sold at a
+    // price somebody else might be made to pay. It is the theme's thesis with
+    // no money in it, which is what makes it work in the weeks before anybody
+    // has any.
+    //
+    // `every: 2` against the boxes' `every: 3` in the same window is deliberate
+    // and it does NOT double-book: the scheduler fires at most one card a week
+    // and pushes the loser late rather than dropping it. `untilFromEnd: 9`
+    // matches the boxes so neither cadence can reach the room's first night at
+    // `fromEnd: 8` — the silent-drop failure the note above this records.
+    { every: 2, from: 2, untilFromEnd: 9, book: 'bb-wildcard' },
+
     { at: { frac: 0.55 }, mood: 'hostile' },
     { at: { fromEnd: 8 }, mood: 'hostile' },
 
@@ -374,6 +420,19 @@ export default {
     // so booked any earlier it would shift the three room nights down a house
     // size each and cost them their canon final eleven / ten / nine.
     { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
+
+    // ── AND THE LAST HAND ─────────────────────────────────────────────────
+    //
+    // The arc used to stop at the double, two or more weeks short of the
+    // finale, while Mystery, CORA and Temptation all carry something to
+    // `fromEnd: 2`. The boxes are the right card to close on and it is the same
+    // reason they open the season: at a final five, choosing five thousand
+    // dollars over the only thing that could have saved you is the most
+    // expensive version of this theme's question that the game can stage.
+    //
+    // Booked AFTER the double in this array because the running order drops any
+    // act resolving at or before the one above it.
+    { at: { fromEnd: 2 }, book: 'bb-prizes-and-punishments' },
   ],
 
   // What the arc owns, and what it deliberately leaves alone:
@@ -386,8 +445,8 @@ export default {
   //              that already ran; every other twist runs on top of it intact.
   //   exclusive— nothing here is exclusive: the payout is the theme, and it is
   //              gated by `economy` rather than by a card only this theme has.
-  books: ['bb-prizes-and-punishments', 'bb-high-rollers-room', 'bb-coin-of-destiny',
-    'bb-double-eviction'],
+  books: ['bb-prizes-and-punishments', 'bb-wildcard', 'bb-high-rollers-room',
+    'bb-coin-of-destiny', 'bb-double-eviction'],
   weights: {},
   bans: [],
   exclusive: [],

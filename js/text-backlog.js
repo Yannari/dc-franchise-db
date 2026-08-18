@@ -5270,6 +5270,35 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'wildcard': {
+        sec('THE WILDCARD');
+        ln('  Nobody enters this one. Three names are drawn before nominations and the');
+        ln('  Head of Household is not in the hat. Winning does not make you safe — it');
+        ln('  earns you the right to be offered safety, out loud, at a price.');
+        ln('');
+        ln(`  Drawn: ${(act.players || []).join(', ') || 'nobody'}.`);
+        ln('');
+        // The scene, then the offer, then what was decided — the ordering the
+        // Coin had to be fixed for. Beats carry the draw and the competition.
+        beats(act);
+        ln('');
+        ln(`  ${act.winner} wins it, and the price on the safety is ${act.punishmentLabel}.`);
+        if (act.punishmentBlurb) ln(`    ${act.punishmentBlurb}`);
+        ln(act.houseWide
+          ? '  It is not billed to the winner. Every other houseguest serves it.'
+          : `  It is billed to ${act.winner} alone.`);
+        ln('');
+        if (act.accepted && act.houseWide) {
+          ln(`  ${act.winner} accepts. Safe for the week, and ${act.served.length} houseguests`);
+          ln('  are wearing the cost of that in a house that votes on Thursday.');
+        } else if (act.accepted) {
+          ln(`  ${act.winner} accepts, and spends the week safe and serving it at the same time.`);
+        } else {
+          ln(`  ${act.winner} refuses. No safety and no punishment — and a statement, made`);
+          ln('  in front of the whole house, about not needing either.');
+        }
+        break;
+      }
       case 'safety-suite': {
         sec('THE SAFETY SUITE');
         ln('  One entry per houseguest, for the whole season. The Head of Household');

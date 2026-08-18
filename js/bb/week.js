@@ -15,6 +15,7 @@ import { resolveHaltingHex } from './eviction-powers.js';
 import { resolveRewind } from './rewind.js';
 import { runCoinOfDestiny, coinNominations, COIN_PRICE } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
+import { runWildcard, wildcardSafe } from './wildcard.js';
 import { openRoom, roomGameForNight, ROOM_GAMES } from './high-rollers-room.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
   carePackageVoteBlock, carePackageBribe, neverNots } from './care-package.js';
@@ -2469,6 +2470,33 @@ export function simulateBBWeek(options = {}) {
     } catch { week.safetySuite = null; }
   }
 
+  // ── THE WILDCARD: three names out of a hat, and a price on the safety ──
+  //
+  // Sits beside the Safety Suite because both are pre-nomination safety, and is
+  // deliberately NOT folded into it: nobody chooses to play this one, and
+  // winning it only buys the right to be asked a question in public. The offer
+  // is the twist; the competition is how the engine decides who gets asked.
+  //
+  // Nominees are passed through because a nominee who wins this and turns it
+  // down is the loudest thing the card can produce, and `runWildcard` narrates
+  // it — it cannot know who is on the block otherwise.
+  if (!compressed && twists.has('bb-wildcard')) {
+    try {
+      week.wildcard = runWildcard({ week, house, hoh, nominees: [...(week.initialNominees || [])], rng });
+      if (week.wildcard) {
+        // A house-wide week on slop is the Have-Nots' job, and `drawPunishment`
+        // is filtered so it cannot be drawn there — but a SOLO slop punishment
+        // is real slop and has to reach the same list the suite writes to.
+        if (week.wildcard.punishment === 'slop' && week.wildcard.accepted) {
+          week.haveNots = [...new Set([...(week.haveNots || []), ...week.wildcard.served])];
+          gs.bb.haveNots = [...week.haveNots];
+        }
+        week.acts.push(addBeats(week.wildcard,
+          { players: [...wildcardSafe(week.wildcard)] }));
+      }
+    } catch { week.wildcard = null; }
+  }
+
   // ── AMERICA'S CARE PACKAGE: the only distributor that hides nothing ──
   //
   // Contents announced before the vote, recipient named in front of everybody.
@@ -2727,6 +2755,7 @@ export function simulateBBWeek(options = {}) {
   try { duoCrownSafe = duoSafeWith(hoh, house); } catch { duoCrownSafe = []; }
   const untouchable = [hoh, week.botbActive ? coHoh : null, week.cloud?.holder,
     carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite),
+    ...wildcardSafe(week.wildcard),
     ...rivalsSafe, ...keySafe, ...duoCrownSafe].filter(Boolean);
 
   /* TWO DUOS, FOUR KEYS.
@@ -4478,7 +4507,7 @@ export function simulateBBWeek(options = {}) {
       // holder is. Without it `chooseReplacement` can hand the holder the pen
       // and have them write their own name — and the dethroned HOH stays in the
       // list too, because canon leaves them safe for the week they lost.
-      const protectedNames = [hoh, coinChair, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...(week.rouletteSafe || []), ...(week.derbySafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...keySafe, ...duoCrownSafe, ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
+      const protectedNames = [hoh, coinChair, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...(week.rouletteSafe || []), ...(week.derbySafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...wildcardSafe(week.wildcard), ...keySafe, ...duoCrownSafe, ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
       // The chooser reasons from their OWN plan. An HOH follows the week's
       // nomination plan; a diamond holder follows their own read of the house,
       // which is what makes the twist a hijacking rather than a formality.
@@ -4701,7 +4730,7 @@ export function simulateBBWeek(options = {}) {
       && !pw.used && !pw.disposed && week.num <= pw.expiresAfterWeek
       && house.includes(pw.holder));
     if (coup) {
-      const protectedNow = [hoh, vetoWinner, coup.holder, carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite)].filter(Boolean);
+      const protectedNow = [hoh, vetoWinner, coup.holder, carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...wildcardSafe(week.wildcard)].filter(Boolean);
       const eligible = house.filter(n => !protectedNow.includes(n));
       // ── whether, before who ──
       //
@@ -5078,6 +5107,7 @@ export function simulateBBWeek(options = {}) {
         ...(week.rouletteSafe || []), ...(week.derbySafe || []),
         ...(week.botbSafe || []), carePackageProtects(week.carePackage),
         ...safetySuiteSafe(week.safetySuite),
+        ...wildcardSafe(week.wildcard),
         ...nominees.filter(n => n !== dec.save)].filter(Boolean);
       const secondRep = chooseReplacement(authority, house, protectedNames, plan, rng);
       if (!secondRep || !house.includes(secondRep) || protectedNames.includes(secondRep)) continue;

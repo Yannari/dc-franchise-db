@@ -1415,6 +1415,22 @@ export function summariseWeek(week) {
         }
         break;
       }
+      case 'wildcard': {
+        line('');
+        line('THE WILDCARD');
+        line(`  Drawn: ${(act.players || []).join(', ') || 'nobody'}.`);
+        for (const sc of (act.scores || [])) line(`    ${sc.name} — ${sc.score}`);
+        line(`  ${act.winner} wins, and is offered safety for ${act.punishmentLabel}`
+          + `${act.houseWide ? ' — served by the whole house instead of by ' + act.winner : ''}.`);
+        if (act.accepted) {
+          line(act.houseWide
+            ? `  Taken. ${act.winner} is safe and ${act.served.length} houseguests are serving the price.`
+            : `  Taken. ${act.winner} is safe, and wearing what it cost.`);
+        } else {
+          line('  Refused. No safety, no punishment, and a claim made in front of everybody.');
+        }
+        break;
+      }
       case 'time-capsule': {
         line('');
         line('THE BB TIME CAPSULE');

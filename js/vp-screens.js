@@ -39,6 +39,7 @@ import { rpBuildBBRivalsOpen, rpBuildBBRivalsHoh, rpBuildBBRivalsWeek,
 import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
 import { rpBuildBBHidden } from './vp-bb-hidden.js';
 import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
+import { rpBuildBBWildcard } from './vp-bb-wildcard.js';
 import { rpBuildBBTimeCapsule } from './vp-bb-time-capsule.js';
 import { rpBuildBBPrizeExchange } from './vp-bb-prize-exchange.js';
 import { rpBuildBBCampComeback, rpBuildBBCampReturn } from './vp-bb-camp.js';
@@ -23502,6 +23503,12 @@ function _bbCycleScreens(view, screens, suffix = '') {
             : act.phase === 'expired' ? 'Never Found'
               : act.found ? 'Found It' : 'The House Is Looking',
           html: rpBuildBBHidden(view, act, hpDeps) });
+        break;
+      }
+      case 'wildcard': {
+        const wcDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id('bb-wildcard'), label: 'The Wildcard',
+          html: rpBuildBBWildcard(view, act, wcDeps) });
         break;
       }
       case 'safety-suite': {

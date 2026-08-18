@@ -726,6 +726,27 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Every one of you has exactly one of these. Somebody is about to spend theirs in week one.',
     },
   },
+  'bb-wildcard': {
+    id: 'bb-wildcard', layer: 'scheduled', category: 'safety',
+    timing: 'week-opening', duration: { weeks: 1 },
+    // BB23's early-weeks twist, and the Safety Suite's opposite number rather
+    // than its duplicate. The Suite is an economy — you choose to spend a thing
+    // you own once. This is a DRAW: nobody opts in, three names come out of a
+    // hat, and winning only earns you the right to be asked a question in
+    // front of the house.
+    //
+    // The question is the twist. Safety costs a punishment, and the punishment
+    // is sometimes billed to the whole house instead of the winner — so
+    // accepting can mean buying one week of your own comfort with everybody
+    // else's, in public, four days before they vote.
+    rules: { addSlots: ['safety'] },
+    acquisition: { channel: 'dedicated-competition', secrecy: 'public' },
+    announcement: {
+      name: 'The Wildcard',
+      rule: 'Three houseguests are drawn at random before nominations — the Head of Household is not among them, and nobody else gets a say in whether they play. They compete, and the winner is offered safety for the week at a price: a punishment. Sometimes that punishment is the winner’s alone; sometimes the entire rest of the house serves it instead. The winner may accept or refuse, out loud, in front of everybody, and refusing costs nothing but says a great deal.',
+      sting: 'Three of you are about to find out that winning was the easy part.',
+    },
+  },
   'bb-care-package': {
     id: 'bb-care-package', layer: 'scheduled', category: 'distribution',
     timing: 'week-opening', duration: { weeks: 1 },

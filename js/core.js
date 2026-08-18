@@ -670,6 +670,12 @@ export const TWIST_CATALOG = [
     // anything else that re-routes the veto is out.
     incompatible:['bb-diamond-veto'],
     incompatibleModes:[] },
+  { id:'bb-wildcard', emoji:'🃏', name:'The Wildcard', format:'big-brother',
+    category:'advantages', phase:'any',
+    desc:'Before nominations, three houseguests are drawn at random — the Head of Household is not in the hat and nobody else chooses to be in it either. They compete, and the winner is offered safety for the week at a price: a punishment, drawn with it. Roughly a third of the time that punishment is billed not to the winner but to EVERY OTHER HOUSEGUEST, who serve it while the winner walks around safe. The winner accepts or refuses out loud in front of the house. Accepting a house-wide price costs real goodwill from every person paying it; refusing costs nothing at all except the claim, made in public, that you did not need saving — which the house will test on Thursday.',
+    // Both decide who can be seated before the ceremony runs, so they would
+    // spend the week arguing about the same chairs.
+    incompatible:['bb-battle-of-the-block', 'bb-split-house'] },
   { id:'bb-safety-suite', emoji:'🛗', name:'The Safety Suite', format:'big-brother',
     category:'advantages', phase:'any',
     desc:'A second competition runs before nominations, and it is not for power — it is for staying off the block. Any houseguest except the Head of Household may enter, but only ONCE for the entire season, so the real decision is which week is worth spending it on. Whoever beats the clock is safe, and must then choose a Plus One who is also safe and takes a punishment in exchange. If only one houseguest enters, safety is not a formality: they still have to beat the clock, and the house watches them fail if they do not.',

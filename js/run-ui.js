@@ -2120,7 +2120,11 @@ export function renderTimeline() {
         const games = (typeof ROOM_GAMES !== 'undefined' && ROOM_GAMES) || [];
         const chosen = t.game || '';
         let gameHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','game',this.value)" onclick="event.stopPropagation()" title="Which game the room sells this night" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
-        gameHtml += `<option value="" ${chosen === '' ? 'selected' : ''}>Auto (Derby, then the wheel)</option>`;
+        // "Auto (Derby, then the wheel)" assumed you already knew that "the
+        // wheel" is the Roulette and that "then" meant later ROOM NIGHTS rather
+        // than later the same evening. Name both games and both prices, and put
+        // the reason for the order in the tooltip.
+        gameHtml += `<option value="" ${chosen === '' ? 'selected' : ''} title="The room sells one game a night. Auto sells the cheap one first, because almost nobody can afford 125 on the room's first night.">Auto — 1st night Derby (50), then Roulette (125)</option>`;
         games.forEach(g => {
           gameHtml += `<option value="${g.id}" ${g.id === chosen ? 'selected' : ''}>${g.name} — ${g.price}</option>`;
         });

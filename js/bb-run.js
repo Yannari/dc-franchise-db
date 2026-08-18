@@ -14,7 +14,7 @@
 // `js/episode.js` is not touched and not called. Total Drama's rules are not
 // involved in a Big Brother week.
 
-import { gs, seasonConfig, seasonFormat, resolveTwistSchedule, TWIST_CATALOG } from './core.js';
+import { gs, seasonConfig, seasonFormat, resolveTwistSchedule, TWIST_CATALOG, plainText } from './core.js';
 // Imported rather than taken off `window`: main.js spreads the players module
 // onto the global scope, which works in the browser and nowhere else, so a
 // headless render of this transcript would throw on the first pronoun.
@@ -1976,7 +1976,9 @@ export function summariseWeek(week) {
     }
     // House life, in the act it happened in.
     for (const beat of act.socialBeats || []) {
-      line(`    [${beat.badgeText}] ${beat.text}`);
+      // `plainText` because a few events bold an alliance or a name for the
+      // viewing party, and this surface is read in a terminal.
+      line(`    [${beat.badgeText}] ${plainText(beat.text)}`);
     }
   }
   return lines.join('\n');

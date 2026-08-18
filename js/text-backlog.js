@@ -1,5 +1,5 @@
 // js/text-backlog.js - Text backlog generators for non-challenge episode sections
-import { gs, seasonConfig, players } from './core.js';
+import { gs, seasonConfig, players, plainText } from './core.js';
 import { juryLines } from './bb/jury.js';
 import { lastWordsLines } from './bb/last-words.js';
 import { finaleHouseLines } from './bb/finale-house.js';
@@ -4341,11 +4341,13 @@ export function generateBBSummaryText(ep) {
   // that already came through here.
   const socialDone = new Set();
   const beats = (act, { own = true } = {}) => {
-    if (own) (act?.beats || []).forEach(b => ln(`  ${b.text}`));
+    // `plainText` on both: a few events carry <strong> for the viewing party,
+    // and this file is the plain-text transcript.
+    if (own) (act?.beats || []).forEach(b => ln(`  ${plainText(b.text)}`));
     if (!act || socialDone.has(act)) return;
     socialDone.add(act);
     (act.socialBeats || []).forEach(b =>
-      ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
+      ln(`  [${b.badgeText || 'HOUSE'}] ${plainText(b.text)}`));
   };
 
   ln(`WEEK ${ep.num}`);

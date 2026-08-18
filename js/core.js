@@ -1804,3 +1804,26 @@ export const REWARD_POOL = [
   { id:'letters',   phase:'post-merge', label:'Letters from Home', desc:'A sealed letter from someone waiting back home. Some players broke down before they even opened it.' },
   { id:'spa',       phase:'post-merge', label:'Spa Day',           desc:'Hot showers, a massage table, real food. The body forgets what discomfort feels like, briefly.' },
 ];
+
+// ── PLAIN TEXT, FOR THE TWO WRITERS THAT ARE NOT HTML ──────────────────
+//
+// Event text is authored for the viewing party, which renders it as markup —
+// so a handful of events bold an alliance or a name (`<strong>The Movement`
+// `</strong>`), and that is correct where it was written.
+//
+// It is NOT correct in the other two writers. `summariseWeek` and the text
+// backlog are plain text that a person reads in a terminal or a text box, and
+// both printed `beat.text` straight through, so a real transcript said:
+//
+//   They name the alliance <strong>The Movement</strong>, decide who is
+//   allowed to know about it and leave the room one at a time.
+//
+// Found by reading a backlog. Stripping at the two plain-text surfaces is the
+// right end to fix it: the markup is meaningful where it lives, and taking it
+// out of the events would flatten the viewing party to fix a terminal.
+export function plainText(s) {
+  return String(s ?? '')
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/[ \t]{2,}/g, ' ');
+}

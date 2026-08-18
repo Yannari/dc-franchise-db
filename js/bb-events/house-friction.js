@@ -218,12 +218,27 @@ const theSpace = {
   },
   fire(house, ctx, api) {
     const { culprit, annoyed } = _grating(house, ctx);
-    const text = _variant([
+    const week = Number(ctx?.week?.num) || 1;
+    const lines = [
       `${culprit} has been in the bathroom for fifty minutes. There are eleven other people in this house and exactly one mirror that anybody wants.`,
-      `${annoyed} comes back to find ${culprit} in the chair. It is not ${annoyed}'s chair. It has been ${annoyed}'s chair for three weeks.`,
       `Somebody has moved ${annoyed}'s things off the good bed. Nobody admits to it. ${annoyed} knows exactly who, and says so to the wrong person first.`,
       `${culprit} borrows a jumper without asking. It comes back smelling of the backyard and ${annoyed} does not mention it, which everybody notices more than a row.`,
-    ], ctx, culprit, annoyed);
+    ];
+    // ── A LINE THAT CLAIMS A HISTORY NEEDS THERE TO BE ONE ──
+    //
+    // This variant used to sit in the pool unconditionally and read "it has
+    // been ${annoyed}'s chair for three weeks" — printed, in a real backlog,
+    // during WEEK ONE, about a house that had been standing for four days.
+    //
+    // `theStory` below already had the right shape for this (`week < 3` and it
+    // weights UP as the season runs), so the fix is that pattern rather than a
+    // new one, and the claim is softened to one that cannot drift: a first week
+    // exists as soon as there has been a second.
+    if (week >= 2) {
+      lines.splice(1, 0, `${annoyed} comes back to find ${culprit} in the chair. It is not `
+        + `${annoyed}'s chair. It has been ${annoyed}'s chair since the first week.`);
+    }
+    const text = _variant(lines, ctx, culprit, annoyed);
     api.addBond(annoyed, culprit, -0.6);
     return {
       text, players: [annoyed, culprit],

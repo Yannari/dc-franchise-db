@@ -632,7 +632,7 @@ function generalReaction(listener, speaker, reveal, reaction) {
     case 'confirmed': return (reaction.prior || 0) > 0.35
       ? pool('confirmed-knew', [
         `${listener} goes very still. It is not news — it is the first time somebody else has said it out loud.`,
-        `${listener} nods once at the floor. ${P(listener).Sub} has thought that about ${a} for two weeks.`,
+        `${listener} nods once at the floor. ${P(listener).Sub} has thought that about ${a} for longer than tonight.`,
         `${listener} looks straight at ${a} and does not look away. That was a confession as far as ${P(listener).sub} is concerned.`,
         `${listener} mouths "I knew it" at the wall, where no camera is supposed to be.`,
         `${listener} files it under confirmed, and starts counting the votes for next Thursday before the door has shut.`,
@@ -778,7 +778,7 @@ function checkConfrontation(week, reveal, reactions, rng, isTrue) {
   const kind = ownIt ? 'owns' : rng() < clamp01(aS.social / 13) ? 'turns' : 'denies';
 
   const opener = pick(rng, [
-    `"No — say it again." ${challenger} is on ${P(challenger).posAdj} feet before the door has finished closing. "Say it to my face, because I have been defending you for three weeks."`,
+    `"No — say it again." ${challenger} is on ${P(challenger).posAdj} feet before the door has finished closing. "Say it to my face, because I have spent this whole week defending you."`,
     `${challenger} does not wait for the room to settle. "Was that true? Look at me and tell me that was not true."`,
     `"I want to hear it from you," ${challenger} says, and the living room goes very quiet very fast.`,
     `${challenger} puts a glass down harder than ${P(challenger).sub} means to. "That is twice now. Twice I've heard your name and told people they were wrong."`,

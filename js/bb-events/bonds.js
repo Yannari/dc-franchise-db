@@ -172,8 +172,16 @@ const bestFriends = {
     const watcher = _quiet(_others(house, a, b))[0];
     const p = pronouns(a);
 
+    // ── NO LINE HERE MAY COUNT WEEKS ──
+    //
+    // This variant said "and have had it for two weeks" and fired in WEEK ONE.
+    // Every one of these events can run on any week, and none of them is handed
+    // the number, so a duration written into the prose is a guess that is wrong
+    // most of the time it prints. Claims like this get phrased so they are true
+    // whenever they fire. `tests/bb-plain-text.test.js` sweeps week one for the
+    // whole pattern.
     const text = _variant([
-      `${a} and ${b} have a joke nobody else understands and have had it for two weeks. It is not funny to anybody outside it, which is most of the point.`,
+      `${a} and ${b} have a joke nobody else understands and neither of them can remember starting. It is not funny to anybody outside it, which is most of the point.`,
       `Neither of them has ever suggested working together. They just end up in the same room every time either of them has a bad hour, which the house has noticed and neither of them has.`,
       `${a} makes ${b} a plate without being asked and without making anything of it. ${watcher || 'Somebody'} clocks it and quietly moves both their names down a list.`,
       `They are not an alliance. Ask either of them and they will say so honestly. Ask them to write the other's name down and watch what happens.`,

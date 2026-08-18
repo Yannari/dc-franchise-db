@@ -325,6 +325,55 @@ function syncPolicyInputs() {
   };
 }
 
+/**
+ * Resolve one gap. Shared by the button and by the automatic sweep.
+ *
+ * Returns the proposals; never approves, never saves.
+ */
+function resolveGap(season, log) {
+  const seasonRank = new Map(seasons.map(x => [x.seasonId, airKey(x)]));
+  return resolveOffSeason({
+    season, careers, events: log, seasonRank, graph,
+    cast: castBySeason.get(season.seasonId) || [],
+    pairs: showmancePairs(season.seasonId),
+  });
+}
+
+/**
+ * EVERY AIRED SEASON THAT HAS NO OFF-SEASON YET, resolved on arrival.
+ *
+ * The author's question was whether pressing a button is the right shape, and
+ * it is not: finishing a season should fill the inbox by itself and the badge
+ * should be waiting next time the site is opened.
+ *
+ * This lives here rather than inside the export for two reasons. The export has
+ * nowhere to PUT the result — serve.py has an endpoint for the log and the
+ * Cloudflare Worker does not, so a hook there would resolve an off-season on
+ * the live site and then drop it. And the export is the most important flow in
+ * the project; a fault in a life resolver must not be able to fail a publish.
+ *
+ * Nothing is saved. These are proposals sitting in a page until committed, so
+ * an automatic sweep can never quietly change what a wiki page says.
+ */
+function sweepUnresolved() {
+  const done = new Set(events.map(e => e.afterSeason));
+  const pending = seasons.slice().sort(byAirDate).filter(s => airKey(s) != null && !done.has(s.seasonId));
+  if (!pending.length) return null;
+
+  // THE NEWEST GAP ONLY.
+  //
+  // Resolving every unresolved season at once is correct arithmetic and a
+  // terrible inbox: on a franchise with fifteen unresolved gaps it proposed
+  // 1,659 events in one go, which is a backlog rather than something anybody
+  // reviews. "Finishing a season fills the inbox" means the season that just
+  // finished. Older gaps stay available on the button, deliberately, one at a
+  // time.
+  const season = pending[pending.length - 1];
+  const fresh = resolveGap(season, events);
+  events = events.concat(fresh);
+  return { season, added: fresh.length, older: pending.length - 1 };
+}
+
 // ── run the resolver ──
 //
 // Proposes; never approves. Everything it produces lands in the list below as
@@ -345,14 +394,7 @@ $('#resolve').onclick = () => {
 
   const kept = events.filter(e => e.afterSeason !== sid);
   const seasonRank = new Map(seasons.map(s => [s.seasonId, airKey(s)]));
-  const fresh = resolveOffSeason({
-    season, careers, events: kept, seasonRank, graph,
-    cast: castBySeason.get(sid) || [],
-    // Couples come from the record: a showmance first, and failing that the
-    // graph offers somebody they are genuinely close to. Nothing here pairs
-    // two strangers.
-    pairs: showmancePairs(sid),
-  });
+  const fresh = resolveGap(season, kept);
   events = kept.concat(fresh);
   const s = summarise(fresh);
   $('#resolve-note').textContent =
@@ -433,6 +475,15 @@ $('#commit').onclick = async () => {
     .map(s => `<option value="${s.seasonId}">${esc(s.title || s.seasonId)} — ${esc(airLabel(s))}</option>`)
     .join('');
   syncPolicyInputs();
+  // Automatic: any season that has aired and has no off-season yet gets one,
+  // as proposals. Pressing the button is only for re-rolling a gap.
+  const swept = sweepUnresolved();
+  if (swept) {
+    $('#resolve-note').textContent =
+      `${swept.added} proposed after ${swept.season.title || swept.season.seasonId}`
+      + (swept.older ? ` · ${swept.older} earlier season${swept.older === 1 ? '' : 's'} `
+        + 'never resolved — pick one above' : '');
+  }
   render();
 })();
 </script>

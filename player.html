@@ -556,6 +556,40 @@ function loadLiveSeason() {
     .catch(() => null);
 }
 
+/**
+ * The competition cells, in the vocabulary of the show being played.
+ *
+ * Big Brother has three competitions and Total Drama has two, and they share no
+ * names. Rendering Immunity / Reward over a Big Brother season did not merely
+ * mislabel: `immunityWins` there is the crown alone, so a houseguest with three
+ * HOHs, four vetoes and three Block Busters was shown as having won three
+ * competitions — the two categories she won most were absent, and the total
+ * beside them agreed with the wrong number.
+ */
+function _liveStatCells(lv, skin = 'live') {
+  const cell = skin === 'bio'
+    ? (n, label) => `<div><div class="pp-bio-k">${label}</div><div class="pp-bio-v">${n ?? 0}</div></div>`
+    : (n, label) => `<div class="live-stat"><b>${n ?? 0}</b><span>${label}</span></div>`;
+  if (lv.comps) {
+    const c = lv.comps;
+    // The headline is the sum of the three, because that is what a viewer means
+    // by "how many competitions has she won". It is computed HERE rather than
+    // read off the payload: `challengeWins` means HOH + veto everywhere else in
+    // this app by an explicit decision, and one field cannot mean two things.
+    const total = (c.hoh || 0) + (c.veto || 0) + (c.blockBuster || 0);
+    return cell(total, 'Comp wins')
+      + cell(c.hoh, 'HOH')
+      + cell(c.veto, 'Veto')
+      + cell(c.blockBuster, 'Block Buster')
+      + cell(lv.timesNominated, 'Nominated')
+      + cell(lv.votesReceived, 'Votes against');
+  }
+  return cell(lv.immunityWins, 'Immunity')
+    + cell(lv.rewardWins, 'Reward')
+    + cell(lv.challengeWins, 'Challenge wins')
+    + cell(lv.votesReceived, 'Votes against');
+}
+
 function renderLiveStatus(lv) {
   const host = document.getElementById('player-content');
   if (!host) return;
@@ -594,12 +628,7 @@ function renderLiveStatus(lv) {
       Season ${lv.seasonNumber}${lv.title ? ' · ' + lv.title : ''} — airing now, episode ${lv.episode}</div>
     <div class="live-status ${inGame ? 'is-in' : 'is-out'}">${statusText}</div>
     <div class="live-sub">This season is still in progress, so it isn't part of the record below yet.</div>
-    <div class="live-stats">
-      <div class="live-stat"><b>${lv.immunityWins ?? 0}</b><span>Immunity</span></div>
-      <div class="live-stat"><b>${lv.rewardWins ?? 0}</b><span>Reward</span></div>
-      <div class="live-stat"><b>${lv.challengeWins ?? 0}</b><span>Challenge wins</span></div>
-      <div class="live-stat"><b>${lv.votesReceived ?? 0}</b><span>Votes against</span></div>
-    </div>
+    <div class="live-stats">${_liveStatCells(lv)}</div>
     <div class="live-note">Updated through episode ${lv.episode}.</div>`;
   host.insertBefore(el, host.firstChild);
 }
@@ -694,9 +723,8 @@ async function renderDebutProfile(id) {
     ${lp ? `<div class="pp-why">
       <div class="pp-why-lbl">${esc(statusText)}</div>
       This season is still airing, so nothing here counts towards the record yet.
-      ${lp.challengeWins ? `So far: <b>${lp.challengeWins}</b> competition win${lp.challengeWins === 1 ? '' : 's'}` : 'No competition wins so far'}${
-  lp.votesReceived ? `, <b>${lp.votesReceived}</b> vote${lp.votesReceived === 1 ? '' : 's'} against.` : '.'}
-    </div>` : `<div class="pp-why">
+    </div>
+    <div class="pp-bio"><div class="pp-bio-grid">${_liveStatCells(lp, 'bio')}</div></div>` : `<div class="pp-why">
       <div class="pp-why-lbl">No record yet</div>
       ${esc(name)} is in the casting pool but has not finished a season, so there
       is nothing to rank. Their profile fills in when a season they play exports.

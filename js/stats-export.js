@@ -2927,6 +2927,14 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
         bb: {
           hohWins: bb.hohWins || 0,
           vetoWins: bb.vetoWins || 0,
+          // The arena, which _bbStats has tracked all along and this template
+          // dropped — so the season document handed to the story writer said a
+          // houseguest who won their way off the block four times had won
+          // nothing. mergeBigBrotherSeason already carried these; the two
+          // exports disagreed about the same season.
+          blockBusterWins: bb.blockBusterWins || 0,
+          blockBusterPlayed: bb.blockBusterPlayed || 0,
+          blockBusterStreak: bb.blockBusterStreak || 0,
           timesNominated: bb.timesNominated || 0,
           timesOnBlock: bb.timesOnBlock || 0,
           timesSaved: bb.timesSaved || 0,
@@ -3265,20 +3273,58 @@ export function extractLiveSeasonSnapshot() {
   const names = _allPlayerNames();
   const jury = new Set(gs.jury || []);
 
+  // ── WHICH SHOW'S COMPETITIONS THESE ARE ──
+  //
+  // `_extractChallengeData` counts `ep.immunityWinner` and `ep.rewardChalData`,
+  // which are Total Drama's words. A Big Brother week records its wins on
+  // `gs.bb.stats` as hohWins / vetoWins / blockBusterWins, and the only one of
+  // those that also lands on `ep.immunityWinner` is the crown — so a houseguest
+  // with 3 HOHs, 4 vetoes and 3 Block Busters was published as having won
+  // THREE competitions, and the two categories she won most were not counted at
+  // all. This is the recurring bug in this project wearing its usual clothes:
+  // one show's vocabulary printed over the other.
+  const format = seasonFormat(typeof seasonConfig !== 'undefined' ? seasonConfig : null);
+  const isBB = format === 'big-brother';
+  const bbStats = (gs.bb && gs.bb.stats) || {};
+
   const players = names.map(name => {
     const exitEp = permanentExit[name];
     const isOut = exitEp !== undefined && exitEp !== null;
     const ch = _extractChallengeData(name);
     const votes = _extractVotingData(name);
-    return {
+    const bb = bbStats[name] || {};
+    const base = {
       name,
       slug: slugOf.get(String(name).trim().toLowerCase()) || null,
       status: isOut ? (jury.has(name) ? 'jury' : 'out') : 'in',
       exitEpisode: isOut ? Math.floor(exitEp) : null,
-      immunityWins: ch.immunityWins || 0,
-      rewardWins: ch.rewardWins || 0,
-      challengeWins: (ch.immunityWins || 0) + (ch.rewardWins || 0),
       votesReceived: votes.totalVotesReceived || 0,
+    };
+    if (!isBB) {
+      return {
+        ...base,
+        immunityWins: ch.immunityWins || 0,
+        rewardWins: ch.rewardWins || 0,
+        challengeWins: (ch.immunityWins || 0) + (ch.rewardWins || 0),
+      };
+    }
+    // The parts, named for what they are. `challengeWins` keeps the meaning it
+    // has everywhere else in this app — HOH + veto — because the finished
+    // export decided that deliberately and says so, treating the arena as its
+    // own additional number. Redefining it here would have made the same field
+    // mean two things depending on whether a season had finished. The page adds
+    // the three up for its headline instead, which is a display choice and not
+    // a change to what the data means.
+    const hoh = bb.hohWins || 0;
+    const veto = bb.vetoWins || 0;
+    const blockBuster = bb.blockBusterWins || 0;
+    return {
+      ...base,
+      comps: { hoh, veto, blockBuster },
+      challengeWins: hoh + veto,
+      timesNominated: bb.timesNominated || 0,
+      timesSaved: bb.timesSaved || 0,
+      timesOnTheBlock: bb.timesOnTheBlock || 0,
     };
   });
 
@@ -3292,7 +3338,7 @@ export function extractLiveSeasonSnapshot() {
     // Brother 1 filed it as Total Drama 1 — and the collision check compared it
     // against Total Drama's finished seasons, which is how a Big Brother sync
     // came back with "Total Drama 1 is already published as a finished season".
-    format: seasonFormat(typeof seasonConfig !== 'undefined' ? seasonConfig : null),
+    format,
     title: (typeof seasonConfig !== 'undefined' && seasonConfig?.seasonTitle) || null,
     episode,
     totalPlayers: players.length,

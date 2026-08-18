@@ -691,7 +691,12 @@ async function renderDebutProfile(id) {
   ].filter(([, v]) => v);
 
   const inGame = lp && lp.status === 'in';
-  const statusText = !lp ? '' : inGame ? 'Still in the house'
+  // A camp is not a house. This line said "Still in the house" over a Total
+  // Drama season — one show's vocabulary printed over the other, the bug class
+  // this project keeps hitting. A snapshot from before the show field existed
+  // has no format, and "in the game" is true of both.
+  const still = live?.format === 'big-brother' ? 'Still in the house' : 'Still in the game';
+  const statusText = !lp ? '' : inGame ? still
     : lp.status === 'jury' ? `On the jury — out in episode ${lp.exitEpisode ?? '?'}`
       : `Out in episode ${lp.exitEpisode ?? '?'}`;
 
@@ -699,6 +704,11 @@ async function renderDebutProfile(id) {
   // Unranked palette: there is no tier for somebody with no finished season,
   // and borrowing one would put a colour on this page that means something.
   host.innerHTML = _profileStyles(getTierInfo(null)) + `
+    <div class="pp-viewtabs" role="tablist" aria-label="Player views">
+      <button class="pp-viewtab" role="tab" id="pv-profile" aria-selected="true">Profile</button>
+      <button class="pp-viewtab" role="tab" id="pv-wiki" aria-selected="false">📖 Wiki</button>
+    </div>
+    <div id="pp-view-profile">
     <div class="pp-hero" id="pp-hero"><div class="pp-hero-glow"></div>
       <div class="pp-hero-inner">
         <div class="pp-av-wrap">
@@ -728,7 +738,27 @@ async function renderDebutProfile(id) {
       <div class="pp-why-lbl">No record yet</div>
       ${esc(name)} is in the casting pool but has not finished a season, so there
       is nothing to rank. Their profile fills in when a season they play exports.
-    </div>`}`;
+    </div>`}
+    </div>
+    <div id="pp-view-wiki" hidden></div>`;
+
+  // ── THE WIKI TAB, FROM THE ROSTER ALONE ──
+  //
+  // The article is built by buildDossier, which reads three things off the
+  // player: id, name and seasonDetails. A debut player has the first two and an
+  // empty third, and that is enough — the sections that need a record skip
+  // themselves, and Biography and Personality, which need only the authored
+  // roster row, do not.
+  //
+  // So this synthesises the shape rather than the data. Nothing here invents a
+  // placement, a season or a statistic; it hands the article an empty career
+  // and lets it say so.
+  const wikiPlayer = { id, name, seasonDetails: [] };
+  // Opened on the show they are actually playing. Without this the article
+  // defaults to Total Drama, so a debut HOUSEGUEST's page would open on the
+  // wrong show's article — the bug class this project keeps hitting.
+  if (live && live.format) _wikiShow = live.format;
+  _wireViewTabs(wikiPlayer);
 
   document.getElementById('loading').style.display = 'none';
   host.style.display = 'block';

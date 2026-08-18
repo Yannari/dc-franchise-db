@@ -79,7 +79,9 @@ function infobox(dossier, show, root) {
     ['Age', bio.age ? String(bio.age) : ''],
     ['Nationality', [bio.ethnicity, bio.nationality].filter(Boolean).join(' ')],
     ['Label', bio.archetype],
-    ['Seasons', `${show.count} (${m.name})`],
+    // Blank rather than "0 (Total Drama)" for somebody who has not finished
+    // one; rowsOf drops an empty value, so the row simply is not there.
+    ['Seasons', show.count ? `${show.count} (${m.name})` : ''],
   ]);
 
   // ── the career, across every season of this show ──
@@ -156,7 +158,11 @@ function infobox(dossier, show, root) {
     ${tabs}
     <img class="wk-ib-portrait" src="${root}/assets/avatars/${esc(dossier.id)}.png" alt=""
          onerror="this.style.display='none'">
-    ${profile ? `<div class="wk-ib-head">${m.icon} ${esc(m.short || m.name)} Profile</div>
+    ${profile ? `<div class="wk-ib-head">${show.count
+      ? `${m.icon} ${esc(m.short || m.name)} Profile`
+      // Same reason the lead names no show: with no season on record, `format`
+      // is the page's default and "TD Profile" is a guess printed as a fact.
+      : 'Profile'}</div>
       <table class="wk-ib-table">${profile}</table>` : ''}
     ${career ? `<div class="wk-ib-head">Career</div>
       <table class="wk-ib-table">${career}</table>` : ''}
@@ -234,6 +240,35 @@ function lead(dossier, show, root) {
 
   const who = `<strong>${esc(dossier.name)}</strong>`;
   let career;
+  if (!seasons.length) {
+    // ── NO FINISHED SEASON YET ──
+    //
+    // Written from the bio instead of the record, because the bio is the only
+    // thing there is. The counter-driven sentence below produces "played 0
+    // seasons of Total Drama: ." for this case, which is how it was found.
+    //
+    // A real entry opens by saying what somebody IS before what they did, so
+    // the occupation and hometown carry the sentence and the missing record is
+    // stated plainly rather than dressed up.
+    // NOTHING HERE NAMES THE SHOW.
+    //
+    // It cannot know it. `format` for somebody with no career is whatever the
+    // page defaulted to, and the first draft of this sentence read "Natasha is
+    // a law student from California, and a contestant on Total Drama" over a
+    // backstory that calls her a HOUSEGUEST and says she entered the HOUSE.
+    // That is the bug class this project keeps hitting, printed by a sentence
+    // written to fix a different one.
+    //
+    // The bio is show-agnostic and true, so the lead is built from the bio and
+    // stops there.
+    const b = dossier.bio || {};
+    const from = [b.occupation && `a ${esc(b.occupation).toLowerCase()}`,
+      b.hometown && `from ${esc(b.hometown)}`].filter(Boolean).join(' ');
+    career = from ? `${who} is ${from}.` : `${who} is a member of the cast pool.`;
+    career += ' No completed season is on record yet, so this page fills itself'
+      + ' in the moment one exports.';
+    return `<p class="wk-lead">${career}</p>`;
+  }
   if (seasons.length === 1) {
     career = `${who} was ${outcome(seasons[0])}.`;
   } else if (seasons.length === 2) {
@@ -440,15 +475,30 @@ export async function hydrateGalleries(host, { base = '' } = {}) {
       const res = await fetch(`${base}/api/gallery/${encodeURIComponent(slug)}`);
       const json = await res.json();
       const images = (json.images || []).slice(0, 8);
-      if (!images.length) { box.closest('section')?.remove(); continue; }
+      if (!images.length) { dropSection(host, box); continue; }
       box.innerHTML = images.map(o => `<a class="wk-gitem"
           href="${base}/gallery/${encodeURIComponent(slug)}/${o.file}" target="_blank" rel="noopener">
           <img src="${base}/gallery/${encodeURIComponent(slug)}/${o.file}?v=${o.size}" alt="" loading="lazy">
         </a>`).join('');
     } catch {
-      box.closest('section')?.remove();
+      dropSection(host, box);
     }
   }
+}
+
+/**
+ * Remove a section AND its line in the Contents.
+ *
+ * The contents box is rendered from the section tree before the pictures are
+ * fetched, so a gallery that turns out to be empty used to leave "3 Gallery"
+ * in the contents pointing at an anchor that no longer existed — a link that
+ * silently does nothing, on a page whose whole job is to be navigable.
+ */
+function dropSection(host, box) {
+  const section = box.closest('section');
+  const id = section?.id;
+  section?.remove();
+  if (id) host?.querySelector(`.wk-contents a[href="#${id}"]`)?.closest('li')?.remove();
 }
 
 /** A show this character has never played. Said plainly, with a way out. */
@@ -474,10 +524,33 @@ export function emptyArticle(dossier, format, otherShows, root) {
  */
 export function renderArticle(dossier, format, { root = '.', allShows = [] } = {}) {
   if (!dossier) return '';
-  const show = (dossier.career || []).find(c => c.format === format);
-  if (!show || !show.seasons.length) {
+  // ── A DEBUT CAST MEMBER STILL HAS AN ARTICLE ───────────────────────
+  //
+  // "Has never played X, so there is nothing to write" is the right answer for
+  // a Total Drama veteran's Big Brother page. It is the wrong answer for
+  // somebody in their FIRST season: everything authored about them — born,
+  // hometown, occupation, backstory, personality — exists and is exactly what
+  // an encyclopedia entry opens with. The record is what is missing, not the
+  // person.
+  //
+  // So the bail is kept for a career that skips this show, and lifted for a
+  // career that has not started. `debut` is deliberately "no career on ANY
+  // show" rather than "none on this one" — a veteran must keep the honest
+  // empty page for the show they never played.
+  const played = (dossier.career || []).find(c => c.format === format);
+  const hasSeasons = !!(played && played.seasons.length);
+  const debut = !(dossier.career || []).length;
+  const b = dossier.bio || {};
+  const authored = !!(dossier.backstory || dossier.personality
+    || b.occupation || b.hometown || b.birthdate);
+  if (!hasSeasons && !(debut && authored)) {
     return emptyArticle(dossier, format, allShows, root);
   }
+  // Every section below reads the show through this object, so a career that
+  // has not started is an EMPTY one rather than a missing one. `best: 99` is
+  // the same "no finish yet" sentinel the totals use.
+  const show = hasSeasons ? played
+    : { format, seasons: [], count: 0, wins: 0, best: 99, totals: {} };
 
   const m = meta(format);
   // ── THE SECTION TREE ───────────────────────────────────────────────

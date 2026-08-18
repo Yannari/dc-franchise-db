@@ -317,3 +317,113 @@ describe('the wiki article reads the authored bio', () => {
       .toContain('.map(par => `<p>${esc(par.trim())}</p>`)');
   });
 });
+
+// ── the debut player's WIKI tab ──
+//
+// The debut page had a Profile tab and nothing else, so everything authored
+// about somebody in their first season could only be read as an infobox — the
+// article, the one view built to read like an encyclopedia entry, was reachable
+// only for people who had already finished a season.
+//
+// renderArticle stood in the way: it bailed to "has never played X, so there is
+// nothing to write" whenever the career held no season of that show, which is
+// every show for a debut. That answer is right for a Total Drama veteran's Big
+// Brother page and wrong for somebody whose record simply has not started.
+describe('somebody in their first season gets the article too', () => {
+  const page = read('player.html');
+  const view = read('js/wiki-view.js');
+  const debut = page.slice(page.indexOf('async function renderDebutProfile'),
+    page.indexOf('async function loadRankingsDatabase'));
+
+  it('renders the tab strip and wires it', () => {
+    expect(debut, 'no Wiki tab on the debut page').toMatch(/id="pv-wiki"/);
+    expect(debut, 'the tab is drawn but never wired').toMatch(/_wireViewTabs\(/);
+    expect(debut, 'no host for the article').toMatch(/id="pp-view-wiki"/);
+  });
+
+  it('hands the article an empty career rather than inventing one', () => {
+    expect(debut, 'the synthesised player is not empty')
+      .toMatch(/seasonDetails: \[\]/);
+    // Anything else would put a placement or a season on a page whose whole
+    // point is that there is not one yet.
+    expect(debut, 'a season was fabricated for the article')
+      .not.toMatch(/seasonDetails: \[\s*\{/);
+  });
+
+  it('opens on the show they are actually playing', () => {
+    // Without this the article defaults to Total Drama, so a debut HOUSEGUEST
+    // reads as a Total Drama contestant.
+    expect(debut).toMatch(/live\.format\).*?_wikiShow = live\.format|_wikiShow = live\.format/s);
+  });
+
+  it('keeps the honest empty page for a veteran who skipped a show', () => {
+    // `debut` is "no career on ANY show", not "none on this one" — otherwise
+    // every veteran's unplayed show would turn into a stub article.
+    expect(view).toMatch(/const debut = !\(dossier\.career \|\| \[\]\)\.length;/);
+    expect(view, 'the empty page was removed entirely')
+      .toMatch(/if \(!hasSeasons && !\(debut && authored\)\) \{/);
+  });
+
+  it('still shows nothing for a debut with nothing written', () => {
+    // The relaxation is gated on there being authored prose or bio facts to
+    // show. An empty roster row earns the empty page, not a hollow stub.
+    expect(view).toMatch(/const authored = !!\(dossier\.backstory \|\| dossier\.personality/);
+  });
+});
+
+// ── claims a page with no record cannot make ──
+//
+// Every one of these was printed as a fact by a page that had no way of
+// knowing it, which is the same failure in three places.
+describe('an article with no season claims no show and no count', () => {
+  const view = read('js/wiki-view.js');
+  const page = read('player.html');
+
+  it('does not name a show in the lead', () => {
+    // `format` for somebody with no career is whatever the page defaulted to.
+    // The first draft read "Natasha is a law student from California, and a
+    // contestant on Total Drama" over a backstory calling her a HOUSEGUEST.
+    const from = view.indexOf('function lead(');
+    const noSeason = view.slice(view.indexOf('if (!seasons.length)', from),
+      view.indexOf('if (seasons.length === 1)', from));
+    expect(noSeason.length, 'the no-season branch is missing').toBeGreaterThan(200);
+    expect(noSeason, 'the lead names a show it cannot know').not.toMatch(/m\.name/);
+  });
+
+  it('does not head the infobox with a show', () => {
+    expect(view, 'the infobox still says "TD Profile" for a player with no season')
+      .toMatch(/\$\{show\.count\s*\n?\s*\?\s*`\$\{m\.icon\}/);
+  });
+
+  it('drops the Seasons row rather than printing 0', () => {
+    expect(view).toMatch(/\['Seasons', show\.count \? `\$\{show\.count\} \(\$\{m\.name\}\)` : ''\]/);
+  });
+
+  it('says "in the house" only for a house', () => {
+    const debut = page.slice(page.indexOf('async function renderDebutProfile'),
+      page.indexOf('async function loadRankingsDatabase'));
+    expect(debut, 'the live status line is hardcoded to one show')
+      .toMatch(/live\?\.format === 'big-brother' \? 'Still in the house'/);
+  });
+});
+
+// ── a contents entry that points at nothing ──
+//
+// The contents box is built from the section tree before the pictures are
+// fetched, so a gallery that comes back empty removed its section and left
+// "3 Gallery" behind, linking to an anchor that no longer existed.
+describe('the contents box matches the sections that survived', () => {
+  const view = read('js/wiki-view.js');
+
+  it('removes the contents line with the section', () => {
+    expect(view).toMatch(/function dropSection\(host, box\)/);
+    expect(view, 'the contents link is left behind')
+      .toMatch(/\.wk-contents a\[href="#\$\{id\}"\]/);
+  });
+
+  it('uses it on both failure paths', () => {
+    // Empty listing AND a failed fetch; the second was the one that still
+    // called .remove() directly.
+    expect((view.match(/dropSection\(host, box\);/g) || []).length).toBe(2);
+  });
+});

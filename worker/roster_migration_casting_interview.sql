@@ -1,0 +1,23 @@
+-- One-time migration: the casting interview column.
+--
+--   cd worker
+--   npx wrangler d1 execute dc-franchise --remote --file roster_migration_casting_interview.sql
+--
+-- ── RUN THIS ONCE. IT IS NOT RE-RUNNABLE. ──
+--
+-- Its own file, not appended to roster_migration_bio.sql or
+-- roster_migration_personality.sql: both of those have already run against the
+-- live database, and D1 executes a file as ONE BATCH and rolls the whole thing
+-- back on the first error. Appending here would fail on `birthdate` (or
+-- `personality`) and land nothing at all — the failure mode that cost us a
+-- migration once already.
+--
+-- To check whether it has run, ask the table rather than guessing:
+--
+--   npx wrangler d1 execute dc-franchise --remote \
+--     --command "SELECT name FROM pragma_table_info('roster')"
+--
+-- Confirmed against the live database on 2026-08-18: 27 columns, ending at
+-- `personality`, with no `casting_interview`.
+
+ALTER TABLE roster ADD COLUMN casting_interview TEXT;

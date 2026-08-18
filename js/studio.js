@@ -19,6 +19,8 @@ const STAT_KEYS = ['physical','endurance','mental','social','strategic','loyalty
 const STAT_ABBR = { physical:'PHY', endurance:'END', mental:'MEN', social:'SOC', strategic:'STR', loyalty:'LOY', boldness:'BLD', intuition:'INT', temperament:'TMP' };
 
 import { composeVoice, stripBioLead, parseBio, splitOrigin } from './bio.js';
+import { INTERVIEW_QUESTIONS, parseInterview, serializeInterview }
+  from './casting-interview.js';
 
 const ARCHETYPES = ['mastermind','schemer','hothead','challenge-beast','social-butterfly','loyal-soldier','wildcard','chaos-agent','floater','underdog','hero','villain','goat','perceptive-player','showmancer'];
 
@@ -113,6 +115,10 @@ function _persistRoster(arr) {
 }
 
 // ── small utils ─────────────────────────────────────────────────────────
+/** How many interview questions have an answer — shown on the fold. */
+const _ivCount = d => INTERVIEW_QUESTIONS
+  .filter(x => String(d.interview?.[x.key] ?? '').trim()).length;
+
 const _esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 function _slugify(name) { return String(name || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
 function _statHue(v) { v = Math.max(1, Math.min(10, v)); let h; if (v <= 5.5) h = 4 + ((v - 1) / 4.5) * 38; else h = 42 + ((v - 5.5) / 4.5) * 108; return `hsl(${h.toFixed(0)} 70% 50%)`; }
@@ -128,6 +134,9 @@ function _blankChar() {
     // The bio. `birthdate` is authoritative over `age` when both are present —
     // an age is a number that silently rots, a date does not.
     birthdate:'', hometown:'', occupation:'', backstory:'', personality:'',
+    // The casting interview, held as { key: answer } while it is being edited
+    // and serialised on save. See js/casting-interview.js.
+    interview: {},
     voice:'', avatarDataUri:'', returneeDataUri:'', stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
   };
 }
@@ -976,6 +985,8 @@ async function _editBySlug(slug) {
     occupation: pick(base.occupation, rich && rich.occupation),
     backstory: pick(base.backstory, rich && rich.backstory),
     personality: pick(base.personality, rich && rich.personality),
+    interview: Object.fromEntries(parseInterview(
+      pick(base.castingInterview, rich && rich.castingInterview)).map(r => [r.key, r.a])),
     // The prose alone. The lead-in is rebuilt from the fields on save, so
     // keeping it here too would stack a second copy in front of the first.
     voice: parsed.prose,
@@ -1106,6 +1117,23 @@ function _renderEditor() {
         <textarea class="st-input st-area" id="st-f-personality" rows="4" placeholder="Generated from the voice profile and the stat line. Leave empty and it will be written for you.">${_esc(d.personality)}</textarea>
       </label>
 
+      <!-- THE CASTING INTERVIEW.
+           Folded shut by default. It is eleven answers and it would otherwise be
+           the longest thing on a form whose top half is the part you edit every
+           time. Written BEFORE they play — nothing in here may reference a
+           season, because the tape was recorded before the door shut. -->
+      <details class="st-iv">
+        <summary class="st-iv-sum">Casting interview
+          <span class="st-hint">${_ivCount(d)} of ${INTERVIEW_QUESTIONS.length} answered &middot; shown on their wiki page</span>
+        </summary>
+        <div class="st-iv-body">
+          ${INTERVIEW_QUESTIONS.map(x => `<label class="st-l">${_esc(x.q)}
+            <textarea class="st-input st-area" id="st-f-iv-${x.key}" rows="${x.short ? 1 : 2}"
+              placeholder="in their own voice">${_esc(d.interview?.[x.key] || '')}</textarea>
+          </label>`).join('')}
+        </div>
+      </details>
+
       <div class="st-actions">
         <button type="button" class="st-btn st-primary st-lg" id="st-save">Save character</button>
         ${(() => {
@@ -1140,6 +1168,16 @@ function _renderEditor() {
   ed.querySelector('#st-f-birthdate').addEventListener('input', e => d.birthdate = e.target.value);
   ed.querySelector('#st-f-backstory').addEventListener('input', e => d.backstory = e.target.value);
   ed.querySelector('#st-f-personality').addEventListener('input', e => d.personality = e.target.value);
+  INTERVIEW_QUESTIONS.forEach(x => {
+    const el = ed.querySelector(`#st-f-iv-${x.key}`);
+    if (!el) return;
+    el.addEventListener('input', e => {
+      d.interview = d.interview || {};
+      d.interview[x.key] = e.target.value;
+      const c = ed.querySelector('.st-iv-sum .st-hint');
+      if (c) c.textContent = `${_ivCount(d)} of ${INTERVIEW_QUESTIONS.length} answered · shown on their wiki page`;
+    });
+  });
   ed.querySelectorAll('#st-f-gender button').forEach(b => b.addEventListener('click', () => {
     d.gender = b.dataset.g; ed.querySelectorAll('#st-f-gender button').forEach(x => x.classList.toggle('active', x === b));
   }));
@@ -1646,6 +1684,12 @@ async function _save() {
     const v = (d[k] ?? '').toString().trim();
     if (v) bio[k] = v;
   }
+  // Serialised here rather than stored as a map, so what reaches D1 and what
+  // reaches the published roster are the same string. Empty when nothing was
+  // answered — an untouched interview must store NULL, not an empty structure
+  // that reads as "written, and blank".
+  const iv = serializeInterview(d.interview || {});
+  if (iv) bio.castingInterview = iv;
   const entry = { name: d.name, slug: d.slug, gender: d.gender, sexuality: d.sexuality,
     archetype: d.archetype, stats: { ...d.stats }, ...bio };
 
@@ -1661,6 +1705,7 @@ async function _save() {
     ethnicity: d.ethnicity, nationality: d.nationality, descriptor: d.descriptor,
     birthdate: d.birthdate, hometown: d.hometown,
     occupation: d.occupation, backstory: d.backstory, personality: d.personality,
+    castingInterview: iv,
     voice: d.voice, avatarDataUri: d.avatarDataUri || '',
     returneeDataUri: d.returneeDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}
@@ -2130,6 +2175,16 @@ function _injectCSS() {
   .st-stat-val{font-family:ui-monospace,monospace;font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
   .st-radar-wrap{display:grid;place-items:center}
   .st-area{resize:vertical;min-height:56px;font-family:inherit}
+  /* The casting interview fold. Eleven questions is the longest thing on this
+     form and the least often edited, so it ships shut and says how full it is
+     from the closed state — otherwise you have to open it to find out. */
+  .st-iv{margin:14px 0;border:1px solid var(--st-stroke,rgba(255,255,255,.12));border-radius:10px;background:rgba(255,255,255,.02)}
+  .st-iv-sum{cursor:pointer;padding:11px 14px;font-weight:700;list-style:none;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .st-iv-sum::-webkit-details-marker{display:none}
+  .st-iv-sum::before{content:'b8';display:inline-block;transition:transform .15s;opacity:.6}
+  .st-iv[open] .st-iv-sum::before{transform:rotate(90deg)}
+  .st-iv-body{padding:0 14px 12px;display:grid;gap:10px}
+  .st-iv-body .st-l{font-size:12.5px;font-weight:600;line-height:1.45}
   .st-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
   .st-btn{background:var(--surface,#26262e);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font:inherit;font-size:12px;padding:8px 12px;cursor:pointer}
   .st-btn:hover{border-color:var(--accent,#f4b23e)}

@@ -25,6 +25,8 @@
 //
 // Returns HTML. Takes a dossier from js/wiki.js and nothing else.
 
+import { parseInterview } from './casting-interview.js';
+
 // `short` is the tab label — "TD14", "BB1" — and matches the code js/shows.js
 // already declares for each show, so a third show is named consistently
 // wherever it appears rather than getting a second abbreviation here.
@@ -652,8 +654,28 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   // moved to lead() and this became what it says on the heading — the
   // description of the person, authored in the Studio, falling back to the
   // voice profile when nobody has written one.
-  if (dossier.personality) {
-    section('personality', 'Personality', `<p>${esc(dossier.personality)}</p>`);
+  //
+  // Under it, the CASTING INTERVIEW — collapsed, the way the reference pages
+  // carry it. On those it IS the Personality section: a shut table headed
+  // "<Name> Biography" holding the questionnaire they filled in before playing.
+  // Ours keeps the description above it, because that is the thing a reader
+  // came for; the tape is what they open when they want the voice.
+  //
+  // Their box repeats Age / Hometown / Occupation at the top. Ours does not:
+  // those are infobox rows two inches to the right, and a hand-edited wiki can
+  // afford a duplicate that we would have to keep in sync.
+  {
+    const rows = parseInterview(dossier.castingInterview);
+    const bits = [];
+    if (dossier.personality) bits.push(`<p>${esc(dossier.personality)}</p>`);
+    if (rows.length) {
+      bits.push(`<details class="wk-iv">
+        <summary class="wk-iv-sum">${esc(dossier.name)} Biography</summary>
+        <dl class="wk-iv-body">${rows.map(r => `
+          <dt>${esc(r.q)}</dt><dd>${esc(r.a)}</dd>`).join('')}</dl>
+      </details>`);
+    }
+    if (bits.length) section('personality', 'Personality', bits.join(''));
   }
 
   // ── QUOTES ─────────────────────────────────────────────────────────
@@ -1043,6 +1065,24 @@ export const WIKI_CSS = `
    pages put it. Same weight as the game paragraph beside it — it is narrative,
    not a pull quote. */
 .wk-lead-persona{ margin:0 0 14px; font-size:14.5px; line-height:1.7; opacity:.9; }
+/* The casting interview. Shut by default, like the reference — it is eleven
+   answers and it would otherwise be the longest thing on the page, sitting
+   above every season they played. The question is the label and the answer is
+   the voice, so the two are weighted apart rather than run together. */
+.wk-iv{ border:1px solid var(--stroke,rgba(255,255,255,.12)); border-radius:10px;
+  background:rgba(255,255,255,.02); margin:14px 0 0; }
+.wk-iv-sum{ cursor:pointer; padding:11px 14px; font-weight:700; font-size:13.5px;
+  font-style:italic; list-style:none; display:flex; gap:9px; align-items:center; }
+.wk-iv-sum::-webkit-details-marker{ display:none; }
+.wk-iv-sum::before{ content:'b8'; transition:transform .15s; opacity:.6;
+  font-style:normal; }
+.wk-iv[open] .wk-iv-sum::before{ transform:rotate(90deg); }
+.wk-iv-body{ margin:0; padding:0 16px 14px; }
+.wk-iv-body dt{ font-weight:700; font-size:13.5px; margin:12px 0 3px; }
+.wk-iv-body dt:first-child{ margin-top:0; }
+.wk-iv-body dd{ margin:0; font-size:14px; line-height:1.65; opacity:.85;
+  white-space:pre-line; }
+@media(prefers-reduced-motion:reduce){ .wk-iv-sum::before{ transition:none; } }
 .wk-ib-show{
   padding:8px 12px; text-align:center; font-size:12.5px; font-weight:700;
   letter-spacing:.05em; text-transform:uppercase; opacity:.75;

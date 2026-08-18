@@ -486,6 +486,9 @@ export function buildDossier(player, {
     descriptor: rosterRow.descriptor || '',
   };
   const backstory = rosterRow.backstory || '';
+  // The casting interview, passed through as the stored string. Parsing it is
+  // js/casting-interview.js's job and the view's business, not this one's.
+  const castingInterview = rosterRow.castingInterview || '';
   const relationships = relationshipsOf(player, { seasonDocs });
 
   return {
@@ -505,6 +508,7 @@ export function buildDossier(player, {
       bio.archetype,
     ].filter(Boolean).join(' · '),
     backstory,
+    castingInterview,
     personality: personalityOf(player.name, voices, rosterRow),
     career: _withLoyalties(careerOf(player, { seasonTitles, seasonDocs }), relationships),
     relationships,

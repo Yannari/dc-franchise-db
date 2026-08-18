@@ -56,6 +56,18 @@ CREATE TABLE IF NOT EXISTS roster (
   -- one fact, which is the drift this project keeps getting bitten by.
   personality TEXT,
 
+  -- The casting interview: the questionnaire every reference character page
+  -- opens with, stored as a JSON array of {key, q, a}.
+  --
+  -- Stored WITH its question text rather than as a bare map of answers, because
+  -- an article renders interviews written long before the current wording of
+  -- the question list. See js/casting-interview.js, which owns that list.
+  --
+  -- It is written at CASTING and must never be generated from a played season:
+  -- "do you have a strategy for winning" answered by a model that has read the
+  -- season leaks the ending into a tape recorded before the door shut.
+  casting_interview TEXT,
+
   is_returnee INTEGER DEFAULT 0,      -- roster flag carried over from the JSON
   retired     INTEGER DEFAULT 0,      -- 1 = hidden from casting, history preserved
   updated_at  TEXT                    -- ISO timestamp of the last write

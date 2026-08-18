@@ -876,6 +876,17 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   const trivia = (dossier.records || [])
     .filter(r => !r.show || r.show === m.name)
     .map(r => `<li>${esc(r.category)} — ${esc(r.stat)}</li>`);
+  // ── COMPUTED, NOT WRITTEN ──
+  //
+  // "the fourth contestant to win the game, following Lindsay, Duncan and
+  // Emma" is a query across every season, not a sentence anyone should be
+  // typing or generating: written by hand it goes stale the next time somebody
+  // wins, and written by a model it comes out the right shape with the wrong
+  // number. Derived, it is right forever and gets richer every season.
+  //
+  // js/player-trivia.js declines to state anything its sample cannot support,
+  // so a first season contributes almost nothing here. That is correct.
+  for (const t of dossier.computedTrivia?.[format] || []) trivia.push(`<li>${esc(t)}</li>`);
   // Facts the episodes support, which is where the interesting ones are: a
   // record table can say somebody won two vetoes and never that they did it
   // in the same shirt both times.
@@ -883,7 +894,8 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
     for (const t of s2.trivia || []) trivia.push(`<li>${esc(t)}</li>`);
   }
   if (show.wins) trivia.push(`<li>Won ${show.wins === 1 ? 'a season' : `${show.wins} seasons`} of ${esc(m.name)}.</li>`);
-  if (show.count > 1) trivia.push(`<li>Played ${show.count} seasons of ${esc(m.name)}.</li>`);
+  // "Played 4 seasons" is not written here any more: the computed line above
+  // says it and adds the best finish, so both together read as a stutter.
   section('trivia', 'Trivia', trivia.length ? `<ul class="wk-list">${trivia.join('')}</ul>` : '');
 
   // ── GALLERY ────────────────────────────────────────────────────────

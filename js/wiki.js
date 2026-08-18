@@ -457,7 +457,7 @@ export function dossierHash(dossier) {
  */
 export function buildDossier(player, {
   voices = {}, roster = [], seasonDocs = [], seasonTitles = new Map(),
-  milestonesByShow = {},
+  milestonesByShow = {}, triviaByShow = {},
 } = {}) {
   if (!player) return null;
   const rosterRow = (roster.players || roster || []).find(r => r.slug === player.id) || {};
@@ -514,6 +514,12 @@ export function buildDossier(player, {
     relationships,
     couple: coupleStatus(relationships),
     records: recordsHeldBy(player.id, milestonesByShow),
+    // Computed trivia, keyed by show — the article is scoped to one show and
+    // picks. Derived in js/player-trivia.js from every career in that format,
+    // which is why it arrives pre-computed rather than being worked out here:
+    // one player's fact is a statement about everybody else's record.
+    computedTrivia: Object.fromEntries(
+      Object.entries(triviaByShow).map(([f, byPlayer]) => [f, byPlayer[player.id] || []])),
     moments: (player.seasonDetails || []).flatMap(d =>
       (d.keyMoments || []).map(text => ({
         text, season: d.season, format: fmtOf(d), seasonId: d.seasonId,

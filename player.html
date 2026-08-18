@@ -888,6 +888,7 @@ function _renderWiki(player) {
     roster: window.__roster || [],
     seasonTitles: window.__seasonTitles || new Map(),
     milestonesByShow: window.__milestones || {},
+    triviaByShow: window.__playerTrivia || {},
     // The seasons this person played, as documents. Fetched once and cached on
     // window; the article draws without them and redraws when they land, so a
     // slow network costs nothing but a moment of the derived text.
@@ -2819,6 +2820,7 @@ document.addEventListener('keydown', e => {
   // The same engine franchise.html draws its per-show boards from, so the two
   // pages cannot come to disagree about somebody's record.
   import { careersIn, franchiseRecords } from './js/records.js';
+  import { allPlayerTrivia } from './js/player-trivia.js';
   import { buildDossier } from './js/wiki.js';
   import { renderArticle, hydrateGalleries, hydrateInfobox, WIKI_CSS } from './js/wiki-view.js';
   import { currentShow, ALL, rememberShow } from './js/show-switcher.js';
@@ -2848,6 +2850,12 @@ document.addEventListener('keydown', e => {
     ]);
     window.__milestones = Object.fromEntries(['total-drama', 'big-brother'].map(f =>
       [f, franchiseRecords({ players: playersDb, seasonsDb, format: f }).milestones]));
+    // Computed trivia, per show. Worked out for the WHOLE field once rather
+    // than per player, because "the fourth contestant to win" is only knowable
+    // by looking at everybody — asking it one player at a time would rebuild
+    // the same comparison for each of them.
+    window.__playerTrivia = Object.fromEntries(['total-drama', 'big-brother'].map(f =>
+      [f, allPlayerTrivia(careersIn(playersDb, f), f)]));
   } catch { /* the section is optional; the profile is not */ }
 
   window._recordsResolve?.();

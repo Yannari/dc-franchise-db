@@ -3429,6 +3429,8 @@ async function generateCastingInterview(body, env) {
     p.hometown && `From: ${p.hometown}`,
     [p.ethnicity, p.nationality].filter(Boolean).join(" "),
     p.gender === "f" ? "Female" : p.gender === "m" ? "Male" : "",
+    // Stated because one of the eleven questions asks it outright.
+    p.sexuality && p.sexuality !== "straight" ? `Sexuality: ${p.sexuality}` : "",
     p.archetype && `Plays as: ${p.archetype}`,
     stats && `Stats: ${stats}`,
   ].filter(Boolean).join("\n");
@@ -3463,11 +3465,43 @@ async function generateCastingInterview(body, env) {
   ].filter(x => x !== "").join("\n");
 
   let text = "";
+  // Its own call rather than socialViaOpenAI, for two reasons. That helper is
+  // tuned for a crowd of one-line posts and picks a small model to match, and
+  // it throws away the response body — the first run of this endpoint failed
+  // with nothing but "openai 400", which is the silent-failure shape this
+  // project keeps having to debug twice. The error below says what OpenAI
+  // actually objected to.
   try {
-    text = await socialViaOpenAI(prompt, env);
+    const res = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-5.5",
+        instructions: prompt,
+        input: "Write the answers.",
+        max_output_tokens: 4000,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return json({ error: `openai ${res.status}`,
+        detail: data?.error?.message || JSON.stringify(data).slice(0, 300) }, 502);
+    }
+    text = typeof data?.output_text === "string" ? data.output_text
+      : Array.isArray(data?.output)
+        ? data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("")
+        : "";
   } catch (e) {
     return json({ error: `openai: ${e.message}` }, 502);
   }
+  // The model was asked for JSON in the prompt rather than through a response
+  // format, because the formats differ by model and a 400 for the wrong one is
+  // not worth the guarantee. It fences the block often enough to be worth
+  // stripping rather than failing on.
+  text = String(text).trim().replace(/^```(?:json)?\s*/i, "").replace(/```$/, "").trim();
 
   let parsed = null;
   try { parsed = JSON.parse(text); } catch { /* handled below */ }

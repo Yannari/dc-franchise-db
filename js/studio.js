@@ -1219,7 +1219,13 @@ function _renderEditor() {
           // copy — one source of truth is js/casting-interview.js.
           questions: INTERVIEW_QUESTIONS.map(x => ({ key: x.key, q: x.q })),
           person: {
-            name: d.name, gender: d.gender, archetype: d.archetype, age: d.age,
+            // sexuality travels explicitly. The voice profile's bio lead-in
+            // carries it, but `d.voice` is the prose with that lead-in STRIPPED
+            // — so without this the model answers "would you be in a showmance"
+            // with no idea, and a first test only passed because it was handed
+            // the raw profile by hand.
+            name: d.name, gender: d.gender, sexuality: d.sexuality,
+            archetype: d.archetype, age: d.age,
             occupation: d.occupation, hometown: d.hometown,
             ethnicity: d.ethnicity, nationality: d.nationality,
             voice: d.voice, backstory: d.backstory, stats: { ...d.stats },

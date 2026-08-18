@@ -272,3 +272,36 @@ describe('writing one with the model', () => {
     expect(studio).not.toMatch(/dc-analytics\.[a-z0-9]+\.workers\.dev/);
   });
 });
+
+// ── the payload carries what the questions actually need ──
+//
+// Found by running it: the model answered "would you be in a showmance" with
+// "I am asexual, and I am not going to fake something intimate for television"
+// — correct, and reached by luck. It read that off the voice profile's bio
+// lead-in, and the Studio sends `d.voice`, which is the prose with that lead-in
+// STRIPPED. The first test only passed because it was handed the raw profile by
+// hand. One of the eleven questions asks about romance outright, so the field
+// travels on its own rather than riding along inside prose.
+describe('the person sent to the model', () => {
+  const studio = read('js/studio.js');
+  const worker = read('worker/worker-episode-live.js');
+  const btn = studio.slice(studio.indexOf("ed.querySelector('#st-iv-write')"),
+    studio.indexOf("ed.querySelectorAll('#st-f-gender button')"));
+
+  it('includes sexuality, which one question asks about directly', () => {
+    expect(btn, 'sexuality is not sent, so the showmance answer is a guess')
+      .toMatch(/sexuality: d\.sexuality/);
+    expect(worker, 'the prompt never states it').toMatch(/p\.sexuality/);
+  });
+
+  it('states it only when it is worth stating', () => {
+    // Spelling out "Sexuality: straight" for three quarters of the roster is
+    // noise in a prompt, and invites an answer about it that nobody asked for.
+    expect(worker).toMatch(/p\.sexuality !== "straight"/);
+  });
+
+  it('sends the voice, which is what makes it sound like them', () => {
+    expect(btn).toMatch(/voice: d\.voice/);
+    expect(btn).toMatch(/backstory: d\.backstory/);
+  });
+});

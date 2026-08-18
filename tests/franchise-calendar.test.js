@@ -140,9 +140,15 @@ describe('the franchise as actually scheduled', () => {
   });
 
   it('never airs a season before its own cast played the season they came from', () => {
-    // bb-1 draws its entire cast from Total Drama 9, 10, 12 and 13, so it
-    // cannot air before td-13. This is the check that a hand-assigned schedule
-    // most needs, and the one a human is most likely to get wrong.
+    // The check a hand-assigned schedule most needs, and the one a human is
+    // most likely to get wrong.
+    //
+    // NOT derived from bb-1's current cast. When this was written, bb-1 held a
+    // PLACEHOLDER cast of eighteen Total Drama alumni, and the schedule was
+    // argued from it — "bb-1 cannot air before td-13 because its cast played
+    // td-13". That constraint was an artifact of unfinished data, not canon:
+    // the real season has no Total Drama returnees at all. Read a cast list as
+    // evidence about the calendar only once the season has actually shipped.
     const players = JSON.parse(readFileSync('players_database.json', 'utf8')).players;
     const bySeasonId = new Map(db.seasons.map(x => [x.seasonId, x]));
     const bad = [];

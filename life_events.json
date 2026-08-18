@@ -1,5 +1,5 @@
 {
-  "_comment": "Accrued data: what happened to characters between seasons. See docs/superpowers/specs/2026-08-18-life-layer-design.md and js/life-events.js. Only status=approved reaches the wiki.",
+  "_comment": "Accrued data: what happened to characters between seasons. See docs/superpowers/specs/2026-08-18-life-layer-design.md and js/life-events.js. Only status=approved reaches the wiki. These rows are SAMPLE DATA written by hand to prove the shape - none of it is canon, which is why every row is proposed. Approve or reject them in life.html, or delete the file and start empty.",
   "events": [
     {
       "player": "alejandro",
@@ -7,7 +7,7 @@
       "afterSeason": "td-8",
       "seq": 1,
       "kind": "dating",
-      "status": "approved"
+      "status": "proposed"
     },
     {
       "player": "alejandro",
@@ -15,14 +15,14 @@
       "afterSeason": "td-8",
       "seq": 2,
       "kind": "went-public",
-      "status": "approved"
+      "status": "proposed"
     },
     {
       "player": "alejandro",
       "afterSeason": "td-8",
       "seq": 3,
       "kind": "podcast",
-      "status": "approved",
+      "status": "proposed",
       "detail": "A weekly post-mortem of the season he had just won."
     },
     {
@@ -31,7 +31,7 @@
       "afterSeason": "td-13",
       "seq": 4,
       "kind": "moved-in",
-      "status": "approved"
+      "status": "proposed"
     },
     {
       "player": "alejandro",
@@ -46,7 +46,7 @@
       "afterSeason": "td-13",
       "seq": 1,
       "kind": "graduated",
-      "status": "approved",
+      "status": "proposed",
       "detail": "Finished the degree she had been picking away at since her first season."
     },
     {
@@ -54,7 +54,7 @@
       "afterSeason": "td-10",
       "seq": 1,
       "kind": "moved-city",
-      "status": "approved"
+      "status": "proposed"
     },
     {
       "player": "bowie",
@@ -62,7 +62,7 @@
       "afterSeason": "td-10",
       "seq": 2,
       "kind": "feud",
-      "status": "approved"
+      "status": "proposed"
     }
   ]
 }

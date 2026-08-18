@@ -57,6 +57,45 @@ def _clean_roster_entry(entry):
     return out
 
 
+def write_life_events(payload):
+    """Replace life_events.json with the inbox's decisions.
+
+    The whole log is sent and the whole file is rewritten, rather than patching
+    individual rows: the inbox is the only thing that edits this file, it always
+    holds every row, and a partial write is how two writers end up disagreeing
+    about which events are canon.
+
+    Validated before it lands. An event with no player or an unknown status is a
+    bug in the caller, and writing it would put a row on disk that nothing can
+    render and nobody can approve.
+    """
+    events = payload.get('events')
+    if not isinstance(events, list):
+        raise ValueError('events must be a list')
+    for i, e in enumerate(events):
+        if not isinstance(e, dict):
+            raise ValueError('event %d is not an object' % i)
+        if not (e.get('player') or '').strip():
+            raise ValueError('event %d has no player' % i)
+        if not (e.get('kind') or '').strip():
+            raise ValueError('event %d has no kind' % i)
+        if e.get('status') not in ('approved', 'proposed', 'rejected'):
+            raise ValueError('event %d has status %r' % (i, e.get('status')))
+
+    path = os.path.join(ROOT, 'life_events.json')
+    doc = {}
+    if os.path.exists(path):
+        with open(path, 'r', encoding='utf-8') as fh:
+            doc = json.load(fh)
+    doc['events'] = events
+    with open(path, 'w', encoding='utf-8') as fh:
+        fh.write(json.dumps(doc, ensure_ascii=False, indent=2) + '\n')
+    counts = {}
+    for e in events:
+        counts[e['status']] = counts.get(e['status'], 0) + 1
+    return {'ok': True, 'wrote': ['life_events.json'], 'counts': counts}
+
+
 def write_character(payload):
     """Upsert roster entry, voice profile, and avatar PNG. Returns a summary dict."""
     result = {'ok': True, 'wrote': []}
@@ -183,11 +222,13 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def do_POST(self):
-        if self.path != '/api/character':
+        if self.path not in ('/api/character', '/api/life-events'):
             return self._send_json({'ok': False, 'error': 'unknown endpoint'}, 404)
         try:
             length = int(self.headers.get('Content-Length', 0))
             payload = json.loads(self.rfile.read(length) or b'{}')
+            if self.path == '/api/life-events':
+                return self._send_json(write_life_events(payload))
             return self._send_json(write_character(payload))
         except ValueError as e:
             return self._send_json({'ok': False, 'error': str(e)}, 400)

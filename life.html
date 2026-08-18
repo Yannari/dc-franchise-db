@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life — the inbox</title>
+<!--
+  THE INBOX.
+
+  Approving what happened to characters between seasons. Design:
+  docs/superpowers/specs/2026-08-18-life-layer-design.md
+
+  Before this page existed, `status` was a word typed into a JSON file by hand,
+  which is not a feature anybody can use. This is the thing that makes the life
+  layer operable by its author rather than by whoever is editing the repo.
+
+  THE WHOLE LOG IS SENT ON COMMIT, and serve.py rewrites the whole file. The
+  inbox is the only thing that edits it and always holds every row; a partial
+  write is how two writers end up disagreeing about which events are canon.
+
+  Policy lives in localStorage, not in the log. It is a preference about how you
+  want to be interrupted, not a fact about the franchise, and it must not travel
+  to anybody else's checkout.
+-->
+<style>
+  :root{
+    --bg:#12101a; --panel:#1b1826; --panel-2:#221e30; --stroke:rgba(255,255,255,.10);
+    --text:#ece9f5; --muted:#a9a2c0; --accent:#7d4cff; --ok:#34d399; --warn:#fbbf24;
+    --major:#f87171; --notable:#60a5fa; --minor:#8b93a7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.55 ui-sans-serif,system-ui,'Segoe UI',sans-serif;}
+  .wrap{max-width:1000px;margin:0 auto;padding:26px 20px 90px}
+  h1{font-size:24px;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 22px}
+  a{color:var(--accent)}
+
+  .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 18px}
+  .btn{border:1px solid var(--stroke);background:var(--panel);color:var(--text);
+    border-radius:10px;padding:9px 14px;font:inherit;font-weight:600;cursor:pointer}
+  .btn:hover{border-color:var(--accent)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.ghost{background:none}
+  .count{color:var(--muted);font-size:13px}
+
+  .gap{margin:0 0 26px;border:1px solid var(--stroke);border-radius:14px;overflow:hidden}
+  .gap-head{background:var(--panel-2);padding:11px 15px;font-weight:700;display:flex;
+    justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .gap-head .when{color:var(--muted);font-weight:500;font-size:13px}
+
+  .ev{display:grid;grid-template-columns:26px 84px 1fr auto;gap:12px;align-items:start;
+    padding:11px 15px;border-top:1px solid var(--stroke);background:var(--panel)}
+  .ev.is-rejected{opacity:.42}
+  .ev input[type=checkbox]{width:17px;height:17px;margin-top:3px;accent-color:var(--accent)}
+  .sig{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 7px;border-radius:6px;text-align:center;margin-top:2px}
+  .sig.major{background:rgba(248,113,113,.16);color:var(--major)}
+  .sig.notable{background:rgba(96,165,250,.16);color:var(--notable)}
+  .sig.minor{background:rgba(139,147,167,.16);color:var(--minor)}
+  .ev-line{font-weight:600}
+  .ev-line .detail{display:block;font-weight:400;color:var(--muted);font-size:13.5px;margin-top:2px}
+  .ev-meta{color:var(--muted);font-size:12px;margin-top:3px}
+  .ev-act{display:flex;gap:6px;align-items:center}
+  .mini{border:1px solid var(--stroke);background:none;color:var(--muted);border-radius:7px;
+    padding:4px 8px;font:inherit;font-size:12px;cursor:pointer}
+  .mini:hover{color:var(--text);border-color:var(--accent)}
+  .pin{color:var(--warn)}
+
+  .policy{border:1px solid var(--stroke);border-radius:14px;background:var(--panel);
+    padding:15px 16px;margin:0 0 24px}
+  .policy h2{font-size:14px;margin:0 0 10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .prow{display:flex;gap:12px;align-items:center;margin:0 0 8px;flex-wrap:wrap}
+  .prow label{min-width:78px;font-weight:600}
+  select,input[type=text]{background:var(--panel-2);border:1px solid var(--stroke);color:var(--text);
+    border-radius:8px;padding:7px 9px;font:inherit}
+  .note{color:var(--muted);font-size:12.5px;margin-top:8px;line-height:1.5}
+
+  .commit{position:fixed;left:0;right:0;bottom:0;background:rgba(18,16,26,.96);
+    border-top:1px solid var(--stroke);padding:12px 20px;display:flex;gap:12px;
+    align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+  .empty{text-align:center;padding:60px 20px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Life</h1>
+  <p class="sub">What happened between seasons. Only what you approve reaches a character's page.
+    <a href="devotees.html">← Players</a></p>
+
+  <div class="policy">
+    <h2>How you want to be interrupted</h2>
+    <div class="prow"><label>Minor</label><select id="p-minor"></select>
+      <span class="count">a new job, a move, a hobby</span></div>
+    <div class="prow"><label>Notable</label><select id="p-notable"></select>
+      <span class="count">a new relationship, a public falling-out</span></div>
+    <div class="prow"><label>Major</label><select id="p-major"></select>
+      <span class="count">an engagement, a baby, a divorce, a death</span></div>
+    <div class="prow"><label>Always ask</label>
+      <input type="text" id="p-pinned" placeholder="slugs, comma separated — e.g. wayne, priya" style="min-width:320px">
+      <span class="count">characters you want to decide about yourself</span></div>
+    <p class="note">Two things ignore this entirely and always wait for you: anything
+      <strong>irreversible</strong> — a death, leaving the franchise — and anything that
+      <strong>contradicts</strong> what you have written in a backstory. A wedding can be undone by a
+      divorce; those cannot, and should never arrive because of a setting you chose months ago.</p>
+  </div>
+
+  <div class="bar">
+    <button class="btn ghost" id="all-yes">Approve everything shown</button>
+    <button class="btn ghost" id="all-no">Reject everything shown</button>
+    <span class="count" id="tally"></span>
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<div class="commit">
+  <span class="count" id="pending"></span>
+  <button class="btn primary" id="commit">Commit to canon</button>
+  <button class="btn ghost" id="copy">Copy JSON</button>
+  <span class="count" id="saved"></span>
+</div>
+
+<script type="module">
+import { KINDS, kindOf, significanceOf, isTerminal, lineFor, needsApproval, order }
+  from './js/life-events.js';
+import { airLabel, airKey } from './js/franchise-calendar.js';
+
+const $ = s => document.querySelector(s);
+const esc = t => String(t ?? '').replace(/[&<>"]/g, c =>
+  ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+// ── policy: a preference about interruption, not a fact about the franchise ──
+const POLICY_KEY = 'dc_life_policy';
+const defaultPolicy = { minor:'auto', notable:'notify', major:'ask', pinned:[] };
+let policy = { ...defaultPolicy };
+try { policy = { ...defaultPolicy, ...(JSON.parse(localStorage.getItem(POLICY_KEY)) || {}) }; } catch {}
+const savePolicy = () => { try { localStorage.setItem(POLICY_KEY, JSON.stringify(policy)); } catch {} };
+
+let events = [];
+let seasons = [];
+let names = {};
+
+const seasonOf = id => seasons.find(s => s.seasonId === id) || null;
+const rank = () => new Map(seasons.map(s => [s.seasonId, airKey(s)]));
+
+/** Whether this row is waiting on the author, given the policy and the two overrides. */
+function waiting(e) {
+  if (e.status !== 'proposed') return false;
+  const pinned = policy.pinned.includes(e.player) || policy.pinned.includes(e.whom);
+  if (pinned) return true;
+  return needsApproval(e, {
+    policy: { minor: policy.minor, notable: policy.notable, major: policy.major },
+    contradictsAuthored: !!e.contradictsAuthored,
+  });
+}
+
+function render() {
+  const list = $('#list');
+  const sorted = events.slice().sort(order(rank()));
+  const gaps = new Map();
+  for (const e of sorted) {
+    const k = e.afterSeason || '(unplaced)';
+    if (!gaps.has(k)) gaps.set(k, []);
+    gaps.get(k).push(e);
+  }
+
+  if (!sorted.length) {
+    list.innerHTML = `<div class="empty">No events yet. Nothing generates them so far —
+      the resolver is the next piece.</div>`;
+  } else {
+    list.innerHTML = [...gaps.entries()].map(([sid, rows]) => {
+      const s = seasonOf(sid);
+      const label = s ? (s.title || sid) : sid;
+      const when = s ? airLabel(s) : '';
+      return `<section class="gap">
+        <div class="gap-head"><span>After ${esc(label)}</span><span class="when">${esc(when)}</span></div>
+        ${rows.map(row).join('')}
+      </section>`;
+    }).join('');
+  }
+
+  // UNDECIDED, not "would the policy hold this".
+  //
+  // The first version counted rows the policy would stop, and reported
+  // "nothing waiting" while an unchecked row sat on screen — because a
+  // `notify` tier means accept-and-tell-me, so nothing was technically being
+  // held. But until you commit, a proposal is undecided whatever the policy
+  // says, and that is the number this bar is for. `waiting()` still exists and
+  // is what the resolver will consult when it decides what to auto-accept.
+  const undecided = events.filter(e => e.status === 'proposed').length;
+  const held = events.filter(waiting).length;
+  $('#pending').textContent = undecided
+    ? `${undecided} undecided${held ? ` · ${held} your policy would hold` : ''}`
+    : 'all decided';
+  $('#tally').textContent =
+    `${events.filter(e => e.status === 'approved').length} canon · `
+    + `${events.filter(e => e.status === 'proposed').length} proposed · `
+    + `${events.filter(e => e.status === 'rejected').length} rejected`;
+
+  list.querySelectorAll('[data-i]').forEach(el => {
+    el.onchange = el.onclick = ev => {
+      const i = Number(el.dataset.i);
+      const act = el.dataset.act;
+      if (act === 'toggle') events[i].status = el.checked ? 'approved' : 'rejected';
+      if (act === 'edit') {
+        const cur = events[i].headline || lineFor(events[i], names, events[i].player);
+        const next = prompt('The sentence on their page:', cur);
+        if (next !== null) events[i].headline = next.trim() || undefined;
+      }
+      if (act === 'pin') {
+        const p = events[i].player;
+        policy.pinned = policy.pinned.includes(p)
+          ? policy.pinned.filter(x => x !== p) : [...policy.pinned, p];
+        savePolicy(); syncPolicyInputs();
+      }
+      render();
+    };
+  });
+}
+
+function row(e) {
+  const i = events.indexOf(e);
+  const sig = significanceOf(e.kind);
+  const def = kindOf(e.kind);
+  const line = e.headline || lineFor(e, names, e.player);
+  const locked = isTerminal(e.kind);
+  const pinned = policy.pinned.includes(e.player);
+  return `<div class="ev${e.status === 'rejected' ? ' is-rejected' : ''}">
+    <input type="checkbox" data-i="${i}" data-act="toggle" ${e.status === 'approved' ? 'checked' : ''}>
+    <span class="sig ${sig}">${sig}</span>
+    <div>
+      <div class="ev-line">${esc(line)}${e.detail ? `<span class="detail">${esc(e.detail)}</span>` : ''}</div>
+      <div class="ev-meta">${esc(e.player)}${e.whom ? ` + ${esc(e.whom)}` : ''}
+        · ${esc(def ? def.track : 'unknown track')}
+        ${locked ? ' · <strong>irreversible — always asks</strong>' : ''}
+        ${e.contradictsAuthored ? ' · <strong>contradicts a backstory</strong>' : ''}
+        ${pinned ? ' · <span class="pin">pinned</span>' : ''}</div>
+    </div>
+    <div class="ev-act">
+      <button class="mini" data-i="${i}" data-act="edit">Edit</button>
+      <button class="mini" data-i="${i}" data-act="pin">${pinned ? 'Unpin' : 'Pin'}</button>
+    </div>
+  </div>`;
+}
+
+function syncPolicyInputs() {
+  for (const tier of ['minor', 'notable', 'major']) {
+    const sel = $(`#p-${tier}`);
+    sel.innerHTML = ['auto', 'notify', 'ask']
+      .map(v => `<option value="${v}"${policy[tier] === v ? ' selected' : ''}>${
+        v === 'auto' ? 'accept silently' : v === 'notify' ? 'accept and tell me' : 'wait for me'
+      }</option>`).join('');
+    sel.onchange = () => { policy[tier] = sel.value; savePolicy(); render(); };
+  }
+  const pin = $('#p-pinned');
+  pin.value = policy.pinned.join(', ');
+  pin.onchange = () => {
+    policy.pinned = pin.value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    savePolicy(); render();
+  };
+}
+
+$('#all-yes').onclick = () => { events.forEach(e => { if (e.status !== 'approved') e.status = 'approved'; }); render(); };
+$('#all-no').onclick = () => { events.forEach(e => { if (e.status === 'proposed') e.status = 'rejected'; }); render(); };
+
+$('#copy').onclick = async () => {
+  await navigator.clipboard.writeText(JSON.stringify({ events }, null, 2));
+  $('#saved').textContent = 'copied';
+  setTimeout(() => { $('#saved').textContent = ''; }, 2500);
+};
+
+$('#commit').onclick = async () => {
+  $('#saved').textContent = 'saving…';
+  try {
+    const res = await fetch('/api/life-events', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ events }),
+    });
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.error || 'refused');
+    $('#saved').textContent = `saved — ${j.counts.approved || 0} canon`;
+  } catch (err) {
+    // Said out loud. This page is only writable when serve.py is running; on
+    // the published site there is no endpoint, and a silent failure would look
+    // exactly like a successful save.
+    $('#saved').textContent = `could not save (${err.message}) — use Copy JSON`;
+  }
+};
+
+(async () => {
+  const [life, sdb, pdb] = await Promise.all([
+    fetch('life_events.json').then(r => r.json()).catch(() => ({ events: [] })),
+    fetch('seasons_database.json').then(r => r.json()).catch(() => ({ seasons: [] })),
+    fetch('players_database.json').then(r => r.json()).catch(() => ({ players: [] })),
+  ]);
+  events = life.events || [];
+  seasons = sdb.seasons || [];
+  names = Object.fromEntries((pdb.players || []).map(p => [p.id, p.name]));
+  syncPolicyInputs();
+  render();
+})();
+</script>
+</body>
+</html>

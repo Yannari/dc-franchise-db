@@ -33,14 +33,34 @@ export const NAV_LINKS = [
   { href: 'social.html',           icon: '💬',  label: 'Social' },
   { href: 'voting-analytics.html', icon: '🧾',  label: 'Voting Analytics' },
   { href: 'franchise.html',        icon: '🏛️', label: 'Franchise' },
-  { href: 'rankings.html',         icon: '🏆',  label: 'Rankings' },
+  // ONE ENTRY FOR FOUR PAGES.
+  //
+  // Rankings, Leaderboards, Awards and Compare are four answers to one question
+  // — who is best — and they took a third of the bar between them. They keep
+  // their own pages, which are four thousand lines of working code between
+  // them; what changes is that the nav offers RECORDS and the four link to each
+  // other through the strip below. Twelve items to ten, and room for Life.
+  { href: 'rankings.html',         icon: '🏆',  label: 'Records' },
   { href: 'seasons.html',          icon: '🗂️', label: 'Seasons' },
   { href: 'devotees.html',         icon: '👥',  label: 'Players' },
-  { href: 'awards.html',           icon: '🏅',  label: 'Awards' },
-  { href: 'leaderboards.html',     icon: '📈',  label: 'Leaderboards' },
-  { href: 'compare.html',          icon: '⚔️', label: 'Compare' },
+  { href: 'life.html',             icon: '🌱',  label: 'Life' },
   { href: 'timeline.html',         icon: '🗓️', label: 'Timeline' },
 ];
+
+/**
+ * Pages that sit under one nav entry, as a strip of their own.
+ *
+ * Keyed by the nav href they belong to, so adding a fifth records page is one
+ * line here rather than an edit to four documents.
+ */
+export const SUB_NAV = {
+  'rankings.html': [
+    { href: 'rankings.html',     label: 'Rankings' },
+    { href: 'leaderboards.html', label: 'Leaderboards' },
+    { href: 'awards.html',       label: 'Awards' },
+    { href: 'compare.html',      label: 'Compare' },
+  ],
+};
 
 /** The page we are on, as a bare filename. Empty path means the index. */
 export function currentPage(pathname = window.location.pathname) {
@@ -59,7 +79,12 @@ export function currentPage(pathname = window.location.pathname) {
 const BELONGS_TO = {
   'player.html': 'devotees.html',
   'season_ref.html': 'seasons.html',
-  'season-awards_ref.html': 'awards.html',
+  // Awards is no longer its own nav entry, so its detail page belongs to the
+  // one that now covers it.
+  'season-awards_ref.html': 'rankings.html',
+  'leaderboards.html': 'rankings.html',
+  'awards.html': 'rankings.html',
+  'compare.html': 'rankings.html',
 };
 
 export function activeHref(page = currentPage()) {
@@ -84,7 +109,25 @@ export function navHtml(active = activeHref()) {
 export const SITE_HEADER_CSS = `
 .site-show-switch{display:flex;justify-content:center;padding:6px 12px 10px;}
 @media(max-width:640px){.site-show-switch{padding:4px 8px 8px;}}
+/* The strip that ties the four records pages together. Quieter than the main
+   nav on purpose: it is where you are WITHIN a section, not which section. */
+.site-subnav{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;padding:0 12px 10px;}
+.site-subnav a{display:block;padding:6px 13px;border-radius:999px;text-decoration:none;
+  font-size:13.5px;font-weight:600;color:rgba(255,255,255,.62);
+  border:1px solid transparent;}
+.site-subnav a:hover{color:#fff;background:rgba(255,255,255,.06);}
+.site-subnav a.is-on{color:#fff;background:rgba(125,76,255,.20);
+  border-color:rgba(125,76,255,.55);}
 `;
+
+/** The sub-strip for the section this page is in, or '' when it has none. */
+export function subNavHtml(page = currentPage()) {
+  const links = SUB_NAV[activeHref(page)];
+  if (!links) return '';
+  return `<nav class="site-subnav" aria-label="Section">${links.map(l =>
+    `<a href="${esc(l.href)}"${l.href === page ? ' class="is-on" aria-current="page"' : ''}>${
+      esc(l.label)}</a>`).join('')}</nav>`;
+}
 
 /**
  * Rewrite the page's nav and hang the show switcher off it.
@@ -104,6 +147,20 @@ export function renderSiteHeader() {
   // shareable, which is the reason the state went into the URL in the first
   // place.
   try { rememberShow(currentShow()); } catch { /* storage can be blocked */ }
+
+  // The section strip, directly under the main nav, on the pages that have one.
+  const sub = subNavHtml();
+  let subMount = document.getElementById('site-subnav');
+  if (sub) {
+    if (!subMount) {
+      subMount = document.createElement('div');
+      subMount.id = 'site-subnav';
+      nav.insertAdjacentElement('afterend', subMount);
+    }
+    subMount.innerHTML = sub;
+  } else if (subMount) {
+    subMount.remove();
+  }
 
   let mount = document.getElementById('site-show-switch');
   if (!mount) {

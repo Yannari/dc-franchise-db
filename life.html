@@ -22,6 +22,7 @@
   want to be interrupted, not a fact about the franchise, and it must not travel
   to anybody else's checkout.
 -->
+<link rel="stylesheet" href="styles.css">
 <style>
   :root{
     --bg:#12101a; --panel:#1b1826; --panel-2:#221e30; --stroke:rgba(255,255,255,.10);
@@ -100,6 +101,23 @@
 </style>
 </head>
 <body>
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon"><span class="brand-logo-text">⚡</span></div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Life between the seasons</p>
+        </div>
+      </a>
+    </div>
+    <!-- Rewritten from NAV_LINKS by js/site-header.js on load: this markup only
+         has to exist, not to be right. -->
+    <nav class="header-nav" aria-label="Primary navigation"><ul class="nav-list"></ul></nav>
+  </div>
+</header>
+
 <div class="wrap">
   <h1>Life</h1>
   <p class="sub">What happened between seasons. Only what you approve reaches a character's page.
@@ -138,6 +156,7 @@
   <span class="count" id="saved"></span>
 </div>
 
+<script type="module" src="js/site-header.js"></script>
 <script type="module">
 import { KINDS, kindOf, significanceOf, isTerminal, lineFor, needsApproval, order }
   from './js/life-events.js';

@@ -888,6 +888,9 @@ function _renderWiki(player) {
     roster: window.__roster || [],
     seasonTitles: window.__seasonTitles || new Map(),
     seasonAir: window.__seasonAir || new Map(),
+    lifeEvents: window.__lifeEvents || [],
+    lifeNames: window.__lifeNames || {},
+    seasonRank: window.__seasonRank || null,
     milestonesByShow: window.__milestones || {},
     triviaByShow: window.__playerTrivia || {},
     // The seasons this person played, as documents. Fetched once and cached on
@@ -2834,6 +2837,7 @@ document.addEventListener('keydown', e => {
   // pages cannot come to disagree about somebody's record.
   import { careersIn, franchiseRecords } from './js/records.js';
   import { allPlayerTrivia } from './js/player-trivia.js';
+  import { airKey } from './js/franchise-calendar.js';
   import { buildDossier } from './js/wiki.js';
   import { renderArticle, hydrateGalleries, hydrateInfobox, WIKI_CSS } from './js/wiki-view.js';
   import { currentShow, ALL, rememberShow } from './js/show-switcher.js';
@@ -2849,11 +2853,14 @@ document.addEventListener('keydown', e => {
      silent and the section simply does not draw — a profile that will not load
      because a personality file 404'd would be a poor trade. */
   try {
-    const [voices, roster, seasonsDb, playersDb] = await Promise.all([
+    const [voices, roster, seasonsDb, playersDb, lifeDoc] = await Promise.all([
       fetch('voice-profiles.json').then(r => r.json()).catch(() => ({ profiles: {} })),
       fetch('franchise_roster.json').then(r => r.json()).catch(() => ({ players: [] })),
       fetch('seasons_database.json').then(r => r.json()).catch(() => ({ seasons: [] })),
       fetch('players_database.json').then(r => r.json()).catch(() => ({ players: [] })),
+      // Accrued data. Optional: a franchise with no life events yet simply has
+      // no Life section, the same way a character with no bio has no Biography.
+      fetch('life_events.json').then(r => r.json()).catch(() => ({ events: [] })),
     ]);
     window.__voices = voices.profiles || {};
     window.__roster = roster;
@@ -2876,6 +2883,12 @@ document.addEventListener('keydown', e => {
     // the same comparison for each of them.
     window.__playerTrivia = Object.fromEntries(['total-drama', 'big-brother'].map(f =>
       [f, allPlayerTrivia(careersIn(playersDb, f), f)]));
+    window.__lifeEvents = lifeDoc.events || [];
+    // slug -> display name, so a two-person event can name the other half.
+    window.__lifeNames = Object.fromEntries((playersDb.players || []).map(p => [p.id, p.name]));
+    // Where each season sits on the franchise calendar, which is what orders
+    // the log: `seq` is per-player and a shared event carries one side's.
+    window.__seasonRank = new Map((seasonsDb.seasons || []).map(x => [x.seasonId, airKey(x)]));
   } catch { /* the section is optional; the profile is not */ }
 
   window._recordsResolve?.();

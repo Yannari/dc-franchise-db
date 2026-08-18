@@ -1,0 +1,68 @@
+{
+  "_comment": "Accrued data: what happened to characters between seasons. See docs/superpowers/specs/2026-08-18-life-layer-design.md and js/life-events.js. Only status=approved reaches the wiki.",
+  "events": [
+    {
+      "player": "alejandro",
+      "whom": "lindsay",
+      "afterSeason": "td-8",
+      "seq": 1,
+      "kind": "dating",
+      "status": "approved"
+    },
+    {
+      "player": "alejandro",
+      "whom": "lindsay",
+      "afterSeason": "td-8",
+      "seq": 2,
+      "kind": "went-public",
+      "status": "approved"
+    },
+    {
+      "player": "alejandro",
+      "afterSeason": "td-8",
+      "seq": 3,
+      "kind": "podcast",
+      "status": "approved",
+      "detail": "A weekly post-mortem of the season he had just won."
+    },
+    {
+      "player": "alejandro",
+      "whom": "lindsay",
+      "afterSeason": "td-13",
+      "seq": 4,
+      "kind": "moved-in",
+      "status": "approved"
+    },
+    {
+      "player": "alejandro",
+      "whom": "lindsay",
+      "afterSeason": "td-14",
+      "seq": 5,
+      "kind": "broke-up",
+      "status": "proposed"
+    },
+    {
+      "player": "lindsay",
+      "afterSeason": "td-13",
+      "seq": 1,
+      "kind": "graduated",
+      "status": "approved",
+      "detail": "Finished the degree she had been picking away at since her first season."
+    },
+    {
+      "player": "bowie",
+      "afterSeason": "td-10",
+      "seq": 1,
+      "kind": "moved-city",
+      "status": "approved"
+    },
+    {
+      "player": "bowie",
+      "whom": "hicks",
+      "afterSeason": "td-10",
+      "seq": 2,
+      "kind": "feud",
+      "status": "approved"
+    }
+  ]
+}

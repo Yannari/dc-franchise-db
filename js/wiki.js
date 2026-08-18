@@ -19,6 +19,9 @@
 // most-read part of the page and the least true.
 //
 // Pure: documents in, a dossier out. No fetch, no DOM.
+import { approvedFor, lineFor as lifeLine } from './life-events.js';
+import { airLabel } from './franchise-calendar.js';
+
 import { parseBio } from './bio.js';
 
 const DEFAULT_FORMAT = 'total-drama';
@@ -463,6 +466,9 @@ export function dossierHash(dossier) {
 export function buildDossier(player, {
   voices = {}, roster = [], seasonDocs = [], seasonTitles = new Map(),
   seasonAir = new Map(), milestonesByShow = {}, triviaByShow = {},
+  // The log, a slug -> display name map so a two-person event can name the
+  // other half, and the calendar ranking that orders them.
+  lifeEvents = [], lifeNames = {}, seasonRank = null,
 } = {}) {
   if (!player) return null;
   const rosterRow = (roster.players || roster || []).find(r => r.slug === player.id) || {};
@@ -518,6 +524,17 @@ export function buildDossier(player, {
     career: _withLoyalties(careerOf(player, { seasonTitles, seasonDocs, seasonAir }), relationships),
     relationships,
     couple: coupleStatus(relationships),
+    // What happened to them between seasons. APPROVED ONLY — a proposal is a
+    // suggestion, and a suggestion must not change what a page says about
+    // somebody. Ordered by the franchise calendar, because `seq` is per-player
+    // and a two-person event carries the numbering of whoever's row it is.
+    life: approvedFor(player.id, lifeEvents, { seasonRank }).map(e => ({
+      ...e,
+      line: lifeLine(e, lifeNames, player.id),
+      // Dated here, where the season records already are, so the view does not
+      // need its own copy of the calendar to print a label.
+      when: airLabel(seasonAir.get(e.afterSeason) || {}),
+    })),
     records: recordsHeldBy(player.id, milestonesByShow),
     // Computed trivia, keyed by show — the article is scoped to one show and
     // picks. Derived in js/player-trivia.js from every career in that format,

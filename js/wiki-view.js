@@ -885,6 +885,26 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   }
   section('relationships', 'Relationships', relBits.join(''));
 
+  // ── LIFE OUTSIDE THE GAME ──────────────────────────────────────────
+  //
+  // The reference pages call this "Post <show>" and fill it with what happened
+  // once the season was over: a relationship that started after the finale, an
+  // engagement, a wedding, a podcast, a public falling-out.
+  //
+  // Accrued data — see js/life-events.js. Only APPROVED events reach here; a
+  // proposal is a suggestion and must not be able to change what a page says
+  // about somebody. Dated by the franchise calendar rather than by the order
+  // they were written, since a two-person event is stored once and carries the
+  // sequence number of whichever side it was written from.
+  {
+    const life = dossier.life || [];
+    if (life.length) {
+      const rows = life.map(e => `<li>${e.when ? `<em>${esc(e.when)}</em> — ` : ''}${
+        esc(e.line)}${e.detail ? ` ${esc(e.detail)}` : ''}</li>`);
+      section('life', 'Life outside the game', `<ul class="wk-list">${rows.join('')}</ul>`);
+    }
+  }
+
   // ── THE OTHER SHOWS ────────────────────────────────────────────────
   //
   // The reference pages carry this as a heading per show — "Big Brother (US)",

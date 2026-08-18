@@ -202,8 +202,11 @@ sentence about it, not the most dramatic one available.
 - **Does this feed `franchise_meta`?** Returnee reputation and grudges already
   exist there. A public falling-out in the off-season *is* a grudge, and two
   systems for one idea would be a mistake.
-- **Who writes the prose** — templates plus voice (free) or the AI writer
-  (already built, costs per call).
+**Who writes the prose: settled.** Templates by default, in each character's
+voice, sized like `js/social/phrasings.js` — 1,284 lines is the bar. The AI
+writer is invoked only when explicitly asked for, per post or per off-season: a
+polish pass rather than the engine, so nothing costs money by surprise. Same
+rule for Dramagram; see its design.
 
 ## Build order
 

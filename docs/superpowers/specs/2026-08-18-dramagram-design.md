@@ -94,6 +94,63 @@ The directory is derived from the roster and the record, so adding characters
 adds profiles with no further work. Nothing about the grid is a list somebody
 maintains.
 
+### 8. Templates by default, the model on request
+
+Captions and comments come from a phrasing bank in each character's voice.
+`js/social/phrasings.js` is 1,284 lines and is the bar for "a lot" — the same
+approach, sized the same way, per kind and per persona.
+
+The AI writer stays available and is invoked **only when explicitly asked for**,
+per post or per off-season. It is the polish pass, not the engine: free by
+default, better on demand, and never a per-post cost that arrives by surprise.
+
+This answers the question the life layer left open too. Both use the same rule.
+
+## Ideas worth building, beyond the obvious
+
+None of these need new data. Each falls out of something that already exists,
+which is the test they had to pass.
+
+**The finale dump.** A season ends and eighteen dots come back on at once. They
+all post within hours — thank-yous, first photos out of the house, the winner
+saying nothing for a day. The most alive the app will ever look, and it is free:
+it is just the sequester state releasing.
+
+**A follow is a relationship, and it breaks.** Two people who fell out do not
+follow each other. A breakup silently removes a follow. Nobody announces it and
+that is exactly why it lands — it is the most Instagram thing in the design, and
+it is a read of the social graph rather than a new mechanic.
+
+**One wedding, two posts.** A two-person life event is ONE event by rule, and
+here it surfaces as both accounts posting the same day with different captions
+and the same photo. The rule that stopped the wiki contradicting itself becomes
+a feature that reads as real.
+
+**The comments turn when the audience does.** Popularity and the edit layer
+already track how a character is being received. After a villain edit, the
+comment tone under their posts goes hostile; after a redemption, warm. Same post,
+different room.
+
+**Verified, and earnable.** A badge at a fame threshold, gained and — this is the
+part worth having — **lost**. It moves with the follower model rather than being
+a permanent stamp on whoever won early.
+
+**Frozen accounts.** A terminal life event leaves the profile standing, last post
+dated, comments still arriving. The life layer insists a death is mechanical
+rather than decorative; this is where that is felt.
+
+**#ad.** The `brand-deal` kind renders as a visibly different post. It is the
+cheapest way to make fame legible without a number, and it gives the high-fame
+characters a texture the rest do not have.
+
+**Throwbacks.** The franchise calendar means a character can post on the
+anniversary of their own season — three years to the day since they walked in.
+Costs nothing, uses a calendar built for something else entirely, and gives
+quiet characters a reason to appear at all.
+
+**The follower delta, shown.** `+41k this week` beside the count after a big
+moment. The number stops being a leaderboard and starts being a story.
+
 ## The two surfaces
 
 **The grid.** Profile picture, follower count, status dot, per show. Search by
@@ -109,10 +166,6 @@ and comments.
 - **Where a profile picture lives.** Reuse `assets/avatars/`, or a separate
   Dramagram picture so a character can have a posed avatar and a different
   profile shot?
-- **Who writes captions and comments** — templates plus the voice profile (free,
-  and the voices are already tuned) or the AI writer that exists behind a flag
-  (better, costs per call). The life layer left the same question open; they
-  should be answered together.
 - **Who is on it at all.** All 182 including Chef and Chris, or only people who
   have played?
 - **How posting volume is gated.** Fame throttles the life layer already;

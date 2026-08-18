@@ -21,6 +21,10 @@ const STAT_ABBR = { physical:'PHY', endurance:'END', mental:'MEN', social:'SOC',
 import { composeVoice, stripBioLead, parseBio, splitOrigin } from './bio.js';
 import { INTERVIEW_QUESTIONS, parseInterview, serializeInterview }
   from './casting-interview.js';
+// The endpoint resolver, not a second hardcoded URL — it already handles the
+// localStorage and globalThis overrides, and pointing at the wrong worker fails
+// silently by falling through to its default branch.
+import { writerEndpoint } from './social/writer.js';
 
 const ARCHETYPES = ['mastermind','schemer','hothead','challenge-beast','social-butterfly','loyal-soldier','wildcard','chaos-agent','floater','underdog','hero','villain','goat','perceptive-player','showmancer'];
 
@@ -1127,6 +1131,10 @@ function _renderEditor() {
           <span class="st-hint">${_ivCount(d)} of ${INTERVIEW_QUESTIONS.length} answered &middot; shown on their wiki page</span>
         </summary>
         <div class="st-iv-body">
+          <div class="st-iv-gen">
+            <button type="button" class="st-btn" id="st-iv-write">Write it from their voice</button>
+            <span class="st-hint" id="st-iv-gen-note">one call, and every answer stays editable</span>
+          </div>
           ${INTERVIEW_QUESTIONS.map(x => `<label class="st-l">${_esc(x.q)}
             <textarea class="st-input st-area" id="st-f-iv-${x.key}" rows="${x.short ? 1 : 2}"
               placeholder="in their own voice">${_esc(d.interview?.[x.key] || '')}</textarea>
@@ -1178,6 +1186,67 @@ function _renderEditor() {
       if (c) c.textContent = `${_ivCount(d)} of ${INTERVIEW_QUESTIONS.length} answered · shown on their wiki page`;
     });
   });
+
+  // ── WRITE THE INTERVIEW ──
+  //
+  // Sends the PERSON and the question list, and gets eleven answers back. It
+  // deliberately cannot send a season: the tape was recorded before the door
+  // shut, and a model that has read the season writes a winner who already
+  // sounds like one.
+  //
+  // Fills the boxes and stops. It does NOT save — these are a first draft in
+  // somebody else's voice, and the voice profiles beside them are all
+  // hand-tuned. Nothing is written to the database until you press Save.
+  const genBtn = ed.querySelector('#st-iv-write');
+  if (genBtn) genBtn.addEventListener('click', async () => {
+    const note = ed.querySelector('#st-iv-gen-note');
+    const say = t => { if (note) note.textContent = t; };
+    if (!d.name) return say('give them a name first');
+    const answered = _ivCount(d);
+    if (answered && !confirm(
+      `${answered} of ${INTERVIEW_QUESTIONS.length} answers are already written.\n\n`
+      + 'Overwrite them?')) return;
+
+    genBtn.disabled = true;
+    say('writing…');
+    try {
+      const res = await fetch(writerEndpoint(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'casting-interview',
+          // The question list travels with the request. The worker keeps no
+          // copy — one source of truth is js/casting-interview.js.
+          questions: INTERVIEW_QUESTIONS.map(x => ({ key: x.key, q: x.q })),
+          person: {
+            name: d.name, gender: d.gender, archetype: d.archetype, age: d.age,
+            occupation: d.occupation, hometown: d.hometown,
+            ethnicity: d.ethnicity, nationality: d.nationality,
+            voice: d.voice, backstory: d.backstory, stats: { ...d.stats },
+          },
+        }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) throw new Error(json?.error || `worker ${res.status}`);
+
+      d.interview = d.interview || {};
+      for (const [k, v] of Object.entries(json.answers || {})) {
+        d.interview[k] = v;
+        const el = ed.querySelector(`#st-f-iv-${k}`);
+        if (el) el.value = v;
+      }
+      const c = ed.querySelector('.st-iv-sum .st-hint');
+      if (c) c.textContent = `${_ivCount(d)} of ${INTERVIEW_QUESTIONS.length} answered · shown on their wiki page`;
+      say(`${json.answered} written — edit anything that reads wrong, then Save`);
+    } catch (e) {
+      // Said out loud rather than swallowed: a button that appears to do
+      // nothing is the worst version of this.
+      say(`could not write it — ${e.message}`);
+    } finally {
+      genBtn.disabled = false;
+    }
+  });
+
   ed.querySelectorAll('#st-f-gender button').forEach(b => b.addEventListener('click', () => {
     d.gender = b.dataset.g; ed.querySelectorAll('#st-f-gender button').forEach(x => x.classList.toggle('active', x === b));
   }));
@@ -2184,6 +2253,7 @@ function _injectCSS() {
   .st-iv-sum::before{content:'b8';display:inline-block;transition:transform .15s;opacity:.6}
   .st-iv[open] .st-iv-sum::before{transform:rotate(90deg)}
   .st-iv-body{padding:0 14px 12px;display:grid;gap:10px}
+  .st-iv-gen{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:2px}
   .st-iv-body .st-l{font-size:12.5px;font-weight:600;line-height:1.45}
   .st-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
   .st-btn{background:var(--surface,#26262e);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font:inherit;font-size:12px;padding:8px 12px;cursor:pointer}

@@ -35,6 +35,11 @@ export default {
       // studio worker's /api/social is a different job: it SERVES a finished
       // feed to the site and does no writing.
       return await generateSocialCrowd(body, env);
+    } else if (mode === "casting-interview") {
+      // The questionnaire a contestant fills in BEFORE they play. Same reason
+      // as `social` for living here: this worker already holds the key and
+      // already dispatches creative writing by mode.
+      return await generateCastingInterview(body, env);
     } else {
       return await generateAnalytics(summaryText, season, episode, env, body.activeCast, body.ledger, body.history);
     }
@@ -3379,6 +3384,107 @@ function socialUsable(text, packet) {
   return posts
     .map(p => ({ text: String(p?.text || "").trim(), cites: [].concat(p?.cites || []) }))
     .filter(p => p.text && socialLocalCheck(p, packet));
+}
+
+/**
+ * The casting interview — eleven answers, in their voice, from before they play.
+ *
+ * ── THIS FUNCTION MUST NEVER SEE A SEASON ──
+ *
+ * Every other mode in this worker is handed episode text and asked to write
+ * about what happened. This one is the opposite and the difference is the whole
+ * point. "Do you have a strategy for winning the game?" is answered by somebody
+ * who has not played. Hand a model the season and the answers stop being a tape
+ * recorded at casting: the winner writes with quiet certainty, the first boot
+ * writes something doomed, and every page becomes a spoiler for its own season.
+ *
+ * So the payload it accepts carries the PERSON only — voice, stats, archetype,
+ * bio — and there is no parameter here through which a placement could arrive.
+ *
+ * The questions come from the caller, which imports js/casting-interview.js.
+ * Keeping a copy here would be a second source of truth for a list that is
+ * edited by hand; docs/ADDING-A-SHOW.md §13 exists because eight files each
+ * kept their own copy of the show list.
+ */
+async function generateCastingInterview(body, env) {
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
+
+  if (!env.OPENAI_API_KEY) {
+    return json({ error: "Casting interviews need OPENAI_API_KEY on this worker.",
+      hint: "wrangler secret put OPENAI_API_KEY --config wrangler-analytics.toml" }, 400);
+  }
+  const p = body.person || {};
+  const questions = Array.isArray(body.questions) ? body.questions : [];
+  if (!p.name) return json({ error: "no person" }, 400);
+  if (!questions.length) return json({ error: "no questions — the caller owns the list" }, 400);
+
+  const stats = p.stats && typeof p.stats === "object"
+    ? Object.entries(p.stats).map(([k, v]) => `${k} ${v}/10`).join(", ") : "";
+  // Only what is actually known. A blank line invites the model to invent the
+  // fact rather than write around the gap.
+  const facts = [
+    p.age && `Age ${p.age}`,
+    p.occupation && `Occupation: ${p.occupation}`,
+    p.hometown && `From: ${p.hometown}`,
+    [p.ethnicity, p.nationality].filter(Boolean).join(" "),
+    p.gender === "f" ? "Female" : p.gender === "m" ? "Male" : "",
+    p.archetype && `Plays as: ${p.archetype}`,
+    stats && `Stats: ${stats}`,
+  ].filter(Boolean).join("\n");
+
+  const prompt = [
+    `You are ${p.name}, filling in the casting questionnaire for a reality show,`,
+    "days before you go in. You have not played yet. You do not know anyone else",
+    "in the cast, you do not know what the twists are, and you have no idea how",
+    "it goes for you — because it has not happened.",
+    "",
+    facts,
+    p.voice ? `\nHow you talk: ${p.voice}` : "",
+    p.backstory ? `\nYour life so far: ${p.backstory}` : "",
+    "",
+    "Answer each question IN FIRST PERSON, in your own voice — the way this",
+    "person actually talks, not the way a press release talks. One to three",
+    "sentences each; the adjectives answer is three words. Be specific and",
+    "occasionally unflattering. A guarded person gives short answers and a",
+    "chatty one rambles: let the voice decide the length, not a target.",
+    "",
+    "Never mention a season, a placement, a competition you won, or anybody's",
+    "name from the cast — none of that has happened yet.",
+    "",
+    "For the question about three things you would take in, answer as three",
+    'lines, each starting "- ".',
+    "",
+    "Return ONLY a JSON object mapping each question's key to its answer:",
+    JSON.stringify(Object.fromEntries(questions.map(q => [q.key, "..."]))),
+    "",
+    "The questions:",
+    ...questions.map(q => `${q.key}: ${q.q}`),
+  ].filter(x => x !== "").join("\n");
+
+  let text = "";
+  try {
+    text = await socialViaOpenAI(prompt, env);
+  } catch (e) {
+    return json({ error: `openai: ${e.message}` }, 502);
+  }
+
+  let parsed = null;
+  try { parsed = JSON.parse(text); } catch { /* handled below */ }
+  if (!parsed || typeof parsed !== "object") {
+    return json({ error: "the model did not return JSON", raw: String(text).slice(0, 400) }, 502);
+  }
+  // Only keys that were asked for, only non-empty answers. A model that invents
+  // a twelfth question must not be able to write a row nothing renders.
+  const answers = {};
+  for (const q of questions) {
+    const a = String(parsed[q.key] ?? "").trim();
+    if (a) answers[q.key] = a;
+  }
+  if (!Object.keys(answers).length) {
+    return json({ error: "the model answered none of the questions" }, 502);
+  }
+  return json({ ok: true, answers, answered: Object.keys(answers).length });
 }
 
 async function socialViaOpenAI(prompt, env) {

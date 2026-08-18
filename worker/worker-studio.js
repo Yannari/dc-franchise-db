@@ -19,7 +19,8 @@
 // Roster writes (require Authorization: Bearer <STUDIO_TOKEN>):
 //   POST /api/roster           {slug,name,gender,sexuality,archetype,stats{},voice,
 //                               age|birthdate,ethnicity,nationality,hometown,
-//                               occupation,descriptor,backstory,personality}
+//                               occupation,descriptor,backstory,personality,
+//                               castingInterview}
 //   POST /api/roster/delete    {slug, force?}  -> deletes if unplayed, else retires
 //   POST /api/roster/unretire  {slug}
 //   POST /api/roster/publish   -> regenerates franchise_roster.json + voice-profiles.json
@@ -476,6 +477,9 @@ function rosterRowToJson(r) {
   if (r.descriptor) out.descriptor = r.descriptor;
   if (r.backstory) out.backstory = r.backstory;
   if (r.personality) out.personality = r.personality;
+  // Emitted as the stored JSON STRING, not re-parsed here: the Worker has no
+  // business knowing the interview's shape, and js/casting-interview.js owns it.
+  if (r.casting_interview) out.castingInterview = r.casting_interview;
   if (r.is_returnee) out.isReturnee = true;
   return out;
 }
@@ -551,8 +555,9 @@ async function rosterSave(env, payload) {
     `INSERT INTO roster (slug,name,gender,sexuality,archetype,${STAT_KEYS.join(',')},
                          voice,age,birthdate,ethnicity,nationality,
                          hometown,occupation,descriptor,backstory,personality,
+                         casting_interview,
                          is_returnee,retired,updated_at)
-     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
      ON CONFLICT(slug) DO UPDATE SET
        name=excluded.name, gender=excluded.gender, sexuality=excluded.sexuality,
        archetype=excluded.archetype,
@@ -563,6 +568,7 @@ async function rosterSave(env, payload) {
        hometown=excluded.hometown, occupation=excluded.occupation,
        descriptor=excluded.descriptor, backstory=excluded.backstory,
        personality=excluded.personality,
+       casting_interview=excluded.casting_interview,
        is_returnee=excluded.is_returnee,
        retired=excluded.retired, updated_at=datetime('now')`
   ).bind(
@@ -573,6 +579,7 @@ async function rosterSave(env, payload) {
     age, birthdate, text(payload.ethnicity), text(payload.nationality),
     text(payload.hometown), text(payload.occupation),
     text(payload.descriptor), text(payload.backstory), text(payload.personality),
+    text(payload.castingInterview),
     payload.isReturnee ? 1 : 0,
     payload.retired ? 1 : 0,
   ).run();

@@ -204,3 +204,71 @@ describe('the article renders it the way the reference does', () => {
       .toMatch(/\.wk-iv-body dd\{[^}]*white-space:pre-line/);
   });
 });
+
+// ── the generator ──
+//
+// Lives on the analytics worker, which already holds the key and already
+// dispatches creative writing by mode. It is a pure text endpoint: it writes
+// answers and returns them. It does not touch the database, because the answers
+// are a first draft in somebody else's voice and must be read before they land.
+describe('writing one with the model', () => {
+  const worker = read('worker/worker-episode-live.js');
+  const studio = read('js/studio.js');
+  const fn = worker.slice(worker.indexOf('async function generateCastingInterview'),
+    worker.indexOf('async function socialViaOpenAI'));
+
+  it('is reachable as its own mode', () => {
+    expect(fn.length, 'generateCastingInterview is missing').toBeGreaterThan(500);
+    expect(worker).toMatch(/mode === "casting-interview"/);
+  });
+
+  it('CANNOT be handed a season', () => {
+    // The guard the whole feature rests on. Every other mode in that worker
+    // takes episode text and writes about what happened; this one is the
+    // opposite. If a placement can reach the prompt, the winner starts writing
+    // like a winner and every page spoils its own season.
+    //
+    // Guarded on what it READS off the request, not on words in the prompt —
+    // the prompt says "never mention a season, a placement, a competition you
+    // won", and a naive scan for those words flags the prohibition itself.
+    const reads = new Set([...fn.matchAll(/body\.(\w+)/g)].map(m => m[1]));
+    expect([...reads].sort(), 'the handler reads something other than the person')
+      .toEqual(['person', 'questions']);
+    // And nothing season-shaped is threaded in under another name.
+    for (const leak of ['summaryText', 'episodeText', 'previousEpisodes',
+      'episodeHistory', 'seasonDetails', 'ledger', 'storyBible']) {
+      expect(fn, `the casting interview prompt can see ${leak}`).not.toContain(leak);
+    }
+    // And it is told so in as many words, because the prompt is the guard.
+    expect(fn).toMatch(/has not happened/);
+  });
+
+  it('takes the question list from the caller instead of keeping one', () => {
+    expect(fn, 'the worker keeps its own copy of the questions')
+      .toMatch(/body\.questions/);
+    expect(fn).toMatch(/no questions — the caller owns the list/);
+  });
+
+  it('returns only answers to questions that were asked', () => {
+    // A model that invents a twelfth question must not be able to write a row
+    // nothing renders.
+    expect(fn).toMatch(/for \(const q of questions\)/);
+  });
+
+  it('never writes to the database from the Studio button', () => {
+    const btn = studio.slice(studio.indexOf("ed.querySelector('#st-iv-write')"),
+      studio.indexOf("ed.querySelectorAll('#st-f-gender button')"));
+    expect(btn.length, 'the generate handler is missing').toBeGreaterThan(400);
+    expect(btn, 'the button saves behind your back — these are a first draft')
+      .not.toMatch(/_save\(|_rosterPush|\/api\/roster/);
+    expect(btn, 'existing answers are overwritten without asking').toMatch(/confirm\(/);
+    expect(btn, 'a failure would be silent').toMatch(/could not write it/);
+  });
+
+  it('resolves the worker URL instead of hardcoding a second one', () => {
+    // Pointing at the Season Builder by mistake falls through to its default
+    // branch and returns analytics — no error, no answers, nothing to explain.
+    expect(studio).toMatch(/import \{ writerEndpoint \}/);
+    expect(studio).not.toMatch(/dc-analytics\.[a-z0-9]+\.workers\.dev/);
+  });
+});

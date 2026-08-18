@@ -41,9 +41,20 @@ describe('the schema describes the table that actually exists', () => {
     }
   });
 
-  it('migrates an existing database for the same columns', () => {
-    for (const f of BIO_FIELDS) {
+  it('migrates an existing database for exactly the columns it is missing', () => {
+    // Only the four NEW ones. The live table already had age / ethnicity /
+    // nationality / descriptor, added out of band before the schema knew about
+    // them — and D1 runs a file as ONE BATCH and rolls back on the first error,
+    // so an ALTER for a column that already exists does not "fail harmlessly
+    // and let the rest through", it discards the whole migration. The first
+    // version of this file listed all eight and added nothing.
+    for (const f of NEW_FIELDS) {
       expect(migration, `no ALTER for ${f}`).toMatch(new RegExp(`ADD COLUMN\\s+${f}\\b`));
+    }
+    for (const f of ['age', 'ethnicity', 'nationality', 'descriptor']) {
+      expect(migration, `${f} already exists on the live table — an ALTER for it `
+        + 'aborts the whole batch and the four new columns never land')
+        .not.toMatch(new RegExp(`ADD COLUMN\\s+${f}\\b`));
     }
   });
 

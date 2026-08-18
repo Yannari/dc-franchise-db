@@ -127,7 +127,7 @@ function _blankChar() {
     ethnicity:'', nationality:'', descriptor:'',
     // The bio. `birthdate` is authoritative over `age` when both are present —
     // an age is a number that silently rots, a date does not.
-    birthdate:'', hometown:'', occupation:'', backstory:'',
+    birthdate:'', hometown:'', occupation:'', backstory:'', personality:'',
     voice:'', avatarDataUri:'', returneeDataUri:'', stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
   };
 }
@@ -975,6 +975,7 @@ async function _editBySlug(slug) {
     hometown: pick(base.hometown, rich && rich.hometown),
     occupation: pick(base.occupation, rich && rich.occupation),
     backstory: pick(base.backstory, rich && rich.backstory),
+    personality: pick(base.personality, rich && rich.personality),
     // The prose alone. The lead-in is rebuilt from the fields on save, so
     // keeping it here too would stack a second copy in front of the first.
     voice: parsed.prose,
@@ -1101,6 +1102,9 @@ function _renderEditor() {
       <label class="st-l">Backstory <span class="st-hint">who they were BEFORE the show — read on their page, not by the episode writer</span>
         <textarea class="st-input st-area" id="st-f-backstory" rows="3" placeholder="e.g. Youngest of three brothers, none of whom he ever lost to…">${_esc(d.backstory)}</textarea>
       </label>
+      <label class="st-l">Personality <span class="st-hint">the long version of the voice above — usually generated from it, edit only if it reads wrong</span>
+        <textarea class="st-input st-area" id="st-f-personality" rows="4" placeholder="Generated from the voice profile and the stat line. Leave empty and it will be written for you.">${_esc(d.personality)}</textarea>
+      </label>
 
       <div class="st-actions">
         <button type="button" class="st-btn st-primary st-lg" id="st-save">Save character</button>
@@ -1135,6 +1139,7 @@ function _renderEditor() {
   ed.querySelector('#st-f-hometown').addEventListener('input', e => d.hometown = e.target.value);
   ed.querySelector('#st-f-birthdate').addEventListener('input', e => d.birthdate = e.target.value);
   ed.querySelector('#st-f-backstory').addEventListener('input', e => d.backstory = e.target.value);
+  ed.querySelector('#st-f-personality').addEventListener('input', e => d.personality = e.target.value);
   ed.querySelectorAll('#st-f-gender button').forEach(b => b.addEventListener('click', () => {
     d.gender = b.dataset.g; ed.querySelectorAll('#st-f-gender button').forEach(x => x.classList.toggle('active', x === b));
   }));
@@ -1637,7 +1642,7 @@ async function _save() {
   // read by hand.
   const bio = {};
   for (const k of ['age', 'birthdate', 'ethnicity', 'nationality',
-    'hometown', 'occupation', 'descriptor', 'backstory']) {
+    'hometown', 'occupation', 'descriptor', 'backstory', 'personality']) {
     const v = (d[k] ?? '').toString().trim();
     if (v) bio[k] = v;
   }
@@ -1655,7 +1660,7 @@ async function _save() {
     sexuality: d.sexuality, archetype: d.archetype,
     ethnicity: d.ethnicity, nationality: d.nationality, descriptor: d.descriptor,
     birthdate: d.birthdate, hometown: d.hometown,
-    occupation: d.occupation, backstory: d.backstory,
+    occupation: d.occupation, backstory: d.backstory, personality: d.personality,
     voice: d.voice, avatarDataUri: d.avatarDataUri || '',
     returneeDataUri: d.returneeDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}

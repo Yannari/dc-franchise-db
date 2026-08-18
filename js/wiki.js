@@ -34,6 +34,18 @@ const fmtOf = d => d?.format || DEFAULT_FORMAT;
  * a wall with duplicated titles; split, it becomes a section per season that can
  * sit beside that season's placement.
  */
+/** Age from an ISO birthdate, or null. Never stored — see the note in bio. */
+export function _ageFrom(birthdate) {
+  if (!birthdate || !/^\d{4}-\d{2}-\d{2}$/.test(birthdate)) return null;
+  const b = new Date(`${birthdate}T00:00:00Z`);
+  if (Number.isNaN(b.getTime())) return null;
+  const now = new Date();
+  let a = now.getUTCFullYear() - b.getUTCFullYear();
+  const m = now.getUTCMonth() - b.getUTCMonth();
+  if (m < 0 || (m === 0 && now.getUTCDate() < b.getUTCDate())) a--;
+  return a >= 0 && a < 130 ? a : null;
+}
+
 export function splitStory(story) {
   const text = String(story || '').trim();
   if (!text) return [];
@@ -63,7 +75,16 @@ export function splitStory(story) {
 }
 
 /** Their personality, without the bio sentence the Studio prepends to it. */
-export function personalityOf(name, voices = {}) {
+export function personalityOf(name, voices = {}, rosterRow = null) {
+  // The long form when there is one. `voice` and `personality` are the same
+  // truth at two lengths — voice is the short imperative that ships inside
+  // every episode prompt, personality is the paragraph a reader gets — and the
+  // page should show the one written for a reader. Falling back to the voice
+  // means a character nobody has written a personality for still says
+  // something, rather than the section vanishing.
+  const authored = rosterRow && typeof rosterRow.personality === 'string'
+    ? rosterRow.personality.trim() : '';
+  if (authored) return authored;
   const raw = voices[name];
   if (!raw) return '';
   return parseBio(raw).prose;
@@ -442,14 +463,29 @@ export function buildDossier(player, {
   const rosterRow = (roster.players || roster || []).find(r => r.slug === player.id) || {};
   const parsed = parseBio(voices[player.name] || '');
 
+  // ── the authored bio, which this used to ignore ──
+  //
+  // occupation, hometown, birthdate and backstory were added to the roster and
+  // wired into the profile infobox, and this function was not told — so the
+  // WIKI tab, the one place meant to read like an encyclopedia entry, showed
+  // none of what had just been written for it.
+  //
+  // Age is derived from the birthdate when there is one and only falls back to
+  // the stored number otherwise: a stored age is wrong from the next birthday
+  // until somebody re-publishes.
   const bio = {
-    age: rosterRow.age ?? parsed.age ?? null,
+    age: _ageFrom(rosterRow.birthdate) ?? rosterRow.age ?? parsed.age ?? null,
+    birthdate: rosterRow.birthdate || '',
     ethnicity: rosterRow.ethnicity || parsed.ethnicity || '',
     nationality: rosterRow.nationality || parsed.nationality || '',
+    hometown: rosterRow.hometown || '',
+    occupation: rosterRow.occupation || '',
     sexuality: rosterRow.sexuality || parsed.sexuality || '',
     gender: rosterRow.gender || '',
     archetype: rosterRow.archetype || '',
+    descriptor: rosterRow.descriptor || '',
   };
+  const backstory = rosterRow.backstory || '';
   const relationships = relationshipsOf(player, { seasonDocs });
 
   return {
@@ -462,9 +498,14 @@ export function buildDossier(player, {
       bio.age ? `${bio.age}` : '',
       [bio.ethnicity, bio.nationality].filter(Boolean).join(' '),
       bio.sexuality && bio.sexuality !== 'straight' ? bio.sexuality : '',
+      // The two the encyclopedia entries lead with, and the two this line was
+      // missing entirely.
+      bio.occupation,
+      bio.hometown,
       bio.archetype,
     ].filter(Boolean).join(' · '),
-    personality: personalityOf(player.name, voices),
+    backstory,
+    personality: personalityOf(player.name, voices, rosterRow),
     career: _withLoyalties(careerOf(player, { seasonTitles, seasonDocs }), relationships),
     relationships,
     couple: coupleStatus(relationships),

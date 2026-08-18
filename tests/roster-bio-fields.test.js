@@ -25,7 +25,7 @@ import { describe, expect, it } from 'vitest';
 const read = f => readFileSync(resolve(process.cwd(), f), 'utf8');
 
 const BIO_FIELDS = ['age', 'birthdate', 'ethnicity', 'nationality',
-  'hometown', 'occupation', 'descriptor', 'backstory'];
+  'hometown', 'occupation', 'descriptor', 'backstory', 'personality'];
 // The four that are new here; the other four predate this and are only being
 // carried correctly for the first time.
 const NEW_FIELDS = ['birthdate', 'hometown', 'occupation', 'backstory'];
@@ -221,5 +221,99 @@ describe('somebody with no finished season still has a page', () => {
       'only one caller uses the shared stylesheet').toBeGreaterThanOrEqual(3);
     expect(page, 'a second copy of the profile CSS was reintroduced')
       .not.toMatch(/let html = `<style>/);
+  });
+});
+
+// ── personality, and the section that had nowhere to go ──
+//
+// The wiki article opened at PERSONALITY. It had no Biography section at all,
+// which is why it read so much worse than the encyclopedia pages it is modelled
+// on: every authored fact about who somebody IS — born, hometown, occupation,
+// the backstory paragraphs — was being written into the roster and then
+// rendered nowhere. The infobox on player.html showed them; the one tab whose
+// whole job is to read like an article did not.
+//
+// `personality` is the long form of `voice`. They are the same truth at two
+// lengths and only one of them is written by hand: voice is the short
+// imperative that ships inside EVERY episode prompt, so padding it with
+// biography is paid for on every episode of every season, and personality is
+// the paragraph a reader gets. Voice stays authored (182 are tuned); the
+// personality falls back to it when nobody has written one.
+describe('the long-form personality', () => {
+  const schema = read('worker/roster_schema.sql');
+  const migration = read('worker/roster_migration_personality.sql');
+  const worker = read('worker/worker-studio.js');
+  const studio = read('js/studio.js');
+
+  it('has its own migration, adding only itself', () => {
+    // Its own file, not appended to roster_migration_bio.sql: that one has
+    // already been run against the live database, and D1 executes a file as ONE
+    // BATCH and rolls back on the first error — so a re-run would fail on
+    // `birthdate` and this column would never land.
+    expect(migration).toMatch(/ADD COLUMN\s+personality\b/);
+    for (const f of BIO_FIELDS.filter(x => x !== 'personality')) {
+      expect(migration, `${f} already exists — an ALTER for it aborts the batch`)
+        .not.toMatch(new RegExp(`ADD COLUMN\s+${f}\b`));
+    }
+  });
+
+  it('is declared, stored, published and editable', () => {
+    expect(schema).toMatch(/^\s*personality\s/m);
+    expect(worker, 'never written').toMatch(/personality=excluded\.personality/);
+    expect(worker, 'stored but never published').toMatch(/out\.personality\s*=/);
+    expect(studio).toMatch(/id="st-f-personality"/);
+    expect(studio).toMatch(/#st-f-personality'\)\.addEventListener/);
+  });
+
+  it('keeps the short voice as the authored one', () => {
+    // If personality ever became the source and voice were generated from it,
+    // every episode prompt would carry a paragraph where it needs a line.
+    expect(studio, 'the tuned voice profile was removed').toMatch(/id="st-f-voice"/);
+  });
+});
+
+describe('the wiki article reads the authored bio', () => {
+  const wiki = read('js/wiki.js');
+  const view = read('js/wiki-view.js');
+
+  it('puts the new fields on the dossier', () => {
+    const fn = wiki.slice(wiki.indexOf('export function buildDossier'));
+    for (const f of ['birthdate', 'hometown', 'occupation', 'descriptor']) {
+      expect(fn, `${f} never reaches the article`)
+        .toMatch(new RegExp(`rosterRow\.${f}`));
+    }
+    expect(fn, 'backstory is not returned').toMatch(/backstory,/);
+  });
+
+  it('derives the age from the birthdate', () => {
+    // A stored age is wrong from the character's next birthday until somebody
+    // remembers to press Publish.
+    expect(wiki).toMatch(/export function _ageFrom/);
+    expect(wiki).toMatch(/_ageFrom\(rosterRow\.birthdate\) \?\? rosterRow\.age/);
+  });
+
+  it('prefers an authored personality over the parsed voice', () => {
+    const fn = wiki.slice(wiki.indexOf('export function personalityOf'),
+      wiki.indexOf('export function', wiki.indexOf('export function personalityOf') + 10));
+    expect(fn, 'personalityOf ignores the roster row').toMatch(/rosterRow/);
+    expect(fn, 'the voice fallback was dropped').toMatch(/voices\[name\]/);
+  });
+
+  it('renders a Biography section, above Personality', () => {
+    expect(view, 'the article still has no Biography section')
+      .toMatch(/section\('biography', 'Biography'/);
+    expect(view.indexOf("section('biography'"), 'Biography renders after Personality')
+      .toBeLessThan(view.indexOf("'personality', 'Personality'"));
+  });
+
+  it('shows nothing rather than an empty heading', () => {
+    // 155 of the roster have no bio written yet; they must get the article they
+    // already had, not a hollow section.
+    expect(view).toMatch(/if \(bits\.length\) section\('biography'/);
+  });
+
+  it('keeps the paragraph breaks in authored prose', () => {
+    expect(view, 'multi-paragraph backstory would render as one block')
+      .toContain('.map(par => `<p>${esc(par.trim())}</p>`)');
   });
 });

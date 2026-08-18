@@ -505,6 +505,42 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
     node.subs.push({ id, title, html });
   };
 
+  // ── BIOGRAPHY ──────────────────────────────────────────────────────
+  //
+  // The section every encyclopedia entry opens with, and the one this article
+  // did not have: it began at Personality, so everything authored about who
+  // somebody IS — where they are from, what they do, who they were before the
+  // door shut — had nowhere to appear no matter how much of it was written.
+  //
+  // Facts first as a definition list, then the prose. Both are optional and the
+  // section is skipped entirely when neither exists, so the 155 characters with
+  // no bio yet get the article they had rather than an empty heading.
+  {
+    const b = dossier.bio || {};
+    const facts = [
+      ['Born', b.birthdate
+        ? `${new Date(`${b.birthdate}T00:00:00Z`).toLocaleDateString(undefined,
+          { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}${
+          b.age != null ? ` (age ${b.age})` : ''}`
+        : (b.age != null ? `Age ${b.age}` : '')],
+      ['Hometown', b.hometown],
+      ['Occupation', b.occupation],
+      ['Nationality', [b.ethnicity, b.nationality].filter(Boolean).join(' ')],
+      ['Also', b.descriptor],
+    ].filter(([, v]) => v);
+    const bits = [];
+    if (facts.length) {
+      bits.push(`<dl class="wk-facts">${facts.map(([k, v]) =>
+        `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`);
+    }
+    if (dossier.backstory) {
+      // Authored prose arrives with paragraph breaks; keep them.
+      bits.push(String(dossier.backstory).split(/\n\s*\n/)
+        .map(par => `<p>${esc(par.trim())}</p>`).join(''));
+    }
+    if (bits.length) section('biography', 'Biography', bits.join(''));
+  }
+
   // ── PERSONALITY ────────────────────────────────────────────────────
   //
   // Per season when the episodes have been read, and the voice profile only
@@ -827,6 +863,17 @@ export const WIKI_CSS = `
    a column can be read down, which is the only reason a table beats a
    sentence. */
 .wk-comp td, .wk-comp th{ text-align:center; }
+/* The Biography facts. A definition list rather than a table: it is five
+   labelled values, and a table of two columns and five rows reads as a
+   spreadsheet where an encyclopedia wants a caption block. Collapses to one
+   column on a phone so a long hometown does not squash the label. */
+.wk-facts{ display:grid; grid-template-columns:auto 1fr; gap:6px 16px;
+  margin:0 0 14px; font-size:13px; }
+.wk-facts dt{ opacity:.6; text-transform:uppercase; letter-spacing:.08em;
+  font-size:10.5px; font-weight:700; align-self:baseline; }
+.wk-facts dd{ margin:0; }
+@media(max-width:520px){ .wk-facts{ grid-template-columns:1fr; gap:2px 0; }
+  .wk-facts dd{ margin-bottom:8px; } }
 .wk-comp td:first-child, .wk-comp th:first-child{ text-align:left; }
 /* A season called "Big Brother Season 1: The House That Kept Receipts" was
    wrapping one word per line in a 60px column and pushing the row eight lines

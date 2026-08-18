@@ -46,6 +46,15 @@ CREATE TABLE IF NOT EXISTS roster (
   occupation  TEXT,                   -- "Attorney"
   descriptor  TEXT,                   -- anything that is neither, kept verbatim
   backstory   TEXT,                   -- reader-facing prose: who they were before the show
+  -- The long-form version of `voice`, for the wiki page.
+  --
+  -- These two are the SAME TRUTH at two lengths, and only one of them is ever
+  -- written by hand. `voice` is the short imperative that ships inside every
+  -- episode prompt ("never lets you see the scheme" instructs a model better
+  -- than "he is strategically guarded" describes him), and `personality` is
+  -- generated from it plus the stat line. Authoring both would be two copies of
+  -- one fact, which is the drift this project keeps getting bitten by.
+  personality TEXT,
 
   is_returnee INTEGER DEFAULT 0,      -- roster flag carried over from the JSON
   retired     INTEGER DEFAULT 0,      -- 1 = hidden from casting, history preserved

@@ -38,6 +38,10 @@ export const TRACKS = {
   home: 'Home',
   public: 'Public life',
   health: 'Health',
+  money: 'Money',
+  legal: 'Legal',
+  franchise: 'The franchise',
+  small: 'Small things',
 };
 
 /** How loudly an event lands, which is what an approval policy switches on. */
@@ -151,6 +155,84 @@ export const KINDS = [
     line: n => `${n} died.` },
   { key: 'left-franchise', track: 'public', sig: 'major', whom: false, terminal: true,
     line: n => `${n} stepped away from the franchise.` },
+
+  // ── money and the law ──────────────────────────────────────────────
+  // The unglamorous side of being briefly famous, and very real for people who
+  // won a large sum on television in their twenties.
+  { key: 'came-into-money', track: 'money', sig: 'notable', whom: false,
+    line: n => `${n} came into money.` },
+  { key: 'lost-money', track: 'money', sig: 'notable', whom: false,
+    line: n => `${n} lost most of what they had.` },
+  { key: 'bankruptcy', track: 'money', sig: 'major', whom: false,
+    line: n => `${n} filed for bankruptcy.` },
+  { key: 'big-purchase', track: 'money', sig: 'minor', whom: false,
+    line: n => `${n} spent the winnings on something they could not justify.` },
+  { key: 'lawsuit', track: 'legal', sig: 'notable', whom: false,
+    line: n => `${n} became involved in a lawsuit.` },
+  { key: 'arrested', track: 'legal', sig: 'major', whom: false,
+    line: n => `${n} was arrested.` },
+  { key: 'charges-dropped', track: 'legal', sig: 'notable', whom: false,
+    line: n => `The charges against ${n} were dropped.` },
+  { key: 'scandal', track: 'legal', sig: 'major', whom: false,
+    line: n => `${n} was at the centre of a scandal.` },
+  { key: 'cancelled', track: 'legal', sig: 'major', whom: false,
+    line: n => `${n} was widely condemned online.` },
+  { key: 'forgiven', track: 'legal', sig: 'notable', whom: false,
+    line: n => `The public moved on, and ${n} was quietly forgiven.` },
+
+  // ── back to the franchise ──────────────────────────────────────────
+  // Most of what a reference page's Post-show section actually consists of.
+  { key: 'mentored', track: 'franchise', sig: 'notable', whom: false,
+    line: n => `${n} returned to mentor a new cast.` },
+  { key: 'reunion', track: 'franchise', sig: 'minor', whom: false,
+    line: n => `${n} appeared at a reunion special.` },
+  { key: 'spin-off', track: 'franchise', sig: 'notable', whom: false,
+    line: n => `${n} signed on for a spin-off.` },
+  { key: 'convention', track: 'franchise', sig: 'minor', whom: false,
+    line: n => `${n} appeared at a fan convention.` },
+  { key: 'rewatch-podcast', track: 'franchise', sig: 'minor', whom: false,
+    line: n => `${n} started a rewatch podcast about their own season.` },
+  { key: 'production-fallout', track: 'franchise', sig: 'notable', whom: false,
+    line: n => `${n} fell out with production.` },
+  { key: 'hall-of-fame', track: 'franchise', sig: 'major', whom: false,
+    line: n => `${n} was inducted into the hall of fame.` },
+
+  // ── vices and recovery ─────────────────────────────────────────────
+  // The slow version of a hard time, where health carries the sudden version.
+  // The sentences are deliberately plain: the design's craft note asks for the
+  // shortest true sentence rather than the most dramatic one available.
+  { key: 'sober', track: 'health', sig: 'major', whom: false,
+    line: n => `${n} got sober.` },
+  { key: 'relapse', track: 'health', sig: 'major', whom: false,
+    line: n => `${n} relapsed.` },
+  { key: 'rehab', track: 'health', sig: 'major', whom: false,
+    line: n => `${n} went into treatment.` },
+  { key: 'therapy', track: 'health', sig: 'notable', whom: false,
+    line: n => `${n} started therapy.` },
+  { key: 'burnout', track: 'health', sig: 'notable', whom: false,
+    line: n => `${n} burned out.` },
+  { key: 'year-off', track: 'career', sig: 'notable', whom: false,
+    line: n => `${n} took a year off.` },
+  { key: 'in-shape', track: 'health', sig: 'minor', whom: false,
+    line: n => `${n} got into the best shape of their life.` },
+
+  // ── small life ─────────────────────────────────────────────────────
+  // The texture that makes the big events land, and what a low-fame character
+  // has to post about. All minor, all auto-accept under a default policy.
+  { key: 'pet', track: 'home', sig: 'minor', whom: false,
+    line: n => `${n} got a dog.` },
+  { key: 'tattoo', track: 'small', sig: 'minor', whom: false,
+    line: n => `${n} got a new tattoo.` },
+  { key: 'hobby', track: 'small', sig: 'minor', whom: false,
+    line: n => `${n} took up something new.` },
+  { key: 'travelling', track: 'small', sig: 'minor', whom: false,
+    line: n => `${n} went travelling.` },
+  { key: 'haircut', track: 'small', sig: 'minor', whom: false,
+    line: n => `${n} changed their hair, and the internet had opinions.` },
+  { key: 'flatmates', track: 'home', sig: 'minor', whom: true,
+    line: (n, w) => `${n} moved in with ${w}.` },
+  { key: 'learned', track: 'small', sig: 'minor', whom: false,
+    line: n => `${n} learned to do something they had always meant to.` },
 ];
 
 const BY_KEY = new Map(KINDS.map(k => [k.key, k]));

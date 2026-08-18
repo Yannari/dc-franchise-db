@@ -43,7 +43,9 @@ export const NAV_LINKS = [
   { href: 'rankings.html',         icon: '🏆',  label: 'Records' },
   { href: 'seasons.html',          icon: '🗂️', label: 'Seasons' },
   { href: 'devotees.html',         icon: '👥',  label: 'Players' },
-  { href: 'life.html',             icon: '🌱',  label: 'Life' },
+  // `badge` names a counter this link can carry. Resolved after the nav paints,
+  // so a slow or missing count never delays the header.
+  { href: 'life.html',             icon: '🌱',  label: 'Life', badge: 'life' },
   { href: 'timeline.html',         icon: '🗓️', label: 'Timeline' },
 ];
 
@@ -101,7 +103,9 @@ export function navHtml(active = activeHref()) {
     const on = l.href === active;
     return `<li class="nav-item"><a href="${esc(l.href)}" class="nav-link${on ? ' active' : ''}"`
       + `${on ? ' aria-current="page"' : ''}>`
-      + `<span class="nav-icon">${l.icon}</span><span>${esc(l.label)}</span></a></li>`;
+      + `<span class="nav-icon">${l.icon}</span><span>${esc(l.label)}</span>`
+      + (l.badge ? `<span class="nav-badge" data-badge="${esc(l.badge)}" hidden></span>` : '')
+      + `</a></li>`;
   }).join('');
   return `<ul class="nav-list">${items}</ul>`;
 }
@@ -109,6 +113,30 @@ export function navHtml(active = activeHref()) {
 export const SITE_HEADER_CSS = `
 .site-show-switch{display:flex;justify-content:center;padding:6px 12px 10px;}
 @media(max-width:640px){.site-show-switch{padding:4px 8px 8px;}}
+/* THE COUNT OF THINGS WAITING, the way a phone does it.
+   Hidden until there is a number: an empty badge is a permanent dot that stops
+   meaning anything, which is the opposite of what a badge is for.
+
+   Built from the brand gradient rather than a flat alert red. A stop-sign
+   circle bolted onto a purple-and-gold header reads as a browser artefact — it
+   has to look like it was always part of the bar, while still being the one
+   thing on it that pulls the eye. The glow does that job instead of the hue. */
+.nav-badge{display:inline-flex;align-items:center;justify-content:center;
+  min-width:17px;height:17px;padding:0 5px;margin-left:7px;border-radius:999px;
+  background:linear-gradient(135deg,#FF4CE6 0%,#7D4CFF 100%);
+  color:#fff;font-size:10.5px;font-weight:800;line-height:1;letter-spacing:.02em;
+  vertical-align:middle;translate:0 -1px;
+  box-shadow:0 0 0 1px rgba(255,255,255,.14) inset,
+             0 2px 8px rgba(255,76,230,.45);}
+.nav-link.active .nav-badge{box-shadow:0 0 0 1px rgba(255,255,255,.22) inset,
+  0 2px 10px rgba(255,76,230,.6);}
+.nav-badge[hidden]{display:none;}
+@media(prefers-reduced-motion:no-preference){
+  /* One pulse on arrival, not a loop: it should catch your eye when the page
+     loads and then stop asking for attention. */
+  .nav-badge{animation:nav-badge-in .45s ease-out;}
+  @keyframes nav-badge-in{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+}
 /* The strip that ties the four records pages together. Quieter than the main
    nav on purpose: it is where you are WITHIN a section, not which section. */
 .site-subnav{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;padding:0 12px 10px;}
@@ -162,6 +190,12 @@ export function renderSiteHeader() {
     subMount.remove();
   }
 
+  // ── the counters ──
+  //
+  // Filled after the nav is on screen and never awaited: the header must not
+  // wait on a fetch, and a franchise with no life events simply has no badge.
+  paintBadges(nav);
+
   let mount = document.getElementById('site-show-switch');
   if (!mount) {
     mount = document.createElement('div');
@@ -188,6 +222,34 @@ export function renderSiteHeader() {
       window.dispatchEvent(new CustomEvent('showchange', { detail: { show } }));
     },
   });
+}
+
+/**
+ * How many life events are waiting for a decision.
+ *
+ * UNDECIDED, not "what your policy would hold" — the same number the inbox's
+ * own bar shows, because a badge that disagrees with the page it points at is
+ * worse than no badge. Counted from the log rather than stored, so approving
+ * something in one tab and reloading another is enough to clear it.
+ */
+export async function lifeBadgeCount() {
+  try {
+    const doc = await fetch('life_events.json').then(r => (r.ok ? r.json() : null));
+    return (doc?.events || []).filter(e => e?.status === 'proposed').length;
+  } catch {
+    return 0;
+  }
+}
+
+/** Fill any badge the nav declared. Failure is silent and leaves it hidden. */
+export async function paintBadges(root = document) {
+  const el = root.querySelector?.('[data-badge="life"]');
+  if (!el) return;
+  const n = await lifeBadgeCount();
+  if (!n) { el.hidden = true; return; }
+  el.textContent = n > 99 ? '99+' : String(n);
+  el.hidden = false;
+  el.setAttribute('aria-label', `${n} waiting for review`);
 }
 
 if (typeof document !== 'undefined') {

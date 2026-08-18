@@ -251,3 +251,70 @@ describe('the stored log', () => {
     expect(dupes, 'one fact stored twice').toEqual([]);
   });
 });
+
+describe('the vocabulary after the second pass', () => {
+  it('covers the categories the author asked for', () => {
+    const tracks = new Set(KINDS.map(k => k.track));
+    for (const t of ['money', 'legal', 'franchise', 'small']) {
+      expect(tracks, `no kinds on the ${t} track`).toContain(t);
+    }
+  });
+
+  it('is mostly ordinary', () => {
+    // Realism is a rate question, and the vocabulary is where it starts: if
+    // most of what CAN happen is dramatic, most of what DOES happen will be.
+    // A life should be able to be uneventful.
+    const minor = KINDS.filter(k => k.sig === 'minor').length;
+    expect(minor / KINDS.length, 'not enough of the vocabulary is small')
+      .toBeGreaterThan(0.25);
+  });
+
+  it('keeps the hard ones plainly worded', () => {
+    // The design's craft note: the shortest true sentence, not the most
+    // dramatic one available.
+    for (const key of ['relapse', 'rehab', 'death', 'bereavement', 'bankruptcy']) {
+      const line = lineFor({ player: 'a', kind: key }, { a: 'Alex' });
+      expect(line, `${key} has no sentence`).toBeTruthy();
+      expect(line.length, `${key} is being dramatised`).toBeLessThan(70);
+      expect(line, `${key} uses an exclamation`).not.toMatch(/!/);
+    }
+  });
+
+  it('routes the irreversible through approval however loud the policy', () => {
+    const allAuto = { minor: 'auto', notable: 'auto', major: 'auto' };
+    for (const key of ['death', 'left-franchise']) {
+      expect(needsApproval({ kind: key }, { policy: allAuto })).toBe(true);
+    }
+    // ...and does NOT lock the merely serious, which are undoable in the sense
+    // that matters: a scandal can be forgiven, a relapse followed by recovery.
+    for (const key of ['scandal', 'relapse', 'bankruptcy']) {
+      expect(isTerminal(key), `${key} should not end a character's tracks`).toBe(false);
+    }
+  });
+});
+
+describe('the count on the nav', () => {
+  const src = readFileSync('js/site-header.js', 'utf8');
+
+  it('counts what is undecided, not what the policy would hold', () => {
+    // A badge that disagrees with the page it points at is worse than none,
+    // and the inbox's own bar counts proposals.
+    expect(src).toMatch(/status === 'proposed'/);
+  });
+
+  it('hides itself at zero rather than showing an empty dot', () => {
+    expect(src).toMatch(/if \(!n\) \{ el\.hidden = true; return; \}/);
+    expect(src, 'the badge has no hidden state at all').toMatch(/\.nav-badge\[hidden\]/);
+  });
+
+  it('caps a silly number', () => {
+    expect(src).toMatch(/n > 99 \? '99\+'/);
+  });
+
+  it('never delays the header on a fetch', () => {
+    // The nav must paint whether or not the log loads; a franchise with no
+    // life events simply has no badge.
+    expect(src, 'the header awaits the badge').toMatch(/\n  paintBadges\(nav\);/);
+    expect(src).toMatch(/catch \{\s*return 0;\s*\}/);
+  });
+});

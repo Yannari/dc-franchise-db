@@ -5537,7 +5537,16 @@ export function simulateBBWeek(options = {}) {
       const third = week.safetyWinner;
       const rival = [...nominees].sort((a, b) =>
         getPerceivedBond(third, a) - getPerceivedBond(third, b))[0];
+      // ── the arena winner is a VOTER, so they can draw their own ballot ──
+      //
+      // `voters` excludes the Head of Household and the nominees. It does not
+      // exclude the person the Block Buster took off the block, because they
+      // are not a nominee any more — they hold a vote like everybody else.
+      // Pitching down the loosest ballots therefore reached their own, and the
+      // week printed "Aaron gets Aaron alone", followed by "Aaron & Aaron
+      // +0.3" as a recorded relationship change.
       for (const ballot of ballots.slice()
+        .filter(b => b.voter !== third)
         .sort((a, b) => (Number(a.margin) || 0) - (Number(b.margin) || 0)).slice(0, 2)) {
         let words = '';
         try { words = campaignArgument(third, ballot.voter, rival); } catch { words = ''; }

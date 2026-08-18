@@ -89,6 +89,16 @@ export function floorBondsInvolving(name, floor = -1) {
 }
 
 export function addBond(a, b, d) {
+  // ── nobody has a relationship with themselves ──
+  //
+  // `bKey` sorts and joins, so addBond(x, x) wrote a real `x||x` entry into
+  // gs.bonds — a relationship that every sweep over the bond store then has to
+  // step around, and that reads back through getBond(x, x) as a number. It got
+  // there through a caller that picked a subject and an audience from
+  // overlapping pools and happened to draw the same name twice; the caller is
+  // fixed, but a self-bond is never meaningful, so the store refuses one at the
+  // door rather than waiting for the next caller to make the same mistake.
+  if (!a || !b || a === b) return;
   // Temperament scaling: hotheads feel everything harder (bonds swing faster both ways)
   const _pA = players.find(p => p.name === a), _pB = players.find(p => p.name === b);
   const _sA = _pA?.stats, _sB = _pB?.stats;

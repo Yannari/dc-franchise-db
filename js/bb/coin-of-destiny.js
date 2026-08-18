@@ -52,9 +52,25 @@ const COIN_MIX = { mental: 0.34, physical: 0.24, temperament: 0.22, intuition: 0
 //      the choice the entire economy exists to force, and a price nobody can
 //      pay deletes the choice just as thoroughly as a price everybody can.
 //
-// 165 is the number those two leave. It is a DEVIATION FROM CANON and it is
-// written down here as one so the next person to read 250 on the wiki does not
-// quietly "fix" it back.
+// MEASURED, at the Coin's own week (`fromEnd: 5`), on the richest houseguest in
+// the house. These are NO-SPENDING UPPER BOUNDS — the runs went through
+// `simulateBBSeason`, the headless path, where the theme's arc never booked the
+// room, so nobody had bought anything. That is the honest frame for the only
+// question the price has to answer, which is what you can afford IF YOU SAVED:
+//
+//   cast 12 — mean 120, max 136. Nothing on this menu is reachable, ever.
+//   cast 16 — mean 203. Buys the Coin outright; buys it after NOTHING else.
+//   cast 20 — mean 285. Buys the Coin, or a 50 Derby seat and then the Coin.
+//
+// Which is the whole design landing: subtract the wheel's 125 and a cast-16
+// house is on 78 and a cast-20 house on 160, both short. You get the spin or
+// you get the Coin. Cast 12 reaching neither is an ANCHOR problem the room
+// already has and documents — the nights are end-anchored onto a nine-week
+// season — and not something a price can fix.
+//
+// 165 is the number those two constraints and those three rows leave. It is a
+// DEVIATION FROM CANON and it is written down here as one so the next person to
+// read 250 on the wiki does not quietly "fix" it back.
 export const COIN_PRICE = 165;
 
 /** The record of who has burned their one buy-in. Created on first touch. */

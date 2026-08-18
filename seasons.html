@@ -221,6 +221,10 @@
     font-size: 15px; font-weight: 700; color: #fff;
     line-height: 1.25; margin: 0 0 2px;
   }
+  .scard-aired {
+    font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase;
+    color: rgba(255,255,255,.42); margin-top: 4px; font-weight: 700;
+  }
   .scard-subtitle {
     font-size: 11px; color: var(--muted); line-height: 1.4;
   }
@@ -372,10 +376,15 @@ window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve
 <script type="module">
   import { mountShowSwitcher, orderFormats, currentShow, ALL, SHOW_SWITCHER_CSS } from './js/show-switcher.js';
   import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
+  import { airLabel } from './js/franchise-calendar.js';
   const style = document.createElement('style');
   style.textContent = SHOW_SWITCHER_CSS;
   document.head.appendChild(style);
   window.showSwitcher = { mountShowSwitcher, orderFormats, currentShow, ALL, SHOWS, DEFAULT_FORMAT };
+  // The card renderer below is a CLASSIC script, so a module import does not
+  // reach it — putting it on window is how this page already shares everything
+  // else, and the first attempt without it only failed at render time.
+  window.airLabel = airLabel;
   window._showSwitcherResolve(window.showSwitcher);
 </script>
 
@@ -485,6 +494,10 @@ function renderSeasons(seasons) {
         <div class="scard-num">${showLabel(fmt, season.seasonNumber)} ${emoji}</div>
         <div class="scard-title">${title.replace(/^Total Drama[:\s]*/i,'')}</div>
         ${subtitle ? `<div class="scard-subtitle">${subtitle}</div>` : ''}
+        <!-- WHEN it aired. The franchise has had a calendar since the life
+             layer needed one, and this is where somebody looks for it: a list
+             of seasons that never said which came first across two shows. -->
+        ${window.airLabel?.(season) ? `<div class="scard-aired">${window.airLabel(season)}</div>` : ''}
       </div>
       <div class="scard-badges">
         ${showShort ? `<span class="scard-badge season-show-badge">${showShort}</span>` : ''}

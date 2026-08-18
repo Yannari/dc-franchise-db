@@ -27,6 +27,7 @@ import { mountShowSwitcher, currentShow, rememberShow, SHOW_SWITCHER_CSS } from 
  * Eleven entries — the ten every page had, plus whichever of Leaderboards and
  * Compare that page was missing. Every page gets all of them now.
  */
+import { latestAired, airLabel } from './franchise-calendar.js';
 export const NAV_LINKS = [
   { href: 'index.html',            icon: '🏠',  label: 'Home' },
   { href: 'current-season.html',   icon: '📊',  label: 'Current Season' },
@@ -113,6 +114,16 @@ export function navHtml(active = activeHref()) {
 export const SITE_HEADER_CSS = `
 .site-show-switch{display:flex;justify-content:center;padding:6px 12px 10px;}
 @media(max-width:640px){.site-show-switch{padding:4px 8px 8px;}}
+/* WHAT YEAR IT IS IN THERE.
+   The franchise has a calendar and nothing ever said so out loud: you could
+   infer the year from a wiki infobox or a group header on the Life page, and
+   latestAired() was exported and called by nothing. Quiet, beside the show
+   switcher, on every page. */
+.site-now{display:flex;justify-content:center;padding:0 12px 8px;}
+.site-now span{font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+  color:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.10);
+  border-radius:999px;padding:4px 12px;}
+.site-now b{color:rgba(255,255,255,.78);font-weight:700;letter-spacing:.04em;}
 /* THE COUNT OF THINGS WAITING, the way a phone does it.
    Hidden until there is a number: an empty badge is a permanent dot that stops
    meaning anything, which is the opposite of what a badge is for.
@@ -190,6 +201,9 @@ export function renderSiteHeader() {
     subMount.remove();
   }
 
+  // ── what year it is in there ──
+  stampNow(nav);
+
   // ── the counters ──
   //
   // Filled after the nav is on screen and never awaited: the header must not
@@ -222,6 +236,29 @@ export function renderSiteHeader() {
       window.dispatchEvent(new CustomEvent('showchange', { detail: { show } }));
     },
   });
+}
+
+/**
+ * The franchise's in-world date: the end of the most recent season aired.
+ *
+ * Derived, never stored — a saved "current year" is a second clock and two
+ * clocks disagree. Silent when no season has been placed on the calendar, which
+ * is the correct answer for a franchise that has not been dated.
+ */
+export async function stampNow(nav) {
+  if (!nav || document.getElementById('site-now')) return;
+  try {
+    const doc = await fetch('seasons_database.json').then(r => (r.ok ? r.json() : null));
+    const latest = latestAired(doc?.seasons || []);
+    const label = airLabel(latest || {});
+    if (!label) return;
+    const el = document.createElement('div');
+    el.id = 'site-now';
+    el.className = 'site-now';
+    el.innerHTML = `<span title="${esc(latest.title || latest.seasonId || '')}">`
+      + `Now &nbsp;<b>${esc(label)}</b></span>`;
+    (document.getElementById('site-show-switch') || nav).insertAdjacentElement('afterend', el);
+  } catch { /* the date is a nicety; the header is not */ }
 }
 
 /**

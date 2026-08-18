@@ -168,3 +168,58 @@ describe('the published roster stays readable by the simulator', () => {
     expect([...strays], 'an unexpected key reached the published roster').toEqual([]);
   });
 });
+
+// ── the debut player ──
+//
+// players_database.json holds FINISHED seasons, so somebody playing their first
+// season is not in it. player.html read that absence as "player not found": a
+// RETURNING player got a live card on their existing profile and a DEBUT player
+// got an error page, for the same eight weeks of television.
+//
+// Fixed as a fallback, not by writing provisional rows into the derived
+// database — its finished-seasons-only rule is load-bearing, since tier,
+// avgPlacement, badges and the rankings board all assume a completed run.
+describe('somebody with no finished season still has a page', () => {
+  const page = read('player.html');
+
+  it('falls back instead of erroring when the database has never heard of them', () => {
+    expect(page, 'the not-found path still goes straight to the error page')
+      .toMatch(/if \(!player\) \{[\s\S]{0,900}?renderDebutProfile\(playerId\);/);
+  });
+
+  it('builds the page from the roster and the live snapshot', () => {
+    const fn = page.slice(page.indexOf('async function renderDebutProfile'),
+      page.indexOf('async function loadRankingsDatabase'));
+    expect(fn.length, 'renderDebutProfile is missing').toBeGreaterThan(400);
+    expect(fn, 'the authored bio is not read').toMatch(/franchise_roster\.json/);
+    expect(fn, 'the live season is not read').toMatch(/loadLiveSeason\(\)/);
+  });
+
+  it('still errors for a genuinely unknown player', () => {
+    const fn = page.slice(page.indexOf('async function renderDebutProfile'),
+      page.indexOf('async function loadRankingsDatabase'));
+    expect(fn, 'an unknown slug would render an empty profile')
+      .toMatch(/if \(!rp && !lp\) return fail\(\);/);
+  });
+
+  it('invents no tier, rank or score', () => {
+    const fn = page.slice(page.indexOf('async function renderDebutProfile'),
+      page.indexOf('async function loadRankingsDatabase'));
+    // Borrowing a tier would put a colour on the page that means something.
+    expect(fn, 'a tier is being guessed for somebody with no record')
+      .toMatch(/getTierInfo\(null\)/);
+    expect(fn, 'a score ring was drawn for a player with no score')
+      .not.toMatch(/pp-ring-fill|pp-score-num/);
+  });
+
+  it('shares one stylesheet with the ordinary profile', () => {
+    // The debut page emitted .pp-hero markup with no .pp-hero rules behind it
+    // and rendered as a full-bleed avatar, because the CSS lived inside
+    // renderPlayerProfile. Both callers now ask the same function for it.
+    expect(page).toMatch(/function _profileStyles\(tc\)/);
+    expect((page.match(/_profileStyles\(/g) || []).length,
+      'only one caller uses the shared stylesheet').toBeGreaterThanOrEqual(3);
+    expect(page, 'a second copy of the profile CSS was reintroduced')
+      .not.toMatch(/let html = `<style>/);
+  });
+});

@@ -397,8 +397,20 @@ if (!playerId) {
     const player = data.players.find(p => p.id === playerId);
     
     if (!player) {
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('error').style.display = 'block';
+      // ── A DEBUT HOUSEGUEST IS NOT A MISSING ONE ──
+      //
+      // players_database.json holds FINISHED seasons, so somebody playing their
+      // first season does not appear in it until that season exports. This page
+      // read that absence as "player not found" — a returning player got a live
+      // card on their existing profile, and a debut player got an error page,
+      // for the same eight weeks of television.
+      //
+      // The fix is a fallback rather than a provisional database row: the
+      // derived database's finished-seasons-only rule is load-bearing (tier,
+      // avgPlacement, badges and the whole rankings board assume a completed
+      // run), and writing half-finished players into it to fix a page would
+      // trade a missing page for wrong numbers everywhere else.
+      renderDebutProfile(playerId);
       return;
     }
     
@@ -590,6 +602,108 @@ function renderLiveStatus(lv) {
     </div>
     <div class="live-note">Updated through episode ${lv.episode}.</div>`;
   host.insertBefore(el, host.firstChild);
+}
+
+/**
+ * The page for somebody who has never finished a season.
+ *
+ * Built from the two sources that DO know about them: franchise_roster.json
+ * (who they are — the authored bio) and the live-season snapshot (what they are
+ * doing right now). Deliberately does not invent a tier, a rank or a career
+ * summary: there is no record yet, and printing a placeholder one is worse than
+ * printing nothing, because every other number on this site is real.
+ *
+ * If they are in neither, the original error page stands — that is a genuinely
+ * unknown player.
+ */
+async function renderDebutProfile(id) {
+  const fail = () => {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+  };
+  let rp = null, live = null, lp = null;
+  try {
+    const [roster, liveSeason] = await Promise.all([
+      fetch('franchise_roster.json').then(r => r.json()).catch(() => null),
+      loadLiveSeason(),
+    ]);
+    const list = Array.isArray(roster) ? roster : (roster?.players || []);
+    rp = list.find(p => p.slug === id) || null;
+    live = liveSeason;
+    if (live) {
+      lp = (live.players || []).find(p =>
+        (p.slug && p.slug === id) ||
+        (rp && p.name && p.name.toLowerCase() === String(rp.name).toLowerCase())) || null;
+    }
+  } catch { /* fall through to the checks below */ }
+
+  // Somebody the roster has never heard of is genuinely not found.
+  if (!rp && !lp) return fail();
+
+  const name = (rp && rp.name) || (lp && lp.name) || id;
+  const esc = t => String(t ?? '').replace(/[&<>"]/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  document.title = name + ' – Profile';
+
+  let age = null;
+  if (rp && rp.birthdate && /^\d{4}-\d{2}-\d{2}$/.test(rp.birthdate)) {
+    const b = new Date(`${rp.birthdate}T00:00:00Z`), now = new Date();
+    let a = now.getUTCFullYear() - b.getUTCFullYear();
+    const m = now.getUTCMonth() - b.getUTCMonth();
+    if (m < 0 || (m === 0 && now.getUTCDate() < b.getUTCDate())) a--;
+    if (a >= 0 && a < 130) age = a;
+  }
+  if (age == null && rp && Number(rp.age) > 0) age = Math.round(Number(rp.age));
+
+  const facts = [
+    ['Occupation', rp && rp.occupation], ['Hometown', rp && rp.hometown],
+    ['Nationality', rp && rp.nationality], ['Ethnicity', rp && rp.ethnicity],
+    ['Age', age != null ? String(age) : ''], ['Also', rp && rp.descriptor],
+  ].filter(([, v]) => v);
+
+  const inGame = lp && lp.status === 'in';
+  const statusText = !lp ? '' : inGame ? 'Still in the house'
+    : lp.status === 'jury' ? `On the jury — out in episode ${lp.exitEpisode ?? '?'}`
+      : `Out in episode ${lp.exitEpisode ?? '?'}`;
+
+  const host = document.getElementById('player-content');
+  // Unranked palette: there is no tier for somebody with no finished season,
+  // and borrowing one would put a colour on this page that means something.
+  host.innerHTML = _profileStyles(getTierInfo(null)) + `
+    <div class="pp-hero" id="pp-hero"><div class="pp-hero-glow"></div>
+      <div class="pp-hero-inner">
+        <div class="pp-av-wrap">
+          <img src="assets/avatars/${encodeURIComponent(id)}.png" alt="${esc(name)}"
+            onerror="this.style.display='none';document.getElementById('ppfb').style.display='flex'"/>
+          <div class="pp-av-fb" id="ppfb">👤</div><div class="pp-av-ring"></div>
+        </div>
+        <div class="pp-info">
+          <div class="pp-tier-pill">${lp ? '● Playing now' : '☆ Not yet played'}</div>
+          <div class="pp-name">${esc(name)}</div>
+          <div class="pp-meta">${lp
+    ? `Season ${esc(live.seasonNumber)}${live.title ? ' · ' + esc(live.title) : ''} — episode ${esc(live.episode)}`
+    : 'No completed seasons yet'}</div>
+          <a class="pp-back" href="devotees.html">← All Players</a>
+        </div>
+      </div></div>
+    ${facts.length || (rp && rp.backstory) ? `<div class="pp-bio">
+      ${facts.length ? `<div class="pp-bio-grid">${facts.map(([k, v]) => `<div>
+        <div class="pp-bio-k">${k}</div><div class="pp-bio-v">${esc(v)}</div></div>`).join('')}</div>` : ''}
+      ${rp && rp.backstory ? `<div class="pp-bio-story">${esc(rp.backstory)}</div>` : ''}
+    </div>` : ''}
+    ${lp ? `<div class="pp-why">
+      <div class="pp-why-lbl">${esc(statusText)}</div>
+      This season is still airing, so nothing here counts towards the record yet.
+      ${lp.challengeWins ? `So far: <b>${lp.challengeWins}</b> competition win${lp.challengeWins === 1 ? '' : 's'}` : 'No competition wins so far'}${
+  lp.votesReceived ? `, <b>${lp.votesReceived}</b> vote${lp.votesReceived === 1 ? '' : 's'} against.` : '.'}
+    </div>` : `<div class="pp-why">
+      <div class="pp-why-lbl">No record yet</div>
+      ${esc(name)} is in the casting pool but has not finished a season, so there
+      is nothing to rank. Their profile fills in when a season they play exports.
+    </div>`}`;
+
+  document.getElementById('loading').style.display = 'none';
+  host.style.display = 'block';
 }
 
 async function loadRankingsDatabase() {
@@ -832,143 +946,18 @@ let GALLERY_BASE = (() => {
 })();
 const galleryUrl = (slug, i, ext) => `${GALLERY_BASE}/${slug}/${i}.${ext}`;
 
-function renderPlayerProfile(fullPlayer) {
-  _fullPlayer = fullPlayer;
-  const container = document.getElementById('player-content');
-  const _show = window.showSwitcher?.currentShow?.() || 'all';
-
-  /* The board applies when you are looking at its show, or at everything.
-     Looking at Big Brother, a Total Drama ranking is not this player's standing
-     — it is a different competition's. */
-  const _board = window.__rankBoard;
-  const _boardFormat = window.__rankFormat || 'total-drama';
-  const _boardApplies = !!_board && (_show === 'all' || _show === _boardFormat);
-  const _entry = _boardApplies
-    ? (_board.rankings || []).find(r => r.playerId === fullPlayer.id || r.name === fullPlayer.name)
-    : null;
-  for (const k of ['tier', 'score', 'rank', 'reasoning', 'totalRanked']) delete fullPlayer[k];
-  if (_entry) {
-    fullPlayer.tier = _entry.tier;
-    fullPlayer.score = _entry.score;
-    fullPlayer.rank = _entry.rank;
-    fullPlayer.reasoning = _entry.reasoning;
-    fullPlayer.totalRanked = (_board.rankings || []).length;
-  }
-  const player = _scopeToShow(fullPlayer, _show);
-
-  if (!player) {
-    // Scoped to a show they never played. The tabs still draw, because the wiki
-    // has its own version of this and both should be reachable.
-    container.innerHTML = `
-      <div class="pp-viewtabs" role="tablist" aria-label="Player views">
-        <button class="pp-viewtab" role="tab" id="pv-profile" aria-selected="true">Profile</button>
-        <button class="pp-viewtab" role="tab" id="pv-wiki" aria-selected="false">📖 Wiki</button>
-      </div>
-      <div id="pp-view-profile">${_neverPlayedHtml(fullPlayer, _show)}</div>
-      <div id="pp-view-wiki" hidden></div>`;
-    _wireViewTabs(fullPlayer);
-    container.querySelectorAll('[data-goto-show]').forEach(b => {
-      b.onclick = () => {
-        try { window.showSwitcher?.rememberShow?.(b.dataset.gotoShow); } catch {}
-        const u = new URL(location.href);
-        u.searchParams.set('show', b.dataset.gotoShow);
-        location.href = u.toString();
-      };
-    });
-    return;
-  }
-
-  const sorted = player.seasonDetails.slice().sort((a,b) => b.season - a.season);
-
-  /**
-   * Seasons, BROKEN DOWN BY SHOW.
-   *
-   * "3 seasons" is true and useless for somebody who played two of one show and
-   * one of another — it reads as a three-season veteran of a single franchise,
-   * which is a different career. players_database has carried the breakdown in
-   * `byShow` since the multi-show migration; this page had simply never shown it.
-   *
-   * Falls back to the flat count for anybody with one show, where the breakdown
-   * would just be the same number said twice.
-   */
-  /* Per-show careers, from js/records.js — the same function franchise.html
-     draws its boards from. A second copy of this arithmetic living on the
-     player page is how two pages come to disagree about somebody's record. */
-  const _careers = (() => {
-    const R = window.records;
-    if (!R?.careersIn) return {};
-    const out = {};
-    for (const fmt of Object.keys(player.byShow || {})) {
-      const c = R.careersIn({ players: [player] }, fmt)[0];
-      if (c) out[fmt] = c;
-    }
-    return out;
-  })();
-  const _showList = Object.keys(_careers);
-  const _multiShow = _showList.length > 1;
-  const SHOW_NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
-  const showName = f => SHOW_NAMES[f] || f;
-
-  const showCounts = (() => {
-    const by = player.byShow || {};
-    const rows = Object.entries(by)
-      .map(([fmt, v]) => ({ fmt, n: Number(v?.seasons) || 0 }))
-      .filter(r => r.n > 0);
-    if (rows.length < 2) return null;
-    const NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
-    return rows
-      .sort((a, b) => b.n - a.n)
-      .map(r => `${r.n} ${NAMES[r.fmt] || r.fmt}`)
-      .join(' &nbsp;•&nbsp; ');
-  })();
-  const seasonsLabel = showCounts
-    || `${player.totalSeasons} season${player.totalSeasons > 1 ? 's' : ''}`;
-
-  /**
-   * A season detail, as the three things a link needs.
-   *
-   * A bare season number stopped identifying a season when a second show
-   * arrived — Total Drama 1 and Big Brother 1 are both `1`, and `?season=1`
-   * resolves to Total Drama permanently. The detail already carries `format`
-   * and `seasonId`; this is the fifth and last page to start reading them.
-   */
-  const refOf = sd => {
-    const format = sd.format || 'total-drama';
-    const key = sd.seasonId || (format === 'total-drama' ? `td-${sd.season}` : `${format}-${sd.season}`);
-    return {
-      href: format === 'total-drama' ? String(sd.season) : key,
-      label: format === 'total-drama' ? `S${sd.season}` : `${key.split('-')[0].toUpperCase()}${sd.season}`,
-    };
-  };
-  const isWinner = player.wins > 0;
-  const winDetail = isWinner ? (player.seasonDetails.find(s => s.placement===1) || null) : null;
-  const winSeason = winDetail ? winDetail.season : null;
-  /* "(S9 Winner)" is right for Total Drama and wrong for everything else — a
-     Big Brother champion was being credited with winning a Total Drama season
-     of the same number. */
-  const winLabel = (() => {
-    if (!winDetail) return '';
-    const fmt = winDetail.format || 'total-drama';
-    if (fmt === 'total-drama') return ` (S${winDetail.season} Winner)`;
-    const prefix = String(winDetail.seasonId || fmt).split('-')[0].toUpperCase();
-    return ` (${prefix}${winDetail.season} Winner)`;
-  })();
-  // Advantages = idols + non-idol advantages (extra vote, vote steal, amulet, etc.)
-  // Per season: prefer advPlayed+advHeld when tracked (advPlayed already counts idol
-  // plays, so don't add idolsFound on top); fall back to idolsFound for older seasons
-  // that didn't record advantage usage.
-  const advantagesPlayed = (player.seasonDetails || []).reduce((sum, sd) => {
-    const tracked = (sd.advPlayed != null) || (sd.advHeld != null);
-    return sum + (tracked ? ((sd.advPlayed || 0) + (sd.advHeld || 0)) : (sd.idolsFound || 0));
-  }, 0);
-  /* Unranked is a state, not a D. Defaulting to the bottom tier told every Big
-     Brother player they were rated badly by a board that has never rated them. */
-  const tier = player.tier || null;
-  const tc = getTierInfo(tier);
-  const score = player.score != null ? player.score : null;
-  const rankStr = player.rank ? `#${player.rank} / ${player.totalRanked||'?'}` : '';
-
-  let html = `<style>
+/**
+ * The profile stylesheet, shared by the two things that render a profile.
+ *
+ * It used to live inside renderPlayerProfile as a template literal, which
+ * meant the debut-player page — built from the roster and the live snapshot
+ * for somebody with no finished season — emitted .pp-hero markup with no
+ * .pp-hero rules behind it, and rendered as a full-bleed avatar and
+ * unstyled text. Tier colours are still interpolated, so an unranked
+ * player gets the grey UNRANKED palette rather than somebody else's tier.
+ */
+function _profileStyles(tc) {
+  return `<style>
   .pp-hero{position:relative;border-radius:20px;overflow:hidden;margin-bottom:28px;
     background:linear-gradient(135deg,rgba(30,15,50,.95),rgba(15,8,30,.98));
     border:1px solid ${tc.color}44;box-shadow:0 0 60px ${tc.glow},0 0 0 1px ${tc.color}22;}
@@ -1246,6 +1235,145 @@ function renderPlayerProfile(fullPlayer) {
   #pp-lb-counter{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
     font-size:12px;color:rgba(255,255,255,.5);letter-spacing:.1em;}
   </style>`;
+}
+
+function renderPlayerProfile(fullPlayer) {
+  _fullPlayer = fullPlayer;
+  const container = document.getElementById('player-content');
+  const _show = window.showSwitcher?.currentShow?.() || 'all';
+
+  /* The board applies when you are looking at its show, or at everything.
+     Looking at Big Brother, a Total Drama ranking is not this player's standing
+     — it is a different competition's. */
+  const _board = window.__rankBoard;
+  const _boardFormat = window.__rankFormat || 'total-drama';
+  const _boardApplies = !!_board && (_show === 'all' || _show === _boardFormat);
+  const _entry = _boardApplies
+    ? (_board.rankings || []).find(r => r.playerId === fullPlayer.id || r.name === fullPlayer.name)
+    : null;
+  for (const k of ['tier', 'score', 'rank', 'reasoning', 'totalRanked']) delete fullPlayer[k];
+  if (_entry) {
+    fullPlayer.tier = _entry.tier;
+    fullPlayer.score = _entry.score;
+    fullPlayer.rank = _entry.rank;
+    fullPlayer.reasoning = _entry.reasoning;
+    fullPlayer.totalRanked = (_board.rankings || []).length;
+  }
+  const player = _scopeToShow(fullPlayer, _show);
+
+  if (!player) {
+    // Scoped to a show they never played. The tabs still draw, because the wiki
+    // has its own version of this and both should be reachable.
+    container.innerHTML = `
+      <div class="pp-viewtabs" role="tablist" aria-label="Player views">
+        <button class="pp-viewtab" role="tab" id="pv-profile" aria-selected="true">Profile</button>
+        <button class="pp-viewtab" role="tab" id="pv-wiki" aria-selected="false">📖 Wiki</button>
+      </div>
+      <div id="pp-view-profile">${_neverPlayedHtml(fullPlayer, _show)}</div>
+      <div id="pp-view-wiki" hidden></div>`;
+    _wireViewTabs(fullPlayer);
+    container.querySelectorAll('[data-goto-show]').forEach(b => {
+      b.onclick = () => {
+        try { window.showSwitcher?.rememberShow?.(b.dataset.gotoShow); } catch {}
+        const u = new URL(location.href);
+        u.searchParams.set('show', b.dataset.gotoShow);
+        location.href = u.toString();
+      };
+    });
+    return;
+  }
+
+  const sorted = player.seasonDetails.slice().sort((a,b) => b.season - a.season);
+
+  /**
+   * Seasons, BROKEN DOWN BY SHOW.
+   *
+   * "3 seasons" is true and useless for somebody who played two of one show and
+   * one of another — it reads as a three-season veteran of a single franchise,
+   * which is a different career. players_database has carried the breakdown in
+   * `byShow` since the multi-show migration; this page had simply never shown it.
+   *
+   * Falls back to the flat count for anybody with one show, where the breakdown
+   * would just be the same number said twice.
+   */
+  /* Per-show careers, from js/records.js — the same function franchise.html
+     draws its boards from. A second copy of this arithmetic living on the
+     player page is how two pages come to disagree about somebody's record. */
+  const _careers = (() => {
+    const R = window.records;
+    if (!R?.careersIn) return {};
+    const out = {};
+    for (const fmt of Object.keys(player.byShow || {})) {
+      const c = R.careersIn({ players: [player] }, fmt)[0];
+      if (c) out[fmt] = c;
+    }
+    return out;
+  })();
+  const _showList = Object.keys(_careers);
+  const _multiShow = _showList.length > 1;
+  const SHOW_NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
+  const showName = f => SHOW_NAMES[f] || f;
+
+  const showCounts = (() => {
+    const by = player.byShow || {};
+    const rows = Object.entries(by)
+      .map(([fmt, v]) => ({ fmt, n: Number(v?.seasons) || 0 }))
+      .filter(r => r.n > 0);
+    if (rows.length < 2) return null;
+    const NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
+    return rows
+      .sort((a, b) => b.n - a.n)
+      .map(r => `${r.n} ${NAMES[r.fmt] || r.fmt}`)
+      .join(' &nbsp;•&nbsp; ');
+  })();
+  const seasonsLabel = showCounts
+    || `${player.totalSeasons} season${player.totalSeasons > 1 ? 's' : ''}`;
+
+  /**
+   * A season detail, as the three things a link needs.
+   *
+   * A bare season number stopped identifying a season when a second show
+   * arrived — Total Drama 1 and Big Brother 1 are both `1`, and `?season=1`
+   * resolves to Total Drama permanently. The detail already carries `format`
+   * and `seasonId`; this is the fifth and last page to start reading them.
+   */
+  const refOf = sd => {
+    const format = sd.format || 'total-drama';
+    const key = sd.seasonId || (format === 'total-drama' ? `td-${sd.season}` : `${format}-${sd.season}`);
+    return {
+      href: format === 'total-drama' ? String(sd.season) : key,
+      label: format === 'total-drama' ? `S${sd.season}` : `${key.split('-')[0].toUpperCase()}${sd.season}`,
+    };
+  };
+  const isWinner = player.wins > 0;
+  const winDetail = isWinner ? (player.seasonDetails.find(s => s.placement===1) || null) : null;
+  const winSeason = winDetail ? winDetail.season : null;
+  /* "(S9 Winner)" is right for Total Drama and wrong for everything else — a
+     Big Brother champion was being credited with winning a Total Drama season
+     of the same number. */
+  const winLabel = (() => {
+    if (!winDetail) return '';
+    const fmt = winDetail.format || 'total-drama';
+    if (fmt === 'total-drama') return ` (S${winDetail.season} Winner)`;
+    const prefix = String(winDetail.seasonId || fmt).split('-')[0].toUpperCase();
+    return ` (${prefix}${winDetail.season} Winner)`;
+  })();
+  // Advantages = idols + non-idol advantages (extra vote, vote steal, amulet, etc.)
+  // Per season: prefer advPlayed+advHeld when tracked (advPlayed already counts idol
+  // plays, so don't add idolsFound on top); fall back to idolsFound for older seasons
+  // that didn't record advantage usage.
+  const advantagesPlayed = (player.seasonDetails || []).reduce((sum, sd) => {
+    const tracked = (sd.advPlayed != null) || (sd.advHeld != null);
+    return sum + (tracked ? ((sd.advPlayed || 0) + (sd.advHeld || 0)) : (sd.idolsFound || 0));
+  }, 0);
+  /* Unranked is a state, not a D. Defaulting to the bottom tier told every Big
+     Brother player they were rated badly by a board that has never rated them. */
+  const tier = player.tier || null;
+  const tc = getTierInfo(tier);
+  const score = player.score != null ? player.score : null;
+  const rankStr = player.rank ? `#${player.rank} / ${player.totalRanked||'?'}` : '';
+
+  let html = _profileStyles(tc);
 
   // ── HERO ─────────────────────────────────────────────────
   const _ringR = 46, _ringC = +(2 * Math.PI * _ringR).toFixed(2);

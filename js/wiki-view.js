@@ -74,11 +74,29 @@ function infobox(dossier, show, root) {
     .map(([k, v]) => `<tr><th>${esc(k)}</th><td>${v}</td></tr>`).join('');
 
   // ── the person ──
+  //
+  // BORN / HOMETOWN / OCCUPATION LIVE HERE, UNDER THE PORTRAIT.
+  //
+  // They were briefly a definition list at the top of the Biography section,
+  // which put a labelled fact block in the body and left the panel beside it
+  // holding four rows — the reference pages do the opposite. On those, the
+  // panel under the picture IS the fact sheet (Born, Hometown, Occupation,
+  // Label) and the body is prose. Facts belong where a reader skims for them.
+  const born = bio.birthdate
+    ? `${new Date(`${bio.birthdate}T00:00:00Z`).toLocaleDateString('en-US',
+      { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}${
+      bio.age != null ? ` (age ${bio.age})` : ''}`
+    : '';
   const profile = rowsOf([
+    ['Born', born],
+    // Only when there is no date to carry it, so the age is never stated twice.
+    ['Age', !born && bio.age ? String(bio.age) : ''],
+    ['Hometown', bio.hometown],
+    ['Occupation', bio.occupation],
     ['Gender', bio.gender === 'f' ? 'Female' : bio.gender === 'm' ? 'Male' : bio.gender ? 'Non-binary' : ''],
-    ['Age', bio.age ? String(bio.age) : ''],
     ['Nationality', [bio.ethnicity, bio.nationality].filter(Boolean).join(' ')],
     ['Label', bio.archetype],
+    ['Also', bio.descriptor],
     // Blank rather than "0 (Total Drama)" for somebody who has not finished
     // one; rowsOf drops an empty value, so the row simply is not there.
     ['Seasons', show.count ? `${show.count} (${m.name})` : ''],
@@ -428,7 +446,27 @@ function lead(dossier, show, root) {
     game = sentences.join(' ');
   }
 
-  return `<p class="wk-lead">${career}</p>${game ? `<p class="wk-lead-game">${game}</p>` : ''}`;
+  // ── WHO THEY WERE, IN THE LEAD ─────────────────────────────────────
+  //
+  // The AI writes a paragraph per season describing how somebody played it.
+  // That used to be the Personality section, one heading per season — which is
+  // not how the reference pages are built. On those, Personality holds the
+  // casting questionnaire and NO prose at all; the character narrative is in
+  // the lead, above the contents box, as one paragraph about the person.
+  //
+  // So it comes here, and Personality becomes the single authored description.
+  //
+  // The notable season's, because that is the season the paragraph below is
+  // about and two paragraphs describing different seasons would disagree. If
+  // the notable one has none, the most recent season that does. A returnee with
+  // written paragraphs for SEVERAL seasons therefore shows one of them, not all
+  // — deliberate, since the lead is a lead and not a chapter.
+  const persona = notable?.personality
+    || seasons.slice().reverse().find(s => s.personality)?.personality || '';
+
+  return `<p class="wk-lead">${career}</p>`
+    + (persona ? `<p class="wk-lead-persona">${esc(persona)}</p>` : '')
+    + (game ? `<p class="wk-lead-game">${game}</p>` : '');
 }
 
 /**
@@ -585,33 +623,16 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   // somebody IS — where they are from, what they do, who they were before the
   // door shut — had nowhere to appear no matter how much of it was written.
   //
-  // Facts first as a definition list, then the prose. Both are optional and the
-  // section is skipped entirely when neither exists, so the 155 characters with
-  // no bio yet get the article they had rather than an empty heading.
+  // PROSE ONLY. Born / Hometown / Occupation are rows in the infobox under the
+  // portrait, where the reference pages keep them and where a reader skims for
+  // a fact. This section held both for a while, which left the panel beside it
+  // nearly empty and the labelled block in the body doing the panel's job.
   {
-    const b = dossier.bio || {};
-    const facts = [
-      ['Born', b.birthdate
-        ? `${new Date(`${b.birthdate}T00:00:00Z`).toLocaleDateString(undefined,
-          { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}${
-          b.age != null ? ` (age ${b.age})` : ''}`
-        : (b.age != null ? `Age ${b.age}` : '')],
-      ['Hometown', b.hometown],
-      ['Occupation', b.occupation],
-      ['Nationality', [b.ethnicity, b.nationality].filter(Boolean).join(' ')],
-      ['Also', b.descriptor],
-    ].filter(([, v]) => v);
-    const bits = [];
-    if (facts.length) {
-      bits.push(`<dl class="wk-facts">${facts.map(([k, v]) =>
-        `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`);
-    }
     if (dossier.backstory) {
       // Authored prose arrives with paragraph breaks; keep them.
-      bits.push(String(dossier.backstory).split(/\n\s*\n/)
+      section('biography', 'Biography', String(dossier.backstory).split(/\n\s*\n/)
         .map(par => `<p>${esc(par.trim())}</p>`).join(''));
     }
-    if (bits.length) section('biography', 'Biography', bits.join(''));
   }
 
   // ── PERSONALITY ────────────────────────────────────────────────────
@@ -622,16 +643,16 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   // this section is meant to say how they were in the house, which only the
   // screenplay knows.
   //
-  // One heading per season rather than one for the person, because people do
-  // not play the same way twice and a returnee described once is described
-  // wrong for at least one of their seasons.
-  const written = show.seasons.filter(s2 => s2.personality);
-  if (written.length) {
-    section('personality', 'Personality', written.map(s2 => `
-      ${show.seasons.length > 1
-        ? `<h3 class="wk-sub">${s2.title ? esc(s2.title) : `Season ${s2.season}`}</h3>` : ''}
-      <p>${esc(s2.personality)}</p>`).join(''));
-  } else if (dossier.personality) {
+  // ONE DESCRIPTION OF THE PERSON, NOT ONE PER SEASON.
+  //
+  // This used to render a heading per season from the AI's per-season
+  // paragraphs. The reference pages do not: their Personality section holds the
+  // casting questionnaire and no prose, and the character narrative sits in the
+  // LEAD, above the contents box, as one paragraph. So the per-season prose
+  // moved to lead() and this became what it says on the heading — the
+  // description of the person, authored in the Studio, falling back to the
+  // voice profile when nobody has written one.
+  if (dossier.personality) {
     section('personality', 'Personality', `<p>${esc(dossier.personality)}</p>`);
   }
 
@@ -936,17 +957,6 @@ export const WIKI_CSS = `
    a column can be read down, which is the only reason a table beats a
    sentence. */
 .wk-comp td, .wk-comp th{ text-align:center; }
-/* The Biography facts. A definition list rather than a table: it is five
-   labelled values, and a table of two columns and five rows reads as a
-   spreadsheet where an encyclopedia wants a caption block. Collapses to one
-   column on a phone so a long hometown does not squash the label. */
-.wk-facts{ display:grid; grid-template-columns:auto 1fr; gap:6px 16px;
-  margin:0 0 14px; font-size:13px; }
-.wk-facts dt{ opacity:.6; text-transform:uppercase; letter-spacing:.08em;
-  font-size:10.5px; font-weight:700; align-self:baseline; }
-.wk-facts dd{ margin:0; }
-@media(max-width:520px){ .wk-facts{ grid-template-columns:1fr; gap:2px 0; }
-  .wk-facts dd{ margin-bottom:8px; } }
 .wk-comp td:first-child, .wk-comp th:first-child{ text-align:left; }
 /* A season called "Big Brother Season 1: The House That Kept Receipts" was
    wrapping one word per line in a 60px column and pushing the row eight lines
@@ -1029,6 +1039,10 @@ export const WIKI_CSS = `
 .wk-ib-season.is-on{ display:block; }
 /* The lead's second paragraph — the game, as opposed to the record. */
 .wk-lead-game{ margin:0 0 14px; font-size:14.5px; line-height:1.7; opacity:.9; }
+/* The AI's description of how they played, in the lead where the reference
+   pages put it. Same weight as the game paragraph beside it — it is narrative,
+   not a pull quote. */
+.wk-lead-persona{ margin:0 0 14px; font-size:14.5px; line-height:1.7; opacity:.9; }
 .wk-ib-show{
   padding:8px 12px; text-align:center; font-size:12.5px; font-weight:700;
   letter-spacing:.05em; text-transform:uppercase; opacity:.75;

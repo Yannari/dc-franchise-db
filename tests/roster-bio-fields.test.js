@@ -309,7 +309,32 @@ describe('the wiki article reads the authored bio', () => {
   it('shows nothing rather than an empty heading', () => {
     // 155 of the roster have no bio written yet; they must get the article they
     // already had, not a hollow section.
-    expect(view).toMatch(/if \(bits\.length\) section\('biography'/);
+    const bio = view.slice(view.indexOf('// ── BIOGRAPHY'));
+    expect(bio.slice(0, bio.indexOf('── PERSONALITY')),
+      'the Biography section renders unconditionally')
+      .toMatch(/if \(dossier\.backstory\)/);
+  });
+
+  it('keeps the facts in the infobox, not in the body', () => {
+    // Born / Hometown / Occupation were briefly a definition list at the top of
+    // the Biography section. That put a labelled fact block in the body and
+    // left the panel beside it holding four rows — the reference pages do the
+    // opposite: the panel under the portrait IS the fact sheet, the body is
+    // prose. A reader skims a panel for a fact; they read a body for a story.
+    const box = view.slice(view.indexOf('function infobox('), view.indexOf('const careerPairs'));
+    for (const f of ['Born', 'Hometown', 'Occupation']) {
+      expect(box, `${f} is not a row in the infobox`).toContain(`['${f}',`);
+    }
+    expect(view, 'the definition list is still being rendered in the body')
+      .not.toMatch(/wk-facts/);
+  });
+
+  it('never states the age twice', () => {
+    // Born already carries "(age 23)". A separate Age row beside it is the same
+    // fact printed twice, and they drift the moment one is derived and the
+    // other stored.
+    const box = view.slice(view.indexOf('function infobox('), view.indexOf('const careerPairs'));
+    expect(box).toMatch(/\['Age', !born && bio\.age/);
   });
 
   it('keeps the paragraph breaks in authored prose', () => {

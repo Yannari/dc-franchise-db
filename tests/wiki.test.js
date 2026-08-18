@@ -262,10 +262,14 @@ describe('the record an article is written from', () => {
     expect(html).not.toContain('Week by week');
   });
 
-  it('prefers a personality written from the episodes, per season', () => {
-    // The voice profile says how somebody TALKS and exists so the episode
-    // generator has a voice. It is not a description of how they played, and
-    // it was standing in for one.
+  it('puts the personality written from the episodes in the LEAD', () => {
+    // This used to render one Personality heading per season. The reference
+    // pages do not: theirs holds the casting questionnaire and no prose at all,
+    // and the character narrative is in the lead, above the contents box, as
+    // one paragraph about the person.
+    //
+    // So the AI's per-season description moved to the lead, and Personality
+    // became the single authored description of the person.
     const withPersona = { ...player, seasonDetails: [
       { ...player.seasonDetails[0], personality: 'Ran the house from the kitchen and never raised her voice.' },
       { ...player.seasonDetails[1], personality: 'Came back loud and lost the room by week two.' },
@@ -273,10 +277,33 @@ describe('the record an article is written from', () => {
     const html = renderArticle(
       { ...withPersona, personality: 'clipped, sarcastic', career: careerOf(withPersona) },
       'big-brother', { root: '.', allShows: ['big-brother'] });
-    expect(html).toContain('Ran the house from the kitchen');
-    expect(html).toContain('Came back loud');
-    // The voice profile does not appear once a season has a real one.
-    expect(html).not.toContain('clipped, sarcastic');
+
+    const lead = html.slice(0, html.indexOf('wk-contents'));
+    expect(lead, 'the written description is not in the lead')
+      .toMatch(/wk-lead-persona/);
+    // ONE of them, not both: the lead is a lead, and two paragraphs describing
+    // different seasons would disagree with each other.
+    const both = ['Ran the house from the kitchen', 'Came back loud']
+      .filter(t => lead.includes(t));
+    expect(both.length, 'the lead prints a paragraph per season again').toBe(1);
+
+    // And the section under the heading is now the authored description,
+    // which used to be suppressed whenever any season had been read.
+    expect(html, 'the Personality section lost the authored description')
+      .toContain('clipped, sarcastic');
+  });
+
+  it('gives Personality one heading, never one per season', () => {
+    const withPersona = { ...player, seasonDetails: [
+      { ...player.seasonDetails[0], personality: 'Ran the house from the kitchen.' },
+      { ...player.seasonDetails[1], personality: 'Came back loud.' },
+    ] };
+    const html = renderArticle(
+      { ...withPersona, personality: 'clipped, sarcastic', career: careerOf(withPersona) },
+      'big-brother', { root: '.', allShows: ['big-brother'] });
+    const sec = html.slice(html.indexOf('id="wk-personality"'));
+    const body = sec.slice(0, sec.indexOf('</section>'));
+    expect(body, 'a season heading is back inside Personality').not.toMatch(/wk-sub/);
   });
 
   it('falls back to the voice profile when no season has been read', () => {

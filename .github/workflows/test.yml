@@ -6,9 +6,33 @@ on:
   pull_request:
     branches: [main]
 
+# ONE STUDIO SAVE IS THREE PUSHES.
+#
+# Saving a character commits the roster, then the voice, then the avatar — so
+# every save queued three identical test runs, and a burst of characters queued
+# thirty. Only the last one tells you anything: the two before it are testing a
+# tree that no longer exists. Superseding them keeps the queue short, which is
+# what starves Pages of runners in the first place.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    # A HUNG SUITE MUST NOT BLOCK DEPLOYMENTS.
+    #
+    # On 2026-08-18 nothing reached the site for an hour and a half. Not one
+    # thing was wrong with the site, the build, or the repository: `npm test`
+    # hangs — a known habit of the full suite, which eats memory and leaves
+    # orphan workers — and with no timeout here each hung run held a runner for
+    # GitHub's six-hour default. Sixteen were stuck at once, the oldest since
+    # 06:22, and every Pages build simply queued behind them. The moment they
+    # were cancelled a build started and finished in three minutes.
+    #
+    # Fifteen minutes is far above a healthy run and far below the point where
+    # one bad run costs anybody a deployment.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

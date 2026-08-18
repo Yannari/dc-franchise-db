@@ -26,6 +26,27 @@ CREATE TABLE IF NOT EXISTS roster (
   temperament INTEGER,
 
   voice       TEXT,                   -- voice profile prose (from voice-profiles.json)
+
+  -- ── the bio ──
+  --
+  -- WHO THEY ARE, as opposed to how they talk (`voice`) or what they did in a
+  -- season (players_database.json, derived). Columns rather than a blob for the
+  -- same reason the stats are: "every attorney on the roster" has to be a query.
+  --
+  -- `voice` and `backstory` are deliberately NOT one field even though they
+  -- overlap. Voice is a writing directive shipped inside every episode prompt —
+  -- padding it with biography is paid for on every episode of every season.
+  -- Backstory is read by a human on a wiki page, and unlike voice it can change
+  -- when a life event lands.
+  age         INTEGER,                -- only when no birthdate; see below
+  birthdate   TEXT,                   -- ISO 'YYYY-MM-DD'. AUTHORITATIVE over age.
+  ethnicity   TEXT,
+  nationality TEXT,                   -- country: "Canadian"
+  hometown    TEXT,                   -- where they are FROM: "Chicago, IL"
+  occupation  TEXT,                   -- "Attorney"
+  descriptor  TEXT,                   -- anything that is neither, kept verbatim
+  backstory   TEXT,                   -- reader-facing prose: who they were before the show
+
   is_returnee INTEGER DEFAULT 0,      -- roster flag carried over from the JSON
   retired     INTEGER DEFAULT 0,      -- 1 = hidden from casting, history preserved
   updated_at  TEXT                    -- ISO timestamp of the last write

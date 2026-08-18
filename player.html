@@ -1143,6 +1143,14 @@ function renderPlayerProfile(fullPlayer) {
     padding:24px 28px;line-height:1.85;font-size:15px;color:#d0c8e0;}
   .pp-story .stats-highlight{color:${tc.color};font-weight:600;
     background:${tc.color}12;padding:1px 4px;border-radius:4px;}
+  .pp-bio{background:linear-gradient(135deg,rgba(30,15,50,.55),rgba(15,8,30,.75));
+    border:1px solid ${tc.color}26;border-radius:13px;padding:16px 20px;margin-bottom:24px;}
+  .pp-bio-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px 22px;}
+  .pp-bio-k{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+    color:${tc.color};font-weight:700;margin-bottom:3px;}
+  .pp-bio-v{font-size:14px;color:#e6dff5;line-height:1.5;}
+  .pp-bio-story{margin-top:14px;padding-top:14px;border-top:1px solid ${tc.color}1f;
+    font-size:14px;color:#c8bedd;line-height:1.7;}
   .pp-why{background:linear-gradient(135deg,rgba(30,15,50,.6),rgba(15,8,30,.8));
     border:1px solid ${tc.color}30;border-radius:13px;padding:18px 22px;
     font-size:14px;color:#c8bedd;line-height:1.7;margin-bottom:24px;}
@@ -1292,6 +1300,55 @@ function renderPlayerProfile(fullPlayer) {
   </div>`}
   ${rankStr ? `<div class="pp-rank-badge" style="position:absolute;bottom:16px;right:20px;">${rankStr}</div>` : ''}
   </div></div>`;
+
+  // ── THE BIO ──────────────────────────────────────────────
+  //
+  // Authored facts about who this person IS, from franchise_roster.json — as
+  // opposed to what they did in a season, which is everything below. Renders
+  // only when there is something to say, so the 155 characters with no bio yet
+  // get an unchanged page rather than a row of dashes.
+  //
+  // Age is COMPUTED from birthdate and never stored: franchise_roster.json is
+  // regenerated only when somebody presses Publish, so an age written into it
+  // is wrong from the next birthday until the next publish. `age` is still read
+  // as a fallback for characters who only ever had a number.
+  html += (() => {
+    const list = Array.isArray(window.__roster) ? window.__roster
+      : (window.__roster?.players || []);
+    const rp = list.find(p => p.slug === player.id || p.name === player.name);
+    if (!rp) return '';
+    const esc = t => String(t).replace(/[&<>"]/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    let age = null;
+    if (rp.birthdate && /^\d{4}-\d{2}-\d{2}$/.test(rp.birthdate)) {
+      const b = new Date(`${rp.birthdate}T00:00:00Z`), now = new Date();
+      let a = now.getUTCFullYear() - b.getUTCFullYear();
+      const m = now.getUTCMonth() - b.getUTCMonth();
+      if (m < 0 || (m === 0 && now.getUTCDate() < b.getUTCDate())) a--;
+      if (a >= 0 && a < 130) age = a;
+    }
+    if (age == null && Number(rp.age) > 0) age = Math.round(Number(rp.age));
+    const born = rp.birthdate
+      ? new Date(`${rp.birthdate}T00:00:00Z`).toLocaleDateString(undefined,
+        { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })
+      : '';
+    const rows = [
+      ['Occupation', rp.occupation],
+      ['Hometown', rp.hometown],
+      ['Nationality', rp.nationality],
+      ['Ethnicity', rp.ethnicity],
+      ['Age', age != null ? (born ? `${age} <span style="opacity:.6">(born ${born})</span>` : String(age)) : ''],
+      ['Also', rp.descriptor],
+    ].filter(([, v]) => v);
+    if (!rows.length && !rp.backstory) return '';
+    return `<div class="pp-bio">
+      ${rows.length ? `<div class="pp-bio-grid">${rows.map(([k, v]) => `<div>
+        <div class="pp-bio-k">${k}</div>
+        <div class="pp-bio-v">${k === 'Age' ? v : esc(v)}</div>
+      </div>`).join('')}</div>` : ''}
+      ${rp.backstory ? `<div class="pp-bio-story">${esc(rp.backstory)}</div>` : ''}
+    </div>`;
+  })();
 
   // ── WHY TIER ─────────────────────────────────────────────
   if (player.reasoning) {

@@ -125,6 +125,9 @@ function _blankChar() {
     // both. `descriptor` keeps anything that is neither — "Scouse" is worth
     // knowing and belongs to no vocabulary.
     ethnicity:'', nationality:'', descriptor:'',
+    // The bio. `birthdate` is authoritative over `age` when both are present —
+    // an age is a number that silently rots, a date does not.
+    birthdate:'', hometown:'', occupation:'', backstory:'',
     voice:'', avatarDataUri:'', returneeDataUri:'', stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
   };
 }
@@ -968,6 +971,10 @@ async function _editBySlug(slug) {
     ethnicity: pick(base.ethnicity, rich && rich.ethnicity, parsed.ethnicity, legacy.ethnicity),
     nationality: pick(base.nationality, rich && rich.nationality, parsed.nationality, legacy.nationality),
     descriptor: pick(base.descriptor, rich && rich.descriptor, parsed.descriptor, legacy.descriptor),
+    birthdate: pick(base.birthdate, rich && rich.birthdate),
+    hometown: pick(base.hometown, rich && rich.hometown),
+    occupation: pick(base.occupation, rich && rich.occupation),
+    backstory: pick(base.backstory, rich && rich.backstory),
     // The prose alone. The lead-in is rebuilt from the fields on save, so
     // keeping it here too would stack a second copy in front of the first.
     voice: parsed.prose,
@@ -1080,6 +1087,20 @@ function _renderEditor() {
           <input class="st-input" id="st-f-descriptor" value="${_esc(d.descriptor)}" placeholder="e.g. Scouse">
         </label>
       </div>
+      <div class="st-row3">
+        <label class="st-l">Occupation <span class="st-hint">queryable</span>
+          <input class="st-input" id="st-f-occupation" value="${_esc(d.occupation)}" placeholder="e.g. Attorney">
+        </label>
+        <label class="st-l">Hometown <span class="st-hint">where they are FROM</span>
+          <input class="st-input" id="st-f-hometown" value="${_esc(d.hometown)}" placeholder="e.g. Chicago, IL">
+        </label>
+        <label class="st-l">Birthdate <span class="st-hint">beats Age above</span>
+          <input class="st-input" id="st-f-birthdate" type="date" value="${_esc(d.birthdate)}">
+        </label>
+      </div>
+      <label class="st-l">Backstory <span class="st-hint">who they were BEFORE the show — read on their page, not by the episode writer</span>
+        <textarea class="st-input st-area" id="st-f-backstory" rows="3" placeholder="e.g. Youngest of three brothers, none of whom he ever lost to…">${_esc(d.backstory)}</textarea>
+      </label>
 
       <div class="st-actions">
         <button type="button" class="st-btn st-primary st-lg" id="st-save">Save character</button>
@@ -1110,6 +1131,10 @@ function _renderEditor() {
   ed.querySelector('#st-f-ethnicity').addEventListener('input', e => d.ethnicity = e.target.value);
   ed.querySelector('#st-f-nationality').addEventListener('input', e => d.nationality = e.target.value);
   ed.querySelector('#st-f-descriptor').addEventListener('input', e => d.descriptor = e.target.value);
+  ed.querySelector('#st-f-occupation').addEventListener('input', e => d.occupation = e.target.value);
+  ed.querySelector('#st-f-hometown').addEventListener('input', e => d.hometown = e.target.value);
+  ed.querySelector('#st-f-birthdate').addEventListener('input', e => d.birthdate = e.target.value);
+  ed.querySelector('#st-f-backstory').addEventListener('input', e => d.backstory = e.target.value);
   ed.querySelectorAll('#st-f-gender button').forEach(b => b.addEventListener('click', () => {
     d.gender = b.dataset.g; ed.querySelectorAll('#st-f-gender button').forEach(x => x.classList.toggle('active', x === b));
   }));
@@ -1596,7 +1621,28 @@ async function _save() {
   const clash = _roster().find(p => p.slug === d.slug && p.name !== d.name);
   if (clash) return _fail(note, `Slug "${d.slug}" already used by ${clash.name}`);
 
-  const entry = { name: d.name, slug: d.slug, gender: d.gender, sexuality: d.sexuality, archetype: d.archetype, stats: { ...d.stats } };
+  // ── the bio travels with the character, and it did not ──
+  //
+  // `entry` is what goes into the local pool AND what `_rosterPush` sends to
+  // D1, and it carried six fields. Everything biographical was written to the
+  // IndexedDB `rich` record instead, which never leaves this browser — so
+  // editing somebody's age or nationality in the Studio appeared to work,
+  // survived a reload, and was silently absent from the database and from
+  // every published roster. The 27 characters that DO have those fields got
+  // them from the original seed script parsing the voice lead-in; nothing
+  // typed into the Studio since has ever reached D1.
+  //
+  // Empty strings are dropped rather than sent: the Worker turns '' into null
+  // anyway, and a roster entry full of empty keys is noise in a file that is
+  // read by hand.
+  const bio = {};
+  for (const k of ['age', 'birthdate', 'ethnicity', 'nationality',
+    'hometown', 'occupation', 'descriptor', 'backstory']) {
+    const v = (d[k] ?? '').toString().trim();
+    if (v) bio[k] = v;
+  }
+  const entry = { name: d.name, slug: d.slug, gender: d.gender, sexuality: d.sexuality,
+    archetype: d.archetype, stats: { ...d.stats }, ...bio };
 
   // 1) live projection into the roster the Cast Builder reads
   const arr = _roster().slice();
@@ -1608,6 +1654,8 @@ async function _save() {
   const rich = { slug: d.slug, name: d.name, age: d.age, gender: d.gender,
     sexuality: d.sexuality, archetype: d.archetype,
     ethnicity: d.ethnicity, nationality: d.nationality, descriptor: d.descriptor,
+    birthdate: d.birthdate, hometown: d.hometown,
+    occupation: d.occupation, backstory: d.backstory,
     voice: d.voice, avatarDataUri: d.avatarDataUri || '',
     returneeDataUri: d.returneeDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}

@@ -17,7 +17,9 @@
 //   GET  /api/roster?includeRetired=1 -> the character pool (source of truth)
 //
 // Roster writes (require Authorization: Bearer <STUDIO_TOKEN>):
-//   POST /api/roster           {slug,name,gender,sexuality,archetype,stats{},voice}
+//   POST /api/roster           {slug,name,gender,sexuality,archetype,stats{},voice,
+//                               age|birthdate,ethnicity,nationality,hometown,
+//                               occupation,descriptor,backstory}
 //   POST /api/roster/delete    {slug, force?}  -> deletes if unplayed, else retires
 //   POST /api/roster/unretire  {slug}
 //   POST /api/roster/publish   -> regenerates franchise_roster.json + voice-profiles.json
@@ -463,9 +465,16 @@ function rosterRowToJson(r) {
   // demographic questions without reaching for D1 — and so the answer on the
   // site is the same one the database would give.
   if (r.age != null) out.age = r.age;
+  // Birthdate is published as the DATE, never as an age computed here. An age
+  // baked into a static file is wrong the moment the year turns, and this file
+  // is regenerated only when somebody presses Publish.
+  if (r.birthdate) out.birthdate = r.birthdate;
   if (r.ethnicity) out.ethnicity = r.ethnicity;
   if (r.nationality) out.nationality = r.nationality;
+  if (r.hometown) out.hometown = r.hometown;
+  if (r.occupation) out.occupation = r.occupation;
   if (r.descriptor) out.descriptor = r.descriptor;
+  if (r.backstory) out.backstory = r.backstory;
   if (r.is_returnee) out.isReturnee = true;
   return out;
 }
@@ -521,21 +530,37 @@ async function rosterSave(env, payload) {
   const age = Number.isFinite(ageNum) && ageNum > 0 ? Math.round(ageNum) : null;
   const text = v => (v == null || String(v).trim() === '') ? null : String(v).trim();
 
+  // A birthdate is stored as a date and nothing else. Anything that is not
+  // YYYY-MM-DD is rejected rather than coerced: a half-parsed date silently
+  // becomes a wrong age on every page that renders it, and the wrongness is
+  // invisible because it still looks like a number.
+  const rawBirth = text(payload.birthdate);
+  if (rawBirth && !/^\d{4}-\d{2}-\d{2}$/.test(rawBirth)) {
+    throw new ValidationError('birthdate must be YYYY-MM-DD');
+  }
+  if (rawBirth && Number.isNaN(Date.parse(`${rawBirth}T00:00:00Z`))) {
+    throw new ValidationError(`birthdate "${rawBirth}" is not a real date`);
+  }
+  const birthdate = rawBirth;
+
   const d = db(env);
   const existing = await d.prepare('SELECT slug FROM roster WHERE slug = ?').bind(slug).first();
 
   await d.prepare(
     `INSERT INTO roster (slug,name,gender,sexuality,archetype,${STAT_KEYS.join(',')},
-                         voice,age,ethnicity,nationality,descriptor,
+                         voice,age,birthdate,ethnicity,nationality,
+                         hometown,occupation,descriptor,backstory,
                          is_returnee,retired,updated_at)
-     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,datetime('now'))
+     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
      ON CONFLICT(slug) DO UPDATE SET
        name=excluded.name, gender=excluded.gender, sexuality=excluded.sexuality,
        archetype=excluded.archetype,
        ${STAT_KEYS.map(k => `${k}=excluded.${k}`).join(', ')},
        voice=excluded.voice,
-       age=excluded.age, ethnicity=excluded.ethnicity,
-       nationality=excluded.nationality, descriptor=excluded.descriptor,
+       age=excluded.age, birthdate=excluded.birthdate,
+       ethnicity=excluded.ethnicity, nationality=excluded.nationality,
+       hometown=excluded.hometown, occupation=excluded.occupation,
+       descriptor=excluded.descriptor, backstory=excluded.backstory,
        is_returnee=excluded.is_returnee,
        retired=excluded.retired, updated_at=datetime('now')`
   ).bind(
@@ -543,7 +568,9 @@ async function rosterSave(env, payload) {
     payload.gender || null, payload.sexuality || null, archetype,
     ...statVals,
     payload.voice ? String(payload.voice) : null,
-    age, text(payload.ethnicity), text(payload.nationality), text(payload.descriptor),
+    age, birthdate, text(payload.ethnicity), text(payload.nationality),
+    text(payload.hometown), text(payload.occupation),
+    text(payload.descriptor), text(payload.backstory),
     payload.isReturnee ? 1 : 0,
     payload.retired ? 1 : 0,
   ).run();

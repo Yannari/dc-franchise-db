@@ -463,6 +463,22 @@ function buildRecords(season){
     if(!resp.ok)throw new Error('Season '+sn+' data not found');
     const s=await resp.json();
 
+    // The air window lives on the season's ROW, not in its document — one home
+    // for the calendar, so the two cannot drift. Optional: a page that cannot
+    // reach the database still renders, just without a date.
+    try {
+      const db = await fetch('seasons_database.json').then(r => r.ok ? r.json() : null);
+      // Matched on the ID and on the number+format, because the reference this
+      // page travels on is the BARE number for Total Drama ("12") while the
+      // database keys everything as "td-12". Comparing only the id found
+      // nothing and the date silently never appeared.
+      const rows = db?.seasons || [];
+      window.__seasonRow = rows.find(x => x.seasonId === seasonRef)
+        || rows.find(x => Number(x.seasonNumber) === Number(sn)
+          && (x.format || shows.DEFAULT_FORMAT) === (ref.format || shows.DEFAULT_FORMAT))
+        || null;
+    } catch { window.__seasonRow = null; }
+
     /* What this season is CALLED. A bare "S1" titles Big Brother 1 as though it
        were Total Drama's premiere — the same number naming two different
        seasons, on the page whose whole job is to be about one of them. Total
@@ -473,6 +489,26 @@ function buildRecords(season){
     document.title = showPrefix + sn + ' — ' + s.title;
     document.getElementById('footer-sub').textContent=s.title+' • '+s.castSize+' players';
 
+    // [AI_FILL] IS A PLACEHOLDER, NOT A VALUE.
+    //
+    // The export writes it into fields the writer has not filled yet, and every
+    // other reader in the project strips it — this page did not, so a season
+    // whose emoji had never been written rendered the literal string
+    // "[AI_FILL]" in its own headline.
+    function _emoji(v) {
+      return (!v || v === '[AI_FILL]') ? '📺' : v;
+    }
+    // When it aired. The season documents do not carry the calendar — it lives
+    // on the row in seasons_database.json — so this reads whichever the page
+    // was handed and says nothing when neither has it.
+    function _aired(sn) {
+      const y = sn.airYear || (window.__seasonRow && window.__seasonRow.airYear);
+      const slot = sn.airSlot || (window.__seasonRow && window.__seasonRow.airSlot);
+      if (!y || !slot) return '';
+      const L = { winter: 'Winter', spring: 'Spring', summer: 'Summer', fall: 'Fall' };
+      return L[String(slot).toLowerCase()] ? `${L[String(slot).toLowerCase()]} ${y}` : '';
+    }
+
     const sc=SEASON_COLORS[(sn-1)%SEASON_COLORS.length];
     document.documentElement.style.setProperty('--sc',sc);
     document.documentElement.style.setProperty('--sc-glow',sc+'44');
@@ -482,7 +518,8 @@ function buildRecords(season){
       <div class="sr-hero-photo" id="sr-hero-photo"></div>
       <div class="sr-hero-overlay"></div>
       <div class="sr-hero-body">
-        <div class="sr-hero-snum">${s.emoji||'📺'} &nbsp; ${seasonLabel} <span style="opacity:.4">•</span> <span style="opacity:.6">${s.status||'Complete'}</span></div>
+        <div class="sr-hero-snum">${_emoji(s.emoji)} &nbsp; ${seasonLabel} <span style="opacity:.4">•</span> <span style="opacity:.6">${s.status||'Complete'}</span>${
+          _aired(s) ? ` <span style="opacity:.4">•</span> <span style="opacity:.6">${_aired(s)}</span>` : ''}</div>
         <h1 class="sr-hero-title">${s.title}</h1>
         <p class="sr-hero-sub">${s.subtitle||''}</p>
         <div class="sr-hero-pills">

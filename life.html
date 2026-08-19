@@ -101,6 +101,12 @@
   .terms dt:first-child{margin-top:0}
   .terms dd{margin:3px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
   .terms strong{color:var(--text);font-weight:600}
+  .views{gap:6px}
+  .views button{background:transparent;border:1px solid var(--line);color:var(--muted);
+    border-radius:999px;padding:6px 14px;font:inherit;font-size:12.5px;cursor:pointer}
+  .views button:hover{color:var(--text)}
+  .views button[aria-current="true"]{background:var(--accent);border-color:var(--accent);
+    color:#12101a;font-weight:700}
 
   .commit{position:fixed;left:0;right:0;bottom:0;background:rgba(18,16,26,.96);
     border-top:1px solid var(--stroke);padding:12px 20px;display:flex;gap:12px;
@@ -182,6 +188,12 @@
     <span class="count" id="tally"></span>
   </div>
 
+  <!-- WHAT STILL NEEDS YOU, not everything that ever happened.
+       Approving a row only ticked a box: the row stayed, so the inbox never
+       emptied and a few seasons in it would be thousands of rows of settled
+       history with the handful of undecided ones buried in it. -->
+  <div class="bar views" id="views"></div>
+
   <div id="list"></div>
 </div>
 
@@ -216,6 +228,14 @@ const savePolicy = () => { try { localStorage.setItem(POLICY_KEY, JSON.stringify
 
 let events = [];
 let seasons = [];
+// Which of the four lists is on screen. An inbox opens on what is waiting.
+let view = 'waiting';
+// DECIDED THIS VISIT, so a row does not vanish from under the cursor the moment
+// it is ticked — you would lose the ability to change your mind, and "Approve
+// everything" would blank the screen. They leave the waiting list when the
+// decision is saved, which is what committing means.
+const touched = new Set();
+const keyOf = e => [e.player, e.whom || '', e.afterSeason, e.seq, e.kind].join('|');
 let names = {};
 let careers = [];
 let ctx = null;
@@ -234,9 +254,35 @@ function waiting(e) {
   });
 }
 
+const VIEWS = [
+  ['waiting', 'Waiting on you', e => e.status === 'proposed' || touched.has(keyOf(e))],
+  ['canon', 'Canon', e => e.status === 'approved'],
+  ['rejected', 'Rejected', e => e.status === 'rejected'],
+  ['all', 'Everything', () => true],
+];
+
+const EMPTY = {
+  waiting: 'Nothing waiting. Every event has been decided — commit to save it.',
+  canon: 'Nothing is canon yet. Tick the events you want and commit them.',
+  rejected: 'Nothing rejected.',
+  all: 'No events yet. Resolve an off-season above, or export a season.',
+};
+
+function renderViews() {
+  $('#views').innerHTML = VIEWS.map(([id, label, test]) => {
+    const n = events.filter(test).length;
+    return `<button data-view="${id}" aria-current="${view === id}">${label} ${n}</button>`;
+  }).join('');
+  $('#views').querySelectorAll('[data-view]').forEach(el => {
+    el.onclick = () => { view = el.dataset.view; render(); };
+  });
+}
+
 function render() {
   const list = $('#list');
-  const sorted = events.slice().sort(order(rank()));
+  renderViews();
+  const test = (VIEWS.find(v => v[0] === view) || VIEWS[3])[2];
+  const sorted = events.filter(test).sort(order(rank()));
   const gaps = new Map();
   for (const e of sorted) {
     const k = e.afterSeason || '(unplaced)';
@@ -245,20 +291,23 @@ function render() {
   }
 
   if (!sorted.length) {
-    list.innerHTML = `<div class="empty">No events yet. Nothing generates them so far —
-      the resolver is the next piece.</div>`;
+    list.innerHTML = `<div class="empty">${esc(EMPTY[view])}</div>`;
   } else {
     list.innerHTML = [...gaps.entries()].map(([sid, rows]) => {
       const s = seasonOf(sid);
       const label = s ? (s.title || sid) : sid;
       const when = s ? airLabel(s) : '';
+      // Counted off the WHOLE log, not the rows on screen: the button removes
+      // the entire off-season, so in a filtered view "Remove 3" would delete
+      // forty. The count and the action have to describe the same thing.
+      const total = events.filter(e => (e.afterSeason || '(unplaced)') === sid).length;
       return `<section class="gap">
         <div class="gap-head">
           <span>After ${esc(label)}</span>
           <span class="gap-right">
             <span class="when">${esc(when)}</span>
             <button class="mini danger" data-dropgap="${esc(sid)}"
-              title="Remove every event in this off-season">Remove ${rows.length}</button>
+              title="Remove every event in this off-season">Remove ${total}</button>
           </span>
         </div>
         ${rows.map(row).join('')}
@@ -305,7 +354,10 @@ function render() {
     el.onchange = el.onclick = ev => {
       const i = Number(el.dataset.i);
       const act = el.dataset.act;
-      if (act === 'toggle') events[i].status = el.checked ? 'approved' : 'rejected';
+      if (act === 'toggle') {
+        events[i].status = el.checked ? 'approved' : 'rejected';
+        touched.add(keyOf(events[i]));
+      }
       if (act === 'edit') {
         const cur = events[i].headline || lineFor(events[i], names, events[i].player);
         const next = prompt('The sentence on their page:', cur);
@@ -474,8 +526,16 @@ $('#resolve').onclick = () => {
 // anything already approved kept its tick and the button looked broken — which
 // is exactly how it was reported. Both now set every row, because "reject all"
 // that leaves half the boxes checked is not what either word means.
-$('#all-yes').onclick = () => { events.forEach(e => { e.status = 'approved'; }); render(); };
-$('#all-no').onclick = () => { events.forEach(e => { e.status = 'rejected'; }); render(); };
+// Only what is on screen. "Approve everything" while looking at the rejected
+// list used to approve the whole log, canon and all — the buttons sit under a
+// filter now, so they mean the list you can see.
+function decideShown(status) {
+  const test = (VIEWS.find(v => v[0] === view) || VIEWS[3])[2];
+  events.filter(test).forEach(e => { e.status = status; touched.add(keyOf(e)); });
+  render();
+}
+$('#all-yes').onclick = () => decideShown('approved');
+$('#all-no').onclick = () => decideShown('rejected');
 
 // REJECTED IS NOT THE SAME AS GONE.
 //
@@ -526,6 +586,11 @@ $('#commit').onclick = async () => {
     $('#saved').textContent = j
       ? `saved to ${j.where} — ${j.counts.approved || 0} canon`
       : 'not saved — no token given';
+    // The decisions are on disk now, so they stop being this visit's business
+    // and drop out of the waiting list. This is the moment the inbox empties,
+    // and it is deliberately committing that does it rather than ticking:
+    // until it is saved, an approval is only an intention.
+    if (j) { touched.clear(); render(); }
   } catch (err) {
     // Said out loud. A silent failure looks exactly like a successful save.
     $('#saved').textContent = `could not save (${err.message}) — use Copy JSON`;

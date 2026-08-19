@@ -61,49 +61,49 @@
       "kind": "bought-home",
       "afterSeason": "td-14",
       "seq": 1,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "alejandro",
       "kind": "hobby",
       "afterSeason": "td-14",
       "seq": 2,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "amy",
       "kind": "pet",
       "afterSeason": "td-14",
       "seq": 3,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "brick",
       "kind": "quit-job",
       "afterSeason": "td-14",
       "seq": 4,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "bridgette",
       "kind": "new-job",
       "afterSeason": "td-14",
       "seq": 5,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "bridgette",
       "kind": "learned",
       "afterSeason": "td-14",
       "seq": 6,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cody",
       "kind": "dating",
       "afterSeason": "td-14",
       "seq": 7,
-      "status": "proposed",
+      "status": "approved",
       "whom": "carrie"
     },
     {
@@ -111,14 +111,14 @@
       "kind": "haircut",
       "afterSeason": "td-14",
       "seq": 8,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dave",
       "kind": "flatmates",
       "afterSeason": "td-14",
       "seq": 9,
-      "status": "proposed",
+      "status": "approved",
       "whom": "alejandro"
     },
     {
@@ -126,112 +126,112 @@
       "kind": "laid-off",
       "afterSeason": "td-14",
       "seq": 10,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dawn",
       "kind": "pet",
       "afterSeason": "td-14",
       "seq": 11,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dj",
       "kind": "production-fallout",
       "afterSeason": "td-14",
       "seq": 12,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "duncan",
       "kind": "moved-city",
       "afterSeason": "td-14",
       "seq": 13,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "duncan",
       "kind": "travelling",
       "afterSeason": "td-14",
       "seq": 14,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dwayne",
       "kind": "new-job",
       "afterSeason": "td-14",
       "seq": 15,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "emma",
       "kind": "pet",
       "afterSeason": "td-14",
       "seq": 16,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ennui",
       "kind": "promoted",
       "afterSeason": "td-14",
       "seq": 17,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "eva",
       "kind": "tattoo",
       "afterSeason": "td-14",
       "seq": 18,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ezekiel",
       "kind": "enrolled",
       "afterSeason": "td-14",
       "seq": 19,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ezekiel",
       "kind": "new-job",
       "afterSeason": "td-14",
       "seq": 20,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "geoff",
       "kind": "new-job",
       "afterSeason": "td-14",
       "seq": 21,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "geoff",
       "kind": "tattoo",
       "afterSeason": "td-14",
       "seq": 22,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "geoff",
       "kind": "forgiven",
       "afterSeason": "td-14",
       "seq": 23,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "gwen",
       "kind": "bought-home",
       "afterSeason": "td-14",
       "seq": 24,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "gwen",
       "kind": "flatmates",
       "afterSeason": "td-14",
       "seq": 25,
-      "status": "proposed",
+      "status": "approved",
       "whom": "zoey"
     },
     {
@@ -239,21 +239,21 @@
       "kind": "laid-off",
       "afterSeason": "td-14",
       "seq": 26,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "izzy",
       "kind": "hobby",
       "afterSeason": "td-14",
       "seq": 27,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jay",
       "kind": "dating",
       "afterSeason": "td-14",
       "seq": 28,
-      "status": "proposed",
+      "status": "approved",
       "whom": "kitty"
     },
     {
@@ -261,42 +261,42 @@
       "kind": "big-purchase",
       "afterSeason": "td-14",
       "seq": 29,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jo",
       "kind": "year-off",
       "afterSeason": "td-14",
       "seq": 30,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "josee",
       "kind": "new-job",
       "afterSeason": "td-14",
       "seq": 31,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "junior",
       "kind": "pet",
       "afterSeason": "td-14",
       "seq": 32,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "justin",
       "kind": "tattoo",
       "afterSeason": "td-14",
       "seq": 33,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "kelly",
       "kind": "dating",
       "afterSeason": "td-14",
       "seq": 34,
-      "status": "proposed",
+      "status": "approved",
       "whom": "ryan"
     },
     {
@@ -304,70 +304,70 @@
       "kind": "promoted",
       "afterSeason": "td-14",
       "seq": 35,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lightning",
       "kind": "hobby",
       "afterSeason": "td-14",
       "seq": 36,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lindsay",
       "kind": "moved-city",
       "afterSeason": "td-14",
       "seq": 37,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lindsay",
       "kind": "interview",
       "afterSeason": "td-14",
       "seq": 38,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lindsay",
       "kind": "cancelled",
       "afterSeason": "td-14",
       "seq": 39,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "mary",
       "kind": "moved",
       "afterSeason": "td-14",
       "seq": 40,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "max",
       "kind": "year-off",
       "afterSeason": "td-14",
       "seq": 41,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "mickey",
       "kind": "tattoo",
       "afterSeason": "td-14",
       "seq": 42,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "noah",
       "kind": "enrolled",
       "afterSeason": "td-14",
       "seq": 43,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "owen",
       "kind": "dating",
       "afterSeason": "td-14",
       "seq": 44,
-      "status": "proposed",
+      "status": "approved",
       "whom": "leshawna"
     },
     {
@@ -375,63 +375,63 @@
       "kind": "enrolled",
       "afterSeason": "td-14",
       "seq": 45,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "owen",
       "kind": "tattoo",
       "afterSeason": "td-14",
       "seq": 46,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "sadie",
       "kind": "bought-home",
       "afterSeason": "td-14",
       "seq": 47,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "sam",
       "kind": "bought-home",
       "afterSeason": "td-14",
       "seq": 48,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "samey",
       "kind": "bankruptcy",
       "afterSeason": "td-14",
       "seq": 49,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "scarlett",
       "kind": "year-off",
       "afterSeason": "td-14",
       "seq": 50,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "shawn",
       "kind": "bought-home",
       "afterSeason": "td-14",
       "seq": 51,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "shawn",
       "kind": "red-carpet",
       "afterSeason": "td-14",
       "seq": 52,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "shawn",
       "kind": "flatmates",
       "afterSeason": "td-14",
       "seq": 53,
-      "status": "proposed",
+      "status": "approved",
       "whom": "scott"
     },
     {
@@ -439,42 +439,42 @@
       "kind": "year-off",
       "afterSeason": "td-14",
       "seq": 54,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "sky",
       "kind": "hobby",
       "afterSeason": "td-14",
       "seq": 55,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "staci",
       "kind": "promoted",
       "afterSeason": "td-14",
       "seq": 56,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "sugar",
       "kind": "enrolled",
       "afterSeason": "td-14",
       "seq": 57,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "sugar",
       "kind": "convention",
       "afterSeason": "td-14",
       "seq": 58,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "tammy",
       "kind": "dating",
       "afterSeason": "td-14",
       "seq": 59,
-      "status": "proposed",
+      "status": "approved",
       "whom": "leonard"
     },
     {
@@ -482,63 +482,63 @@
       "kind": "bought-home",
       "afterSeason": "td-14",
       "seq": 60,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "topher",
       "kind": "haircut",
       "afterSeason": "td-14",
       "seq": 61,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "zoey",
       "kind": "quit-job",
       "afterSeason": "td-14",
       "seq": 62,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "devin",
       "kind": "travelling",
       "afterSeason": "td-14",
       "seq": 63,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "devin",
       "kind": "moved-city",
       "afterSeason": "td-14",
       "seq": 64,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ellody",
       "kind": "promoted",
       "afterSeason": "td-14",
       "seq": 65,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "laurie",
       "kind": "bought-home",
       "afterSeason": "td-14",
       "seq": 66,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lorenzo",
       "kind": "hobby",
       "afterSeason": "td-14",
       "seq": 67,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "pete",
       "kind": "dating",
       "afterSeason": "td-14",
       "seq": 68,
-      "status": "proposed",
+      "status": "approved",
       "whom": "taylor"
     },
     {
@@ -546,21 +546,21 @@
       "kind": "started-business",
       "afterSeason": "td-14",
       "seq": 69,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "tom",
       "kind": "moved",
       "afterSeason": "td-14",
       "seq": 70,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "chet",
       "kind": "dating",
       "afterSeason": "td-14",
       "seq": 71,
-      "status": "proposed",
+      "status": "approved",
       "whom": "jen"
     },
     {
@@ -568,49 +568,49 @@
       "kind": "moved-city",
       "afterSeason": "td-14",
       "seq": 72,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "chet",
       "kind": "tattoo",
       "afterSeason": "td-14",
       "seq": 73,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "gerry",
       "kind": "year-off",
       "afterSeason": "td-14",
       "seq": 74,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jen",
       "kind": "bought-home",
       "afterSeason": "td-14",
       "seq": 75,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jen",
       "kind": "moved",
       "afterSeason": "td-14",
       "seq": 76,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "rock",
       "kind": "quit-job",
       "afterSeason": "td-14",
       "seq": 77,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "sanders",
       "kind": "dating",
       "afterSeason": "td-14",
       "seq": 78,
-      "status": "proposed",
+      "status": "approved",
       "whom": "macarthur"
     },
     {
@@ -618,56 +618,56 @@
       "kind": "bought-home",
       "afterSeason": "td-14",
       "seq": 79,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "bowie",
       "kind": "moved-city",
       "afterSeason": "td-14",
       "seq": 80,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "bowie",
       "kind": "production-fallout",
       "afterSeason": "td-14",
       "seq": 81,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "brightly",
       "kind": "pet",
       "afterSeason": "td-14",
       "seq": 82,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "chase",
       "kind": "new-job",
       "afterSeason": "td-14",
       "seq": 83,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "hicks",
       "kind": "tattoo",
       "afterSeason": "td-14",
       "seq": 84,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "julia",
       "kind": "learned",
       "afterSeason": "td-14",
       "seq": 85,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "julia",
       "kind": "made-up",
       "afterSeason": "td-14",
       "seq": 86,
-      "status": "proposed",
+      "status": "approved",
       "whom": "priya"
     },
     {
@@ -675,14 +675,14 @@
       "kind": "podcast",
       "afterSeason": "td-14",
       "seq": 87,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "nichelle",
       "kind": "dating",
       "afterSeason": "td-14",
       "seq": 88,
-      "status": "proposed",
+      "status": "approved",
       "whom": "chase"
     },
     {
@@ -690,7 +690,7 @@
       "kind": "dating",
       "afterSeason": "td-14",
       "seq": 89,
-      "status": "proposed",
+      "status": "approved",
       "whom": "damien"
     },
     {
@@ -698,21 +698,21 @@
       "kind": "pet",
       "afterSeason": "td-14",
       "seq": 90,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "raj",
       "kind": "learned",
       "afterSeason": "td-14",
       "seq": 91,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ripper",
       "kind": "dating",
       "afterSeason": "td-14",
       "seq": 92,
-      "status": "proposed",
+      "status": "approved",
       "whom": "axel"
     },
     {
@@ -720,7 +720,7 @@
       "kind": "flatmates",
       "afterSeason": "td-14",
       "seq": 93,
-      "status": "proposed",
+      "status": "approved",
       "whom": "bowie"
     },
     {
@@ -728,14 +728,14 @@
       "kind": "tattoo",
       "afterSeason": "td-14",
       "seq": 94,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "wayne",
       "kind": "flatmates",
       "afterSeason": "td-14",
       "seq": 95,
-      "status": "proposed",
+      "status": "approved",
       "whom": "raj"
     },
     {
@@ -743,266 +743,266 @@
       "kind": "quit-job",
       "afterSeason": "td-14",
       "seq": 96,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "zee",
       "kind": "enrolled",
       "afterSeason": "td-14",
       "seq": 97,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "thom",
       "kind": "haircut",
       "afterSeason": "td-14",
       "seq": 98,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "miriam",
       "kind": "hobby",
       "afterSeason": "td-14",
       "seq": 99,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "grett",
       "kind": "enrolled",
       "afterSeason": "td-14",
       "seq": 100,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "grett",
       "kind": "moved",
       "afterSeason": "td-14",
       "seq": 101,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dan",
       "kind": "pet",
       "afterSeason": "td-14",
       "seq": 102,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "gabby",
       "kind": "moved",
       "afterSeason": "td-14",
       "seq": 103,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "eureka",
       "kind": "year-off",
       "afterSeason": "td-14",
       "seq": 104,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "eureka",
       "kind": "scandal",
       "afterSeason": "td-14",
       "seq": 105,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "will",
       "kind": "quit-job",
       "afterSeason": "td-14",
       "seq": 106,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ashley",
       "kind": "promoted",
       "afterSeason": "td-14",
       "seq": 107,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "fiore",
       "kind": "bought-home",
       "afterSeason": "td-14",
       "seq": 108,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "fiore",
       "kind": "rehab",
       "afterSeason": "td-14",
       "seq": 109,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ellie",
       "kind": "bought-home",
       "afterSeason": "td-14",
       "seq": 110,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "james",
       "kind": "quit-job",
       "afterSeason": "td-14",
       "seq": 111,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "maggy",
       "kind": "learned",
       "afterSeason": "td-14",
       "seq": 112,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "karol",
       "kind": "quit-job",
       "afterSeason": "td-14",
       "seq": 113,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "kai",
       "kind": "haircut",
       "afterSeason": "td-14",
       "seq": 114,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "aiden",
       "kind": "convention",
       "afterSeason": "td-14",
       "seq": 115,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "yul",
       "kind": "new-job",
       "afterSeason": "td-14",
       "seq": 116,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "yul",
       "kind": "laid-off",
       "afterSeason": "td-14",
       "seq": 117,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lake",
       "kind": "bought-home",
       "afterSeason": "td-14",
       "seq": 118,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "tess",
       "kind": "learned",
       "afterSeason": "td-14",
       "seq": 119,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "oliver",
       "kind": "promoted",
       "afterSeason": "td-14",
       "seq": 120,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jade",
       "kind": "year-off",
       "afterSeason": "td-14",
       "seq": 121,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jade",
       "kind": "promoted",
       "afterSeason": "td-14",
       "seq": 122,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "diego",
       "kind": "promoted",
       "afterSeason": "td-14",
       "seq": 123,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "benji",
       "kind": "moved-city",
       "afterSeason": "td-14",
       "seq": 124,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "tristan",
       "kind": "moved",
       "afterSeason": "td-14",
       "seq": 125,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ivy",
       "kind": "year-off",
       "afterSeason": "td-14",
       "seq": 126,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "hannah",
       "kind": "enrolled",
       "afterSeason": "td-14",
       "seq": 127,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "hannah",
       "kind": "haircut",
       "afterSeason": "td-14",
       "seq": 128,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "amelie",
       "kind": "new-job",
       "afterSeason": "td-14",
       "seq": 129,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lynda",
       "kind": "started-business",
       "afterSeason": "td-14",
       "seq": 130,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "anastasia",
       "kind": "hobby",
       "afterSeason": "td-14",
       "seq": 131,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "logan",
       "kind": "moved-city",
       "afterSeason": "td-14",
       "seq": 132,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "richard",
       "kind": "moved",
       "afterSeason": "td-14",
       "seq": 133,
-      "status": "proposed"
+      "status": "approved"
     }
   ]
 }

@@ -1176,14 +1176,6 @@
     },
     {
       "player": "noah",
-      "kind": "dating",
-      "afterSeason": "td-1",
-      "seq": 25,
-      "status": "approved",
-      "whom": "leshawna"
-    },
-    {
-      "player": "noah",
       "kind": "graduated",
       "afterSeason": "td-1",
       "seq": 26,

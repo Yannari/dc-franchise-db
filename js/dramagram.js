@@ -20,7 +20,7 @@
 // trusted: a plausible-looking table is exactly how the competition-domination
 // rates and the relationship rates both went wrong before anybody counted them.
 import { airKey, byAirDate } from './franchise-calendar.js';
-import { kindOf, significanceOf, approvedFor, lineFor } from './life-events.js';
+import { kindOf, significanceOf, approvedFor, lineFor, stateOf } from './life-events.js';
 
 /** Everything tunable about the number, in one place. */
 export const FOLLOWERS = {
@@ -241,4 +241,36 @@ export function tiesFor(slug, graph) {
   const row = graph?.get?.(slug);
   if (!row) return [];
   return [...row.entries()].map(([other, weight]) => ({ slug: other, weight }));
+}
+
+/**
+ * Where somebody is up to, romantically — the line under the bio.
+ *
+ * Derived from the approved log like everything else here, never stored, so it
+ * cannot disagree with the posts above it: the same events that say "moved in
+ * together" are the ones that make this read "living with Owen".
+ *
+ * The words are the ones a profile would use rather than the engine's stage
+ * names. `public` is a stage in the resolver because going public is a step;
+ * on a profile it is just "with" somebody, which is what everyone else can see.
+ */
+const STATUS_WORDS = {
+  dating: 'Seeing',
+  public: 'With',
+  'living-together': 'Living with',
+  engaged: 'Engaged to',
+  married: 'Married to',
+};
+
+export function relationshipStatus(slug, { events = [], seasons = [], names = {} } = {}) {
+  const rank = new Map(seasons.map(s => [s.seasonId, airKey(s)]));
+  const st = stateOf(slug, events, { seasonRank: rank });
+  const stage = st?.relationship?.stage || 'single';
+  const withWhom = st?.relationship?.with || null;
+  if (stage === 'single' || !withWhom) return { stage: 'single', label: 'Single', whom: null };
+  return {
+    stage,
+    whom: withWhom,
+    label: (STATUS_WORDS[stage] || 'With') + ' ' + (names[withWhom] || withWhom),
+  };
 }

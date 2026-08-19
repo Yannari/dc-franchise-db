@@ -9,8 +9,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  directory, followerHistory, followersOf, statusOf, short, FOLLOWERS, VERIFIED_AT, postsFor,
-} from '../js/dramagram.js';
+  directory, followerHistory, followersOf, statusOf, short, FOLLOWERS, VERIFIED_AT, postsFor, relationshipStatus } from '../js/dramagram.js';
 import { careersIn } from '../js/records.js';
 
 const SEASONS = Array.from({ length: 8 }, (_, i) => ({
@@ -262,5 +261,44 @@ describe('the page tells a caption from the profile it is on', () => {
       .toMatch(/const caption = captionFor\(/);
     expect(modal, 'the wiki line is being used as the caption')
       .not.toMatch(/const caption = lineFor\(/);
+  });
+});
+
+// A profile should say who somebody is with. It is derived from the same
+// approved events as the posts, never stored, so the line under the bio and the
+// post that says they moved in together cannot disagree.
+describe('relationship status', () => {
+  const SEASONS = [{ seasonId: 'td-1', airYear: 2020, airSlot: 'spring' }];
+  const NAMES = { lesh: 'Leshawna', owen: 'Owen' };
+  const ev = (kind, extra = {}) => ({ player: 'lesh', whom: 'owen', afterSeason: 'td-1',
+    seq: 1, kind, status: 'approved', ...extra });
+
+  it('says single when nothing has happened', () => {
+    expect(relationshipStatus('lesh', { events: [], seasons: SEASONS, names: NAMES }).label)
+      .toBe('Single');
+  });
+
+  it('uses profile words, not the engine stage names', () => {
+    const log = [ev('dating'), { ...ev('moved-in'), seq: 2 }];
+    expect(relationshipStatus('lesh', { events: log, seasons: SEASONS, names: NAMES }).label)
+      .toBe('Living with Owen');
+  });
+
+  it('reads the same from either side of the row', () => {
+    const log = [ev('dating')];
+    expect(relationshipStatus('owen', { events: log, seasons: SEASONS, names: NAMES }).whom)
+      .toBe('lesh');
+  });
+
+  it('goes back to single after it ends', () => {
+    const log = [ev('dating'), { ...ev('broke-up'), seq: 2 }];
+    expect(relationshipStatus('lesh', { events: log, seasons: SEASONS, names: NAMES }).stage)
+      .toBe('single');
+  });
+
+  it('ignores anything not approved, like every other reader here', () => {
+    const log = [ev('dating', { status: 'proposed' })];
+    expect(relationshipStatus('lesh', { events: log, seasons: SEASONS, names: NAMES }).label)
+      .toBe('Single');
   });
 });

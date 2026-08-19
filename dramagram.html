@@ -54,6 +54,7 @@
   .dg-apps a:hover{color:var(--dg-ink);border-color:var(--dg-dim)}
   .dg-apps span{color:var(--dg-bg);background:var(--dg-hot);border-color:var(--dg-hot)}
   .dg-back{color:var(--dg-hot);text-decoration:none;font-weight:600;font-size:13px}
+  .dg-rel{display:inline-flex;align-items:center;gap:5px;color:var(--dg-hot);font-weight:600}
 
   .dg-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 16px}
   .dg-in,.dg-sel{background:var(--dg-card);border:1px solid var(--dg-line);color:var(--dg-ink);
@@ -234,7 +235,8 @@
 
 <script type="module" src="js/site-header.js"></script>
 <script type="module">
-import { directory, short, postsFor, photosOf, followerHistory, tiesFor } from './js/dramagram.js';
+import { directory, short, postsFor, photosOf, followerHistory, tiesFor, relationshipStatus }
+  from './js/dramagram.js';
 import { lineFor } from './js/life-events.js';
 import { captionFor, commentsFor } from './js/dramagram-voice.js';
 import { socialGraph } from './js/life-resolver.js';
@@ -314,6 +316,10 @@ async function renderProfile(slug) {
   const posts = postsFor(slug, { events: allEvents, seasons: allSeasons, photos });
   const h = followerHistory(slug, { careers: allCareers, seasons: allSeasons, events: allEvents });
   const bio = d.bio || {};
+  // Read off the same approved events as the posts, so the two cannot disagree:
+  // the post that says they moved in together is what makes this say "Living
+  // with Owen".
+  const rel = relationshipStatus(slug, { events: allEvents, seasons: allSeasons, names: namesBySlug });
   const bioLine = [bio.occupation, bio.hometown].filter(Boolean).join(' · ');
 
   host.innerHTML = `
@@ -332,6 +338,8 @@ async function renderProfile(slug) {
         </div>
         <div class="dg-bio">
           ${bioLine ? `<b>${esc(bioLine)}</b><br>` : ''}
+          ${rel.stage === 'single' ? ''
+            : `<span class="dg-rel">${heart()}${esc(rel.label)}</span><br>`}
           ${d.status === 'sequestered' ? 'Currently in the house.'
             : d.status === 'quiet' ? 'Has been quiet for a while.' : 'Around.'}
           ${h.steps.length ? `<br>${esc(followerStory(h))}` : ''}
@@ -347,6 +355,13 @@ async function renderProfile(slug) {
   });
 
   renderManage(slug, photos);
+}
+
+/** The status heart. Drawn, not an emoji — nothing else on this page is one. */
+function heart() {
+  return '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">'
+    + '<path d="M12 20s-7-4.6-7-9.5A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.5C19 15.4 12 20 12 20z"'
+    + ' fill="currentColor"/></svg>';
 }
 
 /**

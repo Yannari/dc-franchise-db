@@ -1213,28 +1213,28 @@
       "kind": "graduated",
       "afterSeason": "td-2",
       "seq": 1,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "beth",
       "kind": "new-job",
       "afterSeason": "td-2",
       "seq": 2,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "beth",
       "kind": "brand-deal",
       "afterSeason": "td-2",
       "seq": 3,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "bridgette",
       "kind": "dating",
       "afterSeason": "td-2",
       "seq": 4,
-      "status": "proposed",
+      "status": "approved",
       "whom": "alejandro"
     },
     {
@@ -1242,70 +1242,70 @@
       "kind": "year-off",
       "afterSeason": "td-2",
       "seq": 5,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "bridgette",
       "kind": "pet",
       "afterSeason": "td-2",
       "seq": 6,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cody",
       "kind": "enrolled",
       "afterSeason": "td-2",
       "seq": 7,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cody",
       "kind": "convention",
       "afterSeason": "td-2",
       "seq": 8,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cody",
       "kind": "year-off",
       "afterSeason": "td-2",
       "seq": 9,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "courtney",
       "kind": "pet",
       "afterSeason": "td-2",
       "seq": 10,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "duncan",
       "kind": "hobby",
       "afterSeason": "td-2",
       "seq": 11,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "eva",
       "kind": "year-off",
       "afterSeason": "td-2",
       "seq": 12,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "geoff",
       "kind": "learned",
       "afterSeason": "td-2",
       "seq": 13,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "gwen",
       "kind": "dating",
       "afterSeason": "td-2",
       "seq": 14,
-      "status": "proposed",
+      "status": "approved",
       "whom": "duncan"
     },
     {
@@ -1313,70 +1313,70 @@
       "kind": "promoted",
       "afterSeason": "td-2",
       "seq": 15,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "gwen",
       "kind": "convention",
       "afterSeason": "td-2",
       "seq": 16,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "gwen",
       "kind": "haircut",
       "afterSeason": "td-2",
       "seq": 17,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "heather",
       "kind": "travelling",
       "afterSeason": "td-2",
       "seq": 18,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "justin",
       "kind": "bought-home",
       "afterSeason": "td-2",
       "seq": 19,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "katie",
       "kind": "year-off",
       "afterSeason": "td-2",
       "seq": 20,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "leshawna",
       "kind": "promoted",
       "afterSeason": "td-2",
       "seq": 21,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lindsay",
       "kind": "hobby",
       "afterSeason": "td-2",
       "seq": 22,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lindsay",
       "kind": "moved",
       "afterSeason": "td-2",
       "seq": 23,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "noah",
       "kind": "dating",
       "afterSeason": "td-2",
       "seq": 24,
-      "status": "proposed",
+      "status": "approved",
       "whom": "leshawna"
     },
     {
@@ -1384,21 +1384,21 @@
       "kind": "new-job",
       "afterSeason": "td-2",
       "seq": 25,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "owen",
       "kind": "bought-home",
       "afterSeason": "td-2",
       "seq": 26,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "trent",
       "kind": "dating",
       "afterSeason": "td-2",
       "seq": 27,
-      "status": "proposed",
+      "status": "approved",
       "whom": "lindsay"
     },
     {
@@ -1406,14 +1406,14 @@
       "kind": "moved-city",
       "afterSeason": "td-2",
       "seq": 28,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "tyler",
       "kind": "quit-job",
       "afterSeason": "td-2",
       "seq": 29,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "alejandro",

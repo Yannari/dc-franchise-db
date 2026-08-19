@@ -356,7 +356,15 @@ export default {
     // the act above it, so a cadence that ran any later would start eating room
     // nights on the small casts — the exact failure the week-one note below
     // this records.
-    { every: 3, from: 3, untilFromEnd: 9, book: 'bb-prizes-and-punishments' },
+    // ── ONE CADENCE PER WINDOW, AND THIS ONE IS THE WILDCARD'S ──
+    //
+    // There used to be a boxes cadence here as well, and it silently ate the
+    // Wildcard's first night on EVERY cast size. A recurrence is expanded in
+    // full before the next act is considered, and an act landing at or before
+    // the one above it is refused — so two cadences sharing a window cannot
+    // interleave, they can only take turns eating each other. The boxes were
+    // here to fill the early weeks; the Wildcard now does that better, and it
+    // is the card BB23 actually ran there.
 
     // ── THE WILDCARD, AND WHY IT SHARES THE CADENCE WINDOW ────────────────
     //

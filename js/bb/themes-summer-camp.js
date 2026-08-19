@@ -244,12 +244,28 @@ export default {
     // season busy — the same job the wrapped boxes do on High Roller's.
     // `untilFromEnd: 8` stops it well before the endgame: a secret power won at
     // a final seven is a different, much later twist than the one BB21 ran.
-    { every: 2, from: 2, untilFromEnd: 8, book: 'bb-whacktivity',
+    // ── THE FIRST DOOR, THEN THE CAMPERS, THEN THE REST OF THE DOORS ──
+    //
+    // Written as week 2, week 3, and a cadence from week 4, rather than as one
+    // cadence with Camp Comeback dropped into the middle of it. A recurrence is
+    // expanded IN FULL before the next act is considered, and an act landing at
+    // or before the one above it is refused — so a cadence running 2, 4, 6 with
+    // a week-3 act listed under it does not interleave. The week-3 act is
+    // simply refused, on every cast size, with only a console warning to say
+    // so. Camp Comeback was being dropped from its own theme exactly that way.
+    //
+    // Canon order anyway: Whacktivity ran from week one, and Camp Comeback
+    // opened after the second eviction.
+    { at: { week: 2 }, book: 'bb-whacktivity',
     options: { doors: ['nightmare-power', 'veto-redraw', 'diamond-veto'] } },
 
-    // The campers. Booked once, mid-early: it runs across the first four
-    // evictions from wherever it starts, so it wants room to finish.
+    // The campers. It runs across the first four evictions from wherever it
+    // starts, so it goes down early and wants room to finish.
     { at: { week: 3 }, book: 'bb-camp-comeback' },
+
+    // And the rest of the doors, from the week after the campers move in.
+    { every: 2, from: 4, untilFromEnd: 8, book: 'bb-whacktivity',
+    options: { doors: ['nightmare-power', 'veto-redraw', 'diamond-veto'] } },
 
     // The announcements stop. Both anchor forms, and the EARLIER one turns the
     // season — on every cast up to sixteen weeks that is `fromEnd`, which is a

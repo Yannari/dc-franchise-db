@@ -1665,6 +1665,20 @@ export function buildEpisodeMap() {
     // the double eviction and the Split House are both listed by name.
     if (_allTypes.includes('bb-no-eviction')) elims = 0;
     if (_allTypes.includes('bb-double-eviction')) elims = Math.max(elims, 2);
+    // The Camp Director takes TWO on night one, and this projection was
+    // counting one. Hit The Road evicts the slowest of the four banished
+    // before a Head of Household has even been crowned, and then the week
+    // runs its ordinary nomination, veto and vote on top of that. On a cast of
+    // nineteen the timeline said eighteen were left at episode two when the
+    // engine really had seventeen, and every house-size projection below it
+    // inherited the error.
+    //
+    // The guard mirrors the engine exactly: runCampDirector stands down
+    // under eight (four banished out of a house that still has a season to
+    // play), and the dispatch in week.js is week one only.
+    if (_allTypes.includes('bb-camp-director') && ep === 1 && active >= 8) {
+      elims = Math.max(elims, 2);
+    }
     // You Go, They Go takes two as well — one voted out and one chained to
     // them. The guard mirrors the engine's: four nominees, a Head of Household
     // and a room left to vote need eight houseguests, and below that the week

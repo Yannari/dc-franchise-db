@@ -44,6 +44,9 @@ import { EVICTION_POWER_EVENTS } from './eviction-powers.js';
 import { AMERICAS_NOMINEE_EVENTS } from './americas-nominee.js';
 import { COIN_EVENTS } from './coin-of-destiny.js';
 import { NIGHTMARE_EVENTS } from './nightmare.js';
+import { HIGH_ROLLERS_EVENTS } from './high-rollers.js';
+import { CAMP_DIRECTOR_EVENTS } from './camp-director.js';
+import { WILDCARD_EVENTS } from './wildcard.js';
 import { CARE_PACKAGE_EVENTS } from './care-package.js';
 import { SAFETY_SUITE_EVENTS } from './safety-suite.js';
 import { PUNISHMENT_EVENTS } from './punishments.js';
@@ -98,6 +101,9 @@ export const HOUSE_EVENTS = [
   ...AMERICAS_NOMINEE_EVENTS,
   ...COIN_EVENTS,
   ...NIGHTMARE_EVENTS,
+  ...HIGH_ROLLERS_EVENTS,
+  ...CAMP_DIRECTOR_EVENTS,
+  ...WILDCARD_EVENTS,
   ...CARE_PACKAGE_EVENTS,
   ...SAFETY_SUITE_EVENTS,
   ...PUNISHMENT_EVENTS,

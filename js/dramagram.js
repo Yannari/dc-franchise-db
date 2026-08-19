@@ -33,6 +33,24 @@ export const FOLLOWERS = {
   finalist: 16000,
   // A life event is worth something to the extent anybody noticed it.
   perEvent: { minor: 400, notable: 3500, major: 22000 },
+  // ── what a reputation event does to the number ──
+  //
+  // The model keyed on significance alone, so GETTING CANCELLED PAID THE SAME
+  // AS A WEDDING: +22,000 followers for the thing whose entire meaning is that
+  // the followers leave. These override the significance payout, and they are
+  // PROPORTIONAL like the quiet decay, because losing a fifth of 300k is a
+  // story and a fifth of 12k is noise.
+  //
+  // Feuds and bankruptcies are deliberately NOT here. A feud grows an account —
+  // the drama-follow is real — and a bankruptcy is news that draws sympathy,
+  // not a sin anybody unfollows over. Negative means the crowd actually left.
+  reputation: {
+    cancelled: -0.22,             // the word means the followers leave
+    arrested: -0.10,
+    scandal: -0.08,               // the buzz gains some; it loses more
+    'production-fallout': -0.03,
+    forgiven: +0.05,              // some come back. never all of them.
+  },
   // And simply posting through an off-season keeps the number breathing.
   // Deliberately flat rather than mood-weighted: the follower model runs
   // without the roster, and a delta that depended on archetype would compute
@@ -110,9 +128,12 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
 
     // Then whatever happened to them in the gap after it.
     for (const e of eventsAfter.get(season.seasonId) || []) {
-      const add = FOLLOWERS.perEvent[significanceOf(e.kind)] || 0;
+      const rep = FOLLOWERS.reputation[e.kind];
+      const add = rep !== undefined
+        ? Math.round(n * rep)
+        : FOLLOWERS.perEvent[significanceOf(e.kind)] || 0;
       if (!add) continue;
-      n += add;
+      n = Math.max(FOLLOWERS.floor, n + add);
       steps.push({ season, why: e.kind, delta: add, event: e });
     }
     // And the posting itself — the moments keep the number breathing between

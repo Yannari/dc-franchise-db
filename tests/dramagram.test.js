@@ -474,3 +474,44 @@ describe('the catalog after the bankruptcy audit', () => {
     expect(KINDS.find(k => k.key === 'hall-of-fame').once).toBe(true);
   });
 });
+
+describe('losing followers', () => {
+  // Getting cancelled used to PAY 22,000 followers — the model keyed on
+  // significance alone, so a cancellation was worth exactly a wedding.
+  const REP_SEASONS = [
+    { seasonId: 'r-1', airYear: 2020, airSlot: 'spring' },
+    { seasonId: 'r-2', airYear: 2020, airSlot: 'fall' },
+  ];
+  const CAREERS = [{ id: 'a', name: 'A', wins: 1, seasonsPlayed: 1, bestPlacement: 1,
+    details: [{ seasonId: 'r-1', placement: 1 }] }];
+  const ev = kind => [{ player: 'a', kind, afterSeason: 'r-1', seq: 1, status: 'approved' }];
+  const total = events => followerHistory('a',
+    { careers: CAREERS, seasons: REP_SEASONS, events }).total;
+
+  it('makes a cancellation cost followers, proportionally', () => {
+    const clean = total([]);
+    const cancelled = total(ev('cancelled'));
+    expect(cancelled).toBeLessThan(clean);
+    // Proportional like the decay: about a fifth of what they had.
+    expect(clean - cancelled).toBeGreaterThan(clean * 0.15);
+  });
+
+  it('still lets a feud grow the account — the drama-follow is real', () => {
+    expect(total(ev('feud'))).toBeGreaterThan(total([]));
+  });
+
+  it('gives some back on forgiveness, never all', () => {
+    const fell = total(ev('cancelled'));
+    const events = [...ev('cancelled'),
+      { player: 'a', kind: 'forgiven', afterSeason: 'r-2', seq: 1, status: 'approved' }];
+    const back = total(events);
+    expect(back).toBeGreaterThan(fell - 1);
+    expect(back).toBeLessThan(total([]));
+  });
+
+  it('never drops below the floor — the account still exists', () => {
+    const pile = ['cancelled', 'scandal', 'arrested'].map((kind, i) =>
+      ({ player: 'a', kind, afterSeason: 'r-1', seq: i + 1, status: 'approved' }));
+    expect(total(pile)).toBeGreaterThanOrEqual(FOLLOWERS.floor);
+  });
+});

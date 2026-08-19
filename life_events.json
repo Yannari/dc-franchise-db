@@ -1420,189 +1420,189 @@
       "kind": "graduated",
       "afterSeason": "td-3",
       "seq": 1,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "anne-maria",
       "kind": "podcast",
       "afterSeason": "td-3",
       "seq": 2,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "beth",
       "kind": "new-job",
       "afterSeason": "td-3",
       "seq": 3,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "brick",
       "kind": "tattoo",
       "afterSeason": "td-3",
       "seq": 4,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cameron",
       "kind": "moved-city",
       "afterSeason": "td-3",
       "seq": 5,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cameron",
       "kind": "reunion",
       "afterSeason": "td-3",
       "seq": 6,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cameron",
       "kind": "haircut",
       "afterSeason": "td-3",
       "seq": 7,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cody",
       "kind": "laid-off",
       "afterSeason": "td-3",
       "seq": 8,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "crimson",
       "kind": "new-job",
       "afterSeason": "td-3",
       "seq": 9,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dawn",
       "kind": "pet",
       "afterSeason": "td-3",
       "seq": 10,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dj",
       "kind": "moved-city",
       "afterSeason": "td-3",
       "seq": 11,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "duncan",
       "kind": "hobby",
       "afterSeason": "td-3",
       "seq": 12,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dwayne",
       "kind": "enrolled",
       "afterSeason": "td-3",
       "seq": 13,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dwayne",
       "kind": "quit-job",
       "afterSeason": "td-3",
       "seq": 14,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dwayne",
       "kind": "bankruptcy",
       "afterSeason": "td-3",
       "seq": 15,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "emma",
       "kind": "hosted-comp",
       "afterSeason": "td-3",
       "seq": 16,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "geoff",
       "kind": "haircut",
       "afterSeason": "td-3",
       "seq": 17,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "gwen",
       "kind": "tattoo",
       "afterSeason": "td-3",
       "seq": 18,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "heather",
       "kind": "enrolled",
       "afterSeason": "td-3",
       "seq": 19,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "heather",
       "kind": "haircut",
       "afterSeason": "td-3",
       "seq": 20,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "izzy",
       "kind": "travelling",
       "afterSeason": "td-3",
       "seq": 21,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jo",
       "kind": "laid-off",
       "afterSeason": "td-3",
       "seq": 22,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "justin",
       "kind": "pet",
       "afterSeason": "td-3",
       "seq": 23,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "katie",
       "kind": "promoted",
       "afterSeason": "td-3",
       "seq": 24,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "leshawna",
       "kind": "promoted",
       "afterSeason": "td-3",
       "seq": 25,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lindsay",
       "kind": "enrolled",
       "afterSeason": "td-3",
       "seq": 26,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "mike",
       "kind": "dating",
       "afterSeason": "td-3",
       "seq": 27,
-      "status": "proposed",
+      "status": "approved",
       "whom": "zoey"
     },
     {
@@ -1610,49 +1610,49 @@
       "kind": "new-job",
       "afterSeason": "td-3",
       "seq": 28,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "owen",
       "kind": "started-business",
       "afterSeason": "td-3",
       "seq": 29,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "scott",
       "kind": "tattoo",
       "afterSeason": "td-3",
       "seq": 30,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "scott",
       "kind": "learned",
       "afterSeason": "td-3",
       "seq": 31,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "sierra",
       "kind": "travelling",
       "afterSeason": "td-3",
       "seq": 32,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "tyler",
       "kind": "pet",
       "afterSeason": "td-3",
       "seq": 33,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "zoey",
       "kind": "bought-home",
       "afterSeason": "td-3",
       "seq": 34,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "alejandro",

@@ -218,11 +218,27 @@ export function postsFor(slug, { events = [], seasons = [], photos = [] } = {}) 
   const photoFor = new Map(claim.map((c, n) => [c.i, photos[n]]));
 
   return mine.map((e, i) => ({
-    event: e,
+    // `_sig` rides along on the event so the voice bank does not have to import
+    // the vocabulary to ask how much something matters.
+    event: { ...e, _sig: significanceOf(e.kind) },
     kind: e.kind,
     track: kindOf(e.kind)?.track || '',
     significance: significanceOf(e.kind),
     photo: photoFor.get(i) || null,
     season: seasons.find(s => s.seasonId === e.afterSeason) || null,
   })).reverse();
+}
+
+
+/**
+ * The people who would show up under somebody's post, as [{slug, weight}].
+ *
+ * Straight off the social graph the life resolver already builds. Positive is a
+ * friend, strongly positive is close, negative is a rival — and a rival mostly
+ * says nothing, which the voice bank handles.
+ */
+export function tiesFor(slug, graph) {
+  const row = graph?.get?.(slug);
+  if (!row) return [];
+  return [...row.entries()].map(([other, weight]) => ({ slug: other, weight }));
 }

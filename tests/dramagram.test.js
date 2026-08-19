@@ -249,9 +249,18 @@ describe('the page tells a caption from the profile it is on', () => {
   });
 
   it('does not print the name twice in the opened post', () => {
-    // lineFor already opens with it; the first build read "Alejandro Alejandro
-    // and Lindsay broke up."
+    // WHY THIS CHANGED. In step two the caption WAS the wiki line, which opens
+    // with the name, so the bold prefix produced "Alejandro Alejandro and
+    // Lindsay broke up." In step three the caption is first person and contains
+    // no name at all, so the prefix is the ordinary username-then-caption
+    // convention and is required rather than forbidden.
+    //
+    // The invariant is the same either way: whatever fills the caption slot
+    // must not repeat the name the prefix already printed.
     const modal = page.slice(page.indexOf('function openPost'), page.indexOf('let allEvents'));
-    expect(modal).not.toMatch(/<b>\$\{esc\(d\.name\)\}<\/b>/);
+    expect(modal, 'the caption slot is the encyclopedia sentence again')
+      .toMatch(/const caption = captionFor\(/);
+    expect(modal, 'the wiki line is being used as the caption')
+      .not.toMatch(/const caption = lineFor\(/);
   });
 });

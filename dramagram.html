@@ -132,6 +132,13 @@
   .dg-open-cap{font-size:15px;line-height:1.55}
   .dg-open-meta{color:var(--dg-dim);font-size:12px;margin-top:10px;letter-spacing:.05em;
     text-transform:uppercase;font-weight:700}
+  /* What they said, then what happened, then the room. */
+  .dg-open-fact{color:var(--dg-dim);font-size:12.5px;margin-top:9px;padding-top:9px;
+    border-top:1px solid var(--dg-line);line-height:1.5}
+  .dg-comments{margin-top:12px;display:grid;gap:7px}
+  .dg-c{font-size:13.5px;line-height:1.45}
+  .dg-c b{font-weight:700;margin-right:5px}
+  .dg-c[data-rel=rival]{color:var(--dg-dim)}
   .dg-close{margin-top:14px;background:none;border:1px solid var(--dg-line);color:var(--dg-dim);
     padding:8px 14px;border-radius:2px;font:inherit;font-size:13px;cursor:pointer}
 </style>
@@ -181,8 +188,10 @@
 
 <script type="module" src="js/site-header.js"></script>
 <script type="module">
-import { directory, short, postsFor, photosOf, followerHistory } from './js/dramagram.js';
+import { directory, short, postsFor, photosOf, followerHistory, tiesFor } from './js/dramagram.js';
 import { lineFor } from './js/life-events.js';
+import { captionFor, commentsFor } from './js/dramagram-voice.js';
+import { socialGraph } from './js/life-resolver.js';
 import { careersIn } from './js/records.js';
 import { airLabel, latestAired } from './js/franchise-calendar.js';
 import { currentShow } from './js/show-switcher.js';
@@ -305,7 +314,13 @@ function postTile(p, i) {
   // carries whichever half it was written from, so passing event.player put
   // "Bowie and Hicks fell out publicly" on HICKS'S OWN page. The reader is
   // whoever's profile this is.
-  const caption = lineFor(p.event, namesBySlug, viewing);
+  // THE CAPTION, NOT THE WIKI LINE. lineFor writes the encyclopedia sentence —
+  // third person, past tense — which is right for an article and wrong on a
+  // photo. This is the same fact in the character's own voice.
+  const caption = captionFor(p.event, {
+    archetype: archetypeBySlug[viewing], names: namesBySlug,
+    season: p.season ? (p.season.title || '') : '',
+  }) || lineFor(p.event, namesBySlug, viewing);
   if (p.photo) {
     return `<button class="dg-post" data-post="${i}" title="${esc(caption)}">
       <img src="${esc(p.photo)}" alt="" loading="lazy">
@@ -320,7 +335,14 @@ function postTile(p, i) {
 }
 
 function openPost(p, d) {
-  const caption = lineFor(p.event, namesBySlug, viewing);
+  const caption = captionFor(p.event, {
+    archetype: archetypeBySlug[viewing], names: namesBySlug,
+    season: p.season ? (p.season.title || '') : '',
+  }) || lineFor(p.event, namesBySlug, viewing);
+  // What actually happened, under what they said about it. The two registers
+  // sit together rather than one replacing the other.
+  const fact = lineFor(p.event, namesBySlug, viewing);
+  const comments = commentsFor(p.event, { ties: tiesFor(viewing, graph), names: namesBySlug });
   const wrap = document.createElement('div');
   wrap.className = 'dg-open';
   wrap.innerHTML = `<div class="dg-open-in">
@@ -328,8 +350,11 @@ function openPost(p, d) {
     <div class="dg-open-body">
       <!-- No name prefix: lineFor already opens with it, and the first build
            read "Alejandro Alejandro and Lindsay broke up." -->
-      <div class="dg-open-cap">${esc(caption)}${
-        p.event.detail ? ` ${esc(p.event.detail)}` : ''}</div>
+      <div class="dg-open-cap"><b>${esc(d.name)}</b> ${esc(caption)}</div>
+      <div class="dg-open-fact">${esc(fact)}${p.event.detail ? ` ${esc(p.event.detail)}` : ''}</div>
+      ${comments.length ? `<div class="dg-comments">${comments.map(c =>
+        `<div class="dg-c" data-rel="${c.relation}"><b>${esc(c.name)}</b> ${esc(c.text)}</div>`
+      ).join('')}</div>` : ''}
       <div class="dg-open-meta">${esc(p.season ? airLabel(p.season) : '')} · ${esc(p.track)}</div>
       <button class="dg-close">Close</button>
     </div>
@@ -339,11 +364,12 @@ function openPost(p, d) {
 }
 
 let allEvents = []; let allSeasons = []; let allCareers = []; let namesBySlug = {};
+let graph = null; let archetypeBySlug = {};
 /** Whose profile is open — the side every caption is told from. */
 let viewing = null;
 
 (async () => {
-  const [pdb, sdb, life, live] = await Promise.all([
+  const [pdb, sdb, life, live, roster] = await Promise.all([
     fetch('players_database.json').then(r => r.json()).catch(() => ({ players: [] })),
     fetch('seasons_database.json').then(r => r.json()).catch(() => ({ seasons: [] })),
     fetch('life_events.json').then(r => r.json()).catch(() => ({ events: [] })),
@@ -352,12 +378,19 @@ let viewing = null;
     // dot is simply not sequestered.
     fetch('https://dc-studio.yannari19.workers.dev/api/live-season')
       .then(r => r.json()).then(j => (j && j.ok && j.airing) ? j : null).catch(() => null),
+    fetch('franchise_roster.json').then(r => r.json()).catch(() => ({ players: [] })),
   ]);
   const seasons = sdb.seasons || [];
   allSeasons = seasons;
   allEvents = life.events || [];
   allCareers = careersIn(pdb, 'all');
   namesBySlug = Object.fromEntries((pdb.players || []).map(p => [p.id, p.name]));
+  // Who knows whom, so a comment section is made of people who actually do.
+  graph = socialGraph(allCareers);
+  // Tone comes from the archetype: a villain does not caption a wedding the way
+  // a hero does. Read from the published roster, which is where it is authored.
+  const rosterList = Array.isArray(roster) ? roster : (roster.players || []);
+  archetypeBySlug = Object.fromEntries(rosterList.map(r => [r.slug, r.archetype]));
   rows = directory({ careers: allCareers, seasons, events: allEvents, live });
 
   const now = latestAired(seasons);

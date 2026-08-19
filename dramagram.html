@@ -54,6 +54,12 @@
   .dg-apps a:hover{color:var(--dg-ink);border-color:var(--dg-dim)}
   .dg-apps span{color:var(--dg-bg);background:var(--dg-hot);border-color:var(--dg-hot)}
   .dg-back{color:var(--dg-hot);text-decoration:none;font-weight:600;font-size:13px}
+  /* `display:flex` on the bar and the grid beats the hidden ATTRIBUTE, so
+     hiding them in JS did nothing visible — the search bar sat over the
+     profile it could not search. One rule, for every element on the page. */
+  [hidden]{display:none !important}
+  .dg-return{display:inline-block;margin:0 0 14px}
+  .dg-return:hover{text-decoration:underline}
   .dg-rel{display:inline-flex;align-items:center;gap:5px;color:var(--dg-hot);font-weight:600}
 
   .dg-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 16px}
@@ -208,7 +214,12 @@
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
         ChatAlumni
       </a>
-      <span aria-current="page">
+      <!-- A SPAN ON THE DIRECTORY, A LINK EVERYWHERE ELSE.
+           Marked as the current page is right when you are looking at the
+           directory and wrong when you are two clicks into somebody's profile:
+           it was the one control that looked like the way home and did nothing
+           when pressed. Swapped for a link by the boot code below. -->
+      <span id="dg-here" aria-current="page">
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/></svg>
         Dramagram
       </span>
@@ -308,6 +319,16 @@ async function renderProfile(slug) {
   viewing = slug;
   const d = rows.find(x => x.slug === slug);
   $('#dg-grid').hidden = true;
+  // The search and the sort belong to the DIRECTORY. On a profile they were
+  // still sitting there, offering to sort a list that is not on screen.
+  $('.dg-bar').hidden = true;
+  // And the app chip stops claiming you are already where it would take you.
+  const here = $('#dg-here');
+  if (here && here.tagName === 'SPAN') {
+    here.outerHTML = here.outerHTML
+      .replace('<span id="dg-here" aria-current="page">', '<a id="dg-here" href="dramagram.html">')
+      .replace(/<\/span>$/, '</a>');
+  }
   const host = $('#dg-profile');
   host.hidden = false;
   if (!d) { host.innerHTML = '<p class="dg-empty">No such profile.</p>'; return; }
@@ -323,6 +344,11 @@ async function renderProfile(slug) {
   const bioLine = [bio.occupation, bio.hometown].filter(Boolean).join(' · ');
 
   host.innerHTML = `
+    <!-- THE WAY BACK. Opening a profile is a real navigation, so the browser
+         button always worked — but the page itself had no visible way out once
+         the app switcher replaced the old link, and a page you can only leave
+         by browser chrome is one you are stuck on. -->
+    <a class="dg-back dg-return" href="dramagram.html">← All profiles</a>
     <div class="dg-prof">
       <img class="dg-prof-pic" src="${esc(profilePicOf(slug)
         ? imageUrl(slug, profilePicOf(slug))

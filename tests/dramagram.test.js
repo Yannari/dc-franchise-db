@@ -305,3 +305,31 @@ describe('relationship status', () => {
       .toBe('Single');
   });
 });
+
+// A page you can only leave with browser chrome is one you are stuck on.
+describe('getting back out of a profile', () => {
+  const page = readFileSync('dramagram.html', 'utf8');
+
+  it('puts a way home inside the profile itself', () => {
+    expect(page).toMatch(/class="dg-back dg-return" href="dramagram\.html"/);
+  });
+
+  it('hides the directory search while a profile is open', () => {
+    // It offered to sort a list that was not on screen.
+    expect(page).toMatch(/\$\('\.dg-bar'\)\.hidden = true;/);
+  });
+
+  it('makes hidden actually hide, against display:flex', () => {
+    // .dg-bar and .dg-grid are flex/grid, which beat the hidden ATTRIBUTE, so
+    // hiding them in JS changed nothing on screen.
+    expect(page).toMatch(/\[hidden\]\{display:none ?!important\}/);
+  });
+
+  it('turns the app chip into a link once you are off the directory', () => {
+    // Marked "current page" is right on the directory and wrong two clicks in,
+    // where it was the one control that looked like the way home and did
+    // nothing when pressed.
+    expect(page).toMatch(/id="dg-here"/);
+    expect(page).toMatch(/href="dramagram\.html">/);
+  });
+});

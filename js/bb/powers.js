@@ -577,12 +577,20 @@ export function powerLedgerFor(week, house = gs.activePlayers || []) {
       // came back the following week reading "LAST WEEK IT EXISTS", under a
       // heading that says STILL OUT THERE, after the audience had watched it go
       // off. It belongs on the week it fired and on no week after it.
-      if (p.used) return p.usedWeek === week;
-      // Same for one that left: the night it went, and not a week longer. With
-      // no record of WHEN it was disposed there was nothing to compare against,
-      // so a power lost with an evicted holder sat there being lost again every
-      // week until its original window ran out.
-      if (p.disposed) return (p.disposedWeek ?? p.expiresAfterWeek) === week;
+      //
+      // AND ON EVERY WEEK BEFORE IT, which the strict-equality version of this
+      // clause got wrong in the other direction. This ledger is a per-week
+      // SNAPSHOT — a replay of week one must show the season as it stood in
+      // week one — and `usedWeek === week` deleted a power from every week it
+      // had been alive and unspent. A Coup granted in week one and detonated
+      // in week two vanished from week one's own record. Alive until it fired,
+      // gone after: that is the whole rule, in one comparison.
+      if (p.used) return week <= p.usedWeek;
+      // Same for one that left: alive until the night it went, and not a week
+      // longer. With no record of WHEN it was disposed there was nothing to
+      // compare against, so a power lost with an evicted holder sat there
+      // being lost again every week until its original window ran out.
+      if (p.disposed) return week <= (p.disposedWeek ?? p.expiresAfterWeek);
       return week <= p.expiresAfterWeek;
     })
     .map(p => {
@@ -600,9 +608,12 @@ export function powerLedgerFor(week, house = gs.activePlayers || []) {
         holder: p.holder, visibility: p.visibility, source: p.source,
         acquiredWeek: p.acquiredWeek, expiresAfterWeek: p.expiresAfterWeek,
         weeksLeft: Math.max(0, p.expiresAfterWeek - week),
-        used: !!p.used, usedWeek: p.usedWeek,
+        // STATE AS OF THIS WEEK, not as of now. The entry is a snapshot the
+        // replay reads, so a power spent in week two must not read "used" on
+        // week one's screen — it had not happened yet.
+        used: !!p.used && p.usedWeek <= week, usedWeek: p.usedWeek,
         firedThisWeek: p.usedWeek === week,
-        disposed: !!p.disposed || holderGone,
+        disposed: (!!p.disposed && (p.disposedWeek ?? p.expiresAfterWeek) <= week) || holderGone,
         disposedReason: p.disposedReason || (holderGone ? 'holder-evicted' : null),
         blurb: def.blurb || '', catch: def.catch || '', moment: def.moment || '',
       };

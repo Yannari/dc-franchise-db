@@ -2947,9 +2947,17 @@ export function simulateBBWeek(options = {}) {
     if (!extra || nominees.includes(extra) || untouchable.includes(extra)) break;
     nominees.push(extra);
   }
-  if (nominees.length < 2) {
+  // The safety net for a broken or empty plan — and the floor is hohSeats,
+  // NOT a hard two. This line predates the curse's reserved chair and used to
+  // read `< 2`, which quietly undid the whole dock: a cursed week gives the
+  // Head of Household ONE seat, the plan correctly produced one name, and
+  // this net looked at a one-name block, decided the plan had failed, and
+  // refilled to two. The curse seat then made three — on every ordinary
+  // cursed week, which is exactly what the played temptation test measured.
+  if (nominees.length < Math.min(2, hohSeats)) {
     nominees = chooseNominationPlan(hoh, house, rng).nominees
-      .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
+      .filter(name => house.includes(name) && !untouchable.includes(name)
+        && name !== curseSeat).slice(0, hohSeats);
   }
   // ── the second key the Head of Household did not agree to ──
   //
@@ -3145,34 +3153,17 @@ export function simulateBBWeek(options = {}) {
     }
   }
 
-  // ── the curse takes its chair ──
+  // ── the curse's chair was already taken, two hundred lines up ──
   //
-  // Nobody chose this name and nobody can be blamed for it, which is what
-  // separates it from Roadkill's third nominee: there is no chooser to hunt,
-  // only a beneficiary. The cursed houseguest nominates THEMSELVES, so the
-  // Head of Household's two are untouched and the ceremony gains a third
-  // chair that the room cannot attribute to anybody in it.
-  // The victim is drawn HERE rather than back in the Den, from houseguests who
-  // can actually take the chair — everybody safe is off the list, so the draw
-  // cannot land somewhere it is unable to sit. It used to be drawn at week
-  // opening over the whole house, and a curse that hit the Head of Household
-  // was announced to the viewer and then silently never seated.
-  if (week.temptation?.accepted) {
-    const curseAct = resolveCurse({
-      week, house, rng,
-      protectedNames: [...untouchable, ...nominees],
-    });
-    if (curseAct) {
-      if (curseAct.cursed) {
-        nominees.push(curseAct.cursed);
-        week.temptationChair = curseAct.cursed;
-      } else {
-        week.temptationCurseMissed = true;
-      }
-      week.acts.push(addBeats(curseAct,
-        curseAct.cursed ? { nominees: [curseAct.cursed] } : {}));
-    }
-  }
+  // The reserve-a-seat implementation before the nomination plan is the whole
+  // curse now: it resolves the name, docks the Head of Household a seat
+  // (`hohSeats`), and appends the cursed houseguest itself. A second copy of
+  // the OLD design used to live here — resolve again, `nominees.push` a third
+  // chair — and because both ran, an accepted offer cursed TWO different
+  // houseguests, grew the block to three on an ordinary week, overwrote
+  // `week.temptationChair` with the second name, and staged the curse act
+  // twice. `tests/bb-temptation.test.js` ("the curse takes a seat, it does
+  // not add one") is the guard that caught it.
 
   nominees.forEach(name => gs.bb.stats[name].timesNominated++);
   setSpotlight({ nominees: [...nominees] });

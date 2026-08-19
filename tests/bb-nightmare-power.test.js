@@ -15,6 +15,11 @@ import { runNightmarePower, nightmarePull } from '../js/bb/nightmare-power.js';
 import { BB_POWER_DEFINITIONS } from '../js/bb/powers.js';
 import { BB_THEMES } from '../js/bb/themes.js';
 import { rpBuildBBNightmare } from '../js/vp-bb-nightmare.js';
+import { grantPower } from '../js/bb/powers.js';
+import { simulateBBEpisode } from '../js/bb-run.js';
+import { NIGHTMARE_EVENTS } from '../js/bb-events/nightmare.js';
+import { HOUSE_EVENTS } from '../js/bb-events/index.js';
+import { withSeededRandom } from './helpers/rng.js';
 import { seedGame } from './helpers/setup.js';
 
 const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly',
@@ -158,5 +163,71 @@ describe('the Nightmare Power', () => {
     }
     // And the primer says what it does, per the guard the other themes carry.
     expect(camp.primer.rules.join('\n')).toMatch(/voids a nomination/i);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE NIGHT PLAYS IN ORDER, AND THE WEEK REMEMBERS IT
+// ══════════════════════════════════════════════════════════════════════
+describe('the Nightmare Power, played', () => {
+  beforeEach(house);
+
+  /** Play seeded episodes with the power pre-granted until it fires. */
+  function fired(maxSeeds = 25) {
+    for (let seed = 1; seed <= maxSeeds; seed++) {
+      house();
+      grantPower('nightmare-power', gs.activePlayers[4], { week: 1, visibility: 'secret', source: 'test' });
+      for (let e = 0; e < 5; e++) {
+        let ep;
+        try { ep = withSeededRandom(seed * 61 + e * 13 + 7, () => simulateBBEpisode()); }
+        catch { break; }
+        if (!ep) break;
+        if ((ep.acts || []).some(a => a.type === 'nightmare-power')) {
+          return { ep, week: gs.bb.weeks[gs.bb.weeks.length - 1] };
+        }
+      }
+    }
+    return null;
+  }
+
+  it('shows the ceremony first and the switch second', () => {
+    // Reported off a real season: the 3am screen was appearing BEFORE the
+    // nomination ceremony it voids, and the ceremony screen showed the
+    // already-switched pair — so the original block was never seen at all.
+    const played = fired();
+    expect(played, 'the power never fired across 25 seeded runs').toBeTruthy();
+    const { ep, week } = played;
+    const nomIdx = (ep.acts || []).findIndex(a => a.type === 'nominations');
+    const nmIdx = (ep.acts || []).findIndex(a => a.type === 'nightmare-power');
+    expect(nomIdx, 'no nomination act at all').toBeGreaterThanOrEqual(0);
+    expect(nmIdx, 'no nightmare act at all').toBeGreaterThanOrEqual(0);
+    expect(nmIdx, 'the 3am wake-up played before the ceremony it voids')
+      .toBeGreaterThan(nomIdx);
+    // The ceremony act carries the ORIGINAL pair — the block the house went
+    // to bed on — and the nightmare act carries the switch.
+    const nomAct = ep.acts[nomIdx];
+    const nmAct = ep.acts[nmIdx];
+    for (const n of nmAct.voided) {
+      expect(nomAct.nominees, `${n} was voided but never shown nominated`).toContain(n);
+    }
+    // And the week ends on the corrected block, not the voided one.
+    expect(week.initialNominees.slice().sort()).toEqual([...nmAct.nominees].sort());
+  });
+
+  it('leaves a week the house actually reacts to', () => {
+    // The act is the night; the family is the morning after. Every event is
+    // registered, and at least one fires in the week the power went off —
+    // with a real consequence, because a purely cosmetic reaction is the
+    // thing this codebase bans.
+    const ids = new Set(HOUSE_EVENTS.map(e => e.id));
+    for (const e of NIGHTMARE_EVENTS) {
+      expect(ids.has(e.id), `${e.id} is not registered`).toBe(true);
+    }
+    const played = fired();
+    expect(played, 'the power never fired across 25 seeded runs').toBeTruthy();
+    const beats = (played.ep.acts || []).flatMap(a => a.socialBeats || [])
+      .filter(b => String(b.eventId || '').startsWith('nightmare-'));
+    expect(beats.length, 'the house never once reacted to a voided ceremony')
+      .toBeGreaterThan(0);
   });
 });

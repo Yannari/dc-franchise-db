@@ -43,6 +43,7 @@ import { COUP_EVENTS } from './coup.js';
 import { EVICTION_POWER_EVENTS } from './eviction-powers.js';
 import { AMERICAS_NOMINEE_EVENTS } from './americas-nominee.js';
 import { COIN_EVENTS } from './coin-of-destiny.js';
+import { NIGHTMARE_EVENTS } from './nightmare.js';
 import { CARE_PACKAGE_EVENTS } from './care-package.js';
 import { SAFETY_SUITE_EVENTS } from './safety-suite.js';
 import { PUNISHMENT_EVENTS } from './punishments.js';
@@ -96,6 +97,7 @@ export const HOUSE_EVENTS = [
   ...EVICTION_POWER_EVENTS,
   ...AMERICAS_NOMINEE_EVENTS,
   ...COIN_EVENTS,
+  ...NIGHTMARE_EVENTS,
   ...CARE_PACKAGE_EVENTS,
   ...SAFETY_SUITE_EVENTS,
   ...PUNISHMENT_EVENTS,

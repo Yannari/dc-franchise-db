@@ -3178,50 +3178,6 @@ export function simulateBBWeek(options = {}) {
   setSpotlight({ nominees: [...nominees] });
   week.initialNominees = [...nominees];
   week.plan = plan;
-  // ── THE NIGHTMARE POWER: the ceremony is over, and then it is not ────
-  //
-  // BB21 Whacktivity. Runs HERE, after the ceremony has been counted and
-  // written down, because that is what it undoes — the stats above have
-  // already recorded two nominations and the wall has already changed. Every
-  // other power in this game changes what is about to happen; this one
-  // reaches backwards, so it has to run after the thing it reverses.
-  //
-  // The rewrite mirrors the Coin of Destiny two hundred lines up: replace
-  // `nominees`, restamp `initialNominees`, credit the new pair, respot the
-  // wall and revise the house plans. The act is SECRET — the house watches
-  // the block change and is never told whose hand did it.
-  const nightmare = activePowerAt('post-noms', week.num, 'nightmare-power');
-  if (!compressed && nightmare && house.includes(nightmare.holder)
-    && nightmare.holder !== hoh && nominees.length === 2) {
-    try {
-      const pull = nightmarePull(nightmare.holder, {
-        nominees: [...nominees],
-        weeksLeft: Math.max(0, (nightmare.expiresAfterWeek || week.num) - week.num),
-        rng,
-      });
-      if (rng() < pull) {
-        const redo = runNightmarePower({
-          week, house, hoh, holder: nightmare.holder,
-          nominees: [...nominees], untouchable, rng,
-        });
-        // A house that cannot field two fresh names keeps the ceremony it
-        // already had, and the power is NOT spent — the same rule the veto
-        // uses when no legal replacement exists.
-        if (redo) {
-          usePower(nightmare, week.num);
-          nominees = [...redo.nominees];
-          week.initialNominees = [...nominees];
-          week.nightmareVoided = [...redo.act.voided];
-          nominees.forEach(name => gs.bb.stats[name].timesNominated++);
-          setSpotlight({ nominees: [...nominees] });
-          revise('noms', { hoh, nominees: [...nominees] });
-          week.acts.push(addBeats(redo.act, { nominees: [...nominees] }));
-        }
-      }
-    } catch (err) {
-      (week._nightmareError ||= []).push(String(err?.message || err));
-    }
-  }
 
   // ── the promises this ceremony just broke ──
   //
@@ -3845,6 +3801,70 @@ export function simulateBBWeek(options = {}) {
         eventId: 'invisible-hoh-guess', category: 'ceremonies', location: 'bedroom',
         effects: [{ kind: 'bond', text: `${nom} & ${guess} ${hit.toFixed(1)}`, delta: hit }],
       });
+    }
+  }
+
+  // ── THE NIGHTMARE POWER: the ceremony is over, and then it is not ────
+  //
+  // BB21 Whacktivity, and the ORDER here is the whole point. It voids a
+  // ceremony that already happened, so it must run AFTER the nomination act
+  // and every beat that rides on it — the roadkill blame, the bloc
+  // fingerprints, the invisible-HOH guesses. It used to run before the act
+  // was pushed, and the episode played the 3am wake-up BEFORE the ceremony
+  // it undid, with the ceremony screen already showing the switched pair, so
+  // the original block was never seen at all. Reported off a real season.
+  //
+  // Everything the ceremony did to the ORIGINAL two stands — the promises it
+  // broke, the fallout, the grudges. That ceremony genuinely happened; the
+  // house went to bed on it. What follows is the lights coming on.
+  //
+  // The rewrite mirrors the Coin of Destiny: replace `nominees`, restamp
+  // `initialNominees`, credit the new pair, respot the wall and revise the
+  // house plans. The act is SECRET — the house watches the block change and
+  // is never told whose hand did it. Sitting before the post-noms house act
+  // means the rest of the week reacts to the corrected block.
+  const nightmare = activePowerAt('post-noms', week.num, 'nightmare-power');
+  if (!compressed && nightmare && house.includes(nightmare.holder)
+    && nightmare.holder !== hoh && nominees.length === 2) {
+    try {
+      const pull = nightmarePull(nightmare.holder, {
+        nominees: [...nominees],
+        weeksLeft: Math.max(0, (nightmare.expiresAfterWeek || week.num) - week.num),
+        rng,
+      });
+      if (rng() < pull) {
+        const redo = runNightmarePower({
+          week, house, hoh, holder: nightmare.holder,
+          nominees: [...nominees], untouchable, rng,
+        });
+        // A house that cannot field two fresh names keeps the ceremony it
+        // already had, and the power is NOT spent — the same rule the veto
+        // uses when no legal replacement exists.
+        if (redo) {
+          usePower(nightmare, week.num);
+          nominees = [...redo.nominees];
+          week.initialNominees = [...nominees];
+          week.nightmareVoided = [...redo.act.voided];
+          // Who the house can plausibly suspect: everybody it WATCHED walk
+          // into that Whacktivity room, weeks ago. The winner was told in
+          // private, but the door was public — this list is the event
+          // family's material, the same way the Coin's buyer list is.
+          try {
+            const wk = (gs.bb.weeks || []).find(w => (w.whacktivity?.rooms || [])
+              .some(r => r.powerId === 'nightmare-power' && (r.entrants || []).length));
+            const room = (wk?.whacktivity?.rooms || [])
+              .find(r => r.powerId === 'nightmare-power');
+            week.nightmareSuspects = (room?.entrants || [])
+              .map(e => (typeof e === "string" ? e : e?.name)).filter(Boolean);
+          } catch { week.nightmareSuspects = []; }
+          nominees.forEach(name => gs.bb.stats[name].timesNominated++);
+          setSpotlight({ nominees: [...nominees] });
+          revise('noms', { hoh, nominees: [...nominees] });
+          week.acts.push(addBeats(redo.act, { nominees: [...nominees] }));
+        }
+      }
+    } catch (err) {
+      (week._nightmareError ||= []).push(String(err?.message || err));
     }
   }
 

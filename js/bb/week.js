@@ -6530,7 +6530,32 @@ export function simulateBBWeek(options = {}) {
     } catch { /* the season plays on without the paperwork */ }
   }
 
-  if (!compressed && twists.has('bb-camp-comeback') && evicted) {
+  // ── THE CAMP FILLS OVER FOUR EVICTIONS, NOT OVER ONE WEEK ──
+  //
+  // The contract says `duration: { weeks: 4 }` and the catalog card says "the
+  // next four houseguests evicted". `bbTwistsForWeek` says neither: it matches
+  // a twist to a week by EXACT episode number and knows nothing about
+  // duration. So a Camp Comeback booked on week three was active on week three
+  // and nowhere else — one camper arrived, the camp never reached four, and
+  // the comeback competition never ran. Reported as "1 of 4, and no mention of
+  // it after".
+  //
+  // Fixed the way `hidden-power` already does it eighty lines up: once the
+  // twist has opened something, the STATE keeps it open, not the schedule.
+  // `campers()` counts the living campers and empties itself when the
+  // comeback resolves — one returns, the rest are marked gone — so this
+  // cannot reopen a camp that has already run.
+  //
+  // Widening `bbTwistsForWeek` to honour `duration` was the other candidate
+  // and it is worse: nothing guards the twist ANNOUNCEMENT, so the house
+  // would be read the Camp Comeback rules four weeks running.
+  const _campFilling = (() => {
+    try {
+      const living = campers().length;
+      return living > 0 && living < CAMP_SIZE;
+    } catch { return false; }
+  })();
+  if (!compressed && (twists.has('bb-camp-comeback') || _campFilling) && evicted) {
     try {
       const camped = sendToCamp({ week, evicted, house, rng });
       if (camped) {

@@ -17,7 +17,7 @@
 // And the standing law: THEY COULD TAKE IT WELL OR LESS WELL, REALLY DEPENDS.
 import { gs } from '../core.js';
 import { pronouns } from '../players.js';
-import { pStats, band, perceived } from './_read.js';
+import { pStats, band, perceived, firedThisWeek } from './_read.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
@@ -42,6 +42,11 @@ const countsTheRail = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('side-bet-counts-the-rail', Number(ctx?.week?.num) || 0)) return 0;
     const rail = _rail(ctx, house);
     return rail && _block(ctx, house).length ? band(11, 14) : 0;
   },
@@ -92,6 +97,11 @@ const collected = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('side-bet-collected', Number(ctx?.week?.num) || 0)) return 0;
     const num = Number(ctx?.week?.num) || 0;
     if (num < 2) return 0;
     const prev = (gs.bb?.weeks || []).find(w => Number(w?.num) === num - 1);

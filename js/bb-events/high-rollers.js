@@ -19,7 +19,7 @@
 // The privacy rule stands here too: what somebody PAID is public (the door
 // is), a BALANCE never is, and no beat may state one.
 import { pronouns } from '../players.js';
-import { pStats, band, perceived } from './_read.js';
+import { pStats, band, perceived, firedThisWeek } from './_read.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
@@ -44,6 +44,11 @@ const walkedIn = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('hrr-walked-in', Number(ctx?.week?.num) || 0)) return 0;
     return _entries(ctx, house).length ? band(11, 14) : 0;
   },
   fire(house, ctx, api) {
@@ -86,6 +91,11 @@ const lostTheSeat = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('hrr-lost-the-seat', Number(ctx?.week?.num) || 0)) return 0;
     return _entries(ctx, house).some(e => e.won === false) ? band(11, 14) : 0;
   },
   fire(house, ctx, api) {
@@ -127,6 +137,11 @@ const wheeledUp = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('hrr-wheeled-up', Number(ctx?.week?.num) || 0)) return 0;
     const swap = ctx?.week?.rouletteSwap;
     return swap?.up && house.includes(swap.up) ? band(11, 14) : 0;
   },
@@ -165,6 +180,11 @@ const secondVeto = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('hrr-derby-second-veto', Number(ctx?.week?.num) || 0)) return 0;
     const dv = ctx?.week?.derbyVeto;
     return dv?.holder && house.includes(dv.holder) ? band(11, 14) : 0;
   },

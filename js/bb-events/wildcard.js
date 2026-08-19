@@ -12,7 +12,7 @@
 // reaction. A server needles the winner or tips their cap; the refuser is
 // admired or re-priced as somebody who must already have the votes.
 import { pronouns } from '../players.js';
-import { pStats, band, perceived } from './_read.js';
+import { pStats, band, perceived, firedThisWeek } from './_read.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
@@ -35,6 +35,11 @@ const servingTheBill = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('wildcard-serving', Number(ctx?.week?.num) || 0)) return 0;
     const wc = _wc(ctx, house);
     return wc?.accepted && wc.houseWide
       && (wc.served || []).some(n => house.includes(n)) ? band(12, 15) : 0;
@@ -84,6 +89,11 @@ const refusalTested = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('wildcard-refusal-tested', Number(ctx?.week?.num) || 0)) return 0;
     const wc = _wc(ctx, house);
     return wc && !wc.accepted ? band(12, 15) : 0;
   },
@@ -124,6 +134,11 @@ const wearingIt = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('wildcard-wearing-it', Number(ctx?.week?.num) || 0)) return 0;
     const wc = _wc(ctx, house);
     return wc?.accepted && !wc.houseWide ? band(10, 13) : 0;
   },

@@ -21,7 +21,7 @@
 // the Coin's buyer list is its family's material. The holder is IN the list
 // and must never be singled out as more than a suspect.
 import { pronouns } from '../players.js';
-import { pStats, band } from './_read.js';
+import { pStats, band, firedThisWeek } from './_read.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
@@ -46,6 +46,11 @@ const cameDown = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('nightmare-came-down', Number(ctx?.week?.num) || 0)) return 0;
     const week = _fired(ctx);
     if (!week) return 0;
     // Rare state, so it speaks loudly when it exists — the same rule every
@@ -94,6 +99,11 @@ const wentUp = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('nightmare-went-up', Number(ctx?.week?.num) || 0)) return 0;
     const week = _fired(ctx);
     if (!week) return 0;
     const noms = week.initialNominees || [];
@@ -144,6 +154,11 @@ const countsTheRoom = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('nightmare-counts-the-room', Number(ctx?.week?.num) || 0)) return 0;
     if (!_fired(ctx)) return 0;
     return _suspects(ctx, house).length >= 2 ? band(11, 14) : 0;
   },
@@ -174,6 +189,11 @@ const hohAfter = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('nightmare-hoh-after', Number(ctx?.week?.num) || 0)) return 0;
     const week = _fired(ctx);
     const hoh = _hoh(ctx);
     return week && hoh && house.includes(hoh) ? band(10, 13) : 0;

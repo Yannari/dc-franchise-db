@@ -16,7 +16,7 @@
 // Week one only by construction — everything gates on `week.campDirector`,
 // which only the first week ever carries.
 import { pronouns } from '../players.js';
-import { pStats, band, perceived } from './_read.js';
+import { pStats, band, perceived, firedThisWeek } from './_read.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
@@ -39,6 +39,11 @@ const needled = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('camp-director-needled', Number(ctx?.week?.num) || 0)) return 0;
     return _camp(ctx, house) ? band(11, 14) : 0;
   },
   fire(house, ctx, api) {
@@ -78,6 +83,11 @@ const survivorSettles = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('camp-director-survivor', Number(ctx?.week?.num) || 0)) return 0;
     const cd = _camp(ctx, house);
     return cd && (cd.survivors || []).some(n => house.includes(n)) ? band(11, 14) : 0;
   },
@@ -116,7 +126,11 @@ const survivorSettles = {
   },
 };
 
-// ── the empty chair at the table ──────────────────────────────────────
+// ── one place too many at the table ──
+//
+// (Badge renamed from THE EMPTY CHAIR: a pre-existing veto event already
+// uses that label for the empty REPLACEMENT chair, and a transcript where
+// one badge means two different things is a transcript nobody can skim.)
 //
 // Somebody went home before the game had rules, and the house knows exactly
 // whose handwriting started it.
@@ -125,6 +139,11 @@ const emptyChair = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('camp-director-empty-chair', Number(ctx?.week?.num) || 0)) return 0;
     const cd = _camp(ctx, house);
     return cd?.evicted ? band(10, 13) : 0;
   },
@@ -141,7 +160,7 @@ const emptyChair = {
     ], ctx, cd.evicted);
     api.popDelta(director, -0.5);
     api.remember(speaker, director, 'the-first-name', 1, { twist: 'camp-director' });
-    return { text, players: [speaker, director], badgeText: 'THE EMPTY CHAIR', badgeClass: 'grey' };
+    return { text, players: [speaker, director], badgeText: 'ONE PLACE TOO MANY', badgeClass: 'grey' };
   },
 };
 

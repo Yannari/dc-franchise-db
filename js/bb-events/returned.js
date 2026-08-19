@@ -19,7 +19,7 @@
 // the voters are sheepish or defiant, and stats pick which, proportionally.
 import { gs } from '../core.js';
 import { pronouns } from '../players.js';
-import { pStats, band, perceived } from './_read.js';
+import { pStats, band, perceived, firedThisWeek } from './_read.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
@@ -48,6 +48,11 @@ const firstMorning = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('returned-first-morning', Number(ctx?.week?.num) || 0)) return 0;
     return _returned(ctx, house) ? band(12, 15) : 0;
   },
   fire(house, ctx, api) {
@@ -87,6 +92,11 @@ const rePriced = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('returned-re-priced', Number(ctx?.week?.num) || 0)) return 0;
     return _returned(ctx, house) ? band(11, 14) : 0;
   },
   fire(house, ctx, api) {
@@ -125,6 +135,11 @@ const doorDefender = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('returned-door-defender', Number(ctx?.week?.num) || 0)) return 0;
     const back = _returned(ctx, house);
     const bb = back?.prev?.battleBack;
     if (!bb) return 0;

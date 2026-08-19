@@ -19,7 +19,7 @@
 //
 // And the standing law: THEY COULD TAKE IT WELL OR LESS WELL, REALLY DEPENDS.
 import { pronouns } from '../players.js';
-import { pStats, band, perceived } from './_read.js';
+import { pStats, band, perceived, firedThisWeek } from './_read.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
@@ -36,6 +36,11 @@ const richMan = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('premiere-rich-man', Number(ctx?.week?.num) || 0)) return 0;
     const pm = ctx?.week?.premiereMystery;
     return pm?.hostWinner && house.includes(pm.hostWinner) ? band(11, 14) : 0;
   },
@@ -74,6 +79,11 @@ const namedTheFour = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('premiere-named-the-four', Number(ctx?.week?.num) || 0)) return 0;
     const pm = ctx?.week?.premiereMystery;
     return pm?.relicWinner && house.includes(pm.relicWinner) ? band(10, 13) : 0;
   },
@@ -118,6 +128,11 @@ const anomaly = {
   category: 'social',
   weight(house, ctx) {
     if (!_reactable(ctx)) return 0;
+    // ONE SCENE PER WEEK. These are loud, rare-state events — the same
+    // conversation happening twice in one week reads as a stuck record,
+    // and a real season showed it: ASKED ABOUT THE LIST fired twice in
+    // week one, same asker, same answer.
+    if (firedThisWeek('secret-comp-anomaly', Number(ctx?.week?.num) || 0)) return 0;
     const sc = ctx?.week?.secretPowerComp;
     if (!sc?.results?.length) return 0;
     const best = [...sc.results].sort((a, b) => (b.score || 0) - (a.score || 0))[0];

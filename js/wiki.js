@@ -472,6 +472,8 @@ export function buildDossier(player, {
 } = {}) {
   if (!player) return null;
   const rosterRow = (roster.players || roster || []).find(r => r.slug === player.id) || {};
+  const _lifeGenders = new Map((roster.players || roster || [])
+    .filter(r => r && r.slug).map(r => [r.slug, r.gender]));
   const parsed = parseBio(voices[player.name] || '');
 
   // ── the authored bio, which this used to ignore ──
@@ -530,7 +532,11 @@ export function buildDossier(player, {
     // and a two-person event carries the numbering of whoever's row it is.
     life: approvedFor(player.id, lifeEvents, { seasonRank }).map(e => ({
       ...e,
-      line: lifeLine(e, lifeNames, player.id),
+      // The roster is already here for the personality; it is also the only
+      // place a gender lives, and without it every one-person sentence in the
+      // log came out in singular they on the page of somebody whose gender the
+      // franchise has always known.
+      line: lifeLine(e, lifeNames, player.id, _lifeGenders),
       // Dated here, where the season records already are, so the view does not
       // need its own copy of the calendar to print a label.
       when: airLabel(seasonAir.get(e.afterSeason) || {}),

@@ -1,6 +1,7 @@
 // js/players.js - Player stats, pronouns, threat scoring, challenge records
 import { gs, players, STATS, THREAT_TIERS, ARCHETYPES, DEFAULT_STATS, seasonConfig } from './core.js';
 import { romanticallyCompatible } from './attraction.js';
+import { pronounsOf } from './pronouns-of.js';
 import { DEFAULT_ROSTER } from './roster-data.js';
 // threatScore and isAllianceBottom read bonds, and read them as a BARE
 // identifier — which worked only because main.js hangs every export on window
@@ -56,10 +57,10 @@ export function romanticCompat(a, b) {
 
 export function pronouns(nameOrPlayer) {
   const p = typeof nameOrPlayer === 'string' ? players.find(x => x.name === nameOrPlayer) : nameOrPlayer;
-  const g = p?.gender || 'nb';
-  if (g === 'm')  return { sub:'he',   obj:'him',  pos:'his',    posAdj:'his',   ref:'himself',    Sub:'He',   Obj:'Him',  PosAdj:'His'   };
-  if (g === 'f')  return { sub:'she',  obj:'her',  pos:'hers',   posAdj:'her',   ref:'herself',    Sub:'She',  Obj:'Her',  PosAdj:'Her'   };
-  return              { sub:'they', obj:'them', pos:'theirs', posAdj:'their', ref:'themselves', Sub:'They', Obj:'Them', PosAdj:'Their' };
+  // The table lives in js/pronouns-of.js so that things outside the simulator
+  // can ask — the life layer could not import this file (it pulls in core.js)
+  // and wrote every sentence in singular they as a result.
+  return pronounsOf(p?.gender || 'nb');
 }
 
 export function Pronouns(name) {

@@ -529,7 +529,7 @@ function postTile(p, i) {
   const caption = captionFor(p.event, {
     archetype: archetypeBySlug[viewing], names: namesBySlug,
     season: p.season ? (p.season.title || '') : '',
-  }) || lineFor(p.event, namesBySlug, viewing);
+  }) || lineFor(p.event, namesBySlug, viewing, gendersBySlug);
   if (p.photo) {
     return `<button class="dg-post" data-post="${i}" title="${esc(caption)}">
       <img src="${esc(p.photo)}" alt="" loading="lazy">
@@ -547,10 +547,10 @@ function openPost(p, d) {
   const caption = captionFor(p.event, {
     archetype: archetypeBySlug[viewing], names: namesBySlug,
     season: p.season ? (p.season.title || '') : '',
-  }) || lineFor(p.event, namesBySlug, viewing);
+  }) || lineFor(p.event, namesBySlug, viewing, gendersBySlug);
   // What actually happened, under what they said about it. The two registers
   // sit together rather than one replacing the other.
-  const fact = lineFor(p.event, namesBySlug, viewing);
+  const fact = lineFor(p.event, namesBySlug, viewing, gendersBySlug);
   const comments = commentsFor(p.event, { ties: tiesFor(viewing, graph), names: namesBySlug });
   const wrap = document.createElement('div');
   wrap.className = 'dg-open';
@@ -573,6 +573,9 @@ function openPost(p, d) {
 }
 
 let allEvents = []; let allSeasons = []; let allCareers = []; let namesBySlug = {};
+// slug -> gender, off the authored roster: the only place it lives, and what
+// keeps a caption saying "Cody changed their hair" off Cody's own page.
+let gendersBySlug = new Map();
 let graph = null; let archetypeBySlug = {};
 /** Whose profile is open — the side every caption is told from. */
 let viewing = null;
@@ -600,6 +603,7 @@ let viewing = null;
   // a hero does. Read from the published roster, which is where it is authored.
   const rosterList = Array.isArray(roster) ? roster : (roster.players || []);
   archetypeBySlug = Object.fromEntries(rosterList.map(r => [r.slug, r.archetype]));
+  gendersBySlug = new Map(rosterList.filter(r => r && r.slug).map(r => [r.slug, r.gender]));
   rows = directory({ careers: allCareers, seasons, events: allEvents, live });
 
   const now = latestAired(seasons);

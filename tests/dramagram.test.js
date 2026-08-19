@@ -242,7 +242,10 @@ describe('the page tells a caption from the profile it is on', () => {
     // A two-person event is stored once and carries whichever half wrote it, so
     // passing event.player put "Bowie and Hicks fell out publicly" on HICKS'S
     // own page. Found by reading the rendered card, not the code.
-    expect(page).toMatch(/lineFor\(p\.event, namesBySlug, viewing\)/);
+    // `viewing` third, whatever follows it: the guard is about WHICH SLUG is
+    // the reader, not about the argument count, and pinning the length made
+    // it fail the day a genders map was added behind it.
+    expect(page).toMatch(/lineFor\(p\.event, namesBySlug, viewing[,)]/);
     expect(page, 'a caption is still told from the stored side')
       .not.toMatch(/lineFor\(p\.event, namesBySlug, p\.event\.player\)/);
   });

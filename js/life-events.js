@@ -29,6 +29,7 @@
 // property of the data from the beginning — bolting it on later means deciding
 // retroactively what every existing row meant.
 
+import { pronounsOf } from './pronouns-of.js';
 /** A life track: a thing a character has a position on, that moves over time. */
 export const TRACKS = {
   relationship: 'Relationship',
@@ -85,13 +86,13 @@ export const KINDS = [
 
   // ── family ─────────────────────────────────────────────────────────
   { key: 'expecting', track: 'family', sig: 'major', whom: false,
-    line: n => `${n} announced they were expecting.` },
+    line: (n, w, pr) => `${n} announced ${pr.sub} ${pr.sub === 'they' ? 'were' : 'was'} expecting.` },
   { key: 'birth', track: 'family', sig: 'major', whom: false,
     line: n => `${n} had a child.` },
   { key: 'estranged', track: 'family', sig: 'notable', whom: false,
-    line: n => `${n} became estranged from their family.` },
+    line: (n, w, pr) => `${n} became estranged from ${pr.posAdj} family.` },
   { key: 'reconciled', track: 'family', sig: 'notable', whom: false,
-    line: n => `${n} reconciled with their family.` },
+    line: (n, w, pr) => `${n} reconciled with ${pr.posAdj} family.` },
 
   // ── career ─────────────────────────────────────────────────────────
   { key: 'new-job', track: 'career', sig: 'minor', whom: false,
@@ -99,11 +100,11 @@ export const KINDS = [
   { key: 'promoted', track: 'career', sig: 'minor', whom: false,
     line: n => `${n} was promoted.` },
   { key: 'quit-job', track: 'career', sig: 'minor', whom: false,
-    line: n => `${n} left their job.` },
+    line: (n, w, pr) => `${n} left ${pr.posAdj} job.` },
   { key: 'laid-off', track: 'career', sig: 'notable', whom: false,
     line: n => `${n} was laid off.` },
   { key: 'started-business', track: 'career', sig: 'notable', whom: false,
-    line: n => `${n} started their own business.` },
+    line: (n, w, pr) => `${n} started ${pr.posAdj} own business.` },
 
   // ── education ──────────────────────────────────────────────────────
   // A diploma is the END of a state, not a one-off: `enrolled` opens it and
@@ -128,7 +129,7 @@ export const KINDS = [
   { key: 'red-carpet', track: 'public', sig: 'minor', whom: false,
     line: n => `${n} walked a red carpet.` },
   { key: 'interview', track: 'public', sig: 'minor', whom: false,
-    line: n => `${n} gave an interview about their season.` },
+    line: (n, w, pr) => `${n} gave an interview about ${pr.posAdj} season.` },
   { key: 'podcast', track: 'public', sig: 'minor', whom: false,
     line: n => `${n} started a podcast.` },
   { key: 'brand-deal', track: 'public', sig: 'minor', whom: false,
@@ -150,7 +151,7 @@ export const KINDS = [
   { key: 'recovered', track: 'health', sig: 'notable', whom: false,
     line: n => `${n} recovered.` },
   { key: 'bereavement', track: 'health', sig: 'major', whom: false,
-    line: n => `${n} lost someone close to them.` },
+    line: (n, w, pr) => `${n} lost someone close to ${pr.obj}.` },
   { key: 'death', track: 'health', sig: 'major', whom: false, terminal: true,
     line: n => `${n} died.` },
   { key: 'left-franchise', track: 'public', sig: 'major', whom: false, terminal: true,
@@ -162,11 +163,11 @@ export const KINDS = [
   { key: 'came-into-money', track: 'money', sig: 'notable', whom: false,
     line: n => `${n} came into money.` },
   { key: 'lost-money', track: 'money', sig: 'notable', whom: false,
-    line: n => `${n} lost most of what they had.` },
+    line: (n, w, pr) => `${n} lost most of what ${pr.sub} had.` },
   { key: 'bankruptcy', track: 'money', sig: 'major', whom: false,
     line: n => `${n} filed for bankruptcy.` },
   { key: 'big-purchase', track: 'money', sig: 'minor', whom: false,
-    line: n => `${n} spent the winnings on something they could not justify.` },
+    line: (n, w, pr) => `${n} spent the winnings on something ${pr.sub} could not justify.` },
   { key: 'lawsuit', track: 'legal', sig: 'notable', whom: false,
     line: n => `${n} became involved in a lawsuit.` },
   { key: 'arrested', track: 'legal', sig: 'major', whom: false,
@@ -191,7 +192,7 @@ export const KINDS = [
   { key: 'convention', track: 'franchise', sig: 'minor', whom: false,
     line: n => `${n} appeared at a fan convention.` },
   { key: 'rewatch-podcast', track: 'franchise', sig: 'minor', whom: false,
-    line: n => `${n} started a rewatch podcast about their own season.` },
+    line: (n, w, pr) => `${n} started a rewatch podcast about ${pr.posAdj} own season.` },
   { key: 'production-fallout', track: 'franchise', sig: 'notable', whom: false,
     line: n => `${n} fell out with production.` },
   { key: 'hall-of-fame', track: 'franchise', sig: 'major', whom: false,
@@ -214,7 +215,7 @@ export const KINDS = [
   { key: 'year-off', track: 'career', sig: 'notable', whom: false,
     line: n => `${n} took a year off.` },
   { key: 'in-shape', track: 'health', sig: 'minor', whom: false,
-    line: n => `${n} got into the best shape of their life.` },
+    line: (n, w, pr) => `${n} got into the best shape of ${pr.posAdj} life.` },
 
   // ── small life ─────────────────────────────────────────────────────
   // The texture that makes the big events land, and what a low-fame character
@@ -228,11 +229,11 @@ export const KINDS = [
   { key: 'travelling', track: 'small', sig: 'minor', whom: false,
     line: n => `${n} went travelling.` },
   { key: 'haircut', track: 'small', sig: 'minor', whom: false,
-    line: n => `${n} changed their hair, and the internet had opinions.` },
+    line: (n, w, pr) => `${n} changed ${pr.posAdj} hair, and the internet had opinions.` },
   { key: 'flatmates', track: 'home', sig: 'minor', whom: true,
     line: (n, w) => `${n} moved in with ${w}.` },
   { key: 'learned', track: 'small', sig: 'minor', whom: false,
-    line: n => `${n} learned to do something they had always meant to.` },
+    line: (n, w, pr) => `${n} learned to do something ${pr.sub} had always meant to.` },
 ];
 
 const BY_KEY = new Map(KINDS.map(k => [k.key, k]));
@@ -279,7 +280,7 @@ export const involves = (event, slug) => event?.player === slug || event?.whom =
  * The same wedding appears on two pages and should lead with whoever's page it
  * is — "Lindsay and Alejandro married" on hers, the reverse on his.
  */
-export function lineFor(event, names = {}, reader = null) {
+export function lineFor(event, names = {}, reader = null, genders = null) {
   if (event?.headline) return String(event.headline);
   const def = kindOf(event?.kind);
   if (!def) return '';
@@ -288,7 +289,16 @@ export function lineFor(event, names = {}, reader = null) {
   const other = flip ? event.player : event.whom;
   const who = names[subject] || subject || 'They';
   const whom = names[other] || other || 'someone';
-  return def.whom ? def.line(who, whom) : def.line(who);
+  // THE SUBJECT'S OWN PRONOUNS, when the caller knows them.
+  //
+  // Every one-person sentence here was written in singular they, so a character
+  // whose gender is on the roster still read "Brick left their job" on his own
+  // page — 25 of 170 approved events. `genders` is optional and absent means
+  // they/them, which is what every one of these said before and is the only
+  // honest answer when the roster has no gender to give.
+  const g = genders ? (genders.get ? genders.get(subject) : genders[subject]) : null;
+  const pr = pronounsOf(g);
+  return def.whom ? def.line(who, whom, pr) : def.line(who, null, pr);
 }
 
 /**

@@ -318,3 +318,51 @@ describe('the count on the nav', () => {
     expect(src).toMatch(/catch \{\s*return 0;\s*\}/);
   });
 });
+
+// ── PRONOUNS ─────────────────────────────────────────────────────────
+//
+// Every one-person sentence was written in singular they, so a character whose
+// gender the franchise has always known still read "Brick left their job" on
+// his own page: 25 of 170 canon events, on wiki pages and Dramagram captions.
+describe('whose pronouns a sentence uses', () => {
+  const NAMES = { brick: 'Brick', zoey: 'Zoey', ash: 'Ash', carrie: 'Carrie' };
+  const G = new Map([['brick', 'm'], ['zoey', 'f'], ['ash', 'nb']]);
+  const ev = (player, kind, extra = {}) => ({ player, kind, afterSeason: 'td-1', seq: 1,
+    status: 'approved', ...extra });
+  const line = (player, kind, extra) => lineFor(ev(player, kind, extra), NAMES, player, G);
+
+  it('uses his for a man', () => {
+    expect(line('brick', 'quit-job')).toBe('Brick left his job.');
+  });
+
+  it('uses her for a woman', () => {
+    expect(line('zoey', 'started-business')).toBe('Zoey started her own business.');
+  });
+
+  it('uses they for a non-binary character', () => {
+    expect(line('ash', 'quit-job')).toBe('Ash left their job.');
+  });
+
+  it('agrees the verb, not just the pronoun', () => {
+    // "They were expecting" against "she was expecting" — a sentence that gets
+    // the pronoun right and the verb wrong reads worse than one left alone.
+    expect(line('zoey', 'expecting')).toContain('she was expecting');
+    expect(line('ash', 'expecting')).toContain('they were expecting');
+  });
+
+  it('leaves a couple in the plural, because that "their" is correct', () => {
+    expect(line('brick', 'went-public', { whom: 'carrie' }))
+      .toBe('Brick and Carrie went public with their relationship.');
+  });
+
+  it('falls back to they when the caller knows no genders', () => {
+    // Absent is not the same as non-binary, but it produces the same sentence,
+    // and the alternative is guessing.
+    expect(lineFor(ev('brick', 'quit-job'), NAMES, 'brick')).toBe('Brick left their job.');
+  });
+
+  it('still prefers a hand-written headline over any of this', () => {
+    expect(lineFor(ev('brick', 'quit-job', { headline: 'Brick quit.' }), NAMES, 'brick', G))
+      .toBe('Brick quit.');
+  });
+});

@@ -243,6 +243,10 @@ const keyOf = e => [e.player, e.whom || '', e.afterSeason, e.seq, e.kind].join('
 let names = {};
 let careers = [];
 let ctx = null;
+// slug -> gender, so a one-person sentence reads with the character's own
+// pronouns rather than in singular they. Off ctx.people, which the resolver
+// already needs for who could plausibly date whom.
+let genders = new Map();
 
 const seasonOf = id => seasons.find(s => s.seasonId === id) || null;
 const rank = () => new Map(seasons.map(s => [s.seasonId, airKey(s)]));
@@ -415,7 +419,7 @@ function render() {
         touched.add(keyOf(events[i]));
       }
       if (act === 'edit') {
-        const cur = events[i].headline || lineFor(events[i], names, events[i].player);
+        const cur = events[i].headline || lineFor(events[i], names, events[i].player, genders);
         const next = prompt('The sentence on their page:', cur);
         if (next !== null) events[i].headline = next.trim() || undefined;
       }
@@ -440,7 +444,7 @@ function row(e) {
   const i = events.indexOf(e);
   const sig = significanceOf(e.kind);
   const def = kindOf(e.kind);
-  const line = e.headline || lineFor(e, names, e.player);
+  const line = e.headline || lineFor(e, names, e.player, genders);
   const locked = isTerminal(e.kind);
   const pinned = policy.pinned.includes(e.player);
   return `<div class="ev${e.status === 'rejected' ? ' is-rejected' : ''}">
@@ -671,6 +675,7 @@ $('#commit').onclick = async () => {
   ]);
   events = log;
   ctx = lifeContext(pdb, sdb, roster);
+  genders = new Map([...ctx.people].map(([slug, p]) => [slug, p.gender]));
   seasons = ctx.seasons;
   names = ctx.names;
   careers = ctx.careers;

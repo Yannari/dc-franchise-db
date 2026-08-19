@@ -60,6 +60,19 @@ export const FOLLOWERS = {
   // rather than flat: losing 4% of 300k is a story, losing 4% of 12k is noise,
   // and that asymmetry is correct.
   quietDecay: 0.045,
+  // ── the edit ──
+  //
+  // How the audience took somebody that season, relative to THAT cast — the
+  // export writes a per-season popularity score, and its scale varies with
+  // season length, so a rank within the cast is the only honest reading.
+  // A beloved season pays up to 1.6x the exposure gain; a despised one pays
+  // 0.4x — and the bottom fifth of a cast actively LOSES followers, because
+  // being hated on television is the one season outcome that empties a
+  // following instead of building one. Seasons exported before the field
+  // existed have no edit and pay exactly what they always did.
+  editFloor: 0.4,
+  editCeiling: 1.6,
+  hateUnfollow: 0.06,           // the most hated of a cast loses up to 6%
   floor: 800,                   // nobody ends at zero; the account still exists
 };
 
@@ -102,6 +115,26 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
     eventsAfter.get(e.afterSeason).push(e);
   }
 
+  // Every cast-mate's popularity per season, for ranking somebody's edit
+  // within it. Built once across all careers, not per player.
+  const popsBySeason = new Map();
+  for (const c of careers) {
+    for (const d of c.details || []) {
+      if (typeof d.popularity === 'number') {
+        if (!popsBySeason.has(d.seasonId)) popsBySeason.set(d.seasonId, []);
+        popsBySeason.get(d.seasonId).push(d.popularity);
+      }
+    }
+  }
+  /** Where this season's audience put them: 0 most hated of the cast, 1 most
+   *  loved, null when the season predates the popularity field. */
+  const editOf = detail => {
+    const pool = popsBySeason.get(detail?.seasonId) || [];
+    if (typeof detail?.popularity !== 'number' || pool.length < 3) return null;
+    const sorted = [...pool].sort((a, b) => a - b);
+    return sorted.indexOf(detail.popularity) / Math.max(1, sorted.length - 1);
+  };
+
   let n = 0;
   let debuted = false;
   const steps = [];
@@ -109,15 +142,32 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
   for (const season of placed) {
     const played = mine.get(season.seasonId);
     if (played) {
-      if (!debuted) { n += FOLLOWERS.debut; steps.push({ season, why: 'debut', delta: FOLLOWERS.debut }); debuted = true; }
-      else { n += FOLLOWERS.perSeason; steps.push({ season, why: 'played', delta: FOLLOWERS.perSeason }); }
+      const edit = editOf(played);
+      const editFactor = edit == null ? 1
+        : FOLLOWERS.editFloor + (FOLLOWERS.editCeiling - FOLLOWERS.editFloor) * edit;
+      const exposure = Math.round((debuted ? FOLLOWERS.perSeason : FOLLOWERS.debut) * editFactor);
+      steps.push({ season, why: debuted ? 'played' : 'debut', delta: exposure });
+      n += exposure;
+      debuted = true;
       const place = Number(played.placement);
       const bonus = place === 1 ? FOLLOWERS.win
         : place === 2 ? FOLLOWERS.runnerUp
         : place === 3 ? FOLLOWERS.finalist : 0;
       if (bonus) {
-        n += bonus;
-        steps.push({ season, why: place === 1 ? 'won' : place === 2 ? 'runner-up' : 'finalist', delta: bonus });
+        // The achievement is real however the edit went — a hated winner is
+        // still a winner — so the edit only half-applies to the placement.
+        const add = Math.round(bonus * (edit == null ? 1 : (1 + editFactor) / 2));
+        n += add;
+        steps.push({ season, why: place === 1 ? 'won' : place === 2 ? 'runner-up' : 'finalist', delta: add });
+      }
+      // The bottom fifth of a cast: the season actively cost them followers,
+      // proportionally, like every loss in this model.
+      if (edit != null && edit < 0.2) {
+        const lost = Math.round(n * FOLLOWERS.hateUnfollow * (1 - edit / 0.2));
+        if (lost > 0) {
+          n = Math.max(FOLLOWERS.floor, n - lost);
+          steps.push({ season, why: 'rough edit', delta: -lost });
+        }
       }
     } else if (debuted) {
       // A season they were not in. Only counts once they have an audience to

@@ -348,15 +348,32 @@ describe('moments', () => {
     { seasonId: 't-1', airYear: 2020, airSlot: 'spring' },
     { seasonId: 't-2', airYear: 2020, airSlot: 'fall' },
   ];
-  const CAREER = { id: 'a', name: 'A', details: [{ seasonId: 't-1' }], seasonsPlayed: 1, bestPlacement: 5 };
+  // A WINNER: famous people never skip a gap, which keeps the clock visible.
+  const CAREER = { id: 'a', name: 'A', details: [{ seasonId: 't-1', placement: 1 }],
+    seasonsPlayed: 1, bestPlacement: 1, wins: 1 };
   // Somebody ELSE's canon is what makes an off-season exist.
   const LOG = [{ player: 'x', kind: 'hobby', afterSeason: 't-1', seq: 1, status: 'approved' },
     { player: 'x', kind: 'hobby', afterSeason: 't-2', seq: 1, status: 'approved' }];
 
-  it('posts in every resolved off-season since debuting', () => {
+  it('a famous account posts in every resolved off-season since debuting', () => {
     const ms = momentsFor('a', { events: LOG, seasons: GAP_SEASONS, career: CAREER });
     expect(new Set(ms.map(m => m.afterSeason))).toEqual(new Set(['t-1', 't-2']));
     expect(ms.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('a nobody skips gaps — some people do not care about social media', () => {
+    // Low fame, long retired: over many characters, silence must actually
+    // happen, and an eventful gap must still always post.
+    const quiet = { id: 'q', name: 'Q', details: [{ seasonId: 't-1', placement: 14 }],
+      seasonsPlayed: 1, bestPlacement: 14 };
+    const manyGaps = Array.from({ length: 8 }, (_, i) =>
+      ({ seasonId: `g-${i}`, airYear: 2021 + i, airSlot: 'spring' }));
+    const log = manyGaps.map((g, i) =>
+      ({ player: 'x', kind: 'hobby', afterSeason: g.seasonId, seq: 1, status: 'approved' }));
+    const ms = momentsFor('q', { events: log, seasons: [...GAP_SEASONS, ...manyGaps], career: quiet });
+    const gapsPosted = new Set(ms.map(m => m.afterSeason)).size;
+    expect(gapsPosted).toBeLessThan(8 + 2);
+    expect(gapsPosted).toBeGreaterThan(0);
   });
 
   it('is identical on every call — a feed that reshuffles reads as broken', () => {
@@ -513,5 +530,56 @@ describe('losing followers', () => {
     const pile = ['cancelled', 'scandal', 'arrested'].map((kind, i) =>
       ({ player: 'a', kind, afterSeason: 'r-1', seq: i + 1, status: 'approved' }));
     expect(total(pile)).toBeGreaterThanOrEqual(FOLLOWERS.floor);
+  });
+});
+
+describe('the edit decides what a season pays', () => {
+  // The gains were flat: a first boot and a fan favourite both collected the
+  // same 9,000 for playing, and being despised on television cost nothing.
+  const E_SEASONS = [{ seasonId: 'e-1', airYear: 2020, airSlot: 'spring' }];
+  // A five-person cast with a popularity spread, plus this player at `pop`.
+  const castWith = pop => {
+    const others = [10, 30, 50, 70].map((v, i) =>
+      ({ id: `o${i}`, name: `O${i}`, seasonsPlayed: 1, bestPlacement: 9,
+        details: [{ seasonId: 'e-1', placement: 5 + i, popularity: v }] }));
+    return [...others, { id: 'me', name: 'Me', seasonsPlayed: 1, bestPlacement: 9,
+      details: [{ seasonId: 'e-1', placement: 4, popularity: pop }] }];
+  };
+  const total = careers => followerHistory('me',
+    { careers, seasons: E_SEASONS, events: [] }).total;
+
+  it('pays a beloved season more than a despised one', () => {
+    expect(total(castWith(90))).toBeGreaterThan(total(castWith(50)));
+    expect(total(castWith(50))).toBeGreaterThan(total(castWith(0)));
+  });
+
+  it('makes the most hated of a cast actively lose followers', () => {
+    const h = followerHistory('me', { careers: castWith(0), seasons: E_SEASONS, events: [] });
+    const rough = h.steps.find(s => s.why === 'rough edit');
+    expect(rough).toBeTruthy();
+    expect(rough.delta).toBeLessThan(0);
+  });
+
+  it('changes nothing for seasons exported before the popularity field', () => {
+    // No popularity anywhere: the factor is 1 and the numbers are the old ones.
+    const bare = castWith(50).map(c => ({ ...c,
+      details: c.details.map(({ popularity, ...d }) => d) }));
+    const h = followerHistory('me', { careers: bare, seasons: E_SEASONS, events: [] });
+    expect(h.steps.find(s => s.why === 'debut').delta).toBe(FOLLOWERS.debut);
+  });
+
+  it('only half-applies the edit to a win — a hated winner is still a winner', () => {
+    const winners = pop => {
+      const c = castWith(pop);
+      c.find(x => x.id === 'me').details[0].placement = 1;
+      return c;
+    };
+    const loved = followerHistory('me', { careers: winners(90), seasons: E_SEASONS, events: [] })
+      .steps.find(s => s.why === 'won').delta;
+    const hated = followerHistory('me', { careers: winners(0), seasons: E_SEASONS, events: [] })
+      .steps.find(s => s.why === 'won').delta;
+    expect(loved).toBeGreaterThan(hated);
+    // But never below the edit floor applied at half strength.
+    expect(hated).toBeGreaterThan(FOLLOWERS.win * 0.6);
   });
 });

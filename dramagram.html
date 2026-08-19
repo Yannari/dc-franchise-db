@@ -46,6 +46,13 @@
     background:linear-gradient(92deg,var(--dg-hot),#ffc14d);
     -webkit-background-clip:text;background-clip:text;color:transparent}
   .dg-sub{color:var(--dg-dim);font-size:13.5px}
+  /* The app switcher, in this app's language rather than the other two's. */
+  .dg-apps{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 0}
+  .dg-apps a,.dg-apps span{display:inline-flex;align-items:center;gap:7px;
+    padding:8px 14px;border-radius:2px;font-size:13.5px;font-weight:700;
+    text-decoration:none;border:1px solid var(--dg-line);color:var(--dg-dim)}
+  .dg-apps a:hover{color:var(--dg-ink);border-color:var(--dg-dim)}
+  .dg-apps span{color:var(--dg-bg);background:var(--dg-hot);border-color:var(--dg-hot)}
   .dg-back{color:var(--dg-hot);text-decoration:none;font-weight:600;font-size:13px}
 
   .dg-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 16px}
@@ -184,8 +191,27 @@
     <div class="dg-head">
       <span class="dg-logo">Dramagram</span>
       <span class="dg-sub" id="dg-now"></span>
-      <a class="dg-back" href="social.html">← Birdie &amp; ChatAlumni</a>
     </div>
+
+    <!-- THE SAME THREE APPS, FROM HERE TOO.
+         There was only a one-way link back, so Dramagram was somewhere you
+         could arrive at and not leave by the way you came. Birdie and
+         ChatAlumni live on social.html and take an ?app= parameter; this one is
+         the page you are on, so it is marked rather than linked. -->
+    <nav class="dg-apps" aria-label="Choose an app">
+      <a href="social.html?app=birdie">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M3 15c4-1 6-4 7-7 1 3 4 5 8 5-1 4-5 7-9 7H4l2-3z" fill="currentColor"/></svg>
+        Birdie
+      </a>
+      <a href="social.html?app=chatalumni">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        ChatAlumni
+      </a>
+      <span aria-current="page">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/></svg>
+        Dramagram
+      </span>
+    </nav>
 
     <div class="dg-bar">
       <input class="dg-in" id="dg-q" type="search" placeholder="Search by name…" aria-label="Search by name">

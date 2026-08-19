@@ -24,6 +24,8 @@
 //   POST /api/roster/delete    {slug, force?}  -> deletes if unplayed, else retires
 //   POST /api/roster/unretire  {slug}
 //   POST /api/roster/publish   -> regenerates franchise_roster.json + voice-profiles.json
+//   GET  /api/life-events      -> the life log (public)
+//   POST /api/life-events      {events:[...]}  -> replaces it (token required)
 //
 // Season data (requires the token):
 //   POST /api/sync-seasons  -> rebuilds players/appearances/bonds/seasons/rankings
@@ -50,6 +52,9 @@ import { leaderboardQuery, castmatesQuery, bondsQuery,
 
 const ROSTER_PATH = 'franchise_roster.json';
 const VOICE_PATH = 'voice-profiles.json';
+// Accrued data: what happened to characters between seasons. Written by the
+// inbox on life.html and read by the wiki and Dramagram.
+const LIFE_PATH = 'life_events.json';
 const AVATAR_DIR = 'assets/avatars';
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats'];
@@ -223,6 +228,14 @@ export default {
       }
       // ── roster (character pool) ───────────────────────────────────────────
       // GET is public; every write requires the studio token.
+      // The life log. Public to READ — the site renders it on every player
+      // page — and token-gated to write, like the roster.
+      if (request.method === 'GET' && url.pathname === '/api/life-events') {
+        const doc = await getJson(env, LIFE_PATH, { events: [] });
+        return json({ ok: true, events: doc.events || [] }, 200,
+          { ...cors, 'Cache-Control': 'public, max-age=30' });
+      }
+
       if (request.method === 'GET' && url.pathname === '/api/roster') {
         return json(await rosterList(env, url.searchParams), 200, rcors, 60);
       }
@@ -230,6 +243,15 @@ export default {
       if (request.method === 'GET' && url.pathname === '/api/roster/status') {
         return json(await rosterStatus(env), 200, rcors, 0);
       }
+      if (request.method === 'POST' && url.pathname === '/api/life-events') {
+        const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
+          return json({ ok: false, error: 'unauthorized' }, 401, cors);
+        }
+        const body = await request.json().catch(() => ({}));
+        return json(await lifeEventsSave(env, body), 200, cors);
+      }
+
       if (request.method === 'POST' && url.pathname.startsWith('/api/roster')) {
         const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
         if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
@@ -1562,6 +1584,45 @@ async function deleteFile(env, path, message, sha) {
   });
   if (!r.ok) throw httpErr(`GitHub DELETE ${path} failed (${r.status}): ${await r.text()}`, r.status);
   return r.json();
+}
+
+/**
+ * Replace life_events.json with the inbox's decisions.
+ *
+ * THE WHOLE LOG IS SENT AND THE WHOLE FILE IS REWRITTEN, rather than patching
+ * rows. The inbox is the only thing that edits this file and always holds every
+ * row, so a partial write is how two writers end up disagreeing about which
+ * events are canon. serve.py's local endpoint works the same way for the same
+ * reason; the two must not diverge.
+ *
+ * Validated before it lands. A row with no player, or a status nothing renders,
+ * is a bug in the caller — writing it would put something on disk that no page
+ * can draw and no inbox can approve.
+ */
+async function lifeEventsSave(env, payload = {}) {
+  const events = payload.events;
+  if (!Array.isArray(events)) throw new ValidationError('events must be a list');
+  const STATUSES = ['approved', 'proposed', 'rejected'];
+  events.forEach((e, i) => {
+    if (!e || typeof e !== 'object') throw new ValidationError(`event ${i} is not an object`);
+    if (!String(e.player || '').trim()) throw new ValidationError(`event ${i} has no player`);
+    if (!String(e.kind || '').trim()) throw new ValidationError(`event ${i} has no kind`);
+    if (!STATUSES.includes(e.status)) {
+      throw new ValidationError(`event ${i} has status ${JSON.stringify(e.status)}`);
+    }
+  });
+
+  const existing = await getFile(env, LIFE_PATH);
+  const doc = existing ? decodeJson(existing.content) : {};
+  doc.events = events;
+
+  const counts = {};
+  for (const e of events) counts[e.status] = (counts[e.status] || 0) + 1;
+
+  await putFile(env, LIFE_PATH, encodeJson(doc),
+    `life: ${counts.approved || 0} canon, ${counts.rejected || 0} rejected`,
+    existing && existing.sha);
+  return { ok: true, wrote: [LIFE_PATH], counts };
 }
 
 async function getJson(env, path, fallback) {

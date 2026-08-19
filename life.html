@@ -83,6 +83,7 @@
   .mini{border:1px solid var(--stroke);background:none;color:var(--muted);border-radius:7px;
     padding:4px 8px;font:inherit;font-size:12px;cursor:pointer}
   .mini:hover{color:var(--text);border-color:var(--accent)}
+  .mini.danger:hover{color:#fff;border-color:#f43f5e;background:rgba(244,63,94,.18)}
   .pin{color:var(--warn)}
 
   .policy{border:1px solid var(--stroke);border-radius:14px;background:var(--panel);
@@ -151,6 +152,7 @@
          so the word promised something nothing kept. -->
     <button class="btn ghost" id="all-yes">Approve everything</button>
     <button class="btn ghost" id="all-no">Reject everything</button>
+    <button class="btn ghost" id="drop-rejected">Remove rejected</button>
     <span class="count" id="tally"></span>
   </div>
 
@@ -257,6 +259,12 @@ function render() {
         const next = prompt('The sentence on their page:', cur);
         if (next !== null) events[i].headline = next.trim() || undefined;
       }
+      if (act === 'drop') {
+        // REMOVED, not rejected. Rejecting keeps the row so the resolver can
+        // see that gap was dealt with; removing takes it out of the file
+        // entirely, and if that empties a gap the sweep will offer a fresh one.
+        events.splice(i, 1);
+      }
       if (act === 'pin') {
         const p = events[i].player;
         policy.pinned = policy.pinned.includes(p)
@@ -290,6 +298,7 @@ function row(e) {
     <div class="ev-act">
       <button class="mini" data-i="${i}" data-act="edit">Edit</button>
       <button class="mini" data-i="${i}" data-act="pin">${pinned ? 'Unpin' : 'Pin'}</button>
+      <button class="mini danger" data-i="${i}" data-act="drop" title="Remove this event entirely">&times;</button>
     </div>
   </div>`;
 }
@@ -429,26 +438,85 @@ function showmancePairs(seasonId) {
 $('#all-yes').onclick = () => { events.forEach(e => { e.status = 'approved'; }); render(); };
 $('#all-no').onclick = () => { events.forEach(e => { e.status = 'rejected'; }); render(); };
 
+// REJECTED IS NOT THE SAME AS GONE.
+//
+// A rejected row stays in the file on purpose: the sweep treats a gap with any
+// event in it as already resolved, so keeping the rejections is what stops it
+// proposing the same off-season again every time the page opens. Removing them
+// is therefore a separate, deliberate action — and clearing a whole gap is how
+// you ask for a re-roll.
+$('#drop-rejected').onclick = () => {
+  const n = events.filter(e => e.status === 'rejected').length;
+  if (!n) { $('#saved').textContent = 'nothing rejected'; return; }
+  if (!confirm(`Remove ${n} rejected event${n === 1 ? '' : 's'} from the file?\n\n`
+    + 'Any off-season left with no events at all will be proposed again next time '
+    + 'this page opens.')) return;
+  events = events.filter(e => e.status !== 'rejected');
+  render();
+};
+
 $('#copy').onclick = async () => {
   await navigator.clipboard.writeText(JSON.stringify({ events }, null, 2));
   $('#saved').textContent = 'copied';
   setTimeout(() => { $('#saved').textContent = ''; }, 2500);
 };
 
+/**
+ * Write the whole log, wherever it can be written.
+ *
+ * serve.py when it is running, and the Studio Worker otherwise — the two
+ * endpoints take the same body and rewrite the same file, deliberately, so the
+ * live site and a local checkout cannot end up with different rules about what
+ * is canon.
+ *
+ * Returns null when neither is reachable, and the caller says so rather than
+ * pretending: a silent failure here looks exactly like a successful save.
+ */
+const WORKER = 'https://dc-studio.yannari19.workers.dev';
+const TOKEN_KEY = 'studio_api_token';
+
+function studioToken(ask = true) {
+  let t = '';
+  try { t = localStorage.getItem(TOKEN_KEY) || ''; } catch { /* storage blocked */ }
+  if (t || !ask) return t;
+  t = (prompt('Studio token (stored in this browser only):') || '').trim();
+  if (t) { try { localStorage.setItem(TOKEN_KEY, t); } catch { /* blocked */ } }
+  return t;
+}
+
+async function saveLog(all, { ask = true } = {}) {
+  // Local first: if serve.py is running this is the checkout being worked on,
+  // and writing the file directly is what the author expects.
+  try {
+    const r = await fetch('/api/life-events', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ events: all }),
+    });
+    const j = await r.json();
+    if (j.ok) return { ...j, where: 'this checkout' };
+  } catch { /* not running locally — try the Worker */ }
+
+  const t = studioToken(ask);
+  if (!t) return null;
+  const r = await fetch(`${WORKER}/api/life-events`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+    body: JSON.stringify({ events: all }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!j.ok) throw new Error(j.error || `HTTP ${r.status}`);
+  return { ...j, where: 'the site' };
+}
+
 $('#commit').onclick = async () => {
   $('#saved').textContent = 'saving…';
   try {
-    const res = await fetch('/api/life-events', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ events }),
-    });
-    const j = await res.json();
-    if (!j.ok) throw new Error(j.error || 'refused');
-    $('#saved').textContent = `saved — ${j.counts.approved || 0} canon`;
+    const j = await saveLog(events);
+    $('#saved').textContent = j
+      ? `saved to ${j.where} — ${j.counts.approved || 0} canon`
+      : 'not saved — no token given';
   } catch (err) {
-    // Said out loud. This page is only writable when serve.py is running; on
-    // the published site there is no endpoint, and a silent failure would look
-    // exactly like a successful save.
+    // Said out loud. A silent failure looks exactly like a successful save.
     $('#saved').textContent = `could not save (${err.message}) — use Copy JSON`;
   }
 };
@@ -489,6 +557,15 @@ $('#commit').onclick = async () => {
       `${swept.added} proposed after ${swept.season.title || swept.season.seasonId}`
       + (swept.older ? ` · ${swept.older} earlier season${swept.older === 1 ? '' : 's'} `
         + 'never resolved — pick one above' : '');
+    // PERSISTED IMMEDIATELY, as proposals.
+    //
+    // The badge on the nav counts what is saved, and the sweep only ever lived
+    // in this page — so it read "8" while the inbox showed a hundred and fifty.
+    // Saving a PROPOSAL changes nothing a reader sees, because only approved
+    // rows reach a wiki page or Dramagram, so there is nothing to protect by
+    // keeping them in memory. Silent, and never asks for a token: if it cannot
+    // save, the list still works and Commit will ask properly.
+    try { await saveLog(events, { ask: false }); } catch { /* Commit will report it */ }
   }
   render();
 })();

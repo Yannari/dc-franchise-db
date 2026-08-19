@@ -9,7 +9,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  directory, followerHistory, followersOf, statusOf, short, FOLLOWERS, VERIFIED_AT,
+  directory, followerHistory, followersOf, statusOf, short, FOLLOWERS, VERIFIED_AT, postsFor,
 } from '../js/dramagram.js';
 import { careersIn } from '../js/records.js';
 
@@ -180,5 +180,78 @@ describe('over the real franchise', () => {
     for (let i = 1; i < dir.length; i++) {
       expect(dir[i - 1].followers).toBeGreaterThanOrEqual(dir[i].followers);
     }
+  });
+});
+
+// ── the profile ──
+//
+// A post is an approved life event. Photo when the folder has an unused one,
+// designed card when not — the galleries are character art and there is no
+// wedding photo of anybody.
+describe('posts', () => {
+  const ev = (kind, o = {}) => ({ player: 'a', kind, afterSeason: 's-4', seq: 1, status: 'approved', ...o });
+
+  it('are approved events only', () => {
+    const events = [ev('new-job'), ev('wedding', { whom: 'b', seq: 2, status: 'proposed' })];
+    expect(postsFor('a', { events, seasons: SEASONS, photos: [] })).toHaveLength(1);
+  });
+
+  it('give the photographs to what matters most', () => {
+    // One picture and three events: it belongs to the wedding, not the haircut.
+    const events = [ev('haircut', { seq: 1 }), ev('wedding', { whom: 'b', seq: 2 }), ev('new-job', { seq: 3 })];
+    const posts = postsFor('a', { events, seasons: SEASONS, photos: ['pic-1'] });
+    const withPhoto = posts.filter(p => p.photo);
+    expect(withPhoto).toHaveLength(1);
+    expect(withPhoto[0].kind, 'a minor event took the only photograph').toBe('wedding');
+  });
+
+  it('keep the same photograph across renders', () => {
+    // A feed that reshuffles its own pictures reads as broken.
+    const events = [ev('wedding', { whom: 'b', seq: 1 }), ev('new-job', { seq: 2 })];
+    const ctx = { events, seasons: SEASONS, photos: ['p1', 'p2'] };
+    expect(postsFor('a', ctx).map(p => p.photo)).toEqual(postsFor('a', ctx).map(p => p.photo));
+  });
+
+  it('fall back to a card when there are no photographs at all', () => {
+    const posts = postsFor('a', { events: [ev('new-job')], seasons: SEASONS, photos: [] });
+    expect(posts[0].photo).toBeNull();
+    expect(posts[0].significance).toBe('minor');
+    expect(posts[0].track).toBe('career');
+  });
+
+  it('are newest first', () => {
+    const events = [
+      ev('new-job', { afterSeason: 's-1', seq: 1 }),
+      ev('moved-city', { afterSeason: 's-6', seq: 2 }),
+    ];
+    expect(postsFor('a', { events, seasons: SEASONS, photos: [] }).map(p => p.kind))
+      .toEqual(['moved-city', 'new-job']);
+  });
+
+  it('appear on both profiles of a two-person event', () => {
+    const events = [ev('feud', { player: 'a', whom: 'b' })];
+    expect(postsFor('a', { events, seasons: SEASONS, photos: [] })).toHaveLength(1);
+    expect(postsFor('b', { events, seasons: SEASONS, photos: [] }),
+      "the other half of a feud does not see it").toHaveLength(1);
+  });
+});
+
+describe('the page tells a caption from the profile it is on', () => {
+  const page = readFileSync('dramagram.html', 'utf8');
+
+  it('passes the viewed slug as the reader, not the stored player', () => {
+    // A two-person event is stored once and carries whichever half wrote it, so
+    // passing event.player put "Bowie and Hicks fell out publicly" on HICKS'S
+    // own page. Found by reading the rendered card, not the code.
+    expect(page).toMatch(/lineFor\(p\.event, namesBySlug, viewing\)/);
+    expect(page, 'a caption is still told from the stored side')
+      .not.toMatch(/lineFor\(p\.event, namesBySlug, p\.event\.player\)/);
+  });
+
+  it('does not print the name twice in the opened post', () => {
+    // lineFor already opens with it; the first build read "Alejandro Alejandro
+    // and Lindsay broke up."
+    const modal = page.slice(page.indexOf('function openPost'), page.indexOf('let allEvents'));
+    expect(modal).not.toMatch(/<b>\$\{esc\(d\.name\)\}<\/b>/);
   });
 });

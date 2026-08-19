@@ -20,7 +20,7 @@
 // trusted: a plausible-looking table is exactly how the competition-domination
 // rates and the relationship rates both went wrong before anybody counted them.
 import { airKey, byAirDate } from './franchise-calendar.js';
-import { kindOf, significanceOf, approvedFor } from './life-events.js';
+import { kindOf, significanceOf, approvedFor, lineFor } from './life-events.js';
 
 /** Everything tunable about the number, in one place. */
 export const FOLLOWERS = {
@@ -166,4 +166,63 @@ export function directory({ careers = [], seasons = [], events = [], live = null
       bio: rosterBySlug.get(c.id) || null,
     };
   }).sort((a, b) => b.followers - a.followers);
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+// THE PROFILE
+// ══════════════════════════════════════════════════════════════════════
+
+const GALLERY_API = 'https://dc-studio.yannari19.workers.dev';
+
+/**
+ * The photographs a character has, from the listing endpoint.
+ *
+ * Asked for rather than probed: the Worker returns exact filenames and the
+ * folders mix .png, .jpg and .webp, so guessing extensions means five requests
+ * per slot to discover that none of them exist.
+ */
+export async function photosOf(slug) {
+  try {
+    const j = await fetch(`${GALLERY_API}/api/gallery/${encodeURIComponent(slug)}`)
+      .then(r => (r.ok ? r.json() : null));
+    return (j?.images || []).map(i => `${GALLERY_API}/gallery/${encodeURIComponent(slug)}/${i.file}`);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * A character's posts: their approved life events, newest first.
+ *
+ * ── PHOTO WHEN ONE FITS, CARD WHEN NOT ──
+ *
+ * The galleries are character art. There is no wedding photo of Lindsay and
+ * inventing one is not on the table, so a post takes a picture when the folder
+ * has an unused one and otherwise renders as a designed card. Assigned rather
+ * than random: the same event keeps the same photograph across reloads, because
+ * a feed that reshuffles its own pictures reads as broken.
+ *
+ * A MAJOR event gets first call on the photographs. If somebody has three
+ * pictures and eleven events, the wedding should be one of the three and the
+ * new job should be a card.
+ */
+export function postsFor(slug, { events = [], seasons = [], photos = [] } = {}) {
+  const rank = new Map(seasons.map(s => [s.seasonId, airKey(s)]));
+  const mine = approvedFor(slug, events, { seasonRank: rank });
+  const weight = { major: 0, notable: 1, minor: 2 };
+  const claim = mine
+    .map((e, i) => ({ e, i }))
+    .sort((a, b) => weight[significanceOf(a.e.kind)] - weight[significanceOf(b.e.kind)] || a.i - b.i)
+    .slice(0, photos.length);
+  const photoFor = new Map(claim.map((c, n) => [c.i, photos[n]]));
+
+  return mine.map((e, i) => ({
+    event: e,
+    kind: e.kind,
+    track: kindOf(e.kind)?.track || '',
+    significance: significanceOf(e.kind),
+    photo: photoFor.get(i) || null,
+    season: seasons.find(s => s.seasonId === e.afterSeason) || null,
+  })).reverse();
 }

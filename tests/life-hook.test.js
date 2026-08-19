@@ -199,3 +199,62 @@ describe('who the resolver is allowed to pair', () => {
     expect(Array.isArray(evs)).toBe(true); // it ran over them rather than skipping
   });
 });
+
+// ── ONE PERSON, ONE RELATIONSHIP ──────────────────────────────────────
+//
+// Reported from real output: Leshawna went public with Owen and started seeing
+// Trent in the same off-season. The resolver tracked which PAIRS it had already
+// handled and never asked whether a person was free — so a candidate's own
+// relationship, whether from this round or from the log, was never read.
+describe('who is available', () => {
+  const RANK = new Map([['td-1', 20201]]);
+  const SEASON = { seasonId: 'td-1', airYear: 2020, airSlot: 'spring' };
+  const ROMANTIC = ['dating', 'went-public', 'moved-in', 'engaged', 'married',
+    'broke-up', 'separated', 'quietly-ended'];
+
+  const career = (id, name) => ({ id, name, details: [{ seasonId: 'td-1' }], seasonsPlayed: 1, bestPlacement: 5 });
+  const CAREERS = ['lesh', 'owen', 'trent', 'noah'].map(id => career(id, id));
+  // Everybody close to everybody, which is the case that broke it.
+  const GRAPH = new Map(CAREERS.map(c => [c.id,
+    new Map(CAREERS.filter(o => o.id !== c.id).map(o => [o.id, 7]))]));
+  const PEOPLE = new Map([
+    ['lesh', { gender: 'f', sexuality: 'straight' }],
+    ['owen', { gender: 'm', sexuality: 'straight' }],
+    ['trent', { gender: 'm', sexuality: 'straight' }],
+    ['noah', { gender: 'm', sexuality: 'straight' }],
+  ]);
+
+  /** Every person named in a romantic event, with how many they appear in. */
+  function appearances(events) {
+    const n = new Map();
+    for (const e of events.filter(x => ROMANTIC.includes(x.kind))) {
+      for (const who of [e.player, e.whom].filter(Boolean)) n.set(who, (n.get(who) || 0) + 1);
+    }
+    return n;
+  }
+
+  it('never puts one person in two relationships in the same off-season', () => {
+    for (let i = 0; i < 80; i++) {
+      const out = resolveOffSeasonFor({ season: SEASON, careers: CAREERS, graph: GRAPH,
+        seasonRank: RANK, people: PEOPLE, events: [], seedSalt: 'seed' + i });
+      for (const [who, n] of appearances(out)) {
+        expect(`${who}:${n}`).toBe(`${who}:1`);
+      }
+    }
+  });
+
+  it('will not start something with somebody the log says is already taken', () => {
+    // Leshawna and Owen are together from an earlier off-season. Trent is close
+    // to her, single, and compatible — and must still not be proposed.
+    const log = [
+      { player: 'lesh', whom: 'owen', afterSeason: 'td-0', seq: 1, kind: 'dating', status: 'approved' },
+    ];
+    for (let i = 0; i < 40; i++) {
+      const out = resolveOffSeasonFor({ season: SEASON, careers: CAREERS, graph: GRAPH,
+        seasonRank: new Map([...RANK, ['td-0', 20200]]), people: PEOPLE, events: log,
+        seedSalt: 'taken' + i });
+      const started = out.filter(e => e.kind === 'dating');
+      expect(started.some(e => e.player === 'lesh' || e.whom === 'lesh')).toBe(false);
+    }
+  });
+});

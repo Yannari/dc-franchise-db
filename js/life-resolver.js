@@ -239,6 +239,27 @@ export function resolveOffSeason({
   // both sides would either duplicate it or, worse, move it two stages.
   const settled = new Set();
   const pairKey = (a, b) => [a, b].sort().join('|');
+  // ── WHO IS ALREADY WITH SOMEBODY ──
+  //
+  // `settled` only stopped the same PAIR being handled twice. It said nothing
+  // about a person, so Leshawna could go public with Owen and then be picked as
+  // Trent's new partner in the same off-season — she was never asked whether
+  // she was available, only whether that exact couple had come up before.
+  //
+  // Two ways to be unavailable, and both were missing. Taken THIS resolution,
+  // tracked below; and already in a relationship from an earlier one, which is
+  // in the log and simply was never read for anybody but the subject.
+  const taken = new Set();
+  // Memoised: asked once per candidate per draw, and each answer walks the
+  // whole log. It cannot go stale within a resolution because the only thing
+  // that changes somebody's availability mid-round is `taken`, which is checked
+  // separately.
+  const stageCache = new Map();
+  const stageOf = who => {
+    if (!stageCache.has(who)) stageCache.set(who, stateOf(who, events, { seasonRank }).relationship.stage);
+    return stageCache.get(who);
+  };
+  const singleNow = who => !taken.has(who) && stageOf(who) === 'single';
   const social = graph || socialGraph(careers);
 
   /**
@@ -279,8 +300,12 @@ export function resolveOffSeason({
     .filter(c => hereKey == null || debutKey(c) == null || debutKey(c) <= hereKey)
     .map(c => c.id));
 
-  /** Could these two plausibly be a couple: both on the air, and interested. */
-  const canDate = (a, b) => debuted.has(b)
+  /**
+   * Could these two plausibly START something: both on the air, both free, and
+   * interested. `b` is the candidate; `a` has already been found single by the
+   * branch that calls this.
+   */
+  const canDate = (a, b) => debuted.has(b) && singleNow(b)
     && (!people || couldBeInterested(people.get(a), people.get(b)));
 
   let seq = 0;
@@ -308,6 +333,10 @@ export function resolveOffSeason({
 
     if (stage !== 'single' && partner && !settled.has(key)) {
       settled.add(key);
+      // Both are spoken for this round whatever happens next — including a
+      // break-up. Somebody who has just separated does not start something new
+      // in the same off-season.
+      taken.add(slug); taken.add(partner);
       const r = rng('rel');
       // Rule 2: being cast is the test. One of them alone is the hard version.
       const aIn = castSet.has(slug);
@@ -331,7 +360,11 @@ export function resolveOffSeason({
         && r() < RATES.birth) {
         emit(slug, 'birth');
       }
-    } else if (stage === 'single') {
+    } else if (stage === 'single' && !taken.has(slug)) {
+      // `taken`, not just `stage`: somebody chosen as a partner earlier in this
+      // loop still reads as single in the log — the event proposing it has not
+      // been written there — so without this they would go on to start a second
+      // relationship of their own in the same off-season.
       // A showmance first, then somebody they are genuinely close to. A
       // relationship with a stranger is the one thing the resolver must not
       // invent, so with neither, nothing happens.
@@ -345,6 +378,7 @@ export function resolveOffSeason({
       const ckey = candidate ? pairKey(slug, candidate) : null;
       if (candidate && !settled.has(ckey) && rng('start')() < RATES.advance.single) {
         settled.add(ckey);
+        taken.add(slug); taken.add(candidate);
         emit(slug, 'dating', { whom: candidate });
       }
     }

@@ -147,8 +147,10 @@
   </div>
 
   <div class="bar">
-    <button class="btn ghost" id="all-yes">Approve everything shown</button>
-    <button class="btn ghost" id="all-no">Reject everything shown</button>
+    <!-- "everything", not "everything shown": there is no filter on this list,
+         so the word promised something nothing kept. -->
+    <button class="btn ghost" id="all-yes">Approve everything</button>
+    <button class="btn ghost" id="all-no">Reject everything</button>
     <span class="count" id="tally"></span>
   </div>
 
@@ -420,8 +422,12 @@ function showmancePairs(seasonId) {
   return out;
 }
 
-$('#all-yes').onclick = () => { events.forEach(e => { if (e.status !== 'approved') e.status = 'approved'; }); render(); };
-$('#all-no').onclick = () => { events.forEach(e => { if (e.status === 'proposed') e.status = 'rejected'; }); render(); };
+// SYMMETRICAL. Reject used to touch only rows that were still `proposed`, so
+// anything already approved kept its tick and the button looked broken — which
+// is exactly how it was reported. Both now set every row, because "reject all"
+// that leaves half the boxes checked is not what either word means.
+$('#all-yes').onclick = () => { events.forEach(e => { e.status = 'approved'; }); render(); };
+$('#all-no').onclick = () => { events.forEach(e => { e.status = 'rejected'; }); render(); };
 
 $('#copy').onclick = async () => {
   await navigator.clipboard.writeText(JSON.stringify({ events }, null, 2));

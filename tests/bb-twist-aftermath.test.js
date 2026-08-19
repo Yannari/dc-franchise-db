@@ -20,6 +20,9 @@ import { HIGH_ROLLERS_EVENTS } from '../js/bb-events/high-rollers.js';
 import { CAMP_DIRECTOR_EVENTS } from '../js/bb-events/camp-director.js';
 import { WILDCARD_EVENTS } from '../js/bb-events/wildcard.js';
 import { NIGHTMARE_EVENTS } from '../js/bb-events/nightmare.js';
+import { RETURNED_EVENTS } from '../js/bb-events/returned.js';
+import { SIDE_BET_EVENTS } from '../js/bb-events/side-bet.js';
+import { PREMIERE_MYSTERY_EVENTS } from '../js/bb-events/premiere-mystery.js';
 import { seedGame } from './helpers/setup.js';
 
 const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly',
@@ -70,14 +73,17 @@ describe('twist aftermath families', () => {
   it('are all registered in the house pool', () => {
     const ids = new Set(HOUSE_EVENTS.map(e => e.id));
     for (const ev of [...HIGH_ROLLERS_EVENTS, ...CAMP_DIRECTOR_EVENTS,
-      ...WILDCARD_EVENTS, ...NIGHTMARE_EVENTS]) {
+      ...WILDCARD_EVENTS, ...NIGHTMARE_EVENTS, ...RETURNED_EVENTS,
+      ...SIDE_BET_EVENTS, ...PREMIERE_MYSTERY_EVENTS]) {
       expect(ids.has(ev.id), `${ev.id} is not registered`).toBe(true);
     }
   });
 
   it('stay silent on a week their twist did not touch', () => {
     const roster = [...gs.activePlayers];
-    for (const ev of [...HIGH_ROLLERS_EVENTS, ...CAMP_DIRECTOR_EVENTS, ...WILDCARD_EVENTS]) {
+    for (const ev of [...HIGH_ROLLERS_EVENTS, ...CAMP_DIRECTOR_EVENTS,
+      ...WILDCARD_EVENTS, ...RETURNED_EVENTS, ...SIDE_BET_EVENTS,
+      ...PREMIERE_MYSTERY_EVENTS]) {
       expect(ev.weight(roster, ctxFor({ num: 3 })),
         `${ev.id} fires on an ordinary week`).toBe(0);
     }
@@ -188,5 +194,92 @@ describe('twist aftermath families', () => {
     expect(results.length, 'the claim was never tested').toBeGreaterThan(0);
     expect(api.calls.some(c => c[0] === 'suspicion' || c[0] === 'popDelta'),
       'the refusal moved nothing').toBe(true);
+  });
+});
+
+describe('the second wave: returns, the rail, and the hotel', () => {
+  beforeEach(house);
+
+  it('the returnee is lived with, gracious or counting', () => {
+    const roster = [...gs.activePlayers];
+    const api = spy();
+    const badges = new Set();
+    let fired = 0;
+    for (let i = 0; i < 8; i++) {
+      const back = roster[i];
+      gs.bb = gs.bb || {};
+      gs.bb.weeks = [{ num: 2, returnedHouseguest: back,
+        battleBack: { returned: back, rounds: [{ label: 'THE DOOR', a: back, b: roster[(i + 1) % 8] }] } }];
+      for (const ev of RETURNED_EVENTS) {
+        const rs = sweep(ev, roster, { num: 3 }, api);
+        fired += rs.length;
+        rs.forEach(r => badges.add(r.badgeText));
+      }
+    }
+    expect(fired, 'nobody ever mentioned the person who came back').toBeGreaterThan(0);
+    expect(badges.size, `every return read identically: ${[...badges]}`).toBeGreaterThan(2);
+    expect(api.calls.length, 'reactions with no consequence').toBeGreaterThan(0);
+  });
+
+  it('the rail is counted without ever reading a slip out loud', () => {
+    const roster = [...gs.activePlayers];
+    const api = spy();
+    const ev = SIDE_BET_EVENTS.find(e => e.id === 'side-bet-counts-the-rail');
+    const results = [];
+    for (let i = 0; i < 8; i++) {
+      const nom = roster[i];
+      const week = { num: 4, finalNominees: [nom, roster[(i + 1) % 8]],
+        sideBets: { bets: roster.filter(n => n !== nom).slice(0, 4)
+          .map(n => ({ name: n, on: nom, stake: 10 })) } };
+      results.push(...sweep(ev, roster, week, api));
+    }
+    expect(results.length, 'the block never once counted the rail').toBeGreaterThan(0);
+    // THE PRIVACY RULE: the slip is private. No beat may say whose name was
+    // on a bet — the nominee guesses, and the text never confirms it.
+    for (const r of results) {
+      expect(r.text, 'a beat read a slip out loud').not.toMatch(/bet on (me|him|her|them)\b.*right|slip says/i);
+    }
+    expect(new Set(results.map(r => r.badgeText)).size,
+      `every nominee reacted identically`).toBeGreaterThan(1);
+  });
+
+  it('a collector is resented by a friend or kept as a barometer', () => {
+    const roster = [...gs.activePlayers];
+    const api = spy();
+    const ev = SIDE_BET_EVENTS.find(e => e.id === 'side-bet-collected');
+    const badges = new Set();
+    for (let i = 0; i < 8; i++) {
+      const winner = roster[i];
+      gs.bb = gs.bb || {};
+      gs.bb.weeks = [{ num: 3, evicted: NAMES[11],
+        sideBetResults: { evicted: NAMES[11], results: [{ name: winner, on: NAMES[11], won: true, delta: 4 }] } }];
+      sweep(ev, roster, { num: 4 }, api).forEach(r => badges.add(r.badgeText));
+    }
+    expect(badges.size, 'the collector was never noticed, or always the same way')
+      .toBeGreaterThan(0);
+  });
+
+  it('the hotel circles the money, the four names, and the score with no crown', () => {
+    const roster = [...gs.activePlayers];
+    const api = spy();
+    let fired = 0;
+    for (let i = 0; i < 6; i++) {
+      const week1 = { num: 1, premiereMystery: {
+        hostWinner: roster[i], relicWinner: roster[(i + 3) % 8] } };
+      for (const ev of PREMIERE_MYSTERY_EVENTS.slice(0, 2)) {
+        fired += sweep(ev, roster, week1, api).length;
+      }
+      const week2 = { num: 2, secretPowerComp: {
+        chased: [{ name: roster[i], power: 'the-cloud' }],
+        results: [{ name: roster[i], score: 9.9 }, { name: roster[(i + 2) % 8], score: 7.1 }] } };
+      const rs = sweep(PREMIERE_MYSTERY_EVENTS.find(e => e.id === 'secret-comp-anomaly'),
+        roster, week2, api);
+      fired += rs.length;
+      // The house must never be TOLD the answer — the anomaly stays one.
+      for (const r of rs) expect(r.text).not.toMatch(/secret power|was chasing|never running/i);
+    }
+    expect(fired, 'the hotel never mentioned any of it').toBeGreaterThan(0);
+    expect(api.calls.some(c => c[0] === 'suspicion'),
+      'nobody got suspicious of anything in a mystery theme').toBe(true);
   });
 });

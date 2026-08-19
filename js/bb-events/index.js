@@ -47,6 +47,9 @@ import { NIGHTMARE_EVENTS } from './nightmare.js';
 import { HIGH_ROLLERS_EVENTS } from './high-rollers.js';
 import { CAMP_DIRECTOR_EVENTS } from './camp-director.js';
 import { WILDCARD_EVENTS } from './wildcard.js';
+import { RETURNED_EVENTS } from './returned.js';
+import { SIDE_BET_EVENTS } from './side-bet.js';
+import { PREMIERE_MYSTERY_EVENTS } from './premiere-mystery.js';
 import { CARE_PACKAGE_EVENTS } from './care-package.js';
 import { SAFETY_SUITE_EVENTS } from './safety-suite.js';
 import { PUNISHMENT_EVENTS } from './punishments.js';
@@ -104,6 +107,9 @@ export const HOUSE_EVENTS = [
   ...HIGH_ROLLERS_EVENTS,
   ...CAMP_DIRECTOR_EVENTS,
   ...WILDCARD_EVENTS,
+  ...RETURNED_EVENTS,
+  ...SIDE_BET_EVENTS,
+  ...PREMIERE_MYSTERY_EVENTS,
   ...CARE_PACKAGE_EVENTS,
   ...SAFETY_SUITE_EVENTS,
   ...PUNISHMENT_EVENTS,

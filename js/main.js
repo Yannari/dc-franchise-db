@@ -378,6 +378,25 @@ async function init() {
   broadcastMod.initBroadcastBar();
   // Resolve returnee avatars for the loaded cast (uses -returnee.png when present)
   playersMod.refreshReturneeAvatars();
+
+  // ── WHAT THE CAST HAVE BEEN DOING SINCE ──────────────────────────────
+  //
+  // The approved life log, loaded once and parked on window for
+  // initGameState to read (js/life-cast.js). Deliberately NOT awaited into the
+  // critical path and deliberately swallowed on failure: the simulator has to
+  // open with no network, no endpoint and no log at all, and a season started
+  // before this resolves simply carries nothing in — which is exactly what
+  // every season did until now.
+  (async () => {
+    try {
+      const [{ loadLifeLog }, sdb] = await Promise.all([
+        import('./life-hook.js'),
+        fetch('seasons_database.json').then(r => r.json()).catch(() => ({ seasons: [] })),
+      ]);
+      window.__lifeSeasons = sdb.seasons || [];
+      window.__lifeLog = (await loadLifeLog()).filter(e => e.status === 'approved');
+    } catch { window.__lifeLog = window.__lifeLog || []; }
+  })();
 }
 
 await init();

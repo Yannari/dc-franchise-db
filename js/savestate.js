@@ -7,6 +7,7 @@ import { checkShowmanceBreakup, checkLoveTriangleBreakup } from './romance.js';
 import { generateAftermathShow } from './aftermath.js';
 import { _checkMoleExposure } from './camp-events.js';
 import { setFranchiseLedger, franchiseLedger, buildFranchiseMeta, META_WEIGHTS } from './franchise-meta.js';
+import { lifeSeeds } from './life-cast.js';
 
 // ── IndexedDB wrapper (replaces localStorage for gs + checkpoints) ──
 const DB_NAME = 'dc_franchise_db';
@@ -838,6 +839,56 @@ export function initGameState() {
     }
   }
 
+  // ── WHAT THE CAST BRING WITH THEM ────────────────────────────────────
+  //
+  // See js/life-cast.js. Beside the franchise-meta seeding rather than
+  // anywhere else because it is the same operation on a second source: that
+  // one is what happened in the GAME, this is what happened to them since.
+  //
+  // Wrapped, and empty when there is no log. A season must be able to start
+  // on a franchise that has never resolved an off-season, and a fault in the
+  // life layer must never be the reason a season will not begin.
+  let _life = null;
+  if (seasonConfig.lifeCarryover !== false) {
+    try {
+      _life = lifeSeeds(players, window.__lifeLog || [], window.__lifeSeasons || []);
+    } catch (e) { console.warn('Life carryover skipped.', e); _life = null; }
+  }
+  if (_life) {
+    for (const sp of _life.pairs) {
+      const k = bKey(sp.a, sp.b);
+      const cur = bonds[k] || 0;
+      const hi = Math.max(META_WEIGHTS.bondClamp, cur), lo = Math.min(-META_WEIGHTS.bondClamp, cur);
+      bonds[k] = Math.max(lo, Math.min(hi, cur + sp.bondDelta));
+    }
+    // The partner left at home, on the player. Every consumer that has to know
+    // somebody is spoken for reads it here rather than re-deriving it.
+    for (const solo of _life.soloPartners) {
+      const p = players.find(x => x.name === solo.name);
+      if (p) p.partnerAtHome = { slug: solo.whom, name: solo.whomName, stage: solo.stage };
+    }
+  }
+
+  // Couples who arrived together are ESTABLISHED showmances, not sparks.
+  //
+  // This is the load-bearing half. The whole romance pipeline — jealousy, love
+  // triangles, break-ups, the challenge moments — keys off gs.showmances, so a
+  // couple that is not in there is a couple the season cannot dramatise, test
+  // or break, however large a bond they were given.
+  const _lifeShowmances = (_life?.showmances || []).map(sh => ({
+    players: [...sh.players],
+    phase: 'established',
+    // Zero, not the current episode: this did not form here, and anything that
+    // reads sparkEp as "when it started" must not be told it started tonight.
+    sparkEp: 0,
+    episodesActive: 0,
+    tested: false,
+    breakupEp: null, breakupVoter: null, breakupType: null,
+    origin: 'arrived-together',
+    lifeStage: sh.stage,
+    lifeKids: sh.kids || 0,
+  }));
+
   const tribeList = Object.entries(tribeMap).map(([name,members]) => ({name, members:[...members]}));
 
   // Any player with no tribe property gets added to the smallest tribe so nobody is orphaned
@@ -874,6 +925,10 @@ export function initGameState() {
     penaltyVoteThisEp: null,
     shotInDarkEnabledThisEp: false,
     namedAlliances: buildPreAlliances(),
+    // Couples the cast walked in with (js/life-cast.js). Empty on a franchise
+    // that has never resolved an off-season, which is every franchise until it
+    // has one.
+    showmances: _lifeShowmances,
     playerStates: {},    // { [name]: { emotional, votesReceived, lastVotedEp, bigMoves } }
     adaptationProfiles: {}, // bounded learned tendencies; base stats remain unchanged
     _adaptationProcessedEpisodes: [],

@@ -1,5 +1,7 @@
 // js/episode.js - Main episode orchestration: simulation loop, survival, popularity, tribal aftermath
-import { gs, seasonConfig, players, repairGsSets } from './core.js';
+import { gs, seasonConfig, players, repairGsSets, seasonFormat } from './core.js';
+import { showWords } from './shows.js';
+import { arrivalLine, soloLine } from './life-cast.js';
 import { pStats, pronouns, getPlayerState, updateChalRecord, isAllianceBottom, threatScore } from './players.js';
 import { getBond, getPerceivedBond, addBond, checkPerceivedBondTriggers, updateBonds, updatePerceivedBonds, recoverBonds, floorBondsInvolving } from './bonds.js';
 import { wRandom, computeHeat, formAlliances, detectBetrayals, applyPitchAllianceFallout, decayAllianceTrust } from './alliances.js';
@@ -1233,6 +1235,56 @@ export function simulateEpisode() {
         `${_kr.name} returns from ${_kr.to}. The tribe wants to know what ${_krP.sub} said over there, who ${_krP.sub} bonded with, what information ${_krP.sub} gave up. ${_kr.name} smiles. The answers don't come easy.` };
     }
     delete gs.kidnappedPlayer;
+  }
+
+  // ── WHAT THEY ARRIVED WITH ──────────────────────────────────────────
+  //
+  // The couples and the partners left at home, said out loud in the first
+  // round. A carried relationship that the audience is never told about is one
+  // the season cannot pay off, and it would leave the bond seeding looking like
+  // two players who inexplicably trust each other.
+  //
+  // The words come from the show registry. "Arrived at camp" over a Big Brother
+  // house is the bug class this project keeps a document about, and the same
+  // sentence runs on both.
+  if (!gs._lifeArrivalsDone && (gs.episode || 0) === 0) {
+    gs._lifeArrivalsDone = true;
+    const _lw = showWords(seasonFormat(seasonConfig));
+    const _campOf = name => {
+      if (gs.isMerged) return gs.mergeName || 'merge';
+      const t = (gs.tribes || []).find(x => (x.members || []).includes(name));
+      return t ? t.tribeName || t.name : (gs.mergeName || 'merge');
+    };
+    const _push = (name, ev) => {
+      const key = _campOf(name);
+      if (!ep.campEvents) ep.campEvents = {};
+      if (!ep.campEvents[key]) ep.campEvents[key] = { pre: [], post: [] };
+      ep.campEvents[key].pre.push(ev);
+    };
+    for (const sh of gs.showmances || []) {
+      if (sh.origin !== 'arrived-together') continue;
+      const [a, b] = sh.players;
+      if (!gs.activePlayers.includes(a) || !gs.activePlayers.includes(b)) continue;
+      _push(a, {
+        type: 'life-arrival',
+        text: arrivalLine({ players: [a, b], stage: sh.lifeStage, kids: sh.lifeKids }, _lw),
+        players: [a, b],
+        badgeText: 'Together Already',
+        badgeClass: 'gold',
+      });
+    }
+    for (const p of players) {
+      if (!p.partnerAtHome || !gs.activePlayers.includes(p.name)) continue;
+      const _pr = pronouns(p.name);
+      _push(p.name, {
+        type: 'life-partner-at-home',
+        text: `${soloLine({ name: p.name, whomName: p.partnerAtHome.name, stage: p.partnerAtHome.stage })} `
+          + `${_pr.Sub} came in alone, and every other ${_lw.player} here knows it.`,
+        players: [p.name],
+        badgeText: 'Someone At Home',
+        badgeClass: 'blue',
+      });
+    }
   }
 
   // ── AFTERMAYHEM RETURN ANNOUNCEMENT ──

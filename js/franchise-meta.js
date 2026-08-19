@@ -2,6 +2,7 @@
 // meta profiles. IMPORT RULE: this module imports ONLY core.js; bonds.js and
 // savestate.js import US, so importing them back would create a cycle.
 import { gs, players, seasonConfig } from './core.js';
+import { lifeSeeds as _lifeSeeds } from './life-cast.js';
 
 // Must match bKey() in bonds.js (can't import it — cycle via players.js).
 export function metaBondKey(a, b) { return [a, b].sort().join('||'); }
@@ -1149,6 +1150,22 @@ export function retrofitFranchiseMeta() {
     gs.bonds[k] = Math.max(lo, Math.min(hi, cur + sp.bondDelta));
   }
   gs.franchiseMeta = meta;
+  // The same for the life log, under the same "nothing simulated yet" guard —
+  // a season started before any of this existed can still be given what its
+  // cast walked in with.
+  try {
+    const life = _lifeSeeds(players, window.__lifeLog || [], window.__lifeSeasons || []);
+    for (const sp of life.pairs) {
+      const k = metaBondKey(sp.a, sp.b);
+      const cur = gs.bonds[k] || 0;
+      const hi = Math.max(META_WEIGHTS.bondClamp, cur), lo = Math.min(-META_WEIGHTS.bondClamp, cur);
+      gs.bonds[k] = Math.max(lo, Math.min(hi, cur + sp.bondDelta));
+    }
+    for (const solo of life.soloPartners) {
+      const p = players.find(x => x.name === solo.name);
+      if (p) p.partnerAtHome = { slug: solo.whom, name: solo.whomName, stage: solo.stage };
+    }
+  } catch (e) { console.warn('Life carryover skipped.', e); }
   return true;
 }
 

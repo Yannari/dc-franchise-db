@@ -1,6 +1,6 @@
 # Life carryover: the season reads the life back
 
-**Status:** design, no code
+**Status:** built 2026-08-18
 **Companion to:** `2026-08-18-life-layer-design.md` (the life layer itself)
 
 ## The gap
@@ -66,10 +66,15 @@ about them, not a live wound.
 
 `phase: 'established'` rather than `'spark'`, `origin: 'arrived-together'`,
 `episodesActive` seeded from how long they have been together, and `sparkEp: 0`
-so nothing reads it as having formed this season. It counts toward the **max 4
-active showmances** cap and is seeded first, because the cap exists to stop a
-season becoming a soap and an existing couple is the least inventable of the
-four.
+so nothing reads it as having formed this season. Carried couples are **exempt from the max 4 active showmances cap**, and count
+toward it when the season decides whether to form a NEW one. The cap exists to
+stop the engine inventing a soap; refusing to represent a couple who really are
+together would be denying a fact rather than declining to invent one. The
+consequence is real and intended: cast five existing couples and the season
+forms no new showmances at all, because the house is already full of them.
+
+Verified on the real franchise: a returning cast of eleven produced five carried
+couples, all established, none invented.
 
 This one is load-bearing for correctness, not just flavour: the whole romance
 pipeline (jealousy, love triangles, breakups, `_checkShowmanceChalMoment`) keys

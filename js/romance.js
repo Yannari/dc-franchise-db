@@ -18,6 +18,24 @@ const mutualPull = (a, b) => (feelsFor(a, b) + feelsFor(b, a)) / 2;
 import { SHOWMANCE_ARCHETYPE_MULT } from './camp-events.js';
 import { recordAttractionSpark } from './relationship-events.js';
 
+/**
+ * How much less likely somebody is to start something, for having somebody at
+ * home (js/life-cast.js seeds `partnerAtHome` at season start).
+ *
+ * A REDUCTION, NOT A BLOCK, and that is the whole point. "Being cast is the
+ * test" only means anything if it can be failed: a hard gate would make every
+ * relationship in the franchise survive being apart for three months, which is
+ * the opposite of what the design is about. Marriage weighs more than dating
+ * because it should, not because it is a wall.
+ */
+export function _homeFactor(name) {
+  const at = players.find(p => p.name === name)?.partnerAtHome;
+  if (!at) return 1;
+  return at.stage === 'married' ? 0.25
+    : at.stage === 'engaged' ? 0.35
+    : at.stage === 'living-together' ? 0.45 : 0.6;
+}
+
 export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScores, context) {
   if (seasonConfig.romance === 'disabled') return false;
   if (!gs.showmances) gs.showmances = [];
@@ -39,7 +57,8 @@ export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScore
   const base = isShowmancer ? 0.30 : 0.17;
   // Gated on the WEAKER side: a spark neither of them is reaching for is not
   // a spark, it is one person having a moment on their own.
-  const sparkChance = Math.min(0.62, base + Math.max(0, bothWant(a, b)) * 0.04);
+  const sparkChance = Math.min(0.62, base + Math.max(0, bothWant(a, b)) * 0.04)
+    * _homeFactor(a) * _homeFactor(b);
   if (Math.random() >= sparkChance) return false;
 
   // SPARK! Create a romantic spark — not a showmance yet (slow burn)
@@ -54,6 +73,11 @@ export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScore
     intensity: 0.3,
     fake: false,
     saboteur: null,
+    // Somebody here has a partner at home. Recorded rather than prevented: the
+    // season should be able to show this happening, and the off-season that
+    // follows should be able to resolve what it did to the relationship.
+    overlapping: !!(players.find(p => p.name === a)?.partnerAtHome
+      || players.find(p => p.name === b)?.partnerAtHome),
   });
   recordAttractionSpark(a, b, { ep: epNum });   // populate the mutual attraction dimension
   const prA = pronouns(a), prB = pronouns(b);

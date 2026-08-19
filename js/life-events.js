@@ -62,6 +62,17 @@ export const SIGNIFICANCE = ['minor', 'notable', 'major'];
  *            in the view so that the wiki, the feed and the inbox cannot phrase
  *            the same event three different ways.
  */
+// `weight` — how often a kind comes up relative to its trackmates (default 1).
+//
+// The rare-track draw was UNIFORM, and after the reply-gating thinned the pool
+// a bankruptcy was exactly as likely as a big purchase: seven of them across
+// one franchise log, the most common major event the world produced. A weight
+// of 0.25 keeps the kind reachable and makes it read as the disaster it is.
+//
+// `once` — a kind that happens to a person at most once, ever. You do not go
+// bankrupt twice with a straight face, and a hall of fame that inducts the same
+// person twice is not a hall of fame.
+//
 // `after` — the kinds this one is a REPLY to.
 //
 // "Alejandro recovered." with nothing to recover from was in the log: recovery,
@@ -112,6 +123,14 @@ export const KINDS = [
     line: n => `${n} was laid off.` },
   { key: 'started-business', track: 'career', sig: 'notable', whom: false,
     line: (n, w, pr) => `${n} started ${pr.posAdj} own business.` },
+  { key: 'side-hustle', track: 'career', sig: 'minor', whom: false,
+    line: n => `${n} started a side project.` },
+  { key: 'career-change', track: 'career', sig: 'notable', whom: false,
+    line: n => `${n} retrained and changed careers entirely.` },
+  { key: 'award', track: 'career', sig: 'notable', whom: false,
+    line: (n, w, pr) => `${n} won an award in ${pr.posAdj} field.` },
+  { key: 'business-folded', after: ['started-business'], track: 'career', sig: 'notable', whom: false,
+    line: (n, w, pr) => `${n} closed ${pr.posAdj} business down.` },
 
   // ── education ──────────────────────────────────────────────────────
   // A diploma is the END of a state, not a one-off: `enrolled` opens it and
@@ -130,6 +149,12 @@ export const KINDS = [
     line: n => `${n} bought a place.` },
   { key: 'moved', track: 'home', sig: 'minor', whom: false,
     line: n => `${n} moved.` },
+  { key: 'renovated', after: ['bought-home'], track: 'home', sig: 'minor', whom: false,
+    line: n => `${n} spent months renovating.` },
+  { key: 'moved-abroad', track: 'home', sig: 'notable', whom: false,
+    line: n => `${n} moved abroad.` },
+  { key: 'moved-back', after: ['moved-abroad'], track: 'home', sig: 'notable', whom: false,
+    line: n => `${n} moved back home.` },
 
   // ── public life ────────────────────────────────────────────────────
   // Most of what the reference pages carry under "Post <show>".
@@ -143,6 +168,16 @@ export const KINDS = [
     line: n => `${n} signed a brand deal.` },
   { key: 'hosted-comp', track: 'public', sig: 'notable', whom: false,
     line: n => `${n} returned to host a competition.` },
+  { key: 'memoir', once: true, track: 'public', sig: 'notable', whom: false,
+    line: n => `${n} wrote a memoir.` },
+  { key: 'documentary', track: 'public', sig: 'notable', whom: false,
+    line: n => `${n} appeared in a documentary.` },
+  { key: 'charity', track: 'public', sig: 'minor', whom: false,
+    line: n => `${n} fronted a charity campaign.` },
+  { key: 'meme', track: 'public', sig: 'minor', whom: false,
+    line: n => `${n} became a meme for a week.` },
+  { key: 'podcast-guest', track: 'public', sig: 'minor', whom: false,
+    line: n => `${n} did the podcast circuit.` },
   { key: 'feud', track: 'public', sig: 'notable', whom: true,
     line: (n, w) => `${n} and ${w} fell out publicly.` },
   { key: 'made-up', after: ['feud'], track: 'public', sig: 'minor', whom: true,
@@ -151,13 +186,13 @@ export const KINDS = [
   // ── health and loss ────────────────────────────────────────────────
   // All rare, all approved by hand. See the rate table in the design doc:
   // realism is a rate question, not a permission one.
-  { key: 'illness', track: 'health', sig: 'major', whom: false,
+  { key: 'illness', weight: 0.5, track: 'health', sig: 'major', whom: false,
     line: n => `${n} was seriously ill.` },
   { key: 'injury', track: 'health', sig: 'notable', whom: false,
     line: n => `${n} was injured.` },
   { key: 'recovered', after: ['illness', 'injury'], track: 'health', sig: 'notable', whom: false,
     line: n => `${n} recovered.` },
-  { key: 'bereavement', track: 'health', sig: 'major', whom: false,
+  { key: 'bereavement', weight: 0.5, track: 'health', sig: 'major', whom: false,
     line: (n, w, pr) => `${n} lost someone close to ${pr.obj}.` },
   { key: 'death', track: 'health', sig: 'major', whom: false, terminal: true,
     line: n => `${n} died.` },
@@ -171,19 +206,23 @@ export const KINDS = [
     line: n => `${n} came into money.` },
   { key: 'lost-money', track: 'money', sig: 'notable', whom: false,
     line: (n, w, pr) => `${n} lost most of what ${pr.sub} had.` },
-  { key: 'bankruptcy', track: 'money', sig: 'major', whom: false,
+  { key: 'bankruptcy', weight: 0.25, once: true, track: 'money', sig: 'major', whom: false,
     line: n => `${n} filed for bankruptcy.` },
+  { key: 'investment', track: 'money', sig: 'minor', whom: false,
+    line: n => `${n} made an investment that actually worked out.` },
+  { key: 'bad-investment', track: 'money', sig: 'minor', whom: false,
+    line: n => `${n} put money into a friend's idea. The less said, the better.` },
   { key: 'big-purchase', track: 'money', sig: 'minor', whom: false,
     line: (n, w, pr) => `${n} spent the winnings on something ${pr.sub} could not justify.` },
-  { key: 'lawsuit', track: 'legal', sig: 'notable', whom: false,
+  { key: 'lawsuit', weight: 0.75, track: 'legal', sig: 'notable', whom: false,
     line: n => `${n} became involved in a lawsuit.` },
-  { key: 'arrested', track: 'legal', sig: 'major', whom: false,
+  { key: 'arrested', weight: 0.5, track: 'legal', sig: 'major', whom: false,
     line: n => `${n} was arrested.` },
   { key: 'charges-dropped', after: ['arrested', 'lawsuit'], track: 'legal', sig: 'notable', whom: false,
     line: n => `The charges against ${n} were dropped.` },
-  { key: 'scandal', track: 'legal', sig: 'major', whom: false,
+  { key: 'scandal', weight: 0.5, track: 'legal', sig: 'major', whom: false,
     line: n => `${n} was at the centre of a scandal.` },
-  { key: 'cancelled', track: 'legal', sig: 'major', whom: false,
+  { key: 'cancelled', weight: 0.5, track: 'legal', sig: 'major', whom: false,
     line: n => `${n} was widely condemned online.` },
   { key: 'forgiven', after: ['scandal', 'cancelled'], track: 'legal', sig: 'notable', whom: false,
     line: n => `The public moved on, and ${n} was quietly forgiven.` },
@@ -202,7 +241,13 @@ export const KINDS = [
     line: (n, w, pr) => `${n} started a rewatch podcast about ${pr.posAdj} own season.` },
   { key: 'production-fallout', track: 'franchise', sig: 'notable', whom: false,
     line: n => `${n} fell out with production.` },
-  { key: 'hall-of-fame', track: 'franchise', sig: 'major', whom: false,
+  { key: 'cameo', track: 'franchise', sig: 'minor', whom: false,
+    line: n => `${n} made a cameo on another show.` },
+  { key: 'merch', track: 'franchise', sig: 'minor', whom: false,
+    line: n => `${n} launched a merch line.` },
+  { key: 'watch-party', track: 'franchise', sig: 'minor', whom: true,
+    line: (n, w) => `${n} and ${w} hosted a season watch party.` },
+  { key: 'hall-of-fame', weight: 0.25, once: true, track: 'franchise', sig: 'major', whom: false,
     line: n => `${n} was inducted into the hall of fame.` },
 
   // ── vices and recovery ─────────────────────────────────────────────
@@ -213,7 +258,7 @@ export const KINDS = [
     line: n => `${n} got sober.` },
   { key: 'relapse', after: ['sober', 'rehab'], track: 'health', sig: 'major', whom: false,
     line: n => `${n} relapsed.` },
-  { key: 'rehab', track: 'health', sig: 'major', whom: false,
+  { key: 'rehab', weight: 0.5, track: 'health', sig: 'major', whom: false,
     line: n => `${n} went into treatment.` },
   { key: 'therapy', track: 'health', sig: 'notable', whom: false,
     line: n => `${n} started therapy.` },
@@ -223,6 +268,10 @@ export const KINDS = [
     line: n => `${n} took a year off.` },
   { key: 'in-shape', track: 'health', sig: 'minor', whom: false,
     line: (n, w, pr) => `${n} got into the best shape of ${pr.posAdj} life.` },
+  { key: 'surgery', track: 'health', sig: 'notable', whom: false,
+    line: n => `${n} had a minor operation.` },
+  { key: 'kicked-habit', track: 'health', sig: 'notable', whom: false,
+    line: (n, w, pr) => `${n} finally kicked a habit ${pr.sub} had carried for years.` },
 
   // ── small life ─────────────────────────────────────────────────────
   // The texture that makes the big events land, and what a low-fame character
@@ -241,6 +290,22 @@ export const KINDS = [
     line: (n, w) => `${n} moved in with ${w}.` },
   { key: 'learned', track: 'small', sig: 'minor', whom: false,
     line: (n, w, pr) => `${n} learned to do something ${pr.sub} had always meant to.` },
+  { key: 'marathon', track: 'small', sig: 'minor', whom: false,
+    line: n => `${n} ran a marathon.` },
+  { key: 'new-language', track: 'small', sig: 'minor', whom: false,
+    line: n => `${n} started learning a language.` },
+  { key: 'road-trip', track: 'small', sig: 'minor', whom: true,
+    line: (n, w) => `${n} and ${w} took a road trip.` },
+  { key: 'volunteering', track: 'small', sig: 'minor', whom: false,
+    line: n => `${n} started volunteering.` },
+  { key: 'garden', track: 'small', sig: 'minor', whom: false,
+    line: n => `${n} got unreasonably serious about gardening.` },
+  { key: 'old-car', track: 'small', sig: 'minor', whom: false,
+    line: n => `${n} bought an old car to fix up.` },
+  { key: 'cooking', track: 'small', sig: 'minor', whom: false,
+    line: n => `${n} got genuinely good at cooking.` },
+  { key: 'godparent', track: 'family', sig: 'minor', whom: false,
+    line: n => `${n} became a godparent.` },
 ];
 
 const BY_KEY = new Map(KINDS.map(k => [k.key, k]));

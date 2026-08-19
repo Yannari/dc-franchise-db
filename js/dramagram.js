@@ -378,14 +378,31 @@ export function postsFor(slug, {
   // claimable, majors first, then the moments — a moment IS its photograph in a
   // way a job announcement is not — then the small stuff.
   const queue = (gallery.images || []).filter(o => !o.pinned);
+  // ── A MOOD RESERVES A PHOTO FOR THE MOMENTS ──
+  //
+  // Setting a mood on a picture says "this is a personal post" — a flirty
+  // photo under "started a new business" is the app visibly not looking at its
+  // own pictures. So announcements claim only the unmooded photos, and the
+  // mooded ones go to moments, which adopt the mood as their register. Mood
+  // everything and every announcement renders as a card, which is predictable
+  // rather than wrong.
+  const plain = queue.filter(o => !o.mood);
+  const mooded = queue.filter(o => o.mood);
   const weight = p => p.isMoment ? 1.5
     : ({ major: 0, notable: 1, minor: 2 })[p.significance];
   const wantPhoto = [...evPosts, ...moPosts]
     .filter(p => !postedById.has(p.id))
     .sort((a, b) => weight(a) - weight(b) || b._rank - a._rank);
   const claimed = new Map();
-  for (let i = 0; i < wantPhoto.length && i < queue.length; i++) {
-    claimed.set(wantPhoto[i].id, queue[i]);
+  let pi = 0, mi = 0;
+  for (const p of wantPhoto) {
+    if (p.isMoment) {
+      if (mi < mooded.length) claimed.set(p.id, mooded[mi++]);
+      else if (pi < plain.length) claimed.set(p.id, plain[pi++]);
+    } else if (pi < plain.length) {
+      claimed.set(p.id, plain[pi++]);
+    }
+    if (pi >= plain.length && mi >= mooded.length) break;
   }
 
   const all = [...evPosts, ...moPosts].map(p => {

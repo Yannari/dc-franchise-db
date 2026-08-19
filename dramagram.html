@@ -364,7 +364,7 @@ function render() {
  * wedding photo of anybody, so nothing here claims a picture is of the thing it
  * sits beside.
  */
-async function renderProfile(slug) {
+async function renderProfile(slug, { archive = true } = {}) {
   viewing = slug;
   const d = rows.find(x => x.slug === slug);
   $('#dg-grid').hidden = true;
@@ -425,13 +425,49 @@ async function renderProfile(slug) {
         </div>
       </div>
     </div>
-    ${posts.length ? `<div class="dg-posts">${posts.map(postTile).join('')}</div>`
-      : `<p class="dg-empty">No posts yet.<br>Life events become posts once you approve them in
-         <a class="dg-back" href="life.html">Life</a>.</p>`}`;
+    <div id="dg-feed"></div>`;
 
-  host.querySelectorAll('[data-post]').forEach(el => {
-    el.onclick = () => openPost(posts[Number(el.dataset.post)], d);
-  });
+  // ── THE FEED, TEN AT A TIME ──
+  //
+  // A returning winner has fifty-plus posts, and one page of all of them was a
+  // scroll with no bottom. Paged inside the already-rendered profile: flipping
+  // a page redraws this div alone, so the header, the gallery fetch and the
+  // archive do not run again per click.
+  const FEED_PAGE = 10;
+  let feedPage = 0;
+  const drawFeed = () => {
+    const feed = host.querySelector('#dg-feed');
+    if (!posts.length) {
+      feed.innerHTML = `<p class="dg-empty">No posts yet.<br>Life events become posts once you
+        approve them in <a class="dg-back" href="life.html">Life</a>.</p>`;
+      return;
+    }
+    const pages = Math.max(1, Math.ceil(posts.length / FEED_PAGE));
+    if (feedPage >= pages) feedPage = pages - 1;
+    const from = feedPage * FEED_PAGE;
+    // Absolute indices, so a click on page three opens the right post.
+    const tiles = posts.slice(from, from + FEED_PAGE)
+      .map((post, k) => postTile(post, from + k)).join('');
+    feed.innerHTML = `<div class="dg-posts">${tiles}</div>`
+      + (pages > 1
+        ? `<div class="dg-pager">
+            <button data-fpg="-1" ${feedPage === 0 ? 'disabled' : ''}>← Newer</button>
+            <span>Page ${feedPage + 1} of ${pages}</span>
+            <button data-fpg="1" ${feedPage === pages - 1 ? 'disabled' : ''}>Older →</button>
+          </div>`
+        : '');
+    feed.querySelectorAll('[data-post]').forEach(el => {
+      el.onclick = () => openPost(posts[Number(el.dataset.post)], d);
+    });
+    feed.querySelectorAll('[data-fpg]').forEach(b => {
+      b.onclick = () => {
+        feedPage += Number(b.dataset.fpg);
+        drawFeed();
+        feed.scrollIntoView({ block: 'start', behavior: 'instant' });
+      };
+    });
+  };
+  drawFeed();
 
   // ── THE CLAIM BECOMES PERMANENT ──
   //
@@ -442,7 +478,12 @@ async function renderProfile(slug) {
   //
   // Silent and token-gated: a visitor without the token sees the same feed
   // (the claim is deterministic) — the archive just has not happened yet.
-  archivePosted(slug, posts);
+  //
+  // And skippable: right after a wiki fill the whole dump would be claimed by
+  // the photo-less backlog and archived in one pass, before anybody could pin a
+  // face or set a mood. The fill passes archive:false, so a fresh batch sits in
+  // the queue for this visit; the next open of the profile settles it.
+  if (archive) archivePosted(slug, posts);
 
   renderManage(slug, gal);
 }
@@ -483,7 +524,9 @@ function renderManage(slug, gal) {
     '<p class="dg-note" id="dg-note">Pin one as the profile picture, set a mood ',
     'to tell the captions what a picture is, and new posts claim photos from ',
     'this queue &mdash; a claimed photo moves to the posted pile and its slot ',
-    'frees up for the next dump.</p>',
+    'frees up for the next dump. Pin and mood first if you care which is which: ',
+    'a pinned photo is never posted, and a mood reserves a photo for the ',
+    'personal posts &mdash; announcements only take unmooded ones.</p>',
   ].join('');
   host.appendChild(box);
   const fillBtn = box.querySelector('#dg-fill');
@@ -513,7 +556,7 @@ function renderManage(slug, gal) {
           : !r.free ? 'The queue is already full — post or delete something first.'
           : 'Nothing found. ' + r.why.join(' · ');
       }
-      if (r.added) await renderProfile(slug);
+      if (r.added) await renderProfile(slug, { archive: false });
     } catch (err) {
       const note = $('#dg-note');
       if (note) note.textContent = 'Fill failed — ' + err.message;

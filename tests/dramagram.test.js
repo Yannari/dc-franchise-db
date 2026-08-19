@@ -438,3 +438,39 @@ describe('posts with a gallery', () => {
     expect(withPhoto.every(p => p.mood === 'nostalgic')).toBe(true);
   });
 });
+
+describe('what a mooded photo may be used for', () => {
+  const GAP_SEASONS = [{ seasonId: 't-1', airYear: 2020, airSlot: 'spring' }];
+  const CAREER = { id: 'a', name: 'A', details: [{ seasonId: 't-1' }], seasonsPlayed: 1, bestPlacement: 5 };
+  const LOG = [{ player: 'a', kind: 'started-business', afterSeason: 't-1', seq: 1, status: 'approved' }];
+
+  it('never puts a mooded photo on an announcement', () => {
+    // A flirty picture under "started a new business" is the app visibly not
+    // looking at its own pictures — reported from real output.
+    const gallery = { images: [{ file: '1.png', mood: 'flirty' }], posted: [] };
+    const posts = postsFor('a', { events: LOG, seasons: GAP_SEASONS, gallery, career: CAREER });
+    const biz = posts.find(p => p.kind === 'started-business');
+    expect(biz.photo).toBe(null);
+    // The photo is not wasted: a moment takes it, in its register.
+    const holder = posts.find(p => p.photo);
+    expect(holder?.isMoment).toBe(true);
+    expect(holder?.mood).toBe('flirty');
+  });
+
+  it('still gives announcements the unmooded photos', () => {
+    const gallery = { images: [{ file: '1.png' }, { file: '2.png', mood: 'soft' }], posted: [] };
+    const posts = postsFor('a', { events: LOG, seasons: GAP_SEASONS, gallery, career: CAREER });
+    const biz = posts.find(p => p.kind === 'started-business');
+    expect(biz.photo).toContain('1.png');
+  });
+});
+
+describe('the catalog after the bankruptcy audit', () => {
+  it('caps once-in-a-lifetime kinds in the resolver pool', async () => {
+    const { KINDS } = await import('../js/life-events.js');
+    const bank = KINDS.find(k => k.key === 'bankruptcy');
+    expect(bank.once).toBe(true);
+    expect(bank.weight).toBeLessThan(1);
+    expect(KINDS.find(k => k.key === 'hall-of-fame').once).toBe(true);
+  });
+});

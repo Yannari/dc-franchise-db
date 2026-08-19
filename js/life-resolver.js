@@ -221,6 +221,8 @@ const kindsOn = tracks => KINDS.filter(k => tracks.includes(k.track) && !k.termi
  * second illness. The most recent of the two wins.
  */
 const availableTo = (tracks, mine) => kindsOn(tracks).filter(k => {
+  // Once ever. A second bankruptcy is a caller bug wearing a plot twist.
+  if (k.once && mine.some(e => e.kind === k.key)) return false;
   if (!k.after) return true;
   let asked = -1, answered = -1;
   for (let i = 0; i < mine.length; i++) {
@@ -228,6 +230,13 @@ const availableTo = (tracks, mine) => kindsOn(tracks).filter(k => {
     if (mine[i].kind === k.key) answered = i;
   }
   return asked > answered;
+}).flatMap(k => {
+  // The draw below is uniform over this array, so a kind's weight is how many
+  // copies of it stand in the pool: weight 1 puts in four, weight 0.25 puts in
+  // one. That kept the pick deterministic while making a bankruptcy four times
+  // rarer than a big purchase instead of exactly as likely.
+  const copies = Math.max(1, Math.round((k.weight ?? 1) * 4));
+  return Array(copies).fill(k);
 });
 const pick = (rng, xs) => xs[Math.floor(rng() * xs.length)] || null;
 

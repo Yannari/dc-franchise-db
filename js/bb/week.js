@@ -76,6 +76,8 @@ import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, bloc
 import { recordBBVotes, tickBBKnowledge, stableRng } from './knowledge.js';
 import { runCallOutChain } from './white-locust.js';
 import { runCampDirector } from './camp-director.js';
+import { assignTeams, teamImmune, dissolveTeams, allTeams,
+  teamsDissolved } from './teams.js';
 import { runNightmarePower, nightmarePull } from './nightmare-power.js';
 import { runPremiereMystery } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
@@ -1914,6 +1916,45 @@ export function simulateBBWeek(options = {}) {
   const yard = out => house.filter(name => name !== gs.bb.outgoingHoh && !out.includes(name));
   if (yard(sittingOut).length < 2) sittingOut = [...rivalsOut];
   if (yard(sittingOut).length < 2) sittingOut = [];
+  // ── THE CLIQUES: SORTED ON NIGHT ONE, DISSOLVED WHEN THE HOUSE IS SMALL ──
+  //
+  // Assignment runs in week one only, before the first crown, because the
+  // immunity is read at that week's ceremony and a clique assigned after it
+  // would protect nobody on the night it was created.
+  //
+  // Dissolution is a HOUSE SIZE rather than a week, for the reason every
+  // end-anchored act in this codebase is: a season is not a fixed number of
+  // weeks. A protection that survived to the final five would decide the
+  // endgame by accident of sorting rather than by anything anybody played.
+  if (!compressed && week.twistState?.rules?.assignedTeams) {
+    try {
+      if ((week.num || 1) === 1 && !allTeams().length) {
+        const sorted = assignTeams({ house, rng });
+        if (sorted) {
+          week.teamsAssigned = sorted.teams.map(t => ({ ...t, members: [...t.members] }));
+          week.acts.push(addBeats({
+            type: 'teams-assigned', week: week.num, secret: false,
+            teams: week.teamsAssigned,
+            beats: week.teamsAssigned.map(t => ({
+              text: `${t.name}: ${t.members.join(', ')}. ${t.blurb}`,
+              players: [...t.members],
+              badgeText: t.name.toUpperCase(), badgeClass: 'blue',
+            })),
+          }, { players: house.slice(0, 4) }));
+        }
+      } else if (allTeams().length && !teamsDissolved()
+        && house.length <= (Number(options.teamsDissolveAt) || 8)) {
+        const ended = dissolveTeams(week);
+        if (ended) {
+          week.teamsDissolved = true;
+          week.acts.push(addBeats(ended, { players: [] }));
+        }
+      }
+    } catch (err) {
+      (week._teamsError ||= []).push(String(err?.message || err));
+    }
+  }
+
   // ── NIGHT ONE: THE CAMP DIRECTOR ─────────────────────────────────────
   //
   // BB21's opening. The house elects somebody, that somebody banishes four,
@@ -2799,10 +2840,19 @@ export function simulateBBWeek(options = {}) {
      technicality. */
   let duoCrownSafe = [];
   try { duoCrownSafe = duoSafeWith(hoh, house); } catch { duoCrownSafe = []; }
+  /* AND THE CLIQUE OF WHOEVER IS IN CHARGE.
+     BB11's whole rule: "should a member of their clique win Head of
+     Household, they would be immune from eviction that week." So FOUR people
+     are safe rather than one, and three of them did nothing to earn it —
+     which is what makes the block so much harder to fill and what makes the
+     twist worth having. Empty on every season with no teams, and empty once
+     the cliques dissolve, so the caller never has to know either. */
+  let teamSafe = [];
+  try { teamSafe = teamImmune(week, hoh); } catch { teamSafe = []; }
   const untouchable = [hoh, week.botbActive ? coHoh : null, week.cloud?.holder,
     carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite),
     ...wildcardSafe(week.wildcard),
-    ...rivalsSafe, ...keySafe, ...duoCrownSafe].filter(Boolean);
+    ...rivalsSafe, ...keySafe, ...duoCrownSafe, ...teamSafe].filter(Boolean);
 
   /* TWO DUOS, FOUR KEYS.
      Read before the ordinary plan because it replaces the block wholesale

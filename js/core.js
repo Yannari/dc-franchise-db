@@ -670,6 +670,12 @@ export const TWIST_CATALOG = [
     // anything else that re-routes the veto is out.
     incompatible:['bb-diamond-veto'],
     incompatibleModes:[] },
+  { id:'bb-cliques', emoji:'🏷️', name:'The Cliques', format:'big-brother',
+    category:'structural', phase:'any',
+    desc:'On night one the house is sorted into four cliques — the Athletes, the Brains, the Populars and the Off-Beats — by who these people already are. Nobody chooses their clique and nobody can leave it. The rule is one line and it changes every nomination: whenever somebody wins Head of Household, their ENTIRE clique is immune that week, so four houseguests are safe instead of one and three of them did nothing to earn it. A Head of Household who wanted a particular name on the block may find that name is protected by an accident of sorting. The cliques dissolve once the house is small, and the protection everybody has been quietly relying on evaporates in a single night — at which point it becomes very clear who made real friends and who was only ever in a category.',
+    // Both sort the house into groups that decide who can be nominated, so
+    // they would be answering the same question twice.
+    incompatible:['bb-split-house'] },
   { id:'bb-camp-director', emoji:'🏕️', name:'The Camp Director', format:'big-brother',
     category:'structural', phase:'any',
     desc:'Night one, before anything else: the houseguests elect one of their own Camp Director. Nobody competes for it — it is a vote taken by people who have known each other for a single afternoon, so it goes to whoever seems warmest and least dangerous. The Camp Director then banishes FOUR houseguests to Hit The Road, naming them out loud in front of everybody, and those four run a scramble in the backyard where the slowest is evicted immediately, before a single Head of Household has been crowned. The three who survive walk back inside bound together and knowing exactly whose idea it was, and the Camp Director spends the rest of the season having been elected for being likeable and remembered for something else entirely. Runs in week one only.',

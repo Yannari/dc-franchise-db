@@ -1424,6 +1424,21 @@ export function summariseWeek(week) {
         line('  The house is never told whose power did it.');
         break;
       }
+      case 'teams-assigned': {
+        line('');
+        line('THE CLIQUES');
+        for (const t of (act.teams || [])) {
+          line(`  ${t.name}: ${(t.members || []).join(', ')}.`);
+        }
+        line('  Nobody chose these. A clique whose member wins Head of Household is safe entire.');
+        break;
+      }
+      case 'teams-dissolved': {
+        line('');
+        line('THE CLIQUES ARE OVER');
+        line('  No clique is safe because one of its own is in charge any more.');
+        break;
+      }
       case 'camp-director': {
         line('');
         line('THE CAMP DIRECTOR');

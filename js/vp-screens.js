@@ -42,6 +42,7 @@ import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
 import { rpBuildBBWildcard } from './vp-bb-wildcard.js';
 import { rpBuildBBCampDirector } from './vp-bb-camp-director.js';
 import { rpBuildBBNightmare } from './vp-bb-nightmare.js';
+import { rpBuildBBCliques } from './vp-bb-cliques.js';
 import { rpBuildBBTimeCapsule } from './vp-bb-time-capsule.js';
 import { rpBuildBBPrizeExchange } from './vp-bb-prize-exchange.js';
 import { rpBuildBBCampComeback, rpBuildBBCampReturn } from './vp-bb-camp.js';
@@ -23654,6 +23655,14 @@ function _bbCycleScreens(view, screens, suffix = '') {
         const nmDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-nightmare'), label: 'Nightmare Power',
           html: rpBuildBBNightmare(view, act, nmDeps) });
+        break;
+      }
+      case 'teams-assigned':
+      case 'teams-dissolved': {
+        const cqDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id(act.type === 'teams-dissolved' ? 'bb-cliques-end' : 'bb-cliques'),
+          label: act.type === 'teams-dissolved' ? 'Cliques Over' : 'The Cliques',
+          html: rpBuildBBCliques(view, act, cqDeps) });
         break;
       }
       case 'camp-director': {

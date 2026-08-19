@@ -726,6 +726,25 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Every one of you has exactly one of these. Somebody is about to spend theirs in week one.',
     },
   },
+  'bb-cliques': {
+    id: 'bb-cliques', layer: 'season', category: 'power-structure',
+    timing: 'season-opening', duration: { weeks: null },
+    // BB11, and the first ASSIGNED group this engine has ever had. Every other
+    // grouping here is opted into — alliances are formed, showmances happen,
+    // duos are declared — and blocs.js does not hold groups at all, it derives
+    // them from those. A clique is given to you.
+    //
+    // The rules delta is the immunity, and it is the whole twist: a clique
+    // whose member wins Head of Household is safe entire. Four people rather
+    // than one, three of whom did nothing for it.
+    rules: { assignedTeams: 'cliques' },
+    acquisition: { channel: 'none', secrecy: 'public' },
+    announcement: {
+      name: 'The Cliques',
+      rule: 'The house has been sorted into four cliques — the Athletes, the Brains, the Populars and the Off-Beats. Nobody chose their clique and nobody may change it. For as long as the cliques last, whenever a houseguest wins Head of Household their ENTIRE clique is immune from eviction that week: four people safe instead of one, and three of them did nothing to earn it. When the house gets small the cliques dissolve, and everybody finds out at once whether they had friends or only a category.',
+      sting: 'You did not pick these people, and this week they are the only thing standing between you and that chair.',
+    },
+  },
   'bb-camp-director': {
     id: 'bb-camp-director', layer: 'season', category: 'power-structure',
     timing: 'season-opening', duration: { weeks: 1 },

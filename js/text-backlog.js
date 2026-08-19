@@ -5284,6 +5284,22 @@ export function generateBBSummaryText(ep) {
         ln('  in this house whose name is attached to any of it.');
         break;
       }
+      case 'teams-assigned': {
+        sec('THE CLIQUES');
+        ln('  The house is sorted on night one, by who these people already are.');
+        ln('  Nobody chose their clique and nobody can leave it.');
+        ln('');
+        beats(act);
+        ln('');
+        ln('  For as long as this lasts, a clique whose member wins Head of Household');
+        ln('  is immune entire — four safe instead of one, three of them for nothing.');
+        break;
+      }
+      case 'teams-dissolved': {
+        sec('THE CLIQUES ARE OVER');
+        beats(act);
+        break;
+      }
       case 'camp-director': {
         sec('THE CAMP DIRECTOR');
         ln('  Nobody competes for this. The house votes, on its first night, having');

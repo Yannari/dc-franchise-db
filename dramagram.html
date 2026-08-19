@@ -192,9 +192,13 @@
   .dg-libit button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;
     border:0;background:rgba(0,0,0,.72);color:#fff;font-size:14px;line-height:1;cursor:pointer}
   .dg-libit button:hover{background:#ff6b6b}
-  .dg-libit .pin{position:absolute;left:4px;bottom:4px;top:auto;right:auto;width:auto;height:auto;
-    background:rgba(0,0,0,.72);color:#fff;border-radius:2px;font-size:10px;font-weight:800;
-    letter-spacing:.06em;padding:3px 6px;text-transform:uppercase}
+  /* THE PIN WAS INVISIBLE. It sat at left:4px bottom:4px — the exact
+     rectangle the mood dropdown was later positioned over — so the one control
+     the strip exists for could not be seen or clicked. Top-left now, above
+     everything, gold when it is the face. */
+  .dg-libit .pin{position:absolute;left:4px;top:4px;bottom:auto;right:auto;width:auto;height:auto;
+    background:rgba(0,0,0,.78);color:#fff;border-radius:2px;font-size:10px;font-weight:800;
+    letter-spacing:.06em;padding:4px 7px;text-transform:uppercase;z-index:2}
   .dg-libit .pin.on{background:var(--dg-hot);color:#111}
   .dg-libit .pin:hover{background:var(--dg-hot);color:#111}
   .dg-note{color:var(--dg-dim);font-size:12.5px;margin-top:10px;line-height:1.5}
@@ -403,7 +407,9 @@ async function renderProfile(slug, { archive = true } = {}) {
          by browser chrome is one you are stuck on. -->
     <a class="dg-back dg-return" href="dramagram.html">← All profiles</a>
     <div class="dg-prof">
-      <img class="dg-prof-pic" src="${esc(pinnedOf(gal)
+      <img class="dg-prof-pic" title="Change it in the photo strip below — ☆ set as pfp on any photo"
+        style="cursor:pointer" onclick="document.getElementById('dg-lib')?.scrollIntoView({behavior:'smooth',block:'center'})"
+        src="${esc(pinnedOf(gal)
         ? imageUrl(slug, pinnedOf(gal))
         : 'assets/avatars/' + encodeURIComponent(slug) + '.png')}" alt=""
         onerror="this.outerHTML='<div class=&quot;dg-prof-pic fb&quot;>${esc(initials(d.name))}</div>'">
@@ -591,15 +597,17 @@ async function drawLibrary(slug) {
     '<img src="' + esc(imageUrl(slug, f.file)) + '" alt="" loading="lazy">',
     '<button data-del="' + esc(f.file) + '" title="Delete">&times;</button>',
     '<button class="pin' + (f.pinned ? ' on' : '') + '" data-pin="' + esc(f.file) + '"',
-    ' data-on="' + (f.pinned ? '1' : '') + '" title="Use as profile picture">'
-      + (f.pinned ? 'profile' : 'pin') + '</button>',
+    ' data-on="' + (f.pinned ? '1' : '') + '" title="Use as the profile picture">'
+      + (f.pinned ? '★ pfp' : '☆ pfp') + '</button>',
+    // The label says what pressing it does, not what the mechanism is called:
+    // "pin" was a word only this codebase used, and the author's question was
+    // "genuinely how do i even change my profile pic".
     // The MOOD is the photograph's own fact — what this picture is — and a
     // moment that claims it posts in that register instead of the derived one.
     '<select class="mood" data-mood="' + esc(f.file) + '" title="What this picture is">',
     '<option value="">mood: auto</option>',
     ...MOODS.map(mo => '<option value="' + mo + '"' + (f.mood === mo ? ' selected' : '') + '>' + mo + '</option>'),
     '</select>',
-    posted ? '<span class="dg-postedtag">posted</span>' : '',
     '</div>',
   ].join('');
   lib.innerHTML = (gal.images.map(f => item(f, false)).join('')

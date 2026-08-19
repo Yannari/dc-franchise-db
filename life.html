@@ -268,6 +268,27 @@ const EMPTY = {
   all: 'No events yet. Resolve an off-season above, or export a season.',
 };
 
+/**
+ * The season picker, saying which off-seasons already exist.
+ *
+ * "How do I know a season already has its off-season?" had no answer on the
+ * page: every season looked identical in the list, so the only way to find out
+ * was to resolve one and be told it would replace what was there. The count is
+ * the answer, and it is rebuilt on every render because approving, removing and
+ * resolving all change it.
+ */
+function syncSeasonPicker() {
+  const sel = $('#resolve-season');
+  const keep = sel.value;
+  const n = sid => events.filter(e => e.afterSeason === sid).length;
+  sel.innerHTML = seasons.slice().sort(byAirDate).reverse().map(s => {
+    const c = n(s.seasonId);
+    const mark = c ? `✓ ${c} event${c === 1 ? '' : 's'}` : 'no off-season yet';
+    return `<option value="${s.seasonId}">${esc(s.title || s.seasonId)} — ${esc(airLabel(s))} · ${mark}</option>`;
+  }).join('');
+  if (keep) sel.value = keep;
+}
+
 function renderViews() {
   $('#views').innerHTML = VIEWS.map(([id, label, test]) => {
     const n = events.filter(test).length;
@@ -281,6 +302,7 @@ function renderViews() {
 function render() {
   const list = $('#list');
   renderViews();
+  syncSeasonPicker();
   const test = (VIEWS.find(v => v[0] === view) || VIEWS[3])[2];
   const sorted = events.filter(test).sort(order(rank()));
   const gaps = new Map();
@@ -602,20 +624,20 @@ $('#commit').onclick = async () => {
   // proposals from the simulator, so the copy on disk in a published checkout
   // can be older than the one the Worker holds — reading the file would show an
   // inbox missing the off-season that was just resolved.
-  const [log, sdb, pdb] = await Promise.all([
+  const [log, sdb, pdb, roster] = await Promise.all([
     loadLifeLog(),
     fetch('seasons_database.json').then(r => r.json()).catch(() => ({ seasons: [] })),
     fetch('players_database.json').then(r => r.json()).catch(() => ({ players: [] })),
+    // The roster is where gender and sexuality live; the derived database has
+    // neither, and without them the resolver pairs people who would not.
+    fetch('franchise_roster.json').then(r => r.json()).catch(() => ({ players: [] })),
   ]);
   events = log;
-  ctx = lifeContext(pdb, sdb);
+  ctx = lifeContext(pdb, sdb, roster);
   seasons = ctx.seasons;
   names = ctx.names;
   careers = ctx.careers;
-  const sel = $('#resolve-season');
-  sel.innerHTML = seasons.slice().sort(byAirDate).reverse()
-    .map(s => `<option value="${s.seasonId}">${esc(s.title || s.seasonId)} — ${esc(airLabel(s))}</option>`)
-    .join('');
+  syncSeasonPicker();
   syncPolicyInputs();
   // Automatic: any season that has aired and has no off-season yet gets one,
   // as proposals. Pressing the button is only for re-rolling a gap.

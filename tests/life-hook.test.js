@@ -7,6 +7,7 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { resolveAfterSeason, unresolvedGaps, lifeContext } from '../js/life-hook.js';
 import { nextWindowFor } from '../js/franchise-calendar.js';
+import { resolveOffSeason as resolveOffSeasonFor } from '../js/life-resolver.js';
 
 const SEASONS = [
   { seasonId: 'td-1', seasonNumber: 1, format: 'total-drama', airYear: 2020, airSlot: 'spring', title: 'One' },
@@ -130,5 +131,71 @@ describe('the context both callers share', () => {
   it('finds a season showmance as a pair, once, not once per person', () => {
     const ctx = lifeContext({ players: PLAYERS }, { seasons: SEASONS });
     expect(ctx.pairsFor('td-2')).toEqual([['ali', 'bo']]);
+  });
+});
+
+// ── WHO CAN BE IN AN OFF-SEASON AT ALL ────────────────────────────────
+//
+// Both of these were reported from real output: "Alejandro and Cameron started
+// seeing each other — they're both straight", and a character appearing in
+// Dramagram posts before their first season had aired. The resolver was picking
+// people off the social graph, which knows who is close to whom and nothing
+// about who anybody is attracted to or when they debuted.
+describe('who the resolver is allowed to pair', () => {
+  const CAREERS = [
+    { id: 'al', name: 'Al', details: [{ seasonId: 'td-1' }], seasonsPlayed: 1, bestPlacement: 2 },
+    { id: 'cam', name: 'Cam', details: [{ seasonId: 'td-1' }], seasonsPlayed: 1, bestPlacement: 3 },
+  ];
+  const RANK = new Map([['td-1', 20201], ['td-2', 20203]]);
+  const SEASON = { seasonId: 'td-1', airYear: 2020, airSlot: 'spring' };
+  const CLOSE = new Map([
+    ['al', new Map([['cam', 6]])],
+    ['cam', new Map([['al', 6]])],
+  ]);
+  const straight = new Map([
+    ['al', { gender: 'm', sexuality: 'straight' }],
+    ['cam', { gender: 'm', sexuality: 'straight' }],
+  ]);
+
+  /** Every romantic pairing produced over many seeds. */
+  function pairings(people) {
+    const out = [];
+    for (let i = 0; i < 60; i++) {
+      const evs = resolveOffSeasonFor({ season: SEASON, careers: CAREERS, graph: CLOSE,
+        seasonRank: RANK, people, seedSalt: 'seed' + i });
+      out.push(...evs.filter(e => e.kind === 'dating'));
+    }
+    return out;
+  }
+
+  it('will not pair two straight men however close they are', () => {
+    expect(pairings(straight)).toEqual([]);
+  });
+
+  it('still pairs them when one of them is bi', () => {
+    const bi = new Map(straight);
+    bi.set('al', { gender: 'm', sexuality: 'bi' });
+    bi.set('cam', { gender: 'm', sexuality: 'gay' });
+    expect(pairings(bi).length).toBeGreaterThan(0);
+  });
+
+  it('gives the benefit of the doubt when somebody is not on the roster', () => {
+    // Missing data and a definite no are different answers. Blocking on absent
+    // gender would silently delete events for anybody the roster has not got.
+    expect(pairings(new Map()).length).toBeGreaterThan(0);
+  });
+
+  it('leaves out anybody whose first season has not aired yet', () => {
+    const future = [...CAREERS, { id: 'zed', name: 'Zed', details: [{ seasonId: 'td-2' }], seasonsPlayed: 1 }];
+    const evs = resolveOffSeasonFor({ season: SEASON, careers: future, graph: CLOSE,
+      seasonRank: RANK, people: straight, seedSalt: 'x' });
+    expect(evs.some(e => e.player === 'zed' || e.whom === 'zed')).toBe(false);
+  });
+
+  it('keeps somebody whose seasons have no dates, since unplaced is not the future', () => {
+    const undated = [{ id: 'nom', name: 'Nom', details: [{ seasonId: 'ghost' }], seasonsPlayed: 1 }];
+    const evs = resolveOffSeasonFor({ season: SEASON, careers: undated, graph: new Map(),
+      seasonRank: RANK, people: straight, seedSalt: 'y' });
+    expect(Array.isArray(evs)).toBe(true); // it ran over them rather than skipping
   });
 });

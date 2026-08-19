@@ -112,8 +112,21 @@ export async function saveLifeLog(all, { ask = true } = {}) {
  * than asked for, because the resolver's central rule is that being cast is the
  * test: it has to know which relationships had a season pointed at them.
  */
-export function lifeContext(pdb = {}, sdb = {}) {
+export function lifeContext(pdb = {}, sdb = {}, roster = {}) {
   const seasons = sdb.seasons || [];
+  // WHO EACH CHARACTER IS, from the authored roster — the derived database has
+  // no gender or sexuality on it at all. Without this the resolver pairs people
+  // off the social graph, which knows who is close to whom and nothing about
+  // who anybody is attracted to, and proposes that two straight men have
+  // started seeing each other.
+  // The roster file is `{players:[...]}` but the array is also accepted, and
+  // neither is a given — an omitted roster must mean "no orientation data",
+  // not a crash that takes the whole page down.
+  const rosterRows = Array.isArray(roster) ? roster
+    : Array.isArray(roster?.players) ? roster.players : [];
+  const people = new Map(rosterRows
+    .filter(r => r && r.slug)
+    .map(r => [r.slug, { gender: r.gender, sexuality: r.sexuality }]));
   const players = pdb.players || [];
   const careers = careersIn(pdb, 'all');
   const castBySeason = new Map();
@@ -146,6 +159,7 @@ export function lifeContext(pdb = {}, sdb = {}) {
     castBySeason,
     pairsFor,
     names: Object.fromEntries(players.map(p => [p.id, p.name])),
+    people,
     graph: socialGraph(careers),
     seasonRank: new Map(seasons.map(s => [s.seasonId, airKey(s)])),
   };
@@ -159,6 +173,7 @@ export function resolveGapWith(ctx, season, log) {
     events: log,
     seasonRank: ctx.seasonRank,
     graph: ctx.graph,
+    people: ctx.people,
     cast: ctx.castBySeason.get(season.seasonId) || [],
     pairs: ctx.pairsFor(season.seasonId),
   });
@@ -179,9 +194,10 @@ export function resolveGapWith(ctx, season, log) {
  * completely different things.
  */
 export async function resolveAfterSeason({ seasonId = null, seasonNumber = null, format = null } = {}) {
-  const [sdb, pdb, log] = await Promise.all([
+  const [sdb, pdb, roster, log] = await Promise.all([
     fetch('seasons_database.json').then(r => r.json()).catch(() => ({ seasons: [] })),
     fetch('players_database.json').then(r => r.json()).catch(() => ({ players: [] })),
+    fetch('franchise_roster.json').then(r => r.json()).catch(() => ({ players: [] })),
     loadLifeLog(),
   ]);
 
@@ -202,7 +218,7 @@ export async function resolveAfterSeason({ seasonId = null, seasonNumber = null,
     return { ok: false, season, reason: 'already resolved — ' + already + ' event' + (already === 1 ? '' : 's') + ' after it' };
   }
 
-  const ctx = lifeContext(pdb, sdb);
+  const ctx = lifeContext(pdb, sdb, roster);
   const fresh = resolveGapWith(ctx, season, log);
   if (!fresh.length) return { ok: true, season, added: 0, reason: 'a quiet off-season — nothing happened to anybody' };
 

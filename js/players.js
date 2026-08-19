@@ -1,5 +1,6 @@
 // js/players.js - Player stats, pronouns, threat scoring, challenge records
 import { gs, players, STATS, THREAT_TIERS, ARCHETYPES, DEFAULT_STATS, seasonConfig } from './core.js';
+import { romanticallyCompatible } from './attraction.js';
 import { DEFAULT_ROSTER } from './roster-data.js';
 // threatScore and isAllianceBottom read bonds, and read them as a BARE
 // identifier — which worked only because main.js hangs every export on window
@@ -46,18 +47,11 @@ export function tribeColor(tribe) {
 export function romanticCompat(a, b) {
   const pa = typeof a === 'string' ? players.find(p => p.name === a) : a;
   const pb = typeof b === 'string' ? players.find(p => p.name === b) : b;
-  const sa = pa?.sexuality || 'straight';
-  const sb = pb?.sexuality || 'straight';
-  const ga = pa?.gender || 'm';
-  const gb = pb?.gender || 'm';
-  function attracted(sex, myG, theirG) {
-    if (sex === 'asexual') return false;
-    if (sex === 'bi' || sex === 'queer' || sex === 'pan') return true;
-    if (sex === 'gay')     return myG === 'm' && theirG === 'm';
-    if (sex === 'lesbian') return myG === 'f' && theirG === 'f';
-    return myG !== theirG; // straight
-  }
-  return attracted(sa, ga, gb) && attracted(sb, gb, ga);
+  // The rule itself lives in js/attraction.js so that things outside the
+  // simulator can ask the same question — the life resolver could not import
+  // this file (it pulls in core.js and the whole sim), so it was pairing people
+  // off the social graph with no idea who anybody was attracted to.
+  return romanticallyCompatible(pa, pb);
 }
 
 export function pronouns(nameOrPlayer) {

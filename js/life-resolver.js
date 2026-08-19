@@ -34,6 +34,7 @@
 // happens to everybody else — which a single stream would do, silently, and
 // which would make an approved inbox impossible to reproduce.
 import { KINDS, kindOf, stateOf } from './life-events.js';
+import { couldBeInterested } from './attraction.js';
 
 /**
  * A seeded stream from a key. Copied from js/bb/knowledge.js, deliberately.
@@ -162,10 +163,13 @@ export function socialGraph(careers = []) {
  * stranger, because "fell out publicly with somebody they have never met" is
  * worse than no event at all.
  */
-function knownTo(graph, slug, want, rng) {
+function knownTo(graph, slug, want, rng, allow = null) {
   const row = graph?.get(slug);
   if (!row) return null;
-  const pool = [...row.entries()].filter(([, w]) => (want === 'enemy' ? w < 0 : w > 0));
+  // Filtered BEFORE the draw, not after. Picking somebody and then rejecting
+  // them would quietly drop the event instead of choosing somebody eligible.
+  const pool = [...row.entries()].filter(([other, w]) =>
+    (want === 'enemy' ? w < 0 : w > 0) && (!allow || allow(other)));
   if (!pool.length) return null;
   // Weighted by how strongly they feel: the person you fell out with most is
   // the likeliest to be the one it flares up with again.
@@ -219,6 +223,10 @@ export function resolveOffSeason({
   // spans several off-seasons replays in the wrong order, because `seq` starts
   // again at 1 on every resolution.
   seasonRank = null,
+  // Who each character is: slug -> { gender, sexuality }, off the roster.
+  // Without it the resolver pairs people off the social graph, which knows who
+  // is close to whom and nothing whatever about who anybody is attracted to.
+  people = null,
 } = {}) {
   if (!season?.seasonId) return [];
   const out = [];
@@ -241,11 +249,39 @@ export function resolveOffSeason({
    * strangers fell out, which reads as noise rather than as a life.
    */
   const otherFor = (kind, slug, rng, partner) => {
-    if (kind === 'feud') return knownTo(social, slug, 'enemy', rng);
-    if (kind === 'made-up') return knownTo(social, slug, 'enemy', rng);
-    if (kind === 'flatmates') return partner || knownTo(social, slug, 'friend', rng);
-    return partner || knownTo(social, slug, 'friend', rng);
+    // `here` only: a feud with somebody who has not been on television yet is
+    // the same anachronism as dating them.
+    const here = other => debuted.has(other);
+    if (kind === 'feud' || kind === 'made-up') return knownTo(social, slug, 'enemy', rng, here);
+    return partner || knownTo(social, slug, 'friend', rng, here);
   };
+
+  // ── WHO EXISTS YET ──
+  //
+  // The franchise record is the whole franchise, including people whose first
+  // season has not aired at this point on the calendar. Resolving over all of
+  // them gave a character an off-season — and a Dramagram post — before their
+  // debut, which is a stranger with a public life and no reason to have one.
+  //
+  // Their debut is the earliest season they played that has a date. Somebody
+  // whose seasons are all undated is left in rather than dropped: unplaced is
+  // missing information, not proof they belong to the future.
+  const hereKey = seasonRank ? seasonRank.get(season.seasonId) : null;
+  const debutKey = career => {
+    let best = null;
+    for (const d of career?.details || []) {
+      const k = seasonRank ? seasonRank.get(d.seasonId) : null;
+      if (k != null && (best == null || k < best)) best = k;
+    }
+    return best;
+  };
+  const debuted = new Set(careers
+    .filter(c => hereKey == null || debutKey(c) == null || debutKey(c) <= hereKey)
+    .map(c => c.id));
+
+  /** Could these two plausibly be a couple: both on the air, and interested. */
+  const canDate = (a, b) => debuted.has(b)
+    && (!people || couldBeInterested(people.get(a), people.get(b)));
 
   let seq = 0;
   const emit = (player, kind, extra = {}) => {
@@ -256,6 +292,7 @@ export function resolveOffSeason({
 
   for (const career of careers) {
     const slug = career.id;
+    if (!debuted.has(slug)) continue;
     const state = stateOf(slug, events, { seasonRank });
     // Somebody whose tracks have ended has no off-season. Nothing after a death
     // is a fact about their life.
@@ -298,7 +335,13 @@ export function resolveOffSeason({
       // A showmance first, then somebody they are genuinely close to. A
       // relationship with a stranger is the one thing the resolver must not
       // invent, so with neither, nothing happens.
-      const candidate = pairFor(slug) || knownTo(social, slug, 'friend', rng('who'));
+      // A showmance from the season is the first candidate — the simulator has
+      // already checked that pairing — and a close friend is the fallback. Both
+      // go through canDate: the graph is a record of who matters to whom, and
+      // being important to somebody is not the same as being their type.
+      const showmance = pairFor(slug);
+      const candidate = (showmance && canDate(slug, showmance) ? showmance : null)
+        || knownTo(social, slug, 'friend', rng('who'), other => canDate(slug, other));
       const ckey = candidate ? pairKey(slug, candidate) : null;
       if (candidate && !settled.has(ckey) && rng('start')() < RATES.advance.single) {
         settled.add(ckey);

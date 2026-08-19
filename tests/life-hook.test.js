@@ -325,12 +325,13 @@ describe('resolving an older gap', () => {
 
   it('cannot see events from a season that had not aired yet', () => {
     const ctx = lifeContext(PDB, { seasons: SEASONS });
-    // Ali marries in the LATER gap. A married person is skipped by the
-    // relationship branch entirely, so if resolving the EARLIER gap could see
-    // it, Ali could never start anything in 2020 — no seed, ever. He must be
-    // able to, because in 2020 he was single.
+    // Ali marries in the LATER gap, as a PROPOSAL — approved would lock his
+    // romance instead, which is a different rule tested below. A married person
+    // is skipped by the relationship branch entirely, so if resolving the
+    // EARLIER gap could see this, Ali could never start anything in 2020: no
+    // seed, ever. He must be able to, because in 2020 he was single.
     const future = [
-      { player: 'ali', whom: 'bo', afterSeason: 'td-2', seq: 1, kind: 'wedding', status: 'approved' },
+      { player: 'ali', whom: 'bo', afterSeason: 'td-2', seq: 1, kind: 'wedding', status: 'proposed' },
     ];
     const graph = new Map([['ali', new Map([['bo', 8]])], ['bo', new Map([['ali', 8]])]]);
     const people = new Map([['ali', { gender: 'm', sexuality: 'straight' }],
@@ -352,5 +353,56 @@ describe('resolving an older gap', () => {
     const out = resolveGapWith(ctx, SEASONS[0], log);
     // Ali is already with Bo as far as the log says, so no NEW couple forms.
     expect(out.filter(e => e.kind === 'dating').length).toBe(0);
+  });
+});
+
+// ── AND CANON FURTHER ON IS NOT NEGOTIABLE ────────────────────────────
+//
+// Filling an old gap can contradict a relationship already approved in a newer
+// one: Alejandro and Lindsay moved in together in 2026 — canon — and
+// back-filling 2025 proposed they had broken up the year before, because the
+// cut correctly hides the future from the roll. Both cannot be true.
+describe('an approved relationship later on', () => {
+  const SEASONS = [
+    { seasonId: 'td-1', airYear: 2020, airSlot: 'spring' },
+    { seasonId: 'td-2', airYear: 2020, airSlot: 'fall' },
+  ];
+  const PDB = { players: [
+    { id: 'ali', name: 'Ali', seasonDetails: [{ seasonId: 'td-1' }] },
+    { id: 'bo', name: 'Bo', seasonDetails: [{ seasonId: 'td-1' }] },
+    { id: 'cy', name: 'Cy', seasonDetails: [{ seasonId: 'td-1' }] },
+  ] };
+  const GRAPH = new Map([
+    ['ali', new Map([['bo', 8], ['cy', 8]])],
+    ['bo', new Map([['ali', 8], ['cy', 8]])],
+    ['cy', new Map([['ali', 8], ['bo', 8]])],
+  ]);
+  const PEOPLE = new Map([['ali', { gender: 'm', sexuality: 'straight' }],
+    ['bo', { gender: 'f', sexuality: 'straight' }], ['cy', { gender: 'f', sexuality: 'straight' }]]);
+
+  it('stops an earlier gap writing over it', () => {
+    const ctx = { ...lifeContext(PDB, { seasons: SEASONS }), graph: GRAPH, people: PEOPLE };
+    const canon = [
+      { player: 'ali', whom: 'bo', afterSeason: 'td-2', seq: 1, kind: 'moved-in', status: 'approved' },
+    ];
+    for (let i = 0; i < 40; i++) {
+      const out = resolveGapWith(ctx, SEASONS[0], canon);
+      // Ali's romantic life is already written further on, so 2020 leaves it
+      // alone entirely rather than pairing him with Cy and contradicting it.
+      expect(out.some(e => e.kind === 'dating' && [e.player, e.whom].includes('ali'))).toBe(false);
+    }
+  });
+
+  it('leaves everybody else free', () => {
+    const ctx = { ...lifeContext(PDB, { seasons: SEASONS }), graph: GRAPH, people: PEOPLE };
+    const canon = [
+      { player: 'ali', whom: 'bo', afterSeason: 'td-2', seq: 1, kind: 'moved-in', status: 'approved' },
+    ];
+    // Cy is named nowhere in it, so the lock must not reach her.
+    let free = false;
+    for (let i = 0; i < 40 && !free; i++) {
+      free = resolveGapWith(ctx, SEASONS[0], canon).some(e => e.player === 'cy');
+    }
+    expect(free).toBe(true);
   });
 });

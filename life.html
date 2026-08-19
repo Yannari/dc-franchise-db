@@ -108,6 +108,14 @@
   .views button:hover{color:var(--text)}
   .views button[aria-current="true"]{background:var(--accent);border-color:var(--accent);
     color:#12101a;font-weight:700}
+  /* The weights carry their own colour, the same one the badge on each row
+     uses, so the chip and the rows it lets through look like each other. */
+  .sigs{margin-top:-8px}
+  .sigs button{text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:700}
+  .sig-chip[aria-pressed="false"]{opacity:.4}
+  .sig-chip.major[aria-pressed="true"]{border-color:#f43f5e;color:#fda4af}
+  .sig-chip.notable[aria-pressed="true"]{border-color:#38bdf8;color:#7dd3fc}
+  .sig-chip.minor[aria-pressed="true"]{border-color:var(--muted);color:var(--text)}
 
   .commit{position:fixed;left:0;right:0;bottom:0;background:rgba(18,16,26,.96);
     border-top:1px solid var(--stroke);padding:12px 20px;display:flex;gap:12px;
@@ -194,6 +202,7 @@
        emptied and a few seasons in it would be thousands of rows of settled
        history with the handful of undecided ones buried in it. -->
   <div class="bar views" id="views"></div>
+  <div class="bar views sigs" id="sigs"></div>
 
   <div id="list"></div>
 </div>
@@ -234,6 +243,10 @@ let view = 'waiting';
 // And which off-season. The picker used to be a resolve target only, so
 // choosing a season changed nothing on screen — the list stayed on all of them.
 let seasonFilter = 'all';
+// And which weights. All three on to begin with, because an inbox that opens
+// already hiding things is one you cannot trust the counts on.
+const SIGS = ['major', 'notable', 'minor'];
+let sigFilter = new Set(SIGS);
 // DECIDED THIS VISIT, so a row does not vanish from under the cursor the moment
 // it is ticked — you would lose the ability to change your mind, and "Approve
 // everything" would blank the screen. They leave the waiting list when the
@@ -268,6 +281,21 @@ const VIEWS = [
   ['rejected', 'Rejected', e => e.status === 'rejected'],
   ['all', 'Everything', () => true],
 ];
+
+/**
+ * The events on screen, and the only place that decides what they are.
+ *
+ * Three filters compose here — status, off-season, significance — and they were
+ * being applied in three separate places, which is how a bulk button comes to
+ * act on a different set from the one you can see. Everything reads this.
+ */
+function shownEvents(viewId = view) {
+  const test = (VIEWS.find(v => v[0] === viewId) || VIEWS[3])[2];
+  return events.filter(e =>
+    (seasonFilter === 'all' || e.afterSeason === seasonFilter)
+    && sigFilter.has(significanceOf(e.kind))
+    && test(e));
+}
 
 const EMPTY = {
   waiting: 'Nothing waiting. Every event has been decided — commit to save it.',
@@ -315,13 +343,39 @@ function syncSeasonPicker() {
 }
 
 function renderViews() {
-  const inSeason = e => seasonFilter === 'all' || e.afterSeason === seasonFilter;
-  $('#views').innerHTML = VIEWS.map(([id, label, test]) => {
-    const n = events.filter(inSeason).filter(test).length;
-    return `<button data-view="${id}" aria-current="${view === id}">${label} ${n}</button>`;
-  }).join('');
+  // Counted through the OTHER filters, so a tab says how many it would show if
+  // you pressed it rather than how many exist somewhere.
+  $('#views').innerHTML = VIEWS.map(([id, label]) =>
+    `<button data-view="${id}" aria-current="${view === id}">${label} ${shownEvents(id).length}</button>`
+  ).join('');
   $('#views').querySelectorAll('[data-view]').forEach(el => {
     el.onclick = () => { view = el.dataset.view; render(); };
+  });
+
+  // ── HOW MUCH IT MATTERS ──
+  //
+  // 851 proposals is not a list anybody reads end to end. The weights are
+  // already how the policy decides what to interrupt you about, so they are the
+  // natural way to cut the pile: read the majors, approve the minors in bulk.
+  //
+  // Toggles rather than a single choice — "major and notable, not the haircuts"
+  // is the obvious thing to want, and a radio cannot say it.
+  const inRest = e => (seasonFilter === 'all' || e.afterSeason === seasonFilter)
+    && (VIEWS.find(v => v[0] === view) || VIEWS[3])[2](e);
+  $('#sigs').innerHTML = SIGS.map(sg => {
+    const n = events.filter(e => significanceOf(e.kind) === sg).filter(inRest).length;
+    return `<button class="sig-chip ${sg}" data-sig="${sg}" aria-pressed="${sigFilter.has(sg)}">
+      ${sg} ${n}</button>`;
+  }).join('');
+  $('#sigs').querySelectorAll('[data-sig]').forEach(el => {
+    el.onclick = () => {
+      const sg = el.dataset.sig;
+      if (sigFilter.has(sg)) sigFilter.delete(sg); else sigFilter.add(sg);
+      // Never all three off: an empty list with no explanation reads as a bug,
+      // and the last one you turned off is the one you meant to keep.
+      if (!sigFilter.size) sigFilter = new Set([sg]);
+      render();
+    };
   });
 }
 
@@ -329,11 +383,7 @@ function render() {
   const list = $('#list');
   renderViews();
   syncSeasonPicker();
-  const test = (VIEWS.find(v => v[0] === view) || VIEWS[3])[2];
-  const sorted = events
-    .filter(e => seasonFilter === 'all' || e.afterSeason === seasonFilter)
-    .filter(test)
-    .sort(order(rank()));
+  const sorted = shownEvents().sort(order(rank()));
   const gaps = new Map();
   for (const e of sorted) {
     const k = e.afterSeason || '(unplaced)';
@@ -345,9 +395,13 @@ function render() {
     const s = seasonFilter === 'all' ? null : seasonOf(seasonFilter);
     const here = seasonFilter === 'all' ? 0
       : events.filter(e => e.afterSeason === seasonFilter).length;
+    const filtered = sigFilter.size < SIGS.length;
     list.innerHTML = `<div class="empty">${
       s && !here ? `No off-season after ${esc(s.title || seasonFilter)} yet.<br>Press
         <strong>Resolve the off-season</strong> to fill it.`
+      : filtered ? `Nothing ${esc(view === 'waiting' ? 'waiting' : view)}
+        ${s ? `after ${esc(s.title || seasonFilter)} ` : ''}at
+        ${esc([...sigFilter].join(' or '))}.<br>Turn another weight back on above.`
       : s ? `Nothing ${esc(view === 'waiting' ? 'waiting' : view)} after
         ${esc(s.title || seasonFilter)}. ${here} event${here === 1 ? '' : 's'} in total —
         try another list above.`
@@ -590,11 +644,13 @@ $('#resolve').onclick = () => {
 // list used to approve the whole log, canon and all — the buttons sit under a
 // filter now, so they mean the list you can see.
 function decideShown(status) {
-  const test = (VIEWS.find(v => v[0] === view) || VIEWS[3])[2];
-  events
-    .filter(e => seasonFilter === 'all' || e.afterSeason === seasonFilter)
-    .filter(test)
-    .forEach(e => { e.status = status; touched.add(keyOf(e)); });
+  const rows = shownEvents();
+  // Said out loud when it is a lot. "Approve everything" under a filter means
+  // something quite different from "approve everything", and the number is the
+  // only thing that makes which one you meant obvious.
+  if (rows.length > 25 && !confirm(
+    `${status === 'approved' ? 'Approve' : 'Reject'} all ${rows.length} events currently shown?`)) return;
+  rows.forEach(e => { e.status = status; touched.add(keyOf(e)); });
   render();
 }
 $('#all-yes').onclick = () => decideShown('approved');

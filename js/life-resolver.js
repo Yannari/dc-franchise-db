@@ -196,6 +196,16 @@ function knownTo(graph, slug, want, rng, allow = null) {
 const ORDINARY_TRACKS = ['career', 'home', 'small'];
 const RARE_TRACKS = ['health', 'legal', 'money'];
 
+// WHAT THE RESOLVER BELIEVES.
+//
+// A page shows approved rows only — a proposal must not change what anybody
+// reads. The resolver is the opposite: it is BUILDING the proposals, and a gap
+// that ignores the one before it produces a life that never moves. Resolving
+// ten off-seasons in one run, every gap saw only the already-approved rows, and
+// Alejandro graduated seven times. Rejected rows are the exception: saying no
+// to something is saying it did not happen.
+const BELIEVED = ['approved', 'proposed'];
+
 const kindsOn = tracks => KINDS.filter(k => tracks.includes(k.track) && !k.terminal && !k.stage);
 
 /**
@@ -262,6 +272,11 @@ export function resolveOffSeason({
   // Without it the resolver pairs people off the social graph, which knows who
   // is close to whom and nothing whatever about who anybody is attracted to.
   people = null,
+  // Approved rows from AFTER this gap. Deliberately separate from `events`,
+  // which is cut at the gap so the roll cannot see its own future: this is not
+  // an input to anybody's state, it is a list of what has already been written
+  // and therefore must not be contradicted.
+  laterCanon = [],
 } = {}) {
   if (!season?.seasonId) return [];
   const out = [];
@@ -291,7 +306,7 @@ export function resolveOffSeason({
   // separately.
   const stageCache = new Map();
   const stageOf = who => {
-    if (!stageCache.has(who)) stageCache.set(who, stateOf(who, events, { seasonRank }).relationship.stage);
+    if (!stageCache.has(who)) stageCache.set(who, stateOf(who, events, { seasonRank, statuses: BELIEVED }).relationship.stage);
     return stageCache.get(who);
   };
   const singleNow = who => !taken.has(who) && stageOf(who) === 'single';
@@ -340,11 +355,41 @@ export function resolveOffSeason({
    * interested. `b` is the candidate; `a` has already been found single by the
    * branch that calls this.
    */
-  const canDate = (a, b) => debuted.has(b) && singleNow(b)
+  const canDate = (a, b) => debuted.has(b) && singleNow(b) && !lockedRomance.has(b)
     && (!people || couldBeInterested(people.get(a), people.get(b)));
 
+  // ── CANON LATER ON WINS ──
+  //
+  // Filling an OLD gap can contradict a relationship that is already approved
+  // in a NEWER one. Alejandro and Lindsay moved in together in 2026 — canon —
+  // and back-filling 2025 proposed that they had broken up the year before,
+  // because the cut correctly hides the future from the roll. Both cannot be
+  // true, and the one somebody approved is the one that is.
+  //
+  // So anybody whose romantic life is already written further on is left out of
+  // the relationship branch entirely. It costs a few proposals and it cannot
+  // produce a couple who are together on one page and apart on the other.
+  const lockedRomance = new Set();
+  for (const e of laterCanon) {
+    if (kindOf(e.kind)?.track !== 'relationship') continue;
+    lockedRomance.add(e.player);
+    if (e.whom) lockedRomance.add(e.whom);
+  }
+
   let seq = 0;
+  // Nobody gets the same thing twice in one off-season.
+  //
+  // Each player is drawn from up to three times — the ordinary beat, the
+  // public-life one and the rare one — off overlapping pools, so "Oliver
+  // started a new job." could and did land twice in the same three months.
+  const emitted = new Set();
   const emit = (player, kind, extra = {}) => {
+    // Keyed on the PAIR for a two-person event. Bridgette and Trent each moved
+    // in with the other in the same off-season — two rows, one fact, which the
+    // stored-log guard catches and a reader would see twice on two pages.
+    const once = (extra.whom ? [player, extra.whom].sort().join('+') : player) + '|' + kind;
+    if (emitted.has(once)) return;
+    emitted.add(once);
     out.push({
       player, kind, afterSeason: season.seasonId, seq: ++seq, status: 'proposed', ...extra,
     });
@@ -353,11 +398,11 @@ export function resolveOffSeason({
   for (const career of careers) {
     const slug = career.id;
     if (!debuted.has(slug)) continue;
-    const state = stateOf(slug, events, { seasonRank });
+    const state = stateOf(slug, events, { seasonRank, statuses: BELIEVED });
     // Their own approved history, oldest first — what `availableTo` reads to
     // decide whether a reply has anything to reply to.
     const mine = events
-      .filter(e => e.status === 'approved' && (e.player === slug || e.whom === slug))
+      .filter(e => BELIEVED.includes(e.status) && (e.player === slug || e.whom === slug))
       .sort(order(seasonRank));
     // Somebody whose tracks have ended has no off-season. Nothing after a death
     // is a fact about their life.
@@ -367,7 +412,7 @@ export function resolveOffSeason({
     const fame = fameOf(career);
 
     // ── the relationship ──
-    const stage = state.relationship.stage;
+    const stage = lockedRomance.has(slug) ? 'locked' : state.relationship.stage;
     const partner = state.relationship.with;
     const key = partner ? pairKey(slug, partner) : null;
 
@@ -378,6 +423,11 @@ export function resolveOffSeason({
     // The state is derived, so a poisoned pair repairs itself the moment the
     // row is removed; this stops it spreading in the meantime.
     if (stage !== 'single' && partner && !debuted.has(partner)) continue;
+    // And not if THEIR romance is the one already written. Bridgette going
+    // public with Alejandro in 2025 was proposed while he is approved as
+    // living with Lindsay from 2026: he was locked, she was not, and the lock
+    // only ever looked at whose turn it was.
+    if (stage !== 'single' && partner && lockedRomance.has(partner)) continue;
     if (stage !== 'single' && partner && !settled.has(key)) {
       settled.add(key);
       // Both are spoken for this round whatever happens next — including a
@@ -407,7 +457,7 @@ export function resolveOffSeason({
         && r() < RATES.birth) {
         emit(slug, 'birth');
       }
-    } else if (stage === 'single' && !taken.has(slug)) {
+    } else if (stage === 'single' && !taken.has(slug) && !lockedRomance.has(slug)) {
       // `taken`, not just `stage`: somebody chosen as a partner earlier in this
       // loop still reads as single in the log — the event proposing it has not
       // been written there — so without this they would go on to start a second

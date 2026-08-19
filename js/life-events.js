@@ -318,7 +318,7 @@ export function lineFor(event, names = {}, reader = null, genders = null) {
  * is a fact about their life, and an ordering slip should not be able to
  * resurrect them.
  */
-export function deriveState(events = [], { seasonRank = null } = {}) {
+export function deriveState(events = [], { seasonRank = null, statuses = ['approved'] } = {}) {
   const state = {
     relationship: { stage: 'single', with: null },
     education: { stage: 'none' },
@@ -333,8 +333,16 @@ export function deriveState(events = [], { seasonRank = null } = {}) {
   // rather than reading: a run produced eleven weddings and left nobody
   // married, because each wedding was being replayed before the dating that
   // preceded it. approvedFor learned this first; deriveState had not.
+  // WHICH ROWS COUNT.
+  //
+  // Approved only, for anything a reader sees: a proposal must never change
+  // what a page says. But the RESOLVER has to count proposals too, and finding
+  // that out cost a franchise's worth of nonsense — resolving ten off-seasons
+  // in one run, every gap saw only the 169 approved rows, so nobody's position
+  // ever moved and Alejandro graduated seven times. Inside a run, a proposal
+  // not yet rejected is the working truth.
   const ordered = events
-    .filter(e => e && e.status === 'approved')
+    .filter(e => e && statuses.includes(e.status))
     .slice()
     .sort(order(seasonRank));
 
@@ -401,12 +409,12 @@ export function order(seasonRank = null) {
  * `player` alone is exactly the mistake that produced two different answers for
  * one relationship.
  */
-export function stateOf(slug, events = [], { seasonRank = null } = {}) {
+export function stateOf(slug, events = [], { seasonRank = null, statuses = ['approved'] } = {}) {
   const mine = events.filter(e => involves(e, slug));
-  const st = deriveState(mine, { seasonRank });
+  const st = deriveState(mine, { seasonRank, statuses });
   // "with" must be the OTHER person, whichever side of the row they sat on.
   if (st.relationship.with === slug) {
-    const last = mine.filter(e => e.status === 'approved' && kindOf(e.kind)?.track === 'relationship')
+    const last = mine.filter(e => statuses.includes(e.status) && kindOf(e.kind)?.track === 'relationship')
       .sort(order(seasonRank)).pop();
     st.relationship.with = last ? (last.player === slug ? last.whom : last.player) : null;
   }

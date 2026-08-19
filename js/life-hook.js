@@ -189,10 +189,19 @@ export function resolveGapWith(ctx, season, log) {
     const k = ctx.seasonRank.get(e.afterSeason);
     return k == null || k <= here;
   });
+  // What is already written further on. The cut above hides the future from the
+  // roll, which is right — and would otherwise hide it from the check that
+  // stops the roll contradicting canon, which is not.
+  const laterCanon = here == null ? [] : log.filter(e => {
+    if (e.status !== 'approved') return false;
+    const k = ctx.seasonRank.get(e.afterSeason);
+    return k != null && k > here;
+  });
   return resolveOffSeason({
     season,
     careers: ctx.careers,
     events: sofar,
+    laterCanon,
     seasonRank: ctx.seasonRank,
     graph: ctx.graph,
     people: ctx.people,

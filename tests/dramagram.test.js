@@ -9,7 +9,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  directory, followerHistory, followersOf, statusOf, short, FOLLOWERS, VERIFIED_AT, postsFor, relationshipStatus } from '../js/dramagram.js';
+  directory, followerHistory, followersOf, statusOf, short, FOLLOWERS, VERIFIED_AT, postsFor, relationshipStatus, momentsFor } from '../js/dramagram.js';
 import { careersIn } from '../js/records.js';
 
 const SEASONS = Array.from({ length: 8 }, (_, i) => ({
@@ -198,7 +198,8 @@ describe('posts', () => {
   it('give the photographs to what matters most', () => {
     // One picture and three events: it belongs to the wedding, not the haircut.
     const events = [ev('haircut', { seq: 1 }), ev('wedding', { whom: 'b', seq: 2 }), ev('new-job', { seq: 3 })];
-    const posts = postsFor('a', { events, seasons: SEASONS, photos: ['pic-1'] });
+    const posts = postsFor('a', { events, seasons: SEASONS,
+      gallery: { images: [{ file: '1.png' }], posted: [] } });
     const withPhoto = posts.filter(p => p.photo);
     expect(withPhoto).toHaveLength(1);
     expect(withPhoto[0].kind, 'a minor event took the only photograph').toBe('wedding');
@@ -331,5 +332,109 @@ describe('getting back out of a profile', () => {
     // nothing when pressed.
     expect(page).toMatch(/id="dg-here"/);
     expect(page).toMatch(/href="dramagram\.html">/);
+  });
+});
+
+// ── MOMENTS: the posts about nothing ──────────────────────────────────
+//
+// Derived, never stored, never approved — seeded from (character, off-season,
+// index) so the same moment reads the same way forever. The off-season is the
+// clock: new season, new posts, so a feed can never run out the way a photo
+// inventory would.
+import { momentCaption, momentComments } from '../js/dramagram-voice.js';
+
+describe('moments', () => {
+  const GAP_SEASONS = [
+    { seasonId: 't-1', airYear: 2020, airSlot: 'spring' },
+    { seasonId: 't-2', airYear: 2020, airSlot: 'fall' },
+  ];
+  const CAREER = { id: 'a', name: 'A', details: [{ seasonId: 't-1' }], seasonsPlayed: 1, bestPlacement: 5 };
+  // Somebody ELSE's canon is what makes an off-season exist.
+  const LOG = [{ player: 'x', kind: 'hobby', afterSeason: 't-1', seq: 1, status: 'approved' },
+    { player: 'x', kind: 'hobby', afterSeason: 't-2', seq: 1, status: 'approved' }];
+
+  it('posts in every resolved off-season since debuting', () => {
+    const ms = momentsFor('a', { events: LOG, seasons: GAP_SEASONS, career: CAREER });
+    expect(new Set(ms.map(m => m.afterSeason))).toEqual(new Set(['t-1', 't-2']));
+    expect(ms.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('is identical on every call — a feed that reshuffles reads as broken', () => {
+    const a = momentsFor('a', { events: LOG, seasons: GAP_SEASONS, career: CAREER });
+    const b = momentsFor('a', { events: LOG, seasons: GAP_SEASONS, career: CAREER });
+    expect(a).toEqual(b);
+  });
+
+  it('posts nothing before their first season aired', () => {
+    const later = { ...CAREER, details: [{ seasonId: 't-2' }] };
+    const ms = momentsFor('a', { events: LOG, seasons: GAP_SEASONS, career: later });
+    expect(ms.every(m => m.afterSeason === 't-2')).toBe(true);
+  });
+
+  it('goes quiet after a death, like everything else', () => {
+    const log = [...LOG, { player: 'a', kind: 'death', afterSeason: 't-1', seq: 2, status: 'approved' }];
+    const ms = momentsFor('a', { events: log, seasons: GAP_SEASONS, career: CAREER });
+    expect(ms.filter(m => m.afterSeason === 't-2')).toEqual([]);
+  });
+
+  it('reads only canon: proposals make no off-season exist', () => {
+    const proposed = LOG.map(e => ({ ...e, status: 'proposed' }));
+    expect(momentsFor('a', { events: proposed, seasons: GAP_SEASONS, career: CAREER })).toEqual([]);
+  });
+
+  it('captions in the mood register, deterministically', () => {
+    const m = { player: 'a', afterSeason: 't-1', seq: 1, mood: 'sharp' };
+    const one = momentCaption(m, { archetype: 'mastermind' });
+    expect(one).toBe(momentCaption(m, { archetype: 'mastermind' }));
+    expect(one.length).toBeGreaterThan(0);
+  });
+
+  it('lets a rival bite under a flex, where silence would waste the bait', () => {
+    // Over many seeds, at least one rival comment lands on flex posts — the
+    // thirst trap fishing for drama is the point of the mood.
+    const ties = [{ slug: 'r', weight: -5 }];
+    let bites = 0;
+    for (let i = 1; i <= 30; i++) {
+      const cs = momentComments({ player: 'a', afterSeason: 't-1', seq: i, mood: 'flex' },
+        { ties, names: { r: 'R' } });
+      if (cs.some(c => c.relation === 'rival')) bites++;
+    }
+    expect(bites).toBeGreaterThan(0);
+  });
+});
+
+describe('posts with a gallery', () => {
+  const GAP_SEASONS = [{ seasonId: 't-1', airYear: 2020, airSlot: 'spring' }];
+  const CAREER = { id: 'a', name: 'A', details: [{ seasonId: 't-1' }], seasonsPlayed: 1, bestPlacement: 5 };
+  const LOG = [{ player: 'a', kind: 'wedding', whom: 'b', afterSeason: 't-1', seq: 1, status: 'approved' }];
+
+  it('prefers the archived photo a post already claimed', () => {
+    // The wedding's photo lives at posted/<its id>; the queue must not out-rank it.
+    const gallery = {
+      images: [{ file: '1.png' }],
+      posted: [{ file: 'posted/t-1-1.webp' }],
+    };
+    const posts = postsFor('a', { events: LOG, seasons: GAP_SEASONS, gallery, career: CAREER });
+    const wedding = posts.find(p => p.kind === 'wedding');
+    expect(wedding.photo).toContain('posted/t-1-1.webp');
+    expect(wedding.queueFile, 'an archived post must not also claim from the queue').toBe(null);
+  });
+
+  it('never gives the pinned face to a post', () => {
+    const gallery = { images: [{ file: '1.png', pinned: true }], posted: [] };
+    const posts = postsFor('a', { events: LOG, seasons: GAP_SEASONS, gallery, career: CAREER });
+    expect(posts.every(p => !p.photo || !p.photo.includes('/1.png'))).toBe(true);
+  });
+
+  it('lets an authored photo mood override the derived one', () => {
+    // Enough queue photos that a moment claims one carrying mood metadata.
+    const gallery = { images: [
+      { file: '1.png', mood: 'nostalgic' }, { file: '2.png', mood: 'nostalgic' },
+      { file: '3.png', mood: 'nostalgic' }, { file: '4.png', mood: 'nostalgic' },
+    ], posted: [] };
+    const posts = postsFor('a', { events: LOG, seasons: GAP_SEASONS, gallery, career: CAREER });
+    const withPhoto = posts.filter(p => p.isMoment && p.photo);
+    expect(withPhoto.length).toBeGreaterThan(0);
+    expect(withPhoto.every(p => p.mood === 'nostalgic')).toBe(true);
   });
 });

@@ -463,3 +463,158 @@ export function commentsFor(event, { ties = [], names = {}, max = 4 } = {}) {
   }
   return out;
 }
+
+// ─── moments ────────────────────────────────────────────────────────────────
+//
+// A moment is a post about NOTHING — a selfie, a gym mirror, a Tuesday. Life
+// events are facts and read like announcements; real accounts are mostly this
+// instead, and a feed made only of announcements reads as a press office.
+//
+// A moment has a MOOD rather than a kind, and the mood is the whole message:
+// the same photograph captioned `flex` and captioned `low` is two different
+// posts. The mood is derived from where their life is (js/dramagram.js), and a
+// photograph with an authored mood overrides the derived one — the author is
+// telling us what the picture is.
+
+export const MOODS = ['flex', 'flirty', 'soft', 'low', 'sharp', 'chaos', 'nostalgic'];
+
+export const MOOD_CAPTIONS = {
+  // The thirst trap, the gym mirror, the glow-up. Confidence as content.
+  flex: {
+    warm: ['felt good today, sue me', 'the light was doing something and so was i',
+      'body by spite and a very patient trainer', 'ok fine here', 'growth. literal.'],
+    sharp: ['you may look.', 'posting this for me, not for you', 'the caption is the picture.',
+      'don\'t reply, just absorb it', 'this is a threat'],
+    plain: ['gym', 'today', 'fine, here', 'progress', 'no caption deserves this'],
+    loud: ['LOOK AT ME. NO SERIOUSLY.', 'I WOULD ALSO STARE', 'FREE PICTURE. YOU\'RE WELCOME.',
+      'THE WORK IS WORKING'],
+  },
+  flirty: {
+    warm: ['someone said to post this one 🤍', 'wonder who this is for', 'in a mood',
+      'you know who you are'],
+    sharp: ['this is bait and it will work', 'i know exactly what i\'m doing',
+      'checking if a certain someone still has notifications on'],
+    plain: ['hm.', 'thoughts?', 'for the timeline', 'well?'],
+    loud: ['DM ME COWARDS', 'YES I POSTED IT. AND?', 'SOMEONE COME GET ME'],
+  },
+  soft: {
+    warm: ['a good quiet day 🤍', 'nothing happened. it was perfect.', 'small life, big feelings',
+      'sunday-shaped', 'kept this one for myself for a while'],
+    sharp: ['a rare picture of me not scheming', 'domestic. do not get used to it.',
+      'yes i own slippers now'],
+    plain: ['home', 'quiet one', 'this', 'today was fine'],
+    loud: ['I MADE BREAD', 'A PERFECT DAY. NO NOTES.', 'SOFT LAUNCHING A SOFTER LIFE'],
+  },
+  low: {
+    warm: ['not every week is a good one and that\'s alright', 'posting so you know i\'m still here',
+      'being gentle with myself lately', 'grey days count too'],
+    sharp: ['fine. i\'m fine. next question.', 'no caption. use context clues.',
+      'the picture is doing the talking today'],
+    plain: ['it\'s been a week', 'here', 'anyway', '…'],
+    loud: ['NOT MY BEST ERA', 'WE GO AGAIN TOMORROW', 'DO NOT ASK'],
+  },
+  // Shady. Aimed at somebody, naming nobody.
+  sharp: {
+    warm: ['choosing peace, publicly, so certain people can see me choosing it',
+      'unbothered. moisturised. you know the rest.', 'my circle got smaller and my days got better'],
+    sharp: ['some of you know exactly what this post is about', 'blocked is a lifestyle',
+      'i said what i said, and i said it to their face first', 'imagine thinking this isn\'t about you'],
+    plain: ['noted.', 'interesting week for some people', 'anyway.', 'moving on'],
+    loud: ['THE AUDACITY OF SOME PEOPLE', 'I KNOW YOU\'RE LOOKING', 'KEEP MY NAME IN YOUR MOUTH, IT\'S FREE PROMO'],
+  },
+  chaos: {
+    warm: ['long story. the picture is the short version.', 'we made some choices tonight 🤍',
+      'no regrets. some regrets. three regrets.'],
+    sharp: ['i will not be explaining this', 'evidence, posted voluntarily',
+      'the group chat has been briefed. you get the photo.'],
+    plain: ['so that happened', 'don\'t ask', '???', 'it escalated'],
+    loud: ['I HAVE NO EXPLANATION', 'THE NIGHT TOOK A TURN', 'WE SURVIVED. BARELY. POST.'],
+  },
+  nostalgic: {
+    warm: ['found this while clearing my camera roll 🤍', 'miss this era more than i admit',
+      'a lifetime ago. feels like last week.', 'younger, dumber, happier? unclear.'],
+    sharp: ['back when the drama was scripted and i was better at it',
+      'throwback to when i trusted people. funny.', 'we were so young. and so wrong.'],
+    plain: ['throwback', 'found this', 'a while ago now', 'old one'],
+    loud: ['THROWBACK TO THE GREATEST SEASON OF MY LIFE', 'WHO LET US BE THIS YOUNG',
+      'TAKE ME BACK IMMEDIATELY'],
+  },
+};
+
+/**
+ * The room under a moment.
+ *
+ * MOOD_COMMENTS[relation][mood] -> string[]. A rival under a flex and a friend
+ * under a low are the two posts where the room IS the content, so these do not
+ * share pools with the event comments — "congratulations!" under a thirst trap
+ * is exactly the generated-feeling thing this file exists to prevent.
+ */
+export const MOOD_COMMENTS = {
+  close: {
+    flex: ['EXCUSE ME??', 'delete this before i perish', 'ok show-off 😭', 'the GLOW',
+      'who gave you the right'],
+    flirty: ['and WHO is this for', 'behave', 'oh you\'re DOWN bad', 'i\'m telling everyone'],
+    soft: ['this is the life 🤍', 'you deserve slow days', 'protect this energy', 'cosy king'],
+    low: ['calling you tonight', 'come over. bring nothing.', 'you don\'t have to be fine 🤍',
+      'i\'ve got you. always.'],
+    sharp: ['SAY IT LOUDER', 'i know EXACTLY who this is about', 'the restraint in this caption',
+      'you\'re so unwell and i support you'],
+    chaos: ['I WAS THERE AND I STILL HAVE QUESTIONS', 'never explain. never apologise.',
+      'this photo is going in my speech at your wedding'],
+    nostalgic: ['STOP i wasn\'t ready', 'we were babies', 'miss this. miss you. fix it.',
+      'crying at my desk thanks'],
+  },
+  friend: {
+    flex: ['looking great!', 'ok!! go off', 'the gym is gym-ing', '🔥'],
+    flirty: ['ha! good luck to whoever this is for', 'menace behaviour', '👀'],
+    soft: ['lovely 🤍', 'this looks peaceful', 'good for you honestly'],
+    low: ['hope you\'re okay 🤍', 'here if you need anything', 'sending love'],
+    sharp: ['lmao who upset you', 'i fear i know what this is about', 'oh?'],
+    chaos: ['what happened HERE', 'context. now.', 'ha! unhinged. love it'],
+    nostalgic: ['what a season that was', 'oh this takes me back', 'good times honestly'],
+  },
+  rival: {
+    flex: ['the angles are doing a lot of work', 'we get it.', 'gym membership well spent i suppose',
+      'ok and?'],
+    flirty: ['desperate hours', 'good luck with that', '…'],
+    soft: ['cute i guess', 'domestic bliss. sure.'],
+    low: ['hope you feel better, sincerely.'],
+    sharp: ['if you have something to say, say it', 'this is about me and it\'s flattering',
+      'bold from you specifically', 'post it with your chest next time'],
+    chaos: ['embarrassing', 'and you POSTED it?', 'the production value of your downfall'],
+    nostalgic: ['i was there. it was not like that.', 'revisionist history', 'that season had a better cast, agreed'],
+  },
+};
+
+/** The caption for a moment: mood in their register, seeded so it never reshuffles. */
+export function momentCaption(moment, { archetype = '' } = {}) {
+  const tone = toneFor(archetype);
+  const bank = MOOD_CAPTIONS[moment?.mood]?.[tone]
+    || MOOD_CAPTIONS[moment?.mood]?.plain
+    || MOOD_CAPTIONS.soft.plain;
+  return pickFrom(bank, `${moment?.player}|moment|${moment?.afterSeason}|${moment?.seq}`) || '';
+}
+
+/**
+ * Who turns up under a moment, and what they say.
+ *
+ * The same silence rule as events — a rival mostly says nothing — EXCEPT under
+ * `sharp` and `flex`, where a rival showing up is the drama the post was
+ * fishing for. They still only bite half the time.
+ */
+export function momentComments(moment, { ties = [], names = {}, max = 3 } = {}) {
+  const seedBase = `${moment?.player}|moment|${moment?.afterSeason}|${moment?.seq}`;
+  const ranked = ties.slice().sort((a, b) => Math.abs(b.weight) - Math.abs(a.weight));
+  const out = [];
+  for (const t of ranked) {
+    if (out.length >= max) break;
+    const relation = t.weight >= 3 ? 'close' : t.weight > 0 ? 'friend' : 'rival';
+    const baited = relation === 'rival' && (moment?.mood === 'sharp' || moment?.mood === 'flex');
+    if (relation === 'rival' && !baited && pickFrom([0, 1, 1], `${seedBase}|${t.slug}|skip`)) continue;
+    if (baited && pickFrom([0, 1], `${seedBase}|${t.slug}|bite`)) continue;
+    const text = pickFrom(MOOD_COMMENTS[relation]?.[moment?.mood] || [], `${seedBase}|${t.slug}`);
+    if (!text) continue;
+    out.push({ slug: t.slug, name: names[t.slug] || t.slug, relation, text });
+  }
+  return out;
+}

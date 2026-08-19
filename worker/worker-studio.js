@@ -24,6 +24,9 @@
 //   POST /api/roster/delete    {slug, force?}  -> deletes if unplayed, else retires
 //   POST /api/roster/unretire  {slug}
 //   POST /api/roster/publish   -> regenerates franchise_roster.json + voice-profiles.json
+//   POST /api/gallery/<slug>/meta {file, mood?, pinned?} -> photo facts (token)
+//   POST /api/gallery/<slug>/post {file, id} -> archive a claimed photo (token)
+//   GET  /api/gallery-pins      -> every character's pinned face (public)
 //   GET  /api/life-events      -> the life log (public)
 //   POST /api/life-events      {events:[...]}  -> replaces it (token required)
 //
@@ -119,20 +122,36 @@ export default {
         const slug = decodeURIComponent(url.pathname.slice('/api/gallery/'.length));
         if (!SLUG_RE.test(slug)) return json({ ok: false, error: 'bad slug' }, 400, rcors);
         const images = [];
+        const posted = [];
         // A character has a dozen images, not a thousand, so one page is the
         // whole answer — but `truncated` is honoured rather than assumed away.
+        //
+        // customMetadata rides along because THE PHOTOGRAPH IS WHERE ITS FACTS
+        // LIVE: the mood somebody gave it and whether it is the profile
+        // picture. The first version kept the pin in localStorage, which made
+        // it a per-browser opinion — pinned here, unpinned on your phone.
         let cursor;
         do {
-          const page = await env.GALLERY.list({ prefix: slug + '/', cursor });
+          const page = await env.GALLERY.list({
+            prefix: slug + '/', cursor, include: ['customMetadata'],
+          });
           for (const o of page.objects || []) {
             const file = o.key.slice(slug.length + 1);
-            if (file.includes('/')) continue;              // no subfolders here
-            images.push({ file, size: o.size });
+            const meta = o.customMetadata || {};
+            const row = { file, size: o.size };
+            if (meta.mood) row.mood = meta.mood;
+            if (meta.pinned) row.pinned = true;
+            // posted/ is the archive: photographs a post has claimed. They left
+            // the numbered queue so a new dump has room, but they are still
+            // this character's art and still served.
+            if (file.startsWith('posted/')) posted.push(row);
+            else if (!file.includes('/')) images.push(row);
           }
           cursor = page.truncated ? page.cursor : null;
         } while (cursor);
         images.sort((a, b) => (parseInt(a.file, 10) || 0) - (parseInt(b.file, 10) || 0));
-        return json({ ok: true, slug, images }, 200, rcors, 30);
+        posted.sort((a, b) => a.file.localeCompare(b.file));
+        return json({ ok: true, slug, images, posted }, 200, rcors, 30);
       }
 
       // ── fetching a wiki image on the page's behalf ────────────────────
@@ -169,6 +188,115 @@ export default {
         });
       }
 
+      // ── a photograph's facts: its mood, and whether it is the face ────
+      //
+      // R2 cannot edit metadata in place, so the object is read and rewritten
+      // with the merged metadata. These are sub-megabyte images; the copy is
+      // cheap and it keeps one home per fact.
+      if (request.method === 'POST' && /^\/api\/gallery\/[a-z0-9-]+\/meta$/.test(url.pathname)) {
+        const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
+          return json({ ok: false, error: 'unauthorized' }, 401, cors);
+        }
+        const slug = url.pathname.split('/')[3];
+        const body = await request.json().catch(() => ({}));
+        const file = String(body.file || '');
+        if (!/^(posted\/[a-z0-9][a-z0-9-]{0,60}|\d{1,3})\.(png|jpe?g|webp|gif)$/.test(file)) {
+          return json({ ok: false, error: 'bad file' }, 400, cors);
+        }
+        const MOODS = ['flex', 'flirty', 'soft', 'low', 'sharp', 'chaos', 'nostalgic'];
+        if (body.mood !== undefined && body.mood !== null && body.mood !== ''
+            && !MOODS.includes(body.mood)) {
+          return json({ ok: false, error: 'unknown mood' }, 400, cors);
+        }
+        const rewrite = async (key, mutate) => {
+          const obj = await env.GALLERY.get(key);
+          if (!obj) return false;
+          const meta = { ...(obj.customMetadata || {}) };
+          mutate(meta);
+          for (const k of Object.keys(meta)) if (!meta[k]) delete meta[k];
+          await env.GALLERY.put(key, await obj.arrayBuffer(), {
+            httpMetadata: obj.httpMetadata, customMetadata: meta,
+          });
+          return true;
+        };
+        // ONE pin per character. Pinning clears the previous holder first, so
+        // two objects can never both claim to be the face.
+        if (body.pinned === true) {
+          let cursor;
+          do {
+            const page = await env.GALLERY.list({
+              prefix: slug + '/', cursor, include: ['customMetadata'],
+            });
+            for (const o of page.objects || []) {
+              if (o.customMetadata?.pinned && o.key !== slug + '/' + file) {
+                await rewrite(o.key, m => { delete m.pinned; });
+              }
+            }
+            cursor = page.truncated ? page.cursor : null;
+          } while (cursor);
+        }
+        const found = await rewrite(slug + '/' + file, m => {
+          if (body.mood !== undefined) { if (body.mood) m.mood = body.mood; else delete m.mood; }
+          if (body.pinned !== undefined) { if (body.pinned) m.pinned = '1'; else delete m.pinned; }
+        });
+        if (!found) return json({ ok: false, error: 'no such image' }, 404, cors);
+        return json({ ok: true, slug, file }, 200, cors);
+      }
+
+      // ── a post claims a photograph ────────────────────────────────────
+      //
+      // The numbered slots are the QUEUE — what curation shows, what a dump
+      // refills. When a post takes a picture it moves to posted/<id>.<ext>,
+      // named for the post that claimed it: the key itself records which photo
+      // belongs to which post, so there is no second file to keep in step. The
+      // slot frees up, the image survives, and the wiki gallery still shows it.
+      if (request.method === 'POST' && /^\/api\/gallery\/[a-z0-9-]+\/post$/.test(url.pathname)) {
+        const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
+          return json({ ok: false, error: 'unauthorized' }, 401, cors);
+        }
+        const slug = url.pathname.split('/')[3];
+        const body = await request.json().catch(() => ({}));
+        const m = /^(\d{1,3})\.(png|jpe?g|webp|gif)$/.exec(String(body.file || ''));
+        const id = String(body.id || '');
+        if (!m) return json({ ok: false, error: 'bad file' }, 400, cors);
+        if (!/^[a-z0-9][a-z0-9-]{0,60}$/.test(id)) return json({ ok: false, error: 'bad id' }, 400, cors);
+        const from = slug + '/' + body.file;
+        const to = slug + '/posted/' + id + '.' + m[2];
+        const obj = await env.GALLERY.get(from);
+        if (!obj) return json({ ok: false, error: 'no such image' }, 404, cors);
+        // Refuse rather than overwrite: two posts claiming one id is a caller
+        // bug, and silently replacing the first photo would hide it.
+        if (await env.GALLERY.head(to)) return json({ ok: false, error: 'id already has a photo' }, 409, cors);
+        await env.GALLERY.put(to, await obj.arrayBuffer(), {
+          httpMetadata: obj.httpMetadata, customMetadata: obj.customMetadata,
+        });
+        await env.GALLERY.delete(from);
+        return json({ ok: true, from, to: 'posted/' + id + '.' + m[2] }, 200, cors);
+      }
+
+      // ── everyone's profile picture, in one request ────────────────────
+      //
+      // The directory draws 152 tiles; asking each slug's listing would be 152
+      // requests for one page. One walk over the bucket answers it, and the
+      // walk is over metadata, not bytes.
+      if (request.method === 'GET' && url.pathname === '/api/gallery-pins') {
+        const pins = {};
+        let cursor;
+        do {
+          const page = await env.GALLERY.list({ cursor, include: ['customMetadata'] });
+          for (const o of page.objects || []) {
+            if (!o.customMetadata?.pinned) continue;
+            const i = o.key.indexOf('/');
+            if (i > 0) pins[o.key.slice(0, i)] = o.key.slice(i + 1);
+          }
+          cursor = page.truncated ? page.cursor : null;
+        } while (cursor);
+        return json({ ok: true, pins }, 200,
+          { ...cors, 'Access-Control-Allow-Origin': '*' }, 60);
+      }
+
       // ── adding to and removing from the gallery ───────────────────────
       //
       // assets/gallery/ is git-ignored and 592 MB, so the working copy is
@@ -191,7 +319,12 @@ export default {
         // exactly — one slug, one number, one known extension — so anything
         // else is refused rather than repaired. `..` never has to be special
         // cased because a dot is not in the alphabet.
-        if (!/^[a-z0-9][a-z0-9-]*\/\d{1,3}\.(png|jpe?g|webp|gif)$/.test(key)) {
+        // Numbered queue keys, and — for DELETE only — the posted archive,
+        // so a claimed photo can still be removed outright if it must be.
+        const legalPut = /^[a-z0-9][a-z0-9-]*\/\d{1,3}\.(png|jpe?g|webp|gif)$/.test(key);
+        const legalDel = legalPut
+          || /^[a-z0-9][a-z0-9-]*\/posted\/[a-z0-9][a-z0-9-]{0,60}\.(png|jpe?g|webp|gif)$/.test(key);
+        if (request.method === 'PUT' ? !legalPut : !legalDel) {
           return json({ ok: false, error: 'bad key' }, 400, cors);
         }
         if (request.method === 'DELETE') {

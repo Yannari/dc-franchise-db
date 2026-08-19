@@ -21,6 +21,8 @@
 // rates and the relationship rates both went wrong before anybody counted them.
 import { airKey, byAirDate } from './franchise-calendar.js';
 import { kindOf, significanceOf, approvedFor, lineFor, stateOf } from './life-events.js';
+import { fameOf } from './life-resolver.js';
+import { imageUrl } from './gallery-io.js';
 
 /** Everything tunable about the number, in one place. */
 export const FOLLOWERS = {
@@ -31,6 +33,11 @@ export const FOLLOWERS = {
   finalist: 16000,
   // A life event is worth something to the extent anybody noticed it.
   perEvent: { minor: 400, notable: 3500, major: 22000 },
+  // And simply posting through an off-season keeps the number breathing.
+  // Deliberately flat rather than mood-weighted: the follower model runs
+  // without the roster, and a delta that depended on archetype would compute
+  // two different totals depending on which page asked.
+  perMoment: 250,
   // A season you were not in costs you a slice of what you have. Proportional
   // rather than flat: losing 4% of 300k is a story, losing 4% of 12k is noise,
   // and that asymmetry is correct.
@@ -68,6 +75,9 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
   const myEvents = approvedFor(slug, events, {
     seasonRank: new Map(seasons.map(s => [s.seasonId, airKey(s)])),
   });
+  const myMoments = momentsFor(slug, { events, seasons, career });
+  const momentsAfter = new Map();
+  for (const m of myMoments) momentsAfter.set(m.afterSeason, (momentsAfter.get(m.afterSeason) || 0) + 1);
   const eventsAfter = new Map();
   for (const e of myEvents) {
     if (!eventsAfter.has(e.afterSeason)) eventsAfter.set(e.afterSeason, []);
@@ -104,6 +114,15 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
       if (!add) continue;
       n += add;
       steps.push({ season, why: e.kind, delta: add, event: e });
+    }
+    // And the posting itself — the moments keep the number breathing between
+    // the spikes, which is what stops a quiet-but-active account reading as an
+    // abandoned one. One aggregated step per gap, not one per selfie.
+    const posted = debuted ? (momentsAfter.get(season.seasonId) || 0) : 0;
+    if (posted) {
+      const add = posted * FOLLOWERS.perMoment;
+      n += add;
+      steps.push({ season, why: 'posting', delta: add });
     }
   }
 
@@ -192,6 +211,113 @@ export async function photosOf(slug) {
   }
 }
 
+
+// ─── moments: the posts about nothing ───────────────────────────────────────
+//
+// The feed was a life-event ticker wearing an Instagram skin: every post was an
+// announcement, and an account with a quiet year was a dead one. Real accounts
+// are mostly nothing happening — a selfie, a gym mirror, a Tuesday — so every
+// resolved off-season each debuted character posts a few of these.
+//
+// DERIVED, NEVER STORED, NEVER APPROVED. Seeded from (character, off-season,
+// index) so the same moment reads the same way forever, they add no rows to the
+// inbox and no facts to the world. Life events are facts; moments are noise.
+// The off-season is the clock — new season, new posts, forever — so the feed
+// cannot run out the way a photo inventory would.
+
+/** Deterministic 0..1 from a key, the same trick the voice bank uses. */
+function chance(key) {
+  let h = 2166136261;
+  const str = String(key);
+  for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+  return (h >>> 0) / 4294967296;
+}
+const pickBy = (list, key) => list[Math.floor(chance(key) * list.length)] || null;
+
+const ENDINGS = ['broke-up', 'quietly-ended', 'separated', 'divorced'];
+const SCHEMERS = ['villain', 'mastermind', 'schemer'];
+const LOUD_ONES = ['chaos-agent', 'wildcard', 'hothead'];
+
+/**
+ * The mood of one moment — where their life is, spoken as a register.
+ *
+ * A weighted pool rather than a rule, because a person fresh off a break-up
+ * does not post ONLY sad things: the revenge glow-up (`flex`) is as real as
+ * the sad-post, and which one lands is the roll.
+ */
+function moodFor(key, { endedHere, attached, archetype, fame, awayYears }) {
+  const pool = [];
+  if (endedHere) pool.push('low', 'low', 'sharp', 'flex', 'flex');
+  else if (attached) pool.push('soft', 'soft', 'flirty', 'flex');
+  else pool.push('soft', 'flirty', 'flex', 'chaos', 'low');
+  if (SCHEMERS.includes(archetype)) pool.push('sharp', 'sharp', 'flex');
+  if (LOUD_ONES.includes(archetype)) pool.push('chaos', 'chaos');
+  if (fame > 0.5) pool.push('flex');
+  // Two years off the air and the camera roll is what is left.
+  if (awayYears >= 2) pool.push('nostalgic', 'nostalgic', 'nostalgic');
+  return pickBy(pool, key);
+}
+
+/**
+ * Every moment somebody has ever posted, oldest gap first.
+ *
+ * 1–3 per resolved off-season: one for existing, one more if that off-season
+ * actually happened to them, one more (usually) if they are famous — fame buys
+ * volume here exactly as it does in the life resolver, never a different life.
+ */
+export function momentsFor(slug, { events = [], seasons = [], career = null, archetype = '' } = {}) {
+  const rank = new Map(seasons.map(s => [s.seasonId, airKey(s)]));
+  const approved = events.filter(e => e && e.status === 'approved');
+  // An off-season exists once ANYBODY has canon after it — the inbox being
+  // mid-review must not make everyone else's account go dark.
+  const gaps = [...new Set(approved.map(e => e.afterSeason))]
+    .filter(g => rank.get(g) != null)
+    .sort((a, b) => rank.get(a) - rank.get(b));
+  const details = career?.details || [];
+  const debut = details.reduce((best, d) => {
+    const k = rank.get(d.seasonId);
+    return k != null && (best == null || k < best) ? k : best;
+  }, null);
+  if (debut == null || !gaps.length) return [];
+  const fame = fameOf(career);
+
+  const out = [];
+  for (const gap of gaps) {
+    const here = rank.get(gap);
+    if (here < debut) continue;
+    const upTo = approved.filter(e => (rank.get(e.afterSeason) ?? -1) <= here);
+    const st = stateOf(slug, upTo, { seasonRank: rank });
+    if (st.terminal) break;                        // nothing after a death
+    const mineHere = approved.filter(e => e.afterSeason === gap
+      && (e.player === slug || e.whom === slug));
+    const endedHere = mineHere.some(e => ENDINGS.includes(e.kind));
+    // Rank units are year*10+slot, so ten of them is a year.
+    const lastPlayed = details.reduce((best, d) => {
+      const k = rank.get(d.seasonId);
+      return k != null && k <= here && (best == null || k > best) ? k : best;
+    }, null);
+    const awayYears = lastPlayed == null ? 0 : (here - lastPlayed) / 10;
+
+    const n = 1
+      + (mineHere.length ? 1 : 0)
+      + (fame > 0.5 && chance(`${slug}|${gap}|extra`) < 0.7 ? 1 : 0);
+    for (let i = 1; i <= n; i++) {
+      out.push({
+        id: `m-${gap}-${i}`,
+        isMoment: true,
+        player: slug,
+        afterSeason: gap,
+        seq: i,
+        mood: moodFor(`${slug}|${gap}|${i}|mood`, {
+          endedHere, attached: st.relationship.stage !== 'single',
+          archetype, fame, awayYears,
+        }),
+      });
+    }
+  }
+  return out;
+}
+
 /**
  * A character's posts: their approved life events, newest first.
  *
@@ -207,26 +333,78 @@ export async function photosOf(slug) {
  * pictures and eleven events, the wedding should be one of the three and the
  * new job should be a card.
  */
-export function postsFor(slug, { events = [], seasons = [], photos = [] } = {}) {
+export function postsFor(slug, {
+  events = [], seasons = [], career = null, archetype = '',
+  // The whole gallery document (js/gallery-io.js galleryFull): the numbered
+  // queue and the posted/ archive. The archive is checked FIRST — a photo a
+  // post already claimed is that post's photo forever, keyed by the post's own
+  // id, and no reshuffle of the queue can take it away.
+  gallery = { images: [], posted: [] },
+} = {}) {
   const rank = new Map(seasons.map(s => [s.seasonId, airKey(s)]));
   const mine = approvedFor(slug, events, { seasonRank: rank });
-  const weight = { major: 0, notable: 1, minor: 2 };
-  const claim = mine
-    .map((e, i) => ({ e, i }))
-    .sort((a, b) => weight[significanceOf(a.e.kind)] - weight[significanceOf(b.e.kind)] || a.i - b.i)
-    .slice(0, photos.length);
-  const photoFor = new Map(claim.map((c, n) => [c.i, photos[n]]));
+  const moments = momentsFor(slug, { events, seasons, career, archetype });
 
-  return mine.map((e, i) => ({
+  const evPosts = mine.map(e => ({
+    id: `${e.afterSeason}-${e.seq}`,
     // `_sig` rides along on the event so the voice bank does not have to import
     // the vocabulary to ask how much something matters.
     event: { ...e, _sig: significanceOf(e.kind) },
     kind: e.kind,
     track: kindOf(e.kind)?.track || '',
     significance: significanceOf(e.kind),
-    photo: photoFor.get(i) || null,
     season: seasons.find(s => s.seasonId === e.afterSeason) || null,
-  })).reverse();
+    _rank: rank.get(e.afterSeason) ?? -1,
+    _seq: e.seq || 0,
+  }));
+  const moPosts = moments.map(m => ({
+    id: m.id,
+    moment: m,
+    isMoment: true,
+    mood: m.mood,
+    season: seasons.find(s => s.seasonId === m.afterSeason) || null,
+    _rank: rank.get(m.afterSeason) ?? -1,
+    // High, so within an off-season the moments sit on top of the
+    // announcements — which is where an Instagram would put them.
+    _seq: 900 + m.seq,
+  }));
+
+  // ── the photographs ──
+  const postedById = new Map((gallery.posted || []).map(o => {
+    const m = /^posted\/(.+)\.[a-z]+$/.exec(o.file);
+    return m ? [m[1], o] : null;
+  }).filter(Boolean));
+  // The pinned photo is the face, not a post. Everything else in the queue is
+  // claimable, majors first, then the moments — a moment IS its photograph in a
+  // way a job announcement is not — then the small stuff.
+  const queue = (gallery.images || []).filter(o => !o.pinned);
+  const weight = p => p.isMoment ? 1.5
+    : ({ major: 0, notable: 1, minor: 2 })[p.significance];
+  const wantPhoto = [...evPosts, ...moPosts]
+    .filter(p => !postedById.has(p.id))
+    .sort((a, b) => weight(a) - weight(b) || b._rank - a._rank);
+  const claimed = new Map();
+  for (let i = 0; i < wantPhoto.length && i < queue.length; i++) {
+    claimed.set(wantPhoto[i].id, queue[i]);
+  }
+
+  const all = [...evPosts, ...moPosts].map(p => {
+    const archived = postedById.get(p.id) || null;
+    const fromQueue = archived ? null : claimed.get(p.id) || null;
+    const photo = archived || fromQueue;
+    // A photograph with an authored mood overrides the derived one — the
+    // author has said what this picture is, and the caption should agree.
+    if (p.moment && photo?.mood) p.moment = { ...p.moment, mood: photo.mood };
+    if (p.moment) p.mood = p.moment.mood;
+    return {
+      ...p,
+      photo: photo ? imageUrl(slug, photo.file) : null,
+      // Still in the numbered queue: the page archives these (with a token) so
+      // the slot frees up for the next dump.
+      queueFile: fromQueue ? fromQueue.file : null,
+    };
+  });
+  return all.sort((a, b) => b._rank - a._rank || b._seq - a._seq);
 }
 
 

@@ -149,3 +149,69 @@ export async function uploadMany(slug, files, token, { base = GALLERY_API, onPro
   }
   return { done, failed, skipped: Math.max(0, files.length - slots.length), full: !slots.length };
 }
+
+/**
+ * The whole gallery document: the numbered queue AND the posted archive.
+ *
+ * `listGallery` above returns the queue alone because every caller written
+ * before the archive existed reasons about numbered slots. New code that needs
+ * both — the feed, which draws archived photos, and the wiki gallery, which
+ * must not lose a picture just because a post claimed it — reads this instead.
+ */
+export async function galleryFull(slug, { fresh = false, base = GALLERY_API } = {}) {
+  const url = `${base}/api/gallery/${encodeURIComponent(slug)}`
+    + (fresh ? `?t=${Date.now()}` : '');
+  const r = await fetch(url, fresh ? { cache: 'no-store' } : undefined);
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'could not list the gallery');
+  return { images: j.images || [], posted: j.posted || [] };
+}
+
+/**
+ * Set a photograph's facts: its mood, and whether it is the profile picture.
+ *
+ * On the object itself, in R2 metadata, because the first version kept the pin
+ * in localStorage and a per-browser opinion is not a fact — pinned here,
+ * unpinned on your phone. Pass `mood: null` to clear; `pinned: true` clears the
+ * previous holder server-side, so one character never has two faces.
+ */
+export async function setImageMeta(slug, file, { mood, pinned } = {}, token, base = GALLERY_API) {
+  const res = await fetch(`${base}/api/gallery/${encodeURIComponent(slug)}/meta`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file, mood, pinned }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
+  return j;
+}
+
+/**
+ * Archive a photograph a post has claimed.
+ *
+ * Moves <slug>/<n>.<ext> to <slug>/posted/<id>.<ext> — the key itself records
+ * which post owns the picture, so there is no second file to keep in step. The
+ * numbered slot frees up for the next dump; the image survives for the feed
+ * and the wiki gallery both.
+ */
+export async function postPhoto(slug, file, id, token, base = GALLERY_API) {
+  const res = await fetch(`${base}/api/gallery/${encodeURIComponent(slug)}/post`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file, id }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
+  return j;
+}
+
+/**
+ * Every character's pinned face, in one request — for the 152-tile directory,
+ * where asking each slug's listing would be 152 requests for one page.
+ */
+export async function fetchPins(base = GALLERY_API) {
+  try {
+    const j = await fetch(`${base}/api/gallery-pins`).then(r => r.json());
+    return j.ok ? (j.pins || {}) : {};
+  } catch { return {}; }
+}

@@ -92,23 +92,31 @@ describe('there is one implementation, not two', () => {
   });
 });
 
-describe('the profile picture is a choice, not a copy', () => {
+describe('the profile picture is a fact about the photo, not a preference', () => {
   const gram = readFileSync('dramagram.html', 'utf8');
 
-  it('stores a filename rather than uploading a second image', () => {
-    // The picture already exists in the gallery; storing which one is chosen
-    // costs a string.
-    expect(gram).toMatch(/const PIC_KEY = 'dc_dramagram_pics'/);
-    expect(gram, 'pinning uploads something').not.toMatch(/putImage\(/);
+  // The first design kept the pin in localStorage, and these guards used to
+  // hold it there — which is exactly the bug the author reported: pinned in one
+  // browser, unpinned everywhere else, and the grid never saw it at all. The
+  // pin is R2 metadata on the photograph now, and the guards hold THAT down.
+  it('never keeps the pin in this browser', () => {
+    expect(gram).not.toMatch(/dc_dramagram_pics/);
+    expect(gram).not.toMatch(/setProfilePic\(/);
+  });
+
+  it('reads the face off the gallery document and writes it as metadata', () => {
+    expect(gram).toMatch(/function pinnedOf\(gal\)/);
+    expect(gram).toMatch(/setImageMeta\(slug, b\.dataset\.pin, \{ pinned: /);
   });
 
   it('falls back to the avatar when nothing is pinned', () => {
-    expect(gram).toMatch(/profilePicOf\(slug\)\s*\n?\s*\?\s*imageUrl\(slug, profilePicOf\(slug\)\)/);
+    expect(gram).toMatch(/pinnedOf\(gal\)\s*\n?\s*\?\s*imageUrl\(slug, pinnedOf\(gal\)\)/);
     expect(gram).toMatch(/assets\/avatars\//);
   });
 
-  it('clears the pin when that photograph is deleted', () => {
-    // Otherwise the profile picture points at a file that is no longer there.
-    expect(gram).toMatch(/if \(profilePicOf\(slug\) === file\) setProfilePic\(slug, null\)/);
+  it('gives the grid the same face, in one request for the whole directory', () => {
+    // 152 tiles must not mean 152 listings; the pins map is one endpoint.
+    expect(gram).toMatch(/pinsBySlug = await fetchPins\(\)/);
+    expect(gram).toMatch(/pinsBySlug\[d\.slug\]/);
   });
 });

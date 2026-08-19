@@ -59,6 +59,27 @@
      profile it could not search. One rule, for every element on the page. */
   [hidden]{display:none !important}
   .dg-return{display:inline-block;margin:0 0 14px}
+  .dg-pager{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:16px;
+    padding:18px 0 6px;color:var(--dg-dim);font-size:13px}
+  .dg-pager button{background:none;border:1px solid var(--dg-line);color:var(--dg-ink);
+    padding:8px 16px;border-radius:2px;font:inherit;font-size:13px;cursor:pointer}
+  .dg-pager button:disabled{opacity:.35;cursor:default}
+  .dg-pager button:not(:disabled):hover{border-color:var(--dg-dim)}
+  /* Mood cards: the register is the colour. */
+  .dg-mood[data-mood="flex"]{background:linear-gradient(160deg,#2a1a08,#171006)}
+  .dg-mood[data-mood="flirty"]{background:linear-gradient(160deg,#2a0f1d,#170810)}
+  .dg-mood[data-mood="soft"]{background:linear-gradient(160deg,#122016,#0a130d)}
+  .dg-mood[data-mood="low"]{background:linear-gradient(160deg,#14171f,#0b0d12)}
+  .dg-mood[data-mood="sharp"]{background:linear-gradient(160deg,#220a0a,#130606)}
+  .dg-mood[data-mood="chaos"]{background:linear-gradient(160deg,#1f1226,#110a15)}
+  .dg-mood[data-mood="nostalgic"]{background:linear-gradient(160deg,#1e1a10,#12100a)}
+  .dg-libit select.mood{position:absolute;left:4px;bottom:4px;right:4px;width:calc(100% - 8px);
+    background:rgba(0,0,0,.75);color:var(--dg-ink);border:1px solid var(--dg-line);
+    font-size:10.5px;padding:2px 3px;border-radius:2px}
+  .dg-libit.posted img{opacity:.55}
+  .dg-postedtag{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.75);
+    color:var(--dg-dim);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+    padding:2px 6px;border-radius:2px}
   .dg-return:hover{text-decoration:underline}
   .dg-rel{display:inline-flex;align-items:center;gap:5px;color:var(--dg-hot);font-weight:600}
 
@@ -161,6 +182,10 @@
     color:var(--dg-dim);font-size:13.5px;cursor:pointer;transition:border-color .12s,color .12s}
   .dg-drop:hover,.dg-drop.over{border-color:var(--dg-hot);color:var(--dg-ink)}
   .dg-drop.busy{opacity:.6;pointer-events:none}
+  .dg-fill{margin:10px 0 0;background:none;border:1px solid var(--dg-line);color:var(--dg-ink);
+    padding:9px 16px;border-radius:2px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .dg-fill:hover{border-color:var(--dg-hot);color:var(--dg-hot)}
+  .dg-fill:disabled{opacity:.5;cursor:default}
   .dg-lib{display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));margin-top:12px}
   .dg-libit{position:relative;aspect-ratio:1;background:#1b1b1f;overflow:hidden}
   .dg-libit img{width:100%;height:100%;object-fit:cover;display:block}
@@ -246,15 +271,18 @@
 
 <script type="module" src="js/site-header.js"></script>
 <script type="module">
-import { directory, short, postsFor, photosOf, followerHistory, tiesFor, relationshipStatus }
+import { directory, short, postsFor, followerHistory, tiesFor, relationshipStatus }
   from './js/dramagram.js';
 import { lineFor } from './js/life-events.js';
-import { captionFor, commentsFor } from './js/dramagram-voice.js';
+import { captionFor, commentsFor, momentCaption, momentComments, MOODS }
+  from './js/dramagram-voice.js';
 import { socialGraph } from './js/life-resolver.js';
 // The gallery IO, shared with player.html: one slot allocator, one encoder,
 // and one place that knows the listing cache rule.
-import { listGallery, uploadMany, deleteImage, imageUrl, GALLERY_MAX }
+import { uploadMany, deleteImage, imageUrl, GALLERY_MAX,
+  galleryFull, setImageMeta, postPhoto, fetchPins }
   from './js/gallery-io.js';
+import { fillFromWiki } from './js/wiki-art.js';
 import { careersIn } from './js/records.js';
 import { airLabel, latestAired } from './js/franchise-calendar.js';
 import { currentShow } from './js/show-switcher.js';
@@ -272,9 +300,12 @@ function cell(d) {
   const delta = d.lastDelta
     ? `<span class="dg-delta ${d.lastDelta > 0 ? 'up' : 'down'}">${
         d.lastDelta > 0 ? '+' : '−'}${short(Math.abs(d.lastDelta))}</span>` : '';
+  const face = pinsBySlug[d.slug]
+    ? imageUrl(d.slug, pinsBySlug[d.slug])
+    : `assets/avatars/${encodeURIComponent(d.slug)}.png`;
   return `<a class="dg-cell" href="dramagram.html?player=${encodeURIComponent(d.slug)}">
     <span class="dg-pic">
-      <img src="assets/avatars/${encodeURIComponent(d.slug)}.png" alt="" loading="lazy"
+      <img src="${esc(face)}" alt="" loading="lazy"
         onerror="this.outerHTML='<span class=\\'fb\\'>${esc(initials(d.name))}</span>'">
       <span class="dg-dot" data-s="${d.status}" title="${esc(d.statusLabel)}"></span>
     </span>
@@ -302,9 +333,27 @@ function render() {
     list = list.slice().sort((a, b) => rank[a.status] - rank[b.status] || b.followers - a.followers);
   }
   $('#dg-count').textContent = `${list.length} profile${list.length === 1 ? '' : 's'}`;
-  $('#dg-grid').innerHTML = list.length
-    ? list.map(cell).join('')
+  const pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  if (page >= pages) page = pages - 1;
+  const shown = list.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const pager = pages > 1
+    ? `<div class="dg-pager">
+        <button data-pg="-1" ${page === 0 ? 'disabled' : ''}>← Previous</button>
+        <span>Page ${page + 1} of ${pages}</span>
+        <button data-pg="1" ${page === pages - 1 ? 'disabled' : ''}>Next →</button>
+      </div>`
+    : '';
+  $('#dg-grid').innerHTML = shown.length
+    ? shown.map(cell).join('') + pager
     : '<p class="dg-empty">Nobody by that name.</p>';
+  $('#dg-grid').querySelectorAll('[data-pg]').forEach(b => {
+    b.onclick = () => {
+      page += Number(b.dataset.pg);
+      render();
+      // A new page starts at its top; keeping the old scroll shows its bottom.
+      $('#dg-grid').scrollIntoView({ block: 'start', behavior: 'instant' });
+    };
+  });
 }
 
 /**
@@ -333,8 +382,12 @@ async function renderProfile(slug) {
   host.hidden = false;
   if (!d) { host.innerHTML = '<p class="dg-empty">No such profile.</p>'; return; }
 
-  const photos = await photosOf(slug);
-  const posts = postsFor(slug, { events: allEvents, seasons: allSeasons, photos });
+  const gal = await galleryFull(slug, { fresh: true }).catch(() => ({ images: [], posted: [] }));
+  const posts = postsFor(slug, {
+    events: allEvents, seasons: allSeasons, gallery: gal,
+    career: allCareers.find(c => c.id === slug) || null,
+    archetype: archetypeBySlug[slug] || '',
+  });
   const h = followerHistory(slug, { careers: allCareers, seasons: allSeasons, events: allEvents });
   const bio = d.bio || {};
   // Read off the same approved events as the posts, so the two cannot disagree:
@@ -350,10 +403,10 @@ async function renderProfile(slug) {
          by browser chrome is one you are stuck on. -->
     <a class="dg-back dg-return" href="dramagram.html">← All profiles</a>
     <div class="dg-prof">
-      <img class="dg-prof-pic" src="${esc(profilePicOf(slug)
-        ? imageUrl(slug, profilePicOf(slug))
+      <img class="dg-prof-pic" src="${esc(pinnedOf(gal)
+        ? imageUrl(slug, pinnedOf(gal))
         : 'assets/avatars/' + encodeURIComponent(slug) + '.png')}" alt=""
-        onerror="this.outerHTML='<div class='dg-prof-pic fb'>${esc(initials(d.name))}</div>'">
+        onerror="this.outerHTML='<div class=&quot;dg-prof-pic fb&quot;>${esc(initials(d.name))}</div>'">
       <div class="dg-prof-body">
         <div class="dg-prof-name">${esc(d.name)}${d.verified ? tick() : ''}</div>
         <div class="dg-stats">
@@ -380,7 +433,18 @@ async function renderProfile(slug) {
     el.onclick = () => openPost(posts[Number(el.dataset.post)], d);
   });
 
-  renderManage(slug, photos);
+  // ── THE CLAIM BECOMES PERMANENT ──
+  //
+  // Posts above may have taken photos from the numbered queue. With a token,
+  // each one is moved to posted/<post id> now: the key itself records which
+  // photo belongs to which post, the numbered slot frees up for the next dump,
+  // and no later reshuffle of the queue can hand this post a different picture.
+  //
+  // Silent and token-gated: a visitor without the token sees the same feed
+  // (the claim is deterministic) — the archive just has not happened yet.
+  archivePosted(slug, posts);
+
+  renderManage(slug, gal);
 }
 
 /** The status heart. Drawn, not an emoji — nothing else on this page is one. */
@@ -401,21 +465,63 @@ function heart() {
  * The token is kept under the same localStorage key the player page uses, so
  * authorising in one place authorises in both.
  */
-function renderManage(slug, photos) {
+function renderManage(slug, gal) {
   const host = $('#dg-profile');
   const box = document.createElement('div');
   box.className = 'dg-manage';
   box.innerHTML = [
-    '<h3>Photos &mdash; ' + photos.length + ' of ' + GALLERY_MAX + '</h3>',
+    '<h3>Photo queue &mdash; ' + gal.images.length + ' of ' + GALLERY_MAX
+      + (gal.posted.length ? ' &middot; ' + gal.posted.length + ' posted' : '') + '</h3>',
     '<div class="dg-drop" id="dg-drop">Drop images here, or click to choose. ',
     'Several at once is fine.</div>',
     '<input type="file" id="dg-file" accept="image/*" multiple hidden>',
+    // The same search player.html has: the article, the portraits, the pose
+    // cap. One shared implementation in js/wiki-art.js, asked in this page's
+    // own voice.
+    '<button class="dg-fill" id="dg-fill">Fill from wiki</button>',
     '<div class="dg-lib" id="dg-lib"></div>',
-    '<p class="dg-note" id="dg-note">Pin one as the profile picture, or leave it ',
-    'and the avatar is used. Deleting removes it from the bucket &mdash; there is ',
-    'no other copy.</p>',
+    '<p class="dg-note" id="dg-note">Pin one as the profile picture, set a mood ',
+    'to tell the captions what a picture is, and new posts claim photos from ',
+    'this queue &mdash; a claimed photo moves to the posted pile and its slot ',
+    'frees up for the next dump.</p>',
   ].join('');
   host.appendChild(box);
+  const fillBtn = box.querySelector('#dg-fill');
+  fillBtn.onclick = async () => {
+    const t = token();
+    if (!t) return;
+    const name = namesBySlug[slug] || slug.replace(/-/g, ' ');
+    fillBtn.disabled = true;
+    try {
+      const r = await fillFromWiki(slug, name, t, {
+        say: txt => { fillBtn.textContent = txt; },
+        pickCandidate: async (wikiName, candidates) => {
+          const list = candidates.map((x, n) => (n + 1) + '. ' + x).join('\n');
+          const pick = prompt(wikiName + ' wiki has ' + candidates.length
+            + ' articles starting with "' + name + '".\n\n' + list
+            + '\n\nType a number, or leave blank to skip this wiki:', '1');
+          const n = parseInt(pick, 10);
+          return (n && candidates[n - 1]) || null;
+        },
+        askExact: async (wanted, why) => prompt('No art found for "' + wanted + '".\n\n'
+          + why.join('\n') + '\n\nType the EXACT article title to look it up directly:', wanted),
+      });
+      const note = $('#dg-note');
+      if (note) {
+        note.textContent = r.added
+          ? 'Added ' + r.added + ' from "' + r.foundTitle + '" (' + r.wikiName + ' wiki). Nothing already here was touched.'
+          : !r.free ? 'The queue is already full — post or delete something first.'
+          : 'Nothing found. ' + r.why.join(' · ');
+      }
+      if (r.added) await renderProfile(slug);
+    } catch (err) {
+      const note = $('#dg-note');
+      if (note) note.textContent = 'Fill failed — ' + err.message;
+    } finally {
+      fillBtn.disabled = false;
+      fillBtn.textContent = 'Fill from wiki';
+    }
+  };
   drawLibrary(slug);
 
   const zone = box.querySelector('#dg-drop');
@@ -435,23 +541,52 @@ function renderManage(slug, photos) {
 async function drawLibrary(slug) {
   const lib = $('#dg-lib');
   if (!lib) return;
-  let files = [];
-  try { files = await listGallery(slug, { fresh: true }); } catch { /* renders empty */ }
-  const pinned = profilePicOf(slug);
-  lib.innerHTML = files.map(f => [
-    '<div class="dg-libit">',
+  let gal = { images: [], posted: [] };
+  try { gal = await galleryFull(slug, { fresh: true }); } catch { /* renders empty */ }
+  const item = (f, posted) => [
+    '<div class="dg-libit' + (posted ? ' posted' : '') + '">',
     '<img src="' + esc(imageUrl(slug, f.file)) + '" alt="" loading="lazy">',
     '<button data-del="' + esc(f.file) + '" title="Delete">&times;</button>',
-    '<button class="pin' + (pinned === f.file ? ' on' : '') + '" data-pin="' + esc(f.file) + '"',
-    ' title="Use as profile picture">' + (pinned === f.file ? 'profile' : 'pin') + '</button>',
+    '<button class="pin' + (f.pinned ? ' on' : '') + '" data-pin="' + esc(f.file) + '"',
+    ' data-on="' + (f.pinned ? '1' : '') + '" title="Use as profile picture">'
+      + (f.pinned ? 'profile' : 'pin') + '</button>',
+    // The MOOD is the photograph's own fact — what this picture is — and a
+    // moment that claims it posts in that register instead of the derived one.
+    '<select class="mood" data-mood="' + esc(f.file) + '" title="What this picture is">',
+    '<option value="">mood: auto</option>',
+    ...MOODS.map(mo => '<option value="' + mo + '"' + (f.mood === mo ? ' selected' : '') + '>' + mo + '</option>'),
+    '</select>',
+    posted ? '<span class="dg-postedtag">posted</span>' : '',
     '</div>',
-  ].join('')).join('') || '<p class="dg-note">No photographs yet.</p>';
+  ].join('');
+  lib.innerHTML = (gal.images.map(f => item(f, false)).join('')
+    + (gal.posted.length
+      ? '<p class="dg-note" style="flex-basis:100%">Already posted — out of the queue, still theirs:</p>'
+        + gal.posted.map(f => item(f, true)).join('')
+      : ''))
+    || '<p class="dg-note">No photographs yet.</p>';
 
   lib.querySelectorAll('[data-del]').forEach(b => {
     b.onclick = () => doDelete(slug, b.dataset.del);
   });
   lib.querySelectorAll('[data-pin]').forEach(b => {
-    b.onclick = () => setProfilePic(slug, profilePicOf(slug) === b.dataset.pin ? null : b.dataset.pin);
+    b.onclick = async () => {
+      const t = token();
+      if (!t) return;
+      try {
+        await setImageMeta(slug, b.dataset.pin, { pinned: !b.dataset.on }, t);
+        await renderProfile(slug);   // the face changed; the whole header follows
+      } catch (err) { const n = $('#dg-note'); if (n) n.textContent = 'Pin failed — ' + err.message; }
+    };
+  });
+  lib.querySelectorAll('[data-mood]').forEach(sel => {
+    sel.onchange = async () => {
+      const t = token();
+      if (!t) { sel.value = ''; return; }
+      try {
+        await setImageMeta(slug, sel.dataset.mood, { mood: sel.value || null }, t);
+      } catch (err) { const n = $('#dg-note'); if (n) n.textContent = 'Mood failed — ' + err.message; }
+    };
   });
 }
 
@@ -498,7 +633,6 @@ async function doDelete(slug, file) {
   if (!t) return;
   try {
     await deleteImage(slug, file, t);
-    if (profilePicOf(slug) === file) setProfilePic(slug, null);
     await drawLibrary(slug);
   } catch (err) {
     const note = $('#dg-note');
@@ -506,28 +640,36 @@ async function doDelete(slug, file) {
   }
 }
 
-/**
- * Which photograph is somebody's profile picture.
- *
- * A CHOICE, not a copy. The picture already exists in the gallery, so storing
- * which one is chosen is a filename rather than a second upload -- and it lives
- * in this browser rather than on the roster, because it is a display preference
- * and the roster is the franchise's authored record.
- */
-const PIC_KEY = 'dc_dramagram_pics';
-function allPics() {
-  try { return JSON.parse(localStorage.getItem(PIC_KEY)) || {}; } catch { return {}; }
+/** The pinned face, straight off the gallery document — R2 metadata, not a
+ *  per-browser preference. */
+function pinnedOf(gal) {
+  return ([...(gal.images || []), ...(gal.posted || [])].find(o => o.pinned) || {}).file || null;
 }
-function profilePicOf(slug) { return allPics()[slug] || null; }
-function setProfilePic(slug, file) {
-  const m = allPics();
-  if (file) m[slug] = file; else delete m[slug];
-  try { localStorage.setItem(PIC_KEY, JSON.stringify(m)); } catch { /* storage blocked */ }
-  drawLibrary(slug);
-  const img = document.querySelector('.dg-prof-pic');
-  if (img && img.tagName === 'IMG') {
-    img.src = file ? imageUrl(slug, file) : 'assets/avatars/' + encodeURIComponent(slug) + '.png';
-  }
+
+/** A silent token read: never prompts. Archiving must not ambush a visitor. */
+function storedToken() {
+  try { return localStorage.getItem(TOKEN_KEY) || ''; } catch { return ''; }
+}
+
+let _archiving = false;
+async function archivePosted(slug, posts) {
+  const t = storedToken();
+  if (!t || _archiving) return;
+  const due = posts.filter(p => p.queueFile);
+  if (!due.length) return;
+  _archiving = true;
+  try {
+    for (const p of due) {
+      // 409 means another session archived it first — that is a success.
+      await postPhoto(slug, p.queueFile, p.id, t).catch(err => {
+        if (!/already has a photo/.test(err.message)) throw err;
+      });
+    }
+    // Redraw once so the feed reads from the archive it just made. The guard
+    // above stops this recursing: the second pass finds nothing due.
+    await renderProfile(slug);
+  } catch { /* the queue copy still renders; next visit tries again */ }
+  finally { _archiving = false; }
 }
 
 /** "Up 120k after winning Carnival of Chaos" -- the number, explained. */
@@ -545,6 +687,22 @@ const tick = () => '<svg class="dg-tick" width="15" height="15" viewBox="0 0 24 
 
 function postTile(p, i) {
   const when = p.season ? airLabel(p.season) : '';
+  // A moment is a post about nothing: a photo when one is theirs, a mood card
+  // when not. Its caption comes from the mood bank, never from an event.
+  if (p.isMoment) {
+    const caption = momentCaption(p.moment, { archetype: archetypeBySlug[viewing] });
+    if (p.photo) {
+      return `<button class="dg-post" data-post="${i}" title="${esc(caption)}">
+        <img src="${esc(p.photo)}" alt="" loading="lazy">
+        ${when ? `<span class="when">${esc(when)}</span>` : ''}</button>`;
+    }
+    return `<button class="dg-post" data-post="${i}" title="${esc(caption)}">
+      <span class="dg-card dg-mood" data-mood="${esc(p.mood)}">
+        <span class="k">${esc(p.mood)}</span>
+        <span class="t">${esc(caption)}</span>
+      </span>
+      ${when ? `<span class="when">${esc(when)}</span>` : ''}</button>`;
+  }
   // TOLD FROM THIS PROFILE'S SIDE. A two-person event is stored once and
   // carries whichever half it was written from, so passing event.player put
   // "Bowie and Hicks fell out publicly" on HICKS'S OWN page. The reader is
@@ -570,6 +728,26 @@ function postTile(p, i) {
 }
 
 function openPost(p, d) {
+  if (p.isMoment) {
+    const caption = momentCaption(p.moment, { archetype: archetypeBySlug[viewing] });
+    const comments = momentComments(p.moment, { ties: tiesFor(viewing, graph), names: namesBySlug });
+    const wrap = document.createElement('div');
+    wrap.className = 'dg-open';
+    wrap.innerHTML = `<div class="dg-open-in">
+      ${p.photo ? `<div class="dg-open-media"><img src="${esc(p.photo)}" alt=""></div>` : ''}
+      <div class="dg-open-body">
+        <div class="dg-open-cap"><b>${esc(d.name)}</b> ${esc(caption)}</div>
+        ${comments.length ? `<div class="dg-comments">${comments.map(c =>
+          `<div class="dg-c" data-rel="${c.relation}"><b>${esc(c.name)}</b> ${esc(c.text)}</div>`
+        ).join('')}</div>` : ''}
+        <div class="dg-open-meta">${esc(p.season ? airLabel(p.season) : '')} · ${esc(p.mood)}</div>
+        <button class="dg-close">Close</button>
+      </div>
+    </div>`;
+    wrap.onclick = e => { if (e.target === wrap || e.target.classList.contains('dg-close')) wrap.remove(); };
+    document.body.appendChild(wrap);
+    return;
+  }
   const caption = captionFor(p.event, {
     archetype: archetypeBySlug[viewing], names: namesBySlug,
     season: p.season ? (p.season.title || '') : '',
@@ -602,6 +780,14 @@ let allEvents = []; let allSeasons = []; let allCareers = []; let namesBySlug = 
 // slug -> gender, off the authored roster: the only place it lives, and what
 // keeps a caption saying "Cody changed their hair" off Cody's own page.
 let gendersBySlug = new Map();
+// slug -> pinned photo file, one Worker request for the whole directory. The
+// pin used to live in localStorage, which made it a per-browser opinion —
+// pinned here, unpinned on your phone. It is R2 metadata on the photo now.
+let pinsBySlug = {};
+// Which directory page is showing. 152 avatars in one render was the whole
+// cast's worth of image requests before anybody scrolled.
+let page = 0;
+const PAGE_SIZE = 50;
 let graph = null; let archetypeBySlug = {};
 /** Whose profile is open — the side every caption is told from. */
 let viewing = null;
@@ -634,6 +820,7 @@ let viewing = null;
 
   const now = latestAired(seasons);
   $('#dg-now').textContent = now ? airLabel(now) : '';
+  pinsBySlug = await fetchPins();
 
   // ONE ACCOUNT, SEEN FROM EVERY SHOW.
   //
@@ -647,8 +834,8 @@ let viewing = null;
     render();
   });
 
-  $('#dg-q').oninput = render;
-  $('#dg-sort').onchange = render;
+  $('#dg-q').oninput = () => { page = 0; render(); };
+  $('#dg-sort').onchange = () => { page = 0; render(); };
 
   // ?player=<slug> is a profile; anything else is the directory. One page, two
   // views, so a link from the grid is a normal href and the back button works.

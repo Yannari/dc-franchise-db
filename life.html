@@ -95,6 +95,12 @@
   select,input[type=text]{background:var(--panel-2);border:1px solid var(--stroke);color:var(--text);
     border-radius:8px;padding:7px 9px;font:inherit}
   .note{color:var(--muted);font-size:12.5px;margin-top:8px;line-height:1.5}
+  .terms{margin:0 0 22px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;
+    background:rgba(255,255,255,.02)}
+  .terms dt{font-weight:700;font-size:13px;letter-spacing:.02em;margin-top:10px}
+  .terms dt:first-child{margin-top:0}
+  .terms dd{margin:3px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
+  .terms strong{color:var(--text);font-weight:600}
 
   .commit{position:fixed;left:0;right:0;bottom:0;background:rgba(18,16,26,.96);
     border-top:1px solid var(--stroke);padding:12px 20px;display:flex;gap:12px;
@@ -125,6 +131,18 @@
   <p class="sub">What happened between seasons. Only what you approve reaches a character's page.
     <a href="devotees.html">← Players</a></p>
 
+  <dl class="terms">
+    <dt>The off-season</dt>
+    <dd>The months between one season airing and the next. <strong>Resolving</strong> it works out
+      what happened to everybody in that time — who got together, who broke up, who moved, who fell
+      out — and lists it below as proposals. It rolls; it does not decide. Nothing here is true yet.</dd>
+    <dt>Canon</dt>
+    <dd>What the site treats as having actually happened. <strong>Committing</strong> saves this list
+      to the franchise, and from then on the approved rows are the ones that appear on wiki pages,
+      on Dramagram and in a character's history. Rejected and undecided rows stay here and are shown
+      to nobody.</dd>
+  </dl>
+
   <div class="policy">
     <h2>How you want to be interrupted</h2>
     <div class="prow"><label>Minor</label><select id="p-minor"></select>
@@ -143,18 +161,24 @@
   </div>
 
   <div class="bar">
-    <select id="resolve-season" title="The season that just ended"></select>
-    <button class="btn" id="resolve">Resolve the off-season</button>
+    <select id="resolve-season"
+      title="Which off-season to fill: the months AFTER this season aired. Exporting a season now does this by itself, so this is for older gaps and for re-rolling."></select>
+    <button class="btn" id="resolve"
+      title="Roll what happened to everybody in the months after the season on the left, and add it below as proposals. Nothing is saved and nothing becomes true until you commit. Re-running a season you have already resolved offers to replace it, so you can re-roll an off-season you did not like.">Resolve the off-season</button>
     <span class="count" id="resolve-note"></span>
   </div>
 
   <div class="bar">
     <!-- "everything", not "everything shown": there is no filter on this list,
          so the word promised something nothing kept. -->
-    <button class="btn ghost" id="all-yes">Approve everything</button>
-    <button class="btn ghost" id="all-no">Reject everything</button>
-    <button class="btn ghost" id="drop-rejected">Remove rejected</button>
-    <button class="btn ghost" id="drop-all">Remove everything</button>
+    <button class="btn ghost" id="all-yes"
+      title="Tick every row. They still are not canon until you commit.">Approve everything</button>
+    <button class="btn ghost" id="all-no"
+      title="Untick every row. Rejected rows stay in the file, marked rejected, and are shown to nobody — keeping them is what stops the page proposing that off-season again.">Reject everything</button>
+    <button class="btn ghost" id="drop-rejected"
+      title="Delete the rejected rows outright. Any off-season left with nothing in it will be proposed again, differently, next time this page opens.">Remove rejected</button>
+    <button class="btn ghost" id="drop-all"
+      title="Empty the whole log, including anything already canon. Every off-season is then proposed again from scratch.">Remove everything</button>
     <span class="count" id="tally"></span>
   </div>
 
@@ -163,8 +187,10 @@
 
 <div class="commit">
   <span class="count" id="pending"></span>
-  <button class="btn primary" id="commit">Commit to canon</button>
-  <button class="btn ghost" id="copy">Copy JSON</button>
+  <button class="btn primary" id="commit"
+    title="Save this list to the franchise. Approved rows become part of what happened: they appear on wiki pages, on Dramagram and in a character's history. This is the only button on the page that changes anything a reader sees.">Commit to canon</button>
+  <button class="btn ghost" id="copy"
+    title="Copy the whole log to the clipboard, for pasting into life_events.json by hand when there is nowhere to save to.">Copy JSON</button>
   <span class="count" id="saved"></span>
 </div>
 

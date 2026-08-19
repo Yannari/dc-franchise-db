@@ -49,6 +49,7 @@
   .gap-head{background:var(--panel-2);padding:11px 15px;font-weight:700;display:flex;
     justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
   .gap-head .when{color:var(--muted);font-weight:500;font-size:13px}
+  .gap-right{display:flex;align-items:center;gap:10px}
 
   .ev{display:grid;grid-template-columns:26px auto 84px 1fr auto;gap:12px;align-items:start;
     padding:11px 15px;border-top:1px solid var(--stroke);background:var(--panel)}
@@ -153,6 +154,7 @@
     <button class="btn ghost" id="all-yes">Approve everything</button>
     <button class="btn ghost" id="all-no">Reject everything</button>
     <button class="btn ghost" id="drop-rejected">Remove rejected</button>
+    <button class="btn ghost" id="drop-all">Remove everything</button>
     <span class="count" id="tally"></span>
   </div>
 
@@ -225,7 +227,14 @@ function render() {
       const label = s ? (s.title || sid) : sid;
       const when = s ? airLabel(s) : '';
       return `<section class="gap">
-        <div class="gap-head"><span>After ${esc(label)}</span><span class="when">${esc(when)}</span></div>
+        <div class="gap-head">
+          <span>After ${esc(label)}</span>
+          <span class="gap-right">
+            <span class="when">${esc(when)}</span>
+            <button class="mini danger" data-dropgap="${esc(sid)}"
+              title="Remove every event in this off-season">Remove ${rows.length}</button>
+          </span>
+        </div>
         ${rows.map(row).join('')}
       </section>`;
     }).join('');
@@ -248,6 +257,23 @@ function render() {
     `${events.filter(e => e.status === 'approved').length} canon · `
     + `${events.filter(e => e.status === 'proposed').length} proposed · `
     + `${events.filter(e => e.status === 'rejected').length} rejected`;
+
+  // A WHOLE OFF-SEASON AT ONCE.
+  //
+  // The gap is the natural unit — it is what the resolver produces in one go —
+  // and clearing one is how you ask for a different roll of it, because the
+  // sweep offers any off-season with no events left in it.
+  list.querySelectorAll('[data-dropgap]').forEach(el => {
+    el.onclick = () => {
+      const sid = el.dataset.dropgap;
+      const n = events.filter(e => (e.afterSeason || '(unplaced)') === sid).length;
+      const s = seasonOf(sid);
+      if (!confirm(`Remove all ${n} event${n === 1 ? '' : 's'} after ${(s && s.title) || sid}?\n\n`
+        + 'This off-season will be proposed again, differently, next time this page opens.')) return;
+      events = events.filter(e => (e.afterSeason || '(unplaced)') !== sid);
+      render();
+    };
+  });
 
   list.querySelectorAll('[data-i]').forEach(el => {
     el.onchange = el.onclick = ev => {
@@ -452,6 +478,19 @@ $('#drop-rejected').onclick = () => {
     + 'Any off-season left with no events at all will be proposed again next time '
     + 'this page opens.')) return;
   events = events.filter(e => e.status !== 'rejected');
+  render();
+};
+
+// EVERYTHING. Empties the log entirely, which means the sweep starts again
+// from the newest unresolved season next time this page opens — so this is a
+// reset rather than a deletion of history you cannot get back.
+$('#drop-all').onclick = () => {
+  if (!events.length) { $('#saved').textContent = 'already empty'; return; }
+  const canon = events.filter(e => e.status === 'approved').length;
+  if (!confirm(`Remove all ${events.length} events?\n\n`
+    + (canon ? `${canon} of them are canon and appear on wiki pages and Dramagram.\n\n` : '')
+    + 'Every off-season will be proposed again, differently, from here on.')) return;
+  events = [];
   render();
 };
 

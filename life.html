@@ -43,6 +43,7 @@
   .btn:hover{border-color:var(--accent)}
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   .btn.ghost{background:none}
+  .btn:disabled{opacity:.45;cursor:not-allowed;border-color:var(--stroke)}
   .count{color:var(--muted);font-size:13px}
 
   .gap{margin:0 0 26px;border:1px solid var(--stroke);border-radius:14px;overflow:hidden}
@@ -230,6 +231,9 @@ let events = [];
 let seasons = [];
 // Which of the four lists is on screen. An inbox opens on what is waiting.
 let view = 'waiting';
+// And which off-season. The picker used to be a resolve target only, so
+// choosing a season changed nothing on screen — the list stayed on all of them.
+let seasonFilter = 'all';
 // DECIDED THIS VISIT, so a row does not vanish from under the cursor the moment
 // it is ticked — you would lose the ability to change your mind, and "Approve
 // everything" would blank the screen. They leave the waiting list when the
@@ -279,19 +283,37 @@ const EMPTY = {
  */
 function syncSeasonPicker() {
   const sel = $('#resolve-season');
-  const keep = sel.value;
-  const n = sid => events.filter(e => e.afterSeason === sid).length;
-  sel.innerHTML = seasons.slice().sort(byAirDate).reverse().map(s => {
-    const c = n(s.seasonId);
-    const mark = c ? `✓ ${c} event${c === 1 ? '' : 's'}` : 'no off-season yet';
-    return `<option value="${s.seasonId}">${esc(s.title || s.seasonId)} — ${esc(airLabel(s))} · ${mark}</option>`;
-  }).join('');
-  if (keep) sel.value = keep;
+  sel.innerHTML = [`<option value="all">All off-seasons</option>`]
+    .concat(seasons.slice().sort(byAirDate).reverse().map(s => {
+      const mine = events.filter(e => e.afterSeason === s.seasonId);
+      // WHAT IS SETTLED, not just how many there are. "✓ 133 events" said the
+      // same thing before and after committing them, which is exactly the
+      // question this line exists to answer.
+      const canon = mine.filter(e => e.status === 'approved').length;
+      const waiting = mine.filter(e => e.status === 'proposed').length;
+      const mark = !mine.length ? 'no off-season yet'
+        : waiting && canon ? `${canon} canon · ${waiting} waiting`
+        : waiting ? `${waiting} waiting on you`
+        : `✓ ${canon} canon`;
+      return `<option value="${s.seasonId}">${esc(s.title || s.seasonId)} — ${esc(airLabel(s))} · ${mark}</option>`;
+    })).join('');
+  sel.value = seasonFilter;
+  // Resolving needs a target. With every off-season on screen there is not one,
+  // and a button that silently picks for you is worse than one that waits.
+  const btn = $('#resolve');
+  btn.disabled = seasonFilter === 'all';
+  btn.title = btn.disabled
+    ? 'Pick a season above — this fills the off-season AFTER it.'
+    : 'Roll what happened to everybody in the months after the season on the left, '
+      + 'and add it below as proposals. Nothing is saved and nothing becomes true until you '
+      + 'commit. Resolving a season that already has events offers to replace them, which is '
+      + 'how you re-roll an off-season you did not like.';
 }
 
 function renderViews() {
+  const inSeason = e => seasonFilter === 'all' || e.afterSeason === seasonFilter;
   $('#views').innerHTML = VIEWS.map(([id, label, test]) => {
-    const n = events.filter(test).length;
+    const n = events.filter(inSeason).filter(test).length;
     return `<button data-view="${id}" aria-current="${view === id}">${label} ${n}</button>`;
   }).join('');
   $('#views').querySelectorAll('[data-view]').forEach(el => {
@@ -304,7 +326,10 @@ function render() {
   renderViews();
   syncSeasonPicker();
   const test = (VIEWS.find(v => v[0] === view) || VIEWS[3])[2];
-  const sorted = events.filter(test).sort(order(rank()));
+  const sorted = events
+    .filter(e => seasonFilter === 'all' || e.afterSeason === seasonFilter)
+    .filter(test)
+    .sort(order(rank()));
   const gaps = new Map();
   for (const e of sorted) {
     const k = e.afterSeason || '(unplaced)';
@@ -313,7 +338,16 @@ function render() {
   }
 
   if (!sorted.length) {
-    list.innerHTML = `<div class="empty">${esc(EMPTY[view])}</div>`;
+    const s = seasonFilter === 'all' ? null : seasonOf(seasonFilter);
+    const here = seasonFilter === 'all' ? 0
+      : events.filter(e => e.afterSeason === seasonFilter).length;
+    list.innerHTML = `<div class="empty">${
+      s && !here ? `No off-season after ${esc(s.title || seasonFilter)} yet.<br>Press
+        <strong>Resolve the off-season</strong> to fill it.`
+      : s ? `Nothing ${esc(view === 'waiting' ? 'waiting' : view)} after
+        ${esc(s.title || seasonFilter)}. ${here} event${here === 1 ? '' : 's'} in total —
+        try another list above.`
+      : esc(EMPTY[view])}</div>`;
   } else {
     list.innerHTML = [...gaps.entries()].map(([sid, rows]) => {
       const s = seasonOf(sid);
@@ -553,7 +587,10 @@ $('#resolve').onclick = () => {
 // filter now, so they mean the list you can see.
 function decideShown(status) {
   const test = (VIEWS.find(v => v[0] === view) || VIEWS[3])[2];
-  events.filter(test).forEach(e => { e.status = status; touched.add(keyOf(e)); });
+  events
+    .filter(e => seasonFilter === 'all' || e.afterSeason === seasonFilter)
+    .filter(test)
+    .forEach(e => { e.status = status; touched.add(keyOf(e)); });
   render();
 }
 $('#all-yes').onclick = () => decideShown('approved');
@@ -638,6 +675,10 @@ $('#commit').onclick = async () => {
   names = ctx.names;
   careers = ctx.careers;
   syncSeasonPicker();
+  $('#resolve-season').onchange = () => {
+    seasonFilter = $('#resolve-season').value;
+    render();
+  };
   syncPolicyInputs();
   // Automatic: any season that has aired and has no off-season yet gets one,
   // as proposals. Pressing the button is only for re-rolling a gap.

@@ -5,7 +5,7 @@
 // identical from outside (no events appeared) and mean completely different
 // things, so each one has to say which it was.
 import { describe, expect, it, beforeEach, vi } from 'vitest';
-import { resolveAfterSeason, unresolvedGaps, lifeContext } from '../js/life-hook.js';
+import { resolveAfterSeason, unresolvedGaps, lifeContext, resolveGapWith } from '../js/life-hook.js';
 import { nextWindowFor } from '../js/franchise-calendar.js';
 import { resolveOffSeason as resolveOffSeasonFor } from '../js/life-resolver.js';
 
@@ -305,5 +305,52 @@ describe('showmances carrying out of a season', () => {
         { showmance: 'Ali', showmanceEnded: 'intact', alliances: ['Ali'] }),
       { seasons: [SEASON] });
     expect(ctx.graph.get('ali').get('bo')).toBeGreaterThan(4);
+  });
+});
+
+// ── AN OFF-SEASON KNOWS ONLY ITS OWN PAST ─────────────────────────────
+//
+// The resolver derives everybody's position from the log it is handed, and it
+// used to be handed all of it — so filling in an old gap while newer ones
+// existed read people's CURRENT state instead of their state at the time.
+describe('resolving an older gap', () => {
+  const SEASONS = [
+    { seasonId: 'td-1', seasonNumber: 1, format: 'total-drama', airYear: 2020, airSlot: 'spring' },
+    { seasonId: 'td-2', seasonNumber: 2, format: 'total-drama', airYear: 2020, airSlot: 'fall' },
+  ];
+  const PDB = { players: [
+    { id: 'ali', name: 'Ali', seasonDetails: [{ seasonId: 'td-1' }] },
+    { id: 'bo', name: 'Bo', seasonDetails: [{ seasonId: 'td-1' }] },
+  ] };
+
+  it('cannot see events from a season that had not aired yet', () => {
+    const ctx = lifeContext(PDB, { seasons: SEASONS });
+    // Ali marries in the LATER gap. A married person is skipped by the
+    // relationship branch entirely, so if resolving the EARLIER gap could see
+    // it, Ali could never start anything in 2020 — no seed, ever. He must be
+    // able to, because in 2020 he was single.
+    const future = [
+      { player: 'ali', whom: 'bo', afterSeason: 'td-2', seq: 1, kind: 'wedding', status: 'approved' },
+    ];
+    const graph = new Map([['ali', new Map([['bo', 8]])], ['bo', new Map([['ali', 8]])]]);
+    const people = new Map([['ali', { gender: 'm', sexuality: 'straight' }],
+      ['bo', { gender: 'f', sexuality: 'straight' }]]);
+    let started = 0;
+    for (let i = 0; i < 40; i++) {
+      const out = resolveGapWith({ ...ctx, graph, people }, SEASONS[0], future);
+      if (out.some(e => e.kind === 'dating')) started++;
+      expect(out.every(e => e.afterSeason === 'td-1')).toBe(true);
+    }
+    expect(started).toBeGreaterThan(0);
+  });
+
+  it('keeps undated events, since unplaced is not the future', () => {
+    const ctx = lifeContext(PDB, { seasons: SEASONS });
+    const log = [
+      { player: 'ali', whom: 'bo', afterSeason: 'ghost', seq: 1, kind: 'dating', status: 'approved' },
+    ];
+    const out = resolveGapWith(ctx, SEASONS[0], log);
+    // Ali is already with Bo as far as the log says, so no NEW couple forms.
+    expect(out.filter(e => e.kind === 'dating').length).toBe(0);
   });
 });

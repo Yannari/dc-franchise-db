@@ -33,7 +33,7 @@
 // same answer, and adding a player to the franchise does not change what
 // happens to everybody else — which a single stream would do, silently, and
 // which would make an approved inbox impossible to reproduce.
-import { KINDS, kindOf, stateOf } from './life-events.js';
+import { KINDS, kindOf, stateOf, order } from './life-events.js';
 import { couldBeInterested } from './attraction.js';
 
 /**
@@ -197,6 +197,28 @@ const ORDINARY_TRACKS = ['career', 'home', 'small'];
 const RARE_TRACKS = ['health', 'legal', 'money'];
 
 const kindsOn = tracks => KINDS.filter(k => tracks.includes(k.track) && !k.terminal && !k.stage);
+
+/**
+ * The same list, minus the answers to questions this person was never asked.
+ *
+ * `after` on a kind names what it is a reply to (js/life-events.js). Recovery,
+ * reconciliation, making up, sobriety, charges being dropped, a birth — drawn
+ * at random they produce the answer with no question, and "Alejandro
+ * recovered." with nothing to recover from was in the log.
+ *
+ * The question has to be OPEN, not merely somewhere in the past: somebody who
+ * was ill and recovered is not still recovering, so a second recovery needs a
+ * second illness. The most recent of the two wins.
+ */
+const availableTo = (tracks, mine) => kindsOn(tracks).filter(k => {
+  if (!k.after) return true;
+  let asked = -1, answered = -1;
+  for (let i = 0; i < mine.length; i++) {
+    if (k.after.includes(mine[i].kind)) asked = i;
+    if (mine[i].kind === k.key) answered = i;
+  }
+  return asked > answered;
+});
 const pick = (rng, xs) => xs[Math.floor(rng() * xs.length)] || null;
 
 /**
@@ -332,6 +354,11 @@ export function resolveOffSeason({
     const slug = career.id;
     if (!debuted.has(slug)) continue;
     const state = stateOf(slug, events, { seasonRank });
+    // Their own approved history, oldest first — what `availableTo` reads to
+    // decide whether a reply has anything to reply to.
+    const mine = events
+      .filter(e => e.status === 'approved' && (e.player === slug || e.whom === slug))
+      .sort(order(seasonRank));
     // Somebody whose tracks have ended has no off-season. Nothing after a death
     // is a fact about their life.
     if (state.terminal) continue;
@@ -344,6 +371,13 @@ export function resolveOffSeason({
     const partner = state.relationship.with;
     const key = partner ? pairKey(slug, partner) : null;
 
+    // A relationship only moves if BOTH of them are on the air by now. A couple
+    // carried in the log can outlive the gate that created it — one bad row
+    // from before the debut check existed had Carrie going public in 2020, two
+    // years before her first season, and then advancing in every gap after it.
+    // The state is derived, so a poisoned pair repairs itself the moment the
+    // row is removed; this stops it spreading in the meantime.
+    if (stage !== 'single' && partner && !debuted.has(partner)) continue;
     if (stage !== 'single' && partner && !settled.has(key)) {
       settled.add(key);
       // Both are spoken for this round whatever happens next — including a
@@ -406,7 +440,7 @@ export function resolveOffSeason({
     // ── the ordinary, which is most of it ──
     const ord = rng('ord');
     if (ord() < RATES.ordinary) {
-      const k = pick(ord, kindsOn(ORDINARY_TRACKS));
+      const k = pick(ord, availableTo(ORDINARY_TRACKS, mine));
       if (k) {
         const whom = k.whom ? otherFor(k.key, slug, ord, partner) : null;
         if (!k.whom || whom) emit(slug, k.key, k.whom ? { whom } : {});
@@ -415,14 +449,14 @@ export function resolveOffSeason({
     // Fame buys VOLUME and access to the public-life kinds — never a different
     // chance of something hard happening.
     if (ord() < RATES.publicLife * fame) {
-      const k = pick(ord, kindsOn(['public', 'franchise']));
+      const k = pick(ord, availableTo(['public', 'franchise'], mine));
       if (k) {
         const whom = k.whom ? otherFor(k.key, slug, ord, null) : null;
         if (!k.whom || whom) emit(slug, k.key, k.whom ? { whom } : {});
       }
     }
     if (ord() < RATES.extraOrdinary * (0.4 + fame)) {
-      const k = pick(ord, kindsOn(ORDINARY_TRACKS));
+      const k = pick(ord, availableTo(ORDINARY_TRACKS, mine));
       if (k) {
         const whom = k.whom ? otherFor(k.key, slug, ord, partner) : null;
         if (!k.whom || whom) emit(slug, k.key, k.whom ? { whom } : {});
@@ -432,7 +466,7 @@ export function resolveOffSeason({
     // ── the rare ──
     const rare = rng('rare');
     if (rare() < RATES.rare) {
-      const k = pick(rare, kindsOn(RARE_TRACKS));
+      const k = pick(rare, availableTo(RARE_TRACKS, mine));
       if (k) emit(slug, k.key);
     }
   }

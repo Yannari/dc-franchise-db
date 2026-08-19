@@ -62,6 +62,13 @@ export const SIGNIFICANCE = ['minor', 'notable', 'major'];
  *            in the view so that the wiki, the feed and the inbox cannot phrase
  *            the same event three different ways.
  */
+// `after` — the kinds this one is a REPLY to.
+//
+// "Alejandro recovered." with nothing to recover from was in the log: recovery,
+// reconciliation, making up, getting sober, charges being dropped and a birth
+// are all answers to something, and drawing them at random from their track
+// produced the answer without the question. A kind with `after` is only
+// offered to somebody whose log already holds one of them.
 export const KINDS = [
   // ── relationship ───────────────────────────────────────────────────
   { key: 'dating', track: 'relationship', sig: 'notable', whom: true, stage: 'dating',
@@ -87,11 +94,11 @@ export const KINDS = [
   // ── family ─────────────────────────────────────────────────────────
   { key: 'expecting', track: 'family', sig: 'major', whom: false,
     line: (n, w, pr) => `${n} announced ${pr.sub} ${pr.sub === 'they' ? 'were' : 'was'} expecting.` },
-  { key: 'birth', track: 'family', sig: 'major', whom: false,
+  { key: 'birth', after: ['expecting'], track: 'family', sig: 'major', whom: false,
     line: n => `${n} had a child.` },
   { key: 'estranged', track: 'family', sig: 'notable', whom: false,
     line: (n, w, pr) => `${n} became estranged from ${pr.posAdj} family.` },
-  { key: 'reconciled', track: 'family', sig: 'notable', whom: false,
+  { key: 'reconciled', after: ['estranged'], track: 'family', sig: 'notable', whom: false,
     line: (n, w, pr) => `${n} reconciled with ${pr.posAdj} family.` },
 
   // ── career ─────────────────────────────────────────────────────────
@@ -138,7 +145,7 @@ export const KINDS = [
     line: n => `${n} returned to host a competition.` },
   { key: 'feud', track: 'public', sig: 'notable', whom: true,
     line: (n, w) => `${n} and ${w} fell out publicly.` },
-  { key: 'made-up', track: 'public', sig: 'minor', whom: true,
+  { key: 'made-up', after: ['feud'], track: 'public', sig: 'minor', whom: true,
     line: (n, w) => `${n} and ${w} made up.` },
 
   // ── health and loss ────────────────────────────────────────────────
@@ -148,7 +155,7 @@ export const KINDS = [
     line: n => `${n} was seriously ill.` },
   { key: 'injury', track: 'health', sig: 'notable', whom: false,
     line: n => `${n} was injured.` },
-  { key: 'recovered', track: 'health', sig: 'notable', whom: false,
+  { key: 'recovered', after: ['illness', 'injury'], track: 'health', sig: 'notable', whom: false,
     line: n => `${n} recovered.` },
   { key: 'bereavement', track: 'health', sig: 'major', whom: false,
     line: (n, w, pr) => `${n} lost someone close to ${pr.obj}.` },
@@ -172,13 +179,13 @@ export const KINDS = [
     line: n => `${n} became involved in a lawsuit.` },
   { key: 'arrested', track: 'legal', sig: 'major', whom: false,
     line: n => `${n} was arrested.` },
-  { key: 'charges-dropped', track: 'legal', sig: 'notable', whom: false,
+  { key: 'charges-dropped', after: ['arrested', 'lawsuit'], track: 'legal', sig: 'notable', whom: false,
     line: n => `The charges against ${n} were dropped.` },
   { key: 'scandal', track: 'legal', sig: 'major', whom: false,
     line: n => `${n} was at the centre of a scandal.` },
   { key: 'cancelled', track: 'legal', sig: 'major', whom: false,
     line: n => `${n} was widely condemned online.` },
-  { key: 'forgiven', track: 'legal', sig: 'notable', whom: false,
+  { key: 'forgiven', after: ['scandal', 'cancelled'], track: 'legal', sig: 'notable', whom: false,
     line: n => `The public moved on, and ${n} was quietly forgiven.` },
 
   // ── back to the franchise ──────────────────────────────────────────
@@ -202,9 +209,9 @@ export const KINDS = [
   // The slow version of a hard time, where health carries the sudden version.
   // The sentences are deliberately plain: the design's craft note asks for the
   // shortest true sentence rather than the most dramatic one available.
-  { key: 'sober', track: 'health', sig: 'major', whom: false,
+  { key: 'sober', after: ['rehab', 'relapse'], track: 'health', sig: 'major', whom: false,
     line: n => `${n} got sober.` },
-  { key: 'relapse', track: 'health', sig: 'major', whom: false,
+  { key: 'relapse', after: ['sober', 'rehab'], track: 'health', sig: 'major', whom: false,
     line: n => `${n} relapsed.` },
   { key: 'rehab', track: 'health', sig: 'major', whom: false,
     line: n => `${n} went into treatment.` },

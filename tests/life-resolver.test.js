@@ -8,7 +8,7 @@
 // wrong before anybody measured them.
 import { describe, expect, it } from 'vitest';
 import { resolveOffSeason, STAGES, RATES, fameOf, summarise, socialGraph } from '../js/life-resolver.js';
-import { stateOf, kindOf, approvedFor } from '../js/life-events.js';
+import { stateOf, kindOf, approvedFor, KINDS } from '../js/life-events.js';
 
 const SEASONS = Array.from({ length: 15 }, (_, i) => ({
   seasonId: `s-${i + 1}`, airYear: 2020 + Math.floor(i / 2), airSlot: i % 2 ? 'fall' : 'spring',
@@ -286,5 +286,58 @@ describe('a two-person event is with somebody they know', () => {
     const graph = socialGraph(careers);
     expect(graph.get('vet').size, 'a four-season player knows no more people than a rookie')
       .toBeGreaterThan(graph.get('rookie').size);
+  });
+});
+
+// ── AN ANSWER NEEDS A QUESTION ────────────────────────────────────────
+//
+// "Alejandro recovered." was in the log, with nothing to recover from. Recovery,
+// reconciliation, making up, sobriety, charges being dropped and a birth are all
+// replies; drawn at random from their track they arrive without the thing they
+// are replying to.
+describe('kinds that are replies', () => {
+  const SEASON = { seasonId: 's-1', airYear: 2020, airSlot: 'spring' };
+  const RANK = new Map([['s-0', 20200], ['s-1', 20201]]);
+  const CAREERS = Array.from({ length: 40 }, (_, i) =>
+    ({ id: `p${i}`, name: `P${i}`, details: [{ seasonId: 's-1' }], seasonsPlayed: 1, bestPlacement: 8 }));
+
+  /** Every event produced for a whole cast over many seeds. */
+  function sweep(log = []) {
+    const out = [];
+    for (let i = 0; i < 25; i++) {
+      out.push(...resolveOffSeason({ season: SEASON, careers: CAREERS, events: log,
+        seasonRank: RANK, seedSalt: 'reply' + i }));
+    }
+    return out;
+  }
+
+  it('never proposes a recovery for somebody who was never ill', () => {
+    expect(sweep().some(e => e.kind === 'recovered')).toBe(false);
+  });
+
+  it('offers one to somebody who was', () => {
+    const ill = CAREERS.map(c =>
+      ({ player: c.id, kind: 'illness', afterSeason: 's-0', seq: 1, status: 'approved' }));
+    expect(sweep(ill).some(e => e.kind === 'recovered')).toBe(true);
+  });
+
+  it('will not propose a second recovery once they have recovered', () => {
+    // The question has to be OPEN. Somebody who was ill and recovered is not
+    // still recovering, so a second recovery needs a second illness.
+    const done = CAREERS.flatMap(c => [
+      { player: c.id, kind: 'illness', afterSeason: 's-0', seq: 1, status: 'approved' },
+      { player: c.id, kind: 'recovered', afterSeason: 's-0', seq: 2, status: 'approved' },
+    ]);
+    expect(sweep(done).some(e => e.kind === 'recovered')).toBe(false);
+  });
+
+  it('applies to every reply kind, not just recovery', () => {
+    const replies = KINDS.filter(k => k.after).map(k => k.key);
+    // The list is the feature: if a kind stops declaring what it answers, this
+    // catches it rather than the log doing so months later.
+    expect(replies).toEqual(expect.arrayContaining(
+      ['recovered', 'reconciled', 'made-up', 'sober', 'charges-dropped', 'forgiven', 'birth']));
+    const produced = new Set(sweep().map(e => e.kind));
+    for (const r of replies) expect(produced.has(r)).toBe(false);
   });
 });

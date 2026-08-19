@@ -173,10 +173,26 @@ export function lifeContext(pdb = {}, sdb = {}, roster = {}) {
 
 /** Resolve one gap against a prepared context. Proposes; never approves, never saves. */
 export function resolveGapWith(ctx, season, log) {
+  // ── ONLY WHAT HAD HAPPENED BY THEN ──
+  //
+  // The resolver derives everybody's position from the log it is given, and it
+  // was given all of it — so resolving an OLD gap while newer ones existed read
+  // people's current state instead of their state at the time. Somebody married
+  // in 2026 came out ineligible to start dating in 2021, and a break-up in a
+  // later season silently changed what an earlier off-season could produce.
+  //
+  // Nothing that happened afterwards can influence what happened before, so the
+  // log is cut at the gap being resolved. Undated events are kept: unplaced is
+  // missing information, not proof of the future.
+  const here = ctx.seasonRank.get(season.seasonId);
+  const sofar = here == null ? log : log.filter(e => {
+    const k = ctx.seasonRank.get(e.afterSeason);
+    return k == null || k <= here;
+  });
   return resolveOffSeason({
     season,
     careers: ctx.careers,
-    events: log,
+    events: sofar,
     seasonRank: ctx.seasonRank,
     graph: ctx.graph,
     people: ctx.people,

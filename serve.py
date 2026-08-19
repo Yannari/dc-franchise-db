@@ -219,6 +219,13 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             return self._send_json({'ok': True, 'roster': len(roster.get('players', []))})
         if self.path == '/api/avatars':
             return self._send_json({'avatars': list_avatars()})
+        # The life log, in the same shape the Worker returns it. Both readers —
+        # the inbox and the export hook — try this endpoint before the static
+        # file, so without it a local checkout falls through to whatever was on
+        # disk and quietly shows an older log than the one just written.
+        if self.path == '/api/life-events':
+            doc = _read_json(os.path.join(ROOT, 'life_events.json'), {'events': []})
+            return self._send_json({'ok': True, 'events': doc.get('events', [])})
         return super().do_GET()
 
     def do_POST(self):

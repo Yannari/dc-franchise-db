@@ -69,7 +69,7 @@ export default {
     // endpoint keeps the strict ALLOWED_ORIGIN check.
     const PUBLIC_READS = ['/api/leaderboard', '/api/relationships', '/api/stats',
                           '/api/roster', '/api/roster/status', '/api/live-season',
-                          '/api/social'];
+                          '/api/social', '/api/life-events'];
     // The gallery listing is per-slug, so it is a prefix rather than a fixed
     // path — but it is the same kind of thing as the rest of this list: public
     // data the player page reads from whatever origin it happens to be on.
@@ -232,8 +232,12 @@ export default {
       // page — and token-gated to write, like the roster.
       if (request.method === 'GET' && url.pathname === '/api/life-events') {
         const doc = await getJson(env, LIFE_PATH, { events: [] });
+        // rcors, not cors: this is read from the simulator and from a local
+        // checkout as well as from the published site, and the strict origin
+        // header turned every one of those reads into a CORS failure that fell
+        // back to whatever stale copy of the file was on disk.
         return json({ ok: true, events: doc.events || [] }, 200,
-          { ...cors, 'Cache-Control': 'public, max-age=30' });
+          { ...rcors, 'Cache-Control': 'public, max-age=30' });
       }
 
       if (request.method === 'GET' && url.pathname === '/api/roster') {

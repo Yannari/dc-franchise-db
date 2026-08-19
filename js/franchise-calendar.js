@@ -123,3 +123,40 @@ export function yearsBetween(from, to) {
   const quarters = (Math.floor(b / 10) - Math.floor(a / 10)) * 4 + ((b % 10) - (a % 10));
   return Math.round((quarters / 4) * 10) / 10;
 }
+
+/**
+ * Where the NEXT season of a show belongs, read off that show's own rhythm.
+ *
+ * A season arrives from the export with no date at all — the calendar has
+ * always been hand-written — and an undated season has no off-season, because
+ * "after" is meaningless without a "when". So the export has to place it, and
+ * the only honest way to place it is to continue the pattern already on the
+ * record instead of inventing a schedule.
+ *
+ * The gap between a show's two most recent seasons IS the schedule: Total Drama
+ * alternates spring and fall, two quarters apart, and Big Brother has run once
+ * a summer. One dated season means a year later in the same slot; none at all
+ * means one quarter after whatever aired last anywhere, which is as close to
+ * "soon" as a franchise with no other seasons of that show can get.
+ *
+ * Returns { airYear, airSlot }, or null when the franchise has no dated season
+ * to reason from — in which case nothing is written and nothing is guessed.
+ */
+export function nextWindowFor(seasons = [], format = null) {
+  const quarters = s => { const k = airKey(s); return k == null ? null : Math.floor(k / 10) * 4 + (k % 10); };
+  const at = q => ({ airYear: Math.floor(q / 4), airSlot: SLOTS[((q % 4) + 4) % 4] });
+
+  const dated = seasons.filter(s => airKey(s) != null).sort(byAirDate);
+  if (!dated.length) return null;
+
+  const mine = format ? dated.filter(s => (s.format || null) === format) : dated;
+  if (!mine.length) return at(quarters(dated[dated.length - 1]) + 1);
+  if (mine.length === 1) return at(quarters(mine[0]) + 4);
+
+  const last = quarters(mine[mine.length - 1]);
+  const step = last - quarters(mine[mine.length - 2]);
+  // A step of zero or a negative one means two seasons share a slot or the rows
+  // are out of order; half a year is the franchise's commonest cadence and a
+  // safer answer than repeating a date that already exists.
+  return at(last + (step > 0 && step <= 8 ? step : 2));
+}

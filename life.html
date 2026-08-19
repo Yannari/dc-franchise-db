@@ -173,8 +173,9 @@
 import { KINDS, kindOf, significanceOf, isTerminal, lineFor, needsApproval, order }
   from './js/life-events.js';
 import { airLabel, airKey, byAirDate } from './js/franchise-calendar.js';
-import { resolveOffSeason, summarise, socialGraph } from './js/life-resolver.js';
-import { careersIn } from './js/records.js';
+import { summarise } from './js/life-resolver.js';
+import { lifeContext, resolveGapWith, loadLifeLog, saveLifeLog, unresolvedGaps }
+  from './js/life-hook.js';
 
 const $ = s => document.querySelector(s);
 const esc = t => String(t ?? '').replace(/[&<>"]/g, c =>
@@ -191,8 +192,7 @@ let events = [];
 let seasons = [];
 let names = {};
 let careers = [];
-let graph = null;
-let castBySeason = new Map();
+let ctx = null;
 
 const seasonOf = id => seasons.find(s => s.seasonId === id) || null;
 const rank = () => new Map(seasons.map(s => [s.seasonId, airKey(s)]));
@@ -368,12 +368,7 @@ function syncPolicyInputs() {
  * Returns the proposals; never approves, never saves.
  */
 function resolveGap(season, log) {
-  const seasonRank = new Map(seasons.map(x => [x.seasonId, airKey(x)]));
-  return resolveOffSeason({
-    season, careers, events: log, seasonRank, graph,
-    cast: castBySeason.get(season.seasonId) || [],
-    pairs: showmancePairs(season.seasonId),
-  });
+  return resolveGapWith(ctx, season, log);
 }
 
 /**
@@ -393,19 +388,27 @@ function resolveGap(season, log) {
  * an automatic sweep can never quietly change what a wiki page says.
  */
 function sweepUnresolved() {
-  const done = new Set(events.map(e => e.afterSeason));
-  const pending = seasons.slice().sort(byAirDate).filter(s => airKey(s) != null && !done.has(s.seasonId));
+  const pending = unresolvedGaps(seasons, events);
   if (!pending.length) return null;
 
-  // THE NEWEST GAP ONLY.
+  // THE NEWEST SEASON, NOT THE NEWEST UNRESOLVED ONE.
   //
-  // Resolving every unresolved season at once is correct arithmetic and a
-  // terrible inbox: on a franchise with fifteen unresolved gaps it proposed
-  // 1,659 events in one go, which is a backlog rather than something anybody
-  // reviews. "Finishing a season fills the inbox" means the season that just
-  // finished. Older gaps stay available on the button, deliberately, one at a
-  // time.
+  // This is the safety net now, not the mechanism: the export resolves the gap
+  // it just opened, and this catches the case where it could not — publishing
+  // was off, or the season was exported before any of this existed.
+  //
+  // Picking the newest UNRESOLVED season made every visit to this page walk one
+  // step further back through franchise history, proposing another 143 events
+  // for a season that finished two years ago. Opening an inbox is not a
+  // decision to advance the world, so the only gap it will fill by itself is
+  // the one after the most recent season. Older gaps stay on the button,
+  // deliberately, one at a time.
   const season = pending[pending.length - 1];
+  const newest = seasons.filter(s => rank().get(s.seasonId) != null)
+    .sort((a, b) => rank().get(a.seasonId) - rank().get(b.seasonId)).pop();
+  if (!newest || season.seasonId !== newest.seasonId) {
+    return { season: null, added: 0, older: pending.length };
+  }
   const fresh = resolveGap(season, events);
   events = events.concat(fresh);
   return { season, added: fresh.length, older: pending.length - 1 };
@@ -440,22 +443,6 @@ $('#resolve').onclick = () => {
 };
 
 /** Showmances recorded in a season, as pairs of slugs. */
-function showmancePairs(seasonId) {
-  const out = [];
-  const seen = new Set();
-  for (const c of careers) {
-    for (const d of c.details || []) {
-      if (d.seasonId !== seasonId || !d.showmance) continue;
-      const other = careers.find(x => x.name === d.showmance);
-      if (!other) continue;
-      const key = [c.id, other.id].sort().join('|');
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push([c.id, other.id]);
-    }
-  }
-  return out;
-}
 
 // SYMMETRICAL. Reject used to touch only rows that were still `proposed`, so
 // anything already approved kept its tick and the button looked broken — which
@@ -500,52 +487,11 @@ $('#copy').onclick = async () => {
   setTimeout(() => { $('#saved').textContent = ''; }, 2500);
 };
 
-/**
- * Write the whole log, wherever it can be written.
- *
- * serve.py when it is running, and the Studio Worker otherwise — the two
- * endpoints take the same body and rewrite the same file, deliberately, so the
- * live site and a local checkout cannot end up with different rules about what
- * is canon.
- *
- * Returns null when neither is reachable, and the caller says so rather than
- * pretending: a silent failure here looks exactly like a successful save.
- */
-const WORKER = 'https://dc-studio.yannari19.workers.dev';
-const TOKEN_KEY = 'studio_api_token';
-
-function studioToken(ask = true) {
-  let t = '';
-  try { t = localStorage.getItem(TOKEN_KEY) || ''; } catch { /* storage blocked */ }
-  if (t || !ask) return t;
-  t = (prompt('Studio token (stored in this browser only):') || '').trim();
-  if (t) { try { localStorage.setItem(TOKEN_KEY, t); } catch { /* blocked */ } }
-  return t;
-}
-
-async function saveLog(all, { ask = true } = {}) {
-  // Local first: if serve.py is running this is the checkout being worked on,
-  // and writing the file directly is what the author expects.
-  try {
-    const r = await fetch('/api/life-events', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ events: all }),
-    });
-    const j = await r.json();
-    if (j.ok) return { ...j, where: 'this checkout' };
-  } catch { /* not running locally — try the Worker */ }
-
-  const t = studioToken(ask);
-  if (!t) return null;
-  const r = await fetch(`${WORKER}/api/life-events`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
-    body: JSON.stringify({ events: all }),
-  });
-  const j = await r.json().catch(() => ({}));
-  if (!j.ok) throw new Error(j.error || `HTTP ${r.status}`);
-  return { ...j, where: 'the site' };
-}
+// Loading, saving and the resolver context now live in js/life-hook.js, which
+// the export shares. They were here first, and a copy in each place is how the
+// two would come to disagree about who a character knows — which shows up as
+// one person having two different lives depending on which page resolved them.
+const saveLog = saveLifeLog;
 
 $('#commit').onclick = async () => {
   $('#saved').textContent = 'saving…';
@@ -561,28 +507,20 @@ $('#commit').onclick = async () => {
 };
 
 (async () => {
-  const [life, sdb, pdb] = await Promise.all([
-    fetch('life_events.json').then(r => r.json()).catch(() => ({ events: [] })),
+  // THE LOG THROUGH THE ENDPOINT, not the static file. The export now writes
+  // proposals from the simulator, so the copy on disk in a published checkout
+  // can be older than the one the Worker holds — reading the file would show an
+  // inbox missing the off-season that was just resolved.
+  const [log, sdb, pdb] = await Promise.all([
+    loadLifeLog(),
     fetch('seasons_database.json').then(r => r.json()).catch(() => ({ seasons: [] })),
     fetch('players_database.json').then(r => r.json()).catch(() => ({ players: [] })),
   ]);
-  events = life.events || [];
-  seasons = sdb.seasons || [];
-  names = Object.fromEntries((pdb.players || []).map(p => [p.id, p.name]));
-  careers = careersIn(pdb, 'all');
-  // Who knows whom, from every season anybody played. Built once: it decides
-  // WHO a two-person event is about, so a feud lands on a rival and moving in
-  // lands on a friend, and a returnee has more people to interact with.
-  graph = socialGraph(careers);
-  // Who played each season, so the resolver knows which relationships were
-  // tested. Read from the record rather than asked for.
-  for (const p of pdb.players || []) {
-    for (const d of p.seasonDetails || []) {
-      if (!d.seasonId) continue;
-      if (!castBySeason.has(d.seasonId)) castBySeason.set(d.seasonId, []);
-      castBySeason.get(d.seasonId).push(p.id);
-    }
-  }
+  events = log;
+  ctx = lifeContext(pdb, sdb);
+  seasons = ctx.seasons;
+  names = ctx.names;
+  careers = ctx.careers;
   const sel = $('#resolve-season');
   sel.innerHTML = seasons.slice().sort(byAirDate).reverse()
     .map(s => `<option value="${s.seasonId}">${esc(s.title || s.seasonId)} — ${esc(airLabel(s))}</option>`)
@@ -592,10 +530,13 @@ $('#commit').onclick = async () => {
   // as proposals. Pressing the button is only for re-rolling a gap.
   const swept = sweepUnresolved();
   if (swept) {
-    $('#resolve-note').textContent =
-      `${swept.added} proposed after ${swept.season.title || swept.season.seasonId}`
-      + (swept.older ? ` · ${swept.older} earlier season${swept.older === 1 ? '' : 's'} `
-        + 'never resolved — pick one above' : '');
+    const older = swept.older
+      ? `${swept.older} season${swept.older === 1 ? '' : 's'} with no off-season yet — pick one above`
+      : '';
+    $('#resolve-note').textContent = swept.season
+      ? `${swept.added} proposed after ${swept.season.title || swept.season.seasonId}`
+        + (older ? ` · ${older}` : '')
+      : older;
     // PERSISTED IMMEDIATELY, as proposals.
     //
     // The badge on the nav counts what is saved, and the sweep only ever lived
@@ -604,7 +545,7 @@ $('#commit').onclick = async () => {
     // rows reach a wiki page or Dramagram, so there is nothing to protect by
     // keeping them in memory. Silent, and never asks for a token: if it cannot
     // save, the list still works and Commit will ask properly.
-    try { await saveLog(events, { ask: false }); } catch { /* Commit will report it */ }
+    if (swept.added) { try { await saveLog(events, { ask: false }); } catch { /* Commit will report it */ } }
   }
   render();
 })();

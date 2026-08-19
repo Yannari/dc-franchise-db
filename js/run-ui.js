@@ -52,6 +52,45 @@ function _addPublishToggle(exportBtn) {
  * nothing to do with prose — a missing field, a re-sync — and each fill is two
  * paid calls.
  */
+/**
+ * "Also resolve the off-season" — beside the wiki toggle.
+ *
+ * ON by default, which is the opposite of the wiki fill next to it, and for a
+ * reason worth stating: a fill spends two paid calls and overwrites prose
+ * somebody may have written by hand, whereas this is local arithmetic that
+ * produces PROPOSALS. Nothing it writes is visible to a reader until it is
+ * approved on the Life page, so there is nothing to protect by making it
+ * opt-in — and a forgotten off-season is a hole in every character's life.
+ */
+function _addLifeHookToggle(exportBtn) {
+  if (document.getElementById('life-hook-on-export')) return;
+  const wrap = document.createElement('label');
+  wrap.style.cssText = 'display:flex;align-items:flex-start;gap:6px;margin-top:4px;'
+    + 'font-size:11px;opacity:0.75;cursor:pointer;user-select:none;line-height:1.4;';
+  wrap.title = 'Works out what happened to everybody in the months after this season — '
+    + 'relationships, jobs, fallings-out — and puts it in the Life inbox as proposals. '
+    + 'Nothing reaches a wiki page until you approve it there.';
+  const box = document.createElement('input');
+  box.type = 'checkbox';
+  box.id = 'life-hook-on-export';
+  box.style.cssText = 'cursor:pointer;margin:2px 0 0;';
+  try { box.checked = window.lifeHookOnExport ? !!window.lifeHookOnExport() : true; } catch { box.checked = true; }
+  const text = document.createElement('span');
+  const label = () => box.checked
+    ? 'Also resolves the off-season into the Life inbox'
+    : 'Also resolve the off-season into the Life inbox';
+  text.textContent = label();
+  box.onchange = () => {
+    window.setLifeHookOnExport?.(box.checked);
+    text.textContent = label();
+  };
+  wrap.appendChild(box);
+  wrap.appendChild(text);
+  const wiki = document.getElementById('wiki-fill-on-export');
+  const after = wiki?.parentElement || exportBtn;
+  after.parentElement.insertBefore(wrap, after.nextSibling);
+}
+
 function _addWikiFillToggle(exportBtn) {
   if (document.getElementById('wiki-fill-on-export')) return;
   const wrap = document.createElement('label');
@@ -474,6 +513,8 @@ export function renderGameState() {
         btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
         _addPublishToggle(exportBtn);
         _addWikiFillToggle(exportBtn);
+      _addLifeHookToggle(exportBtn);
+        _addLifeHookToggle(exportBtn);
       }
       let narrBtn = document.getElementById('rankings-narration-btn');
       if (!narrBtn) {
@@ -589,6 +630,7 @@ export function renderGameState() {
       btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
       _addPublishToggle(exportBtn);
       _addWikiFillToggle(exportBtn);
+      _addLifeHookToggle(exportBtn);
     }
     let narrBtn = document.getElementById('rankings-narration-btn');
     if (!narrBtn) {

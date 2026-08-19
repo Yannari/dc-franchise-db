@@ -9,6 +9,7 @@ import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.j
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
+import { nextWindowFor } from './franchise-calendar.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -2096,11 +2097,36 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
   return db;
 }
 
+/**
+ * When this season aired — kept if it was already known, placed if it was not.
+ *
+ * BOTH MERGES REPLACE THE WHOLE ROW so that a re-export can correct anything,
+ * which means a re-export of a dated season would strip its air window and
+ * silently un-place it on the franchise calendar. Every "the first player to…",
+ * every age-at-season and every off-season depends on that window, so it is
+ * read off the old row before the filter removes it.
+ *
+ * A brand new season has never had one — the calendar has always been written
+ * by hand — and an undated season cannot have an off-season, because "after"
+ * needs a "when". So it is placed by continuing the show's own rhythm rather
+ * than left blank for somebody to notice later.
+ */
+function _airWindowFor(db, format, seasonNum) {
+  const rows = (db && db.seasons) || [];
+  const prior = rows.find(s => s.seasonNumber === seasonNum && (s.format || DEFAULT_FORMAT) === format);
+  if (prior && prior.airYear && prior.airSlot) {
+    return { airYear: prior.airYear, airSlot: prior.airSlot };
+  }
+  return nextWindowFor(rows.filter(s => s !== prior), format) || {};
+}
+
 function _mergeSeasonsDatabase(existing, rawStats, template) {
   const db = JSON.parse(JSON.stringify(existing));
   const seasonNum = rawStats.seasonNumber;
 
   if (!db.seasons) db.seasons = [];
+  // Read BEFORE the filter below removes the row it comes from.
+  const airWindow = _airWindowFor(db, DEFAULT_FORMAT, seasonNum);
 
   // Remove existing entry for this season (allows re-export to overwrite).
   // Matched on format too: `seasons` is keyed (format, season_number), so a
@@ -2152,7 +2178,8 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
     theme: _clean(template.seasonNarrative, _clean(template.subtitle)),
     status: 'Complete',
     castPhotoPath: `assets/cast/s${seasonNum}-cast.png`,
-    emoji: _clean(template.emoji)
+    emoji: _clean(template.emoji),
+    ...airWindow
   });
 
   db.franchise = db.franchise || {};
@@ -2188,6 +2215,7 @@ export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
 
   const db = JSON.parse(JSON.stringify(existing || {}));
   if (!db.seasons) db.seasons = [];
+  const airWindow = _airWindowFor(db, 'big-brother', seasonNum);
 
   // Format-matched, so re-exporting Big Brother 1 leaves Total Drama 1 alone.
   db.seasons = db.seasons.filter(s =>
@@ -2233,6 +2261,7 @@ export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
     status: 'Complete',
     castPhotoPath: `assets/cast/${seasonId('big-brother', seasonNum)}-cast.png`,
     emoji: _clean(seasonDoc.emoji),
+    ...airWindow,
   });
 
   db.franchise = db.franchise || {};
@@ -2663,6 +2692,53 @@ async function _fillWikiAfterExport(onStatus) {
   return out;
 }
 
+// ── THE OFF-SEASON, RESOLVED ON ARRIVAL ──────────────────────────────
+//
+// Finishing a season is what should fill the life inbox. It used to be opening
+// life.html: the world only moved on if the author remembered to visit a page.
+//
+// On by default, unlike the wiki fill, because the two cost completely
+// different things. A fill is two paid calls that overwrite prose somebody may
+// have written by hand; this is local arithmetic that produces PROPOSALS, and a
+// proposal changes nothing a reader sees until it is committed in the inbox.
+// There is nothing to protect by making it opt-in, and plenty to lose — a
+// forgotten off-season is a hole in every character's life.
+const LIFE_HOOK_FLAG = 'life_hook_off_export';
+
+export function lifeHookOnExport() {
+  try { return localStorage.getItem(LIFE_HOOK_FLAG) !== 'off'; } catch { return true; }
+}
+
+export function setLifeHookOnExport(on) {
+  try {
+    if (on) localStorage.removeItem(LIFE_HOOK_FLAG);
+    else localStorage.setItem(LIFE_HOOK_FLAG, 'off');
+  } catch { /* private browsing */ }
+  return lifeHookOnExport();
+}
+
+/**
+ * Propose what happened to everybody after the season just exported.
+ *
+ * AFTER the publish, because it reads the published record: the resolver needs
+ * the season to be on the calendar and the cast to be in players_database.json,
+ * and both of those are what the export has just written. It says so plainly
+ * when the season is not there — with publishing off, the export downloads
+ * files and the site is unchanged, so there is nothing to resolve yet and
+ * life.html will pick the gap up when there is.
+ */
+async function _resolveLifeAfterExport(onStatus, seasonNum, format) {
+  const _status = onStatus || (() => {});
+  const { resolveAfterSeason } = await import('./life-hook.js');
+  const out = await resolveAfterSeason({ seasonNumber: seasonNum, format });
+  if (!out.ok) { _status(`Life: skipped — ${out.reason}`); return out; }
+  _status(out.added
+    ? `Life: ${out.added} event${out.added === 1 ? '' : 's'} proposed after `
+      + `${out.season.title || out.season.seasonId} — ${out.reason}. Review them on the Life page.`
+    : `Life: ${out.reason}`);
+  return out;
+}
+
 export async function exportSeason(onStatus) {
   const out = seasonConfig?.format === 'big-brother'
     ? await exportAndFillBigBrotherSeason(onStatus)
@@ -2673,6 +2749,14 @@ export async function exportSeason(onStatus) {
   if (wikiFillOnExport()) {
     try { await _fillWikiAfterExport(onStatus); }
     catch (e) { (onStatus || (() => {}))(`Wiki fill failed: ${e.message || e}`); }
+    }
+  // Last, and never able to fail the export: the season is already published,
+  // and an off-season that did not resolve here resolves on the Life page.
+  if (lifeHookOnExport()) {
+    try {
+      await _resolveLifeAfterExport(onStatus, _getSeasonNumber(),
+        seasonFormat(seasonConfig) || DEFAULT_FORMAT);
+    } catch (e) { (onStatus || (() => {}))(`Life resolver failed: ${e.message || e}`); }
   }
   return out;
 }

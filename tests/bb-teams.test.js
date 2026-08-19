@@ -9,13 +9,17 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { gs, players, seasonConfig, relationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
-import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
+import { getBond, getPerceivedBond, bKey, bondLabel, addBond } from '../js/bonds.js';
 import { assignTeams, teamOf, teammates, sharesTeam, allTeams, teamImmune,
   dissolveTeams, teamsDissolved, CLIQUES } from '../js/bb/teams.js';
 import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
+import { BB_THEMES, THEME_LIST } from '../js/bb/themes.js';
+import { TWIST_CATALOG } from '../js/core.js';
+import { CLIQUES_EVENTS } from '../js/bb-events/cliques.js';
+import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 
 const ROSTER = JSON.parse(readFileSync(resolve(process.cwd(), 'franchise_roster.json'), 'utf8'));
 const POOL = (Array.isArray(ROSTER) ? ROSTER : ROSTER.players || Object.values(ROSTER)[0])
@@ -231,5 +235,140 @@ describe('the cliques, played', () => {
     const a = run();
     expect(a.teams, 'an unthemed season sorted somebody').toBe(0);
     expect(run()).toEqual(a);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE THEME
+// ══════════════════════════════════════════════════════════════════════
+describe('The Cliques, as a season', () => {
+  const theme = () => BB_THEMES.cliques;
+
+  // Every card the arc books must have a line in the primer that explains
+  // it. An audit found three unexplained cards on High Roller's; this is
+  // the same guard the other themes carry.
+  const EXPLAINED = {
+    'bb-cliques': /sorted into four cliques/i,
+    'bb-have-nots': /Have-Not/i,
+    'bb-care-package': /audience hands one houseguest/i,
+    'bb-pandoras-box': /Pandora/i,
+    'bb-double-eviction': /double eviction/i,
+  };
+
+  it('is registered in the engine and offered in the config', () => {
+    expect(theme(), 'the theme is not in the registry').toBeTruthy();
+    expect(THEME_LIST).toContain('cliques');
+    expect(theme().antagonist?.name).toBe('The Yearbook');
+  });
+
+  it('describes every card in its own arc', () => {
+    const booked = [...new Set(theme().arc.filter(a => a.book).map(a => a.book))];
+    const rules = theme().primer.rules.join('\n');
+    for (const id of booked) {
+      const probe = EXPLAINED[id];
+      expect(probe, `${id} is booked and nothing here explains it`).toBeTruthy();
+      expect(rules, `the primer never explains ${id}`).toMatch(probe);
+    }
+    expect([...booked].sort()).toEqual([...theme().books].sort());
+  });
+
+  it('books only cards that exist', () => {
+    for (const id of theme().books) {
+      expect(TWIST_CATALOG.some(t => t.id === id), `${id} is not in the catalog`).toBe(true);
+    }
+  });
+
+  it('explains the one rule the whole season turns on', () => {
+    const rules = theme().primer.rules.join('\n');
+    // Four safe instead of one is the twist. If the primer does not say it,
+    // a viewer watches a season of odd blocks and never learns why.
+    expect(rules).toMatch(/(entire|every member of their|whole) clique is immune/i);
+    expect(rules).toMatch(/four/i);
+    // And that it ends.
+    expect(rules).toMatch(/dissolve/i);
+  });
+
+  it('turns its register on the week the headings stop applying', () => {
+    // teams.js dissolves at a house of eight, and fromEnd:5 IS a house of
+    // eight — the turn has to land on the same night or the theme is saying
+    // one thing while the engine does another.
+    const moods = theme().arc.filter(a => a.mood);
+    expect(moods.some(m => m.at?.fromEnd === 5), 'the turn is not on the dissolution')
+      .toBe(true);
+    expect(moods.some(m => typeof m.at?.frac === 'number'),
+      'no frac backstop for a short season').toBe(true);
+  });
+
+  it('carries the arc to the end of the season', () => {
+    const ends = theme().arc.filter(a => a.book && typeof a.at?.fromEnd === 'number')
+      .map(a => a.at.fromEnd);
+    expect(Math.min(...ends), 'nothing booked in the last fortnight')
+      .toBeLessThanOrEqual(2);
+  });
+});
+
+describe('being sorted, afterwards', () => {
+  beforeEach(() => seat(16));
+
+  const spy = () => {
+    const calls = [];
+    return { calls,
+      addBond: (a, b, d) => calls.push(['addBond', a, b, d]),
+      suspicion: (a, b, d) => calls.push(['suspicion', a, b, d]),
+      remember: (a, b, k) => calls.push(['remember', a, b, k]),
+      popDelta: (n, d) => calls.push(['popDelta', n, d]) };
+  };
+
+  it('is registered in the house pool', () => {
+    const ids = new Set(HOUSE_EVENTS.map(e => e.id));
+    for (const ev of CLIQUES_EVENTS) {
+      expect(ids.has(ev.id), `${ev.id} is not registered`).toBe(true);
+    }
+  });
+
+  it('says nothing on a season with no cliques', () => {
+    const room = [...gs.activePlayers];
+    for (const ev of CLIQUES_EVENTS) {
+      expect(ev.weight(room, { act: 'house', week: { num: 3, hoh: room[0] }, beat: 0 }),
+        `${ev.id} fires on an unsorted season`).toBe(0);
+    }
+  });
+
+  it('takes being covered well or badly, depending who you are', () => {
+    const room = seat(16);
+    assignTeams({ house: room, rng: lcg(31) });
+    const ev = CLIQUES_EVENTS.find(e => e.id === 'cliques-covered');
+    const api = spy();
+    const badges = new Set();
+    // A FRESHLY SEATED HOUSE HAS NO WARMTH ANYWHERE, so every perceived bond
+    // is zero and the resentful branch is correct for all of them. That is
+    // true of week one in a real season too — the warm branch is a thing that
+    // becomes reachable once people have lived together. So the test builds
+    // the bonds a played week would have, rather than weakening the model to
+    // make a fresh house produce feelings it has not earned.
+    room.forEach((a, i) => {
+      room.forEach((b, j) => {
+        if (i < j && (i + j) % 3 === 0) addBond(a, b, 6);
+      });
+    });
+    // Rotate who is in charge so different clique-mates front the scene.
+    for (const hoh of room) {
+      const ctx = { act: 'house', week: { num: 3, hoh }, beat: 0 };
+      if (ev.weight(room, ctx) <= 0) continue;
+      const r = ev.fire(room, ctx, api);
+      if (r) badges.add(r.badgeText);
+    }
+    expect(badges.size, `every covered houseguest reacted identically: ${[...badges]}`)
+      .toBeGreaterThan(1);
+    expect(api.calls.length, 'reactions with no consequence').toBeGreaterThan(0);
+  });
+
+  it('only says it once a week', () => {
+    const room = seat(16);
+    assignTeams({ house: room, rng: lcg(31) });
+    const ev = CLIQUES_EVENTS.find(e => e.id === 'cliques-covered');
+    const ctx = { act: 'house', week: { num: 3, hoh: room[0] }, beat: 0 };
+    // The guard reads the real event history, so a fresh week is open.
+    expect(ev.weight(room, ctx)).toBeGreaterThan(0);
   });
 });

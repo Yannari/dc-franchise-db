@@ -19126,6 +19126,7 @@ export function rpBuildBBThemeBeat(ep, act) {
   if (act?.themeId === 'summer-of-mystery') return _rpThemeBeatMystery(ep, act);
   if (act?.themeId === 'high-rollers') return _rpThemeBeatPitBoss(ep, act);
   if (act?.themeId === 'summer-camp') return _rpThemeBeatCamp(ep, act);
+  if (act?.themeId === 'cliques') return _rpThemeBeatCliques(ep, act);
   return _rpThemeBeatDen(ep, act);
 }
 
@@ -19597,6 +19598,112 @@ function _rpThemeBeatCamp(ep, act) {
       <div class="bbsc-who">${_bbEsc(act?.speaker || '')}</div>
       <p class="bbsc-line">&ldquo;${_bbEsc(act?.line || '')}&rdquo;</p>
       <div class="bbsc-plaque">
+        <span>${_bbEsc(label)}</span>
+        <span><b>${_bbEsc(plaque[0])}</b></span>
+        <span>${_bbEsc(plaque[1])}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/**
+ * The Cliques — a page of the yearbook, and what happens when it stops working.
+ *
+ * The only turn on this shelf that is a SYSTEM FAILING rather than a mood
+ * darkening. So the scene keeps its palette almost exactly and breaks its
+ * GRID: four ruled columns with names filed under them, and in the second
+ * register the rules go crooked, the headings empty out, and the names sit on
+ * a page with nothing to sort them by.
+ *
+ * Nothing here gets angrier. It stops working, which from a filing system is
+ * the worse of the two.
+ */
+function _rpThemeBeatCliques(ep, act) {
+  const week = ep?.num ?? ep?.episode ?? '';
+  const hostile = act?.mood === 'hostile';
+  const ink = hostile ? '#9fb0c4' : '#7dd3fc';
+  const glow = hostile ? '#cbd5e1' : '#bae6fd';
+  const paper = hostile ? '#0d1117' : '#0a0f16';
+
+  // Deterministic ruled lines, so a re-render does not re-typeset the page.
+  let h = 0;
+  for (const ch of `${act?.hook || ''}${week}${act?.line?.length || 0}`) {
+    h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  }
+
+  const HEADINGS = ['ATHLETES', 'BRAINS', 'POPULARS', 'OFF-BEATS'];
+  const columns = HEADINGS.map((label, i) => {
+    const x = 42 + i * 134;
+    // Four name-lines per column. In the second register they are still there
+    // and the heading above them is not — the names outlive the sorting.
+    const rows = Array.from({ length: 4 }, (_, r) => {
+      h = (h * 1103515245 + 12345) >>> 0;
+      const w = 58 + (h % 40);
+      const y = 74 + r * 19;
+      const skew = hostile ? ((h >> 5) % 5) - 2 : 0;
+      return `<rect x="${x + skew}" y="${y}" width="${w}" height="4" rx="1"
+        fill="${ink}" opacity="${hostile ? '.30' : '.55'}"/>`;
+    }).join('');
+    const rule = hostile
+      ? `<path d="M ${x - 10},58 L ${x - 10 + ((h % 7) - 3)},156" stroke="${ink}"
+           stroke-width=".8" opacity=".22"/>`
+      : `<line x1="${x - 10}" y1="58" x2="${x - 10}" y2="156" stroke="${ink}"
+           stroke-width=".8" opacity=".38"/>`;
+    const head = hostile
+      ? `<rect x="${x}" y="46" width="86" height="7" rx="1" fill="${ink}" opacity=".10"/>`
+      : `<text x="${x}" y="52" font-family="Oswald,Impact,sans-serif" font-size="10"
+           letter-spacing="1.6" fill="${ink}" opacity=".92">${label}</text>`;
+    return `${rule}${head}${rows}`;
+  }).join('');
+
+  const plaque = hostile
+    ? ['No headings', 'Nothing fits']
+    : ['Four headings', 'Not subject to appeal'];
+  const label = { open: 'This week', noms: 'The block', veto: 'The veto',
+    vote: 'Filed', finale: 'Last page', crown: 'Closed' }[act?.hook] || 'The page';
+
+  return `<div class="rp-page bb-room bb-block bbcl${hostile ? ' is-hostile' : ''}" data-ambient="tribal-tension">
+    <style>
+      .bbcl{--bbcl-ink:${ink};--bbcl-glow:${glow};
+        max-width:1100px;margin:0 auto;padding:26px 24px 44px;text-align:center}
+      .bbcl-sign{font-family:"Trade Gothic Bold Condensed","Oswald",Impact,sans-serif;
+        letter-spacing:.4em;font-size:14px;text-transform:uppercase;color:var(--bbcl-ink);
+        text-shadow:0 0 16px var(--bbcl-glow);margin-bottom:2px}
+      .bbcl.is-hostile .bbcl-sign{text-shadow:none;opacity:.68;letter-spacing:.5em}
+      .bbcl-week{font-family:var(--font-mono,ui-monospace,monospace);font-size:9px;
+        letter-spacing:.3em;color:#64748b;margin-bottom:14px}
+      .bbcl-page{display:block;width:100%;max-width:620px;height:auto;margin:0 auto 16px}
+      .bbcl-card{max-width:620px;margin:0 auto;padding:16px 18px 14px;border-radius:4px;
+        background:rgba(14,20,28,.86);border:1px solid rgba(125,211,252,.18)}
+      .bbcl.is-hostile .bbcl-card{border-color:rgba(159,176,196,.15)}
+      .bbcl-who{font-family:"Trade Gothic Bold Condensed","Oswald",Impact,sans-serif;
+        letter-spacing:.24em;font-size:11px;text-transform:uppercase;
+        color:var(--bbcl-ink);margin-bottom:6px}
+      .bbcl-line{font-size:15px;line-height:1.55;color:#e6f2fb;margin:0 0 12px}
+      .bbcl.is-hostile .bbcl-line{color:#dbe4ee}
+      .bbcl-plaque{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+        font-family:var(--font-mono,monospace);font-size:8.5px;letter-spacing:.16em;
+        color:#64748b;border-top:1px solid rgba(125,211,252,.16);padding-top:9px}
+      @media(prefers-reduced-motion:reduce){.bbcl-page{animation:none}}
+    </style>
+    <div class="bbcl-sign">${hostile ? 'Unfiled' : 'The Yearbook'}</div>
+    <div class="bbcl-week">WEEK ${_bbEsc(String(week))}</div>
+
+    <svg class="bbcl-page" viewBox="0 0 620 180" role="img"
+         aria-label="${hostile ? 'A page whose headings no longer apply' : 'Four headings with names filed under them'}">
+      <rect x="0" y="0" width="620" height="180" fill="${paper}"/>
+      <rect x="24" y="20" width="572" height="146" rx="2" fill="none"
+            stroke="${ink}" stroke-width=".9" opacity="${hostile ? '.20' : '.34'}"/>
+      <text x="310" y="36" text-anchor="middle" font-family="monospace" font-size="7"
+            letter-spacing="2.4" fill="${ink}" opacity="${hostile ? '.35' : '.60'}">${
+  hostile ? 'THESE GROUPINGS NO LONGER APPLY' : 'HOUSE GROUPINGS · NOT SUBJECT TO APPEAL'}</text>
+      ${columns}
+    </svg>
+
+    <div class="bbcl-card">
+      <div class="bbcl-who">${_bbEsc(act?.speaker || '')}</div>
+      <p class="bbcl-line">&ldquo;${_bbEsc(act?.line || '')}&rdquo;</p>
+      <div class="bbcl-plaque">
         <span>${_bbEsc(label)}</span>
         <span><b>${_bbEsc(plaque[0])}</b></span>
         <span>${_bbEsc(plaque[1])}</span>

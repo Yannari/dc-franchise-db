@@ -125,6 +125,69 @@ function appeal(name, powerId, { nominees = [], hoh = null, rng = Math.random } 
   } else if (powerId === 'bonus-life') {
     // A second chance appeals to somebody who can feel the first one ending.
     want += (onBlock ? 0.5 : 0) + friendless * 0.18 - st.social * 0.02;
+
+  // ── EVERY POWER ON THE SHELF NEEDS A CASE, NOT JUST THE FIRST FOUR ──
+  //
+  // The door picker can put ANY registered power behind a door, and a power
+  // with no branch here scored the base want and nothing else — about 0.7 for
+  // an average houseguest, against a 0.6 sit-out floor and half a point of
+  // noise. So an uncased door was one nobody could be seen to want, and the
+  // room emptied into the sat-out list for no reason anybody watching could
+  // read.
+  //
+  // Noticed on Summer Camp, where TWO of the three canon doors — the
+  // Nightmare Power and the Chaos Power (`veto-redraw`) — were uncased, so
+  // most of the house declined to play for BB21’s own twist.
+
+  } else if (powerId === 'nightmare-power') {
+    // It undoes a ceremony that has already happened, so its pull is almost
+    // entirely "my name is on that wall". The rest is temperament: taking a
+    // whole ceremony back at three in the morning is not a quiet move.
+    want += (onBlock ? 0.75 : 0) + friendless * 0.14
+      + (['chaos-agent', 'villain', 'schemer'].includes(arch) ? 0.25 : 0);
+  } else if (powerId === 'veto-redraw') {
+    // Redraws the veto field. Wanted by a nominee who watched the wrong three
+    // names come out of the bag, and by players who think in fields.
+    want += (onBlock ? 0.45 : 0) + st.strategic * 0.03;
+  } else if (powerId === 'veto-replacement') {
+    // The surgical version of the same thing: name who comes out, name who
+    // goes in. Reads as a planner’s card rather than a survivor’s.
+    want += (onBlock ? 0.35 : 0) + st.strategic * 0.045;
+  } else if (powerId === 'buy-off') {
+    // Take yourself off the block and the Head of Household cannot refuse.
+    // Pure survival, and worth nothing at all to somebody who feels safe.
+    want += (onBlock ? 0.8 : 0) + friendless * 0.16 - 0.1;
+  } else if (powerId === 'halting-hex') {
+    // Cancels an eviction outright. The biggest survival card here, and it
+    // appeals hardest to whoever can feel the count going against them.
+    want += (onBlock ? 0.7 : 0) + friendless * 0.2;
+  } else if (powerId === 'secret-veto') {
+    // A veto nobody knows exists. For the quiet player who would rather not
+    // be seen holding anything — low social, high intuition.
+    want += (onBlock ? 0.5 : 0) + st.intuition * 0.03 - st.social * 0.025;
+  } else if (powerId === 'hoh-gatekeeper') {
+    // Names who may play for the next crown. Nothing to do with surviving
+    // this week and everything to do with owning the next one.
+    want += st.strategic * 0.045 + (onBlock ? -0.15 : 0.1);
+  } else if (powerId === 'rewind-button') {
+    // Takes a whole week back. The loudest thing on the shelf, and there is
+    // no quiet way to hold it or to press it.
+    want += st.boldness * 0.04
+      + (['chaos-agent', 'wildcard', 'villain'].includes(arch) ? 0.3 : 0);
+  } else if (powerId === 'deepfake-hoh') {
+    // Lies to the house about who is in charge. A liar’s card, and it wants
+    // somebody who can hold a face.
+    want += st.strategic * 0.035 + st.social * 0.02
+      + (['mastermind', 'schemer', 'villain'].includes(arch) ? 0.3 : 0);
+  } else if (powerId === 'hoh-interrogation') {
+    // Information rather than protection. Worth most to whoever will do
+    // something with it.
+    want += st.strategic * 0.04 + st.intuition * 0.02 - (onBlock ? 0.2 : 0);
+  } else if (powerId === 'mystery-competitor') {
+    // Play a competition you were not in. Nerve, mostly.
+    want += st.boldness * 0.035 + (onBlock ? 0.2 : 0);
+  } else if (powerId === 'mystery-veto') {
+    want += (onBlock ? 0.45 : 0) + st.strategic * 0.03;
   }
 
   if (name === hoh) want = -1; // the keys already; and barred anyway

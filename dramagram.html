@@ -139,6 +139,26 @@
   .dg-c{font-size:13.5px;line-height:1.45}
   .dg-c b{font-weight:700;margin-right:5px}
   .dg-c[data-rel=rival]{color:var(--dg-dim)}
+  /* -- curation -- */
+  .dg-manage{margin:22px 0 0;border-top:1px solid var(--dg-line);padding-top:18px}
+  .dg-manage h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--dg-dim);
+    margin:0 0 12px;font-weight:800}
+  .dg-drop{border:1px dashed var(--dg-line);border-radius:2px;padding:20px;text-align:center;
+    color:var(--dg-dim);font-size:13.5px;cursor:pointer;transition:border-color .12s,color .12s}
+  .dg-drop:hover,.dg-drop.over{border-color:var(--dg-hot);color:var(--dg-ink)}
+  .dg-drop.busy{opacity:.6;pointer-events:none}
+  .dg-lib{display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));margin-top:12px}
+  .dg-libit{position:relative;aspect-ratio:1;background:#1b1b1f;overflow:hidden}
+  .dg-libit img{width:100%;height:100%;object-fit:cover;display:block}
+  .dg-libit button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;
+    border:0;background:rgba(0,0,0,.72);color:#fff;font-size:14px;line-height:1;cursor:pointer}
+  .dg-libit button:hover{background:#ff6b6b}
+  .dg-libit .pin{position:absolute;left:4px;bottom:4px;top:auto;right:auto;width:auto;height:auto;
+    background:rgba(0,0,0,.72);color:#fff;border-radius:2px;font-size:10px;font-weight:800;
+    letter-spacing:.06em;padding:3px 6px;text-transform:uppercase}
+  .dg-libit .pin.on{background:var(--dg-hot);color:#111}
+  .dg-libit .pin:hover{background:var(--dg-hot);color:#111}
+  .dg-note{color:var(--dg-dim);font-size:12.5px;margin-top:10px;line-height:1.5}
   .dg-close{margin-top:14px;background:none;border:1px solid var(--dg-line);color:var(--dg-dim);
     padding:8px 14px;border-radius:2px;font:inherit;font-size:13px;cursor:pointer}
 </style>
@@ -192,6 +212,10 @@ import { directory, short, postsFor, photosOf, followerHistory, tiesFor } from '
 import { lineFor } from './js/life-events.js';
 import { captionFor, commentsFor } from './js/dramagram-voice.js';
 import { socialGraph } from './js/life-resolver.js';
+// The gallery IO, shared with player.html: one slot allocator, one encoder,
+// and one place that knows the listing cache rule.
+import { listGallery, uploadMany, deleteImage, imageUrl, GALLERY_MAX }
+  from './js/gallery-io.js';
 import { careersIn } from './js/records.js';
 import { airLabel, latestAired } from './js/franchise-calendar.js';
 import { currentShow } from './js/show-switcher.js';
@@ -268,7 +292,9 @@ async function renderProfile(slug) {
 
   host.innerHTML = `
     <div class="dg-prof">
-      <img class="dg-prof-pic" src="assets/avatars/${encodeURIComponent(slug)}.png" alt=""
+      <img class="dg-prof-pic" src="${esc(profilePicOf(slug)
+        ? imageUrl(slug, profilePicOf(slug))
+        : 'assets/avatars/' + encodeURIComponent(slug) + '.png')}" alt=""
         onerror="this.outerHTML='<div class='dg-prof-pic fb'>${esc(initials(d.name))}</div>'">
       <div class="dg-prof-body">
         <div class="dg-prof-name">${esc(d.name)}${d.verified ? tick() : ''}</div>
@@ -293,9 +319,151 @@ async function renderProfile(slug) {
   host.querySelectorAll('[data-post]').forEach(el => {
     el.onclick = () => openPost(posts[Number(el.dataset.post)], d);
   });
+
+  renderManage(slug, photos);
 }
 
-/** "Up 120k after winning Carnival of Chaos" — the number, explained. */
+/**
+ * Curation: the photographs this character has, and how to change them.
+ *
+ * Built on js/gallery-io.js, which player.html also uses -- the slot allocator,
+ * the encoder and the cache rule are shared rather than written twice. What is
+ * NOT shared is this interface: a drop zone under a profile and a strip under a
+ * stat sheet are different things and should look it.
+ *
+ * The token is kept under the same localStorage key the player page uses, so
+ * authorising in one place authorises in both.
+ */
+function renderManage(slug, photos) {
+  const host = $('#dg-profile');
+  const box = document.createElement('div');
+  box.className = 'dg-manage';
+  box.innerHTML = [
+    '<h3>Photos &mdash; ' + photos.length + ' of ' + GALLERY_MAX + '</h3>',
+    '<div class="dg-drop" id="dg-drop">Drop images here, or click to choose. ',
+    'Several at once is fine.</div>',
+    '<input type="file" id="dg-file" accept="image/*" multiple hidden>',
+    '<div class="dg-lib" id="dg-lib"></div>',
+    '<p class="dg-note" id="dg-note">Pin one as the profile picture, or leave it ',
+    'and the avatar is used. Deleting removes it from the bucket &mdash; there is ',
+    'no other copy.</p>',
+  ].join('');
+  host.appendChild(box);
+  drawLibrary(slug);
+
+  const zone = box.querySelector('#dg-drop');
+  const input = box.querySelector('#dg-file');
+  zone.onclick = () => input.click();
+  input.onchange = () => { doUpload(slug, [...input.files]); input.value = ''; };
+  zone.ondragover = e => { e.preventDefault(); zone.classList.add('over'); };
+  zone.ondragleave = () => zone.classList.remove('over');
+  zone.ondrop = e => {
+    e.preventDefault();
+    zone.classList.remove('over');
+    doUpload(slug, [...(e.dataTransfer ? e.dataTransfer.files : [])]
+      .filter(f => f.type.startsWith('image/')));
+  };
+}
+
+async function drawLibrary(slug) {
+  const lib = $('#dg-lib');
+  if (!lib) return;
+  let files = [];
+  try { files = await listGallery(slug, { fresh: true }); } catch { /* renders empty */ }
+  const pinned = profilePicOf(slug);
+  lib.innerHTML = files.map(f => [
+    '<div class="dg-libit">',
+    '<img src="' + esc(imageUrl(slug, f.file)) + '" alt="" loading="lazy">',
+    '<button data-del="' + esc(f.file) + '" title="Delete">&times;</button>',
+    '<button class="pin' + (pinned === f.file ? ' on' : '') + '" data-pin="' + esc(f.file) + '"',
+    ' title="Use as profile picture">' + (pinned === f.file ? 'profile' : 'pin') + '</button>',
+    '</div>',
+  ].join('')).join('') || '<p class="dg-note">No photographs yet.</p>';
+
+  lib.querySelectorAll('[data-del]').forEach(b => {
+    b.onclick = () => doDelete(slug, b.dataset.del);
+  });
+  lib.querySelectorAll('[data-pin]').forEach(b => {
+    b.onclick = () => setProfilePic(slug, profilePicOf(slug) === b.dataset.pin ? null : b.dataset.pin);
+  });
+}
+
+const TOKEN_KEY = 'studio_api_token';
+function token() {
+  let t = '';
+  try { t = localStorage.getItem(TOKEN_KEY) || ''; } catch { /* storage blocked */ }
+  if (t) return t;
+  t = (prompt('Studio token (stored in this browser only):') || '').trim();
+  if (t) { try { localStorage.setItem(TOKEN_KEY, t); } catch { /* storage blocked */ } }
+  return t;
+}
+
+async function doUpload(slug, files) {
+  if (!files.length) return;
+  const t = token();
+  if (!t) return;
+  const zone = $('#dg-drop');
+  const note = $('#dg-note');
+  zone && zone.classList.add('busy');
+  try {
+    const r = await uploadMany(slug, files, t, {
+      onProgress: (n, of) => { if (zone) zone.textContent = 'Uploading ' + n + ' of ' + of + '...'; },
+    });
+    // Reported in place rather than as an alert: a page that shouts at you for
+    // uploading four of five images is worse than one that just tells you.
+    const bits = [];
+    if (r.done.length) bits.push(r.done.length + ' uploaded');
+    if (r.skipped) bits.push(r.skipped + ' skipped, only ' + GALLERY_MAX + ' slots exist');
+    if (r.failed.length) bits.push(r.failed.length + ' failed: ' + r.failed[0]);
+    if (note) note.textContent = bits.join(' · ') || 'Nothing to do.';
+    await drawLibrary(slug);
+  } catch (err) {
+    if (note) note.textContent = 'Upload failed — ' + err.message;
+  } finally {
+    zone && zone.classList.remove('busy');
+    if (zone) zone.textContent = 'Drop images here, or click to choose. Several at once is fine.';
+  }
+}
+
+async function doDelete(slug, file) {
+  if (!confirm('Delete ' + file + '?\n\nThis removes it from the bucket. There is no other copy.')) return;
+  const t = token();
+  if (!t) return;
+  try {
+    await deleteImage(slug, file, t);
+    if (profilePicOf(slug) === file) setProfilePic(slug, null);
+    await drawLibrary(slug);
+  } catch (err) {
+    const note = $('#dg-note');
+    if (note) note.textContent = 'Delete failed — ' + err.message;
+  }
+}
+
+/**
+ * Which photograph is somebody's profile picture.
+ *
+ * A CHOICE, not a copy. The picture already exists in the gallery, so storing
+ * which one is chosen is a filename rather than a second upload -- and it lives
+ * in this browser rather than on the roster, because it is a display preference
+ * and the roster is the franchise's authored record.
+ */
+const PIC_KEY = 'dc_dramagram_pics';
+function allPics() {
+  try { return JSON.parse(localStorage.getItem(PIC_KEY)) || {}; } catch { return {}; }
+}
+function profilePicOf(slug) { return allPics()[slug] || null; }
+function setProfilePic(slug, file) {
+  const m = allPics();
+  if (file) m[slug] = file; else delete m[slug];
+  try { localStorage.setItem(PIC_KEY, JSON.stringify(m)); } catch { /* storage blocked */ }
+  drawLibrary(slug);
+  const img = document.querySelector('.dg-prof-pic');
+  if (img && img.tagName === 'IMG') {
+    img.src = file ? imageUrl(slug, file) : 'assets/avatars/' + encodeURIComponent(slug) + '.png';
+  }
+}
+
+/** "Up 120k after winning Carnival of Chaos" -- the number, explained. */
 function followerStory(h) {
   const big = h.steps.slice().sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))[0];
   if (!big) return '';

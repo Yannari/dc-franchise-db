@@ -2293,36 +2293,22 @@ function ppGalleryBind() {
  * 1600. GIFs pass through untouched — a canvas keeps the first frame and throws
  * the animation away, and there are animated ones in here.
  */
+/**
+ * The shared gallery IO, once it has loaded.
+ *
+ * These functions live in a classic script and the module that provides them is
+ * deferred, so the import lands after this parses. That is fine — nothing here
+ * runs before a click — but a clear message beats "cannot read properties of
+ * undefined" if it ever is not there.
+ */
+function _io() {
+  if (!window.GalleryIO) throw new Error('gallery module has not loaded yet — reload the page');
+  return window.GalleryIO;
+}
+
+/** Downscale and re-encode, in js/gallery-io.js — shared with Dramagram. */
 async function _ppPrepare(file) {
-  const ext = _ppExtOf(file.name);
-  if (ext === 'gif' || file.type === 'image/gif') {
-    return { blob: file, ext: 'gif', type: 'image/gif' };
-  }
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await new Promise((res, rej) => {
-      const im = new Image();
-      im.onload = () => res(im); im.onerror = () => rej(new Error('not a readable image'));
-      im.src = url;
-    });
-    const cap = 1600;
-    const scale = Math.min(1, cap / Math.max(img.naturalWidth, img.naturalHeight));
-    const c = document.createElement('canvas');
-    c.width = Math.max(1, Math.round(img.naturalWidth * scale));
-    c.height = Math.max(1, Math.round(img.naturalHeight * scale));
-    // Transparent cut-out poses are most of this gallery, so no white fill:
-    // the alpha channel has to survive or the page cannot tell a pose from a
-    // scene shot, and it crops the tall ones through the head.
-    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-    const blob = await new Promise(res => c.toBlob(res, 'image/webp', 0.9));
-    if (!blob) throw new Error('could not encode');
-    // A re-encode that made it BIGGER is not worth having.
-    if (blob.size >= file.size && scale === 1) {
-      const keep = ext === 'jpeg' ? 'jpg' : ext;
-      if (['png', 'jpg', 'webp'].includes(keep)) return { blob: file, ext: keep, type: file.type };
-    }
-    return { blob, ext: 'webp', type: 'image/webp' };
-  } finally { URL.revokeObjectURL(url); }
+  return _io().prepareImage(file);
 }
 
 /**
@@ -2336,12 +2322,7 @@ async function _ppPrepare(file) {
  * compute its free slots from the stale list and overwrite the first one.
  */
 async function _ppTakenSlots(slug, { fresh = false } = {}) {
-  const url = `${PP_API}/api/gallery/${encodeURIComponent(slug)}`
-    + (fresh ? `?t=${Date.now()}` : '');
-  const r = await fetch(url, fresh ? { cache: 'no-store' } : undefined);
-  const j = await r.json();
-  if (!j.ok) throw new Error(j.error || 'could not list the gallery');
-  return j.images || [];
+  return _io().listGallery(slug, { fresh, base: PP_API });
 }
 
 async function ppGalleryUpload(files) {
@@ -2369,14 +2350,7 @@ async function ppGalleryUpload(files) {
     for (let n = 0; n < free.length; n++) {
       say(files.length > 1 ? `${n + 1} of ${free.length}…` : 'Uploading…');
       try {
-        const { blob, ext, type } = await _ppPrepare(files[n]);
-        const res = await fetch(`${PP_API}/gallery/${encodeURIComponent(slug)}/${free[n]}.${ext}`, {
-          method: 'PUT',
-          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': type },
-          body: blob,
-        });
-        const j = await res.json().catch(() => ({}));
-        if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
+        await _io().putImage(slug, free[n], await _ppPrepare(files[n]), token, PP_API);
         ok++;
       } catch (err) { failed.push(`${files[n].name}: ${err.message}`); }
     }
@@ -2401,11 +2375,7 @@ async function ppGalleryDelete(ev, file) {
   const token = _ppToken() || _ppAskToken();
   if (!token) return;
   try {
-    const res = await fetch(`${PP_API}/gallery/${encodeURIComponent(slug)}/${file}`, {
-      method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token },
-    });
-    const j = await res.json().catch(() => ({}));
-    if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
+    await _io().deleteImage(slug, file, token, PP_API);
     await ppGalleryRefresh();
   } catch (err) { alert('Delete failed: ' + err.message); }
 }
@@ -2737,13 +2707,10 @@ async function ppGalleryFill() {
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
         const blob = await new Promise(r2 => c.toBlob(r2, 'image/webp', 0.9));
         if (!blob) throw new Error('could not encode');
-        const res = await fetch(`${PP_API}/gallery/${encodeURIComponent(slug)}/${free[added]}.webp`, {
-          method: 'PUT',
-          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'image/webp' },
-          body: blob,
-        });
-        const j = await res.json().catch(() => ({}));
-        if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
+        // The encode above is this importer's own: it needs the decoded image
+        // for the cut-out check, which prepareImage does not do. The upload
+        // itself is the shared one.
+        await _io().putImage(slug, free[added], { blob, ext: 'webp', type: 'image/webp' }, token, PP_API);
         added++;
         if (cutout) poses++;
       } catch (err) { failed.push(err.message); }
@@ -2838,6 +2805,10 @@ document.addEventListener('keydown', e => {
   import { careersIn, franchiseRecords } from './js/records.js';
   import { allPlayerTrivia } from './js/player-trivia.js';
   import { airKey } from './js/franchise-calendar.js';
+  // The gallery IO, shared with Dramagram so the slot allocator, the
+  // encoder and the cache rule exist once rather than twice.
+  import * as GalleryIO from './js/gallery-io.js';
+  window.GalleryIO = GalleryIO;
   import { buildDossier } from './js/wiki.js';
   import { renderArticle, hydrateGalleries, hydrateInfobox, WIKI_CSS } from './js/wiki-view.js';
   import { currentShow, ALL, rememberShow } from './js/show-switcher.js';

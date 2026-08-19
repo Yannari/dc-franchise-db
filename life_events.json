@@ -7,7 +7,7 @@
       "afterSeason": "td-8",
       "seq": 1,
       "kind": "dating",
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "alejandro",
@@ -15,14 +15,14 @@
       "afterSeason": "td-8",
       "seq": 2,
       "kind": "went-public",
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "alejandro",
       "afterSeason": "td-8",
       "seq": 3,
       "kind": "podcast",
-      "status": "proposed",
+      "status": "approved",
       "detail": "A weekly post-mortem of the season he had just won."
     },
     {
@@ -31,7 +31,7 @@
       "afterSeason": "td-13",
       "seq": 4,
       "kind": "moved-in",
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "alejandro",
@@ -39,14 +39,14 @@
       "afterSeason": "td-14",
       "seq": 5,
       "kind": "broke-up",
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lindsay",
       "afterSeason": "td-13",
       "seq": 1,
       "kind": "graduated",
-      "status": "proposed",
+      "status": "approved",
       "detail": "Finished the degree she had been picking away at since her first season."
     },
     {
@@ -54,7 +54,7 @@
       "afterSeason": "td-10",
       "seq": 1,
       "kind": "moved-city",
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "bowie",
@@ -62,7 +62,7 @@
       "afterSeason": "td-10",
       "seq": 2,
       "kind": "feud",
-      "status": "proposed"
+      "status": "approved"
     }
   ]
 }

@@ -258,3 +258,52 @@ describe('who is available', () => {
     }
   });
 });
+
+// ── THE ROMANCE THE SEASON CONTAINED ──────────────────────────────────
+//
+// The resolver has always read `showmance` off a season detail and no export
+// has ever written one: 0 of 280 details had the field, so every relationship
+// it has ever proposed came from the close-friend fallback and not once from a
+// romance the audience actually watched.
+describe('showmances carrying out of a season', () => {
+  const SEASON = { seasonId: 'td-1', airYear: 2020, airSlot: 'spring' };
+  const detail = (extra = {}) => ({ seasonId: 'td-1', ...extra });
+  const pdb = (aSh, bSh) => ({ players: [
+    { id: 'ali', name: 'Ali', seasonDetails: [detail(aSh)] },
+    { id: 'bo', name: 'Bo', seasonDetails: [detail(bSh)] },
+  ] });
+
+  it('offers a couple who left together as the season pair', () => {
+    const ctx = lifeContext(
+      pdb({ showmance: 'Bo', showmanceEnded: 'intact' }, { showmance: 'Ali', showmanceEnded: 'intact' }),
+      { seasons: [SEASON] });
+    expect(ctx.pairsFor('td-1')).toEqual([['ali', 'bo']]);
+  });
+
+  it('does not offer one that broke on screen', () => {
+    // Proposing they started dating over the following months contradicts the
+    // season the audience just watched.
+    const ctx = lifeContext(
+      pdb({ showmance: 'Bo', showmanceEnded: 'broken' }, { showmance: 'Ali', showmanceEnded: 'broken' }),
+      { seasons: [SEASON] });
+    expect(ctx.pairsFor('td-1')).toEqual([]);
+  });
+
+  it('leaves a broken one as a charge between them rather than nothing', () => {
+    // The answer to "what happens to a showmance that ends in episode nine":
+    // no relationship, but a tie — so a falling-out or a reconciliation is
+    // reachable instead of the whole thing vanishing.
+    const ctx = lifeContext(
+      pdb({ showmance: 'Bo', showmanceEnded: 'broken' }, { showmance: 'Ali', showmanceEnded: 'broken' }),
+      { seasons: [SEASON] });
+    expect(ctx.graph.get('ali').get('bo')).toBeLessThan(0);
+  });
+
+  it('makes a lasting one the strongest tie in the graph', () => {
+    const ctx = lifeContext(
+      pdb({ showmance: 'Bo', showmanceEnded: 'intact', alliances: ['Bo'] },
+        { showmance: 'Ali', showmanceEnded: 'intact', alliances: ['Ali'] }),
+      { seasons: [SEASON] });
+    expect(ctx.graph.get('ali').get('bo')).toBeGreaterThan(4);
+  });
+});

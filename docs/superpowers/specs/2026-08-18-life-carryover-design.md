@@ -159,11 +159,27 @@ Not by whether it runs. By reading a played season:
   to explain it.
 - A franchise with no life log must produce a season byte-identical to today's.
 
-## Open question for the author
+## The open question, answered
 
-**Should a season be able to CREATE a relationship that the life layer then
-inherits without the finale?** Today a showmance only becomes a life
-relationship if it survives to the export and shows up in `seasonDetails`. A
-showmance that forms in episode 3 and breaks in episode 9 leaves no trace in the
-life log at all. That is probably right — it happened on television and the
-world moved on — but it is worth deciding rather than defaulting.
+**Should a season be able to create a relationship the life layer inherits
+without the finale?** Settled: a showmance that ends on screen leaves **no
+relationship and a lasting charge**. It happened on television, so the world
+does not pretend they are together — but they are not strangers either, and the
+tie is what makes a public falling-out or a reconciliation reachable in a later
+off-season rather than the whole thing vanishing without trace.
+
+Answering it exposed something worse. `pairsFor` has always read `showmance` off
+a season detail, and **no export has ever written one** — 0 of 280 details had
+the field, because only the Big Brother path wrote it and even that never
+reached `players_database.json`. Every relationship the resolver has proposed in
+its life came from the close-friend fallback, and not one from a romance the
+audience actually watched.
+
+So both exports now write `showmance` and `showmanceEnded` ('intact' | 'broken'),
+and the two readers use them:
+
+- `pairsFor` offers **intact** couples as the season pair. Proposing that a
+  couple who blew up in week six started dating over the following months
+  contradicts the season just watched.
+- `socialGraph` weights an intact showmance at **+4** — the strongest tie two
+  people can leave a season with — and a broken one at **−1.5**.

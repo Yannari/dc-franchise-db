@@ -2054,7 +2054,12 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       gameplayStyle: _clean(filled.gameplayStyle),
       keyMoments: (filled.keyMoments && filled.keyMoments !== '[AI_FILL]') ? filled.keyMoments : [],
       alliances: pd.alliances.map(a => a.name || a),
-      rivalries: pd.rivalries.map(r => r.player || r)
+      rivalries: pd.rivalries.map(r => r.player || r),
+      // Who they were with, and whether they left together. See
+      // _showmanceEndedOf — the Total Drama export never wrote this, so the
+      // life layer had no idea any season had ever contained a romance.
+      showmance: _bbShowmanceOf(player.name),
+      showmanceEnded: _showmanceEndedOf(player.name)
     }, DEFAULT_FORMAT));
 
     // Append season story with separator (strip old version on re-export)
@@ -2597,6 +2602,27 @@ function _bbShowmanceOf(name) {
   return sh ? ((sh.players || []).find(n => n !== name) || '') : '';
 }
 
+/**
+ * And HOW it ended, which decides whether it leaves the show with them.
+ *
+ * `showmance` alone says two people were together at some point in a season and
+ * nothing about whether they still are — so the life layer could not tell a
+ * couple who walked out together from one that blew up in week six. It was
+ * reading the field anyway, and getting `undefined` for every season ever
+ * played, because until now only the Big Brother export wrote it at all: 0 of
+ * 280 season details had one. Every relationship the off-season resolver has
+ * ever proposed came from the close-friend fallback, and not once from an
+ * actual romance the audience watched.
+ *
+ * 'intact' — still together when the season ended.
+ * 'broken' — it ended on screen.
+ */
+function _showmanceEndedOf(name) {
+  const sh = (gs.showmances || []).find(x => (x.players || []).includes(name));
+  if (!sh) return '';
+  return (sh.broken || sh.phase === 'broken-up' || sh.breakupEp) ? 'broken' : 'intact';
+}
+
 export function buildBigBrotherSeasonDocument(seasonNumber) {
   const weeks = gs.bb?.weeks || [];
   if (!weeks.length) throw new Error('No Big Brother weeks have been played yet.');
@@ -3007,6 +3033,7 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
         alliances: _bbAlliancesOf(name),
         rivalries: _bbRivalsOf(name),
         showmance: _bbShowmanceOf(name),
+        showmanceEnded: _showmanceEndedOf(name),
         // Big Brother only — nested so it cannot be mistaken for Total Drama stats.
         bb: {
           hohWins: bb.hohWins || 0,

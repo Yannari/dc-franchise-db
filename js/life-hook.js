@@ -143,6 +143,12 @@ export function lifeContext(pdb = {}, sdb = {}, roster = {}) {
     for (const c of careers) {
       for (const d of c.details || []) {
         if (d.seasonId !== seasonId || !d.showmance) continue;
+        // INTACT ONLY. A couple who broke up on screen did not walk out of the
+        // finale together, and proposing that they started dating over the
+        // following months contradicts the season the audience just watched.
+        // A broken one still leaves a mark — see socialGraph, which now knows
+        // about ex-showmances — it just is not a couple.
+        if (d.showmanceEnded === 'broken') continue;
         const other = careers.find(x => x.name === d.showmance);
         if (!other) continue;
         const key = [c.id, other.id].sort().join('|');

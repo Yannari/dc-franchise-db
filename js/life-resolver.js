@@ -150,6 +150,19 @@ export function socialGraph(careers = []) {
       for (const n of d.unbreakableBonds || []) { const o = byName.get(n); bump(c.id, o, 3); bump(o, c.id, 3); }
       for (const n of d.alliances || []) { const o = byName.get(n); bump(c.id, o, 1); bump(o, c.id, 1); }
       for (const n of d.rivalries || []) { const o = byName.get(n); bump(c.id, o, -2); bump(o, c.id, -2); }
+      // ── the romance the season contained ──
+      //
+      // A showmance that lasted is the strongest tie two people can leave a
+      // season with. One that broke on screen is the answer to "what happens to
+      // a showmance that ends in episode nine": it leaves no relationship, but
+      // it does not leave nothing — they are people with a charge between them,
+      // which is what makes a public falling-out or a reconciliation reachable
+      // in the off-season instead of vanishing without trace.
+      if (d.showmance) {
+        const o = byName.get(d.showmance);
+        const w = d.showmanceEnded === 'broken' ? -1.5 : 4;
+        bump(c.id, o, w); bump(o, c.id, w);
+      }
     }
   }
   return edges;

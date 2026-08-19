@@ -402,7 +402,17 @@
     .post{ padding:13px 16px; }
     .msg{ padding:14px 16px 10px; }
   }
-  </style>
+  
+  /* Dramagram in the app switcher. It is a link, not a toggle, so it never
+     shows a pressed state — and it carries its own warm accent rather than
+     borrowing Birdie's sky or ChatAlumni's bottle green. */
+  .soc-switch .d{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:9px 15px; border-radius:2px; font-weight:700; font-size:14px;
+    color:#ff7a4d; border:1px solid rgba(255,122,77,.35); background:transparent;
+  }
+  .soc-switch .d:hover{ background:rgba(255,122,77,.10); border-color:#ff7a4d; }
+</style>
 </head>
 <body>
 <header class="site-header">
@@ -428,6 +438,15 @@
         <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18"><path d="M3 15c4-1 6-4 7-7 1 3 4 5 8 5-1 4-5 7-9 7H4l2-3z" fill="currentColor"/></svg>
         Birdie
       </button>
+      <!-- The third app. It LINKS rather than switching a pane: Birdie and
+           ChatAlumni are episode-scoped and driven by the season/episode
+           pickers beside this, and a directory of people across all time has no
+           episode at all. Same switcher to the reader, no entanglement with the
+           feed engine. -->
+      <a class="d" id="pick-gram" href="dramagram.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/></svg>
+        Dramagram
+      </a>
       <button class="c" id="pick-chat" aria-pressed="false">
         <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
         ChatAlumni

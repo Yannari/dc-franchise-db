@@ -1826,7 +1826,13 @@ function corsHeaders(request, env) {
   let allow = allowed;
   if (allowed !== '*') {
     const list = allowed.split(',').map(s => s.trim());
-    allow = list.includes(origin) ? origin : list[0];
+    // Any localhost origin is the user's own machine, whatever port their
+    // server picked today. The list pinned :8080 while the checkout serves on
+    // :4222, and every token-gated write from a local page — pin a photo, set
+    // a mood — died at the browser's preflight, before the Worker was ever
+    // asked. The token is the real gate; the origin check is for strangers.
+    const local = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+    allow = (list.includes(origin) || local) ? origin : list[0];
   }
   return {
     'Access-Control-Allow-Origin': allow,

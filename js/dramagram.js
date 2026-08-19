@@ -319,6 +319,22 @@ export function momentsFor(slug, { events = [], seasons = [], career = null, arc
     }, null);
     const awayYears = lastPlayed == null ? 0 : (here - lastPlayed) / 10;
 
+    // ── whether they bother at all ──
+    //
+    // The floor used to be one post per gap for everybody, forever — a
+    // 16th-place boot from years ago posting on the same pulse as a two-time
+    // winner. Some people just do not care about social media, and the ones
+    // with no audience and no recent season care least: `care` is the pull of
+    // fame against the drift of years away, and below it the account simply
+    // says nothing that off-season. An eventful gap always posts — if your
+    // life did something, you post it — so the silence never hides a fact.
+    //
+    // Fame and recency only, no archetype: followerHistory computes the same
+    // counts without the roster in hand, and a count that depended on it would
+    // give two pages two different follower totals.
+    const care = Math.max(0, 1 - Math.max(0, awayYears - 1) * 0.25) * (0.4 + fame);
+    if (!mineHere.length && chance(`${slug}|${gap}|cares`) > care) continue;
+
     const n = 1
       + (mineHere.length ? 1 : 0)
       + (fame > 0.5 && chance(`${slug}|${gap}|extra`) < 0.7 ? 1 : 0);

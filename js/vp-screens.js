@@ -15953,9 +15953,25 @@ const _bbArrivalLine = (name, slot = 0, seasonKey = '') => {
  * being read to a room that already contained them.
  */
 function _bbBeforeArrivals(ep) {
-  const house = ep?.houseAtStart || [];
+  const house = ep?.houseAtStart?.length ? ep.houseAtStart : _bbWeekRoster(ep);
   const late = _bbNotYetArrived(ep);
   return late.length ? house.filter(n => !late.includes(n)) : house;
+}
+
+/**
+ * The house this week was lived by, reconstructed for records that predate
+ * `houseAtStart`.
+ *
+ * Weeks exported before that field existed fall back to the week-END snapshot
+ * (or worse, live state), which is a roster the eviction has already emptied —
+ * so every pre-eviction screen quietly dropped the evictee from the wall, from
+ * the standings and from every alliance, and their absence spoiled the vote.
+ * Whoever left this week was, by definition, in the house when it started.
+ */
+function _bbWeekRoster(ep) {
+  const base = ep?.gsSnapshot?.activePlayers
+    || (typeof gs !== 'undefined' && gs.activePlayers) || [];
+  return [...new Set([...base, ep?.eliminated, ep?.alsoEliminated].filter(Boolean))];
 }
 
 /** Whoever this episode walked in partway through — empty on a normal week. */
@@ -16458,9 +16474,31 @@ export function bbfCamera(key, room) {
  * what they cannot otherwise tell is who in that house is walking around
  * knowing about it, and that is the whole texture of a secret power.
  */
-function _bbPowerBand(ep) {
+function _bbPowerBand(ep, phase = 'pre-hoh') {
   const ledger = (ep.powerLedger || []).filter(p => p && p.powerId);
   if (!ledger.length) return '';
+  // ── NOTHING THE VIEWER HAS NOT SEEN YET ──
+  //
+  // The band is a wall poster drawn on every House Life stretch, and the
+  // ledger is a WEEK-END record: it knows the Cloud was spent at nominations
+  // and that its holder walked out on eviction night. Monday's feed must not.
+  // Each power fires at a known ceremony, so SPENT only shows once this
+  // stretch sits after that ceremony — and a disposal is end-of-week knowledge
+  // that no feed stretch ever gets to show, because every feed airs before the
+  // vote. (Expiry is fine: "LAST WEEK IT EXISTS" is a fuse, not an outcome.)
+  const ORDER = { 'pre-hoh': 0, 'post-hoh': 1, 'post-noms': 2, 'post-veto': 3, campaign: 4, eviction: 5 };
+  const FIRES_AT = {
+    'hoh-gatekeeper': 1,   // fires before the HOH comp
+    'the-cloud': 2,        // declared before nominations — visible once they stand
+    'nightmare-power': 3,  // the night after the nomination ceremony
+    'diamond-veto': 4,     // detonates at the veto ceremony
+    'coup-d-etat': 4,      // stands up at the veto ceremony
+    'buy-off': 4,
+    // Eviction-night powers: no feed stretch ever airs after the vote, so on
+    // this band they are never anything but alive.
+    'bonus-life': 6, 'halting-hex': 6, 'rewind-button': 6,
+  };
+  const at = ORDER[phase] ?? 0;
   const KNOWN = {
     public: { label: 'THE HOUSE KNOWS', note: 'power and holder, out in the open', cls: 'is-open' },
     'holder-secret': { label: 'HOLDER UNKNOWN', note: 'the house knows it exists and not who has it', cls: 'is-half' },
@@ -16468,10 +16506,13 @@ function _bbPowerBand(ep) {
   };
   const cards = ledger.map(p => {
     const know = KNOWN[p.visibility] || KNOWN.public;
-    const state = p.firedThisWeek ? { txt: 'SPENT THIS WEEK', cls: 'is-spent' }
-      : p.disposed ? { txt: p.disposedReason === 'expired' ? 'EXPIRED UNUSED' : 'LOST WITH ITS HOLDER', cls: 'is-gone' }
-        : p.weeksLeft <= 0 ? { txt: 'LAST WEEK IT EXISTS', cls: 'is-urgent' }
-          : { txt: `${p.weeksLeft} WEEK${p.weeksLeft === 1 ? '' : 'S'} LEFT`, cls: 'is-live' };
+    const firedInView = p.firedThisWeek && at >= (FIRES_AT[p.powerId] ?? 6);
+    // Everything else — a disposal, an expiry, a firing this stretch has not
+    // reached — renders as the live power it still was at this point in the
+    // week. "LAST WEEK IT EXISTS" is a fuse, not an outcome, so it stays.
+    const state = firedInView ? { txt: 'SPENT THIS WEEK', cls: 'is-spent' }
+      : p.weeksLeft <= 0 ? { txt: 'LAST WEEK IT EXISTS', cls: 'is-urgent' }
+        : { txt: `${p.weeksLeft} WEEK${p.weeksLeft === 1 ? '' : 'S'} LEFT`, cls: 'is-live' };
     return `<article class="bbpw-card ${know.cls} ${state.cls}">
       <header class="bbpw-h">
         <span class="bbpw-name">${_bbEsc(p.name)}</span>
@@ -16666,7 +16707,8 @@ export function rpBuildBBHouseLife(ep, act, slot) {
   // A House Life stretch that ran before the Rivals came through the door was
   // showing them on the wall for an evening they were not in the building for.
   // The act is stamped at the moment they are seated — see `seatRivals`.
-  const house = act?._preArrival ? _bbBeforeArrivals(ep) : (ep.houseAtStart || []);
+  const house = act?._preArrival ? _bbBeforeArrivals(ep)
+    : (ep.houseAtStart?.length ? ep.houseAtStart : _bbWeekRoster(ep));
   const status = _bbfStatus(ep, phase);
 
   const houseActs = (ep.acts || []).filter(a => a.type === 'house');
@@ -16694,7 +16736,7 @@ export function rpBuildBBHouseLife(ep, act, slot) {
         <span class="bbf-hud-sp">${house.length} IN THE HOUSE</span>
       </div>
       ${_bbMemoryWall(house, { status, notYet: act?._preArrival ? _bbNotYetArrived(ep) : [] })}
-      ${_bbPowerBand(ep)}
+      ${_bbPowerBand(ep, phase)}
       ${_bbThemeBand(ep)}
       ${_bbChipBand(ep)}`;
 
@@ -24666,7 +24708,11 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
   // roster the moment they arrive, and they had not arrived when this snapshot
   // is supposed to be of.
   const roster = opening ? _bbBeforeArrivals(ep) : (ep.houseAtStart || []);
-  const stillIn = roster.length ? roster : (snap.activePlayers || gs.activePlayers || []);
+  // The closing picture may honestly use the week-end roster; the OPENING one
+  // never may — on old records with no houseAtStart it must be rebuilt with
+  // the evictee in it, or the Before screen spoils the vote by omission.
+  const stillIn = roster.length ? roster
+    : (opening ? _bbWeekRoster(ep) : (snap.activePlayers || gs.activePlayers || []));
   if (!stillIn.length) return '';
 
   // Record as of the start of this week: only weeks that have already aired.

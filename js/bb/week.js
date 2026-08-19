@@ -6663,7 +6663,12 @@ export function simulateBBWeek(options = {}) {
   // the week's screen saying so. Without this the only record of a power
   // between the night it was granted and the night it fires is the Debug
   // panel, which is not a thing anybody watches.
-  week.powerLedger = powerLedgerFor(week.num);
+  // THE WEEK'S OWN ROSTER, not tonight's. This stamp runs after the eviction
+  // has already emptied gs.activePlayers, so the default house read Joel as
+  // gone and every screen of the week — including Monday's first feed — said
+  // his power was LOST WITH ITS HOLDER before the audience had seen him leave.
+  // The band depicts the week; the week was lived with him in it.
+  week.powerLedger = powerLedgerFor(week.num, week.houseAtStart || house);
   // The same argument for the money. PRIVATE: this is a snapshot for a later
   // surface and for a replay, never something the house is shown — what the
   // room was told is the announced tiers, which live on the act.

@@ -714,6 +714,18 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
   ep.houseAtStart = [...house];
   ep.alsoEliminated = weekB.evicted;
   ep.doubleEviction = {
+    voteOperation: weekB.voteOperation ? {
+      majority: weekB.voteOperation.majority,
+      plans: (weekB.voteOperation.plans || []).map(p => ({
+        ...p, members: [...p.members],
+        stances: (p.stances || []).map(st => ({ ...st })),
+        approaches: (p.approaches || []).map(a => ({ ...a })),
+        outsideSupport: [...(p.outsideSupport || [])],
+      })),
+      independents: (weekB.voteOperation.independents || []).map(v => ({ ...v })),
+      moves: (weekB.voteOperation.moves || []).map(m => ({ ...m })),
+    } : null,
+    voteCommitments: (weekB.voteCommitments || []).map(c => ({ ...c })),
     hoh: weekB.hoh, nominees: [...(weekB.finalNominees || [])],
     initialNominees: [...(weekB.initialNominees || weekB.finalNominees || [])],
     safetyWinner: weekB.safetyWinner || null,
@@ -1055,7 +1067,23 @@ export function simulateBBEpisode() {
       safetyStopsAt: Number.isFinite(Number(seasonConfig.bbSafetyStopsAt))
         ? Number(seasonConfig.bbSafetyStopsAt) : undefined,
     });
+    // The second cycle's OWN vote work. Without these, the second half of the
+    // night rendered the FIRST cycle's alliance plans and commitments — a war
+    // room organizing against nominees who were already off the block.
+    const leanOp2 = second.voteOperation ? {
+      majority: second.voteOperation.majority,
+      plans: (second.voteOperation.plans || []).map(p => ({
+        ...p, members: [...p.members],
+        stances: (p.stances || []).map(st => ({ ...st })),
+        approaches: (p.approaches || []).map(a => ({ ...a })),
+        outsideSupport: [...(p.outsideSupport || [])],
+      })),
+      independents: (second.voteOperation.independents || []).map(v => ({ ...v })),
+      moves: (second.voteOperation.moves || []).map(m => ({ ...m })),
+    } : null;
     ep.doubleEviction = {
+      voteOperation: leanOp2,
+      voteCommitments: (second.voteCommitments || []).map(c => ({ ...c })),
       hoh: second.hoh,
       nominees: [...(second.finalNominees || [])],
       initialNominees: [...(second.initialNominees || second.finalNominees || [])],

@@ -24193,6 +24193,19 @@ function _bbSecondCycleView(ep) {
     votes: { ...(d.votes || {}) },
     houseAtStart: [...(d.houseAtStart || ep.houseAtStart || [])],
     votingLog: (ep.votingLog || []).filter(v => v.segment === 2),
+    // ── THE FIRST CYCLE'S WAR ROOM MUST NOT LEAK ──
+    //
+    // `...ep` above carries voteOperation and voteCommitments from the first
+    // half of the night, and nothing overrode them: the second cycle's Voting
+    // Plans screen showed alliances organizing against nominees who were
+    // already off the block — one of them already OUT THE DOOR. The double's
+    // record carries its own (from now on); a night played before that existed
+    // gets null, and the plans screen falls back to the house read built from
+    // this cycle's own eviction act, which is honest rather than wrong.
+    voteOperation: d.voteOperation || null,
+    voteCommitments: d.voteCommitments || [],
+    finalPleas: [],
+    dealBreaks: [],
     evictionInterview: null,
   };
 }

@@ -124,3 +124,32 @@ it('a ballot whose target left the block says so, instead of inventing convictio
   expect(html).toContain('THE PLAN LEFT THE BLOCK');
   expect(html).toContain('Jules');
 });
+
+it('the second cycle of a double never renders the first cycle\'s war room', async () => {
+  // Reported: the second eviction's Voting Plans showed alliance plans still
+  // organizing against the FIRST cycle's nominees — one of them already out
+  // the door. The second view spread ...ep and never overrode voteOperation.
+  reset();
+  seasonConfig.twistSchedule = [{ episode: 2, type: 'bb-double-eviction' }];
+  simulateBBEpisode();
+  const ep2 = simulateBBEpisode();
+  expect(ep2.doubleEviction, 'the double did not fire').toBeTruthy();
+
+  // Imitate the author's already-played night: the double's record predates
+  // the second-cycle op, so strip it — the plans screen must then show
+  // NOTHING from cycle one rather than the wrong thing.
+  delete ep2.doubleEviction.voteOperation;
+  delete ep2.doubleEviction.voteCommitments;
+
+  const screens = buildBBWeekScreens(ep2);
+  const plans2 = screens.filter(s => /bb-plans/.test(s.id)).at(-1);
+  if (plans2 && ep2.voteOperation?.plans?.length) {
+    const firstTargets = ep2.voteOperation.plans.map(p => p.target).filter(Boolean);
+    const cycle2Noms = ep2.doubleEviction.nominees || [];
+    for (const t of firstTargets) {
+      if (cycle2Noms.includes(t)) continue;   // legitimately shared name
+      expect(plans2.html.includes(`evict <strong>${t}</strong>`),
+        `second cycle plans still organize against cycle one's ${t}`).toBe(false);
+    }
+  }
+});

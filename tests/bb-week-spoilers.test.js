@@ -97,3 +97,30 @@ it('a double eviction second cycle counts on the record wall, even on an already
   expect(row, `no wall row for the second-cycle HOH ${d.hoh}`).toBeTruthy();
   expect(/#f0a500/.test(row), `${d.hoh} won the fast-forward's crown and the wall shows nothing`).toBe(true);
 });
+
+it('a ballot whose target left the block says so, instead of inventing conviction', async () => {
+  // Reported verbatim: Tobias wanted Jules, the room organized on Jules, he
+  // told the house Jules — Jules was saved — and the card said Tobias had
+  // "wanted this name out since before the live show began" over a chain that
+  // proved the opposite, under a pill crediting the room he defied.
+  reset();
+  const { rpBuildBBEviction, _tvState } = await import('../js/vp-screens.js');
+  const ep = {
+    num: 4, format: 'big-brother', hoh: 'Wayne', houseAtStart: NAMES.slice(0, 8),
+    eliminated: 'Aaron',
+    acts: [{ type: 'eviction', nominees: ['Aaron', 'Millie'], evicted: 'Aaron',
+      ballots: [{ voter: 'Tobias', evict: 'Aaron', margin: 5,
+        preference: 'Jules', stated: 'Jules',
+        assignment: { by: 'The Drama Club', target: 'Jules' } }],
+      socialBeats: [] }],
+  };
+  // Reveal everything so the ballot card renders — on the MODULE's own state,
+  // not a global of the same name, which the first draft set and which the
+  // builder never reads.
+  _tvState['bb_evict_4'] = { idx: 99 };
+  const html = rpBuildBBEviction(ep);
+  expect(html).not.toContain('wanted this name out since before the live show began');
+  expect(html).not.toContain('VOTES WITH THE ROOM');
+  expect(html).toContain('THE PLAN LEFT THE BLOCK');
+  expect(html).toContain('Jules');
+});

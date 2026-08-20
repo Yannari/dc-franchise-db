@@ -19168,7 +19168,7 @@ export function rpBuildBBThemeBeat(ep, act) {
   if (act?.themeId === 'summer-of-mystery') return _rpThemeBeatMystery(ep, act);
   if (act?.themeId === 'high-rollers') return _rpThemeBeatPitBoss(ep, act);
   if (act?.themeId === 'summer-camp') return _rpThemeBeatCamp(ep, act);
-  if (act?.themeId === 'cliques') return _rpThemeBeatCliques(ep, act);
+  if (act?.themeId === 'summer-school') return _rpThemeBeatCliques(ep, act);
   return _rpThemeBeatDen(ep, act);
 }
 
@@ -22344,10 +22344,51 @@ export function rpBuildBBEviction(ep) {
       `No drama in this one: ${voter} answered for ${target} when <strong>${_bbEsc(b.assignment.by)}</strong> took the count, and the answer has not moved.`,
       `${voter} delivers the vote ${pv(b.voter).sub} promised the room. <strong>${_bbEsc(b.assignment.by)}</strong> is one vote closer because of it.`,
     ], b.voter, b.evict, 'assigned');
+    // ── THE NAME THEY CARRIED IN IS NOT ON THE BLOCK ANYMORE ──
+    //
+    // Reported from a real double eviction: Tobias wanted Jules, the room
+    // organized on Jules, he told the house Jules — and then Jules was saved,
+    // so the ballot lands on Aaron and the old text claimed he had "wanted
+    // this name out since before the live show began". The engine knew the
+    // whole story; the screen just had no branch for it.
+    const wantedElse = [b.preference, b.assignment?.target, b.stated]
+      .find(n => n && n !== b.evict);
+    if (wantedElse && !noms.includes(wantedElse)) return vvar([
+      `${voter} walked in carrying <strong>${_bbEsc(wantedElse)}</strong>'s name, and ${_bbEsc(wantedElse)} is not on the block anymore. ${target} is what tonight left ${pv(b.voter).obj} to vote for.`,
+      `The plan said <strong>${_bbEsc(wantedElse)}</strong>. The ceremony took that name off the wall, and nobody rebuilt the plan — so ${voter} takes the nominee ${pv(b.voter).sub} can still reach.`,
+      `${voter} never wanted ${target} — ${pv(b.voter).sub} wanted <strong>${_bbEsc(wantedElse)}</strong>, who is safe tonight. This ballot is what is left of that plan.`,
+      `${voter}'s first choice was saved before a single vote was cast. ${target} inherits the ballot, not the grudge.`,
+    ], b.voter, b.evict, wantedElse, 'target-saved');
+    // ── A FLIP NOBODY CLAIMED ──
+    //
+    // The stated name is still standing and no plea, bloc or recruiter moved
+    // this ballot: the change happened in their own head, and the honest read
+    // is the relationship — keep the closer of the two nominees.
+    if (wantedElse) {
+      let closer = null;
+      try {
+        if (other && typeof getPerceivedBond === 'function') {
+          closer = getPerceivedBond(b.voter, other) > getPerceivedBond(b.voter, b.evict) ? other : null;
+        }
+      } catch { /* the bond read is a bonus */ }
+      return vvar(closer ? [
+        `${voter} said <strong>${_bbEsc(wantedElse)}</strong> all week — and then chooses to protect <strong>${_bbEsc(closer)}</strong> when the door actually closes. The relationship outvoted the plan.`,
+        `Between the kitchen and the Diary Room, ${voter} changed ${pv(b.voter).posAdj} mind: keeping <strong>${_bbEsc(closer)}</strong> matters more than the name ${pv(b.voter).sub} had been repeating.`,
+        `${voter}'s week said one thing and ${pv(b.voter).posAdj} ballot says another. When it was real, ${pv(b.voter).sub} kept the person ${pv(b.voter).sub} is closer to.`,
+      ] : [
+        `${voter} told the house <strong>${_bbEsc(wantedElse)}</strong> and writes ${target}. Whatever changed, it changed in ${pv(b.voter).posAdj} own head, after the last conversation anybody saw.`,
+        `${voter} walks in with one name and leaves having cast another. Nobody moved this ballot; ${pv(b.voter).sub} moved it ${pv(b.voter).ref || 'alone'}.`,
+        `The door closes on <strong>${_bbEsc(wantedElse)}</strong>'s name and opens on ${target}'s. ${voter} owes the house an explanation it will not get tonight.`,
+      ], b.voter, b.evict, wantedElse, 'quiet-flip');
+    }
     if (Number(b.margin) >= 3) return vvar([
       `${voter} came into the Diary Room certain. Nothing in the final pleas changed the choice.`,
       `${voter} never considered keeping ${target}; the campaign only confirmed the original read.`,
-      `There is no hesitation. ${voter} has wanted this name out since before the live show began.`,
+      // Only claimable when the record agrees: the ballot's own preference is
+      // the name being cast, or was never recorded at all.
+      ...((!b.preference || b.preference === b.evict)
+        ? [`There is no hesitation. ${voter} has wanted this name out since before the live show began.`]
+        : []),
     ], b.voter, b.evict, 'firm');
     return vvar([
       `${voter} considered both pitches and chooses the houseguest ${pv(b.voter).sub} trusts less.`,
@@ -22464,6 +22505,11 @@ export function rpBuildBBEviction(ep) {
         const c = commitment.get(b.voter);
         const broke = b.stated && b.stated !== b.evict && c?.promised;
         const lied = !!b.lied && b.stated !== b.evict;
+        // Off the plan they carried in: their own preference, the room's ask or
+        // the name they told the house — whichever exists — is not the ballot.
+        const _plan = [b.preference, b.assignment?.target, b.stated].find(n => n && n !== b.evict);
+        const _offPlan = !!_plan && !b.pleaMove && !b.blocMove && !b.recruitedBy && !b.bandwagon;
+        const _planGone = !!_plan && !noms.includes(_plan);
         // The four-stage chain of this one ballot, replayed: what they walked
         // in wanting, what a room asked of them, what they told the house,
         // and what they actually cast. Every mismatch is a story the audience
@@ -22482,10 +22528,15 @@ export function rpBuildBBEviction(ep) {
         return `<div class="bbns-card bbev-ballot ${broke || lied ? 'is-broke' : ''}">
           <div class="bbns-card-h">${_bbAvatar(b.voter, 30)}<span class="bbns-pill ${
             b.pleaMove ? 'gold' : broke || lied ? 'red' : b.blocMove ? 'blue' : b.recruitedBy ? 'green' : b.bandwagon ? 'gold'
-            : c?.promised ? 'green' : b.assignment ? 'blue' : 'grey'}">${
+            : c?.promised ? 'green' : _offPlan ? 'red' : b.assignment ? 'blue' : 'grey'}">${
             b.pleaMove ? 'MOVED BY THE PLEA' : broke ? 'BREAKS THEIR WORD' : lied ? 'SAID ONE NAME, WRITES ANOTHER' : b.blocMove ? 'VOTES WITH THE BLOC'
             : b.recruitedBy ? 'SIGNED ON THIS WEEK' : b.bandwagon ? 'JOINS THE WINNING SIDE'
-            : c?.promised ? 'KEEPS A PROMISE' : b.assignment ? 'VOTES WITH THE ROOM' : 'THE DIARY ROOM'}</span></div>
+            : c?.promised ? 'KEEPS A PROMISE'
+            // "VOTES WITH THE ROOM" used to fire on the mere EXISTENCE of an
+            // assignment — including on the ballot that defied it. The room's
+            // credit requires the room's name.
+            : _offPlan ? (_planGone ? 'THE PLAN LEFT THE BLOCK' : 'CHANGES AT THE DOOR')
+            : b.assignment ? 'VOTES WITH THE ROOM' : 'THE DIARY ROOM'}</span></div>
           <div class="bbns-card-b">${ballotScene(b, c, broke || lied)}${chain}</div></div>`;
       }
       case 'duotally': {

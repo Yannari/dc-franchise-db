@@ -3248,12 +3248,12 @@
     .rp-theme-summer-camp.is-mood-hostile .rp-page .bb-av img {
       filter: saturate(.55) contrast(1.06) brightness(.93); }
 
-    /* ── The Cliques ────────────────────────────────────────────────────
+    /* ── Summer School ────────────────────────────────────────────────────
        A corridor noticeboard under fluorescent light. Deliberately the
        COLDEST neutral on the shelf — every other theme's ordinary register is
        warm or at least alive, and this one is a filing system, which should
        feel like one from week one rather than only after it turns. */
-    .rp-theme-cliques {
+    .rp-theme-summer-school {
       --theme-accent:#7dd3fc; --theme-glow:#bae6fd;
       --bbx-danger-rgb:  190,68,74;     /* a red pen on a laminated sheet     */
       --bbx-note-rgb:    125,211,252;   /* everything here is typed, not written */
@@ -3268,21 +3268,21 @@
       --bbx-ink-quiet:   #f2f9ff;
       --bbx-faint:       #4a5666;
       --bbx-glyph:       #0e1620; }
-    .rp-theme-cliques .rp-page::after {
+    .rp-theme-summer-school .rp-page::after {
       opacity:.13;
       background:
         radial-gradient(52% 26% at 50% -6%, rgba(186,230,253,.20), transparent 64%),
         repeating-linear-gradient(0deg, rgba(125,211,252,.05) 0 1px, transparent 1px 3px);
       animation: rpThemeCliqueTube 6s ease-in-out infinite; }
-    .rp-theme-cliques .rp-page h1,
-    .rp-theme-cliques .rp-page h2 {
+    .rp-theme-summer-school .rp-page h1,
+    .rp-theme-summer-school .rp-page h2 {
       letter-spacing:.16em; text-transform:uppercase;
       font-family:"Trade Gothic Bold Condensed","Oswald","Haettenschweiler",Impact,sans-serif; }
     /* A tube does not breathe. It holds, and every so often it ticks. */
     @keyframes rpThemeCliqueTube {
       0%,100% { opacity:.13; } 48% { opacity:.15; } 50% { opacity:.09; } 52% { opacity:.15; } }
 
-    /* ── The Cliques, once the headings stop applying ───────────────────
+    /* ── Summer School, once the headings stop applying ───────────────────
        THE ONLY TURN ON THE SHELF THAT IS A SYSTEM FAILING RATHER THAN A MOOD
        DARKENING. The Den flares red, CORA flares red, Summer of Mystery drains
        to bone, High Roller's goes fluorescent and Summer Camp goes silent —
@@ -3293,7 +3293,7 @@
        laminate loses its gloss, and the ordered scanline gives way to a
        misprint. Nothing here is angrier than it was. It has simply stopped
        working, which from a filing system is the worst available outcome. */
-    .rp-theme-cliques.is-mood-hostile {
+    .rp-theme-summer-school.is-mood-hostile {
       --theme-accent:#9fb0c4; --theme-glow:#cbd5e1;   /* the light, minus the confidence */
       --bbx-danger-rgb:  176,74,80;
       --bbx-note-rgb:    159,176,196;   /* the ink has gone grey                */
@@ -3308,7 +3308,7 @@
       --bbx-ink-quiet:   #eef4fa;
       --bbx-faint:       #48525f;
       --bbx-glyph:       #0d1117; }
-    .rp-theme-cliques.is-mood-hostile .rp-page::after {
+    .rp-theme-summer-school.is-mood-hostile .rp-page::after {
       opacity:.17;
       background:
         radial-gradient(46% 24% at 50% -6%, rgba(203,213,225,.12), transparent 66%),
@@ -3321,7 +3321,7 @@
       0%,100% { opacity:.17; background-position:0 0, 0 0, 0 0; }
       50%     { opacity:.20; background-position:0 0, 3px 0, -3px 0; } }
     /* And the faces lose the laminate with the rest of the filing. */
-    .rp-theme-cliques.is-mood-hostile .rp-page .bb-av img {
+    .rp-theme-summer-school.is-mood-hostile .rp-page .bb-av img {
       filter: saturate(.6) contrast(1.04) brightness(.95); }
 
     /* Holds for every theme, present and future, regardless of where in this

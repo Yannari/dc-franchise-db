@@ -38,7 +38,7 @@ import MACHINE from './themes-cora.js';
 import MYSTERY from './themes-mystery.js';
 import HIGH_ROLLERS from './themes-high-rollers.js';
 import SUMMER_CAMP from './themes-summer-camp.js';
-import CLIQUES_THEME from './themes-cliques.js';
+import SUMMER_SCHOOL from './themes-summer-school.js';
 
 /**
  * Every theme, by id.
@@ -54,7 +54,7 @@ export const BB_THEMES = {
   [MYSTERY.id]: MYSTERY,
   [HIGH_ROLLERS.id]: HIGH_ROLLERS,
   [SUMMER_CAMP.id]: SUMMER_CAMP,
-  [CLIQUES_THEME.id]: CLIQUES_THEME,
+  [SUMMER_SCHOOL.id]: SUMMER_SCHOOL,
 };
 
 export const THEME_LIST = Object.keys(BB_THEMES);

@@ -1,4 +1,4 @@
-// The Cliques.
+// Summer School.
 //
 // BB11, and the first theme built on `js/bb/teams.js` — the assigned-group
 // facility that did not exist until this season needed it. Everything else in
@@ -41,8 +41,13 @@
 // something this confident is much worse, and the skin breaks the grid rather
 // than changing its colour.
 export default {
-  id: 'cliques',
-  name: 'The Cliques',
+  // The THEME is a season; the CARD it books is `bb-cliques`. They are
+  // deliberately named apart: every other theme id here is a season name
+  // (summer-of-temptation, machine-summer, summer-camp) while the mechanic
+  // keeps its own. Calling both of them "cliques" made the config read as
+  // a theme sitting next to a twist with the same name.
+  id: 'summer-school',
+  name: 'Summer School',
   tagline: 'You have been sorted. It was not put to a vote.',
   house: 'bb-house',
 

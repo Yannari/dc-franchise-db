@@ -241,8 +241,8 @@ describe('the cliques, played', () => {
 // ══════════════════════════════════════════════════════════════════════
 // THE THEME
 // ══════════════════════════════════════════════════════════════════════
-describe('The Cliques, as a season', () => {
-  const theme = () => BB_THEMES.cliques;
+describe('Summer School, as a season', () => {
+  const theme = () => BB_THEMES['summer-school'];
 
   // Every card the arc books must have a line in the primer that explains
   // it. An audit found three unexplained cards on High Roller's; this is
@@ -257,7 +257,7 @@ describe('The Cliques, as a season', () => {
 
   it('is registered in the engine and offered in the config', () => {
     expect(theme(), 'the theme is not in the registry').toBeTruthy();
-    expect(THEME_LIST).toContain('cliques');
+    expect(THEME_LIST).toContain('summer-school');
     expect(theme().antagonist?.name).toBe('The Yearbook');
   });
 

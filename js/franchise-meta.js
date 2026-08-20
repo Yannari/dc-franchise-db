@@ -206,7 +206,19 @@ export function deriveSeasonRecord(state = null) {
     const elimEp = [...hist].reverse().find(ep => _bootOf(ep) === n) || null;
     const ownBallot = elimEp?.votingLog?.find(v => v.voter === n) || null;
     const votersAgainst = (elimEp?.votingLog || []).filter(v => v.voted === n).map(v => v.voter);
-    const flippers = (elimEp?.defections || []).map(d => d.player).filter(Boolean);
+    // BOTH SHOWS' SHAPES. `defections` is Total Drama's flip record; a Big
+    // Brother week stamps flips on the ballot itself (votingLog[].changed).
+    // Read from one and never the other and every BB season contributes zero
+    // blindsides to the franchise ledger — measured across fourteen audited
+    // seasons before anybody noticed, because the returnee grudges it feeds
+    // only go missing, they never error.
+    const flippers = [...new Set([
+      ...(elimEp?.defections || []).map(d => d.player),
+      ...(elimEp?.votingLog || []).filter(v => v.changed && v.voted === n).map(v => v.voter),
+    ])].filter(Boolean);
+    // The own-ballot clause is Total Drama's: a nominee votes at tribal. A BB
+    // nominee never votes, so that path stays dead for the house on purpose —
+    // its blindside is the flips.
     const blindsided = !!elimEp && !!(elimEp.votingLog || []).length
       && (flippers.length >= 2 || (!!ownBallot && ownBallot.voted !== n && votersAgainst.length >= 3));
     // ep.idolPlays is a shared log for ALL advantage plays (kip/extraVote/voteSteal/
@@ -218,7 +230,9 @@ export function deriveSeasonRecord(state = null) {
     const betrayed = [];
     for (const ep of hist) {
       const b = _bootOf(ep); if (!b || b === n) continue;
-      const flipped = (ep.defections || []).some(d => d.player === n);
+      const flipped = (ep.defections || []).some(d => d.player === n)
+        // The house's version of a defection: a ballot that moved, onto the boot.
+        || (ep.votingLog || []).some(v => v.voter === n && v.voted === b && v.changed);
       const votedForBoot = (ep.votingLog || []).some(v => v.voter === n && v.voted === b);
       if (flipped && votedForBoot && !betrayed.includes(b)) betrayed.push(b);
     }
@@ -227,9 +241,17 @@ export function deriveSeasonRecord(state = null) {
       if (!(al.members || []).includes(n)) continue;
       for (const m of al.members) { if (m !== n && !allies.includes(m) && !betrayed.includes(m)) allies.push(m); }
     }
+    // `players: [a, b]` is the shape every showmance has actually had; the
+    // `sh.a` read matched nothing, ever, on either show — so the "showmance
+    // that lasted" returnee bond has never once seeded from a ledger record.
     const showmances = (_gs.showmances || [])
-      .filter(sh => sh.a === n || sh.b === n)
-      .map(sh => ({ partner: sh.a === n ? sh.b : sh.a, ended: sh.broken ? 'breakup' : 'intact' }));
+      .filter(sh => (sh.players || [sh.a, sh.b]).includes(n))
+      .map(sh => {
+        const pair = sh.players || [sh.a, sh.b];
+        return { partner: pair.find(x => x && x !== n) || null,
+          ended: (sh.broken || sh.phase === 'broken-up') ? 'breakup' : 'intact' };
+      })
+      .filter(sh => sh.partner);
     const rivals = names.filter(o => o !== n && (_gs.bonds?.[metaBondKey(n, o)] ?? 0) <= -4);
     rec.players[n] = {
       placement: placement[n], winner: n === winner, finalist: finalists.includes(n) || n === winner,

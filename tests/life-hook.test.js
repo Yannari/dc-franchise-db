@@ -406,3 +406,56 @@ describe('an approved relationship later on', () => {
     expect(free).toBe(true);
   });
 });
+
+// ── CLOSING THE DANGLING RECORDS ──────────────────────────────────────
+//
+// Pre-lock canon left one-sided couples: Bridgette's page said "Seeing
+// Alejandro" while Alejandro's said "Living with Lindsay". Canon is the
+// author's, so nothing is deleted — the resolver proposes the break-up that
+// was never written, through the inbox like everything else.
+describe('a partner who has moved on', () => {
+  const SEASONS = [
+    { seasonId: 'c-1', airYear: 2020, airSlot: 'spring' },
+    { seasonId: 'c-2', airYear: 2020, airSlot: 'fall' },
+  ];
+  const RANK = new Map([['c-1', 20201], ['c-2', 20203]]);
+  const CAREERS = ['bri', 'al', 'lin'].map(id =>
+    ({ id, name: id, details: [{ seasonId: 'c-1' }], seasonsPlayed: 1, bestPlacement: 5 }));
+  // The pre-lock shape: Bri says she is with Al; Al is with Lin.
+  const CANON = [
+    { player: 'bri', whom: 'al', afterSeason: 'c-1', seq: 1, kind: 'dating', status: 'approved' },
+    { player: 'al', whom: 'lin', afterSeason: 'c-1', seq: 2, kind: 'dating', status: 'approved' },
+    { player: 'al', whom: 'lin', afterSeason: 'c-1', seq: 3, kind: 'moved-in', status: 'approved' },
+  ];
+
+  it('proposes the missing break-up, and only for the dangling side', () => {
+    const out = resolveOffSeasonFor({ season: SEASONS[1], careers: CAREERS, events: CANON,
+      seasonRank: RANK, seedSalt: 'close' });
+    const closings = out.filter(e => /Closing the record/.test(e.detail || ''));
+    expect(closings).toHaveLength(1);
+    expect(closings[0].player).toBe('bri');
+    expect(closings[0].whom).toBe('al');
+    expect(closings[0].kind).toBe('quietly-ended');
+  });
+
+  it('does not divorce the real couple when the closing is believed', async () => {
+    // The trap that nearly shipped: the closing row is also Al's newest
+    // relationship event, and an unaddressed ending set HIM single too.
+    const { stateOf } = await import('../js/life-events.js');
+    const believed = [...CANON,
+      { player: 'bri', whom: 'al', afterSeason: 'c-2', seq: 1, kind: 'quietly-ended',
+        status: 'approved', detail: 'Closing the record — the world had already moved on.' }];
+    expect(stateOf('bri', believed, { seasonRank: RANK }).relationship.stage).toBe('single');
+    expect(stateOf('al', believed, { seasonRank: RANK }).relationship)
+      .toEqual({ stage: 'living-together', with: 'lin' });
+    expect(stateOf('lin', believed, { seasonRank: RANK }).relationship)
+      .toEqual({ stage: 'living-together', with: 'al' });
+  });
+
+  it('leaves a symmetric couple alone', () => {
+    const clean = CANON.slice(1);   // just Al + Lin, both sides consistent
+    const out = resolveOffSeasonFor({ season: SEASONS[1], careers: CAREERS, events: clean,
+      seasonRank: RANK, seedSalt: 'clean' });
+    expect(out.some(e => /Closing the record/.test(e.detail || ''))).toBe(false);
+  });
+});

@@ -383,7 +383,7 @@ export function lineFor(event, names = {}, reader = null, genders = null) {
  * is a fact about their life, and an ordering slip should not be able to
  * resurrect them.
  */
-export function deriveState(events = [], { seasonRank = null, statuses = ['approved'] } = {}) {
+export function deriveState(events = [], { seasonRank = null, statuses = ['approved'], self = null } = {}) {
   const state = {
     relationship: { stage: 'single', with: null },
     education: { stage: 'none' },
@@ -418,11 +418,29 @@ export function deriveState(events = [], { seasonRank = null, statuses = ['appro
     if (e.kind === 'birth') state.children += 1;
     if (!def.stage) continue;
     if (def.track === 'relationship') {
+      // ── AN ENDING ONLY ENDS THE RELATIONSHIP IT NAMES ──
+      //
+      // Without this, closing a dangling record broke the real couple: the
+      // proposed break-up between Bridgette and Alejandro was also Alejandro's
+      // newest relationship row, so approving it set HIM single and divorced
+      // him from Lindsay as a side effect. You cannot break up with somebody
+      // you are not with; an ending whose pair does not include the current
+      // partner is a fact about the OTHER person's page, not this one's.
+      const ending = def.stage === 'single' || def.stage === 'separated';
+      const pair = [e.player, e.whom].filter(Boolean);
+      // Who the OTHER person is. Without `self`, a subject who was the `whom`
+      // of their own establishing event carried THEMSELVES as the partner
+      // until stateOf patched it afterwards — which let an ending naming them
+      // slip the guard below and set the wrong person single. Lindsay read as
+      // single because TRENT's record was closed.
+      const other = self ? (pair.find(x => x && x !== self) || null)
+        : (e.whom || state.relationship.with);
+      if (ending && state.relationship.with && !pair.includes(state.relationship.with)) continue;
       state.relationship = {
         stage: def.stage,
         // A relationship that ended has no partner; one that advanced keeps
         // whoever it advanced with.
-        with: def.stage === 'single' ? null : (e.whom || state.relationship.with),
+        with: def.stage === 'single' ? null : other,
       };
     }
     state.trackStage[def.track] = def.stage;
@@ -476,7 +494,7 @@ export function order(seasonRank = null) {
  */
 export function stateOf(slug, events = [], { seasonRank = null, statuses = ['approved'] } = {}) {
   const mine = events.filter(e => involves(e, slug));
-  const st = deriveState(mine, { seasonRank, statuses });
+  const st = deriveState(mine, { seasonRank, statuses, self: slug });
   // "with" must be the OTHER person, whichever side of the row they sat on.
   if (st.relationship.with === slug) {
     const last = mine.filter(e => statuses.includes(e.status) && kindOf(e.kind)?.track === 'relationship')

@@ -404,6 +404,36 @@ export function resolveOffSeason({
     });
   };
 
+  // ── CLOSING THE DANGLING RECORDS ────────────────────────────────────
+  //
+  // Rows approved before the availability locks existed left three one-sided
+  // couples in canon: Bridgette's page said "Seeing Alejandro" while
+  // Alejandro's said "Living with Lindsay". Nothing can delete an approved
+  // row — canon is the author's — but the record can be CLOSED: when somebody's
+  // partner has visibly moved on, this off-season proposes the break-up that
+  // was never written. Through the inbox like everything else, so the author
+  // still decides whether it happened.
+  for (const career of careers) {
+    const slug = career.id;
+    if (!debuted.has(slug)) continue;
+    const st = stateOf(slug, events, { seasonRank, statuses: BELIEVED });
+    const partner = st.relationship.with;
+    if (st.relationship.stage === 'single' || !partner) continue;
+    const theirs = stateOf(partner, events, { seasonRank, statuses: BELIEVED }).relationship;
+    // One-sided means BOTH attached, to different people. A single partner is
+    // not evidence — an ordinary break-up names both sides and reads back
+    // symmetrically; only the pre-lock rows could split a couple in half.
+    if (theirs.stage === 'single' || theirs.with === slug) continue;
+    const key = pairKey(slug, partner);
+    if (settled.has(key)) continue;
+    settled.add(key);
+    taken.add(slug);
+    emit(slug, st.relationship.stage === 'married' ? 'separated' : 'quietly-ended', {
+      whom: partner,
+      detail: 'Closing the record — the world had already moved on.',
+    });
+  }
+
   for (const career of careers) {
     const slug = career.id;
     if (!debuted.has(slug)) continue;

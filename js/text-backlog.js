@@ -3364,6 +3364,13 @@ export function _textAudiencePulse(ep, ln, sec) {
 // MAIN — generateSummaryText
 // ══════════════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════════════
+// The transcript writer's version. Stored transcripts are STRINGS, written
+// once at week end, so a writer fix alone leaves every already-played night
+// carrying the old text forever. The reader compares this against the stamp on
+// the episode and regenerates when the writer has moved on — the transcript is
+// derived from the episode record, so regenerating it is always safe.
+export const TEXT_BACKLOG_V = 2;
+
 // AFTERMATH SHOW — generates all segment data from game state
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -6051,7 +6058,11 @@ export function generateBBSummaryText(ep) {
         // is the exact fiction the vote-operation rebuild removed from the
         // screen. It carries the operation now: the meetings, every member's
         // answer, the asks by name, and the count from STATED positions.
-        const op = ep.voteOperation || null;
+        // The SECOND cycle's eviction must not carry the first cycle's war
+        // room — same leak the screens had: ep.voteOperation belongs to the
+        // first half of the night, and the double's record carries its own.
+        const op = ((act.segment || 1) === 2
+          ? ep.doubleEviction?.voteOperation : ep.voteOperation) || null;
         const voters = (act.ballots || []).map(b => b.voter);
         const majority = Math.floor(voters.length / 2) + 1;
         sec('VOTING PLANS');
@@ -6127,7 +6138,8 @@ export function generateBBSummaryText(ep) {
 
         // HOW THE PLANS CHANGED — the same reasons the screen gives, so the
         // transcript is not a thinner account of the same night.
-        const commitments = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
+        const commitments = new Map((((act.segment || 1) === 2
+          ? ep.doubleEviction?.voteCommitments : ep.voteCommitments) || []).map(c => [c.voter, c]));
         const reasons = (act.ballots || []).map(b => {
           const c = commitments.get(b.voter);
           const moved = b.stated && b.stated !== b.evict;
@@ -6137,7 +6149,15 @@ export function generateBBSummaryText(ep) {
           if (b.blocMove) return `  ${b.voter} went with ${b.blocMove} onto ${b.evict}.`;
           if (b.recruitedBy) return `  ${b.voter} signed on when ${b.recruitedBy} came recruiting, and delivered.`;
           if (b.bandwagon) return `  ${b.voter} left ${b.stated} once it was losing and joined ${b.evict}.`;
-          if (moved) return `  ${b.voter} was talked off ${b.stated} during the week.`;
+          // Two honest reads for a ballot that landed off its own plan, the
+          // same ones the screen gives. "Was talked off during the week"
+          // claimed a conversation nobody recorded.
+          const carried = [b.preference, b.assignment?.target, b.stated]
+            .find(n => n && n !== b.evict);
+          if (carried && !(act.nominees || []).includes(carried)) {
+            return `  ${b.voter} carried ${carried}'s name into the vote, and ${carried} was off the block by then — ${b.evict} is what the night left.`;
+          }
+          if (moved) return `  ${b.voter} walked in saying ${b.stated} and cast ${b.evict}. Nobody moved this ballot; ${b.voter} moved it alone.`;
           if (c?.promised) return `  ${b.voter} promised ${b.evict} and cast it.`;
           return '';
         }).filter(Boolean);

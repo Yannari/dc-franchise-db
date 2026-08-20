@@ -62,6 +62,29 @@ function _addPublishToggle(exportBtn) {
  * approved on the Life page, so there is nothing to protect by making it
  * opt-in — and a forgotten off-season is a hole in every character's life.
  */
+
+/**
+ * The transcript, regenerated when the writer has learned something since.
+ *
+ * Big Brother transcripts are stored strings, so every prose fix used to reach
+ * only weeks not yet played — the author's real season kept the old text and
+ * the honest version existed only for the future. The writer stamps a version;
+ * a stored transcript behind it is rebuilt from the same episode record it was
+ * always derived from, and saved so it happens once per week, not per view.
+ */
+function _freshTranscript(epRecord) {
+  try {
+    if (epRecord && epRecord.format === 'big-brother'
+      && typeof window.generateSummaryText === 'function'
+      && (epRecord.textV || 0) < (window.TEXT_BACKLOG_V || 1)) {
+      epRecord.summaryText = window.generateSummaryText(epRecord);
+      epRecord.textV = window.TEXT_BACKLOG_V;
+      try { window.saveGameState?.(); } catch { /* view still shows it */ }
+    }
+  } catch { /* the stored text is still an account */ }
+  return epRecord?.summaryText || '';
+}
+
 function _addLifeHookToggle(exportBtn) {
   if (document.getElementById('life-hook-on-export')) return;
   const wrap = document.createElement('label');
@@ -705,7 +728,7 @@ export function renderEpisodeView(epRecord) {
   </div>`;
 
   const _otEl = document.getElementById('ep-output-text');
-  _otEl.value = _spoilerFree ? '' : (epRecord.summaryText || '');
+  _otEl.value = _spoilerFree ? '' : _freshTranscript(epRecord);
   _otEl.style.display = '';
 
   // AI context is useful after every episode; final reports remain finale-only.
@@ -1193,7 +1216,7 @@ export function replayEpisode(epNum) {
 export function copyOutput() {
   const ta = document.getElementById('ep-output-text');
   const epRecord = viewingEpNum ? gs.episodeHistory.find(e=>e.num===viewingEpNum) : gs.episodeHistory[gs.episodeHistory.length-1];
-  const text = epRecord?.summaryText || ta.value;
+  const text = (epRecord && _freshTranscript(epRecord)) || ta.value;
   const btn = event.target;
   if (!text) { btn.textContent = 'Nothing to copy'; setTimeout(()=>btn.textContent='Copy', 1500); return; }
   if (navigator.clipboard?.writeText) {

@@ -153,3 +153,28 @@ it('the second cycle of a double never renders the first cycle\'s war room', asy
     }
   }
 });
+
+it('the transcript keeps the cycles apart too, and the honest flip lines', async () => {
+  // The text backlog is the complete retranscription of the VP narration —
+  // repo rule — so the same two fixes have to hold in prose.
+  reset();
+  window.generateSummaryText = undefined;   // let bb-run use summariseWeek; we call the writer directly
+  seasonConfig.twistSchedule = [{ episode: 2, type: 'bb-double-eviction' }];
+  simulateBBEpisode();
+  const ep2 = simulateBBEpisode();
+  expect(ep2.doubleEviction).toBeTruthy();
+  const { generateSummaryText } = await import('../js/text-backlog.js');
+  const text = generateSummaryText(ep2);
+  expect(text).toContain('DOUBLE EVICTION — THE SECOND CYCLE, LIVE');
+  expect(text).not.toContain('was talked off');
+  // The second cycle's plans section must not organize against a first-cycle
+  // nominee who is not on the second block.
+  const second = text.slice(text.indexOf('THE SECOND CYCLE, LIVE'));
+  const firstTargets = (ep2.voteOperation?.plans || []).map(p => p.target).filter(Boolean);
+  const cycle2Noms = ep2.doubleEviction.nominees || [];
+  for (const t of firstTargets) {
+    if (cycle2Noms.includes(t)) continue;
+    expect(second.includes(`evicting ${t}`),
+      `second cycle transcript still plans against cycle one's ${t}`).toBe(false);
+  }
+});

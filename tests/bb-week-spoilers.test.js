@@ -71,3 +71,29 @@ it('an old episode record with no houseAtStart still shows the evictee before th
       'the first feed is missing the person who leaves tonight').toBe(true);
   }
 });
+
+it('a double eviction second cycle counts on the record wall, even on an already-played episode', () => {
+  reset();
+  seasonConfig.twistSchedule = [{ episode: 2, type: 'bb-double-eviction' }];
+  simulateBBEpisode();
+  const ep2 = simulateBBEpisode();
+  expect(ep2.doubleEviction, 'the double did not fire').toBeTruthy();
+  const d = ep2.doubleEviction;
+
+  // Imitate the author's real season: the episode was simulated BEFORE
+  // safetyWinner/initialNominees were recorded on the double, so strip them —
+  // the wall must recover the wins from the second cycle's own acts.
+  delete ep2.doubleEviction.safetyWinner;
+  delete ep2.doubleEviction.initialNominees;
+
+  const ep3 = simulateBBEpisode();
+  const screens = buildBBWeekScreens(ep3);
+  const before = screens.find(s => s.id === 'bb-overview');
+  expect(before).toBeTruthy();
+
+  // The second-cycle HOH's row must carry a crown count. The row is
+  // `<strong class="bbst-name">NAME</strong>` followed by its stat spans.
+  const row = before.html.split('bbst-row').find(r => r.includes(`>${d.hoh}</strong>`));
+  expect(row, `no wall row for the second-cycle HOH ${d.hoh}`).toBeTruthy();
+  expect(/#f0a500/.test(row), `${d.hoh} won the fast-forward's crown and the wall shows nothing`).toBe(true);
+});

@@ -24725,6 +24725,27 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     // on a status screen would out the Invisible HOH by arithmetic.
     if (!h.hohSecret) bump(h.hoh, 'hoh');
     bump(h.vetoWinner, 'veto');
+    // ── THE SECOND CYCLE OF A DOUBLE IS A WEEK TOO ──
+    //
+    // Its HOH, veto and Block Buster live on ep.doubleEviction, and this loop
+    // never read it: win the fast-forward's crown and the wall carried you as
+    // somebody who had never held power in your life. Same fields, same rules,
+    // read from where that half of the night keeps them.
+    const d = h.doubleEviction;
+    if (d) {
+      bump(d.hoh, 'hoh');
+      bump(d.vetoWinner, 'veto');
+      // Recorded on the double from now on — and RECOVERED off the second
+      // cycle's own acts for every night already simulated, because the author
+      // is not resimulating a season to make a scoreboard honest.
+      const acts2 = (h.acts || []).filter(a => (a.segment || 1) === 2);
+      const safety2 = d.safetyWinner
+        ?? acts2.find(a => a.type === 'safety')?.winner ?? null;
+      bump(safety2, 'buster');
+      const noms2 = acts2.find(a => a.type === 'nominations');
+      [...new Set([...(d.initialNominees || noms2?.nominees || []), ...(d.nominees || [])])]
+        .forEach(n => bump(n, 'block'));
+    }
     // Winning your way off the block is a competition win and the house
     // watched you do it. The board counted crowns, vetoes and nominations and
     // not this, so somebody who took the Block Buster three weeks running
@@ -24745,10 +24766,30 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
   });
   // Only a house that plays it should carry the column. On a season without
   // the twist an always-empty icon in the key is a question nobody can answer.
-  const bustersInPlay = priorWeeks.some(h => h.safetyWinner);
+  const bustersInPlay = priorWeeks.some(h => h.safetyWinner || h.doubleEviction?.safetyWinner
+    || (h.doubleEviction && (h.acts || []).some(a => (a.segment || 1) === 2 && a.type === 'safety' && a.winner)));
 
-  const alliances = (snap.alliances || snap.namedAlliances || gs.namedAlliances || [])
-    .filter(a => a.active !== false && !a.dissolved && (a.members || []).some(m => stillIn.includes(m)));
+  // ── ALLIANCES AS OF THIS MOMENT, EVEN ON A RECORD THAT NEVER SAVED THEM ──
+  //
+  // openingState has the week-start list and is used verbatim. Records from
+  // before it existed fell through to the live store — which is the WHOLE
+  // SEASON'S alliance state, so the Before screen of week three showed week
+  // twelve's rooms and kept changing every time another week was played
+  // ("still updating"). The store carries formed weeks, dissolution weeks and
+  // recruitment history, so the list as this week opened is reconstructible:
+  // formed before this week, not yet dissolved, minus members recruited later.
+  // Opening cuts at the week's start; closing at its end — an alliance
+  // formed DURING the week belongs on the After picture and not the Before.
+  const _asOf = (ep.num || 1) + (opening ? 0 : 1);
+  const _allianceSrc = snap.alliances
+    || (snap.namedAlliances || gs.namedAlliances || [])
+      .filter(a => (a.formed ?? 0) < _asOf && !(a.dissolved && a.dissolved <= _asOf))
+      .map(a => ({ ...a,
+        members: (a.members || []).filter(m => !(a.history || []).some(h =>
+          h && h.type === 'recruited' && h.member === m && h.week >= _asOf)) }));
+  const alliances = _allianceSrc
+    .filter(a => a.active !== false || (a.dissolved && a.dissolved > _asOf))
+    .filter(a => (a.members || []).some(m => stillIn.includes(m)));
   const alliesOf = name => [...new Set(alliances.filter(a => (a.members || []).includes(name))
     .flatMap(a => a.members.filter(m => m !== name && stillIn.includes(m))))];
   const id = suffix => `bbst-${ep.num}-${suffix}`;

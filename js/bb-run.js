@@ -715,6 +715,8 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
   ep.alsoEliminated = weekB.evicted;
   ep.doubleEviction = {
     hoh: weekB.hoh, nominees: [...(weekB.finalNominees || [])],
+    initialNominees: [...(weekB.initialNominees || weekB.finalNominees || [])],
+    safetyWinner: weekB.safetyWinner || null,
     vetoWinner: weekB.vetoWinner || null, evicted: weekB.evicted,
     votes: { ...(weekB.votes || {}) }, houseAtStart: [...sideB],
     // The second half's veto, recorded rather than left to be diffed — same
@@ -1056,7 +1058,11 @@ export function simulateBBEpisode() {
     ep.doubleEviction = {
       hoh: second.hoh,
       nominees: [...(second.finalNominees || [])],
+      initialNominees: [...(second.initialNominees || second.finalNominees || [])],
       vetoWinner: second.vetoWinner || null,
+      // A three-nominee cycle plays its safety game too, and this record was
+      // dropping the win — the whole reason the Block Buster grief existed.
+      safetyWinner: second.safetyWinner || null,
       // See the note on the other double-eviction record.
       ...(second.vetoUsed !== undefined ? {
         vetoUsed: second.vetoUsed, vetoSaved: second.vetoSaved ?? null,

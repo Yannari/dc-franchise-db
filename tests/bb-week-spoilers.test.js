@@ -169,7 +169,13 @@ it('the transcript keeps the cycles apart too, and the honest flip lines', async
   expect(text).not.toContain('was talked off');
   // The second cycle's plans section must not organize against a first-cycle
   // nominee who is not on the second block.
-  const second = text.slice(text.indexOf('THE SECOND CYCLE, LIVE'));
+  // The slice ends where the second cycle does: everything after HOW THE
+  // PLANS CHANGED is the closing whole-week recap, which may legitimately
+  // name first-cycle targets. The first flaky run of this test failed on
+  // exactly that — the recap, not a leak.
+  const from = text.indexOf('THE SECOND CYCLE, LIVE');
+  const to = text.indexOf('HOW THE PLANS CHANGED', from);
+  const second = text.slice(from, to > from ? to : undefined);
   const firstTargets = (ep2.voteOperation?.plans || []).map(p => p.target).filter(Boolean);
   const cycle2Noms = ep2.doubleEviction.nominees || [];
   for (const t of firstTargets) {
@@ -177,4 +183,33 @@ it('the transcript keeps the cycles apart too, and the honest flip lines', async
     expect(second.includes(`evicting ${t}`),
       `second cycle transcript still plans against cycle one's ${t}`).toBe(false);
   }
+});
+
+it('a finished season with a stale ledger record is re-derived on load', async () => {
+  // bb-1's ledger entry was recorded by the deriver that could not see Big
+  // Brother betrayals, blindsides or showmances. The record's raw material
+  // lives in the season save, so the heal runs when that save is in memory —
+  // loading bb-1 once gives its returnees their history back.
+  reset();
+  const { recordSeasonToLedger, healLedgerRecord, activeSeasons, LEDGER_DERIVER_V } =
+    await import('../js/franchise-meta.js');
+  seasonConfig.seasonNumber = 77;
+  seasonConfig.franchiseMeta = true;
+  for (let w = 0; w < 9 && gs.phase !== 'complete'; w++) simulateBBEpisode();
+  gs.seasonNumber = 77;
+  gs.phase = 'complete';
+  gs.finaleResult = gs.finaleResult || { winner: gs.activePlayers[0], finalists: gs.activePlayers.slice(0, 2) };
+
+  expect(recordSeasonToLedger(null, 'live')).toBe(true);
+  const rec = activeSeasons()['77'];
+  expect(rec.deriverV).toBe(LEDGER_DERIVER_V);
+
+  // Age it the way the author's real record is aged.
+  delete rec.deriverV;
+  rec.players[Object.keys(rec.players)[0]].betrayed = [];
+  expect(healLedgerRecord()).toBe(true);
+  expect(activeSeasons()['77'].deriverV).toBe(LEDGER_DERIVER_V);
+
+  // Current records are left alone — the heal is once per deriver version.
+  expect(healLedgerRecord()).toBe(false);
 });

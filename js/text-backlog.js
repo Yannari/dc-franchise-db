@@ -6174,7 +6174,11 @@ export function generateBBSummaryText(ep) {
         if (act.tieBreak) ln(`  Tied — ${act.tieBreak.voter} breaks it against ${act.tieBreak.evict}.`);
         // WHO HAD IT WRONG — the verdict the screen holds back until the
         // votes are read belongs at the same point of the transcript.
-        const wrong = (ep.votePlans || []).filter(pl => pl.wrong);
+        // The second cycle's arithmetic, not the first's — the last of the
+        // four fields that leaked across the double's seam (operation,
+        // commitments, pleas, and this).
+        const wrong = ((((act.segment || 1) === 2
+          ? ep.doubleEviction?.votePlans : ep.votePlans)) || []).filter(pl => pl.wrong);
         if (wrong.length) {
           ln('');
           ln('  Who had it wrong:');

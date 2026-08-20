@@ -10,7 +10,7 @@ import { seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug, resolveAvatarSlug,
   hasReturneeArt, whenReturneeArtKnown } from './players.js';
 import { activeSeasons, franchiseHistorySummary,
-  clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta } from './franchise-meta.js';
+  clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta, healLedgerRecord } from './franchise-meta.js';
 import { persistFranchiseLedger, applyPreAlliances } from './savestate.js';
 
 export function showTab(name) {
@@ -560,6 +560,9 @@ export function _applySeasonSave(data) {
   gs = data.gs;
   repairGsSets(gs);
   saveGameState();
+  // A finished season whose ledger record predates the current deriver is
+  // re-recorded from the save just loaded — see healLedgerRecord.
+  try { healLedgerRecord(); } catch { /* the load is the point; the heal is a bonus */ }
   renderConfig(); renderCast(); renderTribeBuilder(); renderTribeSelect();
   if (typeof renderRelList === 'function') renderRelList();
   if (typeof renderAllianceList === 'function') renderAllianceList();

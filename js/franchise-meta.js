@@ -1221,6 +1221,43 @@ export function wipeLedger() {
 }
 
 // Idempotent: keyed by season number; live records always overwrite backfill.
+// The deriver's version. Bumped when deriveSeasonRecord learns to read
+// something it used to miss — v2 is the Big Brother shapes (ballot flips,
+// blindsides, and the players:[a,b] showmance form) — so records made by an
+// older deriver can be found and re-made from their own save.
+export const LEDGER_DERIVER_V = 2;
+
+/**
+ * Re-derive a stale ledger record from the save that is IN MEMORY.
+ *
+ * The ledger cannot heal itself at boot: a record's raw material (ballots,
+ * episode history) lives in the season save, not in the ledger. So this runs
+ * whenever a save is loaded — if it is a finished season whose ledger record
+ * predates the current deriver, the record is made again from the same state
+ * it was always made from. Loading bb-1 once is what gives its returnees
+ * their betrayals, blindsides and showmances back.
+ */
+export function healLedgerRecord() {
+  try {
+    // "A season is in memory" is the history, not the init flag — a save
+    // applied by the loader has one; a bare page does not.
+    if (!gs || !(gs.episodeHistory || []).length) return false;
+    const complete = gs.phase === 'complete' || !!gs.finaleResult?.winner;
+    if (!complete) return false;
+    const num = Number(gs.seasonNumber || seasonConfig.seasonNumber);
+    if (!num) return false;
+    const existing = activeSeasons()[String(num)];
+    // Only live records: a backfill was never derived from a save and has
+    // nothing to be re-derived from.
+    if (!existing || existing.source !== 'live') return false;
+    if ((existing.deriverV || 1) >= LEDGER_DERIVER_V) return false;
+    if (activeFranchise().locked) return false;
+    const ok = recordSeasonToLedger(null, 'live');
+    if (ok) console.log(`Ledger record for season ${num} re-derived (deriver v${LEDGER_DERIVER_V}).`);
+    return ok;
+  } catch { return false; }
+}
+
 export function recordSeasonToLedger(_ep, source = 'live') {
   const af = activeFranchise();
   if (af.locked) {
@@ -1233,7 +1270,8 @@ export function recordSeasonToLedger(_ep, source = 'live') {
   if (source === 'live' && (seasonConfig?.franchiseMeta === false || seasonConfig?.franchiseMetaAutoRecord === false)) return false;
   const rec = deriveSeasonRecord();
   if (!rec) return false;
-  rec.source = source; // 'live' | 'manual' (Task 8b) — backfill entries carry per-player backfilled flags
+  rec.source = source;
+  rec.deriverV = LEDGER_DERIVER_V; // 'live' | 'manual' (Task 8b) — backfill entries carry per-player backfilled flags
   const _num = Number(gs?.seasonNumber || seasonConfig.seasonNumber);
   activeSeasons()[String(_num)] = rec;
   // Descriptive-only: detect achievements + evaluate objectives from live gs.

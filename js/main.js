@@ -379,6 +379,10 @@ async function init() {
   // Resolve returnee avatars for the loaded cast (uses -returnee.png when present)
   playersMod.refreshReturneeAvatars();
 
+  // A finished season restored straight from localStorage never passes
+  // through the season-save loader, so the ledger heal runs here too.
+  try { franchiseMetaMod.healLedgerRecord(); } catch { /* boot must not care */ }
+
   // ── WHAT THE CAST HAVE BEEN DOING SINCE ──────────────────────────────
   //
   // The approved life log, loaded once and parked on window for

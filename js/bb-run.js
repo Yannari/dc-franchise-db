@@ -190,6 +190,10 @@ export function weekToEpisode(week) {
     // Carried for the visual player: the cold open opens on the whole house,
     // and the nomination screen shows the HOH's private plan.
     houseAtStart: [...(week.houseAtStart || [])],
+    // The yearbook page draws real portraits grouped by clique, so it needs
+    // the sorting AS IT WAS, not as it is now.
+    teams: (week.teams || []).map(t => ({ ...t, members: [...(t.members || [])] })),
+    teamsAreOver: !!week.teamsAreOver,
     outgoingHoh: (week.acts || []).find(a => a.type === 'hoh')?.outgoingHoh || null,
     plan: week.plan || null,
     // The HOH is the week's safety, which is the closest true analogue.
@@ -714,6 +718,7 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
   ep.houseAtStart = [...house];
   ep.alsoEliminated = weekB.evicted;
   ep.doubleEviction = {
+    votePlans: (weekB.votePlans || []).map(v => ({ ...v })),
     voteOperation: weekB.voteOperation ? {
       majority: weekB.voteOperation.majority,
       plans: (weekB.voteOperation.plans || []).map(p => ({
@@ -1084,6 +1089,7 @@ export function simulateBBEpisode() {
     ep.doubleEviction = {
       voteOperation: leanOp2,
       voteCommitments: (second.voteCommitments || []).map(c => ({ ...c })),
+      votePlans: (second.votePlans || []).map(v => ({ ...v })),
       hoh: second.hoh,
       nominees: [...(second.finalNominees || [])],
       initialNominees: [...(second.initialNominees || second.finalNominees || [])],

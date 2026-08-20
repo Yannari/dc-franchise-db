@@ -19649,58 +19649,86 @@ function _rpThemeBeatCamp(ep, act) {
 }
 
 /**
- * The Cliques — a page of the yearbook, and what happens when it stops working.
+ * Summer School — an actual page of the yearbook.
  *
- * The only turn on this shelf that is a SYSTEM FAILING rather than a mood
- * darkening. So the scene keeps its palette almost exactly and breaks its
- * GRID: four ruled columns with names filed under them, and in the second
- * register the rules go crooked, the headings empty out, and the names sit on
- * a page with nothing to sort them by.
+ * The first version of this drew abstract ruled bars standing in for names,
+ * which is a diagram of a yearbook rather than a yearbook. A yearbook is
+ * PORTRAITS: a grid of faces, each with a name under it and a caption under
+ * that, arranged in columns with a heading over each one. So that is what this
+ * draws, out of the real house and the real sorting.
  *
- * Nothing here gets angrier. It stops working, which from a filing system is
- * the worse of the two.
+ * The captions are the cruelty. `Most Likely To —` is funny once and then it
+ * is a sentence somebody has to live under for the rest of the book, which is
+ * the whole thesis of the theme: a person reduced to four words by a hand they
+ * never saw. They are deterministic per houseguest, so the same person carries
+ * the same caption all season — a caption that changed every week would be a
+ * joke rather than a verdict.
+ *
+ * ── THE TURN ─────────────────────────────────────────────────────────
+ *
+ * The hostile register is not a colour change and not a mood. The page is the
+ * SAME PAGE with the sorting taken out of it: the headings blank, the captions
+ * struck through, the columns collapsed into one undifferentiated block of
+ * faces. Everybody is still here. There is simply nothing left to file them
+ * under, and a book that only knew how to sort people has nothing else to do.
  */
+const _CQ_CAPTIONS = {
+  athletes: ['MOST LIKELY TO WIN SOMETHING', 'BEST UNDER PRESSURE', 'HARDEST TO BEAT',
+    'MOST IMPROVED', 'CAPTAIN OF EVERYTHING', 'FIRST PICKED'],
+  brains: ['MOST LIKELY TO OUTPLAN YOU', 'ALWAYS THREE WEEKS AHEAD', 'READS THE ROOM',
+    'MOST LIKELY TO SEE IT COMING', 'BEST MEMORY', 'QUIETEST DANGER'],
+  populars: ['BEST LIKED', 'MOST LIKELY TO BE MISSED', 'KNOWS EVERYBODY',
+    'BEST AT BREAKFAST', 'FRIENDLIEST', 'HARDEST TO VOTE OUT'],
+  offbeats: ['MOST LIKELY TO SURPRISE YOU', 'FITS NOWHERE, THRIVES ANYWAY',
+    'LEAST PREDICTABLE', 'MOST LIKELY TO BE UNDERESTIMATED', 'OWN CATEGORY',
+    'BEST STORY'],
+};
+
+function _cqCaption(name, teamId) {
+  const pool = _CQ_CAPTIONS[teamId] || _CQ_CAPTIONS.offbeats;
+  let h = 0;
+  for (let i = 0; i < String(name).length; i++) {
+    h = (h * 31 + String(name).charCodeAt(i)) >>> 0;
+  }
+  return pool[h % pool.length];
+}
+
 function _rpThemeBeatCliques(ep, act) {
   const week = ep?.num ?? ep?.episode ?? '';
   const hostile = act?.mood === 'hostile';
   const ink = hostile ? '#9fb0c4' : '#7dd3fc';
   const glow = hostile ? '#cbd5e1' : '#bae6fd';
-  const paper = hostile ? '#0d1117' : '#0a0f16';
 
-  // Deterministic ruled lines, so a re-render does not re-typeset the page.
-  let h = 0;
-  for (const ch of `${act?.hook || ''}${week}${act?.line?.length || 0}`) {
-    h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  }
+  // The sorting AS IT WAS this week — stamped onto the episode for exactly
+  // this, so a replay of week two draws week two's board.
+  const teams = (ep?.teams || []).filter(t => (t.members || []).length);
+  const roster = ep?.houseAtStart || [];
+  const over = hostile || ep?.teamsAreOver;
 
-  const HEADINGS = ['ATHLETES', 'BRAINS', 'POPULARS', 'OFF-BEATS'];
-  const columns = HEADINGS.map((label, i) => {
-    const x = 42 + i * 134;
-    // Four name-lines per column. In the second register they are still there
-    // and the heading above them is not — the names outlive the sorting.
-    const rows = Array.from({ length: 4 }, (_, r) => {
-      h = (h * 1103515245 + 12345) >>> 0;
-      const w = 58 + (h % 40);
-      const y = 74 + r * 19;
-      const skew = hostile ? ((h >> 5) % 5) - 2 : 0;
-      return `<rect x="${x + skew}" y="${y}" width="${w}" height="4" rx="1"
-        fill="${ink}" opacity="${hostile ? '.30' : '.55'}"/>`;
-    }).join('');
-    const rule = hostile
-      ? `<path d="M ${x - 10},58 L ${x - 10 + ((h % 7) - 3)},156" stroke="${ink}"
-           stroke-width=".8" opacity=".22"/>`
-      : `<line x1="${x - 10}" y1="58" x2="${x - 10}" y2="156" stroke="${ink}"
-           stroke-width=".8" opacity=".38"/>`;
-    const head = hostile
-      ? `<rect x="${x}" y="46" width="86" height="7" rx="1" fill="${ink}" opacity=".10"/>`
-      : `<text x="${x}" y="52" font-family="Oswald,Impact,sans-serif" font-size="10"
-           letter-spacing="1.6" fill="${ink}" opacity=".92">${label}</text>`;
-    return `${rule}${head}${rows}`;
-  }).join('');
+  // A portrait: face, name, and the caption somebody wrote for them.
+  const portrait = (n, teamId) => `
+    <figure class="bbcl-p${over ? ' is-unfiled' : ''}">
+      <div class="bbcl-frame">${_bbAvatar(n, 54)}</div>
+      <figcaption class="bbcl-nm">${_bbEsc(n)}</figcaption>
+      <div class="bbcl-cap">${over ? '&mdash;' : _bbEsc(_cqCaption(n, teamId))}</div>
+    </figure>`;
 
-  const plaque = hostile
+  // FILED: four columns under four headings.
+  // UNFILED: one block of the same faces, in the order they happen to be in,
+  // which is the point — there is no order any more.
+  const page = (over || !teams.length)
+    ? `<div class="bbcl-unfiled">${
+      (teams.length ? teams.flatMap(t => t.members) : roster)
+        .map(n => portrait(n, null)).join('')}</div>`
+    : `<div class="bbcl-cols">${teams.map(t => `
+        <section class="bbcl-col">
+          <h4 class="bbcl-head">${_bbEsc((t.name || '').replace(/^The /, ''))}</h4>
+          ${(t.members || []).map(n => portrait(n, t.id)).join('')}
+        </section>`).join('')}</div>`;
+
+  const plaque = over
     ? ['No headings', 'Nothing fits']
-    : ['Four headings', 'Not subject to appeal'];
+    : [`${teams.length} headings`, 'Not subject to appeal'];
   const label = { open: 'This week', noms: 'The block', veto: 'The veto',
     vote: 'Filed', finale: 'Last page', crown: 'Closed' }[act?.hook] || 'The page';
 
@@ -19714,7 +19742,44 @@ function _rpThemeBeatCliques(ep, act) {
       .bbcl.is-hostile .bbcl-sign{text-shadow:none;opacity:.68;letter-spacing:.5em}
       .bbcl-week{font-family:var(--font-mono,ui-monospace,monospace);font-size:9px;
         letter-spacing:.3em;color:#64748b;margin-bottom:14px}
-      .bbcl-page{display:block;width:100%;max-width:620px;height:auto;margin:0 auto 16px}
+
+      /* THE PAGE. Off-white stock, a gutter down the middle, a hard rule at
+         the top — a book, not a screen. */
+      .bbcl-book{position:relative;max-width:720px;margin:0 auto 16px;padding:16px 14px 14px;
+        border-radius:2px;background:linear-gradient(180deg,#f3f1e9,#e9e6db);
+        box-shadow:0 16px 40px -20px rgba(0,0,0,.95),inset 0 0 0 1px rgba(0,0,0,.10)}
+      .bbcl-book::before{content:'';position:absolute;left:50%;top:8px;bottom:8px;width:1px;
+        background:rgba(26,32,40,.10)}
+      .bbcl-title{font-family:"Trade Gothic Bold Condensed","Oswald",Impact,sans-serif;
+        font-size:11px;letter-spacing:3px;color:#3c4552;border-bottom:2px solid #3c4552;
+        padding-bottom:5px;margin:0 4px 12px}
+
+      .bbcl-cols{display:flex;gap:8px;justify-content:center;align-items:flex-start}
+      .bbcl-col{flex:1 1 0;min-width:0;padding:0 4px}
+      .bbcl-col+.bbcl-col{border-left:1px solid rgba(26,32,40,.12)}
+      .bbcl-head{font-family:"Trade Gothic Bold Condensed","Oswald",Impact,sans-serif;
+        font-size:9.5px;letter-spacing:2px;color:#1f2733;margin:0 0 8px;
+        border-bottom:1px solid rgba(26,32,40,.30);padding-bottom:3px}
+
+      /* the unfiled state: same faces, no columns, no order */
+      .bbcl-unfiled{display:flex;flex-wrap:wrap;gap:6px 4px;justify-content:center;padding:2px}
+      .bbcl-unfiled .bbcl-p{width:62px}
+
+      .bbcl-p{margin:0 0 9px;text-align:center}
+      .bbcl-frame{width:54px;height:54px;margin:0 auto;overflow:hidden;
+        background:#cfd4d8;border:1px solid rgba(26,32,40,.35);
+        box-shadow:0 1px 0 rgba(255,255,255,.7)}
+      .bbcl-frame img,.bbcl-frame .bb-av,.bbcl-frame .rp-portrait{
+        width:100%;height:100%;object-fit:cover;filter:grayscale(.35) contrast(1.05)}
+      .bbcl-nm{font-size:9.5px;font-weight:700;color:#1f2733;margin-top:4px;
+        overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .bbcl-cap{font-family:var(--font-mono,monospace);font-size:6.5px;letter-spacing:.5px;
+        color:#5b6675;margin-top:1px;line-height:1.25;min-height:8px}
+
+      /* struck through, not removed — the person is still in the book */
+      .bbcl-p.is-unfiled .bbcl-cap{text-decoration:line-through;color:#8b95a3}
+      .bbcl-p.is-unfiled .bbcl-frame{filter:contrast(.9)}
+
       .bbcl-card{max-width:620px;margin:0 auto;padding:16px 18px 14px;border-radius:4px;
         background:rgba(14,20,28,.86);border:1px solid rgba(125,211,252,.18)}
       .bbcl.is-hostile .bbcl-card{border-color:rgba(159,176,196,.15)}
@@ -19726,21 +19791,21 @@ function _rpThemeBeatCliques(ep, act) {
       .bbcl-plaque{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
         font-family:var(--font-mono,monospace);font-size:8.5px;letter-spacing:.16em;
         color:#64748b;border-top:1px solid rgba(125,211,252,.16);padding-top:9px}
-      @media(prefers-reduced-motion:reduce){.bbcl-page{animation:none}}
+      @media(max-width:620px){
+        .bbcl-cols{flex-wrap:wrap}
+        .bbcl-col{flex:1 1 45%}
+        .bbcl-col+.bbcl-col{border-left:0}
+      }
     </style>
-    <div class="bbcl-sign">${hostile ? 'Unfiled' : 'The Yearbook'}</div>
+    <div class="bbcl-sign">${over ? 'Unfiled' : 'The Yearbook'}</div>
     <div class="bbcl-week">WEEK ${_bbEsc(String(week))}</div>
 
-    <svg class="bbcl-page" viewBox="0 0 620 180" role="img"
-         aria-label="${hostile ? 'A page whose headings no longer apply' : 'Four headings with names filed under them'}">
-      <rect x="0" y="0" width="620" height="180" fill="${paper}"/>
-      <rect x="24" y="20" width="572" height="146" rx="2" fill="none"
-            stroke="${ink}" stroke-width=".9" opacity="${hostile ? '.20' : '.34'}"/>
-      <text x="310" y="36" text-anchor="middle" font-family="monospace" font-size="7"
-            letter-spacing="2.4" fill="${ink}" opacity="${hostile ? '.35' : '.60'}">${
-  hostile ? 'THESE GROUPINGS NO LONGER APPLY' : 'HOUSE GROUPINGS · NOT SUBJECT TO APPEAL'}</text>
-      ${columns}
-    </svg>
+    <div class="bbcl-book">
+      <div class="bbcl-title">${over
+    ? 'THESE GROUPINGS NO LONGER APPLY'
+    : 'HOUSE GROUPINGS &#183; NOT SUBJECT TO APPEAL'}</div>
+      ${page}
+    </div>
 
     <div class="bbcl-card">
       <div class="bbcl-who">${_bbEsc(act?.speaker || '')}</div>
@@ -24204,6 +24269,9 @@ function _bbSecondCycleView(ep) {
     // this cycle's own eviction act, which is honest rather than wrong.
     voteOperation: d.voteOperation || null,
     voteCommitments: d.voteCommitments || [],
+    // Same seam, fourth field: "who had it wrong" and the house read both
+    // count ep.votePlans, which is the first cycle's arithmetic.
+    votePlans: d.votePlans || [],
     finalPleas: [],
     dealBreaks: [],
     evictionInterview: null,

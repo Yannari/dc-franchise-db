@@ -6668,6 +6668,21 @@ export function simulateBBWeek(options = {}) {
   // gone and every screen of the week — including Monday's first feed — said
   // his power was LOST WITH ITS HOLDER before the audience had seen him leave.
   // The band depicts the week; the week was lived with him in it.
+  // THE CLIQUES AS THEY STOOD THIS WEEK, stamped for the same reason the mood
+  // is: a replay of week two must draw the board week two actually had. A
+  // screen reading live `gs.bb.teams` would redraw every past week with the
+  // present roster, and would show a dissolved season as never sorted at all.
+  //
+  // Stamped HERE, at the end of the week, and not up beside `themeMood` where
+  // it started. The sorting happens at the premiere slot — six hundred lines
+  // BELOW the mood stamp — so an early stamp caught week one before anybody
+  // had been sorted, and handed the yearbook an empty board on the one week
+  // it most needed a full one.
+  try {
+    const _tm = allTeams();
+    week.teams = _tm.length ? _tm : null;
+    week.teamsAreOver = _tm.length ? teamsDissolved() : false;
+  } catch { week.teams = null; }
   week.powerLedger = powerLedgerFor(week.num, week.houseAtStart || house);
   // The same argument for the money. PRIVATE: this is a snapshot for a later
   // surface and for a replay, never something the house is shown — what the

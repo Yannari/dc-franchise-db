@@ -39,7 +39,7 @@ import { airKey, airLabel, byAirDate } from './franchise-calendar.js';
 import { significanceOf, lineFor } from './life-events.js';
 import { fameOf } from './life-resolver.js';
 import { showWords } from './shows.js';
-import { styleOf, composeEpisode } from './kristal-voice.js';
+import { styleOf, voiceOf, composeEpisode } from './kristal-voice.js';
 
 export const KRISTAL = { slug: 'kristal', name: 'Kristal' };
 
@@ -241,7 +241,7 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
         id: `kt-${sid}-${slug}`, num: ++epNum, kind: 'debrief',
         afterSeason: sid, when: airLabel(season), season,
         guest: slug, guestName: nameOf(slug),
-        archetype: prof.archetype || '', style: styleOf(prof),
+        archetype: prof.archetype || '', style: styleOf(prof), voice: voiceOf(prof),
         facts: factsFor(guest.d, season, names, careers),
         topics, listeners,
         // Who a viral episode lands on: the messiest topic's other party.
@@ -276,7 +276,7 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
         id: `kt-${sid}-life-${slug}`, num: ++epNum, kind: 'life',
         afterSeason: sid, when: airLabel(season), season,
         guest: slug, guestName: nameOf(slug),
-        archetype: prof.archetype || '', style: styleOf(prof),
+        archetype: prof.archetype || '', style: styleOf(prof), voice: voiceOf(prof),
         facts: {
           ...factsFor(lastDetail,
             seasons.find(x => x.seasonId === lastDetail.seasonId) || season, names, careers),

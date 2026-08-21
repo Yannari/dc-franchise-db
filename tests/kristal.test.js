@@ -126,7 +126,7 @@ describe('numbers no page can disagree about', () => {
 //
 // "dont u think the episode will be repetitive ... its shallow" — v2's answer
 // is styles, presses, continuity and fact slots, and these hold each down.
-import { styleOf, composeEpisode, episodeComments, STYLES } from '../js/kristal-voice.js';
+import { styleOf, voiceOf, composeEpisode, episodeComments, STYLES } from '../js/kristal-voice.js';
 
 describe('the voice styles', () => {
   it('lets stats override the archetype — a villain with no temper control is a hothead first', () => {
@@ -152,6 +152,49 @@ describe('the voice styles', () => {
         expect(x.a).not.toMatch(/\{|undefined/);
       }
     }
+  });
+});
+
+describe('layered contestant voices', () => {
+  const archetypes = ['mastermind', 'schemer', 'hothead', 'challenge-beast',
+    'social-butterfly', 'loyal-soldier', 'wildcard', 'chaos-agent', 'floater',
+    'underdog', 'hero', 'villain', 'goat', 'perceptive-player', 'showmancer'];
+  const episode = voice => composeEpisode({
+    id: `layer-${voice.archetype}-${voice.traits.join('-')}`, kind: 'debrief',
+    voice, guestName: 'X', tier: 'solid', season: { format: 'big-brother', title: 'S' },
+    facts: { season: 'S', placement: '5th', votes: '6', rival: 'R', rivalName: 'R' },
+    topics: [{ id: 'the-boot' }, { id: 'the-rivalry', about: 'R' }, { id: 'behind-the-scenes' }],
+  }, { words: { player: 'houseguest', players: 'houseguests', exit: 'evicted' } });
+
+  it('recognises every canonical archetype instead of reducing the profile to a bucket', () => {
+    for (const archetype of archetypes) {
+      const voice = voiceOf({ archetype, stats: {} });
+      expect(voice.archetype).toBe(archetype);
+      expect(voice.cadence).toBeTruthy();
+      expect(episode(voice).exchanges[0].a).toBeTruthy();
+    }
+  });
+
+  it('keeps exact archetypes audible when their fallback cadence is identical', () => {
+    const hero = voiceOf({ archetype: 'hero', stats: { loyalty: 7 } });
+    const soldier = voiceOf({ archetype: 'loyal-soldier', stats: { loyalty: 7 } });
+    expect(hero.cadence).toBe(soldier.cadence);
+    expect(episode(hero).exchanges[0].a).not.toBe(episode(soldier).exchanges[0].a);
+  });
+
+  it('uses high and low values across all nine stats as voice traits', () => {
+    const high = voiceOf({ archetype: 'floater', stats: {
+      physical: 9, endurance: 9, mental: 9, social: 9, strategic: 9,
+      loyalty: 9, boldness: 9, intuition: 9, temperament: 9,
+    } });
+    const low = voiceOf({ archetype: 'floater', stats: {
+      physical: 2, endurance: 2, mental: 2, social: 2, strategic: 2,
+      loyalty: 2, boldness: 2, intuition: 2, temperament: 2,
+    } });
+    expect(high.traits).toHaveLength(9);
+    expect(low.traits).toHaveLength(9);
+    expect(episode(high).exchanges[0].a).not.toBe(episode(low).exchanges[0].a);
+    expect(episode(high).exchanges[2].a).not.toBe(episode(low).exchanges[2].a);
   });
 });
 

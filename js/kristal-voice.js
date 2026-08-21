@@ -64,6 +64,186 @@ export function styleOf({ archetype = '', stats = {} } = {}) {
   return (s.strategic ?? 5) >= 6 ? 'analyst' : (s.social ?? 5) >= 6 ? 'charmer' : 'deadpan';
 }
 
+// A style is only the cadence fallback. The actual voice keeps the exact
+// archetype and every extreme stat, so two people who share a cadence do not
+// collapse into the same speaker.
+const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+  'loyalty', 'boldness', 'intuition', 'temperament'];
+
+export function voiceOf({ archetype = '', stats = {} } = {}) {
+  const values = Object.fromEntries(STAT_KEYS.map(k => [k,
+    Number.isFinite(Number(stats?.[k])) ? Number(stats[k]) : 5]));
+  const traits = STAT_KEYS.flatMap(k => values[k] >= 8 ? [`high-${k}`]
+    : values[k] <= 3 ? [`low-${k}`] : []);
+  return { archetype: archetype || 'custom', cadence: styleOf({ archetype, stats: values }),
+    stats: values, traits };
+}
+
+// Exact archetypes contribute worldview. These are short additions rather
+// than complete canned answers: the subject of the question still comes from
+// the record, while the archetype changes what the guest notices about it.
+const ARCHETYPE_LAYER = {
+  mastermind: {
+    win: 'I was always trying to leave myself more than one path forward.',
+    out: 'My mistake was building a plan that worked on paper after the relationships had already changed.',
+    conflict: 'I kept treating the disagreement like a problem to solve when it had become personal.',
+    bts: 'Most of my game happened in small conversations that only made sense when you put them together.',
+  },
+  schemer: {
+    win: 'I made short-term deals and knew which ones I was actually prepared to keep.',
+    out: 'Eventually too many people had compared the different promises I made them.',
+    conflict: 'We both knew the relationship was useful before either of us believed it was trustworthy.',
+    bts: 'The episodes showed the flips, but not how long I spent preparing somewhere else to land.',
+  },
+  hothead: {
+    win: 'I played emotionally, but emotion also told people exactly where I stood.',
+    out: 'Once I felt cornered, I reacted before I understood what the room was doing.',
+    conflict: 'I let the argument become more important than the decision underneath it.',
+    bts: 'There was usually a long buildup before the reaction that made the episode.',
+  },
+  'challenge-beast': {
+    win: 'Winning challenges gave me options, but it also meant I rarely got to look harmless.',
+    out: 'Once I was vulnerable, nobody wanted to give me another chance to win safety.',
+    bts: 'Training and recovery shaped more of my routine than the episodes had time to show.',
+  },
+  'social-butterfly': {
+    win: 'The casual conversations were my information network; they were never just small talk.',
+    out: 'I confused being liked with people being willing to risk their games for me.',
+    conflict: 'I tried to keep everyone comfortable for so long that the honest conversation came too late.',
+    bts: 'A lot of my strategy looked like friendship because the friendship was part of the strategy.',
+  },
+  'loyal-soldier': {
+    win: 'Keeping my word made me predictable, but it also made people willing to build plans with me.',
+    out: 'I stayed loyal after that loyalty stopped being good for my position.',
+    conflict: 'What hurt was not the move itself; it was realizing the promise meant more to me than it did to them.',
+    bts: 'I had opportunities to change sides. I chose not to, and that choice was part of my game.',
+  },
+  wildcard: {
+    win: 'I changed direction quickly, which was risky but made it difficult to plan around me.',
+    out: 'Eventually my flexibility looked like unreliability to everyone else.',
+    conflict: 'I acted on instinct, then had to explain a decision I had barely explained to myself.',
+    bts: 'Some choices looked random because the quick calculation behind them never made the episode.',
+  },
+  'chaos-agent': {
+    win: 'I created uncertainty on purpose because settled groups did not leave much room for me.',
+    out: 'The disruption stopped being useful once everyone agreed I was the common problem.',
+    conflict: 'I pushed the tension because it benefited me, and then lost control of where it went.',
+    bts: 'Not every argument was accidental; sometimes I needed people looking at each other instead of me.',
+  },
+  floater: {
+    win: 'Staying flexible let me work with the majority without pretending I controlled it.',
+    out: 'I stayed out of danger, but I also waited too long to build something that belonged to me.',
+    conflict: 'I avoided choosing a side until both sides stopped trusting me.',
+    bts: 'My game was mostly listening, adjusting and knowing when not to become the subject of the room.',
+  },
+  underdog: {
+    win: 'Being underestimated gave me time, but I still had to do something useful with it.',
+    out: 'I spent so much time surviving the immediate danger that I never secured the round after it.',
+    conflict: 'I was used to defending my place in the game, so I sometimes heard disagreement as dismissal.',
+    bts: 'The difficult days mattered because surviving them changed how the others saw me.',
+  },
+  hero: {
+    win: 'I wanted to win without becoming someone I would dislike afterward.',
+    out: 'I knew the principled choice was not always the safest one, and I made it anyway.',
+    conflict: 'I was defending someone else, but I can admit I made the situation harder by assuming I was morally right.',
+    bts: 'Some decisions only make sense if you understand who I felt responsible for protecting.',
+  },
+  villain: {
+    win: 'I was willing to be the visible threat if it meant other people were reacting to my game.',
+    out: 'I made enemies openly and eventually gave them enough common ground to work together.',
+    conflict: 'I knew I was escalating it. At the time, I believed backing down would cost me more.',
+    bts: 'The confrontations were real, but so were the smaller relationships that kept me safe afterward.',
+  },
+  goat: {
+    win: 'People underestimated how much information reaches the person nobody considers dangerous.',
+    out: 'I let other people define my role and waited too long to show that I had a game of my own.',
+    conflict: 'I avoided confrontation so completely that people started making decisions for me.',
+    bts: 'I understood more than I said, but understanding something privately is not the same as acting on it.',
+  },
+  'perceptive-player': {
+    win: 'Reading the room early gave me time to respond before a plan became fixed.',
+    out: 'I noticed the warning signs and then talked myself out of trusting them.',
+    conflict: 'I could tell their explanation was incomplete, but knowing that did not tell me what they were hiding.',
+    bts: 'Small changes in tone and routine told me more than the formal strategy meetings did.',
+  },
+  showmancer: {
+    win: 'My closest relationship was emotional and strategic at the same time; separating those would be dishonest.',
+    out: 'Once everyone treated us as one unit, either of us being dangerous made both of us vulnerable.',
+    conflict: 'I was protecting a relationship as well as a game, and that made compromise much harder.',
+    romance: 'What we felt was real, even when the choices around it were strategic.',
+    bts: 'The relationship included ordinary, quiet moments that explain more than the dramatic scenes do.',
+  },
+};
+
+// Stats contribute the substance of an answer. High and low values are both
+// voices: low strategy or social skill should be audible, not treated as an
+// absence of characterization.
+const STAT_LAYER = {
+  out: {
+    'high-strategic': 'I understood the plan, but I kept checking whether it still made sense instead of whether the people were still committed to it.',
+    'low-strategic': 'I did not have a real backup once the vote moved. I kept asking the same people for a different answer.',
+    'high-social': 'I thought my relationships would turn into votes when I needed them. Most did, but not enough.',
+    'low-social': 'I stayed close to too few people, so when I needed help there was no deeper relationship to call on.',
+    'high-loyalty': 'I protected people because I had given them my word, even after that stopped helping my game.',
+    'low-loyalty': 'I changed sides often enough that everyone could imagine me doing it to them next.',
+    'high-boldness': 'I pushed the move too openly and gave the opposition a clear reason to organize.',
+    'low-boldness': 'I waited for someone else to begin the move I needed, and nobody did.',
+    'high-intuition': 'I felt the room change and convinced myself not to trust the feeling.',
+    'low-intuition': 'I missed the warning signs because people kept speaking to me as if everything were normal.',
+    'low-temperament': 'I let one argument define the entire round, and people voted based on how that made them feel.',
+    'high-temperament': 'I stayed calm, but that also made people think I was comfortable when I should have been asking harder questions.',
+    'high-physical': 'Challenge strength kept me safe before, but the first vulnerable round gave everyone the same opportunity.',
+    'high-endurance': 'I had relied on being able to outlast the danger physically. That round required relationships instead.',
+  },
+  win: {
+    'high-strategic': 'I kept several possible endgames open until I knew which one I could actually reach.',
+    'low-strategic': 'I did not map out the whole season. I focused on the next decision and leaned on people I trusted.',
+    'high-social': 'People shared information with me because our relationships felt personal, not transactional.',
+    'low-social': 'I was never the center of the room, so I learned to work through a few dependable relationships.',
+    'high-loyalty': 'Keeping my commitments limited some options, but it made the commitments I did offer valuable.',
+    'low-loyalty': 'I treated every agreement as something that had to keep earning its place in my game.',
+    'high-boldness': 'When the safe option would only delay the danger, I took the larger risk.',
+    'low-boldness': 'I rarely needed credit for a move. Staying underestimated was more useful.',
+    'high-intuition': 'I often felt a shift before anyone confirmed it, and this time I acted on that feeling.',
+    'high-physical': 'Winning when I needed safety gave the rest of my game time to work.',
+    'high-endurance': 'Being able to last through difficult challenges gave me control over a few crucial rounds.',
+  },
+  conflict: {
+    'high-loyalty': 'I expected the same loyalty I was offering, and I took the difference personally.',
+    'low-loyalty': 'I understood why they chose themselves because I would have done the same thing.',
+    'high-social': 'I kept trying to preserve the relationship after the strategic trust had already gone.',
+    'low-social': 'I avoided the direct conversation until both of us were relying on assumptions.',
+    'low-temperament': 'Once I felt attacked, I stopped listening for the part that might have been true.',
+    'high-temperament': 'I stayed controlled in the moment, but being calm did not mean I was unaffected.',
+    'high-intuition': 'I knew their explanation was incomplete; I just misread what they were protecting.',
+    'low-intuition': 'I believed the first explanation because I did not see what had already changed underneath it.',
+  },
+  romance: {
+    'high-loyalty': 'Once I committed to the relationship, protecting it became part of every decision I made.',
+    'low-loyalty': 'The relationship was real, but I never believed it removed our responsibility to play separate games.',
+    'high-social': 'We understood each other quickly, and that closeness made it impossible to look like two independent players.',
+    'low-social': 'It was one of the few relationships where I felt completely comfortable, which made me depend on it too much.',
+  },
+  bts: {
+    'high-mental': 'I spent a lot of time organizing information and replaying conversations before I acted.',
+    'low-mental': 'I processed the game by talking it through, so the shorter edit made some decisions look more sudden than they were.',
+    'high-strategic': 'Most plans went through several quiet versions before the decisive conversation viewers saw.',
+    'low-strategic': 'A lot of my decisions came from immediate conversations rather than a season-long plan.',
+    'high-social': 'The everyday conversations were how I maintained relationships and learned where the room was moving.',
+    'low-social': 'I spoke most openly with a small circle, so much of my game happened away from the larger group.',
+    'high-physical': 'The preparation, soreness and recovery between challenges affected more of the social game than viewers could see.',
+    'high-endurance': 'Long challenge days changed who had energy left to talk strategy afterward, and that rarely made the episode.',
+  },
+  life: {
+    'low-temperament': 'I reacted quickly and publicly before I had worked out what I was actually feeling.',
+    'high-temperament': 'I processed most of it privately, which people sometimes mistook for not caring.',
+    'high-mental': 'I kept trying to understand it before allowing myself to feel it, and that only worked for so long.',
+    'low-mental': 'It took time and several conversations before I could put the experience into words.',
+    'high-social': 'I got through it by letting people close to me know when I needed support.',
+    'low-social': 'My instinct was to withdraw, and learning to ask for help was part of getting better.',
+  },
+};
+
 // ── the answer banks ────────────────────────────────────────────────────
 //
 // Topic groups: win, out (a loss or a boot — {placement} carries which),
@@ -460,6 +640,22 @@ const LISTENER_COMMENTS = {
 
 const bank = (style, group) => (A[style] && A[style][group]) || A.deadpan[group] || [];
 
+function answerFor(voice, style, group, key, facts, index) {
+  const statGroup = group === 'response' ? 'conflict' : group;
+  const traitBank = (voice?.traits || [])
+    .map(trait => STAT_LAYER[statGroup]?.[trait])
+    .filter(Boolean);
+  // Alternate layers across the conversation. The first substantive answer
+  // exposes stats; the next returns to cadence. This keeps both audible.
+  const useTraits = traitBank.length && index % 2 === 0;
+  const core = pickFilled(useTraits ? traitBank : bank(style, group), `${key}|core`, facts)
+    || pickFilled(bank(style, group), `${key}|fallback`, facts);
+  const archetypeLine = ARCHETYPE_LAYER[voice?.archetype]?.[group];
+  // The first answer carries the exact archetype's worldview. Later answers
+  // do not repeat it, which keeps the transcript conversational.
+  return [core, index === 0 ? archetypeLine : ''].filter(Boolean).join(' ');
+}
+
 /**
  * Write the whole transcript for one episode.
  *
@@ -468,7 +664,11 @@ const bank = (style, group) => (A[style] && A[style][group]) || A.deadpan[group]
  * Pure text — nothing here reads or writes a number the follower model uses.
  */
 export function composeEpisode(ep, { words = {}, prior = null, visit = 1 } = {}) {
-  const style = ep.style || 'deadpan';
+  const voice = ep.voice || {
+    ...voiceOf({ archetype: ep.archetype || '', stats: ep.stats || {} }),
+    cadence: ep.style || styleOf({ archetype: ep.archetype || '', stats: ep.stats || {} }),
+  };
+  const style = voice.cadence || ep.style || 'deadpan';
   const facts = ep.facts || {};
   const groupOf = t => t.id === 'the-win' ? 'win'
     : (t.id === 'the-loss' || t.id === 'the-boot' || t.id === 'the-target') ? 'out'
@@ -511,7 +711,8 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1 } = {})
         ...f, players: words.players || 'players', player: words.player || 'player',
         exit: words.exit || 'voted out', season: facts.season,
       });
-    const x = { topic: t.id, q, a: pickFilled(bank(style, group), `${ep.id}|a|${i}`, f) };
+    const x = { topic: t.id, q,
+      a: answerFor(voice, style, group, `${ep.id}|a|${i}`, f, i) };
     if (pressOn.has(t.id)) {
       const crackBank = t.id === 'the-life' ? CRACK_LIFE[style] : CRACK[style];
       x.press = pickFrom(PRESS[style], `${ep.id}|p|${i}`);

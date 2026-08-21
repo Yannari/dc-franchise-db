@@ -400,29 +400,48 @@ const COLD_OPEN = {
   ],
 };
 
-const RAPID_Q = [
-  'Winner you’d actually lose to on purpose?',
-  'Most overrated move in your season?',
-  'One word for the jury.',
-  'Who cried the most off camera?',
-  'Would you return tomorrow?',
-  'Best liar you ever shared a room with?',
-  'Rate your own edit out of ten.',
-  'Who do you still talk to?',
-  'One rule you’d add to the game?',
-  'Delete one twist from history.',
-];
+// ── rapid fire ──────────────────────────────────────────────────────────
+//
+// EVERY ANSWER IS WRITTEN FOR ITS QUESTION. The first version kept one answer
+// pool per style and drew from it blind, so "Best liar you ever shared a room
+// with?" could be answered "In a heartbeat." — twice, in one episode, with no
+// name in sight. Now each question carries its own answers (fact-slotted, so
+// the liar question actually names {rival} when the record has one) plus
+// optional per-style overrides where the register earns a signature line.
 
-const RAPID_A = {
-  bomb: ['Me. Next.', 'Everyone knows. I’m just the only one who’ll say it.', 'Ten. Obviously.', 'Tomorrow? I’d return TONIGHT.', 'My edit was a two. My game was a ten. Do the math.'],
-  analyst: ['Depends on the format.', 'Statistically? Not who you think.', 'Seven point five, and I can show the working.', 'Yes, with conditions.', 'The twist deletion is easy. All of them.'],
-  hothead: ['NEXT question.', 'Don’t start me.', 'One word? HA.', 'Yes. Yesterday. NOW.', 'You KNOW who.'],
-  charmer: ['Whoever’s buying dinner.', 'Mine, tragically.', 'An eleven, and modest too.', 'For the right fee, darling.', 'Everyone. I keep everyone.'],
-  earnest: ['Honestly? All of them.', 'I’d rather not say — okay, fine, but off the record.', 'A six. They were kind to me.', 'In a heartbeat.', 'Nobody cried too much. It’s a lot out there.'],
-  deadpan: ['Pass.', 'Sure.', 'Five.', 'No.', 'Him.'],
-  chaos: ['The bird.', 'Returning tomorrow, arriving yesterday.', 'Out of ten? Purple.', 'Whichever answer causes problems.', 'I AM the twist.'],
-  rambler: ['Okay so it depends—', 'One word? That’s not enough words.', 'The bird, obviously.', 'Wait, repeat the question.', 'Yes. Wait, to which one.'],
-};
+const RAPID = [
+  { q: 'Best liar you ever shared a room with?',
+    a: ['{rival}. Not even close.', 'Myself, honestly. And I was fantastic.', '{winner} — and it worked, didn’t it?'],
+    s: { deadpan: ['{rival}.', 'Me.'], earnest: ['I hate saying it… {rival}.'],
+      bomb: ['{rival}, and second place isn’t close enough to see them.'] } },
+  { q: 'Most overrated move in your season?',
+    a: ['The one everyone clips. Watch it again with the sound off.', 'Whatever {winner} did at the end. There, I said it.', 'Mine, if you believe the jury.'],
+    s: { analyst: ['The “big move” of the season was a coin flip wearing a suit.'] } },
+  { q: 'One word for the jury.',
+    a: ['Bitter.', 'Generous.', 'Confused.'],
+    s: { earnest: ['Fair.'], bomb: ['Cowards.'], chaos: ['Delicious.'] } },
+  { q: 'Who cried the most off camera?',
+    a: ['Everyone. It’s a lot out there.', 'Me. Zero shame.', 'Not saying. …{rival}.'],
+    s: { hothead: ['Not me. Those were RAGE tears, different thing.'] } },
+  { q: 'Would you return tomorrow?',
+    a: ['In a heartbeat.', 'Only as the villain this time.', 'My family says no. So probably.'],
+    s: { deadpan: ['No. …When do we leave?'], chaos: ['I never left. Check the vents.'] } },
+  { q: 'Rate your own edit out of ten.',
+    a: ['Four. My game was a nine.', 'Ten. They aired the truth, unfortunately.', 'A {placement}-shaped six.'],
+    s: { chaos: ['Out of ten? Purple.'], charmer: ['An eleven, and modest with it.'] } },
+  { q: 'Who do you still talk to?',
+    a: ['{partner}. Daily.', 'Half the cast. The correct half.', 'The group chat is three people and one of them is muted.'],
+    s: { deadpan: ['Nobody. It’s great.'] } },
+  { q: 'One rule you’d add to the game?',
+    a: ['No whispering after midnight.', 'Everything {rival} did? Banned.', 'Immunity for whoever cooks.'],
+    s: { analyst: ['Public vote counts. Watch the cowardice evaporate.'] } },
+  { q: 'Delete one twist from history.',
+    a: ['The one that sent me home.', 'All of them. Let people play.', 'Whichever one production loved most.'],
+    s: { chaos: ['Delete? I’d add six.'] } },
+  { q: 'Unfinished business?',
+    a: ['{rival} knows.', 'A trophy.', 'None. …One.'],
+    s: { earnest: ['Just a proper goodbye I never got to say.'] } },
+];
 
 const SUBJECT_COMMENTS = [
   'I was not in the room to answer any of this. Noted.',
@@ -503,11 +522,15 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1 } = {})
     return x;
   }).filter(x => x.q && x.a);
 
-  // Rapid fire: four questions, seeded so an episode never repeats one.
-  const start = hash(ep.id + '|rf') % RAPID_Q.length;
+  // Rapid fire: four questions, seeded so an episode never repeats one, each
+  // answered from ITS OWN bank — style override first, then the question's
+  // general answers, with fact eligibility so {rival} lines need a rival.
+  const start = hash(ep.id + '|rf') % RAPID.length;
   const rapid = Array.from({ length: 4 }, (_, i) => {
-    const q = RAPID_Q[(start + i * 3) % RAPID_Q.length];
-    return { q, a: pickFrom(RAPID_A[style] || RAPID_A.deadpan, `${ep.id}|rfa|${i}|${q}`) };
+    const item = RAPID[(start + i * 3) % RAPID.length];
+    const styled = pickFilled(item.s?.[style] || [], `${ep.id}|rfs|${i}`, facts);
+    return { q: item.q,
+      a: styled || pickFilled(item.a, `${ep.id}|rfa|${i}`, facts) || item.a[0] };
   });
 
   // What the clip everyone shares actually says — the last crack, or the

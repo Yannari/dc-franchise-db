@@ -218,3 +218,44 @@ describe('the room under an episode', () => {
     expect(out.every(c => c.slug !== 'a')).toBe(true);
   });
 });
+
+describe('rapid fire, after the heartbeat bug', () => {
+  // "Best liar you ever shared a room with?" was answered "In a heartbeat." —
+  // twice in one episode — because answers were a style pool drawn blind.
+  const probe = style => composeEpisode({
+    id: 'rf-' + style, kind: 'debrief', style, guestName: 'X', tier: 'viral',
+    season: { format: 'total-drama', title: 'S' },
+    facts: { season: 'S', placement: '5th', votes: '6', rival: 'Rana', rivalName: 'Rana',
+      partner: 'Pat', winner: 'Wes' },
+    topics: [{ id: 'the-boot' }, { id: 'behind-the-scenes' }],
+  }, { words: {} }).rapid;
+
+  it('never repeats an answer inside one episode', () => {
+    for (const style of STYLES) {
+      const answers = probe(style).map(r => r.a);
+      expect(new Set(answers).size, style).toBe(answers.length);
+    }
+  });
+
+  it('answers the question that was asked', () => {
+    // Every answer must come from its own question's bank — the return
+    // question's signature line can never appear under any other question.
+    for (const style of STYLES) {
+      for (const r of probe(style)) {
+        if (r.a === 'In a heartbeat.') expect(r.q).toBe('Would you return tomorrow?');
+        expect(r.a).not.toMatch(/\{|undefined/);
+      }
+    }
+  });
+
+  it('names a name when the record has one to name', () => {
+    // With a rival and a winner in the facts, "Best liar" has eligible
+    // name-bearing variants — over the styles, at least one must use them.
+    let named = 0;
+    for (const style of STYLES) {
+      const liar = probe(style).find(r => r.q.startsWith('Best liar'));
+      if (liar && /Rana|Wes/.test(liar.a)) named++;
+    }
+    expect(named).toBeGreaterThan(0);
+  });
+});

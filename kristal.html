@@ -97,6 +97,8 @@
     background:#fff;transform:translate(-50%,-50%)}
 
   .kt-tx{padding:6px 18px 16px}
+  .kt-cut{font-size:10px;letter-spacing:1.6px;color:var(--kt-dim);margin-top:10px;
+    padding-bottom:2px;border-bottom:1px dashed var(--kt-line)}
   .kt-seg{margin:14px 0}
   .kt-ts{font-size:10px;letter-spacing:1px;color:var(--kt-dim);font-family:var(--font-mono,monospace)}
   .kt-cold{font-size:14px;color:var(--kt-ink);font-style:italic;border-left:3px solid var(--kt-hot);
@@ -240,6 +242,11 @@ function transcript(ep) {
       <span>${mmss(ep.minutes)}</span></div>
   </div>
   <div class="kt-tx">
+    <!-- The frame that makes a short transcript read as EDITED rather than
+         thin: nobody prints an hour of audio, and saying so is the difference
+         between "highlights" and "missing content". -->
+    <div class="kt-cut">THE GOOD PARTS — what Kristal clipped from the ${mmss(ep.minutes)} hour.
+      The rest stays on the feed.</div>
     <div class="kt-seg"><span class="kt-ts">${ts.cold} · COLD OPEN</span>
       <div class="kt-cold">${esc(ep.coldOpen)}</div></div>
     ${ep.exchanges.map((x, i) => `<div class="kt-seg">

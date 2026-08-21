@@ -85,14 +85,7 @@ const RU_HTML = RU_CSS + `      <!-- ══════════════�
           <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 11px; opacity: 0.75; line-height: 1.9;">
             <span style="color:#e2e8f0;">📍 <b>PLACEMENT</b> — spine of the formula · base = 30 + (placementPercentile × 0.42) · P1 → base 72 · last place → base 30 · Win +8 (2nd win +5…) · all other stats add on top</span>
             <span style="display:block;width:100%;height:1px;background:rgba(255,255,255,0.07);margin:2px 0;"></span>
-            <span style="color:#60a5fa;">⚡ <b>PHYSICAL</b></span>
-            <span>🏆 Imm +0.8</span>
-            <span>🎁 Rew +0.3</span>
-            <span style="color:#a78bfa; margin-left:8px;">🧠 <b>STRATEGIC</b></span>
-            <span>🔍 Adv Found +0.4 (located it)</span>
-            <span>🗿 Adv Played effectively +1.2 (on top of found)</span>
-            <span>💥 Adv Wasted/misfired −1.2</span>
-            <span>💀 Adv Held & Eliminated −1.8 · Survived = 0</span>
+            <span id="ru-legend-show" style="display:contents;"></span>
             <span>🤝 Allies +0.5 each (cap 4) · Unbreakable/named alliances only — auto-filled from season JSON</span>
             <span>♟️ Strategic score ×0.12 — ability + real moves (flips, blindsides, schemes, effective plays) · auto-filled from season JSON</span>
             <span style="color:#34d399; margin-left:8px;">💞 <b>SOCIAL</b></span>
@@ -111,10 +104,11 @@ const RU_HTML = RU_CSS + `      <!-- ══════════════�
                   <th style="padding: 6px 5px; text-align: center; width: 50px;" title="Final placement (1 = winner)">Place</th>
                   <th id="ru-th-comp1" style="padding: 6px 5px; text-align: center; width: 44px; color:#60a5fa;" title="+0.8 per individual immunity win">Imm</th>
                   <th id="ru-th-comp2" style="padding: 6px 5px; text-align: center; width: 44px; color:#60a5fa;" title="+0.3 per reward win">Rew</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 44px; color:#a78bfa;" title="Total idols/advantages FOUND · +0.4 each (credit for locating them)">Found</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols/advantages PLAYED EFFECTIVELY (negated votes / worked) · +1.2 each on top of the found bonus">Played</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols/advantages PLAYED but WASTED (misfired / negated 0 votes / failed) · −1.2 each">Wasted</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 44px; color:#a78bfa;" title="Idols/advantages HELD & never used · 0 if survived to the end · −1.8 if eliminated still holding it">Held</th>
+                  <th id="ru-th-comp3" style="padding: 6px 5px; text-align: center; width: 46px; color:#60a5fa; display:none;" title="third competition — set per show">Arena</th>
+                  <th id="ru-th-adv-found" style="padding: 6px 5px; text-align: center; width: 44px; color:#a78bfa;" title="Total idols/advantages FOUND · +0.4 each (credit for locating them)">Found</th>
+                  <th id="ru-th-adv-played" style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols/advantages PLAYED EFFECTIVELY (negated votes / worked) · +1.2 each on top of the found bonus">Played</th>
+                  <th id="ru-th-adv-wasted" style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols/advantages PLAYED but WASTED (misfired / negated 0 votes / failed) · −1.2 each">Wasted</th>
+                  <th id="ru-th-adv-held" style="padding: 6px 5px; text-align: center; width: 44px; color:#a78bfa;" title="Idols/advantages HELD & never used · 0 if survived to the end · −1.8 if eliminated still holding it">Held</th>
                   <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Real alliances only — Unbreakable bonds or named alliances · +0.5 each, max 4 · do NOT include casual relationships">Allies</th>
                   <th style="padding: 6px 5px; text-align: center; width: 52px; color:#a78bfa;" title="Strategic-gameplay score (ability + real moves: flips, blindsides, schemes, effective plays) · ×0.12 · auto-filled from season JSON">Strat</th>
                   <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="not counted in score">Jury ⭐</th>
@@ -360,10 +354,23 @@ const RU_SHOW = {
   'total-drama': {
     comp1: { label: 'Imm',  weight: 0.8, title: '+0.8 per individual immunity win' },
     comp2: { label: 'Rew',  weight: 0.3, title: '+0.3 per reward win' },
+    comp3: null,
+    adv: { group: 'ADVANTAGES', noun: 'idol/advantage',
+      found: 'Found', played: 'Played', wasted: 'Wasted', held: 'Held' },
   },
   'big-brother': {
     comp1: { label: 'HOH',  weight: 0.6, title: '+0.6 per Head of Household — power, and a target' },
     comp2: { label: 'Veto', weight: 0.8, title: '+0.8 per veto — the competition that saves you' },
+    // THE THIRD COMPETITION. A house runs three kinds and this board had two
+    // columns, so every Block Buster and every arena win in a season scored
+    // exactly nothing — the one comp you win while ON THE BLOCK, which is the
+    // hardest circumstance any of them are won in.
+    comp3: { label: 'Arena', weight: 0.7,
+      title: '+0.7 per Block Buster / arena win — won while already on the block' },
+    // Powers are not idols, and the lifecycle words differ: you are GIVEN a
+    // power or you win one, you do not find it in a tree.
+    adv: { group: 'POWERS', noun: 'power',
+      found: 'Won', played: 'Played', wasted: 'Wasted', held: 'Held' },
   },
 };
 
@@ -376,12 +383,52 @@ const RU_SHOW = {
  */
 function _ruRelabelColumns() {
   const rub = _ruRubric();
-  for (const [id, spec] of [['ru-th-comp1', rub.comp1], ['ru-th-comp2', rub.comp2]]) {
+  for (const [id, spec] of [['ru-th-comp1', rub.comp1], ['ru-th-comp2', rub.comp2],
+    ['ru-th-comp3', rub.comp3]]) {
     const th = document.getElementById(id);
     if (!th) continue;
+    // A show with two kinds of competition does not get an empty third column
+    // sitting there inviting a number that would score nothing.
+    th.style.display = spec ? '' : 'none';
+    if (!spec) continue;
     th.textContent = spec.label;
     th.title = spec.title;
   }
+  const adv = rub.adv || {};
+  for (const [id, label] of [['ru-th-adv-found', adv.found], ['ru-th-adv-played', adv.played],
+    ['ru-th-adv-wasted', adv.wasted], ['ru-th-adv-held', adv.held]]) {
+    const th = document.getElementById(id);
+    if (th && label) th.textContent = label;
+  }
+  // Every data row has to gain or lose the same cell, or the columns shear.
+  document.querySelectorAll('.ru-cell-comp3').forEach(td => {
+    td.style.display = rub.comp3 ? '' : 'none';
+  });
+  _ruRenderLegend();
+}
+
+/**
+ * The legend, written from the rubric rather than typed underneath it.
+ *
+ * It used to be hardcoded Total Drama — '🏆 Imm +0.8 · 🎁 Rew +0.3' — so a
+ * Big Brother season relabelled its column headers to HOH and Veto while the
+ * key above the table went on explaining immunity and reward wins at weights
+ * neither of them used. A legend that can disagree with the scorer is worse
+ * than no legend.
+ */
+function _ruRenderLegend() {
+  const el = document.getElementById('ru-legend-show');
+  if (!el) return;
+  const rub = _ruRubric();
+  const adv = rub.adv || {};
+  const comp = [rub.comp1, rub.comp2, rub.comp3].filter(Boolean)
+    .map(c => `<span>${c.label} +${c.weight}</span>`).join('');
+  el.innerHTML = `<span style="color:#60a5fa;">⚡ <b>COMPETITIONS</b></span>${comp}`
+    + `<span style="color:#a78bfa; margin-left:8px;">🧠 <b>${adv.group || 'STRATEGIC'}</b></span>`
+    + `<span>${adv.found || 'Found'} +0.4</span>`
+    + `<span>${adv.played || 'Played'} effectively +1.2</span>`
+    + `<span>${adv.wasted || 'Wasted'} −1.2</span>`
+    + `<span>${adv.held || 'Held'} &amp; eliminated −1.8 · survived = 0</span>`;
 }
 
 /**
@@ -453,7 +500,8 @@ function computeScore(p) {
   // equivalent to.
   const _rub = _ruRubric(p.format);
   const physBonus = (num(p.immWins) * _rub.comp1.weight)
-                  + (num(p.rewWins) * _rub.comp2.weight);
+                  + (num(p.rewWins) * _rub.comp2.weight)
+                  + (_rub.comp3 ? num(p.comp3Wins) * _rub.comp3.weight : 0);
 
   // STRATEGIC — advantages scored by lifecycle: found (located it) < played effectively,
   // while wasting or dying with one costs you. Plus a strategic-gameplay term.
@@ -519,6 +567,7 @@ function addRow(name, placement, stats) {
     '<td style="padding:5px 4px;text-align:center;">' + numCell(placement,'44px') + '</td>' +
     '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.imm,       '36px','#60a5fa') + '</td>' +
     '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.rew,       '36px','#60a5fa') + '</td>' +
+    '<td class="ru-cell-comp3" style="padding:5px 4px;text-align:center;' + (_ruRubric().comp3 ? '' : 'display:none;') + '">' + numCell(stats.comp3, '36px','#60a5fa') + '</td>' +
     '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.advFound,   '38px','#a78bfa') + '</td>' +
     '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.advPlayed,  '40px','#a78bfa') + '</td>' +
     '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.advWasted,  '40px','#a78bfa') + '</td>' +
@@ -555,17 +604,22 @@ function getRows() {
     rows.push({
       name,
       placement,
+      // READ BY POSITION, so every index below moves when a column is added.
+      // The third competition cell is always in the DOM — hidden rather than
+      // absent on a show that has two — precisely so these stay put whichever
+      // show is loaded.
       immWins:       parseInt(nums[1]?nums[1].value:'')||0,
       rewWins:       parseInt(nums[2]?nums[2].value:'')||0,
-      advFound:      parseInt(nums[3]?nums[3].value:'')||0,
-      advPlayed:     parseInt(nums[4]?nums[4].value:'')||0,
-      advWasted:     parseInt(nums[5]?nums[5].value:'')||0,
-      advHeld:       parseInt(nums[6]?nums[6].value:'')||0,
-      alliances:     parseInt(nums[7]?nums[7].value:'')||0,
-      strategicScore:parseFloat(nums[8]?nums[8].value:'')||0,
-      juryVotes:     parseInt(nums[9]?nums[9].value:'')||0,
-      votesAgainst:  parseInt(nums[10]?nums[10].value:'')||0,
-      override:      parseFloat(nums[11]?nums[11].value:'')||0,
+      comp3Wins:     parseInt(nums[3]?nums[3].value:'')||0,
+      advFound:      parseInt(nums[4]?nums[4].value:'')||0,
+      advPlayed:     parseInt(nums[5]?nums[5].value:'')||0,
+      advWasted:     parseInt(nums[6]?nums[6].value:'')||0,
+      advHeld:       parseInt(nums[7]?nums[7].value:'')||0,
+      alliances:     parseInt(nums[8]?nums[8].value:'')||0,
+      strategicScore:parseFloat(nums[9]?nums[9].value:'')||0,
+      juryVotes:     parseInt(nums[10]?nums[10].value:'')||0,
+      votesAgainst:  parseInt(nums[11]?nums[11].value:'')||0,
+      override:      parseFloat(nums[12]?nums[12].value:'')||0,
       overrideReason:txt[1] ? txt[1].value.trim() : '',
       fanFav: chks[0]?chks[0].checked:false,
       quit:   chks[1]?chks[1].checked:false,
@@ -627,7 +681,7 @@ function buildPreview() {
     const newScore = computeScore({
       allPcts, wins:totalWins, nonWinFinals, numSeasons, coWin:isCoWin,
       format:_ruShowFormat(),
-      immWins:row.immWins, rewWins:row.rewWins,
+      immWins:row.immWins, rewWins:row.rewWins, comp3Wins:row.comp3Wins,
       advFound:row.advFound, advPlayed:row.advPlayed, advWasted:row.advWasted, advHeld:row.advHeld,
       strategicScore:row.strategicScore,
       alliances:row.alliances,
@@ -844,7 +898,8 @@ async function applyUpdates() {
         wins:r.isWinner?1:0, seasonsPlayed:1,
         scoreHistory:[r.newScore],
         placements:[r.placement], avgPlacement:r.placement,
-        challengeWins: row.immWins+row.rewWins,
+        // Every competition the show has, not just the two Total Drama runs.
+        challengeWins: row.immWins+row.rewWins+(row.comp3Wins||0),
         votesAgainst:row.votesAgainst, juryVotes:row.juryVotes,
         idolsFound:row.advFound || (row.advPlayed+row.advWasted+row.advHeld),
         title:'', emoji:r.isWinner?'\ud83d\udc51':'\u2b50',
@@ -864,7 +919,7 @@ async function applyUpdates() {
       if (!e.placements) e.placements=[];
       e.placements.push(r.placement);
       e.avgPlacement=e.placements.reduce((a,b)=>a+b,0)/e.placements.length;
-      e.challengeWins=(e.challengeWins||0)+row.immWins+row.rewWins;
+      e.challengeWins=(e.challengeWins||0)+row.immWins+row.rewWins+(row.comp3Wins||0);
       e.votesAgainst=(e.votesAgainst||0)+row.votesAgainst;
       e.juryVotes=(e.juryVotes||0)+row.juryVotes;
       e.idolsFound=(e.idolsFound||0)+(row.advFound || (row.advPlayed+row.advWasted+row.advHeld));
@@ -990,6 +1045,9 @@ function loadSeasonData(json) {
       rew:         isHouse ? (p.bb?.vetoWins ?? p.vetoWins ?? 0)
                            : (p.rewardWins!=null ? p.rewardWins
                               : (p.rew!=null ? p.rew : Math.max(0, (p.challengeWins||0)-(p.immunityWins||0)))),
+      /* The third competition, which only a house has. Block Buster and
+         arena wins were being read by nothing at all. */
+      comp3:       isHouse ? (p.bb?.blockBusterWins ?? p.blockBusterWins ?? 0) : 0,
       alliances:   allianceCount,
       fanFav:      !!fanFavKey && norm(name) === fanFavKey,
       quit:        p.eliminated==='quit'||p.quit||false,

@@ -13541,17 +13541,16 @@
             "timesSaved": 3
           },
           "notes": [
-            "Misha won because she combined late competition leverage with enough social debt to survive the weeks where she should have been exposed."
+            "Misha won because her relationships bent without fully breaking, and her veto record gave the jury a tangible reason to reward survival as agency."
           ],
-          "gameplayStyle": "connected, insulated, late-clutch",
+          "gameplayStyle": "adaptive social survivalist",
           "keyMoments": [
-            "Week 3: joins the expanding Power Couple structure while also building a separate bond with Hasan",
-            "Week 5: helps flip the close Hasan/Zella vote and owns the move when pressed",
-            "Week 10: wins veto on the block and forces Jules to renom Natasha",
-            "Week 13: wins HOH and nominates Jane, Gyselle and Joel, setting up the Gyselle eviction",
-            "Week 14: wins HOH and veto, keeping full control of the Jane/Tobias block",
-            "Week 15: wins veto under threat, saves herself, and casts the sole vote to evict Tobias",
-            "Finale: wins Part 1 and Part 3 of the final HOH, then cuts Joel for Jules"
+            "Week 5: Helped create the decisive flip that sent Zella out and owned the move when pressed.",
+            "Week 10: Won veto while nominated and removed herself from Jules's block.",
+            "Week 13: Won HOH and nominated Jane, Gyselle and Joel, forcing the endgame blocs into the open.",
+            "Week 14: Won HOH and veto, kept nominations the same, and sent Jane to jury.",
+            "Week 15: Won veto from the block, forced Tobias onto the block, and cast the sole vote to evict him.",
+            "Finale: Won Part 1 and Part 3 of the final HOH, then evicted Joel to sit beside Jules."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
@@ -13611,24 +13610,23 @@
             "timesSaved": 0
           },
           "notes": [
-            "Jules played the best losing game: deeply connected, strategically present, and one jury vote short because too many jurors saw comfort without enough ownership."
+            "Jules played the best losing finalist game: deeply connected, rarely out of the loop, but ultimately unable to turn social credit into the last jury vote."
           ],
-          "gameplayStyle": "listener, connector, jury-close",
+          "gameplayStyle": "relational vote broker",
           "keyMoments": [
-            "Week 2: survives the block beside Stella after the house chooses Stella 10–3",
-            "Week 4: wins HOH and veto, nominates Harriett, Natasha and Ireland, and leaves nominations intact",
-            "Week 8: helps redirect the Nico vote after Dylon’s veto forces a renom",
-            "Week 10: wins HOH, nominates Jane, Misha and Ireland, and later renoms Natasha",
-            "Week 12: survives the Felipe vote 3–2 after Gyselle wins Block Buster",
-            "Week 15: survives Misha’s sole vote when Tobias is evicted instead",
-            "Finale: receives four jury votes and loses 5–4"
+            "Week 2: Survived the block as the target after Stella left 10-3.",
+            "Week 4: Won HOH and veto, left nominations intact, and watched Harriett leave unanimously.",
+            "Week 8: Helped move the vote onto Nico after Ireland used veto, deepening his cross-room leverage.",
+            "Week 10: Won HOH, nominated Jane, Misha and Ireland, and saw Ireland leave 7-0 after Misha's veto win.",
+            "Week 12: Survived against Felipe when Gyselle, Misha and Jane moved the vote.",
+            "Finale: Chosen by Misha over Joel, then lost 5-4."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
       "totalBlockBusterWins": 0,
-      "totalBlockBusterPlayed": 2,
+      "totalBlockBusterPlayed": 4,
       "bestBlockBusterStreak": 0,
       "avgPlacement": 2,
       "byShow": {
@@ -13681,17 +13679,16 @@
             "timesSaved": 3
           },
           "notes": [
-            "Joel had the comp record and endgame gravity to win, but he lost the season when Misha correctly refused to sit beside him."
+            "Joel had the strongest competition résumé of the finalists but was cut because everyone understood he was the most dangerous final opponent."
           ],
-          "gameplayStyle": "visible, competitive, endgame-heavy",
+          "gameplayStyle": "clutch endgame tactician",
           "keyMoments": [
-            "Week 2: wins veto and removes himself, forcing Zella onto the block",
-            "Week 7: wins HOH and nominates Dylon, Jane and Ireland",
-            "Week 11: wins HOH and veto, leaves nominations intact, then breaks the tie to evict Natasha",
-            "Week 13: wins veto under threat and saves himself from Misha’s block",
-            "Week 15: wins HOH at final four and nominates Misha and Jules",
-            "Finale: wins Part 2 but loses Part 3 to Misha on the tiebreaker",
-            "Finale: is cut at final three when Misha chooses Jules"
+            "Week 2: Won veto and removed himself from Ireland's block.",
+            "Week 7: Won The Wall HOH after Jules stepped down, then nominated Dylon, Jane and Ireland.",
+            "Week 11: Won HOH and veto, kept nominations intact, and broke the tie to evict Natasha.",
+            "Week 13: Won veto while nominated and saved himself, forcing Aaron onto the block.",
+            "Week 15: Won final-four HOH and nominated Misha and Jules together.",
+            "Finale: Lost the final HOH tiebreaker to Misha and was evicted at final three."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
@@ -13751,23 +13748,23 @@
             "timesSaved": 0
           },
           "notes": [
-            "Tobias was one of the season’s best social-position players, but repeated pawn exposure eventually made him expendable at final four."
+            "Tobias was a late-game hub and fan favorite whose loyalty-based structure collapsed one round before the finale."
           ],
-          "gameplayStyle": "social web, pawn survivor",
+          "gameplayStyle": "loyalty-web power broker",
           "keyMoments": [
-            "Week 1: wins the first HOH, gaining early position despite no eviction",
-            "Week 2: votes out Stella despite a prior endgame promise",
-            "Week 9: helps make Dylon the unanimous boot after previously being tied to him",
-            "Week 11: survives the tied Natasha vote when Joel breaks the tie",
-            "Week 14: survives beside Jane 2–0 after Misha leaves nominations intact",
-            "Week 15: lands on the block after Misha uses veto and is evicted by Misha’s sole vote"
+            "Week 1: Won the first HOH, gaining early social capital despite no eviction.",
+            "Week 2: Voted out Stella despite a prior promise, establishing that sentiment would not override position.",
+            "Week 9: Won Block Buster to escape Ireland's block, allowing the house to evict Dylon.",
+            "Week 11: Survived the tied Natasha vote when Joel broke the tie in his favor.",
+            "Week 14: Survived against Jane 2-0 after Misha left nominations intact.",
+            "Week 15: Renominated after Misha used veto and evicted 1-0 by Misha."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
-      "totalBlockBusterWins": 1,
-      "totalBlockBusterPlayed": 3,
+      "totalBlockBusterWins": 2,
+      "totalBlockBusterPlayed": 6,
       "bestBlockBusterStreak": 1,
       "avgPlacement": 4,
       "byShow": {
@@ -13820,23 +13817,23 @@
             "timesSaved": 0
           },
           "notes": [
-            "Jane returned from the battle back and played a sharp late social game, but her safety depended on other people choosing not to finish moves they had already started."
+            "Jane re-entered through the battle back, rebuilt impressively, but never fully escaped being the expendable returning player."
           ],
-          "gameplayStyle": "returned, observant, socially sticky",
+          "gameplayStyle": "returnee social counterpuncher",
           "keyMoments": [
-            "Week 4: enters the game as her own houseguest after the twins twist resolves",
-            "Week 7: is evicted 5–4, then later wins the Battle Back in Week 8",
-            "Week 10: survives against Ireland when the house unanimously removes Ireland",
-            "Week 12: wins veto and pulls Joel off the block",
-            "Week 12: votes out Felipe despite a final two with him",
-            "Week 14: is nominated beside Tobias and evicted 2–0"
+            "Week 4: Entered as a separate houseguest after the twin reveal.",
+            "Week 7: Evicted 5-4, then later won the battle back over Nico to re-enter.",
+            "Week 10: Sat next to Ireland and survived 7-0 when the house chose the comp threat.",
+            "Week 12: Won veto and used it on Joel, creating the Gyselle renom and Felipe boot.",
+            "Week 13: Won the live double HOH and nominated Misha and Jules before Misha saved herself.",
+            "Week 14: Evicted 2-0 over Tobias after Misha left nominations the same."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
       "totalBlockBusterWins": 0,
-      "totalBlockBusterPlayed": 3,
+      "totalBlockBusterPlayed": 6,
       "bestBlockBusterStreak": 0,
       "avgPlacement": 5,
       "byShow": {
@@ -13889,23 +13886,23 @@
             "timesSaved": 1
           },
           "notes": [
-            "Aaron was loyal, clutch, and respected, but his game narrowed too much and collapsed when he finally needed votes outside his core."
+            "Aaron was a loyal soldier with clutch safety wins, but his narrow relationship base finally left him without votes."
           ],
-          "gameplayStyle": "loyal, clutch, narrow-laned",
+          "gameplayStyle": "loyal clutch shield",
           "keyMoments": [
-            "Week 5: wins veto while nominated and saves himself",
-            "Week 8: wins Block Buster to escape the block",
-            "Week 11: wins Block Buster again, forcing the Natasha/Tobias vote",
-            "Week 12: wins HOH and nominates Joel, Felipe and Jules",
-            "Week 13: wins Block Buster to escape the Jane/Gyselle vote",
-            "Week 13 double eviction: is renominated after Misha uses veto and evicted 2–1"
+            "Week 5: Won veto while nominated and forced Hasan onto the block.",
+            "Week 8: Won Block Buster to survive over Nico.",
+            "Week 11: Won Block Buster again, escaping the Natasha/Tobias vote.",
+            "Week 12: Won HOH but saw the week end with Felipe leaving, not the clean structure he wanted.",
+            "Week 13: Won Block Buster, then was renominated in the live double after Misha used veto.",
+            "Week 13 double: Evicted 2-1 when Tobias and Misha kept Jules."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
-      "totalBlockBusterWins": 3,
-      "totalBlockBusterPlayed": 5,
+      "totalBlockBusterWins": 6,
+      "totalBlockBusterPlayed": 10,
       "bestBlockBusterStreak": 1,
       "avgPlacement": 6,
       "byShow": {
@@ -13958,23 +13955,22 @@
             "timesSaved": 0
           },
           "notes": [
-            "Gyselle was everywhere socially, but too often as the flexible piece other players used rather than the person directing the vote."
+            "Gyselle was socially embedded everywhere, but her refusal to own hard decisions made her easy to cut when the vote required a name."
           ],
-          "gameplayStyle": "social float, vote-adjacent",
+          "gameplayStyle": "soft-power social drifter",
           "keyMoments": [
-            "Week 3: survives beside Amberly after the Power Couple protects her",
-            "Week 6: votes out Hasan despite their final two",
-            "Week 8: wins Block Buster and escapes the Aaron/Nico vote",
-            "Week 12: wins Block Buster and helps send Felipe out",
-            "Week 13: is renominated after Joel’s veto and fails to campaign hard enough",
-            "Week 13: is evicted 3–1 over Jane"
+            "Week 3: Survived against Amberly after the Power Couple protected her.",
+            "Week 6: Voted out Hasan despite their final two, breaking the relationship for position.",
+            "Week 8: Won Block Buster to escape the block before Nico left.",
+            "Week 12: Won Block Buster over Felipe and Jules, forcing the Felipe boot.",
+            "Week 13: Lost the arena, assumed the votes were there, and left 3-1 over Jane."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
-      "totalBlockBusterWins": 2,
-      "totalBlockBusterPlayed": 4,
+      "totalBlockBusterWins": 4,
+      "totalBlockBusterPlayed": 8,
       "bestBlockBusterStreak": 1,
       "avgPlacement": 7,
       "byShow": {
@@ -14027,23 +14023,23 @@
             "timesSaved": 0
           },
           "notes": [
-            "Felipe had one of the best alignment games in the cast, but no competition safety and too many exposed final twos left him vulnerable once the numbers got small."
+            "Felipe had excellent positioning for most of the game, but his web of final twos finally made him disposable to every side at once."
           ],
-          "gameplayStyle": "aligned, relational, exposed deals",
+          "gameplayStyle": "quiet connector accountant",
           "keyMoments": [
-            "Week 1: forms the Felipe/Nico final two",
-            "Week 2: adds a second final two with Jules",
-            "Week 5: helps recruit Joel into the Hasan vote",
-            "Week 8: betrays Nico in the 6–2 vote",
-            "Week 11: bonds with Joel and becomes visibly paired",
-            "Week 12: lands beside Jules after Gyselle wins Block Buster and is evicted 3–2"
+            "Week 2: Made the early final two with Nico that shaped his first half.",
+            "Week 5: Helped recruit Joel onto the Hasan vote while managing multiple rooms.",
+            "Week 8: Cut Nico despite their final two, a necessary but costly betrayal.",
+            "Week 11: Voted Natasha out in the tie week, further exposing his flexible loyalties.",
+            "Week 12: Lost BB Comics to Jane by 2.25 seconds, leaving veto out of reach.",
+            "Week 12: Evicted 3-2 over Jules after Jane flipped away from him."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
       "totalBlockBusterWins": 0,
-      "totalBlockBusterPlayed": 1,
+      "totalBlockBusterPlayed": 2,
       "bestBlockBusterStreak": 0,
       "avgPlacement": 8,
       "byShow": {
@@ -14096,23 +14092,23 @@
             "timesSaved": 0
           },
           "notes": [
-            "Natasha had social influence and loyalty, but her game became too visible as a pair-and-structure player to survive a tie vote."
+            "Natasha was a strong social organizer whose loyalty to visible pairs and groups made her a clean tie-break boot."
           ],
-          "gameplayStyle": "loyal, visible, socially warm",
+          "gameplayStyle": "emotional social organizer",
           "keyMoments": [
-            "Week 1: forms The Power Couple with Gyselle",
-            "Week 3: formalizes the Zella showmance and helps protect Gyselle",
-            "Week 5: votes out Hasan despite broader alliance ties",
-            "Week 10: wins Block Buster and escapes the Jane/Ireland vote",
-            "Week 11: sits beside Tobias after Aaron wins Block Buster",
-            "Week 11: is evicted on Joel’s tie-breaking vote"
+            "Week 1: Formed The Power Couple with Gyselle.",
+            "Week 3: Deepened the Zella relationship, creating a visible pair that shaped multiple votes.",
+            "Week 10: Won Block Buster to escape the block, leaving Jane and Ireland exposed.",
+            "Week 10: Helped consolidate the unanimous Ireland eviction.",
+            "Week 11: Sat next to Tobias after Aaron saved himself and forced a 3-3 tie.",
+            "Week 11: Evicted by Joel's tiebreaker."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
-      "totalBlockBusterWins": 1,
-      "totalBlockBusterPlayed": 3,
+      "totalBlockBusterWins": 2,
+      "totalBlockBusterPlayed": 6,
       "bestBlockBusterStreak": 1,
       "avgPlacement": 9,
       "byShow": {
@@ -14165,24 +14161,23 @@
             "timesSaved": 3
           },
           "notes": [
-            "Ireland was the season’s biggest comp force, but she was so rarely in the vote room that her safety wins became proof she had no stable path."
+            "Ireland was the season’s early comp monster and power user, but once the house stopped needing her as a weapon, they removed her unanimously."
           ],
-          "gameplayStyle": "comp machine, isolated target",
+          "gameplayStyle": "volatile power magnet",
           "keyMoments": [
-            "Week 2: uses The Interrogation to take Nico’s HOH in secret",
-            "Week 3: wins Block Buster and escapes the Amberly/Gyselle vote",
-            "Week 4: wins Block Buster again and escapes the Harriett/Natasha vote",
-            "Week 6: wins HOH and veto, leaving Hasan and Tobias nominated",
-            "Week 8: wins veto and forces Nico onto Dylon’s block",
-            "Week 9: wins HOH and veto, removing Dylon unanimously",
-            "Week 10: loses Block Buster to Natasha and is evicted 7–0"
+            "Week 2: Used The Interrogation to take Nico's HOH anonymously and nominate Stella, Jules and Joel.",
+            "Weeks 3-5: Won three consecutive Block Busters to escape danger repeatedly.",
+            "Week 6: Won HOH and veto, nominated Hasan, Tobias and Dylon, and survived the Mystery Veto chaos.",
+            "Week 7: Won the prizes/punishments veto and saved herself from Joel's block.",
+            "Week 9: Won HOH and veto, nominated Aaron, Tobias and Dylon, and sent Dylon out 8-0.",
+            "Week 10: Lost Block Buster to Natasha and was evicted 7-0."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
-      "totalBlockBusterWins": 3,
-      "totalBlockBusterPlayed": 4,
+      "totalBlockBusterWins": 6,
+      "totalBlockBusterPlayed": 8,
       "bestBlockBusterStreak": 3,
       "avgPlacement": 10,
       "byShow": {
@@ -14235,24 +14230,22 @@
             "timesSaved": 0
           },
           "notes": [
-            "Dylon played hard and won power, but his game became too visible, too comp-dependent, and too easy to unite against."
+            "Dylon built early power and held a secret veto brilliantly, but his threat level and overexposed deals made him the unanimous mid-jury boot."
           ],
-          "gameplayStyle": "active, suspicious, exposed competitor",
+          "gameplayStyle": "visible dealmaker competitor",
           "keyMoments": [
-            "Week 1: wins the Mystery Veto instead of the HOH path",
-            "Week 5: wins HOH and nominates Ireland, Aaron and Zella",
-            "Week 6: uses the Mystery Veto after the ceremony and forces Nico onto the block",
-            "Week 8: wins HOH and targets Ireland, only for Ireland to veto herself",
-            "Week 8: sees Nico leave after the renom",
-            "Week 9: is nominated by Ireland and loses Block Buster to Tobias",
-            "Week 9: is evicted 8–0 over Aaron"
+            "Week 1: Won the Mystery Veto instead of the public HOH track.",
+            "Week 5: Won HOH and nominated Ireland, Aaron and Zella, then watched the week flip onto Zella.",
+            "Week 6: Used the Mystery Veto to save himself after Ireland left nominations intact.",
+            "Week 8: Won HOH and targeted Ireland, but she vetoed herself and Nico left instead.",
+            "Week 9: Sat next to Aaron after Tobias won Block Buster and was evicted unanimously."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
       "totalBlockBusterWins": 0,
-      "totalBlockBusterPlayed": 2,
+      "totalBlockBusterPlayed": 4,
       "bestBlockBusterStreak": 0,
       "avgPlacement": 11,
       "byShow": {
@@ -14305,23 +14298,22 @@
             "timesSaved": 0
           },
           "notes": [
-            "Nico’s calm, loyal game kept him safe for a while, but waiting for other people to move left him exposed when Dylon needed a replacement target."
+            "Nico was stable and trusted until the end of the pre-jury phase, but he waited too long to launch the move he needed."
           ],
-          "gameplayStyle": "calm, loyal, delayed mover",
+          "gameplayStyle": "calm loyal number",
           "keyMoments": [
-            "Week 2: wins HOH before Ireland secretly takes it through The Interrogation",
-            "Week 2: agrees to the Felipe final two that defines his early game",
-            "Week 6: wins Block Buster and escapes the Hasan/Tobias vote",
-            "Week 8: is renominated after Ireland uses veto",
-            "Week 8: does not campaign aggressively, trusting the count",
-            "Week 8: is evicted 6–2 and becomes the first juror"
+            "Week 2: Won the public HOH before Ireland secretly took it from him.",
+            "Week 6: Won Block Buster after Dylon's Mystery Veto renommed him, escaping the vote.",
+            "Week 8: Renominated after Ireland saved herself with veto.",
+            "Week 8: Did not campaign, trusting the count against Aaron.",
+            "Week 8: Evicted 6-2 after Felipe cut their Week 1 final two."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
-      "totalBlockBusterWins": 1,
-      "totalBlockBusterPlayed": 2,
+      "totalBlockBusterWins": 2,
+      "totalBlockBusterPlayed": 4,
       "bestBlockBusterStreak": 1,
       "avgPlacement": 12,
       "byShow": {
@@ -14374,23 +14366,21 @@
             "timesSaved": 0
           },
           "notes": [
-            "Hasan’s early HOH made him look like a strategist, but he never rebuilt once his alliance map became visible."
+            "Hasan understood vote structure early, but his HOH created enemies he could not out-organize once he lost power."
           ],
-          "gameplayStyle": "early planner, exposed connector",
+          "gameplayStyle": "overconfident structure builder",
           "keyMoments": [
-            "Week 3: wins HOH and nominates Amberly, Gyselle and Ireland",
-            "Week 3: asks Gyselle to sit as a pawn, creating long-term distrust",
-            "Week 3: sees Amberly expose the Power Couple structure on the way out",
-            "Week 5: is renominated after Aaron uses veto",
-            "Week 5: survives the initial vote only because Zella leaves 6–5",
-            "Week 6: is nominated again by Ireland and evicted 9–1"
+            "Week 3: Won HOH and nominated Amberly, Gyselle and Ireland.",
+            "Week 3: Put Gyselle up as a pawn, damaging the relationship that was supposed to protect him.",
+            "Week 5: Renominated after Aaron used veto, then survived when Zella left 6-5.",
+            "Week 6: Sat on Ireland's block, survived Dylon's Mystery Veto chaos, but lost against Tobias 9-1."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
       "totalBlockBusterWins": 0,
-      "totalBlockBusterPlayed": 2,
+      "totalBlockBusterPlayed": 4,
       "bestBlockBusterStreak": 0,
       "avgPlacement": 14,
       "byShow": {
@@ -14443,23 +14433,22 @@
             "timesSaved": 0
           },
           "notes": [
-            "Zella played loudly, loyally and visibly, which made her useful early and cuttable the first time her allies needed a sacrifice."
+            "Zella played visibly and loyally, but her showmance and blunt style gave the house an easy mid-prejury cut."
           ],
-          "gameplayStyle": "loyal, visible, volatile",
+          "gameplayStyle": "blunt loyal firebrand",
           "keyMoments": [
-            "Week 2: is renominated and wins Block Buster to save herself",
-            "Week 3: formalizes the Natasha showmance",
-            "Week 5: is nominated by Dylon beside Ireland and Aaron",
-            "Week 5: watches Aaron win veto and Hasan enter as renom",
-            "Week 5: loses Block Buster to Ireland",
-            "Week 5: is evicted 6–5 and exposes Misha on the way out"
+            "Week 2: Renominated by Ireland, then won Block Buster to escape the vote.",
+            "Week 3: Made the Natasha final two/showmance structure visible enough for the house to clock it.",
+            "Week 5: Sat against Hasan after Ireland won Block Buster.",
+            "Week 5: Did not campaign hard, believing the numbers were there.",
+            "Week 5: Evicted 6-5 and correctly named Misha on the way out."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
-      "totalBlockBusterWins": 1,
-      "totalBlockBusterPlayed": 2,
+      "totalBlockBusterWins": 2,
+      "totalBlockBusterPlayed": 4,
       "bestBlockBusterStreak": 1,
       "avgPlacement": 15,
       "byShow": {
@@ -14512,23 +14501,22 @@
             "timesSaved": 0
           },
           "notes": [
-            "Harriett’s twin twist bought entry for Jane, but Harriett’s own game became too loud, too contradictory, and too easy to unite against."
+            "Harriett’s twin twist gave her a second vote in the game, but her own deal-making became too contradictory to survive scrutiny."
           ],
-          "gameplayStyle": "messy, aggressive, twist-exposed",
+          "gameplayStyle": "messy secret-dealer",
           "keyMoments": [
-            "Week 1: enters as part of the secret twin twist",
-            "Week 2: forms The Pipeline with Stella, then votes against the alliance’s interest",
-            "Week 4: Jane enters as a separate houseguest, changing Harriett’s threat profile",
-            "Week 4: uses the Mystery Competitor power but gains no real safety",
-            "Week 4: is exposed by multiple conflicting stories",
-            "Week 4: is evicted unanimously over Natasha"
+            "Week 1: Entered as the public half of the twin twist while Jane stayed hidden.",
+            "Week 2: Formed The Pipeline with Stella, then voted against the alliance direction.",
+            "Week 4: The twin reveal brought Jane into the house and reset how everyone viewed Harriett's conversations.",
+            "Week 4: Used Mystery Competitor to bring Scott into the veto draw, but got no safety.",
+            "Week 4: Exposed by multiple houseguests comparing contradictory stories and evicted 12-0."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
       "totalBlockBusterWins": 0,
-      "totalBlockBusterPlayed": 1,
+      "totalBlockBusterPlayed": 2,
       "bestBlockBusterStreak": 0,
       "avgPlacement": 16,
       "byShow": {
@@ -14581,23 +14569,22 @@
             "timesSaved": 0
           },
           "notes": [
-            "Amberly had real social instincts but never gained enough structural protection to survive once the Power Couple needed a clean early boot."
+            "Amberly had real social instincts but mistook personal warmth for votes that would risk themselves for her."
           ],
-          "gameplayStyle": "social, reactive, underprotected",
+          "gameplayStyle": "social spark, no structure",
           "keyMoments": [
-            "Week 1: bonds broadly but fails to find a real plan",
-            "Week 2: is protected by Ireland’s secret HOH deal but remains outside the main structure",
-            "Week 3: is nominated by Hasan as the target",
-            "Week 3: correctly identifies the Power Couple as the house’s hidden bloc",
-            "Week 3: loses Block Buster to Ireland",
-            "Week 3: is evicted 10–2 over Gyselle"
+            "Week 1: Built broad early personal relationships but was left out of actual plans.",
+            "Week 2: Benefited from Ireland's secret HOH safety deal but remained outside the core.",
+            "Week 3: Nominated by Hasan as a target.",
+            "Week 3: Campaigned against The Power Couple structure but could not crack it.",
+            "Week 3: Evicted 10-2 and accurately exposed the majority on the way out."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
       "totalBlockBusterWins": 0,
-      "totalBlockBusterPlayed": 1,
+      "totalBlockBusterPlayed": 2,
       "bestBlockBusterStreak": 0,
       "avgPlacement": 17,
       "byShow": {
@@ -14650,23 +14637,22 @@
             "timesSaved": 0
           },
           "notes": [
-            "Stella’s loyalty was genuine, but she had no backup plan once the first real vote moved away from her."
+            "Stella’s loyal early bonds were not enough once the house decided she was the clean first eviction."
           ],
-          "gameplayStyle": "loyal, exposed, unsupported",
+          "gameplayStyle": "loyal early outsider",
           "keyMoments": [
-            "Week 1: connects with Jules and Harriett but does not enter a durable majority",
-            "Week 2: is nominated by Ireland",
-            "Week 2: forms The Pipeline with Harriett",
-            "Week 2: loses Block Buster to Zella",
-            "Week 2: is evicted 10–3 over Jules",
-            "Week 8: loses the first Battle Back round to Amberly"
+            "Week 1: Built The Pipeline bond with Harriett.",
+            "Week 2: Nominated by Ireland's secret HOH alongside Jules and Joel.",
+            "Week 2: Did not campaign enough after Zella won Block Buster.",
+            "Week 2: Evicted 10-3 after believing the vote was closer.",
+            "Week 8: Lost the first battle-back round to Amberly."
           ],
           "format": "big-brother",
           "seasonId": "bb-1"
         }
       ],
       "totalBlockBusterWins": 0,
-      "totalBlockBusterPlayed": 1,
+      "totalBlockBusterPlayed": 2,
       "bestBlockBusterStreak": 0,
       "avgPlacement": 18,
       "byShow": {

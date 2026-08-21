@@ -31,14 +31,21 @@ export const RATINGS_V = 1;
 //
 // Ordered worst to best; `tierFor` walks from the top so the bands never need
 // an upper bound written twice.
+// The bands sit where seasons actually land, not on a tidy 0-100 ruler.
+// Iconic at 85 was a label nothing could reach: the four columns are built to
+// disagree, so the headline cannot approach the top of the scale unless all
+// four adore the same season, which is the one thing this design rules out.
+// A typical season is an Average, a good one is a Good, and Iconic is the top
+// end of what a season that thrills one audience without losing the others can
+// actually produce.
 export const TIERS = [
   { key: 'dogwater', label: 'Dogwater', min: 0 },
-  { key: 'bad', label: 'Bad', min: 25 },
-  { key: 'okay', label: 'Okay', min: 38 },
-  { key: 'average', label: 'Average', min: 50 },
-  { key: 'good', label: 'Good', min: 60 },
-  { key: 'great', label: 'Great', min: 72 },
-  { key: 'iconic', label: 'Iconic', min: 85 },
+  { key: 'bad', label: 'Bad', min: 32 },
+  { key: 'okay', label: 'Okay', min: 42 },
+  { key: 'average', label: 'Average', min: 49 },
+  { key: 'good', label: 'Good', min: 57 },
+  { key: 'great', label: 'Great', min: 65 },
+  { key: 'iconic', label: 'Iconic', min: 74 },
 ];
 
 export function tierFor(n) {
@@ -135,6 +142,36 @@ export const BASE_TASTE = Object.freeze({
  */
 function overlay(format) {
   return SHOWS[format]?.audience || {};
+}
+
+/**
+ * How opinionated the four groups are.
+ *
+ * 1 is a plain weighted mean, which measured out as every season in a
+ * twelve-point band. Raised until a great season and a poor one land in
+ * different tiers rather than different decimals. See `rawScore`.
+ */
+const GAIN = 1.9;
+
+/**
+ * One entry from a show's `audience` overlay, for one demographic.
+ *
+ * A number scales that signal for everybody. A MAP scales it per column, and
+ * the map exists because a magnitude multiplier cannot say the thing Total
+ * Drama needs said about twists.
+ *
+ * On Big Brother a twist is an intrusion into a game, and the older audience's
+ * dislike of it is real. On Total Drama a twist IS the show — the format is
+ * stunts and interference, and nobody tuned in expecting a clean game. A
+ * single multiplier could only ever make that dislike bigger or smaller for
+ * everyone at once, so `twist: 1.2` on Total Drama made the older column hate
+ * twists twenty percent MORE, and a measured ten-season run rated twisty
+ * seasons three points BELOW quiet ones on the show built out of twists.
+ */
+function _mult(entry, demo) {
+  if (entry == null) return 1;
+  if (typeof entry === 'number') return entry;
+  return entry[demo] ?? entry.default ?? 1;
 }
 
 const clamp01 = n => Math.max(0, Math.min(1, Number(n) || 0));
@@ -302,7 +339,15 @@ export function readSignals(ep, prev, opts = {}) {
   }
 
   // ── showmance ──
-  const active = (gs?.showmances || []).filter(sh => !sh.broken).length;
+  //
+  // From the WEEK'S OWN state, not today's. `gs.showmances` is live, so a
+  // retro derivation read the season's final couples into all thirteen weeks —
+  // and a season whose romances had all broken by the finale reported zero
+  // romance for its entire run, including the weeks it was the whole story.
+  // The same bug popularity had, caught the same way: by a signal that sat at
+  // exactly 0.00 for a season that demonstrably had one.
+  const showList = ep.gsSnapshot?.showmances || gs?.showmances || [];
+  const active = showList.filter(sh => !sh.broken).length;
   const sparks = (ep.romanceScenes?.length || 0) + (ep.showmanceMoments?.length || 0);
   const showmance = clamp01(norm(active, 3) * 0.7 + norm(sparks, 2) * 0.3);
 
@@ -448,11 +493,22 @@ export function rawScore(signals, demo, format) {
   for (const key of SIGNAL_KEYS) {
     const w = base[key] || 0;
     if (!w) continue;
-    score += w * (mult[key] ?? 1) * calibrate(key, signals[key]);
+    score += w * _mult(mult[key], demo) * calibrate(key, signals[key]);
     if (w > 0) best += w; else worst += w;
   }
   const span = best - worst || 1;
-  return Math.max(0, Math.min(100, ((score - worst) / span) * 100));
+  const flat = ((score - worst) / span) * 100;
+  // CONTRAST. A weighted mean of eleven signals is a centrist by construction:
+  // every real week is partly good and partly bad for every group, so the raw
+  // number crowds the middle. Measured across twenty played seasons — ten with
+  // twists, ten without — every single one landed between 46.9 and 58.6. A
+  // seven-band scale that real play uses two bands of is not a scale.
+  //
+  // Audiences are not centrists. A group that got what it came for is
+  // delighted, not mildly positive. So the deviation from a neutral week is
+  // amplified around the midpoint, which widens the columns and therefore the
+  // headline, without changing what any signal means or which way it points.
+  return Math.max(0, Math.min(100, 50 + (flat - 50) * GAIN));
 }
 
 /**
@@ -756,7 +812,7 @@ export function demoNote(demo, weekRec, prevRec, format) {
   const prev = prevRec?.signals || null;
   let bestKey = null, bestPush = 0, bestRose = false;
   for (const key of SIGNAL_KEYS) {
-    const w = (base[key] || 0) * (mult[key] ?? 1);
+    const w = (base[key] || 0) * _mult(mult[key], demo);
     if (!w) continue;
     const now = calibrate(key, weekRec.signals[key]);
     // With no previous week, the week itself is the news: score against the

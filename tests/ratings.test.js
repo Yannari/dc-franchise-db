@@ -86,7 +86,11 @@ describe('the scale', () => {
     const keysOf = obj => Object.keys(obj);
     const all = keysOf(BASE_TASTE.teens);
     for (const demo of DEMOS) {
-      for (const on of [0, 0.25, 0.5, 0.75, 1]) {
+      // Swept finely rather than at five points: a coarse sample can skip a
+      // band and report it unreachable when the scale reaches it perfectly
+      // well. The question is whether the BAND is reachable, not whether my
+      // five sample vectors happened to land in it.
+      for (let on = 0; on <= 1.0001; on += 0.02) {
         const signals = Object.fromEntries(all.map(k => [k, on]));
         reached.add(tierFor(rawScore(signals, demo, 'big-brother')).key);
       }

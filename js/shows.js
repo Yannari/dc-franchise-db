@@ -35,7 +35,15 @@ export const SHOWS = {
     // Total Drama is sold on stunts, chaos and who is kissing whom. Vote
     // arithmetic happens, but nobody tuned in for it, so a quiet competent
     // week rates worse here than the identical week does on Big Brother.
-    audience: { strategy: 0.7, mess: 1.3, showmance: 1.25, twist: 1.2, predictable: 1.15 },
+    // `twist` is a MAP rather than a number, and it is the reason maps exist.
+    // A twist here is not an intrusion into a game, it is the format: nobody
+    // tunes in to a stunt show expecting a clean season. So the younger half
+    // enjoys it more than they would elsewhere and the older half minds it far
+    // less — where a single multiplier could only make everyone's existing
+    // feeling louder, which rated twisty seasons BELOW quiet ones on the show
+    // built out of twists.
+    audience: { strategy: 0.7, mess: 1.3, showmance: 1.25, predictable: 1.15,
+      twist: { teens: 1.35, youngAdults: 1.25, middleAged: 0.45, older: 0.3 } },
     careerStats: [
       ['challengeWins', 'totalChallengeWins'],
       ['immunityWins', 'totalImmunityWins'],

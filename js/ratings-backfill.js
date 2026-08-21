@@ -129,12 +129,52 @@ export async function backfillSeasonRatings({ post = true } = {}) {
     summary.unmatched = body.unmatched || [];
     if (!body.ok) summary.postError = body.error || `HTTP ${res.status}`;
   } catch (e) {
-    // The dev server is not always the thing serving these files. Falling back
-    // to a download keeps the work rather than losing it.
     summary.postError = String(e?.message || e);
+  }
+
+  // ── THE FALLBACK THAT KEEPS THE WORK ──
+  //
+  // Only serve.py answers POST. A page opened from any other static server —
+  // and there are several ways to serve this folder — gets a 405 and the
+  // ratings evaporate, which is what happened the first time this ran for
+  // real. So when the write fails the merge happens HERE instead, against the
+  // index fetched from wherever the page is being served, and the finished
+  // file is downloaded ready to drop into the repo.
+  if (summary.postError) {
     summary.payload = payload;
+    try {
+      const doc = await (await fetch('seasons_database.json', { cache: 'no-store' })).json();
+      const rows = Array.isArray(doc?.seasons) ? doc.seasons : [];
+      const hit = [];
+      for (const [id, r] of Object.entries(payload)) {
+        // A bare integer is Total Drama, permanently, so a legacy row with no
+        // seasonId still matches td-N.
+        const row = rows.find(x => (x.seasonId || `td-${x.seasonNumber}`) === id);
+        if (row) { row.ratings = r; hit.push(id); }
+      }
+      summary.merged = hit;
+      summary.unmatched = Object.keys(payload).filter(id => !hit.includes(id));
+      if (hit.length) {
+        _download('seasons_database.json', JSON.stringify(doc, null, 2) + String.fromCharCode(10));
+        summary.downloaded = true;
+      }
+    } catch (e) {
+      summary.mergeError = String(e?.message || e);
+    }
   }
   return summary;
+}
+
+/** Hand a finished file to the browser. */
+function _download(name, text) {
+  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /** The button's version: run it, then say plainly what happened. */
@@ -155,10 +195,16 @@ export async function rateSavedSeasons() {
   if (s.unmatched?.length) {
     notes.push('', `No row in seasons_database.json for: ${s.unmatched.join(', ')}`);
   }
-  if (s.postError) {
+  if (s.downloaded) {
+    notes.push('',
+      `Only serve.py accepts the write, and this page is not on it (${s.postError}).`,
+      'So seasons_database.json has been DOWNLOADED with the tiers merged in.',
+      'Drop it into the project folder, replacing the existing one, and reload',
+      'the seasons page.');
+  } else if (s.postError) {
     notes.push('', `The index was NOT written: ${s.postError}`,
-      'Ratings are computed but the seasons page will not show them until the',
-      'dev server is running (python serve.py).');
+      s.mergeError ? `and the download failed too: ${s.mergeError}` : '',
+      'Serve the project with `python serve.py` and run this again.');
   } else {
     notes.push('', 'seasons_database.json updated — reload the seasons page.');
   }

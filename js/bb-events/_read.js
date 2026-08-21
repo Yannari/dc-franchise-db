@@ -40,6 +40,8 @@ import { memoriesAbout, strategicMemoryScore, strongestStrategicMemory } from '.
 import { relationshipDecisionProfile, hasRelationshipDimensions } from '../relationships.js';
 import { strategicReputation } from '../reputation.js';
 import { getIntentions } from '../intentions.js';
+import { believesDeal } from '../bb/knowledge.js';
+import { dealBetween } from '../bb/deals.js';
 
 // ── what actually happened in this act ────────────────────────────────
 //
@@ -605,6 +607,24 @@ export function campaignArgument(nominee, voter, opponent) {
   const theirComps = opponent ? compsOf(opponent) : 0;
   const myComps = compsOf(nominee);
 
+  // ── the argument is a read of THIS voter, made from what the nominee KNOWS ──
+  //
+  // Two arguments outrank everything below, and both were missing. A nominee
+  // campaigning to somebody they share an end with says THAT — "we had a plan,
+  // and it does not work with me outside" — instead of a stranger's arithmetic.
+  // And a nominee who believes the opponent is half of a pair tells the voter
+  // where that leaves them: third. At a final four that is the entire game
+  // said out loud, and the old version was instead reciting alliance rosters
+  // to a person who could recite them back.
+  const house = gs.activePlayers || [];
+  const ourDeal = dealBetween(nominee, voter);
+  if (ourDeal) {
+    return `"We shook on something. I have not forgotten it and I do not think you have. Keep me here and it is still a plan; send me out and you are doing the rest of this alone."`;
+  }
+  const pairedWith = opponent ? house.find(n =>
+    n !== nominee && n !== voter && n !== opponent
+    && believesDeal(nominee, opponent, n)) : null;
+
   // Is the person they would keep instead aligned with people this voter is not?
   const theirAllies = opponent ? (gs.namedAlliances || []).filter(a => a.active !== false
     && (a.members || []).includes(opponent) && !(a.members || []).includes(voter)) : [];
@@ -616,6 +636,9 @@ export function campaignArgument(nominee, voter, opponent) {
 
   if (huntsVoter) {
     return `"Every time you leave the room, ${opponent} brings up your name. I am not the one you need to worry about."`;
+  }
+  if (pairedWith) {
+    return `"${opponent} and ${pairedWith} are a pair. Maybe you knew, maybe you didn't — but count it: keep ${opponent}, and you are the third person in a two-person plan. I am the only vote in this house that breaks that up."`;
   }
   if (theirAllies.length) {
     return `"${opponent} is in ${theirAllies[0].name} and you are not. Keep ${opponent} and you are voting for a group that has no seat for you."`;

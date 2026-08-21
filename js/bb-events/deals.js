@@ -62,8 +62,15 @@ const _voters = (house, ctx) =>
 function _pactPair(house, ctx) {
   const pool = _leastSeen(house);
   for (const a of pool) {
+    // A pair that already HAS something at the end can never land here.
+    // The memory check alone was the guard, and memories get evicted from a
+    // full head — so a final four watched two people solemnly invent the
+    // final two they had been in since week three. The deal ledger doesn't
+    // forget; ask it first, in both directions.
     const b = _others(house, a).find(n =>
-      bond(a, n) >= 3 && !remembers(a, n, 'final-two') && trustOf(a, n) >= 0);
+      bond(a, n) >= 3 && trustOf(a, n) >= 0
+      && !remembers(a, n, 'final-two') && !remembers(n, a, 'final-two')
+      && !dealBetween(a, n));
     if (b) return { a, b };
   }
   return null;
@@ -753,6 +760,36 @@ const reaffirmDeal = {
     const solid = sincerityOf(deal, a) > 0.55 && sincerityOf(deal, b) > 0.55;
     const p = pronouns(a);
     const files = p.sub === 'they' ? 'file' : 'files';
+    // ── one of them is planning the cut ──
+    //
+    // The late-game version of this scene: the words get said again, warmly,
+    // by somebody whose actual plan is the other chair. The audience is told;
+    // the partner gets a provable promise to wave when the cut comes; and
+    // whether the partner buys it runs on the same bond-vs-intuition read as
+    // every other lie in this house.
+    const cutter = targetOf(a) === b ? a : targetOf(b) === a ? b : null;
+    if (cutter && house.length <= 6) {
+      const kept = cutter === a ? b : a;
+      const pc = pronouns(cutter);
+      const fooled = perceived(kept, cutter) + (pStats(cutter).social - 5) * 0.2
+        - pStats(kept).intuition * 0.25 > -0.5;
+      const text = fooled ? _variant([
+        `${cutter} says it again — "still us, still the end" — and means every word except the ones that matter. ${kept} hears exactly what ${pronouns(kept).sub} wanted to hear.`,
+        `The handshake is the same handshake it has been for weeks. Only one of them knows it is a goodbye.`,
+        `${cutter} reaffirms the final two with the ease of somebody who has already had the other conversation, in ${pc.posAdj} own head, twice.`,
+      ], ctx, cutter, kept) : _variant([
+        `${cutter} says the words. ${kept} says them back, and counts the seconds ${cutter} held eye contact, and does not like the number.`,
+        `"Still us?" "Still us." Both of them smile. ${kept} spends the rest of the evening quietly working out what ${pronouns(kept).sub} would need to win without ${cutter}.`,
+        `The final two gets reaffirmed in the kitchen, out loud, and ${kept} notices ${cutter} has started saying "whatever happens" a little too often.`,
+      ], ctx, cutter, kept);
+      api.remember(kept, cutter, 'promise', 3, { promise: 'final two, restated', fake: true });
+      if (!fooled) api.suspicion(kept, cutter, 1.3);
+      else api.addBond(kept, cutter, 0.5);
+      api.popDelta?.(cutter, -0.4);
+      return { text, players: [cutter, kept],
+        badgeText: fooled ? 'A GOODBYE, DRESSED AS A PROMISE' : 'SAID TOO OFTEN',
+        badgeClass: 'red' };
+    }
     const text = solid ? _variant([
       `${a} finds ${b} alone and says it again, plainly: still us, still the end. ${b} does not need to hear it and is glad to anyway.`,
       `Neither of them says much. ${a} bumps ${b}'s shoulder on the way past and ${b} nods once. Weeks in, that is the entire conversation and it is enough.`,

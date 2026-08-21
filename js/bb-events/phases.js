@@ -27,6 +27,7 @@ import {
   targetOf, threat, biggestThreat, willScheme, isNice, isVillainous, archetype,
   trustOf, resentmentOf, beatsInvolving, spotlightOrder, actFacts,
 } from './_read.js';
+import { memoriesAbout } from '../strategy-memory.js';
 
 const _others = (house, ...x) => house.filter(n => n && !x.includes(n));
 /** Least-seen first, weighted toward whoever this week is about. */
@@ -397,10 +398,23 @@ const targetsAlign = {
     if (!pitcher) return null;
     const mark = targetOf(pitcher);
     const p = pronouns(pitcher);
+    // ── a grudge is only as old as its receipts ──
+    //
+    // "has wanted ${mark} gone since week one" fired off nothing but the
+    // CURRENT target — a name that can be three days old — so a reader who
+    // remembered the actual week one caught the show inventing its own
+    // history. The duration claim now requires an early memory against the
+    // mark; a fresh target gets a fresh-target sentence instead.
+    const receipts = memoriesAbout(pitcher, mark) || [];
+    const firstEp = receipts.length ? Math.min(...receipts.map(m => m.ep || 99)) : null;
+    const longHeld = grudge(pitcher, mark) && firstEp != null && firstEp <= 2
+      && (ctx?.week?.num || 1) > 2;
     const text = _variant([
       `${pitcher} tells ${hoh} that ${mark} would nominate them next week. ${hoh} asks how ${pitcher} knows and listens closely to the answer.`,
       `"You don't owe me anything. But if you're looking at ${mark}, so am I." It is the most useful sentence anybody says to ${hoh} today.`,
-      `${pitcher} has wanted ${mark} gone since ${ctx?.week?.num > 1 ? 'week one' : 'the first days in the house'} and has finally found somebody with the power to do it for ${p.obj}.`,
+      longHeld
+        ? `${pitcher} has wanted ${mark} gone since week one and has finally found somebody with the power to do it for ${p.obj}.`
+        : `${pitcher} landed on ${mark} this week — and has already found somebody with the power to do something about it.`,
       `${pitcher} mentions that several people are worried about ${mark}, then leaves the HOH room before ${hoh} can ask who “several people” means.`,
     ], ctx, pitcher, hoh, mark);
     api.addBond(pitcher, hoh, 0.9);

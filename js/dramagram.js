@@ -74,6 +74,19 @@ export const FOLLOWERS = {
   editFloor: 0.4,
   editCeiling: 1.6,
   hateUnfollow: 0.06,           // the most hated of a cast loses up to 6%
+  // ── how many people were watching ──
+  //
+  // The edit above is how the audience took YOU. This is how many of them
+  // there were. A season the country talked about all summer puts a face in
+  // front of far more people than one nobody finished, and the difference
+  // survives the season by years — which is the whole premise of the life
+  // layer.
+  //
+  // It scales the EXPOSURE only, never the placement bonus. Winning is winning
+  // whoever was watching; the prize does not shrink because the season
+  // underperformed. Seasons with no rating pay exactly what they always did.
+  reachFloor: 0.65,
+  reachCeiling: 1.5,
   floor: 800,                   // nobody ends at zero; the account still exists
 };
 
@@ -81,6 +94,21 @@ export const FOLLOWERS = {
 export const VERIFIED_AT = 100000;
 
 const round = n => (n >= 10000 ? Math.round(n / 1000) * 1000 : Math.round(n / 10) * 10);
+
+/**
+ * How big an audience this season had, as a multiplier on exposure.
+ *
+ * Read straight off the published season document — the rating is computed by
+ * the simulator and written in at export, so nothing here has to know how it
+ * was arrived at. A season from before the ratings existed returns 1 and pays
+ * exactly what it always paid.
+ */
+function reachOf(season) {
+  const score = Number(season?.ratings?.score);
+  if (!Number.isFinite(score)) return 1;
+  const t = Math.max(0, Math.min(1, score / 100));
+  return FOLLOWERS.reachFloor + (FOLLOWERS.reachCeiling - FOLLOWERS.reachFloor) * t;
+}
 
 /** "278k" / "9.4k" / "840". */
 export function short(n) {
@@ -164,7 +192,9 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
       const edit = editOf(played);
       const editFactor = edit == null ? 1
         : FOLLOWERS.editFloor + (FOLLOWERS.editCeiling - FOLLOWERS.editFloor) * edit;
-      const exposure = Math.round((debuted ? FOLLOWERS.perSeason : FOLLOWERS.debut) * editFactor);
+      const reach = reachOf(season);
+      const exposure = Math.round(
+        (debuted ? FOLLOWERS.perSeason : FOLLOWERS.debut) * editFactor * reach);
       steps.push({ season, why: debuted ? 'played' : 'debut', delta: exposure });
       n += exposure;
       debuted = true;

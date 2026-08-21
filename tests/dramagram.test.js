@@ -583,3 +583,27 @@ describe('the edit decides what a season pays', () => {
     expect(hated).toBeGreaterThan(FOLLOWERS.win * 0.6);
   });
 });
+
+describe('how many people were watching', () => {
+  // The edit decides how the audience took you. The season's rating decides
+  // how many of them there were, and that difference outlives the season --
+  // which is the whole premise of the life layer.
+  const seasonsRated = score => [{ seasonId: 's-1', seasonNumber: 1, airYear: 2020,
+    airSlot: 'spring', ratings: score == null ? undefined : { score, tier: { key: 'x', label: 'X' } } }];
+  const player = career('ace', [{ seasonId: 's-1', placement: 6 }]);
+
+  const total = score => followersOf('ace', {
+    careers: [player], seasons: seasonsRated(score), events: [] });
+
+  it('puts a debut on an iconic season in front of more people', () => {
+    expect(total(92), 'the tier is not reaching the life layer')
+      .toBeGreaterThan(total(18));
+  });
+
+  it('leaves a season with no rating paying exactly what it always paid', () => {
+    expect(total(null)).toBe(total(undefined));
+    // and lands between the two extremes rather than at one of them
+    expect(total(null)).toBeGreaterThan(total(0));
+    expect(total(null)).toBeLessThan(total(100));
+  });
+});

@@ -304,6 +304,27 @@ describe('evidence-driven interviews', () => {
       .includes(x.behavior))).toBe(true);
   });
 
+  it('answers an early conflict receipt as a conflict, not as a generic strategic choice', () => {
+    const voice = voiceOf({ archetype: 'villain', stats: {
+      strategic: 8, social: 6, loyalty: 2, temperament: 4,
+    } });
+    const ep = { id: 'isabel-marissa-receipt', kind: 'debrief', tier: 'solid', voice,
+      guest: 'isabel', guestName: 'Isabel', season: { format: 'total-drama', title: 'S' },
+      facts: { season: 'S', placement: '6th' },
+      topics: [{ id: 'the-boot' }, { id: 'behind-the-scenes' }],
+      receipts: [{ id: 'moment-1', type: 'moment', weight: 4,
+        statement: "Episode 1: Clashed with Marissa immediately, setting up one of the season's earliest hero-villain dynamics." }],
+    };
+    const out = composeEpisode(ep, {
+      words: { player: 'contestant', players: 'contestants', exit: 'voted out' },
+    });
+    const receipt = out.exchanges.find(x => x.receipt);
+    expect(receipt.q).toContain('Clashed with Marissa immediately');
+    expect(receipt.a).toMatch(/yes|clash|disagreed|distrust/i);
+    expect(receipt.a).toMatch(/tension|conflict|relationship/i);
+    expect(receipt.a).not.toMatch(/best option|several earlier decisions|isolated scene/i);
+  });
+
   it('scales the interview with the importance of the episode', () => {
     expect(receiptEpisode('viral').exchanges.length)
       .toBeGreaterThan(receiptEpisode('quiet').exchanges.length);

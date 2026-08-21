@@ -689,6 +689,43 @@ function receiptBehavior(voice, receipt, key) {
 }
 
 function receiptAnswer(receipt, behavior) {
+  const statement = String(receipt.statement || '');
+  const momentKind = /clash|conflict|feud|confront|argument|meltdown|rival/i.test(statement) ? 'conflict'
+    : /alliance|bond|relationship|showmance|trust/i.test(statement) ? 'relationship'
+      : /idol|advantage/i.test(statement) ? 'advantage'
+        : /won|immunity|challenge|duel|race|fire-making/i.test(statement) ? 'competition'
+          : /vote|voted|jury|eliminat|evict/i.test(statement) ? 'vote' : 'event';
+  if (receipt.type === 'moment' || receipt.type === 'note') {
+    if (momentKind === 'conflict') {
+      return ({
+        own: 'Yes. That is a fair summary. The tension was there immediately, and that first clash shaped how we interpreted each other afterward.',
+        explain: 'Broadly, yes. We disagreed immediately, and once that tension became public, every later interaction carried some of it.',
+        justify: 'Yes, we clashed that early. I knew confronting the situation could define our relationship, but staying silent did not feel honest either.',
+        dispute: 'The clash happened, but the hero-villain label simplifies it. We were two people who distrusted each other almost immediately.',
+        deflect: 'We did clash, but that summary makes it sound one-sided. Both of us kept the conflict alive after that first exchange.',
+        reframe: 'The facts are right. I would describe it as two people deciding very early that the other one could not be trusted.',
+        apologize: 'Yes. I helped create that conflict from the beginning, and I regret how difficult that made every conversation afterward.',
+      })[behavior];
+    }
+    const answerToSummary = {
+      own: 'Yes. That is a fair summary of what happened.',
+      explain: 'Broadly, yes. The summary is accurate, but it compresses what the moment felt like from inside the game.',
+      justify: 'Yes, that happened. I understood the risk at the time and believed my response made sense in that situation.',
+      dispute: 'Not entirely. The event happened, but I do not agree with the way that summary interprets it.',
+      deflect: 'It happened, but focusing on that moment alone leaves out what the other people involved were doing.',
+      reframe: 'The facts are right, although I would describe what they meant differently.',
+      apologize: 'Yes. That happened, and I regret the effect it had on the other person.',
+    }[behavior];
+    const context = {
+      conflict: 'The tension was real from that point forward, and it affected how we interpreted each other afterward.',
+      relationship: 'That relationship became important because later decisions depended on whether the trust held.',
+      advantage: 'The advantage changed my options, but it did not remove the need to read the other players correctly.',
+      competition: 'The result mattered because it changed who was safe and how the next decision could be made.',
+      vote: 'That decision changed the game immediately and also changed how people trusted me afterward.',
+      event: 'It became important because later decisions kept bringing us back to it.',
+    }[momentKind];
+    return `${answerToSummary} ${context}`;
+  }
   const byType = {
     votes: 'Each vote was information about where I stood, even when I survived it.',
     challenges: 'Those wins bought safety, but they also made it harder for anyone to overlook me.',
@@ -696,14 +733,12 @@ function receiptAnswer(receipt, behavior) {
     idols: 'Having an idol created options, but it did not tell me which read of the room was correct.',
     jury: 'The result reflects relationships as much as moves, and I have to take that seriously.',
     relationships: 'Those relationships were not interchangeable, even if the record lists them together.',
-    moment: 'That moment mattered, but it was the result of several earlier decisions rather than one isolated scene.',
-    note: 'The note is accurate, but the shorter version cannot show everything that led to it.',
   };
   const substance = byType[receipt.type] || 'The record is accurate, but the context still matters.';
   const lead = {
-    own: 'That is fair, and I own my part in it.',
-    explain: 'The record is right. What it cannot show by itself is how the decision developed.',
-    justify: 'I made that choice because it was the best option I believed I had at the time.',
+    own: 'That is fair, and I accept what the record shows.',
+    explain: 'The record is right. What it cannot show by itself is how the situation developed.',
+    justify: 'That result came from the way I believed I needed to play at the time.',
     dispute: 'The fact is accurate, but I disagree with the conclusion people usually draw from it.',
     deflect: 'I think people focus on that because it is easier than talking about what everyone else was doing.',
     reframe: 'I would describe it differently, although I understand why it is recorded that way.',
@@ -717,7 +752,11 @@ function receiptCrack(receipt, behavior) {
   const press = behavior === 'deflect'
     ? 'That tells me what everyone else did. What responsibility belongs to you?'
     : 'The context can change the meaning, but it cannot change the record. What part do you accept?';
-  const crack = receipt.type === 'relationships'
+  const isConflictMoment = ['moment', 'note'].includes(receipt.type)
+    && /clash|conflict|feud|confront|argument|meltdown|rival/i.test(String(receipt.statement || ''));
+  const crack = isConflictMoment
+    ? 'I accept that I helped set the tone of that relationship. Whatever happened later, I was part of why the conflict became difficult to undo.'
+    : receipt.type === 'relationships'
     ? 'I accept that I asked people to trust me while keeping options they did not know about. That was good for my game until it became personal.'
     : receipt.type === 'votes'
       ? 'I accept that surviving earlier votes made me overconfident. I treated a repeated warning like proof that I could always escape it.'

@@ -669,8 +669,8 @@
       "seasonNumber": 1,
       "format": "big-brother",
       "seasonId": "bb-1",
-      "title": "Season 1: The Room Decides",
-      "subtitle": "A season where the plan broke more often than it held, and Misha won by being useful to every side until the final question.",
+      "title": "Big Brother 1: The Room Decided",
+      "subtitle": "A season where power mattered, but the vote count mattered more.",
       "castSize": 17,
       "episodeCount": 15,
       "jurySize": 9,
@@ -679,9 +679,9 @@
         "playerSlug": "misha",
         "vote": "Misha 5 — Jules 4 — Joel 0",
         "runnerUp": "Jules & Joel",
-        "keyStats": "Misha won with 2 HOH wins, 4 veto wins, 3 wins under threat, 3 nominations, 3 times pulled off the block, zero eviction votes against, and a 5–4 jury vote over Jules.",
-        "strategy": "Misha’s winning game was not clean control; it was durable positioning. She moved between structures, kept enough personal bonds alive to survive danger, and converted late comp wins into the only choices that mattered. Her best work was making people believe she was an available number even when she was quietly choosing which room survived the week.",
-        "legacy": "Misha becomes the first winner as the season’s best hybrid: socially insulated enough to be saved, competitive enough to save herself, and ruthless enough to cut Joel at final three. The win is narrow, but it is not accidental."
+        "keyStats": "Misha won 5-4 with 2 HOH wins, 4 veto wins, 3 wins under threat, 3 times nominated, 3 times pulled off the block, 85% voting accuracy, only 1 blindside, and 5 jury votes.",
+        "strategy": "Misha’s winning game was not clean control; it was recoverable positioning. She kept enough relationships alive across collapsing groups that people kept needing her after they stopped trusting her. The crucial difference between Misha and the other finalists is that her comp wins came attached to danger: she repeatedly won or benefited from vetoes when her own game was exposed, then converted survival into the next vote. She was willing to be implicated in the mess, own it late, and still make the final decision that removed Joel, the finalist she believed could beat her.",
+        "legacy": "Misha becomes the season’s first winner as a hybrid social-competition player: not the most beloved, not the least bloodied, but the person whose game survived the most scrutiny. Her legacy is the 5-4 verdict itself — a jury split between personal loyalty to Jules and respect for Misha’s ability to keep re-entering the power structure after every rupture."
       },
       "awards": {
         "fanFavorite": {
@@ -698,45 +698,12 @@
           "detail": "7 comp wins"
         }
       },
-      "theme": "Season 1 was defined by a simple fact: the plan held only five times and broke ten. This was not a steamroll; it was a room constantly re-deciding itself. Early power structures like The Power Couple, The Dock Pact, The Oath and The War Room looked solid until one vote exposed the cracks. Comp threats like Ireland and Dylon forced the house to spend weeks solving immediate survival problems, while social players like Misha, Jules, Tobias and Jane made those solutions possible. The jury rewarded the player who best combined both modes. Misha did not dominate every week, but she was present in enough rooms, saved by enough relationships, and clutch in enough late competitions to win 5–4.",
+      "theme": "Season 1 was not a clean steamroll; the plan held only 5 times and broke 10. The defining strategic pattern was that every alliance became public before it became safe. The Power Couple, Dock Pact, Assembly, War Room, Oath, Drama Club and Double Edge all had moments of influence, but none survived comparison of notes for long. Competition wins mattered, especially for Ireland, Joel, Misha and Dylon, yet the season was ultimately decided by who could survive after power expired. Ireland and Dylon show the danger of being a visible comp engine without enough social trust; Felipe and Jane show the danger of having too many deals with no final ownership; Tobias shows the strength and ceiling of being a hub everyone likes but everyone can identify. The final vote distilled the whole season: Jules represented trust, relationship and social repair; Misha represented adaptive survival, clutch safety and the willingness to make the last hard cut. The jury split almost perfectly along that line, and Misha won because one more juror respected the game that kept reassembling itself around her.",
       "status": "Complete",
       "castPhotoPath": "assets/cast/bb-1-cast.png",
       "emoji": "",
       "airYear": 2026,
-      "airSlot": "summer",
-      "ratings": {
-        "v": 1,
-        "score": 65.1,
-        "tier": {
-          "key": "great",
-          "label": "Great",
-          "min": 65
-        },
-        "demos": {
-          "teens": 48.4,
-          "youngAdults": 30.7,
-          "middleAged": 33.7,
-          "older": 84.5
-        },
-        "curve": [
-          50.6,
-          42.3,
-          45,
-          49.8,
-          61.7,
-          65.3,
-          70.8,
-          78,
-          71.9,
-          66,
-          67.6,
-          75.1,
-          77,
-          66.6,
-          64.8,
-          65.2
-        ]
-      }
+      "airSlot": "summer"
     }
   ]
 }

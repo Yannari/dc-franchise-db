@@ -382,44 +382,7 @@
       "format": "total-drama",
       "seasonId": "td-10",
       "airYear": 2024,
-      "airSlot": "fall",
-      "ratings": {
-        "v": 1,
-        "score": 44.5,
-        "tier": {
-          "key": "okay",
-          "label": "Okay",
-          "min": 42
-        },
-        "demos": {
-          "teens": 28.4,
-          "youngAdults": 28.6,
-          "middleAged": 46.9,
-          "older": 39
-        },
-        "curve": [
-          46.5,
-          46.3,
-          48.7,
-          42.8,
-          42,
-          42.2,
-          39.8,
-          39.8,
-          37.5,
-          39.1,
-          46.9,
-          51.7,
-          51.7,
-          50.4,
-          48.1,
-          43.5,
-          42.4,
-          40.7
-        ],
-        "throughEpisode": 18,
-        "complete": true
-      }
+      "airSlot": "fall"
     },
     {
       "seasonNumber": 11,

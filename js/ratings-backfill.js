@@ -67,6 +67,38 @@ export function rateSave(save) {
   };
 }
 
+/**
+ * Does this save really belong to the season it claims?
+ *
+ * A save stamps its own season number, and that number is what the index is
+ * matched on. When the two disagree the rating lands on somebody else's
+ * season and nothing says a word: a save called "Cursed Island" carrying
+ * seasonNumber 10 wrote its 44.5 onto Champions vs Contenders, and Cursed
+ * Island — season 11 — stayed blank. The only reason it was caught is that a
+ * human read the list and knew which season was which.
+ *
+ * So the name is checked against the title. Loose on purpose: titles carry
+ * show prefixes and subtitles the save name never has ("Total Drama Doom
+ * Island" against "Doom Island"), and an episode marker is often appended
+ * ("Big Brother 1 (Ep 15)2"). It asks only whether the distinctive words of
+ * one appear in the other.
+ */
+export function nameMatchesTitle(saveName, title) {
+  const strip = t => String(t || '')
+    .toLowerCase()
+    .replace(/\((?:ep|week)[^)]*\)/g, ' ')      // "(Ep 15)"
+    .replace(/[^a-z0-9 ]+/g, ' ')
+    .replace(/\b(total drama|big brother|season|the|a|of|and)\b/g, ' ')
+    .replace(/\b\d+\b/g, ' ')
+    .split(/\s+/).filter(w => w.length > 2);
+  const a = strip(saveName);
+  const b = strip(title);
+  // Nothing distinctive left on either side is not evidence of a mismatch.
+  if (!a.length || !b.length) return true;
+  const setB = new Set(b);
+  return a.some(w => setB.has(w));
+}
+
 /** Every season save in this browser, newest index order. */
 async function loadSaves() {
   const index = (await _idbGet('season_index')) || [];
@@ -105,6 +137,29 @@ export async function backfillSeasonRatings({ post = true } = {}) {
     const held = bySeason[r.seasonId];
     if (!held || r.episodes >= held.episodes) bySeason[r.seasonId] = r;
   }
+  // ── DOES EACH SAVE BELONG TO THE SEASON IT CLAIMS ──
+  //
+  // Checked against the index BEFORE anything is written, because the failure
+  // is silent and permanent: a rating on the wrong season looks exactly like a
+  // rating on the right one.
+  let index = null;
+  try {
+    const doc = await (await fetch('seasons_database.json', { cache: 'no-store' })).json();
+    index = Array.isArray(doc?.seasons) ? doc.seasons : null;
+  } catch { index = null; }
+
+  const conflicts = [];
+  if (index) {
+    for (const [id, r] of Object.entries(bySeason)) {
+      const row = index.find(x => (x.seasonId || `td-${x.seasonNumber}`) === id);
+      if (!row) continue;
+      if (!nameMatchesTitle(r.name, row.title)) {
+        conflicts.push({ seasonId: id, save: r.name, title: row.title });
+        delete bySeason[id];
+      }
+    }
+  }
+
   const payload = Object.fromEntries(
     Object.entries(bySeason).map(([id, r]) => [id, r.ratings]));
 
@@ -115,8 +170,10 @@ export async function backfillSeasonRatings({ post = true } = {}) {
       tier: r.ratings.tier.label, episodes: r.episodes, complete: r.complete,
     })).sort((a, b) => b.score - a.score),
     skipped: skipped.map(r => ({ name: r.name, why: r.why })),
+    conflicts,
   };
   if (!post) return summary;
+  if (!payload || !Object.keys(payload).length) return summary;
 
   try {
     const res = await fetch('/api/season-ratings', {
@@ -189,6 +246,11 @@ export async function rateSavedSeasons() {
   const lines = s.rated.map(r => `  ${String(r.score).padStart(5)}  ${r.tier.padEnd(9)}`
     + ` ${r.seasonId}  ${r.name}${r.complete ? '' : ` (through ep ${r.episodes})`}`);
   const notes = [];
+  if (s.conflicts?.length) {
+    notes.push('', 'NOT WRITTEN — these saves disagree with the season list:',
+      ...s.conflicts.map(c => `  "${c.save}" claims ${c.seasonId}, which is "${c.title}"`),
+      'Set the right season number on the save and run this again.');
+  }
   if (s.skipped.length) {
     notes.push('', 'Not rated:', ...s.skipped.map(x => `  ${x.name} — ${x.why}`));
   }

@@ -3244,6 +3244,110 @@ export function _runRandomizer() {
 // RESULTS TAB
 // ══════════════════════════════════════════════════════════════════════
 
+/**
+ * A player's season, broken into the things a season is actually made of.
+ *
+ * ── WHY THIS IS NOT ONE NUMBER ──
+ *
+ * It used to be: `challengeWins * 2 + accuracy * 3 + influence * 1.5 + ...`,
+ * one figure with no way to see what was in it. On Big Brother that figure was
+ * also mostly WRONG, because the only Big Brother facts it read were the three
+ * competition counters. `gs.bb.stats` also records timesNominated, timesSaved
+ * and timesOnTheBlock, and `gs.bb.powers` records who is holding what and who
+ * has spent it — so surviving four blocks, or sitting on a secret veto for a
+ * month, counted for precisely nothing.
+ *
+ * Surviving the block is not a footnote in that game. It is frequently the
+ * whole story of a winner.
+ *
+ * Each section scores separately and says what it is made of, so a ranking can
+ * be argued with rather than just read.
+ */
+function _rankingSections(name, ctx) {
+  const { state, isBB, metric } = ctx;
+  const out = [];
+  const add = (key, label, points, detail) => {
+    if (points || detail) out.push({ key, label, points: Math.round(points * 10) / 10, detail });
+  };
+
+  // ── social, which is the same shape on both shows ──
+  const alliances = metric.alliances.length;
+  const showmance = (state?.showmances || [])
+    .filter(sh => !sh.broken && sh.phase !== 'broken-up' && (sh.players || []).includes(name)).length;
+  // Reach: how many people in this house this player is genuinely close to.
+  // Read off the bond table rather than the alliance list, because the useful
+  // relationships are frequently the ones with no name on them.
+  let close = 0;
+  const bonds = state?.bonds || {};
+  for (const [key, val] of Object.entries(bonds)) {
+    if (Number(val) < 4) continue;
+    const pair = String(key).split('||');
+    if (pair.includes(name)) close++;
+  }
+
+  if (isBB) {
+    const rec = state?.bb?.stats?.[name] || {};
+    const hoh = Number(rec.hohWins || 0);
+    const veto = Number(rec.vetoWins || 0);
+    const arena = Number(rec.blockBusterWins || 0);
+    // A Head of Household week is a week you chose the block; a veto is a week
+    // you changed one. Both beat an arena win, which is a week you survived a
+    // twist somebody else set up.
+    add('comp', 'Competitions', hoh * 3 + veto * 2.2 + arena * 1.4,
+      [hoh ? `${hoh} HOH` : null, veto ? `${veto} veto` : null,
+        arena ? `${arena} arena` : null].filter(Boolean).join(' · ') || 'no wins');
+
+    const onBlock = Number(rec.timesOnTheBlock || 0);
+    const saved = Number(rec.timesSaved || 0);
+    const noms = Number(rec.timesNominated || 0);
+    // THE THREE COUNTERS MEAN DIFFERENT THINGS, and reading them wrong printed
+    // a line that contradicted itself: '2 nominated, 0 survived the vote, 1
+    // pulled down'. `timesNominated` is every time you were named to the block.
+    // `timesOnTheBlock` is the times you were still on it when the house voted
+    // — the veto has already removed anybody it saved — so subtracting the
+    // saves from it counts them twice.
+    //
+    // Everybody still in the house survived every vote they faced. Somebody
+    // already gone survived all but the last one.
+    const survived = metric.active ? onBlock : Math.max(0, onBlock - 1);
+    // Being voted to stay beats being pulled down: one is the house choosing
+    // you, the other is somebody else's veto choosing for you.
+    add('block', 'On the block', survived * 1.8 + saved * 1.0,
+      (noms || onBlock || saved)
+        ? `${noms || onBlock + saved} nominated · ${survived} survived the vote`
+          + (saved ? ` · ${saved} pulled down` : '')
+        : 'never nominated');
+
+    const powers = (state?.bb?.powers || []).filter(x => x?.holder === name);
+    const spent = powers.filter(x => x.used).length;
+    add('power', 'Powers', powers.length * 1.2 + spent * 1.6,
+      powers.length ? `${powers.length} held${spent ? ` · ${spent} played` : ' · none played'}` : 'none');
+  } else {
+    add('comp', 'Challenges', metric.challengeWins * 2,
+      metric.challengeWins ? `${metric.challengeWins} win${metric.challengeWins === 1 ? '' : 's'}` : 'no wins');
+    const held = (state?.advantages || []).filter(a => a?.holder === name);
+    add('power', 'Advantages', held.length * 1.5,
+      held.length ? `${held.length} held` : 'none');
+  }
+
+  // ── the vote, which is the game both shows are actually playing ──
+  add('vote', 'The vote', metric.voteAccuracy * 4 + metric.influence * 2,
+    `${Math.round(metric.voteAccuracy * 100)}% with the house`
+    + (metric.influence ? ` · ${metric.influence} vote${metric.influence === 1 ? '' : 's'} steered` : ''));
+
+  add('social', 'Social', alliances * 1.2 + close * 0.5 + showmance * 0.8,
+    [alliances ? `${alliances} alliance${alliances === 1 ? '' : 's'}` : null,
+      close ? `${close} close` : null, showmance ? 'showmance' : null]
+      .filter(Boolean).join(' · ') || 'no ties');
+
+  // ── and the pressure they are under, which subtracts ──
+  add('heat', 'Pressure', -(metric.votesReceived * 0.25),
+    metric.votesReceived ? `${metric.votesReceived} vote${metric.votesReceived === 1 ? '' : 's'} against`
+      : 'nothing against them');
+
+  return out;
+}
+
 export function buildSeasonOverviewModel(state = gs, cast = players) {
   const history = state?.episodeHistory || [];
   // A house season measures power in different units: wins are HOH, veto and
@@ -3287,8 +3391,15 @@ export function buildSeasonOverviewModel(state = gs, cast = players) {
     const reputation = state?.strategicReputations?.[name]?.labels || [];
     const popularity = Number(lastPop[name] || 0);
     const momentum = popularity - Number(prevPop[name] || 0);
-    const pulse = challengeWins * 2 + voteAccuracy * 3 + influence * 1.5 + alliances.length * .6 + momentum * .08 - votesReceived * .08;
-    return { name, active: active.includes(name), challengeWins, hohWins, vetoWins, arenaWins, ballots, correctBallots, voteAccuracy, votesReceived, influence, alliances, reputation, popularity, momentum, pulse };
+    const base = { name, active: active.includes(name), challengeWins, hohWins, vetoWins,
+      arenaWins, ballots, correctBallots, voteAccuracy, votesReceived, influence,
+      alliances, reputation, popularity, momentum };
+    // The pulse is now the SUM OF THE SECTIONS, so the number and its
+    // breakdown cannot disagree — which they would the first time one was
+    // edited without the other.
+    const sections = _rankingSections(name, { state, isBB, metric: base });
+    const pulse = sections.reduce((sum, sec) => sum + sec.points, 0) + momentum * 0.08;
+    return { ...base, sections, pulse: Math.round(pulse * 10) / 10 };
   });
   const activeMetrics = metrics.filter(metric => metric.active);
   const by = (key, min = 0) => [...activeMetrics].filter(metric => metric[key] >= min).sort((a, b) => b[key] - a[key]);
@@ -3556,7 +3667,15 @@ function renderMidseasonOverview() {
     <section class="overview-section"><header><div><span>Recorded</span><h2>Players still writing the season</h2></div><small>${model.active.length} active</small></header><div class="overview-active-cast">${model.active.map(name => `<div>${_overviewPortrait(name)}<span>${_hubEsc(name)}</span></div>`).join('')}</div></section>
     <section class="overview-leaders">${model.leaders.map(leader => `<article><label>${_hubEsc(leader.label)}</label>${_overviewPortrait(leader.player)}<div><strong>${_hubEsc(leader.player)}</strong><span>${_hubEsc(leader.value)}</span></div></article>`).join('') || '<div class="overview-none">Leaders need more episodes to emerge.</div>'}</section>
     <div class="overview-columns">
-      <section class="overview-section overview-ranking"><header><div><span>Game read</span><h2>Season pulse</h2></div><small>Interpretive ranking</small></header><p class="overview-disclaimer">Combines ${model.isBB ? 'competition wins (HOH, veto, arena)' : 'visible challenge wins'}, voting accuracy, agenda control, alliance reach, pressure, and audience movement. It is not a winner prediction.</p><ol>${model.powerRanking.map((metric, index) => `<li><b>${index + 1}</b>${_overviewPortrait(metric.name)}<div><strong>${_hubEsc(metric.name)}</strong><span>${model.isBB ? `${metric.hohWins} HOH · ${metric.vetoWins} veto${metric.arenaWins ? ` · ${metric.arenaWins} arena` : ''}` : `${metric.challengeWins} wins`} · ${Math.round(metric.voteAccuracy * 100)}% vote accuracy · ${metric.alliances.length} alliance${metric.alliances.length === 1 ? '' : 's'}</span></div><em class="${metric.momentum > 0 ? 'up' : metric.momentum < 0 ? 'down' : ''}">${metric.momentum > 0 ? '▲' : metric.momentum < 0 ? '▼' : '—'} ${Math.abs(metric.momentum).toFixed(1)}</em></li>`).join('')}</ol></section>
+      <section class="overview-section overview-ranking"><header><div><span>Game read</span><h2>Season pulse</h2></div><small>Interpretive ranking</small></header>
+        <p class="overview-disclaimer">Every section scores separately and shows its working, so the ranking can be argued with rather than just read. ${model.isBB ? 'Competitions weight a Head of Household above a veto above an arena win; surviving the block counts for more when the house voted you through than when a veto pulled you down.' : 'Challenge wins, advantages, the vote, and who this player is actually close to.'} It is not a winner prediction.</p>
+        <ol class="rank-list">${model.powerRanking.map((metric, index) => `<li class="rank-row">
+          <b class="rank-pos">${index + 1}</b>${_overviewPortrait(metric.name)}
+          <div class="rank-main"><strong>${_hubEsc(metric.name)}</strong>
+            <div class="rank-sections">${(metric.sections || []).map(sec => `<span class="rank-sec ${sec.points < 0 ? 'neg' : sec.points > 0 ? 'pos' : ''}" title="${_hubEsc(sec.label)}: ${sec.points > 0 ? '+' : ''}${sec.points}"><i>${_hubEsc(sec.label)}</i><b>${sec.points > 0 ? '+' : ''}${sec.points}</b><em>${_hubEsc(sec.detail || '')}</em></span>`).join('')}</div>
+          </div>
+          <div class="rank-score"><b>${metric.pulse}</b><em class="${metric.momentum > 0 ? 'up' : metric.momentum < 0 ? 'down' : ''}">${metric.momentum > 0 ? '▲' : metric.momentum < 0 ? '▼' : '—'} ${Math.abs(metric.momentum).toFixed(1)}</em></div>
+        </li>`).join('')}</ol></section>
       <section class="overview-section"><header><div><span>Recorded</span><h2>Alliance timeline</h2></div><small>${model.alliances.filter(alliance => alliance.active).length} active</small></header><div class="overview-alliance-list">${allianceHtml}</div></section>
     </div>
     <div class="overview-columns overview-history-grid">

@@ -23,6 +23,7 @@ import { airKey, byAirDate } from './franchise-calendar.js';
 import { kindOf, significanceOf, approvedFor, lineFor, stateOf } from './life-events.js';
 import { fameOf } from './life-resolver.js';
 import { imageUrl } from './gallery-io.js';
+import { podcastFor, PODCAST_FOLLOWERS, MENTIONED_HIT } from './kristal.js';
 
 /** Everything tunable about the number, in one place. */
 export const FOLLOWERS = {
@@ -109,6 +110,24 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
   const myMoments = momentsFor(slug, { events, seasons, career });
   const momentsAfter = new Map();
   for (const m of myMoments) momentsAfter.set(m.afterSeason, (momentsAfter.get(m.afterSeason) || 0) + 1);
+  // Kristal-talKs, both directions. An appearance pays by how the episode
+  // landed; a VIRAL episode that was about you — the ex, the rival, the name
+  // in the clip everyone shared — costs, proportionally like every loss here.
+  // Names and archetypes are deliberately not passed: the count must be the
+  // same whichever page computes it, and the roster is not always in hand.
+  const podcast = podcastFor({ careers, seasons, lifeEvents: events });
+  const podAfter = new Map();
+  for (const ep of podcast) {
+    if (ep.guest === slug) {
+      const l = podAfter.get(ep.afterSeason) || { gain: 0, hits: 0 };
+      l.gain += PODCAST_FOLLOWERS[ep.tier] || 0;
+      podAfter.set(ep.afterSeason, l);
+    } else if (ep.mentioned === slug && ep.tier === 'viral') {
+      const l = podAfter.get(ep.afterSeason) || { gain: 0, hits: 0 };
+      l.hits += 1;
+      podAfter.set(ep.afterSeason, l);
+    }
+  }
   const eventsAfter = new Map();
   for (const e of myEvents) {
     if (!eventsAfter.has(e.afterSeason)) eventsAfter.set(e.afterSeason, []);
@@ -194,6 +213,18 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
       const add = posted * FOLLOWERS.perMoment;
       n += add;
       steps.push({ season, why: 'posting', delta: add });
+    }
+    const pod = podAfter.get(season.seasonId);
+    if (pod?.gain) {
+      n += pod.gain;
+      steps.push({ season, why: 'Kristal-talKs', delta: pod.gain });
+    }
+    if (pod?.hits) {
+      const lost = Math.round(n * MENTIONED_HIT * pod.hits);
+      if (lost < 0) {
+        n = Math.max(FOLLOWERS.floor, n + lost);
+        steps.push({ season, why: 'talked about on Kristal-talKs', delta: lost });
+      }
     }
   }
 

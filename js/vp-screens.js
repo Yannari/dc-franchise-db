@@ -15234,7 +15234,12 @@ function rpBuildRatings(ep) {
       .rp-rt-card-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
       .rp-rt-card-top b{font-size:12px;letter-spacing:.04em;color:#c9d1d9}
       .rp-rt-card-top span{font-size:19px;font-weight:700;color:#e6edf3;font-variant-numeric:tabular-nums}
-      .rp-rt-card-top span.up{color:#6ee7b7}.rp-rt-card-top span.down{color:#f87171}
+      /* The number is a LEVEL and stays neutral; only the CHANGE is coloured.
+         Colouring the value by its delta printed a 92 in red because that
+         audience had slipped a point, which reads as "92 is bad". */
+      .rp-rt-card-top span i{display:block;font-style:normal;font-size:10px;
+        font-weight:600;color:#6e7681;font-variant-numeric:tabular-nums}
+      .rp-rt-card-top span i.up{color:#6ee7b7}.rp-rt-card-top span i.down{color:#f87171}
       .rp-rt-bar{height:4px;border-radius:3px;background:rgba(139,148,158,.18);margin:7px 0 6px;overflow:hidden}
       .rp-rt-bar i{display:block;height:100%;border-radius:3px;
         background:linear-gradient(90deg,#6366f1,#818cf8)}
@@ -15249,7 +15254,7 @@ function rpBuildRatings(ep) {
     <div class="rp-rt-grid">${rows.map(r => `
       <div class="rp-rt-card">
         <div class="rp-rt-card-top"><b>${_bbEsc(r.label)}</b>
-          <span class="${cls(r.delta)}">${Math.round(r.value)}</span></div>
+          <span>${Math.round(r.value)}<i class="${cls(r.delta)}">${Math.abs(r.delta) < 0.05 ? '' : `${r.delta > 0 ? '▲' : '▼'}${Math.abs(r.delta).toFixed(1)}`}</i></span></div>
         <div class="rp-rt-bar"><i style="width:${Math.round(Math.max(0, Math.min(100, r.value)))}%"></i></div>
         <div class="rp-rt-note">${r.note ? _bbEsc(r.note.text) : 'nothing moved them tonight'}</div>
       </div>`).join('')}</div>

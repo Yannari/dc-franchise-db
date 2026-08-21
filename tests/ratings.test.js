@@ -426,6 +426,38 @@ describe('why the number moved', () => {
     expect(notes.length, 'week one produced no notes at all').toBeGreaterThan(0);
   });
 
+  it('says what happened, with names, and reads as English', () => {
+    // Three things that shipped and were unreadable on screen:
+    //   'the week refused to do the expected thing' -- describes no event
+    //   'a episode that got away from everybody' -- the show supplies the
+    //     noun, so it has to supply the article too
+    //   'the plan was P4, and it was P4 who went' -- a blindside line naming
+    //     the same person twice, which is the least surprising vote possible
+    let st = null;
+    const seen = [];
+    for (let n = 1; n <= 12; n++) {
+      st = foldWeek(st, week(n, {
+        flipped: n % 2 === 0,
+        target: n % 3 === 0 ? CAST[0].name : undefined,
+        beats: n % 2 ? ['ALLIANCE', 'VOTE PLAN'] : ['PRANK', 'KISS'],
+      }));
+    }
+    for (const fmt of ['total-drama', 'big-brother']) {
+      st.weeks.forEach((w, i) => {
+        const prev = i > 0 ? st.weeks[i - 1] : null;
+        DEMOS.forEach(d => { const n = demoNote(d, w, prev, fmt); if (n) seen.push(n.text); });
+      });
+    }
+    expect(seen.length, 'nothing was said all season').toBeGreaterThan(20);
+    for (const line of seen) {
+      expect(line, `unfilled placeholder: ${line}`).not.toMatch(/\{[a-zA-Z]+\}/);
+      expect(line, `wrong article: ${line}`).not.toMatch(/a (episode|hour|arrival)/);
+      expect(line, `empty name slot: ${line}`).not.toMatch(/\s{2,}|\s,|,\s*and it was\s*,/);
+      const dup = line.match(/([A-Z][a-z0-9]+).*and it was /);
+      expect(dup, `names the same person twice: ${line}`).toBe(null);
+    }
+  });
+
   it('speaks the show its season belongs to', () => {
     // {round} is filled from the registry: an episode on Total Drama, a week
     // on Big Brother. This is the surface the wrong-show-vocabulary bug keeps

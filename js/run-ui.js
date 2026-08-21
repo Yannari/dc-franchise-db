@@ -3568,7 +3568,7 @@ function renderMidseasonOverview() {
       <div class="ov-rt-head"><div class="ov-rt-tier tier-${_hubEsc(model.ratings.tier.key)}"><label>${model.ratings.live ? 'Rating so far' : 'Season rating'}</label><strong>${_hubEsc(model.ratings.tier.label)}</strong><em>${model.ratings.score}</em></div>
         <div class="ov-rt-now"><label>Latest episode</label><strong>${model.ratings.latest.overall}</strong><span class="${model.ratings.trend > 0 ? 'up' : model.ratings.trend < 0 ? 'down' : ''}">${model.ratings.trend > 0 ? '▲' : model.ratings.trend < 0 ? '▼' : '—'} ${Math.abs(model.ratings.trend).toFixed(1)}</span></div></div>
       ${_ratingsCurve(model.ratings.weeks)}
-      <div class="ov-rt-demos">${model.ratings.demos.map(d => `<div class="ov-rt-demo"><div class="ov-rt-demo-top"><strong>${_hubEsc(d.label)}</strong><em class="${d.delta > 0.05 ? 'up' : d.delta < -0.05 ? 'down' : ''}">${Math.round(d.value)}</em></div>
+      <div class="ov-rt-demos">${model.ratings.demos.map(d => `<div class="ov-rt-demo"><div class="ov-rt-demo-top"><strong>${_hubEsc(d.label)}</strong><em>${Math.round(d.value)}<i class="${d.delta > 0.05 ? 'up' : d.delta < -0.05 ? 'down' : ''}">${Math.abs(d.delta) < 0.05 ? '' : `${d.delta > 0 ? '▲' : '▼'}${Math.abs(d.delta).toFixed(1)}`}</i></em></div>
         <div class="ov-rt-demo-bar"><i style="width:${Math.round(Math.max(0, Math.min(100, d.value)))}%"></i></div>
         <span class="ov-rt-demo-note ${d.note ? (d.noteGood ? 'good' : 'bad') : ''}">${d.note ? _hubEsc(d.note) : 'nothing moved them this week'}</span></div>`).join('')}</div>
       ${_ratingsTable(model.ratings)}
@@ -3728,7 +3728,7 @@ function renderSeasonRetrospective() {
       <div class="ov-rt-head"><div class="ov-rt-tier tier-${_hubEsc(model.ratings.tier.key)}"><label>Season rating</label><strong>${_hubEsc(model.ratings.tier.label)}</strong><em>${model.ratings.score}</em></div>
         <div class="ov-rt-now"><label>Final episode</label><strong>${model.ratings.latest.overall}</strong><span class="${model.ratings.trend > 0 ? 'up' : model.ratings.trend < 0 ? 'down' : ''}">${model.ratings.trend > 0 ? '▲' : model.ratings.trend < 0 ? '▼' : '—'} ${Math.abs(model.ratings.trend).toFixed(1)}</span></div></div>
       ${_ratingsCurve(model.ratings.weeks)}
-      <div class="ov-rt-demos">${model.ratings.demos.map(d => `<div class="ov-rt-demo"><div class="ov-rt-demo-top"><strong>${_hubEsc(d.label)}</strong><em class="${d.delta > 0.05 ? 'up' : d.delta < -0.05 ? 'down' : ''}">${Math.round(d.value)}</em></div>
+      <div class="ov-rt-demos">${model.ratings.demos.map(d => `<div class="ov-rt-demo"><div class="ov-rt-demo-top"><strong>${_hubEsc(d.label)}</strong><em>${Math.round(d.value)}<i class="${d.delta > 0.05 ? 'up' : d.delta < -0.05 ? 'down' : ''}">${Math.abs(d.delta) < 0.05 ? '' : `${d.delta > 0 ? '▲' : '▼'}${Math.abs(d.delta).toFixed(1)}`}</i></em></div>
         <div class="ov-rt-demo-bar"><i style="width:${Math.round(Math.max(0, Math.min(100, d.value)))}%"></i></div>
         <span class="ov-rt-demo-note ${d.note ? (d.noteGood ? 'good' : 'bad') : ''}">${d.note ? _hubEsc(d.note) : 'nothing moved them at the end'}</span></div>`).join('')}</div>
       ${_ratingsTable(model.ratings)}

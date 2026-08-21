@@ -416,6 +416,7 @@ export function readSignals(ep, prev, opts = {}) {
     twist, returns, likability, villainy, mess, strategy,
     // Carried for next week's memory, not scored themselves.
     bloc, holder, target,
+    boot: ep.eliminated || null,
     nominees: [...(ep.nominees || [])],
   };
 }
@@ -600,6 +601,16 @@ export function foldWeek(state, ep, opts = {}) {
     signals: Object.fromEntries(SIGNAL_KEYS.map(k => [k, Math.round(signals[k] * 100) / 100])),
     momentum,
     twist: signals.twist > 0,
+    // WHO IT HAPPENED TO. The notes were written without these and it showed:
+    // 'the week refused to do the expected thing' describes no event, and
+    // 'for once you could not call it' is a verdict with nothing in it. A
+    // sentence about an audience reacting has to say what they were reacting
+    // to, and that means names.
+    facts: {
+      boot: signals.boot || null,
+      target: signals.target || null,
+      holder: signals.holder || null,
+    },
   };
   return {
     v: RATINGS_V,
@@ -684,115 +695,131 @@ export function ratingsForSeason(history, opts = {}) {
 // `{round}` and `{exit}` are filled from the show's own registry entry. This
 // feature writes prose about a season, which is precisely the surface the
 // wrong-show-vocabulary bug keeps reappearing on.
+// The lines the four columns speak.
+//
+// WHAT MAKES ONE OF THESE GOOD: it describes an EVENT. The first version of
+// this table did not, and two of its lines are why this comment exists. 'The
+// week refused to do the expected thing' names nothing that happened, and
+// 'for once you could not call it' is a verdict with no content underneath.
+// Both shipped, and both were unreadable on screen the moment anybody looked.
+//
+// So a line says what the house DID, and where a name makes it concrete it
+// uses one: {boot} left, {target} was the plan, {holder} won the power. A line
+// whose names this week cannot fill is dropped before the pick, so nothing
+// ever prints an empty slot.
+//
+// {round} and {exit} come from the show's registry entry — an episode on Total
+// Drama, a week on Big Brother. This writes prose about a season, which is the
+// surface the wrong-show-vocabulary bug keeps returning to.
 const NOTES = {
   blindside: {
-    up: ['a vote that genuinely went sideways',
-      'somebody was moved on without ever seeing it coming',
-      'the {round} stopped being a formality',
-      'ballots moved late, after the count looked settled'],
-    down: ['nobody moved. the count on Monday was the count on Thursday',
-      'the {round} went exactly the way it was announced',
-      'a vote with no surprise in it anywhere',
-      'the plan held from the first day to the last'],
+    up: ['{boot} was voted out by people who had promised otherwise that morning',
+      'the plan was {target}, and it was {boot} who went',
+      'ballots moved late and {boot} left without ever seeing it coming',
+      'a vote that turned over in its last hour, and took {boot} with it'],
+    down: ['nobody moved: the count on Monday was the count at the vote',
+      '{boot} went home exactly as announced, by exactly the people who announced it',
+      'the {round} ended with the plan intact and every promise kept',
+      'not one ballot changed hands all {round}'],
   },
   predictable: {
-    up: ['the named target went, on schedule, again',
-      'the whole {round} was legible by Tuesday',
-      'nothing happened that had not been said out loud first',
-      'a week you could have written in advance'],
-    down: ['the obvious name survived and something else happened instead',
-      'the {round} refused to do the expected thing',
-      'the plan on Monday had nothing to do with the result',
-      'for once you could not call it'],
+    up: ['{target} was named early and {target} is the one who left',
+      'the house said {boot} out loud for four days and then did it',
+      'the whole {round} was legible by Tuesday and played out that way',
+      'nothing happened that had not been announced first'],
+    down: ['the name the house had settled on is still here, and {boot} is not',
+      'the plan was {target}. {boot} went instead',
+      'the room spent the {round} on one name and voted out a different one',
+      'the vote everybody expected was not the vote that happened'],
   },
   steamroll: {
-    up: ['the same bloc decided it again',
-      'one group has now run every vote for a month',
-      'the majority is not being tested by anybody',
-      'the same names deciding the same way, week after week'],
-    down: ['the majority cracked',
-      'whoever was running this is not running it any more',
-      'the bloc that decided everything did not decide this',
-      'the power finally moved off one table'],
+    up: ['the same group decided it again, and has now decided every vote for a month',
+      '{boot} is the latest name handed over by a majority nobody is testing',
+      'the same people, the same meeting, the same result',
+      'one bloc has run every {round} and this one changed nothing'],
+    down: ['the majority cracked and did not deliver the vote it promised',
+      'the group that had decided every {round} did not decide this one',
+      'whoever was running this house is not running it now',
+      'the vote came from a different set of people than the last four did'],
   },
   powerShift: {
-    up: ['power crossed the room to somebody who was in trouble last week',
-      'the throne changed hands outright',
-      'last week\'s target is this week\'s authority',
-      'the room reorganised around a new name'],
-    down: ['the same person is in charge as last week',
-      'nothing moved at the top',
-      'power stayed exactly where it already was',
-      'the same table is still the table'],
+    up: ['{holder} was in trouble last {round} and is running this one',
+      'the power crossed the room to {holder}, who was on the wrong side of the last vote',
+      '{holder} takes charge after {aRound} spent under threat',
+      'the room has reorganised itself around {holder}'],
+    down: ['{holder} holds the power for a second {round} running',
+      'nothing moved at the top: the same person is in charge',
+      'the power stayed exactly where it already was',
+      'the same table decided this {round} and will decide the next'],
   },
   showmance: {
-    up: ['there is a romance running, and it is on screen',
-      'two of them cannot stop finding each other',
-      'the season found its couple',
-      'the romance is now half the footage'],
-    down: ['the romance went quiet',
-      'nobody is falling for anybody this week',
-      'the couple stopped being the story',
-      'no romance in it at all'],
+    up: ['there is a couple in this house now, and the cameras have found them',
+      'two of them cannot stop finding each other, and it is half the footage',
+      'the romance is on screen and the rest of the house is talking about it',
+      'this is the {round} the couple stopped being subtext'],
+    down: ['the romance went quiet and the {round} was about the game instead',
+      'nobody is falling for anybody this {round}',
+      'whatever was happening between them stopped happening on camera',
+      'no romance in it anywhere'],
   },
   twist: {
-    up: ['the format did something to them this week',
-      'a twist landed and the house had to deal with it',
-      'the rules changed mid-{round}',
-      'the show intervened, loudly'],
-    down: ['a straight {round} with no interference',
+    up: ['the format reached into the {round} and changed the rules halfway through',
+      'a twist landed and the house spent the {round} dealing with it',
+      'the show intervened, and loudly',
+      'the rules were not the rules anybody woke up to'],
+    down: ['a straight {round}: no twist, no interference, just the game',
       'the format left them alone',
-      'no twist and no gimmick, just the game',
-      'nothing arrived from outside the house'],
+      'nothing arrived from outside the house',
+      'the rules stayed the rules'],
   },
   returns: {
-    up: ['somebody walked back in',
-      'a returning face the room had not planned around',
-      'the show put somebody back in play',
-      'an arrival nobody had planned around'],
+    up: ['somebody walked back into the house',
+      'a returning face nobody had planned around',
+      'the show put a familiar name back in play',
+      'an arrival, and the room has to recount everything'],
     down: ['nobody came back and nobody new arrived',
       'the cast is the cast',
-      'no arrivals this week',
+      'no arrivals this {round}',
       'the door stayed shut'],
   },
   likability: {
-    up: ['the people still in are the people they like',
-      'the cast left is good company',
-      'the show is keeping the ones they came for',
-      'a room that is easy to spend an hour with'],
-    down: ['the ones they liked keep getting {exit}',
-      'the room left is harder to root for',
-      'the favourites are going out one at a time',
+    up: ['the people still in are the people worth watching',
+      'the room left is easy to spend an hour with',
+      'the show is keeping the ones the country came for',
+      'whoever is left, the audience is glad to see them'],
+    down: ['{boot} was one of the ones people liked, and {boot} is gone',
+      'the favourites keep getting {exit}, one {round} at a time',
+      'the room left is harder to root for than it was',
       'nobody obvious left to get behind'],
   },
   villainy: {
-    up: ['the dirty players are running the season',
-      'schemers everywhere, and none of them hiding it',
-      'this is being played by people they do not trust',
-      'the villains have the numbers'],
+    up: ['the dirty players are running this house and not hiding it',
+      'this {round} was decided by people nobody trusts',
+      'schemers everywhere, and the ones being schemed on know it',
+      'the villains have the numbers now'],
     down: ['the nastier players have gone quiet',
-      'less scheming than there has been',
+      'less scheming than the house has seen in a while',
       'the season stopped being about the villains',
-      'a cleaner week than the ones before it'],
+      'a cleaner {round} than the ones before it'],
   },
   mess: {
-    up: ['the week was chaotic and unpolished',
-      'the house came apart a bit this week',
-      'scrappy, loud and largely unmanaged',
-      'a mess, start to finish'],
+    up: ['the house came apart a bit and nobody managed it',
+      'shouting, crying and a food fight, in roughly that order',
+      '{aRound} that got away from everybody in it',
+      'scrappy, loud and largely unmanaged'],
     down: ['everybody behaved themselves',
-      'a tidy, controlled, quiet week',
+      'a tidy, controlled, quiet {round}',
       'no chaos in it anywhere',
-      'controlled, polished, and very quiet'],
+      'controlled and polished, start to finish'],
   },
   strategy: {
-    up: ['an actual game being played, out loud',
-      'real strategy on screen for once',
-      'plans, counts and consequences, all on screen',
-      'the {round} turned on somebody thinking'],
-    down: ['very little actual game this week',
+    up: ['an actual game played out loud: counts, plans and consequences',
+      '{holder} won this {round} by thinking rather than by luck',
+      'the house did arithmetic this {round}, and it showed',
+      'real strategy on screen, argued in front of people'],
+    down: ['very little actual game this {round}',
       'nobody appears to be playing',
-      'no strategy visible anywhere in it',
+      'no plan visible anywhere in it',
       'drifting rather than playing'],
   },
 };
@@ -842,11 +869,33 @@ export function demoNote(demo, weekRec, prevRec, format) {
   // congruent mod 4 and two columns kept printing the same sentence.
   h = (h + DEMOS.indexOf(demo) * 7) >>> 0;
   const words = showWords(format);
+  const facts = weekRec.facts || {};
+  const roundWord = String(words.round || 'episode').toLowerCase();
+  // 'a episode' shipped, because the article was baked into the line while the
+  // show supplies the noun. The show decides the article too.
+  const aRound = `${/^[aeiou]/.test(roundWord) ? 'an' : 'a'} ${roundWord}`;
+  // A line that asks for a name this week does not have is dropped before the
+  // pick rather than printed with a hole in it. Every pool keeps name-free
+  // lines, so there is always something left to say.
+  const NAMED = /\{(boot|target|holder)\}/;
+  // A line naming both the plan and the boot only makes sense when they are
+  // different people. 'The plan was P4, and it was P4 who went' described a
+  // blindside as the least surprising vote imaginable.
+  const distinct = line => !(line.includes('{target}') && line.includes('{boot}'))
+    || facts.target !== facts.boot;
+  const fillable = line => !NAMED.test(line)
+    || [...line.matchAll(/\{(boot|target|holder)\}/g)].every(m => facts[m[1]]);
+  const lines = pool.filter(l => fillable(l) && distinct(l));
+  if (!lines.length) return null;
   return {
     signal: bestKey,
     good: bestPush > 0,
-    text: pool[h % pool.length]
-      .replace(/\{round\}/g, String(words.round || 'episode').toLowerCase())
+    text: lines[h % lines.length]
+      .replace(/\{boot\}/g, facts.boot || '')
+      .replace(/\{target\}/g, facts.target || '')
+      .replace(/\{holder\}/g, facts.holder || '')
+      .replace(/\{aRound\}/g, aRound)
+      .replace(/\{round\}/g, roundWord)
       .replace(/\{exit\}/g, String(words.exit || 'eliminated')),
   };
 }

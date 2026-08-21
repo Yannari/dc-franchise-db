@@ -6363,8 +6363,12 @@
     .ov-rt-demo-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
     .ov-rt-demo-top strong { font-size: 12px; }
     .ov-rt-demo-top em { font-style: normal; font-size: 15px; font-variant-numeric: tabular-nums; color: #c9d1d9; }
-    .ov-rt-demo-top em.up { color: #6ee7b7; }
-    .ov-rt-demo-top em.down { color: #f87171; }
+    /* The number is a LEVEL and stays neutral; only the CHANGE is coloured.
+       Colouring the value by its delta printed a 92 in red because that
+       audience had slipped a point, which reads as "92 is a bad score". */
+    .ov-rt-demo-top em i { display: block; font-style: normal; font-size: 10px; font-weight: 600; color: #6e7681; font-variant-numeric: tabular-nums; }
+    .ov-rt-demo-top em i.up { color: #6ee7b7; }
+    .ov-rt-demo-top em i.down { color: #f87171; }
     .ov-rt-demo-bar { height: 4px; border-radius: 3px; background: rgba(139,148,158,0.18); overflow: hidden; }
     .ov-rt-demo-bar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #6366f1, #818cf8); }
     .ov-rt-demo-note { font-size: 10.5px; line-height: 1.35; color: #8b949e; font-style: italic; }

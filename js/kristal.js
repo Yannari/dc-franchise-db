@@ -1,5 +1,7 @@
 // Kristal-talKs — the exit-interview podcast.
 //
+// Design: docs/superpowers/specs/2026-08-21-kristal-talks-v2-design.md
+//
 // Kristal hosted Disventure Camp season two and All Stars, and now she has a
 // microphone and no production office to answer to. Two kinds of episode:
 //
@@ -24,12 +26,20 @@
 // story score (placement, drama, rivalries, a showmance that ended badly), and
 // a quiet mid-placement floater may go a whole career without an episode.
 // That is the design working, not a hole in it.
+//
+// ── THE NUMBERS ARE ROSTER-FREE ──
+//
+// Voice styles (js/kristal-voice.js) come from archetype and stats and shape
+// PROSE ONLY. Listeners, tiers, durations and follower deltas are computed
+// from careers + seasons + life log alone, so the follower model — which runs
+// without the roster in hand — can never disagree with this page about a
+// number. tests/kristal.test.js holds that door shut.
 
 import { airKey, airLabel, byAirDate } from './franchise-calendar.js';
-import { significanceOf, approvedFor, lineFor } from './life-events.js';
+import { significanceOf, lineFor } from './life-events.js';
 import { fameOf } from './life-resolver.js';
-import { toneFor } from './dramagram-voice.js';
 import { showWords } from './shows.js';
+import { styleOf, composeEpisode } from './kristal-voice.js';
 
 export const KRISTAL = { slug: 'kristal', name: 'Kristal' };
 
@@ -49,36 +59,21 @@ export const PODCAST_FOLLOWERS = { quiet: 1200, solid: 4500, viral: 14000 };
  *  every loss in the follower model. */
 export const MENTIONED_HIT = -0.015;
 
-// Deterministic pick — the same episode reads the same way forever.
-function pickFrom(list, key) {
-  if (!list || !list.length) return null;
-  let h = 2166136261;
-  const s = String(key);
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
-  return list[(h >>> 0) % list.length];
-}
 const chance = key => {
   let h = 2166136261;
   const s = String(key);
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
   return (h >>> 0) / 4294967296;
 };
+const pickFrom = (list, key) => list && list.length
+  ? list[Math.floor(chance(key) * list.length)] : null;
 
-/**
- * How much a guest gives Kristal to work with.
- *
- * Villains spill — that is the whole reason exit podcasts book them. Heroes
- * are gracious and tamer. CANDOR SHAPES THE PROSE ONLY, never the listener
- * count: the follower model computes episodes without the roster in hand, and
- * a number that changed depending on which page asked is the two-clocks bug
- * this project keeps a document about. The register is flavour; the count is
- * arithmetic over data every caller has.
- */
-const CANDOR = {
-  villain: 1.35, schemer: 1.3, mastermind: 1.25, 'chaos-agent': 1.3,
-  hothead: 1.2, wildcard: 1.15, showmancer: 1.1, 'social-butterfly': 1.05,
-  'perceptive-player': 1.0, 'challenge-beast': 0.95, underdog: 0.95,
-  hero: 0.9, 'loyal-soldier': 0.85, floater: 0.8, goat: 0.8,
+/** 1st, 2nd, 3rd — a placement reads wrong as a bare number in a sentence. */
+const nth = n => {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return String(n);
+  const s = ['th', 'st', 'nd', 'rd'][(v % 100 - v % 10 !== 10) && v % 10 < 4 ? v % 10 : 0];
+  return `${v}${s || 'th'}`;
 };
 
 /**
@@ -122,15 +117,47 @@ function topicsFor(detail, season, slug) {
   return t;
 }
 
+/** Everything a bank's fact slots can reach, all off the published record. */
+function factsFor(detail, season, names, careers) {
+  const nameOf = x => names[x] || careers.find(c => c.id === x)?.name || x;
+  return {
+    season: season?.title || season?.seasonId,
+    placement: detail.placement ? nth(detail.placement) : undefined,
+    votes: (detail.votesReceived || 0) > 0 ? String(detail.votesReceived) : undefined,
+    rival: (detail.rivalries || [])[0] || undefined,
+    rivalName: (detail.rivalries || [])[0] || undefined,
+    partner: detail.showmance || undefined,
+    alliance: (detail.alliances || [])[0] || undefined,
+    jury: (detail.juryVotes || 0) > 0 ? String(detail.juryVotes) : undefined,
+    winner: season?.winner?.playerSlug ? nameOf(season.winner.playerSlug) : undefined,
+  };
+}
+
+const TITLES = {
+  debrief: [
+    '{guest} answers for {season}',
+    '{guest}: the whole story',
+    'What {guest} won’t say anywhere else',
+    '{guest}, unedited',
+  ],
+  life: [
+    'Catching up with {guest}',
+    '{guest}: life after the cameras',
+    'Where {guest} has been',
+  ],
+};
+
 /**
  * Every episode the podcast has ever put out, oldest gap first.
  *
  * `careers` from records.js careersIn(pdb, 'all'); `seasons` the calendar
- * rows; `lifeEvents` the whole log (approved rows are read); `archetypes`
- * slug -> archetype off the roster; `names` slug -> display name.
+ * rows; `lifeEvents` the whole log (approved rows are read); `profiles`
+ * slug -> { archetype, stats } off the roster (prose only); `names`
+ * slug -> display name. `archetypes` (slug -> archetype) is the v1 shape and
+ * still accepted.
  */
 export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
-  archetypes = {}, names = {} } = {}) {
+  archetypes = {}, profiles = {}, names = {} } = {}) {
   const aired = seasons.filter(s => airKey(s) != null).slice().sort(byAirDate);
   if (!aired.length) return [];
   const bySlug = new Map(careers.map(c => [c.id, c]));
@@ -138,13 +165,47 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
   // Season details name people by NAME (rivalries, showmance) while the life
   // log uses slugs. `mentioned` has to come out as a slug either way, or the
   // follower model cannot find who a viral episode landed on.
-  const slugOf = x => bySlug.has(x) ? x
+  const slugOf = x => !x ? null : bySlug.has(x) ? x
     : (careers.find(c => c.name === x)?.id || null);
-  const seasonRank = new Map(seasons.map(s => [s.seasonId, airKey(s)]));
+  const profileOf = slug => profiles[slug]
+    || (archetypes[slug] ? { archetype: archetypes[slug] } : {});
   const approved = (lifeEvents || []).filter(e => e && e.status === 'approved');
 
   const episodes = [];
+  const visits = new Map();          // slug -> how many times they have sat down
   let epNum = 0;
+
+  const finish = ep => {
+    const k = ep.listeners / 1000;
+    const r = [...RECEPTION].reverse().find(x => k >= x.min) || RECEPTION[0];
+    ep.tier = r.tier;
+    ep.tierLabel = r.label;
+    // Length is a number too, so it is derived from roster-free inputs only.
+    ep.minutes = Math.min(88, 34 + Math.round(ep.listeners / 4000)
+      + Math.round(chance(ep.id + '|len') * 12));
+    if (ep.mentioned) ep.mentionedName = nameOf(ep.mentioned);
+    ep.title = (pickFrom(TITLES[ep.kind], ep.id + '|title') || '')
+      .replace('{guest}', ep.guestName)
+      .replace('{season}', ep.season?.title || ep.afterSeason);
+    // ── the transcript ──
+    //
+    // Continuity: if the person this episode's mess is about already sat in
+    // the chair THIS GAP, Kristal opens with their clip. Booking order is the
+    // broadcast order, so the quote always exists before it is played.
+    const prior = ep.mentioned
+      ? episodes.find(p => p.afterSeason === ep.afterSeason && p.guest === ep.mentioned) || null
+      : null;
+    const visit = (visits.get(ep.guest) || 0) + 1;
+    visits.set(ep.guest, visit);
+    const t = composeEpisode(ep, {
+      words: showWords(ep.season?.format), prior, visit,
+    });
+    ep.coldOpen = t.coldOpen;
+    ep.exchanges = t.exchanges;
+    ep.rapid = t.rapid;
+    ep.visit = visit;
+    episodes.push(ep);
+  };
 
   for (const season of aired) {
     const sid = season.seasonId;
@@ -168,21 +229,23 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
     }
     for (const guest of booked) {
       const slug = guest.c.id;
-      const arch = archetypes[slug] || '';
+      const prof = profileOf(slug);
       const fame = fameOf(guest.c);
       const topics = topicsFor(guest.d, season, slug);
       const listeners = Math.round(
         (24 + guest.score * 7.5) * (0.5 + fame)
         * (0.8 + chance(`${sid}|${slug}|luck`) * 0.5)) * 1000;
-      episodes.push(_finish({
+      finish({
         id: `kt-${sid}-${slug}`, num: ++epNum, kind: 'debrief',
         afterSeason: sid, when: airLabel(season), season,
-        guest: slug, guestName: nameOf(slug), archetype: arch,
+        guest: slug, guestName: nameOf(slug),
+        archetype: prof.archetype || '', style: styleOf(prof),
+        facts: factsFor(guest.d, season, names, careers),
         topics, listeners,
         // Who a viral episode lands on: the messiest topic's other party.
         mentioned: slugOf((topics.find(t => t.id === 'the-breakup')
           || topics.find(t => t.id === 'the-rivalry'))?.about) || null,
-      }, nameOf));
+      });
     }
 
     // ── the catch-up: whoever's life just did something worth an hour ──
@@ -198,165 +261,32 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
       .slice(0, 2);
     for (const slug of guests) {
       const c = bySlug.get(slug);
-      const arch = archetypes[slug] || '';
+      const prof = profileOf(slug);
       const events = inGap.filter(e => e.player === slug);
       const fame = fameOf(c);
       const listeners = Math.round(
         (28 + events.length * 10) * (0.5 + fame)
         * (0.8 + chance(`${sid}|${slug}|life-luck`) * 0.5)) * 1000;
-      episodes.push(_finish({
+      // A catch-up still reaches into the guest's PLAYED record: the year is
+      // the headline, the career is the follow-up material.
+      const lastDetail = (c.details || [])[c.details.length - 1] || {};
+      finish({
         id: `kt-${sid}-life-${slug}`, num: ++epNum, kind: 'life',
         afterSeason: sid, when: airLabel(season), season,
-        guest: slug, guestName: nameOf(slug), archetype: arch,
+        guest: slug, guestName: nameOf(slug),
+        archetype: prof.archetype || '', style: styleOf(prof),
+        facts: {
+          ...factsFor(lastDetail,
+            seasons.find(x => x.seasonId === lastDetail.seasonId) || season, names, careers),
+          season: season?.title || sid,
+        },
         topics: [{ id: 'the-life', about: null,
           line: lineFor(events[0], names, slug) }, { id: 'behind-the-scenes', about: null }],
         listeners, mentioned: slugOf(events[0]?.whom) || null,
-      }, nameOf));
+      });
     }
   }
   return episodes;
-}
-
-function _finish(ep, nameOf) {
-  const k = ep.listeners / 1000;
-  const r = [...RECEPTION].reverse().find(x => k >= x.min) || RECEPTION[0];
-  ep.tier = r.tier;
-  ep.tierLabel = r.label;
-  if (ep.mentioned) ep.mentionedName = nameOf(ep.mentioned);
-  ep.title = _title(ep);
-  ep.exchanges = _exchanges(ep);
-  return ep;
-}
-
-// ── the voice ──────────────────────────────────────────────────────────
-//
-// Kristal is sassy, quick, and gets the answer she wants — the questions do
-// the cornering, and the guest's archetype register decides how they take it.
-// Three registers: a SPILLER leans in, a GRACIOUS guest deflects beautifully,
-// and PLAIN just answers.
-
-const REGISTER = arch => (CANDOR[arch] ?? 1) >= 1.15 ? 'spiller'
-  : (CANDOR[arch] ?? 1) <= 0.9 ? 'gracious' : 'plain';
-
-const TITLES = {
-  debrief: [
-    '{guest} answers for {season}',
-    '{guest}: the whole story',
-    'What {guest} won’t say anywhere else',
-    '{guest}, unedited',
-  ],
-  life: [
-    'Catching up with {guest}',
-    '{guest}: life after the cameras',
-    'Where {guest} has been',
-  ],
-};
-
-const QUESTIONS = {
-  'the-win': [
-    'Everyone says the winner played the perfect game. I watched the tapes, babe — perfect is not the word I’d use. Walk me through it.',
-    'You won. Congratulations. Now tell me the part of the resume you don’t put on the resume.',
-  ],
-  'the-loss': [
-    'Second place. I need you to say, out loud, the exact moment you lost it — because I know the moment, and I want to see if you do.',
-    'The jury picked somebody else. Years from now, what’s the vote you’d take back?',
-  ],
-  // {player}/{players}/{exit} are filled from the season's own show registry —
-  // an episode about a camp says "voted out" and one about a house says
-  // "evicted", and a third show is one entry in js/shows.js away from being
-  // interviewed correctly. The vocabulary rule does not stop applying just
-  // because the person saying the words is a podcast host.
-  'the-boot': [
-    'Let’s talk about the night you got {exit}, because the edit was VERY kind to some of the {players} in that room.',
-    'You didn’t lose that game, somebody took it from you. Name them.',
-  ],
-  'the-rivalry': [
-    'You and {about}. I’m not moving on until we’ve done this properly.',
-    'Every season has a feud the cameras undersold. Yours was {about}. Correct the record.',
-  ],
-  'the-showmance': [
-    'You found a whole relationship on a game show. Defend yourself.',
-    'The audience shipped it. The house weaponised it. Which one of them was right about you and {about}?',
-  ],
-  'the-breakup': [
-    'You and {about} left that season together and did not stay that way. I have theories. Go.',
-    'I’m going to say a name — {about} — and you’re going to tell me the truth this time.',
-  ],
-  'the-target': [
-    'The other {players} wrote your name down A LOT. At what point did you notice, and why didn’t it work?',
-  ],
-  'the-life': [
-    'Something happened this year, and my listeners have been feral about it. Tell them yourself.',
-    'You’ve had a YEAR. Start wherever it hurts.',
-  ],
-  'behind-the-scenes': [
-    'Give me the thing production cut. You know exactly which one I mean.',
-    'Last one. Tell me something that never made air, and make it good.',
-  ],
-};
-
-const ANSWERS = {
-  spiller: [
-    'Oh, we’re doing this? Fine. Nobody in that cast was innocent, and I kept receipts.',
-    'I said what I said then and I’ll say worse now — I was the only one playing honestly about being dishonest.',
-    'You want names? I’ll give you names. The edit protected exactly the wrong people.',
-    'Everyone’s so brave once they’re out the door. Say it to my face like I said it to theirs.',
-  ],
-  gracious: [
-    'Ha — you’re not getting me that easily. What I’ll say is: it was harder than it looked, and I’d do most of it again.',
-    'I love them, honestly. Even the ones who wrote my name down. It’s a game, and they played it.',
-    'There’s a version of that story that makes good radio and a version that’s true, and I’m going to disappoint you with the true one.',
-  ],
-  plain: [
-    'Honestly? It’s simpler than everyone thinks. I did the maths, the maths said do it, I did it.',
-    'People remember it messier than it was. It was one decision, made fast, and I stand by it.',
-    'I’ve heard every theory. The real answer is boring, which is why nobody believes it.',
-  ],
-};
-
-// The catch-up needs its own answers: read at a screenshot, a guest asked
-// about her YEAR was replying "say it to my face like I said it to theirs" —
-// a debrief spill over a life question. Same three registers, different room.
-const LIFE_ANSWERS = {
-  spiller: [
-    'You want the version I didn’t post? Fine. It was worse and better than the internet decided, in that order.',
-    'Everyone had opinions about my year. None of them were in the room for any of it, and I’m done being polite about that.',
-    'I’ll tell you what actually happened, but you’re bleeping half of it.',
-  ],
-  gracious: [
-    'It’s been a lot, honestly. Some of it wonderful, some of it I’m still carrying. I’m okay — genuinely, not press-release okay.',
-    'The people who mattered showed up. That’s the whole story, and it’s a better one than the drama.',
-    'I read everything people wrote about it. Then I put the phone down and lived my actual life, and I recommend it.',
-  ],
-  plain: [
-    'It happened, it’s handled, and I’m sleeping fine. Next question.',
-    'Life’s quieter than the show. That took some getting used to, and then it took some being grateful for.',
-    'People think it changed me. It didn’t. It changed my mornings.',
-  ],
-};
-
-function _title(ep) {
-  const t = pickFrom(TITLES[ep.kind], ep.id + '|title') || '';
-  return t.replace('{guest}', ep.guestName)
-    .replace('{season}', ep.season?.title || ep.afterSeason);
-}
-
-function _exchanges(ep) {
-  const reg = REGISTER(ep.archetype);
-  // The season being discussed decides the vocabulary, episode by episode —
-  // Kristal interviews the whole franchise, and she says "voted out" to a
-  // contestant and "evicted" to a houseguest in consecutive episodes.
-  const w = showWords(ep.season?.format);
-  return ep.topics.slice(0, 3).map((t, i) => ({
-    q: (t.id === 'the-life'
-      ? pickFrom(QUESTIONS['the-life'], `${ep.id}|q|${i}`)
-      : pickFrom(QUESTIONS[t.id] || QUESTIONS['behind-the-scenes'], `${ep.id}|q|${i}`) || '')
-      .replace(/\{about\}/g, t.about ? (ep.mentionedName || t.about) : '')
-      .replace(/\{player\}/g, w.player).replace(/\{players\}/g, w.players)
-      .replace(/\{exit\}/g, w.exit),
-    a: pickFrom(t.id === 'the-life' ? LIFE_ANSWERS[reg] : ANSWERS[reg], `${ep.id}|a|${i}`) || '',
-    topic: t.id,
-  }));
 }
 
 /** Everything one character has to do with the podcast, for a profile. */

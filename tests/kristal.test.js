@@ -121,3 +121,100 @@ describe('numbers no page can disagree about', () => {
     expect(RECEPTION.map(r => r.tier)).toEqual(['quiet', 'solid', 'viral']);
   });
 });
+
+// ── v2: the full episode ──────────────────────────────────────────────
+//
+// "dont u think the episode will be repetitive ... its shallow" — v2's answer
+// is styles, presses, continuity and fact slots, and these hold each down.
+import { styleOf, composeEpisode, episodeComments, STYLES } from '../js/kristal-voice.js';
+
+describe('the voice styles', () => {
+  it('lets stats override the archetype — a villain with no temper control is a hothead first', () => {
+    expect(styleOf({ archetype: 'villain', stats: { temperament: 1 } })).toBe('hothead');
+    expect(styleOf({ archetype: 'villain', stats: { temperament: 6 } })).toBe('bomb');
+    expect(styleOf({ archetype: 'hero', stats: { mental: 2 } })).toBe('rambler');
+    expect(styleOf({ archetype: 'mastermind', stats: {} })).toBe('analyst');
+  });
+
+  it('gives every style a usable set of banks', () => {
+    // Each style must produce a full episode without a single empty line.
+    for (const style of STYLES) {
+      const ep = { id: 'probe-' + style, kind: 'debrief', style, guestName: 'X',
+        tier: 'viral', season: { format: 'total-drama', title: 'S' },
+        facts: { season: 'S', placement: '5th', votes: '6', rival: 'R', rivalName: 'R', partner: 'P' },
+        topics: [{ id: 'the-boot' }, { id: 'the-rivalry', about: 'R' }, { id: 'behind-the-scenes' }] };
+      const t = composeEpisode(ep, { words: { player: 'contestant', players: 'contestants', exit: 'voted out' } });
+      expect(t.coldOpen.length, style + ' cold open').toBeGreaterThan(0);
+      expect(t.exchanges.length, style + ' exchanges').toBeGreaterThan(1);
+      expect(t.rapid.length, style + ' rapid fire').toBe(4);
+      for (const x of t.exchanges) {
+        expect(x.a, style + ' answer empty').toBeTruthy();
+        expect(x.a).not.toMatch(/\{|undefined/);
+      }
+    }
+  });
+});
+
+describe('the press', () => {
+  it('presses the juiciest topic and lands a crack', () => {
+    const ep = { id: 'press-probe', kind: 'debrief', style: 'bomb', guestName: 'X',
+      tier: 'solid', season: { format: 'total-drama', title: 'S' },
+      facts: { season: 'S', placement: '5th', votes: '6', rival: 'R', rivalName: 'R' },
+      topics: [{ id: 'the-boot' }, { id: 'the-rivalry', about: 'R' }] };
+    const t = composeEpisode(ep, { words: {} });
+    const pressed = t.exchanges.filter(x => x.press);
+    expect(pressed).toHaveLength(1);
+    expect(pressed[0].topic).toBe('the-rivalry');   // juicier than the boot
+    expect(pressed[0].crack).toBeTruthy();
+  });
+
+  it('cracks about the year on a catch-up, never about vote counts', () => {
+    // The first live read had a guest asked about her YEAR confessing about
+    // votes nobody mentioned.
+    const ep = { id: 'life-probe', kind: 'life', style: 'bomb', guestName: 'X',
+      tier: 'solid', season: { format: 'big-brother', title: 'S' },
+      facts: { season: 'S', votes: '8' },
+      topics: [{ id: 'the-life', line: 'X was cancelled.' }, { id: 'behind-the-scenes' }] };
+    const t = composeEpisode(ep, { words: {} });
+    const pressed = t.exchanges.find(x => x.crack);
+    expect(pressed.topic).toBe('the-life');
+    expect(pressed.crack).not.toMatch(/votes/i);
+  });
+});
+
+describe('continuity', () => {
+  it('opens with the rival\'s actual clip when they sat down earlier in the gap', () => {
+    // Cleo's episode is about Ben (rivalry); Ben was booked first. Kristal
+    // plays Ben's crack at Cleo, and Cleo answers it.
+    const eps = run();
+    const withResponse = eps.filter(e => e.exchanges.some(x => x.topic === 'the-response'));
+    for (const e of withResponse) {
+      const prior = eps.find(p => p.afterSeason === e.afterSeason && p.guest === e.mentioned);
+      expect(prior, 'a response with nobody to respond to').toBeTruthy();
+      expect(eps.indexOf(prior)).toBeLessThan(eps.indexOf(e));
+      const rx = e.exchanges.find(x => x.topic === 'the-response');
+      expect(rx.q).toContain(prior.guestName);
+    }
+  });
+
+  it('greets a returning guest by their visit number', () => {
+    const eps = run();
+    const again = eps.find(e => e.visit > 1);
+    if (again) expect(again.coldOpen).toMatch(/again|number|Back in the chair|remembers/i);
+  });
+});
+
+describe('the room under an episode', () => {
+  it('always seats the subject of a viral episode in the comments', () => {
+    const ep = { id: 'c-probe', tier: 'viral', guest: 'a', mentioned: 'r', mentionedName: 'R' };
+    const out = episodeComments(ep, { ties: [], names: {} });
+    expect(out[0].relation).toBe('subject');
+    expect(out[0].slug).toBe('r');
+  });
+
+  it('never lets the guest comment under their own episode', () => {
+    const ep = { id: 'c-probe2', tier: 'solid', guest: 'a', mentioned: null };
+    const out = episodeComments(ep, { ties: [{ slug: 'a', weight: 9 }, { slug: 'b', weight: 4 }], names: {} });
+    expect(out.every(c => c.slug !== 'a')).toBe(true);
+  });
+});

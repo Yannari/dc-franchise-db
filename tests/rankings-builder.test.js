@@ -50,3 +50,42 @@ describe('the rankings builder knows which show it is ranking', () => {
     expect(SRC).toMatch(/row\.immWins\+row\.rewWins\+\(row\.comp3Wins\|\|0\)/);
   });
 });
+
+describe('loading the season that is open in the simulator', () => {
+  // `extractSeasonTemplate()` is the TOTAL DRAMA builder and stamps
+  // `format: 'total-drama'` on whatever it is handed. Pressing the button on
+  // a Big Brother season therefore produced a Total Drama document: the board
+  // relabelled itself back to Imm/Rew and then filled those columns from
+  // immunityWins and rewardWins, which a house does not have. Every player
+  // came out zero and the season ranked on placement alone.
+  it('reaches for the house builder when the house is what is loaded', () => {
+    expect(SRC).toMatch(/buildBigBrotherSeasonDocument/);
+    const fn = SRC.slice(SRC.indexOf('function _ruUseCurrentSeason'),
+      SRC.indexOf('let rankingsDB'));
+    expect(fn, 'the button still always builds a Total Drama document')
+      .toMatch(/houseNow[\s\S]*buildBigBrotherSeasonDocument[\s\S]*extractSeasonTemplate/);
+    expect(fn, 'the house is detected from the format or the played weeks')
+      .toMatch(/seasonConfig\?\.format === 'big-brother'|gs\?\.bb\?\.weeks/);
+  });
+
+  it('keeps the message the house builder gives an unfinished season', () => {
+    const fn = SRC.slice(SRC.indexOf('function _ruUseCurrentSeason'),
+      SRC.indexOf('let rankingsDB'));
+    // 'play the finale before exporting' is actionable; swallowing it into
+    // 'no season is loaded' sends somebody looking for the wrong problem.
+    expect(fn).toMatch(/finale\|weeks/);
+  });
+});
+
+describe('the published house document has what the board fills from', () => {
+  it('carries the per-player tallies on a bb block', () => {
+    const doc = JSON.parse(readFileSync(resolve(process.cwd(),
+      'data/seasons/bb-1-data.json'), 'utf8'));
+    expect(doc.format).toBe('big-brother');
+    const p = doc.placements[0];
+    for (const key of ['hohWins', 'vetoWins', 'blockBusterWins']) {
+      expect(p.bb, `a placement with no ${key} fills the board with zeroes`)
+        .toHaveProperty(key);
+    }
+  });
+});

@@ -11,7 +11,7 @@
 //
 // Rendered into the Legacy tab by renderRankingsUpdate().
 
-import { extractSeasonTemplate } from './stats-export.js';
+import { extractSeasonTemplate, buildBigBrotherSeasonDocument } from './stats-export.js';
 
 // The tool was written against current-season.html, whose .btn is white-on-dark.
 // The simulator's .btn is not, so every button here rendered as black text —
@@ -295,11 +295,26 @@ function _ruUseCurrentSeason() {
     // extractSeasonTemplate() assumes a played season; with an empty simulator
     // it throws from deep inside. Translate that into something actionable
     // rather than surfacing "cannot read properties of undefined".
+    // WHICH BUILDER. `extractSeasonTemplate()` is the Total Drama one and
+    // stamps `format: 'total-drama'` on whatever it is handed, so pressing
+    // this button on a Big Brother season produced a Total Drama document:
+    // the board relabelled itself back to Imm/Rew, and then filled those
+    // columns from immunityWins and rewardWins, which a house does not have.
+    // Every player came out zero and the season ranked on placement alone.
     let tmpl;
+    const houseNow = (typeof seasonConfig !== 'undefined' && seasonConfig?.format === 'big-brother')
+      || !!(typeof gs !== 'undefined' && gs?.bb?.weeks?.length);
     try {
-      tmpl = extractSeasonTemplate();
-    } catch {
-      throw new Error('no season is loaded in the simulator — run or load one first');
+      tmpl = houseNow
+        ? buildBigBrotherSeasonDocument(Number(gs?.seasonNumber || seasonConfig?.seasonNumber) || 1)
+        : extractSeasonTemplate();
+    } catch (e) {
+      // The house builder says something useful when a season is unfinished
+      // ('play the finale before exporting'); the Total Drama one throws from
+      // deep inside. Keep a real message when there is one.
+      throw new Error(/finale|weeks/i.test(e?.message || '')
+        ? e.message
+        : 'no season is loaded in the simulator — run or load one first');
     }
     const placements = (tmpl && tmpl.placements) || [];
     if (!placements.length) throw new Error('that season has no results yet — play it through the finale first');

@@ -778,9 +778,13 @@ export function demoNote(demo, weekRec, prevRec, format) {
   // reacting to the same signal in the same week drew the identical sentence
   // and sat next to each other saying it.
   const key = `${weekRec.ep}|${bestKey}`;
-  let h = DEMOS.indexOf(demo);
+  let h = 0;
   for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
-  h += DEMOS.indexOf(demo);
+  // Offset by the column's position, MULTIPLIED so the offsets stay distinct
+  // modulo the pool size. Seeding the hash with the index and then adding it
+  // again cancelled exactly: 31^n is odd, so the two offsets came out
+  // congruent mod 4 and two columns kept printing the same sentence.
+  h = (h + DEMOS.indexOf(demo) * 7) >>> 0;
   const words = showWords(format);
   return {
     signal: bestKey,

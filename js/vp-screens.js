@@ -14,6 +14,7 @@ import { bKey } from './bonds.js';
 // now. Imported explicitly for the same reason bKey is: a bare global works in
 // the browser and nowhere else, and this band has to survive a headless render.
 import { themeById } from './bb/themes.js';
+import { DEMOS, DEMO_LABELS, tierFor, seasonScore, demoNote } from './ratings.js';
 // The debug screen reports the numbers the house actually decides on, so it
 // reads them from the engine rather than recomputing its own version.
 import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
@@ -15156,11 +15157,103 @@ export function buildVPScreens(epRecord) {
     }
   }
 
+  // ── The overnight ratings: how the country took the episode ──
+  const _rtHtml = rpBuildRatings(ep);
+  if (_rtHtml) vpScreens.push({ id: 'ratings', label: '📺 Ratings', html: _rtHtml });
+
   // ── Debug screen (toggleable) ──
   if (localStorage.getItem('vp_debug') === 'true') {
     const _debugHtml = rpBuildDebug(ep);
     if (_debugHtml) vpScreens.push({ id:'debug', label:'Debug', html: _debugHtml });
   }
+}
+
+/**
+ * THE OVERNIGHT RATINGS — the last card of the episode.
+ *
+ * Reads the stored series off `gs.ratings` rather than a snapshot on the
+ * episode. The two shows write their episode records differently — Big Brother
+ * spreads the whole object, Total Drama names its fields one by one — so a
+ * snapshot would have survived replay on one show and silently vanished on the
+ * other. The series is on `gs`, which both of them save.
+ *
+ * A season played before the ratings existed has no series, and gets no card
+ * rather than a card full of zeroes.
+ */
+function rpBuildRatings(ep) {
+  const series = gs?.ratings?.weeks || [];
+  if (!series.length) return '';
+  const num = Number(ep?.num ?? 0);
+  const idx = series.findIndex(w => Number(w.ep) === num);
+  if (idx < 0) return '';
+  const now = series[idx];
+  const before = idx > 0 ? series[idx - 1] : null;
+  // The verdict AS OF TONIGHT: a viewer watching episode four should not be
+  // shown the tier the season finished on.
+  const soFar = seasonScore(series.slice(0, idx + 1));
+  const tier = tierFor(soFar);
+  const trend = before ? now.overall - before.overall : 0;
+  const fmt = ep?.format || gs?.ratings?.format || seasonConfig?.format || 'total-drama';
+
+  const rows = DEMOS.map(key => {
+    const value = now.demos?.[key] ?? 0;
+    const was = before?.demos?.[key];
+    const delta = was === undefined ? 0 : value - was;
+    let note = null;
+    try { note = demoNote(key, now, before, fmt); } catch { note = null; }
+    return { key, label: DEMO_LABELS[key] || key, value, delta, note };
+  }).sort((a, b) => b.value - a.value);
+
+  const arrow = d => (d > 0.05 ? '▲' : d < -0.05 ? '▼' : '—');
+  const cls = d => (d > 0.05 ? 'up' : d < -0.05 ? 'down' : '');
+
+  return `<div class="rp-page rp-ratings">
+    <style>
+      .rp-ratings{max-width:900px;margin:0 auto;padding:30px 24px 46px;text-align:center}
+      .rp-rt-eyebrow{font-family:var(--font-mono,ui-monospace,monospace);font-size:10px;
+        letter-spacing:.42em;text-transform:uppercase;color:#8b949e;margin-bottom:6px}
+      .rp-rt-num{font-size:70px;line-height:1;font-weight:800;letter-spacing:-.02em;
+        color:#e6edf3;font-variant-numeric:tabular-nums}
+      .rp-rt-trend{font-size:14px;margin-top:2px;color:#8b949e;font-variant-numeric:tabular-nums}
+      .rp-rt-trend.up{color:#6ee7b7}.rp-rt-trend.down{color:#f87171}
+      .rp-rt-tier{display:inline-block;margin-top:12px;padding:6px 18px;border-radius:999px;
+        font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+        border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:#c9d1d9}
+      .rp-rt-tier.tier-dogwater{color:#fca5a5;border-color:rgba(239,68,68,.45);background:rgba(239,68,68,.10)}
+      .rp-rt-tier.tier-bad{color:#fdba74;border-color:rgba(249,115,22,.4);background:rgba(249,115,22,.09)}
+      .rp-rt-tier.tier-good{color:#7dd3fc;border-color:rgba(56,189,248,.4);background:rgba(56,189,248,.09)}
+      .rp-rt-tier.tier-great{color:#6ee7b7;border-color:rgba(52,211,153,.42);background:rgba(52,211,153,.1)}
+      .rp-rt-tier.tier-iconic{color:#fcd34d;border-color:rgba(245,158,11,.6);
+        background:linear-gradient(135deg,rgba(245,158,11,.16),rgba(168,85,247,.1));
+        box-shadow:0 0 22px rgba(245,158,11,.25)}
+      .rp-rt-sub{font-size:12px;color:#6e7681;margin-top:8px}
+      .rp-rt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+        gap:10px;margin-top:26px;text-align:left}
+      .rp-rt-card{padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.03);
+        border:1px solid rgba(255,255,255,.09)}
+      .rp-rt-card-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+      .rp-rt-card-top b{font-size:12px;letter-spacing:.04em;color:#c9d1d9}
+      .rp-rt-card-top span{font-size:19px;font-weight:700;color:#e6edf3;font-variant-numeric:tabular-nums}
+      .rp-rt-card-top span.up{color:#6ee7b7}.rp-rt-card-top span.down{color:#f87171}
+      .rp-rt-bar{height:4px;border-radius:3px;background:rgba(139,148,158,.18);margin:7px 0 6px;overflow:hidden}
+      .rp-rt-bar i{display:block;height:100%;border-radius:3px;
+        background:linear-gradient(90deg,#6366f1,#818cf8)}
+      .rp-rt-note{font-size:11px;line-height:1.4;color:#8b949e;font-style:italic}
+      @media(max-width:560px){.rp-rt-num{font-size:52px}}
+    </style>
+    <div class="rp-rt-eyebrow">Overnight ratings</div>
+    <div class="rp-rt-num">${now.overall}</div>
+    <div class="rp-rt-trend ${cls(trend)}">${arrow(trend)} ${Math.abs(trend).toFixed(1)} on last time</div>
+    <div class="rp-rt-tier tier-${_bbEsc(tier.key)}">${_bbEsc(tier.label)}</div>
+    <div class="rp-rt-sub">The season so far, across ${idx + 1} ${idx === 0 ? 'episode' : 'episodes'} &middot; ${soFar} of 100</div>
+    <div class="rp-rt-grid">${rows.map(r => `
+      <div class="rp-rt-card">
+        <div class="rp-rt-card-top"><b>${_bbEsc(r.label)}</b>
+          <span class="${cls(r.delta)}">${Math.round(r.value)}</span></div>
+        <div class="rp-rt-bar"><i style="width:${Math.round(Math.max(0, Math.min(100, r.value)))}%"></i></div>
+        <div class="rp-rt-note">${r.note ? _bbEsc(r.note.text) : 'nothing moved them tonight'}</div>
+      </div>`).join('')}</div>
+  </div>`;
 }
 
 function _relationshipProfile(raw, fallback = 0) {

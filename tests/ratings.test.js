@@ -371,14 +371,34 @@ describe('why the number moved', () => {
     return st.weeks;
   };
 
-  it('gives every column its own sentence', () => {
-    // Two groups reacting to the same signal in the same week drew the
-    // identical line and sat next to each other saying it.
-    const [w1, w2] = twoWeeks({ beats: ['ALLIANCE'] }, { flipped: true, beats: ['PRANK', 'KISS'] });
-    const notes = DEMOS.map(d => demoNote(d, w2, w1, 'big-brother')).filter(Boolean);
-    expect(notes.length, 'nobody had anything to say').toBeGreaterThan(1);
-    expect(new Set(notes.map(n => n.text)).size, `repeated line: ${notes.map(n => n.text)}`)
-      .toBe(notes.length);
+  it('gives every column its own sentence, in every week', () => {
+    // Two groups reacting to the same signal drew the identical line and sat
+    // next to each other saying it. The first version of this test checked ONE
+    // week and passed while the bug was live — the offsets only cancelled for
+    // particular pool sizes, so a single sample proves nothing. Every week of a
+    // played season is checked now.
+    let st = null;
+    const seasons = [];
+    for (let n = 1; n <= 10; n++) {
+      st = foldWeek(st, week(n, {
+        flipped: n % 2 === 0,
+        beats: n % 3 ? ['ALLIANCE', 'VOTE PLAN'] : ['PRANK', 'KISS', 'SHOWMANCE'],
+        twists: n % 4 === 0 ? ['x'] : [],
+        bloc: n % 3 ? undefined : CAST.map(c => c.name).slice(4),
+      }));
+      seasons.push(st.weeks);
+    }
+    let checked = 0;
+    st.weeks.forEach((w, i) => {
+      const prev = i > 0 ? st.weeks[i - 1] : null;
+      const notes = DEMOS.map(d => demoNote(d, w, prev, 'big-brother')).filter(Boolean);
+      if (notes.length < 2) return;
+      checked++;
+      expect(new Set(notes.map(n => n.text)).size,
+        `week ${w.ep} repeated a line: ${notes.map(n => n.text).join(' / ')}`)
+        .toBe(notes.length);
+    });
+    expect(checked, 'no week produced two notes to compare').toBeGreaterThan(3);
   });
 
   it('says what happened, not whether it was good', () => {

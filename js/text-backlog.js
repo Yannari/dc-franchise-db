@@ -1,6 +1,7 @@
 // js/text-backlog.js - Text backlog generators for non-challenge episode sections
 import { gs, seasonConfig, players, plainText } from './core.js';
 import { juryLines } from './bb/jury.js';
+import { DEMOS, DEMO_LABELS, tierFor, seasonScore, demoNote } from './ratings.js';
 import { lastWordsLines } from './bb/last-words.js';
 import { finaleHouseLines } from './bb/finale-house.js';
 import { juryHouseLines } from './bb/jury-house.js';
@@ -3361,6 +3362,46 @@ export function _textAudiencePulse(ep, ln, sec) {
   (snap.quotes || []).forEach(q => ln(`  ${q.name}: "${q.text}"`));
 }
 
+/**
+ * The overnight ratings, in prose. The same numbers the VP card draws.
+ *
+ * Reads the stored series off `gs.ratings` for the same reason the card does:
+ * the two shows write their episode records differently, and the series is the
+ * one place both of them save.
+ */
+export function _textRatings(ep, ln, sec) {
+  const series = gs?.ratings?.weeks || [];
+  if (!series.length) return;
+  const idx = series.findIndex(w => Number(w.ep) === Number(ep?.num ?? -1));
+  if (idx < 0) return;
+  const now = series[idx];
+  const before = idx > 0 ? series[idx - 1] : null;
+  // The verdict as of TONIGHT, never the one the season finished on.
+  const soFar = seasonScore(series.slice(0, idx + 1));
+  const tier = tierFor(soFar);
+  const fmt = ep?.format || gs?.ratings?.format || seasonConfig?.format || 'total-drama';
+  sec('OVERNIGHT RATINGS');
+  const trend = before ? now.overall - before.overall : 0;
+  ln(`This episode: ${now.overall} out of 100`
+    + (before ? ` (${trend >= 0 ? 'up' : 'down'} ${Math.abs(trend).toFixed(1)} on last time).` : '.'));
+  ln(`The season so far: ${soFar} — ${tier.label}.`);
+  ln('');
+  ln('WHO WATCHED, AND WHAT THEY MADE OF IT:');
+  DEMOS.map(key => {
+    const value = now.demos?.[key] ?? 0;
+    const was = before?.demos?.[key];
+    let note = null;
+    try { note = demoNote(key, now, before, fmt); } catch { note = null; }
+    return { key, label: DEMO_LABELS[key] || key, value,
+      delta: was === undefined ? 0 : value - was, note };
+  }).sort((a, b) => b.value - a.value).forEach(r => {
+    const move = Math.abs(r.delta) < 0.05 ? 'no change'
+      : `${r.delta > 0 ? 'up' : 'down'} ${Math.abs(r.delta).toFixed(1)}`;
+    ln(`  - ${r.label}: ${Math.round(r.value)} (${move})`
+      + (r.note ? ` — ${r.note.text}` : ''));
+  });
+}
+
 // MAIN — generateSummaryText
 // ══════════════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════════════
@@ -3720,6 +3761,7 @@ export function generateSummaryText(ep) {
   _textSchoolyardPick(ep, ln, sec);
   _textAftermath(ep, ln, sec);
   _textAudiencePulse(ep, ln, sec);
+  _textRatings(ep, ln, sec);
   _textSeasonThreads(ep, ln, sec); // tracked story threads — worker beat-sheet spine + reader recap
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);

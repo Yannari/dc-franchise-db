@@ -73,124 +73,124 @@ export function styleOf({ archetype = '', stats = {} } = {}) {
 const A = {
   bomb: {
     win: [
-      'I won {season} and half that cast still acts like it was an accident. {votes} votes against me all season, and I outlived every single person who cast one.',
-      'You don’t win by being liked, you win by being right about people. I was right about all of them. Ask {rival}.',
-      'The confetti fell on ME, babe. Everything else is fan fiction.',
+      'I won {season}, and some people still call it luck. I had {votes} votes cast against me across the season and kept finding a way through. That wasn’t an accident.',
+      'I didn’t need everyone to like me. I needed to understand what they wanted and make sure voting me out felt worse than keeping me.',
+      'I’m proud of the win. I made mistakes, but when the game turned against me, I didn’t disappear.',
     ],
     out: [
-      '{placement} place, and I’d do it all again louder. The ones who took me out needed three of them and a lie to do it.',
-      'They needed {votes} votes to get me out of {season}. Count how many it took for everyone else. I’ll wait.',
-      'I went out {placement}. The people who did it went out apologising to a jury I built.',
+      'I finished in {placement} place because I made myself impossible to ignore. That gave me influence, but it also gave everyone a reason to compare notes.',
+      'By the time I left {season}, I had received {votes} votes across the game. I survived the earlier ones and got too comfortable thinking I could do it again.',
+      'I went out in {placement} place. I was angry, but the move made sense for them. I would have been difficult to beat at the end.',
     ],
     conflict: [
-      '{rival}? {rival} should be paying me rent for the space they take up in my story.',
-      'Everyone wants me to say {rival} and I are fine now. We’re not. Next question.',
-      'I said things about {rival} that were unfair. They were also accurate, which is why we’re still here talking about it.',
+      '{rival} and I wanted control of the same room. Once we both realized that, every conversation became a contest.',
+      'People want me to say {rival} and I are completely fine now. We’re civil, but that isn’t the same thing.',
+      'I said things about {rival} that were unfair. I can own that without pretending the underlying conflict wasn’t real.',
     ],
     romance: [
-      '{partner} knew exactly what I was and stayed anyway. Read into that whatever you like — they did.',
-      'People say I used {partner}. {partner} made the jury. You’re welcome.',
+      '{partner} knew I was playing hard, and I knew they had their own game. The relationship was real, but neither of us stopped being a player.',
+      'People say I used {partner}. I understand why it looked that way, but they made their own decisions and challenged me more than viewers saw.',
     ],
     bts: [
-      'Production knows what they cut, and they know why. There’s a whole fight that never aired and I WON it.',
-      'The thing they cut? Somebody cried in the confessional every single night, and it was never me. Names? Buy me dinner first.',
+      'The episodes showed the arguments, but not always the conversations afterward. I apologized more than the edit suggested, even when I still thought I was right.',
+      'A lot of my quieter relationships were missing. Without those conversations, some of my votes looked much more sudden than they felt in the game.',
     ],
     life: [
       'You want the version I didn’t post? It was worse and better than the internet decided, in that order.',
       'Everyone had a take on my year. None of them were in the room for any of it, and I’m done being polite about that.',
     ],
     response: [
-      '{quotedName} said that? On this show? In the chair I’m currently warming? Bold. Wrong, but bold.',
-      'Play the clip again. Listen to {quotedName}’s voice shake. That’s the whole answer.',
+      'I heard what {quotedName} said. It’s a confident version of events, but it leaves out the decisions they made before I reacted.',
+      '{quotedName} is entitled to remember it that way. I remember a conversation where we both knew the trust was already gone.',
     ],
   },
   analyst: {
     win: [
-      'People call it luck. {season} had a math and I did the math. {jury} jury votes isn’t charm, it’s positioning.',
-      'The win was decided three weeks before the finale — I just didn’t tell anyone the decision had been made.',
-      'Every move I made had a second use. That’s the difference. Nothing I did was only one thing.',
+      'People call parts of it luck, and some of them were. But earning {jury} jury votes came from keeping several paths open until I knew which one I needed.',
+      'I felt the game shift in my favor a few rounds before the finale. I still had to get there, but that was when the endgame became realistic.',
+      'I tried to make every decision solve more than one problem: improve my position, protect a relationship and leave me another option if it failed.',
     ],
     out: [
-      'The read was correct, the timing was wrong. That’s the whole autopsy of my {placement} place.',
-      'I lost the game on one variable I couldn’t control: {rival} woke up that morning and chose chaos.',
-      '{votes} votes. I know whose they were, in order, and two of them still don’t know I know.',
+      'I understood the threat, but I acted one round too late. That timing error is the simplest explanation for my {placement}-place finish.',
+      'I treated {rival} as predictable because that made my plan easier. They weren’t, and I didn’t adapt quickly enough.',
+      'I received {votes} votes across the season. Each one was information, but I didn’t always interpret that information correctly.',
     ],
     conflict: [
-      '{rival} played emotionally and I played structurally, and structure loses exactly one kind of fight: the loud kind.',
-      'My mistake with {rival} wasn’t strategic. I modelled them as a rational actor. That was generous.',
+      '{rival} and I valued different things. I kept treating the conflict like a strategic problem when, for them, it had become personal.',
+      'My mistake with {rival} was assuming they would choose the move I considered optimal. They had different priorities, and I should have accounted for that.',
     ],
     romance: [
-      'The {partner} situation was the one part of my game I didn’t plan, which everyone finds hilarious and I find professionally embarrassing.',
-      'Was it real? It was real AND it was useful. People keep insisting those exclude each other.',
+      'My connection with {partner} wasn’t planned. Once it happened, I had to consider how it affected both of our games.',
+      'It was real, and it sometimes helped us strategically. Those two things can be true at the same time.',
     ],
     bts: [
-      'What they cut is the boring truth: forty hours of me being right quietly, so the edit kept the two minutes of me being right smugly.',
-      'There’s a whiteboard that never made air. When it comes out, three reputations change.',
+      'The episodes compressed a lot of planning into one decisive conversation. Most moves took several smaller talks and a lot of checking where people stood.',
+      'Viewers saw the final plan, but not every version we abandoned first. That made some decisions look cleaner than they actually were.',
     ],
     life: [
       'The year went to plan, which makes terrible television, which is why nobody covered it accurately.',
       'It happened, I processed it, I moved. People think that’s cold. It’s just fast.',
     ],
     response: [
-      '{quotedName}’s account is internally consistent and factually wrong, which is the most {quotedName} thing imaginable.',
-      'I heard the episode. Two claims, one error each. Do you want them in order?',
+      '{quotedName}’s version makes sense from their perspective, but they’re working with information I deliberately kept from them.',
+      'I listened to the episode. I agree with their timeline; I disagree with what they think motivated me.',
     ],
   },
   hothead: {
     win: [
-      'YES I won and YES I’m still mad. Both things. At once. That’s allowed.',
-      'They pushed me the whole season of {season} and then acted SHOCKED when I pushed back all the way to the end.',
+      'I won, and I’m proud of that. I’m also still frustrated by how some people treated me along the way. Winning didn’t erase it.',
+      'I felt pushed throughout {season}, so I pushed back. Sometimes that helped my game, and sometimes I made things harder for myself.',
     ],
     out: [
-      'Don’t— okay. Okay. I’m calm. {votes} votes. {votes}! I helped half those people!',
-      'You know what, {placement} place is fine. It’s FINE. Can we— it’s not fine, who am I kidding. Roll the clip, let’s be mad together.',
+      'I received {votes} votes across the season, and some came from people I had protected. That’s the part I had trouble accepting.',
+      'I told everyone I was fine with {placement} place, but I wasn’t. I thought I had more game left to play.',
     ],
     conflict: [
-      'Do NOT get me started on {rival}. Too late, I’m started. Who does that?? WHO DOES THAT?',
-      '{rival} knows what they did. And if they’re listening — and they are, they absolutely are — HI. Still waiting on that apology.',
+      '{rival} knew exactly what would upset me, and I kept giving them the reaction they wanted. I wish I had handled that differently.',
+      'I’m still waiting for an honest conversation with {rival}. I don’t need a public apology; I need them to stop pretending nothing happened.',
     ],
     romance: [
-      'Me and {partner} were the only honest thing in that whole season and everyone treated it like a strategy. It wasn’t a strategy! I don’t HAVE strategies!',
+      '{partner} and I were real, but everyone else had to consider us strategically. I hated that at the time, although now I understand why they did.',
     ],
     bts: [
-      'The thing they cut is ME BEING RIGHT. Three separate times! Where’s THAT episode, Kristal?',
-      'They aired every time I yelled and cut every reason I had to. Fifty-fifty would’ve been nice.',
+      'The edit showed me losing my temper, but often skipped the slower buildup. That context doesn’t excuse every reaction, but it does explain some of them.',
+      'I had calm conversations too. They weren’t as dramatic, so viewers mostly remember the arguments.',
     ],
     life: [
-      'The year was A LOT and I handled it GREAT and if anyone says otherwise they can say it to my face.',
-      'I’m in a better place now. The better place has a punching bag. It helps.',
+      'The year was difficult, and I didn’t handle every part of it well. I’m trying to be honest about that instead of getting defensive.',
+      'I’m in a better place now. I’ve found healthier ways to deal with the anger instead of letting it decide what I say.',
     ],
     response: [
-      '{quotedName} said WHAT. Play it again. PLAY IT AGAIN. Oh, we’re done being civil.',
+      'I heard {quotedName}. My first reaction was anger, but the real issue is that their version leaves out why I stopped trusting them.',
     ],
   },
   charmer: {
     win: [
-      'Winning {season} was lovely, but honestly? The real prize was watching {rival} clap at the finale. Frame that.',
+      'Winning {season} was wonderful. Seeing people like {rival}, who had every reason to doubt me, respect the game afterward meant a lot too.',
       'Everyone says the social game isn’t a real game until it beats them. Then suddenly it’s all anyone wants to talk about.',
     ],
     out: [
-      'They kept me around {placement} deep because I’m delightful, and they cut me the second they remembered I’m also smart. Fair, honestly.',
-      'You can’t vote out a good time, Kristal. Well. Apparently you can. {votes} people managed.',
+      'My relationships helped me reach {placement} place, but eventually people realized those same relationships could make me dangerous at the end.',
+      'I had {votes} votes cast against me across the season. Being well liked bought me time, but it couldn’t protect me forever.',
     ],
     conflict: [
-      '{rival} and I had chemistry, it was just the explosive kind. I’d do the feud again, it was the best content either of us ever made.',
-      'I don’t hate {rival}. Hate takes effort and I save my effort for my skincare.',
+      '{rival} and I could make each other laugh and furious in the same conversation. That made the conflict more complicated than it looked.',
+      'I don’t hate {rival}. We don’t need to be friends, but I can understand why they played the way they did.',
     ],
     romance: [
-      'What can I say — the cameras found the best angle of me falling for {partner} and I let them.',
-      '{partner}? Ancient history. Gorgeous, well-lit ancient history.',
+      'I knew the cameras were watching, but my feelings for {partner} weren’t something I could switch off for the game.',
+      '{partner} is part of my past now. I can appreciate what we had without pretending it was meant to last forever.',
     ],
     bts: [
-      'The stuff they cut is the stuff I’d charge for. There was a whole karaoke night. Careers ended.',
-      'Off camera everyone’s nicer and messier at the same time. I hold both truths and several secrets.',
+      'A lot of the everyday humor was cut. Those lighter moments explain why people trusted each other even after difficult votes.',
+      'Everyone was kinder and messier than the edited episodes had time to show. The relationships were rarely as simple as the story made them look.',
     ],
     life: [
       'The year? Busy, beautiful, occasionally on fire. I read everything people wrote and kept only the compliments.',
       'Life’s good. The people who mattered showed up and the people who didn’t made great cautionary tales.',
     ],
     response: [
-      'Aww, {quotedName} talked about me? In MY favourite chair? Flattered. Wrong, but flattered.',
+      'I’m glad {quotedName} talked about it. I don’t agree with their whole version, but at least we’re finally having the conversation.',
     ],
   },
   earnest: {
@@ -199,7 +199,7 @@ const A = {
       'I didn’t outplay anyone. I just kept my word the whole way, and it turned out keeping your word IS a strategy.',
     ],
     out: [
-      'Going out {placement} hurt, I won’t pretend otherwise. But the people who did it played the game, and I hugged every one of them.',
+      'Going out in {placement} place hurt, I won’t pretend otherwise. I respected the move, but it took time before I could separate that from how betrayed I felt.',
       'I knew the vote was coming. I could have fought dirtier. I decided who I wanted to be instead, and I’d decide it again.',
     ],
     conflict: [
@@ -210,7 +210,7 @@ const A = {
       'What {partner} and I had was real. Whatever happened after, nobody gets to take the real part away.',
     ],
     bts: [
-      'What they cut? The kindness. Every night somebody sat with somebody who was struggling and none of it aired. That was the real show.',
+      'The episodes had less room for the quiet kindness between us. People checked on each other after difficult days, even when they were on opposite sides of the game.',
     ],
     life: [
       'It’s been a lot, honestly. Some of it wonderful, some of it I’m still carrying. I’m okay — genuinely, not press-release okay.',
@@ -226,76 +226,76 @@ const A = {
       'Everyone had a strategy. Mine was fewer words. Worked.',
     ],
     out: [
-      '{placement}. Could’ve been worse. Was, for {votes} other people.',
-      'They voted me out. I went. Not much of a story, which is why nobody tells it right.',
+      '{placement} place. I wanted to go farther, but I understand why they didn’t let me.',
+      'They voted me out because keeping me no longer helped their games. It was disappointing, not mysterious.',
     ],
     conflict: [
-      '{rival} yelled. I didn’t. Somehow that made ME the villain of the week.',
-      'The feud with {rival} was mostly them. I was just standing there. Repeatedly. Near things they wanted.',
+      '{rival} raised their voice. I shut down. Neither response helped the conversation.',
+      'The feud with {rival} was mostly a failure to communicate. Neither of us made much effort to fix it.',
     ],
     romance: [
-      'People shipped me and {partner}. We mostly shared a blanket. It was a cold season.',
+      'People made a lot of assumptions about me and {partner}. We were close. Not every close relationship needs a bigger label.',
     ],
     bts: [
-      'The wildest thing that got cut? Tuesday. All of Tuesday. Gone. Probably for the best.',
+      'Most of the quiet strategy was cut. I talked more than the episodes suggest, just not usually in large groups.',
     ],
     life: [
       'It happened, it’s handled, and I’m sleeping fine. Next question.',
       'Life’s quieter than the show. That took some getting used to. Then it took some being grateful for.',
     ],
     response: [
-      '{quotedName} said a lot of words. Some were about me. Anyway.',
+      '{quotedName} remembers it differently. I don’t think either of us is going to change the other person’s mind.',
     ],
   },
   chaos: {
     win: [
-      'I won {season} on VIBES and I will not be elaborating, mostly because I can’t.',
-      'The trick to winning is nobody can predict you if YOU can’t predict you. Foolproof. Was I the fool? Also yes.',
+      'Honestly, I changed my mind a lot in {season}. That made me hard to predict, but it also meant I had to keep repairing relationships. Somehow, I did enough of that to win.',
+      'I didn’t follow one perfect plan. I reacted to what was happening, took a few risks and got lucky when I needed to. I can admit that now.',
     ],
     out: [
-      'I went out {placement} doing exactly what I came to do: whatever occurred to me at the moment it occurred.',
-      'They voted me out for being “too unpredictable”, which, thank you? Best review I’ve ever had.',
+      'I went out in {placement} place because people stopped knowing what I would do next. That was useful early on and dangerous later.',
+      'They called me unpredictable, and they weren’t wrong. I just didn’t realize how exhausting that had become for everyone else.',
     ],
     conflict: [
-      'The {rival} thing wasn’t a feud, it was performance art, and {rival} never learned their lines.',
-      'People say I started it. I start EVERYTHING, that’s not evidence.',
+      'Things with {rival} got out of hand. We both kept pushing because neither of us wanted to be the first person to back down.',
+      'I probably started more of it than I admitted at the time. {rival} still knew exactly how to keep it going.',
     ],
     romance: [
-      'Me and {partner} made no sense, which is exactly why it made sense. Keep up.',
+      '{partner} and I surprised each other. We were very different, but in that environment that gave us somewhere to breathe.',
     ],
     bts: [
-      'What got cut? I traded a contestant three votes for a sandwich. The sandwich made the jury. Look it up. You can’t.',
+      'A lot of the quieter conversations were cut. I looked completely impulsive on screen, but I did check in with people before some of those decisions.',
     ],
     life: [
-      'My year? I bought a boat. There’s no water where I live. Next question — no wait, ask about the boat.',
+      'It has been messy. I made a few decisions too quickly, then had to slow down and work out what I actually wanted.',
     ],
     response: [
-      '{quotedName} came on here and said MY name for free? Incredible. I live in their head and I’ve redecorated.',
+      'I heard what {quotedName} said. Some of it was fair, but they left out the part where we were both contributing to the mess.',
     ],
   },
   rambler: {
     win: [
-      'So the win — okay, backing up, because to understand the finale you need to understand the thing with the eggs in week two, which nobody ever asks about—',
-      'People say “you won”, and yes, technically, the money and everything, but the REAL story is so much longer and has a raccoon in it.',
+      'The win still feels strange. I keep thinking about all the small conversations that got me there, because it wasn’t one move. It was a lot of little things adding up.',
+      'People focus on the finale, but I think I won much earlier, when the others started trusting me with information they weren’t sharing with each other.',
     ],
     out: [
-      'The vote was — wait, which vote? The one that got me? See, I thought that vote was about somebody else entirely, which, in my defence, so did two other people—',
-      'I wasn’t even supposed to be at that ceremony. Long story. Well, medium story. Okay so it starts at breakfast—',
+      'The vote that sent me out was confusing because I thought the target had shifted. Looking back, I was hearing what I wanted to hear instead of checking the numbers.',
+      'I can explain how I ended up in {placement} place, but it starts a few rounds earlier. I let one bad read shape every decision after it.',
     ],
     conflict: [
-      '{rival} and me, right, everyone thinks it started at the challenge but it actually started over a TOWEL, and the towel wasn’t even mine, it was—',
+      '{rival} and I had been irritating each other for a while before the big argument. The argument was just the first time everyone else saw it.',
     ],
     romance: [
-      'Me and {partner}, that whole thing, okay, so people forget we didn’t even LIKE each other at first, or — no wait, that was someone else. We liked each other immediately. That was the problem.',
+      '{partner} and I connected quickly, which was comforting and also made us an obvious pair. We knew that; we just didn’t know how to hide it.',
     ],
     bts: [
-      'Ohh the stuff that got cut. There was a bird? For like a week? Ask literally anyone about the bird, actually no, don’t ask {rival}, they’re still upset about the bird.',
+      'What viewers missed was how much time we spent talking through decisions before challenges. The episode makes everything look sudden, but it rarely felt sudden to us.',
     ],
     life: [
-      'This year, wow, okay. Where do I even. So January — actually scratch January, nothing happened in January. FEBRUARY.',
+      'This year has been complicated. I keep wanting to tell it in order, but the honest version is that some good things and some difficult things happened at the same time.',
     ],
     response: [
-      'Wait, {quotedName} was HERE? In this chair? Did they mention the towel? They never tell the towel part.',
+      'I listened to {quotedName}’s episode. I understand why they remember it that way, but there’s a lot of context missing from their version.',
     ],
   },
 };
@@ -307,96 +307,96 @@ const A = {
 
 const PRESS = {
   bomb: [
-    'See, you say it like a headline, but you didn’t answer it. Again, slower.',
-    'That’s the tour version, babe. I asked for the kitchen version.',
+    'That sounds good, but it doesn’t answer the question. What actually happened?',
+    'I’ve heard the public version. What were you thinking in the moment?',
   ],
   analyst: [
-    'That’s the version with the math taken out. Put the math back in.',
-    'You just gave me a conclusion. I asked for the working.',
+    'Walk me through that decision. Who did you think was with you?',
+    'That’s the conclusion. How did you get there?',
   ],
   hothead: [
-    'Breathe. Now say the part you swallowed.',
-    'You got loud, which is what you do instead of answering. Answer.',
+    'Take a second. What part of it still makes you angry?',
+    'I hear that you’re angry. I’m asking who you felt betrayed by.',
   ],
   charmer: [
-    'You can flirt at me all you want, I have time and a second page of notes.',
-    'Adorable. Not an answer. Go again.',
+    'You’re making it sound easy. What was the part you couldn’t charm your way through?',
+    'That’s a very polished answer. Give me the less polished one.',
   ],
   earnest: [
-    'That was very healed of you. Now tell me what you’d have said a year ago.',
-    'I believe you’ve forgiven them. I’m asking what they DID.',
+    'I believe you’ve made peace with it. What did it feel like when it happened?',
+    'You can forgive someone and still be honest about what they did. What happened?',
   ],
   deadpan: [
-    'Give me one more sentence. Splurge.',
-    'That was six words. The listeners paid for at least eleven.',
+    'Can you give me a little more than that?',
+    'What are you leaving out?',
   ],
   chaos: [
-    'No. Come back. The question is still here and so am I.',
-    'I’m going to ask again and you’re going to pretend to be a person who answers questions.',
+    'Hold on. Before we go somewhere else, answer the question I asked.',
+    'We’ll come back to that. First, what actually made you do it?',
   ],
   rambler: [
-    'Okay — stopping you there, loving the journey, needing the destination.',
-    'The towel is fascinating. The QUESTION, though.',
+    'Let me stop you there. What’s the short version?',
+    'There’s a lot of context. What was the moment that changed things?',
   ],
 };
 
 // The crack: the second answer, after the press, where the fact lands.
 const CRACK = {
   bomb: [
-    'Fine. {rival} flipped, I knew it was coming, and I let it happen because the alternative was owing them. I don’t owe people.',
-    'The truth? {votes} of those votes were personal and I earned every one. There. Clip it.',
+    'Fine. I knew {rival} was pulling away, but confronting them would have exposed how little control I had. So I acted like I wasn’t worried.',
+    'The honest answer is that some of those {votes} votes were personal. I pushed people too hard, and eventually they had a chance to respond.',
   ],
   analyst: [
-    'The working: I had the numbers until {rival} moved, I knew the night they moved, and I chose the jury over the fight. That’s it. That’s the game.',
-    'Fine — the real number is this: I made one read on loyalty instead of incentive. Once. In {season}. And it’s the only one anyone remembers.',
+    'I thought I had the numbers until {rival} moved. Once I realized it, I decided not to start a fight I couldn’t win. That choice protected my jury relationships, but it cost me control.',
+    'I made one important read based on loyalty instead of self-interest. In {season}, that was enough to undo the rest of my plan.',
   ],
   hothead: [
-    'WHAT I SWALLOWED is that it was {rival}. The whole time. And I defended them. THAT’S what makes me mad — not the vote, the defending.',
+    'What still bothers me is that it was {rival}. I defended them when other people warned me, so I’m angry at them and at myself for not listening.',
   ],
   charmer: [
-    'Okay, cards down: it wasn’t all charm. I knew exactly what {rival} was doing and I smiled through it because smiling was the only weapon they couldn’t confiscate.',
-    'The un-cute version? {partner} and I were over before the finale and we performed it anyway, because the audience deserved the ending. You’re welcome.',
+    'Honestly, it wasn’t all charm. I knew what {rival} was doing, but staying friendly kept me included long enough to find another option.',
+    'The less polished version is that {rival} got under my skin. I kept smiling because I didn’t want them to know how worried I was.',
   ],
   earnest: [
-    'A year ago I’d have said {rival} looked me in the eye and lied, and that I counted them as family. There. That’s the version that keeps me up.',
+    'At the time, it felt like {rival} looked me in the eye and lied to me. I trusted them as a friend, not just as an ally, and that’s why it hurt.',
   ],
   deadpan: [
-    'One more sentence: {rival} did it, everyone knew, nobody said it, I’m saying it. That’s four sentences. Refund.',
+    '{rival} made the move. Most of us knew it, but saying it aloud would have forced us to choose a side.',
   ],
   chaos: [
-    'The destination: I did it on purpose. All of it. Even the parts that looked like accidents. ESPECIALLY those.',
+    'The short version is that I took the risk on purpose. I didn’t know exactly how it would end, but it wasn’t an accident.',
   ],
   rambler: [
-    'The destination, right, sorry — it was {rival}. It was always {rival}. Even the towel, when you really think about it, was {rival}.',
+    'The short version is that I stopped trusting {rival}, but I kept trying to explain away the warning signs because I needed them in the game.',
   ],
 };
 
 // A press on THE YEAR cannot crack about the season — the first live read
 // had a catch-up guest confessing about vote counts nobody had asked about.
 const CRACK_LIFE = {
-  bomb: ['Fine — the truth about this year is that I lit the match. Everyone keeps asking who lit the match. It was me. It’s always been me.'],
-  analyst: ['The honest version: I saw it coming four months out, planned for it, and it still flattened me. Plans don’t feel, apparently.'],
-  hothead: ['THE PART I SWALLOWED is that I wasn’t okay! For MONTHS. There. Is that a clip? Clip it.'],
-  charmer: ['Cards down? The smiling was load-bearing this year. Some weeks it was the only structural element.'],
-  earnest: ['A year ago I’d have told you I was fine. I wasn’t fine. I’m fine NOW, which is different, and it cost more than I let on.'],
-  deadpan: ['One more sentence: it was bad, then it wasn’t. That’s two sentences. Keep the change.'],
-  chaos: ['The destination is: the boat was a cry for help AND a great boat. Both things.'],
-  rambler: ['The destination — right. It hurt. All of it, even the funny parts. ESPECIALLY the funny parts. …So anyway, the raccoon.'],
+  bomb: ['The honest answer is that I made the first move. I didn’t expect the reaction to become as big as it did, but I can’t pretend I had nothing to do with it.'],
+  analyst: ['I saw some of it coming and made plans for it. What I didn’t understand was how different it would feel once it was actually happening.'],
+  hothead: ['I wasn’t okay for a while. I kept saying I was angry because that was easier than admitting I was hurt.'],
+  charmer: ['I smiled through a lot of it. That helped me get through the day, but it also kept people from realizing when I needed help.'],
+  earnest: ['At the time I kept telling everyone I was fine. I wasn’t. I’m doing better now, but getting here took longer than I admitted.'],
+  deadpan: ['It was difficult for a while. It’s better now. I don’t have a cleverer way to say it.'],
+  chaos: ['I reacted before I understood what I was feeling. Some choices helped and some made everything harder, but at least I know that now.'],
+  rambler: ['The short version is that it hurt more than I let people see. I kept talking around it because saying that plainly felt harder.'],
 };
 
 const COLD_OPEN = {
   debrief: [
-    'Kristal here. Tonight’s guest survived {season}, sort of, and has agreed to discuss it, sort of. {guest}, welcome. Lie to me less than usual.',
-    'You watched {season}. I watched the FEEDS of {season}, which is a different show entirely, and tonight {guest} is going to account for the difference.',
-    'My producer said “be nice to this one.” {guest}, I fired my producer. Welcome to the show.',
+    'Welcome back to Kristal-talKs. My guest tonight is {guest}, and we’re going back through their time on {season}. Thanks for being here.',
+    'If you watched {season}, you know tonight’s guest left us with a few questions. {guest}, welcome to the podcast.',
+    'Today I’m joined by {guest}. We’re talking about the decisions we saw, the conversations we didn’t and what they think of it all now.',
   ],
   life: [
-    'No season talk tonight — well, some season talk, I’m only human. {guest} has had a YEAR, and my listeners have been feral about it since it happened.',
-    'Kristal here. {guest} went quiet, the internet got loud, and tonight we fix the ratio. Welcome back to the real world, babe.',
+    'Today’s episode is a little different. {guest} is here to talk about what life has looked like since the show and what they haven’t said publicly yet.',
+    'A lot has been said about {guest} this year. Today, they get to tell the story in their own words. Welcome back.',
   ],
   returning: [
-    'Back in the chair: {guest}, appearance number {visit}. The chair remembers you. So do my lawyers.',
-    '{guest} again! Last time you sat there you made three headlines and one enemy. Let’s beat it.',
+    '{guest} is back for appearance number {visit}. A lot has changed since our last conversation, so let’s catch up.',
+    'Welcome back, {guest}. Last time we spoke, there were still a few unfinished conversations. Let’s see where they stand now.',
   ],
 };
 
@@ -411,36 +411,36 @@ const COLD_OPEN = {
 
 const RAPID = [
   { q: 'Best liar you ever shared a room with?',
-    a: ['{rival}. Not even close.', 'Myself, honestly. And I was fantastic.', '{winner} — and it worked, didn’t it?'],
+    a: ['{rival}. They could make a lie sound completely reasonable.', 'Probably me. I was better at it than I expected.', '{winner}. They knew when to tell the truth and when not to.'],
     s: { deadpan: ['{rival}.', 'Me.'], earnest: ['I hate saying it… {rival}.'],
-      bomb: ['{rival}, and second place isn’t close enough to see them.'] } },
+      bomb: ['{rival}. They could tell you exactly what you wanted to hear.'] } },
   { q: 'Most overrated move in your season?',
-    a: ['The one everyone clips. Watch it again with the sound off.', 'Whatever {winner} did at the end. There, I said it.', 'Mine, if you believe the jury.'],
-    s: { analyst: ['The “big move” of the season was a coin flip wearing a suit.'] } },
+    a: ['The move everyone calls a blindside. Most of us knew it was coming.', 'The move {winner} made near the end. It worked, but the edit made it look much harder than it was.', 'One of mine, honestly. It looked intentional because it happened to work.'],
+    s: { analyst: ['The move people call strategic was mostly a close vote that happened to break the right way.'] } },
   { q: 'One word for the jury.',
     a: ['Bitter.', 'Generous.', 'Confused.'],
-    s: { earnest: ['Fair.'], bomb: ['Cowards.'], chaos: ['Delicious.'] } },
+    s: { earnest: ['Fair.'], bomb: ['Inconsistent.'], chaos: ['Unpredictable.'] } },
   { q: 'Who cried the most off camera?',
-    a: ['Everyone. It’s a lot out there.', 'Me. Zero shame.', 'Not saying. …{rival}.'],
-    s: { hothead: ['Not me. Those were RAGE tears, different thing.'] } },
+    a: ['Everyone had a difficult day eventually.', 'Me, probably. I’m not embarrassed about it.', 'I shouldn’t say. It was {rival}.'],
+    s: { hothead: ['Possibly me. I was angry and overwhelmed at the same time.'] } },
   { q: 'Would you return tomorrow?',
-    a: ['In a heartbeat.', 'Only as the villain this time.', 'My family says no. So probably.'],
-    s: { deadpan: ['No. …When do we leave?'], chaos: ['I never left. Check the vents.'] } },
+    a: ['In a heartbeat.', 'Yes, but I would play very differently.', 'My family would hate it, but I probably would.'],
+    s: { deadpan: ['I would say no now. Ask me again when casting calls.'], chaos: ['Yes. I clearly didn’t learn enough the first time.'] } },
   { q: 'Rate your own edit out of ten.',
-    a: ['Four. My game was a nine.', 'Ten. They aired the truth, unfortunately.', 'A {placement}-shaped six.'],
-    s: { chaos: ['Out of ten? Purple.'], charmer: ['An eleven, and modest with it.'] } },
+    a: ['Four. It missed too much of my game.', 'Eight. I didn’t always like it, but most of it was fair.', 'Six. It explains the {placement}-place finish, but not how I got there.'],
+    s: { chaos: ['Six. Confusing, but honestly so was I.'], charmer: ['Nine. They understood which angles worked for me.'] } },
   { q: 'Who do you still talk to?',
-    a: ['{partner}. Daily.', 'Half the cast. The correct half.', 'The group chat is three people and one of them is muted.'],
-    s: { deadpan: ['Nobody. It’s great.'] } },
+    a: ['{partner}. We talk almost every day.', 'About half the cast. Some relationships lasted and some didn’t.', 'A small group. The full cast chat did not survive.'],
+    s: { deadpan: ['Only a few people, which suits me.'] } },
   { q: 'One rule you’d add to the game?',
-    a: ['No whispering after midnight.', 'Everything {rival} did? Banned.', 'Immunity for whoever cooks.'],
-    s: { analyst: ['Public vote counts. Watch the cowardice evaporate.'] } },
+    a: ['No strategy conversations after midnight. Everyone needs sleep.', 'A time limit on private conversations. {rival} could disappear for hours.', 'Give the person who cooks a small advantage. It is harder work than people admit.'],
+    s: { analyst: ['Reveal the vote count immediately. People play differently when they cannot hide behind uncertainty.'] } },
   { q: 'Delete one twist from history.',
-    a: ['The one that sent me home.', 'All of them. Let people play.', 'Whichever one production loved most.'],
-    s: { chaos: ['Delete? I’d add six.'] } },
+    a: ['The one that contributed to my elimination. I’m biased.', 'Anything that removes a player without a vote.', 'The twist that had the least room for players to adapt.'],
+    s: { chaos: ['I wouldn’t delete one. I’d probably add another, which explains a lot.'] } },
   { q: 'Unfinished business?',
-    a: ['{rival} knows.', 'A trophy.', 'None. …One.'],
-    s: { earnest: ['Just a proper goodbye I never got to say.'] } },
+    a: ['One honest conversation with {rival}.', 'I still want another chance to win.', 'Less than I used to have, but not none.'],
+    s: { earnest: ['There is one person I never got to say a proper goodbye to.'] } },
 ];
 
 const SUBJECT_COMMENTS = [
@@ -504,8 +504,8 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1 } = {})
       quotedName: t.quoted ? t.quoted.guestName : undefined };
     const q = t.id === 'the-response'
       ? fill(pickFrom([
-        'Before we start: {quotedName} sat in that chair this week and said — and I quote — “{quote}”. You’ve had days to think about it. Go.',
-        'I play clips now. Here’s {quotedName}, this exact chair: “{quote}”. React.',
+        'Before we start, I want to play something {quotedName} said earlier this week: “{quote}” What do you think they got wrong?',
+        '{quotedName} was here earlier and said, “{quote}” You’ve had time to hear it. What’s your response?',
       ], ep.id + '|rq'), { ...f, quote: t.quoted._lastCrack || t.quoted._lastAnswer || '' })
       : fill(pickFrom(QUESTIONS[t.id] || QUESTIONS['behind-the-scenes'], `${ep.id}|q|${i}`) || '', {
         ...f, players: words.players || 'players', player: words.player || 'player',
@@ -546,41 +546,41 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1 } = {})
 // shallow half.
 const QUESTIONS = {
   'the-win': [
-    'Everyone says the winner played the perfect game. I watched the tapes, babe — perfect is not the word I’d use. Walk me through it.',
-    'You won. Congratulations. Now tell me the part of the resume you don’t put on the resume.',
-    '{season} ended with your name. Whose name SHOULD it have been, if you hadn’t done the thing you did — and say the thing.',
+    'You won {season}, but no winning game is perfect. What was the mistake that came closest to costing you?',
+    'When people summarize your win, what part of your game do they usually miss?',
+    'Was there a point when you knew you could win, or did you not believe it until the final vote?',
   ],
   'the-loss': [
-    'Second place. I need you to say, out loud, the exact moment you lost it — because I know the moment, and I want to see if you do.',
-    'The jury picked somebody else. Years from now, what’s the vote you’d take back?',
+    'Looking back, when do you think the game slipped away from you?',
+    'The jury chose someone else. What would you change if you could replay one decision?',
   ],
   'the-boot': [
-    'Let’s talk about the night you got {exit}, because the edit was VERY kind to some of the {players} in that room.',
-    'You didn’t lose that game, somebody took it from you. Name them.',
+    'Let’s go back to the night you were {exit}. What did you understand too late?',
+    'Who first made you realize the vote had turned against you?',
   ],
   'the-rivalry': [
-    'You and {about}. I’m not moving on until we’ve done this properly.',
-    'Every season has a feud the cameras undersold. Yours was {about}. Correct the record.',
-    'I have a theory that you and {about} secretly respected each other. Destroy my theory or confirm it, no middle.',
+    'You and {about} clashed throughout the season. What started it?',
+    'How different was your relationship with {about} from what viewers saw?',
+    'Even at your worst with {about}, was there any respect underneath the conflict?',
   ],
   'the-showmance': [
-    'You found a whole relationship on a game show. Defend yourself.',
-    'The audience shipped it. The other {players} weaponised it. Which of them was right about you and {about}?',
+    'When did you realize your connection with {about} was becoming more than part of the game?',
+    'Other {players} saw you and {about} as a pair. How much did that affect the way you played?',
   ],
   'the-breakup': [
-    'You and {about} left that season together and did not stay that way. I have theories. Go.',
-    'I’m going to say a name — {about} — and you’re going to tell me the truth this time.',
+    'You and {about} left the season together, but the relationship ended later. What changed outside the game?',
+    'When you think about {about} now, what do you understand that you didn’t understand then?',
   ],
   'the-target': [
-    'The other {players} wrote your name down A LOT. At what point did you notice, and why didn’t it work?',
+    'Your name came up repeatedly. When did you realize how often the other {players} were targeting you, and how did you keep surviving?',
   ],
   'the-life': [
-    'Something happened this year, and my listeners have been feral about it. Tell them yourself.',
-    'You’ve had a YEAR. Start wherever it hurts.',
+    'A lot has happened this year. What do you want people to understand about it?',
+    'Where does the story really begin for you?',
   ],
   'behind-the-scenes': [
-    'Give me the thing production cut. You know exactly which one I mean.',
-    'Last one before rapid fire. Tell me something that never made air, and make it good.',
+    'What important part of your experience didn’t make it into the episodes?',
+    'Before rapid fire, what is one thing viewers would understand differently if they had seen more of it?',
   ],
 };
 

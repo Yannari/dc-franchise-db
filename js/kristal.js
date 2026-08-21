@@ -157,7 +157,11 @@ const TITLES = {
  * still accepted.
  */
 export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
-  archetypes = {}, profiles = {}, names = {} } = {}) {
+  archetypes = {}, profiles = {}, names = {},
+  // gapId -> remix count. PROSE ONLY: a salt re-rolls every word of a
+  // period's episodes and touches nothing the follower model reads — the
+  // bookings, listeners and tiers are identical under any salt, by test.
+  proseSalts = {} } = {}) {
   const aired = seasons.filter(s => airKey(s) != null).slice().sort(byAirDate);
   if (!aired.length) return [];
   const bySlug = new Map(careers.map(c => [c.id, c]));
@@ -184,7 +188,8 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
     ep.minutes = Math.min(88, 34 + Math.round(ep.listeners / 4000)
       + Math.round(chance(ep.id + '|len') * 12));
     if (ep.mentioned) ep.mentionedName = nameOf(ep.mentioned);
-    ep.title = (pickFrom(TITLES[ep.kind], ep.id + '|title') || '')
+    const salt = proseSalts[ep.afterSeason] || '';
+    ep.title = (pickFrom(TITLES[ep.kind], ep.id + (salt ? '~' + salt : '') + '|title') || '')
       .replace('{guest}', ep.guestName)
       .replace('{season}', ep.season?.title || ep.afterSeason);
     // ── the transcript ──
@@ -198,7 +203,7 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
     const visit = (visits.get(ep.guest) || 0) + 1;
     visits.set(ep.guest, visit);
     const t = composeEpisode(ep, {
-      words: showWords(ep.season?.format), prior, visit,
+      words: showWords(ep.season?.format), prior, visit, salt,
     });
     ep.coldOpen = t.coldOpen;
     ep.exchanges = t.exchanges;

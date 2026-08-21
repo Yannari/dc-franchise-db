@@ -57,6 +57,9 @@
   .kt-periods button[aria-pressed="true"]{background:var(--kt-hot);border-color:var(--kt-hot);color:#fff}
   .kt-slate{color:var(--kt-dim);font-size:12.5px;margin:8px 2px 14px}
   .kt-slate b{color:var(--kt-ink)}
+  .kt-remix{margin-left:10px;background:none;border:1px solid var(--kt-line);color:var(--kt-hot);
+    border-radius:999px;padding:3px 10px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+  .kt-remix:hover{border-color:var(--kt-hot)}
 
   /* ── the episode rows ── */
   .kt-ep{background:var(--kt-card);border:1px solid var(--kt-line);border-radius:16px;
@@ -195,6 +198,13 @@ const short = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M'
 
 let episodes = [];
 let period = null;
+// The remix counts, per period. A DISPLAY PREFERENCE like dark mode — it
+// changes words, never facts or numbers — so this browser is the right home
+// for it, and another device hearing the original cut is not a bug.
+const SALT_KEY = 'kt_remix';
+let salts = {};
+try { salts = JSON.parse(localStorage.getItem(SALT_KEY)) || {}; } catch { /* fresh */ }
+let buildInputs = null;
 let graph = null;
 let namesBySlug = {};
 
@@ -305,8 +315,18 @@ function render() {
   $('#kt-slate').innerHTML = list.length
     ? `This period: <b>${list.length} episode${list.length === 1 ? '' : 's'}</b> —
        ${debriefs} debrief${debriefs === 1 ? '' : 's'} on <b>${esc(s?.title || period)}</b>
-       and ${list.length - debriefs} catch-up${list.length - debriefs === 1 ? '' : 's'}.`
+       and ${list.length - debriefs} catch-up${list.length - debriefs === 1 ? '' : 's'}.
+       <button class="kt-remix" id="kt-remix" title="Same guests, same numbers — every word re-rolled.">↻ remix the cut</button>`
     : '';
+  const remix = $('#kt-remix');
+  if (remix) remix.onclick = () => {
+    salts[period] = (salts[period] || 0) + 1;
+    try { localStorage.setItem(SALT_KEY, JSON.stringify(salts)); } catch { /* session-only */ }
+    // Same bookings, same listeners — podcastFor re-runs only to recompose
+    // the words, and the parity test guarantees the numbers cannot move.
+    episodes = podcastFor({ ...buildInputs, proseSalts: salts });
+    render();
+  };
   $('#kt-list').innerHTML = list.length ? list.map(card).join('')
     : '<p class="kt-empty">Kristal took this one off.</p>';
   $('#kt-list').querySelectorAll('[data-open]').forEach(b => {
@@ -336,13 +356,14 @@ function render() {
   const careers = careersIn(pdb, 'all');
   namesBySlug = Object.fromEntries((pdb.players || []).map(p => [p.id, p.name]));
   graph = socialGraph(careers);
-  episodes = podcastFor({
+  buildInputs = {
     careers, seasons: sdb.seasons || [], lifeEvents: life.events || [],
     // archetype AND stats, so the voice styles have both to choose from.
     profiles: Object.fromEntries(rows.filter(r => r.slug)
       .map(r => [r.slug, { archetype: r.archetype, stats: r.stats }])),
     names: namesBySlug,
-  });
+  };
+  episodes = podcastFor({ ...buildInputs, proseSalts: salts });
   const total = episodes.reduce((n, e) => n + e.listeners, 0);
   $('#kt-stats').innerHTML = `<b>${episodes.length}</b> episodes ·
     <b>${short(total)}</b> lifetime listens ·

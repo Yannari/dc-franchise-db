@@ -302,3 +302,30 @@ describe('rapid fire, after the heartbeat bug', () => {
     expect(named).toBeGreaterThan(0);
   });
 });
+
+describe('the remix', () => {
+  it('re-rolls the words and cannot touch a number', () => {
+    // The only re-roll the parity rule permits: the follower model never
+    // hears about the salt, so nothing it reads may change under one.
+    const plain = run();
+    const remixed = run({ proseSalts: { 'td-1': 3, 'bb-1': 1 } });
+    expect(remixed.map(e => [e.id, e.guest, e.listeners, e.tier, e.minutes]))
+      .toEqual(plain.map(e => [e.id, e.guest, e.listeners, e.tier, e.minutes]));
+    // And the words actually moved somewhere — same facts, different cut.
+    const changed = remixed.some((e, i) =>
+      e.coldOpen !== plain[i].coldOpen || e.title !== plain[i].title
+      || JSON.stringify(e.rapid) !== JSON.stringify(plain[i].rapid));
+    expect(changed).toBe(true);
+  });
+
+  it('only remixes the salted period', () => {
+    const plain = run();
+    const remixed = run({ proseSalts: { 'bb-1': 2 } });
+    for (let i = 0; i < plain.length; i++) {
+      if (plain[i].afterSeason === 'td-1') {
+        expect(remixed[i].coldOpen).toBe(plain[i].coldOpen);
+        expect(remixed[i].title).toBe(plain[i].title);
+      }
+    }
+  });
+});

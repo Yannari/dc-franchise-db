@@ -663,7 +663,12 @@ function answerFor(voice, style, group, key, facts, index) {
  * this one answers (continuity), if any; `visit` is which appearance this is.
  * Pure text — nothing here reads or writes a number the follower model uses.
  */
-export function composeEpisode(ep, { words = {}, prior = null, visit = 1 } = {}) {
+export function composeEpisode(ep, { words = {}, prior = null, visit = 1, salt = '' } = {}) {
+  // The remix: a salt re-seeds every PICK while the episode's identity — the
+  // guest, the topics, the listeners, the tier — stays exactly what it was.
+  // Different words, same facts, which is the only re-roll the parity rule
+  // permits: the follower model never hears about the salt.
+  const K = salt ? `${ep.id}~${salt}` : ep.id;
   const voice = ep.voice || {
     ...voiceOf({ archetype: ep.archetype || '', stats: ep.stats || {} }),
     cadence: ep.style || styleOf({ archetype: ep.archetype || '', stats: ep.stats || {} }),
@@ -678,7 +683,7 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1 } = {})
 
   // Cold open: returning guests get recognised before anything else.
   const coBank = visit > 1 ? COLD_OPEN.returning : COLD_OPEN[ep.kind] || COLD_OPEN.debrief;
-  const coldOpen = fill(pickFrom(coBank, ep.id + '|cold') || '', {
+  const coldOpen = fill(pickFrom(coBank, K + '|cold') || '', {
     ...facts, guest: ep.guestName, visit: String(visit),
   });
 
@@ -706,17 +711,17 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1 } = {})
       ? fill(pickFrom([
         'Before we start, I want to play something {quotedName} said earlier this week: “{quote}” What do you think they got wrong?',
         '{quotedName} was here earlier and said, “{quote}” You’ve had time to hear it. What’s your response?',
-      ], ep.id + '|rq'), { ...f, quote: t.quoted._lastCrack || t.quoted._lastAnswer || '' })
-      : fill(pickFrom(QUESTIONS[t.id] || QUESTIONS['behind-the-scenes'], `${ep.id}|q|${i}`) || '', {
+      ], K + '|rq'), { ...f, quote: t.quoted._lastCrack || t.quoted._lastAnswer || '' })
+      : fill(pickFrom(QUESTIONS[t.id] || QUESTIONS['behind-the-scenes'], `${K}|q|${i}`) || '', {
         ...f, players: words.players || 'players', player: words.player || 'player',
         exit: words.exit || 'voted out', season: facts.season,
       });
     const x = { topic: t.id, q,
-      a: answerFor(voice, style, group, `${ep.id}|a|${i}`, f, i) };
+      a: answerFor(voice, style, group, `${K}|a|${i}`, f, i) };
     if (pressOn.has(t.id)) {
       const crackBank = t.id === 'the-life' ? CRACK_LIFE[style] : CRACK[style];
-      x.press = pickFrom(PRESS[style], `${ep.id}|p|${i}`);
-      x.crack = pickFilled(crackBank || [], `${ep.id}|c|${i}`, f);
+      x.press = pickFrom(PRESS[style], `${K}|p|${i}`);
+      x.crack = pickFilled(crackBank || [], `${K}|c|${i}`, f);
       if (x.crack) pressed++;
       else { delete x.press; delete x.crack; }
     }
@@ -726,12 +731,12 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1 } = {})
   // Rapid fire: four questions, seeded so an episode never repeats one, each
   // answered from ITS OWN bank — style override first, then the question's
   // general answers, with fact eligibility so {rival} lines need a rival.
-  const start = hash(ep.id + '|rf') % RAPID.length;
+  const start = hash(K + '|rf') % RAPID.length;
   const rapid = Array.from({ length: 4 }, (_, i) => {
     const item = RAPID[(start + i * 3) % RAPID.length];
-    const styled = pickFilled(item.s?.[style] || [], `${ep.id}|rfs|${i}`, facts);
+    const styled = pickFilled(item.s?.[style] || [], `${K}|rfs|${i}`, facts);
     return { q: item.q,
-      a: styled || pickFilled(item.a, `${ep.id}|rfa|${i}`, facts) || item.a[0] };
+      a: styled || pickFilled(item.a, `${K}|rfa|${i}`, facts) || item.a[0] };
   });
 
   // What the clip everyone shares actually says — the last crack, or the

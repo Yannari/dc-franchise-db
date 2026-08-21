@@ -2,8 +2,8 @@
   "seasonNumber": 1,
   "format": "big-brother",
   "seasonId": "bb-1",
-  "title": "Season 1: The Room Decides",
-  "subtitle": "A season where the plan broke more often than it held, and Misha won by being useful to every side until the final question.",
+  "title": "Big Brother 1: The Room Decided",
+  "subtitle": "A season where power mattered, but the vote count mattered more.",
   "castSize": 17,
   "episodeCount": 15,
   "jurySize": 9,
@@ -12,9 +12,9 @@
     "playerSlug": "misha",
     "vote": "Misha 5 — Jules 4 — Joel 0",
     "runnerUp": "Jules & Joel",
-    "keyStats": "Misha won with 2 HOH wins, 4 veto wins, 3 wins under threat, 3 nominations, 3 times pulled off the block, zero eviction votes against, and a 5–4 jury vote over Jules.",
-    "strategy": "Misha’s winning game was not clean control; it was durable positioning. She moved between structures, kept enough personal bonds alive to survive danger, and converted late comp wins into the only choices that mattered. Her best work was making people believe she was an available number even when she was quietly choosing which room survived the week.",
-    "legacy": "Misha becomes the first winner as the season’s best hybrid: socially insulated enough to be saved, competitive enough to save herself, and ruthless enough to cut Joel at final three. The win is narrow, but it is not accidental."
+    "keyStats": "Misha won 5-4 with 2 HOH wins, 4 veto wins, 3 wins under threat, 3 times nominated, 3 times pulled off the block, 85% voting accuracy, only 1 blindside, and 5 jury votes.",
+    "strategy": "Misha’s winning game was not clean control; it was recoverable positioning. She kept enough relationships alive across collapsing groups that people kept needing her after they stopped trusting her. The crucial difference between Misha and the other finalists is that her comp wins came attached to danger: she repeatedly won or benefited from vetoes when her own game was exposed, then converted survival into the next vote. She was willing to be implicated in the mess, own it late, and still make the final decision that removed Joel, the finalist she believed could beat her.",
+    "legacy": "Misha becomes the season’s first winner as a hybrid social-competition player: not the most beloved, not the least bloodied, but the person whose game survived the most scrutiny. Her legacy is the 5-4 verdict itself — a jury split between personal loyalty to Jules and respect for Misha’s ability to keep re-entering the power structure after every rupture."
   },
   "finalists": [
     {
@@ -42,23 +42,22 @@
       "votesReceived": 0,
       "popularity": 135.05000000000004,
       "juryVotes": 5,
-      "notes": "Misha won because she combined late competition leverage with enough social debt to survive the weeks where she should have been exposed.",
-      "story": "Misha’s game was built on being included without always being identified as the person deciding. Early on, she attached herself to Hasan and the larger Power Couple structure, then survived its collapse by keeping individual bonds alive with Jules, Dylon, and later the jury. The record matters here: three times on the block, three times pulled down, and zero eviction votes against is not passive luck; it is proof that people with power kept finding reasons to protect her. Her weakness was jury management, especially when her answers at finale sometimes dodged the question, but her overall arc had more agency than the edit always made obvious. The key stretch is the endgame, where she wins HOH and veto at the exact moments that prevent Joel or Tobias from dictating the finish. Cutting Joel at final three was the correct winning move, even if it nearly cost her his vote.",
-      "gameplayStyle": "connected, insulated, late-clutch",
+      "notes": "Misha won because her relationships bent without fully breaking, and her veto record gave the jury a tangible reason to reward survival as agency.",
+      "story": "Misha’s game began as a middle-position social game inside bigger structures, but the record shows she was never just being carried by them. She voted with the house 85% of the time, was only blindsided once, and repeatedly stayed close enough to the decision-makers to know where the vote was landing. Her danger weeks were real: she was on the block three times, twice as the target, and was pulled down three times while also winning four vetoes overall. The key turn was the back half, where she stopped being merely useful and became necessary — especially once the house began aiming at bigger comp threats and visible pairs. Her final stretch was excellent: she won late HOH and veto power, survived the Joel/Jules/Tobias endgame crossfire, won the final HOH, and cut Joel because she correctly identified him as the person with the clearest jury case. The finale was messy, and several answers missed the question, but her closing argument matched the season: she made connection useful without pretending it was clean.",
+      "gameplayStyle": "adaptive social survivalist",
       "keyMoments": [
-        "Week 3: joins the expanding Power Couple structure while also building a separate bond with Hasan",
-        "Week 5: helps flip the close Hasan/Zella vote and owns the move when pressed",
-        "Week 10: wins veto on the block and forces Jules to renom Natasha",
-        "Week 13: wins HOH and nominates Jane, Gyselle and Joel, setting up the Gyselle eviction",
-        "Week 14: wins HOH and veto, keeping full control of the Jane/Tobias block",
-        "Week 15: wins veto under threat, saves herself, and casts the sole vote to evict Tobias",
-        "Finale: wins Part 1 and Part 3 of the final HOH, then cuts Joel for Jules"
+        "Week 5: Helped create the decisive flip that sent Zella out and owned the move when pressed.",
+        "Week 10: Won veto while nominated and removed herself from Jules's block.",
+        "Week 13: Won HOH and nominated Jane, Gyselle and Joel, forcing the endgame blocs into the open.",
+        "Week 14: Won HOH and veto, kept nominations the same, and sent Jane to jury.",
+        "Week 15: Won veto from the block, forced Tobias onto the block, and cast the sole vote to evict him.",
+        "Finale: Won Part 1 and Part 3 of the final HOH, then evicted Joel to sit beside Jules."
       ],
       "gameArchetype": "social-manipulator",
-      "resume": "Misha could argue that she won six competitions, survived three nominations without ever receiving an eviction vote, was saved by others three times because of relationships she built, and made the final decision to remove Joel, the finalist she believed could beat her.",
-      "demise": "Misha’s last real threat was Joel winning the final HOH or being taken to the end. That threat died when Misha beat Joel in the jury statements tiebreaker and chose Jules instead, turning the most dangerous endgame opponent into the final juror.",
+      "resume": "Misha could honestly argue that she survived three nominations without ever receiving an eviction vote, won six total HOH/veto competitions, won three times under threat, stayed aligned with the house on 11 of 13 votes, and made the final winning cut by removing Joel. Her case was not spotless control; it was repeated survival plus the ability to be included in the next plan after betraying the last one.",
+      "demise": "Misha’s last real threat was Joel at final three. He had the competition résumé, the late-game respect, and enough jurors discussing him as a serious player that sitting beside him was dangerous. Misha killed that threat by beating him in the final jury quiz tiebreaker and choosing Jules instead.",
       "demiseKind": "won-the-game",
-      "optimalLine": "Her correct line was exactly what she did: prioritize survival over ownership until the jury was seated, then win late and cut Joel. The only improvement was cleaner final answers to Felipe, Gyselle, Aaron, and Tobias.",
+      "optimalLine": "Her correct line was the one she took: keep Jules close as the beatable-but-respected final option, use comps only when the room could no longer protect her, and cut Joel at final three even if it risked looking disloyal.",
       "ceiling": "won-it",
       "alliances": [
         "The Power Couple",
@@ -88,23 +87,22 @@
       "votesReceived": 6,
       "popularity": 145.38999999999996,
       "juryVotes": 4,
-      "notes": "Jules played the best losing game: deeply connected, strategically present, and one jury vote short because too many jurors saw comfort without enough ownership.",
-      "story": "Jules was in the season’s machinery from the first real vote and stayed there by being the person people could talk to when the room was shifting. His 78% voting alignment and five groups with nine people show a player who was usually close to the decision, not dragged behind it. He survived being the target four times, which is a real finalist résumé even without dominant veto numbers. His HOH weeks were meaningful, especially the Ireland eviction setup, but the jury split exposed the flaw: many relationships felt real, but not all jurors believed the moves were his. Taking Misha to the end was not his choice, but his relationship with her is why she chose him over Joel. He lost because his social game was strong enough to reach the end and just short of strong enough to beat the winner.",
-      "gameplayStyle": "listener, connector, jury-close",
+      "notes": "Jules played the best losing finalist game: deeply connected, rarely out of the loop, but ultimately unable to turn social credit into the last jury vote.",
+      "story": "Jules’s finish is not an accident; the record supports a strong game. He was nominated four times, all as the target, and survived the vote every time, which means his game repeatedly passed live tests instead of theoretical ones. His social positioning was enormous — five groups, nine-person reach — and he often became the person people used to translate one room’s plan into another room’s vote. His HOH weeks mattered, especially the early Harriett/Natasha/Ireland week and the later Ireland eviction sequence, but he also let other players frame too many of those moves as shared house decisions. The jury liked him, and several jurors voted for him on personal trust, but the same loyalty that made him beloved also made his agency look softer next to Misha’s visible danger wins. He lost by one vote because the jury could see the social game, but not all of them believed it carried enough blood.",
+      "gameplayStyle": "relational vote broker",
       "keyMoments": [
-        "Week 2: survives the block beside Stella after the house chooses Stella 10–3",
-        "Week 4: wins HOH and veto, nominates Harriett, Natasha and Ireland, and leaves nominations intact",
-        "Week 8: helps redirect the Nico vote after Dylon’s veto forces a renom",
-        "Week 10: wins HOH, nominates Jane, Misha and Ireland, and later renoms Natasha",
-        "Week 12: survives the Felipe vote 3–2 after Gyselle wins Block Buster",
-        "Week 15: survives Misha’s sole vote when Tobias is evicted instead",
-        "Finale: receives four jury votes and loses 5–4"
+        "Week 2: Survived the block as the target after Stella left 10-3.",
+        "Week 4: Won HOH and veto, left nominations intact, and watched Harriett leave unanimously.",
+        "Week 8: Helped move the vote onto Nico after Ireland used veto, deepening his cross-room leverage.",
+        "Week 10: Won HOH, nominated Jane, Misha and Ireland, and saw Ireland leave 7-0 after Misha's veto win.",
+        "Week 12: Survived against Felipe when Gyselle, Misha and Jane moved the vote.",
+        "Finale: Chosen by Misha over Joel, then lost 5-4."
       ],
       "gameArchetype": "social-manipulator",
-      "resume": "Jules could argue he survived four target nominations, won two HOHs and a veto, maintained overlapping endgame bonds with Misha, Joel, Tobias, Gyselle and Felipe, and was trusted enough that Misha chose him over Joel at final three.",
-      "demise": "Jules lost at the jury phase, not in the final HOH. Misha’s competition résumé and her ownership at the reunion converted Dylon, Ireland, Natasha, Gyselle and Aaron, while Jules’s best relationships produced only four votes.",
+      "resume": "Jules could argue that he survived four target nominations, won two HOHs and a veto, voted correctly 78% of the time, maintained five groups across the house, and reached finale night because multiple jurors still felt personally connected to him after he betrayed them.",
+      "demise": "Jules lost at the jury stage because Misha’s final cut of Joel gave her a sharper strategic endpoint, while Jules’s answers leaned into relationship management without always naming the move. Felipe, Jane, Tobias and Joel rewarded him, but Dylon, Ireland, Natasha, Gyselle and Aaron decided Misha had done more to actively earn the chair.",
       "demiseKind": "outplayed",
-      "optimalLine": "Jules needed to claim more of the votes he shaped before finale night. At the time, his quieter approach kept him alive, so the mistake was not the path; it was arriving at final speeches without enough clean ownership.",
+      "optimalLine": "His best available line was to claim more ownership earlier, especially around Ireland and the mid-jury votes. The social game was real, but he needed to articulate it as control before finale night rather than asking jurors to infer it.",
       "ceiling": "could-have-won",
       "alliances": [
         "The Pipeline",
@@ -126,7 +124,7 @@
         "timesOnBlock": 4,
         "timesSaved": 0
       },
-      "strategicRank": 8.8
+      "strategicRank": 8.7
     },
     {
       "placement": 3,
@@ -136,23 +134,22 @@
       "votesReceived": 0,
       "popularity": 101.52999999999994,
       "juryVotes": 0,
-      "notes": "Joel had the comp record and endgame gravity to win, but he lost the season when Misha correctly refused to sit beside him.",
-      "story": "Joel’s game was powerful but jagged. Three HOHs, three vetoes, and two wins under threat made him impossible to ignore, and his later weeks forced everyone to plan around him. He was also blindsided three times and only voted with the house 75%, which shows he was not always in the room when the decision became final. His best stretch came from Week 11 onward, when his HOH, veto and social pairing with Felipe made him a central endgame figure. The problem was that his win equity became too obvious. By final three, both Misha and Jules knew Joel was the person the jury could reward for a visible résumé, and Misha took the only path that denied him the chairs.",
-      "gameplayStyle": "visible, competitive, endgame-heavy",
+      "notes": "Joel had the strongest competition résumé of the finalists but was cut because everyone understood he was the most dangerous final opponent.",
+      "story": "Joel’s season looks quieter socially than it was because his game often happened through pairs rather than rooms. He won 3 HOHs and 3 vetoes, including two wins under threat, and was pulled down three times when targeted. That is a real survival record, not a passenger résumé. Strategically, his issue was that his best relationships — Jules, Felipe, Tobias at different points — kept becoming visible right as the house needed an obvious reason to move. His HOH reigns produced important evictions, but several jurors questioned whether the final outcome of those weeks served Joel or the people around him. At final three, he was one question away from choosing his own opponent and likely had a very serious chance against either finalist. Misha evicting him was the clearest compliment his game received: nobody wanted to sit beside the person who could claim both comp control and late-game planning.",
+      "gameplayStyle": "clutch endgame tactician",
       "keyMoments": [
-        "Week 2: wins veto and removes himself, forcing Zella onto the block",
-        "Week 7: wins HOH and nominates Dylon, Jane and Ireland",
-        "Week 11: wins HOH and veto, leaves nominations intact, then breaks the tie to evict Natasha",
-        "Week 13: wins veto under threat and saves himself from Misha’s block",
-        "Week 15: wins HOH at final four and nominates Misha and Jules",
-        "Finale: wins Part 2 but loses Part 3 to Misha on the tiebreaker",
-        "Finale: is cut at final three when Misha chooses Jules"
+        "Week 2: Won veto and removed himself from Ireland's block.",
+        "Week 7: Won The Wall HOH after Jules stepped down, then nominated Dylon, Jane and Ireland.",
+        "Week 11: Won HOH and veto, kept nominations intact, and broke the tie to evict Natasha.",
+        "Week 13: Won veto while nominated and saved himself, forcing Aaron onto the block.",
+        "Week 15: Won final-four HOH and nominated Misha and Jules together.",
+        "Finale: Lost the final HOH tiebreaker to Misha and was evicted at final three."
       ],
       "gameArchetype": "comp-beast",
-      "resume": "Joel could argue six total HOH/veto wins, multiple late-game saves, a tie-breaking eviction of Natasha, and a final-four HOH that forced Misha to win veto or leave.",
-      "demise": "Misha ended Joel by beating him in Part 3 of the final HOH and choosing Jules. It became inevitable once Joel’s résumé and jury upside were obvious enough that sitting beside him looked like choosing second place.",
+      "resume": "Joel could have argued 6 total HOH/veto wins, three times escaping the block via veto, no eviction votes against him, several weeks where the house had to plan around his safety, and a final-three position where both remaining players saw him as too dangerous to take.",
+      "demise": "Misha ended Joel’s game at the final decision. After beating him in the final HOH tiebreaker, she correctly judged that his résumé and jury respect made him a losing final-two opponent for her, so she chose Jules instead.",
       "demiseKind": "outplayed",
-      "optimalLine": "Joel’s best available line was to take Misha out at final four or make Jules believe Joel was easier to beat than Misha. He did not have enough control once Misha won final veto and then final HOH.",
+      "optimalLine": "Joel’s best line was winning Part Three. Short of that, he needed to make Misha believe Jules had the jury locked and that Joel’s betrayals would poison his own vote count, but Misha had enough evidence to know better.",
       "ceiling": "could-have-won",
       "alliances": [
         "The Drama Club",
@@ -171,7 +168,7 @@
         "timesOnBlock": 0,
         "timesSaved": 3
       },
-      "strategicRank": 7.8
+      "strategicRank": 8.4
     },
     {
       "placement": 4,
@@ -181,22 +178,22 @@
       "votesReceived": 5,
       "popularity": 128.29,
       "juryVotes": 0,
-      "notes": "Tobias was one of the season’s best social-position players, but repeated pawn exposure eventually made him expendable at final four.",
-      "story": "Tobias’s finish understates the game. He was in six groups with a reach of ten people and voted with the house 82%, which means he was usually close to where the vote actually landed. He survived five nominations, mostly as pawn or renom, and that is both a compliment and the warning sign: people trusted him enough to use him, then trusted themselves enough to cut him. His best strategic work was in the Dylon eviction and in staying socially relevant through multiple broken structures. His weakness was that he kept too many final-two relationships soft instead of locking a winning route. At final four, Misha held veto and the only vote, and Tobias had no way to make himself more useful than Jules.",
-      "gameplayStyle": "social web, pawn survivor",
+      "notes": "Tobias was a late-game hub and fan favorite whose loyalty-based structure collapsed one round before the finale.",
+      "story": "Tobias’s game was better than the pawn-chair image suggests. He was nominated five times, but three of those were pawn appearances, and his 82% voting accuracy shows he was usually in the room where the vote was decided. His six groups and ten-person reach made him one of the season’s most connected players, but the same reach made him visible as the endgame tightened. He played a strong middle-to-late game by pivoting from Dylon to Aaron to Joel/Jules when the old structures cracked, and his Block Buster win at Week 9 was a crucial self-save. The problem was that his endgame required everyone to believe he was loyal while also watching him cut Dylon, survive Jane, and build multiple final twos. Misha’s final-four veto forced him onto the block against Jules, and she chose to evict him as the last social-competition obstacle before finale.",
+      "gameplayStyle": "loyalty-web power broker",
       "keyMoments": [
-        "Week 1: wins the first HOH, gaining early position despite no eviction",
-        "Week 2: votes out Stella despite a prior endgame promise",
-        "Week 9: helps make Dylon the unanimous boot after previously being tied to him",
-        "Week 11: survives the tied Natasha vote when Joel breaks the tie",
-        "Week 14: survives beside Jane 2–0 after Misha leaves nominations intact",
-        "Week 15: lands on the block after Misha uses veto and is evicted by Misha’s sole vote"
+        "Week 1: Won the first HOH, gaining early social capital despite no eviction.",
+        "Week 2: Voted out Stella despite a prior promise, establishing that sentiment would not override position.",
+        "Week 9: Won Block Buster to escape Ireland's block, allowing the house to evict Dylon.",
+        "Week 11: Survived the tied Natasha vote when Joel broke the tie in his favor.",
+        "Week 14: Survived against Jane 2-0 after Misha left nominations intact.",
+        "Week 15: Renominated after Misha used veto and evicted 1-0 by Misha."
       ],
-      "gameArchetype": "pawn-shield",
-      "resume": "Tobias could argue he survived five blocks, maintained the widest relationship spread in the house, helped move the Dylon vote, and was trusted as a number by almost every major structure at some point.",
-      "demise": "Misha ended Tobias at final four. Once Misha won veto, Joel had to nominate Tobias as the replacement, and Misha chose to keep Jules, honoring the relationship that gave her the best final two odds.",
+      "gameArchetype": "alliance-hub",
+      "resume": "Tobias could argue that he was connected to almost every major bloc, survived five nominations, saved himself when the block became fatal, and sat in the middle of multiple jury evictions without being the immediate target until final four.",
+      "demise": "Misha ended Tobias’s game after winning the final-four veto. Joel’s nominations put Misha and Jules up, but Misha’s veto forced Tobias into the only available chair, and she chose to evict him over Jules because Tobias had too many jury relationships and too much endgame credibility.",
       "demiseKind": "outplayed",
-      "optimalLine": "Tobias needed to treat Misha as the late-game threat earlier, not as a flexible emotional bond. Once she had veto at final four, his best pitch was real but structurally too late.",
+      "optimalLine": "Once Misha won veto, Tobias needed to make the decision about Jules beating Misha, not Tobias beating Misha. He tried versions of that, but his own jury relationships were too obvious by then.",
       "ceiling": "could-have-won",
       "alliances": [
         "The Plot Twist",
@@ -229,22 +226,22 @@
       "votesReceived": 8,
       "popularity": 111.05999999999997,
       "juryVotes": 0,
-      "notes": "Jane returned from the battle back and played a sharp late social game, but her safety depended on other people choosing not to finish moves they had already started.",
-      "story": "Jane’s game is unusual because she entered as a separate houseguest after the twins twist and then re-entered again through the Battle Back. Her best work came after that return, when she rebuilt trust with Gyselle, Tobias and Joel and briefly became a real vote broker. She won an HOH and a veto, used the veto on Joel, and had enough social credibility that several players were nervous about sitting next to her. But the record also says she was nominated four times, three as the target, and took eight eviction votes. By Week 14, the remaining players could see that Jane had friends but not the numbers. Joel and Jules made the clean decision to evict her 2–0 over Tobias.",
-      "gameplayStyle": "returned, observant, socially sticky",
+      "notes": "Jane re-entered through the battle back, rebuilt impressively, but never fully escaped being the expendable returning player.",
+      "story": "Jane’s game is strange because she effectively starts late, leaves, returns, and still becomes one of the most relevant late-jury players. After entering separately from the twin twist, she built real relationships quickly, especially with Natasha, Gyselle, Joel, Tobias and Felipe. Her record is better than a simple fifth-place boot: she won an HOH and a veto, returned through the battle back, and was involved in the votes that shaped the late game. The problem was agency visibility. She often knew something was moving, but too many of her decisions became other people’s moves — saving Joel with veto, cutting Felipe, losing Natasha, then being protected or discarded by the same rooms. At final five, Misha nominated Jane beside Tobias, won veto, and left the block intact; Joel and Jules then chose to remove Jane because she had enough connections to be dangerous but not enough votes to make herself indispensable. She was never a goat, but she was frequently the available piece.",
+      "gameplayStyle": "returnee social counterpuncher",
       "keyMoments": [
-        "Week 4: enters the game as her own houseguest after the twins twist resolves",
-        "Week 7: is evicted 5–4, then later wins the Battle Back in Week 8",
-        "Week 10: survives against Ireland when the house unanimously removes Ireland",
-        "Week 12: wins veto and pulls Joel off the block",
-        "Week 12: votes out Felipe despite a final two with him",
-        "Week 14: is nominated beside Tobias and evicted 2–0"
+        "Week 4: Entered as a separate houseguest after the twin reveal.",
+        "Week 7: Evicted 5-4, then later won the battle back over Nico to re-enter.",
+        "Week 10: Sat next to Ireland and survived 7-0 when the house chose the comp threat.",
+        "Week 12: Won veto and used it on Joel, creating the Gyselle renom and Felipe boot.",
+        "Week 13: Won the live double HOH and nominated Misha and Jules before Misha saved herself.",
+        "Week 14: Evicted 2-0 over Tobias after Misha left nominations the same."
       ],
-      "gameArchetype": "social-manipulator",
-      "resume": "Jane could argue she came back into a house that had already voted her out, rebuilt working relationships, won HOH and veto, saved Joel, and repeatedly positioned herself as the vote people needed.",
-      "demise": "Joel and Jules ended Jane. Misha’s HOH placed Jane beside Tobias, and once Misha kept the veto unused, Joel gathered the two votes needed to remove Jane as the less useful endgame piece.",
+      "gameArchetype": "floater",
+      "resume": "Jane could claim a battle-back win, an HOH, a veto, several late-game alliances, and a demonstrated ability to rebuild after being evicted. Her honest case was that she adapted better than most people who were forced to play from behind.",
+      "demise": "Misha put Jane on the block at final five, and Joel and Jules executed the vote. Jane’s mistake was believing the Tobias/Jane bond and Joel/Jane goodwill were enough when Joel and Jules both saw her as the cleaner boot than Tobias.",
       "demiseKind": "outplayed",
-      "optimalLine": "Jane needed to force the Joel/Jules divide before final five instead of relying on Tobias and Joel as parallel shields. Once those two votes aligned, her pitch had no path.",
+      "optimalLine": "Jane needed to use her veto debt with Joel earlier and more explicitly to force a Joel/Jules fracture before final five. Waiting to be reassured after the veto meeting was the mistake she named herself.",
       "ceiling": "could-have-won",
       "alliances": [
         "The Secret Weapon",
@@ -273,22 +270,22 @@
       "votesReceived": 4,
       "popularity": 83.61000000000001,
       "juryVotes": 0,
-      "notes": "Aaron was loyal, clutch, and respected, but his game narrowed too much and collapsed when he finally needed votes outside his core.",
-      "story": "Aaron’s game was more active than the finish suggests. He was nominated repeatedly, won important Block Busters and a veto, and stayed aligned with the house at an 89% rate. His loyalty to Tobias and later overlap with Felipe gave him structure, but it also made his path predictable. He was useful as a number and dangerous as a competitor, especially after saving himself multiple times. The fatal flaw was social range: when he reached the double eviction endgame, he did not have enough independent relationships to survive the replacement seat. Tobias flipping the final vote against him made the betrayal sting, but the groundwork was laid by weeks of playing tightly with the same people.",
-      "gameplayStyle": "loyal, clutch, narrow-laned",
+      "notes": "Aaron was a loyal soldier with clutch safety wins, but his narrow relationship base finally left him without votes.",
+      "story": "Aaron’s game was coherent: choose a few people, stay loyal, win when necessary, and let bigger targets absorb fire. That got him very far. He was nominated seven times in the measured record, often as a target, and saved himself in the arena three times, including critical late Block Buster wins. His 89% voting accuracy shows he was usually aligned with the actual house decision, even when he was not portrayed as a mastermind. The downside is that his game was too relationship-light outside his core. When he needed votes at the double eviction, he had not invested enough in the people holding them, and Tobias ultimately chose Jules over him. Aaron’s end was not a collapse; it was the bill for playing most of the season through a small trusted circle.",
+      "gameplayStyle": "loyal clutch shield",
       "keyMoments": [
-        "Week 5: wins veto while nominated and saves himself",
-        "Week 8: wins Block Buster to escape the block",
-        "Week 11: wins Block Buster again, forcing the Natasha/Tobias vote",
-        "Week 12: wins HOH and nominates Joel, Felipe and Jules",
-        "Week 13: wins Block Buster to escape the Jane/Gyselle vote",
-        "Week 13 double eviction: is renominated after Misha uses veto and evicted 2–1"
+        "Week 5: Won veto while nominated and forced Hasan onto the block.",
+        "Week 8: Won Block Buster to survive over Nico.",
+        "Week 11: Won Block Buster again, escaping the Natasha/Tobias vote.",
+        "Week 12: Won HOH but saw the week end with Felipe leaving, not the clean structure he wanted.",
+        "Week 13: Won Block Buster, then was renominated in the live double after Misha used veto.",
+        "Week 13 double: Evicted 2-1 when Tobias and Misha kept Jules."
       ],
-      "gameArchetype": "comp-beast",
-      "resume": "Aaron could argue he won key safety comps under pressure, survived multiple target weeks, stayed loyal to his people, and took real shots when he finally had HOH.",
-      "demise": "Jane’s live HOH created the opening, Misha’s veto removed herself, and Tobias supplied the decisive betrayal. Aaron was evicted because Misha and Tobias decided Jules was more useful than Aaron at final six.",
+      "gameArchetype": "pawn-shield",
+      "resume": "Aaron could argue a strong survival résumé: multiple self-saves, a late HOH, high vote accuracy, and loyalty that made him a reliable number rather than a random floater.",
+      "demise": "Jane’s double-eviction HOH put Misha and Jules up, Misha won veto, and Aaron became the replacement because his comp record and exposed bonds made him the obvious available threat. Misha and Tobias chose to evict him, leaving Joel as the lone vote to keep Jules.",
       "demiseKind": "outplayed",
-      "optimalLine": "Aaron needed to diversify earlier, especially with Misha and Jules. By the double, appealing to relationships he had not maintained was not enough.",
+      "optimalLine": "Aaron needed to widen his jury and vote relationships before the double. By the time he was asking for help, people respected him but did not owe him enough.",
       "ceiling": "could-have-won",
       "alliances": [
         "The Dock Pact",
@@ -319,22 +316,21 @@
       "votesReceived": 5,
       "popularity": 66.47999999999998,
       "juryVotes": 0,
-      "notes": "Gyselle was everywhere socially, but too often as the flexible piece other players used rather than the person directing the vote.",
-      "story": "Gyselle’s game had a real social footprint: five groups, eight people reached, and constant proximity to the season’s major structures. But her 70% voting alignment and three blindsides show the cost of playing between rooms without becoming the hub. She survived several blocks by winning two Block Busters and by letting bigger targets sit beside her. Her best moments were the Felipe vote and the way she could recruit Jane or Misha into temporary voting blocs. Her worst moments came when she assumed relationships would hold without confirming the numbers. Misha’s Week 13 HOH put her beside Jane and Joel, Joel used veto, Aaron hit the block, and the Drama Club numbers finally cut Gyselle loose.",
-      "gameplayStyle": "social float, vote-adjacent",
+      "notes": "Gyselle was socially embedded everywhere, but her refusal to own hard decisions made her easy to cut when the vote required a name.",
+      "story": "Gyselle’s numbers show a player with reach: five groups, eight-person reach, and enough social capital to survive deep despite zero HOH or veto wins. She was often positioned as the crack in alliances, which is not automatically bad — it meant she had options. Her problem was that she rarely turned options into ownership. She survived danger through social cushioning and two arena saves, but she was blindsided three times and voted with the house only 70%, indicating she was often near the room rather than inside it. Her betrayal of Hasan was necessary, but it also confirmed to others that her loyalty could be moved without giving her sole credit for the move. At final seven, she sat next to Jane, did not campaign because she thought the count was set, and got evicted when Tobias, Joel and Aaron landed on her as the bigger threat. She had a path, but she needed to claim decisions sooner.",
+      "gameplayStyle": "soft-power social drifter",
       "keyMoments": [
-        "Week 3: survives beside Amberly after the Power Couple protects her",
-        "Week 6: votes out Hasan despite their final two",
-        "Week 8: wins Block Buster and escapes the Aaron/Nico vote",
-        "Week 12: wins Block Buster and helps send Felipe out",
-        "Week 13: is renominated after Joel’s veto and fails to campaign hard enough",
-        "Week 13: is evicted 3–1 over Jane"
+        "Week 3: Survived against Amberly after the Power Couple protected her.",
+        "Week 6: Voted out Hasan despite their final two, breaking the relationship for position.",
+        "Week 8: Won Block Buster to escape the block before Nico left.",
+        "Week 12: Won Block Buster over Felipe and Jules, forcing the Felipe boot.",
+        "Week 13: Lost the arena, assumed the votes were there, and left 3-1 over Jane."
       ],
       "gameArchetype": "floater",
-      "resume": "Gyselle could argue she moved through multiple alliances, survived four nominations, won two Block Busters, and helped assemble the votes that removed Felipe.",
-      "demise": "Misha nominated Gyselle, Joel’s veto forced Aaron into the chair, and Tobias organized the 3–1 vote to evict Gyselle over Jane. The numbers were there before Gyselle fully accepted she was the target.",
+      "resume": "Gyselle could argue that she maintained bonds across nearly every side, survived multiple target weeks, won two Block Busters, and repeatedly became the vote people had to negotiate with.",
+      "demise": "Misha’s Week 13 HOH nominated Gyselle with Jane and Joel, Joel’s veto removed himself, Aaron went up, then Aaron won Block Buster. Once it was Jane versus Gyselle, Tobias gathered Joel and Aaron around the argument that Gyselle was the larger endgame threat, and Jules was alone on Jane.",
       "demiseKind": "outplayed",
-      "optimalLine": "Gyselle needed to own a side by Week 12. Floating had value, but at seven it left her without anyone willing to risk their game for her.",
+      "optimalLine": "Gyselle needed to campaign after losing Block Buster. Her read that there were three votes against her was correct, but treating that as unchangeable let Tobias lock them without resistance.",
       "ceiling": "could-have-won",
       "alliances": [
         "The Power Couple",
@@ -356,7 +352,7 @@
         "timesOnBlock": 2,
         "timesSaved": 0
       },
-      "strategicRank": 6.4
+      "strategicRank": 6.5
     },
     {
       "placement": 8,
@@ -366,22 +362,22 @@
       "votesReceived": 3,
       "popularity": 77.89999999999998,
       "juryVotes": 0,
-      "notes": "Felipe had one of the best alignment games in the cast, but no competition safety and too many exposed final twos left him vulnerable once the numbers got small.",
-      "story": "Felipe’s 90% voting alignment is the stat that defines him. For most of the season, he knew where the vote was going and was close enough to help decide whether to join it. He did this without HOH or veto power, which is a real social-strategic achievement. The downside was that his game depended on relationships staying private: Nico, Jules, Joel, Jane, and Aaron all occupied different versions of his endgame. Once those overlaps became visible, Felipe could not protect himself physically or rhetorically. At final eight, Jane and Misha moved with Gyselle to send him out 3–2, and he had no Block Buster win to rescue him.",
-      "gameplayStyle": "aligned, relational, exposed deals",
+      "notes": "Felipe had excellent positioning for most of the game, but his web of final twos finally made him disposable to every side at once.",
+      "story": "Felipe is one of the better non-winning strategic games despite having no HOH or veto wins. He was nominated only once, as a pawn, voted with the house 90%, and had six groups with eleven-person reach. That is not passive; that is sustained access. For much of the season, Felipe was the person who could move between Jules, Nico, Joel, Aaron, Jane and the larger blocs without being the immediate target. The issue is that his endgame web became too easy to map. Once Nico was gone and Joel/Felipe became visible, he lost the ability to be everybody’s spare number. At Week 12, Jane’s veto saved Joel, Gyselle won the arena, and the vote reduced to Felipe versus Jules. Gyselle and Misha chose the War Room line, Jane signed on, and Felipe’s lack of comp threat did not save him because his relationships were more dangerous than his résumé.",
+      "gameplayStyle": "quiet connector accountant",
       "keyMoments": [
-        "Week 1: forms the Felipe/Nico final two",
-        "Week 2: adds a second final two with Jules",
-        "Week 5: helps recruit Joel into the Hasan vote",
-        "Week 8: betrays Nico in the 6–2 vote",
-        "Week 11: bonds with Joel and becomes visibly paired",
-        "Week 12: lands beside Jules after Gyselle wins Block Buster and is evicted 3–2"
+        "Week 2: Made the early final two with Nico that shaped his first half.",
+        "Week 5: Helped recruit Joel onto the Hasan vote while managing multiple rooms.",
+        "Week 8: Cut Nico despite their final two, a necessary but costly betrayal.",
+        "Week 11: Voted Natasha out in the tie week, further exposing his flexible loyalties.",
+        "Week 12: Lost BB Comics to Jane by 2.25 seconds, leaving veto out of reach.",
+        "Week 12: Evicted 3-2 over Jules after Jane flipped away from him."
       ],
-      "gameArchetype": "social-manipulator",
-      "resume": "Felipe could argue he voted correctly 90% of the time, helped steer multiple majority votes without power, and built enough relationships that people kept giving him information even when they knew he had other deals.",
-      "demise": "Gyselle and Misha, with Jane as the decisive recruit, ended Felipe. Once Gyselle won Block Buster, Felipe was stuck beside Jules, and the War Room side saw him as the cleaner cut.",
-      "demiseKind": "outplayed",
-      "optimalLine": "Felipe needed to win one safety comp or consolidate around Joel earlier. Without that, the multiple final twos became evidence against him instead of insurance.",
+      "gameArchetype": "alliance-hub",
+      "resume": "Felipe could argue that he was almost never on the block, voted correctly at an elite rate, sat in nearly every relevant room, and used relationships rather than competitions to stay central for twelve weeks.",
+      "demise": "Aaron nominated Felipe as a pawn beside Joel and Jules. Jane won veto and used it on Joel, Gyselle went up, then Gyselle won Block Buster. Against Jules, Felipe needed Jane or Misha; Gyselle recruited Jane, Misha stayed with the War Room, and his own overlapping deals made him easier to cut than save.",
+      "demiseKind": "exposed",
+      "optimalLine": "Felipe needed to choose a visible side after Nico left instead of continuing to sell incompatible endgames. The flexible middle was valuable until every remaining player could compare notes.",
       "ceiling": "could-have-won",
       "alliances": [
         "The Power Couple",
@@ -414,22 +410,22 @@
       "votesReceived": 3,
       "popularity": 68.07999999999998,
       "juryVotes": 0,
-      "notes": "Natasha had social influence and loyalty, but her game became too visible as a pair-and-structure player to survive a tie vote.",
-      "story": "Natasha was central early through Zella, Gyselle, and the Power Couple, and she was often better socially than people credited. Her problem was that her loyalty was readable. Once Zella left, Natasha stayed connected but lost the shield that made her choices look less coordinated. She survived several weeks because bigger competitors and messier targets drew attention first. At Week 11, Joel nominated Natasha, Aaron and Tobias, and after Aaron saved himself in the Block Buster, Natasha sat beside Tobias in a vote that split exactly down the middle. Joel broke the tie against her, proving that her relationships were not enough when the HOH had a strategic preference.",
-      "gameplayStyle": "loyal, visible, socially warm",
+      "notes": "Natasha was a strong social organizer whose loyalty to visible pairs and groups made her a clean tie-break boot.",
+      "story": "Natasha’s game had real structure from the beginning. She was central to The Power Couple, then The War Room and The Oath, and she maintained a durable social bond with Gyselle after Zella left. Her 63% voting accuracy and three blindsides show the weakness: she often believed the room was where her relationships were, when the room had already shifted somewhere else. She was rarely a comp force, but her Block Buster win in Week 10 was one of the season’s real clutch survival moments because it prevented Ireland from simply staying as the obvious target next to her. The problem came at Week 11, when she sat next to Tobias after Aaron won the arena. Her social game kept the vote tied, but Joel’s HOH tiebreaker chose to remove her, and that says the house saw her as a more disruptive social piece than Tobias in that exact configuration. She was not dragged; she was targeted for being socially useful to too many people.",
+      "gameplayStyle": "emotional social organizer",
       "keyMoments": [
-        "Week 1: forms The Power Couple with Gyselle",
-        "Week 3: formalizes the Zella showmance and helps protect Gyselle",
-        "Week 5: votes out Hasan despite broader alliance ties",
-        "Week 10: wins Block Buster and escapes the Jane/Ireland vote",
-        "Week 11: sits beside Tobias after Aaron wins Block Buster",
-        "Week 11: is evicted on Joel’s tie-breaking vote"
+        "Week 1: Formed The Power Couple with Gyselle.",
+        "Week 3: Deepened the Zella relationship, creating a visible pair that shaped multiple votes.",
+        "Week 10: Won Block Buster to escape the block, leaving Jane and Ireland exposed.",
+        "Week 10: Helped consolidate the unanimous Ireland eviction.",
+        "Week 11: Sat next to Tobias after Aaron saved himself and forced a 3-3 tie.",
+        "Week 11: Evicted by Joel's tiebreaker."
       ],
       "gameArchetype": "alliance-hub",
-      "resume": "Natasha could argue she built durable bonds, helped shape early majority structures, won safety when she needed it in Week 10, and forced the house to split evenly before Joel broke the tie.",
-      "demise": "Joel ended Natasha. Gyselle, Jules and Misha voted to keep her, but Aaron, Felipe and Jane forced the tie, and Joel chose to evict Natasha as the more connected future problem.",
+      "resume": "Natasha could argue that her social connections repeatedly set vote direction, that she survived long stretches without power because people needed her, and that she won the arena when her game was genuinely on the line.",
+      "demise": "Joel ended Natasha’s game. After Aaron won Block Buster, the vote split 3-3 between Natasha and Tobias; Joel, as HOH, broke the tie against Natasha because her connections through Gyselle, Jane and the War Room were less useful to his endgame than Tobias staying as a shield and number.",
       "demiseKind": "outplayed",
-      "optimalLine": "Natasha needed to cut away from Gyselle and Jane earlier or win veto in Week 11. At the time, loyalty was understandable, but it left her too easy to map.",
+      "optimalLine": "Natasha needed to break from the visible Gyselle/Jane structure earlier or make Joel believe Tobias was the unbeatable jury threat. She had the votes to tie, but not the HOH relationship to survive the tie.",
       "ceiling": "could-have-won",
       "alliances": [
         "The Power Couple",
@@ -450,7 +446,7 @@
         "timesOnBlock": 2,
         "timesSaved": 0
       },
-      "strategicRank": 6.2
+      "strategicRank": 6.6
     },
     {
       "placement": 10,
@@ -460,23 +456,22 @@
       "votesReceived": 7,
       "popularity": 68.12,
       "juryVotes": 0,
-      "notes": "Ireland was the season’s biggest comp force, but she was so rarely in the vote room that her safety wins became proof she had no stable path.",
-      "story": "Ireland’s raw numbers are absurd: three HOHs, four vetoes, three Block Busters, and repeated wins while targeted. But her 40% voting alignment is just as important. She was powerful, but not integrated; she kept surviving votes the house wanted to have without her. The Interrogation power bought her an early secret HOH, and her midgame veto streak made her feel inevitable for a while. The problem was that every win narrowed the house’s patience. Once Natasha beat her in the Week 10 Block Buster, Ireland lost the only thing keeping the room from acting unanimously, and every remaining voter wrote her name down.",
-      "gameplayStyle": "comp machine, isolated target",
+      "notes": "Ireland was the season’s early comp monster and power user, but once the house stopped needing her as a weapon, they removed her unanimously.",
+      "story": "Ireland’s raw competition record is absurd for a tenth-place finish: 3 HOHs, 4 vetoes, 3 Block Busters, and repeated wins under threat. But the record also explains the fall. She was on the block six times, all as the target, voted with the house only 40%, and was blindsided three times in just five votes. That means she was powerful, but rarely structurally safe. Her secret power in Week 2 was excellent short-term play, stealing the HOH and reshaping the week, but it also branded her as the person things ended up with. From there, she had to keep winning because trust never recovered. By Week 10, the entire house agreed that the comp threat had to go; Natasha won the arena, Jane stayed passive, and Ireland had no vote coalition left. Her exit is the classic comp-dependent arc: spectacular survival until one result finally does not land.",
+      "gameplayStyle": "volatile power magnet",
       "keyMoments": [
-        "Week 2: uses The Interrogation to take Nico’s HOH in secret",
-        "Week 3: wins Block Buster and escapes the Amberly/Gyselle vote",
-        "Week 4: wins Block Buster again and escapes the Harriett/Natasha vote",
-        "Week 6: wins HOH and veto, leaving Hasan and Tobias nominated",
-        "Week 8: wins veto and forces Nico onto Dylon’s block",
-        "Week 9: wins HOH and veto, removing Dylon unanimously",
-        "Week 10: loses Block Buster to Natasha and is evicted 7–0"
+        "Week 2: Used The Interrogation to take Nico's HOH anonymously and nominate Stella, Jules and Joel.",
+        "Weeks 3-5: Won three consecutive Block Busters to escape danger repeatedly.",
+        "Week 6: Won HOH and veto, nominated Hasan, Tobias and Dylon, and survived the Mystery Veto chaos.",
+        "Week 7: Won the prizes/punishments veto and saved herself from Joel's block.",
+        "Week 9: Won HOH and veto, nominated Aaron, Tobias and Dylon, and sent Dylon out 8-0.",
+        "Week 10: Lost Block Buster to Natasha and was evicted 7-0."
       ],
       "gameArchetype": "comp-beast",
-      "resume": "Ireland could argue she won her way out of danger over and over, used an early secret power to seize HOH, and forced the house to spend multiple weeks failing to remove her.",
-      "demise": "Jules’s HOH put Ireland back in the danger structure, Misha’s veto changed the block, and Natasha’s Block Buster win took away Ireland’s last escape. After that, the seven voters did the obvious thing and removed the biggest comp threat.",
+      "resume": "Ireland could argue one of the biggest pre-finale competition résumés in the cast: 10 total safety/power wins, repeated self-saves as the target, and multiple HOH weeks where the house had to respond to her instead of ignore her.",
+      "demise": "Jules’s Week 10 HOH nominated Ireland beside Jane and Misha. Misha won veto, Natasha went up, and then Natasha won Block Buster, leaving Ireland against Jane. Every voting bloc independently landed on Ireland because her comp record was too large and her social capital too damaged.",
       "demiseKind": "comp-dependent",
-      "optimalLine": "Ireland needed to use one of her HOHs to build a real majority instead of proving she could survive without one. Once the house saw her as a repeat comp problem, the correct play was earlier reconciliation, not louder targeting.",
+      "optimalLine": "Ireland needed to use one of her HOH runs to repair relationships rather than prosecute targets. Once every week became Ireland versus the house, she had no path that did not require winning every safety opportunity.",
       "ceiling": "could-have-won",
       "alliances": [
         "The Plot Twist"
@@ -494,7 +489,7 @@
         "timesOnBlock": 1,
         "timesSaved": 3
       },
-      "strategicRank": 6.7
+      "strategicRank": 6.9
     },
     {
       "placement": 11,
@@ -504,23 +499,21 @@
       "votesReceived": 12,
       "popularity": 29,
       "juryVotes": 0,
-      "notes": "Dylon played hard and won power, but his game became too visible, too comp-dependent, and too easy to unite against.",
-      "story": "Dylon’s first half was very strong: two HOHs, a veto, and a secret Mystery Veto that saved him when the block looked settled. He had real reads and often identified structures before other people said them out loud. But he also overplayed suspicion into public accusations, and his alliances started treating him as the crack rather than the core. The Week 8 HOH bought him power but made him the obvious next target. When Ireland nominated Aaron, Tobias and Dylon in Week 9, Tobias won Block Buster and Dylon was left beside Aaron. The entire house recognized that Dylon was more dangerous if spared, and the vote became unanimous.",
-      "gameplayStyle": "active, suspicious, exposed competitor",
+      "notes": "Dylon built early power and held a secret veto brilliantly, but his threat level and overexposed deals made him the unanimous mid-jury boot.",
+      "story": "Dylon’s game was strong until it became too visible. He won 2 HOHs and a veto, carried the Mystery Veto until it mattered, and used it in Week 6 to undo Ireland’s settled block and save himself. That was a great television move and a real game move. His problem was the aftermath: everyone now knew he could win, had powers, and was making deals faster than he could maintain them. His voting accuracy was fine at 75%, but the season turned against visible comp-connected bloc players, and Dylon became the cleanest example. Week 9 sealed it: Ireland nominated Aaron, Tobias and Dylon, Tobias won the arena, and every remaining voter chose Dylon over Aaron. Once even his allies could argue he was the threat in front of them, he had no room left.",
+      "gameplayStyle": "visible dealmaker competitor",
       "keyMoments": [
-        "Week 1: wins the Mystery Veto instead of the HOH path",
-        "Week 5: wins HOH and nominates Ireland, Aaron and Zella",
-        "Week 6: uses the Mystery Veto after the ceremony and forces Nico onto the block",
-        "Week 8: wins HOH and targets Ireland, only for Ireland to veto herself",
-        "Week 8: sees Nico leave after the renom",
-        "Week 9: is nominated by Ireland and loses Block Buster to Tobias",
-        "Week 9: is evicted 8–0 over Aaron"
+        "Week 1: Won the Mystery Veto instead of the public HOH track.",
+        "Week 5: Won HOH and nominated Ireland, Aaron and Zella, then watched the week flip onto Zella.",
+        "Week 6: Used the Mystery Veto to save himself after Ireland left nominations intact.",
+        "Week 8: Won HOH and targeted Ireland, but she vetoed herself and Nico left instead.",
+        "Week 9: Sat next to Aaron after Tobias won Block Buster and was evicted unanimously."
       ],
       "gameArchetype": "comp-beast",
-      "resume": "Dylon could argue he won multiple powers, made major nominations, used the Mystery Veto to save himself, identified hidden voting blocs, and forced the house to treat him as a central threat.",
-      "demise": "Ireland nominated Dylon, but Tobias and the whole house ended him. Once Tobias won Block Buster, Dylon sat beside Aaron and every voter chose the cleaner comp-threat removal.",
+      "resume": "Dylon could argue two HOHs, a veto, a successful secret power play, and several weeks where the house had to plan around his ability to win and redirect the block.",
+      "demise": "Ireland nominated Dylon with Aaron and Tobias in Week 9. Tobias won Block Buster, and the vote became Dylon versus Aaron. Tobias, Gyselle, Natasha, Joel, Jules, Misha, Jane and Felipe all converged on Dylon because he was the more active, more proven threat.",
       "demiseKind": "exposed",
-      "optimalLine": "Dylon needed to keep his reads private and let others take the shot at Ireland and the blocs. The information was often right; the delivery made him the move.",
+      "optimalLine": "After using the Mystery Veto, Dylon needed to disappear behind someone else’s target. Instead he kept building and advertising structures, which made the unanimous vote too easy.",
       "ceiling": "could-have-won",
       "alliances": [
         "The Dock Pact",
@@ -549,22 +542,21 @@
       "votesReceived": 6,
       "popularity": 37.3,
       "juryVotes": 0,
-      "notes": "Nico’s calm, loyal game kept him safe for a while, but waiting for other people to move left him exposed when Dylon needed a replacement target.",
-      "story": "Nico had a useful low-temperature game early, anchored by Felipe and a few timely safety results. His Week 2 HOH was stolen by Ireland’s power, which hurt his early agency and public perception. He was often trusted personally, but he did not convert that trust into control; a 67% voting alignment and one blindside show he was adjacent rather than central. His Block Buster win in Week 6 saved him, but in Week 8 the same comp-danger logic made him a replacement nominee. He did not campaign hard because he believed the number was there. It was not: Felipe, Misha, Jules, Tobias, Natasha and Ireland moved against him.",
-      "gameplayStyle": "calm, loyal, delayed mover",
+      "notes": "Nico was stable and trusted until the end of the pre-jury phase, but he waited too long to launch the move he needed.",
+      "story": "Nico had a real social game, especially through Felipe, but his measured record shows passivity at the wrong times. He had one HOH that was stolen by Ireland’s secret power, one Block Buster save, and only one official nomination before the week he left. That is a decent defensive game. The issue is that his strongest relationship became a liability once Felipe needed to prove independence, and Nico had no secondary bloc willing to risk itself for him. When Dylon’s Week 8 target on Ireland failed because Ireland won veto, Nico became the replacement as a comp/resume name the room could justify. He did not campaign because he believed the number was set; it was set, just not for him. Felipe voting him out turned a good social bond into the season’s cleanest betrayal.",
+      "gameplayStyle": "calm loyal number",
       "keyMoments": [
-        "Week 2: wins HOH before Ireland secretly takes it through The Interrogation",
-        "Week 2: agrees to the Felipe final two that defines his early game",
-        "Week 6: wins Block Buster and escapes the Hasan/Tobias vote",
-        "Week 8: is renominated after Ireland uses veto",
-        "Week 8: does not campaign aggressively, trusting the count",
-        "Week 8: is evicted 6–2 and becomes the first juror"
+        "Week 2: Won the public HOH before Ireland secretly took it from him.",
+        "Week 6: Won Block Buster after Dylon's Mystery Veto renommed him, escaping the vote.",
+        "Week 8: Renominated after Ireland saved herself with veto.",
+        "Week 8: Did not campaign, trusting the count against Aaron.",
+        "Week 8: Evicted 6-2 after Felipe cut their Week 1 final two."
       ],
       "gameArchetype": "under-the-radar",
-      "resume": "Nico could argue he built real trust, stayed calm under pressure, won safety when he needed it once, and kept his word in a house where that became rare.",
-      "demise": "Dylon named Nico as the replacement after Ireland used veto. The vote flipped away from Nico when Felipe and Tobias chose game over loyalty, and Nico’s lack of active campaigning gave the new majority room to settle.",
+      "resume": "Nico could argue loyalty, low threat level, a Block Buster self-save, and enough social trust that his eviction required close allies to betray him.",
+      "demise": "Dylon nominated Gyselle, Aaron and Ireland; Ireland won veto, so Dylon renamed Nico. Gyselle won Block Buster, leaving Aaron and Nico, and Tobias/Jules/Misha/Ireland/Felipe/Natasha moved onto Nico while he stayed too calm to disrupt the count.",
       "demiseKind": "outplayed",
-      "optimalLine": "Nico needed to start the anti-Aaron or anti-Dylon move himself before he touched the block. Waiting for the room to protect him was the mistake he could have seen at the time.",
+      "optimalLine": "Nico needed to campaign aggressively the moment he became the replacement nominee. His read that calmness protected him was exactly what let people vote him out without fearing blowback.",
       "ceiling": "best-realistic-finish",
       "alliances": [],
       "rivalries": [],
@@ -590,22 +582,20 @@
       "votesReceived": 14,
       "popularity": 40.95,
       "juryVotes": 0,
-      "notes": "Hasan’s early HOH made him look like a strategist, but he never rebuilt once his alliance map became visible.",
-      "story": "Hasan’s Week 3 HOH gave him real early influence, especially through Misha and the Power Couple. The problem is that the structure around him became public and brittle almost immediately. He nominated Amberly, Gyselle and Ireland, but the week did not produce the stable control he needed. By Week 5 he was a replacement nominee beside Zella, and the house used that chair to break up a known connection. His social ties with Gyselle and Misha were real, but not resilient enough. When Ireland won safety in the Block Buster, Hasan no longer had the bigger target beside him and was gone soon after, though the official boot order records him pre-jury.",
-      "gameplayStyle": "early planner, exposed connector",
+      "notes": "Hasan understood vote structure early, but his HOH created enemies he could not out-organize once he lost power.",
+      "story": "Hasan’s early game had promise. He won the Week 3 HOH, used it to target Amberly and expose parts of The Power Couple, and was involved in multiple core structures. His problem was that his relationships did not survive pressure: Gyselle, his final two, eventually voted him out, and the people he thought were numbers became people comparing his stories. He was nominated twice, once as target and once as renom, and survived one vote before the house had enough. By Week 6, after Dylon’s Mystery Veto forced Nico up and Nico saved himself, Hasan was left sitting next to Tobias. The house chose to keep Tobias as the more useful connected piece and remove Hasan 9-1. He did not lose because he was useless; he lost because his power week made him legible before his social bonds were strong enough.",
+      "gameplayStyle": "overconfident structure builder",
       "keyMoments": [
-        "Week 3: wins HOH and nominates Amberly, Gyselle and Ireland",
-        "Week 3: asks Gyselle to sit as a pawn, creating long-term distrust",
-        "Week 3: sees Amberly expose the Power Couple structure on the way out",
-        "Week 5: is renominated after Aaron uses veto",
-        "Week 5: survives the initial vote only because Zella leaves 6–5",
-        "Week 6: is nominated again by Ireland and evicted 9–1"
+        "Week 3: Won HOH and nominated Amberly, Gyselle and Ireland.",
+        "Week 3: Put Gyselle up as a pawn, damaging the relationship that was supposed to protect him.",
+        "Week 5: Renominated after Aaron used veto, then survived when Zella left 6-5.",
+        "Week 6: Sat on Ireland's block, survived Dylon's Mystery Veto chaos, but lost against Tobias 9-1."
       ],
-      "gameArchetype": "alliance-hub",
-      "resume": "Hasan could argue he won an early HOH, formed meaningful bonds with Misha and Gyselle, and correctly identified several threats before the house was ready to act.",
-      "demise": "Ireland’s Week 6 HOH put Hasan back on the block, Dylon’s Mystery Veto changed the shape but not the target pool, and the house chose Hasan over Tobias because Hasan’s alliance baggage was easier to punish.",
-      "demiseKind": "exposed",
-      "optimalLine": "Hasan needed to repair with non-Power Couple players immediately after Amberly’s exit. Staying inside the same conversations made every later pitch sound self-interested.",
+      "gameArchetype": "wildcard",
+      "resume": "Hasan could argue that he won power early, identified real blocs before others acted on them, and survived a close Week 5 vote despite being a replacement nominee.",
+      "demise": "Ireland nominated Hasan, Tobias and Dylon in Week 6. Dylon’s Mystery Veto removed Dylon and forced Nico up, then Nico won Block Buster. Against Tobias, Hasan lost because Dylon’s Dock Pact/Assembly structure, plus outsiders like Natasha, Joel, Jules and Jane, all agreed Hasan was less useful and more damaged.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Hasan needed to repair Gyselle immediately after using her as a pawn and stop pushing Ireland stories that other people could fact-check. His correct path was humility after HOH, not more control.",
       "ceiling": "best-realistic-finish",
       "alliances": [
         "The Power Couple",
@@ -624,7 +614,7 @@
         "timesOnBlock": 2,
         "timesSaved": 0
       },
-      "strategicRank": 5
+      "strategicRank": 5.7
     },
     {
       "placement": 15,
@@ -634,23 +624,22 @@
       "votesReceived": 6,
       "popularity": 43.29,
       "juryVotes": 0,
-      "notes": "Zella played loudly, loyally and visibly, which made her useful early and cuttable the first time her allies needed a sacrifice.",
-      "story": "Zella had more influence than a pre-jury exit normally gets credited for. Her bond with Natasha shaped early voting blocs, and her Week 2 Block Buster win saved her from becoming an early casualty. But she was always visible: the showmance, the fights with Ireland, and her role in the Power Couple made her an easy symbol of a larger group. In Week 5, Dylon’s HOH put her on the block with Ireland and Aaron, then Aaron’s veto brought Hasan into the chair. Once Ireland won the Block Buster, the house had to choose between Zella and Hasan. Misha, Gyselle, Jane, Tobias, Jules and Joel landed on Zella, making her the casualty of a fractured alliance war.",
-      "gameplayStyle": "loyal, visible, volatile",
+      "notes": "Zella played visibly and loyally, but her showmance and blunt style gave the house an easy mid-prejury cut.",
+      "story": "Zella’s game was never subtle, and that was both the appeal and the flaw. She won a Block Buster, survived early danger, and was central to the Natasha relationship that shaped the first half of the house. But by Week 5, the house could see that keeping Zella meant keeping a visible pair and a loud strategic presence. She was nominated twice, both as the target, and had no ability to soften the target once the vote became Hasan versus Zella. The 6-5 vote shows she had a path — this was not a hopeless position — but she did not campaign enough because she believed the count was locked. Misha’s vote and Gyselle/Jane’s positioning ended her. Her exit accusation against Misha was right, but it came when she no longer had a vote.",
+      "gameplayStyle": "blunt loyal firebrand",
       "keyMoments": [
-        "Week 2: is renominated and wins Block Buster to save herself",
-        "Week 3: formalizes the Natasha showmance",
-        "Week 5: is nominated by Dylon beside Ireland and Aaron",
-        "Week 5: watches Aaron win veto and Hasan enter as renom",
-        "Week 5: loses Block Buster to Ireland",
-        "Week 5: is evicted 6–5 and exposes Misha on the way out"
+        "Week 2: Renominated by Ireland, then won Block Buster to escape the vote.",
+        "Week 3: Made the Natasha final two/showmance structure visible enough for the house to clock it.",
+        "Week 5: Sat against Hasan after Ireland won Block Buster.",
+        "Week 5: Did not campaign hard, believing the numbers were there.",
+        "Week 5: Evicted 6-5 and correctly named Misha on the way out."
       ],
       "gameArchetype": "wildcard",
-      "resume": "Zella could argue she won safety when nominated, protected Natasha even when it hurt her game, and was influential enough that people evicted her to weaken a structure rather than because she was irrelevant.",
-      "demise": "Misha’s side of the vote ended Zella. Once Ireland won Block Buster, Zella sat beside Hasan, and the anti-showmance and anti-Power Couple numbers converged by one vote.",
-      "demiseKind": "collateral",
-      "optimalLine": "Zella needed to separate strategically from Natasha before the house forced the question. Loyalty was understandable, but the pair made her a target before she had enough independent numbers.",
-      "ceiling": "best-realistic-finish",
+      "resume": "Zella could argue loyalty, a self-save under pressure, and influence through The Power Couple and Natasha, but her résumé was more about visibility than executed control.",
+      "demise": "After Dylon nominated Ireland, Aaron and Zella, Aaron vetoed himself and Hasan went up. Ireland won Block Buster, leaving Hasan and Zella. Misha, Gyselle, Jane, Tobias, Joel and Jules formed the decisive six to evict Zella while she thought Hasan was leaving.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Zella needed to treat the Hasan vote as live until the last ballot, not as settled. Her best move was exposing Misha before eviction night rather than at the door.",
+      "ceiling": "could-have-won",
       "alliances": [
         "The Power Couple",
         "The Tandem"
@@ -678,23 +667,22 @@
       "votesReceived": 12,
       "popularity": 3.040000000000002,
       "juryVotes": 0,
-      "notes": "Harriett’s twin twist bought entry for Jane, but Harriett’s own game became too loud, too contradictory, and too easy to unite against.",
-      "story": "Harriett had an interesting opening because the twin twist gave her and Jane a unique structural advantage. But Harriett did not translate that advantage into trust. She was constantly in conversations, but the stories changed depending on the room, and by Week 4 too many people could compare notes. The Mystery Competitor power looked splashy but did not save her; Scott losing simply made the power a curiosity rather than a shield. Once Jules won HOH and nominated Harriett, Natasha and Ireland, Harriett’s contradictions became the easiest house consensus of the season. Ireland saved herself in the Block Buster, and Harriett left 12–0 over Natasha.",
-      "gameplayStyle": "messy, aggressive, twist-exposed",
+      "notes": "Harriett’s twin twist gave her a second vote in the game, but her own deal-making became too contradictory to survive scrutiny.",
+      "story": "Harriett’s game had an unusual opening because the twin twist delayed Jane’s full entry while making every Harriett conversation unstable in retrospect. Strategically, though, Harriett did not convert the twist into durable power. She had one group, won no standard comps, and left before jury after being exposed as telling too many people too many different versions of the plan. The Week 4 Mystery Competitor power bought a veto draw body, not safety, and Scott losing meant the power produced attention without protection. Once Jules held HOH and the house compared Harriett’s stories, the vote became unanimous. She was not an early nobody; she was an early overplayer. The house removed her because her information game had become visible and unreliable.",
+      "gameplayStyle": "messy secret-dealer",
       "keyMoments": [
-        "Week 1: enters as part of the secret twin twist",
-        "Week 2: forms The Pipeline with Stella, then votes against the alliance’s interest",
-        "Week 4: Jane enters as a separate houseguest, changing Harriett’s threat profile",
-        "Week 4: uses the Mystery Competitor power but gains no real safety",
-        "Week 4: is exposed by multiple conflicting stories",
-        "Week 4: is evicted unanimously over Natasha"
+        "Week 1: Entered as the public half of the twin twist while Jane stayed hidden.",
+        "Week 2: Formed The Pipeline with Stella, then voted against the alliance direction.",
+        "Week 4: The twin reveal brought Jane into the house and reset how everyone viewed Harriett's conversations.",
+        "Week 4: Used Mystery Competitor to bring Scott into the veto draw, but got no safety.",
+        "Week 4: Exposed by multiple houseguests comparing contradictory stories and evicted 12-0."
       ],
       "gameArchetype": "wildcard",
-      "resume": "Harriett could argue she helped survive the twin twist long enough to bring Jane into the game, won a secret power, and made enough deals that the house had to compare notes to catch her.",
-      "demise": "Jules nominated Harriett, and Misha, Dylon, Felipe and others exposed the contradictions in her pitches. Once Ireland won Block Buster, the vote against Harriett became the one thing every room could agree on.",
+      "resume": "Harriett could argue that she survived the twin twist long enough to bring Jane into the game and made early deals across the house, but she had no meaningful eviction-control case.",
+      "demise": "Jules nominated Harriett, Natasha and Ireland. Ireland won Block Buster, leaving Harriett against Natasha. By then Dylon, Felipe, Ireland, Jules and Misha had all compared Harriett’s conflicting stories, and every bloc preferred removing the exposed liar over the visible Natasha/Zella pair.",
       "demiseKind": "exposed",
-      "optimalLine": "Harriett needed fewer stories and a cleaner target. After Jane entered, the correct move was to become boring for two weeks, not busier.",
-      "ceiling": "overperformed",
+      "optimalLine": "Harriett needed to simplify after the twin reveal. Instead of continuing to sell different stories, she should have picked one defensible alliance and made the twist itself the shield.",
+      "ceiling": "best-realistic-finish",
       "alliances": [
         "The Pipeline"
       ],
@@ -721,22 +709,21 @@
       "votesReceived": 10,
       "popularity": 11.700000000000001,
       "juryVotes": 0,
-      "notes": "Amberly had real social instincts but never gained enough structural protection to survive once the Power Couple needed a clean early boot.",
-      "story": "Amberly was more socially aware than the house gave her credit for. She spotted the shape of the Power Couple and named it accurately on the way out. The issue is that she lacked a stable alliance seat before she needed one. Hasan’s HOH put her on the block beside Gyselle and Ireland, and Dylon’s veto not being used left her exposed. Ireland winning Block Buster removed the obvious comp threat from the vote and reduced the decision to Amberly versus Gyselle. The larger group protected Gyselle, and Amberly left with information the house only believed after it was too late for her.",
-      "gameplayStyle": "social, reactive, underprotected",
+      "notes": "Amberly had real social instincts but mistook personal warmth for votes that would risk themselves for her.",
+      "story": "Amberly was socially active from the start and had enough presence that her eviction mattered. She was not dragged out because she was irrelevant; she was removed because people could see she might become a problem. Her mistake was believing that being liked and being protected were the same thing. Hasan’s HOH put her on the block beside Gyselle and Ireland, and once Ireland won Block Buster, Amberly was left against a better-insulated alliance member. The vote was 10-2 because The Power Couple and its attached numbers had more structure than Amberly’s looser personal ties. Her door warning about Gyselle, Natasha, Zella, Felipe, Hasan and Misha was accurate, which is the tragedy: she saw the house, but too late to make the house act.",
+      "gameplayStyle": "social spark, no structure",
       "keyMoments": [
-        "Week 1: bonds broadly but fails to find a real plan",
-        "Week 2: is protected by Ireland’s secret HOH deal but remains outside the main structure",
-        "Week 3: is nominated by Hasan as the target",
-        "Week 3: correctly identifies the Power Couple as the house’s hidden bloc",
-        "Week 3: loses Block Buster to Ireland",
-        "Week 3: is evicted 10–2 over Gyselle"
+        "Week 1: Built broad early personal relationships but was left out of actual plans.",
+        "Week 2: Benefited from Ireland's secret HOH safety deal but remained outside the core.",
+        "Week 3: Nominated by Hasan as a target.",
+        "Week 3: Campaigned against The Power Couple structure but could not crack it.",
+        "Week 3: Evicted 10-2 and accurately exposed the majority on the way out."
       ],
       "gameArchetype": "early-casualty",
-      "resume": "Amberly could argue she read the house correctly, exposed the Power Couple, and campaigned against a real structure rather than chasing personal grudges.",
-      "demise": "Hasan nominated Amberly, but the Power Couple and its satellites ended her. Once Ireland saved herself, Natasha, Zella, Felipe, Misha and enough free agents protected Gyselle and made Amberly the easy vote.",
-      "demiseKind": "never-had-a-path",
-      "optimalLine": "Amberly needed to lock a counter-alliance before saying the structure out loud. The read was right; the timing left her with information and no votes.",
+      "resume": "Amberly could argue she identified the main power structure before most people were willing to say it aloud and had enough social pull to force others to account for her, but she had no comp wins or vote-control résumé.",
+      "demise": "Hasan nominated Amberly with Gyselle and Ireland. Dylon left the veto unused, Ireland won Block Buster, and the Power Couple plus attached voters protected Gyselle. Amberly’s looser social ties could not beat an organized group vote.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Amberly needed to name the power structure before she was on the block, not at the door. Once nominated beside Gyselle, she had to make keeping her the anti-majority vote immediately.",
       "ceiling": "best-realistic-finish",
       "alliances": [
         "The Plot Twist"
@@ -754,7 +741,7 @@
         "timesOnBlock": 1,
         "timesSaved": 0
       },
-      "strategicRank": 3.5
+      "strategicRank": 4.2
     },
     {
       "placement": 18,
@@ -764,22 +751,21 @@
       "votesReceived": 10,
       "popularity": 17.44,
       "juryVotes": 0,
-      "notes": "Stella’s loyalty was genuine, but she had no backup plan once the first real vote moved away from her.",
-      "story": "Stella never got the runway to build a full game. She was loyal to Harriett and connected enough to matter socially, but not enough to command votes. Ireland’s Week 2 secret HOH put Stella beside Jules and Joel, and Joel’s veto removed the most obvious third option. Zella won Block Buster, leaving Stella against Jules. Stella believed the count was closer than it was, which tells the whole story: people were kind to her but not voting for her. Tobias voting against her despite an early deal underlined how little leverage she had.",
-      "gameplayStyle": "loyal, exposed, unsupported",
+      "notes": "Stella’s loyal early bonds were not enough once the house decided she was the clean first eviction.",
+      "story": "Stella went out before the season’s real structures hardened, so there is a limit to the game case. She built a meaningful bond with Harriett and had enough trust with Tobias that his vote against her counted as a broken promise. But she did not have a backup plan when Ireland’s secret HOH put her on the block with Jules and Joel. Joel won veto, Zella went up, Zella won Block Buster, and Stella was left against Jules, who had more active campaign routes and more people willing to keep him as a game piece. The 10-3 vote shows Stella did not just narrowly miss; she badly misread how many votes had already moved. Her game was loyalty-forward, but loyalty in Week 2 needed a vote count attached.",
+      "gameplayStyle": "loyal early outsider",
       "keyMoments": [
-        "Week 1: connects with Jules and Harriett but does not enter a durable majority",
-        "Week 2: is nominated by Ireland",
-        "Week 2: forms The Pipeline with Harriett",
-        "Week 2: loses Block Buster to Zella",
-        "Week 2: is evicted 10–3 over Jules",
-        "Week 8: loses the first Battle Back round to Amberly"
+        "Week 1: Built The Pipeline bond with Harriett.",
+        "Week 2: Nominated by Ireland's secret HOH alongside Jules and Joel.",
+        "Week 2: Did not campaign enough after Zella won Block Buster.",
+        "Week 2: Evicted 10-3 after believing the vote was closer.",
+        "Week 8: Lost the first battle-back round to Amberly."
       ],
       "gameArchetype": "early-casualty",
-      "resume": "Stella’s honest case is loyalty: she built real bonds, kept faith with Harriett, and tried to argue that keeping her gave people a reliable vote. She did not have a strategic résumé beyond that.",
-      "demise": "Ireland’s nominations put Stella in danger, Joel’s veto preserved Jules as the comparison, and the house chose to keep Jules as the more useful player. The 10 votes were there before Stella realized the room had closed.",
+      "resume": "Stella had no real finale case. Her honest argument would be that she built genuine loyalty quickly, but she left before she could turn it into power.",
+      "demise": "Ireland’s Week 2 secret HOH nominated Stella, Jules and Joel. Joel won veto, Zella became the renom, Zella saved herself in Block Buster, and the house chose to keep Jules as the more useful player while Tobias and others abandoned Stella.",
       "demiseKind": "never-had-a-path",
-      "optimalLine": "Stella needed to campaign earlier and against Jules specifically, not rely on loyalty being recognized. Given how little game had formed, though, her ceiling was always low.",
+      "optimalLine": "Stella needed to campaign after the Block Buster instead of trusting the relationships she already had. Her best available pitch was that Jules was the more dangerous long-term social player.",
       "ceiling": "best-realistic-finish",
       "alliances": [
         "The Pipeline"
@@ -797,7 +783,7 @@
         "timesOnBlock": 1,
         "timesSaved": 0
       },
-      "strategicRank": 2
+      "strategicRank": 3.2
     }
   ],
   "weeks": [
@@ -2729,220 +2715,220 @@
       65.2
     ]
   },
-  "seasonNarrative": "Season 1 was defined by a simple fact: the plan held only five times and broke ten. This was not a steamroll; it was a room constantly re-deciding itself. Early power structures like The Power Couple, The Dock Pact, The Oath and The War Room looked solid until one vote exposed the cracks. Comp threats like Ireland and Dylon forced the house to spend weeks solving immediate survival problems, while social players like Misha, Jules, Tobias and Jane made those solutions possible. The jury rewarded the player who best combined both modes. Misha did not dominate every week, but she was present in enough rooms, saved by enough relationships, and clutch in enough late competitions to win 5–4.",
+  "seasonNarrative": "Season 1 was not a clean steamroll; the plan held only 5 times and broke 10. The defining strategic pattern was that every alliance became public before it became safe. The Power Couple, Dock Pact, Assembly, War Room, Oath, Drama Club and Double Edge all had moments of influence, but none survived comparison of notes for long. Competition wins mattered, especially for Ireland, Joel, Misha and Dylon, yet the season was ultimately decided by who could survive after power expired. Ireland and Dylon show the danger of being a visible comp engine without enough social trust; Felipe and Jane show the danger of having too many deals with no final ownership; Tobias shows the strength and ceiling of being a hub everyone likes but everyone can identify. The final vote distilled the whole season: Jules represented trust, relationship and social repair; Misha represented adaptive survival, clutch safety and the willingness to make the last hard cut. The jury split almost perfectly along that line, and Misha won because one more juror respected the game that kept reassembling itself around her.",
   "awards": {
     "bestStrategic": {
       "name": "Misha",
       "playerSlug": "misha",
-      "description": "Misha’s strategy was adaptable rather than linear: she moved through collapsing structures, kept herself worth saving, and cut Joel at the exact moment his résumé became fatal to her."
+      "description": "Misha gets the strategic award because her game kept surviving contact with exposure. She was implicated in major votes, targeted multiple times, and still reached the end with enough jury respect to beat a beloved finalist."
     },
     "bestSocial": {
       "name": "Jules",
       "playerSlug": "jules",
-      "description": "Jules was the season’s best pure social player, repeatedly surviving target weeks because people felt heard by him even when they were not aligned with him."
+      "description": "Jules’s social game was the cleanest pure relationship engine of the season. Four target nominations and four vote survivals is the evidence: people kept choosing him when they had the chance not to."
     },
     "bestPhysical": {
       "name": "Ireland",
       "playerSlug": "ireland",
-      "description": "Ireland’s combined HOH, veto and Block Buster run made her the clearest physical and competition force of the season.",
+      "description": "Ireland was the season’s most overwhelming physical/endurance-adjacent presence when counting HOH, veto and Block Buster output, even if the same résumé made her impossible to keep.",
       "wins": 10
     },
     "mostClutch": {
       "name": "Misha",
       "playerSlug": "misha",
-      "description": "Misha won three times under threat, including the final-four veto and the final HOH sequence that let her choose the winning endgame."
+      "description": "Misha’s late-game veto and final HOH wins came with her actual life in the game on the line. The final-four veto and finale tiebreaker are the definition of clutch."
     },
     "mostLoyal": {
       "name": "Aaron",
       "playerSlug": "aaron",
-      "description": "Aaron’s loyalty to Tobias and his core was not always optimal, but it was consistent enough that even people who cut him understood what kind of game he was trying to play."
+      "description": "Aaron’s loyalty was not always optimal, but it was consistent. He kept choosing his people even when broader social investment would have helped him more."
     },
     "bestUnderdog": {
       "name": "Jane",
       "playerSlug": "jane",
-      "description": "Jane entered late, was evicted, fought back in, and still became a real late-game player rather than a novelty returnee."
+      "description": "Jane entered late, got evicted, battled back, and still reached fifth with real relationships and a veto win. That is the season’s best underdog arc."
     },
     "biggestVillain": {
       "name": "Misha",
       "playerSlug": "misha",
-      "description": "Misha owned enough hidden votes and late cuts that the jury often had to respect her through resentment."
+      "description": "Misha was not cartoonishly villainous, but the winner’s path ran through betrayals jurors felt personally. Owning the screens at the reunion sealed the role."
     },
     "mostChaotic": {
       "name": "Ireland",
       "playerSlug": "ireland",
-      "description": "Ireland combined secret power, repeated comp wins, public feuds, and a 40% voting alignment into the most volatile game in the house."
+      "description": "Ireland’s game was constant motion: stolen HOH, repeated self-saves, blown-up promises, public confrontations, and a comp résumé that made every week about her."
     },
     "quietestThreat": {
       "name": "Felipe",
       "playerSlug": "felipe",
-      "description": "Felipe had no HOH or veto wins, but a 90% voting alignment and constant endgame deals made him far more dangerous than his résumé looked."
+      "description": "Felipe was almost never in danger and was in almost every room. The threat was quiet because it looked like listening until the final twos started colliding."
     },
     "seasonMVP": {
       "name": "Misha",
       "playerSlug": "misha",
-      "description": "Misha is the MVP because the season’s deciding arc is hers: survive the middle, win the end, and choose the opponent."
+      "description": "Misha wins MVP because she combined the winning vote, the most important late competitions, and the decisive final cut. The season’s endgame runs through her."
     },
     "mostTragic": {
       "name": "Joel",
       "playerSlug": "joel",
-      "description": "Joel was one question and one decision from the final two, then had to vote for the person who cut him."
+      "description": "Joel was one final jury-quiz tiebreaker from choosing his opponent and possibly winning. Instead, the person he needed to beat cut him one chair short."
     },
     "mostUnlucky": {
-      "name": "Jane",
-      "playerSlug": "jane",
-      "description": "Jane survived a brutal path back into the house only to be trapped at final five by a clean 2–0 vote she could not meaningfully disrupt."
+      "name": "Felipe",
+      "playerSlug": "felipe",
+      "description": "Felipe losing BB Comics to Jane by 2.25 seconds directly set up the veto chain that ended his game. A tiny margin became a jury seat."
     },
     "ironPerson": {
-      "name": "Tobias",
-      "playerSlug": "tobias",
-      "description": "Tobias lasted 15 weeks, survived five nominations, and remained socially relevant almost to the end despite being used as a pawn repeatedly."
+      "name": "Misha",
+      "playerSlug": "misha",
+      "description": "Misha lasted the full season, survived repeated danger, won multiple high-pressure comps, and still had enough stamina to take Part 1 and Part 3 of the final HOH."
     },
     "biggestMeltdown": {
-      "name": "Dylon",
-      "playerSlug": "dylon",
-      "description": "Dylon’s public exposure of The War Room and his escalating feud with Ireland turned correct reads into reasons to evict him.",
-      "episode": 9
+      "name": "Ireland",
+      "playerSlug": "ireland",
+      "description": "Ireland’s late HOH overplay and public certainty around Dylon turned the house’s fear of her into a unanimous eviction plan the very next week.",
+      "episode": 10
     },
     "playerOfSeason": {
       "gold": {
         "name": "Misha",
         "playerSlug": "misha",
-        "description": "Misha gets gold for winning with the best blend of social insulation, late comps and final decision-making."
+        "description": "Winner, six HOH/veto wins, final HOH, final cut, and the jury respect to beat Jules 5-4."
       },
       "silver": {
         "name": "Jules",
         "playerSlug": "jules",
-        "description": "Jules gets silver for a finalist game that came within one vote and had real influence across the season."
+        "description": "The strongest social game of the season and one vote away from winning, with repeated survival as the target."
       }
     },
     "heroOfSeason": {
       "gold": {
         "name": "Tobias",
         "playerSlug": "tobias",
-        "description": "Tobias became the audience favorite because even when he betrayed people, he tended to make the house feel human."
+        "description": "America’s Favorite and the houseguest most often treated with affection even by people plotting against him."
       },
       "silver": {
-        "name": "Aaron",
-        "playerSlug": "aaron",
-        "description": "Aaron’s loyalty, clutch saves and straightforward emotional game gave the season a grounded counterweight to the chaos."
+        "name": "Jules",
+        "playerSlug": "jules",
+        "description": "Jules’s care work, cooking, and loyalty-based social game made him the emotional center for much of the cast."
       }
     },
     "villainOfSeason": {
       "gold": {
         "name": "Misha",
         "playerSlug": "misha",
-        "description": "Misha’s winning game included hidden votes, strategic denials and the final Joel cut, making her the season’s most effective villain."
+        "description": "The winner owned multiple hidden votes and betrayals at the reunion and still won, making her the season’s most effective villain."
       },
       "silver": {
         "name": "Ireland",
         "playerSlug": "ireland",
-        "description": "Ireland’s public feuds, secret HOH and relentless comp safety made her the antagonist of multiple rooms."
+        "description": "Ireland’s power-heavy, confrontational style made her the house’s favorite target and antagonist through the middle game."
       }
     },
     "compBeast": {
       "gold": {
         "name": "Ireland",
         "playerSlug": "ireland",
-        "description": "Ten total safety or power wins made Ireland the season’s clear competition monster."
+        "description": "Three HOHs, four vetoes and three Block Busters made Ireland the season’s biggest total comp presence."
       },
       "silver": {
-        "name": "Misha",
-        "playerSlug": "misha",
-        "description": "Misha’s six HOH/veto wins mattered most late, when every competition directly shaped the endgame."
+        "name": "Joel",
+        "playerSlug": "joel",
+        "description": "Three HOHs and three vetoes, with key endgame wins that forced everyone to plan around him."
       }
     },
     "socialQueenKing": {
       "gold": {
         "name": "Jules",
         "playerSlug": "jules",
-        "description": "Jules used conversation as protection and reached finale night because people kept wanting him in their endgame."
+        "description": "Jules repeatedly survived target nominations because enough people still wanted him in the house."
       },
       "silver": {
-        "name": "Tobias",
-        "playerSlug": "tobias",
-        "description": "Tobias’s group reach and nomination survival show a social game that kept working even when his name was on the block."
+        "name": "Felipe",
+        "playerSlug": "felipe",
+        "description": "Felipe’s low nomination count and huge alliance reach made him the best quiet social connector."
       }
     },
     "masterStrategist": {
       "gold": {
         "name": "Misha",
         "playerSlug": "misha",
-        "description": "Misha’s strategic edge was timing: she rarely overclaimed early and took full ownership only when the game required it."
+        "description": "Misha’s strategic strength was timing: she rarely had total control, but she knew when to attach, when to cut, and when to win."
       },
       "silver": {
-        "name": "Jules",
-        "playerSlug": "jules",
-        "description": "Jules read rooms well, especially on HOH weeks, but lost points for not making the jury see enough direct ownership."
+        "name": "Tobias",
+        "playerSlug": "tobias",
+        "description": "Tobias stood in the middle of several jury evictions and kept rebuilding his structure after each betrayal."
       }
     },
     "mostBrutalExit": {
       "gold": {
         "name": "Joel",
         "playerSlug": "joel",
-        "description": "Joel lost the final HOH tiebreaker, watched Misha choose Jules, and became the last juror one decision from the prize."
+        "description": "Joel lost the final HOH tiebreaker, got cut by Misha, and became the last juror after being one decision from the final two."
       },
       "silver": {
-        "name": "Tobias",
-        "playerSlug": "tobias",
-        "description": "Tobias was evicted 1–0 by Misha after believing enough of the relationship to be hurt by the cut."
+        "name": "Nico",
+        "playerSlug": "nico",
+        "description": "Nico was blindsided 6-2, then lost the battle back to Jane immediately after becoming the first juror."
       }
     },
     "advantageKing": {
       "gold": {
         "name": "Ireland",
         "playerSlug": "ireland",
-        "description": "Ireland’s Interrogation power created a secret HOH and set the template for the season’s hidden-power paranoia."
+        "description": "Ireland’s Interrogation power stole an HOH and set the tone for the season’s secret-power paranoia."
       },
       "silver": {
         "name": "Dylon",
         "playerSlug": "dylon",
-        "description": "Dylon’s Mystery Veto saved him after the veto ceremony and changed an already-settled block."
+        "description": "Dylon’s Mystery Veto was held until it mattered and blew up a settled Week 6 block."
       }
     },
     "mostRobbedPlayer": {
       "gold": {
         "name": "Joel",
         "playerSlug": "joel",
-        "description": "Joel had a winning argument if he reached the final two, but Misha correctly cut him before the jury could reward it."
+        "description": "Joel was not twist-robbed, but he was game-robbed in the purest sense: one question from control, then cut because he could win."
       }
     },
     "ftcGame": {
       "gold": {
-        "name": "Misha",
-        "playerSlug": "misha",
-        "description": "Misha’s final tribal-style questioning was uneven, but her closing statement and ownership at the reunion gave enough jurors permission to vote for the better overall game."
+        "name": "Jules",
+        "playerSlug": "jules",
+        "description": "Jules answered the jury better on several relationship questions and converted a bitter Joel into a vote, but it was not quite enough."
       }
     },
     "mostRobbedFinalist": {
       "gold": {
         "name": "Jules",
         "playerSlug": "jules",
-        "description": "Losing 5–4 makes Jules the obvious robbed finalist: he had the social case, several jurors defending him, and still fell one vote short."
+        "description": "Jules lost 5-4 despite a finalist case many jurors openly admired. One vote flips and the season reads as a social-masterclass win."
       }
     },
     "messiestFeud": {
       "players": [
-        "Dylon",
-        "Ireland"
+        "Misha",
+        "Jane"
       ],
-      "description": "Dylon and Ireland turned promises, powers, false stories and public callouts into the season’s longest-running strategic grudge."
+      "description": "Misha and Jane’s feud kept regenerating from overheard plans, food, beds, vote suspicion and mutual distrust, long after the original causes stopped mattering."
     },
     "biggestBetrayal": {
       "betrayer": "Misha",
       "betrayed": "Joel",
       "episode": 16,
-      "description": "Misha cut Joel at final three despite his expectation that the final decision could still favor him, choosing the only opponent she could beat."
+      "description": "Misha cutting Joel at final three was the season’s decisive betrayal: personal, strategic, and directly responsible for her win."
     },
     "secondBiggestBetrayal": {
-      "betrayer": "Jane",
-      "betrayed": "Felipe",
-      "episode": 12,
-      "description": "Jane voted out Felipe after a final two, turning one of her key bonds into the vote that sent him to jury."
+      "betrayer": "Felipe",
+      "betrayed": "Nico",
+      "episode": 8,
+      "description": "Felipe voting out Nico broke the Week 1 final two and proved that even the season’s most sincere early bond had an expiration date."
     },
     "legacyMoment": {
-      "name": "Misha chooses Jules over Joel",
+      "name": "Misha cuts Joel",
       "episode": 16,
-      "description": "The season’s defining move was Misha winning the final HOH and cutting Joel, converting a near-certain losing final two into a 5–4 victory."
+      "description": "Misha winning the final HOH and choosing Jules over Joel is the moment that decided the season and reframed her entire game as intentional rather than merely survivable."
     },
     "fanFavorite": {
       "name": "Tobias",

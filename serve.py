@@ -96,6 +96,63 @@ def write_life_events(payload):
     return {'ok': True, 'wrote': ['life_events.json'], 'counts': counts}
 
 
+def write_season_ratings(payload):
+    """Merge TV ratings into seasons_database.json.
+
+    The seasons page renders that index, not the per-season documents, so a
+    rating written only into a season document never reaches the badge. The
+    index has no episode records in it and never will, so it cannot derive a
+    rating either — the simulator computes it from a saved season and posts
+    the result here.
+
+    MERGED, never rewritten. Only the `ratings` key of a matched season is
+    touched; every other field and every unmatched season is left exactly as
+    it was. A backfill that rewrote the file would silently drop any season
+    whose save the browser happened not to have.
+    """
+    ratings = payload.get('ratings')
+    if not isinstance(ratings, dict) or not ratings:
+        raise ValueError('ratings must be a non-empty object keyed by seasonId')
+    for key, r in ratings.items():
+        if not isinstance(r, dict):
+            raise ValueError('ratings[%r] is not an object' % key)
+        if not isinstance(r.get('score'), (int, float)):
+            raise ValueError('ratings[%r] has no numeric score' % key)
+        tier = r.get('tier')
+        if not isinstance(tier, dict) or not tier.get('label'):
+            raise ValueError('ratings[%r] has no tier label' % key)
+
+    path = os.path.join(ROOT, 'seasons_database.json')
+    if not os.path.exists(path):
+        raise ValueError('seasons_database.json not found')
+    with open(path, 'r', encoding='utf-8') as fh:
+        doc = json.load(fh)
+    seasons = doc.get('seasons')
+    if not isinstance(seasons, list):
+        raise ValueError('seasons_database.json has no seasons list')
+
+    matched, unmatched = [], []
+    for key, r in ratings.items():
+        hit = None
+        for row in seasons:
+            # By seasonId where there is one. A bare integer is Total Drama,
+            # permanently, so a legacy row with no seasonId matches td-N.
+            rid = row.get('seasonId') or ('td-%s' % row.get('seasonNumber'))
+            if rid == key:
+                hit = row
+                break
+        if hit is None:
+            unmatched.append(key)
+            continue
+        hit['ratings'] = r
+        matched.append(key)
+
+    with open(path, 'w', encoding='utf-8') as fh:
+        fh.write(json.dumps(doc, ensure_ascii=False, indent=2) + chr(10))
+    return {'ok': True, 'wrote': ['seasons_database.json'],
+            'rated': sorted(matched), 'unmatched': sorted(unmatched)}
+
+
 def write_character(payload):
     """Upsert roster entry, voice profile, and avatar PNG. Returns a summary dict."""
     result = {'ok': True, 'wrote': []}
@@ -229,13 +286,15 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def do_POST(self):
-        if self.path not in ('/api/character', '/api/life-events'):
+        if self.path not in ('/api/character', '/api/life-events', '/api/season-ratings'):
             return self._send_json({'ok': False, 'error': 'unknown endpoint'}, 404)
         try:
             length = int(self.headers.get('Content-Length', 0))
             payload = json.loads(self.rfile.read(length) or b'{}')
             if self.path == '/api/life-events':
                 return self._send_json(write_life_events(payload))
+            if self.path == '/api/season-ratings':
+                return self._send_json(write_season_ratings(payload))
             return self._send_json(write_character(payload))
         except ValueError as e:
             return self._send_json({'ok': False, 'error': str(e)}, 400)

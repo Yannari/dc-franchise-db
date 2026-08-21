@@ -6371,6 +6371,28 @@
     .ov-rt-demo-note.good { color: #86c8a8; }
     .ov-rt-demo-note.bad { color: #d09090; }
 
+    /* The episode-by-episode read. Folded away by default because it is long
+       and dense on purpose — a whole season, every audience, every night. */
+    .ov-rt-detail { margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface2); }
+    .ov-rt-detail > summary { cursor: pointer; padding: 8px 12px; font-size: 11px; letter-spacing: .06em; color: #8b949e; user-select: none; }
+    .ov-rt-detail > summary:hover { color: #c9d1d9; }
+    .ov-rt-detail[open] > summary { border-bottom: 1px solid var(--border); }
+    .ov-rt-scroll { overflow-x: auto; }
+    .ov-rt-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .ov-rt-table th, .ov-rt-table td { padding: 6px 8px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(139,148,158,.10); }
+    .ov-rt-table thead th { position: sticky; top: 0; background: var(--surface2); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: #6e7681; white-space: nowrap; }
+    .ov-rt-table tbody th { white-space: nowrap; font-weight: 700; color: #c9d1d9; }
+    .ov-rt-table tbody th b { font-variant-numeric: tabular-nums; }
+    .ov-rt-tw { display: block; font-style: normal; font-size: 8px; letter-spacing: .1em; color: #fbbf24; }
+    .ov-rt-overall b { font-size: 14px; font-variant-numeric: tabular-nums; color: #e6edf3; }
+    .ov-rt-overall i, .ov-rt-cell i { display: block; font-style: normal; font-size: 9px; color: #6e7681; font-variant-numeric: tabular-nums; }
+    .ov-rt-overall i.up, .ov-rt-cell.up i { color: #6ee7b7; }
+    .ov-rt-overall i.down, .ov-rt-cell.down i { color: #f87171; }
+    .ov-rt-cell { min-width: 150px; }
+    .ov-rt-cell b { font-size: 12px; font-variant-numeric: tabular-nums; color: #c9d1d9; }
+    .ov-rt-cell span { display: block; margin-top: 2px; font-size: 10px; line-height: 1.35; color: #8b949e; font-style: italic; }
+    @media(max-width:700px){ .ov-rt-cell { min-width: 120px; } }
+
     /* ── AUDIENCE PULSE (edit layer, roadmap #6) ── */
     .overview-audience header > div > span { color: var(--sg-strategy); }
     .overview-edit-list { display: flex; flex-direction: column; gap: 6px; }

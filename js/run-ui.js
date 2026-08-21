@@ -2,6 +2,12 @@
 // run-ui.js — Run tab, episode management, setup panels, twist catalog
 // ══════════════════════════════════════════════════════════════════════
 
+// The only imports in this file, and the reason they exist: main.js exposes
+// module FUNCTIONS on window, not module data. `DEMOS` is an array and
+// `DEMO_LABELS` an object, so reading them off window gave undefined and the
+// ratings section rendered its curve above an empty grid.
+import { DEMOS, DEMO_LABELS } from './ratings.js';
+
 /**
  * A dry-run switch for the export, sitting under the button that needs it.
  *
@@ -3445,6 +3451,52 @@ function _overviewRatings(state) {
 }
 
 /**
+ * Every episode, every column, and what moved each one.
+ *
+ * The curve says the shape and the four cards say where it ended up; neither
+ * answers "what did the older audience make of episode nine", which is the
+ * question somebody looking at a finished season actually has. So the whole
+ * series is written out, one row per episode, with the driving note per
+ * column — the same sentence the episode card showed on the night.
+ */
+function _ratingsTable(ratings) {
+  const weeks = ratings?.weeks || [];
+  if (!weeks.length) return '';
+  const fmt = ratings.format || 'total-drama';
+  const cell = (w, prev, key) => {
+    const v = w.demos?.[key] ?? 0;
+    const was = prev?.demos?.[key];
+    const d = was === undefined ? 0 : v - was;
+    const cls = d > 0.05 ? 'up' : d < -0.05 ? 'down' : '';
+    let note = null;
+    if (typeof demoNote === 'function') {
+      try { note = demoNote(key, w, prev, fmt); } catch { note = null; }
+    }
+    return `<td class="ov-rt-cell ${cls}"><b>${Math.round(v)}</b>`
+      + `<i>${d === 0 ? '' : `${d > 0 ? '▲' : '▼'}${Math.abs(d).toFixed(1)}`}</i>`
+      + `<span>${note ? _hubEsc(note.text) : '&mdash;'}</span></td>`;
+  };
+  const rows = weeks.map((w, i) => {
+    const prev = i > 0 ? weeks[i - 1] : null;
+    const move = prev ? w.overall - prev.overall : 0;
+    return `<tr>`
+      + `<th scope="row"><b>EP ${String(w.ep).padStart(2, '0')}</b>`
+      + `${w.twist ? '<i class="ov-rt-tw" title="A twist ran this episode">TWIST</i>' : ''}</th>`
+      + `<td class="ov-rt-overall"><b>${w.overall}</b>`
+      + `<i class="${move > 0.05 ? 'up' : move < -0.05 ? 'down' : ''}">`
+      + `${prev ? `${move > 0 ? '▲' : move < 0 ? '▼' : '—'} ${Math.abs(move).toFixed(1)}` : 'first'}</i></td>`
+      + DEMOS.map(k => cell(w, prev, k)).join('')
+      + `</tr>`;
+  }).join('');
+  return `<details class="ov-rt-detail"><summary>Episode by episode &middot; every audience</summary>
+    <div class="ov-rt-scroll"><table class="ov-rt-table">
+      <thead><tr><th scope="col">Episode</th><th scope="col">Overall</th>
+      ${DEMOS.map(k => `<th scope="col">${_hubEsc(DEMO_LABELS[k] || k)}</th>`).join('')}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div></details>`;
+}
+
+/**
  * The trajectory, as an SVG line.
  *
  * SVG rather than a row of CSS bars: this is a curve with a shape, and the
@@ -3519,6 +3571,7 @@ function renderMidseasonOverview() {
       <div class="ov-rt-demos">${model.ratings.demos.map(d => `<div class="ov-rt-demo"><div class="ov-rt-demo-top"><strong>${_hubEsc(d.label)}</strong><em class="${d.delta > 0.05 ? 'up' : d.delta < -0.05 ? 'down' : ''}">${Math.round(d.value)}</em></div>
         <div class="ov-rt-demo-bar"><i style="width:${Math.round(Math.max(0, Math.min(100, d.value)))}%"></i></div>
         <span class="ov-rt-demo-note ${d.note ? (d.noteGood ? 'good' : 'bad') : ''}">${d.note ? _hubEsc(d.note) : 'nothing moved them this week'}</span></div>`).join('')}</div>
+      ${_ratingsTable(model.ratings)}
     </section>` : ''}
     ${model.audiencePulse ? `<section class="overview-section overview-audience"><header><div><span>Audience pulse</span><h2>The edit so far</h2></div><small>Viewer perception · not game truth</small></header>
       <p class="overview-disclaimer">How the season is being cut for the audience: screen time, confessionals, and each player's running edit read. The edit can drift from what is really happening — that is the point.</p>
@@ -3616,6 +3669,11 @@ export function buildSeasonRetrospectiveModel(state = gs, cast = players) {
     allianceOutcomes,
     relationshipOutcomes,
     timeline,
+    // The Overview becomes the Retrospective on the final episode, and the
+    // ratings went with it — the one screen where a whole season's audience
+    // story is worth reading was the one screen that dropped it.
+    ratings: overview.ratings || null,
+    audiencePulse: overview.audiencePulse || null,
   };
 }
 
@@ -3665,6 +3723,16 @@ function renderSeasonRetrospective() {
     <div class="retro-two-column"><section class="overview-section"><header><div><span>Final decision</span><h2>Jury breakdown</h2></div><small>${model.voteTotal ? `${model.voteTotal} votes` : 'Challenge finale'}</small></header><div class="retro-jury">${juryHtml}</div></section><section class="overview-section"><header><div><span>Recorded</span><h2>Alliance outcomes</h2></div><small>End state</small></header><div class="retro-outcomes">${allianceHtml}</div></section></div>
     <section class="overview-section"><header><div><span>Recorded movement</span><h2>Relationships at the finish</h2></div><small>Season-long change</small></header><div class="retro-relationships">${relationshipHtml}</div></section>
     <section class="overview-section"><header><div><span>The complete trail</span><h2>Season story timeline</h2></div><small>${model.timeline.length} episodes</small></header><div class="retro-timeline">${model.timeline.map(item => `<button onclick="showTab('run');viewEpisode(${item.episode})"><b>EP ${String(item.episode).padStart(2,'0')}</b><span>${item.eliminated.map(name => _overviewPortrait(name)).join('') || (item.episode === model.timeline.at(-1)?.episode && model.winner ? _overviewPortrait(model.winner) : '')}</span><strong>${_hubEsc(item.label)}</strong><small>${item.merge ? 'MERGE · ' : ''}${_hubEsc(item.voteShape || (item.episode === model.timeline.at(-1)?.episode ? 'Finale' : 'No standard vote'))}</small></button>`).join('')}</div></section>
+    ${model.ratings ? `<section class="overview-section overview-ratings"><header><div><span>Audience pulse</span><h2>The ratings, end to end</h2></div><small>Final &middot; ${model.ratings.weeks.length} episodes</small></header>
+      <p class="overview-disclaimer">How the season went down with the country, episode by episode. Four audiences watched the same show and wanted different things from it &mdash; the tier is the back-weighted verdict across every episode, not the finale.</p>
+      <div class="ov-rt-head"><div class="ov-rt-tier tier-${_hubEsc(model.ratings.tier.key)}"><label>Season rating</label><strong>${_hubEsc(model.ratings.tier.label)}</strong><em>${model.ratings.score}</em></div>
+        <div class="ov-rt-now"><label>Final episode</label><strong>${model.ratings.latest.overall}</strong><span class="${model.ratings.trend > 0 ? 'up' : model.ratings.trend < 0 ? 'down' : ''}">${model.ratings.trend > 0 ? '▲' : model.ratings.trend < 0 ? '▼' : '—'} ${Math.abs(model.ratings.trend).toFixed(1)}</span></div></div>
+      ${_ratingsCurve(model.ratings.weeks)}
+      <div class="ov-rt-demos">${model.ratings.demos.map(d => `<div class="ov-rt-demo"><div class="ov-rt-demo-top"><strong>${_hubEsc(d.label)}</strong><em class="${d.delta > 0.05 ? 'up' : d.delta < -0.05 ? 'down' : ''}">${Math.round(d.value)}</em></div>
+        <div class="ov-rt-demo-bar"><i style="width:${Math.round(Math.max(0, Math.min(100, d.value)))}%"></i></div>
+        <span class="ov-rt-demo-note ${d.note ? (d.noteGood ? 'good' : 'bad') : ''}">${d.note ? _hubEsc(d.note) : 'nothing moved them at the end'}</span></div>`).join('')}</div>
+      ${_ratingsTable(model.ratings)}
+    </section>` : ''}
     <section class="overview-section"><header><div><span>Final placements</span><h2>Every journey</h2></div><small>${model.castSize} players</small></header><div class="retro-placement-list">${model.placements.map(row => `<div class="retro-placement ${row.winner ? 'winner' : ''}"><b>${ordinal(row.place)}</b>${_overviewPortrait(row.name)}<strong>${_hubEsc(row.name)}</strong><span>${row.winner ? 'Season winner' : row.finalist ? `${Number(model.juryVotes[row.name] || 0)} jury votes` : row.jury ? `Jury · Episode ${row.episode || '—'}` : `Out · Episode ${row.episode || '—'}`}</span></div>`).join('')}</div></section>
     <footer class="retro-next"><div><span>Season archived</span><h2>What do you want to do next?</h2></div><button onclick="startNewSeasonFromRetrospective()">Start New Season</button><button onclick="showTab('franchise')">Open All-Stars Scout</button><button onclick="openWinnerCareerFromRetrospective()">Open Winner Career</button><button onclick="showTab('franchise')">View Franchise</button></footer>
   </section>`;

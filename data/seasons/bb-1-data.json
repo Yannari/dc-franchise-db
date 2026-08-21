@@ -2936,5 +2936,97 @@
       "description": "Tobias was voted the house's favourite by the audience."
     }
   },
-  "emoji": "[AI_FILL]"
+  "emoji": "[AI_FILL]",
+  "gameHistory": [
+    {
+      "n": 1,
+      "word": "Week",
+      "title": "Opening Block",
+      "prose": "Millie won Head of Household and nominated Axel and Emmah. At the vote, Axel was evicted over Emmah by a 13-2 vote."
+    },
+    {
+      "n": 2,
+      "word": "Week",
+      "title": "Brightly's Veto",
+      "prose": "Raj won Head of Household and nominated Brightly and Zee, but Brightly won the veto. At the vote, Millie was evicted over Zee by a 9-5 vote."
+    },
+    {
+      "n": 3,
+      "word": "Week",
+      "title": "Caleb's Veto",
+      "prose": "Hicks won Head of Household and nominated Nichelle and MK, and Caleb won the veto. At the vote, Nichelle was evicted over MK by a 10-3 vote."
+    },
+    {
+      "n": 4,
+      "word": "Week",
+      "title": "Replacement Vote",
+      "prose": "Bowie won Head of Household and nominated Caleb and Chase, while Julia won the veto. At the vote, Ripper was evicted over Chase by a 10-2 vote."
+    },
+    {
+      "n": 5,
+      "word": "Week",
+      "title": "Julia and Bowie",
+      "prose": "Wayne won Head of Household and nominated Julia and Bowie. MK won the veto, but the final vote remained between Julia and Bowie. Julia was evicted over Bowie by a 7-4 vote."
+    },
+    {
+      "n": 6,
+      "word": "Week",
+      "title": "Raj's Veto",
+      "prose": "Bowie won Head of Household and nominated Scary Girl and Raj. Raj won the veto, leaving Scary Girl and MK at the vote. Scary Girl was evicted over MK by an 8-2 vote."
+    },
+    {
+      "n": 7,
+      "word": "Week",
+      "title": "Bowie's Veto",
+      "prose": "Emmah won Head of Household and nominated Hicks and Bowie. Bowie won the veto, and the vote shifted to Hicks and Chase. Chase was evicted over Hicks by a 5-4 vote."
+    },
+    {
+      "n": 8,
+      "word": "Week",
+      "title": "Brightly Versus Bowie",
+      "prose": "Caleb won Head of Household and nominated Brightly and Damien. Priya won the veto, and the final vote came down to Brightly and Bowie. Brightly was evicted over Bowie by a 5-3 vote."
+    },
+    {
+      "n": 9,
+      "word": "Week",
+      "title": "MK Versus Raj",
+      "prose": "Bowie won Head of Household and nominated Zee and Raj. Priya won the veto, and MK and Raj faced the vote. MK was evicted over Raj by a 6-1 vote."
+    },
+    {
+      "n": 10,
+      "word": "Week",
+      "title": "Priya Breaks Tie",
+      "prose": "Priya won Head of Household and nominated Bowie and Emmah. Bowie won the veto, leaving Caleb and Emmah at the vote. The vote tied 3-3, and Priya broke the tie to evict Emmah over Caleb."
+    },
+    {
+      "n": 11,
+      "word": "Week",
+      "title": "Unanimous Vote",
+      "prose": "Hicks won Head of Household and nominated Bowie and Raj. Caleb won the veto, but Bowie and Raj remained at the vote. Bowie was evicted over Raj by a unanimous 5-0 vote."
+    },
+    {
+      "n": 12,
+      "word": "Week",
+      "title": "Caleb Comes Down",
+      "prose": "Damien won Head of Household and nominated Caleb and Zee. Caleb won the veto, and the vote moved to Raj and Zee. Raj was evicted over Zee by a 3-1 vote."
+    },
+    {
+      "n": 13,
+      "word": "Week",
+      "title": "Priya Replacement",
+      "prose": "Wayne won Head of Household and nominated Hicks and Caleb. Caleb won the veto, leaving Hicks and Priya at the vote. Hicks was evicted over Priya by a 2-1 vote."
+    },
+    {
+      "n": 14,
+      "word": "Week",
+      "title": "Zee Breaks Tie",
+      "prose": "Zee won Head of Household and nominated Wayne and Priya. Caleb won the veto, and Damien and Priya faced the vote. The vote tied 1-1, and Zee broke the tie to evict Damien over Priya."
+    },
+    {
+      "n": 15,
+      "word": "Week",
+      "title": "Final Veto Vote",
+      "prose": "Priya won Head of Household and nominated Zee and Caleb. Wayne won the veto, leaving Zee and Caleb at the vote. Caleb was evicted over Zee by a 1-0 vote."
+    }
+  ]
 }

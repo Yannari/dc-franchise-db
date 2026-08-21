@@ -38,6 +38,7 @@ import { generateBBEvictionInterview } from './bb-aftermath.js';
 import { simulateBBFinale, finalCompChoices } from './bb-finale.js';
 import { generateBBFinaleText } from './text-backlog.js';
 import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
+import { updateRatings } from './ratings.js';
 import { installBBSaboteur, saboteurState } from './bb/saboteur.js';
 import { installTwinTwist, twinState, repairTwinStats } from './bb/twin-twist.js';
 import { installDuos } from './bb/duos.js';
@@ -761,7 +762,7 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
   // Same as the other two paths: the week in the writer's shape, beside the
   // transcript rather than instead of it.
   try { ep.structuredText = generateBBStructuredText(ep); } catch { ep.structuredText = ''; }
-  try { updateEditLayer(ep); } catch { /* the edit never blocks the week */ }
+  try { updateEditLayer(ep); updateRatings(ep); } catch { /* the edit never blocks the week */ }
   gs.episodeHistory ||= [];
   // ── the number the rest of the app reads ──
   //
@@ -1155,7 +1156,7 @@ export function simulateBBEpisode() {
 
   // The edit: what the audience saw of this week. Total Drama runs this at
   // every episode-complete site in episode.js; this is the house's.
-  try { updateEditLayer(ep); } catch { /* the edit never blocks the week */ }
+  try { updateEditLayer(ep); updateRatings(ep); } catch { /* the edit never blocks the week */ }
 
   gs.episodeHistory ||= [];
   // ── the number the rest of the app reads ──
@@ -2093,7 +2094,7 @@ export function runBBFinale() {
   // the size, and the model stops spending its output moving facts between two
   // arrangements — which is where it kept dropping them.
   try { ep.structuredText = generateBBStructuredText(ep); } catch { ep.structuredText = ''; }
-  try { updateEditLayer(ep); finalizeEditSeason(); } catch { /* the edit never blocks the finale */ }
+  try { updateEditLayer(ep); updateRatings(ep); finalizeEditSeason(); } catch { /* the edit never blocks the finale */ }
   gs.episodeHistory ||= [];
   // ── the number the rest of the app reads ──
   //

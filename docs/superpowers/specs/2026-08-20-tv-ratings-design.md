@@ -107,6 +107,41 @@ guessing what it meant.
 **The overall rating** is the mean of the four. Exposed alongside them, never
 instead of them.
 
+### 3b. The table is per show, not global
+
+The table above is `BASE_TASTE` — what the four groups want from ANY reality
+show. What a given show is FOR is a second layer, and it lives where every
+other per-show fact in this project lives: the registry entry in
+`js/shows.js`, beside `words` and `careerStats`. A show declares its own
+audience the same way it declares its own vocabulary.
+
+```js
+'total-drama': { …, audience: { strategy: 0.7, mess: 1.3, showmance: 1.25, twist: 1.2 } },
+'big-brother': { …, audience: { strategy: 1.3, blindside: 1.25, steamroll: 1.3, mess: 0.85 } },
+```
+
+The overlay is a multiplier per signal, applied to every demographic's weight
+for that signal. Total Drama is sold on challenges, chaos and romance, so
+strategy is background there and mess is the point. Big Brother is sold on the
+vote, so strategy amplifies and a steamroll costs far more — "the same six
+people ran the house all summer" is the defining complaint about that show
+specifically, not about reality television in general.
+
+The consequence, which is the reason to build it this way: the same week — a
+competent alliance quietly executing, no romance, no twist — rates
+respectably on Big Brother and poorly on Total Drama. That is correct, and a
+single global table cannot express it.
+
+A show with no `audience` entry uses the base table unchanged, so an
+unregistered or half-built format still rates rather than crashing — the same
+fallback `showWords` already uses. A third show (Traitors, whenever it comes)
+is one registry entry plus its own branch in `readSignals`; the taste table is
+not rewritten, per `docs/ADDING-A-SHOW.md`.
+
+And every sentence the ratings screens generate takes its words from
+`showWords(format)`. This feature writes prose about a season, which is
+exactly the surface the show-vocabulary bug class keeps reappearing on.
+
 ---
 
 ## 4. Momentum

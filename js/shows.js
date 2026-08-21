@@ -27,6 +27,15 @@ export const SHOWS = {
     // Season-detail fields this show contributes to a career, and the byShow
     // key each lands under. A show declares its own shape here rather than
     // _rebuildByShow branching on the format.
+    // WHAT THIS SHOW IS FOR, as the ratings read it. A multiplier per signal,
+    // applied on top of the four demographics' universal tastes in
+    // js/ratings.js — that table says what a Young Adult wants from reality
+    // television, this says what the show is selling.
+    //
+    // Total Drama is sold on stunts, chaos and who is kissing whom. Vote
+    // arithmetic happens, but nobody tuned in for it, so a quiet competent
+    // week rates worse here than the identical week does on Big Brother.
+    audience: { strategy: 0.7, mess: 1.3, showmance: 1.25, twist: 1.2, predictable: 1.15 },
     careerStats: [
       ['challengeWins', 'totalChallengeWins'],
       ['immunityWins', 'totalImmunityWins'],
@@ -38,6 +47,11 @@ export const SHOWS = {
     prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹',
     words: { player: 'houseguest', players: 'houseguests', round: 'Week', exit: 'evicted',
       comp: 'competition', comps: 'competition wins', compBeast: 'comp beast', compWon: 'competitions' },
+    // Big Brother is sold on the vote. Strategy is the product rather than the
+    // background, a flip is the event of the week, and the steamroll penalty
+    // is magnified because "the same six people ran the house all summer" is
+    // the defining complaint about THIS show — not about television.
+    audience: { strategy: 1.3, blindside: 1.25, steamroll: 1.3, mess: 0.85, showmance: 0.9 },
     careerStats: [
       ['challengeWins', 'totalCompWins'],
       ['bb.hohWins', 'hohWins'],

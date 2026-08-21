@@ -2150,6 +2150,14 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
 function _airWindowFor(db, format, seasonNum) {
   const rows = (db && db.seasons) || [];
   const prior = rows.find(s => s.seasonNumber === seasonNum && (s.format || DEFAULT_FORMAT) === format);
+  // An explicit choice in the season setup beats everything — including the
+  // window a previous export stamped, because changing the dropdown and
+  // re-exporting IS how you move a season on the calendar.
+  const chosen = String(seasonConfig?.airWindow || 'auto');
+  if (chosen !== 'auto' && chosen.includes('|')) {
+    const [y, slot] = chosen.split('|');
+    if (Number(y) && slot) return { airYear: Number(y), airSlot: slot };
+  }
   if (prior && prior.airYear && prior.airSlot) {
     return { airYear: prior.airYear, airSlot: prior.airSlot };
   }

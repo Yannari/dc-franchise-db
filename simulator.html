@@ -224,6 +224,15 @@
               </div>
             </div>
             <div class="form-group">
+              <label class="form-label">Airs <span class="hint">(the franchise calendar — when this season happened)</span></label>
+              <!-- Options are filled from seasons_database.json so "Auto" can say
+                   what it will actually pick. Auto continues the show's own
+                   cadence; an explicit pick wins over it at export. -->
+              <select id="cfg-air-window" class="form-input" onchange="saveConfig()">
+                <option value="auto">Auto — continues the schedule</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label class="u-check-row">
                 <input type="checkbox" id="cfg-franchise-meta" checked onchange="saveConfig()" style="width:14px;height:14px">
                 <span style="font-size:13px">Franchise history <span class="hint">(returnees carry reputation &amp; grudges)</span></span>

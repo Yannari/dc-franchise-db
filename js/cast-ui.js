@@ -927,12 +927,57 @@ function applySeasonTwistConfig(set) {
   }
 }
 
+
+/**
+ * The Airs dropdown: every quarter from two years back to three ahead of the
+ * newest season on the calendar, plus what Auto would pick — said in the
+ * option itself, because a default nobody can see is a default nobody trusts.
+ *
+ * Fetched rather than hardcoded so the range follows the franchise instead of
+ * the real-world date, and cached: renderConfig runs on every keystroke of the
+ * setup form and the calendar does not change under it.
+ */
+let _airOptionsFilled = null;
+async function _fillAirWindowOptions() {
+  if (_airOptionsFilled) return _airOptionsFilled;
+  _airOptionsFilled = (async () => {
+    const el = document.getElementById('cfg-air-window');
+    if (!el) return;
+    let seasons = [];
+    try {
+      seasons = (await fetch('seasons_database.json').then(r => r.json())).seasons || [];
+    } catch { /* no calendar, plain Auto */ }
+    const { nextWindowFor, SLOTS, airKey } = await import('./franchise-calendar.js');
+    const fmt = (typeof seasonFormat === 'function' && seasonFormat(seasonConfig)) || seasonConfig.format || 'total-drama';
+    const auto = nextWindowFor(seasons, fmt);
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const latest = Math.max(2026, ...seasons.map(s => Number(s.airYear) || 0));
+    const opts = [`<option value="auto">Auto — ${auto ? `${cap(auto.airSlot)} ${auto.airYear}` : 'continues the schedule'}</option>`];
+    const taken = new Map(seasons.filter(s => airKey(s) != null)
+      .map(s => [`${s.airYear}|${s.airSlot}`, s.title || s.seasonId]));
+    for (let y = latest - 2; y <= latest + 3; y++) {
+      for (const slot of SLOTS) {
+        const v = `${y}|${slot}`;
+        // A shared quarter is legal — two shows in one summer is the whole
+        // reason the calendar is quarters — but it is worth saying out loud.
+        opts.push(`<option value="${v}">${cap(slot)} ${y}${taken.has(v) ? ` — with ${taken.get(v)}` : ''}</option>`);
+      }
+    }
+    const keep = el.value;
+    el.innerHTML = opts.join('');
+    if (keep && [...el.options].some(o => o.value === keep)) el.value = keep;
+  })();
+  return _airOptionsFilled;
+}
+
 export function saveConfig() {
   const g = id => document.getElementById(id);
   seasonConfig = {
     name:        g('cfg-name')?.value.trim() || '',
     seasonNumber: parseInt(g('cfg-season-number')?.value) || 0,
     days:        parseInt(g('cfg-days')?.value) || 39,
+    // 'auto' (place chronologically at export, as always) or 'YYYY|slot'.
+    airWindow:   g('cfg-air-window')?.value || 'auto',
     gameMode:    seasonConfig.gameMode || 'spectator',
     teams:       parseInt(g('cfg-teams')?.value) || 2,
     mergeAt:     parseInt(g('cfg-merge')?.value) || 12,
@@ -1051,6 +1096,7 @@ export function renderConfig() {
   set('cfg-name',    seasonConfig.name || '');
   set('cfg-season-number', seasonConfig.seasonNumber || '');
   set('cfg-days',    seasonConfig.days || 39);
+  _fillAirWindowOptions().then(() => set('cfg-air-window', seasonConfig.airWindow || 'auto'));
   set('cfg-teams',   seasonConfig.teams || 2);
   set('cfg-merge',   seasonConfig.mergeAt);
   set('cfg-finale',  seasonConfig.finaleSize);

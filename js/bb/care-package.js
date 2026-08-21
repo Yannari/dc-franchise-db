@@ -25,6 +25,7 @@
 //
 // The five, in the order the show ran them.
 import { gs, seasonConfig } from '../core.js';
+import { engagement } from '../ratings.js';
 import { pStats, pronouns } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
 import { makePicker, clamp } from '../bb-comps/_shared.js';
@@ -159,7 +160,13 @@ export function runCarePackage({ week, house, hoh, rng = Math.random, forced = n
   if (!pool.length) return null;
 
   const weights = pool.map(name => ({
-    name, weight: Math.max(0.6, 3 + (gs.popularity?.[name] || 0)),
+    // HOW MANY PEOPLE ARE ACTUALLY VOTING. On a season the country is
+    // watching, the package follows popularity sharply. On one nobody is,
+    // the electorate is a handful of people and the spread flattens toward
+    // random — the favourite can simply lose. That is sampling error,
+    // which is the honest reason a badly-rated season's audience twists
+    // should be less predictable rather than merely labelled worse.
+    name, weight: Math.max(0.6, 3 + (gs.popularity?.[name] || 0) * engagement()),
   }));
   const total = weights.reduce((sum, c) => sum + c.weight, 0);
   let roll = rng() * total;
@@ -333,7 +340,13 @@ export function runTimeCapsule({ week, house, hoh, rng = Math.random,
   if (!pool.length) return null;
 
   const weights = pool.map(name => ({
-    name, weight: Math.max(0.6, 3 + (gs.popularity?.[name] || 0)),
+    // HOW MANY PEOPLE ARE ACTUALLY VOTING. On a season the country is
+    // watching, the package follows popularity sharply. On one nobody is,
+    // the electorate is a handful of people and the spread flattens toward
+    // random — the favourite can simply lose. That is sampling error,
+    // which is the honest reason a badly-rated season's audience twists
+    // should be less predictable rather than merely labelled worse.
+    name, weight: Math.max(0.6, 3 + (gs.popularity?.[name] || 0) * engagement()),
   }));
   const total = weights.reduce((sum, c) => sum + c.weight, 0);
   let roll = rng() * total;

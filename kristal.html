@@ -117,6 +117,12 @@
   .kt-clip{margin-top:14px;border:1px dashed var(--kt-hot);border-radius:10px;padding:10px 12px;
     font-size:12.5px;color:var(--kt-dim)}
   .kt-clip b{color:var(--kt-ink)}
+  .kt-aftermath{margin-top:14px;display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;
+    font-size:12px;color:var(--kt-dim);border-top:1px solid var(--kt-line);padding-top:10px}
+  .kt-aftermath b{font-size:9.5px;letter-spacing:2px;color:var(--kt-dim)}
+  .kt-aftermath em{font-style:normal;font-weight:800}
+  .kt-aftermath .up{color:#3ddc84}
+  .kt-aftermath .down{color:#ff6b6b}
   .kt-comments{margin-top:14px;border-top:1px solid var(--kt-line);padding-top:10px}
   .kt-c{display:flex;gap:9px;align-items:flex-start;margin:8px 0;font-size:13px}
   .kt-c img{width:26px;height:26px;border-radius:50%;object-fit:cover;flex:none}
@@ -173,7 +179,7 @@
 
 <script type="module" src="js/site-header.js"></script>
 <script type="module">
-import { podcastFor } from './js/kristal.js';
+import { podcastFor, PODCAST_FOLLOWERS, MENTIONED_HIT } from './js/kristal.js';
 import { episodeComments } from './js/kristal-voice.js';
 import { careersIn } from './js/records.js';
 import { socialGraph } from './js/life-resolver.js';
@@ -249,6 +255,15 @@ function transcript(ep) {
     ${ep.mentionedName && ep.tier === 'viral'
       ? `<div class="kt-clip">THE CLIP EVERYONE SHARED was about <b>${esc(ep.mentionedName)}</b>,
          who was not in the room to answer it — see the comments.</div>` : ''}
+    <!-- What the hour was worth. The same numbers the follower model applies —
+         PODCAST_FOLLOWERS by tier for the guest, MENTIONED_HIT for the subject
+         of a viral one — shown here so the economics are never a secret. -->
+    <div class="kt-aftermath">
+      <b>THE AFTERMATH</b>
+      <span>${esc(ep.guestName)} <em class="up">+${short(PODCAST_FOLLOWERS[ep.tier] || 0)} followers</em></span>
+      ${ep.mentionedName && ep.tier === 'viral'
+        ? `<span>${esc(ep.mentionedName)} <em class="down">−${Math.round(Math.abs(MENTIONED_HIT) * 1000) / 10}% of theirs</em></span>` : ''}
+    </div>
     ${comments.length ? `<div class="kt-comments">${comments.map(c =>
       `<div class="kt-c" data-rel="${c.relation}">${avatar(c.slug)}
         <span><b>${esc(c.name)}</b>${c.relation === 'subject' ? ' <i>· the subject</i>' : ''}

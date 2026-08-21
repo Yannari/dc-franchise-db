@@ -33,6 +33,7 @@
 // change". A bitter juror can be given the perfect answer and still vote the
 // other way, which is the honest version and the one the user asked for.
 import { gs, seasonConfig } from '../core.js';
+import { engagement } from '../ratings.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { juryValueProfile, juryTopValue } from '../finale.js';
@@ -1246,7 +1247,8 @@ export function runAmericasFavourite({ finalTwo = [], rng = Math.random } = {}) 
   // Weighted by popularity, floored so that somebody the audience never warmed
   // to still has a vote out there — America's Favourite is not a ranking of
   // gameplay and should not resolve like one.
-  const weights = eligible.map(n => ({ name: n, w: Math.max(0.6, (Number(pop[n]) || 0) + 6) }));
+  const eng = engagement();
+  const weights = eligible.map(n => ({ name: n, w: Math.max(0.6, (Number(pop[n]) || 0) * eng + 6) }));
   const total = weights.reduce((s, x) => s + x.w, 0);
 
   // ── an actual count ──
@@ -1258,7 +1260,11 @@ export function runAmericasFavourite({ finalTwo = [], rng = Math.random } = {}) 
   // audience, each drawn against popularity, and whoever holds the most blocks
   // wins. Few enough blocks that the second-favourite can still take it, which
   // is the upset the old roll was there to allow.
-  const BLOCKS = 25;
+  // AND THE ELECTORATE ITSELF. The blocks were already a count of how many
+  // people voted, so a season the country stopped watching simply has fewer
+  // of them — and fewer blocks is a noisier count with a likelier upset.
+  // Nothing else here changes: the same vote, run by fewer people.
+  const BLOCKS = Math.max(9, Math.min(40, Math.round(25 * eng)));
   const counts = Object.fromEntries(eligible.map(n => [n, 0]));
   for (let i = 0; i < BLOCKS; i++) {
     let roll = rng() * total;

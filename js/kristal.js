@@ -217,9 +217,11 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
     const ranked = cast
       .map(x => ({ ...x, score: storyScore(x.d, season, x.c.id) }))
       .sort((a, b) => b.score - a.score || String(a.c.name).localeCompare(b.c.name));
-    // The winner always sits down; then the loudest stories. Three chairs on a
-    // full season, two on a small one.
-    const chairs = cast.length >= 12 ? 3 : 2;
+    // The winner always sits down; then the loudest stories. Chairs scale
+    // with the cast — an eighteen-person season has more to answer for than a
+    // ten — capped at four so an invitation stays something to earn. With up
+    // to three catch-ups below, a loud gap tops out at seven episodes.
+    const chairs = Math.max(2, Math.min(4, Math.ceil(cast.length / 5)));
     const booked = [];
     const winner = ranked.find(x => x.d.placement === 1);
     if (winner) booked.push(winner);
@@ -258,7 +260,7 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
     const guests = [...new Set(inGap.map(e => e.player))]
       .filter(p => bySlug.has(p) && !booked.some(b => b.c.id === p))
       .sort((a, b) => fameOf(bySlug.get(b)) - fameOf(bySlug.get(a)))
-      .slice(0, 2);
+      .slice(0, 3);
     for (const slug of guests) {
       const c = bySlug.get(slug);
       const prof = profileOf(slug);

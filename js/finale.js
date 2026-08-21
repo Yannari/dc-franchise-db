@@ -1,5 +1,6 @@
 // js/finale.js - Finale simulation: final challenge, jury vote, fan campaign, fan vote
 import { gs, gsCheckpoints, seasonConfig, players, repairGsSets } from './core.js';
+import { engagement } from './ratings.js';
 import { _idbPut } from './savestate.js';
 import { pStats, pronouns } from './players.js';
 import { showWords } from './shows.js';
@@ -5288,7 +5289,10 @@ export function simulateFanVote(finalists) {
     const pop = gs.popularity?.[name] || 0;
     const campaignBoost = s.social * 0.3 + s.boldness * 0.2 + s.strategic * 0.1;
     const variance = Math.random() * 1.5;
-    const total = pop * 1.0 + campaignBoost + variance;
+    // The audience's opinion counts for as much as there is an audience. On
+    // a season nobody watched, popularity stops separating the finalists and
+    // the campaign plus the noise decide it instead.
+    const total = pop * engagement() + campaignBoost + variance;
     scores[name] = total;
     breakdown.push({ name, popularity: pop, campaignBoost: Math.round(campaignBoost * 10) / 10, totalScore: Math.round(total * 10) / 10 });
   });

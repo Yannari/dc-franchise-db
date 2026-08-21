@@ -459,3 +459,45 @@ describe('a finished season keeps its rating', () => {
     expect(typeof doc.ratings.score, 'the tooltip comes from this').toBe('number');
   });
 });
+
+// ── the consequence, against the real vote ────────────────────────────
+describe('a season nobody watched votes differently', () => {
+  // Not the arithmetic in the abstract — the actual America's Favourite
+  // count, run twice on identical popularity with only the season's rating
+  // changed. If this stops separating, the consequence has quietly become
+  // decorative and the ratings are a scoreboard again.
+  const favouriteWins = async (overall, trials = 300) => {
+    const { runAmericasFavourite } = await import('../js/bb/finale-night.js');
+    gs.popularity = { Ace: 9, Bee: 6, Cal: 3, Dee: 1, Eve: -2 };
+    gs.eliminated = ['Ace', 'Bee', 'Cal', 'Dee', 'Eve'];
+    gs.ratings = { weeks: [{ overall }] };
+    let seed = 4242;
+    const rng = () => ((seed = (1664525 * seed + 1013904223) >>> 0) / 0x100000000);
+    let wins = 0, ran = 0;
+    for (let i = 0; i < trials; i++) {
+      const r = runAmericasFavourite({ finalTwo: [], rng });
+      if (!r) continue;
+      ran++;
+      if (r.winner === 'Ace') wins++;
+    }
+    delete gs.ratings;
+    expect(ran, 'the vote never ran').toBeGreaterThan(0);
+    return wins / ran;
+  };
+
+  it('lets the favourite lose a vote nobody is casting', async () => {
+    const dogwater = await favouriteWins(20);
+    const iconic = await favouriteWins(90);
+    expect(iconic, `iconic ${iconic.toFixed(2)} vs dogwater ${dogwater.toFixed(2)}`)
+      .toBeGreaterThan(dogwater + 0.08);
+    // And neither end is broken: the favourite is still the favourite on a
+    // bad season, just less reliably.
+    expect(dogwater).toBeGreaterThan(0.2);
+    expect(iconic).toBeLessThan(0.99);
+  });
+
+  it('leaves a season with no ratings exactly as it was', () => {
+    delete gs.ratings;
+    expect(engagement(), 'an unrated season must vote as it always did').toBe(1);
+  });
+});

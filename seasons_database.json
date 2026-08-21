@@ -703,7 +703,40 @@
       "castPhotoPath": "assets/cast/bb-1-cast.png",
       "emoji": "",
       "airYear": 2026,
-      "airSlot": "summer"
+      "airSlot": "summer",
+      "ratings": {
+        "v": 1,
+        "score": 65.1,
+        "tier": {
+          "key": "great",
+          "label": "Great",
+          "min": 65
+        },
+        "demos": {
+          "teens": 48.4,
+          "youngAdults": 30.7,
+          "middleAged": 33.7,
+          "older": 84.5
+        },
+        "curve": [
+          50.6,
+          42.3,
+          45,
+          49.8,
+          61.7,
+          65.3,
+          70.8,
+          78,
+          71.9,
+          66,
+          67.6,
+          75.1,
+          77,
+          66.6,
+          64.8,
+          65.2
+        ]
+      }
     }
   ]
 }

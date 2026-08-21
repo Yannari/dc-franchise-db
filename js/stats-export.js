@@ -2172,6 +2172,14 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
   // Read BEFORE the filter below removes the row it comes from.
   const airWindow = _airWindowFor(db, DEFAULT_FORMAT, seasonNum);
 
+  // Same reason, same timing: the row is REBUILT from the document below, so
+  // anything the document does not carry is destroyed by a re-publish. That
+  // is how a season's tier vanished from the seasons page the moment it was
+  // published again — the badge simply stopped rendering, which looks exactly
+  // like a season nobody had rated.
+  const priorRatings = (db.seasons.find(x =>
+    x.seasonNumber === seasonNum && (x.format || DEFAULT_FORMAT) === DEFAULT_FORMAT) || {}).ratings || null;
+
   // Remove existing entry for this season (allows re-export to overwrite).
   // Matched on format too: `seasons` is keyed (format, season_number), so a
   // number-only filter would take Big Brother 1 out with Total Drama 1 and
@@ -2183,6 +2191,10 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
   const aiAwards = template.awards || {};
   const bestStr = aiAwards.bestStrategic || aiAwards.masterStrategist?.gold;
   db.seasons.push({
+    // The document carries its own rating (stats-export writes it at export
+    // time); an older document that does not keeps whatever the index already
+    // had, so re-publishing never costs a season its tier.
+    ratings: template?.ratings || rawStats?.ratings || priorRatings || undefined,
     seasonNumber: seasonNum,
     // This merge is the Total Drama path — the house has its own (see
     // mergeBigBrotherSeason). Tagged here so the season record and the season
@@ -2260,6 +2272,11 @@ export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
   const db = JSON.parse(JSON.stringify(existing || {}));
   if (!db.seasons) db.seasons = [];
   const airWindow = _airWindowFor(db, 'big-brother', seasonNum);
+  // Read before the filter, for the same reason the air window is: the row is
+  // rebuilt from the document, so a field the document does not carry does not
+  // survive a re-publish.
+  const priorRatings = (db.seasons.find(x =>
+    x.seasonNumber === seasonNum && x.format === 'big-brother') || {}).ratings || null;
 
   // Format-matched, so re-exporting Big Brother 1 leaves Total Drama 1 alone.
   db.seasons = db.seasons.filter(s =>
@@ -2275,6 +2292,7 @@ export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
     .sort((a, b) => b.wins - a.wins)[0] || null;
 
   db.seasons.push({
+    ratings: seasonDoc?.ratings || priorRatings || undefined,
     seasonNumber: seasonNum,
     format: 'big-brother',
     seasonId: seasonId('big-brother', seasonNum),

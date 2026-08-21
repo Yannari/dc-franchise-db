@@ -631,9 +631,16 @@ const SUBJECT_COMMENTS = [
 ];
 
 const LISTENER_COMMENTS = {
-  close: ['knew every word of this already and it STILL got me', 'the chair never stood a chance 🤍', 'called them right after this dropped. we talked for two hours'],
-  friend: ['ok this was actually a great listen', 'the rapid fire took me OUT', 'they sound exactly like this in real life, for the record'],
-  rival: ['a very generous retelling', 'fascinating what got left out', 'the press was the only honest minute of the hour'],
+  close: ['I knew most of this already, and it still hit differently hearing it all together.', 'Called them after this dropped. We talked for two hours.', 'This is the most honest I have heard them be about that season.'],
+  friend: ['This was genuinely a good conversation.', 'The answer after Kristal brought out the record changed how I see it.', 'They sound exactly like this when the cameras are gone, for the record.'],
+  rival: ['That is a generous version of what happened.', 'Interesting how much context is still missing.', 'The follow-up was the first time the answer became honest.'],
+};
+
+const GUEST_REPLIES = {
+  subject: ['I knew you would disagree. I am willing to have the full conversation if you are.', 'You deserved to hear this from me directly. We should talk.', 'I expected this response. I stand by what I said, but I will listen to your side.'],
+  close: ['Thank you for being there before and after the microphones.', 'You heard the version that never made the episode. Thank you for keeping me honest.'],
+  friend: ['I appreciate this. There was more I wanted to say.', 'Thank you. I was nervous about how this conversation would land.'],
+  rival: ['You are allowed to disagree. The record is there for both of us.', 'Then come on the podcast and tell the part you think I missed.'],
 };
 
 // ── the composers ───────────────────────────────────────────────────────
@@ -654,6 +661,68 @@ function answerFor(voice, style, group, key, facts, index) {
   // The first answer carries the exact archetype's worldview. Later answers
   // do not repeat it, which keeps the transcript conversational.
   return [core, index === 0 ? archetypeLine : ''].filter(Boolean).join(' ');
+}
+
+const RECEIPT_QUESTIONS = {
+  votes: r => `${r.statement} Were those votes warnings you understood, or warnings you kept surviving until you stopped listening?`,
+  challenges: r => `${r.statement} How much of your strategy depended on being able to win when you needed to?`,
+  immunity: r => `${r.statement} What changed in the way people treated you once that pattern became obvious?`,
+  idols: r => `${r.statement} Did that give you control, or did it make you feel safer than you really were?`,
+  jury: r => `${r.statement} What does that result tell you about the relationships you built?`,
+  relationships: r => `${r.statement} Which of those relationships was real beyond the game, and which one was mostly strategic?`,
+  moment: r => `Your season record says: “${r.statement}” Is that a fair summary of what happened?`,
+  note: r => `There is a season note that reads: “${r.statement}” What is the context viewers are missing?`,
+};
+
+function receiptBehavior(voice, receipt, key) {
+  const s = voice?.stats || {};
+  const options = ['own', 'explain', 'justify', 'dispute'];
+  if ((s.strategic || 5) >= 8) options.push('explain', 'explain');
+  if ((s.intuition || 5) >= 8) options.push('own');
+  if ((s.temperament || 5) <= 3) options.push('deflect', 'deflect');
+  if ((s.social || 5) >= 8) options.push('reframe', 'reframe');
+  if ((s.loyalty || 5) >= 8 && ['relationships', 'moment', 'note'].includes(receipt.type)) {
+    options.push('apologize', 'apologize');
+  }
+  if ((s.loyalty || 5) <= 3) options.push('justify');
+  return pickFrom(options, `${key}|behavior`) || 'explain';
+}
+
+function receiptAnswer(receipt, behavior) {
+  const byType = {
+    votes: 'Each vote was information about where I stood, even when I survived it.',
+    challenges: 'Those wins bought safety, but they also made it harder for anyone to overlook me.',
+    immunity: 'Safety changed the conversation around me because people had to plan for the next time I was vulnerable.',
+    idols: 'Having an idol created options, but it did not tell me which read of the room was correct.',
+    jury: 'The result reflects relationships as much as moves, and I have to take that seriously.',
+    relationships: 'Those relationships were not interchangeable, even if the record lists them together.',
+    moment: 'That moment mattered, but it was the result of several earlier decisions rather than one isolated scene.',
+    note: 'The note is accurate, but the shorter version cannot show everything that led to it.',
+  };
+  const substance = byType[receipt.type] || 'The record is accurate, but the context still matters.';
+  const lead = {
+    own: 'That is fair, and I own my part in it.',
+    explain: 'The record is right. What it cannot show by itself is how the decision developed.',
+    justify: 'I made that choice because it was the best option I believed I had at the time.',
+    dispute: 'The fact is accurate, but I disagree with the conclusion people usually draw from it.',
+    deflect: 'I think people focus on that because it is easier than talking about what everyone else was doing.',
+    reframe: 'I would describe it differently, although I understand why it is recorded that way.',
+    apologize: 'I can explain the game reason, but I also hurt someone I cared about, and I am sorry for that.',
+  }[behavior];
+  return `${lead} ${substance}`;
+}
+
+function receiptCrack(receipt, behavior) {
+  if (!['deflect', 'dispute', 'reframe'].includes(behavior)) return null;
+  const press = behavior === 'deflect'
+    ? 'That tells me what everyone else did. What responsibility belongs to you?'
+    : 'The context can change the meaning, but it cannot change the record. What part do you accept?';
+  const crack = receipt.type === 'relationships'
+    ? 'I accept that I asked people to trust me while keeping options they did not know about. That was good for my game until it became personal.'
+    : receipt.type === 'votes'
+      ? 'I accept that surviving earlier votes made me overconfident. I treated a repeated warning like proof that I could always escape it.'
+      : 'I accept that my decision helped create the outcome. Other people had agency, but I was not simply carried into it.';
+  return { press, crack };
 }
 
 /**
@@ -689,7 +758,19 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1, salt =
 
   // Continuity: the response exchange leads, because that is how Kristal
   // would open — with the clip.
-  const topics = [...ep.topics];
+  const closing = (ep.topics || []).filter(t => t.id === 'behind-the-scenes');
+  const coreTopics = (ep.topics || []).filter(t => t.id !== 'behind-the-scenes');
+  const receiptLimit = ep.tier === 'viral' ? 4 : ep.tier === 'solid' ? 3 : 2;
+  const receiptTopics = (ep.receipts || []).slice(0, receiptLimit)
+    .map(receipt => ({ id: 'the-receipt', receipt }));
+  // Interleave record and emotion. A stack of six receipts in a row reads as
+  // an audit and can crowd the rivalry out of the edited cut.
+  const topics = [];
+  for (let i = 0; i < Math.max(coreTopics.length, receiptTopics.length); i++) {
+    if (coreTopics[i]) topics.push(coreTopics[i]);
+    if (receiptTopics[i]) topics.push(receiptTopics[i]);
+  }
+  topics.push(...closing);
   if (prior) topics.unshift({ id: 'the-response', about: prior.guest, quoted: prior });
 
   const pressBudget = ep.tier === 'viral' ? 2 : 1;
@@ -702,7 +783,25 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1, salt =
     .slice(0, pressBudget).map(t => t.id));
   if (!pressOn.size && topics.length) pressOn.add(topics[0].id);
 
-  const exchanges = topics.slice(0, 4).map((t, i) => {
+  const exchangeLimit = ep.tier === 'viral' ? 9 : ep.tier === 'solid' ? 7 : 5;
+  const selectedTopics = topics.slice(0, exchangeLimit);
+  // Preserve the closing reflection when the evidence-rich middle reaches
+  // the edit limit. The final receipt is less valuable than an actual ending.
+  if (closing.length && !selectedTopics.some(t => t.id === 'behind-the-scenes')) {
+    selectedTopics[selectedTopics.length - 1] = closing[0];
+  }
+  const exchanges = selectedTopics.map((t, i) => {
+    if (t.id === 'the-receipt') {
+      const receipt = t.receipt;
+      const behavior = receiptBehavior(voice, receipt, `${K}|receipt|${i}`);
+      const follow = receiptCrack(receipt, behavior);
+      if (follow) pressed++;
+      return {
+        topic: t.id, q: (RECEIPT_QUESTIONS[receipt.type] || RECEIPT_QUESTIONS.note)(receipt),
+        a: receiptAnswer(receipt, behavior), behavior, receipt,
+        ...(follow || {}),
+      };
+    }
     const group = t.id === 'the-response' ? 'response' : groupOf(t);
     const f = { ...facts,
       about: t.about ? (facts.rivalName || t.about) : facts.rival,
@@ -746,6 +845,37 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1, salt =
   ep._lastAnswer = exchanges.length ? exchanges[exchanges.length - 1].a : null;
 
   return { coldOpen, exchanges, rapid, pressed };
+}
+
+/** Consequences are derived from the interview and never written back merely
+ *  because the page opened. Other surfaces can display or deliberately
+ *  materialize them later without making a page view alter canon. */
+export function podcastAftermath(ep) {
+  const xs = ep.exchanges || [];
+  const receipts = xs.filter(x => x.receipt);
+  const owned = xs.filter(x => ['own', 'apologize'].includes(x.behavior)).length;
+  const resisted = xs.filter(x => ['deflect', 'dispute'].includes(x.behavior)).length;
+  const explained = xs.filter(x => ['explain', 'justify', 'reframe'].includes(x.behavior)).length;
+  const credibilityScore = Math.max(-3, Math.min(6,
+    receipts.length + owned * 2 + explained - resisted * 2));
+  const credibility = credibilityScore >= 5 ? 'strengthened'
+    : credibilityScore >= 2 ? 'credible' : credibilityScore >= 0 ? 'mixed' : 'damaged';
+  const controversy = Math.max(0, Math.min(10,
+    (ep.tier === 'viral' ? 4 : ep.tier === 'solid' ? 2 : 0)
+      + resisted * 2 + (ep.mentioned ? 2 : 0) + xs.filter(x => x.press).length));
+  const apologized = xs.some(x => x.behavior === 'apologize');
+  const relationship = !ep.mentioned ? null : apologized
+    ? { with: ep.mentioned, direction: 'repair', label: 'A public apology opened the door to a private conversation.' }
+    : resisted ? { with: ep.mentioned, direction: 'worsen', label: 'The disputed account added new tension to the relationship.' }
+      : { with: ep.mentioned, direction: 'unchanged', label: 'The relationship remains unresolved.' };
+  const responseRequested = Boolean(ep.mentioned && ep.tier === 'viral'
+    && (controversy >= 6 || relationship?.direction === 'worsen'));
+  const tags = [credibility === 'strengthened' ? 'owned the record'
+    : credibility === 'damaged' ? 'story questioned' : 'account debated'];
+  if (apologized) tags.push('public apology');
+  if (responseRequested) tags.push('response requested');
+  return { credibility, credibilityScore, controversy, relationship,
+    responseRequested, receiptsTested: receipts.length, tags };
 }
 
 // Kristal's questions, kept from v1 and extended — hers were never the
@@ -799,13 +929,26 @@ export function episodeComments(ep, { ties = [], names = {} } = {}) {
       relation: 'subject', text: pickFrom(SUBJECT_COMMENTS, ep.id + '|subj') });
   }
   const ranked = ties.slice().sort((a, b) => Math.abs(b.weight) - Math.abs(a.weight));
+  const limit = ep.tier === 'viral' ? 7 : ep.tier === 'solid' ? 5 : 3;
   for (const t of ranked) {
-    if (out.length >= 3) break;
+    if (out.length >= limit) break;
     if (t.slug === ep.mentioned || t.slug === ep.guest) continue;
     const relation = t.weight >= 3 ? 'close' : t.weight > 0 ? 'friend' : 'rival';
     if (relation === 'rival' && hash(`${ep.id}|${t.slug}|skip`) % 2) continue;
     out.push({ slug: t.slug, name: names[t.slug] || t.slug, relation,
       text: pickFrom(LISTENER_COMMENTS[relation], `${ep.id}|lc|${t.slug}`) });
+  }
+  // A thread is a consequence, not decorative filler. The guest answers the
+  // subject or strongest challenge once; quieter comments remain standalone.
+  const challenged = out.find(c => c.relation === 'subject') || out.find(c => c.relation === 'rival');
+  if (challenged && ep.tier !== 'quiet') {
+    challenged.replies = [{ slug: ep.guest, name: ep.guestName, relation: 'guest',
+      text: pickFrom(GUEST_REPLIES[challenged.relation], `${ep.id}|reply|${challenged.slug}`) }];
+  }
+  const supported = out.find(c => c.relation === 'close');
+  if (supported && ep.tier === 'viral') {
+    supported.replies = [{ slug: ep.guest, name: ep.guestName, relation: 'guest',
+      text: pickFrom(GUEST_REPLIES.close, `${ep.id}|reply|close`) }];
   }
   return out;
 }

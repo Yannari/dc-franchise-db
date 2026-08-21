@@ -126,7 +126,7 @@ describe('numbers no page can disagree about', () => {
 //
 // "dont u think the episode will be repetitive ... its shallow" — v2's answer
 // is styles, presses, continuity and fact slots, and these hold each down.
-import { styleOf, voiceOf, composeEpisode, episodeComments, STYLES } from '../js/kristal-voice.js';
+import { styleOf, voiceOf, composeEpisode, episodeComments, podcastAftermath, STYLES } from '../js/kristal-voice.js';
 
 describe('the voice styles', () => {
   it('lets stats override the archetype — a villain with no temper control is a hothead first', () => {
@@ -259,6 +259,62 @@ describe('the room under an episode', () => {
     const ep = { id: 'c-probe2', tier: 'solid', guest: 'a', mentioned: null };
     const out = episodeComments(ep, { ties: [{ slug: 'a', weight: 9 }, { slug: 'b', weight: 4 }], names: {} });
     expect(out.every(c => c.slug !== 'a')).toBe(true);
+  });
+
+  it('builds a cast thread under a consequential episode', () => {
+    const ep = { id: 'thread-probe', tier: 'viral', guest: 'a', guestName: 'A',
+      mentioned: 'r', mentionedName: 'R', exchanges: [] };
+    const out = episodeComments(ep, { names: { a: 'A', r: 'R', b: 'B', c: 'C' },
+      ties: [{ slug: 'b', weight: 5 }, { slug: 'c', weight: -4 }] });
+    expect(out.length).toBeGreaterThanOrEqual(3);
+    expect(out.some(c => (c.replies || []).some(r => r.slug === 'a'))).toBe(true);
+  });
+});
+
+describe('evidence-driven interviews', () => {
+  const receiptEpisode = tier => {
+    const voice = voiceOf({ archetype: 'mastermind', stats: {
+      strategic: 9, social: 7, loyalty: 5, intuition: 8, temperament: 6,
+    } });
+    const ep = { id: `receipts-${tier}`, kind: 'debrief', tier, voice,
+      guest: 'x', guestName: 'X', mentioned: 'r', season: { format: 'big-brother', title: 'S' },
+      facts: { season: 'S', placement: '5th', votes: '7', rival: 'R', rivalName: 'R' },
+      topics: [{ id: 'the-boot' }, { id: 'the-rivalry', about: 'R' },
+        { id: 'behind-the-scenes' }],
+      receipts: [
+        { id: 'votes-1', type: 'votes', statement: 'You received 7 votes across the season.', weight: 4 },
+        { id: 'challenge-1', type: 'challenges', statement: 'You won 3 challenges.', weight: 3 },
+        { id: 'moment-1', type: 'moment', statement: 'You changed sides at the final six.', weight: 4 },
+        { id: 'jury-1', type: 'jury', statement: 'The final vote was 5-2.', weight: 4 },
+      ],
+    };
+    Object.assign(ep, composeEpisode(ep, {
+      words: { player: 'houseguest', players: 'houseguests', exit: 'evicted' },
+    }));
+    ep.aftermath = podcastAftermath(ep);
+    return ep;
+  };
+
+  it('puts published receipts into the conversation with explicit response behavior', () => {
+    const ep = receiptEpisode('viral');
+    const receipts = ep.exchanges.filter(x => x.receipt);
+    expect(receipts.length).toBeGreaterThanOrEqual(3);
+    expect(receipts.every(x => x.q.includes(x.receipt.statement))).toBe(true);
+    expect(receipts.every(x => ['own', 'explain', 'justify', 'dispute', 'deflect', 'reframe', 'apologize']
+      .includes(x.behavior))).toBe(true);
+  });
+
+  it('scales the interview with the importance of the episode', () => {
+    expect(receiptEpisode('viral').exchanges.length)
+      .toBeGreaterThan(receiptEpisode('quiet').exchanges.length);
+  });
+
+  it('derives fallout without mutating the season record', () => {
+    const ep = receiptEpisode('viral');
+    expect(ep.aftermath.receiptsTested).toBeGreaterThan(0);
+    expect(ep.aftermath.controversy).toBeGreaterThan(0);
+    expect(['strengthened', 'credible', 'mixed', 'damaged']).toContain(ep.aftermath.credibility);
+    expect(ep.aftermath.relationship?.with).toBe('r');
   });
 });
 

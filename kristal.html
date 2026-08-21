@@ -115,6 +115,11 @@
   .kt-crack{margin-top:6px;color:#ffd9ea;font-size:14px;padding-left:14px;
     border-left:2px solid var(--kt-hot);background:rgba(232,67,147,.06);border-radius:0 8px 8px 0;
     padding-top:6px;padding-bottom:6px}
+  .kt-receipt{display:inline-flex;margin-top:5px;padding:3px 7px;border-radius:999px;
+    background:rgba(240,165,0,.1);border:1px solid rgba(240,165,0,.3);color:var(--kt-gold);
+    font-size:9px;letter-spacing:1.2px;font-weight:800;text-transform:uppercase}
+  .kt-behavior{color:var(--kt-dim);font-size:9px;letter-spacing:1px;text-transform:uppercase;
+    margin-left:7px}
   .kt-rf{margin-top:6px;display:grid;grid-template-columns:1fr;gap:6px}
   .kt-rf div{display:flex;gap:10px;font-size:13px;align-items:baseline}
   .kt-rf b{color:var(--kt-dim);font-weight:600;flex:none;max-width:52%}
@@ -128,6 +133,10 @@
   .kt-aftermath em{font-style:normal;font-weight:800}
   .kt-aftermath .up{color:#3ddc84}
   .kt-aftermath .down{color:#ff6b6b}
+  .kt-consequence{flex-basis:100%;display:flex;gap:7px;flex-wrap:wrap}
+  .kt-consequence i{font-style:normal;border:1px solid var(--kt-line);border-radius:999px;
+    padding:3px 8px;color:var(--kt-ink);background:rgba(255,255,255,.03)}
+  .kt-consequence-note{flex-basis:100%;color:var(--kt-ink)}
   .kt-comments{margin-top:14px;border-top:1px solid var(--kt-line);padding-top:10px}
   .kt-c{display:flex;gap:9px;align-items:flex-start;margin:8px 0;font-size:13px}
   .kt-c img{width:26px;height:26px;border-radius:50%;object-fit:cover;flex:none}
@@ -135,6 +144,10 @@
   .kt-c i{font-style:normal;color:var(--kt-dim)}
   .kt-c[data-rel="subject"] b{color:var(--kt-hot)}
   .kt-c[data-rel="subject"]{background:rgba(232,67,147,.05);border-radius:8px;padding:6px 8px}
+  .kt-replies{margin:6px 0 2px 34px;padding-left:10px;border-left:2px solid var(--kt-line)}
+  .kt-reply{display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:12px;color:var(--kt-dim)}
+  .kt-reply img{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none}
+  .kt-reply b{color:var(--kt-hot)}
 
   .kt-empty{color:var(--kt-dim);text-align:center;padding:50px 0}
   [hidden]{display:none !important}
@@ -261,6 +274,7 @@ function transcript(ep) {
       <div class="kt-cold">${esc(ep.coldOpen)}</div></div>
     ${ep.exchanges.map((x, i) => `<div class="kt-seg">
       <span class="kt-ts">${ts.at(i)}${x.topic === 'the-response' ? ' · THE CLIP' : ''}</span>
+      ${x.receipt ? `<div><span class="kt-receipt">record · ${esc(x.receipt.type)}</span><span class="kt-behavior">${esc(x.behavior)}</span></div>` : ''}
       <div class="kt-q">${esc(x.q)}</div>
       <div class="kt-a">${esc(ep.guestName)}: &ldquo;${esc(x.a)}&rdquo;</div>
       ${x.press ? `<div class="kt-press">${esc(x.press)}</div>
@@ -280,11 +294,18 @@ function transcript(ep) {
       <span>${esc(ep.guestName)} <em class="up">+${short(PODCAST_FOLLOWERS[ep.tier] || 0)} followers</em></span>
       ${ep.mentionedName && ep.tier === 'viral'
         ? `<span>${esc(ep.mentionedName)} <em class="down">−${Math.round(Math.abs(MENTIONED_HIT) * 1000) / 10}% of theirs</em></span>` : ''}
+      ${ep.aftermath ? `<span>credibility <em>${esc(ep.aftermath.credibility)}</em></span>
+        <span>controversy <em>${esc(ep.aftermath.controversy)}/10</em></span>
+        <div class="kt-consequence">${ep.aftermath.tags.map(t => `<i>${esc(t)}</i>`).join('')}</div>
+        ${ep.aftermath.relationship ? `<div class="kt-consequence-note">${esc(ep.aftermath.relationship.label)}</div>` : ''}
+        ${ep.aftermath.responseRequested ? `<div class="kt-consequence-note"><b>${esc(ep.mentionedName || 'The subject')}</b> has grounds for a response episode.</div>` : ''}` : ''}
     </div>
     ${comments.length ? `<div class="kt-comments">${comments.map(c =>
       `<div class="kt-c" data-rel="${c.relation}">${avatar(c.slug)}
         <span><b>${esc(c.name)}</b>${c.relation === 'subject' ? ' <i>· the subject</i>' : ''}
-        <br>${esc(c.text)}</span></div>`).join('')}</div>` : ''}
+        <br>${esc(c.text)}</span></div>
+        ${(c.replies || []).length ? `<div class="kt-replies">${c.replies.map(r =>
+          `<div class="kt-reply">${avatar(r.slug)}<span><b>${esc(r.name)}</b><br>${esc(r.text)}</span></div>`).join('')}</div>` : ''}`).join('')}</div>` : ''}
   </div>`;
 }
 

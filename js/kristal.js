@@ -39,7 +39,7 @@ import { airKey, airLabel, byAirDate } from './franchise-calendar.js';
 import { significanceOf, lineFor } from './life-events.js';
 import { fameOf } from './life-resolver.js';
 import { showWords } from './shows.js';
-import { styleOf, voiceOf, composeEpisode } from './kristal-voice.js';
+import { styleOf, voiceOf, composeEpisode, podcastAftermath } from './kristal-voice.js';
 
 export const KRISTAL = { slug: 'kristal', name: 'Kristal' };
 
@@ -133,6 +133,51 @@ function factsFor(detail, season, names, careers) {
   };
 }
 
+/** Published facts Kristal can put on the table. A receipt is evidence, not
+ *  an accusation: every sentence is built from a field already in the career
+ *  record, and missing fields produce no receipt. */
+function receiptsFor(detail, season) {
+  const out = [];
+  const add = (type, statement, weight = 1, data = {}) => {
+    if (!statement) return;
+    out.push({ id: `${type}-${out.length + 1}`, type, statement, weight, ...data });
+  };
+  const votes = Number(detail.votesReceived) || 0;
+  const challenges = Number(detail.challengeWins) || 0;
+  const immunities = Number(detail.immunityWins) || 0;
+  const idols = Number(detail.idolsFound) || 0;
+  const jury = Number(detail.juryVotes) || 0;
+  if (votes) add('votes', `You received ${votes} vote${votes === 1 ? '' : 's'} across the season.`,
+    Math.min(5, 1 + votes / 3), { count: votes });
+  if (challenges) add('challenges', `You won ${challenges} challenge${challenges === 1 ? '' : 's'}.`,
+    Math.min(4, 1 + challenges / 2), { count: challenges });
+  if (immunities && immunities !== challenges) add('immunity',
+    `${immunities} of those wins gave you immunity.`, Math.min(4, 1 + immunities / 2), { count: immunities });
+  if (idols) add('idols', `You found ${idols} idol${idols === 1 ? '' : 's'}.`, 3, { count: idols });
+  if (jury) add('jury', `You received ${jury} jury vote${jury === 1 ? '' : 's'} at the end.`, 4, { count: jury });
+  if (detail.finalVote) add('jury', `The final vote was ${detail.finalVote}.`, 4,
+    { finalVote: String(detail.finalVote) });
+  const alliances = (detail.alliances || detail.unbreakableBonds || [])
+    .map(a => typeof a === 'string' ? a : a?.name || a?.label)
+    .filter(Boolean);
+  if (alliances.length) add('relationships',
+    `Your published record identifies ${alliances.slice(0, 3).join(', ')} as central to your game.`, 3,
+    { names: alliances.slice(0, 3) });
+  for (const [i, moment] of (detail.keyMoments || []).slice(0, 3).entries()) {
+    add('moment', String(moment), i ? 2 : 4, { source: 'key moment' });
+  }
+  // Notes are evidence too, but only fill a thin record; repeating a key
+  // moment as a note would make Kristal pretend she has two receipts.
+  const used = new Set(out.map(r => r.statement.toLowerCase()));
+  for (const note of (detail.notes || []).slice(0, 2)) {
+    const statement = String(note);
+    if (![...used].some(x => x.includes(statement.toLowerCase()) || statement.toLowerCase().includes(x))) {
+      add('note', statement, 1, { source: 'season note' });
+    }
+  }
+  return out.sort((a, b) => b.weight - a.weight || a.id.localeCompare(b.id)).slice(0, 6);
+}
+
 const TITLES = {
   debrief: [
     '{guest} answers for {season}',
@@ -208,6 +253,7 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
     ep.coldOpen = t.coldOpen;
     ep.exchanges = t.exchanges;
     ep.rapid = t.rapid;
+    ep.aftermath = podcastAftermath(ep);
     ep.visit = visit;
     episodes.push(ep);
   };
@@ -248,7 +294,7 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
         guest: slug, guestName: nameOf(slug),
         archetype: prof.archetype || '', style: styleOf(prof), voice: voiceOf(prof),
         facts: factsFor(guest.d, season, names, careers),
-        topics, listeners,
+        topics, receipts: receiptsFor(guest.d, season), listeners,
         // Who a viral episode lands on: the messiest topic's other party.
         mentioned: slugOf((topics.find(t => t.id === 'the-breakup')
           || topics.find(t => t.id === 'the-rivalry'))?.about) || null,
@@ -289,6 +335,8 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
         },
         topics: [{ id: 'the-life', about: null,
           line: lineFor(events[0], names, slug) }, { id: 'behind-the-scenes', about: null }],
+        receipts: receiptsFor(lastDetail,
+          seasons.find(x => x.seasonId === lastDetail.seasonId) || season),
         listeners, mentioned: slugOf(events[0]?.whom) || null,
       });
     }

@@ -180,3 +180,79 @@ describe('the article renders them', () => {
     expect(wiki).toMatch(/Object\.entries\(triviaByShow\)/);
   });
 });
+
+// ── life trivia ───────────────────────────────────────────────────────
+//
+// The most trivia-shaped facts the franchise produces lived in the life log,
+// and this file never read it. Franchise-wide on purpose — a relationship does
+// not restart when somebody changes shows — and under the same gates: zero
+// weddings in the log means the marriage facts say NOTHING.
+import { lifeTriviaFor } from '../js/player-trivia.js';
+
+describe('life trivia', () => {
+  const SEASONS = Array.from({ length: 6 }, (_, i) =>
+    ({ seasonId: `s-${i + 1}`, airYear: 2020 + i, airSlot: 'spring', title: `S${i + 1}` }));
+  const NAMES = Object.fromEntries('abcdefghijkl'.split('').map(c => [c, c.toUpperCase()]));
+  const ev = (player, kind, whom, afterSeason, extra = {}) =>
+    ({ player, kind, whom, afterSeason, seq: 1, status: 'approved', ...extra });
+
+  // Five stable couples — enough pool for a superlative — with A+B the oldest.
+  const COUPLES = ['ab', 'cd', 'ef', 'gh', 'ij'].flatMap((pair, i) =>
+    [ev(pair[0], 'dating', pair[1], `s-${i + 1}`)]);
+
+  it('crowns the longest-running couple, on both partners', () => {
+    for (const who of ['a', 'b']) {
+      const t = lifeTriviaFor(who, { lifeEvents: COUPLES, seasons: SEASONS, names: NAMES });
+      expect(t.join(' ')).toMatch(/longest-running couple in the franchise/);
+      expect(t.join(' ')).toContain('Spring 2020');
+    }
+    // And on nobody else.
+    expect(lifeTriviaFor('c', { lifeEvents: COUPLES, seasons: SEASONS, names: NAMES })
+      .join(' ')).not.toMatch(/longest-running/);
+  });
+
+  it('says nothing about a couple that has since broken up', () => {
+    const log = [...COUPLES, ev('a', 'broke-up', 'b', 's-6')];
+    expect(lifeTriviaFor('a', { lifeEvents: log, seasons: SEASONS, names: NAMES })
+      .join(' ')).not.toMatch(/longest-running/);
+  });
+
+  it('refuses the superlative when the pool is too small', () => {
+    expect(lifeTriviaFor('a', { lifeEvents: COUPLES.slice(0, 3), seasons: SEASONS, names: NAMES }))
+      .toEqual([]);
+  });
+
+  it('stays silent on marriage with no weddings in the log — the gate is the feature', () => {
+    for (const who of Object.keys(NAMES)) {
+      expect(lifeTriviaFor(who, { lifeEvents: COUPLES, seasons: SEASONS, names: NAMES })
+        .join(' ')).not.toMatch(/marr/i);
+    }
+  });
+
+  it('orders "married a castmate" by when it happened, not by name', () => {
+    const log = [...COUPLES,
+      ev('e', 'wedding', 'f', 's-3'),
+      ev('a', 'wedding', 'b', 's-5'),
+      ev('c', 'wedding', 'd', 's-6')];
+    expect(lifeTriviaFor('e', { lifeEvents: log, seasons: SEASONS, names: NAMES })
+      .join(' ')).toMatch(/first in the franchise to marry a castmate/);
+    expect(lifeTriviaFor('c', { lifeEvents: log, seasons: SEASONS, names: NAMES })
+      .join(' ')).toMatch(/fifth in the franchise to marry/);
+  });
+
+  it('names the serial dater with their history, endings included', () => {
+    const log = [
+      ev('a', 'dating', 'b', 's-1'), ev('a', 'broke-up', 'b', 's-2'),
+      ev('a', 'dating', 'c', 's-3'), ev('a', 'quietly-ended', 'c', 's-4'),
+      ev('a', 'dating', 'd', 's-5'),
+    ];
+    const t = lifeTriviaFor('a', { lifeEvents: log, seasons: SEASONS, names: NAMES }).join(' ');
+    expect(t).toMatch(/dated 3 fellow players/);
+  });
+
+  it('reads approved rows only, like every reader', () => {
+    const proposed = COUPLES.map(e => ({ ...e, status: 'proposed' }));
+    expect(lifeTriviaFor('a', { lifeEvents: proposed, seasons: SEASONS, names: NAMES }))
+      .toEqual([]);
+  });
+});

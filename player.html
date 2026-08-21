@@ -2623,7 +2623,14 @@ document.addEventListener('keydown', e => {
     // by looking at everybody — asking it one player at a time would rebuild
     // the same comparison for each of them.
     window.__playerTrivia = Object.fromEntries(['total-drama', 'big-brother'].map(f =>
-      [f, allPlayerTrivia(careersIn(playersDb, f), f)]));
+      [f, allPlayerTrivia(careersIn(playersDb, f), f, {
+        // The life log, so the trivia can say who married a castmate and who
+        // has been together longest — the most trivia-shaped facts the
+        // franchise produces, and the section never read them.
+        lifeEvents: lifeDoc.events || [],
+        seasons: seasonsDb.seasons || [],
+        names: Object.fromEntries((playersDb.players || []).map(pl => [pl.id, pl.name])),
+      })]));
     window.__lifeEvents = lifeDoc.events || [];
     // slug -> display name, so a two-person event can name the other half.
     window.__lifeNames = Object.fromEntries((playersDb.players || []).map(p => [p.id, p.name]));

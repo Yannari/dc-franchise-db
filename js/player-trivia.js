@@ -31,6 +31,9 @@
 // has no immunity idol; printing one show's words over the other is the bug
 // class this project names first.
 
+import { airKey, airLabel } from './franchise-calendar.js';
+import { stateOf } from './life-events.js';
+
 /** Minimum comparison pool before a superlative means anything. */
 const MIN_POOL = 5;
 /** Minimum qualifying set before an ordinal ("the third to…") means anything. */
@@ -138,7 +141,8 @@ function namesOf(holders, slug) {
  * `careers` is every career in this format (from records.js careersIn), which
  * is the comparison pool. `seasonsDb` supplies season order for "the Nth to…".
  */
-export function playerTriviaFor(slug, careers = [], format = 'total-drama', { seasonsDb = null } = {}) {
+export function playerTriviaFor(slug, careers = [], format = 'total-drama', opts = {}) {
+  const { seasonsDb = null } = opts;
   const me = careers.find(c => c.id === slug);
   if (!me) return [];
   const W = wordsFor(format);
@@ -252,6 +256,13 @@ export function playerTriviaFor(slug, careers = [], format = 'total-drama', { se
     }
   }
 
+  // ── what happened to them between seasons ──
+  //
+  // Folded in here so every existing caller that starts passing the log gets
+  // the facts with no second call — and callers that do not pass it lose
+  // nothing, because an empty log produces an empty list by design.
+  out.push(...lifeTriviaFor(slug, opts));
+
   // ── longevity, which needs no pool at all ──
   //
   // True regardless of how many people have played, so it is not gated: it is a
@@ -276,5 +287,129 @@ export function allPlayerTrivia(careers = [], format = 'total-drama', opts = {})
     const t = playerTriviaFor(c.id, careers, format, opts);
     if (t.length) out[c.id] = t;
   }
+  return out;
+}
+
+// ── life trivia ─────────────────────────────────────────────────────────
+//
+// The most trivia-shaped facts the project produces never appeared here: who
+// has been together longest, who married a castmate, who has dated half the
+// call sheet. They live in the life log, and this file read careers only.
+//
+// FRANCHISE-WIDE ON PURPOSE. A career is scoped to one show, but a life is
+// not — Alejandro's relationship does not restart when he walks into a
+// different house — so these facts compare across everyone in the log and say
+// "in the franchise" rather than borrowing either show's vocabulary. The same
+// sentence appears on a character's article whichever show it is scoped to,
+// which is correct: it is the same fact about the same person.
+//
+// Approved rows only, like every reader — a proposal must not change a page.
+// And the same gating philosophy as above: with no weddings in the log, the
+// marriage facts produce NOTHING, which is the correct output, not a bug.
+
+/**
+ * Life-derived trivia for one character.
+ *
+ * `lifeEvents` is the whole log; `seasons` the calendar rows (for when things
+ * happened); `names` slug -> display name.
+ */
+export function lifeTriviaFor(slug, { lifeEvents = [], seasons = [], names = {} } = {}) {
+  const out = [];
+  const approved = (lifeEvents || []).filter(e => e && e.status === 'approved');
+  if (!approved.length) return out;
+  const name = names[slug] || slug;
+  const nameOf = s => names[s] || s;
+  const seasonRank = new Map(seasons.map(s => [s.seasonId, airKey(s)]));
+  const seasonOf = id => seasons.find(s => s.seasonId === id) || null;
+  const keyOf = e => seasonRank.get(e.afterSeason) ?? null;
+  const people = [...new Set(approved.flatMap(e => [e.player, e.whom].filter(Boolean)))];
+
+  const REL = new Set(['dating', 'went-public', 'moved-in', 'engaged', 'wedding']);
+
+  // ── the longest-running couple in the franchise ──
+  //
+  // Couples are read from CURRENT state (both sides, so a dangling record can
+  // never crown a couple who are not one), and each couple's start is the
+  // earliest approved relationship event between the pair. Longest means the
+  // earliest start still standing.
+  const couples = [];
+  const seenPair = new Set();
+  for (const p of people) {
+    const st = stateOf(p, approved, { seasonRank }).relationship;
+    if (st.stage === 'single' || !st.with) continue;
+    const theirs = stateOf(st.with, approved, { seasonRank }).relationship;
+    if (theirs.with !== p) continue;
+    const key = [p, st.with].sort().join('|');
+    if (seenPair.has(key)) continue;
+    seenPair.add(key);
+    const starts = approved
+      .filter(e => REL.has(e.kind)
+        && [e.player, e.whom].includes(p) && [e.player, e.whom].includes(st.with))
+      .map(keyOf).filter(k => k != null);
+    if (!starts.length) continue;
+    couples.push({ pair: [p, st.with], start: Math.min(...starts), stage: st.stage });
+  }
+  if (couples.length >= MIN_POOL) {
+    const earliest = Math.min(...couples.map(c => c.start));
+    const holders = couples.filter(c => c.start === earliest);
+    // Same crowd rule as every superlative: a record a third of the couples
+    // share is a fact about the calendar, not about any of them.
+    if (holders.length === 1 && holders[0].pair.includes(slug)) {
+      const [c] = holders;
+      const other = c.pair.find(x => x !== slug);
+      const since = seasons.find(s => airKey(s) === c.start);
+      out.push(`${name} and ${nameOf(other)} are the longest-running couple in the franchise`
+        + `${since ? `, together since ${airLabel(since)}` : ''}.`);
+    }
+  }
+
+  // ── marriage: the ordinal and the only ──
+  //
+  // Zero weddings in the log today, so both stay silent — and start speaking
+  // the season somebody finally does it, with the count already right.
+  const weddedAt = p => {
+    const w = approved.filter(e => e.kind === 'wedding' && [e.player, e.whom].includes(p))
+      .map(keyOf).filter(k => k != null);
+    return w.length ? Math.min(...w) : null;
+  };
+  const married = people.map(p => ({ p, when: weddedAt(p) })).filter(x => x.when != null)
+    .sort((a, b) => a.when - b.when || nameOf(a.p).localeCompare(nameOf(b.p)));
+  if (married.length >= MIN_ORDINAL_POOL) {
+    const i = married.findIndex(x => x.p === slug);
+    if (i === 0) out.push(`${name} was the first in the franchise to marry a castmate.`);
+    else if (i > 0) out.push(`${name} was the ${ordinal(i + 1)} in the franchise to marry a castmate.`);
+  } else if (married.length === 1 && married[0].p === slug && people.length >= MIN_ONLY_POOL) {
+    const partner = approved.find(e => e.kind === 'wedding' && [e.player, e.whom].includes(slug));
+    const other = partner ? [partner.player, partner.whom].find(x => x && x !== slug) : null;
+    out.push(`${name}${other ? ` and ${nameOf(other)}` : ''} `
+      + `${other ? 'are the only married couple' : 'is the only one married'} in the franchise.`);
+  }
+
+  // ── children ──
+  const births = p => approved.filter(e => e.kind === 'birth' && e.player === p);
+  const mine = births(slug);
+  if (mine.length >= 2) out.push(`${name} has ${mine.length} children.`);
+  const parents = people.map(p => {
+    const b = births(p).map(keyOf).filter(k => k != null);
+    return { p, when: b.length ? Math.min(...b) : null };
+  }).filter(x => x.when != null)
+    .sort((a, b) => a.when - b.when || nameOf(a.p).localeCompare(nameOf(b.p)));
+  if (parents.length >= MIN_ORDINAL_POOL && parents[0].p === slug) {
+    out.push(`${name} was the first in the franchise to have a child.`);
+  }
+
+  // ── the serial dater ──
+  //
+  // Distinct partners across the whole log, endings included: "has dated" is
+  // history, not status. Three is where it becomes a pattern; the count needs
+  // no comparison pool because it is a fact about them alone.
+  const partners = new Set(approved
+    .filter(e => e.kind === 'dating' && [e.player, e.whom].includes(slug))
+    .map(e => [e.player, e.whom].find(x => x && x !== slug)).filter(Boolean));
+  if (partners.size >= 3) {
+    out.push(`${name} has dated ${partners.size} fellow players across the franchise`
+      + ` — ${joinList([...partners].slice(0, 3).map(nameOf))}${partners.size > 3 ? ', among others' : ''}.`);
+  }
+
   return out;
 }

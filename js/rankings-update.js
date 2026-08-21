@@ -1044,11 +1044,18 @@ function loadSeasonData(json) {
     const stats={
       juryVotes:   p.juryVotes||p.jury_votes||0,
       votesVs:     p.votesAgainst||p.votes_against||p.votesReceived||0,
-      advFound:    p.idolsFound ?? p.advFound ?? 0,   // total found
-      advPlayed:   p.advPlayed ?? 0,                  // played effectively
-      advWasted:   p.advWasted ?? 0,                  // played but wasted
-      advHeld:     p.advHeld ?? 0,                    // held & never used
-      strategicScore: p.strategicScore ?? 0,
+      /* THE ADVANTAGE COLUMNS, per show. A house does not find idols — it is
+         handed powers, plays them, lets them lapse, or ends the season still
+         holding one. Those four states are what `bb.powersWon/Played/Wasted/
+         Held` count, and reading only the Total Drama field names left all
+         four columns empty on every Big Brother season. */
+      advFound:    isHouse ? (p.bb?.powersWon ?? 0) : (p.idolsFound ?? p.advFound ?? 0),
+      advPlayed:   isHouse ? (p.bb?.powersPlayed ?? 0) : (p.advPlayed ?? 0),
+      advWasted:   isHouse ? (p.bb?.powersWasted ?? 0) : (p.advWasted ?? 0),
+      advHeld:     isHouse ? (p.bb?.powersHeld ?? 0) : (p.advHeld ?? 0),
+      /* The house writes this one under a different name — `strategicRank` —
+         so the column sat empty while the number it wanted was right there. */
+      strategicScore: p.strategicScore ?? (isHouse ? (p.strategicRank ?? 0) : 0),
       /* THE TWO COMPETITION COLUMNS, per show.
          A Big Brother placement carries its own tallies in `bb` — hohWins,
          vetoWins, timesNominated — and this read immunityWins and rewardWins,

@@ -3106,6 +3106,26 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
           timesNominated: bb.timesNominated || 0,
           timesOnBlock: bb.timesOnBlock || 0,
           timesSaved: bb.timesSaved || 0,
+          // ── THE POWERS, which nothing carried ──
+          //
+          // `gs.bb.powers` has known who held what and who spent it all
+          // season, and no export wrote any of it down. The rankings board has
+          // four columns for exactly this and every one of them filled with
+          // zero on every Big Brother season.
+          //
+          // The four states are exhaustive: won = played + wasted + held.
+          // WASTED is a power that lapsed — disposed of without ever being
+          // played — which is the honest analogue of misfiring an idol. HELD
+          // is ending the season still holding it.
+          ...(() => {
+            const mine = (gs.bb?.powers || []).filter(x => x?.holder === name);
+            return {
+              powersWon: mine.length,
+              powersPlayed: mine.filter(x => x.used).length,
+              powersWasted: mine.filter(x => !x.used && x.disposed).length,
+              powersHeld: mine.filter(x => !x.used && !x.disposed).length,
+            };
+          })(),
         },
       };
     })

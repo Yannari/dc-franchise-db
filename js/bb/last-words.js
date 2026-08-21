@@ -418,10 +418,28 @@ function speechFor(reveal, speaker, register, rng) {
     return register === 'explosion' ? pick(rng, [
       `"${names}. That's it. That's the whole house. You've been a group since week two and the rest of you are furniture!"`,
       `"Count them! ${names}! How do you think the votes keep landing the same way?"`,
-    ]) : pick(rng, [
-      `"Look at who's left. ${names} have been working together for weeks. Whoever isn't in that list — you're next."`,
-      `"There's a group in this house: ${names}. I'd start counting if I were the rest of you."`,
-    ]);
+    ]) : (() => {
+      // ── WHO IS ACTUALLY LEFT TO WARN ──
+      //
+      // "I'd start counting if I were the rest of you" was said into a final
+      // three where "the rest of you" was one person. When the room is that
+      // small, the warning has a NAME — and naming the only person who could
+      // act on it is more dangerous, not less: they just voted you out to
+      // keep somebody who may already have promised the end away.
+      const listeners = (gs.activePlayers || [])
+        .filter(n => n !== speaker && !(reveal.members || [a]).includes(n));
+      if (listeners.length === 1) {
+        const you = listeners[0];
+        return pick(rng, [
+          `"${you}. ${names} have had something for weeks. I know you know they work together — I don't think you know how far it goes."`,
+          `"This is for ${you}, because there's nobody else left to say it to: ${names} are a pair. Count the seats in the finale."`,
+        ]);
+      }
+      return pick(rng, [
+        `"Look at who's left. ${names} have been working together for weeks. Whoever isn't in that list — you're next."`,
+        `"There's a group in this house: ${names}. I'd start counting if I were the rest of you."`,
+      ]);
+    })();
   }
   if (reveal.type === 'deal') {
     return register === 'explosion' ? pick(rng, [
@@ -793,9 +811,22 @@ function checkConfrontation(week, reveal, reactions, rng, isTrue) {
     `"That is a LIE," ${accused} says, over the top of ${P(challenger).obj}. "That is a lie and you are letting somebody play you from the doorway."`,
     `${accused} is shouting now too. "I did not do that! You've known me for six weeks — six weeks — and this is what it takes?"`,
   ]);
-  const close = pick(rng, [
+  // ── STAGED WITH THE PEOPLE WHO ARE ACTUALLY IN THE ROOM ──
+  //
+  // "Two houseguests get between them" was written for a full house and kept
+  // firing at a final three, where the bystander count is one — and where
+  // naming that one is better anyway: at the end of a season the person
+  // standing between two fighters is standing between two of their own
+  // promises, and the scene should say so.
+  const bystanders = (gs.activePlayers || []).filter(n => n !== challenger && n !== accused);
+  const close = bystanders.length === 1 ? pick(rng, [
+    `${bystanders[0]} is the only other person in the house, and steps between them — which, this deep in the season, means standing between two promises ${P(bystanders[0]).sub} has personally made.`,
+    `There is nobody to break it up but ${bystanders[0]}, who tries anyway, and who both of them will need in about a week.`,
+  ]) : bystanders.length === 0 ? pick(rng, [
+    `There is nobody left to get between them. It ends when one of them runs out of things they have been saving up.`,
+  ]) : pick(rng, [
     `Somebody says the word bedtime. Nobody moves. It ends the way these end — with both of them still talking and nothing settled.`,
-    `Two houseguests get between them. The rest of the room has already started deciding who was right.`,
+    `${bystanders.length >= 2 ? 'Two houseguests get' : `${bystanders[0]} gets`} between them. The rest of the room has already started deciding who was right.`,
     `${challenger} walks out to the backyard mid-sentence. ${accused} stays exactly where ${P(accused).sub} is, which the room also notices.`,
     `It stops as suddenly as it started, and everybody in that room understands the week has changed shape.`,
   ]);

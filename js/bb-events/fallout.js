@@ -270,6 +270,28 @@ const itWasNotMe = {
         badgeText: 'SILENCE', badgeClass: 'grey' };
     }
     const p = pronouns(liar);
+    // ── THE COUNT IS PUBLIC, AND ARITHMETIC BEATS CHARM ──
+    //
+    // The vote total is read out at the eviction, so "I voted to keep them"
+    // is only TELLABLE when somebody actually did. On a unanimous vote there
+    // is no keep-vote to claim: Joel told Tobias he voted to keep Jane over a
+    // 2–0 that Tobias heard announced from the block. No trust roll survives
+    // that — the lie fails on math, not on intuition, and it fails harder,
+    // because a provable lie is a different offence from a plausible one.
+    const keepVotes = minorityVoters(week).length;
+    const against = wroteTheName(week).length;
+    if (!keepVotes) {
+      const caught = _variant([
+        `“It wasn't me.” ${mourner.name} doesn't argue. ${p.Sub} just says the count out loud — ${against} to nothing — and lets ${liar} do the rest of the arithmetic in public.`,
+        `${liar} swears ${p.sub} voted to keep ${gone}. The vote was ${against}–0. ${mourner.name} waits exactly as long as it takes ${liar} to remember that.`,
+        `“I was with ${gone} till the end.” ${mourner.name}: “The vote was unanimous.” The kitchen gets very interested in its own dishes.`,
+      ], ctx, mourner.name, liar);
+      api.suspicion(mourner.name, liar, 2.2);
+      api.addBond(mourner.name, liar, -1.6);
+      api.remember(mourner.name, liar, 'lied-to-my-face', 3, { about: gone, provable: true });
+      return { text: caught, players: [mourner.name, liar],
+        badgeText: 'THE MATH DOES NOT LIE', badgeClass: 'red' };
+    }
     // Same shape as every other claim in this house: it lands on trust, not on
     // truth. Here the truth is that they are lying, which makes being believed
     // the bad outcome for everybody except the liar.

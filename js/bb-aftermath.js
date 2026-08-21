@@ -202,6 +202,20 @@ function readOfTheRoom(evictee, week, house) {
  */
 function goodbyeMessages(evictee, house, week, rng) {
   const votedAgainst = new Set((week.ballots || []).filter(b => b.evict === evictee).map(b => b.voter));
+  // ── a goodbye can only claim the vote its author actually had ──
+  //
+  // "I fought for you. I lost." was sayable by anybody who didn't write the
+  // name down — including the Head of Household and the other nominee, who
+  // never held a ballot at all. At a final four with one voter, that meant
+  // three people claiming a fight they were constitutionally barred from
+  // joining. Vote-claiming lines now require a KEEP ballot; the people who
+  // couldn't vote get lines about the seat they were actually in.
+  const voters = new Set((week.ballots || []).map(b => b.voter));
+  const keptThem = name => voters.has(name) && !votedAgainst.has(name);
+  const blockmate = name => (week.finalNominees || []).includes(name)
+    && (week.finalNominees || []).includes(evictee) && name !== evictee;
+  const vetoRewrote = !!week.vetoWinner
+    && JSON.stringify(week.initialNominees || []) !== JSON.stringify(week.finalNominees || []);
   // The show curates. Thirteen goodbye messages is a table read, not a
   // segment: the broadcast plays the ones with something in them — the
   // organiser, the friend who did it anyway, the people who actually
@@ -335,12 +349,23 @@ function goodbyeMessages(evictee, house, week, rng) {
     );
 
     const warm = [
-      `"I fought for you. I lost. I'm sorry — genuinely, I'm sorry."`,
       `"This house is going to be a lot worse without you in it, and I mean that."`,
-      `"I kept my word. For whatever it's worth in here, I kept it."`,
       `"You made this house feel less like a set. I'm going to miss that more than I can say on camera."`,
       `"Watch my season for me. Yell at the screen when I do something stupid. You'll know when."`,
     ];
+    if (keptThem(name)) warm.push(
+      `"I fought for you. I lost. I'm sorry — genuinely, I'm sorry."`,
+      `"I kept my word. For whatever it's worth in here, I kept it."`,
+    );
+    if (blockmate(name)) warm.push(
+      `"I was in the other chair. I couldn't fight for you — we needed the same vote, and it could only save one of us. I hate that it saved me."`,
+      `"No ballot, no say — just the seat next to yours. I'm sorry it was you, and I can't even pretend I'm sorry it wasn't me. You'd see through that."`,
+    );
+    if (name === week.hoh) warm.push(
+      vetoRewrote
+        ? `"This is not the week I built. The veto came down and it stopped being mine. I want you to know the version with my name on it looked different."`
+        : `"I set the week up and then I had to sit on my hands while the house finished it. That is the worst seat in the building when it's someone you like."`,
+    );
     if (allied) warm.push(
       `"I voted with you, for you, and against the room, and I'd do it again tomorrow with worse numbers."`,
       `"Whatever this alliance did or didn't do, you never once made me doubt where you were. That is rarer in here than winning anything."`,
@@ -367,8 +392,10 @@ function goodbyeMessages(evictee, house, week, rng) {
       `"We barely spoke and I still spent half my week thinking about what you were doing. Take that as the compliment it is."`,
     );
     if (enemy) polite.push(
-      `"I didn't vote for you to go, which I suspect surprises you as much as it surprises me."`,
       `"We were never going to be friends. I'd still rather have played against you than most of the people left in here."`,
+    );
+    if (enemy && keptThem(name)) polite.push(
+      `"I didn't vote for you to go, which I suspect surprises you as much as it surprises me."`,
     );
     if (arch === 'floater' || arch === 'goat') polite.push(
       `"I've been quiet in here. You were one of about three people who talked to me like that wasn't a problem."`,
@@ -428,6 +455,11 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
   // that misremembers how long its own guest was inside breaks the whole
   // illusion in one sentence.
   const weeksIn = Math.max(1, week.num || 1);
+  // How many ballots there actually were. Late-season evictions are decided
+  // by one or two people, and an interview that rails about "the whole house"
+  // over a 1–0 vote has not watched its own show.
+  const voteCount = (week.ballots || []).length;
+  const soleVoter = voteCount === 1 ? week.ballots[0]?.voter : null;
   const timeIn = weeksIn === 1 ? 'seven days' : weeksIn === 2 ? 'two weeks' : `${weeksIn} weeks`;
 
   const questions = [];
@@ -440,7 +472,11 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
     ],
     defiant: [
       `"Blindsided, yes. Beaten? For tonight. Those are different things."`,
-      `"They needed the whole house to do it and half of them still could not look at me. I can live with that."`,
+      voteCount === 1
+        ? `"One vote. ${soleVoter || 'One person'} got to do alone what the whole house spent a season failing to do. I hope it felt heavy."`
+        : voteCount === 2
+          ? `"Two votes in the room, and both of them knew exactly who I was. That is a different kind of door than the house showing you out."`
+          : `"They needed the whole house to do it and half of them still could not look at me. I can live with that."`,
       `"I hope they enjoy the quiet. I was the only interesting problem they had."`,
     ],
     social: [
@@ -487,6 +523,35 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
       firstAnswers[voice] || firstAnswers.guarded)
       .replace('{time}', timeIn),
   });
+
+  // A 1–0 eviction is not a mystery to unpick; it is one relationship read
+  // wrong, and the interview should sit in that instead of the usual
+  // who-ran-the-house sweep.
+  if (voteCount === 1 && soleVoter) {
+    questions.push({
+      q: style === 'warm'
+        ? `"It came down to one vote. ${soleVoter}'s. Did you know where it was going?"`
+        : style === 'incisive'
+          ? `"One ballot in the box, and it was ${soleVoter}'s. Where did you think it was going?"`
+          : style === 'playful'
+            ? `"The maths at the end is brutal — one voter, one vote, ${soleVoter}. Any idea which way it was headed?"`
+            : `"It was one vote — ${soleVoter}'s. Did you know where it was going?"`,
+      a: pickLayeredAnswer(rng,
+        statFlavoredLines(evictee, 'reaction', { blindsided }),
+        voice === 'analytical'
+          ? [`"I thought I did. I had ${soleVoter} read down to the sentence, and the sentence was wrong."`,
+            `"I knew it was ${soleVoter}'s decision by Tuesday. I spent the rest of the week convincing myself I had already made it for ${pronouns(soleVoter).obj}."`]
+          : voice === 'volatile'
+            ? [`"I thought I did. Apparently not."`,
+              `"${soleVoter} looked me in the eye an hour before the vote. So no. No, I did not."`]
+            : voice === 'sincere'
+              ? [`"I believed I did. Not because of the game — because of who I thought we were in there. That is the part that stings."`,
+                `"I thought I knew ${soleVoter}. One vote is a very efficient way to find out."`]
+              : [`"I thought I did. Apparently not."`,
+                `"Everything that week ran through ${soleVoter}, and I still called it wrong. That one is mine."`]),
+      loaded: true,
+    });
+  }
 
   const blameBase = read.correct
     ? [
@@ -550,7 +615,7 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
 
   const identityAnswers = {
     analytical: [`"People saw the plans. They did not see how often I abandoned a better one because the room was not ready."`, `"That I was not cold. I was precise. There is a difference, even if it looks identical on television."`],
-    defiant: [`"They thought being loud meant being careless. I knew exactly whose nerves I was touching."`, `"They understood me perfectly. That is why it took all of them."`],
+    defiant: [`"They thought being loud meant being careless. I knew exactly whose nerves I was touching."`, voteCount <= 2 ? `"They understood me perfectly. That is why they waited until there was almost nobody left to ask."` : `"They understood me perfectly. That is why it took all of them."`],
     social: [`"They thought the relationships were decoration. They were the game I was playing."`, `"That listening was strategy. I learned more over coffee than most people learned in meetings."`],
     volatile: [`"That every reaction was random. Some of them were extremely well earned."`, `"They kept calling me emotional when what they meant was inconveniently honest."`],
     underdog: [`"They mistook needing help for having no agency. I was still choosing every hand I took."`, `"That surviving is a move when the whole house has agreed you are supposed to disappear."`],

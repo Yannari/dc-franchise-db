@@ -5040,8 +5040,19 @@ export function generateBBSummaryText(ep) {
         if ((act.automatic || []).length) {
           ln('');
           ln('  THE DRAW');
-          (act.automatic || []).filter(Boolean).forEach((n, i) => ln(
-            `    ${n} plays automatically — ${i === 0 ? 'Head of Household' : 'nominated'}.`));
+          // Small houses have no bag: at four or six, everybody IS the field,
+          // and captioning the bystander "nominated" put a person on a block
+          // they were never on. Roles come from the act when it has them;
+          // position order is only trusted on old saves that don't.
+          if (act.everybodyPlays) {
+            ln(`    ${(act.automatic || []).filter(Boolean).length} houseguests left — everybody plays. Nothing to draw for.`);
+          } else {
+            const hohName = ep.hoh || act.hoh || null;
+            (act.automatic || []).filter(Boolean).forEach((n, i) => ln(
+              `    ${n} plays automatically — ${act.blockAtDraw
+                ? (n === hohName ? 'Head of Household' : 'nominated')
+                : (i === 0 ? 'Head of Household' : 'nominated')}.`));
+          }
           (act.draw || []).forEach(d => {
             if (!d) return;
             ln(d.chip === 'choice'

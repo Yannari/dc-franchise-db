@@ -22,7 +22,7 @@ import { juryOpensAt } from '../bb/jury.js';
 import {
   pStats, bond, perceived, hidden, band, bondFactor, closestTo, furthestFrom,
   trusts, dislikes, sharesAlliance, alliancesOf, grudge, remembers, wasPromised,
-  suspicionOf, targetOf, isHunting, huntedBy, threat, biggestThreat, willScheme, deFactoAllies,
+  suspicionOf, targetOf, targetsOf, isHunting, huntedBy, threat, biggestThreat, willScheme, deFactoAllies,
   isNice, isVillainous, archetype, trustOf, obligationOf, respectOf, dangerOf,
   resentmentOf, beatsInvolving, spotlightOrder, actFacts,
 } from './_read.js';
@@ -91,9 +91,25 @@ function _brokenPromise(house, ctx) {
 
 function _safetyPair(house, ctx) {
   if (!ctx?.hoh) return null;
-  const other = _others(house, ctx.hoh).filter(n => !_nominees(ctx).includes(n))
-    .sort((a, b) => threat(b) - threat(a))[0];
-  return other ? { hoh: ctx.hoh, other } : null;
+  // ── THE PLAN IS PART OF THE PICK ──
+  //
+  // This chose the biggest non-nominated threat, blind — which is exactly who
+  // the HOH is most likely to be PLANNING to nominate, so Joel shook hands on
+  // "your name stays out of the box" and put Jules in the box the same week,
+  // with nothing in the story owning the contradiction.
+  //
+  // Now the plan decides the shape. An HOH who would not scheme does not make
+  // promises their own plan already breaks — they offer the deal to the
+  // biggest threat they are NOT coming for. A schemer offered the same pair
+  // makes the deal anyway, as a LIE the audience is told about, and the
+  // nomination lands on it later with a debt attached.
+  const planned = targetsOf(ctx.hoh);
+  const pool = _others(house, ctx.hoh).filter(n => !_nominees(ctx).includes(n))
+    .sort((a, b) => threat(b) - threat(a));
+  const marked = pool.find(n => planned.includes(n));
+  if (marked && willScheme(ctx.hoh)) return { hoh: ctx.hoh, other: marked, fake: true };
+  const clean = pool.find(n => !planned.includes(n));
+  return clean ? { hoh: ctx.hoh, other: clean, fake: false } : null;
 }
 
 /**
@@ -278,9 +294,40 @@ const safetyDeal = {
     return _w(band(4 + threat(pair.other) * 0.5), ctx);
   },
   fire(house, ctx, api) {
-    const { hoh, other } = _safetyPair(house, ctx);
+    const { hoh, other, fake } = _safetyPair(house, ctx);
     const p = pronouns(other);
-    const honest = !willScheme(hoh);
+    const honest = !fake && !willScheme(hoh);
+    // ── THE FAKE DEAL, TOLD AS ONE ──
+    //
+    // The audience is in on it — that is the whole pleasure of the scene — and
+    // whether the MARK is depends on the same arithmetic as every other read
+    // in this house: what they think of the HOH, against their own intuition.
+    // High bond and low intuition shakes the hand smiling; the reverse takes
+    // the deal knowing exactly what it is worth.
+    if (fake) {
+      const ph = pronouns(hoh);
+      const fooled = perceived(other, hoh) + (pStats(hoh).social - 5) * 0.2
+        - pStats(other).intuition * 0.25 > -0.5;
+      const text = fooled ? _variant([
+        `${hoh} tells ${other}, “You keep my name out of next week, and I keep yours out of the box.” They shake on it. ${hoh} already has ${other}'s name at the top of ${ph.posAdj} list, and nothing in ${ph.posAdj} face says so.`,
+        `${other} leaves the HOH room with a deal and a good feeling. ${hoh} watches the door close and goes back to planning ${other}'s nomination.`,
+        `The handshake is warm, the terms are clear, and exactly one of them intends to keep any of it.`,
+      ], ctx, hoh, other) : _variant([
+        `${hoh} offers safety. ${other} takes the deal, thanks ${ph.obj} — and starts packing a mental bag on the way downstairs. A promise from ${hoh} this week is a weather report, not a contract.`,
+        `${other} shakes the hand, holds the eye contact a beat too long, and both of them understand the deal for what it is: a receipt to wave later.`,
+        `“Sure,” ${other} says, “deal.” ${p.Sub} has counted the room. ${p.Sub} knows whose name is actually in ${hoh}'s head. Saying no would only move the date up.`,
+      ], ctx, hoh, other);
+      api.sideDeal?.(hoh, other, 'safety', { genuine: false, reason: 'one week of safety' });
+      // The debt: when the nomination lands, this memory is what the fallout
+      // reads — a PROVABLE broken promise, not a vibe.
+      api.remember(other, hoh, 'promise', 3, { promise: 'one week of safety', fake: true });
+      if (!fooled) api.suspicion(other, hoh, 1.4);
+      else api.addBond(other, hoh, 0.6);
+      api.popDelta?.(hoh, -0.5);
+      return { text, players: [hoh, other],
+        badgeText: fooled ? 'A LIE, SHAKEN ON' : 'BOTH KNOW BETTER',
+        badgeClass: 'red' };
+    }
     const text = _variant([
       `In the HOH room, ${other} offers one quiet week: no nomination now, no retaliation if ${other} wins next. ${hoh} repeats the terms before shaking on it.`,
       `${other} asks ${hoh} directly whether ${other} is going up. ${hoh} says no—if ${other} leaves ${hoh} alone next week. ${other} agrees before the offer can change.`,

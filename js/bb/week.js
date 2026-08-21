@@ -4335,6 +4335,12 @@ export function simulateBBWeek(options = {}) {
       // The stranger who took one of the drawn seats, so the draw screen can
       // show the swap it was silently not showing.
       guest: vetoDraw.guest || null,
+      // Who was on the block WHEN THE FIELD WAS SET, and whether the bag ever
+      // came out. At four or six houseguests everybody plays automatically —
+      // and without these two fields the renderers had to guess roles from
+      // position, which is how a final-four bystander got captioned
+      // "nominated" on the draw screen.
+      everybodyPlays: !!vetoDraw.everybodyPlays, blockAtDraw: [...nominees],
       automatic: vetoDraw.automatic }, { nominees: [...nominees], vetoWinner });
     // After addBeats, which ASSIGNS socialBeats rather than merging. The
     // alumnus's run and their goodbye go here, on the screen that shows the

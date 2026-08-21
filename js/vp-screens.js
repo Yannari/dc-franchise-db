@@ -17311,7 +17311,9 @@ export function rpBuildBBVetoDraw(ep) {
           ${who
             ? `${_bbAvatar(who, 46)}<b>${_bbEsc(who)}</b>
                <i>${who === guest?.name ? 'does not live here'
-                 : auto ? (who === hoh ? 'HOH' : 'nominated') : 'drawn'}</i>`
+                 : auto ? (who === hoh ? 'HOH'
+                   : (act?.blockAtDraw ? act.blockAtDraw.includes(who) : true) ? 'nominated'
+                     : 'everybody plays') : 'drawn'}</i>`
             : `<span class="bbvs-empty">?</span><i>in the bag</i>`}
         </div>`;
       }).join('')}

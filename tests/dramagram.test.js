@@ -600,6 +600,23 @@ describe('how many people were watching', () => {
       .toBeGreaterThan(total(18));
   });
 
+  it('makes a win on a season nobody watched worth less than one everybody did', () => {
+    // Reach was excluded from the placement bonus at first, on the principle
+    // that winning is winning. Measured, that put every winner within six
+    // percent of every other — 134k on a Dogwater season against 142k on an
+    // Iconic one — so the tier meant nothing to the people a season is
+    // actually remembered by. It half-applies now, the way the edit already
+    // did, and for the same reason from the other side: the achievement is
+    // constant, the audience for it is not.
+    const champ = career('ace', [{ seasonId: 's-1', placement: 1 }]);
+    const won = score => followersOf('ace', {
+      careers: [champ], seasons: seasonsRated(score), events: [] });
+    expect(won(92), 'the tier does not reach a winner').toBeGreaterThan(won(18) * 1.2);
+    // but never enough to make a Dogwater win worth less than a mid-pack
+    // finish on the best season on the shelf — winning still dominates.
+    expect(won(18)).toBeGreaterThan(total(92));
+  });
+
   it('leaves a season with no rating paying exactly what it always paid', () => {
     expect(total(null)).toBe(total(undefined));
     // and lands between the two extremes rather than at one of them

@@ -205,7 +205,17 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
       if (bonus) {
         // The achievement is real however the edit went — a hated winner is
         // still a winner — so the edit only half-applies to the placement.
-        const add = Math.round(bonus * (edit == null ? 1 : (1 + editFactor) / 2));
+        //
+        // Reach applies the same way, and for the same reason read from the
+        // other side: the achievement is constant but the audience for it is
+        // not. Winning a season nobody watched makes you genuinely less famous
+        // than winning one everybody did. Excluding the bonus entirely put
+        // every winner within six percent of every other — 134k on a Dogwater
+        // season against 142k on an Iconic one — which made the tier
+        // meaningless for exactly the people a season is remembered by.
+        const add = Math.round(bonus
+          * (edit == null ? 1 : (1 + editFactor) / 2)
+          * ((1 + reach) / 2));
         n += add;
         steps.push({ season, why: place === 1 ? 'won' : place === 2 ? 'runner-up' : 'finalist', delta: add });
       }

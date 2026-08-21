@@ -2961,10 +2961,33 @@ export async function exportAndFillBigBrotherSeason(onStatus) {
  * finalists are returned in the order given and the caller may reorder.
  */
 function _bbPlacements(weeks, finalists) {
-  const evictionOrder = weeks.map(w => w.evicted).filter(Boolean);
-  const total = evictionOrder.length + finalists.length;
+  // ── SOMEBODY WHO COMES BACK IS EVICTED TWICE ──
+  //
+  // This counted eviction EVENTS and numbered down from their total, so a
+  // houseguest who returned consumed two places and occupied one: their first
+  // exit was overwritten by their second, the abandoned number became a
+  // permanent hole, and everybody evicted before them was pushed a place
+  // further down.
+  //
+  // Measured on the first season with a return in it: fifteen evictions,
+  // fourteen people, a cast of seventeen numbered one to EIGHTEEN with no
+  // thirteenth place -- and the first boot listed as eighteenth in a
+  // seventeen-player season.
+  //
+  // Only the LAST exit places you. Coming back and lasting six more weeks is
+  // not a worse result than going out the first time.
+  const order = [];
+  weeks.map(w => w.evicted).filter(Boolean).forEach(name => {
+    const at = order.indexOf(name);
+    if (at >= 0) order.splice(at, 1);
+    order.push(name);
+  });
+  // A finalist cannot also hold an eviction slot -- a returnee who made the
+  // final three would otherwise be counted in both halves.
+  const dense = order.filter(name => !finalists.includes(name));
+  const total = dense.length + finalists.length;
   const placement = {};
-  evictionOrder.forEach((name, i) => { placement[name] = total - i; });
+  dense.forEach((name, i) => { placement[name] = total - i; });
   finalists.forEach((name, i) => { placement[name] = i + 1; });
   return placement;
 }

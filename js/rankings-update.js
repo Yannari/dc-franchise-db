@@ -708,12 +708,25 @@ function buildPreview() {
     // Build breakdown string
     const castAvg = Math.round(castSize/3);
     const parts   = [];
-    if (row.immWins)    parts.push('Imm:+' + (row.immWins*0.8).toFixed(1));
-    if (row.rewWins)    parts.push('Rew:+' + (row.rewWins*0.3).toFixed(1));
-    if (row.advFound)   parts.push('AdvFound:+' + (row.advFound*0.4).toFixed(1));
-    if (row.advPlayed)  parts.push('AdvPlay:+' + (row.advPlayed*1.2).toFixed(1));
-    if (row.advWasted)  parts.push('AdvWasted:\u2212' + (row.advWasted*1.2).toFixed(1));
-    if (row.advHeld && !isFinalist) parts.push('AdvHeld:\u2212' + (row.advHeld*1.8).toFixed(1));
+    // ── THE BREAKDOWN HAS TO USE THE NUMBERS THE SCORE USED ──
+    //
+    // These labels and weights were hardcoded Total Drama while the scorer
+    // read the show's rubric. A house printed 'Imm:+1.6' for two Heads of
+    // Household (2 x 0.8) against a score that had actually counted 1.2
+    // (2 x 0.6), and called a veto a reward at a third of its real weight.
+    // A breakdown that does not add up to its own total is worse than none:
+    // it is a receipt for a different purchase.
+    const _mrub = _ruRubric();
+    const _adv = _mrub.adv || {};
+    if (row.immWins)    parts.push(_mrub.comp1.label + ':+' + (row.immWins*_mrub.comp1.weight).toFixed(1));
+    if (row.rewWins)    parts.push(_mrub.comp2.label + ':+' + (row.rewWins*_mrub.comp2.weight).toFixed(1));
+    if (row.comp3Wins && _mrub.comp3) {
+      parts.push(_mrub.comp3.label + ':+' + (row.comp3Wins*_mrub.comp3.weight).toFixed(1));
+    }
+    if (row.advFound)   parts.push((_adv.found || 'AdvFound') + ':+' + (row.advFound*0.4).toFixed(1));
+    if (row.advPlayed)  parts.push((_adv.played || 'AdvPlay') + ':+' + (row.advPlayed*1.2).toFixed(1));
+    if (row.advWasted)  parts.push((_adv.wasted || 'AdvWasted') + ':\u2212' + (row.advWasted*1.2).toFixed(1));
+    if (row.advHeld && !isFinalist) parts.push((_adv.held || 'AdvHeld') + ':\u2212' + (row.advHeld*1.8).toFixed(1));
     if (row.strategicScore) parts.push('Strat:+' + (row.strategicScore*0.12).toFixed(1));
     if (row.alliances)   parts.push('Allies:+' + (Math.min(row.alliances,4)*0.5).toFixed(1));
     if (row.fanFav)     parts.push('FanFav:+2.0');

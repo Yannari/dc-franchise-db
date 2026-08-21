@@ -82,11 +82,16 @@ export const FOLLOWERS = {
   // survives the season by years — which is the whole premise of the life
   // layer.
   //
-  // It scales the EXPOSURE only, never the placement bonus. Winning is winning
-  // whoever was watching; the prize does not shrink because the season
-  // underperformed. Seasons with no rating pay exactly what they always did.
-  reachFloor: 0.65,
-  reachCeiling: 1.5,
+  // It scales the exposure AND the placement bonus, and the bonus was the
+  // correction. Excluding it on the principle that winning is winning put
+  // every winner within six percent of every other — 134k on a Dogwater
+  // season against 142k on an Iconic one — so the tier meant nothing to
+  // exactly the people a season is remembered by. Winners now run 101k to
+  // 171k across the scale.
+  //
+  // Seasons with no rating pay exactly what they always did: 1 throughout.
+  reachFloor: 0.6,
+  reachCeiling: 1.32,
   floor: 800,                   // nobody ends at zero; the account still exists
 };
 
@@ -213,9 +218,14 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
         // every winner within six percent of every other — 134k on a Dogwater
         // season against 142k on an Iconic one — which made the tier
         // meaningless for exactly the people a season is remembered by.
+        // The EDIT half-applies; REACH applies in full. They are different
+        // kinds of fact. The edit is a judgement — a hated winner is still a
+        // winner, so being disliked cannot take the win off you. Reach is a
+        // headcount, and a headcount does not half-count: if a third as many
+        // people saw you win, a third as many people know you won.
         const add = Math.round(bonus
           * (edit == null ? 1 : (1 + editFactor) / 2)
-          * ((1 + reach) / 2));
+          * reach);
         n += add;
         steps.push({ season, why: place === 1 ? 'won' : place === 2 ? 'runner-up' : 'finalist', delta: add });
       }

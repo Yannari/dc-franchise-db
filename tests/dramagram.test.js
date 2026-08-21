@@ -611,7 +611,11 @@ describe('how many people were watching', () => {
     const champ = career('ace', [{ seasonId: 's-1', placement: 1 }]);
     const won = score => followersOf('ace', {
       careers: [champ], seasons: seasonsRated(score), events: [] });
-    expect(won(92), 'the tier does not reach a winner').toBeGreaterThan(won(18) * 1.2);
+    // Asked for and calibrated to roughly 100k at the bottom of the scale and
+    // 170k at the top, so the band is asserted rather than just the ordering.
+    expect(won(92), 'the tier does not reach a winner').toBeGreaterThan(won(18) * 1.5);
+    expect(won(18), 'the bottom of the scale drifted').toBeLessThan(115000);
+    expect(won(92), 'the top of the scale drifted').toBeGreaterThan(160000);
     // but never enough to make a Dogwater win worth less than a mid-pack
     // finish on the best season on the shelf — winning still dominates.
     expect(won(18)).toBeGreaterThan(total(92));

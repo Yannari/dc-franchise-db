@@ -628,3 +628,34 @@ describe('how many people were watching', () => {
     expect(total(null)).toBeLessThan(total(100));
   });
 });
+
+describe('the audience prize', () => {
+  // Tobias won the fan-favourite vote on a season he finished fourth in, and
+  // left it with eighteen thousand followers -- a debut payment and nothing
+  // else, because fourth place earns no placement bonus and the award was not
+  // in the model at all. The single most popular person on television that
+  // summer was paid as an also-ran.
+  const seasonWith = ff => [{ seasonId: 's-1', seasonNumber: 1, airYear: 2020, airSlot: 'spring',
+    awards: ff ? { fanFavorite: { name: 'Ace', playerSlug: 'ace' } } : {} }];
+  const fourth = career('ace', [{ seasonId: 's-1', placement: 4 }]);
+  const total = ff => followersOf('ace', { careers: [fourth], seasons: seasonWith(ff), events: [] });
+
+  it('pays the audience favourite for being the audience favourite', () => {
+    expect(total(true)).toBeGreaterThan(total(false) * 3);
+  });
+
+  it('is worth more than losing a jury vote', () => {
+    // Second place is the jury saying you nearly won a game. Fan favourite is
+    // the country saying they liked you most, which is what a following is
+    // actually made of.
+    const runnerUp = career('bee', [{ seasonId: 's-1', placement: 2 }]);
+    const ru = followersOf('bee', { careers: [runnerUp], seasons: seasonWith(false), events: [] });
+    expect(total(true)).toBeGreaterThan(ru);
+  });
+
+  it('pays nobody else', () => {
+    const other = career('zed', [{ seasonId: 's-1', placement: 4 }]);
+    const paid = followersOf('zed', { careers: [other], seasons: seasonWith(true), events: [] });
+    expect(paid).toBe(total(false));
+  });
+});

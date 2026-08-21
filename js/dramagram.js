@@ -32,6 +32,15 @@ export const FOLLOWERS = {
   win: 120000,                  // winning is the cliff
   runnerUp: 38000,
   finalist: 16000,
+  // ── the audience prize ──
+  //
+  // Worth more than the runner-up bonus, and that is not a mistake. Second
+  // place is the jury saying you nearly won a game; fan favourite is the
+  // COUNTRY saying they liked you most, which is the same thing a following
+  // is made of. A fourth-place finisher who won it left the season with a
+  // debut payment and nothing else -- eighteen thousand followers for being
+  // the single most popular person on television that summer.
+  fanFavourite: 45000,
   // A life event is worth something to the extent anybody noticed it.
   perEvent: { minor: 400, notable: 3500, major: 22000 },
   // ── what a reputation event does to the number ──
@@ -229,6 +238,21 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
         n += add;
         steps.push({ season, why: place === 1 ? 'won' : place === 2 ? 'runner-up' : 'finalist', delta: add });
       }
+      // ── the audience prize ──
+      //
+      // Scaled by REACH but not by the edit. Reach is how many people were
+      // watching, which matters. The edit is how the audience took them --
+      // and winning the audience vote already IS that verdict, so applying it
+      // again would pay the same fact twice.
+      const ff = season?.awards?.fanFavorite;
+      const ffSlug = ff?.playerSlug
+        || (ff?.name ? String(ff.name).toLowerCase().replace(/[^a-z0-9]+/g, '-') : null);
+      if (ffSlug && ffSlug === slug) {
+        const add = Math.round(FOLLOWERS.fanFavourite * reach);
+        n += add;
+        steps.push({ season, why: 'fan favourite', delta: add });
+      }
+
       // The bottom fifth of a cast: the season actively cost them followers,
       // proportionally, like every loss in this model.
       if (edit != null && edit < 0.2) {

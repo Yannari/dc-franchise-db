@@ -23,7 +23,7 @@ import { seedJurorReads, sentimentAdjustment } from './bb/jury-sentiment.js';
 import { runJuryQuestioning, runReunion, runClosingStatements, runAmericasFavourite } from './bb/finale-night.js';
 import { seatedJurors } from './bb/jury.js';
 import { rememberStrategy } from './strategy-memory.js';
-import { simulateJuryVote, projectJuryVotes } from './finale.js';
+import { simulateJuryVote } from './finale.js';
 import { runBBCompetition } from './bb/comps.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
 import { generateBBFinaleHouse } from './bb/finale-house.js';
@@ -102,6 +102,61 @@ function finalPitches({ hoh, options, margins, honoured, betrayal, week }) {
 const houseNow = () => [...(gs.activePlayers || [])];
 
 const finalePick = (rng, lines) => lines[Math.floor(rng() * lines.length)];
+
+
+/**
+ * The count the final Head of Household does in their OWN head.
+ *
+ * This replaces a projectJuryVotes call that read the Total Drama jury store,
+ * which Big Brother only fills AFTER this decision — so the "who can I beat"
+ * reading returned an empty object, every margin was zero, keeping a promise
+ * never appeared to cost anything, and a final-two deal was honoured in twenty
+ * seasons out of twenty. The one spot the whole season aims at was being
+ * decided by a function looking at an empty bench.
+ *
+ * It is deliberately NOT a fixed version of that projection. The real vote
+ * runs on things no houseguest can see — jury-house blowups, sentiment
+ * adjustments, per-juror private reads — and handing those to the HOH would
+ * be an oracle wearing a bandana. This count uses only what a player in that
+ * chair actually has:
+ *
+ *   - friendships they watched form (bonds between jurors and finalists were
+ *     lived in front of them);
+ *   - the memory wall (competition wins and survived evictions are public);
+ *   - dirt that went PUBLIC — broken deals count only for jurors they were
+ *     exposed to, private grudges stay invisible;
+ *   - the rulebook: whoever they cut is the last juror, and arrives bitter
+ *     at the person who cut them;
+ *   - and a blur over the whole thing scaled by their own intuition, because
+ *     a bad reader of people does this math confidently and wrong.
+ *
+ * Returns { margin, count } — margin is believed votes for the HOH minus
+ * believed votes against, over the jury that would exist if `other` sits
+ * beside them (so the third houseguest is counted as the juror they become).
+ */
+function hohJuryCount(hoh, other, thirdWheel, rng = Math.random) {
+  const bench = [...new Set([...seatedJurors(), thirdWheel].filter(n => n && n !== hoh && n !== other))];
+  if (!bench.length) return { margin: 0, count: {} };
+  const stats = n => gs.bb?.stats?.[n] || {};
+  const resume = n => (stats(n).hohWins || 0) + (stats(n).vetoWins || 0)
+    + (stats(n).blockBusterWins || 0) + Math.min(3, (stats(n).timesOnTheBlock || 0)) * 0.3;
+  const publicDirt = (finalist, juror) => (gs.sideDeals || [])
+    .filter(d => d.broken && d.brokenBy === finalist
+      && ((d.exposedTo || []).includes(juror) || (d.players || []).includes(juror))).length;
+  const blur = (1 - Math.min(1, (pStats(hoh).intuition || 5) / 10)) * 1.6;
+  const count = { [hoh]: 0, [other]: 0 };
+  for (const juror of bench) {
+    let lean = (getBond(juror, hoh) - getBond(juror, other)) * 0.55
+      + (resume(hoh) - resume(other)) * 0.35
+      + (publicDirt(other, juror) - publicDirt(hoh, juror)) * 0.9;
+    // The juror this cut creates. Every real player prices this in: the last
+    // seat on the bench is filled by the person you personally sent to it.
+    if (juror === thirdWheel) lean -= 1.8;
+    lean += (rng() - 0.5) * 2 * blur;
+    count[lean >= 0 ? hoh : other]++;
+  }
+  return { margin: count[hoh] - count[other], count };
+}
 
 /** Turn the ordinary eviction interview shell into the much rawer final-three exit. */
 function finalThreeInterview(base, { cut, finalHoh, kept, betrayal, honoured }, rng) {
@@ -479,16 +534,14 @@ export function simulateBBFinale(rng = Math.random) {
     let projected = null;
     try {
       const projections = options.map(other => {
-        const proj = projectJuryVotes([finalHoh, other]);
-        const mine = proj?.votes?.[finalHoh] ?? 0;
-        const theirs = proj?.votes?.[other] ?? 0;
-        return { other, margin: mine - theirs };
+        const third = options.find(n => n !== other) || null;
+        return { other, margin: hohJuryCount(finalHoh, other, third, rng).margin };
       }).sort((a, b) => b.margin - a.margin);
       projections.forEach(p => margins.set(p.other, p.margin));
       projected = projections[0].other;
       keep = projected;
     } catch {
-      // No projection available: take the person the house liked least.
+      // No read available: take the person the house liked least.
       keep = options.sort((a, b) =>
         house.reduce((s, n) => s + getBond(n, a), 0) - house.reduce((s, n) => s + getBond(n, b), 0))[0];
       projected = keep;

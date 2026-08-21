@@ -58,954 +58,6 @@
     },
     {
       "player": "alejandro",
-      "kind": "bought-home",
-      "afterSeason": "td-14",
-      "seq": 1,
-      "status": "approved"
-    },
-    {
-      "player": "alejandro",
-      "kind": "hobby",
-      "afterSeason": "td-14",
-      "seq": 2,
-      "status": "approved"
-    },
-    {
-      "player": "amy",
-      "kind": "pet",
-      "afterSeason": "td-14",
-      "seq": 3,
-      "status": "approved"
-    },
-    {
-      "player": "brick",
-      "kind": "quit-job",
-      "afterSeason": "td-14",
-      "seq": 4,
-      "status": "approved"
-    },
-    {
-      "player": "bridgette",
-      "kind": "new-job",
-      "afterSeason": "td-14",
-      "seq": 5,
-      "status": "approved"
-    },
-    {
-      "player": "bridgette",
-      "kind": "learned",
-      "afterSeason": "td-14",
-      "seq": 6,
-      "status": "approved"
-    },
-    {
-      "player": "cody",
-      "kind": "dating",
-      "afterSeason": "td-14",
-      "seq": 7,
-      "status": "approved",
-      "whom": "carrie"
-    },
-    {
-      "player": "cody",
-      "kind": "haircut",
-      "afterSeason": "td-14",
-      "seq": 8,
-      "status": "approved"
-    },
-    {
-      "player": "dave",
-      "kind": "flatmates",
-      "afterSeason": "td-14",
-      "seq": 9,
-      "status": "approved",
-      "whom": "alejandro"
-    },
-    {
-      "player": "dawn",
-      "kind": "laid-off",
-      "afterSeason": "td-14",
-      "seq": 10,
-      "status": "approved"
-    },
-    {
-      "player": "dawn",
-      "kind": "pet",
-      "afterSeason": "td-14",
-      "seq": 11,
-      "status": "approved"
-    },
-    {
-      "player": "dj",
-      "kind": "production-fallout",
-      "afterSeason": "td-14",
-      "seq": 12,
-      "status": "approved"
-    },
-    {
-      "player": "duncan",
-      "kind": "moved-city",
-      "afterSeason": "td-14",
-      "seq": 13,
-      "status": "approved"
-    },
-    {
-      "player": "duncan",
-      "kind": "travelling",
-      "afterSeason": "td-14",
-      "seq": 14,
-      "status": "approved"
-    },
-    {
-      "player": "dwayne",
-      "kind": "new-job",
-      "afterSeason": "td-14",
-      "seq": 15,
-      "status": "approved"
-    },
-    {
-      "player": "emma",
-      "kind": "pet",
-      "afterSeason": "td-14",
-      "seq": 16,
-      "status": "approved"
-    },
-    {
-      "player": "ennui",
-      "kind": "promoted",
-      "afterSeason": "td-14",
-      "seq": 17,
-      "status": "approved"
-    },
-    {
-      "player": "eva",
-      "kind": "tattoo",
-      "afterSeason": "td-14",
-      "seq": 18,
-      "status": "approved"
-    },
-    {
-      "player": "ezekiel",
-      "kind": "enrolled",
-      "afterSeason": "td-14",
-      "seq": 19,
-      "status": "approved"
-    },
-    {
-      "player": "ezekiel",
-      "kind": "new-job",
-      "afterSeason": "td-14",
-      "seq": 20,
-      "status": "approved"
-    },
-    {
-      "player": "geoff",
-      "kind": "new-job",
-      "afterSeason": "td-14",
-      "seq": 21,
-      "status": "approved"
-    },
-    {
-      "player": "geoff",
-      "kind": "tattoo",
-      "afterSeason": "td-14",
-      "seq": 22,
-      "status": "approved"
-    },
-    {
-      "player": "geoff",
-      "kind": "forgiven",
-      "afterSeason": "td-14",
-      "seq": 23,
-      "status": "approved"
-    },
-    {
-      "player": "gwen",
-      "kind": "bought-home",
-      "afterSeason": "td-14",
-      "seq": 24,
-      "status": "approved"
-    },
-    {
-      "player": "gwen",
-      "kind": "flatmates",
-      "afterSeason": "td-14",
-      "seq": 25,
-      "status": "approved",
-      "whom": "zoey"
-    },
-    {
-      "player": "harold",
-      "kind": "laid-off",
-      "afterSeason": "td-14",
-      "seq": 26,
-      "status": "approved"
-    },
-    {
-      "player": "izzy",
-      "kind": "hobby",
-      "afterSeason": "td-14",
-      "seq": 27,
-      "status": "approved"
-    },
-    {
-      "player": "jay",
-      "kind": "dating",
-      "afterSeason": "td-14",
-      "seq": 28,
-      "status": "approved",
-      "whom": "kitty"
-    },
-    {
-      "player": "jay",
-      "kind": "big-purchase",
-      "afterSeason": "td-14",
-      "seq": 29,
-      "status": "approved"
-    },
-    {
-      "player": "jo",
-      "kind": "year-off",
-      "afterSeason": "td-14",
-      "seq": 30,
-      "status": "approved"
-    },
-    {
-      "player": "josee",
-      "kind": "new-job",
-      "afterSeason": "td-14",
-      "seq": 31,
-      "status": "approved"
-    },
-    {
-      "player": "junior",
-      "kind": "pet",
-      "afterSeason": "td-14",
-      "seq": 32,
-      "status": "approved"
-    },
-    {
-      "player": "justin",
-      "kind": "tattoo",
-      "afterSeason": "td-14",
-      "seq": 33,
-      "status": "approved"
-    },
-    {
-      "player": "kelly",
-      "kind": "dating",
-      "afterSeason": "td-14",
-      "seq": 34,
-      "status": "approved",
-      "whom": "ryan"
-    },
-    {
-      "player": "leonard",
-      "kind": "promoted",
-      "afterSeason": "td-14",
-      "seq": 35,
-      "status": "approved"
-    },
-    {
-      "player": "lightning",
-      "kind": "hobby",
-      "afterSeason": "td-14",
-      "seq": 36,
-      "status": "approved"
-    },
-    {
-      "player": "lindsay",
-      "kind": "moved-city",
-      "afterSeason": "td-14",
-      "seq": 37,
-      "status": "approved"
-    },
-    {
-      "player": "lindsay",
-      "kind": "interview",
-      "afterSeason": "td-14",
-      "seq": 38,
-      "status": "approved"
-    },
-    {
-      "player": "lindsay",
-      "kind": "cancelled",
-      "afterSeason": "td-14",
-      "seq": 39,
-      "status": "approved"
-    },
-    {
-      "player": "mary",
-      "kind": "moved",
-      "afterSeason": "td-14",
-      "seq": 40,
-      "status": "approved"
-    },
-    {
-      "player": "max",
-      "kind": "year-off",
-      "afterSeason": "td-14",
-      "seq": 41,
-      "status": "approved"
-    },
-    {
-      "player": "mickey",
-      "kind": "tattoo",
-      "afterSeason": "td-14",
-      "seq": 42,
-      "status": "approved"
-    },
-    {
-      "player": "noah",
-      "kind": "enrolled",
-      "afterSeason": "td-14",
-      "seq": 43,
-      "status": "approved"
-    },
-    {
-      "player": "owen",
-      "kind": "dating",
-      "afterSeason": "td-14",
-      "seq": 44,
-      "status": "approved",
-      "whom": "leshawna"
-    },
-    {
-      "player": "owen",
-      "kind": "enrolled",
-      "afterSeason": "td-14",
-      "seq": 45,
-      "status": "approved"
-    },
-    {
-      "player": "owen",
-      "kind": "tattoo",
-      "afterSeason": "td-14",
-      "seq": 46,
-      "status": "approved"
-    },
-    {
-      "player": "sadie",
-      "kind": "bought-home",
-      "afterSeason": "td-14",
-      "seq": 47,
-      "status": "approved"
-    },
-    {
-      "player": "sam",
-      "kind": "bought-home",
-      "afterSeason": "td-14",
-      "seq": 48,
-      "status": "approved"
-    },
-    {
-      "player": "samey",
-      "kind": "bankruptcy",
-      "afterSeason": "td-14",
-      "seq": 49,
-      "status": "approved"
-    },
-    {
-      "player": "scarlett",
-      "kind": "year-off",
-      "afterSeason": "td-14",
-      "seq": 50,
-      "status": "approved"
-    },
-    {
-      "player": "shawn",
-      "kind": "bought-home",
-      "afterSeason": "td-14",
-      "seq": 51,
-      "status": "approved"
-    },
-    {
-      "player": "shawn",
-      "kind": "red-carpet",
-      "afterSeason": "td-14",
-      "seq": 52,
-      "status": "approved"
-    },
-    {
-      "player": "shawn",
-      "kind": "flatmates",
-      "afterSeason": "td-14",
-      "seq": 53,
-      "status": "approved",
-      "whom": "scott"
-    },
-    {
-      "player": "sky",
-      "kind": "year-off",
-      "afterSeason": "td-14",
-      "seq": 54,
-      "status": "approved"
-    },
-    {
-      "player": "sky",
-      "kind": "hobby",
-      "afterSeason": "td-14",
-      "seq": 55,
-      "status": "approved"
-    },
-    {
-      "player": "staci",
-      "kind": "promoted",
-      "afterSeason": "td-14",
-      "seq": 56,
-      "status": "approved"
-    },
-    {
-      "player": "sugar",
-      "kind": "enrolled",
-      "afterSeason": "td-14",
-      "seq": 57,
-      "status": "approved"
-    },
-    {
-      "player": "sugar",
-      "kind": "convention",
-      "afterSeason": "td-14",
-      "seq": 58,
-      "status": "approved"
-    },
-    {
-      "player": "tammy",
-      "kind": "dating",
-      "afterSeason": "td-14",
-      "seq": 59,
-      "status": "approved",
-      "whom": "leonard"
-    },
-    {
-      "player": "tammy",
-      "kind": "bought-home",
-      "afterSeason": "td-14",
-      "seq": 60,
-      "status": "approved"
-    },
-    {
-      "player": "topher",
-      "kind": "haircut",
-      "afterSeason": "td-14",
-      "seq": 61,
-      "status": "approved"
-    },
-    {
-      "player": "zoey",
-      "kind": "quit-job",
-      "afterSeason": "td-14",
-      "seq": 62,
-      "status": "approved"
-    },
-    {
-      "player": "devin",
-      "kind": "travelling",
-      "afterSeason": "td-14",
-      "seq": 63,
-      "status": "approved"
-    },
-    {
-      "player": "devin",
-      "kind": "moved-city",
-      "afterSeason": "td-14",
-      "seq": 64,
-      "status": "approved"
-    },
-    {
-      "player": "ellody",
-      "kind": "promoted",
-      "afterSeason": "td-14",
-      "seq": 65,
-      "status": "approved"
-    },
-    {
-      "player": "laurie",
-      "kind": "bought-home",
-      "afterSeason": "td-14",
-      "seq": 66,
-      "status": "approved"
-    },
-    {
-      "player": "lorenzo",
-      "kind": "hobby",
-      "afterSeason": "td-14",
-      "seq": 67,
-      "status": "approved"
-    },
-    {
-      "player": "pete",
-      "kind": "dating",
-      "afterSeason": "td-14",
-      "seq": 68,
-      "status": "approved",
-      "whom": "taylor"
-    },
-    {
-      "player": "spud",
-      "kind": "started-business",
-      "afterSeason": "td-14",
-      "seq": 69,
-      "status": "approved"
-    },
-    {
-      "player": "tom",
-      "kind": "moved",
-      "afterSeason": "td-14",
-      "seq": 70,
-      "status": "approved"
-    },
-    {
-      "player": "chet",
-      "kind": "dating",
-      "afterSeason": "td-14",
-      "seq": 71,
-      "status": "approved",
-      "whom": "jen"
-    },
-    {
-      "player": "chet",
-      "kind": "moved-city",
-      "afterSeason": "td-14",
-      "seq": 72,
-      "status": "approved"
-    },
-    {
-      "player": "chet",
-      "kind": "tattoo",
-      "afterSeason": "td-14",
-      "seq": 73,
-      "status": "approved"
-    },
-    {
-      "player": "gerry",
-      "kind": "year-off",
-      "afterSeason": "td-14",
-      "seq": 74,
-      "status": "approved"
-    },
-    {
-      "player": "jen",
-      "kind": "bought-home",
-      "afterSeason": "td-14",
-      "seq": 75,
-      "status": "approved"
-    },
-    {
-      "player": "jen",
-      "kind": "moved",
-      "afterSeason": "td-14",
-      "seq": 76,
-      "status": "approved"
-    },
-    {
-      "player": "rock",
-      "kind": "quit-job",
-      "afterSeason": "td-14",
-      "seq": 77,
-      "status": "approved"
-    },
-    {
-      "player": "sanders",
-      "kind": "dating",
-      "afterSeason": "td-14",
-      "seq": 78,
-      "status": "approved",
-      "whom": "macarthur"
-    },
-    {
-      "player": "axel",
-      "kind": "bought-home",
-      "afterSeason": "td-14",
-      "seq": 79,
-      "status": "approved"
-    },
-    {
-      "player": "bowie",
-      "kind": "moved-city",
-      "afterSeason": "td-14",
-      "seq": 80,
-      "status": "approved"
-    },
-    {
-      "player": "bowie",
-      "kind": "production-fallout",
-      "afterSeason": "td-14",
-      "seq": 81,
-      "status": "approved"
-    },
-    {
-      "player": "brightly",
-      "kind": "pet",
-      "afterSeason": "td-14",
-      "seq": 82,
-      "status": "approved"
-    },
-    {
-      "player": "chase",
-      "kind": "new-job",
-      "afterSeason": "td-14",
-      "seq": 83,
-      "status": "approved"
-    },
-    {
-      "player": "hicks",
-      "kind": "tattoo",
-      "afterSeason": "td-14",
-      "seq": 84,
-      "status": "approved"
-    },
-    {
-      "player": "julia",
-      "kind": "learned",
-      "afterSeason": "td-14",
-      "seq": 85,
-      "status": "approved"
-    },
-    {
-      "player": "julia",
-      "kind": "made-up",
-      "afterSeason": "td-14",
-      "seq": 86,
-      "status": "approved",
-      "whom": "priya"
-    },
-    {
-      "player": "millie",
-      "kind": "podcast",
-      "afterSeason": "td-14",
-      "seq": 87,
-      "status": "approved"
-    },
-    {
-      "player": "nichelle",
-      "kind": "dating",
-      "afterSeason": "td-14",
-      "seq": 88,
-      "status": "approved",
-      "whom": "chase"
-    },
-    {
-      "player": "priya",
-      "kind": "dating",
-      "afterSeason": "td-14",
-      "seq": 89,
-      "status": "approved",
-      "whom": "damien"
-    },
-    {
-      "player": "priya",
-      "kind": "pet",
-      "afterSeason": "td-14",
-      "seq": 90,
-      "status": "approved"
-    },
-    {
-      "player": "raj",
-      "kind": "learned",
-      "afterSeason": "td-14",
-      "seq": 91,
-      "status": "approved"
-    },
-    {
-      "player": "ripper",
-      "kind": "dating",
-      "afterSeason": "td-14",
-      "seq": 92,
-      "status": "approved",
-      "whom": "axel"
-    },
-    {
-      "player": "scary-girl",
-      "kind": "flatmates",
-      "afterSeason": "td-14",
-      "seq": 93,
-      "status": "approved",
-      "whom": "bowie"
-    },
-    {
-      "player": "scary-girl",
-      "kind": "tattoo",
-      "afterSeason": "td-14",
-      "seq": 94,
-      "status": "approved"
-    },
-    {
-      "player": "wayne",
-      "kind": "flatmates",
-      "afterSeason": "td-14",
-      "seq": 95,
-      "status": "approved",
-      "whom": "raj"
-    },
-    {
-      "player": "wayne",
-      "kind": "quit-job",
-      "afterSeason": "td-14",
-      "seq": 96,
-      "status": "approved"
-    },
-    {
-      "player": "zee",
-      "kind": "enrolled",
-      "afterSeason": "td-14",
-      "seq": 97,
-      "status": "approved"
-    },
-    {
-      "player": "thom",
-      "kind": "haircut",
-      "afterSeason": "td-14",
-      "seq": 98,
-      "status": "approved"
-    },
-    {
-      "player": "miriam",
-      "kind": "hobby",
-      "afterSeason": "td-14",
-      "seq": 99,
-      "status": "approved"
-    },
-    {
-      "player": "grett",
-      "kind": "enrolled",
-      "afterSeason": "td-14",
-      "seq": 100,
-      "status": "approved"
-    },
-    {
-      "player": "grett",
-      "kind": "moved",
-      "afterSeason": "td-14",
-      "seq": 101,
-      "status": "approved"
-    },
-    {
-      "player": "dan",
-      "kind": "pet",
-      "afterSeason": "td-14",
-      "seq": 102,
-      "status": "approved"
-    },
-    {
-      "player": "gabby",
-      "kind": "moved",
-      "afterSeason": "td-14",
-      "seq": 103,
-      "status": "approved"
-    },
-    {
-      "player": "eureka",
-      "kind": "year-off",
-      "afterSeason": "td-14",
-      "seq": 104,
-      "status": "approved"
-    },
-    {
-      "player": "eureka",
-      "kind": "scandal",
-      "afterSeason": "td-14",
-      "seq": 105,
-      "status": "approved"
-    },
-    {
-      "player": "will",
-      "kind": "quit-job",
-      "afterSeason": "td-14",
-      "seq": 106,
-      "status": "approved"
-    },
-    {
-      "player": "ashley",
-      "kind": "promoted",
-      "afterSeason": "td-14",
-      "seq": 107,
-      "status": "approved"
-    },
-    {
-      "player": "fiore",
-      "kind": "bought-home",
-      "afterSeason": "td-14",
-      "seq": 108,
-      "status": "approved"
-    },
-    {
-      "player": "fiore",
-      "kind": "rehab",
-      "afterSeason": "td-14",
-      "seq": 109,
-      "status": "approved"
-    },
-    {
-      "player": "ellie",
-      "kind": "bought-home",
-      "afterSeason": "td-14",
-      "seq": 110,
-      "status": "approved"
-    },
-    {
-      "player": "james",
-      "kind": "quit-job",
-      "afterSeason": "td-14",
-      "seq": 111,
-      "status": "approved"
-    },
-    {
-      "player": "maggy",
-      "kind": "learned",
-      "afterSeason": "td-14",
-      "seq": 112,
-      "status": "approved"
-    },
-    {
-      "player": "karol",
-      "kind": "quit-job",
-      "afterSeason": "td-14",
-      "seq": 113,
-      "status": "approved"
-    },
-    {
-      "player": "kai",
-      "kind": "haircut",
-      "afterSeason": "td-14",
-      "seq": 114,
-      "status": "approved"
-    },
-    {
-      "player": "aiden",
-      "kind": "convention",
-      "afterSeason": "td-14",
-      "seq": 115,
-      "status": "approved"
-    },
-    {
-      "player": "yul",
-      "kind": "new-job",
-      "afterSeason": "td-14",
-      "seq": 116,
-      "status": "approved"
-    },
-    {
-      "player": "yul",
-      "kind": "laid-off",
-      "afterSeason": "td-14",
-      "seq": 117,
-      "status": "approved"
-    },
-    {
-      "player": "lake",
-      "kind": "bought-home",
-      "afterSeason": "td-14",
-      "seq": 118,
-      "status": "approved"
-    },
-    {
-      "player": "tess",
-      "kind": "learned",
-      "afterSeason": "td-14",
-      "seq": 119,
-      "status": "approved"
-    },
-    {
-      "player": "oliver",
-      "kind": "promoted",
-      "afterSeason": "td-14",
-      "seq": 120,
-      "status": "approved"
-    },
-    {
-      "player": "jade",
-      "kind": "year-off",
-      "afterSeason": "td-14",
-      "seq": 121,
-      "status": "approved"
-    },
-    {
-      "player": "jade",
-      "kind": "promoted",
-      "afterSeason": "td-14",
-      "seq": 122,
-      "status": "approved"
-    },
-    {
-      "player": "diego",
-      "kind": "promoted",
-      "afterSeason": "td-14",
-      "seq": 123,
-      "status": "approved"
-    },
-    {
-      "player": "benji",
-      "kind": "moved-city",
-      "afterSeason": "td-14",
-      "seq": 124,
-      "status": "approved"
-    },
-    {
-      "player": "tristan",
-      "kind": "moved",
-      "afterSeason": "td-14",
-      "seq": 125,
-      "status": "approved"
-    },
-    {
-      "player": "ivy",
-      "kind": "year-off",
-      "afterSeason": "td-14",
-      "seq": 126,
-      "status": "approved"
-    },
-    {
-      "player": "hannah",
-      "kind": "enrolled",
-      "afterSeason": "td-14",
-      "seq": 127,
-      "status": "approved"
-    },
-    {
-      "player": "hannah",
-      "kind": "haircut",
-      "afterSeason": "td-14",
-      "seq": 128,
-      "status": "approved"
-    },
-    {
-      "player": "amelie",
-      "kind": "new-job",
-      "afterSeason": "td-14",
-      "seq": 129,
-      "status": "approved"
-    },
-    {
-      "player": "lynda",
-      "kind": "started-business",
-      "afterSeason": "td-14",
-      "seq": 130,
-      "status": "approved"
-    },
-    {
-      "player": "anastasia",
-      "kind": "hobby",
-      "afterSeason": "td-14",
-      "seq": 131,
-      "status": "approved"
-    },
-    {
-      "player": "logan",
-      "kind": "moved-city",
-      "afterSeason": "td-14",
-      "seq": 132,
-      "status": "approved"
-    },
-    {
-      "player": "richard",
-      "kind": "moved",
-      "afterSeason": "td-14",
-      "seq": 133,
-      "status": "approved"
-    },
-    {
-      "player": "alejandro",
       "kind": "enrolled",
       "afterSeason": "td-1",
       "seq": 1,
@@ -7014,6 +6066,1050 @@
       "kind": "cooking",
       "afterSeason": "bb-1",
       "seq": 140,
+      "status": "approved"
+    },
+    {
+      "player": "alejandro",
+      "kind": "moved-abroad",
+      "afterSeason": "td-14",
+      "seq": 1,
+      "status": "approved"
+    },
+    {
+      "player": "alejandro",
+      "kind": "marathon",
+      "afterSeason": "td-14",
+      "seq": 2,
+      "status": "approved"
+    },
+    {
+      "player": "amy",
+      "kind": "travelling",
+      "afterSeason": "td-14",
+      "seq": 3,
+      "status": "approved"
+    },
+    {
+      "player": "b",
+      "kind": "garden",
+      "afterSeason": "td-14",
+      "seq": 4,
+      "status": "approved"
+    },
+    {
+      "player": "brick",
+      "kind": "side-hustle",
+      "afterSeason": "td-14",
+      "seq": 5,
+      "status": "approved"
+    },
+    {
+      "player": "bridgette",
+      "kind": "promoted",
+      "afterSeason": "td-14",
+      "seq": 6,
+      "status": "approved"
+    },
+    {
+      "player": "bridgette",
+      "kind": "cooking",
+      "afterSeason": "td-14",
+      "seq": 7,
+      "status": "approved"
+    },
+    {
+      "player": "cody",
+      "kind": "dating",
+      "afterSeason": "td-14",
+      "seq": 8,
+      "status": "approved",
+      "whom": "carrie"
+    },
+    {
+      "player": "cody",
+      "kind": "road-trip",
+      "afterSeason": "td-14",
+      "seq": 9,
+      "status": "approved",
+      "whom": "jacques"
+    },
+    {
+      "player": "dave",
+      "kind": "volunteering",
+      "afterSeason": "td-14",
+      "seq": 10,
+      "status": "approved"
+    },
+    {
+      "player": "dawn",
+      "kind": "award",
+      "afterSeason": "td-14",
+      "seq": 11,
+      "status": "approved"
+    },
+    {
+      "player": "dawn",
+      "kind": "tattoo",
+      "afterSeason": "td-14",
+      "seq": 12,
+      "status": "approved"
+    },
+    {
+      "player": "dj",
+      "kind": "merch",
+      "afterSeason": "td-14",
+      "seq": 13,
+      "status": "approved"
+    },
+    {
+      "player": "duncan",
+      "kind": "broke-up",
+      "afterSeason": "td-14",
+      "seq": 14,
+      "status": "approved",
+      "whom": "gwen"
+    },
+    {
+      "player": "duncan",
+      "kind": "bought-home",
+      "afterSeason": "td-14",
+      "seq": 15,
+      "status": "approved"
+    },
+    {
+      "player": "duncan",
+      "kind": "new-language",
+      "afterSeason": "td-14",
+      "seq": 16,
+      "status": "approved"
+    },
+    {
+      "player": "dwayne",
+      "kind": "new-job",
+      "afterSeason": "td-14",
+      "seq": 17,
+      "status": "approved"
+    },
+    {
+      "player": "emma",
+      "kind": "travelling",
+      "afterSeason": "td-14",
+      "seq": 18,
+      "status": "approved"
+    },
+    {
+      "player": "ennui",
+      "kind": "promoted",
+      "afterSeason": "td-14",
+      "seq": 19,
+      "status": "approved"
+    },
+    {
+      "player": "eva",
+      "kind": "haircut",
+      "afterSeason": "td-14",
+      "seq": 20,
+      "status": "approved"
+    },
+    {
+      "player": "ezekiel",
+      "kind": "promoted",
+      "afterSeason": "td-14",
+      "seq": 21,
+      "status": "approved"
+    },
+    {
+      "player": "geoff",
+      "kind": "promoted",
+      "afterSeason": "td-14",
+      "seq": 22,
+      "status": "approved"
+    },
+    {
+      "player": "geoff",
+      "kind": "travelling",
+      "afterSeason": "td-14",
+      "seq": 23,
+      "status": "approved"
+    },
+    {
+      "player": "geoff",
+      "kind": "rehab",
+      "afterSeason": "td-14",
+      "seq": 24,
+      "status": "approved"
+    },
+    {
+      "player": "gwen",
+      "kind": "moved-abroad",
+      "afterSeason": "td-14",
+      "seq": 25,
+      "status": "approved"
+    },
+    {
+      "player": "gwen",
+      "kind": "garden",
+      "afterSeason": "td-14",
+      "seq": 26,
+      "status": "approved"
+    },
+    {
+      "player": "harold",
+      "kind": "career-change",
+      "afterSeason": "td-14",
+      "seq": 27,
+      "status": "approved"
+    },
+    {
+      "player": "izzy",
+      "kind": "marathon",
+      "afterSeason": "td-14",
+      "seq": 28,
+      "status": "approved"
+    },
+    {
+      "player": "jay",
+      "kind": "dating",
+      "afterSeason": "td-14",
+      "seq": 29,
+      "status": "approved",
+      "whom": "kitty"
+    },
+    {
+      "player": "jay",
+      "kind": "bad-investment",
+      "afterSeason": "td-14",
+      "seq": 30,
+      "status": "approved"
+    },
+    {
+      "player": "jo",
+      "kind": "tattoo",
+      "afterSeason": "td-14",
+      "seq": 31,
+      "status": "approved"
+    },
+    {
+      "player": "josee",
+      "kind": "went-public",
+      "afterSeason": "td-14",
+      "seq": 32,
+      "status": "approved",
+      "whom": "mickey"
+    },
+    {
+      "player": "josee",
+      "kind": "new-job",
+      "afterSeason": "td-14",
+      "seq": 33,
+      "status": "approved"
+    },
+    {
+      "player": "junior",
+      "kind": "hobby",
+      "afterSeason": "td-14",
+      "seq": 34,
+      "status": "approved"
+    },
+    {
+      "player": "justin",
+      "kind": "travelling",
+      "afterSeason": "td-14",
+      "seq": 35,
+      "status": "approved"
+    },
+    {
+      "player": "katie",
+      "kind": "graduated",
+      "afterSeason": "td-14",
+      "seq": 36,
+      "status": "approved"
+    },
+    {
+      "player": "kelly",
+      "kind": "dating",
+      "afterSeason": "td-14",
+      "seq": 37,
+      "status": "approved",
+      "whom": "ryan"
+    },
+    {
+      "player": "leonard",
+      "kind": "laid-off",
+      "afterSeason": "td-14",
+      "seq": 38,
+      "status": "approved"
+    },
+    {
+      "player": "leshawna",
+      "kind": "quietly-ended",
+      "afterSeason": "td-14",
+      "seq": 39,
+      "status": "approved",
+      "whom": "noah"
+    },
+    {
+      "player": "lightning",
+      "kind": "learned",
+      "afterSeason": "td-14",
+      "seq": 40,
+      "status": "approved"
+    },
+    {
+      "player": "lindsay",
+      "kind": "moved-city",
+      "afterSeason": "td-14",
+      "seq": 41,
+      "status": "approved"
+    },
+    {
+      "player": "lindsay",
+      "kind": "podcast",
+      "afterSeason": "td-14",
+      "seq": 42,
+      "status": "approved"
+    },
+    {
+      "player": "lindsay",
+      "kind": "cancelled",
+      "afterSeason": "td-14",
+      "seq": 43,
+      "status": "approved"
+    },
+    {
+      "player": "mary",
+      "kind": "renovated",
+      "afterSeason": "td-14",
+      "seq": 44,
+      "status": "approved"
+    },
+    {
+      "player": "max",
+      "kind": "tattoo",
+      "afterSeason": "td-14",
+      "seq": 45,
+      "status": "approved"
+    },
+    {
+      "player": "mickey",
+      "kind": "travelling",
+      "afterSeason": "td-14",
+      "seq": 46,
+      "status": "approved"
+    },
+    {
+      "player": "owen",
+      "kind": "haircut",
+      "afterSeason": "td-14",
+      "seq": 47,
+      "status": "approved"
+    },
+    {
+      "player": "sadie",
+      "kind": "renovated",
+      "afterSeason": "td-14",
+      "seq": 48,
+      "status": "approved"
+    },
+    {
+      "player": "sam",
+      "kind": "moved",
+      "afterSeason": "td-14",
+      "seq": 49,
+      "status": "approved"
+    },
+    {
+      "player": "samey",
+      "kind": "investment",
+      "afterSeason": "td-14",
+      "seq": 50,
+      "status": "approved"
+    },
+    {
+      "player": "scarlett",
+      "kind": "tattoo",
+      "afterSeason": "td-14",
+      "seq": 51,
+      "status": "approved"
+    },
+    {
+      "player": "shawn",
+      "kind": "moved-abroad",
+      "afterSeason": "td-14",
+      "seq": 52,
+      "status": "approved"
+    },
+    {
+      "player": "shawn",
+      "kind": "interview",
+      "afterSeason": "td-14",
+      "seq": 53,
+      "status": "approved"
+    },
+    {
+      "player": "shawn",
+      "kind": "volunteering",
+      "afterSeason": "td-14",
+      "seq": 54,
+      "status": "approved"
+    },
+    {
+      "player": "sierra",
+      "kind": "charity",
+      "afterSeason": "td-14",
+      "seq": 55,
+      "status": "approved"
+    },
+    {
+      "player": "sky",
+      "kind": "tattoo",
+      "afterSeason": "td-14",
+      "seq": 56,
+      "status": "approved"
+    },
+    {
+      "player": "sky",
+      "kind": "marathon",
+      "afterSeason": "td-14",
+      "seq": 57,
+      "status": "approved"
+    },
+    {
+      "player": "staci",
+      "kind": "quit-job",
+      "afterSeason": "td-14",
+      "seq": 58,
+      "status": "approved"
+    },
+    {
+      "player": "sugar",
+      "kind": "enrolled",
+      "afterSeason": "td-14",
+      "seq": 59,
+      "status": "approved"
+    },
+    {
+      "player": "sugar",
+      "kind": "convention",
+      "afterSeason": "td-14",
+      "seq": 60,
+      "status": "approved"
+    },
+    {
+      "player": "tammy",
+      "kind": "dating",
+      "afterSeason": "td-14",
+      "seq": 61,
+      "status": "approved",
+      "whom": "leonard"
+    },
+    {
+      "player": "tammy",
+      "kind": "moved",
+      "afterSeason": "td-14",
+      "seq": 62,
+      "status": "approved"
+    },
+    {
+      "player": "zoey",
+      "kind": "side-hustle",
+      "afterSeason": "td-14",
+      "seq": 63,
+      "status": "approved"
+    },
+    {
+      "player": "carrie",
+      "kind": "graduated",
+      "afterSeason": "td-14",
+      "seq": 64,
+      "status": "approved"
+    },
+    {
+      "player": "devin",
+      "kind": "marathon",
+      "afterSeason": "td-14",
+      "seq": 65,
+      "status": "approved"
+    },
+    {
+      "player": "devin",
+      "kind": "bought-home",
+      "afterSeason": "td-14",
+      "seq": 66,
+      "status": "approved"
+    },
+    {
+      "player": "ellody",
+      "kind": "quit-job",
+      "afterSeason": "td-14",
+      "seq": 67,
+      "status": "approved"
+    },
+    {
+      "player": "laurie",
+      "kind": "moved",
+      "afterSeason": "td-14",
+      "seq": 68,
+      "status": "approved"
+    },
+    {
+      "player": "lorenzo",
+      "kind": "learned",
+      "afterSeason": "td-14",
+      "seq": 69,
+      "status": "approved"
+    },
+    {
+      "player": "pete",
+      "kind": "dating",
+      "afterSeason": "td-14",
+      "seq": 70,
+      "status": "approved",
+      "whom": "taylor"
+    },
+    {
+      "player": "spud",
+      "kind": "award",
+      "afterSeason": "td-14",
+      "seq": 71,
+      "status": "approved"
+    },
+    {
+      "player": "tom",
+      "kind": "year-off",
+      "afterSeason": "td-14",
+      "seq": 72,
+      "status": "approved"
+    },
+    {
+      "player": "chet",
+      "kind": "dating",
+      "afterSeason": "td-14",
+      "seq": 73,
+      "status": "approved",
+      "whom": "jen"
+    },
+    {
+      "player": "chet",
+      "kind": "moved-city",
+      "afterSeason": "td-14",
+      "seq": 74,
+      "status": "approved"
+    },
+    {
+      "player": "chet",
+      "kind": "flatmates",
+      "afterSeason": "td-14",
+      "seq": 75,
+      "status": "approved",
+      "whom": "jen"
+    },
+    {
+      "player": "gerry",
+      "kind": "hobby",
+      "afterSeason": "td-14",
+      "seq": 76,
+      "status": "approved"
+    },
+    {
+      "player": "jen",
+      "kind": "moved-abroad",
+      "afterSeason": "td-14",
+      "seq": 77,
+      "status": "approved"
+    },
+    {
+      "player": "jen",
+      "kind": "pet",
+      "afterSeason": "td-14",
+      "seq": 78,
+      "status": "approved"
+    },
+    {
+      "player": "rock",
+      "kind": "started-business",
+      "afterSeason": "td-14",
+      "seq": 79,
+      "status": "approved"
+    },
+    {
+      "player": "sanders",
+      "kind": "dating",
+      "afterSeason": "td-14",
+      "seq": 80,
+      "status": "approved",
+      "whom": "macarthur"
+    },
+    {
+      "player": "axel",
+      "kind": "moved",
+      "afterSeason": "td-14",
+      "seq": 81,
+      "status": "approved"
+    },
+    {
+      "player": "bowie",
+      "kind": "bought-home",
+      "afterSeason": "td-14",
+      "seq": 82,
+      "status": "approved"
+    },
+    {
+      "player": "brightly",
+      "kind": "hobby",
+      "afterSeason": "td-14",
+      "seq": 83,
+      "status": "approved"
+    },
+    {
+      "player": "chase",
+      "kind": "promoted",
+      "afterSeason": "td-14",
+      "seq": 84,
+      "status": "approved"
+    },
+    {
+      "player": "hicks",
+      "kind": "graduated",
+      "afterSeason": "td-14",
+      "seq": 85,
+      "status": "approved"
+    },
+    {
+      "player": "hicks",
+      "kind": "haircut",
+      "afterSeason": "td-14",
+      "seq": 86,
+      "status": "approved"
+    },
+    {
+      "player": "julia",
+      "kind": "old-car",
+      "afterSeason": "td-14",
+      "seq": 87,
+      "status": "approved"
+    },
+    {
+      "player": "nichelle",
+      "kind": "dating",
+      "afterSeason": "td-14",
+      "seq": 88,
+      "status": "approved",
+      "whom": "chase"
+    },
+    {
+      "player": "priya",
+      "kind": "dating",
+      "afterSeason": "td-14",
+      "seq": 89,
+      "status": "approved",
+      "whom": "damien"
+    },
+    {
+      "player": "priya",
+      "kind": "travelling",
+      "afterSeason": "td-14",
+      "seq": 90,
+      "status": "approved"
+    },
+    {
+      "player": "raj",
+      "kind": "old-car",
+      "afterSeason": "td-14",
+      "seq": 91,
+      "status": "approved"
+    },
+    {
+      "player": "ripper",
+      "kind": "dating",
+      "afterSeason": "td-14",
+      "seq": 92,
+      "status": "approved",
+      "whom": "axel"
+    },
+    {
+      "player": "scary-girl",
+      "kind": "old-car",
+      "afterSeason": "td-14",
+      "seq": 93,
+      "status": "approved"
+    },
+    {
+      "player": "scary-girl",
+      "kind": "promoted",
+      "afterSeason": "td-14",
+      "seq": 94,
+      "status": "approved"
+    },
+    {
+      "player": "wayne",
+      "kind": "volunteering",
+      "afterSeason": "td-14",
+      "seq": 95,
+      "status": "approved"
+    },
+    {
+      "player": "zee",
+      "kind": "enrolled",
+      "afterSeason": "td-14",
+      "seq": 96,
+      "status": "approved"
+    },
+    {
+      "player": "thom",
+      "kind": "new-language",
+      "afterSeason": "td-14",
+      "seq": 97,
+      "status": "approved"
+    },
+    {
+      "player": "jake",
+      "kind": "graduated",
+      "afterSeason": "td-14",
+      "seq": 98,
+      "status": "approved"
+    },
+    {
+      "player": "miriam",
+      "kind": "learned",
+      "afterSeason": "td-14",
+      "seq": 99,
+      "status": "approved"
+    },
+    {
+      "player": "grett",
+      "kind": "enrolled",
+      "afterSeason": "td-14",
+      "seq": 100,
+      "status": "approved"
+    },
+    {
+      "player": "grett",
+      "kind": "year-off",
+      "afterSeason": "td-14",
+      "seq": 101,
+      "status": "approved"
+    },
+    {
+      "player": "dan",
+      "kind": "travelling",
+      "afterSeason": "td-14",
+      "seq": 102,
+      "status": "approved"
+    },
+    {
+      "player": "gabby",
+      "kind": "moved-abroad",
+      "afterSeason": "td-14",
+      "seq": 103,
+      "status": "approved"
+    },
+    {
+      "player": "eureka",
+      "kind": "pet",
+      "afterSeason": "td-14",
+      "seq": 104,
+      "status": "approved"
+    },
+    {
+      "player": "eureka",
+      "kind": "scandal",
+      "afterSeason": "td-14",
+      "seq": 105,
+      "status": "approved"
+    },
+    {
+      "player": "will",
+      "kind": "graduated",
+      "afterSeason": "td-14",
+      "seq": 106,
+      "status": "approved"
+    },
+    {
+      "player": "will",
+      "kind": "started-business",
+      "afterSeason": "td-14",
+      "seq": 107,
+      "status": "approved"
+    },
+    {
+      "player": "ashley",
+      "kind": "laid-off",
+      "afterSeason": "td-14",
+      "seq": 108,
+      "status": "approved"
+    },
+    {
+      "player": "fiore",
+      "kind": "moved",
+      "afterSeason": "td-14",
+      "seq": 109,
+      "status": "approved"
+    },
+    {
+      "player": "fiore",
+      "kind": "in-shape",
+      "afterSeason": "td-14",
+      "seq": 110,
+      "status": "approved"
+    },
+    {
+      "player": "ellie",
+      "kind": "moved",
+      "afterSeason": "td-14",
+      "seq": 111,
+      "status": "approved"
+    },
+    {
+      "player": "nick",
+      "kind": "graduated",
+      "afterSeason": "td-14",
+      "seq": 112,
+      "status": "approved"
+    },
+    {
+      "player": "nick",
+      "kind": "garden",
+      "afterSeason": "td-14",
+      "seq": 113,
+      "status": "approved"
+    },
+    {
+      "player": "wix",
+      "kind": "graduated",
+      "afterSeason": "td-14",
+      "seq": 114,
+      "status": "approved"
+    },
+    {
+      "player": "james",
+      "kind": "started-business",
+      "afterSeason": "td-14",
+      "seq": 115,
+      "status": "approved"
+    },
+    {
+      "player": "maggy",
+      "kind": "cooking",
+      "afterSeason": "td-14",
+      "seq": 116,
+      "status": "approved"
+    },
+    {
+      "player": "karol",
+      "kind": "started-business",
+      "afterSeason": "td-14",
+      "seq": 117,
+      "status": "approved"
+    },
+    {
+      "player": "aiden",
+      "kind": "rewatch-podcast",
+      "afterSeason": "td-14",
+      "seq": 118,
+      "status": "approved"
+    },
+    {
+      "player": "yul",
+      "kind": "promoted",
+      "afterSeason": "td-14",
+      "seq": 119,
+      "status": "approved"
+    },
+    {
+      "player": "yul",
+      "kind": "side-hustle",
+      "afterSeason": "td-14",
+      "seq": 120,
+      "status": "approved"
+    },
+    {
+      "player": "lake",
+      "kind": "moved-abroad",
+      "afterSeason": "td-14",
+      "seq": 121,
+      "status": "approved"
+    },
+    {
+      "player": "tess",
+      "kind": "cooking",
+      "afterSeason": "td-14",
+      "seq": 122,
+      "status": "approved"
+    },
+    {
+      "player": "oliver",
+      "kind": "graduated",
+      "afterSeason": "td-14",
+      "seq": 123,
+      "status": "approved"
+    },
+    {
+      "player": "oliver",
+      "kind": "quit-job",
+      "afterSeason": "td-14",
+      "seq": 124,
+      "status": "approved"
+    },
+    {
+      "player": "jade",
+      "kind": "tattoo",
+      "afterSeason": "td-14",
+      "seq": 125,
+      "status": "approved"
+    },
+    {
+      "player": "jade",
+      "kind": "quit-job",
+      "afterSeason": "td-14",
+      "seq": 126,
+      "status": "approved"
+    },
+    {
+      "player": "diego",
+      "kind": "laid-off",
+      "afterSeason": "td-14",
+      "seq": 127,
+      "status": "approved"
+    },
+    {
+      "player": "benji",
+      "kind": "moved",
+      "afterSeason": "td-14",
+      "seq": 128,
+      "status": "approved"
+    },
+    {
+      "player": "tristan",
+      "kind": "year-off",
+      "afterSeason": "td-14",
+      "seq": 129,
+      "status": "approved"
+    },
+    {
+      "player": "ivy",
+      "kind": "tattoo",
+      "afterSeason": "td-14",
+      "seq": 130,
+      "status": "approved"
+    },
+    {
+      "player": "hannah",
+      "kind": "enrolled",
+      "afterSeason": "td-14",
+      "seq": 131,
+      "status": "approved"
+    },
+    {
+      "player": "amelie",
+      "kind": "promoted",
+      "afterSeason": "td-14",
+      "seq": 132,
+      "status": "approved"
+    },
+    {
+      "player": "lynda",
+      "kind": "award",
+      "afterSeason": "td-14",
+      "seq": 133,
+      "status": "approved"
+    },
+    {
+      "player": "anastasia",
+      "kind": "learned",
+      "afterSeason": "td-14",
+      "seq": 134,
+      "status": "approved"
+    },
+    {
+      "player": "logan",
+      "kind": "bought-home",
+      "afterSeason": "td-14",
+      "seq": 135,
+      "status": "approved"
+    },
+    {
+      "player": "richard",
+      "kind": "pet",
+      "afterSeason": "td-14",
+      "seq": 136,
+      "status": "approved"
+    },
+    {
+      "player": "jules",
+      "kind": "old-car",
+      "afterSeason": "td-14",
+      "seq": 137,
+      "status": "approved"
+    },
+    {
+      "player": "joel",
+      "kind": "moved-city",
+      "afterSeason": "td-14",
+      "seq": 138,
+      "status": "approved"
+    },
+    {
+      "player": "jane",
+      "kind": "garden",
+      "afterSeason": "td-14",
+      "seq": 139,
+      "status": "approved"
+    },
+    {
+      "player": "aaron",
+      "kind": "new-job",
+      "afterSeason": "td-14",
+      "seq": 140,
+      "status": "approved"
+    },
+    {
+      "player": "ireland",
+      "kind": "travelling",
+      "afterSeason": "td-14",
+      "seq": 141,
+      "status": "approved"
+    },
+    {
+      "player": "ireland",
+      "kind": "moved-city",
+      "afterSeason": "td-14",
+      "seq": 142,
+      "status": "approved"
+    },
+    {
+      "player": "dylon",
+      "kind": "hobby",
+      "afterSeason": "td-14",
+      "seq": 143,
+      "status": "approved"
+    },
+    {
+      "player": "nico",
+      "kind": "haircut",
+      "afterSeason": "td-14",
+      "seq": 144,
+      "status": "approved"
+    },
+    {
+      "player": "zella",
+      "kind": "moved-abroad",
+      "afterSeason": "td-14",
+      "seq": 145,
+      "status": "approved"
+    },
+    {
+      "player": "harriett",
+      "kind": "moved",
+      "afterSeason": "td-14",
+      "seq": 146,
+      "status": "approved"
+    },
+    {
+      "player": "stella",
+      "kind": "moved",
+      "afterSeason": "td-14",
+      "seq": 147,
       "status": "approved"
     }
   ]

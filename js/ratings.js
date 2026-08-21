@@ -607,7 +607,13 @@ export function ratingsForSeason(history, opts = {}) {
     weeks: st.weeks,
     demos: st.demos,
     score,
-    tier: tierFor(score).key,
+    // The tier OBJECT, not its key. Everything that stores a rating is read
+    // back somewhere that has no TIERS table to look the label up in — a
+    // published season document rendered by seasons.html, a ledger record on
+    // the franchise page. Storing the key alone meant the badge read
+    // `tier.label` off a string and rendered nothing, which looks exactly
+    // like a season that was never rated.
+    tier: tierFor(score),
     format: st.format || opts.format || DEFAULT_FORMAT,
   };
 }

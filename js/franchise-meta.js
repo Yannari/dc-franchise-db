@@ -3,6 +3,9 @@
 // savestate.js import US, so importing them back would create a cycle.
 import { gs, players, seasonConfig } from './core.js';
 import { lifeSeeds as _lifeSeeds } from './life-cast.js';
+// SAFE UNDER THE IMPORT RULE ABOVE: ratings.js imports core.js, tone.js and
+// shows.js, all of which are leaves, and nothing imports us back through it.
+import { ratingsForSeason as _ratingsForSeason } from './ratings.js';
 
 // Must match bKey() in bonds.js (can't import it — cycle via players.js).
 export function metaBondKey(a, b) { return [a, b].sort().join('||'); }
@@ -200,7 +203,27 @@ export function deriveSeasonRecord(state = null) {
 
   const { placement, permanentExit } = _derivePlacements(_gs, names);
 
-  const rec = { seasonName: _seasonName, players: {} };
+  // HOW IT WENT DOWN WITH THE COUNTRY. Derived here rather than read off
+  // `gs.ratings` so a season played before the ratings existed gets one the
+  // first time its save is loaded — the record's raw material is the episode
+  // history, which is exactly what the heal above reloads.
+  //
+  // The per-episode curve is stored as bare numbers. The full week objects
+  // carry every signal and every demographic, and a ledger holding twenty
+  // seasons of those is the state-bloat shape this project has already paid
+  // for once.
+  let ratings = null;
+  try {
+    const r = _ratingsForSeason(hist, { format: _gs.format || 'total-drama' });
+    if (r) {
+      ratings = { v: r.v, score: r.score, tier: r.tier,
+        demos: Object.fromEntries(Object.entries(r.demos)
+          .map(([k, v]) => [k, Math.round(v * 10) / 10])),
+        curve: r.weeks.map(w => w.overall) };
+    }
+  } catch { ratings = null; }
+
+  const rec = { seasonName: _seasonName, ratings, players: {} };
   for (const n of names) {
     // Last (not first) elimination episode — RI/EoE returnees can be booted twice.
     const elimEp = [...hist].reverse().find(ep => _bootOf(ep) === n) || null;
@@ -1225,7 +1248,9 @@ export function wipeLedger() {
 // something it used to miss — v2 is the Big Brother shapes (ballot flips,
 // blindsides, and the players:[a,b] showmance form) — so records made by an
 // older deriver can be found and re-made from their own save.
-export const LEDGER_DERIVER_V = 2;
+// v3 adds the TV ratings: a season played before they existed gets its tier
+// the first time its save is loaded.
+export const LEDGER_DERIVER_V = 3;
 
 /**
  * Re-derive a stale ledger record from the save that is IN MEMORY.

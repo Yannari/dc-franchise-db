@@ -426,3 +426,36 @@ describe('the headline number', () => {
     expect(overallOf({ teens: 100, youngAdults: 100, middleAged: 100, older: 100 })).toBe(100);
   });
 });
+
+// ── the season carries its tier off the simulator ─────────────────────
+describe('a finished season keeps its rating', () => {
+  it('compresses the curve instead of storing every week whole', () => {
+    // A ledger holding twenty seasons of full week objects — every signal,
+    // every demographic — is the state-bloat shape this project has already
+    // paid for once. What a card needs is a tier, a score and a line.
+    const r = ratingsForSeason([1, 2, 3, 4].map(n => week(n)));
+    const stored = { v: r.v, score: r.score, tier: r.tier,
+      demos: r.demos, curve: r.weeks.map(w => w.overall) };
+    expect(stored.curve).toHaveLength(4);
+    stored.curve.forEach(n => expect(typeof n).toBe('number'));
+    // It has to survive being written to a file and read back on a page that
+    // never loads the simulator.
+    const round = JSON.parse(JSON.stringify(stored));
+    expect(round.tier.key).toBe(tierFor(r.score).key);
+    expect(round.tier.label, 'the label must survive the trip').toBeTruthy();
+    expect(round.score).toBe(r.score);
+  });
+
+  it('gives the badge everything it draws from', () => {
+    // seasons.html reads exactly these three fields off the document. If the
+    // shape drifts the badge silently disappears — it renders nothing when
+    // `ratings.tier` is absent, which looks identical to a season that was
+    // never rated.
+    const r = ratingsForSeason([1, 2, 3].map(n => week(n)));
+    const tier = tierFor(r.score);
+    const doc = { ratings: { score: r.score, tier, curve: r.weeks.map(w => w.overall) } };
+    expect(doc.ratings.tier.key, 'the badge class comes from this').toBeTruthy();
+    expect(doc.ratings.tier.label, 'the badge text comes from this').toBeTruthy();
+    expect(typeof doc.ratings.score, 'the tooltip comes from this').toBe('number');
+  });
+});

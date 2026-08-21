@@ -10,6 +10,7 @@ import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
 import { nextWindowFor } from './franchise-calendar.js';
+import { ratingsForSeason } from './ratings.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -1529,6 +1530,7 @@ export function extractSeasonTemplate() {
     alliances: _extractAlliances(),
     finalTribalCouncil: _extractFinalTribalCouncil(),
     twists: _extractTwists(),
+    ratings: _extractRatings(),
     seasonNarrative: '[AI_FILL]',
     awards: '[AI_FILL]',
     emoji: '[AI_FILL]'
@@ -1536,6 +1538,35 @@ export function extractSeasonTemplate() {
 }
 
 
+/**
+ * How the season went down with the country, for the published document.
+ *
+ * Computed HERE and stored, not recomputed by the site. A published season
+ * document is a summary — no camp events, no flipped ballots, no popularity —
+ * so the pages that render it could only ever produce a different, worse
+ * number from the one the simulator produced. One season, two ratings, is the
+ * two-clocks problem this project keeps having.
+ *
+ * The per-episode curve is stored as bare numbers so the seasons page can draw
+ * a sparkline without shipping every signal of every week.
+ */
+function _extractRatings() {
+  try {
+    // Always derived from the episode history rather than read off
+    // `gs.ratings`, so an exported season and a re-rated one cannot differ.
+    const derived = ratingsForSeason(gs?.episodeHistory || [],
+      { format: seasonFormat() || DEFAULT_FORMAT });
+    if (!derived) return null;
+    return {
+      v: derived.v,
+      score: derived.score,
+      tier: derived.tier,
+      demos: Object.fromEntries(Object.entries(derived.demos)
+        .map(([k, v]) => [k, Math.round(v * 10) / 10])),
+      curve: derived.weeks.map(w => w.overall),
+    };
+  } catch { return null; }
+}
 // ── relationships, for both shows ─────────────────────────────────────
 //
 // THESE EXISTED ONLY WHILE A SEASON WAS BEING PLAYED. `gs.showmances` and
@@ -3148,6 +3179,7 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
     alliances: _extractAlliances(),
     rivalries: _extractRivalries(),
     twists: _extractTwists(),
+    ratings: _extractRatings(),
     seasonNarrative: '[AI_FILL]',
     awards: '[AI_FILL]',
     emoji: '[AI_FILL]',

@@ -122,11 +122,19 @@ export const BASE_TASTE = Object.freeze({
  * signal. Declared in the registry beside `words` and `careerStats` — a show
  * states its own audience the same way it states its own vocabulary.
  *
- * A format with no entry rates on the base table unchanged, so a half-built or
- * unregistered show still produces a number instead of a crash.
+ * A format with no entry rates on the BASE TABLE UNCHANGED — a neutral
+ * multiplier of one across the board, not the default show's overlay. Falling
+ * back to Total Drama's would have quietly rated a brand new show as though it
+ * were Total Drama: a plausible number, wrong for reasons nobody would ever
+ * think to check, which is the same trap `words` already documents.
+ *
+ * A show that never declares one is rated as generic reality television. That
+ * is the honest answer, and `tests/ratings.test.js` fails the moment a
+ * registered show is missing its entry, so nothing ships on the fallback by
+ * accident.
  */
 function overlay(format) {
-  return (SHOWS[format]?.audience) || (SHOWS[DEFAULT_FORMAT]?.audience) || {};
+  return SHOWS[format]?.audience || {};
 }
 
 const clamp01 = n => Math.max(0, Math.min(1, Number(n) || 0));
@@ -601,6 +609,179 @@ export function ratingsForSeason(history, opts = {}) {
     score,
     tier: tierFor(score).key,
     format: st.format || opts.format || DEFAULT_FORMAT,
+  };
+}
+
+// ── What moved them ──────────────────────────────────────────────────
+//
+// A number with no reason attached is a scoreboard. These are the sentences
+// that make the four columns read as four audiences with opinions, so every
+// signal carries a line for the week it rose and a line for the week it fell,
+// four ways each.
+//
+// `{round}` and `{exit}` are filled from the show's own registry entry. This
+// feature writes prose about a season, which is precisely the surface the
+// wrong-show-vocabulary bug keeps reappearing on.
+const NOTES = {
+  blindside: {
+    up: ['a vote that genuinely went sideways',
+      'somebody was moved on without ever seeing it coming',
+      'the {round} stopped being a formality',
+      'ballots moved late, after the count looked settled'],
+    down: ['nobody moved. the count on Monday was the count on Thursday',
+      'the {round} went exactly the way it was announced',
+      'a vote with no surprise in it anywhere',
+      'the plan held from the first day to the last'],
+  },
+  predictable: {
+    up: ['the named target went, on schedule, again',
+      'the whole {round} was legible by Tuesday',
+      'nothing happened that had not been said out loud first',
+      'a week you could have written in advance'],
+    down: ['the obvious name survived and something else happened instead',
+      'the {round} refused to do the expected thing',
+      'the plan on Monday had nothing to do with the result',
+      'for once you could not call it'],
+  },
+  steamroll: {
+    up: ['the same bloc decided it again',
+      'one group has now run every vote for a month',
+      'the majority is not being tested by anybody',
+      'the same names deciding the same way, week after week'],
+    down: ['the majority cracked',
+      'whoever was running this is not running it any more',
+      'the bloc that decided everything did not decide this',
+      'the power finally moved off one table'],
+  },
+  powerShift: {
+    up: ['power crossed the room to somebody who was in trouble last week',
+      'the throne changed hands outright',
+      'last week\'s target is this week\'s authority',
+      'the room reorganised around a new name'],
+    down: ['the same person is in charge as last week',
+      'nothing moved at the top',
+      'power stayed exactly where it already was',
+      'the same table is still the table'],
+  },
+  showmance: {
+    up: ['there is a romance running, and it is on screen',
+      'two of them cannot stop finding each other',
+      'the season found its couple',
+      'the romance is now half the footage'],
+    down: ['the romance went quiet',
+      'nobody is falling for anybody this week',
+      'the couple stopped being the story',
+      'no romance in it at all'],
+  },
+  twist: {
+    up: ['the format did something to them this week',
+      'a twist landed and the house had to deal with it',
+      'the rules changed mid-{round}',
+      'the show intervened, loudly'],
+    down: ['a straight {round} with no interference',
+      'the format left them alone',
+      'no twist and no gimmick, just the game',
+      'nothing arrived from outside the house'],
+  },
+  returns: {
+    up: ['somebody walked back in',
+      'a returning face the room had not planned around',
+      'the show put somebody back in play',
+      'an arrival nobody had planned around'],
+    down: ['nobody came back and nobody new arrived',
+      'the cast is the cast',
+      'no arrivals this week',
+      'the door stayed shut'],
+  },
+  likability: {
+    up: ['the people still in are the people they like',
+      'the cast left is good company',
+      'the show is keeping the ones they came for',
+      'a room that is easy to spend an hour with'],
+    down: ['the ones they liked keep getting {exit}',
+      'the room left is harder to root for',
+      'the favourites are going out one at a time',
+      'nobody obvious left to get behind'],
+  },
+  villainy: {
+    up: ['the dirty players are running the season',
+      'schemers everywhere, and none of them hiding it',
+      'this is being played by people they do not trust',
+      'the villains have the numbers'],
+    down: ['the nastier players have gone quiet',
+      'less scheming than there has been',
+      'the season stopped being about the villains',
+      'a cleaner week than the ones before it'],
+  },
+  mess: {
+    up: ['the week was chaotic and unpolished',
+      'the house came apart a bit this week',
+      'scrappy, loud and largely unmanaged',
+      'a mess, start to finish'],
+    down: ['everybody behaved themselves',
+      'a tidy, controlled, quiet week',
+      'no chaos in it anywhere',
+      'controlled, polished, and very quiet'],
+  },
+  strategy: {
+    up: ['an actual game being played, out loud',
+      'real strategy on screen for once',
+      'plans, counts and consequences, all on screen',
+      'the {round} turned on somebody thinking'],
+    down: ['very little actual game this week',
+      'nobody appears to be playing',
+      'no strategy visible anywhere in it',
+      'drifting rather than playing'],
+  },
+};
+
+/**
+ * Why this demographic's number moved: the single signal that did the most to
+ * them this week, said in their terms.
+ *
+ * "The most" is the signal with the largest weighted CHANGE, so a group is
+ * never told about something that has been sitting at the same value all
+ * season — a steamroll that started three weeks ago is not this week's news.
+ */
+export function demoNote(demo, weekRec, prevRec, format) {
+  if (!weekRec?.signals) return null;
+  const base = BASE_TASTE[demo] || {};
+  const mult = overlay(format);
+  const prev = prevRec?.signals || null;
+  let bestKey = null, bestPush = 0, bestRose = false;
+  for (const key of SIGNAL_KEYS) {
+    const w = (base[key] || 0) * (mult[key] ?? 1);
+    if (!w) continue;
+    const now = calibrate(key, weekRec.signals[key]);
+    // With no previous week, the week itself is the news: score against the
+    // midpoint so an opening week still has something to say.
+    const then = prev ? calibrate(key, prev[key]) : 0.5;
+    const push = w * (now - then);
+    if (Math.abs(push) > Math.abs(bestPush)) {
+      bestPush = push; bestKey = key; bestRose = now > then;
+    }
+  }
+  if (!bestKey || Math.abs(bestPush) < 0.05) return null;
+  // Which pool is chosen by whether the SIGNAL rose, never by whether this
+  // group enjoyed it. A steamroll tightening is "the same bloc again" whether
+  // that delights the older audience or drives the young one away; `good`
+  // carries the verdict separately.
+  const pool = NOTES[bestKey]?.[bestRose ? 'up' : 'down'] || [];
+  if (!pool.length) return null;
+  // Rotated by the column's position as well as hashed, because two groups
+  // reacting to the same signal in the same week drew the identical sentence
+  // and sat next to each other saying it.
+  const key = `${weekRec.ep}|${bestKey}`;
+  let h = DEMOS.indexOf(demo);
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  h += DEMOS.indexOf(demo);
+  const words = showWords(format);
+  return {
+    signal: bestKey,
+    good: bestPush > 0,
+    text: pool[h % pool.length]
+      .replace(/\{round\}/g, String(words.round || 'episode').toLowerCase())
+      .replace(/\{exit\}/g, String(words.exit || 'eliminated')),
   };
 }
 

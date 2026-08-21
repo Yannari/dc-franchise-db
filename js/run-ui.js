@@ -3347,6 +3347,15 @@ export function buildSeasonOverviewModel(state = gs, cast = players) {
     const shift = relationshipMovement[0];
     storyThreads.push(`${shift.a} and ${shift.b} had the latest notable relationship ${Number(shift.delta) > 0 ? 'gain' : 'fracture'}.`);
   }
+  // THE RATINGS. How the season is going down with the country, which is a
+  // different question from how it is being cut (the edit, below) and a
+  // different question again from who is winning it.
+  //
+  // Derived from the episode history when the season has no stored ratings,
+  // so every season played before the feature existed shows a tier the first
+  // time it is opened rather than an empty panel.
+  const ratings = _overviewRatings(state);
+
   // Audience pulse (edit layer): how the season is being CUT, distinct from how it is going.
   const edit = state?.edit || null;
   const editLabels = typeof EDIT_LABELS !== 'undefined' ? EDIT_LABELS : {};
@@ -3384,9 +3393,86 @@ export function buildSeasonOverviewModel(state = gs, cast = players) {
     storyThreads,
     powerRanking,
     isBB,
+    ratings,
     audiencePulse,
     jury: [...(state?.jury || [])],
   };
+}
+
+/**
+ * The season's ratings, ready to draw.
+ *
+ * Reads the stored series when there is one and derives it from the episode
+ * history when there is not — the whole system is a reader, so a season
+ * finished long before it existed rates exactly the same as a live one.
+ */
+function _overviewRatings(state) {
+  const history = state?.episodeHistory || [];
+  if (!history.length) return null;
+  // Guarded the way this file guards EDIT_LABELS: `seasonConfig` arrives
+  // through window, and the season-hub tests build a model without it.
+  const cfg = typeof seasonConfig !== 'undefined' ? seasonConfig : null;
+  const fmt = state?.format || cfg?.format || 'total-drama';
+  let series = state?.ratings?.weeks?.length ? state.ratings : null;
+  if (!series && typeof ratingsForSeason === 'function') {
+    try { series = ratingsForSeason(history, { format: fmt }); } catch { series = null; }
+  }
+  if (!series?.weeks?.length) return null;
+  const weeks = series.weeks;
+  const score = typeof seasonScore === 'function' ? seasonScore(weeks) : 0;
+  const tier = typeof tierFor === 'function' ? tierFor(score) : { key: 'average', label: 'Average' };
+  const latest = weeks[weeks.length - 1];
+  const before = weeks.length > 1 ? weeks[weeks.length - 2] : null;
+  const demos = (typeof DEMOS !== 'undefined' ? DEMOS : []).map(key => {
+    const value = latest.demos?.[key] ?? 0;
+    const was = before?.demos?.[key];
+    let note = null;
+    if (typeof demoNote === 'function') {
+      try { note = demoNote(key, latest, before, fmt); } catch { note = null; }
+    }
+    return {
+      key,
+      label: (typeof DEMO_LABELS !== 'undefined' && DEMO_LABELS[key]) || key,
+      value,
+      delta: was === undefined ? 0 : value - was,
+      note: note?.text || null,
+      noteGood: !!note?.good,
+    };
+  }).sort((a, b) => b.value - a.value);
+  return { score, tier, weeks, demos, latest, format: fmt,
+    trend: before ? latest.overall - before.overall : 0,
+    live: state?.phase !== 'complete' };
+}
+
+/**
+ * The trajectory, as an SVG line.
+ *
+ * SVG rather than a row of CSS bars: this is a curve with a shape, and the
+ * shape is the whole point of showing it week by week instead of printing one
+ * number. Twist weeks are marked, because a spike next to a twist is the most
+ * common thing anybody will want to explain.
+ */
+function _ratingsCurve(weeks) {
+  const W = 640, H = 132, padX = 26, padY = 14;
+  const n = weeks.length;
+  const x = i => padX + (n < 2 ? (W - padX * 2) / 2 : (i / (n - 1)) * (W - padX * 2));
+  const y = v => H - padY - (Math.max(0, Math.min(100, v)) / 100) * (H - padY * 2);
+  const pts = weeks.map((w, i) => [x(i), y(w.overall)]);
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+  const area = `${line} L${pts[pts.length - 1][0].toFixed(1)},${(H - padY).toFixed(1)}`
+    + ` L${pts[0][0].toFixed(1)},${(H - padY).toFixed(1)} Z`;
+  // The tier boundaries the curve is being read against, so a line at 61 is
+  // visibly a different thing from a line at 59.
+  const bands = (typeof TIERS !== 'undefined' ? TIERS : []).filter(t => t.min > 0 && t.min < 100)
+    .map(t => `<line class="ov-rt-band" x1="${padX}" x2="${W - padX}" y1="${y(t.min).toFixed(1)}" y2="${y(t.min).toFixed(1)}"/>`).join('');
+  const marks = weeks.map((w, i) => (w.twist
+    ? `<line class="ov-rt-twist" x1="${x(i).toFixed(1)}" x2="${x(i).toFixed(1)}" y1="${padY}" y2="${H - padY}"/>` : '')).join('');
+  const dots = weeks.map((w, i) => `<circle class="ov-rt-dot" cx="${x(i).toFixed(1)}" cy="${y(w.overall).toFixed(1)}" r="3">`
+    + `<title>Episode ${w.ep}: ${w.overall}${w.twist ? ' (twist)' : ''}</title></circle>`).join('');
+  return `<svg class="ov-rt-curve" viewBox="0 0 ${W} ${H}" role="img"`
+    + ` aria-label="Ratings across ${n} episode${n === 1 ? '' : 's'}">`
+    + `${bands}${marks}<path class="ov-rt-area" d="${area}"/>`
+    + `<path class="ov-rt-line" d="${line}"/>${dots}</svg>`;
 }
 
 function _overviewPortrait(name, extraClass = '') {
@@ -3425,6 +3511,15 @@ function renderMidseasonOverview() {
       <section class="overview-section"><header><div><span>Recorded</span><h2>How the tribes changed</h2></div><small>${model.tribeHistory.length} era${model.tribeHistory.length === 1 ? '' : 's'}</small></header><div class="overview-tribe-history">${tribeHistoryHtml}</div></section>
       <section class="overview-section"><header><div><span>Public status</span><h2>Camp hierarchy</h2></div><small>Visible roles only</small></header><p class="overview-disclaimer">Roles reflect behavior the cast can observe. Hidden leverage and private intentions are deliberately excluded.</p><div class="overview-status-list">${statusHtml}</div></section>
     </div>
+    ${model.ratings ? `<section class="overview-section overview-ratings"><header><div><span>Audience pulse</span><h2>The ratings</h2></div><small>${model.ratings.live ? `Through episode ${model.ratings.latest.ep}` : 'Final'}</small></header>
+      <p class="overview-disclaimer">How the season is going down with the country. Four audiences watch the same show and want different things from it, so they rarely agree — the tier is the back-weighted verdict across every episode, not the latest one.</p>
+      <div class="ov-rt-head"><div class="ov-rt-tier tier-${_hubEsc(model.ratings.tier.key)}"><label>${model.ratings.live ? 'Rating so far' : 'Season rating'}</label><strong>${_hubEsc(model.ratings.tier.label)}</strong><em>${model.ratings.score}</em></div>
+        <div class="ov-rt-now"><label>Latest episode</label><strong>${model.ratings.latest.overall}</strong><span class="${model.ratings.trend > 0 ? 'up' : model.ratings.trend < 0 ? 'down' : ''}">${model.ratings.trend > 0 ? '▲' : model.ratings.trend < 0 ? '▼' : '—'} ${Math.abs(model.ratings.trend).toFixed(1)}</span></div></div>
+      ${_ratingsCurve(model.ratings.weeks)}
+      <div class="ov-rt-demos">${model.ratings.demos.map(d => `<div class="ov-rt-demo"><div class="ov-rt-demo-top"><strong>${_hubEsc(d.label)}</strong><em class="${d.delta > 0.05 ? 'up' : d.delta < -0.05 ? 'down' : ''}">${Math.round(d.value)}</em></div>
+        <div class="ov-rt-demo-bar"><i style="width:${Math.round(Math.max(0, Math.min(100, d.value)))}%"></i></div>
+        <span class="ov-rt-demo-note ${d.note ? (d.noteGood ? 'good' : 'bad') : ''}">${d.note ? _hubEsc(d.note) : 'nothing moved them this week'}</span></div>`).join('')}</div>
+    </section>` : ''}
     ${model.audiencePulse ? `<section class="overview-section overview-audience"><header><div><span>Audience pulse</span><h2>The edit so far</h2></div><small>Viewer perception · not game truth</small></header>
       <p class="overview-disclaimer">How the season is being cut for the audience: screen time, confessionals, and each player's running edit read. The edit can drift from what is really happening — that is the point.</p>
       <div class="overview-edit-list">${(maxShare => model.audiencePulse.players.map(row => `<div class="overview-edit-row">${_overviewPortrait(row.name)}<div class="overview-edit-info"><strong>${_hubEsc(row.name)}</strong><span class="overview-edit-arc">${_hubEsc(row.arc.length > 1 ? row.arc.join(' → ') : row.read)}</span></div><span class="overview-edit-chip edit-${_hubEsc(row.readKey)}">${_hubEsc(row.read)}</span><div class="overview-edit-share"><div class="overview-edit-share-fill" style="width:${Math.round(row.share / maxShare * 100)}%"></div></div><em title="Share of the season's total screen time">${Math.round(row.share * 100)}% screen time</em></div>`).join(''))(Math.max(...model.audiencePulse.players.map(row => row.share), 0.01))}</div>

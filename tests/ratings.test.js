@@ -21,7 +21,7 @@ import { gs, players, seasonConfig } from '../js/core.js';
 import {
   TIERS, DEMOS, BASE_TASTE, RATINGS_V, tierFor, readSignals, rawScore,
   applyMomentum, foldWeek, seasonScore, ratingsForSeason, updateRatings,
-  ratingsSummary, engagement,
+  ratingsSummary, engagement, demoNote, overallOf,
 } from '../js/ratings.js';
 import { SHOWS } from '../js/shows.js';
 import { seedGame } from './helpers/setup.js';
@@ -360,5 +360,69 @@ describe('every episode calls it', () => {
       expect(edit, `${file} lost its edit-layer calls`).toBeGreaterThan(0);
       expect(rate, `${file}: ${edit} edit sites but ${rate} ratings sites`).toBe(edit);
     }
+  });
+});
+
+// ── the sentences under the numbers ───────────────────────────────────
+describe('why the number moved', () => {
+  const twoWeeks = (a, b) => {
+    let st = foldWeek(null, week(1, a));
+    st = foldWeek(st, week(2, b));
+    return st.weeks;
+  };
+
+  it('gives every column its own sentence', () => {
+    // Two groups reacting to the same signal in the same week drew the
+    // identical line and sat next to each other saying it.
+    const [w1, w2] = twoWeeks({ beats: ['ALLIANCE'] }, { flipped: true, beats: ['PRANK', 'KISS'] });
+    const notes = DEMOS.map(d => demoNote(d, w2, w1, 'big-brother')).filter(Boolean);
+    expect(notes.length, 'nobody had anything to say').toBeGreaterThan(1);
+    expect(new Set(notes.map(n => n.text)).size, `repeated line: ${notes.map(n => n.text)}`)
+      .toBe(notes.length);
+  });
+
+  it('says what happened, not whether it was good', () => {
+    // The pools describe the week; the number and the colour carry the
+    // verdict. A line that approves of the week reads as sarcasm in the
+    // column where the score went down — which is exactly how it shipped
+    // first time, telling the older audience their falling score was
+    // 'scrappy in the way that makes people talk'.
+    const [w1, w2] = twoWeeks({ beats: ['ALLIANCE'] }, { beats: ['PRANK', 'FOOD FIGHT', 'CRY'] });
+    for (const d of DEMOS) {
+      const n = demoNote(d, w2, w1, 'big-brother');
+      if (!n) continue;
+      expect(n.text, `${d} was given a verdict instead of an observation: ${n.text}`)
+        .not.toMatch(/better for it|the good stuff|whole appeal|worth watching|makes people talk/i);
+    }
+  });
+
+  it('has something to say about an opening week', () => {
+    const [w1] = twoWeeks({ flipped: true, beats: ['ALLIANCE', 'VOTE PLAN'] }, {});
+    const notes = DEMOS.map(d => demoNote(d, w1, null, 'big-brother')).filter(Boolean);
+    expect(notes.length, 'week one produced no notes at all').toBeGreaterThan(0);
+  });
+
+  it('speaks the show its season belongs to', () => {
+    // {round} is filled from the registry: an episode on Total Drama, a week
+    // on Big Brother. This is the surface the wrong-show-vocabulary bug keeps
+    // coming back on.
+    const [w1, w2] = twoWeeks({ beats: ['ALLIANCE'] }, { flipped: true });
+    const all = f => DEMOS.map(d => demoNote(d, w2, w1, f)).filter(Boolean).map(n => n.text).join(' | ');
+    expect(all('total-drama')).not.toMatch(/week/i);
+    expect(all('big-brother')).not.toMatch(/episode/i);
+    expect(all('total-drama') + all('big-brother')).not.toMatch(/\{round\}|\{exit\}/);
+  });
+});
+
+describe('the headline number', () => {
+  it('rewards a season one group loves over one nobody minds', () => {
+    const beloved = { teens: 30, youngAdults: 30, middleAged: 30, older: 90 };
+    const fine = { teens: 45, youngAdults: 45, middleAged: 45, older: 45 };
+    expect(overallOf(beloved)).toBeGreaterThan(overallOf(fine));
+  });
+
+  it('never leaves the scale', () => {
+    expect(overallOf({ teens: 0, youngAdults: 0, middleAged: 0, older: 0 })).toBe(0);
+    expect(overallOf({ teens: 100, youngAdults: 100, middleAged: 100, older: 100 })).toBe(100);
   });
 });

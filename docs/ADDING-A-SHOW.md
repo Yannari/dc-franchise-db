@@ -65,6 +65,7 @@ Every one of those needs **nothing** from you beyond the entry.
     ['challengeWins', 'totalLegWins'],
     ['votesReceived', 'totalPenalties'],
   ],
+  audience: { strategy: 0.6, mess: 1.3, twist: 1.1, steamroll: 0.8 },
 },
 ```
 
@@ -78,6 +79,14 @@ Every one of those needs **nothing** from you beyond the entry.
   and under what name. `_rebuildByShow()` in `js/stats-export.js` reads it and
   branches on nothing — `'bb.hohWins'` reaches into the nested block, a bare
   name is a top-level field.
+- `audience` is **what the show is FOR**, as the TV ratings read it: a
+  multiplier per signal on top of the four demographics' universal tastes in
+  `js/ratings.js`. Total Drama sells stunts and romance (`strategy: 0.7`),
+  Big Brother sells the vote (`strategy: 1.3`), and the steamroll penalty is
+  magnified there because "the same six ran the house all summer" is the
+  complaint about that show specifically. Omit it and your show is rated as
+  generic reality television — see §2.5, which is the part that actually
+  needs your attention.
 
 **The permanent rule you must not break:** *a bare integer is Total Drama.*
 `season=14` is Total Drama 14 for ever, every other show is `season=rr-14`.
@@ -107,6 +116,58 @@ Dispatch happens in `js/run-ui.js` — `simulateNext()` (~line 950) and again in
 the replay path (~line 1116). Both places choose the engine. **Add yours to both** —
 the replay path once knew only Total Drama's two engines, so a house had
 checkpoints it could never spend.
+
+---
+
+## 2.5 The ratings reader — `js/ratings.js`
+
+**Does the TV ratings system adapt to a new show on its own? Partly, and the
+half that does not is silent.**
+
+What adapts for free: the tiers, the four demographics, momentum, the season
+verdict, engagement, the retroactive pass. None of that knows what show it is
+reading. Register your show and it will produce a number on day one.
+
+What does **not** adapt: `readSignals`, which turns one episode record into
+eleven numbers. It has to know where YOUR engine wrote each fact, and every
+fact it cannot find reads as zero. A zero is not an error — it is "this did not
+happen this week" — so a mis-wired signal produces a plausible rating that is
+quietly wrong for ever.
+
+That is not hypothetical. Both existing shows shipped with it:
+
+- Total Drama files camp events one level deeper than Big Brother
+  (`{ camp: { pre: [...] } }` against a flat array), so every tone-derived
+  signal read zero for fourteen straight episodes.
+- Total Drama has no `changed` flag on a ballot — it records a flip in
+  `_flipDetectionLog`. Six consecutive seasons were rated as having had no
+  blindside in them at any point.
+
+Both were found by playing seasons and reading the numbers. Neither was found
+by a test, because there is nothing for a test to catch: the code ran fine.
+
+**So, for your show:**
+
+1. Point each signal at where your engine records it. The ones that need it are
+   `blindside` (`flippedVotes`), `predictable` (`statedTarget`), the tone
+   signals (`airedEvents`), and `returns`. The rest read fields both shows
+   already share — `eliminated`, `votingLog`, `houseAtStart`, `twists`,
+   `immunityWinner`/`hoh`.
+2. Declare `audience` in the registry (§1). Without it your show is rated as
+   generic reality television — the base table, no overlay. That is a
+   deliberate neutral fallback rather than inheriting Total Drama's, which
+   would rate your show as though it were a different one.
+3. **Play a season and print the signals before you believe any of it.** Every
+   signal should vary and none should sit pinned at zero or one. This is the
+   only check that works.
+4. Add your show to `tests/ratings-distribution.test.js`, which re-measures the
+   `CALIBRATION` bands and fails when a signal drifts out of the range the
+   table claims. That table is a snapshot of one measurement and it rots.
+
+One thing that is deliberately NOT per show: `CALIBRATION` itself. Big Brother
+genuinely produces more strategy per week than Total Drama does, and
+calibrating each show against itself would erase exactly the difference the
+`audience` overlay exists to express.
 
 ---
 
@@ -289,7 +350,9 @@ Each step leaves the site working.
 5. **Export** (§5) — reuse `weeks` or `votingHistory` if the format allows.
 6. **Publish one season** end to end. The site now has real data to render.
 7. **Screens** (§6), driven by that season rather than by imagination.
-8. **AI fills** (§7) last — they are the only step that costs money per run.
+8. **Ratings signals** (§2.5) — after step 6, because the only way to wire them
+   is to print them against a season that really happened.
+9. **AI fills** (§7) last — they are the only step that costs money per run.
 
 ---
 
@@ -302,6 +365,11 @@ The existing ones that will already catch you:
 - `tests/show-switcher.test.js` — the switcher holds no show list
 - `tests/season-format.test.js` — the export adapter matches the engine's shape
 - `tests/wiki.test.js` — each show's article uses its own vocabulary
+- `tests/ratings.test.js` — every registered show declares an `audience`
+  overlay (§1), and the same week must not rate identically on two shows
+- `tests/ratings-distribution.test.js` — re-measures the `CALIBRATION` bands
+  against played seasons, so a signal that drifts out of the range the table
+  claims fails loudly instead of quietly contributing a fraction of its weight
 
 **The vocabulary guard, added 2026-08-12** — the one this section used to say
 was missing:

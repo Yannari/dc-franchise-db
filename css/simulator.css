@@ -6324,6 +6324,53 @@
     @keyframes dropIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     @keyframes slideInLeft { from { transform: translateX(-40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
+    /* ── TV RATINGS ──
+       The trajectory is an SVG line, not a row of divs: it is a curve with a
+       shape, and the shape is why it is drawn week by week instead of
+       printed as one number. Tier colours run cold-to-warm so a season's
+       standing is legible before the label is read. */
+    .overview-ratings header > div > span { color: var(--sg-strategy); }
+    .ov-rt-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; margin-bottom: 10px; }
+    .ov-rt-tier { flex: 1 1 220px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); }
+    .ov-rt-tier label, .ov-rt-now label { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #8b949e; }
+    .ov-rt-tier strong { font-size: 26px; line-height: 1.05; letter-spacing: 0.02em; }
+    .ov-rt-tier em { font-style: normal; font-size: 12px; color: #8b949e; font-variant-numeric: tabular-nums; }
+    .ov-rt-tier.tier-dogwater { border-color: rgba(239,68,68,0.45); background: rgba(239,68,68,0.07); }
+    .ov-rt-tier.tier-dogwater strong { color: #f87171; }
+    .ov-rt-tier.tier-bad { border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.06); }
+    .ov-rt-tier.tier-bad strong { color: #fb923c; }
+    .ov-rt-tier.tier-okay strong { color: #d4b483; }
+    .ov-rt-tier.tier-average strong { color: #9aa4b2; }
+    .ov-rt-tier.tier-good { border-color: rgba(56,189,248,0.35); background: rgba(56,189,248,0.05); }
+    .ov-rt-tier.tier-good strong { color: #7dd3fc; }
+    .ov-rt-tier.tier-great { border-color: rgba(52,211,153,0.4); background: rgba(52,211,153,0.06); }
+    .ov-rt-tier.tier-great strong { color: #6ee7b7; }
+    .ov-rt-tier.tier-iconic { border-color: rgba(245,158,11,0.55); background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(99,102,241,0.06)); }
+    .ov-rt-tier.tier-iconic strong { color: #fbbf24; text-shadow: 0 0 18px rgba(245,158,11,0.35); }
+    .ov-rt-now { flex: 0 1 150px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); }
+    .ov-rt-now strong { font-size: 22px; font-variant-numeric: tabular-nums; }
+    .ov-rt-now span { font-size: 11px; color: #8b949e; font-variant-numeric: tabular-nums; }
+    .ov-rt-now span.up { color: #6ee7b7; }
+    .ov-rt-now span.down { color: #f87171; }
+    .ov-rt-curve { display: block; width: 100%; height: auto; max-height: 150px; margin-bottom: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; }
+    .ov-rt-band { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 5; opacity: 0.55; }
+    .ov-rt-twist { stroke: rgba(245,158,11,0.45); stroke-width: 1; stroke-dasharray: 2 4; }
+    .ov-rt-area { fill: rgba(99,102,241,0.14); stroke: none; }
+    .ov-rt-line { fill: none; stroke: #818cf8; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+    .ov-rt-dot { fill: #c7d2fe; stroke: #4c1d95; stroke-width: 1; }
+    .ov-rt-demos { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; }
+    .ov-rt-demo { display: flex; flex-direction: column; gap: 5px; padding: 9px 11px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; }
+    .ov-rt-demo-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .ov-rt-demo-top strong { font-size: 12px; }
+    .ov-rt-demo-top em { font-style: normal; font-size: 15px; font-variant-numeric: tabular-nums; color: #c9d1d9; }
+    .ov-rt-demo-top em.up { color: #6ee7b7; }
+    .ov-rt-demo-top em.down { color: #f87171; }
+    .ov-rt-demo-bar { height: 4px; border-radius: 3px; background: rgba(139,148,158,0.18); overflow: hidden; }
+    .ov-rt-demo-bar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #6366f1, #818cf8); }
+    .ov-rt-demo-note { font-size: 10.5px; line-height: 1.35; color: #8b949e; font-style: italic; }
+    .ov-rt-demo-note.good { color: #86c8a8; }
+    .ov-rt-demo-note.bad { color: #d09090; }
+
     /* ── AUDIENCE PULSE (edit layer, roadmap #6) ── */
     .overview-audience header > div > span { color: var(--sg-strategy); }
     .overview-edit-list { display: flex; flex-direction: column; gap: 6px; }

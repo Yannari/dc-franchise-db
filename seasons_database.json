@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 14,
-    "totalPlayers": 152,
+    "totalPlayers": 169,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
@@ -669,75 +669,41 @@
       "seasonNumber": 1,
       "format": "big-brother",
       "seasonId": "bb-1",
-      "title": "Big Brother Season 1: The House That Kept Receipts",
-      "subtitle": "A season of false counts, broken final twos, public apologies, and one winner who reached the end by surviving the exact weeks that should have exposed him.",
-      "castSize": 18,
+      "title": "Season 1: The Room Decides",
+      "subtitle": "A season where the plan broke more often than it held, and Misha won by being useful to every side until the final question.",
+      "castSize": 17,
       "episodeCount": 15,
-      "jurySize": 7,
+      "jurySize": 9,
       "winner": {
-        "name": "Wayne",
-        "playerSlug": "wayne",
-        "vote": "Wayne 4 — Priya 3 — Zee 0",
-        "runnerUp": "Priya & Zee",
-        "keyStats": "Wayne wins Season 1 by a 4–3 jury vote over Priya, with 2 HOH wins, 1 veto win, only 1 nomination, 1 veto save, and zero eviction votes cast against him all season.",
-        "strategy": "Wayne’s game is built on trust that looks simple until it starts winning votes. He makes people feel protected, lets bigger targets take the heat, and repeatedly positions himself inside overlapping groups without becoming the face of them. When the endgame arrives, he cuts where he has to, owns just enough of it at finale, and benefits from a jury that values the way he handled people on their way out.",
-        "legacy": "Wayne becomes the season’s first champion by proving that a quiet social game can beat a louder strategic résumé. His win is narrow, emotional, and messy in all the right ways: a 4–3 verdict decided less by one big move than by months of jury management, small kindnesses, and carefully timed survival."
+        "name": "Misha",
+        "playerSlug": "misha",
+        "vote": "Misha 5 — Jules 4 — Joel 0",
+        "runnerUp": "Jules & Joel",
+        "keyStats": "Misha won with 2 HOH wins, 4 veto wins, 3 wins under threat, 3 nominations, 3 times pulled off the block, zero eviction votes against, and a 5–4 jury vote over Jules.",
+        "strategy": "Misha’s winning game was not clean control; it was durable positioning. She moved between structures, kept enough personal bonds alive to survive danger, and converted late comp wins into the only choices that mattered. Her best work was making people believe she was an available number even when she was quietly choosing which room survived the week.",
+        "legacy": "Misha becomes the first winner as the season’s best hybrid: socially insulated enough to be saved, competitive enough to save herself, and ruthless enough to cut Joel at final three. The win is narrow, but it is not accidental."
       },
       "awards": {
         "fanFavorite": {
-          "name": "Caleb",
-          "playerSlug": "caleb"
+          "name": "Tobias",
+          "playerSlug": "tobias"
         },
         "bestStrategic": {
-          "name": "Priya",
-          "playerSlug": "priya"
+          "name": "Misha",
+          "playerSlug": "misha"
         },
         "mostChallengeWins": {
-          "name": "Caleb",
-          "playerSlug": "caleb",
-          "detail": "6 comp wins"
+          "name": "Ireland",
+          "playerSlug": "ireland",
+          "detail": "7 comp wins"
         }
       },
-      "theme": "Season 1 is a house built on bad information. The saboteur twist poisons the early weeks, not because Chase earns the most money, but because everyone starts believing the wrong person at the wrong time. Early power swings are brutal: Millie wins an instant HOH and leaves the next week, Raj exposes his Wayne bond too soon, and Bowie becomes the season’s first true tactician by weaponizing rooms, rumors, and replacement nominations. The middle game is a maze of alliances with names that stop meaning what they used to mean: The Undertow, The Wildcard Pact, The Signal, The Guard, and The Outwit Club all protect people until the vote count says they do not. Caleb becomes the comp monster, Priya becomes the strategist, Zee becomes the social survivor, and Wayne becomes the player jurors keep forgiving. By the end, nearly every finalist has betrayed somebody on the jury, but Wayne’s betrayals feel less like contempt and more like survival. Priya wins the final HOH and cuts Zee, the most personal move of the season, only to lose 4–3 to Wayne. It is a season decided by one vote, but built by a hundred small conversations nobody thought mattered at the time.",
+      "theme": "Season 1 was defined by a simple fact: the plan held only five times and broke ten. This was not a steamroll; it was a room constantly re-deciding itself. Early power structures like The Power Couple, The Dock Pact, The Oath and The War Room looked solid until one vote exposed the cracks. Comp threats like Ireland and Dylon forced the house to spend weeks solving immediate survival problems, while social players like Misha, Jules, Tobias and Jane made those solutions possible. The jury rewarded the player who best combined both modes. Misha did not dominate every week, but she was present in enough rooms, saved by enough relationships, and clutch in enough late competitions to win 5–4.",
       "status": "Complete",
       "castPhotoPath": "assets/cast/bb-1-cast.png",
       "emoji": "",
       "airYear": 2026,
-      "airSlot": "summer",
-      "ratings": {
-        "v": 1,
-        "score": 71.3,
-        "tier": {
-          "key": "great",
-          "label": "Great",
-          "min": 65
-        },
-        "demos": {
-          "teens": 34.2,
-          "youngAdults": 30.4,
-          "middleAged": 54.4,
-          "older": 92.4
-        },
-        "curve": [
-          46.5,
-          45.3,
-          49.3,
-          57.6,
-          72.5,
-          77.4,
-          82,
-          86.7,
-          77,
-          72,
-          73.2,
-          79.6,
-          81.2,
-          72.2,
-          70.7
-        ],
-        "throughEpisode": 15,
-        "complete": false
-      }
+      "airSlot": "summer"
     }
   ]
 }

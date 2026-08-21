@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 14,
-    "totalPlayers": 152,
+    "totalPlayers": 169,
     "description": "Total Drama franchise player statistics and performance data"
   },
   "players": [
@@ -7883,16 +7883,15 @@
       "id": "axel",
       "name": "Axel",
       "seasons": [
-        9,
-        1
+        9
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 1,
       "bestPlacement": 10,
       "wins": 0,
       "totalChallengeWins": 2,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 18,
+      "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -7932,35 +7931,6 @@
           ],
           "format": "total-drama",
           "seasonId": "td-9"
-        },
-        {
-          "season": 1,
-          "placement": 18,
-          "status": "Pre-Jury",
-          "challengeWins": 0,
-          "votesReceived": 13,
-          "juryVotes": 0,
-          "popularity": 4.2,
-          "bb": {
-            "hohWins": 0,
-            "vetoWins": 0,
-            "timesNominated": 1,
-            "timesOnBlock": 1,
-            "timesSaved": 0
-          },
-          "notes": [
-            "Axel’s bluntness makes her the first easy consensus target in a house desperate for one."
-          ],
-          "gameplayStyle": "blunt force, no runway",
-          "keyMoments": [
-            "Week 1: Clashes with Emmah over food and becomes the house’s first loud story.",
-            "Week 1: Is nominated by Millie during the instant eviction.",
-            "Week 1: Has no veto available and no full week to campaign.",
-            "Week 1: Pitches herself as direct danger the house can use.",
-            "Week 1: Is evicted 13–2 against Emmah."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "Axel storms in as the survivalist enforcer on a starving Yellow, trying to impose order on chaos he can’t control. He rides Bowie’s early structure, then becomes the immune hammer at the first merge vote as Ripper takes the bullet. In the split, the Amazon finds herself trapped on the wrong side of four votes and no bridges. Her exit is all physics—too strong to carry forward, too isolated to save.",
@@ -7971,34 +7941,26 @@
           "totalImmunityWins": 1,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 0,
-          "hohWins": 0,
-          "vetoWins": 0,
-          "timesNominated": 1
         }
       },
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "avgPlacement": 14
+      "avgPlacement": 10
     },
     {
       "id": "bowie",
       "name": "Bowie",
       "seasons": [
         9,
-        10,
-        1
+        10
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 2,
       "bestPlacement": 1,
       "wins": 1,
-      "totalChallengeWins": 7,
+      "totalChallengeWins": 2,
       "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 24,
+      "totalVotesAgainst": 12,
       "totalIdolsFound": 3,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8089,41 +8051,10 @@
           ],
           "format": "total-drama",
           "seasonId": "td-10"
-        },
-        {
-          "season": 1,
-          "placement": 8,
-          "status": "Jury",
-          "challengeWins": 5,
-          "votesReceived": 12,
-          "juryVotes": 0,
-          "popularity": 81.69999999999997,
-          "bb": {
-            "hohWins": 3,
-            "vetoWins": 2,
-            "timesNominated": 5,
-            "timesOnBlock": 3,
-            "timesSaved": 2
-          },
-          "notes": [
-            "Bowie is the season’s great tactician until his threat level finally becomes too obvious to protect."
-          ],
-          "gameplayStyle": "smiling knife, vote architect",
-          "keyMoments": [
-            "Week 4: Wins HOH and nominates Caleb and Chase.",
-            "Week 4: Uses Julia’s veto outcome to renom Ripper and send him out 10–2.",
-            "Week 6: Wins HOH and nominates Scary Girl and Raj.",
-            "Week 7: Wins veto while nominated and forces Chase into the replacement chair.",
-            "Week 9: Wins HOH and nominates Zee and Raj, with MK as the real backdoor target.",
-            "Week 10: Wins veto while on the block and forces Caleb into danger.",
-            "Week 11: Is evicted 5–0 against Raj after Hicks’s HOH."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "He walks in smiling, the nice guy with perfect hair, and quietly builds a web strong enough to catch idols mid‑flight. Early on he shelters behind louder shields, letting Ripper and Axel eat heat while he courts bonds across tribes. The turning point is the Inheritance Heist at the merge—Bowie absorbs Emmah’s stolen powers and leaves Tribal with a toolbox nobody saw coming. From there he steals Julia’s idol on live TV, betrays Priya at the precise second her stock peaks, and wins the fire duel against Damien when it matters most. His endgame is cold and clinical, but never sloppy, selling ruthlessness as inevitability. When the votes are read, the jury rewards the architect who owned the season’s chaos rather than survived it.\n\nSEASON 10 — Champions vs Contenders\n────────\nBowie starts fast, finding an idol in Episode 1 and immediately assembling The Movement with names, targets, and order. His pre-merge is defined by cold reversals: he cuts Gwen, betrays Mickey, reclaims credit from Courtney, and keeps turning fractured alliances into usable machinery. At merge, he becomes the gravitational center of the season, steering the ambassador decision that sends Stephanie home and then using The Oath as a weapon against Scott and Priya. But the same visibility that makes him powerful also makes him radioactive, with Courtney, Priya, Scott, and others naming him as the architect on their way out. In the endgame, he wins survival immunity, reaches the final two, and stands one challenge away from finishing the masterpiece. The relay exposes his one weakness: when the board disappears and the finish line is physical, Bowie cannot talk the course into obeying him.",
-      "avgPlacement": 3.67,
+      "avgPlacement": 1.5,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -8131,32 +8062,24 @@
           "totalImmunityWins": 2,
           "totalRewardWins": 0,
           "totalIdolsFound": 3
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 5,
-          "hohWins": 3,
-          "vetoWins": 2,
-          "timesNominated": 5
         }
       },
-      "totalHohWins": 3,
-      "totalVetoWins": 2
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "brightly",
       "name": "Brightly",
       "seasons": [
-        9,
-        1
+        9
       ],
-      "totalSeasons": 2,
-      "bestPlacement": 11,
+      "totalSeasons": 1,
+      "bestPlacement": 13,
       "wins": 0,
-      "totalChallengeWins": 1,
+      "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 12,
+      "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8194,37 +8117,6 @@
           ],
           "format": "total-drama",
           "seasonId": "td-9"
-        },
-        {
-          "season": 1,
-          "placement": 11,
-          "status": "Pre-Jury",
-          "challengeWins": 1,
-          "votesReceived": 5,
-          "juryVotes": 0,
-          "popularity": -1.6199999999999983,
-          "bb": {
-            "hohWins": 0,
-            "vetoWins": 1,
-            "timesNominated": 2,
-            "timesOnBlock": 1,
-            "timesSaved": 1
-          },
-          "notes": [
-            "Brightly sees the shape of the house early, but too many side deals make them impossible to keep."
-          ],
-          "gameplayStyle": "early solver, overextended web",
-          "keyMoments": [
-            "Week 2: Wins the Power of Veto and saves themselves from Raj’s nominations.",
-            "Week 2: Watches Millie become the replacement and leave 9–5.",
-            "Week 3: Becomes central to the Wildcard Pact and Undertow overlap.",
-            "Week 5: Survives Wayne’s HOH from off the block while Julia leaves.",
-            "Week 7: Votes out Chase despite their final three, breaking a major promise.",
-            "Week 8: Is nominated by Caleb beside Damien.",
-            "Week 8: Is evicted 5–3 against Bowie."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "She starts as the daycare chemist, pairing high EQ with high IQ to stabilize Red and eliminate Zee. The bond with Hicks feels unbreakable—until his rescue of Emmah exposes competing formulas for control. After the swap, the lab explodes; cut off from her partner and surrounded by Yellows, Brightly becomes the obvious pre‑merge casualty. She keeps her hands clean and her read sharp, but a perfect 4–1 makes the end of the experiment official.",
@@ -8235,34 +8127,26 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 1,
-          "hohWins": 0,
-          "vetoWins": 1,
-          "timesNominated": 2
         }
       },
       "totalHohWins": 0,
-      "totalVetoWins": 1,
-      "avgPlacement": 12
+      "totalVetoWins": 0,
+      "avgPlacement": 13
     },
     {
       "id": "caleb",
       "name": "Caleb",
       "seasons": [
         9,
-        13,
-        1
+        13
       ],
-      "totalSeasons": 3,
-      "bestPlacement": 4,
+      "totalSeasons": 2,
+      "bestPlacement": 5,
       "wins": 0,
-      "totalChallengeWins": 7,
+      "totalChallengeWins": 1,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 14,
+      "totalVotesAgainst": 10,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8336,41 +8220,10 @@
           ],
           "format": "total-drama",
           "seasonId": "td-13"
-        },
-        {
-          "season": 1,
-          "placement": 4,
-          "status": "Jury",
-          "challengeWins": 6,
-          "votesReceived": 4,
-          "juryVotes": 0,
-          "popularity": 133.79999999999995,
-          "bb": {
-            "hohWins": 1,
-            "vetoWins": 5,
-            "timesNominated": 5,
-            "timesOnBlock": 2,
-            "timesSaved": 3
-          },
-          "notes": [
-            "Caleb dominates veto competitions and becomes America’s Favourite, but his jury threat finally becomes too large to hide."
-          ],
-          "gameplayStyle": "veto furnace, open heart",
-          "keyMoments": [
-            "Week 3: Wins his first veto in Cold Comfort and chooses not to use it.",
-            "Week 8: Wins HOH in Rollin' in the Dough and nominates Brightly and Damien.",
-            "Week 10: Survives the block when Priya breaks a tie against Emmah.",
-            "Week 11: Wins veto with his own game at risk and keeps nominations the same.",
-            "Week 12: Wins veto in The Black Box and saves himself, forcing Raj up.",
-            "Week 13: Wins the Final Six veto and saves himself again.",
-            "Week 15: Is evicted 1–0 by Wayne despite being the season’s biggest comp résumé."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "A physical pillar on Red, Caleb never finds the same footing socially. When fear becomes the challenge, paranoia takes the wheel; he and Millie both fire Shot in the Dark, but only Millie hits. Hicks chooses loyalty over horsepower and sends Caleb home 2–1. He’s the pre‑merge reminder that in a game of feelings, muscles only carry you so far.\n\nSEASON 13 — Total Drama Doom Island\n────────\nCaleb starts strong in challenges but messy in conversations, often saying too much at the wrong time. Over the season, he becomes a bridge between camps, especially through MacArthur, Jake, and later Riya. His immunity win at That's Off the Chain! proves he can dominate when the spotlight hits him. At final six, everyone understands the same truth: Caleb has too many friends, and that makes him too dangerous to keep.",
-      "avgPlacement": 8,
+      "avgPlacement": 10,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -8378,33 +8231,25 @@
           "totalImmunityWins": 1,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 6,
-          "hohWins": 1,
-          "vetoWins": 5,
-          "timesNominated": 5
         }
       },
-      "totalHohWins": 1,
-      "totalVetoWins": 5
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "chase",
       "name": "Chase",
       "seasons": [
         9,
-        12,
-        1
+        12
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 2,
       "bestPlacement": 3,
       "wins": 0,
       "totalChallengeWins": 3,
       "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 18,
+      "totalVotesAgainst": 11,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8485,41 +8330,10 @@
           ],
           "format": "total-drama",
           "seasonId": "td-12"
-        },
-        {
-          "season": 1,
-          "placement": 12,
-          "status": "Pre-Jury",
-          "challengeWins": 0,
-          "votesReceived": 7,
-          "juryVotes": 0,
-          "popularity": 51.75,
-          "bb": {
-            "hohWins": 0,
-            "vetoWins": 0,
-            "timesNominated": 2,
-            "timesOnBlock": 2,
-            "timesSaved": 0
-          },
-          "notes": [
-            "Chase is the saboteur, the early social connector, and the pre-jury player whose secret war bends the season without saving him."
-          ],
-          "gameplayStyle": "smiling saboteur, soft chaos",
-          "keyMoments": [
-            "Week 1: Accepts the first saboteur mission and is spotted by Zee.",
-            "Week 3: Successfully wrecks the week by flipping the memory wall photos.",
-            "Week 4: Breaks Ripper’s campaign by arriving in rooms before him.",
-            "Week 5: Is publicly revealed as the saboteur and banks $10,000.",
-            "Week 6: Survives as the social center of the MK showmance.",
-            "Week 7: Is renominated after Bowie uses veto on himself.",
-            "Week 7: Is evicted 5–4 against Hicks."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "Chase begins as Bowie’s pliable lieutenant on a starving Yellow, but his pocket game is real—he finds the tribe idol and detonates it in the swap to topple Hicks. The merge casts him as swing between the Misfits and the Core, and he stockpiles leverage with a secret Vote Stopper. His late surge defines him: advantage sprint, obstacle‑course immunity, then the dare‑soaked finale necklace to seize final agency. Choosing Millie as his goat backfires when Bowie wins fire, turning Chase from kingmaker to runner‑up. The jury respects the fight but not the steering wheel, leaving his resume a highlight reel without authorship.\n\nSEASON 12 — Total Drama: Generations\n────────\nChase plays like a shadow: quiet, likable, and hard to pin down. He builds real early loyalty with Yul and a strong bond with Kai, then detaches from alliances when they become too heavy. That instinct keeps him fluid, but it also leaves him without enough structure when Saplings implodes. He is frequently in conversations, rarely the loudest voice, and often the person others want nearby until they need a name. At the Full Metal Drama Tribal, the whole tribe scatters and no bloc lands cleanly. Chase loses the obstacle-course tiebreaker to Riya, a brutal end for a player who nearly slipped through.",
-      "avgPlacement": 10.33,
+      "avgPlacement": 9.5,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -8527,13 +8341,6 @@
           "totalImmunityWins": 2,
           "totalRewardWins": 0,
           "totalIdolsFound": 1
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 0,
-          "hohWins": 0,
-          "vetoWins": 0,
-          "timesNominated": 2
         }
       },
       "totalHohWins": 0,
@@ -8544,16 +8351,15 @@
       "name": "Damien",
       "seasons": [
         9,
-        13,
-        1
+        13
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 2,
       "bestPlacement": 4,
       "wins": 0,
-      "totalChallengeWins": 6,
+      "totalChallengeWins": 5,
       "totalImmunityWins": 1,
       "totalRewardWins": 4,
-      "totalVotesAgainst": 9,
+      "totalVotesAgainst": 8,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8631,41 +8437,10 @@
           ],
           "format": "total-drama",
           "seasonId": "td-13"
-        },
-        {
-          "season": 1,
-          "placement": 5,
-          "status": "Jury",
-          "challengeWins": 1,
-          "votesReceived": 1,
-          "juryVotes": 0,
-          "popularity": 89.39999999999995,
-          "bb": {
-            "hohWins": 1,
-            "vetoWins": 0,
-            "timesNominated": 2,
-            "timesOnBlock": 1,
-            "timesSaved": 1
-          },
-          "notes": [
-            "Damien plays a perceptive, relationship-heavy game that reaches Final Five before one tie-breaker ends it."
-          ],
-          "gameplayStyle": "quiet reads, soft leverage",
-          "keyMoments": [
-            "Week 4: Builds trust with Priya after a private emotional moment.",
-            "Week 8: Is nominated by Caleb, then saved by Priya’s veto.",
-            "Week 10: Votes to keep Emmah in the 3–3 tie that Priya breaks.",
-            "Week 12: Wins HOH and nominates Caleb and Zee.",
-            "Week 12: Renominates Raj after Caleb uses the veto, setting up Raj’s eviction.",
-            "Week 14: Is forced onto the block as the only replacement after Caleb uses the veto on Wayne.",
-            "Week 14: Is evicted on Zee’s tie-breaking vote against Priya."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "Damien is the season’s steady heartbeat—calm in storms, a competitor when it counts. He anchors Blue early, then the merge, stacking wins while cultivating Unbreakables with Priya and Bowie that make him the safest smart guy in the room. He finds the Campers idol quietly and uses restraint as a weapon, surviving crossfires and winning sanctuary when everyone else is starving. The late game forces a choice between heart and heat; he backs Millie and still protects Bowie in Idol Armageddon, only to meet him at the rope. Fire decides what politics couldn’t—Damien’s spark comes late, Bowie’s rope snaps first, and the season’s conscience becomes its final heartbreak.\n\nSEASON 13 — Total Drama Doom Island\n────────\nDamien comes in determined to prove he belongs, but the early game keeps putting him on the wrong side of power. He bonds deeply with Julia, survives humiliation, and repeatedly tries to play straight in a crooked season. His honesty earns respect, especially on Truth or Shark, but it also makes him easy to map and easier to cut. When the Episode 8 revote arrives, Damien has no vote, no shield, and no way to stop the tide.",
-      "avgPlacement": 8,
+      "avgPlacement": 9.5,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -8673,16 +8448,9 @@
           "totalImmunityWins": 1,
           "totalRewardWins": 4,
           "totalIdolsFound": 1
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 1,
-          "hohWins": 1,
-          "vetoWins": 0,
-          "timesNominated": 2
         }
       },
-      "totalHohWins": 1,
+      "totalHohWins": 0,
       "totalVetoWins": 0
     },
     {
@@ -8690,16 +8458,15 @@
       "name": "Emmah",
       "seasons": [
         9,
-        12,
-        1
+        12
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 2,
       "bestPlacement": 5,
       "wins": 0,
-      "totalChallengeWins": 3,
+      "totalChallengeWins": 2,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 16,
+      "totalVotesAgainst": 11,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8776,41 +8543,10 @@
           "rivalries": [],
           "format": "total-drama",
           "seasonId": "td-12"
-        },
-        {
-          "season": 1,
-          "placement": 9,
-          "status": "Jury",
-          "challengeWins": 1,
-          "votesReceived": 5,
-          "juryVotes": 0,
-          "popularity": 26.840000000000003,
-          "bb": {
-            "hohWins": 1,
-            "vetoWins": 0,
-            "timesNominated": 2,
-            "timesOnBlock": 2,
-            "timesSaved": 0
-          },
-          "notes": [
-            "Emmah plays loud, precise, and personal, becoming the first juror after Priya breaks a tie against her."
-          ],
-          "gameplayStyle": "direct fire, personal precision",
-          "keyMoments": [
-            "Week 1: Survives the instant eviction against Axel by a 13–2 vote.",
-            "Week 2: Forms a final three with Damien and Zee.",
-            "Week 7: Wins the endurance HOH on The Wall.",
-            "Week 7: Nominates Hicks and Bowie and makes the week openly personal.",
-            "Week 10: Is nominated by Priya beside Bowie.",
-            "Week 10: Faces Caleb after Bowie’s veto and loses on Priya’s tie-breaker.",
-            "Week 10: Enters jury as its first member."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "Written off as a pawn on Red, Emmah flips the board by turning information into theft. She fractures from Hicks/Brightly, then reaches the merge and publicly rips Wayne’s Extra Vote with Knowledge is Power, doubling her own ballot to erase Ripper. That swagger paints her as the new boss, and she rides the Misfits’ wave while sparring with Wayne’s allies and surviving as a visible threat. Her downfall is the idol storm at five—both big totems get flashed and Emmah is the only blade left bare. The robber who emptied pockets gets ushered to the jury with nothing left to steal.\n\nSEASON 12 — Total Drama: Generations\n────────\nEmmah arrives saying this time might be different, but the island gets quiet for a reason. She performs well in the opening challenge and looks like someone who could matter, maybe more than people expected. Around camp, though, confidence becomes ammunition, and her name gains speed. Riya distrusts her, Ally centers the vote against her, and the Shot in the Dark gives her no rescue. At Tribal, Emmah keeps her composure until the votes land. Then she leaves by torchlight and detonates the truth: Ally ran the first vote, and everyone should remember it.",
-      "avgPlacement": 11.33,
+      "avgPlacement": 12.5,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -8818,16 +8554,9 @@
           "totalImmunityWins": 1,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 1,
-          "hohWins": 1,
-          "vetoWins": 0,
-          "timesNominated": 2
         }
       },
-      "totalHohWins": 1,
+      "totalHohWins": 0,
       "totalVetoWins": 0
     },
     {
@@ -8835,16 +8564,15 @@
       "name": "Hicks",
       "seasons": [
         9,
-        10,
-        1
+        10
       ],
-      "totalSeasons": 3,
-      "bestPlacement": 6,
+      "totalSeasons": 2,
+      "bestPlacement": 12,
       "wins": 0,
-      "totalChallengeWins": 2,
+      "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 18,
+      "totalVotesAgainst": 12,
       "totalIdolsFound": 2,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -8916,41 +8644,10 @@
           "rivalries": [],
           "format": "total-drama",
           "seasonId": "td-10"
-        },
-        {
-          "season": 1,
-          "placement": 6,
-          "status": "Jury",
-          "challengeWins": 2,
-          "votesReceived": 6,
-          "juryVotes": 0,
-          "popularity": 80.85999999999997,
-          "bb": {
-            "hohWins": 2,
-            "vetoWins": 0,
-            "timesNominated": 2,
-            "timesOnBlock": 2,
-            "timesSaved": 0
-          },
-          "notes": [
-            "Hicks builds strong rooms and sharp reads, but his late-game safety disappears the moment Wayne turns power on him."
-          ],
-          "gameplayStyle": "watchful broker, brittle trust",
-          "keyMoments": [
-            "Week 3: Wins HOH and nominates Nichelle and MK.",
-            "Week 3: Keeps nominations intact after Caleb wins veto, leading to Nichelle’s eviction.",
-            "Week 7: Survives the block against Chase by a single vote.",
-            "Week 11: Wins HOH and nominates Bowie and Raj.",
-            "Week 11: Watches Bowie leave unanimously while Raj survives as the pawn.",
-            "Week 13: Is nominated by Wayne beside Caleb.",
-            "Week 13: Is evicted 2–1 against Priya after Caleb saves himself."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "The Southern observer becomes Red’s whispering king, reading motive better than anyone. He saves Emmah over Caleb with two quiet votes, cracking his ‘unbreakable’ with Brightly in service of control. The swap strands him across from a unified Yellow bloc and a wary Millie. Idol fireworks erase the initial hit on Chase, and the revote puts Hicks alone at the guillotine. He leaves with the right reads and the wrong numbers, a tactician undone by timing.\n\nSEASON 10 — Champions vs Contenders\n────────\nHicks begins the game as one of the most observant players on the beach, spotting Jasmine's advantage and later finding an idol of his own. He runs early structure on the Contenders tribe, positioning Tyler and reading alliance cracks before others admit they exist. His problem is that social perception does not always become social control. By Episode 8, he is liked enough to be dangerous and exposed enough to be consensus. Scott offers him a plan that feels clean, and Hicks makes the fatal mistake of turning trust into an object by handing over the idol. The vote lands on him anyway, and Redemption Island confirms that reading the game is not the same as surviving it.",
-      "avgPlacement": 10.67,
+      "avgPlacement": 13,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -8958,16 +8655,9 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 2
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 2,
-          "hohWins": 2,
-          "vetoWins": 0,
-          "timesNominated": 2
         }
       },
-      "totalHohWins": 2,
+      "totalHohWins": 0,
       "totalVetoWins": 0
     },
     {
@@ -8975,16 +8665,15 @@
       "name": "Julia",
       "seasons": [
         9,
-        13,
-        1
+        13
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 2,
       "bestPlacement": 2,
       "wins": 0,
-      "totalChallengeWins": 8,
+      "totalChallengeWins": 7,
       "totalImmunityWins": 5,
       "totalRewardWins": 2,
-      "totalVotesAgainst": 20,
+      "totalVotesAgainst": 13,
       "totalIdolsFound": 4,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -9070,40 +8759,10 @@
           ],
           "format": "total-drama",
           "seasonId": "td-13"
-        },
-        {
-          "season": 1,
-          "placement": 14,
-          "status": "Pre-Jury",
-          "challengeWins": 1,
-          "votesReceived": 7,
-          "juryVotes": 0,
-          "popularity": 31.5,
-          "bb": {
-            "hohWins": 0,
-            "vetoWins": 1,
-            "timesNominated": 1,
-            "timesOnBlock": 1,
-            "timesSaved": 0
-          },
-          "notes": [
-            "Julia plays openly, sharply, and too visibly, leaving after Wayne’s HOH turns her own momentum against her."
-          ],
-          "gameplayStyle": "open blade, exposed plans",
-          "keyMoments": [
-            "Week 1: Breaks the twist silence and immediately marks herself as fearless.",
-            "Week 4: Wins the Pure Chance veto.",
-            "Week 4: Uses the veto on Caleb, allowing Ripper to be renominated.",
-            "Week 5: Is nominated by Wayne beside Bowie.",
-            "Week 5: Moves Scary Girl with her final plea, but cannot flip the vote.",
-            "Week 5: Is evicted 7–4 and exposes the Priya-Wayne connection at the door."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "She enters as the Ice Queen and never warms. On Blue she weaponizes disdain into control, then at the three-tribe twist she springs the season’s coldest trap—seducing Raj into pocketing an idol as she votes him out 2–1. At the merge she sides with the outcasts, then endures a public stripping when Bowie robs her idol with Knowledge is Power. Spite becomes fuel; she flips between blocs, helps oust Priya, and still commands attention until the house finally unites. Silenced by Chase’s Vote Stopper and buried 6–0, Julia exits as the villain the story needed—loud, lethal, unforgettable.\n\nSEASON 13 — Total Drama Doom Island\n────────\nJulia arrives with a Beware Advantage, an idol trail, and the confidence of someone who expects chaos to bend around her. She engineers safety through ambassadors, sabotage, immunity wins, and carefully placed information. Her game is relentless: she cuts threats, courts shields, and turns even a volleyball named Wilson into a psychological landmark. But the same sharpness that gets her to the finale leaves too many people bruised, and in the final race, Wayne's bench screams louder than hers.",
-      "avgPlacement": 7.33,
+      "avgPlacement": 4,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -9111,32 +8770,24 @@
           "totalImmunityWins": 5,
           "totalRewardWins": 2,
           "totalIdolsFound": 4
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 1,
-          "hohWins": 0,
-          "vetoWins": 1,
-          "timesNominated": 1
         }
       },
       "totalHohWins": 0,
-      "totalVetoWins": 1
+      "totalVetoWins": 0
     },
     {
       "id": "mk",
       "name": "MK",
       "seasons": [
-        9,
-        1
+        9
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 1,
       "bestPlacement": 8,
       "wins": 0,
-      "totalChallengeWins": 5,
+      "totalChallengeWins": 4,
       "totalImmunityWins": 1,
       "totalRewardWins": 3,
-      "totalVotesAgainst": 15,
+      "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -9175,37 +8826,6 @@
           ],
           "format": "total-drama",
           "seasonId": "td-9"
-        },
-        {
-          "season": 1,
-          "placement": 10,
-          "status": "Jury",
-          "challengeWins": 1,
-          "votesReceived": 11,
-          "juryVotes": 0,
-          "popularity": 48.660000000000004,
-          "bb": {
-            "hohWins": 0,
-            "vetoWins": 1,
-            "timesNominated": 3,
-            "timesOnBlock": 3,
-            "timesSaved": 0
-          },
-          "notes": [
-            "MK gathers information everywhere, but her social web snaps after Chase leaves and Priya makes her the replacement target."
-          ],
-          "gameplayStyle": "quiet files, sharp corners",
-          "keyMoments": [
-            "Week 3: Survives the block against Nichelle after a 10–3 vote.",
-            "Week 4: Helps the Ripper vote come together and owns it in goodbye messages.",
-            "Week 5: Wins the Tower of Hanoi veto and chooses not to use it.",
-            "Week 6: Survives as Bowie’s replacement nominee against Scary Girl.",
-            "Week 7: Votes out Chase despite their showmance, creating one of the season’s messiest emotional breaks.",
-            "Week 9: Is renominated after Priya saves Zee with the veto.",
-            "Week 9: Is evicted 6–1 against Raj."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "MK watches, catalogs, and lets noisier players set fires she can later route around. Her pre-merge feud with Julia explodes and then freezes into a truce at the merge, where she helps notch the Ripper vote and wins Horror immunity to dodge a consensus boot. When Bowie strips Julia’s idol, MK gambles on Shot in the Dark beside her nemesis—and loses the numbers game. The jury sees a technician who moved subtly but never seized the steering wheel once the bombs started flying.",
@@ -9216,33 +8836,25 @@
           "totalImmunityWins": 1,
           "totalRewardWins": 3,
           "totalIdolsFound": 0
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 1,
-          "hohWins": 0,
-          "vetoWins": 1,
-          "timesNominated": 3
         }
       },
       "totalHohWins": 0,
-      "totalVetoWins": 1,
-      "avgPlacement": 9
+      "totalVetoWins": 0,
+      "avgPlacement": 8
     },
     {
       "id": "millie",
       "name": "Millie",
       "seasons": [
-        9,
-        1
+        9
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 1,
       "bestPlacement": 2,
       "wins": 0,
-      "totalChallengeWins": 2,
+      "totalChallengeWins": 1,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 10,
+      "totalVotesAgainst": 1,
       "totalIdolsFound": 1,
       "totalJuryVotes": 3,
       "tier": "S",
@@ -9285,36 +8897,6 @@
           ],
           "format": "total-drama",
           "seasonId": "td-9"
-        },
-        {
-          "season": 1,
-          "placement": 17,
-          "status": "Pre-Jury",
-          "challengeWins": 1,
-          "votesReceived": 9,
-          "juryVotes": 0,
-          "popularity": 20.459999999999997,
-          "bb": {
-            "hohWins": 1,
-            "vetoWins": 0,
-            "timesNominated": 1,
-            "timesOnBlock": 1,
-            "timesSaved": 0
-          },
-          "notes": [
-            "Millie wins the first HOH, makes the first irreversible move, and pays for it one week later."
-          ],
-          "gameplayStyle": "early spark, exposed pawn",
-          "keyMoments": [
-            "Week 1: Wins the first HOH in the instant eviction format.",
-            "Week 1: Nominates Axel and Emmah without any veto in play.",
-            "Week 1: Watches Axel leave 13–2 and inherits the consequences.",
-            "Week 2: Is renominated after Brightly saves themselves with veto.",
-            "Week 2: Loses the Wildcard Pact numbers she thought she had.",
-            "Week 2: Is evicted 9–5 against Zee."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "Dismissed early as the quiet author, Millie keeps receipts while bigger egos collide. On old Red she pockets the Beware Idol, surviving the Hicks/Brightly civil war by appearing harmless and useful. She forges iron bonds—first with Priya, later with Julia—acting as the bridge nobody wants to burn. Her defining night is the Priya shield: reading the room, she plays her idol on her best friend and flips a 5–0 rout into the season’s great escape. As the field thins, she wins at Revolver, outlasts every other woman, and arrives at Final Tribal as the moral alternative to Bowie’s blade. Three votes prove respect for the undercurrent she piloted beneath the waves.",
@@ -9325,33 +8907,25 @@
           "totalImmunityWins": 1,
           "totalRewardWins": 0,
           "totalIdolsFound": 1
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 1,
-          "hohWins": 1,
-          "vetoWins": 0,
-          "timesNominated": 1
         }
       },
-      "totalHohWins": 1,
+      "totalHohWins": 0,
       "totalVetoWins": 0,
-      "avgPlacement": 9.5
+      "avgPlacement": 2
     },
     {
       "id": "nichelle",
       "name": "Nichelle",
       "seasons": [
-        9,
-        1
+        9
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 1,
       "bestPlacement": 16,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 17,
+      "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -9388,36 +8962,6 @@
           ],
           "format": "total-drama",
           "seasonId": "td-9"
-        },
-        {
-          "season": 1,
-          "placement": 16,
-          "status": "Pre-Jury",
-          "challengeWins": 0,
-          "votesReceived": 10,
-          "juryVotes": 0,
-          "popularity": 19.340000000000003,
-          "bb": {
-            "hohWins": 0,
-            "vetoWins": 0,
-            "timesNominated": 1,
-            "timesOnBlock": 1,
-            "timesSaved": 0
-          },
-          "notes": [
-            "Nichelle’s social subtlety keeps her alive early, but once she hits the block she cannot rebuild the vote fast enough."
-          ],
-          "gameplayStyle": "soft read, late alarm",
-          "keyMoments": [
-            "Week 1: Builds an early connection with Damien and later Zee.",
-            "Week 2: Performs strongly in Caged Eggs but remains socially adrift.",
-            "Week 3: Is nominated by Hicks beside MK.",
-            "Week 3: Exposes how much of the house is moving without her.",
-            "Week 3: Moves Chase with her final plea in the living room.",
-            "Week 3: Is evicted 10–3 against MK."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "On a starving Yellow, Nichelle is the tribe’s heart—and the easiest cut for a puppet master. After surviving the rock draw war with Bowie and Axel, she senses danger but trusts her bond with Chase. When both she and Ripper burn Shot in the Dark, she loses her vote and her shield, and Bowie sweeps the table 3–0. She leaves early, liked but unarmed, in a tribe where trust was a luxury no one could afford.",
@@ -9428,13 +8972,6 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 0,
-          "hohWins": 0,
-          "vetoWins": 0,
-          "timesNominated": 1
         }
       },
       "totalHohWins": 0,
@@ -9446,18 +8983,17 @@
       "name": "Priya",
       "seasons": [
         9,
-        10,
-        1
+        10
       ],
-      "totalSeasons": 3,
-      "bestPlacement": 2,
+      "totalSeasons": 2,
+      "bestPlacement": 7,
       "wins": 0,
-      "totalChallengeWins": 6,
+      "totalChallengeWins": 2,
       "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 25,
+      "totalVotesAgainst": 23,
       "totalIdolsFound": 0,
-      "totalJuryVotes": 3,
+      "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
       "seasonDetails": [
@@ -9538,41 +9074,10 @@
           ],
           "format": "total-drama",
           "seasonId": "td-10"
-        },
-        {
-          "season": 1,
-          "placement": 2,
-          "status": "Finalist",
-          "challengeWins": 4,
-          "votesReceived": 2,
-          "juryVotes": 3,
-          "popularity": 129.09,
-          "bb": {
-            "hohWins": 2,
-            "vetoWins": 2,
-            "timesNominated": 2,
-            "timesOnBlock": 2,
-            "timesSaved": 0
-          },
-          "notes": [
-            "Priya plays the cleanest strategic game on paper, but the jury makes her pay for the relationships she turned into moves."
-          ],
-          "gameplayStyle": "precise, patient, surgical",
-          "keyMoments": [
-            "Week 4: Publicly names the wrong saboteur and spends her one official accusation on Hicks.",
-            "Week 8: Wins veto and uses it on Damien, forcing Bowie into the replacement chair.",
-            "Week 9: Wins veto again and saves Zee, sending MK to the block instead.",
-            "Week 10: Wins HOH, nominates Bowie and Emmah, then breaks the tie to evict Emmah.",
-            "Week 13: Survives the block against Hicks after the house chooses to keep her threat level in play.",
-            "Week 15: Wins HOH at Final Four and nominates Zee and Caleb together.",
-            "Finale: Wins the final HOH, cuts Zee, and loses the jury vote 4–3."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "From the first swap Priya becomes the axis—bonding tightly with Damien and Millie while outworking every conversation. She banks a vote in the split challenge, then watches Millie’s idol erase a five‑vote shot to keep her throne intact. Through the merge she is the consensus endgame boss, drawing fire and deflecting it with social gravity. The one angle she can’t defend is Bowie’s; when the architect chooses winning over loyalty, the queen goes down 4–2–1. She leaves stunned, but her season is a clinic in insulation and timing that forces the winner to commit treason to beat her.\n\nSEASON 10 — Champions vs Contenders\n────────\nPriya begins as the obvious physical force, catching fish, building camp infrastructure, and winning early respect almost accidentally. She forms and breaks alliances at high speed: The Alliance with Brick, the Chaos Crew, the Three Torches, and later deep bonds with Jasmine and Cody. Her first boot should end her game, but Redemption Island turns her into something sharper, where she beats Josee, Tyler, and Hicks before returning at merge with a target painted across her chest. She wins The Great Fake-Out, survives public pressure, and keeps influencing votes even when people are actively trying to remove her. But by Episode 12, Bowie and the Oath decide her strategic pull and challenge résumé cannot coexist with their endgame plans. Sanders ends her comeback on Redemption Island, and Priya leaves as a player who absolutely played, even when it hurt.",
-      "avgPlacement": 5.67,
+      "avgPlacement": 7.5,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -9580,32 +9085,24 @@
           "totalImmunityWins": 2,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 4,
-          "hohWins": 2,
-          "vetoWins": 2,
-          "timesNominated": 2
         }
       },
-      "totalHohWins": 2,
-      "totalVetoWins": 2
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "raj",
       "name": "Raj",
       "seasons": [
-        9,
-        1
+        9
       ],
-      "totalSeasons": 2,
-      "bestPlacement": 7,
+      "totalSeasons": 1,
+      "bestPlacement": 12,
       "wins": 0,
-      "totalChallengeWins": 2,
+      "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 6,
+      "totalVotesAgainst": 2,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -9641,37 +9138,6 @@
           ],
           "format": "total-drama",
           "seasonId": "td-9"
-        },
-        {
-          "season": 1,
-          "placement": 7,
-          "status": "Jury",
-          "challengeWins": 2,
-          "votesReceived": 4,
-          "juryVotes": 0,
-          "popularity": 44.28,
-          "bb": {
-            "hohWins": 1,
-            "vetoWins": 1,
-            "timesNominated": 4,
-            "timesOnBlock": 3,
-            "timesSaved": 1
-          },
-          "notes": [
-            "Raj’s loyalty makes him powerful, then predictable, and finally expendable."
-          ],
-          "gameplayStyle": "loyal shield, visible heart",
-          "keyMoments": [
-            "Week 2: Wins HOH and nominates Brightly and Zee.",
-            "Week 2: Names Millie as replacement after Brightly uses the veto.",
-            "Week 5: Formalizes a final three with Wayne and Priya.",
-            "Week 6: Wins veto and saves himself from Bowie’s nominations.",
-            "Week 9: Survives against MK after Priya’s veto creates the replacement nomination.",
-            "Week 11: Survives unanimously against Bowie as Hicks’s pawn.",
-            "Week 12: Is renominated after Caleb wins veto and is evicted 3–1."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "The heart of the Hockey Bros arrives grinning and coasts on love and brawn—until separation exposes him. Locked on a micro‑tribe with Julia, Axel, and Emmah, he finishes his Beware quest and still trusts the wrong smile. Julia convinces him Axel is the vote; he pockets his idol for Wayne—and walks out 2–1. The season’s most tragic pre‑merge exit is a cautionary tale about saving someone else for later and forgetting to save yourself now.",
@@ -9682,34 +9148,26 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 1
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 2,
-          "hohWins": 1,
-          "vetoWins": 1,
-          "timesNominated": 4
         }
       },
-      "totalHohWins": 1,
-      "totalVetoWins": 1,
-      "avgPlacement": 9.5
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "avgPlacement": 12
     },
     {
       "id": "ripper",
       "name": "Ripper",
       "seasons": [
         9,
-        13,
-        1
+        13
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 2,
       "bestPlacement": 11,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 21,
+      "totalVotesAgainst": 11,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -9790,40 +9248,10 @@
           ],
           "format": "total-drama",
           "seasonId": "td-13"
-        },
-        {
-          "season": 1,
-          "placement": 15,
-          "status": "Pre-Jury",
-          "challengeWins": 0,
-          "votesReceived": 10,
-          "juryVotes": 0,
-          "popularity": 18.1,
-          "bb": {
-            "hohWins": 0,
-            "vetoWins": 0,
-            "timesNominated": 1,
-            "timesOnBlock": 1,
-            "timesSaved": 0
-          },
-          "notes": [
-            "Ripper thinks silence means safety until the entire house votes like the conversation already happened without him."
-          ],
-          "gameplayStyle": "loud shield, bad radar",
-          "keyMoments": [
-            "Week 1: Forms The Dock Pact with Chase.",
-            "Week 2: Forms The Undertow with Hicks.",
-            "Week 3: Is pulled deeper into overlapping alliances that never fully protect him.",
-            "Week 4: Is renominated after Julia saves Caleb with the veto.",
-            "Week 4: Has his campaign quietly disrupted by Chase’s saboteur mission.",
-            "Week 4: Is evicted 10–2 against Chase."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "From day one he is gasoline—fighting Scary Girl, needling Nichelle, and yet never quite dying. He idols away a unanimous hit, survives a rock draw he created, and watches Bowie flip Chase to save him over Nichelle. Post‑swap he rides the New Red majority but stays the chew toy, until the merge finally unites the beach on removing the last physical shield. His nine lives run out only when Emmah doubles her vote. Chaos kept him alive; structure finally kills him.\n\nSEASON 13 — Total Drama Doom Island\n────────\nRipper starts as comic relief with surprising challenge bite, knocking out Julia and surviving brutal physical rounds. He bonds with MacArthur into The Double Edge and even finds the Villains idol. But his game is interrupted before the merge can fully test him. Julia and Aiden agree on his elimination at the ambassador table, making Ripper the season's cruelest procedural casualty.",
-      "avgPlacement": 12.67,
+      "avgPlacement": 11.5,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -9831,13 +9259,6 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 1
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 0,
-          "hohWins": 0,
-          "vetoWins": 0,
-          "timesNominated": 1
         }
       },
       "totalHohWins": 0,
@@ -9847,16 +9268,15 @@
       "id": "scary-girl",
       "name": "Scary Girl",
       "seasons": [
-        9,
-        1
+        9
       ],
-      "totalSeasons": 2,
-      "bestPlacement": 13,
+      "totalSeasons": 1,
+      "bestPlacement": 17,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 8,
+      "totalVotesAgainst": 0,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -9891,36 +9311,6 @@
           ],
           "format": "total-drama",
           "seasonId": "td-9"
-        },
-        {
-          "season": 1,
-          "placement": 13,
-          "status": "Pre-Jury",
-          "challengeWins": 0,
-          "votesReceived": 8,
-          "juryVotes": 0,
-          "popularity": 22.380000000000003,
-          "bb": {
-            "hohWins": 0,
-            "vetoWins": 0,
-            "timesNominated": 1,
-            "timesOnBlock": 1,
-            "timesSaved": 0
-          },
-          "notes": [
-            "Scary Girl is underestimated as chaos until the house realizes chaos still counts as a vote."
-          ],
-          "gameplayStyle": "volatile pawn, hidden hurt",
-          "keyMoments": [
-            "Week 1: Joins The Dock Pact after being brought into the bedroom.",
-            "Week 4: Votes out Ripper after promising the move, helping end The Dock Pact era.",
-            "Week 5: Is moved by Julia’s final plea but still lands on the wrong side of the read.",
-            "Week 6: Is nominated by Bowie beside Raj.",
-            "Week 6: Watches Raj win veto and MK take the replacement chair.",
-            "Week 6: Is evicted 8–2 against MK."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "Her vibe is weaponized weird, acid on the already‑fraying Yellow tribe. She goes to rocks rather than compromise in a 0–0 idol wipeout, a landmark of early‑season chaos. There’s a version of the game where her volatility pays off; in this one, random chance and stubborn pride send her home without a single vote against her.",
@@ -9931,40 +9321,31 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 0,
-          "hohWins": 0,
-          "vetoWins": 0,
-          "timesNominated": 1
         }
       },
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "avgPlacement": 15
+      "avgPlacement": 17
     },
     {
       "id": "wayne",
       "name": "Wayne",
       "seasons": [
         9,
-        13,
-        1
+        13
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 2,
       "bestPlacement": 1,
-      "wins": 2,
-      "totalChallengeWins": 4,
+      "wins": 1,
+      "totalChallengeWins": 1,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
       "totalVotesAgainst": 17,
       "totalIdolsFound": 0,
-      "totalJuryVotes": 4,
+      "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [
-        "S13 Winner",
-        "BB1 Winner"
+        "S13 Winner"
       ],
       "seasonDetails": [
         {
@@ -10044,41 +9425,10 @@
           ],
           "format": "total-drama",
           "seasonId": "td-13"
-        },
-        {
-          "season": 1,
-          "placement": 1,
-          "status": "Winner",
-          "challengeWins": 3,
-          "votesReceived": 0,
-          "juryVotes": 4,
-          "popularity": 116.84999999999997,
-          "bb": {
-            "hohWins": 2,
-            "vetoWins": 1,
-            "timesNominated": 1,
-            "timesOnBlock": 0,
-            "timesSaved": 1
-          },
-          "notes": [
-            "Wayne wins by making loyalty feel real even when the game forces him to break it."
-          ],
-          "gameplayStyle": "warm hands, hidden knives",
-          "keyMoments": [
-            "Week 2: Locks in the final two with Raj, giving both players their first real structure.",
-            "Week 5: Wins HOH and nominates Julia and Bowie, beginning his visible power game.",
-            "Week 10: Votes to evict Caleb’s target Emmah, then watches Priya break the tie.",
-            "Week 12: Betrays Raj with his vote, ending the season’s defining loyalty deal.",
-            "Week 13: Wins HOH and nominates Hicks and Caleb together to break up a dangerous pair.",
-            "Week 15: Wins the veto and casts the sole vote to evict Caleb, the season’s comp giant.",
-            "Finale: Wins Part One, loses Part Three, then beats Priya 4–3 with jury respect and social capital."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "Half of the season’s beating heart, Wayne loses Raj and then everything that protected him. He starts by winning the summit, stealing Ripper’s vote and an Extra Vote of his own, only to watch Emmah rip that power away at the merge on live TV. He scrapes along on grit and a bond with Julia, but a perfect shield by Millie and an extra ballot of Priya’s erase him in a 5–0 shutout. Unlucky to the end, Wayne is the jury’s folk hero—robbed three times and still smiling.\n\nSEASON 13 — Total Drama Doom Island\n────────\nWayne begins as the guy everyone wants near the fire, not the one everyone fears at tribal. He protects Bridgette, bonds with Aiden, and keeps choosing people even when the game punishes him for it. Through the merge, his votes are rarely clean, but his relationships keep saving him when the numbers turn ugly. At the end, with Julia charging behind him, Wayne wins the Rejected Olympic Relay because the people he cared for all season drag him emotionally across the line.",
-      "avgPlacement": 3.67,
+      "avgPlacement": 5,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -10086,32 +9436,24 @@
           "totalImmunityWins": 1,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 3,
-          "hohWins": 2,
-          "vetoWins": 1,
-          "timesNominated": 1
         }
       },
-      "totalHohWins": 2,
-      "totalVetoWins": 1
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "zee",
       "name": "Zee",
       "seasons": [
-        9,
-        1
+        9
       ],
-      "totalSeasons": 2,
-      "bestPlacement": 3,
+      "totalSeasons": 1,
+      "bestPlacement": 18,
       "wins": 0,
-      "totalChallengeWins": 1,
+      "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 11,
+      "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -10142,37 +9484,6 @@
           "rivalries": [],
           "format": "total-drama",
           "seasonId": "td-9"
-        },
-        {
-          "season": 1,
-          "placement": 3,
-          "status": "Finalist",
-          "challengeWins": 1,
-          "votesReceived": 6,
-          "juryVotes": 0,
-          "popularity": 136.36999999999998,
-          "bb": {
-            "hohWins": 1,
-            "vetoWins": 0,
-            "timesNominated": 4,
-            "timesOnBlock": 3,
-            "timesSaved": 1
-          },
-          "notes": [
-            "Zee survives four nominations, two veto saves around him, and a collapsing web of deals before one final decision leaves him third."
-          ],
-          "gameplayStyle": "social fog, late bite",
-          "keyMoments": [
-            "Week 2: Survives the block against Millie after a messy 9–5 vote.",
-            "Week 9: Priya uses the veto on him, proving their bond has real game value.",
-            "Week 12: Survives against Raj after Wayne and Priya help flip the vote.",
-            "Week 13: His relationship with Priya becomes public and increasingly dangerous.",
-            "Week 14: Wins HOH and nominates Wayne and Priya, then breaks the tie to evict Damien.",
-            "Week 15: Survives the sole vote when Wayne evicts Caleb instead.",
-            "Finale: Loses Part Two to Priya and is cut at Final Three."
-          ],
-          "format": "big-brother",
-          "seasonId": "bb-1"
         }
       ],
       "story": "Laid‑back to a fault, Zee never matches Red’s urgency after losing flint. Brightly and Hicks read his nonchalance as danger, and the tribe makes a clean, unanimous statement. His lone parting shot at Caleb is less a plan than an exhale. On a season of power hoarders, he’s the reminder that Day 3 can be checkmate if you don’t clock the tempo.",
@@ -10183,18 +9494,11 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "big-brother": {
-          "seasons": 1,
-          "totalCompWins": 1,
-          "hohWins": 1,
-          "vetoWins": 0,
-          "timesNominated": 4
         }
       },
-      "totalHohWins": 1,
+      "totalHohWins": 0,
       "totalVetoWins": 0,
-      "avgPlacement": 10.5
+      "avgPlacement": 18
     },
     {
       "id": "thom",
@@ -14192,6 +13496,1186 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
+        }
+      }
+    },
+    {
+      "id": "misha",
+      "name": "Misha",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 6,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 5,
+      "totalHohWins": 2,
+      "totalVetoWins": 4,
+      "tier": "",
+      "badges": [
+        "BB1 Winner"
+      ],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 1,
+          "status": "Winner",
+          "challengeWins": 6,
+          "votesReceived": 0,
+          "juryVotes": 5,
+          "popularity": 135.05000000000004,
+          "bb": {
+            "hohWins": 2,
+            "vetoWins": 4,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 0,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 3,
+            "timesOnBlock": 0,
+            "timesSaved": 3
+          },
+          "notes": [
+            "Misha won because she combined late competition leverage with enough social debt to survive the weeks where she should have been exposed."
+          ],
+          "gameplayStyle": "connected, insulated, late-clutch",
+          "keyMoments": [
+            "Week 3: joins the expanding Power Couple structure while also building a separate bond with Hasan",
+            "Week 5: helps flip the close Hasan/Zella vote and owns the move when pressed",
+            "Week 10: wins veto on the block and forces Jules to renom Natasha",
+            "Week 13: wins HOH and nominates Jane, Gyselle and Joel, setting up the Gyselle eviction",
+            "Week 14: wins HOH and veto, keeping full control of the Jane/Tobias block",
+            "Week 15: wins veto under threat, saves herself, and casts the sole vote to evict Tobias",
+            "Finale: wins Part 1 and Part 3 of the final HOH, then cuts Joel for Jules"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 0,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 1,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 6,
+          "hohWins": 2,
+          "vetoWins": 4,
+          "timesNominated": 3
+        }
+      }
+    },
+    {
+      "id": "jules",
+      "name": "Jules",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 2,
+      "wins": 0,
+      "totalChallengeWins": 3,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 4,
+      "totalHohWins": 2,
+      "totalVetoWins": 1,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 2,
+          "status": "Finalist",
+          "challengeWins": 3,
+          "votesReceived": 6,
+          "juryVotes": 4,
+          "popularity": 145.38999999999996,
+          "bb": {
+            "hohWins": 2,
+            "vetoWins": 1,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 2,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 4,
+            "timesOnBlock": 4,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Jules played the best losing game: deeply connected, strategically present, and one jury vote short because too many jurors saw comfort without enough ownership."
+          ],
+          "gameplayStyle": "listener, connector, jury-close",
+          "keyMoments": [
+            "Week 2: survives the block beside Stella after the house chooses Stella 10–3",
+            "Week 4: wins HOH and veto, nominates Harriett, Natasha and Ireland, and leaves nominations intact",
+            "Week 8: helps redirect the Nico vote after Dylon’s veto forces a renom",
+            "Week 10: wins HOH, nominates Jane, Misha and Ireland, and later renoms Natasha",
+            "Week 12: survives the Felipe vote 3–2 after Gyselle wins Block Buster",
+            "Week 15: survives Misha’s sole vote when Tobias is evicted instead",
+            "Finale: receives four jury votes and loses 5–4"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 2,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 2,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 3,
+          "hohWins": 2,
+          "vetoWins": 1,
+          "timesNominated": 4
+        }
+      }
+    },
+    {
+      "id": "joel",
+      "name": "Joel",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 3,
+      "wins": 0,
+      "totalChallengeWins": 6,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 3,
+      "totalVetoWins": 3,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 3,
+          "status": "Finalist",
+          "challengeWins": 6,
+          "votesReceived": 0,
+          "juryVotes": 0,
+          "popularity": 101.52999999999994,
+          "bb": {
+            "hohWins": 3,
+            "vetoWins": 3,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 0,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 3,
+            "timesOnBlock": 0,
+            "timesSaved": 3
+          },
+          "notes": [
+            "Joel had the comp record and endgame gravity to win, but he lost the season when Misha correctly refused to sit beside him."
+          ],
+          "gameplayStyle": "visible, competitive, endgame-heavy",
+          "keyMoments": [
+            "Week 2: wins veto and removes himself, forcing Zella onto the block",
+            "Week 7: wins HOH and nominates Dylon, Jane and Ireland",
+            "Week 11: wins HOH and veto, leaves nominations intact, then breaks the tie to evict Natasha",
+            "Week 13: wins veto under threat and saves himself from Misha’s block",
+            "Week 15: wins HOH at final four and nominates Misha and Jules",
+            "Finale: wins Part 2 but loses Part 3 to Misha on the tiebreaker",
+            "Finale: is cut at final three when Misha chooses Jules"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 0,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 3,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 6,
+          "hohWins": 3,
+          "vetoWins": 3,
+          "timesNominated": 3
+        }
+      }
+    },
+    {
+      "id": "tobias",
+      "name": "Tobias",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 4,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 4,
+          "status": "Jury",
+          "challengeWins": 0,
+          "votesReceived": 5,
+          "juryVotes": 0,
+          "popularity": 128.29,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 1,
+            "blockBusterPlayed": 3,
+            "blockBusterStreak": 1,
+            "blockBusterWeeks": [],
+            "timesNominated": 5,
+            "timesOnBlock": 4,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Tobias was one of the season’s best social-position players, but repeated pawn exposure eventually made him expendable at final four."
+          ],
+          "gameplayStyle": "social web, pawn survivor",
+          "keyMoments": [
+            "Week 1: wins the first HOH, gaining early position despite no eviction",
+            "Week 2: votes out Stella despite a prior endgame promise",
+            "Week 9: helps make Dylon the unanimous boot after previously being tied to him",
+            "Week 11: survives the tied Natasha vote when Joel breaks the tie",
+            "Week 14: survives beside Jane 2–0 after Misha leaves nominations intact",
+            "Week 15: lands on the block after Misha uses veto and is evicted by Misha’s sole vote"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 1,
+      "totalBlockBusterPlayed": 3,
+      "bestBlockBusterStreak": 1,
+      "avgPlacement": 4,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "timesNominated": 5
+        }
+      }
+    },
+    {
+      "id": "jane",
+      "name": "Jane",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 5,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 8,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 1,
+      "totalVetoWins": 1,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 5,
+          "status": "Jury",
+          "challengeWins": 2,
+          "votesReceived": 8,
+          "juryVotes": 0,
+          "popularity": 111.05999999999997,
+          "bb": {
+            "hohWins": 1,
+            "vetoWins": 1,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 3,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 4,
+            "timesOnBlock": 4,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Jane returned from the battle back and played a sharp late social game, but her safety depended on other people choosing not to finish moves they had already started."
+          ],
+          "gameplayStyle": "returned, observant, socially sticky",
+          "keyMoments": [
+            "Week 4: enters the game as her own houseguest after the twins twist resolves",
+            "Week 7: is evicted 5–4, then later wins the Battle Back in Week 8",
+            "Week 10: survives against Ireland when the house unanimously removes Ireland",
+            "Week 12: wins veto and pulls Joel off the block",
+            "Week 12: votes out Felipe despite a final two with him",
+            "Week 14: is nominated beside Tobias and evicted 2–0"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 3,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 5,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 2,
+          "hohWins": 1,
+          "vetoWins": 1,
+          "timesNominated": 4
+        }
+      }
+    },
+    {
+      "id": "aaron",
+      "name": "Aaron",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 4,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 1,
+      "totalVetoWins": 1,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 6,
+          "status": "Jury",
+          "challengeWins": 2,
+          "votesReceived": 4,
+          "juryVotes": 0,
+          "popularity": 83.61000000000001,
+          "bb": {
+            "hohWins": 1,
+            "vetoWins": 1,
+            "blockBusterWins": 3,
+            "blockBusterPlayed": 5,
+            "blockBusterStreak": 1,
+            "blockBusterWeeks": [],
+            "timesNominated": 5,
+            "timesOnBlock": 3,
+            "timesSaved": 1
+          },
+          "notes": [
+            "Aaron was loyal, clutch, and respected, but his game narrowed too much and collapsed when he finally needed votes outside his core."
+          ],
+          "gameplayStyle": "loyal, clutch, narrow-laned",
+          "keyMoments": [
+            "Week 5: wins veto while nominated and saves himself",
+            "Week 8: wins Block Buster to escape the block",
+            "Week 11: wins Block Buster again, forcing the Natasha/Tobias vote",
+            "Week 12: wins HOH and nominates Joel, Felipe and Jules",
+            "Week 13: wins Block Buster to escape the Jane/Gyselle vote",
+            "Week 13 double eviction: is renominated after Misha uses veto and evicted 2–1"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 3,
+      "totalBlockBusterPlayed": 5,
+      "bestBlockBusterStreak": 1,
+      "avgPlacement": 6,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 2,
+          "hohWins": 1,
+          "vetoWins": 1,
+          "timesNominated": 5
+        }
+      }
+    },
+    {
+      "id": "gyselle",
+      "name": "Gyselle",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 7,
+          "status": "Jury",
+          "challengeWins": 0,
+          "votesReceived": 5,
+          "juryVotes": 0,
+          "popularity": 66.47999999999998,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 2,
+            "blockBusterPlayed": 4,
+            "blockBusterStreak": 1,
+            "blockBusterWeeks": [],
+            "timesNominated": 3,
+            "timesOnBlock": 2,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Gyselle was everywhere socially, but too often as the flexible piece other players used rather than the person directing the vote."
+          ],
+          "gameplayStyle": "social float, vote-adjacent",
+          "keyMoments": [
+            "Week 3: survives beside Amberly after the Power Couple protects her",
+            "Week 6: votes out Hasan despite their final two",
+            "Week 8: wins Block Buster and escapes the Aaron/Nico vote",
+            "Week 12: wins Block Buster and helps send Felipe out",
+            "Week 13: is renominated after Joel’s veto and fails to campaign hard enough",
+            "Week 13: is evicted 3–1 over Jane"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 2,
+      "totalBlockBusterPlayed": 4,
+      "bestBlockBusterStreak": 1,
+      "avgPlacement": 7,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "timesNominated": 3
+        }
+      }
+    },
+    {
+      "id": "felipe",
+      "name": "Felipe",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 8,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 3,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 8,
+          "status": "Jury",
+          "challengeWins": 0,
+          "votesReceived": 3,
+          "juryVotes": 0,
+          "popularity": 77.89999999999998,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 1,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 1,
+            "timesOnBlock": 1,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Felipe had one of the best alignment games in the cast, but no competition safety and too many exposed final twos left him vulnerable once the numbers got small."
+          ],
+          "gameplayStyle": "aligned, relational, exposed deals",
+          "keyMoments": [
+            "Week 1: forms the Felipe/Nico final two",
+            "Week 2: adds a second final two with Jules",
+            "Week 5: helps recruit Joel into the Hasan vote",
+            "Week 8: betrays Nico in the 6–2 vote",
+            "Week 11: bonds with Joel and becomes visibly paired",
+            "Week 12: lands beside Jules after Gyselle wins Block Buster and is evicted 3–2"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 1,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 8,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "timesNominated": 1
+        }
+      }
+    },
+    {
+      "id": "natasha",
+      "name": "Natasha",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 9,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 3,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 9,
+          "status": "Jury",
+          "challengeWins": 0,
+          "votesReceived": 3,
+          "juryVotes": 0,
+          "popularity": 68.07999999999998,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 1,
+            "blockBusterPlayed": 3,
+            "blockBusterStreak": 1,
+            "blockBusterWeeks": [],
+            "timesNominated": 2,
+            "timesOnBlock": 2,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Natasha had social influence and loyalty, but her game became too visible as a pair-and-structure player to survive a tie vote."
+          ],
+          "gameplayStyle": "loyal, visible, socially warm",
+          "keyMoments": [
+            "Week 1: forms The Power Couple with Gyselle",
+            "Week 3: formalizes the Zella showmance and helps protect Gyselle",
+            "Week 5: votes out Hasan despite broader alliance ties",
+            "Week 10: wins Block Buster and escapes the Jane/Ireland vote",
+            "Week 11: sits beside Tobias after Aaron wins Block Buster",
+            "Week 11: is evicted on Joel’s tie-breaking vote"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 1,
+      "totalBlockBusterPlayed": 3,
+      "bestBlockBusterStreak": 1,
+      "avgPlacement": 9,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "timesNominated": 2
+        }
+      }
+    },
+    {
+      "id": "ireland",
+      "name": "Ireland",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 10,
+      "wins": 0,
+      "totalChallengeWins": 7,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 7,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 3,
+      "totalVetoWins": 4,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 10,
+          "status": "Jury",
+          "challengeWins": 7,
+          "votesReceived": 7,
+          "juryVotes": 0,
+          "popularity": 68.12,
+          "bb": {
+            "hohWins": 3,
+            "vetoWins": 4,
+            "blockBusterWins": 3,
+            "blockBusterPlayed": 4,
+            "blockBusterStreak": 3,
+            "blockBusterWeeks": [],
+            "timesNominated": 6,
+            "timesOnBlock": 1,
+            "timesSaved": 3
+          },
+          "notes": [
+            "Ireland was the season’s biggest comp force, but she was so rarely in the vote room that her safety wins became proof she had no stable path."
+          ],
+          "gameplayStyle": "comp machine, isolated target",
+          "keyMoments": [
+            "Week 2: uses The Interrogation to take Nico’s HOH in secret",
+            "Week 3: wins Block Buster and escapes the Amberly/Gyselle vote",
+            "Week 4: wins Block Buster again and escapes the Harriett/Natasha vote",
+            "Week 6: wins HOH and veto, leaving Hasan and Tobias nominated",
+            "Week 8: wins veto and forces Nico onto Dylon’s block",
+            "Week 9: wins HOH and veto, removing Dylon unanimously",
+            "Week 10: loses Block Buster to Natasha and is evicted 7–0"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 3,
+      "totalBlockBusterPlayed": 4,
+      "bestBlockBusterStreak": 3,
+      "avgPlacement": 10,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 7,
+          "hohWins": 3,
+          "vetoWins": 4,
+          "timesNominated": 6
+        }
+      }
+    },
+    {
+      "id": "dylon",
+      "name": "Dylon",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 11,
+      "wins": 0,
+      "totalChallengeWins": 3,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 12,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 2,
+      "totalVetoWins": 1,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 11,
+          "status": "Jury",
+          "challengeWins": 3,
+          "votesReceived": 12,
+          "juryVotes": 0,
+          "popularity": 29,
+          "bb": {
+            "hohWins": 2,
+            "vetoWins": 1,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 2,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 3,
+            "timesOnBlock": 2,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Dylon played hard and won power, but his game became too visible, too comp-dependent, and too easy to unite against."
+          ],
+          "gameplayStyle": "active, suspicious, exposed competitor",
+          "keyMoments": [
+            "Week 1: wins the Mystery Veto instead of the HOH path",
+            "Week 5: wins HOH and nominates Ireland, Aaron and Zella",
+            "Week 6: uses the Mystery Veto after the ceremony and forces Nico onto the block",
+            "Week 8: wins HOH and targets Ireland, only for Ireland to veto herself",
+            "Week 8: sees Nico leave after the renom",
+            "Week 9: is nominated by Ireland and loses Block Buster to Tobias",
+            "Week 9: is evicted 8–0 over Aaron"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 2,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 11,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 3,
+          "hohWins": 2,
+          "vetoWins": 1,
+          "timesNominated": 3
+        }
+      }
+    },
+    {
+      "id": "nico",
+      "name": "Nico",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 12,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 12,
+          "status": "Jury",
+          "challengeWins": 0,
+          "votesReceived": 6,
+          "juryVotes": 0,
+          "popularity": 37.3,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 1,
+            "blockBusterPlayed": 2,
+            "blockBusterStreak": 1,
+            "blockBusterWeeks": [],
+            "timesNominated": 1,
+            "timesOnBlock": 1,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Nico’s calm, loyal game kept him safe for a while, but waiting for other people to move left him exposed when Dylon needed a replacement target."
+          ],
+          "gameplayStyle": "calm, loyal, delayed mover",
+          "keyMoments": [
+            "Week 2: wins HOH before Ireland secretly takes it through The Interrogation",
+            "Week 2: agrees to the Felipe final two that defines his early game",
+            "Week 6: wins Block Buster and escapes the Hasan/Tobias vote",
+            "Week 8: is renominated after Ireland uses veto",
+            "Week 8: does not campaign aggressively, trusting the count",
+            "Week 8: is evicted 6–2 and becomes the first juror"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 1,
+      "totalBlockBusterPlayed": 2,
+      "bestBlockBusterStreak": 1,
+      "avgPlacement": 12,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "timesNominated": 1
+        }
+      }
+    },
+    {
+      "id": "hasan",
+      "name": "Hasan",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 14,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 14,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 1,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 14,
+          "status": "Pre-Jury",
+          "challengeWins": 1,
+          "votesReceived": 14,
+          "juryVotes": 0,
+          "popularity": 40.95,
+          "bb": {
+            "hohWins": 1,
+            "vetoWins": 0,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 2,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 2,
+            "timesOnBlock": 2,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Hasan’s early HOH made him look like a strategist, but he never rebuilt once his alliance map became visible."
+          ],
+          "gameplayStyle": "early planner, exposed connector",
+          "keyMoments": [
+            "Week 3: wins HOH and nominates Amberly, Gyselle and Ireland",
+            "Week 3: asks Gyselle to sit as a pawn, creating long-term distrust",
+            "Week 3: sees Amberly expose the Power Couple structure on the way out",
+            "Week 5: is renominated after Aaron uses veto",
+            "Week 5: survives the initial vote only because Zella leaves 6–5",
+            "Week 6: is nominated again by Ireland and evicted 9–1"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 2,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 14,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 1,
+          "hohWins": 1,
+          "vetoWins": 0,
+          "timesNominated": 2
+        }
+      }
+    },
+    {
+      "id": "zella",
+      "name": "Zella",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 15,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 15,
+          "status": "Pre-Jury",
+          "challengeWins": 0,
+          "votesReceived": 6,
+          "juryVotes": 0,
+          "popularity": 43.29,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 1,
+            "blockBusterPlayed": 2,
+            "blockBusterStreak": 1,
+            "blockBusterWeeks": [],
+            "timesNominated": 1,
+            "timesOnBlock": 1,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Zella played loudly, loyally and visibly, which made her useful early and cuttable the first time her allies needed a sacrifice."
+          ],
+          "gameplayStyle": "loyal, visible, volatile",
+          "keyMoments": [
+            "Week 2: is renominated and wins Block Buster to save herself",
+            "Week 3: formalizes the Natasha showmance",
+            "Week 5: is nominated by Dylon beside Ireland and Aaron",
+            "Week 5: watches Aaron win veto and Hasan enter as renom",
+            "Week 5: loses Block Buster to Ireland",
+            "Week 5: is evicted 6–5 and exposes Misha on the way out"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 1,
+      "totalBlockBusterPlayed": 2,
+      "bestBlockBusterStreak": 1,
+      "avgPlacement": 15,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "timesNominated": 1
+        }
+      }
+    },
+    {
+      "id": "harriett",
+      "name": "Harriett",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 16,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 12,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 16,
+          "status": "Pre-Jury",
+          "challengeWins": 0,
+          "votesReceived": 12,
+          "juryVotes": 0,
+          "popularity": 3.040000000000002,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 1,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 1,
+            "timesOnBlock": 1,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Harriett’s twin twist bought entry for Jane, but Harriett’s own game became too loud, too contradictory, and too easy to unite against."
+          ],
+          "gameplayStyle": "messy, aggressive, twist-exposed",
+          "keyMoments": [
+            "Week 1: enters as part of the secret twin twist",
+            "Week 2: forms The Pipeline with Stella, then votes against the alliance’s interest",
+            "Week 4: Jane enters as a separate houseguest, changing Harriett’s threat profile",
+            "Week 4: uses the Mystery Competitor power but gains no real safety",
+            "Week 4: is exposed by multiple conflicting stories",
+            "Week 4: is evicted unanimously over Natasha"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 1,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 16,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "timesNominated": 1
+        }
+      }
+    },
+    {
+      "id": "amberly",
+      "name": "Amberly",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 17,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 10,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 17,
+          "status": "Pre-Jury",
+          "challengeWins": 0,
+          "votesReceived": 10,
+          "juryVotes": 0,
+          "popularity": 11.700000000000001,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 1,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 1,
+            "timesOnBlock": 1,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Amberly had real social instincts but never gained enough structural protection to survive once the Power Couple needed a clean early boot."
+          ],
+          "gameplayStyle": "social, reactive, underprotected",
+          "keyMoments": [
+            "Week 1: bonds broadly but fails to find a real plan",
+            "Week 2: is protected by Ireland’s secret HOH deal but remains outside the main structure",
+            "Week 3: is nominated by Hasan as the target",
+            "Week 3: correctly identifies the Power Couple as the house’s hidden bloc",
+            "Week 3: loses Block Buster to Ireland",
+            "Week 3: is evicted 10–2 over Gyselle"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 1,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 17,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "timesNominated": 1
+        }
+      }
+    },
+    {
+      "id": "stella",
+      "name": "Stella",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 18,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 10,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 18,
+          "status": "Pre-Jury",
+          "challengeWins": 0,
+          "votesReceived": 10,
+          "juryVotes": 0,
+          "popularity": 17.44,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 1,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 1,
+            "timesOnBlock": 1,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Stella’s loyalty was genuine, but she had no backup plan once the first real vote moved away from her."
+          ],
+          "gameplayStyle": "loyal, exposed, unsupported",
+          "keyMoments": [
+            "Week 1: connects with Jules and Harriett but does not enter a durable majority",
+            "Week 2: is nominated by Ireland",
+            "Week 2: forms The Pipeline with Harriett",
+            "Week 2: loses Block Buster to Zella",
+            "Week 2: is evicted 10–3 over Jules",
+            "Week 8: loses the first Battle Back round to Amberly"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-1"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 1,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 18,
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "timesNominated": 1
         }
       }
     }

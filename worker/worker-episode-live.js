@@ -3637,6 +3637,12 @@ async function generateRankingsReasoning(body, env) {
   const totalSeasons = Number(body.totalSeasons) || 1;
   const totalWins    = Number(body.totalWins) || 0;
   const existing     = String(body.existingReasoning || "").trim();
+  // OPTIONAL grounded material: what actually happened to this player, out of
+  // the season document. A stat line alone says "1 alliance" about somebody's
+  // whole season, and a model handed that will pad it into three sentences of
+  // invention. Capped, because a caller can send a whole season and the blurb
+  // is four sentences long.
+  const seasonFacts = String(body.seasonFacts || "").trim().slice(0, 4000);
 
   // The examples are the tone specification, so they have to be from the show
   // being written about. A houseguest described as having "stripped an idol at
@@ -3667,17 +3673,33 @@ async function generateRankingsReasoning(body, env) {
     "",
     context,
     "",
+    ...(seasonFacts ? [
+      "What actually happened to them, from the season record:",
+      "",
+      seasonFacts,
+      "",
+      "Draw the specifics from that record. It is the only thing you know about",
+      "this season — anything not in it did not happen.",
+      "",
+    ] : []),
     "Write 2-4 sentences that read like a thoughtful analyst describing this",
     "player's legacy — not a stat sheet. Be specific about what made their game",
     "notable, or what their placement means in context. If they are a returning",
     "player, weave their career arc together rather than listing seasons",
     "separately. If they played poorly or left early, be honest but fair.",
     "",
+    // A blurb that lists six houseguests in one sentence is the season record
+    // copied out, not an analyst writing. Naming the one person who mattered
+    // is the thing a reader remembers.
+    "Name at most two other players, and only where the other player IS the",
+    "story — who cut them, who they could never get past. A list of names is",
+    "not a sentence.",
+    "",
     // The one rule this project keeps having to relearn: a show's words are
     // not interchangeable. The stat line already arrives in the right
     // vocabulary; the sentences around it must match.
     `Use ${showName}'s own vocabulary and nothing else. Do not import words from`,
-    "another format — and never invent a moment that is not in the stats above.",
+    `another format — and never invent a moment that is not in the ${seasonFacts ? "record" : "stats"} above.`,
     "",
     "Match the tone of these examples:",
     "",

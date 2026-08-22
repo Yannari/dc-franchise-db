@@ -1093,37 +1093,54 @@ function renderPreview(results, seasonNum, castSize) {
 // names, the word for an advantage and the meaning of the social column all
 // come from that show's rubric. A houseguest kept on the block three times is
 // not "3 votes against".
+/**
+ * What this player did this season, said in this show's words.
+ *
+ * One list, two readers: the AI prompt's fact block and the structured
+ * fallback. They had separate copies and the copies disagreed — the prompt's
+ * was Total Drama's regardless of show, so a houseguest's Heads of Household
+ * were described to the model as "immunity wins" and the arena column, which
+ * did not exist when that copy was written, was left out of the summary
+ * entirely.
+ */
+function _ruStatParts(row) {
+  const rub  = _ruRubric();
+  // The rubric's noun is a column heading -- "idol/advantage" -- and a heading
+  // reads as a heading in a sentence. Prose takes the first word of it.
+  const noun = ((rub.adv || {}).noun || 'advantage').split('/')[0];
+  const parts = [];
+  const comp = (spec, n) => {
+    if (!spec || !n) return;
+    // HOH is not "hoh". An acronym keeps its case; a word does not shout.
+    const label = /^[A-Z]{2,}$/.test(spec.label) ? spec.label : spec.label.toLowerCase();
+    parts.push(`${n} ${label} win${n > 1 ? 's' : ''}`);
+  };
+  comp(rub.comp1, row.immWins);
+  comp(rub.comp2, row.rewWins);
+  comp(rub.comp3, row.comp3Wins);
+  if (row.advPlayed > 0) parts.push(`played ${row.advPlayed} ${noun}${row.advPlayed>1?'s':''} effectively`);
+  if (row.advWasted > 0) parts.push(`wasted ${row.advWasted} ${noun}${row.advWasted>1?'s':''}`);
+  if (row.advHeld   > 0) parts.push(`held ${row.advHeld} ${noun}${row.advHeld>1?'s':''} (unused)`);
+  if (row.alliances > 0) parts.push(`${row.alliances} alliance${row.alliances>1?'s':''}`);
+  if (row.fanFav)        parts.push('fan favorite');
+  if (row.quit)          parts.push('quit the game');
+  // The one column that means opposite things on the two shows.
+  if ((rub.social || {}).kind === 'survived') {
+    if (row.socialCol === 1)     parts.push('survived the block once');
+    else if (row.socialCol > 1)  parts.push(`survived the block ${row.socialCol} times`);
+  } else if (row.socialCol === 0) parts.push('never received a vote');
+  else if (row.socialCol === 1)   parts.push('voted against once');
+  else                            parts.push(`${row.socialCol} votes against`);
+  return parts;
+}
+
 function _ruSeasonLabel(seasonNum, format) {
   const fmt = format || _ruShowFormat();
   return fmt === 'total-drama' ? `S${seasonNum}` : `${(SHOWS[fmt] || {}).short || 'S'}${seasonNum}`;
 }
 
 function buildSeasonReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning) {
-  const rub  = _ruRubric();
-  const noun = (rub.adv || {}).noun || 'advantage';
-  const highlights = [];
-  const comp = (spec, n) => {
-    if (!spec || !n) return;
-    // HOH is not "hoh". An acronym keeps its case; a word does not shout.
-    const label = /^[A-Z]{2,}$/.test(spec.label) ? spec.label : spec.label.toLowerCase();
-    highlights.push(`${n} ${label} win${n > 1 ? 's' : ''}`);
-  };
-  comp(rub.comp1, row.immWins);
-  comp(rub.comp2, row.rewWins);
-  comp(rub.comp3, row.comp3Wins);
-  if (row.advPlayed > 0) highlights.push(`played ${row.advPlayed} ${noun}${row.advPlayed>1?'s':''} effectively`);
-  if (row.advWasted > 0) highlights.push(`wasted ${row.advWasted} ${noun}${row.advWasted>1?'s':''}`);
-  if (row.advHeld   > 0) highlights.push(`held ${row.advHeld} ${noun}${row.advHeld>1?'s':''} (unused)`);
-  if (row.alliances > 0) highlights.push(`${row.alliances} alliance${row.alliances>1?'s':''}`);
-  if (row.fanFav)        highlights.push('fan favorite');
-  if (row.quit)          highlights.push('quit the game');
-  // The one column that means opposite things on the two shows.
-  if ((rub.social || {}).kind === 'survived') {
-    if (row.socialCol === 1)     highlights.push('survived the block once');
-    else if (row.socialCol > 1)  highlights.push(`survived the block ${row.socialCol} times`);
-  } else if (row.socialCol === 0) highlights.push('never received a vote');
-  else if (row.socialCol === 1)   highlights.push('voted against once');
-  else                            highlights.push(`${row.socialCol} votes against`);
+  const highlights = _ruStatParts(row);
 
   const suffix   = highlights.length ? ` ${highlights.join(', ')}.` : '';
   const winLabel = isWinner ? 'Winner' : `P${placement}`;
@@ -1141,65 +1158,63 @@ function buildSeasonReasoning(name, seasonNum, placement, row, isWinner, isNew, 
   return (stripped ? stripped + ' ' : '') + thisSeasonLine;
 }
 
-// ── AI reasoning via Claude API ──────────────────────────
-async function generateAIReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning, totalSeasons, totalWins) {
-  const winLabel   = isWinner ? 'Winner' : `P${placement}`;
-  const statParts  = [];
-  if (row.immWins)    statParts.push(`${row.immWins} immunity win${row.immWins>1?'s':''}`);
-  if (row.rewWins)    statParts.push(`${row.rewWins} reward win${row.rewWins>1?'s':''}`);
-  if (row.advPlayed) statParts.push(`played ${row.advPlayed} advantage${row.advPlayed>1?'s':''} effectively`);
-  if (row.advWasted) statParts.push(`wasted ${row.advWasted} advantage${row.advWasted>1?'s':''}`);
-  if (row.advHeld) statParts.push(`held ${row.advHeld} advantage${row.advHeld>1?'s':''} (unused)`);
-  if (row.alliances)  statParts.push(`${row.alliances} real alliance${row.alliances>1?'s':''}`);
-  // The column means different things on different shows, and so must the
-  // sentence written from it. "3 votes against" over a houseguest who was kept
-  // three times is not a smaller version of the truth, it is the opposite one.
-  const _psoc = _ruRubric().social || {};
-  if (_psoc.kind === 'survived') {
-    if (row.socialCol === 1) statParts.push('survived the block once');
-    else if (row.socialCol > 1) statParts.push(`survived the block ${row.socialCol} times`);
-  } else if (row.socialCol === 0) statParts.push('never received a vote');
-  else if (row.socialCol === 1) statParts.push('voted against once');
-  else statParts.push(`${row.socialCol} votes against`);
-  if (row.fanFav)     statParts.push('fan favorite');
-  if (row.quit)       statParts.push('quit the game');
-  if (row.override)   statParts.push(`narrative note: ${row.overrideReason}`);
+// ── AI reasoning, via the worker ─────────────────────
+//
+// This used to POST to api.anthropic.com from the page, with no key and no
+// CORS grant, so the request failed before it left the browser EVERY time --
+// silently, because the catch below writes the structured fallback and moves
+// on. The feature looked like it worked and had never once run.
+//
+// A key cannot ship to a static page, so the call goes to dc-analytics: the
+// worker that already holds OPENAI_API_KEY and already dispatches writing by
+// `mode`. Facts go up, a paragraph comes back; the prompt lives with the model
+// that has to answer it.
+const RU_WORKER_URL = 'https://dc-analytics.yannari19.workers.dev';
 
-  const context = isNew
-    ? `This is ${name}'s first season (Season ${seasonNum}). They placed ${winLabel}. Stats: ${statParts.join(', ')}.`
-    : `${name} has now played ${totalSeasons} seasons with ${totalWins} win${totalWins!==1?'s':''}. This season (Season ${seasonNum}) they placed ${winLabel}. Stats: ${statParts.join(', ')}. Their existing career summary: "${existingReasoning}"`;
-
-  const prompt = `You write the "Why ${isWinner?'S+':totalWins>0?'S':'tier'}" reasoning for a Total Drama franchise rankings page.
-
-${context}
-
-Write 2-4 sentences that read like a thoughtful analyst describing this player's legacy — not a stat sheet. Be specific about what made their game notable or what their placement means in context. If they're a returning player, weave their career arc together rather than listing seasons separately. If they played poorly or left early, be honest but fair. Match the tone of these examples:
-
-Good example (winner): "S9's dominant winner and the franchise's most advantage-literate player. Bowie played a social spider game from day one, allying quietly while hoarding power. He stripped Julia's idol at Tribal with Knowledge is Power, broke his Unbreakable Bond to blindside Priya, and beat Damien at fire to seal a flawless endgame."
-
-Good example (non-winner): "S9's most complete non-winner. Millie converted a Beware package into the Red Idol, used it at F8 to nullify a five-vote strike, and held her alliances together through one of the season's messiest post-merges. Her game had everything a winning résumé needs — she just ran into Bowie."
-
-Good example (early boot): "S9's unluckiest exit. Nichelle was on the wrong end of the Ep2 rock draw through no fault of her own, then burned Shot in the Dark in Ep3 and lost — going 3-0 as both she and Ripper burned their advantages simultaneously."
-
-Write ONLY the reasoning text, no labels or quotes.`;
-
+function _ruWorkerEndpoint() {
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    // `workerUrl` is the key current-season.html saves the analytics endpoint
+    // under -- NOT `aiWorkerUrl`, which is only the input's id. Honouring it
+    // means a worker deployed under another name is picked up here too.
+    const saved = localStorage.getItem('RANKINGS_WORKER_URL') || localStorage.getItem('workerUrl');
+    if (saved) return saved.trim().replace(/\/+$/, '');
+  } catch { /* no storage, use the default */ }
+  return RU_WORKER_URL;
+}
+
+async function generateAIReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning, totalSeasons, totalWins) {
+  const statParts = _ruStatParts(row);
+  if (row.override) statParts.push(`narrative note: ${row.overrideReason}`);
+
+  const fmt = _ruShowFormat();
+  try {
+    const resp = await fetch(_ruWorkerEndpoint(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 300,
-        messages: [{ role: 'user', content: prompt }]
+        mode: 'rankings-reasoning',
+        name,
+        // The show, so the blurb is written in its vocabulary rather than
+        // Total Drama's -- which is what the old hardcoded prompt did to every
+        // Big Brother season it was handed.
+        showName: (SHOWS[fmt] || {}).name || 'Total Drama',
+        seasonLabel: _ruSeasonLabel(seasonNum, fmt),
+        placeLabel: isWinner ? 'Winner' : `P${placement}`,
+        statLine: statParts.join(', '),
+        isNew, isWinner, totalSeasons, totalWins,
+        existingReasoning: isNew ? '' : (existingReasoning || ''),
       })
     });
-    const data = await resp.json();
-    const text = data?.content?.[0]?.text?.trim();
+    const data = await resp.json().catch(() => ({}));
+    const text = typeof data?.reasoning === 'string' ? data.reasoning.trim() : '';
     if (text) return text;
-  } catch(e) {
-    console.warn('AI reasoning failed, using fallback', e);
+    // Say WHY, once per player. "AI reasoning failed" with no detail is how
+    // the direct-to-Anthropic call stayed broken without anyone noticing.
+    console.warn(`Rankings reasoning for ${name} fell back:`,
+      data?.error || `HTTP ${resp.status}`, data?.detail || '');
+  } catch (e) {
+    console.warn(`Rankings reasoning for ${name} fell back:`, e.message);
   }
-  // Fallback to structured text
   return buildSeasonReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning);
 }
 

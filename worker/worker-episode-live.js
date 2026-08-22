@@ -40,6 +40,12 @@ export default {
       // as `social` for living here: this worker already holds the key and
       // already dispatches creative writing by mode.
       return await generateCastingInterview(body, env);
+    } else if (mode === "rankings-reasoning") {
+      // The franchise rankings blurb. Same reason as the two above for living
+      // here: this worker already holds OPENAI_API_KEY and already dispatches
+      // by mode. The browser cannot hold a key, which is why it was calling
+      // api.anthropic.com with none and failing on CORS every time.
+      return await generateRankingsReasoning(body, env);
     } else {
       return await generateAnalytics(summaryText, season, episode, env, body.activeCast, body.ledger, body.history);
     }
@@ -3590,4 +3596,125 @@ function parseSocialJson(text) {
   const end = body.lastIndexOf('}');
   if (start === -1 || end === -1) return null;
   try { return JSON.parse(body.slice(start, end + 1)); } catch { return null; }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// RANKINGS REASONING
+// ══════════════════════════════════════════════════════════════════════
+//
+// The "Why they're ranked here" paragraph on the franchise rankings page,
+// written when a finished season is applied to the board.
+//
+// It lives here, and not in the browser, because the browser was calling
+// api.anthropic.com directly: no key, no CORS, so every single call failed and
+// every summary silently came out of the structured fallback instead. A key
+// cannot be shipped to a page on GitHub Pages, so the call belongs on the
+// worker that already holds one.
+//
+// OpenAI, like the rest of this worker's non-creative routes.
+//
+// The caller sends FACTS, not a prompt. That keeps the prompt versioned
+// alongside the model that has to answer it, and it stops the route being a
+// general-purpose text generator for anyone who finds the URL.
+async function generateRankingsReasoning(body, env) {
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
+
+  if (!env.OPENAI_API_KEY) {
+    return json({ error: "Rankings reasoning needs OPENAI_API_KEY on this worker.",
+      hint: "wrangler secret put OPENAI_API_KEY --config wrangler-analytics.toml" }, 400);
+  }
+
+  const name = String(body.name || "").trim();
+  if (!name) return json({ error: "no name" }, 400);
+
+  const showName    = String(body.showName || "Total Drama");
+  const seasonLabel = String(body.seasonLabel || "");
+  const placeLabel  = String(body.placeLabel || "");
+  const statLine    = String(body.statLine || "");
+  const isNew       = !!body.isNew;
+  const isWinner    = !!body.isWinner;
+  const totalSeasons = Number(body.totalSeasons) || 1;
+  const totalWins    = Number(body.totalWins) || 0;
+  const existing     = String(body.existingReasoning || "").trim();
+
+  // The examples are the tone specification, so they have to be from the show
+  // being written about. A houseguest described as having "stripped an idol at
+  // Tribal" is the exact bug the show registry exists to prevent — and the
+  // model will copy whatever vocabulary the examples model for it.
+  const EXAMPLES = {
+    "Big Brother": [
+      'Good example (winner): "BB2\'s most complete winner. Ana won three vetoes off the block and never once needed the third — she had the votes before the ceremony started. She broke the house\'s only real duo in week five and sat beside the person she had been steering since the first Head of Household."',
+      'Good example (non-winner): "The best player never to make the end. Marcus read every eviction correctly for eight weeks and won the arena twice from the block, but he had no path past the pair he helped build, and they took the shot the week he was finally beatable."',
+      'Good example (early boot): "Gone before the game found her. Priya was the first casualty of a backdoor she never saw coming — never nominated, never on the block, and out in week two on a plan formed in a room she was not in."',
+    ],
+    "Total Drama": [
+      'Good example (winner): "S9\'s dominant winner and the franchise\'s most advantage-literate player. Bowie played a social spider game from day one, allying quietly while hoarding power. He stripped Julia\'s idol at Tribal with Knowledge is Power, broke his Unbreakable Bond to blindside Priya, and beat Damien at fire to seal a flawless endgame."',
+      'Good example (non-winner): "S9\'s most complete non-winner. Millie converted a Beware package into the Red Idol, used it at F8 to nullify a five-vote strike, and held her alliances together through one of the season\'s messiest post-merges. Her game had everything a winning résumé needs — she just ran into Bowie."',
+      'Good example (early boot): "S9\'s unluckiest exit. Nichelle was on the wrong end of the Ep2 rock draw through no fault of her own, then burned Shot in the Dark in Ep3 and lost — going 3-0 as both she and Ripper burned their advantages simultaneously."',
+    ],
+  };
+  const examples = EXAMPLES[showName] || EXAMPLES["Total Drama"];
+
+  const context = isNew
+    ? `This is ${name}'s first season (${seasonLabel}). They finished ${placeLabel}. Stats: ${statLine}.`
+    : `${name} has now played ${totalSeasons} season${totalSeasons !== 1 ? "s" : ""} with ${totalWins} win${totalWins !== 1 ? "s" : ""}. `
+      + `This season (${seasonLabel}) they finished ${placeLabel}. Stats: ${statLine}.`
+      + (existing ? ` Their existing career summary: "${existing}"` : "");
+
+  const prompt = [
+    `You write the ranking blurbs for a ${showName} franchise rankings page.`,
+    "",
+    context,
+    "",
+    "Write 2-4 sentences that read like a thoughtful analyst describing this",
+    "player's legacy — not a stat sheet. Be specific about what made their game",
+    "notable, or what their placement means in context. If they are a returning",
+    "player, weave their career arc together rather than listing seasons",
+    "separately. If they played poorly or left early, be honest but fair.",
+    "",
+    // The one rule this project keeps having to relearn: a show's words are
+    // not interchangeable. The stat line already arrives in the right
+    // vocabulary; the sentences around it must match.
+    `Use ${showName}'s own vocabulary and nothing else. Do not import words from`,
+    "another format — and never invent a moment that is not in the stats above.",
+    "",
+    "Match the tone of these examples:",
+    "",
+    ...examples,
+    "",
+    "Return ONLY the reasoning text: no labels, no quotes, no markdown.",
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-5.5",
+        instructions: prompt,
+        input: `Write the blurb for ${name}.`,
+        max_output_tokens: 800,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      // Say what OpenAI actually objected to. "AI reasoning failed" with no
+      // detail is how this feature stayed broken long enough to ship.
+      return json({ error: `openai ${res.status}`,
+        detail: data?.error?.message || JSON.stringify(data).slice(0, 300) }, 502);
+    }
+    const text = (typeof data?.output_text === "string" ? data.output_text
+      : Array.isArray(data?.output)
+        ? data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("")
+        : "").trim();
+    if (!text) return json({ error: "openai returned no text" }, 502);
+    // Models like to wrap a single paragraph in quotes however often you ask.
+    return json({ reasoning: text.replace(/^["'\u201c\u201d]+|["'\u201c\u201d]+$/g, "").trim() });
+  } catch (e) {
+    return json({ error: `openai: ${e.message}` }, 502);
+  }
 }

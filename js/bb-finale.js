@@ -735,7 +735,14 @@ export function simulateBBFinale(rng = Math.random) {
   gs.phase = 'complete';
   gs.winner = winner;
   gs.bb ||= {};
-  gs.bb.finale = { finalHoh, finalTwo, cut, jury, votes, winner, runnerUp, favourite };
+  gs.bb.finale = { finalHoh, finalTwo, cut, jury, votes, winner, runnerUp, favourite,
+    /* WHO EACH JUROR VOTED FOR, not just how many each finalist got. Every
+       reference cast wall labels a juror with the name they wrote down —
+       "Jury: Michelle" — and the tally cannot answer it. `verdict.reasoning`
+       has carried it per juror all along and it stopped here. */
+    juryBallots: (verdict.reasoning || [])
+      .map(r => ({ juror: r.juror, votedFor: r.votedFor }))
+      .filter(b => b.juror && b.votedFor) };
 
   return {
     num: week.num,

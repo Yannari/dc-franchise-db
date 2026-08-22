@@ -50,14 +50,65 @@
     .sr-twists dd { margin:4px 0 0; font-size:13.5px; line-height:1.65; color:var(--muted); }
     /* The memory wall: everybody who walked in, in the order they walked out.
        Greyed from the week they leave, so it reads as a house emptying. */
-    .sr-wall { display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:10px; margin-bottom:26px; }
+    /* ── THE PODIUM ───────────────────────────────────────────────────────
+       The top three, out of the grid and stood on a podium: second, first,
+       third, with the winner raised. */
+    .sr-podium { display:grid; grid-template-columns:1fr 1.18fr 1fr; gap:12px;
+      align-items:end; margin:2px 0 16px; }
+    .sr-pod { display:block; text-decoration:none; text-align:center; padding:10px 8px 12px;
+      border-radius:14px; border:1px solid rgba(255,255,255,.1);
+      background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+      transition:transform .22s,box-shadow .22s,border-color .22s; }
+    .sr-pod:hover { transform:translateY(-4px); }
+    /* The status plate across the top of a card. Colour-coded the way the
+       reference walls are: the winner's own, silver for the seat beside them,
+       purple for the jury, flat for everybody who left before it. */
+    .sr-pod-banner { font-size:9.5px; font-weight:900; letter-spacing:.05em;
+      text-transform:uppercase; padding:3px 6px; margin:-4px -4px 7px; border-radius:7px;
+      background:rgba(255,255,255,.07); color:var(--muted);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sr-pod-banner.is-winner { background:linear-gradient(180deg,#fde68a,#f59e0b); color:#231103; }
+    .sr-pod-banner.is-runner { background:rgba(226,232,240,.22); color:#e2e8f0; }
+    .sr-pod-banner.is-jury { background:rgba(167,139,250,.22); color:#d8ccff; }
+    .sr-pod-banner.is-gone { background:rgba(248,113,113,.15); color:#fca5a5; }
+    .sr-pod .sr-pod-banner { font-size:10.5px; margin:-6px -8px 9px; border-radius:9px; }
+    .sr-pod-photo { position:relative; width:100%; aspect-ratio:1; border-radius:12px;
+      overflow:hidden; background:rgba(255,255,255,.05); }
+    .sr-pod-photo img { width:100%; height:100%; object-fit:cover; display:block; }
+    .sr-pod-rank { position:absolute; left:6px; top:6px; padding:2px 8px; border-radius:999px;
+      font-size:11px; font-weight:900; letter-spacing:.03em; color:#160c22;
+      box-shadow:0 2px 10px rgba(0,0,0,.45); }
+    .sr-pod-name { margin-top:8px; font-size:15px; font-weight:800; color:#fff; }
+    .sr-pod-fate { font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+      font-weight:700; color:var(--muted); margin-top:2px; }
+    /* first: raised, lit, and wearing the season's colour */
+    .sr-pod.is-1 { border-color:var(--sc); box-shadow:0 0 0 1px var(--sc),0 12px 40px var(--sc-glow);
+      background:linear-gradient(180deg,var(--sc-glow),rgba(255,255,255,.02)); }
+    .sr-pod.is-1 .sr-pod-photo { box-shadow:inset 0 0 0 2px var(--sc); }
+    .sr-pod.is-1 .sr-pod-name { font-size:18px; }
+    .sr-pod.is-1 .sr-pod-fate { color:#fde68a; }
+    .sr-pod.is-1 .sr-pod-rank { background:linear-gradient(180deg,#fde68a,#f59e0b); }
+    .sr-pod.is-2 .sr-pod-rank { background:linear-gradient(180deg,#f1f5f9,#94a3b8); }
+    .sr-pod.is-3 .sr-pod-rank { background:linear-gradient(180deg,#f0b27a,#b45309); color:#2a1206; }
+    .sr-pod.is-2 { margin-bottom:10px; }
+    .sr-pod.is-3 { margin-bottom:20px; }
+    @media (max-width:620px) { .sr-podium { grid-template-columns:1fr 1fr 1fr; }
+      .sr-pod.is-2, .sr-pod.is-3 { margin-bottom:0; } }
+    @media (prefers-reduced-motion:reduce) { .sr-pod, .sr-wall-cell { transition:none; } }
+    .sr-wall { display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:10px; margin-bottom:26px; }
     .sr-wall-cell { display:block; text-align:center; text-decoration:none; padding:8px 4px 10px;
       border:1px solid rgba(255,255,255,.09); border-radius:10px; background:rgba(255,255,255,.03);
       transition:transform .2s,border-color .2s; }
     .sr-wall-cell:hover { transform:translateY(-3px); border-color:var(--sc); }
     .sr-wall-photo { width:100%; aspect-ratio:1; border-radius:8px; overflow:hidden; margin-bottom:6px;
       background:rgba(255,255,255,.05); }
+    .sr-wall-photo { position:relative; }
     .sr-wall-photo img { width:100%; height:100%; object-fit:cover; display:block; }
+    /* The finish, stamped on the portrait — which leaves the line underneath
+       free to say the week they went, the thing a reader is actually after. */
+    .sr-wall-rank { position:absolute; left:4px; top:4px; padding:1px 6px; border-radius:999px;
+      font-size:9.5px; font-weight:900; color:#fff; background:rgba(12,7,22,.72);
+      border:1px solid rgba(255,255,255,.18); backdrop-filter:blur(2px); }
     .sr-wall-name { font-size:12px; font-weight:700; color:#fff; }
     .sr-wall-fate { font-size:10px; color:var(--muted); margin-top:1px; }
     .sr-wall-fate b { color:#fff; font-weight:800; }
@@ -915,36 +966,90 @@ function buildRecords(season){
          The thing the house looks at every day: everybody who walked in, in
          the order they walked out. */
       /* ── THE CAST WALL ─────────────────────────────────────────────────
-         WINNER FIRST. It used to run worst-first, "in the order they left",
-         which puts the person the season is about in the bottom corner and
-         opens the section on somebody who lasted one episode. Every reference
-         wiki leads with the winner, and so does every other board on this
-         site.
+         WINNER FIRST, AND THE TOP THREE ARE NOT A GRID CELL.
+         This was seventeen identical squares in finishing order, which is a
+         list of people rather than the result of a season: the winner sat in
+         the top-left corner at exactly the size of the person who left first,
+         and the only thing marking them was a thin border.
 
-         RANK AND WEEK, and no grey. Greying out sixteen of seventeen faces to
-         mark "evicted" says nothing — everybody is evicted eventually, it is a
-         season — while costing the wall the one thing it is for, which is
-         seeing the cast. The finish is a number and the exit is a week; both
-         are stated instead of drawn as an absence. */
-      const wall = cast.slice().sort((a, b) => a.placement - b.placement).map(p => {
+         So the podium comes out of the grid. Second, first, third across the
+         top the way a podium is actually stood on — the winner raised, larger
+         and lit — and everybody else in a dense grid underneath with their
+         finish stamped on the portrait. It also fixes the arrangement: taking
+         three out of seventeen leaves fourteen, which fills its rows instead
+         of stranding two cells on a line of their own.
+
+         RANK ON THE PICTURE, not under it. A number under a name is a caption;
+         a number on the corner of a portrait is a placement, and it leaves the
+         line below free to say the one thing a reader actually wants — which
+         week they went.
+
+         No grey. Everybody is evicted eventually, that is a season; greying
+         them costs the wall the one thing it is for. */
+      /* ── WHAT EACH ONE ENDED THE SEASON AS ─────────────────────────────
+         The banner every reference cast wall carries across the top of a
+         portrait: Winner, Runner-Up, Jury — and on a jury card, the name they
+         wrote down at the end, which is the single most-read fact on those
+         pages and the one a tally can never answer. `juryBallots` is exported
+         on the finale record; a season published before that says "Jury" and
+         stops there rather than guessing. */
+      const juryFor = {};
+      for (const b of (weeks.find(w => w.finale)?.juryBallots || [])) {
+        if (b.juror && b.votedFor) juryFor[b.juror] = b.votedFor;
+      }
+      /* "Pre-Jury" contains the word jury, which is how every houseguest who
+         left before it was labelled a juror on the first draft of this wall.
+         The status is exact or it is not read. */
+      const juror = new Set([...(s.jury || []),
+        ...cast.filter(p => /^jury$/i.test(String(p.status || '').trim())).map(p => p.name)]);
+      const bannerOf = p => {
+        if (p.placement === 1) return { text: 'Winner', cls: 'is-winner' };
+        if (p.placement === 2) return { text: 'Runner-Up', cls: 'is-runner' };
+        if (juror.has(p.name)) {
+          return { text: juryFor[p.name] ? `Jury: ${juryFor[p.name]}` : 'Jury', cls: 'is-jury' };
+        }
+        if (p.placement <= (s.finalists || []).length) return { text: 'Finalist', cls: 'is-runner' };
+        return { text: hasBlock ? 'Evicted' : 'Voted out', cls: 'is-gone' };
+      };
+      const ranked = cast.slice().sort((a, b) => a.placement - b.placement);
+      const fateOf = p => {
         const gone = outWeek[p.name];
-        const win = p.placement === 1;
+        if (p.placement === 1) return 'Winner';
+        return gone ? `${roundWord} ${gone}` : esc(p.status || ord(p.placement));
+      };
+      const tipOf = p => {
         const back = (exits[p.name] || []).length > 1;
-        const where = win ? 'Winner'
-          : gone ? `${roundWord} ${gone}`
-            : esc(p.status || ord(p.placement));
-        return `<a class="sr-wall-cell${win ? ' is-win' : ''}"
-            href="player.html?player=${esc(p.playerSlug)}&view=wiki"
-            title="${esc(back
-              ? `${p.name} — ${ord(p.placement)}. Evicted ${roundWord.toLowerCase()} ${
-                exits[p.name][0]}, came back, out again ${roundWord.toLowerCase()} ${gone}.`
-              : `${p.name} — ${ord(p.placement)}`)}">
-          <div class="sr-wall-photo">${av(p)}</div>
+        return esc(back
+          ? `${p.name} — ${ord(p.placement)}. Evicted ${roundWord.toLowerCase()} ${
+            exits[p.name][0]}, came back, out again ${roundWord.toLowerCase()} ${outWeek[p.name]}.`
+          : `${p.name} — ${ord(p.placement)}${outWeek[p.name]
+            ? `, out in ${roundWord.toLowerCase()} ${outWeek[p.name]}` : ''}`);
+      };
+      const backMark = p => ((exits[p.name] || []).length > 1
+        ? ' <i class="sr-wall-back" title="Came back">\u21A9</i>' : '');
+
+      // Second, first, third — in the order a podium is stood on, so the
+      // winner is in the middle and raised rather than first in a queue.
+      const podium = ranked.slice(0, 3);
+      const order = podium.length === 3 ? [podium[1], podium[0], podium[2]] : podium;
+      const podiumHtml = podium.length === 3 ? `<div class="sr-podium">${order.map(p => `
+        <a class="sr-pod is-${p.placement}" href="player.html?player=${esc(p.playerSlug)}&view=wiki"
+           title="${tipOf(p)}">
+          <div class="sr-pod-banner ${bannerOf(p).cls}">${esc(bannerOf(p).text)}</div>
+          <div class="sr-pod-photo">${av(p)}<span class="sr-pod-rank">${ord(p.placement)}</span></div>
+          <div class="sr-pod-name">${esc(p.name)}</div>
+          <div class="sr-pod-fate">${fateOf(p)}${backMark(p)}</div>
+        </a>`).join('')}</div>` : '';
+
+      const rest = podium.length === 3 ? ranked.slice(3) : ranked;
+      const wall = `${podiumHtml}<div class="sr-wall">${rest.map(p => `
+        <a class="sr-wall-cell${p.placement === 1 ? ' is-win' : ''}"
+           href="player.html?player=${esc(p.playerSlug)}&view=wiki" title="${tipOf(p)}">
+          <div class="sr-pod-banner ${bannerOf(p).cls}">${esc(bannerOf(p).text)}</div>
+          <div class="sr-wall-photo">${av(p)}<span class="sr-wall-rank">${ord(p.placement)}</span></div>
           <div class="sr-wall-name">${esc(p.name)}</div>
-          <div class="sr-wall-fate"><b>${ord(p.placement)}</b> · ${where}${
-            back ? ' <i class="sr-wall-back">\u21A9</i>' : ''}</div>
-        </a>`;
-      }).join('');
+          <div class="sr-wall-fate">${fateOf(p)}${backMark(p)}</div>
+        </a>`).join('')}</div>`;
 
       /* ── 3b. the power table ──
          Faces, not names in cells. `byName` resolves a week's plain string
@@ -1390,7 +1495,7 @@ function buildRecords(season){
           : `<p class="sr-thin">Nothing in this season's record identifies a twist. Seasons
              exported before a twist was tracked do not carry it — the weeks below are still
              complete.</p>`)}
-        ${sec(hasBlock ? 'Houseguests' : 'Contestants', `<div class="sr-wall">${wall}</div>`,
+        ${sec(hasBlock ? 'Houseguests' : 'Contestants', wall,
           `${cast.length} · winner first`)}
         ${sec('The power', power, hasPower ? `who ran each ${roundWord.toLowerCase()}` : '')}
         ${sec('Voting history', votingHistory, hasBallots ? 'who voted for whom' : '')}

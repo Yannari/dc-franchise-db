@@ -3080,44 +3080,63 @@ function _bbStats(weeks) {
 function _bbStrategic(weeks, finalists) {
   const fin = new Set(finalists || []);
   const rec = {};
-  const ensure = n => (rec[n] ||= { plans: 0, correct: 0, votes: 0 });
+  const ensure = n => (rec[n] ||= { plans: 0, correct: 0, votes: 0, active: 0 });
 
   for (const week of weeks) {
     const evicted = week.evicted;
-    // Calling a vote and DELIVERING it — the house's blindside-orchestrated.
-    // A plan whose target did not walk is a plan that failed and scores nothing.
     for (const plan of (week.voteOperation?.plans || [])) {
       if (plan?.organizer && evicted && plan.target === evicted) ensure(plan.organizer).plans++;
     }
+    // Everyone still in the house that week, whether or not they held a vote --
+    // a nominee cannot vote and must not look less active for it.
+    for (const n of (week.houseguests || week.activePlayers || [])) if (n) ensure(n).active++;
     for (const b of (week.ballots || [])) {
       if (!b?.voter) continue;
       const r = ensure(b.voter);
       r.votes++;
-      // Reading the room: small per vote, because most weeks most of the house
-      // is right. It adds up over a season and separates nobody in one week.
+      if (!week.houseguests && !week.activePlayers) r.active++;
       if (evicted && b.evict === evicted) r.correct++;
     }
   }
 
+  // ── RATES, NOT TOTALS ──
+  //
+  // Every cumulative measure of strategy grows with weeks survived and so
+  // restates the finish instead of describing the play. Measured on S1:
+  // correct-vote COUNT tracks placement at -0.827, the same thing as a RATE at
+  // -0.186. Jane voted six for six and went out fifth; Ireland went two for
+  // five and won ten competitions. Only one of those numbers knows the
+  // difference between them.
+  const MIN_VOTES = 3;
+  const sampled = Object.values(rec).filter(r => r.votes >= MIN_VOTES);
+  const meanRate = sampled.length
+    ? sampled.reduce((a, r) => a + r.correct / r.votes, 0) / sampled.length : 0.5;
+
   const out = {};
-  for (const name of new Set([...Object.keys(rec), ...(weeks[0]?.ballots || []).map(b => b.voter)])) {
-    if (!name) continue;
-    const r = rec[name] || { plans: 0, correct: 0, votes: 0 };
-    const st = (() => { try { return pStats(name) || {}; } catch { return {}; } })();
+  for (const name of Object.keys(rec)) {
+    const r = rec[name];
+    // A SHORT SAMPLE SCORES THE CAST AVERAGE, NOT ZERO.
+    //
+    // This is the whole trick. An early boot casts one or two votes, and
+    // scoring that as a rate of zero would make the term a survival clock
+    // again by the back door -- the exact failure the rates are here to avoid.
+    // Not enough evidence means no evidence, so they sit at the middle.
+    const rate = r.votes >= MIN_VOTES ? r.correct / r.votes : meanRate;
+    const planRate = r.active ? r.plans / r.active : 0;
+
     const mine = (gs.bb?.powers || []).filter(x => x?.holder === name);
     const played = mine.filter(x => x.used).length;
     const wasted = mine.filter(x => !x.used && x.disposed).length;
     const held   = mine.filter(x => !x.used && !x.disposed).length;
+    // What they did with what they were given, not how much they were given.
+    const conversion = mine.length ? (played - wasted - (fin.has(name) ? 0 : held)) / mine.length : 0;
+
+    const st = (() => { try { return pStats(name) || {}; } catch { return {}; } })();
     const raw =
-        (st.strategic || 0) * 0.45
-      + (st.intuition || 0) * 0.10
-      + (st.boldness  || 0) * 0.10
-      + r.plans   * 1.00
-      + r.correct * 0.12
-      + mine.length * 0.40
-      + played * 1.00
-      - wasted * 0.80
-      - (fin.has(name) ? 0 : held * 0.80);
+        rate      * 4.0            // read the room, per vote cast
+      + planRate  * 8.0            // called a vote that landed, per week in the house
+      + conversion * 2.0           // spent a power well, per power held
+      + (st.strategic || 0) * 0.10; // a thumb on the scale, not the scale
     out[name] = Math.max(0, Math.min(10, Math.round(raw * 10) / 10));
   }
   return out;
@@ -3125,6 +3144,24 @@ function _bbStrategic(weeks, finalists) {
 
 export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
   if (!Array.isArray(weeks) || !weeks.length) throw new Error('No Big Brother weeks to export');
+  /* ── A WEEK RECORD IS NOT ALWAYS A NIGHT ────────────────────────────
+     A double eviction runs a second, compressed cycle with its own Head of
+     Household, its own veto and its own vote — genuinely a second week record,
+     which is why the engine makes one — but it is ONE EPISODE, because that is
+     how it is watched. Exported with `w.num`, the two halves came out as weeks
+     13 and 14, and every page since said the second evictee survived a week
+     longer than they did.
+
+     So the exported number counts NIGHTS. Both halves carry the same week, the
+     second is flagged, and everything after it is numbered against reality
+     instead of against the ledger's length. `segment`/`compressed` are the
+     engine's own flags for the second half. */
+  let _night = 0;
+  const _nightOf = weeks.map(w => {
+    const second = !!(w.compressed || Number(w.segment) === 2);
+    if (!second) _night += 1;
+    return { week: Math.max(1, _night), second };
+  });
   const finalOrder = [...(finalists || [])];
   const placement = _bbPlacements(weeks, finalOrder);
   const stats = _bbStats(weeks);
@@ -3233,7 +3270,8 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
     title: '[AI_FILL]',
     subtitle: '[AI_FILL]',
     castSize: meta.castSize ?? cast.length,
-    episodeCount: weeks.length,
+    // Nights, plus the finale — which is an episode and was never a week.
+    episodeCount: _night + (gs.bb?.finale?.finalHoh ? 1 : 0),
     jurySize,
     winner: {
       name: winner,
@@ -3246,8 +3284,10 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
     },
     finalists: finalOrder.map(name => ({ name, playerSlug: _slug(name), placement: placement[name] })),
     placements,
-    weeks: weeks.map(w => ({
-      week: w.num,
+    weeks: [...weeks.map((w, _i) => ({
+      week: _nightOf[_i].week,
+      // The second half of a double eviction: the same night, a second vote.
+      ...(_nightOf[_i].second ? { secondEviction: true } : {}),
       hoh: w.hoh,
       initialNominees: w.initialNominees,
       vetoWinner: w.vetoWinner,
@@ -3316,6 +3356,53 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
       hohComp: _compRef(w.hohCompetition),
       vetoComp: _compRef(w.vetoCompetition),
     })),
+    /* ── AND THE FINALE, WHICH IS AN EPISODE ──────────────────────────
+       Third place is cut and the jury votes, and neither was in `weeks` at
+       all: the finale lived only in the winner block, so the week-by-week
+       record of every house season stopped one night short of the thing the
+       season is for. `gs.bb.finale` has held all of it since the finale was
+       written — the final Head of Household, who they cut, the ballots — and
+       nothing exported it.
+
+       The Head of Household casts the only vote at final three, so the ballot
+       below is the whole vote rather than a sample of one. */
+    ...((() => {
+      const f = gs.bb?.finale;
+      if (!f?.finalHoh) return [];
+      const tally = f.votes && typeof f.votes === 'object' && !Array.isArray(f.votes)
+        ? Object.entries(f.votes).sort((a, b) => b[1] - a[1])
+          .map(([n, c]) => `${n} ${c}`).join(' — ')
+        : '';
+      return [{
+        week: _night + 1,
+        finale: true,
+        hoh: f.finalHoh,
+        initialNominees: [],
+        vetoWinner: null,
+        finalNominees: [],
+        votes: {},
+        voteChanges: 0,
+        tieBreak: null,
+        evicted: f.cut || null,
+        blockBeforeSafety: null,
+        safetyWinner: null,
+        ballots: f.cut ? [{ voter: f.finalHoh, voterSlug: _slug(f.finalHoh),
+          evict: f.cut, evictSlug: _slug(f.cut) }] : [],
+        tieBreakVote: null,
+        haveNots: [],
+        publicVote: false,
+        hohComp: null,
+        vetoComp: null,
+        // How the season ended, in the record rather than only in prose.
+        juryVote: tally,
+        // One row per juror: the vote that decided it, by name. A tally says
+        // 5-4; a cast wall says which four.
+        juryBallots: (f.juryBallots || []).map(b => ({
+          juror: b.juror, jurorSlug: _slug(b.juror), votedFor: b.votedFor })),
+        finalTwo: [...(f.finalTwo || [])],
+        jury: [...(f.jury || [])],
+      }];
+    })())],
     showmances: _extractShowmances(),
     alliances: _extractAlliances(),
     rivalries: _extractRivalries(),

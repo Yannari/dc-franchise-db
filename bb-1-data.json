@@ -2163,7 +2163,7 @@
       }
     },
     {
-      "week": 14,
+      "week": 13,
       "hoh": "Jane",
       "initialNominees": [
         "Misha",
@@ -2231,10 +2231,11 @@
           "Tobias",
           "Aaron"
         ]
-      }
+      },
+      "secondEviction": true
     },
     {
-      "week": 15,
+      "week": 14,
       "hoh": "Misha",
       "initialNominees": [
         "Jane",
@@ -2296,7 +2297,7 @@
       }
     },
     {
-      "week": 16,
+      "week": 15,
       "hoh": "Joel",
       "initialNominees": [
         "Misha",
@@ -2348,6 +2349,31 @@
           "Joel"
         ]
       }
+    },
+    {
+      "week": 16,
+      "finale": true,
+      "hoh": "Misha",
+      "initialNominees": [],
+      "vetoWinner": null,
+      "finalNominees": [],
+      "votes": {},
+      "voteChanges": 0,
+      "tieBreak": null,
+      "evicted": "Joel",
+      "blockBeforeSafety": null,
+      "safetyWinner": null,
+      "ballots": [
+        {
+          "voter": "Misha",
+          "voterSlug": "misha",
+          "evict": "Joel",
+          "evictSlug": "joel"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "juryVote": "Misha 5 — Jules 4 — Joel 0"
     }
   ],
   "showmances": [

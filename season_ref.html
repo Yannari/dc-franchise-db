@@ -60,8 +60,8 @@
     .sr-wall-photo img { width:100%; height:100%; object-fit:cover; display:block; }
     .sr-wall-name { font-size:12px; font-weight:700; color:#fff; }
     .sr-wall-fate { font-size:10px; color:var(--muted); margin-top:1px; }
-    .sr-wall-cell.is-out .sr-wall-photo img { filter:grayscale(1); opacity:.4; }
-    .sr-wall-cell.is-out .sr-wall-name { color:var(--muted); }
+    .sr-wall-fate b { color:#fff; font-weight:800; }
+    .sr-wall-cell.is-win .sr-wall-fate b { color:var(--sc); }
     .sr-wall-cell.is-win { border-color:var(--sc); box-shadow:0 0 0 1px var(--sc), 0 0 24px var(--sc-glow); }
     /* The grid scrolls on its own rather than widening the article. */
     .sr-scroll { overflow-x:auto; margin-bottom:10px; }
@@ -104,6 +104,11 @@
     .sr-grid td.is-count { font-variant-numeric:tabular-nums; }
     .sr-pow-none-wk td { background:rgba(148,163,184,.06); }
     .sr-nowk-line { font-size:11.5px; color:var(--muted); }
+    .sr-pow-wk .is-second { display:block; font-size:9px; letter-spacing:.06em;
+      color:#fca5a5; font-weight:800; }
+    .sr-pow-finale td { background:rgba(250,204,21,.07); }
+    .sr-grid th.is-finale { color:#fde68a; }
+    .sr-grid th sup { font-size:8px; opacity:.7; }
     /* Somebody who left, came back, and left again. */
     .sr-wall-back { font-style:normal; color:#4fbf8b; font-weight:800; margin-left:3px; }
     .sr-key { display:inline-block; padding:1px 5px; border-radius:3px; font-size:10px; font-weight:800; }
@@ -779,12 +784,30 @@ function buildRecords(season){
          evicted and appears nowhere in the record — no ballot, no chair, no
          vote against them — is a week they were not in the house for, and the
          grid should say so rather than drawing them as quietly safe. */
+      /* ── A WEEK NUMBER IS NOT A POSITION ANY MORE ──────────────────────
+         A double eviction is ONE night with two evictions, and the engine
+         models the compressed second cycle as its own record — so two records
+         now share a week number, the way every Big Brother wiki writes a
+         double. Anything asking "is this after they left" therefore has to
+         compare POSITIONS in the ledger, or the person who went first in the
+         double reappears in the second half of their own eviction night.
+
+         `outWeek` stays the number, because that is what a reader is told. */
       const outWeek = {};
-      const exits = {};
-      weeks.forEach(w => {
-        if (w.evicted && !finalists.has(w.evicted)) {
+      const outAt = {};        // name -> index of their last exit
+      const exits = {};        // name -> every week number they left on
+      const exitIdx = {};      // name -> every index they left at
+      weeks.forEach((w, i) => {
+        // A finalist is never "evicted" — except at the finale, where third
+        // place is cut and that IS their exit. Only the two who sat in the
+        // final vote are protected.
+        const protectedName = finalists.has(w.evicted)
+          && (cast.find(p => p.name === w.evicted)?.placement || 99) <= 2;
+        if (w.evicted && !protectedName) {
           outWeek[w.evicted] = w.week;
+          outAt[w.evicted] = i;
           (exits[w.evicted] = exits[w.evicted] || []).push(w.week);
+          (exitIdx[w.evicted] = exitIdx[w.evicted] || []).push(i);
         }
       });
       const inWeek = (name, w) => w.hoh === name || w.vetoWinner === name
@@ -794,20 +817,20 @@ function buildRecords(season){
         || (w.initialNominees || []).includes(name)
         || (w.blockBeforeSafety || []).includes(name)
         || (w.finalNominees || []).includes(name);
-      const awayWeeks = {};
-      for (const [name, list] of Object.entries(exits)) {
+      const awayAt = {};
+      for (const [name, list] of Object.entries(exitIdx)) {
         if (list.length < 2) continue;
         const back = new Set();
-        for (const w of weeks) {
-          if (w.week > list[0] && w.week <= list[list.length - 1] && !inWeek(name, w)) back.add(w.week);
-        }
-        awayWeeks[name] = back;
+        weeks.forEach((w, i) => {
+          if (i > list[0] && i <= list[list.length - 1] && !inWeek(name, w)) back.add(i);
+        });
+        awayAt[name] = back;
       }
       /* THE WEEK WHERE NOBODY GOES HOME. It has a Head of Household and no
          ceremony, so every table below has to be told not to read it as a week
          whose record is simply missing. */
       const cancelled = w => !!w.cancelledEviction;
-      const isAway = (name, w) => awayWeeks[name]?.has(w.week);
+      const isAway = (name, i) => awayAt[name]?.has(i);
       /* ── A HOUSE HAS NOBODY QUIETLY SITTING OUT A WEEK. Every houseguest
        votes, holds the crown, sits on the block or leaves, so a week where
        somebody appears NOWHERE in the record is a week they were not in the
@@ -822,18 +845,22 @@ function buildRecords(season){
         for (const p2 of cast) {
           // A week with no ceremony has nobody in its record, so it can
           // never be the week somebody first appears.
-          const first = weeks.find(w => !cancelled(w) && inWeek(p2.name, w));
-          if (first && Number(first.week) > 1) firstSeen[p2.name] = Number(first.week);
+          const at = weeks.findIndex(w => !cancelled(w) && inWeek(p2.name, w));
+          if (at > 0) firstSeen[p2.name] = at;
         }
       }
-      const notYet = (name, w) => !cancelled(w) && firstSeen[name] != null
-        && w.week < firstSeen[name];
+      const notYet = (name, i) => !cancelled(weeks[i]) && firstSeen[name] != null
+        && i < firstSeen[name];
 
       /* ── 1. the facts ── */
       const facts = [
         ['Cast', `${s.castSize || cast.length} ${hasBlock ? 'houseguests' : 'contestants'}`],
         ['Episodes', s.episodeCount || weeks.length || '—'],
-        [bbWeeks.length ? 'Weeks' : 'Rounds', weeks.length || '—'],
+        /* DISTINCT week numbers, not records. A double eviction is one night
+           with two of them, so counting rows said this season ran seventeen
+           weeks when it ran sixteen. */
+        [bbWeeks.length ? 'Weeks' : 'Rounds',
+          new Set(weeks.map(w => Number(w.week))).size || '—'],
         s.jurySize ? ['Jury', `${s.jurySize} members`] : null,
         winnerName ? ['Winner', esc(winnerName)] : null,
         cast[1] ? ['Runner-up', esc(cast[1].name)] : null,
@@ -887,19 +914,35 @@ function buildRecords(season){
       /* ── 3. the memory wall ──
          The thing the house looks at every day: everybody who walked in, in
          the order they walked out. */
-      const wall = cast.slice().sort((a, b) => b.placement - a.placement).map(p => {
+      /* ── THE CAST WALL ─────────────────────────────────────────────────
+         WINNER FIRST. It used to run worst-first, "in the order they left",
+         which puts the person the season is about in the bottom corner and
+         opens the section on somebody who lasted one episode. Every reference
+         wiki leads with the winner, and so does every other board on this
+         site.
+
+         RANK AND WEEK, and no grey. Greying out sixteen of seventeen faces to
+         mark "evicted" says nothing — everybody is evicted eventually, it is a
+         season — while costing the wall the one thing it is for, which is
+         seeing the cast. The finish is a number and the exit is a week; both
+         are stated instead of drawn as an absence. */
+      const wall = cast.slice().sort((a, b) => a.placement - b.placement).map(p => {
         const gone = outWeek[p.name];
         const win = p.placement === 1;
-        return `<a class="sr-wall-cell${gone ? ' is-out' : ''}${win ? ' is-win' : ''}"
-            href="player.html?player=${esc(p.playerSlug)}&view=wiki">
+        const back = (exits[p.name] || []).length > 1;
+        const where = win ? 'Winner'
+          : gone ? `${roundWord} ${gone}`
+            : esc(p.status || ord(p.placement));
+        return `<a class="sr-wall-cell${win ? ' is-win' : ''}"
+            href="player.html?player=${esc(p.playerSlug)}&view=wiki"
+            title="${esc(back
+              ? `${p.name} — ${ord(p.placement)}. Evicted ${roundWord.toLowerCase()} ${
+                exits[p.name][0]}, came back, out again ${roundWord.toLowerCase()} ${gone}.`
+              : `${p.name} — ${ord(p.placement)}`)}">
           <div class="sr-wall-photo">${av(p)}</div>
           <div class="sr-wall-name">${esc(p.name)}</div>
-          <div class="sr-wall-fate">${win ? 'Winner'
-            : gone ? `${roundWord} ${gone}${(exits[p.name] || []).length > 1
-              ? ` <i class="sr-wall-back" title="${esc(`Evicted ${roundWord.toLowerCase()} ${
-                exits[p.name][0]}, came back, out again ${roundWord.toLowerCase()} ${gone}`)}">\u21A9</i>`
-              : ''}`
-            : esc(p.status || ord(p.placement))}</div>
+          <div class="sr-wall-fate"><b>${ord(p.placement)}</b> · ${where}${
+            back ? ' <i class="sr-wall-back">\u21A9</i>' : ''}</div>
         </a>`;
       }).join('');
 
@@ -962,6 +1005,18 @@ function buildRecords(season){
           ? esc(`${a}–${b} tie — ${tb.voter} broke it and evicted ${tb.evict}`)
           : 'eviction margin'}">${a}–${b}${tb ? ' ⚖' : ''}</span>`;
       };
+      /* ── WHAT A COLUMN IS CALLED ───────────────────────────────────────
+         Two records can share a week number now (a double eviction is one
+         night) and the last one is the finale, so a bare number is no longer
+         enough to tell a reader which night they are looking at. */
+      const colHead = (w, i) => {
+        const cls = [cancelled(w) ? 'is-nowk' : '', w.finale ? 'is-finale' : ''].filter(Boolean).join(' ');
+        const tip = w.finale ? 'Finale'
+          : w.secondEviction ? `${roundWord} ${w.week} — second eviction of the night`
+            : cancelled(w) ? 'No eviction this week' : `${roundWord} ${w.week}`;
+        return `<th${cls ? ` class="${cls}"` : ''} title="${esc(tip)}">${
+          w.finale ? 'F' : w.week}${w.secondEviction ? '<sup>2</sup>' : ''}</th>`;
+      };
       const anyArena = weeks.some(w => w.safetyWinner);
       /* A table of who held power needs somebody to have held some. The Total
          Drama season export records only who was eliminated and who voted —
@@ -995,8 +1050,12 @@ function buildRecords(season){
                           : ''}. The house was the same size on Thursday as it was on Sunday.</span>
                     </td>
                   </tr>`
-                : `<tr>
-                <td><div class="sr-pow-wk">${w.week}${tally(w)}</div></td>
+                : `<tr${w.finale ? ' class="sr-pow-finale"' : ''}>
+                <td><div class="sr-pow-wk">${w.finale ? 'FINALE' : w.week}${
+                  w.secondEviction ? '<span class="is-second">SECOND EVICTION</span>'
+                    : w.finale ? `<span>${esc(String(w.juryVote || '').replace(/[^0-9]+/g, '–')
+                      .replace(/^–|–$/g, '') || 'JURY VOTE')}</span>`
+                    : tally(w)}</div></td>
                 <td>${chip(w.hoh || w.immunityWinner || w.winner, 'hoh', hasBlock ? 'H' : 'I')}</td>
                 ${anyArena ? `<td>${chip(w.safetyWinner, 'arena', 'B')}</td>` : ''}
                 ${hasBlock ? `<td>${chip(w.vetoWinner, 'veto', 'V')}</td><td>${nomFaces(w)}</td>` : ''}
@@ -1035,24 +1094,22 @@ function buildRecords(season){
       const grid = (hasBlock && weeks.length) ? `
         <div class="wk-scroll">
           <table class="wk-table wk-weeks sr-grid">
-            <thead><tr><th>${hasBlock ? 'Houseguest' : 'Contestant'}</th>${weeks.map(w =>
-              `<th${cancelled(w) ? ' class="is-nowk" title="No eviction this week"' : ''}>${
-                w.week}</th>`).join('')}<th>Votes</th></tr></thead>
+            <thead><tr><th>${hasBlock ? 'Houseguest' : 'Contestant'}</th>${weeks.map(colHead).join('')}<th>Votes</th></tr></thead>
             <tbody>${cast.map(p => {
               const gone = outWeek[p.name];
               let against = 0;
               return `<tr>
                 <th><a href="player.html?player=${esc(p.playerSlug)}&view=wiki">${
                   av(p)}${esc(p.name)}</a></th>
-                ${weeks.map(w => {
-                  const left = gone && w.week > gone;
+                ${weeks.map((w, i) => {
+                  const left = outAt[p.name] != null && i > outAt[p.name];
                   against += (w.votes || {})[p.name] || 0;
                   if (left) return '<td class="is-gone"></td>';
                   // Out of the house and not yet back: not safe, not there.
-                  if (notYet(p.name, w)) {
+                  if (notYet(p.name, i)) {
                     return '<td class="is-away" title="Not in the house yet">·</td>';
                   }
-                  if (isAway(p.name, w)) return '<td class="is-away" title="Out of the house">·</td>';
+                  if (isAway(p.name, i)) return '<td class="is-away" title="Out of the house">·</td>';
                   if (cancelled(w) && !cellFor(p.name, w)[0]) return '<td class="is-nowk"></td>';
                   const [label, cls] = cellFor(p.name, w);
                   return `<td class="${cls}">${label}</td>`;
@@ -1134,20 +1191,18 @@ function buildRecords(season){
       const votingHistory = hasBallots ? `
         <div class="wk-scroll">
           <table class="wk-table wk-weeks sr-grid sr-votes">
-            <thead><tr><th>Voted to evict</th>${weeks.map(w =>
-              `<th${cancelled(w) ? ' class="is-nowk" title="No eviction this week"' : ''}>${
-                w.week}</th>`).join('')}</tr></thead>
+            <thead><tr><th>Voted to evict</th>${weeks.map(colHead).join('')}</tr></thead>
             <tbody>${cast.map(p => {
               const gone = outWeek[p.name];
               return `<tr>
                 <th><a href="player.html?player=${esc(p.playerSlug)}&view=wiki">${
                   av(p)}${esc(p.name)}</a></th>
-                ${weeks.map(w => {
-                  if (gone && w.week > gone) return '<td class="is-gone"></td>';
-                  if (notYet(p.name, w)) {
+                ${weeks.map((w, i) => {
+                  if (outAt[p.name] != null && i > outAt[p.name]) return '<td class="is-gone"></td>';
+                  if (notYet(p.name, i)) {
                     return '<td class="is-away" title="Not in the house yet">·</td>';
                   }
-                  if (isAway(p.name, w)) return '<td class="is-away" title="Out of the house">·</td>';
+                  if (isAway(p.name, i)) return '<td class="is-away" title="Out of the house">·</td>';
                   if (cancelled(w)) return '<td class="is-nowk" title="No eviction this week"></td>';
                   const [label, cls, title, face] = voteCell(p.name, w);
                   return `<td class="${cls}"${title ? ` title="${esc(title)}"` : ''}>${
@@ -1186,7 +1241,9 @@ function buildRecords(season){
       const gameHistory = weeks.map(w => {
         const noms = (w.blockBeforeSafety || w.initialNominees || []);
         const bits = [];
-        if (w.hoh) bits.push(`<b>${esc(w.hoh)}</b> won Head of Household.`);
+        if (w.hoh) {
+          bits.push(`<b>${esc(w.hoh)}</b> won ${w.finale ? 'the final ' : ''}Head of Household.`);
+        }
         if (w.winner) bits.push(`<b>${esc(w.winner)}</b> won the challenge.`);
         if (w.immunityWinner && w.immunityWinner !== w.winner) {
           bits.push(`<b>${esc(w.immunityWinner)}</b> had immunity.`);
@@ -1198,7 +1255,10 @@ function buildRecords(season){
           bits.push(`${w.finalNominees.map(esc).join(' and ')} faced the vote.`);
         }
         if (w.tieBreak) bits.push('The vote tied.');
-        if (w.evicted) {
+        if (w.finale && w.evicted) {
+          bits.push(`<b>${esc(w.hoh || 'They')}</b> cast the only vote and evicted
+            <b>${esc(w.evicted)}</b>.`);
+        } else if (w.evicted) {
           const tally = Object.entries(w.votes || {}).map(([n, c]) => `${c}`).sort((a, b) => b - a);
           // A house evicts; a camp votes somebody out.
           bits.push(`<b>${esc(w.evicted)}</b> was ${hasBlock ? 'evicted' : 'voted out'}${tally.length > 1
@@ -1216,6 +1276,11 @@ function buildRecords(season){
            names the person who held power and the person who left, and both
            are in the week object. Prose that mentions none of them is prose
            about some other house. */
+        // THE LAST LINE OF A SEASON, and it lived only in the winner block —
+        // the week-by-week record used to stop one night short of the thing
+        // the whole season is for. After the cut, because that is the order it
+        // happened in.
+        if (w.finale && w.juryVote) bits.push(`The jury voted: <b>${esc(w.juryVote)}</b>.`);
         const w2raw = written.get(Number(w.week));
         const knownNames = [w.hoh, w.winner, w.immunityWinner, w.vetoWinner, w.safetyWinner,
           w.evicted, ...(w.initialNominees || []), ...(w.blockBeforeSafety || []),
@@ -1233,7 +1298,8 @@ function buildRecords(season){
              <p class="sr-week-f">${bits.join(' ')}</p>`
           : bits.join(' ');
         return `<div class="sr-week">
-          <div class="sr-week-n">${roundWord} ${w.week}</div>
+          <div class="sr-week-n">${w.finale ? 'Finale'
+            : `${roundWord} ${w.week}${w.secondEviction ? ' · second eviction' : ''}`}</div>
           <div class="sr-week-b">${body}</div>
         </div>`;
       }).join('');
@@ -1325,10 +1391,11 @@ function buildRecords(season){
              exported before a twist was tracked do not carry it — the weeks below are still
              complete.</p>`)}
         ${sec(hasBlock ? 'Houseguests' : 'Contestants', `<div class="sr-wall">${wall}</div>`,
-          `${cast.length} · in the order they left`)}
+          `${cast.length} · winner first`)}
         ${sec('The power', power, hasPower ? `who ran each ${roundWord.toLowerCase()}` : '')}
         ${sec('Voting history', votingHistory, hasBallots ? 'who voted for whom' : '')}
-        ${sec('Competition history', grid, hasBlock && weeks.length ? `${weeks.length} weeks` : '')}
+        ${sec('Competition history', grid, hasBlock && weeks.length
+          ? `${new Set(weeks.map(w => Number(w.week))).size} weeks` : '')}
         ${!hasBallots && weeks.length ? `<p class="sr-thin">A vote-by-vote history needs the
           ballots, which this season was exported before the record carried. Re-export it and
           the grid of who voted for whom appears here.</p>` : ''}

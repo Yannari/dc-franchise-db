@@ -715,3 +715,63 @@ describe('canon lock', () => {
     expect(activeSeasons()['1']).toBeUndefined();
   });
 });
+
+// ── A HOUSE KEEPS ITS FINALE SOMEWHERE ELSE ───────────────────────────────
+//
+// `gs.finaleResult` is Total Drama's. Big Brother writes `gs.bb.finale` with
+// its own field names, so the ledger read an empty object for every Big
+// Brother season it ever recorded: no winner, no finalists.
+//
+// With no finalists, placements fall back to eviction order numbered from the
+// end — which crowns the LAST person evicted, drops the actual winner (never
+// evicted, so never in the eviction list at all) to the bottom of the cast,
+// and leaves nobody carrying `winner: true`. The symptom on screen was a season
+// card with no winner, a "runner-up" who came fourth, an empty Hall of Fame,
+// and the champion filed under "first out".
+describe('deriveSeasonRecord reads a Big Brother finale', () => {
+  function fabricateHouse() {
+    const _stats = { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5, loyalty: 5, boldness: 5, intuition: 5, temperament: 5 };
+    setPlayers(['Misha', 'Jules', 'Joel', 'Tobias', 'Stella'].map(name =>
+      ({ name, isReturnee: false, stats: { ..._stats } })));
+    setSeasonConfig({ ...defaultConfig(), seasonNumber: 1, name: 'Big Brother 1', franchiseMeta: true });
+    setGs({
+      phase: 'complete',
+      format: 'big-brother',
+      // Deliberately absent: a house never writes this.
+      finaleResult: null,
+      bb: { finale: { winner: 'Misha', runnerUp: 'Jules', cut: 'Joel',
+        votes: { Misha: 5, Jules: 4 }, jury: ['Tobias', 'Stella'] } },
+      episodeHistory: [
+        { num: 1, eliminated: 'Stella', immunityWinner: 'Tobias', vetoWinner: 'Misha', votingLog: [] },
+        { num: 2, eliminated: 'Tobias', immunityWinner: 'Misha', vetoWinner: 'Misha', votingLog: [] },
+      ],
+      bonds: {}, advantages: [], namedAlliances: [], showmances: [], schemesCaught: {},
+    });
+  }
+
+  it('crowns the winner the jury voted for, not the last person evicted', () => {
+    fabricateHouse();
+    const rec = deriveSeasonRecord();
+    expect(rec.players['Misha']).toMatchObject({ placement: 1, winner: true, finalist: true });
+    expect(rec.players['Jules']).toMatchObject({ placement: 2, finalist: true });
+    expect(rec.players['Joel']).toMatchObject({ placement: 3, finalist: true });
+    // Evicted, so they place BELOW the final three — the bug had it the other
+    // way round, with Tobias first and Misha last.
+    expect(rec.players['Tobias'].placement).toBe(4);
+    expect(rec.players['Stella'].placement).toBe(5);
+    expect(rec.players['Tobias'].winner).toBe(false);
+  });
+
+  it('stamps the show on the record, so labels can use its words', () => {
+    fabricateHouse();
+    expect(deriveSeasonRecord().format).toBe('big-brother');
+  });
+
+  it('counts vetoes as competition wins, not only the HOH', () => {
+    fabricateHouse();
+    const rec = deriveSeasonRecord();
+    // Misha: one HOH (stamped as immunityWinner) plus two vetoes.
+    expect(rec.players['Misha'].chalWins).toBe(3);
+    expect(rec.players['Tobias'].chalWins).toBe(1);
+  });
+});

@@ -6,6 +6,7 @@ import { lifeSeeds as _lifeSeeds } from './life-cast.js';
 // SAFE UNDER THE IMPORT RULE ABOVE: ratings.js imports core.js, tone.js and
 // shows.js, all of which are leaves, and nothing imports us back through it.
 import { ratingsForSeason as _ratingsForSeason } from './ratings.js';
+import { SHOWS, DEFAULT_FORMAT } from './shows.js';
 
 // Must match bKey() in bonds.js (can't import it — cycle via players.js).
 export function metaBondKey(a, b) { return [a, b].sort().join('||'); }
@@ -136,12 +137,55 @@ function _bootOf(ep) {
 // losses, RI quits, reentry losers, multi-tribal boots, fire-making duels,
 // jury-elimination twists, Koh-Lanta orienteering cuts, ambassador boots, and
 // Tied Destinies collateral — all the exits the naive boot-order walk missed.
+/**
+ * The finale, whichever show it belongs to.
+ *
+ * `gs.finaleResult` is TOTAL DRAMA'S. A house keeps its finale at `gs.bb.finale`
+ * under different field names, so every Big Brother season the ledger has ever
+ * recorded read an empty object here: no winner, no finalists.
+ *
+ * That is not a cosmetic gap. With no finalists, _derivePlacements falls back
+ * to eviction order alone and numbers it from the end -- so the LAST person
+ * evicted is crowned first place, the real winner (who was never evicted at
+ * all) drops to the bottom of the cast, and nobody carries `winner: true`, which
+ * is why the Hall of Fame stayed empty while a season card said "runner-up" of
+ * somebody who came fourth.
+ */
+/** A season cited the way its own show numbers them: S9, but BB1. */
+function _seasonTag(num, format) {
+  const f = format || DEFAULT_FORMAT;
+  if (f === DEFAULT_FORMAT) return `S${num}`;
+  return `${(SHOWS[f] || {}).short || 'S'}${num}`;
+}
+
+function _finaleOf(_gs) {
+  const td = _gs?.finaleResult;
+  if (td?.winner) {
+    return {
+      winner: td.winner,
+      finalists: (td.finalists || []).map(f => typeof f === 'string' ? f : f?.name).filter(Boolean),
+      votes: td.votes || {},
+    };
+  }
+  const bb = _gs?.bb?.finale;
+  if (bb?.winner) {
+    return {
+      winner: bb.winner,
+      // The final two, then the houseguest cut at three: the order the house
+      // actually finished in.
+      finalists: [bb.winner, bb.runnerUp, bb.cut].filter(Boolean),
+      votes: bb.votes || {},
+    };
+  }
+  return { winner: null, finalists: [], votes: {} };
+}
+
 function _derivePlacements(_gs, names) {
   const history = _gs.episodeHistory || [];
-  const fin = _gs.finaleResult || {};
-  const winner = fin.winner || null;
-  const finalists = (fin.finalists || []).map(f => typeof f === 'string' ? f : f?.name).filter(Boolean);
-  const juryVotes = fin.votes || {};
+  const fin = _finaleOf(_gs);
+  const winner = fin.winner;
+  const finalists = fin.finalists;
+  const juryVotes = fin.votes;
   const permanentExit = {};
   for (const ep of history) {
     if (ep.riDuel?.loser) permanentExit[ep.riDuel.loser] = ep.num;
@@ -196,9 +240,9 @@ export function deriveSeasonRecord(state = null) {
   if (!seasonNum || !_gs) return null;
   const _seasonName = state?.seasonName || (state ? state?.config?.name : seasonConfig?.name) || `Season ${seasonNum}`;
   const hist = _gs.episodeHistory || [];
-  const fin = _gs.finaleResult || {};
-  const winner = fin.winner || null;
-  const finalists = (fin.finalists || []).map(f => typeof f === 'string' ? f : f?.name).filter(Boolean);
+  const fin = _finaleOf(_gs);
+  const winner = fin.winner;
+  const finalists = fin.finalists;
   const names = (_players || []).map(p => p.name);
 
   const { placement, permanentExit } = _derivePlacements(_gs, names);
@@ -223,7 +267,12 @@ export function deriveSeasonRecord(state = null) {
     }
   } catch { ratings = null; }
 
-  const rec = { seasonName: _seasonName, ratings, players: {} };
+  // WHICH SHOW THIS SEASON WAS. Nothing in the ledger recorded it, so every
+  // label written from a record used Total Drama's words: a houseguest was
+  // told they "never made the merge" (there is no merge in the house) and a
+  // Big Brother season was cited as "S1", which is also the name of a Total
+  // Drama season.
+  const rec = { seasonName: _seasonName, format: _gs.format || DEFAULT_FORMAT, ratings, players: {} };
   for (const n of names) {
     // Last (not first) elimination episode — RI/EoE returnees can be booted twice.
     const elimEp = [...hist].reverse().find(ep => _bootOf(ep) === n) || null;
@@ -285,7 +334,20 @@ export function deriveSeasonRecord(state = null) {
       idolsPlayed, idoledOut, betrayed,
       betrayedBy: [], // second pass
       allies, showmances, rivals,
-      chalWins: hist.filter(ep => ep.immunityWinner === n).length,
+      // EVERY COMPETITION THEY WON, whichever show ran it.
+      //
+      // This counted `immunityWinner` alone. bb-run.js stamps that with the
+      // HOH -- "the week's safety, the closest true analogue" -- so a house's
+      // VETOES and Block Busters counted for nothing at all, and the one comp
+      // that did count was reported as an immunity win. A veto is the
+      // competition that actually saves you; leaving it out understates every
+      // houseguest who ever played one.
+      chalWins: hist.reduce((total, ep) => total
+        + (ep.immunityWinner === n ? 1 : 0)
+        + (ep.vetoWinner === n ? 1 : 0)
+        + (ep.blockBusterWinner === n ? 1 : 0)
+        // The arena can crown more than one, so it is also carried as a list.
+        + ((ep.blockBusterWinners || []).includes(n) ? 1 : 0), 0),
       schemesCaught: _gs.schemesCaught?.[n] || 0,
       // Character evidence — who they ARE and how the audience received them.
       // Both power the villain/hero analysis; older records lack them (null-safe).
@@ -313,7 +375,8 @@ function _historyFor(name) {
   const out = []; // [{ seasonNum, rec }] sorted oldest → newest
   for (const [num, season] of Object.entries(activeSeasons())) {
     if (season.included === false) continue; // excluded seasons feed nothing to meta
-    if (season.players?.[name]) out.push({ seasonNum: Number(num), rec: season.players[name], seasonName: season.seasonName });
+    if (season.players?.[name]) out.push({ seasonNum: Number(num), rec: season.players[name],
+      seasonName: season.seasonName, format: season.format || DEFAULT_FORMAT });
   }
   return out.sort((a, b) => a.seasonNum - b.seasonNum);
 }
@@ -601,10 +664,11 @@ export function careerFor(name) {
   const history = _historyFor(name); // [{ seasonNum, seasonName, rec }] oldest→newest, included only
   if (!history.length) return null;
   let slug = '';
-  const seasons = history.map(({ seasonNum, seasonName, rec }) => {
+  const seasons = history.map(({ seasonNum, seasonName, format, rec }) => {
     if (!slug && rec.slug) slug = rec.slug;
     return {
       seasonNum, seasonName: seasonName || `Season ${seasonNum}`,
+      format: format || DEFAULT_FORMAT,
       placement: rec.placement || 0, winner: !!rec.winner, finalist: !!rec.finalist,
       blindsided: !!rec.blindsided, chalWins: rec.chalWins || 0, idolsPlayed: rec.idolsPlayed || 0,
       blindsidesAuthored: rec.blindsidesAuthored || 0, backfilled: !!rec.backfilled,
@@ -692,7 +756,11 @@ export function franchiseRecords() {
   };
   let t;
   t = best(c => c.totals.wins); push('Most titles', t?.c.name, t?.v, t ? `${t.v} title${t.v === 1 ? '' : 's'}` : '');
-  t = best(c => c.totals.chalWins); push('Most career immunity wins', t?.c.name, t?.v, t ? `${t.v} immunity wins` : '');
+  // A FRANCHISE RECORD SPANS BOTH SHOWS, so its title cannot be one show's
+  // word. There is no immunity in the house -- there is the HOH, the veto and
+  // the Block Buster -- and this counts all of them alongside Total Drama's
+  // challenges, so it is named for what it actually measures.
+  t = best(c => c.totals.chalWins); push('Most career competition wins', t?.c.name, t?.v, t ? `${t.v} competition wins` : '');
   t = best(c => c.totals.blindsidesAuthored); push('Most blindsides authored', t?.c.name, t?.v, t ? `${t.v} blindsides` : '');
   t = best(c => c.totals.seasons, 1); push('Most seasons played', t?.c.name, t?.v, t ? `${t.v} seasons` : '');
   // Best average placement — only players with ≥2 scored seasons qualify; lower is better.
@@ -753,14 +821,14 @@ export function returneePools() {
     }
     if (fell) {
       scored.fallenAngels.push({ name, slug,
-        why: `${fell.peak.winner ? 'Champion' : 'Finalist'} S${fell.peak.seasonNum}, then ${_ordinal(fell.later.placement)} in S${fell.later.seasonNum}`,
+        why: `${fell.peak.winner ? 'Champion' : 'Finalist'} ${_seasonTag(fell.peak.seasonNum, fell.peak.format)}, then ${_ordinal(fell.later.placement)} in ${_seasonTag(fell.later.seasonNum, fell.later.format)}`,
         rel: (fell.peak.winner ? 2 : 1) * 100 + fell.later.placement });
       claimed.add(name); continue;
     }
     // unfinishedBusiness — blindsided in their LAST season while making a real run
     if (last && last.blindsided && (last.blindsidesAuthored >= 1 || (last.placement > 0 && last.placement <= 6))) {
       scored.unfinishedBusiness.push({ name, slug,
-        why: `Blindsided ${_ordinal(last.placement)} in S${last.seasonNum}${last.blindsidesAuthored >= 1 ? ` after ${last.blindsidesAuthored} of their own` : ''}`,
+        why: `Blindsided ${_ordinal(last.placement)} in ${_seasonTag(last.seasonNum, last.format)}${last.blindsidesAuthored >= 1 ? ` after ${last.blindsidesAuthored} of their own` : ''}`,
         rel: (last.blindsidesAuthored || 0) * 10 + (20 - Math.min(20, last.placement)) });
       claimed.add(name); continue;
     }
@@ -768,7 +836,11 @@ export function returneePools() {
     if (c.seasons.length && c.seasons.every(s => !_madeMergeMark(s.placement, _castSizeOf(s.seasonNum)))) {
       const worst = c.seasons.reduce((a, s) => s.placement > (a?.placement || 0) ? s : a, null);
       scored.redemption.push({ name, slug,
-        why: `Never made the merge — best ${_ordinal(c.totals.bestPlacement || (worst ? worst.placement : 0))} in ${c.totals.seasons} run${c.totals.seasons === 1 ? '' : 's'}`,
+        // A house has no merge -- it has a jury. Said in one show's word over
+        // a career made of the other's, this told houseguests they never
+        // reached a milestone their season does not contain.
+        why: `Never made ${c.seasons.every(s => s.format === 'big-brother') ? 'jury' : 'the merge'}`
+          + ` — best ${_ordinal(c.totals.bestPlacement || (worst ? worst.placement : 0))} in ${c.totals.seasons} run${c.totals.seasons === 1 ? '' : 's'}`,
         rel: c.totals.seasons * 10 + (worst ? worst.placement : 0) });
       claimed.add(name); continue;
     }
@@ -823,7 +895,7 @@ export function returneePools() {
       }
     }
     if ((c.totals.chalWins || 0) >= 4) scored.challengeTitans.push({ name, slug, rel: c.totals.chalWins,
-      why: `${c.totals.chalWins} career immunity wins` });
+      why: `${c.totals.chalWins} career competition wins` });
     if ((c.people.showmances || []).length >= 1) {
       const sh = c.people.showmances[0];
       scored.showmanceStars.push({ name, slug, rel: c.people.showmances.length * 10,
@@ -832,7 +904,7 @@ export function returneePools() {
     for (const s of c.seasons) {
       const cs = _castSizeOf(s.seasonNum);
       if (cs && s.placement === cs) {
-        scored.firstBootClub.push({ name, slug, rel: 100 - s.seasonNum, why: `First out in S${s.seasonNum}` });
+        scored.firstBootClub.push({ name, slug, rel: 100 - s.seasonNum, why: `First out in ${_seasonTag(s.seasonNum, s.format)}` });
         break;
       }
     }

@@ -64,6 +64,10 @@ export const SHOWS = {
       ['challengeWins', 'totalCompWins'],
       ['bb.hohWins', 'hohWins'],
       ['bb.vetoWins', 'vetoWins'],
+      // THE ARENA. Left out, so a career's competition record silently excluded
+      // the one comp won while already on the block -- Ireland's three counted
+      // for nothing anywhere byShow was read.
+      ['bb.blockBusterWins', 'blockBusterWins'],
       ['bb.timesNominated', 'timesNominated'],
     ],
   },

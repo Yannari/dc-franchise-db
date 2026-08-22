@@ -1474,6 +1474,24 @@ function renderPlayerProfile(fullPlayer) {
   })();
   const _showList = Object.keys(_careers);
   const _multiShow = _showList.length > 1;
+
+  /* THE THREE COMPETITIONS A HOUSE RUNS, per show.
+     byShow declares only hohWins, vetoWins and timesNominated, so the arena --
+     the comp you win while already ON the block, the hardest circumstance any
+     of them is won in -- reached the page nowhere at all: Ireland's totalCompWins
+     read 7 for 3 HOHs and 4 vetoes while her 3 Block Busters counted for nothing.
+     Summed from the season details, which have carried `bb.blockBusterWins` all
+     along, so this is right today rather than after the next export. */
+  const _bbTotals = fmt => (player.seasonDetails || [])
+    .filter(d => (d.format || 'total-drama') === fmt)
+    .reduce((o, d) => {
+      const b = d.bb || {};
+      o.hoh += b.hohWins || 0;
+      o.veto += b.vetoWins || 0;
+      o.arena += b.blockBusterWins || 0;
+      o.noms += b.timesNominated || 0;
+      return o;
+    }, { hoh: 0, veto: 0, arena: 0, noms: 0 });
   const SHOW_NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
   const showName = f => SHOW_NAMES[f] || f;
 
@@ -1676,9 +1694,10 @@ function renderPlayerProfile(fullPlayer) {
        single stored counter adds them up. */
     const compWins = _showList.reduce((n, f) => {
       const c = _careers[f] || {};
-      const bb = player.byShow?.[f] || {};
-      return n + (Number(c.challengeWins) || 0)
-        + (Number(bb.hohWins) || 0) + (Number(bb.vetoWins) || 0) + (Number(bb.blockBusterWins) || 0);
+      const bb = _bbTotals(f);
+      // challengeWins already folds in a house's HOHs and vetoes; only the
+      // arena is missing from it.
+      return n + (Number(c.challengeWins) || 0) + bb.arena;
     }, 0) || (player.totalChallengeWins || 0);
     const votesAgainst = player.totalVotesAgainst || 0;
     const juryVotes = player.totalJuryVotes || 0;
@@ -1812,14 +1831,43 @@ function renderPlayerProfile(fullPlayer) {
      `totalChallengeWins` and friends are cross-format sums by design — a Big
      Brother competition win is folded in — so one bar labelled "Challenge Wins"
      on a two-show career is a number belonging to neither show. */
-  function barsFor(c) {
+  function barsFor(c, fmt) {
+    /* IMMUNITY IS TOTAL DRAMA'S WORD AND TOTAL DRAMA'S ROW.
+       A house does not play for immunity -- it plays for the veto -- so this
+       bar could only ever read 0 on a Big Brother career, taking up a row to
+       say nothing. Dropped for that show only; Total Drama keeps it exactly as
+       it was. The three comps a house DOES run are the chips underneath, where
+       "6 competition wins" is broken into the HOHs, vetoes and Block Busters
+       that make it up. */
+    const isHouse = fmt === 'big-brother';
     return [
-      { label: 'Challenge Wins', val: c.challengeWins, max: 20 },
-      { label: 'Immunity Wins',  val: c.immunityWins,  max: 12 },
+      // Named for the show, because "Challenge Wins" over a houseguest's Heads
+      // of Household is the same mistake one row down. The arena is added back
+      // in for a house: challengeWins counts HOHs and vetoes only, so the bar
+      // read 7 while the three chips beneath it added to 10.
+      { label: isHouse ? 'Competition Wins' : 'Challenge Wins',
+        val: isHouse ? (c.challengeWins || 0) + _bbTotals(fmt).arena : c.challengeWins, max: 20 },
+      ...(isHouse ? [] : [{ label: 'Immunity Wins', val: c.immunityWins, max: 12 }]),
       { label: 'Jury Votes',     val: c.juryVotes,     max: 10 },
       { label: 'Votes Against',  val: c.votesAgainst,  max: 30, color: 'danger' },
     ];
   }
+  /* THE THREE ICONS: what a house's competition record is actually made of.
+     HOH, veto and the arena are three different games -- you take the power,
+     you save yourself at the ceremony, or you win your way off the block -- and
+     one "Comp Wins" total flattened all three into a number that could not
+     distinguish them. Total Drama has no equivalent split and does not get one. */
+  function bbCompChips(t) {
+    if (!t || (!t.hoh && !t.veto && !t.arena)) return '';
+    const chip = (v, l, title) =>
+      `<div class="pp-chip" title="${title}"><div class="v">${v}</div><div class="l">${l}</div></div>`;
+    return `<div class="pp-mini-chips pp-reveal">
+      ${chip(t.hoh, 'HOH', 'Heads of Household won')}
+      ${chip(t.veto, 'Vetoes', 'Powers of Veto won')}
+      ${chip(t.arena, 'Block<br>Buster', 'Won off the block in the arena')}
+    </div>`;
+  }
+
   function drawBars(bars) {
     let out = `<div class="pp-statbars pp-reveal">`;
     bars.forEach(b => {
@@ -1841,21 +1889,16 @@ function renderPlayerProfile(fullPlayer) {
       html += `<div class="pp-showhead pp-reveal">${showName(fmt)}
         <span class="pp-showsub">${c.seasonsPlayed} season${c.seasonsPlayed===1?'':'s'} &nbsp;•&nbsp;
         ${c.wins} win${c.wins===1?'':'s'} &nbsp;•&nbsp; best #${c.bestPlacement}</span></div>`;
-      html += drawBars(barsFor(c));
-      /* Big Brother keeps counters Total Drama has no equivalent for, and they
-         were computed into byShow and then displayed nowhere at all. */
-      if (bb.hohWins != null || bb.vetoWins != null || bb.timesNominated != null) {
-        html += `<div class="pp-mini-chips pp-reveal">
-          ${bb.totalCompWins != null ? `<div class="pp-chip"><div class="v">${bb.totalCompWins}</div><div class="l">Comp Wins</div></div>` : ''}
-          ${bb.hohWins != null ? `<div class="pp-chip"><div class="v">${bb.hohWins}</div><div class="l">HOH</div></div>` : ''}
-          ${bb.vetoWins != null ? `<div class="pp-chip"><div class="v">${bb.vetoWins}</div><div class="l">Vetoes</div></div>` : ''}
-          ${bb.timesNominated != null ? `<div class="pp-chip"><div class="v">${bb.timesNominated}</div><div class="l">Times Nominated</div></div>` : ''}
-        </div>`;
-      }
+      html += drawBars(barsFor(c, fmt));
+      /* The competition bar above is one number; these are the three comps it
+         is made of. A total that does not say how it was earned cannot tell a
+         comp beast from somebody who won four vetoes off the block. */
+      if (fmt === 'big-brother') html += bbCompChips(_bbTotals(fmt));
     }
   } else {
     const only = _careers[_showList[0]];
-    html += drawBars(only ? [...barsFor(only),
+    const onlyFmt = _showList[0];
+    html += drawBars(only ? [...barsFor(only, onlyFmt),
       { label: 'Advantages', val: advantagesPlayed, max: 6 }] : [
       { label:'Challenge Wins', val: player.totalChallengeWins||0, max:20 },
       { label:'Immunity Wins',  val: player.totalImmunityWins||0,  max:12 },
@@ -1863,14 +1906,7 @@ function renderPlayerProfile(fullPlayer) {
       { label:'Jury Votes',     val: player.totalJuryVotes||0,     max:10 },
       { label:'Votes Against',  val: player.totalVotesAgainst||0,  max:30, color:'danger' },
     ]);
-    const bb = player.byShow?.[_showList[0]] || {};
-    if (bb.hohWins != null || bb.vetoWins != null) {
-      html += `<div class="pp-mini-chips pp-reveal">
-        ${bb.hohWins != null ? `<div class="pp-chip"><div class="v">${bb.hohWins}</div><div class="l">HOH</div></div>` : ''}
-        ${bb.vetoWins != null ? `<div class="pp-chip"><div class="v">${bb.vetoWins}</div><div class="l">Vetoes</div></div>` : ''}
-        ${bb.timesNominated != null ? `<div class="pp-chip"><div class="v">${bb.timesNominated}</div><div class="l">Times Nominated</div></div>` : ''}
-      </div>`;
-    }
+    if (onlyFmt === 'big-brother') html += bbCompChips(_bbTotals(onlyFmt));
   }
 
   /* The seasons-per-show chip stays for a two-show career, where "3 seasons"

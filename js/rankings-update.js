@@ -427,8 +427,17 @@ const RU_SHOW = {
     //
     // Capped at 4: past that it is describing a house that kept renominating a
     // pawn, which is a pattern rather than an achievement.
-    social: { kind: 'survived', label: 'Survived', weight: 1.5, cap: 4,
-      title: 'Eviction nights survived ON THE BLOCK · +1.5 each, max 4 · nominated, voted on, and kept' },
+    //
+    // Priced UNDER a competition win, at 1.0 against a veto's 1.6, because a
+    // veto is entirely yours and a survival is half the house's: you can be
+    // kept for being the harmless one, which is the goat's route through a
+    // season and should not pay like a resume. At 1.5 four survivals came to
+    // 6.0 against four vetoes at 6.4, near enough parity to say they are the
+    // same achievement. The weight moves nobody's rank at any value between
+    // 1.0 and 1.5 — it only sets how far apart the board spaces them — so this
+    // is a statement about what surviving is worth, not a tiebreak.
+    social: { kind: 'survived', label: 'Survived', weight: 1.0, cap: 4,
+      title: 'Eviction nights survived ON THE BLOCK · +1.0 each, max 4 · nominated, voted on, and kept' },
   },
 };
 

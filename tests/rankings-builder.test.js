@@ -211,6 +211,27 @@ describe('a season of play can move you off your finish', () => {
       .toBeLessThan(S.computeScore(td({ socialCol: 2 })));
   });
 
+  it('holds the strategic term under one competition win', () => {
+    // NOT because strategy matters less than a veto. Because the figure the
+    // column is fed is not yet worth more.
+    //
+    // `strategicRank` -- the AI pass's read of how somebody played -- tracks
+    // FINISH POSITION at -0.927 on S1. Asked to judge strategy it re-derives
+    // the order people went out in, which makes it placement measured a third
+    // time, the same fault `votesAgainst` was deleted for. Raising this weight
+    // to 0.35 lifted the entire cast by ~2 points IN RANK ORDER and moved three
+    // players a tier with no comparison between them having changed.
+    //
+    // The ceiling is not the problem, the measure is: anything CUMULATIVE grows
+    // with weeks survived and restates the finish (correct-vote count sits at
+    // -0.827 against placement), while the same thing as a RATE sits at -0.186
+    // and is close to independent. Rebuild the figure on rates and this can be
+    // raised to answer a comp run. If you are here because this test failed,
+    // that is the work it is waiting for.
+    const bb = S.RU_SHOW['big-brother'];
+    expect(bb.strat.weight * bb.strat.scale).toBeLessThan(bb.comp2.weight);
+  });
+
   it('keeps the printed breakdown on the same weights as the score', () => {
     // A breakdown that does not add up to its own total is a receipt for a
     // different purchase. These were four separate copies of the same numbers.

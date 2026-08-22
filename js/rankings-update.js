@@ -87,7 +87,7 @@ const RU_HTML = RU_CSS + `      <!-- ══════════════�
             <span style="display:block;width:100%;height:1px;background:rgba(255,255,255,0.07);margin:2px 0;"></span>
             <span id="ru-legend-show" style="display:contents;"></span>
             <span id="ru-legend-allies">🤝 Allies · Unbreakable/named alliances only — auto-filled from season JSON</span>
-            <span>♟️ Strategic score ×0.12 — ability + real moves (flips, blindsides, schemes, effective plays) · auto-filled from season JSON</span>
+            <span id="ru-legend-strat">♟️ Strategic score — auto-filled from season JSON</span>
             <span style="color:#34d399; margin-left:8px;">💞 <b>SOCIAL</b></span>
             <span></span>
             <span>❤️ Fan Fav +2.0</span>
@@ -110,7 +110,7 @@ const RU_HTML = RU_CSS + `      <!-- ══════════════�
                   <th id="ru-th-adv-wasted" style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols/advantages PLAYED but WASTED (misfired / negated 0 votes / failed) · −1.2 each">Wasted</th>
                   <th id="ru-th-adv-held" style="padding: 6px 5px; text-align: center; width: 44px; color:#a78bfa;" title="Idols/advantages HELD & never used · 0 if survived to the end · −1.8 if eliminated still holding it">Held</th>
                   <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" id="ru-th-allies" title="Real alliances only — Unbreakable bonds or named alliances · do NOT include casual relationships">Allies</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 52px; color:#a78bfa;" title="Strategic-gameplay score (ability + real moves: flips, blindsides, schemes, effective plays) · ×0.12 · auto-filled from season JSON">Strat</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 52px; color:#a78bfa;" id="ru-th-strat" title="Strategic-gameplay score · auto-filled from season JSON">Strat</th>
                   <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="not counted in score">Jury ⭐</th>
                   <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" id="ru-th-social" title="Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below cast avg">Votes vs</th>
                   <th style="padding: 6px 5px; text-align: center; width: 42px; color:#f59e0b;" title="Won Fan Favorite · +2.0">FanFav</th>
@@ -389,6 +389,10 @@ const RU_SHOW = {
     comp3: null,
     adv: { group: 'ADVANTAGES', noun: 'idol/advantage',
       found: 'Found', played: 'Played', wasted: 'Wasted', held: 'Held' },
+    // Total Drama's own scorer runs roughly 10-35, so 0.12 puts the ceiling
+    // near 4 -- the same place the house's 0-10 scale reaches at 0.35. Same
+    // ceiling, different rulers, because the two shows measure it differently.
+    strat: { weight: 0.12, scale: 35 },
     // Votes against, on a curve around the cast average.
     social: { kind: 'votes', label: 'Votes vs',
       title: 'Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below' },
@@ -406,6 +410,29 @@ const RU_SHOW = {
     // power or you win one, you do not find it in a tree.
     adv: { group: 'POWERS', noun: 'power',
       found: 'Won', played: 'Played', wasted: 'Wasted', held: 'Held' },
+    // ── HELD AT 1.2 UNTIL THE FIGURE IS WORTH MORE ──
+    //
+    // Strategy has the smallest ceiling on a board where competitions are the
+    // only unbounded term -- one houseguest took 14.2 from them on S1, 93% of
+    // everything she scored, while survivals cap at 4, alliances at 1 and this
+    // at 1.2. That asymmetry is real and this weight was raised to 0.35 to fix
+    // it. It was put back, because raising it made the board worse.
+    //
+    // `strategicRank`, the AI pass's read of how somebody played, correlates
+    // with FINISH POSITION at -0.927. Asked to judge strategy it re-derives the
+    // order people went out in, so it is placement measured a third time -- the
+    // same fault `votesAgainst` was deleted for. Weighting it more heavily does
+    // not give strategy teeth, it amplifies placement: at 0.35 the whole cast
+    // rose by about two points in rank order and three players changed tier
+    // with no comparison between them having changed at all.
+    //
+    // The ceiling is not what is wrong. The MEASURE is. Anything cumulative --
+    // correct votes, vote plans landed, moves made -- grows with weeks survived
+    // and therefore restates the finish: correct-vote COUNT sits at -0.827
+    // against placement, while correct-vote RATE sits at -0.186 and is close to
+    // genuinely independent. Rebuild the figure on rates and this weight can be
+    // raised to answer a comp run. Until then it stays where it cannot do harm.
+    strat: { weight: 0.12, scale: 10 },
     // ── WHAT THE HOUSE COLUMN MEASURES INSTEAD ──
     //
     // This column counted VOTES AGAINST, which under Big Brother is placement
@@ -482,6 +509,12 @@ function _ruRelabelColumns() {
   const soc = rub.social;
   const socTh = document.getElementById('ru-th-social');
   if (socTh && soc) { socTh.textContent = soc.label; socTh.title = soc.title; }
+  const stratTh = document.getElementById('ru-th-strat');
+  if (stratTh && rub.strat) {
+    stratTh.title = 'How they actually played — judged, not counted · ×' + rub.strat.weight
+      + ' on a 0–' + rub.strat.scale + ' scale (max +'
+      + (rub.strat.weight * rub.strat.scale).toFixed(1) + ') · auto-filled from season JSON';
+  }
   const allyTh = document.getElementById('ru-th-allies');
   if (allyTh) {
     allyTh.title = 'Real alliances only — Unbreakable bonds or named alliances · +'
@@ -510,6 +543,11 @@ function _ruRenderLegend() {
   if (ally) {
     ally.textContent = `🤝 Allies +${RU_ALLY.weight} each (cap ${RU_ALLY.cap}) · Unbreakable/named`
       + ' alliances only — auto-filled from season JSON';
+  }
+  const strat = document.getElementById('ru-legend-strat');
+  if (strat && rub.strat) {
+    strat.textContent = `♟️ Strategic play ×${rub.strat.weight} on a 0–${rub.strat.scale}`
+      + ` scale (max +${(rub.strat.weight * rub.strat.scale).toFixed(1)}) — judged, not counted`;
   }
   const soc = document.getElementById('ru-legend-social');
   if (soc && rub.social) {
@@ -634,7 +672,7 @@ function computeScore(p) {
   const stratBonus = advFoundBonus + advPlayedBonus
                    - advWastedPen - advHeldPen
                    + (Math.min(p.alliances, RU_ALLY.cap) * RU_ALLY.weight)
-                   + ((p.strategicScore || 0) * 0.12); // ability + real moves (flips, blindsides, schemes, effective plays)
+                   + ((p.strategicScore || 0) * (_rub.strat?.weight ?? 0.12)); // judged strategic play
 
   // SOCIAL — one column, read the way the show it came from means it.
   // See the `social` block in RU_SHOW for why the house does not count votes.
@@ -841,7 +879,7 @@ function buildPreview() {
     if (row.advPlayed)  parts.push((_adv.played || 'AdvPlay') + ':+' + (row.advPlayed*RU_ADV.played).toFixed(1));
     if (row.advWasted)  parts.push((_adv.wasted || 'AdvWasted') + ':\u2212' + (row.advWasted*RU_ADV.wasted).toFixed(1));
     if (row.advHeld && !isFinalist) parts.push((_adv.held || 'AdvHeld') + ':\u2212' + (row.advHeld*RU_ADV.held).toFixed(1));
-    if (row.strategicScore) parts.push('Strat:+' + (row.strategicScore*0.12).toFixed(1));
+    if (row.strategicScore) parts.push('Strat:+' + (row.strategicScore*(_mrub.strat?.weight ?? 0.12)).toFixed(1));
     if (row.alliances)   parts.push('Allies:+' + (Math.min(row.alliances,RU_ALLY.cap)*RU_ALLY.weight).toFixed(1));
     if (row.fanFav)     parts.push('FanFav:+2.0');
     const _msoc = _mrub.social || {};
@@ -1235,7 +1273,11 @@ function loadSeasonData(json) {
       advWasted:   isHouse ? (p.bb?.powersWasted ?? 0) : (p.advWasted ?? 0),
       advHeld:     isHouse ? (p.bb?.powersHeld ?? 0) : (p.advHeld ?? 0),
       /* The house writes this one under a different name — `strategicRank` —
-         so the column sat empty while the number it wanted was right there. */
+         so the column sat empty while the number it wanted was right there.
+         The computed figure is preferred and the AI's is the fallback, NOT the
+         other way round: measured against S1, `strategicRank` tracks finish
+         position at -0.927 and is very nearly a restatement of it. See the
+         `strat` note in RU_SHOW. */
       strategicScore: p.strategicScore ?? (isHouse ? (p.strategicRank ?? 0) : 0),
       /* THE TWO COMPETITION COLUMNS, per show.
          A Big Brother placement carries its own tallies in `bb` — hohWins,

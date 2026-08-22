@@ -86,12 +86,12 @@ const RU_HTML = RU_CSS + `      <!-- ══════════════�
             <span style="color:#e2e8f0;">📍 <b>PLACEMENT</b> — spine of the formula · base = 42 + (placementPercentile × 0.26) · P1 → base 68 · last place → base 42 · Win +8 (2nd win +5…) · all other stats add on top</span>
             <span style="display:block;width:100%;height:1px;background:rgba(255,255,255,0.07);margin:2px 0;"></span>
             <span id="ru-legend-show" style="display:contents;"></span>
-            <span>🤝 Allies +0.5 each (cap 4) · Unbreakable/named alliances only — auto-filled from season JSON</span>
+            <span id="ru-legend-allies">🤝 Allies · Unbreakable/named alliances only — auto-filled from season JSON</span>
             <span>♟️ Strategic score ×0.12 — ability + real moves (flips, blindsides, schemes, effective plays) · auto-filled from season JSON</span>
             <span style="color:#34d399; margin-left:8px;">💞 <b>SOCIAL</b></span>
             <span></span>
             <span>❤️ Fan Fav +2.0</span>
-            <span>🗳️ Votes vs −0.2 per vote above avg · +0.15 per vote below avg</span>
+            <span id="ru-legend-social"></span>
             <span style="color:#fbbf24; margin-left:8px;">✍️ <b>Override</b> ±5 max</span>
             <span style="color:#f87171; margin-left:8px;">🚪 Quit −6.0</span>
           </div>
@@ -109,10 +109,10 @@ const RU_HTML = RU_CSS + `      <!-- ══════════════�
                   <th id="ru-th-adv-played" style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols/advantages PLAYED EFFECTIVELY (negated votes / worked) · +1.2 each on top of the found bonus">Played</th>
                   <th id="ru-th-adv-wasted" style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols/advantages PLAYED but WASTED (misfired / negated 0 votes / failed) · −1.2 each">Wasted</th>
                   <th id="ru-th-adv-held" style="padding: 6px 5px; text-align: center; width: 44px; color:#a78bfa;" title="Idols/advantages HELD & never used · 0 if survived to the end · −1.8 if eliminated still holding it">Held</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Real alliances only — Unbreakable bonds or named alliances · +0.5 each, max 4 · do NOT include casual relationships">Allies</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" id="ru-th-allies" title="Real alliances only — Unbreakable bonds or named alliances · do NOT include casual relationships">Allies</th>
                   <th style="padding: 6px 5px; text-align: center; width: 52px; color:#a78bfa;" title="Strategic-gameplay score (ability + real moves: flips, blindsides, schemes, effective plays) · ×0.12 · auto-filled from season JSON">Strat</th>
                   <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="not counted in score">Jury ⭐</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below cast avg">Votes vs</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" id="ru-th-social" title="Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below cast avg">Votes vs</th>
                   <th style="padding: 6px 5px; text-align: center; width: 42px; color:#f59e0b;" title="Won Fan Favorite · +2.0">FanFav</th>
                   <th style="padding: 6px 5px; text-align: center; width: 38px; color:#f87171;" title="Quit voluntarily · −6.0">Quit</th>
                   <th style="padding: 6px 5px; text-align: center; width: 58px; color:#fbbf24;" title="Narrative override · −5 to +5 · add a reason in the note field">±Override</th>
@@ -372,6 +372,16 @@ let rowCount       = 0;
 // bitten by once with the competition columns. One copy, everything reads it.
 const RU_ADV = { found: 0.8, played: 2.4, wasted: 2.4, held: 2.4 };
 
+// Alliances are a participation trophy, priced like one.
+//
+// At 0.5 with a cap of 4 this was worth +2.0, and on S1 SIXTEEN of seventeen
+// players had some and SIX were pinned at the cap. A modifier a third of the
+// cast maxes out is not telling them apart, it is a flat bonus for being
+// socially present — and it was enough to put a houseguest whose entire
+// resume was "in four alliances" above one who won three competitions and
+// played a power. It is a tiebreaker now, not a term.
+const RU_ALLY = { weight: 0.25, cap: 4 };
+
 const RU_SHOW = {
   'total-drama': {
     comp1: { label: 'Imm',  weight: 1.6, title: '+1.6 per individual immunity win' },
@@ -379,6 +389,9 @@ const RU_SHOW = {
     comp3: null,
     adv: { group: 'ADVANTAGES', noun: 'idol/advantage',
       found: 'Found', played: 'Played', wasted: 'Wasted', held: 'Held' },
+    // Votes against, on a curve around the cast average.
+    social: { kind: 'votes', label: 'Votes vs',
+      title: 'Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below' },
   },
   'big-brother': {
     comp1: { label: 'HOH',  weight: 1.2, title: '+1.2 per Head of Household — power, and a target' },
@@ -393,6 +406,29 @@ const RU_SHOW = {
     // power or you win one, you do not find it in a tree.
     adv: { group: 'POWERS', noun: 'power',
       found: 'Won', played: 'Played', wasted: 'Wasted', held: 'Held' },
+    // ── WHAT THE HOUSE COLUMN MEASURES INSTEAD ──
+    //
+    // This column counted VOTES AGAINST, which under Big Brother is placement
+    // measured a second time: you only accrue votes by being nominated and
+    // evicted, so the tally is very nearly a function of finish order. On S1 it
+    // ran +0.9 for the winner down to −1.6 for an early boot, always with the
+    // same sign as the base it was added to. Deleting it moved exactly two
+    // players — proof it carried nothing of its own — and both moves were
+    // corrections, a houseguest with three competition wins and a played power
+    // finally clearing one whose record was empty.
+    //
+    // SURVIVING THE BLOCK is the signal that column should have been carrying.
+    // It is the one thing in the house record genuinely uncorrelated with
+    // finish: you can sit at eviction night nominated three times, be kept
+    // three times and still go out tenth, or win the season having never been
+    // up at all. `timesOnBlock` already counts only reaching eviction night
+    // still nominated — an arena save never gets there and is scored as a
+    // competition instead, so nothing is credited twice.
+    //
+    // Capped at 4: past that it is describing a house that kept renominating a
+    // pawn, which is a pattern rather than an achievement.
+    social: { kind: 'survived', label: 'Survived', weight: 1.5, cap: 4,
+      title: 'Eviction nights survived ON THE BLOCK · +1.5 each, max 4 · nominated, voted on, and kept' },
   },
 };
 
@@ -432,6 +468,17 @@ function _ruRelabelColumns() {
     if (label) th.textContent = label;
     if (advTitles[id]) th.title = advTitles[id];
   }
+  // The social column counts something different per show, so its header and
+  // its tooltip come off the rubric like the competition ones do.
+  const soc = rub.social;
+  const socTh = document.getElementById('ru-th-social');
+  if (socTh && soc) { socTh.textContent = soc.label; socTh.title = soc.title; }
+  const allyTh = document.getElementById('ru-th-allies');
+  if (allyTh) {
+    allyTh.title = 'Real alliances only — Unbreakable bonds or named alliances · +'
+      + RU_ALLY.weight + ' each, max ' + RU_ALLY.cap + ' · do NOT include casual relationships';
+  }
+
   // Every data row has to gain or lose the same cell, or the columns shear.
   document.querySelectorAll('.ru-cell-comp3').forEach(td => {
     td.style.display = rub.comp3 ? '' : 'none';
@@ -449,9 +496,20 @@ function _ruRelabelColumns() {
  * than no legend.
  */
 function _ruRenderLegend() {
+  const rub = _ruRubric();
+  const ally = document.getElementById('ru-legend-allies');
+  if (ally) {
+    ally.textContent = `🤝 Allies +${RU_ALLY.weight} each (cap ${RU_ALLY.cap}) · Unbreakable/named`
+      + ' alliances only — auto-filled from season JSON';
+  }
+  const soc = document.getElementById('ru-legend-social');
+  if (soc && rub.social) {
+    soc.textContent = rub.social.kind === 'survived'
+      ? `🪑 ${rub.social.label} +${rub.social.weight} per eviction night survived on the block (cap ${rub.social.cap})`
+      : '🗳️ Votes vs −0.2 per vote above avg · +0.15 per vote below avg';
+  }
   const el = document.getElementById('ru-legend-show');
   if (!el) return;
-  const rub = _ruRubric();
   const adv = rub.adv || {};
   const comp = [rub.comp1, rub.comp2, rub.comp3].filter(Boolean)
     .map(c => `<span>${c.label} +${c.weight}</span>`).join('');
@@ -488,6 +546,11 @@ function _ruFormatOfDoc(json) {
   // A document with weeks and no episodes is a house, whatever it forgot to say.
   if (Array.isArray(json?.weeks) && json.weeks.length) return 'big-brother';
   return 'total-drama';
+}
+
+/** Does this show's social column count votes against, or block survivals? */
+function _ruSocialIsVotes(format) {
+  return (_ruRubric(format).social || {}).kind !== 'survived';
 }
 
 function _ruRubric(format) {
@@ -561,16 +624,23 @@ function computeScore(p) {
   const advHeldPen     = p.isFinalist ? 0 : ((p.advHeld || 0) * RU_ADV.held); // eliminated still holding it
   const stratBonus = advFoundBonus + advPlayedBonus
                    - advWastedPen - advHeldPen
-                   + (Math.min(p.alliances, 4) * 0.5)
+                   + (Math.min(p.alliances, RU_ALLY.cap) * RU_ALLY.weight)
                    + ((p.strategicScore || 0) * 0.12); // ability + real moves (flips, blindsides, schemes, effective plays)
 
-  // SOCIAL — co-winner jury votes ×0.75 (4-4 tie ≠ 4 decisive votes)
-  const castAvgVotes = Math.round(p.castSize / 3);
-  // Two-sided votes curve: above avg = penalty, below avg = bonus
-  const voteDiff     = p.votesAgainst - castAvgVotes;
-  const voteAdj      = voteDiff > 0 ? -(voteDiff * 0.2) : -(voteDiff * 0.15); // negative diff * negative rate = positive bonus
+  // SOCIAL — one column, read the way the show it came from means it.
+  // See the `social` block in RU_SHOW for why the house does not count votes.
+  const _soc = _rub.social || RU_SHOW['total-drama'].social;
+  let socialAdj;
+  if (_soc.kind === 'survived') {
+    socialAdj = Math.min(num(p.socialCol), _soc.cap) * _soc.weight;
+  } else {
+    const castAvgVotes = Math.round(p.castSize / 3);
+    // Two-sided votes curve: above avg = penalty, below avg = bonus
+    const voteDiff = num(p.socialCol) - castAvgVotes;
+    socialAdj = voteDiff > 0 ? -(voteDiff * 0.2) : -(voteDiff * 0.15); // negative diff * negative rate = positive bonus
+  }
   const fanFavBonus  = p.fanFav ? 2.0 : 0;
-  const socialBonus  = fanFavBonus + voteAdj;
+  const socialBonus  = fanFavBonus + socialAdj;
 
   const quitAdj = p.quit ? -6 : 0;
 
@@ -625,7 +695,7 @@ function addRow(name, placement, stats) {
     '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.alliances,   '40px','#a78bfa') + '</td>' +
     '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.strategicScore, '46px','#a78bfa') + '</td>' +
     '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.juryVotes,   '40px','#34d399') + '</td>' +
-    '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.votesVs,    '44px','#34d399') + '</td>' +
+    '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.social,     '44px','#34d399') + '</td>' +
     '<td style="padding:5px 4px;text-align:center;">' + chkCell(stats.fanFav,'#f59e0b') + '</td>' +
     '<td style="padding:5px 4px;text-align:center;">' + chkCell(stats.quit,  '#f87171') + '</td>' +
     '<td style="padding:5px 4px;text-align:center;">' +
@@ -668,7 +738,7 @@ function getRows() {
       alliances:     parseInt(nums[8]?nums[8].value:'')||0,
       strategicScore:parseFloat(nums[9]?nums[9].value:'')||0,
       juryVotes:     parseInt(nums[10]?nums[10].value:'')||0,
-      votesAgainst:  parseInt(nums[11]?nums[11].value:'')||0,
+      socialCol:     parseInt(nums[11]?nums[11].value:'')||0,  // votes against, or block survivals — per show
       override:      parseFloat(nums[12]?nums[12].value:'')||0,
       overrideReason:txt[1] ? txt[1].value.trim() : '',
       fanFav: chks[0]?chks[0].checked:false,
@@ -735,7 +805,7 @@ function buildPreview() {
       advFound:row.advFound, advPlayed:row.advPlayed, advWasted:row.advWasted, advHeld:row.advHeld,
       strategicScore:row.strategicScore,
       alliances:row.alliances,
-      juryVotes:row.juryVotes, votesAgainst:row.votesAgainst,
+      juryVotes:row.juryVotes, socialCol:row.socialCol,
       fanFav:row.fanFav, quit:row.quit,
       override:row.override, castSize, isFinalist
     });
@@ -763,11 +833,17 @@ function buildPreview() {
     if (row.advWasted)  parts.push((_adv.wasted || 'AdvWasted') + ':\u2212' + (row.advWasted*RU_ADV.wasted).toFixed(1));
     if (row.advHeld && !isFinalist) parts.push((_adv.held || 'AdvHeld') + ':\u2212' + (row.advHeld*RU_ADV.held).toFixed(1));
     if (row.strategicScore) parts.push('Strat:+' + (row.strategicScore*0.12).toFixed(1));
-    if (row.alliances)   parts.push('Allies:+' + (Math.min(row.alliances,4)*0.5).toFixed(1));
+    if (row.alliances)   parts.push('Allies:+' + (Math.min(row.alliances,RU_ALLY.cap)*RU_ALLY.weight).toFixed(1));
     if (row.fanFav)     parts.push('FanFav:+2.0');
-    const vDiff = row.votesAgainst - castAvg;
-    if (vDiff > 0)  parts.push('VotesVs:\u2212'+(vDiff*0.2).toFixed(1));
-    else if (vDiff < 0) parts.push('VotesVs:+'+(Math.abs(vDiff)*0.15).toFixed(1));
+    const _msoc = _mrub.social || {};
+    if (_msoc.kind === 'survived') {
+      const kept = Math.min(row.socialCol || 0, _msoc.cap);
+      if (kept) parts.push(_msoc.label + ':+' + (kept * _msoc.weight).toFixed(1));
+    } else {
+      const vDiff = row.socialCol - castAvg;
+      if (vDiff > 0)  parts.push('VotesVs:\u2212'+(vDiff*0.2).toFixed(1));
+      else if (vDiff < 0) parts.push('VotesVs:+'+(Math.abs(vDiff)*0.15).toFixed(1));
+    }
     if (row.quit)       parts.push('Quit:\u22126.0');
     if (row.override)   parts.push('Override:' + (row.override>0?'+':'') + row.override.toFixed(1) + (row.overrideReason?' ('+row.overrideReason+')':''));
 
@@ -922,9 +998,16 @@ async function generateAIReasoning(name, seasonNum, placement, row, isWinner, is
   if (row.advWasted) statParts.push(`wasted ${row.advWasted} advantage${row.advWasted>1?'s':''}`);
   if (row.advHeld) statParts.push(`held ${row.advHeld} advantage${row.advHeld>1?'s':''} (unused)`);
   if (row.alliances)  statParts.push(`${row.alliances} real alliance${row.alliances>1?'s':''}`);
-  if (row.votesAgainst===0) statParts.push('never received a vote');
-  else if (row.votesAgainst===1) statParts.push('voted against once');
-  else statParts.push(`${row.votesAgainst} votes against`);
+  // The column means different things on different shows, and so must the
+  // sentence written from it. "3 votes against" over a houseguest who was kept
+  // three times is not a smaller version of the truth, it is the opposite one.
+  const _psoc = _ruRubric().social || {};
+  if (_psoc.kind === 'survived') {
+    if (row.socialCol === 1) statParts.push('survived the block once');
+    else if (row.socialCol > 1) statParts.push(`survived the block ${row.socialCol} times`);
+  } else if (row.socialCol === 0) statParts.push('never received a vote');
+  else if (row.socialCol === 1) statParts.push('voted against once');
+  else statParts.push(`${row.socialCol} votes against`);
   if (row.fanFav)     statParts.push('fan favorite');
   if (row.quit)       statParts.push('quit the game');
   if (row.override)   statParts.push(`narrative note: ${row.overrideReason}`);
@@ -991,7 +1074,12 @@ async function applyUpdates() {
         placements:[r.placement], avgPlacement:r.placement,
         // Every competition the show has, not just the two Total Drama runs.
         challengeWins: row.immWins+row.rewWins+(row.comp3Wins||0),
-        votesAgainst:row.votesAgainst, juryVotes:row.juryVotes,
+        // Career totals stay in their own units. The one column feeding them
+        // carries votes on Total Drama and block survivals in the house, and
+        // summing them into the same field would make both meaningless.
+        ...(_ruSocialIsVotes() ? { votesAgainst: row.socialCol, blockSurvived: 0 }
+                               : { votesAgainst: 0, blockSurvived: row.socialCol }),
+        juryVotes:row.juryVotes,
         idolsFound:row.advFound || (row.advPlayed+row.advWasted+row.advHeld),
         title:'', emoji:r.isWinner?'\ud83d\udc51':'\u2b50',
         reasoning: buildSeasonReasoning(r.name, seasonNum, r.placement, row, r.isWinner, true, ''),
@@ -1011,7 +1099,8 @@ async function applyUpdates() {
       e.placements.push(r.placement);
       e.avgPlacement=e.placements.reduce((a,b)=>a+b,0)/e.placements.length;
       e.challengeWins=(e.challengeWins||0)+row.immWins+row.rewWins+(row.comp3Wins||0);
-      e.votesAgainst=(e.votesAgainst||0)+row.votesAgainst;
+      if (_ruSocialIsVotes()) e.votesAgainst=(e.votesAgainst||0)+row.socialCol;
+      else                    e.blockSurvived=(e.blockSurvived||0)+row.socialCol;
       e.juryVotes=(e.juryVotes||0)+row.juryVotes;
       e.idolsFound=(e.idolsFound||0)+(row.advFound || (row.advPlayed+row.advWasted+row.advHeld));
       if (row.override) {
@@ -1119,7 +1208,14 @@ function loadSeasonData(json) {
                         : (p.allianceCount ?? p.namedAlliances?.length ?? 0));
     const stats={
       juryVotes:   p.juryVotes||p.jury_votes||0,
-      votesVs:     p.votesAgainst||p.votes_against||p.votesReceived||0,
+      /* THE SOCIAL COLUMN, per show. A house fills it with eviction nights
+         survived on the block rather than votes against — see RU_SHOW.
+         `timesOnBlock` counts only reaching eviction night still nominated, so
+         one of them is the night that ended the game for everyone who did not
+         reach the final two, and the rest are the ones the house kept them. */
+      social:      isHouse
+        ? Math.max(0, (p.bb?.timesOnBlock ?? 0) - (placement <= 2 ? 0 : 1))
+        : (p.votesAgainst||p.votes_against||p.votesReceived||0),
       /* THE ADVANTAGE COLUMNS, per show. A house does not find idols — it is
          handed powers, plays them, lets them lapse, or ends the season still
          holding one. Those four states are what `bb.powersWon/Played/Wasted/

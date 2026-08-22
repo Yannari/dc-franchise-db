@@ -111,7 +111,7 @@ function loadScorer() {
     cut('const RU_SHOW = {', 'function _ruRelabelColumns'),
     cut('function _ruRubric(format)', '// ── Scoring formula'),
     cut('function placementPct(', 'function tierColor('),
-    'return { computeScore, scoreTier, placementPct, RU_ADV, RU_SHOW };',
+    'return { computeScore, scoreTier, placementPct, RU_ADV, RU_ALLY, RU_SHOW };',
   ].join(String.fromCharCode(10)).replace('RU_SHOW[format || _ruShowFormat()]', 'RU_SHOW[format]');
   return new Function(src)();
 }
@@ -124,7 +124,7 @@ function blank(S, place, over = {}) {
     wins: place === 1 ? 1 : 0, nonWinFinals: 0, numSeasons: 1, format: 'big-brother',
     immWins: 0, rewWins: 0, comp3Wins: 0,
     advFound: 0, advPlayed: 0, advWasted: 0, advHeld: 0,
-    strategicScore: 0, alliances: 0, votesAgainst: Math.round(CAST / 3),
+    strategicScore: 0, alliances: 0, socialCol: 0,
     fanFav: false, quit: false, override: 0,
     castSize: CAST, isFinalist: place <= 3, ...over,
   };
@@ -146,32 +146,69 @@ describe('a season of play can move you off your finish', () => {
     // Ireland against Gyselle, S1. This is the comparison the old curve got
     // backwards by two and a half points.
     const decorated = S.computeScore(blank(S, 10, {
-      immWins: 3, rewWins: 4, comp3Wins: 3, advFound: 1, advPlayed: 1,
-      alliances: 1, votesAgainst: 7,
+      immWins: 3, rewWins: 4, comp3Wins: 3, advFound: 1, advPlayed: 1, alliances: 1,
     }));
-    const passive = S.computeScore(blank(S, 7, { comp3Wins: 2, alliances: 4, votesAgainst: 5 }));
+    const passive = S.computeScore(blank(S, 7, { comp3Wins: 2, alliances: 4 }));
     expect(decorated).toBeGreaterThan(passive);
   });
 
   it('does not let it out-score the winner', () => {
     // Play has to matter, not decide. Whoever won the season stays on top.
     const decorated = S.computeScore(blank(S, 10, {
-      immWins: 3, rewWins: 4, comp3Wins: 3, advFound: 1, advPlayed: 1, alliances: 1,
+      immWins: 3, rewWins: 4, comp3Wins: 3, advFound: 1, advPlayed: 1, alliances: 1, socialCol: 2,
     }));
-    const winner = S.computeScore(blank(S, 1, { immWins: 2, rewWins: 4, alliances: 3, votesAgainst: 0 }));
+    const winner = S.computeScore(blank(S, 1, { immWins: 2, rewWins: 4, alliances: 3 }));
     expect(winner).toBeGreaterThan(decorated);
   });
 
   it('keeps a one-season winner short of the franchise ceiling', () => {
     // S+ is for careers. Doubling the competition weights must not hand it to
     // anyone who wins once with a good comp record.
-    const winner = S.computeScore(blank(S, 1, { immWins: 2, rewWins: 4, alliances: 3, votesAgainst: 0 }));
+    const winner = S.computeScore(blank(S, 1, { immWins: 2, rewWins: 4, alliances: 3 }));
     expect(S.scoreTier(winner)).toBe('S');
   });
 
   it('does not score the first boot as barely a franchise player', () => {
     // The floor was 30/100 for making the cast and going out first.
-    expect(S.computeScore(blank(S, CAST, { votesAgainst: 10 }))).toBeGreaterThan(38);
+    expect(S.computeScore(blank(S, CAST))).toBeGreaterThan(38);
+  });
+
+  it('will not let four alliances outrank three competition wins', () => {
+    // Felipe against Dylon, S1. Felipe's whole record was "in four alliances"
+    // and he finished two spots higher; that used to be enough, by 0.3.
+    const social = S.computeScore(blank(S, 9, { alliances: 4 }));
+    const player = S.computeScore(blank(S, 11, {
+      immWins: 2, rewWins: 1, advFound: 1, advPlayed: 1, alliances: 2,
+    }));
+    expect(player).toBeGreaterThan(social);
+    // And the weight itself, since the pair above would survive a revert:
+    // a maxed alliance count must stay worth less than one veto.
+    expect(S.RU_ALLY.weight * S.RU_ALLY.cap)
+      .toBeLessThan(S.RU_SHOW['big-brother'].comp2.weight);
+  });
+
+  it('reads the house social column as block survivals, not votes against', () => {
+    // The same number in the same column, meaning opposite things per show.
+    // Under the house rubric it can only ever help you.
+    const kept = S.computeScore(blank(S, 9, { socialCol: 3 }));
+    const never = S.computeScore(blank(S, 9, { socialCol: 0 }));
+    expect(kept).toBeGreaterThan(never);
+    expect(kept - never).toBeCloseTo(3 * S.RU_SHOW['big-brother'].social.weight, 5);
+  });
+
+  it('stops crediting a house that kept renominating the same pawn', () => {
+    const cap = S.RU_SHOW['big-brother'].social.cap;
+    expect(S.computeScore(blank(S, 9, { socialCol: cap + 4 })))
+      .toBe(S.computeScore(blank(S, 9, { socialCol: cap })));
+  });
+
+  it('leaves Total Drama counting votes against', () => {
+    // Total Drama has no block, so its column keeps the two-sided votes curve
+    // and more votes must still cost you.
+    const td = over => ({ ...blank(S, 9, over), format: 'total-drama' });
+    expect(S.RU_SHOW['total-drama'].social.kind).toBe('votes');
+    expect(S.computeScore(td({ socialCol: 12 })))
+      .toBeLessThan(S.computeScore(td({ socialCol: 2 })));
   });
 
   it('keeps the printed breakdown on the same weights as the score', () => {

@@ -316,6 +316,15 @@ function _ruUseCurrentSeason() {
         ? e.message
         : 'no season is loaded in the simulator — run or load one first');
     }
+    /* The villain ranking travels with the document, and the awards writer
+       reads it off a global because the payload it builds is assembled from
+       form fields rather than from the template. Set here, where a played
+       season's document actually exists. See js/villain-score.js. */
+    try {
+      if (tmpl?.villainBoard && typeof window !== 'undefined') {
+        window.__villainBoard = tmpl.villainBoard;
+      }
+    } catch { /* the board is an award, not a blocker */ }
     const placements = (tmpl && tmpl.placements) || [];
     if (!placements.length) throw new Error('that season has no results yet — play it through the finale first');
 

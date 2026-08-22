@@ -5614,7 +5614,10 @@ setTimeout(function() {
         juryVotes
       },
       awards,
-      brantsteeleStats // Include Brantsteele stats
+      brantsteeleStats, // Include Brantsteele stats
+      /* Who the villain actually was, ranked from the record before the model
+         is asked anything. It writes the citation; it does not choose. */
+      villainBoard: window.__villainBoard || null
     };
   }
   

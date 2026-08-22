@@ -2994,5 +2994,305 @@
       "description": "Tobias was voted the house's favourite by the audience."
     }
   },
-  "emoji": "[AI_FILL]"
+  "emoji": "[AI_FILL]",
+  "villainBoard": {
+    "read": "Misha did the most to other people this season, and Ireland was not far behind.",
+    "sources": [
+      "the record"
+    ],
+    "board": [
+      {
+        "name": "Misha",
+        "slug": "misha",
+        "score": 29,
+        "deeds": {
+          "brokenWord": 4,
+          "cutAnAlly": 2,
+          "ranTheWeek": 2,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 1,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Moved their vote onto Zella in week 5.",
+          "Voted out Zella, who they were aligned with, in week 5.",
+          "Told the room Hasan and wrote down Tobias in week 6.",
+          "Told the room Aaron and wrote down Nico in week 8.",
+          "Moved their vote onto Felipe in week 12.",
+          "Voted out Felipe, who they were aligned with, in week 12.",
+          "Held the power in week 13; Gyselle went home.",
+          "Held the power in week 14; Jane went home.",
+          "Cut Joel at the final three and chose who to sit beside."
+        ]
+      },
+      {
+        "name": "Ireland",
+        "slug": "ireland",
+        "score": 21,
+        "deeds": {
+          "brokenWord": 3,
+          "cutAnAlly": 0,
+          "ranTheWeek": 3,
+          "decidingVote": 0,
+          "vetoAsWeapon": 1,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Held the power in week 2; Stella went home.",
+          "Moved their vote onto Harriett in week 4.",
+          "Told the room Zella and wrote down Hasan in week 5.",
+          "Held the power in week 6; Hasan went home.",
+          "Won the veto in week 6 and left Nico in the chair.",
+          "Moved their vote onto Nico in week 8.",
+          "Held the power in week 9; Dylon went home."
+        ]
+      },
+      {
+        "name": "Jane",
+        "slug": "jane",
+        "score": 19,
+        "deeds": {
+          "brokenWord": 2,
+          "cutAnAlly": 2,
+          "ranTheWeek": 1,
+          "decidingVote": 0,
+          "vetoAsWeapon": 1,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Moved their vote onto Zella in week 5.",
+          "Voted out Natasha, who they were aligned with, in week 11.",
+          "Moved their vote onto Felipe in week 12.",
+          "Voted out Felipe, who they were aligned with, in week 12.",
+          "Won the veto in week 12 and left Gyselle in the chair.",
+          "Held the power in week 13; Aaron went home."
+        ]
+      },
+      {
+        "name": "Tobias",
+        "slug": "tobias",
+        "score": 17,
+        "deeds": {
+          "brokenWord": 2,
+          "cutAnAlly": 3,
+          "ranTheWeek": 0,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Moved their vote onto Jane in week 7.",
+          "Voted out Jane, who they were aligned with, in week 7.",
+          "Voted out Gyselle, who they were aligned with, in week 13.",
+          "Told the room Jules and wrote down Aaron in week 13.",
+          "Voted out Aaron, who they were aligned with, in week 13."
+        ]
+      },
+      {
+        "name": "Felipe",
+        "slug": "felipe",
+        "score": 13,
+        "deeds": {
+          "brokenWord": 1,
+          "cutAnAlly": 3,
+          "ranTheWeek": 0,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Voted out Hasan, who they were aligned with, in week 6.",
+          "Moved their vote onto Jane in week 7.",
+          "Voted out Jane, who they were aligned with, in week 7.",
+          "Voted out Natasha, who they were aligned with, in week 11."
+        ]
+      },
+      {
+        "name": "Gyselle",
+        "slug": "gyselle",
+        "score": 13,
+        "deeds": {
+          "brokenWord": 1,
+          "cutAnAlly": 3,
+          "ranTheWeek": 0,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Moved their vote onto Zella in week 5.",
+          "Voted out Zella, who they were aligned with, in week 5.",
+          "Voted out Hasan, who they were aligned with, in week 6.",
+          "Voted out Felipe, who they were aligned with, in week 12."
+        ]
+      },
+      {
+        "name": "Joel",
+        "slug": "joel",
+        "score": 13,
+        "deeds": {
+          "brokenWord": 1,
+          "cutAnAlly": 0,
+          "ranTheWeek": 3,
+          "decidingVote": 1,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Told the room Hasan and wrote down Zella in week 5.",
+          "Held the power in week 7; Jane went home.",
+          "Held the power in week 11; Natasha went home.",
+          "Broke the tie in week 11 and sent Natasha home.",
+          "Held the power in week 15; Tobias went home."
+        ]
+      },
+      {
+        "name": "Jules",
+        "slug": "jules",
+        "score": 12,
+        "deeds": {
+          "brokenWord": 2,
+          "cutAnAlly": 0,
+          "ranTheWeek": 2,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Told the room Gyselle and wrote down Amberly in week 3.",
+          "Held the power in week 4; Harriett went home.",
+          "Held the power in week 10; Ireland went home.",
+          "Moved their vote onto Tobias in week 11."
+        ]
+      },
+      {
+        "name": "Dylon",
+        "slug": "dylon",
+        "score": 8,
+        "deeds": {
+          "brokenWord": 1,
+          "cutAnAlly": 0,
+          "ranTheWeek": 2,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Told the room Gyselle and wrote down Amberly in week 3.",
+          "Held the power in week 5; Zella went home.",
+          "Held the power in week 8; Nico went home."
+        ]
+      },
+      {
+        "name": "Natasha",
+        "slug": "natasha",
+        "score": 7,
+        "deeds": {
+          "brokenWord": 1,
+          "cutAnAlly": 1,
+          "ranTheWeek": 0,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Voted out Hasan, who they were aligned with, in week 6.",
+          "Told the room Aaron and wrote down Nico in week 8."
+        ]
+      },
+      {
+        "name": "Aaron",
+        "slug": "aaron",
+        "score": 5,
+        "deeds": {
+          "brokenWord": 0,
+          "cutAnAlly": 1,
+          "ranTheWeek": 1,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Voted out Natasha, who they were aligned with, in week 11.",
+          "Held the power in week 12; Felipe went home."
+        ]
+      },
+      {
+        "name": "Harriett",
+        "slug": "harriett",
+        "score": 4,
+        "deeds": {
+          "brokenWord": 1,
+          "cutAnAlly": 0,
+          "ranTheWeek": 0,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Told the room Gyselle and wrote down Amberly in week 3."
+        ]
+      },
+      {
+        "name": "Nico",
+        "slug": "nico",
+        "score": 4,
+        "deeds": {
+          "brokenWord": 1,
+          "cutAnAlly": 0,
+          "ranTheWeek": 0,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Moved their vote onto Hasan in week 5."
+        ]
+      },
+      {
+        "name": "Hasan",
+        "slug": "hasan",
+        "score": 2,
+        "deeds": {
+          "brokenWord": 0,
+          "cutAnAlly": 0,
+          "ranTheWeek": 1,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Held the power in week 3; Amberly went home."
+        ]
+      }
+    ]
+  }
 }

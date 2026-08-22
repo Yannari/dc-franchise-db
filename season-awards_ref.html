@@ -147,6 +147,39 @@
 }
 
 /* ── Award grid ────────────────────────────────────── */
+
+/* ── the villain board ────────────────────────────────────────────────
+   A ranking with its working shown, because the point is that it is
+   ARGUABLE: every number is a deed somebody can go and read in the voting
+   history. */
+.vb-read { font-size:14px; color:#d6cfe0; margin:0 0 12px; }
+.vb-src { display:inline-block; margin-left:8px; font-size:11px; letter-spacing:.05em;
+  text-transform:uppercase; color:#8b93a7; }
+.vb-list { list-style:none; margin:0 0 26px; padding:0; }
+.vb-row { display:grid; grid-template-columns:26px minmax(120px,180px) 1fr auto;
+  grid-template-areas:'n who bar score' '. deeds deeds deeds' '. ev ev ev';
+  gap:2px 10px; align-items:center; padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.06); }
+.vb-rank { grid-area:n; text-align:center; font-weight:900; font-size:13px; color:#8b93a7; }
+.vb-row.is-top .vb-rank { color:#f87171; }
+.vb-who { grid-area:who; display:flex; align-items:center; gap:8px; text-decoration:none;
+  color:#fff; font-weight:700; font-size:14px; }
+.vb-who img { width:28px; height:28px; border-radius:50%; object-fit:cover;
+  border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.06); }
+.vb-who:hover span { text-decoration:underline; }
+.vb-bar { grid-area:bar; display:block; height:8px; border-radius:5px;
+  background:rgba(255,255,255,.06); overflow:hidden; }
+.vb-bar i { display:block; height:100%; border-radius:5px;
+  background:linear-gradient(90deg,rgba(248,113,113,.45),#f87171); }
+.vb-score { grid-area:score; font-size:12px; color:#fca5a5; font-variant-numeric:tabular-nums; }
+.vb-deeds { grid-area:deeds; display:flex; flex-wrap:wrap; gap:4px 6px; margin-top:4px; }
+.vb-deed { font-size:10.5px; padding:1px 8px; border-radius:999px; color:#e7d9d9;
+  background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.22); }
+.vb-rest { font-size:11.5px; color:#8b93a7; margin:-18px 0 26px; }
+.vb-ev { grid-area:ev; font-size:11.5px; color:#8b93a7; font-style:italic; margin-top:3px; }
+@media(max-width:600px){ .vb-row { grid-template-columns:22px 1fr auto;
+  grid-template-areas:'n who score' '. bar bar' '. deeds deeds' '. ev ev'; } }
+
 .award-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px,1fr));
@@ -691,6 +724,46 @@ function statLbCard(title, rows) {
       ${awardCard('🎯','Biggest Target', awards.biggestTarget || awards['biggest Target'])}
       ${awardCard('😢','Most Robbed', awards.mostRobbedPreJuror)}
     </div>`;
+
+    /* ── THE VILLAIN BOARD ──────────────────────────────────────────────
+       "Biggest Villain" is one line written by a model. This is the working
+       behind it: the whole cast ranked by what they actually did to each
+       other, computed from the record before anybody wrote a sentence — see
+       js/villain-score.js. It sits under the character awards because it is
+       the evidence for the one directly above it, and because a spin-off casts
+       from a board rather than from a caption. */
+    const vb = season.villainBoard;
+    if (vb?.board?.length) {
+      const DEEDS = {
+        brokenWord: 'broke their word', villainScene: 'played as the aggressor',
+        cutAnAlly: 'cut an ally', finalCut: 'made the final cut',
+        vetoAsWeapon: 'used the veto on somebody else',
+        decidingVote: 'cast the deciding vote', rivalry: 'open war',
+        ranTheWeek: 'ran the week',
+      };
+      const top = vb.board[0].score || 1;
+      html += `<div class="sa-section-heading">😈 The Villain Board</div>
+        <p class="vb-read">${vb.read || ''}
+          <span class="vb-src">ranked from ${(vb.sources || ['the record']).join(' and ')}</span></p>
+        <ol class="vb-list">${vb.board.slice(0, 3).map((v, i) => `
+          <li class="vb-row${i === 0 ? ' is-top' : ''}">
+            <span class="vb-rank">${i + 1}</span>
+            <a class="vb-who" href="player.html?player=${v.slug}&view=wiki">
+              <img src="assets/avatars/${v.slug}.png" alt=""
+                   onerror="this.style.visibility='hidden'"><span>${v.name}</span></a>
+            <span class="vb-bar"><i style="width:${
+              Math.max(5, Math.round((v.score / top) * 100))}%"></i></span>
+            <b class="vb-score">${v.score}</b>
+            <span class="vb-deeds">${Object.entries(v.deeds || {})
+              .filter(([, n]) => n).sort((a, b) => b[1] - a[1])
+              .map(([k, n]) => `<span class="vb-deed">${DEEDS[k] || k}${
+                n > 1 ? ` ×${n}` : ''}</span>`).join('')}</span>
+            ${v.evidence?.length
+              ? `<span class="vb-ev">${v.evidence[0]}</span>` : ''}
+          </li>`).join('')}</ol>
+        ${vb.board.length > 3 ? `<p class="vb-rest">${vb.board.length - 3} more scored
+          below the cut.</p>` : ''}`;
+    }
 
     // Unfortunate awards
     const unfortunate = [

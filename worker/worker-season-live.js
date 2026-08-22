@@ -90,7 +90,8 @@ function extractCastFromEpisode1(episodes) {
 }
 
 async function generateSeasonDataExtraction(body, env) {
-  const { season, seasonTitle, episodes, finale, awards, metadata, brantsteeleStats } = body;
+  const { season, seasonTitle, episodes, finale, awards, metadata, brantsteeleStats,
+    villainBoard } = body;
   
   if (!episodes || episodes.length === 0) {
     return new Response(JSON.stringify({ error: "No episodes provided" }), {
@@ -284,6 +285,42 @@ async function generateSeasonDataExtraction(body, env) {
     brantsteeleSection = `\n\n=== BRANTSTEELE STATISTICS (USE THIS FOR ACCURATE NUMBERS) ===\n${brantsteeleStats}\n\n⚠️ IMPORTANT: Use Brantsteele stats for exact numbers (challenge wins, votes received, idol counts, placements). Episode summaries provide narrative context.`;
   }
 
+  /* ── THE VILLAIN IS RANKED BEFORE THIS PROMPT RUNS ─────────────────
+     Asked cold, off one paragraph of summary per episode, the model picked
+     whoever those paragraphs talked about most — which is the winner and
+     whoever they were sleeping with. js/villain-score.js ranks the cast from
+     deeds in the record: ballots that moved, allies cut in a live vote, weeks
+     they ran, vetoes turned on somebody else, the final cut.
+
+     So the pick is settled and the WRITING is the job. The evidence goes in
+     with it, because a citation has to be about what actually happened. */
+  const villainSection = (villainBoard?.board || []).length
+    ? `
+
+=== VILLAIN BOARD (COMPUTED FROM THE RECORD — DO NOT RE-RANK) ===
+`
+      + villainBoard.board.slice(0, 6).map((v, i) =>
+        `${i + 1}. ${v.name} — ${v.score} points
+${(v.evidence || [])
+          .map(e => `     · ${e}`).join('
+')}`).join('
+')
+      + `
+
+RULES FOR THE VILLAIN AWARDS:
+`
+      + `- villainOfSeason.gold MUST be ${villainBoard.board[0].name}.
+`
+      + (villainBoard.board[1]
+        ? `- villainOfSeason.silver MUST be ${villainBoard.board[1].name}.
+` : '')
+      + `- biggestVillain MUST be ${villainBoard.board[0].name}.
+`
+      + `- Write the descriptions FROM THE EVIDENCE ABOVE. Cite what they did, `
+      + `to whom, and in which week. Do not describe them as a villain for being `
+      + `disliked, for being loud, or for who they were in a showmance with.`
+    : '';
+
   const canonicalCastSection = canonicalCast.length
     ? `\n\nCANONICAL_CAST (use EXACTLY these names; do NOT add suffixes like "Winner" / "Juror" / "Votes to Win"; do NOT invent new people):\n- ${canonicalCast.join('\n- ')}`
     : '';
@@ -330,7 +367,7 @@ Episodes: ${metadata.episodeCount}
 Cast Size: ${metadata.castSize}
 
 ${episodeSummaries}
-${brantsteeleSection}
+${brantsteeleSection}${villainSection}
 
 Return ONLY valid JSON matching the schema exactly.
 `.trim();

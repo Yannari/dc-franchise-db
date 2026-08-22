@@ -1620,13 +1620,41 @@ function _extractAlliances() {
  * in the season it appears in. It lived in `gs.bb.rivals` and went nowhere.
  */
 function _extractRivalries() {
-  const pairs = gs.bb?.rivals?.pairs || [];
-  return pairs.map(p => ({
-    players: [p.player || p.a, p.rival || p.b].filter(Boolean),
-    playerSlugs: [p.player || p.a, p.rival || p.b].filter(Boolean).map(n => _slug(n)),
-    source: 'rivals-twist',
-    startWeek: gs.bb?.rivals?.startWeek ?? null,
-  })).filter(r => r.players.length === 2);
+  const out = [];
+  const seen = new Set();
+  const push = (a, b, source, extra = {}) => {
+    if (!a || !b || a === b) return;
+    const key = [a, b].sort().join('|');
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ players: [a, b], playerSlugs: [a, b].map(n => _slug(n)), source, ...extra });
+  };
+
+  // The Rivals twist, which assigns them.
+  for (const p of gs.bb?.rivals?.pairs || []) {
+    push(p.player || p.a, p.rival || p.b, 'rivals-twist',
+      { startWeek: gs.bb?.rivals?.startWeek ?? null });
+  }
+
+  /* ── AND THE ONES THE HOUSE MADE ITSELF ─────────────────────────────
+     This read the twist and nothing else, so a season that did not run Rivals
+     exported ZERO rivalries — every organic feud a cast generated over three
+     months, gone. Big Brother 1 published with an empty list after a season of
+     people who could not be in a room together, and the villain board had no
+     way to see a fight at all.
+
+     Bad blood is already measured: the bond matrix runs -10 to +10 and the
+     whole engine reads it to decide who targets whom. Deeply negative is a
+     feud whatever produced it, and it is the same fact the pages want. */
+  const cast = (players || []).map(p => p.name).filter(Boolean);
+  for (let i = 0; i < cast.length; i++) {
+    for (let j = i + 1; j < cast.length; j++) {
+      let bond = 0;
+      try { bond = Number(getBond(cast[i], cast[j])) || 0; } catch { bond = 0; }
+      if (bond <= -5) push(cast[i], cast[j], 'bad-blood', { bond });
+    }
+  }
+  return out;
 }
 
 // Per-episode vote breakdown for the Vote History tab + Voting Analytics page.

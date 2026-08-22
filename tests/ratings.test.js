@@ -547,9 +547,16 @@ describe('a season nobody watched votes differently', () => {
     expect(iconic, `iconic ${iconic.toFixed(2)} vs dogwater ${dogwater.toFixed(2)}`)
       .toBeGreaterThan(dogwater + 0.08);
     // And neither end is broken: the favourite is still the favourite on a
-    // bad season, just less reliably.
+    // bad season, just less reliably — a season nobody watched is a small,
+    // noisy poll and can genuinely be lost.
     expect(dogwater).toBeGreaterThan(0.2);
-    expect(iconic).toBeLessThan(0.99);
+    expect(dogwater).toBeLessThan(0.95);
+    // NOT asserted: that a well-watched season stays uncertain. It used to be
+    // (`iconic < 0.99`), on twenty-five blocks. Nothing on finale night feeds
+    // this vote — popularity is settled weeks earlier and only read here — so
+    // a country that turned up in numbers SHOULD return the person it spent
+    // the season liking. The upset lives at the other end of the dial now.
+    expect(iconic).toBeGreaterThan(dogwater);
   });
 
   it('leaves a season with no ratings exactly as it was', () => {

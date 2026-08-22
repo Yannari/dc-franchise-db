@@ -900,18 +900,44 @@ export function returneePools() {
 
     // — heroes: loyalty you can verify (clean hands + real allies) + fan love
     {
+      // CLEAN HANDS ARE WORTH WHAT THE OPPORTUNITY WAS WORTH.
+      //
+      // This was an absolute gate: one betrayal, ever, and no quantity of
+      // alliances or audience love could get a player in. Which meant it
+      // systematically rewarded being evicted early -- somebody gone in week
+      // two has committed no betrayals because nothing happened to them, while
+      // a finalist who made one hard cut across sixteen weeks was barred
+      // outright. Big Brother 1 filled the category with pre-jury boots and a
+      // goat while the houseguest who actually won America's Favourite could
+      // not appear in it.
+      //
+      // Betraying nobody only means something if you had somebody to betray,
+      // so the credit scales with how far they actually got, and a betrayal
+      // costs rather than disqualifies.
       const parts = [];
       let h = 0;
-      if (t.betrayalsCommitted === 0 && t.schemesCaught === 0) {
-        h += 1.5;
-        if (arch === 'hero') { h += 2.5; parts.push('hero'); }
-        else if (NICE_ARCH.includes(arch)) { h += 1.5; parts.push(arch); }
-        const allyCount = c.people.allies.reduce((s, a) => s + a.count, 0);
-        if (allyCount >= 2) { h += Math.min(3, allyCount * 0.6); parts.push(`${allyCount} loyal alliances`); }
-        if (t.timesBetrayed >= 1 && t.betrayalsCommitted === 0) { h += 1; parts.push('betrayed, never betrayed back'); }
-        if (t.popularityKnown && t.popularity > 0) { h += Math.min(4, t.popularity); parts.push('fan-loved'); }
-        if (h >= 4) scored.heroes.push({ name, slug, rel: h, why: parts.join(' · ') || 'clean hands, full seasons' });
+      const depth = c.seasons.length
+        ? c.seasons.reduce((sum, sn) => {
+          const cs = _castSizeOf(sn.seasonNum);
+          if (!cs || cs < 2 || !sn.placement) return sum;
+          return sum + Math.max(0, (cs - sn.placement) / (cs - 1));
+        }, 0) / c.seasons.length
+        : 0;
+      const clean = t.betrayalsCommitted === 0 && t.schemesCaught === 0;
+      if (clean && depth > 0) {
+        h += 1.5 + 2 * depth;
+        parts.push(depth >= 0.75 ? 'clean hands to the end' : 'clean hands');
       }
+      if (arch === 'hero') { h += 2.5; parts.push('hero'); }
+      else if (NICE_ARCH.includes(arch)) { h += 1.5; parts.push(arch); }
+      const allyCount = c.people.allies.reduce((s, a) => s + a.count, 0);
+      if (allyCount >= 2) { h += Math.min(3, allyCount * 0.6); parts.push(`${allyCount} loyal alliances`); }
+      if (t.timesBetrayed >= 1 && clean) { h += 1; parts.push('betrayed, never betrayed back'); }
+      if (t.popularityKnown && t.popularity > 0) { h += Math.min(4, t.popularity); parts.push('fan-loved'); }
+      // What it cost, rather than what it barred.
+      h -= (t.betrayalsCommitted || 0) * 1.5;
+      h -= (t.schemesCaught || 0) * 2;
+      if (h >= 4) scored.heroes.push({ name, slug, rel: h, why: parts.join(' · ') || 'clean hands, full seasons' });
     }
     if ((c.totals.chalWins || 0) >= 4) scored.challengeTitans.push({ name, slug, rel: c.totals.chalWins,
       why: `${c.totals.chalWins} career competition wins` });

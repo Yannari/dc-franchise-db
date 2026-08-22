@@ -640,6 +640,39 @@ describe('returneePools — flavor pools and feuds', () => {
     expect(feud).toBeTruthy();
     expect(feud.why).toMatch(/betrayed/);
   });
+  // CLEAN HANDS ARE WORTH WHAT THE OPPORTUNITY WAS WORTH.
+  //
+  // The gate was absolute — one betrayal ever and nothing could get a player in
+  // — so it rewarded being evicted early: a week-two boot has betrayed nobody
+  // because nothing happened to them, while a finalist who made one hard cut
+  // across a whole season was barred outright.
+  it('rates clean hands by how far they got, and prices a betrayal instead of barring it', () => {
+    setFranchiseLedger({ seasons: {
+      '1': { seasonName: 'S1', castSize: 10, players: {
+        // Same clean record, opposite opportunity.
+        Deep: _rec({ placement: 1, winner: true, finalist: true, episodesLasted: 14,
+          archetype: 'loyal-soldier', allies: ['Early', 'Cut'], popularity: 2 }),
+        Early: _rec({ placement: 10, episodesLasted: 1,
+          archetype: 'loyal-soldier', allies: ['Deep', 'Cut'], popularity: 2 }),
+        // Went deep, made one cut, and the audience loved him anyway.
+        Cut: _rec({ placement: 2, finalist: true, episodesLasted: 13, betrayed: ['Early'],
+          archetype: 'social-butterfly', allies: ['Deep'], popularity: 4 }),
+      } }
+    } });
+    // The pool is sorted strongest-first and drops the score, so rank IS the
+    // assertion.
+    const heroes = returneePools().heroes.map(x => x.name);
+    // Reaching the end without betraying anybody beats never having the chance.
+    expect(heroes).toContain('Deep');
+    expect(heroes.indexOf('Deep')).toBeLessThan(
+      heroes.indexOf('Early') === -1 ? Number.MAX_SAFE_INTEGER : heroes.indexOf('Early'));
+    expect(returneePools().heroes.find(x => x.name === 'Deep').why)
+      .toMatch(/clean hands to the end/);
+    // And one cut no longer erases a whole career from the category.
+    expect(heroes).toContain('Cut');
+    expect(heroes.indexOf('Deep')).toBeLessThan(heroes.indexOf('Cut'));
+  });
+
   it('blindsides alone are NOT villainy — a clean-handed hero never qualifies', () => {
     setFranchiseLedger({ seasons: {
       '1': { seasonName: 'S1', castSize: 10, players: {

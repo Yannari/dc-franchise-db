@@ -2712,6 +2712,19 @@ function _bbShowmanceOf(name) {
 function _showmanceEndedOf(name) {
   const sh = (gs.showmances || []).find(x => (x.players || []).includes(name));
   if (!sh) return '';
+  // SEPARATED IS NOT A BREAK-UP, and this read it as one.
+  //
+  // romance.js sets `breakupType = 'separated'` when one of them is voted out
+  // and the other stays, and says so in as many words: "not betrayal --
+  // relationship intact, just physically apart". It keeps the bond high on
+  // purpose, because it is grief rather than anger. `phase` still goes to
+  // 'broken-up' only because the couple is no longer active IN THE HOUSE.
+  //
+  // Testing the phase alone therefore called every evicted-apart couple a
+  // break-up, and the life layer excludes broken ones by design -- so two
+  // people the audience watched stay together right to the finale walked out
+  // of it as exes, and could never be paired in the off-season.
+  if (sh.breakupType === 'separated') return 'intact';
   return (sh.broken || sh.phase === 'broken-up' || sh.breakupEp) ? 'broken' : 'intact';
 }
 

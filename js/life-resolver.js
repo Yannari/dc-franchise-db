@@ -95,6 +95,18 @@ export const RATES = {
   // engagement rather than in the wedding that follows it.
   advance: {
     single: 0.16,               // finding somebody at all
+    // WALKING OUT TOGETHER IS NOT THE SAME EVENT AS MEETING SOMEBODY.
+    //
+    // A showmance still intact at the end of a season was rolled at `single`,
+    // so a couple the audience watched survive to the finale had the same 16%
+    // chance of being together a month later as two people who had never
+    // dated. Three intact couples came out of Big Brother 1 and the roll gave
+    // none of them a relationship, which is not a surprising result at 0.16 --
+    // it is the likeliest one.
+    //
+    // They are already together when the season ends. The question the roll is
+    // really asking is whether it SURVIVES the off-season, and most do.
+    showmance: 0.75,
     dating: 0.34,
     public: 0.22,
     'living-together': 0.14,
@@ -519,10 +531,13 @@ export function resolveOffSeason({
       // go through canDate: the graph is a record of who matters to whom, and
       // being important to somebody is not the same as being their type.
       const showmance = pairFor(slug);
-      const candidate = (showmance && canDate(slug, showmance) ? showmance : null)
+      const fromShow = !!(showmance && canDate(slug, showmance));
+      const candidate = (fromShow ? showmance : null)
         || knownTo(social, slug, 'friend', rng('who'), other => canDate(slug, other));
       const ckey = candidate ? pairKey(slug, candidate) : null;
-      if (candidate && !settled.has(ckey) && rng('start')() < RATES.advance.single) {
+      // Continuing beats starting: see RATES.advance.showmance.
+      const rate = fromShow ? RATES.advance.showmance : RATES.advance.single;
+      if (candidate && !settled.has(ckey) && rng('start')() < rate) {
         settled.add(ckey);
         taken.add(slug); taken.add(candidate);
         emit(slug, 'dating', { whom: candidate });

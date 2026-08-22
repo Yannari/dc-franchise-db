@@ -13624,7 +13624,9 @@
             "Finale: Won Part 1 and Part 3 of the final HOH, then evicted Joel to sit beside Jules."
           ],
           "format": "big-brother",
-          "seasonId": "bb-1"
+          "seasonId": "bb-1",
+          "showmance": "Jules",
+          "showmanceEnded": "intact"
         }
       ],
       "totalBlockBusterWins": 0,
@@ -13694,7 +13696,9 @@
             "Finale: Chosen by Misha over Joel, then lost 5-4."
           ],
           "format": "big-brother",
-          "seasonId": "bb-1"
+          "seasonId": "bb-1",
+          "showmance": "Misha",
+          "showmanceEnded": "intact"
         }
       ],
       "totalBlockBusterWins": 0,
@@ -13764,7 +13768,9 @@
             "Finale: Lost the final HOH tiebreaker to Misha and was evicted at final three."
           ],
           "format": "big-brother",
-          "seasonId": "bb-1"
+          "seasonId": "bb-1",
+          "showmance": "Felipe",
+          "showmanceEnded": "intact"
         }
       ],
       "totalBlockBusterWins": 0,
@@ -14043,7 +14049,9 @@
             "Week 13: Lost the arena, assumed the votes were there, and left 3-1 over Jane."
           ],
           "format": "big-brother",
-          "seasonId": "bb-1"
+          "seasonId": "bb-1",
+          "showmance": "Hasan",
+          "showmanceEnded": "broken"
         }
       ],
       "totalBlockBusterWins": 4,
@@ -14113,7 +14121,9 @@
             "Week 12: Evicted 3-2 over Jules after Jane flipped away from him."
           ],
           "format": "big-brother",
-          "seasonId": "bb-1"
+          "seasonId": "bb-1",
+          "showmance": "Joel",
+          "showmanceEnded": "intact"
         }
       ],
       "totalBlockBusterWins": 0,
@@ -14183,7 +14193,9 @@
             "Week 11: Evicted by Joel's tiebreaker."
           ],
           "format": "big-brother",
-          "seasonId": "bb-1"
+          "seasonId": "bb-1",
+          "showmance": "Zella",
+          "showmanceEnded": "intact"
         }
       ],
       "totalBlockBusterWins": 2,
@@ -14459,7 +14471,9 @@
             "Week 6: Sat on Ireland's block, survived Dylon's Mystery Veto chaos, but lost against Tobias 9-1."
           ],
           "format": "big-brother",
-          "seasonId": "bb-1"
+          "seasonId": "bb-1",
+          "showmance": "Gyselle",
+          "showmanceEnded": "broken"
         }
       ],
       "totalBlockBusterWins": 0,
@@ -14528,7 +14542,9 @@
             "Week 5: Evicted 6-5 and correctly named Misha on the way out."
           ],
           "format": "big-brother",
-          "seasonId": "bb-1"
+          "seasonId": "bb-1",
+          "showmance": "Natasha",
+          "showmanceEnded": "intact"
         }
       ],
       "totalBlockBusterWins": 2,

@@ -341,3 +341,36 @@ describe('kinds that are replies', () => {
     for (const r of replies) expect(produced.has(r)).toBe(false);
   });
 });
+
+// ── A COUPLE WHO LEFT TOGETHER IS NOT A STRANGER ──────────────────────────
+//
+// An intact showmance was rolled at RATES.advance.single — the rate for a
+// single person finding somebody at all — so two people the audience had just
+// watched survive a whole season together had a 16% chance of still being
+// together a month later. Big Brother 1 left three intact couples and the roll
+// produced none of them, which at 0.16 is the likeliest single outcome rather
+// than bad luck.
+describe('an intact showmance continues far more often than a single finds somebody', () => {
+  it('rates continuing above starting', () => {
+    expect(RATES.advance.showmance).toBeGreaterThan(RATES.advance.single);
+  });
+
+  it('pairs most showmance couples in the first off-season', () => {
+    const { careers, pairs } = couples(40);
+    const got = resolveOffSeason({
+      season: SEASONS[0], careers, events: [], cast: [], pairs,
+      seedSalt: 'showmance-rate', seasonRank: RANK,
+    }).filter(e => e.kind === 'dating');
+
+    // Every dating event must be one of the couples the season actually made:
+    // the showmance is the preferred candidate, never a substitute for one.
+    for (const e of got) {
+      expect(pairs.some(([a, b]) =>
+        (a === e.player && b === e.whom) || (b === e.player && a === e.whom))).toBe(true);
+    }
+    // Well above the old 16%, and not a certainty either — some do end.
+    const rate = got.length / pairs.length;
+    expect(rate).toBeGreaterThan(0.5);
+    expect(rate).toBeLessThanOrEqual(1);
+  });
+});

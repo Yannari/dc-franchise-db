@@ -236,12 +236,25 @@ function _weekRowsFromDoc(found, name) {
     const finalExit = exits.length ? exits[exits.length - 1] : null;
     /* The stretch between an exit and the week they turn up again: out of the
        house, waiting on the door. Blank in the grid reads as a quiet week. */
-    const appears = w => w.hoh === name || w.vetoWinner === name || w.safetyWinner === name
+    /* ── A HOUSE HAS NOBODY QUIETLY SITTING OUT A WEEK. Every houseguest
+       votes, holds the crown, sits on the block or leaves, so a week where
+       somebody appears NOWHERE in the record is a week they were not in the
+       house as themselves. Before their first appearance that means they had
+       not arrived yet — the second half of a twin, a late addition — and
+       drawing it blank says "a quiet week" about somebody who was not there.
+
+       House only. A camp votes one tribe at a time, so a blank round there is
+       normal and means nothing of the kind. */
+    const appearsIn = w => w.hoh === name || w.vetoWinner === name || w.safetyWinner === name
       || w.evicted === name || (w.ballots || []).some(b => b.voter === name)
       || (w.votes || {})[name] != null
       || (w.initialNominees || []).includes(name)
       || (w.blockBeforeSafety || []).includes(name)
       || (w.finalNominees || []).includes(name);
+    // A week with no ceremony has nobody in its record at all, so it can never
+    // be the week somebody first appears — read as one, it told every
+    // houseguest in the season that they arrived late.
+    const firstSeen = weeks.find(w => !w.cancelledEviction && appearsIn(w))?.week ?? null;
     let gone = false;
     for (const w of weeks) {
       if (gone) break;
@@ -297,7 +310,10 @@ function _weekRowsFromDoc(found, name) {
         // before that simply has none, which reads as "never a have-not" and is
         // why the section is dropped when no week records anybody.
         haveNot: (w.haveNots || []).includes(name),
-        away: exits.length > 1 && Number(w.week) > exits[0] && !appears(w),
+        away: exits.length > 1 && Number(w.week) > exits[0] && !appearsIn(w),
+        // Not in the house YET: the other half of a twin, or anybody the
+        // season walked in after it started.
+        notYet: !w.cancelledEviction && firstSeen != null && Number(w.week) < Number(firstSeen),
         // A week with no ceremony at all. The house is the same size on
         // Thursday as it was on Sunday, and every cell in it is blank for a
         // reason rather than for want of a record.

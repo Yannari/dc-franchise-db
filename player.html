@@ -2267,6 +2267,20 @@ function _seasonRun(name, doc) {
       || (r.blockBeforeSafety || []).includes(n)
       || (r.finalNominees || []).includes(n))
     : (r.eliminated === n || (r.votes || []).some(v => v.voter === n || v.target === n)));
+  /* ── A HOUSE HAS NOBODY QUIETLY SITTING OUT A WEEK. Every houseguest
+       votes, holds the crown, sits on the block or leaves, so a week where
+       somebody appears NOWHERE in the record is a week they were not in the
+       house as themselves. Before their first appearance that means they had
+       not arrived yet — the second half of a twin, a late addition — and
+       drawing it blank says "a quiet week" about somebody who was not there.
+
+       House only. A camp votes one tribe at a time, so a blank round there is
+       normal and means nothing of the kind. */
+  // A week with no ceremony has nobody in its record at all, so it can never
+  // be the week somebody first appears — read as one, it told every houseguest
+  // in the season that they arrived late.
+  const firstSeen = bbWeeks.length
+    ? (rows.find(r => !r.cancelledEviction && appears(r, name))?.week ?? null) : null;
   const exitWeeks = rows.filter(r => (bbWeeks.length ? r.evicted : r.eliminated) === name)
     .map(r => Number(r.week ?? r.episode));
   const finalExit = exitWeeks.length ? exitWeeks[exitWeeks.length - 1] : null;
@@ -2370,10 +2384,12 @@ function _seasonRun(name, doc) {
     // the season and an early exit looks like one. `finalExit` rather than the
     // first one, or a returnee is drawn as gone for the half of the season
     // they came back and played.
-    const away = awayAt.has(num);
+    const notYet = !r.cancelledEviction && firstSeen != null && num < Number(firstSeen);
+    const away = notYet || awayAt.has(num);
     const gone = away || (finalExit != null && num > finalExit);
     if (!gone) lastPresent = num;
-    const label = away ? 'out of the house, waiting to get back in'
+    const label = notYet ? 'not in the house yet'
+      : away ? 'out of the house, waiting to get back in'
       : gone ? 'not in the house'
         : (why.length ? why.join(' · ') : 'safe, no power');
     const roundW = rounds === 'week' ? 'Week' : 'Episode';
@@ -2427,7 +2443,8 @@ function _seasonRun(name, doc) {
        <span><i style="background:#38bdf8"></i>Came off the block</span>
        <span><i style="background:#f87171"></i>On the block at the vote</span>
        <span><i style="background:#f43f5e"></i>Gone</span>
-       ${cameBack ? '<span><i style="background:rgba(255,255,255,.2)"></i>Out of the house</span>' : ''}
+       ${cameBack || (firstSeen != null && Number(firstSeen) > 1)
+         ? '<span><i style="background:rgba(255,255,255,.2)"></i>Not in the house</span>' : ''}
        <span class="pp-run-key-m"><i class="m-n">N</i>nominated
          <i class="m-h">H</i>HOH <i class="m-v">V</i>veto <i class="m-b">B</i>Block Buster</span>
        <span class="pp-run-key-f">face = who they voted to evict</span>`

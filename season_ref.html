@@ -803,11 +803,31 @@ function buildRecords(season){
         }
         awayWeeks[name] = back;
       }
-      const isAway = (name, w) => awayWeeks[name]?.has(w.week);
       /* THE WEEK WHERE NOBODY GOES HOME. It has a Head of Household and no
          ceremony, so every table below has to be told not to read it as a week
          whose record is simply missing. */
       const cancelled = w => !!w.cancelledEviction;
+      const isAway = (name, w) => awayWeeks[name]?.has(w.week);
+      /* ── A HOUSE HAS NOBODY QUIETLY SITTING OUT A WEEK. Every houseguest
+       votes, holds the crown, sits on the block or leaves, so a week where
+       somebody appears NOWHERE in the record is a week they were not in the
+       house as themselves. Before their first appearance that means they had
+       not arrived yet — the second half of a twin, a late addition — and
+       drawing it blank says "a quiet week" about somebody who was not there.
+
+       House only. A camp votes one tribe at a time, so a blank round there is
+       normal and means nothing of the kind. */
+      const firstSeen = {};
+      if (hasBlock) {
+        for (const p2 of cast) {
+          // A week with no ceremony has nobody in its record, so it can
+          // never be the week somebody first appears.
+          const first = weeks.find(w => !cancelled(w) && inWeek(p2.name, w));
+          if (first && Number(first.week) > 1) firstSeen[p2.name] = Number(first.week);
+        }
+      }
+      const notYet = (name, w) => !cancelled(w) && firstSeen[name] != null
+        && w.week < firstSeen[name];
 
       /* ── 1. the facts ── */
       const facts = [
@@ -1029,6 +1049,9 @@ function buildRecords(season){
                   against += (w.votes || {})[p.name] || 0;
                   if (left) return '<td class="is-gone"></td>';
                   // Out of the house and not yet back: not safe, not there.
+                  if (notYet(p.name, w)) {
+                    return '<td class="is-away" title="Not in the house yet">·</td>';
+                  }
                   if (isAway(p.name, w)) return '<td class="is-away" title="Out of the house">·</td>';
                   if (cancelled(w) && !cellFor(p.name, w)[0]) return '<td class="is-nowk"></td>';
                   const [label, cls] = cellFor(p.name, w);
@@ -1121,6 +1144,9 @@ function buildRecords(season){
                   av(p)}${esc(p.name)}</a></th>
                 ${weeks.map(w => {
                   if (gone && w.week > gone) return '<td class="is-gone"></td>';
+                  if (notYet(p.name, w)) {
+                    return '<td class="is-away" title="Not in the house yet">·</td>';
+                  }
                   if (isAway(p.name, w)) return '<td class="is-away" title="Out of the house">·</td>';
                   if (cancelled(w)) return '<td class="is-nowk" title="No eviction this week"></td>';
                   const [label, cls, title, face] = voteCell(p.name, w);

@@ -2655,6 +2655,21 @@
       ]
     },
     {
+      "id": "bb-twin-twist",
+      "name": "The Twin Twist",
+      "emoji": "👯",
+      "category": "hidden-identity",
+      "inCatalog": true,
+      "players": [
+        "Harriett",
+        "Jane"
+      ],
+      "desc": "One houseguest was secretly two people swapping places every week. Harriett and Jane played as one, and lasted long enough to both enter the game as individuals in week 4.",
+      "episodes": [
+        4
+      ]
+    },
+    {
       "id": "bb-prizes-and-punishments",
       "name": "Prizes and Punishments",
       "emoji": "🎁",

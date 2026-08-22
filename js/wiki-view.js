@@ -921,6 +921,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
         if (w.evicted) return { label: isHouse ? 'Evicted' : 'Voted out', cls: 'wk-c-out', marks: [] };
         // Out of the house between two evictions, and the week nobody went
         // home: two states that are not "safe" and were both drawn as blank.
+        if (w.notYet) return { label: 'Not in', cls: 'wk-c-away', marks: [] };
         if (w.away) return { label: 'Out', cls: 'wk-c-away', marks: [] };
         if (w.noEviction) return { label: '—', cls: 'wk-c-none', marks: [] };
         const marks = [];
@@ -982,7 +983,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
           if (n(w => w.nominated)) bits.push(`nominated ${n(w => w.nominated)}x`);
           if (n(w => w.onBlock)) bits.push(`on the block at the vote ${n(w => w.onBlock)}x`);
           const against = rows.reduce((t, w) => t + (w.votesAgainst || 0), 0);
-          const played = rows.filter(w => !w.away && !w.noEviction).length;
+          const played = rows.filter(w => !w.away && !w.notYet && !w.noEviction).length;
           bits.push(`${played} ${played === 1 ? roundWord.toLowerCase() : `${roundWord.toLowerCase()}s`} played`);
           bits.push(against ? `${against} vote${against === 1 ? '' : 's'} cast against them`
             : 'never had a vote cast against them');

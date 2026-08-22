@@ -740,7 +740,8 @@ describe('deriveSeasonRecord reads a Big Brother finale', () => {
       // Deliberately absent: a house never writes this.
       finaleResult: null,
       bb: { finale: { winner: 'Misha', runnerUp: 'Jules', cut: 'Joel',
-        votes: { Misha: 5, Jules: 4 }, jury: ['Tobias', 'Stella'] } },
+        votes: { Misha: 5, Jules: 4 }, jury: ['Tobias', 'Stella'],
+        favourite: { winner: 'Tobias', tally: [{ name: 'Tobias', share: 20 }], prize: 5000 } } },
       episodeHistory: [
         { num: 1, eliminated: 'Stella', immunityWinner: 'Tobias', vetoWinner: 'Misha', votingLog: [] },
         { num: 2, eliminated: 'Tobias', immunityWinner: 'Misha', vetoWinner: 'Misha', votingLog: [] },
@@ -765,6 +766,17 @@ describe('deriveSeasonRecord reads a Big Brother finale', () => {
   it('stamps the show on the record, so labels can use its words', () => {
     fabricateHouse();
     expect(deriveSeasonRecord().format).toBe('big-brother');
+  });
+
+  // The audience's pick is not the jury's, and the ledger recorded it nowhere
+  // -- so the only thing on the Legacy tab saying "fan favorite" was a returnee
+  // bucket whose name happens to contain the words, leading with somebody the
+  // audience never voted for.
+  it('records the audience ballot, not the jury result', () => {
+    fabricateHouse();
+    const rec = deriveSeasonRecord();
+    expect(rec.fanFavorite).toBe('Tobias');
+    expect(rec.players['Tobias'].winner).toBe(false);   // loved, and still not the winner
   });
 
   it('counts vetoes as competition wins, not only the HOH', () => {

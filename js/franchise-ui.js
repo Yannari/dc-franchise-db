@@ -220,6 +220,10 @@ function _renderSeasonCard(num, season) {
   const chips = [];
   if (castN) chips.push(`cast ${castN}`);
   if (eps) chips.push(`${eps} eps`);
+  // WHO THE AUDIENCE PICKED. Recorded but never shown, so the only "fan
+  // favorite" anywhere on this tab was the returnee bucket's NAME -- which is
+  // a casting category, not the award, and routinely leads with somebody else.
+  if (season.fanFavorite) chips.push(`fan fav: ${_esc(season.fanFavorite)}`);
   return `<div class="fr-card ${included ? '' : 'fr-excluded'}" id="fr-card-${num}">
     <div class="fr-card-head">
       <span class="fr-snum">S${num}</span>

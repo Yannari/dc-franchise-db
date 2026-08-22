@@ -151,6 +151,24 @@ function _bootOf(ep) {
  * is why the Hall of Fame stayed empty while a season card said "runner-up" of
  * somebody who came fourth.
  */
+/**
+ * Who the AUDIENCE picked, which is a different question from who won.
+ *
+ * The ledger recorded this nowhere at all, so the only thing on the Legacy tab
+ * with the words "Fan Favorites" in it was the returnee bucket -- a casting
+ * category scored on clean hands and loyal alliances, which is not the award
+ * and can easily name somebody else. Big Brother 1 gave America's Favourite to
+ * Tobias on 20% of the vote while that bucket led with Jules.
+ *
+ * A house runs a ballot at the finale; a camp reads its popularity board. Both
+ * answer "who did they love", so both land in the same field.
+ */
+function _favouriteOf(_gs) {
+  const bb = _gs?.bb?.finale?.favourite;
+  if (bb?.winner) return bb.winner;
+  return _gs?.fanFavorite || null;
+}
+
 /** A season cited the way its own show numbers them: S9, but BB1. */
 function _seasonTag(num, format) {
   const f = format || DEFAULT_FORMAT;
@@ -272,7 +290,8 @@ export function deriveSeasonRecord(state = null) {
   // told they "never made the merge" (there is no merge in the house) and a
   // Big Brother season was cited as "S1", which is also the name of a Total
   // Drama season.
-  const rec = { seasonName: _seasonName, format: _gs.format || DEFAULT_FORMAT, ratings, players: {} };
+  const rec = { seasonName: _seasonName, format: _gs.format || DEFAULT_FORMAT,
+    fanFavorite: _favouriteOf(_gs), ratings, players: {} };
   for (const n of names) {
     // Last (not first) elimination episode — RI/EoE returnees can be booted twice.
     const elimEp = [...hist].reverse().find(ep => _bootOf(ep) === n) || null;

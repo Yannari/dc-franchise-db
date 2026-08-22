@@ -20,7 +20,6 @@ import { gs, seasonConfig, seasonFormat, resolveTwistSchedule, TWIST_CATALOG, pl
 // headless render of this transcript would throw on the first pronoun.
 import { pronouns } from './players.js';
 import { simulateBBWeek } from './bb/week.js';
-import { stableRng } from './bb/knowledge.js';
 import { generateBBStructuredText } from './bb-structured.js';
 import { juryOpensAt, juryLines, isSeatedJuror } from './bb/jury.js';
 import { applyGoodbyeMessages } from './bb/jury-sentiment.js';
@@ -2073,20 +2072,19 @@ if (typeof window !== 'undefined') window._bbRunnable = true;
  */
 export function runBBFinale() {
   if (gs.phase === 'complete' || (gs.activePlayers || []).length < 2) return null;
-  // SEEDED, LIKE THE REST OF THE SEASON.
+  // ROLLED FRESH, ON PURPOSE.
   //
-  // The call below passed no argument at all, so `rng` fell back to its
-  // default of Math.random -- and every draw of the night with it. The whole
-  // season either side of this is stable: the weeks, the comps, the twists and
-  // the knowledge model all run off stableRng seeded on gs.bb.seasonSalt, which
-  // is what makes a season replayable at all. The finale alone was a fresh roll
-  // every time it ran, so the same save could produce a different winner, a
-  // different jury vote and a different America's Favourite on each attempt.
+  // This was briefly seeded off gs.bb.seasonSalt so a season had one true
+  // ending. It does not, by choice: playing the finale again is meant to give
+  // a different night, and a salt that is set once per season made re-running
+  // it return the same winner forever.
   //
-  // Nothing below needed changing: every function on this path already threads
-  // an `rng` and only names Math.random as a DEFAULT. The one call site never
-  // gave them one.
-  const ep = simulateBBFinale(stableRng('bb-finale', gs?.bb?.seasonSalt || 0));
+  // What the roll must NOT be is wild, and that is the weighting's job rather
+  // than the seed's -- see runAmericasFavourite. Measured over 20,000 ballots
+  // on Big Brother 1: the old model let fourteen different houseguests take
+  // the audience award with the favourite on 36%, the current one puts 98% of
+  // re-runs across the three people the audience actually rated.
+  const ep = simulateBBFinale();
   if (!ep) return null;
   ep.num = (gs.episodeHistory?.length || 0) + 1;
   // The finale's transcript, on BOTH paths.

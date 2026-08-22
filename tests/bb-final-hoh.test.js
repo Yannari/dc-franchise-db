@@ -383,12 +383,12 @@ describe('the finale is reproducible', () => {
     expect(nights.size).toBeGreaterThan(1);
   });
 
-  it('is called with a seeded rng, not the default Math.random', () => {
-    // The bug was never in the finale — every function on that path already
-    // threads an rng and only names Math.random as a DEFAULT. The single call
-    // site simply never handed them one.
+  it('rolls a fresh night when the finale is actually played', () => {
+    // Deliberately NOT seeded at the call site: playing the finale again is
+    // meant to give a different night. The engine is seedable — the test above
+    // proves it — but a season salt is set once, so seeding here would make
+    // re-running return the same winner forever.
     const src = readFileSync('js/bb-run.js', 'utf8');
-    expect(src).toMatch(/simulateBBFinale\(\s*stableRng\(/);
-    expect(src).not.toMatch(/simulateBBFinale\(\s*\)/);
+    expect(src).toMatch(/simulateBBFinale\(\s*\)/);
   });
 });

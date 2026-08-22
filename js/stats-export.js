@@ -7,6 +7,7 @@ import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
 import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
+import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
 import { nextWindowFor } from './franchise-calendar.js';
@@ -1503,7 +1504,7 @@ export function extractSeasonTemplate() {
     votes: f.juryVotes
   }));
 
-  return {
+  const _doc = {
     seasonNumber: rawStats.seasonNumber,
     // Mirrors the `format` the Big Brother template carries, so every consumer
     // of a season document reads the show off the same field either way.
@@ -1535,6 +1536,9 @@ export function extractSeasonTemplate() {
     awards: '[AI_FILL]',
     emoji: '[AI_FILL]'
   };
+  // A camp has no block and no veto; the deeds it records are ballots, and
+  // the board reads them the same way. See _attachVillainBoard.
+  return _attachVillainBoard(_doc);
 }
 
 
@@ -2031,7 +2035,10 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
 
     // AI-assigned player emoji flows into the database so devotees.html stays
     // current without hand-editing its emojiMap. Latest season's emoji wins.
-    if (filled.emoji) player.emoji = filled.emoji;
+    // The placeholder is explicitly excluded: a season exported without the fill
+    // pass carries the literal '[AI_FILL]', and writing that through would draw
+    // it as the player's icon on every card they appear on.
+    if (filled.emoji && filled.emoji !== '[AI_FILL]') player.emoji = filled.emoji;
 
     // Re-merge support: if this season was already recorded — whether as a
     // pre-season placeholder OR a previously-finalized result — strip its old
@@ -2707,7 +2714,7 @@ export function buildBigBrotherSeasonDocument(seasonNumber) {
   if (doc.winner) {
     doc.winner.vote = finalists.map(n => `${n} ${Number(votes[n]) || 0}`).join(' — ');
   }
-  return doc;
+  return _attachVillainBoard(doc);
 }
 
 /**
@@ -3215,6 +3222,19 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
         // and every audience-facing page with nothing to read.
         popularity: Number(gs.popularity?.[name]) || 0,
         juryVotes: 0,                      // the engine does not model a jury vote yet
+        // ── THE PLAYER'S ICON ──
+        //
+        // devotees.html reads `player.emoji` first, falls back to a hardcoded
+        // map, and lands on a generic silhouette when neither has anything. The
+        // map was written out by hand for the 152 Total Drama players and knows
+        // nobody from the house, and this template never declared the field --
+        // so the fill pass was never asked for one and the merge had nothing to
+        // carry. Every houseguest in the franchise showed as 👤.
+        //
+        // Fourth time this shape has bitten: the arena wins, the powers, the
+        // strategic score, now this. A field Total Drama emits, Big Brother does
+        // not, and a page downstream quietly rendering a default.
+        emoji: '[AI_FILL]',
         // ── THE STRATEGIC COLUMN, which this export carried nothing for ──
         //
         // The board has had a Strat column all along and no house season could
@@ -3444,6 +3464,28 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
 }
 
 /**
+ * WHO THE VILLAIN ACTUALLY WAS, computed rather than asked for.
+ *
+ * The awards are written by a model reading a paragraph of summary per
+ * episode, and the villain pick drifted to whoever those paragraphs talked
+ * about most — which is the winner and whoever they were sleeping with. So the
+ * ranking is worked out from the record here and stored on the document; the
+ * model still writes the citation, and now has to write it about the right
+ * person. See js/villain-score.js.
+ *
+ * `gs.edit.totals` rides along because it is the screenplay's half of the
+ * answer: per-player screen time split by tone, classified off the same beats
+ * the episodes are written from.
+ */
+function _attachVillainBoard(doc) {
+  try {
+    const { board, read, sources } = villainBoard(doc, { editTotals: gs?.edit?.totals || null });
+    if (board.length) doc.villainBoard = { read, sources, board };
+  } catch { /* an award is not worth failing an export over */ }
+  return doc;
+}
+
+/**
  * The twists this season actually ran.
  *
  * Nothing in the export carried them, so every season page's Twists section
@@ -3607,6 +3649,11 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
     }
     if (!player.seasonDetails) player.seasonDetails = [];
     if (!player.seasons) player.seasons = [];
+
+    // The icon, carried the way the Total Drama merge carries it (latest season
+    // wins). Without this a houseguest's emoji reaches the season document and
+    // stops there, and devotees.html goes on drawing the generic silhouette.
+    if (entry.emoji && entry.emoji !== '[AI_FILL]') player.emoji = entry.emoji;
 
     // Strip a previous recording of this same season before adding the new one.
     // Already stripped from everybody above; this only matters for a player who

@@ -83,7 +83,7 @@ const RU_HTML = RU_CSS + `      <!-- ══════════════�
           <p style="font-size: 12px; opacity: 0.6; margin: 0 0 8px 0;">Name must match exactly as in rankings_database.json. All stat fields are optional — leave blank to skip. Hover column headers for scoring details.</p>
 
           <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 11px; opacity: 0.75; line-height: 1.9;">
-            <span style="color:#e2e8f0;">📍 <b>PLACEMENT</b> — spine of the formula · base = 30 + (placementPercentile × 0.42) · P1 → base 72 · last place → base 30 · Win +8 (2nd win +5…) · all other stats add on top</span>
+            <span style="color:#e2e8f0;">📍 <b>PLACEMENT</b> — spine of the formula · base = 42 + (placementPercentile × 0.26) · P1 → base 68 · last place → base 42 · Win +8 (2nd win +5…) · all other stats add on top</span>
             <span style="display:block;width:100%;height:1px;background:rgba(255,255,255,0.07);margin:2px 0;"></span>
             <span id="ru-legend-show" style="display:contents;"></span>
             <span>🤝 Allies +0.5 each (cap 4) · Unbreakable/named alliances only — auto-filled from season JSON</span>
@@ -365,23 +365,30 @@ let rowCount       = 0;
 // THE WEIGHTS BELOW ARE A STARTING POINT, not a claim. They are yours to tune
 // in one place, which is the actual point of them being here rather than
 // implied by a column called "Imm".
+// Advantage / power lifecycle weights.
+//
+// These lived as literals in FOUR places — the scorer, the column titles, the
+// legend and the preview breakdown — which is the drift this file already got
+// bitten by once with the competition columns. One copy, everything reads it.
+const RU_ADV = { found: 0.8, played: 2.4, wasted: 2.4, held: 2.4 };
+
 const RU_SHOW = {
   'total-drama': {
-    comp1: { label: 'Imm',  weight: 0.8, title: '+0.8 per individual immunity win' },
-    comp2: { label: 'Rew',  weight: 0.3, title: '+0.3 per reward win' },
+    comp1: { label: 'Imm',  weight: 1.6, title: '+1.6 per individual immunity win' },
+    comp2: { label: 'Rew',  weight: 0.6, title: '+0.6 per reward win' },
     comp3: null,
     adv: { group: 'ADVANTAGES', noun: 'idol/advantage',
       found: 'Found', played: 'Played', wasted: 'Wasted', held: 'Held' },
   },
   'big-brother': {
-    comp1: { label: 'HOH',  weight: 0.6, title: '+0.6 per Head of Household — power, and a target' },
-    comp2: { label: 'Veto', weight: 0.8, title: '+0.8 per veto — the competition that saves you' },
+    comp1: { label: 'HOH',  weight: 1.2, title: '+1.2 per Head of Household — power, and a target' },
+    comp2: { label: 'Veto', weight: 1.6, title: '+1.6 per veto — the competition that saves you' },
     // THE THIRD COMPETITION. A house runs three kinds and this board had two
     // columns, so every Block Buster and every arena win in a season scored
     // exactly nothing — the one comp you win while ON THE BLOCK, which is the
     // hardest circumstance any of them are won in.
-    comp3: { label: 'Arena', weight: 0.7,
-      title: '+0.7 per Block Buster / arena win — won while already on the block' },
+    comp3: { label: 'Arena', weight: 1.4,
+      title: '+1.4 per Block Buster / arena win — won while already on the block' },
     // Powers are not idols, and the lifecycle words differ: you are GIVEN a
     // power or you win one, you do not find it in a tree.
     adv: { group: 'POWERS', noun: 'power',
@@ -410,10 +417,20 @@ function _ruRelabelColumns() {
     th.title = spec.title;
   }
   const adv = rub.adv || {};
+  // The weights live in RU_ADV, so the tooltips quote it rather than repeat it.
+  const noun = adv.noun || 'idol/advantage';
+  const advTitles = {
+    'ru-th-adv-found':  `Total ${noun}s FOUND · +${RU_ADV.found} each (credit for locating them)`,
+    'ru-th-adv-played': `${noun}s PLAYED EFFECTIVELY (negated votes / worked) · +${RU_ADV.played} each on top of the found bonus`,
+    'ru-th-adv-wasted': `${noun}s PLAYED but WASTED (misfired / negated 0 votes / failed) · −${RU_ADV.wasted} each`,
+    'ru-th-adv-held':   `${noun}s HELD & never used · 0 if survived to the end · −${RU_ADV.held} if eliminated still holding it`,
+  };
   for (const [id, label] of [['ru-th-adv-found', adv.found], ['ru-th-adv-played', adv.played],
     ['ru-th-adv-wasted', adv.wasted], ['ru-th-adv-held', adv.held]]) {
     const th = document.getElementById(id);
-    if (th && label) th.textContent = label;
+    if (!th) continue;
+    if (label) th.textContent = label;
+    if (advTitles[id]) th.title = advTitles[id];
   }
   // Every data row has to gain or lose the same cell, or the columns shear.
   document.querySelectorAll('.ru-cell-comp3').forEach(td => {
@@ -440,10 +457,10 @@ function _ruRenderLegend() {
     .map(c => `<span>${c.label} +${c.weight}</span>`).join('');
   el.innerHTML = `<span style="color:#60a5fa;">⚡ <b>COMPETITIONS</b></span>${comp}`
     + `<span style="color:#a78bfa; margin-left:8px;">🧠 <b>${adv.group || 'STRATEGIC'}</b></span>`
-    + `<span>${adv.found || 'Found'} +0.4</span>`
-    + `<span>${adv.played || 'Played'} effectively +1.2</span>`
-    + `<span>${adv.wasted || 'Wasted'} −1.2</span>`
-    + `<span>${adv.held || 'Held'} &amp; eliminated −1.8 · survived = 0</span>`;
+    + `<span>${adv.found || 'Found'} +${RU_ADV.found}</span>`
+    + `<span>${adv.played || 'Played'} effectively +${RU_ADV.played}</span>`
+    + `<span>${adv.wasted || 'Wasted'} −${RU_ADV.wasted}</span>`
+    + `<span>${adv.held || 'Held'} &amp; eliminated −${RU_ADV.held} · survived = 0</span>`;
 }
 
 /**
@@ -493,8 +510,26 @@ const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
 
 function computeScore(p) {
   const cp   = careerPct(p.allPcts);
-  // Tightened base: makes 100 genuinely hard. Scale 42 → P1 base 72, last place 30.
-  const base = 30 + (cp / 100) * 42;
+  // Base 42 → 68: placement is still the spine, but a shorter one.
+  //
+  // This was `30 + pct * 42`, which made one placement position worth 2.6
+  // points in a cast of 17 — more than four Heads of Household, or three
+  // vetoes. The board was a finish-order list with a decorative modifier
+  // column: the most decorated non-finalist of a season could not out-score
+  // someone three spots above her who had done nothing all game.
+  //
+  // The spread is 26 and the competition weights doubled, which sets the law
+  // the rest of the formula is tuned against: ONE COMPETITION WIN IS WORTH
+  // ABOUT ONE PLACEMENT POSITION (a veto 1.6 against 26/16 = 1.63 per place in
+  // a cast of 17). Winning things can now move you past the people who merely
+  // outlasted you, which is the entire point of scoring them.
+  //
+  // The floor rose 30 → 42 rather than the ceiling falling, on purpose. The
+  // top of the board is where it was (a one-season winner still lands ~87, S,
+  // not S+), and the compression comes out of the bottom, where a scale that
+  // scored the first boot of a 17-person house at 30/100 was saying she was
+  // barely a franchise player at all. She made the cast.
+  const base = 42 + (cp / 100) * 26;
 
   // Win bonus — the P1 placement already lifts the base, so the flat win reward is kept
   // modest to avoid a single win rocketing a mediocre-career player to near-perfect.
@@ -520,10 +555,10 @@ function computeScore(p) {
 
   // STRATEGIC — advantages scored by lifecycle: found (located it) < played effectively,
   // while wasting or dying with one costs you. Plus a strategic-gameplay term.
-  const advFoundBonus  = (p.advFound  || 0) * 0.4;                 // located an advantage
-  const advPlayedBonus = (p.advPlayed || 0) * 1.2;                 // used it effectively (on top of found)
-  const advWastedPen   = (p.advWasted || 0) * 1.2;                 // burned to no effect
-  const advHeldPen     = p.isFinalist ? 0 : ((p.advHeld || 0) * 1.8); // eliminated still holding it
+  const advFoundBonus  = (p.advFound  || 0) * RU_ADV.found;   // located an advantage
+  const advPlayedBonus = (p.advPlayed || 0) * RU_ADV.played;  // used it effectively (on top of found)
+  const advWastedPen   = (p.advWasted || 0) * RU_ADV.wasted;  // burned to no effect
+  const advHeldPen     = p.isFinalist ? 0 : ((p.advHeld || 0) * RU_ADV.held); // eliminated still holding it
   const stratBonus = advFoundBonus + advPlayedBonus
                    - advWastedPen - advHeldPen
                    + (Math.min(p.alliances, 4) * 0.5)
@@ -723,10 +758,10 @@ function buildPreview() {
     if (row.comp3Wins && _mrub.comp3) {
       parts.push(_mrub.comp3.label + ':+' + (row.comp3Wins*_mrub.comp3.weight).toFixed(1));
     }
-    if (row.advFound)   parts.push((_adv.found || 'AdvFound') + ':+' + (row.advFound*0.4).toFixed(1));
-    if (row.advPlayed)  parts.push((_adv.played || 'AdvPlay') + ':+' + (row.advPlayed*1.2).toFixed(1));
-    if (row.advWasted)  parts.push((_adv.wasted || 'AdvWasted') + ':\u2212' + (row.advWasted*1.2).toFixed(1));
-    if (row.advHeld && !isFinalist) parts.push((_adv.held || 'AdvHeld') + ':\u2212' + (row.advHeld*1.8).toFixed(1));
+    if (row.advFound)   parts.push((_adv.found || 'AdvFound') + ':+' + (row.advFound*RU_ADV.found).toFixed(1));
+    if (row.advPlayed)  parts.push((_adv.played || 'AdvPlay') + ':+' + (row.advPlayed*RU_ADV.played).toFixed(1));
+    if (row.advWasted)  parts.push((_adv.wasted || 'AdvWasted') + ':\u2212' + (row.advWasted*RU_ADV.wasted).toFixed(1));
+    if (row.advHeld && !isFinalist) parts.push((_adv.held || 'AdvHeld') + ':\u2212' + (row.advHeld*RU_ADV.held).toFixed(1));
     if (row.strategicScore) parts.push('Strat:+' + (row.strategicScore*0.12).toFixed(1));
     if (row.alliances)   parts.push('Allies:+' + (Math.min(row.alliances,4)*0.5).toFixed(1));
     if (row.fanFav)     parts.push('FanFav:+2.0');
@@ -769,6 +804,22 @@ function buildPreview() {
   renderPreview(results, seasonNum, castSize);
 }
 
+/**
+ * The Place cell: the finish, plus how far the score moved them off it.
+ *
+ * A player who won three arena competitions from the bottom half should be able
+ * to see that the board noticed. Silent disagreement between two adjacent
+ * columns just looks like a bug.
+ */
+function _ruPlaceCell(r, i) {
+  const moved = r.placement - (i + 1);
+  if (!moved) return String(r.placement);
+  const up = moved > 0;
+  return r.placement + ' <span style="font-size:10px;color:' + (up ? '#34d399' : '#f87171') +
+    ';" title="' + (up ? 'scores above' : 'scores below') + ' the finish order by ' +
+    Math.abs(moved) + '">' + (up ? '▲' : '▼') + Math.abs(moved) + '</span>';
+}
+
 function renderPreview(results, seasonNum, castSize) {
   const out = document.getElementById('ru-preview-output');
   out.style.display = 'block';
@@ -783,9 +834,20 @@ function renderPreview(results, seasonNum, castSize) {
   const ds = d => d===null?'NEW':(d>=0?'+':'')+d.toFixed(1);
   const dc = d => d===null?'#a78bfa':d>0?'#34d399':d<0?'#f87171':'#9ca3af';
 
-  const rowHtml = r =>
+  // ── SORTED BY THE SCORE, NOT BY THE FINISH ──
+  //
+  // The board decides an order and then printed a different one: rows ran in
+  // finish order while the column beside them held the score, so a season where
+  // play actually moved somebody read as a broken table (5th scoring under 6th,
+  // 10th scoring over 8th). Rank is where the formula puts them; Place is where
+  // the season left them, and the gap between the two is the interesting part.
+  const ranked = results.slice().sort((a, b) =>
+    (b.newScore - a.newScore) || (a.placement - b.placement));
+
+  const rowHtml = (r, i) =>
     '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">' +
-    '<td style="padding:7px 10px;opacity:0.7;">' + r.placement + '</td>' +
+    '<td style="padding:7px 10px;font-weight:700;opacity:0.85;">' + (i + 1) + '</td>' +
+    '<td style="padding:7px 10px;opacity:0.7;">' + _ruPlaceCell(r, i) + '</td>' +
     '<td style="padding:7px 10px;font-weight:600;">' + r.name +
       (r.row.quit?' <span style="font-size:11px;opacity:0.5;">(quit)</span>':'') +
       (r.isWinner?' \ud83d\udc51':'') +
@@ -818,7 +880,8 @@ function renderPreview(results, seasonNum, castSize) {
     '<div style="overflow:auto;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">' +
       '<table style="width:100%;border-collapse:collapse;font-size:13px;">' +
         '<thead><tr style="background:rgba(255,255,255,0.05);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.65;">' +
-          '<th style="padding:8px 10px;text-align:left;">Place</th>' +
+          '<th style="padding:8px 10px;text-align:left;" title="Where the score puts them on the board">Rank</th>' +
+          '<th style="padding:8px 10px;text-align:left;" title="Where the season left them — an arrow means the formula disagrees with the finish order">Place</th>' +
           '<th style="padding:8px 10px;text-align:left;">Player</th>' +
           '<th style="padding:8px 10px;text-align:center;" title="The player\'s established score \u2014 what the rankings currently show for them.">Current</th>' +
           '<th style="padding:8px 10px;text-align:center;">New</th>' +
@@ -826,7 +889,7 @@ function renderPreview(results, seasonNum, castSize) {
           '<th style="padding:8px 10px;text-align:center;">Tier</th>' +
           '<th style="padding:8px 10px;text-align:left;">Modifiers</th>' +
         '</tr></thead>' +
-        '<tbody>'+results.slice().sort((a,b)=>a.placement-b.placement).map(rowHtml).join('')+'</tbody>' +
+        '<tbody>'+ranked.map(rowHtml).join('') +'</tbody>' +
       '</table>' +
     '</div>';
 

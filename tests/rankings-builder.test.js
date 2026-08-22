@@ -89,3 +89,112 @@ describe('the published house document has what the board fills from', () => {
     }
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THE CURVE.
+//
+// Everything above checks the wiring — that the house gets three competition
+// columns and the legend quotes the scorer. None of it checked the one thing
+// the board is for: whether winning things can actually move you.
+//
+// It could not. With `base = 30 + pct * 42`, one placement position was worth
+// 2.6 points in a cast of 17 and a Head of Household was worth 0.6, so a
+// season's play was a rounding error against finish order — the most decorated
+// non-finalist of S1 (3 HOH, 4 vetoes, 3 arena wins, a power found and played)
+// scored below three people above her who had done nothing. These lock the
+// balance so it cannot quietly drift back.
+// ─────────────────────────────────────────────────────────────────────────────
+function loadScorer() {
+  const cut = (a, b) => SRC.slice(SRC.indexOf(a), SRC.indexOf(b, SRC.indexOf(a)));
+  const src = [
+    cut('const RU_ADV = {', 'const RU_SHOW = {'),
+    cut('const RU_SHOW = {', 'function _ruRelabelColumns'),
+    cut('function _ruRubric(format)', '// ── Scoring formula'),
+    cut('function placementPct(', 'function tierColor('),
+    'return { computeScore, scoreTier, placementPct, RU_ADV, RU_SHOW };',
+  ].join(String.fromCharCode(10)).replace('RU_SHOW[format || _ruShowFormat()]', 'RU_SHOW[format]');
+  return new Function(src)();
+}
+
+const CAST = 17;
+/** A houseguest who did nothing but finish where they finished. */
+function blank(S, place, over = {}) {
+  return {
+    allPcts: [S.placementPct(place, CAST)],
+    wins: place === 1 ? 1 : 0, nonWinFinals: 0, numSeasons: 1, format: 'big-brother',
+    immWins: 0, rewWins: 0, comp3Wins: 0,
+    advFound: 0, advPlayed: 0, advWasted: 0, advHeld: 0,
+    strategicScore: 0, alliances: 0, votesAgainst: Math.round(CAST / 3),
+    fanFav: false, quit: false, override: 0,
+    castSize: CAST, isFinalist: place <= 3, ...over,
+  };
+}
+
+describe('a season of play can move you off your finish', () => {
+  const S = loadScorer();
+
+  it('prices one competition win at about one placement position', () => {
+    // The law the rest of the formula is tuned against. It used to take more
+    // than four Heads of Household to be worth finishing one spot higher.
+    const perPlace = S.computeScore(blank(S, 8)) - S.computeScore(blank(S, 9));
+    const veto = S.RU_SHOW['big-brother'].comp2.weight;
+    expect(veto).toBeGreaterThan(perPlace * 0.75);
+    expect(veto).toBeLessThan(perPlace * 1.35);
+  });
+
+  it('lets a decorated tenth out-score a passive seventh', () => {
+    // Ireland against Gyselle, S1. This is the comparison the old curve got
+    // backwards by two and a half points.
+    const decorated = S.computeScore(blank(S, 10, {
+      immWins: 3, rewWins: 4, comp3Wins: 3, advFound: 1, advPlayed: 1,
+      alliances: 1, votesAgainst: 7,
+    }));
+    const passive = S.computeScore(blank(S, 7, { comp3Wins: 2, alliances: 4, votesAgainst: 5 }));
+    expect(decorated).toBeGreaterThan(passive);
+  });
+
+  it('does not let it out-score the winner', () => {
+    // Play has to matter, not decide. Whoever won the season stays on top.
+    const decorated = S.computeScore(blank(S, 10, {
+      immWins: 3, rewWins: 4, comp3Wins: 3, advFound: 1, advPlayed: 1, alliances: 1,
+    }));
+    const winner = S.computeScore(blank(S, 1, { immWins: 2, rewWins: 4, alliances: 3, votesAgainst: 0 }));
+    expect(winner).toBeGreaterThan(decorated);
+  });
+
+  it('keeps a one-season winner short of the franchise ceiling', () => {
+    // S+ is for careers. Doubling the competition weights must not hand it to
+    // anyone who wins once with a good comp record.
+    const winner = S.computeScore(blank(S, 1, { immWins: 2, rewWins: 4, alliances: 3, votesAgainst: 0 }));
+    expect(S.scoreTier(winner)).toBe('S');
+  });
+
+  it('does not score the first boot as barely a franchise player', () => {
+    // The floor was 30/100 for making the cast and going out first.
+    expect(S.computeScore(blank(S, CAST, { votesAgainst: 10 }))).toBeGreaterThan(38);
+  });
+
+  it('keeps the printed breakdown on the same weights as the score', () => {
+    // A breakdown that does not add up to its own total is a receipt for a
+    // different purchase. These were four separate copies of the same numbers.
+    expect(SRC).toMatch(/row\.advFound\*RU_ADV\.found/);
+    expect(SRC).toMatch(/row\.advPlayed\*RU_ADV\.played/);
+    expect(SRC).toMatch(/row\.advWasted\*RU_ADV\.wasted/);
+    expect(SRC).toMatch(/row\.advHeld\*RU_ADV\.held/);
+    expect(SRC, 'the legend restates the weights instead of quoting them')
+      .toMatch(/\$\{RU_ADV\.played\}/);
+  });
+});
+
+describe('the preview prints the order it decided', () => {
+  it('sorts by the score, not by the finish', () => {
+    expect(SRC).toMatch(/const ranked = results\.slice\(\)\.sort/);
+    expect(SRC, 'still rendering in finish order')
+      .not.toMatch(/results\.slice\(\)\.sort\(\(a,b\)=>a\.placement-b\.placement\)\.map\(rowHtml\)/);
+    expect(SRC).toMatch(/<tbody>'\+ranked\.map\(rowHtml\)/);
+  });
+
+  it('shows how far the score moved someone off their finish', () => {
+    expect(SRC).toMatch(/function _ruPlaceCell/);
+  });
+});

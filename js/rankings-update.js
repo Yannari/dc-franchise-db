@@ -12,6 +12,7 @@
 // Rendered into the Legacy tab by renderRankingsUpdate().
 
 import { extractSeasonTemplate, buildBigBrotherSeasonDocument } from './stats-export.js';
+import { SHOWS } from './shows.js';
 
 // The tool was written against current-season.html, whose .btn is white-on-dark.
 // The simulator's .btn is not, so every button here rendered as black text —
@@ -1082,6 +1083,64 @@ function renderPreview(results, seasonNum, castSize) {
 }
 
 // ── Apply ─────────────────────────────────────────────────
+// ── Structured reasoning (fallback, and the pre-AI text) ──
+//
+// Left behind in current-season.html when this tool was lifted out, so every
+// path that reaches it -- a new player's first summary, and the fallback the
+// AI call lands on the moment fetch fails -- threw ReferenceError instead.
+//
+// Show-aware, because it writes sentences about a season: the competition
+// names, the word for an advantage and the meaning of the social column all
+// come from that show's rubric. A houseguest kept on the block three times is
+// not "3 votes against".
+function _ruSeasonLabel(seasonNum, format) {
+  const fmt = format || _ruShowFormat();
+  return fmt === 'total-drama' ? `S${seasonNum}` : `${(SHOWS[fmt] || {}).short || 'S'}${seasonNum}`;
+}
+
+function buildSeasonReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning) {
+  const rub  = _ruRubric();
+  const noun = (rub.adv || {}).noun || 'advantage';
+  const highlights = [];
+  const comp = (spec, n) => {
+    if (!spec || !n) return;
+    // HOH is not "hoh". An acronym keeps its case; a word does not shout.
+    const label = /^[A-Z]{2,}$/.test(spec.label) ? spec.label : spec.label.toLowerCase();
+    highlights.push(`${n} ${label} win${n > 1 ? 's' : ''}`);
+  };
+  comp(rub.comp1, row.immWins);
+  comp(rub.comp2, row.rewWins);
+  comp(rub.comp3, row.comp3Wins);
+  if (row.advPlayed > 0) highlights.push(`played ${row.advPlayed} ${noun}${row.advPlayed>1?'s':''} effectively`);
+  if (row.advWasted > 0) highlights.push(`wasted ${row.advWasted} ${noun}${row.advWasted>1?'s':''}`);
+  if (row.advHeld   > 0) highlights.push(`held ${row.advHeld} ${noun}${row.advHeld>1?'s':''} (unused)`);
+  if (row.alliances > 0) highlights.push(`${row.alliances} alliance${row.alliances>1?'s':''}`);
+  if (row.fanFav)        highlights.push('fan favorite');
+  if (row.quit)          highlights.push('quit the game');
+  // The one column that means opposite things on the two shows.
+  if ((rub.social || {}).kind === 'survived') {
+    if (row.socialCol === 1)     highlights.push('survived the block once');
+    else if (row.socialCol > 1)  highlights.push(`survived the block ${row.socialCol} times`);
+  } else if (row.socialCol === 0) highlights.push('never received a vote');
+  else if (row.socialCol === 1)   highlights.push('voted against once');
+  else                            highlights.push(`${row.socialCol} votes against`);
+
+  const suffix   = highlights.length ? ` ${highlights.join(', ')}.` : '';
+  const winLabel = isWinner ? 'Winner' : `P${placement}`;
+  const sLabel   = _ruSeasonLabel(seasonNum);
+  const overridePart = row.override
+    ? ` Narrative override ${row.override>0?'+':''}${row.override}: ${row.overrideReason}.` : '';
+
+  const thisSeasonLine = `${sLabel} ${winLabel}.${overridePart}${suffix}`;
+  if (isNew) return thisSeasonLine;
+
+  // Returning player -- append, having first dropped any auto-line already
+  // written for this same season so a re-run does not stack duplicates.
+  const stripped = (existingReasoning || '')
+    .replace(new RegExp(`${sLabel}\s+(?:Winner|P\d+)[^]*$`), '').trim();
+  return (stripped ? stripped + ' ' : '') + thisSeasonLine;
+}
+
 // ── AI reasoning via Claude API ──────────────────────────
 async function generateAIReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning, totalSeasons, totalWins) {
   const winLabel   = isWinner ? 'Winner' : `P${placement}`;

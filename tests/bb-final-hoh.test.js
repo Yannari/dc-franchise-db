@@ -16,6 +16,7 @@ import { runBBCompetition, BB_COMP_TYPES } from '../js/bb/comps.js';
 import { BB_COMPETITIONS, FINAL_HOH_COMPS } from '../js/bb-comps/index.js';
 import { endgameDealsOf } from '../js/bb/deals.js';
 import { addBond } from '../js/bonds.js';
+import { readFileSync } from 'node:fs';
 import { simulateBBFinale } from '../js/bb-finale.js';
 import { bbCompetitionsForSlot } from '../js/bb-run.js';
 import { seedGame } from './helpers/setup.js';
@@ -347,5 +348,47 @@ describe('the final HOH set pieces', () => {
       expect(b.badgeText).toBeTruthy();
       expect(b.text).not.toMatch(/undefined|NaN|\[object/);
     }
+  });
+});
+
+// ── FINALE NIGHT IS SEEDED, LIKE THE REST OF THE SEASON ───────────────────
+//
+// runBBFinale() called simulateBBFinale() with no argument, so `rng` fell back
+// to its default of Math.random and every draw of the night with it. The season
+// either side of it is stable — weeks, comps, twists and the knowledge model
+// all run off stableRng seeded on gs.bb.seasonSalt, which is what makes a
+// season replayable — so the same save could produce a different winner, a
+// different jury vote and a different America's Favourite on each run.
+describe('the finale is reproducible', () => {
+  it('gives the same audience ballot every time from the same seed', () => {
+    const ballot = () => {
+      reset();
+      const afh = simulateBBFinale(seededRng(99)).acts.find(a => a.type === 'americas-favourite');
+      return JSON.stringify({ winner: afh?.winner ?? null, tally: afh?.tally ?? null });
+    };
+    const first = ballot();
+    expect(first).toContain('winner');
+    for (let i = 0; i < 4; i++) expect(ballot()).toBe(first);
+  });
+
+  it('gives a different night from a different seed', () => {
+    // Seeded, not frozen: the machinery must still respond to the salt.
+    const nights = new Set();
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+      reset();
+      const ep = simulateBBFinale(seededRng(seed));
+      const afh = ep.acts.find(a => a.type === 'americas-favourite');
+      nights.add(`${gs.bb?.finale?.winner}|${afh?.winner}`);
+    }
+    expect(nights.size).toBeGreaterThan(1);
+  });
+
+  it('is called with a seeded rng, not the default Math.random', () => {
+    // The bug was never in the finale — every function on that path already
+    // threads an rng and only names Math.random as a DEFAULT. The single call
+    // site simply never handed them one.
+    const src = readFileSync('js/bb-run.js', 'utf8');
+    expect(src).toMatch(/simulateBBFinale\(\s*stableRng\(/);
+    expect(src).not.toMatch(/simulateBBFinale\(\s*\)/);
   });
 });

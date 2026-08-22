@@ -20,6 +20,7 @@ import { gs, seasonConfig, seasonFormat, resolveTwistSchedule, TWIST_CATALOG, pl
 // headless render of this transcript would throw on the first pronoun.
 import { pronouns } from './players.js';
 import { simulateBBWeek } from './bb/week.js';
+import { stableRng } from './bb/knowledge.js';
 import { generateBBStructuredText } from './bb-structured.js';
 import { juryOpensAt, juryLines, isSeatedJuror } from './bb/jury.js';
 import { applyGoodbyeMessages } from './bb/jury-sentiment.js';
@@ -2072,7 +2073,20 @@ if (typeof window !== 'undefined') window._bbRunnable = true;
  */
 export function runBBFinale() {
   if (gs.phase === 'complete' || (gs.activePlayers || []).length < 2) return null;
-  const ep = simulateBBFinale();
+  // SEEDED, LIKE THE REST OF THE SEASON.
+  //
+  // The call below passed no argument at all, so `rng` fell back to its
+  // default of Math.random -- and every draw of the night with it. The whole
+  // season either side of this is stable: the weeks, the comps, the twists and
+  // the knowledge model all run off stableRng seeded on gs.bb.seasonSalt, which
+  // is what makes a season replayable at all. The finale alone was a fresh roll
+  // every time it ran, so the same save could produce a different winner, a
+  // different jury vote and a different America's Favourite on each attempt.
+  //
+  // Nothing below needed changing: every function on this path already threads
+  // an `rng` and only names Math.random as a DEFAULT. The one call site never
+  // gave them one.
+  const ep = simulateBBFinale(stableRng('bb-finale', gs?.bb?.seasonSalt || 0));
   if (!ep) return null;
   ep.num = (gs.episodeHistory?.length || 0) + 1;
   // The finale's transcript, on BOTH paths.

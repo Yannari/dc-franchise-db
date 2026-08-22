@@ -19,7 +19,7 @@
 // most-read part of the page and the least true.
 //
 // Pure: documents in, a dossier out. No fetch, no DOM.
-import { approvedFor, lineFor as lifeLine } from './life-events.js';
+import { approvedFor, lineFor as lifeLine, kindOf } from './life-events.js';
 import { airLabel } from './franchise-calendar.js';
 
 import { parseBio } from './bio.js';
@@ -630,7 +630,24 @@ export function buildDossier(player, {
     // suggestion, and a suggestion must not change what a page says about
     // somebody. Ordered by the franchise calendar, because `seq` is per-player
     // and a two-person event carries the numbering of whoever's row it is.
-    life: approvedFor(player.id, lifeEvents, { seasonRank }).map(e => ({
+    /* ── WHAT IS WORTH A LINE ──────────────────────────────────────
+       Everything accrues, and a page that prints all of it buries the
+       divorce between a marathon and a haircut — twenty-six lines for
+       Alejandro, of which four were about anybody. The `small` track exists
+       for the SOCIAL FEED, which needs texture to post about; an encyclopedia
+       entry does not, and neither does a minor move nobody else was part of.
+
+       Everything else stays: a relationship, a job, a season of another show,
+       an award, an injury, a feud. If it names another person it stays
+       whatever its weight, because a fact about two people is never texture. */
+    life: approvedFor(player.id, lifeEvents, { seasonRank })
+      .filter(e => {
+        const def = kindOf(e.kind);
+        if (!def) return false;
+        if (def.track === 'small') return false;
+        return def.sig !== 'minor' || !!e.whom || def.track !== 'home';
+      })
+      .map(e => ({
       ...e,
       // The roster is already here for the personality; it is also the only
       // place a gender lives, and without it every one-person sentence in the
@@ -640,6 +657,10 @@ export function buildDossier(player, {
       // Dated here, where the season records already are, so the view does not
       // need its own copy of the calendar to print a label.
       when: airLabel(seasonAir.get(e.afterSeason) || {}),
+      // And where it sits on the franchise calendar, so a view can interleave
+      // the log with anything else that has a date — the seasons of the OTHER
+      // show, which happen inside the same gaps.
+      rank: seasonRank?.get?.(e.afterSeason) ?? null,
     })),
     // ── WHAT THE ARTICLE CAN LINK ──────────────────────────────────
     //

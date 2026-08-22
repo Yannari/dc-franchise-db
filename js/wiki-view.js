@@ -26,7 +26,7 @@
 // Returns HTML. Takes a dossier from js/wiki.js and nothing else.
 
 import { parseInterview } from './casting-interview.js';
-import { airLabel, ageAt } from './franchise-calendar.js';
+import { airLabel, ageAt, airKey } from './franchise-calendar.js';
 
 // `short` is the tab label — "TD14", "BB1" — and matches the code js/shows.js
 // already declares for each show, so a third show is named consistently
@@ -1104,10 +1104,39 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   // sequence number of whichever side it was written from.
   {
     const life = dossier.life || [];
-    if (life.length) {
-      const rows = life.map(e => `<li>${e.when ? `<em>${esc(e.when)}</em> — ` : ''}${
-        L.text(e.line)}${e.detail ? ` ${L.text(e.detail)}` : ''}</li>`);
-      section('life', 'Life outside the game', `<ul class="wk-list">${rows.join('')}</ul>`);
+    /* ── THE OTHER SHOWS BELONG IN THE TIMELINE ────────────────────────
+       "Life outside the game" listed weddings, jobs and moves and said nothing
+       about the biggest thing that happens to any of these people between
+       seasons of THIS show, which is playing another one. It was on the page —
+       in a section of its own, further down — so a reader working through
+       somebody's life in order hit a two-year gap with nothing in it.
+
+       Derived from the career rather than stored: nothing has to be written,
+       it cannot go stale, and it is dated off the same calendar the rest of
+       the log is sorted on. */
+    const elsewhere = (dossier.career || [])
+      .filter(c => c.format !== format)
+      .flatMap(c => (c.seasons || []).map(x => ({
+        when: airLabel(x.air || {}),
+        key: seasonSort(x),
+        show: true,
+        html: `${esc(dossier.name)} ${x.placement === 1 ? 'won' : 'competed on'} ${
+          L.season(x, c.format)}${x.placement && x.placement !== 1
+            ? `, finishing ${ordinal(x.placement)}` : ''}.`,
+      })));
+    const rows = [
+      ...life.map(e => ({
+        when: e.when, key: e.rank ?? Number.MAX_SAFE_INTEGER, show: false,
+        html: `${L.text(e.line)}${e.detail ? ` ${L.text(e.detail)}` : ''}`,
+      })),
+      ...elsewhere,
+    // Both sources on one spine. Undated rows keep the order they arrived in,
+    // at the end, which is what an unplaced season means everywhere else.
+    ].sort((a, b) => a.key - b.key);
+    if (rows.length) {
+      section('life', 'Life outside the game', `<ul class="wk-list">${rows.map(r =>
+        `<li${r.show ? ' class="wk-life-show"' : ''}>${
+          r.when ? `<em>${esc(r.when)}</em> — ` : ''}${r.html}</li>`).join('')}</ul>`);
     }
   }
 
@@ -1221,6 +1250,15 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   </article>`;
 }
 
+/**
+ * A season's place on the franchise calendar, as one sortable number.
+ *
+ * `airKey` and nothing else: the life log is already ordered by it upstream,
+ * and a second scale invented here would interleave the two sources almost
+ * correctly, which is the worst of the three outcomes.
+ */
+const seasonSort = x => (airKey(x?.air || {}) ?? Number.MAX_SAFE_INTEGER);
+
 const slugOf = n => String(n || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
 
 /** The stylesheet. Kept with the markup so the two cannot drift apart. */
@@ -1316,6 +1354,10 @@ export const WIKI_CSS = `
   transition:transform .25s; }
 .wk-gitem:hover img{ transform:scale(1.05); }
 .wk-thin{ opacity:.65; font-style:italic; }
+/* A season of another show, inside the life timeline — the one line in there
+   that is about the game rather than about the life around it. */
+.wk-life-show{ list-style:'B8  '; }
+.wk-life-show a{ font-weight:700; }
 .wk-list{ margin:8px 0 0; padding-left:20px; }
 .wk-list li{ margin:5px 0; line-height:1.6; font-size:14.5px; }
 

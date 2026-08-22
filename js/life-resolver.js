@@ -33,7 +33,7 @@
 // same answer, and adding a player to the franchise does not change what
 // happens to everybody else — which a single stream would do, silently, and
 // which would make an approved inbox impossible to reproduce.
-import { KINDS, kindOf, stateOf, order } from './life-events.js';
+import { KINDS, kindOf, stateOf, order, allowedFrom } from './life-events.js';
 import { couldBeInterested } from './attraction.js';
 
 /**
@@ -206,7 +206,15 @@ const RARE_TRACKS = ['health', 'legal', 'money'];
 // to something is saying it did not happen.
 const BELIEVED = ['approved', 'proposed'];
 
-const kindsOn = tracks => KINDS.filter(k => tracks.includes(k.track) && !k.terminal && !k.stage);
+/* EXCLUDED BY TRACK, NOT BY `stage`.
+   This used to drop every kind that carries a position, which was a no-op
+   while only the relationship and education tracks had one — and became a
+   silent deletion of the entire career track the moment "employed" existed.
+   The two tracks with their own branch are named; everything else is drawn
+   here and gated by `allowedFrom` below. */
+const HANDLED_ELSEWHERE = ['relationship', 'education'];
+const kindsOn = tracks => KINDS.filter(k => tracks.includes(k.track) && !k.terminal
+  && !HANDLED_ELSEWHERE.includes(k.track));
 
 /**
  * The same list, minus the answers to questions this person was never asked.
@@ -220,9 +228,11 @@ const kindsOn = tracks => KINDS.filter(k => tracks.includes(k.track) && !k.termi
  * was ill and recovered is not still recovering, so a second recovery needs a
  * second illness. The most recent of the two wins.
  */
-const availableTo = (tracks, mine) => kindsOn(tracks).filter(k => {
+const availableTo = (tracks, mine, state = null) => kindsOn(tracks).filter(k => {
   // Once ever. A second bankruptcy is a caller bug wearing a plot twist.
   if (k.once && mine.some(e => e.kind === k.key)) return false;
+  // And you cannot resign from a job you were laid off from a year ago.
+  if (state && !allowedFrom(k.key, state)) return false;
   if (!k.after) return true;
   let asked = -1, answered = -1;
   for (let i = 0; i < mine.length; i++) {
@@ -529,7 +539,7 @@ export function resolveOffSeason({
     // ── the ordinary, which is most of it ──
     const ord = rng('ord');
     if (ord() < RATES.ordinary) {
-      const k = pick(ord, availableTo(ORDINARY_TRACKS, mine));
+      const k = pick(ord, availableTo(ORDINARY_TRACKS, mine, state));
       if (k) {
         const whom = k.whom ? otherFor(k.key, slug, ord, partner) : null;
         if (!k.whom || whom) emit(slug, k.key, k.whom ? { whom } : {});
@@ -538,14 +548,14 @@ export function resolveOffSeason({
     // Fame buys VOLUME and access to the public-life kinds — never a different
     // chance of something hard happening.
     if (ord() < RATES.publicLife * fame) {
-      const k = pick(ord, availableTo(['public', 'franchise'], mine));
+      const k = pick(ord, availableTo(['public', 'franchise'], mine, state));
       if (k) {
         const whom = k.whom ? otherFor(k.key, slug, ord, null) : null;
         if (!k.whom || whom) emit(slug, k.key, k.whom ? { whom } : {});
       }
     }
     if (ord() < RATES.extraOrdinary * (0.4 + fame)) {
-      const k = pick(ord, availableTo(ORDINARY_TRACKS, mine));
+      const k = pick(ord, availableTo(ORDINARY_TRACKS, mine, state));
       if (k) {
         const whom = k.whom ? otherFor(k.key, slug, ord, partner) : null;
         if (!k.whom || whom) emit(slug, k.key, k.whom ? { whom } : {});
@@ -555,7 +565,7 @@ export function resolveOffSeason({
     // ── the rare ──
     const rare = rng('rare');
     if (rare() < RATES.rare) {
-      const k = pick(rare, availableTo(RARE_TRACKS, mine));
+      const k = pick(rare, availableTo(RARE_TRACKS, mine, state));
       if (k) emit(slug, k.key);
     }
   }

@@ -19,27 +19,11 @@
     },
     {
       "player": "alejandro",
-      "afterSeason": "td-8",
-      "seq": 3,
-      "kind": "podcast",
-      "status": "approved",
-      "detail": "A weekly post-mortem of the season he had just won."
-    },
-    {
-      "player": "alejandro",
       "whom": "lindsay",
       "afterSeason": "td-13",
       "seq": 4,
       "kind": "moved-in",
       "status": "approved"
-    },
-    {
-      "player": "lindsay",
-      "afterSeason": "td-13",
-      "seq": 1,
-      "kind": "graduated",
-      "status": "approved",
-      "detail": "Finished the degree she had been picking away at since her first season."
     },
     {
       "player": "bowie",
@@ -135,13 +119,6 @@
     },
     {
       "player": "ezekiel",
-      "kind": "graduated",
-      "afterSeason": "td-1",
-      "seq": 13,
-      "status": "approved"
-    },
-    {
-      "player": "ezekiel",
       "kind": "travelling",
       "afterSeason": "td-1",
       "seq": 14,
@@ -152,13 +129,6 @@
       "kind": "moved",
       "afterSeason": "td-1",
       "seq": 15,
-      "status": "approved"
-    },
-    {
-      "player": "ezekiel",
-      "kind": "sober",
-      "afterSeason": "td-1",
-      "seq": 16,
       "status": "approved"
     },
     {
@@ -220,23 +190,9 @@
     },
     {
       "player": "noah",
-      "kind": "graduated",
-      "afterSeason": "td-1",
-      "seq": 26,
-      "status": "approved"
-    },
-    {
-      "player": "noah",
       "kind": "year-off",
       "afterSeason": "td-1",
       "seq": 27,
-      "status": "approved"
-    },
-    {
-      "player": "owen",
-      "kind": "graduated",
-      "afterSeason": "td-1",
-      "seq": 28,
       "status": "approved"
     },
     {
@@ -886,13 +842,6 @@
     },
     {
       "player": "jo",
-      "kind": "promoted",
-      "afterSeason": "td-4",
-      "seq": 26,
-      "status": "approved"
-    },
-    {
-      "player": "jo",
       "kind": "year-off",
       "afterSeason": "td-4",
       "seq": 27,
@@ -1184,23 +1133,9 @@
     },
     {
       "player": "dwayne",
-      "kind": "promoted",
-      "afterSeason": "td-5",
-      "seq": 24,
-      "status": "approved"
-    },
-    {
-      "player": "dwayne",
       "kind": "started-business",
       "afterSeason": "td-5",
       "seq": 25,
-      "status": "approved"
-    },
-    {
-      "player": "dwayne",
-      "kind": "bankruptcy",
-      "afterSeason": "td-5",
-      "seq": 26,
       "status": "approved"
     },
     {
@@ -1403,23 +1338,9 @@
     },
     {
       "player": "tyler",
-      "kind": "quit-job",
-      "afterSeason": "td-5",
-      "seq": 55,
-      "status": "approved"
-    },
-    {
-      "player": "tyler",
       "kind": "pet",
       "afterSeason": "td-5",
       "seq": 56,
-      "status": "approved"
-    },
-    {
-      "player": "alejandro",
-      "kind": "quit-job",
-      "afterSeason": "td-6",
-      "seq": 1,
       "status": "approved"
     },
     {
@@ -1552,13 +1473,6 @@
       "status": "approved"
     },
     {
-      "player": "dj",
-      "kind": "quit-job",
-      "afterSeason": "td-6",
-      "seq": 20,
-      "status": "approved"
-    },
-    {
       "player": "duncan",
       "kind": "went-public",
       "afterSeason": "td-6",
@@ -1634,13 +1548,6 @@
       "kind": "hobby",
       "afterSeason": "td-6",
       "seq": 31,
-      "status": "approved"
-    },
-    {
-      "player": "geoff",
-      "kind": "laid-off",
-      "afterSeason": "td-6",
-      "seq": 32,
       "status": "approved"
     },
     {
@@ -2014,13 +1921,6 @@
     },
     {
       "player": "brick",
-      "kind": "quit-job",
-      "afterSeason": "td-7",
-      "seq": 13,
-      "status": "approved"
-    },
-    {
-      "player": "brick",
       "kind": "travelling",
       "afterSeason": "td-7",
       "seq": 14,
@@ -2231,13 +2131,6 @@
       "kind": "rewatch-podcast",
       "afterSeason": "td-7",
       "seq": 43,
-      "status": "approved"
-    },
-    {
-      "player": "heather",
-      "kind": "quit-job",
-      "afterSeason": "td-7",
-      "seq": 44,
       "status": "approved"
     },
     {
@@ -2664,13 +2557,6 @@
       "status": "approved"
     },
     {
-      "player": "brick",
-      "kind": "quit-job",
-      "afterSeason": "td-9",
-      "seq": 6,
-      "status": "approved"
-    },
-    {
       "player": "brody",
       "kind": "dating",
       "afterSeason": "td-9",
@@ -2769,13 +2655,6 @@
       "kind": "enrolled",
       "afterSeason": "td-9",
       "seq": 20,
-      "status": "approved"
-    },
-    {
-      "player": "dj",
-      "kind": "quit-job",
-      "afterSeason": "td-9",
-      "seq": 21,
       "status": "approved"
     },
     {
@@ -2908,13 +2787,6 @@
       "status": "approved"
     },
     {
-      "player": "katie",
-      "kind": "laid-off",
-      "afterSeason": "td-9",
-      "seq": 40,
-      "status": "approved"
-    },
-    {
       "player": "kelly",
       "kind": "learned",
       "afterSeason": "td-9",
@@ -3042,13 +2914,6 @@
       "status": "approved"
     },
     {
-      "player": "staci",
-      "kind": "laid-off",
-      "afterSeason": "td-9",
-      "seq": 59,
-      "status": "approved"
-    },
-    {
       "player": "stephanie",
       "kind": "haircut",
       "afterSeason": "td-9",
@@ -3081,13 +2946,6 @@
       "kind": "laid-off",
       "afterSeason": "td-9",
       "seq": 64,
-      "status": "approved"
-    },
-    {
-      "player": "tyler",
-      "kind": "quit-job",
-      "afterSeason": "td-9",
-      "seq": 65,
       "status": "approved"
     },
     {
@@ -3438,26 +3296,12 @@
       "status": "approved"
     },
     {
-      "player": "dj",
-      "kind": "quit-job",
-      "afterSeason": "td-11",
-      "seq": 13,
-      "status": "approved"
-    },
-    {
       "player": "duncan",
       "kind": "broke-up",
       "afterSeason": "td-11",
       "seq": 14,
       "status": "approved",
       "whom": "gwen"
-    },
-    {
-      "player": "duncan",
-      "kind": "quit-job",
-      "afterSeason": "td-11",
-      "seq": 15,
-      "status": "approved"
     },
     {
       "player": "duncan",
@@ -3489,13 +3333,6 @@
       "whom": "geoff"
     },
     {
-      "player": "emma",
-      "kind": "laid-off",
-      "afterSeason": "td-11",
-      "seq": 20,
-      "status": "approved"
-    },
-    {
       "player": "ennui",
       "kind": "laid-off",
       "afterSeason": "td-11",
@@ -3507,13 +3344,6 @@
       "kind": "hobby",
       "afterSeason": "td-11",
       "seq": 22,
-      "status": "approved"
-    },
-    {
-      "player": "geoff",
-      "kind": "quit-job",
-      "afterSeason": "td-11",
-      "seq": 23,
       "status": "approved"
     },
     {
@@ -3570,13 +3400,6 @@
       "kind": "hobby",
       "afterSeason": "td-11",
       "seq": 31,
-      "status": "approved"
-    },
-    {
-      "player": "jo",
-      "kind": "quit-job",
-      "afterSeason": "td-11",
-      "seq": 32,
       "status": "approved"
     },
     {
@@ -3662,13 +3485,6 @@
       "kind": "enrolled",
       "afterSeason": "td-11",
       "seq": 44,
-      "status": "approved"
-    },
-    {
-      "player": "max",
-      "kind": "laid-off",
-      "afterSeason": "td-11",
-      "seq": 45,
       "status": "approved"
     },
     {
@@ -5077,8 +4893,8 @@
     {
       "player": "bridgette",
       "kind": "quietly-ended",
-      "afterSeason": "bb-1",
-      "seq": 1,
+      "afterSeason": "td-8",
+      "seq": 0.5,
       "status": "approved",
       "whom": "alejandro",
       "detail": "Closing the record — the world had already moved on."
@@ -5086,8 +4902,8 @@
     {
       "player": "trent",
       "kind": "quietly-ended",
-      "afterSeason": "bb-1",
-      "seq": 2,
+      "afterSeason": "td-8",
+      "seq": 0.5,
       "status": "approved",
       "whom": "lindsay",
       "detail": "Closing the record — the world had already moved on."
@@ -5399,13 +5215,6 @@
     },
     {
       "player": "mickey",
-      "kind": "laid-off",
-      "afterSeason": "bb-1",
-      "seq": 46,
-      "status": "approved"
-    },
-    {
-      "player": "mickey",
       "kind": "documentary",
       "afterSeason": "bb-1",
       "seq": 47,
@@ -5574,13 +5383,6 @@
       "status": "approved"
     },
     {
-      "player": "pete",
-      "kind": "promoted",
-      "afterSeason": "bb-1",
-      "seq": 71,
-      "status": "approved"
-    },
-    {
       "player": "spud",
       "kind": "bought-home",
       "afterSeason": "bb-1",
@@ -5700,13 +5502,6 @@
       "kind": "haircut",
       "afterSeason": "bb-1",
       "seq": 88,
-      "status": "approved"
-    },
-    {
-      "player": "mk",
-      "kind": "promoted",
-      "afterSeason": "bb-1",
-      "seq": 89,
       "status": "approved"
     },
     {
@@ -6198,24 +5993,10 @@
       "status": "approved"
     },
     {
-      "player": "ennui",
-      "kind": "promoted",
-      "afterSeason": "td-14",
-      "seq": 19,
-      "status": "approved"
-    },
-    {
       "player": "eva",
       "kind": "haircut",
       "afterSeason": "td-14",
       "seq": 20,
-      "status": "approved"
-    },
-    {
-      "player": "ezekiel",
-      "kind": "promoted",
-      "afterSeason": "td-14",
-      "seq": 21,
       "status": "approved"
     },
     {
@@ -6332,13 +6113,6 @@
       "seq": 37,
       "status": "approved",
       "whom": "ryan"
-    },
-    {
-      "player": "leonard",
-      "kind": "laid-off",
-      "afterSeason": "td-14",
-      "seq": 38,
-      "status": "approved"
     },
     {
       "player": "leshawna",
@@ -6732,13 +6506,6 @@
       "kind": "old-car",
       "afterSeason": "td-14",
       "seq": 93,
-      "status": "approved"
-    },
-    {
-      "player": "scary-girl",
-      "kind": "promoted",
-      "afterSeason": "td-14",
-      "seq": 94,
       "status": "approved"
     },
     {

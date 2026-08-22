@@ -113,19 +113,31 @@ export const KINDS = [
     line: (n, w, pr) => `${n} reconciled with ${pr.posAdj} family.` },
 
   // ── career ─────────────────────────────────────────────────────────
-  { key: 'new-job', track: 'career', sig: 'minor', whom: false,
+  /* ── YOU CANNOT QUIT A JOB YOU DO NOT HAVE ──────────────────────────
+     The career kinds had no `stage`, so nothing tracked whether somebody was
+     employed and the draw was free to lay a person off and then have them
+     resign eighteen months later without a job in between. It is on the record
+     for Alejandro exactly like that.
+
+     Everybody starts EMPLOYED — the roster gives every character an occupation
+     — so the stage only has to say when that stops being true and when it
+     starts again. `needsStage` is the gate the resolver reads. */
+  { key: 'new-job', track: 'career', sig: 'minor', whom: false, stage: 'employed',
     line: n => `${n} started a new job.` },
-  { key: 'promoted', track: 'career', sig: 'minor', whom: false,
+  { key: 'promoted', track: 'career', sig: 'minor', whom: false, stage: 'employed',
+    needsStage: ['employed'],
     line: n => `${n} was promoted.` },
-  { key: 'quit-job', track: 'career', sig: 'minor', whom: false,
+  { key: 'quit-job', track: 'career', sig: 'minor', whom: false, stage: 'unemployed',
+    needsStage: ['employed'],
     line: (n, w, pr) => `${n} left ${pr.posAdj} job.` },
-  { key: 'laid-off', track: 'career', sig: 'notable', whom: false,
+  { key: 'laid-off', track: 'career', sig: 'notable', whom: false, stage: 'unemployed',
+    needsStage: ['employed'],
     line: n => `${n} was laid off.` },
   { key: 'started-business', track: 'career', sig: 'notable', whom: false,
     line: (n, w, pr) => `${n} started ${pr.posAdj} own business.` },
   { key: 'side-hustle', track: 'career', sig: 'minor', whom: false,
     line: n => `${n} started a side project.` },
-  { key: 'career-change', track: 'career', sig: 'notable', whom: false,
+  { key: 'career-change', track: 'career', sig: 'notable', whom: false, stage: 'employed',
     line: n => `${n} retrained and changed careers entirely.` },
   { key: 'award', track: 'career', sig: 'notable', whom: false,
     line: (n, w, pr) => `${n} won an award in ${pr.posAdj} field.` },
@@ -137,9 +149,13 @@ export const KINDS = [
   // `graduated` closes it, which is why both exist.
   { key: 'enrolled', track: 'education', sig: 'minor', whom: false, stage: 'studying',
     line: n => `${n} went back to school.` },
+  // You graduate from something you enrolled in. Same hole as the career
+  // track, and the same fix: a position, and a gate on it.
   { key: 'graduated', track: 'education', sig: 'notable', whom: false, stage: 'graduated',
+    needsStage: ['studying'],
     line: n => `${n} graduated.` },
   { key: 'dropped-out', track: 'education', sig: 'minor', whom: false, stage: 'none',
+    needsStage: ['studying'],
     line: n => `${n} dropped out.` },
 
   // ── home ───────────────────────────────────────────────────────────
@@ -162,7 +178,9 @@ export const KINDS = [
     line: n => `${n} walked a red carpet.` },
   { key: 'interview', track: 'public', sig: 'minor', whom: false,
     line: (n, w, pr) => `${n} gave an interview about ${pr.posAdj} season.` },
-  { key: 'podcast', track: 'public', sig: 'minor', whom: false,
+  // ONCE. "Started a podcast" twice on one page is the same sentence twice,
+  // and the circuit kind below is what a second one actually looks like.
+  { key: 'podcast', once: true, track: 'public', sig: 'minor', whom: false,
     line: n => `${n} started a podcast.` },
   { key: 'brand-deal', track: 'public', sig: 'minor', whom: false,
     line: n => `${n} signed a brand deal.` },
@@ -286,8 +304,12 @@ export const KINDS = [
     line: n => `${n} went travelling.` },
   { key: 'haircut', track: 'small', sig: 'minor', whom: false,
     line: (n, w, pr) => `${n} changed ${pr.posAdj} hair, and the internet had opinions.` },
+  /* "Moved in with Bridgette" and "moved in together with Lindsay" are the
+     same sentence, and one of them is a lease. A log that says both about the
+     same person in the same year reads as two relationships — which is exactly
+     how this one read. The flatmate says so. */
   { key: 'flatmates', track: 'home', sig: 'minor', whom: true,
-    line: (n, w) => `${n} moved in with ${w}.` },
+    line: (n, w) => `${n} and ${w} became flatmates.` },
   { key: 'learned', track: 'small', sig: 'minor', whom: false,
     line: (n, w, pr) => `${n} learned to do something ${pr.sub} had always meant to.` },
   { key: 'marathon', track: 'small', sig: 'minor', whom: false,
@@ -383,10 +405,20 @@ export function lineFor(event, names = {}, reader = null, genders = null) {
  * is a fact about their life, and an ordering slip should not be able to
  * resurrect them.
  */
+/**
+ * Where a track starts before anything has happened on it.
+ *
+ * EMPLOYED, because everybody on the roster has an occupation written into
+ * their bio — "unemployed until the log says otherwise" would have every
+ * character resign from a job the page says they hold.
+ */
+export const TRACK_START = { relationship: 'single', education: 'none', career: 'employed' };
+
 export function deriveState(events = [], { seasonRank = null, statuses = ['approved'], self = null } = {}) {
   const state = {
     relationship: { stage: 'single', with: null },
     education: { stage: 'none' },
+    career: { stage: 'career' in TRACK_START ? TRACK_START.career : 'employed' },
     children: 0,
     terminal: null,
     trackStage: {},
@@ -445,8 +477,33 @@ export function deriveState(events = [], { seasonRank = null, statuses = ['appro
     }
     state.trackStage[def.track] = def.stage;
     if (def.track === 'education') state.education = { stage: def.stage };
+    // Employed or not, which is the gate on resigning from a job.
+    if (def.track === 'career') state.career = { stage: def.stage };
   }
   return state;
+}
+
+/**
+ * Can this kind happen to somebody standing where they are standing?
+ *
+ * `needsStage` is the answer to a bug class the log is full of: an event that
+ * only makes sense from a position — graduating without enrolling, resigning
+ * from a job you were laid off from eighteen months ago, going public with a
+ * relationship you are not in. The draw offered all of them, because nothing
+ * asked.
+ *
+ * A kind with no `needsStage` is always allowed; a track with no recorded
+ * position starts at TRACK_START, so "employed" is the default and every
+ * character can resign from the job their bio says they hold.
+ */
+export function allowedFrom(kind, state = {}) {
+  const def = kindOf(kind);
+  if (!def?.needsStage) return true;
+  const at = state.trackStage?.[def.track]
+    || (def.track === 'relationship' ? state.relationship?.stage : null)
+    || (def.track === 'education' ? state.education?.stage : null)
+    || TRACK_START[def.track] || null;
+  return def.needsStage.includes(at);
 }
 
 /**

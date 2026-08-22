@@ -30,6 +30,16 @@ const showName = f => SHOW_NAMES[f] || f;
 const fmtOf = d => d?.format || DEFAULT_FORMAT;
 
 /**
+ * A player slug, the way every other file in this project makes one.
+ *
+ * Exported because the article links names, and a link needs an id: the season
+ * documents carry `playerSlug`/`evictSlug` on most rows and nothing on the
+ * rest, so the fallback has to agree with the one the export used.
+ */
+export const _slug = n => String(n || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
+
+
+/**
  * The story, split back into the seasons it was written about.
  *
  * `player.story` is one long string with "SEASON 4 — Title" headers in it, and
@@ -218,26 +228,67 @@ function _weekRowsFromDoc(found, name) {
     let gone = false;
     for (const w of weeks) {
       if (gone) break;
-      const noms = w.blockBeforeSafety || w.initialNominees || [];
+      // ── THE BLOCK, IN THE ORDER THE WEEK ACTUALLY HAPPENS ──────────
+      //
+      // Three fields, three different moments, and this used to read only one
+      // of them: `blockBeforeSafety || initialNominees`, which is the block
+      // AFTER the veto ceremony. So a houseguest who was nominated on Sunday
+      // and took himself down with the veto on Saturday was, on his own page,
+      // never nominated at all — the grid showed a bare "Veto" and the run
+      // strip showed nothing. The only rescue that left a mark was the Block
+      // Buster, because that one is recorded on its own two fields.
+      //
+      //   initialNominees   — the nomination ceremony
+      //   blockBeforeSafety — after the veto and any replacement, going into
+      //                       the arena (absent when no arena was played)
+      //   finalNominees     — who is sitting there when the house votes
+      //
+      // THE FINAL BLOCK IS THE HEADLINE. Being nominated and getting off it is
+      // a different week from being nominated and staying there, so the row
+      // says which rescue it was rather than flattening both into "Nominated".
+      const opened = w.initialNominees || w.blockBeforeSafety || [];
+      const postVeto = w.blockBeforeSafety || w.finalNominees || [];
       const finalNoms = w.finalNominees || [];
+      const wasOpened = opened.includes(name);
+      const wasPostVeto = postVeto.includes(name);
+      const onBlock = finalNoms.includes(name);
+      const vetoWon = w.vetoWinner === name;
+      const arenaWon = w.safetyWinner === name;
       const ballot = (w.ballots || []).find(b => b.voter === name);
       const out = w.evicted === name;
       rows.push({
         week: Number(w.week),
         hoh: w.hoh === name,
-        veto: w.vetoWinner === name,
+        veto: vetoWon,
+        // Won it while sitting on the block and used it on themselves: the
+        // single most-remembered thing a nominee can do, and the one the grid
+        // could not say.
+        vetoOnSelf: vetoWon && wasOpened && !wasPostVeto,
+        // Taken off by somebody else's veto.
+        savedByVeto: wasOpened && !wasPostVeto && !vetoWon,
+        // Put up after the veto came down on somebody else.
+        replacement: !wasOpened && wasPostVeto,
         // Played the arena and won their way off the block, which outranks
         // having been nominated — being nominated is how you get into it.
-        arenaPlayed: noms.includes(name) && !!w.safetyWinner,
-        arenaWon: w.safetyWinner === name,
-        onBlock: finalNoms.includes(name),
-        nominated: noms.includes(name),
+        arenaPlayed: wasPostVeto && !!w.safetyWinner,
+        arenaWon,
+        onBlock,
+        // Nominated AT ANY POINT in the week, whether or not they were still
+        // there at the vote.
+        nominated: wasOpened || wasPostVeto,
         // Slop and the have-not room. Exported since today; a season published
         // before that simply has none, which reads as "never a have-not" and is
         // why the section is dropped when no week records anybody.
         haveNot: (w.haveNots || []).includes(name),
         votesAgainst: Number((w.votes || {})[name]) || 0,
         votedFor: ballot?.evict || '',
+        // The slug the avatar is drawn from, straight off the ballot when the
+        // export wrote one — a name has to be guessed at, a slug does not.
+        votedForSlug: ballot?.evictSlug || _slug(ballot?.evict),
+        // Who ran the week, and who left it. Both are the week's facts rather
+        // than this player's, and both are what a reader wants a face for.
+        hohName: w.hoh || '',
+        evictedName: w.evicted || '',
         evicted: out,
       });
       if (out) gone = true;
@@ -262,6 +313,8 @@ function _weekRowsFromDoc(found, name) {
       evicted: out,
       votesAgainst: against,
       votedFor: mine?.target || '',
+      votedForSlug: mine?.targetSlug || _slug(mine?.target),
+      evictedName: r.eliminated || '',
     });
     if (out) gone = true;
   }
@@ -346,6 +399,15 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [], se
       // article, it simply has no grid in it.
       weekRows: _weekRowsFromDoc(rowFor(d), player.name)
         || (Array.isArray(d.weekRows) ? d.weekRows : null),
+      // ── WHO ELSE WAS THERE ─────────────────────────────────────────
+      //
+      // Every name this season's prose can mention, with the slug their page
+      // lives at. A fandom article links a castmate the first time it says
+      // their name and the article had no way to: it knew four bonds and a
+      // rival and nothing about the other sixteen people in the room.
+      cast: ((rowFor(d)?.doc?.placements) || []).map(p => ({
+        name: p.name, slug: p.playerSlug || _slug(p.name),
+      })).filter(p => p.name && p.name !== player.name),
       // ── HOW THE SEASON ENDED ─────────────────────────────────────
       //
       // The lead's second paragraph closes the way the reference pages do —
@@ -541,6 +603,25 @@ export function buildDossier(player, {
       // need its own copy of the calendar to print a label.
       when: airLabel(seasonAir.get(e.afterSeason) || {}),
     })),
+    // ── WHAT THE ARTICLE CAN LINK ──────────────────────────────────
+    //
+    // A wiki links. Every season it names, every houseguest it names — that is
+    // most of what makes one read like an encyclopedia rather than a report,
+    // and the prose on this page was flat text with the links only ever in the
+    // tables. These two are the lookup the view linkifies against.
+    //
+    // The roster is the widest name list there is (152 people, slug and all),
+    // and the per-season cast above covers anybody the roster has not caught
+    // up with yet.
+    people: (roster.players || roster || [])
+      .filter(r => r && r.name && r.slug)
+      .map(r => ({ name: r.name, slug: r.slug })),
+    // title -> the season page it links to. `seasonTitles` is keyed by both
+    // seasonId and season number with the same title behind each; the string
+    // key is the one season_ref.html wants.
+    seasonLinks: [...seasonTitles.entries()]
+      .filter(([k, v]) => typeof k === 'string' && v)
+      .map(([id, title]) => ({ id, title })),
     records: recordsHeldBy(player.id, milestonesByShow),
     // Computed trivia, keyed by show — the article is scoped to one show and
     // picks. Derived in js/player-trivia.js from every career in that format,

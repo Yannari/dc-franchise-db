@@ -48,6 +48,124 @@ const ordinal = n => {
   return `${v}${s || 'th'}`;
 };
 
+// Escapes anything a title or a name can contain — an apostrophe, a colon,
+// a hyphen — without a character class of its own to get wrong.
+const rxEsc = t => String(t).replace(/[^A-Za-z0-9 ]/g, c => String.fromCharCode(92) + c);
+
+/**
+ * THE THING THAT MAKES IT READ LIKE A WIKI: everything is a link.
+ *
+ * A fandom article does not say "Misha voted with Jules" in flat text. Every
+ * season it names goes to that season's page and every castmate it names goes
+ * to theirs, in the prose as well as in the tables — that is most of the
+ * difference between an encyclopedia entry and a report, and this article had
+ * the links only ever inside its tables. The lead linked its seasons because
+ * the lead built them by hand; the Summary, the key moments, the quotes, the
+ * trivia and the life log were plain strings.
+ *
+ * So one linkifier, applied to every piece of prose on the page. It works on
+ * RAW text and escapes as it goes — escaping first and matching afterwards
+ * would need the pattern to know what `&amp;` used to be.
+ *
+ * Boundaries are alphanumeric only, deliberately: "Jules" inside "Jules's" is
+ * a mention and should link, "Jane" inside "Janet" is not and must not.
+ *
+ * Every occurrence, not just the first. Real articles link the first mention
+ * per section and this page is read in pieces — a reader who lands on Trivia
+ * should not have to scroll up to find the link.
+ */
+function _linker(dossier, root) {
+  const targets = new Map();          // matched text -> href
+
+  // ── the seasons ──
+  const seasonHref = id => `${root}/season_ref.html?season=${encodeURIComponent(id)}`;
+  const addSeason = (title, id) => {
+    if (!title || !id) return;
+    targets.set(String(title), seasonHref(id));
+    // "Big Brother 1: The Room Decided" is written in half the prose as "Big
+    // Brother 1". Both are the same season and both should go there.
+    const head = String(title).split(/\s*[:—–]\s*/)[0];
+    if (head && head !== title && head.length > 4 && !targets.has(head)) {
+      targets.set(head, seasonHref(id));
+    }
+  };
+  for (const l of dossier.seasonLinks || []) addSeason(l.title, l.id);
+  for (const c of dossier.career || []) {
+    for (const x of c.seasons || []) {
+      const id = x.seasonId || (c.format === 'big-brother' ? `bb-${x.season}` : x.season);
+      addSeason(x.title, id);
+      addSeason(`${meta(c.format).name} ${x.season}`, id);
+    }
+  }
+
+  // ── the people ──
+  const slugs = new Map();
+  const addPerson = (name, slug) => {
+    if (!name || !slug || name === dossier.name) return;
+    if (!slugs.has(name)) slugs.set(name, slug);
+  };
+  for (const c of dossier.career || []) {
+    for (const x of c.seasons || []) for (const p of x.cast || []) addPerson(p.name, p.slug);
+  }
+  for (const p of dossier.people || []) addPerson(p.name, p.slug);
+  const playerHref = slug => `${root}/player.html?player=${encodeURIComponent(slug)}`;
+  for (const [name, slug] of slugs) {
+    // One-word names only get linked when they are a whole word; the boundary
+    // test below is what enforces that. A name shorter than three letters is
+    // left alone — "Al" would light up half the prose on the page.
+    if (name.length >= 3) targets.set(name, playerHref(slug));
+  }
+
+  // Longest first, so "Big Brother 1: The Room Decided" wins over "Big
+  // Brother 1" and "Jane Doe" over "Jane".
+  const keys = [...targets.keys()].sort((a, b) => b.length - a.length);
+  const rx = keys.length ? new RegExp(keys.map(rxEsc).join('|'), 'g') : null;
+  const isWord = ch => ch && /[A-Za-z0-9]/.test(ch);
+
+  const text = raw => {
+    const str = String(raw ?? '');
+    if (!str || !rx) return esc(str);
+    let out = '', last = 0, m;
+    rx.lastIndex = 0;
+    while ((m = rx.exec(str))) {
+      const i = m.index;
+      const word = m[0];
+      if (isWord(str[i - 1]) || isWord(str[i + word.length])) { rx.lastIndex = i + 1; continue; }
+      out += esc(str.slice(last, i))
+        + `<a class="wk-link" href="${targets.get(word)}">${esc(word)}</a>`;
+      last = i + word.length;
+      rx.lastIndex = last;
+    }
+    return out + esc(str.slice(last));
+  };
+
+  const slugOfName = name => slugs.get(name) || slugOf(name);
+
+  /** A face. 152 of them exist as files and the article drew none. */
+  const avatar = (name, cls = '') => (name
+    ? `<img class="wk-av ${cls}" src="${root}/assets/avatars/${esc(slugOfName(name))}.png"
+         alt="" loading="lazy" onerror="this.classList.add('is-off')">`
+    : '');
+
+  /** A name, as a face and a link — the chip the tables and lists use. */
+  const person = (name, { face = true } = {}) => {
+    if (!name) return '';
+    const inner = `${face ? avatar(name) : ''}<span>${esc(name)}</span>`;
+    return slugs.has(name)
+      ? `<a class="wk-person" href="${playerHref(slugOfName(name))}">${inner}</a>`
+      : `<span class="wk-person">${inner}</span>`;
+  };
+
+  /** A season, always as a link when the page knows where it lives. */
+  const season = (x, fmt) => {
+    const label = x.title || `${meta(fmt || x.format).name} ${x.season}`;
+    const id = x.seasonId || (fmt === 'big-brother' ? `bb-${x.season}` : x.season);
+    return `<a href="${seasonHref(id)}">${esc(label)}</a>`;
+  };
+
+  return { text, person, avatar, season, slugOfName, knows: name => slugs.has(name) };
+}
+
 /**
  * The infobox: the panel a fandom article opens with.
  *
@@ -68,7 +186,7 @@ const ordinal = n => {
  * reference pages print "TBA" in that spot; a column of them is noise, and the
  * absence says the same thing more honestly.
  */
-function infobox(dossier, show, root) {
+function infobox(dossier, show, root, L) {
   const m = meta(show.format);
   const bio = dossier.bio || {};
 
@@ -169,9 +287,14 @@ function infobox(dossier, show, root) {
       pairs.push(['Idols found', rec.idolsFound ? String(rec.idolsFound) : '']);
       pairs.push(['Team', s.tribe ? esc(s.tribe) : '']);
     }
+    // The three rows that are nothing but other people's names, and the three
+    // that printed them as plain text on a page whose whole business is links.
+    const faces = list => (list || []).length
+      ? `<span class="wk-ib-people">${list.map(n => L.person(n)).join('')}</span>` : '';
     pairs.push(['Alliances', (s.alliances || []).map(esc).join(', ')]);
-    pairs.push(['Loyalties', (s.loyalties || []).map(esc).join(', ')]);
-    pairs.push(['Rivals', (s.rivalries || []).map(esc).join(', ')]);
+    pairs.push(['Loyalties', faces(s.loyalties)]);
+    pairs.push(['Rivals', faces(s.rivalries)]);
+    pairs.push(['Showmance', s.showmance ? L.person(s.showmance) : '']);
     // What a real infobox calls Days. Counted in rounds, because rounds are
     // what this simulator measures — a day count would be invented.
     pairs.push([show.format === 'big-brother' ? 'Weeks' : 'Episodes', rounds ? String(rounds) : '']);
@@ -200,7 +323,7 @@ function infobox(dossier, show, root) {
       <table class="wk-ib-table">${career}</table>` : ''}
     ${seasons.map((s, i) => `
       <div class="wk-ib-season${i === 0 ? ' is-on' : ''}" data-ibx-panel="${s.season}">
-        <div class="wk-ib-head">${s.title ? esc(s.title) : `${esc(m.name)} ${s.season}`}</div>
+        <div class="wk-ib-head">${L.season(s, show.format)}</div>
         <table class="wk-ib-table">${seasonBlock(s)}</table>
       </div>`).join('')}
   </aside>`;
@@ -243,7 +366,7 @@ function _finalTally(vote, winnerName) {
  *      (`story`), and otherwise measured from the record, which is flatter but
  *      never wrong.
  */
-function lead(dossier, show, root) {
+function lead(dossier, show, root, L) {
   const m = meta(show.format);
   const seasons = show.seasons.slice().sort((a, b) => a.season - b.season);
   const link = s => `<a href="${root}/season_ref.html?season=${
@@ -359,7 +482,7 @@ function lead(dossier, show, root) {
 
   let game = '';
   if (written) {
-    game = esc(written);
+    game = L.text(written);
   } else if (notable) {
     const rec = notable.record || {};
     const bb = rec.bb || {};
@@ -391,7 +514,10 @@ function lead(dossier, show, root) {
       : comps >= 2 ? 'a capable competitor'
       : comps === 1 ? 'a competitor who picked their moment'
       : '';
-    const mates = (notable.loyalties || []).slice(0, 3).map(esc);
+    // NAMES ARE LINKS HERE TOO. This paragraph names an alliance's members and
+    // a showmance and the person they beat in the final, and it built all of
+    // them with esc() — the one paragraph on the page most likely to be read.
+    const mates = (notable.loyalties || []).slice(0, 3).map(x => L.person(x, { face: false }));
     const named = (notable.alliances || []).slice(0, 3).map(x => `<em>${esc(x)}</em>`);
     const allianceBit = named.length === 1
       ? `forming a dominant alliance in ${named[0]}${mates.length ? ` with ${joinList(mates)}` : ''}`
@@ -399,7 +525,8 @@ function lead(dossier, show, root) {
         ? `playing through ${joinList(named)}${mates.length ? ` alongside ${joinList(mates)}` : ''}`
         : (mates.length ? `building ${P.pos} game around ${joinList(mates)}` : '');
     const showmanceBit = notable.showmance
-      ? `${mates.includes(esc(notable.showmance)) ? '' : `, with ${esc(notable.showmance)} as ${P.pos} showmance`}`
+      ? `${(notable.loyalties || []).includes(notable.showmance) ? ''
+        : `, with ${L.person(notable.showmance, { face: false })} as ${P.pos} showmance`}`
       : '';
 
     const opener = [];
@@ -435,7 +562,8 @@ function lead(dossier, show, root) {
     //    is the sentence those pages are remembered for.
     const tally = _finalTally(notable.finalVote, dossier.name);
     if (notable.placement === 1) {
-      const beat = notable.runnerUp ? ` over ${esc(String(notable.runnerUp).split(' & ')[0])}` : '';
+      const beat = notable.runnerUp
+        ? ` over ${L.person(String(notable.runnerUp).split(' & ')[0], { face: false })}` : '';
       sentences.push(tally
         ? `In ${tally.close ? 'a close final vote' : 'the final vote'}, ${P.sub} emerged victorious with a ${
             tally.a} to ${tally.b} decision${beat}.`
@@ -479,7 +607,7 @@ function lead(dossier, show, root) {
     || seasons.slice().reverse().find(s => s.personality)?.personality || '';
 
   return `<p class="wk-lead">${career}</p>`
-    + (persona ? `<p class="wk-lead-persona">${esc(persona)}</p>` : '')
+    + (persona ? `<p class="wk-lead-persona">${L.text(persona)}</p>` : '')
     + (game ? `<p class="wk-lead-game">${game}</p>` : '');
 }
 
@@ -605,6 +733,10 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
     : { format, seasons: [], count: 0, wins: 0, best: 99, totals: {} };
 
   const m = meta(format);
+  // Every season and every castmate this article can name, as links and faces.
+  // Built once and handed to everything below, including the infobox and the
+  // lead, so a name is a link wherever it appears.
+  const L = _linker(dossier, root);
   // ── THE SECTION TREE ───────────────────────────────────────────────
   //
   // A fandom article is not a flat list of sections: a season is a heading
@@ -619,9 +751,9 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   // subsection off it. Both ignore empty content, so a season with nothing
   // recorded contributes no heading at all.
   const tree = [];
-  const section = (id, title, html) => {
+  const section = (id, title, html, titleHtml) => {
     if (!html && html !== null) return null;
-    const node = { id, title, html: html || '', subs: [] };
+    const node = { id, title, html: html || '', subs: [], titleHtml: titleHtml || '' };
     tree.push(node);
     return node;
   };
@@ -645,7 +777,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
     if (dossier.backstory) {
       // Authored prose arrives with paragraph breaks; keep them.
       section('biography', 'Biography', String(dossier.backstory).split(/\n\s*\n/)
-        .map(par => `<p>${esc(par.trim())}</p>`).join(''));
+        .map(par => `<p>${L.text(par.trim())}</p>`).join(''));
     }
   }
 
@@ -679,12 +811,12 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   {
     const rows = parseInterview(dossier.castingInterview);
     const bits = [];
-    if (dossier.personality) bits.push(`<p>${esc(dossier.personality)}</p>`);
+    if (dossier.personality) bits.push(`<p>${L.text(dossier.personality)}</p>`);
     if (rows.length) {
       bits.push(`<details class="wk-iv">
         <summary class="wk-iv-sum">${esc(dossier.name)} Biography</summary>
         <dl class="wk-iv-body">${rows.map(r => `
-          <dt>${esc(r.q)}</dt><dd>${esc(r.a)}</dd>`).join('')}</dl>
+          <dt>${esc(r.q)}</dt><dd>${L.text(r.a)}</dd>`).join('')}</dl>
       </details>`);
     }
     if (bits.length) section('personality', 'Personality', bits.join(''));
@@ -699,8 +831,8 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   if (quoted.length) {
     section('quotes', 'Quotes', quoted.map(s2 => `
       <ul class="wk-quotes">${s2.quotes.map(q => `<li>
-        <blockquote>&ldquo;${esc(typeof q === 'string' ? q : q.text)}&rdquo;</blockquote>
-        ${typeof q === 'object' && q.context ? `<cite>${esc(q.context)}</cite>` : ''}
+        <blockquote>&ldquo;${L.text(typeof q === 'string' ? q : q.text)}&rdquo;</blockquote>
+        ${typeof q === 'object' && q.context ? `<cite>${L.text(q.context)}</cite>` : ''}
       </li>`).join('')}</ul>`).join(''));
   }
 
@@ -716,14 +848,18 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
     // The reference wiki writes "The Mad House 7" because its season titles are
     // bare numbers. Ours already carry the show's name, so the article prefix
     // produced "The Total Drama All-Stars". The title stands on its own.
+    // The heading links to the season, the way every heading on a fandom
+    // article that names one does. It was the only place the article printed a
+    // season's title and did not.
     const node = section(`s${s2.season}`,
-      s2.title || `${m.name} ${s2.season}`, null);   // section() escapes it
+      s2.title || `${m.name} ${s2.season}`, null,
+      L.season(s2, show.format));
 
     // 2.1 Summary — the season's narrative, and the moments that made it.
     const summary = [];
-    if (s2.story) summary.push(`<p>${esc(s2.story)}</p>`);
+    if (s2.story) summary.push(`<p>${L.text(s2.story)}</p>`);
     if (s2.keyMoments?.length) {
-      summary.push(`<ul class="wk-list">${s2.keyMoments.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`);
+      summary.push(`<ul class="wk-list">${s2.keyMoments.map(x => `<li>${L.text(x)}</li>`).join('')}</ul>`);
     }
     if (!summary.length) {
       summary.push(`<p class="wk-thin">Placed ${ordinal(s2.placement)}${
@@ -741,7 +877,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
         <div class="wk-scroll">
           <table class="wk-table wk-weeks">
             <thead><tr><th>Week</th>${rows.map(w => `<th>${w.week}</th>`).join('')}</tr></thead>
-            <tbody><tr><th>${esc(dossier.name)}</th>${rows.map(w =>
+            <tbody><tr><th>${L.avatar(dossier.name)}${esc(dossier.name)}</th>${rows.map(w =>
               `<td class="${w.haveNot ? 'wk-c-out' : ''}">${w.haveNot ? 'Have-Not' : 'Have'}</td>`).join('')}</tr></tbody>
           </table>
         </div>
@@ -751,27 +887,66 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
 
     // 2.3 Voting History — the grid, and the ballot they cast.
     if (rows.length) {
+      // ── THE CELL SAYS WHERE THEY ENDED THE WEEK ────────────────────
+      //
+      // The first version was a priority list — HOH, evicted, arena, veto,
+      // nominated — and one label per cell, which meant every week said only
+      // its highest-ranked fact. A houseguest nominated on Sunday who won the
+      // veto and took himself off read as a bare "Veto", identical to the
+      // houseguest who won it from the sofa and never had anything to fear.
+      // The only rescue that showed at all was the Block Buster.
+      //
+      // So the cell is now the FINAL BLOCK — where they actually were when the
+      // house voted — plus the marks that got them there. "Nominated" is
+      // reserved for somebody still sitting there at the vote; anybody who came
+      // off says how, and a week that was both (HOH one week, block the next)
+      // can no longer hide half of itself.
       const cell = w => {
-        if (w.hoh) return ['HOH', 'wk-c-hoh'];
-        if (w.evicted) return [isHouse ? 'Evicted' : 'Voted out', 'wk-c-out'];
-        if (w.arenaWon) return ['Block Buster', 'wk-c-arena'];
-        if (w.veto) return ['Veto', 'wk-c-veto'];
-        if (w.onBlock || w.nominated) return ['Nominated', 'wk-c-nom'];
-        return ['', ''];
+        if (w.evicted) return { label: isHouse ? 'Evicted' : 'Voted out', cls: 'wk-c-out', marks: [] };
+        const marks = [];
+        if (w.hoh) marks.push(['H', 'Head of Household']);
+        if (w.veto) marks.push(['V', w.vetoOnSelf ? 'Won the veto and used it on themselves' : 'Won the Power of Veto']);
+        if (w.arenaWon) marks.push(['B', 'Won the Block Buster']);
+        let label = '', cls = '';
+        if (w.onBlock) {
+          label = 'Nominated'; cls = 'wk-c-nom';
+        } else if (w.vetoOnSelf) {
+          label = 'Saved'; cls = 'wk-c-veto';        // won the veto, used it on themselves
+        } else if (w.arenaWon) {
+          label = 'Won arena'; cls = 'wk-c-arena';
+        } else if (w.savedByVeto) {
+          label = 'Taken off'; cls = 'wk-c-veto';     // somebody else's veto
+        } else if (w.hoh) {
+          label = 'HOH'; cls = 'wk-c-hoh';
+        } else if (w.veto) {
+          label = 'Veto'; cls = 'wk-c-veto';
+        } else if (w.nominated) {
+          // Nominated, off the block, and not by a veto or the arena — the
+          // week was voided, or the record only knows half of it. Said
+          // plainly rather than dropped.
+          label = 'Nominated'; cls = 'wk-c-nom';
+        }
+        return { label, cls, marks };
       };
-      const marked = rows.some(w => cell(w)[0]);
+      const drawn = rows.map(cell);
+      const marked = drawn.some(c => c.label || c.marks.length);
       const votedAny = rows.some(w => w.votedFor);
       sub(node, `s${s2.season}-votes`, 'Voting History', `
         <div class="wk-scroll">
           <table class="wk-table wk-weeks">
             <thead><tr><th>${roundWord}</th>${rows.map(w => `<th>${w.week}</th>`).join('')}</tr></thead>
             <tbody>
-              ${marked ? `<tr><th>${esc(dossier.name)}</th>${rows.map(w => {
-                const [label, cls] = cell(w);
-                return `<td class="${cls}">${label}</td>`;
-              }).join('')}</tr>` : ''}
-              ${votedAny ? `<tr class="wk-weeks-sub"><th>Voted for</th>${rows.map(w =>
-                `<td>${esc(w.votedFor || '')}</td>`).join('')}</tr>` : ''}
+              ${marked ? `<tr><th>${L.avatar(dossier.name)}${esc(dossier.name)}</th>${drawn.map(c =>
+                `<td class="${c.cls}">${c.marks.length ? `<span class="wk-marks">${c.marks.map(([ch, tip]) =>
+                  `<i class="wk-m wk-m-${ch}" title="${esc(tip)}">${ch}</i>`).join('')}</span>` : ''}${
+                  c.label ? `<span class="wk-cell-l">${esc(c.label)}</span>` : ''}</td>`).join('')}</tr>` : ''}
+              ${votedAny ? `<tr class="wk-weeks-sub"><th>Voted to evict</th>${rows.map(w =>
+                // WITH THE FACE. A grid of thirteen names is a grid a reader
+                // has to read; a row of faces is one they can scan, which is
+                // the whole reason the reference pages carry portraits here.
+                `<td>${w.votedFor
+                  ? `<span class="wk-ballot">${L.avatar(w.votedFor)}${L.person(w.votedFor, { face: false })}</span>`
+                  : ''}</td>`).join('')}</tr>` : ''}
               <tr class="wk-weeks-sub"><th>Votes against</th>${rows.map(w =>
                 `<td>${w.votesAgainst || ''}</td>`).join('')}</tr>
             </tbody>
@@ -782,8 +957,10 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
           const n = f => rows.filter(f).length;
           if (n(w => w.hoh)) bits.push(`${n(w => w.hoh)}x Head of Household`);
           if (n(w => w.veto)) bits.push(`${n(w => w.veto)}x Power of Veto`);
+          if (n(w => w.vetoOnSelf)) bits.push(`saved themselves with it ${n(w => w.vetoOnSelf)}x`);
           if (n(w => w.arenaPlayed)) bits.push(`in the Block Buster ${n(w => w.arenaPlayed)}x, winning ${n(w => w.arenaWon)}`);
           if (n(w => w.nominated)) bits.push(`nominated ${n(w => w.nominated)}x`);
+          if (n(w => w.onBlock)) bits.push(`on the block at the vote ${n(w => w.onBlock)}x`);
           const against = rows.reduce((t, w) => t + (w.votesAgainst || 0), 0);
           bits.push(`${rows.length} ${rows.length === 1 ? roundWord.toLowerCase() : `${roundWord.toLowerCase()}s`} played`);
           bits.push(against ? `${against} vote${against === 1 ? '' : 's'} cast against them`
@@ -867,22 +1044,29 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   // Relationships, when any are on record for this show.
   const rel = dossier.relationships || {};
   const relBits = [];
+  // WITH FACES. This section is entirely about other people and it was a list
+  // of bare names, only one of which was even a link.
+  const people = (list, label, cls) => (list.length
+    ? `<div class="wk-rel"><div class="wk-rel-k">${esc(label)}</div>
+        <div class="wk-rel-v ${cls}">${list.map(n => L.person(n)).join('')}</div></div>`
+    : '');
   if (dossier.couple) {
-    relBits.push(`<p><strong>${esc(dossier.couple.partner)}</strong> — ${
-      dossier.couple.together
-        ? `together since season ${dossier.couple.since}`
-        : `ended in season ${dossier.couple.season}${dossier.couple.endedBy ? ` at the ${esc(dossier.couple.endedBy)}` : ''}`}</p>`);
+    relBits.push(`<div class="wk-rel"><div class="wk-rel-k">${
+      dossier.couple.together ? 'Together with' : 'Was with'}</div>
+      <div class="wk-rel-v">${L.person(dossier.couple.partner)}
+        <span class="wk-rel-note">${dossier.couple.together
+          ? `together since ${esc(m.name)} ${esc(String(dossier.couple.since))}`
+          : `ended in ${esc(m.name)} ${esc(String(dossier.couple.season))}${
+            dossier.couple.endedBy ? ` at the ${esc(dossier.couple.endedBy)}` : ''}`}</span>
+      </div></div>`);
   }
-  if (rel.bonds?.length) {
-    relBits.push(`<p><em>Closest to:</em> ${rel.bonds.map(b =>
-      `<a href="${root}/player.html?player=${esc(slugOf(b.name))}">${esc(b.name)}</a>`).join(', ')}</p>`);
-  }
+  relBits.push(people((rel.bonds || []).map(b => b.name), 'Closest to', ''));
   if (rel.alliances?.length) {
-    relBits.push(`<p><em>Alliances:</em> ${rel.alliances.map(a => esc(a.name)).join(', ')}</p>`);
+    relBits.push(`<div class="wk-rel"><div class="wk-rel-k">Alliances</div>
+      <div class="wk-rel-v">${rel.alliances.map(a =>
+        `<span class="wk-tag">${esc(a.name)}</span>`).join('')}</div></div>`);
   }
-  if (rel.rivalries?.length) {
-    relBits.push(`<p><em>Rivals:</em> ${rel.rivalries.map(r => esc(r.rival)).join(', ')}</p>`);
-  }
+  relBits.push(people((rel.rivalries || []).map(r => r.rival).filter(Boolean), 'Rivals', 'is-rival'));
   section('relationships', 'Relationships', relBits.join(''));
 
   // ── LIFE OUTSIDE THE GAME ──────────────────────────────────────────
@@ -900,7 +1084,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
     const life = dossier.life || [];
     if (life.length) {
       const rows = life.map(e => `<li>${e.when ? `<em>${esc(e.when)}</em> — ` : ''}${
-        esc(e.line)}${e.detail ? ` ${esc(e.detail)}` : ''}</li>`);
+        L.text(e.line)}${e.detail ? ` ${L.text(e.detail)}` : ''}</li>`);
       section('life', 'Life outside the game', `<ul class="wk-list">${rows.join('')}</ul>`);
     }
   }
@@ -953,7 +1137,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   // Trivia — records held, and the facts worth knowing.
   const trivia = (dossier.records || [])
     .filter(r => !r.show || r.show === m.name)
-    .map(r => `<li>${esc(r.category)} — ${esc(r.stat)}</li>`);
+    .map(r => `<li>${esc(r.category)} — ${L.text(r.stat)}</li>`);
   // ── COMPUTED, NOT WRITTEN ──
   //
   // "the fourth contestant to win the game, following Lindsay, Duncan and
@@ -964,12 +1148,12 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   //
   // js/player-trivia.js declines to state anything its sample cannot support,
   // so a first season contributes almost nothing here. That is correct.
-  for (const t of dossier.computedTrivia?.[format] || []) trivia.push(`<li>${esc(t)}</li>`);
+  for (const t of dossier.computedTrivia?.[format] || []) trivia.push(`<li>${L.text(t)}</li>`);
   // Facts the episodes support, which is where the interesting ones are: a
   // record table can say somebody won two vetoes and never that they did it
   // in the same shirt both times.
   for (const s2 of show.seasons) {
-    for (const t of s2.trivia || []) trivia.push(`<li>${esc(t)}</li>`);
+    for (const t of s2.trivia || []) trivia.push(`<li>${L.text(t)}</li>`);
   }
   if (show.wins) trivia.push(`<li>Won ${show.wins === 1 ? 'a season' : `${show.wins} seasons`} of ${esc(m.name)}.</li>`);
   // "Played 4 seasons" is not written here any more: the computed line above
@@ -994,7 +1178,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
 
   const bodyHtml = drawn.map(node => `
     <section class="wk-section" id="wk-${node.id}">
-      <h2>${esc(node.title)}</h2>
+      <h2>${node.titleHtml || esc(node.title)}</h2>
       ${node.html}
       ${node.subs.map(x => `<section class="wk-subsection" id="wk-${x.id}">
         <h3>${esc(x.title)}</h3>${x.html}</section>`).join('')}
@@ -1006,9 +1190,9 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
 
   return `
   <article class="wk-article" style="--wk-accent:${m.accent}">
-    ${infobox(dossier, show, root)}
+    ${infobox(dossier, show, root, L)}
     <div class="wk-main">
-      ${lead(dossier, show, root)}
+      ${lead(dossier, show, root, L)}
       ${drawn.length > 2 ? `<nav class="wk-contents"><b>Contents</b><ol>${contentsHtml}</ol></nav>` : ''}
       ${bodyHtml}
     </div>
@@ -1198,6 +1382,63 @@ export const WIKI_CSS = `
   font:inherit; font-weight:700;
 }
 .wk-btn:hover{ border-color:var(--wk-accent); }
+
+/* ── LINKS AND FACES ─────────────────────────────────────────────────
+   A wiki links, and this article's prose did not: every season it named and
+   every castmate it named was flat text. The linker turns both into these. */
+.wk-main a{ color:var(--wk-accent); }
+.wk-link{ text-decoration:none; border-bottom:1px solid color-mix(in srgb, var(--wk-accent) 40%, transparent); }
+.wk-link:hover{ border-bottom-color:var(--wk-accent); }
+/* A face. 18px, round, and it removes itself when there is no file rather than
+   leaving a broken-image box in the middle of a sentence. */
+.wk-av{
+  width:18px; height:18px; border-radius:50%; object-fit:cover; flex:0 0 auto;
+  background:rgba(255,255,255,.07); vertical-align:-4px; margin-right:5px;
+}
+.wk-av.is-off{ display:none; }
+.wk-person{
+  display:inline-flex; align-items:center; gap:0; text-decoration:none;
+  color:var(--wk-accent); font-weight:600; white-space:nowrap;
+}
+.wk-person:hover span{ text-decoration:underline; }
+.wk-ballot{ display:inline-flex; align-items:center; }
+.wk-ib-people{ display:flex; flex-wrap:wrap; gap:4px 10px; }
+/* The relationships block: a label and a row of faces, not a paragraph. */
+.wk-rel{ display:flex; gap:12px; align-items:baseline; margin:0 0 10px; flex-wrap:wrap; }
+.wk-rel-k{
+  flex:0 0 96px; font-size:11.5px; letter-spacing:.07em; text-transform:uppercase;
+  opacity:.55; font-weight:700;
+}
+.wk-rel-v{ display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; font-size:14px; }
+.wk-rel-v.is-rival .wk-person{ color:#fca5a5; }
+.wk-rel-note{ opacity:.6; font-size:12.5px; font-weight:500; }
+.wk-tag{
+  padding:3px 9px; border-radius:999px; font-size:12px; font-weight:700;
+  border:1px solid color-mix(in srgb, var(--wk-accent) 35%, transparent);
+  background:color-mix(in srgb, var(--wk-accent) 12%, transparent);
+}
+/* The marks inside a week cell — H, V, B — above the word for where that week
+   left them. One cell can now say "won the veto AND was still nominated",
+   which the single-label version could never do. */
+.wk-marks{ display:flex; gap:3px; justify-content:center; margin-bottom:2px; }
+.wk-m{
+  width:15px; height:15px; border-radius:4px; font-style:normal; font-size:9.5px;
+  font-weight:900; display:inline-flex; align-items:center; justify-content:center;
+  color:#0b0a14;
+}
+.wk-m-H{ background:#facc15; }
+.wk-m-V{ background:#38bdf8; }
+.wk-m-B{ background:#4fbf8b; }
+.wk-cell-l{ display:block; }
+.wk-weeks td{ vertical-align:middle; }
+.wk-weeks tbody th .wk-av{ vertical-align:-5px; }
+/* A season title inside the coloured plate keeps the plate's colour. */
+.wk-ib-head a{ color:inherit; text-decoration:none; }
+.wk-ib-head a:hover{ text-decoration:underline; }
+/* A linked season heading is still a heading. */
+.wk-section h2 a{ color:inherit; text-decoration:none;
+  border-bottom:2px solid color-mix(in srgb, var(--wk-accent) 45%, transparent); }
+.wk-section h2 a:hover{ border-bottom-color:var(--wk-accent); }
 
 /* The tab strip that chooses Profile or Wiki. */
 .pp-viewtabs{ display:flex; gap:6px; margin:18px 0 4px; border-bottom:1px solid var(--stroke); }

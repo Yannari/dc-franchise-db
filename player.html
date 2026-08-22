@@ -214,7 +214,10 @@ function formatPlayerStory(storyText, player) {
         .replace(/(\d+)[–\-](\d+)(?:[–\-](\d+))?/g,
           '<span class="stats-highlight">$&</span>');
 
-      return '<p>' + formatted + '</p>';
+      /* Names last, so a castmate mentioned in the story goes to their page —
+         the paragraph is already HTML by here and the linkifier only touches
+         what sits between the tags. */
+      return '<p>' + _ppLinkPeople(formatted) + '</p>';
     }).join('');
 
     // Try to get season info from player data
@@ -334,7 +337,10 @@ function formatPlayerStory(storyText, player) {
           .replace(/(\d+)[–\-](\d+)(?:[–\-](\d+))?/g, 
             '<span class="stats-highlight">$&</span>');
         
-        return '<p>' + formatted + '</p>';
+        /* Names last, so a castmate mentioned in the story goes to their page —
+         the paragraph is already HTML by here and the linkifier only touches
+         what sits between the tags. */
+      return '<p>' + _ppLinkPeople(formatted) + '</p>';
       }).join('');
       
       html += '<div class="season-section">' +
@@ -363,7 +369,7 @@ function formatPlayerStory(storyText, player) {
       .replace(/(\d+)[–\-](\d+)(?:[–\-](\d+))?/g, 
         '<span class="stats-highlight">$&</span>');
     
-    return '<p>' + formatted + '</p>';
+    return '<p>' + _ppLinkPeople(formatted) + '</p>';
   }).join('');
   
   return '<div class="season-body" style="border-left: none;">' + formattedParagraphs + '</div>';
@@ -1133,6 +1139,61 @@ function _profileStyles(tc) {
   .pc.votes{background:rgba(255,92,122,.09);border-color:rgba(255,92,122,.28);color:#ff7a96;}
   .pc.rank{background:rgba(52,211,153,.09);border-color:rgba(52,211,153,.28);color:#34d399;}
   .pc.style{background:rgba(245,158,11,.09);border-color:rgba(245,158,11,.28);color:#f59e0b;}
+  /* ── the trophy case ────────────────────────────────────────────────────
+     Career at a Glance used to be four bars and a row of grey chips, which is
+     the same picture for a two-time winner and for somebody who went out first
+     twice. Rings for the headline numbers, an arc for the shape of the career,
+     and a shelf for the honours the record can actually support. */
+  .pp-medals{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px;}
+  .pp-med{position:relative;flex:1 1 120px;min-width:112px;max-width:170px;
+    padding:12px 8px 11px;border-radius:16px;text-align:center;
+    background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.09);overflow:hidden;
+    transition:transform .18s,border-color .18s;}
+  .pp-med:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.22);}
+  .pp-med-ring{position:absolute;inset:0;margin:auto;width:86px;height:86px;top:6px;bottom:auto;
+    left:0;right:0;transform:rotate(-90deg);}
+  .pp-med-track{fill:none;stroke:rgba(255,255,255,.07);stroke-width:6;}
+  .pp-med-fill{fill:none;stroke-width:6;stroke-linecap:round;
+    transition:stroke-dasharray .8s cubic-bezier(.22,1,.36,1);}
+  .pp-med-v{position:relative;height:86px;display:grid;place-items:center;
+    font-family:var(--font-samdan,'Samdan',sans-serif);
+    font-size:1.75rem;font-weight:700;line-height:1;}
+  .pp-med-l{position:relative;margin-top:2px;font-size:10px;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--muted);font-weight:700;}
+  /* the arc: every placement, in the order they were played */
+  .pp-arc{padding:12px 14px 6px;border-radius:16px;margin:0 0 14px;
+    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);}
+  .pp-arc-h{font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:800;
+    color:#e6e0f0;margin-bottom:2px;}
+  .pp-arc-h span{margin-left:8px;letter-spacing:.02em;text-transform:none;font-weight:500;
+    font-size:11px;color:var(--muted);}
+  .pp-arc-svg{width:100%;height:auto;display:block;overflow:visible;}
+  .pp-arc-gl{stroke:rgba(255,255,255,.09);stroke-width:1;stroke-dasharray:3 5;}
+  .pp-arc-ax{fill:var(--muted);font-size:10px;font-weight:700;}
+  .pp-arc-line{fill:none;stroke:rgba(167,139,250,.55);stroke-width:2.5;stroke-linejoin:round;
+    stroke-linecap:round;}
+  .pp-arc-dot{fill:#1a1327;stroke:#a78bfa;stroke-width:2.5;transition:r .15s;}
+  .pp-arc-dot.is-win{fill:#f59e0b;stroke:#fde68a;}
+  .pp-arc-pt{cursor:pointer;}
+  .pp-arc-pt:hover .pp-arc-dot{stroke:#fff;}
+  .pp-arc-n{fill:#fff;font-size:12px;font-weight:800;}
+  .pp-arc-s{fill:var(--muted);font-size:11px;font-weight:700;letter-spacing:.05em;}
+  /* the honours shelf */
+  .pp-honours{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 16px;}
+  .pp-hon{display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 9px;
+    border-radius:999px;font-size:12px;font-weight:700;color:#d9d2e6;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);}
+  .pp-hon i{font-style:normal;font-size:14px;line-height:1;}
+  .pp-hon.is-gold{background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.42);color:#fbbf24;}
+  .pp-hon.is-silver{background:rgba(203,213,225,.12);border-color:rgba(203,213,225,.35);color:#e2e8f0;}
+  .pp-hon.is-purple{background:rgba(167,139,250,.13);border-color:rgba(167,139,250,.4);color:#c4b5fd;}
+  .pp-hon.is-green{background:rgba(79,191,139,.13);border-color:rgba(79,191,139,.38);color:#6ee7b7;}
+  .pp-hon.is-blue{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.35);color:#7dd3fc;}
+  .pp-hon.is-red{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.35);color:#fca5a5;}
+  @media(prefers-reduced-motion:reduce){
+    .pp-med,.pp-med-fill{transition:none;}
+  }
   /* ── the run: one season, week by week, as a strip ──────────────────────
      A wiki draws this as a table with a row per week and the word "Nominated"
      typed into a cell, which takes fifteen rows to say a shape you can read in
@@ -1140,7 +1201,7 @@ function _profileStyles(tc) {
      much danger they were in and the badges are what they won. */
   .pp-run{overflow:hidden;}
   .pp-run-strip{display:flex;gap:5px;overflow-x:auto;padding:2px 0 8px;}
-  .pp-wk{flex:0 0 auto;width:42px;border-radius:10px;padding:6px 0 0;text-align:center;
+  .pp-wk{flex:0 0 auto;width:46px;border-radius:10px;padding:6px 0 0;text-align:center;
     background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);
     position:relative;transition:transform .15s,border-color .15s;cursor:default;}
   .pp-wk:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.3);}
@@ -1150,6 +1211,20 @@ function _profileStyles(tc) {
     font-weight:900;display:grid;place-items:center;color:#160c22;}
   .m-h{background:#facc15;} .m-v{background:#38bdf8;} .m-b{background:#c084fc;}
   .m-x{background:rgba(255,255,255,.14);color:#ff9db3;}
+  /* Nominated AT ANY POINT in the week. Without it, a nominee who won the veto
+     and took himself down was drawn exactly like somebody who won it from the
+     sofa — the pip is the difference between a rescue and a stroll. */
+  .m-n{background:#f87171;color:#2a0a12;}
+  /* Who they wrote down that week. The strip could always say what happened to
+     somebody and never what they did about it. */
+  .pp-wk-vote{display:flex;justify-content:center;padding:0 0 5px;}
+  .pp-wk-face{width:20px;height:20px;border-radius:50%;object-fit:cover;
+    border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);display:block;}
+  .pp-wk-face.is-blank{border-style:dashed;border-color:rgba(255,255,255,.08);background:none;}
+  .pp-run-key-m i{width:13px;height:13px;border-radius:50%;font-style:normal;font-size:8px;
+    font-weight:900;display:inline-grid;place-items:center;color:#160c22;margin:0 3px 0 8px;
+    vertical-align:-2px;}
+  .pp-run-key-f{opacity:.75;}
   /* the floor of the tile carries the week's verdict */
   .pp-wk-bar{height:4px;border-radius:0 0 9px 9px;background:rgba(255,255,255,.07);}
   .pp-wk.is-pow{background:rgba(250,204,21,.1);border-color:rgba(250,204,21,.3);}
@@ -1190,6 +1265,15 @@ function _profileStyles(tc) {
   .pp-ally:hover{background:rgba(52,211,153,.18);}
   .pp-rival{background:rgba(255,92,122,.09);border:1px solid rgba(255,92,122,.28);color:#ff7a96;}
   .pp-rival:hover{background:rgba(255,92,122,.18);}
+  /* A castmate named in the prose. Underlined rather than coloured loudly —
+     a paragraph with nine names in it should still read as a paragraph. */
+  .pp-nlink{color:#c4b5fd;text-decoration:none;border-bottom:1px solid rgba(167,139,250,.4);}
+  .pp-nlink:hover{color:#fff;border-bottom-color:#a78bfa;}
+  .pp-face{width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:1px;
+    border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);}
+  .pp-face.is-fb{display:grid;place-items:center;font-size:11px;}
+  .pp-ally.is-group,.pp-rival.is-group{opacity:.92;}
+  .pp-ally.is-group::before{content:'✦';margin-right:2px;opacity:.7;}
   .pp-story{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
     border-left:4px solid ${tc.color};border-radius:0 14px 14px 0;
     padding:24px 28px;line-height:1.85;font-size:15px;color:#d0c8e0;}
@@ -1546,8 +1630,167 @@ function renderPlayerProfile(fullPlayer) {
     html += `<div class="pp-why"><div class="pp-why-lbl">Why ${tier} Tier</div>${player.reasoning}</div>`;
   }
 
-  // ── CAREER STATS ─────────────────────────────────────────
+  // ── CAREER AT A GLANCE ───────────────────────────────────
+  //
+  // THE TROPHY CASE, NOT THE SPREADSHEET.
+  //
+  // This was four progress bars and a row of grey chips: correct, and the same
+  // shape whether it belonged to a two-time winner or to somebody who went out
+  // first, twice. A career has a SHAPE — where they finished each time, what
+  // they won, what they survived — and none of it was drawn.
+  //
+  // Three things now. Medallions for the numbers a reader came for, an arc of
+  // every placement in order so a career reads as a line rather than a total,
+  // and the honours the record actually supports. The bars stayed, per show,
+  // underneath: they are the detail behind the medallions.
   html += `<div class="pp-section pp-reveal"><h2>Career at a Glance</h2><span class="pp-pill">${seasonsLabel}</span></div>`;
+
+  {
+    const _esc = t => String(t == null ? '' : t)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+    const _ord = n => {
+      const v = Number(n);
+      if (!Number.isFinite(v)) return '—';
+      const t = v % 100;
+      if (t >= 11 && t <= 13) return `${v}th`;
+      return `${v}${['th', 'st', 'nd', 'rd'][v % 10] || 'th'}`;
+    };
+    /* Every competition they ever won, across both shows — a Big Brother HOH
+       and a Total Drama immunity are both "I beat everybody that day", and no
+       single stored counter adds them up. */
+    const compWins = _showList.reduce((n, f) => {
+      const c = _careers[f] || {};
+      const bb = player.byShow?.[f] || {};
+      return n + (Number(c.challengeWins) || 0)
+        + (Number(bb.hohWins) || 0) + (Number(bb.vetoWins) || 0) + (Number(bb.blockBusterWins) || 0);
+    }, 0) || (player.totalChallengeWins || 0);
+    const votesAgainst = player.totalVotesAgainst || 0;
+    const juryVotes = player.totalJuryVotes || 0;
+    const best = Number(player.bestPlacement) || null;
+
+    /* A ring, not a bar: a bar says "seven out of a maximum somebody chose for
+       you", a ring says "seven" first and the proportion second, which is the
+       right order for a headline number. */
+    const ring = (value, label, frac, color, note) => {
+      const R = 34, C = 2 * Math.PI * R;
+      // A zero ring draws NOTHING. stroke-linecap:round on a zero-length dash
+      // paints a dot at twelve o'clock, which reads as a sliver of progress on
+      // the one number that has none.
+      const f = Math.max(0, Math.min(1, Number(frac) || 0));
+      const on = f * C;
+      return `<div class="pp-med" title="${_esc(note || label)}">
+        <svg viewBox="0 0 80 80" class="pp-med-ring" aria-hidden="true">
+          <circle cx="40" cy="40" r="${R}" class="pp-med-track"></circle>
+          ${f ? `<circle cx="40" cy="40" r="${R}" class="pp-med-fill"
+            style="stroke:${color};stroke-dasharray:${on.toFixed(1)} ${(C - on).toFixed(1)}"></circle>` : ''}
+        </svg>
+        <div class="pp-med-v" style="color:${color}">${value}</div>
+        <div class="pp-med-l">${_esc(label)}</div>
+      </div>`;
+    };
+
+    const meds = [
+      ring(player.totalSeasons, 'Seasons', (player.totalSeasons || 0) / 6, '#a78bfa',
+        String(seasonsLabel).replace(/&nbsp;/g, ' ').replace(/<[^>]*>/g, '')),
+      ring(player.wins, player.wins === 1 ? 'Win' : 'Wins',
+        player.totalSeasons ? player.wins / player.totalSeasons : 0, '#f59e0b',
+        player.wins ? `Won ${player.wins} of ${player.totalSeasons}` : 'No win yet'),
+      ring(best ? `#${best}` : '—', 'Best Finish', best ? 1 / best : 0, '#38bdf8',
+        best === 1 ? 'Won it' : `Best finish: ${best ? _ord(best) : 'unplaced'}`),
+      ring(compWins, 'Comps Won', compWins / 12, '#4fbf8b',
+        'Challenges, HOHs, vetoes and Block Busters together'),
+      ring(votesAgainst, 'Votes Against', votesAgainst / 25, '#f87171',
+        'Every vote ever cast to send them home'),
+    ];
+    if (juryVotes) {
+      meds.push(ring(juryVotes, 'Jury Votes', juryVotes / 9, '#fbbf24',
+        'Votes cast for them to win'));
+    }
+    html += `<div class="pp-medals pp-reveal">${meds.join('')}</div>`;
+
+    // ── THE PLACEMENT ARC ────────────────────────────────────
+    //
+    // Every season in order, with how far they got. A returnee's whole story is
+    // the SHAPE of this line — out early, back, and won it — and the page said
+    // it as two numbers in a grey chip.
+    const arcSeasons = player.seasonDetails.slice()
+      .sort((a, b) => (a.season - b.season))
+      .filter(sd => Number(sd.placement) > 0);
+    // TWO SEASONS OR MORE. A one-season career has no arc — a single dot in a
+    // 172px box is a chart drawn out of one number, and the Season History
+    // panel immediately below says the same thing with the detail attached.
+    if (arcSeasons.length > 1) {
+      const W = 720, H = 172, padX = 46, padT = 30, padB = 40;
+      const worst = Math.max(6, ...arcSeasons.map(sd => Number(sd.placement)));
+      const xOf = i => (arcSeasons.length === 1 ? W / 2
+        : padX + i * ((W - padX * 2) / (arcSeasons.length - 1)));
+      const yOf = pl => padT + ((Number(pl) - 1) / Math.max(1, worst - 1)) * (H - padT - padB);
+      const pts = arcSeasons.map((sd, i) => ({ sd, x: xOf(i), y: yOf(sd.placement) }));
+      const path = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+      // The ceiling of the chart is the win and the floor is last place, so a
+      // dot has something to be high or low against.
+      const dots = pts.map(p => {
+        const won = Number(p.sd.placement) === 1;
+        const r = refOf(p.sd);
+        const title = `${r.label} — ${_ord(p.sd.placement)}${p.sd.status ? ` · ${p.sd.status}` : ''}`;
+        return `<a href="season_ref.html?season=${_esc(r.href)}" class="pp-arc-pt">
+          <title>${_esc(title)}</title>
+          <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${won ? 9 : 6.5}"
+            class="pp-arc-dot${won ? ' is-win' : ''}"></circle>
+          <text x="${p.x.toFixed(1)}" y="${(p.y - 15).toFixed(1)}" class="pp-arc-n"
+            text-anchor="middle">${won ? '★' : `#${p.sd.placement}`}</text>
+          <text x="${p.x.toFixed(1)}" y="${H - 12}" class="pp-arc-s"
+            text-anchor="middle">${_esc(r.label)}</text>
+        </a>`;
+      }).join('');
+      html += `<div class="pp-arc pp-reveal">
+        <div class="pp-arc-h">Placement arc <span>every season, in the order they played them</span></div>
+        <svg viewBox="0 0 ${W} ${H}" class="pp-arc-svg" role="img"
+             aria-label="Placement in each season">
+          <line x1="${padX - 20}" x2="${W - padX + 20}" y1="${padT}" y2="${padT}" class="pp-arc-gl"></line>
+          <line x1="${padX - 20}" x2="${W - padX + 20}" y1="${H - padB}" y2="${H - padB}" class="pp-arc-gl"></line>
+          <text x="6" y="${padT + 4}" class="pp-arc-ax">#1</text>
+          <text x="6" y="${H - padB + 4}" class="pp-arc-ax">#${worst}</text>
+          <path d="${path}" class="pp-arc-line"></path>
+          ${dots}
+        </svg>
+      </div>`;
+    }
+
+    // ── HONOURS ──────────────────────────────────────────────
+    //
+    // Written from the record and nowhere else: every line below is a counter
+    // that has to clear a bar before it is allowed to say anything. A shelf
+    // that awards everybody something is wallpaper.
+    const badges = [];
+    const add = (icon, text, cls) => badges.push(
+      `<span class="pp-hon ${cls || ''}"><i>${icon}</i>${_esc(text)}</span>`);
+    if (player.wins > 1) add('👑', `${player.wins}-time winner`, 'is-gold');
+    else if (player.wins === 1) add('🏆', 'Champion', 'is-gold');
+    if (best === 2) add('🥈', 'Runner-up', 'is-silver');
+    if (player.totalSeasons >= 3) add('🔁', `${player.totalSeasons}-time player`, 'is-purple');
+    else if (player.totalSeasons === 2) add('🔁', 'Returnee', 'is-purple');
+    if (compWins >= 8) add('⚡', `${compWins} competitions won`, 'is-green');
+    else if (compWins >= 4) add('⚡', `${compWins} comp wins`, 'is-green');
+    if (juryVotes >= 5) add('⚖️', `${juryVotes} jury votes`, 'is-gold');
+    if (advantagesPlayed >= 3) add('🃏', `${advantagesPlayed} advantages played`, 'is-purple');
+    if (votesAgainst >= 15) add('🎯', `Survived ${votesAgainst} votes`, 'is-red');
+    else if (player.totalSeasons && !votesAgainst) add('🕊️', 'Never had a vote cast against them', 'is-blue');
+    {
+      // Big Brother's own honours, which the shelf above has no equivalent for.
+      const bbT = _showList.reduce((o, f) => {
+        const b = player.byShow?.[f] || {};
+        o.hoh += b.hohWins || 0; o.veto += b.vetoWins || 0;
+        o.arena += b.blockBusterWins || 0; o.noms += b.timesNominated || 0;
+        return o;
+      }, { hoh: 0, veto: 0, arena: 0, noms: 0 });
+      if (bbT.hoh >= 3) add('🏠', `${bbT.hoh}x Head of Household`, 'is-gold');
+      if (bbT.veto >= 3) add('🛡️', `${bbT.veto}x Power of Veto`, 'is-blue');
+      if (bbT.arena) add('🧱', `${bbT.arena}x off the block in the Block Buster`, 'is-green');
+      if (bbT.noms >= 4) add('🎯', `Nominated ${bbT.noms} times and still there`, 'is-red');
+    }
+    if (badges.length) html += `<div class="pp-honours pp-reveal">${badges.join('')}</div>`;
+  }
 
   /* THE BARS ARE PER SHOW when somebody has played more than one.
      `totalChallengeWins` and friends are cross-format sums by design — a Big
@@ -1614,26 +1857,21 @@ function renderPlayerProfile(fullPlayer) {
     }
   }
 
-  // Mini chips for non-bar stats
-  html += `<div class="pp-mini-chips pp-reveal">`;
-  /* ONE CHIP PER SHOW when there is more than one. A single "3" with the
-     breakdown squeezed underneath is the merged number with a footnote — which
-     is what it looked like, because that is what it was. */
+  /* The seasons-per-show chip stays for a two-show career, where "3 seasons"
+     is a merged number that belongs to neither of them. Everything the rest of
+     the old chip row said — wins, best finish, win rate — is a medallion now,
+     and saying it twice on one screen was the reason the section read flat. */
   if (_multiShow) {
+    html += `<div class="pp-mini-chips pp-reveal">`;
     for (const fmt of _showList) {
       html += `<div class="pp-chip"><div class="v">${_careers[fmt].seasonsPlayed}</div><div class="l">${
         (SHOW_NAMES[fmt] || fmt).replace(' ', '<br>')}</div></div>`;
     }
-  } else {
-    html += `<div class="pp-chip"><div class="v">${player.totalSeasons}</div><div class="l">Seasons</div></div>`;
+    if (player.winRate != null) {
+      html += `<div class="pp-chip"><div class="v">${player.winRate}%</div><div class="l">Win Rate<br>(all shows)</div></div>`;
+    }
+    html += `</div>`;
   }
-  html += `<div class="pp-chip"><div class="v">${player.wins}</div><div class="l">Wins</div></div>`;
-  html += `<div class="pp-chip"><div class="v">#${player.bestPlacement}</div><div class="l">Best Finish</div></div>`;
-  /* Win rate and average placement average across every show somebody played.
-     That is a real number and a confusing one on a two-show career, so it says
-     which it is rather than implying one franchise. */
-  if (player.winRate != null) html += `<div class="pp-chip"><div class="v">${player.winRate}%</div><div class="l">Win Rate${_multiShow ? ' (all shows)' : ''}</div></div>`;
-  html += `</div>`;
 
   // ── SEASON HISTORY ────────────────────────────────────────
   html += `<div class="pp-section pp-reveal"><h2>Season History</h2></div>`;
@@ -1906,6 +2144,63 @@ function buildMomentsFromStats(season) {
 }
 
 /**
+ * Every castmate named in a paragraph, turned into a link to their page.
+ *
+ * A wiki links. The prose on this page — the season story, the key moments —
+ * named twenty other people per season and linked none of them, while the
+ * roster with all 152 names and slugs in it was already loaded two functions
+ * away.
+ *
+ * Works on HTML that has already been assembled: the text is split on tags and
+ * only the parts BETWEEN them are matched, so a name can never be rewritten
+ * inside an attribute, and a name already inside an <a> is left alone.
+ *
+ * Boundaries are alphanumeric, so "Jules" links inside "Jules's" and "Jane"
+ * does not link inside "Janet".
+ */
+let _ppNameRx = null, _ppNameSlugs = null;
+function _ppLinkPeople(html, selfName) {
+  const str = String(html == null ? '' : html);
+  if (!str) return '';
+  if (!_ppNameRx) {
+    const list = Array.isArray(window.__roster) ? window.__roster
+      : (window.__roster?.players || []);
+    // NOT CACHED UNTIL THE ROSTER IS THERE. The profile renders before the
+    // roster fetch lands; caching an empty map on that first call would mean
+    // nothing on the page ever links, for the rest of the session.
+    if (!list.length) return str;
+    _ppNameSlugs = new Map();
+    for (const r of list) {
+      if (r && r.name && r.slug && String(r.name).length >= 3) _ppNameSlugs.set(r.name, r.slug);
+    }
+    const keys = [..._ppNameSlugs.keys()].sort((a, b) => b.length - a.length);
+    _ppNameRx = keys.length
+      ? new RegExp(keys.map(k => k.replace(/[^A-Za-z0-9 ]/g, c => String.fromCharCode(92) + c)).join('|'), 'g')
+      : false;
+  }
+  if (!_ppNameRx) return str;
+  const isWord = ch => ch && /[A-Za-z0-9]/.test(ch);
+  // Odd indexes are tags, even indexes are text. Only the text is touched.
+  return str.split(/(<[^>]*>)/).map((part, i) => {
+    if (i % 2 === 1 || !part) return part;
+    let out = '', last = 0, m;
+    _ppNameRx.lastIndex = 0;
+    while ((m = _ppNameRx.exec(part))) {
+      const at = m.index, word = m[0];
+      if (isWord(part[at - 1]) || isWord(part[at + word.length]) || word === selfName) {
+        _ppNameRx.lastIndex = at + 1;
+        continue;
+      }
+      out += part.slice(last, at)
+        + `<a class="pp-nlink" href="player.html?player=${_ppNameSlugs.get(word)}">${word}</a>`;
+      last = at + word.length;
+      _ppNameRx.lastIndex = last;
+    }
+    return out + part.slice(last);
+  }).join('');
+}
+
+/**
  * One player's run through one season, week by week.
  *
  * The season panels have always held totals — three immunity wins, five votes
@@ -1935,35 +2230,82 @@ function _seasonRun(name, doc) {
   const rows = bbWeeks.length ? bbWeeks : (Array.isArray(doc?.votingHistory) ? doc.votingHistory : []);
   if (!rows.length) return '';
 
+  const slug = n => String(n || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
+  /* A face, 20px, gone entirely when there is no file for it. */
+  const face = (n, cls, tip) => (n
+    ? `<img class="pp-wk-face ${cls || ''}" src="assets/avatars/${slug(n)}.png" alt=""
+         loading="lazy" title="${esc(tip || n)}" onerror="this.style.visibility='hidden'">`
+    : '<span class="pp-wk-face is-blank"></span>');
+
   for (const r of rows) {
     const num = r.week ?? r.episode;
     const marks = [];
     let state = 'safe';
     let why = [];
+    let ballot = '';
 
     if (bbWeeks.length) {
-      const opened = [...(r.blockBeforeSafety || []), ...(r.initialNominees || [])];
+      /* ── THE BLOCK, IN THE ORDER THE WEEK HAPPENS ──────────────────────
+         Three fields, three moments, and reading them as one set is what hid
+         the most dramatic thing a nominee can do:
+
+           initialNominees   — the nomination ceremony
+           blockBeforeSafety — after the veto and any replacement, going into
+                               the arena
+           finalNominees     — who is sitting there when the house votes
+
+         A houseguest nominated on Sunday who won the veto and took himself
+         down came out of the old reading as a plain "V" — identical to
+         somebody who won it from the sofa with nothing at stake. The only
+         rescue that ever showed was the Block Buster, because that one has
+         two fields of its own. So the tile now carries a nomination pip for
+         anybody who was up at any point, and the veto mark says which kind of
+         veto it was. */
+      const opened = r.initialNominees || r.blockBeforeSafety || [];
+      const postVeto = r.blockBeforeSafety || r.finalNominees || [];
       const final = r.finalNominees || [];
-      const onBlock = opened.includes(name) || final.includes(name);
-      const stayed = final.includes(name);
+      const wasOpened = opened.includes(name);
+      const wasPostVeto = postVeto.includes(name);
+      const onBlock = final.includes(name);
+      const nominated = wasOpened || wasPostVeto;
+      const vetoOnSelf = r.vetoWinner === name && wasOpened && !wasPostVeto;
+
+      if (nominated) marks.push('<i class="m-n" title="Nominated">N</i>');
       if (r.hoh === name) { t.hoh++; marks.push('<i class="m-h">H</i>'); why.push('won Head of Household'); }
-      if (r.vetoWinner === name) { t.veto++; marks.push('<i class="m-v">V</i>'); why.push('won the veto'); }
+      if (r.vetoWinner === name) {
+        t.veto++;
+        marks.push(`<i class="m-v">V</i>`);
+        why.push(vetoOnSelf ? 'won the veto and used it on themselves' : 'won the veto');
+      }
       if (r.safetyWinner === name) { t.arena++; marks.push('<i class="m-b">B</i>'); why.push('won the Block Buster'); }
-      if (marks.length) state = 'pow';
-      if (onBlock) {
-        if (stayed) { t.nom++; state = 'nom'; why.push('on the block at the vote'); }
-        else { t.saved++; state = 'saved'; why.push('nominated, then came off the block'); }
+      if (r.hoh === name || r.vetoWinner === name || r.safetyWinner === name) state = 'pow';
+      if (nominated) {
+        if (onBlock) { t.nom++; state = 'nom'; why.unshift('on the block at the vote'); }
+        else {
+          t.saved++;
+          state = 'saved';
+          why.unshift(vetoOnSelf ? 'nominated, then vetoed themselves off'
+            : r.safetyWinner === name ? 'nominated, then won their way off the block'
+              : 'nominated, then came off the block');
+        }
       }
       const against = (r.votes || {})[name];
       if (Number.isFinite(against) && against > 0) {
         t.votes += against;
         why.push(`${against} vote${against === 1 ? '' : 's'} to evict`);
       }
+      /* WHO THEY WROTE DOWN. The strip has always been able to say what
+         happened TO somebody and never what they did about it, and the ballot
+         was sitting on the same week object the whole time. */
+      const mine = (r.ballots || []).find(b => b.voter === name);
+      if (mine?.evict) ballot = mine.evict;
       if (r.evicted === name) { state = 'out'; exit = 'evicted'; exitWeek = num; why = [...why, 'evicted']; }
-      if (onBlock || marks.length || r.evicted === name) seen = true;
+      if (nominated || marks.length || r.evicted === name) seen = true;
     } else {
       // A camp records who voted for whom and nothing else.
       const against = (r.votes || []).filter(v => v.target === name).length;
+      const mine = (r.votes || []).find(v => v.voter === name);
+      if (mine?.target) ballot = mine.target;
       if (against) {
         t.votes += against;
         t.nom++;
@@ -1980,10 +2322,13 @@ function _seasonRun(name, doc) {
     const gone = exitWeek != null && num > exitWeek;
     if (!gone) lastPresent = num;
     const label = gone ? 'not in the house' : (why.length ? why.join(' · ') : 'safe, no power');
+    const roundW = rounds === 'week' ? 'Week' : 'Episode';
     tiles.push(`<div class="pp-wk is-${gone ? 'gone' : state}" title="${
-      esc(`${rounds === 'week' ? 'Week' : 'Episode'} ${num} — ${label}`)}">
+      esc(`${roundW} ${num} — ${label}`)}">
       <div class="pp-wk-n">${num}</div>
       <div class="pp-wk-marks">${gone ? '' : marks.join('')}</div>
+      <div class="pp-wk-vote">${gone || !ballot ? '<span class="pp-wk-face is-blank"></span>'
+        : face(ballot, '', `${roundW} ${num}: voted to evict ${ballot}`)}</div>
       <div class="pp-wk-bar"></div></div>`);
   }
   if (!seen) return '';
@@ -2023,9 +2368,13 @@ function _seasonRun(name, doc) {
     ? `<span><i style="background:#facc15"></i>Held power</span>
        <span><i style="background:#38bdf8"></i>Came off the block</span>
        <span><i style="background:#f87171"></i>On the block at the vote</span>
-       <span><i style="background:#f43f5e"></i>Gone</span>`
+       <span><i style="background:#f43f5e"></i>Gone</span>
+       <span class="pp-run-key-m"><i class="m-n">N</i>nominated
+         <i class="m-h">H</i>HOH <i class="m-v">V</i>veto <i class="m-b">B</i>Block Buster</span>
+       <span class="pp-run-key-f">face = who they voted to evict</span>`
     : `<span><i style="background:#f87171"></i>Drew votes</span>
-       <span><i style="background:#f43f5e"></i>Gone</span>`;
+       <span><i style="background:#f43f5e"></i>Gone</span>
+       <span class="pp-run-key-f">face = who they voted for</span>`;
 
   return `<div class="pp-pcard pp-run"><h3>The run, ${rounds} by ${rounds}</h3>
     <div class="pp-run-strip">${tiles.join('')}</div>
@@ -2096,7 +2445,8 @@ function renderSeasonDetails(season) {
       const _ep = m.match(/^Ep(\d+)[:\.]/i);
       const _dot = _ep ? _ep[1] : (i+1);
       const _txt = _ep ? m.replace(/^Ep\d+[:\.\s]*/i,'') : m;
-      html += `<div class="pp-tl-row"><div class="pp-tl-dot">${_dot}</div><div class="pp-tl-txt">${_txt}</div></div>`;
+      html += `<div class="pp-tl-row"><div class="pp-tl-dot">${_dot}</div><div class="pp-tl-txt">${
+        _ppLinkPeople(_txt)}</div></div>`;
     });
     html += `</div></div>`;
   }
@@ -2105,21 +2455,41 @@ function renderSeasonDetails(season) {
   const hasA = season.alliances&&season.alliances.length;
   const hasR = season.rivalries&&season.rivalries.length;
   if(hasA||hasR) {
+    /* ── A NAME IN THESE LISTS IS ONE OF TWO THINGS ─────────────────────
+       Older seasons store the PEOPLE somebody was aligned with ("Cameron",
+       "Jo"); every season since alliances got names stores the ALLIANCE ("The
+       Firewall", "The Power Couple"). Both were drawn as a player link with a
+       👤 in front, so a Big Brother page linked "The Power Couple" to
+       player.html?player=the-power-couple — a page for nobody.
+
+       The roster settles it: a name it knows is a person and gets their face,
+       anything else is a group and gets a plain tag. Without the roster loaded
+       the "The ..." shape is the fallback, which is how every named alliance in
+       the database reads. */
+    const _slugOf = n => String(n).toLowerCase().trim().replace(/[^a-z0-9]+/g,'-');
+    const _rosterList = Array.isArray(window.__roster) ? window.__roster
+      : (window.__roster?.players || []);
+    const _isPerson = n => (_rosterList.length
+      ? _rosterList.some(r => r && (r.name === n || r.slug === _slugOf(n)))
+      : !/^the\s/i.test(String(n)));
+    /* WITH THEIR FACE. This section is entirely about other people and it drew
+       an emoji placeholder for every one of them while 152 portraits sat in the
+       folder the header avatar already reads. */
+    const _chip = (n, cls) => (_isPerson(n)
+      ? `<a class="${cls}" href="player.html?player=${_slugOf(n)}"><img class="pp-face"
+           src="assets/avatars/${_slugOf(n)}.png" alt="" loading="lazy"
+           onerror="this.replaceWith(Object.assign(document.createElement('span'),
+             {className:'pp-face is-fb',textContent:'\u{1F464}'}))">${n}</a>`
+      : `<span class="${cls} is-group">${n}</span>`);
     html += `<div class="pp-grid2">`;
     if(hasA) {
       html += `<div class="pp-pcard"><h3>🤝 Alliances</h3><div class="pp-ppl">`;
-      season.alliances.forEach(a => {
-        const slug = a.toLowerCase().replace(/[^a-z0-9]/g,'-');
-        html += `<a class="pp-ally" href="player.html?player=${slug}">👤 ${a}</a>`;
-      });
+      season.alliances.forEach(a => { html += _chip(a, 'pp-ally'); });
       html += `</div></div>`;
     }
     if(hasR) {
       html += `<div class="pp-pcard"><h3>⚔️ Rivalries</h3><div class="pp-ppl">`;
-      season.rivalries.forEach(r => {
-        const slug = r.toLowerCase().replace(/[^a-z0-9]/g,'-');
-        html += `<a class="pp-rival" href="player.html?player=${slug}">⚔️ ${r}</a>`;
-      });
+      season.rivalries.forEach(r => { html += _chip(r, 'pp-rival'); });
       html += `</div></div>`;
     }
     html += `</div>`;

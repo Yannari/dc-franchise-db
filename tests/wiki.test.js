@@ -250,7 +250,7 @@ describe('the record an article is written from', () => {
     expect(html).toContain('wk-c-arena');
     expect(html).toContain('wk-c-out');
     // The week they won the arena reads as the arena, not as a nomination.
-    const cells = html.match(/<td class="wk-c-[a-z]*">[^<]*<\/td>/g) || [];
+    const cells = html.match(/<td class="wk-c-[a-z]*">[\s\S]*?<\/td>/g) || [];
     expect(cells[2]).toContain('Block Buster');
     // And the summary underneath counts what the row shows.
     expect(html).toMatch(/in the Block Buster 1x, winning 1/);
@@ -410,7 +410,7 @@ describe('reading a filled season', () => {
     // Under the season's own heading now, with the round word the camp uses.
     expect(html).toMatch(/Voting History/);
     expect(html).toMatch(/<th>Episode<\/th>/);
-    expect(html).toMatch(/Voted for/);
+    expect(html).toMatch(/Voted to evict/);
     expect(html).toMatch(/A clown attacked me/);
     // Big Brother's vocabulary must not appear on a camp's grid.
     expect(html).not.toMatch(/Head of Household|Power of Veto/);
@@ -442,7 +442,10 @@ describe('the lead', () => {
     const out = html(twice);
     // Won first, came back later — and the later season is the second clause.
     expect(out).toMatch(/was the winner of[\s\S]*?and returned for[\s\S]*?finishing 5th/);
-    expect(out.indexOf('season=7')).toBeLessThan(out.indexOf('season=18'));
+    // Scoped to the LEAD. The infobox links its seasons as well now, newest
+    // first, and it is drawn above the paragraph this is about.
+    const lead = out.match(/<p class="wk-lead">([\s\S]*?)<\/p>/)?.[1] || '';
+    expect(lead.indexOf('season=7')).toBeLessThan(lead.indexOf('season=18'));
   });
 
   it('says "later won" when the second season was also a win', () => {
@@ -578,7 +581,8 @@ describe('the section tree', () => {
 
   it('makes the season a heading with its own subsections', () => {
     const out = html();
-    expect(out).toMatch(/<h2>Big Brother 1<\/h2>/);
+    // A LINK, like every heading on a fandom article that names a season.
+    expect(out).toMatch(/<h2><a href="[^"]*season=bb-1">Big Brother 1<\/a><\/h2>/);
     expect(out).toMatch(/<h3>Summary<\/h3>/);
     expect(out).toMatch(/<h3>Voting History<\/h3>/);
   });
@@ -650,7 +654,8 @@ describe('the game paragraph', () => {
     expect(p).toMatch(/During .* time on the show/);
     expect(p).toMatch(/winning three challenges/);       // spelled out
     expect(p).toMatch(/forming a dominant alliance in <em>The Anchor<\/em>/);
-    expect(p).toMatch(/with Benji and Hannah/);
+    // Every castmate named in the prose is a link to their page.
+    expect(p).toMatch(/with <[^>]*>?<span>Benji<\/span>[\s\S]*?<span>Hannah<\/span>/);
   });
 
   it('links the season it is talking about', () => {
@@ -659,7 +664,8 @@ describe('the game paragraph', () => {
 
   it('says how the vote went when the season recorded one', () => {
     const doc = { ...DOC, winner: { ...DOC.winner, vote: 'Jade 4 — Logan 3' } };
-    expect(para(out(JADE, doc))).toMatch(/a close final vote[\s\S]*4 to 3 decision over Logan/);
+    expect(para(out(JADE, doc)))
+      .toMatch(/a close final vote[\s\S]*4 to 3 decision over [\s\S]*Logan/);
   });
 
   it('calls a landslide what it is', () => {

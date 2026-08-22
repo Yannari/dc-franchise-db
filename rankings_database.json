@@ -4,7 +4,7 @@
     "name": "🏆 Total Drama Franchise Rankings - Complete Cast",
     "version": "11.0_ASCII_SAFE_TITLE_EMOJI_REFRESH",
     "lastUpdated": "2026-08-22",
-    "totalPlayers": 78,
+    "totalPlayers": 152,
     "seasons": 7,
     "improvements": [
       "All strings ASCII-safe (no em-dash/smart quotes)",
@@ -102,7 +102,8 @@
       "winPercentile": 94.03,
       "challengePercentile": 100,
       "socialPercentile": 26.87,
-      "strategicPercentile": 97.01
+      "strategicPercentile": 97.01,
+      "blockSurvived": 0
     },
     {
       "playerId": "jacques",
@@ -152,7 +153,8 @@
           "value": -4,
           "reason": "equalize"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "jade",
@@ -185,7 +187,8 @@
       "weaknesses": [
         "Frequently targeted",
         "Messy path to the win"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "bowie",
@@ -222,7 +225,8 @@
         94,
         99
       ],
-      "winRate": 50
+      "winRate": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "james",
@@ -256,7 +260,8 @@
         "Only 1 challenge win",
         "One-season sample",
         "Frequently targeted"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "mickey",
@@ -299,7 +304,8 @@
       "scoreHistory": [
         96,
         91.1
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "cameron",
@@ -336,7 +342,8 @@
       "winPercentile": 45.52,
       "challengePercentile": 92.54,
       "socialPercentile": 70.15,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "wayne",
@@ -380,7 +387,8 @@
           "value": 1,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "julia",
@@ -424,7 +432,8 @@
           "value": 1,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "scott",
@@ -469,7 +478,8 @@
       "scoreHistory": [
         80,
         87.4
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "anastasia",
@@ -503,7 +513,8 @@
         "11 votes against",
         "High threat level",
         "Fell short of finals"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "logan",
@@ -536,38 +547,13 @@
       "weaknesses": [
         "Lost at the finish",
         "Less flashy résumé than Jade"
-      ]
-    },
-    {
-      "playerId": "misha",
-      "name": "Misha",
-      "rank": 13,
-      "tier": "S",
-      "score": 86,
-      "wins": 1,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        86
       ],
-      "placements": [
-        1
-      ],
-      "avgPlacement": 1,
-      "challengeWins": 6,
-      "votesAgainst": 0,
-      "blockSurvived": 0,
-      "juryVotes": 5,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "👑",
-      "reasoning": "A winner who turned survival into control. Misha started in the middle of bigger alliances, voted with the house often enough to stay covered, and still proved she was not being dragged when the block became a real threat. Her four veto wins and late Head of Household run gave the jury a clean case: she kept relationships intact, survived being targeted, won the final HOH, and cut Joel before he could make the stronger pitch.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "millie",
       "name": "Millie",
-      "rank": 14,
+      "rank": 13,
       "tier": "S",
       "score": 85.8,
       "wins": 0,
@@ -584,13 +570,14 @@
       "emoji": "📔",
       "reasoning": "S9's most complete non-winner. Millie converted a Beware package into the Red Idol, used it at F8 to nullify a five-vote strike on Priya, and held her alliances together through one of the season's messiest post-merges. She won F5 immunity and was the last woman standing going into the finale. Her game had everything a winning résumé needs — she just ran into Bowie.",
       "strengths": [],
-      "weaknesses": []
+      "weaknesses": [],
+      "blockSurvived": 0
     },
     {
       "playerId": "jasmine",
       "tier": "S",
       "score": 85.3,
-      "rank": 15,
+      "rank": 14,
       "avgPlacement": 9.333333333333334,
       "winRate": 33.33,
       "placements": [
@@ -627,13 +614,14 @@
       "scoreHistory": [
         47,
         85.3
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "lindsay",
       "tier": "S",
       "score": 84,
-      "rank": 16,
+      "rank": 15,
       "avgPlacement": 8,
       "winRate": 33.33,
       "placements": [
@@ -666,12 +654,13 @@
         7
       ],
       "seasonsPlayed": 3,
-      "wins": 1
+      "wins": 1,
+      "blockSurvived": 0
     },
     {
       "playerId": "ryan",
       "name": "Ryan",
-      "rank": 17,
+      "rank": 16,
       "tier": "S",
       "score": 83.1,
       "title": "The Gentle Wrecking Ball",
@@ -709,12 +698,13 @@
       "scoreHistory": [
         75.5,
         83.1
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "duncan",
       "name": "Duncan",
-      "rank": 18,
+      "rank": 17,
       "tier": "S",
       "score": 83,
       "title": "The Delinquent",
@@ -746,12 +736,13 @@
       "winPercentile": 94.03,
       "challengePercentile": 70.15,
       "socialPercentile": 57.46,
-      "strategicPercentile": 77.61
+      "strategicPercentile": 77.61,
+      "blockSurvived": 0
     },
     {
       "playerId": "riya",
       "name": "Riya",
-      "rank": 19,
+      "rank": 18,
       "tier": "S",
       "score": 82.8,
       "wins": 0,
@@ -790,13 +781,14 @@
           "value": 1,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "macarthur",
       "tier": "S",
       "score": 82.6,
-      "rank": 20,
+      "rank": 19,
       "avgPlacement": 6,
       "winRate": 33.33,
       "placements": [
@@ -839,12 +831,13 @@
           "value": 1,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "jake",
       "name": "Jake",
-      "rank": 21,
+      "rank": 20,
       "tier": "S",
       "score": 81.1,
       "wins": 0,
@@ -883,12 +876,13 @@
           "value": 1,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "emma",
       "name": "Emma",
-      "rank": 22,
+      "rank": 21,
       "tier": "S",
       "score": 81,
       "title": "The Comeback Kid",
@@ -920,13 +914,14 @@
       "winPercentile": 94.03,
       "challengePercentile": 83.58,
       "socialPercentile": 79.1,
-      "strategicPercentile": 88.06
+      "strategicPercentile": 88.06,
+      "blockSurvived": 0
     },
     {
       "playerId": "zoey",
       "tier": "S",
       "score": 80.8,
-      "rank": 23,
+      "rank": 22,
       "avgPlacement": 7.75,
       "winRate": 0,
       "placements": [
@@ -965,12 +960,13 @@
       "scoreHistory": [
         77,
         80.8
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "sanders",
       "name": "Sanders",
-      "rank": 24,
+      "rank": 23,
       "tier": "S",
       "score": 80.2,
       "wins": 0,
@@ -1002,12 +998,13 @@
         86.1,
         77.7
       ],
-      "winRate": 0
+      "winRate": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "miriam",
       "name": "Miriam",
-      "rank": 25,
+      "rank": 24,
       "tier": "S",
       "score": 80,
       "wins": 1,
@@ -1046,39 +1043,14 @@
           "value": 5,
           "reason": "equalizer"
         }
-      ]
-    },
-    {
-      "playerId": "jules",
-      "name": "Jules",
-      "rank": 26,
-      "tier": "S",
-      "score": 80,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        80
       ],
-      "placements": [
-        2
-      ],
-      "avgPlacement": 2,
-      "challengeWins": 3,
-      "votesAgainst": 0,
-      "blockSurvived": 4,
-      "juryVotes": 4,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "BB1’s strongest losing finalist. Jules hit the block four times as the target and survived every vote, then turned five alliances into the kind of social reach that kept him in the middle of the house’s plans. His Head of Household wins mattered, but too many moves looked like shared house decisions, and next to Misha’s more visible danger wins, his jury case came up one vote short.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "carrie",
       "tier": "A",
       "score": 77.8,
-      "rank": 27,
+      "rank": 25,
       "avgPlacement": 4.5,
       "winRate": 0,
       "placements": [
@@ -1113,39 +1085,14 @@
       "scoreHistory": [
         77,
         76.8
-      ]
-    },
-    {
-      "playerId": "joel",
-      "name": "Joel",
-      "rank": 28,
-      "tier": "A",
-      "score": 77.6,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        77.6
       ],
-      "placements": [
-        3
-      ],
-      "avgPlacement": 3,
-      "challengeWins": 6,
-      "votesAgainst": 0,
-      "blockSurvived": 0,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "BB1’s most dangerous player to miss the jury vote. Joel’s game looked quieter than it was because so much of it ran through pairs, but three HOHs, three vetoes, and three saves when targeted made him far more than a passenger. His problem was that his best relationships kept becoming visible just as the house needed a target, and at final three Misha gave him the ultimate compliment by cutting the one finalist nobody wanted to sit beside.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "cody",
       "tier": "A",
       "score": 77.2,
-      "rank": 29,
+      "rank": 26,
       "avgPlacement": 9.333333333333334,
       "winRate": 0,
       "placements": [
@@ -1182,12 +1129,13 @@
       "scoreHistory": [
         72.6,
         77.2
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "ally",
       "name": "Ally",
-      "rank": 30,
+      "rank": 27,
       "tier": "A",
       "score": 76.9,
       "wins": 0,
@@ -1226,12 +1174,13 @@
           "value": 1,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "jay",
       "name": "Jay",
-      "rank": 31,
+      "rank": 28,
       "tier": "A",
       "score": 76.7,
       "title": "The Loyal Heart",
@@ -1262,13 +1211,14 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 87.31,
-      "strategicPercentile": 85.07
+      "strategicPercentile": 85.07,
+      "blockSurvived": 0
     },
     {
       "playerId": "sky",
       "tier": "A",
       "score": 75.7,
-      "rank": 32,
+      "rank": 29,
       "avgPlacement": 7,
       "winRate": 0,
       "placements": [
@@ -1300,12 +1250,13 @@
         7
       ],
       "seasonsPlayed": 3,
-      "wins": 0
+      "wins": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "brick",
       "name": "Brick",
-      "rank": 33,
+      "rank": 30,
       "tier": "A",
       "score": 75.1,
       "title": "The Noble Shield",
@@ -1342,12 +1293,13 @@
       "scoreHistory": [
         59,
         75.1
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "aiden",
       "name": "Aiden",
-      "rank": 34,
+      "rank": 31,
       "tier": "A",
       "score": 75,
       "wins": 0,
@@ -1386,12 +1338,13 @@
           "value": 1,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "hannah",
       "name": "Hannah",
-      "rank": 35,
+      "rank": 32,
       "tier": "A",
       "score": 74.8,
       "wins": 0,
@@ -1420,12 +1373,13 @@
         "0 challenge wins",
         "No idols or advantages",
         "Limited endgame control"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "thom",
       "name": "Thom",
-      "rank": 36,
+      "rank": 33,
       "tier": "A",
       "score": 74.7,
       "wins": 0,
@@ -1464,12 +1418,13 @@
           "value": 2,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "alec",
       "name": "Alec",
-      "rank": 37,
+      "rank": 34,
       "tier": "A",
       "score": 74.5,
       "wins": 0,
@@ -1508,38 +1463,13 @@
           "value": 1,
           "reason": "equalizer"
         }
-      ]
-    },
-    {
-      "playerId": "tobias",
-      "name": "Tobias",
-      "rank": 38,
-      "tier": "A",
-      "score": 73.1,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        73.1
       ],
-      "placements": [
-        4
-      ],
-      "avgPlacement": 4,
-      "challengeWins": 1,
-      "votesAgainst": 0,
-      "blockSurvived": 3,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "Better than the pawn-chair image suggests, Tobias was a late-game hub whose vote sense and relationships kept him in the decision room even while he kept touching the block. His loyalty game gave him reach, but it also made him too visible once he had cut Dylon, survived Jane, and kept building final twos. His Week 9 Block Buster win bought him one more round; Misha’s final-four veto ended the run one eviction short of the finale.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "fiore",
       "name": "Fiore",
-      "rank": 39,
+      "rank": 35,
       "tier": "A",
       "score": 73,
       "wins": 0,
@@ -1578,39 +1508,14 @@
           "value": 2,
           "reason": "equalizer"
         }
-      ]
-    },
-    {
-      "playerId": "ireland",
-      "name": "Ireland",
-      "rank": 40,
-      "tier": "A",
-      "score": 72.7,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        72.7
       ],
-      "placements": [
-        10
-      ],
-      "avgPlacement": 10,
-      "challengeWins": 10,
-      "votesAgainst": 0,
-      "blockSurvived": 0,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "A tenth-place juror with a finalist’s competition résumé. Ireland won HOH, vetoes, and Block Busters whenever the game put her in danger, and her Week 2 power steal was the kind of move that can flip a season — but it also made her the person the house could point to every time things got scary. Once she finally lost the arena to Natasha, there was no vote structure left behind the wins, and the eviction was unanimous.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "tom",
       "tier": "A",
       "score": 72,
-      "rank": 41,
+      "rank": 36,
       "avgPlacement": 5,
       "winRate": 0,
       "placements": [
@@ -1639,12 +1544,13 @@
         7
       ],
       "seasonsPlayed": 1,
-      "wins": 0
+      "wins": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "spencer",
       "name": "Spencer",
-      "rank": 42,
+      "rank": 37,
       "tier": "A",
       "score": 71.1,
       "wins": 0,
@@ -1673,12 +1579,13 @@
         "19 votes against",
         "Zero challenge wins",
         "No finalist equity shown"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "geoff",
       "name": "Geoff",
-      "rank": 43,
+      "rank": 38,
       "tier": "A",
       "score": 71,
       "title": "The Party Surfer",
@@ -1709,12 +1616,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 75.37,
       "socialPercentile": 1.49,
-      "strategicPercentile": 71.64
+      "strategicPercentile": 71.64,
+      "blockSurvived": 0
     },
     {
       "playerId": "blaineley",
       "name": "Blaineley",
-      "rank": 44,
+      "rank": 39,
       "tier": "B",
       "score": 70.4,
       "title": "The Media Maven",
@@ -1744,38 +1652,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 53.73,
-      "strategicPercentile": 77.61
-    },
-    {
-      "playerId": "aaron",
-      "name": "Aaron",
-      "rank": 45,
-      "tier": "B",
-      "score": 70.4,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        70.4
-      ],
-      "placements": [
-        6
-      ],
-      "avgPlacement": 6,
-      "challengeWins": 5,
-      "votesAgainst": 0,
-      "blockSurvived": 2,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "A loyal soldier who turned survival into a real jury run. Aaron was nominated seven times, but three arena wins and a veto kept him from becoming the easy boot, while his votes usually stayed with the house. The problem was never that he lost control of a week; it was that his circle stayed too small, and at the double eviction Tobias had more reason to keep Jules than to save him.",
-      "strengths": [],
-      "weaknesses": []
+      "strategicPercentile": 77.61,
+      "blockSurvived": 0
     },
     {
       "playerId": "bridgette",
       "name": "Bridgette",
-      "rank": 46,
+      "rank": 40,
       "tier": "B",
       "score": 70.3,
       "title": "The Surfboard Shield",
@@ -1820,12 +1703,13 @@
           "value": 2,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "gabby",
       "name": "Gabby",
-      "rank": 47,
+      "rank": 41,
       "tier": "B",
       "score": 70.3,
       "wins": 0,
@@ -1854,13 +1738,14 @@
         "9 votes against",
         "0 challenge wins",
         "Only 1 alliance"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "taylor",
       "tier": "B",
       "score": 70,
-      "rank": 48,
+      "rank": 42,
       "avgPlacement": 7,
       "winRate": 0,
       "placements": [
@@ -1889,12 +1774,13 @@
         7
       ],
       "seasonsPlayed": 1,
-      "wins": 0
+      "wins": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "isabel",
       "name": "Isabel",
-      "rank": 49,
+      "rank": 43,
       "tier": "B",
       "score": 69.4,
       "wins": 0,
@@ -1923,12 +1809,13 @@
         "13 votes against",
         "Only one alliance",
         "No challenge wins"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "mike",
       "name": "Mike",
-      "rank": 50,
+      "rank": 44,
       "tier": "B",
       "score": 69,
       "title": "The Many Faces",
@@ -1957,12 +1844,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 75.37,
       "socialPercentile": 57.46,
-      "strategicPercentile": 77.61
+      "strategicPercentile": 77.61,
+      "blockSurvived": 0
     },
     {
       "playerId": "rosa-maria",
       "name": "Rosa-Maria",
-      "rank": 51,
+      "rank": 45,
       "tier": "B",
       "score": 69,
       "wins": 0,
@@ -1991,38 +1879,13 @@
         "0 challenge wins",
         "No jury votes",
         "Often targeted"
-      ]
-    },
-    {
-      "playerId": "jane",
-      "name": "Jane",
-      "rank": 52,
-      "tier": "B",
-      "score": 68.8,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        68.8
       ],
-      "placements": [
-        5
-      ],
-      "avgPlacement": 5,
-      "challengeWins": 2,
-      "votesAgainst": 0,
-      "blockSurvived": 3,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "A messy but legitimately dangerous late-jury game. Jane re-entered through the battle back, rebuilt enough relationships to win power and shape votes, but her best moves too often became leverage for someone else — most notably saving Joel with the veto before he helped send her out at five. She was never dragged, but she could never shake the label of the returnee who was connected enough to threaten the endgame and expendable enough to cut.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "chase",
       "name": "Chase",
-      "rank": 53,
+      "rank": 46,
       "tier": "B",
       "score": 68.5,
       "wins": 0,
@@ -2054,12 +1917,13 @@
         83.3,
         68.5
       ],
-      "winRate": 0
+      "winRate": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "beth",
       "name": "Beth",
-      "rank": 54,
+      "rank": 47,
       "tier": "B",
       "score": 68.4,
       "title": "The Sweetheart",
@@ -2089,12 +1953,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 61.19,
       "socialPercentile": 20.15,
-      "strategicPercentile": 14.18
+      "strategicPercentile": 14.18,
+      "blockSurvived": 0
     },
     {
       "playerId": "jen",
       "name": "Jen",
-      "rank": 55,
+      "rank": 48,
       "tier": "B",
       "score": 68.2,
       "wins": 0,
@@ -2126,12 +1991,13 @@
         71.7,
         68.2
       ],
-      "winRate": 0
+      "winRate": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "ellie",
       "name": "Ellie",
-      "rank": 56,
+      "rank": 49,
       "tier": "B",
       "score": 67.7,
       "wins": 0,
@@ -2163,12 +2029,13 @@
         "Never gained stable control",
         "0 jury votes"
       ],
-      "winRate": 0
+      "winRate": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "dwayne",
       "name": "Dwayne",
-      "rank": 57,
+      "rank": 50,
       "tier": "B",
       "score": 67.6,
       "title": "The Dad",
@@ -2198,12 +2065,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 65.67,
-      "strategicPercentile": 28.36
+      "strategicPercentile": 28.36,
+      "blockSurvived": 0
     },
     {
       "playerId": "caleb",
       "name": "Caleb",
-      "rank": 58,
+      "rank": 51,
       "tier": "B",
       "score": 67.4,
       "wins": 0,
@@ -2242,12 +2110,13 @@
           "value": 2,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "ezekiel",
       "name": "Ezekiel",
-      "rank": 59,
+      "rank": 52,
       "tier": "B",
       "score": 67.3,
       "title": "The Idol Gambler",
@@ -2285,12 +2154,13 @@
       "scoreHistory": [
         70.5,
         67.3
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "gwen",
       "name": "Gwen",
-      "rank": 60,
+      "rank": 53,
       "tier": "B",
       "score": 67.2,
       "title": "The Shadow Marathoner",
@@ -2329,13 +2199,14 @@
       "scoreHistory": [
         70.2,
         67.2
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "shawn",
       "tier": "B",
       "score": 67,
-      "rank": 61,
+      "rank": 54,
       "avgPlacement": 9,
       "winRate": 0,
       "placements": [
@@ -2366,12 +2237,13 @@
         7
       ],
       "seasonsPlayed": 2,
-      "wins": 0
+      "wins": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "trent",
       "name": "Trent",
-      "rank": 62,
+      "rank": 55,
       "tier": "B",
       "score": 66.6,
       "title": "The Bruised Strategist",
@@ -2416,12 +2288,13 @@
           "value": 3,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "amy",
       "name": "Amy",
-      "rank": 63,
+      "rank": 56,
       "tier": "B",
       "score": 66.4,
       "title": "The Mean Twin",
@@ -2448,12 +2321,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 65.67,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "damien",
       "name": "Damien",
-      "rank": 64,
+      "rank": 57,
       "tier": "B",
       "score": 66.3,
       "wins": 0,
@@ -2492,12 +2366,13 @@
           "value": 3,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "marissa",
       "name": "Marissa",
-      "rank": 65,
+      "rank": 58,
       "tier": "B",
       "score": 65.6,
       "wins": 0,
@@ -2526,12 +2401,13 @@
         "Showmance visibility",
         "Limited endgame control",
         "No jury votes"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "eureka",
       "name": "Eureka",
-      "rank": 66,
+      "rank": 59,
       "tier": "B",
       "score": 65.4,
       "wins": 0,
@@ -2560,12 +2436,13 @@
         "No idol protection",
         "Limited endgame control",
         "No immunity wins"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "sugar",
       "name": "Sugar",
-      "rank": 67,
+      "rank": 60,
       "tier": "B",
       "score": 65.2,
       "title": "The Pageant Menace",
@@ -2594,12 +2471,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 11.19,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "lake",
       "name": "Lake",
-      "rank": 68,
+      "rank": 61,
       "tier": "B",
       "score": 64.9,
       "wins": 0,
@@ -2628,12 +2506,13 @@
         "0 challenge wins",
         "No jury votes",
         "Limited control"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "scarlett",
       "name": "Scarlett",
-      "rank": 69,
+      "rank": 62,
       "tier": "B",
       "score": 64.7,
       "title": "The Volatile Mastermind",
@@ -2676,12 +2555,13 @@
           "value": 4,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "jo",
       "name": "Jo",
-      "rank": 70,
+      "rank": 63,
       "tier": "B",
       "score": 64.7,
       "title": "The Alpha Athlete",
@@ -2711,12 +2591,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 22.39,
-      "strategicPercentile": 11.19
+      "strategicPercentile": 11.19,
+      "blockSurvived": 0
     },
     {
       "playerId": "zaid",
       "name": "Zaid",
-      "rank": 71,
+      "rank": 64,
       "tier": "B",
       "score": 64.5,
       "wins": 0,
@@ -2745,12 +2626,13 @@
         "Zero challenge wins",
         "No idols or advantages",
         "Only one alliance"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "hunter",
       "name": "Hunter",
-      "rank": 72,
+      "rank": 65,
       "tier": "B",
       "score": 64.3,
       "wins": 0,
@@ -2788,38 +2670,13 @@
           "value": 1,
           "reason": "equalizer"
         }
-      ]
-    },
-    {
-      "playerId": "dylon",
-      "name": "Dylon",
-      "rank": 73,
-      "tier": "B",
-      "score": 64.3,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        64.3
       ],
-      "placements": [
-        11
-      ],
-      "avgPlacement": 11,
-      "challengeWins": 3,
-      "votesAgainst": 0,
-      "blockSurvived": 1,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "A dangerous mid-jury game that peaked in the exact moment it exposed him. Dylon won two HOHs, held the Mystery Veto until it mattered, and used it in Week 6 to blow up Ireland’s settled block and save himself, but afterward the house could see every reason to take him seriously. By Week 9, sitting beside Aaron, he had become the cleaner threat, and the vote against him was unanimous.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "priya",
       "name": "Priya",
-      "rank": 74,
+      "rank": 66,
       "tier": "B",
       "score": 63.9,
       "wins": 0,
@@ -2851,12 +2708,13 @@
         64.7,
         63.9
       ],
-      "winRate": 0
+      "winRate": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "kelly",
       "name": "Kelly",
-      "rank": 75,
+      "rank": 67,
       "tier": "B",
       "score": 63.6,
       "title": "The Fireline Fallen",
@@ -2899,12 +2757,13 @@
           "value": 4,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "gerry",
       "name": "Gerry",
-      "rank": 76,
+      "rank": 68,
       "tier": "B",
       "score": 63.2,
       "wins": 0,
@@ -2943,38 +2802,13 @@
           "value": 4,
           "reason": "equalizer"
         }
-      ]
-    },
-    {
-      "playerId": "gyselle",
-      "name": "Gyselle",
-      "rank": 77,
-      "tier": "B",
-      "score": 63.2,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        63.2
       ],
-      "placements": [
-        7
-      ],
-      "avgPlacement": 7,
-      "challengeWins": 2,
-      "votesAgainst": 0,
-      "blockSurvived": 1,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "A connected but slippery juror who had more reach than ownership. Gyselle survived the block and saved herself twice in the arena, but too often let hard votes happen around her instead of making them hers, leaving allies unsure whether her loyalty meant anything after the Hasan betrayal. At final seven, she sat next to Jane, assumed the votes were set, and was cut as the bigger threat before she could turn all those options into a real endgame.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "mk",
       "name": "MK",
-      "rank": 78,
+      "rank": 69,
       "tier": "B",
       "score": 62.3,
       "wins": 0,
@@ -2991,12 +2825,13 @@
       "emoji": "😏",
       "reasoning": "S9's stealthiest player. MK stayed low, kept her name off ballots, and won the F8 horror immunity when she needed it most. She never had a bad vote until Bowie's bloc went against her at F7 in a 4-2. A composed, analytical game that went further than it looked from the outside.",
       "strengths": [],
-      "weaknesses": []
+      "weaknesses": [],
+      "blockSurvived": 0
     },
     {
       "playerId": "dave",
       "name": "Dave",
-      "rank": 79,
+      "rank": 70,
       "tier": "B",
       "score": 61.9,
       "title": "The Neurotic Strategist",
@@ -3026,38 +2861,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 86.57,
       "socialPercentile": 48.51,
-      "strategicPercentile": 50
-    },
-    {
-      "playerId": "natasha",
-      "name": "Natasha",
-      "rank": 80,
-      "tier": "B",
-      "score": 61.2,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        61.2
-      ],
-      "placements": [
-        9
-      ],
-      "avgPlacement": 9,
-      "challengeWins": 1,
-      "votesAgainst": 0,
-      "blockSurvived": 1,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "One of BB1’s cleanest jury cuts: Natasha had enough social structure to matter, but too much of it was visible. She built through The Power Couple, The War Room, and The Oath, then kept herself alive with a clutch Week 10 Block Buster win, yet her reads kept lagging behind the vote as the house shifted away from her alliances. When she sat next to Tobias in Week 11, her social game still forced a tie, but Joel used the Head of Household tiebreaker to take out the more disruptive piece.",
-      "strengths": [],
-      "weaknesses": []
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "heather",
       "name": "Heather",
-      "rank": 81,
+      "rank": 71,
       "tier": "B",
       "score": 61.1,
       "title": "The Queen Bee",
@@ -3088,12 +2898,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 75.37,
       "socialPercentile": 17.16,
-      "strategicPercentile": 77.61
+      "strategicPercentile": 77.61,
+      "blockSurvived": 0
     },
     {
       "playerId": "dawn",
       "name": "Dawn",
-      "rank": 82,
+      "rank": 72,
       "tier": "C",
       "score": 60.6,
       "title": "The Aura Casualty",
@@ -3136,12 +2947,13 @@
           "value": 3,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "owen",
       "name": "Owen",
-      "rank": 83,
+      "rank": 73,
       "tier": "C",
       "score": 59.5,
       "title": "The Big Buddy",
@@ -3170,12 +2982,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 65.67,
       "socialPercentile": 61.19,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "ivy",
       "name": "Ivy",
-      "rank": 84,
+      "rank": 74,
       "tier": "C",
       "score": 59.5,
       "wins": 0,
@@ -3204,12 +3017,13 @@
         "0 challenge wins",
         "8 votes against",
         "No idols or jury votes"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "courtney",
       "name": "Courtney",
-      "rank": 85,
+      "rank": 75,
       "tier": "C",
       "score": 59.1,
       "title": "The Courtroom Wildfire",
@@ -3248,13 +3062,14 @@
       "scoreHistory": [
         59.2,
         59.1
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "kitty",
       "tier": "C",
       "score": 59,
-      "rank": 86,
+      "rank": 76,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -3285,13 +3100,14 @@
         7
       ],
       "seasonsPlayed": 2,
-      "wins": 0
+      "wins": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "laurie",
       "tier": "C",
       "score": 59,
-      "rank": 87,
+      "rank": 77,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -3320,38 +3136,13 @@
         7
       ],
       "seasonsPlayed": 1,
-      "wins": 0
-    },
-    {
-      "playerId": "felipe",
-      "name": "Felipe",
-      "rank": 88,
-      "tier": "C",
-      "score": 59,
       "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        59
-      ],
-      "placements": [
-        8
-      ],
-      "avgPlacement": 8,
-      "challengeWins": 0,
-      "votesAgainst": 0,
-      "blockSurvived": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "One of BB1’s sharpest non-winning games, built almost entirely without power. Felipe never won HOH or veto, touched the block only once as a pawn, and spent most of the season as the spare number everyone thought they could use. But once his final twos were too visible, Jane’s veto saving Joel left Felipe exposed, and the same relationships that kept him off the block made him the juror everyone could afford to cut.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "ripper",
       "name": "Ripper",
-      "rank": 89,
+      "rank": 78,
       "tier": "C",
       "score": 58.7,
       "wins": 0,
@@ -3390,12 +3181,13 @@
           "value": 2,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "max",
       "name": "Max",
-      "rank": 90,
+      "rank": 79,
       "tier": "C",
       "score": 57.8,
       "title": "The Evil Genius",
@@ -3422,12 +3214,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 48.51,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "leshawna",
       "name": "Leshawna",
-      "rank": 91,
+      "rank": 80,
       "tier": "C",
       "score": 57.8,
       "title": "The Real One",
@@ -3457,12 +3250,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 65.67,
       "socialPercentile": 31.34,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "emmah",
       "name": "Emmah",
-      "rank": 92,
+      "rank": 81,
       "tier": "C",
       "score": 57,
       "wins": 0,
@@ -3494,12 +3288,13 @@
         70.4,
         57
       ],
-      "winRate": 0
+      "winRate": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "axel",
       "name": "Axel",
-      "rank": 93,
+      "rank": 82,
       "tier": "C",
       "score": 57,
       "wins": 0,
@@ -3516,12 +3311,13 @@
       "emoji": "🪓",
       "reasoning": "S9's physical force. Axel survived the Ep2 rock draw, helped execute a clean 3-0 on Nichelle, and won merge immunity in Ep8. She was tight with Bowie and Ripper but found herself on the wrong side of the numbers post-merge and fell 4-1 at F9. Left with a stronger résumé than her placement shows.",
       "strengths": [],
-      "weaknesses": []
+      "weaknesses": [],
+      "blockSurvived": 0
     },
     {
       "playerId": "dan",
       "name": "Dan",
-      "rank": 94,
+      "rank": 83,
       "tier": "C",
       "score": 57,
       "wins": 0,
@@ -3550,13 +3346,14 @@
         "0 challenge wins",
         "No idols played",
         "9th-place ceiling"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "pete",
       "tier": "C",
       "score": 56.8,
-      "rank": 95,
+      "rank": 84,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -3586,12 +3383,13 @@
         7
       ],
       "seasonsPlayed": 2,
-      "wins": 0
+      "wins": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "topher",
       "name": "Topher",
-      "rank": 96,
+      "rank": 85,
       "tier": "C",
       "score": 56.6,
       "title": "The Host Wannabe",
@@ -3618,12 +3416,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 48.51,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "benji",
       "name": "Benji",
-      "rank": 97,
+      "rank": 86,
       "tier": "C",
       "score": 56.1,
       "wins": 0,
@@ -3652,12 +3451,13 @@
         "11th place finish",
         "0 challenge wins",
         "8 votes against"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "richard",
       "name": "Richard",
-      "rank": 98,
+      "rank": 87,
       "tier": "C",
       "score": 55.2,
       "wins": 0,
@@ -3685,12 +3485,13 @@
         "16 votes against",
         "0 challenge wins",
         "No idols or jury votes"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "stephanie",
       "name": "Stephanie",
-      "rank": 99,
+      "rank": 88,
       "tier": "C",
       "score": 55.1,
       "title": "The Unspent Fuse",
@@ -3727,12 +3528,13 @@
       "scoreHistory": [
         49,
         55.1
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "lill",
       "name": "Lill",
-      "rank": 100,
+      "rank": 89,
       "tier": "C",
       "score": 55,
       "wins": 0,
@@ -3761,12 +3563,13 @@
         "10th place",
         "0 challenge wins",
         "No idols played"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "noah",
       "name": "Noah",
-      "rank": 101,
+      "rank": 90,
       "tier": "C",
       "score": 54.6,
       "title": "The Snark King",
@@ -3796,13 +3599,14 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 11.19,
-      "strategicPercentile": 94.03
+      "strategicPercentile": 94.03,
+      "blockSurvived": 0
     },
     {
       "playerId": "brody",
       "tier": "C",
       "score": 54.5,
-      "rank": 102,
+      "rank": 91,
       "avgPlacement": 13.666666666666666,
       "winRate": 0,
       "placements": [
@@ -3834,12 +3638,13 @@
         7
       ],
       "seasonsPlayed": 3,
-      "wins": 0
+      "wins": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "dj",
       "name": "DJ",
-      "rank": 103,
+      "rank": 92,
       "tier": "C",
       "score": 54,
       "title": "The Gentle Giant",
@@ -3869,12 +3674,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 11.19,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "harold",
       "name": "Harold",
-      "rank": 104,
+      "rank": 93,
       "tier": "C",
       "score": 54,
       "title": "The Ninja Nerd",
@@ -3904,12 +3710,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 81.34,
       "socialPercentile": 38.06,
-      "strategicPercentile": 77.61
+      "strategicPercentile": 77.61,
+      "blockSurvived": 0
     },
     {
       "playerId": "natalia",
       "name": "Natalia",
-      "rank": 105,
+      "rank": 94,
       "tier": "C",
       "score": 53.9,
       "wins": 0,
@@ -3937,38 +3744,13 @@
         "12th place finish",
         "0 challenge wins",
         "9 votes against"
-      ]
-    },
-    {
-      "playerId": "hasan",
-      "name": "Hasan",
-      "rank": 106,
-      "tier": "C",
-      "score": 53.7,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        53.7
       ],
-      "placements": [
-        13
-      ],
-      "avgPlacement": 13,
-      "challengeWins": 1,
-      "votesAgainst": 0,
-      "blockSurvived": 1,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "Hasan saw the vote structure early, but his Week 3 HOH made him a target before his relationships could hold up under pressure. He exposed enough of the house to become legible, then watched his own numbers compare notes and drift away, right down to Gyselle voting him out. By Week 6, sitting next to Tobias after the veto scramble, the house kept the more useful connected piece and sent Hasan out 9-1.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "josee",
       "name": "Josee",
-      "rank": 107,
+      "rank": 95,
       "tier": "C",
       "score": 53.6,
       "title": "The Fury Duelist",
@@ -4006,12 +3788,13 @@
       "scoreHistory": [
         55.2,
         53.6
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "karol",
       "name": "Karol",
-      "rank": 108,
+      "rank": 96,
       "tier": "C",
       "score": 53.6,
       "wins": 0,
@@ -4039,12 +3822,13 @@
         "11th-place finish",
         "8 votes against",
         "Limited alliance network"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "eva",
       "name": "Eva",
-      "rank": 109,
+      "rank": 97,
       "tier": "C",
       "score": 53.4,
       "title": "The Tempered Equalizer",
@@ -4088,12 +3872,13 @@
           "value": 2,
           "reason": "equalizer"
         }
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "hicks",
       "name": "Hicks",
-      "rank": 110,
+      "rank": 98,
       "tier": "C",
       "score": 53.2,
       "wins": 0,
@@ -4125,12 +3910,13 @@
         44.4,
         53.2
       ],
-      "winRate": 0
+      "winRate": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "seraphine",
       "name": "Seraphine",
-      "rank": 111,
+      "rank": 99,
       "tier": "C",
       "score": 53.2,
       "wins": 0,
@@ -4158,12 +3944,13 @@
         "11th place ceiling",
         "0 challenge wins",
         "5 votes against"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "katie",
       "name": "Katie",
-      "rank": 112,
+      "rank": 100,
       "tier": "C",
       "score": 52.8,
       "title": "The BFF",
@@ -4191,12 +3978,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 48.51,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "sadie",
       "name": "Sadie",
-      "rank": 113,
+      "rank": 101,
       "tier": "C",
       "score": 52.2,
       "title": "The BFF",
@@ -4224,38 +4012,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 87.31,
-      "strategicPercentile": 50
-    },
-    {
-      "playerId": "nico",
-      "name": "Nico",
-      "rank": 114,
-      "tier": "C",
-      "score": 51.8,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        51.8
-      ],
-      "placements": [
-        12
-      ],
-      "avgPlacement": 12,
-      "challengeWins": 1,
-      "votesAgainst": 0,
-      "blockSurvived": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "A solid social player whose BB1 game looked safer than it was. Nico had a stolen Head of Household, a Block Buster save, and only one official nomination before his eviction week, but that defensive record hid how little leverage he had once Ireland came off the block. His bond with Felipe was real until it became evidence Felipe needed to cut him, and Nico’s quiet exit — no real campaign, the votes assumed locked — made that betrayal land even cleaner.",
-      "strengths": [],
-      "weaknesses": []
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "yul",
       "name": "Yul",
-      "rank": 115,
+      "rank": 102,
       "tier": "C",
       "score": 51.2,
       "wins": 0,
@@ -4283,12 +4046,13 @@
         "12th-place finish",
         "0 challenge wins",
         "8 votes against"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "lynda",
       "name": "Lynda",
-      "rank": 116,
+      "rank": 103,
       "tier": "C",
       "score": 51.2,
       "wins": 0,
@@ -4316,12 +4080,13 @@
         "13th place in only season",
         "0 challenge wins",
         "Limited strategic footprint"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "rodney",
       "name": "Rodney",
-      "rank": 117,
+      "rank": 104,
       "tier": "C",
       "score": 51,
       "title": "The Loverboy",
@@ -4350,38 +4115,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 17.16,
-      "strategicPercentile": 50
-    },
-    {
-      "playerId": "harriett",
-      "name": "Harriett",
-      "rank": 118,
-      "tier": "D",
-      "score": 50.8,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        50.8
-      ],
-      "placements": [
-        15
-      ],
-      "avgPlacement": 15,
-      "challengeWins": 0,
-      "votesAgainst": 0,
-      "blockSurvived": 0,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "An early overplayer with a twist she never turned into safety. Harriett’s twin twist gave her an extra vote and made every conversation harder to read, but she spent that cover making too many conflicting deals instead of building a durable alliance. Her Week 4 Mystery Competitor power only put Scott into the veto draw, and when that failed during Jules’s HOH, the house compared notes and sent her out unanimously before jury.",
-      "strengths": [],
-      "weaknesses": []
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "sierra",
       "name": "Sierra",
-      "rank": 119,
+      "rank": 105,
       "tier": "D",
       "score": 50.1,
       "title": "The Superfan",
@@ -4411,12 +4151,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 0,
-      "strategicPercentile": 6.72
+      "strategicPercentile": 6.72,
+      "blockSurvived": 0
     },
     {
       "playerId": "anne-maria",
       "name": "Anne Maria",
-      "rank": 120,
+      "rank": 106,
       "tier": "D",
       "score": 50,
       "title": "The Jersey Diva",
@@ -4445,12 +4186,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 65.67,
       "socialPercentile": 7.46,
-      "strategicPercentile": 18.66
+      "strategicPercentile": 18.66,
+      "blockSurvived": 0
     },
     {
       "playerId": "lightning",
       "name": "Lightning",
-      "rank": 121,
+      "rank": 107,
       "tier": "D",
       "score": 50,
       "title": "The Jock",
@@ -4480,12 +4222,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 2.99,
-      "strategicPercentile": 11.19
+      "strategicPercentile": 11.19,
+      "blockSurvived": 0
     },
     {
       "playerId": "sterling",
       "name": "Sterling",
-      "rank": 122,
+      "rank": 108,
       "tier": "D",
       "score": 49.7,
       "wins": 0,
@@ -4513,38 +4256,13 @@
         "12th place finish",
         "0 challenge wins",
         "Limited strategic footprint"
-      ]
-    },
-    {
-      "playerId": "zella",
-      "name": "Zella",
-      "rank": 123,
-      "tier": "D",
-      "score": 49.7,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        49.7
       ],
-      "placements": [
-        14
-      ],
-      "avgPlacement": 14,
-      "challengeWins": 1,
-      "votesAgainst": 0,
-      "blockSurvived": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "A loud, visible pre-jury presence whose game was strong enough to matter and exposed enough to cut. Zella won a Block Buster and survived early danger, but her loyalty to Natasha turned her into half of an obvious pair, and by Week 5 the house had an easy target. The 6-5 vote says she was not dead on the block; her mistake was believing the count was locked and letting Misha’s vote land before her campaign did.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "brightly",
       "name": "Brightly",
-      "rank": 124,
+      "rank": 109,
       "tier": "D",
       "score": 48.8,
       "wins": 0,
@@ -4561,12 +4279,13 @@
       "emoji": "🔬",
       "reasoning": "S9's most underrated player. Brightly orchestrated the Zee boot on Day 1 and moved immediately to target Emmah as a liability — Hicks flipped and saved Emmah instead, ending Brightly's game at F13. She had the clearest read on the season's social dynamics of any pre-merger but left too early for the résumé to reflect it.",
       "strengths": [],
-      "weaknesses": []
+      "weaknesses": [],
+      "blockSurvived": 0
     },
     {
       "playerId": "sam",
       "name": "Sam",
-      "rank": 125,
+      "rank": 110,
       "tier": "D",
       "score": 47.6,
       "title": "The Eager Underdog",
@@ -4602,12 +4321,13 @@
       "scoreHistory": [
         45,
         47.6
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "izzy",
       "name": "Izzy",
-      "rank": 126,
+      "rank": 111,
       "tier": "D",
       "score": 47.4,
       "title": "The Chaos Gremlin",
@@ -4635,12 +4355,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 48.51,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "alessio",
       "name": "Alessio",
-      "rank": 127,
+      "rank": 112,
       "tier": "D",
       "score": 47.1,
       "wins": 0,
@@ -4668,12 +4389,13 @@
         "14th place finish",
         "0 challenge wins",
         "No visible power base"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "mary",
       "name": "Mary",
-      "rank": 128,
+      "rank": 113,
       "tier": "D",
       "score": 47,
       "title": "The Brain",
@@ -4701,12 +4423,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 87.31,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "nick",
       "name": "Nick",
-      "rank": 129,
+      "rank": 114,
       "tier": "D",
       "score": 47,
       "wins": 0,
@@ -4734,12 +4457,13 @@
         "13th place finish",
         "0 challenge wins",
         "Little visible agency"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "raj",
       "name": "Raj",
-      "rank": 130,
+      "rank": 115,
       "tier": "D",
       "score": 46.8,
       "wins": 0,
@@ -4756,12 +4480,13 @@
       "emoji": "🛡️",
       "reasoning": "S9's most painful exit. Raj secured the Blue Beware advantage in Ep2 and completed his idol — then walked out of Ep7 tribal with it untouched after Julia manipulated the vote around him. He never saw it coming. An unfortunate end to a player with the social tools to go much deeper.",
       "strengths": [],
-      "weaknesses": []
+      "weaknesses": [],
+      "blockSurvived": 0
     },
     {
       "playerId": "tess",
       "name": "Tess",
-      "rank": 131,
+      "rank": 116,
       "tier": "D",
       "score": 45.8,
       "wins": 0,
@@ -4789,12 +4514,13 @@
         "13th-place finish",
         "11 votes against",
         "No idols or challenge wins"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "oliver",
       "name": "Oliver",
-      "rank": 132,
+      "rank": 117,
       "tier": "D",
       "score": 45.8,
       "wins": 0,
@@ -4822,13 +4548,14 @@
         "14th-place finish",
         "0 challenge wins",
         "No strategic payoff"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "devin",
       "tier": "D",
       "score": 45,
-      "rank": 133,
+      "rank": 118,
       "avgPlacement": 14,
       "winRate": 0,
       "placements": [
@@ -4857,38 +4584,13 @@
         7
       ],
       "seasonsPlayed": 1,
-      "wins": 0
-    },
-    {
-      "playerId": "amberly",
-      "name": "Amberly",
-      "rank": 134,
-      "tier": "D",
-      "score": 44.7,
       "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        44.7
-      ],
-      "placements": [
-        16
-      ],
-      "avgPlacement": 16,
-      "challengeWins": 0,
-      "votesAgainst": 0,
-      "blockSurvived": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "Amberly was a pre-jury boot with more game sense than safety, social enough that her eviction felt preventative rather than incidental. Hasan’s Head of Household exposed the gap in her game: once the block narrowed, she was left beside Gyselle, whose alliance insulation turned Amberly’s personal warmth into a 10-2 eviction. Her final read on the house was right, but it came after the votes had already hardened against her.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "tristan",
       "name": "Tristan",
-      "rank": 135,
+      "rank": 119,
       "tier": "D",
       "score": 43.6,
       "wins": 0,
@@ -4916,12 +4618,13 @@
         "15th place finish",
         "7 votes against",
         "No challenge or idol impact"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "kai",
       "name": "Kai",
-      "rank": 136,
+      "rank": 120,
       "tier": "D",
       "score": 43.5,
       "wins": 0,
@@ -4949,12 +4652,13 @@
         "15th-place finish",
         "6 votes against",
         "0 challenge wins"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "tyler",
       "name": "Tyler",
-      "rank": 137,
+      "rank": 121,
       "tier": "D",
       "score": 43.4,
       "title": "The Heartfirst Liability",
@@ -4991,12 +4695,13 @@
       "scoreHistory": [
         22,
         43.4
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "grett",
       "name": "Grett",
-      "rank": 138,
+      "rank": 122,
       "tier": "D",
       "score": 43.2,
       "wins": 0,
@@ -5024,38 +4729,13 @@
         "8 votes against",
         "14th place finish",
         "0 challenge wins"
-      ]
-    },
-    {
-      "playerId": "stella",
-      "name": "Stella",
-      "rank": 139,
-      "tier": "D",
-      "score": 43,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        43
       ],
-      "placements": [
-        17
-      ],
-      "avgPlacement": 17,
-      "challengeWins": 0,
-      "votesAgainst": 0,
-      "blockSurvived": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "Gone before the house had fully hardened. Stella’s bond with Harriett gave her something real, and Tobias’s vote against her mattered because it exposed how much trust she thought she had. Once the veto and Block Buster stripped away her outs, she was left on the block beside a nominee with more campaign routes, and the 10-3 vote made clear that her loyalty game never became a vote count.",
-      "strengths": [],
-      "weaknesses": []
+      "blockSurvived": 0
     },
     {
       "playerId": "samey",
       "name": "Samey",
-      "rank": 140,
+      "rank": 123,
       "tier": "D",
       "score": 42,
       "title": "The Sweet Twin",
@@ -5083,13 +4763,14 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 76.87,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "lorenzo",
       "tier": "D",
       "score": 42,
-      "rank": 141,
+      "rank": 124,
       "avgPlacement": 16,
       "winRate": 0,
       "placements": [
@@ -5118,12 +4799,13 @@
         7
       ],
       "seasonsPlayed": 1,
-      "wins": 0
+      "wins": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "diego",
       "name": "Diego",
-      "rank": 142,
+      "rank": 125,
       "tier": "D",
       "score": 41.4,
       "wins": 0,
@@ -5151,12 +4833,13 @@
         "16th place finish",
         "0 challenge wins",
         "No established alliance"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "wix",
       "name": "Wix",
-      "rank": 143,
+      "rank": 126,
       "tier": "D",
       "score": 41.2,
       "wins": 0,
@@ -5184,12 +4867,13 @@
         "15th place finish",
         "0 challenge wins",
         "Minimal footprint"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "junior",
       "name": "Junior",
-      "rank": 144,
+      "rank": 127,
       "tier": "D",
       "score": 41,
       "title": "The Kid",
@@ -5218,12 +4902,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 87.31,
-      "strategicPercentile": 14.18
+      "strategicPercentile": 14.18,
+      "blockSurvived": 0
     },
     {
       "playerId": "ted",
       "name": "Ted",
-      "rank": 145,
+      "rank": 128,
       "tier": "D",
       "score": 40.2,
       "wins": 0,
@@ -5251,12 +4936,13 @@
         "17th-place finish",
         "0 challenge wins",
         "5 votes against"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "chet",
       "name": "Chet",
-      "rank": 146,
+      "rank": 129,
       "tier": "D",
       "score": 40.1,
       "wins": 0,
@@ -5273,12 +4959,13 @@
       "emoji": "🧑‍🤝‍🧑",
       "reasoning": "S8's steady pre-merge presence. Chet survived the opening 3-3 tie against Miles and stayed under the radar as a provider, but fell on a 2-0 revote in Ep4. He never found his strategic footing but left without enemies.",
       "strengths": [],
-      "weaknesses": []
+      "weaknesses": [],
+      "blockSurvived": 0
     },
     {
       "playerId": "ennui",
       "name": "Ennui",
-      "rank": 147,
+      "rank": 130,
       "tier": "D",
       "score": 40,
       "title": "The Deadpan Goth",
@@ -5307,12 +4994,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 87.31,
-      "strategicPercentile": 24.63
+      "strategicPercentile": 24.63,
+      "blockSurvived": 0
     },
     {
       "playerId": "will",
       "name": "Will",
-      "rank": 148,
+      "rank": 131,
       "tier": "D",
       "score": 39.4,
       "wins": 0,
@@ -5340,12 +5028,13 @@
         "16th place finish",
         "5 votes against",
         "0 challenge wins"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "beardo",
       "name": "Beardo",
-      "rank": 149,
+      "rank": 132,
       "tier": "D",
       "score": 39,
       "title": "The Soundboard",
@@ -5373,12 +5062,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 65.67,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "amelie",
       "name": "Amelie",
-      "rank": 150,
+      "rank": 133,
       "tier": "D",
       "score": 38.2,
       "wins": 0,
@@ -5405,12 +5095,13 @@
         "18th-place finish",
         "0 challenge wins",
         "5 votes against"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "nichelle",
       "name": "Nichelle",
-      "rank": 151,
+      "rank": 134,
       "tier": "D",
       "score": 38.1,
       "wins": 0,
@@ -5427,12 +5118,13 @@
       "emoji": "🎬",
       "reasoning": "S9's unluckiest exit. Nichelle was on the wrong end of the Ep2 rock draw through no fault of her own, then tried to fight back with Shot in the Dark in Ep3 and lost — going 3-0 as both she and Ripper burned their advantages simultaneously.",
       "strengths": [],
-      "weaknesses": []
+      "weaknesses": [],
+      "blockSurvived": 0
     },
     {
       "playerId": "maggy",
       "name": "Maggy",
-      "rank": 152,
+      "rank": 135,
       "tier": "D",
       "score": 38.1,
       "wins": 0,
@@ -5460,12 +5152,13 @@
         "17th-place finish",
         "4 early votes against",
         "0 challenge wins"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "justin",
       "name": "Justin",
-      "rank": 153,
+      "rank": 136,
       "tier": "D",
       "score": 38,
       "title": "The Model",
@@ -5495,12 +5188,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 24.63,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "ella",
       "name": "Ella",
-      "rank": 154,
+      "rank": 137,
       "tier": "D",
       "score": 38,
       "title": "The Disney Princess",
@@ -5528,12 +5222,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 73.13,
-      "strategicPercentile": 50
+      "strategicPercentile": 50,
+      "blockSurvived": 0
     },
     {
       "playerId": "tammy",
       "name": "Tammy",
-      "rank": 155,
+      "rank": 138,
       "tier": "D",
       "score": 37,
       "title": "The Cosplayer",
@@ -5562,13 +5257,14 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 87.31,
-      "strategicPercentile": 1.49
+      "strategicPercentile": 1.49,
+      "blockSurvived": 0
     },
     {
       "playerId": "spud",
       "tier": "D",
       "score": 37,
-      "rank": 156,
+      "rank": 139,
       "avgPlacement": 17,
       "winRate": 0,
       "placements": [
@@ -5597,12 +5293,13 @@
         7
       ],
       "seasonsPlayed": 1,
-      "wins": 0
+      "wins": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "scary-girl",
       "name": "Scary Girl",
-      "rank": 157,
+      "rank": 140,
       "tier": "D",
       "score": 36.5,
       "wins": 0,
@@ -5619,12 +5316,13 @@
       "emoji": "🖤",
       "reasoning": "S9's wildcard gone too soon. Scary Girl pulled the short rock at the Ep2 0-0 idol council — the season's most chaotic early moment — and was gone before she had a chance to show what her game was. Impossible to evaluate fairly on placement alone.",
       "strengths": [],
-      "weaknesses": []
+      "weaknesses": [],
+      "blockSurvived": 0
     },
     {
       "playerId": "rock",
       "name": "Rock",
-      "rank": 158,
+      "rank": 141,
       "tier": "D",
       "score": 36.1,
       "wins": 0,
@@ -5641,12 +5339,13 @@
       "emoji": "🎸",
       "reasoning": "S8's unlucky early exit. Rock got caught in Civilian feud crossfire and was voted out 3-2 in Ep2 — a victim of tribal politics more than anything he did wrong. Left before his game had a chance to open up.",
       "strengths": [],
-      "weaknesses": []
+      "weaknesses": [],
+      "blockSurvived": 0
     },
     {
       "playerId": "drew",
       "name": "Drew",
-      "rank": 159,
+      "rank": 142,
       "tier": "D",
       "score": 35.9,
       "wins": 0,
@@ -5674,12 +5373,13 @@
         "17th place finish",
         "0 challenge wins",
         "No clear alliances"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "connor",
       "name": "Connor",
-      "rank": 160,
+      "rank": 143,
       "tier": "D",
       "score": 35.6,
       "wins": 0,
@@ -5707,12 +5407,13 @@
         "18th-place finish",
         "No alliances listed",
         "0 challenge wins"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "ashley",
       "name": "Ashley",
-      "rank": 161,
+      "rank": 144,
       "tier": "D",
       "score": 33.3,
       "wins": 0,
@@ -5740,12 +5441,13 @@
         "18th place finish",
         "First boot of this group",
         "0 challenge wins"
-      ]
+      ],
+      "blockSurvived": 0
     },
     {
       "playerId": "zee",
       "name": "Zee",
-      "rank": 162,
+      "rank": 145,
       "tier": "D",
       "score": 33.2,
       "wins": 0,
@@ -5762,12 +5464,13 @@
       "emoji": "🌊",
       "reasoning": "S9's first boot. Zee came in with the right attitude and the wrong tempo — Brightly and Hicks read him as a liability on Day 1 and the tribe agreed 5-1. The most amicable departure of the season.",
       "strengths": [],
-      "weaknesses": []
+      "weaknesses": [],
+      "blockSurvived": 0
     },
     {
       "playerId": "b",
       "name": "B",
-      "rank": 163,
+      "rank": 146,
       "tier": "D",
       "score": 33,
       "title": "The Silent Genius",
@@ -5796,12 +5499,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 38.06,
-      "strategicPercentile": 6.72
+      "strategicPercentile": 6.72,
+      "blockSurvived": 0
     },
     {
       "playerId": "miles",
       "name": "Miles",
-      "rank": 164,
+      "rank": 147,
       "tier": "D",
       "score": 33,
       "wins": 0,
@@ -5818,12 +5522,13 @@
       "emoji": "🌿",
       "reasoning": "S8's first boot. Miles fell on the Ep1 revote 3-1 after a 3-3 tie with Chet. The kind of opening-night exit that says more about the numbers than the player.",
       "strengths": [],
-      "weaknesses": []
+      "weaknesses": [],
+      "blockSurvived": 0
     },
     {
       "playerId": "staci",
       "name": "Staci",
-      "rank": 165,
+      "rank": 148,
       "tier": "D",
       "score": 32,
       "title": "The Storyteller",
@@ -5852,13 +5557,14 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 38.06,
-      "strategicPercentile": 6.72
+      "strategicPercentile": 6.72,
+      "blockSurvived": 0
     },
     {
       "playerId": "ellody",
       "tier": "D",
       "score": 32,
-      "rank": 166,
+      "rank": 149,
       "avgPlacement": 19,
       "winRate": 0,
       "placements": [
@@ -5887,12 +5593,13 @@
         7
       ],
       "seasonsPlayed": 1,
-      "wins": 0
+      "wins": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "leonard",
       "name": "Leonard",
-      "rank": 167,
+      "rank": 150,
       "tier": "D",
       "score": 28,
       "title": "The Wizard",
@@ -5922,12 +5629,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 65.67,
-      "strategicPercentile": 0
+      "strategicPercentile": 0,
+      "blockSurvived": 0
     },
     {
       "playerId": "dakota",
       "name": "Dakota",
-      "rank": 168,
+      "rank": 151,
       "tier": "D",
       "score": 26,
       "title": "The Celebrity",
@@ -5957,12 +5665,13 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 14.93,
-      "strategicPercentile": 18.66
+      "strategicPercentile": 18.66,
+      "blockSurvived": 0
     },
     {
       "playerId": "crimson",
       "name": "Crimson",
-      "rank": 169,
+      "rank": 152,
       "tier": "D",
       "score": 21,
       "title": "The Goth Twin",
@@ -5992,7 +5701,8 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 57.46,
-      "strategicPercentile": 2.99
+      "strategicPercentile": 2.99,
+      "blockSurvived": 0
     }
   ]
 }

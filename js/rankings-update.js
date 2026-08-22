@@ -13,6 +13,7 @@
 
 import { extractSeasonTemplate, buildBigBrotherSeasonDocument } from './stats-export.js';
 import { SHOWS } from './shows.js';
+import { boardFile } from './ranking-boards.js';
 
 // The tool was written against current-season.html, whose .btn is white-on-dark.
 // The simulator's .btn is not, so every button here rendered as black text —
@@ -247,16 +248,63 @@ function _ruReset() {
   if (seasonStatus) { seasonStatus.textContent = 'No season file loaded'; seasonStatus.style.color = ''; }
 }
 
-/** Pull rankings_database.json straight from the site — no file picker.
+/**
+ * The board a show gets when its first season is applied.
+ *
+ * Tier bands are the franchise's, not a show's -- an S+ is an S+ on either
+ * board -- so a new board borrows them from whichever board is already loaded
+ * and falls back to the standard five.
+ */
+function _ruEmptyBoard(format) {
+  return {
+    metadata: {
+      format,
+      name: ((SHOWS[format] || {}).emoji || '') + ' ' + ((SHOWS[format] || {}).name || format) + ' Franchise Rankings',
+      version: '1.0',
+      lastUpdated: new Date().toISOString().split('T')[0],
+      totalPlayers: 0,
+      seasons: 0,
+    },
+    scoringSystem: {},
+    tiers: (rankingsDB && rankingsDB.tiers) || {
+      'S+': { name: 'TIER S+ - Elite Winners',        description: '90+ • Franchise legends',  scoreRange: [90, 100] },
+      'S':  { name: 'TIER S - Championship Caliber',  description: '80-89 • Top-tier threats',  scoreRange: [80, 89] },
+      'A':  { name: 'TIER A - Elite Threats',         description: '71-79 • Serious players',   scoreRange: [71, 79] },
+      'B':  { name: 'TIER B - Solid Competitors',     description: '60-70 • Held their own',    scoreRange: [60, 70] },
+      'C':  { name: 'TIER C - Middle of the Pack',    description: '45-59 • Made no dent',      scoreRange: [45, 59] },
+      'D':  { name: 'TIER D - Early Exits',           description: 'Under 45 • Gone early',     scoreRange: [0, 44] },
+    },
+    rankings: [],
+  };
+}
+
+/** Pull this show's ranking board straight from the site — no file picker.
  *  Returns a promise so callers can wait for the database before previewing. */
 async function _ruAutoLoad() {
   const status = document.getElementById('ru-load-status');
+  // THE BOARD FOR THIS SHOW. This always loaded Total Drama's, so applying a
+  // Big Brother season appended seventeen houseguests to the camp's board and
+  // renumbered every contestant below them.
+  const fmt  = _ruShowFormat();
+  const file = boardFile(fmt) || 'rankings_database.json';
   try {
-    const r = await fetch('rankings_database.json', { cache: 'no-store' });
+    const r = await fetch(file, { cache: 'no-store' });
+    // A show ranked for the first time has no board yet. That is a new board,
+    // not a failure -- the alternative is that the first season of every new
+    // show cannot be applied at all.
+    if (r.status === 404) {
+      rankingsDB = _ruEmptyBoard(fmt);
+      if (status) {
+        status.textContent = 'No ' + ((SHOWS[fmt] || {}).name || fmt) + ' board yet — this season starts one';
+        status.style.color = '#facc15';
+      }
+      return;
+    }
     if (!r.ok) throw new Error('HTTP ' + r.status);
     rankingsDB = await r.json();
     if (status) {
-      status.textContent = 'Loaded ' + (rankingsDB.rankings || []).length + ' players from the site';
+      status.textContent = 'Loaded ' + (rankingsDB.rankings || []).length + ' players from the '
+        + ((SHOWS[fmt] || {}).name || fmt) + ' board';
       status.style.color = '#4ade80';
     }
   } catch (e) {
@@ -1290,7 +1338,13 @@ async function applyUpdates() {
 
   rankingsDB.rankings.sort((a,b)=>b.score-a.score);
   rankingsDB.rankings.forEach((p,i)=>{p.rank=i+1;});
-  if (rankingsDB.metadata) rankingsDB.metadata.lastUpdated=new Date().toISOString().split('T')[0];
+  if (rankingsDB.metadata) {
+    rankingsDB.metadata.lastUpdated=new Date().toISOString().split('T')[0];
+    // This said 78 while the file held 169 entries: written once and never
+    // again, so every reader that trusted the count was reading a stale one.
+    rankingsDB.metadata.totalPlayers=(rankingsDB.rankings||[]).length;
+    rankingsDB.metadata.format=rankingsDB.metadata.format||_ruShowFormat();
+  }
 
   // Publish straight to the site: the Worker commits rankings_database.json and
   // refreshes the database from it. Downloading is the fallback, so a missing
@@ -1299,18 +1353,21 @@ async function applyUpdates() {
   applyBtn.textContent = '\u23f3 Publishing\u2026';
   const published = await _ruPublish(rankingsDB, seasonNum);
 
+  // Name the file the show's own board, so a manual commit after a failed
+  // publish does not drop a house's board over a camp's.
+  const boardName = boardFile(_ruShowFormat()) || 'rankings_database.json';
   let note;
   if (published.ok) {
-    note = '\u2705 Published \u2014 rankings_database.json committed and the database refreshed. ' +
+    note = '\u2705 Published \u2014 ' + boardName + ' committed and the database refreshed. ' +
            'The site rebuilds in about a minute.';
   } else {
     const blob = new Blob([JSON.stringify(rankingsDB, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'rankings_database.json'; a.click();
+    a.href = url; a.download = boardName; a.click();
     URL.revokeObjectURL(url);
     note = '\u26a0\ufe0f Could not publish (' + published.error + ') \u2014 the file was downloaded instead. ' +
-           'Replace rankings_database.json in the repo with it and commit.';
+           'Replace ' + boardName + ' in the repo with it and commit.';
   }
 
   applyBtn.textContent = origText;
@@ -1337,7 +1394,9 @@ async function _ruPublish(db, seasonNumber) {
     const r = await fetch(base + '/api/publish-season', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ seasonNumber, rankings: db }),
+      // The show, so the Worker commits THIS show's board file rather than
+      // writing every board over Total Drama's.
+      body: JSON.stringify({ seasonNumber, format: _ruShowFormat(), rankings: db }),
     });
     const j = await r.json().catch(() => null);
     if (!r.ok || !j || !j.ok) return { ok: false, error: (j && j.error) || ('HTTP ' + r.status) };

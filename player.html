@@ -426,8 +426,7 @@ if (!playerId) {
        Total Drama tier, rank and score, on a page scoped to Big Brother. There
        is no Big Brother board yet; the honest answer is none, not somebody
        else's. */
-    window.__rankBoard = rankingsData || null;
-    window.__rankFormat = rankingsData?.metadata?.format || 'total-drama';
+    window.__rankBoards = rankingsData || [];
     
     // Fetch season data files for any season missing keyMoments
     const seasonFetches = (player.seasonDetails || []).map(sd => {
@@ -771,13 +770,20 @@ async function renderDebutProfile(id) {
 }
 
 async function loadRankingsDatabase() {
+  // EVERY show's board, not Total Drama's alone. This returned the one file,
+  // so a houseguest's profile had no board to find them on and said so --
+  // correctly, but only because the board it was handed was the wrong show's.
+  // js/ranking-boards.js tolerates a show that has not been ranked yet.
+  // Imported here rather than taken off `window`: this classic script runs
+  // BEFORE the deferred module block at the bottom of the page, so anything
+  // that block publishes does not exist yet at this point.
   try {
-    // Always fetch fresh — rankings update more often
-    const response = await fetch('rankings_database.json');
-    if (!response.ok) return null;
-    return await response.json();
+    const mod = await import('./js/ranking-boards.js');
+    window.findRankEntry = mod.findRankEntry;
+    const boards = await mod.loadRankingBoards();
+    return boards.length ? boards : null;
   } catch (error) {
-    console.warn("⚠️ Could not load rankings_database.json:", error);
+    console.warn("⚠️ Could not load the ranking boards:", error);
     return null;
   }
 }
@@ -1397,12 +1403,17 @@ function renderPlayerProfile(fullPlayer) {
   /* The board applies when you are looking at its show, or at everything.
      Looking at Big Brother, a Total Drama ranking is not this player's standing
      — it is a different competition's. */
-  const _board = window.__rankBoard;
-  const _boardFormat = window.__rankFormat || 'total-drama';
-  const _boardApplies = !!_board && (_show === 'all' || _show === _boardFormat);
-  const _entry = _boardApplies
-    ? (_board.rankings || []).find(r => r.playerId === fullPlayer.id || r.name === fullPlayer.name)
+  const _boards = window.__rankBoards || [];
+  // Looking at one show, only that show's board can rank you. Looking at
+  // everything, any board that has you does -- which for somebody who has
+  // played both shows is whichever the registry lists first, the same order
+  // the rankings page heads its sections in.
+  const _hit = window.findRankEntry
+    ? window.findRankEntry(_boards, { id: fullPlayer.id, name: fullPlayer.name,
+        format: _show === 'all' ? null : _show })
     : null;
+  const _board = _hit?.board || null;
+  const _entry = _hit?.entry || null;
   for (const k of ['tier', 'score', 'rank', 'reasoning', 'totalRanked']) delete fullPlayer[k];
   if (_entry) {
     fullPlayer.tier = _entry.tier;
@@ -3013,6 +3024,7 @@ document.addEventListener('keydown', e => {
   // databases — nothing stores a fame field, because decay makes it a function
   // of when you ask rather than of the player's own record.
   import { computeFame } from './js/fame.js';
+  import { loadRankingBoards } from './js/ranking-boards.js';
   // The same engine franchise.html draws its per-show boards from, so the two
   // pages cannot come to disagree about somebody's record.
   import { careersIn, franchiseRecords } from './js/records.js';
@@ -3118,7 +3130,10 @@ document.addEventListener('keydown', e => {
         fetch(url, { cache: 'no-store' }).then(r => r.ok ? r.json() : fallback).catch(() => fallback);
       const [players, rankings, seasons, franchise] = await Promise.all([
         grab('players_database.json', null),
-        grab('rankings_database.json', {}),
+        // Both boards: showRankMultiplier matches a player's show against
+        // metadata.format, so handing it Total Drama's board alone rates every
+        // houseguest as unranked.
+        loadRankingBoards().catch(() => []),
         grab('seasons_database.json', { seasons: [] }),
         grab('franchise_database.json', {}),
       ]);

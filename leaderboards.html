@@ -273,6 +273,12 @@ window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve
   // the classic script below, which is what actually filters the board.
   import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
   import { currentShow, ALL } from './js/show-switcher.js';
+  import { loadRankingBoards, boardFormat } from './js/ranking-boards.js';
+  // Which shows have been ranked at all, so tierApplies() below can stop
+  // assuming the answer is "Total Drama, and only Total Drama".
+  loadRankingBoards()
+    .then(boards => { window.__rankingsFormats = boards.map(boardFormat); })
+    .catch(() => { window.__rankingsFormats = ['total-drama']; });
   window.SHOWS = SHOWS;
   window.showSwitcher = { currentShow, ALL, SHOWS, DEFAULT_FORMAT };
   window._showSwitcherResolve(window.showSwitcher);
@@ -324,11 +330,15 @@ function avatarHtml(id, name){
          `<img loading="lazy" alt="" src="assets/avatars/${esc(id)}.png" ` +
          `onerror="this.classList.add('gone')"></span>`;
 }
-/* The ranking board is Total Drama's — metadata.format says so. Under any other
-   show its tiers are a different competition's verdict, so no chip is drawn. */
+/* A tier is a position on a board, and there is a board per show. This checked
+   against a single `__rankingsFormat` that nothing ever set, so it was always
+   'total-drama' and no Big Brother row could ever carry a chip -- correct while
+   Total Drama had the only board, wrong the moment a second one shipped.
+   `__rankingsFormats` is filled in below from the boards that actually load. */
 function tierApplies(){
   const show = activeShow();
-  return show === 'all' || show === (window.__rankingsFormat || 'total-drama');
+  const have = window.__rankingsFormats || ['total-drama'];
+  return show === 'all' || have.includes(show);
 }
 
 function tierChip(tier){

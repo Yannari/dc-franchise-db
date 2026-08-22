@@ -897,12 +897,14 @@ window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve
   import { mountShowSwitcher, orderFormats, currentShow, ALL, SHOW_SWITCHER_CSS } from './js/show-switcher.js';
   import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
   import { computeFame } from './js/fame.js';
+  import { loadRankingBoards } from './js/ranking-boards.js';
   import { renderStars, FAME_STAR_CSS } from './js/fame-stars.js';
   const style = document.createElement('style');
   style.textContent = SHOW_SWITCHER_CSS + FAME_STAR_CSS;
   document.head.appendChild(style);
   window.showSwitcher = { mountShowSwitcher, orderFormats, currentShow, ALL, SHOWS, DEFAULT_FORMAT };
   window.fame = { computeFame, renderStars };
+  window.loadRankingBoards = loadRankingBoards;
   window._showSwitcherResolve(window.showSwitcher);
 </script>
 
@@ -921,15 +923,19 @@ window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve
     ]);
     await switcherReady;
 
-    const [rankingsResponse, playersResponse] = await Promise.all([
-      fetch('rankings_database.json'),
+    // ONE BOARD PER SHOW. This fetched rankings_database.json alone, so the
+    // only board that could ever be on screen was Total Drama's -- and the
+    // "No <show> rankings yet" panel below fired for every other show whether
+    // or not that show had been ranked.
+    const [boards, playersResponse] = await Promise.all([
+      window.loadRankingBoards(),
       fetch('players_database.json')
     ]);
 
-    if (!rankingsResponse.ok) throw new Error('Failed to load rankings_database.json');
+    if (!boards.length) throw new Error('No ranking boards could be loaded');
     if (!playersResponse.ok) throw new Error('Failed to load players_database.json');
 
-    const rankingsData = await rankingsResponse.json();
+    const rankingsData = boards;
     const playersData = await playersResponse.json();
 
     // One board or a list of them — the count must not assume the object form.
@@ -1084,6 +1090,8 @@ function renderRankings(rankingsData, playersMap) {
    the tier IDs — the #tier-s chips at the top of the page are one set, so a
    second board repeating those IDs would just be a duplicate nothing links to. */
 function boardHtml(active, playersMap, withIds) {
+  // What show this board ranks, so a card can use that show's words.
+  const boardFmt = (active && active.metadata && active.metadata.format) || 'total-drama';
   const tierGroups = {};
   // Auto-sort rankings by score (descending)
   active.rankings.sort((a, b) => {
@@ -1150,7 +1158,7 @@ function boardHtml(active, playersMap, withIds) {
           console.warn('Player not found:', ranking.playerId);
           return;
         }
-        html += renderPlayerCard(ranking, player);
+        html += renderPlayerCard(ranking, player, boardFmt);
       });
     }
 
@@ -1158,6 +1166,20 @@ function boardHtml(active, playersMap, withIds) {
   });
 
   return html;
+}
+
+/* A SEASON'S NAME BELONGS TO ITS SHOW. Every label here was 'S' + number, so
+   Big Brother 1 was printed "S1 Winner" and "BEST FINISH S1: #1" -- which is
+   also the name of a Total Drama season, on a board that now holds both shows.
+   seasonDetails carries `format` per season, so a career that spans two shows
+   labels each of its seasons correctly rather than picking one show's prefix
+   for all of them. Total Drama keeps the bare S it has always had. */
+function seasonTag(format, n) {
+  const f = format || 'total-drama';
+  if (f === 'total-drama') return 'S' + n;
+  const short = (window.showSwitcher && window.showSwitcher.SHOWS
+    && window.showSwitcher.SHOWS[f] && window.showSwitcher.SHOWS[f].short) || '';
+  return short ? short + n : 'S' + n;
 }
 
 function getWinnerKeys(player){
@@ -1170,7 +1192,7 @@ function getWinnerKeys(player){
       if (!s) return;
       if (s.placement === 1) {
         const sn = (s.season != null && s.season !== '') ? String(s.season) : '';
-        keys.add(sn ? ('S' + sn) : 'WINNER');
+        keys.add(sn ? seasonTag(s.format, sn) : 'WINNER');
       }
     });
   }
@@ -1190,14 +1212,14 @@ function getWinnerKeys(player){
   return Array.from(keys).sort(function(a,b){
     if (a === 'WINNER') return 1;
     if (b === 'WINNER') return -1;
-    const na = parseInt(a.replace(/^S/i,''),10);
-    const nb = parseInt(b.replace(/^S/i,''),10);
+    const na = parseInt(a.replace(/^[A-Za-z]+/,''),10);
+    const nb = parseInt(b.replace(/^[A-Za-z]+/,''),10);
     if (isNaN(na) || isNaN(nb)) return a.localeCompare(b);
     return na - nb;
   });
 }
 
-function renderPlayerCard(ranking, player) {
+function renderPlayerCard(ranking, player, format) {
   const winRate = ranking.winRate || Math.round((player.wins / player.totalSeasons) * 100);
   const avgPlacement = calculateAvgPlacement(player);
   const winnerKeys = getWinnerKeys(player);
@@ -1209,7 +1231,7 @@ function renderPlayerCard(ranking, player) {
       if (!best || s.placement < best.placement) best = s;
     });
   }
-  const bestLabel = best ? ((best.season ? 'S'+best.season+': ' : '')+'#'+best.placement) : '—';
+  const bestLabel = best ? ((best.season ? seasonTag(best.format, best.season)+': ' : '')+'#'+best.placement) : '—';
 
   // Career fame, if it could be computed — an empty string when it could not.
   const fame = window._fame ? window._fame.get(ranking.playerId) : null;
@@ -1306,8 +1328,14 @@ function renderPlayerCard(ranking, player) {
   html +=       '<div class="stat-value">' + winRate + '%</div>';
   html +=     '</div>';
   html +=     '<div class="stat-box">';
-  html +=       '<div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div>';
-  html +=       '<div class="stat-value">' + player.totalVotesAgainst + ' total' + (player.totalVotesAgainst < 5 ? ' 🔒' : '') + '</div>';
+  if (format === 'big-brother') {
+    const survived = ranking.blockSurvived || 0;
+    html +=     '<div class="stat-label"><span class="stat-icon">🧱</span> SURVIVED THE BLOCK</div>';
+    html +=     '<div class="stat-value">' + survived + (survived === 1 ? ' time' : ' times') + '</div>';
+  } else {
+    html +=     '<div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div>';
+    html +=     '<div class="stat-value">' + player.totalVotesAgainst + ' total' + (player.totalVotesAgainst < 5 ? ' 🔒' : '') + '</div>';
+  }
   html +=     '</div>';
   html +=     '<div class="stat-box">';
   html +=       '<div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div>';
@@ -1349,7 +1377,7 @@ function renderMiniCard(ranking, player) {
     });
   }
   const bestLabel = best
-    ? ((best.season ? 'S'+best.season + ': ' : '') + '#' + best.placement)
+    ? ((best.season ? seasonTag(best.format, best.season) + ': ' : '') + '#' + best.placement)
     : '—';
 
   const winnerKeys = getWinnerKeys(player);

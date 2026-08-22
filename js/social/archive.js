@@ -531,7 +531,11 @@ export function awardEvents(doc, format, season, episode, { isFinale = false } =
  */
 export function crowdFromRankings(rankings) {
   const out = {};
-  for (const r of rankings?.rankings || []) {
+  // One board or every board. There is a board per show now, and a season's
+  // feed should draw its crowd from the show it belongs to -- but an entry
+  // carries its own playerId, so pooling them cannot mix two players up.
+  const boards = Array.isArray(rankings) ? rankings : [rankings];
+  for (const r of boards.flatMap(b => b?.rankings || [])) {
     if (r.playerId && Number.isFinite(Number(r.score))) out[r.playerId] = Number(r.score);
   }
   return out;

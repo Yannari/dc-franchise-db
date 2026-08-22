@@ -13,6 +13,7 @@ import {
   setArchetypeResolver, backfillAchievements, ACHIEVEMENT_LABELS
 } from './franchise-meta.js';
 import { persistFranchiseLedger } from './savestate.js';
+import { loadRankingBoards } from './ranking-boards.js';
 import { FRANCHISE_ROSTER } from './cast-ui.js';
 
 // Older/imported ledger records carry no archetype — resolve from the roster so
@@ -1128,11 +1129,13 @@ const _BRIEF_NOTE = `NOTE: Each character below has a "Voice:" line that defines
 
 async function _briefDatabases() {
   if (window._briefDbCache) return window._briefDbCache;
-  const [p, r] = await Promise.all([
+  const [p, boards] = await Promise.all([
     fetch('players_database.json').then(x => x.json()).catch(() => null),
-    fetch('rankings_database.json').then(x => x.json()).catch(() => null),
+    // A returning houseguest has a standing too; it is just on another board.
+    loadRankingBoards().catch(() => []),
   ]);
-  window._briefDbCache = { players: (p && p.players) || [], rankings: (r && r.rankings) || [] };
+  window._briefDbCache = { players: (p && p.players) || [],
+    rankings: boards.flatMap(b => b.rankings || []) };
   return window._briefDbCache;
 }
 

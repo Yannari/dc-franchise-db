@@ -555,11 +555,12 @@ async function loadData() {
     const db = await r.json();
     allPlayers = db.players || [];
 
-    const rr = await fetch('rankings_database.json').catch(() => null);
-    if (rr && rr.ok) {
-      const rd = await rr.json();
-      allRankings = rd.rankings || [];
-    }
+    // Every show's board. This read Total Drama's alone, so comparing two
+    // houseguests showed neither of them a tier.
+    try {
+      const { loadRankingBoards } = await import('./js/ranking-boards.js');
+      allRankings = (await loadRankingBoards()).flatMap(b => b.rankings || []);
+    } catch { allRankings = []; }
   } catch (e) {
     console.error('Failed to load player data', e);
   }

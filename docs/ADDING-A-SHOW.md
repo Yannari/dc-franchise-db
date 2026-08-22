@@ -294,12 +294,26 @@ keeps the bare-integer key it has always had.
 | Episode transcript | `rr_episode_s1_e1` (`js/episode-store.js`) |
 | Episode analytics | `AI_ANALYTICS_rr-1` |
 | D1 tables | `seasons`, `appearances`, `bonds` are keyed `(format, season_number)` |
+| Ranking board | `rankings_rr.json` (Total Drama keeps `rankings_database.json`) |
 | `seasons_database.json` | one row per season, carries `format` |
 | `players_database.json` | `seasonDetails[].format` — **absent means Total Drama** |
 
 That last one is the quiet trap: an appearance with no `format` is Total Drama,
 so if your export forgets to stamp it, a racer joins the Total Drama career of
 whoever shares their slug.
+
+The board is the same trap one level up. A ranking is a position on a board and
+a board ranks ONE show, because the scores are not comparable across shows —
+`js/rankings-update.js` weights a veto differently from an immunity on purpose.
+Big Brother 1 was applied into `rankings_database.json`, which declares itself
+Total Drama's, and the result was seventeen houseguests sitting at ranks 13, 26
+and 28 among contestants while every reader that checks `metadata.format`
+correctly refused to show them — the site said "No Big Brother rankings yet"
+about players that were in the file.
+
+`js/ranking-boards.js` owns the mapping and every reader goes through it. A show
+with no finished season has no board, and that is not an error: `loadRankingBoards()`
+skips a 404 so a new show does not break the pages before it has been ranked.
 
 ---
 

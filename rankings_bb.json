@@ -1,0 +1,505 @@
+{
+  "metadata": {
+    "format": "big-brother",
+    "name": "📹 Big Brother Franchise Rankings",
+    "version": "11.0_ASCII_SAFE_TITLE_EMOJI_REFRESH",
+    "lastUpdated": "2026-08-22",
+    "totalPlayers": 17,
+    "seasons": 1
+  },
+  "scoringSystem": {},
+  "tiers": {
+    "S+": {
+      "name": "TIER S+ - Elite Winners",
+      "description": "90+ • Franchise legends",
+      "scoreRange": [
+        90,
+        100
+      ]
+    },
+    "S": {
+      "name": "TIER S - Championship Caliber",
+      "description": "80-89 • Top-tier threats",
+      "scoreRange": [
+        80,
+        89
+      ]
+    },
+    "A": {
+      "name": "TIER A - Elite Threats",
+      "description": "71-79 • Deep runs",
+      "scoreRange": [
+        71,
+        79
+      ]
+    },
+    "B": {
+      "name": "TIER B - Above Average",
+      "description": "61-70 • Solid gameplay",
+      "scoreRange": [
+        61,
+        70
+      ]
+    },
+    "C": {
+      "name": "TIER C - Average",
+      "description": "51-60 • Mid-game players",
+      "scoreRange": [
+        51,
+        60
+      ]
+    },
+    "D": {
+      "name": "TIER D - Below Average",
+      "description": "0-50 • Early exits",
+      "scoreRange": [
+        0,
+        50
+      ]
+    }
+  },
+  "rankings": [
+    {
+      "playerId": "misha",
+      "name": "Misha",
+      "rank": 1,
+      "tier": "S",
+      "score": 86,
+      "wins": 1,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        86
+      ],
+      "placements": [
+        1
+      ],
+      "avgPlacement": 1,
+      "challengeWins": 6,
+      "blockSurvived": 0,
+      "juryVotes": 5,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "👑",
+      "reasoning": "A winner who turned survival into control. Misha started in the middle of bigger alliances, voted with the house often enough to stay covered, and still proved she was not being dragged when the block became a real threat. Her four veto wins and late Head of Household run gave the jury a clean case: she kept relationships intact, survived being targeted, won the final HOH, and cut Joel before he could make the stronger pitch.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "jules",
+      "name": "Jules",
+      "rank": 2,
+      "tier": "S",
+      "score": 80,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        80
+      ],
+      "placements": [
+        2
+      ],
+      "avgPlacement": 2,
+      "challengeWins": 3,
+      "blockSurvived": 4,
+      "juryVotes": 4,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "BB1’s strongest losing finalist. Jules hit the block four times as the target and survived every vote, then turned five alliances into the kind of social reach that kept him in the middle of the house’s plans. His Head of Household wins mattered, but too many moves looked like shared house decisions, and next to Misha’s more visible danger wins, his jury case came up one vote short.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "joel",
+      "name": "Joel",
+      "rank": 3,
+      "tier": "A",
+      "score": 77.6,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        77.6
+      ],
+      "placements": [
+        3
+      ],
+      "avgPlacement": 3,
+      "challengeWins": 6,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "BB1’s most dangerous player to miss the jury vote. Joel’s game looked quieter than it was because so much of it ran through pairs, but three HOHs, three vetoes, and three saves when targeted made him far more than a passenger. His problem was that his best relationships kept becoming visible just as the house needed a target, and at final three Misha gave him the ultimate compliment by cutting the one finalist nobody wanted to sit beside.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "tobias",
+      "name": "Tobias",
+      "rank": 4,
+      "tier": "A",
+      "score": 73.1,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        73.1
+      ],
+      "placements": [
+        4
+      ],
+      "avgPlacement": 4,
+      "challengeWins": 1,
+      "blockSurvived": 3,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Better than the pawn-chair image suggests, Tobias was a late-game hub whose vote sense and relationships kept him in the decision room even while he kept touching the block. His loyalty game gave him reach, but it also made him too visible once he had cut Dylon, survived Jane, and kept building final twos. His Week 9 Block Buster win bought him one more round; Misha’s final-four veto ended the run one eviction short of the finale.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "ireland",
+      "name": "Ireland",
+      "rank": 5,
+      "tier": "A",
+      "score": 72.7,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        72.7
+      ],
+      "placements": [
+        10
+      ],
+      "avgPlacement": 10,
+      "challengeWins": 10,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "A tenth-place juror with a finalist’s competition résumé. Ireland won HOH, vetoes, and Block Busters whenever the game put her in danger, and her Week 2 power steal was the kind of move that can flip a season — but it also made her the person the house could point to every time things got scary. Once she finally lost the arena to Natasha, there was no vote structure left behind the wins, and the eviction was unanimous.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "aaron",
+      "name": "Aaron",
+      "rank": 6,
+      "tier": "B",
+      "score": 70.4,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        70.4
+      ],
+      "placements": [
+        6
+      ],
+      "avgPlacement": 6,
+      "challengeWins": 5,
+      "blockSurvived": 2,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "A loyal soldier who turned survival into a real jury run. Aaron was nominated seven times, but three arena wins and a veto kept him from becoming the easy boot, while his votes usually stayed with the house. The problem was never that he lost control of a week; it was that his circle stayed too small, and at the double eviction Tobias had more reason to keep Jules than to save him.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "jane",
+      "name": "Jane",
+      "rank": 7,
+      "tier": "B",
+      "score": 68.8,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        68.8
+      ],
+      "placements": [
+        5
+      ],
+      "avgPlacement": 5,
+      "challengeWins": 2,
+      "blockSurvived": 3,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "A messy but legitimately dangerous late-jury game. Jane re-entered through the battle back, rebuilt enough relationships to win power and shape votes, but her best moves too often became leverage for someone else — most notably saving Joel with the veto before he helped send her out at five. She was never dragged, but she could never shake the label of the returnee who was connected enough to threaten the endgame and expendable enough to cut.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "dylon",
+      "name": "Dylon",
+      "rank": 8,
+      "tier": "B",
+      "score": 64.3,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        64.3
+      ],
+      "placements": [
+        11
+      ],
+      "avgPlacement": 11,
+      "challengeWins": 3,
+      "blockSurvived": 1,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "A dangerous mid-jury game that peaked in the exact moment it exposed him. Dylon won two HOHs, held the Mystery Veto until it mattered, and used it in Week 6 to blow up Ireland’s settled block and save himself, but afterward the house could see every reason to take him seriously. By Week 9, sitting beside Aaron, he had become the cleaner threat, and the vote against him was unanimous.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "gyselle",
+      "name": "Gyselle",
+      "rank": 9,
+      "tier": "B",
+      "score": 63.2,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        63.2
+      ],
+      "placements": [
+        7
+      ],
+      "avgPlacement": 7,
+      "challengeWins": 2,
+      "blockSurvived": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "A connected but slippery juror who had more reach than ownership. Gyselle survived the block and saved herself twice in the arena, but too often let hard votes happen around her instead of making them hers, leaving allies unsure whether her loyalty meant anything after the Hasan betrayal. At final seven, she sat next to Jane, assumed the votes were set, and was cut as the bigger threat before she could turn all those options into a real endgame.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "natasha",
+      "name": "Natasha",
+      "rank": 10,
+      "tier": "B",
+      "score": 61.2,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        61.2
+      ],
+      "placements": [
+        9
+      ],
+      "avgPlacement": 9,
+      "challengeWins": 1,
+      "blockSurvived": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "One of BB1’s cleanest jury cuts: Natasha had enough social structure to matter, but too much of it was visible. She built through The Power Couple, The War Room, and The Oath, then kept herself alive with a clutch Week 10 Block Buster win, yet her reads kept lagging behind the vote as the house shifted away from her alliances. When she sat next to Tobias in Week 11, her social game still forced a tie, but Joel used the Head of Household tiebreaker to take out the more disruptive piece.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "felipe",
+      "name": "Felipe",
+      "rank": 11,
+      "tier": "C",
+      "score": 59,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        59
+      ],
+      "placements": [
+        8
+      ],
+      "avgPlacement": 8,
+      "challengeWins": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "One of BB1’s sharpest non-winning games, built almost entirely without power. Felipe never won HOH or veto, touched the block only once as a pawn, and spent most of the season as the spare number everyone thought they could use. But once his final twos were too visible, Jane’s veto saving Joel left Felipe exposed, and the same relationships that kept him off the block made him the juror everyone could afford to cut.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "hasan",
+      "name": "Hasan",
+      "rank": 12,
+      "tier": "C",
+      "score": 53.7,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        53.7
+      ],
+      "placements": [
+        13
+      ],
+      "avgPlacement": 13,
+      "challengeWins": 1,
+      "blockSurvived": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Hasan saw the vote structure early, but his Week 3 HOH made him a target before his relationships could hold up under pressure. He exposed enough of the house to become legible, then watched his own numbers compare notes and drift away, right down to Gyselle voting him out. By Week 6, sitting next to Tobias after the veto scramble, the house kept the more useful connected piece and sent Hasan out 9-1.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "nico",
+      "name": "Nico",
+      "rank": 13,
+      "tier": "C",
+      "score": 51.8,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        51.8
+      ],
+      "placements": [
+        12
+      ],
+      "avgPlacement": 12,
+      "challengeWins": 1,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "A solid social player whose BB1 game looked safer than it was. Nico had a stolen Head of Household, a Block Buster save, and only one official nomination before his eviction week, but that defensive record hid how little leverage he had once Ireland came off the block. His bond with Felipe was real until it became evidence Felipe needed to cut him, and Nico’s quiet exit — no real campaign, the votes assumed locked — made that betrayal land even cleaner.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "harriett",
+      "name": "Harriett",
+      "rank": 14,
+      "tier": "D",
+      "score": 50.8,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        50.8
+      ],
+      "placements": [
+        15
+      ],
+      "avgPlacement": 15,
+      "challengeWins": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "An early overplayer with a twist she never turned into safety. Harriett’s twin twist gave her an extra vote and made every conversation harder to read, but she spent that cover making too many conflicting deals instead of building a durable alliance. Her Week 4 Mystery Competitor power only put Scott into the veto draw, and when that failed during Jules’s HOH, the house compared notes and sent her out unanimously before jury.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "zella",
+      "name": "Zella",
+      "rank": 15,
+      "tier": "D",
+      "score": 49.7,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        49.7
+      ],
+      "placements": [
+        14
+      ],
+      "avgPlacement": 14,
+      "challengeWins": 1,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "A loud, visible pre-jury presence whose game was strong enough to matter and exposed enough to cut. Zella won a Block Buster and survived early danger, but her loyalty to Natasha turned her into half of an obvious pair, and by Week 5 the house had an easy target. The 6-5 vote says she was not dead on the block; her mistake was believing the count was locked and letting Misha’s vote land before her campaign did.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "amberly",
+      "name": "Amberly",
+      "rank": 16,
+      "tier": "D",
+      "score": 44.7,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        44.7
+      ],
+      "placements": [
+        16
+      ],
+      "avgPlacement": 16,
+      "challengeWins": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Amberly was a pre-jury boot with more game sense than safety, social enough that her eviction felt preventative rather than incidental. Hasan’s Head of Household exposed the gap in her game: once the block narrowed, she was left beside Gyselle, whose alliance insulation turned Amberly’s personal warmth into a 10-2 eviction. Her final read on the house was right, but it came after the votes had already hardened against her.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "stella",
+      "name": "Stella",
+      "rank": 17,
+      "tier": "D",
+      "score": 43,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        43
+      ],
+      "placements": [
+        17
+      ],
+      "avgPlacement": 17,
+      "challengeWins": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Gone before the house had fully hardened. Stella’s bond with Harriett gave her something real, and Tobias’s vote against her mattered because it exposed how much trust she thought she had. Once the veto and Block Buster stripped away her outs, she was left on the block beside a nominee with more campaign routes, and the 10-3 vote made clear that her loyalty game never became a vote count.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    }
+  ]
+}

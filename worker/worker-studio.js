@@ -898,6 +898,20 @@ const PLAYERS_DB_PATH  = 'players_database.json';
 const SEASONS_DB_PATH  = 'seasons_database.json';
 const RANKINGS_DB_PATH = 'rankings_database.json';
 
+/**
+ * A RANKING BOARD PER SHOW, named the way the season files beside it are.
+ *
+ * This endpoint committed every board it was given to rankings_database.json,
+ * which declares itself Total Drama's, so applying Big Brother 1 wrote
+ * seventeen houseguests into the camp's board. Mirrors js/ranking-boards.js --
+ * change one and change the other.
+ */
+function rankingsPathFor(format) {
+  return !format || format === DEFAULT_FORMAT
+    ? RANKINGS_DB_PATH
+    : `rankings_${formatPrefix(format)}.json`;
+}
+
 /** Read a repo JSON file. Falls back to download_url for files over 1MB,
  *  where the GitHub contents API stops inlining content. */
 async function getRepoJson(env, path, required = true) {
@@ -1492,7 +1506,9 @@ async function publishSeason(env, payload = {}) {
   if (payload.players)   docs.push([PLAYERS_DB_PATH, payload.players]);
   if (payload.seasons)   docs.push([SEASONS_DB_PATH, payload.seasons]);
   if (payload.franchise) docs.push(['franchise_database.json', payload.franchise]);
-  if (payload.rankings)  docs.push([RANKINGS_DB_PATH, payload.rankings]);
+  // The board belonging to the show whose season is being published. `format`
+  // is resolved above for the season document; the board follows it.
+  if (payload.rankings)  docs.push([rankingsPathFor(payload.format), payload.rankings]);
   if (!docs.length) throw new ValidationError('nothing to publish — no documents in the request');
 
   // Refuse obviously truncated payloads rather than committing them over good

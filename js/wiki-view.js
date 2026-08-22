@@ -121,6 +121,19 @@ function _linker(dossier, root) {
   const keys = [...targets.keys()].sort((a, b) => b.length - a.length);
   const rx = keys.length ? new RegExp(keys.map(rxEsc).join('|'), 'g') : null;
   const isWord = ch => ch && /[A-Za-z0-9]/.test(ch);
+  // ── A NAME INSIDE A PLACE NAME IS NOT A PERSON ─────────────────────
+  //
+  // "San Diego" is a city and Diego is a houseguest, and the boundary test
+  // cannot tell them apart: the character before "Diego" is a space either way.
+  // So a bio that said somebody met their partner in a San Diego bar linked the
+  // bar to a cast member's page.
+  //
+  // The fix is the word BEFORE the match. These prefixes only ever start a place
+  // name, so a capitalised name following one is part of it — "San Diego",
+  // "Santa Rosa", "New Jersey", "Mount Sierra", "Lake Georgia". Nothing else is
+  // blocked: "and Diego", "with Diego", "Diego said" all still link.
+  const PLACE_PREFIX = /(?:^|[\s(\["'“])(?:San|Santa|Sao|São|Los|Las|New|Fort|Ft\.|Saint|St\.|Ste\.|Port|Lake|Mount|Mt\.|Rio|Cape|El|La|Le|North|South|East|West|Upper|Lower|Grand|Old|Nova|Villa)\s+$/;
+  const inPlaceName = (str, i) => PLACE_PREFIX.test(str.slice(Math.max(0, i - 14), i));
 
   const text = raw => {
     const str = String(raw ?? '');
@@ -130,7 +143,10 @@ function _linker(dossier, root) {
     while ((m = rx.exec(str))) {
       const i = m.index;
       const word = m[0];
-      if (isWord(str[i - 1]) || isWord(str[i + word.length])) { rx.lastIndex = i + 1; continue; }
+      if (isWord(str[i - 1]) || isWord(str[i + word.length]) || inPlaceName(str, i)) {
+        rx.lastIndex = i + 1;
+        continue;
+      }
       out += esc(str.slice(last, i))
         + `<a class="wk-link" href="${targets.get(word)}">${esc(word)}</a>`;
       last = i + word.length;

@@ -2180,6 +2180,19 @@ function _ppLinkPeople(html, selfName) {
   }
   if (!_ppNameRx) return str;
   const isWord = ch => ch && /[A-Za-z0-9]/.test(ch);
+  // ── A NAME INSIDE A PLACE NAME IS NOT A PERSON ─────────────────────
+  //
+  // "San Diego" is a city and Diego is a houseguest, and the boundary test
+  // cannot tell them apart: the character before "Diego" is a space either way.
+  // So a bio that said somebody met their partner in a San Diego bar linked the
+  // bar to a cast member's page.
+  //
+  // The fix is the word BEFORE the match. These prefixes only ever start a place
+  // name, so a capitalised name following one is part of it — "San Diego",
+  // "Santa Rosa", "New Jersey", "Mount Sierra", "Lake Georgia". Nothing else is
+  // blocked: "and Diego", "with Diego", "Diego said" all still link.
+  const PLACE_PREFIX = /(?:^|[\s(\["'“])(?:San|Santa|Sao|São|Los|Las|New|Fort|Ft\.|Saint|St\.|Ste\.|Port|Lake|Mount|Mt\.|Rio|Cape|El|La|Le|North|South|East|West|Upper|Lower|Grand|Old|Nova|Villa)\s+$/;
+  const inPlaceName = (part, at) => PLACE_PREFIX.test(part.slice(Math.max(0, at - 14), at));
   // Odd indexes are tags, even indexes are text. Only the text is touched.
   return str.split(/(<[^>]*>)/).map((part, i) => {
     if (i % 2 === 1 || !part) return part;
@@ -2187,7 +2200,8 @@ function _ppLinkPeople(html, selfName) {
     _ppNameRx.lastIndex = 0;
     while ((m = _ppNameRx.exec(part))) {
       const at = m.index, word = m[0];
-      if (isWord(part[at - 1]) || isWord(part[at + word.length]) || word === selfName) {
+      if (isWord(part[at - 1]) || isWord(part[at + word.length]) || word === selfName
+        || inPlaceName(part, at)) {
         _ppNameRx.lastIndex = at + 1;
         continue;
       }

@@ -81,6 +81,31 @@
     .sr-grid td.is-out { background:rgba(248,113,113,.34); color:#fff; font-weight:800; }
     .sr-grid td.is-gone { background:rgba(255,255,255,.02); }
     .sr-grid-tot { color:var(--muted); font-variant-numeric:tabular-nums; }
+    /* ── FACES IN THE GRIDS ───────────────────────────────────────────────
+       Both grids are about people and neither drew one. The row header gets
+       the houseguest, and every vote cell gets the person they wrote down —
+       fifteen columns of names is a table you read, fifteen columns of faces
+       is one you scan, which is why the reference wikis carry portraits in
+       exactly these two tables. */
+    .sr-grid tbody th img { width:20px; height:20px; border-radius:50%; object-fit:cover;
+      vertical-align:-6px; margin-right:6px; border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.06); }
+    .sr-vf { display:inline-flex; align-items:center; gap:4px; justify-content:center; }
+    .sr-vf img { width:17px; height:17px; border-radius:50%; object-fit:cover;
+      border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.06); }
+    .sr-vf b { font-weight:700; }
+    .sr-votes td { padding:3px 6px; }
+    /* Evicted, and not back yet: not safe, not in the house. */
+    .sr-grid td.is-away { background:repeating-linear-gradient(45deg,
+      rgba(255,255,255,.03) 0 4px, transparent 4px 8px); color:rgba(255,255,255,.25); }
+    /* The week where nobody goes home. */
+    .sr-grid td.is-nowk, .sr-grid th.is-nowk { background:rgba(148,163,184,.09);
+      color:var(--muted); }
+    .sr-grid td.is-count { font-variant-numeric:tabular-nums; }
+    .sr-pow-none-wk td { background:rgba(148,163,184,.06); }
+    .sr-nowk-line { font-size:11.5px; color:var(--muted); }
+    /* Somebody who left, came back, and left again. */
+    .sr-wall-back { font-style:normal; color:#4fbf8b; font-weight:800; margin-left:3px; }
     .sr-key { display:inline-block; padding:1px 5px; border-radius:3px; font-size:10px; font-weight:800; }
     .sr-key.is-hoh { background:rgba(250,204,21,.2); color:#fde68a; }
     .sr-key.is-veto { background:rgba(56,189,248,.18); color:#bae6fd; }
@@ -742,10 +767,47 @@ function buildRecords(season){
         ...(winnerName ? [winnerName] : []),
         ...cast.filter(p => p.placement === 1).map(p => p.name),
       ]);
+      /* A RETURNEE LEAVES TWICE, and the wall only ever showed the second
+         one. Jane was evicted in week 7 of Big Brother 1, won her way back in
+         through the Battle Back, and went out again in week 15 — a fact the
+         record holds in full and the page reduced to "Week 15", which reads as
+         somebody who was never touched until the end.
+
+         `outWeek` stays the LAST exit, because that is the one that greys the
+         wall and blanks the grid. `exits` keeps all of them, and `awayWeeks`
+         is the stretch in between: a week where somebody has already been
+         evicted and appears nowhere in the record — no ballot, no chair, no
+         vote against them — is a week they were not in the house for, and the
+         grid should say so rather than drawing them as quietly safe. */
       const outWeek = {};
+      const exits = {};
       weeks.forEach(w => {
-        if (w.evicted && !finalists.has(w.evicted)) outWeek[w.evicted] = w.week;
+        if (w.evicted && !finalists.has(w.evicted)) {
+          outWeek[w.evicted] = w.week;
+          (exits[w.evicted] = exits[w.evicted] || []).push(w.week);
+        }
       });
+      const inWeek = (name, w) => w.hoh === name || w.vetoWinner === name
+        || w.safetyWinner === name || w.evicted === name
+        || (w.ballots || []).some(b => b.voter === name)
+        || (w.votes || {})[name] != null
+        || (w.initialNominees || []).includes(name)
+        || (w.blockBeforeSafety || []).includes(name)
+        || (w.finalNominees || []).includes(name);
+      const awayWeeks = {};
+      for (const [name, list] of Object.entries(exits)) {
+        if (list.length < 2) continue;
+        const back = new Set();
+        for (const w of weeks) {
+          if (w.week > list[0] && w.week <= list[list.length - 1] && !inWeek(name, w)) back.add(w.week);
+        }
+        awayWeeks[name] = back;
+      }
+      const isAway = (name, w) => awayWeeks[name]?.has(w.week);
+      /* THE WEEK WHERE NOBODY GOES HOME. It has a Head of Household and no
+         ceremony, so every table below has to be told not to read it as a week
+         whose record is simply missing. */
+      const cancelled = w => !!w.cancelledEviction;
 
       /* ── 1. the facts ── */
       const facts = [
@@ -813,7 +875,11 @@ function buildRecords(season){
           <div class="sr-wall-photo">${av(p)}</div>
           <div class="sr-wall-name">${esc(p.name)}</div>
           <div class="sr-wall-fate">${win ? 'Winner'
-            : gone ? `${roundWord} ${gone}` : esc(p.status || ord(p.placement))}</div>
+            : gone ? `${roundWord} ${gone}${(exits[p.name] || []).length > 1
+              ? ` <i class="sr-wall-back" title="${esc(`Evicted ${roundWord.toLowerCase()} ${
+                exits[p.name][0]}, came back, out again ${roundWord.toLowerCase()} ${gone}`)}">\u21A9</i>`
+              : ''}`
+            : esc(p.status || ord(p.placement))}</div>
         </a>`;
       }).join('');
 
@@ -896,13 +962,26 @@ function buildRecords(season){
                 ${hasBlock ? '<th>Power of Veto</th><th>On the block</th>' : ''}
                 <th>${hasBlock ? 'Evicted' : 'Voted out'}</th>
               </tr></thead>
-              <tbody>${weeks.map(w => `<tr>
+              <tbody>${weeks.map(w => (cancelled(w)
+                /* THE WEEK WHERE NOBODY GOES HOME. Drawn as one wide cell
+                   rather than a row of dashes, which is what a week with no
+                   record looks like — and this week has a record, it just has
+                   no ceremony in it. */
+                ? `<tr class="sr-pow-none-wk">
+                    <td><div class="sr-pow-wk">${w.week}<span>NO EVICTION</span></div></td>
+                    <td colspan="${1 + (anyArena ? 1 : 0) + (hasBlock ? 2 : 0) + 1}">
+                      <span class="sr-nowk-line">No nominations, no veto and no vote${
+                        w.hoh ? ` — ${esc(w.hoh)} held a Head of Household with nothing to spend it on`
+                          : ''}. The house was the same size on Thursday as it was on Sunday.</span>
+                    </td>
+                  </tr>`
+                : `<tr>
                 <td><div class="sr-pow-wk">${w.week}${tally(w)}</div></td>
                 <td>${chip(w.hoh || w.immunityWinner || w.winner, 'hoh', hasBlock ? 'H' : 'I')}</td>
                 ${anyArena ? `<td>${chip(w.safetyWinner, 'arena', 'B')}</td>` : ''}
                 ${hasBlock ? `<td>${chip(w.vetoWinner, 'veto', 'V')}</td><td>${nomFaces(w)}</td>` : ''}
                 <td>${chip(w.evicted, 'out', '✕')}</td>
-              </tr>`).join('')}</tbody>
+              </tr>`)).join('')}</tbody>
             </table>
           </div>
           <div class="sr-pow-key">
@@ -935,18 +1014,23 @@ function buildRecords(season){
       };
       const grid = (hasBlock && weeks.length) ? `
         <div class="wk-scroll">
-          <table class="wk-table wk-weeks">
+          <table class="wk-table wk-weeks sr-grid">
             <thead><tr><th>${hasBlock ? 'Houseguest' : 'Contestant'}</th>${weeks.map(w =>
-              `<th>${w.week}</th>`).join('')}<th>Votes</th></tr></thead>
+              `<th${cancelled(w) ? ' class="is-nowk" title="No eviction this week"' : ''}>${
+                w.week}</th>`).join('')}<th>Votes</th></tr></thead>
             <tbody>${cast.map(p => {
               const gone = outWeek[p.name];
               let against = 0;
               return `<tr>
-                <th><a href="player.html?player=${esc(p.playerSlug)}&view=wiki">${esc(p.name)}</a></th>
+                <th><a href="player.html?player=${esc(p.playerSlug)}&view=wiki">${
+                  av(p)}${esc(p.name)}</a></th>
                 ${weeks.map(w => {
                   const left = gone && w.week > gone;
                   against += (w.votes || {})[p.name] || 0;
                   if (left) return '<td class="is-gone"></td>';
+                  // Out of the house and not yet back: not safe, not there.
+                  if (isAway(p.name, w)) return '<td class="is-away" title="Out of the house">·</td>';
+                  if (cancelled(w) && !cellFor(p.name, w)[0]) return '<td class="is-nowk"></td>';
                   const [label, cls] = cellFor(p.name, w);
                   return `<td class="${cls}">${label}</td>`;
                 }).join('')}
@@ -969,8 +1053,9 @@ function buildRecords(season){
                 <thead><tr><th>Contestant</th><th>Challenge wins</th><th>Immunity</th>
                   <th>Rewards</th><th>Idols</th><th>Advantages</th><th>Votes against</th></tr></thead>
                 <tbody>${cast.map(p => `<tr>
-                  <th><a href="player.html?player=${esc(p.playerSlug)}&view=wiki">${esc(p.name)}</a></th>
-                  <td>${p.challengeWins || ''}</td>
+                  <th><a href="player.html?player=${esc(p.playerSlug)}&view=wiki">${
+                    av(p)}${esc(p.name)}</a></th>
+                  <td class="is-count">${p.challengeWins || ''}</td>
                   <td>${p.immunityWins || ''}</td>
                   <td>${p.rewardWins || ''}</td>
                   <td>${p.idolsFound || ''}</td>
@@ -1005,33 +1090,42 @@ function buildRecords(season){
           // and belongs on the grid rather than in a footnote.
           const tb = w.tieBreakVote;
           return tb && tb.voter === name
-            ? [`${esc(tb.evict)}`, 'is-tiebreak', 'broke the tie']
-            : ['HOH', 'is-hoh', 'did not vote'];
+            ? [esc(tb.evict), 'is-tiebreak', 'broke the tie', byName[tb.evict]]
+            : ['HOH', 'is-hoh', 'did not vote', null];
         }
         const up = (w.finalNominees || []).includes(name)
           || (w.blockBeforeSafety || []).includes(name);
         const ballot = (w.ballots || []).find(b => b.voter === name);
         if (ballot) {
+          // WITH THE FACE. Fifteen columns of surnames is a grid you read;
+          // fifteen columns of faces is one you scan, which is the only reason
+          // the reference wikis put portraits in this table at all.
           return [esc(ballot.evict), ballot.changed ? 'is-changed' : '',
-            ballot.stated ? `said ${ballot.stated}` : (ballot.changed ? 'changed their mind' : '')];
+            ballot.stated ? `said ${ballot.stated}` : (ballot.changed ? 'changed their mind' : ''),
+            byName[ballot.evict]];
         }
-        if (w.evicted === name) return ['OUT', 'is-out', 'evicted'];
-        if (up) return ['NOM', 'is-nom', 'on the block, could not vote'];
-        return ['', '', ''];
+        if (w.evicted === name) return ['OUT', 'is-out', 'evicted', null];
+        if (up) return ['NOM', 'is-nom', 'on the block, could not vote', null];
+        return ['', '', '', null];
       };
       const votingHistory = hasBallots ? `
         <div class="wk-scroll">
-          <table class="wk-table wk-weeks sr-votes">
+          <table class="wk-table wk-weeks sr-grid sr-votes">
             <thead><tr><th>Voted to evict</th>${weeks.map(w =>
-              `<th>${w.week}</th>`).join('')}</tr></thead>
+              `<th${cancelled(w) ? ' class="is-nowk" title="No eviction this week"' : ''}>${
+                w.week}</th>`).join('')}</tr></thead>
             <tbody>${cast.map(p => {
               const gone = outWeek[p.name];
               return `<tr>
-                <th><a href="player.html?player=${esc(p.playerSlug)}&view=wiki">${esc(p.name)}</a></th>
+                <th><a href="player.html?player=${esc(p.playerSlug)}&view=wiki">${
+                  av(p)}${esc(p.name)}</a></th>
                 ${weeks.map(w => {
                   if (gone && w.week > gone) return '<td class="is-gone"></td>';
-                  const [label, cls, title] = voteCell(p.name, w);
-                  return `<td class="${cls}"${title ? ` title="${esc(title)}"` : ''}>${label}</td>`;
+                  if (isAway(p.name, w)) return '<td class="is-away" title="Out of the house">·</td>';
+                  if (cancelled(w)) return '<td class="is-nowk" title="No eviction this week"></td>';
+                  const [label, cls, title, face] = voteCell(p.name, w);
+                  return `<td class="${cls}"${title ? ` title="${esc(title)}"` : ''}>${
+                    face ? `<span class="sr-vf">${av(face)}<b>${label}</b></span>` : label}</td>`;
                 }).join('')}
               </tr>`;
             }).join('')}</tbody>
@@ -1084,8 +1178,30 @@ function buildRecords(season){
           bits.push(`<b>${esc(w.evicted)}</b> was ${hasBlock ? 'evicted' : 'voted out'}${tally.length > 1
             ? `, ${tally[0]}-${tally[1]}` : ''}.`);
         }
-        const w2 = written.get(Number(w.week));
-        const body = w2
+        /* ── WRITTEN PROSE THAT NAMES NOBODY FROM THIS WEEK IS NOT ABOUT
+              THIS WEEK. ──
+           Big Brother 1 shipped with fifteen `gameHistory` rows describing an
+           entirely different cast — Millie, Bowie, Caleb, Priya — because the
+           fill was run against the wrong season's episodes and committed here.
+           The page printed all of it, above the derived line, as this season's
+           own account of itself.
+
+           The test is the record, not a heuristic: every round the fill writes
+           names the person who held power and the person who left, and both
+           are in the week object. Prose that mentions none of them is prose
+           about some other house. */
+        const w2raw = written.get(Number(w.week));
+        const knownNames = [w.hoh, w.winner, w.immunityWinner, w.vetoWinner, w.safetyWinner,
+          w.evicted, ...(w.initialNominees || []), ...(w.blockBeforeSafety || []),
+          ...(w.finalNominees || [])].filter(Boolean);
+        const aboutThisWeek = w2raw && (!knownNames.length || knownNames.some(n =>
+          new RegExp(`\\b${String(n).replace(/[^A-Za-z0-9 ]/g, c => String.fromCharCode(92) + c)}\\b`)
+            .test(String(w2raw.prose))));
+        const w2 = aboutThisWeek ? w2raw : null;
+        const body = cancelled(w)
+          ? `<p class="sr-week-f">No nominations, no veto and no vote this week — nobody went
+             home.${w.hoh ? ` <b>${esc(w.hoh)}</b> won Head of Household.` : ''}</p>`
+          : w2
           ? `${w2.title ? `<div class="sr-week-t">${esc(w2.title)}</div>` : ''}
              <p class="sr-week-p">${esc(w2.prose)}</p>
              <p class="sr-week-f">${bits.join(' ')}</p>`

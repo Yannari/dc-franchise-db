@@ -1236,6 +1236,11 @@ function _profileStyles(tc) {
   .pp-wk.is-out{background:rgba(190,24,60,.22);border-color:rgba(244,63,94,.55);}
   .pp-wk.is-out .pp-wk-bar{background:#f43f5e;}
   .pp-wk.is-out .pp-wk-n{color:#fda4af;}
+  /* out of the house between two evictions — hatched rather than flat, since
+     flat is what a week they were never part of looks like */
+  .pp-wk.is-away{opacity:.5;background:repeating-linear-gradient(45deg,
+    rgba(255,255,255,.05) 0 4px,transparent 4px 8px);}
+  .pp-wk.is-away .pp-wk-n{color:var(--muted);}
   /* the weeks after they left, drawn flat so the season keeps its length */
   .pp-wk.is-gone{opacity:.24;}
   .pp-wk.is-gone .pp-wk-n{font-weight:600;color:var(--muted);}
@@ -2244,6 +2249,36 @@ function _seasonRun(name, doc) {
   const rows = bbWeeks.length ? bbWeeks : (Array.isArray(doc?.votingHistory) ? doc.votingHistory : []);
   if (!rows.length) return '';
 
+  /* ── A RETURNEE COMES BACK, AND THE STRIP HAD NO WAY TO ──────────────
+     `exitWeek` was set at the FIRST eviction and every later week was drawn
+     flat as "not in the house". Jane went out in week 7 of Big Brother 1, won
+     her way back through the Battle Back and played eight more weeks including
+     a Head of Household — and her run strip greyed out the whole of it, then
+     drew her second eviction on a week it had already declared her gone.
+
+     So the exits are counted first. The LAST one ends the season; the weeks
+     between an exit and the next week they actually appear in are the stretch
+     they were out of the house, which is a third state — not safe, not gone. */
+  const appears = (r, n) => (bbWeeks.length
+    ? (r.hoh === n || r.vetoWinner === n || r.safetyWinner === n || r.evicted === n
+      || (r.ballots || []).some(b => b.voter === n)
+      || (r.votes || {})[n] != null
+      || (r.initialNominees || []).includes(n)
+      || (r.blockBeforeSafety || []).includes(n)
+      || (r.finalNominees || []).includes(n))
+    : (r.eliminated === n || (r.votes || []).some(v => v.voter === n || v.target === n)));
+  const exitWeeks = rows.filter(r => (bbWeeks.length ? r.evicted : r.eliminated) === name)
+    .map(r => Number(r.week ?? r.episode));
+  const finalExit = exitWeeks.length ? exitWeeks[exitWeeks.length - 1] : null;
+  const cameBack = exitWeeks.length > 1;
+  const awayAt = new Set();
+  if (cameBack) {
+    for (const r of rows) {
+      const n = Number(r.week ?? r.episode);
+      if (n > exitWeeks[0] && n <= finalExit && !appears(r, name)) awayAt.add(n);
+    }
+  }
+
   const slug = n => String(n || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
   /* A face, 20px, gone entirely when there is no file for it. */
   const face = (n, cls, tip) => (n
@@ -2332,12 +2367,17 @@ function _seasonRun(name, doc) {
     }
 
     // Weeks after they left are drawn flat, so the strip keeps the length of
-    // the season and an early exit looks like one.
-    const gone = exitWeek != null && num > exitWeek;
+    // the season and an early exit looks like one. `finalExit` rather than the
+    // first one, or a returnee is drawn as gone for the half of the season
+    // they came back and played.
+    const away = awayAt.has(num);
+    const gone = away || (finalExit != null && num > finalExit);
     if (!gone) lastPresent = num;
-    const label = gone ? 'not in the house' : (why.length ? why.join(' · ') : 'safe, no power');
+    const label = away ? 'out of the house, waiting to get back in'
+      : gone ? 'not in the house'
+        : (why.length ? why.join(' · ') : 'safe, no power');
     const roundW = rounds === 'week' ? 'Week' : 'Episode';
-    tiles.push(`<div class="pp-wk is-${gone ? 'gone' : state}" title="${
+    tiles.push(`<div class="pp-wk is-${away ? 'away' : gone ? 'gone' : state}" title="${
       esc(`${roundW} ${num} — ${label}`)}">
       <div class="pp-wk-n">${num}</div>
       <div class="pp-wk-marks">${gone ? '' : marks.join('')}</div>
@@ -2372,7 +2412,11 @@ function _seasonRun(name, doc) {
      strange way to say so, and the document knows which they were. */
   const place = (doc.placements || []).find(p => p.name === name)?.placement;
   const end = exitWeek != null
-    ? ` ${exit === 'evicted' ? 'Evicted' : 'Voted out'} in ${rounds} <b>${exitWeek}</b>.`
+    ? (cameBack
+      ? ` ${exit === 'evicted' ? 'Evicted' : 'Voted out'} in ${rounds} <b>${exitWeeks[0]}</b>,
+         won their way back in, and ${exit === 'evicted' ? 'evicted' : 'voted out'} again in
+         ${rounds} <b>${finalExit}</b>.`
+      : ` ${exit === 'evicted' ? 'Evicted' : 'Voted out'} in ${rounds} <b>${exitWeek}</b>.`)
     : place === 1 ? ' <b>Won the season.</b>'
       : place === 2 ? ' Made it to the end and lost the final vote.'
         : place ? ` Reached ${rounds} <b>${lastPresent}</b> and finished <b>#${place}</b>.`
@@ -2383,6 +2427,7 @@ function _seasonRun(name, doc) {
        <span><i style="background:#38bdf8"></i>Came off the block</span>
        <span><i style="background:#f87171"></i>On the block at the vote</span>
        <span><i style="background:#f43f5e"></i>Gone</span>
+       ${cameBack ? '<span><i style="background:rgba(255,255,255,.2)"></i>Out of the house</span>' : ''}
        <span class="pp-run-key-m"><i class="m-n">N</i>nominated
          <i class="m-h">H</i>HOH <i class="m-v">V</i>veto <i class="m-b">B</i>Block Buster</span>
        <span class="pp-run-key-f">face = who they voted to evict</span>`

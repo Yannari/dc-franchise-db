@@ -5,7 +5,7 @@
   "title": "Season 1: The Room Decides",
   "subtitle": "A season where the plan broke more often than it held, and Misha won by being useful to every side until the final question.",
   "castSize": 17,
-  "episodeCount": 15,
+  "episodeCount": 16,
   "jurySize": 9,
   "winner": {
     "name": "Misha",
@@ -803,6 +803,23 @@
   "weeks": [
     {
       "week": 1,
+      "hoh": null,
+      "initialNominees": [],
+      "vetoWinner": null,
+      "finalNominees": [],
+      "votes": {},
+      "voteChanges": 0,
+      "tieBreak": null,
+      "evicted": null,
+      "blockBeforeSafety": null,
+      "safetyWinner": null,
+      "ballots": [],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "cancelledEviction": true
+    },
+    {
+      "week": 2,
       "hoh": "Ireland",
       "initialNominees": [
         "Stella",
@@ -936,7 +953,7 @@
       }
     },
     {
-      "week": 2,
+      "week": 3,
       "hoh": "Hasan",
       "initialNominees": [
         "Amberly",
@@ -1073,7 +1090,7 @@
       }
     },
     {
-      "week": 3,
+      "week": 4,
       "hoh": "Jules",
       "initialNominees": [
         "Harriett",
@@ -1202,7 +1219,7 @@
       }
     },
     {
-      "week": 4,
+      "week": 5,
       "hoh": "Dylon",
       "initialNominees": [
         "Ireland",
@@ -1331,7 +1348,7 @@
       }
     },
     {
-      "week": 5,
+      "week": 6,
       "hoh": "Ireland",
       "initialNominees": [
         "Hasan",
@@ -1449,7 +1466,7 @@
       }
     },
     {
-      "week": 6,
+      "week": 7,
       "hoh": "Joel",
       "initialNominees": [
         "Dylon",
@@ -1566,7 +1583,7 @@
       }
     },
     {
-      "week": 7,
+      "week": 8,
       "hoh": "Dylon",
       "initialNominees": [
         "Gyselle",
@@ -1675,7 +1692,7 @@
       }
     },
     {
-      "week": 8,
+      "week": 9,
       "hoh": "Ireland",
       "initialNominees": [
         "Aaron",
@@ -1779,7 +1796,7 @@
       }
     },
     {
-      "week": 9,
+      "week": 10,
       "hoh": "Jules",
       "initialNominees": [
         "Jane",
@@ -1877,7 +1894,7 @@
       }
     },
     {
-      "week": 10,
+      "week": 11,
       "hoh": "Joel",
       "initialNominees": [
         "Natasha",
@@ -1978,7 +1995,7 @@
       }
     },
     {
-      "week": 11,
+      "week": 12,
       "hoh": "Aaron",
       "initialNominees": [
         "Joel",
@@ -2066,7 +2083,7 @@
       }
     },
     {
-      "week": 12,
+      "week": 13,
       "hoh": "Misha",
       "initialNominees": [
         "Jane",
@@ -2146,7 +2163,7 @@
       }
     },
     {
-      "week": 13,
+      "week": 14,
       "hoh": "Jane",
       "initialNominees": [
         "Misha",
@@ -2217,7 +2234,7 @@
       }
     },
     {
-      "week": 14,
+      "week": 15,
       "hoh": "Misha",
       "initialNominees": [
         "Jane",
@@ -2279,7 +2296,7 @@
       }
     },
     {
-      "week": 15,
+      "week": 16,
       "hoh": "Joel",
       "initialNominees": [
         "Misha",

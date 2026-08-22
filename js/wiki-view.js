@@ -919,6 +919,10 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
       // can no longer hide half of itself.
       const cell = w => {
         if (w.evicted) return { label: isHouse ? 'Evicted' : 'Voted out', cls: 'wk-c-out', marks: [] };
+        // Out of the house between two evictions, and the week nobody went
+        // home: two states that are not "safe" and were both drawn as blank.
+        if (w.away) return { label: 'Out', cls: 'wk-c-away', marks: [] };
+        if (w.noEviction) return { label: '—', cls: 'wk-c-none', marks: [] };
         const marks = [];
         if (w.hoh) marks.push(['H', 'Head of Household']);
         if (w.veto) marks.push(['V', w.vetoOnSelf ? 'Won the veto and used it on themselves' : 'Won the Power of Veto']);
@@ -978,7 +982,8 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
           if (n(w => w.nominated)) bits.push(`nominated ${n(w => w.nominated)}x`);
           if (n(w => w.onBlock)) bits.push(`on the block at the vote ${n(w => w.onBlock)}x`);
           const against = rows.reduce((t, w) => t + (w.votesAgainst || 0), 0);
-          bits.push(`${rows.length} ${rows.length === 1 ? roundWord.toLowerCase() : `${roundWord.toLowerCase()}s`} played`);
+          const played = rows.filter(w => !w.away && !w.noEviction).length;
+          bits.push(`${played} ${played === 1 ? roundWord.toLowerCase() : `${roundWord.toLowerCase()}s`} played`);
           bits.push(against ? `${against} vote${against === 1 ? '' : 's'} cast against them`
             : 'never had a vote cast against them');
           return esc(bits.join(' · '));
@@ -1290,6 +1295,12 @@ export const WIKI_CSS = `
 .wk-c-arena{ background:rgba(79,191,139,.18); color:#a7f3d0; font-weight:700; }
 .wk-c-nom{ background:rgba(248,113,113,.14); color:#fecaca; }
 .wk-c-out{ background:rgba(248,113,113,.3); color:#fff; font-weight:700; }
+/* Evicted and not back yet — hatched, because blank is what a week they were
+   never part of looks like. */
+.wk-c-away{ background:repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 4px,
+  transparent 4px 8px); color:rgba(255,255,255,.4); font-size:10px; }
+/* The week where nobody goes home. */
+.wk-c-none{ background:rgba(148,163,184,.09); color:rgba(255,255,255,.35); }
 .wk-sub{ font-size:15px; margin:14px 0 6px; opacity:.9; }
 .wk-quotes{ list-style:none; margin:0; padding:0; }
 .wk-quotes li{ margin:0 0 14px; }

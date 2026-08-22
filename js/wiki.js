@@ -225,6 +225,23 @@ function _weekRowsFromDoc(found, name) {
   const weeks = Array.isArray(doc.weeks) ? doc.weeks : [];
   if (weeks.length) {
     const rows = [];
+    /* ── EVICTED IS NOT ALWAYS THE END ──────────────────────────────
+       This broke out of the loop at the first eviction, which is right for
+       almost everybody and wrong for the one player a season builds a twist
+       around: a Battle Back winner's grid ended at the week they lost, so the
+       eight weeks they came back and played — including a Head of Household —
+       were not in their article at all. The grid runs to the LAST time the
+       record says they left. */
+    const exits = weeks.filter(w => w.evicted === name).map(w => Number(w.week));
+    const finalExit = exits.length ? exits[exits.length - 1] : null;
+    /* The stretch between an exit and the week they turn up again: out of the
+       house, waiting on the door. Blank in the grid reads as a quiet week. */
+    const appears = w => w.hoh === name || w.vetoWinner === name || w.safetyWinner === name
+      || w.evicted === name || (w.ballots || []).some(b => b.voter === name)
+      || (w.votes || {})[name] != null
+      || (w.initialNominees || []).includes(name)
+      || (w.blockBeforeSafety || []).includes(name)
+      || (w.finalNominees || []).includes(name);
     let gone = false;
     for (const w of weeks) {
       if (gone) break;
@@ -280,6 +297,11 @@ function _weekRowsFromDoc(found, name) {
         // before that simply has none, which reads as "never a have-not" and is
         // why the section is dropped when no week records anybody.
         haveNot: (w.haveNots || []).includes(name),
+        away: exits.length > 1 && Number(w.week) > exits[0] && !appears(w),
+        // A week with no ceremony at all. The house is the same size on
+        // Thursday as it was on Sunday, and every cell in it is blank for a
+        // reason rather than for want of a record.
+        noEviction: !!w.cancelledEviction,
         votesAgainst: Number((w.votes || {})[name]) || 0,
         votedFor: ballot?.evict || '',
         // The slug the avatar is drawn from, straight off the ballot when the
@@ -291,7 +313,7 @@ function _weekRowsFromDoc(found, name) {
         evictedName: w.evicted || '',
         evicted: out,
       });
-      if (out) gone = true;
+      if (out && Number(w.week) === finalExit) gone = true;
     }
     return rows.length ? rows : null;
   }

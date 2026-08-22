@@ -283,3 +283,24 @@ describe('the preview prints the order it decided', () => {
     expect(SRC).toMatch(/function _ruPlaceCell/);
   });
 });
+
+describe('the board never prints a number its own badge contradicts', () => {
+  const PAGE = readFileSync(resolve(process.cwd(), 'rankings.html'), 'utf8');
+
+  it('floors the displayed score instead of rounding it', () => {
+    // Tier gates are whole numbers, so rounding a score UP across one prints a
+    // figure the badge disagrees with: 79.6 drew as "80" beside an A, which
+    // reads as broken tiers rather than a rounded display. A score is in a tier
+    // exactly when its FLOOR is, so flooring cannot contradict the badge.
+    expect(PAGE, 'a rounded score can cross a tier gate the score has not')
+      .not.toMatch(/Math\.round\(ranking\.score\)/);
+    expect(PAGE).toMatch(/Math\.floor\(ranking\.score\)/);
+  });
+
+  it('keeps every tier gate a whole number, which is what makes flooring safe', () => {
+    const src = SRC.slice(SRC.indexOf('function scoreTier'), SRC.indexOf('function tierColor'));
+    [...src.matchAll(/s >= (\d+(?:\.\d+)?)/g)].forEach(m => {
+      expect(Number(m[1]) % 1, `gate ${m[1]} is not a whole number`).toBe(0);
+    });
+  });
+});

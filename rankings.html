@@ -1281,7 +1281,14 @@ function renderPlayerCard(ranking, player) {
   html +=           ' data-target="' + dashTarget + '" style="filter:drop-shadow(0 0 5px ' + tc + '88)"/>';
   html +=       '</svg>';
   html +=       '<div class="score-ring-inner">';
-  html +=         '<div class="score-ring-num" style="color:' + tc + '" data-score="' + Math.round(ranking.score) + '">0</div>';
+  // FLOOR, NOT ROUND.
+  //
+  // Every tier gate is a whole number -- S is 80, A is 71 -- so rounding a
+  // score UP across one prints a number the badge beside it contradicts: 79.6
+  // was drawn as "80" next to an A, which reads as a bug in the tiers rather
+  // than a rounded display. Flooring cannot do that, because a score is in a
+  // tier exactly when its floor is.
+  html +=         '<div class="score-ring-num" style="color:' + tc + '" data-score="' + Math.floor(ranking.score) + '">0</div>';
   html +=         '<div class="score-ring-sub">/100</div>';
   if (ranking.rank) html += '<div class="score-ring-rank" style="color:' + tc + ';border-color:' + tc + '44;background:' + tc + '12">#' + ranking.rank + '</div>';
   html +=       '</div>';
@@ -1362,7 +1369,8 @@ function renderMiniCard(ranking, player) {
   html +=     '</div>';
   html +=     '<div class="mini-name" style="color:' + tc + '">' + (ranking.emoji || '') + ' ' + player.name + '</div>';
   html +=     '<div class="mini-rank">';
-  html +=       '<div class="mini-score-num" style="color:' + tc + '" data-score="' + Math.round(ranking.score) + '">0</div>';
+  // Floored for the same reason as the ring above.
+  html +=       '<div class="mini-score-num" style="color:' + tc + '" data-score="' + Math.floor(ranking.score) + '">0</div>';
   if (ranking.rank) html +=  '<div class="mini-rank-pill">#' + ranking.rank + '</div>';
   html +=     '</div>';
   html +=   '</div>';

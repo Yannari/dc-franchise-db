@@ -166,19 +166,49 @@ describe('closing statements', () => {
 });
 
 describe("America's Favourite", () => {
-  it('is voted from popularity, and finalists are not on the ballot', () => {
+  it('is voted from popularity, and the favourite usually wins', () => {
     const counts = {};
     for (let seed = 1; seed <= 200; seed++) {
       seasonWithJury();
       const afh = runAmericasFavourite({ finalTwo: ['Wayne', 'Priya'], rng: seededRng(seed) });
       expect(afh).toBeTruthy();
-      expect(['Wayne', 'Priya']).not.toContain(afh.winner);
       counts[afh.winner] = (counts[afh.winner] || 0) + 1;
     }
-    // Gus is the most popular evictee and should win most often — but Fern,
-    // who the audience never warmed to, still has to be able to win it.
+    // Gus is the most popular and should win most often — but Fern, who the
+    // audience never warmed to, still has to be able to win it.
     expect(counts.Gus).toBeGreaterThan(counts.Fern || 0);
     expect(Object.keys(counts).length).toBeGreaterThan(1);
+  });
+
+  // THE FINALISTS ARE ON THE BALLOT. They were struck off on the reasoning that
+  // they are playing for the money, which is not the rule the real show uses --
+  // Tyler Crispen won it in BB20 as the runner-up. It also produced the one
+  // outcome the prize should never produce: a season's most-loved houseguest
+  // barred from the audience award for being good at the game.
+  it('lets a finalist win it', () => {
+    const wins = new Set();
+    for (let seed = 1; seed <= 120; seed++) {
+      seasonWithJury();
+      // The audience adored the runner-up, which is exactly the Tyler case.
+      gs.popularity = { Wayne: 40, Priya: 4, Dara: 6, Eli: 2, Fern: -1, Gus: 9 };
+      const afh = runAmericasFavourite({ finalTwo: ['Wayne', 'Priya'], rng: seededRng(seed) });
+      wins.add(afh.winner);
+      expect(afh.tally.length).toBeGreaterThan(1);
+    }
+    expect([...wins]).toContain('Wayne');
+  });
+
+  // A count of twenty-five made one block worth four points of share, so the
+  // winner could be decided by a single lucky draw — Big Brother 1 came down to
+  // 5 blocks against 4, with a houseguest on half the favourite's popularity
+  // outpolling one on all of it.
+  it('counts enough of the audience for the margin to mean something', () => {
+    seasonWithJury();
+    const afh = runAmericasFavourite({ finalTwo: ['Wayne', 'Priya'], rng: seededRng(7) });
+    // At twenty-five blocks every share is a multiple of four, because a
+    // block IS four points. A finer grid is the whole point of counting more.
+    const onTheOldGrid = afh.tally.every(t => Math.abs(t.share / 4 - Math.round(t.share / 4)) < 0.005);
+    expect(onTheOldGrid).toBe(false);
   });
 });
 

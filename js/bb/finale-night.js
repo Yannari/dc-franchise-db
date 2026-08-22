@@ -1225,8 +1225,14 @@ const AFH_REASONS = [
   (n, p) => `never once being boring, which is a harder season-long game than any of the ones being judged tonight`,
   (n, p) => `the way ${p.sub} took a genuinely rotten week and made it funny at ${p.posAdj} own expense`,
   (n, p) => `being the person the house was nicest about behind ${p.posAdj} back`,
-  (n, p) => `going out with more grace than the people who did it deserved`,
   (n, p) => `being, by a distance, the most watchable person in that house`,
+];
+
+// One of them only makes sense about somebody who LEFT. Now that a finalist can
+// win this, a houseguest who walked to the end would have been congratulated
+// for "going out with more grace than the people who did it deserved".
+const AFH_REASONS_EVICTED = [
+  (n, p) => `going out with more grace than the people who did it deserved`,
 ];
 
 /**
@@ -1234,21 +1240,46 @@ const AFH_REASONS = [
  *
  * Popularity has been tracked all season by every competition, every heroic or
  * cowardly moment and every camp event, and until now precisely nothing
- * consumed it at the end. Every evicted houseguest is eligible — the finalists
- * are playing for the money and are not on this ballot.
+ * consumed it at the end.
+ *
+ * THE WHOLE CAST IS ON THE BALLOT, FINALISTS INCLUDED. They were struck off
+ * here on the reasoning that they are "playing for the money", which is not the
+ * rule the real show uses -- Tyler Crispen won America's Favorite in BB20 as
+ * the runner-up, having just lost the jury vote 5-4, and Jordan Lloyd and
+ * Taylor Hale won their seasons AND the award. Excluding them also produces the
+ * one result the prize should never produce: Big Brother 1's most-loved
+ * houseguest by a clear margin was barred from the ballot for being good at the
+ * game, and the audience award went to somebody seventeen points behind him.
  */
 export function runAmericasFavourite({ finalTwo = [], rng = Math.random } = {}) {
   if (seasonConfig?.popularityEnabled === false) return null;
   const pop = gs.popularity || {};
-  const eligible = [...new Set([...(gs.eliminated || []), ...Object.keys(pop)])]
-    .filter(n => n && !finalTwo.includes(n));
+  const eligible = [...new Set([...(gs.eliminated || []), ...finalTwo, ...Object.keys(pop)])]
+    .filter(Boolean);
   if (eligible.length < 2) return null;
 
-  // Weighted by popularity, floored so that somebody the audience never warmed
-  // to still has a vote out there — America's Favourite is not a ranking of
-  // gameplay and should not resolve like one.
+  // ── HOW FAR ABOVE THE FIELD, NOT HOW BIG THE NUMBER ──
+  //
+  // The weight was popularity itself, and with a cast of seventeen that is
+  // almost a flat ballot: the season's runaway favourite on 145 sat at an
+  // expected 11.9% against 11.1% for the next name down, because the absolute
+  // scores are large and their RATIOS are mild. Being twice as beloved as the
+  // average houseguest barely moved the odds, so the prize resolved as a
+  // lottery with extra steps and no block count could fix it -- more blocks
+  // only converge harder on the near-tie.
+  //
+  // Favourite is a comparative word. The weight is now how far above the
+  // average houseguest the audience rated you, which is self-normalising: a
+  // season the country adored across the board does not flatten into a raffle,
+  // and one nobody warmed to still has a clear favourite.
   const eng = engagement();
-  const weights = eligible.map(n => ({ name: n, w: Math.max(0.6, (Number(pop[n]) || 0) * eng + 6) }));
+  const scores = eligible.map(n => Number(pop[n]) || 0);
+  const mean = scores.reduce((a, b) => a + b, 0) / (scores.length || 1);
+  // Floored, so somebody the audience never warmed to still has a vote out
+  // there — America's Favourite is not a ranking of gameplay and should not
+  // resolve like one.
+  const weights = eligible.map(n => ({ name: n,
+    w: Math.max(0.6, ((Number(pop[n]) || 0) - mean) * eng + 6) }));
   const total = weights.reduce((s, x) => s + x.w, 0);
 
   // ── an actual count ──
@@ -1264,7 +1295,12 @@ export function runAmericasFavourite({ finalTwo = [], rng = Math.random } = {}) 
   // people voted, so a season the country stopped watching simply has fewer
   // of them — and fewer blocks is a noisier count with a likelier upset.
   // Nothing else here changes: the same vote, run by fewer people.
-  const BLOCKS = Math.max(9, Math.min(40, Math.round(25 * eng)));
+  // Enough of them that the count means something. At twenty-five, one block
+  // was four points of share and the winner was decided by a margin of one --
+  // Big Brother 1 was 5 blocks to 4, with a houseguest on half the favourite's
+  // popularity outpolling one on all of it. The upset is still reachable, it
+  // just has to be earned by more than a single lucky draw.
+  const BLOCKS = Math.max(25, Math.min(120, Math.round(75 * eng)));
   const counts = Object.fromEntries(eligible.map(n => [n, 0]));
   for (let i = 0; i < BLOCKS; i++) {
     let roll = rng() * total;
@@ -1284,7 +1320,8 @@ export function runAmericasFavourite({ finalTwo = [], rng = Math.random } = {}) 
     .slice(0, 5);
   return {
     winner, tally, prize: 5000,
-    reason: pick(rng, AFH_REASONS)(winner, p),
+    reason: pick(rng, finalTwo.includes(winner)
+      ? AFH_REASONS : [...AFH_REASONS, ...AFH_REASONS_EVICTED])(winner, p),
     // The audience's read and the jury's are different things, and the gap
     // between them is frequently the most interesting number of the night.
     popularity: round2(Number(pop[winner]) || 0),

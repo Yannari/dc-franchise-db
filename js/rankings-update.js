@@ -426,15 +426,25 @@ const RU_SHOW = {
     // which makes it the most independent term on this board; competitions, the
     // benchmark for a term that earns its weight, sit at -0.484.
     //
-    // CENTERED, because it is now big enough to inflate. The scale's neutral
-    // point is 4 and a houseguest is scored on the distance from it, so playing
-    // well gains and playing badly costs and the median player moves nothing.
-    // A flat bonus this size would just push the whole cast up a tier.
+    // CENTERED, because it is now big enough to inflate. A houseguest is scored
+    // on the distance from the neutral point, so playing well gains and playing
+    // badly costs and the median player moves nothing. A flat bonus this size
+    // would just push the whole cast up a tier.
+    //
+    // THE CENTRE IS THE MIDDLE OF THE SCALE, 5, and not the median of any one
+    // season. It was 4, picked off simulated seasons of twelve to fourteen
+    // players -- and on a real seventeen-player season, where more weeks means
+    // more votes and the shrinkage pulls less, the median came out at 4.75 and
+    // the mean at 5.26. Twelve of sixteen houseguests sat above the centre and
+    // the term handed the cast a net sixteen points: two-sided in shape, a
+    // bonus in practice. Half the scale is the only centre that does not drift
+    // with cast size, and a franchise board has to mean the same thing in
+    // season nine as it did in season one.
     //
     // An EMPTY column contributes nothing rather than -3.2. A season that has
     // not been exported since this landed must not have its entire cast
     // punished for a number nobody wrote down.
-    strat: { weight: 0.8, scale: 10, center: 4 },
+    strat: { weight: 0.8, scale: 10, center: 5 },
     // ── WHAT THE HOUSE COLUMN MEASURES INSTEAD ──
     //
     // This column counted VOTES AGAINST, which under Big Brother is placement
@@ -898,9 +908,15 @@ function buildPreview() {
     if (row.advPlayed)  parts.push((_adv.played || 'AdvPlay') + ':+' + (row.advPlayed*RU_ADV.played).toFixed(1));
     if (row.advWasted)  parts.push((_adv.wasted || 'AdvWasted') + ':\u2212' + (row.advWasted*RU_ADV.wasted).toFixed(1));
     if (row.advHeld && !isFinalist) parts.push((_adv.held || 'AdvHeld') + ':\u2212' + (row.advHeld*RU_ADV.held).toFixed(1));
+    // A CONTRIBUTION OF ZERO STILL PRINTS.
+    //
+    // `if (sa)` hid it, so a houseguest sitting exactly on the centre of the
+    // scale -- scored, average, worth nothing either way -- rendered exactly
+    // like one whose column was never filled in. That ambiguity is what kept
+    // the empty Strat column invisible on every house season for months.
     if (row.strategicScore) {
       const sa = _stratAdj(row.strategicScore, _mrub);
-      if (sa) parts.push('Strat:' + (sa > 0 ? '+' : '−') + Math.abs(sa).toFixed(1));
+      parts.push('Strat:' + (sa > 0 ? '+' : sa < 0 ? '−' : '±') + Math.abs(sa).toFixed(1));
     }
     if (row.alliances)   parts.push('Allies:+' + (Math.min(row.alliances,RU_ALLY.cap)*RU_ALLY.weight).toFixed(1));
     if (row.fanFav)     parts.push('FanFav:+2.0');

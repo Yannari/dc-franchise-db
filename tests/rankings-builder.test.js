@@ -237,6 +237,17 @@ describe('a season of play can move you off your finish', () => {
       .toBeLessThan(S.computeScore(blank(S, 9, { strategicScore: spec.center })));
   });
 
+  it('centres strategy on the middle of the scale, not on one season', () => {
+    // The centre was 4, chosen off simulated seasons of twelve to fourteen. On a
+    // real seventeen-player season the median came out at 4.75 and twelve of
+    // sixteen houseguests sat above it, so the two-sided curve handed the cast a
+    // net sixteen points -- two-sided in shape, a bonus in practice. Half the
+    // scale is the only centre that does not drift with cast size, and a
+    // franchise board has to mean the same thing in season nine as season one.
+    const spec = S.RU_SHOW['big-brother'].strat;
+    expect(spec.center).toBe(spec.scale / 2);
+  });
+
   it('scores an unfilled strategic column as nothing, not as a penalty', () => {
     // Every season exported before the column existed has it empty, and a
     // centred term would read empty as "worst strategist in the house" and dock

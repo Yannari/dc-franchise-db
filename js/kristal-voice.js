@@ -623,6 +623,19 @@ const RAPID = [
     s: { earnest: ['There is one person I never got to say a proper goodbye to.'] } },
 ];
 
+const MESSY_RAPID = [
+  { q: 'Love, lust, strategy—or all three?',
+    a: ['All three. {partner} was real, the attraction was obvious, and pretending it never affected my game would be bullshit.',
+      'Love came later. Lust arrived immediately. Strategy kept interrupting both of them.'],
+    s: { charmer: ['All three. I wanted {partner}, I cared about {partner}, and yes, I knew exactly how dangerous that made us.'] } },
+  { q: 'Who did you want to kiss when the cameras finally stopped?',
+    a: ['{partner}. That answer was never subtle.',
+      '{partner}. We had spent the whole season pretending privacy was five feet farther away than the nearest camera.'] },
+  { q: 'Did you ever forget the cameras were there?',
+    a: ['Around {partner}, yes. Then I would notice one moving and remember the whole audience was about to have opinions.',
+      'Once or twice. Those are probably the moments production wishes it had caught better.'] },
+];
+
 const SUBJECT_COMMENTS = [
   'I was not in the room to answer any of this. Noted.',
   'Interesting episode. Interesting choices. Interesting that my name carried the whole hour.',
@@ -688,7 +701,21 @@ function receiptBehavior(voice, receipt, key) {
   return pickFrom(options, `${key}|behavior`) || 'explain';
 }
 
-function receiptAnswer(receipt, behavior) {
+const PERSONAL_MESS_RE = /kiss|hookup|slept|bed|hoodie|jealous|crush|flirt|romance|showmance|date|love|missed|cry|cried|argument|fight|clash|betray|lied|secret|drunk|naked|sex/i;
+
+function receiptHeat(receipt) {
+  const statement = String(receipt?.statement || '');
+  let heat = Number(receipt?.weight) || 0;
+  if (receipt?.type === 'moment') heat += 5;
+  else if (receipt?.type === 'note') heat += 3;
+  else if (receipt?.type === 'relationships') heat += 2;
+  if (PERSONAL_MESS_RE.test(statement)) heat += 5;
+  if (/\b[A-Z][a-z]+\b/.test(statement)) heat += 1;
+  if (['votes', 'jury', 'challenges', 'immunity'].includes(receipt?.type)) heat -= 2;
+  return heat;
+}
+
+function receiptAnswer(receipt, behavior, voice, facts) {
   const statement = String(receipt.statement || '');
   const momentKind = /clash|conflict|feud|confront|argument|meltdown|rival/i.test(statement) ? 'conflict'
     : /alliance|bond|relationship|showmance|trust/i.test(statement) ? 'relationship'
@@ -696,6 +723,19 @@ function receiptAnswer(receipt, behavior) {
         : /won|immunity|challenge|duel|race|fire-making/i.test(statement) ? 'competition'
           : /vote|voted|jury|eliminat|evict/i.test(statement) ? 'vote' : 'event';
   if (receipt.type === 'moment' || receipt.type === 'note') {
+    if (voice?.archetype === 'showmancer' && (momentKind === 'relationship'
+      || PERSONAL_MESS_RE.test(statement))) {
+      const partner = facts?.partner || 'them';
+      return ({
+        own: `Yeah. That happened. I missed ${partner}, I was jealous, and I was trying to act less wrecked than I actually was. The embarrassing detail is the honest one.`,
+        explain: `I missed ${partner} badly. The flirting and jealousy were not a storyline I switched off when the cameras moved; I was emotional, embarrassed and still completely tangled up in it.`,
+        justify: `I wanted ${partner}, I missed them, and I made a messy choice instead of a clean strategic one. I can explain it, but I am not going to pretend it looked dignified.`,
+        dispute: `The scene happened, but the edit made it look calculated. It was worse than that for me: I missed ${partner}, got jealous and handled it badly.`,
+        deflect: `Fine—the ugly version is that I missed ${partner}, I was jealous, and I did not want everyone watching me fall apart over it.`,
+        reframe: `Call it strategy if you want. I missed ${partner}, got jealous and did something embarrassing because the relationship was real to me.`,
+        apologize: `I missed ${partner} and let jealousy turn into behavior that hurt people. That was messy, it was mine, and I am sorry for it.`,
+      })[behavior];
+    }
     if (momentKind === 'conflict') {
       return ({
         own: 'Yes. That is a fair summary. The tension was there immediately, and that first clash shaped how we interpreted each other afterward.',
@@ -800,7 +840,11 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1, salt =
   const closing = (ep.topics || []).filter(t => t.id === 'behind-the-scenes');
   const coreTopics = (ep.topics || []).filter(t => t.id !== 'behind-the-scenes');
   const receiptLimit = ep.tier === 'viral' ? 4 : ep.tier === 'solid' ? 3 : 2;
-  const receiptTopics = (ep.receipts || []).slice(0, receiptLimit)
+  const receiptTopics = (ep.receipts || []).slice()
+    .sort((a, b) => receiptHeat(b) - receiptHeat(a)
+      || (Number(b.weight) || 0) - (Number(a.weight) || 0)
+      || String(a.id).localeCompare(String(b.id)))
+    .slice(0, receiptLimit)
     .map(receipt => ({ id: 'the-receipt', receipt }));
   // Interleave record and emotion. A stack of six receipts in a row reads as
   // an audit and can crowd the rivalry out of the edited cut.
@@ -837,7 +881,7 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1, salt =
       if (follow) pressed++;
       return {
         topic: t.id, q: (RECEIPT_QUESTIONS[receipt.type] || RECEIPT_QUESTIONS.note)(receipt),
-        a: receiptAnswer(receipt, behavior), behavior, receipt,
+        a: receiptAnswer(receipt, behavior, voice, facts), behavior, receipt,
         ...(follow || {}),
       };
     }
@@ -869,13 +913,19 @@ export function composeEpisode(ep, { words = {}, prior = null, visit = 1, salt =
   // Rapid fire: four questions, seeded so an episode never repeats one, each
   // answered from ITS OWN bank — style override first, then the question's
   // general answers, with fact eligibility so {rival} lines need a rival.
+  const messyEligible = ep.tier !== 'quiet' && facts.partner
+    && (voice.archetype === 'showmancer' || style === 'charmer');
+  const messy = messyEligible ? MESSY_RAPID[hash(K + '|messy-rf') % MESSY_RAPID.length] : null;
+  const rapid = messy ? [{ q: messy.q,
+    a: pickFilled(messy.s?.[style] || [], `${K}|messy-rfs`, facts)
+      || pickFilled(messy.a, `${K}|messy-rfa`, facts) }] : [];
   const start = hash(K + '|rf') % RAPID.length;
-  const rapid = Array.from({ length: 4 }, (_, i) => {
+  for (let i = 0; rapid.length < 4; i++) {
     const item = RAPID[(start + i * 3) % RAPID.length];
     const styled = pickFilled(item.s?.[style] || [], `${K}|rfs|${i}`, facts);
-    return { q: item.q,
-      a: styled || pickFilled(item.a, `${K}|rfa|${i}`, facts) || item.a[0] };
-  });
+    if (!rapid.some(r => r.q === item.q)) rapid.push({ q: item.q,
+      a: styled || pickFilled(item.a, `${K}|rfa|${i}`, facts) || item.a[0] });
+  }
 
   // What the clip everyone shares actually says — the last crack, or the
   // loudest answer. Continuity quotes read from here.

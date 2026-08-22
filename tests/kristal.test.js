@@ -337,6 +337,57 @@ describe('evidence-driven interviews', () => {
     expect(['strengthened', 'credible', 'mixed', 'damaged']).toContain(ep.aftermath.credibility);
     expect(ep.aftermath.relationship?.with).toBe('r');
   });
+
+  it('cuts a strong episode around human mess before abstract totals', () => {
+    const voice = voiceOf({ archetype: 'showmancer', stats: {
+      social: 9, loyalty: 7, boldness: 8, temperament: 5,
+    } });
+    const out = composeEpisode({
+      id: 'mess-before-math', kind: 'debrief', tier: 'solid', voice,
+      guest: 'jules', guestName: 'Jules', season: { format: 'big-brother', title: 'House' },
+      facts: { season: 'House', placement: '2nd', votes: '6', jury: '4', partner: 'Stella' },
+      topics: [{ id: 'the-loss' }, { id: 'the-showmance', about: 'Stella' },
+        { id: 'the-target' }, { id: 'behind-the-scenes' }],
+      receipts: [
+        { id: 'jury-1', type: 'jury', statement: 'You received 4 jury votes at the end.', weight: 4 },
+        { id: 'votes-1', type: 'votes', statement: 'You received 6 votes across the season.', weight: 3 },
+        { id: 'moment-1', type: 'moment', statement: 'After Stella left, you cried in the storage room and kissed her hoodie before nominations.', weight: 4 },
+      ],
+    }, { words: { player: 'houseguest', players: 'houseguests', exit: 'evicted' } });
+    const receiptStatements = out.exchanges.filter(x => x.receipt)
+      .map(x => x.receipt.statement);
+    expect(receiptStatements[0]).toContain('cried in the storage room');
+  });
+
+  it('makes a showmancer answer a personal receipt like a person, not a press release', () => {
+    const voice = voiceOf({ archetype: 'showmancer', stats: {
+      social: 9, loyalty: 7, boldness: 8, temperament: 5,
+    } });
+    const out = composeEpisode({
+      id: 'showmancer-mess', kind: 'debrief', tier: 'viral', voice,
+      guest: 'jules', guestName: 'Jules', season: { format: 'big-brother', title: 'House' },
+      facts: { season: 'House', placement: '2nd', partner: 'Stella' },
+      topics: [{ id: 'the-showmance', about: 'Stella' }],
+      receipts: [{ id: 'moment-1', type: 'moment', weight: 5,
+        statement: 'After Stella left, you slept in her hoodie and admitted you were jealous of Misha.' }],
+    }, { words: { player: 'houseguest', players: 'houseguests', exit: 'evicted' } });
+    const answer = out.exchanges.find(x => x.receipt)?.a || '';
+    expect(answer).toMatch(/Stella|hoodie|jealous|wanted|missed|kiss|relationship/i);
+    expect(answer).not.toMatch(/record is accurate|context still matters|describe it differently/i);
+  });
+
+  it('does not clip the same answer twice under different questions', () => {
+    const voice = voiceOf({ archetype: 'showmancer', stats: { strategic: 2, social: 9 } });
+    const out = composeEpisode({
+      id: 'no-repeat-answer', kind: 'debrief', tier: 'solid', voice,
+      guestName: 'Jules', season: { format: 'big-brother', title: 'House' },
+      facts: { season: 'House', placement: '2nd', votes: '6', partner: 'Stella' },
+      topics: [{ id: 'the-loss' }, { id: 'the-target' }, { id: 'behind-the-scenes' }],
+      receipts: [],
+    }, { words: { player: 'houseguest', players: 'houseguests', exit: 'evicted' } });
+    const answers = out.exchanges.map(x => x.a);
+    expect(new Set(answers).size).toBe(answers.length);
+  });
 });
 
 describe('rapid fire, after the heartbeat bug', () => {
@@ -377,6 +428,18 @@ describe('rapid fire, after the heartbeat bug', () => {
       if (liar && /Rana|Wes/.test(liar.a)) named++;
     }
     expect(named).toBeGreaterThan(0);
+  });
+
+  it('gives a well-rated showmancer at least one question with romantic danger', () => {
+    const out = composeEpisode({
+      id: 'rf-messy-showmancer', kind: 'debrief', tier: 'solid',
+      voice: voiceOf({ archetype: 'showmancer', stats: { social: 9, boldness: 8 } }),
+      guestName: 'Jules', season: { format: 'big-brother', title: 'House' },
+      facts: { season: 'House', placement: '2nd', partner: 'Stella', rival: 'Misha' },
+      topics: [{ id: 'the-showmance', about: 'Stella' }],
+    }, { words: {} });
+    expect(out.rapid.some(r => /love|lust|kiss|jealous|hooked up|cameras/i.test(r.q))).toBe(true);
+    expect(out.rapid.every(r => r.a && !/[{}]|undefined/.test(r.a))).toBe(true);
   });
 });
 

@@ -3082,21 +3082,40 @@ function _bbStrategic(weeks, finalists) {
   const rec = {};
   const ensure = n => (rec[n] ||= { plans: 0, correct: 0, votes: 0, active: 0 });
 
+  // ── WHO WAS IN THE HOUSE, REBUILT ──
+  //
+  // A week does not carry its roster, and counting only the weeks somebody
+  // cast a ballot gets this wrong twice over: a NOMINEE cannot vote, so the
+  // people in the most danger looked the least active and their per-week rates
+  // inflated to the cap; and anybody who never voted at all -- the first boot --
+  // fell out of the record entirely and scored zero, which is the survival
+  // clock walking back in through the door the rates were built to shut.
+  //
+  // So the roster is reconstructed: everyone the season ever mentions is in the
+  // house until the week they leave.
+  const cast = new Set();
+  for (const w of weeks) {
+    [w.hoh, w.vetoWinner, w.evicted, w.safetyWinner].forEach(n => n && cast.add(n));
+    [...(w.initialNominees || []), ...(w.finalNominees || []),
+     ...(w.blockBeforeSafety || [])].forEach(n => n && cast.add(n));
+    (w.ballots || []).forEach(b => b?.voter && cast.add(b.voter));
+  }
+  const gone = new Set();
   for (const week of weeks) {
     const evicted = week.evicted;
+    for (const name of cast) if (!gone.has(name)) ensure(name).active++;
     for (const plan of (week.voteOperation?.plans || [])) {
       if (plan?.organizer && evicted && plan.target === evicted) ensure(plan.organizer).plans++;
     }
-    // Everyone still in the house that week, whether or not they held a vote --
-    // a nominee cannot vote and must not look less active for it.
-    for (const n of (week.houseguests || week.activePlayers || [])) if (n) ensure(n).active++;
     for (const b of (week.ballots || [])) {
       if (!b?.voter) continue;
       const r = ensure(b.voter);
       r.votes++;
-      if (!week.houseguests && !week.activePlayers) r.active++;
       if (evicted && b.evict === evicted) r.correct++;
     }
+    // A returnee is counted out only from the week they last leave, which the
+    // placement deriver already treats as the exit that places them.
+    if (evicted) gone.add(evicted);
   }
 
   // ── RATES, NOT TOTALS ──
@@ -3107,10 +3126,19 @@ function _bbStrategic(weeks, finalists) {
   // -0.186. Jane voted six for six and went out fifth; Ireland went two for
   // five and won ten competitions. Only one of those numbers knows the
   // difference between them.
-  const MIN_VOTES = 3;
-  const sampled = Object.values(rec).filter(r => r.votes >= MIN_VOTES);
-  const meanRate = sampled.length
-    ? sampled.reduce((a, r) => a + r.correct / r.votes, 0) / sampled.length : 0.5;
+  // Rates are SHRUNK TOWARD THE CAST MEAN by a pseudo-count, because a rate
+  // over a small denominator is mostly noise: one vote plan in two weeks reads
+  // as a higher strike rate than three in twelve, and an eighth-place finisher
+  // was hitting the ceiling of this scale while the final three sat near three.
+  // Adding k imaginary average attempts to everybody's record costs a long
+  // sample almost nothing and stops a short one swinging.
+  const totV = Object.values(rec).reduce((a, r) => a + r.votes, 0);
+  const totC = Object.values(rec).reduce((a, r) => a + r.correct, 0);
+  const meanRate = totV ? totC / totV : 0.5;
+  const totA = Object.values(rec).reduce((a, r) => a + r.active, 0);
+  const totP = Object.values(rec).reduce((a, r) => a + r.plans, 0);
+  const meanPlan = totA ? totP / totA : 0;
+  const K_VOTE = 4, K_PLAN = 4;
 
   const out = {};
   for (const name of Object.keys(rec)) {
@@ -3120,9 +3148,10 @@ function _bbStrategic(weeks, finalists) {
     // This is the whole trick. An early boot casts one or two votes, and
     // scoring that as a rate of zero would make the term a survival clock
     // again by the back door -- the exact failure the rates are here to avoid.
-    // Not enough evidence means no evidence, so they sit at the middle.
-    const rate = r.votes >= MIN_VOTES ? r.correct / r.votes : meanRate;
-    const planRate = r.active ? r.plans / r.active : 0;
+    // Not enough evidence means no evidence, so they sit near the middle and
+    // earn their way off it.
+    const rate = (r.correct + K_VOTE * meanRate) / (r.votes + K_VOTE);
+    const planRate = (r.plans + K_PLAN * meanPlan) / (r.active + K_PLAN);
 
     const mine = (gs.bb?.powers || []).filter(x => x?.holder === name);
     const played = mine.filter(x => x.used).length;

@@ -211,25 +211,41 @@ describe('a season of play can move you off your finish', () => {
       .toBeLessThan(S.computeScore(td({ socialCol: 2 })));
   });
 
-  it('holds the strategic term under one competition win', () => {
-    // NOT because strategy matters less than a veto. Because the figure the
-    // column is fed is not yet worth more.
+  it('scores strategy on a two-sided curve, so raising it cannot inflate', () => {
+    // This weight was held at 0.12 -- a ceiling below one veto -- for as long as
+    // the figure feeding it was `strategicRank`, the AI pass's read, which
+    // tracks FINISH POSITION at -0.927. Judging strategy, it re-derived the
+    // order people went out in, and weighting placement harder is not the same
+    // as weighting strategy. Raising it then lifted the whole cast about two
+    // points IN RANK ORDER and moved three players a tier with nothing real
+    // having changed.
     //
-    // `strategicRank` -- the AI pass's read of how somebody played -- tracks
-    // FINISH POSITION at -0.927 on S1. Asked to judge strategy it re-derives
-    // the order people went out in, which makes it placement measured a third
-    // time, the same fault `votesAgainst` was deleted for. Raising this weight
-    // to 0.35 lifted the entire cast by ~2 points IN RANK ORDER and moved three
-    // players a tier with no comparison between them having changed.
-    //
-    // The ceiling is not the problem, the measure is: anything CUMULATIVE grows
-    // with weeks survived and restates the finish (correct-vote count sits at
-    // -0.827 against placement), while the same thing as a RATE sits at -0.186
-    // and is close to independent. Rebuild the figure on rates and this can be
-    // raised to answer a comp run. If you are here because this test failed,
-    // that is the work it is waiting for.
-    const bb = S.RU_SHOW['big-brother'];
-    expect(bb.strat.weight * bb.strat.scale).toBeLessThan(bb.comp2.weight);
+    // The export's figure is rebuilt on rates now and measures -0.023 against
+    // placement over six seasons, so the weight is up at 0.8. It is CENTRED to
+    // pay for that: the median player must move nothing, or a term this size is
+    // just a bonus everybody gets. See tests/bb-strategic-independence.test.js.
+    const spec = S.RU_SHOW['big-brother'].strat;
+    expect(spec.center, 'a term this heavy must be two-sided').toBeGreaterThan(0);
+
+    const median = S.computeScore(blank(S, 9, { socialCol: 0 }));
+    const atCentre = S.computeScore(blank(S, 9, { socialCol: 0, strategicScore: spec.center }));
+    expect(atCentre, 'a player at the centre of the scale should move nothing').toBeCloseTo(median, 5);
+
+    expect(S.computeScore(blank(S, 9, { strategicScore: spec.scale })))
+      .toBeGreaterThan(S.computeScore(blank(S, 9, { strategicScore: spec.center })));
+    expect(S.computeScore(blank(S, 9, { strategicScore: 1 })))
+      .toBeLessThan(S.computeScore(blank(S, 9, { strategicScore: spec.center })));
+  });
+
+  it('scores an unfilled strategic column as nothing, not as a penalty', () => {
+    // Every season exported before the column existed has it empty, and a
+    // centred term would read empty as "worst strategist in the house" and dock
+    // the entire cast 3.2 points.
+    const empty = S.computeScore(blank(S, 9));
+    const zero  = S.computeScore(blank(S, 9, { strategicScore: 0 }));
+    const centre = S.computeScore(blank(S, 9, { strategicScore: S.RU_SHOW['big-brother'].strat.center }));
+    expect(empty).toBe(centre);
+    expect(zero).toBe(centre);
   });
 
   it('keeps the printed breakdown on the same weights as the score', () => {

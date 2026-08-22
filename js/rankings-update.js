@@ -410,29 +410,31 @@ const RU_SHOW = {
     // power or you win one, you do not find it in a tree.
     adv: { group: 'POWERS', noun: 'power',
       found: 'Won', played: 'Played', wasted: 'Wasted', held: 'Held' },
-    // ── HELD AT 1.2 UNTIL THE FIGURE IS WORTH MORE ──
+    // ── STRATEGY, ON A TWO-SIDED CURVE ──
     //
-    // Strategy has the smallest ceiling on a board where competitions are the
-    // only unbounded term -- one houseguest took 14.2 from them on S1, 93% of
-    // everything she scored, while survivals cap at 4, alliances at 1 and this
-    // at 1.2. That asymmetry is real and this weight was raised to 0.35 to fix
-    // it. It was put back, because raising it made the board worse.
+    // This sat at 0.12 -- a ceiling of 1.2, less than a single veto -- and was
+    // held there deliberately, because the figure feeding it was not worth
+    // more. `strategicRank`, the AI pass's read of how somebody played, tracks
+    // FINISH POSITION at -0.927: asked to judge strategy it re-derived the
+    // order people went out in. Weighting placement more heavily is not the
+    // same thing as weighting strategy.
     //
-    // `strategicRank`, the AI pass's read of how somebody played, correlates
-    // with FINISH POSITION at -0.927. Asked to judge strategy it re-derives the
-    // order people went out in, so it is placement measured a third time -- the
-    // same fault `votesAgainst` was deleted for. Weighting it more heavily does
-    // not give strategy teeth, it amplifies placement: at 0.35 the whole cast
-    // rose by about two points in rank order and three players changed tier
-    // with no comparison between them having changed at all.
+    // The export's figure is rebuilt on RATES now -- vote plans landed per week
+    // in the house, evictions read right per vote cast, powers converted per
+    // power held, each shrunk toward the cast mean so a short sample cannot
+    // spike. Measured over six simulated seasons it tracks placement at -0.023,
+    // which makes it the most independent term on this board; competitions, the
+    // benchmark for a term that earns its weight, sit at -0.484.
     //
-    // The ceiling is not what is wrong. The MEASURE is. Anything cumulative --
-    // correct votes, vote plans landed, moves made -- grows with weeks survived
-    // and therefore restates the finish: correct-vote COUNT sits at -0.827
-    // against placement, while correct-vote RATE sits at -0.186 and is close to
-    // genuinely independent. Rebuild the figure on rates and this weight can be
-    // raised to answer a comp run. Until then it stays where it cannot do harm.
-    strat: { weight: 0.12, scale: 10 },
+    // CENTERED, because it is now big enough to inflate. The scale's neutral
+    // point is 4 and a houseguest is scored on the distance from it, so playing
+    // well gains and playing badly costs and the median player moves nothing.
+    // A flat bonus this size would just push the whole cast up a tier.
+    //
+    // An EMPTY column contributes nothing rather than -3.2. A season that has
+    // not been exported since this landed must not have its entire cast
+    // punished for a number nobody wrote down.
+    strat: { weight: 0.8, scale: 10, center: 4 },
     // ── WHAT THE HOUSE COLUMN MEASURES INSTEAD ──
     //
     // This column counted VOTES AGAINST, which under Big Brother is placement
@@ -511,9 +513,8 @@ function _ruRelabelColumns() {
   if (socTh && soc) { socTh.textContent = soc.label; socTh.title = soc.title; }
   const stratTh = document.getElementById('ru-th-strat');
   if (stratTh && rub.strat) {
-    stratTh.title = 'How they actually played — judged, not counted · ×' + rub.strat.weight
-      + ' on a 0–' + rub.strat.scale + ' scale (max +'
-      + (rub.strat.weight * rub.strat.scale).toFixed(1) + ') · auto-filled from season JSON';
+    stratTh.title = 'How they actually played · ' + _stratRangeText(rub.strat)
+      + ' · auto-filled from season JSON — leave blank and it scores nothing';
   }
   const allyTh = document.getElementById('ru-th-allies');
   if (allyTh) {
@@ -546,8 +547,7 @@ function _ruRenderLegend() {
   }
   const strat = document.getElementById('ru-legend-strat');
   if (strat && rub.strat) {
-    strat.textContent = `♟️ Strategic play ×${rub.strat.weight} on a 0–${rub.strat.scale}`
-      + ` scale (max +${(rub.strat.weight * rub.strat.scale).toFixed(1)}) — judged, not counted`;
+    strat.textContent = `♟️ Strategic play — ${_stratRangeText(rub.strat)}`;
   }
   const soc = document.getElementById('ru-legend-social');
   if (soc && rub.social) {
@@ -618,6 +618,25 @@ function careerPct(seasonPcts) {
 
 const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
 
+/** What the strategic column can be worth, said the way the show scores it. */
+function _stratRangeText(spec) {
+  const s = spec.scale, w = spec.weight;
+  if (spec.center == null) return `×${w} on a 0–${s} scale (max +${(w * s).toFixed(1)})`;
+  return `×${w} on a 0–${s} scale, centred on ${spec.center}`
+    + ` (${(-spec.center * w).toFixed(1)} to +${((s - spec.center) * w).toFixed(1)})`;
+}
+
+/**
+ * The strategic term. Two-sided where the show declares a centre, flat where
+ * it does not, and always nothing at all when the column is empty.
+ */
+function _stratAdj(value, rub) {
+  const spec = rub?.strat;
+  const v = num(value);
+  if (!spec || !v) return 0;
+  return spec.center != null ? (v - spec.center) * spec.weight : v * spec.weight;
+}
+
 function computeScore(p) {
   const cp   = careerPct(p.allPcts);
   // Base 42 → 68: placement is still the spine, but a shorter one.
@@ -672,7 +691,7 @@ function computeScore(p) {
   const stratBonus = advFoundBonus + advPlayedBonus
                    - advWastedPen - advHeldPen
                    + (Math.min(p.alliances, RU_ALLY.cap) * RU_ALLY.weight)
-                   + ((p.strategicScore || 0) * (_rub.strat?.weight ?? 0.12)); // judged strategic play
+                   + _stratAdj(p.strategicScore, _rub); // rebuilt on rates, see RU_SHOW
 
   // SOCIAL — one column, read the way the show it came from means it.
   // See the `social` block in RU_SHOW for why the house does not count votes.
@@ -879,7 +898,10 @@ function buildPreview() {
     if (row.advPlayed)  parts.push((_adv.played || 'AdvPlay') + ':+' + (row.advPlayed*RU_ADV.played).toFixed(1));
     if (row.advWasted)  parts.push((_adv.wasted || 'AdvWasted') + ':\u2212' + (row.advWasted*RU_ADV.wasted).toFixed(1));
     if (row.advHeld && !isFinalist) parts.push((_adv.held || 'AdvHeld') + ':\u2212' + (row.advHeld*RU_ADV.held).toFixed(1));
-    if (row.strategicScore) parts.push('Strat:+' + (row.strategicScore*(_mrub.strat?.weight ?? 0.12)).toFixed(1));
+    if (row.strategicScore) {
+      const sa = _stratAdj(row.strategicScore, _mrub);
+      if (sa) parts.push('Strat:' + (sa > 0 ? '+' : '−') + Math.abs(sa).toFixed(1));
+    }
     if (row.alliances)   parts.push('Allies:+' + (Math.min(row.alliances,RU_ALLY.cap)*RU_ALLY.weight).toFixed(1));
     if (row.fanFav)     parts.push('FanFav:+2.0');
     const _msoc = _mrub.social || {};

@@ -3062,11 +3062,73 @@ function _bbStats(weeks) {
  * @param {string[]} finalists  final placings, best first
  * @param {object}   meta       { seasonNumber, castSize, jurySize }
  */
+/**
+ * A houseguest's strategic-gameplay score, 0-10, from the house's own record.
+ *
+ * `computeStrategicScore()` above is Total Drama's and cannot be pointed at a
+ * season of this: it reads `gs.episodeHistory` and `ep.votingLog`, which a
+ * house does not keep, so every behavioural term in it comes back zero and
+ * what is left is the stat line. A score that is only ability is exactly what
+ * "Behavior > Stats" forbids, so this reads the ledger the house DOES keep --
+ * who called a vote that landed, who read the room right, who spent a power.
+ *
+ * ON THE 0-10 SCALE, deliberately. The board multiplies this column by 0.12,
+ * which was calibrated against the AI-filled `strategicRank` (S1 ran 2.0 to
+ * 9.2) and caps the term at about one competition win. Total Drama's raw score
+ * runs 15-30 and would land two to three times heavier than any veto.
+ */
+function _bbStrategic(weeks, finalists) {
+  const fin = new Set(finalists || []);
+  const rec = {};
+  const ensure = n => (rec[n] ||= { plans: 0, correct: 0, votes: 0 });
+
+  for (const week of weeks) {
+    const evicted = week.evicted;
+    // Calling a vote and DELIVERING it — the house's blindside-orchestrated.
+    // A plan whose target did not walk is a plan that failed and scores nothing.
+    for (const plan of (week.voteOperation?.plans || [])) {
+      if (plan?.organizer && evicted && plan.target === evicted) ensure(plan.organizer).plans++;
+    }
+    for (const b of (week.ballots || [])) {
+      if (!b?.voter) continue;
+      const r = ensure(b.voter);
+      r.votes++;
+      // Reading the room: small per vote, because most weeks most of the house
+      // is right. It adds up over a season and separates nobody in one week.
+      if (evicted && b.evict === evicted) r.correct++;
+    }
+  }
+
+  const out = {};
+  for (const name of new Set([...Object.keys(rec), ...(weeks[0]?.ballots || []).map(b => b.voter)])) {
+    if (!name) continue;
+    const r = rec[name] || { plans: 0, correct: 0, votes: 0 };
+    const st = (() => { try { return pStats(name) || {}; } catch { return {}; } })();
+    const mine = (gs.bb?.powers || []).filter(x => x?.holder === name);
+    const played = mine.filter(x => x.used).length;
+    const wasted = mine.filter(x => !x.used && x.disposed).length;
+    const held   = mine.filter(x => !x.used && !x.disposed).length;
+    const raw =
+        (st.strategic || 0) * 0.45
+      + (st.intuition || 0) * 0.10
+      + (st.boldness  || 0) * 0.10
+      + r.plans   * 1.00
+      + r.correct * 0.12
+      + mine.length * 0.40
+      + played * 1.00
+      - wasted * 0.80
+      - (fin.has(name) ? 0 : held * 0.80);
+    out[name] = Math.max(0, Math.min(10, Math.round(raw * 10) / 10));
+  }
+  return out;
+}
+
 export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
   if (!Array.isArray(weeks) || !weeks.length) throw new Error('No Big Brother weeks to export');
   const finalOrder = [...(finalists || [])];
   const placement = _bbPlacements(weeks, finalOrder);
   const stats = _bbStats(weeks);
+  const strategic = _bbStrategic(weeks, finalists);
   const cast = Object.keys(placement);
   const winner = finalOrder[0] || null;
   const jurySize = meta.jurySize ?? 0;
@@ -3087,6 +3149,16 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
         // and every audience-facing page with nothing to read.
         popularity: Number(gs.popularity?.[name]) || 0,
         juryVotes: 0,                      // the engine does not model a jury vote yet
+        // ── THE STRATEGIC COLUMN, which this export carried nothing for ──
+        //
+        // The board has had a Strat column all along and no house season could
+        // fill it: this template emitted neither `strategicScore` nor
+        // `strategicRank`, so the field only ever appeared on a season that had
+        // been through the AI writing pass, which grafts it on afterwards. A
+        // raw export therefore scored every houseguest as strategically inert
+        // and quietly cost each of them up to 1.2 points -- enough, on S1, to
+        // hold the runner-up one tier below where he belonged.
+        strategicScore: strategic[name] ?? 0,
         notes: '[AI_FILL]',
         story: '[AI_FILL]',
         gameplayStyle: '[AI_FILL]',
@@ -3297,6 +3369,40 @@ function _extractTwists() {
     if (epNum && !row.episodes.includes(epNum)) row.episodes.push(epNum);
   };
 
+  // ── A SEASON-LONG TWIST IS NOT ON THE SCHEDULE ─────────────────────
+  //
+  // Both sources below are per-EPISODE: the booking sheet, and what fired in a
+  // given week. A twist whose contract says `layer: 'season'` is neither — the
+  // Twin Twist is installed once at the door from `seasonConfig.bbTwins` and
+  // then lives on `gs.bb.twins` — so it exported nowhere at all. Big Brother 1
+  // was built around one and its published record does not mention it, which
+  // is why one houseguest's grid had three blank weeks with no explanation
+  // anywhere on the page for what they were.
+  //
+  // Dated by the week the second twin walked in, because that is the episode
+  // the audience finds out. A pair that never made it stays on episode 1,
+  // where they entered as one person.
+  const twins = gs.bb?.twins;
+  if (twins) {
+    add('bb-twin-twist', Number(twins.enteredWeek) || 1);
+    const row = seen.get('bb-twin-twist');
+    if (row) {
+      row.name = 'The Twin Twist';
+      row.emoji = '👯';
+      row.category = 'hidden-identity';
+      row.inCatalog = true;
+      // Who it was, which is the whole fact — and a detail no other twist row
+      // needs, so it rides along rather than changing the shape of the rest.
+      row.players = [twins.front, twins.other].filter(Boolean);
+      row.desc = `One houseguest was secretly two people swapping places every week. `
+        + `${twins.front || 'They'} and ${twins.other || 'their twin'} played as one`
+        + (twins.enteredWeek
+          ? `, and lasted long enough to both enter the game as individuals in week ${
+            twins.enteredWeek}.`
+          : ' and never made it in as two.');
+    }
+  }
+
   for (const t of (seasonConfig.twistSchedule || []).filter(Boolean)) {
     const epNum = Number(t.episode);
     if (!Number.isFinite(epNum) || epNum > eps) continue;   // booked but never reached
@@ -3419,6 +3525,9 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
       votesReceived: entry.votesReceived || 0,
       juryVotes: entry.juryVotes || 0,
       popularity: Number(entry.popularity) || 0,
+      // Carried like Total Drama carries it, so a career reads the same either
+      // side of the show boundary.
+      strategicScore: Number(entry.strategicScore) || 0,
       bb: {
         hohWins: bb.hohWins || 0,
         vetoWins: bb.vetoWins || 0,

@@ -421,9 +421,25 @@ export function samplePosts(event, { count = 20, stream = 'timeline', rng = Math
   // Shared across the whole crowd reacting to ONE event, so the room does not
   // say the same sentence nine times in a row.
   const used = new Set();
+
+  // WHO SPEAKS IS DRAWN BEFORE ANYBODY SPEAKS.
+  //
+  // These used to be interleaved: draw a persona, compose their post, draw the
+  // next. But composePost consults the crowd and takes a DIFFERENT NUMBER of
+  // rolls depending on how it feels about the subject, so it left the stream in
+  // a different place and every persona after the first moved. The same night
+  // with its subject beloved and then despised put the whole room in different
+  // mouths -- which is the one thing the crowd must not decide, because a post
+  // is loud since somebody with reach made it, not the other way round.
+  //
+  // Selection first, composition second: the cast comes from the seed alone,
+  // and what they say still comes from the crowd.
+  const picks = [];
   for (let i = 0; i < count; i++) {
     const persona = voices[Math.floor(rng() * voices.length) % voices.length];
-    const topic = weightedPick(rng, candidates, t => topicWeight(persona, t, event, platform));
+    picks.push({ persona, topic: weightedPick(rng, candidates, t => topicWeight(persona, t, event, platform)) });
+  }
+  for (const { persona, topic } of picks) {
     posts.push(composePost({ persona, topic, platform, event, rng, crowd, used }));
   }
   return posts;

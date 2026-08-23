@@ -226,7 +226,15 @@ export function buildEpisodeFeed(events, {
   // posting six or seven times — a group chat wearing a timeline's clothes. The
   // crowd keeps the loudest posts with the recurring cast and hands the rest to
   // accounts invented for tonight. See crowd.js.
+  //
+  // ITS OWN STREAM, NOT THE ONE ABOVE. `rng` has been consumed by the sampler
+  // by the time it arrives here, and how MANY times depends on the crowd --
+  // which is derived from popularity. So the same night with its subject
+  // beloved and then despised left the stream at a different position and
+  // handed every post to a different account, which is precisely what this
+  // function is written not to do. Seeding the assignment separately puts the
+  // authors back where they belong: on the seed alone.
   return useCrowd
-    ? assignCrowd(posts, { rng, personas: PERSONAS, currentSeason: season })
+    ? assignCrowd(posts, { rng: seeded(seed + 0x5f3759df), personas: PERSONAS, currentSeason: season })
     : posts;
 }

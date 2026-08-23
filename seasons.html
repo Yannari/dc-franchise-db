@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" data-root=".">
 <head>
+  <!-- Load config.js FIRST. Every one of these pages listened for siteConfigReady
+       and none of them loaded the script that fires it, so the banner kept the
+       numbers hardcoded in its own markup: "9 Seasons - 102 Players", frozen
+       since season nine. -->
+  <script src="config.js"></script>
+
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>DC Franchise – Seasons</title>

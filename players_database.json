@@ -221,7 +221,8 @@
           "totalRewardWins": 0,
           "totalIdolsFound": 0
         }
-      }
+      },
+      "tier": "B"
     },
     {
       "id": "anne-maria",
@@ -311,7 +312,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "💅"
+      "emoji": "💅",
+      "tier": "D"
     },
     {
       "id": "b",
@@ -367,7 +369,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🔧"
+      "emoji": "🔧",
+      "tier": "D"
     },
     {
       "id": "beardo",
@@ -418,7 +421,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎧"
+      "emoji": "🎧",
+      "tier": "D"
     },
     {
       "id": "beth",
@@ -528,7 +532,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "🌾"
+      "emoji": "🌾",
+      "tier": "B"
     },
     {
       "id": "blaineley",
@@ -619,7 +624,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "📺"
+      "emoji": "📺",
+      "tier": "B"
     },
     {
       "id": "brick",
@@ -723,7 +729,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎖️"
+      "emoji": "🎖️",
+      "tier": "A"
     },
     {
       "id": "bridgette",
@@ -836,7 +843,8 @@
           "totalRewardWins": 1,
           "totalIdolsFound": 1
         }
-      }
+      },
+      "tier": "B"
     },
     {
       "id": "brody",
@@ -855,7 +863,7 @@
       "totalVotesAgainst": 38,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -1093,7 +1101,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "🔬"
+      "emoji": "🔬",
+      "tier": "S+"
     },
     {
       "id": "cody",
@@ -1219,7 +1228,8 @@
           "totalRewardWins": 0,
           "totalIdolsFound": 2
         }
-      }
+      },
+      "tier": "A"
     },
     {
       "id": "courtney",
@@ -1365,7 +1375,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "📋"
+      "emoji": "📋",
+      "tier": "C"
     },
     {
       "id": "crimson",
@@ -1450,7 +1461,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🖤"
+      "emoji": "🖤",
+      "tier": "D"
     },
     {
       "id": "dakota",
@@ -1536,7 +1548,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "💎"
+      "emoji": "💎",
+      "tier": "D"
     },
     {
       "id": "dave",
@@ -1621,7 +1634,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🧴"
+      "emoji": "🧴",
+      "tier": "B"
     },
     {
       "id": "dawn",
@@ -1712,7 +1726,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🌙"
+      "emoji": "🌙",
+      "tier": "C"
     },
     {
       "id": "dj",
@@ -1787,7 +1802,8 @@
           "totalRewardWins": 0,
           "totalIdolsFound": 0
         }
-      }
+      },
+      "tier": "C"
     },
     {
       "id": "duncan",
@@ -1898,7 +1914,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "💀"
+      "emoji": "💀",
+      "tier": "S"
     },
     {
       "id": "dwayne",
@@ -1991,7 +2008,8 @@
           "totalRewardWins": 0,
           "totalIdolsFound": 0
         }
-      }
+      },
+      "tier": "B"
     },
     {
       "id": "ella",
@@ -2042,7 +2060,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎵"
+      "emoji": "🎵",
+      "tier": "D"
     },
     {
       "id": "emma",
@@ -2166,7 +2185,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "⚖️"
+      "emoji": "⚖️",
+      "tier": "S"
     },
     {
       "id": "ennui",
@@ -2183,7 +2203,7 @@
       "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -2318,7 +2338,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🏋️‍♀️"
+      "emoji": "🏋️‍♀️",
+      "tier": "C"
     },
     {
       "id": "ezekiel",
@@ -2433,7 +2454,8 @@
           "totalIdolsFound": 3
         }
       },
-      "emoji": "🧢"
+      "emoji": "🧢",
+      "tier": "B"
     },
     {
       "id": "geoff",
@@ -2560,7 +2582,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎉"
+      "emoji": "🎉",
+      "tier": "A"
     },
     {
       "id": "gwen",
@@ -2703,7 +2726,8 @@
           "totalRewardWins": 1,
           "totalIdolsFound": 0
         }
-      }
+      },
+      "tier": "B"
     },
     {
       "id": "harold",
@@ -2792,7 +2816,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🤓"
+      "emoji": "🤓",
+      "tier": "C"
     },
     {
       "id": "heather",
@@ -2938,7 +2963,8 @@
           "totalIdolsFound": 3
         }
       },
-      "emoji": "🐍"
+      "emoji": "🐍",
+      "tier": "B"
     },
     {
       "id": "izzy",
@@ -2992,7 +3018,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "💥"
+      "emoji": "💥",
+      "tier": "D"
     },
     {
       "id": "jacques",
@@ -3011,7 +3038,7 @@
       "totalVotesAgainst": 12,
       "totalIdolsFound": 0,
       "totalJuryVotes": 7,
-      "tier": "Unranked",
+      "tier": "S+",
       "badges": [
         "S6 Winner"
       ],
@@ -3269,7 +3296,8 @@
           "totalRewardWins": 0,
           "totalIdolsFound": 0
         }
-      }
+      },
+      "tier": "S"
     },
     {
       "id": "jay",
@@ -3286,7 +3314,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "A",
       "badges": [],
       "seasonDetails": [
         {
@@ -3462,7 +3490,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🏃‍♀️"
+      "emoji": "🏃‍♀️",
+      "tier": "B"
     },
     {
       "id": "josee",
@@ -3583,7 +3612,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "⛸️"
+      "emoji": "⛸️",
+      "tier": "C"
     },
     {
       "id": "junior",
@@ -3600,7 +3630,7 @@
       "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -3726,7 +3756,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "🪞"
+      "emoji": "🪞",
+      "tier": "D"
     },
     {
       "id": "katie",
@@ -3782,7 +3813,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "💗"
+      "emoji": "💗",
+      "tier": "C"
     },
     {
       "id": "kelly",
@@ -3800,7 +3832,7 @@
       "totalVotesAgainst": 15,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -3900,7 +3932,7 @@
       "totalVotesAgainst": 28,
       "totalIdolsFound": 3,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -4069,7 +4101,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🧙"
+      "emoji": "🧙",
+      "tier": "D"
     },
     {
       "id": "leshawna",
@@ -4183,7 +4216,8 @@
           "totalRewardWins": 0,
           "totalIdolsFound": 1
         }
-      }
+      },
+      "tier": "C"
     },
     {
       "id": "lightning",
@@ -4270,7 +4304,8 @@
           "totalIdolsFound": 2
         }
       },
-      "emoji": "⚡"
+      "emoji": "⚡",
+      "tier": "D"
     },
     {
       "id": "lindsay",
@@ -4396,7 +4431,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "💄"
+      "emoji": "💄",
+      "tier": "S"
     },
     {
       "id": "mary",
@@ -4413,7 +4449,7 @@
       "totalVotesAgainst": 2,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -4513,7 +4549,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🦹"
+      "emoji": "🦹",
+      "tier": "C"
     },
     {
       "id": "mickey",
@@ -4645,7 +4682,8 @@
           "totalIdolsFound": 2
         }
       },
-      "emoji": "🩹"
+      "emoji": "🩹",
+      "tier": "S+"
     },
     {
       "id": "mike",
@@ -4738,7 +4776,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎭"
+      "emoji": "🎭",
+      "tier": "B"
     },
     {
       "id": "noah",
@@ -4826,7 +4865,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "📚"
+      "emoji": "📚",
+      "tier": "C"
     },
     {
       "id": "owen",
@@ -4935,7 +4975,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🍔"
+      "emoji": "🍔",
+      "tier": "C"
     },
     {
       "id": "rodney",
@@ -4985,7 +5026,8 @@
           "totalRewardWins": 0,
           "totalIdolsFound": 0
         }
-      }
+      },
+      "tier": "C"
     },
     {
       "id": "ryan",
@@ -5119,7 +5161,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "💪"
+      "emoji": "💪",
+      "tier": "S"
     },
     {
       "id": "sadie",
@@ -5175,7 +5218,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "💞"
+      "emoji": "💞",
+      "tier": "C"
     },
     {
       "id": "sam",
@@ -5262,7 +5306,8 @@
           "totalRewardWins": 0,
           "totalIdolsFound": 0
         }
-      }
+      },
+      "tier": "D"
     },
     {
       "id": "samey",
@@ -5313,7 +5358,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🌻"
+      "emoji": "🌻",
+      "tier": "D"
     },
     {
       "id": "scarlett",
@@ -5403,7 +5449,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🧪"
+      "emoji": "🧪",
+      "tier": "B"
     },
     {
       "id": "scott",
@@ -5578,7 +5625,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "🦈"
+      "emoji": "🦈",
+      "tier": "S"
     },
     {
       "id": "shawn",
@@ -5662,7 +5710,8 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "🧟"
+      "emoji": "🧟",
+      "tier": "B"
     },
     {
       "id": "sierra",
@@ -5752,7 +5801,8 @@
           "totalIdolsFound": 2
         }
       },
-      "emoji": "📱"
+      "emoji": "📱",
+      "tier": "D"
     },
     {
       "id": "sky",
@@ -5878,7 +5928,8 @@
           "totalRewardWins": 1,
           "totalIdolsFound": 2
         }
-      }
+      },
+      "tier": "A"
     },
     {
       "id": "staci",
@@ -5935,7 +5986,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🗣️"
+      "emoji": "🗣️",
+      "tier": "D"
     },
     {
       "id": "stephanie",
@@ -5953,7 +6005,7 @@
       "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -6125,7 +6177,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎀"
+      "emoji": "🎀",
+      "tier": "B"
     },
     {
       "id": "tammy",
@@ -6142,7 +6195,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -6241,7 +6294,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎬"
+      "emoji": "🎬",
+      "tier": "C"
     },
     {
       "id": "trent",
@@ -6360,7 +6414,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎸"
+      "emoji": "🎸",
+      "tier": "B"
     },
     {
       "id": "tyler",
@@ -6447,7 +6502,8 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🏈"
+      "emoji": "🏈",
+      "tier": "D"
     },
     {
       "id": "zoey",
@@ -6615,7 +6671,8 @@
           "totalRewardWins": 3,
           "totalIdolsFound": 1
         }
-      }
+      },
+      "tier": "S"
     },
     {
       "id": "carrie",
@@ -6633,7 +6690,7 @@
       "totalVotesAgainst": 10,
       "totalIdolsFound": 0,
       "totalJuryVotes": 1,
-      "tier": "Unranked",
+      "tier": "A",
       "badges": [],
       "seasonDetails": [
         {
@@ -6740,7 +6797,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -6806,7 +6863,7 @@
       "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -6867,7 +6924,7 @@
       "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -6928,7 +6985,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -6992,7 +7049,7 @@
       "totalVotesAgainst": 23,
       "totalIdolsFound": 2,
       "totalJuryVotes": 6,
-      "tier": "Unranked",
+      "tier": "S",
       "badges": [
         "S7 Winner"
       ],
@@ -7142,7 +7199,7 @@
       "totalVotesAgainst": 14,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -7241,7 +7298,7 @@
       "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -7304,7 +7361,7 @@
       "totalVotesAgainst": 11,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -7370,7 +7427,7 @@
       "totalVotesAgainst": 13,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "A",
       "badges": [],
       "seasonDetails": [
         {
@@ -7438,7 +7495,7 @@
       "totalVotesAgainst": 10,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -7501,7 +7558,7 @@
       "totalVotesAgainst": 13,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -7602,7 +7659,7 @@
       "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -7710,7 +7767,7 @@
       "totalVotesAgainst": 6,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -7769,7 +7826,7 @@
       "totalVotesAgainst": 3,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -7829,7 +7886,7 @@
       "totalVotesAgainst": 6,
       "totalIdolsFound": 2,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "S",
       "badges": [],
       "seasonDetails": [
         {
@@ -7939,7 +7996,7 @@
       "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -8008,7 +8065,7 @@
       "totalVotesAgainst": 12,
       "totalIdolsFound": 3,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "S+",
       "badges": [
         "S9 Winner"
       ],
@@ -8128,7 +8185,7 @@
       "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -8196,7 +8253,7 @@
       "totalVotesAgainst": 10,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -8300,7 +8357,7 @@
       "totalVotesAgainst": 11,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -8410,7 +8467,7 @@
       "totalVotesAgainst": 8,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -8518,7 +8575,7 @@
       "totalVotesAgainst": 11,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -8625,7 +8682,7 @@
       "totalVotesAgainst": 12,
       "totalIdolsFound": 2,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -8727,7 +8784,7 @@
       "totalVotesAgainst": 13,
       "totalIdolsFound": 4,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "S",
       "badges": [],
       "seasonDetails": [
         {
@@ -8841,7 +8898,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -8981,7 +9038,7 @@
       "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -9048,7 +9105,7 @@
       "totalVotesAgainst": 23,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -9159,7 +9216,7 @@
       "totalVotesAgainst": 2,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -9225,7 +9282,7 @@
       "totalVotesAgainst": 11,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -9335,7 +9392,7 @@
       "totalVotesAgainst": 0,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -9400,7 +9457,7 @@
       "totalVotesAgainst": 17,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "S",
       "badges": [
         "S13 Winner"
       ],
@@ -9513,7 +9570,7 @@
       "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -9574,7 +9631,7 @@
       "totalVotesAgainst": 2,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "A",
       "badges": [
         "S11 Fan Favorite"
       ],
@@ -9686,7 +9743,7 @@
       "totalVotesAgainst": 12,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "S",
       "badges": [],
       "seasonDetails": [
         {
@@ -9805,7 +9862,7 @@
       "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "S",
       "badges": [
         "S11 Winner"
       ],
@@ -9916,7 +9973,7 @@
       "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -9985,7 +10042,7 @@
       "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -10057,7 +10114,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -10123,7 +10180,7 @@
       "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -10196,7 +10253,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -10266,7 +10323,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -10337,7 +10394,7 @@
       "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -10408,7 +10465,7 @@
       "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -10480,7 +10537,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -10549,7 +10606,7 @@
       "totalVotesAgainst": 12,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "A",
       "badges": [],
       "seasonDetails": [
         {
@@ -10662,7 +10719,7 @@
       "totalVotesAgainst": 15,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "A",
       "badges": [],
       "seasonDetails": [
         {
@@ -10784,7 +10841,7 @@
       "totalVotesAgainst": 21,
       "totalIdolsFound": 2,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -10898,7 +10955,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -10968,7 +11025,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -11033,7 +11090,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -11103,7 +11160,7 @@
       "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 7,
-      "tier": "Unranked",
+      "tier": "S+",
       "badges": [
         "S12 Winner"
       ],
@@ -11182,7 +11239,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -11250,7 +11307,7 @@
       "totalVotesAgainst": 8,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -11324,7 +11381,7 @@
       "totalVotesAgainst": 6,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -11398,7 +11455,7 @@
       "totalVotesAgainst": 25,
       "totalIdolsFound": 0,
       "totalJuryVotes": 2,
-      "tier": "Unranked",
+      "tier": "S",
       "badges": [],
       "seasonDetails": [
         {
@@ -11518,7 +11575,7 @@
       "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -11595,7 +11652,7 @@
       "totalVotesAgainst": 1,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -11664,7 +11721,7 @@
       "totalVotesAgainst": 14,
       "totalIdolsFound": 2,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "A",
       "badges": [],
       "seasonDetails": [
         {
@@ -11782,7 +11839,7 @@
       "totalVotesAgainst": 15,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -11894,7 +11951,7 @@
       "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -11972,7 +12029,7 @@
       "totalVotesAgainst": 6,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -12048,7 +12105,7 @@
       "totalVotesAgainst": 11,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -12119,7 +12176,7 @@
       "totalVotesAgainst": 15,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "A",
       "badges": [],
       "seasonDetails": [
         {
@@ -12233,7 +12290,7 @@
       "totalVotesAgainst": 3,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -12304,7 +12361,7 @@
       "totalVotesAgainst": 10,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "S+",
       "badges": [
         "S14 Winner"
       ],
@@ -12384,7 +12441,7 @@
       "totalVotesAgainst": 19,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "A",
       "badges": [],
       "seasonDetails": [
         {
@@ -12461,7 +12518,7 @@
       "totalVotesAgainst": 3,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -12525,7 +12582,7 @@
       "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -12597,7 +12654,7 @@
       "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -12661,7 +12718,7 @@
       "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -12734,7 +12791,7 @@
       "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -12804,7 +12861,7 @@
       "totalVotesAgainst": 3,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "A",
       "badges": [],
       "seasonDetails": [
         {
@@ -12876,7 +12933,7 @@
       "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -12941,7 +12998,7 @@
       "totalVotesAgainst": 3,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -13010,7 +13067,7 @@
       "totalVotesAgainst": 13,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -13084,7 +13141,7 @@
       "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -13157,7 +13214,7 @@
       "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -13229,7 +13286,7 @@
       "totalVotesAgainst": 11,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "S",
       "badges": [],
       "seasonDetails": [
         {
@@ -13305,7 +13362,7 @@
       "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -13369,7 +13426,7 @@
       "totalVotesAgainst": 3,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -13436,7 +13493,7 @@
       "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "S",
       "badges": [],
       "seasonDetails": [
         {
@@ -13513,7 +13570,7 @@
       "totalVotesAgainst": 16,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -13587,7 +13644,7 @@
       "totalJuryVotes": 5,
       "totalHohWins": 2,
       "totalVetoWins": 4,
-      "tier": "",
+      "tier": "S",
       "badges": [
         "BB1 Winner"
       ],
@@ -13661,7 +13718,7 @@
       "totalJuryVotes": 4,
       "totalHohWins": 2,
       "totalVetoWins": 1,
-      "tier": "",
+      "tier": "S",
       "badges": [],
       "seasonDetails": [
         {
@@ -13733,7 +13790,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 3,
       "totalVetoWins": 3,
-      "tier": "",
+      "tier": "A",
       "badges": [],
       "seasonDetails": [
         {
@@ -13805,7 +13862,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "tier": "",
+      "tier": "A",
       "badges": [],
       "seasonDetails": [
         {
@@ -13875,7 +13932,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 1,
       "totalVetoWins": 1,
-      "tier": "",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -13945,7 +14002,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 1,
       "totalVetoWins": 1,
-      "tier": "",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -14015,7 +14072,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "tier": "",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -14086,7 +14143,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "tier": "",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -14158,7 +14215,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "tier": "",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -14230,7 +14287,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 3,
       "totalVetoWins": 4,
-      "tier": "",
+      "tier": "A",
       "badges": [],
       "seasonDetails": [
         {
@@ -14300,7 +14357,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 2,
       "totalVetoWins": 1,
-      "tier": "",
+      "tier": "B",
       "badges": [],
       "seasonDetails": [
         {
@@ -14369,7 +14426,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "tier": "",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -14438,7 +14495,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 1,
       "totalVetoWins": 0,
-      "tier": "",
+      "tier": "C",
       "badges": [],
       "seasonDetails": [
         {
@@ -14508,7 +14565,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "tier": "",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -14579,7 +14636,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "tier": "",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -14648,7 +14705,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "tier": "",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {
@@ -14717,7 +14774,7 @@
       "totalJuryVotes": 0,
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "tier": "",
+      "tier": "D",
       "badges": [],
       "seasonDetails": [
         {

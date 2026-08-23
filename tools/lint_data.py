@@ -9,6 +9,10 @@ Run from the repo root:
 
 Exit code 0 = clean. Exit code 1 = issues found.
 
+A season is (SHOW, NUMBER) throughout. Big Brother 1 and Total Drama season 1
+are both "1" and are not the same season; keying on the number alone reported
+that S1's winner was two different people.
+
 Checks performed:
   1.  Player slugs in season-data exist in players_database
   2.  Players in players_database reference valid season numbers
@@ -63,13 +67,50 @@ franchise_db    = load("franchise_database.json")
 player_by_id   = {p["id"]: p for p in players_data["players"]}
 player_by_name = {p["name"].strip().lower(): p for p in players_data["players"]}
 
+# A SEASON IS (SHOW, NUMBER), NOT A NUMBER.
+#
+# This globbed "season*-data.json", so Big Brother was invisible to all twelve
+# checks below — and where a number DID reach them it collided: Big Brother 1
+# and Total Drama season 1 are both "1", which is why this reported that S1's
+# winner was Lindsay in one file and Misha in another. They are different
+# seasons of different shows.
+FORMAT_TAGS = {"total-drama": "S", "big-brother": "BB"}
+
+def _fmt_of(sd, path):
+    f = sd.get("format")
+    if f:
+        return f
+    if os.path.basename(path).startswith("bb-"):
+        return "big-brother"
+    return "total-drama"
+
+def tag(fmt, sn):
+    """A season named the way its own show numbers them: S9, but BB1."""
+    return f"{FORMAT_TAGS.get(fmt, 'S')}{sn}"
+
+def player_seasons(p):
+    """Every (show, number) a player actually played.
+
+    `seasons` is a flat list of NUMBERS and cannot tell two shows apart, so the
+    detail rows are the source and the bare list is only a fallback for entries
+    written before the second show existed. An absent format is Total Drama —
+    the same rule the rest of the repo uses.
+    """
+    out = set()
+    for d in p.get("seasonDetails", []) or []:
+        if d.get("season") is not None:
+            out.add((d.get("format") or "total-drama", d["season"]))
+    if not out:
+        out = {("total-drama", n) for n in p.get("seasons", []) or []}
+    return out
+
 # Load all season-data files
 season_data_files = {}
-for path in glob.glob(os.path.join(ROOT, "data", "seasons", "season*-data.json")):
+for path in glob.glob(os.path.join(ROOT, "data", "seasons", "*-data.json")):
     sd = json.load(open(path, encoding="utf-8"))
     sn = sd.get("seasonNumber")
     if sn is not None:
-        season_data_files[sn] = sd
+        season_data_files[(_fmt_of(sd, path), sn)] = sd
 
 # Avatar files on disk
 avatar_dir   = os.path.join(ROOT, "assets", "avatars")
@@ -79,47 +120,47 @@ avatar_files = {f.lower() for f in os.listdir(avatar_dir) if f.endswith(".png")}
 # ─── Check 1: Player slugs in season-data exist in players_database ──────────
 
 print("\nCheck 1: Season-data slugs exist in players_database")
-for sn, sd in sorted(season_data_files.items()):
+for (fmt, sn), sd in sorted(season_data_files.items()):
     for pl in sd.get("placements", []):
         slug = pl.get("playerSlug", "").strip()
         name = pl.get("name", "").strip()
         if slug and slug not in player_by_id:
             # Try name match as fallback
             if name.lower() not in player_by_name:
-                err(f"  S{sn} placement {pl.get('placement')}: slug '{slug}' ({name}) not in players_database")
+                err(f"  {tag(fmt, sn)} placement {pl.get('placement')}: slug '{slug}' ({name}) not in players_database")
             else:
-                warn(f"  S{sn} placement {pl.get('placement')}: slug '{slug}' not found but name '{name}' matches — slug mismatch")
+                warn(f"  {tag(fmt, sn)} placement {pl.get('placement')}: slug '{slug}' not found but name '{name}' matches — slug mismatch")
 print("  done")
 
 
 # ─── Check 2: Players_database season list references valid season files ──────
 
 print("Check 2: players_database season references have data files")
-known_season_nums = set(season_data_files.keys())
+known_seasons = set(season_data_files.keys())
 for p in players_data["players"]:
-    for sn in p.get("seasons", []):
-        if sn not in known_season_nums:
-            err(f"  [{p['name']}] references season {sn} but season{sn}-data.json not found")
+    for (fmt, sn) in sorted(player_seasons(p)):
+        if (fmt, sn) not in known_seasons:
+            err(f"  [{p['name']}] references {tag(fmt, sn)} but no season document for it was found")
 print("  done")
 
 
 # ─── Check 3: Season-data winner matches placement #1 ─────────────────────────
 
 print("Check 3: Season winner matches placement #1 in season-data")
-for sn, sd in sorted(season_data_files.items()):
+for (fmt, sn), sd in sorted(season_data_files.items()):
     winner_slug  = sd.get("winner", {}).get("playerSlug", "").strip()
     winner_name  = sd.get("winner", {}).get("name", "").strip()
     p1_entries   = [p for p in sd.get("placements", []) if p.get("placement") == 1]
 
     if not p1_entries:
-        err(f"  S{sn}: no placement=1 found in placements array")
+        err(f"  {tag(fmt, sn)}: no placement=1 found in placements array")
         continue
 
     p1_slugs = {p.get("playerSlug", "").strip() for p in p1_entries}
     p1_names = {p.get("name", "").strip() for p in p1_entries}
 
     if winner_slug not in p1_slugs:
-        err(f"  S{sn}: winner slug '{winner_slug}' ({winner_name}) not in placement-1 entries: {p1_slugs}")
+        err(f"  {tag(fmt, sn)}: winner slug '{winner_slug}' ({winner_name}) not in placement-1 entries: {p1_slugs}")
 print("  done")
 
 
@@ -128,35 +169,35 @@ print("  done")
 print("Check 4: Winner consistent across season-data / seasons_database / franchise_database")
 
 # Build lookup from seasons_database
-sdb_winner = {s["seasonNumber"]: s["winner"]["playerSlug"]
+sdb_winner = {(s.get("format") or "total-drama", s["seasonNumber"]): s["winner"]["playerSlug"]
               for s in seasons_db.get("seasons", [])
               if "winner" in s}
 
 # Build lookup from franchise_database
-fdb_winner = {c["season"]: c["playerSlug"]
+fdb_winner = {(c.get("format") or "total-drama", c["season"]): c["playerSlug"]
               for c in franchise_db.get("champions", [])}
 
-for sn, sd in sorted(season_data_files.items()):
+for (fmt, sn), sd in sorted(season_data_files.items()):
     sd_slug  = sd.get("winner", {}).get("playerSlug", "").strip()
 
-    sdb_slug = sdb_winner.get(sn, "")
-    fdb_slug = fdb_winner.get(sn, "")
+    sdb_slug = sdb_winner.get((fmt, sn), "")
+    fdb_slug = fdb_winner.get((fmt, sn), "")
 
     if sdb_slug and sdb_slug != sd_slug:
-        err(f"  S{sn}: winner slug '{sd_slug}' in season-data vs '{sdb_slug}' in seasons_database")
+        err(f"  {tag(fmt, sn)}: winner slug '{sd_slug}' in season-data vs '{sdb_slug}' in seasons_database")
     if fdb_slug and fdb_slug != sd_slug:
-        err(f"  S{sn}: winner slug '{sd_slug}' in season-data vs '{fdb_slug}' in franchise_database")
+        err(f"  {tag(fmt, sn)}: winner slug '{sd_slug}' in season-data vs '{fdb_slug}' in franchise_database")
     if not sdb_slug:
-        warn(f"  S{sn}: season not found in seasons_database")
+        warn(f"  {tag(fmt, sn)}: season not found in seasons_database")
     if not fdb_slug:
-        warn(f"  S{sn}: season not found in franchise_database champions list")
+        warn(f"  {tag(fmt, sn)}: season not found in franchise_database champions list")
 print("  done")
 
 
 # ─── Check 5: players_database season memberships match season-data placements ─
 
 print("Check 5: players_database season memberships match season-data placements")
-for sn, sd in sorted(season_data_files.items()):
+for (fmt, sn), sd in sorted(season_data_files.items()):
     # Slugs that appeared in this season's placements
     placed_slugs = {pl.get("playerSlug", "").strip()
                     for pl in sd.get("placements", [])
@@ -165,16 +206,16 @@ for sn, sd in sorted(season_data_files.items()):
     # Players who claim to have played this season
     claimed_players = {p["id"]: p["name"]
                        for p in players_data["players"]
-                       if sn in p.get("seasons", [])}
+                       if (fmt, sn) in player_seasons(p)}
 
     for pid, pname in claimed_players.items():
         if pid not in placed_slugs:
-            warn(f"  [{pname}] claims season {sn} in players_database but not in season{sn}-data placements")
+            warn(f"  [{pname}] claims {tag(fmt, sn)} in players_database but is not in its placements")
 
     for slug in placed_slugs:
         if slug in player_by_id:
-            if sn not in player_by_id[slug].get("seasons", []):
-                warn(f"  [{player_by_id[slug]['name']}] in season{sn}-data placements but season {sn} not in players_database seasons list")
+            if (fmt, sn) not in player_seasons(player_by_id[slug]):
+                warn(f"  [{player_by_id[slug]['name']}] is in {tag(fmt, sn)} placements but does not claim it in players_database")
 print("  done")
 
 
@@ -183,7 +224,7 @@ print("  done")
 print("Check 6: Player win counts match actual placement-1 records")
 # Build actual wins from season-data
 actual_wins = {pid: 0 for pid in player_by_id}
-for sn, sd in season_data_files.items():
+for (fmt, sn), sd in season_data_files.items():
     for pl in sd.get("placements", []):
         if pl.get("placement") == 1:
             slug = pl.get("playerSlug", "").strip()
@@ -203,7 +244,7 @@ print("  done")
 
 print("Check 7: Player bestPlacement matches actual best placement")
 actual_best = {}
-for sn, sd in season_data_files.items():
+for (fmt, sn), sd in season_data_files.items():
     for pl in sd.get("placements", []):
         slug = pl.get("playerSlug", "").strip()
         pos  = pl.get("placement")
@@ -244,13 +285,13 @@ print("  done")
 # ─── Check 10: No duplicate slugs within one season's placements ──────────────
 
 print("Check 10: No duplicate player slugs within one season")
-for sn, sd in sorted(season_data_files.items()):
+for (fmt, sn), sd in sorted(season_data_files.items()):
     seen = {}
     for pl in sd.get("placements", []):
         slug = pl.get("playerSlug", "").strip()
         pos  = pl.get("placement")
         if slug in seen and seen[slug] != pos:
-            err(f"  S{sn}: slug '{slug}' appears multiple times in placements (positions {seen[slug]} and {pos})")
+            err(f"  {tag(fmt, sn)}: slug '{slug}' appears multiple times in placements (positions {seen[slug]} and {pos})")
         seen[slug] = pos
 print("  done")
 
@@ -258,12 +299,12 @@ print("  done")
 # ─── Check 11: seasons_database and season-data files are in sync ─────────────
 
 print("Check 11: seasons_database and season-data files are in sync")
-sdb_nums  = {s["seasonNumber"] for s in seasons_db.get("seasons", [])}
+sdb_nums  = {(s.get("format") or "total-drama", s["seasonNumber"]) for s in seasons_db.get("seasons", [])}
 data_nums = set(season_data_files.keys())
 for n in data_nums - sdb_nums:
-    warn(f"  season{n}-data.json exists but season {n} not in seasons_database")
+    warn(f"  a season document exists for {tag(*n)} but it is not in seasons_database")
 for n in sdb_nums - data_nums:
-    warn(f"  season {n} in seasons_database but season{n}-data.json not found")
+    warn(f"  {tag(*n)} is in seasons_database but has no season document")
 print("  done")
 
 
@@ -271,23 +312,24 @@ print("  done")
 
 print("Check 12: franchise_database champions match season-data winners")
 for champ in franchise_db.get("champions", []):
-    sn   = champ["season"]
+    key  = (champ.get("format") or "total-drama", champ["season"])
     slug = champ["playerSlug"]
-    if sn in season_data_files:
-        sd_slug = season_data_files[sn].get("winner", {}).get("playerSlug", "")
+    if key in season_data_files:
+        sd_slug = season_data_files[key].get("winner", {}).get("playerSlug", "")
         if slug != sd_slug:
-            err(f"  franchise_database S{sn} champion '{slug}' != season-data winner '{sd_slug}'")
+            err(f"  franchise_database {tag(*key)} champion '{slug}' != season-data winner '{sd_slug}'")
     else:
-        warn(f"  franchise_database S{sn} champion listed but season{sn}-data.json not found")
+        warn(f"  franchise_database {tag(*key)} champion listed but no season document was found")
 print("  done")
 
 
 # ─── Check 13: placements are one per player, numbered 1..N ──────────────
 
-# THE ONLY CHECK HERE THAT LOOKS AT BIG BROTHER. Every check above globs
-# "season*-data.json", so bb-1-data.json has never been linted by any of them --
-# which is how it sat for two weeks numbering a cast of seventeen 1-12 and
-# 14-18, with the first boot listed eighteenth and nobody thirteenth.
+# This was once the only check here that looked at Big Brother: every check
+# above globbed "season*-data.json", so bb-1-data.json had never been linted by
+# any of them -- which is how it sat for two weeks numbering a cast of
+# seventeen 1-12 and 14-18, with the first boot listed eighteenth and nobody
+# thirteenth. They all key on (show, number) now, and this one is ordinary.
 #
 # The cause was upstream and is already fixed (_bbPlacements counted eviction
 # EVENTS, so a houseguest who was evicted, came back and was evicted again ate

@@ -23,7 +23,11 @@ export const SHOWS = {
     // hand out immunity. A juror was saying "three individual immunities" and
     // "challenge beast" about a houseguest's Heads of Household.
     words: { player: 'contestant', players: 'contestants', round: 'Episode', exit: 'voted out',
-      comp: 'challenge', comps: 'immunity wins', compBeast: 'challenge beast', compWon: 'immunities' },
+      comp: 'challenge', comps: 'immunity wins', compBeast: 'challenge beast', compWon: 'immunities',
+      // What this show calls the prize nobody in the game votes on. The
+      // measure behind it is shared (js/audience.js) and show-agnostic; only
+      // the name is a show's own.
+      audienceAward: 'Fan Favorite' },
     // Season-detail fields this show contributes to a career, and the byShow
     // key each lands under. A show declares its own shape here rather than
     // _rebuildByShow branching on the format.
@@ -54,7 +58,8 @@ export const SHOWS = {
   'big-brother': {
     prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹',
     words: { player: 'houseguest', players: 'houseguests', round: 'Week', exit: 'evicted',
-      comp: 'competition', comps: 'competition wins', compBeast: 'comp beast', compWon: 'competitions' },
+      comp: 'competition', comps: 'competition wins', compBeast: 'comp beast', compWon: 'competitions',
+      audienceAward: "America's Favourite Houseguest" },
     // Big Brother is sold on the vote. Strategy is the product rather than the
     // background, a flip is the event of the week, and the steamroll penalty
     // is magnified because "the same six people ran the house all summer" is

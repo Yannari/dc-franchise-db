@@ -302,6 +302,37 @@ That last one is the quiet trap: an appearance with no `format` is Total Drama,
 so if your export forgets to stamp it, a racer joins the Total Drama career of
 whoever shares their slug.
 
+### Popularity, and the prize nobody votes on
+
+`gs.popularity` is a running total your show increments as it goes — every
+competition, every heroic or cowardly moment, every camp event. **Do not rank
+players by it.** It is accrued per round, so it is dominated by how many rounds
+somebody was in: measured on Big Brother 1 it correlates with FINAL PLACEMENT at
+-0.952, which means asking it who was liked returns who lasted. Every consumer
+that asked was reading the wrong thing — both shows' fan favourite award, the
+heroes board, the "fan-loved" tag, the audience pulse, the social feed's crowd.
+
+`js/audience.js` is the comparable reading, and it is show-agnostic on purpose:
+it knows only that a show has rounds and eliminates people from them, both of
+which it reads off `episodeHistory`. **A new show gets it for free and must not
+write its own.**
+
+| You want | Use |
+|---|---|
+| how much affection they generated all season | `gs.popularity[name]` |
+| **who was liked more** | `audienceStanding(name)` |
+| the whole cast, best first | `audienceBoard({ eligible })` |
+| the award itself, as a vote | `runAudienceVote({ eligible, rng, blocks, scale })` |
+
+Two knobs, both documented with the measurements behind them: `AUDIENCE_PRIOR`
+stops a two-round cameo topping the board on one good moment, and
+`VOTE_SHARPNESS` sets how hard the favourite is favoured. Pass `scale` and
+`blocks` from whatever your show knows about how many people were watching.
+
+The only part that is yours is the NAME: `words.audienceAward` in the registry
+entry ("Fan Favorite", "America's Favourite Houseguest"). If your show has no
+such award, leave it out and call nothing.
+
 The board is the same trap one level up. A ranking is a position on a board and
 a board ranks ONE show, because the scores are not comparable across shows —
 `js/rankings-update.js` weights a veto differently from an immunity on purpose.

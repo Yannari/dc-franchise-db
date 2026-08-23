@@ -34,6 +34,7 @@
 // other way, which is the honest version and the one the user asked for.
 import { gs, seasonConfig } from '../core.js';
 import { engagement } from '../ratings.js';
+import { runAudienceVote } from '../audience.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { juryValueProfile, juryTopValue } from '../finale.js';
@@ -1258,81 +1259,17 @@ export function runAmericasFavourite({ finalTwo = [], rng = Math.random } = {}) 
     .filter(Boolean);
   if (eligible.length < 2) return null;
 
-  // ── HOW FAR ABOVE THE FIELD, NOT HOW BIG THE NUMBER ──
-  //
-  // The weight was popularity itself, and with a cast of seventeen that is
-  // almost a flat ballot: the season's runaway favourite on 145 sat at an
-  // expected 11.9% against 11.1% for the next name down, because the absolute
-  // scores are large and their RATIOS are mild. Being twice as beloved as the
-  // average houseguest barely moved the odds, so the prize resolved as a
-  // lottery with extra steps and no block count could fix it -- more blocks
-  // only converge harder on the near-tie.
-  //
-  // Favourite is a comparative word. The weight is now how far above the
-  // average houseguest the audience rated you, which is self-normalising: a
-  // season the country adored across the board does not flatten into a raffle,
-  // and one nobody warmed to still has a clear favourite.
+  // The vote itself lives in js/audience.js, because every show has one and
+  // none of them should have their own arithmetic for it. What is passed in
+  // from here is the only part that is Big Brother's: how engaged the country
+  // was with THIS season, which both sharpens the weighting and decides how
+  // many of them turned out to vote.
   const eng = engagement();
-  const scores = eligible.map(n => Number(pop[n]) || 0);
-  const mean = scores.reduce((a, b) => a + b, 0) / (scores.length || 1);
-  // Floored, so somebody the audience never warmed to still has a vote out
-  // there — America's Favourite is not a ranking of gameplay and should not
-  // resolve like one.
-  const weights = eligible.map(n => ({ name: n,
-    w: Math.max(0.6, ((Number(pop[n]) || 0) - mean) * eng + 6) }));
-  const total = weights.reduce((s, x) => s + x.w, 0);
+  const ballot = runAudienceVote({ eligible, rng, blocks: 750 * eng, scale: eng });
+  if (!ballot) return null;
+  const { winner, tally } = ballot;
 
-  // ── an actual count ──
-  //
-  // This used to draw the winner from the weights and then print the weights as
-  // the tally, which meant the screen could show one houseguest on 33% and
-  // crown somebody on 26% underneath it — a vote graphic that contradicts its
-  // own result. So the votes are counted instead: twenty-five blocks of
-  // audience, each drawn against popularity, and whoever holds the most blocks
-  // wins. Few enough blocks that the second-favourite can still take it, which
-  // is the upset the old roll was there to allow.
-  // AND THE ELECTORATE ITSELF. The blocks were already a count of how many
-  // people voted, so a season the country stopped watching simply has fewer
-  // of them — and fewer blocks is a noisier count with a likelier upset.
-  // Nothing else here changes: the same vote, run by fewer people.
-  // ── HOW MANY PEOPLE VOTED ──
-  //
-  // A block is a slice of the audience that votes together, and the count of
-  // them is a SAMPLE SIZE: the weights say what the country thinks, the blocks
-  // are a poll of it. Twenty-five made every share a multiple of four and let
-  // one lucky draw decide the night -- Big Brother 1 came down to 5 blocks
-  // against 4, with a houseguest on half the favourite's popularity outpolling
-  // one on all of it.
-  //
-  // Nothing on finale night feeds this. Popularity is settled weeks earlier and
-  // is only READ here, so a small poll was re-deciding a question whose answer
-  // had not changed. Measured on Big Brother 1, where the top three sit at
-  // 22.8 / 20.0 / 18.1 and are therefore as hard to separate as this gets:
-  //
-  //     25 blocks   favourite wins 50%      750 blocks   favourite wins ~88%
-  //     75 blocks   favourite wins 58%     5000 blocks   favourite wins 100%
-  //
-  // 750 is the number that lets popularity decide it while leaving an upset
-  // reachable about one finale in eight -- and a season with a clear favourite
-  // rather than three tied ones resolves more firmly still, which is right.
-  const BLOCKS = Math.max(250, Math.min(1500, Math.round(750 * eng)));
-  const counts = Object.fromEntries(eligible.map(n => [n, 0]));
-  for (let i = 0; i < BLOCKS; i++) {
-    let roll = rng() * total;
-    let landed = weights[0].name;
-    for (const entry of weights) {
-      roll -= entry.w;
-      if (roll <= 0) { landed = entry.name; break; }
-    }
-    counts[landed]++;
-  }
-  const ranked = [...weights].sort((a, b) => (counts[b.name] - counts[a.name]) || (b.w - a.w));
-  const winner = ranked[0].name;
   const p = pronouns(winner);
-  const tally = ranked
-    .map(x => ({ name: x.name, share: round2((counts[x.name] / BLOCKS) * 100) }))
-    .filter(x => x.share > 0)
-    .slice(0, 5);
   return {
     winner, tally, prize: 5000,
     reason: pick(rng, finalTwo.includes(winner)

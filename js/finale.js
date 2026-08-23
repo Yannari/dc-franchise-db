@@ -1,6 +1,7 @@
 // js/finale.js - Finale simulation: final challenge, jury vote, fan campaign, fan vote
 import { gs, gsCheckpoints, seasonConfig, players, repairGsSets } from './core.js';
 import { engagement } from './ratings.js';
+import { audienceBoard } from './audience.js';
 import { _idbPut } from './savestate.js';
 import { pStats, pronouns } from './players.js';
 import { showWords } from './shows.js';
@@ -1893,16 +1894,26 @@ export function simulateFinale() {
   }
 
   // ── Fan Favorite ──
+  //
+  // Ranked on the audience STANDING rather than the raw total. Popularity is
+  // accrued per episode, so picking the biggest number picked whoever had been
+  // on screen longest -- it correlates with final placement at -0.95 -- and the
+  // award went to a finalist essentially every season by construction. The
+  // standing is the same affection measured per episode they were actually in,
+  // which is the only reading that can see a contestant the audience loved and
+  // the cast voted out in week four. See js/audience.js.
   if (seasonConfig.popularityEnabled !== false && gs.popularity) {
-    const _allNames = players.map(p => p.name);
-    const _fanFav = _allNames.reduce((best, name) =>
-      (gs.popularity[name] || 0) > (gs.popularity[best] || 0) ? name : best,
-      _allNames[0]
-    );
-    gs.fanFavorite = _fanFav;
-    ep.fanFavorite = _fanFav;
-    ep.fanFavoriteScore = gs.popularity[_fanFav] || 0;
-    ep.fanFavoriteIsWinner = _fanFav === ep.winner;
+    const board = audienceBoard({ eligible: players.map(p => p.name) });
+    const top = board[0];
+    if (top) {
+      gs.fanFavorite = top.name;
+      ep.fanFavorite = top.name;
+      // The season TOTAL still, because that is what the number means when it
+      // is reported on its own rather than compared between two people.
+      ep.fanFavoriteScore = top.popularity;
+      ep.fanFavoriteStanding = Math.round(top.standing * 100) / 100;
+      ep.fanFavoriteIsWinner = top.name === ep.winner;
+    }
   }
 
   const summaryText = generateFinaleSummaryText(ep);

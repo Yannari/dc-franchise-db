@@ -57,7 +57,7 @@ describe('multi-franchise management', () => {
 });
 
 import { setGs, setPlayers, setSeasonConfig, defaultConfig } from '../js/core.js';
-import { deriveSeasonRecord, recordSeasonToLedger } from '../js/franchise-meta.js';
+import { deriveSeasonRecord, recordSeasonToLedger, buildFranchiseMeta, franchiseLedger } from '../js/franchise-meta.js';
 
 function fabricateFinishedSeason() {
   const _stats = { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5, loyalty: 5, boldness: 5, intuition: 5, temperament: 5 };
@@ -761,27 +761,81 @@ describe('canon lock', () => {
 // and leaves nobody carrying `winner: true`. The symptom on screen was a season
 // card with no winner, a "runner-up" who came fourth, an empty Hall of Fame,
 // and the champion filed under "first out".
+// ── TWO SHOWS, ONE SLOT ────────────────────────────────────────────────────
+//
+// The ledger keys a season by its NUMBER, so Big Brother 1 and Total Drama
+// season 1 are the same entry and recording one destroys the other. It is the
+// place that decides whether returnees remember each other, so the cost is a
+// cast who have played together and arrive as strangers: no old alliance, no
+// grudge, no showmance.
+function fabricateHouse() {
+  const _stats = { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5, loyalty: 5, boldness: 5, intuition: 5, temperament: 5 };
+  setPlayers(['Misha', 'Jules', 'Joel', 'Tobias', 'Stella'].map(name =>
+    ({ name, isReturnee: false, stats: { ..._stats } })));
+  setSeasonConfig({ ...defaultConfig(), seasonNumber: 1, name: 'Big Brother 1', franchiseMeta: true });
+  setGs({
+    phase: 'complete',
+    format: 'big-brother',
+    // Deliberately absent: a house never writes this.
+    finaleResult: null,
+    bb: { finale: { winner: 'Misha', runnerUp: 'Jules', cut: 'Joel',
+      votes: { Misha: 5, Jules: 4 }, jury: ['Tobias', 'Stella'],
+      favourite: { winner: 'Tobias', tally: [{ name: 'Tobias', share: 20 }], prize: 5000 } } },
+    episodeHistory: [
+      { num: 1, eliminated: 'Stella', immunityWinner: 'Tobias', vetoWinner: 'Misha', votingLog: [] },
+      { num: 2, eliminated: 'Tobias', immunityWinner: 'Misha', vetoWinner: 'Misha', votingLog: [] },
+    ],
+    bonds: {}, advantages: [], namedAlliances: [], showmances: [], schemesCaught: {},
+  });
+}
+
+describe('the ledger holds both shows', () => {
+  it('records a Big Brother season without destroying Total Drama season 1', () => {
+    setFranchiseLedger({ seasons: {
+      '1': { seasonName: 'Total Drama 1', format: 'total-drama', castSize: 4, players: {
+        Ava: _rec({ placement: 1, winner: true, finalist: true, allies: ['Ben'] }),
+        Ben: _rec({ placement: 2, finalist: true, allies: ['Ava'] }),
+      } },
+    } });
+
+    fabricateHouse();                    // Big Brother, season number 1
+    expect(recordSeasonToLedger(null, 'manual')).not.toBe(false);
+
+    const seasons = franchiseLedger.franchises[franchiseLedger.active].seasons;
+    const names = Object.values(seasons).flatMap(s => Object.keys(s.players || {}));
+    expect(names, 'Total Drama season 1 was overwritten').toEqual(expect.arrayContaining(['Ava', 'Ben']));
+    expect(names, 'the Big Brother season was not recorded').toEqual(expect.arrayContaining(['Misha', 'Jules']));
+    expect(Object.keys(seasons).length).toBe(2);
+  });
+
+  it('moves a season recorded under the old key out of the way', () => {
+    // A ledger written before the key knew about shows: Big Brother 1 is
+    // sitting on "1", where the next Total Drama season 1 will land on it.
+    setFranchiseLedger({ seasons: {
+      '1': { seasonName: 'Big Brother 1', format: 'big-brother', castSize: 3, players: {
+        Misha: _rec({ placement: 1, winner: true, finalist: true }),
+      } },
+    } });
+    const seasons = franchiseLedger.franchises[franchiseLedger.active].seasons;
+    expect(Object.keys(seasons)).toEqual(['bb-1']);
+    // And the record itself is untouched by the move.
+    expect(seasons['bb-1'].players.Misha.winner).toBe(true);
+  });
+
+  it('gives a returning cast their history back', () => {
+    setFranchiseLedger({ seasons: {} });
+    fabricateHouse();
+    recordSeasonToLedger(null, 'manual');
+    // The same houseguests, brought back.
+    const returning = ['Misha', 'Jules', 'Joel'].map(name => ({ name, isReturnee: true, stats: {} }));
+    setPlayers(returning);
+    const meta = buildFranchiseMeta(returning, { franchiseMeta: true });
+    expect(meta, 'no returnee history at all').toBeTruthy();
+    expect(Object.keys(meta.profiles)).toEqual(expect.arrayContaining(['Misha', 'Jules', 'Joel']));
+  });
+});
+
 describe('deriveSeasonRecord reads a Big Brother finale', () => {
-  function fabricateHouse() {
-    const _stats = { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5, loyalty: 5, boldness: 5, intuition: 5, temperament: 5 };
-    setPlayers(['Misha', 'Jules', 'Joel', 'Tobias', 'Stella'].map(name =>
-      ({ name, isReturnee: false, stats: { ..._stats } })));
-    setSeasonConfig({ ...defaultConfig(), seasonNumber: 1, name: 'Big Brother 1', franchiseMeta: true });
-    setGs({
-      phase: 'complete',
-      format: 'big-brother',
-      // Deliberately absent: a house never writes this.
-      finaleResult: null,
-      bb: { finale: { winner: 'Misha', runnerUp: 'Jules', cut: 'Joel',
-        votes: { Misha: 5, Jules: 4 }, jury: ['Tobias', 'Stella'],
-        favourite: { winner: 'Tobias', tally: [{ name: 'Tobias', share: 20 }], prize: 5000 } } },
-      episodeHistory: [
-        { num: 1, eliminated: 'Stella', immunityWinner: 'Tobias', vetoWinner: 'Misha', votingLog: [] },
-        { num: 2, eliminated: 'Tobias', immunityWinner: 'Misha', vetoWinner: 'Misha', votingLog: [] },
-      ],
-      bonds: {}, advantages: [], namedAlliances: [], showmances: [], schemesCaught: {},
-    });
-  }
 
   it('crowns the winner the jury voted for, not the last person evicted', () => {
     fabricateHouse();

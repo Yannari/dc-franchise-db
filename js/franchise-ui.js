@@ -13,6 +13,8 @@ import {
   setArchetypeResolver, backfillAchievements, ACHIEVEMENT_LABELS
 } from './franchise-meta.js';
 import { persistFranchiseLedger } from './savestate.js';
+import { seasonKeyParts } from './franchise-meta.js';
+import { SHOWS, DEFAULT_FORMAT } from './shows.js';
 import { loadRankingBoards } from './ranking-boards.js';
 import { FRANCHISE_ROSTER } from './cast-ui.js';
 
@@ -201,17 +203,30 @@ function _renderHeader() {
 
 function _renderTimeline() {
   const seasons = activeSeasons();
-  const nums = Object.keys(seasons).map(Number).sort((a, b) => a - b);
-  if (!nums.length) {
+  // Keys are (show, number) now, so they are sorted by the parsed number rather
+  // than by Number("bb-1"), which is NaN and sorts nowhere.
+  const keys = Object.keys(seasons)
+    .sort((a, b) => seasonKeyParts(a, seasons[a]).num - seasonKeyParts(b, seasons[b]).num);
+  if (!keys.length) {
     return `<div class="fr-empty">${_svgTrophy()}
       <div class="fr-empty-text">No recorded seasons yet — drop a savestate below or finish a season with auto-record on.</div></div>`;
   }
-  const cards = nums.map(num => _renderSeasonCard(num, seasons[String(num)])).join('');
+  const cards = keys.map(key => _renderSeasonCard(key, seasons[key])).join('');
   return `<div class="vp-section-header gold">Season Timeline</div>
     <div class="fr-grid">${cards}</div>`;
 }
 
-function _renderSeasonCard(num, season) {
+/** A season named the way its own show numbers them: S9, but BB1. */
+function _seasonTagUI(num, format) {
+  const f = format || DEFAULT_FORMAT;
+  if (f === DEFAULT_FORMAT) return `S${num}`;
+  return `${(SHOWS[f] || {}).short || 'S'}${num}`;
+}
+
+function _renderSeasonCard(key, season) {
+  // The card used to print the key, which is fine while a key is a number and
+  // reads "Sbb-1" the moment it is not.
+  const { format: _fmt, num } = seasonKeyParts(key, season);
   const included = _isIncluded(season);
   const winner = _winnerOf(season);
   const runnerUp = _placeName(season, 2);
@@ -224,9 +239,9 @@ function _renderSeasonCard(num, season) {
   // favorite" anywhere on this tab was the returnee bucket's NAME -- which is
   // a casting category, not the award, and routinely leads with somebody else.
   if (season.fanFavorite) chips.push(`fan fav: ${_esc(season.fanFavorite)}`);
-  return `<div class="fr-card ${included ? '' : 'fr-excluded'}" id="fr-card-${num}">
+  return `<div class="fr-card ${included ? '' : 'fr-excluded'}" id="fr-card-${key}">
     <div class="fr-card-head">
-      <span class="fr-snum">S${num}</span>
+      <span class="fr-snum">${_esc(_seasonTagUI(num, _fmt))}</span>
       ${_sourceBadge(season)}
     </div>
     <div class="fr-card-name">${_esc(season.seasonName || `Season ${num}`)}</div>
@@ -241,12 +256,12 @@ function _renderSeasonCard(num, season) {
     ${chips.length ? `<div class="fr-chips">${chips.map(c => `<span class="fr-chip">${_esc(c)}</span>`).join('')}</div>` : ''}
     <div class="fr-card-controls">
       <label class="fr-incl" title="Counts toward returnee history">
-        <input type="checkbox" ${included ? 'checked' : ''} onchange="frToggleSeasonIncluded(${num}, this.checked)">
+        <input type="checkbox" ${included ? 'checked' : ''} onchange="frToggleSeasonIncluded('${key}', this.checked)">
         <span>counts</span></label>
-      <button class="fr-btn fr-btn-sm" onclick="frToggleDetails(${num})" title="Details">👁 details</button>
-      <button class="fr-btn fr-btn-sm fr-btn-danger" onclick="frDeleteSeason(${num})" title="Delete season">🗑</button>
+      <button class="fr-btn fr-btn-sm" onclick="frToggleDetails('${key}')" title="Details">👁 details</button>
+      <button class="fr-btn fr-btn-sm fr-btn-danger" onclick="frDeleteSeason('${key}')" title="Delete season">🗑</button>
     </div>
-    <div class="fr-details" id="fr-details-${num}" style="display:none"></div>
+    <div class="fr-details" id="fr-details-${key}" style="display:none"></div>
   </div>`;
 }
 
@@ -962,23 +977,32 @@ export function frDeleteFranchise() {
   deleteFranchise(franchiseLedger.active);
   _persistAndRerender();
 }
-export function frToggleSeasonIncluded(num, checked) {
-  setSeasonIncluded(num, checked);
+export function frToggleSeasonIncluded(key, checked) {
+  // A key, not a number: setSeasonIncluded resolves either, but two shows can
+  // both have a season 1 and only the key says which one was ticked.
+  setSeasonIncluded(key, checked);
   _persistAndRerender();
 }
-export function frToggleDetails(num) {
-  const el = document.getElementById('fr-details-' + num);
+export function frToggleDetails(key) {
+  const el = document.getElementById('fr-details-' + key);
   if (!el) return;
   if (el.style.display === 'none') {
-    el.innerHTML = _renderDetails(num, activeSeasons()[String(num)]);
+    el.innerHTML = _renderDetails(seasonKeyParts(key, activeSeasons()[String(key)]).num,
+      activeSeasons()[String(key)]);
     el.style.display = 'block';
   } else { el.style.display = 'none'; }
 }
-export function frDeleteSeason(num) {
-  const season = activeSeasons()[String(num)];
+export function frDeleteSeason(key) {
+  const seasons = activeSeasons();
+  const season = seasons[String(key)];
+  if (!season) return;
   const winner = _winnerOf(season);
-  if (!confirm(`Delete Season ${num}${winner ? ` (winner ${winner})` : ''} from this franchise? This cannot be undone.`)) return;
-  delete activeSeasons()[String(num)];
+  const { format, num } = seasonKeyParts(key, season);
+  // Named for its show, because two shows can both have a season 1 and
+  // "Delete Season 1" is not a question anybody can answer.
+  const label = season.seasonName || `${_seasonTagUI(num, format)}`;
+  if (!confirm(`Delete ${label}${winner ? ` (winner ${winner})` : ''} from this franchise? This cannot be undone.`)) return;
+  delete seasons[String(key)];
   _persistAndRerender();
 }
 export function frRecordLoaded() {

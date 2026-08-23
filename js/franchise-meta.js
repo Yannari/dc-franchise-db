@@ -6,7 +6,7 @@ import { lifeSeeds as _lifeSeeds } from './life-cast.js';
 // SAFE UNDER THE IMPORT RULE ABOVE: ratings.js imports core.js, tone.js and
 // shows.js, all of which are leaves, and nothing imports us back through it.
 import { ratingsForSeason as _ratingsForSeason } from './ratings.js';
-import { SHOWS, DEFAULT_FORMAT } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT, formatPrefix } from './shows.js';
 
 // Must match bKey() in bonds.js (can't import it — cycle via players.js).
 export function metaBondKey(a, b) { return [a, b].sort().join('||'); }
@@ -38,8 +38,81 @@ export function activeFranchise() {
   const af = franchiseLedger.franchises[franchiseLedger.active];
   if (!af.seasons || typeof af.seasons !== 'object') af.seasons = {};
   if (!af.name) af.name = 'Untitled';
+  _rekeyByShow(af);
   return af;
 }
+
+/**
+ * Move a season recorded before the key knew about shows.
+ *
+ * A ledger written under the old rule has another show's season sitting on a
+ * bare number, where the next Total Drama season of that number will overwrite
+ * it -- or already has. Records carry their own `format`, so the ones that are
+ * in the wrong place can say so and be moved without guessing.
+ *
+ * Runs on every read and does nothing at all once there is nothing to move.
+ */
+function _rekeyByShow(af) {
+  let moved = null;
+  for (const [key, rec] of Object.entries(af.seasons)) {
+    const fmt = rec?.format;
+    if (!fmt || fmt === DEFAULT_FORMAT) continue;      // Total Drama keeps the bare key
+    if (/^[a-z]+-\d+$/i.test(key)) continue;           // already moved
+    const want = seasonKey(fmt, key);
+    if (want === key || af.seasons[want]) continue;    // nowhere to go, or taken
+    (moved ||= []).push(`${key} -> ${want}`);
+    af.seasons[want] = rec;
+    delete af.seasons[key];
+  }
+  if (moved) console.info(`Franchise ledger: re-keyed ${moved.length} season(s) by show — ${moved.join(', ')}`);
+}
+/**
+ * WHERE A SEASON LIVES IN THE LEDGER.
+ *
+ * This was the season NUMBER and nothing else, so Big Brother 1 and Total
+ * Drama season 1 were the same entry: recording one silently destroyed the
+ * other. And this ledger is what decides whether returnees remember each
+ * other, so the cost was a cast who had played a whole season together
+ * arriving as strangers -- no old alliance, no grudge, no showmance, because
+ * the record with their names in it had been overwritten by another show's.
+ *
+ * Total Drama keeps the bare integer it has always had; every other show is
+ * prefixed. Same rule as every other key in the project -- see
+ * docs/ADDING-A-SHOW.md section 8.
+ */
+export function seasonKey(format, num) {
+  const f = format || DEFAULT_FORMAT;
+  return f === DEFAULT_FORMAT ? String(num) : `${formatPrefix(f)}-${num}`;
+}
+
+/** The show and number behind a ledger key, whichever form it is in. */
+export function seasonKeyParts(key, rec = null) {
+  const raw = String(key);
+  const m = raw.match(/^([a-z]+)-(\d+)$/i);
+  if (m) {
+    const format = Object.keys(SHOWS).find(f => formatPrefix(f) === m[1].toLowerCase());
+    return { format: format || rec?.format || DEFAULT_FORMAT, num: Number(m[2]) };
+  }
+  return { format: rec?.format || DEFAULT_FORMAT, num: Number(raw) };
+}
+
+/**
+ * Find a season however the caller asked for it.
+ *
+ * Callers pass a bare number from before this existed, or a composite key. A
+ * bare number means Total Drama unless only one show has that number.
+ */
+export function findSeason(seasons, numOrKey, format = null) {
+  if (seasons[String(numOrKey)] && (!format || (seasons[String(numOrKey)].format || DEFAULT_FORMAT) === format)) {
+    return seasons[String(numOrKey)];
+  }
+  if (format) return seasons[seasonKey(format, numOrKey)] || null;
+  const n = Number(numOrKey);
+  if (!Number.isFinite(n)) return null;
+  const hits = Object.entries(seasons).filter(([k, rec]) => seasonKeyParts(k, rec).num === n);
+  return hits.length ? hits[0][1] : null;
+}
+
 export function activeSeasons() { return activeFranchise().seasons; }
 export function listFranchises() {
   activeFranchise();
@@ -95,7 +168,7 @@ export function setFranchiseLocked(id, bool) {
 }
 // Include toggle — excluded seasons still persist but feed nothing to meta.
 export function setSeasonIncluded(seasonNum, bool) {
-  const s = activeSeasons()[String(seasonNum)];
+  const s = findSeason(activeSeasons(), seasonNum);
   if (s) { s.included = !!bool; return true; }
   return false;
 }
@@ -394,8 +467,9 @@ function _historyFor(name) {
   const out = []; // [{ seasonNum, rec }] sorted oldest → newest
   for (const [num, season] of Object.entries(activeSeasons())) {
     if (season.included === false) continue; // excluded seasons feed nothing to meta
-    if (season.players?.[name]) out.push({ seasonNum: Number(num), rec: season.players[name],
-      seasonName: season.seasonName, format: season.format || DEFAULT_FORMAT });
+    const { format: _f, num: _n } = seasonKeyParts(num, season);
+    if (season.players?.[name]) out.push({ seasonNum: _n, rec: season.players[name],
+      seasonName: season.seasonName, format: _f });
   }
   return out.sort((a, b) => a.seasonNum - b.seasonNum);
 }
@@ -454,12 +528,15 @@ export function buildFranchiseMeta(cast, cfg) {
   const seeded = {}; // key → { a, b, bondDelta, reason, kind }
   const inCast = new Set(Object.keys(profiles));
   const _seasons = activeSeasons();
-  const seasonNums = Object.keys(_seasons)
-    .filter(num => _seasons[num].included !== false) // excluded seasons seed no bonds
-    .map(Number).sort((a, b) => b - a);
-  seasonNums.forEach((num, idx) => {
+  // Keys are (show, number) now, so the ordering parses them rather than
+  // calling Number() on "bb-1" and sorting a list of NaN.
+  const seasonKeys = Object.keys(_seasons)
+    .filter(k => _seasons[k].included !== false) // excluded seasons seed no bonds
+    .sort((a, b) => seasonKeyParts(b, _seasons[b]).num - seasonKeyParts(a, _seasons[a]).num);
+  seasonKeys.forEach((key, idx) => {
     const scale = idx === 0 ? 1 : Math.pow(W.bondOlderSeasonScale, idx);
-    const season = _seasons[String(num)];
+    const season = _seasons[key];
+    const num = seasonKeyParts(key, season).num;
     const add = (a, b, delta, reason, kind, directional, extra) => {
       if (!inCast.has(a) || !inCast.has(b) || a === b) return;
       // Directional kinds (betrayal/blindside) keep each side's feeling separate;
@@ -648,8 +725,8 @@ export function clearPlayerHistory(name) {
 }
 
 // ── Career aggregation (Legacy layer — pure reads over included seasons) ───
-function _castSizeOf(seasonNum) {
-  const s = activeSeasons()[String(seasonNum)];
+function _castSizeOf(seasonNum, format = null) {
+  const s = findSeason(activeSeasons(), seasonNum, format);
   if (!s) return 0;
   return s.castSize || Object.keys(s.players || {}).length || 0;
 }
@@ -1415,7 +1492,10 @@ export function recordSeasonToLedger(_ep, source = 'live') {
   rec.source = source;
   rec.deriverV = LEDGER_DERIVER_V; // 'live' | 'manual' (Task 8b) — backfill entries carry per-player backfilled flags
   const _num = Number(gs?.seasonNumber || seasonConfig.seasonNumber);
-  activeSeasons()[String(_num)] = rec;
+  // Keyed by SHOW AND NUMBER. Writing to the bare number meant recording Big
+  // Brother 1 deleted Total Drama season 1, taking every returnee relationship
+  // in it with them.
+  activeSeasons()[seasonKey(rec.format, _num)] = rec;
   // Descriptive-only: detect achievements + evaluate objectives from live gs.
   // Stored on the record; never influences the sim (already complete).
   try {

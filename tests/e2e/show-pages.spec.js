@@ -9,8 +9,11 @@
 // the switcher — it was in the pages not listening.
 import { test, expect } from '@playwright/test';
 
-const BB_PLAYERS = 18;      // the cast of the one Big Brother season played
-const ALL_PLAYERS = 152;
+// Both were stale, and stale in a way that hid the bug they were meant to
+// catch: the roster used to hold 152 Total Drama players with Big Brother's
+// cast not merged into it at all. It is one roster now.
+const BB_PLAYERS = 17;      // the cast of the one Big Brother season played
+const ALL_PLAYERS = 169;    // 152 contestants + 17 houseguests
 
 test('the timeline shows one show at a time', async ({ page }) => {
   await page.goto('/timeline.html?show=big-brother');

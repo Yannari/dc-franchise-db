@@ -337,7 +337,7 @@
       </a>
 
       <div class="stats-badge">
-        <div class="stats-main"><span id="totalSeasons">9</span> Seasons • <span id="totalPlayers">102</span> Players</div>
+        <div class="stats-main"><span id="totalSeasons">9</span> <span id="totalSeasonsLabel">Seasons</span> • <span id="totalPlayers">102</span> <span id="totalPlayersLabel">Players</span></div>
         <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
       </div>
     </div>
@@ -743,15 +743,41 @@ function loadPlayerData() {
 
 // Compute the header/footer totals from the live player data so they always
 // reflect the current database (players, seasons, and total appearances).
+
+/* WHICH SHOW IS IN VIEW, in one place. The list below was already scoped by the
+   switcher and these counters were not, so Big Brother reported 169 players and
+   14 seasons — 169 is 152 contestants plus 17 houseguests and is the size of no
+   cast that has ever existed, and 14 is Total Drama's season count. */
+function _viewShow() {
+  const sw = window.showSwitcher;
+  return sw ? sw.currentShow() : 'all';
+}
+function _playerInShow(p, show = _viewShow()) {
+  return show === 'all'
+    || (p.seasonDetails || []).some(d => (d.format || 'total-drama') === show);
+}
+
 function updateHeaderStats() {
   if (!Array.isArray(allPlayers) || !allPlayers.length) return;
-  const totalPlayers = allPlayers.length;
-  const totalAppearances = allPlayers.reduce((sum, p) => {
-    const apps = Number(p.totalSeasons ?? (Array.isArray(p.seasons) ? p.seasons.length : 0)) || 0;
-    return sum + apps;
-  }, 0);
-  const seasonNums = allPlayers.flatMap(p => Array.isArray(p.seasons) ? p.seasons.map(Number) : []);
-  const totalSeasons = seasonNums.length ? Math.max(...seasonNums) : 0;
+  const show = _viewShow();
+  const scoped = allPlayers.filter(p => _playerInShow(p, show));
+  if (!scoped.length) return;
+  const totalPlayers = scoped.length;
+  // An appearance is a season detail, counted only where it belongs to the show
+  // being looked at — `totalSeasons` on the row is every show at once.
+  const detailsIn = p => (p.seasonDetails || [])
+    .filter(d => show === 'all' || (d.format || 'total-drama') === show);
+  const totalAppearances = scoped.reduce((sum, p) => sum + (detailsIn(p).length
+    || Number(p.totalSeasons ?? (Array.isArray(p.seasons) ? p.seasons.length : 0)) || 0), 0);
+  // COUNTED, NOT MAXED. A season is (show, number): taking the highest number
+  // says 14 for a franchise of fifteen seasons, because Big Brother 1 is a "1"
+  // and Total Drama already had one of those.
+  const seasonKeys = new Set(scoped.flatMap(p => detailsIn(p)
+    .filter(d => d.season != null)
+    .map(d => `${d.format || 'total-drama'}|${d.season}`)));
+  const seasonNums = [...new Set(scoped.flatMap(p => detailsIn(p)
+    .filter(d => d.season != null).map(d => Number(d.season))))];
+  const totalSeasons = seasonKeys.size;
 
   // Populate the season filter dropdown from the live data so it never goes stale.
   const seasonFilter = document.getElementById('seasonFilter');
@@ -765,11 +791,17 @@ function updateHeaderStats() {
 
   const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
   setText('totalPlayers', totalPlayers);
-  if (totalSeasons) setText('totalSeasons', totalSeasons);
+  // The nouns are spans because this banner counts ONE show now, and a show can
+  // have one season. "1 Seasons" is the kind of thing a reader notices.
+  setText('totalPlayersLabel', totalPlayers === 1 ? 'Player' : 'Players');
+  if (totalSeasons) {
+    setText('totalSeasons', totalSeasons);
+    setText('totalSeasonsLabel', totalSeasons === 1 ? 'Season' : 'Seasons');
+  }
   setText('footer-players', totalPlayers);
   if (totalSeasons) setText('footer-seasons', totalSeasons);
   setText('metaCounts', `${totalPlayers} total players • ${totalAppearances} appearances`);
-  setText('footerCounts', `${totalPlayers} total players across ${totalSeasons} seasons • ${totalAppearances} total appearances`);
+  setText('footerCounts', `${totalPlayers} total players across ${totalSeasons} season${totalSeasons === 1 ? '' : 's'} • ${totalAppearances} total appearances`);
 }
 
 // ✅ CALL THE FUNCTION AND CHAIN PROMISES
@@ -875,12 +907,16 @@ Promise.all([
     populateArchetypeFilter();
     renderPlayers(allPlayers);
     // Re-filter when the header switches shows.
-    window.addEventListener('showchange', updateDisplay);
+    window.addEventListener('showchange', () => { updateHeaderStats(); updateDisplay(); });
     // The module glue resolves after this classic script runs, so a first paint
     // that did not wait had no switcher to ask and always showed every show.
     updateDisplay();
-    window._showSwitcherReady?.then(() => updateDisplay());
     updateHeaderStats();
+    // The counters have to wait for the switcher for the same reason the list
+    // does: this classic script runs before the module glue resolves, so a
+    // first paint that did not wait had no switcher to ask and counted every
+    // show.
+    window._showSwitcherReady?.then(() => { updateHeaderStats(); updateDisplay(); });
 
     console.log('🔄 Player data loaded successfully');
   })
@@ -995,9 +1031,8 @@ function updateDisplay() {
      this page and inert, so "show me Big Brother" answered with all 152
      players, 134 of whom have never been in that house. */
   const _sw = window.showSwitcher;
-  const _show = _sw ? _sw.currentShow() : 'all';
-  const _inShow = p => _show === 'all'
-    || (p.seasonDetails || []).some(d => (d.format || 'total-drama') === _show);
+  const _show = _viewShow();
+  const _inShow = p => _playerInShow(p, _show);
 
   let filteredPlayers = allPlayers.filter(p => {
     if (!_inShow(p)) return false;
@@ -1095,7 +1130,15 @@ function updateDisplay() {
   });
 
   renderPlayers(filteredPlayers);
-  countDiv.textContent = `Showing ${filteredPlayers.length} of ${allPlayers.length} players`;
+  /* OUT OF HOW MANY THIS SHOW HAS, not how many the franchise has.
+     The list was already scoped by the switcher, but the denominator was the
+     whole roster — so Big Brother read "showing 17 of 169 players" when 169 is
+     a number that exists on no show: it is 152 contestants plus 17 houseguests,
+     and nobody has ever been in a cast of it. */
+  const inShowTotal = allPlayers.filter(_inShow).length;
+  const showLabel = _show === 'all' ? 'players'
+    : `${((_sw?.SHOWS || {})[_show] || {}).name || _show} players`;
+  countDiv.textContent = `Showing ${filteredPlayers.length} of ${inShowTotal} ${showLabel}`;
 }
 
 search.addEventListener('input', updateDisplay);

@@ -76,6 +76,29 @@ function record(juror) {
  * Zero for a pair with no history, which is also the honest answer — a juror
  * who never played with somebody has no read to give.
  */
+/**
+ * What a season that has already aired is worth to a juror, before this one.
+ *
+ * Smaller than the equivalent from THIS house — being written down eight days
+ * ago is worth -1.6 and a betrayal last summer is worth -0.9 — because the
+ * season they just played is the one they are voting on.
+ */
+const OLD_SEASON_WEIGHT = {
+  betrayal: -0.9,
+  blindside: -0.7,
+  rivals: -0.5,
+  'showmance-broken': -0.4,
+  allies: 0.8,
+  'showmance-intact': 0.9,
+};
+
+/** Shared history between two people, from the franchise ledger. */
+function _pastBetween(a, b) {
+  const pairs = gs?.franchiseMeta?.seededPairs || [];
+  return pairs.find(sp => sp.wronged !== false
+    && ((sp.a === a && sp.b === b) || (sp.a === b && sp.b === a))) || null;
+}
+
 export function readOf(juror, player) {
   if (!juror || !player) return 0;
   return Number(store()[juror]?.reads?.[player]) || 0;
@@ -142,6 +165,28 @@ export function seedJurorReads(juror, week = 0) {
     read += ((pS.strategic + pS.social) / 20) * respectWeight;
     const bigMoves = Number(gs.playerStates?.[player]?.bigMoves) || 0;
     read += Math.min(1.2, bigMoves * 0.22) * respectWeight;
+
+    // ── AND THE SEASON BEFORE THIS ONE ──
+    //
+    // A juror who was cut by this finalist in a previous summer does not walk
+    // in neutral, and one who went to the end WITH them does not either. The
+    // ledger has carried this the whole time and the house has been seeding
+    // starting bonds off it since returnees existed; the jury was the one room
+    // that never asked.
+    //
+    // Scaled DOWN against this season's evidence on purpose. What somebody did
+    // to you eight days ago outweighs what they did to you last year -- it is a
+    // thumb on the scale, not the verdict, and a juror who values loyalty
+    // carries an old betrayal further than a strategic one does.
+    const past = _pastBetween(juror, player);
+    if (past) {
+      const older = OLD_SEASON_WEIGHT[past.kind] || 0;
+      if (older) {
+        read += older * (older < 0 ? grudgeWeight : respectWeight);
+        rec.log.push({ week, kind: 'history', player, delta: older,
+          text: `${juror} did not arrive neutral about ${player}: ${past.reason}.` });
+      }
+    }
 
     rec.reads[player] = read;
   }

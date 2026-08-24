@@ -58,6 +58,7 @@ import { PUNISHMENT_EVENTS } from './punishments.js';
 // Rivals ever read the kinship axis; outside them a declared estrangement or
 // marriage was two people with a number between them.
 import { KINSHIP_EVENTS } from './kinship.js';
+import { FRANCHISE_HISTORY_EVENTS } from './franchise-history.js';
 import { POWER_KNOWLEDGE_EVENTS } from './power-knowledge.js';
 import { PRIZE_EXCHANGE_EVENTS } from './prize-exchange.js';
 import { CAMP_EVENTS } from './camp-comeback.js';
@@ -116,6 +117,8 @@ export const HOUSE_EVENTS = [
   ...SAFETY_SUITE_EVENTS,
   ...PUNISHMENT_EVENTS,
   ...KINSHIP_EVENTS,
+  // What they did to each other in a season that has already aired.
+  ...FRANCHISE_HISTORY_EVENTS,
   ...POWER_KNOWLEDGE_EVENTS,
   ...PRIZE_EXCHANGE_EVENTS,
   ...CAMP_EVENTS,

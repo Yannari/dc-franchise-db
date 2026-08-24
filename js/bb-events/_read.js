@@ -658,4 +658,65 @@ export function campaignArgument(nominee, voter, opponent) {
   return `"I am not asking you to like me. I am asking you to count. Without me you are one short of everything you want to do."`;
 }
 
+// ── WHAT HAPPENED BEFORE THIS SEASON ──────────────────────────────────────
+//
+// Everything above reads the CURRENT house: who is allied with whom now, what
+// somebody has seen this summer. `gs.franchiseMeta` is the other kind of
+// memory — what these people did to each other in a season that has already
+// aired — and until now no Big Brother module read it at all.
+//
+// The house got the consequences and none of the cause: initGameState seeds
+// starting bonds from the ledger, so two returnees who were cut by each other
+// last time genuinely dislike each other on day one, and nobody could say why.
+//
+// Built by js/franchise-meta.js and show-agnostic; these are just the reads.
+
+/** Every piece of shared history between two returnees, strongest first. */
+export function pastBetween(a, b) {
+  const pairs = gs?.franchiseMeta?.seededPairs || [];
+  if (!a || !b) return [];
+  return pairs
+    .filter(sp => (sp.a === a && sp.b === b) || (sp.a === b && sp.b === a))
+    // The betrayer-side copy of a betrayal says the same sentence from the
+    // wrong mouth; the wronged party owns the grievance.
+    .filter(sp => sp.wronged !== false)
+    .sort((x, y) => Math.abs(y.bondDelta) - Math.abs(x.bondDelta));
+}
+
+/** The one thing these two are most likely to bring up, or null. */
+export function sharedPast(a, b) {
+  return pastBetween(a, b)[0] || null;
+}
+
+/** Everyone in `house` this player has a past with. */
+export function pastPartners(name, house = []) {
+  if (!name) return [];
+  return house.filter(n => n && n !== name && pastBetween(name, n).length);
+}
+
+/**
+ * Every pair in the house with history, worst blood first.
+ *
+ * `kinds` narrows it — 'betrayal', 'blindside', 'rivals', 'allies',
+ * 'showmance-intact', 'showmance-broken'.
+ */
+export function pastPairs(house = [], kinds = null) {
+  const pairs = gs?.franchiseMeta?.seededPairs || [];
+  const inHouse = new Set(house.filter(Boolean));
+  return pairs
+    .filter(sp => sp.wronged !== false && inHouse.has(sp.a) && inHouse.has(sp.b))
+    .filter(sp => !kinds || kinds.includes(sp.kind))
+    .sort((x, y) => Math.abs(y.bondDelta) - Math.abs(x.bondDelta));
+}
+
+/** What the ledger knows about how this player plays: reputation, instincts. */
+export function pastProfile(name) {
+  return (name && gs?.franchiseMeta?.profiles?.[name]) || null;
+}
+
+/** Has this houseguest played before, as far as the ledger is concerned? */
+export function isVeteran(name) {
+  return !!pastProfile(name);
+}
+
 export { pStats };

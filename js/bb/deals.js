@@ -71,7 +71,17 @@ function sincerityFor(name, partner, tier = 'final-two') {
   const skill = planSkill(name) / 10;
   const held = endgameDealsOf(name).length;
   const base = loyalty * 0.62 + clamp01((trustOf(name, partner) + 4) / 12) * 0.38;
-  const discount = skill * 0.3 + held * 0.22;
+  // ── AND WHAT THEY WATCHED THEM DO LAST TIME ──
+  //
+  // A reputation is only a reputation if it costs something. The ledger has
+  // known who cuts their allies since returnees existed, and the house shook
+  // hands with them exactly as readily as with anybody else. You do not fully
+  // mean a final two with somebody whose whole season was televised.
+  //
+  // Smaller than the planning discount, because it is a thing you believe about
+  // them rather than a thing you know about yourself.
+  const notorious = Number(gs.franchiseMeta?.profiles?.[partner]?.knownSchemer) || 0;
+  const discount = skill * 0.3 + held * 0.22 + notorious * 0.18;
   // A final three is a looser promise than a final two, and people mean it more
   // easily because it costs them less.
   const tierEase = tier === 'final-three' ? 0.1 : 0;

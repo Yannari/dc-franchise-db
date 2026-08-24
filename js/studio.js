@@ -287,6 +287,16 @@ let _archFilter = (() => {       // one archetype, or '' for all
   try { return localStorage.getItem('studio_arch_filter') || ''; } catch { return ''; }
 })();
 
+// Cast-analysis panel: which sections are open. An all-returnee cast produces a
+// pair for nearly every duo in the house — BB1's 17 members print ~90 of them —
+// so chemistry stays shut until asked for, and the archetype bars remember
+// whatever was chosen last. Only the warning chips are always on screen,
+// because those are the part that says do something.
+const _flag = (k, dflt) => { try { const v = localStorage.getItem(k); return v === null ? dflt : v === '1'; } catch { return dflt; } };
+let _anOpen = _flag('studio_an_open', true);      // archetype bars + stat side panel
+let _chemOpen = _flag('studio_chem_open', false); // prior-season history
+const _chemPlayers = new Set();                   // names whose pairs are expanded
+
 // Hosts live in the roster but never compete, so they'd always look "never
 // played". Keep them out of that filter so a cleanup sweep can't bin them.
 const RESERVED_CHARACTERS = new Set(['chef', 'chef-hatchet', 'chris', 'chris-mclean']);
@@ -793,6 +803,7 @@ function _renderBalance() {
   if (active && active.slugs.length) {
     const members = active.slugs.map(s => _roster().find(p => p.slug === s)).filter(Boolean);
     el.innerHTML = _castAnalysisHTML(members, active.name);
+    _bindAnalysis(el);
     return;
   }
   // pool-level snapshot when no cast is being composed
@@ -849,6 +860,31 @@ function _renderArchBar(list) {
   }));
 }
 
+/**
+ * Open/close handlers for the analysis panel.
+ *
+ * The panel is small enough that a full re-render is cheaper than patching it,
+ * and re-rendering keeps the chevrons, aria-expanded and titles in agreement
+ * with the state without a second code path that has to remember to.
+ */
+function _bindAnalysis(el) {
+  el.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
+    const act = b.dataset.act;
+    if (act === 'an-toggle') {
+      _anOpen = !_anOpen;
+      try { localStorage.setItem('studio_an_open', _anOpen ? '1' : '0'); } catch {}
+    } else if (act === 'chem-toggle') {
+      _chemOpen = !_chemOpen;
+      try { localStorage.setItem('studio_chem_open', _chemOpen ? '1' : '0'); } catch {}
+      if (!_chemOpen) _chemPlayers.clear();   // reopening starts rolled up again
+    } else if (act === 'chem-player') {
+      const n = b.dataset.name;
+      if (_chemPlayers.has(n)) _chemPlayers.delete(n); else _chemPlayers.add(n);
+    } else return;
+    _renderBalance();
+  }));
+}
+
 function _castAnalysisHTML(members, castName) {
   const N = members.length;
   const g = { m: 0, f: 0, nb: 0 }, arch = {};
@@ -884,43 +920,130 @@ function _castAnalysisHTML(members, castName) {
   if (!warns.length) warns.push(['ok', 'balanced lineup — no red flags']);
 
   return `<div class="st-analysis">
-    <div class="st-an-head">${_esc(castName)} — cast analysis · ${N} member${N === 1 ? '' : 's'}</div>
-    <div class="st-an-cols">
+    <div class="st-an-head">
+      <span>${_esc(castName)} — cast analysis · ${N} member${N === 1 ? '' : 's'}</span>
+      <button type="button" class="st-an-toggle" data-act="an-toggle" aria-expanded="${_anOpen}"
+        title="${_anOpen ? 'Hide' : 'Show'} archetype spread and stat summary">breakdown <i>${_anOpen ? '▾' : '▸'}</i></button>
+    </div>
+    ${_anOpen ? `<div class="st-an-cols">
       <div class="st-an-bars">${bars}</div>
       <div class="st-an-side">
         <div class="st-an-stat"><b>${avg}</b><span>avg stat</span></div>
         <div class="st-an-gender">♂ ${g.m || 0} · ♀ ${g.f || 0} · ⚧ ${g.nb || 0}</div>
         <div class="st-an-mix"><span class="st-an-mix-v">${villains} scheme</span><span class="st-an-mix-h">${nice} nice</span><span class="st-an-mix-c">${phys} threat</span></div>
       </div>
-    </div>
+    </div>` : ''}
     <div class="st-an-warns">${warns.map(([k, t]) => `<span class="st-an-warn st-an-${k}">${_esc(t)}</span>`).join('')}</div>
     ${_chemistryHTML(members)}
   </div>`;
 }
 
+// Weakest relationship first in count, strongest first when a pair is printed.
+// "Allied" is both the most numerous and the least interesting thing two
+// returnees can share; a showmance or a burn is what actually moves a season,
+// so those sort to the top of a player's list and set the pair's label when a
+// duo has more than one thing on file.
+const CHEM_KINDS = {
+  showmance: { side: 'good', rank: 0, label: 'showmance' },
+  ally:      { side: 'good', rank: 3, label: 'ally' },
+  burn:      { side: 'bad',  rank: 1, label: 'burn' },
+  rival:     { side: 'bad',  rank: 2, label: 'rivalry' },
+};
+
+/**
+ * Prior-season history between the members of a cast.
+ *
+ * Rolled up per player rather than printed pair by pair. An all-returnee
+ * lineup shares a season with itself, so the flat form is quadratic — BB1's 17
+ * members produced ~90 pills of "X & Y allied" that nobody could read. The
+ * rollup is one row per member, and the pairs are still there a click away.
+ */
 function _chemistryHTML(members) {
   if (typeof window.careerFor !== 'function') return '';
   const names = new Set(members.map(m => m.name));
   const key = (a, b) => [a, b].sort().join('||');
-  const chem = new Map(), conflict = new Map();
+  const pairs = new Map();   // pair||side -> { a, b, kind, text }
   let hasHistory = false;
+
+  // Strongest claim on a side wins: a duo who allied and then showmanced reads
+  // as a showmance, not as both.
+  const add = (a, b, kind, text) => {
+    const { side, rank } = CHEM_KINDS[kind];
+    const k = `${key(a, b)}|${side}`;
+    const prev = pairs.get(k);
+    if (prev && CHEM_KINDS[prev.kind].rank <= rank) return;
+    pairs.set(k, { a, b, kind, text });
+  };
+
   members.forEach(m => {
     let c = null; try { c = window.careerFor(m.name); } catch {}
     if (!c) return;
     hasHistory = true;
     const P = c.people || {};
-    (P.allies || []).forEach(a => { if (a.name !== m.name && names.has(a.name)) { const k = key(m.name, a.name); if (!chem.has(k)) chem.set(k, `${m.name} &amp; ${a.name} allied`); } });
-    (P.showmances || []).forEach(s => { if (names.has(s.partner)) chem.set(key(m.name, s.partner), `${m.name} &amp; ${s.partner} — showmance${s.ended ? ' (ended)' : ''}`); });
-    (P.betrayed || []).forEach(b => { if (names.has(b.name)) conflict.set(key(m.name, b.name), `${m.name} burned ${b.name}`); });
-    (P.betrayedBy || []).forEach(b => { if (names.has(b.name) && !conflict.has(key(m.name, b.name))) conflict.set(key(m.name, b.name), `${b.name} burned ${m.name}`); });
-    (P.rivals || []).forEach(r => { if (names.has(r.name) && !conflict.has(key(m.name, r.name))) conflict.set(key(m.name, r.name), `${m.name} &amp; ${r.name} — rivals`); });
+    (P.allies || []).forEach(a => { if (a.name !== m.name && names.has(a.name)) add(m.name, a.name, 'ally', `${m.name} &amp; ${a.name} allied`); });
+    (P.showmances || []).forEach(s => { if (names.has(s.partner)) add(m.name, s.partner, 'showmance', `${m.name} &amp; ${s.partner} — showmance${s.ended ? ' (ended)' : ''}`); });
+    (P.betrayed || []).forEach(b => { if (names.has(b.name)) add(m.name, b.name, 'burn', `${m.name} burned ${b.name}`); });
+    (P.betrayedBy || []).forEach(b => { if (names.has(b.name)) add(m.name, b.name, 'burn', `${b.name} burned ${m.name}`); });
+    (P.rivals || []).forEach(r => { if (names.has(r.name)) add(m.name, r.name, 'rival', `${m.name} &amp; ${r.name} — rivals`); });
   });
+
   if (!hasHistory) return `<div class="st-chem-note">✦ No prior-season history among these members — a clean slate.</div>`;
-  const chemA = [...chem.values()], confA = [...conflict.values()];
-  if (!chemA.length && !confA.length) return `<div class="st-chem-note">History on file, but no shared past among these members yet.</div>`;
-  return `<div class="st-chem">
-    ${chemA.length ? `<div class="st-chem-col st-chem-good"><span class="st-chem-h">✦ Chemistry</span>${chemA.map(t => `<span class="st-chem-pair">${t}</span>`).join('')}</div>` : ''}
-    ${confA.length ? `<div class="st-chem-col st-chem-bad"><span class="st-chem-h">⚔ Conflict</span>${confA.map(t => `<span class="st-chem-pair">${t}</span>`).join('')}</div>` : ''}
+  const all = [...pairs.values()];
+  if (!all.length) return `<div class="st-chem-note">History on file, but no shared past among these members yet.</div>`;
+
+  const totals = { showmance: 0, ally: 0, burn: 0, rival: 0 };
+  const per = new Map();     // name -> { showmance, ally, burn, rival, pairs: [] }
+  const blank = () => ({ showmance: 0, ally: 0, burn: 0, rival: 0, pairs: [] });
+  all.forEach(p => {
+    totals[p.kind]++;
+    [p.a, p.b].forEach(n => {
+      if (!per.has(n)) per.set(n, blank());
+      const rec = per.get(n);
+      rec[p.kind]++;
+      rec.pairs.push(p);
+    });
+  });
+
+  const sum = (r, side) => Object.keys(CHEM_KINDS).reduce((t, k) => t + (CHEM_KINDS[k].side === side ? r[k] : 0), 0);
+  const rows = [...per.entries()]
+    .sort((x, y) => (y[1].pairs.length - x[1].pairs.length) || x[0].localeCompare(y[0]))
+    .map(([name, rec]) => {
+      const open = _chemPlayers.has(name);
+      const bits = [];
+      if (rec.showmance) bits.push(`<span class="st-chem-n st-chem-love">${rec.showmance} showmance</span>`);
+      if (rec.ally) bits.push(`<span class="st-chem-n st-chem-ok">${rec.ally} ally</span>`);
+      if (rec.burn) bits.push(`<span class="st-chem-n st-chem-burn">${rec.burn} burn</span>`);
+      if (rec.rival) bits.push(`<span class="st-chem-n st-chem-riv">${rec.rival} rival</span>`);
+      // A tilt bar reads faster than the numbers do: all-green is somebody with
+      // friends everywhere, all-red is somebody at war with the house.
+      const good = sum(rec, 'good'), bad = sum(rec, 'bad'), tot = good + bad || 1;
+      const detail = open
+        ? `<div class="st-chem-pairs">${rec.pairs
+            .slice().sort((p, q) => CHEM_KINDS[p.kind].rank - CHEM_KINDS[q.kind].rank)
+            .map(p => `<span class="st-chem-pair st-chem-${CHEM_KINDS[p.kind].side}">${p.text}</span>`).join('')}</div>`
+        : '';
+      return `<div class="st-chem-row">
+        <button type="button" class="st-chem-name${open ? ' on' : ''}" data-act="chem-player" data-name="${_esc(name)}"
+          aria-expanded="${open}" title="${open ? 'Hide' : 'Show'} ${_esc(name)}'s shared history">
+          <i class="st-chem-chev">${open ? '▾' : '▸'}</i><b>${_esc(name)}</b>
+          <span class="st-chem-tilt"><span style="width:${(good / tot) * 100}%"></span></span>
+          ${bits.join('')}
+        </button>${detail}</div>`;
+    }).join('');
+
+  const part = (n, one, many) => n ? `${n} ${n === 1 ? one : many}` : '';
+  const goodSum = [part(totals.ally, 'alliance', 'alliances'), part(totals.showmance, 'showmance', 'showmances')].filter(Boolean).join(' · ') || 'nothing';
+  const badSum = [part(totals.burn, 'burn', 'burns'), part(totals.rival, 'rivalry', 'rivalries')].filter(Boolean).join(' · ') || 'nothing';
+
+  return `<div class="st-chem-wrap">
+    <button type="button" class="st-chem-toggle" data-act="chem-toggle" aria-expanded="${_chemOpen}"
+      title="${_chemOpen ? 'Hide' : 'Show'} prior-season history between these members">
+      <i class="st-chem-chev">${_chemOpen ? '▾' : '▸'}</i>
+      <span class="st-chem-sum st-chem-ok">✦ ${goodSum}</span>
+      <span class="st-chem-sum st-chem-burn">⚔ ${badSum}</span>
+      <span class="st-chem-hint">${all.length} shared pair${all.length === 1 ? '' : 's'}</span>
+    </button>
+    ${_chemOpen ? `<div class="st-chem-rows">${rows}</div>` : ''}
   </div>`;
 }
 
@@ -2137,7 +2260,12 @@ function _injectCSS() {
   .st-star.on{color:var(--accent,#f4b23e)}
   .st-card.member{border-color:var(--accent,#f4b23e)}
   .st-analysis{flex:1 1 100%;display:flex;flex-direction:column;gap:9px;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:10px;padding:11px 12px}
-  .st-an-head{font-size:12px;font-weight:700;letter-spacing:.02em}
+  .st-an-head{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.02em}
+  .st-an-toggle{margin-left:auto;display:flex;align-items:center;gap:5px;cursor:pointer;background:none;
+    border:1px solid var(--border,#333);border-radius:999px;padding:2px 9px;color:var(--muted,#9a9);
+    font:inherit;font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .st-an-toggle:hover{border-color:var(--accent,#46b17b);color:inherit}
+  .st-an-toggle i{font-style:normal;font-size:9px}
   .st-an-cols{display:grid;grid-template-columns:1fr 132px;gap:14px}
   @media(max-width:560px){.st-an-cols{grid-template-columns:1fr}}
   .st-an-bars{display:flex;flex-direction:column;gap:4px}
@@ -2157,14 +2285,29 @@ function _injectCSS() {
   .st-an-warn{font-size:10.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--border,#333);color:#e5843e}
   .st-an-crit{color:#fff;background:#e5484d;border-color:transparent}
   .st-an-ok{color:#46b17b;border-color:#46b17b55}
-  .st-chem{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  @media(max-width:560px){.st-chem{grid-template-columns:1fr}}
-  .st-chem-col{display:flex;flex-direction:column;gap:3px;border-radius:8px;padding:7px 9px;border:1px solid var(--border,#333)}
-  .st-chem-good{border-left:3px solid #46b17b}
-  .st-chem-bad{border-left:3px solid #e5484d}
-  .st-chem-h{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#9a9)}
-  .st-chem-pair{font-size:11px}
   .st-chem-note{font-size:11px;color:var(--muted,#9a9);font-style:italic}
+  .st-chem-wrap{display:flex;flex-direction:column;gap:6px}
+  .st-chem-toggle{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;width:100%;text-align:left;cursor:pointer;
+    background:none;border:1px solid var(--border,#333);border-radius:8px;padding:6px 9px;color:inherit;font:inherit}
+  .st-chem-toggle:hover{border-color:var(--accent,#46b17b)}
+  .st-chem-sum{font-size:11px}
+  .st-chem-hint{margin-left:auto;font-family:ui-monospace,monospace;font-size:9.5px;color:var(--muted,#9a9)}
+  .st-chem-chev{font-style:normal;font-size:9px;color:var(--muted,#9a9)}
+  .st-chem-rows{display:flex;flex-direction:column;gap:2px}
+  .st-chem-row{display:flex;flex-direction:column}
+  .st-chem-name{display:flex;align-items:center;gap:7px;width:100%;text-align:left;cursor:pointer;
+    background:none;border:0;border-radius:6px;padding:3px 7px;color:inherit;font:inherit}
+  .st-chem-name:hover,.st-chem-name.on{background:var(--track,#2a2a33)}
+  .st-chem-name b{font-size:11.5px;min-width:92px}
+  .st-chem-tilt{width:52px;height:4px;border-radius:99px;background:#e5484d;overflow:hidden;flex:none}
+  .st-chem-tilt span{display:block;height:100%;background:#46b17b}
+  .st-chem-n{font-family:ui-monospace,monospace;font-size:9.5px;color:var(--muted,#9a9)}
+  .st-chem-ok{color:#46b17b}.st-chem-love{color:#e0699a}.st-chem-burn{color:#e5484d}.st-chem-riv{color:#e5843e}
+  .st-chem-pairs{display:flex;flex-direction:column;gap:2px;margin:2px 0 5px 22px;
+    padding-left:9px;border-left:2px solid var(--border,#333)}
+  .st-chem-pair{font-size:11px}
+  .st-chem-pair.st-chem-good{color:#46b17b}
+  .st-chem-pair.st-chem-bad{color:#e5843e}
   .st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
   .st-card{position:relative;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:12px;padding:8px 6px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;color:inherit}
   .st-card:hover{border-color:var(--accent,#f4b23e)}

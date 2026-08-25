@@ -30,6 +30,7 @@ export const BASE_WEEK_RULES = Object.freeze({
   publicVote: false,        // the ballot is secret unless a twist opens it
   addSlots: [],             // extra competition slots ('safety', 'return', ...)
   secondCycle: false,       // a compressed second eviction cycle after the first
+  extraCycles: 0,           // HOW MANY of them: 1 is a double, 2 is a triple
 });
 
 /**
@@ -316,7 +317,22 @@ export const BB_TWIST_CONTRACTS = {
   'bb-double-eviction': {
     id: 'bb-double-eviction', layer: 'scheduled', category: 'week-structure',
     timing: 'week', duration: { weeks: 1 },
-    rules: { secondCycle: true },
+    rules: { secondCycle: true, extraCycles: 1 },
+  },
+  // Declares the SAME rule as the double, because it is the same rule staged
+  // one more time: an extra compressed cycle after the vote. `extraCycles`
+  // says how many, and the double is the case where that number is one.
+  'bb-triple-eviction': {
+    id: 'bb-triple-eviction', layer: 'scheduled', category: 'week-structure',
+    timing: 'week', duration: { weeks: 1 },
+    rules: { secondCycle: true, extraCycles: 2 },
+    acquisition: { channel: 'production', secrecy: 'public' },
+    announcement: {
+      name: 'Triple Eviction',
+      reactions: 'dread',
+      rule: 'Tonight is not one eviction and it is not two. When that front door closes you will play for Head of Household again, nominate again, play a veto again and vote again — and when THAT door closes, you are going to do all of it a third time. There will be no time to talk to anybody. There will be no time to count.',
+      sting: 'Three of you are sleeping somewhere else tonight.',
+    },
   },
   'bb-instant-eviction': {
     id: 'bb-instant-eviction', layer: 'scheduled', category: 'week-structure',

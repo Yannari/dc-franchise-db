@@ -201,6 +201,10 @@ export function getEpisodeEliminations(ep) {
     // this helper (the hub card, the season timeline, the episode trail)
     // silently lost a houseguest, which is why the count never went 16 -> 14.
     ep.alsoEliminated,
+    // And a triple's third. Same reason: everything downstream counts the
+    // house off this list, so a name missing here is a houseguest the season
+    // never notices leaving.
+    ...(ep.extraEvictions || []).map(r => r && r.evicted),
   ].filter(Boolean);
   return [...new Set(names)];
 }
@@ -1694,6 +1698,7 @@ export function buildEpisodeMap() {
     // the double eviction and the Split House are both listed by name.
     if (_allTypes.includes('bb-no-eviction')) elims = 0;
     if (_allTypes.includes('bb-double-eviction')) elims = Math.max(elims, 2);
+    if (_allTypes.includes('bb-triple-eviction')) elims = Math.max(elims, 3);
     // The Camp Director takes TWO on night one, and this projection was
     // counting one. Hit The Road evicts the slowest of the four banished
     // before a Head of Household has even been crowned, and then the week
@@ -1721,6 +1726,7 @@ export function buildEpisodeMap() {
     if (_allTypes.includes('bb-split-house')
         && active >= 10
         && !_allTypes.includes('bb-double-eviction')
+        && !_allTypes.includes('bb-triple-eviction')
         && !_allTypes.includes('bb-instant-eviction')
         && !(seasonConfig.bbSafetyMode && seasonConfig.bbSafetyMode !== 'off')) {
       elims = Math.max(elims, 2);

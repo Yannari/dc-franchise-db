@@ -562,15 +562,26 @@ export const TWIST_CATALOG = [
     category:'elim', phase:'any',
     desc:'For one week the house plays in pairs. The Head of Household nominates two DUOS rather than two houseguests \u2014 four keys on the wall \u2014 and the veto pulls a whole pair down and puts a whole pair up. The house then votes normally, one name each, and whoever takes the most votes is evicted along with their partner, however few votes that partner got. Two people leave and only one of them was chosen.',
     engineType:'bb-duo-week',
-    incompatible:['bb-double-eviction', 'bb-instant-eviction', 'bb-split-house', 'bb-battle-of-the-block'] },
+    incompatible:['bb-double-eviction', 'bb-triple-eviction', 'bb-instant-eviction', 'bb-split-house', 'bb-battle-of-the-block'] },
   { id:'bb-double-eviction', emoji:'⏩', name:'Double Eviction', format:'big-brother',
     category:'elim', phase:'any',
     desc:'Two evictions in one night. The week plays normally, and the moment the first houseguest walks out the house runs a second, compressed cycle live: new Head of Household, nominations, veto and vote with no time to campaign properly. Two people leave.',
-    engineType:'bb-double-eviction', incompatible:['bb-instant-eviction'] },
+    engineType:'bb-double-eviction', incompatible:['bb-instant-eviction', 'bb-triple-eviction'] },
+  // The triple is not a bigger double — it is the double's night run one cycle
+  // further. BB22 staged it as TWO fast-forward cycles after a normal week, not
+  // as one Head of Household nominating three people (that shape is Big Brother
+  // Canada's, and this house does not play it), so the engine reaches it by
+  // running the same compressed cycle twice rather than by learning a new one.
+  { id:'bb-triple-eviction', emoji:'⏭️', name:'Triple Eviction', format:'big-brother',
+    category:'elim', phase:'any',
+    desc:'Three evictions in one night. The week plays normally, and the moment the first houseguest walks out the house runs a compressed cycle live — new Head of Household, nominations, veto, vote — and then, with the second front door still closing, does the whole thing AGAIN. Nobody campaigns, nobody has time to count, and the house that sits down at the end of the night is three people smaller.',
+    engineType:'bb-triple-eviction',
+    incompatible:['bb-double-eviction', 'bb-instant-eviction', 'bb-split-house',
+      'bb-battle-of-the-block', 'bb-duo-week', 'bb-invisible-hoh', 'bb-no-eviction'] },
   { id:'bb-instant-eviction', emoji:'⚡', name:'Instant Eviction', format:'big-brother',
     category:'elim', phase:'any',
     desc:'No veto this week. The Head of Household nominates and the nominations stand — the house votes the same night, with no competition to save anybody and no ceremony to change the pair.',
-    engineType:'bb-instant-eviction', incompatible:['bb-double-eviction', 'bb-diamond-veto'] },
+    engineType:'bb-instant-eviction', incompatible:['bb-double-eviction', 'bb-triple-eviction', 'bb-diamond-veto'] },
   { id:'bb-have-nots', emoji:'🥣', name:'Have-Nots', format:'big-brother',
     category:'social', phase:'any',
     desc:'The new Head of Household puts part of the house on slop, cold showers and the have-not room for the week. Have-nots compete at a real disadvantage in the veto, and nobody forgets who chose them.',
@@ -582,7 +593,7 @@ export const TWIST_CATALOG = [
   { id:'bb-invisible-hoh', emoji:'👤', name:'Invisible HOH', format:'big-brother',
     category:'power', phase:'any',
     desc:'The Head of Household competition runs — and the result is sealed. Only the winner knows who holds power: nominations are read by Big Brother, the replacement is named anonymously, and the Invisible HOH casts no vote but may compete in next week\'s HOH competition. The house spends the week guessing, and the guesses are not always right.',
-    engineType:'bb-invisible-hoh', incompatible:['bb-instant-eviction', 'bb-double-eviction'] },
+    engineType:'bb-invisible-hoh', incompatible:['bb-instant-eviction', 'bb-double-eviction', 'bb-triple-eviction'] },
   { id:'bb-premiere-mystery', emoji:'🗝️', name:'Premiere Night Mystery', format:'big-brother',
     category:'advantages', phase:'any',
     desc:'Nobody has unpacked and the host has already been taken, along with the Head of Household relic. The house is split in two and sent looking — one half for the relic, one half for the host — and each half is playing for a prize it has not been told the shape of. Whoever recovers the relic gets to name the four houseguests allowed to compete for the first crown, out loud, in front of the twelve who are not. Whoever finds the host wins ten thousand dollars in public and is told in private what the money is actually for: spent once, before the jury, it takes them off the block and forces the Head of Household to name somebody else on the spot. The house spends a fortnight watching the loud prize.',
@@ -596,7 +607,7 @@ export const TWIST_CATALOG = [
     engineType:'bb-white-locust',
     // It takes somebody out before the week has started, so nothing else that
     // owns an eviction or crowns a Head of Household may share it.
-    incompatible:['bb-double-eviction', 'bb-instant-eviction', 'bb-no-eviction', 'bb-duo-week',
+    incompatible:['bb-double-eviction', 'bb-triple-eviction', 'bb-instant-eviction', 'bb-no-eviction', 'bb-duo-week',
       'bb-battle-of-the-block', 'bb-invisible-hoh', 'bb-split-house', 'bb-camp-comeback'] },
   // `phase:'any'` like every other house card — a Big Brother season has no
   // merge, so a phase gate here is a filter with nothing behind it.
@@ -607,7 +618,7 @@ export const TWIST_CATALOG = [
     // It owns the eviction, so nothing else that reshapes the vote may share
     // the night. It sits happily beside the Block Buster: that decides who is
     // still on the block when the room is called down, which is upstream.
-    incompatible:['bb-instant-eviction', 'bb-double-eviction', 'bb-no-eviction', 'bb-duo-week'] },
+    incompatible:['bb-instant-eviction', 'bb-double-eviction', 'bb-triple-eviction', 'bb-no-eviction', 'bb-duo-week'] },
   { id:'bb-pandoras-box', emoji:'❓', name:'Pandora\'s Box', format:'big-brother',
     category:'advantages', phase:'any',
     desc:'A door with a question mark appears in the HOH room. Open it and something good happens to you while something bad happens to the house — and what was inside stays secret. The canonical cargo is a hidden Diamond Power of Veto with a two-eviction fuse, detonated live at an eviction: the holder saves a nominee and personally names the replacement while the house watches a week of plans evaporate.',
@@ -615,7 +626,7 @@ export const TWIST_CATALOG = [
   { id:'bb-split-house', emoji:'🪟', name:'Split House', format:'big-brother',
     category:'power', phase:'any',
     desc:'Two Heads of Household are crowned, then pick sides schoolyard-style. The two halves are sealed off from each other for the whole week — separate nominations, separate veto, separate vote — and one houseguest from each side is evicted on the same night.',
-    incompatible:['bb-battle-of-the-block', 'bb-invisible-hoh', 'bb-double-eviction', 'bb-instant-eviction', 'bb-hacker'],
+    incompatible:['bb-battle-of-the-block', 'bb-invisible-hoh', 'bb-double-eviction', 'bb-triple-eviction', 'bb-instant-eviction', 'bb-hacker'],
     incompatibleModes:['block-buster'] },
   { id:'bb-battle-of-the-block', emoji:'⚔️', name:'Battle of the Block', format:'big-brother',
     // The engine stands this down itself when the Block Buster owns the block,
@@ -777,7 +788,7 @@ export const TWIST_CATALOG = [
   { id:'bb-no-eviction', emoji:'🚫', name:'No Eviction', format:'big-brother',
     category:'structural', phase:'any',
     desc:'No nomination ceremony, no veto and no vote: the house is the same size on Thursday as it was on Sunday. The Head of Household competition still runs and still crowns somebody, which leaves one houseguest holding the most powerful seat in the game with absolutely nothing to spend it on — and everybody else with a week to work in and no ceremony to be judged by. Pairs with anything hiding inside the competition, because a week that cannot evict anybody is a week whose only outcome is who walked away holding something.',
-    incompatible:['bb-double-eviction','bb-instant-eviction'] },
+    incompatible:['bb-double-eviction', 'bb-triple-eviction','bb-instant-eviction'] },
   { id:'bb-secret-power-comp', emoji:'🎭', name:'Secret Power Competition', format:'big-brother',
     category:'advantages', phase:'any',
     desc:"Three powers are hidden inside this week's Head of Household competition, and before a single houseguest plays they decide in private what they are actually competing for: the crown, or one of the three. Not both. The outgoing Head of Household cannot win the crown back and so plays only for a power, which is the one week their exclusion is worth something. Somebody out there is about to post the best score of the afternoon and not be Head of Household, because that was never what they were running for — and the house will spend weeks not understanding why. Winners are told alone and nothing is announced. Every power won here dies the moment the jury opens, which is why they are allowed to be this strong.",

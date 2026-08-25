@@ -23616,16 +23616,29 @@ export function rpBuildBBInstantEviction(ep) {
 }
 
 /** The break between a double eviction's two halves. */
-function _bbDoubleBreak(ep) {
-  const d = ep.doubleEviction || {};
+function _bbDoubleBreak(ep, cycle = 0) {
+  const d = (ep.extraEvictions || [])[cycle] || ep.doubleEviction || {};
+  // A triple's third break is not the second one again. The card counts the
+  // night's cycles and says which one is starting — and takes its own reveal
+  // state, because two breaks sharing `bb_dbl_${ep.num}` meant opening the
+  // third replayed the second's progress and showed nothing new.
+  const total = 1 + ((ep.extraEvictions || []).length || (ep.doubleEviction ? 1 : 0));
+  const triple = total >= 3;
+  const nth = cycle === 0 ? 'second' : 'third';
   return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num}`, title: 'AND WE ARE NOT DONE', accent: 'var(--bbx-note)', room: 'bb-live',
+    eyebrow: `Week ${ep.num}`,
+    title: triple && cycle > 0 ? 'STILL NOT DONE' : 'AND WE ARE NOT DONE',
+    accent: 'var(--bbx-note)', room: 'bb-live',
     subtitle: 'The front door has not finished closing.',
-    stateKey: `bb_dbl_${ep.num}`,
+    stateKey: `bb_dbl_${ep.num}_${cycle + 2}`,
     scenes: [
-      { text: `The house is told to sit back down. There will be a second eviction tonight, and it starts now.`,
-        players: [], badgeText: 'DOUBLE EVICTION', badgeClass: 'red' },
-      { text: `A whole week — competition, nominations, veto, vote — in the time it usually takes to argue about one.`,
+      { text: triple && cycle > 0
+        ? `Nobody has sat down. The house is told there will be a THIRD eviction tonight, and that it starts now.`
+        : `The house is told to sit back down. There will be a ${nth} eviction tonight, and it starts now.`,
+        players: [], badgeText: triple ? 'TRIPLE EVICTION' : 'DOUBLE EVICTION', badgeClass: 'red' },
+      { text: triple && cycle > 0
+        ? `Another whole week — competition, nominations, veto, vote — run by a house that has just watched two people walk out of it.`
+        : `A whole week — competition, nominations, veto, vote — in the time it usually takes to argue about one.`,
         players: [...(d.houseAtStart || [])].slice(0, 6), badgeText: 'LIVE', badgeClass: 'gold' },
     ],
   });
@@ -24285,20 +24298,26 @@ function _bbCycleScreens(view, screens, suffix = '') {
           // A two-cycle week draws this block once per cycle, and the second
           // interview belongs to the LAST cycle — rendering it in both put the
           // same evictee in two chairs. The first cycle draws only its own.
-          const twoCycle = !!view.doubleEviction;
-          const drawSecond = !twoCycle || view._seg === 2;
+          const twoCycle = !!view.doubleEviction || !!(view.extraEvictions || []).length;
+          const drawSecond = !twoCycle || (view._seg || 1) >= 2;
+          // Each extra cycle sits its OWN evictee down. On a triple the third
+          // cycle must reach for the third chair, or the person it evicted
+          // walks out of the house without ever being asked about it.
+          const ivKey = (view._seg || 1) >= 3
+            ? 'thirdEvictionInterview' : 'secondEvictionInterview';
           const label1 = split && sideOf(firstOut)
             ? `Evictee · ${sideOf(firstOut)}'s side` : 'Evictee Interview';
           const label2 = split && sideOf(secondOut)
-            ? `Evictee · ${sideOf(secondOut)}'s side` : 'Second Evictee';
+            ? `Evictee · ${sideOf(secondOut)}'s side`
+            : (view._seg || 1) >= 3 ? 'Third Evictee' : 'Second Evictee';
 
           const iv = rpBuildBBEvictionInterview(view);
           if (iv && iv.trim()) screens.push({ id: id('bb-interview'), label: label1, html: iv });
           // Two evictions, two chairs. The second evictee of a split or a
           // double had an interview written for them and no screen to sit in.
-          const iv2 = drawSecond
-            ? rpBuildBBEvictionInterview(view, 'secondEvictionInterview') : '';
+          const iv2 = drawSecond ? rpBuildBBEvictionInterview(view, ivKey) : '';
           if (iv2 && iv2.trim()) {
+            // `id()` already stamps the cycle on, so the base stays fixed.
             screens.push({ id: id('bb-interview-2'), label: label2, html: iv2 });
           }
         } catch { /* no interview, no screen */ }
@@ -24344,11 +24363,14 @@ function _bbCycleScreens(view, screens, suffix = '') {
  * them about segments they are handed a view of the episode in which the
  * second cycle IS the week. `_seg` keeps the reveal states apart.
  */
-function _bbSecondCycleView(ep) {
-  const d = ep.doubleEviction || {};
+function _bbSecondCycleView(ep, cycle = 0) {
+  // `extraEvictions` is the list; `doubleEviction` is its first entry, kept
+  // under the old name for every reader written before the triple existed.
+  const d = (ep.extraEvictions || [])[cycle] || (cycle === 0 ? ep.doubleEviction : null) || {};
+  const seg = d.segment || cycle + 2;
   return {
-    ...ep, _seg: 2,
-    acts: (ep.acts || []).filter(a => (a.segment || 1) === 2),
+    ...ep, _seg: seg,
+    acts: (ep.acts || []).filter(a => (a.segment || 1) === seg),
     hoh: d.hoh || null,
     immunityWinner: d.hoh || null,
     initialNominees: [...(d.nominees || [])],
@@ -24357,7 +24379,7 @@ function _bbSecondCycleView(ep) {
     eliminated: d.evicted || null,
     votes: { ...(d.votes || {}) },
     houseAtStart: [...(d.houseAtStart || ep.houseAtStart || [])],
-    votingLog: (ep.votingLog || []).filter(v => v.segment === 2),
+    votingLog: (ep.votingLog || []).filter(v => v.segment === seg),
     // ── THE FIRST CYCLE'S WAR ROOM MUST NOT LEAK ──
     //
     // `...ep` above carries voteOperation and voteCommitments from the first
@@ -24401,7 +24423,7 @@ export function buildBBWeekScreens(ep) {
   // first cycle is rendered from a view holding only its own acts and the
   // second gets a view where it IS the week. Without the split, every builder
   // would find the first 'hoh' act twice and draw the same screen again.
-  const hasSecond = !!ep.doubleEviction;
+  const hasSecond = !!ep.doubleEviction || !!(ep.extraEvictions || []).length;
   const firstView = hasSecond
     ? { ...ep, acts: (ep.acts || []).filter(a => (a.segment || 1) === 1) }
     : ep;
@@ -24522,10 +24544,21 @@ export function buildBBWeekScreens(ep) {
             own — their own nominations, their own veto, their own vote.
           </p>
         </div>` });
+      _bbCycleScreens(_bbSecondCycleView(ep, 0), screens, '-2');
     } else {
-      screens.push({ id: 'bb-double', label: 'Double Eviction', html: _bbDoubleBreak(ep) });
+      // One extra cycle or two, drawn by the same loop. A triple's third
+      // cycle is a full set of screens, not a footnote on the second.
+      const cycles = (ep.extraEvictions || []).length
+        || (ep.doubleEviction ? 1 : 0);
+      for (let c = 0; c < cycles; c++) {
+        screens.push({
+          id: c === 0 ? 'bb-double' : `bb-double-${c + 2}`,
+          label: cycles > 1 ? `Eviction ${c + 2}` : 'Double Eviction',
+          html: _bbDoubleBreak(ep, c),
+        });
+        _bbCycleScreens(_bbSecondCycleView(ep, c), screens, `-${c + 2}`);
+      }
     }
-    _bbCycleScreens(_bbSecondCycleView(ep), screens, '-2');
   }
 
   // And after it: the same screen, once everything has actually happened.
@@ -26105,7 +26138,10 @@ export function rpBuildBBEvictionInterview(ep, which = null) {
   // generated and never drawn.
   const iv = which ? ep[which] : ep.evictionInterview;
   if (!iv) return '';
-  const stateKey = `bb_iv_${ep.num}${which === 'secondEvictionInterview' ? '_2' : ''}`;
+  // A distinct reveal state per chair. Two interviews sharing one key meant
+  // opening the second replayed the first's progress; three would be worse.
+  const stateKey = `bb_iv_${ep.num}${which === 'secondEvictionInterview' ? '_2'
+    : which === 'thirdEvictionInterview' ? '_3' : ''}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
   const p = (n => { try { return pronouns(n); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } })(iv.evictee);

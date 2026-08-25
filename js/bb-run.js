@@ -44,6 +44,7 @@ import { installTwinTwist, twinState, repairTwinStats } from './bb/twin-twist.js
 import { installDuos } from './bb/duos.js';
 import { installRivals, rivalsState } from './bb/rivals.js';
 import { installTheme, reanchorThemeArc } from './bb/themes.js';
+import { resolveWeekTwistState } from './bb/twist-contract.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
 export { BB_POWER_DEFINITIONS } from './bb/powers.js';
@@ -130,12 +131,22 @@ export function houseStructure(config = {}, castSize = 0) {
   // projection than it does in play.
   const twoAtOnce = (config.twistSchedule || [])
     .filter(t => t && (t.type === 'bb-double-eviction' || t.type === 'bb-split-house'
-      || t.type === 'bb-duo-week'));
-  const doubles = twoAtOnce.length;
+      || t.type === 'bb-duo-week' || t.type === 'bb-triple-eviction'));
+  // Counted by how many people the night removes BEYOND the ordinary one, so a
+  // triple saves the calendar two weeks and a double one. Counting nights
+  // rather than evictions had the projection run a season a week long.
+  const doubles = twoAtOnce
+    .reduce((n, t) => n + (t.type === 'bb-triple-eviction' ? 2 : 1), 0);
   const splits = twoAtOnce.filter(t => t.type === 'bb-split-house').length;
   const weeks = Math.max(0, evictions - Math.min(doubles, Math.max(0, evictions - 1)));
-  const doubleLabel = doubles
-    ? ` (${doubles} double${splits ? `, ${splits} of them a split` : ''})` : '';
+  // NIGHTS, not evictions — `doubles` above is how many extra people leave,
+  // which is the right number for the calendar and the wrong one for a label
+  // that says "double".
+  const triples = twoAtOnce.filter(t => t.type === 'bb-triple-eviction').length;
+  const nights = twoAtOnce.length;
+  const doubleLabel = nights
+    ? ` (${nights} double${triples ? `, ${triples} of them a triple`
+      : splits ? `, ${splits} of them a split` : ''})` : '';
   segs.push({
     label: `${weeks} week${weeks === 1 ? '' : 's'}${doubleLabel}`,
     ok: weeks >= 1,
@@ -1054,28 +1065,48 @@ export function simulateBBEpisode() {
     ep.alsoEliminated = week.secondEvicted;
     ep.doubleEvictionStyle = 'double-vote';
   }
-  // Held outside the block so the second evictee's interview can be written
+  // Held outside the block so a later evictee's interview can be written
   // against the cycle that actually removed them.
   let secondWeek = null;
-  if (twists.includes('bb-double-eviction') && deStyle !== 'double-vote'
-    && (gs.activePlayers || []).length > Math.max(4, houseFinaleSize())) {
+  // Every extra cycle's own week record, so each evictee is interviewed
+  // against the cycle that removed them rather than the first one.
+  const extraWeeks = [];
+  // ONE EXTRA CYCLE OR TWO, run by the same code.
+  //
+  // A triple eviction is not a different night from a double — it is the same
+  // compressed cycle staged one more time, which is exactly how the house ran
+  // it. Written as a loop rather than a second block, so the third cycle
+  // reaches the transcript, the viewing party and the stats through the paths
+  // the second one already proved, instead of being written and unreachable.
+  // Read off the CONTRACT, not off the twist id, so the number of cycles is
+  // stated in one place. A double-vote night removes two people from a single
+  // cycle, so it runs none of these.
+  const extraCycles = deStyle === 'double-vote' ? 0
+    : (resolveWeekTwistState(twists).rules.extraCycles || 0);
+  for (let c = 0; c < extraCycles; c++) {
+    // Re-checked EVERY cycle, not once for the night. The house shrinks by one
+    // each time round, and a triple booked a week too late would otherwise run
+    // its third cycle into a house with nobody left to vote.
+    if ((gs.activePlayers || []).length <= Math.max(4, houseFinaleSize())) break;
+    const segment = c + 2;
     const second = simulateBBWeek({
       houseEvents: HOUSE_EVENTS,
       competitions: BB_COMPETITIONS,
       // The week-in-one runs the second cycle at FULL length — house life,
       // real campaigning — inside the same episode; the fast-forward keeps
-      // the live-hour compression.
-      compressed: deStyle !== 'week-in-one',
-      segment: 2,
+      // the live-hour compression. A triple is always the live hour: there is
+      // no room in one night for two unhurried weeks.
+      compressed: extraCycles > 1 ? true : deStyle !== 'week-in-one',
+      segment,
       // A three-nominee season is a three-nominee season, including the half
       // of the night that runs live.
       safetyMode: seasonConfig.bbSafetyMode || 'off',
       safetyStopsAt: Number.isFinite(Number(seasonConfig.bbSafetyStopsAt))
         ? Number(seasonConfig.bbSafetyStopsAt) : undefined,
     });
-    // The second cycle's OWN vote work. Without these, the second half of the
-    // night rendered the FIRST cycle's alliance plans and commitments — a war
-    // room organizing against nominees who were already off the block.
+    // The cycle's OWN vote work. Without these, the later half of the night
+    // rendered the FIRST cycle's alliance plans and commitments — a war room
+    // organizing against nominees who were already off the block.
     const leanOp2 = second.voteOperation ? {
       majority: second.voteOperation.majority,
       plans: (second.voteOperation.plans || []).map(p => ({
@@ -1087,9 +1118,10 @@ export function simulateBBEpisode() {
       independents: (second.voteOperation.independents || []).map(v => ({ ...v })),
       moves: (second.voteOperation.moves || []).map(m => ({ ...m })),
     } : null;
-    ep.doubleEviction = {
+    const record = {
+      segment,
       voteOperation: leanOp2,
-      voteCommitments: (second.voteCommitments || []).map(c => ({ ...c })),
+      voteCommitments: (second.voteCommitments || []).map(c2 => ({ ...c2 })),
       votePlans: (second.votePlans || []).map(v => ({ ...v })),
       hoh: second.hoh,
       nominees: [...(second.finalNominees || [])],
@@ -1107,18 +1139,25 @@ export function simulateBBEpisode() {
       votes: { ...(second.votes || {}) },
       houseAtStart: [...(second.houseAtStart || [])],
     };
-    ep.alsoEliminated = second.evicted;
-    ep.doubleEvictionStyle = deStyle;
-    ep.acts = [...(ep.acts || []), ...(second.acts || []).map(a => ({ ...a, segment: 2 }))];
+    ep.extraEvictions = [...(ep.extraEvictions || []), record];
+    // `doubleEviction` stays the FIRST extra cycle, because a dozen readers
+    // across three files already know that name and a double is still a double.
+    if (c === 0) {
+      ep.doubleEviction = record;
+      ep.alsoEliminated = second.evicted;
+      secondWeek = second;
+    }
+    ep.doubleEvictionStyle = extraCycles > 1 ? 'triple' : deStyle;
+    ep.acts = [...(ep.acts || []), ...(second.acts || []).map(a => ({ ...a, segment }))];
     ep.votingLog = [
       ...(ep.votingLog || []),
-      ...(second.ballots || []).map(b => ({ voter: b.voter, voted: b.evict, changed: !!b.changed, segment: 2 })),
+      ...(second.ballots || []).map(b => ({ voter: b.voter, voted: b.evict, changed: !!b.changed, segment })),
     ];
-    // Same as the main week below: the second cycle's bookend snapshots are
-    // never read back off the ledger.
+    // Same as the main week below: the cycle's bookend snapshots are never
+    // read back off the ledger.
     delete second.openingState;
     delete second.closingState;
-    secondWeek = second;
+    extraWeeks.push(second);
   }
   // The aftermath of a Big Brother week is one person, interviewed on the way
   // out, finding out what was actually happening around them.
@@ -1130,6 +1169,15 @@ export function simulateBBEpisode() {
   if (ep.alsoEliminated) {
     ep.secondEvictionInterview = generateBBEvictionInterview(
       ep, secondWeek || week, Math.random, ep.alsoEliminated);
+  }
+  // A triple sits a third person in the same chair. Same rule: interviewed
+  // against the cycle that took them out.
+  if ((ep.extraEvictions || []).length > 1) {
+    const third = ep.extraEvictions[1];
+    if (third.evicted) {
+      ep.thirdEvictionInterview = generateBBEvictionInterview(
+        ep, extraWeeks[1] || week, Math.random, third.evicted);
+    }
   }
   carryGoodbyesToJury(ep, week.num);
   // The shared text backlog owns transcripts for both shows, so a Big Brother

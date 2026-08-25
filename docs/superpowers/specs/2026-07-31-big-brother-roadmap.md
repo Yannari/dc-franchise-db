@@ -114,7 +114,11 @@ order they would change a season most:
 - **Coup d'état / secret powers** — a hidden power that overturns a ceremony
 - **Pandora's Box** — a private reward with a house-wide consequence
 - **Diamond Veto** — the veto holder names the replacement
-- **Triple Eviction** — the double, once more
+- ~~**Triple Eviction** — the double, once more~~ **BUILT** (2026-08-25). Staged
+  the way BB22 staged it: two fast-forward cycles after an ordinary week, not
+  one HOH nominating three (that shape is Big Brother Canada's). The engine
+  reads `extraCycles` off the twist contract, so the double is the same code
+  path with the number set to one.
 
 Rule already recorded and worth repeating: **nothing enters the catalogue until
 its mechanics exist.** A listed twist that does nothing is indistinguishable

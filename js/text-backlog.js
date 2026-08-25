@@ -4238,6 +4238,22 @@ const _BB_PHASE_TITLE = {
  * `skip` drops sections the transcript already prints under its own headings,
  * so the two do not say the same thing twice a few lines apart.
  */
+/**
+ * The vote work belonging to the cycle an act was played in.
+ *
+ * The first cycle's war room must not be printed over a later one: the
+ * operation, the commitments and the counts all belong to the half of the
+ * night that produced them. Returns null for the main week, so callers fall
+ * back to the episode's own fields.
+ */
+function _bbSegRecord(ep, act) {
+  const seg = act?.segment || 1;
+  if (seg < 2) return null;
+  const list = (ep.extraEvictions || []).length
+    ? ep.extraEvictions : (ep.doubleEviction ? [ep.doubleEviction] : []);
+  return list.find(r => (r.segment || 2) === seg) || list[seg - 2] || null;
+}
+
 function _textBBHouseStatus(ep, phase, ln, sec, { skip = [] } = {}) {
   let html = '';
   try { html = rpBuildBBOverview(ep, phase) || ''; } catch { return; }
@@ -4478,15 +4494,24 @@ export function generateBBSummaryText(ep) {
       + `${d.lopsided ? '  — one of them means it considerably more than the other' : ''}`));
   }
 
-  let announcedSecond = false;
+  // Which extra cycles have already been announced. A double runs the week
+  // twice in one episode and a triple runs it three times; without a banner
+  // per cycle the transcript reads as one confusing week with three Heads of
+  // Household. Tracked as a SET rather than a flag, because the flag version
+  // announced the second cycle and let the third arrive unmarked.
+  const announcedSegs = new Set();
+  const totalSegs = 1 + ((ep.extraEvictions || []).length
+    || (ep.doubleEviction ? 1 : 0));
   for (const act of ep.acts || []) {
-    // A double eviction runs the whole week twice in one episode. Without this
-    // the transcript reads as one confusing week with two Heads of Household.
-    if (act.segment === 2 && !announcedSecond) {
-      announcedSecond = true;
+    const seg = act.segment || 1;
+    if (seg >= 2 && !announcedSegs.has(seg)) {
+      announcedSegs.add(seg);
+      const title = totalSegs >= 3
+        ? `TRIPLE EVICTION — CYCLE ${seg} OF ${totalSegs}, LIVE`
+        : 'DOUBLE EVICTION — THE SECOND CYCLE, LIVE';
       ln('');
       ln('═'.repeat(46));
-      ln('DOUBLE EVICTION — THE SECOND CYCLE, LIVE');
+      ln(title);
       ln('═'.repeat(46));
     }
     switch (act.type) {
@@ -4970,7 +4995,14 @@ export function generateBBSummaryText(ep) {
           (act.socialBeats || []).forEach(b => ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
           break;
         }
-        const nomHoh = ep.hoh || act.hoh || 'The Head of Household';
+        // THE ACT'S OWN HEAD OF HOUSEHOLD, not the episode's.
+        //
+        // Read the other way round, and on any night that runs a second cycle
+        // the ceremony was hosted by the FIRST cycle's Head of Household — who
+        // by then is frequently a nominee, so the transcript had them turning a
+        // key on their own photograph. `ep.hoh` stays as the fallback for the
+        // ordinary week, where the act does not always carry the name.
+        const nomHoh = act.hoh || ep.hoh || 'The Head of Household';
         // The chairs the HOH actually filled. A cursed self-nomination or a
         // Roadkill winner's pick is on the block but was never theirs to claim,
         // and the ceremony must not count it among the keys in their box.
@@ -6114,8 +6146,7 @@ export function generateBBSummaryText(ep) {
         // The SECOND cycle's eviction must not carry the first cycle's war
         // room — same leak the screens had: ep.voteOperation belongs to the
         // first half of the night, and the double's record carries its own.
-        const op = ((act.segment || 1) === 2
-          ? ep.doubleEviction?.voteOperation : ep.voteOperation) || null;
+        const op = (_bbSegRecord(ep, act)?.voteOperation ?? ep.voteOperation) || null;
         const voters = (act.ballots || []).map(b => b.voter);
         const majority = Math.floor(voters.length / 2) + 1;
         sec('VOTING PLANS');
@@ -6191,8 +6222,8 @@ export function generateBBSummaryText(ep) {
 
         // HOW THE PLANS CHANGED — the same reasons the screen gives, so the
         // transcript is not a thinner account of the same night.
-        const commitments = new Map((((act.segment || 1) === 2
-          ? ep.doubleEviction?.voteCommitments : ep.voteCommitments) || []).map(c => [c.voter, c]));
+        const commitments = new Map(((_bbSegRecord(ep, act)?.voteCommitments
+          ?? ep.voteCommitments) || []).map(c => [c.voter, c]));
         const reasons = (act.ballots || []).map(b => {
           const c = commitments.get(b.voter);
           const moved = b.stated && b.stated !== b.evict;
@@ -6230,8 +6261,8 @@ export function generateBBSummaryText(ep) {
         // The second cycle's arithmetic, not the first's — the last of the
         // four fields that leaked across the double's seam (operation,
         // commitments, pleas, and this).
-        const wrong = ((((act.segment || 1) === 2
-          ? ep.doubleEviction?.votePlans : ep.votePlans)) || []).filter(pl => pl.wrong);
+        const wrong = ((_bbSegRecord(ep, act)?.votePlans ?? ep.votePlans) || [])
+          .filter(pl => pl.wrong);
         if (wrong.length) {
           ln('');
           ln('  Who had it wrong:');
@@ -6297,6 +6328,7 @@ export function generateBBSummaryText(ep) {
   for (const [heading, iv] of [
     ['THE EVICTEE INTERVIEW', ep.evictionInterview],
     ['THE SECOND EVICTEE INTERVIEW', ep.secondEvictionInterview],
+    ['THE THIRD EVICTEE INTERVIEW', ep.thirdEvictionInterview],
   ]) {
     if (!iv) continue;
     sec(heading);

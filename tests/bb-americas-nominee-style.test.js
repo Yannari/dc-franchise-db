@@ -100,7 +100,13 @@ describe('the MVP event family comes back to life', () => {
     expect(direct.fired['americas-mvp-quiet'],
       'a direct week produced a culprit-watching event with no culprit')
       .toBeUndefined();
-  });
+    // TWO FULL SWEEPS IN ONE TEST. Every other test here plays `run()` once;
+    // this one plays it twice to compare the shapes, which is sixty simulated
+    // episodes. It fits inside the 90s default alone and does not when a
+    // hundred and forty-nine files are competing for the machine, so it timed
+    // out in the full run and passed on its own -- flakiness that is really
+    // just arithmetic.
+  }, 240000);
 
   it('keeps the paranoia in both, because the house hunts either way', () => {
     // americas-hunt is the one that matters most and it must not be a

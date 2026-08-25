@@ -866,7 +866,14 @@ function renderStatsTable(playersIn) {
   });
 
   let rows = '';
-  STATS_DEF.forEach(def => {
+  // IMMUNITY IS TOTAL DRAMA'S WORD. A house plays for the veto, so the row can
+  // only ever read 0 against 0 on a Big Brother comparison — two houseguests
+  // being told they tied at a thing neither show they played has. The same rule
+  // the profile follows; see js/shows.js for the vocabulary.
+  const defs = show === 'big-brother'
+    ? STATS_DEF.filter(d => d.key !== 'totalImmunityWins')
+    : STATS_DEF;
+  defs.forEach(def => {
     const vals = players.map(p => {
       let v = p[def.key];
       if (v == null) {

@@ -43,13 +43,17 @@ test('the players list shows one show at a time', async ({ page }) => {
 });
 
 test('a leaderboard is scoped to its show', async ({ page }) => {
-  // Big Brother's only season was won by Wayne, so he tops a wins board that is
-  // genuinely scoped. Alejandro tops it when both shows are counted.
+  // Big Brother's only season was won by MISHA, so she tops a wins board that
+  // is genuinely scoped. Alejandro tops it when both shows are counted.
+  //
+  // This named Wayne, who has played Total Drama seasons 9 and 13 and has never
+  // been in that house — so it was asking a correctly-scoped board to show
+  // somebody the scope excludes, and the board has been right all along.
   // Waiting on the board's TEXT rather than a row selector: the markup differs
   // between the worker and the local-JSON fallback, and which one answers is
   // exactly the thing a test must not depend on.
   await page.goto('/leaderboards.html?show=big-brother');
-  await expect(page.locator('#board')).toContainText('Wayne', { timeout: 20000 });
+  await expect(page.locator('#board')).toContainText('Misha', { timeout: 20000 });
   await expect(page.locator('#board')).not.toContainText('Alejandro');
 
   await page.goto('/leaderboards.html?show=total-drama');
@@ -62,28 +66,68 @@ test('the social feed follows the show you picked', async ({ page }) => {
   await expect(page.locator('#ctx-chip')).toContainText('Big Brother');
 });
 
+/** A season's own name, which is what the wiki heads its sections with. */
+function seasonTitle(format, number) {
+  const db = JSON.parse(readFileSync('seasons_database.json', 'utf8'));
+  const row = (db.seasons || []).find(s => s.seasonNumber === number
+    && (s.format || 'total-drama') === format);
+  if (!row?.title) throw new Error(`no season document for ${format} ${number}`);
+  return row.title;
+}
+
+/** Whoever the roster says has played more than one show, if anybody has. */
+function aTwoShowCareer() {
+  const db = JSON.parse(readFileSync('players_database.json', 'utf8'));
+  return (db.players || []).find(p => new Set((p.seasonDetails || [])
+    .map(d => d.format || 'total-drama')).size > 1) || null;
+}
+
 test('a two-show career is described as two careers', async ({ page }) => {
   // "3 seasons" is true and useless for somebody who played two of one show and
   // one of another: it reads as a three-season veteran of one franchise, which
   // is a different career.
-  await page.goto('/player.html?player=bowie');
+  //
+  // FOUND IN THE DATA, NOT NAMED. This asked for Bowie, who has played Total
+  // Drama 9 and 10 and nothing else — so it waited for a two-show layout on a
+  // one-show career and timed out. Nobody in the franchise has crossed shows
+  // yet, so today this skips; the day somebody returns across one it starts
+  // guarding, without anybody remembering to come back and rename them.
+  const vet = aTwoShowCareer();
+  test.skip(!vet, 'no player has crossed shows yet');
+
+  await page.goto(`/player.html?player=${vet.id}`);
   await page.waitForSelector('.pp-showhead', { timeout: 15000 });
 
-  await expect(page.locator('.pp-meta')).toContainText('2 Total Drama');
-  await expect(page.locator('.pp-meta')).toContainText('1 Big Brother');
+  const shows = [...new Set((vet.seasonDetails || []).map(d => d.format || 'total-drama'))];
+  const NAME = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
+  for (const f of shows) {
+    const n = (vet.seasonDetails || []).filter(d => (d.format || 'total-drama') === f).length;
+    await expect(page.locator('.pp-meta')).toContainText(`${n} ${NAME[f] || f}`);
+  }
 
   // Each show gets its own heading and its own bars, because the career totals
   // are cross-format sums — one "Challenge Wins" bar belongs to neither show.
-  const heads = await page.locator('.pp-showhead').allTextContents();
-  expect(heads).toHaveLength(2);
-  expect(await page.locator('.pp-statbars').count()).toBe(2);
+  expect(await page.locator('.pp-showhead').count()).toBe(shows.length);
+  expect(await page.locator('.pp-statbars').count()).toBe(shows.length);
+});
 
+test('a Big Brother career shows the three competitions the house runs', async ({ page }) => {
+  // The half of the old test that CAN run today, on the show that has a cast.
   // Big Brother keeps counters Total Drama has no equivalent for, and they were
   // computed into byShow and displayed nowhere at all.
-  const chips = await page.locator('.pp-chip .l').allTextContents();
+  //
+  // "Times Nominated" was the third chip until the competition record was split
+  // into the three comps a house actually runs — the HOH, the veto and the
+  // arena — which is what the total is made of and what the total could not say.
+  await page.goto('/player.html?player=misha&show=big-brother');
+  await page.waitForSelector('.pp-chip', { timeout: 20000 });
+  const chips = (await page.locator('.pp-chip .l').allTextContents()).map(t => t.replace(/\s+/g, ' ').trim());
   expect(chips).toContain('HOH');
   expect(chips).toContain('Vetoes');
-  expect(chips).toContain('Times Nominated');
+  expect(chips.join(' ')).toMatch(/Block ?Buster/i);
+  // And immunity is Total Drama's word: it must not appear on a houseguest.
+  const bars = await page.locator('.pp-statlbl').allTextContents();
+  expect(bars.join(' ')).not.toMatch(/Immunity/i);
 });
 
 test('a one-show career is not made to look like two', async ({ page }) => {
@@ -108,19 +152,30 @@ test('the wiki is its own tab, and one article per show', async ({ page }) => {
   await expect(page.locator('.wk-infobox')).toBeVisible();
   await expect(page.locator('.wk-lead')).toContainText('Bowie');
 
+  // A SEASON IS NAMED, NOT NUMBERED. This looked for the literal "Season 9";
+  // the article heads its season sections with the season's own title, so
+  // Bowie's read "Total Drama: Land of Powers" and "Champions vs Contenders".
+  // Numbering them would be worse, and on two shows it would be ambiguous —
+  // there is a season 9 on more than one show now.
   const td = await page.locator('.wk-section h2').allTextContents();
-  expect(td.join(' ')).toContain('Season 9');
+  expect(td.join(' '), 'no season of his is named in the article')
+    .toContain(seasonTitle('total-drama', 9));
   await expect(page.locator('.wk-ib-show')).toContainText('Total Drama');
 });
 
 test('the wiki follows the show switcher', async ({ page }) => {
-  await page.goto('/player.html?player=bowie&view=wiki&show=big-brother');
+  // ON SOMEBODY WHO HAS THAT CAREER. This asked for Bowie's Big Brother
+  // article, and Bowie has never been in that house — so it waited for an
+  // article on a page that correctly says "No Big Brother article" instead.
+  await page.goto('/player.html?player=misha&view=wiki&show=big-brother');
   await page.waitForSelector('.wk-article', { timeout: 15000 });
   await expect(page.locator('.wk-ib-show')).toContainText('Big Brother');
 
   const heads = await page.locator('.wk-section h2').allTextContents();
-  expect(heads.join(' '), 'the Big Brother article is showing Total Drama seasons')
-    .not.toContain('Season 9');
+  expect(heads.join(' '), 'the Big Brother article is showing a Total Drama season')
+    .not.toContain(seasonTitle('total-drama', 9));
+  expect(heads.join(' '), 'the Big Brother season is not in its own article')
+    .toContain(seasonTitle('big-brother', 1));
 });
 
 test('a show they never played says so, with a way across', async ({ page }) => {
@@ -153,14 +208,22 @@ test('a profile scoped to a show they never played is empty, not their other car
 });
 
 test('a profile scoped to a show they DID play shows only that show', async ({ page }) => {
-  await page.goto('/player.html?player=bowie&show=big-brother');
+  // ON SOMEBODY WHO PLAYED IT. This opened Bowie under a Big Brother filter and
+  // waited for his Big Brother season; he has played Total Drama 9 and 10 and
+  // has never been in that house, so the page correctly shows an empty career
+  // and the test read that as a scoping failure. The neighbouring test above
+  // already covers the empty case on purpose.
+  await page.goto('/player.html?player=misha&show=big-brother');
   await page.waitForSelector('.pp-meta', { timeout: 15000 });
 
-  // One Big Brother season, and his best finish there — not the Total Drama win.
   await expect(page.locator('.pp-meta')).toContainText('1 season');
-  await expect(page.locator('.pp-meta')).toContainText('#8');
+  await expect(page.locator('.pp-meta')).toContainText('#1');
   const tabs = await page.locator('.pp-tab').allTextContents();
-  expect(tabs.map(t => t.trim())).toEqual(['BB1']);
+  expect(tabs.map(t => t.replace(/[^A-Za-z0-9]/g, ''))).toEqual(['BB1']);
+
+  // And the season tab is the house's, not a bare integer that could be either
+  // show's season 1.
+  await expect(page.locator('.pp-meta')).toContainText('BB1');
 });
 
 test('a comparison compares within one show, and says which', async ({ page }) => {
@@ -168,9 +231,17 @@ test('a comparison compares within one show, and says which', async ({ page }) =
   // competition win is folded into that field by design — so under a show
   // filter the table counted seasons the filter excluded. A side-by-side is
   // where an unattributable number does the most damage.
-  await page.goto('/compare.html?players=bowie,wayne&show=big-brother');
+  // ON TWO PEOPLE WHO PLAYED IT. This compared Bowie and Wayne under a Big
+  // Brother filter; neither has ever been in that house, so the page correctly
+  // answers "there is nothing to compare" and the test read that as a failure
+  // to scope. The scoping it wants to see needs a pair the scope contains.
+  await page.goto('/compare.html?players=misha,jules&show=big-brother');
   await expect(page.locator('#statsTable')).toContainText('Big Brother only', { timeout: 15000 });
   await expect(page.locator('#statsTable')).not.toContainText('Career totals');
+
+  // And the empty answer is still the right answer for a pair who did not.
+  await page.goto('/compare.html?players=bowie,wayne&show=big-brother');
+  await expect(page.locator('#statsTable')).toContainText('never played Big Brother', { timeout: 15000 });
 
   await page.goto('/compare.html?players=bowie,wayne&show=all');
   await expect(page.locator('#statsTable')).toContainText('Career totals across every show', { timeout: 15000 });

@@ -326,6 +326,22 @@ function infobox(dossier, show, root, L) {
   return `
   <aside class="wk-infobox" style="--wk-accent:${m.accent}">
     <div class="wk-ib-title">${esc(dossier.name)}</div>
+    ${/*
+      WHICH SHOW'S ARTICLE THIS IS.
+
+      A character's Big Brother article and their Total Drama article are
+      different articles, and nothing on the page said which one you were
+      reading — the sections are headed with the SEASON'S name, so "Champions vs
+      Contenders" tells you only if you already know. The stylesheet has carried
+      a `.wk-ib-show` rule for exactly this band the whole time and nothing ever
+      emitted the element.
+
+      Omitted rather than guessed when there is no season on record: with no
+      career here, `format` is the page's default, and printing "TOTAL DRAMA"
+      over an empty article states as a fact something nobody knows. Same rule
+      the profile head below already follows.
+    */ ''}
+    ${show.count ? `<div class="wk-ib-show">${m.icon ? `${m.icon} ` : ''}${esc(m.name || m.short || '')}</div>` : ''}
     ${tabs}
     <img class="wk-ib-portrait" src="${root}/assets/avatars/${esc(dossier.id)}.png" alt=""
          onerror="this.style.display='none'">

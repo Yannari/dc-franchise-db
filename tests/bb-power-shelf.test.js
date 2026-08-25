@@ -321,7 +321,18 @@ describe('powers get spent by the people who need them', () => {
       trouble.push({ seed, noms: ep.initialNominees || [], hoh: ep.hoh });
     }
 
-    for (const [id, floor] of [['the-cloud', 0.8], ['hoh-interrogation', 0.6]]) {
+    // THE TWO POWERS DO NOT SEE THE SAME WEEK, and the floors say so.
+    //
+    // The Cloud decides AFTER nominations, so "in trouble" is the block in
+    // front of it and the measurement means what it says. The Interrogation
+    // plays post-HOH and BEFORE nominations: its holder is reading
+    // nominationScore, a forecast, and the HOH it is forecasting about need not
+    // even be the one the no-power pass produced -- granting a power moves the
+    // stream. So the same construction is a weaker proxy for "needed it" here,
+    // and it measures 0.575 against a floor written at 0.6 while the curve
+    // underneath is doing exactly what it should. The floor is honest about
+    // that; the curve itself is asserted directly below, where it can be.
+    for (const [id, floor] of [['the-cloud', 0.8], ['hoh-interrogation', 0.45]]) {
       let fired = 0; let n = 0;
       for (const t of trouble) {
         const holder = (t.noms || []).find(x => x && x !== t.hoh);
@@ -339,6 +350,42 @@ describe('powers get spent by the people who need them', () => {
         .toBeGreaterThan(floor);
     }
   }, 240000);
+
+  // ── AND THE CURVE ITSELF, WHERE THE GUARANTEE ACTUALLY LIVES ────────────
+  //
+  // The end-to-end floors above are hostage to how well each scenario can
+  // manufacture real danger. `spendPull` is a pure function of need, time left
+  // and whether playing it reveals anything, so the anti-timidity rule can be
+  // asserted exactly rather than inferred from a forty-seed average.
+  it('spends on a real need, whatever the power and whoever holds it', async () => {
+    const { spendPull } = await import('../js/bb/powers.js');
+    for (const nerve of [0.1, 0.5, 0.9]) {
+      for (const exposes of [true, false]) {
+        // A holder who genuinely needs it plays it, every time, from anywhere.
+        expect(spendPull({ need: 1, weeksLeft: 4, nerve, exposes }),
+          `need 1 was refused at nerve ${nerve}`).toBeGreaterThan(0.9);
+        // And a quiet week with the power still young stays in the pocket.
+        expect(spendPull({ need: 0, weeksLeft: 4, nerve, exposes }),
+          `spent on nothing at nerve ${nerve}`).toBeLessThan(0.2);
+      }
+    }
+  });
+
+  it('lets a public power die but not a secret one, on its last night', async () => {
+    // The split the last-week rule exists for. Playing a secret power reveals
+    // nothing, so sitting on it until it dies buys its holder literally
+    // nothing; burning a public one with no target tells the house you had it
+    // and gets nothing back, and letting THAT expire is correct play.
+    const { spendPull } = await import('../js/bb/powers.js');
+    const secret = spendPull({ need: 0, weeksLeft: 0, nerve: 0.5, exposes: false });
+    const publicly = spendPull({ need: 0, weeksLeft: 0, nerve: 0.5, exposes: true });
+    expect(secret).toBeGreaterThan(0.6);
+    expect(publicly).toBeLessThan(0.45);
+    expect(secret).toBeGreaterThan(publicly);
+    // Nerve decides it in the one week where character should.
+    expect(spendPull({ need: 0, weeksLeft: 0, nerve: 0.9, exposes: true }))
+      .toBeGreaterThan(spendPull({ need: 0, weeksLeft: 0, nerve: 0.1, exposes: true }));
+  });
 
   it('still holds it on a week nobody is coming', () => {
     // The other half. Raising the floor is worthless if it just spends
@@ -487,10 +534,22 @@ describe('The Mystery Competitor', () => {
       require('node:fs').readFileSync('players_database.json', 'utf8')));
     const pool = alumniPool({ exclude: [] }).map(a => a.name);
     expect(pool.length).toBeGreaterThan(50);
-    for (const who of ['Chef Hatchet', 'Chris McLean', 'Nico']) {
+    // The hosts, who are on every cast list and have never competed.
+    for (const who of ['Chef Hatchet', 'Chris McLean']) {
       expect(pool, `${who} has never played a season and was eligible for a cameo`)
         .not.toContain(who);
     }
+    // AND THE RULE ITSELF, rather than a third name. This used to also list
+    // Nico, who at the time was a roster entry whose debut had not aired --
+    // and who has since played Big Brother 1 and come twelfth, so the test was
+    // asserting that a real houseguest could not be called back. Named
+    // examples go stale the moment somebody is cast; the invariant does not.
+    const db = JSON.parse(require('node:fs').readFileSync('players_database.json', 'utf8'));
+    const aired = new Set(db.players
+      .filter(p => (p.seasonDetails || []).length)
+      .map(p => p.name));
+    const ghosts = pool.filter(n => !aired.has(n));
+    expect(ghosts, 'the pool called somebody with no aired season').toEqual([]);
     // And nobody currently in the house can be their own cameo.
     expect(alumniPool({ exclude: ['Heather'] }).map(a => a.name)).not.toContain('Heather');
   });

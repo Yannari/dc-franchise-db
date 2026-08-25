@@ -282,8 +282,29 @@ describe('The Hacker — on the surfaces', () => {
         || (/THE HACKER/.test(l) && /PLAYED ALONE/.test(l))
         || (/THE HACKER/.test(l) && /plays it alone/.test(lines[i + 1] || '')));
       expect(from, `${label}: the hacker act wrote no block of its own`).toBeGreaterThan(-1);
-      const section = lines.slice(from, from + 12).join('\n');
-      expect(section, `${label}: the transcript named the hacker`).not.toContain(hk.winner);
+      const section = lines.slice(from, from + 12);
+
+      // A HACKER WHO SAVES THEMSELVES IS VISIBLE, and that is the show. The
+      // house watches a chair open and sees who walked out of it; what it never
+      // learns is who reached in. So the rule is not "their name is absent" —
+      // on a self-save that is impossible — it is that nothing ATTRIBUTES the
+      // move to them.
+      //
+      // The leak this caught was real and is fixed in js/bb/hacker.js: the
+      // replacement reasoning was generated with the hacker as the chooser, so
+      // one line after "with nobody's name attached to it" the transcript said
+      // "Nichelle chooses the replacement the house is least likely to fight
+      // over". It says "the hacker" now, and "they", because two of those
+      // sentences reach for the chooser's pronoun as well.
+      const publicFacts = [hk.blockHack?.down, hk.blockHack?.up].filter(Boolean);
+      for (const line of section) {
+        if (!line.includes(hk.winner)) continue;
+        const attributes = /\bchooses\b|\bdecides\b|\bpicks\b|\bwanted\b|\bsees\b|\bbuilt\b/.test(line);
+        const statesAFact = publicFacts.some(n => line.includes(n));
+        expect(statesAFact && !attributes,
+          `${label}: the transcript attributed the hack to ${hk.winner} — "${line.trim()}"`)
+          .toBe(true);
+      }
     }
   });
 

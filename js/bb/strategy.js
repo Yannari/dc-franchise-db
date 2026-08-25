@@ -653,21 +653,49 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
  * exactly one legal name — at which point the ceremony is not a decision at
  * all, and pretending otherwise is what makes a house feel fake.
  */
-export function explainReplacement(hoh, name, pool, plan, nominees = []) {
+/**
+ * Why this replacement, in the chooser's own read.
+ *
+ * `as` RENAMES THE CHOOSER FOR THE SENTENCE ONLY. A secret nominator — the
+ * Hacker, and Roadkill if it ever prints this — is the whole twist: the house
+ * is told a chair changed and never told who changed it. The transcript said
+ * "with nobody's name attached to it" and then, one line later, printed this
+ * reasoning with the hacker's name in it. Two of the variants below reach for
+ * the chooser's PRONOUN as well, so swapping the name in the finished string
+ * would have left the gender behind.
+ *
+ * The bond and plan reads still use the real `hoh`, so the reasoning is the
+ * reasoning that actually happened; only the person saying it goes unnamed.
+ */
+export function explainReplacement(hoh, name, pool, plan, nominees = [], opts = {}) {
+  const txt = _explainReplacement(hoh, name, pool, plan, nominees, opts);
+  // The label lands at the start of a sentence in some variants and mid-clause
+  // in others -- "for the hacker to name" is right and ". the hacker chooses"
+  // is not -- so it is written lower case and capitalised where it belongs.
+  if (!opts.as || !txt) return txt;
+  const cap = opts.as.charAt(0).toUpperCase() + opts.as.slice(1);
+  let out = txt.startsWith(opts.as) ? cap + txt.slice(opts.as.length) : txt;
+  for (const stop of ['. ', '! ', '? ']) out = out.split(stop + opts.as).join(stop + cap);
+  return out;
+}
+
+function _explainReplacement(hoh, name, pool, plan, nominees = [], { as = null } = {}) {
+  const who = as || hoh;
+  const whoP = as ? { sub: 'they', obj: 'them', posAdj: 'their', pos: 'theirs', Sub: 'They', Obj: 'Them' } : pronouns(hoh);
   if (!name) return '';
   const options = (pool || []).filter(n => n !== name);
   if (!options.length) {
     return strategyText([
-      `${hoh} has only one eligible replacement. ${name}'s nomination is forced before the speech begins.`,
-      `Once the immune names and the remaining nominee are removed, only ${name} is left for ${hoh} to name.`,
-      `There is no second option for ${hoh}. The rules put ${name} in the empty chair.`,
+      `${who} has only one eligible replacement. ${name}'s nomination is forced before the speech begins.`,
+      `Once the immune names and the remaining nominee are removed, only ${name} is left for ${who} to name.`,
+      `There is no second option for ${who}. The rules put ${name} in the empty chair.`,
     ], hoh, name, 'replacement-forced');
   }
   if (plan?.backdoorTarget === name) {
     return strategyText([
-      `${hoh} kept ${name} away from the opening block and the veto draw. The empty chair is the final step of that plan.`,
-      `${name} was never the backup. ${hoh} built the week around naming ${pronouns(name).obj} only after the veto could no longer be won.`,
-      `The original nominations created the opening; ${name} was always meant to fill it. ${hoh} finally says the real target aloud.`,
+      `${who} kept ${name} away from the opening block and the veto draw. The empty chair is the final step of that plan.`,
+      `${name} was never the backup. ${who} built the week around naming ${pronouns(name).obj} only after the veto could no longer be won.`,
+      `The original nominations created the opening; ${name} was always meant to fill it. ${who} finally says the real target aloud.`,
     ], hoh, name, 'replacement-backdoor');
   }
   const st = pStats(name);
@@ -676,36 +704,36 @@ export function explainReplacement(hoh, name, pool, plan, nominees = []) {
   const plan2 = housePlan(hoh);
   if ((plan2?.targets || []).includes(name)) {
     return strategyText([
-      `${hoh} wanted ${name} on the block from the start. The veto finally supplies an open chair.`,
-      `${name} was already on ${hoh}'s target list. The replacement decision turns that private plan into a public move.`,
-      `${hoh} does not need to invent a new target under pressure. ${name}'s name was waiting in the plan.`,
+      `${who} wanted ${name} on the block from the start. The veto finally supplies an open chair.`,
+      `${name} was already on ${who}'s target list. The replacement decision turns that private plan into a public move.`,
+      `${who} does not need to invent a new target under pressure. ${name}'s name was waiting in the plan.`,
     ], hoh, name, 'replacement-target');
   }
   if (comps >= 2) {
     return strategyText([
-      `${name} has already won ${comps} competitions. ${hoh} uses the rare moment when somebody else holds the veto to put that record on the block.`,
-      `${hoh} sees ${comps} competition wins beside ${name}'s name and decides the empty chair may not come again.`,
-      `${name}'s ${comps} wins make the replacement less about convenience than opportunity. ${hoh} takes the shot while it is available.`,
+      `${name} has already won ${comps} competitions. ${who} uses the rare moment when somebody else holds the veto to put that record on the block.`,
+      `${who} sees ${comps} competition wins beside ${name}'s name and decides the empty chair may not come again.`,
+      `${name}'s ${comps} wins make the replacement less about convenience than opportunity. ${who} takes the shot while it is available.`,
     ], hoh, name, comps, 'replacement-comps');
   }
   if (getPerceivedBond(hoh, name) >= 3) {
     return strategyText([
-      `${hoh} has run out of distant names. Putting up ${name} damages a real relationship, but every remaining option costs even more.`,
-      `${name} is close to ${hoh}; that no longer makes ${pronouns(name).obj} safe when the eligible pool is this small.`,
-      `${hoh} chooses ${name} despite their relationship and makes clear the decision came from the shrinking list, not a new target.`,
+      `${who} has run out of distant names. Putting up ${name} damages a real relationship, but every remaining option costs even more.`,
+      `${name} is close to ${who}; that no longer makes ${pronouns(name).obj} safe when the eligible pool is this small.`,
+      `${who} chooses ${name} despite their relationship and makes clear the decision came from the shrinking list, not a new target.`,
     ], hoh, name, 'replacement-close');
   }
   if (options.length <= 2) {
     return strategyText([
-      `${hoh} has almost no room left to choose. Between the available names, ${name} is the relationship ${pronouns(hoh).sub} believes can survive the nomination.`,
-      `The eligible pool is down to ${name} and ${options.join(' and ')}. ${hoh} chooses the person least likely to turn the chair into a permanent war.`,
-      `${hoh} is choosing damage, not safety. ${name} is the option ${pronouns(hoh).sub} expects to cost less after the ceremony.`,
+      `${who} has almost no room left to choose. Between the available names, ${name} is the relationship ${whoP.sub} believes can survive the nomination.`,
+      `The eligible pool is down to ${name} and ${options.join(' and ')}. ${who} chooses the person least likely to turn the chair into a permanent war.`,
+      `${who} is choosing damage, not safety. ${name} is the option ${whoP.sub} expects to cost less after the ceremony.`,
     ], hoh, name, ...options, 'replacement-small-pool');
   }
   return strategyText([
-    `${name} has fewer people ready to object than the other eligible names. ${hoh} chooses the replacement the house is least likely to fight over.`,
-    `${hoh} does not need ${name} to be the biggest threat—only the name that creates the smallest counterattack.`,
-    `${name} has stayed outside the center of the week. That makes ${pronouns(name).obj} easier for ${hoh} to nominate without breaking a larger structure.`,
+    `${name} has fewer people ready to object than the other eligible names. ${who} chooses the replacement the house is least likely to fight over.`,
+    `${who} does not need ${name} to be the biggest threat—only the name that creates the smallest counterattack.`,
+    `${name} has stayed outside the center of the week. That makes ${pronouns(name).obj} easier for ${who} to nominate without breaking a larger structure.`,
   ], hoh, name, 'replacement-default');
 }
 

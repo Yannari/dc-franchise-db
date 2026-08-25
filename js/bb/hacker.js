@@ -131,7 +131,15 @@ export function chooseHackerBlockHack({ hacker, nominees = [], house = [], hoh, 
   }
   let why = '';
   try {
-    why = explainReplacement(hacker, up, house.filter(n => !blocked.includes(n)), chooserPlan, nominees);
+    // UNNAMED, because not knowing who did it IS the twist. The reasoning is
+    // still the hacker's real read — the bond and plan checks inside use the
+    // real name — but the sentence says "the hacker", and says "they", since
+    // two of those variants reach for the chooser's pronoun as well.
+    //
+    // The transcript said "with nobody's name attached to it" and then printed
+    // this on the very next line with the hacker's name in it.
+    why = explainReplacement(hacker, up, house.filter(n => !blocked.includes(n)),
+      chooserPlan, nominees, { as: 'the hacker' });
   } catch { why = ''; }
   return {
     use: true, down, up, reason,

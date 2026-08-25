@@ -153,7 +153,18 @@ describe('against the season that actually shipped', () => {
     let total = 0;
     for (const w of season.weeks) {
       const evs = extractEvents(w, { format: 'big-brother', season: 1, episode: w.week });
-      expect(evs.length, `week ${w.week} produced nothing`).toBeGreaterThan(1);
+      // EVERY week is read; a week that ran a full cycle has something to say.
+      //
+      // Big Brother 1 opened on a NO-EVICTION premiere — no Head of Household,
+      // no nominations, nobody voted out — so the only thing that happened is
+      // that the episode aired, and one event is the correct answer for it.
+      // Holding it to the same floor as a week that crowned, nominated, vetoed
+      // and voted called the reader broken on the one week with nothing in it.
+      expect(evs.length, `week ${w.week} produced nothing at all`).toBeGreaterThan(0);
+      if (w.evicted) {
+        expect(evs.length, `week ${w.week} ran a full cycle and read as one event`)
+          .toBeGreaterThan(1);
+      }
       total += evs.length;
     }
     expect(total).toBeGreaterThan(50);

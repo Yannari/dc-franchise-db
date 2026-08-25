@@ -43,7 +43,11 @@
 export const DELIVERY = {
   // trait: [pattern, profiles matched when last measured]
   mystical: [/mystic|spiritual|new-age|cosmic|aura|zen|hippie|dream|surreal|bizarre/, 5],
-  streetwise: [/tough|street|jersey|scrapp|hardened|delinquent|rebel|punk|criminal|thug/, 7],
+  // `criminal` because a CRIMINAL LAW STUDENT is not streetwise. The
+  // count drifting from 7 to 8 was this and only this: Hasan is composed and
+  // formal, reads as a lawyer because he is training to be one, and the word
+  // that put him in a jersey-tough delivery bucket was his degree.
+  streetwise: [/tough|street|jersey|scrapp|hardened|delinquent|rebel|punk|criminal(?! law)|thug/, 7],
   boastful: [/boast|arrogant|egotis|vain|self-obsessed|narcissis|cocky|braggart|conceited/, 9],
   excitable: [/excit|hyper|energetic|bubbly|manic|enthusiast|bouncy|eager|giddy/, 12],
   theatrical: [/dramat|theatric|flamboyan|over-the-top|melodram|diva|showman|grandiose|poetic|opera/, 13],

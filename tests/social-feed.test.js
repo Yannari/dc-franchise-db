@@ -18,6 +18,21 @@ const weekEvents = (i = 0) => extractEvents(season.weeks[i], {
   format: 'big-brother', season: 1, episode: season.weeks[i].week,
 });
 
+/**
+ * THE FIRST WEEK THAT ACTUALLY RAN A WEEK.
+ *
+ * Everything below used `weeks[0]`, and Big Brother 1 opened on a NO-EVICTION
+ * premiere: no Head of Household, no nominations, nobody voted out. It yields
+ * exactly one event — the episode airing — so the feed built ten posts from it
+ * and six tests here read that as a broken feed. The same weeks two through
+ * four build 82, 109 and 109.
+ *
+ * Found rather than hard-coded, because which week is the premiere is a fact
+ * about the season document and not about this file.
+ */
+const FULL = season.weeks.findIndex(w => w.evicted);
+if (FULL < 0) throw new Error('no week of this season ran an eviction');
+
 describe('normalising the crowd', () => {
   it('reads popularity relative to this cast, not an absolute scale', () => {
     // Being the most-liked player in a hated cast still reads as popular. An
@@ -41,7 +56,7 @@ describe('normalising the crowd', () => {
 });
 
 describe('building an episode', () => {
-  const events = weekEvents(0);
+  const events = weekEvents(FULL);
   const posts = buildEpisodeFeed(events, { seed: 7 });
 
   it('produces a flood, not a highlights reel', () => {
@@ -97,7 +112,7 @@ describe('building an episode', () => {
 });
 
 describe('replies', () => {
-  const posts = buildEpisodeFeed(weekEvents(0), { seed: 3 });
+  const posts = buildEpisodeFeed(weekEvents(FULL), { seed: 3 });
   const replies = posts.filter(p => p.replyTo);
 
   it('answers earlier posts, so a ratio is legible', () => {
@@ -123,7 +138,7 @@ describe('replies', () => {
 });
 
 describe('real popularity reaching the page', () => {
-  const events = weekEvents(0);
+  const events = weekEvents(FULL);
   const subject = events.find(e => e.subject)?.subject;
 
   it('ratios the take, not its target', () => {
@@ -177,7 +192,15 @@ describe('a whole real season', () => {
     let total = 0;
     for (const [i, w] of season.weeks.entries()) {
       const posts = buildEpisodeFeed(weekEvents(i), { seed: 100 + i });
-      expect(posts.length, `week ${w.week} produced no feed`).toBeGreaterThan(20);
+      // EVERY week gets a feed; a week that ran a full cycle gets a flood. A
+      // no-eviction premiere has one thing to react to and should not be held
+      // to the same volume as a week that crowned, nominated, vetoed and voted
+      // — asserting one number for both called the quiet week broken.
+      expect(posts.length, `week ${w.week} produced no feed at all`).toBeGreaterThan(0);
+      if (w.evicted) {
+        expect(posts.length, `week ${w.week} ran a full cycle and barely reacted`)
+          .toBeGreaterThan(20);
+      }
       total += posts.length;
     }
     // A season of a live audience, not a highlights reel.

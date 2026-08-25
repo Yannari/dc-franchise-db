@@ -230,8 +230,22 @@ describe('BB Roadkill, on the surfaces', () => {
     // The act carries all three because all three are on the block, but the
     // plan the HOH actually made is still a plan for two.
     expect(noms.nominees).toHaveLength(3);
-    const hohChose = [noms.target, noms.pawn].filter(Boolean);
-    expect(hohChose, 'the HOH was credited with the roadkill nominee')
+    expect(noms.nominees, 'the roadkill nominee is not on the block').toContain(rk.nominee);
+    // Exactly one of the three came from somebody other than the HOH.
+    expect(noms.nominees.filter(n => n !== rk.nominee)).toHaveLength(2);
+
+    // A BACKDOOR TARGET IS NOT A NAME THE HOH READ OUT — it is the person they
+    // arranged NOT to nominate. On two of the six seeds this file plays, the
+    // HOH planned a backdoor and the roadkill winner then put that exact person
+    // up from the other direction, which is the twist working: the HOH wanted
+    // them gone quietly and somebody else did it loudly. Reading `target` as
+    // one of the HOH's two chairs called that a miscredit.
+    const readOut = [noms.backdoorTarget ? null : noms.target, noms.pawn].filter(Boolean);
+    expect(readOut, 'the HOH was credited with the roadkill nominee')
       .not.toContain(rk.nominee);
+    for (const name of readOut) {
+      expect(noms.nominees, `${name} was credited to the HOH but is not on the block`)
+        .toContain(name);
+    }
   });
 });

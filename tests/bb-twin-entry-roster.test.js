@@ -79,9 +79,18 @@ describe('both twins in the house means both twins in the house', () => {
     for (const w of after()) {
       const onBlock = [...(w.initialNominees || []), ...(w.finalNominees || [])].includes(twin);
       const voted = (w.ballots || w.votingLog || []).some(b => b.voter === twin);
-      // A nominee does not vote, so one or the other — but never neither,
-      // which is what "0 presence" looked like.
-      expect(onBlock || voted, `week ${w.num}: she neither voted nor stood`).toBe(true);
+      // ── AND RUNNING THE WEEK IS PRESENCE TOO ──
+      //
+      // A nominee does not vote and neither does the Head of Household, so it
+      // is one of THREE, never none. This listed only two and then failed on
+      // the weeks she won the HOH — she takes it twice across these five — and
+      // called the houseguest holding the power "0 presence", which is the
+      // exact opposite of what happened.
+      const ranIt = w.hoh === twin
+        || (w.crownedHohs || []).includes(twin)
+        || w.coHoh === twin;
+      expect(onBlock || voted || ranIt,
+        `week ${w.num}: she neither voted, stood, nor ran the week`).toBe(true);
     }
   });
 

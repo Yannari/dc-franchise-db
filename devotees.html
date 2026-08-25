@@ -479,7 +479,7 @@
 
     <div class="devotees-hero">
       <h1>👥 All Players</h1>
-      <p>Browse the complete roster of Total Drama contestants</p>
+      <p id="devoteesBlurb">Browse the complete roster</p>
     </div>
 
     <div class="controls">
@@ -806,6 +806,15 @@ function updateHeaderStats() {
   }
   setText('footer-players', totalPlayers);
   if (totalSeasons) setText('footer-seasons', totalSeasons);
+  // WHOSE ROSTER THIS IS, in that show's own word for its people. This was
+  // "the complete roster of Total Drama contestants", printed over a list of
+  // houseguests -- the registry carries `words.players` precisely so a page
+  // does not have to guess, and a third show gets its own noun for free.
+  const _sw2 = window.showSwitcher;
+  const _words = (_sw2?.SHOWS || {})[show]?.words;
+  setText('devoteesBlurb', show === 'all'
+    ? 'Browse the complete roster, every show'
+    : `Browse every ${(_sw2?.SHOWS || {})[show]?.name || show} ${_words?.player || 'player'}`);
   setText('metaCounts', `${totalPlayers} total players • ${totalAppearances} appearances`);
   setText('footerCounts', `${totalPlayers} total players across ${totalSeasons} season${totalSeasons === 1 ? '' : 's'} • ${totalAppearances} total appearances`);
 }

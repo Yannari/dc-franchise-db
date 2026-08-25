@@ -47,10 +47,9 @@ describe('a schedule the designer would have refused', () => {
   beforeEach(() => house());
 
   it('drops a twist that clashes with a card already on the week', () => {
-    // Both reshape the block with a third chair, and each names the other in
-    // its catalog entry. Put on the same week by a preset or a save, they used
-    // to both run and seat two extra nominees.
-    house(['bb-roadkill', 'bb-den-of-temptation']);
+    // Both reshape the block, and each names the other in its catalog entry.
+    // Put on the same week by a preset or a save, they used to both run.
+    house(['bb-roadkill', 'bb-battle-of-the-block']);
     const live = bbTwistsForWeek(1);
     expect(live, 'both block-reshaping twists survived the same week').toHaveLength(1);
     // The first one scheduled keeps the week — an arbitrary but stable rule,
@@ -59,25 +58,27 @@ describe('a schedule the designer would have refused', () => {
   });
 
   it('is order-stable rather than alphabetical', () => {
-    house(['bb-den-of-temptation', 'bb-roadkill']);
-    expect(bbTwistsForWeek(1)).toEqual(['bb-den-of-temptation']);
+    // The same pair the other way round keeps the OTHER card, which is the
+    // whole claim: first scheduled wins, not first alphabetically.
+    house(['bb-battle-of-the-block', 'bb-roadkill']);
+    expect(bbTwistsForWeek(1)).toEqual(['bb-battle-of-the-block']);
   });
 
   it('drops a twist that clashes with a season MODE switched on later', () => {
-    // THE REPORTED SHAPE. The Den is scheduled while the Block Buster is off —
+    // THE REPORTED SHAPE. Roadkill is scheduled while the Block Buster is off —
     // perfectly legal, the catalog allows it — and then the mode is switched
     // on. Nothing re-validated the schedule, so a twist the designer would now
     // refuse to add went on running.
-    house(['bb-den-of-temptation']);
-    expect(bbTwistsForWeek(1), 'the legal case broke').toEqual(['bb-den-of-temptation']);
+    house(['bb-roadkill']);
+    expect(bbTwistsForWeek(1), 'the legal case broke').toEqual(['bb-roadkill']);
 
     seasonConfig.bbSafetyMode = 'block-buster';
-    expect(bbTwistsForWeek(1), 'the Den survived the Block Buster being switched on')
+    expect(bbTwistsForWeek(1), 'Roadkill survived the Block Buster being switched on')
       .toEqual([]);
 
     // ...and switching it back off restores it, because nothing was destroyed.
     seasonConfig.bbSafetyMode = 'off';
-    expect(bbTwistsForWeek(1)).toEqual(['bb-den-of-temptation']);
+    expect(bbTwistsForWeek(1)).toEqual(['bb-roadkill']);
   });
 
   it('leaves a compatible pair alone', () => {
@@ -104,12 +105,29 @@ describe('a schedule the designer would have refused', () => {
 });
 
 describe('the week that actually plays', () => {
+  // THE END-TO-END CLAIM. bbTwistsForWeek filtering in isolation proves nothing
+  // if the engine goes on to run the schedule it was handed instead; this is
+  // the same clash played through a real week.
+  //
+  // The pair used to be Roadkill and the Den, because the Den seated a third
+  // chair too. It has not since "The curse takes a chair instead of adding
+  // one" (2026-08-09): the cursed houseguest fills a seat the HOH would have
+  // filled, so the block is the size it always was and the two no longer
+  // clash. This file was written five days earlier and kept asserting the old
+  // design — a deleted design, not a missing feature.
   it('never runs two block-reshaping twists in one played week', () => {
-    house(['bb-roadkill', 'bb-den-of-temptation']);
+    house(['bb-roadkill', 'bb-battle-of-the-block']);
     const ep = withSeededRandom(31, () => simulateBBEpisode());
     const seated = (ep.acts || []).filter(a =>
-      a.type === 'roadkill' || a.type === 'temptation-curse').length;
-    expect(seated, 'two twists both seated a third chair').toBeLessThan(2);
+      a.type === 'roadkill' || a.type === 'battle-of-the-block').length;
+    expect(seated, 'both block-reshaping twists ran in one week').toBeLessThan(2);
+  });
+
+  // And the pair that no longer clashes is allowed to share a week, which is
+  // the other half of the same rule: the filter must not be a blunt instrument.
+  it('lets the curse share a week with Roadkill, because it takes a chair', () => {
+    house(['bb-roadkill', 'bb-den-of-temptation']);
+    expect(bbTwistsForWeek(1).sort()).toEqual(['bb-den-of-temptation', 'bb-roadkill']);
   });
 });
 

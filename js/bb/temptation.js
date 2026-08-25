@@ -160,13 +160,19 @@ function acceptRead(name, rng, { house = [], hoh = null } = {}) {
 /**
  * Run the Den for this week. Returns an act, or null if it cannot run.
  *
- * Called at week opening, BEFORE nominations, because the curse has to be able
- * to put a third chair on the stage before the ceremony reads names out.
+ * Called at week opening, BEFORE nominations, because the curse has to name its
+ * houseguest before the ceremony reads names out.
+ *
+ * It does not ADD a chair. The cursed houseguest fills a seat the Head of
+ * Household would have filled — week.js takes one off `hohSeats` — so the block
+ * is the size it always was and the HOH simply gets one fewer name on it. Said
+ * here because "third chair" is what this said for months after it stopped
+ * being true, and it is what the twist-compatibility tests went on asserting.
  */
 export function runDenOfTemptation({ week, house, rng = Math.random, offered = 'random' } = {}) {
   const room = (house || []).filter(Boolean);
   // The curse needs somebody who is not the taker, and a house this small has
-  // no room for a third chair anyway.
+  // nobody spare to take the seat anyway.
   if (room.length < 5) return null;
 
   const weekNum = Number(week?.num) || (gs.bb?.weeks?.length || 0) + 1;
@@ -250,7 +256,10 @@ export function runDenOfTemptation({ week, house, rng = Math.random, offered = '
 }
 
 /**
- * Draw the cursed houseguest and put them in the third chair.
+ * Draw the cursed houseguest and seat them.
+ *
+ * Into a chair the Head of Household then does not get to fill, not an extra
+ * one — see runDenOfTemptation.
  *
  * Called AT the nomination ceremony, and the eligibility list is the whole
  * point: the curse belongs to the HOUSE, not to one pre-selected person, so

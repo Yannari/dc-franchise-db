@@ -29,6 +29,25 @@ beforeAll(() => {
 
 const find = id => players.find(p => p.id === id);
 
+/**
+ * A career that spans two shows, built rather than looked up.
+ *
+ * NOBODY IN THE FRANCHISE HAS CROSSED SHOWS YET — measured, not assumed: zero
+ * players in players_database have season details from more than one format.
+ * These tests named Bowie, who has played Total Drama 9 and 10 and has never
+ * been in that house, so they asked a correct answer to be two careers long.
+ *
+ * Constructed here so the assertion runs every day rather than waiting for a
+ * returnee who may not arrive for a year — the same trick the hash test below
+ * already uses to prove a changed career invalidates.
+ */
+function twoShowCareer(id = 'bowie') {
+  const p = JSON.parse(JSON.stringify(find(id)));
+  p.seasonDetails.push({ season: 1, format: 'big-brother', seasonId: 'bb-1',
+    placement: 4, status: 'Jury', keyMoments: [] });
+  return p;
+}
+
 describe('the story, split back into seasons', () => {
   it('cuts a wall of text into a chapter per season', () => {
     const parts = splitStory('SEASON 1 — Cullhouse\nShe played hard.\nSEASON 2 — Action\nAnd again.');
@@ -76,7 +95,7 @@ describe('personality', () => {
 
 describe('the career, grouped by show', () => {
   it('describes two shows as two careers', () => {
-    const career = careerOf(find('bowie'));
+    const career = careerOf(twoShowCareer());
     expect(career).toHaveLength(2);
     expect(career.find(c => c.show === 'Big Brother').count).toBe(1);
     expect(career.find(c => c.show === 'Total Drama').count).toBe(2);
@@ -159,7 +178,7 @@ describe('what a writer would be handed', () => {
   // personality profile plus a list of placements. But the model gets facts and
   // writes about them; anything it states that is not in here is an invention.
   it('carries what happened and nothing else', () => {
-    const facts = dossierFacts(buildDossier(find('bowie'), { voices, roster }));
+    const facts = dossierFacts(buildDossier(twoShowCareer(), { voices, roster }));
     expect(facts.name).toBe('Bowie');
     expect(facts.shows.map(s => s.show))
       .toEqual(expect.arrayContaining(['Total Drama', 'Big Brother']));

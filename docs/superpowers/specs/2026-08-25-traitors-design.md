@@ -73,6 +73,73 @@ channel, not the show default. This is the recurring bug class in
 `audience` overlay: this show sells paranoia and betrayal, not stunts or vote
 arithmetic. Values set when ratings are wired (sub-project 3), not before.
 
+### 2.1 The two founding questions (manual §0)
+
+The manual says answer these first because both are hard to change later.
+
+**Does it eliminate by vote, or by result?** **Neither, exactly — and this show
+needs a third answer.** Banishment is a vote. Murder is *not* a vote and *not* a
+result: it is a decision taken by a subset of the cast, off-screen, with no
+ballot the group ever sees. The manual contemplates two kinds and this is a
+third. §10.1 handles it by modelling the murder as a Traitors-only ballot on a
+`channel`, which keeps the voting grid, the vote-history tab, the betrayal
+ledger and the social feed fed — all four of which have nothing to draw from an
+elimination with no ballot.
+
+**Is a round a week or an episode?** An **Episode**.
+
+### 2.2 `careerStats` — what rolls up into a career
+
+Required in the registry and previously missing from this spec.
+`_rebuildByShow()` reads it and branches on nothing; a bare name is a top-level
+field, a dotted name reaches into a nested block.
+
+```js
+careerStats: [
+  ['tr.missionsWon',    'totalMissionsWon'],
+  ['tr.shieldsWon',     'totalShieldsWon'],
+  ['tr.roundsAsTraitor','totalRoundsAsTraitor'],
+  ['tr.timesRecruited', 'totalTimesRecruited'],
+  ['tr.timesMurdered',  'totalTimesMurdered'],
+  ['tr.timesBanished',  'totalTimesBanished'],
+]
+```
+
+Two notes. `roundsAsTraitor` rather than `seasonsAsTraitor`, because
+recruitment means the role is not a season-level property. And a career that
+can say *"murdered three times, never once banished"* is a characterisation the
+other two shows cannot produce — worth having.
+
+Open: whether mission performance deserves a per-player career stat at all,
+given missions grant no immunity and `careerStats` is shaped around wins
+(carried in §14).
+
+### 2.3 Engine wiring checklist (manual §2)
+
+Small, specific, and every item is silent when forgotten:
+
+- **`gs.episodeHistory[]` stamped `format: 'traitors'`.** VP screens, the
+  timeline and the replay path all filter on it; an unstamped episode belongs to
+  Total Drama by default.
+- **A runnable flag** — `window._trRunnable`, set at the bottom of the run
+  module, read by `formatIsRunnable()` in `js/core.js`. It exists so a
+  half-built show cannot be started by someone clicking through setup, which is
+  exactly our situation for most of this build.
+- **Dispatch in `js/run-ui.js` twice** — `simulateNext()` (~950) **and the
+  replay path** (~1116). The replay path once knew only Total Drama's engines,
+  so a Big Brother house had checkpoints it could never spend.
+
+### 2.4 Twists and config (manual §§3–4)
+
+- Every `TWIST_CATALOG` entry needs `format: 'traitors'`. A twist with no
+  `format` belongs to Total Drama, and that default is load-bearing for
+  fourteen seasons of existing entries.
+- `js/quick-setup.js`: `CONFIG_SCOPE` (add `traitors` only to controls this
+  engine actually reads — no tribes, no idols, no have-nots), the **show
+  picker** (`{ id, name, tag, icon }`, ~425), the **blueprint** that seeds a
+  default season, and **host options**. `tests/format-scoped-config.test.js`
+  enforces the first.
+
 ## 3. Architecture
 
 ### 3.1 Rejected: Traitors as a Big Brother mode
@@ -566,6 +633,100 @@ This is real work and gets its own step in the implementation plan. Picking a
 - Keys by prefix: `data/seasons/tr-1-data.json`, `tr_episode_s1_e1`,
   `AI_ANALYTICS_tr-1`, `rankings_tr.json`.
 
+### 10.4 Popularity, audience, fame and rankings
+
+The part most easily got wrong, and it is got wrong by writing code rather than
+by omitting it.
+
+**`gs.popularity` is accrued, and must never rank anybody.** It is incremented
+every round, so it is dominated by how long somebody lasted — measured on Big
+Brother 1 it correlates with FINAL PLACEMENT at **-0.952**. Asking it who was
+liked returns who lasted. Every consumer that asked was reading the wrong
+thing: both shows' fan-favourite award, the heroes board, the fan-loved tag, the
+audience pulse and the social feed's crowd.
+
+**`js/audience.js` is show-agnostic on purpose and Traitors gets it for free.**
+It knows only that a show has rounds and eliminates people from them, both read
+off `episodeHistory`. **We must not write our own.**
+
+| Want | Use |
+|---|---|
+| affection generated all season | `gs.popularity[name]` |
+| **who was liked more** | `audienceStanding(name)` |
+| the cast, best first | `audienceBoard({ eligible })` |
+| the award as a vote | `runAudienceVote({ eligible, rng, blocks, scale })` |
+
+Pass `scale` and `blocks` from whatever the show knows about how many people
+were watching. The **only** show-specific part is the name:
+`words.audienceAward`. If Traitors has no such award, leave the field out and
+call nothing — that is a supported answer, not a gap (§14).
+
+**Popularity still has to be written.** Every existing rule applies: any event
+that is heroic, villainous, cowardly or selfless moves `gs.popularity`. This
+show adds a wrinkle the others do not have — **the audience knows who the
+Traitors are.** A Traitor playing brilliantly is *entertaining*, not
+*admirable*, and the two should not be the same number. Popularity tracks
+affection; it must not silently become a competence score for a villain the
+crowd enjoys.
+
+**Fame and the social feed.** `js/fame.js` and the 22 other registry importers
+need nothing beyond the entry. The social feed needs **one** `SHOW_WORDS` entry
+in `js/social/adapter.js` — per §9 that map is vocabulary and stays where it
+is; components never branch, so it is the only file. Follower counts and fame
+level then flow from the published season and the audience reading, not from
+anything Traitors writes itself.
+
+**Rankings.** `rankings_tr.json`, never `rankings_database.json` — that file
+declares itself Total Drama's, and Big Brother 1 was applied into it, producing
+seventeen houseguests sitting at ranks 13, 26 and 28 among contestants while
+every correct reader refused to display them. A board ranks **one** show,
+because the scores are not comparable across shows. `js/ranking-boards.js` owns
+the mapping and every reader goes through it; `js/rankings-update.js` (~360)
+needs a per-format ranking config. A show with no finished season has no board
+and that is not an error — `loadRankingBoards()` skips the 404.
+
+Ranking weights are a real design question for this show, deferred until a
+season exists: there are no comp wins to weight. The obvious currency is rounds
+survived, correct banishments driven, and whether you finished on the winning
+side — but that is a guess until there is data.
+
+## 10.5 The duplication (manual §9)
+
+Thirteen files hold their own copy of the show list. None will error; they will
+describe Traitors as Total Drama.
+
+`player.html` (`SHOW_PREFIX` ~681, `NAMES` ~792, `ICONS` ~793, `SHOW_NAMES`
+~909/~918, and a literal `['total-drama','big-brother']` ~727) · `js/wiki.js`
+(`SHOW_NAMES` ~25) · `js/wiki-view.js` (`SHOW_META` ~28) · `season_ref.html`
+(`SHOW_NAMES` ~320) · `current-season.html` (`CS_SHOWS` ~870) · `compare.html`
+(`CMP_SHOW_LABEL` ~832) · `franchise.html` (`SHOW_LABEL` ~705) · `js/alumni.js`
+(`_SHOW_NAMES` ~106) — **these eight are pure identity and should be collapsed
+into `js/shows.js` before we start.** The manual calls it roughly an hour,
+mechanical, and it converts eight chances to forget the show into zero.
+
+The other five are per-show **data** and stay where they are: `js/settings.js`
+venues, `js/rankings-update.js` weights, `js/quick-setup.js` config scope, and
+the two vocabulary maps (`js/social/adapter.js`, `worker/worker-season-live.js`).
+
+## 10.6 Guards that already cover us
+
+By existing in the registry, Traitors inherits: `format-scoped-config`,
+`show-switcher`, `season-format`, `wiki`, `ratings`, `ratings-distribution`,
+and — most valuable here — **`tests/show-vocabulary.test.js`**, which walks
+every registered format, renders an article for a winner *and* an eliminated
+player, and fails when a show's output contains another show's words. There is
+no list in it to extend.
+
+Its e2e sibling `tests/e2e/show-pages.spec.js` does the same against real site
+data. Note its three documented failure modes before trusting a green run: a
+fixture that renders only a winner never draws the exit cell; a season with no
+round data makes the guard pass over an empty section; and `` `${w}` `` in a
+template literal is a backspace character, not a word boundary.
+
+**Given §2.1, our exit cell must be checked for both verbs** — banished and
+murdered. A guard that only ever sees a banishment is the empty-section failure
+mode wearing a different hat.
+
 ## 11. The returnee split
 
 `isReturnee` is **overloaded** and this show breaks it. It drives two orthogonal
@@ -608,29 +769,47 @@ silently walks in with no reputation and no grudges and nothing reports it.
 
 Per `docs/ADDING-A-SHOW.md` §10, and front-loading risk:
 
-1. Registry entry, `gs.tr` state, config and cast-builder scope.
-2. **The returnee split** (§11) — small, and everything downstream reads it.
-3. **Deduction vertical slice**: alignment facts and eras, evidence source 1
+Reconciled with the manual's §10 order, which requires that **each step leaves
+the site working**, and with our own need to front-load the risk that matters.
+
+1. **Registry entry** (§2). Nothing uses it; the switcher already lists it.
+2. **Collapse the eight identity maps** into `js/shows.js` (§10.5) — the manual
+   puts this second on purpose: the diff is small while the show is still just a
+   registry entry, and the failure mode is obvious.
+3. **The returnee split** (§11) — small, and everything downstream reads it.
+4. **Config scope, show picker, blueprint, host options** (§2.4), so the show
+   can be configured but not run.
+5. `gs.tr` state and the runnable flag (§2.3), off.
+6. **Deduction vertical slice**: alignment facts and eras, evidence source 1
    (ballots) only, suspicion to ballot, Round Table, reveal cascade. Play it
    headless. **If a Round Table does not produce a believable banishment here,
    nothing else matters** — stop and fix it before building anything else.
-4. Murder, conclave, Shields, the blocked-murder event.
-5. Recruitment, eras in anger, the exit blowup.
-6. The event engine and the castle pool at scale (§5.7).
-7. Missions, pot, Dagger, Seer, murder variants.
-8. Endgame.
-9. Export, the co-winner decision (§10.2), publish, D1.
-10. VP and text backlog.
-11. Screens (§6 of the manual).
-12. One full season played end to end.
-13. **Only then**: ratings (sub-project 3).
+7. Murder, conclave, Shields, the blocked-murder event.
+8. Recruitment, eras in anger, the exit blowup.
+9. The event engine and the castle pool at scale (§5.7).
+10. Missions, pot, Dagger, Seer, murder variants. Twist catalog entries (§2.4).
+11. Endgame. Dispatch wired in **both** `run-ui.js` places (§2.3); runnable flag on.
+12. Export incl. `careerStats` (§2.2), the co-winner decision (§10.2), publish, D1.
+13. **Publish one season end to end.** The site now has real data to render.
+14. VP and text backlog.
+15. Screens (manual §6), driven by that season rather than by imagination.
+    Audience/fame/rankings wiring (§10.4) belongs here — it needs a played season.
+16. **Ratings signals** (sub-project 3) — only after step 13, and only by
+    printing them against a season that really happened.
+17. **AI fills last** — the episode-writer prompt is per show and is the only
+    step that costs money per run.
 
 ## 14. Open questions
 
-- `audienceAward` — what does this show call the prize nobody votes on?
+- `audienceAward` — what does this show call the prize nobody votes on? Note
+  §10.4: omitting it entirely is a supported answer if the format has no such
+  award, and is better than inventing one.
 - Cast mix: ~90% Total Drama by roster weight today. Left as a casting choice per
   season rather than a rule, but worth a deliberate decision before the first
   season.
 - Whether missions produce a per-player score worth exporting to careers, given
   that they grant no immunity and the existing `careerStats` shape is built
-  around wins.
+  around wins (§2.2).
+- **Ranking weights** (§10.4). There are no comp wins to weight on this show.
+  Rounds survived, correct banishments driven and finishing on the winning side
+  are the obvious currency, but that is a guess until a season exists.

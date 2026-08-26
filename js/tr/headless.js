@@ -10,9 +10,11 @@ import { gs, setGs } from '../core.js';
 import { initTraitorsState } from './state.js';
 import { resetKnowledge } from '../knowledge.js';
 import { setBond } from '../bonds.js';
-import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls } from './roles.js';
-import { seedTraitorKnowledge, ballotEvidence } from './deduction.js';
+import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
+  canRecruit, chooseRecruit, offerRecruitment } from './roles.js';
+import { seedTraitorKnowledge, ballotEvidence, murderEvidence } from './deduction.js';
 import { runRoundTable } from './roundtable.js';
+import { resolveMurder } from './murder.js';
 
 function rngFor(seed) {
   let s = (seed >>> 0) || 1;
@@ -52,20 +54,67 @@ function _seedStartingBonds(cast, seed) {
 }
 
 /**
- * PLACEHOLDER. Plan 3 deletes this.
+ * The night. A conclave, and what it decided to do with it.
  *
- * A real murder is the Traitors arguing in the turret about who the table
- * cannot remove for them. This is a coin flip. It is here so the cast shrinks
- * at roughly the rate the format shrinks it — a season of pure banishment runs
- * seventeen rounds and measures a game nobody plays — and it deliberately
- * generates NO evidence, so nothing calibrated here depends on it.
+ * RECRUITMENT AND MURDER ARE EXCLUSIVE, and that is the format's rule rather
+ * than an implementation shortcut: the Traitors get one action per night, so a
+ * night spent making an offer is a night nobody dies — whatever the answer.
+ * A refused note costs them a body they could have taken.
+ *
+ * The choice itself is deliberately crude, and seeded like everything else.
+ * The interesting decisions here are WHO (chooseRecruit) and whether they
+ * accept; a later plan can make the coin strategic.
+ *
+ * WHAT IS RECORDED, AND WHY IT IS TWO FIELDS AND NOT ONE.
+ *
+ *   `murdered`      — who actually died. `null` on a blocked night, because
+ *                     nobody did, and the round record is what the VP and the
+ *                     export shape read.
+ *   `murderTarget`  — who the conclave CHOSE, whether or not it landed.
+ *
+ * They are separate because murderEvidence() gates on `target && !blocked`, and
+ * if the only field were `murdered` then a blocked night would carry `null` and
+ * the `!blocked` half of that guard could never do any work — the suppression
+ * test would pass because the state is unreachable, not because suppression
+ * works. With the attempt recorded, removing `!blocked` really does leak
+ * evidence out of a night nobody died on. See the comment on that test.
  */
-function _placeholderMurder(ep, rng) {
-  const targets = livingFaithfuls(ep);
-  if (!targets.length) return null;
-  const victim = targets[Math.floor(rng() * targets.length)];
-  gs.activePlayers = (gs.activePlayers || []).filter(n => n !== victim);
-  return victim;
+function _night(ep, rng) {
+  if (!livingTraitors(ep).length) {
+    return { murdered: null, murderTarget: null, blocked: false, recruited: null, livingAtMurder: [] };
+  }
+  const rounds = gs.tr.rounds;
+  const last = rounds.length ? rounds[rounds.length - 1] : null;
+
+  // Recruit rather than murder when the pact is thin and somebody is takeable.
+  const wantsRecruit = canRecruit(ep) && livingTraitors(ep).length < 3 && rng() < 0.45;
+  if (wantsRecruit) {
+    const pick = chooseRecruit(ep, rng);
+    if (pick) {
+      // The ultimatum fires only with one Traitor left — the format's own rule,
+      // and the reason refusal is fatal there: they have seen the only face.
+      const offer = offerRecruitment(pick.target, ep, rng,
+        { mode: livingTraitors(ep).length === 1 ? 'ultimatum' : 'note', recruiter: pick.recruiter });
+      const recruited = { ...offer, target: pick.target };
+      if (last) last.recruitment = recruited;
+      return { murdered: null, murderTarget: null, blocked: false, recruited, livingAtMurder: [] };
+    }
+  }
+
+  // Snapshot the room BEFORE the kill. This is harness DATA, not behaviour:
+  // nothing in the engine reads it. It exists so the calibration can ask
+  // whether the victim was better connected than the field the conclave was
+  // choosing from, which is unanswerable once the victim has been removed.
+  const livingAtMurder = [...(gs.activePlayers || [])];
+  const m = resolveMurder(ep, rng);
+  if (last) {
+    last.murdered = m.victim;
+    last.murderTarget = m.target;
+    // murderEvidence reads this NEXT round; it must be on the round record.
+    last.murderCost = m.cost;
+  }
+  return { murdered: m.victim, murderTarget: m.target, blocked: m.blocked,
+    recruited: null, livingAtMurder };
 }
 
 /**
@@ -96,8 +145,14 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   let ep = 1;
   // The format's own rule: no banishment on the first night, so the Traitors
   // get one round to become a faction before the hunt starts.
-  const firstMurder = _placeholderMurder(ep, rng);
-  log.push({ ep, banished: null, wasTraitor: null, murdered: firstMurder });
+  // Nothing has been recorded as a round yet, so this murder leaves no round
+  // record and therefore emits no evidence next episode. That is correct and
+  // not a gap: there are no ballots and no accusations on night one, so the
+  // only channel murderEvidence could have read is murderCost's clash trace,
+  // and a clash the room has not yet seen anybody voice at a table is not
+  // something the room can reason from.
+  const n1 = _night(ep, rng);
+  log.push({ ep, banished: null, wasTraitor: null, ...n1 });
 
   while (ep++ < maxRounds) {
     const alive = gs.activePlayers || [];
@@ -105,10 +160,17 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     const fa = livingFaithfuls(ep).length;
     if (!tr || alive.length <= 3 || fa <= tr) break;
 
+    // ORDER IS THE CONTRACT. Both evidence sources read the round that just
+    // CLOSED, so both must run before runRoundTable opens a new one — and
+    // murderEvidence in particular gates on `round.ep === ep - 1`, which is
+    // the guard that stops it re-emitting an old murder every round for the
+    // rest of the season. The murder itself comes last, and is written back
+    // onto the round the table just produced.
     evidence(ep, rng);
+    murderEvidence(ep, rng);
     const r = runRoundTable(ep, rng);
     if (!r) break;   // an empty castle: nothing left to banish
-    const murdered = livingTraitors(ep).length ? _placeholderMurder(ep, rng) : null;
+    const night = _night(ep, rng);
     // aliveAtVote/traitorsAtVote are the population as it stood when the ballots
     // were cast, and they are DATA, not behaviour — nothing in the engine reads
     // them. They exist because the null hypothesis for a banishment is not a
@@ -117,7 +179,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // Traitor hit for reasons that have nothing to do with deduction. Without
     // these two numbers there is no way to tell a room that learned something
     // from a room that simply ran out of Faithfuls.
-    log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, murdered,
+    log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...night,
       alive: alive.length, aliveAtVote: alive.length, traitorsAtVote: tr });
   }
 
@@ -126,6 +188,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     traitors,
     log,
     rounds: gs.tr.rounds,
+    // Nights the Traitors struck and nobody died. Copied out because the next
+    // season replaces gs wholesale.
+    blockedMurders: [...(gs.tr.blockedMurders || [])],
+    roleHistory: [...(gs.tr.roleHistory || [])],
     survivors: [...(gs.activePlayers || [])],
     winner: survivingTraitors.length ? 'traitors' : 'faithfuls',
   };

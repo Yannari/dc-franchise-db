@@ -23,6 +23,7 @@ import { resolveVotes } from '../voting.js';
 import { learn } from '../knowledge.js';
 import { alignmentAt } from './roles.js';
 import { alignmentFactId, suspicionBoard, chooseBanishmentVote, recordRound, revealCascade } from './deduction.js';
+import { exitSpeech } from './exit.js';
 
 /**
  * One player names another in front of everybody.
@@ -133,5 +134,18 @@ export function runRoundTable(ep, rng = Math.random) {
   recordRound(round);
   gs.activePlayers = living.filter(n => n !== banished);
   revealCascade(banished, wasTraitor, ep, rng);
+  // THE SPEECH, on the round record where the export shape and the VP can read
+  // it. Generated from what the LEAVER believes, so it must run after the
+  // removal — a banished player names somebody still in the castle.
+  //
+  // It deliberately forms NO belief in anybody. A burn is one person shouting
+  // on their way out of a door, and how much of it sticks is residue: threads,
+  // cooldowns and the castle event pool, which Plan 4 owns. Wiring the
+  // consequence here would build that mechanism twice, in the wrong file and
+  // without the decay Plan 4 needs. Generation and record are wired now, so
+  // nothing rebuilds the speech itself. Measured inert: suppressing this call
+  // moves early lift by under 1pp across five 200-season blocks, which is the
+  // rng stream shifting and nothing else.
+  round.exitSpeech = exitSpeech(banished, ep, rng);
   return { ...round, wasTraitor, tally: tally(ballots) };
 }

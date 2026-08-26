@@ -344,9 +344,38 @@ export function revealCascade(name, wasTraitor, ep, rng = Math.random) {
 
 // How loud each murder-shaped inference is. Smaller than the ballot weights on
 // purpose: a murder is one data point a night, and the ballot record is many.
+// THE TWO CHANNELS ARE PRICED DIFFERENTLY BECAUSE THEY CARRY DIFFERENT AMOUNTS
+// OF INFORMATION. These used to be declared at 0.30/0.36 and multiplied by a
+// bare 1.6 at each call site — a multiplier copied from a ballot weight that
+// has since been deleted — so the table said 0.36 and the engine used 0.576.
+// A constant that does not name the number the engine uses is not
+// documentation. Both are now the confidence actually passed to learn().
+//
+// Measured over 200 wired seasons, against the 20.5% Traitor base rate at the
+// table — how often each channel's indictment lands on a real Traitor:
+//
+//   pushedThenDied  30.4%  ->  1.45x base. A real signal. Unchanged at 0.48.
+//   clashTraced     20.3%  ->  1.00x base. NONE, and it cannot have any:
+//                   formPreference PENALISES murdering somebody you visibly
+//                   clashed with, so a clash with the victim is uncorrelated
+//                   with guilt by construction of the conclave itself.
+//
+// That does not make it worthless — it makes it a FALSE-POSITIVE GENERATOR,
+// and a deliberate one. The person who made no secret of hating the victim is
+// the obvious suspect at breakfast and is almost always innocent, which is
+// exactly the mistake this format is made of. But pricing it at 0.576 made the
+// loudest belief in the engine the one carrying the least information, which
+// diluted every board it touched.
+//
+// The comparison that sets the number is pairSilence, this engine's OTHER
+// deliberate false-positive generator, capped at 0.24 with a written argument
+// for why it must stay weak. This is the same kind of thing and is now priced
+// the same. Measured effect of 0.576 -> 0.24 over five disjoint 200-season
+// blocks: early lift mean 4.0pp -> 3.1pp with 5/5 blocks under the +5pp band
+// (was 2/5), late lift mean 16.4pp -> 18.4pp, board precision 1.78x -> 1.83x.
 const M = {
-  pushedThenDied:  0.30,   // you wanted them gone, and they went
-  clashTraced:     0.36,   // murderCost named you
+  pushedThenDied:  0.48,   // you wanted them gone, and they went
+  clashTraced:     0.24,   // murderCost named you — a suspect, not a signal
 };
 
 /**
@@ -376,11 +405,22 @@ export function murderEvidence(ep, rng = Math.random) {
   // the VP and by a later plan's counting argument. Recorded for both.
   const blocked = (gs.tr?.blockedMurders || []).some(b => b.ep === round.ep);
 
-  if (round.murdered && !blocked) {
+  // THE ATTEMPT, not the death — and the difference is what keeps `!blocked`
+  // load-bearing. The harness records `murderTarget` on every night the
+  // conclave chose somebody and `murdered` only when they actually died, so a
+  // blocked night carries a target and `!blocked` is the only thing suppressing
+  // it. Reading `round.murdered` alone would make a blocked night `null`
+  // anyway, `!blocked` would never do any work, and the suppression test would
+  // be green because its state was unreachable rather than because suppression
+  // works. `?? round.murdered` keeps older round records (and fixtures that
+  // record only the death) reading correctly.
+  const victim = round.murderTarget ?? round.murdered;
+
+  if (victim && !blocked) {
     // You pushed their name at the table, and that night they died.
     const pushers = new Set([
-      ...(round.accusations || []).filter(a => a.target === round.murdered).map(a => a.accuser),
-      ...(round.ballots || []).filter(b => b.channel === 'banishment' && b.voted === round.murdered)
+      ...(round.accusations || []).filter(a => a.target === victim).map(a => a.accuser),
+      ...(round.ballots || []).filter(b => b.channel === 'banishment' && b.voted === victim)
         .map(b => b.voter),
     ]);
     for (const pusher of pushers) {
@@ -388,8 +428,8 @@ export function murderEvidence(ep, rng = Math.random) {
       for (const observer of living) {
         if (observer === pusher) continue;
         const belief = learn(observer, alignmentFactId(pusher), {
-          source: `wanted ${round.murdered} gone the night ${round.murdered} died`,
-          sourceType: 'deduced', confidence: M.pushedThenDied * 1.6, ep, rng,
+          source: `wanted ${victim} gone the night ${victim} died`,
+          sourceType: 'deduced', confidence: M.pushedThenDied, ep, rng,
         });
         if (belief) formed.push({ observer, subject: pusher, ep: round.ep, kind: 'pushed-then-died' });
       }
@@ -401,8 +441,8 @@ export function murderEvidence(ep, rng = Math.random) {
       for (const observer of living) {
         if (observer === blamed) continue;
         const belief = learn(observer, alignmentFactId(blamed), {
-          source: `made no secret of hating ${round.murdered}`,
-          sourceType: 'deduced', confidence: M.clashTraced * 1.6, ep, rng,
+          source: `made no secret of hating ${victim}`,
+          sourceType: 'deduced', confidence: M.clashTraced, ep, rng,
         });
         if (belief) formed.push({ observer, subject: blamed, ep: round.ep, kind: 'clash-traced' });
       }

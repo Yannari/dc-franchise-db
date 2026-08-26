@@ -192,7 +192,25 @@ export function murderCost(target, reason, ep) {
   // clashed with — the clash is real evidence either way, so it must not be
   // dropped just because the heat check reported first. Compute it once, up
   // front, and hand it out under whichever `kind` wins.
-  const clashed = livingTraitors(ep).filter(t => getBond(t, target) <= -6);
+  //
+  // WHO THE ROOM CAN REACH FOR, AND WHY IT IS NOT ONLY TRAITORS.
+  //
+  // A visible clash is PUBLIC. At breakfast the castle reaches for whoever
+  // made no secret of hating the person who is missing, and it cannot tell
+  // whether that person is a Traitor — which is the entire reason this channel
+  // is worth having, because it manufactures the format's best false positive.
+  //
+  // This used to read `livingTraitors(ep).filter(...)`, which made the source
+  // an ORACLE rather than evidence: measured over 200 seasons of the wired
+  // engine it named a Traitor 84 times out of 84, at a belief confidence of
+  // 0.58, and no Faithful could ever be blamed by it. Its cost was +4.9pp of
+  // EARLY lift on its own — the room reading sharp on night three, which is
+  // precisely the one thing the calibration's early band exists to forbid.
+  const clashed = (gs.activePlayers || [])
+    .filter(n => n !== target && getBond(n, target) <= -6);
+  // The COST, unlike the blame, IS a Traitor question: the kill only hurts the
+  // pact if one of the names the room can now reach for happens to be theirs.
+  const tracedToPact = clashed.some(n => livingTraitors(ep).includes(n));
 
   // The room was already spending itself on this person. Killing them hands
   // the Faithfuls their votes back and forces them to hunt properly.
@@ -200,7 +218,7 @@ export function murderCost(target, reason, ep) {
 
   // A Traitor who visibly hated the victim is the first name the room reaches
   // for at breakfast, and it is reaching correctly.
-  if (clashed.length) return { kind: 'clash-traced', cost: 0.5, blames: clashed };
+  if (clashed.length) return { kind: 'clash-traced', cost: tracedToPact ? 0.5 : 0, blames: clashed };
 
   return { kind: 'clean', cost: 0, blames: [] };
 }

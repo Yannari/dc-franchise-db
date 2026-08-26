@@ -10,6 +10,7 @@
 // is a DESIGN failure, not a flaky test — do not widen a band to make it pass.
 import { describe, expect, it } from 'vitest';
 import { gs, setPlayers } from '../js/core.js';
+import { pStats } from '../js/players.js';
 import { learn } from '../js/knowledge.js';
 import { alignmentFactId, ballotEvidence, suspicionBoard } from '../js/tr/deduction.js';
 import { alignmentAt } from '../js/tr/roles.js';
@@ -397,6 +398,73 @@ describe('the castle, measured over many seasons', () => {
     expect(engine.precision,
       'the engine reads no better than pure noise does when it has a read at all')
       .toBeGreaterThan(placebo.precision + 0.15);
+  });
+
+  // ── THE TWO BANDS THIS PLAN EARNS ─────────────────────────────────
+  it('MURDERS THE COALITION: the victim is better connected than average', () => {
+    // The visibility trap, from the Traitors' side: murder is the only tool
+    // that works on somebody the table will never remove, so a conclave that
+    // is reasoning at all should skew toward the well-liked. If this fails,
+    // the conclave is picking at random and the tool-allocation term in
+    // formPreference is inert.
+    //
+    // The field is every living player at the moment of the attempt, the
+    // victim included. Including them biases the comparison AGAINST the claim,
+    // which is the direction a band should be wrong in.
+    let victimSocial = 0, victims = 0, fieldSocial = 0, field = 0;
+    seasons.forEach(s => s.log.forEach(r => {
+      if (!r.murdered) return;
+      victimSocial += (pStats(r.murdered).social || 5); victims++;
+      (r.livingAtMurder || []).forEach(n => { fieldSocial += (pStats(n).social || 5); field++; });
+    }));
+    expect(victims, 'no murders happened at all').toBeGreaterThan(200);
+    expect(field, 'the harness recorded no living field to compare against').toBeGreaterThan(2000);
+    const vAvg = victimSocial / victims, fAvg = fieldSocial / field;
+    console.log(`victim social ${vAvg.toFixed(2)} vs field ${fAvg.toFixed(2)} `
+      + `(+${(vAvg - fAvg).toFixed(2)}) over ${victims} murders`);
+    // Measured +0.92 to +1.05 across five disjoint 200-season blocks. The band
+    // is the plan's own wording — above the living average — rather than a
+    // margin, because the margin is a property of how the roster's `social`
+    // happens to be distributed and a future roster would move it without any
+    // change to the conclave. The margin band below sits at roughly half the
+    // smallest measured value (0.92), which is headroom no random picker could
+    // reach — a random victim scores +0.00 by definition.
+    expect(vAvg, 'the conclave murders at random — tool allocation is inert')
+      .toBeGreaterThan(fAvg);
+    expect(vAvg - fAvg, 'the skew toward the well-liked has collapsed to noise')
+      .toBeGreaterThan(0.5);
+  });
+
+  // A BLOCKED MURDER IS VISIBLE — AND TODAY IT STRUCTURALLY CANNOT HAPPEN.
+  //
+  // This is the band the plan asks for, inverted into a TRIPWIRE, and the
+  // inversion is the honest form of it right now. `grantShield` has exactly one
+  // caller in the whole repo and it is tests/tr-murder.test.js: Shields are won
+  // in missions, missions are Plan 5, and until they exist no season can
+  // produce a night where nobody dies. Writing `toBeGreaterThan(0)` today would
+  // be a band that is red on arrival and would be "fixed" by someone deleting
+  // it; asserting the zero says the same thing and cannot be silently lost.
+  //
+  // PLAN 5 MUST REPLACE THIS. The moment a mission awards a Shield this test
+  // goes red, and the correct response is to measure the blocked-murder count
+  // and swap the assertion for the plan's original:
+  //     expect(blocked, 'the shield path never fired').toBeGreaterThan(0);
+  //
+  // The path itself is NOT unexercised in the meantime — tests/tr-murder.test.js
+  // grants a Shield directly and asserts that the murder is blocked, that the
+  // Shield is spent anyway, that the attempt is recorded, and (in
+  // tr-murder.test.js's suppression test) that a blocked night forms no belief
+  // while an otherwise identical unblocked night does. What is untested is only
+  // whether a SEASON ever reaches that state on its own, and today it cannot.
+  it('A BLOCKED MURDER IS VISIBLE: awaiting Plan 5 — nothing grants a shield yet', () => {
+    const blocked = seasons.reduce((n, s) => n + (s.blockedMurders?.length || 0), 0);
+    const murders = seasons.reduce((n, s) => n + s.log.filter(r => r.murdered).length, 0);
+    console.log(`blocked murders across ${seasons.length} seasons: ${blocked} `
+      + `(against ${murders} completed murders) — structurally zero until missions exist`);
+    expect(murders, 'no murders at all: this comparison would be vacuous').toBeGreaterThan(200);
+    expect(blocked,
+      'A SHIELD FIRED IN A SEASON. Plan 5 has landed: measure the count and replace '
+      + 'this tripwire with expect(blocked).toBeGreaterThan(0).').toBe(0);
   });
 
   it('replays identically from a seed', () => {

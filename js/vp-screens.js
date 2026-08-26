@@ -41,6 +41,7 @@ import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
 import { rpBuildBBHidden } from './vp-bb-hidden.js';
 import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
 import { rpBuildBBChainOfSafety } from './vp-bb-chain.js';
+import { rpBuildBBAudienceVote } from './vp-bb-audience-vote.js';
 import { rpBuildBBWildcard } from './vp-bb-wildcard.js';
 import { rpBuildBBCampDirector } from './vp-bb-camp-director.js';
 import { rpBuildBBNightmare } from './vp-bb-nightmare.js';
@@ -24070,22 +24071,11 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       }
       case 'americas-eviction-vote': {
+        const avDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-avote'), label: "America's Vote",
-          html: _bbSceneScreen(view, {
-            eyebrow: `Week ${view.num}`, title: 'AMERICA HAS VOTED',
-            accent: 'var(--bbx-bad)', room: 'bb-live',
-            subtitle: 'Cast by people the house cannot campaign to.',
-            stateKey: `bb_av_${view.num}${view?._seg ? `_s${view._seg}` : ''}`,
-            scenes: [
-              { text: `The public has been voting all week. They vote to evict ${act.target}`
-                + `${act.weight > 1 ? `, and that vote carries the weight of ${act.weight} houseguests`
-                  : ''} — read out on eviction night alongside the ballots, in the same tally.`
-                + `${(act.tally || []).length
-                  ? ` The split: ${act.tally.map(t => `${t.name} ${t.share}%`).join(', ')}.`
-                  : ''}`,
-              players: [act.target], badgeText: "AMERICA'S VOTE", badgeClass: 'red' },
-              ..._bbOwnBeats(act),
-            ],
+          html: rpBuildBBAudienceVote(view, act, avDeps, {
+            title: 'AMERICA HAS VOTED',
+            sub: 'Seven days of voting, read out in one sentence.',
           }) });
         break;
       }

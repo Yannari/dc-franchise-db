@@ -1570,10 +1570,14 @@ export function summariseWeek(week) {
       }
       case 'americas-eviction-vote': {
         line('');
-        line("AMERICA'S EVICTION VOTE");
-        line(`  The audience votes to evict ${act.target}`
-          + `${act.weight > 1 ? `, worth ${act.weight} votes` : ''}.`);
-        (act.tally || []).forEach(t => line(`  ${t.name}: ${t.share}%`));
+        line('THE PUBLIC VOTE');
+        if (act.closing) line(`  "${act.closing}"`);
+        const avOrder = act.reveal
+          || [...(act.tally || [])].sort((a, b) => (a.share || 0) - (b.share || 0));
+        avOrder.forEach(t => line(t.name === act.target
+          ? `  ${act.resultLine || `${t.name} — ${t.share}%.`}`
+          : `    ${t.name} — ${t.share}%.`));
+        if (act.weight > 1) line(`  Worth ${act.weight} ballots.`);
         break;
       }
       case 'safety-suite': {

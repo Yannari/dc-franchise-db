@@ -17,6 +17,7 @@ import { runCoinOfDestiny, coinNominations, COIN_PRICE } from './coin-of-destiny
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
 import { runChainOfSafety, chainSafe, chainFallout } from './chain-of-safety.js';
 import { runAudienceVote } from '../audience.js';
+import { buildAudienceReveal } from './audience-reveal.js';
 import { runWildcard, wildcardSafe } from './wildcard.js';
 import { openRoom, roomGameForNight, ROOM_GAMES } from './high-rollers-room.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
@@ -6302,17 +6303,21 @@ export function simulateBBWeek(options = {}) {
       if (av?.winner) {
         const weight = Math.max(1, Math.min(3, Number(options.avWeight) || 1));
         votes[av.winner] = (votes[av.winner] || 0) + weight;
+        // THE SUSPENSE IS DATA, NOT DECORATION.
+        //
+        // A result read out flat is the same sentence every week. What makes a
+        // public vote worth watching is the SHAPE of it — whether the house
+        // has been told something it already suspected or something it has no
+        // answer for — so the shape is computed here and both the transcript
+        // and the screen build their reveal out of it.
+        const board = buildAudienceReveal({
+          tally: av.tally, target: av.winner, verb: 'evict', weight,
+        });
         week.americasVote = { target: av.winner, tally: av.tally, weight,
-          nominees: [...nominees] };
+          nominees: [...nominees], ...board };
         week.acts.push(addBeats({
           type: 'americas-eviction-vote', target: av.winner, tally: av.tally,
-          weight, nominees: [...nominees],
-          beats: [{
-            text: `The audience has been voting all week, and it votes to evict ${av.winner}`
-              + `${weight > 1 ? ` — with the weight of ${weight} houseguests` : ''}. `
-              + `It goes into the tally with the house's, and nobody in that room got a say in it.`,
-            players: [av.winner], badgeText: "AMERICA'S VOTE", badgeClass: 'red',
-          }],
+          weight, nominees: [...nominees], ...board,
         }, { nominees: [av.winner] }));
       }
     } catch { week.americasVote = null; }

@@ -18,6 +18,8 @@ import { ordinal } from '../js/finale.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { runAudienceVote } from '../js/audience.js';
+import { buildAudienceReveal, voteShape } from '../js/bb/audience-reveal.js';
+import { rpBuildBBAudienceVote } from '../js/vp-bb-audience-vote.js';
 import { resolveWeekTwistState, BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { seedGame } from './helpers/setup.js';
 
@@ -139,12 +141,15 @@ describe('the week', () => {
 });
 
 describe('reaching the audience', () => {
-  it('reads the public split out in the transcript', () => {
+  it('reads every share out, and the winning one in a full sentence', () => {
+    // The flat version this replaced printed a heading, one summary line and
+    // a percentage list. It said what happened and none of how it happened.
     const { ep, week } = playVote();
     const text = generateSummaryText(ep) || '';
-    expect(text).toContain("AMERICA'S EVICTION VOTE");
-    expect(text).toContain(`The audience votes to evict ${week.americasVote.target}`);
-    expect(text).toContain('How the public split:');
+    const av = week.americasVote;
+    expect(text).toContain('THE PUBLIC VOTE');
+    for (const r of av.tally) expect(text).toContain(`${r.share}%`);
+    expect(text).toContain(av.resultLine);
   });
 
   it('does not open the week with a joke about winning a competition', () => {
@@ -162,5 +167,118 @@ describe('reaching the audience', () => {
     const screen = buildBBWeekScreens(ep).find(s => s.id === 'bb-avote');
     expect(screen, 'the audience voted and drew nothing').toBeTruthy();
     expect(screen.label).toBe("America's Vote");
+  });
+});
+
+describe('reading the result out', () => {
+  // The reveal is its own object, deliberately show-agnostic and
+  // verb-agnostic: a public vote to SAVE in another format is the same
+  // broadcast beat pointed the other way and should reuse all of this.
+  const tally3 = [{ name: 'Ida', share: 55 }, { name: 'Bo', share: 30 }, { name: 'Cy', share: 15 }];
+
+  it('reads the numbers upward, with the name last', () => {
+    const b = buildAudienceReveal({ tally: tally3, target: 'Ida', rng: () => 0.4 });
+    expect(b.reveal.map(r => r.name)).toEqual(['Cy', 'Bo', 'Ida']);
+    expect(b.reveal[b.reveal.length - 1].name).toBe('Ida');
+  });
+
+  it('knows what kind of night it was', () => {
+    expect(voteShape([{ share: 80 }, { share: 20 }])).toBe('landslide');
+    expect(voteShape([{ share: 60 }, { share: 40 }])).toBe('clear');
+    expect(voteShape([{ share: 54 }, { share: 46 }])).toBe('close');
+    expect(voteShape([{ share: 51 }, { share: 49 }])).toBe('knife-edge');
+    // And the stall is chosen off it, so a landslide and a photo finish do
+    // not get the same sentence.
+    const land = buildAudienceReveal({ tally: [{ name: 'A', share: 90 }, { name: 'B', share: 10 }], target: 'A', rng: () => 0 });
+    const edge = buildAudienceReveal({ tally: [{ name: 'A', share: 51 }, { name: 'B', share: 49 }], target: 'A', rng: () => 0 });
+    expect(land.tease).not.toBe(edge.tease);
+    expect(edge.margin).toBeCloseTo(2, 5);
+  });
+
+  it('says the right verb for the format asking', () => {
+    // Secret Story will want the same machinery pointed at SAVE.
+    const save = buildAudienceReveal({ tally: tally3, target: 'Ida', verb: 'save', rng: () => 0 });
+    expect(save.resultLine).toMatch(/safe/i);
+    expect(save.address).toMatch(/save/i);
+    const evict = buildAudienceReveal({ tally: tally3, target: 'Ida', verb: 'evict', rng: () => 0 });
+    expect(evict.resultLine).not.toMatch(/safe/i);
+  });
+});
+
+describe('the screen', () => {
+  const deps = () => {
+    const tvState = {};
+    return { tvState, reveal: () => '', esc: x => String(x), avatar: () => '' };
+  };
+  const actFor = (tally, target) => ({
+    type: 'americas-eviction-vote', target, tally, weight: 1, nominees: tally.map(t => t.name),
+    ...buildAudienceReveal({ tally, target, rng: () => 0 }),
+  });
+
+  it('does not give a two-way vote away with the loser’s number', () => {
+    // With two names the first number IS the answer, because the other is a
+    // hundred minus it. Both bars have to land together on the name.
+    const act = actFor([{ name: 'Ida', share: 78 }, { name: 'Bo', share: 22 }], 'Ida');
+    const d = deps();
+    const ep = { num: 4 };
+    let seen = [];
+    for (let idx = -1; idx <= 4; idx++) {
+      d.tvState[`bb_avote_${ep.num}`] = { idx };
+      const html = rpBuildBBAudienceVote(ep, act, d);
+      seen.push((html.match(/bbav-row is-in/g) || []).length);
+    }
+    // Nothing on the board until the name is read, then both at once.
+    expect(seen.slice(0, 4)).toEqual([0, 0, 0, 0]);
+    expect(seen[4]).toBe(2);
+  });
+
+  it('reveals a three-way one bar at a time, losers first', () => {
+    const act = actFor(
+      [{ name: 'Ida', share: 55 }, { name: 'Bo', share: 30 }, { name: 'Cy', share: 15 }], 'Ida');
+    const d = deps();
+    const ep = { num: 4 };
+    const at = idx => {
+      d.tvState[`bb_avote_${ep.num}`] = { idx };
+      return rpBuildBBAudienceVote(ep, act, d);
+    };
+    // Cy first, then Bo, and Ida only when the name is read.
+    expect(at(3)).toContain('>Cy<');
+    expect(at(3), 'the winner was on the board before the name').not.toContain('>Ida<');
+    expect(at(4)).toContain('>Bo<');
+    expect(at(4), 'the winner was on the board before the name').not.toContain('>Ida<');
+    expect(at(5)).toContain('>Ida<');
+  });
+
+  it('names the shape of the night once the numbers are out', () => {
+    const act = actFor([{ name: 'Ida', share: 88 }, { name: 'Bo', share: 12 }], 'Ida');
+    const d = deps();
+    d.tvState['bb_avote_4'] = { idx: 9 };
+    expect(rpBuildBBAudienceVote({ num: 4 }, act, d)).toContain('A LANDSLIDE');
+  });
+});
+
+describe('the transcript reads like the broadcast', () => {
+  it('stalls before it says the name, and says the name last', () => {
+    const { ep, week } = playVote();
+    const text = generateSummaryText(ep) || '';
+    const av = week.americasVote;
+    expect(text).toContain('THE PUBLIC VOTE');
+    expect(text).toContain(av.closing);
+    expect(text).toContain(av.tease);
+    // The result line comes AFTER every losing number.
+    const resultAt = text.indexOf(av.resultLine);
+    expect(resultAt).toBeGreaterThan(-1);
+    for (const r of av.reveal.filter(x => x.name !== av.target)) {
+      expect(text.indexOf(`${r.name} — ${r.share}%`)).toBeLessThan(resultAt);
+    }
+  });
+
+  it('does not narrate the same result twice', () => {
+    // The first version drew a scene card AND a beat card that said the same
+    // thing in the same words, one under the other.
+    const { ep } = playVote();
+    const text = generateSummaryText(ep) || '';
+    const dupe = 'The audience has been voting all week';
+    expect(text.split(dupe).length - 1).toBeLessThan(2);
   });
 });

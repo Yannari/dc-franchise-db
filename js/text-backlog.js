@@ -5469,16 +5469,29 @@ export function generateBBSummaryText(ep) {
         break;
       }
       case 'americas-eviction-vote': {
-        sec("AMERICA'S EVICTION VOTE");
-        ln(`  The audience votes to evict ${act.target}`
-          + `${act.weight > 1 ? `, with the weight of ${act.weight} houseguests` : ''}.`);
-        if ((act.tally || []).length) {
+        sec("THE PUBLIC VOTE");
+        // Read out in the order the room heard it — lines closed, what they
+        // were asked, the stall, then the numbers from the lowest upward with
+        // the name last. A transcript that opened with the result would be
+        // telling the reader the answer and then narrating the suspense.
+        if (act.closing) ln(`  "${act.closing}"`);
+        if (act.address) { ln(''); ln(`  "${act.address}"`); }
+        if (act.tease) { ln(''); ln(`  "${act.tease}"`); }
+        ln('');
+        const order = act.reveal
+          || [...(act.tally || [])].sort((a, b) => (a.share || 0) - (b.share || 0));
+        for (const r of order) {
+          ln(r.name === act.target
+            ? `  "${act.resultLine || `${r.name} — ${r.share}%.`}"`
+            : `    ${r.name} — ${r.share}%.`);
+        }
+        if (act.shape === 'knife-edge' || act.shape === 'close') {
           ln('');
-          ln('  How the public split:');
-          act.tally.forEach(t => ln(`    ${t.name}: ${t.share}%`));
+          ln(`  ${act.margin} points between them.`);
         }
         ln('');
-        ln('  It goes into the tally with the house’s.');
+        ln(`  It goes into the tally with the house’s${act.weight > 1
+          ? `, ${act.weight} times` : ''}. Nobody in that room had a say in it.`);
         beats(act);
         break;
       }

@@ -252,6 +252,12 @@ describe('reading the murder', () => {
     gs.activePlayers = CAST.filter(n => n !== victim);
     const first = murderEvidence(3, seededRng(2));
     const second = murderEvidence(4, seededRng(2));
+    // THE FLOOR IS WHAT MAKES THE ZERO MEAN ANYTHING. Without it this test
+    // passes on `murderEvidence = () => []` — "never emitted" and "emitted
+    // exactly once" are the same assertion once the second half is all you
+    // check. Proven by stubbing: the emptied function passed, and fails here.
+    expect(first.filter(e => e.ep === 2).length,
+      'episode 2 emitted nothing at all -- "exactly once" is vacuous').toBeGreaterThan(0);
     expect(second.filter(e => e.ep === 2), 'episode 2 was re-read in episode 4').toHaveLength(0);
   });
 

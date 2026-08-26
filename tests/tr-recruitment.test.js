@@ -217,15 +217,42 @@ describe('the way somebody leaves', () => {
     expect(fresh, 'tenure made no difference to whether an ally-having Traitor burns').toBeGreaterThan(founder);
   });
 
-  it('a burn names somebody real, and never the speaker', () => {
+  it('a burn names somebody real, in the text, and never the speaker', () => {
+    // WHY THIS TEST HAS A COUNTER AND AN ASSERTION ABOUT THE TEXT.
+    //
+    // What stood here was two assertions inside `if (sp.burns)` and nothing
+    // else, and it could not fail three separate ways. Stub exitSpeech so
+    // `burns` is never true and the loop body never runs: green. Both inner
+    // assertions were also true BY CONSTRUCTION — `target` is only ever drawn
+    // from `gs.activePlayers`, and both branches of exitSpeech already filter
+    // `n !== name`, so neither could go red on any implementation that
+    // compiles. Three assertions, no coverage.
+    //
+    // So: a floor on how often a burn actually happens (a fresh recruit at
+    // tenure 1 carries the +0.35 rare-state amplification and burns most
+    // nights — measured 30/40 here), and an assertion with CONTENT: the name
+    // must appear in the sentence the show would print, and a non-burn must
+    // carry no name at all, which is the contract exitSpeech documents.
     offerRecruitment(CAST[5], 4, () => 0.01, { mode: 'note' });
+    let burns = 0, quiet = 0;
     for (let s = 1; s <= 40; s++) {
       const sp = exitSpeech(CAST[5], 5, seededRng(s));
       if (sp.burns) {
+        burns++;
         expect(gs.activePlayers).toContain(sp.target);
         expect(sp.target).not.toBe(CAST[5]);
+        // The name has to reach the page, not just the object.
+        expect(sp.text, 'a burn produced text that does not name the person burned')
+          .toContain(sp.target);
+        expect(sp.text).toContain(CAST[5]);
+      } else {
+        quiet++;
+        expect(sp.target, 'a speech that says nothing useful still carried a name').toBe(null);
       }
     }
+    console.log(`[population] fresh recruit burns ${burns}/40, silent ${quiet}/40`);
+    expect(burns, 'nobody ever burned anybody -- every assertion above was skipped')
+      .toBeGreaterThan(10);
   });
 
   it('a low-loyalty faithful burns far more often than a high-loyalty one, and can be wrong about who', () => {

@@ -75,3 +75,54 @@ export function agendaMix({ stats, archetype, vulnerability = 0 }) {
 export function dominantAgenda(mix) {
   return Object.entries(mix).sort((a, b) => b[1] - a[1])[0][0];
 }
+
+const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+  'loyalty', 'boldness', 'intuition', 'temperament'];
+
+/** You teach what you are good at. Ties go to the earlier key, deterministically. */
+export function teachableStat(coachStats) {
+  return STAT_KEYS.reduce((best, k) => (coachStats[k] > coachStats[best] ? k : best), STAT_KEYS[0]);
+}
+
+/**
+ * What one session moves.
+ *
+ * Centred on 5: above it a coach helps, below it they do damage. Bond scales
+ * it because you teach best whoever trusts you, and a contestant who resents
+ * their coach learns nothing from him.
+ */
+export function sessionGain(coachStat, bond, roll = Math.random) {
+  const skill = (coachStat - 5) / 5;              // −1 .. +1
+  const trust = 1 + (bond / 20);                  // bond is −10..+10
+  const noise = 0.75 + roll() * 0.5;              // ×0.75 .. ×1.25
+  return skill * trust * noise;
+}
+
+/**
+ * Who a coach spends their sessions on.
+ *
+ * Weighted and summed, never thresholded. The agenda mix supplies the weights,
+ * so the same candidate list produces different picks for a challenge-beast
+ * and a mastermind — and different picks for two masterminds whose loyalty
+ * differs.
+ */
+export function pickSessionTargets({ coach, candidates, sessions, roll = Math.random }) {
+  const mix = agendaMix({ stats: coach.stats, archetype: coach.archetype, vulnerability: coach.vulnerability });
+  const discipline = teachableStat(coach.stats);
+
+  const scored = candidates.map(c => {
+    const gain   = (10 - (c.stats[discipline] ?? 5)) / 10;
+    const swing  = ((c.stats.social + c.stats.strategic) / 20);
+    const bond   = (c.bond + 10) / 20;
+    const risk   = c.atRisk || 0;
+    const score = mix.win     * gain
+                + mix.control * swing
+                + mix.support * (gain * 0.6 + risk * 0.4)
+                + mix.survive * swing
+                + mix.disrupt * (0.5 + (roll() - 0.5))
+                + 0.15 * bond;
+    return { name: c.name, score };
+  });
+
+  return scored.sort((a, b) => b.score - a.score).slice(0, sessions).map(s => s.name);
+}

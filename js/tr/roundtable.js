@@ -110,8 +110,22 @@ export function runRoundTable(ep, rng = Math.random) {
     result = resolveVotes(tally(rvBallots));
     if (result.isTie && !voters.length) break;
   }
+  // The last-resort draw, and the reason it is written this defensively.
+  //
+  // When every living player draws exactly one vote, `tiedPlayers` is the whole
+  // room, the revote has no eligible voters, and `resolveVotes({})` hands back an
+  // EMPTY `tiedPlayers`. `|| living` does not rescue that: `[]` is truthy, so the
+  // fallback never fires and `[][NaN]` is `undefined`. A round then banishes
+  // nobody — the season silently skips a banishment, the round drops out of
+  // `ballotEvidence` forever, and `revealCascade(undefined, ...)` teaches every
+  // living player a `public`-certainty alignment about a person who does not
+  // exist. Fall back on EMPTINESS, never on presence.
+  const drawPool = (result.tiedPlayers && result.tiedPlayers.length)
+    ? result.tiedPlayers
+    : living;
   const banished = result.eliminated
-    || (result.tiedPlayers || living)[Math.floor(rng() * ((result.tiedPlayers || living).length))];
+    || (drawPool.length ? drawPool[Math.floor(rng() * drawPool.length)] : null);
+  if (!banished) return null;   // an empty castle has nobody to banish
 
   const wasTraitor = alignmentAt(banished, ep) === 'traitor';
   const round = { ep, banished, banishedWasTraitor: wasTraitor, murdered: null,

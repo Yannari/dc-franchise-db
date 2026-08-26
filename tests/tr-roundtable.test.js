@@ -119,6 +119,36 @@ describe('the banishment', () => {
     expect(found.banished).toBeTruthy();          // a tie must still resolve
   });
 
+  it('BANISHES A REAL PERSON even when the whole room ties', () => {
+    // The degenerate table: every living player draws one vote, so `tiedPlayers`
+    // is the whole room, the revote has NO eligible voters, and resolveVotes({})
+    // comes back with an EMPTY tiedPlayers. A `|| living` fallback does not save
+    // this — `[]` is truthy, so `[][NaN]` is `undefined` — and the round then
+    // banishes nobody, drops out of the evidence stream forever, and teaches the
+    // whole castle a `public`-certainty alignment about a person who does not
+    // exist. Measured at ~0.2% of rounds in a 20-cast; trivially reproducible in
+    // a small one, which is where the endgame lives.
+    const SMALL = ['Gwen', 'Duncan', 'Heather'];
+    let sawTie = false;
+    for (let seed = 1; seed <= 40; seed++) {
+      setGs({ bonds: {}, activePlayers: [...SMALL] });
+      gs.tr = initTraitorsState();
+      resetKnowledge();
+      recordAlignment('Gwen', true, 1, 'selection');
+      recordAlignment('Duncan', false, 1, 'selection');
+      recordAlignment('Heather', false, 1, 'selection');
+      seedTraitorKnowledge(1);
+      const r = runRoundTable(2, seededRng(seed));
+      if (r.revotes.length) sawTie = true;
+      expect(SMALL, `seed ${seed} banished a non-player`).toContain(r.banished);
+      expect(gs.tr.rounds.every(x => x.banished),
+        `seed ${seed} stored a round with no banishment`).toBe(true);
+      expect(gs.knowledge['alignment:undefined'],
+        `seed ${seed} taught the castle about a player who does not exist`).toBeUndefined();
+    }
+    expect(sawTie, 'no tie occurred at all — this test proved nothing').toBe(true);
+  });
+
   it('is deterministic for a seed — a season has to replay', () => {
     // Determinism means the same WORLD plus the same seed replays identically —
     // not that a second run started with the first run's leftover Round Table

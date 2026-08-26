@@ -63,6 +63,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
 
     ballotEvidence(ep, rng);
     const r = runRoundTable(ep, rng);
+    if (!r) break;   // an empty castle: nothing left to banish
     const murdered = livingTraitors(ep).length ? _placeholderMurder(ep, rng) : null;
     // aliveAtVote/traitorsAtVote are the population as it stood when the ballots
     // were cast, and they are DATA, not behaviour — nothing in the engine reads

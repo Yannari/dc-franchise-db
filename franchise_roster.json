@@ -4754,6 +4754,25 @@
         "temperament": 7
       },
       "profileSources": {}
+    },
+    {
+      "name": "Nura",
+      "slug": "nura",
+      "gender": "f",
+      "sexuality": "lesbian",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 7,
+        "social": 2,
+        "strategic": 5,
+        "loyalty": 6,
+        "boldness": 6,
+        "intuition": 6,
+        "temperament": 2
+      },
+      "profileSources": {}
     }
   ]
 }

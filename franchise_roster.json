@@ -4656,12 +4656,15 @@
           }
         ]
       },
+      "age": 21,
       "birthdate": "2005-10-25",
       "ethnicity": "Asian",
       "nationality": "Korean American",
       "hometown": "DC",
       "occupation": "Business student",
-      "descriptor": "The Class President"
+      "descriptor": "The Class President",
+      "backstory": "Before appearing on the show, Ara was a 21-year-old business student. Her family history shaped her guarded view of relationships: her parents left Korea for love, a choice she refuses to repeat, and she was regarded as the golden child in her family. She had dated several people before, but tended to end relationships first out of fear they would hold her back; outside of academics, she enjoyed badminton, journalism, and cooking.",
+      "personality": "Ara is calculating, proud, and intensely goal-driven. Under pressure, she looks for leverage rather than comfort, and she is willing to use secrets, manipulation, revenge, and social embarrassment to get ahead. Her loyalty is conditional: she can cooperate when it benefits her or when she feels comfortable, but she resists vulnerability and struggles with rejection. She will cross many ethical lines for success, but she draws a firm boundary at physical violence."
     },
     {
       "name": "Bruno",
@@ -4680,6 +4683,7 @@
         "temperament": 9
       },
       "sexuality": "straight",
+      "voice": "Bruno talks like an overexcited superfan: quick, eager, and packed with references to contestants, strategies, strengths, and weaknesses. When he argues, he tends to lean on facts, precedent, and show knowledge rather than intimidation, but his excitement can make him blurt things out before he thinks them through. His rhythm is enthusiastic and slightly nervous, especially when he is trying to prove an idea.",
       "profileSources": {
         "backstory": [
           {
@@ -4713,7 +4717,8 @@
       "hometown": "Lima",
       "occupation": "Personal assistant",
       "descriptor": "The Superfan",
-      "voice": "Bruno talks like an overexcited superfan: quick, eager, and packed with references to contestants, strategies, strengths, and weaknesses. When he argues, he tends to lean on facts, precedent, and show knowledge rather than intimidation, but his excitement can make him blurt things out before he thinks them through. His rhythm is enthusiastic and slightly nervous, especially when he is trying to prove an idea."
+      "backstory": "Before appearing on television, Bruno had lived in Hartford, Connecticut and later moved to New York. His parents are Teresa and Alvaro, and his mother made him a hoodie that he treasures as a good-luck gift. He became a personal assistant because the pay was good and because he likes helping others and feeling useful; his boss is named Valerie. He is also strongly connected to his family history, with his grandmother also being named Teresa.",
+      "personality": "Bruno is intensely optimistic, enthusiastic, and knowledge-driven, but pressure can shake his confidence. He wants to be useful and impressive, yet he may need encouragement from stronger personalities when his plans are questioned or fail. He is more likely to motivate, explain, and rally people than to bully them, and he will speak up when excited even if it embarrasses him or creates a strategic mistake. His loyalty reads as cooperative rather than cutthroat: he wants people to believe in his ideas, but he is not naturally ruthless."
     },
     {
       "name": "Dunia",
@@ -4732,6 +4737,7 @@
         "temperament": 8
       },
       "sexuality": "lesbian",
+      "voice": "Dunia talks with an upbeat, performative rhythm, leaning into mystical language, teasing confidence, and wordplay. In conversation or an argument, she is likely to charm first, joke second, and press for emotional honesty while keeping the tone playful rather than openly cruel.",
       "profileSources": {
         "backstory": [
           {
@@ -4765,7 +4771,8 @@
       "hometown": "Montreal",
       "occupation": "Witch / tarot reader",
       "descriptor": "The Tarot Reader",
-      "voice": "Dunia talks with an upbeat, performative rhythm, leaning into mystical language, teasing confidence, and wordplay. In conversation or an argument, she is likely to charm first, joke second, and press for emotional honesty while keeping the tone playful rather than openly cruel."
+      "backstory": "Before appearing on the show, Dunia grew up in Edmonton, Canada. She developed an interest in witchcraft after reading tarot for friends in high school, eventually shaping that into a serious spiritual practice and public identity as a tarot reader and witch.",
+      "personality": "Dunia is relaxed, charismatic, and socially magnetic, especially around people who meet her with optimism and openness. Under pressure, she is more likely to use charm, intuition, and personal mystique than brute force, trying to draw out what others are feeling even if they resist. She is loyal to people whose energy feels positive to her, but she will not tolerate her religion or practice being reduced to a shallow aesthetic or branding gimmick."
     },
     {
       "name": "Ernesto",
@@ -4784,6 +4791,7 @@
         "temperament": 7
       },
       "sexuality": "straight",
+      "voice": "Ernesto speaks like a seasoned mentor: measured, declarative, and fond of framing his opinions as practical guidance. In an argument, he challenges weak logic directly rather than escalating emotionally, using experience-based reasoning and occasionally blunt judgments. His vocabulary can sound formal or paternal, especially when he talks about younger people needing direction.",
       "profileSources": {
         "backstory": [
           {
@@ -4817,7 +4825,8 @@
       "hometown": "Buitrago de Lozoya",
       "occupation": "Corporate trainer",
       "descriptor": "The Elder",
-      "voice": "Ernesto speaks like a seasoned mentor: measured, declarative, and fond of framing his opinions as practical guidance. In an argument, he challenges weak logic directly rather than escalating emotionally, using experience-based reasoning and occasionally blunt judgments. His vocabulary can sound formal or paternal, especially when he talks about younger people needing direction."
+      "backstory": "Before appearing on the show, Ernesto lived a long adult life as a corporate trainer from Spain. He has been married, has children, and is a grandfather. As a child, he helped his mother make gazpacho and spent time reading comics such as Mortadelo and Filemón and Zipi y Zape. In his free time, he enjoys woodcarving, a hobby he finds relaxing and skillful.",
+      "personality": "Ernesto is steady under pressure and trusts age, experience, and preparation to carry him through difficult situations. He wants to be useful and respected, but when ignored he becomes frustrated and can come across as bossy or rude. He is loyal to people who genuinely listen to him, offering advice, encouragement, and warmth in return. He will question a bad plan and refuse to pretend nonsense makes sense, but he is not cruel; even after conflict or disappointment, he can show sympathy and support."
     },
     {
       "name": "Evie",
@@ -4863,12 +4872,15 @@
           }
         ]
       },
+      "age": 59,
       "birthdate": "1967-02-09",
       "ethnicity": "White",
       "nationality": "American",
-      "hometown": "Aspen",
+      "hometown": "Los Angeles",
       "occupation": "Unemployed",
-      "descriptor": "The Heiress"
+      "descriptor": "The Heiress",
+      "backstory": "Evangeline “Evie” Marlowe was born in Los Angeles and comes from extreme inherited wealth as the heiress to the Marlowe Oil Fortune. Her upbringing appears luxurious and family-centered in a privileged way: her mother passed down an ascot to her, and her father gave her horses and a stable. Before appearing on television, she spent much of her life maintaining her looks, lounging at resorts, eating, getting massages, drinking wine, gossiping, and enjoying high-society comforts, while feeling judged as someone who had never worked for anything.",
+      "personality": "Evie behaves like a pampered socialite who wants to be seen as elegant, beautiful, and effortlessly charming, but under pressure she is easily confused, lazy, and prone to avoiding real work. She likes luxury, attention, brunch, travel, and gossip, and she can be petty when criticized, but she is not fundamentally cruel; she is optimistic, socially warm, and capable of leaving setbacks without bitterness. She will play strategically once she understands what is happening, but she will not reliably push herself through boring or difficult tasks."
     },
     {
       "name": "Finn",
@@ -4887,6 +4899,7 @@
         "temperament": 2
       },
       "sexuality": "gay",
+      "voice": "Finn speaks with theatrical confidence and a need to dominate the room. His rhythm is boastful, cutting, and self-aware: he frames insults like performance, mocks other people’s lines, and escalates arguments by turning them into dramatic declarations about ambition and image. When challenged, he leans into sharp put-downs rather than backing off.",
       "profileSources": {
         "backstory": [
           {
@@ -4920,7 +4933,8 @@
       "hometown": "Sydney",
       "occupation": "Performing arts student",
       "descriptor": "The Theater Kid",
-      "voice": "Finn speaks with theatrical confidence and a need to dominate the room. His rhythm is boastful, cutting, and self-aware: he frames insults like performance, mocks other people’s lines, and escalates arguments by turning them into dramatic declarations about ambition and image. When challenged, he leans into sharp put-downs rather than backing off."
+      "backstory": "Finn is a young performing-arts student with big dreams of becoming an actor. He grew up watching Blue Water High and presents himself as unusually talented for his class, school, and generation. He also cares about theatrical craft and personal presentation, including grooming his mustache carefully.",
+      "personality": "Finn is ambitious, entitled, and drama-driven. Under pressure, he gets impatient and heated when things do not go his way, and he is willing to put others down if he feels blocked or disrespected. His loyalty is mostly interest-based: he bonds quickly with people who share his taste for acting, drama, and calculated meanness, but he has trouble hiding disdain for people he dislikes. He will stir conflict, act friendly for advantage, and embrace a villainous image; he will not easily swallow his pride or accept being overlooked."
     },
     {
       "name": "Manu",
@@ -4939,6 +4953,7 @@
         "temperament": 7
       },
       "sexuality": "straight",
+      "voice": "Manu talks in an upbeat, welcoming rush, the kind of person who opens with a big greeting and tries to keep the mood light. His vocabulary leans casual and encouraging, with jokes, smiles, and direct reassurance when someone is embarrassed. In conflict, he becomes firmer and more protective, especially if someone he cares about is being mocked.",
       "profileSources": {
         "backstory": [
           {
@@ -4972,7 +4987,8 @@
       "hometown": "Hawaii",
       "occupation": "Appliance salesman",
       "descriptor": "The Big Brother",
-      "voice": "Manu talks in an upbeat, welcoming rush, the kind of person who opens with a big greeting and tries to keep the mood light. His vocabulary leans casual and encouraging, with jokes, smiles, and direct reassurance when someone is embarrassed. In conflict, he becomes firmer and more protective, especially if someone he cares about is being mocked."
+      "backstory": "Before appearing on the show, Manu worked as an appliance salesman and had a close bond with his younger brother Aleki. His father Fetuu divorced his biological mother Naomi when Manu was 19, though the split was on good terms, and his stepmother is named Leilani. Manu used to go to many parties when he was 20, but after the family changes and Aleki’s birth, he stopped so he could become a better role model for his brother. He is single, has an ex-girlfriend, and describes himself as having become more alone than before while still relying on smiling and laughing to get through life.",
+      "personality": "Manu is optimistic, helpful, and driven by the idea that being reliable matters. Under pressure he can become overwhelmed and indecisive, especially because he knows he is trusting and not naturally strategic, but he still tries to make choices that protect himself and the people he cares about. His loyalty is warm and active: he encourages embarrassed friends, feels bad when others are hurt, and will confront people who mock someone close to him. He will bend when manipulated or frightened, but he will not quietly tolerate cruelty toward his loved ones."
     },
     {
       "name": "Nura",
@@ -4991,6 +5007,7 @@
         "temperament": 2
       },
       "sexuality": "lesbian",
+      "voice": "Nura speaks in a dry, deadpan rhythm, with sarcasm and complaint as her default modes. In an argument, she tends to needle people with blunt pessimistic observations and mock-politeness rather than emotional appeals. Her vocabulary leans cynical and theatrical, turning ordinary annoyances into dark jokes about life, death, and failure.",
       "profileSources": {
         "backstory": [
           {
@@ -5024,7 +5041,8 @@
       "hometown": "San Francisco",
       "occupation": "Retail cashier",
       "descriptor": "The Debbie Downer",
-      "voice": "Nura speaks in a dry, deadpan rhythm, with sarcasm and complaint as her default modes. In an argument, she tends to needle people with blunt pessimistic observations and mock-politeness rather than emotional appeals. Her vocabulary leans cynical and theatrical, turning ordinary annoyances into dark jokes about life, death, and failure."
+      "backstory": "Before appearing on the show, Nura worked as a retail cashier and felt stuck, wanting something more than the life she had. She lived with a roommate named Chelsea, had a habit of writing—especially mellow dramas and tragic comedies—and once abandoned poetry after being rejected by a girl she liked. As a teen, she gave herself an ear piercing at fourteen and played bass in a band at sixteen, though the band only lasted about six months.",
+      "personality": "Nura is gloomy, guarded, and reflexively negative, especially when surrounded by people who are eager to socialize. Under pressure she stays outwardly flat and unimpressed, even around frightening or dangerous situations, but her coldness is not total indifference: she feels guilt over failing to connect and slowly pushes herself to reach out. She is not naturally warm or sympathetic, and she will complain, judge, and withdraw before she comforts someone, but she will not entirely give up on the possibility that she can become closer to others or do more with her life."
     },
     {
       "name": "Oliwia",
@@ -5043,6 +5061,7 @@
         "temperament": 3
       },
       "sexuality": "asexual",
+      "voice": "She speaks in a hesitant, self-conscious rhythm, often pausing before landing on a strangely intense thought. Her vocabulary makes morbid ideas sound tender or artistic, framing death as permanence and preservation rather than horror. In an argument, she is likely to become nervous and pleading, trying to justify herself and win approval instead of staying detached.",
       "profileSources": {
         "backstory": [
           {
@@ -5074,7 +5093,8 @@
       "hometown": "Alaska",
       "occupation": "Taxidermist",
       "descriptor": "The Taxidermist",
-      "voice": "She speaks in a hesitant, self-conscious rhythm, often pausing before landing on a strangely intense thought. Her vocabulary makes morbid ideas sound tender or artistic, framing death as permanence and preservation rather than horror. In an argument, she is likely to become nervous and pleading, trying to justify herself and win approval instead of staying detached."
+      "backstory": "Before appearing on the show, Oliwia worked as a taxidermist and genuinely loved the craft. She had been fascinated with death since childhood, which made it difficult for her to make friends because others found her interests and beliefs strange. She kept many pets, some living and some preserved, including a beloved first cat named Lena, and she enjoyed knitting small sweaters for her specimens. Growing up, she did not watch many cartoons, though she liked the Polish cartoon Reksio.",
+      "personality": "Oliwia is eccentric, morbidly curious, and desperate to be accepted. Under pressure she becomes anxious and easily agitated, especially when she thinks she might lose approval or be left out. She is loyal in a clingy, approval-seeking way: she wants to be useful, liked, and needed, but that need can push her into unhealthy choices. She will try hard to help people she wants closeness with, but she will not easily accept rejection, judgment, or being treated as disposable."
     },
     {
       "name": "Ren",
@@ -5093,6 +5113,7 @@
         "temperament": 6
       },
       "sexuality": "queer",
+      "voice": "Ren talks like a performer: playful, theatrical, and a little deliberately odd, with jokes and flourishes before he gets to the point. He uses whimsical references, like astrology or circus sounds, to disarm people or make an accusation feel ridiculous. In conflict, he can try to cool things down first, but when pushed he becomes blunt and direct rather than quietly resentful.",
       "profileSources": {
         "backstory": [
           {
@@ -5126,7 +5147,8 @@
       "hometown": "Las Vegas",
       "occupation": "Graphic designer",
       "descriptor": "The Circus Artist",
-      "voice": "Ren talks like a performer: playful, theatrical, and a little deliberately odd, with jokes and flourishes before he gets to the point. He uses whimsical references, like astrology or circus sounds, to disarm people or make an accusation feel ridiculous. In conflict, he can try to cool things down first, but when pushed he becomes blunt and direct rather than quietly resentful."
+      "backstory": "Before the show, Ren had built a creative, mobile life as a graphic designer with a background in acrobatics, which explains both his artistic flair and his athletic confidence. He traveled, met many different kinds of people, and found that they were generally welcoming of his genderfluid identity. The article gives no family or hometown details, so his pre-show life reads as independent, social, and shaped by performance and design.",
+      "personality": "Ren is openly eccentric, free-spirited, and comfortable being perceived as strange; pressure does not make him shrink or pretend to be more conventional. He is social and affectionate with people he trusts, but his loyalty has limits when someone harms the group or humiliates another person. He will strategize, take risks, and call out incompetence or bullying, but he will not abandon his sense of self just to be accepted."
     },
     {
       "name": "Sami",
@@ -5145,6 +5167,7 @@
         "temperament": 5
       },
       "sexuality": "gay",
+      "voice": "Sami talks in a relaxed, socially fluent way, often framing situations through risk, reward, and the odds of a good outcome. When challenged, he keeps his wording controlled: he can deny an accusation in public, then privately admit there is truth to it. His tone can tighten around personal subjects, but he quickly returns to confidence and charm.",
       "profileSources": {
         "backstory": [
           {
@@ -5178,7 +5201,8 @@
       "hometown": "Bangkok",
       "occupation": "Risk analyst",
       "descriptor": "The Analyst",
-      "voice": "Sami talks in a relaxed, socially fluent way, often framing situations through risk, reward, and the odds of a good outcome. When challenged, he keeps his wording controlled: he can deny an accusation in public, then privately admit there is truth to it. His tone can tighten around personal subjects, but he quickly returns to confidence and charm."
+      "backstory": "Before appearing on the show, Samuel “Sami” Thitivoranan worked as a risk analyst, a job his coworkers considered him very good at. He has been married at some point, enjoys working out at the gym, puzzles, surfing, psychological horror movies, and Thai foods such as mango sticky rice and Tom Yum Goong. His childhood tastes included Rocko’s Modern Life, and his interests suggest someone analytical, social, and comfortable mixing practical routines with geeky hobbies.",
+      "personality": "Sami presents himself as chill, laid back, and easy to connect with, but under pressure he becomes a careful schemer. He is good at reading people and situations, using charm and analysis to stay near power without taking visible blame. His loyalty is pragmatic rather than sentimental: he will work with people when it benefits him, but he will not hesitate to hide his intentions, deny manipulation, or double down when sharper players begin to see through him. He is also easily frightened, which gives his calm persona a more vulnerable edge."
     }
   ]
 }

@@ -8,6 +8,7 @@ import { assessIdolExposure } from './advantage-intel.js';
 import { reputationModifier } from './reputation.js';
 import { getIntentions, intendsToProtect } from './intentions.js';
 import { META_WEIGHTS } from './franchise-meta.js';
+import { coachRecord } from './coaches.js';
 
 export function handleAdvantageInheritance(eliminatedName, ep) {
   if (!eliminatedName || !gs.advantages?.length) return;
@@ -1167,5 +1168,36 @@ export function pickNomineeWithDrama(pool, weightFn) {
   }
 
   return { nominee, dramaEvent };
+}
+
+/**
+ * ONE LAW: a coach's power always has a target other than the coach.
+ *
+ * No list is needed for the usual cases — anything self-directed is inert —
+ * but two are named explicitly. Vote Stopper targets somebody else and is
+ * still refused, because "coaches never touch the ballot" is a cleaner promise
+ * than the targeting rule and a hidden hand in a pre-merge vote makes the vote
+ * unreadable.
+ */
+const COACH_PLAYABLE = new Set(['kip', 'fake-idol', 'team-switch', 'loan', 'second-opinion']);
+
+export function coachCanPlay(type) {
+  return COACH_PLAYABLE.has(type);
+}
+
+/**
+ * Hand an advantage to a contestant. It costs the coach their save card.
+ *
+ * Surrendering the protection that keeps you alive to arm a favourite is
+ * meant to be a hard choice, not a reflex.
+ */
+export function giveAdvantage(coachName, contestant, advantage) {
+  const record = coachRecord(coachName);
+  if (!record || record.saveCard !== 'unused') return false;
+  if (!advantage || advantage.holder !== coachName) return false;
+  advantage.holder = contestant;
+  advantage.givenBy = coachName;
+  record.saveCard = 'used';
+  return true;
 }
 

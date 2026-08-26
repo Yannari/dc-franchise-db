@@ -24056,6 +24056,29 @@ function _bbCycleScreens(view, screens, suffix = '') {
           html: rpBuildBBWildcard(view, act, wcDeps) });
         break;
       }
+      case 'dead-last': {
+        // The scoreboard put somebody on the block, so the card is the
+        // scoreboard's — it belongs beside the competition it came out of
+        // rather than pretending to be a ceremony.
+        screens.push({ id: id('bb-deadlast'), label: 'Dead Last',
+          html: _bbSceneScreen(view, {
+            eyebrow: `Week ${view.num}`, title: 'LAST PLACE TAKES A CHAIR',
+            accent: 'var(--bbx-bad)', room: 'bb-comp',
+            subtitle: act.threw
+              ? 'Thrown, in the one week where that costs something.'
+              : 'Nobody had to nominate them. The scoreboard did it.',
+            stateKey: `bb_dl_${view.num}${view?._seg ? `_s${view._seg}` : ''}`,
+            scenes: [
+              { text: `${act.nominee} finishes ${act.place} of ${act.of}`
+                + `${act.competition ? ` in ${act.competition}` : ''}, and that is the whole nomination. `
+                + `No speech, no keys, no reasons — one of the two chairs was filled by the scoreboard `
+                + `before ${act.hoh} was allowed to think about it.`,
+              players: [act.nominee], badgeText: 'DEAD LAST', badgeClass: 'red' },
+              ..._bbBeats(act),
+            ],
+          }) });
+        break;
+      }
       case 'chain-of-safety': {
         const chDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-chain'), label: 'Chain of Safety',

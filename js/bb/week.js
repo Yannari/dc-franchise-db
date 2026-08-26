@@ -1773,6 +1773,17 @@ export function simulateBBWeek(options = {}) {
     // wondering who it is — the safety net is simply gone and everybody in here
     // is standing on it.
     const dread = !paranoid && group.some(a => a?.reactions === 'dread');
+    // WHETHER THERE IS ACTUALLY A VETO THIS WEEK.
+    //
+    // The dread line below used to state flatly that there was not one. It was
+    // written for the Instant Eviction, where that is the rule — but every
+    // twist declaring the same register inherited the sentence, so a Dead Last
+    // Nominee week (which runs an ordinary veto) had the house's best
+    // strategist announcing there was no veto to hide behind, hours before the
+    // veto competition he then played in.
+    const noVetoThisWeek = (group.some(a => a?.twist
+      && ['bb-instant-eviction', 'bb-chain-of-safety'].includes(a.twist)))
+      || compressed;
     const schemer = byStat('strategic')[0];
     const bold = byStat('boldness').find(n => n !== schemer) || byStat('boldness')[0];
     if (bold) {
@@ -1796,7 +1807,9 @@ export function simulateBBWeek(options = {}) {
         text: paranoid
           ? `${schemer} says nothing at all, and is already doing the only arithmetic that matters: ${house.length - 1} other people, one of them lying, and a whole season to find out which. Nobody in this room is going to be believed about anything again.`
           : dread
-            ? `${schemer} works out the only thing worth working out: there is no afternoon of talking anybody round this week, and no veto to hide behind if it goes wrong. Everything has to be done before that competition ends.`
+            ? (noVetoThisWeek
+              ? `${schemer} works out the only thing worth working out: there is no afternoon of talking anybody round this week, and no veto to hide behind if it goes wrong. Everything has to be done before that competition ends.`
+              : `${schemer} works out the only thing worth working out: the rule does the damage before anybody gets a say in it. Whatever this costs, it will already have cost it by the time the house is allowed to start talking.`)
             : `${schemer} says nothing at all, which from ${schemer} is the loudest possible reaction. The rule has already been taken apart and reassembled twice behind those eyes.`,
         players: [schemer], badgeText: paranoid ? 'COUNTING THE ROOM' : dread ? 'NO TIME TO WORK' : 'RECALCULATING', badgeClass: 'grey',
         eventId: 'twist-announcement-recalc', category: 'ceremonies', location: 'living-room',
@@ -3000,8 +3013,46 @@ export function simulateBBWeek(options = {}) {
         curseAct.cursed ? { nominees: [curseAct.cursed] } : {}));
     }
   }
+  // ── DEAD LAST: the competition fills a chair before anybody nominates ──
+  //
+  // Same mechanism as the curse above — it RESERVES a seat rather than adding
+  // one, so the block stays the size the season says it is and the Head of
+  // Household simply has one fewer name to give.
+  //
+  // Read off the Head of Household competition's own placements, so it is the
+  // real result and not a re-roll. A week with no competition (a pre-crowned
+  // Head of Household, a Battle of the Block) has no last place to take, and
+  // anybody already holding safety is skipped upward: safety won earlier in
+  // the week beats a rule about a competition, or the twist would quietly
+  // cancel every protection in the house.
+  let deadLastSeat = null;
+  if (twists.has('bb-dead-last-nominee') && hohCompetition?.placements?.length > 1) {
+    const order = [...hohCompetition.placements].reverse();
+    deadLastSeat = order.find(name => name !== hoh && house.includes(name)
+      && !untouchable.includes(name)) || null;
+    if (deadLastSeat) {
+      week.deadLastNominee = deadLastSeat;
+      const place = hohCompetition.placements.indexOf(deadLastSeat) + 1;
+      const threw = !!hohCompetition.debug?.scoreBreakdown?.[deadLastSeat]?.threw;
+      week.acts.push(addBeats({
+        type: 'dead-last', nominee: deadLastSeat, hoh,
+        place, of: hohCompetition.placements.length,
+        competition: hohCompetition.name || '', threw,
+        beats: [{
+          text: threw
+            ? `${deadLastSeat} threw it. ${deadLastSeat} threw it in the one week in this house where `
+              + `coming last puts you on the block, and the whole room watched ${pronouns(deadLastSeat).obj} do it.`
+            : `${deadLastSeat} finishes last of ${hohCompetition.placements.length} and is nominated for it `
+              + `before ${hoh} has said a single name.`,
+          players: [deadLastSeat], badgeText: 'DEAD LAST', badgeClass: 'red',
+        }],
+      }, { nominees: [deadLastSeat] }));
+    }
+  }
+
   // How many the Head of Household actually gets to name.
-  const hohSeats = Math.max(1, nomineeCount - (curseSeat ? 1 : 0));
+  const hohSeats = Math.max(1, nomineeCount
+    - (curseSeat ? 1 : 0) - (deadLastSeat ? 1 : 0));
 
   // `duoBlock` already guarantees both halves are in the house and neither is
   // protected, so this no longer re-filters the pair — that filter is exactly
@@ -3018,7 +3069,7 @@ export function simulateBBWeek(options = {}) {
       : duoPair ? [...duoPair]
         : [...new Set(plan.nominees)]
         .filter(name => house.includes(name) && !untouchable.includes(name)
-          && name !== curseSeat).slice(0, hohSeats);
+          && name !== curseSeat && name !== deadLastSeat).slice(0, hohSeats);
   if (duoWeekNoms) week.duoWeekNominees = [...duoWeekNoms];
   if (duoPair && nominees.length === duoPair.length) {
     week.duoNomination = [...nominees];
@@ -3029,7 +3080,7 @@ export function simulateBBWeek(options = {}) {
   // put somebody on the block that the house had already made safe.
   while (!chainNoms.length && nominees.length < hohSeats) {
     const extra = chooseReplacement(hoh, house,
-      [...untouchable, ...nominees, curseSeat].filter(Boolean), plan, rng);
+      [...untouchable, ...nominees, curseSeat, deadLastSeat].filter(Boolean), plan, rng);
     if (!extra || nominees.includes(extra) || untouchable.includes(extra)) break;
     nominees.push(extra);
   }
@@ -3065,13 +3116,14 @@ export function simulateBBWeek(options = {}) {
   // another target rather than a name out of a hat.
   while ((safetyActive || doubleVote) && nominees.length < hohSeats) {
     const third = chooseReplacement(hoh, house,
-      [...untouchable, ...nominees, curseSeat].filter(Boolean), plan, rng);
+      [...untouchable, ...nominees, curseSeat, deadLastSeat].filter(Boolean), plan, rng);
     if (!third || nominees.includes(third)) break;
     nominees.push(third);
   }
   // And the reserved chair, last, so the block reads as the Head of
   // Household's names plus the one that is not theirs.
   if (curseSeat && !nominees.includes(curseSeat)) nominees.push(curseSeat);
+  if (deadLastSeat && !nominees.includes(deadLastSeat)) nominees.push(deadLastSeat);
   // ── BB ROADKILL: the third key nobody's hand is on ──
   //
   // Everybody plays, one at a time and out of sight of the rest, and only the
@@ -3439,9 +3491,16 @@ export function simulateBBWeek(options = {}) {
     // the ceremony is not the HOH's to claim: without this the script says "it
     // is my responsibility to nominate THREE people" and turns three keys for
     // somebody the HOH never chose.
-    hohNominees: nominees.filter(n => n !== week.temptationChair && n !== week.roadkill?.nominee),
+    // A chair filled by a curse, a secret nomination competition or the
+    // week's own scoreboard is on the block, but it is not the Head of
+    // Household's to claim — without this the ceremony script says "it is my
+    // responsibility to nominate TWO people" and turns two keys for a block
+    // the Head of Household only chose half of.
+    hohNominees: nominees.filter(n => n !== week.temptationChair
+      && n !== week.roadkill?.nominee && n !== week.deadLastNominee),
     curseChair: week.temptationChair || null,
     roadkillChair: week.roadkill?.nominee || null,
+    deadLastChair: week.deadLastNominee || null,
     brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
   revise('noms', { hoh, nominees: [...nominees] });
 

@@ -588,6 +588,14 @@ export const TWIST_CATALOG = [
       'bb-invisible-hoh', 'bb-split-house', 'bb-roadkill', 'bb-americas-nominee',
       'bb-diamond-veto', 'bb-double-veto', 'bb-forced-veto', 'bb-safety-suite',
       'bb-wildcard', 'bb-sanctum-week', 'bb-no-eviction'] },
+  // A rule, not a ceremony: it reserves one chair before the Head of Household
+  // starts counting, exactly the way the Den's curse does.
+  { id:'bb-dead-last-nominee', emoji:'🪑', name:'Dead Last Nominee', format:'big-brother',
+    category:'elim', phase:'any',
+    desc:'Whoever finishes LAST in the Head of Household competition is nominated automatically. The Head of Household is told before they nominate that one of the chairs is already filled and that they only have the other one to give — so the competition nobody bothers losing carefully is suddenly the most dangerous thing in the week, and throwing it stops being free.',
+    engineType:'bb-dead-last-nominee',
+    incompatible:['bb-chain-of-safety', 'bb-battle-of-the-block', 'bb-duo-week',
+      'bb-invisible-hoh', 'bb-split-house'] },
   { id:'bb-instant-eviction', emoji:'⚡', name:'Instant Eviction', format:'big-brother',
     category:'elim', phase:'any',
     desc:'No veto this week. The Head of Household nominates and the nominations stand — the house votes the same night, with no competition to save anybody and no ceremony to change the pair.',

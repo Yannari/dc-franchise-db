@@ -32,6 +32,7 @@ export const BASE_WEEK_RULES = Object.freeze({
   secondCycle: false,       // a compressed second eviction cycle after the first
   extraCycles: 0,           // HOW MANY of them: 1 is a double, 2 is a triple
   chainOfSafety: false,     // the block is what the chain left over, not a ceremony
+  deadLastNominee: false,   // last in the HOH competition takes a chair automatically
 });
 
 /**
@@ -347,6 +348,20 @@ export const BB_TWIST_CONTRACTS = {
       reactions: 'dread',
       rule: 'There will be no nomination ceremony this week. One of you will be made safe, and then YOU will choose who is safe next, and that person will choose after you — out loud, in this room, in front of everybody you do not choose. When three of you are left, those three will compete. One will win safety. The other two are nominated, and there is no veto to take them down.',
       sting: 'Nobody is going to put you on that block. Everybody is just going to keep choosing somebody else.',
+    },
+  },
+  // Fills a chair rather than adding one: the block is the same size, the Head
+  // of Household simply gets one fewer name on it.
+  'bb-dead-last-nominee': {
+    id: 'bb-dead-last-nominee', layer: 'scheduled', category: 'week-structure',
+    timing: 'week', duration: { weeks: 1 },
+    rules: { deadLastNominee: true },
+    acquisition: { channel: 'production', secrecy: 'public' },
+    announcement: {
+      name: 'Dead Last Nominee',
+      reactions: 'dread',
+      rule: 'One of the two chairs at this week’s nomination ceremony has already been filled, and it will be filled by whoever finishes LAST in the Head of Household competition. Your Head of Household will only have one name to give. The other one you are going to give yourselves.',
+      sting: 'Nobody in this house gets to be bad at a competition for free this week.',
     },
   },
   'bb-instant-eviction': {

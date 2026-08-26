@@ -4239,6 +4239,19 @@ const _BB_PHASE_TITLE = {
  * so the two do not say the same thing twice a few lines apart.
  */
 /**
+ * The number of keys a Head of Household is about to turn, in words.
+ *
+ * `Math.max(0, n - 2)` used to floor this, so a ceremony with ONE name of its
+ * own announced "it is my responsibility to nominate TWO people", promised two
+ * keys and then turned one. It only happens when something else has already
+ * filled a chair — a curse, a secret nomination competition, a dead-last rule
+ * — which is exactly when the script is most worth getting right, because the
+ * whole point of those weeks is that the Head of Household did not choose the
+ * whole block.
+ */
+const NUMWORD = n => ['one', 'two', 'three', 'four', 'five'][n - 1] || `${n}`;
+
+/**
  * The vote work belonging to the cycle an act was played in.
  *
  * The first cycle's war room must not be printed over a later one: the
@@ -4976,7 +4989,7 @@ export function generateBBSummaryText(ep) {
           // this transcript may put the real name next to it.
           const anonOwn = (act.hohNominees && act.hohNominees.length)
             ? act.hohNominees.filter(Boolean) : nomNames;
-          const anonWord = ['two', 'three', 'four', 'five'][Math.max(0, anonOwn.length - 2)] || `${anonOwn.length}`;
+          const anonWord = NUMWORD(anonOwn.length);
           ln('  The chair at the head of the table stays empty. The wall screen speaks:');
           ln(`  "This week's Head of Household is invisible. Big Brother will now turn ${anonWord} keys on their behalf."`);
           ln('');
@@ -5008,7 +5021,7 @@ export function generateBBSummaryText(ep) {
         // and the ceremony must not count it among the keys in their box.
         const ownNames = (act.hohNominees && act.hohNominees.length)
           ? act.hohNominees.filter(Boolean) : nomNames;
-        const ownWord = ['two', 'three', 'four', 'five'][Math.max(0, ownNames.length - 2)] || `${ownNames.length}`;
+        const ownWord = NUMWORD(ownNames.length);
         if (act.duo?.pair?.length === 2) {
           ln(`  ${nomHoh}: "This is the nomination ceremony. It is my responsibility as Head of`);
           ln('    Household to nominate a DUO for eviction — not two houseguests, two houseguests');
@@ -5016,9 +5029,17 @@ export function generateBBSummaryText(ep) {
           ln(`    ${act.duo.pair.join(' and ')}${act.duo.kin ? ` — ${act.duo.kin.toLowerCase()}` : ''}.`);
         } else
         ln(`  ${nomHoh}: "This is the nomination ceremony. It is my responsibility as Head of`);
-        ln(`  Household to nominate ${ownWord} people for eviction. In my nomination box are the keys`);
-        ln(`  of the houseguests I am nominating. I will turn ${ownWord} keys to lock in my`);
-        ln('  nominations, and their faces will appear on the memory wall."');
+        // Every noun in this speech has to agree with how many chairs are
+        // actually the Head of Household's, which on a curse, Roadkill or
+        // dead-last week is ONE — and the fixed plurals had them promising
+        // "two people" and "two keys" before turning a single key.
+        const one = ownNames.length === 1;
+        ln(`  Household to nominate ${ownWord} ${one ? 'person' : 'people'} for eviction. `
+          + `In my nomination box ${one ? 'is the key' : 'are the keys'}`);
+        ln(`  of the ${one ? 'houseguest' : 'houseguests'} I am nominating. I will turn `
+          + `${ownWord} ${one ? 'key' : 'keys'} to lock in my`);
+        ln(`  ${one ? 'nomination, and their face' : 'nominations, and their faces'} `
+          + `will appear on the memory wall."`);
         ln('');
         ownNames.forEach((name, i) => {
           const which = ['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`;
@@ -5048,7 +5069,7 @@ export function generateBBSummaryText(ep) {
         }
         ln(`  ${nomHoh}: "${ownNames.join(', ')} — I have nominated you for eviction. This is the`);
         ln('  nomination ceremony. Nominations are complete."');
-        if (act.curseChair || act.roadkillChair) {
+        if (act.curseChair || act.roadkillChair || act.deadLastChair) {
           ln(`  The block is ${nomNames.join(', ')}. Only ${ownNames.length} of those names belong to`);
           ln(`  ${nomHoh}, and everybody in the room can count.`);
         }
@@ -5435,6 +5456,16 @@ export function generateBBSummaryText(ep) {
           ln(`  ${act.winner} refuses. No safety and no punishment — and a statement, made`);
           ln('  in front of the whole house, about not needing either.');
         }
+        break;
+      }
+      case 'dead-last': {
+        sec('DEAD LAST');
+        ln(`  ${act.nominee} finished ${act.place} of ${act.of}`
+          + `${act.competition ? ` in ${act.competition}` : ''}.`);
+        ln(act.threw
+          ? `  ${act.nominee} threw it, in the one week where that fills a chair.`
+          : `  Last place takes the first chair. ${act.hoh} has one name left to give.`);
+        beats(act);
         break;
       }
       case 'chain-of-safety': {

@@ -708,8 +708,10 @@ function rankIcon(i) {
    Everything on this page that CAN be attributed is derived per show by
    js/records.js instead. What is left below is what that file cannot answer. */
 const FRANCHISE_DOC_FORMAT = 'total-drama';
-const SHOW_LABEL = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
-const showNameOf = f => SHOW_LABEL[f] || f || 'this show';
+/* Names come from the registry the module block above already hands this
+   script. The local map it replaces named an unlisted show by its slug, in the
+   middle of a sentence explaining what the page cannot tell you about it. */
+const showNameOf = f => window.showSwitcher?.SHOWS?.[f]?.name || f || 'this show';
 
 /** Does the all-shows document apply to what is being looked at? */
 function legacyDocApplies(show) {

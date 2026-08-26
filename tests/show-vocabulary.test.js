@@ -141,7 +141,17 @@ describe('every registered show is described in its own words', () => {
         expect(html.length, 'nothing rendered — the fixture is wrong, not the code').toBeGreaterThan(500);
         // The exit cell must actually be on the page, or this passes by drawing
         // nothing — which is how the first version of this guard missed it.
-        if (who === 'left') expect(strip(html).toLowerCase()).toMatch(/voted out|evicted/);
+        //
+        // Asked of the registry, not of a list. This line used to read
+        // /voted out|evicted/ — the exact two-show assumption the header above
+        // promises is not in here, sitting inside the guard against it. A third
+        // show would have passed it by printing the second show's verb.
+        if (who === 'left') {
+          const exit = showWords(format).exit.toLowerCase();
+          expect(strip(html).toLowerCase(),
+            `the ${format} article never says "${exit}" — no exit cell rendered`)
+            .toContain(exit);
+        }
         expect(leaks(html, format)).toEqual([]);
       });
     }

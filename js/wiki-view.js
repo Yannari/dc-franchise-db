@@ -28,15 +28,22 @@
 import { parseInterview } from './casting-interview.js';
 import { airLabel, ageAt, airKey } from './franchise-calendar.js';
 
-// `short` is the tab label — "TD14", "BB1" — and matches the code js/shows.js
-// already declares for each show, so a third show is named consistently
-// wherever it appears rather than getting a second abbreviation here.
-const SHOW_META = {
-  'total-drama': { name: 'Total Drama', short: 'TD', icon: '🎬', accent: '#7d4cff' },
-  'big-brother': { name: 'Big Brother', short: 'BB', icon: '📹', accent: '#38bdf8' },
-};
-const meta = f => SHOW_META[f]
-  || { name: f, short: String(f).slice(0, 2).toUpperCase(), icon: '📺', accent: '#7d4cff' };
+import { DEFAULT_FORMAT, seasonId, showName, showShort, showIcon, showAccent, showWords }
+  from './shows.js';
+
+// `short` is the tab label — "TD14", "BB1". These came out of a copy of the
+// show list kept here; they now come from js/shows.js, so a show is named,
+// abbreviated and coloured the same wherever it appears.
+//
+// The unregistered case still draws something rather than nothing, because a
+// blank tab is unclickable — but it is deliberately generic, not the default
+// show's clapperboard.
+const meta = f => ({
+  name: showName(f),
+  short: showShort(f) || String(f).slice(0, 2).toUpperCase(),
+  icon: showIcon(f) || '📺',
+  accent: showAccent(f),
+});
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -385,8 +392,13 @@ function _finalTally(vote, winnerName) {
 function lead(dossier, show, root, L) {
   const m = meta(show.format);
   const seasons = show.seasons.slice().sort((a, b) => a.season - b.season);
-  const link = s => `<a href="${root}/season_ref.html?season=${
-    show.format === 'big-brother' ? `bb-${s.season}` : s.season}"><em>${
+  // A bare integer is Total Drama and stays one, because every bookmark on the
+  // site is `?season=7`. Every other show is prefixed — and it was the `=== 'big-
+  // brother'` test here that would have linked a third show's season 5 straight
+  // at Total Drama 5, an existing page, so nothing would have looked wrong.
+  const ref = s => show.format === DEFAULT_FORMAT
+    ? String(s.season) : seasonId(show.format, s.season);
+  const link = s => `<a href="${root}/season_ref.html?season=${ref(s)}"><em>${
     esc(s.title || `${m.name} ${s.season}`)}</em></a>`;
 
   // ── 1. the record ──
@@ -400,7 +412,7 @@ function lead(dossier, show, root, L) {
     if (s.placement === 1) return `the winner of ${link(s)}`;
     if (s.placement === 2) return `the runner-up on ${link(s)}`;
     if (s.placement) return `${ordinal(s.placement)} on ${link(s)}`;
-    return `a contestant on ${link(s)}`;
+    return `a ${showWords(show.format).player} on ${link(s)}`;
   };
   /** "a, b, and c" — with the serial comma the reference pages use. */
   const joinList = xs => {
@@ -858,7 +870,14 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   // everything about that season underneath it. A returnee gets one of these
   // per season, so their two games are never interleaved.
   const isHouse = show.format === 'big-brother';
-  const roundWord = isHouse ? 'Week' : 'Episode';
+  // `isHouse` still gates the BIG BROTHER-ONLY columns below — have-nots, the
+  // HOH/veto totals row — which are features of that game and not vocabulary.
+  // Words are a different question, and answering it with the same boolean is
+  // what printed "Voted out" over a banishment: everything that was not Big
+  // Brother got Total Drama's noun.
+  const words = showWords(show.format);
+  const roundWord = words.round;
+  const exitWord = words.exit.charAt(0).toUpperCase() + words.exit.slice(1);
 
   for (const s2 of show.seasons) {
     // The reference wiki writes "The Mad House 7" because its season titles are
@@ -918,7 +937,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
       // off says how, and a week that was both (HOH one week, block the next)
       // can no longer hide half of itself.
       const cell = w => {
-        if (w.evicted) return { label: isHouse ? 'Evicted' : 'Voted out', cls: 'wk-c-out', marks: [] };
+        if (w.evicted) return { label: exitWord, cls: 'wk-c-out', marks: [] };
         // Out of the house between two evictions, and the week nobody went
         // home: two states that are not "safe" and were both drawn as blank.
         if (w.notYet) return { label: 'Not in', cls: 'wk-c-away', marks: [] };

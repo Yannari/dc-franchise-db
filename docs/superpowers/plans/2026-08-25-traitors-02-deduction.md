@@ -123,8 +123,11 @@ function seededRng(seed = 1) {
 }
 
 beforeEach(() => {
+  // js/core.js exports `gs` as null until a season exists, so a test that
+  // reaches for gs.tr before setGs() throws on a null read rather than failing
+  // its assertion. setGs replaces the live binding; the imported `gs` updates.
+  setGs({ bonds: {}, activePlayers: [...CAST] });
   gs.tr = initTraitorsState();
-  gs.activePlayers = [...CAST];
   resetKnowledge();
 });
 
@@ -815,7 +818,7 @@ Create `tests/tr-roundtable.test.js`:
 // a belief about who somebody IS — formed in public, in front of everybody, and
 // weighted by whether the room trusts the person making the accusation.
 import { describe, expect, it, beforeEach } from 'vitest';
-import { gs } from '../js/core.js';
+import { gs, setGs } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { resetKnowledge, believes } from '../js/knowledge.js';
 import { recordAlignment } from '../js/tr/roles.js';
@@ -830,9 +833,8 @@ function seededRng(seed = 1) {
 }
 
 beforeEach(() => {
+  setGs({ bonds: {}, activePlayers: [...CAST] });   // gs is null until set — see Task 1
   gs.tr = initTraitorsState();
-  gs.activePlayers = [...CAST];
-  gs.bonds = {};
   resetKnowledge();
   recordAlignment('Gwen', true, 1, 'selection');
   recordAlignment('Duncan', true, 1, 'selection');
@@ -880,16 +882,26 @@ describe('the banishment', () => {
   });
 
   it('breaks a tie among the tied players only, and they do not vote', () => {
-    // Force a 3-3 by giving two candidates identical strong reads and nobody else any.
-    const r = runRoundTable(2, seededRng(6));
-    if (r.revotes.length) {
-      const rv = r.revotes[0];
-      rv.ballots.forEach(b => {
-        expect(rv.tied).toContain(b.voted);
-        expect(rv.tied).not.toContain(b.voter);
-      });
+    // This test MUST actually see a tie. An `if (r.revotes.length)` guard would
+    // let it pass by never entering the branch — the exact failure mode this
+    // project has documented twice, where a guard reports coverage it does not
+    // have. So: search seeds until a revote genuinely happens, and fail loudly
+    // if none does in 60 tries, because that would mean ties never occur at all.
+    let found = null;
+    for (let seed = 1; seed <= 60 && !found; seed++) {
+      gs.tr.rounds = [];
+      gs.activePlayers = [...CAST];
+      const r = runRoundTable(2, seededRng(seed));
+      if (r.revotes.length) found = r;
     }
-    expect(r.banished).toBeTruthy();   // a tie must still resolve
+    expect(found, 'no tie occurred in 60 seeded round tables — ties are unreachable').toBeTruthy();
+    const rv = found.revotes[0];
+    expect(rv.ballots.length).toBeGreaterThan(0);
+    rv.ballots.forEach(b => {
+      expect(rv.tied).toContain(b.voted);        // only the tied are eligible
+      expect(rv.tied).not.toContain(b.voter);    // and they do not vote
+    });
+    expect(found.banished).toBeTruthy();          // a tie must still resolve
   });
 
   it('is deterministic for a seed — a season has to replay', () => {
@@ -1192,7 +1204,7 @@ git commit -m "A reveal turns a round of meaningless ballots into evidence"
 // every unit test it has and still produce a room that never works anything
 // out, because "did the belief update" and "did the room find the Traitors" are
 // different questions and only the second one matters.
-import { gs } from '../core.js';
+import { gs, setGs } from '../core.js';
 import { initTraitorsState } from './state.js';
 import { resetKnowledge } from '../knowledge.js';
 import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls } from './roles.js';
@@ -1224,9 +1236,9 @@ function _placeholderMurder(ep, rng) {
 /** Play one season. Returns the record and enough log to measure it. */
 export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds = 40 } = {}) {
   const rng = rngFor(seed);
+  // gs is null until a season exists (js/core.js), so the harness creates one.
+  setGs({ bonds: {}, activePlayers: [...cast] });
   gs.tr = initTraitorsState();
-  gs.activePlayers = [...cast];
-  gs.bonds = {};
   resetKnowledge();
 
   const traitors = selectTraitors(cast, { traitorCount }, rng);
@@ -1284,11 +1296,14 @@ import { setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import roster from '../franchise_roster.json';
 
-const CAST = roster.slice(0, 20).map(p => p.name);
+// franchise_roster.json is { players: [...] }, NOT a bare array. Reaching for
+// roster.slice() throws; this is the shape the file actually has.
+const ROSTER = roster.players.slice(0, 20);
+const CAST = ROSTER.map(p => p.name);
 const SEASONS = 60;
 
 function run(n = SEASONS, traitorCount = 3) {
-  setPlayers(roster.slice(0, 20));
+  setPlayers(ROSTER);
   return Array.from({ length: n }, (_, i) =>
     playTraitorsSeason({ cast: CAST, traitorCount, seed: i + 1 }));
 }

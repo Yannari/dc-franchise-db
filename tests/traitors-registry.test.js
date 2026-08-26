@@ -3,7 +3,7 @@
 // comes from this entry, so it is worth asserting rather than assuming.
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { SHOWS, formatPrefix, showShort, showIcon, showAccent } from '../js/shows.js';
+import { SHOWS, formatPrefix, showShort, showIcon, showAccent, showWords } from '../js/shows.js';
 import { buildFranchiseMeta, setFranchiseLedger, activeSeasons }
   from '../js/franchise-meta.js';
 import { formatIsRunnable, seasonConfig } from '../js/core.js';
@@ -39,8 +39,22 @@ describe('the traitors registry entry', () => {
     expect(w.player).not.toBe('contestant');
   });
 
+  // Asserted through showWords(), which is what every caller actually reads.
+  // The raw literal was asserted before and stayed green while the accessor
+  // spread Total Drama's words underneath and returned 'Fan Favorite'.
   it('omits audienceAward rather than naming an award the format lacks', () => {
     expect('audienceAward' in SHOWS['traitors'].words).toBe(false);
+    expect('audienceAward' in showWords('traitors')).toBe(false);
+    expect(showWords('traitors').audienceAward).toBeUndefined();
+    // The rest of the vocabulary still inherits — that is why a show can omit
+    // a word and still get a readable one.
+    expect(showWords('traitors').comp).toBe('mission');
+    expect(showWords('traitors').show).toBe('The Traitors');
+  });
+
+  it('leaves the two shows that DO have an award holding theirs', () => {
+    expect(showWords('total-drama').audienceAward).toBe('Fan Favorite');
+    expect(showWords('big-brother').audienceAward).toBe("America's Favourite Houseguest");
   });
 
   it('declares an audience overlay, which tests/ratings.test.js requires', () => {

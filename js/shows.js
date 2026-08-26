@@ -150,8 +150,19 @@ export function formatPrefix(format) {
  * produces readable text rather than "undefined was undefined".
  */
 export function showWords(format) {
-  return { show: showName(format),
-    ...(SHOWS[DEFAULT_FORMAT].words), ...(SHOWS[format]?.words || {}) };
+  const own = SHOWS[format]?.words;
+  const w = { show: showName(format), ...(SHOWS[DEFAULT_FORMAT].words), ...(own || {}) };
+  // THE ONE WORD WHERE ABSENCE IS THE ANSWER. Inheriting the default show's
+  // vocabulary is deliberate everywhere else — it is why a registered show can
+  // omit `comp` and still get a sensible word instead of "undefined" — but an
+  // award is a thing a show either HANDS OUT or does not. A format that omits
+  // the field has no such award, and inheriting made every caller announce a
+  // Fan Favorite over a castle. So the field is dropped for a registered show
+  // that left it out, and callers must handle a missing name by calling
+  // nothing. An UNREGISTERED format keeps the fallback, because there the
+  // absence means "we do not know this show", not "this show has no award".
+  if (own && !('audienceAward' in own)) delete w.audienceAward;
+  return w;
 }
 
 export function showName(format) {

@@ -20,8 +20,9 @@ import { recordAlignment } from '../js/tr/roles.js';
 import { openThread, findOpenThread } from '../js/tr/threads.js';
 import { EVENTS, eligible, pickEvent, validateRegistry } from '../js/tr/events.js';
 import { setFranchiseLedger } from '../js/franchise-meta.js';
-import { learn, resetKnowledge } from '../js/knowledge.js';
-import { alignmentFactId, seedTraitorKnowledge } from '../js/tr/deduction.js';
+import { learn } from '../js/knowledge.js';
+import { alignmentFactId } from '../js/tr/deduction.js';
+import { PROBE_CAST, PROBE_EP, forkRng, probeWorld } from './helpers/tr-probe-world.js';
 import roster from '../franchise_roster.json';
 
 // Side-effect imports: this is what registers the ~25 events under test.
@@ -233,53 +234,12 @@ describe('every event has a real consequence', () => {
 // self-knowledge. Weight is where the gate lives and where all three defects
 // lived.
 describe('ground truth does not decide who a castle event happens to', () => {
-  // SYNTHETIC, IDENTICAL PLAYERS. Six roster names with different stat lines
-  // would make this probe lie in both directions: `cover-cold-sweat-tell`
-  // reads `pStats(whoever is the Traitor).temperament`, so swapping which of
-  // two REAL people is the Traitor moves its weight for a reason that has
-  // nothing to do with reading a hidden alignment. With every stat line
-  // identical, any weight difference between the arms can only be the
-  // alignment, which is the whole question.
-  const PROBE_STATS = { intuition: 7, temperament: 3, strategic: 7, social: 7,
-    boldness: 7, loyalty: 7, mental: 7 };
-  const PROBE_PLAYERS = ['Pa', 'Pb', 'Pc', 'Pd', 'Pe', 'Pf']
-    .map(n => makePlayer(n, 'floater', PROBE_STATS));
-  const PROBE_CAST = PROBE_PLAYERS.map(p => p.name);
+  // The world, the cast and the scripted-roll helper now live in
+  // tests/helpers/tr-probe-world.js — tr-castle-belief-gate.test.js needs the
+  // same world to execute every event's fire() in, and two copies of it would
+  // drift.
   const [A, B] = PROBE_CAST;
-  const EP = 5;
-
-  /**
-   * A world identical in every respect except the two alignments (and whether
-   * the turret was ever shown). Rich enough that most of the pool clears its
-   * non-alignment preconditions — a murder last round, threads of every kind
-   * this pool opens, warm bonds, and a prior season on the ledger — because a
-   * probe where nothing is eligible passes trivially.
-   */
-  function probeWorld({ aTraitor, bTraitor, turret }) {
-    setPlayers(PROBE_PLAYERS);
-    setGs({ bonds: {}, activePlayers: [...PROBE_CAST] });
-    gs.tr = initTraitorsState();
-    resetKnowledge();
-    recordAlignment(A, aTraitor, 1, 'selection');
-    recordAlignment(B, bTraitor, 1, 'selection');
-    PROBE_CAST.slice(2).forEach(n => recordAlignment(n, false, 1, 'selection'));
-    if (turret) seedTraitorKnowledge(1);
-    setBond(A, B, 4);
-    setBond(PROBE_CAST[2], PROBE_CAST[3], -3);
-    gs.tr.rounds.push({ ep: EP - 1, murdered: PROBE_CAST[5], murderTarget: PROBE_CAST[5] });
-    for (const kind of ['trust', 'suspicion', 'cover', 'callback', 'testing', 'grief',
-      'romance', 'romance-spark', 'romance-showmance']) {
-      openThread(kind, [A, B], EP - 2, 'seed');
-    }
-    setFranchiseLedger({
-      v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {
-        '1': { seasonName: 'S1', format: 'total-drama', players: {
-          [A]: { allies: [B], rivals: [B], betrayed: [], betrayedBy: [B], showmances: [{ partner: B, ended: 'breakup' }], finalist: true },
-          [B]: { allies: [A], rivals: [A], betrayed: [A], betrayedBy: [], showmances: [{ partner: A, ended: 'breakup' }], finalist: true },
-        } },
-      } } },
-    });
-  }
+  const EP = PROBE_EP;
 
   /** Every registered event's weight, keyed by id, for the scene [A, B]. */
   function weightsFor(world) {
@@ -306,7 +266,8 @@ describe('ground truth does not decide who a castle event happens to', () => {
     expect(live, 'the probe world made almost nothing eligible — the comparison below is vacuous')
       .toBeGreaterThanOrEqual(30);
     const diffs = compare(aFaithfulBTraitor, aTraitorBFaithful);
-    expect(diffs, `these events read WHICH actor is the Traitor:\n${diffs.join('\n')}`).toEqual([]);
+    expect(diffs, `these events read WHICH actor is the Traitor:
+${diffs.join('\n')}`).toEqual([]);
   });
 
   it('PROBE B: a Traitor who has never been shown the turret cannot act on a partner\'s alignment', () => {
@@ -316,7 +277,8 @@ describe('ground truth does not decide who a castle event happens to', () => {
     expect(live, 'the probe world made almost nothing eligible — the comparison below is vacuous')
       .toBeGreaterThanOrEqual(30);
     const diffs = compare(partnerFaithful, partnerTraitor);
-    expect(diffs, `these events read the partner's hidden alignment:\n${diffs.join('\n')}`).toEqual([]);
+    expect(diffs, `these events read the partner's hidden alignment:
+${diffs.join('\n')}`).toEqual([]);
   });
 
   it('PROBE B goes the other way once the turret HAS been shown — the pact is knowledge, not truth', () => {
@@ -327,6 +289,99 @@ describe('ground truth does not decide who a castle event happens to', () => {
     const moved = compare(unmet, met);
     expect(moved.length, 'seeding the turret changed nothing — knowsAlignmentOf is inert here')
       .toBeGreaterThan(0);
+  });
+
+  // ── PROBE C: the same question, asked of fire() (fix round 2, R2) ────────
+  //
+  // PROBE A and PROBE B above only ever call weight(). The finding they came
+  // from said "ground truth leaks into BOND DELTAS", and a bond delta is
+  // written in fire(), which reads alignment just as freely. The defeat that
+  // motivated this arm stayed green through both probes above:
+  //
+  //     // js/tr/castle/suspicion.js — susp-misread-tell fire()
+  //     addBond(a, b, alignmentAt(b, ctx.ep) === 'faithful' ? -0.5 : -4);
+  //
+  // WHY THIS IS PROBE B'S FLIP AND NOT PROBE A'S. The exemption the finding
+  // asks for is "the ACTING player's own role" — grief-morning-reaction's
+  // opportunistic branch and cover's competence roll legitimately read it,
+  // because a Traitor knows they are a Traitor. Probe A's flip SWAPS which of
+  // the two actors is the Traitor, so it changes the acting player's own role
+  // (grief takes `ctx.actors[0]` as its reactor) and would flag that
+  // legitimate read. Probe B's flip holds actors[0] a Traitor in BOTH arms and
+  // moves only the OTHER actor, so the exemption falls out of the world's
+  // construction rather than out of a hand-maintained list of event ids —
+  // which is the shape this file's other sweeps are written in, and the reason
+  // round 1's probes caught defects the review had missed.
+  //
+  // Everything an event may legitimately vary on is held equal across the two
+  // arms: identical stat lines, identical archetypes, identical bonds,
+  // identical threads, identical ledger, and the SAME scripted roll sequence.
+  // The only difference in the world is whether Pb is secretly a Traitor.
+  const PROBE_C_ROLLS = [0.05, 0.35, 0.65, 0.95];
+
+  /**
+   * Execute every registered event's fire() in `world`, at a fixed roll, and
+   * reduce the outcome to the two things the finding is about: which branch
+   * was taken and what it did to a bond. Player NAMES are deliberately not
+   * compared — probe C never swaps the actors, so a name difference could only
+   * come from an event choosing a third party, which is a different question.
+   */
+  const PROBE_PAIRS = PROBE_CAST.flatMap((x, i) => PROBE_CAST.slice(i + 1).map(y => [x, y]));
+  /** Every bond in the probe cast, so a delta can be measured rather than trusted. */
+  function bondSnapshot() {
+    return PROBE_PAIRS.map(([x, y]) => getBond(x, y));
+  }
+
+  function outcomesFor(world, roll) {
+    const out = {};
+    for (const ev of EVENTS) {
+      probeWorld(world);
+      const before = bondSnapshot();
+      const ctx = { ep: EP, window: ev.window, act: 'middle', living: [...PROBE_CAST], actors: [A, B] };
+      let branch;
+      try {
+        const r = ev.fire(ctx, forkRng(roll));
+        branch = r == null ? 'null' : String(r.branch ?? '-');
+      } catch (e) {
+        out[ev.id] = `threw:${e.message}`;
+        continue;
+      }
+      // MEASURED, not reported. The defeat this arm exists for wrote
+      // `addBond(a, b, alignmentAt(b) === 'faithful' ? -0.5 : -4)` while its
+      // return value still said `bondDelta: -0.5` — trusting the event's own
+      // account of what it did is how a laundered write stays invisible.
+      const after = bondSnapshot();
+      const moved = PROBE_PAIRS
+        .map(([x, y], i) => [x, y, after[i] - before[i]])
+        .filter(([, , d]) => d !== 0)
+        .map(([x, y, d]) => `${x}~${y}:${d}`)
+        .sort();
+      out[ev.id] = `${branch}|${moved.join(',')}`;
+    }
+    return out;
+  }
+
+  it('PROBE C: fire() — branch and bond delta do not move when the OTHER actor\'s hidden alignment does', () => {
+    const diffs = [];
+    let live = 0;
+    for (const roll of PROBE_C_ROLLS) {
+      const partnerFaithful = outcomesFor({ aTraitor: true, bTraitor: false, turret: false }, roll);
+      const partnerTraitor = outcomesFor({ aTraitor: true, bTraitor: true, turret: false }, roll);
+      live += Object.values(partnerFaithful).filter(v => !v.startsWith('null|') && !v.startsWith('threw')).length;
+      for (const ev of EVENTS) {
+        if (partnerFaithful[ev.id] !== partnerTraitor[ev.id]) {
+          diffs.push(`${ev.id} @roll ${roll}: ${partnerFaithful[ev.id]} vs ${partnerTraitor[ev.id]}`);
+        }
+      }
+    }
+    // Guard on the guard: if fire() returned null (or threw) for everything,
+    // every outcome would be the same string in both arms and this passes on
+    // an empty sample.
+    expect(live, 'almost no event actually produced an outcome — the comparison below is vacuous')
+      .toBeGreaterThanOrEqual(EVENTS.length * PROBE_C_ROLLS.length * 0.5);
+    expect(diffs, `these events' fire() read the other actor's hidden alignment:
+${diffs.join('\n')}`)
+      .toEqual([]);
   });
 });
 

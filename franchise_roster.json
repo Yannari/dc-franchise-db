@@ -2342,31 +2342,28 @@
         "temperament": 7
       },
       "sexuality": "gay",
-      "voice": "Warm, straightforward, and reassuring, with an occasional goofy enthusiasm that escapes his serious exterior. Thom gives practical advice, names unfairness directly, and grows clipped when he suspects deception. Vulnerability comes slowly but plainly; he does not decorate an apology once he finally chooses to make it.",
+      "voice": "Tom tends to speak in a guarded, controlled way, especially when he is trying to keep emotional distance. In conflict, he can become blunt and moralizing, framing arguments around fairness, safety, and what he thinks is right. When he feels safe, his rhythm loosens into warmer reassurance, but shame or trauma can make him evasive or quietly defensive.",
       "profileSources": {
         "voice": [
           {
-            "label": "Tom character reference",
-            "url": "https://disventure-camp.fandom.com/wiki/Tom",
-            "kind": "source-canon"
-          },
-          {
-            "label": "Fans vs Favorites profile interpretation",
+            "label": "Read from the wiki article, not stated in it",
             "kind": "interpretation"
           }
         ],
         "personality": [
           {
-            "label": "Tom character reference",
+            "label": "Disventure Camp Wiki - Tom",
             "url": "https://disventure-camp.fandom.com/wiki/Tom",
-            "kind": "source-canon"
+            "kind": "source-canon",
+            "quote": "Tom likes to operate fairly, even opting to punish those who cheat, showing he possesses a strong sense of justice."
           }
         ],
         "backstory": [
           {
-            "label": "Tom character reference",
+            "label": "Disventure Camp Wiki - Tom",
             "url": "https://disventure-camp.fandom.com/wiki/Tom",
-            "kind": "source-canon"
+            "kind": "source-canon",
+            "quote": "Tom became a spy because his love for comics as a child instilled within him a desire to help and protect others."
           }
         ],
         "stats": [
@@ -2383,30 +2380,28 @@
         ],
         "birthdate": [
           {
-            "label": "Tom character reference",
-            "url": "https://disventure-camp.fandom.com/wiki/Tom",
-            "kind": "source-canon"
+            "label": "28 at Cursed Island (spring 2025), so born 1997",
+            "kind": "simulator-continuity"
           }
         ],
         "nationality": [
           {
-            "label": "Tom character reference",
-            "url": "https://disventure-camp.fandom.com/wiki/Tom",
-            "kind": "source-canon"
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
           }
         ],
         "occupation": [
           {
-            "label": "Tom character reference",
+            "label": "Disventure Camp Wiki - Tom",
             "url": "https://disventure-camp.fandom.com/wiki/Tom",
-            "kind": "source-canon"
+            "kind": "source-canon",
+            "quote": "Tom is able to find work as a policeman."
           }
         ],
         "descriptor": [
           {
-            "label": "Tom character reference",
-            "url": "https://disventure-camp.fandom.com/wiki/Tom",
-            "kind": "source-canon"
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
           }
         ],
         "sexuality": [
@@ -2414,6 +2409,24 @@
             "label": "Tom character reference",
             "url": "https://disventure-camp.fandom.com/wiki/Tom",
             "kind": "source-canon"
+          }
+        ],
+        "ethnicity": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "age": [
+          {
+            "label": "28 at Cursed Island (spring 2025), and it is fall 2026 now",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "hometown": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
           }
         ]
       },

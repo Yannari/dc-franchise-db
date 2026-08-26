@@ -98,6 +98,7 @@ import { rpBuildClownTitleCard, rpBuildClownStalk, rpBuildClownRun } from './cha
 import { rpBuildBashTitleCard, rpBuildBashArena, rpBuildBashResults } from './chal/bumper-car-bash.js';
 import { rpBuildCheeseTitleCard, rpBuildCheeseDrop, rpBuildCheeseResults } from './chal/say-cheese.js';
 import { rpBuildWheelTitleCard, rpBuildWheelPhase1, rpBuildWheelPhase2, rpBuildWheelPhase3, rpBuildWheelResults } from './chal/wheel-of-misfortune.js';
+import { rpBuildCoachBoard } from './vp-coaches.js';
 import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish, rpBuildJuryVotes, rpBuildJuryLife } from './vp-finale.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 // rpBuildAftermath is read off window (not statically imported) — aftermath.js already imports from
@@ -3744,6 +3745,10 @@ export function generateSummaryText(ep) {
   }
   if (ep.wheelOfMisfortune) {
     _textTwistChallenge(ep, ln, sec, 'wheelOfMisfortune', 'WHEEL OF MISFORTUNE', [rpBuildWheelTitleCard, rpBuildWheelPhase1, rpBuildWheelPhase2, rpBuildWheelPhase3, rpBuildWheelResults]);
+  }
+
+  if (ep.coachData) {
+    _textTwistChallenge(ep, ln, sec, 'coachData', 'COACHING', [rpBuildCoachBoard]);
   }
 
   // ── CHAIN OF COMMAND ──

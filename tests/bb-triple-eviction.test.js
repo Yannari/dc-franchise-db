@@ -332,3 +332,59 @@ describe('the night ends when the night ends', () => {
     }
   });
 });
+
+describe('a later cycle does not claim nobody has power yet', () => {
+  // `rpBuildBBHouseLife` reads `act.phase || 'pre-hoh'`, so a stretch built
+  // without a phase prints "Before anybody has power". The compressed cycles
+  // of a double and a triple have no house acts, so the beats displaced from
+  // their competitions were flushed into exactly such a stretch — and it
+  // appeared after the Head of Household, the veto, both ceremonies AND the
+  // campaign, announcing that nobody had power yet on a night that had
+  // already crowned two people.
+  const subtitles = twists => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+    Object.assign(seasonConfig, {
+      format: 'big-brother', jurySize: 7, finaleSize: 3, bbSafetyMode: 'off',
+      bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house', romance: 'enabled',
+      twistSchedule: twists,
+    });
+    gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns,
+      threatScore, getBond, getPerceivedBond, ordinal });
+    simulateBBEpisode();
+    const ep = simulateBBEpisode();
+    const stored = (gs.episodeHistory || []).find(h => h.num === ep.num) || ep;
+    const screens = buildVPScreens(stored) || [];
+    const labels = screens.map(s => s.label);
+    return {
+      labels,
+      house: screens.filter(s => s.label === 'House Life')
+        .map(s => (s.html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ')),
+    };
+  };
+
+  for (const [name, twists] of [
+    ['a triple', [{ episode: 2, type: 'bb-triple-eviction', teStyle: 'fast-forward' }]],
+    ['a double', [{ episode: 2, type: 'bb-double-eviction', deStyle: 'fast-forward' }]],
+    ['a triple ending on a chain', [{ episode: 2, type: 'bb-triple-eviction', teStyle: 'chain' }]],
+  ]) {
+    it(`says it once, at the top of the night, on ${name}`, () => {
+      const { house } = subtitles(twists);
+      expect(house.length, 'no house life at all').toBeGreaterThan(2);
+      const noPower = house.filter(h => /Before anybody has power/i.test(h));
+      // Exactly one, and it has to be the first stretch of the night.
+      expect(noPower, `"Before anybody has power" appeared ${noPower.length} times`)
+        .toHaveLength(1);
+      expect(/Before anybody has power/i.test(house[0]),
+        'the one that says it is not the first stretch').toBe(true);
+    });
+
+    it(`draws no two House Life screens in a row on ${name}`, () => {
+      const { labels } = subtitles(twists);
+      const doubled = labels.filter((l, i) => i > 0 && l === 'House Life' && labels[i - 1] === 'House Life');
+      expect(doubled, `${doubled.length} pairs back to back`).toEqual([]);
+    });
+  }
+});

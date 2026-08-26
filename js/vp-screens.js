@@ -24377,10 +24377,28 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // its vote. Flushed here, where a full week would have had its
         // post-veto stretch.
         if (pendingBeats.length) {
-          screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life',
-            html: rpBuildBBHouseLife(view, { type: 'house', socialBeats: pendingBeats }, houseSlot) });
-          lastHouse = { at: screens.length - 1,
-            act: { type: 'house', socialBeats: pendingBeats }, slot: houseSlot };
+          // PHASE 'campaign', NOT NONE. `rpBuildBBHouseLife` reads
+          // `act.phase || 'pre-hoh'`, so a phaseless stretch prints "Before
+          // anybody has power" — which on the back half of a triple appeared
+          // after the Head of Household, the veto, both ceremonies and the
+          // campaign, announcing that nobody had power yet on a night that had
+          // already crowned two people.
+          //
+          // These are the hours before the vote, which is what 'campaign'
+          // means, and it is the phase the same stretch carries on a full week.
+          const flushed = { type: 'house', phase: 'campaign', socialBeats: pendingBeats };
+          if (lastHouse && lastHouse.at === screens.length - 1) {
+            // The campaign screen is usually right there. One stretch, not two.
+            const joined = { ...lastHouse.act, ...flushed,
+              socialBeats: [...(lastHouse.act.socialBeats || []), ...pendingBeats] };
+            screens[lastHouse.at] = { id: id(`bb-house-${lastHouse.slot}`), label: 'House Life',
+              html: rpBuildBBHouseLife(view, joined, lastHouse.slot) };
+            lastHouse = { ...lastHouse, act: joined };
+          } else {
+            screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life',
+              html: rpBuildBBHouseLife(view, flushed, houseSlot) });
+            lastHouse = { at: screens.length - 1, act: flushed, slot: houseSlot };
+          }
           pendingBeats = [];
         }
         // The Block Buster first, if there was one: it is the last thing that
@@ -24475,8 +24493,10 @@ function _bbCycleScreens(view, screens, suffix = '') {
   // Life stretch to fold displaced competition beats into. Rather than lose
   // them, they get the one extra screen this path used to create every week.
   if (pendingBeats.length) {
+    // Same reason as the flush in the eviction case: phaseless reads as
+    // "Before anybody has power", which is never true this late.
     screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life',
-      html: rpBuildBBHouseLife(view, { type: 'house', socialBeats: pendingBeats }, houseSlot) });
+      html: rpBuildBBHouseLife(view, { type: 'house', phase: 'campaign', socialBeats: pendingBeats }, houseSlot) });
     pendingBeats = [];
   }
   // A week that never held a ceremony (an instant eviction, a cycle that fell

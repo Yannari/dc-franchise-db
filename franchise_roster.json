@@ -17,7 +17,84 @@
         "temperament": 4
       },
       "sexuality": "straight",
-      "voice": "Smooth, charming, calculated manipulator. Weaponizes charm and good looks, always three steps ahead, never lets you see the scheme. Silky, flattering speech that hides a knife."
+      "voice": "Smooth, charming, calculated manipulator. Weaponizes charm and good looks, always three steps ahead, never lets you see the scheme. Silky, flattering speech that hides a knife.",
+      "profileSources": {
+        "ethnicity": [
+          {
+            "label": "Total Drama Wiki - Alejandro",
+            "url": "https://totaldrama.fandom.com/wiki/Alejandro",
+            "kind": "source-canon",
+            "quote": "proud of his Hispanic heritage"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "descriptor": [
+          {
+            "label": "Total Drama Wiki - Alejandro",
+            "url": "https://totaldrama.fandom.com/wiki/Alejandro",
+            "kind": "source-canon",
+            "quote": "label: The Arch Villain"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "16 at Total Drama (spring 2020), so born 2004",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "age": [
+          {
+            "label": "16 at Total Drama (spring 2020), and it is fall 2026 now",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "hometown": [
+          {
+            "label": "Total Drama Wiki - Alejandro",
+            "url": "https://totaldrama.fandom.com/wiki/Alejandro",
+            "kind": "source-canon",
+            "quote": "originally from Spain"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Total Drama Wiki - Alejandro",
+            "url": "https://totaldrama.fandom.com/wiki/Alejandro",
+            "kind": "source-canon",
+            "quote": "on the honor roll at their high school"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Total Drama Wiki - Alejandro",
+            "url": "https://totaldrama.fandom.com/wiki/Alejandro",
+            "kind": "source-canon",
+            "quote": "originally from Spain, moved to Latin America shortly after his birth, and later moved to Canada"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Total Drama Wiki - Alejandro",
+            "url": "https://totaldrama.fandom.com/wiki/Alejandro",
+            "kind": "source-canon",
+            "quote": "On the surface, Alejandro appears to be a polite, dashing, and charming gentleman, but underneath he is dark and twisted."
+          }
+        ]
+      },
+      "age": 26,
+      "birthdate": "2000-05-05",
+      "ethnicity": "Hispanic",
+      "nationality": "Spanish-Canadian",
+      "hometown": "Spain",
+      "occupation": "Student",
+      "descriptor": "The Arch Villain",
+      "backstory": "Alejandro grew up in a successful Hispanic family with his parents, uncle Julio, and older brothers José and Carlos. He was born in Spain, moved to Latin America shortly after birth, and later moved to Canada. Before appearing on television, he was an honor-roll high school student shaped by a polished, high-achieving household and by José’s bullying, which helped form his competitiveness, hatred of the nickname “Al,” and obsession with being superior.",
+      "personality": "Alejandro behaves like a charming gentleman until pressure reveals the calculating villain underneath. He is patient, image-conscious, and highly strategic, willing to fake kindness, exploit attraction, and hold grudges over even small slights if it helps him get ahead. His loyalty is selective: he can be sincerely kind when he chooses, but he usually treats relationships as tools unless someone earns real respect. He will manipulate, humiliate, and take revenge, but he draws a line at pointless cruelty and senseless harm."
     },
     {
       "name": "Amy",
@@ -211,6 +288,8 @@
           }
         ]
       },
+      "age": 22,
+      "birthdate": "2004-06-12",
       "backstory": "Before competing, Bowie was already a practiced performer and relentless competitor. His audition presents him as Total Drama’s first openly gay contestant, a basketball-playing student who had been crowned both prom king and queen and wanted another crown. That mix of pageantry, preparation, and self-belief explains why he arrived expecting to manage both the room and the show around it.",
       "personality": "Bowie is openly competitive, socially alert, and comfortable being the most visibly confident person in a room. He enjoys drama as both entertainment and information, notices who needs reassurance, and can build sincere friendships even while planning around them. He prefers clean strategic authorship: identify the dangerous player, assemble the numbers, and own the decision in confessional. His affection for people such as Raj reveals a real boundary beneath the ambition; he can postpone or soften a move when the human cost becomes personal. Under pressure he gets sharper and more controlling, but not randomly cruel. He respects opponents who can answer him move for move and hates being treated as strategically naive."
     },
@@ -1143,7 +1222,13 @@
           }
         ]
       },
+      "age": 21,
+      "birthdate": "2005-06-23",
+      "ethnicity": "White",
+      "nationality": "Canadian",
+      "hometown": "Toronto, Ontario",
       "occupation": "Social media influencer",
+      "descriptor": "The Influencer and Evil in Human Form",
       "backstory": "Before the show, Julia built an online identity as a wellness and lifestyle influencer, presenting herself as a serene “citizen of Mother Earth” while privately disliking parts of the brand she sold. Her family includes parents Greg and Judy, who ran a bake shop where she worked as a child, and a sister, Megan, whom Julia targets with casual cruelty. Competition gave her a platform large enough to discard the mask and monetize the real Julia instead.",
       "personality": "Julia is fiercely competitive, physically resilient, and strategically aggressive. She first cultivated a sunny influencer persona built from crystals, nature slogans, and curated positivity, but humiliation stripped away the performance and revealed someone who enjoys winning, intimidation, and a perfectly timed insult. She is excellent at turning social information into leverage and persistent enough to rebuild after exposure. Loyalty is conditional, though she can form a compelling partnership when the other person matches her nerve and usefulness. Under pressure she doubles down, lies boldly, and attacks the weak point rather than retreating. Her temper and public cruelty create jurors and enemies even when the move itself is sound. She respects competent opposition—especially Bowie—because beating a real strategist proves more than dominating a passive room."
     },
@@ -1512,7 +1597,12 @@
           }
         ]
       },
+      "age": 24,
+      "birthdate": "2002-06-18",
       "ethnicity": "Italian",
+      "nationality": "Canadian",
+      "hometown": "Ontario, Canada",
+      "descriptor": "Overly dedicated actor/comedian",
       "backstory": "Mike entered the franchise as an Italian teenager hiding a deeply personal part of his mental-health history because he feared ridicule and rejection. His bond with Zoey gave him a reason to become more open, while the competition repeatedly punished secrecy and loss of control. By the end of his source story he had integrated his identities and retained their learned abilities, leaving him to build an ordinary future without erasing what he experienced.",
       "personality": "Mike is caring, relationship-oriented, and more comfortable supporting another person than demanding the center of attention. Earlier secrecy taught him to scan constantly for signs that people might reject him, so he sometimes withholds difficult truths until avoidance becomes its own problem. Once trust is established, he is intensely loyal and willing to take emotional risks for the people he loves. His post-canon baseline is integration and continuity: he remembers his whole life, owns his choices, and can draw on varied skills without switching into a caricature. Stress may make him anxious or evasive, but it must never turn mental illness into automatic menace. His strategic game grows from protection, compromise, and careful relationship repair rather than manipulation for sport."
     },

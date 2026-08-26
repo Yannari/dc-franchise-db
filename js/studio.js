@@ -19,6 +19,7 @@ const STAT_KEYS = ['physical','endurance','mental','social','strategic','loyalty
 const STAT_ABBR = { physical:'PHY', endurance:'END', mental:'MEN', social:'SOC', strategic:'STR', loyalty:'LOY', boldness:'BLD', intuition:'INT', temperament:'TMP' };
 
 import { composeVoice, stripBioLead, parseBio, splitOrigin } from './bio.js';
+import { PROFILE_GROUPS, diffPublishedProfile, applyProfileSelection, validatePublishedProfile, selectProfileVoice } from './profile-import.js';
 import { INTERVIEW_QUESTIONS, parseInterview, serializeInterview }
   from './casting-interview.js';
 // The endpoint resolver, not a second hardcoded URL — it already handles the
@@ -140,7 +141,7 @@ function _blankChar() {
     birthdate:'', hometown:'', occupation:'', backstory:'', personality:'',
     // The casting interview, held as { key: answer } while it is being edited
     // and serialised on save. See js/casting-interview.js.
-    interview: {},
+    interview: {}, profileSources:{},
     voice:'', avatarDataUri:'', returneeDataUri:'', stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
   };
 }
@@ -325,12 +326,12 @@ async function _rosterPull() {
 /** Upsert one character into D1. Throws on failure so callers can report it.
  *  The error carries the HTTP status — a silent failure here once caused a
  *  character to be published away, so make it diagnosable. */
-async function _rosterPush(entry, voiceText) {
+async function _rosterPush(entry) {
   let r, body;
   try {
     r = await fetch(_apiUrl('/api/roster'), {
       method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ ...entry, voice: voiceText || '' }),
+      body: JSON.stringify(entry),
     });
   } catch (netErr) {
     throw new Error(`network error reaching /api/roster (${netErr.message})`);
@@ -1081,7 +1082,12 @@ async function _editBySlug(slug) {
   const rich = await _idbGet('characters', slug);
   // Studio record wins; otherwise fall back to the existing voice-profiles.json
   // entry so editing a canon/hand-added character shows their real voice.
-  const voice = (rich && rich.voice) || await _existingVoice(base.name);
+  const legacyVoice = await _existingVoice(base.name);
+  const voice = selectProfileVoice({
+    localVoice: rich?.voice || '',
+    rosterVoice: base.voice || '',
+    legacyVoice,
+  });
 
   // WHERE THE BIO COMES FROM, in order of how much it can be trusted:
   //
@@ -1112,6 +1118,7 @@ async function _editBySlug(slug) {
     occupation: pick(base.occupation, rich && rich.occupation),
     backstory: pick(base.backstory, rich && rich.backstory),
     personality: pick(base.personality, rich && rich.personality),
+    profileSources: pick(rich && rich.profileSources, base.profileSources, {}),
     interview: Object.fromEntries(parseInterview(
       pick(base.castingInterview, rich && rich.castingInterview)).map(r => [r.key, r.a])),
     // The prose alone. The lead-in is rebuilt from the fields on save, so
@@ -1135,7 +1142,79 @@ async function _editBySlug(slug) {
   document.getElementById('st-editor')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// ── the character sheet ─────────────────────────────────────────────────
+// ── published profile import ──────────────────────────────────────────────
+const _profileValue = value => value == null || value === '' ? '—' : typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
+function _profileSnapshot(d) { return { ...d, castingInterview: serializeInterview(d.interview || {}) }; }
+function _invalidProfileKeys(errors) {
+  const keys = new Set();
+  for (const error of errors) {
+    const source = /^profileSources\.([^.[ ]+)/.exec(error);
+    if (source) keys.add(source[1]);
+    if (error.startsWith('birthdate ')) keys.add('birthdate');
+    if (error.startsWith('Unknown stat:') || error.startsWith('Missing stat:') || STAT_KEYS.some(key => error.startsWith(`${key} `))) keys.add('stats');
+  }
+  return keys;
+}
+export function _openPublishedProfilePreview(published, options = {}) {
+  const currentDraft = options.current || _draft;
+  if (!currentDraft || !published) return null;
+  const current = options.current ? currentDraft : _profileSnapshot(currentDraft);
+  let rows;
+  try { rows = diffPublishedProfile(current, published); } catch { rows = []; }
+  const validation = validatePublishedProfile(published);
+  const invalidKeys = _invalidProfileKeys(validation.errors);
+  document.getElementById('st-profile-import')?.remove();
+  const dialog = document.createElement('dialog');
+  dialog.id = 'st-profile-import'; dialog.className = 'st-profile-dialog';
+  const grouped = Object.keys(PROFILE_GROUPS).map(group => {
+    const groupRows = rows.filter(row => row.group === group);
+    if (!groupRows.length) return '';
+    return `<section class="st-profile-group"><h3>${_esc(group)}</h3>${groupRows.map(row => {
+      const unsafe = invalidKeys.has(row.key);
+      const sourceValue = published.profileSources?.[row.key];
+      const sources = Array.isArray(sourceValue) ? sourceValue.filter(source => source && typeof source === 'object') : [];
+      return `<label class="st-profile-row${unsafe ? ' is-invalid' : ''}">
+        <input type="checkbox" data-profile-key="${_esc(row.key)}" ${row.selected && !unsafe ? 'checked' : ''} ${unsafe ? 'disabled' : ''}>
+        <span class="st-profile-field">${_esc(row.key)}</span>
+        <span class="st-profile-values"><span><b>Current</b><code>${_esc(_profileValue(row.current))}</code></span><span><b>Published</b><code>${_esc(_profileValue(row.published))}</code></span></span>
+        <span class="st-profile-sources">${sources.map(source => `<span class="st-profile-source" data-kind="${_esc(source.kind)}">${_esc(source.label)}</span>`).join('')}</span>
+      </label>`;
+    }).join('')}</section>`;
+  }).join('');
+  dialog.innerHTML = `<form method="dialog" class="st-profile-card">
+    <header><div><h2>Load published profile</h2><p>Review what will change in this draft. Nothing is saved until you press Save character.</p></div><button class="st-profile-x" value="cancel" aria-label="Close">×</button></header>
+    <div id="st-profile-errors" class="st-profile-errors" ${validation.valid ? 'hidden' : ''}>${validation.errors.map(error => `<p>${_esc(error)}</p>`).join('')}</div>
+    <div class="st-profile-groups">${grouped || '<p class="st-empty">This draft already matches the published profile.</p>'}</div>
+    <footer><button type="button" class="st-btn" id="st-profile-blanks">Fill blanks</button><button type="button" class="st-btn" id="st-profile-all">Select all</button><span></span><button type="button" class="st-btn" id="st-profile-cancel">Cancel</button><button type="button" class="st-btn st-primary" id="st-profile-apply">Apply selected</button></footer>
+  </form>`;
+  document.body.appendChild(dialog);
+  const checks = () => [...dialog.querySelectorAll('[data-profile-key]:not(:disabled)')];
+  dialog.querySelector('#st-profile-blanks').addEventListener('click', () => { const defaults = new Map(rows.map(row => [row.key, row.selected])); checks().forEach(box => { box.checked = !!defaults.get(box.dataset.profileKey); }); });
+  dialog.querySelector('#st-profile-all').addEventListener('click', () => checks().forEach(box => { box.checked = true; }));
+  const close = () => { if (typeof dialog.close === 'function') dialog.close(); dialog.remove(); };
+  dialog.querySelector('#st-profile-cancel').addEventListener('click', close);
+  dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
+  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  dialog.querySelector('#st-profile-apply').addEventListener('click', () => {
+    const selected = checks().filter(box => box.checked).map(box => box.dataset.profileKey);
+    const applied = applyProfileSelection(current, published, selected);
+    applied.profileSources = { ...(current.profileSources || {}) };
+    for (const key of selected) {
+      if (published.profileSources?.[key]) {
+        applied.profileSources[key] = published.profileSources[key].map(source => ({ ...source }));
+      } else delete applied.profileSources[key];
+    }
+    if (options.onApply) options.onApply(applied);
+    else {
+      _draft = { ...currentDraft, ...applied };
+      if (Object.hasOwn(applied, 'castingInterview')) { _draft.interview = Object.fromEntries(parseInterview(applied.castingInterview).map(row => [row.key, row.a])); delete _draft.castingInterview; }
+      renderStudio();
+    }
+    close();
+  });
+  if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', '');
+  return dialog;
+}
 function _renderEditor() {
   const ed = document.getElementById('st-editor');
   if (!ed) return;
@@ -1266,6 +1345,7 @@ function _renderEditor() {
       </details>
 
       <div class="st-actions">
+        ${d.slug && _roster().some(p => p.slug === d.slug) ? '<button type="button" class="st-btn st-lg" id="st-load-profile">Load published profile</button>' : ''}
         <button type="button" class="st-btn st-primary st-lg" id="st-save">Save character</button>
         ${(() => {
           const active = _casts.find(c => c.id === _activeCast);
@@ -1445,7 +1525,11 @@ function _renderEditor() {
     probe.src = _avatarSrc(`${d.slug}-returnee`);
   }
 
-  // save / delete
+  // load / save / delete
+  ed.querySelector('#st-load-profile')?.addEventListener('click', () => {
+    const published = _roster().find(p => p.slug === d.slug);
+    if (published) _openPublishedProfilePreview(published);
+  });
   ed.querySelector('#st-save').addEventListener('click', _save);
   ed.querySelector('#st-del')?.addEventListener('click', _delete);
   // add/remove the selected character from the active cast, right from the editor
@@ -1889,7 +1973,8 @@ async function _save() {
   const iv = serializeInterview(d.interview || {});
   if (iv) bio.castingInterview = iv;
   const entry = { name: d.name, slug: d.slug, gender: d.gender, sexuality: d.sexuality,
-    archetype: d.archetype, stats: { ...d.stats }, ...bio };
+    archetype: d.archetype, stats: { ...d.stats }, voice: d.voice,
+    profileSources: d.profileSources, ...bio };
 
   // 1) live projection into the roster the Cast Builder reads
   const arr = _roster().slice();
@@ -1903,7 +1988,7 @@ async function _save() {
     ethnicity: d.ethnicity, nationality: d.nationality, descriptor: d.descriptor,
     birthdate: d.birthdate, hometown: d.hometown,
     occupation: d.occupation, backstory: d.backstory, personality: d.personality,
-    castingInterview: iv,
+    castingInterview: iv, profileSources: d.profileSources,
     voice: d.voice, avatarDataUri: d.avatarDataUri || '',
     returneeDataUri: d.returneeDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}
@@ -1926,7 +2011,7 @@ async function _save() {
   let savedToDb = false;
   if (_serverUp) {
     try {
-      await _rosterPush(entry, composedVoice);
+      await _rosterPush(entry);
       savedToDb = true;
     } catch (e) { _toast('Saved locally, but the database write failed: ' + e.message, 'warn'); }
 
@@ -2125,7 +2210,18 @@ async function _exportRepo() {
   try { base = await (await fetch('voice-profiles.json', { cache: 'no-store' })).json(); } catch {}
   if (!base.profiles) base.profiles = {};
   const chars = await _idbAll('characters');
-  chars.forEach(c => { const v = _composeVoice(c); if (v) base.profiles[c.name] = v; });
+  const rosterVoiceNames = new Set();
+  for (const p of _roster()) {
+    if (p.voice && String(p.voice).trim()) {
+      base.profiles[p.name] = composeVoice(p, stripBioLead(p.voice));
+      rosterVoiceNames.add(p.name);
+    }
+  }
+  chars.forEach(c => {
+    if (rosterVoiceNames.has(c.name)) return;
+    const v = _composeVoice(c);
+    if (v) base.profiles[c.name] = v;
+  });
   _dl('voice-profiles.json', JSON.stringify(base, null, 2) + '\n');
   // 3) avatar PNGs for studio-created characters
   let n = 0;
@@ -2413,6 +2509,23 @@ function _injectCSS() {
   .st-danger{color:#e5484d;border-color:#e5484d55}
   .st-save-note{font-size:12px;font-family:ui-monospace,monospace}
   .st-save-note.ok{color:#46b17b}.st-save-note.err{color:#e5484d}
+  .st-profile-dialog{width:min(960px,calc(100vw - 32px));max-height:calc(100vh - 32px);padding:0;border:1px solid var(--border,#333);border-radius:16px;background:var(--surface,#1c1c22);color:inherit;box-shadow:0 24px 80px rgba(0,0,0,.65)}
+  .st-profile-dialog::backdrop{background:rgba(5,5,10,.72);backdrop-filter:blur(3px)}
+  .st-profile-card{display:flex;flex-direction:column;max-height:calc(100vh - 32px)}
+  .st-profile-card>header{display:flex;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border,#333)}
+  .st-profile-card h2,.st-profile-card p{margin:0}.st-profile-card header p{margin-top:4px;color:var(--muted,#9a9);font-size:12px}
+  .st-profile-x{border:0;background:none;color:inherit;font:inherit;font-size:24px;cursor:pointer;border-radius:6px}
+  .st-profile-groups{padding:16px 20px;overflow:auto}.st-profile-group+ .st-profile-group{margin-top:18px}.st-profile-group h3{margin:0 0 7px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent,#f4b23e)}
+  .st-profile-row{display:grid;grid-template-columns:22px 110px minmax(0,1fr);gap:9px 10px;align-items:start;padding:10px 0;border-top:1px solid var(--border,#333)}
+  .st-profile-row>input{margin-top:4px;accent-color:var(--accent,#f4b23e)}.st-profile-field{font-weight:700;font-size:12px;padding-top:3px}
+  .st-profile-values{display:grid;grid-template-columns:1fr 1fr;gap:8px}.st-profile-values>span{min-width:0;padding:8px;border-radius:8px;background:rgba(255,255,255,.035)}
+  .st-profile-values b{display:block;margin-bottom:5px;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted,#9a9)}.st-profile-values code{display:block;white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.45 ui-monospace,monospace}
+  .st-profile-sources{grid-column:3;display:flex;gap:5px;flex-wrap:wrap}.st-profile-source{font-size:9px;padding:2px 7px;border:1px solid var(--border,#333);border-radius:999px;color:var(--muted,#9a9)}
+  .st-profile-row.is-invalid{opacity:.6}.st-profile-errors{margin:12px 20px 0;padding:9px 12px;border:1px solid #e5484d88;border-radius:8px;color:#ff9b9e;background:#e5484d12;font-size:11px}.st-profile-errors p+p{margin-top:4px}
+  .st-profile-card>footer{display:grid;grid-template-columns:auto auto 1fr auto auto;gap:8px;padding:13px 20px;border-top:1px solid var(--border,#333);background:var(--surface,#1c1c22)}
+  .st-profile-dialog :focus-visible{outline:2px solid var(--accent,#f4b23e);outline-offset:2px}
+  @media(max-width:720px){.st-profile-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.st-profile-row{grid-template-columns:22px 1fr}.st-profile-field{grid-column:2}.st-profile-values,.st-profile-sources{grid-column:2}.st-profile-values{grid-template-columns:1fr}.st-profile-card>footer{grid-template-columns:1fr 1fr}.st-profile-card>footer span{display:none}}
+  @media(prefers-reduced-motion:reduce){.st-profile-dialog::backdrop{backdrop-filter:none}.st-profile-dialog *{scroll-behavior:auto!important;transition:none!important}}
   .st-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--surface,#26262e);border:1px solid var(--border,#333);border-radius:10px;padding:11px 16px;font-size:13px;box-shadow:0 12px 40px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:.22s;z-index:9999;max-width:80vw}
   .st-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .st-toast.st-ok{border-left:3px solid #46b17b}.st-toast.st-err{border-left:3px solid #e5484d}.st-toast.st-warn{border-left:3px solid #e5843e}

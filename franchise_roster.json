@@ -155,8 +155,56 @@
         "intuition": 9,
         "temperament": 6
       },
+      "personality": "Bowie is openly competitive, socially alert, and comfortable being the most visibly confident person in a room. He enjoys drama as both entertainment and information, notices who needs reassurance, and can build sincere friendships even while planning around them. He prefers clean strategic authorship: identify the dangerous player, assemble the numbers, and own the decision in confessional. His affection for people such as Raj reveals a real boundary beneath the ambition; he can postpone or soften a move when the human cost becomes personal. Under pressure he gets sharper and more controlling, but not randomly cruel. He respects opponents who can answer him move for move and hates being treated as strategically naive.",
       "sexuality": "gay",
-      "personality": "Bowie can be described as both competitive and affable, which sets him apart from most antagonists. While he possesses a strong drive to win, he knows when to put aside his ruthlessness. Despite being naturally competitive, he is sincerely friendly and open to making friends or forming relationships, though he prefers to wait until the season's over so he doesn't hurt them by eventually plotting their elimination. Bowie has trained himself to win the show, and therefore possesses the confidence to believe he will do well."
+      "voice": "Polished, theatrical, and quick on the draw. Bowie speaks in crisp reads, playful shade, and confident declarations; when a plan matters, the jokes shorten and he explains the social geometry plainly. He can be warm without surrendering control and ruthless without pretending the move was accidental.",
+      "backstory": "Before competing, Bowie was already a practiced performer and relentless competitor. His audition presents him as Total Drama’s first openly gay contestant, a basketball-playing student who had been crowned both prom king and queen and wanted another crown. That mix of pageantry, preparation, and self-belief explains why he arrived expecting to manage both the room and the show around it.",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Bowie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Bowie",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Bowie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Bowie",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Bowie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Bowie",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "sexuality": [
+          {
+            "label": "Bowie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Bowie",
+            "kind": "source-canon"
+          }
+        ]
+      }
     },
     {
       "name": "Brick",
@@ -504,7 +552,56 @@
         "intuition": 8,
         "temperament": 10
       },
-      "sexuality": "straight"
+      "occupation": "Grocery store employee and cook",
+      "voice": "Soft-spoken, sincere, and protective, with simple language that gets firmer when someone is unsafe. DJ comforts before advising, invokes his mother’s lessons without irony, and reacts to fear openly. His humor is gentle and self-aware; anger is rare, brief, and rooted in harm rather than ego.",
+      "personality": "DJ is a physically imposing person with an exceptionally gentle center. He values safety, kindness, animals, cooking, and the emotional well-being of the group above competitive glory. Fear is visible—he can cry, panic, or freeze when heights, water, horror, or an injured animal overwhelms him—but courage for someone else is easier to access than courage for himself. His social strength comes from practical care: feeding people, listening without judgment, and becoming the person others trust at their worst. That trust can make him a threat even when he has little appetite for strategy. Under pressure he may become guilt-ridden or accept blame too quickly. He will not scheme, steal, sabotage, or humiliate someone; any vote he casts needs a protective, fair, or reluctantly necessary reason.",
+      "backstory": "Devon “DJ” Joseph did not originally plan on reality television. Producers noticed his extraordinary strength while he pushed a row of eighty shopping carts at his part-time grocery job and recruited him for the show. Away from competition, he learned compassion and cooking from the mother he deeply admires, cared for animals whenever possible, and developed into the classic “brickhouse with heart”: intimidating at first glance, tender in practice.",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "DJ character reference",
+            "url": "https://totaldrama.fandom.com/wiki/DJ",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "DJ character reference",
+            "url": "https://totaldrama.fandom.com/wiki/DJ",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "DJ character reference",
+            "url": "https://totaldrama.fandom.com/wiki/DJ",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "DJ character reference",
+            "url": "https://totaldrama.fandom.com/wiki/DJ",
+            "kind": "source-canon"
+          }
+        ]
+      }
     },
     {
       "name": "Duncan",
@@ -906,7 +1003,57 @@
         "intuition": 6,
         "temperament": 4
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "occupation": "Social media influencer",
+      "voice": "Bright wellness-influencer cadence wrapped around ruthless intent. Julia uses fake serenity, clipped insults, and sudden volcanic honesty; she can pivot from “positive energy” to a devastating read without changing volume. Confessionals are punchy, self-congratulatory, and brutally clear about who she plans to remove.",
+      "personality": "Julia is fiercely competitive, physically resilient, and strategically aggressive. She first cultivated a sunny influencer persona built from crystals, nature slogans, and curated positivity, but humiliation stripped away the performance and revealed someone who enjoys winning, intimidation, and a perfectly timed insult. She is excellent at turning social information into leverage and persistent enough to rebuild after exposure. Loyalty is conditional, though she can form a compelling partnership when the other person matches her nerve and usefulness. Under pressure she doubles down, lies boldly, and attacks the weak point rather than retreating. Her temper and public cruelty create jurors and enemies even when the move itself is sound. She respects competent opposition—especially Bowie—because beating a real strategist proves more than dominating a passive room.",
+      "backstory": "Before the show, Julia built an online identity as a wellness and lifestyle influencer, presenting herself as a serene “citizen of Mother Earth” while privately disliking parts of the brand she sold. Her family includes parents Greg and Judy, who ran a bake shop where she worked as a child, and a sister, Megan, whom Julia targets with casual cruelty. Competition gave her a platform large enough to discard the mask and monetize the real Julia instead.",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Julia character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Julia",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Julia character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Julia",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Julia character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Julia",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Julia character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Julia",
+            "kind": "source-canon"
+          }
+        ]
+      }
     },
     {
       "name": "Junior",
@@ -1183,7 +1330,56 @@
         "intuition": 7,
         "temperament": 6
       },
-      "sexuality": "straight"
+      "ethnicity": "Italian",
+      "voice": "Gentle, earnest, and slightly self-conscious, with humor used to ease tension rather than dominate it. Mike asks before assuming, speaks most firmly when protecting someone, and admits uncertainty in short, honest bursts. He should sound like an integrated adult, never like a collection of impressions.",
+      "personality": "Mike is caring, relationship-oriented, and more comfortable supporting another person than demanding the center of attention. Earlier secrecy taught him to scan constantly for signs that people might reject him, so he sometimes withholds difficult truths until avoidance becomes its own problem. Once trust is established, he is intensely loyal and willing to take emotional risks for the people he loves. His post-canon baseline is integration and continuity: he remembers his whole life, owns his choices, and can draw on varied skills without switching into a caricature. Stress may make him anxious or evasive, but it must never turn mental illness into automatic menace. His strategic game grows from protection, compromise, and careful relationship repair rather than manipulation for sport.",
+      "backstory": "Mike entered the franchise as an Italian teenager hiding a deeply personal part of his mental-health history because he feared ridicule and rejection. His bond with Zoey gave him a reason to become more open, while the competition repeatedly punished secrecy and loss of control. By the end of his source story he had integrated his identities and retained their learned abilities, leaving him to build an ordinary future without erasing what he experienced.",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Mike character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Mike",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Mike character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Mike",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Mike character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Mike",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "ethnicity": [
+          {
+            "label": "Mike character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Mike",
+            "kind": "source-canon"
+          }
+        ]
+      }
     },
     {
       "name": "Miles",
@@ -1218,8 +1414,56 @@
         "intuition": 7,
         "temperament": 6
       },
-      "sexuality": "straight",
-      "backstory": "Millie is an aspiring journalist who writes about people and how they act. She can often come off as condescending, self-superior, and judgmental, but is generally social and kind. She has a low opinion of the other campers, documenting their actions on her notebook. Millie's judgmental attitude is a result of her own insecurities. Due to having a lonely childhood, Millie has a very low opinion of herself and finds pointing out other people's flaws easier than thinking about her own."
+      "backstory": "An aspiring journalist with a lonely childhood, Millie auditioned to document what she saw as the failures of her generation. Writing about other people gave her a sense of expertise and kept attention away from her own low self-worth. She arrived with a notebook, a research project, and very little practical preparation, expecting the cast to prove her thesis rather than expecting any of them to become important to her.",
+      "occupation": "Aspiring journalist",
+      "voice": "Precise, analytical, and occasionally too clinical for the moment. Millie frames observations like notes for an article, then catches herself when a friend needs empathy instead of analysis. Her humor is dry and defensive; sincere apologies become less polished, more specific, and noticeably harder for her to say.",
+      "personality": "Millie is book-smart, observant, and habitually judgmental, especially when she can study a group from its edge instead of risking participation. Her notebook once let her convert loneliness and insecurity into criticism of everyone else; genuine friendship forced her to see that observation without compassion can become exploitation. She still notices absurd behavior quickly and can sound condescending when anxious, but she now understands that people are not merely material. Social cues do not always come naturally, and physical challenges can expose her hesitation, yet she learns quickly when someone gives her a concrete method. Under pressure she may retreat into analysis or justify a selfish choice as research. Her best growth comes when she puts the notebook down, accepts responsibility without qualifiers, and acts for a person she has chosen to trust.",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Millie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Millie",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Millie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Millie",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Millie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Millie",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Millie character reference",
+            "url": "https://totaldrama.fandom.com/wiki/Millie",
+            "kind": "source-canon"
+          }
+        ]
+      }
     },
     {
       "name": "MK",
@@ -1836,7 +2080,88 @@
         "intuition": 9,
         "temperament": 7
       },
-      "sexuality": "gay"
+      "birthdate": "1993-06-12",
+      "nationality": "Canadian",
+      "occupation": "Lifeguard",
+      "descriptor": "Former spy and police officer",
+      "sexuality": "gay",
+      "voice": "Warm, straightforward, and reassuring, with an occasional goofy enthusiasm that escapes his serious exterior. Thom gives practical advice, names unfairness directly, and grows clipped when he suspects deception. Vulnerability comes slowly but plainly; he does not decorate an apology once he finally chooses to make it.",
+      "personality": "Thom uses Tom’s current canon baseline: physically capable, protective, justice-oriented, and finally more comfortable being seen. His old instinct was concealment—mask the scars, compartmentalize the mission, avoid the conversation that might reopen pain—and that habit can still return when intimacy feels dangerous. He naturally takes responsibility in emergencies and prefers fair competition, but he is not infallible: traps, mixed signals, and his own avoidance can make him look hypocritical or gullible. Later experience has made him cheerier and more openly affectionate, without removing the watchfulness learned as a spy and police officer. He will make strategic deals and can break one under genuine necessity, but cruelty, humiliation, and casual sabotage conflict with his moral center. When pressured, he protects first and explains after.",
+      "backstory": "Thomas “Tom” Reed was born in Canada on June 12, 1993. He worked undercover as a spy, entered camp on a mission, and concealed both his identity and facial scars. Exposure cost him that career; he later worked as a police officer before leaving the job and becoming a lifeguard. Relationships and recovery gradually moved him from guarded isolation toward a more open, playful life. In this simulator the roster name is Thom, but the source identity and characterization are Tom.",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Tom character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Tom",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Tom character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Tom",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Tom character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Tom",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "Tom character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Tom",
+            "kind": "source-canon"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Tom character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Tom",
+            "kind": "source-canon"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Tom character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Tom",
+            "kind": "source-canon"
+          }
+        ],
+        "descriptor": [
+          {
+            "label": "Tom character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Tom",
+            "kind": "source-canon"
+          }
+        ],
+        "sexuality": [
+          {
+            "label": "Tom character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Tom",
+            "kind": "source-canon"
+          }
+        ]
+      }
     },
     {
       "name": "Jake",
@@ -1889,8 +2214,72 @@
         "intuition": 7,
         "temperament": 2
       },
-      "sexuality": "bi",
-      "personality": "Grett is rather abrasive, rude, and she's never afraid of speaking her mind.Grett is also very cunning, as she is willing to lie and cheat in order to advance in the game. Despite this, however, a more vulnerable side of her can be seen sometimes, as she's also shown to be a jealous and insecure individual."
+      "personality": "Grett is ambitious, perceptive, and difficult to intimidate. Her earliest social armor was vanity and condescension: strike first, define everyone else as lesser, and no one gets to name the insecurity underneath. She can lie, build overlapping alliances, and weaponize a private weakness when she believes control is slipping. Experience has made her more self-aware and capable of real care, especially after learning how exploitation feels from the receiving end, but it has not erased her pride or temper. She values independence and responds badly to pity, public embarrassment, or a partner trying to shrink her. Under pressure she may overplay, issue ultimatums, and mistake fear for authority. At her best, she combines strategic nerve with boundaries strong enough to protect both herself and someone else.",
+      "birthdate": "1999-10-25",
+      "nationality": "British",
+      "occupation": "Fitness influencer",
+      "voice": "Blunt, polished, and dryly cutting. Grett rarely wastes a sentence: praise sounds earned, contempt sounds surgical, and insecurity appears as overcontrol rather than pleading. Her later voice can be caring without becoming soft-focus; she still tells friends the truth they hoped she would skip.",
+      "backstory": "Gretchen “Grett” Clark was born in Britain on October 25, 1999 and built a public career as a fitness influencer. Long before camp, image and approval were tangled with her self-worth, encouraging a persona that was glamorous, superior, and impossible to dismiss. Competition gave that armor a strategic use, while later relationships and public scrutiny forced her to separate genuine confidence from the need to control how everyone saw her.",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Grett character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Grett",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Grett character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Grett",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Grett character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Grett",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "Grett character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Grett",
+            "kind": "source-canon"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Grett character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Grett",
+            "kind": "source-canon"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Grett character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Grett",
+            "kind": "source-canon"
+          }
+        ]
+      }
     },
     {
       "name": "Dan",
@@ -1944,8 +2333,64 @@
         "intuition": 4,
         "temperament": 6
       },
+      "personality": "Gabby is energetic, kind, intensely affectionate, and unpredictable when a moral or personal boundary is crossed. Kindness earns fierce loyalty from her, while betrayal can become absolute in a single emotional swing. Nature, animals, veganism, and activism are commitments rather than decorative quirks; cruelty toward living things provokes some of her strongest reactions. She experiences intrusive thoughts represented onscreen as a harsher duplicate of herself. That voice can be rude, manipulative, and threatening, but it should be written as an internal struggle—not an invented diagnosis and not proof that Gabby is secretly evil. She reacts before she calculates, remembers who stood by her, and can become strategically dangerous when anger supplies focus. After the explosion, remorse and renewed tenderness are both possible if accountability feels real.",
+      "occupation": "Environmental activist",
       "sexuality": "lesbian",
-      "personality": "Gabby is energetic, kind, and overly affectionate. However, she can also be very unpredictable. When it comes to interacting with others, Gabby is fiercely loyal to the people who are nice to her, such as Ellie. She is also quick to take offense to others' comments and actions that she does not like and has been known to explode into a rage if she believes they're mistreating animals or the environment, as she's a big lover of nature. It is often mentioned that Gabby is an activist, and while on her call to home, it's revealed she owns many, many pets, including exotic animals. She is also a devout vegan. Gabby has recurring hallucinations, seeing a duplicate of herself, which is a representation of her intrusive thoughts. This duplicate acts more outwardly cruel, manipulative, and rude, even insulting Gabby herself. When pushed to a breaking point, Gabby adopts the personality of this other self, going as far as insulting and threatening violence on those she's been wronged by."
+      "voice": "Fast, affectionate, and emotionally transparent, often jumping from delighted detail to a fierce moral judgment in the same breath. Gabby talks to people, animals, and her own intrusive thoughts as if all are present in the conversation. Anger is vivid and specific; warmth is exuberant and unembarrassed.",
+      "backstory": "Before competition, Gabby was already an environmental activist, devoted vegan, animal lover, and caretaker of a remarkable number of pets, including exotic animals. The outdoors felt safer and more legible to her than many social groups. She came to camp thrilled by nature and connection, carrying both enormous affection and intrusive thoughts that could turn perceived rejection into an immediate demand for justice or revenge.",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Gabby character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Gabby",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Gabby character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Gabby",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Gabby character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Gabby",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Gabby character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Gabby",
+            "kind": "source-canon"
+          }
+        ],
+        "sexuality": [
+          {
+            "label": "Gabby character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Gabby",
+            "kind": "source-canon"
+          }
+        ]
+      }
     },
     {
       "name": "Sterling",
@@ -2224,7 +2669,80 @@
         "intuition": 6,
         "temperament": 5
       },
-      "sexuality": "gay"
+      "birthdate": "1998-05-29",
+      "nationality": "Brazilian",
+      "occupation": "Actor and social media influencer",
+      "sexuality": "gay",
+      "voice": "Camera-ready, charismatic, and knowingly dramatic. James turns plans into quotable summaries and can sell a lie with relaxed confidence, but the polish drops around people he truly loves. His mature voice distinguishes performance from sincerity: he may still make content, yet he no longer treats every private moment as material.",
+      "personality": "James is charming, calculating, image-conscious, and skilled at making an audience feel included in his version of events. Early in life, loneliness taught him to treat follower counts as proof that he mattered; this made staged affection, selective truth, and public spectacle feel like reasonable tools. Real relationships challenged that equation. He remains ambitious and capable of deception, but authentic loyalty now has weight that fame cannot automatically outweigh. Under pressure he narrates, reframes, and searches for the move that preserves both leverage and reputation. He dislikes being made foolish in public and can retaliate with precision. His strongest boundary is earned intimacy: once someone becomes real to him rather than useful, exploiting that bond should create visible conflict rather than effortless villainy.",
+      "backstory": "James Costa was born in Brazil on May 29, 1998. Growing up, he had few friends beyond his sister, so social media attention became a substitute measure of belonging and value. He turned that instinct into a career as an influencer and later an actor, arriving at competition with a practiced persona, an eye for content, and a willingness to manufacture moments before learning that genuine connection could satisfy what an audience never did.",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "James character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/James",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "James character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/James",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "James character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/James",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "James character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/James",
+            "kind": "source-canon"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "James character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/James",
+            "kind": "source-canon"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "James character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/James",
+            "kind": "source-canon"
+          }
+        ],
+        "sexuality": [
+          {
+            "label": "James character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/James",
+            "kind": "source-canon"
+          }
+        ]
+      }
     },
     {
       "name": "Kai",
@@ -2277,7 +2795,56 @@
         "intuition": 7,
         "temperament": 8
       },
-      "sexuality": "lesbian"
+      "sexuality": "lesbian",
+      "voice": "Measured, thoughtful, and quietly formal, with confidence that grows rather than announces itself. Lake asks precise questions, dislikes cruelty disguised as humor, and chooses direct statements when a boundary has been crossed. Excitement appears in careful detail about books, chess, or a freedom she chose for herself.",
+      "personality": "Lake is intelligent, creative, principled, and shaped by years of rigid parental control. Perfection was enforced so harshly that stress contributed to her losing her hair, and hiding vulnerability became a survival habit. She finds refuge in writing, chess, and imagined worlds where choices belong to her. Freedom has not made her reckless; it has made her deliberate. She listens closely, values loyal friendships, and can absorb a setback without surrendering her identity. Under pressure she may obey too long, then make one decisive break when the demand violates her moral compass. She has little patience for bullying or people who confuse dominance with strength. Her growth should sound like ownership—“I choose”—rather than constant rebellion against parents who are no longer in the room.",
+      "backstory": "Lake Müller grew up under strict parents who controlled her schedule, appearance, and future. The pressure to be perfect left her private, anxious about vulnerability, and deeply self-conscious about wearing a wig after stress-related hair loss. Chess and writing offered places to think freely. Friendships beyond her family eventually gave her the support to defy that control, choose a new appearance, and begin living according to her own values.",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Lake character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Lake",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Lake character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Lake",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Lake character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Lake",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "sexuality": [
+          {
+            "label": "Lake character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Lake",
+            "kind": "source-canon"
+          }
+        ]
+      }
     },
     {
       "name": "Maggy",
@@ -2380,7 +2947,80 @@
         "intuition": 4,
         "temperament": 2
       },
-      "sexuality": "straight"
+      "birthdate": "2001-07-24",
+      "ethnicity": "Korean",
+      "nationality": "Korean",
+      "occupation": "Podcaster and brand promoter; former dancer",
+      "voice": "Abrasive, image-obsessed, and aggressively dismissive. Yul speaks in insults, status claims, and transactional logic, then pivots to calculated loyalty when an alliance benefits him. He is capable of sharp reads, but his need to demean people keeps turning usable information into unnecessary enemies.",
+      "personality": "Yul is vain, cruel, discriminatory, and convinced that fame should exempt him from ordinary accountability. Viral success as a teenage dancer rewarded performance before he developed empathy, and he learned to treat outrage as both threat and publicity. He can maintain tactical loyalty and understand alliance structure, yet his contempt repeatedly destroys the trust that strategy requires. Apologies are usually reputation management; remorse becomes suspect the moment consequences fade. Under pressure he insults appearance, identity, or intelligence, tries to reassert hierarchy, and threatens retaliation when control fails. His behavior must not be softened into harmless sass: abuse and bigotry should damage bonds, reputation, and voting options. He can be funny through vanity, hypocrisy, and failed self-importance without making targeted cruelty consequence-free.",
+      "backstory": "Yul Kim was born in Korea on July 24, 2001. A dance performance went viral when he was fifteen, creating early fame and a public “nice” persona that concealed his contempt for others. His behavior eventually cost him dancing work and damaged his reputation, after which he continued as a podcaster and brand promoter. He enters competition treating money and renewed celebrity as permission to stop pretending to be decent.",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          }
+        ],
+        "ethnicity": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Yul character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Yul",
+            "kind": "source-canon"
+          }
+        ]
+      }
     },
     {
       "name": "Alessio",
@@ -2614,7 +3254,88 @@
         "intuition": 8,
         "temperament": 4
       },
-      "sexuality": "straight"
+      "birthdate": "1996-08-03",
+      "nationality": "Puerto Rican American",
+      "occupation": "Publicist",
+      "descriptor": "Transgender woman with ADHD",
+      "sexuality": "pansexual",
+      "voice": "Bubbly, quick, and gossip-fluent, mixing affectionate nicknames, jokes, and sharp public-relations reads. Natalia can turn a crisis into a punchline, but emotion rushes through the polish when a friend is threatened. Strategy sounds like managing a narrative: who owns the story, who needs reassurance, and whose image cannot recover.",
+      "personality": "Natalia is outgoing, funny, socially curious, and professionally attuned to reputation. She genuinely likes learning about people, whether through direct conversation or gossip, and humor is her fastest route into a group. Friendship also makes her strategically messy: when someone she cares about is targeted, emotion can overwhelm the cleaner plan she intended to play. She is capable of flipping, reconciling with a rival for a shared objective, and recognizing when the public version of events matters as much as the vote. Her returning goal is discipline rather than personality replacement—strong bonds, fewer impulsive pivots, and control of her own story. Serious betrayals remain hard for her to release. Under pressure she talks faster, negotiates across factions, and may expose the whole room rather than leave quietly.",
+      "backstory": "Natalia Baez was born on August 3, 1996 and is proudly Puerto Rican American. She built a career as a publicist—the person friends call when an image needs repair—and developed a taste for tabloids, celebrity drama, and the human motives behind both. Her parents supported her transition; accepting herself as a transgender woman was frightening and liberating. She also identifies as pansexual and has spoken about having ADHD.",
+      "profileSources": {
+        "voice": [
+          {
+            "label": "Natalia character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Natalia",
+            "kind": "source-canon"
+          },
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Natalia character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Natalia",
+            "kind": "source-canon"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Natalia character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Natalia",
+            "kind": "source-canon"
+          }
+        ],
+        "stats": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "archetype": [
+          {
+            "label": "Fans vs Favorites profile interpretation",
+            "kind": "interpretation"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "Natalia character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Natalia",
+            "kind": "source-canon"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Natalia character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Natalia",
+            "kind": "source-canon"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Natalia character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Natalia",
+            "kind": "source-canon"
+          }
+        ],
+        "descriptor": [
+          {
+            "label": "Natalia character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Natalia",
+            "kind": "source-canon"
+          }
+        ],
+        "sexuality": [
+          {
+            "label": "Natalia character reference",
+            "url": "https://disventure-camp.fandom.com/wiki/Natalia",
+            "kind": "source-canon"
+          }
+        ]
+      }
     },
     {
       "name": "Richard",

@@ -24147,6 +24147,25 @@ function _bbCycleScreens(view, screens, suffix = '') {
           }) });
         break;
       }
+      case 'chain-duel': {
+        // A real competition, so it gets the competition board every other
+        // comp in the house gets rather than a bespoke card.
+        const duelView = { ...view, acts: [{ ...act, type: 'veto',
+          participants: act.nominees || [],
+          competition: act.competition,
+          results: (act.competition?.placements || []).map(name =>
+            ({ name, score: act.competition?.scores?.[name] })) }] };
+        const board = rpBuildBBComp(duelView, 'veto');
+        screens.push({ id: id('bb-chainduel'), label: 'The Duel',
+          html: board || _bbSceneScreen(view, {
+            eyebrow: `Week ${view.num}`, title: 'HEAD TO HEAD',
+            accent: 'var(--bbx-bad)', room: 'bb-comp',
+            subtitle: 'No vote. The two the house went past settle it themselves.',
+            stateKey: `bb_duel_${view.num}${view?._seg ? `_s${view._seg}` : ''}`,
+            scenes: _bbOwnBeats(act),
+          }) });
+        break;
+      }
       case 'chain-of-safety': {
         const chDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-chain'), label: 'Chain of Safety',
@@ -24410,7 +24429,15 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // The reads first, then the show. Voting Plans is the house counting —
         // Total Drama's plans screen for a house — and Eviction Night is the
         // live hour, so the intentions and the result stop sharing a page.
-        screens.push({ id: id('bb-plans'), label: 'Voting Plans', html: rpBuildBBVotingPlans(view) });
+        // NO PLANS ON A WEEK WITH NO VOTE.
+        //
+        // A Québec chain is settled by a duel and nobody casts a ballot, so the
+        // plans screen drew a war room for a vote that never happens — "every
+        // ballot this week belongs to a person, not a plan" over a week with no
+        // ballots in it. The Duel screen is where this week is decided.
+        if (!view.chainDuel) {
+          screens.push({ id: id('bb-plans'), label: 'Voting Plans', html: rpBuildBBVotingPlans(view) });
+        }
         // The Sanctum sits BETWEEN the plans and the result, because that is
         // where it happens: the room is called down, the votes are cast in
         // front of each other one at a time, and only then does the night
@@ -24420,7 +24447,28 @@ function _bbCycleScreens(view, screens, suffix = '') {
         if ((view.acts || []).some(a => a.type === 'eviction' && a.publicVote)) {
           screens.push({ id: id('bb-sanctum'), label: 'The Sanctum', html: rpBuildBBSanctum(view) });
         }
-        screens.push({ id: id('bb-evict'), label: 'Eviction Night', html: rpBuildBBEviction(view) });
+        // The eviction board counts ballots. On a duel week there are none, so
+        // it drew both nominees on nought votes and offered the Head of
+        // Household a tie to break. The duel already showed the result; this
+        // screen is the walk-out, so it is titled as one.
+        if (view.chainDuel) {
+          screens.push({ id: id('bb-evict'), label: 'The Front Door',
+            html: _bbSceneScreen(view, {
+              eyebrow: `Week ${view.num}`, title: 'THE FRONT DOOR',
+              accent: 'var(--bbx-bad)', room: 'bb-live',
+              subtitle: 'Decided in the yard. Nobody voted.',
+              stateKey: `bb_frontdoor_${view.num}${view?._seg ? `_s${view._seg}` : ''}`,
+              scenes: [{
+                text: `${view.chainDuel.loser} loses the duel and is evicted. There was no vote `
+                  + `this week — the house chose who was safe, twice, and ${view.chainDuel.loser} `
+                  + `and ${view.chainDuel.winner} were the two it went past.`,
+                players: [view.chainDuel.loser, view.chainDuel.winner].filter(Boolean),
+                badgeText: 'EVICTED', badgeClass: 'red',
+              }],
+            }) });
+        } else {
+          screens.push({ id: id('bb-evict'), label: 'Eviction Night', html: rpBuildBBEviction(view) });
+        }
         // No separate Vote screen: Eviction Night reads every ballot from the
         // Diary Room itself, so a second page repeating the same nine votes was
         // the night told twice.

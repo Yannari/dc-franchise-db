@@ -958,6 +958,9 @@ export function simulateBBEpisode() {
   const chainEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-chain-of-safety');
   const chainStart = chainEntry?.chainStart || 'safety-comp';
+  // How it ENDS: 'canada' stops at three and the house votes; 'quebec' runs the
+  // chain twice and the two people it forgot settle it in a duel.
+  const chainStyle = chainEntry?.chainStyle === 'quebec' ? 'quebec' : 'canada';
   // The triple has shapes too, and they are different NIGHTS rather than
   // different flavour:
   //   'fast-forward'  BB22 — two compressed cycles after the ordinary week.
@@ -1053,6 +1056,7 @@ export function simulateBBEpisode() {
       .find(t => t && Number(t.episode) === epNum && t.type === 'bb-app-store')?.shelf) || undefined,
     doubleVote: twists.includes('bb-double-eviction') && deStyle === 'double-vote',
     chainStart,
+    chainStyle,
     // How many houseguests America's ballot is worth. One is BBOTT's rule and
     // the default; the designer can lean on it harder.
     avWeight: Number((seasonConfig.twistSchedule || [])
@@ -1072,6 +1076,7 @@ export function simulateBBEpisode() {
   ep.instantEviction = twists.includes('bb-instant-eviction');
   ep.safetyMode = week.safetyMode || null;
   ep.safetyWinner = week.safetyWinner || null;
+  ep.chainDuel = week.chainDuel || null;
   ep.blockBeforeSafety = week.blockBeforeSafety ? [...week.blockBeforeSafety] : [];
   ep.departure = week.departure ? { ...week.departure } : null;
   ep.maintenanceErrors = [...(week.maintenanceErrors || [])];
@@ -1546,6 +1551,14 @@ export function summariseWeek(week) {
         if (act.punished?.length) {
           line(`  Punishments: ${act.punished.map(p => `${p.name} (${p.punishment})`).join(', ')}.`);
         }
+        break;
+      }
+      case 'chain-duel': {
+        line('');
+        line('THE DUEL');
+        line(`  ${(act.nominees || []).join(' v ')}`
+          + `${act.competition?.name ? ` — ${act.competition.name}` : ''}.`);
+        line(`  ${act.loser} is evicted. No vote.`);
         break;
       }
       case 'chain-of-safety': {

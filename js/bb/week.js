@@ -2602,8 +2602,33 @@ export function simulateBBWeek(options = {}) {
   // ran as its double eviction, and `deStyle: 'chain'` books it that way.
   if (twists.has('bb-chain-of-safety')) {
     try {
+      const chainStyle = options.chainStyle === 'quebec' ? 'quebec' : 'canada';
       week.chainOfSafety = runChainOfSafety({ week, house, hoh, rng,
-        variant: options.chainStart || 'safety-comp' });
+        variant: options.chainStart || 'safety-comp', style: chainStyle });
+      // ── QUÉBEC RUNS IT TWICE ──
+      //
+      // The first chain leaves one person unchosen and that is a nominee. Then
+      // the whole thing happens AGAIN among everybody else, and whoever is left
+      // over the second time is the other nominee. The house never votes: the
+      // two of them settle it in a duel.
+      if (week.chainOfSafety && chainStyle === 'quebec') {
+        const first = week.chainOfSafety.nominees[0];
+        const second = runChainOfSafety({ week, house, hoh, rng,
+          variant: options.chainStart || 'safety-comp', style: 'quebec',
+          skip: [first].filter(Boolean) });
+        if (second) {
+          week.chainOfSafety.secondChain = second;
+          week.chainOfSafety.nominees = [first, ...second.nominees].filter(Boolean);
+          week.chainOfSafety.beats = [
+            ...(week.chainOfSafety.beats || []),
+            { text: `${first} is on the block, and the house is told to do the whole thing again.`,
+              players: [first], badgeText: 'AND AGAIN', badgeClass: 'red' },
+            ...(second.beats || []),
+          ];
+          week.chainOfSafety.slights = [
+            ...(week.chainOfSafety.slights || []), ...(second.slights || [])];
+        }
+      }
       if (week.chainOfSafety) {
         skipVeto = true;
         // ── AND THE BLOCK BUSTER DOES NOT RUN EITHER ──
@@ -5752,8 +5777,42 @@ export function simulateBBWeek(options = {}) {
     return week;
   }
 
+  // ── THE DUEL, ON A QUÉBEC CHAIN ──
+  //
+  // The house does not vote on this week. It decided who was safe, twice, and
+  // the two people it forgot settle what is left between them head to head.
+  // The loser is evicted; there are no ballots at all, which is why `voters`
+  // is emptied below rather than the result being overridden afterwards — a
+  // week that records ballots nobody cast is a week that lies to the jury,
+  // the alliance ledger and the knowledge store all at once.
+  if (week.chainOfSafety?.style === 'quebec' && nominees.length === 2) {
+    try {
+      const duel = runBBCompetition({ type: 'tiebreaker', participants: [...nominees],
+        excluded: house.filter(n => !nominees.includes(n)), house, week, rng,
+        library: competitionLibrary, seed: options.seed, allowThrowing: false });
+      const loser = duel?.placements?.[duel.placements.length - 1]
+        || nominees[nominees.length - 1];
+      week.chainDuel = { competition: duel, winner: duel?.winner || null, loser };
+      week.acts.push(addBeats({
+        type: 'chain-duel', nominees: [...nominees], competition: duel,
+        winner: duel?.winner || null, loser,
+        beats: [{
+          text: `No vote. ${nominees.join(' and ')} are the two people this house went past, `
+            + `and the only thing left is which of them is better at one competition.`,
+          players: [...nominees], badgeText: 'HEAD TO HEAD', badgeClass: 'red',
+        }, {
+          text: `${duel?.winner || 'One of them'} wins it and stays. ${loser} is evicted, `
+            + 'and not one houseguest had to put their name to it.',
+          players: [duel?.winner, loser].filter(Boolean), badgeText: 'DECIDED', badgeClass: 'gold',
+        }],
+      }, { nominees: [...nominees] }));
+    } catch { week.chainDuel = null; }
+  }
+
   // Days 5–6 — votes begin from bonds, then campaigning can visibly move them.
-  let voters = house.filter(name => name !== hoh && !nominees.includes(name));
+  // A duel week has no voters: see the block above.
+  let voters = week.chainDuel ? []
+    : house.filter(name => name !== hoh && !nominees.includes(name));
   voters = hook(hooks, 'voteEligibility', voters, { week, house, hoh, nominees: [...nominees] }) || voters;
   voters = [...new Set(voters)].filter(name => house.includes(name) && name !== hoh && !nominees.includes(name));
   // Step 1 of the operation: everybody's own starting position, kept on the
@@ -6345,7 +6404,10 @@ export function simulateBBWeek(options = {}) {
   let evicted;
   let secondEvicted = null;
   let tieBreak = null;
-  if (doubleVote && nominees.length >= 3) {
+  if (week.chainDuel) {
+    // Decided in the yard, not in the Diary Room.
+    evicted = week.chainDuel.loser;
+  } else if (doubleVote && nominees.length >= 3) {
     // One vote, three chairs, two walks. The two highest evict-getters both
     // leave; the only tie that matters is the BOUNDARY — second place versus
     // the survivor — and the HOH's preference settles it, exactly like an

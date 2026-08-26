@@ -569,3 +569,76 @@ describe('the Block Buster is the same idea twice', () => {
     expect((week.ballots || []).length).toBeGreaterThan(4);
   });
 });
+
+describe('the Québec ending', () => {
+  // Celebrity Big Brother Québec runs the chain until ONE person is left
+  // unchosen and nominates them, then runs the whole thing AGAIN and nominates
+  // whoever is left over the second time. The two of them settle it in a duel.
+  // The house never votes: it decides who is safe, twice, and the two people
+  // it forgot fight over what is left.
+  const playQuebec = () => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+    Object.assign(seasonConfig, {
+      format: 'big-brother', jurySize: 7, finaleSize: 3, bbSafetyMode: 'off',
+      bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house', romance: 'enabled',
+      twistSchedule: [{ episode: 2, type: 'bb-chain-of-safety',
+        chainStart: 'hoh', chainStyle: 'quebec' }],
+    });
+    gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns,
+      threatScore, getBond, getPerceivedBond, ordinal });
+    simulateBBEpisode();
+    const ep = simulateBBEpisode();
+    return { ep, week: gs.bb.weeks[gs.bb.weeks.length - 1] };
+  };
+
+  it('runs the chain twice and nominates whoever was left over each time', () => {
+    const { week } = playQuebec();
+    const c = week.chainOfSafety;
+    expect(c.style).toBe('quebec');
+    expect(c.leftover, 'the first chain did not stop at one').toHaveLength(1);
+    expect(c.secondChain, 'the chain only ran once').toBeTruthy();
+    expect(c.secondChain.leftover).toHaveLength(1);
+    expect(c.nominees).toEqual([c.leftover[0], c.secondChain.leftover[0]]);
+    // The first nominee is on the block and out of the second chain entirely.
+    expect(c.secondChain.order).not.toContain(c.leftover[0]);
+  });
+
+  it('settles it with a duel and nobody votes', () => {
+    const { week } = playQuebec();
+    expect(week.chainDuel, 'no duel was staged').toBeTruthy();
+    expect(week.chainDuel.competition, 'the duel used no competition').toBeTruthy();
+    expect(week.chainOfSafety.nominees).toContain(week.chainDuel.loser);
+    expect(week.chainOfSafety.nominees).toContain(week.chainDuel.winner);
+    expect(week.evicted).toBe(week.chainDuel.loser);
+    // NO BALLOTS AT ALL. Recording votes nobody cast would lie to the jury,
+    // the alliance ledger and the knowledge store at once.
+    expect(week.ballots || []).toHaveLength(0);
+  });
+
+  it('draws no vote screens for a week with no vote', () => {
+    // The plans screen drew a war room for a vote that never happens, and the
+    // eviction board put both nominees on nought votes and offered the Head of
+    // Household a tie to break.
+    const { ep } = playQuebec();
+    const labels = buildScreens(ep).map(s => s.label);
+    expect(labels).toContain('The Duel');
+    expect(labels, 'a Voting Plans screen on a week with no ballots')
+      .not.toContain('Voting Plans');
+    expect(labels, 'an Eviction Night vote board with nothing to count')
+      .not.toContain('Eviction Night');
+    expect(labels).toContain('The Front Door');
+  });
+
+  it('leaves the Canada ending exactly as it was', () => {
+    const { week, ep } = playChain();       // the default style
+    expect(week.chainOfSafety.style).toBe('canada');
+    expect(week.chainOfSafety.secondChain).toBeUndefined();
+    expect(week.chainDuel).toBeUndefined();
+    expect(week.leftover || week.chainOfSafety.leftover).toHaveLength(3);
+    expect((week.ballots || []).length, 'the house stopped voting').toBeGreaterThan(4);
+    expect(buildScreens(ep).map(s => s.label)).toContain('Voting Plans');
+  });
+});

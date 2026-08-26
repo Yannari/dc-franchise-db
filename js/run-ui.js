@@ -2161,6 +2161,20 @@ export function renderTimeline() {
       // Same control as the double's, because a triple is a shape of night
       // rather than a bigger number: two fast-forwards is BB22, one live cycle
       // that takes two is Big Brother Canada's.
+      // Who starts the chain, and how it ends — two different questions, two
+      // documented answers each.
+      if (t.type === 'bb-chain-of-safety') {
+        const starts = { 'safety-comp': 'Safety Comp starts it', hoh: 'HOH starts it' };
+        const ends = { canada: 'Canada — house votes', quebec: 'Québec — duel decides' };
+        const sel = (key, opts, cur, title) => {
+          let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','${key}',this.value)" onclick="event.stopPropagation()" title="${title}" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
+          Object.entries(opts).forEach(([k, label]) => { h += `<option value="${k}" ${k === cur ? 'selected' : ''}>${label}</option>`; });
+          return h + '</select>';
+        };
+        const cfg = sel('chainStart', starts, t.chainStart || 'safety-comp', 'Who holds the first link')
+          + sel('chainStyle', ends, t.chainStyle || 'canada', 'How the chain ends');
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${cfg} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'bb-triple-eviction') {
         const tStyles = {
           'fast-forward': 'Two Fast-Forwards (BB22)',
@@ -2687,6 +2701,7 @@ export function assignTwist(twistId) {
     if (twistId === 'bb-americas-nominee') entry.anStyle = 'direct';
     if (twistId === 'bb-double-eviction') entry.deStyle = 'fast-forward';
     if (twistId === 'bb-triple-eviction') entry.teStyle = 'fast-forward';
+    if (twistId === 'bb-chain-of-safety') { entry.chainStart = 'safety-comp'; entry.chainStyle = 'canada'; }
     if (twistId === 'bb-battle-back') { entry.bbStyle = 'gauntlet'; entry.bbComp = ''; }
     seasonConfig.twistSchedule.push(entry);
   });

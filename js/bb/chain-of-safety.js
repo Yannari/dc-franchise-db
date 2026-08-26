@@ -7,14 +7,25 @@
 // it. One person is made safe, THEY choose the next, and it runs down the
 // house until three are left standing there having been chosen by nobody.
 //
-// Two documented variants, and the difference is only who starts it:
+// WHO STARTS IT has two documented answers:
 //   'safety-comp'  BBCan10 — a safety competition crowns the first link.
 //   'hoh'          BBCan11 — the reigning Head of Household starts it.
-// Everything after the first link is identical, so the variant is a flag
-// rather than a second implementation.
+// Everything after the first link is identical, so that one is a flag rather
+// than a second implementation.
 //
-// The last three play a second safety competition. Its winner is safe; the
-// other two are the nominees, immediately, with no ceremony and no veto.
+// HOW IT ENDS has two, and they are genuinely different weeks:
+//
+//   'canada'  The chain runs until THREE are left. Those three play a second
+//             safety competition; its winner is safe and the other two are the
+//             nominees, and the house votes one of them out.
+//
+//   'quebec'  Celebrity Big Brother Québec. The chain runs until ONE person is
+//             left unchosen, and that person is nominated. Then the whole
+//             thing runs AGAIN, and whoever is left unchosen the second time is
+//             the other nominee. The two of them settle it in a head-to-head
+//             duel and the loser is evicted — there is no vote at all. The
+//             house does not decide who goes; it decides who is safe, twice,
+//             and the two people it forgot fight over what is left.
 //
 // ── WHAT MAKES IT DIFFERENT FROM A NOMINATION ──
 //
@@ -171,6 +182,20 @@ const LAST_LINK = [
   (n, left) => `That is the end of it. ${n} was the last name called, and the three people ${pronouns(n).sub} might have saved are now competing for it instead.`,
 ];
 
+/** Québec: the chain ends on one person, and everybody watched it get there. */
+const LAST_LINK_ONE = [
+  (n, left) => `${n} is safe, and there is nobody left to hand it to but ${left}. The chain stops rather than save ${pronouns(left).obj}.`,
+  (n, left) => `It comes down to ${n}, holding the last link, with ${left} the only person left to give it to. ${n} does not give it.`,
+  (n, left) => `${n} takes the link and the room realises at the same moment that ${left} is the only name left uncalled.`,
+];
+
+/** And the one nobody said. */
+const LEFTOVER_ONE = [
+  n => `${n} is the only person in this house nobody chose. Not one name in that whole chain was ${n}'s.`,
+  n => `The chain runs out on ${n}. Every single houseguest had a name to give and every single one of them gave it to somebody else.`,
+  n => `${n} is left. There is no competition to win out of it and nobody to share it with — just ${n}, and a room that went all the way round.`,
+];
+
 /** The last three, chosen by nobody. */
 const LEFTOVER = [
   ns => `${ns.join(', ')} are the last three. Not one person in this house said any of their names.`,
@@ -229,9 +254,15 @@ function pickTarget(picker, pool, rng) {
  * small for a chain to mean anything (at five, "the last three" is most of the
  * room and the twist stops being a selection).
  */
-export function runChainOfSafety({ week, house, hoh, rng = Math.random, variant = 'safety-comp' } = {}) {
-  const room = (house || []).filter(Boolean);
-  if (room.length < 6) return null;
+export function runChainOfSafety({ week, house, hoh, rng = Math.random,
+  variant = 'safety-comp', style = 'canada', skip = [] } = {}) {
+  // Québec runs the chain down to ONE person left unchosen; Canada stops at
+  // three so they have a field to compete in.
+  const CHAIN_FLOOR_HERE = style === 'quebec' ? 1 : CHAIN_FLOOR;
+  // A second chain does not offer safety to somebody already nominated by the
+  // first one — they are on the block and out of it.
+  const room = (house || []).filter(Boolean).filter(n => !skip.includes(n));
+  if (room.length < (style === 'quebec' ? 4 : 6)) return null;
   const say = makePicker(rng);
   const beats = [];
   const useHoh = variant === 'hoh' && hoh && room.includes(hoh);
@@ -267,7 +298,7 @@ export function runChainOfSafety({ week, house, hoh, rng = Math.random, variant 
   const slights = [];
   let narrated = 0;
   let picker = starter;
-  const totalPicks = unsafe.length - CHAIN_FLOOR;
+  const totalPicks = unsafe.length - CHAIN_FLOOR_HERE;
 
   const relation = (a, b) => {
     try {
@@ -286,7 +317,7 @@ export function runChainOfSafety({ week, house, hoh, rng = Math.random, variant 
     return null;
   };
 
-  while (unsafe.length > CHAIN_FLOOR) {
+  while (unsafe.length > CHAIN_FLOOR_HERE) {
     const chosen = pickTarget(picker, unsafe, rng);
     if (!chosen) break;
     unsafe.splice(unsafe.indexOf(chosen), 1);
@@ -374,16 +405,41 @@ export function runChainOfSafety({ week, house, hoh, rng = Math.random, variant 
   // and not allowed to use it on any of the three people watching you hold it.
   const holder = order[order.length - 1];
   if (holder && holder !== starter && unsafe.length) {
-    beats.push(beat(say(LAST_LINK)(holder, unsafe), [holder, ...unsafe],
-      'NOWHERE LEFT TO SEND IT', 'blue'));
+    // Québec leaves ONE person over, not three, so the line about the three of
+    // them settling it themselves is not true there — and the holder is not
+    // stopped by a rule, they simply have nobody left worth the link.
+    beats.push(style === 'quebec'
+      ? beat(say(LAST_LINK_ONE)(holder, unsafe[0]), [holder, unsafe[0]],
+        'THE LAST NAME NOBODY SAID', 'blue')
+      : beat(say(LAST_LINK)(holder, unsafe), [holder, ...unsafe],
+        'NOWHERE LEFT TO SEND IT', 'blue'));
   }
 
-  // ── the last three ──
+  // ── whoever the chain never reached ──
   const leftover = [...unsafe];
-  beats.push(beat(say(LEFTOVER)(leftover), [...leftover], 'CHOSEN BY NOBODY', 'red'));
+  beats.push(style === 'quebec'
+    ? beat(say(LEFTOVER_ONE)(leftover[0]), [...leftover], 'CHOSEN BY NOBODY', 'red')
+    : beat(say(LEFTOVER)(leftover), [...leftover], 'CHOSEN BY NOBODY', 'red'));
   for (const n of leftover) {
     if (!gs.popularity) gs.popularity = {};
     gs.popularity[n] = (gs.popularity[n] || 0) - 1;
+  }
+
+  // ── QUÉBEC ENDS HERE ──
+  //
+  // One person is left unchosen and that is a nominee. There is no competition
+  // among the leftovers because there is only one of them; the second nominee
+  // comes from running the whole chain again, which the caller does.
+  if (style === 'quebec') {
+    return {
+      type: 'chain-of-safety', week: week?.num || 0, style: 'quebec',
+      variant: useHoh ? 'hoh' : 'safety-comp',
+      starter, openingComp,
+      order: [...order], links, leftover,
+      finalComp: null, safetyWinner: null,
+      nominees: [...leftover],
+      slights, beats,
+    };
   }
 
   // The second competition. The winner walks; the other two are already
@@ -409,6 +465,7 @@ export function runChainOfSafety({ week, house, hoh, rng = Math.random, variant 
   return {
     type: 'chain-of-safety',
     week: week?.num || 0,
+    style: 'canada',
     variant: useHoh ? 'hoh' : 'safety-comp',
     starter,
     openingComp,

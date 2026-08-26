@@ -5505,6 +5505,15 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
       }
+      case 'chain-duel': {
+        sec('THE DUEL');
+        ln(`  No vote. ${(act.nominees || []).join(' and ')} settle it head to head`
+          + `${act.competition?.name ? ` in ${act.competition.name}` : ''}.`);
+        if (act.winner) ln(`  ${act.winner} wins and stays.`);
+        ln(`  ${act.loser} is evicted, and not one houseguest had to put a name to it.`);
+        beats(act);
+        break;
+      }
       case 'chain-of-safety': {
         sec('THE CHAIN OF SAFETY');
         ln(act.variant === 'hoh'

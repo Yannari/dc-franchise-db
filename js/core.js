@@ -582,7 +582,7 @@ export const TWIST_CATALOG = [
   // incompatible with everything that assumes either exists.
   { id:'bb-chain-of-safety', emoji:'⛓️', name:'Chain of Safety', format:'big-brother',
     category:'elim', phase:'any',
-    desc:'Nobody is nominated this week — they are left over. One houseguest is made safe and chooses the next, that houseguest chooses the next, and the chain runs down the house in public until three people are standing there having been picked by nobody. Those three play a second safety competition: the winner walks, and the two who lose are the nominees on the spot. There is no ceremony, there are no keys, and there is no veto.',
+    desc:'Nobody is nominated this week — they are left over. One houseguest is made safe and chooses the next, that houseguest chooses the next, and the chain runs down the house in public until three people are standing there having been picked by nobody. Those three play a second safety competition: the winner walks, and the two who lose are the nominees on the spot. There is no ceremony, there are no keys, and there is no veto. The Québec ending runs the chain TWICE instead, nominates the person left over each time, and settles it with a head-to-head duel — no vote at all.',
     engineType:'bb-chain-of-safety',
     incompatible:['bb-instant-eviction', 'bb-battle-of-the-block', 'bb-duo-week',
       'bb-invisible-hoh', 'bb-split-house', 'bb-roadkill', 'bb-americas-nominee',

@@ -4887,14 +4887,40 @@
         "temperament": 2
       },
       "sexuality": "gay",
-      "profileSources": {},
+      "profileSources": {
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Finn",
+            "url": "https://disventure-camp.fandom.com/wiki/Finn",
+            "kind": "source-canon",
+            "quote": "well-performed arts student who has big dreams of becoming an actor"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Finn",
+            "url": "https://disventure-camp.fandom.com/wiki/Finn",
+            "kind": "source-canon",
+            "quote": "thrives on stirring up drama"
+          }
+        ],
+        "voice": [
+          {
+            "label": "Disventure Camp Wiki - Finn",
+            "url": "https://disventure-camp.fandom.com/wiki/Finn",
+            "kind": "source-canon",
+            "quote": "mocks Ivy's line"
+          }
+        ]
+      },
       "age": 20,
       "birthdate": "2006-08-17",
       "ethnicity": "White",
       "nationality": "Australian",
       "hometown": "Sydney",
       "occupation": "Performing arts student",
-      "descriptor": "The Theater Kid"
+      "descriptor": "The Theater Kid",
+      "voice": "Finn speaks with theatrical confidence and a need to dominate the room. His rhythm is boastful, cutting, and self-aware: he frames insults like performance, mocks other people’s lines, and escalates arguments by turning them into dramatic declarations about ambition and image. When challenged, he leans into sharp put-downs rather than backing off."
     },
     {
       "name": "Manu",

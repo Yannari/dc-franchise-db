@@ -71,68 +71,104 @@ const COMP_START = [
 
 /** Early in the chain: the picks nobody has to justify. */
 const PICK_EARLY = [
-  (a, b) => `${a} says ${b}'s name without hesitating. ${b} is out of the chain before the room has settled.`,
-  (a, b) => `"${b}." ${a} does not explain it. Nobody in this house needs it explained.`,
-  (a, b) => `${a} does not even look around the room first, which tells everybody in it something.`,
-  (a, b) => `${a} gives it to ${b} immediately. Two names in and the shape of this house is already on the table.`,
+  (a, b) => `${a} says ${b}'s name straight away, without looking round the room first.`,
+  (a, b) => `"${b}." That is the whole sentence. ${a} does not add anything to it.`,
+  (a, b) => `${a} barely waits to be asked. It is ${b}, and everybody could have guessed it.`,
+  (a, b) => `${a} picks ${b} inside about two seconds, which tells the room plenty on its own.`,
+  (a, b) => `${a} goes with ${b} and does not explain why. Nobody expects ${pronouns(a).obj} to, this early.`,
+  (a, b) => `First name of the night from ${a}, and it is ${b}. No hesitation at all.`,
 ];
 
 /** The middle: the picks that start costing something. */
 const PICK_MID = [
-  (a, b) => `${a} takes a moment over it, and gives it to ${b}.`,
-  (a, b) => `${a} looks along the row twice before saying ${b}, which everybody notices and nobody mentions.`,
-  (a, b) => `"${b}," says ${a}, and says it to the floor rather than to ${b}.`,
-  (a, b) => `${a} picks ${b}. Somewhere behind ${pronouns(a).obj} somebody breathes out through their nose.`,
-  (a, b) => `${a} weighs it properly — there are people left in this room ${pronouns(a).sub} likes — and lands on ${b}.`,
+  (a, b) => `${a} thinks about it properly this time, then says ${b}.`,
+  (a, b) => `${a} looks down the row twice before choosing ${b}. Everybody notices the second look.`,
+  (a, b) => `"${b}," ${a} says, and says it to the floor instead of to ${b}.`,
+  (a, b) => `${a} picks ${b}. Somebody further along the row lets out a breath.`,
+  (a, b) => `There are people left in this room ${a} likes. ${pronouns(a).Sub} picks ${b} anyway.`,
+  (a, b) => `${a} takes long enough that the room goes quiet, and then chooses ${b}.`,
+  (a, b) => `${a} says ${b}'s name and immediately looks at the floor.`,
 ];
 
 /** Late: the room is small, and everybody can count. */
 const PICK_LATE = [
-  (a, b) => `${a} is looking at a very short row of people now, and ${a} chooses ${b}.`,
-  (a, b) => `There are four names left and ${a} has one to give. ${pronouns(a).Sub} gives it to ${b} and does not look up afterwards.`,
-  (a, b) => `${a} says ${b}'s name quietly, which does not make it any quieter in the room.`,
-  (a, b) => `${b} is safe. ${a} has just told the two or three people still sitting down exactly where they came on the list.`,
-  (a, b) => `${a} hesitates long enough that everybody left has time to hope, and then says ${b}.`,
+  (a, b) => `There are only a few people left to choose from now. ${a} chooses ${b}.`,
+  (a, b) => `${a} has one name to give and four people to give it to. ${pronouns(a).Sub} says ${b}, and does not look up.`,
+  (a, b) => `${a} says ${b}'s name quietly. It does not land any more quietly for that.`,
+  (a, b) => `${b} is safe. Everybody still sitting down has just learned where they came on ${a}'s list.`,
+  (a, b) => `${a} waits long enough that the people left start to hope, then says ${b}.`,
+  (a, b) => `${a} apologises before saying it, which does not help anybody, and then says ${b}.`,
 ];
 
 /** Saving the person you are in a showmance with. Nobody is surprised. */
 const PICK_SHOWMANCE = [
-  (a, b) => `${a} picks ${b}, and the room makes the noise a room makes when nobody is remotely surprised.`,
-  (a, b) => `${a} says ${b} before the sentence asking is finished. It is the least secret decision of the night.`,
-  (a, b) => `Of course it is ${b}. ${a} does not pretend otherwise, and somebody at the end of the row says "shocking" without any inflection at all.`,
+  (a, b) => `${a} picks ${b}. The room makes the noise a room makes when nobody is surprised.`,
+  (a, b) => `${a} says ${b} before the question is finished. It is the least secret decision of the night.`,
+  (a, b) => `It is ${b}, obviously. Somebody at the end of the row says "shocking" completely flatly.`,
+  (a, b) => `${a} does not even pretend to weigh it up. ${b}, straight away, to nobody's surprise at all.`,
+  (a, b) => `${a} and ${b} have not been fooling anybody for weeks, and ${a} has just stopped trying.`,
 ];
 
 /** Saving somebody you are openly aligned with. */
 const PICK_ALLY = [
-  (a, b) => `${a} picks ${b}, which is what ${a} was always going to do and confirms it in front of everybody.`,
-  (a, b) => `${a} and ${b} have been a pair for weeks. ${a} has just said so out loud, on camera, to a room taking notes.`,
-  (a, b) => `${b}. It costs ${a} nothing and tells the house everything.`,
+  (a, b) => `${a} picks ${b}, which is what everybody expected and what ${a} was always going to do.`,
+  (a, b) => `${a} and ${b} have been working together for weeks. ${a} has just confirmed it in front of the whole house.`,
+  (a, b) => `${b}. It costs ${a} nothing, and the rest of the room files it away anyway.`,
+  (a, b) => `${a} chooses ${b} without hesitating, and half the room was already writing the name down.`,
+  (a, b) => `${a} says ${b}, and in doing so tells everybody watching exactly who ${pronouns(a).sub} ${pronouns(a).sub === 'they' ? 'are' : 'is'} playing with.`,
+  (a, b) => `No surprise: ${a} looks after ${b}, the way ${pronouns(a).sub} ${pronouns(a).sub === 'they' ? 'have' : 'has'} all season.`,
+  (a, b) => `${a} picks ${b}. They have voted together every week and now the whole house has seen why.`,
+  (a, b) => `${b}, of course. ${a} did not have to think about that one and did not pretend to.`,
 ];
 
 /** Saving somebody you have no relationship with at all. */
 const PICK_COLD = [
-  (a, b) => `${a} picks ${b}, and the two of them have barely had a conversation this season. Half the room is trying to work out what that means.`,
-  (a, b) => `${a} goes with ${b} — not a friend, not an enemy, and therefore not a debt anybody can call in.`,
-  (a, b) => `${a} names ${b}, which surprises ${b} more than anybody, and ${b} does a poor job of hiding it.`,
+  (a, b) => `${a} picks ${b}, and the two of them have barely spoken this season. Half the room is trying to work out what it means.`,
+  (a, b) => `${a} goes with ${b} — not a friend, not an enemy, and so not a favour anybody can call in later.`,
+  (a, b) => `${a} says ${b}, and ${b} looks more surprised than anybody else in the room.`,
+  (a, b) => `${b} was not expecting it. Neither was anybody else. ${a} does not explain.`,
+  (a, b) => `${a} chooses somebody ${pronouns(a).sub} ${pronouns(a).sub === 'they' ? 'have' : 'has'} no history with at all, and ${b} takes the seat without asking why.`,
 ];
 
 /** Saving somebody you do not even like. That is a move. */
 const PICK_RIVAL = [
   (a, b) => `${a} picks ${b}. They cannot stand each other, and ${a} has just bought something with that.`,
-  (a, b) => `${b}, of all people. ${a} has spent six weeks on the other side of ${b} and has just handed ${pronouns(b).obj} a week.`,
-  (a, b) => `${a} says ${b}'s name and the room actually turns round. That is not a friendship, it is an invoice.`,
+  (a, b) => `${b}, of all people. ${a} has been on the other side of ${pronouns(b).obj} for weeks and has just handed ${pronouns(b).obj} a week of safety.`,
+  (a, b) => `${a} says ${b}'s name and the room actually turns to look. That is not a friendship. It is a debt.`,
+  (a, b) => `${a} saves the one person nobody thought ${pronouns(a).sub} would, and lets everybody sit with it.`,
 ];
 
-/** The people who were sitting right there and did not hear their name. */
+/**
+ * The people who were sitting right there and did not hear their name.
+ *
+ * Written to be SAID rather than admired. The first version reached for
+ * phrases like "a bad smile" that no houseguest would ever use out loud, and
+ * it read like something translated rather than something said.
+ */
 const PASSED_OVER = [
-  (a, b) => `${b} was watching ${a}'s mouth and it made a different shape. ${b} says nothing and files it.`,
-  (a, b) => `${a} had one name to give and it was not ${b}'s. ${b} is going to remember exactly how long that took.`,
-  (a, b) => `${b} had counted on ${a}. ${b} is now counting something else.`,
-  (a, b) => `${b} does not react at all, which from ${b} is the reaction.`,
-  (a, b) => `${b} had already half-stood up. ${b} sits back down and spends a while looking at nothing in particular.`,
-  (a, b) => `Whatever ${a} and ${b} had before tonight, it was worth less than one name, and both of them now know the number.`,
-  (a, b) => `${b} smiles at ${a}. It is a bad smile and it arrives about a second too late.`,
-  (a, b) => `${a} could have ended ${b}'s week right there and chose not to. ${b} will be doing arithmetic about that until Thursday.`,
+  (a, b) => `${b} was watching ${a}'s face the whole time, waiting for it, and it never came.`,
+  (a, b) => `${a} had one name to give and did not give it to ${b}. ${b} will remember how long ${a} took over it.`,
+  (a, b) => `${b} was counting on ${a}. ${b} is not counting on ${a} any more.`,
+  (a, b) => `${b} does not react at all, which from ${b} is a reaction.`,
+  (a, b) => `${b} had half stood up already. ${pronouns(b).Sub} sits back down and stares at the floor for a while.`,
+  (a, b) => `${a} and ${b} were close before tonight. ${b} has just found out how close.`,
+  (a, b) => `${b} smiles at ${a}. It takes ${pronouns(b).obj} a second too long, and it does not reach ${pronouns(b).posAdj} eyes.`,
+  (a, b) => `${a} could have ended ${b}'s week right there and did not. ${b} will be thinking about that until Thursday.`,
+  (a, b) => `${b} says "fair enough" to nobody in particular, and does not sound like ${pronouns(b).sub} ${pronouns(b).sub === 'they' ? 'mean' : 'means'} it.`,
+];
+
+/**
+ * The last houseguest made safe, holding a link with nowhere to send it.
+ *
+ * The chain stops at three because those three have to compete. So the final
+ * person saved gets the one thing nobody else in the room got: safety, the
+ * power to save, and no permission to use it.
+ */
+const LAST_LINK = [
+  (n, left) => `${n} is safe, and that is where it stops. Three people are left and ${n} is not allowed to save any of them — ${left.join(', ')} are going to settle it themselves.`,
+  (n, left) => `The chain reaches ${n} and runs out. ${n} holds it, looks at ${left.join(', ')}, and is told the choosing is over.`,
+  (n, left) => `${n} takes the last link and has nowhere to send it. ${left.join(', ')} are the three, and no houseguest gets a say in which of them stays.`,
+  (n, left) => `That is the end of it. ${n} was the last name called, and the three people ${pronouns(n).sub} might have saved are now competing for it instead.`,
 ];
 
 /** The last three, chosen by nobody. */
@@ -321,6 +357,20 @@ export function runChainOfSafety({ week, house, hoh, rng = Math.random, variant 
         'PASSED OVER', 'red'));
     }
     picker = chosen;
+  }
+
+  // ── the chain dies in somebody's hands ──
+  //
+  // The last houseguest made safe is handed the link and has nowhere to put
+  // it: three people are left and the rule stops there, because those three
+  // are the ones who compete. Without this beat the screen simply showed the
+  // chain ending one name early and it read as somebody skipping their turn.
+  // It is also the best seat in the twist — safe, holding the power to save,
+  // and not allowed to use it on any of the three people watching you hold it.
+  const holder = order[order.length - 1];
+  if (holder && holder !== starter && unsafe.length) {
+    beats.push(beat(say(LAST_LINK)(holder, unsafe), [holder, ...unsafe],
+      'NOWHERE LEFT TO SEND IT', 'blue'));
   }
 
   // ── the last three ──

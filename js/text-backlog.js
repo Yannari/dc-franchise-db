@@ -5526,6 +5526,15 @@ export function generateBBSummaryText(ep) {
           ln(`    ${String(i + 2).padStart(2)}. ${l.chosen} — chosen by ${l.picker}`);
         });
         ln('');
+        // Why the list stops one short of the room: the chain ends at three
+        // because those three have to compete, so the last name called is
+        // handed a link with nowhere to send it.
+        const holder = (act.order || [])[(act.order || []).length - 1];
+        if (holder) {
+          ln(`  ${holder} is the last name called, and the chain stops there — three left means`);
+          ln('  there is a competition to run, so nobody gets to save anybody else.');
+          ln('');
+        }
         ln(`  Chosen by nobody: ${(act.leftover || []).join(', ')}.`);
         if (act.safetyWinner) {
           ln(`  Second safety competition: ${act.safetyWinner} wins it and is safe.`);
@@ -6318,6 +6327,16 @@ export function generateBBSummaryText(ep) {
           if (b.pleaMove) chain.push(`moved by ${b.movedBy}'s plea`);
           ln(`  ${b.voter}: "I vote to evict ${b.evict}."${chain.length ? `  (${chain.join(' · ')})` : ''}`);
         });
+        // AND THE PUBLIC'S, read with the rest of them. It is counted into the
+        // totals below, so leaving it out of the list printed a room of eight
+        // and a board that added up to nine.
+        if (act.americasVote?.target) {
+          const av = act.americasVote;
+          const share = (av.tally || []).find(t => t.name === av.target)?.share;
+          ln(`  The public: "We vote to evict ${av.target}."`
+            + `  (${share != null ? `${share}% of the public vote` : 'the public vote'}`
+            + `${av.weight > 1 ? ` × ${av.weight}` : ''})`);
+        }
 
         // HOW THE PLANS CHANGED — the same reasons the screen gives, so the
         // transcript is not a thinner account of the same night.

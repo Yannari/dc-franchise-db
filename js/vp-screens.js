@@ -22590,6 +22590,12 @@ export function rpBuildBBEviction(ep) {
     ...noms.map(name => ({ kind: 'plea', name })),
     { kind: 'tovote' },
     ...ballots.map(b => ({ kind: 'ballot', b })),
+    // THE PUBLIC'S BALLOT SITS WITH THE OTHERS.
+    //
+    // It is counted into the totals but it is not a houseguest, so the board
+    // showed eight names voting and a verdict built on nine votes. Read here,
+    // last, the way the show reads it.
+    ...(act?.americasVote?.target ? [{ kind: 'publicballot' }] : []),
     // Before the verdict, because it IS the verdict's reasoning: with two duos
     // up, the votes are added by pair and the loudest half of the losing pair
     // goes. Without this the right name is called for reasons the screen never
@@ -22678,6 +22684,19 @@ export function rpBuildBBEviction(ep) {
         return `<div class="bbns-card is-open">
           <div class="bbns-card-h"><span class="bbns-pill grey">THE HOUSE VOTES</span></div>
           <div class="bbns-card-b">One at a time, the voters cross the living room to the Diary Room. The vote is secret from the house — only the audience hears it — and ${hoh ? `<strong>${_bbEsc(hoh)}</strong> and the nominees do not vote at all` : 'the nominees do not vote'}.</div></div>`;
+      case 'publicballot': {
+        const av = act.americasVote;
+        const share = (av.tally || []).find(t => t.name === av.target)?.share;
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h"><span class="bbns-pill red">THE PUBLIC VOTE</span></div>
+          <div class="bbns-card-b">${_bbAvatar(av.target, 26)}
+            <strong>The public:</strong> “We vote to evict ${_bbEsc(av.target)}.”
+            <div style="margin-top:6px;font-size:11px;color:var(--muted)">${share != null
+    ? `${share}% of the public vote` : 'the public vote'}${av.weight > 1
+    ? `, counted ${av.weight} times` : ''} — cast by people nobody in that room
+            could campaign to, and counted with the ballots above.</div>
+          </div></div>`;
+      }
       case 'ballot': {
         const b = step.b;
         const c = commitment.get(b.voter);

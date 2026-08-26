@@ -6575,6 +6575,13 @@ export function simulateBBWeek(options = {}) {
 
   week.acts.push(addBeats(
     { type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted,
+      // THE PUBLIC'S BALLOT, WHERE THE BALLOTS ARE READ.
+      //
+      // It is counted into `votes` but it is not in `ballots`, so the eviction
+      // night printed eight names and a total of nine: a reader counting the
+      // room got a different number from the one on the board. It travels with
+      // the act now and is read out with the rest.
+      americasVote: week.americasVote || null,
       secondEvicted, doubleVote,
       // The night the room watched each other vote.
       publicVote: !!week.publicVote,

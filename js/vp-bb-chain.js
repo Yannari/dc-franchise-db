@@ -140,6 +140,9 @@ export function rpBuildBBChainOfSafety(ep, act, deps) {
          <br><br>That houseguest chooses the next. And that one chooses the next. It runs down this
          house out loud, in front of everybody who has not been chosen yet, until three people are
          left standing there having been picked by nobody at all.
+         <br><br><b>It stops at three.</b> The last houseguest saved does not get to choose again —
+         there has to be a field left to compete, so whoever is holding the chain when three remain
+         is simply told the choosing is over.
          <br><br>Those three compete. One wins safety. The other two are the nominees, on the spot,
          and there is no veto coming to take either of them down.`, 'gold');
     }

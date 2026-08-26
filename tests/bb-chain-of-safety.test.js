@@ -353,3 +353,30 @@ describe('the house afterwards', () => {
     }
   });
 });
+
+describe('the chain stopping one name short', () => {
+  it('says why the last person saved does not get to choose', () => {
+    // The rule stops the chain at three, because those three have to compete.
+    // So the final houseguest saved is handed the link with nowhere to send
+    // it — correct, and completely invisible until it was narrated: the screen
+    // just showed the chain ending one name early, which reads as somebody
+    // skipping their turn.
+    const { week } = playChain();
+    const c = week.chainOfSafety;
+    const holder = c.order[c.order.length - 1];
+    const beat = (c.beats || []).find(b => b.badgeText === 'NOWHERE LEFT TO SEND IT');
+    expect(beat, 'the chain stopped and nothing explained why').toBeTruthy();
+    expect(beat.text).toContain(holder);
+    // Nobody in the last three was saved by them.
+    for (const n of c.leftover) expect(c.order).not.toContain(n);
+    // And the person holding it is the last one in the order, not a nominee.
+    expect(c.leftover).not.toContain(holder);
+  });
+
+  it('states the stopping rule before the chain runs', async () => {
+    const { ep } = playChain();
+    const vp = await import('../js/vp-screens.js');
+    const screen = vp.buildBBWeekScreens(ep).find(s => s.id === 'bb-chain');
+    expect(screen.html).toContain('It stops at three');
+  });
+});

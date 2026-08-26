@@ -282,3 +282,32 @@ describe('the transcript reads like the broadcast', () => {
     expect(text.split(dupe).length - 1).toBeLessThan(2);
   });
 });
+
+describe('eviction night can be counted', () => {
+  it('reads the public ballot out with the houseguests’', () => {
+    // The vote is counted into the totals but is not a houseguest, so it was
+    // not in the list of ballots: the transcript printed eight people voting
+    // and a board that added up to nine. Anybody counting the room got a
+    // different number from the one on the screen.
+    const { ep, week } = playVote();
+    const text = generateSummaryText(ep) || '';
+    const av = week.americasVote;
+    expect(text).toContain(`The public: "We vote to evict ${av.target}."`);
+    // And the arithmetic now closes: named ballots + the public = the totals.
+    const cast = Object.values(week.votes).reduce((a, b) => a + b, 0);
+    expect(cast).toBe(week.ballots.length + av.weight);
+  });
+
+  it('puts it on the eviction screen too, not only in the transcript', async () => {
+    const { ep, week } = playVote();
+    const vp = await import('../js/vp-screens.js');
+    vp.buildBBWeekScreens(ep);
+    for (const k of Object.keys(vp._tvState)) {
+      const st = vp._tvState[k];
+      if (st && typeof st === 'object' && 'idx' in st) st.idx = 9999;
+    }
+    const html = vp.buildBBWeekScreens(ep).map(x => x.html || '').join(' ');
+    expect(html).toContain('THE PUBLIC VOTE');
+    expect(html).toContain(`We vote to evict ${week.americasVote.target}`);
+  });
+});

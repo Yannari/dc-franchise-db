@@ -4784,14 +4784,40 @@
         "temperament": 7
       },
       "sexuality": "straight",
-      "profileSources": {},
+      "profileSources": {
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Ernesto",
+            "url": "https://disventure-camp.fandom.com/wiki/Ernesto",
+            "kind": "source-canon",
+            "quote": "63-year-old corporate trainer from Spain"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Ernesto",
+            "url": "https://disventure-camp.fandom.com/wiki/Ernesto",
+            "kind": "source-canon",
+            "quote": "Ernesto is calm and confident and contributes to his team in a rewarding way"
+          }
+        ],
+        "voice": [
+          {
+            "label": "Disventure Camp Wiki - Ernesto",
+            "url": "https://disventure-camp.fandom.com/wiki/Ernesto",
+            "kind": "source-canon",
+            "quote": "filled with younger people"
+          }
+        ]
+      },
       "age": 64,
       "birthdate": "1962-01-11",
       "ethnicity": "White",
       "nationality": "Spanish",
       "hometown": "Buitrago de Lozoya",
       "occupation": "Corporate trainer",
-      "descriptor": "The Elder"
+      "descriptor": "The Elder",
+      "voice": "Ernesto speaks like a seasoned mentor: measured, declarative, and fond of framing his opinions as practical guidance. In an argument, he challenges weak logic directly rather than escalating emotionally, using experience-based reasoning and occasionally blunt judgments. His vocabulary can sound formal or paternal, especially when he talks about younger people needing direction."
     },
     {
       "name": "Evie",

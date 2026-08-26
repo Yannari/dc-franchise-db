@@ -76,6 +76,61 @@ export const SHOWS = {
       ['bb.timesNominated', 'timesNominated'],
     ],
   },
+  // ── The Traitors ────────────────────────────────────────────────────
+  // An all-alumni social deduction format. Two things about it break
+  // assumptions the other two shows never tested:
+  //
+  // 1. It has TWO exit verbs. `words.exit` is 'banished' because that is the
+  //    vote, and a vote is what most screens are describing. But a murder is
+  //    not a banishment, and any sentence about a departure must read the
+  //    round's own exit channel rather than this default. Printing "banished"
+  //    over a murder is the same bug as "evicted" over a camp.
+  // 2. Every player has franchise history and NOBODY is returning to this
+  //    show — the two things `isReturnee` has safely meant at once for fifteen
+  //    seasons. `historyFromLedger` below is that split.
+  'traitors': {
+    prefix: 'tr', name: 'The Traitors', short: 'TR', emoji: '🗡️',
+    words: { player: 'player', players: 'players', round: 'Episode', exit: 'banished',
+      comp: 'mission', comps: 'missions won', compBeast: 'mission asset',
+      compWon: 'missions' },
+      // audienceAward is deliberately absent: the format has no in-show award
+      // and the manual says a show without one leaves the field out and calls
+      // nothing. Inventing a name would be worse than having none.
+
+    // Reputation and grudges come from the appearance ledger rather than from
+    // the per-season Returning checkbox. On the other two shows those coincide,
+    // because a returnee is the only person with history worth carrying. Here
+    // every player has history, so the checkbox would have to be ticked twenty
+    // times a season to enable a system that already knows the answer — and the
+    // day one is missed, that player walks in with no reputation and nothing
+    // reports it. Read by buildFranchiseMeta().
+    historyFromLedger: true,
+
+    // PROVISIONAL. tests/ratings.test.js requires an overlay at registration and
+    // requires it to differ from every other show's, so this cannot wait for the
+    // ratings pass — but it has not been measured against a played season yet
+    // and must be recalibrated there.
+    //
+    // The reasoning behind the shape: this show sells the betrayal, not the
+    // arithmetic that produced it. A banishment that lands on a Traitor is the
+    // event of the week, so `blindside` is the highest multiplier on the board.
+    // `predictable` is punished hard because a season where the Faithfuls are
+    // simply right every week has no show in it. Romance exists but is not what
+    // anybody tuned in for.
+    audience: { strategy: 1.15, blindside: 1.4, mess: 1.1, predictable: 0.6,
+      steamroll: 1.1, showmance: 0.85 },
+
+    // roundsAsTraitor rather than seasonsAsTraitor: recruitment means the role
+    // is not a season-level property of a person.
+    careerStats: [
+      ['tr.missionsWon',     'totalMissionsWon'],
+      ['tr.shieldsWon',      'totalShieldsWon'],
+      ['tr.roundsAsTraitor', 'totalRoundsAsTraitor'],
+      ['tr.timesRecruited',  'totalTimesRecruited'],
+      ['tr.timesMurdered',   'totalTimesMurdered'],
+      ['tr.timesBanished',   'totalTimesBanished'],
+    ],
+  },
 };
 
 /** The default for anything that predates formats — every old season is this. */

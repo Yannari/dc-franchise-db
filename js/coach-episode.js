@@ -18,21 +18,31 @@ function vulnerabilityOf(coachName, tribe) {
 /**
  * Career fame gap between a coach and a contestant, in stars.
  *
- * `js/fame.js` derives stars from `computeFame({ players, rankings, seasons,
- * franchise })` — a full walk of seasons_database.json / players_database.json
- * / the franchise records file. None of those databases are loaded into the
- * live simulator's `gs` (fame.js's own header says as much: "the site uses it
- * now and the simulator uses it later"), so there is no real score to feed
- * `starsFromScore` from inside an episode. Rather than invent a number, this
- * always returns a gap of 0 — awe is architecturally wired but inert until a
- * future task plumbs the franchise databases into `gs`.
+ * `js/fame.js` derives real stars from `computeFame({ players, rankings,
+ * seasons, franchise })` — a full walk of seasons_database.json /
+ * players_database.json / the franchise records file. None of those
+ * databases are loaded into the live simulator's `gs` (fame.js's own header
+ * says as much: "the site uses it now and the simulator uses it later"), so
+ * there is no continuous 0-5 score to feed `starsFromScore` from inside an
+ * episode.
  *
- * Kept as a seam (not hardcoded inline) so that wiring is a one-line change
- * here, and so a test can inject a stand-in to prove the awe→bond multiplier
- * itself is correct without needing that data to exist yet.
+ * This is a two-tier PROXY, not real fame: the coach's own `stars` (set on
+ * `addCoach`, defaulting to 4.5 — coaches are winners/finalists by
+ * definition) against a flat guess at the contestant's own standing, read
+ * off `isReturnee` because that field IS reachable in-engine today
+ * (`js/players.js` already reads it): a newbie is `0`, a returning vet is
+ * `2.0`. It is deliberately coarse and should be replaced the day a season
+ * builder plumbs real fame.js output into `gs`.
+ *
+ * Kept as a seam (not hardcoded inline) so a caller can pass real fame later
+ * without touching `runCoachingBlock`, and so tests can inject a stand-in.
  */
-export function defaultFameGapOf(_coachName, _contestantName) {
-  return 0;
+export function defaultFameGapOf(coachName, contestantName, tribeCoaches) {
+  const coach = (tribeCoaches || []).find(c => c.name === coachName);
+  const coachStars = coach?.stars ?? 4.5;
+  const contestant = players.find(p => p.name === contestantName);
+  const contestantStars = contestant?.isReturnee ? 2.0 : 0;
+  return coachStars - contestantStars;
 }
 
 export function runCoachingBlock(ep, tribe, roll = Math.random, fameGapOf = defaultFameGapOf) {
@@ -65,7 +75,7 @@ export function runCoachingBlock(ep, tribe, roll = Math.random, fameGapOf = defa
       // here — being coached is still attention, so the floor is 0, not the
       // raw negative awe.
       const contestantArchetype = players.find(p => p.name === contestant)?.archetype;
-      const gap = fameGapOf(coach.name, contestant);
+      const gap = fameGapOf(coach.name, contestant, coaches);
       const awe = aweOf({ gap, stats: pStats(contestant), archetype: contestantArchetype });
       const bondMult = 1 + Math.max(0, awe);
 

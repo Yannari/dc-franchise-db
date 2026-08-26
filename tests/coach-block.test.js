@@ -110,10 +110,45 @@ describe('awe of a famous coach accelerates the bond, never the teaching', () =>
     expect(gainAwe).toBeCloseTo(gainNoAwe);
   });
 
-  it('defaultFameGapOf takes the gap as 0 — no fame database reachable from an episode yet', () => {
-    const out = runCoachingBlock({ num: 3 }, tribe, () => 0.5);
-    // With the default gap of 0, aweOf({gap:0}) is 0, so the multiplier is 1
-    // and the bond gained is exactly the base attention bond.
-    expect(getBond('Julia', out.sessions[0].contestant)).toBeCloseTo(1);
+  it('the default fame proxy makes a newbie gain more bond than a returning vet, all else equal', () => {
+    // Real fame.js output needs season data an episode cannot reach, so
+    // defaultFameGapOf stands in with a coarse two-tier proxy: the coach's
+    // own `stars` (4.5 by default) against isReturnee (0 for a newbie, 2.0
+    // for a vet) — reachable in-engine today. Gap 4.5 for the newbie vs. gap
+    // 2.5 for the vet, same coach, same stats, same roll.
+    setPlayers([
+      { name: 'Star', archetype: 'schemer', stats: stats({ endurance: 9 }) },
+      { name: 'Newbie', archetype: 'goat', isReturnee: false,
+        stats: stats({ endurance: 2, strategic: 1, boldness: 1, intuition: 1 }) },
+      { name: 'Vet', archetype: 'goat', isReturnee: true,
+        stats: stats({ endurance: 2, strategic: 1, boldness: 1, intuition: 1 }) },
+    ]);
+
+    setGs({ activePlayers: ['Newbie'], coaches: [], coachTraining: {}, bonds: {}, episode: 3 });
+    addCoach({ name: 'Star', tribe: 'NewbieTribe', sessionsPerEp: 1 });
+    runCoachingBlock({ num: 3 }, { tribeName: 'NewbieTribe', members: ['Newbie'] }, () => 0.5);
+    const newbieBond = getBond('Star', 'Newbie');
+
+    setGs({ activePlayers: ['Vet'], coaches: [], coachTraining: {}, bonds: {}, episode: 3 });
+    addCoach({ name: 'Star', tribe: 'VetTribe', sessionsPerEp: 1 });
+    runCoachingBlock({ num: 3 }, { tribeName: 'VetTribe', members: ['Vet'] }, () => 0.5);
+    const vetBond = getBond('Star', 'Vet');
+
+    expect(newbieBond).toBeGreaterThan(vetBond);
+  });
+
+  it('a coach with a lower stars rating shrinks the same contestant’s gap', () => {
+    setPlayers([
+      { name: 'MinorStar', archetype: 'schemer', stats: stats({ endurance: 9 }) },
+      { name: 'Newbie', archetype: 'goat', isReturnee: false,
+        stats: stats({ endurance: 2, strategic: 1, boldness: 1, intuition: 1 }) },
+    ]);
+    setGs({ activePlayers: ['Newbie'], coaches: [], coachTraining: {}, bonds: {}, episode: 3 });
+    addCoach({ name: 'MinorStar', tribe: 'T', sessionsPerEp: 1, stars: 1 });
+    const out = runCoachingBlock({ num: 3 }, { tribeName: 'T', members: ['Newbie'] }, () => 0.5);
+    // gap = 1 - 0 = 1, small but still positive awe for a deferential goat,
+    // so the bond gained sits just above the unmultiplied base of 1.
+    const bond = getBond('MinorStar', out.sessions[0].contestant);
+    expect(bond).toBeGreaterThan(1);
   });
 });

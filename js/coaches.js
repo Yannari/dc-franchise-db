@@ -33,9 +33,14 @@ export function sessionsFor(tribeSize) {
   return Math.max(1, Math.floor(tribeSize / 3));
 }
 
-export function addCoach({ name, tribe, sessionsPerEp = 2 }) {
+/**
+ * Career fame, in stars. Coaches are by definition winners and finalists, so
+ * 4.5 (Icon, one rung short of the five-star lock) is the honest default — a
+ * season builder can override it per coach once one exists.
+ */
+export function addCoach({ name, tribe, sessionsPerEp = 2, stars = 4.5 }) {
   if (!gs.coaches) gs.coaches = [];
-  const record = { name, tribe, saveCard: 'unused', promoted: false, sessionsPerEp };
+  const record = { name, tribe, saveCard: 'unused', promoted: false, sessionsPerEp, stars };
   gs.coaches.push(record);
   return record;
 }

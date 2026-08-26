@@ -116,16 +116,21 @@ export function lateArrivalDue(epNum) {
   return !!held && !held.seated && Number(epNum) >= held.episode;
 }
 
+/**
+ * `where` is already a phrase, not a name: a tribe is "Fans camp" and a
+ * tribeless season is "the game". Passing the raw name and appending the word
+ * "camp" produced "walks into the game camp", which is not a place.
+ */
 const WALK_IN = [
-  (n, t, p) => `${n} walks into ${t} camp carrying a bag, and every conversation in it stops at the same time.`,
-  (n, t) => `Nobody in ${t} is expecting anybody. ${n} comes up the path anyway.`,
-  (n, t, p) => `${n} arrives late, alone, and to a camp that has already had ${p.posAdj} share of arguments without ${p.obj}.`,
+  (n, w) => `${n} walks into ${w} carrying a bag, and every conversation in earshot stops at the same time.`,
+  (n, w) => `Nobody in ${w} is expecting anybody. ${n} comes up the path anyway.`,
+  (n, w, p) => `${n} arrives late, alone, into ${w} — which has already had ${p.posAdj} share of arguments without ${p.obj}.`,
 ];
 
 const THE_PROBLEM = [
-  (n, t) => `Everybody in ${t} has spent days working out who they trust. ${n} was not in any of those conversations, and it shows before anybody says a word.`,
+  (n, w) => `Everybody in ${w} has spent days working out who they trust. ${n} was not in any of those conversations, and it shows before anybody says a word.`,
   (n) => `${n} has no bonds here, no alliance, and nothing yet to be useful for. There is no version of this where that is not the first thing everybody notices.`,
-  (n, t) => `${n} is now the easiest vote in ${t}, and knows it, and has about two days to change it.`,
+  (n, w) => `${n} is now the easiest vote in ${w}, and knows it, and has about two days to change it.`,
 ];
 
 const THEY_KNOW = [
@@ -165,11 +170,14 @@ export function seatLateArrival(ep, { rng = Math.random } = {}) {
   const pick = list => list[Math.floor(rng() * list.length)];
   const p = pronouns(held.name);
   const campName = held.seatedOn;
+  // A tribe is a camp; a tribeless season is just the game. Built here so no
+  // line has to guess which it is.
+  const where = tribe ? `${campName} camp` : (gs.mergeName ? `${gs.mergeName}` : 'the game');
   const away = !!tribe && held.castOn && held.castOn !== tribe.name;
 
   return {
     type: 'lateArrival',
-    text: `${pick(WALK_IN)(held.name, campName, p)} ${pick(THE_PROBLEM)(held.name, campName, p)}`
+    text: `${pick(WALK_IN)(held.name, where, p)} ${pick(THE_PROBLEM)(held.name, where, p)}`
       + (away ? ` ${pick(THEY_KNOW)(held.name, campName, p)}` : ''),
     players: [held.name],
     badgeText: away ? 'ONE OF THEM IS NOT' : 'A LATE ARRIVAL',

@@ -524,7 +524,15 @@ export function generateDockArrivals(ep) {
     return choice;
   };
   const host = seasonConfig.host || 'Chris';
-  const allPlayers = [...players];
+  // ── NOT THE ONE WHO IS NOT THERE YET ──
+  //
+  // The dock reads the CAST, and a late arrival is cast normally — so they
+  // walked down the dock in the cold open of episode one, with a host line and
+  // a résumé, weeks before they were due. The whole point of holding somebody
+  // back is that the house does not know they are coming, and the premiere was
+  // introducing them by name.
+  const _held = gs._lateArrival && !gs._lateArrival.seated ? gs._lateArrival.name : null;
+  const allPlayers = [...players].filter(p => p.name !== _held);
   if (!allPlayers.length) return;
 
   // ── Step 1: Group players by energy tier ──

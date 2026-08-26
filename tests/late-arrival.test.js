@@ -257,3 +257,50 @@ describe('what the viewer is shown', () => {
     expect(ep.lateArrival).toBeTruthy();
   });
 });
+
+describe('keeping the surprise', () => {
+  const premiereAndArrival = () => {
+    const cast = makeCast(24);
+    cast.push({ name: 'Latecomer', slug: 'latecomer', gender: 'f', sexuality: 'straight',
+      archetype: 'mastermind', tribe: 'Ravu', stats: Object.fromEntries(K.map(k => [k, 5])) });
+    runOneSeason({
+      twistSchedule: [{ episode: 3, type: 'late-arrival', arrival: 'Latecomer', arrivalTribe: 'smallest' }],
+      mergeAt: 10, romance: 'disabled',
+    }, 25, cast);
+    const h = core.gs.episodeHistory || [];
+    return { premiere: h[0], arrival: h.find(e => e.lateArrival) };
+  };
+
+  it('does not walk them down the dock in the premiere', () => {
+    // The dock reads the CAST, and a late arrival is cast normally — so they
+    // arrived in the cold open of episode one with a host line and a résumé,
+    // weeks before they were due. The whole point of holding somebody back is
+    // that nobody knows they are coming.
+    const { premiere } = premiereAndArrival();
+    const onDock = (premiere.dockArrivals || []).map(a => a.name);
+    expect(onDock.length, 'nobody arrived at all').toBeGreaterThan(10);
+    expect(onDock, 'the premiere introduced somebody who was not there')
+      .not.toContain('Latecomer');
+  });
+
+  it('gives them their introduction on the episode they actually arrive', async () => {
+    const { arrival } = premiereAndArrival();
+    const { rpBuildLateArrival } = await import('../js/vp-screens.js');
+    const html = rpBuildLateArrival(arrival);
+    expect(html).toContain('WHAT THEY ARE WALKING IN WITH');
+    expect(html.toLowerCase()).toContain('mastermind');
+  });
+
+  it('shows the room they walked into, even with no tribes', async () => {
+    // `activeAtStart` lives on the live episode object and NOT on the stored
+    // record, so reading it left the row empty on every replay and printed
+    // "0 PEOPLE WHO HAVE ALREADY DECIDED WHO THEY TRUST" over nothing.
+    const { arrival } = premiereAndArrival();
+    const { rpBuildLateArrival } = await import('../js/vp-screens.js');
+    const html = rpBuildLateArrival(arrival);
+    expect(html, 'the row of people was empty').not.toContain('0 PEOPLE WHO HAVE');
+    const m = html.match(/(\d+) PEOPLE WHO HAVE ALREADY DECIDED/);
+    expect(m, 'no count at all').toBeTruthy();
+    expect(Number(m[1])).toBeGreaterThan(3);
+  });
+});

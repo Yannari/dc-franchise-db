@@ -4044,12 +4044,59 @@ export function rpBuildFirstImpressions(ep, twistObj) {
  * that moment with the newcomer set apart from it, because the picture is the
  * point — everybody else has been standing together for days.
  */
+/**
+ * The introduction they never got.
+ *
+ * A late arrival is skipped by the dock in the premiere on purpose — walking
+ * them down it weeks early tells the audience somebody is coming and throws
+ * away the only surprise the twist has. So the words happen HERE instead, on
+ * the episode they actually arrive: who they are, and what the house is about
+ * to find out about them.
+ */
+function _laIntro(name) {
+  let s = {};
+  try { s = pStats(name) || {}; } catch { s = {}; }
+  const arch = (players.find(p => p.name === name) || {}).archetype || '';
+  // The two things they are loudest at, which is what a room clocks first.
+  const top = Object.entries(s)
+    .filter(([k]) => k !== 'temperament')
+    .sort((a, b) => b[1] - a[1]).slice(0, 2)
+    .map(([k, v]) => `${k} ${v}`);
+  const resume = [];
+  try {
+    const meta = gs.franchiseMeta?.profiles?.[name]?.resume || [];
+    resume.push(...meta.slice(0, 3));
+  } catch { /* no franchise history */ }
+  if (!top.length && !resume.length && !arch) return '';
+  return `<div class="la-intro">
+    <div class="la-intro-h">WHAT THEY ARE WALKING IN WITH</div>
+    ${arch ? `<div class="la-arch">${_bbEsc(String(arch).replace(/-/g, ' '))}</div>` : ''}
+    ${top.length ? `<div class="la-chips">${top.map(t =>
+    `<span class="la-chip">${_bbEsc(t)}</span>`).join('')}</div>` : ''}
+    ${resume.length ? `<div class="la-resume">${resume.map(r =>
+    `<div>${_bbEsc(r)}</div>`).join('')}</div>` : ''}
+  </div>`;
+}
+
 export function rpBuildLateArrival(ep) {
   const a = ep.lateArrival;
   if (!a?.name) return '';
-  const camp = (ep.tribesAtStart || []).find(t => t.name === a.tribe)
-    || { name: a.tribe, members: [] };
-  const already = (camp.members || []).filter(n => n !== a.name);
+  // ── WHO WAS ALREADY HERE ──
+  //
+  // The tribe they joined, when there is one. A season with no tribes at all —
+  // an individual format, or one already merged — has no camp to look up, and
+  // reading `tribesAtStart` alone produced "0 PEOPLE WHO HAVE ALREADY DECIDED
+  // WHO THEY TRUST" printed over an empty row, which is both wrong and the
+  // opposite of what the screen is for. Everybody who was playing when the
+  // episode began is the right answer in that case, and it is the honest one:
+  // in a tribeless season the whole game is the room they walked into.
+  const camp = (ep.tribesAtStart || []).find(t => t.name === a.tribe) || null;
+  // `activeAtStart` is on the live episode object and NOT on the stored record,
+  // so reading it here left the row empty on every replay. `tribalPlayers` is
+  // the roster a stored episode actually carries.
+  const already = (camp ? (camp.members || [])
+    : (ep.activeAtStart || ep.tribalPlayers || []))
+    .filter(n => n !== a.name);
   const walkIn = (ep.campEvents?.[a.tribe]?.pre || []).find(e => e.type === 'lateArrival');
 
   return `<div class="rp-page" style="max-width:1100px;margin:0 auto;padding:26px 18px">
@@ -4063,8 +4110,9 @@ export function rpBuildLateArrival(ep) {
       .la-stage{position:relative;padding:22px 16px;border-radius:12px;overflow:hidden;
         background:radial-gradient(120% 80% at 50% -10%,rgba(56,189,248,.12),rgba(8,12,18,.97) 62%);
         border:1px solid rgba(56,189,248,.22)}
-      .la-new{display:block;width:88px;margin:0 auto 6px;position:relative}
-      .la-new .la-ring{width:88px;height:88px;border-radius:50%;overflow:hidden;
+      .la-new{display:flex;justify-content:center;margin:0 auto 6px;position:relative}
+      .la-new .la-ring{width:88px;height:88px;border-radius:50%;overflow:hidden;flex:none;
+        display:flex;align-items:center;justify-content:center;
         border:2px solid #38bdf8;box-shadow:0 0 0 4px rgba(56,189,248,.14),0 0 30px -4px rgba(56,189,248,.9)}
       .la-new img,.la-new .rp-portrait{width:100%;height:100%;object-fit:cover}
       .la-name{text-align:center;font-size:15px;font-weight:700;color:#e6edf3;margin-top:8px}
@@ -4081,6 +4129,16 @@ export function rpBuildLateArrival(ep) {
         text-overflow:ellipsis;white-space:nowrap}
       .la-legend{text-align:center;font-size:9px;letter-spacing:1.4px;color:#64748b;margin-top:14px}
       .la-copy{margin:20px auto 0;max-width:560px;font-size:13px;line-height:1.7;color:#c9d3e6}
+      .la-intro{margin:18px auto 0;max-width:560px;padding:14px 16px;border-radius:10px;
+        border:1px solid rgba(56,189,248,.2);background:rgba(56,189,248,.05)}
+      .la-intro-h{font-family:var(--font-mono,monospace);font-size:9px;letter-spacing:2px;
+        color:#38bdf8;margin-bottom:8px}
+      .la-arch{font-size:13px;color:#e6edf3;font-weight:600;text-transform:capitalize}
+      .la-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+      .la-chip{font-family:var(--font-mono,monospace);font-size:9.5px;letter-spacing:1px;
+        color:#c9d3e6;background:rgba(148,163,184,.14);border-radius:3px;padding:3px 7px;
+        text-transform:uppercase}
+      .la-resume{margin-top:10px;font-size:11.5px;line-height:1.6;color:#94a3b8}
     </style>
     <div class="la-wrap">
       <div class="la-eyebrow">EPISODE ${Number(ep.num) || ''}</div>
@@ -4089,17 +4147,22 @@ export function rpBuildLateArrival(ep) {
       <div class="la-stage">
         <div class="la-new"><div class="la-ring">${rpPortrait(a.name, 'lg')}</div></div>
         <div class="la-name">${_bbEsc(a.name)}</div>
-        <div class="la-tag">${a.fromOtherSide ? 'NOT THE CAMP THEY WERE CAST ON' : 'JOINING ' + _bbEsc(String(a.tribe || '').toUpperCase())}</div>
+        <div class="la-tag">${a.fromOtherSide ? 'NOT THE CAMP THEY WERE CAST ON'
+    : camp ? 'JOINING ' + _bbEsc(String(a.tribe || '').toUpperCase())
+      : 'INTO A GAME ALREADY IN PROGRESS'}</div>
         <div class="la-gap"></div>
         <div class="la-them">${already.map(n => `
           <div class="la-one" title="${_bbEsc(n)}">
             <div class="la-face">${rpPortrait(n, 'sm')}</div>
             <div class="la-who">${_bbEsc(n)}</div>
           </div>`).join('')}</div>
-        <div class="la-legend">${already.length} PEOPLE WHO HAVE ALREADY DECIDED WHO THEY TRUST</div>
+        <div class="la-legend">${already.length
+    ? `${already.length} PEOPLE WHO HAVE ALREADY DECIDED WHO THEY TRUST`
+    : 'AND NOBODY HERE WAS EXPECTING ANYBODY'}</div>
       </div>
       <div class="la-copy">${walkIn ? _bbEsc(walkIn.text)
     : `${_bbEsc(a.name)} joins ${_bbEsc(a.tribe)} with no bonds, no alliance and no challenge record.`}</div>
+      ${_laIntro(a.name)}
     </div>
   </div>`;
 }

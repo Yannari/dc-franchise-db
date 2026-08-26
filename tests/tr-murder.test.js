@@ -11,8 +11,9 @@ import { initTraitorsState } from '../js/tr/state.js';
 import { resetKnowledge } from '../js/knowledge.js';
 import { recordAlignment } from '../js/tr/roles.js';
 import { seedTraitorKnowledge } from '../js/tr/deduction.js';
-import { formPreference, runConclave } from '../js/tr/murder.js';
+import { formPreference, runConclave, murderCost } from '../js/tr/murder.js';
 import { setBond } from '../js/bonds.js';
+import { recordRound } from '../js/tr/deduction.js';
 import roster from '../franchise_roster.json';
 
 const CAST = roster.players.slice(0, 10).map(p => p.name);
@@ -142,5 +143,29 @@ describe('the room resolves it socially, not correctly', () => {
     const r = runConclave(3, seededRng(4));
     expect(r.target).toBeTruthy();
     expect(r.overruled).toHaveLength(0);
+  });
+});
+
+describe('what a bad murder costs', () => {
+  it('names the decoy the traitors just destroyed', () => {
+    // A Faithful the room was already voting for is worth more alive.
+    recordRound({ ep: 2, banished: null, banishedWasTraitor: false, murdered: null,
+      ballots: CAST.map(v => ({ voter: v, voted: CAST[5], channel: 'banishment' })) });
+    const c = murderCost(CAST[5], 'wasted-decoy', 3);
+    expect(c.kind).toBe('decoy-destroyed');
+    expect(c.cost).toBeGreaterThan(0);
+  });
+
+  it('points suspicion at the traitor who had visibly clashed with the victim', () => {
+    setBond(TRAITORS[0], CAST[6], -8);
+    const c = murderCost(CAST[6], 'convenient', 3);
+    expect(c.kind).toBe('clash-traced');
+    expect(c.blames).toContain(TRAITORS[0]);
+  });
+
+  it('says nothing interesting about a clean kill', () => {
+    const c = murderCost(CAST[7], 'beloved', 3);
+    expect(c.kind).toBe('clean');
+    expect(c.blames).toHaveLength(0);
   });
 });

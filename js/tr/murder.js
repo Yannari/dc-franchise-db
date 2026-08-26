@@ -173,3 +173,28 @@ export function runConclave(ep, rng = Math.random) {
   return { decision: 'murder', target: winner.target, reason: winner.reason,
     decidedBy: winner.traitor, argued, overruled };
 }
+
+/**
+ * What this particular murder cost the Traitors.
+ *
+ * Not a score — a NAMED consequence, because the whole point of letting the
+ * conclave be wrong is that the audience can see which wrong thing it did. A
+ * flat "bad kill" penalty would be indistinguishable from noise.
+ *
+ * `blames` is the list of Traitors the room can legitimately reason toward
+ * from this kill alone. Task 4 turns it into evidence; nothing else may.
+ */
+export function murderCost(target, reason, ep) {
+  const heat = _publicHeatAgainst(target, ep);
+
+  // The room was already spending itself on this person. Killing them hands
+  // the Faithfuls their votes back and forces them to hunt properly.
+  if (heat > 0.25) return { kind: 'decoy-destroyed', cost: heat, blames: [] };
+
+  // A Traitor who visibly hated the victim is the first name the room reaches
+  // for at breakfast, and it is reaching correctly.
+  const clashed = livingTraitors(ep).filter(t => getBond(t, target) <= -6);
+  if (clashed.length) return { kind: 'clash-traced', cost: 0.5, blames: clashed };
+
+  return { kind: 'clean', cost: 0, blames: [] };
+}

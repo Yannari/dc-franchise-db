@@ -340,8 +340,19 @@ describe('the wiki article reads the authored bio', () => {
   });
 
   it('keeps the paragraph breaks in authored prose', () => {
-    expect(view, 'multi-paragraph backstory would render as one block')
-      .toContain('.map(par => `<p>${esc(par.trim())}</p>`)');
+    // Pinned to the BEHAVIOUR, not to which escaper performs it. This asserted
+    // the literal `${esc(par.trim())}` and went red when the body moved to
+    // `L.text()` — which escapes on every branch exactly as esc does, and
+    // linkifies known names as well. The render got better and the guard
+    // called it a regression. What must stay true is the split and the <p>.
+    const body = view.slice(view.indexOf('if (dossier.backstory)'));
+    // A fixed window, not up to the first '}': the very thing being matched
+    // contains ${...}, so slicing at the first brace cut the render in half.
+    const render = body.slice(0, 600);
+    expect(render, 'a multi-paragraph backstory must not render as one block')
+      .toMatch(/String\(dossier\.backstory\)\s*\.split\(/);
+    expect(render, 'each paragraph gets its own <p>, however it is escaped')
+      .toMatch(/\.map\(par => `<p>\$\{(?:esc|L\.text)\(par\.trim\(\)\)\}<\/p>`\)/);
   });
 });
 

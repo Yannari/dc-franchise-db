@@ -170,12 +170,31 @@ export function parseBio(voice) {
  * `straight` is omitted, matching what the Studio has always done: the lead-in
  * exists to tell the writer something it would not otherwise assume.
  */
+/** Ethnicity and nationality as ONE description, never the same word twice. */
+function _joinOrigin(ethnicity, nationality) {
+  const e = String(ethnicity || '').trim();
+  const n = String(nationality || '').trim();
+  if (!e) return n;
+  if (!n) return e;
+  const le = e.toLowerCase(), ln = n.toLowerCase();
+  // Same word, or one already contains the other at a word boundary.
+  if (le === ln) return e;
+  if (ln.startsWith(le + ' ')) return n;
+  if (le.startsWith(ln + ' ')) return e;
+  return `${e} ${n}`;
+}
+
 export function composeBioLead({ age, ethnicity, nationality, sexuality, descriptor } = {}) {
   const bits = [];
   if (age) bits.push(String(age).trim());
   // "Asian Canadian" rather than "Asian, Canadian" — it is one description of a
   // person, and the comma made it read like two.
-  const origin = [ethnicity, nationality].filter(Boolean).join(' ');
+  //
+  // Joined only when they are actually two words. Yul is ethnicity "Korean"
+  // and nationality "Korean", and a plain join published him as "Korean
+  // Korean." A nationality that already opens with the ethnicity ("Korean"
+  // + "Korean American") says it once too, so the longer one wins.
+  const origin = _joinOrigin(ethnicity, nationality);
   if (origin) bits.push(origin);
   if (descriptor) bits.push(descriptor);
   if (sexuality && norm(sexuality) !== 'straight') bits.push(sexuality);

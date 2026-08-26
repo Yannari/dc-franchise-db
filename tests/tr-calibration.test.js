@@ -36,18 +36,31 @@ describe('the castle, measured over many seasons', () => {
     });
   });
 
-  it('BEATS CHANCE: banishments hit traitors more often than random would', () => {
-    // Random banishment with 3 traitors in 20 hits one ~15% of the time. This is
-    // the whole thesis of the plan: if it is not clearly above chance, the
-    // deduction engine does not work and nothing downstream can save it.
-    let hits = 0, total = 0;
+  it('BEATS CHANCE: banishments beat the SHIFTING null, not the premiere one', () => {
+    // The null here is not a constant, and getting that wrong is the easiest way
+    // to award this engine credit it has not earned. Three Traitors in twenty is
+    // 15.8% on night one only. The murder removes a FAITHFUL every round and
+    // nothing but a banishment ever removes a Traitor, so Traitor density climbs
+    // monotonically all season — by the eighth banishment a coin flip hits a
+    // Traitor 27% of the time. Averaged over the real population trajectory the
+    // aggregate null is 19.1%, not 15%.
+    //
+    // So this asserts two things: the fixed floor the plan specified, AND a real
+    // multiple of the null actually observed in these seasons. A uniform-random
+    // voter scores 0.92x its own null; this engine scores 1.8x.
+    let hits = 0, total = 0, nullSum = 0;
     seasons.forEach(s => s.log.forEach(r => {
-      if (r.banished) { total++; if (r.wasTraitor) hits++; }
+      if (!r.banished) return;
+      total++;
+      nullSum += r.traitorsAtVote / r.aliveAtVote;   // chance, at the moment of THIS vote
+      if (r.wasTraitor) hits++;
     }));
     expect(total, 'nothing was banished — this metric would be vacuous').toBeGreaterThan(100);
-    const rate = hits / total;
-    console.log(`traitor-hit rate: ${(rate * 100).toFixed(1)}% over ${total} banishments`);
+    const rate = hits / total, nul = nullSum / total;
+    console.log(`traitor-hit rate: ${(rate * 100).toFixed(1)}% over ${total} banishments `
+      + `(null ${(nul * 100).toFixed(1)}%, lift ${(rate / nul).toFixed(2)}x)`);
     expect(rate, 'the room is banishing at random — the deduction layer is not working').toBeGreaterThan(0.22);
+    expect(rate / nul, 'the hit rate is just Traitor density, not deduction').toBeGreaterThan(1.4);
   });
 
   it('DOES NOT SOLVE IT: the faithfuls must lose a fair share of seasons', () => {
@@ -59,41 +72,66 @@ describe('the castle, measured over many seasons', () => {
     expect(faithfulWins, 'the faithfuls are solving it every time').toBeLessThan(0.75);
   });
 
-  it('SHARPENS: late banishments are better than early ones', () => {
-    // The reveal cascade should make information density rise. Early rounds are
-    // noise; late rounds should not be.
-    const half = (pick) => {
-      let hits = 0, total = 0;
+  it('SHARPENS: the LIFT OVER CHANCE grows as the season goes on', () => {
+    // Raw hit rate cannot tell learning from arithmetic. A uniform-random voter
+    // ALSO shows late > early — 16.6% to 22.7% when measured — purely because
+    // Traitor density drifts upward as Faithfuls are murdered. A band on the raw
+    // rate is therefore passed by an engine with no deduction in it at all, which
+    // makes it worse than no band.
+    //
+    // So both halves are measured against the chance rate that applied at each
+    // individual banishment, and what must grow is the LIFT. Under the random
+    // control this goes red exactly as it should: -0.6pp early, -2.8pp late.
+    const lift = (pick) => {
+      let hits = 0, total = 0, nul = 0;
       seasons.forEach(s => {
         const bans = s.log.filter(r => r.banished);
-        pick(bans).forEach(r => { total++; if (r.wasTraitor) hits++; });
+        pick(bans).forEach(r => {
+          total++; nul += r.traitorsAtVote / r.aliveAtVote; if (r.wasTraitor) hits++;
+        });
       });
-      return { rate: total ? hits / total : 0, total };
+      return { lift: hits / total - nul / total, rate: hits / total, nul: nul / total, total };
     };
-    const early = half(b => b.slice(0, Math.floor(b.length / 2)));
-    const late  = half(b => b.slice(Math.floor(b.length / 2)));
+    const early = lift(b => b.slice(0, Math.floor(b.length / 2)));
+    const late  = lift(b => b.slice(Math.floor(b.length / 2)));
     expect(early.total, 'no early banishments to measure').toBeGreaterThan(40);
     expect(late.total, 'no late banishments to measure').toBeGreaterThan(40);
-    console.log(`early ${(early.rate * 100).toFixed(1)}% (n=${early.total})  late ${(late.rate * 100).toFixed(1)}% (n=${late.total})`);
-    expect(late.rate, 'the room learns nothing as the season goes on').toBeGreaterThan(early.rate);
+    console.log(`early ${(early.rate * 100).toFixed(1)}% vs null ${(early.nul * 100).toFixed(1)}% = lift ${(early.lift * 100).toFixed(1)}pp (n=${early.total})`);
+    console.log(`late  ${(late.rate * 100).toFixed(1)}% vs null ${(late.nul * 100).toFixed(1)}% = lift ${(late.lift * 100).toFixed(1)}pp (n=${late.total})`);
+    expect(late.lift, 'the room learns nothing as the season goes on').toBeGreaterThan(early.lift + 0.05);
+    expect(late.lift, 'late banishments are no better than chance').toBeGreaterThan(0.10);
   });
 
-  it('IS NOT UNANIMOUS: a round table disagrees with itself', () => {
-    // A room that votes 20-0 every night is not deducing, it is following a
-    // scalar. Real tables split.
-    let splitRounds = 0, totalRounds = 0;
+  it('IS CONTESTED: the room votes as neither a bloc nor a coin', () => {
+    // The band this replaces asked whether two distinct names got a vote. With
+    // ~13 ballots, a noise term on every score and Traitors structurally barred
+    // from naming the pact, at least one vote always diverges — so it read
+    // 100.0%, and it would read 100.0% on an engine with no deduction in it.
+    // A metric that cannot go red is not a metric.
+    //
+    // Plurality share — the winner's votes over the ballots cast — has a failure
+    // mode in BOTH directions. A room following a single shared scalar converges
+    // on 1.0; a room with no shared read at all cannot concentrate votes.
+    // Measured here: 31.3-32.6% across five disjoint 60-season blocks.
+    let shares = [], marginSum = 0, closeRounds = 0, roundCount = 0;
     seasons.forEach(s => (s.rounds || []).forEach(r => {
       const t = {};
       (r.ballots || []).forEach(b => { t[b.voted] = (t[b.voted] || 0) + 1; });
-      const counts = Object.values(t);
-      if (!counts.length) return;
-      totalRounds++;
-      if (counts.length > 1) splitRounds++;
+      const counts = Object.values(t).sort((a, b) => b - a);
+      const cast = (r.ballots || []).length;
+      if (!counts.length || !cast) return;
+      roundCount++;
+      shares.push(counts[0] / cast);
+      marginSum += counts[0] - (counts[1] || 0);
+      if (counts[0] - (counts[1] || 0) <= 1) closeRounds++;
     }));
-    expect(totalRounds, 'no round tables to measure').toBeGreaterThan(100);
-    const splitRate = splitRounds / totalRounds;
-    console.log(`rounds with a split vote: ${(splitRate * 100).toFixed(1)}%`);
-    expect(splitRate).toBeGreaterThan(0.6);
+    expect(roundCount, 'no round tables to measure').toBeGreaterThan(100);
+    const mean = shares.reduce((a, b) => a + b, 0) / shares.length;
+    console.log(`mean plurality share: ${(mean * 100).toFixed(1)}% over ${roundCount} round tables `
+      + `(mean winning margin ${(marginSum / roundCount).toFixed(2)} votes, `
+      + `${(closeRounds / roundCount * 100).toFixed(1)}% decided by <=1)`);
+    expect(mean, 'nobody agrees with anybody — there is no shared read in the room').toBeGreaterThan(0.20);
+    expect(mean, 'the room is voting as one bloc, not deducing').toBeLessThan(0.55);
   });
 
   it('replays identically from a seed', () => {

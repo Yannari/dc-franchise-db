@@ -64,7 +64,16 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     ballotEvidence(ep, rng);
     const r = runRoundTable(ep, rng);
     const murdered = livingTraitors(ep).length ? _placeholderMurder(ep, rng) : null;
-    log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, murdered, alive: alive.length });
+    // aliveAtVote/traitorsAtVote are the population as it stood when the ballots
+    // were cast, and they are DATA, not behaviour — nothing in the engine reads
+    // them. They exist because the null hypothesis for a banishment is not a
+    // constant: the murder only ever removes Faithfuls, so Traitor density
+    // climbs monotonically all season and a late banishment is a likelier
+    // Traitor hit for reasons that have nothing to do with deduction. Without
+    // these two numbers there is no way to tell a room that learned something
+    // from a room that simply ran out of Faithfuls.
+    log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, murdered,
+      alive: alive.length, aliveAtVote: alive.length, traitorsAtVote: tr });
   }
 
   const survivingTraitors = livingTraitors(ep);

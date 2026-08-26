@@ -323,7 +323,8 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { openThread } from '../js/tr/threads.js';
-import { registerEvent, eligible, pickEvent, EVENTS, _resetRegistry } from '../js/tr/events.js';
+import { registerEvent, eligible, pickEvent, validateRegistry, EVENTS, _resetRegistry }
+  from '../js/tr/events.js';
 import roster from '../franchise_roster.json';
 
 const CAST = roster.players.slice(0, 8).map(p => p.name);
@@ -343,13 +344,21 @@ beforeEach(() => {
 });
 
 describe('the contract', () => {
-  it('refuses an event whose weight and fire disagree about eligibility', () => {
+  it('catches an event whose weight and fire disagree about eligibility', () => {
     // The BB Hacker lesson: an event that weights itself eligible and then
-    // declines to fire is content you believe is in the game and is not.
-    expect(() => registerEvent({
-      id: 'broken', family: 'suspicion', window: 'evening',
-      weight: () => 5, fire: () => null,
-    })).toThrow(/weight\(\) and fire\(\) must agree/i);
+    // declines to do anything is content you believe is in the game and is not.
+    //
+    // This is a SWEEP, not a registration-time check. Validating by execution
+    // at registration would fire the event against the live season and write
+    // bonds, threads and residue as an import side effect — a worse bug than
+    // the one being guarded.
+    registerEvent({ id: 'broken', family: 'suspicion', window: 'evening',
+      weight: () => 5, fire: () => null });
+    registerEvent({ id: 'honest', family: 'suspicion', window: 'evening',
+      weight: () => 5, fire: () => ({ ok: true }) });
+    const broken = validateRegistry(() => ctxFor(), seededRng(1));
+    expect(broken).toContain('broken');
+    expect(broken).not.toContain('honest');
   });
 
   it('treats weight 0 as not eligible', () => {
@@ -428,7 +437,39 @@ describe('the guards', () => {
 
 - [ ] **Step 2: Run it and watch it fail.**
 
-- [ ] **Step 3: Implement `js/tr/events.js`** — the registry, `weight(ctx)` scoring with all four guards applied as multipliers, and `pickEvent` recording the three cooldowns. Match the shapes the test asserts exactly. `registerEvent` validates the weight/fire agreement by calling `fire` against a synthetic eligible context at registration time and throwing if it returns null.
+- [ ] **Step 3: Implement `js/tr/events.js`** — the registry, `weight(ctx)` scoring with all four guards applied as multipliers, and `pickEvent` recording the three cooldowns. Match the shapes the test asserts exactly.
+
+**How the weight/fire agreement is validated, and how it is NOT.** `registerEvent`
+must **never call `fire()`**. Firing an event writes bonds, state, residue and
+threads — validating by execution would mutate a live season at import time,
+which is a worse bug than the one being guarded against.
+
+Instead `registerEvent` validates *shape* (both are functions, `id` unique,
+`window` known), and the agreement itself is checked by a **sandboxed sweep**:
+
+```js
+/**
+ * Does every registered event that CLAIMS to be eligible actually fire?
+ *
+ * The BB Hacker lesson: an event that weights itself in and then declines to
+ * do anything is content you believe is in the game and is not. It cannot be
+ * checked at registration, because firing has side effects — so this runs
+ * against a throwaway world and is called by a test, never by the engine.
+ */
+export function validateRegistry(makeCtx, rng) {
+  const broken = [];
+  for (const ev of EVENTS) {
+    const ctx = makeCtx(ev);              // a fresh sandbox world per event
+    if (ev.weight(ctx) <= 0) continue;    // not claiming eligibility: fine
+    if (ev.fire(ctx, rng) == null) broken.push(ev.id);
+  }
+  return broken;
+}
+```
+
+The test asserting `registerEvent` throws on disagreement (in the brief above)
+must therefore be rewritten to call `validateRegistry` and assert the broken
+list contains that event — the throw belongs to the sweep, not the registration.
 
 - [ ] **Step 4: Run, sweep, commit**
 
@@ -481,7 +522,55 @@ The audit runs a set of seasons, tags every belief with the event that produced 
 
 **The rule it enforces:** an event may set `writesBelief: true` only if its measured `edge` is positive with a margin. An event whose channel is at or below its control is a **false-positive generator** — it points the room at innocents, and this project has already shipped one (`clashTraced`, deleted at 0.87× emission and 0.57× on surviving beliefs).
 
-- [ ] Steps: failing test that a known-informative synthetic channel passes and a known-uninformative one fails; implement; **verify against the two historical cases** — a `clashTraced`-shaped channel must fail the audit, and the surviving `pushedThenDied` must report its known ~0.01× edge; commit.
+- [ ] **Step 1: Write the failing test.** Three cases, and the third is the one that matters:
+
+```js
+// The instrument that decides whether an event has earned the right to write a
+// belief. Three bad channels have shipped in this project and every one was
+// caught here rather than by reading code.
+describe('the channel audit', () => {
+  it('passes a channel that genuinely knows something', () => {
+    // Synthetic: names a real Traitor 60% of the time against a ~21% base.
+    const r = measureChannel({ source: 'synthetic-informed', seasons: 40, control: 'any-faithful' });
+    expect(r.n).toBeGreaterThan(200);          // non-vacuity: it must have fired
+    expect(r.edge).toBeGreaterThan(0.15);
+  });
+
+  it('FAILS a channel that is merely structurally enriched', () => {
+    // The pushedThenDied shape: looks strong against a flat base, ~0.01x
+    // against "voted for any Faithful". If the audit passes this, it is
+    // measuring the same thing the old bands measured and is worthless.
+    const r = measureChannel({ source: 'synthetic-structural', seasons: 40, control: 'any-faithful' });
+    expect(r.ratio, 'looks informative against a naive base').toBeGreaterThan(1.1);
+    expect(r.edge, 'but has no edge over an uninformative control').toBeLessThan(0.05);
+  });
+
+  it('FAILS an anti-signal outright', () => {
+    // The clashTraced shape: 0.87x at emission. It points the room at
+    // innocents. An audit that does not catch this has no purpose.
+    const r = measureChannel({ source: 'synthetic-anti', seasons: 40, control: 'any-faithful' });
+    expect(r.ratio).toBeLessThan(1);
+    expect(r.edge).toBeLessThan(0);
+  });
+
+  it('bases every ratio on the density at the round the belief was formed', () => {
+    // NOT a season-wide average. The murder only ever removes Faithfuls, so
+    // Traitor density climbs all season and a flat base double-counts that
+    // drift as if it were signal.
+    const r = measureChannel({ source: 'synthetic-informed', seasons: 40, control: 'any-faithful' });
+    expect(r.base).toBeGreaterThan(0.15);
+    expect(r.base).toBeLessThan(0.35);
+  });
+});
+```
+
+- [ ] **Step 2: Run it and watch it fail.**
+
+- [ ] **Step 3: Implement `js/tr/channel-audit.js`.** It plays seasons with belief-tagging enabled, groups emissions by their `source` string, and for each reports `{ n, hitRate, base, ratio, controlRatio, edge }`. The control draws the same number of (observer, subject) pairs the same way but from an uninformative rule, so the comparison is like-for-like. Base is computed **per emission** from the living population at that round and averaged, never taken season-wide.
+
+- [ ] **Step 4: Verify against the real engine, not just synthetics.** Run the audit over the shipped `pushedThenDied` channel and confirm it reports an edge near the known ~0.01×. If it reports materially more, the audit is measuring the wrong thing and must be fixed before any event uses it. Report the number.
+
+- [ ] **Step 5: Commit.**
 
 ---
 

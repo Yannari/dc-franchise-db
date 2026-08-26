@@ -4,7 +4,7 @@
 import { gs, players } from './core.js';
 import { pStats } from './players.js';
 import { addBond, getBond } from './bonds.js';
-import { bankTraining, coachesOf, coachRecord, removeCoach, revokeCoachTraining, sessionsFor } from './coaches.js';
+import { bankTraining, coachesOf, coachRecord, isCoach, removeCoach, revokeCoachTraining, sessionsFor } from './coaches.js';
 import { pickSessionTargets, sessionGain, teachableStat, aweOf } from './coach-agenda.js';
 
 /** How close this coach is to being voted out, 0..1. Lifts their survive agenda. */
@@ -122,4 +122,39 @@ export function eliminateCoach(ep, coachName) {
   if (!ep.coachElimination) ep.coachElimination = [];
   ep.coachElimination.push({ coach: coachName, tribe, lost, reactions });
   return { lost, reactions };
+}
+
+/**
+ * One card per coach, playable only if every contestant on the tribe agrees.
+ *
+ * Unanimity is the twist's difficulty dial. A tribe that cannot agree argues
+ * and loses its coach anyway, which is also a scene.
+ *
+ * A never-interacted bond defaults to 0. Silence is not consent — a tribe
+ * that has barely met its coach must not be able to save him by default, so
+ * every contestant must sit STRICTLY ABOVE zero, not merely non-negative.
+ */
+export function offerSaveCard(ep, coachName, tribe) {
+  const record = coachRecord(coachName);
+  if (!record) return { played: false, replacement: null, reason: 'not-a-coach' };
+  if (record.saveCard !== 'unused') return { played: false, replacement: null, reason: 'already-used' };
+
+  // Every contestant must be willing, and willing means a positive bond —
+  // never having interacted (bond 0) does not count as agreeing.
+  const holdout = tribe.members.find(m => getBond(coachName, m) <= 0);
+  if (holdout) return { played: false, replacement: null, reason: `holdout:${holdout}` };
+
+  // He chooses. Never another coach — the card removes a contestant. Coaches
+  // are never in `tribe.members` (they live outside `gs.activePlayers`), but
+  // the filter is kept as a defensive guard against a caller seeding the
+  // tribe roster incorrectly.
+  const replacement = tribe.members
+    .filter(m => !isCoach(m))
+    .slice()
+    .sort((a, b) => getBond(coachName, a) - getBond(coachName, b))[0] || null;
+
+  record.saveCard = 'used';
+  if (!ep.coachSaves) ep.coachSaves = [];
+  ep.coachSaves.push({ coach: coachName, tribe: tribe.tribeName, replacement });
+  return { played: true, replacement, reason: 'unanimous' };
 }

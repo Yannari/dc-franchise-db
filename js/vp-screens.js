@@ -15839,6 +15839,17 @@ function _bbSceneScreen(ep, { eyebrow, title, subtitle, accent = 'var(--bbx-note
 
 const _bbBeats = act => (act?.socialBeats || []).map(b =>
   ({ text: b.text, players: b.players, badgeText: b.badgeText, badgeClass: b.badgeClass }));
+/**
+ * The same, for an act that carries its narration on `beats`.
+ *
+ * Both field names are in use: house life and ceremonies hang their prose on
+ * `socialBeats`, while a twist act built by its own engine module writes
+ * `beats`. Reaching for the wrong one is silent — the screen renders, the
+ * scenes are simply empty — which is precisely the failure
+ * bb-vp-render-completeness exists to catch, and did.
+ */
+const _bbOwnBeats = act => (act?.beats || []).map(b =>
+  ({ text: b.text, players: b.players, badgeText: b.badgeText, badgeClass: b.badgeClass }));
 
 // ── Cold open ─────────────────────────────────────────────────────────
 
@@ -24071,7 +24082,7 @@ function _bbCycleScreens(view, screens, suffix = '') {
                   ? ` The split: ${act.tally.map(t => `${t.name} ${t.share}%`).join(', ')}.`
                   : ''}`,
               players: [act.target], badgeText: "AMERICA'S VOTE", badgeClass: 'red' },
-              ..._bbBeats(act),
+              ..._bbOwnBeats(act),
             ],
           }) });
         break;
@@ -24094,7 +24105,7 @@ function _bbCycleScreens(view, screens, suffix = '') {
                 + `No speech, no keys, no reasons — one of the two chairs was filled by the scoreboard `
                 + `before ${act.hoh} was allowed to think about it.`,
               players: [act.nominee], badgeText: 'DEAD LAST', badgeClass: 'red' },
-              ..._bbBeats(act),
+              ..._bbOwnBeats(act),
             ],
           }) });
         break;

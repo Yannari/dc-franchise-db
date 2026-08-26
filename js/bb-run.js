@@ -1515,6 +1515,34 @@ export function summariseWeek(week) {
         }
         break;
       }
+      case 'chain-of-safety': {
+        line('');
+        line('THE CHAIN OF SAFETY');
+        line(act.variant === 'hoh'
+          ? `  ${act.starter} starts the chain as Head of Household. No ceremony, no veto.`
+          : `  ${act.starter} wins the first link. No ceremony, no veto.`);
+        (act.links || []).forEach((l, i) => line(`  ${i + 2}. ${l.chosen} — chosen by ${l.picker}`));
+        line(`  Chosen by nobody: ${(act.leftover || []).join(', ')}.`);
+        if (act.safetyWinner) line(`  ${act.safetyWinner} wins safety.`);
+        if ((act.nominees || []).length) line(`  Nominees: ${act.nominees.join(' and ')}.`);
+        break;
+      }
+      case 'dead-last': {
+        line('');
+        line('DEAD LAST');
+        line(`  ${act.nominee} finished ${act.place} of ${act.of}`
+          + `${act.competition ? ` in ${act.competition}` : ''} and is nominated for it.`);
+        if (act.threw) line(`  ${act.nominee} threw it.`);
+        break;
+      }
+      case 'americas-eviction-vote': {
+        line('');
+        line("AMERICA'S EVICTION VOTE");
+        line(`  The audience votes to evict ${act.target}`
+          + `${act.weight > 1 ? `, worth ${act.weight} votes` : ''}.`);
+        (act.tally || []).forEach(t => line(`  ${t.name}: ${t.share}%`));
+        break;
+      }
       case 'safety-suite': {
         line('');
         line('THE SAFETY SUITE');

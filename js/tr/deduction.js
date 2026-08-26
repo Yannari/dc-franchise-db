@@ -53,20 +53,51 @@ export function recordRound(round) {
   return round;
 }
 
-/** Every banishment ballot cast so far, oldest first. */
+/**
+ * Every banishment ballot cast so far, oldest first.
+ *
+ * `ep` is the only thing added, and it is the only thing any caller ever read.
+ * This used to decorate each ballot with the round's `banished` and
+ * `wasTraitor` as well; nothing anywhere looked at either, and a field that is
+ * written and never read is a claim about what this evidence considers that is
+ * not true. The reveal loop below gets both from the round it is already
+ * standing in.
+ */
 function banishmentBallots() {
   return (gs.tr?.rounds || []).flatMap(r =>
     (r.ballots || []).filter(b => b.channel === 'banishment')
-      .map(b => ({ ...b, ep: r.ep, banished: r.banished, wasTraitor: r.banishedWasTraitor })));
+      .map(b => ({ ...b, ep: r.ep })));
 }
 
 // How hard each ballot pattern pushes. Deliberately small: a single vote is a
 // hint, not a proof, and the ceiling in learn() is what stops a pile of hints
 // becoming certainty.
+//
+// TWO SIGNALS THAT USED TO SIT HERE AND ARE GONE, because a constant that reads
+// as tuned while being unreachable is a worse lie than no constant at all:
+//
+//   votedRevealedTraitor: -0.16  — "exonerating". It was assigned and then
+//   discarded unconditionally three lines later by `if (weight <= 0) continue`,
+//   so it never once entered a belief in any season this engine has played. Nor
+//   could it: js/knowledge.js has no representation for a NEGATIVE belief —
+//   confidence is a magnitude, and learn() keeps the strongest evidence seen, so
+//   there is nothing for a minus sign to write to. Exoneration here is the
+//   ABSENCE of a suspicion, and naming the revealed Traitor already buys exactly
+//   that: everybody else in the room takes a defendedRevealedTraitor hit and you
+//   do not. That is a real relative effect and it is the only one available.
+//   Reinstating a signed weight means giving beliefs a sign first, which is a
+//   knowledge-layer change and not a Traitors one.
+//
+//   votedRevealedFaithful: 0.10  — "you spent a life for nothing". It reached
+//   learn() as a confidence of 0.16, which _assess() turns into an acceptance
+//   probability of about 0.045: one observer in twenty-two, and inert by any
+//   measurement. Raising it is not the answer either, because of WHO it points
+//   at — a banished Faithful is normally named by most of the room, so the
+//   signal indicts the majority and carries almost no information about anyone.
+//   A revealed Faithful tells the castle it was wrong, not who is guilty.
+//   revealCascade() already says precisely that; now this agrees with it.
 const W = {
   defendedRevealedTraitor: 0.34,   // you kept a Traitor in. The strongest read available.
-  votedRevealedFaithful:   0.10,   // you spent a life for nothing — or you meant to
-  votedRevealedTraitor:   -0.16,   // exonerating
   pairSilence:             0.35,   // scales how UNLIKELY a silent pair record is
   pairSilenceCeiling:      0.24,   // ...and how far that can ever get, which is not far
 };
@@ -88,17 +119,26 @@ export function ballotEvidence(ep, rng = Math.random) {
   // ── reveals: who protected whom, and who was right ──────────────────
   const reveals = (gs.tr?.rounds || []).filter(r => r.banished);
   for (const round of reveals) {
-    const cast = ballots.filter(b => b.ep === round.ep);
+    // Revote ballots count here, and they were excluded before for no reason.
+    // They are read aloud in front of exactly the same room, and they are a
+    // CLEANER signal than the first ballot: the field has been narrowed to the
+    // tied players, so naming somebody other than the person who turned out to
+    // be a Traitor is a two-way choice rather than a pick from fifteen names.
+    // Worth 30.7% against 29.9% on the hit rate over 200 seasons, and +1.2pp on
+    // the late-season lift.
+    //
+    // They deliberately do NOT feed the pair-silence loop below. A revote where
+    // you were not allowed to name somebody is not a chance you passed up.
+    const cast = ballots.filter(b => b.ep === round.ep)
+      .concat((round.revotes || []).flatMap(rv => rv.ballots || []));
     for (const b of cast) {
       if (!living.includes(b.voter)) continue;
-      const votedForTheBanished = b.voted === round.banished;
-      let weight = 0;
-      if (round.banishedWasTraitor) {
-        weight = votedForTheBanished ? W.votedRevealedTraitor : W.defendedRevealedTraitor;
-      } else if (votedForTheBanished) {
-        weight = W.votedRevealedFaithful;
-      }
-      if (weight <= 0) continue;   // exoneration is handled by absence, not by a negative belief
+      // One pattern, and only one, is evidence about a person: you kept somebody
+      // in on a night they turned out to be a Traitor. Naming them buys nothing
+      // positive — it buys the absence of this, which is all exoneration is here.
+      if (!round.banishedWasTraitor) continue;
+      if (b.voted === round.banished) continue;
+      const weight = W.defendedRevealedTraitor;
       for (const observer of living) {
         if (observer === b.voter) continue;
         const belief = learn(observer, alignmentFactId(b.voter), {

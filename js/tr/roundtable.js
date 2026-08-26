@@ -57,7 +57,15 @@ function debate(ep, rng) {
   const living = gs.activePlayers || [];
   const accusations = [];
   for (const speaker of living) {
-    const board = suspicionBoard(speaker, ep, living);
+    // A Traitor's suspicion board is topped by the people they were TOLD about
+    // in the turret, at a certainty no Faithful can ever reach. Reading it
+    // straight makes the faction stand up on night one and name each other in
+    // front of the room, which is not a debate, it is a confession. They speak
+    // about the same pool they are willing to write down: everyone but the pact.
+    const pool = alignmentAt(speaker, ep) === 'traitor'
+      ? living.filter(n => alignmentAt(n, ep) !== 'traitor')
+      : living;
+    const board = suspicionBoard(speaker, ep, pool.length ? pool : living);
     const top = board[0];
     // Somebody with no read at all keeps quiet rather than inventing one.
     // Boldness decides who speaks anyway.

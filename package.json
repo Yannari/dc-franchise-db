@@ -25,7 +25,8 @@
     "deploy:seasons": "wrangler deploy --config worker/wrangler-season.toml",
     "deploy:all": "npm run deploy && npm run deploy:analytics && npm run deploy:seasons",
     "preview": "wrangler dev --config worker/wrangler.toml",
-    "build:favorites-context": "node scripts/build-favorites-context.mjs"
+    "build:favorites-context": "node scripts/build-favorites-context.mjs",
+    "fix:social-counts": "node scripts/fix-social-counts.mjs"
   },
   "repository": {
     "type": "git",

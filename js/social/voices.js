@@ -38,8 +38,9 @@
  * a fifth of the cast. Same principle that unswallowed the lenses: rank by how
  * much a signal actually distinguishes somebody, never by declaration order.
  *
- * Re-measure with `npm run audit:social` after editing any pattern here — AND
- * after editing anybody's VOICE, which is the case this line used to miss.
+ * Re-measure with `npm run fix:social-counts`, which rewrites these numbers in
+ * place. Needed after editing a pattern here — AND after editing anybody's
+ * VOICE, which is the case the old note missed and the commoner one by far.
  * These counts drifted three times in one session without a pattern being
  * touched: a profile rewritten in the Studio silently adds or removes a match,
  * and a stale weight misranks the trait for everybody, not just that person.
@@ -59,9 +60,9 @@ export const DELIVERY = {
   formal: [/formal|articulate|precise|analytic|intellect|scholar|clinical|methodical|polite|proper/, 16],
   nervous: [/nervous|anxious|timid|shy|stammer|panick|insecure|jitter|worrier|meek|fearful/, 17],
   deadpan: [/deadpan|dry |monoton|stoic|laconic|unbothered|nonchalant|apathetic|bored|flat /, 19],
-  manipulative: [/manipulat|silky|flatter|charm|schem|slick|smooth|honey|calculat|cunning/, 25],
+  manipulative: [/manipulat|silky|flatter|charm|schem|slick|smooth|honey|calculat|cunning/, 26],
   blunt: [/blunt|brash|loud|aggressive|abrasive|no-nonsense|harsh|gruff|confrontational|bossy/, 44],
-  warm: [/kind|sweet|warm|gentle|caring|nurtur|supportive|optimis|cheerful|friendly|earnest/, 81],
+  warm: [/kind|sweet|warm|gentle|caring|nurtur|supportive|optimis|cheerful|friendly|earnest/, 82],
 };
 
 /**

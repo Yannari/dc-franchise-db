@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "season": {
+    "title": "Fans vs Favorites",
+    "format": "total-drama",
+    "tribeTheme": "Favorites",
+    "castSize": 24,
+    "favorites": 12,
+    "fans": 12
+  },
+  "cast": [
+    {
+      "slug": "bowie",
+      "name": "Bowie",
+      "context": "Bowie. Source voice: Polished, theatrical, and quick on the draw. Bowie speaks in crisp reads, playful shade, and confident declarations; when a plan matters, the jokes shorten and he explains the social geometry plainly. He can be warm without surrendering control and ruthless without pretending the move was accidental. Archetype: mastermind. Behavioral baseline: Bowie is openly competitive, socially alert, and comfortable being the most visibly confident person in a room. He enjoys drama as both entertainment and information, notices who needs reassurance, and can build sincere friendships even while planning around them. Placement history: Season 9: 1 (Winner); Season 10: 2 (Finalist). Archive anchors: Ep5: Navigates idol chaos and revote to decapitate Hicks without exposure. / Episode 1: Finds the Champions Hidden Immunity Idol and forms The Movement. Favorite ties: Millie: S9 ally/finalist opponent. Julia: S9 strategic rival; Bowie stole her idol. Open hook: Julia rematch—can respect delay a necessary strike? Millie—does he treat her as a finalist equal?"
+    },
+    {
+      "slug": "mike",
+      "name": "Mike",
+      "context": "Mike. Source voice: Gentle, earnest, and slightly self-conscious, with humor used to ease tension rather than dominate it. Mike asks before assuming, speaks most firmly when protecting someone, and admits uncertainty in short, honest bursts. He should sound like an integrated adult, never like a collection of impressions. Archetype: showmancer. Behavioral baseline: Mike is caring, relationship-oriented, and more comfortable supporting another person than demanding the center of attention. Earlier secrecy taught him to scan constantly for signs that people might reject him, so he sometimes withholds difficult truths until avoidance becomes its own problem. Placement history: Season 3: 6 (Juror); Season 4: 12 (Juror). Archive anchors: Formed an unbreakable bond with Zoey — the emotional core of the Mutant Maggots. / Rebuilt his unbreakable bond with Zoey from Season 3 stronger than ever. Favorite ties: No established simulator tie. Likely affinity with DJ is interpretation only. Open hook: Can Mike play a complete independent game, and will two caretakers with DJ ever make the hard call?"
+    },
+    {
+      "slug": "millie",
+      "name": "Millie",
+      "context": "Millie. Source voice: Precise, analytical, and occasionally too clinical for the moment. Millie frames observations like notes for an article, then catches herself when a friend needs empathy instead of analysis. Her humor is dry and defensive; sincere apologies become less polished, more specific, and noticeably harder for her to say. Archetype: underdog. Behavioral baseline: Millie is book-smart, observant, and habitually judgmental, especially when she can study a group from its edge instead of risking participation. Her notebook once let her convert loneliness and insecurity into criticism of everyone else; genuine friendship forced her to see that observation without compassion can become exploitation. Placement history: Season 9: 2 (Finalist). Archive anchors: Ep4: Converts Beware into the Red Idol. Favorite ties: Bowie: S9 ally and finalist opponent. Julia: S9 alliance with unsafe strategic attraction. Open hook: Who authored the S9 endgame with Bowie, and can she observe Julia without becoming useful to her?"
+    },
+    {
+      "slug": "thom",
+      "name": "Thom",
+      "context": "Thom (Tom canon identity). Source voice: Warm, straightforward, and reassuring, with an occasional goofy enthusiasm that escapes his serious exterior. Thom gives practical advice, names unfairness directly, and grows clipped when he suspects deception. Vulnerability comes slowly but plainly; he does not decorate an apology once he finally chooses to make it. Archetype: hero. Behavioral baseline: Thom uses Tom’s current canon baseline: physically capable, protective, justice-oriented, and finally more comfortable being seen. His old instinct was concealment—mask the scars, compartmentalize the mission, avoid the conversation that might reopen pain—and that habit can still return when intimacy feels dangerous. Placement history: Season 11: 2 (Finalist); Season 13: 13 (Juror). Archive anchors: Ep.2: Saves Gabby from drowning during Rock the Dock, cementing his hero image. / Ep.1 — Beats Kelly in Slap Slap Revolution and strengthens the Heroes surge. Favorite ties: Gabby: S11 rescue bond. Grett: S11 rival he helped eliminate. Open hook: Can he trust Gabby as an equal, and judge Grett’s present actions instead of retrying S11?"
+    },
+    {
+      "slug": "grett",
+      "name": "Grett",
+      "context": "Grett. Source voice: Blunt, polished, and dryly cutting. Grett rarely wastes a sentence: praise sounds earned, contempt sounds surgical, and insecurity appears as overcontrol rather than pleading. Her later voice can be caring without becoming soft-focus; she still tells friends the truth they hoped she would skip. Archetype: villain. Behavioral baseline: Grett is ambitious, perceptive, and difficult to intimidate. Her earliest social armor was vanity and condescension: strike first, define everyone else as lesser, and no one gets to name the insecurity underneath. Placement history: Season 11: 14 (Pre-Merge). Archive anchors: Ep.1: Is first-impression voted out but swapped to Purple instead of eliminated. Favorite ties: Thom: S11 rival. Gabby: S11 twist-linked path plus complicated source-canon history. Open hook: Can she hold power without detonating bridges, especially with Gabby and Thom watching for old patterns?"
+    },
+    {
+      "slug": "gabby",
+      "name": "Gabby",
+      "context": "Gabby. Source voice: Fast, affectionate, and emotionally transparent, often jumping from delighted detail to a fierce moral judgment in the same breath. Gabby talks to people, animals, and her own intrusive thoughts as if all are present in the conversation. Anger is vivid and specific; warmth is exuberant and unembarrassed. Archetype: wildcard. Behavioral baseline: Gabby is energetic, kind, intensely affectionate, and unpredictable when a moral or personal boundary is crossed. Kindness earns fierce loyalty from her, while betrayal can become absolute in a single emotional swing. Placement history: Season 11: 5 (Juror). Archive anchors: Ep.1: Finds the Vote Block near the Teal shelter. Favorite ties: Thom: S11 rescue bond. Grett: S11/source-canon complexity. Open hook: Will Thom stop treating her as someone to save, and can Gabby support Grett without becoming her weapon?"
+    },
+    {
+      "slug": "james",
+      "name": "James",
+      "context": "James. Source voice: Camera-ready, charismatic, and knowingly dramatic. James turns plans into quotable summaries and can sell a lie with relaxed confidence, but the polish drops around people he truly loves. His mature voice distinguishes performance from sincerity: he may still make content, yet he no longer treats every private moment as material. Archetype: schemer. Behavioral baseline: James is charming, calculating, image-conscious, and skilled at making an audience feel included in his version of events. Early in life, loneliness taught him to treat follower counts as proof that he mattered; this made staged affection, selective truth, and public spectacle feel like reasonable tools. Placement history: Season 12: 1 (Winner). Archive anchors: Episode 2: Leads the Ezekiel vote under The Ride or Die banner, establishing himself as an early architect. Favorite ties: Lake: S12 alliance-network overlap. Yul: S12 and source-canon rival. Open hook: Does he admit Lake stabilized his winner route, and expose Yul now or keep him as predictable cover?"
+    },
+    {
+      "slug": "lake",
+      "name": "Lake",
+      "context": "Lake. Source voice: Measured, thoughtful, and quietly formal, with confidence that grows rather than announces itself. Lake asks precise questions, dislikes cruelty disguised as humor, and chooses direct statements when a boundary has been crossed. Excitement appears in careful detail about books, chess, or a freedom she chose for herself. Archetype: loyal-soldier. Behavioral baseline: Lake is intelligent, creative, principled, and shaped by years of rigid parental control. Perfection was enforced so harshly that stress contributed to her losing her hair, and hiding vulnerability became a survival habit. Placement history: Season 12: 7 (Juror). Archive anchors: Episode 1: Finds the Saplings Amulet Advantage and keeps it hidden. Favorite ties: James: S12 alliance ecosystem. Yul: S12 moral opponent. Open hook: Can loyalty include self-interest when James asks for another favor or Yul tries to dictate her reaction?"
+    },
+    {
+      "slug": "yul",
+      "name": "Yul",
+      "context": "Yul. Source voice: Abrasive, image-obsessed, and aggressively dismissive. Yul speaks in insults, status claims, and transactional logic, then pivots to calculated loyalty when an alliance benefits him. He is capable of sharp reads, but his need to demean people keeps turning usable information into unnecessary enemies. Archetype: villain. Behavioral baseline: Yul is vain, cruel, discriminatory, and convinced that fame should exempt him from ordinary accountability. Viral success as a teenage dancer rewarded performance before he developed empathy, and he learned to treat outrage as both threat and publicity. Placement history: Season 12: 12 (Pre-Merge). Archive anchors: Episode 1: Forms a secret final three with Hunter while feeding him false information. Favorite ties: James and Lake: S12 rivals. Grett: source-canon former partner; no shared simulator season. Open hook: Grett accountability—target, fake reform, or collapse? James is the successful authenticity comparison he hates."
+    },
+    {
+      "slug": "natalia",
+      "name": "Natalia",
+      "context": "Natalia. Source voice: Bubbly, quick, and gossip-fluent, mixing affectionate nicknames, jokes, and sharp public-relations reads. Natalia can turn a crisis into a punchline, but emotion rushes through the polish when a friend is threatened. Strategy sounds like managing a narrative: who owns the story, who needs reassurance, and whose image cannot recover. Archetype: chaos-agent. Behavioral baseline: Natalia is outgoing, funny, socially curious, and professionally attuned to reputation. She genuinely likes learning about people, whether through direct conversation or gossip, and humor is her fastest route into a group. Placement history: Season 14: 12 (Juror). Archive anchors: Episode 3: Helped form The Triumvirate, then immediately fractured it by voting Richard. Favorite ties: No shared simulator tie. Source canon establishes familiarity with Gabby and Tom/Thom. Open hook: Can she build a stable core with Gabby and turn warmth with Thom into proof at a real vote?"
+    },
+    {
+      "slug": "julia",
+      "name": "Julia",
+      "context": "Julia. Source voice: Bright wellness-influencer cadence wrapped around ruthless intent. Julia uses fake serenity, clipped insults, and sudden volcanic honesty; she can pivot from “positive energy” to a devastating read without changing volume. Confessionals are punchy, self-congratulatory, and brutally clear about who she plans to remove. Archetype: schemer. Behavioral baseline: Julia is fiercely competitive, physically resilient, and strategically aggressive. She first cultivated a sunny influencer persona built from crystals, nature slogans, and curated positivity, but humiliation stripped away the performance and revealed someone who enjoys winning, intimidation, and a perfectly timed insult. Placement history: Season 9: 6 (Juror); Season 13: 2 (Finalist). Archive anchors: Ep7: Manipulates Raj into leaving with an idol. / Ep.2 — Finds the Villains idol and keeps the secret close. Favorite ties: Bowie: S9 strategic rival. Millie: S9 ally. Open hook: Who strikes first in the Bowie rematch, and can Julia learn jury management from Millie without condescension?"
+    },
+    {
+      "slug": "dj",
+      "name": "DJ",
+      "context": "DJ. Source voice: Soft-spoken, sincere, and protective, with simple language that gets firmer when someone is unsafe. DJ comforts before advising, invokes his mother’s lessons without irony, and reacts to fear openly. His humor is gentle and self-aware; anger is rare, brief, and rooted in harm rather than ego. Archetype: hero. Behavioral baseline: DJ is a physically imposing person with an exceptionally gentle center. He values safety, kindness, animals, cooking, and the emotional well-being of the group above competitive glory. Placement history: Season 1: 22 (Pre-Juror); Season 2: 5 (Juror). Archive anchors: A peaceful social player who couldn't escape the 'challenge liability' label. / A pillar of emotional support for his tribe through the pre-merge. Favorite ties: No established simulator tie. Likely care affinity with Mike is interpretation only. Open hook: Who makes the hard call with Mike, and can DJ join Bowie without ignoring what the structure will demand?"
+    }
+  ],
+  "franchiseContext": "Source canon defines voice and behavioral boundaries. Archived simulator seasons define deeds and relationships. Do not invent shared history for unlinked pairs. Thom uses Tom canon characterization and only Thom Seasons 11/13 continuity. Total Drama vocabulary applies: contestants are voted out, never evicted or nominated."
+}

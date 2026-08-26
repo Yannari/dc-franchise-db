@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 const expected = ['bowie','mike','millie','thom','grett','gabby','james','lake','yul','natalia','julia','dj'];
 const history = JSON.parse(readFileSync('data/continuity/fans-vs-favorites-favorites-history.json','utf8'));
 const bible = readFileSync('docs/continuity/fans-vs-favorites-favorites-bible.md','utf8');
+const context = JSON.parse(readFileSync('data/continuity/fans-vs-favorites-favorites-context.json','utf8'));
 
 describe('Favorites continuity history', () => {
   it('contains the finalized cast once each', () => {
@@ -35,5 +36,24 @@ describe('Favorites continuity bible', () => {
   it('documents Bowie and Julia as shared-history rivals', () => {
     expect(bible).toContain('Bowie ↔ Julia');
     expect(bible).toContain('shared simulator history');
+  });
+});
+describe('compact Favorites episode context', () => {
+  it('contains the finalized cast exactly once in order', () => {
+    expect(context.cast.map(x => x.slug)).toEqual(expected);
+    expect(new Set(context.cast.map(x => x.name)).size).toBe(12);
+  });
+  it('keeps every writer block compact but continuity-rich', () => {
+    for (const player of context.cast) {
+      expect(player.context.length, player.slug).toBeLessThanOrEqual(1200);
+      expect(player.context).toMatch(/Placement history:/);
+      expect(player.context).toMatch(/Open hook:/);
+    }
+  });
+  it('keeps Thom on Thom seasons only', () => {
+    const thom = context.cast.find(x => x.slug === 'thom').context;
+    expect(thom).toContain('Season 11');
+    expect(thom).toContain('Season 13');
+    expect(thom).not.toContain('Season 7');
   });
 });

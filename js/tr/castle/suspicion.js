@@ -15,6 +15,7 @@ import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
 import { openThread, advanceThread, closeThread, findOpenThread, heatAt } from '../threads.js';
+import { alignmentAt } from '../roles.js';
 
 const FAMILY = 'suspicion';
 
@@ -251,5 +252,164 @@ registerEvent({
       else threadId = openThread(FAMILY, [accuser, accused], ctx.ep, line)?.id;
     }
     return { branch, pair: [accuser, accused], threadId, bondDelta };
+  },
+});
+
+// ── Task 6 additions ────────────────────────────────────────────────────
+
+const TIMELINE_LINES = [
+  '{a} and {b} laid out {c}\'s account side by side, and it didn\'t line up cleanly.',
+  'Neither {a} nor {b} could quite make {c}\'s morning add up the way {c} told it.',
+];
+
+registerEvent({
+  id: 'susp-timeline-crosscheck',
+  family: FAMILY,
+  window: 'dawn',
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    if ((ctx.living || []).length < 3) return 0;
+    const [a, b] = ctx.actors;
+    return getBond(a, b) <= 2 ? 1.5 : 0.5;
+  },
+  fire(ctx, rng) {
+    const [a, b] = ctx.actors;
+    const others = ctx.living.filter(n => n !== a && n !== b);
+    const target = pick(rng, others);
+    addBond(a, b, 0.5);
+    const note = pick(rng, TIMELINE_LINES).replace('{a}', a).replace('{b}', b).replace(/\{c\}/g, target);
+    const t = openThread(FAMILY, [a, b], ctx.ep, note);
+    return { branch: 'crosschecked', pair: [a, b], about: target, threadId: t?.id, bondDelta: 0.5 };
+  },
+});
+
+registerEvent({
+  id: 'susp-body-language-read',
+  family: FAMILY,
+  window: 'morning',
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a] = ctx.actors;
+    return pStats(a).intuition >= 6 ? 1.5 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    addBond(a, b, -0.5);
+    const t = openThread(FAMILY, [a, b], ctx.ep,
+      `${a} watched ${b}'s hands more than ${b}'s words, and didn't love what they saw.`);
+    return { branch: 'body-read', pair: [a, b], threadId: t?.id, bondDelta: -0.5 };
+  },
+});
+
+registerEvent({
+  id: 'susp-alliance-shape-guess',
+  family: FAMILY,
+  window: 'evening',
+  advancesThread: true,
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    if ((ctx.living || []).length < 4) return 0;
+    return 1.5;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    addBond(a, b, 0.5);
+    const existing = findOpenThread(FAMILY, [a, b]);
+    const note = `${a} and ${b} sketched out, in whispers, who they thought was actually working together.`;
+    const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
+    return { branch: 'shape-guessed', pair: [a, b], threadId: t?.id, bondDelta: 0.5 };
+  },
+});
+
+// The irony machine: a FAITHFUL's ordinary defensiveness reads exactly like
+// a Traitor's, and the room cannot tell the difference from the outside —
+// this is the "frequently wrong" texture the whole format runs on. Gated on
+// role (faithful) specifically so it is the mirror image of cover.js rather
+// than a recolor of it.
+registerEvent({
+  id: 'susp-defensive-overcorrect',
+  family: FAMILY,
+  window: 'after-table',
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    if (alignmentAt(b, ctx.ep) !== 'faithful') return 0;
+    return pStats(b).temperament <= 4 ? 2 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    addBond(a, b, -1);
+    const t = openThread(FAMILY, [a, b], ctx.ep,
+      `${b} explained themselves to ${a} for far longer than the question actually required — an innocent person, over-answering.`);
+    return { branch: 'overcorrected', pair: [a, b], threadId: t?.id, bondDelta: -1, wronglySuspected: true };
+  },
+});
+
+const GROUP_PRESSURE_LINES = {
+  holds: [
+    '{b} took the whole room leaning on them and didn\'t budge an inch.',
+    'Six people staring at {b} at once, and {b} just waited them out.',
+  ],
+  cracks: [
+    '{b} folded under the group pressure fast, and it showed.',
+    'It took less than a minute for {b} to start contradicting themselves.',
+  ],
+  redirects: [
+    '{b} took the group\'s pressure and pointed it at somebody else entirely.',
+    'By the end, the room had forgotten it was ever asking {b} anything.',
+  ],
+};
+
+registerEvent({
+  id: 'susp-group-pressure-crack',
+  family: FAMILY,
+  window: 'evening',
+  advancesThread: true,
+  rare: true,
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    if ((ctx.living || []).length < 5) return 0;
+    const [, b] = ctx.actors;
+    const t = findOpenThread(FAMILY, ctx.actors);
+    return t ? 2 : 0.75;
+  },
+  fire(ctx, rng) {
+    const [a, b] = ctx.actors;
+    const st = pStats(b);
+    const holdsScore = (st.temperament / 10) * 0.5 + (st.boldness / 10) * 0.3 + 0.1;
+    const cracksScore = (1 - st.temperament / 10) * 0.6 + 0.1;
+    const redirectsScore = (st.strategic / 10) * 0.4 + (st.social / 10) * 0.3;
+    const total = holdsScore + cracksScore + redirectsScore;
+    const roll = rng() * total;
+    let branch;
+    if (roll < holdsScore) branch = 'holds';
+    else if (roll < holdsScore + cracksScore) branch = 'cracks';
+    else branch = 'redirects';
+
+    const line = pick(rng, GROUP_PRESSURE_LINES[branch]).replace('{a}', a).replace('{b}', b);
+    let bondDelta = branch === 'holds' ? 0.5 : branch === 'cracks' ? -2 : -1;
+    addBond(a, b, bondDelta);
+    const existing = findOpenThread(FAMILY, ctx.actors);
+    const t = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, ctx.actors, ctx.ep, line);
+    return { branch, pair: [a, b], threadId: t?.id, bondDelta };
+  },
+});
+
+registerEvent({
+  id: 'susp-misread-tell',
+  family: FAMILY,
+  window: 'morning',
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [, b] = ctx.actors;
+    // The joke lands hardest on someone who has done nothing wrong.
+    return alignmentAt(b, ctx.ep) === 'faithful' ? 1.5 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    addBond(a, b, -0.5);
+    const t = openThread(FAMILY, [a, b], ctx.ep,
+      `${a} clocked a completely harmless habit of ${b}'s and decided it meant something.`);
+    return { branch: 'misread', pair: [a, b], threadId: t?.id, bondDelta: -0.5, wronglySuspected: true };
   },
 });

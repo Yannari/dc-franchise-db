@@ -19,11 +19,34 @@ import { gs } from '../../core.js';
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, closeThread, findOpenThread, heatAt } from '../threads.js';
+import { openThread, advanceThread, closeThread, findOpenThread, openThreadsFor, heatAt } from '../threads.js';
 
 const FAMILY = 'trust';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
+
+/**
+ * ROUND 2 FIX (dead-event audit at real season scale): `findOpenThread(kind,
+ * [a, b])` requires the SAME TWO PEOPLE to be the exact scene the runner
+ * draws again — and at a 20-person cast, a specific pair is redrawn on
+ * roughly 1 in 300 draws (`_sceneActors` in events.js samples uniformly
+ * over the living cast, with no awareness of thread state). A continuation
+ * event gated on the exact original pair is therefore not "uncommon," it is
+ * unreachable in practice: `trust-late-checkin` and `trust-vow-of-silence`
+ * both measured ZERO firings across 60 real seasons before this fix, even
+ * though their preconditions (a still-open trust thread) are common. The
+ * fix reads whether EITHER actor drawn into the current scene is a party to
+ * an open thread of this kind at all, and pulls the actual partner from the
+ * thread's own `parties`, rather than requiring the scene to already be
+ * that exact pair.
+ */
+function _threadForActors(kind, actors, ep) {
+  for (const n of actors || []) {
+    const hit = openThreadsFor(n, ep).find(t => t.kind === kind);
+    if (hit) return hit;
+  }
+  return null;
+}
 
 const CONFIDE_LINES = [
   '{a} told {b} something they hadn\'t said out loud to anyone else in the castle.',
@@ -277,15 +300,19 @@ registerEvent({
   // that is ALREADY positive when eligibility is rolled; it does nothing for
   // an event whose real problem is that eligibility itself almost never
   // triggers, which is what was happening here.
+  // ROUND 2 FIX: see `_threadForActors` above — this used to require the
+  // exact original pair to be the scene, which measured ZERO firings across
+  // 60 real seasons. Now any open trust thread involving either actor
+  // drawn into the scene qualifies, and the real partner is read off the
+  // thread's own `parties`.
   weight(ctx) {
-    if (ctx.actors?.length !== 2) return 0;
-    const [a, b] = ctx.actors;
-    const t = findOpenThread(FAMILY, [a, b]);
+    if (!ctx.actors?.length) return 0;
+    const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
     return t && heatAt(t, ctx.ep) > 0 ? 2 : 0;
   },
   fire(ctx) {
-    const [a, b] = ctx.actors;
-    const t = findOpenThread(FAMILY, [a, b]);
+    const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
+    const [a, b] = t.parties;
     addBond(a, b, 1);
     const advanced = advanceThread(t.id, ctx.ep, `${a} checked in with ${b} — the arrangement was still holding.`);
     return { branch: 'checked-in', pair: [a, b], threadId: advanced?.id, bondDelta: 1 };
@@ -306,5 +333,167 @@ function _sawMurderLastNight(ctx) {
   if (!rounds) return false;
   return rounds.some(r => r.ep === ctx.ep - 1 && r.murdered);
 }
+
+// ── Task 6 additions: scaling the family without diluting it ──────────
+
+const SHARE_SUSPICION_LINES = [
+  '{a} told {b}, flat out, who they were actually worried about — no hedging.',
+  '{a} handed {b} a real read on {c}, the kind you only give someone you trust.',
+];
+
+registerEvent({
+  id: 'trust-share-suspicion-honestly',
+  family: FAMILY,
+  window: 'morning',
+  advancesThread: true,
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    if ((ctx.living || []).length < 3) return 0;
+    const [a, b] = ctx.actors;
+    return getBond(a, b) >= 2 ? 2 : 0;
+  },
+  fire(ctx, rng) {
+    const [a, b] = ctx.actors;
+    const others = ctx.living.filter(n => n !== a && n !== b);
+    const target = pick(rng, others.length ? others : [b]);
+    addBond(a, b, 1);
+    const note = pick(rng, SHARE_SUSPICION_LINES).replace('{a}', a).replace('{b}', b).replace('{c}', target);
+    const existing = findOpenThread(FAMILY, [a, b]);
+    const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
+    return { branch: 'shared-suspicion', pair: [a, b], about: target, threadId: t?.id, bondDelta: 1 };
+  },
+});
+
+registerEvent({
+  id: 'trust-inner-circle-invite',
+  family: FAMILY,
+  window: 'evening',
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    return getBond(a, b) >= 5 ? 1.5 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    addBond(a, b, 1);
+    const t = openThread(FAMILY, [a, b], ctx.ep,
+      `${a} told ${b}, in so many words: you're one of the people I'm actually playing this with.`);
+    return { branch: 'invited-in', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+  },
+});
+
+registerEvent({
+  id: 'trust-return-favor',
+  family: FAMILY,
+  window: 'after-table',
+  advancesThread: true,
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    return findOpenThread(FAMILY, [a, b]) ? 2 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    const existing = findOpenThread(FAMILY, [a, b]);
+    addBond(a, b, 1);
+    const note = `${b} did ${a} a small, real favor tonight — the kind that only makes sense if the pact still holds.`;
+    const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
+    return { branch: 'favor-returned', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+  },
+});
+
+registerEvent({
+  id: 'trust-vow-of-silence',
+  family: FAMILY,
+  window: 'dawn',
+  advancesThread: true,
+  // ROUND 2 FIX: see `_threadForActors` — this measured ZERO firings across
+  // 60 real seasons under the exact-pair gate. Same fix as late-checkin.
+  weight(ctx) {
+    if (!ctx.actors?.length) return 0;
+    const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
+    return t && heatAt(t, ctx.ep) >= 1 ? 1.5 : 0;
+  },
+  fire(ctx) {
+    const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
+    const [a, b] = t.parties;
+    const advanced = advanceThread(t.id, ctx.ep, `${a} and ${b} agreed: whatever was said between them stays between them.`);
+    addBond(a, b, 0.5);
+    return { branch: 'vowed-silence', pair: [a, b], threadId: advanced?.id, bondDelta: 0.5 };
+  },
+});
+
+registerEvent({
+  id: 'trust-defend-in-absentia',
+  family: FAMILY,
+  window: 'after-table',
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    if (getBond(a, b) < 1) return 0;
+    // Wants some grounds — an open suspicion thread naming b is what makes a
+    // defense a defense rather than a compliment out of nowhere.
+    const threads = gs.tr?.threads || [];
+    return threads.some(t => t.state === 'open' && t.kind === 'suspicion' && t.parties.includes(b)) ? 2.5 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    addBond(a, b, 2);
+    const t = openThread(FAMILY, [a, b], ctx.ep,
+      `When somebody brought ${b}'s name up sideways, ${a} shut it down before it went anywhere.`);
+    return { branch: 'defended', pair: [a, b], threadId: t?.id, bondDelta: 2 };
+  },
+});
+
+// A second forking event, distinct from the vote-commitment flagship: what
+// happens to something told in confidence, scored off the RECEIVER'S own
+// loyalty/temperament/social rather than a coin. Three real outcomes, three
+// different consequences — none of them cosmetic.
+const SECRET_SWAP_LINES = {
+  kept: [
+    '{b} sat on what {a} told them. It never came up again, anywhere.',
+    'Whatever {a} said, it went into {b} and stayed there.',
+  ],
+  leakedAccident: [
+    '{b} didn\'t mean to repeat it — it just slipped out in a different conversation entirely.',
+    'The secret got out through {b}, and {b} looked as surprised as anyone that it had.',
+  ],
+  leakedDeliberate: [
+    '{b} traded {a}\'s secret to somebody else for something better.',
+    '{b} decided {a}\'s secret was worth more spent than kept.',
+  ],
+};
+
+registerEvent({
+  id: 'trust-secret-swap',
+  family: FAMILY,
+  window: 'evening',
+  advancesThread: true,
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    return getBond(a, b) >= 1 ? 2 : 0;
+  },
+  fire(ctx, rng) {
+    const [a, b] = ctx.actors;
+    const st = pStats(b);
+    const keepScore = (st.loyalty / 10) * 0.6 + (st.temperament / 10) * 0.4;
+    const accidentScore = (1 - st.social / 10) * 0.5 + 0.15;
+    const deliberateScore = (st.strategic / 10) * 0.5 + (1 - st.loyalty / 10) * 0.5;
+    const total = keepScore + accidentScore + deliberateScore;
+    const roll = rng() * total;
+    let branch;
+    if (roll < keepScore) branch = 'kept';
+    else if (roll < keepScore + accidentScore) branch = 'leakedAccident';
+    else branch = 'leakedDeliberate';
+
+    const line = pick(rng, SECRET_SWAP_LINES[branch]).replace('{a}', a).replace('{b}', b);
+    let bondDelta = branch === 'kept' ? 1 : branch === 'leakedAccident' ? -1 : -3;
+    addBond(a, b, bondDelta);
+    const existing = findOpenThread(FAMILY, [a, b]);
+    const t = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, [a, b], ctx.ep, line);
+    return { branch, pair: [a, b], threadId: t?.id, bondDelta };
+  },
+});
 
 export const _internal = { _sawMurderLastNight };

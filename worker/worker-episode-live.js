@@ -2275,60 +2275,73 @@ async function callAnthropicText(system, userText, env, model, maxTokens = 1600)
 /**
  * One short structured call, on whichever provider will actually answer.
  *
- * Claude is the intended home for these two — the project is moving creative
- * work onto it, not off. But an unfunded key fails at the API with
- * "credit balance is too low", and a feature that is dead until a billing page
- * is visited is dead. So: Claude first, OpenAI if Claude will not take the
- * call, and the moment credit is topped up the first branch simply starts
- * winning again with no code change.
+ * OPENAI IS FIRST HERE ON PURPOSE, and it is the one place in this worker that
+ * is true — every other creative path prefers Claude. The Anthropic key on
+ * this worker is unfunded and fails at the API with "credit balance is too
+ * low", which made both of these features dead on arrival rather than
+ * degraded. A feature that cannot run until somebody visits a billing page is
+ * not shipped.
  *
- * Deliberately NOT silent about which one answered. A profile written by a
- * different model than the one you expected, with no way to tell, is the kind
- * of thing that gets debugged twice.
+ * Flip it back with PREFER_MODEL="anthropic" in wrangler-analytics.toml — a
+ * config edit, not a code change, so restoring the project's intended default
+ * costs one line the day that key has credit again.
+ *
+ * Whichever answers is reported back. A profile written by a different model
+ * than the one you expected, with no way to tell, gets debugged twice.
  */
 async function callShortModel(system, userText, env, { maxTokens = 2000, model } = {}) {
-  let anthropicError = null;
-  if (env.ANTHROPIC_API_KEY) {
-    try {
-      const text = await callAnthropicText(system, userText, env, model || MODELS.creative, maxTokens);
-      if (text) return { text, provider: "anthropic" };
-      anthropicError = "empty response";
-    } catch (e) {
-      anthropicError = e.message;
+  const preferAnthropic = String(env.PREFER_MODEL || "openai").toLowerCase() === "anthropic";
+
+  const tryAnthropic = async () => {
+    if (!env.ANTHROPIC_API_KEY) throw new Error("no ANTHROPIC_API_KEY");
+    const text = await callAnthropicText(system, userText, env, model || MODELS.creative, maxTokens);
+    if (!text) throw new Error("empty response");
+    return { text, provider: "anthropic" };
+  };
+
+  const tryOpenAI = async () => {
+    if (!env.OPENAI_API_KEY) throw new Error("no OPENAI_API_KEY");
+    const res = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-5.5",
+        instructions: system,
+        input: userText,
+        max_output_tokens: maxTokens * 2,
+        // Both callers parse JSON out of this, and asking for it explicitly is
+        // cheaper than a retry when the model wraps it in prose.
+        text: { format: { type: "json_object" } },
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(`openai ${res.status}: ${(data?.error?.message || "").slice(0, 160)}`);
     }
-  } else {
-    anthropicError = "no ANTHROPIC_API_KEY";
-  }
+    const text = typeof data?.output_text === "string" ? data.output_text
+      : Array.isArray(data?.output)
+        ? data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("")
+        : "";
+    if (!text) throw new Error("openai returned nothing");
+    return { text, provider: "openai" };
+  };
 
-  if (!env.OPENAI_API_KEY) {
-    throw new Error(anthropicError || "no model key on this worker");
+  const [first, second] = preferAnthropic ? [tryAnthropic, tryOpenAI] : [tryOpenAI, tryAnthropic];
+  let firstError = "";
+  try {
+    return await first();
+  } catch (e) {
+    firstError = e.message;
   }
-
-  const res = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-5.5",
-      instructions: system,
-      input: userText,
-      max_output_tokens: maxTokens * 2,
-      text: { format: { type: "json_object" } },
-    }),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(`both providers refused — anthropic: ${anthropicError}; openai ${res.status}: `
-      + (data?.error?.message || "").slice(0, 160));
+  try {
+    const out = await second();
+    return { ...out, fellBackFrom: firstError };
+  } catch (e) {
+    throw new Error(`both providers refused — ${firstError}; ${e.message}`);
   }
-  const text = typeof data?.output_text === "string" ? data.output_text
-    : Array.isArray(data?.output)
-      ? data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("")
-      : "";
-  if (!text) throw new Error(`both providers refused — anthropic: ${anthropicError}; openai returned nothing`);
-  return { text, provider: "openai", fellBackFrom: anthropicError };
 }
 
 // FINAL PASS — DE-CLEVER. Reads the finished episode and rewrites ONLY the lines that use the

@@ -17,6 +17,23 @@ import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
 import { runWindow, startRoundBudget } from './events.js';
 
+// TASK 6 WIRING DECISION: the castle event pool is now live in every real
+// season. Side-effect imports only — nothing here is called directly; each
+// module registers its events into the shared `EVENTS` array (events.js) on
+// load. Before this line, `EVENTS` was empty at runtime because nothing in
+// the require graph from a real season ever reached js/tr/castle/*.js, so
+// `runWindow` (already wired into the round loop below since the plumbing
+// task) always returned `[]` — every real season ran with zero castle
+// content despite the engine being fully built. See task-6-report.md for
+// the calibration re-run this triggered and its results.
+import '../tr/castle/trust.js';
+import '../tr/castle/suspicion.js';
+import '../tr/castle/grief.js';
+import '../tr/castle/cover.js';
+import '../tr/castle/romance.js';
+import '../tr/castle/callback.js';
+import '../tr/castle/testing.js';
+
 /**
  * The season's random stream — and the hash in front of it is load-bearing.
  *

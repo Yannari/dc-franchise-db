@@ -19,6 +19,7 @@ import { getBond, setBond } from '../js/bonds.js';
 import { recordAlignment } from '../js/tr/roles.js';
 import { openThread, findOpenThread } from '../js/tr/threads.js';
 import { EVENTS, eligible, pickEvent, validateRegistry } from '../js/tr/events.js';
+import { setFranchiseLedger } from '../js/franchise-meta.js';
 import roster from '../franchise_roster.json';
 
 // Side-effect imports: this is what registers the ~25 events under test.
@@ -30,6 +31,9 @@ import '../js/tr/castle/trust.js';
 import '../js/tr/castle/suspicion.js';
 import '../js/tr/castle/grief.js';
 import '../js/tr/castle/cover.js';
+import '../js/tr/castle/romance.js';
+import '../js/tr/castle/callback.js';
+import '../js/tr/castle/testing.js';
 
 const BASE_CAST = roster.players.slice(0, 6).map(p => p.name);
 
@@ -59,13 +63,21 @@ function setup(cast = BASE_CAST, playersOverride = null) {
 beforeEach(() => setup());
 
 describe('the pool loads cleanly', () => {
-  it('registers a representative slice per family (6-10 events each)', () => {
+  // Task 6 scaled the four original families past their initial 6-10 slice
+  // and added three more (romance, callback, testing). The floor matters
+  // more than the ceiling here — the dead-event/repetition audit
+  // (tests/tr-castle-audit.test.js) is what actually governs pool health;
+  // this is just a sanity floor so a family cannot silently regress to zero.
+  it('registers at least 10 events in every one of the seven families', () => {
     const byFamily = {};
     for (const ev of EVENTS) (byFamily[ev.family] ||= []).push(ev.id);
-    for (const fam of ['trust', 'suspicion', 'grief', 'cover']) {
-      expect(byFamily[fam]?.length ?? 0).toBeGreaterThanOrEqual(6);
-      expect(byFamily[fam]?.length ?? 0).toBeLessThanOrEqual(10);
+    for (const fam of ['trust', 'suspicion', 'grief', 'cover', 'romance', 'callback', 'testing']) {
+      expect(byFamily[fam]?.length ?? 0, `family "${fam}"`).toBeGreaterThanOrEqual(10);
     }
+  });
+
+  it('the whole pool is at least 80 events, honestly — not padded to a round number', () => {
+    expect(EVENTS.length).toBeGreaterThanOrEqual(80);
   });
 
   it('every event that claims eligibility actually fires (BB Hacker lesson)', () => {
@@ -413,5 +425,132 @@ describe('cover: role overrides archetype', () => {
     // spills into a worse branch. This is the mechanical trace of "visibly
     // bad at it": nothing about ELIGIBILITY changed, only the outcome did.
     expect(heroRoll.branch).not.toBe('convincing');
+  });
+});
+
+describe('romance: the liability-exposed flagship forks on the FAITHFUL partner\'s own read', () => {
+  const CAST2 = ['Faithful', 'Turncoat'];
+  function ctxFor(ep) { return { ep, window: 'after-table', act: 'middle', living: CAST2, actors: CAST2 }; }
+  function seedShowmance(ep) { return openThread('romance-showmance', CAST2, ep, 'seed'); }
+
+  it('needs a MIXED-role showmance — two Faithfuls in a showmance have nothing to expose', () => {
+    setup(CAST2, [makePlayer('Faithful', 'floater'), makePlayer('Turncoat', 'floater')]);
+    recordAlignment('Faithful', false, 1, 'selection');
+    recordAlignment('Turncoat', false, 1, 'selection');
+    seedShowmance(3);
+    const ev = EVENTS.find(e => e.id === 'romance-liability-exposed');
+    expect(ev.weight(ctxFor(4))).toBe(0);
+  });
+
+  it('a low-intuition Faithful stays OBLIVIOUS and the bond warms', () => {
+    setup(CAST2, [
+      makePlayer('Faithful', 'goat', { intuition: 1, loyalty: 10, boldness: 1 }),
+      makePlayer('Turncoat', 'villain'),
+    ]);
+    recordAlignment('Faithful', false, 1, 'selection');
+    recordAlignment('Turncoat', true, 1, 'selection');
+    seedShowmance(3);
+    const ev = EVENTS.find(e => e.id === 'romance-liability-exposed');
+    const result = ev.fire(ctxFor(4), scriptedRng([0.01]));
+    expect(result.branch).toBe('oblivious');
+    expect(result.bondDelta).toBeGreaterThan(0);
+  });
+
+  it('a bold, disloyal-leaning Faithful EXPOSES it publicly, closing the showmance thread', () => {
+    setup(CAST2, [
+      makePlayer('Faithful', 'hothead', { intuition: 1, loyalty: 1, boldness: 10, temperament: 1 }),
+      makePlayer('Turncoat', 'villain'),
+    ]);
+    recordAlignment('Faithful', false, 1, 'selection');
+    recordAlignment('Turncoat', true, 1, 'selection');
+    const showmance = seedShowmance(3);
+    const ev = EVENTS.find(e => e.id === 'romance-liability-exposed');
+    const result = ev.fire(ctxFor(4), scriptedRng([0.999]));
+    expect(result.branch).toBe('exposes');
+    expect(gs.tr.threads.find(t => t.id === showmance.id).state).toBe('closed');
+    // A `cover` thread opens on the Traitor — their old protection is gone.
+    expect(gs.tr.threads.some(t => t.kind === 'cover' && t.parties.includes('Turncoat'))).toBe(true);
+  });
+});
+
+describe('callback: the history-confrontation flagship forks on the actor + the polarity of shared history', () => {
+  const CAST2 = ['Veteran', 'OldAlly'];
+  function ctxFor(ep) { return { ep, window: 'after-table', act: 'middle', living: CAST2, actors: CAST2 }; }
+  function seedLedger(relation) {
+    setFranchiseLedger({
+      v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {
+        '1': { seasonName: 'S1', format: 'total-drama', players: {
+          Veteran: { allies: relation === 'allies' ? ['OldAlly'] : [], rivals: relation === 'rivals' ? ['OldAlly'] : [],
+            betrayed: [], betrayedBy: relation === 'betrayed-by-them' ? ['OldAlly'] : [], showmances: [] },
+          OldAlly: { allies: relation === 'allies' ? ['Veteran'] : [], rivals: relation === 'rivals' ? ['Veteran'] : [],
+            betrayed: relation === 'betrayed-by-them' ? ['Veteran'] : [], betrayedBy: [], showmances: [] },
+        } },
+      } } },
+    });
+  }
+
+  it('no shared history at all means zero weight', () => {
+    setup(CAST2, [makePlayer('Veteran', 'floater'), makePlayer('OldAlly', 'floater')]);
+    setFranchiseLedger({ v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {} } } });
+    const ev = EVENTS.find(e => e.id === 'callback-history-confrontation');
+    expect(ev.weight(ctxFor(4))).toBe(0);
+  });
+
+  it('a high-loyalty actor with a POSITIVE history RECONCILES, warming the bond', () => {
+    setup(CAST2, [makePlayer('Veteran', 'loyal-soldier', { loyalty: 10, strategic: 1, boldness: 1, temperament: 1 }), makePlayer('OldAlly', 'floater')]);
+    seedLedger('allies');
+    const ev = EVENTS.find(e => e.id === 'callback-history-confrontation');
+    const result = ev.fire(ctxFor(4), scriptedRng([0.01]));
+    expect(result.branch).toBe('reconciles');
+    expect(result.bondDelta).toBeGreaterThan(0);
+  });
+
+  it('a low-loyalty actor with a NEGATIVE history renews the GRUDGE, damaging the bond', () => {
+    setup(CAST2, [makePlayer('Veteran', 'villain', { loyalty: 1, strategic: 1, boldness: 1, temperament: 1 }), makePlayer('OldAlly', 'floater')]);
+    seedLedger('betrayed-by-them');
+    const ev = EVENTS.find(e => e.id === 'callback-history-confrontation');
+    const result = ev.fire(ctxFor(4), scriptedRng([0.35]));
+    expect(result.branch).toBe('grudge');
+    expect(result.bondDelta).toBeLessThan(0);
+  });
+
+  it('a high-temperament, low-boldness actor BURIES it, closing any existing callback thread', () => {
+    setup(CAST2, [makePlayer('Veteran', 'goat', { loyalty: 1, strategic: 1, boldness: 1, temperament: 10 }), makePlayer('OldAlly', 'floater')]);
+    seedLedger('rivals');
+    const preexisting = openThread('callback', CAST2, 3, 'seed');
+    const ev = EVENTS.find(e => e.id === 'callback-history-confrontation');
+    const result = ev.fire(ctxFor(4), scriptedRng([0.999]));
+    expect(result.branch).toBe('buries');
+    expect(gs.tr.threads.find(t => t.id === preexisting.id).state).toBe('closed');
+  });
+});
+
+describe('testing: the decoy-secret flagship forks on the TARGET\'s stats, four ways', () => {
+  const CAST2 = ['Tester', 'Target'];
+  function ctxFor(ep) { return { ep, window: 'evening', act: 'middle', living: CAST2, actors: CAST2 }; }
+
+  it('a high-loyalty, high-temperament target KEEPS the secret quiet and the thread closes clean', () => {
+    setup(CAST2, [makePlayer('Tester', 'floater'), makePlayer('Target', 'loyal-soldier', { loyalty: 10, temperament: 10, social: 1, strategic: 1, intuition: 1 })]);
+    const t = openThread('testing', CAST2, 3, 'seed');
+    const ev = EVENTS.find(e => e.id === 'testing-decoy-secret');
+    const result = ev.fire(ctxFor(4), scriptedRng([0.01]));
+    expect(result.branch).toBe('keptQuiet');
+    expect(result.bondDelta).toBeGreaterThan(0);
+    expect(gs.tr.threads.find(x => x.id === t.id).state).toBe('closed');
+  });
+
+  it('a high-strategic, low-loyalty target REPEATS IT MALICIOUSLY and the bond takes real damage', () => {
+    setup(CAST2, [makePlayer('Tester', 'floater'), makePlayer('Target', 'schemer', { loyalty: 1, temperament: 1, social: 1, strategic: 10, intuition: 1 })]);
+    const ev = EVENTS.find(e => e.id === 'testing-decoy-secret');
+    const result = ev.fire(ctxFor(4), scriptedRng([0.65]));
+    expect(result.branch).toBe('malicious');
+    expect(result.bondDelta).toBeLessThan(-1);
+  });
+
+  it('a high-intuition target CATCHES THE TEST outright', () => {
+    setup(CAST2, [makePlayer('Tester', 'floater'), makePlayer('Target', 'perceptive-player', { loyalty: 1, temperament: 1, social: 1, strategic: 1, intuition: 10 })]);
+    const ev = EVENTS.find(e => e.id === 'testing-decoy-secret');
+    const result = ev.fire(ctxFor(4), scriptedRng([0.999]));
+    expect(result.branch).toBe('caughtTest');
   });
 });

@@ -4680,14 +4680,40 @@
         "temperament": 9
       },
       "sexuality": "straight",
-      "profileSources": {},
+      "profileSources": {
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Bruno",
+            "url": "https://disventure-camp.fandom.com/wiki/Bruno",
+            "kind": "source-canon",
+            "quote": "Bruno was originally from Hartford, Connecticut before moving to New York."
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Bruno",
+            "url": "https://disventure-camp.fandom.com/wiki/Bruno",
+            "kind": "source-canon",
+            "quote": "his enthusiasm and optimism are spectacular at making others feel motivated"
+          }
+        ],
+        "voice": [
+          {
+            "label": "Disventure Camp Wiki - Bruno",
+            "url": "https://disventure-camp.fandom.com/wiki/Bruno",
+            "kind": "source-canon",
+            "quote": "trouble stopping himself from speaking up when excited"
+          }
+        ]
+      },
       "age": 23,
       "birthdate": "2003-06-24",
       "ethnicity": "Latino",
       "nationality": "Peruvian American",
       "hometown": "Lima",
       "occupation": "Personal assistant",
-      "descriptor": "The Superfan"
+      "descriptor": "The Superfan",
+      "voice": "Bruno talks like an overexcited superfan: quick, eager, and packed with references to contestants, strategies, strengths, and weaknesses. When he argues, he tends to lean on facts, precedent, and show knowledge rather than intimidation, but his excitement can make him blurt things out before he thinks them through. His rhythm is enthusiastic and slightly nervous, especially when he is trying to prove an idea."
     },
     {
       "name": "Dunia",

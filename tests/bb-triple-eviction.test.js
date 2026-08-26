@@ -18,6 +18,7 @@ import { pStats, pronouns, threatScore } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { ordinal } from '../js/finale.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
+import { buildVPScreens } from '../js/vp-screens.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { resolveWeekTwistState, BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { seedGame } from './helpers/setup.js';
@@ -266,6 +267,68 @@ describe('the shape of the night is the author’s to choose', () => {
       expect(ep.evictionInterview, `${style}: no first interview`).toBeTruthy();
       expect(ep.secondEvictionInterview, `${style}: no second interview`).toBeTruthy();
       expect(ep.thirdEvictionInterview, `${style}: no third interview`).toBeTruthy();
+    }
+  });
+});
+
+describe('the night ends when the night ends', () => {
+  // A compressed cycle has no house life of its own, so anything displaced
+  // from its competitions waited for a stretch that never came and was flushed
+  // at the END of the cycle — which put a House Life screen after the second
+  // evictee's interview. The night finished on a stretch of house life that
+  // had happened hours earlier.
+  //
+  // Found by driving the real page rather than by a test: the navigator makes
+  // it obvious and an assertion about screen COUNTS never would.
+  const tailOf = (twists, eps = 2) => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+    Object.assign(seasonConfig, {
+      format: 'big-brother', jurySize: 7, finaleSize: 3, bbSafetyMode: 'off',
+      bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house', romance: 'enabled',
+      twistSchedule: twists,
+    });
+    gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns,
+      threatScore, getBond, getPerceivedBond, ordinal });
+    let ep; for (let i = 0; i < eps; i++) ep = simulateBBEpisode();
+    const stored = (gs.episodeHistory || []).find(h => h.num === ep.num) || ep;
+    return { ep: stored, labels: (buildVPScreens(stored) || []).map(s => s.label) };
+  };
+
+  const SHAPES = [
+    ['a double', [{ episode: 2, type: 'bb-double-eviction', deStyle: 'fast-forward' }]],
+    ['a double run as a chain', [{ episode: 2, type: 'bb-double-eviction', deStyle: 'chain' }]],
+    ['a triple', [{ episode: 2, type: 'bb-triple-eviction', teStyle: 'fast-forward' }]],
+    ['a triple ending on a chain', [{ episode: 2, type: 'bb-triple-eviction', teStyle: 'chain' }]],
+    ['a chain on its own', [{ episode: 2, type: 'bb-chain-of-safety', chainStart: 'hoh' }]],
+    ['an ordinary week', []],
+  ];
+
+  it('never draws house life after the last evictee has been interviewed', () => {
+    for (const [name, twists] of SHAPES) {
+      const { labels } = tailOf(twists);
+      const lastIv = Math.max(labels.lastIndexOf('Evictee Interview'),
+        labels.lastIndexOf('Second Evictee'), labels.lastIndexOf('Third Evictee'));
+      expect(lastIv, `${name}: nobody was interviewed at all`).toBeGreaterThan(-1);
+      const after = labels.slice(lastIv + 1).filter(l => l === 'House Life');
+      expect(after, `${name} ended on house life: ${labels.slice(-4).join(' | ')}`).toEqual([]);
+    }
+  });
+
+  it('does not lose the beats it moved', () => {
+    // Flushing them earlier is only right if they still appear.
+    for (const [name, twists] of SHAPES) {
+      const { ep, labels } = tailOf(twists);
+      const fallout = (ep.acts || []).flatMap(a => (a.socialBeats || []))
+        .filter(b => b.chainFallout);
+      if (!fallout.length) continue;
+      const html = (buildVPScreens(ep) || []).map(s => s.html || '').join(' ');
+      for (const b of fallout) {
+        expect(html, `${name} dropped "${b.text.slice(0, 40)}"`).toContain(b.text.slice(0, 40));
+      }
+      expect(labels.length).toBeGreaterThan(5);
     }
   });
 });

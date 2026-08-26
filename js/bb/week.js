@@ -7017,9 +7017,14 @@ export function simulateBBWeek(options = {}) {
       host.socialBeats = [...(week._chainFallout.socialBeats || []),
         ...(host.socialBeats || [])];
       host.chainFallout = true;
+    } else if (chainAt >= 0) {
+      // No house life left to fold into — a compressed cycle has none. It gets
+      // its own act, INSERTED directly after the chain rather than appended:
+      // pushed to the end it landed after the eviction and the evictee's
+      // interview, so the night finished on a stretch of house life that had
+      // happened hours earlier.
+      week.acts.splice(chainAt + 1, 0, week._chainFallout);
     } else {
-      // No house life left in the week (a compressed cycle). Better its own
-      // act than losing it.
       week.acts.push(week._chainFallout);
     }
     delete week._chainFallout;

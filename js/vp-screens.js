@@ -24364,6 +24364,25 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       }
       case 'eviction':
+        // ── ANYTHING STILL WAITING FOR A STRETCH OF HOUSE LIFE GETS ONE HERE ──
+        //
+        // Beats displaced from a competition wait for the next House Life act
+        // to fold into. A COMPRESSED cycle has no house life at all, so on the
+        // back half of a double they waited for a stretch that never came and
+        // were flushed at the very end of the cycle instead — which put a
+        // House Life screen AFTER the second evictee's interview, at the end
+        // of the night, in the navigator.
+        //
+        // They came out of this cycle's competitions, so they belong before
+        // its vote. Flushed here, where a full week would have had its
+        // post-veto stretch.
+        if (pendingBeats.length) {
+          screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life',
+            html: rpBuildBBHouseLife(view, { type: 'house', socialBeats: pendingBeats }, houseSlot) });
+          lastHouse = { at: screens.length - 1,
+            act: { type: 'house', socialBeats: pendingBeats }, slot: houseSlot };
+          pendingBeats = [];
+        }
         // The Block Buster first, if there was one: it is the last thing that
         // happens before the vote.
         screens.push(...deferred.splice(0, deferred.length));

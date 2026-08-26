@@ -48,6 +48,7 @@ export function blueprintFor(config = {}, castSize = 0) {
   const fmt = config.finaleFormat || 'traditional';
   const N = Number(castSize) || 0;
   const house = seasonFormat(config) === 'big-brother';
+  const castle = seasonFormat(config) === 'traitors';
   const segs = [];
 
   segs.push({
@@ -55,6 +56,28 @@ export function blueprintFor(config = {}, castSize = 0) {
     ok: N >= 4,
     why: N >= 4 ? undefined : `Cast at least 4 ${house ? 'houseguests' : 'players'}`,
   });
+
+  // A castle has no tribes, no merge and no jury. What it does have is a
+  // ratio: too few Traitors and one lucky banishment ends the season in
+  // episode four, too many and the Faithfuls cannot help but find one.
+  if (castle) {
+    const asked = Number(config.traitorCount) || 0;
+    const max = Math.max(2, Math.min(5, Math.round(N * 0.25)));
+    const countOk = asked >= 2 && asked <= max;
+    segs.push({ label: 'one castle', ok: true });
+    segs.push({
+      label: `${asked} traitor${asked === 1 ? '' : 's'}`,
+      ok: countOk,
+      why: countOk ? undefined : `A cast of ${N} supports 2 to ${max} traitors`,
+    });
+    const endOk = finaleSize >= 2 && finaleSize < N;
+    segs.push({
+      label: `endgame at ${finaleSize}`,
+      ok: endOk,
+      why: endOk ? undefined : `The endgame must start at 2+ and below ${N}`,
+    });
+    return segs;
+  }
 
   // A house has no tribes and no merge: everybody is in from day one.
   if (house) {
@@ -423,6 +446,7 @@ function _preset() {
 const SHOWS = [
   { id: 'total-drama', name: 'Total Drama', tag: 'Tribes, challenges, tribal council', icon: '🎬' },
   { id: 'big-brother', name: 'Big Brother', tag: 'One house, HOH, veto, live eviction', icon: '🏠' },
+  { id: 'traitors',    name: 'The Traitors', tag: 'A castle, a round table, a murder every night', icon: '🗡️' },
 ];
 
 function _format() {
@@ -921,6 +945,10 @@ export const HOSTS_BY_FORMAT = {
     { value: 'Julie Chen Moonves', label: 'Julie Chen Moonves' },
     { value: 'Arisa Cox', label: 'Arisa Cox' },
   ],
+  'traitors': [
+    { value: 'Alistair', label: 'Alistair Crane' },
+    { value: 'Claudia',  label: 'Claudia Winterbourne' },
+  ],
 };
 
 export function hostOptionsForFormat(fmt) {
@@ -1003,7 +1031,7 @@ const CONFIG_SCOPE = {
     idol:       ['total-drama'],
     advantages: ['total-drama'],
     qem:        ['total-drama'],
-    popularity: ['total-drama', 'big-brother'],  // a house has an audience too
+    popularity: ['total-drama', 'big-brother', 'traitors'],  // a castle has an audience too
     survival:   ['total-drama'],
     mole:       ['total-drama'],
   },
@@ -1026,10 +1054,15 @@ const CONFIG_SCOPE = {
     'cfg-bb-departures':     ['big-brother'],
     'f-tribe':               ['total-drama'],  // a house has no tribes to join
     'cfg-finale':            ['total-drama'],  // a house always ends at three
+    // The castle's own controls: how many traitors, how they're picked, and
+    // the pot they're playing for. No other format's engine reads these.
+    'cfg-tr-traitor-count':  ['traitors'],
+    'cfg-tr-selection':      ['traitors'],   // random | chosen
+    'cfg-tr-pot':            ['traitors'],
   },
   sections: {
     'sec-season-options':     ['total-drama'],
-    'sec-settings-mechanics': ['total-drama', 'big-brother'],  // popularity lives here
+    'sec-settings-mechanics': ['total-drama', 'big-brother', 'traitors'],  // popularity lives here
     'sec-bb-options':         ['big-brother'],
     'sec-bb-divider':         ['big-brother'],
     // The container, not just its heading. The fixed-rule lines inside it are
@@ -1039,6 +1072,9 @@ const CONFIG_SCOPE = {
     'sec-tribes':             ['total-drama'],
     'sec-formats-twists':          ['total-drama'],
     'sec-formats-twists-divider':  ['total-drama'],
+    // The castle's traitor-count/selection/pot controls and their heading.
+    'sec-tr-options':        ['traitors'],
+    'sec-tr-divider':        ['traitors'],
   },
 };
 

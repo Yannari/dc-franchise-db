@@ -4,7 +4,7 @@
 import { gs, players } from './core.js';
 import { pStats } from './players.js';
 import { addBond, getBond } from './bonds.js';
-import { bankTraining, coachesOf, sessionsFor } from './coaches.js';
+import { bankTraining, coachesOf, coachRecord, removeCoach, revokeCoachTraining, sessionsFor } from './coaches.js';
 import { pickSessionTargets, sessionGain, teachableStat, aweOf } from './coach-agenda.js';
 
 /** How close this coach is to being voted out, 0..1. Lifts their survive agenda. */
@@ -95,4 +95,31 @@ export function runCoachingBlock(ep, tribe, roll = Math.random, fameGapOf = defa
   if (!ep.coachData) ep.coachData = {};
   ep.coachData[tribe.tribeName] = { sessions, passedOver };
   return { sessions, passedOver };
+}
+
+/**
+ * A coach is voted out.
+ *
+ * The mechanical cost is revocation — everything they banked leaves with them,
+ * immediately and visibly, which is what makes a coach who did his job
+ * expensive to cut. The rest is the twist's largest emotional beat and must
+ * not be silent.
+ */
+export function eliminateCoach(ep, coachName) {
+  const record = coachRecord(coachName);
+  const tribe = record?.tribe;
+  const lost = revokeCoachTraining(coachName);
+
+  const reactions = [];
+  for (const name of (gs.activePlayers || [])) {
+    const bond = getBond(coachName, name);
+    // Thresholds are allowed here: this chooses narrative text, not gameplay.
+    const kind = bond >= 5 ? 'grief' : bond <= -3 ? 'relief' : 'unsettled';
+    reactions.push({ contestant: name, kind, bond });
+  }
+
+  removeCoach(coachName);
+  if (!ep.coachElimination) ep.coachElimination = [];
+  ep.coachElimination.push({ coach: coachName, tribe, lost, reactions });
+  return { lost, reactions };
 }

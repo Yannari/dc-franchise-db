@@ -1400,7 +1400,7 @@ function _renderEditor() {
         <label class="st-l">Nationality <span class="st-hint">queryable</span>
           <input class="st-input" id="st-f-nationality" value="${_esc(d.nationality)}" placeholder="e.g. Canadian">
         </label>
-        <label class="st-l">Descriptor <span class="st-hint">the short epithet the show gives them &mdash; their wiki <b>Label</b> row</span>
+        <label class="st-l">Descriptor <span class="st-hint">shown as <b>Label</b></span>
           <input class="st-input" id="st-f-descriptor" value="${_esc(d.descriptor)}" placeholder="e.g. The Lively">
         </label>
       </div>
@@ -2903,6 +2903,10 @@ function _injectCSS() {
   .st-l-txt{font-size:12px;color:var(--muted,#9a9);font-weight:600}
   .st-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .st-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  /* The inputs line up even when one label's hint wraps to two lines. Each
+     .st-l is a flex column filling its grid cell, so without this a longer
+     hint pushes its own input down and only that one sits low. */
+  .st-row3 > .st-l > .st-input{margin-top:auto}
   @media(max-width:720px){ .st-row3{grid-template-columns:1fr} }
   .st-hint{font-weight:400;font-style:italic;opacity:.8}
   .st-avatar-ctrls{display:flex;gap:8px;flex-wrap:wrap}

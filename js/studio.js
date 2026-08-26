@@ -1785,8 +1785,13 @@ async function _fillProfileFrom(ed, d, say) {
     preview.addSource({ origin: 'wiki', label: page.label, profile: out.profile });
     const { total, canon } = out.counts;
     const guessed = total - canon;
+    // Say what was dropped. A cap that bins a field silently reads as "the
+    // wiki had nothing to say about that", which is a different fact.
+    const dropped = (out.overlong || []).length
+      ? ` Skipped ${out.overlong.join(', ')} — came back as prose, not a value.`
+      : '';
     preview.say(`${page.title} on the ${page.label}: ${canon} of ${total} field${total === 1 ? '' : 's'} quote the article`
-      + `${guessed ? `, ${guessed} ${guessed === 1 ? 'is a reading' : 'are readings'} of it` : ''}.`);
+      + `${guessed ? `, ${guessed} ${guessed === 1 ? 'is a reading' : 'are readings'} of it` : ''}.${dropped}`);
   } catch (e) {
     preview.say(`The wiki lookup failed: ${e.message}`);
     if (say) say('');

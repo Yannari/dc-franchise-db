@@ -2310,10 +2310,15 @@ async function callShortModel(system, userText, env, { maxTokens = 2000, model }
       body: JSON.stringify({
         model: "gpt-5.5",
         instructions: system,
-        input: userText,
+        // The reminder is not redundant: json_object mode is REFUSED unless the
+        // word "json" appears in the INPUT, and saying it in `instructions`
+        // does not count. Both callers parse JSON out of the answer, so asking
+        // for it explicitly is cheaper than a retry when the model wraps it in
+        // prose.
+        input: `${userText}
+
+Answer with a single JSON object.`,
         max_output_tokens: maxTokens * 2,
-        // Both callers parse JSON out of this, and asking for it explicitly is
-        // cheaper than a retry when the model wraps it in prose.
         text: { format: { type: "json_object" } },
       }),
     });
@@ -4038,6 +4043,25 @@ const WIKI_PROFILE_FIELDS = ["occupation", "hometown", "birthdate", "ethnicity",
   "nationality", "descriptor", "sexuality", "voice", "personality", "backstory"];
 
 /**
+ * Fields that are a VALUE, not a sentence — and the length that proves it.
+ *
+ * These feed the composed bio lead, the "Canadian, Former spy and police
+ * officer. " prefix in front of a voice profile. A real fetch came back with
+ * occupation = "Volunteer focused on helping disadvantaged teenagers; she
+ * hopes to open a community center someday." and sexuality = "Appears straight
+ * or primarily attracted to men, based on her romantic interest in..." — both
+ * defensible as prose and both ruinous in a one-line lead.
+ *
+ * Over the cap the field is DROPPED rather than truncated. A value cut off
+ * mid-clause is worse than an absent one: it looks authored, and the rule here
+ * has always been that a blank beats a bad fill.
+ */
+const SHORT_FIELDS = {
+  occupation: 48, hometown: 48, descriptor: 48,
+  ethnicity: 32, nationality: 32, sexuality: 24,
+};
+
+/**
  * The check that makes `source-canon` mean something.
  *
  * Every claim the model marked as canon is looked for IN THE TEXT THAT WAS
@@ -4056,7 +4080,7 @@ const WIKI_PROFILE_FIELDS = ["occupation", "hometown", "birthdate", "ethnicity",
  */
 export function buildVerifiedProfile(parsed, prose, { url, label, title }) {
   const flatProse = flattenForQuoteCheck(prose);
-  const fields = {}, profileSources = {}, demoted = [];
+  const fields = {}, profileSources = {}, demoted = [], overlong = [];
   for (const key of WIKI_PROFILE_FIELDS) {
     const entry = parsed?.fields?.[key];
     if (!entry || typeof entry !== "object") continue;
@@ -4065,6 +4089,11 @@ export function buildVerifiedProfile(parsed, prose, { url, label, title }) {
     // An unparseable date is dropped, not demoted: the Studio validates the
     // format and would refuse the whole profile over it.
     if (key === "birthdate" && !/^\d{4}-\d{2}-\d{2}$/.test(value)) continue;
+    // A value that turned into a sentence is not the value that was asked for.
+    if (SHORT_FIELDS[key] && (value.length > SHORT_FIELDS[key] || /[.;]\s/.test(value))) {
+      overlong.push(key);
+      continue;
+    }
 
     let kind = entry.kind === "source-canon" ? "source-canon" : "interpretation";
     const quote = typeof entry.quote === "string" ? entry.quote.trim() : "";
@@ -4080,7 +4109,7 @@ export function buildVerifiedProfile(parsed, prose, { url, label, title }) {
       ? [{ label: `${label} - ${title}`, url, kind: "source-canon", quote }]
       : [{ label: "Read from the wiki article, not stated in it", kind: "interpretation" }];
   }
-  return { fields, profileSources, demoted };
+  return { fields, profileSources, demoted, overlong };
 }
 
 async function generateWikiProfile(body, env) {
@@ -4141,6 +4170,12 @@ async function generateWikiProfile(body, env) {
     "  most of it is episode recap. No alliance, elimination, placement, season",
     "  or competition may appear in backstory.",
     "descriptor: the short epithet the show itself uses, if it has one.",
+    "",
+    "occupation, hometown, descriptor, ethnicity, nationality and sexuality are",
+    "  VALUES, not sentences. A few words at most: \"Hair stylist\", \"Toronto,",
+    "  Ontario\", \"straight\". No explaining, no hedging, no reasoning about why",
+    "  — those fields are printed in a one-line biography lead and a sentence",
+    "  there ruins it. If you cannot say it in a few words, omit the field.",
     "birthdate: only as YYYY-MM-DD, only if the article gives a real date.",
   ].join("\n");
 
@@ -4162,7 +4197,7 @@ async function generateWikiProfile(body, env) {
     return json({ ok: false, error: "the model did not return usable JSON" }, 502);
   }
 
-  const { fields, profileSources, demoted } =
+  const { fields, profileSources, demoted, overlong } =
     buildVerifiedProfile(parsed, prose, { url, label, title });
 
   if (!Object.keys(fields).length) {
@@ -4179,6 +4214,7 @@ async function generateWikiProfile(body, env) {
     // Surfaced rather than hidden: "3 of these are guesses" is the single most
     // useful sentence this endpoint can say.
     demoted,
+    overlong,
     counts: {
       total: Object.keys(fields).length,
       canon: Object.values(profileSources).filter(s => s[0].kind === "source-canon").length,

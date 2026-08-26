@@ -96,6 +96,43 @@ describe('what it will and will not carry through', () => {
     expect(fields.birthdate).toBeUndefined();
   });
 
+  it('drops a short field that came back as a sentence', () => {
+    // Both of these are real output from a live fetch. They are defensible as
+    // prose and ruinous in the one-line bio lead these fields are printed in,
+    // so they are dropped rather than truncated — a value cut off mid-clause
+    // looks authored, and a blank beats a bad fill.
+    const { fields, overlong } = buildVerifiedProfile({
+      fields: {
+        occupation: { value: 'Volunteer focused on helping disadvantaged teenagers; she hopes to open a community center someday.', kind: 'interpretation' },
+        sexuality: { value: 'Appears straight or primarily attracted to men, based on her romantic interest in Harold.', kind: 'interpretation' },
+      },
+    }, ARTICLE, SOURCE);
+
+    expect(fields.occupation).toBeUndefined();
+    expect(fields.sexuality).toBeUndefined();
+    expect(overlong).toEqual(['occupation', 'sexuality']);
+  });
+
+  it('keeps a short field that is actually short', () => {
+    const { fields, overlong } = buildVerifiedProfile({
+      fields: {
+        occupation: { value: 'Hair stylist', kind: 'interpretation' },
+        sexuality: { value: 'pansexual', kind: 'interpretation' },
+        hometown: { value: 'Toronto, Ontario', kind: 'interpretation' },
+      },
+    }, ARTICLE, SOURCE);
+    expect(fields).toMatchObject({ occupation: 'Hair stylist', sexuality: 'pansexual', hometown: 'Toronto, Ontario' });
+    expect(overlong).toEqual([]);
+  });
+
+  it('does not cap the fields that are meant to be prose', () => {
+    const long = 'She is warm and blunt in equal measure. Under pressure she pushes back rather than folding, and she remembers who was kind to her.';
+    const { fields } = buildVerifiedProfile({
+      fields: { personality: { value: long, kind: 'interpretation' } },
+    }, ARTICLE, SOURCE);
+    expect(fields.personality, 'personality, voice and backstory are paragraphs by design').toBe(long);
+  });
+
   it('ignores blanks and fields it was never asked for', () => {
     const { fields } = buildVerifiedProfile({
       fields: {

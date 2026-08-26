@@ -305,7 +305,7 @@ export function applyResolvedPitchesToForecast(pitches = [], records = []) {
 // A grievance can break alliance discipline, but only when the voter believes a
 // counter-plan has enough support. Low temperament lowers the proof required;
 // it never invents supporters who are not present in the planning network.
-export function evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes = [], immunePlayers = [], emotional = 'comfortable', roll = Math.random, diagnostics = null) {
+export function evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes = [], immunePlayers = [], emotional = 'comfortable', roll = Math.random, diagnostics = null, extraTargets = []) {
   if (!allianceTarget) return null;
   const s = pStats(voter);
   const immune = immunePlayers instanceof Set ? immunePlayers : new Set(immunePlayers || []);
@@ -313,8 +313,11 @@ export function evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers,
   const majority = Math.floor(eligibleVoters.length / 2) + 1;
   const volatility = Math.max(0, Math.min(1, (10 - s.temperament) / 9));
   const currentEp = (gs.episode || 0) + 1;
+  // Anyone who can RECEIVE this revenge vote — tribalPlayers plus any
+  // non-voting targets (coaches). eligibleVoters above stays tribalPlayers-only.
+  const votableSubjects = [...tribalPlayers, ...extraTargets];
 
-  const candidates = tribalPlayers.filter(subject => subject !== voter && subject !== allianceTarget && !immune.has(subject))
+  const candidates = votableSubjects.filter(subject => subject !== voter && subject !== allianceTarget && !immune.has(subject))
     .map(subject => {
       const memoryScore = strategicMemoryScore(voter, subject, currentEp);
       const memory = strongestStrategicMemory(voter, subject, currentEp);
@@ -1158,7 +1161,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
     // This is not a blind revenge roll. The voter must see a plausible coalition,
     // with volatile players merely accepting shakier numbers than calm players.
     if (_inNamedAlliance && allianceTarget && !target) {
-      const revenge = evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes, _immSet, emotional, Math.random, emotionalDefectionDiagnostics);
+      const revenge = evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes, _immSet, emotional, Math.random, emotionalDefectionDiagnostics, extraTargets);
       if (revenge) {
         target = revenge.target;
         const base = strategicMemoryReason(voter, target) || `${voter} has unfinished business with ${target}`;

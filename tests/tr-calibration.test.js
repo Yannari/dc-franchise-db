@@ -65,9 +65,15 @@ function run(n = SEASONS, traitorCount = 3, evidence = undefined) {
 //
 // THE DENSITY k IS NOT A FREE CHOICE, so it is not made once and forgotten.
 // The placebo's growth depends on how much noise it pours in, and it depends on
-// it steeply -- measured over 200 seasons:
+// it steeply. Measured over twelve decorrelated 200-season blocks (an earlier
+// note here read "k=1 -> +16.2pp, k=3 -> +5.8pp, k=6 -> -2.0pp", from a single
+// block under the correlated seeding rngFor() has since fixed and before murder
+// evidence existed):
 //
-//     k=1  ->  +16.2pp        k=3  ->  +5.8pp        k=6  ->  -2.0pp
+//     k=1  ->  -1.7pp        k=3  ->  -12.6pp        k=6  ->  -17.1pp
+//
+// The ORDERING is what matters here and it has not changed: a thin placebo
+// still manufactures the most growth and a thick one the least.
 //
 // A thin placebo has blank boards early and full ones late, which manufactures
 // growth out of nothing; a thick one saturates immediately and shows none. A
@@ -255,8 +261,31 @@ describe('the castle, measured over many seasons', () => {
     //   the clash-traced ground-truth oracle this band caught in Task 7 was
     //   worth +4.9pp on its own, which still takes the engine to ~11pp — RED.
     //
-    // A leak of the class this band exists for is still a failure at 0.10. What
-    // is no longer a failure is the seed block you happened to run.
+    // WHAT THIS BAND CANNOT DO, MEASURED, AND WRITTEN DOWN BECAUSE AN EARLIER
+    // VERSION OF THIS COMMENT CLAIMED THE OPPOSITE.
+    //
+    // It used to say the Task-7 ground-truth oracle "was worth +4.9pp on its
+    // own, which still takes the engine to ~11pp — RED". That is FALSE. The
+    // +4.9pp was measured under the correlated seeding rngFor() has since
+    // fixed, and with an M.pushedThenDied that has since changed. Re-measured
+    // over twelve decorrelated 200-season blocks, restoring the pre-fix
+    // `const clashed = livingTraitors(ep).filter(...)` in js/tr/murder.js:
+    //
+    //   engine : 6.30pp mean, sd 1.64, range 2.81 - 8.65
+    //   ORACLE : 7.18pp mean, sd 1.49, range 4.54 - 9.79
+    //
+    // The oracle is worth +0.87pp, not +4.9pp, and the two distributions OVERLAP
+    // almost entirely: the oracle's LOWEST block (4.54) sits far below the
+    // engine's HIGHEST (8.65). Any ceiling low enough to go red on the oracle's
+    // 4.54 is already red on the engine on several of its own blocks, and any
+    // ceiling high enough to clear the engine's 8.65 lets most of the oracle
+    // through. There is NO early band that is green on this engine and red on
+    // that oracle. This band does not catch it — not at 0.10, not at 0.05, not
+    // at any value — and nobody should believe it does.
+    //
+    // What it DOES still catch is the placebo, which reads +19.2 to +23.1pp and
+    // is red on every one of the twelve blocks. That is a real leak of a real
+    // class, and it is the only thing this band is currently evidence against.
     expect(early.total, 'no early banishments to measure').toBeGreaterThan(40);
     expect(early.lift, 'the room is already sharp in the first half -- information is leaking in early')
       .toBeLessThan(0.10);
@@ -303,8 +332,17 @@ describe('the castle, measured over many seasons', () => {
     expect(late.total, 'no late banishments to measure').toBeGreaterThan(40);
     console.log(`early ${(early.rate * 100).toFixed(1)}% vs null ${(early.nul * 100).toFixed(1)}% = lift ${(early.lift * 100).toFixed(1)}pp (n=${early.total})`);
     console.log(`late  ${(late.rate * 100).toFixed(1)}% vs null ${(late.nul * 100).toFixed(1)}% = lift ${(late.lift * 100).toFixed(1)}pp (n=${late.total})`);
+    // The one thing this test asserts that no other test does: GROWTH.
+    //
+    // There used to be a second line here, `expect(late.lift).toBeGreaterThan(0.10)`.
+    // It is deleted rather than kept as belt-and-braces, because it was
+    // STRICTLY DOMINATED: BEATS CHANCE asserts `late.lift > 0.15` on the
+    // identically-computed statistic over the identical seasons, so the 0.10
+    // line could never go red without the 0.15 line going red first. A test
+    // that cannot fail independently is not a second opinion, it is noise in
+    // the failure report — and it made this file look like it had six gates on
+    // late lift when it has one.
     expect(late.lift, 'the room learns nothing as the season goes on').toBeGreaterThan(early.lift + 0.05);
-    expect(late.lift, 'late banishments are no better than chance').toBeGreaterThan(0.10);
   });
 
   // THE UPPER BOUND IS A GATE; THE LOWER BOUND IS A SANITY CHECK. A room
@@ -379,10 +417,34 @@ describe('the castle, measured over many seasons', () => {
     console.log(`worst placebo: k=${worstK} at ${(worstGrowth * 100).toFixed(1)}pp`);
 
     expect(minTotal, 'a placebo produced no banishments to compare against').toBeGreaterThan(100);
-    // Measured worst is k=1 at +16.2pp. A control that climbs past 20pp is
-    // manufacturing growth out of its own blank-board rate and is no longer a
-    // control -- which is a finding about the harness, not about the engine, and
-    // the message says so.
+    // A TRIPWIRE, NOT A GATE — AND IT IS LABELLED THAT WAY BECAUSE IT CANNOT
+    // FAIL ON ANYTHING THAT RUNS TODAY.
+    //
+    // The 0.20 was set against a measured worst of +16.2pp, which left 3.8pp of
+    // headroom and read like a live band. That figure is stale twice over: it
+    // predates rngFor()'s hash AND it predates murder evidence existing, and
+    // the placebo's growth collapsed once the engine it is compared against
+    // started learning earlier. Re-measured over twelve decorrelated
+    // 200-season blocks:
+    //
+    //   k=1  mean  -1.71pp  sd 2.54  worst  +2.93pp   <- still the worst k
+    //   k=3  mean -12.59pp  sd 2.24  worst  -7.55pp
+    //   k=6  mean -17.07pp  sd 2.76  worst  -9.80pp
+    //
+    // Worst block of the worst density is +2.93pp against a 20pp ceiling —
+    // roughly 6.7 sd of slack, and the shipped block reads -0.78pp. Nothing
+    // that runs is going to trip this.
+    //
+    // It is NOT re-derived down to the measurement, and the reason is what it
+    // is for: it is not measuring the engine, it is asserting that the CONTROL
+    // is still a control. Tightening it to, say, 0.05 would convert a harness
+    // tripwire into a band that goes red on placebo block noise and gets
+    // "fixed" by someone widening it. Left at 0.20, relabelled, with the real
+    // number in the comment so the next reader is not misled about its slack.
+    //
+    // (The k-ordering IS still load-bearing: k=1 remains the worst density in
+    // all twelve blocks, so asserting against the MAX rather than against k=3
+    // alone continues to earn its two extra runs.)
     expect(worstGrowth, 'a placebo density is LEARNING -- it has information in it and is no longer a control')
       .toBeLessThan(0.20);
     expect(realGrowth, 'the engine sharpens no faster than pure noise does -- the ballot layer is inert')

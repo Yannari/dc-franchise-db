@@ -96,8 +96,13 @@ function banishmentBallots() {
 //   signal indicts the majority and carries almost no information about anyone.
 //   A revealed Faithful tells the castle it was wrong, not who is guilty.
 //   revealCascade() already says precisely that; now this agrees with it.
+//   defendedRevealedTraitor: 0.34  — "you kept a Traitor in". Still the strongest
+//   read in the engine, but it is not a BALLOT weight any more and does not
+//   belong here: revealCascade() emits it once, at the moment of the reveal, at
+//   its own confidence of 0.5. Leaving the constant here would invite a second
+//   caller, and a second caller is precisely the bug that was deleted (see the
+//   long note inside ballotEvidence).
 const W = {
-  defendedRevealedTraitor: 0.34,   // you kept a Traitor in. The strongest read available.
   pairSilence:             0.35,   // scales how UNLIKELY a silent pair record is
   pairSilenceCeiling:      0.24,   // ...and how far that can ever get, which is not far
 };
@@ -131,41 +136,35 @@ export function ballotEvidence(ep, rng = Math.random) {
   const living = gs.activePlayers || [];
   const formed = [];
 
-  // ── reveals: who protected whom, and who was right ──────────────────
-  const reveals = (gs.tr?.rounds || []).filter(r => r.banished);
-  for (const round of reveals) {
-    // Revote ballots count here, and they were excluded before for no reason.
-    // They are read aloud in front of exactly the same room, and they are a
-    // CLEANER signal than the first ballot: the field has been narrowed to the
-    // tied players, so naming somebody other than the person who turned out to
-    // be a Traitor is a two-way choice rather than a pick from fifteen names.
-    // Worth 30.7% against 29.9% on the hit rate over 200 seasons, and +1.2pp on
-    // the late-season lift.
-    //
-    // They deliberately do NOT feed the pair-silence loop below. A revote where
-    // you were not allowed to name somebody is not a chance you passed up.
-    const cast = ballots.filter(b => b.ep === round.ep)
-      .concat((round.revotes || []).flatMap(rv => rv.ballots || []));
-    for (const b of cast) {
-      if (!living.includes(b.voter)) continue;
-      // One pattern, and only one, is evidence about a person: you kept somebody
-      // in on a night they turned out to be a Traitor. Naming them buys nothing
-      // positive — it buys the absence of this, which is all exoneration is here.
-      if (!round.banishedWasTraitor) continue;
-      if (b.voted === round.banished) continue;
-      const weight = W.defendedRevealedTraitor;
-      for (const observer of living) {
-        if (observer === b.voter) continue;
-        const belief = learn(observer, alignmentFactId(b.voter), {
-          source: `the ballot in episode ${round.ep}`,
-          sourceType: 'deduced',
-          confidence: weight * 1.6,
-          ep, rng,
-        });
-        if (belief) formed.push({ observer, subject: b.voter, weight, ep: round.ep });
-      }
-    }
-  }
+  // ── THE REVEAL LOOP THAT USED TO STAND HERE, AND WHY IT IS GONE ─────
+  //
+  // It walked EVERY past reveal on EVERY round and, for each one, re-indicted
+  // every voter who had not named the person who turned out to be a Traitor —
+  // at confidence 0.544 (the old W.defendedRevealedTraitor * 1.6). revealCascade()
+  // already emits exactly that indictment, once, at 0.5, at the moment the
+  // reveal becomes knowable. This was the same fact learned again every round
+  // for the rest of the season.
+  //
+  // THE MECHANISM THAT MAKES REPETITION HARMFUL RATHER THAN NEUTRAL, and the
+  // reason nobody should re-add this: learn() OVERWRITES a stored valence when
+  // the new confidence is >= the stored one, and _assess() stores the
+  // protective `valence: 'false'` — the intuition prior that clears an innocent
+  // — at a rate scaled by mental+intuition. Re-rolling the same indictment
+  // every round therefore keeps re-rolling that protective valence away, and it
+  // does so at a HIGHER confidence than the cascade's, so it always wins the
+  // overwrite. It does not sharpen the read; it strips the protection off
+  // exactly the innocent people it indicts. Measured: protection on Faithfuls
+  // 41.9% with the cascade alone, 29.2% with this re-walk bolted on.
+  //
+  // Deleting it is worth, over 200 seasons: aggregate lift 1.29x -> 1.52x,
+  // early->late growth 20.8pp -> 31.2pp, Faithful win rate 41% -> 54%.
+  //
+  // One indictment at the moment of knowledge is both the correct model of the
+  // room — you learn a thing once, when it happens — and the stronger engine.
+  // The revote ballots this loop used to fold in went with it: they were only
+  // ever a second helping of the same defender signal, and they deliberately
+  // never fed the pair rule below (a revote in which you were not ALLOWED to
+  // name somebody is not a chance you passed up).
 
   // ── the pair who never touch each other ─────────────────────────────
   // Catches real Traitor pairs AND innocent best friends, and the false

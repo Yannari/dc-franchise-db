@@ -175,85 +175,42 @@ describe('reading the ballots', () => {
     seedTraitorKnowledge(1);
   });
 
-  // A single ballot's acceptance is a coin flip by design: `_assess()` in
-  // js/knowledge.js runs an accept-gate roll AND (for a claim about a Traitor
-  // who wasn't detected, or a Faithful who was) a detect-roll before a belief
-  // ever lands. A fixed seed therefore tests one draw of that coin, not the
-  // underlying tendency the engine is supposed to have. These two tests
-  // replace a single-seed comparison with a population one: run the same
-  // scenario across a range of seeds and assert the ordering holds in a
-  // healthy majority of them, not in literally every one.
-  it('makes defending a revealed traitor the strongest signal there is (population)', () => {
-    // Owen votes to save Duncan (votes elsewhere) while the room banishes
-    // Duncan, who reveals as a Traitor. Heather, who voted correctly, never
-    // has a belief formed about her here at all (a negative weight is
-    // dropped rather than turned into a belief — see ballotEvidence), so
-    // onLeshawna is structurally always 0 and this really measures
-    // P(Owen's belief is accepted AND the read-skill roll doesn't clear him).
-    // Measured over 500 seeds during development: ~34%. That is a real
-    // finding about W.defendedRevealedTraitor's confidence input, not a test
-    // bug — see task-2-report.md's fix-round addendum. Threshold below is set
-    // with real headroom under that measurement, not just under whatever a
-    // small sample happens to produce.
-    const N = 100;
-    let hits = 0;
-    for (let seed = 1; seed <= N; seed++) {
-      resetKnowledge();
-      gs.tr = initTraitorsState();
-      recordAlignment('Gwen', true, 1, 'selection');
-      recordAlignment('Duncan', true, 1, 'selection');
-      ['Heather', 'Owen', 'Leshawna', 'Noah'].forEach(n => recordAlignment(n, false, 1, 'selection'));
-      seedTraitorKnowledge(1);
-      recordRound({
-        ep: 1, banished: 'Duncan', banishedWasTraitor: true, murdered: null,
-        ballots: [
-          { voter: 'Heather',  voted: 'Duncan', channel: 'banishment' },
-          { voter: 'Leshawna', voted: 'Duncan', channel: 'banishment' },
-          { voter: 'Noah',     voted: 'Duncan', channel: 'banishment' },
-          { voter: 'Owen',     voted: 'Noah',   channel: 'banishment' },
-        ],
-      });
-      ballotEvidence(2, seededRng(seed));
-      if (suspicion('Heather', 'Owen', 2) > suspicion('Heather', 'Leshawna', 2)) hits++;
+  // THE TWO POPULATION TESTS THAT USED TO STAND HERE ARE GONE WITH THE CODE
+  // THEY TESTED.
+  //
+  // They asserted that ballotEvidence() indicts the people who defended a
+  // revealed Traitor. It no longer does, deliberately: revealCascade() emits
+  // that indictment once, at the moment of the reveal, and ballotEvidence used
+  // to re-emit it every round thereafter at a HIGHER confidence — which, via
+  // learn()'s overwrite-on-equal-or-greater-confidence rule, kept stripping the
+  // protective `valence: 'false'` off innocent people rather than sharpening
+  // anything. See the long note in js/tr/deduction.js.
+  //
+  // The mechanism is NOT untested. It is tested where it now lives, by
+  // 'punishes the people who kept them in (population)' in the reveal describe
+  // below — the same scenario, the same population shape, the same threshold.
+  // What is asserted here instead is the DELETION, so that re-adding the loop
+  // goes red rather than silently passing.
+  it('does NOT re-indict the defenders of a revealed traitor — the cascade owns that', () => {
+    gs.activePlayers = ['Gwen', 'Heather', 'Owen', 'Leshawna', 'Noah'];
+    recordRound({
+      ep: 1, banished: 'Duncan', banishedWasTraitor: true, murdered: null,
+      ballots: [
+        { voter: 'Heather',  voted: 'Duncan', channel: 'banishment' },
+        { voter: 'Leshawna', voted: 'Duncan', channel: 'banishment' },
+        { voter: 'Noah',     voted: 'Duncan', channel: 'banishment' },
+        { voter: 'Owen',     voted: 'Noah',   channel: 'banishment' },
+      ],
+    });
+    // One round only, so the pair rule (which needs three shared voting rounds)
+    // cannot fire and anything formed here would have to come from the reveal
+    // walk. Across a hundred seeds, not one belief may be formed.
+    for (let seed = 1; seed <= 100; seed++) {
+      expect(ballotEvidence(2, seededRng(seed)),
+        'ballotEvidence is re-walking reveals again — revealCascade already did this'
+      ).toEqual([]);
     }
-    const rate = hits / N;
-    console.log(`[population] defending a revealed traitor: ${hits}/${N} (${(rate * 100).toFixed(1)}%)`);
-    // Headroom under the measured ~34% — flags a genuine collapse (the
-    // mechanism breaking, not sampling noise) without asserting a supermajority
-    // the weights don't actually produce.
-    expect(rate, 'defending a revealed traitor should read as suspicious in a solid minority of draws, not never').toBeGreaterThan(0.15);
-  });
-
-  it('exonerates the people who were right (population)', () => {
-    // Same coin: Noah's belief about Owen (who also defended Duncan) has to
-    // both be accepted AND survive the detect-roll to register as suspicion.
-    // Heather, who voted correctly, again never gets a belief formed about her
-    // in this ballot pattern, so this is structurally the same shape as the
-    // test above. Measured over 500 seeds: ~34%.
-    const N = 100;
-    let hits = 0;
-    for (let seed = 1; seed <= N; seed++) {
-      resetKnowledge();
-      gs.tr = initTraitorsState();
-      recordAlignment('Gwen', true, 1, 'selection');
-      recordAlignment('Duncan', true, 1, 'selection');
-      ['Heather', 'Owen', 'Leshawna', 'Noah'].forEach(n => recordAlignment(n, false, 1, 'selection'));
-      seedTraitorKnowledge(1);
-      recordRound({
-        ep: 1, banished: 'Duncan', banishedWasTraitor: true, murdered: null,
-        ballots: [
-          { voter: 'Heather',  voted: 'Duncan', channel: 'banishment' },
-          { voter: 'Leshawna', voted: 'Duncan', channel: 'banishment' },
-          { voter: 'Noah',     voted: 'Owen',   channel: 'banishment' },
-          { voter: 'Owen',     voted: 'Noah',   channel: 'banishment' },
-        ],
-      });
-      ballotEvidence(2, seededRng(seed));
-      if (suspicion('Noah', 'Heather', 2) < suspicion('Noah', 'Owen', 2)) hits++;
-    }
-    const rate = hits / N;
-    console.log(`[population] exonerates the people who were right: ${hits}/${N} (${(rate * 100).toFixed(1)}%)`);
-    expect(rate, 'Owen should read as more suspicious than the never-flagged Heather in a solid minority of draws, not never').toBeGreaterThan(0.15);
+    expect(suspicion('Heather', 'Owen', 2)).toBe(0);
   });
 
   it('notices a pair who never once vote for each other', () => {
@@ -279,14 +236,27 @@ describe('reading the ballots', () => {
   });
 
   it('never lets a ballot read reach certainty', () => {
+    // Six rounds of the SAME silent pair, so the pair signal is re-learned as
+    // many times as the engine will ever re-learn anything. learn()'s tier
+    // ceiling for a `deduced` alignment is 0.62 and no pile of hints may pass
+    // it. (This used to drive the ceiling through the reveal walk; that walk is
+    // deleted, so it drives it through the only ballot signal left.)
     for (let ep = 1; ep <= 6; ep++) {
       recordRound({
-        ep, banished: 'Duncan', banishedWasTraitor: true, murdered: null,
-        ballots: [{ voter: 'Owen', voted: 'Heather', channel: 'banishment' }],
+        ep, banished: null, banishedWasTraitor: false, murdered: null,
+        ballots: [
+          { voter: 'Gwen',     voted: 'Noah',     channel: 'banishment' },
+          { voter: 'Duncan',   voted: 'Noah',     channel: 'banishment' },
+          { voter: 'Heather',  voted: 'Gwen',     channel: 'banishment' },
+          { voter: 'Leshawna', voted: 'Duncan',   channel: 'banishment' },
+          { voter: 'Noah',     voted: 'Heather',  channel: 'banishment' },
+          { voter: 'Owen',     voted: 'Leshawna', channel: 'banishment' },
+        ],
       });
     }
     ballotEvidence(7, seededRng(5));
-    expect(suspicion('Heather', 'Owen', 7)).toBeLessThan(1);
+    expect(suspicion('Heather', 'Gwen', 7)).toBeLessThan(0.62);
+    expect(suspicion('Heather', 'Duncan', 7)).toBeLessThan(0.62);
   });
 });
 

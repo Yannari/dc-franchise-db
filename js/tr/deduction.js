@@ -67,7 +67,8 @@ const W = {
   defendedRevealedTraitor: 0.34,   // you kept a Traitor in. The strongest read available.
   votedRevealedFaithful:   0.10,   // you spent a life for nothing — or you meant to
   votedRevealedTraitor:   -0.16,   // exonerating
-  neverVotedEachOther:     0.07,   // per round of a clean pair record
+  pairSilence:             0.35,   // scales how UNLIKELY a silent pair record is
+  pairSilenceCeiling:      0.24,   // ...and how far that can ever get, which is not far
 };
 
 /**
@@ -115,24 +116,57 @@ export function ballotEvidence(ep, rng = Math.random) {
   // Catches real Traitor pairs AND innocent best friends, and the false
   // positive is the point: this is how a castle convinces itself about two
   // people who simply like each other.
-  const rounds = new Set(ballots.map(b => b.ep));
-  if (rounds.size >= 3) {
-    for (const a of living) {
-      for (const b of living) {
-        if (a >= b) continue;
-        const aVotedB = ballots.some(x => x.voter === a && x.voted === b);
-        const bVotedA = ballots.some(x => x.voter === b && x.voted === a);
-        if (aVotedB || bVotedA) continue;
-        const conf = Math.min(0.5, W.neverVotedEachOther * rounds.size);
-        for (const observer of living) {
-          if (observer === a || observer === b) continue;
-          for (const subject of [a, b]) {
-            const belief = learn(observer, alignmentFactId(subject), {
-              source: `never once voted against ${subject === a ? b : a}`,
-              sourceType: 'deduced', confidence: conf, ep, rng,
-            });
-            if (belief) formed.push({ observer, subject, weight: conf, ep });
-          }
+  //
+  // WHY THIS IS NORMALISED BY OPPORTUNITY AND NOT BY ELAPSED ROUNDS.
+  //
+  // It used to read `min(0.5, 0.07 * roundsSoFar)`, so the confidence of every
+  // silent pair GREW with the length of the season regardless of anything the
+  // pair had actually done — acceptance climbed from about 10% at three rounds
+  // to 44% at seven. For most pairs this signal is symmetric noise, so what rose
+  // all season was the NOISE FLOOR: mean suspicion of an innocent Faithful went
+  // 0.11 -> 0.29 -> 0.37 across banishment rounds 4, 6 and 8, while the gap to a
+  // Traitor plateaued at ~0.11 from round 6 — and the vote noise term in
+  // chooseBanishmentVote is 0.35, three times that margin. The engine peaked at
+  // round 4-5 and degraded into the endgame, which is backwards for a format
+  // whose whole promise is that the last table is the sharpest one.
+  //
+  // The information in a silence is not how long the season has run. It is how
+  // unlikely the silence was GIVEN THE CHANCES they had to break it. A pair who
+  // have only shared three votes in a room of eighteen have said almost nothing,
+  // because a random ballot would rarely have landed on that one name anyway; a
+  // pair still silent after nine shared votes in a room of eight have said
+  // something. So each shared round contributes its own per-round probability
+  // that a ballot WOULD have broken the silence, the run compounds into a
+  // probability that the silence is coincidence, and the result is capped low.
+  // It still grows — slowly, and for a reason — and it stays weak, because
+  // innocent friends are supposed to keep getting caught by it.
+  const eps = [...new Set(ballots.map(b => b.ep))].sort((x, y) => x - y);
+  const votersByEp = new Map(eps.map(e => [e, new Set(ballots.filter(b => b.ep === e).map(b => b.voter))]));
+  for (const a of living) {
+    for (const b of living) {
+      if (a >= b) continue;
+      if (ballots.some(x => (x.voter === a && x.voted === b) || (x.voter === b && x.voted === a))) continue;
+      // Only rounds in which BOTH of them actually cast a ballot were chances to
+      // name each other. A pair who overlapped for two nights is not a pattern.
+      let pCoincidence = 1, shared = 0;
+      for (const e of eps) {
+        const voters = votersByEp.get(e);
+        if (!voters.has(a) || !voters.has(b) || voters.size < 3) continue;
+        shared++;
+        // Two ballots, each of which could have landed on the other's name out
+        // of that night's field.
+        pCoincidence *= Math.max(0, 1 - 2 / (voters.size - 1));
+      }
+      if (shared < 3) continue;
+      const conf = Math.min(W.pairSilenceCeiling, W.pairSilence * (1 - pCoincidence));
+      for (const observer of living) {
+        if (observer === a || observer === b) continue;
+        for (const subject of [a, b]) {
+          const belief = learn(observer, alignmentFactId(subject), {
+            source: `never once voted against ${subject === a ? b : a}`,
+            sourceType: 'deduced', confidence: conf, ep, rng,
+          });
+          if (belief) formed.push({ observer, subject, weight: conf, ep });
         }
       }
     }

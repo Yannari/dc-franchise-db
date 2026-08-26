@@ -152,6 +152,7 @@ export function offerRecruitment(target, ep, rng = Math.random, { mode = 'note',
   if (mode === 'ultimatum') p += 0.25;
 
   const accepted = rng() < Math.max(0.02, Math.min(0.95, p));
+  let executed = null;
 
   if (accepted) {
     recordAlignment(target, true, ep, mode === 'ultimatum' ? 'ultimatum' : 'recruitment');
@@ -165,9 +166,21 @@ export function offerRecruitment(target, ep, rng = Math.random, { mode = 'note',
   } else if (mode === 'ultimatum') {
     // They have seen the face. This is why the rule exists.
     gs.activePlayers = (gs.activePlayers || []).filter(n => n !== target);
+    executed = target;
   }
 
-  return { accepted, mode, recruiter: from };
+  // `executed` IS A DEATH AND MUST BE REPORTED AS ONE. A refused ultimatum
+  // removes somebody from the castle exactly as a murder does, and the night
+  // still returns `murdered: null` — so until this field existed, that body was
+  // invisible to the harness log, to any count of how many people died, and to
+  // every reader downstream. A death the engine does not report is a death no
+  // measurement can find. It is a SEPARATE field from `murdered` rather than
+  // folded into it because the two are chosen by different machinery: a murder
+  // victim comes out of formPreference (well-liked, hard to banish, which is
+  // what the MURDERS THE COALITION band is measuring), an execution comes out
+  // of chooseRecruit (takeable, low loyalty) and then out of a refusal. Folding
+  // them together would silently redefine that band's population.
+  return { accepted, mode, recruiter: from, executed };
 }
 
 function _wasAccusedLastRound(name) {

@@ -14,11 +14,19 @@
 // most of a social deduction engine is already written.
 //
 // THE ONE RULE THAT MAKES IT WORK: nobody ever OBSERVES an alignment. The
-// Traitors are told theirs; everybody else can only ever deduce or hear a rumour,
-// which the credibility tiers cap at 0.62 and 0.45. So no Faithful can reach
-// certainty, ever, about anyone — which is exactly the state the people on this
-// show are in, and it falls out of the tier table rather than out of a special
-// case in every reader.
+// Traitors are told theirs; everybody else can only ever deduce or hear a
+// rumour, and every such belief is capped at 0.62 — the ALIGNMENT_CRED_CEILING
+// in js/knowledge.js. So no Faithful can reach certainty, ever, about anyone,
+// which is exactly the state the people on this show are in.
+//
+// 0.62 IS THE NUMBER THAT DOES THE WORK, and this sentence used to name 0.45
+// as if the rumour tier were a second ceiling. It is not one. An explicit
+// `confidence` bypasses SOURCE_CRED entirely, and roundtable.js's broadcast()
+// passes one — `Math.max(0.05, Math.min(0.6, pitch * trust))`, up to 0.60,
+// through `sourceType: 'rumor'`. Measured over 200 seasons, the strongest
+// belief any Faithful holds all season is 0.5997 and it arrives by exactly that
+// path. The rumour tier caps only the callers that pass no confidence; the
+// ceiling in learn() is what actually bounds the format.
 import { gs } from '../core.js';
 import { recordFact, learn, believes } from '../knowledge.js';
 import { alignmentFactId, livingTraitors, alignmentAt } from './roles.js';

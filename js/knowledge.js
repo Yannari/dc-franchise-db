@@ -104,13 +104,31 @@ export function learn(knower, id, { source = 'observation', sourceType = 'observ
   const fact = store()[id];
   if (!fact || !knower) return null;
   let cred = confidence != null ? clamp01(confidence) : (SOURCE_CRED[sourceType] ?? 0.5);
-  // An explicit confidence bypasses SOURCE_CRED entirely. For alignment it may not.
-  if (fact.type === 'alignment' && confidence != null) cred = Math.min(cred, ALIGNMENT_CRED_CEILING);
+  // THE ALIGNMENT CEILING IS STRUCTURAL, NOT CONVENTIONAL.
+  //
+  // The clamp used to be conditional on `confidence != null`, which held only
+  // because every alignment caller that wanted to beat the ceiling happened to
+  // pass one. A caller writing `{ sourceType: 'told' }` with NO confidence
+  // would have been handed SOURCE_CRED.told = 0.70, over the 0.62 ceiling, and
+  // nothing here would have stopped it — the same hole a second time, in the
+  // shape the guard did not cover. There is no such caller today; the point is
+  // that there cannot be one tomorrow either. The exemption is by sourceType,
+  // named explicitly, and it is the one the docstring above already sanctions:
+  // `public` — the turret and the reveal, where people are looking at each
+  // other rather than inferring.
+  if (fact.type === 'alignment' && sourceType !== 'public') cred = Math.min(cred, ALIGNMENT_CRED_CEILING);
   // Witnessing an action or hearing a public announcement is knowledge, not a
   // persuasion roll. Interpretation may later be wrong; occurrence is known.
   const direct = sourceType === 'public' || sourceType === 'observed';
+  // The same rule, applied to the floor the direct branch installs: `observed`
+  // would otherwise force 0.9 onto an alignment and walk straight over the
+  // ceiling without ever touching `cred`. Nobody observes an alignment today
+  // and nobody may start to. Inert for every other fact type, which is every
+  // caller of this branch that exists.
+  const directFloor = sourceType === 'public' ? 1
+    : (fact.type === 'alignment' ? ALIGNMENT_CRED_CEILING : 0.9);
   const res = direct
-    ? { accept: true, confidence: Math.max(cred, sourceType === 'public' ? 1 : 0.9), valence: fact.truth ? 'accurate' : 'false' }
+    ? { accept: true, confidence: Math.max(cred, directFloor), valence: fact.truth ? 'accurate' : 'false' }
     : _assess(knower, cred, fact.truth, rng);
   if (!res.accept) return null;
 

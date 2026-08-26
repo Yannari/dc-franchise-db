@@ -107,7 +107,8 @@ function _seedStartingBonds(cast, seed) {
  */
 function _night(ep, rng) {
   if (!livingTraitors(ep).length) {
-    return { murdered: null, murderTarget: null, blocked: false, recruited: null, livingAtMurder: [] };
+    return { murdered: null, murderTarget: null, blocked: false, recruited: null,
+      executed: null, livingAtMurder: [] };
   }
   const rounds = gs.tr.rounds;
   const last = rounds.length ? rounds[rounds.length - 1] : null;
@@ -122,8 +123,12 @@ function _night(ep, rng) {
       const offer = offerRecruitment(pick.target, ep, rng,
         { mode: livingTraitors(ep).length === 1 ? 'ultimatum' : 'note', recruiter: pick.recruiter });
       const recruited = { ...offer, target: pick.target };
-      if (last) last.recruitment = recruited;
-      return { murdered: null, murderTarget: null, blocked: false, recruited, livingAtMurder: [] };
+      if (last) { last.recruitment = recruited; if (offer.executed) last.executed = offer.executed; }
+      // A refused ultimatum kills. It is not a `murdered` — see the note on
+      // offerRecruitment — but it is a body, and it is on the log and on the
+      // round record so that anything counting who left the castle finds it.
+      return { murdered: null, murderTarget: null, blocked: false, recruited,
+        executed: offer.executed || null, livingAtMurder: [] };
     }
   }
 
@@ -140,7 +145,7 @@ function _night(ep, rng) {
     last.murderCost = m.cost;
   }
   return { murdered: m.victim, murderTarget: m.target, blocked: m.blocked,
-    recruited: null, livingAtMurder };
+    recruited: null, executed: null, livingAtMurder };
 }
 
 /**

@@ -500,8 +500,16 @@ describe('the castle, measured over many seasons', () => {
   it('A BLOCKED MURDER IS VISIBLE: awaiting Plan 5 — nothing grants a shield yet', () => {
     const blocked = seasons.reduce((n, s) => n + (s.blockedMurders?.length || 0), 0);
     const murders = seasons.reduce((n, s) => n + s.log.filter(r => r.murdered).length, 0);
+    // Executions are the OTHER way the castle loses somebody at night: a
+    // refused ultimatum. They are counted here rather than folded into
+    // `murdered` because MURDERS THE COALITION is a measurement of
+    // formPreference's victim choice and an execution is chooseRecruit's —
+    // but a death that no number reports is a death no measurement can find,
+    // and until offerRecruitment returned `executed` this one was invisible.
+    const executed = seasons.reduce((n, s) => n + s.log.filter(r => r.executed).length, 0);
     console.log(`blocked murders across ${seasons.length} seasons: ${blocked} `
-      + `(against ${murders} completed murders) — structurally zero until missions exist`);
+      + `(against ${murders} completed murders and ${executed} refused-ultimatum executions) `
+      + `— structurally zero until missions exist`);
     expect(murders, 'no murders at all: this comparison would be vacuous').toBeGreaterThan(200);
     expect(blocked,
       'A SHIELD FIRED IN A SEASON. Plan 5 has landed: measure the count and replace '

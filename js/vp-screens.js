@@ -4036,6 +4036,74 @@ export function rpBuildFirstImpressions(ep, twistObj) {
 }
 
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
+/**
+ * The one episode all season where the cast gets BIGGER.
+ *
+ * Built around the two facts that matter and nothing else: which camp they
+ * walked into, and how far behind they are. The camp is drawn as it stands at
+ * that moment with the newcomer set apart from it, because the picture is the
+ * point — everybody else has been standing together for days.
+ */
+export function rpBuildLateArrival(ep) {
+  const a = ep.lateArrival;
+  if (!a?.name) return '';
+  const camp = (ep.tribesAtStart || []).find(t => t.name === a.tribe)
+    || { name: a.tribe, members: [] };
+  const already = (camp.members || []).filter(n => n !== a.name);
+  const walkIn = (ep.campEvents?.[a.tribe]?.pre || []).find(e => e.type === 'lateArrival');
+
+  return `<div class="rp-page" style="max-width:1100px;margin:0 auto;padding:26px 18px">
+    <style>
+      .la-wrap{max-width:640px;margin:0 auto}
+      .la-eyebrow{font-family:var(--font-mono,ui-monospace,monospace);font-size:10px;
+        letter-spacing:4px;color:#38bdf8;text-align:center}
+      .la-title{font-family:var(--font-display,Georgia,serif);font-size:30px;letter-spacing:3px;
+        text-align:center;color:#e6edf3;margin:8px 0 4px}
+      .la-sub{text-align:center;font-size:12px;color:var(--muted,#8b949e);margin-bottom:22px}
+      .la-stage{position:relative;padding:22px 16px;border-radius:12px;overflow:hidden;
+        background:radial-gradient(120% 80% at 50% -10%,rgba(56,189,248,.12),rgba(8,12,18,.97) 62%);
+        border:1px solid rgba(56,189,248,.22)}
+      .la-new{display:block;width:88px;margin:0 auto 6px;position:relative}
+      .la-new .la-ring{width:88px;height:88px;border-radius:50%;overflow:hidden;
+        border:2px solid #38bdf8;box-shadow:0 0 0 4px rgba(56,189,248,.14),0 0 30px -4px rgba(56,189,248,.9)}
+      .la-new img,.la-new .rp-portrait{width:100%;height:100%;object-fit:cover}
+      .la-name{text-align:center;font-size:15px;font-weight:700;color:#e6edf3;margin-top:8px}
+      .la-tag{text-align:center;font-family:var(--font-mono,monospace);font-size:9px;
+        letter-spacing:2px;color:#38bdf8;margin-top:3px}
+      .la-gap{height:1px;background:repeating-linear-gradient(90deg,rgba(148,163,184,.4) 0 6px,transparent 6px 12px);
+        margin:22px 0 16px}
+      .la-them{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+      .la-one{width:52px;text-align:center;opacity:.85}
+      .la-face{width:44px;height:44px;margin:0 auto;border-radius:4px;overflow:hidden;
+        border:1px solid rgba(148,163,184,.35);background:#0b1017}
+      .la-face img,.la-face .rp-portrait{width:100%;height:100%;object-fit:cover}
+      .la-who{font-size:8.5px;color:#c9d3e6;margin-top:3px;overflow:hidden;
+        text-overflow:ellipsis;white-space:nowrap}
+      .la-legend{text-align:center;font-size:9px;letter-spacing:1.4px;color:#64748b;margin-top:14px}
+      .la-copy{margin:20px auto 0;max-width:560px;font-size:13px;line-height:1.7;color:#c9d3e6}
+    </style>
+    <div class="la-wrap">
+      <div class="la-eyebrow">EPISODE ${Number(ep.num) || ''}</div>
+      <div class="la-title">A NEW ARRIVAL</div>
+      <div class="la-sub">${_bbEsc(a.name)} was not here when this season started.</div>
+      <div class="la-stage">
+        <div class="la-new"><div class="la-ring">${rpPortrait(a.name, 'lg')}</div></div>
+        <div class="la-name">${_bbEsc(a.name)}</div>
+        <div class="la-tag">${a.fromOtherSide ? 'NOT THE CAMP THEY WERE CAST ON' : 'JOINING ' + _bbEsc(String(a.tribe || '').toUpperCase())}</div>
+        <div class="la-gap"></div>
+        <div class="la-them">${already.map(n => `
+          <div class="la-one" title="${_bbEsc(n)}">
+            <div class="la-face">${rpPortrait(n, 'sm')}</div>
+            <div class="la-who">${_bbEsc(n)}</div>
+          </div>`).join('')}</div>
+        <div class="la-legend">${already.length} PEOPLE WHO HAVE ALREADY DECIDED WHO THEY TRUST</div>
+      </div>
+      <div class="la-copy">${walkIn ? _bbEsc(walkIn.text)
+    : `${_bbEsc(a.name)} joins ${_bbEsc(a.tribe)} with no bonds, no alliance and no challenge record.`}</div>
+    </div>
+  </div>`;
+}
+
 export function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
     .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt' && t.type !== 'hells-kitchen' && t.type !== 'trust-challenge' && t.type !== 'hide-and-be-sneaky' && t.type !== 'off-the-chain' && t.type !== 'auction'); // shown in dedicated screens
@@ -13612,6 +13680,17 @@ export function buildVPScreens(epRecord) {
   // ── 3. Pre-Challenge Twist (tribe swap, three gifts, journey, exile-island, etc.) ──
   const _preTwistHtml = rpBuildPreTwist(ep);
   if (_preTwistHtml) vpScreens.push({ id:'twist', label:'Twists', html: _preTwistHtml });
+
+  // ── 3b. A LATE ARRIVAL ──
+  //
+  // Placed straight after the twist card, because it IS the twist of that
+  // episode. It renders as a camp event too — the walk-in is a thing that
+  // happens in a camp — but a card in the middle of a camp feed is not the
+  // right weight for the only episode all season where somebody joins.
+  if (ep.lateArrival) {
+    const _laHtml = rpBuildLateArrival(ep);
+    if (_laHtml) vpScreens.push({ id: 'late-arrival', label: 'A New Arrival', html: _laHtml });
+  }
 
   // ── 3c. Schoolyard Pick (dedicated click-to-reveal draft screen) ──
   if (ep.schoolyardPick?.picks?.length) {

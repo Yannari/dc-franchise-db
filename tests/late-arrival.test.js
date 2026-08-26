@@ -208,3 +208,52 @@ describe('a season played with one', () => {
     expect(walkIn.text.length).toBeGreaterThan(80);
   });
 });
+
+describe('what the viewer is shown', () => {
+  // "Every feature needs VP + text backlog." The walk-in already rendered as a
+  // camp-event card, so it was never invisible — but a card in the middle of a
+  // camp feed is the wrong weight for the only episode all season where the
+  // cast gets bigger.
+  const arrivalEpisode = () => {
+    const cast = makeCast(24);
+    cast.push({ name: 'Latecomer', slug: 'latecomer', gender: 'f', sexuality: 'straight',
+      archetype: 'floater', tribe: 'Ravu', stats: Object.fromEntries(K.map(k => [k, 5])) });
+    runOneSeason({
+      twistSchedule: [{ episode: 3, type: 'late-arrival', arrival: 'Latecomer', arrivalTribe: 'smallest' }],
+      mergeAt: 10, romance: 'disabled',
+    }, 25, cast);
+    return (core.gs.episodeHistory || []).find(e => e.lateArrival);
+  };
+
+  it('writes a section of its own in the transcript', async () => {
+    const ep = arrivalEpisode();
+    const { generateSummaryText } = await import('../js/text-backlog.js');
+    const text = generateSummaryText(ep) || '';
+    expect(text).toContain('SOMEBODY ARRIVES');
+    expect(text).toContain('Latecomer was not here when this season started');
+    expect(text).toContain('No bonds, no alliance, no challenge record');
+  });
+
+  it('builds a screen of its own', async () => {
+    const ep = arrivalEpisode();
+    const { rpBuildLateArrival } = await import('../js/vp-screens.js');
+    const html = rpBuildLateArrival(ep);
+    expect(html, 'the arrival had no screen').toBeTruthy();
+    expect(html).toContain('A NEW ARRIVAL');
+    expect(html).toContain('Latecomer');
+    // The camp they walked into is drawn with them, so the picture carries the
+    // point: everybody else has been standing together for days.
+    const camp = (ep.tribesAtStart || []).find(t => t.name === ep.lateArrival.tribe);
+    const others = (camp?.members || []).filter(n => n !== 'Latecomer');
+    expect(others.length).toBeGreaterThan(3);
+    expect(html).toContain(`${others.length} PEOPLE WHO HAVE ALREADY DECIDED`);
+  });
+
+  it('draws nothing on an episode where nobody arrives', () => {
+    const ep = arrivalEpisode();
+    const plain = (core.gs.episodeHistory || []).find(e => !e.lateArrival);
+    expect(plain, 'every episode had an arrival').toBeTruthy();
+    expect(plain.lateArrival).toBeFalsy();
+    expect(ep.lateArrival).toBeTruthy();
+  });
+});

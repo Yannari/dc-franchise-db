@@ -270,9 +270,38 @@ describe('reading the murder', () => {
         // in the whole engine that beats the 0.62 deduced ceiling, and it has
         // nothing to do with murderEvidence. This test is about THIS task's
         // beliefs only.
-        if (TRAITORS.includes(observer) && TRAITORS.includes(subject)) continue;
+        if (observer !== subject && TRAITORS.includes(observer) && TRAITORS.includes(subject)) {
+          // The pair is skipped BECAUSE it is certain — assert that, so the
+          // day the turret seeding silently breaks, this loop stops passing
+          // by accident (nothing certain left to skip) and says so instead.
+          expect(suspicion(observer, subject, 3)).toBeGreaterThanOrEqual(0.63);
+          continue;
+        }
         expect(suspicion(observer, subject, 3)).toBeLessThan(0.63);
       }
     }
+  });
+
+  it('forms no belief from a blocked murder — nobody died, there is nothing to reason from', () => {
+    const victim = CAST[8], pusher = CAST[4];
+    recordRound({ ep: 2, banished: null, banishedWasTraitor: false, murdered: victim,
+      ballots: [{ voter: pusher, voted: victim, channel: 'banishment' }],
+      accusations: [{ accuser: pusher, target: victim }] });
+    // The victim is still alive: a blocked murder kills nobody, so unlike the
+    // other tests in this block, do NOT remove them from gs.activePlayers.
+    gs.tr.blockedMurders = [{ ep: 2, target: victim }];
+    const blocked = murderEvidence(3, seededRng(2));
+    expect(blocked, 'a blocked murder should not indict the pusher').toHaveLength(0);
+
+    // Prove the suppression is doing the work, not that nothing would have
+    // happened anyway: remove the blocked marker, replay the identical round,
+    // and confirm the same setup DOES form a belief once it is not blocked.
+    world();
+    recordRound({ ep: 2, banished: null, banishedWasTraitor: false, murdered: victim,
+      ballots: [{ voter: pusher, voted: victim, channel: 'banishment' }],
+      accusations: [{ accuser: pusher, target: victim }] });
+    gs.activePlayers = CAST.filter(n => n !== victim);
+    const unblocked = murderEvidence(3, seededRng(2));
+    expect(unblocked.length, 'an unblocked murder with an identical pusher formed no belief at all').toBeGreaterThan(0);
   });
 });

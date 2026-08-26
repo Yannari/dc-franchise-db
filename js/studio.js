@@ -1510,17 +1510,30 @@ function _renderEditor() {
   // born in 2004 is 22 for as long as the present is fall 2026, however many
   // real months pass. Age is still editable — a value typed by hand wins and
   // is not overwritten on the next keystroke.
-  ed.querySelector('#st-f-birthdate').addEventListener('input', e => {
-    d.birthdate = e.target.value;
-    const derived = ageNow(d.birthdate);
+  const syncAge = () => {
     const ageEl = ed.querySelector('#st-f-age');
+    const now = franchiseNow();
+    const hint = ed.querySelector('#st-age-hint');
+    if (hint) hint.textContent = (now && d.birthdate) ? `at ${now.airSlot} ${now.airYear}` : '';
+    const derived = ageNow(d.birthdate);
     if (derived == null || !ageEl) return;
     ageEl.value = String(derived);
     d.age = String(derived);
-    const now = franchiseNow();
-    const hint = ed.querySelector('#st-age-hint');
-    if (hint && now) hint.textContent = `at ${now.airSlot} ${now.airYear}`;
-  });
+  };
+  // Both events: a date input fires `input` while typing and `change` when the
+  // picker commits, and which one arrives first is browser-dependent.
+  for (const evt of ['input', 'change']) {
+    ed.querySelector('#st-f-birthdate').addEventListener(evt, e => {
+      d.birthdate = e.target.value;
+      syncAge();
+    });
+  }
+  // And once more when the calendar finishes loading. The archive is fetched
+  // asynchronously, so a birthdate typed in the first moment after the editor
+  // opens — or one already saved on the character — was being counted against
+  // a present that did not exist yet: ageNow returned null, the box stayed
+  // empty, and only the hint appeared later to say it should not have.
+  ed._syncAge = syncAge;
   ed.querySelector('#st-f-backstory').addEventListener('input', e => d.backstory = e.target.value);
   ed.querySelector('#st-f-personality').addEventListener('input', e => d.personality = e.target.value);
   INTERVIEW_QUESTIONS.forEach(x => {
@@ -1919,11 +1932,7 @@ export async function _fillContinuity(ed, slug) {
   // box still needs a present to count to.
   try {
     await continuityIndex();
-    const now = franchiseNow();
-    const hint = ed.querySelector('#st-age-hint');
-    if (hint && now && ed.querySelector('#st-f-birthdate')?.value) {
-      hint.textContent = `at ${now.airSlot} ${now.airYear}`;
-    }
+    ed._syncAge?.();
   } catch { /* an age box with no hint is fine; a broken editor is not */ }
 
   const box = ed.querySelector('#st-cont');
@@ -2961,9 +2970,11 @@ function _injectCSS() {
   .st-l-txt{font-size:12px;color:var(--muted,#9a9);font-weight:600}
   .st-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .st-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-  /* The inputs line up even when one label's hint wraps to two lines. Each
-     .st-l is a flex column filling its grid cell, so without this a longer
-     hint pushes its own input down and only that one sits low. */
+  /* The inputs line up even when one label carries a hint and its neighbour
+     does not. Each .st-l is a flex column filling its grid cell, so without
+     this the labelled one pushes its own input down and sits low. Both row
+     widths need it — fixing only .st-row3 left Slug/Age crooked. */
+  .st-row2 > .st-l > .st-input,
   .st-row3 > .st-l > .st-input{margin-top:auto}
   @media(max-width:720px){ .st-row3{grid-template-columns:1fr} }
   .st-hint{font-weight:400;font-style:italic;opacity:.8}

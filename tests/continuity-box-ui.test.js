@@ -139,3 +139,24 @@ describe('the fold is remembered', () => {
       'a veteran history is tall; re-folding it every time gets it ignored').toBe(true);
   });
 });
+
+describe('the age box catches up with the calendar', () => {
+  it('recomputes once the archive has loaded', async () => {
+    // The bug as reported: a birthdate is entered, the hint appears saying
+    // "at fall 2026", and the age box stays empty. The archive is fetched
+    // asynchronously and it is what tells the calendar what year it is — so a
+    // birthdate typed in the first moment after the editor opens was counted
+    // against a present that did not exist yet. ageNow returned null, nothing
+    // was written, and only the hint turned up later to say it should have.
+    const ed = skeleton();
+    let called = 0;
+    ed._syncAge = () => { called++; };
+    await fill(ed, 'bowie');
+    expect(called, 'the editor is never told the present arrived').toBeGreaterThan(0);
+  });
+
+  it('does not fall over for an editor that has no age box', async () => {
+    const ed = skeleton();
+    await expect(fill(ed, 'bowie')).resolves.not.toThrow();
+  });
+});

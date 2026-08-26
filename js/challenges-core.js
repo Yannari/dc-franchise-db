@@ -196,8 +196,8 @@ export function simulateLastChance(a, b) {
     { name:'Memory Lane',    desc:'Replicate a sequence of symbols from memory. First to get it right survives.',                                      category:'puzzle',    stat:s=>s.mental },
   ];
   const chal = lcPool[Math.floor(Math.random() * lcPool.length)];
-  const sA = chal.stat(pStats(a)) + (Math.random() * 2 - 1);
-  const sB = chal.stat(pStats(b)) + (Math.random() * 2 - 1);
+  const sA = chal.stat(_trainedStats(a)) + (Math.random() * 2 - 1);
+  const sB = chal.stat(_trainedStats(b)) + (Math.random() * 2 - 1);
   const winner = sA >= sB ? a : b;
   return { winner, loser: winner === a ? b : a, challengeLabel: chal.name, challengeCategory: chal.category, challengeDesc: chal.desc };
 }

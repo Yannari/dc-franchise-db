@@ -2272,6 +2272,65 @@ async function callAnthropicText(system, userText, env, model, maxTokens = 1600)
   return (data.content || []).map(b => b.text || "").join("").trim();
 }
 
+/**
+ * One short structured call, on whichever provider will actually answer.
+ *
+ * Claude is the intended home for these two — the project is moving creative
+ * work onto it, not off. But an unfunded key fails at the API with
+ * "credit balance is too low", and a feature that is dead until a billing page
+ * is visited is dead. So: Claude first, OpenAI if Claude will not take the
+ * call, and the moment credit is topped up the first branch simply starts
+ * winning again with no code change.
+ *
+ * Deliberately NOT silent about which one answered. A profile written by a
+ * different model than the one you expected, with no way to tell, is the kind
+ * of thing that gets debugged twice.
+ */
+async function callShortModel(system, userText, env, { maxTokens = 2000, model } = {}) {
+  let anthropicError = null;
+  if (env.ANTHROPIC_API_KEY) {
+    try {
+      const text = await callAnthropicText(system, userText, env, model || MODELS.creative, maxTokens);
+      if (text) return { text, provider: "anthropic" };
+      anthropicError = "empty response";
+    } catch (e) {
+      anthropicError = e.message;
+    }
+  } else {
+    anthropicError = "no ANTHROPIC_API_KEY";
+  }
+
+  if (!env.OPENAI_API_KEY) {
+    throw new Error(anthropicError || "no model key on this worker");
+  }
+
+  const res = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-5.5",
+      instructions: system,
+      input: userText,
+      max_output_tokens: maxTokens * 2,
+      text: { format: { type: "json_object" } },
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(`both providers refused — anthropic: ${anthropicError}; openai ${res.status}: `
+      + (data?.error?.message || "").slice(0, 160));
+  }
+  const text = typeof data?.output_text === "string" ? data.output_text
+    : Array.isArray(data?.output)
+      ? data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("")
+      : "";
+  if (!text) throw new Error(`both providers refused — anthropic: ${anthropicError}; openai returned nothing`);
+  return { text, provider: "openai", fellBackFrom: anthropicError };
+}
+
 // FINAL PASS — DE-CLEVER. Reads the finished episode and rewrites ONLY the lines that use the
 // model's "clever" tics (personified objects, neat antithesis/before-after parallelism, poetic
 // metaphors, fortune-cookie one-liners) into plain human speech — everything else is left
@@ -4074,9 +4133,10 @@ async function generateWikiProfile(body, env) {
 
   const user = `Character: ${title}\nArticle (${label}):\n\n${excerpt}`;
 
-  let raw = "";
+  let raw = "", provider = "";
   try {
-    raw = await callAnthropicText(system, user, env, claudeModel("creative", body, env), 3000);
+    const out = await callShortModel(system, user, env, { maxTokens: 3000, model: claudeModel("creative", body, env) });
+    raw = out.text; provider = out.provider;
   } catch (e) {
     return json({ ok: false, error: `model: ${e.message}` }, 502);
   }
@@ -4102,6 +4162,7 @@ async function generateWikiProfile(body, env) {
     // it unchanged - same diff, same checkboxes, same "your writing wins".
     profile: { slug, ...fields, profileSources },
     source: { host, title, url, label },
+    provider,
     // Surfaced rather than hidden: "3 of these are guesses" is the single most
     // useful sentence this endpoint can say.
     demoted,
@@ -4208,9 +4269,10 @@ async function generateContinuityRead(body, env) {
 
   const user = `${person.name}\n${who}\n\nThe record:\n\n${record}`;
 
-  let raw = "";
+  let raw = "", provider = "";
   try {
-    raw = await callAnthropicText(system, user, env, claudeModel("creative", body, env), 1400);
+    const out = await callShortModel(system, user, env, { maxTokens: 1400, model: claudeModel("creative", body, env) });
+    raw = out.text; provider = out.provider;
   } catch (e) {
     return json({ ok: false, error: `model: ${e.message}` }, 502);
   }
@@ -4237,5 +4299,5 @@ async function generateContinuityRead(body, env) {
     hooks && `Open threads. ${hooks}`,
   ].filter(Boolean).join("\n\n");
 
-  return json({ ok: true, note, sections: { evolution, motivation, hooks } });
+  return json({ ok: true, note, provider, sections: { evolution, motivation, hooks } });
 }

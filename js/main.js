@@ -4,6 +4,7 @@
 
 import * as core from './core.js';
 import * as playersMod from './players.js';
+import * as coachEpisodeMod from './coach-episode.js';
 import * as alumniMod from './alumni.js';
 import * as bondsMod from './bonds.js';
 import * as alliancesMod from './alliances.js';
@@ -219,7 +220,7 @@ for (const name of functions) {
 
 // ── Expose extracted module functions on window ──
 const extractedModules = [
-  playersMod, alumniMod, bondsMod, alliancesMod, votingMod, adaptationMod, socialStatusMod, editLayerMod, ratingsMod, ratingsBackfillMod, vpKitMod,
+  playersMod, coachEpisodeMod, alumniMod, bondsMod, alliancesMod, votingMod, adaptationMod, socialStatusMod, editLayerMod, ratingsMod, ratingsBackfillMod, vpKitMod,
   advantagesMod, romanceMod, challengesCoreMod,
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, truthOrDareTrainMod, aMazeInGripMod, polesApartMod, tusksLaddersMod, tusksLaddersVpMod, killerClownMod, killerClownVpMod, bumperCarBashMod, bumperCarBashVpMod, sayCheeseMod, sayCheeseVpMod, wheelOfMisfortuneMod, wheelOfMisfortuneVpMod, rescueMissionMod, disadvantageVoteMod, paintballHuntMod, hellsKitchenMod,

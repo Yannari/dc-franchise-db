@@ -38,6 +38,8 @@ import { retrofitFranchiseMeta } from './franchise-meta.js';
 import { survivalFlavor, fillVocab } from './settings.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
+import { eliminateCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
+import { coachesOf, isCoach } from './coaches.js';
 
 // Challenge simulate functions
 import { simulateCliffDive } from './chal/cliff-dive.js';
@@ -1629,6 +1631,7 @@ export function simulateEpisode() {
   const isMerge = !gs.isMerged && _preReturnActive <= cfg.mergeAt;
   if (isMerge) {
     ep.isMerge = true; gs.isMerged = true; gs.phase = 'post-merge'; gs.tribes = [];
+    if (ep.isCoaches) promoteCoaches(ep);
     gs.sitOutHistory = {}; // sit-out back-to-back rule doesn't carry into individual game
     gs.advantagesFoundThisPhase = {}; // reset per-phase advantage caps (e.g., KiP 1 pre + 1 post)
     if (cfg.advantages?.idol?.enabled) gs.mergeIdolHidden = cfg.idolsAtMerge ?? 1;
@@ -1684,7 +1687,7 @@ export function simulateEpisode() {
     // Unified story-driven generator for both venues (survival camp / furnished motel).
     generateInterludeLife(ep);
     gs.episode = epNum;
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false,
         lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
       challengeType: null, isMerge: false,
@@ -1754,7 +1757,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
 
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false,
       num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: 'slasher-night', isMerge: ep.isMerge,
@@ -2118,7 +2121,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
 
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false,
       num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
       immunityWinner: null,
       challengeType: 'triple-dog-dare', isMerge: ep.isMerge,
@@ -2254,7 +2257,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false,
       num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: 'individual', challengeLabel: ep.challengeLabel,
@@ -2335,6 +2338,11 @@ export function simulateEpisode() {
     } catch { /* the season carries on without them */ }
   }
   generateCampEvents(ep, 'pre');
+  // Coaches: pre-merge only — the tribes stop existing at the merge and every
+  // surviving coach is promoted there instead (see the ── MERGE CHECK ── block).
+  if (ep.isCoaches && !gs.isMerged) {
+    (gs.tribes || []).forEach(tribe => runCoachingBlock(ep, tribe));
+  }
   checkMoleSabotage(ep); // The Mole: bond sabotage, laying low events, exposure checks
   checkVolunteerExileDuel(ep); // Volunteer Exile Duel: bold player asks to be voted out
   updatePerceivedBonds(ep); // close perception gaps before tribal decisions
@@ -2840,7 +2848,7 @@ export function simulateEpisode() {
       gs.episode = epNum;
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
-      gs.episodeHistory.push({
+      gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false,
         num: epNum, eliminated: ep.eliminated || _sdLastPlace, riChoice: ep.riChoice || null,
         immunityWinner: ep.immunityWinner || null,
         challengeType: ep.challengeType || 'individual',
@@ -2942,7 +2950,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false,
       num: epNum, eliminated: _ytElim || null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: ep.challengeType || 'individual',
@@ -3238,7 +3246,7 @@ export function simulateEpisode() {
       gs.episode = epNum;
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
-      gs.episodeHistory.push({
+      gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false,
         lateArrival: ep.lateArrival || null,
         num: epNum, eliminated: _sdLastPlace, riChoice: ep.riChoice || null,
         immunityWinner: ep.immunityWinner || null,
@@ -3723,7 +3731,7 @@ export function simulateEpisode() {
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
-    gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null, immunityWinner: null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null, immunityWinner: null,
       challengeType: ep.challengeType, isMerge: ep.isMerge, votes: {}, alliances: [],
       lastChance: true, riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
       advantagesPreTribal: ep.advantagesPreTribal || null,
@@ -3801,7 +3809,7 @@ export function simulateEpisode() {
       updateSurvival(ep);
       if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
       gs.episode = epNum;
-      gs.episodeHistory.push({ num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
+      gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
         challengeType: ep.challengeType, isMerge: ep.isMerge, votes: {}, alliances: [],
         riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
         advantagesPreTribal: ep.advantagesPreTribal || null,
@@ -3975,7 +3983,7 @@ export function simulateEpisode() {
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
-    gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated || null, riChoice: null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, num: epNum, eliminated: ep.eliminated || null, riChoice: null,
         lateArrival: ep.lateArrival || null,
       departure: ep.departure || null,
       immunityWinner: ep.immunityWinner || null, challengeType: ep.challengeType || null,
@@ -4301,7 +4309,7 @@ export function simulateEpisode() {
     // Snapshot bonds before vote — triggers need pre-vote bond values
     ep._preVoteBondSnapshot = { ...gs.bonds };
 
-    const { votes, log, defections, voteMiscommunications, votePitches: _vpResult, pitchIntel:_pitchIntelResult, pitchCounterplay:_pitchCounterplayResult, knowledgeEvents:_knowledgeEventsResult, emotionalDefectionDiagnostics, voteCommitmentDiagnostics } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
+    const { votes, log, defections, voteMiscommunications, votePitches: _vpResult, pitchIntel:_pitchIntelResult, pitchCounterplay:_pitchCounterplayResult, knowledgeEvents:_knowledgeEventsResult, emotionalDefectionDiagnostics, voteCommitmentDiagnostics } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote, coachesOf(tribeLabel).map(c => c.name));
     if (emotionalDefectionDiagnostics?.length) ep.emotionalDefectionDiagnostics = emotionalDefectionDiagnostics;
     if (voteCommitmentDiagnostics?.length) ep.voteCommitmentDiagnostics = voteCommitmentDiagnostics;
     if (_vpResult) ep.votePitches = _vpResult;
@@ -4756,7 +4764,7 @@ export function simulateEpisode() {
         return { votes, log, eliminated: loser, isTie: true, tiedPlayers: _nonImmune };
       }
       // Survivor mode: revote, then rocks
-      const rv = simulateVotes(tribalPlayers, [...tribalImmune, ...(ep.idolPlays||[]).map(p => p.player)], allianceSet, gs.lostVotes, ep.openVote);
+      const rv = simulateVotes(tribalPlayers, [...tribalImmune, ...(ep.idolPlays||[]).map(p => p.player)], allianceSet, gs.lostVotes, ep.openVote, coachesOf(tribeLabel).map(c => c.name));
       ep.revoteVotes = rv.votes; ep.revoteLog = rv.log;
       const res2 = resolveVotes(rv.votes);
       if (res2.eliminated) return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _nonImmune };
@@ -4769,7 +4777,7 @@ export function simulateEpisode() {
 
     // Votes wiped (SitD + idol both fired) — run a fresh open vote with all immune players excluded
     if (!res.eliminated && !res.isTie && ep.shotInDark?.safe) {
-      const rv2 = simulateVotes(tribalPlayers, tribalImmune, allianceSet, gs.lostVotes, ep.openVote);
+      const rv2 = simulateVotes(tribalPlayers, tribalImmune, allianceSet, gs.lostVotes, ep.openVote, coachesOf(tribeLabel).map(c => c.name));
       ep.revoteVotes = rv2.votes; ep.revoteLog = rv2.log;
       ep.sidFreshVote = true;
       const res2 = resolveVotes(rv2.votes);
@@ -4808,7 +4816,7 @@ export function simulateEpisode() {
       const eligibleRevoters = tribalPlayers.filter(p => !res.tiedPlayers.includes(p) && !gs.lostVotes.includes(p));
       if (!eligibleRevoters.length) {
         ep.isFullDeadlock = true;
-        const fdRv = simulateVotes(tribalPlayers, tribalImmune.length ? tribalImmune : immuneName, allianceSet, gs.lostVotes, ep.openVote);
+        const fdRv = simulateVotes(tribalPlayers, tribalImmune.length ? tribalImmune : immuneName, allianceSet, gs.lostVotes, ep.openVote, coachesOf(tribeLabel).map(c => c.name));
         ep.revoteVotes = fdRv.votes; ep.revoteLog = fdRv.log;
         const fdRes = resolveVotes(fdRv.votes);
         if (fdRes.eliminated) return { votes, log, eliminated: fdRes.eliminated, isTie: true, tiedPlayers: res.tiedPlayers };
@@ -4984,7 +4992,7 @@ export function simulateEpisode() {
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
-    gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
         lateArrival: ep.lateArrival || null,
       immunityWinner: null, challengeType: 'double-tribal', isMerge: ep.isMerge,
       challengeLabel: ep.challengeLabel || null, challengeCategory: ep.challengeCategory || null,
@@ -5235,7 +5243,7 @@ export function simulateEpisode() {
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false,
         lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
       immunityWinner: null, challengeType: 'multi-tribal', isMerge: ep.isMerge,
@@ -5647,7 +5655,7 @@ function simulateJuryRoundtable(ep) {
         generateRIPostDuelEvents(ep);
       }
     }
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false,
         lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated || null, firstEliminated: null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
@@ -5969,7 +5977,7 @@ function simulateJuryRoundtable(ep) {
       }
     }
 
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false,
         lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated || null, firstEliminated: null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
@@ -6012,6 +6020,16 @@ function simulateJuryRoundtable(ep) {
 
   // ── VOTE ──
   const r1 = runTribal(ep.tribalPlayers, ep.immunityWinner||null, alliances);
+  // Coaches: a coach can be voted out here (they were an eligible target — see
+  // formAlliances/simulateVotes). They never held a spot in gs.activePlayers,
+  // so none of the ordinary elimination machinery below (double-elim, exile
+  // duel, jury/RI routing, advantage inheritance) applies to them — null the
+  // result out before any of it reads r1.eliminated, so this tribal simply
+  // costs the tribe its coach instead of a contestant.
+  if (r1.eliminated && isCoach(r1.eliminated)) {
+    eliminateCoach(ep, r1.eliminated);
+    r1.eliminated = null;
+  }
   // The initial tally is authoritative. In particular, Extra Votes already
   // mutate r1.votes before resolution. Preserve tie metadata even if a legacy
   // or special resolution path returned an eliminated player without it; the
@@ -7027,7 +7045,7 @@ function simulateJuryRoundtable(ep) {
 
   // ── INCREMENT & SAVE ──
   gs.episode = epNum;
-  gs.episodeHistory.push({
+  gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false,
         lateArrival: ep.lateArrival || null,
     num: epNum, eliminated: ep.eliminated, firstEliminated: ep.firstEliminated || null, riChoice: ep.riChoice,
     immunityWinner: ep.challengeType === 'tribe' ? null : (ep.immunityWinner || null),

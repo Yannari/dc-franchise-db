@@ -11,6 +11,7 @@ import { hasSocialRole, perceivedRoles } from './social-status.js';
 import { addRelationshipDimension } from './relationships.js';
 import { recordBetrayal } from './relationship-events.js';
 import { idolSuspicionModifier, splitVotePreference } from './adaptation.js';
+import { coachesOf } from './coaches.js';
 
 const _arch = (n) => players.find(p => p.name === n)?.archetype || 'floater';
 const _VILLAINY = ['villain', 'mastermind', 'schemer'];
@@ -929,6 +930,11 @@ export function resolveAllianceRepair(incident, epNum = (gs.episode || 0) + 1, r
 
 export function formAlliances(members, tribeLabel, challengeLabel) {
   if (members.length <= 1) return [];
+  // Coaches: eligible to be TARGETED by any voting bloc on this tribe, never to
+  // attack, form a bloc, or vote themselves. Appended only to the second
+  // (victims) argument of pickTarget below — never to `majority`/`minority`/
+  // `naMembers`, which double as attacker lists elsewhere in this function.
+  const _coachVictims = tribeLabel ? coachesOf(tribeLabel).map(c => c.name) : [];
   // Persistent strategy starts as a tribe-survival read before merge and may
   // later expand. It must exist before organizers choose names in either phase.
   prepareIntentionsForVote();
@@ -1063,7 +1069,7 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
     return { label: fallbackLabel(grp, lead, target), type: isRealAlliance ? 'alliance' : 'consensus' };
   };
 
-  const majTarget = pickTarget(majority, minority, challengeLabel);
+  const majTarget = pickTarget(majority, [...minority, ..._coachVictims], challengeLabel);
   const { label: majLabel, type: majType } = classifyGroup(majority, hub, majTarget);
   // Guard: a named alliance must never have one of its own members as its stated target.
   // Exception: if bonds have genuinely deteriorated, allow the betrayal — but first remove the
@@ -1096,7 +1102,7 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
   const _majFinalLabel = _majForceLabel || majLabel;
   const _majFinalType = _majForceLabel ? 'alliance' : majType;
   const _majNa = _majFinalType === 'alliance' ? activeNamed.find(a => a.name === _majFinalLabel) : null;
-  const _majSafeTarget = _resolveAllianceTarget(_majNa, majTarget, majority, minority) ?? majTarget;
+  const _majSafeTarget = _resolveAllianceTarget(_majNa, majTarget, majority, [...minority, ..._coachVictims]) ?? majTarget;
   alliances.push({ members: majority, target: _majSafeTarget, label: _majFinalLabel, type: _majFinalType, tribe: tribeLabel, challengeLabel });
 
   if (minority.length >= 2) {
@@ -1109,9 +1115,9 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
       if (minMembers.length < 2) return;
       if (minMembers.every(m => _minAlliancesUsed.has(m))) return; // all already in a bloc
       minMembers.forEach(m => _minAlliancesUsed.add(m));
-      const minTarget = pickTarget(minMembers, majority, challengeLabel);
+      const minTarget = pickTarget(minMembers, [...majority, ..._coachVictims], challengeLabel);
       const _minNa = alliance;
-      const _minSafeTarget = _resolveAllianceTarget(_minNa, minTarget, minMembers, majority) ?? minTarget;
+      const _minSafeTarget = _resolveAllianceTarget(_minNa, minTarget, minMembers, [...majority, ..._coachVictims]) ?? minTarget;
       _minAllianceBlocs.push({ members: minMembers, target: _minSafeTarget, label: _minNa.name, type: 'alliance', tribe: tribeLabel, challengeLabel });
     });
     if (_minAllianceBlocs.length) {
@@ -1120,13 +1126,13 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
       const _unaligned = minority.filter(m => !_minAlliancesUsed.has(m));
       if (_unaligned.length >= 2) {
         const _uLead = _unaligned.sort((a,b) => (pStats(b).social + pStats(b).strategic) - (pStats(a).social + pStats(a).strategic))[0];
-        const _uTarget = pickTarget(_unaligned, majority, challengeLabel);
+        const _uTarget = pickTarget(_unaligned, [...majority, ..._coachVictims], challengeLabel);
         const { label: _uLabel, type: _uType } = classifyGroup(_unaligned, _uLead, _uTarget);
         alliances.push({ members: _unaligned, target: _uTarget, label: _uLabel, type: _uType, tribe: tribeLabel, challengeLabel });
       }
       // Solo unaligned players still need a vote entry
       _unaligned.filter(m => _unaligned.length < 2 || !alliances.some(a => a.members.includes(m))).forEach(solo => {
-        alliances.push({ members: [solo], target: pickTarget([solo], majority, challengeLabel), label: 'Solo', type: 'solo', tribe: tribeLabel, challengeLabel });
+        alliances.push({ members: [solo], target: pickTarget([solo], [...majority, ..._coachVictims], challengeLabel), label: 'Solo', type: 'solo', tribe: tribeLabel, challengeLabel });
       });
     } else {
       // No minority alliance — original behavior: bond-based or solo
@@ -1134,15 +1140,15 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
       if (minAvgBond > 0 || hasUB(minority)) {
         const _minHubScore = n => { const s = pStats(n); return s.social * 0.5 + s.strategic * 0.5 + Math.random() * 0.5; };
         const minLead = minority.slice().sort((a,b) => _minHubScore(b)-_minHubScore(a))[0];
-        const minTarget = pickTarget(minority, majority, challengeLabel);
+        const minTarget = pickTarget(minority, [...majority, ..._coachVictims], challengeLabel);
         const { label: minLabel, type: minType } = classifyGroup(minority, minLead, minTarget);
         const _minNa = minType === 'alliance' ? activeNamed.find(a => a.name === minLabel) : null;
-        const _minSafeTarget = _resolveAllianceTarget(_minNa, minTarget, minority, majority) ?? minTarget;
+        const _minSafeTarget = _resolveAllianceTarget(_minNa, minTarget, minority, [...majority, ..._coachVictims]) ?? minTarget;
         alliances.push({ members: minority, target: _minSafeTarget, label: minLabel, type: minType, tribe: tribeLabel, challengeLabel });
       }
     }
   } else if (minority.length === 1) {
-    alliances.push({ members: minority, target: pickTarget(minority, majority, challengeLabel), label: 'Solo', type: 'solo', tribe: tribeLabel, challengeLabel });
+    alliances.push({ members: minority, target: pickTarget(minority, [...majority, ..._coachVictims], challengeLabel), label: 'Solo', type: 'solo', tribe: tribeLabel, challengeLabel });
   }
 
   // Add ALL remaining named alliances as their own voting blocs
@@ -1151,7 +1157,7 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
     const naMembers = na.members.filter(m => _allAtTribal.has(m));
     if (naMembers.length < 2) return;
     if (alliances.some(a => a.label === na.name)) return; // already used
-    const targets = members.filter(m => !naMembers.includes(m) && !gs._currentImmuneNames?.includes(m));
+    const targets = [...members.filter(m => !naMembers.includes(m) && !gs._currentImmuneNames?.includes(m)), ..._coachVictims];
     if (!targets.length) return;
     alliances.push({ members: naMembers, target: pickTarget(naMembers, targets, challengeLabel), label: na.name, type: 'alliance', tribe: tribeLabel, challengeLabel });
   });

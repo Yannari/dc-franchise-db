@@ -4618,7 +4618,7 @@
       "name": "Ara",
       "slug": "ara",
       "gender": "f",
-      "archetype": "villain",
+      "archetype": "schemer",
       "stats": {
         "physical": 4,
         "endurance": 5,
@@ -4637,7 +4637,8 @@
       "nationality": "Korean American",
       "hometown": "DC",
       "occupation": "Business student",
-      "descriptor": "The Class President"
+      "descriptor": "The Class President",
+      "voice": "Asian Korean American, The Class President, bi."
     },
     {
       "name": "Bruno",

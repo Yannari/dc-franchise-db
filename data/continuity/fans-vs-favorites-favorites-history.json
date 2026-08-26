@@ -1,0 +1,852 @@
+{
+  "schemaVersion": 1,
+  "season": "Fans vs Favorites",
+  "generatedFrom": "players_database.json and archived data/seasons season files",
+  "players": {
+    "bowie": {
+      "name": "Bowie",
+      "canonIdentity": "Bowie",
+      "appearances": [
+        {
+          "season": 9,
+          "placement": 1,
+          "status": "Winner",
+          "tribe": "Yellow → Yellow → Red → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 2,
+          "idolsFound": 1,
+          "strategicRank": 10,
+          "juryVotes": 0,
+          "finalVote": "5-3-0",
+          "advantages": [],
+          "notes": [
+            "5 Votes To Win / Adv. Master"
+          ],
+          "gameplayStyle": "Advantage hoarder, social spider",
+          "keyMoments": [
+            "Ep5: Navigates idol chaos and revote to decapitate Hicks without exposure.",
+            "Ep8: Plays Inheritance to absorb Knowledge is Power and an Extra Vote.",
+            "Ep11: Uses Knowledge is Power to take Julia’s idol.",
+            "Ep12: Breaks Unbreakable bond to blindside Priya.",
+            "Ep13: Wins immunity; pairs Extra Vote with Chase’s Vote Stopper to bury Julia.",
+            "Ep15: Beats Damien at fire to secure Final 3."
+          ],
+          "alliances": [
+            "Chase",
+            "Damien",
+            "Axel",
+            "Priya",
+            "Millie"
+          ],
+          "rivalries": [
+            "Julia",
+            "Emmah"
+          ],
+          "format": "total-drama",
+          "seasonId": "td-9",
+          "sourceFile": "data/seasons/season9-data.json"
+        },
+        {
+          "season": 10,
+          "placement": 2,
+          "status": "Finalist",
+          "tribe": "Champions → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 10,
+          "idolsFound": 2,
+          "strategicRank": 10,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Bowie plays the season's sharpest strategic game but loses the final when the course demands more than control."
+          ],
+          "gameplayStyle": "Ruthless architectural tactician",
+          "keyMoments": [
+            "Episode 1: Finds the Champions Hidden Immunity Idol and forms The Movement.",
+            "Episode 3: Publicly points The Movement at Courtney while privately voting out Mickey.",
+            "Episode 4: Confronts Courtney and reclaims credit for his earlier move.",
+            "Episode 9: Negotiates as ambassador and steers Zoey toward eliminating Stephanie.",
+            "Episode 11: Leads the Scott vote after Scott publicly names him as the strategic center.",
+            "Episode 14: Drives the Carrie vote after identifying her hidden jury danger.",
+            "Episode 17: Wins Camp Castaways immunity through survival instincts and navigation.",
+            "Episode 18: Falls behind in every relay phase and finishes as runner-up."
+          ],
+          "alliances": [
+            "The Movement",
+            "The Oath",
+            "The Undertow"
+          ],
+          "rivalries": [
+            "Scott",
+            "Cody",
+            "Carrie",
+            "Sanders",
+            "Priya",
+            "Jasmine"
+          ],
+          "format": "total-drama",
+          "seasonId": "td-10",
+          "sourceFile": "data/seasons/season10-data.json"
+        }
+      ],
+      "careerStory": "He walks in smiling, the nice guy with perfect hair, and quietly builds a web strong enough to catch idols mid‑flight. Early on he shelters behind louder shields, letting Ripper and Axel eat heat while he courts bonds across tribes. The turning point is the Inheritance Heist at the merge—Bowie absorbs Emmah’s stolen powers and leaves Tribal with a toolbox nobody saw coming. From there he steals Julia’s idol on live TV, betrays Priya at the precise second her stock peaks, and wins the fire duel against Damien when it matters most. His endgame is cold and clinical, but never sloppy, selling ruthlessness as inevitability. When the votes are read, the jury rewards the architect who owned the season’s chaos rather than survived it.\n\nSEASON 10 — Champions vs Contenders\n────────\nBowie starts fast, finding an idol in Episode 1 and immediately assembling The Movement with names, targets, and order. His pre-merge is defined by cold reversals: he cuts Gwen, betrays Mickey, reclaims credit from Courtney, and keeps turning fractured alliances into usable machinery. At merge, he becomes the gravitational center of the season, steering the ambassador decision that sends Stephanie home and then using The Oath as a weapon against Scott and Priya. But the same visibility that makes him powerful also makes him radioactive, with Courtney, Priya, Scott, and others naming him as the architect on their way out. In the endgame, he wins survival immunity, reaches the final two, and stands one challenge away from finishing the masterpiece. The relay exposes his one weakness: when the board disappears and the finish line is physical, Bowie cannot talk the course into obeying him.",
+      "careerSummary": {
+        "totalSeasons": 2,
+        "bestPlacement": 1,
+        "wins": 1,
+        "totalChallengeWins": 2,
+        "totalVotesAgainst": 12,
+        "badges": [
+          "S9 Winner"
+        ]
+      }
+    },
+    "mike": {
+      "name": "Mike",
+      "canonIdentity": "Mike",
+      "appearances": [
+        {
+          "season": 3,
+          "placement": 6,
+          "status": "Juror",
+          "tribe": "Mutant Maggots",
+          "challengeWins": 1,
+          "immunityWins": 0,
+          "rewardWins": 1,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": "Medium",
+          "unbreakableBonds": [
+            "Zoey",
+            "Brick"
+          ],
+          "notes": [
+            "Blindsided while Zoey held immunity",
+            "Voted Cameron at FTC"
+          ],
+          "keyMoments": [
+            "Formed an unbreakable bond with Zoey — the emotional core of the Mutant Maggots.",
+            "Survived the tribe phase through key relationships despite friction with Jo and Anne Maria.",
+            "Blindsided at Episode 11 while Zoey held the immunity necklace — unable to be saved.",
+            "Voted Cameron at FTC — respected strategic play over social loyalty."
+          ],
+          "format": "total-drama",
+          "seasonId": "td-3",
+          "sourceFile": "data/seasons/season3-data.json"
+        },
+        {
+          "season": 4,
+          "placement": 12,
+          "status": "Juror",
+          "tribe": "Red → Yellow → Campers",
+          "challengeWins": 1,
+          "immunityWins": 0,
+          "rewardWins": 1,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": "Medium",
+          "unbreakableBonds": [
+            "Zoey"
+          ],
+          "notes": [
+            "Eliminated 2-0 (Sierra's perfect idol)",
+            "Extreme hatred with Jo",
+            "Voted Zoey at FTC"
+          ],
+          "keyMoments": [
+            "Rebuilt his unbreakable bond with Zoey from Season 3 stronger than ever.",
+            "His relationship with Zoey was the emotional foundation of the Red Alliance.",
+            "Eliminated 2-0 when Sierra's idol cancelled all votes except Jo's — a brutal twist of fate.",
+            "Voted Zoey at FTC — loyalty survived the betrayal."
+          ],
+          "format": "total-drama",
+          "seasonId": "td-4",
+          "sourceFile": "data/seasons/season4-data.json"
+        }
+      ],
+      "careerStory": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nOn Revenge of the Island (Season 3), Mike started on the Mutant Maggots but quickly became the center of the season’s messiest feud: Mike vs Anne Maria. While others used that chaos as cover, the rivalry kept repainting targets every round. Once the game needed a decisive cut before the endgame, the numbers converged—Mike was voted out in Episode 11 (Result: voted out 4–2 vote; 6th, 5th juror).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nREBUILT unbreakable bond with Zoey in S4. Victim of Sierra's perfect idol play (10 votes cancelled).\n\nIn Edge of Extinction (Season 4), Mike became the lightning rod for chaos—nine votes against and a constant target the moment the tribe wanted an easy name. His exit was shaped by advantage dynamics: Sierra’s perfect idol play voided the main plan, and Mike was the only clean option left, leaving 2–0. Result: Mike placed 12th.",
+      "careerSummary": {
+        "totalSeasons": 2,
+        "bestPlacement": 6,
+        "wins": 0,
+        "totalChallengeWins": 2,
+        "totalVotesAgainst": 8,
+        "badges": [
+          "Unbreakable: Zoey (Rebuilt)",
+          "Strategic: Medium",
+          "Perfect Idol Victim"
+        ]
+      }
+    },
+    "millie": {
+      "name": "Millie",
+      "canonIdentity": "Millie",
+      "appearances": [
+        {
+          "season": 9,
+          "placement": 2,
+          "status": "Finalist",
+          "tribe": "Red → Blue → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 1,
+          "idolsFound": 1,
+          "strategicRank": 7,
+          "juryVotes": 3,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "3 Votes To Win / Unbreakable Partner"
+          ],
+          "gameplayStyle": "Quiet author, social glue",
+          "keyMoments": [
+            "Ep4: Converts Beware into the Red Idol.",
+            "Ep6: Helps finish the Brightly regime 4–1 without burning her idol.",
+            "Ep10: Correctly plays idol on Priya to nullify a 5‑vote strike.",
+            "Ep12: Wins immunity at Revolver; still loses Priya in blindside.",
+            "Ep13: Joins unanimous strike on Julia; last woman standing at F5."
+          ],
+          "alliances": [
+            "Priya",
+            "Damien",
+            "Julia",
+            "Chase"
+          ],
+          "rivalries": [
+            "Bowie",
+            "Emmah"
+          ],
+          "format": "total-drama",
+          "seasonId": "td-9",
+          "sourceFile": "data/seasons/season9-data.json"
+        }
+      ],
+      "careerStory": "Dismissed early as the quiet author, Millie keeps receipts while bigger egos collide. On old Red she pockets the Beware Idol, surviving the Hicks/Brightly civil war by appearing harmless and useful. She forges iron bonds—first with Priya, later with Julia—acting as the bridge nobody wants to burn. Her defining night is the Priya shield: reading the room, she plays her idol on her best friend and flips a 5–0 rout into the season’s great escape. As the field thins, she wins at Revolver, outlasts every other woman, and arrives at Final Tribal as the moral alternative to Bowie’s blade. Three votes prove respect for the undercurrent she piloted beneath the waves.",
+      "careerSummary": {
+        "totalSeasons": 1,
+        "bestPlacement": 2,
+        "wins": 0,
+        "totalChallengeWins": 1,
+        "totalVotesAgainst": 1,
+        "badges": []
+      }
+    },
+    "thom": {
+      "name": "Thom",
+      "canonIdentity": "Tom",
+      "appearances": [
+        {
+          "season": 11,
+          "placement": 2,
+          "status": "Finalist",
+          "tribe": "Teal → Campers",
+          "challengeWins": 2,
+          "immunityWins": 2,
+          "rewardWins": 0,
+          "votesReceived": 1,
+          "idolsFound": 0,
+          "strategicRank": 8.1,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Thom reaches the final two as the season's emotional anchor and physical workhorse, only to lose when compassion slows his hand at the summit."
+          ],
+          "gameplayStyle": "protective, physical, heart-led, steady",
+          "keyMoments": [
+            "Ep.2: Saves Gabby from drowning during Rock the Dock, cementing his hero image.",
+            "Ep.5: Exposes Seraphine's backstage sabotage after his Talent Show disaster.",
+            "Ep.7: Helps flip the vote onto Grett despite The Firewall collapsing around him.",
+            "Ep.13: Wins Monster Cash immunity by outlasting Eureka in the final showdown.",
+            "Ep.16: Wins invincibility while handcuffed to rival Alec in the Tri-Armed Triathlon.",
+            "Ep.17: Wins immunity in Planes, Trains & Hot Air Mobiles and protects Miriam at the vote.",
+            "Ep.18: Beats Fiore in the joust, then loses the million after hesitating against Miriam at the crater."
+          ],
+          "alliances": [
+            "The Three Headed Snake",
+            "The Outwit Club",
+            "The Bridge",
+            "The Collective",
+            "The Tribal Terrors"
+          ],
+          "rivalries": [
+            "Grett",
+            "Alec",
+            "Fiore"
+          ],
+          "advPlayed": 1,
+          "advHeld": 0,
+          "format": "total-drama",
+          "seasonId": "td-11",
+          "sourceFile": "data/seasons/season11-data.json"
+        },
+        {
+          "season": 13,
+          "placement": 13,
+          "status": "Juror",
+          "tribe": "Heroes → Civilians → Heroes → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 1,
+          "idolsFound": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 6.6,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Thom plays the clean hero game and becomes beloved enough that the tribe decides they cannot let him reach the merge."
+          ],
+          "gameplayStyle": "Pure heart, visible threat",
+          "keyMoments": [
+            "Ep.1 — Beats Kelly in Slap Slap Revolution and strengthens the Heroes surge.",
+            "Ep.3 — Wins his Bone Battle round against Miriam and Aiden.",
+            "Ep.6 — Becomes Civilians' sled puller in Frozen Crossing.",
+            "Ep.8 — Carries Heroes socially through Truth or Shark with repeated confessions.",
+            "Ep.10 — Voted out after being labeled a long-term jury threat."
+          ],
+          "alliances": [
+            "The Engine"
+          ],
+          "rivalries": [],
+          "format": "total-drama",
+          "seasonId": "td-13",
+          "sourceFile": "data/seasons/season13-data.json"
+        }
+      ],
+      "careerStory": "Thom starts as the teammate everyone wants, and that becomes both his gift and his curse. He rescues people, protects people, feeds people, and quietly becomes the center of too many hearts at once. His bonds with Jake, Dan, Sterling, Miriam, and Eureka carry him deep, but they also make his decisions heavier than everyone else's. As the merge turns colder, Thom learns to cut names he cares about, but never completely shuts the door on feeling. He wins when he has to, survives repeated target spikes, and takes out Fiore in the final joust. At the volcano, he is ahead, but Miriam reaches the one place his game is vulnerable: the part of him that still cares.\n\nSEASON 13 — Total Drama Doom Island\n────────\nThom is useful from day one: building shelters, winning fights, and anchoring Jake emotionally. His loyalty is reflexive, and that makes him inspiring to allies and terrifying to opponents. He keeps proving value in challenge after challenge while building bonds with Ally and Jake. By Episode 10, the tribe doesn't vote him out because he failed; they vote him out because he could win clean.",
+      "careerSummary": {
+        "totalSeasons": 2,
+        "bestPlacement": 2,
+        "wins": 0,
+        "totalChallengeWins": 2,
+        "totalVotesAgainst": 2,
+        "badges": [
+          "S11 Fan Favorite"
+        ]
+      }
+    },
+    "grett": {
+      "name": "Grett",
+      "canonIdentity": "Grett",
+      "appearances": [
+        {
+          "season": 11,
+          "placement": 14,
+          "status": "Pre-Merge",
+          "tribe": "Purple → Teal → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 8,
+          "idolsFound": 0,
+          "strategicRank": 6.3,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Grett brings sabotage, grudges, and chaos, but overplaying makes her impossible to keep."
+          ],
+          "gameplayStyle": "vengeful, chaotic, sharp, overplayed",
+          "keyMoments": [
+            "Ep.1: Is first-impression voted out but swapped to Purple instead of eliminated.",
+            "Ep.1: Sabotages Purple's fort and frames Ashley for the collapse.",
+            "Ep.3: Helps target Fiore from inside a fractured anti-Seraphine bloc.",
+            "Ep.5: Is voted out but saved by the elimination swap, choosing Gabby in exchange.",
+            "Ep.6: Blows up tribal by exposing Alec's control, Ellie's idol, and The Circle.",
+            "Ep.7: Overplays with too many side deals and becomes the consensus boot.",
+            "Ep.7: Leaves with a furious crashout speech about everyone playing safe."
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Thom",
+            "Fiore"
+          ],
+          "advPlayed": 0,
+          "advHeld": 0,
+          "format": "total-drama",
+          "seasonId": "td-11",
+          "sourceFile": "data/seasons/season11-data.json"
+        }
+      ],
+      "careerStory": "Grett is targeted before camp even begins, survives through the swap twist, and immediately turns resentment into fuel. Her biggest early move is invisible: sabotaging Purple's fort and framing Ashley, a dirty play that sets the season's tone. She talks like she controls the room even when the room is already turning on her, and her reads are often strong enough to scare people. The elimination swap gives her one more life, but it also leaves her surrounded by people she has burned. On Teal, she tries to scramble through too many doors at once. At tribal, the whispering becomes the reason everyone needs.",
+      "careerSummary": {
+        "totalSeasons": 1,
+        "bestPlacement": 14,
+        "wins": 0,
+        "totalChallengeWins": 0,
+        "totalVotesAgainst": 8,
+        "badges": []
+      }
+    },
+    "gabby": {
+      "name": "Gabby",
+      "canonIdentity": "Gabby",
+      "appearances": [
+        {
+          "season": 11,
+          "placement": 5,
+          "status": "Juror",
+          "tribe": "Teal → Purple → Campers",
+          "challengeWins": 1,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "strategicRank": 6.8,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Gabby stockpiles advantages and survives through chaos, but the Tied Destinies twist removes her as collateral beside Eureka."
+          ],
+          "gameplayStyle": "advantage-rich, reactive, fierce, volatile",
+          "keyMoments": [
+            "Ep.1: Finds the Vote Block near the Teal shelter.",
+            "Ep.2: Is rescued from drowning by Thom during Rock the Dock.",
+            "Ep.5: Finds the Vote Steal and hides it from the tribe.",
+            "Ep.7: Sets the pace for Purple in Up the Creek and earns MVP paddler status.",
+            "Ep.12: Steals Alec's vote and redirects it to Dan, helping force Dan into the tiebreaker.",
+            "Ep.13: Votes Alec while trying to protect Eureka from the Jake Core collapse.",
+            "Ep.16: Is eliminated as collateral when Eureka loses Fiore's Second Life duel."
+          ],
+          "alliances": [
+            "The Camp Takeover"
+          ],
+          "rivalries": [
+            "Miriam",
+            "Dan",
+            "Alec",
+            "Fiore"
+          ],
+          "advPlayed": 2,
+          "advHeld": 0,
+          "format": "total-drama",
+          "seasonId": "td-11",
+          "sourceFile": "data/seasons/season11-data.json"
+        }
+      ],
+      "careerStory": "Gabby plays sideways from the start, finding a Vote Block, later a Vote Steal, and rarely moving in the same direction as the room. She is emotional, observant, and dangerous when underestimated, but her relationships constantly swing between warmth and rupture. Her rivalry with Miriam becomes one of the season's nastiest personal threads, while her bonds with Jake and Eureka give her late-game life. She makes the move that sends Dan out, proving she can cut a supposed number when the relationship breaks. But the endgame twist is cruel: she is not the target, not the central threat, not even the duel loser. She is chained to Eureka's fate and leaves because Fiore beats someone else.",
+      "careerSummary": {
+        "totalSeasons": 1,
+        "bestPlacement": 5,
+        "wins": 0,
+        "totalChallengeWins": 1,
+        "totalVotesAgainst": 9,
+        "badges": []
+      }
+    },
+    "james": {
+      "name": "James",
+      "canonIdentity": "James",
+      "appearances": [
+        {
+          "season": 12,
+          "placement": 1,
+          "status": "Winner",
+          "tribe": "Embers → Saplings → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 9.6,
+          "juryVotes": 7,
+          "finalVote": "7-2",
+          "advantages": [],
+          "notes": [
+            "James wins by turning paranoia, precision, and a late-game comeback into a dominant 7-2 jury victory."
+          ],
+          "gameplayStyle": "Cold math, public chaos",
+          "keyMoments": [
+            "Episode 2: Leads the Ezekiel vote under The Ride or Die banner, establishing himself as an early architect.",
+            "Episode 3: Becomes the last unpainted deer and steals a hunter’s gun, winning Paintball Hunt for Embers.",
+            "Episode 10: Wins Say Uncle immunity and publicly casts the open vote that helps bury Karol.",
+            "Episode 12: Gets voted out after Jacques plays an idol, then exposes The Double Edge in his crashout.",
+            "Episode 12 Aftermayhem: Wins the board race and returns to the game by reaching the Trophy Case.",
+            "Episode 17: Beats Aiden in fire-making after a tied vote, saving his season by inches.",
+            "Episode 18: Wins final immunity on The Perch and chooses Riya for Final Tribal.",
+            "Episode 18: Defeats Riya 7-2 after selling a ruthless, calculated winner’s case."
+          ],
+          "alliances": [
+            "The Ride or Die",
+            "The Double Edge",
+            "The Tribal Terrors"
+          ],
+          "rivalries": [
+            "Karol",
+            "Aiden",
+            "Yul",
+            "Ally",
+            "Oliver",
+            "Ellie"
+          ],
+          "format": "total-drama",
+          "seasonId": "td-12",
+          "sourceFile": "data/seasons/season12-data.json"
+        }
+      ],
+      "careerStory": "James enters Generations already narrating the game in his head, and for most of the season, the island struggles to keep up with the speed of his calculations. He is rarely comfortable, often exposed, and repeatedly accused of overplaying, but he keeps finding new rooms to enter and new people to use. His first run ends in humiliation when Jacques’s idol play and a fractured Double Edge vote send him out, but the Aftermayhem gives him a second life and he treats it like proof of destiny. From there, James plays sharper: he survives tiebreaker fire against Aiden, watches Jacques fall at final four, then wins the final perch when it matters most. At Final Tribal, he does not ask the jury to like him; he asks them to respect the body of work. Seven jurors do.",
+      "careerSummary": {
+        "totalSeasons": 1,
+        "bestPlacement": 1,
+        "wins": 1,
+        "totalChallengeWins": 1,
+        "totalVotesAgainst": 9,
+        "badges": [
+          "S12 Winner"
+        ]
+      }
+    },
+    "lake": {
+      "name": "Lake",
+      "canonIdentity": "Lake",
+      "appearances": [
+        {
+          "season": 12,
+          "placement": 7,
+          "status": "Juror",
+          "tribe": "Saplings → Embers → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 7.6,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Lake is the season’s loyal soldier, protected by deep bonds until one brutal tiebreaker cuts her endgame short."
+          ],
+          "gameplayStyle": "Loyal spine, quiet leverage",
+          "keyMoments": [
+            "Episode 1: Finds the Saplings Amulet Advantage and keeps it hidden.",
+            "Episode 2: Moves to Embers in the producer swap and designs the Tiki Royalty runway look.",
+            "Episode 7: Blocks Karol’s vote, helping The Double Edge send Kai home.",
+            "Episode 8: Forms an amulet understanding with Rosa-Maria and deepens her loyalty network.",
+            "Episode 10: Votes Karol at the merge, helping remove a physical and emotional threat.",
+            "Episode 13: Forms The Oath with Rosa-Maria as her clearest late-game pair.",
+            "Episode 14: Has her vote stolen by Ellie and redirected to James during Ellie’s elimination.",
+            "Episode 15: Loses the endurance tiebreaker to Jacques after a tied vote."
+          ],
+          "alliances": [
+            "The Camp Takeover",
+            "The Undertow",
+            "The Double Edge",
+            "The Oath",
+            "The Movement"
+          ],
+          "rivalries": [
+            "Karol",
+            "Riya",
+            "Jacques"
+          ],
+          "format": "total-drama",
+          "seasonId": "td-12",
+          "sourceFile": "data/seasons/season12-data.json"
+        }
+      ],
+      "careerStory": "Lake finds power early with the amulet, but her defining weapon is steadiness. She designs, weaves, covers for people, shares quiet meals, and builds bonds that turn into alliances. Her loyalties to Jen, Rosa-Maria, Aiden, and Ally shape the middle of the game, even when they put her in impossible positions. She repeatedly chooses relationship over pure optimization, and that makes her trusted — and predictable. By final seven, she is woven into too many hearts and too many plans. Jacques strikes preemptively, the vote tangles, and Lake loses the endurance tiebreaker that decides her fate.",
+      "careerSummary": {
+        "totalSeasons": 1,
+        "bestPlacement": 7,
+        "wins": 0,
+        "totalChallengeWins": 0,
+        "totalVotesAgainst": 6,
+        "badges": []
+      }
+    },
+    "yul": {
+      "name": "Yul",
+      "canonIdentity": "Yul",
+      "appearances": [
+        {
+          "season": 12,
+          "placement": 12,
+          "status": "Pre-Merge",
+          "tribe": "Saplings → Embers → Saplings → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 8,
+          "idolsFound": 0,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 7.4,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Yul schemes early and loudly, but his fake deals and public cruelty make him impossible to keep."
+          ],
+          "gameplayStyle": "Sharp tongue, false pacts",
+          "keyMoments": [
+            "Episode 1: Forms a secret final three with Hunter while feeding him false information.",
+            "Episode 3: Creates The Iron Four with Kai and Hunter, then repeatedly shoots Connor in Paintball Hunt.",
+            "Episode 4: Wins the Journey puzzle and takes the Vote Block.",
+            "Episode 5: Blocks Tess’s vote and plays Shot in the Dark, only to be swapped instead of eliminated.",
+            "Episode 6: Panics after learning Hunter wrote his name and overplays on Embers.",
+            "Episode 7: Is abducted to Saplings and tries to build a new home with limited loyalty.",
+            "Episode 9: Suffers Ellie’s trapeze sabotage and lands in jellyfish.",
+            "Episode 9: Is voted out by Hunter, Tess, Ellie, and James in the first half of the double elimination."
+          ],
+          "alliances": [
+            "The Iron Four"
+          ],
+          "rivalries": [
+            "James",
+            "Karol",
+            "Riya",
+            "Connor",
+            "Jen",
+            "Aiden",
+            "Hunter",
+            "Tess",
+            "Ellie"
+          ],
+          "format": "total-drama",
+          "seasonId": "td-12",
+          "sourceFile": "data/seasons/season12-data.json"
+        }
+      ],
+      "careerStory": "Yul enters with a plan for everyone and an honest loyalty to almost no one. He builds The Iron Four, tests Hunter with false information, protects Chase in ways that reveal a softer center, and collects a Vote Block that should have made him dangerous. But every move leaves residue. He shoves Tess, shoots Connor, refuses truths, and turns allies into liabilities. The elimination swap gives him a strange second life, but by the double elimination, the coalition against him is too clean. Yul exits as a villain with flashes of brilliance and a trail of burned deals.",
+      "careerSummary": {
+        "totalSeasons": 1,
+        "bestPlacement": 12,
+        "wins": 0,
+        "totalChallengeWins": 0,
+        "totalVotesAgainst": 8,
+        "badges": []
+      }
+    },
+    "natalia": {
+      "name": "Natalia",
+      "canonIdentity": "Natalia",
+      "appearances": [
+        {
+          "season": 14,
+          "placement": 12,
+          "status": "Juror",
+          "tribe": "Blue Team",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "advPlayed": 0,
+          "advHeld": 0,
+          "strategicRank": 7.4,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Natalia is a chaos agent whose reads and aggression keep her relevant until her unpredictability becomes impossible to manage."
+          ],
+          "gameplayStyle": "Volatile reads, chaos pressure",
+          "keyMoments": [
+            "Episode 3: Helped form The Triumvirate, then immediately fractured it by voting Richard.",
+            "Episode 4: Was MVP of Paintball Hunt as the last deer standing.",
+            "Episode 6: Choked in Talent Show after Spencer sabotaged her props, scoring zero.",
+            "Episode 10: Faced Lynda in exile and stayed alive by winning the duel.",
+            "Episode 11: Survived while Lynda was sent permanently to Rescue Island.",
+            "Episode 14: Was voted out at the merge after being labeled unpredictable and a jury threat.",
+            "Episode 14: Exposed Logan and the Anti-Spencer Coalition in her crashout."
+          ],
+          "alliances": [
+            "The Triumvirate",
+            "The Secret Weapon"
+          ],
+          "rivalries": [
+            "Isabel",
+            "Anastasia",
+            "Logan",
+            "Richard"
+          ],
+          "format": "total-drama",
+          "seasonId": "td-14",
+          "sourceFile": "data/seasons/season14-data.json"
+        }
+      ],
+      "careerStory": "Natalia arrives promising to learn the rules and break them, and she spends the season doing both. On Blue Team, she moves through alliances quickly: The Triumvirate, The Secret Weapon, Anti-Spencer arrangements, and temporary truces with people she distrusts. She is perceptive, confrontational, and repeatedly close to power without ever staying fully inside it. Her stage disaster in Talent Show hurts her image, but she keeps surviving through pressure, side deals, and social intimidation. At the merge, her threat level is too high to ignore and her enemies too numerous to outmaneuver. She leaves by exposing Logan and Anastasia's roles, turning her exit into one last detonation.",
+      "careerSummary": {
+        "totalSeasons": 1,
+        "bestPlacement": 12,
+        "wins": 0,
+        "totalChallengeWins": 0,
+        "totalVotesAgainst": 9,
+        "badges": []
+      }
+    },
+    "julia": {
+      "name": "Julia",
+      "canonIdentity": "Julia",
+      "appearances": [
+        {
+          "season": 9,
+          "placement": 6,
+          "status": "Juror",
+          "tribe": "Blue → Yellow → Campers",
+          "challengeWins": 3,
+          "immunityWins": 1,
+          "rewardWins": 2,
+          "votesReceived": 10,
+          "idolsFound": 1,
+          "strategicRank": 9,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "6 Vote / Ice Queen Strategist"
+          ],
+          "gameplayStyle": "Ice Queen tactician",
+          "keyMoments": [
+            "Ep7: Manipulates Raj into leaving with an idol.",
+            "Ep8: Joins Misfits to target Ripper.",
+            "Ep9: Helps cut Axel on the losing team.",
+            "Ep11: Has her idol stolen by Bowie at Tribal.",
+            "Ep12: Joins Bowie to dethrone Priya."
+          ],
+          "alliances": [
+            "Emmah",
+            "MK",
+            "Wayne"
+          ],
+          "rivalries": [
+            "MK",
+            "Bowie",
+            "Raj"
+          ],
+          "format": "total-drama",
+          "seasonId": "td-9",
+          "sourceFile": "data/seasons/season9-data.json"
+        },
+        {
+          "season": 13,
+          "placement": 2,
+          "status": "Finalist",
+          "tribe": "Villains → Heroes → Campers",
+          "challengeWins": 4,
+          "immunityWins": 4,
+          "rewardWins": 0,
+          "votesReceived": 3,
+          "idolsFound": 3,
+          "advPlayed": 1,
+          "advHeld": 0,
+          "strategicRank": 9.8,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Julia plays the most strategically aggressive game of the season, but her control finally meets Wayne's coalition of real relationships."
+          ],
+          "gameplayStyle": "Ruthless precision, public fire",
+          "keyMoments": [
+            "Ep.2 — Finds the Villains idol and keeps the secret close.",
+            "Ep.5 — Outlasts everyone in Awake-A-Thon, announcing herself as a physical force.",
+            "Ep.9 — Sabotages the Lava Gulch track to help Heroes win Tropical Takedown.",
+            "Ep.13 — Wins Greece's Pieces with the Icarus tiebreaker.",
+            "Ep.19 — Wins Rapa Phooey immunity, forcing Jake out before the finale."
+          ],
+          "alliances": [
+            "The Guard",
+            "The Anchor",
+            "The Elimination Squad"
+          ],
+          "rivalries": [
+            "Wayne",
+            "Aiden",
+            "Ally",
+            "Jake",
+            "Ripper",
+            "MacArthur"
+          ],
+          "format": "total-drama",
+          "seasonId": "td-13",
+          "sourceFile": "data/seasons/season13-data.json"
+        }
+      ],
+      "careerStory": "She enters as the Ice Queen and never warms. On Blue she weaponizes disdain into control, then at the three-tribe twist she springs the season’s coldest trap—seducing Raj into pocketing an idol as she votes him out 2–1. At the merge she sides with the outcasts, then endures a public stripping when Bowie robs her idol with Knowledge is Power. Spite becomes fuel; she flips between blocs, helps oust Priya, and still commands attention until the house finally unites. Silenced by Chase’s Vote Stopper and buried 6–0, Julia exits as the villain the story needed—loud, lethal, unforgettable.\n\nSEASON 13 — Total Drama Doom Island\n────────\nJulia arrives with a Beware Advantage, an idol trail, and the confidence of someone who expects chaos to bend around her. She engineers safety through ambassadors, sabotage, immunity wins, and carefully placed information. Her game is relentless: she cuts threats, courts shields, and turns even a volleyball named Wilson into a psychological landmark. But the same sharpness that gets her to the finale leaves too many people bruised, and in the final race, Wayne's bench screams louder than hers.",
+      "careerSummary": {
+        "totalSeasons": 2,
+        "bestPlacement": 2,
+        "wins": 0,
+        "totalChallengeWins": 7,
+        "totalVotesAgainst": 13,
+        "badges": []
+      }
+    },
+    "dj": {
+      "name": "DJ",
+      "canonIdentity": "DJ",
+      "appearances": [
+        {
+          "season": 1,
+          "placement": 22,
+          "status": "Pre-Juror",
+          "tribe": "Killer Bass",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "notes": [
+            "9 votes in Episode 3"
+          ],
+          "keyMoments": [
+            "A peaceful social player who couldn't escape the 'challenge liability' label.",
+            "MAPLV and Killer Bass Alliance #1 both locked on him as the same tribal's target.",
+            "Eliminated 9-2 at Episode 3 — a near-unanimous first major alliance statement vote."
+          ],
+          "format": "total-drama",
+          "seasonId": "td-1",
+          "sourceFile": "data/seasons/season1-data.json"
+        },
+        {
+          "season": 2,
+          "placement": 5,
+          "status": "Juror",
+          "tribe": "Killer Grips",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 11,
+          "idolsFound": 0,
+          "notes": [
+            "4-1 vote at Final Five"
+          ],
+          "keyMoments": [
+            "A pillar of emotional support for his tribe through the pre-merge.",
+            "Survived early tribal chaos as a swing target.",
+            "Fell at Final 5 when Beth played her idol, making him the cleanest remaining target.",
+            "Eliminated 4-1 — unable to outlast a tribe that had run out of easier options."
+          ],
+          "format": "total-drama",
+          "seasonId": "td-2",
+          "sourceFile": "data/seasons/season2-data.json"
+        }
+      ],
+      "careerStory": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Killer Bass (Season 1), DJ was the kind of player everyone loves—and that’s exactly what made him dangerous. By Episode 3, the vote pile was massive (9 votes against), a sign that the tribe wanted the ‘heart’ out before it turned into the center of the game. He didn’t lose a duel; he lost to fear of what he could become if he reached the merge with that much goodwill (Result: eliminated; 22nd).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nDJ’s Season 2 run on Killer Grips was his deepest, steadiest showing: fewer blowups, stronger bonds, and survival through an idol-heavy midgame. He reached Final Five as the \"safe\" number for multiple sides — and that’s exactly why he became expendable. He was voted out just before the endgame (DJ eliminated at Final Five, 4–1).",
+      "careerSummary": {
+        "totalSeasons": 2,
+        "bestPlacement": 5,
+        "wins": 0,
+        "totalChallengeWins": 0,
+        "totalVotesAgainst": 20,
+        "badges": []
+      }
+    }
+  }
+}

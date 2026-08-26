@@ -4837,7 +4837,24 @@
       },
       "sexuality": "straight",
       "voice": "White American, The Heiress.",
-      "profileSources": {},
+      "profileSources": {
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Evie",
+            "url": "https://disventure-camp.fandom.com/wiki/Evie",
+            "kind": "source-canon",
+            "quote": "the heir to the \"Marlowe Oil Fortune\""
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Evie",
+            "url": "https://disventure-camp.fandom.com/wiki/Evie",
+            "kind": "source-canon",
+            "quote": "While she presents an air of class and refinement, Evie is actually quite dim."
+          }
+        ]
+      },
       "birthdate": "1967-02-09",
       "ethnicity": "White",
       "nationality": "American",

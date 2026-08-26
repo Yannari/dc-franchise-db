@@ -228,6 +228,7 @@ describe('traitors state survives a round trip through JSON', () => {
     const tr = initTraitorsState();
     expect(tr.alignment).toEqual({});
     expect(tr.roleHistory).toEqual([]);
+    expect(tr.rounds).toEqual([]);
     expect(tr.pot).toBe(0);
     expect(tr.threads).toEqual([]);
     expect(tr.conclaveTension).toEqual({});

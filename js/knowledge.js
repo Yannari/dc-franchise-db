@@ -24,7 +24,15 @@ function clamp01(v) { return Math.max(0, Math.min(1, v)); }
 export function factId(type, subject, object) { return object !== null && object !== undefined ? `${type}:${subject}:${object}` : `${type}:${subject}`; }
 
 // how many episodes a fact stays "current" before beliefs go stale
-const VALIDITY = { target: 1, pitch: 2, 'bond-read': 4, idol: 99, advantage: 99, alliance: 99, betrayal: 99, throw: 99 };
+const VALIDITY = {
+  target: 1, pitch: 2, 'bond-read': 4, idol: 99, advantage: 99, alliance: 99, betrayal: 99, throw: 99,
+  // Alignment never goes stale. A vote or a pitch describes one round and
+  // rightly fades; who somebody IS does not, and a read formed in episode two
+  // is still evidence in episode nine. This is the only fact type whose ground
+  // truth can CHANGE mid-season (recruitment), which eras handle in tr/roles.js
+  // rather than by expiring the fact.
+  alignment: 99,
+};
 // base credibility by how the belief arrived
 const SOURCE_CRED = { public: 1.0, observed: 0.9, told: 0.7, deduced: 0.62, rumor: 0.45 };
 

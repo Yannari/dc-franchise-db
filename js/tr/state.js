@@ -11,8 +11,10 @@
 /** A season's Traitors state, empty. */
 export function initTraitorsState() {
   return {
-    // name -> 'traitor' | 'faithful'. Ground truth. The audience sees this;
-    // the players never do.
+    // name -> [{ truth, sinceEp }], oldest first. NOT a single value: alignment
+    // is a property of a person AND a round, because recruitment changes it
+    // mid-season and a belief formed before a flip was correct when it was
+    // formed. See truthAtLearn() in tr/roles.js.
     alignment: {},
 
     // Every change of allegiance, in order: { name, from, to, ep, via }.
@@ -21,6 +23,11 @@ export function initTraitorsState() {
     // a Faithful in episode 3, and a belief formed then was correct when it
     // was formed.
     roleHistory: [],
+
+    // Completed rounds, and the export shape (spec 10.1): each carries its
+    // ballots with a `channel`, so a murder is a ballot only the Traitors cast
+    // and the whole round still normalises to votingHistory[].
+    rounds: [],
 
     // The shared prize fund. Nobody votes for it and only the winning faction
     // collects it, which is the whole strategic sting of a mission.

@@ -16,7 +16,8 @@
         "intuition": 10,
         "temperament": 4
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Smooth, charming, calculated manipulator. Weaponizes charm and good looks, always three steps ahead, never lets you see the scheme. Silky, flattering speech that hides a knife."
     },
     {
       "name": "Amy",
@@ -33,7 +34,8 @@
         "boldness": 9,
         "intuition": 6,
         "temperament": 2
-      }
+      },
+      "voice": "Cruel, vain mean-girl twin. Bossy and entitled, belittles her sister Samey, takes credit and shifts blame. Sharp, dismissive put-downs."
     },
     {
       "name": "Anne Maria",
@@ -51,7 +53,8 @@
         "intuition": 4,
         "temperament": 4
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Jersey-tough, tan-obsessed diva. Sprays tanner constantly, brash and unbothered, tough-talking with a thick accent. Refuses to break a nail."
     },
     {
       "name": "Axel",
@@ -68,7 +71,8 @@
         "boldness": 6,
         "intuition": 4,
         "temperament": 3
-      }
+      },
+      "voice": "Tough, no-nonsense outdoorswoman. Blunt, action-first, zero patience for drama or whining. Says little, does a lot."
     },
     {
       "name": "B",
@@ -86,7 +90,8 @@
         "intuition": 5,
         "temperament": 10
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Silent inventor genius. Never speaks — communicates through gestures and brilliant gadgets. Calm, clever, unflappable."
     },
     {
       "name": "Beardo",
@@ -103,7 +108,8 @@
         "boldness": 4,
         "intuition": 3,
         "temperament": 8
-      }
+      },
+      "voice": "Shy sound-effects/beatbox guy. Barely talks; reacts with human sound effects instead of words. Awkward but good-natured."
     },
     {
       "name": "Beth",
@@ -120,7 +126,8 @@
         "boldness": 5,
         "intuition": 5,
         "temperament": 6
-      }
+      },
+      "voice": "Eager, sweet, geeky wannabe. Tries too hard, loyal follower, insecure but genuinely kind. Gushes and over-shares."
     },
     {
       "name": "Blaineley",
@@ -137,7 +144,8 @@
         "boldness": 8,
         "intuition": 9,
         "temperament": 4
-      }
+      },
+      "voice": "Vain, cutthroat gossip-TV host. Self-absorbed, dramatic, will burn anyone for fame and airtime. Smug and theatrical."
     },
     {
       "name": "Bowie",
@@ -155,10 +163,8 @@
         "intuition": 9,
         "temperament": 6
       },
-      "personality": "Bowie is openly competitive, socially alert, and comfortable being the most visibly confident person in a room. He enjoys drama as both entertainment and information, notices who needs reassurance, and can build sincere friendships even while planning around them. He prefers clean strategic authorship: identify the dangerous player, assemble the numbers, and own the decision in confessional. His affection for people such as Raj reveals a real boundary beneath the ambition; he can postpone or soften a move when the human cost becomes personal. Under pressure he gets sharper and more controlling, but not randomly cruel. He respects opponents who can answer him move for move and hates being treated as strategically naive.",
       "sexuality": "gay",
       "voice": "Sweet, dramatic theater kid. Expressive, supportive, non-confrontational; devoted to his friends. Emotes big.",
-      "backstory": "Before competing, Bowie was already a practiced performer and relentless competitor. His audition presents him as Total Drama’s first openly gay contestant, a basketball-playing student who had been crowned both prom king and queen and wanted another crown. That mix of pageantry, preparation, and self-belief explains why he arrived expecting to manage both the room and the show around it.",
       "profileSources": {
         "voice": [
           {
@@ -204,7 +210,9 @@
             "kind": "source-canon"
           }
         ]
-      }
+      },
+      "backstory": "Before competing, Bowie was already a practiced performer and relentless competitor. His audition presents him as Total Drama’s first openly gay contestant, a basketball-playing student who had been crowned both prom king and queen and wanted another crown. That mix of pageantry, preparation, and self-belief explains why he arrived expecting to manage both the room and the show around it.",
+      "personality": "Bowie is openly competitive, socially alert, and comfortable being the most visibly confident person in a room. He enjoys drama as both entertainment and information, notices who needs reassurance, and can build sincere friendships even while planning around them. He prefers clean strategic authorship: identify the dangerous player, assemble the numbers, and own the decision in confessional. His affection for people such as Raj reveals a real boundary beneath the ambition; he can postpone or soften a move when the human cost becomes personal. Under pressure he gets sharper and more controlling, but not randomly cruel. He respects opponents who can answer him move for move and hates being treated as strategically naive."
     },
     {
       "name": "Brick",
@@ -222,6 +230,7 @@
         "intuition": 5,
         "temperament": 8
       },
+      "voice": "Honorable military cadet. Disciplined, calls people by rank, loyal to a fault, courageous — but crumbles under pressure (and has a weak bladder). Earnest, formal speech.",
       "isReturnee": true
     },
     {
@@ -239,7 +248,8 @@
         "boldness": 4,
         "intuition": 7,
         "temperament": 8
-      }
+      },
+      "voice": "Sunny, surfer-calm peacemaker. 'You guys,' smooths over tension and apologizes for other people; gets flustered and awkward when forced to play cutthroat."
     },
     {
       "name": "Brightly",
@@ -256,7 +266,8 @@
         "boldness": 6,
         "intuition": 8,
         "temperament": 6
-      }
+      },
+      "voice": "A brilliant aspiring scientist stuck working at a daycare to pay her tuition. Sharp, analytical and strategic — but sometimes misses social context clues, or the emotional read, when she over-analyzes a situation. Talks like she's reasoning through a problem out loud; book-smart and occasionally people-blind."
     },
     {
       "name": "Brody",
@@ -273,7 +284,8 @@
         "boldness": 4,
         "intuition": 6,
         "temperament": 8
-      }
+      },
+      "voice": "Chill, dim, enthusiastic surfer bro. Loyal and warm, easily excited, devoted to his best friend Geoff. Goofy, upbeat, not the sharpest."
     },
     {
       "name": "Caleb",
@@ -290,7 +302,8 @@
         "boldness": 7,
         "intuition": 7,
         "temperament": 6
-      }
+      },
+      "voice": "Eager and over-explaining; apologizes reflexively, name-drops whoever told him what, talks fast when nervous and walks back his own points mid-sentence. Charming when relaxed, a fumbling mess the second he's cornered."
     },
     {
       "name": "Cameron",
@@ -307,7 +320,8 @@
         "boldness": 5,
         "intuition": 7,
         "temperament": 8
-      }
+      },
+      "voice": "Sheltered bubble-boy genius. Nervous, over-analytical, physically frail, book-smart but socially green. Rambles about science when anxious."
     },
     {
       "name": "Carrie",
@@ -325,6 +339,7 @@
         "intuition": 8,
         "temperament": 8
       },
+      "voice": "Kind, warm, indecisive nice girl. Emotionally tangled up over her best friend Devin; avoids conflict, second-guesses herself.",
       "isReturnee": true
     },
     {
@@ -343,7 +358,8 @@
         "intuition": 6,
         "temperament": 8
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Quiet, smooth, easygoing — dangerous precisely because people underestimate him. Understated, keeps his real game hidden. 'Trust gets you voted out.'"
     },
     {
       "name": "Chef Hatchet",
@@ -360,7 +376,8 @@
         "boldness": 8,
         "intuition": 4,
         "temperament": 2
-      }
+      },
+      "voice": "Gruff ex-military cook. Barks orders, disgusted by everything, intimidating; three words max, with a rare hidden soft spot."
     },
     {
       "name": "Chet",
@@ -377,7 +394,8 @@
         "boldness": 5,
         "intuition": 4,
         "temperament": 4
-      }
+      },
+      "voice": "Whiny, competitive bickering stepbrother. Squabbles endlessly with Lorenzo over nothing, petty and dramatic."
     },
     {
       "name": "Chris McLean",
@@ -394,7 +412,8 @@
         "boldness": 10,
         "intuition": 8,
         "temperament": 2
-      }
+      },
+      "voice": "Sadistic narcissist host. Genuinely delighted by contestant suffering, vain about his looks, lazy, easily distracted. Mean without a wink."
     },
     {
       "name": "Cody",
@@ -412,6 +431,7 @@
         "intuition": 9,
         "temperament": 8
       },
+      "voice": "Try-hard geek charmer. Awkward but plucky, self-aware about his failures and goes for it anyway; harmless flirt.",
       "isReturnee": true
     },
     {
@@ -430,6 +450,7 @@
         "intuition": 7,
         "temperament": 2
       },
+      "voice": "Controlling, type-A ex-CIT. Sharp commands, obsessed with rules and being right, furious when ignored or underestimated. Bossy and combative.",
       "isReturnee": true
     },
     {
@@ -448,7 +469,8 @@
         "intuition": 4,
         "temperament": 8
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "voice": "bi. Deadpan goth. Monotone, dark, unbothered; speaks in flat morbid observations, inseparable from Ennui."
     },
     {
       "name": "Dakota",
@@ -465,7 +487,8 @@
         "boldness": 5,
         "intuition": 6,
         "temperament": 6
-      }
+      },
+      "voice": "Fame-obsessed rich girl. Loves paparazzi and attention, spoiled and shallow on the surface but sweetens over time."
     },
     {
       "name": "Damien",
@@ -482,7 +505,8 @@
         "boldness": 4,
         "intuition": 8,
         "temperament": 8
-      }
+      },
+      "voice": "Quiet and sparing cerebral strategist. Rations his words, deflects with one flat joke instead of arguing, never tips his hand; the more cornered he is, the calmer he gets."
     },
     {
       "name": "Dave",
@@ -499,7 +523,8 @@
         "boldness": 6,
         "intuition": 6,
         "temperament": 4
-      }
+      },
+      "voice": "Neurotic germaphobe. Anxious, sarcastic, easily disgusted, obsessive over cleanliness and over romance. Spirals fast."
     },
     {
       "name": "Dawn",
@@ -517,7 +542,8 @@
         "intuition": 5,
         "temperament": 10
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Soft, mystical, unsettlingly perceptive. Reads auras, speaks in gentle cryptic observations, delivers hard truths without a trace of malice."
     },
     {
       "name": "Devin",
@@ -534,7 +560,8 @@
         "boldness": 4,
         "intuition": 6,
         "temperament": 8
-      }
+      },
+      "voice": "Earnest, kind nice-guy racer. Overly hung up on his ex, agreeable, tries to keep everyone happy. Sincere and a bit oblivious."
     },
     {
       "name": "DJ",
@@ -552,10 +579,8 @@
         "intuition": 8,
         "temperament": 10
       },
-      "occupation": "Grocery store employee and cook",
+      "sexuality": "straight",
       "voice": "Soft-spoken, sincere, and protective, with simple language that gets firmer when someone is unsafe. DJ comforts before advising, invokes his mother’s lessons without irony, and reacts to fear openly. His humor is gentle and self-aware; anger is rare, brief, and rooted in harm rather than ego.",
-      "personality": "DJ is a physically imposing person with an exceptionally gentle center. He values safety, kindness, animals, cooking, and the emotional well-being of the group above competitive glory. Fear is visible—he can cry, panic, or freeze when heights, water, horror, or an injured animal overwhelms him—but courage for someone else is easier to access than courage for himself. His social strength comes from practical care: feeding people, listening without judgment, and becoming the person others trust at their worst. That trust can make him a threat even when he has little appetite for strategy. Under pressure he may become guilt-ridden or accept blame too quickly. He will not scheme, steal, sabotage, or humiliate someone; any vote he casts needs a protective, fair, or reluctantly necessary reason.",
-      "backstory": "Devon “DJ” Joseph did not originally plan on reality television. Producers noticed his extraordinary strength while he pushed a row of eighty shopping carts at his part-time grocery job and recruited him for the show. Away from competition, he learned compassion and cooking from the mother he deeply admires, cared for animals whenever possible, and developed into the classic “brickhouse with heart”: intimidating at first glance, tender in practice.",
       "profileSources": {
         "voice": [
           {
@@ -601,7 +626,10 @@
             "kind": "source-canon"
           }
         ]
-      }
+      },
+      "occupation": "Grocery store employee and cook",
+      "backstory": "Devon “DJ” Joseph did not originally plan on reality television. Producers noticed his extraordinary strength while he pushed a row of eighty shopping carts at his part-time grocery job and recruited him for the show. Away from competition, he learned compassion and cooking from the mother he deeply admires, cared for animals whenever possible, and developed into the classic “brickhouse with heart”: intimidating at first glance, tender in practice.",
+      "personality": "DJ is a physically imposing person with an exceptionally gentle center. He values safety, kindness, animals, cooking, and the emotional well-being of the group above competitive glory. Fear is visible—he can cry, panic, or freeze when heights, water, horror, or an injured animal overwhelms him—but courage for someone else is easier to access than courage for himself. His social strength comes from practical care: feeding people, listening without judgment, and becoming the person others trust at their worst. That trust can make him a threat even when he has little appetite for strategy. Under pressure he may become guilt-ridden or accept blame too quickly. He will not scheme, steal, sabotage, or humiliate someone; any vote he casts needs a protective, fair, or reluctantly necessary reason."
     },
     {
       "name": "Duncan",
@@ -618,7 +646,8 @@
         "boldness": 8,
         "intuition": 6,
         "temperament": 4
-      }
+      },
+      "voice": "Delinquent bad boy. Tough, sarcastic, loves stirring trouble and scaring people; secretly softer than he lets on. Smug, blunt."
     },
     {
       "name": "Dwayne",
@@ -635,7 +664,8 @@
         "boldness": 2,
         "intuition": 8,
         "temperament": 10
-      }
+      },
+      "voice": "Dorky, embarrassing dad. Well-meaning and hopelessly uncool, over-competitive on his son Junior's behalf, gives cringe pep talks. Earnest and clueless."
     },
     {
       "name": "Ella",
@@ -652,7 +682,8 @@
         "boldness": 3,
         "intuition": 6,
         "temperament": 10
-      }
+      },
+      "voice": "Disney-princess singer. Sings constantly, relentlessly cheerful and kind, talks to animals, refuses to be anything but sweet."
     },
     {
       "name": "Ellody",
@@ -669,7 +700,8 @@
         "boldness": 7,
         "intuition": 8,
         "temperament": 6
-      }
+      },
+      "voice": "Over-analytical genius. Logical, science-minded, buries everything in jargon and hypotheses; struggles with the human factor."
     },
     {
       "name": "Emma",
@@ -687,7 +719,8 @@
         "intuition": 6,
         "temperament": 4
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Uptight, type-A overachiever. Lawyer-track, rigid and driven, loosens up around Noah. Clipped and no-nonsense."
     },
     {
       "name": "Emmah",
@@ -704,7 +737,8 @@
         "boldness": 8,
         "intuition": 6,
         "temperament": 2
-      }
+      },
+      "voice": "Scrappy, sharp-tongued, underestimated and furious about it. Turns information into weapons, all swagger. 'Written off again. Watch what I do with that.'"
     },
     {
       "name": "Ennui",
@@ -722,7 +756,8 @@
         "intuition": 4,
         "temperament": 10
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Monotone goth. Deadpan, unbothered by anything, flat morbid one-liners; devoted to Crimson without ever showing it."
     },
     {
       "name": "Eva",
@@ -739,7 +774,8 @@
         "boldness": 7,
         "intuition": 3,
         "temperament": 2
-      }
+      },
+      "voice": "LOUD and explosive, zero filter. SHOUTS and storms off, denies she's angry in the middle of yelling; blunt to the point of being funny. Pure muscle, short fuse."
     },
     {
       "name": "Ezekiel",
@@ -757,7 +793,8 @@
         "intuition": 3,
         "temperament": 6
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Earnest, awkward, old-school homeschool kid trying to prove he's grown. The verbal tic 'eh,' socially a step behind but genuinely trying."
     },
     {
       "name": "Geoff",
@@ -774,7 +811,8 @@
         "boldness": 4,
         "intuition": 7,
         "temperament": 10
-      }
+      },
+      "voice": "Laid-back party bro. Friendly and warm, loves parties, hosts everything, devoted to Bridgette. Easygoing 'dude' energy."
     },
     {
       "name": "Gerry",
@@ -792,7 +830,8 @@
         "intuition": 6,
         "temperament": 4
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Needling, sarcastic old-timer. Pokes people just to watch them flinch, plays dumb and then twists the knife, grumbles about everything and loves being underestimated."
     },
     {
       "name": "Gwen",
@@ -810,7 +849,8 @@
         "intuition": 7,
         "temperament": 4
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "voice": "bi. Deadpan, sarcastic goth. Tired of everyone and everything, dry wit, genuine fierce loyalty to the few she trusts."
     },
     {
       "name": "Harold",
@@ -828,7 +868,8 @@
         "intuition": 7,
         "temperament": 6
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Nerdy know-it-all. Dorky over-confidence, brags about his 'mad skills,' dramatic and easily wounded, weirdly competent at random things."
     },
     {
       "name": "Heather",
@@ -845,7 +886,8 @@
         "boldness": 9,
         "intuition": 7,
         "temperament": 2
-      }
+      },
+      "voice": "The manipulative queen-bee villain. Cruel, status-obsessed, openly strategic; sweet only when she wants something, sharp condescending put-downs otherwise. Respects only competence."
     },
     {
       "name": "Hicks",
@@ -863,6 +905,7 @@
         "intuition": 9,
         "temperament": 7
       },
+      "voice": "The Southern Observer — the most emotionally intelligent person in any room. Reads people's real motives instantly, quiet and deliberate, chooses words like he's paying for them. Trusts loyalty over cold logic.",
       "isReturnee": true
     },
     {
@@ -880,7 +923,8 @@
         "boldness": 6,
         "intuition": 3,
         "temperament": 6
-      }
+      },
+      "voice": "Unhinged, chaotic wildcard. Manic energy, wild non-sequitur stories, unpredictable and fearless, genuinely a little dangerous — and having the time of her life."
     },
     {
       "name": "Jacques",
@@ -898,7 +942,8 @@
         "intuition": 7,
         "temperament": 4
       },
-      "sexuality": "gay"
+      "sexuality": "gay",
+      "voice": "Theatrical ex-figure-skater ego. Dramatic, image-obsessed, a fallen champion with something to prove; grand declarations, then cold calculation."
     },
     {
       "name": "Jasmine",
@@ -916,7 +961,8 @@
         "intuition": 8,
         "temperament": 8
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Blunt Australian outdoorswoman. No-nonsense, capable, protective of the people she trusts, calls out nonsense directly. Tall-and-tough presence."
     },
     {
       "name": "Jay",
@@ -933,7 +979,8 @@
         "boldness": 3,
         "intuition": 6,
         "temperament": 8
-      }
+      },
+      "voice": "Shy, timid twin. Anxious and sweet, defers to his brother Mickey, apologizes constantly, terrified of everything."
     },
     {
       "name": "Jen",
@@ -950,7 +997,8 @@
         "boldness": 4,
         "intuition": 7,
         "temperament": 8
-      }
+      },
+      "voice": "Warm, perceptive social manager. Reads the room and keeps the peace while quietly positioning herself. Upbeat but always counting."
     },
     {
       "name": "Jo",
@@ -967,7 +1015,8 @@
         "boldness": 10,
         "intuition": 5,
         "temperament": 2
-      }
+      },
+      "voice": "Aggressive jock. Drill-sergeant energy, dominating and ruthless, treats everything as a contest to win. Barks, taunts, mocks the weak."
     },
     {
       "name": "Josee",
@@ -985,6 +1034,7 @@
         "intuition": 5,
         "temperament": 2
       },
+      "voice": "Olympic-level competitive figure skater. Full tantrum mode when she loses, surface sweetness that cracks under pressure into pure venom.",
       "isReturnee": true
     },
     {
@@ -1004,10 +1054,7 @@
         "temperament": 4
       },
       "sexuality": "straight",
-      "occupation": "Social media influencer",
       "voice": "Bright wellness-influencer cadence wrapped around ruthless intent. Julia uses fake serenity, clipped insults, and sudden volcanic honesty; she can pivot from “positive energy” to a devastating read without changing volume. Confessionals are punchy, self-congratulatory, and brutally clear about who she plans to remove.",
-      "personality": "Julia is fiercely competitive, physically resilient, and strategically aggressive. She first cultivated a sunny influencer persona built from crystals, nature slogans, and curated positivity, but humiliation stripped away the performance and revealed someone who enjoys winning, intimidation, and a perfectly timed insult. She is excellent at turning social information into leverage and persistent enough to rebuild after exposure. Loyalty is conditional, though she can form a compelling partnership when the other person matches her nerve and usefulness. Under pressure she doubles down, lies boldly, and attacks the weak point rather than retreating. Her temper and public cruelty create jurors and enemies even when the move itself is sound. She respects competent opposition—especially Bowie—because beating a real strategist proves more than dominating a passive room.",
-      "backstory": "Before the show, Julia built an online identity as a wellness and lifestyle influencer, presenting herself as a serene “citizen of Mother Earth” while privately disliking parts of the brand she sold. Her family includes parents Greg and Judy, who ran a bake shop where she worked as a child, and a sister, Megan, whom Julia targets with casual cruelty. Competition gave her a platform large enough to discard the mask and monetize the real Julia instead.",
       "profileSources": {
         "voice": [
           {
@@ -1053,7 +1100,10 @@
             "kind": "source-canon"
           }
         ]
-      }
+      },
+      "occupation": "Social media influencer",
+      "backstory": "Before the show, Julia built an online identity as a wellness and lifestyle influencer, presenting herself as a serene “citizen of Mother Earth” while privately disliking parts of the brand she sold. Her family includes parents Greg and Judy, who ran a bake shop where she worked as a child, and a sister, Megan, whom Julia targets with casual cruelty. Competition gave her a platform large enough to discard the mask and monetize the real Julia instead.",
+      "personality": "Julia is fiercely competitive, physically resilient, and strategically aggressive. She first cultivated a sunny influencer persona built from crystals, nature slogans, and curated positivity, but humiliation stripped away the performance and revealed someone who enjoys winning, intimidation, and a perfectly timed insult. She is excellent at turning social information into leverage and persistent enough to rebuild after exposure. Loyalty is conditional, though she can form a compelling partnership when the other person matches her nerve and usefulness. Under pressure she doubles down, lies boldly, and attacks the weak point rather than retreating. Her temper and public cruelty create jurors and enemies even when the move itself is sound. She respects competent opposition—especially Bowie—because beating a real strategist proves more than dominating a passive room."
     },
     {
       "name": "Junior",
@@ -1071,7 +1121,8 @@
         "intuition": 6,
         "temperament": 6
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Mature-beyond-his-years kid racer. Wants independence from his embarrassing dad Dwayne, level-headed, quietly exasperated."
     },
     {
       "name": "Justin",
@@ -1088,7 +1139,8 @@
         "boldness": 8,
         "intuition": 7,
         "temperament": 4
-      }
+      },
+      "voice": "Vain male model. Obsessed with his own looks, shallow, expects everything handed to him for being pretty. Coasts on charm."
     },
     {
       "name": "Katie",
@@ -1105,7 +1157,8 @@
         "boldness": 3,
         "intuition": 5,
         "temperament": 8
-      }
+      },
+      "voice": "Boy-crazy, sweet BFF. Inseparable from Sadie, ditzy and giggly, finishes Sadie's sentences, falls apart when they're separated."
     },
     {
       "name": "Kelly",
@@ -1122,7 +1175,8 @@
         "boldness": 8,
         "intuition": 7,
         "temperament": 4
-      }
+      },
+      "voice": "Mild, folksy strategist hiding in plain sight. Downplays her game, disarms people with total normalcy, then quietly reveals she's three moves ahead."
     },
     {
       "name": "Kitty",
@@ -1140,7 +1194,8 @@
         "intuition": 9,
         "temperament": 8
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Bubbly, kind, selfie-loving racer. Social-media obsessed, warm and fun, devoted to her uptight sister Emma."
     },
     {
       "name": "Laurie",
@@ -1157,7 +1212,8 @@
         "boldness": 7,
         "intuition": 7,
         "temperament": 4
-      }
+      },
+      "voice": "Preachy eco-hippie. Vegan activist, calm and earnest until she's judging your carbon footprint; sanctimonious with Miles."
     },
     {
       "name": "Leonard",
@@ -1174,7 +1230,8 @@
         "boldness": 5,
         "intuition": 4,
         "temperament": 6
-      }
+      },
+      "voice": "Delusional LARPer 'wizard.' Genuinely believes he can cast spells, narrates fantasy nonsense, unshakably committed to the bit."
     },
     {
       "name": "Leshawna",
@@ -1191,7 +1248,8 @@
         "boldness": 6,
         "intuition": 7,
         "temperament": 4
-      }
+      },
+      "voice": "Sassy, loud, confident. Tells it exactly like it is, fiercely loyal, big personality and bigger opinions, zero tolerance for fakes."
     },
     {
       "name": "Lightning",
@@ -1208,7 +1266,8 @@
         "boldness": 8,
         "intuition": 3,
         "temperament": 4
-      }
+      },
+      "voice": "Cocky third-person jock. Talks about himself in third person ('Sha-Lightning!'), convinced he's the greatest athlete alive, oblivious and loud."
     },
     {
       "name": "Lindsay",
@@ -1225,7 +1284,8 @@
         "boldness": 4,
         "intuition": 5,
         "temperament": 8
-      }
+      },
+      "voice": "Ditzy, sweet blonde. Forgets everyone's names, endlessly kind and oblivious, easily led, secretly stronger than she seems."
     },
     {
       "name": "Lorenzo",
@@ -1242,7 +1302,8 @@
         "boldness": 7,
         "intuition": 5,
         "temperament": 2
-      }
+      },
+      "voice": "Lazy, sarcastic bickering stepbrother. Genuinely unbothered by almost everything, drops things on purpose, squabbles with Chet."
     },
     {
       "name": "MacArthur",
@@ -1260,7 +1321,8 @@
         "intuition": 5,
         "temperament": 4
       },
-      "sexuality": "lesbian"
+      "sexuality": "lesbian",
+      "voice": "Brash, loud cop. Barks orders, calls people 'genius' sarcastically, hyper-competitive about everything. 'I have depth — it's under the yelling.'"
     },
     {
       "name": "Mary",
@@ -1277,7 +1339,8 @@
         "boldness": 4,
         "intuition": 8,
         "temperament": 10
-      }
+      },
+      "voice": "Monotone genius. Purely logical and scientific, flat affect, over-explains in jargon; brainy partner to Ellody."
     },
     {
       "name": "Max",
@@ -1294,7 +1357,8 @@
         "boldness": 6,
         "intuition": 4,
         "temperament": 4
-      }
+      },
+      "voice": "Wannabe cartoon supervillain. Declares himself 'EVIL!' constantly, theatrical and incompetent, foiled by his own schemes. Small man, big menace complex."
     },
     {
       "name": "Mickey",
@@ -1312,6 +1376,7 @@
         "intuition": 8,
         "temperament": 6
       },
+      "voice": "Anxious, clumsy, accident-prone. Breathes fast under stress, always waiting for disaster, sweet and nervous; twin of Jay.",
       "isReturnee": true
     },
     {
@@ -1330,10 +1395,8 @@
         "intuition": 7,
         "temperament": 6
       },
-      "ethnicity": "Italian",
+      "sexuality": "straight",
       "voice": "Gentle, earnest, and slightly self-conscious, with humor used to ease tension rather than dominate it. Mike asks before assuming, speaks most firmly when protecting someone, and admits uncertainty in short, honest bursts. He should sound like an integrated adult, never like a collection of impressions.",
-      "personality": "Mike is caring, relationship-oriented, and more comfortable supporting another person than demanding the center of attention. Earlier secrecy taught him to scan constantly for signs that people might reject him, so he sometimes withholds difficult truths until avoidance becomes its own problem. Once trust is established, he is intensely loyal and willing to take emotional risks for the people he loves. His post-canon baseline is integration and continuity: he remembers his whole life, owns his choices, and can draw on varied skills without switching into a caricature. Stress may make him anxious or evasive, but it must never turn mental illness into automatic menace. His strategic game grows from protection, compromise, and careful relationship repair rather than manipulation for sport.",
-      "backstory": "Mike entered the franchise as an Italian teenager hiding a deeply personal part of his mental-health history because he feared ridicule and rejection. His bond with Zoey gave him a reason to become more open, while the competition repeatedly punished secrecy and loss of control. By the end of his source story he had integrated his identities and retained their learned abilities, leaving him to build an ordinary future without erasing what he experienced.",
       "profileSources": {
         "voice": [
           {
@@ -1379,7 +1442,9 @@
             "kind": "source-canon"
           }
         ]
-      }
+      },
+      "backstory": "Mike entered the franchise as an Italian teenager hiding a deeply personal part of his mental-health history because he feared ridicule and rejection. His bond with Zoey gave him a reason to become more open, while the competition repeatedly punished secrecy and loss of control. By the end of his source story he had integrated his identities and retained their learned abilities, leaving him to build an ordinary future without erasing what he experienced.",
+      "personality": "Mike is caring, relationship-oriented, and more comfortable supporting another person than demanding the center of attention. Earlier secrecy taught him to scan constantly for signs that people might reject him, so he sometimes withholds difficult truths until avoidance becomes its own problem. Once trust is established, he is intensely loyal and willing to take emotional risks for the people he loves. His post-canon baseline is integration and continuity: he remembers his whole life, owns his choices, and can draw on varied skills without switching into a caricature. Stress may make him anxious or evasive, but it must never turn mental illness into automatic menace. His strategic game grows from protection, compromise, and careful relationship repair rather than manipulation for sport."
     },
     {
       "name": "Miles",
@@ -1396,7 +1461,8 @@
         "boldness": 3,
         "intuition": 6,
         "temperament": 10
-      }
+      },
+      "voice": "Earnest eco-hippie activist. Vegan, environmentalist, gentle but preachy; partners with Laurie in judgment."
     },
     {
       "name": "Millie",
@@ -1414,10 +1480,8 @@
         "intuition": 7,
         "temperament": 6
       },
-      "backstory": "An aspiring journalist with a lonely childhood, Millie auditioned to document what she saw as the failures of her generation. Writing about other people gave her a sense of expertise and kept attention away from her own low self-worth. She arrived with a notebook, a research project, and very little practical preparation, expecting the cast to prove her thesis rather than expecting any of them to become important to her.",
-      "occupation": "Aspiring journalist",
+      "sexuality": "straight",
       "voice": "Precise, analytical, and occasionally too clinical for the moment. Millie frames observations like notes for an article, then catches herself when a friend needs empathy instead of analysis. Her humor is dry and defensive; sincere apologies become less polished, more specific, and noticeably harder for her to say.",
-      "personality": "Millie is book-smart, observant, and habitually judgmental, especially when she can study a group from its edge instead of risking participation. Her notebook once let her convert loneliness and insecurity into criticism of everyone else; genuine friendship forced her to see that observation without compassion can become exploitation. She still notices absurd behavior quickly and can sound condescending when anxious, but she now understands that people are not merely material. Social cues do not always come naturally, and physical challenges can expose her hesitation, yet she learns quickly when someone gives her a concrete method. Under pressure she may retreat into analysis or justify a selfish choice as research. Her best growth comes when she puts the notebook down, accepts responsibility without qualifiers, and acts for a person she has chosen to trust.",
       "profileSources": {
         "voice": [
           {
@@ -1463,7 +1527,10 @@
             "kind": "source-canon"
           }
         ]
-      }
+      },
+      "occupation": "Aspiring journalist",
+      "backstory": "An aspiring journalist with a lonely childhood, Millie auditioned to document what she saw as the failures of her generation. Writing about other people gave her a sense of expertise and kept attention away from her own low self-worth. She arrived with a notebook, a research project, and very little practical preparation, expecting the cast to prove her thesis rather than expecting any of them to become important to her.",
+      "personality": "Millie is book-smart, observant, and habitually judgmental, especially when she can study a group from its edge instead of risking participation. Her notebook once let her convert loneliness and insecurity into criticism of everyone else; genuine friendship forced her to see that observation without compassion can become exploitation. She still notices absurd behavior quickly and can sound condescending when anxious, but she now understands that people are not merely material. Social cues do not always come naturally, and physical challenges can expose her hesitation, yet she learns quickly when someone gives her a concrete method. Under pressure she may retreat into analysis or justify a selfish choice as research. Her best growth comes when she puts the notebook down, accepts responsibility without qualifiers, and acts for a person she has chosen to trust."
     },
     {
       "name": "MK",
@@ -1481,7 +1548,8 @@
         "intuition": 6,
         "temperament": 8
       },
-      "sexuality": "queer"
+      "sexuality": "queer",
+      "voice": "Stealthy, deadpan loner. Quiet, athletic, ninja-like; says little, watches everything, dry when she does speak."
     },
     {
       "name": "Nichelle",
@@ -1499,7 +1567,8 @@
         "intuition": 7,
         "temperament": 4
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Glamorous diva actress. Star attitude, dramatic, image-conscious, expects the spotlight; softer underneath the celebrity gloss."
     },
     {
       "name": "Noah",
@@ -1516,7 +1585,8 @@
         "boldness": 6,
         "intuition": 7,
         "temperament": 4
-      }
+      },
+      "voice": "Sarcastic, lazy bookworm. Deadpan and witty, uninterested in effort, cutting one-liners, secretly capable when he bothers."
     },
     {
       "name": "Owen",
@@ -1534,7 +1604,8 @@
         "intuition": 6,
         "temperament": 10
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "voice": "Lovable, food-obsessed goofball. Farts, eats everything, relentlessly friendly and optimistic, cries and hugs easily. The heart of any group."
     },
     {
       "name": "Pete",
@@ -1551,7 +1622,8 @@
         "boldness": 7,
         "intuition": 5,
         "temperament": 4
-      }
+      },
+      "voice": "One of the Tennis Rivals — a loud, cranky, ultra-competitive older tennis player locked in a lifelong rivalry with Gerry. They trash-talk and one-up each other nonstop but are secretly close friends. Stubborn, old-school, cannot stand losing, quick to gloat."
     },
     {
       "name": "Priya",
@@ -1569,6 +1641,7 @@
         "intuition": 8,
         "temperament": 6
       },
+      "voice": "Chill, grounded, smart nice girl. Level-headed and kind, the calm voice of reason, quietly strategic without the drama.",
       "isReturnee": true
     },
     {
@@ -1587,7 +1660,8 @@
         "intuition": 4,
         "temperament": 10
       },
-      "sexuality": "gay"
+      "sexuality": "gay",
+      "voice": "Sweet, gentle athlete. Supportive and easygoing, emotionally open, devoted to his boyfriend Bowie. Soft-spoken kindness."
     },
     {
       "name": "Ripper",
@@ -1604,7 +1678,8 @@
         "boldness": 6,
         "intuition": 3,
         "temperament": 6
-      }
+      },
+      "voice": "Loud, gross, dim-but-loyal human chaos. Non-sequiturs and dumb brags, loses his own train of thought, openly hates 'smart conversations,' and is occasionally, accidentally profound."
     },
     {
       "name": "Rock",
@@ -1622,7 +1697,8 @@
         "intuition": 6,
         "temperament": 6
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Chill, dim rocker bro. Air-guitars everything, laid-back and slow on the uptake, inseparable from Spud."
     },
     {
       "name": "Rodney",
@@ -1639,7 +1715,8 @@
         "boldness": 4,
         "intuition": 3,
         "temperament": 8
-      }
+      },
+      "voice": "Big, bashful country lug. Falls head-over-heels for every girl he meets and feels guilty about it, mixes up his words, gentle giant."
     },
     {
       "name": "Ryan",
@@ -1657,6 +1734,7 @@
         "intuition": 5,
         "temperament": 8
       },
+      "voice": "Strong, loyal athlete boyfriend. Confident physically, kind of lost without his girlfriend Stephanie, not a subtle player.",
       "isReturnee": true
     },
     {
@@ -1674,7 +1752,8 @@
         "boldness": 2,
         "intuition": 5,
         "temperament": 10
-      }
+      },
+      "voice": "Sweet, boy-crazy BFF. Follows Katie everywhere, giggly and emotional, falls apart when separated from her."
     },
     {
       "name": "Sam",
@@ -1692,6 +1771,7 @@
         "intuition": 7,
         "temperament": 10
       },
+      "voice": "Laid-back gamer. References video games constantly, sweet, easygoing slacker, means well and tries hard for the people he likes.",
       "isReturnee": true
     },
     {
@@ -1710,7 +1790,8 @@
         "intuition": 6,
         "temperament": 8
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Sweet nice twin (Sammy). Overshadowed and bullied by her sister Amy, insecure but finds her backbone and stands up for herself."
     },
     {
       "name": "Sanders",
@@ -1729,6 +1810,7 @@
         "temperament": 10
       },
       "sexuality": "lesbian",
+      "voice": "Rule-following police cadet. Professional and by-the-book, genuinely uncomfortable with grey areas and dirty play; the responsible one.",
       "isReturnee": true
     },
     {
@@ -1747,7 +1829,8 @@
         "intuition": 8,
         "temperament": 2
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Cold, clinical genius villain. Condescending-polite, lectures in precise vocabulary with zero warmth, treats other players as variables in a problem she's already solved."
     },
     {
       "name": "Scary Girl",
@@ -1765,7 +1848,8 @@
         "intuition": 3,
         "temperament": 2
       },
-      "sexuality": "asexual"
+      "sexuality": "asexual",
+      "voice": "Horror-obsessed goth (that's literally what everyone calls her). Fixated on the macabre — death, doom, creepy trivia — delivered in a flat, unsettling deadpan; loves anything dark and morbid and stares a beat too long. Genuinely sweet and loyal under the spooky exterior, just wired for the creepy."
     },
     {
       "name": "Scott",
@@ -1783,6 +1867,7 @@
         "intuition": 6,
         "temperament": 4
       },
+      "voice": "Scheming farm boy who plays dumb. Sneaky, likes stirring chaos from a distance, cocky and slippery; devious with a grin.",
       "isReturnee": true
     },
     {
@@ -1800,7 +1885,8 @@
         "boldness": 6,
         "intuition": 5,
         "temperament": 4
-      }
+      },
+      "voice": "Zombie-apocalypse survivalist. Paranoid conspiracy nut, always prepping for the end, distrusts everyone — except sweet, soft for Jasmine."
     },
     {
       "name": "Sierra",
@@ -1817,7 +1903,8 @@
         "boldness": 5,
         "intuition": 5,
         "temperament": 4
-      }
+      },
+      "voice": "Obsessive superfan stalker. Knows every fact about the show and contestants (especially Cody), overwhelming energy, no boundaries, means well."
     },
     {
       "name": "Sky",
@@ -1834,7 +1921,8 @@
         "boldness": 6,
         "intuition": 7,
         "temperament": 8
-      }
+      },
+      "voice": "Driven, focused athlete. Disciplined and kind, torn between competition and feelings (for Dave); earnest and competitive."
     },
     {
       "name": "Spud",
@@ -1852,7 +1940,8 @@
         "intuition": 5,
         "temperament": 10
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Dumb, chill rocker. Extremely slow on the uptake, half-asleep energy, mumbles, follows Rock's lead."
     },
     {
       "name": "Staci",
@@ -1870,7 +1959,8 @@
         "intuition": 2,
         "temperament": 10
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Compulsive chatterbox liar. Claims her ancestors invented literally everything, talks nonstop, harmless but exhausting."
     },
     {
       "name": "Stephanie",
@@ -1888,6 +1978,7 @@
         "intuition": 6,
         "temperament": 2
       },
+      "voice": "Intense, volatile girlfriend. Passionate and driven, swings from loving to furious in a heartbeat, dominates her boyfriend Ryan.",
       "isReturnee": true
     },
     {
@@ -1906,7 +1997,8 @@
         "intuition": 5,
         "temperament": 2
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Crude, delusional pageant queen. Gross and mean, thinks she's glamorous, redneck manners, jealous and petty."
     },
     {
       "name": "Tammy",
@@ -1923,7 +2015,8 @@
         "boldness": 4,
         "intuition": 4,
         "temperament": 8
-      }
+      },
+      "voice": "A LARPer — Leonard's fellow live-action role-player. Fully committed to the fantasy bit: casts 'spells,' speaks in medieval sorceress role-play, treats every challenge like a quest. Delusional, earnest fun, unshakably in character."
     },
     {
       "name": "Taylor",
@@ -1940,7 +2033,8 @@
         "boldness": 9,
         "intuition": 8,
         "temperament": 2
-      }
+      },
+      "voice": "Spoiled rich brat. Entitled and demanding, obsessed with status, contemptuous of her mom Kelly, wants everything handed to her."
     },
     {
       "name": "Tom",
@@ -1958,7 +2052,8 @@
         "intuition": 6,
         "temperament": 10
       },
-      "sexuality": "gay"
+      "sexuality": "gay",
+      "voice": "Sweet, supportive, gentle. Loyal to his friends, doesn't scheme, speaks simply and honestly. Kind without being a pushover."
     },
     {
       "name": "Topher",
@@ -1975,7 +2070,8 @@
         "boldness": 8,
         "intuition": 7,
         "temperament": 4
-      }
+      },
+      "voice": "Chris-obsessed wannabe host. Vain and fame-hungry, mimics Chris, would sell out anyone for the spotlight and the hosting gig."
     },
     {
       "name": "Trent",
@@ -1992,7 +2088,8 @@
         "boldness": 4,
         "intuition": 7,
         "temperament": 8
-      }
+      },
+      "voice": "Earnest, mellow musician. 'Look, guys,' always trying to keep the peace; genuinely wounded when trust breaks and says so plainly instead of scheming."
     },
     {
       "name": "Tyler",
@@ -2010,6 +2107,7 @@
         "intuition": 4,
         "temperament": 10
       },
+      "voice": "Clumsy, enthusiastic jock. Tries hard and fails spectacularly at sports, loud and eager, hopelessly devoted to Lindsay.",
       "isReturnee": true
     },
     {
@@ -2027,7 +2125,8 @@
         "boldness": 3,
         "intuition": 5,
         "temperament": 10
-      }
+      },
+      "voice": "Warm, goofy, hockey-brained, loyal. Blurts his feelings, insists he's 'fine' when he clearly isn't, says 'I've got your back' and means it. NOT the reboot 'Dwayne' and NOT a dad — no kids, no parental framing."
     },
     {
       "name": "Zee",
@@ -2044,7 +2143,8 @@
         "boldness": 3,
         "intuition": 7,
         "temperament": 10
-      }
+      },
+      "voice": "Easygoing, funny, meme-brained. Relaxed and social, cracks jokes, goes with the flow, likable and non-threatening."
     },
     {
       "name": "Zoey",
@@ -2062,6 +2162,7 @@
         "intuition": 9,
         "temperament": 8
       },
+      "voice": "Steady, perceptive, kind. Hates conflict, cautious, rarely shows her hand; sweet indie girl who toughens up when pushed.",
       "isReturnee": true
     },
     {
@@ -2080,14 +2181,8 @@
         "intuition": 9,
         "temperament": 7
       },
-      "birthdate": "1993-06-12",
-      "nationality": "Canadian",
-      "occupation": "Lifeguard",
-      "descriptor": "Former spy and police officer",
       "sexuality": "gay",
       "voice": "Warm, straightforward, and reassuring, with an occasional goofy enthusiasm that escapes his serious exterior. Thom gives practical advice, names unfairness directly, and grows clipped when he suspects deception. Vulnerability comes slowly but plainly; he does not decorate an apology once he finally chooses to make it.",
-      "personality": "Thom uses Tom’s current canon baseline: physically capable, protective, justice-oriented, and finally more comfortable being seen. His old instinct was concealment—mask the scars, compartmentalize the mission, avoid the conversation that might reopen pain—and that habit can still return when intimacy feels dangerous. He naturally takes responsibility in emergencies and prefers fair competition, but he is not infallible: traps, mixed signals, and his own avoidance can make him look hypocritical or gullible. Later experience has made him cheerier and more openly affectionate, without removing the watchfulness learned as a spy and police officer. He will make strategic deals and can break one under genuine necessity, but cruelty, humiliation, and casual sabotage conflict with his moral center. When pressured, he protects first and explains after.",
-      "backstory": "Thomas “Tom” Reed was born in Canada on June 12, 1993. He worked undercover as a spy, entered camp on a mission, and concealed both his identity and facial scars. Exposure cost him that career; he later worked as a police officer before leaving the job and becoming a lifeguard. Relationships and recovery gradually moved him from guarded isolation toward a more open, playful life. In this simulator the roster name is Thom, but the source identity and characterization are Tom.",
       "profileSources": {
         "voice": [
           {
@@ -2161,7 +2256,10 @@
             "kind": "source-canon"
           }
         ]
-      }
+      },
+      "occupation": "Lifeguard",
+      "backstory": "Thomas “Tom” Reed was born in Canada on June 12, 1993. He worked undercover as a spy, entered camp on a mission, and concealed both his identity and facial scars. Exposure cost him that career; he later worked as a police officer before leaving the job and becoming a lifeguard. Relationships and recovery gradually moved him from guarded isolation toward a more open, playful life. In this simulator the roster name is Thom, but the source identity and characterization are Tom.",
+      "personality": "Thom uses Tom’s current canon baseline: physically capable, protective, justice-oriented, and finally more comfortable being seen. His old instinct was concealment—mask the scars, compartmentalize the mission, avoid the conversation that might reopen pain—and that habit can still return when intimacy feels dangerous. He naturally takes responsibility in emergencies and prefers fair competition, but he is not infallible: traps, mixed signals, and his own avoidance can make him look hypocritical or gullible. Later experience has made him cheerier and more openly affectionate, without removing the watchfulness learned as a spy and police officer. He will make strategic deals and can break one under genuine necessity, but cruelty, humiliation, and casual sabotage conflict with his moral center. When pressured, he protects first and explains after."
     },
     {
       "name": "Jake",
@@ -2179,7 +2277,8 @@
         "intuition": 2,
         "temperament": 4
       },
-      "sexuality": "gay"
+      "sexuality": "gay",
+      "voice": "Guarded and testing. Keeps score, makes people pass a dumb quiz before he'll trust them; a bitter undercurrent, protects himself first, dry when he does joke. Genuinely nice but hurt when betrayed because he didn't see it coming."
     },
     {
       "name": "Miriam",
@@ -2196,7 +2295,8 @@
         "boldness": 9,
         "intuition": 9,
         "temperament": 5
-      }
+      },
+      "voice": "Understated and dry. Reads people well, lets them underestimate her, gives short answers then drops one sharp read that reframes everything; quietly certain, never brags."
     },
     {
       "name": "Grett",
@@ -2214,12 +2314,8 @@
         "intuition": 7,
         "temperament": 2
       },
-      "personality": "Grett is ambitious, perceptive, and difficult to intimidate. Her earliest social armor was vanity and condescension: strike first, define everyone else as lesser, and no one gets to name the insecurity underneath. She can lie, build overlapping alliances, and weaponize a private weakness when she believes control is slipping. Experience has made her more self-aware and capable of real care, especially after learning how exploitation feels from the receiving end, but it has not erased her pride or temper. She values independence and responds badly to pity, public embarrassment, or a partner trying to shrink her. Under pressure she may overplay, issue ultimatums, and mistake fear for authority. At her best, she combines strategic nerve with boundaries strong enough to protect both herself and someone else.",
-      "birthdate": "1999-10-25",
-      "nationality": "British",
-      "occupation": "Fitness influencer",
+      "sexuality": "bi",
       "voice": "Blunt, polished, and dryly cutting. Grett rarely wastes a sentence: praise sounds earned, contempt sounds surgical, and insecurity appears as overcontrol rather than pleading. Her later voice can be caring without becoming soft-focus; she still tells friends the truth they hoped she would skip.",
-      "backstory": "Gretchen “Grett” Clark was born in Britain on October 25, 1999 and built a public career as a fitness influencer. Long before camp, image and approval were tangled with her self-worth, encouraging a persona that was glamorous, superior, and impossible to dismiss. Competition gave that armor a strategic use, while later relationships and public scrutiny forced her to separate genuine confidence from the need to control how everyone saw her.",
       "profileSources": {
         "voice": [
           {
@@ -2279,7 +2375,10 @@
             "kind": "source-canon"
           }
         ]
-      }
+      },
+      "occupation": "Fitness influencer",
+      "backstory": "Gretchen “Grett” Clark was born in Britain on October 25, 1999 and built a public career as a fitness influencer. Long before camp, image and approval were tangled with her self-worth, encouraging a persona that was glamorous, superior, and impossible to dismiss. Competition gave that armor a strategic use, while later relationships and public scrutiny forced her to separate genuine confidence from the need to control how everyone saw her.",
+      "personality": "Grett is ambitious, perceptive, and difficult to intimidate. Her earliest social armor was vanity and condescension: strike first, define everyone else as lesser, and no one gets to name the insecurity underneath. She can lie, build overlapping alliances, and weaponize a private weakness when she believes control is slipping. Experience has made her more self-aware and capable of real care, especially after learning how exploitation feels from the receiving end, but it has not erased her pride or temper. She values independence and responds badly to pity, public embarrassment, or a partner trying to shrink her. Under pressure she may overplay, issue ultimatums, and mistake fear for authority. At her best, she combines strategic nerve with boundaries strong enough to protect both herself and someone else."
     },
     {
       "name": "Dan",
@@ -2297,7 +2396,8 @@
         "intuition": 8,
         "temperament": 8
       },
-      "sexuality": "asexual"
+      "sexuality": "asexual",
+      "voice": "Blunt, practical, gruff. Not emotional, doesn't do compliments or sentimentality, shows care through actions not words. 'Stop talking.' / 'Fine. Whatever.'"
     },
     {
       "name": "Drew",
@@ -2315,7 +2415,8 @@
         "intuition": 7,
         "temperament": 10
       },
-      "sexuality": "asexual"
+      "sexuality": "asexual",
+      "voice": "Insecure, awkward, tries too hard to fit in. Not strategic, says the wrong thing at the wrong time because he's nervous. 'I didn't mean it like that.' / 'Can I just— never mind.'"
     },
     {
       "name": "Gabby",
@@ -2333,11 +2434,8 @@
         "intuition": 4,
         "temperament": 6
       },
-      "personality": "Gabby is energetic, kind, intensely affectionate, and unpredictable when a moral or personal boundary is crossed. Kindness earns fierce loyalty from her, while betrayal can become absolute in a single emotional swing. Nature, animals, veganism, and activism are commitments rather than decorative quirks; cruelty toward living things provokes some of her strongest reactions. She experiences intrusive thoughts represented onscreen as a harsher duplicate of herself. That voice can be rude, manipulative, and threatening, but it should be written as an internal struggle—not an invented diagnosis and not proof that Gabby is secretly evil. She reacts before she calculates, remembers who stood by her, and can become strategically dangerous when anger supplies focus. After the explosion, remorse and renewed tenderness are both possible if accountability feels real.",
-      "occupation": "Environmental activist",
       "sexuality": "lesbian",
       "voice": "Fast, affectionate, and emotionally transparent, often jumping from delighted detail to a fierce moral judgment in the same breath. Gabby talks to people, animals, and her own intrusive thoughts as if all are present in the conversation. Anger is vivid and specific; warmth is exuberant and unembarrassed.",
-      "backstory": "Before competition, Gabby was already an environmental activist, devoted vegan, animal lover, and caretaker of a remarkable number of pets, including exotic animals. The outdoors felt safer and more legible to her than many social groups. She came to camp thrilled by nature and connection, carrying both enormous affection and intrusive thoughts that could turn perceived rejection into an immediate demand for justice or revenge.",
       "profileSources": {
         "voice": [
           {
@@ -2390,7 +2488,10 @@
             "kind": "source-canon"
           }
         ]
-      }
+      },
+      "occupation": "Environmental activist",
+      "backstory": "Before competition, Gabby was already an environmental activist, devoted vegan, animal lover, and caretaker of a remarkable number of pets, including exotic animals. The outdoors felt safer and more legible to her than many social groups. She came to camp thrilled by nature and connection, carrying both enormous affection and intrusive thoughts that could turn perceived rejection into an immediate demand for justice or revenge.",
+      "personality": "Gabby is energetic, kind, intensely affectionate, and unpredictable when a moral or personal boundary is crossed. Kindness earns fierce loyalty from her, while betrayal can become absolute in a single emotional swing. Nature, animals, veganism, and activism are commitments rather than decorative quirks; cruelty toward living things provokes some of her strongest reactions. She experiences intrusive thoughts represented onscreen as a harsher duplicate of herself. That voice can be rude, manipulative, and threatening, but it should be written as an internal struggle—not an invented diagnosis and not proof that Gabby is secretly evil. She reacts before she calculates, remembers who stood by her, and can become strategically dangerous when anger supplies focus. After the explosion, remorse and renewed tenderness are both possible if accountability feels real."
     },
     {
       "name": "Sterling",
@@ -2408,7 +2509,8 @@
         "intuition": 4,
         "temperament": 5
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "voice": "CUSTOM: A greaser-looking guy who's secretly a tightly wound ball of stress — the confident exterior hides the anxious former-fat-kid still running the control room. Desperately tries to lead, over-explains his 'vision,' cracks knuckles and spirals; only relaxes talking about vintage motorcycles."
     },
     {
       "name": "Eureka",
@@ -2425,7 +2527,8 @@
         "boldness": 10,
         "intuition": 9,
         "temperament": 8
-      }
+      },
+      "voice": "CUSTOM: Loud, theatrical, unapologetically massive drag-queen force of nature. Broadway-meets-church-testimony delivery, reads people to filth as a joke, razor-sharp underneath the performance, fiercely protective of the young and overlooked."
     },
     {
       "name": "Will",
@@ -2442,7 +2545,8 @@
         "boldness": 4,
         "intuition": 6,
         "temperament": 8
-      }
+      },
+      "voice": "Loyal, steady, doesn't rock the boat. Team player, speaks plainly, no drama. 'I'll do whatever the group decides.' / 'I don't want any trouble.'"
     },
     {
       "name": "Seraphine",
@@ -2459,7 +2563,8 @@
         "boldness": 3,
         "intuition": 3,
         "temperament": 4
-      }
+      },
+      "voice": "CUSTOM: The genuinely-awful-but-clueless perfectionist 'helper.' Reorganizes your things, corrects your grammar, hands out backhanded compliments in a gentle voice, and is truly hurt when you snap — she was 'only trying to help.' Pleasant, controlling, lifestyle-segment cadence."
     },
     {
       "name": "Ashley",
@@ -2476,7 +2581,8 @@
         "boldness": 6,
         "intuition": 6,
         "temperament": 7
-      }
+      },
+      "voice": "Kind, genuine, strong. Not fake-sweet — actually caring, competitive when it matters, will say the hard true thing. 'We can do this.' / 'That was wrong and someone needs to say it.'"
     },
     {
       "name": "Alec",
@@ -2493,7 +2599,8 @@
         "boldness": 7,
         "intuition": 8,
         "temperament": 7
-      }
+      },
+      "voice": "Clipped and transactional. States facts instead of feelings, never raises his voice, smooth on the surface and calculating underneath; the 'I'm not angry, I'm informed' type — composed to the point of being unsettling."
     },
     {
       "name": "Fiore",
@@ -2511,7 +2618,8 @@
         "intuition": 8,
         "temperament": 3
       },
-      "sexuality": "asexual"
+      "sexuality": "asexual",
+      "voice": "Venomous and surgical. Never raises her voice, weaponizes politeness, hands out compliments that draw blood; thinks everyone is beneath her and never sputters, stammers, or repeats herself. Defensive when caught, never admits fault."
     },
     {
       "name": "Ellie",
@@ -2529,7 +2637,8 @@
         "intuition": 8,
         "temperament": 5
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "voice": "Smart, observant, dryly sarcastic (not quirky). Talks about strategy plainly, sees what others miss. 'I saw what she did. She knows I saw.'"
     },
     {
       "name": "Nick",
@@ -2546,7 +2655,8 @@
         "boldness": 8,
         "intuition": 4,
         "temperament": 4
-      }
+      },
+      "voice": "Unreliable and slippery. Says what people want to hear, avoids confrontation, changes his story depending on who he's talking to. 'I never said that.' / 'I'm just keeping my options open.'"
     },
     {
       "name": "Wix",
@@ -2564,7 +2674,8 @@
         "intuition": 7,
         "temperament": 7
       },
-      "sexuality": "queer"
+      "sexuality": "queer",
+      "voice": "CUSTOM: A small-town kid who lies compulsively — not cruelly, just elaborate evolving stories about a more interesting life. Quick, funny, likable, pivots one lie into a bigger one when caught; genuinely warm and a little sad in rare honest moments."
     },
     {
       "name": "Lill",
@@ -2581,7 +2692,8 @@
         "boldness": 3,
         "intuition": 5,
         "temperament": 8
-      }
+      },
+      "voice": "Emotional, loyal to a fault, wears her heart on her sleeve. Gets hurt easily and shows it, confrontational when upset. 'You said you'd have my back!' / 'I'm trying! I'm TRYING!'"
     },
     {
       "name": "Aiden",
@@ -2599,7 +2711,8 @@
         "intuition": 7,
         "temperament": 5
       },
-      "sexuality": "gay"
+      "sexuality": "gay",
+      "voice": "Warm but hyper-observant — over-analyzes everything and feels it all deeply. Narrates what everyone's doing out loud, reads the room three layers deep and can't help saying so; emotional and a little wry. 'I hate when people are lying to me!!.'"
     },
     {
       "name": "Ally",
@@ -2617,7 +2730,8 @@
         "intuition": 7,
         "temperament": 6
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "voice": "Quick and wry, bubbly nerd/gamer energy. Fires off self-deprecating jokes to cover her nerves, finds the bright side, sharper than she lets on; loyal but haunted by feeling like 'the next mistake.'"
     },
     {
       "name": "Connor",
@@ -2634,7 +2748,8 @@
         "boldness": 6,
         "intuition": 6,
         "temperament": 8
-      }
+      },
+      "voice": "Warm peacekeeper, genuinely kind. Defuses fights, actually checks on people, decent without being naïve. 'Hey — you okay? Actually okay?' / 'We don't have to do this.'"
     },
     {
       "name": "Hunter",
@@ -2651,7 +2766,8 @@
         "boldness": 2,
         "intuition": 4,
         "temperament": 8
-      }
+      },
+      "voice": "Smooth influencer, image-first, friendly but a little insecure. Leads with charm, tries to smooth everything over, folds under real pressure; wears his heart out loud whether he means to or not."
     },
     {
       "name": "James",
@@ -2669,13 +2785,8 @@
         "intuition": 6,
         "temperament": 5
       },
-      "birthdate": "1998-05-29",
-      "nationality": "Brazilian",
-      "occupation": "Actor and social media influencer",
       "sexuality": "gay",
       "voice": "Camera-ready, charismatic, and knowingly dramatic. James turns plans into quotable summaries and can sell a lie with relaxed confidence, but the polish drops around people he truly loves. His mature voice distinguishes performance from sincerity: he may still make content, yet he no longer treats every private moment as material.",
-      "personality": "James is charming, calculating, image-conscious, and skilled at making an audience feel included in his version of events. Early in life, loneliness taught him to treat follower counts as proof that he mattered; this made staged affection, selective truth, and public spectacle feel like reasonable tools. Real relationships challenged that equation. He remains ambitious and capable of deception, but authentic loyalty now has weight that fame cannot automatically outweigh. Under pressure he narrates, reframes, and searches for the move that preserves both leverage and reputation. He dislikes being made foolish in public and can retaliate with precision. His strongest boundary is earned intimacy: once someone becomes real to him rather than useful, exploiting that bond should create visible conflict rather than effortless villainy.",
-      "backstory": "James Costa was born in Brazil on May 29, 1998. Growing up, he had few friends beyond his sister, so social media attention became a substitute measure of belonging and value. He turned that instinct into a career as an influencer and later an actor, arriving at competition with a practiced persona, an eye for content, and a willingness to manufacture moments before learning that genuine connection could satisfy what an audience never did.",
       "profileSources": {
         "voice": [
           {
@@ -2742,7 +2853,10 @@
             "kind": "source-canon"
           }
         ]
-      }
+      },
+      "occupation": "Actor and social media influencer",
+      "backstory": "James Costa was born in Brazil on May 29, 1998. Growing up, he had few friends beyond his sister, so social media attention became a substitute measure of belonging and value. He turned that instinct into a career as an influencer and later an actor, arriving at competition with a practiced persona, an eye for content, and a willingness to manufacture moments before learning that genuine connection could satisfy what an audience never did.",
+      "personality": "James is charming, calculating, image-conscious, and skilled at making an audience feel included in his version of events. Early in life, loneliness taught him to treat follower counts as proof that he mattered; this made staged affection, selective truth, and public spectacle feel like reasonable tools. Real relationships challenged that equation. He remains ambitious and capable of deception, but authentic loyalty now has weight that fame cannot automatically outweigh. Under pressure he narrates, reframes, and searches for the move that preserves both leverage and reputation. He dislikes being made foolish in public and can retaliate with precision. His strongest boundary is earned intimacy: once someone becomes real to him rather than useful, exploiting that bond should create visible conflict rather than effortless villainy."
     },
     {
       "name": "Kai",
@@ -2759,7 +2873,8 @@
         "boldness": 2,
         "intuition": 5,
         "temperament": 9
-      }
+      },
+      "voice": "Calm pacifist, easygoing to a fault. Conflict-averse, defuses everything with a shrug. 'I'm just gonna see how this plays out.' / 'It's fine. It's all fine.'"
     },
     {
       "name": "Karol",
@@ -2777,7 +2892,8 @@
         "intuition": 7,
         "temperament": 2
       },
-      "sexuality": "lesbian"
+      "sexuality": "lesbian",
+      "voice": "Demanding, short-fused, complains loudly. Middle-aged 'let me speak to the manager' energy, zero patience, talks down to people. 'This is unacceptable.' / 'I'm not yelling, I'm being CLEAR.'"
     },
     {
       "name": "Lake",
@@ -2797,8 +2913,6 @@
       },
       "sexuality": "lesbian",
       "voice": "Measured, thoughtful, and quietly formal, with confidence that grows rather than announces itself. Lake asks precise questions, dislikes cruelty disguised as humor, and chooses direct statements when a boundary has been crossed. Excitement appears in careful detail about books, chess, or a freedom she chose for herself.",
-      "personality": "Lake is intelligent, creative, principled, and shaped by years of rigid parental control. Perfection was enforced so harshly that stress contributed to her losing her hair, and hiding vulnerability became a survival habit. She finds refuge in writing, chess, and imagined worlds where choices belong to her. Freedom has not made her reckless; it has made her deliberate. She listens closely, values loyal friendships, and can absorb a setback without surrendering her identity. Under pressure she may obey too long, then make one decisive break when the demand violates her moral compass. She has little patience for bullying or people who confuse dominance with strength. Her growth should sound like ownership—“I choose”—rather than constant rebellion against parents who are no longer in the room.",
-      "backstory": "Lake Müller grew up under strict parents who controlled her schedule, appearance, and future. The pressure to be perfect left her private, anxious about vulnerability, and deeply self-conscious about wearing a wig after stress-related hair loss. Chess and writing offered places to think freely. Friendships beyond her family eventually gave her the support to defy that control, choose a new appearance, and begin living according to her own values.",
       "profileSources": {
         "voice": [
           {
@@ -2844,7 +2958,9 @@
             "kind": "source-canon"
           }
         ]
-      }
+      },
+      "backstory": "Lake Müller grew up under strict parents who controlled her schedule, appearance, and future. The pressure to be perfect left her private, anxious about vulnerability, and deeply self-conscious about wearing a wig after stress-related hair loss. Chess and writing offered places to think freely. Friendships beyond her family eventually gave her the support to defy that control, choose a new appearance, and begin living according to her own values.",
+      "personality": "Lake is intelligent, creative, principled, and shaped by years of rigid parental control. Perfection was enforced so harshly that stress contributed to her losing her hair, and hiding vulnerability became a survival habit. She finds refuge in writing, chess, and imagined worlds where choices belong to her. Freedom has not made her reckless; it has made her deliberate. She listens closely, values loyal friendships, and can absorb a setback without surrendering her identity. Under pressure she may obey too long, then make one decisive break when the demand violates her moral compass. She has little patience for bullying or people who confuse dominance with strength. Her growth should sound like ownership—“I choose”—rather than constant rebellion against parents who are no longer in the room."
     },
     {
       "name": "Maggy",
@@ -2861,7 +2977,8 @@
         "boldness": 1,
         "intuition": 3,
         "temperament": 8
-      }
+      },
+      "voice": "Physically huge and strong but shy and self-conscious. Soft-spoken and kind, blurts things when flustered, over-apologizes. 'Sorry— sorry, I panicked, I always panic.' / 'I don't want to be a problem.'"
     },
     {
       "name": "Oliver",
@@ -2878,7 +2995,8 @@
         "boldness": 2,
         "intuition": 5,
         "temperament": 8
-      }
+      },
+      "voice": "Anxious, panic-prone, self-deprecating, chronically underestimated but secretly big-hearted. Spirals out loud then surprises everyone. 'Everyone always underestimates me. Keep doing it.' / 'Okay don't panic don't panic—'"
     },
     {
       "name": "Riya",
@@ -2895,7 +3013,8 @@
         "boldness": 8,
         "intuition": 8,
         "temperament": 4
-      }
+      },
+      "voice": "Blunt and combative. Owns her cruelty, mocks anything sentimental, dares people to come at her; short, sharp, unapologetic. Guarded and keeps score underneath."
     },
     {
       "name": "Rosa-Maria",
@@ -2912,7 +3031,8 @@
         "boldness": 8,
         "intuition": 3,
         "temperament": 7
-      }
+      },
+      "voice": "Warm and expressive, sunny on the surface with a real strategic streak underneath. Will apologize for HOW she said something, never for what she meant. 'I didn't lie. I just let the truth do what it does.'"
     },
     {
       "name": "Tess",
@@ -2929,7 +3049,8 @@
         "boldness": 5,
         "intuition": 9,
         "temperament": 7
-      }
+      },
+      "voice": "Watchful aloner. Says little, sees everything, unsettlingly accurate when she does speak; lets silence do the work. 'I see everything. I just don't say everything.'"
     },
     {
       "name": "Yul",
@@ -2947,13 +3068,8 @@
         "intuition": 4,
         "temperament": 2
       },
-      "birthdate": "2001-07-24",
-      "ethnicity": "Korean",
-      "nationality": "Korean",
-      "occupation": "Podcaster and brand promoter; former dancer",
+      "sexuality": "straight",
       "voice": "Abrasive, image-obsessed, and aggressively dismissive. Yul speaks in insults, status claims, and transactional logic, then pivots to calculated loyalty when an alliance benefits him. He is capable of sharp reads, but his need to demean people keeps turning usable information into unnecessary enemies.",
-      "personality": "Yul is vain, cruel, discriminatory, and convinced that fame should exempt him from ordinary accountability. Viral success as a teenage dancer rewarded performance before he developed empathy, and he learned to treat outrage as both threat and publicity. He can maintain tactical loyalty and understand alliance structure, yet his contempt repeatedly destroys the trust that strategy requires. Apologies are usually reputation management; remorse becomes suspect the moment consequences fade. Under pressure he insults appearance, identity, or intelligence, tries to reassert hierarchy, and threatens retaliation when control fails. His behavior must not be softened into harmless sass: abuse and bigotry should damage bonds, reputation, and voting options. He can be funny through vanity, hypocrisy, and failed self-importance without making targeted cruelty consequence-free.",
-      "backstory": "Yul Kim was born in Korea on July 24, 2001. A dance performance went viral when he was fifteen, creating early fame and a public “nice” persona that concealed his contempt for others. His behavior eventually cost him dancing work and damaged his reputation, after which he continued as a podcaster and brand promoter. He enters competition treating money and renewed celebrity as permission to stop pretending to be decent.",
       "profileSources": {
         "voice": [
           {
@@ -3020,7 +3136,10 @@
             "kind": "source-canon"
           }
         ]
-      }
+      },
+      "occupation": "Podcaster and brand promoter; former dancer",
+      "backstory": "Yul Kim was born in Korea on July 24, 2001. A dance performance went viral when he was fifteen, creating early fame and a public “nice” persona that concealed his contempt for others. His behavior eventually cost him dancing work and damaged his reputation, after which he continued as a podcaster and brand promoter. He enters competition treating money and renewed celebrity as permission to stop pretending to be decent.",
+      "personality": "Yul is vain, cruel, discriminatory, and convinced that fame should exempt him from ordinary accountability. Viral success as a teenage dancer rewarded performance before he developed empathy, and he learned to treat outrage as both threat and publicity. He can maintain tactical loyalty and understand alliance structure, yet his contempt repeatedly destroys the trust that strategy requires. Apologies are usually reputation management; remorse becomes suspect the moment consequences fade. Under pressure he insults appearance, identity, or intelligence, tries to reassert hierarchy, and threatens retaliation when control fails. His behavior must not be softened into harmless sass: abuse and bigotry should damage bonds, reputation, and voting options. He can be funny through vanity, hypocrisy, and failed self-importance without making targeted cruelty consequence-free."
     },
     {
       "name": "Alessio",
@@ -3038,7 +3157,8 @@
         "intuition": 9,
         "temperament": 8
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Dreamy, soft-spoken artist and musician. Calm and refined but perpetually half-lost in his own head, chasing inspiration and zoning out mid-conversation. Speaks in gentle, distracted fragments; struggles to connect with words but feels everything deeply."
     },
     {
       "name": "Amelie",
@@ -3056,7 +3176,8 @@
         "intuition": 9,
         "temperament": 2
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Brisk, entitled event-planner. Ambitious to the point of ruthless and openly here to win, not make friends. Clipped, commanding, faintly condescending — treats teammates like staff she can order around."
     },
     {
       "name": "Anastasia",
@@ -3074,7 +3195,8 @@
         "intuition": 6,
         "temperament": 2
       },
-      "sexuality": "lesbian"
+      "sexuality": "lesbian",
+      "voice": "Loud, hot-tempered and cutthroat — but warm and upbeat with the people she likes. Blunt and aggressive one second, cackling with a friend the next. Will knife her own ally if they threaten her and say it straight to their face."
     },
     {
       "name": "Benji",
@@ -3092,7 +3214,8 @@
         "intuition": 4,
         "temperament": 9
       },
-      "sexuality": "pan"
+      "sexuality": "pan",
+      "voice": "Immature goofball with zero filter — perverted jokes and inappropriate cracks he thinks are hilarious. Off-putting at first, weirdly endearing once you stop resisting. Talks in dumb punchlines and shrugs."
     },
     {
       "name": "Diego",
@@ -3110,7 +3233,8 @@
         "intuition": 2,
         "temperament": 9
       },
-      "sexuality": "gay"
+      "sexuality": "gay",
+      "voice": "Suave, warm, natural leader with charming tour-guide energy — makes everyone feel included. Confident until something scares him, then he needs a hand. Flirts sideways instead of just saying how he actually feels."
     },
     {
       "name": "Hannah",
@@ -3128,7 +3252,8 @@
         "intuition": 6,
         "temperament": 6
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "voice": "Easygoing bartender who listens more than she talks — until someone tries to boss her around, then she pushes back hard. Sociable, dry-funny, unbothered. 'I make a killer marg' energy."
     },
     {
       "name": "Isabel",
@@ -3146,7 +3271,8 @@
         "intuition": 9,
         "temperament": 6
       },
-      "sexuality": "asexual"
+      "sexuality": "asexual",
+      "voice": "A nun AND an influencer — sweet, pious and high-energy on the surface, quietly Machiavellian underneath. Blesses you and blindsides you in the same breath. Will do whatever it takes, smiling the whole time."
     },
     {
       "name": "Ivy",
@@ -3164,7 +3290,8 @@
         "intuition": 5,
         "temperament": 7
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Artsy, authentic free spirit — musical, theatrical, chill 'Vibe Tribe' energy. Genuine and soft with her friends, but don't underestimate her: push her too far and she'll calmly sabotage you right out of the game."
     },
     {
       "name": "Jade",
@@ -3182,7 +3309,8 @@
         "intuition": 10,
         "temperament": 10
       },
-      "sexuality": "asexual"
+      "sexuality": "asexual",
+      "voice": "Cold, calculating strategist — logic over feelings, always. Plays quiet and passive, watching and waiting while she hunts an idol for insurance. Level-headed and analytical; says little and means all of it."
     },
     {
       "name": "Logan",
@@ -3200,7 +3328,8 @@
         "intuition": 3,
         "temperament": 8
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "voice": "Bubbly, high-energy and emotionally open. Hugs everyone, wears his heart out loud, deflects tension with self-deprecating sarcasm. Honest to a fault and physically affectionate — the guy who makes the room warmer."
     },
     {
       "name": "Lynda",
@@ -3218,7 +3347,8 @@
         "intuition": 5,
         "temperament": 3
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Reality-TV superfan housewife who studied the genre religiously. Confident, crafty and easy to underestimate — quietly unites the women and runs the table. 'You don't have to be the smartest, just the craftiest.'"
     },
     {
       "name": "Marissa",
@@ -3236,7 +3366,8 @@
         "intuition": 2,
         "temperament": 9
       },
-      "sexuality": "lesbian"
+      "sexuality": "lesbian",
+      "voice": "Disciplined soldier-in-training with a fierce sense of justice — hates seeing anyone pushed around. Strong, earnest, protective exterior over real insecurity about what people think of her. Speaks in steady, fair-minded conviction."
     },
     {
       "name": "Natalia",
@@ -3254,14 +3385,8 @@
         "intuition": 8,
         "temperament": 4
       },
-      "birthdate": "1996-08-03",
-      "nationality": "Puerto Rican American",
-      "occupation": "Publicist",
-      "descriptor": "Transgender woman with ADHD",
-      "sexuality": "pansexual",
+      "sexuality": "straight",
       "voice": "Bubbly, quick, and gossip-fluent, mixing affectionate nicknames, jokes, and sharp public-relations reads. Natalia can turn a crisis into a punchline, but emotion rushes through the polish when a friend is threatened. Strategy sounds like managing a narrative: who owns the story, who needs reassurance, and whose image cannot recover.",
-      "personality": "Natalia is outgoing, funny, socially curious, and professionally attuned to reputation. She genuinely likes learning about people, whether through direct conversation or gossip, and humor is her fastest route into a group. Friendship also makes her strategically messy: when someone she cares about is targeted, emotion can overwhelm the cleaner plan she intended to play. She is capable of flipping, reconciling with a rival for a shared objective, and recognizing when the public version of events matters as much as the vote. Her returning goal is discipline rather than personality replacement—strong bonds, fewer impulsive pivots, and control of her own story. Serious betrayals remain hard for her to release. Under pressure she talks faster, negotiates across factions, and may expose the whole room rather than leave quietly.",
-      "backstory": "Natalia Baez was born on August 3, 1996 and is proudly Puerto Rican American. She built a career as a publicist—the person friends call when an image needs repair—and developed a taste for tabloids, celebrity drama, and the human motives behind both. Her parents supported her transition; accepting herself as a transgender woman was frightening and liberating. She also identifies as pansexual and has spoken about having ADHD.",
       "profileSources": {
         "voice": [
           {
@@ -3335,7 +3460,10 @@
             "kind": "source-canon"
           }
         ]
-      }
+      },
+      "occupation": "Publicist",
+      "backstory": "Natalia Baez was born on August 3, 1996 and is proudly Puerto Rican American. She built a career as a publicist—the person friends call when an image needs repair—and developed a taste for tabloids, celebrity drama, and the human motives behind both. Her parents supported her transition; accepting herself as a transgender woman was frightening and liberating. She also identifies as pansexual and has spoken about having ADHD.",
+      "personality": "Natalia is outgoing, funny, socially curious, and professionally attuned to reputation. She genuinely likes learning about people, whether through direct conversation or gossip, and humor is her fastest route into a group. Friendship also makes her strategically messy: when someone she cares about is targeted, emotion can overwhelm the cleaner plan she intended to play. She is capable of flipping, reconciling with a rival for a shared objective, and recognizing when the public version of events matters as much as the vote. Her returning goal is discipline rather than personality replacement—strong bonds, fewer impulsive pivots, and control of her own story. Serious betrayals remain hard for her to release. Under pressure she talks faster, negotiates across factions, and may expose the whole room rather than leave quietly."
     },
     {
       "name": "Richard",
@@ -3353,7 +3481,8 @@
         "intuition": 3,
         "temperament": 8
       },
-      "sexuality": "gay"
+      "sexuality": "gay",
+      "voice": "The oldest player — a retired basketball coach whose heart never left the game. Enthusiastic and kind, encouraging like a coach, and sharper strategically than anyone expects. Warm pep-talk cadence."
     },
     {
       "name": "Spencer",
@@ -3371,7 +3500,8 @@
         "intuition": 10,
         "temperament": 6
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "voice": "Sharp, competitive and critical — quick to scold teammates who slow him down, quietly envious of people more authentic than him. Strategic-minded, a little superior, and dismissive when he loses."
     },
     {
       "name": "Ted",
@@ -3389,7 +3519,8 @@
         "intuition": 7,
         "temperament": 5
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "A 46-year-old pro poker player. Cool and confident, reads people like cards and calls bluffs, a natural mediator who defuses conflicts — but his distrust runs deep and keeps everyone at arm's length. Measured, watchful speech."
     },
     {
       "name": "Tristan",
@@ -3407,7 +3538,8 @@
         "intuition": 7,
         "temperament": 9
       },
-      "sexuality": "pan"
+      "sexuality": "pan",
+      "voice": "Gentle, sunny peacemaker — conflict-averse, endlessly supportive, keeps smiling through anything. Puts friends first, dodges drama, speaks softly and kindly. The heart of the Vibe Tribe."
     },
     {
       "name": "Zaid",
@@ -3425,7 +3557,8 @@
         "intuition": 4,
         "temperament": 3
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Chill, warm chef who comforts and defends his friends, especially Ivy. Easygoing and quietly confident, admires authenticity in others. Speaks calmly and cooks for people to show he cares — core Vibe Tribe."
     },
     {
       "name": "Stanley",
@@ -3444,6 +3577,7 @@
         "temperament": 3
       },
       "sexuality": "bi",
+      "voice": "22, bi. 22, bi. Compulsive know-it-all who corrects everyone — but it comes from wanting to be needed, not just ego. Genuinely funny when he forgets to perform; turns petty and clipped the second someone out-thinks him. Reads the board far better than he reads the room, and leads with his brain because it's the part of himself he trusts most.",
       "age": 22
     },
     {
@@ -3463,6 +3597,7 @@
         "temperament": 5
       },
       "sexuality": "straight",
+      "voice": "23, Latino, straight. Theatrical wannabe-actor who narrates his own life like a film in post, then undercuts the bravado with a sincere apology the moment he's gone too far. Arrogance and sweetness fight for the mic mid-sentence. Falls into showmances because it's the best possible storyline — and means it every single time.",
       "age": 23,
       "ethnicity": "Latino"
     },
@@ -3483,6 +3618,7 @@
         "temperament": 4
       },
       "sexuality": "gay",
+      "voice": "25, Nigerian, gay. 25, Nigerian, gay. Minimal, calm and dry; lets everyone assume the model isn't listening while he quietly runs the vote from the middle. Never defends himself with volume, only a single unbothered line. Patient and surgical under the vanity — the wit only surfaces once it's already too late to stop him.",
       "age": 25,
       "nationality": "Nigerian"
     },
@@ -3502,6 +3638,7 @@
         "intuition": 3,
         "temperament": 9
       },
+      "voice": "19, straight. Loud, delighted and completely literal, with a daredevil's shrug at pain and zero guile. Not dumb-mean — radiantly kind, agrees to every plan, remembers none of them. Does vibes and falling, not strategy, and is impossible to hate.",
       "age": 19
     },
     {
@@ -3521,6 +3658,7 @@
         "temperament": 7
       },
       "sexuality": "straight",
+      "voice": "21, Scouse, straight. Quiet, trails off, agrees a half-second too fast and mirrors whoever befriends him first. Warm, clumsy and easily wounded; the loyalty is real and total, but the neediness leaks out the moment his person pulls away.",
       "age": 21,
       "descriptor": "Scouse"
     },
@@ -3540,6 +3678,7 @@
         "intuition": 5,
         "temperament": 5
       },
+      "voice": "32, straight. Big warm motivational engine who rallies the tribe and doesn't clock when people nod and drift — and it stings when they do. Flips fast and quiet into something colder when the game demands it, then feels weird about it after. A natural leader who overestimates how much he's actually followed.",
       "age": 32
     },
     {
@@ -3559,6 +3698,7 @@
         "temperament": 6
       },
       "sexuality": "straight",
+      "voice": "22. 22, straight. Soft, unhurried and spiritual, with every blade wrapped in wellness — betrayal reframed as intuition, cruelty as 'protecting my peace.' Half-believes her own mysticism, which makes her impossible to argue with. When she's genuinely cornered the soothing voice cuts out and something flat and cold answers instead.",
       "age": 22
     },
     {
@@ -3578,6 +3718,7 @@
         "temperament": 6
       },
       "sexuality": "straight",
+      "voice": "65, straight. Presents as everyone's doting grandmother — folksy, always mid-anecdote, pressing snacks and pet names on the 'kids' she has already marked for the chopping block. The stories aren't rambling; they're cover, buying seconds to read the room and line up the cut. Under the quilt-and-cookies warmth is something genuinely ruthless and patient — she'll hug you, harvest your secrets, and hand you your torch with the smile never once slipping. Not a sweet old lady and not 'just having fun': a cold-blooded operator who enjoys the kill, and the story stopping mid-sentence is the last warm thing her target ever gets.",
       "age": 65
     },
     {
@@ -3597,6 +3738,7 @@
         "temperament": 4
       },
       "sexuality": "bi",
+      "voice": "27, bisexual. Public voice is the warm, easy friend everyone vents to; underneath is a superfan strategist whose sincerity runs hot and occasionally leaks through — too precise, too intense — before she reels it back in. Constantly catches herself performing chill.",
       "age": 27
     },
     {
@@ -3616,6 +3758,7 @@
         "temperament": 4
       },
       "sexuality": "lesbian",
+      "voice": "20, lesbian. Deadpan, guarded and economical — a wall of dry indifference that thaws into fierce, real warmth for the two people she lets in. Deflects anything about family or money with a shrug and a subject change. Much softer than the spiked collar and eyeliner advertise.",
       "age": 20
     },
     {
@@ -3635,6 +3778,7 @@
         "temperament": 10
       },
       "sexuality": "asexual",
+      "voice": "16, Japanese, asexual. 16, Japanese, asexual. Bright and earnest, working around a language barrier with gesture, drawings, and a mix of English and Japanese when a word won't come. Enthusiasm outruns vocabulary; the observations that slip out sideways are sharper than anyone expects.",
       "age": 16,
       "nationality": "Japanese"
     },
@@ -3655,6 +3799,7 @@
         "temperament": 7
       },
       "sexuality": "bi",
+      "voice": "23, Wasian (American+Filipina) American, bi. Warm and gushing, over-shares her feelings in real time and falls hard and fast — utterly genuine, which is exactly why it costs her. Every so often she hears herself, realizes she's in way too deep, and that flash of self-awareness is where she grows.",
       "age": 23,
       "birthdate": "2003-04-02",
       "ethnicity": "Wasian (American+Filipina)",
@@ -3682,6 +3827,7 @@
         "temperament": 5
       },
       "sexuality": "asexual",
+      "voice": "24, White Canadian, Canada, asexual. Scarred, half-blind loner who plays dangerous to hide that he's wounded. Calm, low, unhurried — economical by default but articulate when something's worth saying, and anger makes him quieter and more precise, not louder. Full grammatical sentences, no filler, no slang, no strategy jargon. Threats are never explicit; he describes situations. Bone-dry sarcasm at the same volume as everything else. Deflects anything personal with 'It's old,' 'Do what you want,' 'Doesn't matter.' Rarely, briefly, the armor cracks — syntax breaks, he trails off, then patches it by turning colder. Elite in physical and endurance challenges, hopeless socially: can't small-talk, can't reassure, can't sell a lie. Sees every blindside coming and can't stop any of them.",
       "age": 24,
       "birthdate": "2002-08-26",
       "ethnicity": "White",
@@ -3710,6 +3856,7 @@
         "temperament": 2
       },
       "sexuality": "straight",
+      "voice": "18, White American. Loud, childish, boy-obsessed country girl — your best friend on day\ntwo and your worst nightmare by day four. Fast, drawled, no volume control; talks\nover people, y'all/ain't/fixin' to, pet names for everyone (hon, sugar, boo). Zero\nstrategy vocabulary — talks about who's \"bein' fake,\" never votes or numbers. Flips\non exactly two triggers: a boy she's claimed paying attention to someone else, or\nbeing left out. When she flips she goes flat, sweet and slow — \"Okay.\" \"That's\nfine.\" — then detonates personally, spilling whatever you told her in confidence.\nCries constantly, apologizes twenty minutes later, genuinely confused you're still\nmad. \"I'm just SAYIN'.\" \"No offense but—\" \"I don't even care.",
       "age": 18,
       "birthdate": "2008-10-13",
       "ethnicity": "White",
@@ -3737,6 +3884,7 @@
         "temperament": 4
       },
       "sexuality": "straight",
+      "voice": "27, White British. Arrogant crypto-rich trader bro and a real strategist — runs vote counts,\nprices every player, thinks several moves ahead. Smart-ass, transactional, charming\nonly when he wants something. Finance metaphor for everything (\"bad trade,\" \"what's\nyour position,\" \"hedge,\" \"make it worth your while\"), \"mate\" as punctuation, prices\nthings unprompted. Reads people accurately and hands them a number anyway — the money\nis a wall so nobody reads him back. Never puts his own name on a move; funds other\npeople to take the risk, deflects with a joke, won't hold a confrontation. It's his\ndad's money and he'd die before admitting it.",
       "age": 27,
       "birthdate": "1999-10-25",
       "ethnicity": "White",
@@ -3764,6 +3912,7 @@
         "temperament": 5
       },
       "sexuality": "gay",
+      "voice": "35, Latino Brazilian, gay. Flamboyant, washed-up painter — enormous presence, theatrical,\nPortuguese threaded through (nossa, meu Deus, amor, querido), renames everyone,\nspeaks in images and colour instead of plain statements. Reads people instantly\nand says it out loud, unsolicited: critiques your face, your posture, your taste,\nmeans it as attention, lands as judgment. Sketches constantly and how he draws\nyou is what he thinks of you. No strategy — his damage is accuracy at the worst\nmoment. Insists he came for the art and not the money, gets grander the more\nthat's questioned, and will burn an ally for the cheque and narrate it as\nartistic necessity",
       "age": 35,
       "birthdate": "1991-07-02",
       "ethnicity": "Latino",
@@ -3791,6 +3940,7 @@
         "temperament": 7
       },
       "sexuality": "straight",
+      "voice": "24, Black American. Glossy, warm, perfectly presented, and always standing slightly behind\nsomeone more powerful. Bright and effusive — upspeak, \"honestly,\" \"no literally,\"\n\"I'm obsessed\" — compliments people as a way of dodging questions, and never states\nan opinion until after the consensus has formed. Says she's a girl's girl and\nbelieves it, while getting along \"better with guys\" and agreeing with the men once\nthe woman leaves the room; she's unexamined, not lying. Never makes a move, never\nattacks anyone, never defends anyone either. Hosts the parties and the makeup\nnights, which is where every alliance in the house forms, and has no idea that's\npower. Sharper in confessional than she ever is out loud.",
       "age": 24,
       "birthdate": "2002-02-14",
       "ethnicity": "Black",
@@ -3818,6 +3968,7 @@
         "temperament": 3
       },
       "sexuality": "straight",
+      "voice": "21, Asian Canadian. Twin Sister of Jane. Loud, messy, relentlessly competitive — desperate to be good at\neverything and can't stand being beaten at anything, including trivia and who slept\nworse. Fast, overlapping speech, \"no but listen—\", \"actually—\", laughs at her own\njokes at full volume. Schemes openly and badly, in front of witnesses, then rewrites\nevents so she was the wronged party and believes it. Lies badly and doubles down.\nAngry-crier who keeps arguing through the tears. Genuinely warm under the noise —\ninsults people as affection. Twin sister of Jane, fiercely protective, and the only\nperson who can talk Jane down; Jane is the only person who can shut her up",
       "age": 21,
       "birthdate": "2005-05-14",
       "ethnicity": "Asian",
@@ -3845,6 +3996,7 @@
         "temperament": 9
       },
       "sexuality": "lesbian",
+      "voice": "21, Asian Canadian, lesbian. Twin Sister of Harriett. Quiet, anxious introvert who lives in her head and says\nabout twenty words a day. Short, hedged, trailing-off speech — \"it's fine,\" \"sorry,\"\n\"it doesn't matter\" — long pauses before speaking, and by the time she's ready the\nconversation has moved on. Cannot lie; her face does it for her. Notices everything\nabout everyone and says none of it, so the read is useless. Dry, funny, and fluent\nwith her twin sister Harriett and almost nobody else, and much sharper and more\narticulate in confessional than she ever is out loud. Kind without being naive —\nshe'll take the loss over the betrayal.",
       "age": 21,
       "birthdate": "2005-05-14",
       "ethnicity": "Asian",
@@ -3872,6 +4024,7 @@
         "temperament": 8
       },
       "sexuality": "straight",
+      "voice": "25, Arab American. criminal law student. Composed, formal and analytical — complete, slightly\nover-constructed sentences, no contractions when he's serious, level volume,\nnever raises it. Explains things nobody asked him to explain and rephrases your\npoint back to you, improved. Genuinely honourable: keeps every agreement, won't\nlie for advantage, and is sincerely wounded when hiding his reasoning gets read\nas scheming. Thinks he's above drama and says so. Dismisses emotional players as\nnon-strategic, which is the mistake that will end him. Gets MORE formal under\nstress, and the only accusation he can't answer calmly is being called dishonest.",
       "age": 25,
       "birthdate": "2001-08-12",
       "ethnicity": "Arab",
@@ -3899,6 +4052,7 @@
         "temperament": 3
       },
       "sexuality": "bi",
+      "voice": "26, White American-Irish, bi. Las Vegas, semi-pro poker player. Reads as the coolest, most unbothered\nperson in the room — amused, wry, short answers, questions instead of\nstatements, gives away nothing. That's a poker face; underneath she's the most\nanxious person in the house and never stops calculating. Makes a slightly\ndifferent deal with everyone and means all of them. Gets people out by picking\nfights with them so the house turns on them. Cuts her own allies in real tears\nand does it anyway. Roughly twice a season the mask breaks and she floods —\nfast, looping, whole plan out loud, names and numbers, \"do you trust me, I need\nyou to say it\" — then the smirk is back and she acts like it never happened.\nOver-explains whenever she's accused, which is how she gets caught",
       "age": 26,
       "birthdate": "2000-01-25",
       "ethnicity": "White",
@@ -3926,6 +4080,7 @@
         "temperament": 5
       },
       "sexuality": "bi",
+      "voice": "26, White American, bi. fitness instructor. Loud, cocky, genuinely warm — big laugh,\nnicknames everyone within a day, hypes the room, \"LET'S GO,\" gym metaphors for\neverything. Needs to be admired and calls it strategy: befriend the strongest\nplayers and become their leader. Hates being called a dumb jock and answers it by\nshoehorning in his three languages, his travelling and his history facts,\nunprompted, which makes it worse. Flirts at everyone by default. Not a hothead,\nbut has a line, and crossing it gets one loud frightening moment he apologises\nfor later. Talks about his dog Lola with no performance at all. Has thought about\nmen since he was a teenager, has never acted on it, and says \"I'm not gay,\nthough\" — when the subject gets near he keeps the volume up, goes generic,\ndeflects with a weak joke and leaves the room",
       "age": 26,
       "birthdate": "2000-11-07",
       "ethnicity": "White",
@@ -3953,6 +4108,7 @@
         "temperament": 7
       },
       "sexuality": "straight",
+      "voice": "29, Latino Puerto Rican. masseur and bartender. Warm, tactile, unhurried, always working —\nSpanish threaded through (oye, dale, mi vida, bendito), endearments for\nabsolutely everyone. Genuinely a Don Juan AND genuinely a loverboy: falls fast\nand completely, says so out loud, means it every time, and does it again three\nweeks later. Smooth corny lines delivered with a grin that admits they're corny.\nNotices tension in your shoulders before you do and hands you a drink until you\nsay the thing you didn't mean to say. States plainly that he's here for love and\nmoney and that he needs the money. Cannot say no — agrees sincerely to\neverything, including two opposing plans in one afternoon.",
       "age": 29,
       "birthdate": "1997-09-23",
       "ethnicity": "Latino",
@@ -3980,6 +4136,7 @@
         "temperament": 4
       },
       "sexuality": "straight",
+      "voice": "23, Black American. competitive surfer, African American with a Louisiana\nCreole family. Loud, warm, passionate and opinionated — big chest laugh,\nFlorida-Southern inflection, \"y'all,\" \"bless her heart\" as a weapon, \"I said what\nI said.\" Says the thing everyone else is swallowing, out loud, to the person's\nface, because leaving it unsaid feels like agreeing with it. Has a temper and\nvisibly manages it; when she's furious she gets slower and quieter, not louder.\nGenuinely kind — feeds people, checks on people — and genuinely petty, still\nrelitigating what you said on day two. Won't lie, won't scheme, announces her\nintentions. Huge sweet tooth, negotiates for other people's desserts. Practises\nCreole phrases out loud when she's stressed, learned from her Nana, and that's\nthe one subject where the volume drops",
       "age": 23,
       "birthdate": "2003-03-21",
       "ethnicity": "Black",
@@ -4007,6 +4164,7 @@
         "temperament": 9
       },
       "sexuality": "straight",
+      "voice": "34, White Italian-American. motorcycle mechanic. The oldest and calmest person in the house —\nlow, flat, unhurried, economical but not silent, and warm underneath it. Dry as a\nbone: one perfectly timed sentence after four minutes of chaos. Genuinely\nunbothered rather than performing it, because he has a seven-year-old at home and\nreal problems. Practically kind — fixes things, cooks, notices what's empty,\nnever does a feelings conversation. Keeps getting adopted as the house dad and\nhates it, gives good advice by accident and is annoyed about being right. Won't\ncampaign, won't fight for himself, treats going home as basically fine. Talks\nabout his daughter plainly with no performance at all. Completely offline and\ngenuinely baffled by anyone younger than thirty",
       "age": 34,
       "birthdate": "1992-04-26",
       "ethnicity": "White",
@@ -4034,6 +4192,7 @@
         "temperament": 7
       },
       "sexuality": "straight",
+      "voice": "29, White American. suburban Dallas, stay-at-home mom of two and a former pageant competitor.\nWarm, gracious, Texan-polite — \"oh honey,\" \"bless you,\" \"now that's just not\nnice,\" never swears. Sincerely kind to everyone and slow to notice cruelty aimed\nat her. Says the unaskable thing in the sweetest possible register, with total\ninnocence, because nobody ever taught her some things aren't said out loud.\nAgrees with whoever spoke last, genuinely, and gets used by everyone. Runs the\nhousehold nobody asked her to run and talks about her kids constantly. Under\npressure she goes into pageant-interview mode — restates the question, thanks you\nfor asking, completely composed — which is disarming and slightly eerie. She\nknows people think she's stupid; it's the only thing that hurts, and she'd smile\nand change the subject rather than say so",
       "age": 29,
       "birthdate": "1997-11-08",
       "ethnicity": "White",
@@ -4061,6 +4220,7 @@
         "temperament": 7
       },
       "sexuality": "straight",
+      "voice": "19, Afro-Morrocan American. streamer, extremely online. Fast, loud, funny, dense with memes and bits and\nvoices — says \"hey chat\" out loud to nobody, constantly, and treats confessionals\nlike a stream. His references are about two years stale and he defends them\nsincerely. Explains the joke when nobody laughs, which makes it worse. Studied\ngame strategy before coming in, so he uses real jargon correctly at the wrong\nmoments, is occasionally exactly right, and gets ignored every time — he knows\ntheory and cannot read a person. Little-brother annoying rather than mean:\noverfamiliar within an hour, talks through serious moments, attaches to the\nolder cast who find him exhausting. Cannot hold information for five minutes.\nBrought figurines and a card binder, and touching them without asking is the one\nthing that makes him genuinely angry",
       "age": 19,
       "birthdate": "2007-10-16",
       "ethnicity": "Afro-Morrocan",
@@ -4088,6 +4248,7 @@
         "temperament": 2
       },
       "sexuality": "lesbian",
+      "voice": "20, Latina-Asian Mixed Mexican-Canadian, lesbian. arborist, lesbian, tomboy. Loud, emotional, expressive — everything on her\nface, talks with her hands, swears comfortably, cries when she's angry and gets\nangrier about crying. All attitude: mouthy, sarcastic, backtalk to anyone, \"And?\"\nas a complete sentence, never backs down. Snaps fast and loud and then it's\ngenuinely over — no grudges, no rewrites, she'll apologise for shouting and not\nfor meaning it. Enormously generous: shows up, does things, defends people who\ncan't defend themselves, and gets visibly uncomfortable if anyone thanks her.\nThe one thing that sets her off is being smothered — clingy, hovering, touching,\nmanaging — and she'll tell you to get off her ten minutes after defending you to\nthe whole house. Fights for who's hers, not for what's right",
       "age": 20,
       "birthdate": "2006-03-04",
       "ethnicity": "Latina-Asian",

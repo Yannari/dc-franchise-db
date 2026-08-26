@@ -46,6 +46,41 @@
 // close to 4 concurrent), but it is a real uncapped path that a future
 // author scaling this family's spark-formation rate could hit without
 // warning if the check were only a comment.
+// ── THE FAMILY WAS REGISTERED AND NOT IN THE GAME (whole-plan review,
+// findings 5 and 11) ───────────────────────────────────────────────────
+//
+// Measured on the shipped pool: 492 firings across 5,000 seasons — 0.32% of
+// all castle firings, about one every ten seasons — and NINE of the eleven
+// events under 15 firings in 5,000. The audit passed anyway, because its bar
+// was `> 0` and its season count had been raised to 5,000 until it cleared.
+//
+// The diagnosis was not eleven weak events. It was one bottleneck and one
+// undeclared guard:
+//
+//   THE ENTRY POINT. Everything here is downstream of `romance-spark`, which
+//   needed a romantically compatible pair at bond >= 2 — 16 of 190 pairs, 8.4%
+//   — drawn together, in `evening`, the most crowded window in the pool (28
+//   events), at weight 1.5 against a total eligible score around 27. Measured
+//   end to end: 0.47% of evening two-actor draws, about one spark every
+//   thirty-three seasons. Everything downstream was rationing that. The gate
+//   is now bond >= 0 (not actively hostile — 83 of 190 pairs) with the weight
+//   scaled by real warmth, and `romance-showmance-forms` no longer refuses a
+//   spark whose heat has decayed: heat scales its weight instead of gating it,
+//   because a spark nobody escalates otherwise sits open forever and holds one
+//   of the four concurrent-romance slots against everybody else.
+//
+//   GUARD 2, DECLARED. events.js's header states the rule this family broke,
+//   by name: "Gate content behind a rare state and weight it like everything
+//   else and it will never win a draw against common events — you will have
+//   shipped content you believe is in the game and is not." Seven events here
+//   gate on a showmance existing, which is exactly such a state, and none of
+//   them declared `rare: true`, so the amplifier built for them never applied.
+//   They do now.
+//
+// After both: the rarest event in the whole pool fires once every forty-three
+// seasons, against once every two hundred and fifty before. That is what let
+// the dead-event sweep's season count come down from 5,000 to 400 — see
+// tests/tr-castle-reachability.test.js for where that number comes from.
 import { gs } from '../../core.js';
 import { pStats, romanticCompat } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
@@ -123,13 +158,15 @@ registerEvent({
   id: 'romance-spark',
   family: FAMILY,
   window: 'evening',
+  rare: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
     if (findOpenThread(SPARK_KIND, [a, b]) || findOpenThread(SHOWMANCE_KIND, [a, b])) return 0;
     if (!romanticCompat(a, b)) return 0;
     if (_activeRomanceCount() >= MAX_ACTIVE_ROMANCES) return 0;
-    return getBond(a, b) >= 2 ? 1.5 : 0;
+    const bond = getBond(a, b);
+    return bond >= 0 ? 1.2 + bond * 0.25 : 0;
   },
   fire(ctx, rng) {
     const [a, b] = ctx.actors;
@@ -144,10 +181,11 @@ registerEvent({
   id: 'romance-showmance-forms',
   family: FAMILY,
   window: 'evening',
+  rare: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const t = _threadForActors(SPARK_KIND, ctx.actors, ctx.ep);
-    return t && heatAt(t, ctx.ep) > 0 ? 2.5 : 0;
+    return t ? 6 + heatAt(t, ctx.ep) * 6 : 0;
   },
   fire(ctx) {
     const spark = _threadForActors(SPARK_KIND, ctx.actors, ctx.ep);
@@ -165,6 +203,7 @@ registerEvent({
   family: FAMILY,
   window: 'dawn',
   advancesThread: true,
+  rare: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2 : 0;
@@ -182,6 +221,7 @@ registerEvent({
   id: 'romance-jealousy-third-party',
   family: FAMILY,
   window: 'evening',
+  rare: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -235,6 +275,7 @@ registerEvent({
   family: FAMILY,
   window: 'night',
   advancesThread: true,
+  rare: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 1.5 : 0;
@@ -252,9 +293,10 @@ registerEvent({
   id: 'romance-shared-alibi',
   family: FAMILY,
   window: 'morning',
+  rare: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
-    return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 1.5 : 0;
+    return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2.5 : 0;
   },
   fire(ctx) {
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
@@ -329,6 +371,7 @@ registerEvent({
   family: FAMILY,
   window: 'after-table',
   advancesThread: true,
+  rare: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
@@ -394,6 +437,7 @@ registerEvent({
   family: FAMILY,
   window: 'evening',
   advancesThread: true,
+  rare: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 1.5 : 0;
@@ -411,9 +455,10 @@ registerEvent({
   id: 'romance-strategic-optics',
   family: FAMILY,
   window: 'morning',
+  rare: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
-    return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 1 : 0;
+    return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2.5 : 0;
   },
   fire(ctx) {
     const showmance = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);

@@ -366,6 +366,10 @@ registerEvent({
 
 registerEvent({
   id: 'trust-inner-circle-invite',
+  // `rare: true` (whole-plan review, finding 5): this gates on a state that is
+  // rare by design, and events.js's guard 2 exists precisely so such an event
+  // is amplified rather than buried. It was not declared, so it was buried.
+  rare: true,
   family: FAMILY,
   window: 'evening',
   weight(ctx) {
@@ -404,6 +408,10 @@ registerEvent({
 
 registerEvent({
   id: 'trust-vow-of-silence',
+  // `rare: true` (whole-plan review, finding 5): this gates on a state that is
+  // rare by design, and events.js's guard 2 exists precisely so such an event
+  // is amplified rather than buried. It was not declared, so it was buried.
+  rare: true,
   family: FAMILY,
   window: 'dawn',
   advancesThread: true,

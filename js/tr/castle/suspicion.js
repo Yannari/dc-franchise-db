@@ -114,7 +114,10 @@ registerEvent({
     if (!t) return 0;
     const heat = heatAt(t, ctx.ep);
     // Cooled (someone let it drop) but never actually closed or abandoned.
-    return heat > 0 && heat < 1 ? 2 : 0;
+    // Weight raised from 2 to 4 (whole-plan review, finding 5): the heat band
+    // this needs is narrow AND `evening` is the pool's most crowded window, so
+    // even with `rare`'s amplifier it was firing once in ninety seasons.
+    return heat > 0 && heat < 1 ? 4 : 0;
   },
   fire(ctx) {
     const [a, b] = ctx.actors;

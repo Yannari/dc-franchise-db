@@ -152,7 +152,10 @@ registerEvent({
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
-    return sharedHistory(a, b).some(h => h.relation === 'showmance') ? 2 : 0;
+    // 2 -> 3.5 (whole-plan review, finding 5): a prior showmance is the
+    // rarest relation in a real ledger, so this competes for the fewest pairs
+    // of anything in the family and needed the base weight to say so.
+    return sharedHistory(a, b).some(h => h.relation === 'showmance') ? 3.5 : 0;
   },
   fire(ctx) {
     const [a, b] = ctx.actors;

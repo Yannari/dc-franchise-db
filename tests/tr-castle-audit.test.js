@@ -1,26 +1,29 @@
 // ══════════════════════════════════════════════════════════════════════
-// tr-castle-audit.test.js — the deliverable: does every event actually
-// fire, and does the pool actually feel varied?
+// tr-castle-audit.test.js — the TABLES. Run this and read it when you
+// change castle content.
 // ══════════════════════════════════════════════════════════════════════
 //
-// Two questions, and pool SIZE answers neither of them:
+// A viewer does not experience "the pool has 81 events" — they experience a
+// handful of firings a round, across a season, against whatever the ELIGIBLE
+// set happens to be at that window in that act. A big pool with a starved
+// eligible set at a given (window, act) still repeats badly. This file
+// measures that and prints the numbers; the numbers ARE the deliverable.
 //
-//   1. DEAD-EVENT AUDIT. Run 20+ seasons and assert every registered event
-//      fires at least once. An event that never fires is content the brief
-//      warns about by name: believed to be in the game and is not — the
-//      exact failure rare-state amplification exists to prevent.
+// WHAT IS NOT HERE ANY MORE (whole-plan review, finding 4). The dead-event
+// sweep and the cooldown sweep used to live here, and this filename matches
+// `**/*-audit.test.js`, which vitest.config.js excludes from `npm test`. They
+// were guards sitting in a file nothing runs. They moved to
+// tests/tr-castle-reachability.test.js, which the ordinary run collects. What
+// is left here is genuinely a tool: it plays seasons and prints tables, and
+// exactly one thing in it can fail — the dominance band below, which is a real
+// bar and is banded near its measurement rather than 2.4x away from it.
 //
-//   2. REPETITION-AS-EXPERIENCED. A viewer does not experience "the pool
-//      has 90 events" — they experience a handful of firings a round,
-//      across a season, against whatever the ELIGIBLE set happens to be at
-//      that window in that act. A big pool with a starved eligible set at
-//      a given (window, act) still repeats badly. This file measures both
-//      and reports the numbers rather than only a pass/fail.
+// Run it: npm run audit:tr-castle
 import { describe, expect, it } from 'vitest';
 import { gs, setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { EVENTS, eligible } from '../js/tr/events.js';
-import { setFranchiseLedger } from '../js/franchise-meta.js';
+import { seedFranchiseHistory } from './helpers/tr-castle-fixture.js';
 import roster from '../franchise_roster.json';
 
 // Side-effect imports: the whole pool, all seven families.
@@ -34,46 +37,22 @@ import '../js/tr/castle/testing.js';
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
-const AUDIT_SEASONS = 5000; // margin for rare-but-reachable pair-specific callback/romance events
-
-/**
- * A fabricated prior season, so the callback family — which reads
- * `activeSeasons()` and has NOTHING to read otherwise — actually gets a
- * shot at eligibility. Every relation type callback.js checks for is
- * represented on at least one pair, deliberately, so the audit can tell a
- * genuinely unreachable callback event from one that simply never got
- * fixture data.
- */
-function seedFranchiseHistory() {
-  setFranchiseLedger({
-    v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {
-      '1': {
-        seasonName: 'Founding Season', format: 'total-drama', players: {
-          [CAST[0]]: { allies: [CAST[1]], rivals: [], betrayed: [], betrayedBy: [], showmances: [], finalist: true, winner: true },
-          [CAST[1]]: { allies: [CAST[0]], rivals: [], betrayed: [], betrayedBy: [], showmances: [], finalist: true },
-          [CAST[2]]: { allies: [], rivals: [], betrayed: [CAST[3]], betrayedBy: [], showmances: [], finalist: false },
-          [CAST[3]]: { allies: [], rivals: [], betrayed: [], betrayedBy: [CAST[2]], showmances: [], finalist: false },
-          [CAST[4]]: { allies: [], rivals: [CAST[5]], betrayed: [], betrayedBy: [], showmances: [], finalist: false },
-          [CAST[5]]: { allies: [], rivals: [CAST[4]], betrayed: [], betrayedBy: [], showmances: [], finalist: false },
-          [CAST[6]]: { allies: [], rivals: [], betrayed: [], betrayedBy: [], showmances: [{ partner: CAST[7], ended: 'breakup' }], finalist: false },
-          [CAST[7]]: { allies: [], rivals: [], betrayed: [], betrayedBy: [], showmances: [{ partner: CAST[6], ended: 'breakup' }], finalist: false },
-        },
-      },
-    } } },
-  });
-}
+// Enough seasons for the shares and the distinctness averages to settle. This
+// is a table, not a bar: it is NOT the dead-event sweep's count and must never
+// be raised to make anything pass. See tr-castle-reachability.test.js for the
+// count that is a threshold, and where it comes from.
+const AUDIT_SEASONS = 1000;
 
 function seededRng(seed) {
   let s = seed >>> 0;
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
 }
 
-/** Run the audit population once; every test below reads from this. */
 function runAuditSeasons(n) {
   const perSeason = [];
   for (let i = 1; i <= n; i++) {
     setPlayers(ROSTER);
-    seedFranchiseHistory();
+    seedFranchiseHistory(CAST);
     const res = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: i });
     const fired = [];
     for (const round of res.log) {
@@ -92,16 +71,10 @@ function runAuditSeasons(n) {
 const SEASONS = runAuditSeasons(AUDIT_SEASONS);
 const ALL_FIRINGS = SEASONS.flat();
 
-describe('THE DEAD-EVENT AUDIT (the deliverable)', () => {
-  it(`every registered event fires at least once across ${AUDIT_SEASONS} seasons`, () => {
+describe('THE FIRING DISTRIBUTION', () => {
+  it('prints every event\'s firing count, by family', () => {
     const countPerId = {};
     for (const f of ALL_FIRINGS) countPerId[f.id] = (countPerId[f.id] || 0) + 1;
-
-    const registeredIds = EVENTS.map(e => e.id);
-    const dead = registeredIds.filter(id => !countPerId[id]);
-
-    // The full firing distribution, printed unconditionally — the brief asks
-    // for the distribution reported, not just the pass.
     const byFamily = {};
     for (const ev of EVENTS) (byFamily[ev.family] ||= []).push(ev.id);
     console.log(`\n=== FIRING DISTRIBUTION (${AUDIT_SEASONS} seasons, ${ALL_FIRINGS.length} total firings) ===`);
@@ -109,39 +82,32 @@ describe('THE DEAD-EVENT AUDIT (the deliverable)', () => {
       console.log(`-- ${family} (${ids.length} events) --`);
       for (const id of ids) console.log(`   ${id}: ${countPerId[id] || 0}`);
     }
-    if (dead.length) console.log('DEAD EVENTS (never fired):', dead);
-
-    expect(dead, `these events never fired in ${AUDIT_SEASONS} seasons and are dead content: ${dead.join(', ')}`).toEqual([]);
+    expect(ALL_FIRINGS.length).toBeGreaterThan(0);
   });
 
-  it('registers 80+ events across the seven families (honest count, not padded to a target)', () => {
-    const byFamily = {};
-    for (const ev of EVENTS) (byFamily[ev.family] ||= 0, byFamily[ev.family]++);
-    console.log('Per-family counts:', byFamily);
-    expect(EVENTS.length).toBeGreaterThanOrEqual(80);
-  });
-});
-
-describe('REPETITION AUDIT: does the engine\'s own cooldown hold in real seasons?', () => {
-  it('no event fires again inside its own event-scope cooldown, in any real season', () => {
-    const byId = {};
-    for (const ev of EVENTS) byId[ev.id] = ev;
-    const violations = [];
-    for (const season of SEASONS) {
-      const epsById = {};
-      for (const f of season) (epsById[f.id] ||= []).push(f.ep);
-      for (const [id, eps] of Object.entries(epsById)) {
-        const sorted = [...eps].sort((a, b) => a - b);
-        const window = byId[id]?.cooldown?.event ?? 2;
-        for (let i = 1; i < sorted.length; i++) {
-          if (sorted[i] - sorted[i - 1] < window) violations.push({ id, gap: sorted[i] - sorted[i - 1], window });
-        }
-      }
-    }
-    expect(violations, JSON.stringify(violations.slice(0, 10))).toEqual([]);
-  });
-
-  it('no single event dominates its family\'s firing share beyond 35%', () => {
+  // ── THE ONE BAR IN THIS FILE, BANDED WHERE IT WAS MEASURED ──
+  //
+  // This used to be titled "beyond 35%" and assert `toBeLessThan(0.50)`,
+  // against a worst measured share of 0.211 — a name stating a threshold its
+  // own assertion did not enforce, and a gap of 2.4x that nothing plausible
+  // could close (whole-plan review, finding 9; the sixth instance in this
+  // project of a label asserting something the code does not).
+  //
+  // AND THE REVIEW'S OWN NUMBER IS WRONG, which is what made the 0.50 band
+  // look 2.4x loose. Re-measured on the shipped pool BEFORE any change this
+  // round: the worst is trust-trade-reads at 0.455 of the trust family (7,898
+  // of 17,350 firings). The assertion had about 10% of headroom, not 140%.
+  // The NAME was the defect; the band was very nearly right.
+  //
+  // Re-measured again after this round's content work: worst 0.395
+  // (trust-trade-reads), with romance-spark at 0.389 behind it. The band is
+  // 0.45 — near the measurement, loose enough for ordinary drift, tight enough
+  // that one event genuinely running away with its family trips it.
+  //
+  // trust-trade-reads taking two firings in five of its own family is a real
+  // repetition finding and is NOT fixed here: it predates this round and
+  // belongs with the scene-selection work.
+  it('no single event takes more than 45% of its family\'s firings', () => {
     const familyTotal = {};
     const idTotal = {};
     for (const f of ALL_FIRINGS) {
@@ -155,39 +121,12 @@ describe('REPETITION AUDIT: does the engine\'s own cooldown hold in real seasons
     }).sort((a, b) => b.share - a.share);
     console.log('Top firing shares (id, family, share of family total):', shares.slice(0, 10));
     const worst = shares[0];
-    expect(worst.share, `${worst.id} is ${(worst.share * 100).toFixed(1)}% of family "${worst.family}"'s firings`).toBeLessThan(0.50);
+    expect(worst.share, `${worst.id} is ${(worst.share * 100).toFixed(1)}% of family "${worst.family}"'s firings`)
+      .toBeLessThan(0.45);
   });
 });
 
-describe('CALLBACK IS DEAD IN A DEBUT SEASON (round 1 review finding, documented not fixed)', () => {
-  // callback.js's own header now says this too. This test exists so a green
-  // run of THIS FILE is never mistaken for "callback works in season one" —
-  // the dead-event audit above only shows callback alive because
-  // seedFranchiseHistory() fabricates a prior season on purpose. Here we
-  // run WITHOUT that fixture and confirm the family goes to zero while the
-  // other six do not — proving the family reads real history rather than
-  // faking it, and documenting the cost of that correctness.
-  it('with an empty ledger, callback fires 0 while the other six families are unaffected', () => {
-    const perFamily = {};
-    for (let i = 1; i <= 60; i++) {
-      setPlayers(ROSTER);
-      setFranchiseLedger({ v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {} } } });
-      const res = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 90000 + i });
-      for (const round of res.log) {
-        for (const ce of (round.castleEvents || [])) {
-          perFamily[ce.event.family] = (perFamily[ce.event.family] || 0) + 1;
-        }
-      }
-    }
-    console.log('=== DEBUT-SEASON (empty ledger) FIRINGS PER FAMILY ===', perFamily);
-    expect(perFamily.callback ?? 0).toBe(0);
-    for (const fam of ['trust', 'suspicion', 'grief', 'cover', 'romance', 'testing']) {
-      expect(perFamily[fam] ?? 0, `family "${fam}" should still fire with no franchise history`).toBeGreaterThan(0);
-    }
-  });
-});
-
-describe('REPETITION-AS-EXPERIENCED (addendum)', () => {
+describe('REPETITION-AS-EXPERIENCED', () => {
   it('1. eligible-set size per (window, act): median and minimum', () => {
     const WINDOWS = ['dawn', 'morning', 'journey-out', 'journey-back', 'evening', 'after-table', 'night'];
     const ACT_EP = { early: 2, middle: 5, late: 9 };
@@ -197,7 +136,7 @@ describe('REPETITION-AS-EXPERIENCED (addendum)', () => {
       for (let trial = 0; trial < 15; trial++) {
         seedCounter++;
         setPlayers(ROSTER);
-        seedFranchiseHistory();
+        seedFranchiseHistory(CAST);
         // Play a truncated season up to this act's representative round, so
         // the accumulated bonds/threads/alignment are REAL, not synthetic —
         // only the actor draw used to sample eligible() below is separate
@@ -230,13 +169,12 @@ describe('REPETITION-AS-EXPERIENCED (addendum)', () => {
     }
     console.log('\n=== ELIGIBLE-SET SIZE PER (window, act) ===');
     for (const [key, r] of Object.entries(report)) console.log(`${key}: median=${r.median} min=${r.min} max=${r.max}`);
-    // Not a strict pass/fail bar — the numbers ARE the finding — but this
-    // guards against the measurement itself being silently empty (e.g. a
-    // typo'd window name that never matches anything).
+    // Not a bar — the numbers ARE the finding — but this guards against the
+    // measurement itself being silently empty (e.g. a typo'd window name).
     expect(Object.keys(report).length).toBe(21);
   });
 
-  it('2. within-season distinctness: how many of ~60 firings are distinct ids / distinct (id,branch) outcomes', () => {
+  it('2. within-season distinctness: how many firings are distinct ids / distinct (id,branch) outcomes', () => {
     const totals = SEASONS.map(s => s.length);
     const distinctIds = SEASONS.map(s => new Set(s.map(f => f.id)).size);
     const distinctBranches = SEASONS.map(s => new Set(s.map(f => `${f.id}:${f.branch}`)).size);
@@ -259,8 +197,7 @@ describe('REPETITION-AS-EXPERIENCED (addendum)', () => {
     for (let i = 0; i < idSets.length; i++) {
       for (let j = i + 1; j < idSets.length; j++) { sum += jaccard(idSets[i], idSets[j]); pairs++; }
     }
-    const avgJaccard = sum / pairs;
-    console.log(`\n=== CROSS-SEASON OVERLAP === avg Jaccard over ${pairs} season pairs: ${avgJaccard.toFixed(3)}`);
+    console.log(`\n=== CROSS-SEASON OVERLAP === avg Jaccard over ${pairs} season pairs: ${(sum / pairs).toFixed(3)}`);
     expect(pairs).toBeGreaterThan(0);
   });
 

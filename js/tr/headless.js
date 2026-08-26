@@ -9,6 +9,7 @@
 import { gs, setGs } from '../core.js';
 import { initTraitorsState } from './state.js';
 import { resetKnowledge } from '../knowledge.js';
+import { setBond } from '../bonds.js';
 import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls } from './roles.js';
 import { seedTraitorKnowledge, ballotEvidence } from './deduction.js';
 import { runRoundTable } from './roundtable.js';
@@ -16,6 +17,38 @@ import { runRoundTable } from './roundtable.js';
 function rngFor(seed) {
   let s = (seed >>> 0) || 1;
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+}
+
+/**
+ * A cast that has already met each other.
+ *
+ * MEASUREMENT FIXTURE, NOT A SOCIAL MODEL. It exists because the harness used
+ * to open with `bonds: {}` and nothing ever wrote to it, so getBond() returned
+ * 0 for every pair in every season — which made bondResistance() exactly 1.0
+ * and broadcast()'s trust term the constant 0.55 in every number this plan has
+ * ever reported. Two of the three social mechanisms the design rests on ("a
+ * well-liked Traitor survives a table the evidence should have lost them", and
+ * "the same true name lands or dies depending on whose mouth it comes from")
+ * were inert in all of them. A calibration run on an engine with two of its
+ * three levers pinned at neutral is not a calibration of that engine.
+ *
+ * So: a plain spread of warm and cold relationships, drawn from a stream of its
+ * own so it cannot shift the game's own draws, and deterministic in the season
+ * seed like everything else here. Roughly a fifth of pairs like each other and
+ * an eighth do not, which puts most people in three or four warm relationships
+ * and two or three hostile ones in a cast of twenty. It is not trying to be a
+ * pre-season; it is trying to stop the two levers being measured at zero.
+ */
+function _seedStartingBonds(cast, seed) {
+  const rng = rngFor((seed * 2654435761) >>> 0 || 7);
+  for (let i = 0; i < cast.length; i++) {
+    for (let j = i + 1; j < cast.length; j++) {
+      const roll = rng();
+      if (roll < 0.18) setBond(cast[i], cast[j], 2 + Math.floor(rng() * 7));        // +2..+8
+      else if (roll < 0.30) setBond(cast[i], cast[j], -2 - Math.floor(rng() * 6));  // -2..-7
+      else rng();   // burn a draw either way, so the stream does not depend on the branch
+    }
+  }
 }
 
 /**
@@ -42,6 +75,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   setGs({ bonds: {}, activePlayers: [...cast] });
   gs.tr = initTraitorsState();
   resetKnowledge();
+  _seedStartingBonds(cast, seed);
 
   const traitors = selectTraitors(cast, { traitorCount }, rng);
   traitors.forEach(n => recordAlignment(n, true, 1, 'selection'));

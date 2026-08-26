@@ -1,11 +1,12 @@
 // The per-episode coaching block: run the sessions, move the bonds, record
 // what happened. This is the only file in the twist that writes to `gs`; the
 // maths lives in coach-agenda.js and the store in coaches.js.
-import { gs, players } from './core.js';
+import { gs, players, seasonConfig } from './core.js';
 import { pStats } from './players.js';
 import { addBond, getBond } from './bonds.js';
 import { activeCoaches, bankTraining, coachesOf, coachRecord, isCoach, removeCoach, revokeCoachTraining, sessionsFor } from './coaches.js';
 import { pickSessionTargets, sessionGain, teachableStat, aweOf } from './coach-agenda.js';
+import { showWords } from './shows.js';
 
 /** How close this coach is to being voted out, 0..1. Lifts their survive agenda. */
 function vulnerabilityOf(coachName, tribe) {
@@ -209,4 +210,241 @@ export function applyCoachElimination(ep, result) {
   eliminateCoach(ep, result.eliminated);
   result.eliminated = null;
   return true;
+}
+
+/**
+ * What one episode's coaching block COST or EARNED, told as camp events.
+ *
+ * `runCoachingBlock` already banked the training and moved the bonds; the
+ * Coaches' Board (js/vp-coaches.js) already shows, session by session, who
+ * got called on and who was left off. Neither of those is a camp event, and
+ * this function must not become a third rendering of the same list — its job
+ * is what the tribe DOES with what the board showed: a drill spilling out
+ * into how someone carries themselves, a name kept off the board long enough
+ * that its owner starts keeping their own tally, two protégés measuring
+ * themselves against each other, a coach's own advice landing wrong in front
+ * of witnesses. Every event lays its own consequence on top of whatever
+ * `runCoachingBlock` already applied.
+ */
+export function coachFallout(ep, tribe, blockResult, roll = Math.random) {
+  const W = showWords(seasonConfig.format);
+  const events = [];
+  const sessions = Array.isArray(blockResult?.sessions) ? blockResult.sessions : [];
+  const passedOver = Array.isArray(blockResult?.passedOver) ? blockResult.passedOver : [];
+  const members = tribe?.members || [];
+
+  const archetypeOf = name => players.find(p => p.name === name)?.archetype;
+  const pick = arr => arr[Math.min(arr.length - 1, Math.floor(roll() * arr.length))];
+
+  if (!gs.popularity) gs.popularity = {};
+  if (!gs._coachPassStreak) gs._coachPassStreak = {};
+
+  // ── POSITIVE: a breakthrough spills out of the session and into camp ──
+  // Guaranteed per successful session — the board only shows the drill ran;
+  // this is the contestant actually walking around changed by it.
+  for (const s of sessions) {
+    const gain = Number(s.gain) || 0;
+    if (gain <= 0) continue;
+    const arche = archetypeOf(s.contestant);
+    const pool = {
+      villain: [
+        `${s.contestant} runs the ${s.stat} trick ${s.coach} gave them the very next chance and makes sure two other ${W.players} watch it land.`,
+        `${s.contestant} won't shut up about the ${s.stat} edge ${s.coach} handed over — not gratitude, just an inventory of a new weapon.`,
+        `${s.contestant} tries the move once, files it away, and starts calculating who it's most useful against.`,
+        `${s.contestant} corners a tribemate to demonstrate the ${s.stat} fix before anyone can ask how the session actually went.`,
+      ],
+      hero: [
+        `${s.contestant} practices the ${s.stat} adjustment quietly, then goes and shows the same trick to whoever else is struggling with it.`,
+        `${s.contestant} thanks ${s.coach} twice, then spends the rest of the afternoon teaching it forward instead of hoarding it.`,
+        `${s.contestant} keeps at the drill until it clicks, visibly relieved it wasn't a fluke.`,
+        `${s.contestant} credits ${s.coach} out loud, in front of the whole camp, for something most people would have kept to themselves.`,
+      ],
+      goat: [
+        `${s.contestant} runs the ${s.stat} drill alone by the fire, half-convinced it'll stop working if anyone's watching.`,
+        `${s.contestant} keeps turning over the one thing ${s.coach} said, like it might be an accident if examined too hard.`,
+        `${s.contestant} tests the fix twice more before daring to believe it, and still won't say so out loud.`,
+        `${s.contestant} looks almost surprised the session helped at all.`,
+      ],
+      default: [
+        `${s.contestant} keeps testing the ${s.stat} adjustment ${s.coach} gave, and it keeps holding up.`,
+        `${s.contestant} walks around camp a little taller — something ${s.coach} said actually stuck.`,
+        `${s.contestant} tries explaining the ${s.stat} fix to a tribemate and only half succeeds, but the attempt is the tell.`,
+        `${s.contestant} catches ${s.coach}'s eye across camp and gives a small nod — the drill worked, and both of them know it.`,
+      ],
+    };
+    addBond(s.coach, s.contestant, 0.4);
+    gs.popularity[s.contestant] = (gs.popularity[s.contestant] || 0) + 0.5;
+    events.push({
+      type: 'coachBreakthrough', players: [s.coach, s.contestant],
+      badgeText: 'BREAKTHROUGH', badgeClass: 'green',
+      text: pick(pool[arche] || pool.default),
+    });
+  }
+
+  // ── POSITIVE: a protégé defends their coach, unprompted ──
+  const coachNames = [...new Set([...sessions.map(s => s.coach), ...passedOver.map(p => p.coach)])];
+  for (const coachName of coachNames) {
+    const defender = members
+      .filter(m => m !== coachName && getBond(coachName, m) >= 3)
+      .sort((a, b) => getBond(coachName, b) - getBond(coachName, a))[0];
+    const skeptic = members.find(m => m !== defender && m !== coachName);
+    if (!defender || !skeptic || roll() >= 0.4) continue;
+    const arche = archetypeOf(defender);
+    const pool = {
+      hero: [
+        `${defender} won't let ${skeptic} write ${coachName} off, and it's not a strategic move — it just isn't true, as far as ${defender} is concerned.`,
+        `${defender} steps in front of a joke at ${coachName}'s expense and shuts it down flat.`,
+      ],
+      'loyal-soldier': [
+        `${defender} tells ${skeptic}, unprompted, that ${coachName} has more than earned the benefit of the doubt.`,
+        `${defender} defends ${coachName}'s picks to ${skeptic} like it's a personal matter, not a game one.`,
+      ],
+      default: [
+        `${defender} pushes back on ${skeptic}'s grumbling about ${coachName} — nobody asked ${defender} to.`,
+        `${defender} finds a reason to bring ${coachName} up favourably while talking to ${skeptic}, apropos of nothing.`,
+        `${defender} tells ${skeptic} flatly that ${coachName} knows what they're doing, and leaves it there.`,
+        `${defender} takes ${skeptic}'s dig at ${coachName} more personally than the moment called for.`,
+      ],
+    };
+    addBond(defender, coachName, 0.5);
+    events.push({
+      type: 'coachDefended', players: [defender, coachName, skeptic],
+      badgeText: 'DEFENDED THE COACH', badgeClass: 'green',
+      text: pick(pool[arche] || pool.default),
+    });
+  }
+
+  // ── POSITIVE: a bond forms between two protégés comparing what they got ──
+  const trainedNames = [...new Set(sessions.map(s => s.contestant))];
+  if (trainedNames.length >= 2 && roll() < 0.45) {
+    const a = pick(trainedNames);
+    const b = pick(trainedNames.filter(n => n !== a));
+    if (b) {
+      addBond(a, b, 0.4);
+      const pool = [
+        `${a} and ${b} compare notes on what they were each taught and end up trading tips of their own.`,
+        `${a} and ${b} realize they're both being built up for the same fight and decide that's a reason to team up, not compete.`,
+        `${a} walks ${b} through the drill they just got, and ${b} returns the favour — the coaching spreads faster than the coach intended.`,
+        `${a} and ${b} spend the rest of the evening running each other's new tricks, laughing every time one of them fumbles it.`,
+      ];
+      events.push({
+        type: 'coachProtegeBond', players: [a, b],
+        badgeText: 'BONDING', badgeClass: 'green',
+        text: pick(pool),
+      });
+    }
+  }
+
+  // ── NEGATIVE: the passed-over contestant noticing — guaranteed, and it escalates ──
+  for (const p of passedOver) {
+    gs._coachPassStreak[p.contestant] = (gs._coachPassStreak[p.contestant] || 0) + 1;
+    const streak = gs._coachPassStreak[p.contestant];
+    const arche = archetypeOf(p.contestant);
+    const early = {
+      villain: [
+        `${p.contestant} clocks getting skipped again and quietly starts a list of who ${p.coach} does call on.`,
+        `${p.contestant} says nothing to ${p.coach}'s face, and files the snub away for later.`,
+      ],
+      hothead: [
+        `${p.contestant} doesn't hide being annoyed at getting passed over — ${p.coach} hears about it within the hour.`,
+        `${p.contestant} vents loudly about ${p.coach}'s picks to anyone still listening.`,
+      ],
+      goat: [
+        `${p.contestant} assumes there's a good reason ${p.coach} skipped them and tries not to dwell on it.`,
+        `${p.contestant} shrugs off getting left out again, or does a decent job pretending to.`,
+      ],
+      default: [
+        `${p.contestant} notices being left off the board again and says nothing about it.`,
+        `${p.contestant} watches someone else get pulled aside and keeps their face carefully neutral.`,
+      ],
+    };
+    const escalated = [
+      `${p.contestant} has stopped pretending it's a coincidence — this is the ${streak === 3 ? 'third' : `${streak}th`} ${W.round} running ${p.coach} has passed them over.`,
+      `${p.contestant} is openly keeping count now: ${streak} straight ${W.round.toLowerCase()}s without a single session from ${p.coach}.`,
+      `${p.contestant} brings up the streak unprompted to a tribemate — ${streak} ${W.round.toLowerCase()}s of being skipped is no longer nothing.`,
+      `${p.contestant} has quietly decided ${p.coach}'s neglect is a pattern, not an accident, after ${streak} ${W.round.toLowerCase()}s of it.`,
+    ];
+    const pool = streak >= 3 ? escalated : (early[arche] || early.default);
+    addBond(p.coach, p.contestant, -0.2 * Math.min(streak, 3));
+    events.push({
+      type: 'coachPassedOverNotices', players: [p.contestant, p.coach],
+      badgeText: streak >= 3 ? 'PATTERN NOTICED' : 'LEFT OFF AGAIN', badgeClass: 'red',
+      text: pick(pool),
+    });
+  }
+
+  // Reset the streak for anyone who actually got a session this ep.
+  for (const s of sessions) gs._coachPassStreak[s.contestant] = 0;
+
+  // ── NEGATIVE: two protégés compare notes, and it turns sour ──
+  if (trainedNames.length && passedOver.length && roll() < 0.5) {
+    const trained = pick(trainedNames);
+    const stillOut = passedOver.filter(p => p.contestant !== trained);
+    const skipped = stillOut.length ? pick(stillOut).contestant : null;
+    if (skipped) {
+      addBond(trained, skipped, -0.3);
+      const pool = [
+        `${skipped} asks ${trained} what the session was like, and the answer only confirms who ${_coachOf(passedOver, skipped)} actually prioritizes.`,
+        `${trained} tries to downplay getting a session in front of ${skipped}, which somehow makes it worse.`,
+        `${skipped} watches ${trained} talk through the new drill and can't quite keep the resentment off their face.`,
+        `${trained} and ${skipped} compare who got called on this ${W.round.toLowerCase()} and end the conversation further apart than they started it.`,
+      ];
+      events.push({
+        type: 'coachCompareNotes', players: [trained, skipped],
+        badgeText: 'COMPARING NOTES', badgeClass: 'red',
+        text: pick(pool),
+      });
+    }
+  }
+
+  // ── NEGATIVE: a protégé caught between two coaches ──
+  const tribeCoaches = tribe?.tribeName ? coachesOf(tribe.tribeName) : [];
+  if (tribeCoaches.length >= 2) {
+    for (const s of sessions) {
+      const other = tribeCoaches.find(c => c.name !== s.coach);
+      if (!other) continue;
+      const otherBond = getBond(other.name, s.contestant);
+      if (otherBond < 2 || roll() >= 0.4) continue;
+      addBond(s.contestant, other.name, -0.3);
+      addBond(s.contestant, s.coach, 0.2);
+      const pool = [
+        `${s.contestant} gets pulled aside by ${other.name} right after training with ${s.coach}, and now has two coaches expecting loyalty.`,
+        `${s.contestant} tries to keep both ${s.coach} and ${other.name} happy and manages neither.`,
+        `${s.contestant} lets slip to ${other.name} what ${s.coach} just taught them, and immediately regrets it.`,
+        `${s.contestant} is starting to feel poached — ${other.name} wants the same attention ${s.coach} just got.`,
+      ];
+      events.push({
+        type: 'coachPoachedProtege', players: [s.contestant, s.coach, other.name],
+        badgeText: 'CAUGHT BETWEEN COACHES', badgeClass: 'red',
+        text: pick(pool),
+      });
+      break;
+    }
+  }
+
+  // ── NEGATIVE: bad advice detonates in front of everybody ──
+  for (const s of sessions) {
+    const gain = Number(s.gain) || 0;
+    if (gain >= 0 || roll() >= 0.6) continue;
+    gs.popularity[s.contestant] = (gs.popularity[s.contestant] || 0) - 0.5;
+    addBond(s.coach, s.contestant, -0.4);
+    const pool = [
+      `${s.contestant} tries out what ${s.coach} taught them at the worst possible moment and it falls apart in front of the whole tribe.`,
+      `${s.contestant} follows ${s.coach}'s advice to the letter and it backfires so badly that other ${W.players} start openly questioning the coaching.`,
+      `${s.contestant} publicly credits ${s.coach} for a ${s.stat} tip that turns out to be exactly wrong.`,
+      `${s.contestant} eats the blame for a bad ${s.stat} call that was really ${s.coach}'s, and everyone at camp watches it happen.`,
+    ];
+    events.push({
+      type: 'coachBadAdvice', players: [s.contestant, s.coach],
+      badgeText: 'BAD ADVICE', badgeClass: 'red',
+      text: pick(pool),
+    });
+  }
+
+  return events;
+}
+
+/** Which coach passed over this contestant — used only inside coachFallout's compare-notes text. */
+function _coachOf(passedOverList, name) {
+  return passedOverList.find(p => p.contestant === name)?.coach || 'their coach';
 }

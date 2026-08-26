@@ -4610,7 +4610,7 @@
       "nationality": "American",
       "hometown": "New York",
       "occupation": "Psychology student",
-      "descriptor": "Astrology junkie",
+      "descriptor": "The Astrology junkie",
       "backstory": "Aubrey grew up attending public school, where she preferred reading to going out for recess and was much shyer as a child before gradually becoming more self-assured. She studies psychology and got into astrology while in college, even tying star charts into academic work. Her parents are in their early forties, and she has a Siamese cat named Ziggy. Outside school and astrology, she enjoys traveling, reading fantasy books, socializing, cross stitching, and cake decorating.",
       "personality": "Aubrey is sociable, self-assured, and eager to lead, but she is also highly judgmental and prone to deciding who is trustworthy before she really knows them. Under pressure, she can lose composure fast, snapping into anger when she feels slighted or when events stop matching the story she has built in her head. Her loyalty is strongest toward people she believes she can understand or categorize, especially through astrology, while she is much colder toward those she has written off. She will keep pushing toward a goal and offer advice when she feels in control, but she will not easily abandon her biases or admit that her first read of someone may be wrong."
     },
@@ -4631,20 +4631,19 @@
         "temperament": 2
       },
       "sexuality": "bi",
+      "voice": "Asian Korean American, The Class President, bi.",
       "profileSources": {},
       "birthdate": "2005-10-25",
       "ethnicity": "Asian",
       "nationality": "Korean American",
       "hometown": "DC",
       "occupation": "Business student",
-      "descriptor": "The Class President",
-      "voice": "Asian Korean American, The Class President, bi."
+      "descriptor": "The Class President"
     },
     {
       "name": "Bruno",
       "slug": "bruno",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "loyal-soldier",
       "stats": {
         "physical": 5,
@@ -4657,13 +4656,20 @@
         "intuition": 4,
         "temperament": 9
       },
-      "profileSources": {}
+      "sexuality": "straight",
+      "profileSources": {},
+      "age": 23,
+      "birthdate": "2003-06-24",
+      "ethnicity": "Latino",
+      "nationality": "Peruvian American",
+      "hometown": "Lima",
+      "occupation": "Personal assistant",
+      "descriptor": "The Superfan"
     },
     {
       "name": "Dunia",
       "slug": "dunia",
       "gender": "f",
-      "sexuality": "lesbian",
       "archetype": "perceptive-player",
       "stats": {
         "physical": 5,
@@ -4676,13 +4682,20 @@
         "intuition": 8,
         "temperament": 8
       },
-      "profileSources": {}
+      "sexuality": "lesbian",
+      "profileSources": {},
+      "age": 31,
+      "birthdate": "1995-03-03",
+      "ethnicity": "Black",
+      "nationality": "Congolese Canadian",
+      "hometown": "Montreal",
+      "occupation": "Witch / tarot reader",
+      "descriptor": "The Tarot Reader"
     },
     {
       "name": "Ernesto",
       "slug": "ernesto",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "underdog",
       "stats": {
         "physical": 6,
@@ -4695,13 +4708,20 @@
         "intuition": 3,
         "temperament": 7
       },
-      "profileSources": {}
+      "sexuality": "straight",
+      "profileSources": {},
+      "age": 64,
+      "birthdate": "1962-01-11",
+      "ethnicity": "White",
+      "nationality": "Spanish",
+      "hometown": "Buitrago de Lozoya",
+      "occupation": "Corporate trainer",
+      "descriptor": "The Elder"
     },
     {
       "name": "Evie",
       "slug": "evie",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "goat",
       "stats": {
         "physical": 2,
@@ -4714,14 +4734,20 @@
         "intuition": 2,
         "temperament": 8
       },
+      "sexuality": "straight",
+      "voice": "White American, The Heiress.",
       "profileSources": {},
-      "voice": "White American, The Heiress."
+      "birthdate": "1967-02-09",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Aspen",
+      "occupation": "Unemployed",
+      "descriptor": "The Heiress"
     },
     {
       "name": "Finn",
       "slug": "finn",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "chaos-agent",
       "stats": {
         "physical": 5,
@@ -4734,13 +4760,20 @@
         "intuition": 6,
         "temperament": 2
       },
-      "profileSources": {}
+      "sexuality": "gay",
+      "profileSources": {},
+      "age": 20,
+      "birthdate": "2006-08-17",
+      "ethnicity": "White",
+      "nationality": "Australian",
+      "hometown": "Sydney",
+      "occupation": "Performing arts student",
+      "descriptor": "The Theater Kid"
     },
     {
       "name": "Manu",
       "slug": "manu",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "loyal-soldier",
       "stats": {
         "physical": 7,
@@ -4753,13 +4786,20 @@
         "intuition": 6,
         "temperament": 7
       },
-      "profileSources": {}
+      "sexuality": "straight",
+      "profileSources": {},
+      "age": 41,
+      "birthdate": "1985-05-02",
+      "ethnicity": "Samoan",
+      "nationality": "American Samoan",
+      "hometown": "Hawaii",
+      "occupation": "Appliance salesman",
+      "descriptor": "The Big Brother"
     },
     {
       "name": "Nura",
       "slug": "nura",
       "gender": "f",
-      "sexuality": "lesbian",
       "archetype": "hothead",
       "stats": {
         "physical": 5,
@@ -4772,13 +4812,20 @@
         "intuition": 6,
         "temperament": 2
       },
-      "profileSources": {}
+      "sexuality": "lesbian",
+      "profileSources": {},
+      "age": 29,
+      "birthdate": "1996-11-21",
+      "ethnicity": "Black",
+      "nationality": "American Somali",
+      "hometown": "San Francisco",
+      "occupation": "Retail cashier",
+      "descriptor": "The Debbie Downer"
     },
     {
       "name": "Oliwia",
       "slug": "oliwia",
       "gender": "f",
-      "sexuality": "asexual",
       "archetype": "wildcard",
       "stats": {
         "physical": 3,
@@ -4791,13 +4838,20 @@
         "intuition": 4,
         "temperament": 3
       },
-      "profileSources": {}
+      "sexuality": "asexual",
+      "profileSources": {},
+      "age": 25,
+      "birthdate": "2001-09-17",
+      "ethnicity": "White",
+      "nationality": "Polish-American",
+      "hometown": "Alaska",
+      "occupation": "Taxidermist",
+      "descriptor": "The Taxidermist"
     },
     {
       "name": "Ren",
       "slug": "ren",
       "gender": "nb",
-      "sexuality": "queer",
       "archetype": "challenge-beast",
       "stats": {
         "physical": 7,
@@ -4810,13 +4864,20 @@
         "intuition": 2,
         "temperament": 6
       },
-      "profileSources": {}
+      "sexuality": "queer",
+      "profileSources": {},
+      "age": 26,
+      "birthdate": "1999-12-10",
+      "ethnicity": "Latino",
+      "nationality": "American Chilean",
+      "hometown": "Las Vegas",
+      "occupation": "Graphic designer",
+      "descriptor": "The Circus Artist"
     },
     {
       "name": "Sami",
       "slug": "sami",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "mastermind",
       "stats": {
         "physical": 7,
@@ -4829,7 +4890,15 @@
         "intuition": 7,
         "temperament": 5
       },
-      "profileSources": {}
+      "sexuality": "gay",
+      "profileSources": {},
+      "age": 29,
+      "birthdate": "1997-10-29",
+      "ethnicity": "Asian",
+      "nationality": "American Thai",
+      "hometown": "Bangkok",
+      "occupation": "Risk analyst",
+      "descriptor": "The Analyst"
     }
   ]
 }

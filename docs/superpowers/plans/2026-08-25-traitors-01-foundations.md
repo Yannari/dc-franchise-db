@@ -222,7 +222,11 @@ git commit -m "The registry learns a show with two ways to leave it"
 
 **Interfaces:**
 - Consumes: `SHOWS.traitors` from Task 1.
-- Produces: `showIcon(fmt)`, `showAccent(fmt)`, `showPrefix(fmt)`, `showShort(fmt)` exported from `js/shows.js`, alongside the existing `showName()` and `showWords()`.
+- Produces: `showShort(fmt)`, `showIcon(fmt)`, `showAccent(fmt)` exported from `js/shows.js`, alongside the **already existing** `formatPrefix()`, `showName()`, `showWords()`, `seasonId()` and `parseSeasonRef()`.
+
+**Do NOT add a `showPrefix`.** `formatPrefix(format)` already exists at
+`js/shows.js:87` and does exactly that job. A second function for one job with
+different fallback semantics is duplication, not a convenience.
 
 **Why now:** the manual puts this second on purpose. The show is a registry entry with no data, so the diff is small and the failure mode is obvious. It converts eight chances to forget the show into zero. Doing it after the engine exists means eight silent mislabels found weeks later.
 
@@ -246,11 +250,11 @@ Append to `tests/traitors-registry.test.js`:
 
 ```js
 import { readFileSync } from 'node:fs';
-import { showIcon, showAccent, showPrefix, showShort } from '../js/shows.js';
+import { showIcon, showAccent, showShort, formatPrefix } from '../js/shows.js';
 
 describe('identity lives only in the registry', () => {
   it('exposes every identity field a screen needs', () => {
-    expect(showPrefix('traitors')).toBe('tr');
+    expect(formatPrefix('traitors')).toBe('tr');
     expect(showShort('traitors')).toBe('TR');
     expect(showIcon('traitors')).toBe(SHOWS['traitors'].emoji);
     expect(typeof showAccent('traitors')).toBe('string');
@@ -294,8 +298,9 @@ In `js/shows.js`, beside the existing `showName()`/`showWords()`:
 //
 // Unknown formats return a neutral value rather than falling back to the
 // default show: being told nothing is recoverable, being told the wrong show is
-// not.
-export function showPrefix(fmt) { return SHOWS[fmt]?.prefix || ''; }
+// not. formatPrefix() above is the deliberate exception and keeps its Total
+// Drama fallback, because for a PREFIX an absent format really is Total Drama —
+// that is the bare-integer rule the whole site depends on.
 export function showShort(fmt)  { return SHOWS[fmt]?.short  || ''; }
 export function showIcon(fmt)   { return SHOWS[fmt]?.emoji  || ''; }
 export function showAccent(fmt) { return SHOWS[fmt]?.accent || 'var(--accent)'; }

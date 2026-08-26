@@ -316,6 +316,15 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // season replaces gs wholesale.
     blockedMurders: [...(gs.tr.blockedMurders || [])],
     roleHistory: [...(gs.tr.roleHistory || [])],
+    // Every narrative thread the castle opened, with its full beat log.
+    // HARNESS DATA, NOT BEHAVIOUR — nothing in the engine reads this copy.
+    // It is here because "continuation beats novelty" is this plan's central
+    // claim and it was unmeasurable from outside the season: `gs` is replaced
+    // wholesale by the next one, so a caller that plays 200 seasons and then
+    // reads `gs.tr.threads` is reading season 200 and calling it a
+    // population. Copied out for the same reason `rounds` and `roleHistory`
+    // are.
+    threads: [...(gs.tr.threads || [])],
     survivors: [...(gs.activePlayers || [])],
     winner: survivingTraitors.length ? 'traitors' : 'faithfuls',
   };

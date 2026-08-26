@@ -40,6 +40,28 @@ const CONTINUATION_BASE = 1;       // a live-but-cold thread still beats a fresh
 const CONTINUATION_PER_HEAT = 0.5; // a hot thread beats a cold one by more
 const RARE_MULTIPLIER = 2;         // amplify UP when a rare precondition clears, never down
 
+// The live values `_score` reads. They are variables and not the constants
+// above for exactly one reason: the continuity band in tr-calibration.test.js
+// asserts that the continuation guard is doing something, and a band that
+// cannot be shown to go red when the thing it guards is switched off is not a
+// measurement — it is the eleventh unfailable guard in this project. The
+// control arm needs the multiplier flattened to 1, and flattening it requires
+// a seam. Nothing in the show may ever call this; it is the same contract as
+// `_resetRegistry` and as `evidence` in playTraitorsSeason.
+let _contBase = CONTINUATION_BASE;
+let _contPerHeat = CONTINUATION_PER_HEAT;
+
+/**
+ * Test-only: retune (or disable) guard 1. Returns a restore function — call it
+ * in a `finally`, because leaving the guard flattened would silently change
+ * every other measurement in the file that runs after.
+ */
+export function _setContinuationGuard({ base = CONTINUATION_BASE, perHeat = CONTINUATION_PER_HEAT } = {}) {
+  const prevBase = _contBase, prevPerHeat = _contPerHeat;
+  _contBase = base; _contPerHeat = perHeat;
+  return () => { _contBase = prevBase; _contPerHeat = prevPerHeat; };
+}
+
 // Per-scope cooldown durations (episodes), deliberately UNEQUAL. If all three
 // scopes held the same window, the event-scope check — which blocks ANY
 // re-firing of that id, for anyone — would always be the thing doing the
@@ -183,7 +205,7 @@ function _score(ev, ctx) {
     const thread = findOpenThread(ev.family, ctx.actors);
     if (thread) {
       const heat = heatAt(thread, ctx.ep);
-      continuationMult = 1 + CONTINUATION_BASE + heat * CONTINUATION_PER_HEAT;
+      continuationMult = 1 + _contBase + heat * _contPerHeat;
     }
   }
 
@@ -239,8 +261,36 @@ export function pickEvent(ctx, rng) {
     cds.pair[`${chosen.id}:${_pairKey(ctx.actors)}`] = ctx.ep;
   }
 
+  // WHAT THE CONTINUATION GUARD ACTUALLY DID, SAMPLED BEFORE fire() RUNS.
+  //
+  // Both flags are HARNESS DATA — nothing in the engine reads them — and both
+  // must be read here rather than reconstructed afterwards, because fire()
+  // opens, advances and closes threads, so a scene that HAD a live story
+  // before the draw is indistinguishable from one that was just given one.
+  //
+  //   liveThread — these exact actors already had an open thread with somebody
+  //                (any family). This is the conditioning set: the guard can
+  //                only ever act on a scene where there is something to
+  //                continue, so it is the only population in which its effect
+  //                is visible at all.
+  //   continued  — the event the draw actually landed on is one that advances
+  //                a thread these actors already had. This is the plan's
+  //                central claim, stated as an observable.
+  //
+  // The unconditional "what share of beats were advances" is NOT that claim
+  // and must not be banded as if it were: it is dominated by the runner
+  // re-drawing the same pair by chance and openThread folding the second
+  // scene into the first thread, which happens at very nearly the same rate
+  // with the guard switched off. See the band in tr-calibration.test.js.
+  const liveThread = ctx.actors?.length
+    ? (gs.tr.threads || []).some(t => t.state === 'open'
+        && _pairKey(t.parties) === _pairKey(ctx.actors))
+    : false;
+  const continued = !!(chosen.advancesThread && ctx.actors?.length
+    && findOpenThread(chosen.family, ctx.actors));
+
   const consequences = chosen.fire(ctx, rng);
-  return { event: chosen, consequences };
+  return { event: chosen, consequences, liveThread, continued };
 }
 
 // ── The runner: seven social windows around four mechanical beats (§5.6) ──

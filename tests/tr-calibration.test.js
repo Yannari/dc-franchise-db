@@ -15,6 +15,7 @@ import { learn } from '../js/knowledge.js';
 import { alignmentFactId, ballotEvidence, suspicionBoard } from '../js/tr/deduction.js';
 import { alignmentAt } from '../js/tr/roles.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
+import { _setContinuationGuard } from '../js/tr/events.js';
 import roster from '../franchise_roster.json';
 
 // franchise_roster.json is { players: [...] }, NOT a bare array. Reaching for
@@ -156,6 +157,71 @@ const EARLY = b => b.slice(0, Math.floor(b.length / 2));
 const LATE = b => b.slice(Math.floor(b.length / 2));
 const ALL = b => b;
 
+/**
+ * DOES THE CASTLE CONTINUE A STORY, OR JUST START FORTY OF THEM?
+ *
+ * `continued / liveScenes`, and the choice of that denominator is the whole
+ * measurement — see the long comment on the band below for why the obvious
+ * alternative is unfailable.
+ *
+ *   liveScenes — draws whose actors already had an open thread with each
+ *                other. The guard can only act where there is something to
+ *                continue, so this is the only population it is visible in.
+ *   continued  — draws that landed on an event which advances a thread those
+ *                actors already had.
+ *
+ * Both flags are sampled inside pickEvent BEFORE fire() runs (see events.js):
+ * afterwards a scene that had a live story is indistinguishable from one that
+ * was just handed one.
+ *
+ * The rest is diagnostics — thread lengths, revivals from cold, payoffs —
+ * printed and asserted nowhere, because none of them separates the guard from
+ * the control.
+ */
+function continuity(seasons) {
+  let firings = 0, liveScenes = 0, continued = 0;
+  let threads = 0, beats = 0, revivals = 0, closed = 0, singleAndCold = 0;
+  const lens = {};
+  for (const s of seasons) {
+    for (const r of s.log) {
+      for (const f of (r.castleEvents || [])) {
+        firings++;
+        if (f.liveThread) liveScenes++;
+        if (f.continued) continued++;
+      }
+    }
+    for (const t of (s.threads || [])) {
+      threads++;
+      beats += t.beats.length;
+      lens[t.beats.length] = (lens[t.beats.length] || 0) + 1;
+      if (t.state === 'closed') closed++;
+      else if (t.beats.length === 1) singleAndCold++;
+      // Heat as heatAt() computes it, replayed over the beat log, so we can ask
+      // what the heat WAS when each beat landed. A beat that arrives on a
+      // thread already decayed to zero is the "she never let it go" revival
+      // findOpenThread's parties-keyed lookup exists to make reachable.
+      let heat = 0, lastEp = null;
+      for (const b of t.beats) {
+        if (lastEp != null) {
+          const before = Math.max(0, heat - Math.max(0, b.ep - lastEp) * 0.5);
+          if (before === 0) revivals++;
+          heat = Math.min(4, before + 1);
+        } else heat = 1;
+        lastEp = b.ep;
+      }
+    }
+  }
+  return { firings, liveScenes, continued, threads, beats, revivals, closed,
+    rate: continued / liveScenes,
+    liveShare: liveScenes / firings,
+    advanceShare: (beats - threads) / beats,
+    meanLen: beats / threads,
+    revivalShare: revivals / beats,
+    closedShare: closed / threads,
+    deadShare: singleAndCold / threads,
+    lens };
+}
+
 describe('the castle, measured over many seasons', () => {
   const seasons = run();
 
@@ -245,6 +311,15 @@ describe('the castle, measured over many seasons', () => {
     // block still reads 6.64pp, and it costs 2pp of late lift. There is no
     // price of this channel at which 0.05 is honestly green.
     //
+    // RE-SWEPT AGAIN AFTER THE `clashTraced` DELETION, AND THE PRICE WENT UP,
+    // NOT DOWN: 0.36 -> 0.62, the alignment credibility ceiling (see the
+    // control-matched sweep in js/tr/deduction.js). Early lift went DOWN with
+    // it — twelve-block mean 5.67 -> 3.95pp, worst block 7.38 -> 6.87pp — so
+    // the loudest this channel can legally be is also the least early-leaky
+    // this engine has measured. The 0.10 ceiling now has 3.1pp of headroom on
+    // the worst block rather than 2.3pp, and it is still not tightened; see
+    // below for what it can and cannot catch.
+    //
     // So the band is re-derived from the observed distribution, and the reason
     // a room reading ~6pp above chance in the first half is CORRECT for this
     // format is the murder itself. Before Plan 3 the first half of a season
@@ -303,11 +378,20 @@ describe('the castle, measured over many seasons', () => {
 
     // LATE: by the second half every reveal has re-scored a round of ballots,
     // and the endgame is supposed to be the sharpest table of the season.
-    // Measured 18.31pp mean, sd 1.82, worst block 15.24pp over twelve
-    // decorrelated 200-season blocks — green everywhere, but THE THINNEST GATE
-    // IN THE FILE (0.24pp on its worst block) and the number that decided
-    // M.pushedThenDied's price (see js/tr/deduction.js). Any future change to
-    // the murder layer hits this band first.
+    //
+    // Measured 20.19pp mean, sd 2.72, worst block 15.19pp over twelve
+    // decorrelated 200-season blocks at the repriced M.pushedThenDied = 0.62
+    // (was 19.11pp mean / worst 15.03 at 0.36). STILL THE THINNEST GATE IN THE
+    // FILE — 0.19pp on its worst block, up from 0.03pp — and any future change
+    // to the murder layer hits it first.
+    //
+    // THE WORST BLOCK IS NOT A RESULT AND WAS NOT USED AS ONE. Across the
+    // price sweep the worst-of-twelve wandered 13.70 / 14.35 / 15.03 / 15.19 /
+    // 16.82pp with no monotone relation to price, against a per-block sd of
+    // 1.7 — it is one unlucky block, exactly the statistic that produced this
+    // project's three most flattering refuted numbers. The price was decided
+    // on the channel's edge over a matched noise control, not on this figure.
+    // The figure is quoted only to say how much room the band has left.
     //
     // Deleting the `clash-traced` channel moved this 19.02 -> 18.31pp. That is
     // NOT a 0.71pp loss: measured block-by-block the change is -5.1, +1.5,
@@ -424,6 +508,10 @@ describe('the castle, measured over many seasons', () => {
       + ` (grows ${(realGrowth * 100).toFixed(1)}pp, raw lift ${(rAll.rate / rAll.nul).toFixed(2)}x)`);
 
     let worstGrowth = -Infinity, worstK = null, minTotal = Infinity;
+    // The LOWEST early lift any noise density manages — the placebo's best
+    // attempt at looking like an engine that is not leaking. See the band on it
+    // at the foot of this test.
+    let bestPlaceboEarly = Infinity;
     for (const k of PLACEBO_K) {
       const placebo = run(SEASONS, 3, placeboEvidence(k));
       const pEarly = liftOver(placebo, EARLY), pLate = liftOver(placebo, LATE);
@@ -432,9 +520,12 @@ describe('the castle, measured over many seasons', () => {
       console.log(`placebo k=${k}: ${(pEarly.lift * 100).toFixed(1)}pp -> ${(pLate.lift * 100).toFixed(1)}pp`
         + ` (grows ${(growth * 100).toFixed(1)}pp, raw lift ${(pAll.rate / pAll.nul).toFixed(2)}x)`);
       minTotal = Math.min(minTotal, pEarly.total);
+      bestPlaceboEarly = Math.min(bestPlaceboEarly, pEarly.lift);
       if (growth > worstGrowth) { worstGrowth = growth; worstK = k; }
     }
     console.log(`worst placebo: k=${worstK} at ${(worstGrowth * 100).toFixed(1)}pp`);
+    console.log(`placebo early lift, best density: ${(bestPlaceboEarly * 100).toFixed(1)}pp `
+      + `(the early band's ceiling is 10.0pp)`);
 
     expect(minTotal, 'a placebo produced no banishments to compare against').toBeGreaterThan(100);
     // A TRIPWIRE, NOT A GATE — AND IT IS LABELLED THAT WAY BECAUSE IT CANNOT
@@ -469,6 +560,27 @@ describe('the castle, measured over many seasons', () => {
       .toBeLessThan(0.20);
     expect(realGrowth, 'the engine sharpens no faster than pure noise does -- the ballot layer is inert')
       .toBeGreaterThan(worstGrowth + 0.05);
+
+    // THE EARLY BAND'S PROOF OF FAILABILITY, ASSERTED RATHER THAN CLAIMED.
+    //
+    // The comment on the early ceiling (0.10, in BEATS CHANCE above) says the
+    // placebo is red there on every block. That was a claim in prose about
+    // numbers nothing re-ran, and this file has been wrong in exactly that way
+    // before. The placebo is already played here for the growth band, so the
+    // check is free: the LEAST leaky noise density must still come in over the
+    // ceiling the engine has to stay under. Measured 17.1pp at k=3 and k=1
+    // against a 10.0pp ceiling, on an engine reading 3.4pp.
+    //
+    // This is also the answer to "can the early band be tightened". It cannot
+    // usefully be: the only leak class it demonstrably catches is this one, it
+    // catches it with 7pp to spare, and the ground-truth oracle it was
+    // originally written against is now structurally unreachable — `blames` was
+    // that oracle's only route into the belief store and murderEvidence no
+    // longer reads it. A tighter ceiling would catch nothing more and would go
+    // red on block noise.
+    expect(bestPlaceboEarly, 'the placebo no longer leaks early — the early band now '
+      + 'catches nothing at all and is evidence of nothing')
+      .toBeGreaterThan(0.10);
   });
 
   // THE BAND THAT ISOLATES INFERENCE, AND THE ONLY ONE NOISE INJECTION CANNOT
@@ -521,6 +633,107 @@ describe('the castle, measured over many seasons', () => {
     expect(engine.precision,
       'the engine reads no better than pure noise does when it has a read at all')
       .toBeGreaterThan(placebo.precision + 0.15);
+  });
+
+  // ── THE PLAN'S CENTRAL CLAIM, MEASURED AT LAST ────────────────────
+  //
+  // "Continuation beats novelty" is the one rule that is supposed to stop a
+  // season reading as forty unconnected incidents, and until this band it was
+  // asserted in four doc comments and measured nowhere.
+  //
+  // THE OBVIOUS METRIC IS UNFAILABLE AND MUST NOT BE USED. The natural reading
+  // of the claim is "what share of thread beats were advances rather than
+  // opens", and it is 11.6%. With the continuation guard FLATTENED TO 1 — the
+  // rule switched off entirely — it is 11.0%. Twelve decorrelated 200-season
+  // blocks each way; the distributions overlap; any floor the live engine
+  // clears the dead one clears too. Nearly all of that 11.6% is the runner
+  // re-drawing the same pair by chance and openThread folding the second scene
+  // into the first thread, which happens at the same rate whether or not
+  // anything is preferring continuation. A band on it would have been the
+  // eleventh unfailable guard in this project, and it would have been guarding
+  // the plan's whole thesis.
+  //
+  // WHAT IS ACTUALLY FAILABLE is the CONDITIONAL rate: given a scene whose
+  // actors already have a live story, how often does the draw land on an event
+  // that continues it? That is where the multiplier lives, and it separates
+  // cleanly. Twelve decorrelated blocks, four strengths of the same guard:
+  //
+  //   guard OFF     (mult 1)    0.1989 mean   sd 0.0089   range 0.1831-0.2155
+  //   guard HALVED  (0.5/0.25)  0.2333 mean   sd 0.0117   range 0.2115-0.2485
+  //   guard SHIPPED (1/0.5)     0.2606 mean   sd 0.0138   range 0.2347-0.2763
+  //   guard DOUBLED (2/1)       0.2917 mean   sd 0.0133   range 0.2666-0.3095
+  //
+  // Monotone in the knob, and the shipped and OFF ranges do not overlap: the
+  // worst live block (0.2347) is above the best dead block (0.2155). A
+  // failable band has to sit in that 1.9pp window, and 0.22 is where it sits —
+  // 1.47pp under the worst live block, 0.45pp over the best dead one. There is
+  // no wider band that can fail, and a band that cannot fail is not evidence.
+  //
+  // THE CONTROL RUNS EVERY TIME, and that is not ceremony. A floor chosen from
+  // a measurement goes stale the moment content changes; an assertion that the
+  // SAME seeds with the guard switched off come in UNDER that floor cannot go
+  // stale, because it re-derives the separation on every run. If a future
+  // change makes the guard inert, this test goes red on the third assertion
+  // even if someone has been generous with the first.
+  //
+  // WHAT IT CATCHES, EXACTLY. Verified by mutation, not asserted: setting
+  // CONTINUATION_BASE and CONTINUATION_PER_HEAT to 0 in events.js takes the
+  // shipped block from 26.9% to 21.6% and this test goes RED on the first
+  // assertion. It is a band on the guard being SWITCHED OFF, not on the guard
+  // being weak: a HALVED guard reads 24.7% on the shipped block and passes the
+  // floor, and clears the separation assertion below by 0.002. Nothing here
+  // would catch a guard quietly detuned by half, and nothing at 200 seasons a
+  // block could — the halved and shipped distributions overlap.
+  //
+  // WHAT THE DIAGNOSTICS SAY, AND IT IS NOT FLATTERING. 89.6% of threads are
+  // opened, given one beat, and never touched again; the mean thread is 1.13
+  // beats long; 0.6% of threads ever reach closeThread and a payoff, and
+  // abandonThread is never called by the engine at all. Revivals from cold
+  // happen — 4.6% of beats land on a thread whose heat had already decayed to
+  // zero, which is the parties-keyed findOpenThread lookup doing exactly the
+  // job Task 1 built it for — but the castle is still overwhelmingly a place
+  // where stories start. The structural reason is that `_sceneActors` picks
+  // WHO is in the scene at random and only then asks what happens: the guard
+  // can prefer continuation, but nothing ever convenes a scene BECAUSE there
+  // is a live story to continue. Fixing that is a scene-selection change and
+  // belongs to a later plan; it is recorded here so the next person does not
+  // read a green tick as "the castle tells long stories".
+  it('CONTINUES A STORY: a live thread is preferred to a fresh one', () => {
+    const live = continuity(seasons);
+    // The same seeds, the same content, guard 1 flattened to a multiplier of 1.
+    // Restored in a finally: leaving it flat would silently change every
+    // measurement in this file that runs afterwards.
+    const restore = _setContinuationGuard({ base: 0, perHeat: 0 });
+    let dead;
+    try { dead = continuity(run()); } finally { restore(); }
+
+    console.log(`continuation: ${(live.rate * 100).toFixed(1)}% of ${live.liveScenes} live-thread scenes `
+      + `continued (guard off: ${(dead.rate * 100).toFixed(1)}% of ${dead.liveScenes})`);
+    console.log(`[diagnostic, NOT a gate] ${live.firings} firings, ${live.threads} threads, `
+      + `${(live.liveShare * 100).toFixed(1)}% of scenes had a live thread, `
+      + `advance share ${(live.advanceShare * 100).toFixed(1)}% (guard off ${(dead.advanceShare * 100).toFixed(1)}%)`);
+    console.log(`[diagnostic, NOT a gate] mean thread ${live.meanLen.toFixed(2)} beats, `
+      + `${(live.deadShare * 100).toFixed(1)}% die at one beat, ${(live.closedShare * 100).toFixed(1)}% reach a payoff, `
+      + `${(live.revivalShare * 100).toFixed(1)}% of beats revive a cold thread`);
+    console.log(`[diagnostic, NOT a gate] thread lengths: ${JSON.stringify(live.lens)}`);
+
+    // Non-vacuity first: a run where nobody ever walked into a scene with a
+    // live story would make the ratio meaningless however good it looked.
+    expect(live.liveScenes, 'no scene ever had a live thread — this ratio is noise')
+      .toBeGreaterThan(500);
+    expect(dead.liveScenes, 'the control produced no live-thread scenes to compare against')
+      .toBeGreaterThan(500);
+
+    expect(live.rate, 'the castle starts stories and never continues them — guard 1 is inert')
+      .toBeGreaterThan(0.22);
+    // THE PROOF THE BAND ABOVE CAN FAIL. Same seeds, same pool, rule off.
+    expect(dead.rate, 'the continuation band is green with continuation SWITCHED OFF — '
+      + 'it is measuring the runner re-drawing a pair by chance, not the guard')
+      .toBeLessThan(0.22);
+    // And the separation itself, which does not depend on 0.22 being well
+    // chosen. Worst of twelve decorrelated blocks: +4.33pp.
+    expect(live.rate - dead.rate, 'the continuation guard moved nothing')
+      .toBeGreaterThan(0.03);
   });
 
   // ── THE TWO BANDS THIS PLAN EARNS ─────────────────────────────────

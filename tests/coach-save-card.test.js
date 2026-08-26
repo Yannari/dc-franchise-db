@@ -54,12 +54,30 @@ describe('the save card', () => {
     expect(tribe.members).toContain(out.replacement);
   });
 
-  it('never picks another coach as the replacement', () => {
+  it('a coach who is not a tribe member is never selected', () => {
     addCoach({ name: 'Yul', tribe: 'Red' });
     addBond('Julia', 'Evie', 9);
     addBond('Julia', 'Finn', 8);
     const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
     expect(out.replacement).not.toBe('Yul');
+  });
+
+  it('filters out a coach even if one is wrongly seeded into tribe.members', () => {
+    // Real callers never put a coach in tribe.members (coaches never enter
+    // gs.activePlayers). This seeds it wrong ON PURPOSE, with Yul given the
+    // WEAKEST bond of anyone in the array (but still positive, so the
+    // unanimity check itself passes), so the plain lowest-bond sort would
+    // name Yul first if the isCoach filter were not there. A filter with no
+    // coverage is indistinguishable from a filter that does nothing.
+    addCoach({ name: 'Yul', tribe: 'Red' });
+    addBond('Julia', 'Evie', 9);
+    addBond('Julia', 'Finn', 8);
+    addBond('Julia', 'Yul', 0.5); // weakest bond in the array, but still assent
+    const rigged = { tribeName: 'Red', members: ['Evie', 'Finn', 'Yul'] };
+    const out = offerSaveCard({ num: 6 }, 'Julia', rigged);
+    expect(out.played).toBe(true);
+    expect(out.replacement).not.toBe('Yul');
+    expect(['Evie', 'Finn']).toContain(out.replacement);
   });
 
   it('cannot be played twice', () => {

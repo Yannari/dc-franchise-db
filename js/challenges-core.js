@@ -2,6 +2,19 @@
 import { gs, players, seasonConfig } from './core.js';
 import { pStats, pronouns, threatScore, threat } from './players.js';
 import { getBond, addBond } from './bonds.js';
+import { trainingBonus } from './coaches.js';
+
+// Challenges here score with `chal.stat(s)` — a formula over the full stats
+// object rather than a fixed primary/secondary pair — so banked training is
+// applied by handing the formula an augmented stats object with the bank
+// added to every stat, exactly the shape trainingBonus already returns 0 for
+// untrained stats/players.
+function _trainedStats(name) {
+  const s = pStats(name);
+  const out = {};
+  for (const k of Object.keys(s)) out[k] = s[k] + trainingBonus(name, k);
+  return out;
+}
 
 export function pickChallenge(mode = 'both') {
   // Filter by mode: 'team', 'individual', or 'both' (accepts challenges tagged 'both' or matching mode)
@@ -114,7 +127,7 @@ export function simulateTribeChallenge(tribes) {
           }
         }
       }
-      return { name: m, score: chal.stat(pStats(m)) - _injP - survPenalty - _moleThrowPenalty + (Math.random()*4-2) };
+      return { name: m, score: chal.stat(_trainedStats(m)) - _injP - survPenalty - _moleThrowPenalty + (Math.random()*4-2) };
     });
     // The Mole: target sabotage — reduce another player's score after all scores computed
     if (gs._moleChalTargetSabotage?.length) {
@@ -206,7 +219,7 @@ export function simulateIndividualChallenge(pool, immune) {
   // Score every candidate so we can produce a full ranking
   const scored = candidates
     .map(name => {
-      const base = chal.stat(pStats(name));
+      const base = chal.stat(_trainedStats(name));
       const streak = _streaks[name] || 0;
       const fatigue = streak >= 4 ? 3 : streak >= 3 ? 2 : streak >= 2 ? 1.5 : streak >= 1 ? 0.5 : 0;
       // Lingering injury penalty — decays over episodes

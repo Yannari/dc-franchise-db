@@ -187,7 +187,12 @@ const CHANNELS = {
   /**
    * THE REAL, SHIPPED CHANNEL. Transcribed from murderEvidence() in
    * js/tr/deduction.js — "you wanted them gone at the table, and that night
-   * they died", priced at M.pushedThenDied = 0.36.
+   * they died", priced at M.pushedThenDied = 0.62 (the alignment credibility
+   * ceiling; see the sweep in js/tr/deduction.js). The price does not enter
+   * this audit — measureChannel scores WHO a channel indicts, not how loudly —
+   * so a reprice moves nothing here, and that independence is the point: the
+   * 1.21x-against-a-1.20x-control below is a property of the channel's
+   * selection rule at any volume.
    *
    * Three details are load-bearing and all three are in the original:
    *   - the ATTEMPT, not the death (`murderTarget ?? murdered`), suppressed on

@@ -392,27 +392,64 @@ export function revealCascade(name, wasTraitor, ep, rng = Math.random) {
 // only the PRICE — the loudest belief in the engine was carrying little
 // information, and it diluted every board it touched.
 //
-// pushedThenDied 0.48 -> 0.36. Measured over twelve DECORRELATED 200-season
-// blocks (see rngFor in headless.js), 0.36 is the lowest price at which the
-// late-lift band stays green on all twelve: at 0.30 the worst block reads
-// 13.99pp and at 0.24 it reads 13.81pp, both under the +15pp floor, while 0.36
-// holds a worst block of 15.74pp. Everything else is flat to within block noise
-// — early 5.58 -> 6.30pp (sd 1.6), late 19.17 -> 19.02pp, board 1.877 ->
-// 1.875x — and that flatness IS the finding: a price that can be cut by a
-// quarter without moving any band was not buying signal.
+// THE PRICE, RE-DERIVED AFTER THE `clashTraced` DELETION. 0.48 -> 0.36 -> 0.62.
 //
-// THAT SWEEP WAS RUN WITH `clashTraced` STILL PRESENT, AND HAS NOT BEEN REDONE.
-// Since the deletion this is the ONLY murder-shaped channel there is, and late
-// lift now reads 18.31pp mean with a worst block of 15.24pp against the +15pp
-// floor — 0.24pp of headroom, down from 0.74pp. The direction of the sweep is
-// unlikely to have inverted, but "0.36 is the lowest green price" is now an
-// UNVERIFIED claim about a different engine. Anybody repricing this constant
-// must re-run the sweep rather than trust the numbers above, and the honest
-// next question is whether 0.36 is now too LOW rather than too high.
+// The 0.36 was swept with `clashTraced` still present and was never redone, so
+// it was an unverified claim about a different engine. Re-swept at 0.18 / 0.24
+// / 0.30 / 0.36 / 0.42 / 0.48 / 0.60 / 0.75 / 1.00 over twelve DECORRELATED
+// 200-season blocks (rngFor in headless.js), and the answer inverted: 0.36 was
+// too LOW.
+//
+// FIRST, THE CEILING. 0.75 and 1.00 reproduce each other bit-for-bit, because
+// learn() clamps any non-`public` alignment belief to ALIGNMENT_CRED_CEILING =
+// SOURCE_CRED.deduced = 0.62 (js/knowledge.js). Every price above 0.62 IS 0.62.
+// The constant is written as 0.62 rather than 1.0 so that it says what it does.
+//
+// SECOND, AND THIS IS WHAT THE OLD COMMENT GOT WRONG: the flatness it read as
+// "not buying signal" was measured against nothing. The real series IS flat
+// and noisy over 0.30-0.62 — late-lift means 19.02 / 19.11 / 18.80 / 20.09 /
+// 18.88 / 20.19pp, non-monotone, against a per-block sd of 1.7 — and picking a
+// price off worst-of-twelve blocks is exactly the worst-of-N mistake that has
+// collapsed three of this project's headline numbers.
+//
+// So it was swept against a CONTROL: the identical channel, identical emission
+// count, identical rounds, identical price, with the SUBJECT drawn uniformly
+// from the living instead of from the people who pushed the victim's name.
+// Same loudness, no information. Twelve blocks each:
+//
+//   price   late lift  real / control   edge      board  real / control   edge
+//   0.24        17.30 / 17.70pp        -0.40pp          1.866 / 1.875    -0.009
+//   0.36        19.11 / 18.58pp        +0.53pp          1.893 / 1.862    +0.031
+//   0.60        18.88 / 15.47pp        +3.41pp          1.932 / 1.872    +0.060
+//   0.62        20.19 / 15.33pp        +4.86pp          1.946 / 1.888    +0.058
+//
+// The control is flat in price on both metrics and the real channel is not:
+// the EDGE grows monotonically, from indistinguishable-from-noise at 0.24 to
+// clearly separated at the ceiling. Turning the noise channel up actively
+// HURTS the room (17.70 -> 15.33pp) while turning the real one up helps it.
+// That is a dose-response separation against a matched control, and it is the
+// only thing in this sweep that is not block noise.
+//
+// At the ceiling every band improves or holds, on twelve blocks: hit 33.64%
+// (min 30.80), early 3.95pp mean / worst 6.87 (was 5.67 / 7.38 — the room is
+// LESS sharp early, which is the correct direction for this format), late
+// 20.19pp mean / worst 15.19 (was 19.11 / 15.03), growth worst 10.35pp, board
+// 1.946 mean / min 1.846 (was 1.893 / 1.792), victim +1.07, faithful wins
+// 45.8%.
+//
+// WHAT IS STILL TRUE: this channel is weakly right, not sharp. At the emission
+// level it is 1.21x against a 1.20x control, and part of that enrichment is
+// structural — chooseBanishmentVote bars a Traitor from naming the pact, so
+// Traitors' ballots are restricted to Faithfuls. It earns the ceiling because
+// its edge over an equally loud noise channel is real and increasing, not
+// because it is a good detector. Late lift remains the thinnest gate in the
+// file and any future change to the murder layer hits it first.
 //
 // clashTraced is gone entirely; see murderEvidence.
 const M = {
-  pushedThenDied:  0.36,   // you wanted them gone, and they went — 1.21x, against a 1.20x control
+  // The ALIGNMENT_CRED_CEILING in js/knowledge.js. Anything higher is this
+  // value; if that ceiling ever moves, this channel is silently repriced.
+  pushedThenDied:  0.62,   // you wanted them gone, and they went
 };
 
 /**

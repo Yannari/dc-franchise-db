@@ -4,7 +4,7 @@
 import { gs, players } from './core.js';
 import { pStats } from './players.js';
 import { addBond, getBond } from './bonds.js';
-import { bankTraining, coachesOf, coachRecord, isCoach, removeCoach, revokeCoachTraining, sessionsFor } from './coaches.js';
+import { activeCoaches, bankTraining, coachesOf, coachRecord, isCoach, removeCoach, revokeCoachTraining, sessionsFor } from './coaches.js';
 import { pickSessionTargets, sessionGain, teachableStat, aweOf } from './coach-agenda.js';
 
 /** How close this coach is to being voted out, 0..1. Lifts their survive agenda. */
@@ -157,4 +157,32 @@ export function offerSaveCard(ep, coachName, tribe) {
   if (!ep.coachSaves) ep.coachSaves = [];
   ep.coachSaves.push({ coach: coachName, tribe: tribe.tribeName, replacement });
   return { played: true, replacement, reason: 'unanimous' };
+}
+
+/**
+ * Every surviving coach becomes a full player.
+ *
+ * One push into gs.activePlayers, after which 135 modules begin treating them
+ * as contestants without being told. They arrive with their bonds, their
+ * banked advantages, and NO training on themselves — a real weakness, since
+ * they spent the whole pre-merge improving other people.
+ *
+ * The stake is the one exception: a coach whose protégés are still standing
+ * arrives sharper, so coaching well is not merely a way to stay alive.
+ */
+export function promoteCoaches(ep) {
+  const promoted = [];
+  for (const coach of activeCoaches()) {
+    const built = gs.coachTraining?.[coach.name] || {};
+    const surviving = Object.keys(built).filter(n => (gs.activePlayers || []).includes(n));
+    const stake = Math.min(1.5, surviving.length * 0.5);
+
+    coach.promoted = true;
+    if (!gs.activePlayers.includes(coach.name)) gs.activePlayers.push(coach.name);
+    if (stake > 0) bankTraining(coach.name, coach.name, 'strategic', stake);
+
+    promoted.push({ name: coach.name, stake, surviving });
+  }
+  if (promoted.length) ep.coachPromotions = promoted;
+  return promoted;
 }

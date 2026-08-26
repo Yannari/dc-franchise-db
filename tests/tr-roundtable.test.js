@@ -57,14 +57,57 @@ describe('an accusation is heard by the whole room', () => {
   });
 
   it('lands harder when the room trusts the accuser', () => {
-    CAST.forEach(n => { if (n !== 'Leshawna') setBond(n, 'Leshawna', 8); });
-    CAST.forEach(n => { if (n !== 'Noah') setBond(n, 'Noah', -6); });
-    broadcast('Leshawna', 'Owen', 2, seededRng(4));
-    const trusted = suspicion('Bridgette', 'Owen', 2);
-    resetKnowledge();
-    broadcast('Noah', 'Owen', 2, seededRng(4));
-    const distrusted = suspicion('Bridgette', 'Owen', 2);
-    expect(trusted).toBeGreaterThan(distrusted);
+    // A POPULATION read, with the world rebuilt properly between the two halves.
+    //
+    // What this replaces called resetKnowledge() between the measurements, which
+    // does not merely clear beliefs — it destroys the `alignment:Owen` FACT
+    // itself. learn() then bails on `if (!fact) return null`, so the second
+    // broadcast was a complete no-op and `distrusted` was structurally 0. It
+    // asserted only `trusted > 0`, on one seed, and would have passed identically
+    // if the trust term had no effect whatsoever — the exact mechanism it is
+    // named for.
+    //
+    // It is also the same accuser both times. Swapping Leshawna for Noah changes
+    // `pitch` along with the bond, so the two reads differed by the speaker's
+    // social stat as much as by the room's trust. One person, two rooms.
+    const build = (bond) => {
+      setGs({ bonds: {}, activePlayers: [...CAST] });
+      gs.tr = initTraitorsState();
+      resetKnowledge();
+      recordAlignment('Gwen', true, 1, 'selection');
+      recordAlignment('Duncan', true, 1, 'selection');
+      CAST.filter(n => !['Gwen', 'Duncan'].includes(n))
+        .forEach(n => recordAlignment(n, false, 1, 'selection'));
+      seedTraitorKnowledge(1);
+      CAST.forEach(n => { if (n !== 'Leshawna') setBond(n, 'Leshawna', bond); });
+    };
+    // Two probabilistic reads cannot be compared on one draw: whether any single
+    // listener accepts a rumour is a read-skill roll inside learn(). Compare the
+    // distributions.
+    const LISTENERS = CAST.filter(n => n !== 'Leshawna' && n !== 'Owen');
+    let trustedSum = 0, distrustedSum = 0, trustedBelievers = 0, distrustedBelievers = 0;
+    const SEEDS = 80;
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      build(8);
+      broadcast('Leshawna', 'Owen', 2, seededRng(seed));
+      LISTENERS.forEach(n => {
+        const s2 = suspicion(n, 'Owen', 2);
+        trustedSum += s2; if (s2 > 0) trustedBelievers++;
+      });
+      build(-6);
+      broadcast('Leshawna', 'Owen', 2, seededRng(seed));
+      LISTENERS.forEach(n => {
+        const s2 = suspicion(n, 'Owen', 2);
+        distrustedSum += s2; if (s2 > 0) distrustedBelievers++;
+      });
+    }
+    const n = SEEDS * LISTENERS.length;
+    // Non-vacuity: a comparison of two zeroes is what the old test was doing.
+    expect(trustedBelievers, 'nobody at all believed the trusted accuser').toBeGreaterThan(0);
+    expect(distrustedBelievers, 'the distrusted broadcast formed no beliefs — the world was not rebuilt').toBeGreaterThan(0);
+    // A warm room both believes it more often AND believes it harder.
+    expect(trustedBelievers).toBeGreaterThan(distrustedBelievers);
+    expect(trustedSum / n).toBeGreaterThan(distrustedSum / n);
   });
 });
 

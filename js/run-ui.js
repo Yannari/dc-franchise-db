@@ -2148,6 +2148,9 @@ export function renderTimeline() {
           'fast-forward': 'Fast-Forward (live hour)',
           'double-vote': 'Double Vote (one vote, two leave)',
           'week-in-one': 'Two Weeks in One',
+          // How Big Brother Canada actually ran its Chain of Safety: as the
+          // second half of a double eviction night.
+          'chain': 'Chain of Safety (second cycle)',
         };
         const cur = t.deStyle || 'fast-forward';
         let styleHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','deStyle',this.value)" onclick="event.stopPropagation()" title="How the double eviction runs" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;

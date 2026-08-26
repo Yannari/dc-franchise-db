@@ -40,6 +40,7 @@ import { rpBuildBBRivalsOpen, rpBuildBBRivalsHoh, rpBuildBBRivalsWeek,
 import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
 import { rpBuildBBHidden } from './vp-bb-hidden.js';
 import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
+import { rpBuildBBChainOfSafety } from './vp-bb-chain.js';
 import { rpBuildBBWildcard } from './vp-bb-wildcard.js';
 import { rpBuildBBCampDirector } from './vp-bb-camp-director.js';
 import { rpBuildBBNightmare } from './vp-bb-nightmare.js';
@@ -24053,6 +24054,12 @@ function _bbCycleScreens(view, screens, suffix = '') {
         const wcDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-wildcard'), label: 'The Wildcard',
           html: rpBuildBBWildcard(view, act, wcDeps) });
+        break;
+      }
+      case 'chain-of-safety': {
+        const chDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id('bb-chain'), label: 'Chain of Safety',
+          html: rpBuildBBChainOfSafety(view, act, chDeps) });
         break;
       }
       case 'safety-suite': {

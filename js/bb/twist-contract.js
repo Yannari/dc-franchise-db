@@ -31,6 +31,7 @@ export const BASE_WEEK_RULES = Object.freeze({
   addSlots: [],             // extra competition slots ('safety', 'return', ...)
   secondCycle: false,       // a compressed second eviction cycle after the first
   extraCycles: 0,           // HOW MANY of them: 1 is a double, 2 is a triple
+  chainOfSafety: false,     // the block is what the chain left over, not a ceremony
 });
 
 /**
@@ -332,6 +333,20 @@ export const BB_TWIST_CONTRACTS = {
       reactions: 'dread',
       rule: 'Tonight is not one eviction and it is not two. When that front door closes you will play for Head of Household again, nominate again, play a veto again and vote again — and when THAT door closes, you are going to do all of it a third time. There will be no time to talk to anybody. There will be no time to count.',
       sting: 'Three of you are sleeping somewhere else tonight.',
+    },
+  },
+  // Declares what it TAKES AWAY: the veto never happens, and the nomination
+  // ceremony is replaced by the chain rather than run alongside it.
+  'bb-chain-of-safety': {
+    id: 'bb-chain-of-safety', layer: 'scheduled', category: 'week-structure',
+    timing: 'week', duration: { weeks: 1 },
+    rules: { vetoCount: 0, chainOfSafety: true },
+    acquisition: { channel: 'production', secrecy: 'public' },
+    announcement: {
+      name: 'Chain of Safety',
+      reactions: 'dread',
+      rule: 'There will be no nomination ceremony this week. One of you will be made safe, and then YOU will choose who is safe next, and that person will choose after you — out loud, in this room, in front of everybody you do not choose. When three of you are left, those three will compete. One will win safety. The other two are nominated, and there is no veto to take them down.',
+      sting: 'Nobody is going to put you on that block. Everybody is just going to keep choosing somebody else.',
     },
   },
   'bb-instant-eviction': {

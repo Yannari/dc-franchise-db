@@ -578,6 +578,16 @@ export const TWIST_CATALOG = [
     engineType:'bb-triple-eviction',
     incompatible:['bb-double-eviction', 'bb-instant-eviction', 'bb-split-house',
       'bb-battle-of-the-block', 'bb-duo-week', 'bb-invisible-hoh', 'bb-no-eviction'] },
+  // The chain replaces the nomination ceremony AND the veto, so it is
+  // incompatible with everything that assumes either exists.
+  { id:'bb-chain-of-safety', emoji:'⛓️', name:'Chain of Safety', format:'big-brother',
+    category:'elim', phase:'any',
+    desc:'Nobody is nominated this week — they are left over. One houseguest is made safe and chooses the next, that houseguest chooses the next, and the chain runs down the house in public until three people are standing there having been picked by nobody. Those three play a second safety competition: the winner walks, and the two who lose are the nominees on the spot. There is no ceremony, there are no keys, and there is no veto.',
+    engineType:'bb-chain-of-safety',
+    incompatible:['bb-instant-eviction', 'bb-battle-of-the-block', 'bb-duo-week',
+      'bb-invisible-hoh', 'bb-split-house', 'bb-roadkill', 'bb-americas-nominee',
+      'bb-diamond-veto', 'bb-double-veto', 'bb-forced-veto', 'bb-safety-suite',
+      'bb-wildcard', 'bb-sanctum-week', 'bb-no-eviction'] },
   { id:'bb-instant-eviction', emoji:'⚡', name:'Instant Eviction', format:'big-brother',
     category:'elim', phase:'any',
     desc:'No veto this week. The Head of Household nominates and the nominations stand — the house votes the same night, with no competition to save anybody and no ceremony to change the pair.',

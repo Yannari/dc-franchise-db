@@ -951,6 +951,13 @@ export function simulateBBEpisode() {
   const deEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-double-eviction');
   const deStyle = deEntry?.deStyle || 'fast-forward';
+  // Which end of the chain the house starts from, authored on the scheduled
+  // entry the same way the double's style is: 'safety-comp' is BBCan10 (a
+  // competition crowns the first link) and 'hoh' is BBCan11 (the reigning
+  // Head of Household starts it).
+  const chainEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-chain-of-safety');
+  const chainStart = chainEntry?.chainStart || 'safety-comp';
   // The Battle Back's shape and its competition are both authored on the
   // scheduled instance, the same way Pandora's cargo and the double's style
   // are — so one season can run the BB18 gauntlet and the next the Showdown.
@@ -1035,6 +1042,7 @@ export function simulateBBEpisode() {
     appStoreShelf: ((seasonConfig.twistSchedule || [])
       .find(t => t && Number(t.episode) === epNum && t.type === 'bb-app-store')?.shelf) || undefined,
     doubleVote: twists.includes('bb-double-eviction') && deStyle === 'double-vote',
+    chainStart,
     // Season modes that put a third houseguest on the block every week.
     safetyMode: seasonConfig.bbSafetyMode || 'off',
     safetyStopsAt: Number.isFinite(Number(seasonConfig.bbSafetyStopsAt))
@@ -1096,8 +1104,21 @@ export function simulateBBEpisode() {
       // real campaigning — inside the same episode; the fast-forward keeps
       // the live-hour compression. A triple is always the live hour: there is
       // no room in one night for two unhurried weeks.
-      compressed: extraCycles > 1 ? true : deStyle !== 'week-in-one',
+      compressed: extraCycles > 1 ? true : (deStyle !== 'week-in-one'),
       segment,
+      // THE SECOND CYCLE RUNS AS A CHAIN.
+      //
+      // Big Brother Canada staged its Chain of Safety as exactly this — the
+      // back half of a double eviction night — so booking it that way is a
+      // style on the double rather than a second twist to schedule. The
+      // compressed cycle already skips the veto; the chain also replaces the
+      // ceremony, which is the part that needs saying here.
+      ...(deStyle === 'chain' ? {
+        twists: ['bb-chain-of-safety'],
+        // Authored on the DOUBLE's entry when it is booked that way; the
+        // standalone twist's entry is not on the schedule at all here.
+        chainStart: deEntry?.chainStart || chainEntry?.chainStart || 'hoh',
+      } : {}),
       // A three-nominee season is a three-nominee season, including the half
       // of the night that runs live.
       safetyMode: seasonConfig.bbSafetyMode || 'off',

@@ -15,6 +15,7 @@ import { resolveHaltingHex } from './eviction-powers.js';
 import { resolveRewind } from './rewind.js';
 import { runCoinOfDestiny, coinNominations, COIN_PRICE } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
+import { runChainOfSafety, chainSafe } from './chain-of-safety.js';
 import { runWildcard, wildcardSafe } from './wildcard.js';
 import { openRoom, roomGameForNight, ROOM_GAMES } from './high-rollers-room.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
@@ -1199,7 +1200,10 @@ export function simulateBBWeek(options = {}) {
    */
   const twists = new Set(options.twists || []);
   const compressed = !!options.compressed;
-  const skipVeto = compressed ? !!options.skipVeto : (twists.has('bb-instant-eviction') || !!options.skipVeto);
+  // `let`, because the Chain of Safety also removes the veto and does not know
+  // it is going to run until the house is big enough for it, two thousand
+  // lines below this.
+  let skipVeto = compressed ? !!options.skipVeto : (twists.has('bb-instant-eviction') || !!options.skipVeto);
   week.twists = [...twists];
   week.compressed = compressed;
   if (options.segment) week.segment = options.segment;
@@ -2557,6 +2561,27 @@ export function simulateBBWeek(options = {}) {
     } catch { week.safetySuite = null; }
   }
 
+  // ── THE CHAIN OF SAFETY: the block is what is left over ──
+  //
+  // Runs in the safety-suite slot — after the Head of Household is crowned,
+  // before anybody nominates — because the chain REPLACES the ceremony. Its
+  // two losers are the nominees, so by the time the nomination code below runs
+  // there is nothing left for it to decide.
+  //
+  // Allowed on a compressed cycle: a chain is exactly what Big Brother Canada
+  // ran as its double eviction, and `deStyle: 'chain'` books it that way.
+  if (twists.has('bb-chain-of-safety')) {
+    try {
+      week.chainOfSafety = runChainOfSafety({ week, house, hoh, rng,
+        variant: options.chainStart || 'safety-comp' });
+      if (week.chainOfSafety) {
+        skipVeto = true;
+        week.acts.push(addBeats(week.chainOfSafety,
+          { players: [...(week.chainOfSafety.nominees || [])] }));
+      }
+    } catch { week.chainOfSafety = null; }
+  }
+
   // ── THE WILDCARD: three names out of a hat, and a price on the safety ──
   //
   // Sits beside the Safety Suite because both are pre-nomination safety, and is
@@ -2850,7 +2875,7 @@ export function simulateBBWeek(options = {}) {
   let teamSafe = [];
   try { teamSafe = teamImmune(week, hoh); } catch { teamSafe = []; }
   const untouchable = [hoh, week.botbActive ? coHoh : null, week.cloud?.holder,
-    carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite),
+    carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...chainSafe(week.chainOfSafety),
     ...wildcardSafe(week.wildcard),
     ...rivalsSafe, ...keySafe, ...duoCrownSafe, ...teamSafe].filter(Boolean);
 
@@ -2981,9 +3006,17 @@ export function simulateBBWeek(options = {}) {
   // `duoBlock` already guarantees both halves are in the house and neither is
   // protected, so this no longer re-filters the pair — that filter is exactly
   // what used to leave half a duo on the block beside a stranger.
-  let nominees = duoWeekNoms ? [...duoWeekNoms]
-    : duoPair ? [...duoPair]
-      : [...new Set(plan.nominees)]
+  // THE CHAIN'S LEFTOVERS ARE THE BLOCK.
+  //
+  // First in the chain, ahead of every other way a name reaches the block,
+  // because the chain is not a competing source of nominees — it is the whole
+  // ceremony. The Head of Household's plan still exists (the vote reads it for
+  // who wanted whom out), it simply does not get to fill a chair.
+  const chainNoms = (week.chainOfSafety?.nominees || []).filter(n => house.includes(n));
+  let nominees = chainNoms.length ? [...chainNoms]
+    : duoWeekNoms ? [...duoWeekNoms]
+      : duoPair ? [...duoPair]
+        : [...new Set(plan.nominees)]
         .filter(name => house.includes(name) && !untouchable.includes(name)
           && name !== curseSeat).slice(0, hohSeats);
   if (duoWeekNoms) week.duoWeekNominees = [...duoWeekNoms];
@@ -2991,7 +3024,10 @@ export function simulateBBWeek(options = {}) {
     week.duoNomination = [...nominees];
     if (duoPairs) week.duoBlocks = duoPairs.map(p => [...p]);
   }
-  while (nominees.length < hohSeats) {
+  // A three-nominee season does NOT top the chain's block up to three: the
+  // chain produced exactly the two people it left over, and padding it would
+  // put somebody on the block that the house had already made safe.
+  while (!chainNoms.length && nominees.length < hohSeats) {
     const extra = chooseReplacement(hoh, house,
       [...untouchable, ...nominees, curseSeat].filter(Boolean), plan, rng);
     if (!extra || nominees.includes(extra) || untouchable.includes(extra)) break;
@@ -3319,6 +3355,12 @@ export function simulateBBWeek(options = {}) {
   const askedPawn = week.pawnAsk?.pawn || null;
   for (const nominee of nominees) {
     if (!nominee || nominee === hoh) continue;
+    // NOBODY PUT THEM UP. On a chain week the Head of Household did not choose
+    // this block — the house did, by choosing everybody else — so charging the
+    // crown for a betrayal it did not commit would bill the wrong person for
+    // the most public act of the week. The chain prices its own fallout, on
+    // the houseguests who actually passed them over.
+    if (chainNoms.length) continue;
     // A broken promise already cost more than this, and worse.
     if ((week.brokenPromises || []).some(b => b.victim === nominee)) continue;
     // The pawn's conversation was already priced. See above.
@@ -3380,7 +3422,10 @@ export function simulateBBWeek(options = {}) {
     week.nomFallout.push({ nominee, hoh, hit, treason, kind: isTarget ? 'target' : 'nominee' });
   }
 
-  week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
+  // NO CEREMONY ON A CHAIN WEEK. The chain act already showed the house
+  // arriving at this block; drawing a nomination ceremony on top of it would
+  // have a Head of Household turning keys on two people they never chose.
+  if (!chainNoms.length) week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
     duo: duoNom, nomFallout: week.nomFallout,
     structure: plan.structure || 'target-pawn', structureWhy: plan.structureWhy || '',
     anonymous: hohSecret,
@@ -4040,10 +4085,17 @@ export function simulateBBWeek(options = {}) {
     if (overheard) week.sequestered.overheard = overheard;
     if (regret) week.sequestered.regret = regret;
 
-    week.acts.push(addBeats(
-      { type: 'instant-eviction', nominees: [...nominees], hoh,
-        sequestered: week.sequestered || null, overheard, regret },
-      { nominees: [...nominees] }));
+    // NOT ON A CHAIN WEEK. The chain also removes the veto, but it is not an
+    // Instant Eviction and must not be announced as one — the screen and the
+    // transcript would both tell the house the Head of Household's nominations
+    // are standing, on a week where the Head of Household never made any. The
+    // chain act already said what happened instead.
+    if (!chainNoms.length) {
+      week.acts.push(addBeats(
+        { type: 'instant-eviction', nominees: [...nominees], hoh,
+          sequestered: week.sequestered || null, overheard, regret },
+        { nominees: [...nominees] }));
+    }
   }
 
   if (!skipVeto) {
@@ -4664,7 +4716,7 @@ export function simulateBBWeek(options = {}) {
       // holder is. Without it `chooseReplacement` can hand the holder the pen
       // and have them write their own name — and the dethroned HOH stays in the
       // list too, because canon leaves them safe for the week they lost.
-      const protectedNames = [hoh, coinChair, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...(week.rouletteSafe || []), ...(week.derbySafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...wildcardSafe(week.wildcard), ...keySafe, ...duoCrownSafe, ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
+      const protectedNames = [hoh, coinChair, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...(week.rouletteSafe || []), ...(week.derbySafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...chainSafe(week.chainOfSafety), ...wildcardSafe(week.wildcard), ...keySafe, ...duoCrownSafe, ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
       // The chooser reasons from their OWN plan. An HOH follows the week's
       // nomination plan; a diamond holder follows their own read of the house,
       // which is what makes the twist a hijacking rather than a formality.
@@ -4887,7 +4939,7 @@ export function simulateBBWeek(options = {}) {
       && !pw.used && !pw.disposed && week.num <= pw.expiresAfterWeek
       && house.includes(pw.holder));
     if (coup) {
-      const protectedNow = [hoh, vetoWinner, coup.holder, carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...wildcardSafe(week.wildcard)].filter(Boolean);
+      const protectedNow = [hoh, vetoWinner, coup.holder, carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...chainSafe(week.chainOfSafety), ...wildcardSafe(week.wildcard)].filter(Boolean);
       const eligible = house.filter(n => !protectedNow.includes(n));
       // ── whether, before who ──
       //
@@ -5263,7 +5315,7 @@ export function simulateBBWeek(options = {}) {
       const protectedNames = [hoh, vetoWinner, extra.holder, dec.save, ...keySafe, ...duoCrownSafe, ...savedThisWeek,
         ...(week.rouletteSafe || []), ...(week.derbySafe || []),
         ...(week.botbSafe || []), carePackageProtects(week.carePackage),
-        ...safetySuiteSafe(week.safetySuite),
+        ...safetySuiteSafe(week.safetySuite), ...chainSafe(week.chainOfSafety),
         ...wildcardSafe(week.wildcard),
         ...nominees.filter(n => n !== dec.save)].filter(Boolean);
       const secondRep = chooseReplacement(authority, house, protectedNames, plan, rng);

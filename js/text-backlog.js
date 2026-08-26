@@ -5437,6 +5437,37 @@ export function generateBBSummaryText(ep) {
         }
         break;
       }
+      case 'chain-of-safety': {
+        sec('THE CHAIN OF SAFETY');
+        ln(act.variant === 'hoh'
+          ? '  The Head of Household starts the chain. No nomination ceremony, no veto.'
+          : '  A safety competition crowns the first link. No nomination ceremony, no veto.');
+        ln('');
+        if (act.openingComp?.placements?.length) {
+          ln(`  Safety competition: ${act.openingComp.placements.slice(0, 3).join(', ')} — `
+            + `${act.starter} wins the first link.`);
+          ln('');
+        }
+        // THE PICK ORDER IS THE DOCUMENT. Everything else this week is a
+        // consequence of it, so it is printed in full, numbered, with who
+        // owed the pick to whom — a reader who only saw the block would have
+        // no idea how the house arrived at it.
+        ln(`  The chain, in order:`);
+        ln(`     1. ${act.starter}${act.variant === 'hoh' ? ' (Head of Household)' : ' (won safety)'}`);
+        (act.links || []).forEach((l, i) => {
+          ln(`    ${String(i + 2).padStart(2)}. ${l.chosen} — chosen by ${l.picker}`);
+        });
+        ln('');
+        ln(`  Chosen by nobody: ${(act.leftover || []).join(', ')}.`);
+        if (act.safetyWinner) {
+          ln(`  Second safety competition: ${act.safetyWinner} wins it and is safe.`);
+        }
+        if ((act.nominees || []).length) {
+          ln(`  ${act.nominees.join(' and ')} are the nominees. No ceremony, no veto.`);
+        }
+        beats(act);
+        break;
+      }
       case 'safety-suite': {
         sec('THE SAFETY SUITE');
         ln('  One entry per houseguest, for the whole season. The Head of Household');

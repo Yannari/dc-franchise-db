@@ -23,10 +23,10 @@ import { approvedFor, lineFor as lifeLine, kindOf } from './life-events.js';
 import { airLabel } from './franchise-calendar.js';
 
 import { parseBio } from './bio.js';
+// The registry is the only list of shows. This file kept its own, so a show
+// registered anywhere else headed its section with a raw slug.
+import { DEFAULT_FORMAT, showName } from './shows.js';
 
-const DEFAULT_FORMAT = 'total-drama';
-const SHOW_NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
-const showName = f => SHOW_NAMES[f] || f;
 const fmtOf = d => d?.format || DEFAULT_FORMAT;
 
 /**
@@ -193,7 +193,7 @@ function _withLoyalties(career, relationships) {
     for (const s of show.seasons) {
       s.loyalties = bonds
         .filter(b => (b.seasons || []).some(x =>
-          Number(x.season) === Number(s.season) && (x.format || 'total-drama') === show.format))
+          Number(x.season) === Number(s.season) && (x.format || DEFAULT_FORMAT) === show.format))
         .map(b => b.name);
     }
   }

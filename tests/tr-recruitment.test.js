@@ -7,6 +7,7 @@ import { resetKnowledge, believes, isAccurate } from '../js/knowledge.js';
 import { recordAlignment, alignmentAt, truthAtLearn, canRecruit, offerRecruitment, chooseRecruit }
   from '../js/tr/roles.js';
 import { alignmentFactId, seedTraitorKnowledge, recordRound } from '../js/tr/deduction.js';
+import { exitSpeech } from '../js/tr/exit.js';
 import roster from '../franchise_roster.json';
 
 const CAST = roster.players.slice(0, 10).map(p => p.name);
@@ -180,5 +181,55 @@ describe('refusing', () => {
     console.log(`[population] ${loyal} (loyal) accepts ${(rLoyal * 100).toFixed(0)}%, ` +
                 `${disloyal} accepts ${(rDisloyal * 100).toFixed(0)}%`);
     expect(rLoyal, 'loyalty made no difference to whether they turned').toBeLessThan(rDisloyal);
+  });
+});
+
+describe('the way somebody leaves', () => {
+  beforeEach(() => {
+    recordRound({ ep: 3, banished: CAST[0], banishedWasTraitor: true, murdered: null, ballots: [] });
+    gs.activePlayers = CAST.filter(n => n !== CAST[0]);
+  });
+
+  it('a two-night recruit burns their recruiter far more often than a founder does', () => {
+    const burnRate = (setup) => {
+      let burns = 0;
+      for (let s = 1; s <= 80; s++) {
+        world();
+        recordRound({ ep: 3, banished: CAST[0], banishedWasTraitor: true, murdered: null, ballots: [] });
+        gs.activePlayers = CAST.filter(n => n !== CAST[0]);
+        const who = setup(s);
+        if (exitSpeech(who, 5, seededRng(s)).burns) burns++;
+      }
+      return burns / 80;
+    };
+    const fresh = burnRate((s) => {
+      offerRecruitment(CAST[5], 4, () => 0.01, { mode: 'note' });
+      return CAST[5];
+    });
+    const founder = burnRate(() => CAST[1]);   // traitor since episode 1
+    console.log(`[population] fresh recruit burns ${(fresh * 100).toFixed(0)}%, ` +
+                `founder burns ${(founder * 100).toFixed(0)}%`);
+    expect(fresh, 'a two-night recruit is as loyal as a nine-round traitor').toBeGreaterThan(founder);
+  });
+
+  it('a burn names somebody real, and never the speaker', () => {
+    offerRecruitment(CAST[5], 4, () => 0.01, { mode: 'note' });
+    for (let s = 1; s <= 40; s++) {
+      const sp = exitSpeech(CAST[5], 5, seededRng(s));
+      if (sp.burns) {
+        expect(gs.activePlayers).toContain(sp.target);
+        expect(sp.target).not.toBe(CAST[5]);
+      }
+    }
+  });
+
+  it('a faithful can leave angry too, and be wrong about who', () => {
+    let named = 0;
+    for (let s = 1; s <= 60; s++) {
+      world();
+      const sp = exitSpeech(CAST[7], 5, seededRng(s));
+      if (sp.target) named++;
+    }
+    expect(named, 'no faithful ever says anything on the way out').toBeGreaterThan(0);
   });
 });

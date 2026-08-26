@@ -209,3 +209,153 @@ registerEvent({
       competence, threadId: t?.id, bondDelta };
   },
 });
+
+// ── Task 6 additions ────────────────────────────────────────────────────
+
+registerEvent({
+  id: 'cover-double-bluff',
+  family: FAMILY,
+  window: 'evening',
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    // Needs exactly one Traitor in the scene and a Faithful to sell it to.
+    return isTraitor(a, ctx.ep) && !isTraitor(b, ctx.ep) ? 1.5 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    addBond(a, b, 1);
+    const t = openThread(FAMILY, [a, b], ctx.ep,
+      `${a} floated a suspicion about a fellow Traitor to ${b} — genuine-sounding enough that ${b} took it as proof ${a} couldn't be one.`);
+    return { branch: 'double-bluffed', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+  },
+});
+
+registerEvent({
+  id: 'cover-decline-recruit-offer-story',
+  family: FAMILY,
+  window: 'dawn',
+  weight(ctx) {
+    if (!ctx.actors?.length) return 0;
+    const debts = gs.tr?.loyaltyDebt || [];
+    const actor = ctx.actors.find(n => debts.some(d => d.recruiter === n));
+    return actor ? 1.5 : 0;
+  },
+  fire(ctx) {
+    const debts = gs.tr?.loyaltyDebt || [];
+    const actor = ctx.actors.find(n => debts.some(d => d.recruiter === n));
+    const t = openThread(FAMILY, [actor], ctx.ep,
+      `${actor} had a whole cover story ready for where they'd been the night they made that offer. Nobody had even asked.`);
+    return { branch: 'recruit-story-covered', actor, threadId: t?.id };
+  },
+});
+
+const ALIBI_CRUMBLE_LINES = {
+  holds: [
+    '{a}\'s cover story took a real question and shrugged it off without a wobble.',
+    'Somebody tried to pull at {a}\'s alibi. It didn\'t give.',
+  ],
+  wobbles: [
+    '{a}\'s alibi survived, but it took an extra beat longer than it should have.',
+    'There was a small gap in {a}\'s story that {a} had to paper over out loud.',
+  ],
+  collapses: [
+    '{a}\'s cover story came apart the moment someone actually pushed on it.',
+    'The alibi didn\'t survive contact — {a} had to abandon it mid-sentence.',
+  ],
+};
+
+registerEvent({
+  id: 'cover-alibi-crumbles',
+  family: FAMILY,
+  window: 'after-table',
+  advancesThread: true,
+  rare: true,
+  weight(ctx) {
+    if (!ctx.actors?.length) return 0;
+    const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
+    if (!actor) return 0;
+    const t = findOpenThread(FAMILY, [actor]);
+    return t ? 2 : 0;
+  },
+  fire(ctx, rng) {
+    const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
+    const partner = ctx.actors.find(n => n !== actor) || null;
+    const st = pStats(actor);
+    const holdsScore = (st.strategic / 10) * 0.4 + (st.temperament / 10) * 0.4 + 0.1;
+    const wobblesScore = 0.35;
+    const collapsesScore = (1 - st.temperament / 10) * 0.5 + (1 - st.strategic / 10) * 0.2;
+    const total = holdsScore + wobblesScore + collapsesScore;
+    const roll = rng() * total;
+    let branch;
+    if (roll < holdsScore) branch = 'holds';
+    else if (roll < holdsScore + wobblesScore) branch = 'wobbles';
+    else branch = 'collapses';
+
+    let line = pick(rng, ALIBI_CRUMBLE_LINES[branch]).replace('{a}', actor);
+    let bondDelta = 0;
+    if (partner) {
+      bondDelta = branch === 'holds' ? 0.5 : branch === 'wobbles' ? -0.5 : -2;
+      if (bondDelta) addBond(actor, partner, bondDelta);
+    }
+    const t = findOpenThread(FAMILY, [actor]);
+    const advanced = t ? advanceThread(t.id, ctx.ep, line) : openThread(FAMILY, [actor], ctx.ep, line);
+    return { branch, actor, partner, threadId: advanced?.id, bondDelta };
+  },
+});
+
+registerEvent({
+  id: 'cover-blend-with-victims-friends',
+  family: FAMILY,
+  window: 'after-table',
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    if (!isTraitor(a, ctx.ep) || isTraitor(b, ctx.ep)) return 0;
+    return gs?.tr?.rounds?.some(r => r.ep === ctx.ep - 1 && r.murdered) ? 2 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    addBond(a, b, 1);
+    const t = openThread(FAMILY, [a, b], ctx.ep,
+      `${a} sat with ${b} and helped them grieve — the same night's work ${a} had a hand in causing.`);
+    return { branch: 'blended-in', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+  },
+});
+
+registerEvent({
+  id: 'cover-feign-fear',
+  family: FAMILY,
+  window: 'morning',
+  weight(ctx) {
+    if (!ctx.actors?.length) return 0;
+    const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
+    return actor && livingFaithfuls(ctx.ep).length ? 1 : 0;
+  },
+  fire(ctx) {
+    const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
+    const t = openThread(FAMILY, [actor], ctx.ep,
+      `${actor} performed the exact right amount of fear at breakfast — no more, no less than anyone else.`);
+    return { branch: 'feigned-fear', actor, threadId: t?.id };
+  },
+});
+
+registerEvent({
+  id: 'cover-swap-story-with-partner',
+  family: FAMILY,
+  window: 'dawn',
+  advancesThread: true,
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    return isTraitor(a, ctx.ep) && isTraitor(b, ctx.ep) ? 2 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    addBond(a, b, 1);
+    const existing = findOpenThread(FAMILY, [a, b]);
+    const note = `${a} and ${b} ran their stories past each other before anyone else was awake, and smoothed out the parts that didn't match.`;
+    const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
+    return { branch: 'synchronized', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+  },
+});

@@ -20,8 +20,8 @@ import { recordAlignment } from '../js/tr/roles.js';
 import { openThread, findOpenThread } from '../js/tr/threads.js';
 import { EVENTS, eligible, pickEvent, validateRegistry } from '../js/tr/events.js';
 import { setFranchiseLedger } from '../js/franchise-meta.js';
-import { resetKnowledge } from '../js/knowledge.js';
-import { seedTraitorKnowledge } from '../js/tr/deduction.js';
+import { learn, resetKnowledge } from '../js/knowledge.js';
+import { alignmentFactId, seedTraitorKnowledge } from '../js/tr/deduction.js';
 import roster from '../franchise_roster.json';
 
 // Side-effect imports: this is what registers the ~25 events under test.
@@ -330,55 +330,69 @@ describe('ground truth does not decide who a castle event happens to', () => {
   });
 });
 
+// ═════════════════════════════════════════════════════════════════════
+// HOW A FORK IS TESTED HERE, AND WHY IT CHANGED (whole-plan review, finding 2)
+// ═════════════════════════════════════════════════════════════════════
+//
+// Every fork test in this file used to vary the stats AND walk the roll
+// monotonically down the cumulative distribution in branch-declaration order
+// (0.01, 0.30, 0.50, 0.999). The roll alone chose the branch; the stats were
+// decorative. Proven by running it: replacing every `const *Score = …` in
+// trust.js, suspicion.js, testing.js and callback.js with `0.5` — deleting the
+// entire stat/role/bond-derived scoring in four families, making each fork a
+// literal coin flip wearing four labels — left 32 of 33 tests green.
+//
+// So the roll is now FIXED across all the variants of a fork, and the STATS
+// are the only thing that moves. A branch is asserted by giving it a stat line
+// whose score band contains that one roll; nothing else can produce the
+// outcome. Flatten the scores and every band becomes identical, so the fixed
+// roll lands in the SAME branch for every variant and all but one go red.
+//
+// The roll per fork is not 0.5 everywhere because it cannot be: `caughtTest`
+// in testing-decoy-secret tops out at 48% of its own fork's total score even
+// with intuition at 10 and everything else at 0, so no stat line makes it the
+// branch containing the midpoint. The roll for each fork is the one value at
+// which ALL of its branches are reachable by some legal stat line — stated on
+// each block, with the arithmetic, so a future rebalance knows what moved.
+
 describe('trust: the vote-commitment test forks on a real check, four ways', () => {
   const CAST2 = ['Asker', 'Asked'];
   function ctxFor(ep) { return { ep, window: 'evening', act: 'middle', living: CAST2, actors: CAST2 }; }
+  // ONE ROLL, FOUR STAT LINES. keep = loy*.06 + max(0,bond)*.04; break =
+  // strat*.05 + (10-loy)*.05; deflect = (10-bold)*.07 + .15; turn = bold*.05 +
+  // int*.05. At 0.5 each line below puts its own branch over half the fork's
+  // total, so the midpoint lands inside it.
+  const ROLL = 0.5;
 
-  it('a high-loyalty, well-bonded asked player KEEPS the commitment', () => {
-    setup(CAST2, [
-      makePlayer('Asker', 'floater'),
-      makePlayer('Asked', 'loyal-soldier', { loyalty: 10, strategic: 1, boldness: 1, intuition: 1 }),
-    ]);
-    setBond('Asker', 'Asked', 8);
-    const ev = EVENTS.find(e => e.id === 'trust-vote-commitment-test');
-    // keepScore dominates: loyalty 10 + high bond. roll near 0 lands in it.
-    const result = ev.fire(ctxFor(4), scriptedRng([0.01]));
+  function askedWith(stats, bond) {
+    setup(CAST2, [makePlayer('Asker', 'floater'), makePlayer('Asked', 'floater', stats)]);
+    setBond('Asker', 'Asked', bond);
+    return EVENTS.find(e => e.id === 'trust-vote-commitment-test');
+  }
+
+  it('KEEPS: loyalty 10 on a bond of 10 — keep 1.00 of a 1.65 total', () => {
+    const ev = askedWith({ loyalty: 10, strategic: 0, boldness: 10, intuition: 0 }, 10);
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('kept');
     expect(result.bondDelta).toBeGreaterThan(0);
   });
 
-  it('a low-loyalty, high-strategic asked player BREAKS it', () => {
-    setup(CAST2, [
-      makePlayer('Asker', 'floater'),
-      makePlayer('Asked', 'schemer', { loyalty: 1, strategic: 10, boldness: 1, intuition: 1 }),
-    ]);
-    setBond('Asker', 'Asked', 1);
-    const ev = EVENTS.find(e => e.id === 'trust-vote-commitment-test');
-    // keepScore is near its floor here; roll just past it lands in break.
-    const result = ev.fire(ctxFor(4), scriptedRng([0.30]));
+  it('BREAKS: the same roll, loyalty 0 and strategic 10 — break 1.00 of 1.69', () => {
+    const ev = askedWith({ loyalty: 0, strategic: 10, boldness: 10, intuition: 0 }, 1);
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('broken');
     expect(result.bondDelta).toBeLessThan(0);
   });
 
-  it('a low-boldness asked player DEFLECTS rather than commit either way', () => {
-    setup(CAST2, [
-      makePlayer('Asker', 'floater'),
-      makePlayer('Asked', 'goat', { loyalty: 5, strategic: 5, boldness: 1, intuition: 1 }),
-    ]);
-    setBond('Asker', 'Asked', 1);
-    const ev = EVENTS.find(e => e.id === 'trust-vote-commitment-test');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.90]));
+  it('DEFLECTS: the same roll, boldness 0 — deflect 0.85 of 1.39', () => {
+    const ev = askedWith({ loyalty: 0, strategic: 0, boldness: 0, intuition: 0 }, 1);
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('deflected');
   });
 
-  it('a high-boldness, high-intuition asked player TURNS it back on the asker', () => {
-    setup(CAST2, [
-      makePlayer('Asker', 'floater'),
-      makePlayer('Asked', 'villain', { loyalty: 1, strategic: 1, boldness: 10, intuition: 10 }),
-    ]);
-    setBond('Asker', 'Asked', 1);
-    const ev = EVENTS.find(e => e.id === 'trust-vote-commitment-test');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.999]));
+  it('TURNS IT BACK: the same roll, boldness 10 and intuition 10 — turn 1.00 of 1.69', () => {
+    const ev = askedWith({ loyalty: 0, strategic: 0, boldness: 10, intuition: 10 }, 1);
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('turned');
     expect(result.bondDelta).toBeLessThan(0);
   });
@@ -387,124 +401,106 @@ describe('trust: the vote-commitment test forks on a real check, four ways', () 
 describe('suspicion: the private accusation forks on the ACCUSED\'s reaction', () => {
   const CAST2 = ['Accuser', 'Accused'];
   function ctxFor(ep) { return { ep, window: 'after-table', act: 'middle', living: CAST2, actors: CAST2 }; }
+  // ONE ROLL, FOUR STAT LINES. deny = temp*.06 + soc*.04; denyWeak =
+  // (10-temp)*.06 + .15; turn = bold*.05 + int*.05; confess = loy*.05 +
+  // (10-temp)*.05.
+  const ROLL = 0.5;
 
-  it('a calm, socially skilled accused DENIES convincingly and closes the thread', () => {
-    setup(CAST2, [
-      makePlayer('Accuser', 'floater'),
-      makePlayer('Accused', 'social-butterfly', { temperament: 10, social: 10, loyalty: 1, boldness: 1, intuition: 1 }),
-    ]);
+  function accusedWith(stats) {
+    setup(CAST2, [makePlayer('Accuser', 'floater'), makePlayer('Accused', 'floater', stats)]);
+    return EVENTS.find(e => e.id === 'susp-private-accusation');
+  }
+
+  it('DENIES convincingly and closes the thread: temperament 10, social 10 — deny 1.00 of 1.15', () => {
+    const ev = accusedWith({ temperament: 10, social: 10, loyalty: 0, boldness: 0, intuition: 0 });
     const t = openThread('suspicion', CAST2, 3, 'seed');
-    const ev = EVENTS.find(e => e.id === 'susp-private-accusation');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.01]));
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('denies');
     expect(gs.tr.threads.find(x => x.id === t.id).state).toBe('closed');
   });
 
-  it('a volatile accused DENIES WEAKLY and the thread heats up', () => {
-    setup(CAST2, [
-      makePlayer('Accuser', 'floater'),
-      makePlayer('Accused', 'hothead', { temperament: 1, social: 1, loyalty: 1, boldness: 1, intuition: 1 }),
-    ]);
+  it('DENIES WEAKLY and the thread heats: the same roll, temperament 0 — denyWeak 0.75 of 1.25', () => {
+    const ev = accusedWith({ temperament: 0, social: 0, loyalty: 0, boldness: 0, intuition: 0 });
     const t = openThread('suspicion', CAST2, 3, 'seed');
     const before = gs.tr.threads.find(x => x.id === t.id).heat;
-    const ev = EVENTS.find(e => e.id === 'susp-private-accusation');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.30]));
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('denyWeak');
     expect(gs.tr.threads.find(x => x.id === t.id).heat).toBeGreaterThan(before);
   });
 
-  it('a bold, intuitive accused TURNS the accusation back on the accuser', () => {
-    setup(CAST2, [
-      makePlayer('Accuser', 'floater'),
-      makePlayer('Accused', 'villain', { temperament: 1, social: 1, loyalty: 1, boldness: 10, intuition: 10 }),
-    ]);
+  it('TURNS it back: the same roll, boldness 10 and intuition 10 — turn 1.00 of 1.75', () => {
+    const ev = accusedWith({ temperament: 10, social: 0, loyalty: 0, boldness: 10, intuition: 10 });
     openThread('suspicion', CAST2, 3, 'seed');
-    const ev = EVENTS.find(e => e.id === 'susp-private-accusation');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.50]));
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('turned');
     expect(result.bondDelta).toBeLessThan(0);
   });
 
-  it('a loyal, volatile accused CONFESSES to something unrelated', () => {
-    setup(CAST2, [
-      makePlayer('Accuser', 'floater'),
-      makePlayer('Accused', 'loyal-soldier', { temperament: 1, social: 1, loyalty: 10, boldness: 1, intuition: 1 }),
-    ]);
+  it('CONFESSES to something unrelated: the same roll, loyalty 10 and temperament 0 — confess 1.00 of 1.75', () => {
+    const ev = accusedWith({ temperament: 0, social: 0, loyalty: 10, boldness: 0, intuition: 0 });
     const t = openThread('suspicion', CAST2, 3, 'seed');
-    const ev = EVENTS.find(e => e.id === 'susp-private-accusation');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.999]));
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('confess');
     expect(gs.tr.threads.find(x => x.id === t.id).state).toBe('closed');
   });
 });
 
 describe('grief: the morning reaction forks on archetype/role, not a coin', () => {
-  const CAST2 = ['Reactor', 'Partner', 'Victim'];
-  function ctxFor(ep) { return { ep, window: 'dawn', act: 'middle', living: CAST2.slice(0, 2), actors: CAST2.slice(0, 2) }; }
+  const CAST2 = ['Reactor', 'Partner'];
+  function ctxFor(ep) { return { ep, window: 'dawn', act: 'middle', living: CAST2, actors: CAST2 }; }
   function withMurder(ep) { gs.tr.rounds.push({ ep: ep - 1, murdered: 'Victim' }); }
+  // ONE ROLL, FIVE STAT/ROLE LINES. mourn = soc*.05 + loy*.05 + .3 if a warm
+  // archetype; suspicious = strat*.05 + int*.05 + .3 if a reader archetype;
+  // stoic = (10-soc)*.06 + .15; opportunistic = 0 unless the reactor is a
+  // living Traitor, and then strat*.05 + bold*.05 + .2.
+  const ROLL = 0.5;
 
-  it('a warm, loyal reactor MOURNS OPENLY', () => {
-    setup(['Reactor', 'Partner'], [
-      makePlayer('Reactor', 'hero', { social: 10, loyalty: 10, strategic: 1, intuition: 1, boldness: 1 }),
-      makePlayer('Partner', 'floater'),
-    ]);
+  function reactorWith(archetype, stats, isTraitor = false) {
+    setup(CAST2, [makePlayer('Reactor', archetype, stats), makePlayer('Partner', 'floater')]);
     withMurder(4);
-    const ev = EVENTS.find(e => e.id === 'grief-morning-reaction');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.01]));
+    recordAlignment('Reactor', isTraitor, 1, 'selection');
+    return EVENTS.find(e => e.id === 'grief-morning-reaction');
+  }
+
+  it('MOURNS OPENLY: a hero with social 10 and loyalty 10 — mourn 1.30 of 1.45', () => {
+    const ev = reactorWith('hero', { social: 10, loyalty: 10, strategic: 0, intuition: 0, boldness: 0 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('mourn');
     expect(result.bondDelta).toBeGreaterThan(0);
   });
 
-  it('a strategic, perceptive reactor turns SUSPICIOUS immediately', () => {
-    setup(['Reactor', 'Partner'], [
-      makePlayer('Reactor', 'perceptive-player', { social: 1, loyalty: 1, strategic: 10, intuition: 10, boldness: 1 }),
-      makePlayer('Partner', 'floater'),
-    ]);
-    withMurder(4);
-    const ev = EVENTS.find(e => e.id === 'grief-morning-reaction');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.55]));
+  it('turns SUSPICIOUS: the same roll, a perceptive-player with strategic 10 and intuition 10 — suspicious 1.30 of 2.05', () => {
+    const ev = reactorWith('perceptive-player', { social: 0, loyalty: 0, strategic: 10, intuition: 10, boldness: 0 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('suspicious');
   });
 
-  it('a low-social reactor withdraws STOICALLY and still leaves residue', () => {
-    setup(['Reactor', 'Partner'], [
-      makePlayer('Reactor', 'floater', { social: 1, loyalty: 1, strategic: 1, intuition: 1, boldness: 1 }),
-      makePlayer('Partner', 'floater'),
-    ]);
-    withMurder(4);
-    const ev = EVENTS.find(e => e.id === 'grief-morning-reaction');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.999]));
+  it('withdraws STOICALLY and still leaves residue: the same roll, everything at 0 — stoic 0.75 of 0.75', () => {
+    const ev = reactorWith('floater', { social: 0, loyalty: 0, strategic: 0, intuition: 0, boldness: 0 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('stoic');
     expect(result.bondDelta).toBe(0);
     expect(result.threadId, 'stoic must still write residue, not nothing').toBeTruthy();
   });
 
-  it('a living Traitor can use the grief OPPORTUNISTICALLY (role gate)', () => {
-    setup(['Reactor', 'Partner'], [
-      makePlayer('Reactor', 'wildcard', { social: 1, loyalty: 1, strategic: 10, boldness: 10, intuition: 1 }),
-      makePlayer('Partner', 'floater'),
-    ]);
-    withMurder(4);
-    recordAlignment('Reactor', true, 1, 'selection');
-    const ev = EVENTS.find(e => e.id === 'grief-morning-reaction');
-    // Force the roll to the top of the range, which only opportunisticScore
-    // reaches when isTraitor is true — a Faithful with these exact stats has
-    // opportunisticScore === 0 and this same roll would fall through to stoic.
-    const result = ev.fire(ctxFor(4), scriptedRng([0.999]));
+  // THE ROLE GATE, as a matched pair: identical stats, identical roll, one
+  // bit of difference. opportunisticScore is the only term in the fork that
+  // is multiplied by role rather than by a stat, so this is the one thing in
+  // the family that no stat line can reproduce.
+  const GATE_STATS = { social: 10, loyalty: 0, strategic: 0, intuition: 0, boldness: 10 };
+
+  it('a living Traitor reaches the OPPORTUNISTIC branch — opportunistic 0.70 of 1.35', () => {
+    const ev = reactorWith('wildcard', GATE_STATS, true);
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('opportunistic');
     expect(result.isTraitor).toBe(true);
   });
 
-  it('a Faithful with the same stats CANNOT reach the opportunistic branch (role gate proof)', () => {
-    setup(['Reactor', 'Partner'], [
-      makePlayer('Reactor', 'wildcard', { social: 1, loyalty: 1, strategic: 10, boldness: 10, intuition: 1 }),
-      makePlayer('Partner', 'floater'),
-    ]);
-    withMurder(4);
-    recordAlignment('Reactor', false, 1, 'selection');
-    const ev = EVENTS.find(e => e.id === 'grief-morning-reaction');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.999]));
+  it('a Faithful with the SAME stats and the SAME roll cannot reach it — the term is 0', () => {
+    const ev = reactorWith('wildcard', GATE_STATS, false);
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).not.toBe('opportunistic');
+    expect(result.branch).toBe('mourn');
   });
 });
 
@@ -565,54 +561,99 @@ describe('cover: role overrides archetype', () => {
   });
 });
 
-describe('romance: the liability-exposed flagship forks on the FAITHFUL partner\'s own read', () => {
-  const CAST2 = ['Faithful', 'Turncoat'];
+describe('romance: the liability-exposed flagship forks on the DOUBTING partner\'s own read', () => {
+  const CAST2 = ['Doubter', 'Partner'];
   function ctxFor(ep) { return { ep, window: 'after-table', act: 'middle', living: CAST2, actors: CAST2 }; }
   function seedShowmance(ep) { return openThread('romance-showmance', CAST2, ep, 'seed'); }
+  /** Give `who` a real, deduced read on `about` — the event's precondition. */
+  function seedDoubt(who, about, ep) {
+    learn(who, alignmentFactId(about), { sourceType: 'deduced', confidence: 0.6, ep, rng: () => 0 });
+  }
+  // Same discipline as the other forks: the roll is FIXED, the stats move.
+  // oblivious = (10-int)*.06 + loy*.02; suspicious = int*.05 + (10-bold)*.03;
+  // confronts = bold*.05 + int*.03; exposes = bold*.04 + (10-loy)*.04.
+  const ROLL = 0.5;
+  // `exposes` cannot hold the midpoint at any legal stat line — killing
+  // oblivious needs intuition 10, which feeds suspicious and confronts faster
+  // than it feeds exposes, so exposes tops out at 0.80 of a 1.90 total (42%).
+  // It gets a MATCHED PAIR at a higher fixed roll instead: same roll, two stat
+  // lines, two different branches.
+  const ROLL_HIGH = 0.85;
 
-  it('needs a MIXED-role showmance — two Faithfuls in a showmance have nothing to expose', () => {
-    setup(CAST2, [makePlayer('Faithful', 'floater'), makePlayer('Turncoat', 'floater')]);
-    recordAlignment('Faithful', false, 1, 'selection');
-    recordAlignment('Turncoat', false, 1, 'selection');
+  function doubterWith(stats) {
+    setup(CAST2, [makePlayer('Doubter', 'floater', stats), makePlayer('Partner', 'floater')]);
+    recordAlignment('Doubter', false, 1, 'selection');
+    recordAlignment('Partner', true, 1, 'selection');
+    seedShowmance(3);
+    seedDoubt('Doubter', 'Partner', 4);
+    return EVENTS.find(e => e.id === 'romance-liability-exposed');
+  }
+
+  it('needs a DOUBT inside the couple — a showmance nobody has started reading has nothing to expose', () => {
+    setup(CAST2, [makePlayer('Doubter', 'floater'), makePlayer('Partner', 'floater')]);
+    // Deliberately MIXED by ground truth, and deliberately without a read:
+    // the old precondition was exactly this world and it fired here. It does
+    // not any more — the gate is what the partner believes, not what the
+    // other one is. See the ground-truth probes above.
+    recordAlignment('Doubter', false, 1, 'selection');
+    recordAlignment('Partner', true, 1, 'selection');
     seedShowmance(3);
     const ev = EVENTS.find(e => e.id === 'romance-liability-exposed');
     expect(ev.weight(ctxFor(4))).toBe(0);
+    seedDoubt('Doubter', 'Partner', 4);
+    expect(ev.weight(ctxFor(4))).toBeGreaterThan(0);
   });
 
-  it('a low-intuition Faithful stays OBLIVIOUS and the bond warms', () => {
-    setup(CAST2, [
-      makePlayer('Faithful', 'goat', { intuition: 1, loyalty: 10, boldness: 1 }),
-      makePlayer('Turncoat', 'villain'),
-    ]);
-    recordAlignment('Faithful', false, 1, 'selection');
-    recordAlignment('Turncoat', true, 1, 'selection');
-    seedShowmance(3);
-    const ev = EVENTS.find(e => e.id === 'romance-liability-exposed');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.01]));
+  it('stays OBLIVIOUS and the bond warms: intuition 0, loyalty 10 — oblivious 0.80 of 1.10', () => {
+    const ev = doubterWith({ intuition: 0, loyalty: 10, boldness: 0 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('oblivious');
     expect(result.bondDelta).toBeGreaterThan(0);
   });
 
-  it('a bold, disloyal-leaning Faithful EXPOSES it publicly, closing the showmance thread', () => {
-    setup(CAST2, [
-      makePlayer('Faithful', 'hothead', { intuition: 1, loyalty: 1, boldness: 10, temperament: 1 }),
-      makePlayer('Turncoat', 'villain'),
-    ]);
-    recordAlignment('Faithful', false, 1, 'selection');
-    recordAlignment('Turncoat', true, 1, 'selection');
-    const showmance = seedShowmance(3);
-    const ev = EVENTS.find(e => e.id === 'romance-liability-exposed');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.999]));
+  it('goes SUSPICIOUS-BUT-SILENT: the same roll, intuition 10 and boldness 0 — suspicious 0.80 of 1.50', () => {
+    const ev = doubterWith({ intuition: 10, loyalty: 0, boldness: 0 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
+    expect(result.branch).toBe('suspicious');
+    expect(result.bondDelta).toBe(0);
+  });
+
+  it('CONFRONTS privately: the same roll, intuition 10 and boldness 10 — confronts 0.80 of 2.10', () => {
+    const ev = doubterWith({ intuition: 10, loyalty: 0, boldness: 10 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
+    expect(result.branch).toBe('confronts');
+    expect(result.bondDelta).toBeLessThan(0);
+  });
+
+  it('EXPOSES it publicly, closing the showmance: boldness 10, loyalty 0 — exposes 0.80 of 1.90', () => {
+    const ev = doubterWith({ intuition: 0, loyalty: 0, boldness: 10 });
+    const showmance = findOpenThread('romance-showmance', CAST2);
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL_HIGH]));
     expect(result.branch).toBe('exposes');
     expect(gs.tr.threads.find(t => t.id === showmance.id).state).toBe('closed');
-    // A `cover` thread opens on the Traitor — their old protection is gone.
-    expect(gs.tr.threads.some(t => t.kind === 'cover' && t.parties.includes('Turncoat'))).toBe(true);
+    // A `cover` thread opens on the suspected partner — their old protection
+    // is gone, whatever they actually are.
+    expect(gs.tr.threads.some(t => t.kind === 'cover' && t.parties.includes('Partner'))).toBe(true);
+  });
+
+  it('the SAME high roll on a timid, loyal doubter does NOT expose — the stats are what moved it', () => {
+    const ev = doubterWith({ intuition: 0, loyalty: 10, boldness: 0 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL_HIGH]));
+    expect(result.branch).not.toBe('exposes');
+    expect(result.branch).toBe('suspicious');
   });
 });
 
 describe('callback: the history-confrontation flagship forks on the actor + the polarity of shared history', () => {
   const CAST2 = ['Veteran', 'OldAlly'];
   function ctxFor(ep) { return { ep, window: 'after-table', act: 'middle', living: CAST2, actors: CAST2 }; }
+  // ONE ROLL, FOUR LINES. reconcile = loy*.05 + (.3 positive | .1 otherwise);
+  // grudge = (10-loy)*.04 + (.4 negative | .05); strategic = strat*.04 +
+  // bold*.03; buries = temp*.04 + (10-bold)*.02 + .1. 0.6 rather than 0.5
+  // because `buries` cannot hold the midpoint: reconcile and grudge together
+  // floor at 0.35 whatever the stats, so buries tops out at 47% of the total.
+  const ROLL = 0.6;
+
   function seedLedger(relation) {
     setFranchiseLedger({
       v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {
@@ -626,6 +667,12 @@ describe('callback: the history-confrontation flagship forks on the actor + the 
     });
   }
 
+  function veteranWith(stats, relation) {
+    setup(CAST2, [makePlayer('Veteran', 'floater', stats), makePlayer('OldAlly', 'floater')]);
+    seedLedger(relation);
+    return EVENTS.find(e => e.id === 'callback-history-confrontation');
+  }
+
   it('no shared history at all means zero weight', () => {
     setup(CAST2, [makePlayer('Veteran', 'floater'), makePlayer('OldAlly', 'floater')]);
     setFranchiseLedger({ v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {} } } });
@@ -633,30 +680,30 @@ describe('callback: the history-confrontation flagship forks on the actor + the 
     expect(ev.weight(ctxFor(4))).toBe(0);
   });
 
-  it('a high-loyalty actor with a POSITIVE history RECONCILES, warming the bond', () => {
-    setup(CAST2, [makePlayer('Veteran', 'loyal-soldier', { loyalty: 10, strategic: 1, boldness: 1, temperament: 1 }), makePlayer('OldAlly', 'floater')]);
-    seedLedger('allies');
-    const ev = EVENTS.find(e => e.id === 'callback-history-confrontation');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.01]));
+  it('RECONCILES: loyalty 10 over a positive history — reconcile 0.80 of 1.15', () => {
+    const ev = veteranWith({ loyalty: 10, strategic: 0, boldness: 0, temperament: 0 }, 'allies');
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('reconciles');
     expect(result.bondDelta).toBeGreaterThan(0);
   });
 
-  it('a low-loyalty actor with a NEGATIVE history renews the GRUDGE, damaging the bond', () => {
-    setup(CAST2, [makePlayer('Veteran', 'villain', { loyalty: 1, strategic: 1, boldness: 1, temperament: 1 }), makePlayer('OldAlly', 'floater')]);
-    seedLedger('betrayed-by-them');
-    const ev = EVENTS.find(e => e.id === 'callback-history-confrontation');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.35]));
+  it('renews the GRUDGE: the same roll, loyalty 0 over a betrayal — grudge 0.80 of 1.20', () => {
+    const ev = veteranWith({ loyalty: 0, strategic: 0, boldness: 0, temperament: 0 }, 'betrayed-by-them');
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('grudge');
     expect(result.bondDelta).toBeLessThan(0);
   });
 
-  it('a high-temperament, low-boldness actor BURIES it, closing any existing callback thread', () => {
-    setup(CAST2, [makePlayer('Veteran', 'goat', { loyalty: 1, strategic: 1, boldness: 1, temperament: 10 }), makePlayer('OldAlly', 'floater')]);
-    seedLedger('rivals');
+  it('plays it STRATEGICALLY: the same roll and the same positive history as the reconciler, strategic 10 and boldness 10 — strategic 0.70 of 1.55', () => {
+    const ev = veteranWith({ loyalty: 0, strategic: 10, boldness: 10, temperament: 0 }, 'allies');
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
+    expect(result.branch).toBe('strategic');
+  });
+
+  it('BURIES it, closing any existing callback thread: the same roll, temperament 10 and boldness 0 — buries 0.70 of 1.65', () => {
+    const ev = veteranWith({ loyalty: 5, strategic: 0, boldness: 0, temperament: 10 }, 'rivals');
     const preexisting = openThread('callback', CAST2, 3, 'seed');
-    const ev = EVENTS.find(e => e.id === 'callback-history-confrontation');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.999]));
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('buries');
     expect(gs.tr.threads.find(t => t.id === preexisting.id).state).toBe('closed');
   });
@@ -665,29 +712,45 @@ describe('callback: the history-confrontation flagship forks on the actor + the 
 describe('testing: the decoy-secret flagship forks on the TARGET\'s stats, four ways', () => {
   const CAST2 = ['Tester', 'Target'];
   function ctxFor(ep) { return { ep, window: 'evening', act: 'middle', living: CAST2, actors: CAST2 }; }
+  // ONE ROLL, FOUR STAT LINES. kept = loy*.05 + temp*.03 + .1; innocent =
+  // soc*.05 + .15; malicious = strat*.05 + (10-loy)*.04; caught = int*.06.
+  // 0.7 rather than 0.5 because `caughtTest` cannot hold the midpoint: at
+  // intuition 10 with every other stat at 0 it is 0.60 of a 1.25 total, i.e.
+  // 48%, and lowering the others raises kept instead. 0.7 is inside all four
+  // branches' best bands (kept < .857, innocent .37-.90, malicious > .22,
+  // caught > .52).
+  const ROLL = 0.7;
 
-  it('a high-loyalty, high-temperament target KEEPS the secret quiet and the thread closes clean', () => {
-    setup(CAST2, [makePlayer('Tester', 'floater'), makePlayer('Target', 'loyal-soldier', { loyalty: 10, temperament: 10, social: 1, strategic: 1, intuition: 1 })]);
+  function targetWith(stats) {
+    setup(CAST2, [makePlayer('Tester', 'floater'), makePlayer('Target', 'floater', stats)]);
+    return EVENTS.find(e => e.id === 'testing-decoy-secret');
+  }
+
+  it('KEEPS IT QUIET and the thread closes clean: loyalty 10, temperament 10 — kept 0.90 of 1.05', () => {
+    const ev = targetWith({ loyalty: 10, temperament: 10, social: 0, strategic: 0, intuition: 0 });
     const t = openThread('testing', CAST2, 3, 'seed');
-    const ev = EVENTS.find(e => e.id === 'testing-decoy-secret');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.01]));
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('keptQuiet');
     expect(result.bondDelta).toBeGreaterThan(0);
     expect(gs.tr.threads.find(x => x.id === t.id).state).toBe('closed');
   });
 
-  it('a high-strategic, low-loyalty target REPEATS IT MALICIOUSLY and the bond takes real damage', () => {
-    setup(CAST2, [makePlayer('Tester', 'floater'), makePlayer('Target', 'schemer', { loyalty: 1, temperament: 1, social: 1, strategic: 10, intuition: 1 })]);
-    const ev = EVENTS.find(e => e.id === 'testing-decoy-secret');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.65]));
+  it('REPEATS IT INNOCENTLY: the same roll, social 10 with loyalty still high — innocent 0.65 of 1.22', () => {
+    const ev = targetWith({ loyalty: 7, temperament: 0, social: 10, strategic: 0, intuition: 0 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
+    expect(result.branch).toBe('innocent');
+  });
+
+  it('REPEATS IT MALICIOUSLY: the same roll, loyalty 0 and strategic 10 — malicious 0.90 of 1.15', () => {
+    const ev = targetWith({ loyalty: 0, temperament: 0, social: 0, strategic: 10, intuition: 0 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('malicious');
     expect(result.bondDelta).toBeLessThan(-1);
   });
 
-  it('a high-intuition target CATCHES THE TEST outright', () => {
-    setup(CAST2, [makePlayer('Tester', 'floater'), makePlayer('Target', 'perceptive-player', { loyalty: 1, temperament: 1, social: 1, strategic: 1, intuition: 10 })]);
-    const ev = EVENTS.find(e => e.id === 'testing-decoy-secret');
-    const result = ev.fire(ctxFor(4), scriptedRng([0.999]));
+  it('CATCHES THE TEST: the same roll and the same loyalty 0, intuition 10 instead of strategic 10 — caught 0.60 of 1.25', () => {
+    const ev = targetWith({ loyalty: 0, temperament: 0, social: 0, strategic: 0, intuition: 10 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('caughtTest');
   });
 });

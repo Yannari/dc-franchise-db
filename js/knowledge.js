@@ -197,6 +197,16 @@ export function propagate(ep = null, { contacts = defaultContacts, rng = Math.ra
   for (const id of Object.keys(s)) {
     const fact = s[id];
     if (_isStale(fact, e)) continue;   // nobody bothers passing around old news
+    // Alignment never goes through generic gossip. propagate()'s hop formula
+    // (effectiveConfidence * 0.85 * trustMultiplier) does not pass through
+    // SOURCE_CRED at all — it hands learn() an explicit confidence override.
+    // A Traitor's `public` (~1.0) belief about their ally would survive one
+    // high-trust hop at up to ~0.9, laundering a Traitor's certainty straight
+    // into a Faithful's head and blowing through the 0.62/0.45 ceiling that
+    // is the entire point of the alignment fact type. An accusation is a
+    // deliberate public act (broadcast(), a later task), not a random hop
+    // between two people who happened to talk.
+    if (fact.type === 'alignment') continue;
     // Vote-round facts about someone already voted out are dead news: a target
     // fact stays time-valid into the next episode, but nobody "quietly brings
     // Zaid's name" to camp after Zaid's torch is snuffed. (Permanent facts —

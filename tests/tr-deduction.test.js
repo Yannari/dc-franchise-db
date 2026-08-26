@@ -8,7 +8,8 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { gs, setGs } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
-import { resetKnowledge, believes, learn } from '../js/knowledge.js';
+import { resetKnowledge, believes, learn, propagate } from '../js/knowledge.js';
+import { setRelationshipDimension } from '../js/relationships.js';
 import {
   selectTraitors, recordAlignment, alignmentAt, truthAtLearn,
 } from '../js/tr/roles.js';
@@ -82,6 +83,18 @@ describe('alignment as ground truth', () => {
     expect(truthAtLearn('Heather', 3)).toBe(false);   // a correct read in ep 3
     expect(truthAtLearn('Heather', 9)).toBe(true);
   });
+
+  it('a second write for the SAME episode wins, without corrupting earlier eras', () => {
+    // Two calls land on episode 5 (e.g. a correction, or an ultimatum reversed
+    // within the same episode). recordAlignment() re-sorts on every append and
+    // Array.prototype.sort is stable, so the later write becomes authoritative
+    // for episode 5 onward without touching what was true in episode 3.
+    recordAlignment('Owen', true, 5, 'recruitment');
+    recordAlignment('Owen', false, 5, 'ultimatum');
+    expect(alignmentAt('Owen', 3)).toBe('faithful');   // untouched by either ep-5 write
+    expect(alignmentAt('Owen', 5)).toBe('faithful');   // the later write wins
+    expect(alignmentAt('Owen', 11)).toBe('faithful');
+  });
 });
 
 describe('what the traitors know, and what nobody else can', () => {
@@ -113,5 +126,25 @@ describe('what the traitors know, and what nobody else can', () => {
       { source: 'ballots', sourceType: 'deduced', ep: 4, rng: () => 0.01 });
     const b = believes('Heather', alignmentFactId('Gwen'), 4);
     if (b) expect(b.effectiveConfidence).toBeLessThan(0.7);
+  });
+
+  it('CEILING HOLDS THROUGH GOSSIP: propagate() must never hop an alignment belief', () => {
+    // Gwen holds Duncan's alignment at `public` (~1.0) — she was told it in the
+    // turret. Heather is a maximally-trusted contact of Gwen's. Without the
+    // propagate() guard, the hop formula (effectiveConfidence * 0.85 *
+    // trustMultiplier) launders that ~1.0 straight past the 0.62/0.45 ceiling
+    // and hands Heather near-certainty about who Duncan is — exactly the
+    // asymmetry the format depends on breaking down.
+    setRelationshipDimension('Heather', 'Gwen', 'trust', 10);
+    propagate(1, {
+      // Force Gwen's one gossip roll to land on Heather, deterministically.
+      contacts: (knower) => (knower === 'Gwen' ? { allies: ['Heather'], others: [] } : { allies: [], others: [] }),
+      // Low draws clear every acceptance/selection gate in propagate() and
+      // _assess(), so if the guard is missing the hop goes through at close
+      // to its maximum possible confidence.
+      rng: () => 0.01,
+    });
+    const belief = believes('Heather', alignmentFactId('Duncan'), 1);
+    expect(belief, 'alignment must never spread through generic gossip').toBeNull();
   });
 });

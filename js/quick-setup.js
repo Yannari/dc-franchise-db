@@ -20,6 +20,7 @@
 
 import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
+import { SHOWS as SHOW_REGISTRY, showName, showIcon } from './shows.js';
 import { houseStructure } from './bb-run.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
@@ -443,11 +444,21 @@ function _preset() {
 // flavour of rules *within* Total Drama, while this picks which game is being
 // played at all. Keeping them apart is what lets the franchise add Traitors,
 // Drag Race and the rest without the preset row becoming nonsense.
-const SHOWS = [
-  { id: 'total-drama', name: 'Total Drama', tag: 'Tribes, challenges, tribal council', icon: '🎬' },
-  { id: 'big-brother', name: 'Big Brother', tag: 'One house, HOH, veto, live eviction', icon: '🏠' },
-  { id: 'traitors',    name: 'The Traitors', tag: 'A castle, a round table, a murder every night', icon: '🗡️' },
-];
+// Derived from js/shows.js rather than listed here. This array WAS a ninth
+// hardcoded show list -- the eight the collapse removed, plus this one it
+// missed -- and it had already drifted: Big Brother's icon was a house here and
+// a camera in the registry, so the same show wore two faces on two screens and
+// nothing errored. Name and icon are identity and belong to the registry; `tag`
+// stays local because it is this picker's own sales copy, not a fact about the
+// show, and a fourth show added to the registry appears here without an edit.
+const SHOW_TAGS = {
+  'total-drama': 'Tribes, challenges, tribal council',
+  'big-brother': 'One house, HOH, veto, live eviction',
+  'traitors':    'A castle, a round table, a murder every night',
+};
+export const SHOWS = Object.keys(SHOW_REGISTRY).map(id => ({
+  id, name: showName(id), icon: showIcon(id), tag: SHOW_TAGS[id] || '',
+}));
 
 function _format() {
   const el = _g('cfg-format');

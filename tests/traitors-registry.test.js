@@ -8,6 +8,7 @@ import { buildFranchiseMeta, setFranchiseLedger, activeSeasons }
   from '../js/franchise-meta.js';
 import { formatIsRunnable, seasonConfig } from '../js/core.js';
 import { currentFormat } from '../js/social/session.js';
+import { SHOWS as QS_SHOWS } from '../js/quick-setup.js';
 import { initTraitorsState, prepTrForSave, repairTrSets } from '../js/tr/state.js';
 
 describe('the traitors registry entry', () => {
@@ -185,6 +186,22 @@ describe('the show picker on the actual screen', () => {
     const optionValues = [...selectMatch[1].matchAll(/<option value="([^"]+)"/g)]
       .map(m => m[1]);
     expect(new Set(optionValues)).toEqual(new Set(Object.keys(SHOWS)));
+  });
+
+  // The Quick Setup show cards were a NINTH hardcoded show list, missed by the
+  // collapse, and already drifted: Big Brother's icon was a house there and a
+  // camera in the registry. Derived from Object.keys(SHOWS) so a fourth show
+  // cannot be forgotten, and asserted the same way for the same reason -- a
+  // literal three-show list here would rebuild the defect one show later.
+  it('renders one Quick Setup card per registered show, with registry identity', () => {
+    expect(new Set(QS_SHOWS.map(s => s.id))).toEqual(new Set(Object.keys(SHOWS)));
+    for (const card of QS_SHOWS) {
+      expect(card.name, `${card.id} card name`).toBe(SHOWS[card.id].name);
+      expect(card.icon, `${card.id} card icon`).toBe(SHOWS[card.id].emoji);
+      // `tag` is this picker's own copy, not identity, but a blank card is a
+      // show nobody can tell apart from the one above it.
+      expect(card.tag, `${card.id} card has no tag`).toBeTruthy();
+    }
   });
 });
 

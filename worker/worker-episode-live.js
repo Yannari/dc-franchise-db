@@ -4044,7 +4044,12 @@ function flattenForQuoteCheck(s) {
     .trim();
 }
 
-const WIKI_PROFILE_FIELDS = ["occupation", "hometown", "birthdate", "ethnicity",
+// birthdate is NOT here. A wiki states an AGE — "Leshawna is sixteen" — which
+// is a fact about the moment she debuted, not about today. Turning that into a
+// date needs this franchise's calendar, which lives in js/franchise-calendar.js
+// and has no business being duplicated in a worker. So the model reports the
+// age it READ (quotable, checkable) and the browser does the arithmetic.
+const WIKI_PROFILE_FIELDS = ["occupation", "hometown", "ethnicity",
   "nationality", "descriptor", "sexuality", "voice", "personality", "backstory"];
 
 /**
@@ -4193,7 +4198,11 @@ async function generateWikiProfile(body, env) {
     '{"fields":{"<field>":{"value":"...","kind":"source-canon|interpretation","quote":"..."}}}',
     "",
     `Fields you may fill: ${WIKI_PROFILE_FIELDS.join(", ")}.`,
-    "Omit a field entirely rather than writing an empty string.",
+    "Propose EVERY field. Where the article states something, use it and quote",
+    "  it. Where it does not, give your most plausible reading and mark it",
+    "  interpretation — a blank helps nobody, and an interpretation is offered",
+    "  to a person who can untick it. Omit a field only when you have no basis",
+    "  for a guess at all.",
     "",
     "kind is the whole point of this job:",
     "  source-canon   - the article states it. You MUST include `quote`: a short",
@@ -4219,7 +4228,16 @@ async function generateWikiProfile(body, env) {
     "  Ontario\", \"straight\". No explaining, no hedging, no reasoning about why",
     "  — those fields are printed in a one-line biography lead and a sentence",
     "  there ruins it. If you cannot say it in a few words, omit the field.",
-    "birthdate: only as YYYY-MM-DD, only if the article gives a real date.",
+    "",
+    "Two extra keys, OUTSIDE `fields`, both about age:",
+    '  "canonicalAge": {"value": 16, "kind": "...", "quote": "..."}',
+    "     The age the character IS in the source material, at their first",
+    "     appearance. Quote the article if it says so. If it does not, estimate",
+    "     from context and mark it interpretation. This is not their age today —",
+    "     the caller works that out from when their first season aired.",
+    '  "birthday": "MM-DD"',
+    "     Month and day only, no year. Use the article's if it gives one;",
+    "     otherwise pick a plausible one. The YEAR is not yours to choose.",
   ].join("\n");
 
   const user = `Character: ${title}\nArticle (${label}):\n\n${excerpt}`;
@@ -4254,6 +4272,20 @@ async function generateWikiProfile(body, env) {
     profile: { slug, ...fields, profileSources },
     source: { host, title, url, label },
     provider,
+    // Handed back raw. The caller owns the calendar and therefore owns the
+    // sum; this only reports what the article said the age was.
+    canonicalAge: parsed?.canonicalAge && Number.isFinite(Number(parsed.canonicalAge.value))
+      ? {
+        value: Number(parsed.canonicalAge.value),
+        kind: parsed.canonicalAge.kind === "source-canon"
+          && typeof parsed.canonicalAge.quote === "string"
+          && parsed.canonicalAge.quote.trim().length >= 12
+          && flattenForQuoteCheck(prose).includes(flattenForQuoteCheck(parsed.canonicalAge.quote))
+          ? "source-canon" : "interpretation",
+        quote: typeof parsed.canonicalAge.quote === "string" ? parsed.canonicalAge.quote.trim() : "",
+      }
+      : null,
+    birthday: /^\d{2}-\d{2}$/.test(String(parsed?.birthday || "")) ? parsed.birthday : null,
     // Surfaced rather than hidden: "3 of these are guesses" is the single most
     // useful sentence this endpoint can say.
     demoted,

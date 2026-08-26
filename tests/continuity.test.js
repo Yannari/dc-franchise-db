@@ -146,3 +146,58 @@ describe('what the box says about a whole career', () => {
     expect(apps.some(a => a.keyMoments.length === 0)).toBe(true);
   });
 });
+
+// A wiki freezes a character at the age they were written. Turning "Leshawna is
+// sixteen" into a birthday needs to know WHEN she was sixteen, and the only
+// thing that knows is this franchise's own calendar.
+describe('an age from a wiki, placed in franchise time', () => {
+  it('anchors on the season that aired first, not the lowest number', async () => {
+    const { appearancesFor, ageAnchor } = await load();
+    const a = ageAnchor(await appearancesFor('leshawna'));
+    expect(a.debut.seasonId).toBe('td-1');
+    expect(a.debut.airYear).toBe(2020);
+    // "Now" is derived from the last season aired, never stored — a stored
+    // current year is a second clock and two clocks disagree.
+    expect(a.now.airYear).toBe(2026);
+    expect(a.now.airSlot).toBe('fall');
+  });
+
+  it('carries a canonical age forward to the present', async () => {
+    const { appearancesFor, ageAnchor, birthFromCanonAge } = await load();
+    const a = ageAnchor(await appearancesFor('leshawna'));
+    const born = birthFromCanonAge(16, a, '07-14');
+    // 16 in spring 2020 is a person born in 2004, who is 22 in fall 2026.
+    expect(born.birthYear).toBe(2004);
+    expect(born.birthdate).toBe('2004-07-14');
+    expect(born.ageNow).toBe(22);
+  });
+
+  it('gives a later debut a later birth year for the same canonical age', async () => {
+    const { appearancesFor, ageAnchor, birthFromCanonAge } = await load();
+    const bowie = ageAnchor(await appearancesFor('bowie'));
+    // Bowie debuted in 2024, so the same "16" means someone born in 2008 —
+    // this is the whole reason the sum cannot be done from the wiki alone.
+    expect(birthFromCanonAge(16, bowie, '07-14').birthYear).toBe(2008);
+  });
+
+  it('still gives an age when no birthday is known', async () => {
+    const { appearancesFor, ageAnchor, birthFromCanonAge } = await load();
+    const a = ageAnchor(await appearancesFor('leshawna'));
+    const born = birthFromCanonAge(16, a, null);
+    expect(born.birthdate, 'a day of the month is nobody’s fact').toBeNull();
+    expect(born.ageNow).toBe(22);
+  });
+
+  it('refuses an age it cannot use', async () => {
+    const { appearancesFor, ageAnchor, birthFromCanonAge } = await load();
+    const a = ageAnchor(await appearancesFor('leshawna'));
+    for (const bad of [null, undefined, 0, -3, 250, 'sixteen', 16.5]) {
+      expect(birthFromCanonAge(bad, a, '07-14'), String(bad)).toBeNull();
+    }
+  });
+
+  it('has no anchor for somebody who has never played', async () => {
+    const { appearancesFor, ageAnchor } = await load();
+    expect(ageAnchor(await appearancesFor('nobody-has-this-slug'))).toBeNull();
+  });
+});

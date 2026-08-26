@@ -20,7 +20,7 @@ const STAT_ABBR = { physical:'PHY', endurance:'END', mental:'MEN', social:'SOC',
 
 import { composeVoice, stripBioLead, parseBio, splitOrigin } from './bio.js';
 import { PROFILE_GROUPS, validatePublishedProfile, selectProfileVoice, diffProfileCandidates, applyCandidateSelection } from './profile-import.js';
-import { appearancesFor, continuitySummary, continuityTies } from './continuity.js';
+import { appearancesFor, ageAnchor, birthFromCanonAge, continuitySummary, continuityTies } from './continuity.js';
 import { INTERVIEW_QUESTIONS, parseInterview, serializeInterview }
   from './casting-interview.js';
 // The endpoint resolver, not a second hardcoded URL — it already handles the
@@ -1780,9 +1780,52 @@ async function _fillProfileFrom(ed, d, say) {
     if (!page) { preview.say(published ? 'Saved profile only — no wiki page chosen.' : 'No wiki page chosen.'); return; }
 
     preview.say(`reading ${page.title} on the ${page.label}…`);
-    const out = await _wikiCall({ mode: 'wiki-profile', host: page.host, title: page.title, slug });
+    const [out, appearances] = await Promise.all([
+      _wikiCall({ mode: 'wiki-profile', host: page.host, title: page.title, slug }),
+      // Their career, for the age anchor below. Cached after the first call,
+      // and usually already warm because the continuity box asked for it when
+      // the editor opened.
+      appearancesFor(slug).catch(() => []),
+    ]);
 
-    preview.addSource({ origin: 'wiki', label: page.label, profile: out.profile });
+    // ── the age, translated into this franchise's time ──
+    //
+    // A wiki freezes a character at the age they were written: Leshawna is
+    // sixteen. That is true of the moment she debuted, not of now. Anchored on
+    // when her first season actually aired and carried forward to the season
+    // currently airing, sixteen in spring 2020 is twenty-two in fall 2026.
+    //
+    // Split provenance on purpose: the AGE can be quoted from the article, the
+    // BIRTHDATE cannot — it is this calendar's arithmetic on top of it — and
+    // the day of the month is nobody's fact at all.
+    const anchor = ageAnchor(appearances);
+    const profile = { ...out.profile };
+    if (out.canonicalAge && anchor) {
+      const born = birthFromCanonAge(out.canonicalAge.value, anchor, out.birthday);
+      if (born) {
+        const dated = `${out.canonicalAge.value} at ${anchor.debut.title || anchor.debut.seasonId}`
+          + ` (${anchor.debut.airSlot} ${anchor.debut.airYear})`;
+        profile.profileSources = { ...(profile.profileSources || {}) };
+        if (born.birthdate) {
+          profile.birthdate = born.birthdate;
+          profile.profileSources.birthdate = [{
+            label: `${dated}, so born ${born.birthYear}`,
+            kind: 'simulator-continuity',
+          }, ...(out.canonicalAge.kind === 'source-canon'
+            ? [{ label: `${out.source.label} — ${out.source.title}`, url: out.source.url,
+              kind: 'source-canon', quote: out.canonicalAge.quote }]
+            : [])];
+        }
+        if (born.ageNow != null) {
+          profile.age = born.ageNow;
+          profile.profileSources.age = [{
+            label: `${dated}, and it is ${anchor.now.airSlot} ${anchor.now.airYear} now`,
+            kind: 'simulator-continuity',
+          }];
+        }
+      }
+    }
+    preview.addSource({ origin: 'wiki', label: page.label, profile });
     const { total, canon } = out.counts;
     const guessed = total - canon;
     // Say what was dropped. A cap that bins a field silently reads as "the

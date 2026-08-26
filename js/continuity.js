@@ -22,6 +22,9 @@
 // into a module the Studio wants to call before a game exists.
 import { SHOWS, showWords, showName, DEFAULT_FORMAT } from './shows.js';
 import { seasonDataFile } from './social/adapter.js';
+// A true leaf — it imports nothing. It owns when a season aired and what
+// "now" means, and nothing else in this project is allowed a second opinion.
+import { ageAt, byAirDate, latestAired, yearsBetween } from './franchise-calendar.js';
 
 /** Fetch one published season document. Null when it has not aired. */
 async function loadSeasonDoc(format, season, root) {
@@ -86,6 +89,11 @@ function _appearance(doc, meta, row) {
     seasonNumber: meta.seasonNumber,
     seasonId: meta.seasonId || String(meta.seasonNumber),
     title: meta.title || '',
+    // WHEN it aired, carried through so a career can be placed in time. The
+    // calendar is the only thing that can turn "the wiki says she is 16" into
+    // a birth year — 16 at a season that aired in 2023 is not 16 now.
+    airYear: meta.airYear || null,
+    airSlot: meta.airSlot || null,
     placement: row.placement,
     // Total Drama writes `phase`, Big Brother writes `status`. Both mean the
     // same thing: how far they got and how it ended.
@@ -117,6 +125,7 @@ function _isComplete(doc) {
   return !!(doc && (doc.winner || doc.status === 'Complete'));
 }
 
+let _seasons = [];      // every season row, for deriving the franchise's "now"
 let _index = null;      // slug -> appearance[]
 let _indexPromise = null;
 
@@ -124,6 +133,7 @@ async function _build(root) {
   const res = await fetch(`${root}/seasons_database.json`);
   if (!res.ok) return {};
   const seasons = (await res.json()).seasons || [];
+  _seasons = seasons;
   const index = {};
   // Sequential rather than parallel: fifteen small documents, and the Studio
   // opens this once per session. A burst of fetches on a page that is already
@@ -212,4 +222,63 @@ export function continuityTies(appearances) {
       .map(([name, count]) => ({ name, count }));
   };
   return { alliances: tally('alliances'), rivalries: tally('rivalries') };
+}
+
+/**
+ * When they debuted, and when "now" is — the two dates an age needs.
+ *
+ * The wiki states a canonical age and nothing else: Leshawna is sixteen. That
+ * is a fact about a moment, and the moment is her FIRST season, not today. So
+ * sixteen at a season that aired in spring 2020 is a person born around 2004,
+ * who is twenty-two in the fall of 2026 — and the only thing that can perform
+ * that translation is this franchise's own calendar.
+ *
+ * "Now" is derived, never stored: `latestAired` reads the last season that
+ * actually aired. A stored current year would be a second clock, and two
+ * clocks disagree — the calendar module says so at length and it is right.
+ *
+ * Debut is by AIR DATE, not by season number. Appearances sort by show then
+ * number, which puts bb-1 after td-14 for somebody who did both; the season
+ * that came first in time is the one an age attaches to.
+ */
+export function ageAnchor(appearances) {
+  const placed = (appearances || []).filter(a => a.airYear);
+  if (!placed.length) return null;
+  const debut = placed.slice().sort(byAirDate)[0];
+  const now = latestAired(_seasons) || debut;
+  return {
+    debut: {
+      seasonId: debut.seasonId, title: debut.title,
+      airYear: debut.airYear, airSlot: debut.airSlot,
+    },
+    now: { seasonId: now.seasonId, title: now.title, airYear: now.airYear, airSlot: now.airSlot },
+    // Whole years from their first season to the present, which is the number
+    // a canonical age has to be moved forward by.
+    yearsSinceDebut: yearsBetween(debut, now),
+  };
+}
+
+/**
+ * A birth year from a canonical age, and the age that implies today.
+ *
+ * Deliberately arithmetic and not a model's guess. Asking for a birthdate
+ * directly gets one computed in a language model's head from an age it also
+ * had to infer, and neither half is checkable afterwards. Asking only for the
+ * age it READ — which can carry a quote — and doing the sum here keeps the
+ * sourced part sourced and the derived part derived.
+ */
+export function birthFromCanonAge(canonAge, anchor, monthDay) {
+  const age = Number(canonAge);
+  if (!Number.isInteger(age) || age < 1 || age > 99 || !anchor?.debut?.airYear) return null;
+  const birthYear = Number(anchor.debut.airYear) - age;
+  const md = /^\d{2}-\d{2}$/.test(String(monthDay || '')) ? monthDay : null;
+  const birthdate = md ? `${birthYear}-${md}` : null;
+  const season = { airYear: anchor.now.airYear, airSlot: anchor.now.airSlot };
+  return {
+    birthYear,
+    birthdate,
+    // The age they are at the franchise's present, which is what a profile
+    // should show — not the age the wiki froze them at years ago.
+    ageNow: birthdate ? ageAt(birthdate, season) : Number(anchor.now.airYear) - birthYear,
+  };
 }

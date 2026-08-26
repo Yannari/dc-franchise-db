@@ -16,6 +16,7 @@ import { resolveRewind } from './rewind.js';
 import { runCoinOfDestiny, coinNominations, COIN_PRICE } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
 import { runChainOfSafety, chainSafe } from './chain-of-safety.js';
+import { runAudienceVote } from '../audience.js';
 import { runWildcard, wildcardSafe } from './wildcard.js';
 import { openRoom, roomGameForNight, ROOM_GAMES } from './high-rollers-room.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
@@ -1784,14 +1785,24 @@ export function simulateBBWeek(options = {}) {
     const noVetoThisWeek = (group.some(a => a?.twist
       && ['bb-instant-eviction', 'bb-chain-of-safety'].includes(a.twist)))
       || compressed;
+    // A twist may supply its own first reaction; see `firstWord` on the
+    // contract's announcement.
+    const fw = group.map(a => a?.firstWord).find(Boolean) || null;
+    const firstWordLine = fw ? (who => fw.replace(/\{who\}/g, who)) : null;
     const schemer = byStat('strategic')[0];
     const bold = byStat('boldness').find(n => n !== schemer) || byStat('boldness')[0];
     if (bold) {
       beats.push({
         text: paranoid
           ? `${bold} breaks the silence first, and does it by looking straight down the sofa: "Well. It's one of you." Half the room laughs. The other half works out where they were sitting.`
-          : dread
-            ? `${bold} breaks the silence first: "So whoever wins that comp gets to end somebody's game before dinner." Nobody laughs, because nobody can think of a reason to.`
+          : (dread && firstWordLine)
+            // The announcement brought its own opening line, because the
+            // generic one below assumes a COMPETITION decides the twist —
+            // true of most of them, and nonsense on a week decided by people
+            // outside the house.
+            ? firstWordLine(bold)
+            : dread
+              ? `${bold} breaks the silence first: "So whoever wins that comp gets to end somebody's game before dinner." Nobody laughs, because nobody can think of a reason to.`
             : `${bold} breaks the silence first: "Good. I hope I win it." Half the room laughs; the other half writes it down.`,
         players: [bold], badgeText: 'FIRST WORD', badgeClass: 'gold',
         eventId: 'twist-announcement-bravado', category: 'ceremonies', location: 'living-room',
@@ -6258,6 +6269,44 @@ export function simulateBBWeek(options = {}) {
 
   // Eviction act; HOH breaks a tie.
   const votes = tally(ballots, nominees);
+
+  // ── AMERICA'S EVICTION VOTE ──
+  //
+  // BBOTT's shape: the audience casts an ADDITIONAL vote alongside the house's
+  // ballots, in the same tally, and it is announced with them.
+  //
+  // Deliberately NOT pushed into `ballots`. Everything that reads that array
+  // reads it as houseguests — the knowledge store writes a "how they voted"
+  // fact per voter, the alliance ledger looks for who flipped, the vote
+  // operation counts a majority out of it — so a ballot signed "America" would
+  // have the house detecting a betrayal by somebody who is not in it. It is
+  // counted here and carried separately, which is also how the show put it on
+  // screen.
+  if (twists.has('bb-americas-eviction-vote') && nominees.length >= 2) {
+    try {
+      // `scale: -1` inverts the audience model: the further ABOVE the field
+      // somebody's standing sits, the less likely a vote is to land on them.
+      // A popularity vote and an eviction vote are the same machine pointed in
+      // opposite directions, so this is one model rather than two.
+      const av = runAudienceVote({ eligible: [...nominees], rng, blocks: 900, scale: -1 });
+      if (av?.winner) {
+        const weight = Math.max(1, Math.min(3, Number(options.avWeight) || 1));
+        votes[av.winner] = (votes[av.winner] || 0) + weight;
+        week.americasVote = { target: av.winner, tally: av.tally, weight,
+          nominees: [...nominees] };
+        week.acts.push(addBeats({
+          type: 'americas-eviction-vote', target: av.winner, tally: av.tally,
+          weight, nominees: [...nominees],
+          beats: [{
+            text: `The audience has been voting all week, and it votes to evict ${av.winner}`
+              + `${weight > 1 ? ` — with the weight of ${weight} houseguests` : ''}. `
+              + `It goes into the tally with the house's, and nobody in that room got a say in it.`,
+            players: [av.winner], badgeText: "AMERICA'S VOTE", badgeClass: 'red',
+          }],
+        }, { nominees: [av.winner] }));
+      }
+    } catch { week.americasVote = null; }
+  }
   let evicted;
   let secondEvicted = null;
   let tieBreak = null;

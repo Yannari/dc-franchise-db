@@ -24056,6 +24056,26 @@ function _bbCycleScreens(view, screens, suffix = '') {
           html: rpBuildBBWildcard(view, act, wcDeps) });
         break;
       }
+      case 'americas-eviction-vote': {
+        screens.push({ id: id('bb-avote'), label: "America's Vote",
+          html: _bbSceneScreen(view, {
+            eyebrow: `Week ${view.num}`, title: 'AMERICA HAS VOTED',
+            accent: 'var(--bbx-bad)', room: 'bb-live',
+            subtitle: 'Cast by people the house cannot campaign to.',
+            stateKey: `bb_av_${view.num}${view?._seg ? `_s${view._seg}` : ''}`,
+            scenes: [
+              { text: `The public has been voting all week. They vote to evict ${act.target}`
+                + `${act.weight > 1 ? `, and that vote carries the weight of ${act.weight} houseguests`
+                  : ''} — read out on eviction night alongside the ballots, in the same tally.`
+                + `${(act.tally || []).length
+                  ? ` The split: ${act.tally.map(t => `${t.name} ${t.share}%`).join(', ')}.`
+                  : ''}`,
+              players: [act.target], badgeText: "AMERICA'S VOTE", badgeClass: 'red' },
+              ..._bbBeats(act),
+            ],
+          }) });
+        break;
+      }
       case 'dead-last': {
         // The scoreboard put somebody on the block, so the card is the
         // scoreboard's — it belongs beside the competition it came out of

@@ -1043,6 +1043,10 @@ export function simulateBBEpisode() {
       .find(t => t && Number(t.episode) === epNum && t.type === 'bb-app-store')?.shelf) || undefined,
     doubleVote: twists.includes('bb-double-eviction') && deStyle === 'double-vote',
     chainStart,
+    // How many houseguests America's ballot is worth. One is BBOTT's rule and
+    // the default; the designer can lean on it harder.
+    avWeight: Number((seasonConfig.twistSchedule || [])
+      .find(t => t && Number(t.episode) === epNum && t.type === 'bb-americas-eviction-vote')?.avWeight) || 1,
     // Season modes that put a third houseguest on the block every week.
     safetyMode: seasonConfig.bbSafetyMode || 'off',
     safetyStopsAt: Number.isFinite(Number(seasonConfig.bbSafetyStopsAt))

@@ -5458,6 +5458,20 @@ export function generateBBSummaryText(ep) {
         }
         break;
       }
+      case 'americas-eviction-vote': {
+        sec("AMERICA'S EVICTION VOTE");
+        ln(`  The audience votes to evict ${act.target}`
+          + `${act.weight > 1 ? `, with the weight of ${act.weight} houseguests` : ''}.`);
+        if ((act.tally || []).length) {
+          ln('');
+          ln('  How the public split:');
+          act.tally.forEach(t => ln(`    ${t.name}: ${t.share}%`));
+        }
+        ln('');
+        ln('  It goes into the tally with the house’s.');
+        beats(act);
+        break;
+      }
       case 'dead-last': {
         sec('DEAD LAST');
         ln(`  ${act.nominee} finished ${act.place} of ${act.of}`

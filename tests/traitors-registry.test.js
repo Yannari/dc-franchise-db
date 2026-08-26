@@ -231,7 +231,7 @@ describe('traitors state survives a round trip through JSON', () => {
     expect(tr.rounds).toEqual([]);
     expect(tr.pot).toBe(0);
     expect(tr.threads).toEqual([]);
-    expect(tr.conclaveTension).toEqual({});
+    expect(tr.conclaveTension).toEqual([]);
   });
 
   it('restores Sets that JSON.stringify would have flattened', () => {

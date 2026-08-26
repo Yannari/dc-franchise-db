@@ -39,9 +39,12 @@ export function initTraitorsState() {
     // keeps a season from reading as forty unconnected incidents.
     threads: [],
 
-    // Who overruled whom at the conclave, and on which night. Not a mood: this
-    // is the ledger the endgame betrayal is eventually justified by.
-    conclaveTension: {},
+    // Who overruled whom at the conclave, and on which night:
+    //   [{ ep, winner, loser, target, theirTarget }]
+    // Not a mood. By episode 8 there is not a set of three Traitors but a
+    // faction with a history, and the endgame betrayal has a DATE attached
+    // rather than a schedule. Read by the exit blowup and (later) the endgame.
+    conclaveTension: [],
 
     // Set-shaped, so it must be declared here. Cleared each round.
     shieldedThisRound: new Set(),

@@ -4513,6 +4513,14 @@ export function generateBBSummaryText(ep) {
   // Household. Tracked as a SET rather than a flag, because the flag version
   // announced the second cycle and let the third arrive unmarked.
   const announcedSegs = new Set();
+  // COUNTED IN PEOPLE, NOT IN CYCLES.
+  //
+  // Big Brother Canada's triple takes three houseguests out in TWO cycles —
+  // the second one has three nominees and two of them walk — so counting
+  // cycles had the banner announcing a double over a night that evicted three.
+  const totalOut = 1 + (ep.extraEvictions || []).reduce(
+    (n, r) => n + (r.evicted ? 1 : 0) + (r.secondEvicted ? 1 : 0),
+    (ep.extraEvictions || []).length ? 0 : (ep.doubleEviction ? 1 : 0));
   const totalSegs = 1 + ((ep.extraEvictions || []).length
     || (ep.doubleEviction ? 1 : 0));
   for (const act of ep.acts || []) {
@@ -4521,7 +4529,9 @@ export function generateBBSummaryText(ep) {
       announcedSegs.add(seg);
       const title = totalSegs >= 3
         ? `TRIPLE EVICTION — CYCLE ${seg} OF ${totalSegs}, LIVE`
-        : 'DOUBLE EVICTION — THE SECOND CYCLE, LIVE';
+        : totalOut >= 3
+          ? 'TRIPLE EVICTION — ONE LIVE CYCLE, TWO WALK'
+          : 'DOUBLE EVICTION — THE SECOND CYCLE, LIVE';
       ln('');
       ln('═'.repeat(46));
       ln(title);

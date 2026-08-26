@@ -204,3 +204,68 @@ describe('reaching the audience', () => {
     for (const s of screens) expect(s.html.length, `${s.id} was blank`).toBeGreaterThan(50);
   });
 });
+
+describe('the shape of the night is the author’s to choose', () => {
+  // The double has had a style dropdown since it was built; the triple was
+  // hardcoded to two fast-forwards. Both are real formats.
+  const playStyle = teStyle => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+    Object.assign(seasonConfig, {
+      format: 'big-brother', jurySize: 7, bbSafetyMode: 'off', finaleSize: 3,
+      bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house', romance: 'enabled',
+      twistSchedule: [{ episode: 2, type: 'bb-triple-eviction', teStyle }],
+    });
+    gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns,
+      threatScore, getBond, getPerceivedBond, ordinal });
+    simulateBBEpisode();
+    const ep = simulateBBEpisode();
+    const out = [ep.eliminated, ...(ep.extraEvictions || [])
+      .flatMap(r => [r.evicted, r.secondEvicted])].filter(Boolean);
+    return { ep, out };
+  };
+
+  it('evicts three whichever shape is picked', () => {
+    for (const style of ['fast-forward', 'double-vote', 'chain']) {
+      const { out } = playStyle(style);
+      expect(out, `${style} did not remove three`).toHaveLength(3);
+      expect(new Set(out).size, `${style} evicted somebody twice`).toBe(3);
+    }
+  });
+
+  it("runs Canada's shape as one live cycle that takes two", () => {
+    const { ep, out } = playStyle('double-vote');
+    // ONE extra cycle, and it removes two people rather than one.
+    expect(ep.extraEvictions).toHaveLength(1);
+    expect(ep.extraEvictions[0].doubleVote).toBe(true);
+    expect(ep.extraEvictions[0].secondEvicted).toBeTruthy();
+    expect(out).toHaveLength(3);
+    // The banner counts PEOPLE, not cycles — counting cycles announced a
+    // double over a night that evicted three.
+    const text = generateSummaryText(ep) || '';
+    expect(text).toContain('TRIPLE EVICTION');
+    expect(text).not.toContain('DOUBLE EVICTION — THE SECOND CYCLE');
+    // And all three are named in it, including the second walk-out of the
+    // double-vote cycle, which had no field on the record to be written from.
+    for (const n of out) expect(text).toContain(n);
+  });
+
+  it('can end the night on a chain', () => {
+    const { ep } = playStyle('chain');
+    const weeks = gs.bb.weeks;
+    const last = weeks[weeks.length - 1];
+    expect(last.chainOfSafety, 'the last cycle was not a chain').toBeTruthy();
+    expect(ep.extraEvictions).toHaveLength(2);
+  });
+
+  it('sits three people down whichever shape ran', () => {
+    for (const style of ['fast-forward', 'double-vote', 'chain']) {
+      const { ep } = playStyle(style);
+      expect(ep.evictionInterview, `${style}: no first interview`).toBeTruthy();
+      expect(ep.secondEvictionInterview, `${style}: no second interview`).toBeTruthy();
+      expect(ep.thirdEvictionInterview, `${style}: no third interview`).toBeTruthy();
+    }
+  });
+});

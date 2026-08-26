@@ -23634,7 +23634,9 @@ function _bbDoubleBreak(ep, cycle = 0) {
   // night's cycles and says which one is starting — and takes its own reveal
   // state, because two breaks sharing `bb_dbl_${ep.num}` meant opening the
   // third replayed the second's progress and showed nothing new.
-  const total = 1 + ((ep.extraEvictions || []).length || (ep.doubleEviction ? 1 : 0));
+  const total = 1 + (ep.extraEvictions || []).reduce(
+    (n, r) => n + (r.evicted ? 1 : 0) + (r.secondEvicted ? 1 : 0),
+    (ep.extraEvictions || []).length ? 0 : (ep.doubleEviction ? 1 : 0));
   const triple = total >= 3;
   const nth = cycle === 0 ? 'second' : 'third';
   return _bbSceneScreen(ep, {
@@ -24611,10 +24613,16 @@ export function buildBBWeekScreens(ep) {
       // cycle is a full set of screens, not a footnote on the second.
       const cycles = (ep.extraEvictions || []).length
         || (ep.doubleEviction ? 1 : 0);
+      // How many people leave, which is not how many cycles run: Canada's
+      // triple takes two out of a single live cycle.
+      const outTotal = 1 + (ep.extraEvictions || []).reduce(
+        (n, r) => n + (r.evicted ? 1 : 0) + (r.secondEvicted ? 1 : 0),
+        (ep.extraEvictions || []).length ? 0 : (ep.doubleEviction ? 1 : 0));
       for (let c = 0; c < cycles; c++) {
         screens.push({
           id: c === 0 ? 'bb-double' : `bb-double-${c + 2}`,
-          label: cycles > 1 ? `Eviction ${c + 2}` : 'Double Eviction',
+          label: cycles > 1 ? `Eviction ${c + 2}`
+            : outTotal >= 3 ? 'Triple Eviction' : 'Double Eviction',
           html: _bbDoubleBreak(ep, c),
         });
         _bbCycleScreens(_bbSecondCycleView(ep, c), screens, `-${c + 2}`);

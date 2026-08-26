@@ -1432,7 +1432,12 @@ export function simulateBBWeek(options = {}) {
   // arena — the block itself is the twist. Incompatible with a safety mode
   // (that machinery owns the third chair) and needs enough house left for
   // three nominees, an HOH and at least two voters.
-  const doubleVote = !!options.doubleVote && !compressed && !safetyActive && house.length >= 6;
+  // A double-vote cycle is allowed to be a COMPRESSED one now. The `!compressed`
+  // here was never a rule about the mechanic — it was true by construction,
+  // because the only caller put a double vote on the main week. Big Brother
+  // Canada's triple is one live cycle with three nominees where the two highest
+  // evict-getters both walk, so the triple needs exactly this shape at speed.
+  const doubleVote = !!options.doubleVote && !safetyActive && house.length >= 6;
   week.doubleVote = doubleVote;
   const nomineeCount = (safetyActive || doubleVote) ? 3 : 2;
   // The house as it stands before a single thing happens this week. The status

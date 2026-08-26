@@ -958,6 +958,16 @@ export function simulateBBEpisode() {
   const chainEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-chain-of-safety');
   const chainStart = chainEntry?.chainStart || 'safety-comp';
+  // The triple has shapes too, and they are different NIGHTS rather than
+  // different flavour:
+  //   'fast-forward'  BB22 — two compressed cycles after the ordinary week.
+  //   'double-vote'   Big Brother Canada — ONE live cycle with three nominees
+  //                   in which the two highest evict-getters both walk, so the
+  //                   night still removes three people in two cycles.
+  //   'chain'         the last cycle of the night is a Chain of Safety.
+  const teEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-triple-eviction');
+  const teStyle = teEntry?.teStyle || 'fast-forward';
   // The Battle Back's shape and its competition are both authored on the
   // scheduled instance, the same way Pandora's cargo and the double's style
   // are — so one season can run the BB18 gauntlet and the next the Showdown.
@@ -1093,8 +1103,12 @@ export function simulateBBEpisode() {
   // Read off the CONTRACT, not off the twist id, so the number of cycles is
   // stated in one place. A double-vote night removes two people from a single
   // cycle, so it runs none of these.
-  const extraCycles = deStyle === 'double-vote' ? 0
+  let extraCycles = deStyle === 'double-vote' ? 0
     : (resolveWeekTwistState(twists).rules.extraCycles || 0);
+  // Canada's triple gets there in ONE extra cycle, because that cycle takes
+  // two people. Counting it as two would evict four.
+  const tripleDoubleVote = twists.includes('bb-triple-eviction') && teStyle === 'double-vote';
+  if (tripleDoubleVote) extraCycles = 1;
   for (let c = 0; c < extraCycles; c++) {
     // Re-checked EVERY cycle, not once for the night. The house shrinks by one
     // each time round, and a triple booked a week too late would otherwise run
@@ -1117,6 +1131,15 @@ export function simulateBBEpisode() {
       // style on the double rather than a second twist to schedule. The
       // compressed cycle already skips the veto; the chain also replaces the
       // ceremony, which is the part that needs saying here.
+      // Canada's shape: three chairs and two of them empty by the end of it.
+      ...(tripleDoubleVote ? { doubleVote: true } : {}),
+      // The night's LAST cycle run as a chain. `runChainOfSafety` returns null
+      // in a house too small for one, and the cycle then plays as an ordinary
+      // fast-forward rather than half a twist.
+      ...((teStyle === 'chain' && c === extraCycles - 1) ? {
+        twists: ['bb-chain-of-safety'],
+        chainStart: teEntry?.chainStart || 'hoh',
+      } : {}),
       ...(deStyle === 'chain' ? {
         twists: ['bb-chain-of-safety'],
         // Authored on the DOUBLE's entry when it is booked that way; the
@@ -1161,6 +1184,12 @@ export function simulateBBEpisode() {
         vetoSavedAll: [...(second.vetoSavedAll || [])],
       } : {}),
       evicted: second.evicted,
+      // A double-vote cycle removes TWO. Without this the second walk-out is
+      // simulated, taken out of the house, and then never recorded on the
+      // episode — which is how a night quietly evicts somebody the timeline,
+      // the transcript and the stats all still think is playing.
+      secondEvicted: second.secondEvicted || null,
+      doubleVote: !!second.doubleVote,
       votes: { ...(second.votes || {}) },
       houseAtStart: [...(second.houseAtStart || [])],
     };
@@ -1197,12 +1226,16 @@ export function simulateBBEpisode() {
   }
   // A triple sits a third person in the same chair. Same rule: interviewed
   // against the cycle that took them out.
-  if ((ep.extraEvictions || []).length > 1) {
-    const third = ep.extraEvictions[1];
-    if (third.evicted) {
-      ep.thirdEvictionInterview = generateBBEvictionInterview(
-        ep, extraWeeks[1] || week, Math.random, third.evicted);
-    }
+  //
+  // On Canada's shape there is no third CYCLE — there is a second cycle that
+  // took two people — so the third chair belongs to that cycle's second
+  // walk-out, and it is interviewed against the week that removed them.
+  const thirdOut = (ep.extraEvictions || [])[1]?.evicted
+    || (ep.extraEvictions || [])[0]?.secondEvicted || null;
+  if (thirdOut) {
+    const against = (ep.extraEvictions || [])[1] ? extraWeeks[1] : extraWeeks[0];
+    ep.thirdEvictionInterview = generateBBEvictionInterview(
+      ep, against || week, Math.random, thirdOut);
   }
   carryGoodbyesToJury(ep, week.num);
   // The shared text backlog owns transcripts for both shows, so a Big Brother

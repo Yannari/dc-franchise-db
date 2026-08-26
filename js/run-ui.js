@@ -204,7 +204,7 @@ export function getEpisodeEliminations(ep) {
     // And a triple's third. Same reason: everything downstream counts the
     // house off this list, so a name missing here is a houseguest the season
     // never notices leaving.
-    ...(ep.extraEvictions || []).map(r => r && r.evicted),
+    ...(ep.extraEvictions || []).flatMap(r => [r && r.evicted, r && r.secondEvicted]),
   ].filter(Boolean);
   return [...new Set(names)];
 }
@@ -2158,6 +2158,21 @@ export function renderTimeline() {
         styleHtml += `</select>`;
         return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${styleHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      // Same control as the double's, because a triple is a shape of night
+      // rather than a bigger number: two fast-forwards is BB22, one live cycle
+      // that takes two is Big Brother Canada's.
+      if (t.type === 'bb-triple-eviction') {
+        const tStyles = {
+          'fast-forward': 'Two Fast-Forwards (BB22)',
+          'double-vote': 'One Vote, Two Leave (Canada)',
+          'chain': 'Last Cycle is a Chain',
+        };
+        const tCur = t.teStyle || 'fast-forward';
+        let tHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','teStyle',this.value)" onclick="event.stopPropagation()" title="How the triple eviction runs" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
+        Object.entries(tStyles).forEach(([k, label]) => { tHtml += `<option value="${k}" ${k === tCur ? 'selected' : ''}>${label}</option>`; });
+        tHtml += `</select>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${tHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'bb-battle-back') {
         // Two aired shapes plus the competition it is fought on. The comp list
         // is deliberately wider than an HOH or veto picker — see
@@ -2671,6 +2686,7 @@ export function assignTwist(twistId) {
     if (twistId === 'bb-whacktivity' || twistId === 'bb-secret-power-comp') entry.doors = 'auto';
     if (twistId === 'bb-americas-nominee') entry.anStyle = 'direct';
     if (twistId === 'bb-double-eviction') entry.deStyle = 'fast-forward';
+    if (twistId === 'bb-triple-eviction') entry.teStyle = 'fast-forward';
     if (twistId === 'bb-battle-back') { entry.bbStyle = 'gauntlet'; entry.bbComp = ''; }
     seasonConfig.twistSchedule.push(entry);
   });

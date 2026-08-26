@@ -133,6 +133,25 @@ export function rpBuildBBChainOfSafety(ep, act, deps) {
   const card = (step, i) => {
     if (i > state.idx) return _hidden();
     if (step.kind === 'rule') {
+      // QUÉBEC IS A DIFFERENT RULE AND HAS TO BE READ OUT AS ONE.
+      //
+      // This card was Canada's, always: "until three people are left", "it
+      // stops at three", "those three compete". On a Québec chain every one of
+      // those sentences is false, and it was printed above a chain that ran to
+      // one and then ran again.
+      if (act.style === 'quebec') {
+        return _card('NO CEREMONY, NO VETO, NO VOTE',
+          `Nobody is going to be nominated tonight either. One houseguest is safe, and their only
+           job is to say somebody else's name — and then that one chooses, and so on down the
+           house, out loud, in front of everybody still waiting.
+           <br><br>It runs until ONE person is left that nobody said. They are nominated.
+           <br><br>Then this house does the whole thing again. Whoever is left over the second
+           time is the other nominee — and the two of them settle it between themselves, head to
+           head, in a competition.
+           <br><br><b>There is no vote.</b> Nobody in here has to put their name to it. This house
+           only ever decides who is safe; the two people it forgets have to fight over the rest.`,
+          'gold');
+      }
       return _card('NO CEREMONY, NO VETO',
         `Nobody is going to be nominated tonight. One houseguest is safe, and ${act.variant === 'hoh'
     ? 'it is the Head of Household'
@@ -147,6 +166,16 @@ export function rpBuildBBChainOfSafety(ep, act, deps) {
          and there is no veto coming to take either of them down.`, 'gold');
     }
     if (step.kind === 'block') {
+      // A Québec chain has no second competition to win, so the Canada card
+      // for "nobody won it" was firing on every single one of them and telling
+      // the viewer the chain had failed when it had done exactly its job.
+      if (act.style === 'quebec') {
+        return _card('THE TWO NOBODY SAID',
+          `${esc((act.nominees || []).join(' and '))} are the nominees, and neither of them was put
+           there by a person. Two chains ran the length of this house and neither one reached them.
+           <br><br>There is nothing left to campaign for. No vote is coming — they settle it
+           between the two of them.`, 'red', 'is-final', [...(act.nominees || [])]);
+      }
       if (!act.safetyWinner) {
         return _card('THE CHAIN RUNS OUT', 'The chain ends and nobody wins the second competition.',
           'red', 'is-final');
@@ -164,9 +193,11 @@ export function rpBuildBBChainOfSafety(ep, act, deps) {
   return _shell({
     ep, stateKey, total, cls: 'bbch', css: CHAIN_CSS,
     title: 'THE CHAIN OF SAFETY',
-    sub: act.variant === 'hoh'
-      ? 'The Head of Household starts it. Nobody else gets a say in where it goes.'
-      : 'One competition decides who starts it. After that the house decides everything.',
+    sub: act.style === 'quebec'
+      ? 'Twice down the house, and the two it never reached settle it themselves.'
+      : act.variant === 'hoh'
+        ? 'The Head of Household starts it. Nobody else gets a say in where it goes.'
+        : 'One competition decides who starts it. After that the house decides everything.',
     stage: ROOM,
     cards: steps.map(card).join(''),
     firstLabel: 'Start the chain',

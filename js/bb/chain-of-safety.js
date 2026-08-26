@@ -80,6 +80,13 @@ const COMP_START = [
 // barely spoken to. The narration picks the family first and the line second,
 // so the prose varies because the situation does.
 
+/** The handover: last to be saved, first to choose. */
+const SECOND_CHAIN_START = [
+  n => `${n} was the last name called a moment ago. ${n} starts this one, which everybody in the room has already done the arithmetic on.`,
+  n => `The chain begins again, and it begins with ${n} — saved last, choosing first, with a very good memory about the order of it.`,
+  n => `${n} holds the first link this time. Nobody needs reminding where ${pronouns(n).sub} came on the list before.`,
+];
+
 /** Early in the chain: the picks nobody has to justify. */
 const PICK_EARLY = [
   (a, b) => `${a} says ${b}'s name straight away, without looking round the room first.`,
@@ -255,7 +262,7 @@ function pickTarget(picker, pool, rng) {
  * room and the twist stops being a selection).
  */
 export function runChainOfSafety({ week, house, hoh, rng = Math.random,
-  variant = 'safety-comp', style = 'canada', skip = [] } = {}) {
+  variant = 'safety-comp', style = 'canada', skip = [], startWith = null } = {}) {
   // Québec runs the chain down to ONE person left unchosen; Canada stops at
   // three so they have a field to compete in.
   const CHAIN_FLOOR_HERE = style === 'quebec' ? 1 : CHAIN_FLOOR;
@@ -270,7 +277,21 @@ export function runChainOfSafety({ week, house, hoh, rng = Math.random,
   // ── the first link ──
   let starter = null;
   let openingComp = null;
-  if (useHoh) {
+  if (startWith && room.includes(startWith)) {
+    // ── A SECOND CHAIN IS NOT THE FIRST ONE AGAIN ──
+    //
+    // Started from the same person, with the same room and the same bonds, the
+    // second chain picked the same names in the same order — seventeen
+    // identical links, which reads as the screen repeating itself rather than
+    // as the house choosing twice.
+    //
+    // So it starts with whoever was holding the chain when it stopped: the
+    // last person saved goes first this time. It is the natural handover, it
+    // guarantees a different order, and it is the best thing that happens to
+    // somebody who was picked seventeenth.
+    starter = startWith;
+    beats.push(beat(say(SECOND_CHAIN_START)(starter), [starter], 'STARTS IT THIS TIME', 'gold'));
+  } else if (useHoh) {
     starter = hoh;
     const p = pronouns(starter);
     beats.push(beat(say(HOH_START)(starter, p), [starter], 'STARTS THE CHAIN', 'gold'));

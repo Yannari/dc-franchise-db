@@ -598,12 +598,15 @@ describe('the Québec ending', () => {
     const { week } = playQuebec();
     const c = week.chainOfSafety;
     expect(c.style).toBe('quebec');
-    expect(c.leftover, 'the first chain did not stop at one').toHaveLength(1);
     expect(c.secondChain, 'the chain only ran once').toBeTruthy();
-    expect(c.secondChain.leftover).toHaveLength(1);
-    expect(c.nominees).toEqual([c.leftover[0], c.secondChain.leftover[0]]);
+    // Each RUN stops at one. `c.leftover` is deliberately the union of both,
+    // because that is what the board draws: everybody the chains never reached.
+    expect(c.secondChain.leftover, 'the second chain did not stop at one').toHaveLength(1);
+    expect(c.nominees, 'two chains should leave two nominees').toHaveLength(2);
+    expect(c.nominees[1]).toBe(c.secondChain.leftover[0]);
     // The first nominee is on the block and out of the second chain entirely.
-    expect(c.secondChain.order).not.toContain(c.leftover[0]);
+    expect(c.secondChain.order).not.toContain(c.nominees[0]);
+    expect(c.secondChain.leftover).not.toContain(c.nominees[0]);
   });
 
   it('settles it with a duel and nobody votes', () => {
@@ -640,5 +643,96 @@ describe('the Québec ending', () => {
     expect(week.leftover || week.chainOfSafety.leftover).toHaveLength(3);
     expect((week.ballots || []).length, 'the house stopped voting').toBeGreaterThan(4);
     expect(buildScreens(ep).map(s => s.label)).toContain('Voting Plans');
+  });
+});
+
+describe('the second chain is not the first one again', () => {
+  // Started from the same person, with the same room and the same bonds, it
+  // picked the same names in the same order — seventeen identical links, which
+  // reads as the screen repeating itself rather than as a house choosing twice.
+  // Found by reading a real Québec run, not by a test.
+  const playQ = () => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+    Object.assign(seasonConfig, {
+      format: 'big-brother', jurySize: 7, finaleSize: 3, bbSafetyMode: 'off',
+      bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house', romance: 'enabled',
+      twistSchedule: [{ episode: 2, type: 'bb-chain-of-safety',
+        chainStart: 'hoh', chainStyle: 'quebec' }],
+    });
+    gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns,
+      threatScore, getBond, getPerceivedBond, ordinal });
+    simulateBBEpisode();
+    const ep = simulateBBEpisode();
+    return { ep, week: gs.bb.weeks[gs.bb.weeks.length - 1] };
+  };
+
+  it('hands the first link to whoever was holding it when the first one stopped', () => {
+    const { week } = playQ();
+    const c = week.chainOfSafety;
+    const handover = c.order[c.order.length - 1];
+    expect(c.secondChain.order[0], 'the second chain started with the same person')
+      .toBe(handover);
+    // Saved last, choosing first — a different starter guarantees a different
+    // chain, which is the point.
+    expect(c.secondChain.order.join('>')).not.toBe(c.order.join('>'));
+  });
+
+  it('does not put both nominees through the same order of names', () => {
+    const { week } = playQ();
+    const c = week.chainOfSafety;
+    const a = c.order.slice(0, 6).join('>');
+    const b = c.secondChain.order.slice(0, 6).join('>');
+    expect(b, 'the two chains opened identically').not.toBe(a);
+  });
+
+  it('shows both nominees on the board, one from each run', () => {
+    // The diagram draws `leftover`. With only the first chain's, the second
+    // nominee was missing from it while the cards narrated how they got there.
+    const { week } = playQ();
+    const c = week.chainOfSafety;
+    expect(c.leftover.sort()).toEqual([...c.nominees].sort());
+    expect(c.nominees).toHaveLength(2);
+  });
+});
+
+describe('the Québec screen reads out Québec rules', () => {
+  const quebecHtml = () => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+    Object.assign(seasonConfig, {
+      format: 'big-brother', jurySize: 7, finaleSize: 3, bbSafetyMode: 'off',
+      bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house', romance: 'enabled',
+      twistSchedule: [{ episode: 2, type: 'bb-chain-of-safety',
+        chainStart: 'hoh', chainStyle: 'quebec' }],
+    });
+    gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns,
+      threatScore, getBond, getPerceivedBond, ordinal });
+    simulateBBEpisode();
+    const ep = simulateBBEpisode();
+    const screen = buildScreens(ep).find(s => s.label === 'Chain of Safety');
+    return (screen?.html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+  };
+
+  it('does not describe Canada’s rules over a Québec chain', () => {
+    // The rules card was Canada's, always: "until three people are left", "it
+    // stops at three", "those three compete". Every one of those is false here.
+    const html = quebecHtml();
+    expect(html, 'the card promised three').not.toMatch(/stops at three|until three people are left/i);
+    expect(html).toMatch(/no vote/i);
+  });
+
+  it('does not call a finished chain a failed one', () => {
+    // A Québec chain has no second competition to win, so Canada's card for
+    // "nobody won it" fired on every single one and told the viewer the chain
+    // had broken when it had done exactly its job.
+    const html = quebecHtml();
+    expect(html, 'it reported the chain as having failed')
+      .not.toMatch(/nobody wins the second competition/i);
+    expect(html).toMatch(/THE TWO NOBODY SAID/);
   });
 });

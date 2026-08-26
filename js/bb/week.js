@@ -2613,12 +2613,20 @@ export function simulateBBWeek(options = {}) {
       // two of them settle it in a duel.
       if (week.chainOfSafety && chainStyle === 'quebec') {
         const first = week.chainOfSafety.nominees[0];
+        // Started by whoever was holding the chain when the first one stopped.
+        // See `startWith` — the same starter replayed the same chain.
+        const handover = (week.chainOfSafety.order || []).slice(-1)[0] || null;
         const second = runChainOfSafety({ week, house, hoh, rng,
           variant: options.chainStart || 'safety-comp', style: 'quebec',
-          skip: [first].filter(Boolean) });
+          skip: [first].filter(Boolean), startWith: handover });
         if (second) {
           week.chainOfSafety.secondChain = second;
           week.chainOfSafety.nominees = [first, ...second.nominees].filter(Boolean);
+          // The board draws `leftover` as the people the chain never reached.
+          // On a Québec week that is BOTH of them — one from each run — and
+          // showing only the first chain's left the second nominee off the
+          // diagram entirely while the cards were narrating how they got there.
+          week.chainOfSafety.leftover = [...week.chainOfSafety.nominees];
           week.chainOfSafety.beats = [
             ...(week.chainOfSafety.beats || []),
             { text: `${first} is on the block, and the house is told to do the whole thing again.`,

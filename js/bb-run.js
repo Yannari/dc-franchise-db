@@ -1144,12 +1144,18 @@ export function simulateBBEpisode() {
       ...((teStyle === 'chain' && c === extraCycles - 1) ? {
         twists: ['bb-chain-of-safety'],
         chainStart: teEntry?.chainStart || 'hoh',
+        // Which ENDING the chain uses, authored on the triple's own entry.
+        // Without this it silently ran Canada's every time and there was no
+        // way to ask for Québec's from inside a multi-cycle night.
+        chainStyle: teEntry?.chainStyle === 'quebec' ? 'quebec' : 'canada',
       } : {}),
       ...(deStyle === 'chain' ? {
         twists: ['bb-chain-of-safety'],
         // Authored on the DOUBLE's entry when it is booked that way; the
         // standalone twist's entry is not on the schedule at all here.
         chainStart: deEntry?.chainStart || chainEntry?.chainStart || 'hoh',
+        chainStyle: (deEntry?.chainStyle || chainEntry?.chainStyle) === 'quebec'
+          ? 'quebec' : 'canada',
       } : {}),
       // A three-nominee season is a three-nominee season, including the half
       // of the night that runs live.

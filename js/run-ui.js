@@ -2143,6 +2143,19 @@ export function renderTimeline() {
         }
         return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${configHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      // The chain's own two questions, offered wherever a chain can be booked:
+      // on its own, or as the back half of a double or a triple.
+      const _chainSelects = (t2) => {
+        const starts = { 'safety-comp': 'Safety Comp starts it', hoh: 'HOH starts it' };
+        const ends = { canada: 'Canada — house votes', quebec: 'Québec — duel decides' };
+        const sel = (key, opts, cur, title) => {
+          let h = `<select onchange="event.stopPropagation();updateTwist('${t2.id}','${key}',this.value)" onclick="event.stopPropagation()" title="${title}" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
+          Object.entries(opts).forEach(([k, label]) => { h += `<option value="${k}" ${k === cur ? 'selected' : ''}>${label}</option>`; });
+          return h + '</select>';
+        };
+        return sel('chainStart', starts, t2.chainStart || 'safety-comp', 'Who holds the first link')
+          + sel('chainStyle', ends, t2.chainStyle || 'canada', 'How the chain ends');
+      };
       if (t.type === 'bb-double-eviction') {
         const styles = {
           'fast-forward': 'Fast-Forward (live hour)',
@@ -2156,6 +2169,8 @@ export function renderTimeline() {
         let styleHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','deStyle',this.value)" onclick="event.stopPropagation()" title="How the double eviction runs" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
         Object.entries(styles).forEach(([k, label]) => { styleHtml += `<option value="${k}" ${k===cur?'selected':''}>${label}</option>`; });
         styleHtml += `</select>`;
+        // Same for a double whose second cycle IS a chain.
+        if (cur === 'chain') styleHtml += _chainSelects(t);
         return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${styleHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       // Same control as the double's, because a triple is a shape of night
@@ -2164,15 +2179,7 @@ export function renderTimeline() {
       // Who starts the chain, and how it ends — two different questions, two
       // documented answers each.
       if (t.type === 'bb-chain-of-safety') {
-        const starts = { 'safety-comp': 'Safety Comp starts it', hoh: 'HOH starts it' };
-        const ends = { canada: 'Canada — house votes', quebec: 'Québec — duel decides' };
-        const sel = (key, opts, cur, title) => {
-          let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','${key}',this.value)" onclick="event.stopPropagation()" title="${title}" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
-          Object.entries(opts).forEach(([k, label]) => { h += `<option value="${k}" ${k === cur ? 'selected' : ''}>${label}</option>`; });
-          return h + '</select>';
-        };
-        const cfg = sel('chainStart', starts, t.chainStart || 'safety-comp', 'Who holds the first link')
-          + sel('chainStyle', ends, t.chainStyle || 'canada', 'How the chain ends');
+        const cfg = _chainSelects(t);
         return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${cfg} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'bb-triple-eviction') {
@@ -2185,6 +2192,9 @@ export function renderTimeline() {
         let tHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','teStyle',this.value)" onclick="event.stopPropagation()" title="How the triple eviction runs" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
         Object.entries(tStyles).forEach(([k, label]) => { tHtml += `<option value="${k}" ${k === tCur ? 'selected' : ''}>${label}</option>`; });
         tHtml += `</select>`;
+        // A night that ENDS on a chain gets the chain's own two questions too,
+        // or there is no way to ask for the Québec ending from in here.
+        if (tCur === 'chain') tHtml += _chainSelects(t);
         return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${tHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'bb-battle-back') {

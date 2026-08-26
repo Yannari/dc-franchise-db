@@ -107,6 +107,27 @@ Bonds need no new storage. `getBond` / `addBond` are name-keyed and symmetric,
 so coach↔contestant bonds work untouched — which matters, because resentment is
 built out of them rather than out of a new stat.
 
+## Archetype Biases, It Does Not Decide
+
+Every table in this document is a **bias**, never an assignment. Nothing here
+reads "if archetype is villain then Control"; archetype supplies a multiplier
+and the stats do the work, per the project's rule that gameplay scales rather
+than trips thresholds.
+
+So the same archetype produces different coaches:
+
+- A mastermind at loyalty 9 barely reaches for Control at all. He has the
+  strategic mind for it and no appetite for the betrayal it needs.
+- A hero at strategic 9 carries real Control in the mix. He will not poach, but
+  he will absolutely run a tribe.
+- Ara — schemer, strategic 8, loyalty 1, temperament 2 — is nearly pure
+  Control, because every stat agrees with her archetype rather than pulling
+  against it.
+
+The archetype is a lean. The stats decide how far. Two coaches sharing an
+archetype should not behave the same way, and a coach whose stats contradict
+their archetype is one of the more interesting things this twist can produce.
+
 ## Attention
 
 Each coach receives a fixed budget of **sessions** per episode — two at a tribe
@@ -160,7 +181,8 @@ score = wGain    × marginal gain      (how much this person would actually impr
       + wSalvage × how at-risk they are
 ```
 
-Archetype sets the weights, and all fifteen behave differently:
+Archetype **biases** the weights and the stats set them; all fifteen lean
+differently:
 
 | archetype | targets |
 |---|---|
@@ -245,12 +267,17 @@ awe = gap × archetypeFactor
           × ((10 − intuition) / 10)     // reads the résumé, not the person
 ```
 
-| archetype | factor |
+| archetype | leans |
 |---|---|
-| goat, loyal-soldier, underdog | high — they are looking for someone to follow |
-| social-butterfly, showmancer, floater, hothead, wildcard | moderate |
-| challenge-beast, chaos-agent | low — unimpressed by anything but results |
+| goat, loyal-soldier, underdog | receptive — they are looking for someone to follow |
+| social-butterfly, showmancer, floater, hothead, wildcard | middling |
+| challenge-beast, chaos-agent | unmoved by anything but results |
 | mastermind, schemer, villain, perceptive-player | **inverted** — see below |
+
+`archetypeFactor` is a lean, not a constant. The three stat terms above do most
+of the work, so a goat with strategic 8 is much harder to impress than a goat
+with strategic 2, and a mastermind with intuition 2 can be caught looking up to
+somebody in spite of himself.
 
 ### The inversion
 
@@ -320,7 +347,17 @@ The engine has been treating "survive to the merge" as every coach's goal. It
 is not. **What a coach spends influence on is set by archetype and stats**, and
 the spread is most of what makes two coaches on one tribe different:
 
-| agenda | archetypes | spends influence on |
+Every coach carries a mix of all five at once, recomputed each episode:
+
+```
+control = (strategic/10) × ((10−loyalty)/10) × bias.control
+support = (loyalty/10)   × (social/10)       × bias.support
+win     = (mental/10)    × (intuition/10)    × bias.win
+survive = vulnerability                       × bias.survive
+disrupt = (boldness/10)  × ((10−temperament)/10) × bias.disrupt
+```
+
+| agenda | leans | spends influence on |
 |---|---|---|
 | **Control** | mastermind, schemer, villain | running the tribe through their protégés |
 | **Win** | challenge-beast | making the tribe unbeatable, and nothing else |
@@ -328,8 +365,13 @@ the spread is most of what makes two coaches on one tribe different:
 | **Survive** | goat, floater, underdog | whatever keeps them past the next vote |
 | **Disrupt** | chaos-agent, hothead, wildcard | whatever is most interesting this episode |
 
-Neutrals shift toward Control only at strategic ≥ 6 and loyalty ≤ 4, which is
-the project's existing scheming gate rather than a new rule.
+Those are the biases, not the answers. A loyal mastermind sits closer to Support
+than to Control because `(10−loyalty)` collapses his Control term, and a
+strategic hero carries more Control than his archetype suggests.
+
+`survive` rises with vulnerability for everybody, which is why any coach drifts
+toward self-preservation as the vote closes in — the same drift that raises
+`wSwing` in Attention, from the same input.
 
 ### The symmetric trap
 

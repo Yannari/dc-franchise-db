@@ -38,7 +38,7 @@ import { retrofitFranchiseMeta } from './franchise-meta.js';
 import { survivalFlavor, fillVocab } from './settings.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
-import { applyCoachElimination, promoteCoaches, runCoachingBlock } from './coach-episode.js';
+import { applyCoachElimination, coachFallout, promoteCoaches, runCoachingBlock } from './coach-episode.js';
 import { coachesOf } from './coaches.js';
 
 // Challenge simulate functions
@@ -2341,7 +2341,15 @@ export function simulateEpisode() {
   // Coaches: pre-merge only — the tribes stop existing at the merge and every
   // surviving coach is promoted there instead (see the ── MERGE CHECK ── block).
   if (ep.isCoaches && !gs.isMerged) {
-    (gs.tribes || []).forEach(tribe => runCoachingBlock(ep, tribe));
+    (gs.tribes || []).forEach(tribe => {
+      const blockResult = runCoachingBlock(ep, tribe);
+      const falloutEvents = coachFallout(ep, tribe, blockResult);
+      if (falloutEvents.length) {
+        if (!ep.campEvents) ep.campEvents = {};
+        if (!ep.campEvents[tribe.tribeName]) ep.campEvents[tribe.tribeName] = { pre: [], post: [] };
+        ep.campEvents[tribe.tribeName].pre.push(...falloutEvents);
+      }
+    });
   }
   checkMoleSabotage(ep); // The Mole: bond sabotage, laying low events, exposure checks
   checkVolunteerExileDuel(ep); // Volunteer Exile Duel: bold player asks to be voted out

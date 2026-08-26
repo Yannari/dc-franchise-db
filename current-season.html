@@ -873,12 +873,13 @@ Owen: This is going to be amazing!"
   // always had and needs no migration whatsoever, and every other show gets its
   // own prefix — `AI_ANALYTICS_bb-14`, and `_sv-14` the day a third exists.
   // Nothing to convert, nothing to lose, and one entry in shows.js to add a show.
-  const CS_SHOWS = { 'total-drama': 'td', 'big-brother': 'bb' };
   const CS_DEFAULT_FORMAT = 'total-drama';
-  // Filled from js/shows.js as soon as the module graph loads — see the module
-  // tag at the end of the page. The literal above is only what this page can
-  // answer before that resolves; it is never the source of truth.
-  function _csShows() { return (window.__SHOWS && window.__SHOWS.prefixes) || CS_SHOWS; }
+  // Filled from js/shows.js by the module tag at the end of the page. There is
+  // no literal fallback: the module runs before DOMContentLoaded and everything
+  // that asks this runs after, and the copy that used to sit here is what a
+  // third show would have been missing from — silently, since a show absent
+  // from a PREFIX map reads as the default one, which is a real season.
+  function _csShows() { return (window.__SHOWS && window.__SHOWS.prefixes) || {}; }
 
   /**
    * The show the page is currently looking at.

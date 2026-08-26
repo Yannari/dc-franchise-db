@@ -247,7 +247,7 @@ const CHANNELS = {
     for (const round of S.rounds) {
       const ep = round.ep + 1;
       if (!S.playedEps.has(ep)) continue;
-      for (const voter of _votedForAFaithful(S, ep)) out.push({ subject: voter, ep });
+      for (const voter of _votedForAFaithful(S, ep).members) out.push({ subject: voter, ep });
     }
     return out;
   },
@@ -315,12 +315,21 @@ function _perRound(S, perRound, pick) {
 /** Everybody who, in the round episode `ep` reads, voted for a Faithful. */
 function _votedForAFaithful(S, ep) {
   const round = S.rounds.find(r => r.ep === ep - 1);
-  if (!round) return [];
+  if (!round) return { ep, members: [] };
   const living = S.livingAt(ep);
-  return (round.ballots || [])
-    .filter(b => b.channel === 'banishment' && b.voted
-      && !S.isTraitorAt(b.voted, round.ep) && living.includes(b.voter))
-    .map(b => b.voter);
+  // `ep` IS RETURNED, AND IT IS NOT DECORATION. It is the round the pool was
+  // actually built from, and measureChannel histograms it against the round the
+  // channel emitted into. Without it, a control that read a FIXED round while
+  // the channel walked the season would be invisible: every derived number
+  // would still line up, because they would all be recorded against the
+  // emission's ep rather than the control's own.
+  return {
+    ep,
+    members: (round.ballots || [])
+      .filter(b => b.channel === 'banishment' && b.voted
+        && !S.isTraitorAt(b.voted, round.ep) && living.includes(b.voter))
+      .map(b => b.voter),
+  };
 }
 
 const CONTROLS = {
@@ -354,8 +363,29 @@ function _control(name) {
 /**
  * Measure one evidence channel against one uninformative control.
  *
- * Returns { n, hitRate, base, ratio, controlN, controlHitRate, controlBase,
- *           controlRatio, edge }.
+ * THIS REPORTS EMISSIONS, AND THE RETURNED OBJECT SAYS SO (`unit: 'emission'`).
+ * Say it out loud because the distinction has already produced two true numbers
+ * for one channel: `clashTraced` measured 0.87x AT EMISSION and 0.57x ON THE
+ * BELIEFS THAT SURVIVED to move a board. Both correct, wildly different, and a
+ * report that does not name which one it is invites the next author to compare
+ * them. An emission is an indictment the event OFFERS — before learn()'s
+ * acceptance roll, and before a louder later source can overwrite it. That is
+ * the right unit for a gate: it asks what the event is pointing at, not what
+ * the rest of the engine did with it afterwards. (The surviving-belief view is
+ * what `seasonForAudit().beliefs` exposes, and it is used here only to prove
+ * the reconstruction is faithful.)
+ *
+ * Returns { source, control, unit, seasons, seedFrom, n, hitRate, base, ratio,
+ *           controlN, controlHitRate, controlBase, controlRatio, edge,
+ *           epHist, controlEpHist, controlOffPopulation }.
+ *
+ * `controlRatio` IS NOT A CONSTANT, and the gate's bar is therefore not a fixed
+ * hit rate. Because the control is round-matched, it is re-drawn into whatever
+ * rounds the channel fires in, and it has measured 1.26x to 1.48x across the
+ * channels in this file. A late-firing channel correctly faces a stiffer
+ * control: the rooms it emits into are denser, so more of its apparent accuracy
+ * is drift. Compare `edge`, never `ratio`, and never `ratio` against a number
+ * quoted from a different channel.
  *
  * THE CONTROL IS MATCHED PER EMISSION, ON THE ROUND. For every indictment the
  * channel makes in episode e, the control contributes exactly one unit drawn
@@ -380,37 +410,58 @@ function _control(name) {
  * than counted on one, so `n` and `controlN` cannot come apart.
  */
 export function measureChannel({ source, seasons = 40, control = 'any-faithful',
-  cast, traitorCount = 3 } = {}) {
+  cast, traitorCount = 3, seedFrom = 1 } = {}) {
   const channel = _channel(source);
   const ctrl = _control(control);
   if (!cast || !cast.length) throw new Error('measureChannel needs a cast');
 
   let n = 0, hits = 0, baseSum = 0;
   let controlN = 0, controlHits = 0, controlBaseSum = 0;
+  // WHICH ROUNDS EACH SIDE ACTUALLY DREW FROM. Not derived from each other:
+  // `epHist` counts the episode the channel emitted into, `controlEpHist` the
+  // episode the CONTROL says it built its pool from. They are compared in the
+  // tests, and a control reading any other round shows up there and nowhere
+  // else — every rate, base and ratio would still agree.
+  const epHist = {}, controlEpHist = {};
+  // Control pool members who were not in the room the channel was indicting
+  // into. Must be zero: a control drawn from a different population is not a
+  // control, and this is the specific asymmetry that hid for a round — the
+  // channel filters its subjects to the living, the control filtered its voters
+  // to the living only inside its own rule, and dropping that filter moved the
+  // reference channel's edge by 38% while every test stayed green.
+  let controlOffPopulation = 0;
 
-  for (let seed = 1; seed <= seasons; seed++) {
+  for (let seed = seedFrom; seed < seedFrom + seasons; seed++) {
     const S = seasonForAudit({ cast, traitorCount, seed });
     for (const em of channel(S, S.rng)) {
       const living = S.livingAt(em.ep);
       if (!living.length) continue;
-      const pool = ctrl(S, em.ep);
+      const drawn = ctrl(S, em.ep);
+      const pool = drawn.members || [];
       if (!pool.length) continue;             // dropped from both sides, never one
       // THE BASE, PER EMISSION: the Traitor density of the room this indictment
       // was actually made in. Not the season's, and not the cast's.
       const base = living.filter(x => S.isTraitorAt(x, em.ep)).length / living.length;
+      const room = new Set(living);
 
       n++;
       baseSum += base;
+      epHist[em.ep] = (epHist[em.ep] || 0) + 1;
       if (S.isTraitorAt(em.subject, em.ep)) hits++;
 
       controlN++;
       controlBaseSum += base;
+      controlEpHist[drawn.ep] = (controlEpHist[drawn.ep] || 0) + 1;
+      for (const x of pool) if (!room.has(x)) controlOffPopulation++;
       controlHits += pool.filter(x => S.isTraitorAt(x, em.ep)).length / pool.length;
     }
   }
 
-  if (!n) return { n: 0, hitRate: 0, base: 0, ratio: 0, controlN: 0, controlHitRate: 0,
-    controlBase: 0, controlRatio: 0, edge: 0 };
+  const empty = { source, control, unit: 'emission', seasons, seedFrom,
+    n: 0, hitRate: 0, base: 0, ratio: 0, controlN: 0, controlHitRate: 0,
+    controlBase: 0, controlRatio: 0, edge: 0, epHist, controlEpHist,
+    controlOffPopulation };
+  if (!n) return empty;
 
   const base = baseSum / n;
   const hitRate = hits / n;
@@ -418,8 +469,80 @@ export function measureChannel({ source, seasons = 40, control = 'any-faithful',
   const controlHitRate = controlHits / controlN;
   const ratio = base > 0 ? hitRate / base : 0;
   const controlRatio = controlBase > 0 ? controlHitRate / controlBase : 0;
-  return { n, hitRate, base, ratio, controlN, controlHitRate, controlBase, controlRatio,
-    edge: ratio - controlRatio };
+  return { source, control, unit: 'emission', seasons, seedFrom,
+    n, hitRate, base, ratio, controlN, controlHitRate, controlBase, controlRatio,
+    edge: ratio - controlRatio, epHist, controlEpHist, controlOffPopulation };
+}
+
+/**
+ * THE PROTOCOL. Run this, not measureChannel, to decide whether an event may
+ * write a belief.
+ *
+ * ── WHY A BARE measureChannel CALL IS NOT A DECISION ──
+ *
+ * `measureChannel` is an estimator, and at the sample sizes a single 40-season
+ * call produces it is a noisy one. The standard error on `edge` is roughly 0.06
+ * at n~350 — LARGER than the 0.05 band the synthetic tests use to say "no
+ * edge". Measured on this audit's own reference channel:
+ *
+ *     seasons    n     edge
+ *        40     150   +0.058    <- WRONG SIGN. Would PASS a gate built to fail it.
+ *        60     219   -0.014
+ *       100     351   -0.058
+ *       200     708   -0.074
+ *       300    1091   -0.116
+ *
+ * And on four DISJOINT 100-season blocks (seeds 1-100, 101-200, 201-300,
+ * 301-400): -0.058, -0.091, -0.193, -0.083. Every block negative. The +0.058
+ * is not a small-sample version of a real positive; it is the noise floor,
+ * which at n~350 has a standard error of about 0.06 on `edge`.
+ *
+ * A protocol that prescribed 40 seasons would have admitted `pushedThenDied` —
+ * the channel this whole file exists to have caught — on the strength of a
+ * sampling accident. So:
+ *
+ *   1. n IS DECOUPLED FROM SEASON COUNT. The requirement is 200 emissions,
+ *      over however many seasons that takes. A murder-shaped channel needs
+ *      100+; a twice-a-season rare event may need 200+. That is CI cost, not a
+ *      reason to deny a real channel its belief — rare-state amplification
+ *      exists so those events happen, and the gate must not punish an event for
+ *      being rare.
+ *   2. THE EDGE MUST CLEAR THE BAR ON BOTH HALVES OF A SPLIT, on DISJOINT seed
+ *      blocks. `rngFor` hashes, so seeds 1..S and S+1..2S are decorrelated
+ *      populations rather than two halves of one correlated run (that hashing
+ *      is the fix for the bug in lesson 9, and the reason a split like this
+ *      means anything here). Without a split, the +-0.06 noise floor admits a
+ *      false positive at exactly the margin the gate polices.
+ *
+ * Returns { pass, reasons, full, halves }.
+ */
+export function gateChannel({ source, control = 'any-faithful', cast, traitorCount = 3,
+  minN = 200, minEdge = 0.15, startSeasons = 40, maxSeasons = 800 } = {}) {
+  // Grow the sample until the channel has emitted enough to be measured at all.
+  let seasons = startSeasons;
+  let full = measureChannel({ source, control, cast, traitorCount, seasons });
+  while (full.n < minN && seasons < maxSeasons) {
+    // Scale by the shortfall rather than doubling blindly, with a floor so a
+    // channel that fired twice does not ask for ten thousand seasons at once.
+    const need = full.n ? Math.ceil(seasons * (minN / full.n) * 1.15) : seasons * 4;
+    seasons = Math.min(maxSeasons, Math.max(seasons + startSeasons, need));
+    full = measureChannel({ source, control, cast, traitorCount, seasons });
+  }
+
+  // Two DISJOINT blocks, each the size the full sample needed. Not halves of
+  // the same run: `full` is seeds 1..seasons, and these are 1..seasons and
+  // seasons+1..2*seasons, so block B is seasons the estimate has never seen.
+  const a = measureChannel({ source, control, cast, traitorCount, seasons, seedFrom: 1 });
+  const b = measureChannel({ source, control, cast, traitorCount, seasons, seedFrom: seasons + 1 });
+
+  const reasons = [];
+  if (full.n < minN) reasons.push(`only ${full.n} emissions in ${seasons} seasons (need ${minN}); too rare to measure, not too rare to build`);
+  if (full.edge < minEdge) reasons.push(`edge ${full.edge.toFixed(3)} below +${minEdge} over ${seasons} seasons`);
+  for (const [label, half] of [['A', a], ['B', b]]) {
+    if (half.edge < minEdge) reasons.push(`block ${label} (seeds ${half.seedFrom}..${half.seedFrom + seasons - 1}) edge ${half.edge.toFixed(3)} below +${minEdge}`);
+    if (half.n < minN / 2) reasons.push(`block ${label} only ${half.n} emissions`);
+  }
+  return { source, seasons, pass: !reasons.length, reasons, full, halves: [a, b] };
 }
 
 /** The channels this audit can measure, for a caller that wants to sweep. */

@@ -35,7 +35,7 @@
 // name the brief gave it: js/tr/channel-audit.js.
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
-import { measureChannel, seasonForAudit } from '../js/tr/channel-audit.js';
+import { measureChannel, gateChannel, seasonForAudit } from '../js/tr/channel-audit.js';
 import roster from '../franchise_roster.json';
 
 // franchise_roster.json is { players: [...] }, NOT a bare array.
@@ -132,10 +132,79 @@ describe('the channel audit', () => {
     // room's density...
     expect(r.ratio).toBeGreaterThan(1.05);
     // ...and does not beat the uninformative statement "you voted for somebody
-    // who turned out to be a Faithful". The band is wide because 100 seasons is
-    // a smaller sample than the 600 the constant was priced on; the assertion
-    // that matters is that this is NOT a signal.
+    // who turned out to be a Faithful". The assertion that matters is that this
+    // is NOT a signal.
     expect(r.edge).toBeLessThan(0.10);
+  });
+
+  // ── THE PROTOCOL, WHICH IS NOT THE SAME THING AS THE INSTRUMENT ──
+  //
+  // A single 40-season measureChannel call is an estimator with a standard
+  // error on `edge` of roughly 0.06 — larger than the 0.05 band the synthetics
+  // above use to mean "no edge". Re-derived here, on this audit's own reference
+  // channel:
+  //
+  //     seasons    n     edge
+  //        40     150   +0.058     <- WRONG SIGN
+  //        60     219   -0.014
+  //       100     351   -0.058
+  //       200     708   -0.074
+  //       300    1091   -0.116
+  //
+  // At 40 seasons `pushedThenDied` — the channel this whole file exists to have
+  // caught — reports a POSITIVE edge. A gate prescribing 40 seasons would have
+  // admitted it on a sampling accident, and ~150 events were about to be judged
+  // that way. gateChannel() is the fix: grow the sample until n >= 200 however
+  // many seasons that takes, then require the bar on two DISJOINT seed blocks.
+  it('the gate rejects the reference channel, at every stage of its own protocol', () => {
+    setPlayers(ROSTER);
+    const g = gateChannel({ source: 'pushed-then-died', ...OPTS });
+    console.log(`  GATE pushed-then-died pass=${g.pass} seasons=${g.seasons} n=${g.full.n} edge=${g.full.edge.toFixed(3)} A=${g.halves[0].edge.toFixed(3)} B=${g.halves[1].edge.toFixed(3)}`);
+    expect(g.pass).toBe(false);
+    // It grew past the 40 seasons that would have flattered it.
+    expect(g.seasons).toBeGreaterThan(40);
+    expect(g.full.n).toBeGreaterThanOrEqual(200);
+    // And it fails on BOTH blocks independently, which is what makes the
+    // rejection a finding rather than a draw of a coin. Four decorrelated
+    // 100-season blocks read -0.058, -0.091, -0.193, -0.083.
+    expect(g.halves[0].edge).toBeLessThan(0.15);
+    expect(g.halves[1].edge).toBeLessThan(0.15);
+    expect(g.reasons.length).toBeGreaterThan(0);
+  });
+
+  it('the gate admits a channel that genuinely knows something, on both blocks', () => {
+    setPlayers(ROSTER);
+    const g = gateChannel({ source: 'synthetic-informed', ...OPTS });
+    console.log(`  GATE synthetic-informed pass=${g.pass} seasons=${g.seasons} n=${g.full.n} edge=${g.full.edge.toFixed(3)} A=${g.halves[0].edge.toFixed(3)} B=${g.halves[1].edge.toFixed(3)}`);
+    expect(g.pass).toBe(true);
+    expect(g.reasons).toEqual([]);
+    // The two blocks must be genuinely disjoint seed ranges — a split of one
+    // correlated run proves nothing, and `rngFor` hashing is what makes
+    // separate ranges separate populations (lesson 9).
+    expect(g.halves[1].seedFrom).toBe(g.halves[0].seedFrom + g.seasons);
+    expect(g.halves[0].edge).toBeGreaterThan(0.15);
+    expect(g.halves[1].edge).toBeGreaterThan(0.15);
+  });
+
+  it('the gate refuses a channel that cannot emit enough to be measured', () => {
+    setPlayers(ROSTER);
+    // n is decoupled from season count on purpose — a rare event is not a bad
+    // one — but a channel that still cannot reach 200 emissions inside the
+    // ceiling has not been measured, and an unmeasured channel is refused
+    // rather than waved through.
+    const g = gateChannel({ source: 'pushed-then-died', ...OPTS, minN: 400, maxSeasons: 40 });
+    expect(g.pass).toBe(false);
+    expect(g.reasons.join(' ')).toMatch(/too rare to measure/);
+  });
+
+  it('reports emissions, and says so in the returned object', () => {
+    // clashTraced measured 0.87x AT EMISSION and 0.57x on the beliefs that
+    // SURVIVED to move a board. Both true, very different. A number that does
+    // not name its unit invites the next author to compare the two.
+    const r = measure('pushed-then-died');
+    expect(r.unit).toBe('emission');
+    expect(r.source).toBe('pushed-then-died');
+    expect(r.control).toBe('any-faithful');
   });
 
   // The transcription check. The audit reconstructs each channel's selection
@@ -145,16 +214,32 @@ describe('the channel audit', () => {
   // reconstruction.
   it('reconstructs the real channel faithfully — every belief it left is an emission the audit found', () => {
     setPlayers(ROSTER);
-    let checked = 0;
-    for (let seed = 1; seed <= 12; seed++) {
+    let checked = 0, emissionSubjects = 0, withSurvivingBelief = 0;
+    for (let seed = 1; seed <= 40; seed++) {
       const S = seasonForAudit({ ...OPTS, seed });
       const emitted = S.emissions('pushed-then-died');
       const subjects = new Set(emitted.map(e => e.subject));
       const firstEp = new Map();
       for (const e of emitted) if (!firstEp.has(e.subject)) firstEp.set(e.subject, e.ep);
+      // The source string names the VICTIM, so the round the channel read is
+      // checkable too, not just who it indicted. An off-by-one on the round, or
+      // a transcription that read `murdered` where the engine reads
+      // `murderTarget ?? murdered`, would put a different name here.
+      const victimAt = new Map();
+      for (const r of S.rounds) victimAt.set(r.ep + 1, r.murderTarget ?? r.murdered);
+      const victimsPushed = new Map();
+      for (const e of emitted) {
+        if (!victimsPushed.has(e.subject)) victimsPushed.set(e.subject, new Set());
+        victimsPushed.get(e.subject).add(victimAt.get(e.ep));
+      }
+
+      const seen = new Set();
       for (const b of S.beliefs) {
-        if (!/^wanted .+ gone the night .+ died$/.test(b.source)) continue;
+        const m = /^wanted (.+) gone the night (.+) died$/.exec(b.source);
+        if (m && m[1] !== m[2]) throw new Error(`malformed source: ${b.source}`);
+        if (!m) continue;
         checked++;
+        seen.add(b.subject);
         expect(subjects.has(b.subject),
           `a belief sourced to the murder channel names ${b.subject}, who the reconstruction never indicts`).toBe(true);
         // The belief must not PREDATE the emission that wrote it. It may
@@ -162,12 +247,37 @@ describe('the channel audit', () => {
         // about the same pair even when it keeps the older, stronger source, so
         // learnedEp is the last time anything was learned about this subject,
         // not the round this source wrote. Requiring exact equality here fails
-        // on real seasons — measured, ep 4 emission read back as ep 5 — and the
-        // failure is a property of the knowledge layer, not of the transcription.
+        // on real seasons — measured, an ep-4 emission reads back as ep 5 — and
+        // the failure is a property of the knowledge layer, not of the
+        // transcription.
         expect(b.learnedEp).toBeGreaterThanOrEqual(firstEp.get(b.subject));
+        // ...and the victim the belief names must be one this subject was
+        // actually reconstructed as having pushed. Not the FIRST such victim:
+        // somebody can be indicted in several rounds for several victims, and
+        // the belief that survived is whichever landed hardest.
+        expect([...(victimsPushed.get(b.subject) || [])],
+          `belief names victim ${m[1]}, reconstruction has ${b.subject} pushing`).toContain(m[1]);
       }
+      emissionSubjects += subjects.size;
+      for (const x of subjects) if (seen.has(x)) withSurvivingBelief++;
     }
     expect(checked, 'the fidelity check must have had something to check').toBeGreaterThan(20);
+
+    // ── THE OTHER DIRECTION, AND ITS LIMIT ──
+    //
+    // Everything above proves the reconstruction is not too NARROW. It cannot
+    // prove it is not too BROAD: extra emissions the engine never makes would
+    // dilute hitRate downward and leave every assertion green. A full two-way
+    // correspondence is not available, because most true emissions leave no
+    // surviving trace — learn()'s acceptance roll rejects many outright, and
+    // revealCascade overwrites the survivors at 0.5 against this channel's
+    // 0.36. So the check is a COVERAGE FLOOR, bar set below the measured rate
+    // and the rate logged (lesson 4). Measured 40.1%; a transcription would
+    // have to be roughly a quarter over-broad before this caught it, and the
+    // report says so plainly rather than claiming breadth is verified.
+    const coverage = withSurvivingBelief / emissionSubjects;
+    console.log(`  reconstruction coverage=${(coverage * 100).toFixed(1)}%  (emission subjects=${emissionSubjects}, with a surviving belief=${withSurvivingBelief})`);
+    expect(coverage).toBeGreaterThan(0.30);
   });
 
   // The control must be LIKE-FOR-LIKE. A control that draws a different number
@@ -179,8 +289,37 @@ describe('the channel audit', () => {
     for (const src of ['synthetic-informed', 'synthetic-structural', 'synthetic-anti', 'pushed-then-died']) {
       const r = measure(src);
       expect(r.controlN, `${src}: control n must match channel n`).toBe(r.n);
-      // Round-matched, so the control sees the identical population densities.
-      expect(r.controlBase, `${src}: control must share the channel base`).toBeCloseTo(r.base, 12);
+      // ROUND-MATCHED, ASSERTED ON THE ROUNDS THEMSELVES.
+      //
+      // This used to read `expect(r.controlBase).toBeCloseTo(r.base, 12)`, and
+      // it certified NOTHING: both accumulators add the same local `base`
+      // variable, so that equality holds under any control whatsoever —
+      // including one that reads a single fixed round all season. It was a
+      // number compared with itself.
+      //
+      // The property meant is that the control drew from the SAME ROUNDS the
+      // channel emitted into, so `controlEpHist` is built from the round each
+      // control pool says it came from, independently of the emission's.
+      expect(r.controlEpHist, `${src}: control must draw from the channel's own rounds`)
+        .toEqual(r.epHist);
+    }
+  });
+
+  // THE SAME POPULATION, NOT MERELY THE SAME ROUND — and this is the failure
+  // class the module's own docstring names ("a control drawn from a different
+  // population ... would produce a number with no meaning") and did not test.
+  //
+  // The channel filters its subjects to the living. The control filtered its
+  // voters to the living only INSIDE its own rule, so removing that one filter
+  // left every assertion green while moving the reference channel's edge from
+  // +0.058 to +0.080 — a 38% swing on the number the gate is built around.
+  // Asymmetry between a channel and its control is invisible in every rate it
+  // produces; it is only visible in who is in the pool.
+  it('draws its control from the same population the channel indicts into', () => {
+    for (const src of ['synthetic-informed', 'synthetic-structural', 'synthetic-anti', 'pushed-then-died']) {
+      const r = measure(src);
+      expect(r.controlOffPopulation,
+        `${src}: ${r.controlOffPopulation} control pool members were not in the room the channel was indicting into`).toBe(0);
     }
   });
 

@@ -1409,6 +1409,9 @@ export function formatIsRunnable(source) {
   const fmt = seasonFormat(source);
   if (fmt === 'total-drama') return true;
   if (fmt === 'big-brother') return typeof window !== 'undefined' && !!window._bbRunnable;
+  // Off until the engine can finish a season. The flag exists so a half-built
+  // show cannot be started by somebody clicking through the setup screen.
+  if (fmt === 'traitors') return typeof window !== 'undefined' && !!window._trRunnable;
   return false;
 }
 

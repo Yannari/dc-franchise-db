@@ -1,11 +1,13 @@
 // The Traitors, as the registry sees it. Everything downstream of a show —
 // filenames, storage keys, every sentence a screen generates about a season —
 // comes from this entry, so it is worth asserting rather than assuming.
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { SHOWS, formatPrefix, showShort, showIcon, showAccent } from '../js/shows.js';
 import { buildFranchiseMeta, setFranchiseLedger, activeSeasons }
   from '../js/franchise-meta.js';
+import { formatIsRunnable } from '../js/core.js';
+import { initTraitorsState, prepTrForSave, repairTrSets } from '../js/tr/state.js';
 
 describe('the traitors registry entry', () => {
   it('is registered with the prefix every filename depends on', () => {
@@ -147,5 +149,55 @@ describe('the show picker on the actual screen', () => {
     const optionValues = [...selectMatch[1].matchAll(/<option value="([^"]+)"/g)]
       .map(m => m[1]);
     expect(new Set(optionValues)).toEqual(new Set(Object.keys(SHOWS)));
+  });
+});
+
+describe('a castle nobody can start yet', () => {
+  afterEach(() => { delete globalThis.window?._trRunnable; });
+
+  it('is not runnable while the engine is unbuilt', () => {
+    expect(formatIsRunnable({ format: 'traitors' })).toBe(false);
+  });
+
+  it('becomes runnable only when the engine says so', () => {
+    globalThis.window = globalThis.window || {};
+    globalThis.window._trRunnable = true;
+    expect(formatIsRunnable({ format: 'traitors' })).toBe(true);
+  });
+
+  it('leaves the other two shows alone', () => {
+    expect(formatIsRunnable({ format: 'total-drama' })).toBe(true);
+  });
+});
+
+describe('traitors state survives a round trip through JSON', () => {
+  it('starts empty and well-formed', () => {
+    const tr = initTraitorsState();
+    expect(tr.alignment).toEqual({});
+    expect(tr.roleHistory).toEqual([]);
+    expect(tr.pot).toBe(0);
+    expect(tr.threads).toEqual([]);
+    expect(tr.conclaveTension).toEqual({});
+  });
+
+  it('restores Sets that JSON.stringify would have flattened', () => {
+    const g = { tr: initTraitorsState() };
+    g.tr.shieldedThisRound = new Set(['Gwen']);
+    const revived = JSON.parse(JSON.stringify(prepTrForSave(g)));
+    expect(Array.isArray(revived.tr.shieldedThisRound)).toBe(true);
+    repairTrSets(revived);
+    expect(revived.tr.shieldedThisRound instanceof Set).toBe(true);
+    expect(revived.tr.shieldedThisRound.has('Gwen')).toBe(true);
+  });
+
+  it('repairTrSets is idempotent — safe to call twice, and safe on state that never had the Sets', () => {
+    const g = { tr: initTraitorsState() };
+    delete g.tr.shieldedThisRound; // simulate state that predates this field
+    expect(() => repairTrSets(g)).not.toThrow();
+    expect(g.tr.shieldedThisRound instanceof Set).toBe(true);
+    // second call on already-repaired state must not throw or replace the Set
+    const first = g.tr.shieldedThisRound;
+    expect(() => repairTrSets(g)).not.toThrow();
+    expect(g.tr.shieldedThisRound).toBe(first);
   });
 });

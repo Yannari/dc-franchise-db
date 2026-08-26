@@ -15,7 +15,7 @@ import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
 import { openThread, advanceThread, closeThread, findOpenThread, heatAt } from '../threads.js';
-import { alignmentAt } from '../roles.js';
+import { suspicion } from '../deduction.js';
 
 const FAMILY = 'suspicion';
 
@@ -321,11 +321,21 @@ registerEvent({
   },
 });
 
-// The irony machine: a FAITHFUL's ordinary defensiveness reads exactly like
-// a Traitor's, and the room cannot tell the difference from the outside —
-// this is the "frequently wrong" texture the whole format runs on. Gated on
-// role (faithful) specifically so it is the mirror image of cover.js rather
-// than a recolor of it.
+// The irony machine: ordinary defensiveness reads exactly like a Traitor's,
+// and the room cannot tell the difference from the outside — this is the
+// "frequently wrong" texture the whole format runs on.
+//
+// BELIEF, NOT TRUTH (whole-plan review, finding 3). This used to gate on
+// `alignmentAt(b) === 'faithful'` and then spend a bond on it, which put a
+// GROUND-TRUTH channel into the room's reasoning: bonds feed bondResistance()
+// -> suspicion() in the deduction layer, so an event that penalises exactly
+// the innocent is an oracle pointed at the room, outside every gate Task 4
+// built (gateChannel guards `learn()`, and this never touched `learn()`).
+// Measured volume at the time: 6,536 Faithful-penalising firings per 5,000
+// seasons. The condition is now `a` already having a READ on `b` — which is
+// belief, is what `a` could actually act on, and is exactly what the room is
+// allowed to feed back into itself. Whether the read is right is not this
+// event's business; that is the joke.
 registerEvent({
   id: 'susp-defensive-overcorrect',
   family: FAMILY,
@@ -333,15 +343,15 @@ registerEvent({
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
-    if (alignmentAt(b, ctx.ep) !== 'faithful') return 0;
+    if (suspicion(a, b, ctx.ep) <= 0) return 0;
     return pStats(b).temperament <= 4 ? 2 : 0;
   },
   fire(ctx) {
     const [a, b] = ctx.actors;
     addBond(a, b, -1);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${b} explained themselves to ${a} for far longer than the question actually required — an innocent person, over-answering.`);
-    return { branch: 'overcorrected', pair: [a, b], threadId: t?.id, bondDelta: -1, wronglySuspected: true };
+      `${b} explained themselves to ${a} for far longer than the question actually required, and it did not help.`);
+    return { branch: 'overcorrected', pair: [a, b], threadId: t?.id, bondDelta: -1 };
   },
 });
 
@@ -401,15 +411,19 @@ registerEvent({
   window: 'morning',
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
-    const [, b] = ctx.actors;
-    // The joke lands hardest on someone who has done nothing wrong.
-    return alignmentAt(b, ctx.ep) === 'faithful' ? 1.5 : 0;
+    const [a, b] = ctx.actors;
+    // BELIEF, NOT TRUTH — the same finding as susp-defensive-overcorrect, and
+    // the mirror of it. This one wants the ABSENCE of a read: suspicion built
+    // out of a mannerism, by somebody who has been told nothing at all. The
+    // pair is picked by what `a` knows (nothing), never by what `b` is.
+    if (suspicion(a, b, ctx.ep) > 0) return 0;
+    return 1.5;
   },
   fire(ctx) {
     const [a, b] = ctx.actors;
     addBond(a, b, -0.5);
     const t = openThread(FAMILY, [a, b], ctx.ep,
       `${a} clocked a completely harmless habit of ${b}'s and decided it meant something.`);
-    return { branch: 'misread', pair: [a, b], threadId: t?.id, bondDelta: -0.5, wronglySuspected: true };
+    return { branch: 'misread', pair: [a, b], threadId: t?.id, bondDelta: -0.5 };
   },
 });

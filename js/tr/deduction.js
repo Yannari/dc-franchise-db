@@ -262,6 +262,30 @@ export function suspicion(observer, target, ep) {
   return Math.max(0, b.effectiveConfidence * bondResistance(observer, target));
 }
 
+/**
+ * Does `observer` KNOW `target`'s alignment, rather than merely suspect it?
+ *
+ * READ-ONLY, and it exists so the castle layer can condition on the pact
+ * WITHOUT reading ground truth. The castle is forbidden from importing
+ * knowledge.js (tests/tr-castle-belief-gate.test.js), and `suspicion()` alone
+ * cannot answer this: it multiplies by bondResistance, so a warm pair's
+ * turret-grade certainty and a cold pair's deduced guess land on the same
+ * number and no threshold separates them.
+ *
+ * `public` is the discriminator, and it is a closed set by design: the only
+ * three writers of a `public` alignment belief are the turret seeding, the
+ * banishment reveal, and a recruit being shown the turret (see the ceiling
+ * note in js/knowledge.js). Every other alignment belief in the game — every
+ * deduction, every rumour — arrives capped at ALIGNMENT_CRED_CEILING and is
+ * therefore a suspicion, never knowledge, whatever its number.
+ */
+export function knowsAlignmentOf(observer, target, ep) {
+  if (observer === target) return false;
+  const b = believes(observer, alignmentFactId(target), ep);
+  if (!b || b.valence !== 'accurate') return false;
+  return b.sourceType === 'public' && b.effectiveConfidence > 0;
+}
+
 /** Everyone `observer` could name, most suspected first. */
 export function suspicionBoard(observer, ep, candidates = null) {
   const pool = (candidates || gs.activePlayers || []).filter(n => n !== observer);

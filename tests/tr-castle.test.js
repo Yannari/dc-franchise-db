@@ -20,6 +20,8 @@ import { recordAlignment } from '../js/tr/roles.js';
 import { openThread, findOpenThread } from '../js/tr/threads.js';
 import { EVENTS, eligible, pickEvent, validateRegistry } from '../js/tr/events.js';
 import { setFranchiseLedger } from '../js/franchise-meta.js';
+import { resetKnowledge } from '../js/knowledge.js';
+import { seedTraitorKnowledge } from '../js/tr/deduction.js';
 import roster from '../franchise_roster.json';
 
 // Side-effect imports: this is what registers the ~25 events under test.
@@ -190,6 +192,141 @@ describe('every event has a real consequence', () => {
     const after = snapshotWorld();
     expect(result).toBeTruthy();                    // the old bar: cleared trivially
     expect(worldMoved(before, after)).toBe(false);   // the new bar: correctly refuses to call this a consequence
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// GROUND TRUTH DOES NOT REACH A BOND (whole-plan review, finding 3)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Three events used to condition a BOND DELTA on `alignmentAt()` — who
+// somebody actually IS — and bonds are not inert: they feed bondResistance()
+// -> suspicion() in the deduction layer, which is the ledger's own account of
+// the castle's only influence path. So a truth-keyed bond was an oracle wired
+// into the room's reasoning, arriving by the one route Task 4's whole
+// apparatus does not watch: gateChannel() guards `learn()`, and none of these
+// ever touched `learn()`. Measured before the fix: 6,536 Faithful-penalising
+// firings and 202 Traitor-warming firings per 5,000 seasons.
+//
+// The rule these two probes enforce, stated once:
+//
+//   A castle event's weight may read a player's alignment as PERMISSION for
+//   that player to act (self-knowledge — a Traitor knows they are a Traitor)
+//   or as PACT KNOWLEDGE the actor has actually been given (the turret, via
+//   knowsAlignmentOf). It may never read the OTHER person's hidden alignment.
+//
+// PROBE A — role symmetry. Two worlds, one Traitor among the two actors in
+// each, differing only in WHICH. Every event's weight must be identical: an
+// event may notice that somebody in the scene is a Traitor, it must not care
+// which of them it is. This is the probe that fails on
+// `alignmentAt(b) === 'faithful'` and equally on the review's named mutation
+// of it, `=== 'traitor'`.
+//
+// PROBE B — an unmet pact is not a pact. `a` is a Traitor in both worlds and
+// the turret has NOT been seeded, so `a` knows nothing about anybody. Flipping
+// `b`'s alignment must not move the weight. This is the probe that fails on
+// `isTraitor(a) && isTraitor(b)` and on romance-liability-exposed's old
+// mixed-by-truth precondition.
+//
+// Weight only, deliberately: fire() legitimately reads the ACTOR's own role
+// (grief's opportunistic branch, cover's competence roll), and those are
+// self-knowledge. Weight is where the gate lives and where all three defects
+// lived.
+describe('ground truth does not decide who a castle event happens to', () => {
+  // SYNTHETIC, IDENTICAL PLAYERS. Six roster names with different stat lines
+  // would make this probe lie in both directions: `cover-cold-sweat-tell`
+  // reads `pStats(whoever is the Traitor).temperament`, so swapping which of
+  // two REAL people is the Traitor moves its weight for a reason that has
+  // nothing to do with reading a hidden alignment. With every stat line
+  // identical, any weight difference between the arms can only be the
+  // alignment, which is the whole question.
+  const PROBE_STATS = { intuition: 7, temperament: 3, strategic: 7, social: 7,
+    boldness: 7, loyalty: 7, mental: 7 };
+  const PROBE_PLAYERS = ['Pa', 'Pb', 'Pc', 'Pd', 'Pe', 'Pf']
+    .map(n => makePlayer(n, 'floater', PROBE_STATS));
+  const PROBE_CAST = PROBE_PLAYERS.map(p => p.name);
+  const [A, B] = PROBE_CAST;
+  const EP = 5;
+
+  /**
+   * A world identical in every respect except the two alignments (and whether
+   * the turret was ever shown). Rich enough that most of the pool clears its
+   * non-alignment preconditions — a murder last round, threads of every kind
+   * this pool opens, warm bonds, and a prior season on the ledger — because a
+   * probe where nothing is eligible passes trivially.
+   */
+  function probeWorld({ aTraitor, bTraitor, turret }) {
+    setPlayers(PROBE_PLAYERS);
+    setGs({ bonds: {}, activePlayers: [...PROBE_CAST] });
+    gs.tr = initTraitorsState();
+    resetKnowledge();
+    recordAlignment(A, aTraitor, 1, 'selection');
+    recordAlignment(B, bTraitor, 1, 'selection');
+    PROBE_CAST.slice(2).forEach(n => recordAlignment(n, false, 1, 'selection'));
+    if (turret) seedTraitorKnowledge(1);
+    setBond(A, B, 4);
+    setBond(PROBE_CAST[2], PROBE_CAST[3], -3);
+    gs.tr.rounds.push({ ep: EP - 1, murdered: PROBE_CAST[5], murderTarget: PROBE_CAST[5] });
+    for (const kind of ['trust', 'suspicion', 'cover', 'callback', 'testing', 'grief',
+      'romance', 'romance-spark', 'romance-showmance']) {
+      openThread(kind, [A, B], EP - 2, 'seed');
+    }
+    setFranchiseLedger({
+      v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {
+        '1': { seasonName: 'S1', format: 'total-drama', players: {
+          [A]: { allies: [B], rivals: [B], betrayed: [], betrayedBy: [B], showmances: [{ partner: B, ended: 'breakup' }], finalist: true },
+          [B]: { allies: [A], rivals: [A], betrayed: [A], betrayedBy: [], showmances: [{ partner: A, ended: 'breakup' }], finalist: true },
+        } },
+      } } },
+    });
+  }
+
+  /** Every registered event's weight, keyed by id, for the scene [A, B]. */
+  function weightsFor(world) {
+    probeWorld(world);
+    const out = {};
+    for (const ev of EVENTS) {
+      const ctx = { ep: EP, window: ev.window, act: 'middle', living: [...PROBE_CAST], actors: [A, B] };
+      out[ev.id] = ev.weight(ctx);
+    }
+    return out;
+  }
+
+  function compare(w1, w2) {
+    return EVENTS.map(e => e.id).filter(id => w1[id] !== w2[id])
+      .map(id => `${id}: ${w1[id]} vs ${w2[id]}`);
+  }
+
+  it('PROBE A: an event may notice a Traitor is in the scene, never WHICH of the two it is', () => {
+    const aFaithfulBTraitor = weightsFor({ aTraitor: false, bTraitor: true, turret: true });
+    const aTraitorBFaithful = weightsFor({ aTraitor: true, bTraitor: false, turret: true });
+    // Guard on the guard: a probe world where nothing is eligible would pass
+    // this and every mutant with it.
+    const live = Object.values(aTraitorBFaithful).filter(w => w > 0).length;
+    expect(live, 'the probe world made almost nothing eligible — the comparison below is vacuous')
+      .toBeGreaterThanOrEqual(30);
+    const diffs = compare(aFaithfulBTraitor, aTraitorBFaithful);
+    expect(diffs, `these events read WHICH actor is the Traitor:\n${diffs.join('\n')}`).toEqual([]);
+  });
+
+  it('PROBE B: a Traitor who has never been shown the turret cannot act on a partner\'s alignment', () => {
+    const partnerFaithful = weightsFor({ aTraitor: true, bTraitor: false, turret: false });
+    const partnerTraitor = weightsFor({ aTraitor: true, bTraitor: true, turret: false });
+    const live = Object.values(partnerFaithful).filter(w => w > 0).length;
+    expect(live, 'the probe world made almost nothing eligible — the comparison below is vacuous')
+      .toBeGreaterThanOrEqual(30);
+    const diffs = compare(partnerFaithful, partnerTraitor);
+    expect(diffs, `these events read the partner's hidden alignment:\n${diffs.join('\n')}`).toEqual([]);
+  });
+
+  it('PROBE B goes the other way once the turret HAS been shown — the pact is knowledge, not truth', () => {
+    // The other half of the claim: knowsAlignmentOf is not dead weight. The
+    // same two Traitors, with the turret seeded, DO reach their pact events.
+    const unmet = weightsFor({ aTraitor: true, bTraitor: true, turret: false });
+    const met = weightsFor({ aTraitor: true, bTraitor: true, turret: true });
+    const moved = compare(unmet, met);
+    expect(moved.length, 'seeding the turret changed nothing — knowsAlignmentOf is inert here')
+      .toBeGreaterThan(0);
   });
 });
 

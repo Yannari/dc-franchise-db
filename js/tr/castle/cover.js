@@ -21,6 +21,7 @@ import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
 import { openThread, advanceThread, findOpenThread } from '../threads.js';
 import { alignmentAt, livingFaithfuls } from '../roles.js';
+import { knowsAlignmentOf } from '../deduction.js';
 
 const FAMILY = 'cover';
 const NICE_ARCHETYPES = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
@@ -52,7 +53,9 @@ registerEvent({
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
-    return isTraitor(a, ctx.ep) && isTraitor(b, ctx.ep) ? 2 : 0;
+    // The pact is read through what `a` KNOWS, not through what `b` IS — see
+    // the note on cover-swap-story-with-partner.
+    return isTraitor(a, ctx.ep) && knowsAlignmentOf(a, b, ctx.ep) ? 2 : 0;
   },
   fire(ctx) {
     const [a, b] = ctx.actors;
@@ -218,12 +221,20 @@ registerEvent({
   window: 'evening',
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
-    const [a, b] = ctx.actors;
-    // Needs exactly one Traitor in the scene and a Faithful to sell it to.
-    return isTraitor(a, ctx.ep) && !isTraitor(b, ctx.ep) ? 1.5 : 0;
+    // Needs a Traitor in the scene and somebody they know is NOT in the pact
+    // to sell it to. Two things this does NOT do: read `b`'s hidden alignment
+    // (it reads `a`'s own knowledge of the turret instead), and require that
+    // the Traitor happened to be drawn FIRST. The scene sampler orders actors
+    // at random, so a positional requirement silently halved this event for
+    // no reason anybody could state.
+    const a = ctx.actors.find(n => isTraitor(n, ctx.ep));
+    if (!a) return 0;
+    const b = ctx.actors.find(n => n !== a);
+    return b && !knowsAlignmentOf(a, b, ctx.ep) ? 1.5 : 0;
   },
   fire(ctx) {
-    const [a, b] = ctx.actors;
+    const a = ctx.actors.find(n => isTraitor(n, ctx.ep));
+    const b = ctx.actors.find(n => n !== a);
     addBond(a, b, 1);
     const t = openThread(FAMILY, [a, b], ctx.ep,
       `${a} floated a suspicion about a fellow Traitor to ${b} — genuine-sounding enough that ${b} took it as proof ${a} couldn't be one.`);
@@ -310,12 +321,18 @@ registerEvent({
   window: 'after-table',
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
-    const [a, b] = ctx.actors;
-    if (!isTraitor(a, ctx.ep) || isTraitor(b, ctx.ep)) return 0;
+    // Again: the Traitor is whichever of the two IS one (not whichever was
+    // drawn first), and `b` is somebody they know is outside the pact — read
+    // off `a`'s knowledge, never off `b`'s hidden alignment.
+    const a = ctx.actors.find(n => isTraitor(n, ctx.ep));
+    if (!a) return 0;
+    const b = ctx.actors.find(n => n !== a);
+    if (!b || knowsAlignmentOf(a, b, ctx.ep)) return 0;
     return gs?.tr?.rounds?.some(r => r.ep === ctx.ep - 1 && r.murdered) ? 2 : 0;
   },
   fire(ctx) {
-    const [a, b] = ctx.actors;
+    const a = ctx.actors.find(n => isTraitor(n, ctx.ep));
+    const b = ctx.actors.find(n => n !== a);
     addBond(a, b, 1);
     const t = openThread(FAMILY, [a, b], ctx.ep,
       `${a} sat with ${b} and helped them grieve — the same night's work ${a} had a hand in causing.`);
@@ -345,10 +362,19 @@ registerEvent({
   family: FAMILY,
   window: 'dawn',
   advancesThread: true,
+  // THE ONE PLACE IN THIS FILE WHERE THE SECOND NAME IS NOT READ OFF GROUND
+  // TRUTH (whole-plan review, finding 3). Every other event here gates on the
+  // ACTOR's own role, which is self-knowledge and costs nothing. This one
+  // gates on a PAIR and then spends +1 bond on it, and bonds feed
+  // bondResistance() -> suspicion() in the deduction layer — so a truth-keyed
+  // pair bonus is a ground-truth channel into the room's reasoning, arriving
+  // by the one route Task 4's whole apparatus does not watch. The pact is
+  // still the precondition; it is now read through what `a` KNOWS (the turret,
+  // via knowsAlignmentOf) rather than through what `b` IS.
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
-    return isTraitor(a, ctx.ep) && isTraitor(b, ctx.ep) ? 2 : 0;
+    return isTraitor(a, ctx.ep) && knowsAlignmentOf(a, b, ctx.ep) ? 2 : 0;
   },
   fire(ctx) {
     const [a, b] = ctx.actors;

@@ -51,14 +51,13 @@ import { pStats, romanticCompat } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
 import { openThread, advanceThread, closeThread, findOpenThread, heatAt } from '../threads.js';
-import { alignmentAt } from '../roles.js';
+import { suspicion } from '../deduction.js';
 
 const FAMILY = 'romance';
 const SPARK_KIND = 'romance-spark';
 const SHOWMANCE_KIND = 'romance-showmance';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
-function isTraitor(name, ep) { return alignmentAt(name, ep) === 'traitor'; }
 
 /**
  * ROUND 2 FIX (dead-event audit at real season scale): every event from
@@ -267,15 +266,25 @@ registerEvent({
   },
 });
 
-// ── FLAGSHIP: the liability is exposed — a four-way fork on the FAITHFUL
+// ── FLAGSHIP: the liability is exposed — a four-way fork on the DOUBTING
 // partner's own reading of the person they're sleeping next to ──────────
 //
-// This only exists when the showmance is MIXED — one Traitor, one Faithful
-// — because a same-role showmance has nothing to expose. The check reads
-// the Faithful partner's intuition, loyalty, temperament and boldness, not
-// a coin: a sharp, bold Faithful is far more likely to actually confront or
-// expose their partner than a loyal, low-boldness one, who is far more
-// likely to stay oblivious or bury the discomfort in silence.
+// BELIEF, NOT TRUTH (whole-plan review, finding 3 — the same defect as
+// susp-misread-tell, found by the role-symmetry probe rather than by the
+// review). This used to require the showmance to be MIXED by GROUND TRUTH
+// (one real Traitor, one real Faithful) and then spend up to -4 bond on it.
+// The acting partner is the Faithful one — somebody with no access whatever
+// to the fact the gate was reading — so the bond move was an oracle, and
+// bonds feed bondResistance() -> suspicion() straight back into the room's
+// reasoning. The precondition is now the partner's own READ: a showmance
+// where one of the two has started to suspect the other. Whether the doubt
+// is right is not this event's business, which is a better version of the
+// same scene — the format's whole engine is people being sure and wrong.
+//
+// The check reads the doubting partner's intuition, loyalty, temperament and
+// boldness, not a coin: a sharp, bold doubter is far more likely to actually
+// confront or expose their partner than a loyal, low-boldness one, who is
+// far more likely to stay oblivious or bury the discomfort in silence.
 //   OBLIVIOUS           — notices nothing. The showmance is pure protection
 //                          this round; nothing about it costs the Traitor
 //                          anything. Bond warms.
@@ -325,15 +334,16 @@ registerEvent({
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     if (!t) return 0;
     const [x, y] = t.parties;
-    if (isTraitor(x, ctx.ep) === isTraitor(y, ctx.ep)) return 0; // needs a MIXED pair
+    // Needs a DOUBT inside the couple, not a mixed pair of alignments.
+    if (suspicion(x, y, ctx.ep) <= 0 && suspicion(y, x, ctx.ep) <= 0) return 0;
     return 3;
   },
   fire(ctx, rng) {
     const showmance0 = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [x, y] = showmance0.parties;
-    const traitor = isTraitor(x, ctx.ep) ? x : y;
-    const faithful = traitor === x ? y : x;
-    const st = pStats(faithful);
+    const doubter = suspicion(x, y, ctx.ep) >= suspicion(y, x, ctx.ep) ? x : y;  // the doubter
+    const suspected = doubter === x ? y : x;                                        // the suspected
+    const st = pStats(doubter);
 
     const obliviousScore = (1 - st.intuition / 10) * 0.6 + (st.loyalty / 10) * 0.2;
     const suspiciousScore = (st.intuition / 10) * 0.5 + (1 - st.boldness / 10) * 0.3;
@@ -347,35 +357,35 @@ registerEvent({
     else if (roll < obliviousScore + suspiciousScore + confrontsScore) branch = 'confronts';
     else branch = 'exposes';
 
-    const line = pick(rng, LIABILITY_LINES[branch]).replace('{a}', faithful).replace('{b}', traitor);
+    const line = pick(rng, LIABILITY_LINES[branch]).replace('{a}', doubter).replace('{b}', suspected);
     const showmance = findOpenThread(SHOWMANCE_KIND, [x, y]);
     let bondDelta = 0;
     let threadId = showmance?.id ?? null;
 
     if (branch === 'oblivious') {
       bondDelta = 1;
-      addBond(faithful, traitor, bondDelta);
+      addBond(doubter, suspected, bondDelta);
       const advanced = showmance ? advanceThread(showmance.id, ctx.ep, line) : openThread(SHOWMANCE_KIND, [x, y], ctx.ep, line);
       threadId = advanced?.id ?? threadId;
     } else if (branch === 'suspicious') {
       // No bond move — nothing has been SAID. Residue lands as a suspicion
-      // thread on the Traitor, readable by suspicion.js's own events.
-      const susp = openThread('suspicion', [faithful, traitor], ctx.ep, line);
+      // thread on the suspected partner, readable by suspicion.js's own events.
+      const susp = openThread('suspicion', [doubter, suspected], ctx.ep, line);
       threadId = susp?.id ?? threadId;
     } else if (branch === 'confronts') {
       bondDelta = -2;
-      addBond(faithful, traitor, bondDelta);
+      addBond(doubter, suspected, bondDelta);
       const advanced = showmance ? advanceThread(showmance.id, ctx.ep, line) : openThread(SHOWMANCE_KIND, [x, y], ctx.ep, line);
       threadId = advanced?.id ?? threadId;
     } else {
       bondDelta = -4;
-      addBond(faithful, traitor, bondDelta);
+      addBond(doubter, suspected, bondDelta);
       if (showmance) closeThread(showmance.id, ctx.ep, 'exposed');
-      const coverThread = openThread('cover', [traitor], ctx.ep,
-        `${traitor}'s own showmance just told the room what they were. Damage control starts now.`);
+      const coverThread = openThread('cover', [suspected], ctx.ep,
+        `${suspected}'s own showmance just stood up and named them in front of the room. Damage control starts now.`);
       threadId = coverThread?.id ?? threadId;
     }
-    return { branch, faithful, traitor, threadId, bondDelta };
+    return { branch, doubter, suspected, threadId, bondDelta };
   },
 });
 

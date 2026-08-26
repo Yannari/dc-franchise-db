@@ -39,6 +39,16 @@ export function initTraitorsState() {
     // keeps a season from reading as forty unconnected incidents.
     threads: [],
 
+    // What events have written down, keyed by player: [{ ep, note, threadId }].
+    // This is why episode 7's accusation can name episode 2. Without it every
+    // event is a sentence nobody can refer back to.
+    residue: {},
+
+    // Three cooldown scopes: by event id, by player, by PAIR. The pair scope is
+    // the one that matters — without it the same two people have the same
+    // conversation four times and the season reads as a loop.
+    cooldowns: { event: {}, player: {}, pair: {} },
+
     // Who overruled whom at the conclave, and on which night:
     //   [{ ep, winner, loser, target, theirTarget }]
     // Not a mood. By episode 8 there is not a set of three Traitors but a

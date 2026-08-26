@@ -4732,14 +4732,40 @@
         "temperament": 8
       },
       "sexuality": "lesbian",
-      "profileSources": {},
+      "profileSources": {
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Dunia",
+            "url": "https://disventure-camp.fandom.com/wiki/Dunia",
+            "kind": "source-canon",
+            "quote": "Dunia grew up in Edmonton, Canada."
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Dunia",
+            "url": "https://disventure-camp.fandom.com/wiki/Dunia",
+            "kind": "source-canon",
+            "quote": "easy-going and charismatic woman"
+          }
+        ],
+        "voice": [
+          {
+            "label": "Disventure Camp Wiki - Dunia",
+            "url": "https://disventure-camp.fandom.com/wiki/Dunia",
+            "kind": "source-canon",
+            "quote": "she's done with the \"witch jokes\""
+          }
+        ]
+      },
       "age": 31,
       "birthdate": "1995-03-03",
       "ethnicity": "Black",
       "nationality": "Congolese Canadian",
       "hometown": "Montreal",
       "occupation": "Witch / tarot reader",
-      "descriptor": "The Tarot Reader"
+      "descriptor": "The Tarot Reader",
+      "voice": "Dunia talks with an upbeat, performative rhythm, leaning into mystical language, teasing confidence, and wordplay. In conversation or an argument, she is likely to charm first, joke second, and press for emotional honesty while keeping the tone playful rather than openly cruel."
     },
     {
       "name": "Ernesto",

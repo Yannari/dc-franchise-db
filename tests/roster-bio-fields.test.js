@@ -164,7 +164,7 @@ describe('the published roster stays readable by the simulator', () => {
     const allowed = new Set(['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats',
       // The casting interview travels as one JSON string; js/casting-interview.js
       // owns its shape and nothing between here and the page unpacks it.
-      'isReturnee', 'castingInterview', ...BIO_FIELDS]);
+      'isReturnee', 'castingInterview', 'voice', 'profileSources', ...BIO_FIELDS]);
     const strays = new Set();
     for (const p of players) for (const k of Object.keys(p)) if (!allowed.has(k)) strays.add(k);
     expect([...strays], 'an unexpected key reached the published roster').toEqual([]);

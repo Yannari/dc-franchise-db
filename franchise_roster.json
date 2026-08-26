@@ -4638,6 +4638,25 @@
       "hometown": "DC",
       "occupation": "Business student",
       "descriptor": "The Class President"
+    },
+    {
+      "name": "Bruno",
+      "slug": "bruno",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 4,
+        "social": 4,
+        "strategic": 3,
+        "loyalty": 10,
+        "boldness": 1,
+        "intuition": 4,
+        "temperament": 9
+      },
+      "profileSources": {}
     }
   ]
 }

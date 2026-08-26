@@ -6,14 +6,27 @@
 // testable without a browser, and so the two callers (the run tab after an
 // episode, the sync button before publishing) share one entry point rather than
 // each deciding what format the season is.
-import { gs, seasonConfig } from '../core.js';
+import { gs, seasonConfig, seasonFormat } from '../core.js';
 import { ensureFeeds, ensureFeedsWritten } from './live.js';
 import { storeOf, toPublishPayload } from './store.js';
 import { writerEndpoint } from './writer.js';
 
-/** Which show is loaded, in the vocabulary the rest of the feed uses. */
+/**
+ * Which show is loaded, in the vocabulary the rest of the feed uses.
+ *
+ * Resolved against the registry rather than tested against one slug. The
+ * two-way ternary this replaces called every show that was not Big Brother
+ * Total Drama, so a third show's whole Birdie/ChatAlumni feed was written in
+ * Total Drama's words — the exact bug the show registry exists to stop, one
+ * level down from the screens that were fixed for it.
+ *
+ * Consumers that only know two shows degrade rather than break: adapter.js
+ * words() hands an unregistered-to-it format the GENERIC vocabulary, and
+ * events.js reads a non-BB episode with the Total Drama reader — which is
+ * correct while the only engines that produce episodes are those two.
+ */
 export function currentFormat() {
-  return seasonConfig?.format === 'big-brother' ? 'big-brother' : 'total-drama';
+  return seasonFormat(seasonConfig);
 }
 
 /**

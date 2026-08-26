@@ -6,7 +6,8 @@ import { readFileSync } from 'node:fs';
 import { SHOWS, formatPrefix, showShort, showIcon, showAccent } from '../js/shows.js';
 import { buildFranchiseMeta, setFranchiseLedger, activeSeasons }
   from '../js/franchise-meta.js';
-import { formatIsRunnable } from '../js/core.js';
+import { formatIsRunnable, seasonConfig } from '../js/core.js';
+import { currentFormat } from '../js/social/session.js';
 import { initTraitorsState, prepTrForSave, repairTrSets } from '../js/tr/state.js';
 
 describe('the traitors registry entry', () => {
@@ -220,5 +221,30 @@ describe('traitors state survives a round trip through JSON', () => {
     const first = g.tr.shieldedThisRound;
     expect(() => repairTrSets(g)).not.toThrow();
     expect(g.tr.shieldedThisRound).toBe(first);
+  });
+});
+
+describe('the social feed asks the registry which show it is', () => {
+  const before = seasonConfig.format;
+  afterEach(() => { seasonConfig.format = before; });
+
+  // currentFormat() is the season's format for the ENTIRE Birdie/ChatAlumni
+  // feed. It used to be `=== 'big-brother' ? 'big-brother' : 'total-drama'`,
+  // which called a castle Total Drama and generated its whole feed in Total
+  // Drama's words — the registry's own bug class, one level below the screens.
+  it('does not call a third show Total Drama', () => {
+    seasonConfig.format = 'traitors';
+    expect(currentFormat()).toBe('traitors');
+  });
+
+  it('still answers exactly as before for the two shows that have engines', () => {
+    seasonConfig.format = 'big-brother';
+    expect(currentFormat()).toBe('big-brother');
+    seasonConfig.format = 'total-drama';
+    expect(currentFormat()).toBe('total-drama');
+    // An unregistered or missing format is still Total Drama — the bare-integer
+    // rule the whole site depends on.
+    seasonConfig.format = 'nope';
+    expect(currentFormat()).toBe('total-drama');
   });
 });

@@ -16,8 +16,34 @@ import { seedTraitorKnowledge, ballotEvidence, murderEvidence } from './deductio
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
 
+/**
+ * The season's random stream — and the hash in front of it is load-bearing.
+ *
+ * WHY THE SEED IS HASHED BEFORE IT REACHES THE LCG. A bare LCG advanced from
+ * seed `s` returns `(s * 1664525 + 1013904223) / 2^32` as its FIRST draw, so
+ * two consecutive seeds differ in that first number by 1664525/2^32 ~ 3.9e-4.
+ * That draw is consumed by selectTraitors() to pick Traitor #1. Measured on
+ * the unhashed generator: seeds 1..200 produced only THREE distinct first
+ * Traitors out of a cast of twenty (one of them 129 times), seeds 201..400
+ * only two, seeds 2001..2200 only two. Every 200-season "population" was in
+ * fact 200 replays of the same two or three Traitor identities, and since a
+ * Traitor's own stats drive everything the calibration measures, a block's
+ * numbers were a property of WHICH block it was. Across twelve blocks the
+ * early-lift band read mean 5.85pp sd 5.67 — the block-to-block spread was
+ * larger than the band's own headroom, and the shipped block (seeds 1..200)
+ * happened to be the roster's weakest possible Traitor.
+ *
+ * One integer multiply fixes it: Knuth's 2654435761 scrambles the low bits the
+ * LCG barely touches, so consecutive seeds start from unrelated states. After
+ * it, the same twelve blocks each draw all twenty cast members as Traitor #1
+ * roughly ten times apiece and the early-lift spread falls to sd 1.4.
+ *
+ * The fix belongs HERE and not in how the calibration enumerates seeds: `seed`
+ * is a user-facing replay handle, and raising the season count on contiguous
+ * seeds would only add correlated samples of the same Traitor.
+ */
 function rngFor(seed) {
-  let s = (seed >>> 0) || 1;
+  let s = Math.imul((seed >>> 0) || 1, 2654435761) >>> 0;
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
 }
 

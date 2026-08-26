@@ -4613,6 +4613,25 @@
       "descriptor": "Astrology junkie",
       "backstory": "Aubrey grew up attending public school, where she preferred reading to going out for recess and was much shyer as a child before gradually becoming more self-assured. She studies psychology and got into astrology while in college, even tying star charts into academic work. Her parents are in their early forties, and she has a Siamese cat named Ziggy. Outside school and astrology, she enjoys traveling, reading fantasy books, socializing, cross stitching, and cake decorating.",
       "personality": "Aubrey is sociable, self-assured, and eager to lead, but she is also highly judgmental and prone to deciding who is trustworthy before she really knows them. Under pressure, she can lose composure fast, snapping into anger when she feels slighted or when events stop matching the story she has built in her head. Her loyalty is strongest toward people she believes she can understand or categorize, especially through astrology, while she is much colder toward those she has written off. She will keep pushing toward a goal and offer advice when she feels in control, but she will not easily abandon her biases or admit that her first read of someone may be wrong."
+    },
+    {
+      "name": "Ara",
+      "slug": "ara",
+      "gender": "f",
+      "sexuality": "bi",
+      "archetype": "villain",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 7,
+        "social": 5,
+        "strategic": 8,
+        "loyalty": 1,
+        "boldness": 9,
+        "intuition": 7,
+        "temperament": 2
+      },
+      "profileSources": {}
     }
   ]
 }

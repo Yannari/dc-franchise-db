@@ -19,7 +19,8 @@ import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { ordinal } from '../js/finale.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { generateSummaryText } from '../js/text-backlog.js';
-import { runChainOfSafety, CHAIN_FLOOR } from '../js/bb/chain-of-safety.js';
+import { runChainOfSafety, chainFallout, CHAIN_FLOOR } from '../js/bb/chain-of-safety.js';
+import { getBond as rawBond } from '../js/bonds.js';
 import { resolveWeekTwistState, BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { seedGame } from './helpers/setup.js';
 
@@ -229,5 +230,126 @@ describe('as the back half of a double eviction', () => {
     // The first cycle is an ordinary week and keeps its ceremony.
     const seg1 = (ep.acts || []).filter(a => (a.segment || 1) === 1).map(a => a.type);
     expect(seg1).toContain('nominations');
+  });
+});
+
+describe('what the chain costs everybody in it', () => {
+  // The first version priced this thinly: a flat bond bump for being picked,
+  // one bond hit for one person per pick, and nothing at all afterwards. In a
+  // fourteen-person house that meant most of the room went through the most
+  // public night of the season owing nobody anything.
+
+  it('never says the same thing twice about eleven different picks', () => {
+    // ELEVEN picks out of four lines is each line three times, which is what
+    // the first version shipped and what reading a real chain showed.
+    const { week } = playChain();
+    const c = week.chainOfSafety;
+    const picks = (c.beats || []).filter(b => b.badgeText === 'SAFE').map(b => b.text);
+    expect(picks.length).toBeGreaterThan(6);
+    expect(new Set(picks).size, 'the chain repeated itself').toBe(picks.length);
+  });
+
+  it('pays gratitude by WHEN the name came, not just that it came', () => {
+    // Being handed safety second is a different gift from being handed it
+    // eleventh, when the person doing it had already gone past the whole room.
+    //
+    // Measured as a DELTA on a house with no history, because comparing raw
+    // bonds afterwards would pass just as happily on the flat +2 this used to
+    // pay — the two numbers would simply be equal.
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [{ num: 1 }], stats: {}, house: null };
+    gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+    const house = CAST.map(p => p.name);
+    const before = {};
+    for (const a of house) for (const b of house) before[`${a}|${b}`] = rawBond(a, b);
+    const rng = (s => () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296))(31);
+    const c = runChainOfSafety({ week: { num: 1 }, house, hoh: house[0], rng, variant: 'hoh' });
+    expect(c.links.length).toBeGreaterThan(4);
+    // Averaged over the first third against the last third, because addBond
+    // scales every delta by the pair's own relationship: a single early pick
+    // against a single late one is mostly that scaling, and comparing just
+    // those two passed happily on the flat +2 this replaced.
+    const gain = l => rawBond(l.picker, l.chosen) - before[`${l.picker}|${l.chosen}`];
+    const third = Math.max(1, Math.floor(c.links.length / 3));
+    const mean = ls => ls.reduce((a, l) => a + gain(l), 0) / ls.length;
+    const early = mean(c.links.slice(0, third));
+    const late = mean(c.links.slice(-third));
+    expect(early, 'an early pick bought nothing').toBeGreaterThan(0);
+    expect(early - late, 'being picked first paid the same as being picked last')
+      .toBeGreaterThan(0.5);
+  });
+
+  it('charges every person who was passed over, not only the narrated one', () => {
+    const { week } = playChain();
+    const c = week.chainOfSafety;
+    expect(c.slights, 'nobody was recorded as passed over').toBeTruthy();
+    const narrated = (c.beats || []).filter(b => b.badgeText === 'PASSED OVER').length;
+    expect(c.slights.length, 'only the narrated slights were applied')
+      .toBeGreaterThanOrEqual(narrated);
+    // Each recorded slight names a real pair from the chain, and the person
+    // passed over was genuinely still unsafe at that moment.
+    for (const sl of c.slights) {
+      expect(c.order).toContain(sl.picker);
+      expect(c.order.indexOf(sl.passed) === -1 || c.order.indexOf(sl.passed) > sl.position - 1)
+        .toBe(true);
+    }
+  });
+
+  it('keeps the prose selective even though the cost is not', () => {
+    // Eleven snubs narrated beside eleven saves is unreadable. The cap is the
+    // point: consequences broad, prose chosen.
+    const { week } = playChain();
+    const narrated = (week.chainOfSafety.beats || [])
+      .filter(b => b.badgeText === 'PASSED OVER').length;
+    expect(narrated).toBeLessThanOrEqual(4);
+  });
+});
+
+describe('the house afterwards', () => {
+  it('reacts to it at all', () => {
+    // It shipped with no aftermath: eleven people made a public choice about
+    // each other and the week simply carried on.
+    const { week } = playChain();
+    const act = (week.acts || []).find(a => a.chainFallout);
+    expect(act, 'the house said nothing about the chain').toBeTruthy();
+    expect(act.type, 'the fallout needs its own screen instead of reusing house life')
+      .toBe('house');
+    expect((act.socialBeats || []).length).toBeGreaterThan(2);
+  });
+
+  it('lets the nominees say the thing only this twist produces', () => {
+    // On an ordinary week you can hate the Head of Household. Here the whole
+    // house did it to you one at a time and there is nobody to campaign to.
+    const { week } = playChain();
+    const act = (week.acts || []).find(a => a.chainFallout);
+    const said = (act.socialBeats || []).filter(b => b.badgeText === 'NOBODY PUT ME HERE');
+    expect(said.length, 'neither nominee reacted').toBeGreaterThan(0);
+    for (const b of said) {
+      expect(week.chainOfSafety.nominees.some(n => b.players.includes(n))).toBe(true);
+    }
+    // Two nominees must not be handed the identical line.
+    expect(new Set(said.map(b => b.text)).size).toBe(said.length);
+  });
+
+  it('says nothing when there was no chain to react to', () => {
+    expect(chainFallout(null)).toBeNull();
+    expect(chainFallout({ links: [] })).toBeNull();
+  });
+
+  it('puts the fallout in front of the viewer', async () => {
+    const { ep, week } = playChain();
+    const vp = await import('../js/vp-screens.js');
+    vp.buildBBWeekScreens(ep);
+    for (const k of Object.keys(vp._tvState)) {
+      const st = vp._tvState[k];
+      if (st && typeof st === 'object' && 'idx' in st) st.idx = 9999;
+    }
+    const html = vp.buildBBWeekScreens(ep).map(x => x.html || '').join(' ')
+      .replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+    const act = (week.acts || []).find(a => a.chainFallout);
+    for (const b of act.socialBeats || []) {
+      const probe = b.text.slice(0, 40).replace(/\s+/g, ' ');
+      expect(html, `the house said "${probe}" and no screen showed it`).toContain(probe);
+    }
   });
 });

@@ -15,7 +15,7 @@ import { resolveHaltingHex } from './eviction-powers.js';
 import { resolveRewind } from './rewind.js';
 import { runCoinOfDestiny, coinNominations, COIN_PRICE } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
-import { runChainOfSafety, chainSafe } from './chain-of-safety.js';
+import { runChainOfSafety, chainSafe, chainFallout } from './chain-of-safety.js';
 import { runAudienceVote } from '../audience.js';
 import { runWildcard, wildcardSafe } from './wildcard.js';
 import { openRoom, roomGameForNight, ROOM_GAMES } from './high-rollers-room.js';
@@ -2607,6 +2607,11 @@ export function simulateBBWeek(options = {}) {
         skipVeto = true;
         week.acts.push(addBeats(week.chainOfSafety,
           { players: [...(week.chainOfSafety.nominees || [])] }));
+        // And what the house says about it afterwards. Eleven people made a
+        // public choice about each other; a week that carried straight on from
+        // that would be the one thing a house would never do.
+        const after = chainFallout(week.chainOfSafety, { rng });
+        if (after) week.acts.push(after);
       }
     } catch { week.chainOfSafety = null; }
   }

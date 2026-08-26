@@ -1183,7 +1183,7 @@ export function _openPublishedProfilePreview(published, options = {}) {
     }).join('')}</section>`;
   }).join('');
   dialog.innerHTML = `<form method="dialog" class="st-profile-card">
-    <header><div><h2>Load published profile</h2><p>Review what will change in this draft. Nothing is saved until you press Save character.</p></div><button class="st-profile-x" value="cancel" aria-label="Close">×</button></header>
+    <header><div><h2>${_esc(options.title || 'Load published profile')}</h2><p>${options.note || 'Review what will change in this draft. Nothing is saved until you press Save character.'}</p></div><button class="st-profile-x" value="cancel" aria-label="Close">×</button></header>
     <div id="st-profile-errors" class="st-profile-errors" ${validation.valid ? 'hidden' : ''}>${validation.errors.map(error => `<p>${_esc(error)}</p>`).join('')}</div>
     <div class="st-profile-groups">${grouped || '<p class="st-empty">This draft already matches the published profile.</p>'}</div>
     <footer><button type="button" class="st-btn" id="st-profile-blanks">Fill blanks</button><button type="button" class="st-btn" id="st-profile-all">Select all</button><span></span><button type="button" class="st-btn" id="st-profile-cancel">Cancel</button><button type="button" class="st-btn st-primary" id="st-profile-apply">Apply selected</button></footer>
@@ -1361,6 +1361,7 @@ function _renderEditor() {
 
       <div class="st-actions">
         ${d.slug && _roster().some(p => p.slug === d.slug) ? '<button type="button" class="st-btn st-lg" id="st-load-profile">Load published profile</button>' : ''}
+        ${d.name ? '<button type="button" class="st-btn st-lg" id="st-wiki-fetch">Fetch profile from wiki</button><span class="st-hint" id="st-wiki-note"></span>' : ''}
         <button type="button" class="st-btn st-primary st-lg" id="st-save">Save character</button>
         ${(() => {
           const active = _casts.find(c => c.id === _activeCast);
@@ -1547,6 +1548,10 @@ function _renderEditor() {
     const published = _roster().find(p => p.slug === d.slug);
     if (published) _openPublishedProfilePreview(published);
   });
+  ed.querySelector('#st-wiki-fetch')?.addEventListener('click', () => {
+    const note = ed.querySelector('#st-wiki-note');
+    _fetchProfileFromWiki(ed, d, t => { if (note) note.textContent = t; });
+  });
   ed.querySelector('#st-save').addEventListener('click', _save);
   ed.querySelector('#st-del')?.addEventListener('click', _delete);
   // add/remove the selected character from the active cast, right from the editor
@@ -1554,6 +1559,121 @@ function _renderEditor() {
 
   _drawRadar();
   _updateRead();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// FETCH FROM WIKI — canon, proposed rather than applied.
+//
+// Two round trips on purpose. The first is a search and costs nothing, so a
+// name that is spelled differently on the wiki than on the roster (Thom is
+// "Tom" there) is corrected before any generation is paid for. The second
+// reads the page and writes the profile.
+//
+// The result lands in the SAME preview as a published profile: every field a
+// checkbox, anything already written arriving unticked. Nothing here can
+// overwrite prose silently, which is the entire reason the fetch is allowed to
+// invent a hometown at all — an invention that must be ticked is a suggestion,
+// and it is labelled as one.
+// ═══════════════════════════════════════════════════════════════════════
+
+/** Ask a small question with a text field. Resolves to a string or null. */
+function _askName(message, initial) {
+  // eslint-disable-next-line no-alert
+  const answer = window.prompt(message, initial || '');
+  const trimmed = (answer || '').trim();
+  return trimmed || null;
+}
+
+/** Ask which of several wikis. Resolves to a candidate or null. */
+function _askWhichWiki(name, candidates) {
+  const lines = candidates.map((c, i) => `${i + 1}. ${c.label} — ${c.title}`).join('\n');
+  // eslint-disable-next-line no-alert
+  const answer = window.prompt(
+    `"${name}" exists on more than one wiki. Which one is this character?\n\n${lines}\n\nType a number:`, '1');
+  const idx = Number.parseInt(answer, 10);
+  return Number.isInteger(idx) && candidates[idx - 1] ? candidates[idx - 1] : null;
+}
+
+async function _wikiCall(payload) {
+  const res = await fetch(writerEndpoint(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json().catch(() => null);
+  if (!res.ok || !json?.ok) throw new Error(json?.error || `worker ${res.status}`);
+  return json;
+}
+
+/**
+ * Find the page for this character, asking only when genuinely unsure.
+ *
+ * Exact-title matching is the confidence test, and it happens to separate the
+ * three real cases: a name on one wiki is certain, a name on two is a
+ * question, a name on none is a spelling the user can fix in one field.
+ */
+async function _resolveWikiPage(name) {
+  let query = name;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const out = await _wikiCall({ mode: 'wiki-resolve', name: query });
+
+    if (out.status === 'found') return out.page;
+
+    if (out.status === 'ambiguous') {
+      const picked = _askWhichWiki(query, out.candidates);
+      if (!picked) return null;
+      return picked;
+    }
+
+    // Not found. Near-misses become the suggestion in the retry box, because
+    // the answer is usually one letter away and typing it is faster than
+    // going to look the article up.
+    const hint = out.suggestions?.length
+      ? `\n\nClosest pages found:\n${out.suggestions.map(s => `· ${s.title} (${s.label})`).join('\n')}`
+      : '';
+    query = _askName(
+      `No wiki page called "${query}".${hint}\n\nWhat name is this character filed under?`,
+      out.suggestions?.[0]?.title || query);
+    if (!query) return null;
+  }
+  return null;
+}
+
+/** Button handler: resolve, fetch, preview. */
+async function _fetchProfileFromWiki(ed, d, say) {
+  const btn = ed.querySelector('#st-wiki-fetch');
+  if (btn) btn.disabled = true;
+  try {
+    say('finding the page…');
+    const page = await _resolveWikiPage(d.name);
+    if (!page) { say(''); return; }
+
+    say(`reading ${page.title} on the ${page.label}…`);
+    const out = await _wikiCall({
+      mode: 'wiki-profile', host: page.host, title: page.title,
+      slug: d.slug || _slugify(d.name),
+    });
+
+    // The honest headline. `demoted` are the fields the model called canon
+    // whose quote could not be found in the page that was actually fetched —
+    // they are still offered, just no longer labelled as sourced.
+    const { total, canon } = out.counts;
+    const guessed = total - canon;
+    const note = `From <a href="${_esc(out.source.url)}" target="_blank" rel="noopener">${_esc(out.source.title)}</a>`
+      + ` on the ${_esc(out.source.label)}. ${canon} of ${total} field${total === 1 ? '' : 's'} quote the article`
+      + `${guessed ? `, ${guessed} ${guessed === 1 ? 'is a reading' : 'are readings'} of it` : ''}.`
+      + ' Nothing is saved until you press Save character.';
+
+    say('');
+    _openPublishedProfilePreview(out.profile, {
+      title: 'Fetch profile from wiki',
+      note,
+    });
+  } catch (e) {
+    say(`failed: ${e.message}`);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════

@@ -40,6 +40,18 @@ export default {
       // as `social` for living here: this worker already holds the key and
       // already dispatches creative writing by mode.
       return await generateCastingInterview(body, env);
+    } else if (mode === "wiki-resolve") {
+      // Which wiki page is this character? Search only — no model, no cost.
+      // Split from `wiki-profile` so the browser can ask "who do you mean?"
+      // before anything is spent, and so a wrong guess costs one more search
+      // rather than one more generation.
+      return await resolveWikiPage(body, env);
+    } else if (mode === "wiki-profile") {
+      // A wiki page turned into a profile the Studio can preview. Lives here
+      // for the same reason as `social` and `casting-interview`: the key is
+      // already here. The FETCH has to be server-side regardless — fandom.com
+      // sends no CORS headers, so the browser cannot read a page directly.
+      return await generateWikiProfile(body, env);
     } else if (mode === "rankings-reasoning") {
       // The franchise rankings blurb. Same reason as the two above for living
       // here: this worker already holds OPENAI_API_KEY and already dispatches
@@ -3739,4 +3751,359 @@ async function generateRankingsReasoning(body, env) {
   } catch (e) {
     return json({ error: `openai: ${e.message}` }, 502);
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+ * WIKI PROFILE IMPORT — a character's canon, read off a fandom wiki.
+ *
+ * The continuity design document ruled this out ("Live wiki scraping or
+ * automatic acceptance of community-edited facts" was a non-goal) on the
+ * grounds that layouts break and community edits are not trustworthy. Both
+ * objections are real; neither is answered by making a person copy-paste the
+ * same page by hand. So the fetch happens, and the TRUST is handled instead:
+ *
+ *   - Nothing is applied. The answer goes into the Studio's existing
+ *     published-profile preview, where every field is a checkbox and a field
+ *     the user already wrote arrives unticked.
+ *   - Nothing claims to be canon on the model's say-so. A field marked
+ *     `source-canon` must carry a verbatim quote from the page that was
+ *     actually fetched, and this function CHECKS that the quote is present.
+ *     A claim that fails the check is demoted to `interpretation` rather than
+ *     dropped, because a plausible invented occupation is often what you want
+ *     — it just must not be labelled as sourced.
+ *
+ * It reads the MediaWiki API, never the rendered page: fandom.com answers HTTP
+ * 402 to plain page fetches (and to ?action=raw) but leaves api.php open.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+// Only these hosts, and only their API. An allowlist rather than a URL
+// parameter: the caller names a character, not an address, so there is no
+// route through this worker to an arbitrary host.
+const WIKI_HOSTS = {
+  "total-drama": { host: "totaldrama.fandom.com", label: "Total Drama Wiki" },
+  "disventure-camp": { host: "disventure-camp.fandom.com", label: "Disventure Camp Wiki" },
+  "big-brother": { host: "bigbrother.fandom.com", label: "Big Brother Wiki" },
+};
+
+async function wikiApi(host, params) {
+  const qs = new URLSearchParams({ ...params, format: "json" }).toString();
+  const res = await fetch(`https://${host}/api.php?${qs}`, {
+    headers: { "User-Agent": "dc-franchise-studio/1.0" },
+  });
+  if (!res.ok) throw new Error(`${host} said ${res.status}`);
+  return res.json();
+}
+
+/** Does this exact title exist on this wiki? */
+async function wikiHasTitle(host, title) {
+  const data = await wikiApi(host, { action: "query", titles: title });
+  const pages = data?.query?.pages || {};
+  const page = Object.values(pages)[0];
+  return page && !("missing" in page) ? page.title : null;
+}
+
+/**
+ * Which wiki page is this character?
+ *
+ * Confidence comes from exact title matches, which turns out to separate the
+ * three real cases cleanly:
+ *   Bowie  -> Total Drama only            -> certain
+ *   Tom    -> on BOTH wikis               -> ambiguous, the user picks
+ *   Thom   -> on NEITHER (he is "Tom")    -> not found, the user retypes
+ * A spelling that differs from the roster name is the common case, so the
+ * retry takes a NAME. Nobody should have to go and find a URL.
+ */
+async function resolveWikiPage(body, env) {
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
+
+  const name = String(body.name || "").trim();
+  if (!name) return json({ ok: false, error: "name is required" }, 400);
+
+  const hits = [];
+  for (const [format, w] of Object.entries(WIKI_HOSTS)) {
+    try {
+      const title = await wikiHasTitle(w.host, name);
+      if (title) {
+        hits.push({
+          format, host: w.host, label: w.label, title,
+          url: `https://${w.host}/wiki/${encodeURIComponent(title)}`,
+        });
+      }
+    } catch { /* one wiki being down must not hide the other */ }
+  }
+
+  if (!hits.length) {
+    // Offer near-misses so the retry is a click rather than a guess.
+    const suggestions = [];
+    for (const [format, w] of Object.entries(WIKI_HOSTS)) {
+      try {
+        const data = await wikiApi(w.host, {
+          action: "query", list: "search", srsearch: name, srlimit: 4,
+        });
+        for (const s of (data?.query?.search || [])) {
+          // Sub-pages ("Jade/Interactions") and pair articles are not people.
+          if (s.title.includes("/") || / and /i.test(s.title)) continue;
+          suggestions.push({ format, host: w.host, label: w.label, title: s.title });
+        }
+      } catch { /* ignore */ }
+    }
+    return json({ ok: true, status: "not-found", name, suggestions: suggestions.slice(0, 6) });
+  }
+  if (hits.length > 1) return json({ ok: true, status: "ambiguous", name, candidates: hits });
+  return json({ ok: true, status: "found", name, page: hits[0] });
+}
+
+/**
+ * Wikitext, flattened to prose.
+ *
+ * A character article is mostly episode-by-episode recap wrapped in templates,
+ * and the model reads better from sentences. The trimming is deliberately
+ * crude — it only has to leave sentences intact enough to QUOTE from, because
+ * quoting is what the verification below depends on.
+ */
+/**
+ * The infobox, flattened into lines instead of deleted.
+ *
+ * Running a real article through the first version of this showed the
+ * character infobox surviving as raw markup — and reading it showed that
+ * deleting it would have been the worse bug. It is the densest profile source
+ * on the page: `label` is the epithet the show itself uses, and `family`,
+ * `relationship`, `friends` and `enemies` are stated facts in a form the rest
+ * of the article only implies over seven thousand words.
+ *
+ * Flattened to "key: value" so the model can read it AND quote from it — a
+ * fact that cannot be quoted cannot be marked canon, so anything left as
+ * markup here silently becomes an interpretation later.
+ */
+function flattenInfobox(block) {
+  const inner = block.replace(/^\{\{/, "").replace(/\}\}$/, "");
+  const parts = inner.split(/\n\s*\|/);
+  const name = (parts.shift() || "").trim();
+  const lines = [];
+  for (const part of parts) {
+    const eq = part.indexOf("=");
+    if (eq === -1) continue;
+    const key = part.slice(0, eq).trim();
+    const value = part.slice(eq + 1).replace(/\s*\n\s*/g, ", ").trim();
+    // An empty field ("tdi team = ") is not a fact about anybody.
+    if (!key || !value) continue;
+    if (/^(image|file|images?\d*|caption|voice)$/i.test(key)) continue;
+    lines.push(`${key}: ${value}`);
+  }
+  return lines.length ? `${name.replace(/^Infobox\s*/i, "")} details:\n${lines.join("\n")}\n` : " ";
+}
+
+export function wikitextToProse(wikitext) {
+  let text = String(wikitext || "")
+    .replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi, " ")
+    .replace(/<[^>]+>/g, " ");
+
+  // The infobox first, while its structure is still intact. Read by counting
+  // braces rather than by pattern: it ENDS "...Novie Edwards]]}}" — closing
+  // braces on the same line as content — and a regex looking for a newline
+  // before them silently matched nothing, which is how the densest block on
+  // the page came to be deleted instead of kept.
+  if (text.trimStart().startsWith("{{")) {
+    const start = text.indexOf("{{");
+    let depth = 0, end = -1;
+    for (let i = start; i < text.length - 1; i++) {
+      if (text[i] === "{" && text[i + 1] === "{") { depth++; i++; }
+      else if (text[i] === "}" && text[i + 1] === "}") { depth--; i++; if (!depth) { end = i + 1; break; } }
+    }
+    if (end > start) text = flattenInfobox(text.slice(start, end)) + text.slice(end);
+  }
+
+  // Then the rest of the templates. Looped rather than single-pass: a template
+  // nested inside another leaves its parent's braces behind.
+  //
+  // A parameterised template keeps its LAST parameter, because on these wikis
+  // that is the readable half — {{teamicon|gophers}} is the team's name and
+  // {{S|1}} is a season. Dropping them whole left "was a camper on , where she
+  // was a member of the ." in the lead, and a sentence with holes in it cannot
+  // be quoted, so every fact drawn from one would fail its citation check.
+  for (let i = 0; i < 6; i++) {
+    const next = text.replace(/\{\{([^{}]*)\}\}/g, (m, inner) => {
+      const params = inner.split("|").map(s => s.trim()).filter(Boolean);
+      if (params.length < 2) return " ";
+      const last = params[params.length - 1];
+      // "name=value" params are metadata, not prose.
+      return last.includes("=") ? " " : ` ${last} `;
+    });
+    if (next === text) break;
+    text = next;
+  }
+
+  return text
+    .replace(/\{\|[\s\S]*?\|\}/g, " ")                  // tables
+    .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, "$1")   // links keep their text
+    .replace(/'''?/g, "")
+    .replace(/^\s*[*#:;].*$/gm, " ")                    // list scaffolding
+    .replace(/={2,}\s*([^=]+?)\s*={2,}/g, "\n\n$1:\n")
+    .replace(/\[\S+\s+([^\]]+)\]/g, "$1")
+    // Any table row or template fragment the passes above could not pair up.
+    .replace(/^\s*[|}{].*$/gm, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/** Normalised for quote-checking: quotes and dashes vary between renderings. */
+function flattenForQuoteCheck(s) {
+  return String(s || "").toLowerCase()
+    .replace(/[‘’ʼ]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/[‐-―]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const WIKI_PROFILE_FIELDS = ["occupation", "hometown", "birthdate", "ethnicity",
+  "nationality", "descriptor", "sexuality", "voice", "personality", "backstory"];
+
+/**
+ * The check that makes `source-canon` mean something.
+ *
+ * Every claim the model marked as canon is looked for IN THE TEXT THAT WAS
+ * ACTUALLY FETCHED. A quote that is not there is not evidence, whatever the
+ * model believed when it wrote it, so the field survives as `interpretation`
+ * instead of as a sourced fact.
+ *
+ * Demotion rather than deletion, deliberately. An invented hometown is often
+ * exactly what you want for a character the wiki is silent about — the harm
+ * was never the invention, it was the invention wearing a citation. The
+ * preview shows which is which, and nothing applies without a tick.
+ *
+ * Exported for the test: this is the one function in the wiki path whose
+ * failure is silent and expensive, because a wrong label survives into the
+ * roster and reads as researched forever after.
+ */
+export function buildVerifiedProfile(parsed, prose, { url, label, title }) {
+  const flatProse = flattenForQuoteCheck(prose);
+  const fields = {}, profileSources = {}, demoted = [];
+  for (const key of WIKI_PROFILE_FIELDS) {
+    const entry = parsed?.fields?.[key];
+    if (!entry || typeof entry !== "object") continue;
+    const value = typeof entry.value === "string" ? entry.value.trim() : "";
+    if (!value) continue;
+    // An unparseable date is dropped, not demoted: the Studio validates the
+    // format and would refuse the whole profile over it.
+    if (key === "birthdate" && !/^\d{4}-\d{2}-\d{2}$/.test(value)) continue;
+
+    let kind = entry.kind === "source-canon" ? "source-canon" : "interpretation";
+    const quote = typeof entry.quote === "string" ? entry.quote.trim() : "";
+    if (kind === "source-canon") {
+      // The length floor stops a two-word quote ("she is") matching almost any
+      // article by accident and laundering a guess into a citation.
+      const verified = quote.length >= 12 && flatProse.includes(flattenForQuoteCheck(quote));
+      if (!verified) { kind = "interpretation"; demoted.push(key); }
+    }
+
+    fields[key] = value;
+    profileSources[key] = kind === "source-canon"
+      ? [{ label: `${label} - ${title}`, url, kind: "source-canon", quote }]
+      : [{ label: "Read from the wiki article, not stated in it", kind: "interpretation" }];
+  }
+  return { fields, profileSources, demoted };
+}
+
+async function generateWikiProfile(body, env) {
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
+
+  if (!env.ANTHROPIC_API_KEY) {
+    return json({ ok: false, error: "Wiki profiles need ANTHROPIC_API_KEY on this worker." }, 500);
+  }
+  const host = String(body.host || "");
+  const title = String(body.title || "").trim();
+  const slug = String(body.slug || "").trim();
+  if (!Object.values(WIKI_HOSTS).some(w => w.host === host)) {
+    return json({ ok: false, error: "unknown wiki" }, 400);
+  }
+  if (!title || !slug) return json({ ok: false, error: "title and slug are required" }, 400);
+
+  let prose = "";
+  try {
+    const data = await wikiApi(host, { action: "parse", page: title, prop: "wikitext" });
+    prose = wikitextToProse(data?.parse?.wikitext?.["*"] || "");
+  } catch (e) {
+    return json({ ok: false, error: `could not read the wiki: ${e.message}` }, 502);
+  }
+  if (prose.length < 200) return json({ ok: false, error: "that page has almost no text on it" }, 422);
+
+  const url = `https://${host}/wiki/${encodeURIComponent(title)}`;
+  const label = (Object.values(WIKI_HOSTS).find(w => w.host === host) || {}).label || host;
+  // A long article costs more than it adds: the lead and the personality
+  // sections are near the top, and the tail is episode recap this must not
+  // read into a biography anyway.
+  const excerpt = prose.slice(0, 24000);
+
+  const system = [
+    "You turn a wiki article about a reality-competition character into a cast profile.",
+    "",
+    "Answer with ONE JSON object and nothing else:",
+    '{"fields":{"<field>":{"value":"...","kind":"source-canon|interpretation","quote":"..."}}}',
+    "",
+    `Fields you may fill: ${WIKI_PROFILE_FIELDS.join(", ")}.`,
+    "Omit a field entirely rather than writing an empty string.",
+    "",
+    "kind is the whole point of this job:",
+    "  source-canon   - the article states it. You MUST include `quote`: a short",
+    "                   VERBATIM span copied from the article that shows it. Do",
+    "                   not paraphrase the quote, do not stitch two sentences",
+    "                   together, do not quote a section heading.",
+    "  interpretation - your inference, or a reasonable invention where the",
+    "                   article is silent. No quote. This is allowed and wanted;",
+    "                   what is forbidden is calling it source-canon.",
+    "",
+    "voice: 2-4 sentences on HOW THEY TALK - rhythm, vocabulary, what they do",
+    "  in an argument. Not their biography.",
+    "personality: a paragraph on behaviour under pressure, loyalty, and what",
+    "  they will and will not do.",
+    "backstory: PRE-SHOW life ONLY - family, job, where they grew up. This is",
+    "  the rule that matters most and the one the article fights you on, since",
+    "  most of it is episode recap. No alliance, elimination, placement, season",
+    "  or competition may appear in backstory.",
+    "descriptor: the short epithet the show itself uses, if it has one.",
+    "birthdate: only as YYYY-MM-DD, only if the article gives a real date.",
+  ].join("\n");
+
+  const user = `Character: ${title}\nArticle (${label}):\n\n${excerpt}`;
+
+  let raw = "";
+  try {
+    raw = await callAnthropicText(system, user, env, claudeModel("creative", body, env), 3000);
+  } catch (e) {
+    return json({ ok: false, error: `model: ${e.message}` }, 502);
+  }
+
+  let parsed = null;
+  try {
+    const m = raw.match(/\{[\s\S]*\}/);
+    parsed = JSON.parse(m ? m[0] : raw);
+  } catch {
+    return json({ ok: false, error: "the model did not return usable JSON" }, 502);
+  }
+
+  const { fields, profileSources, demoted } =
+    buildVerifiedProfile(parsed, prose, { url, label, title });
+
+  if (!Object.keys(fields).length) {
+    return json({ ok: false, error: "nothing usable came back from that page" }, 422);
+  }
+
+  return json({
+    ok: true,
+    // Shaped as a published profile so the Studio's existing preview can take
+    // it unchanged - same diff, same checkboxes, same "your writing wins".
+    profile: { slug, ...fields, profileSources },
+    source: { host, title, url, label },
+    // Surfaced rather than hidden: "3 of these are guesses" is the single most
+    // useful sentence this endpoint can say.
+    demoted,
+    counts: {
+      total: Object.keys(fields).length,
+      canon: Object.values(profileSources).filter(s => s[0].kind === "source-canon").length,
+    },
+  });
 }

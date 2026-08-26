@@ -1,7 +1,7 @@
 // Franchise meta — persistent cross-season history (ledger) + season-start
 // meta profiles. IMPORT RULE: this module imports ONLY core.js; bonds.js and
 // savestate.js import US, so importing them back would create a cycle.
-import { gs, players, seasonConfig, seasonFormat } from './core.js';
+import { gs, players, seasonConfig, seasonFormat, formatIsRunnable } from './core.js';
 import { lifeSeeds as _lifeSeeds } from './life-cast.js';
 // SAFE UNDER THE IMPORT RULE ABOVE: ratings.js imports core.js, tone.js and
 // shows.js, all of which are leaves, and nothing imports us back through it.
@@ -501,7 +501,17 @@ export function buildFranchiseMeta(cast, cfg) {
   if (cfg?.franchiseMeta === false) return null;
   const W = META_WEIGHTS;
   const profiles = {};
-  const fromLedger = !!SHOWS[seasonFormat(cfg)]?.historyFromLedger;
+  // OPTED IN *AND* ACTUALLY RUNNING. A format is set on seasonConfig long
+  // before its engine exists, and the run loop falls through to the Total Drama
+  // engine for anything it does not recognise. So a season stamped 'traitors'
+  // and pressed Run is a TOTAL DRAMA season — and reading the ledger on the
+  // strength of the stamp alone gave every veteran in it reputation, grudges and
+  // seeded bond deltas that no Returning checkbox had asked for, with nothing on
+  // screen reporting it. formatIsRunnable() is the same fact the setup screen
+  // uses, so the two cannot drift, and this switches itself on the day the
+  // engine ships rather than needing a show name added here.
+  const fromLedger = !!SHOWS[seasonFormat(cfg)]?.historyFromLedger
+    && formatIsRunnable(cfg);
   for (const p of cast) {
     // WHO CARRIES HISTORY INTO THIS SEASON.
     //

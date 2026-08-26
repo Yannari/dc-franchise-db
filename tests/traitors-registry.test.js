@@ -110,6 +110,27 @@ describe('franchise history on a show where everyone has some', () => {
       Gwen: { placement: 1, winner: true, chalWins: 3, blindsidesAuthored: 2 },
       Owen: { placement: 2, finalist: true, chalWins: 1 },
     } };
+    // The ledger read is gated on the engine actually running, so every
+    // assertion below about profiles EXISTING has to say the engine is there.
+    globalThis.window = globalThis.window || {};
+    globalThis.window._trRunnable = true;
+  });
+  afterEach(() => { delete globalThis.window?._trRunnable; });
+
+  // THE BUG: the show is selectable but not runnable, so a season stamped
+  // 'traitors' is simulated by the Total Drama engine — and this read handed
+  // that Total Drama season reputation, grudges and seeded bonds off the
+  // ledger with no Returning checkbox ticked anywhere. The gate is runnability,
+  // not a show name, so it lifts by itself the day the engine ships.
+  it('reads no ledger while the engine that opted in cannot run', () => {
+    delete globalThis.window._trRunnable;
+    expect(buildFranchiseMeta(cast, { format: 'traitors' })).toBeNull();
+  });
+
+  it('reads the ledger the moment that engine can run', () => {
+    globalThis.window._trRunnable = true;
+    const meta = buildFranchiseMeta(cast, { format: 'traitors' });
+    expect(Object.keys(meta.profiles).sort()).toEqual(['Gwen', 'Owen']);
   });
 
   it('gives a Traitors cast profiles without a single checkbox ticked', () => {

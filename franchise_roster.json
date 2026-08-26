@@ -5145,14 +5145,40 @@
         "temperament": 5
       },
       "sexuality": "gay",
-      "profileSources": {},
+      "profileSources": {
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Sam",
+            "url": "https://disventure-camp.fandom.com/wiki/Sam",
+            "kind": "source-canon",
+            "quote": "Sam is a risk analyst"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Sam",
+            "url": "https://disventure-camp.fandom.com/wiki/Sam",
+            "kind": "source-canon",
+            "quote": "Sam uses his intelligence and charisma to position himself on the correct side of the vote while not absorbing blame for any of his actions."
+          }
+        ],
+        "voice": [
+          {
+            "label": "Disventure Camp Wiki - Sam",
+            "url": "https://disventure-camp.fandom.com/wiki/Sam",
+            "kind": "source-canon",
+            "quote": "In a more tense tone, he states he's competing for private reasons."
+          }
+        ]
+      },
       "age": 29,
       "birthdate": "1997-10-29",
       "ethnicity": "Asian",
       "nationality": "American Thai",
       "hometown": "Bangkok",
       "occupation": "Risk analyst",
-      "descriptor": "The Analyst"
+      "descriptor": "The Analyst",
+      "voice": "Sami talks in a relaxed, socially fluent way, often framing situations through risk, reward, and the odds of a good outcome. When challenged, he keeps his wording controlled: he can deny an accusation in public, then privately admit there is truth to it. His tone can tighten around personal subjects, but he quickly returns to confidence and charm."
     }
   ]
 }

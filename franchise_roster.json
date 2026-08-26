@@ -4550,7 +4550,60 @@
         "intuition": 6,
         "temperament": 4
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "voice": "Aubrey talks in quick, confident bursts, mixing friendly self-introduction with astrology jargon and psych-student framing. She likes labels, rankings, and decisive reads, so in an argument she tends to diagnose people rather than patiently hear them out. When challenged, her tone turns sharp and absolutist; she presents suspicion as instinctive certainty instead of something she needs to prove.",
+      "profileSources": {
+        "ethnicity": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "descriptor": [
+          {
+            "label": "Disventure Camp Wiki - Aubrey",
+            "url": "https://disventure-camp.fandom.com/wiki/Aubrey",
+            "kind": "source-canon",
+            "quote": "as one of the fans"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Disventure Camp Wiki - Aubrey",
+            "url": "https://disventure-camp.fandom.com/wiki/Aubrey",
+            "kind": "source-canon",
+            "quote": "Aubrey is a psychology student"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Aubrey",
+            "url": "https://disventure-camp.fandom.com/wiki/Aubrey",
+            "kind": "source-canon",
+            "quote": "Aubrey went to public school growing up and preferred reading over going to recess."
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Aubrey",
+            "url": "https://disventure-camp.fandom.com/wiki/Aubrey",
+            "kind": "source-canon",
+            "quote": "When things do not go her way, Aubrey can lose her composure very quickly."
+          }
+        ],
+        "voice": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ]
+      }
     }
   ]
 }

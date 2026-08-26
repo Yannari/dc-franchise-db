@@ -1103,6 +1103,44 @@
             "url": "https://totaldrama.fandom.com/wiki/Julia",
             "kind": "source-canon"
           }
+        ],
+        "ethnicity": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "descriptor": [
+          {
+            "label": "Total Drama Wiki - Julia",
+            "url": "https://totaldrama.fandom.com/wiki/Julia",
+            "kind": "source-canon",
+            "quote": "The Influencer and Evil in Human Form"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "16 at Total Drama: Land of Powers (spring 2024), so born 2008",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "age": [
+          {
+            "label": "16 at Total Drama: Land of Powers (spring 2024), and it is fall 2026 now",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "hometown": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
         ]
       },
       "occupation": "Social media influencer",

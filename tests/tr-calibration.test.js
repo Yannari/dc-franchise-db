@@ -14,7 +14,7 @@ import { pStats } from '../js/players.js';
 import { learn } from '../js/knowledge.js';
 import { alignmentFactId, ballotEvidence, suspicionBoard } from '../js/tr/deduction.js';
 import { alignmentAt } from '../js/tr/roles.js';
-import { playTraitorsSeason } from '../js/tr/headless.js';
+import { playTraitorsSeason, rngFor, _castleRngFor } from '../js/tr/headless.js';
 import { _setContinuationGuard } from '../js/tr/events.js';
 import roster from '../franchise_roster.json';
 
@@ -809,6 +809,27 @@ describe('the castle, measured over many seasons', () => {
     expect(blocked,
       'A SHIELD FIRED IN A SEASON. Plan 5 has landed: measure the count and replace '
       + 'this tripwire with expect(blocked).toBeGreaterThan(0).').toBe(0);
+  });
+
+  // ── THE CASTLE STREAM IS NEVER THE GAME STREAM (finding 14) ──
+  //
+  // headless.js derives the castle's rng by multiplying the seed by 40503,
+  // which is ODD — so `40503 * 2**31 === 2**31` modulo 2**32 and at that one
+  // seed the derived seed IS the seed. The castle would draw from the game's
+  // own stream, and every content change would re-roll every murder, ballot
+  // and banishment: exactly the coupling the whole isolation exists to
+  // prevent, invisible because nobody plays seed 2**31.
+  //
+  // `rngFor` hashes its argument with an odd multiply, a bijection mod 2**32,
+  // so two streams coincide IF AND ONLY IF the seeds handed to it are equal.
+  // Comparing first draws is therefore a complete test, not a sample.
+  it('the castle stream never collapses onto the game stream, 2**31 included', () => {
+    const collisions = [];
+    for (const seed of [1, 2, 7, 13, 99, 12345, 2 ** 31, 2 ** 31 + 1, 2 ** 32 - 1, 0]) {
+      if (rngFor(seed)() === _castleRngFor(seed)()) collisions.push(seed);
+    }
+    expect(collisions, `castle and game streams are identical at seed(s) ${collisions.join(', ')}`)
+      .toEqual([]);
   });
 
   it('replays identically from a seed', () => {

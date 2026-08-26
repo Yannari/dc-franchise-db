@@ -45,7 +45,14 @@ const SOURCE_CRED = { public: 1.0, observed: 0.9, told: 0.7, deduced: 0.62, rumo
 // `{ sourceType: 'deduced', confidence: 0.95 }` cannot hand a Faithful
 // certainty about who somebody IS. Certainty is reserved for the two places
 // that pass no confidence at all: the turret, and the reveal.
-const ALIGNMENT_CRED_CEILING = SOURCE_CRED.deduced;   // 0.62
+// EXPORTED because js/tr/deduction.js prices its murder channel AT this
+// ceiling and used to say so with a hand-copied `0.62` and a comment reading
+// "if that ceiling ever moves, this channel is silently repriced" — which is
+// a defect written down rather than fixed (whole-plan review, finding 10).
+// Nothing outside this module may WRITE it; importing it is how a caller
+// says "the most an inference is ever worth", in the one place that decides
+// what that is.
+export const ALIGNMENT_CRED_CEILING = SOURCE_CRED.deduced;   // 0.62
 
 // ── ground-truth facts ────────────────────────────────────────────────
 export function recordFact({ type, subject, object = null, payload = null, truth = true, ep = null } = {}) {

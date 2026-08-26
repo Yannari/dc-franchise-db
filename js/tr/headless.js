@@ -94,9 +94,23 @@ export function rngFor(seed) {
  * unhashed seed, just triggered by editing content instead of picking a
  * seed. `_seedStartingBonds` already does this for the bond fixture, keyed
  * off a DIFFERENT multiplier so the two derived streams do not correlate.
+ *
+ * AND THE MULTIPLIER HAS ONE FIXED POINT (whole-plan review, finding 14).
+ * 40503 is ODD, so `40503 * 2**31 === 2**31` modulo 2**32: at seed 2**31 the
+ * derived seed is the seed, `rngFor` is handed the same number twice, and the
+ * castle stream IS the game stream — silently defeating the isolation this
+ * whole comment exists to guarantee, at exactly one seed out of four billion.
+ * No seed anybody uses is near it and none ever will be; a fixed point that
+ * cannot be reached is still a fixed point, and it costs one comparison to
+ * close. `rngFor` hashes its argument by an odd multiply, which is a bijection
+ * mod 2**32, so equal derived seeds are the ONLY way the two streams can
+ * coincide — the check below is exhaustive, not a sample of the failure.
  */
-function castleRngFor(seed) {
-  return rngFor((seed * 40503) >>> 0 || 13);
+export function _castleRngFor(seed) {
+  const s = (seed >>> 0) || 1;
+  let derived = Math.imul(s, 40503) >>> 0;
+  if (derived === s || derived === 0) derived = (derived ^ 0x9E3779B9) >>> 0 || 13;
+  return rngFor(derived);
 }
 
 /**
@@ -215,7 +229,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   const rng = rngFor(seed);
   // The narrative layer's OWN stream — see castleRngFor's doc comment for why
   // round budgets (and later, window draws) must never share the game rng.
-  const castleRng = castleRngFor(seed);
+  const castleRng = _castleRngFor(seed);
   // gs is null until a season exists (js/core.js), so the harness creates one.
   setGs({ bonds: {}, activePlayers: [...cast] });
   gs.tr = initTraitorsState();

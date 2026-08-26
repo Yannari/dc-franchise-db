@@ -549,7 +549,3 @@ export function gateChannel({ source, control = 'any-faithful', cast, traitorCou
   }
   return { source, seasons, pass: !reasons.length, reasons, full, halves: [a, b] };
 }
-
-/** The channels this audit can measure, for a caller that wants to sweep. */
-export function knownChannels() { return Object.keys(CHANNELS); }
-export function knownControls() { return Object.keys(CONTROLS); }

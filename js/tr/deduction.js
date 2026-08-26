@@ -28,7 +28,7 @@
 // path. The rumour tier caps only the callers that pass no confidence; the
 // ceiling in learn() is what actually bounds the format.
 import { gs } from '../core.js';
-import { recordFact, learn, believes } from '../knowledge.js';
+import { recordFact, learn, believes, ALIGNMENT_CRED_CEILING } from '../knowledge.js';
 import { alignmentFactId, livingTraitors, alignmentAt } from './roles.js';
 import { getBond } from '../bonds.js';
 
@@ -471,9 +471,14 @@ export function revealCascade(name, wasTraitor, ep, rng = Math.random) {
 //
 // clashTraced is gone entirely; see murderEvidence.
 const M = {
-  // The ALIGNMENT_CRED_CEILING in js/knowledge.js. Anything higher is this
-  // value; if that ceiling ever moves, this channel is silently repriced.
-  pushedThenDied:  0.62,   // you wanted them gone, and they went
+  // THE CEILING ITSELF, not a copy of its current value. This was written
+  // `0.62` with a comment saying "if that ceiling ever moves, this channel is
+  // silently repriced" — a defect recorded rather than fixed, and nothing
+  // tested that the two agreed (whole-plan review, finding 10). learn() clamps
+  // every alignment belief to this anyway, so the import changes no number
+  // today; it means a change to SOURCE_CRED.deduced moves this channel with
+  // it, visibly, instead of leaving it stranded at an old value.
+  pushedThenDied:  ALIGNMENT_CRED_CEILING,   // you wanted them gone, and they went
 };
 
 /**

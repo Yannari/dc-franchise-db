@@ -627,8 +627,8 @@
           }
         ]
       },
-      "age": 24,
-      "birthdate": "2002-02-14",
+      "age": 27,
+      "birthdate": "1999-02-14",
       "ethnicity": "Black",
       "nationality": "Canadian Jamaican",
       "occupation": "Grocery store employee and cook",
@@ -3481,6 +3481,7 @@
           }
         ]
       },
+      "age": 30,
       "birthdate": "1996-08-03",
       "nationality": "Puerto Rican American",
       "occupation": "Publicist",

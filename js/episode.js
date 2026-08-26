@@ -38,8 +38,8 @@ import { retrofitFranchiseMeta } from './franchise-meta.js';
 import { survivalFlavor, fillVocab } from './settings.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
-import { eliminateCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
-import { coachesOf, isCoach } from './coaches.js';
+import { applyCoachElimination, promoteCoaches, runCoachingBlock } from './coach-episode.js';
+import { coachesOf } from './coaches.js';
 
 // Challenge simulate functions
 import { simulateCliffDive } from './chal/cliff-dive.js';
@@ -4939,6 +4939,7 @@ export function simulateEpisode() {
     // Pre-tribal idol mechanics
     checkIdolPreTribal(ep, _dtMembers);
     const _dtResult = runTribal(_dtMembers, null, _dtAlliances);
+    applyCoachElimination(ep, _dtResult); // see applyCoachElimination's header — must run before _dtResult.eliminated is read below
     ep.votes = _dtResult.votes; ep.votingLog = _dtResult.log;
     ep.isTie = _dtResult.isTie; ep.tiedPlayers = _dtResult.tiedPlayers;
     // Second Life twist/amulet checks
@@ -5097,6 +5098,7 @@ export function simulateEpisode() {
       checkIdolPreTribal(ep, tribe.members);
       const tAlliances = formAlliances(tribe.members, tribe.name, ep.challengeCategory);
       const tResult = runTribal(tribe.members, null, tAlliances);
+      applyCoachElimination(ep, tResult); // see applyCoachElimination's header — must run before tResult.eliminated is read below
       // Capture idol plays that fired for THIS tribe
       const _tribeIdolPlays = (ep.idolPlays || []).slice(_preIdolCount);
 
@@ -6020,16 +6022,7 @@ function simulateJuryRoundtable(ep) {
 
   // ── VOTE ──
   const r1 = runTribal(ep.tribalPlayers, ep.immunityWinner||null, alliances);
-  // Coaches: a coach can be voted out here (they were an eligible target — see
-  // formAlliances/simulateVotes). They never held a spot in gs.activePlayers,
-  // so none of the ordinary elimination machinery below (double-elim, exile
-  // duel, jury/RI routing, advantage inheritance) applies to them — null the
-  // result out before any of it reads r1.eliminated, so this tribal simply
-  // costs the tribe its coach instead of a contestant.
-  if (r1.eliminated && isCoach(r1.eliminated)) {
-    eliminateCoach(ep, r1.eliminated);
-    r1.eliminated = null;
-  }
+  applyCoachElimination(ep, r1); // see applyCoachElimination's header — must run before r1.eliminated is read below
   // The initial tally is authoritative. In particular, Extra Votes already
   // mutate r1.votes before resolution. Preserve tie metadata even if a legacy
   // or special resolution path returned an eliminated player without it; the
@@ -6335,6 +6328,7 @@ function simulateJuryRoundtable(ep) {
       ep.shotInDark1 = ep.shotInDark || null;
       ep.shotInDark = null;
       const r2 = runTribal(remaining, ep.immunityWinner2, alliances2);
+      applyCoachElimination(ep, r2); // see applyCoachElimination's header — must run before r2.eliminated is read below
       ep.votes2 = r2.votes; ep.votingLog2 = r2.log;
       ep.isTie = r2.isTie; ep.tiedPlayers = r2.tiedPlayers;
 

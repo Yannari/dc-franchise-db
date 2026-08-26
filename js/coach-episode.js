@@ -186,3 +186,27 @@ export function promoteCoaches(ep) {
   if (promoted.length) ep.coachPromotions = promoted;
   return promoted;
 }
+
+/**
+ * Call this immediately after ANY vote-resolution result that might have
+ * eliminated a coach — before that result's `.eliminated` is read by
+ * contestant-only elimination machinery (double-elim, exile duel, RI/jury
+ * routing, advantage inheritance, the `gs.activePlayers` filter).
+ *
+ * A coach is never in `gs.activePlayers`, so every one of those systems is a
+ * SILENT NO-OP against a coach's name: `removeCoach` never runs,
+ * `revokeCoachTraining` never runs, and the coach quietly keeps coaching with
+ * their training intact — the worst failure shape this twist has, because it
+ * looks like the vote worked. This is the one gate every `runTribal(...)`
+ * result must pass through before its `.eliminated` field is trusted.
+ *
+ * Mutates `result.eliminated` to null (a coach boot costs the tribe its
+ * coach, not a contestant's game) and returns true if it fired, so a caller
+ * can skip whatever elimination branch it was about to take.
+ */
+export function applyCoachElimination(ep, result) {
+  if (!result?.eliminated || !isCoach(result.eliminated)) return false;
+  eliminateCoach(ep, result.eliminated);
+  result.eliminated = null;
+  return true;
+}

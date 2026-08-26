@@ -32,4 +32,17 @@ describe('the twist is reachable', () => {
     expect(read('js/main.js')).toMatch(/coach-episode\.js/);
     expect(read('js/run-ui.js')).toMatch(/isCoaches/);
   });
+
+  it('every runTribal(...) result is routed through the shared coach-elimination gate', () => {
+    // A coach voted out at a runTribal call site that skips this gate is a
+    // silent no-op: they were never in gs.activePlayers, so contestant-only
+    // elimination code does nothing and the coach quietly stays a coach with
+    // their training intact. One shared helper (not four pasted branches) is
+    // required so the sites can't drift apart later.
+    const ep = read('js/episode.js');
+    const runTribalCalls = ep.match(/runTribal\(/g)?.length || 0;
+    const gateCalls = ep.match(/applyCoachElimination\(ep,/g)?.length || 0;
+    // One `runTribal(` match is the function's own declaration, not a call site.
+    expect(gateCalls, `${runTribalCalls} runTribal( occurrences (incl. the declaration), ${gateCalls} routed through applyCoachElimination`).toBe(runTribalCalls - 1);
+  });
 });

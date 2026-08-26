@@ -68,8 +68,18 @@ function _placeholderMurder(ep, rng) {
   return victim;
 }
 
-/** Play one season. Returns the record and enough log to measure it. */
-export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds = 40 } = {}) {
+/**
+ * Play one season. Returns the record and enough log to measure it.
+ *
+ * `evidence` is an injection point and exists for exactly one caller: the
+ * PLACEBO control in tests/tr-calibration.test.js, which plays a season with
+ * identical population dynamics, the identical vote, and the ballot-reading
+ * layer swapped for pure noise. Without a way to run that season, the
+ * calibration's bands cannot tell an engine that deduces from an engine that
+ * merely has beliefs. Nothing in the show may ever pass this.
+ */
+export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds = 40,
+  evidence = ballotEvidence } = {}) {
   const rng = rngFor(seed);
   // gs is null until a season exists (js/core.js), so the harness creates one.
   setGs({ bonds: {}, activePlayers: [...cast] });
@@ -95,7 +105,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     const fa = livingFaithfuls(ep).length;
     if (!tr || alive.length <= 3 || fa <= tr) break;
 
-    ballotEvidence(ep, rng);
+    evidence(ep, rng);
     const r = runRoundTable(ep, rng);
     if (!r) break;   // an empty castle: nothing left to banish
     const murdered = livingTraitors(ep).length ? _placeholderMurder(ep, rng) : null;

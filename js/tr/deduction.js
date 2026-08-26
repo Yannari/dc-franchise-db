@@ -106,9 +106,24 @@ const W = {
  * Turn the public ballot record into deduced beliefs about alignment.
  *
  * Runs once per round, after a banishment reveal. Every belief it forms arrives
- * as `deduced`, so it runs the read-skill roll in js/knowledge.js — a sharp
- * reader accepts a real pattern and sees through a coincidental one, a gullible
- * one does the reverse, and neither can ever be certain.
+ * as `deduced`, so it goes through _assess() in js/knowledge.js.
+ *
+ * BE ACCURATE ABOUT WHAT _assess() ACTUALLY DOES, because the sentence that used
+ * to stand here — "a sharp reader accepts a real pattern and sees through a
+ * coincidental one" — describes something it cannot do. It has no access to the
+ * pattern. It reads the fact's GROUND TRUTH, and marks the belief `valence:
+ * 'false'` at a rate scaled by mental+intuition when the truth is false; the
+ * belief is then worth nothing, because suspicion() maps a false valence to 0.
+ * About a third of all the suspicion ever aimed at a Faithful is deleted for the
+ * sole reason that they are a Faithful.
+ *
+ * That is deliberate and sanctioned by spec §4.2 ("sharp readers see through the
+ * frame"): it is an INTUITION PRIOR — a smart player's unearned, unjustified,
+ * frequently-correct hunch that the story they are being told about somebody is
+ * not the true one. It is a real part of what this format is. But it is an
+ * oracle, it is a large share of this engine's measured detection, and anyone
+ * reading a lift number here should know it is in there. It is not inference,
+ * and no amount of ballot reading is responsible for it.
  */
 export function ballotEvidence(ep, rng = Math.random) {
   const ballots = banishmentBallots();

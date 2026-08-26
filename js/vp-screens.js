@@ -4114,7 +4114,14 @@ export function rpBuildLateArrival(ep) {
       .la-new .la-ring{width:88px;height:88px;border-radius:50%;overflow:hidden;flex:none;
         display:flex;align-items:center;justify-content:center;
         border:2px solid #38bdf8;box-shadow:0 0 0 4px rgba(56,189,248,.14),0 0 30px -4px rgba(56,189,248,.9)}
-      .la-new img,.la-new .rp-portrait{width:100%;height:100%;object-fit:cover}
+      /* rpPortrait nests a sized box inside a sized box: .rp-portrait wraps
+         .rp-portrait-img which carries its OWN fixed dimensions. Sizing only
+         the outer one left a 72px image inside a 44px tile, and because the
+         tile clips, the visible crop sat fifteen pixels right of centre — the
+         art looked off-centre while every container measured dead centre. */
+      .la-new img,.la-new .rp-portrait,.la-new .rp-portrait-img{
+        width:100%!important;height:100%!important;object-fit:cover;
+        display:block;margin:0;left:auto;top:auto}
       .la-name{text-align:center;font-size:15px;font-weight:700;color:#e6edf3;margin-top:8px}
       .la-tag{text-align:center;font-family:var(--font-mono,monospace);font-size:9px;
         letter-spacing:2px;color:#38bdf8;margin-top:3px}
@@ -4124,7 +4131,9 @@ export function rpBuildLateArrival(ep) {
       .la-one{width:52px;text-align:center;opacity:.85}
       .la-face{width:44px;height:44px;margin:0 auto;border-radius:4px;overflow:hidden;
         border:1px solid rgba(148,163,184,.35);background:#0b1017}
-      .la-face img,.la-face .rp-portrait{width:100%;height:100%;object-fit:cover}
+      .la-face img,.la-face .rp-portrait,.la-face .rp-portrait-img{
+        width:100%!important;height:100%!important;object-fit:cover;
+        display:block;margin:0;left:auto;top:auto}
       .la-who{font-size:8.5px;color:#c9d3e6;margin-top:3px;overflow:hidden;
         text-overflow:ellipsis;white-space:nowrap}
       .la-legend{text-align:center;font-size:9px;letter-spacing:1.4px;color:#64748b;margin-top:14px}

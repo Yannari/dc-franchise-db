@@ -3380,7 +3380,6 @@
       "name": "aubrey",
       "slug": "aubrey",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "wildcard",
       "stats": {
         "physical": 2,
@@ -3392,7 +3391,8 @@
         "boldness": 8,
         "intuition": 6,
         "temperament": 4
-      }
+      },
+      "sexuality": "straight"
     }
   ]
 }

@@ -23681,6 +23681,11 @@ function _bbDoubleBreak(ep, cycle = 0) {
 /** The acts of one cycle, in the order they happened. */
 function _bbCycleScreens(view, screens, suffix = '') {
   let houseSlot = 0, campaignIdx = 0;
+  // The most recent House Life screen, and where it sits. A week that removes
+  // the veto leaves the post-block stretch and the campaign days with nothing
+  // between them, and both draw as House Life — two identical stops back to
+  // back in the navigator.
+  let lastHouse = null;
   // Screens that are built when their act comes up but shown later.
   const deferred = [];
   const id = base => `${base}${suffix}`;
@@ -23718,7 +23723,28 @@ function _bbCycleScreens(view, screens, suffix = '') {
           ? { ...act, socialBeats: [...pendingBeats, ...(act.socialBeats || [])] }
           : act;
         pendingBeats = [];
+        // NOTHING BETWEEN THEM MEANS IT IS ONE STRETCH.
+        //
+        // House life is punctuated by ceremonies. A week that removes one —
+        // a Chain of Safety takes the nomination ceremony AND the veto —
+        // leaves two stretches back to back, and both draw as House Life, so
+        // the navigator shows the same stop twice with nothing between them.
+        //
+        // Folded at RENDER time rather than by merging the acts, because an
+        // act is not only its beats: twists flag the stretch they caused and
+        // this file's own machinery reads those flags.
+        if (lastHouse && lastHouse.at === screens.length - 1) {
+          const joined = { ...lastHouse.act, ...merged,
+            socialBeats: [...(lastHouse.act.socialBeats || []), ...(merged.socialBeats || [])] };
+          screens[lastHouse.at] = { id: id(`bb-house-${lastHouse.slot}`), label: 'House Life',
+            html: rpBuildBBHouseLife(view, joined, lastHouse.slot) };
+          lastHouse = { ...lastHouse, act: joined };
+          break;
+        }
         screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life', html: rpBuildBBHouseLife(view, merged, houseSlot) });
+        // Remembered so the next stretch can fold into it when nothing
+        // separates the two. See the 'campaign' case.
+        lastHouse = { at: screens.length - 1, act: merged, slot: houseSlot };
         break;
       }
       case 'have-nots':
@@ -24314,10 +24340,27 @@ function _bbCycleScreens(view, screens, suffix = '') {
           phase: 'campaign',
           socialBeats: campaignActs.flatMap(a => a.socialBeats || []),
         };
+        // NOTHING BETWEEN THEM MEANS IT IS ONE STRETCH.
+        //
+        // On an ordinary week the Veto and the Veto Ceremony sit between the
+        // post-block days and the campaign days. A week that removes the veto
+        // — a Chain of Safety, an Instant Eviction — leaves two House Life
+        // screens adjacent, which reads as the same screen drawn twice. When
+        // the previous screen IS that stretch, the campaign is folded into it
+        // and the one screen covers all of the days.
+        if (lastHouse && lastHouse.at === screens.length - 1) {
+          const joined = { ...merged,
+            socialBeats: [...(lastHouse.act.socialBeats || []), ...(merged.socialBeats || [])] };
+          screens[lastHouse.at] = { id: id(`bb-house-${lastHouse.slot}`), label: 'House Life',
+            html: rpBuildBBHouseLife(view, joined, lastHouse.slot) };
+          lastHouse = { ...lastHouse, act: joined };
+          break;
+        }
         screens.push({
           id: id(`bb-house-${++houseSlot}`), label: 'House Life',
           html: rpBuildBBHouseLife(view, merged, houseSlot),
         });
+        lastHouse = { at: screens.length - 1, act: merged, slot: houseSlot };
         break;
       }
       case 'eviction':

@@ -23,6 +23,7 @@ import { runChainOfSafety, chainFallout, CHAIN_FLOOR } from '../js/bb/chain-of-s
 import { getBond as rawBond } from '../js/bonds.js';
 import { resolveWeekTwistState, BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { seedGame } from './helpers/setup.js';
+import * as vpMod from '../js/vp-screens.js';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -316,7 +317,11 @@ describe('the house afterwards', () => {
     expect(act, 'the house said nothing about the chain').toBeTruthy();
     expect(act.type, 'the fallout needs its own screen instead of reusing house life')
       .toBe('house');
-    expect((act.socialBeats || []).length).toBeGreaterThan(2);
+    // Folded into the week's ordinary house life rather than added beside it:
+    // pushing its own act drew two House Life screens back to back.
+    expect((act.socialBeats || []).filter(b => b.chainFallout).length).toBeGreaterThan(2);
+    expect((act.socialBeats || []).some(b => !b.chainFallout),
+      'the fallout is still a separate stretch of house life').toBe(true);
   });
 
   it('lets the nominees say the thing only this twist produces', () => {
@@ -324,7 +329,8 @@ describe('the house afterwards', () => {
     // house did it to you one at a time and there is nobody to campaign to.
     const { week } = playChain();
     const act = (week.acts || []).find(a => a.chainFallout);
-    const said = (act.socialBeats || []).filter(b => b.badgeText === 'NOBODY PUT ME HERE');
+    const said = (act.socialBeats || [])
+      .filter(b => b.chainFallout && b.badgeText === 'NOBODY PUT ME HERE');
     expect(said.length, 'neither nominee reacted').toBeGreaterThan(0);
     for (const b of said) {
       expect(week.chainOfSafety.nominees.some(n => b.players.includes(n))).toBe(true);
@@ -349,7 +355,7 @@ describe('the house afterwards', () => {
     const html = vp.buildBBWeekScreens(ep).map(x => x.html || '').join(' ')
       .replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
     const act = (week.acts || []).find(a => a.chainFallout);
-    for (const b of act.socialBeats || []) {
+    for (const b of (act.socialBeats || []).filter(x => x.chainFallout)) {
       const probe = b.text.slice(0, 40).replace(/\s+/g, ' ');
       expect(html, `the house said "${probe}" and no screen showed it`).toContain(probe);
     }
@@ -444,5 +450,77 @@ describe('the lines are written to be said out loud', () => {
         }
       }
     }
+  });
+});
+
+/** Build the week's screens fresh, fully revealed. */
+function buildScreens(ep) {
+  // eslint-disable-next-line no-undef
+  const vp = vpMod;
+  vp.buildBBWeekScreens(ep);
+  for (const k of Object.keys(vp._tvState)) {
+    const st = vp._tvState[k];
+    if (st && typeof st === 'object' && 'idx' in st) st.idx = 9999;
+  }
+  return vp.buildBBWeekScreens(ep);
+}
+
+describe('one stretch of house life, not two', () => {
+  it('does not draw the same screen twice in a row', () => {
+    // The chain removes the nomination ceremony AND the veto, and those are
+    // what normally separate the post-block days from the campaign days. With
+    // both gone the viewing party drew House Life, then House Life, with
+    // nothing in between — which reads as a bug because it is one.
+    const { ep } = playChain();
+    const labels = buildScreens(ep).map(s => s.label);
+    const doubled = labels.filter((l, i) => i > 0 && l === labels[i - 1]);
+    expect(doubled, `these screens drew twice in a row: ${doubled.join(', ')}`).toEqual([]);
+  });
+
+  it('folds the stretches without losing what was in them', () => {
+    // Folded when the screens are BUILT, not by merging the acts. Merging the
+    // acts looked simpler and dropped content: an act is not only its beats —
+    // twists flag the stretch they caused, vp-screens.js reads those flags,
+    // and carrying `hackerBlame` onto the real post-noms stretch made the
+    // viewing party suppress the whole thing as a stub.
+    //
+    // Measured against a PLAIN week rather than against zero. A small number
+    // of house beats do not survive to the rendered text on any week, chain or
+    // not — that is a separate, pre-existing question about how the house-life
+    // screen escapes its text. What must be true here is that folding two
+    // stretches into one costs nothing EXTRA.
+    const rendered = ep => {
+      const html = buildScreens(ep).map(x => x.html || '').join(' ')
+        .replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+      return html;
+    };
+    const lost = (ep, week) => {
+      const html = rendered(ep);
+      return (week.acts || []).filter(a => a.type === 'house')
+        .flatMap(a => a.socialBeats || [])
+        .filter(b => b.text && b.text.length >= 45)
+        .filter(b => !html.includes(
+          b.text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').slice(0, 40))).length;
+    };
+    const chain = playChain();
+    const chainLost = lost(chain.ep, chain.week);
+
+    // A week with no twist at all, for the baseline.
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+    Object.assign(seasonConfig, { format: 'big-brother', jurySize: 7, bbSafetyMode: 'off',
+      finaleSize: 3, bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house',
+      romance: 'enabled', twistSchedule: [] });
+    gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+    simulateBBEpisode();
+    const plainEp = simulateBBEpisode();
+    const plainWeek = gs.bb.weeks[gs.bb.weeks.length - 1];
+    const plainLost = lost(plainEp, plainWeek);
+
+    expect(chainLost, 'folding the two stretches lost beats a plain week keeps')
+      .toBeLessThanOrEqual(plainLost);
+    // And the chain week genuinely has house life on screen.
+    expect(rendered(chain.ep).length).toBeGreaterThan(2000);
   });
 });

@@ -473,8 +473,12 @@ export function chainFallout(act, { rng = Math.random } = {}) {
   const say = makePicker(rng);
   const socialBeats = [];
   const add = (text, players, badgeText, badgeClass = 'grey') =>
+    // `chainFallout` on the BEAT, not only on the act. The act it ends up in
+    // is the week's ordinary house-life stretch, which carries everybody
+    // else's beats too, so the flag has to travel with the sentences that
+    // actually came from the chain.
     socialBeats.push({ text, players: [...players].filter(Boolean), badgeText, badgeClass,
-      category: 'social', location: 'living-room' });
+      chainFallout: true, category: 'social', location: 'living-room' });
 
   // THE PEOPLE WHO WERE COUNTING ON SOMEBODY. The loudest one first, because
   // it is the thing the twist exists to produce.
@@ -487,7 +491,7 @@ export function chainFallout(act, { rng = Math.random } = {}) {
   const second = [...(act.slights || [])].sort((a, b) => b.bond - a.bond)
     .find(x => worst && x.passed !== worst.passed && x.bond >= 4);
   if (second) {
-    add(`${second.passed} and ${second.picker} are perfectly civil to each other all evening, which anybody watching can tell is the problem.`,
+    add(`${second.passed} and ${second.picker} are polite to each other all evening. Neither of them is normally polite to anybody, and the room notices.`,
       [second.passed, second.picker], 'CIVIL', 'grey');
   }
 
@@ -500,20 +504,20 @@ export function chainFallout(act, { rng = Math.random } = {}) {
   // THE ONE WHO GOT OUT OF IT. Winning the second competition is a week of
   // safety and a permanent piece of information about where you stand.
   if (act.safetyWinner) {
-    add(`${act.safetyWinner} is safe, and had to win a competition to get there — after watching the entire house go past ${pronouns(act.safetyWinner).obj} first.`,
+    add(`${act.safetyWinner} is safe, but had to win a competition for it. Everybody else was simply chosen, and ${pronouns(act.safetyWinner).sub} ${pronouns(act.safetyWinner).sub === 'they' ? 'were' : 'was'} not.`,
       [act.safetyWinner], 'SAFE, AND COUNTING', 'blue');
   }
 
   // THE FIRST LINK, who is now holding a favour and a grudge in the same hand.
   const first = act.links[0];
   if (first) {
-    add(`${first.chosen} was the first name said tonight and the house has not stopped mentioning it. ${first.chosen} is finding out that being chosen first is not only a compliment.`,
+    add(`${first.chosen} was the first name called tonight and nobody has stopped bringing it up. It was meant kindly, and it has made ${pronouns(first.chosen).obj} a target.`,
       [first.chosen, first.picker], 'FIRST NAME CALLED', 'gold');
   }
   // And the last one made safe: picked, but only just.
   const last = act.links[act.links.length - 1];
   if (last && act.links.length > 2) {
-    add(`${last.chosen} is safe by one place, and is being very careful not to look pleased about it in front of the three who are not.`,
+    add(`${last.chosen} was the last name called. One place further down and ${pronouns(last.chosen).sub} would be sitting with the other three, and ${pronouns(last.chosen).sub} ${pronouns(last.chosen).sub === 'they' ? 'know' : 'knows'} it.`,
       [last.chosen], 'SAFE BY ONE', 'grey');
   }
 

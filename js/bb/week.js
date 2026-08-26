@@ -2611,8 +2611,12 @@ export function simulateBBWeek(options = {}) {
         // And what the house says about it afterwards. Eleven people made a
         // public choice about each other; a week that carried straight on from
         // that would be the one thing a house would never do.
-        const after = chainFallout(week.chainOfSafety, { rng });
-        if (after) week.acts.push(after);
+        //
+        // HELD, NOT PUSHED. Pushing it here made it its own `house` act, and
+        // the week's real house-life act follows immediately after — so the
+        // viewing party drew two House Life screens back to back with nothing
+        // between them. It is merged into the next one instead, below.
+        week._chainFallout = chainFallout(week.chainOfSafety, { rng });
       }
     } catch { week.chainOfSafety = null; }
   }
@@ -6981,6 +6985,38 @@ export function simulateBBWeek(options = {}) {
   // bump made the counter jump 4 -> 6 and every episode after it was misnumbered
   // for the rest of the season. The second segment is the same night.
   if (Number(options.segment || 1) <= 1) gs.episode = (gs.episode || 0) + 1;
+  // ── the chain's aftermath belongs to the next stretch of house life ──
+  //
+  // Held back at the chain rather than pushed, because it is a conversation
+  // the house has afterwards, not a separate segment. Merged into the first
+  // house act that follows the chain so there is one House Life screen, and
+  // put at the FRONT of it: this is the first thing anybody says once the
+  // room breaks up.
+  if (week._chainFallout) {
+    const chainAt = week.acts.findIndex(a => a && a.type === 'chain-of-safety');
+    const nextHouse = chainAt >= 0
+      ? week.acts.findIndex((a, i) => i > chainAt && a && a.type === 'house') : -1;
+    if (nextHouse >= 0) {
+      const host = week.acts[nextHouse];
+      host.socialBeats = [...(week._chainFallout.socialBeats || []),
+        ...(host.socialBeats || [])];
+      host.chainFallout = true;
+    } else {
+      // No house life left in the week (a compressed cycle). Better its own
+      // act than losing it.
+      week.acts.push(week._chainFallout);
+    }
+    delete week._chainFallout;
+  }
+
+  // Two stretches of house life with nothing between them is a RENDERING
+  // question, and it is answered in js/vp-screens.js where the folding
+  // machinery already lives. Collapsing the acts here instead looked simpler
+  // and was not: a house act is not only its beats, and twists flag the
+  // stretch they caused. Merging two of them carried `hackerBlame` onto the
+  // real post-noms stretch, the viewing party's existing fold suppressed it
+  // as a stub, and the whole stretch vanished from the week.
+
   return week;
 }
 

@@ -242,3 +242,65 @@ export function pickEvent(ctx, rng) {
   const consequences = chosen.fire(ctx, rng);
   return { event: chosen, consequences };
 }
+
+// ── The runner: seven social windows around four mechanical beats (§5.6) ──
+//
+// BUDGET RULE. A round produces 4-8 castle events TOTAL, spread across its
+// seven windows, not 4-8 PER window — an unbounded per-window loop would let
+// a busy dawn burn the whole round before evening (where vote pitches live)
+// ever got a turn. The rule chosen is a per-ROUND budget (drawn once,
+// 4-8 inclusive, from the season's own rng so replay stays exact) combined
+// with a per-WINDOW cap (below) that stops any single window from spending
+// it alone. Both numbers are small and named, not threaded through as
+// magic literals, so a reviewer mutating "the round budget" knows exactly
+// which constant that is.
+const ROUND_BUDGET_MIN = 4;
+const ROUND_BUDGET_MAX = 8; // inclusive
+const PER_WINDOW_CAP = 3;   // below ROUND_BUDGET_MIN: no window can exhaust a round alone
+
+/** ep -> act, the same three-band split every event's `acts` multiplier reads. */
+function _actFor(ep) {
+  return ep <= 3 ? 'early' : ep <= 7 ? 'middle' : 'late';
+}
+
+/**
+ * Draw and install this round's total castle-event budget on `gs.tr`, so
+ * every window called during the round (a sequence of separate runWindow
+ * calls from headless.js, not one function) shares and depletes the same
+ * pot. Drawn from the season's own rng — a bare Math.random() here would
+ * break season replay just as surely as one in the vote or the murder.
+ */
+export function startRoundBudget(rng) {
+  const total = ROUND_BUDGET_MIN + Math.floor(rng() * (ROUND_BUDGET_MAX - ROUND_BUDGET_MIN + 1));
+  gs.tr.roundBudget = { total, used: 0 };
+  return gs.tr.roundBudget;
+}
+
+/**
+ * Fire whatever this window has to offer, until its own cap or the round's
+ * shared budget runs out, or nothing is left eligible. Returns the fired
+ * events (each `{ event, consequences }`, as pickEvent returns) so the
+ * caller can log them — the budget itself is observable on `gs.tr.roundBudget`
+ * for the calibration to measure later, rather than only in this return value.
+ *
+ * No castle events are registered yet (that is Tasks 5 and 6), so in a real
+ * season this runs seven times a round and returns `[]` every time. That is
+ * expected: the point of this task is the plumbing running cleanly with an
+ * empty pool, not a season that already has content.
+ */
+export function runWindow(window, ep, rng) {
+  const fired = [];
+  const budget = gs.tr.roundBudget;
+  if (!budget) return fired; // no round in progress: nothing to spend
+  const ctx = { ep, window, act: _actFor(ep), living: gs.activePlayers || [] };
+
+  let drawnHere = 0;
+  while (drawnHere < PER_WINDOW_CAP && budget.used < budget.total) {
+    const result = pickEvent(ctx, rng);
+    if (!result) break; // nothing eligible left for this window right now
+    fired.push(result);
+    budget.used++;
+    drawnHere++;
+  }
+  return fired;
+}

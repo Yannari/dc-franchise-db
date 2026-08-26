@@ -70,6 +70,13 @@ export function initTraitorsState() {
     // is the worst outcome in the format and the reason recruitment is a
     // decision with a tail rather than a free extra body.
     loyaltyDebt: [],
+
+    // This round's shared castle-event spending money: { total, used }.
+    // startRoundBudget() (tr/events.js) draws `total` (4-8) once per round
+    // from the season rng; every runWindow() call across that round's seven
+    // windows depletes the same `used` counter, which is what keeps a round
+    // to 4-8 events TOTAL rather than 4-8 per window. Null between rounds.
+    roundBudget: null,
   };
 }
 

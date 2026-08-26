@@ -9,8 +9,8 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { openThread } from '../js/tr/threads.js';
-import { registerEvent, eligible, pickEvent, validateRegistry, EVENTS, _resetRegistry }
-  from '../js/tr/events.js';
+import { registerEvent, eligible, pickEvent, validateRegistry, EVENTS, _resetRegistry,
+  runWindow, startRoundBudget } from '../js/tr/events.js';
 import roster from '../franchise_roster.json';
 
 const CAST = roster.players.slice(0, 8).map(p => p.name);
@@ -264,5 +264,127 @@ describe('pickEvent actually spends the score', () => {
     console.log(`pickEvent selection: high-weight event chosen ${highWins}/${TRIALS} (${(rate * 100).toFixed(1)}%)`);
     expect(rate, `high-weight event should win the large majority of draws, got ${(rate * 100).toFixed(1)}%`)
       .toBeGreaterThan(0.8);
+  });
+});
+
+describe('runWindow: the seven social windows around the four beats', () => {
+  it('only fires events registered for that window', () => {
+    registerEvent({ id: 'dawn-only', family: 'grief', window: 'dawn',
+      weight: () => 5, fire: () => ({ ok: true }) });
+    registerEvent({ id: 'night-only', family: 'romance', window: 'night',
+      weight: () => 5, fire: () => ({ ok: true }) });
+    startRoundBudget(seededRng(1));
+    const dawnFired = runWindow('dawn', 3, seededRng(2));
+    expect(dawnFired.every(f => f.event.id === 'dawn-only')).toBe(true);
+    expect(dawnFired.some(f => f.event.id === 'night-only')).toBe(false);
+
+    startRoundBudget(seededRng(1));
+    const nightFired = runWindow('night', 3, seededRng(2));
+    expect(nightFired.every(f => f.event.id === 'night-only')).toBe(true);
+  });
+
+  it('caps a round at 4-8 total castle events across all seven windows, never per window', () => {
+    // A single event, eligible in every window, with no cooldown at all
+    // (oncePerSeason: false, tiny windows) so the ONLY thing that can stop
+    // it firing over and over is the round budget itself.
+    const windows = ['dawn', 'morning', 'journey-out', 'journey-back', 'evening', 'after-table', 'night'];
+    for (const w of windows) {
+      registerEvent({ id: `always-${w}`, family: 'trust', window: w,
+        cooldown: { event: 0, player: 0, pair: 0 },
+        weight: () => 5, fire: () => ({ ok: true }) });
+    }
+    const rng = seededRng(9);
+    const budget = startRoundBudget(rng);
+    expect(budget.total).toBeGreaterThanOrEqual(4);
+    expect(budget.total).toBeLessThanOrEqual(8);
+
+    let allFired = [];
+    for (const w of windows) allFired = allFired.concat(runWindow(w, 5, rng));
+
+    expect(allFired.length).toBeGreaterThanOrEqual(4);
+    expect(allFired.length).toBeLessThanOrEqual(8);
+    expect(allFired.length).toBe(gs.tr.roundBudget.used);
+  });
+
+  it('rejects an unknown window at registration, before the runner ever sees it', () => {
+    expect(() => registerEvent({ id: 'bad-window', family: 'trust', window: 'brunch',
+      weight: () => 5, fire: () => ({ ok: true }) })).toThrow();
+  });
+
+  it('does nothing when no round budget has been started', () => {
+    registerEvent({ id: 'orphan', family: 'trust', window: 'evening',
+      weight: () => 5, fire: () => ({ ok: true }) });
+    gs.tr.roundBudget = null;
+    expect(runWindow('evening', 3, seededRng(1))).toEqual([]);
+  });
+});
+
+describe('window wiring order inside a real season (headless.js contract)', () => {
+  it('calls the seven windows in beat order and never disturbs evidence -> table -> night', async () => {
+    // This does not go through registerEvent/pickEvent at all — it spies on
+    // runWindow itself to record the ORDER headless.js calls the seven
+    // windows in, independent of whether anything is registered to fire.
+    // That is deliberate: "windows slot around the loop, they do not disturb
+    // it" is a claim about CALL ORDER, and a population with an empty event
+    // pool (true today — Tasks 5/6 have not shipped yet) must still prove it.
+    const { vi } = await import('vitest');
+    const eventsMod = await import('../js/tr/events.js');
+    const roundtableMod = await import('../js/tr/roundtable.js');
+    const { playTraitorsSeason } = await import('../js/tr/headless.js');
+    const realRunWindow = eventsMod.runWindow;
+    const realRunRoundTable = roundtableMod.runRoundTable;
+    const order = [];
+    const spyWindow = vi.spyOn(eventsMod, 'runWindow')
+      .mockImplementation((window, ep, rng) => { order.push(window); return realRunWindow(window, ep, rng); });
+    // A marker for the Round Table BEAT itself, not just the windows around
+    // it — "evening immediately before the table, after-table immediately
+    // after" is a claim about a window's position relative to the BEAT, and
+    // a rank check over windows alone cannot see a window that moved to the
+    // other side of the table while keeping its rank order among windows
+    // (moving 'evening' to fire right after runRoundTable instead of right
+    // before it does not change window-to-window rank at all).
+    const spyTable = vi.spyOn(roundtableMod, 'runRoundTable')
+      .mockImplementation((ep, rng) => { order.push('TABLE'); return realRunRoundTable(ep, rng); });
+    try {
+      playTraitorsSeason({ cast: CAST, traitorCount: 2, seed: 3, maxRounds: 4 });
+    } finally {
+      spyWindow.mockRestore();
+      spyTable.mockRestore();
+    }
+    expect(order.length).toBeGreaterThan(0);
+
+    const RANK = { dawn: 0, morning: 1, 'journey-out': 2, 'journey-back': 3,
+      evening: 4, TABLE: 4.5, 'after-table': 5, night: 6 };
+    // A round ends at 'night' — split the flat call log back into per-round
+    // segments and check each is non-decreasing in beat rank. Round one has
+    // no Round Table (no evening/after-table/TABLE); later rounds have all of it.
+    let seg = [];
+    const segments = [];
+    for (const w of order) {
+      seg.push(w);
+      if (w === 'night') { segments.push(seg); seg = []; }
+    }
+    expect(segments.length).toBeGreaterThanOrEqual(2); // at least round one + round two
+
+    const tableSegments = segments.filter(s => s.includes('TABLE'));
+    expect(tableSegments.length).toBeGreaterThan(0);
+
+    for (const s of segments) {
+      const ranks = s.map(w => RANK[w]);
+      for (let i = 1; i < ranks.length; i++) {
+        expect(ranks[i], `"${s[i]}" fired out of beat order in segment ${JSON.stringify(s)}`)
+          .toBeGreaterThan(ranks[i - 1]);
+      }
+      // 'evening' campaigns for the vote and must sit directly against the
+      // table on the near side; 'after-table' reacts to the reveal cascade
+      // and must sit directly against it on the far side.
+      if (s.includes('TABLE')) {
+        const t = s.indexOf('TABLE');
+        expect(s[t - 1], `evening did not sit immediately before the table in ${JSON.stringify(s)}`)
+          .toBe('evening');
+        expect(s[t + 1], `after-table did not sit immediately after the table in ${JSON.stringify(s)}`)
+          .toBe('after-table');
+      }
+    }
   });
 });

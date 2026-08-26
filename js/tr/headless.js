@@ -15,6 +15,7 @@ import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
 import { seedTraitorKnowledge, ballotEvidence, murderEvidence } from './deduction.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
+import { runWindow, startRoundBudget } from './events.js';
 
 /**
  * The season's random stream — and the hash in front of it is load-bearing.
@@ -181,14 +182,39 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // not a gap: murderEvidence's one surviving channel is `pushedThenDied`,
   // which reads ballots and accusations, and night one has neither. There is
   // nothing about this murder for the room to reason from.
+  //
+  // Night one still has breakfast and a mission — the show does — so dawn,
+  // morning and the two journey windows run around it same as any other
+  // round. It has no Round Table, so evening (which campaigns for a vote
+  // that does not happen) and after-table (which reacts to a reveal cascade
+  // that did not run) are skipped; night runs after the conclave same as
+  // always.
+  startRoundBudget(rng);
+  const castle1 = [
+    ...runWindow('dawn', ep, rng),
+    ...runWindow('morning', ep, rng),
+    ...runWindow('journey-out', ep, rng),
+    ...runWindow('journey-back', ep, rng),
+  ];
   const n1 = _night(ep, rng);
-  log.push({ ep, banished: null, wasTraitor: null, ...n1 });
+  castle1.push(...runWindow('night', ep, rng));
+  log.push({ ep, banished: null, wasTraitor: null, ...n1,
+    castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
 
   while (ep++ < maxRounds) {
     const alive = gs.activePlayers || [];
     const tr = livingTraitors(ep).length;
     const fa = livingFaithfuls(ep).length;
     if (!tr || alive.length <= 3 || fa <= tr) break;
+
+    // A fresh 4-8 spending money for this round's seven windows. Windows
+    // slot around the evidence/table/night contract below WITHOUT disturbing
+    // it — see that comment for why the three calls it wraps cannot reorder.
+    startRoundBudget(rng);
+    const castleEvents = [
+      ...runWindow('dawn', ep, rng),
+      ...runWindow('morning', ep, rng),
+    ];
 
     // ORDER IS THE CONTRACT. Both evidence sources read the round that just
     // CLOSED, so both must run before runRoundTable opens a new one — and
@@ -198,9 +224,20 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // onto the round the table just produced.
     evidence(ep, rng);
     murderEvidence(ep, rng);
+    // journey-out/journey-back sit here because that is where the mission
+    // itself would run — there is no mission engine yet (a later plan builds
+    // one), so these two windows simply run as social scenes with nothing
+    // mechanical behind them, same as they do on night one.
+    castleEvents.push(...runWindow('journey-out', ep, rng), ...runWindow('journey-back', ep, rng));
+    castleEvents.push(...runWindow('evening', ep, rng));
     const r = runRoundTable(ep, rng);
     if (!r) break;   // an empty castle: nothing left to banish
+    // The reveal cascade has already run inside runRoundTable by the time
+    // after-table fires — that is the whole point of the window: someone
+    // was just revealed.
+    castleEvents.push(...runWindow('after-table', ep, rng));
     const night = _night(ep, rng);
+    castleEvents.push(...runWindow('night', ep, rng));
     // aliveAtVote/traitorsAtVote are the population as it stood when the ballots
     // were cast, and they are DATA, not behaviour — nothing in the engine reads
     // them. They exist because the null hypothesis for a banishment is not a
@@ -210,7 +247,8 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // these two numbers there is no way to tell a room that learned something
     // from a room that simply ran out of Faithfuls.
     log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...night,
-      alive: alive.length, aliveAtVote: alive.length, traitorsAtVote: tr });
+      alive: alive.length, aliveAtVote: alive.length, traitorsAtVote: tr,
+      castleEvents, budget: { ...gs.tr.roundBudget } });
   }
 
   const survivingTraitors = livingTraitors(ep);

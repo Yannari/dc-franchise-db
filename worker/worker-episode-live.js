@@ -4088,10 +4088,10 @@ const SHORT_FIELDS = {
  * failure is silent and expensive, because a wrong label survives into the
  * roster and reads as researched forever after.
  */
-export function buildVerifiedProfile(parsed, prose, { url, label, title }) {
+export function buildVerifiedProfile(parsed, prose, { url, label, title, only } = {}) {
   const flatProse = flattenForQuoteCheck(prose);
   const fields = {}, profileSources = {}, demoted = [], overlong = [];
-  for (const key of WIKI_PROFILE_FIELDS) {
+  for (const key of (only || WIKI_PROFILE_FIELDS)) {
     const entry = parsed?.fields?.[key];
     if (!entry || typeof entry !== "object") continue;
     const value = typeof entry.value === "string" ? entry.value.trim() : "";
@@ -4178,6 +4178,18 @@ async function generateWikiProfile(body, env) {
   }
   if (!title || !slug) return json({ ok: false, error: "title and slug are required" }, 400);
 
+  // Fields the caller has already written. Not asked for, because the preview
+  // would arrive with them unticked anyway — proposing a rival for prose
+  // somebody wrote is output paid for and thrown away. Measured on a real
+  // page, voice + personality + backstory are 79% of the reply, so skipping
+  // those three when they exist is most of what there is to save. The input
+  // cannot shrink: the article still has to be read to answer anything.
+  const skip = new Set(Array.isArray(body.skip) ? body.skip.filter(f => typeof f === "string") : []);
+  const wanted = WIKI_PROFILE_FIELDS.filter(f => !skip.has(f));
+  if (!wanted.length && skip.has("__age")) {
+    return json({ ok: false, error: "everything is already written — nothing to ask for" }, 422);
+  }
+
   let prose = "";
   try {
     const data = await wikiApi(host, { action: "parse", page: title, prop: "wikitext" });
@@ -4197,7 +4209,8 @@ async function generateWikiProfile(body, env) {
     "Answer with ONE JSON object and nothing else:",
     '{"fields":{"<field>":{"value":"...","kind":"source-canon|interpretation","quote":"..."}}}',
     "",
-    `Fields you may fill: ${WIKI_PROFILE_FIELDS.join(", ")}.`,
+    `Fields you may fill: ${wanted.join(", ")}.`,
+    skip.size ? `Do NOT return: ${[...skip].filter(f => f !== "__age").join(", ")} — already written, and anything you say about them is discarded.` : "",
     "Propose EVERY field. Where the article states something, use it and quote",
     "  it. Where it does not, give your most plausible reading and mark it",
     "  interpretation — a blank helps nobody, and an interpretation is offered",
@@ -4259,7 +4272,7 @@ async function generateWikiProfile(body, env) {
   }
 
   const { fields, profileSources, demoted, overlong } =
-    buildVerifiedProfile(parsed, prose, { url, label, title });
+    buildVerifiedProfile(parsed, prose, { url, label, title, only: wanted });
 
   if (!Object.keys(fields).length) {
     return json({ ok: false, error: "nothing usable came back from that page" }, 422);
@@ -4274,7 +4287,7 @@ async function generateWikiProfile(body, env) {
     provider,
     // Handed back raw. The caller owns the calendar and therefore owns the
     // sum; this only reports what the article said the age was.
-    canonicalAge: parsed?.canonicalAge && Number.isFinite(Number(parsed.canonicalAge.value))
+    canonicalAge: skip.has("__age") ? null : parsed?.canonicalAge && Number.isFinite(Number(parsed.canonicalAge.value))
       ? {
         value: Number(parsed.canonicalAge.value),
         kind: parsed.canonicalAge.kind === "source-canon"

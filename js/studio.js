@@ -1779,9 +1779,32 @@ async function _fillProfileFrom(ed, d, say) {
     const page = await _resolveWikiPage(d.name);
     if (!page) { preview.say(published ? 'Saved profile only — no wiki page chosen.' : 'No wiki page chosen.'); return; }
 
+    // ── don't pay to be told what you already wrote ──
+    //
+    // The preview unticks a field you have written anyway, so proposing a
+    // rival for it is output bought and thrown away. voice, personality and
+    // backstory are 79% of a reply between them, so skipping those three when
+    // they exist is most of the saving there is. The input cannot shrink —
+    // the article still has to be read to answer anything at all.
+    const already = ['occupation', 'hometown', 'ethnicity', 'nationality',
+      'descriptor', 'sexuality', 'voice', 'personality', 'backstory']
+      .filter(f => String(d[f] || '').trim());
+    // The age pass is separate: it is worth asking for unless a birthdate is
+    // already on the record.
+    const skip = [...already, ...(String(d.birthdate || '').trim() ? ['__age'] : [])];
+
+    // Nothing left to ask about is a reason not to spend, not a reason to send
+    // an empty request. The saved profile is already in the preview behind
+    // this, so the dialog is not empty either.
+    if (already.length === 9 && skip.includes('__age')) {
+      preview.say('Every field is already written — nothing worth asking the wiki. '
+        + 'Clear a field and press again to get a proposal for it.');
+      return;
+    }
+
     preview.say(`reading ${page.title} on the ${page.label}…`);
     const [out, appearances] = await Promise.all([
-      _wikiCall({ mode: 'wiki-profile', host: page.host, title: page.title, slug }),
+      _wikiCall({ mode: 'wiki-profile', host: page.host, title: page.title, slug, skip }),
       // Their career, for the age anchor below. Cached after the first call,
       // and usually already warm because the continuity box asked for it when
       // the editor opened.
@@ -1833,8 +1856,14 @@ async function _fillProfileFrom(ed, d, say) {
     const dropped = (out.overlong || []).length
       ? ` Skipped ${out.overlong.join(', ')} — came back as prose, not a value.`
       : '';
+    // Said out loud for the same reason: a field missing from the preview
+    // because nobody asked for it looks identical to one the wiki had nothing
+    // to say about, and they are very different facts.
+    const saved = already.length
+      ? ` Did not ask about ${already.length} field${already.length === 1 ? '' : 's'} you have already written.`
+      : '';
     preview.say(`${page.title} on the ${page.label}: ${canon} of ${total} field${total === 1 ? '' : 's'} quote the article`
-      + `${guessed ? `, ${guessed} ${guessed === 1 ? 'is a reading' : 'are readings'} of it` : ''}.${dropped}`);
+      + `${guessed ? `, ${guessed} ${guessed === 1 ? 'is a reading' : 'are readings'} of it` : ''}.${dropped}${saved}`);
   } catch (e) {
     preview.say(`The wiki lookup failed: ${e.message}`);
     if (say) say('');

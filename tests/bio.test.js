@@ -27,12 +27,19 @@ describe('reading a bio out of a voice profile', () => {
     expect(jane.prose).toMatch(/^Twin Sister of Harriett/);
   });
 
-  it('leaves the 158 characters who have no bio alone', () => {
+  it('leaves a profile with no lead-in completely alone', () => {
     // Most of the roster predates the age box. Their prose must come back
     // untouched rather than half-eaten by a parser looking for a lead-in.
-    const alejandro = parseBio(profiles.Alejandro);
-    expect(alejandro.age).toBe(null);
-    expect(alejandro.prose).toBe(profiles.Alejandro.trim());
+    //
+    // Asserted across everybody rather than on one named character. It used to
+    // pin Alejandro, who has since been given a bio in the Studio — so the
+    // guard failed on somebody doing exactly the thing the app is for, which
+    // teaches you to edit the guard.
+    const bare = Object.entries(profiles).filter(([, text]) => parseBio(text).age == null);
+    expect(bare.length, 'nobody is without a bio, so this proves nothing').toBeGreaterThan(20);
+    for (const [name, text] of bare) {
+      expect(parseBio(text).prose, `${name}'s prose was chewed`).toBe(text.trim());
+    }
   });
 
   it('ships nobody with a doubled lead-in', () => {
@@ -155,8 +162,12 @@ describe('the backfill this makes possible', () => {
     expect(rows.filter(r => r.ethnicity).length).toBeGreaterThan(3);
     expect(rows.filter(r => r.nationality).length).toBeGreaterThan(8);
     expect(rows.filter(r => r.sexuality).length).toBeGreaterThan(10);
-    expect(Math.min(...rows.map(r => r.age))).toBe(16);
-    expect(Math.max(...rows.map(r => r.age))).toBe(65);
+    // A range, not the exact extremes — the extremes move whenever somebody is
+    // given an age in the Studio, and this pinned 65 until a 73-year-old
+    // existed. What it is really checking is that the parser is reading ages
+    // and not, say, a year out of a sentence.
+    expect(Math.min(...rows.map(r => r.age))).toBeGreaterThanOrEqual(14);
+    expect(Math.max(...rows.map(r => r.age))).toBeLessThan(100);
   });
 });
 

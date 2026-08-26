@@ -250,3 +250,35 @@ describe('only the parts of an article that describe a person', () => {
     expect(out).not.toMatch(/^\s*\*/m);
   });
 });
+
+// Output is the only half of this call that can shrink — the article still has
+// to be sent to answer anything. Measured on a real page, voice, personality
+// and backstory are 79% of the reply between them, so not asking for prose
+// somebody has already written is where the saving is.
+describe('not paying to be told what you already wrote', () => {
+  const ANSWER = {
+    fields: {
+      occupation: { value: 'Hair stylist', kind: 'interpretation' },
+      personality: { value: 'Warm and blunt.', kind: 'interpretation' },
+      backstory: { value: 'Grew up in a large family.', kind: 'interpretation' },
+    },
+  };
+
+  it('takes only the fields it was asked for', () => {
+    const { fields } = buildVerifiedProfile(ANSWER, ARTICLE, { ...SOURCE, only: ['occupation'] });
+    expect(fields.occupation).toBe('Hair stylist');
+    // Answered anyway, and discarded — the caller already has these.
+    expect(fields.personality).toBeUndefined();
+    expect(fields.backstory).toBeUndefined();
+  });
+
+  it('falls back to every field when no list is given', () => {
+    const { fields } = buildVerifiedProfile(ANSWER, ARTICLE, SOURCE);
+    expect(Object.keys(fields).sort()).toEqual(['backstory', 'occupation', 'personality']);
+  });
+
+  it('asks for nothing when the list is empty', () => {
+    const { fields } = buildVerifiedProfile(ANSWER, ARTICLE, { ...SOURCE, only: [] });
+    expect(fields).toEqual({});
+  });
+});

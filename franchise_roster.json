@@ -4631,8 +4631,31 @@
         "temperament": 2
       },
       "sexuality": "bi",
-      "voice": "Asian Korean American, The Class President, bi.",
-      "profileSources": {},
+      "voice": "Ara talks with sharp, cutting confidence, using insults and pointed observations to put others on the back foot. In arguments, she pushes hard, rebukes people directly, and is willing to threaten or embarrass someone if it helps her win the exchange. Her language is strategic and self-justifying: she frames ambition as proof that she is right, not something she needs to apologize for.",
+      "profileSources": {
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Ara",
+            "url": "https://disventure-camp.fandom.com/wiki/Ara",
+            "kind": "source-canon",
+            "quote": "21-year-old business student"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Ara",
+            "url": "https://disventure-camp.fandom.com/wiki/Ara",
+            "kind": "source-canon",
+            "quote": "no problem using underhanded tactics and embarrassing secrets"
+          }
+        ],
+        "voice": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ]
+      },
       "birthdate": "2005-10-25",
       "ethnicity": "Asian",
       "nationality": "Korean American",

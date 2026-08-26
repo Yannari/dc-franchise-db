@@ -46,14 +46,14 @@ const SAFETY_MIX = { physical: 0.30, mental: 0.26, endurance: 0.24, temperament:
 export const CHAIN_FLOOR = 3;
 
 const HOH_START = [
-  (n, p) => `${n} is handed the first link and told to make somebody safe. The room goes very quiet, because everybody in it has just worked out that ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} about to say a name and then never be able to unsay it.`,
+  (n, p) => `${n} is handed the first link and told to make somebody safe. The room goes very quiet, because everybody in it has just worked out that ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} about to say a name out loud that ${p.sub} can never take back.`,
   (n) => `${n} does not get to nominate this week. ${n} gets to SAVE, once, and then hand the decision to whoever that was.`,
-  (n, p) => `The Head of Household starts the chain. ${n} takes ${p.posAdj} time about it, which everybody notices, and which does not help.`,
+  (n, p) => `The Head of Household starts the chain. ${n} takes a long time over it, and every second of that is watched by people waiting to hear their own name.`,
 ];
 
 const COMP_START = [
-  (n) => `${n} wins the safety competition and with it the first link of the chain. Safe, and now holding the only thing worth more than safety — the next name.`,
-  (n, p) => `${n} takes it, and the prize is not really the safety. It is that ${p.sub} chooses who stands next to ${p.obj}.`,
+  (n) => `${n} wins the safety competition and takes the first link of the chain. Safe — and now the only person in the room who gets to say a name.`,
+  (n, p) => `${n} takes it. The safety is not really the prize — the prize is that ${p.sub} decides who else gets to be safe.`,
 ];
 
 // ── THE LINES ──
@@ -74,7 +74,7 @@ const PICK_EARLY = [
   (a, b) => `${a} says ${b}'s name straight away, without looking round the room first.`,
   (a, b) => `"${b}." That is the whole sentence. ${a} does not add anything to it.`,
   (a, b) => `${a} barely waits to be asked. It is ${b}, and everybody could have guessed it.`,
-  (a, b) => `${a} picks ${b} inside about two seconds, which tells the room plenty on its own.`,
+  (a, b) => `${a} picks ${b} in about two seconds, and everybody can see how easy that was.`,
   (a, b) => `${a} goes with ${b} and does not explain why. Nobody expects ${pronouns(a).obj} to, this early.`,
   (a, b) => `First name of the night from ${a}, and it is ${b}. No hesitation at all.`,
 ];
@@ -93,8 +93,8 @@ const PICK_MID = [
 /** Late: the room is small, and everybody can count. */
 const PICK_LATE = [
   (a, b) => `There are only a few people left to choose from now. ${a} chooses ${b}.`,
-  (a, b) => `${a} has one name to give and four people to give it to. ${pronouns(a).Sub} says ${b}, and does not look up.`,
-  (a, b) => `${a} says ${b}'s name quietly. It does not land any more quietly for that.`,
+  (a, b, p, left) => `${a} has one name to give and ${left} people to give it to. ${pronouns(a).Sub} says ${b}, and does not look up.`,
+  (a, b) => `${a} says ${b}'s name very quietly, and it goes round the room anyway.`,
   (a, b) => `${b} is safe. Everybody still sitting down has just learned where they came on ${a}'s list.`,
   (a, b) => `${a} waits long enough that the people left start to hope, then says ${b}.`,
   (a, b) => `${a} apologises before saying it, which does not help anybody, and then says ${b}.`,
@@ -102,7 +102,7 @@ const PICK_LATE = [
 
 /** Saving the person you are in a showmance with. Nobody is surprised. */
 const PICK_SHOWMANCE = [
-  (a, b) => `${a} picks ${b}. The room makes the noise a room makes when nobody is surprised.`,
+  (a, b) => `${a} picks ${b}. Half the room groans, because every one of them saw it coming.`,
   (a, b) => `${a} says ${b} before the question is finished. It is the least secret decision of the night.`,
   (a, b) => `It is ${b}, obviously. Somebody at the end of the row says "shocking" completely flatly.`,
   (a, b) => `${a} does not even pretend to weigh it up. ${b}, straight away, to nobody's surprise at all.`,
@@ -113,9 +113,9 @@ const PICK_SHOWMANCE = [
 const PICK_ALLY = [
   (a, b) => `${a} picks ${b}, which is what everybody expected and what ${a} was always going to do.`,
   (a, b) => `${a} and ${b} have been working together for weeks. ${a} has just confirmed it in front of the whole house.`,
-  (a, b) => `${b}. It costs ${a} nothing, and the rest of the room files it away anyway.`,
-  (a, b) => `${a} chooses ${b} without hesitating, and half the room was already writing the name down.`,
-  (a, b) => `${a} says ${b}, and in doing so tells everybody watching exactly who ${pronouns(a).sub} ${pronouns(a).sub === 'they' ? 'are' : 'is'} playing with.`,
+  (a, b) => `${b}. It costs ${a} nothing to say, and everybody in the room knows it.`,
+  (a, b) => `${a} chooses ${b} without hesitating, and half the room had already guessed it.`,
+  (a, b) => `${a} says ${b}, and everybody in the room now knows for certain which of them are working together.`,
   (a, b) => `No surprise: ${a} looks after ${b}, the way ${pronouns(a).sub} ${pronouns(a).sub === 'they' ? 'have' : 'has'} all season.`,
   (a, b) => `${a} picks ${b}. They have voted together every week and now the whole house has seen why.`,
   (a, b) => `${b}, of course. ${a} did not have to think about that one and did not pretend to.`,
@@ -124,7 +124,7 @@ const PICK_ALLY = [
 /** Saving somebody you have no relationship with at all. */
 const PICK_COLD = [
   (a, b) => `${a} picks ${b}, and the two of them have barely spoken this season. Half the room is trying to work out what it means.`,
-  (a, b) => `${a} goes with ${b} — not a friend, not an enemy, and so not a favour anybody can call in later.`,
+  (a, b) => `${a} goes with ${b}: not a friend and not an enemy, so nobody can say ${pronouns(a).sub} owed ${pronouns(b).obj} anything.`,
   (a, b) => `${a} says ${b}, and ${b} looks more surprised than anybody else in the room.`,
   (a, b) => `${b} was not expecting it. Neither was anybody else. ${a} does not explain.`,
   (a, b) => `${a} chooses somebody ${pronouns(a).sub} ${pronouns(a).sub === 'they' ? 'have' : 'has'} no history with at all, and ${b} takes the seat without asking why.`,
@@ -132,10 +132,10 @@ const PICK_COLD = [
 
 /** Saving somebody you do not even like. That is a move. */
 const PICK_RIVAL = [
-  (a, b) => `${a} picks ${b}. They cannot stand each other, and ${a} has just bought something with that.`,
+  (a, b) => `${a} picks ${b}. They cannot stand each other, and everybody in the room is now wondering what ${pronouns(a).sub} wants for it.`,
   (a, b) => `${b}, of all people. ${a} has been on the other side of ${pronouns(b).obj} for weeks and has just handed ${pronouns(b).obj} a week of safety.`,
-  (a, b) => `${a} says ${b}'s name and the room actually turns to look. That is not a friendship. It is a debt.`,
-  (a, b) => `${a} saves the one person nobody thought ${pronouns(a).sub} would, and lets everybody sit with it.`,
+  (a, b) => `${a} says ${b}'s name and people actually turn round to look. Whatever that was, it was not friendship.`,
+  (a, b) => `${a} saves the one person nobody expected ${pronouns(a).obj} to, and offers no explanation for it.`,
 ];
 
 /**
@@ -149,7 +149,7 @@ const PASSED_OVER = [
   (a, b) => `${b} was watching ${a}'s face the whole time, waiting for it, and it never came.`,
   (a, b) => `${a} had one name to give and did not give it to ${b}. ${b} will remember how long ${a} took over it.`,
   (a, b) => `${b} was counting on ${a}. ${b} is not counting on ${a} any more.`,
-  (a, b) => `${b} does not react at all, which from ${b} is a reaction.`,
+  (a, b) => `${b} does not react at all. From ${b}, that is a reaction, and the room reads it as one.`,
   (a, b) => `${b} had half stood up already. ${pronouns(b).Sub} sits back down and stares at the floor for a while.`,
   (a, b) => `${a} and ${b} were close before tonight. ${b} has just found out how close.`,
   (a, b) => `${b} smiles at ${a}. It takes ${pronouns(b).obj} a second too long, and it does not reach ${pronouns(b).posAdj} eyes.`,
@@ -304,7 +304,12 @@ export function runChainOfSafety({ week, house, hoh, rng = Math.random, variant 
           : rel === 'cold' ? PICK_COLD
             : done > 0.72 ? PICK_LATE
               : done < 0.3 ? PICK_EARLY : PICK_MID;
-    beats.push(beat(say(pool)(picker, chosen, pronouns(picker)), [picker, chosen],
+    // The FIELD at the moment of choosing — how many people were actually
+    // available to be saved. A line that states the number has to be given it
+    // rather than guessing: one of them said "four people to give it to" on
+    // every week regardless of how many were left.
+    const field = unsafe.length + 1;
+    beats.push(beat(say(pool)(picker, chosen, pronouns(picker), field), [picker, chosen],
       'SAFE', 'green'));
 
     // ── consequences, which are the whole twist ──
@@ -428,7 +433,7 @@ export const chainSafe = act => (act?.order || []).filter(Boolean)
 /** The conversation the person who was counted on has to have. */
 const CONFRONT = [
   (b, a) => `${b} finds ${a} in the kitchen afterwards and asks it flatly: "You had one name." ${a} starts a sentence about numbers and does not finish it.`,
-  (b, a) => `${b} has not said anything to ${a} since the chain, and the not-saying is doing considerably more work than saying it would.`,
+  (b, a) => `${b} has not spoken to ${a} once since the chain, and everybody in the house has noticed that ${pronouns(b).sub} ${pronouns(b).sub === 'they' ? 'have' : 'has'} not.`,
   (b, a) => `"I would have picked you." ${b} says it once, to ${a}, in front of two other people, and then goes to bed.`,
   (b, a) => `${a} tries to explain it to ${b} twice. The second attempt is worse than the first and both of them know it.`,
   (b, a) => `${b} tells somebody else, loudly enough to carry, that ${pronouns(b).sub} now knows exactly where ${pronouns(b).sub} ${pronouns(b).sub === 'they' ? 'come' : 'comes'} on ${a}'s list.`,
@@ -442,11 +447,11 @@ const CONFRONT = [
  * and there is nobody to campaign to about it.
  */
 const NOMINEE_REACT = [
-  (n) => `${n} does the maths out loud to nobody: every single person in this house had one name to give, and not one of them said ${n}. There is no Head of Household to be angry at. There is just the room.`,
-  (n) => `${n} keeps coming back to the same thing — that there is nobody to campaign to about this, because everybody already voted with their mouth in front of everybody else.`,
-  (n) => `Somebody tells ${n} it was not personal. ${n} points out, reasonably, that it was about as personal as this house gets.`,
+  (n) => `${n} counts it out loud to nobody in particular. Every single person in this house had one name to give and not one of them said ${n}. There is no Head of Household to blame for it. There is only everybody.`,
+  (n) => `${n} keeps coming back to the same thing: there is nobody left to talk round, because every one of them already said their name out loud in front of the others.`,
+  (n) => `Somebody tells ${n} it was not personal. ${n} asks them what would count as personal, if not that.`,
   (n, p) => `${n} is on the block and cannot name the person who put ${p.obj} there, because it was all of them, one at a time, out loud.`,
-  (n) => `${n} spends the evening being extremely pleasant to people, which is what ${n} does instead of saying any of it.`,
+  (n, p) => `${n} is extremely pleasant to everybody all evening, which is what ${n} does instead of saying what ${p.sub} actually ${p.sub === 'they' ? 'think' : 'thinks'}.`,
   (n, p) => `"Every one of you." ${n} does not raise ${p.posAdj} voice and does not need to; the room has already worked out that ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} right.`,
 ];
 
@@ -495,14 +500,14 @@ export function chainFallout(act, { rng = Math.random } = {}) {
   // THE ONE WHO GOT OUT OF IT. Winning the second competition is a week of
   // safety and a permanent piece of information about where you stand.
   if (act.safetyWinner) {
-    add(`${act.safetyWinner} is safe and knows exactly what it cost to find out — that the whole house went past ${pronouns(act.safetyWinner).obj} first, and only a competition fixed it.`,
+    add(`${act.safetyWinner} is safe, and had to win a competition to get there — after watching the entire house go past ${pronouns(act.safetyWinner).obj} first.`,
       [act.safetyWinner], 'SAFE, AND COUNTING', 'blue');
   }
 
   // THE FIRST LINK, who is now holding a favour and a grudge in the same hand.
   const first = act.links[0];
   if (first) {
-    add(`${first.chosen} was the first name said tonight and the house has not stopped mentioning it. ${first.chosen} is finding out that being chosen first is not only a good thing to have been.`,
+    add(`${first.chosen} was the first name said tonight and the house has not stopped mentioning it. ${first.chosen} is finding out that being chosen first is not only a compliment.`,
       [first.chosen, first.picker], 'FIRST NAME CALLED', 'gold');
   }
   // And the last one made safe: picked, but only just.

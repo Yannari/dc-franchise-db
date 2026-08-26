@@ -23,6 +23,8 @@ import { runChainOfSafety, chainFallout, CHAIN_FLOOR } from '../js/bb/chain-of-s
 import { getBond as rawBond } from '../js/bonds.js';
 import { resolveWeekTwistState, BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { seedGame } from './helpers/setup.js';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
   'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -378,5 +380,69 @@ describe('the chain stopping one name short', () => {
     const vp = await import('../js/vp-screens.js');
     const screen = vp.buildBBWeekScreens(ep).find(s => s.id === 'bb-chain');
     expect(screen.html).toContain('It stops at three');
+  });
+});
+
+describe('the lines are written to be said out loud', () => {
+  // Three separate reads of real output flagged the same fault, never a bug in
+  // the engine: an idiom that does not survive being read literally. "It is a
+  // bad smile." "Half the room was already writing the name down." "Picks Zee
+  // inside about two seconds." Nobody was writing anything, and none of it is
+  // how a person speaks.
+  //
+  // This walks every line the chain can print, on real chains, and checks the
+  // mechanical faults a reader cannot be asked to catch by eye.
+  const everyLine = () => {
+    const out = [];
+    for (let run = 0; run < 4; run++) {
+      const { week } = playChain(run % 2 ? 'hoh' : 'safety-comp');
+      const c = week.chainOfSafety;
+      if (!c) continue;
+      out.push(...(c.beats || []).map(b => b.text));
+      const fa = (week.acts || []).find(a => a.chainFallout);
+      out.push(...((fa && fa.socialBeats) || []).map(b => b.text));
+    }
+    return out;
+  };
+
+  it('never prints a hole where a value should be', () => {
+    // A line reaching for an argument its own function does not take fails
+    // silently into the prose rather than throwing.
+    for (const line of everyLine()) {
+      expect(line, `"${line.slice(0, 60)}"`).not.toMatch(/undefined|NaN|\[object/);
+      expect(line).not.toMatch(/\$\{/);
+    }
+  });
+
+  it('never states a number it was not given', () => {
+    // One line said "four people to give it to" on every week regardless of
+    // how many were actually left.
+    const { week } = playChain();
+    const c = week.chainOfSafety;
+    const counted = (c.beats || []).map(b => b.text)
+      .find(t => /(\d+) people to give it to/.test(t));
+    if (counted) {
+      const n = Number(counted.match(/(\d+) people to give it to/)[1]);
+      // It has to be a field that could really have existed in this chain.
+      expect(n).toBeGreaterThanOrEqual(CHAIN_FLOOR);
+      expect(n).toBeLessThanOrEqual(c.order.length + c.leftover.length);
+    }
+  });
+
+  it('leaves the pronouns to the pronoun helper', () => {
+    // A rewrite hardcoded "she" into a line about whoever was holding the
+    // chain, which misgenders roughly half the house.
+    const src = readFileSync(join(process.cwd(), 'js/bb/chain-of-safety.js'), 'utf8');
+    for (const m of src.matchAll(/^\s*\((.*?)\)\s*=>\s*`(.*)`,\s*$/gm)) {
+      const [, args, body] = m;
+      expect(body, `hardcoded pronoun in "${body.slice(0, 50)}"`)
+        .not.toMatch(/(^|[^\w$])(she|he|her|his|him|hers)([^\w}]|$)/i);
+      // And every placeholder it uses is an argument it actually takes.
+      for (const v of ['p', 'left', 'ns']) {
+        if (body.includes('${' + v + (v === 'p' ? '.' : ''))) {
+          expect(args, `"${body.slice(0, 40)}" uses ${v} and does not take it`).toContain(v);
+        }
+      }
+    }
   });
 });

@@ -2459,7 +2459,64 @@
         "intuition": 9,
         "temperament": 5
       },
-      "voice": "Understated and dry. Reads people well, lets them underestimate her, gives short answers then drops one sharp read that reframes everything; quietly certain, never brags."
+      "voice": "Miriam likely speaks in a clipped, dry, no-nonsense way, using blunt criticism rather than soft reassurance. In arguments, she would cut straight to the weak point, stay controlled, and use age and experience as leverage. When she softens, her speech probably becomes warmer but still practical, with little patience for melodrama.",
+      "sexuality": "straight",
+      "profileSources": {
+        "descriptor": [
+          {
+            "label": "Disventure Camp Wiki - Miriam",
+            "url": "https://disventure-camp.fandom.com/wiki/Miriam",
+            "kind": "source-canon",
+            "quote": "bitter old lady"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "73 at Cursed Island (spring 2025), so born 1952",
+            "kind": "simulator-continuity"
+          },
+          {
+            "label": "Disventure Camp Wiki — Miriam",
+            "url": "https://disventure-camp.fandom.com/wiki/Miriam",
+            "kind": "source-canon",
+            "quote": "At 73 and 75 years old"
+          }
+        ],
+        "age": [
+          {
+            "label": "73 at Cursed Island (spring 2025), and it is fall 2026 now",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "occupation": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Miriam",
+            "url": "https://disventure-camp.fandom.com/wiki/Miriam",
+            "kind": "source-canon",
+            "quote": "lost her husband and only son to a drunk driving accident"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Miriam",
+            "url": "https://disventure-camp.fandom.com/wiki/Miriam",
+            "kind": "source-canon",
+            "quote": "she kept to herself and criticized her teammates often"
+          }
+        ],
+        "voice": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ]
+      }
     },
     {
       "name": "Grett",

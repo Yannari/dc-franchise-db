@@ -38,8 +38,13 @@ Two mechanics answer it, and they answer it from opposite directions:
    budget of attention must neglect somebody, and the neglected assemble the
    coalition that removes him.
 
-Together: good coaching is what makes a coach worth keeping, and uneven
-coaching is what gets him killed. Both halves are his own doing.
+A third arrives with Fame: a newbie who is star-struck by a champion will not
+vote for him, and how star-struck depends on who the contestants are rather
+than on anything the coach does. See "Fame, and Being Impressed".
+
+Together: good coaching is what makes a coach worth keeping, uneven coaching is
+what gets him killed, and his reputation buys him time to do both. The first
+two are his own doing.
 
 Threat level and a tight contestant bloc point at the same vote for different
 reasons, so the same elimination reads three ways — cutting a threat, closing
@@ -207,6 +212,84 @@ targets and forming blocs, so a coach who spends four episodes on two
 favourites has — through machinery that already exists — built two strong bonds
 and one weak one, and the weak one drifts toward the people who will vote him
 out. The coalition assembles itself.
+
+## Fame, and Being Impressed
+
+`js/fame.js` already answers "how big a deal is this person" as 0 to 5 stars,
+derived from their whole career, decaying while they are off air and locking at
+five. Its header notes it imports nothing from the simulator so that the
+simulator can use it later. This is later.
+
+A coach is a winner or a finalist. A newbie is nobody yet. **The gap between
+their stars is the mechanic.**
+
+```
+gap = coachStars − contestantStars      // 5.0 at most; 0 between equals
+```
+
+Two four-star vets are not impressed by each other and the gap does nothing.
+A five-star champion standing in front of a nought-star newbie is something
+else entirely.
+
+### Susceptibility
+
+The gap only lands on people it can land on. Proportional, never thresholded:
+
+```
+awe = gap × archetypeFactor
+          × ((10 − strategic) / 10)     // does not see the manipulation
+          × ((10 − boldness) / 10)      // defers rather than challenges
+          × ((10 − intuition) / 10)     // reads the résumé, not the person
+```
+
+| archetype | factor |
+|---|---|
+| goat, loyal-soldier, underdog | high — they are looking for someone to follow |
+| social-butterfly, showmancer, floater, hothead, wildcard | moderate |
+| challenge-beast, chaos-agent | low — unimpressed by anything but results |
+| mastermind, schemer, villain, perceptive-player | **inverted** — see below |
+
+### The inversion
+
+For the four at the bottom of that table, a famous coach is not someone to look
+up to. He is a **résumé**, which is to say a threat and an opportunity. The same
+gap that makes a goat deferential makes a mastermind target him earlier, because
+a five-star finalist in your camp is the most dangerous person in it.
+
+So fame feeds both ends of the twist from one number: it protects a coach from
+the impressionable and exposes him to the strategic. A tribe's composition
+decides which. That falls out of the casting design for free — **the newbie
+tribe protects its coaches for longer and the underperforming-vet tribe turns on
+them sooner**, without either rule being written anywhere.
+
+### What awe does
+
+1. **Bond grows faster.** Session bond gains multiply by `(1 + awe)`. A
+   star-struck newbie attaches to their coach in two episodes rather than five.
+2. **The vote softens.** Awe reduces willingness to target that coach, which is
+   the third defence against the free-boot problem — and the only one that
+   comes from who the contestants *are* rather than from what the coach does.
+3. **Awe decays.** It falls each episode as familiarity replaces reputation.
+   Fame gets a coach in the door; only coaching keeps him there.
+
+### Disappointment
+
+The important half. **Awe inverts when it is betrayed.**
+
+A contestant who was star-struck and is then neglected, poached against, or
+handed a bad session falls further than one who never cared:
+
+```
+resentment = baseResentment × (1 + aweAtTheTime)
+```
+
+Meeting your hero and finding him ordinary is worse than meeting a stranger and
+finding him ordinary. So fame is not a shield a coach can hide behind — it is
+**leverage that raises the stakes in both directions**, and a famous coach who
+plays favourites has more to lose by doing it than an unknown one would.
+
+That is the cleanest expression of the twist's whole thesis: the more
+accomplished the coach, the further there is to fall.
 
 ## Advantages: One Law
 
@@ -410,6 +493,10 @@ reversal on review:
 7. The save card is one **per coach**, not one per tribe as drafted — so that
    one coach cannot spend or burn another's protection.
 8. Team Switch moves a contestant, not the coach.
+9. Fame susceptibility divides by strategic, boldness and intuition. Social was
+   raised as a candidate and left out: a socially confident contestant is
+   arguably *less* star-struck, not more, so including it would have pulled the
+   formula in a direction nobody intended.
 
 ## Out of Scope
 

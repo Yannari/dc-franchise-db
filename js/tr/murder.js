@@ -186,14 +186,20 @@ export function runConclave(ep, rng = Math.random) {
  */
 export function murderCost(target, reason, ep) {
   const heat = _publicHeatAgainst(target, ep);
+  // `kind` and `blames` are orthogonal: `kind` is the story the audience
+  // reads about THIS kill, `blames` is the channel the deduction layer reads
+  // from it. A victim can be BOTH a spent decoy AND someone a Traitor visibly
+  // clashed with — the clash is real evidence either way, so it must not be
+  // dropped just because the heat check reported first. Compute it once, up
+  // front, and hand it out under whichever `kind` wins.
+  const clashed = livingTraitors(ep).filter(t => getBond(t, target) <= -6);
 
   // The room was already spending itself on this person. Killing them hands
   // the Faithfuls their votes back and forces them to hunt properly.
-  if (heat > 0.25) return { kind: 'decoy-destroyed', cost: heat, blames: [] };
+  if (heat > 0.25) return { kind: 'decoy-destroyed', cost: heat, blames: clashed };
 
   // A Traitor who visibly hated the victim is the first name the room reaches
   // for at breakfast, and it is reaching correctly.
-  const clashed = livingTraitors(ep).filter(t => getBond(t, target) <= -6);
   if (clashed.length) return { kind: 'clash-traced', cost: 0.5, blames: clashed };
 
   return { kind: 'clean', cost: 0, blames: [] };

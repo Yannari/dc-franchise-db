@@ -13,7 +13,7 @@ import { recordAlignment } from '../js/tr/roles.js';
 import { seedTraitorKnowledge } from '../js/tr/deduction.js';
 import { formPreference, runConclave, murderCost, grantShield, isShielded, resolveMurder } from '../js/tr/murder.js';
 import { setBond } from '../js/bonds.js';
-import { recordRound } from '../js/tr/deduction.js';
+import { recordRound, murderEvidence, suspicion } from '../js/tr/deduction.js';
 import roster from '../franchise_roster.json';
 
 const CAST = roster.players.slice(0, 10).map(p => p.name);
@@ -168,6 +168,19 @@ describe('what a bad murder costs', () => {
     expect(c.kind).toBe('clean');
     expect(c.blames).toHaveLength(0);
   });
+
+  it('still names the clashed traitor when the victim was ALSO a spent decoy', () => {
+    // The overlap case: heat is checked before clash and reports first, but
+    // `blames` must not be discarded just because 'decoy-destroyed' won the
+    // `kind`. Real evidence (the clash) must not be dropped in favour of the
+    // narrative label.
+    recordRound({ ep: 2, banished: null, banishedWasTraitor: false, murdered: null,
+      ballots: CAST.map(v => ({ voter: v, voted: CAST[6], channel: 'banishment' })) });
+    setBond(TRAITORS[0], CAST[6], -8);
+    const c = murderCost(CAST[6], 'wasted-decoy', 3);
+    expect(c.kind).toBe('decoy-destroyed');
+    expect(c.blames).toContain(TRAITORS[0]);
+  });
 });
 
 describe('the shield, and the night nobody dies', () => {
@@ -206,5 +219,60 @@ describe('the shield, and the night nobody dies', () => {
     expect(gs.activePlayers).toHaveLength(before.length - 1);
     expect(gs.activePlayers).not.toContain(r.victim);
     expect(TRAITORS).not.toContain(r.victim);
+  });
+});
+
+describe('reading the murder', () => {
+  it('suspects whoever pushed the victim right before the victim died', () => {
+    // Population — the read runs through _assess and is probabilistic.
+    let hits = 0;
+    const N = 100;
+    for (let s = 1; s <= N; s++) {
+      world();
+      const victim = CAST[8], pusher = CAST[4], quiet = CAST[7];
+      recordRound({ ep: 2, banished: null, banishedWasTraitor: false, murdered: victim,
+        ballots: [{ voter: pusher, voted: victim, channel: 'banishment' },
+                  { voter: quiet,  voted: CAST[9], channel: 'banishment' }],
+        accusations: [{ accuser: pusher, target: victim }] });
+      gs.activePlayers = CAST.filter(n => n !== victim);
+      murderEvidence(3, seededRng(s));
+      if (suspicion(CAST[3], pusher, 3) > suspicion(CAST[3], quiet, 3)) hits++;
+    }
+    const rate = hits / N;
+    console.log(`[population] pusher out-suspected the quiet player: ${(rate * 100).toFixed(1)}%`);
+    expect(rate, 'pushing a name the night the name died bought no suspicion at all')
+      .toBeGreaterThan(0.15);
+  });
+
+  it('emits each murder exactly once, never re-walking history', () => {
+    const victim = CAST[8];
+    recordRound({ ep: 2, banished: null, banishedWasTraitor: false, murdered: victim,
+      ballots: [{ voter: CAST[4], voted: victim, channel: 'banishment' }],
+      accusations: [{ accuser: CAST[4], target: victim }] });
+    gs.activePlayers = CAST.filter(n => n !== victim);
+    const first = murderEvidence(3, seededRng(2));
+    const second = murderEvidence(4, seededRng(2));
+    expect(second.filter(e => e.ep === 2), 'episode 2 was re-read in episode 4').toHaveLength(0);
+  });
+
+  it('never breaks the credibility ceiling', () => {
+    const victim = CAST[8];
+    recordRound({ ep: 2, banished: null, banishedWasTraitor: false, murdered: victim,
+      ballots: [{ voter: CAST[4], voted: victim, channel: 'banishment' }],
+      accusations: [{ accuser: CAST[4], target: victim }] });
+    gs.activePlayers = CAST.filter(n => n !== victim);
+    murderEvidence(3, seededRng(2));
+    for (const observer of gs.activePlayers) {
+      for (const subject of gs.activePlayers) {
+        // Traitor-on-traitor is excluded: seedTraitorKnowledge() legitimately
+        // grants them `public` certainty about each other (they're standing
+        // in the room wearing the cloaks) — one of the two sanctioned places
+        // in the whole engine that beats the 0.62 deduced ceiling, and it has
+        // nothing to do with murderEvidence. This test is about THIS task's
+        // beliefs only.
+        if (TRAITORS.includes(observer) && TRAITORS.includes(subject)) continue;
+        expect(suspicion(observer, subject, 3)).toBeLessThan(0.63);
+      }
+    }
   });
 });

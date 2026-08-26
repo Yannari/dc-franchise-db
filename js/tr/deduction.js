@@ -341,3 +341,73 @@ export function revealCascade(name, wasTraitor, ep, rng = Math.random) {
   }
   return formed;
 }
+
+// How loud each murder-shaped inference is. Smaller than the ballot weights on
+// purpose: a murder is one data point a night, and the ballot record is many.
+const M = {
+  pushedThenDied:  0.30,   // you wanted them gone, and they went
+  clashTraced:     0.36,   // murderCost named you
+};
+
+/**
+ * Evidence source 2 — what a murder tells the room about the living.
+ *
+ * EMITTED EXACTLY ONCE, for the round that just happened. This is not a
+ * stylistic choice: Plan 2 measured that re-walking history every round makes
+ * the room WORSE, because learn() overwrites a belief's valence on a re-roll
+ * and a protective 'false' is stored at x0.6 — so repetition strips protection
+ * off precisely the innocent people the evidence indicts. Deleting that shape
+ * from ballotEvidence was worth 0.20-0.23x of lift. Do not reintroduce it here.
+ */
+export function murderEvidence(ep, rng = Math.random) {
+  const rounds = gs.tr?.rounds || [];
+  const round = rounds[rounds.length - 1];
+  // ONLY the round that just closed. `>= ep` would not be enough: it stops a
+  // same-episode re-read but happily re-emits an OLD round every round after
+  // it, which is precisely the re-walk Plan 2 deleted from ballotEvidence for
+  // costing 0.20-0.23x of lift. The equality is the guard.
+  if (!round || round.ep !== ep - 1) return [];
+  const living = gs.activePlayers || [];
+  const formed = [];
+
+  // A blocked attempt is public: nobody died and everybody can count chairs.
+  // It teaches that a Shield was live, which is information about the GAME
+  // rather than about a person, so it forms no belief here — it is read by
+  // the VP and by a later plan's counting argument. Recorded for both.
+  const blocked = (gs.tr?.blockedMurders || []).some(b => b.ep === round.ep);
+
+  if (round.murdered && !blocked) {
+    // You pushed their name at the table, and that night they died.
+    const pushers = new Set([
+      ...(round.accusations || []).filter(a => a.target === round.murdered).map(a => a.accuser),
+      ...(round.ballots || []).filter(b => b.channel === 'banishment' && b.voted === round.murdered)
+        .map(b => b.voter),
+    ]);
+    for (const pusher of pushers) {
+      if (!living.includes(pusher)) continue;
+      for (const observer of living) {
+        if (observer === pusher) continue;
+        const belief = learn(observer, alignmentFactId(pusher), {
+          source: `wanted ${round.murdered} gone the night ${round.murdered} died`,
+          sourceType: 'deduced', confidence: M.pushedThenDied * 1.6, ep, rng,
+        });
+        if (belief) formed.push({ observer, subject: pusher, ep: round.ep, kind: 'pushed-then-died' });
+      }
+    }
+
+    // murderCost named somebody: a Traitor who visibly hated the victim.
+    for (const blamed of (round.murderCost?.blames || [])) {
+      if (!living.includes(blamed)) continue;
+      for (const observer of living) {
+        if (observer === blamed) continue;
+        const belief = learn(observer, alignmentFactId(blamed), {
+          source: `made no secret of hating ${round.murdered}`,
+          sourceType: 'deduced', confidence: M.clashTraced * 1.6, ep, rng,
+        });
+        if (belief) formed.push({ observer, subject: blamed, ep: round.ep, kind: 'clash-traced' });
+      }
+    }
+  }
+
+  return formed;
+}

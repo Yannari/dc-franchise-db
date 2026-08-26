@@ -241,3 +241,134 @@ registerEvent({
     return { branch, reactor, partner, victim, isTraitor, archetype, threadId, bondDelta };
   },
 });
+
+// ── Task 6 additions ────────────────────────────────────────────────────
+
+registerEvent({
+  id: 'grief-keepsake',
+  family: FAMILY,
+  window: 'dawn',
+  weight(ctx) {
+    if (!ctx.actors?.length) return 0;
+    return _victimLastNight(ctx.ep) ? 1.5 : 0;
+  },
+  fire(ctx) {
+    const actor = ctx.actors[0];
+    const v = _victimLastNight(ctx.ep);
+    const t = openThread(FAMILY, [actor], ctx.ep,
+      `${actor} quietly kept something small of ${v}'s — nobody asked, and ${actor} didn't offer an explanation.`);
+    return { branch: 'keepsake', actor, victim: v, threadId: t?.id };
+  },
+});
+
+registerEvent({
+  id: 'grief-blame-the-room',
+  family: FAMILY,
+  window: 'morning',
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    return _victimLastNight(ctx.ep) ? 1.5 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    addBond(a, b, -0.5);
+    const v = _victimLastNight(ctx.ep);
+    const t = openThread(FAMILY, [a, b], ctx.ep,
+      `${a} said out loud that somebody in this castle let ${v} die. ${b} didn't disagree.`);
+    return { branch: 'blamed-room', pair: [a, b], victim: v, threadId: t?.id, bondDelta: -0.5 };
+  },
+});
+
+registerEvent({
+  id: 'grief-toast-to-them',
+  family: FAMILY,
+  window: 'evening',
+  rare: true,
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    if ((ctx.living || []).length < 3) return 0;
+    // Reachable, uncommon state: the castle has lost more than one person —
+    // by the second death, a ritual like this has grounds to exist.
+    const deaths = (gs.tr?.rounds || []).filter(r => r.murdered).length;
+    return deaths >= 2 ? 2 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    addBond(a, b, 2);
+    const t = openThread(FAMILY, [a, b], ctx.ep,
+      `${a} and ${b} raised a glass, quietly, to everyone the castle had already lost.`);
+    return { branch: 'toasted', pair: [a, b], threadId: t?.id, bondDelta: 2 };
+  },
+});
+
+registerEvent({
+  id: 'grief-numb-to-it-now',
+  family: FAMILY,
+  window: 'dawn',
+  acts: { late: 2 },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const deaths = (gs.tr?.rounds || []).filter(r => r.murdered).length;
+    return deaths >= 2 && _victimLastNight(ctx.ep) ? 1.5 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    const v = _victimLastNight(ctx.ep);
+    const t = openThread(FAMILY, [a, b], ctx.ep,
+      `${a} told ${b} the empty chair barely registered anymore, and hated how true that was.`);
+    // No bond move — the point of this one IS the absence of a felt reaction.
+    return { branch: 'numb', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 0 };
+  },
+});
+
+registerEvent({
+  id: 'grief-someone-cries-alone',
+  family: FAMILY,
+  window: 'dawn',
+  weight(ctx) {
+    if (ctx.actors?.length !== 1) return 0;
+    return _victimLastNight(ctx.ep) ? 1 : 0;
+  },
+  fire(ctx) {
+    const actor = ctx.actors[0];
+    const t = openThread(FAMILY, [actor], ctx.ep,
+      `${actor} found somewhere nobody could see them and let it out, alone, before breakfast.`);
+    return { branch: 'cried-alone', actor, threadId: t?.id };
+  },
+});
+
+// ROUND 1 FIX: this event originally gated on `alignmentAt(v, ep - 1) ===
+// 'traitor'` — the murder victim having secretly been a Traitor. That
+// precondition is IMPOSSIBLE under the current engine: murder.js's target
+// pool is `livingFaithfuls(ep).filter(...)` (js/tr/murder.js, the line
+// choosing who the conclave can even consider) — the Traitors never
+// murder one of their own, so `_victimLastNight` can never resolve to a
+// Traitor. Zero firings across a 60-season dead-event sweep confirmed it
+// (not a rare state; an unreachable one — the exact distinction the brief
+// draws). Rare-state amplification cannot rescue a precondition that never
+// clears, so the fix is a different, REACHABLE irony rather than a
+// loosened gate on the same impossible one: the room mourning someone who
+// spent their last days under a suspicion — from suspicion.js's own
+// threads — that never led anywhere and now never will. Murder victims are
+// always Faithfuls, and Faithfuls collect suspicion threads constantly, so
+// this fires routinely instead of never.
+registerEvent({
+  id: 'grief-wrongly-suspected-irony',
+  family: FAMILY,
+  window: 'morning',
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const v = _victimLastNight(ctx.ep);
+    if (!v) return 0;
+    const threads = gs.tr?.threads || [];
+    return threads.some(t => t.kind === 'suspicion' && t.parties.includes(v)) ? 2 : 0;
+  },
+  fire(ctx) {
+    const [a, b] = ctx.actors;
+    const v = _victimLastNight(ctx.ep);
+    addBond(a, b, 1);
+    const t = openThread(FAMILY, [a, b], ctx.ep,
+      `${a} and ${b} realized, too late, that ${v} had spent their last days under a suspicion that never actually went anywhere.`);
+    return { branch: 'wrongly-suspected-irony', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 1 };
+  },
+});

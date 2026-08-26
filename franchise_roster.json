@@ -4657,6 +4657,25 @@
         "temperament": 9
       },
       "profileSources": {}
+    },
+    {
+      "name": "Dunia",
+      "slug": "dunia",
+      "gender": "f",
+      "sexuality": "lesbian",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 5,
+        "endurance": 4,
+        "mental": 7,
+        "social": 8,
+        "strategic": 4,
+        "loyalty": 8,
+        "boldness": 4,
+        "intuition": 8,
+        "temperament": 8
+      },
+      "profileSources": {}
     }
   ]
 }

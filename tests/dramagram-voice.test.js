@@ -203,3 +203,73 @@ describe('the banks are complete enough to use', () => {
     expect(comments, 'the comment bank is thin').toBeGreaterThan(60);
   });
 });
+
+describe('the room reads the news before it reacts to it', () => {
+  // COMMENTS is written for good news and was merged into EVERY kind for
+  // variety. Under a bereavement post the room said "so happy for you both i
+  // could scream". Under an arrest, "YES. finally. YES." Under an illness,
+  // "been waiting years for this one".
+  //
+  // Found by printing what a cheating post actually drew, which is also how
+  // the caption for it was found: it had no bank of its own and fell through
+  // to the celebratory fallback.
+  const HARD = ['bereavement', 'illness', 'injury', 'arrested', 'scandal', 'cancelled',
+    'lawsuit', 'divorced', 'separated', 'broke-up', 'cheated', 'bankruptcy',
+    'lost-money', 'laid-off', 'relapse', 'rehab', 'estranged', 'feud'];
+  // Words that can only belong under good news.
+  const CHEER = /congratulat|so happy|delighted|wonderful|lovely news|so pleased|YES\. finally|been waiting years|amazing news|SOBBING/i;
+
+  const room = kind => {
+    const out = [];
+    for (let seq = 1; seq <= 8; seq++) {
+      const ev = { player: 'ida', whom: 'bo', kind, afterSeason: 'bb-2', seq,
+        _sig: significanceOf(kind) };
+      out.push(...commentsFor(ev, {
+        ties: [{ slug: 'cy', weight: 7 }, { slug: 'dee', weight: 2 },
+          { slug: 'eve', weight: -6 }, { slug: 'fay', weight: 4 }],
+        names: { cy: 'Cy', dee: 'Dee', eve: 'Eve', fay: 'Fay' },
+      }).map(c => c.text));
+    }
+    return out.filter(Boolean);
+  };
+
+  it('never congratulates anybody on bad news', () => {
+    for (const kind of HARD) {
+      const said = room(kind);
+      expect(said.length, `nobody said anything under ${kind}`).toBeGreaterThan(0);
+      const wrong = said.filter(t => CHEER.test(t));
+      expect(wrong, `the room celebrated a ${kind}: ${wrong.join(' | ')}`).toEqual([]);
+    }
+  });
+
+  it('still celebrates the good news', () => {
+    // The fix must not flatten everything into sympathy.
+    const happy = ['wedding', 'birth', 'graduated', 'engaged'].flatMap(room);
+    expect(happy.some(t => CHEER.test(t)), 'nothing in the room is happy any more').toBe(true);
+  });
+
+  it('gives infidelity its own words rather than the fallback', () => {
+    // Without a bank of its own this drew FALLBACK.major, so somebody whose
+    // affair had just aired captioned it "big news" and "something has changed
+    // and it's good".
+    expect(CAPTIONS.cheated, 'no caption bank for it').toBeTruthy();
+    const seen = new Set();
+    for (const arch of ['hero', 'villain', 'floater', 'goat', 'mastermind', 'hothead']) {
+      for (let seq = 1; seq <= 4; seq++) {
+        const line = captionFor({ player: 'ida', whom: 'bo', kind: 'cheated',
+          afterSeason: 'bb-2', seq, _sig: 'major' },
+        { archetype: arch, names: { ida: 'Ida', bo: 'Bo' } });
+        expect(line, 'an empty caption').toBeTruthy();
+        for (const bank of Object.values(FALLBACK)) {
+          for (const tone of Object.values(bank)) {
+            expect(tone, `it fell through to the generic bank: "${line}"`).not.toContain(line);
+          }
+        }
+        seen.add(line);
+      }
+    }
+    // And nobody announces it cheerfully.
+    for (const line of seen) expect(line).not.toMatch(CHEER);
+    expect(seen.size, 'every archetype posts the same sentence').toBeGreaterThan(3);
+  });
+});

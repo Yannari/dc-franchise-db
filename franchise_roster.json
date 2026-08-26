@@ -1438,16 +1438,11 @@
         "temperament": 6
       },
       "sexuality": "straight",
-      "voice": "Gentle, earnest, and slightly self-conscious, with humor used to ease tension rather than dominate it. Mike asks before assuming, speaks most firmly when protecting someone, and admits uncertainty in short, honest bursts. He should sound like an integrated adult, never like a collection of impressions.",
+      "voice": "Mike talks like someone trying to keep the peace while also hiding panic: cautious, apologetic, and quick to soften what he says. In arguments, he tends to dodge or explain rather than attack, unless someone he cares about is in danger. His vocabulary is earnest and teenager-casual, with nervous stalling when he is cornered and a warmer, more direct tone when he finally tells the truth.",
       "profileSources": {
         "voice": [
           {
-            "label": "Mike character reference",
-            "url": "https://totaldrama.fandom.com/wiki/Mike",
-            "kind": "source-canon"
-          },
-          {
-            "label": "Fans vs Favorites profile interpretation",
+            "label": "Read from the wiki article, not stated in it",
             "kind": "interpretation"
           }
         ],
@@ -1482,6 +1477,38 @@
             "label": "Mike character reference",
             "url": "https://totaldrama.fandom.com/wiki/Mike",
             "kind": "source-canon"
+          }
+        ],
+        "nationality": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ],
+        "descriptor": [
+          {
+            "label": "Total Drama Wiki - Mike",
+            "url": "https://totaldrama.fandom.com/wiki/Mike",
+            "kind": "source-canon",
+            "quote": "an overly dedicated actor/comedian"
+          }
+        ],
+        "birthdate": [
+          {
+            "label": "16 at Total Drama Revenge of the Island (spring 2021), so born 2005",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "age": [
+          {
+            "label": "16 at Total Drama Revenge of the Island (spring 2021), and it is fall 2026 now",
+            "kind": "simulator-continuity"
+          }
+        ],
+        "hometown": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
           }
         ]
       },

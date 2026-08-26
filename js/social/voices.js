@@ -47,17 +47,17 @@ export const DELIVERY = {
   // count drifting from 7 to 8 was this and only this: Hasan is composed and
   // formal, reads as a lawyer because he is training to be one, and the word
   // that put him in a jersey-tough delivery bucket was his degree.
-  streetwise: [/tough|street|jersey|scrapp|hardened|delinquent|rebel|punk|criminal(?! law)|thug/, 7],
+  streetwise: [/tough|street|jersey|scrapp|hardened|delinquent|rebel|punk|criminal(?! law)|thug/, 6],
   boastful: [/boast|arrogant|egotis|vain|self-obsessed|narcissis|cocky|braggart|conceited/, 9],
-  excitable: [/excit|hyper|energetic|bubbly|manic|enthusiast|bouncy|eager|giddy/, 12],
-  theatrical: [/dramat|theatric|flamboyan|over-the-top|melodram|diva|showman|grandiose|poetic|opera/, 13],
+  excitable: [/excit|hyper|energetic|bubbly|manic|enthusiast|bouncy|eager|giddy/, 13],
+  theatrical: [/dramat|theatric|flamboyan|over-the-top|melodram|diva|showman|grandiose|poetic|opera/, 14],
   sarcastic: [/sarcas|snark|sardonic|mocking|cynic|smug|smart-alec|wry|ironic/, 15],
   formal: [/formal|articulate|precise|analytic|intellect|scholar|clinical|methodical|polite|proper/, 15],
-  nervous: [/nervous|anxious|timid|shy|stammer|panick|insecure|jitter|worrier|meek|fearful/, 19],
+  nervous: [/nervous|anxious|timid|shy|stammer|panick|insecure|jitter|worrier|meek|fearful/, 17],
   deadpan: [/deadpan|dry |monoton|stoic|laconic|unbothered|nonchalant|apathetic|bored|flat /, 19],
-  manipulative: [/manipulat|silky|flatter|charm|schem|slick|smooth|honey|calculat|cunning/, 26],
+  manipulative: [/manipulat|silky|flatter|charm|schem|slick|smooth|honey|calculat|cunning/, 24],
   blunt: [/blunt|brash|loud|aggressive|abrasive|no-nonsense|harsh|gruff|confrontational|bossy/, 43],
-  warm: [/kind|sweet|warm|gentle|caring|nurtur|supportive|optimis|cheerful|friendly|earnest/, 82],
+  warm: [/kind|sweet|warm|gentle|caring|nurtur|supportive|optimis|cheerful|friendly|earnest/, 80],
 };
 
 /**

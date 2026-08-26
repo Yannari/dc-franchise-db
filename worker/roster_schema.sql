@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS roster (
 
   voice       TEXT,                   -- authored raw voice profile prose
   profile_sources TEXT,                -- JSON field-keyed provenance arrays
+  continuity_note TEXT,                -- authored read of what their seasons mean
 
   -- ── the bio ──
   --

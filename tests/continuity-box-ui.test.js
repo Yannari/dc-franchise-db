@@ -89,6 +89,38 @@ describe('the continuity box draws', () => {
   });
 });
 
+// The continuity read is AUTHORED, unlike everything above it in the box, so
+// it has to survive a Publish. Publish regenerates franchise_roster.json
+// wholesale from D1 — a field the database has never heard of is deleted the
+// next time somebody presses the button, silently, with no diff to notice.
+// That very nearly ate twelve researched profiles, so the chain is checked
+// end to end rather than trusted.
+describe('the continuity read reaches the database', () => {
+  const read = p => fs.readFileSync(p, 'utf8');
+
+  it('is sent up with the roster entry, not just kept in the browser', () => {
+    const studio = read('js/studio.js');
+    expect(studio, 'must ride along with the bio fields into the save payload')
+      .toMatch(/'continuityNote'\]\)\s*\{/);
+  });
+
+  it('has a column, a migration, and a way back out again', () => {
+    const worker = read('worker/worker-studio.js');
+    // Accepted on the way in…
+    expect(worker).toMatch(/ROSTER_FIELDS = \[[^\]]*'continuityNote'/);
+    expect(worker).toMatch(/continuity_note=excluded\.continuity_note/);
+    // …and published on the way out. Missing this half is the failure that
+    // looks like it works: saves succeed, and the field vanishes at Publish.
+    expect(worker).toMatch(/out\.continuityNote = r\.continuity_note/);
+
+    expect(read('worker/roster_schema.sql')).toMatch(/continuity_note TEXT/);
+    // SQLite has no ADD COLUMN IF NOT EXISTS, so the column needs its own
+    // migration or a deploy reaches a table that does not have it.
+    expect(read('worker/roster_migration_continuity_note.sql'))
+      .toMatch(/ALTER TABLE roster ADD COLUMN continuity_note TEXT/);
+  });
+});
+
 describe('the fold is remembered', () => {
   it('opens closed the first time and reopens the way it was left', async () => {
     const first = skeleton();

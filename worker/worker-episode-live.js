@@ -40,6 +40,10 @@ export default {
       // as `social` for living here: this worker already holds the key and
       // already dispatches creative writing by mode.
       return await generateCastingInterview(body, env);
+    } else if (mode === "continuity-read") {
+      // What a career MEANS. The opposite of casting-interview directly above:
+      // that one must never see a season, this one may see nothing else.
+      return await generateContinuityRead(body, env);
     } else if (mode === "wiki-resolve") {
       // Which wiki page is this character? Search only — no model, no cost.
       // Split from `wiki-profile` so the browser can ask "who do you mean?"
@@ -4106,4 +4110,132 @@ async function generateWikiProfile(body, env) {
       canon: Object.values(profileSources).filter(s => s[0].kind === "source-canon").length,
     },
   });
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+ * CONTINUITY READ — what their seasons MEAN.
+ *
+ * The mirror of `casting-interview`, and the opposite rule. That one must
+ * never see a season, because a tape recorded at casting cannot know how the
+ * game went. This one may see nothing else: it is the read of a career that
+ * has already happened, and every sentence has to be answerable from the
+ * record it is handed.
+ *
+ * It writes the three sections the hand-authored continuity bible has that
+ * `js/continuity.js` cannot derive. The chronology is transcription — the
+ * archive already holds gameplayStyle, keyMoments, alliances and rivalries,
+ * so asking a model for it would be paying to have facts re-typed, with a
+ * chance of them coming back wrong. What the archive does NOT hold is
+ * judgement:
+ *
+ *   evolution  — how two seasons differ, and what the second proved or cost.
+ *   motivation — what they want now, given how the last one ended.
+ *   hooks      — the unresolved threads a writer can actually pull on.
+ *
+ * VOCABULARY IS NOT DECORATION HERE. The caller sends each appearance with the
+ * words of its own show already attached, and the prompt forbids borrowing
+ * across them. This project's recurring bug is one show's language printed
+ * over the other — "never nominated" over a camp season — and a paragraph
+ * about a career spanning both shows is precisely where that happens.
+ * ═══════════════════════════════════════════════════════════════════════ */
+async function generateContinuityRead(body, env) {
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
+
+  if (!env.ANTHROPIC_API_KEY) {
+    return json({ ok: false, error: "The continuity read needs ANTHROPIC_API_KEY on this worker." }, 500);
+  }
+  const person = body.person || {};
+  const appearances = Array.isArray(body.appearances) ? body.appearances : [];
+  if (!person.name) return json({ ok: false, error: "person.name is required" }, 400);
+  if (!appearances.length) {
+    // A character who has not played has no continuity, and inventing one is
+    // the failure this whole feature is trying to avoid.
+    return json({ ok: false, error: `${person.name} has not finished a season yet.` }, 422);
+  }
+
+  const record = appearances.map(a => {
+    const lines = [
+      `${a.show} ${a.seasonId} — ${a.title}`,
+      `  Finished: ${a.placement}${a.outcome ? ` (${a.outcome})` : ""}`,
+      a.gameplayStyle ? `  Style: ${a.gameplayStyle}` : "",
+      a.stats?.length ? `  Record: ${a.stats.map(s => `${s.value} ${s.label}`).join(", ")}` : "",
+      a.keyMoments?.length ? `  What happened:\n${a.keyMoments.map(m => `    - ${m}`).join("\n")}` : "",
+      a.alliances?.length ? `  Alliances: ${a.alliances.join(", ")}` : "",
+      a.rivalries?.length ? `  Rivalries: ${a.rivalries.join(", ")}` : "",
+      // The show's own words travel WITH the season, so a mixed career cannot
+      // be written in one show's language by accident.
+      `  On this show people are ${a.exitWord}, and a round is called a ${a.roundWord}.`,
+    ];
+    return lines.filter(Boolean).join("\n");
+  }).join("\n\n");
+
+  const who = [
+    person.archetype ? `Archetype: ${person.archetype}` : "",
+    person.voice ? `Voice: ${person.voice}` : "",
+    person.personality ? `Personality: ${person.personality}` : "",
+  ].filter(Boolean).join("\n");
+
+  const system = [
+    "You read a competition career and say what it means. You are writing notes",
+    "for whoever books this person's next season.",
+    "",
+    "Answer with ONE JSON object and nothing else:",
+    '{"evolution":"...","motivation":"...","hooks":"..."}',
+    "",
+    "evolution  — 2-3 sentences. How the later seasons differ from the earlier",
+    "             ones, and what each result proved or cost. If there is only",
+    "             one season, say what that season established and leave the",
+    "             comparison out rather than inventing a second.",
+    "motivation — 2-3 sentences. What they want going in NOW, given how the",
+    "             last one ended. Not a wish; something that would make them",
+    "             act differently at a vote.",
+    "hooks      — 2-3 sentences. Unresolved threads a writer can pull on —",
+    "             a debt, a rematch, a question the record left open. Name the",
+    "             other people involved.",
+    "",
+    "HARD RULES",
+    "- Every claim must be answerable from the record below. No invented",
+    "  seasons, placements, alliances, betrayals or relationships.",
+    "- Use each show's own words for that show's season, exactly as the record",
+    "  states them. Never describe a Total Drama season with Big Brother terms",
+    "  (nominated, evicted, Head of Household, veto) or a Big Brother season",
+    "  with Total Drama terms (voted out, tribal council, idol, immunity).",
+    "- Write about the person, not the format. No recapping the chronology —",
+    "  whoever reads this already has it on the same screen.",
+    "- Plain prose. No headings, no bullet points, no second person.",
+  ].join("\n");
+
+  const user = `${person.name}\n${who}\n\nThe record:\n\n${record}`;
+
+  let raw = "";
+  try {
+    raw = await callAnthropicText(system, user, env, claudeModel("creative", body, env), 1400);
+  } catch (e) {
+    return json({ ok: false, error: `model: ${e.message}` }, 502);
+  }
+
+  let parsed = null;
+  try {
+    const m = raw.match(/\{[\s\S]*\}/);
+    parsed = JSON.parse(m ? m[0] : raw);
+  } catch {
+    return json({ ok: false, error: "the model did not return usable JSON" }, 502);
+  }
+
+  const clean = k => (typeof parsed?.[k] === "string" ? parsed[k].trim() : "");
+  const evolution = clean("evolution"), motivation = clean("motivation"), hooks = clean("hooks");
+  if (!evolution && !motivation && !hooks) {
+    return json({ ok: false, error: "nothing usable came back" }, 502);
+  }
+
+  // Assembled here rather than in the browser so the stored note and the
+  // preview are the same string — the Studio saves what it showed.
+  const note = [
+    evolution && `Evolution. ${evolution}`,
+    motivation && `Going in now. ${motivation}`,
+    hooks && `Open threads. ${hooks}`,
+  ].filter(Boolean).join("\n\n");
+
+  return json({ ok: true, note, sections: { evolution, motivation, hooks } });
 }

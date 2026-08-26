@@ -489,9 +489,32 @@ describe('the roster owns voice and profile provenance', () => {
 });
 
 describe('the roster profile upsert bind shape', () => {
-  it('has one placeholder for every value bound after the nine stats', () => {
+  // Counted rather than spelled as a magic number. The literal version read
+  // `(?:\?,){13}\?` and had to be hand-edited every time a column was added —
+  // which means the day somebody adds a column and DOESN'T update it, the
+  // failure looks identical to the bug the test is for. Comparing the two
+  // sides of the statement to each other checks the actual invariant and needs
+  // no maintenance.
+  it('has one placeholder for every column bound after the nine stats', () => {
     const worker = read('worker/worker-studio.js');
-    expect(worker).toMatch(/\$\{STAT_KEYS\.map\(\(\) => '\?'\)\.join\(','\)\},(?:\?,){13}\?,datetime\('now'\)/);
+    const insert = worker.slice(worker.indexOf('INSERT INTO roster'));
+    const stmt = insert.slice(0, insert.indexOf('ON CONFLICT'));
+
+    const columnList = stmt.slice(stmt.indexOf('(') + 1, stmt.indexOf('VALUES'));
+    const columns = columnList
+      .slice(columnList.indexOf('${STAT_KEYS.join(\',\')}') + '${STAT_KEYS.join(\',\')}'.length)
+      // The last column carries the statement's closing paren; strip it rather
+      // than dropping the entry, which silently loses updated_at.
+      .split(',').map(s => s.trim().replace(/\)+$/, '')).filter(Boolean);
+
+    const valuesTail = stmt.slice(stmt.indexOf('VALUES'));
+    const afterStats = valuesTail.slice(valuesTail.indexOf("join(',')}") + "join(',')}".length);
+    const placeholders = (afterStats.match(/\?/g) || []).length;
+
+    // updated_at is the one column filled by SQL rather than by a bind.
+    expect(columns).toContain('updated_at');
+    expect(placeholders, `columns after the stats: ${columns.join(', ')}`)
+      .toBe(columns.length - 1);
   });
 });
 

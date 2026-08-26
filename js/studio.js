@@ -140,6 +140,7 @@ function _blankChar() {
     // The bio. `birthdate` is authoritative over `age` when both are present —
     // an age is a number that silently rots, a date does not.
     birthdate:'', hometown:'', occupation:'', backstory:'', personality:'',
+    continuityNote:'',
     // The casting interview, held as { key: answer } while it is being edited
     // and serialised on save. See js/casting-interview.js.
     interview: {}, profileSources:{},
@@ -1357,6 +1358,20 @@ function _renderEditor() {
           <span class="st-hint" id="st-cont-count">reading the archive&hellip;</span>
         </summary>
         <div class="st-cont-body" id="st-cont-body"></div>
+        <!-- The read. Everything above it is transcribed from the archive and
+             read-only because it is already true; this is the judgement about
+             it, which is authored and therefore yours to edit. -->
+        <div class="st-cont-read">
+          <label class="st-l">Continuity read
+            <span class="st-hint">what the seasons above MEAN — drafted from them, then yours</span>
+            <textarea class="st-input st-area" id="st-f-continuity" rows="6"
+              placeholder="Evolution, what they want going in now, and the threads left open. Draft it from their record, then edit.">${_esc(d.continuityNote || '')}</textarea>
+          </label>
+          <div class="st-cont-gen">
+            <button type="button" class="st-btn" id="st-cont-write">Draft from their record</button>
+            <span class="st-hint" id="st-cont-note"></span>
+          </div>
+        </div>
       </details>
 
       <div class="st-actions">
@@ -1542,6 +1557,11 @@ function _renderEditor() {
   }
 
   _fillContinuity(ed, d.slug);
+  ed.querySelector('#st-f-continuity')?.addEventListener('input', e => { d.continuityNote = e.target.value; });
+  ed.querySelector('#st-cont-write')?.addEventListener('click', () => {
+    const note = ed.querySelector('#st-cont-note');
+    _draftContinuityRead(ed, d, t => { if (note) note.textContent = t; });
+  });
 
   // load / save / delete
   ed.querySelector('#st-load-profile')?.addEventListener('click', () => {
@@ -1741,6 +1761,58 @@ export async function _fillContinuity(ed, slug) {
 function _ordinal(n) {
   const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+/**
+ * Draft the read from the record the box is already showing.
+ *
+ * The appearances go up with the request rather than being looked up again on
+ * the worker: the browser has just derived them, they carry each season's own
+ * vocabulary, and a second copy of that derivation living server-side is how
+ * this project ends up with two versions of the same fact. The worker holds
+ * the key; it does not need to hold the archive.
+ *
+ * Overwriting is confirmed, never silent. A drafted note that quietly replaced
+ * a paragraph somebody wrote would be the same failure as a Publish wiping a
+ * profile, in miniature.
+ */
+async function _draftContinuityRead(ed, d, say) {
+  const btn = ed.querySelector('#st-cont-write');
+  const field = ed.querySelector('#st-f-continuity');
+  const existing = (field?.value || '').trim();
+  // eslint-disable-next-line no-alert
+  if (existing && !window.confirm('There is already a continuity read here.\n\nReplace it?')) return;
+
+  if (btn) btn.disabled = true;
+  say('reading their record…');
+  try {
+    const appearances = await appearancesFor(d.slug);
+    if (!appearances.length) { say(`${d.name} has not finished a season yet.`); return; }
+
+    const res = await fetch(writerEndpoint(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'continuity-read',
+        person: {
+          name: d.name, archetype: d.archetype,
+          voice: d.voice, personality: d.personality,
+        },
+        appearances,
+      }),
+    });
+    const json = await res.json().catch(() => null);
+    if (!res.ok || !json?.ok) throw new Error(json?.error || `worker ${res.status}`);
+
+    d.continuityNote = json.note;
+    if (field) field.value = json.note;
+    const seasons = appearances.length;
+    say(`drafted from ${seasons} season${seasons > 1 ? 's' : ''} — edit it freely`);
+  } catch (e) {
+    say(`failed: ${e.message}`);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 /** One season's row. */
@@ -2202,7 +2274,11 @@ async function _save() {
   // read by hand.
   const bio = {};
   for (const k of ['age', 'birthdate', 'ethnicity', 'nationality',
-    'hometown', 'occupation', 'descriptor', 'backstory', 'personality']) {
+    'hometown', 'occupation', 'descriptor', 'backstory', 'personality',
+    // Rides with the bio because it must reach D1 for the same reason the bio
+    // does: Publish rebuilds franchise_roster.json from that table, so a field
+    // the database never sees is deleted the next time the button is pressed.
+    'continuityNote']) {
     const v = (d[k] ?? '').toString().trim();
     if (v) bio[k] = v;
   }
@@ -2228,6 +2304,7 @@ async function _save() {
     ethnicity: d.ethnicity, nationality: d.nationality, descriptor: d.descriptor,
     birthdate: d.birthdate, hometown: d.hometown,
     occupation: d.occupation, backstory: d.backstory, personality: d.personality,
+    continuityNote: d.continuityNote,
     castingInterview: iv, profileSources: d.profileSources,
     voice: d.voice, avatarDataUri: d.avatarDataUri || '',
     returneeDataUri: d.returneeDataUri || '' };
@@ -2760,6 +2837,8 @@ function _injectCSS() {
   .st-cont-ties{font-size:11.5px;opacity:.8;display:grid;gap:2px}
   .st-cont-thin{font-size:11.5px;opacity:.6;font-style:italic}
   .st-cont-sum-line{font-size:12px;opacity:.8;padding-bottom:2px}
+  .st-cont-read{border-top:1px dashed var(--st-stroke,rgba(255,255,255,.14));padding-top:11px;display:grid;gap:9px}
+  .st-cont-gen{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .st-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
   .st-btn{background:var(--surface,#26262e);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font:inherit;font-size:12px;padding:8px 12px;cursor:pointer}
   .st-btn:hover{border-color:var(--accent,#f4b23e)}

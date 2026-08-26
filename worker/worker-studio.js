@@ -61,7 +61,7 @@ const VOICE_PATH = 'voice-profiles.json';
 const LIFE_PATH = 'life_events.json';
 const AVATAR_DIR = 'assets/avatars';
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
-const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'voice', 'profileSources'];
+const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'voice', 'profileSources', 'continuityNote'];
 
 export default {
   async fetch(request, env) {
@@ -629,6 +629,16 @@ function rosterRowToJson(r) {
       if (sources && typeof sources === 'object' && !Array.isArray(sources)) out.profileSources = sources;
     } catch { /* malformed legacy provenance is omitted from the snapshot */ }
   }
+  // The continuity read — what their seasons MEAN, as opposed to what the
+  // archive already records that they did. Authored (or drafted and then
+  // edited), so it lives here and not in a derivation: js/continuity.js can
+  // rebuild the chronology from the season documents any time, and cannot
+  // rebuild a judgement about it.
+  //
+  // It has to travel through D1 or it does not survive. Publish regenerates
+  // franchise_roster.json wholesale FROM this table, so a field the database
+  // never hears about is deleted the next time somebody presses the button.
+  if (r.continuity_note) out.continuityNote = r.continuity_note;
   // The bio, as fields. Published alongside the rest so the static site can ask
   // demographic questions without reaching for D1 — and so the answer on the
   // site is the same one the database would give.
@@ -726,16 +736,17 @@ async function rosterSave(env, payload) {
 
   await d.prepare(
     `INSERT INTO roster (slug,name,gender,sexuality,archetype,${STAT_KEYS.join(',')},
-                         voice,profile_sources,age,birthdate,ethnicity,nationality,
+                         voice,profile_sources,continuity_note,age,birthdate,ethnicity,nationality,
                          hometown,occupation,descriptor,backstory,personality,
                          casting_interview,
                          is_returnee,retired,updated_at)
-     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
      ON CONFLICT(slug) DO UPDATE SET
        name=excluded.name, gender=excluded.gender, sexuality=excluded.sexuality,
        archetype=excluded.archetype,
        ${STAT_KEYS.map(k => `${k}=excluded.${k}`).join(', ')},
        voice=excluded.voice, profile_sources=excluded.profile_sources,
+       continuity_note=excluded.continuity_note,
        age=excluded.age, birthdate=excluded.birthdate,
        ethnicity=excluded.ethnicity, nationality=excluded.nationality,
        hometown=excluded.hometown, occupation=excluded.occupation,
@@ -749,6 +760,7 @@ async function rosterSave(env, payload) {
     payload.gender || null, payload.sexuality || null, archetype,
     ...statVals,
     payload.voice ? String(payload.voice) : null, profileSources,
+    text(payload.continuityNote),
     age, birthdate, text(payload.ethnicity), text(payload.nationality),
     text(payload.hometown), text(payload.occupation),
     text(payload.descriptor), text(payload.backstory), text(payload.personality),

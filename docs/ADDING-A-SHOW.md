@@ -15,7 +15,7 @@ what the command prints, the command is right and this file is stale — fix the
 file in the same commit as whatever moved.
 
 **The one-line summary:** the registry in `js/shows.js` is the source of truth,
-23 modules already read it and need nothing from you, and everything
+35 modules already read it and need nothing from you, and everything
 that still holds its own copy of the show list is listed in §9. Adding a show is
 a registry entry plus an engine; the work in between is making sure no screen
 falls back to the default show's vocabulary.
@@ -45,15 +45,20 @@ Write both answers down. §6 is a checklist against them.
 ## 1. The registry — `js/shows.js`
 
 One entry. This is the only file that knows slugs, prefixes, display names and
-vocabulary. Twenty-three non-test files import it today:
+vocabulary. **Thirty-five** non-test files import it today, up from the
+twenty-three this document was written against — the growth is the identity
+collapse in §9 landing, and it is the number moving in the right direction:
 
 `awards.html`, `compare.html`, `current-season.html`, `devotees.html`,
-`franchise.html`, `js/core.js`, `js/episode-store.js`, `js/fame.js`,
-`js/show-switcher.js`, `js/site-header.js`, `js/social-page.js`,
-`js/social/adapter.js`, `js/stats-export.js`, `js/wiki-fill-run.js`,
-`js/wiki-view.js`, `leaderboards.html`, `rankings.html`,
-`season-awards_ref.html`, `season_ref.html`, `seasons.html`, `timeline.html`,
-`worker/worker-studio.js`.
+`franchise.html`, `js/alumni.js`, `js/core.js`, `js/episode-store.js`,
+`js/episode.js`, `js/fame.js`, `js/finale.js`, `js/franchise-meta.js`,
+`js/franchise-ui.js`, `js/kristal.js`, `js/quick-setup.js`,
+`js/ranking-boards.js`, `js/rankings-update.js`, `js/ratings-backfill.js`,
+`js/ratings.js`, `js/show-switcher.js`, `js/site-header.js`,
+`js/social-page.js`, `js/social/adapter.js`, `js/stats-export.js`,
+`js/wiki-fill-run.js`, `js/wiki-view.js`, `js/wiki.js`, `leaderboards.html`,
+`player.html`, `rankings.html`, `season-awards_ref.html`, `season_ref.html`,
+`seasons.html`, `timeline.html`, `worker/worker-studio.js`.
 
 Every one of those needs **nothing** from you beyond the entry.
 
@@ -350,35 +355,51 @@ skips a 404 so a new show does not break the pages before it has been ranked.
 
 ## 9. The duplication you will hit
 
-These files each hold their own copy of the show list. Every one of them is a
-place a third show can be forgotten, and none of them will error — they will
-just describe your show as Total Drama.
+**The eight identity maps in this table are gone.** They were collapsed into
+`js/shows.js` on the Traitors branch (2026-08-25), which is why §1 now counts
+thirty-five importers instead of twenty-three. The table is kept because the
+identifiers are still the fastest way to understand what was there, and because
+the row that says "leave it" is the one worth reading before you delete
+anything: not every per-format map is a duplicate.
 
-| File | Identifier | Kind |
-|---|---|---|
-| `player.html` | `SHOW_PREFIX` (~681), `NAMES` (~792), `ICONS` (~793), `SHOW_NAMES` (~909, ~918), and a literal `['total-drama', 'big-brother']` (~727) | identity |
-| `js/wiki.js` | `SHOW_NAMES` (~25) | identity |
-| `js/wiki-view.js` | `SHOW_META` — name, short, emoji, accent (~28) | identity + styling |
-| `season_ref.html` | `SHOW_NAMES` (~320) | identity |
-| `current-season.html` | `CS_SHOWS` prefix map (~870) | identity |
-| `compare.html` | `CMP_SHOW_LABEL` (~832) | identity |
-| `franchise.html` | `SHOW_LABEL` (~705) | identity |
-| `js/alumni.js` | `_SHOW_NAMES` (~106) | identity |
-| `js/social/adapter.js` | `SHOW_WORDS` (~40) | **vocabulary — leave it** |
-| `worker/worker-season-live.js` | `SHOW_WORDS` fallback (~716) | **vocabulary — leave it** |
-| `js/settings.js` | venue list per format (~26) | data, per show |
-| `js/rankings-update.js` | per-format ranking config (~360) | data, per show |
-| `js/quick-setup.js` | `CONFIG_SCOPE` + the show picker | data, per show |
+| File | Identifier | Kind | Status |
+|---|---|---|---|
+| `player.html` | `SHOW_PREFIX`, `NAMES`, `ICONS`, `SHOW_NAMES`, and a literal `['total-drama', 'big-brother']` | identity | **collapsed** |
+| `js/wiki.js` | `SHOW_NAMES` | identity | **collapsed** |
+| `js/wiki-view.js` | `SHOW_META` — name, short, emoji, accent | identity + styling | **collapsed** |
+| `season_ref.html` | `SHOW_NAMES` | identity | **collapsed** |
+| `current-season.html` | `CS_SHOWS` prefix map | identity | **collapsed** (reads `window.__SHOWS`) |
+| `compare.html` | `CMP_SHOW_LABEL` | identity | **collapsed** |
+| `franchise.html` | `SHOW_LABEL` | identity | **collapsed** |
+| `js/alumni.js` | `_SHOW_NAMES` | identity | **collapsed** |
+| `js/social/adapter.js` | `SHOW_WORDS` (~40) | **vocabulary — leave it** | stands |
+| `js/social/adapter.js` | three ternaries in `eventLabel()` (~114–117) | identity leak | **not fixed — see below** |
+| `worker/worker-season-live.js` | `SHOW_WORDS` fallback (~716) | **vocabulary — leave it** | stands |
+| `js/settings.js` | venue list per format | data, per show | stands |
+| `js/rankings-update.js` | per-format ranking config | data, per show | stands |
+| `js/quick-setup.js` | `CONFIG_SCOPE` | data, per show | stands |
+| `js/quick-setup.js` | the show picker cards | identity | **collapsed** (2026-08-25) |
+| `js/player-trivia.js` | per-format trivia | data, per show | stands, never in this table |
+| `js/ranking-boards.js` | format → board file | data, per show | stands, never in this table |
 
-Eight of those are pure identity — a name, an icon, a prefix — and belong in the
-registry. The rest are per-show DATA and are right where they are: a show's
-venues, its ranking weights, its vocabulary and its config scope are not
-identity and do not collapse.
+Two things that table did not say when it was written, and both cost time:
 
-**Recommended before you start:** collapse the eight identity maps into
-`js/shows.js` and import them. Roughly an hour, mechanical, and it converts
-eight chances to forget your show into zero. Keep the vocabulary and per-show
-data maps where they are.
+**The collapse missed a ninth list.** `js/quick-setup.js`'s show picker held
+`{ id, name, tag, icon }` per show and was not in the table, so nobody looked at
+it — and it had already drifted: Big Brother's icon was 🏠 there and 📹 in the
+registry, so the same show wore two faces on two screens and nothing errored.
+That is the whole failure mode in one line. It now derives `name` and `icon`
+from the registry; `tag` stays local because a picker's sales copy is not
+identity. Anything you find that is not in the table above is another one:
+re-derive with §13 rather than trusting this list.
+
+**`js/social/adapter.js` is BOTH.** `SHOW_WORDS` is genuine per-show vocabulary
+and must stay. But `eventLabel()` (~114–117) decides three labels with
+`format === 'big-brother' ? A : B`, so a third show is told it had a
+"Challenge win" and an "Elimination" by fallthrough — identity smuggled in as a
+ternary. It is deferred with the wiki-view screen work, not fixed, and the
+reason it survived every audit is in §13: the duplicate-hunting grep matches
+map shapes only, and a ternary has no braces in it.
 
 ---
 
@@ -387,9 +408,10 @@ data maps where they are.
 Each step leaves the site working.
 
 1. **Registry entry** (§1). Nothing uses it yet; the switcher already lists it.
-2. **Collapse the identity duplicates** (§9) while the new show is still a
-   registry entry with no data — the diff is small and the failure mode is
-   obvious.
+2. **Collapse any identity duplicate you find** (§9) while the new show is
+   still a registry entry with no data — the diff is small and the failure mode
+   is obvious. The eight in the table are already done; run §13's two greps to
+   find the ones that appeared since.
 3. **Setup scope map** (§3), so the show can be configured but not run.
 4. **Engine** (§2) behind the runnable flag, dispatched in both places.
 5. **Export** (§5) — reuse `weeks` or `votingHistory` if the format allows.
@@ -471,12 +493,33 @@ built from, so a difference means the code moved and this file did not.
 # Ignore vendored and worktree copies in all of these, or the counts inflate.
 EX='node_modules|\.claude/'
 
-# Everything that imports the registry (§1). Expect 23 non-test files.
+# Everything that imports the registry (§1). Expect 36 lines — 35 non-test
+# files plus js/shows.js itself.
 grep -rln "shows\.js" --include=*.js --include=*.html .   | grep -Ev "$EX" | grep -v "^./tests" | sort
 
-# Everything holding its own show map (§9). Expect the 13 files in that table;
-# anything else is a new duplicate that will silently mis-label a third show.
+# MAP-SHAPED duplicates (§9). Expect exactly these 7 files, all of them per-show
+# DATA that is right where it is:
+#   js/player-trivia.js  js/quick-setup.js  js/ranking-boards.js
+#   js/rankings-update.js  js/settings.js  js/social/adapter.js
+#   worker/worker-season-live.js
+# Anything else is a new duplicate that will silently mis-label a third show.
+# Two of those seven — js/player-trivia.js and js/ranking-boards.js — were
+# never in §9's table at all, which is the point of running the command.
 grep -rn "'total-drama'" --include=*.html --include=*.js .   | grep -Ev "$EX" | grep -v "^./tests/"   | grep -E "\{ ?'total-drama'|'total-drama':" | grep -v "js/shows.js"   | awk -F: '{print $1}' | sort -u
+
+# TERNARY-SHAPED duplicates. ONE GREP IS NOT ENOUGH: the command above matches
+# an object literal keyed by slug, and a show list hidden in
+# `x === 'big-brother' ? A : B` has no braces and no colon-after-slug, so it is
+# invisible to it. Every such ternary is a two-show world that calls a third
+# show by the default show's name — which is exactly how js/social/session.js
+# came to generate an entire season's social feed in Total Drama's words while
+# passing every audit in this document. Expect 13 hits across 7 files:
+#   js/wiki-view.js (4)  js/social/adapter.js (3)  js/cast-ui.js (2)
+#   js/run-ui.js  js/social/events.js  player.html  worker/worker-season-live.js
+grep -rn "=== 'big-brother' ?" --include=*.js --include=*.html .   | grep -Ev "$EX" | grep -v "^./tests/"
+
+# Neither grep is exhaustive. `!== 'big-brother'`, `?? 'total-drama'` and a
+# switch on the slug are all show lists too. Treat these two as the floor.
 
 # Every place the engine or a screen branches on a specific show (§2, §6).
 grep -rn "big-brother" --include=*.js --include=*.html js/ *.html worker/   | grep -Ev "$EX"
@@ -488,8 +531,19 @@ grep -rc "big-brother" --include=*.js --include=*.html .   | grep -Ev "$EX" | gr
 ls tests | grep -E "format|show|season-format"
 ```
 
-**Counts as of this writing:** 46 non-test files mention `big-brother`; the
-heaviest are `js/core.js` (31 — the twist catalog), `js/quick-setup.js` (22),
-`js/stats-export.js` (18), `js/bb/week.js` (16). The first and last are
-expected — a catalog and a show's own engine. The middle two are the ones worth
-watching: if they grow, per-show behaviour is leaking into shared code.
+**Counts, re-derived 2026-08-25 on the Traitors branch:** 47 non-test files
+mention `big-brother`; the heaviest are `js/core.js` (35 — the twist catalog),
+`js/quick-setup.js` (22), `js/stats-export.js` (21), `js/bb/week.js` (16). The
+first and last are expected — a catalog and a show's own engine.
+
+The two this document told you to watch **both grew unnoticed**: `js/core.js`
+31 → 35 and `js/stats-export.js` 18 → 21, between Big Brother shipping and a
+third show being registered, with nothing reporting it. The instruction to watch
+them is only worth as much as the re-run, so re-run the command and write the
+new number into this paragraph in the same commit — that is what makes the next
+reader's comparison mean anything.
+
+(46 → 47 rather than 48: `js/social/session.js` dropped off the list when its
+two-way `=== 'big-brother'` ternary was replaced with `seasonFormat()`, and
+`js/quick-setup.js` joined §1's importer list when its picker started reading
+the registry. A count going DOWN here is usually a duplicate being removed.)

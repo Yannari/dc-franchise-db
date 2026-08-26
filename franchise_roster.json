@@ -706,8 +706,8 @@
           }
         ]
       },
-      "age": 27,
-      "birthdate": "1999-02-14",
+      "age": 25,
+      "birthdate": "2001-02-14",
       "ethnicity": "Black",
       "nationality": "Canadian Jamaican",
       "occupation": "Grocery store employee and cook",
@@ -1688,6 +1688,11 @@
           }
         ]
       },
+      "age": 20,
+      "birthdate": "2006-07-12",
+      "ethnicity": "Black",
+      "nationality": "American",
+      "hometown": "Connecticut",
       "occupation": "Aspiring journalist",
       "backstory": "An aspiring journalist with a lonely childhood, Millie auditioned to document what she saw as the failures of her generation. Writing about other people gave her a sense of expertise and kept attention away from her own low self-worth. She arrived with a notebook, a research project, and very little practical preparation, expecting the cast to prove her thesis rather than expecting any of them to become important to her.",
       "personality": "Millie is book-smart, observant, and habitually judgmental, especially when she can study a group from its edge instead of risking participation. Her notebook once let her convert loneliness and insecurity into criticism of everyone else; genuine friendship forced her to see that observation without compassion can become exploitation. She still notices absurd behavior quickly and can sound condescending when anxious, but she now understands that people are not merely material. Social cues do not always come naturally, and physical challenges can expose her hesitation, yet she learns quickly when someone gives her a concrete method. Under pressure she may retreat into analysis or justify a selfish choice as research. Her best growth comes when she puts the notebook down, accepts responsibility without qualifiers, and acts for a person she has chosen to trust."
@@ -2430,12 +2435,15 @@
           }
         ]
       },
-      "birthdate": "1993-06-12",
-      "nationality": "Canadian",
-      "occupation": "Lifeguard",
-      "descriptor": "Former spy and police officer",
-      "backstory": "Thomas “Tom” Reed was born in Canada on June 12, 1993. He worked undercover as a spy, entered camp on a mission, and concealed both his identity and facial scars. Exposure cost him that career; he later worked as a police officer before leaving the job and becoming a lifeguard. Relationships and recovery gradually moved him from guarded isolation toward a more open, playful life. In this simulator the roster name is Thom, but the source identity and characterization are Tom.",
-      "personality": "Thom uses Tom’s current canon baseline: physically capable, protective, justice-oriented, and finally more comfortable being seen. His old instinct was concealment—mask the scars, compartmentalize the mission, avoid the conversation that might reopen pain—and that habit can still return when intimacy feels dangerous. He naturally takes responsibility in emergencies and prefers fair competition, but he is not infallible: traps, mixed signals, and his own avoidance can make him look hypocritical or gullible. Later experience has made him cheerier and more openly affectionate, without removing the watchfulness learned as a spy and police officer. He will make strategic deals and can break one under genuine necessity, but cruelty, humiliation, and casual sabotage conflict with his moral center. When pressured, he protects first and explains after."
+      "age": 29,
+      "birthdate": "1997-06-18",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Miami, Florida",
+      "occupation": "Policeman",
+      "descriptor": "The Spy",
+      "backstory": "Thomas “Tom” Reed, born Winters, grew up with a mother named Jackie who strongly shaped his life and a younger brother, Tony, whom he gets along with well. One of his happiest childhood memories was going skating with his mother, and his childhood love of comics gave him an idealistic desire to protect people. He became a spy before later police work, and his life before public fame was marked by a serious traumatic incident that left him with lasting PTSD-related struggles and difficulty showing his face or trusting others. His parents suspected he was gay before he fully understood it himself, and he first recognized his sexuality when he was younger.",
+      "personality": "Tom is secretive and self-protective at first, but his instinct is still to look after people rather than abandon them. Under pressure, he tries to take charge physically and morally, leaning on discipline, strength, and a strong sense of justice; however, if he believes a larger mission or someone’s safety depends on it, he can lie, withhold the truth, or double-cross others. He is loyal once he trusts someone, but trust does not come easily, and he may avoid people rather than admit how badly he has been hurt. He will stand up to cheating and cruelty, but he will not easily expose his own vulnerability unless someone has earned it."
     },
     {
       "name": "Jake",
@@ -2472,8 +2480,8 @@
         "intuition": 9,
         "temperament": 5
       },
-      "voice": "Miriam likely speaks in a clipped, dry, no-nonsense way, using blunt criticism rather than soft reassurance. In arguments, she would cut straight to the weak point, stay controlled, and use age and experience as leverage. When she softens, her speech probably becomes warmer but still practical, with little patience for melodrama.",
       "sexuality": "straight",
+      "voice": "Miriam likely speaks in a clipped, dry, no-nonsense way, using blunt criticism rather than soft reassurance. In arguments, she would cut straight to the weak point, stay controlled, and use age and experience as leverage. When she softens, her speech probably becomes warmer but still practical, with little patience for melodrama.",
       "profileSources": {
         "descriptor": [
           {
@@ -2529,7 +2537,13 @@
             "kind": "interpretation"
           }
         ]
-      }
+      },
+      "age": 73,
+      "birthdate": "1952-12-14",
+      "occupation": "Retiree",
+      "descriptor": "Bitter old lady",
+      "backstory": "Miriam is an elderly widow and bereaved mother whose husband and only son died in a drunk driving accident. When she was younger, her family did not understand her and she struggled to fit in, but sports gave her a sense of purpose; she tried rowing, water polo, lacrosse, cheerleading, debate, knife throwing, archery, cooking, and baking. She owns a cat named Biscuit and has a neighbor named Joey who helps watch over him.",
+      "personality": "Miriam is guarded, sharp-tongued, and initially keeps emotional distance from younger people, but her bitterness comes from grief rather than simple cruelty. Under pressure, she is clever and highly capable, willing to manipulate others or misdirect them when she thinks it is necessary. She can become deeply loyal once someone’s pain reaches her, and she is capable of real warmth, but she will not waste energy pretending to be sweet or harmless."
     },
     {
       "name": "Grett",
@@ -2609,7 +2623,9 @@
           }
         ]
       },
-      "birthdate": "1999-10-25",
+      "age": 25,
+      "birthdate": "2001-10-25",
+      "ethnicity": "White",
       "nationality": "British",
       "occupation": "Fitness influencer",
       "backstory": "Gretchen “Grett” Clark was born in Britain on October 25, 1999 and built a public career as a fitness influencer. Long before camp, image and approval were tangled with her self-worth, encouraging a persona that was glamorous, superior, and impossible to dismiss. Competition gave that armor a strategic use, while later relationships and public scrutiny forced her to separate genuine confidence from the need to control how everyone saw her.",
@@ -2724,7 +2740,11 @@
           }
         ]
       },
-      "occupation": "Environmental activist",
+      "birthdate": "2000-05-12",
+      "ethnicity": "Black",
+      "nationality": "Polish",
+      "hometown": "Warsaw",
+      "occupation": "Self-defense instructor",
       "backstory": "Before competition, Gabby was already an environmental activist, devoted vegan, animal lover, and caretaker of a remarkable number of pets, including exotic animals. The outdoors felt safer and more legible to her than many social groups. She came to camp thrilled by nature and connection, carrying both enormous affection and intrusive thoughts that could turn perceived rejection into an immediate demand for justice or revenge.",
       "personality": "Gabby is energetic, kind, intensely affectionate, and unpredictable when a moral or personal boundary is crossed. Kindness earns fierce loyalty from her, while betrayal can become absolute in a single emotional swing. Nature, animals, veganism, and activism are commitments rather than decorative quirks; cruelty toward living things provokes some of her strongest reactions. She experiences intrusive thoughts represented onscreen as a harsher duplicate of herself. That voice can be rude, manipulative, and threatening, but it should be written as an internal struggle—not an invented diagnosis and not proof that Gabby is secretly evil. She reacts before she calculates, remembers who stood by her, and can become strategically dangerous when anger supplies focus. After the explosion, remorse and renewed tenderness are both possible if accountability feels real."
     },
@@ -3089,10 +3109,13 @@
           }
         ]
       },
-      "birthdate": "1998-05-29",
+      "age": 24,
+      "birthdate": "2002-05-29",
+      "ethnicity": "Black",
       "nationality": "Brazilian",
+      "hometown": "Sao paulo",
       "occupation": "Actor and social media influencer",
-      "backstory": "James Costa was born in Brazil on May 29, 1998. Growing up, he had few friends beyond his sister, so social media attention became a substitute measure of belonging and value. He turned that instinct into a career as an influencer and later an actor, arriving at competition with a practiced persona, an eye for content, and a willingness to manufacture moments before learning that genuine connection could satisfy what an audience never did.",
+      "backstory": "James Costa was born in Brazil on May 29, 2002. Growing up, he had few friends beyond his sister, so social media attention became a substitute measure of belonging and value. He turned that instinct into a career as an influencer and later an actor, arriving at competition with a practiced persona, an eye for content, and a willingness to manufacture moments before learning that genuine connection could satisfy what an audience never did.",
       "personality": "James is charming, calculating, image-conscious, and skilled at making an audience feel included in his version of events. Early in life, loneliness taught him to treat follower counts as proof that he mattered; this made staged affection, selective truth, and public spectacle feel like reasonable tools. Real relationships challenged that equation. He remains ambitious and capable of deception, but authentic loyalty now has weight that fame cannot automatically outweigh. Under pressure he narrates, reframes, and searches for the move that preserves both leverage and reputation. He dislikes being made foolish in public and can retaliate with precision. His strongest boundary is earned intimacy: once someone becomes real to him rather than useful, exploiting that bond should create visible conflict rather than effortless villainy."
     },
     {
@@ -3379,9 +3402,11 @@
           }
         ]
       },
-      "birthdate": "2001-07-24",
-      "ethnicity": "Korean",
+      "age": 23,
+      "birthdate": "2003-07-24",
+      "ethnicity": "Asian",
       "nationality": "Korean",
+      "hometown": "Seoul",
       "occupation": "Podcaster and brand promoter; former dancer",
       "backstory": "Yul Kim was born in Korea on July 24, 2001. A dance performance went viral when he was fifteen, creating early fame and a public “nice” persona that concealed his contempt for others. His behavior eventually cost him dancing work and damaged his reputation, after which he continued as a podcaster and brand promoter. He enters competition treating money and renewed celebrity as permission to stop pretending to be decent.",
       "personality": "Yul is vain, cruel, discriminatory, and convinced that fame should exempt him from ordinary accountability. Viral success as a teenage dancer rewarded performance before he developed empathy, and he learned to treat outrage as both threat and publicity. He can maintain tactical loyalty and understand alliance structure, yet his contempt repeatedly destroys the trust that strategy requires. Apologies are usually reputation management; remorse becomes suspect the moment consequences fade. Under pressure he insults appearance, identity, or intelligence, tries to reassert hierarchy, and threatens retaliation when control fails. His behavior must not be softened into harmless sass: abuse and bigotry should damage bonds, reputation, and voting options. He can be funny through vanity, hypocrisy, and failed self-importance without making targeted cruelty consequence-free."
@@ -3708,6 +3733,7 @@
       },
       "age": 30,
       "birthdate": "1996-08-03",
+      "ethnicity": "Latina",
       "nationality": "Puerto Rican American",
       "occupation": "Publicist",
       "descriptor": "Transgender woman with ADHD",

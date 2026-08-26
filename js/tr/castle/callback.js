@@ -21,6 +21,25 @@
 // claim, and CLAUDE.md's own governing rule (bonds/threads/residue free,
 // beliefs earned through gateChannel()) applies to old history exactly as
 // hard as it applies to new.
+//
+// THIS FAMILY IS DEAD IN A DEBUT SEASON, ON PURPOSE — DOCUMENTED HERE SO
+// NOBODY MISTAKES A GREEN AUDIT FOR "IT WORKS SEASON ONE" (round 1 review
+// finding). Every event below reads `activeSeasons()` and returns weight 0
+// with an empty or brand-new ledger — verified directly: emptying the
+// ledger while leaving the other six families untouched drops `callback`'s
+// firings to exactly 0 while trust/suspicion/grief/cover/romance/testing
+// are unaffected. That is the correct design (a callback that fired
+// without real history would be exactly the fabricated-evidence failure
+// this family exists to avoid), but it means all 11 events here — ~13% of
+// the whole castle pool — are structurally inert the first time this
+// franchise ever runs a Traitors season. `tests/tr-castle-audit.test.js`'s
+// dead-event sweep only shows this family alive because it fabricates a
+// prior season on purpose (see that file's `seedFranchiseHistory()`) — a
+// green audit run there proves these events CAN fire given real history,
+// not that they will in a debut season. No fallback is implemented; if a
+// debut-season callback beat is ever wanted, it would need its own
+// precondition entirely (e.g. reading THIS season's early bonds/threads
+// instead of the ledger), not a loosening of what this family checks now.
 import { gs } from '../../core.js';
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';

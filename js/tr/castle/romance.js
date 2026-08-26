@@ -31,6 +31,21 @@
 // biggest liability (nobody is better positioned to notice something is
 // wrong). `romance-liability-exposed` is the flagship this family earns its
 // place with — see below.
+//
+// THE CAP (round 1 review finding): js/romance.js caps the TD pipeline at 4
+// ACTIVE showmances a season (CLAUDE.md's own rule, enforced inside
+// `_challengeRomanceSpark()`). Because this family deliberately does not
+// touch `gs.showmances` (see above), that cap does not automatically apply
+// here — a castle season on its own has NOTHING capping how many concurrent
+// `romance-spark`/`romance-showmance` threads can exist. `_activeRomanceCount()`
+// below enforces the SAME 4-active limit locally, on the two events that can
+// OPEN a new spark (`romance-spark`, `romance-comfort-after-loss-sparks`) —
+// escalation and reaction events never create a new pairing, so they don't
+// need the check. At current volume this was never observed to matter (59
+// spark/showmance formations across 5000 seasons, ~0.012/season — nowhere
+// close to 4 concurrent), but it is a real uncapped path that a future
+// author scaling this family's spark-formation rate could hit without
+// warning if the check were only a comment.
 import { gs } from '../../core.js';
 import { pStats, romanticCompat } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
@@ -85,6 +100,20 @@ function _threadForActors(kind, actors) {
   return matches.reduce((a, b) => (b.lastEp > a.lastEp ? b : a));
 }
 
+/**
+ * How many spark/showmance pairings are currently active, castle-wide.
+ * Mirrors js/romance.js's 4-active-showmance cap locally, since this family
+ * cannot reuse that cap directly (see the header comment: it never touches
+ * `gs.showmances`). Only the two events that OPEN a new spark check this —
+ * escalation/reaction events operate on a pairing that already exists and
+ * don't add to the count.
+ */
+const MAX_ACTIVE_ROMANCES = 4;
+function _activeRomanceCount() {
+  const threads = gs.tr?.threads || [];
+  return threads.filter(t => t.state === 'open' && (t.kind === SPARK_KIND || t.kind === SHOWMANCE_KIND)).length;
+}
+
 const SPARK_LINES = [
   '{a} and {b} sat closer than the conversation strictly required, and both of them noticed.',
   'Something shifted between {a} and {b} tonight that had nothing to do with the game.',
@@ -100,6 +129,7 @@ registerEvent({
     const [a, b] = ctx.actors;
     if (findOpenThread(SPARK_KIND, [a, b]) || findOpenThread(SHOWMANCE_KIND, [a, b])) return 0;
     if (!romanticCompat(a, b)) return 0;
+    if (_activeRomanceCount() >= MAX_ACTIVE_ROMANCES) return 0;
     return getBond(a, b) >= 2 ? 1.5 : 0;
   },
   fire(ctx, rng) {
@@ -393,6 +423,7 @@ registerEvent({
     const [a, b] = ctx.actors;
     if (findOpenThread(SPARK_KIND, [a, b]) || findOpenThread(SHOWMANCE_KIND, [a, b])) return 0;
     if (!romanticCompat(a, b)) return 0;
+    if (_activeRomanceCount() >= MAX_ACTIVE_ROMANCES) return 0;
     const rounds = gs.tr?.rounds || [];
     return rounds.some(r => r.ep === ctx.ep - 1 && r.murdered) && getBond(a, b) >= 1 ? 1.5 : 0;
   },

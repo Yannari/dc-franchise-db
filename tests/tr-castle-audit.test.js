@@ -159,6 +159,34 @@ describe('REPETITION AUDIT: does the engine\'s own cooldown hold in real seasons
   });
 });
 
+describe('CALLBACK IS DEAD IN A DEBUT SEASON (round 1 review finding, documented not fixed)', () => {
+  // callback.js's own header now says this too. This test exists so a green
+  // run of THIS FILE is never mistaken for "callback works in season one" —
+  // the dead-event audit above only shows callback alive because
+  // seedFranchiseHistory() fabricates a prior season on purpose. Here we
+  // run WITHOUT that fixture and confirm the family goes to zero while the
+  // other six do not — proving the family reads real history rather than
+  // faking it, and documenting the cost of that correctness.
+  it('with an empty ledger, callback fires 0 while the other six families are unaffected', () => {
+    const perFamily = {};
+    for (let i = 1; i <= 60; i++) {
+      setPlayers(ROSTER);
+      setFranchiseLedger({ v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {} } } });
+      const res = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 90000 + i });
+      for (const round of res.log) {
+        for (const ce of (round.castleEvents || [])) {
+          perFamily[ce.event.family] = (perFamily[ce.event.family] || 0) + 1;
+        }
+      }
+    }
+    console.log('=== DEBUT-SEASON (empty ledger) FIRINGS PER FAMILY ===', perFamily);
+    expect(perFamily.callback ?? 0).toBe(0);
+    for (const fam of ['trust', 'suspicion', 'grief', 'cover', 'romance', 'testing']) {
+      expect(perFamily[fam] ?? 0, `family "${fam}" should still fire with no franchise history`).toBeGreaterThan(0);
+    }
+  });
+});
+
 describe('REPETITION-AS-EXPERIENCED (addendum)', () => {
   it('1. eligible-set size per (window, act): median and minimum', () => {
     const WINDOWS = ['dawn', 'morning', 'journey-out', 'journey-back', 'evening', 'after-table', 'night'];

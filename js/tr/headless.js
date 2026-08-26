@@ -24,8 +24,18 @@ import { runWindow, startRoundBudget } from './events.js';
 // the require graph from a real season ever reached js/tr/castle/*.js, so
 // `runWindow` (already wired into the round loop below since the plumbing
 // task) always returned `[]` — every real season ran with zero castle
-// content despite the engine being fully built. See task-6-report.md for
-// the calibration re-run this triggered and its results.
+// content despite the engine being fully built.
+//
+// CALIBRATION NOTE, CORRECTED (Task 6 round-1 review): wiring this in does
+// not measurably hurt the calibration bands (11/11 stayed green across five
+// decorrelated 200-season blocks). It also does NOT demonstrate that castle
+// content helps deduction — a three-arm counterfactual found a contentless
+// pool of random bond churn, same shape and same magnitude, reproduces the
+// late-lift movement and then some. The mechanism is bond VARIANCE feeding
+// bondResistance() -> suspicion() in the deduction layer, not content
+// signal. See task-6-report.md for the full counterfactual and the
+// corrected numbers — do not cite the late-lift movement as evidence this
+// pool's specific content is doing anything for the room's reasoning.
 import '../tr/castle/trust.js';
 import '../tr/castle/suspicion.js';
 import '../tr/castle/grief.js';

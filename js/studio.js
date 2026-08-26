@@ -19,7 +19,7 @@ const STAT_KEYS = ['physical','endurance','mental','social','strategic','loyalty
 const STAT_ABBR = { physical:'PHY', endurance:'END', mental:'MEN', social:'SOC', strategic:'STR', loyalty:'LOY', boldness:'BLD', intuition:'INT', temperament:'TMP' };
 
 import { composeVoice, stripBioLead, parseBio, splitOrigin } from './bio.js';
-import { PROFILE_GROUPS, diffPublishedProfile, applyProfileSelection, validatePublishedProfile, selectProfileVoice } from './profile-import.js';
+import { PROFILE_GROUPS, validatePublishedProfile, selectProfileVoice, diffProfileCandidates, applyCandidateSelection } from './profile-import.js';
 import { appearancesFor, continuitySummary, continuityTies } from './continuity.js';
 import { INTERVIEW_QUESTIONS, parseInterview, serializeInterview }
   from './casting-interview.js';
@@ -1157,66 +1157,163 @@ function _invalidProfileKeys(errors) {
   }
   return keys;
 }
-export function _openPublishedProfilePreview(published, options = {}) {
-  const currentDraft = options.current || _draft;
-  if (!currentDraft || !published) return null;
+/**
+ * One preview, however many sources are offering.
+ *
+ * There used to be two buttons — "Load published profile" and "Fetch profile
+ * from wiki" — and comparing their field lists showed the wiki could offer
+ * nothing the saved roster could not. So the choice was never about coverage.
+ * It was about where a value came from, and that is a property of a ROW.
+ *
+ * Sources can arrive late. The saved roster is local and instant; the wiki
+ * costs a call and a model. Rather than make the reader wait on the slow one
+ * to see the fast one, the dialog opens on whatever is ready and re-renders
+ * when the rest lands, keeping every tick and every choice already made.
+ */
+export function _openProfileFillPreview(currentDraft, options = {}) {
+  if (!currentDraft) return null;
   const current = options.current ? currentDraft : _profileSnapshot(currentDraft);
-  let rows;
-  try { rows = diffPublishedProfile(current, published); } catch { rows = []; }
-  const validation = validatePublishedProfile(published);
-  const invalidKeys = _invalidProfileKeys(validation.errors);
+  const sources = [];
+  // key -> the value string the reader picked, so a re-render cannot undo a
+  // choice they already made.
+  const picked = new Map();
+  const ticked = new Map();
+
   document.getElementById('st-profile-import')?.remove();
   const dialog = document.createElement('dialog');
-  dialog.id = 'st-profile-import'; dialog.className = 'st-profile-dialog';
-  const grouped = Object.keys(PROFILE_GROUPS).map(group => {
-    const groupRows = rows.filter(row => row.group === group);
-    if (!groupRows.length) return '';
-    return `<section class="st-profile-group"><h3>${_esc(group)}</h3>${groupRows.map(row => {
-      const unsafe = invalidKeys.has(row.key);
-      const sourceValue = published.profileSources?.[row.key];
-      const sources = Array.isArray(sourceValue) ? sourceValue.filter(source => source && typeof source === 'object') : [];
-      return `<label class="st-profile-row${unsafe ? ' is-invalid' : ''}">
-        <input type="checkbox" data-profile-key="${_esc(row.key)}" ${row.selected && !unsafe ? 'checked' : ''} ${unsafe ? 'disabled' : ''}>
-        <span class="st-profile-field">${_esc(row.key)}</span>
-        <span class="st-profile-values"><span><b>Current</b><code>${_esc(_profileValue(row.current))}</code></span><span><b>Published</b><code>${_esc(_profileValue(row.published))}</code></span></span>
-        <span class="st-profile-sources">${sources.map(source => `<span class="st-profile-source" data-kind="${_esc(source.kind)}">${_esc(source.label)}</span>`).join('')}</span>
-      </label>`;
-    }).join('')}</section>`;
-  }).join('');
+  dialog.id = 'st-profile-import';
+  dialog.className = 'st-profile-dialog';
   dialog.innerHTML = `<form method="dialog" class="st-profile-card">
-    <header><div><h2>${_esc(options.title || 'Load published profile')}</h2><p>${options.note || 'Review what will change in this draft. Nothing is saved until you press Save character.'}</p></div><button class="st-profile-x" value="cancel" aria-label="Close">×</button></header>
-    <div id="st-profile-errors" class="st-profile-errors" ${validation.valid ? 'hidden' : ''}>${validation.errors.map(error => `<p>${_esc(error)}</p>`).join('')}</div>
-    <div class="st-profile-groups">${grouped || '<p class="st-empty">This draft already matches the published profile.</p>'}</div>
+    <header><div><h2>Fill in this profile</h2>
+      <p>Every row says where it came from. Anything you have already written arrives unticked. Nothing is saved until you press Save character.</p></div>
+      <button class="st-profile-x" value="cancel" aria-label="Close">&times;</button></header>
+    <div id="st-profile-status" class="st-profile-status"></div>
+    <div id="st-profile-errors" class="st-profile-errors" hidden></div>
+    <div class="st-profile-groups" id="st-profile-groups"></div>
     <footer><button type="button" class="st-btn" id="st-profile-blanks">Fill blanks</button><button type="button" class="st-btn" id="st-profile-all">Select all</button><span></span><button type="button" class="st-btn" id="st-profile-cancel">Cancel</button><button type="button" class="st-btn st-primary" id="st-profile-apply">Apply selected</button></footer>
   </form>`;
   document.body.appendChild(dialog);
+
+  const groupsEl = dialog.querySelector('#st-profile-groups');
+  const statusEl = dialog.querySelector('#st-profile-status');
+  const errorsEl = dialog.querySelector('#st-profile-errors');
+  let rows = [];
+
+  const remember = () => {
+    for (const box of dialog.querySelectorAll('[data-profile-key]')) {
+      ticked.set(box.dataset.profileKey, box.checked);
+    }
+    for (const radio of dialog.querySelectorAll('input[type=radio]:checked')) {
+      picked.set(radio.name.replace(/^pick-/, ''), radio.value);
+    }
+  };
+
+  const render = () => {
+    rows = diffProfileCandidates(current, sources);
+
+    // Validation runs per source: a bad stat block from one must not condemn
+    // the other's perfectly good hometown.
+    const invalidKeys = new Set();
+    const errors = [];
+    for (const source of sources) {
+      const v = validatePublishedProfile(source.profile);
+      if (!v.valid) {
+        errors.push(...v.errors.map(e => `${source.label}: ${e}`));
+        for (const k of _invalidProfileKeys(v.errors)) invalidKeys.add(k);
+      }
+    }
+    errorsEl.hidden = !errors.length;
+    errorsEl.innerHTML = errors.map(e => `<p>${_esc(e)}</p>`).join('');
+
+    groupsEl.innerHTML = Object.keys(PROFILE_GROUPS).map(group => {
+      const groupRows = rows.filter(r => r.group === group);
+      if (!groupRows.length) return '';
+      return `<section class="st-profile-group"><h3>${_esc(group)}</h3>${groupRows.map(row => {
+        const unsafe = invalidKeys.has(row.key);
+        const isTicked = ticked.has(row.key) ? ticked.get(row.key) : row.selected;
+        const chosen = picked.get(row.key);
+        const choiceIdx = Math.max(0, row.candidates.findIndex(c => _profileValue(c.value) === chosen));
+
+        // One candidate reads as it always did. Two or more become a choice,
+        // because preferring the reviewed one or the fresh one is a judgement
+        // this code has no way to make for somebody else.
+        const offer = row.candidates.length === 1
+          ? `<span><b>${_esc(row.candidates[0].label)}</b><code>${_esc(_profileValue(row.candidates[0].value))}</code>
+               ${_sourceChips(row.candidates[0].sources)}</span>`
+          : row.candidates.map((c, i) => `<label class="st-profile-pick">
+               <input type="radio" name="pick-${_esc(row.key)}" value="${_esc(_profileValue(c.value))}" ${i === choiceIdx ? 'checked' : ''}>
+               <b>${_esc(c.label)}</b><code>${_esc(_profileValue(c.value))}</code>
+               ${_sourceChips(c.sources)}</label>`).join('');
+
+        return `<label class="st-profile-row${unsafe ? ' is-invalid' : ''}${row.candidates.length > 1 ? ' has-choice' : ''}">
+          <input type="checkbox" data-profile-key="${_esc(row.key)}" ${isTicked && !unsafe ? 'checked' : ''} ${unsafe ? 'disabled' : ''}>
+          <span class="st-profile-field">${_esc(row.key)}</span>
+          <span class="st-profile-values"><span><b>Current</b><code>${_esc(_profileValue(row.current))}</code></span>${offer}</span>
+        </label>`;
+      }).join('')}</section>`;
+    }).join('') || '<p class="st-empty">Nothing to add — this draft already has everything the sources offer.</p>';
+  };
+
   const checks = () => [...dialog.querySelectorAll('[data-profile-key]:not(:disabled)')];
-  dialog.querySelector('#st-profile-blanks').addEventListener('click', () => { const defaults = new Map(rows.map(row => [row.key, row.selected])); checks().forEach(box => { box.checked = !!defaults.get(box.dataset.profileKey); }); });
-  dialog.querySelector('#st-profile-all').addEventListener('click', () => checks().forEach(box => { box.checked = true; }));
+  dialog.querySelector('#st-profile-blanks').addEventListener('click', () => {
+    const defaults = new Map(rows.map(r => [r.key, r.selected]));
+    checks().forEach(box => { box.checked = !!defaults.get(box.dataset.profileKey); });
+  });
+  dialog.querySelector('#st-profile-all').addEventListener('click', () =>
+    checks().forEach(box => { box.checked = true; }));
+
   const close = () => { if (typeof dialog.close === 'function') dialog.close(); dialog.remove(); };
   dialog.querySelector('#st-profile-cancel').addEventListener('click', close);
-  dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
+  dialog.addEventListener('cancel', e => { e.preventDefault(); close(); });
   dialog.addEventListener('close', () => dialog.remove(), { once: true });
+
   dialog.querySelector('#st-profile-apply').addEventListener('click', () => {
-    const selected = checks().filter(box => box.checked).map(box => box.dataset.profileKey);
-    const applied = applyProfileSelection(current, published, selected);
-    applied.profileSources = { ...(current.profileSources || {}) };
-    for (const key of selected) {
-      if (published.profileSources?.[key]) {
-        applied.profileSources[key] = published.profileSources[key].map(source => ({ ...source }));
-      } else delete applied.profileSources[key];
+    remember();
+    const picks = [];
+    for (const box of checks()) {
+      if (!box.checked) continue;
+      const row = rows.find(r => r.key === box.dataset.profileKey);
+      if (!row) continue;
+      const want = picked.get(row.key);
+      const candidate = row.candidates.find(c => _profileValue(c.value) === want) || row.candidates[0];
+      picks.push({ key: row.key, value: candidate.value, sources: candidate.sources });
     }
+    const applied = applyCandidateSelection(current, picks);
     if (options.onApply) options.onApply(applied);
     else {
       _draft = { ...currentDraft, ...applied };
-      if (Object.hasOwn(applied, 'castingInterview')) { _draft.interview = Object.fromEntries(parseInterview(applied.castingInterview).map(row => [row.key, row.a])); delete _draft.castingInterview; }
+      if (Object.hasOwn(applied, 'castingInterview')) {
+        _draft.interview = Object.fromEntries(
+          parseInterview(applied.castingInterview).map(r => [r.key, r.a]));
+        delete _draft.castingInterview;
+      }
       renderStudio();
     }
     close();
   });
+
+  render();
   if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', '');
-  return dialog;
+
+  return {
+    dialog,
+    /** Merge another source in, without losing anything already chosen. */
+    addSource(source) {
+      if (!source?.profile || !dialog.isConnected) return;
+      remember();
+      sources.push(source);
+      render();
+    },
+    say(text) { if (statusEl) statusEl.textContent = text || ''; },
+  };
 }
+
+function _sourceChips(sources) {
+  if (!Array.isArray(sources) || !sources.length) return '';
+  return `<span class="st-profile-sources">${sources.map(s =>
+    `<span class="st-profile-source" data-kind="${_esc(s.kind)}" ${s.quote ? `title="${_esc(s.quote)}"` : ''}>${_esc(s.label)}</span>`).join('')}</span>`;
+}
+
 function _renderEditor() {
   const ed = document.getElementById('st-editor');
   if (!ed) return;
@@ -1375,8 +1472,7 @@ function _renderEditor() {
       </details>
 
       <div class="st-actions">
-        ${d.slug && _roster().some(p => p.slug === d.slug) ? '<button type="button" class="st-btn st-lg" id="st-load-profile">Load published profile</button>' : ''}
-        ${d.name ? '<button type="button" class="st-btn st-lg" id="st-wiki-fetch">Fetch profile from wiki</button><span class="st-hint" id="st-wiki-note"></span>' : ''}
+        ${d.name ? '<button type="button" class="st-btn st-lg" id="st-fill-profile">Fill in this profile</button><span class="st-hint" id="st-fill-note"></span>' : ''}
         <button type="button" class="st-btn st-primary st-lg" id="st-save">Save character</button>
         ${(() => {
           const active = _casts.find(c => c.id === _activeCast);
@@ -1564,13 +1660,9 @@ function _renderEditor() {
   });
 
   // load / save / delete
-  ed.querySelector('#st-load-profile')?.addEventListener('click', () => {
-    const published = _roster().find(p => p.slug === d.slug);
-    if (published) _openPublishedProfilePreview(published);
-  });
-  ed.querySelector('#st-wiki-fetch')?.addEventListener('click', () => {
-    const note = ed.querySelector('#st-wiki-note');
-    _fetchProfileFromWiki(ed, d, t => { if (note) note.textContent = t; });
+  ed.querySelector('#st-fill-profile')?.addEventListener('click', () => {
+    const note = ed.querySelector('#st-fill-note');
+    _fillProfileFrom(ed, d, t => { if (note) note.textContent = t; });
   });
   ed.querySelector('#st-save').addEventListener('click', _save);
   ed.querySelector('#st-del')?.addEventListener('click', _delete);
@@ -1659,38 +1751,45 @@ async function _resolveWikiPage(name) {
   return null;
 }
 
-/** Button handler: resolve, fetch, preview. */
-async function _fetchProfileFromWiki(ed, d, say) {
-  const btn = ed.querySelector('#st-wiki-fetch');
+/**
+ * One button, two sources, one preview.
+ *
+ * The saved roster is local and instant. The wiki costs a call and a model and
+ * can take ten seconds. Waiting on the slow one to show the fast one would
+ * make a free lookup feel like an expensive one, so the dialog opens on the
+ * roster immediately and the wiki merges in when it arrives — every tick and
+ * every choice already made survives the re-render.
+ *
+ * The wiki half is allowed to fail quietly. A network error, a missing page, a
+ * refusal: the reader still has the saved profile in front of them, and a
+ * status line says what happened rather than an alert taking the dialog away.
+ */
+async function _fillProfileFrom(ed, d, say) {
+  const btn = ed.querySelector('#st-fill-profile');
+  const slug = d.slug || _slugify(d.name);
+
+  const published = _roster().find(p => p.slug === slug);
+  const preview = _openProfileFillPreview(d);
+  if (!preview) return;
+  if (published) preview.addSource({ origin: 'roster', label: 'Saved profile', profile: published });
+
+  preview.say('searching the wiki…');
   if (btn) btn.disabled = true;
   try {
-    say('finding the page…');
     const page = await _resolveWikiPage(d.name);
-    if (!page) { say(''); return; }
+    if (!page) { preview.say(published ? 'Saved profile only — no wiki page chosen.' : 'No wiki page chosen.'); return; }
 
-    say(`reading ${page.title} on the ${page.label}…`);
-    const out = await _wikiCall({
-      mode: 'wiki-profile', host: page.host, title: page.title,
-      slug: d.slug || _slugify(d.name),
-    });
+    preview.say(`reading ${page.title} on the ${page.label}…`);
+    const out = await _wikiCall({ mode: 'wiki-profile', host: page.host, title: page.title, slug });
 
-    // The honest headline. `demoted` are the fields the model called canon
-    // whose quote could not be found in the page that was actually fetched —
-    // they are still offered, just no longer labelled as sourced.
+    preview.addSource({ origin: 'wiki', label: page.label, profile: out.profile });
     const { total, canon } = out.counts;
     const guessed = total - canon;
-    const note = `From <a href="${_esc(out.source.url)}" target="_blank" rel="noopener">${_esc(out.source.title)}</a>`
-      + ` on the ${_esc(out.source.label)}. ${canon} of ${total} field${total === 1 ? '' : 's'} quote the article`
-      + `${guessed ? `, ${guessed} ${guessed === 1 ? 'is a reading' : 'are readings'} of it` : ''}.`
-      + ' Nothing is saved until you press Save character.';
-
-    say('');
-    _openPublishedProfilePreview(out.profile, {
-      title: 'Fetch profile from wiki',
-      note,
-    });
+    preview.say(`${page.title} on the ${page.label}: ${canon} of ${total} field${total === 1 ? '' : 's'} quote the article`
+      + `${guessed ? `, ${guessed} ${guessed === 1 ? 'is a reading' : 'are readings'} of it` : ''}.`);
   } catch (e) {
-    say(`failed: ${e.message}`);
+    preview.say(`The wiki lookup failed: ${e.message}`);
+    if (say) say('');
   } finally {
     if (btn) btn.disabled = false;
   }
@@ -2859,6 +2958,15 @@ function _injectCSS() {
   .st-profile-row>input{margin-top:4px;accent-color:var(--accent,#f4b23e)}.st-profile-field{font-weight:700;font-size:12px;padding-top:3px}
   .st-profile-values{display:grid;grid-template-columns:1fr 1fr;gap:8px}.st-profile-values>span{min-width:0;padding:8px;border-radius:8px;background:rgba(255,255,255,.035)}
   .st-profile-values b{display:block;margin-bottom:5px;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted,#9a9)}.st-profile-values code{display:block;white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.45 ui-monospace,monospace}
+  /* A row offering more than one answer stacks them: with two sources the
+     side-by-side grid would put "Current" beside the first option and hide the
+     second below it, which reads as one choice rather than two. */
+  .st-profile-row.has-choice .st-profile-values{grid-template-columns:1fr}
+  .st-profile-pick{display:grid;grid-template-columns:18px auto minmax(0,1fr);gap:6px 9px;align-items:start;
+    padding:8px;border-radius:8px;background:rgba(255,255,255,.035);cursor:pointer}
+  .st-profile-pick:has(input:checked){outline:1px solid var(--accent,#f4b23e);background:rgba(244,178,62,.07)}
+  .st-profile-pick .st-profile-sources{grid-column:3}
+  .st-profile-status{font-size:11.5px;color:var(--muted,#9a9);padding:0 0 8px;min-height:16px;line-height:1.45}
   .st-profile-sources{grid-column:3;display:flex;gap:5px;flex-wrap:wrap}.st-profile-source{font-size:9px;padding:2px 7px;border:1px solid var(--border,#333);border-radius:999px;color:var(--muted,#9a9)}
   .st-profile-row.is-invalid{opacity:.6}.st-profile-errors{margin:12px 20px 0;padding:9px 12px;border:1px solid #e5484d88;border-radius:8px;color:#ff9b9e;background:#e5484d12;font-size:11px}.st-profile-errors p+p{margin-top:4px}
   .st-profile-card>footer{display:grid;grid-template-columns:auto auto 1fr auto auto;gap:8px;padding:13px 20px;border-top:1px solid var(--border,#333);background:var(--surface,#1c1c22)}

@@ -144,6 +144,85 @@ export function applyProfileSelection(current, published, selectedKeys) {
   return result;
 }
 
+/**
+ * The same diff, but from several sources at once.
+ *
+ * Two buttons that both meant "fill this in" was a worse question than it
+ * looked. The wiki fetch offers no field the saved roster cannot, so choosing
+ * between them was never about coverage — it was about where the value came
+ * from, which is a property of a ROW, not of a button. So the sources merge
+ * and every row says where it came from.
+ *
+ * Where two sources offer the same field, both survive as `candidates` and the
+ * reader picks. Silently preferring one would be the thing this whole preview
+ * exists to avoid: the saved roster is reviewed and the wiki is fresh, and
+ * which of those wins is a judgement nobody can make on the reader's behalf.
+ *
+ * `sources` is [{ origin, label, profile }], in preference order — the first
+ * source offering a field owns the default pick.
+ */
+export function diffProfileCandidates(current, sources) {
+  const rows = new Map();
+  for (const source of sources || []) {
+    const profile = source?.profile;
+    if (!profile) continue;
+    assertMatchingSlugs(current, profile);
+    for (const [group, keys] of Object.entries(PROFILE_GROUPS)) {
+      for (const key of keys) {
+        if (!Object.hasOwn(profile, key) || isBlank(profile[key])) continue;
+        // A source that agrees with the draft has nothing to offer on this row.
+        if (valuesEqual(current?.[key], profile[key])) continue;
+        const candidate = {
+          origin: source.origin,
+          label: source.label,
+          value: clone(profile[key]),
+          sources: clone(profile.profileSources?.[key]) || [],
+        };
+        const row = rows.get(key);
+        if (!row) {
+          rows.set(key, {
+            group, key,
+            current: clone(current?.[key]),
+            candidates: [candidate],
+            // Same rule as the single-source diff: a blank comes in ticked, a
+            // field the reader already wrote does not.
+            selected: isBlank(current?.[key]),
+          });
+        } else if (!row.candidates.some(c => valuesEqual(c.value, candidate.value))) {
+          // Two sources saying the identical thing is one option, not two.
+          row.candidates.push(candidate);
+        }
+      }
+    }
+  }
+  // Grouped order, so the dialog renders Identity before Biography as before.
+  const order = Object.keys(PROFILE_GROUPS);
+  return [...rows.values()].sort((a, b) =>
+    order.indexOf(a.group) - order.indexOf(b.group));
+}
+
+/**
+ * Apply the chosen candidates.
+ *
+ * `picks` is [{ key, value, sources }] — the value the reader actually chose,
+ * not merely the key, because a row can now offer more than one. Provenance
+ * travels with the choice: a value taken from the wiki keeps the wiki's
+ * citation, and one taken from the roster keeps the roster's, so the record of
+ * where a fact came from survives the merge that produced it.
+ */
+export function applyCandidateSelection(current, picks) {
+  const result = clone(current) || {};
+  for (const pick of picks || []) {
+    if (!pick || !pick.key) continue;
+    result[pick.key] = clone(pick.value);
+    if (pick.sources && pick.sources.length) {
+      result.profileSources = result.profileSources || {};
+      result.profileSources[pick.key] = clone(pick.sources);
+    }
+  }
+  return result;
+}
+
 export function selectProfileVoice({ localVoice, rosterVoice, legacyVoice } = {}) {
   return [localVoice, rosterVoice, legacyVoice].find(value => !isBlank(value)) || '';
 }

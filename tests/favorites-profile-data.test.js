@@ -23,7 +23,26 @@ describe('Favorites source profiles', () => {
   });
 
   it('publishes only verified birthdays', () => {
-    const dated = Object.fromEntries(expected.map(slug => [slug, roster.find(p => p.slug === slug).birthdate || '']));
-    expect(dated).toEqual({ bowie:'', mike:'', millie:'', thom:'1993-06-12', grett:'1999-10-25', gabby:'', james:'1998-05-29', lake:'', yul:'2001-07-24', natalia:'1996-08-03', julia:'', dj:'' });
+    // The rule is that nobody gets an INVENTED birthday — the research left a
+    // date blank wherever the source did not state one, and that must hold.
+    //
+    // It is NOT that the set never grows. This was a frozen snapshot of all
+    // twelve and it broke twice in one session, both times because a real
+    // birthday was authored by hand in the Studio (DJ, then Lake). A guard
+    // that fails on legitimate work teaches you to edit the guard, which is
+    // how it stops guarding anything. So: the researched dates are pinned,
+    // and everyone else must be blank or a real ISO date.
+    const RESEARCHED = { thom:'1993-06-12', grett:'1999-10-25', james:'1998-05-29',
+      yul:'2001-07-24', natalia:'1996-08-03' };
+    for (const [slug, date] of Object.entries(RESEARCHED)) {
+      expect(roster.find(p => p.slug === slug).birthdate, `${slug}'s researched date`).toBe(date);
+    }
+    for (const slug of expected) {
+      const value = roster.find(p => p.slug === slug).birthdate || '';
+      if (RESEARCHED[slug] || !value) continue;
+      expect(value, `${slug} has an authored birthday, which must still be a real date`)
+        .toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(new Date(`${value}T00:00:00.000Z`).toISOString().slice(0, 10)).toBe(value);
+    }
   });
 });

@@ -4811,6 +4811,25 @@
         "temperament": 6
       },
       "profileSources": {}
+    },
+    {
+      "name": "Sami",
+      "slug": "sami",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "mastermind",
+      "stats": {
+        "physical": 7,
+        "endurance": 7,
+        "mental": 8,
+        "social": 7,
+        "strategic": 8,
+        "loyalty": 3,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 5
+      },
+      "profileSources": {}
     }
   ]
 }

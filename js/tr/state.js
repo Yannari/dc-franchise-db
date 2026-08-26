@@ -54,6 +54,12 @@ export function initTraitorsState() {
     // was nearly murdered. The room does not, and must not: only the FACT of
     // a blocked attempt is public, which is what Task 4 reads.
     blockedMurders: [],
+
+    // A recruiter's fate is tied to their recruit's: [{ recruiter, recruit, ep }].
+    // A recruit banished soon after may burn the person who turned them, which
+    // is the worst outcome in the format and the reason recruitment is a
+    // decision with a tail rather than a free extra body.
+    loyaltyDebt: [],
   };
 }
 

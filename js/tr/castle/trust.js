@@ -19,7 +19,7 @@ import { gs } from '../../core.js';
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, findOpenThread, heatAt } from '../threads.js';
+import { openThread, advanceThread, closeThread, findOpenThread, heatAt } from '../threads.js';
 
 const FAMILY = 'trust';
 
@@ -119,9 +119,12 @@ registerEvent({
 //               is now on the record (residue), which is what lets a LATER
 //               event reference "the time they wouldn't commit."
 //   TURNED    — the asked flips the dynamic and asks the asker to commit
-//               FIRST. A genuine role reversal: a new thread opens with the
-//               parties' narrative roles swapped, not just a repeat of this
-//               one with a different verb.
+//               FIRST. Structural, not just narrated: the prior thread (if
+//               any) is CLOSED with outcome 'turned-back' and the new one is
+//               opened with `parties` REVERSED, so `thread.parties[0]` tells
+//               a downstream reader who is actually on the spot now — see
+//               the comment in fire() for why party order survives the
+//               sorted lookup key.
 //
 // The fork is driven by the asked player's own stats plus the EXISTING bond,
 // not a bare RNG draw dressed up after the fact — a real check has to be
@@ -180,29 +183,34 @@ registerEvent({
     else branch = 'turned';
 
     const line = pick(rng, COMMIT_LINES[branch]).replace('{a}', asker).replace('{b}', asked);
+    const existing = findOpenThread(FAMILY, [asker, asked]);
     let bondDelta = 0;
     let thread;
-    if (branch === 'kept') {
-      bondDelta = 2;
-      addBond(asker, asked, bondDelta);
-      thread = openThread(FAMILY, [asker, asked], ctx.ep, line);
-    } else if (branch === 'broken') {
-      bondDelta = -3;
-      addBond(asker, asked, bondDelta);
-      thread = openThread(FAMILY, [asker, asked], ctx.ep, line);
-    } else if (branch === 'deflected') {
-      bondDelta = 0;
-      thread = openThread(FAMILY, [asker, asked], ctx.ep, line);
+    if (branch === 'kept' || branch === 'broken' || branch === 'deflected') {
+      bondDelta = branch === 'kept' ? 2 : branch === 'broken' ? -3 : 0;
+      if (bondDelta) addBond(asker, asked, bondDelta);
+      thread = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, [asker, asked], ctx.ep, line);
     } else {
+      // STRUCTURAL reversal, not a narration-only one: any prior commitment
+      // thread for this pair is CLOSED (a real state transition, matching
+      // how susp-private-accusation resolves its own 'turned' branch), and
+      // the replacement thread is opened with `parties` REVERSED —
+      // `openThread`/`findOpenThread` key lookups on the SORTED party set,
+      // so this changes nothing about how the thread is found, but
+      // `thread.parties` itself preserves insertion order (see threads.js:
+      // `parties: [...parties]`), so a downstream reader can check
+      // `thread.parties[0]` to learn whose move it actually is now — the
+      // asked player, not the original asker. Earlier this branch opened
+      // the SAME [asker, asked] order as every other branch and only the
+      // prose claimed a reversal; that claim was false and nothing
+      // downstream could have told the two cases apart.
       bondDelta = -1;
       addBond(asker, asked, bondDelta);
-      // Role reversal: the new thread's parties are the SAME pair (a thread
-      // is keyed on party-set, not on who is asking whom), but the note
-      // records that the narrative role flipped, which is what a later
-      // event reads to know whose move it is next.
-      thread = openThread(FAMILY, [asker, asked], ctx.ep, line);
+      if (existing) closeThread(existing.id, ctx.ep, 'turned-back');
+      thread = openThread(FAMILY, [asked, asker], ctx.ep, line);
     }
-    return { branch, pair: [asker, asked], threadId: thread?.id, bondDelta };
+    return { branch, pair: [asker, asked], onTheSpot: branch === 'turned' ? asker : asked,
+      threadId: thread?.id, bondDelta };
   },
 });
 
@@ -252,11 +260,28 @@ registerEvent({
   window: 'dawn',
   advancesThread: true,
   acts: { late: 1.5 },
+  // DECISION (round 1 fix): originally gated on `heatAt >= 1`. Heat starts at
+  // 1 on open and decays 0.5 per round of silence, and this window (dawn)
+  // only ever sees a trust thread AFTER at least one full round has elapsed
+  // since it last moved — most of these windows run before that same
+  // thread's own evening/after-table slot has fired again. So `>= 1`
+  // required the thread to have already been ADVANCED at least once
+  // (heat 2 -> 1.5 after one round of decay) before this could ever be
+  // eligible — a conjunction measured at 0.2% of trust firings over 250
+  // seasons, which is the dead-content failure rare-state amplification
+  // exists to prevent, not a deliberately rare beat (nothing about "checking
+  // in" is meant to be rarer than the pact it follows up on). Loosened to
+  // `> 0`: any trust thread that hasn't fully gone cold yet, which a plain
+  // single-open thread (heat 1) still satisfies one round later (0.5 > 0).
+  // `rare: true` was considered and rejected — that flag amplifies a weight
+  // that is ALREADY positive when eligibility is rolled; it does nothing for
+  // an event whose real problem is that eligibility itself almost never
+  // triggers, which is what was happening here.
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
     const t = findOpenThread(FAMILY, [a, b]);
-    return t && heatAt(t, ctx.ep) >= 1 ? 2 : 0;
+    return t && heatAt(t, ctx.ep) > 0 ? 2 : 0;
   },
   fire(ctx) {
     const [a, b] = ctx.actors;

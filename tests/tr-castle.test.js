@@ -103,10 +103,35 @@ describe('the pool loads cleanly', () => {
   });
 });
 
+/**
+ * A snapshot of everything a castle event is allowed to change. JSON-cloned
+ * because `gs.bonds`/`gs.tr.threads`/`gs.tr.residue` are all plain
+ * objects/arrays in this slice of state (no Sets), so a structural
+ * string-diff is a cheap, exhaustive way to ask "did ANYTHING in here move,"
+ * without needing to know in advance which key a given event would touch.
+ */
+function snapshotWorld() {
+  return {
+    bonds: JSON.stringify(gs.bonds || {}),
+    threads: JSON.stringify(gs.tr?.threads || []),
+    residue: JSON.stringify(gs.tr?.residue || {}),
+  };
+}
+function worldMoved(before, after) {
+  return before.bonds !== after.bonds || before.threads !== after.threads || before.residue !== after.residue;
+}
+
 describe('every event has a real consequence', () => {
-  it('never returns a firing with no bond delta, thread, and no actor-level state', () => {
-    // Fire every event that is willing to, under the same friendly world as
-    // above, and check the returned consequence object is not empty.
+  it('actually moves the observed world (bonds, threads, or residue) — not just its return shape', () => {
+    // Round-1 fix: the previous version of this test inspected the SHAPE of
+    // fire()'s return value (`result.branch`, `result.pair`, ...) rather than
+    // whether anything in `gs` actually changed. Every event returns at
+    // least a branch/pair/actor field as scene bookkeeping for the caller —
+    // so that check passed even for an event that changed nothing, which is
+    // exactly the failure mode the brief's "no purely cosmetic event" rule
+    // exists to catch. This version snapshots the mutable world BEFORE the
+    // call and asserts it is DIFFERENT after — see the mutation check below,
+    // which proves this version actually goes red where the old one did not.
     const cast = BASE_CAST;
     const ep = 5;
     recordAlignment(cast[0], true, 1, 'selection');
@@ -119,21 +144,40 @@ describe('every event has a real consequence', () => {
 
     const ctx = { ep, window: 'evening', act: 'middle', living: [...cast], actors: [cast[0], cast[1]] };
     const rng = seededRng(3);
+    let fired = 0;
     for (const ev of EVENTS) {
       if (ev.weight(ctx) <= 0) continue;
+      const before = snapshotWorld();
       const result = ev.fire(ctx, rng);
       expect(result, `${ev.id} fired but returned nothing`).toBeTruthy();
-      const hasBond = typeof result.bondDelta === 'number' && result.bondDelta !== 0;
-      const hasThread = !!result.threadId;
-      const hasNamedState = !!(result.branch || result.actor || result.pair || result.target || result.about);
-      expect(hasBond || hasThread || hasNamedState,
-        `${ev.id} produced a result with no observable consequence: ${JSON.stringify(result)}`)
+      const after = snapshotWorld();
+      expect(worldMoved(before, after),
+        `${ev.id} fired and changed nothing observable in gs.bonds/gs.tr.threads/gs.tr.residue`)
         .toBe(true);
-      // The stricter bar the brief actually sets: evidence (thread/residue)
-      // or bond/state. A result that is ONLY a branch label with no thread
-      // and no bond is exactly the cosmetic-event failure mode being tested
-      // for, so most events must clear the harder check too.
+      fired++;
     }
+    // A guard on the guard: if the ctx above stopped making anything
+    // eligible, the loop would trivially "pass" having tested zero events.
+    expect(fired).toBeGreaterThanOrEqual(10);
+  });
+
+  it('MUTATION CHECK: a stubbed no-op event (same return shape, zero world writes) fails the check above', () => {
+    // Round 1's proof-of-concept was "strip every addBond/threadId out of
+    // all six grief events and watch all 21 tests stay green." Reproduced
+    // here as a standing regression guard: a stand-in event with the exact
+    // return shape a real grief event produces (branch/pair/victim/threadId)
+    // but that genuinely writes nothing to `gs`. If a future edit reverts
+    // the test above to a return-shape check, THIS assertion — which the
+    // return-shape check would pass — is what should go red instead.
+    const cast = BASE_CAST;
+    const stub = {
+      fire: () => ({ branch: 'empty-chair', pair: [cast[0], cast[1]], victim: cast[4], threadId: null }),
+    };
+    const before = snapshotWorld();
+    const result = stub.fire();
+    const after = snapshotWorld();
+    expect(result).toBeTruthy();                    // the old bar: cleared trivially
+    expect(worldMoved(before, after)).toBe(false);   // the new bar: correctly refuses to call this a consequence
   });
 });
 

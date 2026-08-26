@@ -6427,8 +6427,15 @@ setTimeout(function() {
       seasonNumber: seasonData.seasonNumber,
       // Stamped, so the row can never again be found by number alone.
       format: _pubFormat,
+      // `|| _pubFormat` is the same guard _epKey() carries, and it is here for
+      // the same reason: _csShows() is empty until the module block at the foot
+      // of this page loads, and this is the one site that WRITES. Without it a
+      // publish that beat the module wrote seasonId "undefined-14" into
+      // seasons_database.json — persisted corruption of the row every page
+      // looks a season up by, from a lookup that fails silently.
       seasonId: _pubFormat === CS_DEFAULT_FORMAT
-        ? `td-${seasonData.seasonNumber}` : `${_csShows()[_pubFormat]}-${seasonData.seasonNumber}`,
+        ? `td-${seasonData.seasonNumber}`
+        : `${_csShows()[_pubFormat] || _pubFormat}-${seasonData.seasonNumber}`,
       title: seasonData.title,
       subtitle: seasonData.subtitle,
       castSize: seasonData.castSize,

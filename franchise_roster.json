@@ -4716,6 +4716,25 @@
       },
       "profileSources": {},
       "voice": "White American, The Heiress."
+    },
+    {
+      "name": "Finn",
+      "slug": "finn",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "chaos-agent",
+      "stats": {
+        "physical": 5,
+        "endurance": 4,
+        "mental": 6,
+        "social": 4,
+        "strategic": 6,
+        "loyalty": 2,
+        "boldness": 9,
+        "intuition": 6,
+        "temperament": 2
+      },
+      "profileSources": {}
     }
   ]
 }

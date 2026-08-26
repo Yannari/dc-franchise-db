@@ -1447,9 +1447,9 @@
           }
         ]
       },
+      "ethnicity": "Italian",
       "backstory": "Mike entered the franchise as an Italian teenager hiding a deeply personal part of his mental-health history because he feared ridicule and rejection. His bond with Zoey gave him a reason to become more open, while the competition repeatedly punished secrecy and loss of control. By the end of his source story he had integrated his identities and retained their learned abilities, leaving him to build an ordinary future without erasing what he experienced.",
-      "personality": "Mike is caring, relationship-oriented, and more comfortable supporting another person than demanding the center of attention. Earlier secrecy taught him to scan constantly for signs that people might reject him, so he sometimes withholds difficult truths until avoidance becomes its own problem. Once trust is established, he is intensely loyal and willing to take emotional risks for the people he loves. His post-canon baseline is integration and continuity: he remembers his whole life, owns his choices, and can draw on varied skills without switching into a caricature. Stress may make him anxious or evasive, but it must never turn mental illness into automatic menace. His strategic game grows from protection, compromise, and careful relationship repair rather than manipulation for sport.",
-      "ethnicity": "Italian"
+      "personality": "Mike is caring, relationship-oriented, and more comfortable supporting another person than demanding the center of attention. Earlier secrecy taught him to scan constantly for signs that people might reject him, so he sometimes withholds difficult truths until avoidance becomes its own problem. Once trust is established, he is intensely loyal and willing to take emotional risks for the people he loves. His post-canon baseline is integration and continuity: he remembers his whole life, owns his choices, and can draw on varied skills without switching into a caricature. Stress may make him anxious or evasive, but it must never turn mental illness into automatic menace. His strategic game grows from protection, compromise, and careful relationship repair rather than manipulation for sport."
     },
     {
       "name": "Miles",
@@ -2262,12 +2262,12 @@
           }
         ]
       },
-      "occupation": "Lifeguard",
-      "backstory": "Thomas “Tom” Reed was born in Canada on June 12, 1993. He worked undercover as a spy, entered camp on a mission, and concealed both his identity and facial scars. Exposure cost him that career; he later worked as a police officer before leaving the job and becoming a lifeguard. Relationships and recovery gradually moved him from guarded isolation toward a more open, playful life. In this simulator the roster name is Thom, but the source identity and characterization are Tom.",
-      "personality": "Thom uses Tom’s current canon baseline: physically capable, protective, justice-oriented, and finally more comfortable being seen. His old instinct was concealment—mask the scars, compartmentalize the mission, avoid the conversation that might reopen pain—and that habit can still return when intimacy feels dangerous. He naturally takes responsibility in emergencies and prefers fair competition, but he is not infallible: traps, mixed signals, and his own avoidance can make him look hypocritical or gullible. Later experience has made him cheerier and more openly affectionate, without removing the watchfulness learned as a spy and police officer. He will make strategic deals and can break one under genuine necessity, but cruelty, humiliation, and casual sabotage conflict with his moral center. When pressured, he protects first and explains after.",
       "birthdate": "1993-06-12",
       "nationality": "Canadian",
-      "descriptor": "Former spy and police officer"
+      "occupation": "Lifeguard",
+      "descriptor": "Former spy and police officer",
+      "backstory": "Thomas “Tom” Reed was born in Canada on June 12, 1993. He worked undercover as a spy, entered camp on a mission, and concealed both his identity and facial scars. Exposure cost him that career; he later worked as a police officer before leaving the job and becoming a lifeguard. Relationships and recovery gradually moved him from guarded isolation toward a more open, playful life. In this simulator the roster name is Thom, but the source identity and characterization are Tom.",
+      "personality": "Thom uses Tom’s current canon baseline: physically capable, protective, justice-oriented, and finally more comfortable being seen. His old instinct was concealment—mask the scars, compartmentalize the mission, avoid the conversation that might reopen pain—and that habit can still return when intimacy feels dangerous. He naturally takes responsibility in emergencies and prefers fair competition, but he is not infallible: traps, mixed signals, and his own avoidance can make him look hypocritical or gullible. Later experience has made him cheerier and more openly affectionate, without removing the watchfulness learned as a spy and police officer. He will make strategic deals and can break one under genuine necessity, but cruelty, humiliation, and casual sabotage conflict with his moral center. When pressured, he protects first and explains after."
     },
     {
       "name": "Jake",
@@ -2384,11 +2384,11 @@
           }
         ]
       },
+      "birthdate": "1999-10-25",
+      "nationality": "British",
       "occupation": "Fitness influencer",
       "backstory": "Gretchen “Grett” Clark was born in Britain on October 25, 1999 and built a public career as a fitness influencer. Long before camp, image and approval were tangled with her self-worth, encouraging a persona that was glamorous, superior, and impossible to dismiss. Competition gave that armor a strategic use, while later relationships and public scrutiny forced her to separate genuine confidence from the need to control how everyone saw her.",
-      "personality": "Grett is ambitious, perceptive, and difficult to intimidate. Her earliest social armor was vanity and condescension: strike first, define everyone else as lesser, and no one gets to name the insecurity underneath. She can lie, build overlapping alliances, and weaponize a private weakness when she believes control is slipping. Experience has made her more self-aware and capable of real care, especially after learning how exploitation feels from the receiving end, but it has not erased her pride or temper. She values independence and responds badly to pity, public embarrassment, or a partner trying to shrink her. Under pressure she may overplay, issue ultimatums, and mistake fear for authority. At her best, she combines strategic nerve with boundaries strong enough to protect both herself and someone else.",
-      "birthdate": "1999-10-25",
-      "nationality": "British"
+      "personality": "Grett is ambitious, perceptive, and difficult to intimidate. Her earliest social armor was vanity and condescension: strike first, define everyone else as lesser, and no one gets to name the insecurity underneath. She can lie, build overlapping alliances, and weaponize a private weakness when she believes control is slipping. Experience has made her more self-aware and capable of real care, especially after learning how exploitation feels from the receiving end, but it has not erased her pride or temper. She values independence and responds badly to pity, public embarrassment, or a partner trying to shrink her. Under pressure she may overplay, issue ultimatums, and mistake fear for authority. At her best, she combines strategic nerve with boundaries strong enough to protect both herself and someone else."
     },
     {
       "name": "Dan",
@@ -2864,11 +2864,11 @@
           }
         ]
       },
+      "birthdate": "1998-05-29",
+      "nationality": "Brazilian",
       "occupation": "Actor and social media influencer",
       "backstory": "James Costa was born in Brazil on May 29, 1998. Growing up, he had few friends beyond his sister, so social media attention became a substitute measure of belonging and value. He turned that instinct into a career as an influencer and later an actor, arriving at competition with a practiced persona, an eye for content, and a willingness to manufacture moments before learning that genuine connection could satisfy what an audience never did.",
-      "personality": "James is charming, calculating, image-conscious, and skilled at making an audience feel included in his version of events. Early in life, loneliness taught him to treat follower counts as proof that he mattered; this made staged affection, selective truth, and public spectacle feel like reasonable tools. Real relationships challenged that equation. He remains ambitious and capable of deception, but authentic loyalty now has weight that fame cannot automatically outweigh. Under pressure he narrates, reframes, and searches for the move that preserves both leverage and reputation. He dislikes being made foolish in public and can retaliate with precision. His strongest boundary is earned intimacy: once someone becomes real to him rather than useful, exploiting that bond should create visible conflict rather than effortless villainy.",
-      "birthdate": "1998-05-29",
-      "nationality": "Brazilian"
+      "personality": "James is charming, calculating, image-conscious, and skilled at making an audience feel included in his version of events. Early in life, loneliness taught him to treat follower counts as proof that he mattered; this made staged affection, selective truth, and public spectacle feel like reasonable tools. Real relationships challenged that equation. He remains ambitious and capable of deception, but authentic loyalty now has weight that fame cannot automatically outweigh. Under pressure he narrates, reframes, and searches for the move that preserves both leverage and reputation. He dislikes being made foolish in public and can retaliate with precision. His strongest boundary is earned intimacy: once someone becomes real to him rather than useful, exploiting that bond should create visible conflict rather than effortless villainy."
     },
     {
       "name": "Kai",
@@ -3154,12 +3154,12 @@
           }
         ]
       },
-      "occupation": "Podcaster and brand promoter; former dancer",
-      "backstory": "Yul Kim was born in Korea on July 24, 2001. A dance performance went viral when he was fifteen, creating early fame and a public “nice” persona that concealed his contempt for others. His behavior eventually cost him dancing work and damaged his reputation, after which he continued as a podcaster and brand promoter. He enters competition treating money and renewed celebrity as permission to stop pretending to be decent.",
-      "personality": "Yul is vain, cruel, discriminatory, and convinced that fame should exempt him from ordinary accountability. Viral success as a teenage dancer rewarded performance before he developed empathy, and he learned to treat outrage as both threat and publicity. He can maintain tactical loyalty and understand alliance structure, yet his contempt repeatedly destroys the trust that strategy requires. Apologies are usually reputation management; remorse becomes suspect the moment consequences fade. Under pressure he insults appearance, identity, or intelligence, tries to reassert hierarchy, and threatens retaliation when control fails. His behavior must not be softened into harmless sass: abuse and bigotry should damage bonds, reputation, and voting options. He can be funny through vanity, hypocrisy, and failed self-importance without making targeted cruelty consequence-free.",
       "birthdate": "2001-07-24",
       "ethnicity": "Korean",
-      "nationality": "Korean"
+      "nationality": "Korean",
+      "occupation": "Podcaster and brand promoter; former dancer",
+      "backstory": "Yul Kim was born in Korea on July 24, 2001. A dance performance went viral when he was fifteen, creating early fame and a public “nice” persona that concealed his contempt for others. His behavior eventually cost him dancing work and damaged his reputation, after which he continued as a podcaster and brand promoter. He enters competition treating money and renewed celebrity as permission to stop pretending to be decent.",
+      "personality": "Yul is vain, cruel, discriminatory, and convinced that fame should exempt him from ordinary accountability. Viral success as a teenage dancer rewarded performance before he developed empathy, and he learned to treat outrage as both threat and publicity. He can maintain tactical loyalty and understand alliance structure, yet his contempt repeatedly destroys the trust that strategy requires. Apologies are usually reputation management; remorse becomes suspect the moment consequences fade. Under pressure he insults appearance, identity, or intelligence, tries to reassert hierarchy, and threatens retaliation when control fails. His behavior must not be softened into harmless sass: abuse and bigotry should damage bonds, reputation, and voting options. He can be funny through vanity, hypocrisy, and failed self-importance without making targeted cruelty consequence-free."
     },
     {
       "name": "Alessio",
@@ -3481,12 +3481,12 @@
           }
         ]
       },
-      "occupation": "Publicist",
-      "backstory": "Natalia Baez was born on August 3, 1996 and is proudly Puerto Rican American. She built a career as a publicist—the person friends call when an image needs repair—and developed a taste for tabloids, celebrity drama, and the human motives behind both. Her parents supported her transition; accepting herself as a transgender woman was frightening and liberating. She also identifies as pansexual and has spoken about having ADHD.",
-      "personality": "Natalia is outgoing, funny, socially curious, and professionally attuned to reputation. She genuinely likes learning about people, whether through direct conversation or gossip, and humor is her fastest route into a group. Friendship also makes her strategically messy: when someone she cares about is targeted, emotion can overwhelm the cleaner plan she intended to play. She is capable of flipping, reconciling with a rival for a shared objective, and recognizing when the public version of events matters as much as the vote. Her returning goal is discipline rather than personality replacement—strong bonds, fewer impulsive pivots, and control of her own story. Serious betrayals remain hard for her to release. Under pressure she talks faster, negotiates across factions, and may expose the whole room rather than leave quietly.",
       "birthdate": "1996-08-03",
       "nationality": "Puerto Rican American",
-      "descriptor": "Transgender woman with ADHD"
+      "occupation": "Publicist",
+      "descriptor": "Transgender woman with ADHD",
+      "backstory": "Natalia Baez was born on August 3, 1996 and is proudly Puerto Rican American. She built a career as a publicist—the person friends call when an image needs repair—and developed a taste for tabloids, celebrity drama, and the human motives behind both. Her parents supported her transition; accepting herself as a transgender woman was frightening and liberating. She also identifies as pansexual and has spoken about having ADHD.",
+      "personality": "Natalia is outgoing, funny, socially curious, and professionally attuned to reputation. She genuinely likes learning about people, whether through direct conversation or gossip, and humor is her fastest route into a group. Friendship also makes her strategically messy: when someone she cares about is targeted, emotion can overwhelm the cleaner plan she intended to play. She is capable of flipping, reconciling with a rival for a shared objective, and recognizing when the public version of events matters as much as the vote. Her returning goal is discipline rather than personality replacement—strong bonds, fewer impulsive pivots, and control of her own story. Serious betrayals remain hard for her to release. Under pressure she talks faster, negotiates across factions, and may expose the whole room rather than leave quietly."
     },
     {
       "name": "Richard",

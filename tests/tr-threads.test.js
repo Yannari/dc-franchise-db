@@ -127,4 +127,65 @@ describe('a thread accumulates', () => {
     expect(findOpenThread('suspicion', [CAST[2], CAST[3]])).toBeNull();
     expect(gs.tr.threads.find(x => x.id === t.id).state).toBe('abandoned');
   });
+
+  it('a closed thread is a payoff, not a reopenable one — a new episode gets a NEW thread', () => {
+    const t = openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
+    advanceThread(t.id, 3, 'confirmed at the table');
+    closeThread(t.id, 5, 'banished-and-was-guilty');
+    const beatsBefore = JSON.parse(JSON.stringify(t.beats));
+
+    // Someone raises the same pair again later — this MUST NOT reopen the
+    // payoff. Closure is an ending; silently reviving it erases the ending.
+    const after = openThread('suspicion', [CAST[0], CAST[1]], 9, 'brought it up again');
+
+    expect(after.id).not.toBe(t.id);
+    const closed = gs.tr.threads.find(x => x.id === t.id);
+    expect(closed.state).toBe('closed');
+    expect(closed.outcome).toBe('banished-and-was-guilty');
+    expect(closed.beats).toEqual(beatsBefore); // untouched by the later call
+    expect(gs.tr.threads.filter(x => x.kind === 'suspicion').length).toBe(2);
+  });
+
+  it('a revive writes residue for the revival episode, for both parties', () => {
+    const t = openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
+    advanceThread(t.id, 3, 'first follow-up');
+    const beforeA = residueFor(CAST[0]).length;
+    const beforeB = residueFor(CAST[1]).length;
+
+    openThread('suspicion', [CAST[0], CAST[1]], 8, 'she never let it go');
+
+    // Residue-citation is the entire payoff of a revive: it is why episode 9
+    // can name episode 8. If the revive stops writing it, that link is gone.
+    const afterA = residueFor(CAST[0]);
+    const afterB = residueFor(CAST[1]);
+    expect(afterA.length).toBe(beforeA + 1);
+    expect(afterB.length).toBe(beforeB + 1);
+    expect(afterA[afterA.length - 1]).toMatchObject({ ep: 8, note: 'she never let it go' });
+    expect(afterB[afterB.length - 1]).toMatchObject({ ep: 8, note: 'she never let it go' });
+  });
+
+  it('a revive raises heat — a story that comes back must outrank a fresh one', () => {
+    const t = openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
+    advanceThread(t.id, 3, 'first follow-up');
+    const heatBefore = gs.tr.threads.find(x => x.id === t.id).heat;
+
+    const revived = openThread('suspicion', [CAST[0], CAST[1]], 8, 'she never let it go');
+
+    expect(revived.heat).toBeGreaterThan(heatBefore);
+  });
+
+  it('a redundant re-announcement adds no second beat and no second residue entry', () => {
+    const a = openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
+    const beatsBefore = a.beats.length;
+    const residueBefore = residueFor(CAST[0]).length;
+
+    // Identical (kind, parties, ep, seed) — this is the SAME beat announced
+    // twice, not a second one. If the guard were disabled, both counts here
+    // would grow on the second call.
+    openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
+
+    const again = gs.tr.threads.find(x => x.id === a.id);
+    expect(again.beats.length).toBe(beatsBefore);
+    expect(residueFor(CAST[0]).length).toBe(residueBefore);
+  });
 });

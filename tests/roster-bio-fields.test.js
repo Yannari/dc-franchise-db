@@ -140,8 +140,14 @@ describe('the player page renders it without inventing anything', () => {
   it('computes age from the birthdate rather than trusting a stored one', () => {
     const box = page.slice(page.indexOf('// ── THE BIO'), page.indexOf('// ── WHY TIER'));
     expect(box.length, 'the bio block is missing from player.html').toBeGreaterThan(200);
-    expect(box, 'age is not derived from birthdate').toMatch(/getUTCFullYear/);
+    // Derived, and derived on the FRANCHISE'S clock. This pinned
+    // `getUTCFullYear`, which was the old inline sum against `new Date()` —
+    // real time advances whether or not a season airs, so everybody quietly
+    // gained a year when the real calendar turned. ageNow() counts to the last
+    // season aired instead, and there is now exactly one of it.
+    expect(box, 'age is not derived from the birthdate').toMatch(/ageNow\(rp\.birthdate\)/);
     expect(box, 'the stored age is not used as a fallback').toMatch(/rp\.age/);
+    expect(box, 'a second clock came back').not.toMatch(/new Date\(\)/);
   });
 
   it('escapes the authored text', () => {

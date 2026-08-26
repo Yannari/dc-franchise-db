@@ -20,7 +20,8 @@ const STAT_ABBR = { physical:'PHY', endurance:'END', mental:'MEN', social:'SOC',
 
 import { composeVoice, stripBioLead, parseBio, splitOrigin } from './bio.js';
 import { PROFILE_GROUPS, validatePublishedProfile, selectProfileVoice, diffProfileCandidates, applyCandidateSelection } from './profile-import.js';
-import { appearancesFor, ageAnchor, birthFromCanonAge, continuitySummary, continuityTies } from './continuity.js';
+import { appearancesFor, ageAnchor, birthFromCanonAge, continuityIndex, continuitySummary, continuityTies } from './continuity.js';
+import { ageNow, franchiseNow } from './franchise-calendar.js';
 import { INTERVIEW_QUESTIONS, parseInterview, serializeInterview }
   from './casting-interview.js';
 // The endpoint resolver, not a second hardcoded URL — it already handles the
@@ -1329,7 +1330,7 @@ function _renderEditor() {
           <label class="st-l">Name<input class="st-input" id="st-f-name" value="${_esc(d.name)}" placeholder="Character name"></label>
           <div class="st-row2">
             <label class="st-l">Slug<input class="st-input" id="st-f-slug" value="${_esc(d.slug)}" placeholder="auto"></label>
-            <label class="st-l">Age<input class="st-input" id="st-f-age" value="${_esc(d.age)}" placeholder="—" inputmode="numeric"></label>
+            <label class="st-l">Age <span class="st-hint" id="st-age-hint"></span><input class="st-input" id="st-f-age" value="${_esc(d.age)}" placeholder="&mdash;" inputmode="numeric"></label>
           </div>
         </div>
       </div>
@@ -1503,7 +1504,23 @@ function _renderEditor() {
   ed.querySelector('#st-f-descriptor').addEventListener('input', e => d.descriptor = e.target.value);
   ed.querySelector('#st-f-occupation').addEventListener('input', e => d.occupation = e.target.value);
   ed.querySelector('#st-f-hometown').addEventListener('input', e => d.hometown = e.target.value);
-  ed.querySelector('#st-f-birthdate').addEventListener('input', e => d.birthdate = e.target.value);
+  // ── the age follows the birthdate, on the franchise's clock ──
+  //
+  // Not the real one. Time here advances because a season aired, so somebody
+  // born in 2004 is 22 for as long as the present is fall 2026, however many
+  // real months pass. Age is still editable — a value typed by hand wins and
+  // is not overwritten on the next keystroke.
+  ed.querySelector('#st-f-birthdate').addEventListener('input', e => {
+    d.birthdate = e.target.value;
+    const derived = ageNow(d.birthdate);
+    const ageEl = ed.querySelector('#st-f-age');
+    if (derived == null || !ageEl) return;
+    ageEl.value = String(derived);
+    d.age = String(derived);
+    const now = franchiseNow();
+    const hint = ed.querySelector('#st-age-hint');
+    if (hint && now) hint.textContent = `at ${now.airSlot} ${now.airYear}`;
+  });
   ed.querySelector('#st-f-backstory').addEventListener('input', e => d.backstory = e.target.value);
   ed.querySelector('#st-f-personality').addEventListener('input', e => d.personality = e.target.value);
   INTERVIEW_QUESTIONS.forEach(x => {
@@ -1897,6 +1914,18 @@ const CONT_OPEN_KEY = 'st_continuity_open';
  * asserting that a builder returned a string.
  */
 export async function _fillContinuity(ed, slug) {
+  // Loading the archive is also what tells the calendar what year it is, so
+  // this runs for a debut character too — they have no seasons, but the age
+  // box still needs a present to count to.
+  try {
+    await continuityIndex();
+    const now = franchiseNow();
+    const hint = ed.querySelector('#st-age-hint');
+    if (hint && now && ed.querySelector('#st-f-birthdate')?.value) {
+      hint.textContent = `at ${now.airSlot} ${now.airYear}`;
+    }
+  } catch { /* an age box with no hint is fine; a broken editor is not */ }
+
   const box = ed.querySelector('#st-cont');
   const body = ed.querySelector('#st-cont-body');
   const count = ed.querySelector('#st-cont-count');

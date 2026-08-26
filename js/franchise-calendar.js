@@ -160,3 +160,35 @@ export function nextWindowFor(seasons = [], format = null) {
   // safer answer than repeating a date that already exists.
   return at(last + (step > 0 && step <= 8 ? step : 2));
 }
+
+// ── THE FRANCHISE'S PRESENT, SET ONCE ────────────────────────────────
+//
+// "Nothing ticks" is the rule at the top of this file, and three places were
+// breaking it: js/wiki.js and two blocks in player.html each computed an age
+// against `new Date()`. Real time advances whether or not a season airs, so
+// every character silently gained a year the moment the real calendar turned —
+// while the franchise sat where it was. It reads correct today only because
+// the real year and the aired year happen to match.
+//
+// So the present is stored once, derived from the seasons that have actually
+// aired, and everything asks the same question of the same source.
+let _now = null;
+
+/** Point the calendar at the seasons that exist. Returns the present. */
+export function setFranchiseNow(seasons) {
+  _now = latestAired(seasons || []) || null;
+  return _now;
+}
+
+/** The season that is "now", or null before any list has been supplied. */
+export function franchiseNow() { return _now; }
+
+/**
+ * Their age at the franchise's present.
+ *
+ * Null rather than a real-world fallback when the present is unknown: an age
+ * computed off the wrong clock is worse than a blank, because it looks right.
+ */
+export function ageNow(birthdate) {
+  return _now ? ageAt(birthdate, _now) : null;
+}

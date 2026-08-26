@@ -24,7 +24,7 @@ import { SHOWS, showWords, showName, DEFAULT_FORMAT } from './shows.js';
 import { seasonDataFile } from './social/adapter.js';
 // A true leaf — it imports nothing. It owns when a season aired and what
 // "now" means, and nothing else in this project is allowed a second opinion.
-import { ageAt, byAirDate, latestAired, yearsBetween } from './franchise-calendar.js';
+import { ageAt, byAirDate, latestAired, setFranchiseNow, yearsBetween } from './franchise-calendar.js';
 
 /** Fetch one published season document. Null when it has not aired. */
 async function loadSeasonDoc(format, season, root) {
@@ -134,6 +134,9 @@ async function _build(root) {
   if (!res.ok) return {};
   const seasons = (await res.json()).seasons || [];
   _seasons = seasons;
+  // Everything that needs to know what year it is asks the calendar, and
+  // this is the one place that has just read the list.
+  setFranchiseNow(seasons);
   const index = {};
   // Sequential rather than parallel: fifteen small documents, and the Studio
   // opens this once per session. A burst of fetches on a page that is already

@@ -201,3 +201,49 @@ describe('an age from a wiki, placed in franchise time', () => {
     expect(ageAnchor(await appearancesFor('nobody-has-this-slug'))).toBeNull();
   });
 });
+
+// "Nothing ticks" is the calendar's own first rule: time advances because a
+// season aired, not because a clock ran. Three places broke it — js/wiki.js
+// and two blocks in player.html each aged people against `new Date()`, so
+// everybody would have quietly gained a year the moment the real calendar
+// turned while the franchise stayed put. It reads correct today only because
+// the real year and the aired year happen to match.
+describe('an age is counted on the franchise clock', () => {
+  it('knows nothing until it is told what has aired', async () => {
+    const cal = await import('../js/franchise-calendar.js');
+    // Deliberately null rather than falling back to the real date: an age off
+    // the wrong clock is worse than a blank because it looks right.
+    cal.setFranchiseNow([]);
+    expect(cal.ageNow('2004-07-21')).toBeNull();
+  });
+
+  it('counts to the last season aired, not to today', async () => {
+    const { continuityIndex, resetContinuityIndex } = await load();
+    const cal = await import('../js/franchise-calendar.js');
+    // The index caches, and a cached hit does not re-tell the calendar what
+    // year it is — so the test above, which cleared it, would otherwise decide
+    // this one's answer.
+    resetContinuityIndex();
+    await continuityIndex();
+
+    const now = cal.franchiseNow();
+    expect(now.airYear).toBe(2026);
+    expect(now.airSlot).toBe('fall');
+    expect(cal.ageNow('2004-07-21')).toBe(22);
+    // Their birthday has not come round by the time the slot opens.
+    expect(cal.ageNow('2006-12-31')).toBe(19);
+    expect(cal.ageNow('2006-01-02')).toBe(20);
+  });
+
+  it('is the only clock any page reads', async () => {
+    const fs = await import('node:fs');
+    for (const f of ['js/wiki.js', 'player.html']) {
+      // Comments may say the words — one of them explains why this rule
+      // exists. Only executable code counts.
+      const code = fs.readFileSync(f, 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/^\s*(\/\/|\*).*$/gm, '');
+      expect(code, `${f} grew a second clock`).not.toMatch(/new Date\(\)/);
+    }
+  });
+});

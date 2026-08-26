@@ -32,3 +32,46 @@ export function aweOf({ gap, stats, archetype }) {
     * ((10 - stats.boldness) / 10)
     * ((10 - stats.intuition) / 10);
 }
+
+/** Which way each archetype leans. Multiplied against stats, never consulted alone. */
+const AGENDA_BIAS = {
+  mastermind:          { control: 1.0, win: 0.5, support: 0.2, survive: 0.4, disrupt: 0.2 },
+  schemer:             { control: 0.95, win: 0.4, support: 0.2, survive: 0.5, disrupt: 0.3 },
+  villain:             { control: 0.9, win: 0.4, support: 0.1, survive: 0.4, disrupt: 0.5 },
+  'challenge-beast':   { control: 0.3, win: 1.0, support: 0.4, survive: 0.3, disrupt: 0.2 },
+  hero:                { control: 0.3, win: 0.6, support: 1.0, survive: 0.3, disrupt: 0.1 },
+  'loyal-soldier':     { control: 0.2, win: 0.5, support: 1.0, survive: 0.4, disrupt: 0.1 },
+  'social-butterfly':  { control: 0.4, win: 0.3, support: 0.9, survive: 0.4, disrupt: 0.2 },
+  showmancer:          { control: 0.3, win: 0.3, support: 0.9, survive: 0.4, disrupt: 0.3 },
+  goat:                { control: 0.1, win: 0.2, support: 0.5, survive: 1.0, disrupt: 0.2 },
+  floater:             { control: 0.2, win: 0.3, support: 0.5, survive: 0.9, disrupt: 0.3 },
+  underdog:            { control: 0.3, win: 0.4, support: 0.6, survive: 0.9, disrupt: 0.2 },
+  'chaos-agent':       { control: 0.3, win: 0.2, support: 0.2, survive: 0.3, disrupt: 1.0 },
+  hothead:             { control: 0.3, win: 0.5, support: 0.3, survive: 0.3, disrupt: 0.9 },
+  wildcard:            { control: 0.3, win: 0.3, support: 0.3, survive: 0.3, disrupt: 0.9 },
+  'perceptive-player': { control: 0.7, win: 0.4, support: 0.5, survive: 0.6, disrupt: 0.2 },
+};
+
+const DEFAULT_BIAS = { control: 0.4, win: 0.4, support: 0.4, survive: 0.4, disrupt: 0.4 };
+
+/**
+ * The five things a coach can spend influence on, all at once.
+ *
+ * `vulnerability` is 0..1 — how close this coach is to being voted out. It
+ * lifts `survive` for everybody, which is why any coach drifts toward
+ * self-preservation as the vote nears, whatever they came in wanting.
+ */
+export function agendaMix({ stats, archetype, vulnerability = 0 }) {
+  const b = AGENDA_BIAS[archetype] || DEFAULT_BIAS;
+  return {
+    control: (stats.strategic / 10) * ((10 - stats.loyalty) / 10) * b.control,
+    support: (stats.loyalty / 10) * (stats.social / 10) * b.support,
+    win:     (stats.mental / 10) * (stats.intuition / 10) * b.win,
+    survive: Math.min(1, vulnerability) * b.survive,
+    disrupt: (stats.boldness / 10) * ((10 - stats.temperament) / 10) * b.disrupt,
+  };
+}
+
+export function dominantAgenda(mix) {
+  return Object.entries(mix).sort((a, b) => b[1] - a[1])[0][0];
+}

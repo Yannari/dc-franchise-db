@@ -3526,7 +3526,7 @@ async function generateCastingInterview(body, env) {
     p.age && `Age ${p.age}`,
     p.occupation && `Occupation: ${p.occupation}`,
     p.hometown && `From: ${p.hometown}`,
-    [p.ethnicity, p.nationality].filter(Boolean).join(" "),
+    joinOrigin(p.ethnicity, p.nationality),
     p.gender === "f" ? "Female" : p.gender === "m" ? "Male" : "",
     // Stated because one of the eleven questions asks it outright.
     p.sexuality && p.sexuality !== "straight" ? `Sexuality: ${p.sexuality}` : "",

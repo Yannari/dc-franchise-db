@@ -170,8 +170,14 @@ export function parseBio(voice) {
  * `straight` is omitted, matching what the Studio has always done: the lead-in
  * exists to tell the writer something it would not otherwise assume.
  */
-/** Ethnicity and nationality as ONE description, never the same word twice. */
-function _joinOrigin(ethnicity, nationality) {
+/**
+ * Ethnicity and nationality as ONE description, never the same word twice.
+ *
+ * Exported because this join existed in THREE places — here, the wiki infobox,
+ * and the wiki bio line — and fixing only this one left Yul reading "Korean
+ * Korean" on his own article. One rule, one home.
+ */
+export function joinOrigin(ethnicity, nationality) {
   const e = String(ethnicity || '').trim();
   const n = String(nationality || '').trim();
   if (!e) return n;
@@ -194,7 +200,7 @@ export function composeBioLead({ age, ethnicity, nationality, sexuality, descrip
   // and nationality "Korean", and a plain join published him as "Korean
   // Korean." A nationality that already opens with the ethnicity ("Korean"
   // + "Korean American") says it once too, so the longer one wins.
-  const origin = _joinOrigin(ethnicity, nationality);
+  const origin = joinOrigin(ethnicity, nationality);
   if (origin) bits.push(origin);
   if (descriptor) bits.push(descriptor);
   if (sexuality && norm(sexuality) !== 'straight') bits.push(sexuality);

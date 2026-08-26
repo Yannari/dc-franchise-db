@@ -1400,8 +1400,8 @@ function _renderEditor() {
         <label class="st-l">Nationality <span class="st-hint">queryable</span>
           <input class="st-input" id="st-f-nationality" value="${_esc(d.nationality)}" placeholder="e.g. Canadian">
         </label>
-        <label class="st-l">Anything else <span class="st-hint">kept as written</span>
-          <input class="st-input" id="st-f-descriptor" value="${_esc(d.descriptor)}" placeholder="e.g. Scouse">
+        <label class="st-l">Descriptor <span class="st-hint">the short epithet the show gives them &mdash; their wiki <b>Label</b> row</span>
+          <input class="st-input" id="st-f-descriptor" value="${_esc(d.descriptor)}" placeholder="e.g. The Lively">
         </label>
       </div>
       <div class="st-row3">

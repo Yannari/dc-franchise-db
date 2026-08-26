@@ -11,7 +11,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseBio, composeBioLead, composeVoice, stripBioLead, splitOrigin } from '../js/bio.js';
+import { parseBio, composeBioLead, composeVoice, joinOrigin, stripBioLead, splitOrigin } from '../js/bio.js';
 
 const profiles = JSON.parse(
   readFileSync(join(process.cwd(), 'voice-profiles.json'), 'utf8')).profiles;
@@ -157,5 +157,42 @@ describe('the backfill this makes possible', () => {
     expect(rows.filter(r => r.sexuality).length).toBeGreaterThan(10);
     expect(Math.min(...rows.map(r => r.age))).toBe(16);
     expect(Math.max(...rows.map(r => r.age))).toBe(65);
+  });
+});
+
+// The same join lived in FOUR places — the bio lead, the wiki infobox, the
+// wiki bio line, and the casting-interview prompt — and fixing only the first
+// left Yul reading "Korean Korean" on his own article. One rule, one home,
+// and a test that says so.
+describe('ethnicity and nationality are one description', () => {
+  it('says the word once when they are the same word', () => {
+    expect(joinOrigin('Korean', 'Korean')).toBe('Korean');
+    expect(joinOrigin('korean', 'Korean')).toBe('korean');
+  });
+
+  it('keeps the longer one when it already contains the other', () => {
+    expect(joinOrigin('Korean', 'Korean American')).toBe('Korean American');
+    expect(joinOrigin('Puerto Rican American', 'Puerto Rican')).toBe('Puerto Rican American');
+  });
+
+  it('joins two genuinely different words', () => {
+    expect(joinOrigin('Asian', 'Canadian')).toBe('Asian Canadian');
+  });
+
+  it('handles one side being missing', () => {
+    expect(joinOrigin('Black', '')).toBe('Black');
+    expect(joinOrigin('', 'Brazilian')).toBe('Brazilian');
+    expect(joinOrigin('', '')).toBe('');
+  });
+
+  it('is the only implementation left', async () => {
+    // A duplicated join is how this survived a fix. Any new copy fails here.
+    const fs = await import('node:fs');
+    const files = ['js/wiki-view.js', 'js/wiki.js', 'worker/worker-episode-live.js', 'js/bio.js'];
+    for (const f of files) {
+      const src = fs.readFileSync(f, 'utf8');
+      expect(src, `${f} has its own ethnicity+nationality join again`)
+        .not.toMatch(/\[\s*\w*\.?ethnicity,\s*\w*\.?nationality\s*\]\s*\.filter\(Boolean\)\.join/);
+    }
   });
 });

@@ -27,6 +27,7 @@
 
 import { parseInterview } from './casting-interview.js';
 import { airLabel, ageAt, airKey } from './franchise-calendar.js';
+import { joinOrigin } from './bio.js';
 
 // `short` is the tab label — "TD14", "BB1" — and matches the code js/shows.js
 // already declares for each show, so a third show is named consistently
@@ -231,9 +232,17 @@ function infobox(dossier, show, root, L) {
     ['Hometown', bio.hometown],
     ['Occupation', bio.occupation],
     ['Gender', bio.gender === 'f' ? 'Female' : bio.gender === 'm' ? 'Male' : bio.gender ? 'Non-binary' : ''],
-    ['Nationality', [bio.ethnicity, bio.nationality].filter(Boolean).join(' ')],
-    ['Label', bio.archetype],
-    ['Also', bio.descriptor],
+    ['Nationality', joinOrigin(bio.ethnicity, bio.nationality)],
+    // "Label" is the epithet, everywhere this franchise draws from: the source
+    // infobox writes `|label = The Lively`, and a Big Brother article writes
+    // `Label / The Activist`. It was holding the ARCHETYPE — a gameplay tag
+    // this project invented — while the actual epithet sat in a row of its
+    // own further down, so the one row a reader recognises had the wrong
+    // thing in it.
+    ['Label', bio.descriptor],
+    // Named for what it is instead of borrowing the epithet's row. It is not
+    // canon and does not pretend to be: it is how the simulator plays them.
+    ['Archetype', bio.archetype],
     // Blank rather than "0 (Total Drama)" for somebody who has not finished
     // one; rowsOf drops an empty value, so the row simply is not there.
     ['Seasons', show.count ? `${show.count} (${m.name})` : ''],

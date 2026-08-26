@@ -22,7 +22,7 @@
 import { approvedFor, lineFor as lifeLine, kindOf } from './life-events.js';
 import { airLabel } from './franchise-calendar.js';
 
-import { parseBio } from './bio.js';
+import { parseBio, joinOrigin } from './bio.js';
 
 const DEFAULT_FORMAT = 'total-drama';
 const SHOW_NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
@@ -612,7 +612,7 @@ export function buildDossier(player, {
     // line rather than printing an empty one.
     bioLine: [
       bio.age ? `${bio.age}` : '',
-      [bio.ethnicity, bio.nationality].filter(Boolean).join(' '),
+      joinOrigin(bio.ethnicity, bio.nationality),
       bio.sexuality && bio.sexuality !== 'straight' ? bio.sexuality : '',
       // The two the encyclopedia entries lead with, and the two this line was
       // missing entirely.

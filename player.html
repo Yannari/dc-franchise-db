@@ -698,7 +698,7 @@ async function renderDebutProfile(id) {
   const facts = [
     ['Occupation', rp && rp.occupation], ['Hometown', rp && rp.hometown],
     ['Nationality', rp && rp.nationality], ['Ethnicity', rp && rp.ethnicity],
-    ['Age', age != null ? String(age) : ''], ['Also', rp && rp.descriptor],
+    ['Age', age != null ? String(age) : ''], ['Label', rp && rp.descriptor],
   ].filter(([, v]) => v);
 
   const inGame = lp && lp.status === 'in';
@@ -1653,7 +1653,7 @@ function renderPlayerProfile(fullPlayer) {
       ['Nationality', rp.nationality],
       ['Ethnicity', rp.ethnicity],
       ['Age', age != null ? (born ? `${age} <span style="opacity:.6">(born ${born})</span>` : String(age)) : ''],
-      ['Also', rp.descriptor],
+      ['Label', rp.descriptor],
     ].filter(([, v]) => v);
     if (!rows.length && !rp.backstory) return '';
     return `<div class="pp-bio">

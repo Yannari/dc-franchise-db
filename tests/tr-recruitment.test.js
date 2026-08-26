@@ -3,7 +3,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
-import { resetKnowledge, believes } from '../js/knowledge.js';
+import { resetKnowledge, believes, isAccurate } from '../js/knowledge.js';
 import { recordAlignment, alignmentAt, truthAtLearn, canRecruit, offerRecruitment, chooseRecruit }
   from '../js/tr/roles.js';
 import { alignmentFactId, seedTraitorKnowledge, recordRound } from '../js/tr/deduction.js';
@@ -61,16 +61,78 @@ describe('the flip', () => {
     const b = believes(CAST[5], alignmentFactId(r.recruiter), 4);
     expect(b, 'the recruit does not know who they just joined').toBeTruthy();
     expect(b.effectiveConfidence).toBeGreaterThanOrEqual(0.99);
-    // And still nobody else can be certain of anything.
+    // And nobody else learns anything at all — the turret write names only the
+    // two people standing in it. (Not "if a belief exists, it's weak" — that
+    // guard can never fail, because no belief is ever formed for an outsider.
+    // The honest assertion is that none exists.)
     const outsider = CAST.find(n => n !== CAST[5] && n !== r.recruiter && gs.activePlayers.includes(n));
     const ob = believes(outsider, alignmentFactId(r.recruiter), 4);
-    if (ob) expect(ob.effectiveConfidence).toBeLessThan(0.63);
+    expect(ob, 'recruitment leaked to a bystander who was never in the room').toBeNull();
   });
 
   it('records how and when, because a two-night traitor owes nobody anything', () => {
     offerRecruitment(CAST[5], 4, () => 0.01, { mode: 'note' });
     const flip = gs.tr.roleHistory.find(r => r.name === CAST[5] && r.via === 'recruitment');
     expect(flip).toMatchObject({ from: 'faithful', to: 'traitor', ep: 4 });
+  });
+});
+
+describe('the ultimatum gate', () => {
+  // Same fixture, one variable changed: how many Traitors are alive when the
+  // SAME refusal happens. Fatal is earned only by "they have seen your face,"
+  // which is only true with exactly one Traitor left to identify.
+  it('with two Traitors alive, a requested ultimatum degrades to a survivable note', () => {
+    const traitors = CAST.slice(0, 3);
+    world(traitors);
+    // Banish a non-Traitor so all 3 Traitors are still alive going in, then
+    // drop to 2 by having the room take out one Traitor — canRecruit only
+    // needs "some banished round happened with a Traitor lost eventually",
+    // but the gate itself cares about livingTraitors(ep), so set that up
+    // directly: 2 Traitors alive at the moment of the offer.
+    recordRound({ ep: 3, banished: traitors[2], banishedWasTraitor: true, murdered: null, ballots: [] });
+    gs.activePlayers = CAST.filter(n => n !== traitors[2]);
+    expect(livingTraitorsCount(traitors)).toBe(2);
+    const r = offerRecruitment(CAST[5], 4, () => 0.99, { mode: 'ultimatum' });   // forced refuse
+    expect(r.accepted).toBe(false);
+    expect(r.mode, 'an ultimatum with two Traitors alive should never be reported as delivered').toBe('note');
+    expect(gs.activePlayers, 'two Traitors alive is not "seen the face" — this must be survivable').toContain(CAST[5]);
+  });
+
+  it('with exactly one Traitor alive, the same refusal is fatal', () => {
+    const traitors = CAST.slice(0, 2);
+    world(traitors);
+    recordRound({ ep: 3, banished: traitors[1], banishedWasTraitor: true, murdered: null, ballots: [] });
+    gs.activePlayers = CAST.filter(n => n !== traitors[1]);
+    expect(livingTraitorsCount(traitors.slice(0, 1))).toBe(1);
+    const r = offerRecruitment(CAST[5], 4, () => 0.99, { mode: 'ultimatum' });   // forced refuse
+    expect(r.accepted).toBe(false);
+    expect(r.mode).toBe('ultimatum');
+    expect(gs.activePlayers, 'one Traitor left means they have seen the face').not.toContain(CAST[5]);
+  });
+});
+
+function livingTraitorsCount(remainingTraitorNames) {
+  return remainingTraitorNames.filter(n => gs.activePlayers.includes(n)).length;
+}
+
+describe('the era back door', () => {
+  beforeEach(() => {
+    recordRound({ ep: 3, banished: CAST[0], banishedWasTraitor: true, murdered: null, ballots: [] });
+    gs.activePlayers = CAST.filter(n => n !== CAST[0]);
+  });
+
+  // recordFact() mutates a live fact's `.truth` in place on every write
+  // (js/knowledge.js), so `fact.truth` after a flip is the CURRENT truth, not
+  // the truth as of the episode a belief was formed. isAccurate() must never
+  // read that live value for an alignment fact, or a recruitment in episode 8
+  // retroactively brands a correct episode-3 read as a mistake — the exact
+  // failure the era model exists to prevent. Accuracy on alignment must go
+  // through truthAtLearn(name, learnedEp) instead.
+  it('refuses to score alignment facts at all, before or after a flip', () => {
+    expect(isAccurate(CAST[6], alignmentFactId(CAST[5]), 3)).toBeNull();
+    offerRecruitment(CAST[5], 4, () => 0.01, { mode: 'note' });   // forced accept, flips CAST[5]
+    expect(isAccurate(CAST[6], alignmentFactId(CAST[5]), 3),
+      'a live-mutated fact.truth was used to retroactively mark a pre-flip read wrong').toBeNull();
   });
 });
 

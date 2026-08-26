@@ -167,6 +167,14 @@ export function whoKnows(id, ep = null) {
 // a planted lie counts as accurate.
 export function isAccurate(knower, id, ep = null) {
   const fact = store()[id]; if (!fact) return null;
+  // Alignment facts are mutated in place by recordFact/recordAlignment on a
+  // recruitment flip (`existing.truth = truth`), so `fact.truth` here is the
+  // CURRENT truth, not the truth as of `ep`. Scoring a pre-flip belief against
+  // it would retroactively brand a correct episode-3 read as wrong the moment
+  // somebody is recruited in episode 8 — exactly the mistake the era model
+  // (tr/roles.js: alignmentAt / truthAtLearn) exists to prevent. Route any
+  // alignment accuracy check through truthAtLearn(name, learnedEp) instead.
+  if (fact.type === 'alignment') return null;
   const b = believes(knower, id, ep); if (!b) return null;
   if (fact.truth === false) return b.valence === 'false';
   return (b.valence === 'accurate') && b.effectiveConfidence >= 0.4;

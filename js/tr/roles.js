@@ -126,6 +126,14 @@ export function offerRecruitment(target, ep, rng = Math.random, { mode = 'note',
   const from = recruiter || chooseRecruit(ep, rng)?.recruiter;
   if (!from || !target) return { accepted: false, mode, recruiter: null };
 
+  // The Ultimatum's fatal refusal is only justified by "they have seen your
+  // face" — a fact that is only true when there is exactly one Traitor left
+  // to be identified. With two or more alive, a refuser who's never met the
+  // room's remaining Traitors face to face has seen nothing worth killing
+  // over, so the request quietly degrades to an anonymous note rather than
+  // becoming a full-strength conclave executing a refuser.
+  if (mode === 'ultimatum' && livingTraitors(ep).length !== 1) mode = 'note';
+
   const st = pStats(target);
   const arch = players.find(p => p.name === target)?.archetype || 'floater';
   // Proportional, never a threshold. Loyalty is the spine of it: a high-loyalty

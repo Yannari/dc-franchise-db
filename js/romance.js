@@ -31,10 +31,28 @@ import { recordAttractionSpark } from './relationship-events.js';
 export function _homeFactor(name) {
   const at = players.find(p => p.name === name)?.partnerAtHome;
   if (!at) return 1;
-  return at.stage === 'married' ? 0.25
+  const stage = at.stage === 'married' ? 0.25
     : at.stage === 'engaged' ? 0.35
-    : at.stage === 'living-together' ? 0.45 : 0.6;
+      : at.stage === 'living-together' ? 0.45 : 0.6;
+  // ── AND WHO THEY ARE, WHICH IS THE HALF THAT WAS MISSING ──
+  //
+  // The stage alone made every attached houseguest the same person: a loyalty
+  // of nine and a loyalty of one were equally likely to start something, and
+  // the only thing separating them was how serious the relationship they were
+  // doing it to happened to be. That is backwards. What somebody has at home
+  // sets the price; what kind of person they are decides whether they pay it.
+  //
+  // Deliberately applied at EVERY stage rather than only to marriage. Being
+  // disloyal to somebody you have been seeing for a month is the ordinary
+  // version of this and the one that happens most.
+  let loyalty = 5;
+  try { loyalty = pStats(name)?.loyalty ?? 5; } catch { /* default */ }
+  const character = 1.8 - (loyalty / 10) * 1.6;
+  return Math.max(0.03, Math.min(1, stage * character));
 }
+
+/** `_pick` is local to two other functions in this file; this one is shared. */
+const _homePick = arr => arr[Math.floor(Math.random() * arr.length)];
 
 export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScores, context) {
   if (seasonConfig.romance === 'disabled') return false;
@@ -100,6 +118,34 @@ export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScore
       text: sparkText, personalScores: { [a]: 0.5, [b]: 0.5 },
       badge: 'ROMANCE SPARK', badgeClass: 'gold'
     });
+    // ── AND THE ROOM REMEMBERS WHO IS WAITING AT HOME ──
+    //
+    // Life events resolve BETWEEN seasons, so the log cannot say anything
+    // about this until the season is over. The house can, immediately, and it
+    // is the house that would: everybody was told on day one that this person
+    // came in alone, and they have just watched them stop being alone.
+    for (const who of [a, b]) {
+      const at = players.find(p => p.name === who)?.partnerAtHome;
+      if (!at) continue;
+      const other = who === a ? b : a;
+      const pr = pronouns(who);
+      phases[phaseKey].push({
+        type: 'soOverlap', phase: phaseKey, players: [who, other],
+        text: _homePick([
+          `Somebody says ${at.name}'s name out loud, and the room goes quiet for a second. `
+            + `${who} does not answer it.`,
+          `${who} knows exactly what this looks like. ${at.name} is at home watching it happen `
+            + `at the same time as everybody else.`,
+          `Nobody in here has forgotten ${at.name}. ${pr.Sub} was the first thing ${who} told `
+            + `them about, and ${pr.sub} ${pr.sub === 'they' ? 'have' : 'has'} not been mentioned since.`,
+        ]),
+        badge: 'SOMEBODY AT HOME', badgeClass: 'red',
+      });
+      // Being seen doing it costs something with the audience, and it is not
+      // the same cost as being in an ordinary showmance (which pays +2 above).
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[who] = (gs.popularity[who] || 0) - 4;
+    }
   }
   return true;
 }

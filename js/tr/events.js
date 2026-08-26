@@ -116,23 +116,33 @@ function _pairKey(actors) {
  * because there is no episode count after which a signature event is
  * allowed to happen again.
  *
- * Player scope and pair scope are checked on MUTUALLY EXCLUSIVE actor
- * counts (solo vs. two-or-more) rather than both always firing together.
- * If a two-actor scene recorded a per-player cooldown for each participant
- * as well as the pair cooldown, the player-scope entries alone would always
- * be enough to re-block the exact same pair on their own — the pair-scope
- * check would then never be the thing doing the blocking, and disabling it
- * would go unnoticed by any test built on a two-person scene. Scoping them
- * to different actor counts is what makes "pair" a real, independent guard
- * instead of a redundant restatement of "player".
+ * Player scope checks EVERY actor named in the scene, regardless of how many
+ * there are — a two-actor scene still writes (and checks) a per-player
+ * cooldown for each participant. Earlier this scope and pair scope were
+ * mutually exclusive by actor count (solo vs. two-or-more), on the theory
+ * that a two-actor scene's per-player entries would otherwise always be
+ * enough to re-block the exact same pair on their own, making the
+ * pair-scope check untestable dead weight. That theory was correct but the
+ * fix was wrong: exclusivity also meant a single player could run the same
+ * event with a NEW partner every episode and player scope would never see
+ * them, because a multi-actor scene never wrote to it — exactly the
+ * "same person, same beat, over and over" player scope exists to catch.
+ * The unequal durations below (2/3/5) already isolate each scope for
+ * mutation testing without needing exclusivity: at an episode gap of 3-4,
+ * event scope has lapsed and player scope has too, but pair scope still
+ * holds, and a lapsed player scope with a live pair scope (or vice versa)
+ * is reachable by picking the gap between their two window sizes.
  */
 function _onCooldown(ev, ctx) {
   const cds = gs.tr.cooldowns;
-  // An explicit ev.cooldown overrides all three scopes uniformly (author's
-  // call); otherwise each scope uses its own default window (see above).
-  const evWindow = ev.cooldown ?? EVENT_COOLDOWN_EPS;
-  const playerWindow = ev.cooldown ?? PLAYER_COOLDOWN_EPS;
-  const pairWindow = ev.cooldown ?? PAIR_COOLDOWN_EPS;
+  // An explicit ev.cooldown is a PARTIAL { event?, player?, pair? } so an
+  // author can tune one scope without flattening the other two to the same
+  // value — a scalar override would collapse 2/3/5 back to one duration and
+  // reintroduce the exact masking (event scope always explains the result)
+  // that unequal defaults exist to prevent.
+  const evWindow = ev.cooldown?.event ?? EVENT_COOLDOWN_EPS;
+  const playerWindow = ev.cooldown?.player ?? PLAYER_COOLDOWN_EPS;
+  const pairWindow = ev.cooldown?.pair ?? PAIR_COOLDOWN_EPS;
 
   const evLast = cds.event[ev.id];
   if (evLast != null) {
@@ -140,10 +150,13 @@ function _onCooldown(ev, ctx) {
     if (ctx.ep - evLast < evWindow) return true;
   }
 
-  if (ctx.actors?.length === 1) {
-    const last = cds.player[`${ev.id}:${ctx.actors[0]}`];
-    if (last != null && ctx.ep - last < playerWindow) return true;
-  } else if (ctx.actors?.length >= 2) {
+  if (ctx.actors?.length) {
+    for (const p of ctx.actors) {
+      const last = cds.player[`${ev.id}:${p}`];
+      if (last != null && ctx.ep - last < playerWindow) return true;
+    }
+  }
+  if (ctx.actors?.length >= 2) {
     const pairLast = cds.pair[`${ev.id}:${_pairKey(ctx.actors)}`];
     if (pairLast != null && ctx.ep - pairLast < pairWindow) return true;
   }
@@ -217,9 +230,12 @@ export function pickEvent(ctx, rng) {
 
   const cds = gs.tr.cooldowns;
   cds.event[chosen.id] = ctx.ep;
-  if (ctx.actors?.length === 1) {
-    cds.player[`${chosen.id}:${ctx.actors[0]}`] = ctx.ep;
-  } else if (ctx.actors?.length >= 2) {
+  if (ctx.actors?.length) {
+    for (const p of ctx.actors) {
+      cds.player[`${chosen.id}:${p}`] = ctx.ep;
+    }
+  }
+  if (ctx.actors?.length >= 2) {
     cds.pair[`${chosen.id}:${_pairKey(ctx.actors)}`] = ctx.ep;
   }
 

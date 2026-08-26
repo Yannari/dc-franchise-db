@@ -47,6 +47,13 @@ describe('the contract', () => {
     expect(broken).not.toContain('honest');
   });
 
+  it('rejects a duplicate event id', () => {
+    registerEvent({ id: 'dup', family: 'trust', window: 'evening',
+      weight: () => 1, fire: () => ({ ok: true }) });
+    expect(() => registerEvent({ id: 'dup', family: 'trust', window: 'evening',
+      weight: () => 1, fire: () => ({ ok: true }) })).toThrow();
+  });
+
   it('treats weight 0 as not eligible', () => {
     registerEvent({ id: 'never', family: 'suspicion', window: 'evening',
       weight: () => 0, fire: () => ({ ok: true }) });
@@ -141,20 +148,41 @@ describe('the guards', () => {
       .not.toContain('soloagain');
   });
 
-  it('a solo firing does not block the same player in an unrelated pair scene', () => {
-    // Player scope (solo actor) and pair scope (two-or-more actors) are
-    // checked on mutually exclusive actor counts. If they were not, a
-    // two-person scene would ALSO write a per-player cooldown for both
-    // participants, blurring "this pair had this conversation" with "this
-    // person did this at all" — two different narrative guarantees.
-    registerEvent({ id: 'soloconfession', family: 'trust', window: 'evening',
+  it('the same player cannot dodge their cooldown by rotating partners every episode', () => {
+    // Player scope must check EVERY actor in the scene, not just solo scenes.
+    // A version that only wrote player cooldowns for single-actor events (and
+    // left pair scenes to pair-scope alone) would let one player run the same
+    // event with a new partner each episode and never trip player scope at
+    // all — exactly the "same person, same beat, over and over" this scope
+    // exists to catch. Gap is chosen deliberately: 2 episodes clears the
+    // 2-episode event-scope window (so event scope can't be doing this) and
+    // the new partner means pair scope has never seen this exact pair before
+    // (so pair scope can't be doing this either) — only player scope remains.
+    registerEvent({ id: 'floater', family: 'trust', window: 'evening',
       weight: () => 5, fire: () => ({ ok: true }) });
-    const soloCtx = { ...ctxFor(3), actors: [CAST[0]] };
-    pickEvent(soloCtx, seededRng(4));
-    // Same player, later, in a PAIR scene with someone else: event scope has
-    // lapsed and pair scope has never seen this pair, so it is offered again.
-    const pairCtx = { ...ctxFor(6), actors: [CAST[0], CAST[1]] };
-    expect(eligible(pairCtx).map(e => e.id)).toContain('soloconfession');
+    pickEvent({ ...ctxFor(3), actors: [CAST[0], CAST[1]] }, seededRng(7));
+    const newPartnerCtx = { ...ctxFor(5), actors: [CAST[0], CAST[2]] };
+    expect(eligible(newPartnerCtx).map(e => e.id),
+      'player scope let the same player repeat the same event with a brand new partner')
+      .not.toContain('floater');
+  });
+
+  it('the event-scope cooldown window itself blocks a repeat, then releases once it lapses', () => {
+    // Task 2 review round 1: a mutant deleting `if (ctx.ep - evLast < evWindow)
+    // return true` while LEAVING the oncePerSeason branch intact passed every
+    // test — because every existing event-scope assertion used a
+    // oncePerSeason event, which is blocked by a totally separate line. This
+    // event is NOT oncePerSeason, and has no actors, so only the raw
+    // event-scope TIME WINDOW (2 episodes) can be doing any blocking here.
+    registerEvent({ id: 'windowed', family: 'trust', window: 'evening',
+      weight: () => 5, fire: () => ({ ok: true }) });
+    pickEvent(ctxFor(3), seededRng(6));
+    expect(eligible(ctxFor(4)).map(e => e.id),
+      'event scope should still hold at a 1-episode gap (its window is 2)')
+      .not.toContain('windowed');
+    expect(eligible(ctxFor(5)).map(e => e.id),
+      'event scope did not release once its own 2-episode window had lapsed')
+      .toContain('windowed');
   });
 
   it('will not fire a oncePerSeason event twice', () => {
@@ -162,6 +190,25 @@ describe('the guards', () => {
       oncePerSeason: true, weight: () => 9, fire: () => ({ ok: true }) });
     pickEvent(ctxFor(), seededRng(3));
     expect(eligible(ctxFor(5)).map(e => e.id)).not.toContain('signature');
+  });
+
+  it('lets an author tune ONE cooldown scope without flattening the other two', () => {
+    // Task 2 review round 1: a scalar `ev.cooldown` override collapses all
+    // three scope durations (2/3/5) to a single value, restoring the exact
+    // masking those unequal defaults exist to prevent — an author only ever
+    // needs to lengthen the pair scope on a heavily-recurring couple, and a
+    // scalar would silently shrink event scope's default too. `cooldown`
+    // must be a PARTIAL: only the named scope is overridden.
+    registerEvent({ id: 'tuned', family: 'trust', window: 'evening',
+      cooldown: { pair: 6 }, weight: () => 5, fire: () => ({ ok: true }) });
+    pickEvent({ ...ctxFor(3), actors: [CAST[0], CAST[1]] }, seededRng(8));
+    // Gap of 5: default event scope (2) and default player scope (3, left
+    // untouched by the override) have both lapsed — only the TUNED pair
+    // window (6) can still be excluding this exact pair.
+    const ctx = { ...ctxFor(8), actors: [CAST[0], CAST[1]] };
+    expect(eligible(ctx).map(e => e.id),
+      'the pair-scope override did not hold, or a scalar collapsed the other two scopes')
+      .not.toContain('tuned');
   });
 
   it('shifts the centre of gravity between acts', () => {
@@ -175,5 +222,47 @@ describe('the guards', () => {
       .toBeGreaterThan(early.find(e => e.id === 'paranoid').score);
     expect(late.find(e => e.id === 'paranoid').score)
       .toBeGreaterThan(late.find(e => e.id === 'warm').score);
+  });
+});
+
+describe('pickEvent actually spends the score', () => {
+  it('picks the high-weight event substantially more often across many independent draws', () => {
+    // Task 2 review round 1: forcing `let roll = -1` (always take scored[0],
+    // ignoring every score) passed 11/11 — every guard in this file is
+    // asserted against eligible().score, and nothing asserted the score
+    // reaches SELECTION. A single draw proves nothing (lesson 4): this is a
+    // population assertion over many independent trials, each from a
+    // genuinely fresh world (lesson 5), with the bar set well below the
+    // theoretical rate and the measured rate logged for the report.
+    const TRIALS = 200;
+    // ONE rng generator advanced across all trials — not a fresh seed per
+    // trial. Re-seeding by incrementing the seed by 1 each time produces a
+    // near-arithmetic sequence of first-outputs (the LCG multiplier step is
+    // tiny relative to its modulus), which under-explores the unit interval.
+    // Advancing a single generator's internal state through its real
+    // recurrence is what actually gives 200 decorrelated draws.
+    const rng = seededRng(1234);
+    let highWins = 0;
+    for (let i = 0; i < TRIALS; i++) {
+      _resetRegistry();
+      setPlayers(roster.players.slice(0, 8));
+      setGs({ bonds: {}, activePlayers: [...CAST] });
+      gs.tr = initTraitorsState();
+      registerEvent({ id: 'low', family: 'trust', window: 'evening',
+        weight: () => 1, fire: () => ({ ok: true }) });
+      registerEvent({ id: 'high', family: 'trust', window: 'evening',
+        weight: () => 19, fire: () => ({ ok: true }) });
+      const picked = pickEvent(ctxFor(3), rng);
+      if (picked?.event.id === 'high') highWins++;
+    }
+    const rate = highWins / TRIALS;
+    // Theoretical weighted rate is 19/20 = 0.95. The bar (0.8) sits well
+    // below that with headroom for RNG noise, but comfortably above what
+    // either `roll = -1` (0%, always picks registration-order first) or a
+    // score-ignoring uniform pick over 2 events (~50%) would produce.
+    // eslint-disable-next-line no-console
+    console.log(`pickEvent selection: high-weight event chosen ${highWins}/${TRIALS} (${(rate * 100).toFixed(1)}%)`);
+    expect(rate, `high-weight event should win the large majority of draws, got ${(rate * 100).toFixed(1)}%`)
+      .toBeGreaterThan(0.8);
   });
 });

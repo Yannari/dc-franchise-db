@@ -15,8 +15,15 @@
 // were guards sitting in a file nothing runs. They moved to
 // tests/tr-castle-reachability.test.js, which the ordinary run collects. What
 // is left here is genuinely a tool: it plays seasons and prints tables, and
-// exactly one thing in it can fail — the dominance band below, which is a real
-// bar and is banded near its measurement rather than 2.4x away from it.
+// nothing in it is a bar any more.
+//
+// FIX ROUND 2, R3. Round 1 left ONE assertion here — the family-dominance
+// band — and re-banded it 0.50 -> 0.45 inside this file, which is the file
+// `**/*-audit.test.js` excludes from `npm test`. That is the third time this
+// exact trap has landed in this project. The band now lives in
+// tests/tr-castle-reachability.test.js next to the other two sweeps the
+// ordinary run collects. What is left here prints tables and asserts only
+// that it measured something.
 //
 // Run it: npm run audit:tr-castle
 import { describe, expect, it } from 'vitest';
@@ -85,45 +92,6 @@ describe('THE FIRING DISTRIBUTION', () => {
     expect(ALL_FIRINGS.length).toBeGreaterThan(0);
   });
 
-  // ── THE ONE BAR IN THIS FILE, BANDED WHERE IT WAS MEASURED ──
-  //
-  // This used to be titled "beyond 35%" and assert `toBeLessThan(0.50)`,
-  // against a worst measured share of 0.211 — a name stating a threshold its
-  // own assertion did not enforce, and a gap of 2.4x that nothing plausible
-  // could close (whole-plan review, finding 9; the sixth instance in this
-  // project of a label asserting something the code does not).
-  //
-  // AND THE REVIEW'S OWN NUMBER IS WRONG, which is what made the 0.50 band
-  // look 2.4x loose. Re-measured on the shipped pool BEFORE any change this
-  // round: the worst is trust-trade-reads at 0.455 of the trust family (7,898
-  // of 17,350 firings). The assertion had about 10% of headroom, not 140%.
-  // The NAME was the defect; the band was very nearly right.
-  //
-  // Re-measured again after this round's content work: worst 0.395
-  // (trust-trade-reads), with romance-spark at 0.389 behind it. The band is
-  // 0.45 — near the measurement, loose enough for ordinary drift, tight enough
-  // that one event genuinely running away with its family trips it.
-  //
-  // trust-trade-reads taking two firings in five of its own family is a real
-  // repetition finding and is NOT fixed here: it predates this round and
-  // belongs with the scene-selection work.
-  it('no single event takes more than 45% of its family\'s firings', () => {
-    const familyTotal = {};
-    const idTotal = {};
-    for (const f of ALL_FIRINGS) {
-      familyTotal[f.family] = (familyTotal[f.family] || 0) + 1;
-      idTotal[f.id] = (idTotal[f.id] || 0) + 1;
-    }
-    const shares = Object.entries(idTotal).map(([id, count]) => {
-      const ev = EVENTS.find(e => e.id === id);
-      const share = count / (familyTotal[ev.family] || 1);
-      return { id, family: ev.family, share: Math.round(share * 1000) / 1000 };
-    }).sort((a, b) => b.share - a.share);
-    console.log('Top firing shares (id, family, share of family total):', shares.slice(0, 10));
-    const worst = shares[0];
-    expect(worst.share, `${worst.id} is ${(worst.share * 100).toFixed(1)}% of family "${worst.family}"'s firings`)
-      .toBeLessThan(0.45);
-  });
 });
 
 describe('REPETITION-AS-EXPERIENCED', () => {

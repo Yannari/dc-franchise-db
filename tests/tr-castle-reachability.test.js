@@ -102,6 +102,58 @@ describe('THE DEAD-EVENT SWEEP', () => {
   });
 });
 
+describe('THE FAMILY-DOMINANCE BAND', () => {
+  // ── MOVED HERE IN FIX ROUND 2 (R3), AND WHY ──
+  //
+  // This is the only pass/fail bar the castle content has against repetition,
+  // and until now it lived in tests/tr-castle-audit.test.js. That filename
+  // matches `**/*-audit.test.js`, which vitest.config.js excludes from
+  // `npm test`; it is not in vitest.slow.js either, and no workflow runs
+  // `audit:*`. Round 1 re-banded it 0.50 -> 0.45 *inside that file*, so the
+  // tightened band ran in no job at all. Same trap as this file's own header
+  // describes, third occurrence. Bars live here; tables live there.
+  //
+  // ── WHERE 0.45 COMES FROM ──
+  //
+  // It used to be titled "beyond 35%" and assert `toBeLessThan(0.50)` against
+  // a worst measured share of 0.211 — a name stating a threshold its own
+  // assertion did not enforce (whole-plan review, finding 9). The review's
+  // number was itself wrong: re-measured on the shipped pool BEFORE round 1's
+  // content work, the worst was trust-trade-reads at 0.455 of the trust
+  // family. The NAME was the defect; the band was very nearly right.
+  //
+  // Re-measured after round 1's content work, over the 1,000-season audit:
+  // worst 0.395 (trust-trade-reads), romance-spark 0.389 behind it. The band
+  // is 0.45 — near the measurement, loose enough for ordinary drift, tight
+  // enough that one event genuinely running away with its family trips it.
+  // Over the 400 seasons THIS file plays — the sample the band now actually
+  // runs against — the same worst event measures 0.407, with romance-spark at
+  // 0.394 behind it. So the band has about 0.04 of headroom, not 0.05; both
+  // numbers are printed on every run rather than left in a comment to rot.
+  //
+  // trust-trade-reads taking two firings in five of its own family is a real
+  // repetition finding and is NOT fixed here: it predates round 1 and belongs
+  // with the scene-selection work.
+  it('no single event takes more than 45% of its family\'s firings', () => {
+    const familyTotal = {};
+    const idTotal = {};
+    for (const f of ALL_FIRINGS) {
+      familyTotal[f.family] = (familyTotal[f.family] || 0) + 1;
+      idTotal[f.id] = (idTotal[f.id] || 0) + 1;
+    }
+    const shares = Object.entries(idTotal).map(([id, count]) => {
+      const ev = EVENTS.find(e => e.id === id);
+      const share = count / (familyTotal[ev.family] || 1);
+      return { id, family: ev.family, share: Math.round(share * 1000) / 1000 };
+    }).sort((a, b) => b.share - a.share);
+    console.log(`\n=== TOP FIRING SHARES (${SWEEP_SEASONS} seasons) ===`);
+    for (const s of shares.slice(0, 8)) console.log(`   ${s.share}\t${s.family}\t${s.id}`);
+    const worst = shares[0];
+    expect(worst.share, `${worst.id} is ${(worst.share * 100).toFixed(1)}% of family "${worst.family}"'s firings`)
+      .toBeLessThan(0.45);
+  });
+});
+
 describe('THE COOLDOWN SWEEP: does the engine\'s own cooldown hold in real seasons?', () => {
   it('no event fires again inside its own event-scope cooldown, in any real season', () => {
     const byId = {};

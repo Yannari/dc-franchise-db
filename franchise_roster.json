@@ -4676,6 +4676,25 @@
         "temperament": 8
       },
       "profileSources": {}
+    },
+    {
+      "name": "Ernesto",
+      "slug": "ernesto",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "underdog",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 5,
+        "social": 2,
+        "strategic": 3,
+        "loyalty": 7,
+        "boldness": 6,
+        "intuition": 3,
+        "temperament": 7
+      },
+      "profileSources": {}
     }
   ]
 }

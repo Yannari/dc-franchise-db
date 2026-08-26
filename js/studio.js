@@ -20,6 +20,7 @@ const STAT_ABBR = { physical:'PHY', endurance:'END', mental:'MEN', social:'SOC',
 
 import { composeVoice, stripBioLead, parseBio, splitOrigin } from './bio.js';
 import { PROFILE_GROUPS, diffPublishedProfile, applyProfileSelection, validatePublishedProfile, selectProfileVoice } from './profile-import.js';
+import { appearancesFor, continuitySummary, continuityTies } from './continuity.js';
 import { INTERVIEW_QUESTIONS, parseInterview, serializeInterview }
   from './casting-interview.js';
 // The endpoint resolver, not a second hardcoded URL — it already handles the
@@ -1344,6 +1345,20 @@ function _renderEditor() {
         </div>
       </details>
 
+      <!-- CONTINUITY — what they already did, read back out of the archive.
+           The mirror image of the casting interview above it: that tape was
+           recorded before the door shut and may not mention a season, this one
+           is nothing but seasons. Starts hidden and reveals itself only if the
+           archive has them, so a debut character never sees an empty box.
+           Folded state is remembered because a three-season veteran's history
+           is longer than the form it sits under. -->
+      <details class="st-cont" id="st-cont" hidden>
+        <summary class="st-cont-sum">Continuity
+          <span class="st-hint" id="st-cont-count">reading the archive&hellip;</span>
+        </summary>
+        <div class="st-cont-body" id="st-cont-body"></div>
+      </details>
+
       <div class="st-actions">
         ${d.slug && _roster().some(p => p.slug === d.slug) ? '<button type="button" class="st-btn st-lg" id="st-load-profile">Load published profile</button>' : ''}
         <button type="button" class="st-btn st-primary st-lg" id="st-save">Save character</button>
@@ -1525,6 +1540,8 @@ function _renderEditor() {
     probe.src = _avatarSrc(`${d.slug}-returnee`);
   }
 
+  _fillContinuity(ed, d.slug);
+
   // load / save / delete
   ed.querySelector('#st-load-profile')?.addEventListener('click', () => {
     const published = _roster().find(p => p.slug === d.slug);
@@ -1537,6 +1554,109 @@ function _renderEditor() {
 
   _drawRadar();
   _updateRead();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// CONTINUITY — the seasons they already played, in that show's words.
+//
+// Nothing here is written or generated: every line is transcribed out of the
+// season documents, which is where the hand-authored continuity bible got its
+// chronology too. So it costs one read of the archive and it is never stale —
+// play another season and it is in here the next time the editor opens.
+//
+// The show tag on every row is the point. This project's recurring bug is one
+// show's vocabulary printed over the other, and a career panel that lists a
+// Big Brother week next to a Total Drama episode with no marking is exactly
+// how that starts. The words come from the registry, per appearance.
+// ═══════════════════════════════════════════════════════════════════════
+
+const CONT_OPEN_KEY = 'st_continuity_open';
+
+/**
+ * Fill (and reveal) the continuity box for one character.
+ *
+ * Exported under the same underscore convention as the profile preview: a
+ * panel that renders nothing is this project's favourite way to ship broken,
+ * so the test drives the real function against a real DOM rather than
+ * asserting that a builder returned a string.
+ */
+export async function _fillContinuity(ed, slug) {
+  const box = ed.querySelector('#st-cont');
+  const body = ed.querySelector('#st-cont-body');
+  const count = ed.querySelector('#st-cont-count');
+  if (!box || !body) return;
+
+  let apps = [];
+  try { apps = await appearancesFor(slug); } catch { apps = []; }
+  // The editor may have moved to another character while the archive loaded.
+  if (!box.isConnected) return;
+
+  const sum = continuitySummary(apps);
+  if (!sum) { box.hidden = true; return; }   // debut character — no box at all
+
+  const showList = sum.shows.join(' &amp; ');
+  // "1 win · best 1st" says the same thing twice. A winner's headline is the
+  // win; only a player who never won needs their best finish spelled out.
+  const tail = sum.wins
+    ? ` &middot; ${sum.wins} win${sum.wins > 1 ? 's' : ''}`
+    : ` &middot; best ${_ordinal(sum.best.placement)}`;
+  if (count) {
+    count.innerHTML = `${sum.seasons} season${sum.seasons > 1 ? 's' : ''} on ${showList}${tail}`;
+  }
+
+  const ties = continuityTies(apps);
+  body.innerHTML = apps.map(a => _contSeasonHtml(a)).join('')
+    + _contTiesHtml(ties);
+
+  box.hidden = false;
+  // Remembered across characters and sessions: a three-season veteran's
+  // history is taller than the form above it, and re-folding it every time is
+  // the thing that makes a panel like this get ignored.
+  try { box.open = localStorage.getItem(CONT_OPEN_KEY) === '1'; } catch { /* private mode */ }
+  box.addEventListener('toggle', () => {
+    try { localStorage.setItem(CONT_OPEN_KEY, box.open ? '1' : '0'); } catch { /* ignore */ }
+  });
+}
+
+function _ordinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+/** One season's row. */
+function _contSeasonHtml(a) {
+  const place = a.placement === 1 ? 'Winner' : _ordinal(a.placement);
+  const outcome = a.outcome && a.outcome !== 'Winner' ? ` <span class="st-cont-title">(${_esc(a.outcome)})</span>` : '';
+  const stats = a.stats.length
+    ? `<div class="st-cont-stats">${a.stats.map(s => `${_esc(String(s.value))} ${_esc(s.label)}`).join(' &middot; ')}</div>` : '';
+  // Season 1's title IS "Total Drama", so the show tag beside it printed the
+  // same words twice. The tag is the one that has to stay.
+  const title = a.title && a.title !== a.show
+    ? `<span class="st-cont-title">${_esc(a.title)}</span>` : '';
+  const style = a.gameplayStyle
+    ? `<div class="st-cont-style">${_esc(a.gameplayStyle)}</div>` : '';
+  const moments = a.keyMoments.length
+    ? `<ul class="st-cont-moments">${a.keyMoments.map(m => `<li>${_esc(m)}</li>`).join('')}</ul>`
+    // Season 1 and 2 documents predate keyMoments. Saying so is better than a
+    // silent gap that reads as "nothing happened to them".
+    : `<div class="st-cont-thin">no episode beats recorded for this season</div>`;
+  return `<div class="st-cont-season">
+    <div class="st-cont-head">
+      <span class="st-cont-show">${_esc(a.show)}</span>
+      <span class="st-cont-place">${_esc(a.seasonId)} &middot; ${place}</span>${outcome}
+      ${title}
+    </div>
+    ${style}${stats}${moments}
+  </div>`;
+}
+
+/** Who they keep running into, across the whole career. */
+function _contTiesHtml(ties) {
+  const line = (label, list) => list.length
+    ? `<div><strong>${label}:</strong> ${list.map(t => _esc(t.name) + (t.count > 1 ? ` &times;${t.count}` : '')).join(', ')}</div>`
+    : '';
+  const html = line('Alliances', ties.alliances) + line('Rivalries', ties.rivalries);
+  return html ? `<div class="st-cont-ties">${html}</div>` : '';
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -2500,6 +2620,26 @@ function _injectCSS() {
   .st-iv-body{padding:0 14px 12px;display:grid;gap:10px}
   .st-iv-gen{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:2px}
   .st-iv-body .st-l{font-size:12.5px;font-weight:600;line-height:1.45}
+  .st-cont{margin:14px 0;border:1px solid var(--st-stroke,rgba(255,255,255,.12));border-radius:10px;background:rgba(255,255,255,.02)}
+  .st-cont-sum{cursor:pointer;padding:11px 14px;font-weight:700;list-style:none;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .st-cont-sum::-webkit-details-marker{display:none}
+  .st-cont-sum::before{content:'▸';display:inline-block;transition:transform .15s;opacity:.6}
+  .st-cont[open] .st-cont-sum::before{transform:rotate(90deg)}
+  .st-cont-body{padding:0 14px 12px;display:grid;gap:12px}
+  .st-cont-season{border-left:2px solid var(--st-stroke,rgba(255,255,255,.14));padding:2px 0 2px 11px;display:grid;gap:5px}
+  .st-cont-head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-weight:700;font-size:13px}
+  /* The show tag is the whole point of the box being show-aware: a Big Brother
+     row and a Total Drama row must never be mistakable for one another. */
+  .st-cont-show{font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+    padding:1px 6px;border-radius:999px;border:1px solid var(--st-stroke,rgba(255,255,255,.18));opacity:.85}
+  .st-cont-place{font-variant-numeric:tabular-nums}
+  .st-cont-title{font-weight:500;opacity:.7;font-size:12px}
+  .st-cont-style{font-size:12px;opacity:.85;font-style:italic}
+  .st-cont-stats{font-size:11.5px;opacity:.75;font-variant-numeric:tabular-nums}
+  .st-cont-moments{margin:0;padding-left:16px;display:grid;gap:3px;font-size:12px;line-height:1.45;opacity:.9}
+  .st-cont-ties{font-size:11.5px;opacity:.8;display:grid;gap:2px}
+  .st-cont-thin{font-size:11.5px;opacity:.6;font-style:italic}
+  .st-cont-sum-line{font-size:12px;opacity:.8;padding-bottom:2px}
   .st-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
   .st-btn{background:var(--surface,#26262e);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font:inherit;font-size:12px;padding:8px 12px;cursor:pointer}
   .st-btn:hover{border-color:var(--accent,#f4b23e)}

@@ -5043,14 +5043,38 @@
         "temperament": 3
       },
       "sexuality": "asexual",
-      "profileSources": {},
+      "profileSources": {
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Oliwia",
+            "url": "https://disventure-camp.fandom.com/wiki/Oliwia",
+            "kind": "source-canon",
+            "quote": "has been fascinated with death ever since she was a young child"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Oliwia",
+            "url": "https://disventure-camp.fandom.com/wiki/Oliwia",
+            "kind": "source-canon",
+            "quote": "easily agitated individual, who tends to get quite nervous during high-pressure situations"
+          }
+        ],
+        "voice": [
+          {
+            "label": "Read from the wiki article, not stated in it",
+            "kind": "interpretation"
+          }
+        ]
+      },
       "age": 25,
       "birthdate": "2001-09-17",
       "ethnicity": "White",
       "nationality": "Polish-American",
       "hometown": "Alaska",
       "occupation": "Taxidermist",
-      "descriptor": "The Taxidermist"
+      "descriptor": "The Taxidermist",
+      "voice": "She speaks in a hesitant, self-conscious rhythm, often pausing before landing on a strangely intense thought. Her vocabulary makes morbid ideas sound tender or artistic, framing death as permanence and preservation rather than horror. In an argument, she is likely to become nervous and pleading, trying to justify herself and win approval instead of staying detached."
     },
     {
       "name": "Ren",

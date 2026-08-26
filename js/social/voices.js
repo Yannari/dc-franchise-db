@@ -57,12 +57,12 @@ export const DELIVERY = {
   excitable: [/excit|hyper|energetic|bubbly|manic|enthusiast|bouncy|eager|giddy/, 13],
   theatrical: [/dramat|theatric|flamboyan|over-the-top|melodram|diva|showman|grandiose|poetic|opera/, 14],
   sarcastic: [/sarcas|snark|sardonic|mocking|cynic|smug|smart-alec|wry|ironic/, 15],
-  formal: [/formal|articulate|precise|analytic|intellect|scholar|clinical|methodical|polite|proper/, 16],
-  nervous: [/nervous|anxious|timid|shy|stammer|panick|insecure|jitter|worrier|meek|fearful/, 17],
-  deadpan: [/deadpan|dry |monoton|stoic|laconic|unbothered|nonchalant|apathetic|bored|flat /, 19],
-  manipulative: [/manipulat|silky|flatter|charm|schem|slick|smooth|honey|calculat|cunning/, 26],
-  blunt: [/blunt|brash|loud|aggressive|abrasive|no-nonsense|harsh|gruff|confrontational|bossy/, 44],
-  warm: [/kind|sweet|warm|gentle|caring|nurtur|supportive|optimis|cheerful|friendly|earnest/, 82],
+  formal: [/formal|articulate|precise|analytic|intellect|scholar|clinical|methodical|polite|proper/, 15],
+  nervous: [/nervous|anxious|timid|shy|stammer|panick|insecure|jitter|worrier|meek|fearful/, 21],
+  deadpan: [/deadpan|dry |monoton|stoic|laconic|unbothered|nonchalant|apathetic|bored|flat /, 18],
+  manipulative: [/manipulat|silky|flatter|charm|schem|slick|smooth|honey|calculat|cunning/, 27],
+  blunt: [/blunt|brash|loud|aggressive|abrasive|no-nonsense|harsh|gruff|confrontational|bossy/, 45],
+  warm: [/kind|sweet|warm|gentle|caring|nurtur|supportive|optimis|cheerful|friendly|earnest/, 84],
 };
 
 /**

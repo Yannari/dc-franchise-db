@@ -32,16 +32,20 @@ describe('Favorites source profiles', () => {
     // that fails on legitimate work teaches you to edit the guard, which is
     // how it stops guarding anything. So: the researched dates are pinned,
     // and everyone else must be blank or a real ISO date.
-    const RESEARCHED = { thom:'1993-06-12', grett:'1999-10-25', james:'1998-05-29',
-      yul:'2001-07-24', natalia:'1996-08-03' };
-    for (const [slug, date] of Object.entries(RESEARCHED)) {
-      expect(roster.find(p => p.slug === slug).birthdate, `${slug}'s researched date`).toBe(date);
+    // These five were researched with a stated source, and a Publish wiping
+    // them back to blank is the failure this guards — it has happened twice.
+    // The exact VALUE is not pinned: Thom's was authored over in the Studio
+    // (1993-06-12 -> 1997-06-18), which is the app working, and a guard that
+    // fails on that teaches you to edit the guard.
+    const RESEARCHED = ['thom', 'grett', 'james', 'yul', 'natalia'];
+    for (const slug of RESEARCHED) {
+      expect(roster.find(p => p.slug === slug).birthdate, `${slug} lost their date`)
+        .toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
     for (const slug of expected) {
       const value = roster.find(p => p.slug === slug).birthdate || '';
-      if (RESEARCHED[slug] || !value) continue;
-      expect(value, `${slug} has an authored birthday, which must still be a real date`)
-        .toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      if (!value) continue;
+      expect(value, `${slug}'s birthday must be a real date`).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(new Date(`${value}T00:00:00.000Z`).toISOString().slice(0, 10)).toBe(value);
     }
   });

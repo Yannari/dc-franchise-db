@@ -30,12 +30,41 @@
 // never fired across 20 simulated seasons, is an audit, not a hope."
 //
 // 400 is derived from the pool as it now stands, not from what makes it pass.
-// Measured over 1,000 seasons after the content fixes in this same round, the
-// RAREST event in the pool fires 25 times — one season in forty, the floor the
-// review itself proposed. At 400 seasons that event expects 10 firings, so the
-// probability of the sweep missing it by chance is about 5 in 100,000; every
-// other event has more headroom than that. If a future change drops something
-// below one-in-forty, this sweep is supposed to go red, and it will.
+//
+// ── FIX ROUND 2, R4: THE MARGIN CLAIM ABOVE WAS WRONG BY ~200x ──
+//
+// It used to read: "the RAREST event in the pool fires 25 times [per 1,000] —
+// one season in forty, the floor the review itself proposed. At 400 seasons
+// that event expects 10 firings, so the probability of the sweep missing it by
+// chance is about 5 in 100,000." This test's OWN printout, four lines of
+// console.log below, has said otherwise on every run since it was written:
+//
+//     === RAREST TEN (400 seasons, 12628 firings) ===
+//        6   trust      trust-protect-pact
+//        12  romance    romance-showmance-fight
+//        12  callback   callback-showmance-reunion-spark
+//
+// The floor is 6 firings in 400 seasons — 15 per 1,000, one season in 67, not
+// one in forty. Poisson at lambda = 6 gives a miss probability of e^-6, about
+// 2.5e-3: one run in 400, not one in 20,000. The comment was corrected rather
+// than the content raised, and the honest reasons for that choice are:
+//
+//   - This sweep is DETERMINISTIC. Seeds are 1..400 and the fixture is laid
+//     out by index, so it does not roll dice on each run: it passes or it
+//     fails, always the same way. The Poisson number is a robustness margin
+//     against UNRELATED future change, never a flake rate.
+//   - Raising trust-protect-pact, romance-showmance-fight and
+//     callback-showmance-reunion-spark to make one-in-forty true is content
+//     work: it moves each family's firing shares, and the family-dominance
+//     band below plus the twelve calibration bands in tr-calibration.test.js
+//     are all measured against the current distribution. Retuning a
+//     measurement to rescue a comment is the wrong direction.
+//
+// SO, STATED PLAINLY AND LEFT OPEN: the pool's rarest event is at one season
+// in 67, BELOW the one-in-forty floor the whole-plan review proposed. That is
+// a real content finding about trust-protect-pact and it is not fixed here. If
+// a future change drops something below the current floor, this sweep goes red
+// — with about 2.5e-3 of chance-miss slack rather than 5e-5.
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
@@ -92,6 +121,18 @@ describe('THE DEAD-EVENT SWEEP', () => {
 
     expect(dead, `these events never fired in ${SWEEP_SEASONS} seasons and are dead content: ${dead.join(', ')}`)
       .toEqual([]);
+
+    // AND THE FLOOR ITSELF, AS AN ASSERTION (fix round 2, R4). The paragraph
+    // in this file's header used to make a claim about the bottom of this
+    // distribution that was wrong by ~200x, and nothing could tell, because
+    // the only thing enforced was "> 0". A comment stating a number no code
+    // checks is how that happens. 4 is derived from the measured 6 with room
+    // for ordinary drift: an event sliding from 6 firings to 2 is on its way
+    // to dead and this run should say so BEFORE it gets there. Deterministic
+    // seeds, so this is a bar and not a coin.
+    const floor = rarest[0];
+    expect(floor.n, `the rarest event in the pool is ${floor.id} at ${floor.n} firings in ${SWEEP_SEASONS} seasons — one season in ${Math.round(SWEEP_SEASONS / Math.max(1, floor.n))}`)
+      .toBeGreaterThanOrEqual(4);
   });
 
   it('registers 80+ events across the seven families (honest count, not padded to a target)', () => {

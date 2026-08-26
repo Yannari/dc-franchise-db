@@ -35,6 +35,17 @@ const VALIDITY = {
 };
 // base credibility by how the belief arrived
 const SOURCE_CRED = { public: 1.0, observed: 0.9, told: 0.7, deduced: 0.62, rumor: 0.45 };
+// The one fact type nobody in a Traitors castle can ever witness. Every tier
+// table in this file can be sidestepped by passing an explicit `confidence`,
+// which is correct for a pitch or a bond-read where the caller knows how loud
+// the evidence was — and fatal for alignment, where an inference must never be
+// allowed to out-rank the `deduced` tier. Today the largest override any caller
+// passes is 0.544 and the ceiling holds by arithmetic across four call sites;
+// this makes it hold by rule, so a fifth caller writing
+// `{ sourceType: 'deduced', confidence: 0.95 }` cannot hand a Faithful
+// certainty about who somebody IS. Certainty is reserved for the two places
+// that pass no confidence at all: the turret, and the reveal.
+const ALIGNMENT_CRED_CEILING = SOURCE_CRED.deduced;   // 0.62
 
 // ── ground-truth facts ────────────────────────────────────────────────
 export function recordFact({ type, subject, object = null, payload = null, truth = true, ep = null } = {}) {
@@ -92,7 +103,9 @@ function _assess(knower, cred, truth, rng) {
 export function learn(knower, id, { source = 'observation', sourceType = 'observed', confidence = null, ep = null, from = null, rng = Math.random } = {}) {
   const fact = store()[id];
   if (!fact || !knower) return null;
-  const cred = confidence != null ? clamp01(confidence) : (SOURCE_CRED[sourceType] ?? 0.5);
+  let cred = confidence != null ? clamp01(confidence) : (SOURCE_CRED[sourceType] ?? 0.5);
+  // An explicit confidence bypasses SOURCE_CRED entirely. For alignment it may not.
+  if (fact.type === 'alignment' && confidence != null) cred = Math.min(cred, ALIGNMENT_CRED_CEILING);
   // Witnessing an action or hearing a public announcement is knowledge, not a
   // persuasion roll. Interpretation may later be wrong; occurrence is known.
   const direct = sourceType === 'public' || sourceType === 'observed';

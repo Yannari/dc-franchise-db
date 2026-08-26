@@ -124,10 +124,26 @@ describe('what the traitors know, and what nobody else can', () => {
 
   it('CEILING: a faithful can never reach certainty about anyone', () => {
     // Even the strongest inference this engine can express stays a guess.
+    // `if (b) expect(...)` would be vacuous: learn() returns null on a failed
+    // read roll or a missing fact, and the assertion would never run. Assert the
+    // belief EXISTS, then assert against the real ceiling — the `deduced` tier's
+    // 0.62 — rather than a 0.7 that nothing could ever reach anyway.
     learn('Heather', alignmentFactId('Gwen'),
       { source: 'ballots', sourceType: 'deduced', ep: 4, rng: () => 0.01 });
     const b = believes('Heather', alignmentFactId('Gwen'), 4);
-    if (b) expect(b.effectiveConfidence).toBeLessThan(0.7);
+    expect(b, 'the strongest inference the engine can express formed no belief at all').toBeTruthy();
+    expect(b.effectiveConfidence).toBeLessThanOrEqual(0.62);
+
+    // And the ceiling must be STRUCTURAL, not arithmetic. An explicit
+    // `confidence` bypasses the SOURCE_CRED tier table for every other fact
+    // type; for alignment it must be clamped, or one future call site hands a
+    // Faithful the certainty the whole format depends on them never having.
+    learn('Noah', alignmentFactId('Gwen'),
+      { source: 'a hunch', sourceType: 'deduced', confidence: 0.95, ep: 4, rng: () => 0.01 });
+    const shouted = believes('Noah', alignmentFactId('Gwen'), 4);
+    expect(shouted, 'no belief formed from a maximal claim').toBeTruthy();
+    expect(shouted.effectiveConfidence,
+      'an explicit confidence sailed past the alignment ceiling').toBeLessThanOrEqual(0.62);
   });
 
   it('CEILING HOLDS THROUGH GOSSIP: propagate() must never hop an alignment belief', () => {

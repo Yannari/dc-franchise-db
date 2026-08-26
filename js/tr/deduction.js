@@ -212,6 +212,15 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
  * ballots that meant nothing into a round of ballots that mean something.
  */
 export function revealCascade(name, wasTraitor, ep, rng = Math.random) {
+  // The one line in this engine that hands out certainty about an alignment to
+  // the whole room. It is only ever legitimate about somebody who has just LEFT
+  // the game and said it out loud. Today that holds by call order — runRoundTable
+  // removes the banished player before calling — which is not a rule, it is a
+  // coincidence one refactor away from ending. A future caller (a murder reveal,
+  // a recruitment exposure, an exit blowup) that fires this about a LIVING player
+  // would collapse the format in a single line, so refuse it here rather than
+  // trusting every future call site.
+  if (!name || (gs.activePlayers || []).includes(name)) return [];
   const living = (gs.activePlayers || []).filter(n => n !== name);
 
   // 1. The certainty. `public` is correct: they said it out loud, to the room.

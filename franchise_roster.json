@@ -4939,14 +4939,40 @@
         "temperament": 7
       },
       "sexuality": "straight",
-      "profileSources": {},
+      "profileSources": {
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Manu",
+            "url": "https://disventure-camp.fandom.com/wiki/Manu",
+            "kind": "source-canon",
+            "quote": "his father divorced his biological mother when he was 19"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Manu",
+            "url": "https://disventure-camp.fandom.com/wiki/Manu",
+            "kind": "source-canon",
+            "quote": "doesn't tolerate anyone hurting his loved ones"
+          }
+        ],
+        "voice": [
+          {
+            "label": "Disventure Camp Wiki - Manu",
+            "url": "https://disventure-camp.fandom.com/wiki/Manu",
+            "kind": "source-canon",
+            "quote": "welcoming the \"party people\" with energy"
+          }
+        ]
+      },
       "age": 41,
       "birthdate": "1985-05-02",
       "ethnicity": "Samoan",
       "nationality": "American Samoan",
       "hometown": "Hawaii",
       "occupation": "Appliance salesman",
-      "descriptor": "The Big Brother"
+      "descriptor": "The Big Brother",
+      "voice": "Manu talks in an upbeat, welcoming rush, the kind of person who opens with a big greeting and tries to keep the mood light. His vocabulary leans casual and encouraging, with jokes, smiles, and direct reassurance when someone is embarrassed. In conflict, he becomes firmer and more protective, especially if someone he cares about is being mocked."
     },
     {
       "name": "Nura",

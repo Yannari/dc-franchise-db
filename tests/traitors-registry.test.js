@@ -1,9 +1,11 @@
 // The Traitors, as the registry sees it. Everything downstream of a show —
 // filenames, storage keys, every sentence a screen generates about a season —
 // comes from this entry, so it is worth asserting rather than assuming.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { SHOWS, formatPrefix, showShort, showIcon, showAccent } from '../js/shows.js';
+import { buildFranchiseMeta, setFranchiseLedger, activeSeasons }
+  from '../js/franchise-meta.js';
 
 describe('the traitors registry entry', () => {
   it('is registered with the prefix every filename depends on', () => {
@@ -88,5 +90,44 @@ describe('identity lives only in the registry', () => {
     // An object literal keyed by show slug is the shape being banned.
     expect(src, `${file} still maps show identity locally`)
       .not.toMatch(/['"]total-drama['"]\s*:/);
+  });
+});
+
+describe('franchise history on a show where everyone has some', () => {
+  // Two players with real ledger history; NEITHER is ticked as returning.
+  const cast = [
+    { name: 'Gwen',  isReturnee: false },
+    { name: 'Owen',  isReturnee: false },
+  ];
+
+  // The ledger is module state reached through activeSeasons(), not a field on
+  // gs — setFranchiseLedger is how the existing franchise-meta tests seed it.
+  beforeEach(() => {
+    setFranchiseLedger({ seasons: {} });
+    activeSeasons()['3'] = { seasonName: 'Season 3', players: {
+      Gwen: { placement: 1, winner: true, chalWins: 3, blindsidesAuthored: 2 },
+      Owen: { placement: 2, finalist: true, chalWins: 1 },
+    } };
+  });
+
+  it('gives a Traitors cast profiles without a single checkbox ticked', () => {
+    const meta = buildFranchiseMeta(cast, { format: 'traitors' });
+    expect(meta, 'no meta built — every prior is dead').toBeTruthy();
+    expect(Object.keys(meta.profiles).sort()).toEqual(['Gwen', 'Owen']);
+    expect(meta.profiles.Gwen.repScore).toBeGreaterThan(0);
+  });
+
+  it('does NOT change Total Drama, where the checkbox still means something', () => {
+    expect(buildFranchiseMeta(cast, { format: 'total-drama' })).toBeNull();
+  });
+
+  it('does NOT change Big Brother either', () => {
+    expect(buildFranchiseMeta(cast, { format: 'big-brother' })).toBeNull();
+  });
+
+  it('still skips a Traitors player with no history at all', () => {
+    const meta = buildFranchiseMeta(
+      [...cast, { name: 'Nobody', isReturnee: false }], { format: 'traitors' });
+    expect(Object.keys(meta.profiles)).not.toContain('Nobody');
   });
 });

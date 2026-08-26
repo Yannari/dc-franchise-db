@@ -1,7 +1,7 @@
 // Franchise meta — persistent cross-season history (ledger) + season-start
 // meta profiles. IMPORT RULE: this module imports ONLY core.js; bonds.js and
 // savestate.js import US, so importing them back would create a cycle.
-import { gs, players, seasonConfig } from './core.js';
+import { gs, players, seasonConfig, seasonFormat } from './core.js';
 import { lifeSeeds as _lifeSeeds } from './life-cast.js';
 // SAFE UNDER THE IMPORT RULE ABOVE: ratings.js imports core.js, tone.js and
 // shows.js, all of which are leaves, and nothing imports us back through it.
@@ -501,8 +501,23 @@ export function buildFranchiseMeta(cast, cfg) {
   if (cfg?.franchiseMeta === false) return null;
   const W = META_WEIGHTS;
   const profiles = {};
+  const fromLedger = !!SHOWS[seasonFormat(cfg)]?.historyFromLedger;
   for (const p of cast) {
-    if (!p.isReturnee) continue;
+    // WHO CARRIES HISTORY INTO THIS SEASON.
+    //
+    // On Total Drama and Big Brother that is the returnees, and the checkbox is
+    // the right answer: coming back to the same show is what makes a past
+    // season relevant, and casting a player who happens to have played before
+    // does not make them a returnee here.
+    //
+    // On a crossover show the two come apart. Everyone has history, nobody is
+    // returning to THIS show, and requiring twenty ticked boxes to switch on a
+    // system that can already read the ledger means the day one is missed, that
+    // player walks in with no reputation and no grudges and nothing says so.
+    //
+    // The line below this one already skips anyone the ledger has nothing for,
+    // so a show that opts in needs no other check.
+    if (!fromLedger && !p.isReturnee) continue;
     const history = _historyFor(p.name);
     if (!history.length) continue;
     let wins = 0, finals = 0, bsAuth = 0, chalW = 0, idolsP = 0, idoledOut = 0, blindsided = 0, betrayedCt = 0, caught = 0;

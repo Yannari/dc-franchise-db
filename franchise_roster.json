@@ -4618,7 +4618,6 @@
       "name": "Ara",
       "slug": "ara",
       "gender": "f",
-      "sexuality": "bi",
       "archetype": "villain",
       "stats": {
         "physical": 4,
@@ -4631,7 +4630,14 @@
         "intuition": 7,
         "temperament": 2
       },
-      "profileSources": {}
+      "sexuality": "bi",
+      "profileSources": {},
+      "birthdate": "2005-10-25",
+      "ethnicity": "Asian",
+      "nationality": "Korean American",
+      "hometown": "DC",
+      "occupation": "Business student",
+      "descriptor": "The Class President"
     }
   ]
 }

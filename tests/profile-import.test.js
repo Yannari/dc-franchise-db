@@ -31,6 +31,32 @@ describe('published profile import', () => {
       .toContain('birthdate must use YYYY-MM-DD');
   });
 
+  it('accepts field-keyed profile sources', () => {
+    const result = validatePublishedProfile({
+      slug:'julia',
+      profileSources: {
+        personality: [{ label:'Character bio', url:'https://example.com/julia', kind:'source-canon' }],
+        birthdate: [],
+        stats: [{ label:'Simulator notes', kind:'simulator-continuity' }],
+      },
+    });
+    expect(result).toEqual({ valid:true, errors:[] });
+  });
+
+  it('rejects invalid profile source arrays and nested records', () => {
+    const result = validatePublishedProfile({
+      slug:'julia',
+      profileSources: {
+        personality: { label:'Not an array', kind:'authored' },
+        birthdate: [null],
+        stats: [{ label:'Bad kind', kind:'rumour' }],
+      },
+    });
+    expect(result.errors).toContain('profileSources.personality must be an array');
+    expect(result.errors).toContain('profileSources.birthdate[0] must be an object');
+    expect(result.errors).toContain('profileSources.stats[0].kind is invalid');
+  });
+
   it('uses local, then roster, then legacy voice', () => {
     expect(selectProfileVoice({ localVoice:'local', rosterVoice:'roster', legacyVoice:'legacy' })).toBe('local');
     expect(selectProfileVoice({ localVoice:'', rosterVoice:'roster', legacyVoice:'legacy' })).toBe('roster');

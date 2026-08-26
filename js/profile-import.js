@@ -81,24 +81,36 @@ export function validatePublishedProfile(profile) {
   }
 
   if (profile.profileSources != null) {
-    if (!Array.isArray(profile.profileSources)) {
-      errors.push('profileSources must be an array');
+    const sourceGroups = profile.profileSources;
+    const prototype = typeof sourceGroups === 'object' && sourceGroups !== null
+      ? Object.getPrototypeOf(sourceGroups) : null;
+    if (sourceGroups === null || typeof sourceGroups !== 'object'
+        || Array.isArray(sourceGroups)
+        || (prototype !== Object.prototype && prototype !== null)) {
+      errors.push('profileSources must be an object');
     } else {
-      profile.profileSources.forEach((source, index) => {
-        if (!source || typeof source !== 'object' || Array.isArray(source)) {
-          errors.push(`profileSources[${index}] must be an object`);
-          return;
+      for (const [field, sources] of Object.entries(sourceGroups)) {
+        if (!Array.isArray(sources)) {
+          errors.push(`profileSources.${field} must be an array`);
+          continue;
         }
-        if (typeof source.label !== 'string' || source.label.trim() === '') {
-          errors.push(`profileSources[${index}].label is required`);
-        }
-        if (source.url != null && typeof source.url !== 'string') {
-          errors.push(`profileSources[${index}].url must be a string`);
-        }
-        if (!PROFILE_SOURCE_KINDS.has(source.kind)) {
-          errors.push(`profileSources[${index}].kind is invalid`);
-        }
-      });
+        sources.forEach((source, index) => {
+          const path = `profileSources.${field}[${index}]`;
+          if (!source || typeof source !== 'object' || Array.isArray(source)) {
+            errors.push(`${path} must be an object`);
+            return;
+          }
+          if (typeof source.label !== 'string' || source.label.trim() === '') {
+            errors.push(`${path}.label is required`);
+          }
+          if (source.url != null && typeof source.url !== 'string') {
+            errors.push(`${path}.url must be a string`);
+          }
+          if (!PROFILE_SOURCE_KINDS.has(source.kind)) {
+            errors.push(`${path}.kind is invalid`);
+          }
+        });
+      }
     }
   }
 

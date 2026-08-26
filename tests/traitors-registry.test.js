@@ -131,3 +131,21 @@ describe('franchise history on a show where everyone has some', () => {
     expect(Object.keys(meta.profiles)).not.toContain('Nobody');
   });
 });
+
+describe('the show picker on the actual screen', () => {
+  // configScopeFor('traitors') can be perfect while the show stays
+  // unselectable: simulator.html's #cfg-format <select> is a hardcoded legacy
+  // list, not generated from js/shows.js, and _cloneOptions() in
+  // quick-setup.js mirrors THAT markup — so the registry can know about a
+  // show a person can never pick. Assert against the registry's own keys,
+  // never a literal list, or this test becomes the next place a fourth show
+  // is silently forgotten.
+  it('offers exactly one <option> per registered show', () => {
+    const src = readFileSync('simulator.html', 'utf8');
+    const selectMatch = src.match(/<select id="cfg-format"[^>]*>([\s\S]*?)<\/select>/);
+    expect(selectMatch, 'no #cfg-format select found in simulator.html').toBeTruthy();
+    const optionValues = [...selectMatch[1].matchAll(/<option value="([^"]+)"/g)]
+      .map(m => m[1]);
+    expect(new Set(optionValues)).toEqual(new Set(Object.keys(SHOWS)));
+  });
+});

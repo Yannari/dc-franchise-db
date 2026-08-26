@@ -344,38 +344,55 @@ export function revealCascade(name, wasTraitor, ep, rng = Math.random) {
 
 // How loud each murder-shaped inference is. Smaller than the ballot weights on
 // purpose: a murder is one data point a night, and the ballot record is many.
-// THE TWO CHANNELS ARE PRICED DIFFERENTLY BECAUSE THEY CARRY DIFFERENT AMOUNTS
-// OF INFORMATION. These used to be declared at 0.30/0.36 and multiplied by a
-// bare 1.6 at each call site — a multiplier copied from a ballot weight that
-// has since been deleted — so the table said 0.36 and the engine used 0.576.
-// A constant that does not name the number the engine uses is not
-// documentation. Both are now the confidence actually passed to learn().
 //
-// Measured over 200 wired seasons, against the 20.5% Traitor base rate at the
-// table — how often each channel's indictment lands on a real Traitor:
+// BOTH CHANNELS ARE PRICED AGAINST A CONTROL, NOT AGAINST A FLAT BASE, AND
+// THAT IS THE WHOLE OF THE ARGUMENT. An earlier version of this comment priced
+// `pushedThenDied` at 0.48 on "30.4% vs 21.0% base = 1.45x, a real signal".
+// That base was the season-wide aggregate Traitor share, and the murder removes
+// a Faithful every night, so Traitor density climbs monotonically — measuring
+// any late-arriving channel against a flat aggregate credits it for the drift.
 //
-//   pushedThenDied  30.4%  ->  1.45x base. A real signal. Unchanged at 0.48.
-//   clashTraced     20.3%  ->  1.00x base. NONE, and it cannot have any:
-//                   formPreference PENALISES murdering somebody you visibly
-//                   clashed with, so a clash with the victim is uncorrelated
-//                   with guilt by construction of the conclave itself.
+// Re-measured at the EMISSION level over 600 seasons, each indictment scored
+// against the Traitor density of the room it was actually emitted into:
 //
-// That does not make it worthless — it makes it a FALSE-POSITIVE GENERATOR,
-// and a deliberate one. The person who made no secret of hating the victim is
-// the obvious suspect at breakfast and is almost always innocent, which is
-// exactly the mistake this format is made of. But pricing it at 0.576 made the
-// loudest belief in the engine the one carrying the least information, which
-// diluted every board it touched.
+//   pushedThenDied              n=2261    24.1% vs base 19.9%  = 1.21x
+//   CTRL: voted for ANY faithful n=30308  23.3% vs base 19.4%  = 1.20x
+//   clashTraced                 n=1456    17.0% vs base 19.5%  = 0.87x
 //
-// The comparison that sets the number is pairSilence, this engine's OTHER
-// deliberate false-positive generator, capped at 0.24 with a written argument
-// for why it must stay weak. This is the same kind of thing and is now priced
-// the same. Measured effect of 0.576 -> 0.24 over five disjoint 200-season
-// blocks: early lift mean 4.0pp -> 3.1pp with 5/5 blocks under the +5pp band
-// (was 2/5), late lift mean 16.4pp -> 18.4pp, board precision 1.78x -> 1.83x.
+// The control is the point. `pushedThenDied` beats a room's Traitor density by
+// 1.21x — and so does the entirely uninformative statement "you voted for
+// somebody who turned out to be a Faithful", at 1.20x. Its edge over that is
+// 0.01x, and the 1.21x itself is STRUCTURAL rather than deductive:
+// chooseBanishmentVote legitimately stops a Traitor naming the pact, so
+// Traitors' ballots are restricted to Faithfuls; formPreference then draws the
+// victim from livingFaithfuls; so anybody who voted for the victim inherits an
+// enrichment derived from ground truth that has nothing to do with the murder.
+//
+//   clashTraced  0.87x — no signal, and it cannot have any: formPreference
+//                PENALISES murdering somebody you visibly clashed with, so a
+//                clash with the victim is uncorrelated with guilt by
+//                construction of the conclave itself.
+//
+// Neither channel is deleted, and neither should be. A false-positive generator
+// is a thing this format is made of: the person who wanted the victim gone, and
+// the person who made no secret of hating them, are the two obvious suspects at
+// breakfast and are usually innocent. What was wrong was the PRICE — the
+// loudest belief in the engine was one of the two carrying the least
+// information, and it diluted every board it touched.
+//
+// pushedThenDied 0.48 -> 0.36. Measured over twelve DECORRELATED 200-season
+// blocks (see rngFor in headless.js), 0.36 is the lowest price at which the
+// late-lift band stays green on all twelve: at 0.30 the worst block reads
+// 13.99pp and at 0.24 it reads 13.81pp, both under the +15pp floor, while 0.36
+// holds a worst block of 15.74pp. Everything else is flat to within block noise
+// — early 5.58 -> 6.30pp (sd 1.6), late 19.17 -> 19.02pp, board 1.877 ->
+// 1.875x — and that flatness IS the finding: a price that can be cut by a
+// quarter without moving any band was not buying signal.
+//
+// clashTraced stays at 0.24, the cap pairSilence carries for the same reason.
 const M = {
-  pushedThenDied:  0.48,   // you wanted them gone, and they went
-  clashTraced:     0.24,   // murderCost named you — a suspect, not a signal
+  pushedThenDied:  0.36,   // you wanted them gone, and they went — 1.21x, against a 1.20x control
+  clashTraced:     0.24,   // murderCost named you — a suspect, not a signal (0.87x)
 };
 
 /**

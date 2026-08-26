@@ -19,6 +19,7 @@ const STAT_KEYS = ['physical','endurance','mental','social','strategic','loyalty
 const STAT_ABBR = { physical:'PHY', endurance:'END', mental:'MEN', social:'SOC', strategic:'STR', loyalty:'LOY', boldness:'BLD', intuition:'INT', temperament:'TMP' };
 
 import { composeVoice, stripBioLead, parseBio, splitOrigin } from './bio.js';
+import { selectProfileVoice } from './profile-import.js';
 import { INTERVIEW_QUESTIONS, parseInterview, serializeInterview }
   from './casting-interview.js';
 // The endpoint resolver, not a second hardcoded URL — it already handles the
@@ -140,7 +141,7 @@ function _blankChar() {
     birthdate:'', hometown:'', occupation:'', backstory:'', personality:'',
     // The casting interview, held as { key: answer } while it is being edited
     // and serialised on save. See js/casting-interview.js.
-    interview: {},
+    interview: {}, profileSources:{},
     voice:'', avatarDataUri:'', returneeDataUri:'', stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
   };
 }
@@ -325,12 +326,12 @@ async function _rosterPull() {
 /** Upsert one character into D1. Throws on failure so callers can report it.
  *  The error carries the HTTP status — a silent failure here once caused a
  *  character to be published away, so make it diagnosable. */
-async function _rosterPush(entry, voiceText) {
+async function _rosterPush(entry) {
   let r, body;
   try {
     r = await fetch(_apiUrl('/api/roster'), {
       method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ ...entry, voice: voiceText || '' }),
+      body: JSON.stringify(entry),
     });
   } catch (netErr) {
     throw new Error(`network error reaching /api/roster (${netErr.message})`);
@@ -1081,7 +1082,12 @@ async function _editBySlug(slug) {
   const rich = await _idbGet('characters', slug);
   // Studio record wins; otherwise fall back to the existing voice-profiles.json
   // entry so editing a canon/hand-added character shows their real voice.
-  const voice = (rich && rich.voice) || await _existingVoice(base.name);
+  const legacyVoice = await _existingVoice(base.name);
+  const voice = selectProfileVoice({
+    localVoice: rich?.voice || '',
+    rosterVoice: base.voice || '',
+    legacyVoice,
+  });
 
   // WHERE THE BIO COMES FROM, in order of how much it can be trusted:
   //
@@ -1112,6 +1118,7 @@ async function _editBySlug(slug) {
     occupation: pick(base.occupation, rich && rich.occupation),
     backstory: pick(base.backstory, rich && rich.backstory),
     personality: pick(base.personality, rich && rich.personality),
+    profileSources: pick(rich && rich.profileSources, base.profileSources, {}),
     interview: Object.fromEntries(parseInterview(
       pick(base.castingInterview, rich && rich.castingInterview)).map(r => [r.key, r.a])),
     // The prose alone. The lead-in is rebuilt from the fields on save, so
@@ -1889,7 +1896,8 @@ async function _save() {
   const iv = serializeInterview(d.interview || {});
   if (iv) bio.castingInterview = iv;
   const entry = { name: d.name, slug: d.slug, gender: d.gender, sexuality: d.sexuality,
-    archetype: d.archetype, stats: { ...d.stats }, ...bio };
+    archetype: d.archetype, stats: { ...d.stats }, voice: d.voice,
+    profileSources: d.profileSources, ...bio };
 
   // 1) live projection into the roster the Cast Builder reads
   const arr = _roster().slice();
@@ -1903,7 +1911,7 @@ async function _save() {
     ethnicity: d.ethnicity, nationality: d.nationality, descriptor: d.descriptor,
     birthdate: d.birthdate, hometown: d.hometown,
     occupation: d.occupation, backstory: d.backstory, personality: d.personality,
-    castingInterview: iv,
+    castingInterview: iv, profileSources: d.profileSources,
     voice: d.voice, avatarDataUri: d.avatarDataUri || '',
     returneeDataUri: d.returneeDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}
@@ -1926,7 +1934,7 @@ async function _save() {
   let savedToDb = false;
   if (_serverUp) {
     try {
-      await _rosterPush(entry, composedVoice);
+      await _rosterPush(entry);
       savedToDb = true;
     } catch (e) { _toast('Saved locally, but the database write failed: ' + e.message, 'warn'); }
 
@@ -2125,7 +2133,18 @@ async function _exportRepo() {
   try { base = await (await fetch('voice-profiles.json', { cache: 'no-store' })).json(); } catch {}
   if (!base.profiles) base.profiles = {};
   const chars = await _idbAll('characters');
-  chars.forEach(c => { const v = _composeVoice(c); if (v) base.profiles[c.name] = v; });
+  const rosterVoiceNames = new Set();
+  for (const p of _roster()) {
+    if (p.voice && String(p.voice).trim()) {
+      base.profiles[p.name] = composeVoice(p, stripBioLead(p.voice));
+      rosterVoiceNames.add(p.name);
+    }
+  }
+  chars.forEach(c => {
+    if (rosterVoiceNames.has(c.name)) return;
+    const v = _composeVoice(c);
+    if (v) base.profiles[c.name] = v;
+  });
   _dl('voice-profiles.json', JSON.stringify(base, null, 2) + '\n');
   // 3) avatar PNGs for studio-created characters
   let n = 0;

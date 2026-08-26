@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS roster (
   intuition   INTEGER,
   temperament INTEGER,
 
-  voice       TEXT,                   -- voice profile prose (from voice-profiles.json)
+  voice       TEXT,                   -- authored raw voice profile prose
+  profile_sources TEXT,                -- JSON field-keyed provenance arrays
 
   -- ── the bio ──
   --

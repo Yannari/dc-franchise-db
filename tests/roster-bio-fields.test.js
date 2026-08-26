@@ -454,3 +454,52 @@ describe('the contents box matches the sections that survived', () => {
     expect((view.match(/dropSection\(host, box\);/g) || []).length).toBe(2);
   });
 });
+
+describe('the roster owns voice and profile provenance', () => {
+  const schema = read('worker/roster_schema.sql');
+  const migration = read('worker/roster_migration_profile_sources.sql');
+  const worker = read('worker/worker-studio.js');
+  const studio = read('js/studio.js');
+
+  it('stores provenance in a dedicated nullable column', () => {
+    expect(schema).toMatch(/^\s*profile_sources\s+TEXT/m);
+    expect(migration).toMatch(/ADD COLUMN\s+profile_sources\s+TEXT/i);
+    expect(migration).not.toMatch(/ADD COLUMN\s+voice\b/i);
+  });
+
+  it('publishes raw roster voice and field-keyed sources', () => {
+    expect(worker).toMatch(/out\.voice\s*=\s*r\.voice/);
+    expect(worker).toMatch(/out\.profileSources\s*=/);
+    expect(worker).toMatch(/profile_sources=excluded\.profile_sources/);
+  });
+
+  it('carries both fields through the Studio draft and save entry', () => {
+    expect(studio).toMatch(/import\s*\{\s*selectProfileVoice\s*\}\s*from\s*['"]\.\/profile-import\.js['"]/);
+    expect(studio).toMatch(/profileSources:\s*\{\}/);
+    expect(studio).toMatch(/voice:\s*d\.voice/);
+    expect(studio).toMatch(/profileSources:\s*d\.profileSources/);
+  });
+
+  it('derives compatibility voices from migrated roster rows on export', () => {
+    const exportFn = studio.slice(studio.indexOf('async function _exportRepo()'));
+    expect(exportFn).toMatch(/for \(const p of _roster\(\)\)/);
+    expect(exportFn).toMatch(/if \(p\.voice/);
+    expect(exportFn).toMatch(/base\.profiles\[p\.name\]/);
+  });
+});
+
+describe('the roster profile upsert bind shape', () => {
+  it('has one placeholder for every value bound after the nine stats', () => {
+    const worker = read('worker/worker-studio.js');
+    expect(worker).toMatch(/\$\{STAT_KEYS\.map\(\(\) => '\?'\)\.join\(','\)\},(?:\?,){13}\?,datetime\('now'\)/);
+  });
+});
+
+describe('direct character writes preserve authored profile fields', () => {
+  it('allows raw voice and provenance through the roster cleaner', () => {
+    const worker = read('worker/worker-studio.js');
+    const fields = worker.slice(worker.indexOf('const ROSTER_FIELDS'), worker.indexOf('export default'));
+    expect(fields).toContain("'voice'");
+    expect(fields).toContain("'profileSources'");
+  });
+});

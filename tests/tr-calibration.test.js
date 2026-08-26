@@ -17,7 +17,15 @@ import roster from '../franchise_roster.json';
 // roster.slice() throws; this is the shape the file actually has.
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
-const SEASONS = 60;
+// Sixty seasons is not enough seasons.
+//
+// Measured across 40 disjoint 60-season blocks, the lift band failed 1 in 40
+// (min 1.37), the faithful-win band 3 in 40 and SHARPENS 2 in 40 — about 15% of
+// blocks would go red on an engine nobody had touched. The suite is not flaky
+// (the seeds are fixed 1..60), but the headroom it reports is optimistic and the
+// particular block it reports flatters the result. Two hundred seasons costs a
+// few seconds and turns a population estimate into one.
+const SEASONS = 200;
 
 function run(n = SEASONS, traitorCount = 3) {
   setPlayers(ROSTER);

@@ -20,7 +20,7 @@
 // show are in, and it falls out of the tier table rather than out of a special
 // case in every reader.
 import { gs } from '../core.js';
-import { learn, believes } from '../knowledge.js';
+import { recordFact, learn, believes } from '../knowledge.js';
 import { alignmentFactId, livingTraitors, alignmentAt } from './roles.js';
 import { getBond } from '../bonds.js';
 
@@ -197,4 +197,50 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
     score: suspicion(voter, name, ep) + rng() * 0.35,
   })).sort((a, b) => b.score - a.score);
   return scored[0].name;
+}
+
+/**
+ * A banishment reveal, and everything it retroactively re-scores.
+ *
+ * The certainty is about ONE person and is the only one a Faithful ever gets.
+ * The value is in the second half: a room that now knows Duncan was a Traitor
+ * also knows who spent a vote keeping him, and that is real evidence about
+ * THOSE people, arrived at by reasoning rather than by being told.
+ *
+ * This is why the last three Round Tables of a season feel different from the
+ * first three without anything being scripted — every reveal converts a round of
+ * ballots that meant nothing into a round of ballots that mean something.
+ */
+export function revealCascade(name, wasTraitor, ep, rng = Math.random) {
+  const living = (gs.activePlayers || []).filter(n => n !== name);
+
+  // 1. The certainty. `public` is correct: they said it out loud, to the room.
+  //    This and seedTraitorKnowledge are the only two places alignment is ever
+  //    learned at better than `deduced`.
+  recordFact({ type: 'alignment', subject: name, truth: !!wasTraitor, ep });
+  for (const observer of living) {
+    learn(observer, alignmentFactId(name),
+      { source: 'the reveal', sourceType: 'public', ep, rng: () => 0 });
+  }
+
+  // 2. The re-scoring. Only a revealed TRAITOR indicts their defenders — a
+  //    revealed Faithful tells you the room was wrong, not who is guilty.
+  if (!wasTraitor) return [];
+  const round = (gs.tr?.rounds || []).find(r => r.ep === ep && r.banished === name);
+  if (!round) return [];
+
+  const formed = [];
+  for (const b of (round.ballots || [])) {
+    if (b.channel !== 'banishment' || !living.includes(b.voter)) continue;
+    if (b.voted === name) continue;                 // they were right; nothing to answer for
+    for (const observer of living) {
+      if (observer === b.voter) continue;
+      const belief = learn(observer, alignmentFactId(b.voter), {
+        source: `kept ${name} in on the night ${name} was revealed`,
+        sourceType: 'deduced', confidence: 0.5, ep, rng,
+      });
+      if (belief) formed.push({ observer, subject: b.voter });
+    }
+  }
+  return formed;
 }

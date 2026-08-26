@@ -316,3 +316,63 @@ describe('turning belief into a vote', () => {
     expect(new Set(picks).size, 'the whole room picked the same name on no information').toBeGreaterThan(1);
   });
 });
+
+import { revealCascade } from '../js/tr/deduction.js';
+
+describe('the reveal, and what it does to everybody else', () => {
+  beforeEach(() => {
+    recordAlignment('Gwen', true, 1, 'selection');
+    recordAlignment('Duncan', true, 1, 'selection');
+    ['Heather', 'Owen', 'Leshawna', 'Noah'].forEach(n => recordAlignment(n, false, 1, 'selection'));
+    seedTraitorKnowledge(1);
+  });
+
+  it('makes a banished traitor a certainty for everyone left', () => {
+    gs.activePlayers = ['Gwen', 'Heather', 'Owen', 'Leshawna', 'Noah'];
+    revealCascade('Duncan', true, 3, seededRng(2));
+    const b = believes('Heather', alignmentFactId('Duncan'), 3);
+    expect(b.effectiveConfidence).toBeGreaterThanOrEqual(0.99);
+  });
+
+  // The re-scoring half runs every formed belief through learn()'s accept-gate
+  // and detect-roll, exactly like ballotEvidence() above — a single seed tests
+  // one draw of that coin, not the underlying tendency. Leshawna's read of
+  // Heather is structurally always 0 here (Heather voted correctly, so
+  // revealCascade never even calls learn() about her); Leshawna's read of Owen
+  // only registers if the belief about him clears both gates. So this is a
+  // population test, same shape as the two in 'reading the ballots' above.
+  it('punishes the people who kept them in (population)', () => {
+    const N = 100;
+    let hits = 0;
+    for (let seed = 1; seed <= N; seed++) {
+      resetKnowledge();
+      gs.tr = initTraitorsState();
+      recordAlignment('Gwen', true, 1, 'selection');
+      recordAlignment('Duncan', true, 1, 'selection');
+      ['Heather', 'Owen', 'Leshawna', 'Noah'].forEach(n => recordAlignment(n, false, 1, 'selection'));
+      seedTraitorKnowledge(1);
+      gs.activePlayers = ['Gwen', 'Heather', 'Owen', 'Leshawna', 'Noah'];
+      recordRound({
+        ep: 3, banished: 'Duncan', banishedWasTraitor: true, murdered: null,
+        ballots: [
+          { voter: 'Owen',     voted: 'Noah',   channel: 'banishment' },
+          { voter: 'Heather',  voted: 'Duncan', channel: 'banishment' },
+          { voter: 'Leshawna', voted: 'Duncan', channel: 'banishment' },
+          { voter: 'Noah',     voted: 'Duncan', channel: 'banishment' },
+        ],
+      });
+      revealCascade('Duncan', true, 3, seededRng(seed));
+      if (suspicion('Leshawna', 'Owen', 3) > suspicion('Leshawna', 'Heather', 3)) hits++;
+    }
+    const rate = hits / N;
+    console.log(`[population] reveal cascade punishes a defender: ${hits}/${N} (${(rate * 100).toFixed(1)}%)`);
+    expect(rate, 'defending a revealed traitor at the moment of reveal should read as suspicious in a solid minority of draws, not never').toBeGreaterThan(0.15);
+  });
+
+  it('a banished faithful teaches the room something too — they were wrong', () => {
+    gs.activePlayers = ['Gwen', 'Duncan', 'Heather', 'Leshawna', 'Noah'];
+    revealCascade('Owen', false, 3, seededRng(2));
+    const b = believes('Heather', alignmentFactId('Owen'), 3);
+    expect(b.valence).toBe('false');   // correctly disbelieved: he was not one
+  });
+});

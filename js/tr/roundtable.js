@@ -22,15 +22,18 @@ import { getBond } from '../bonds.js';
 import { resolveVotes } from '../voting.js';
 import { learn } from '../knowledge.js';
 import { alignmentAt } from './roles.js';
-import { alignmentFactId, suspicionBoard, chooseBanishmentVote, recordRound } from './deduction.js';
+import { alignmentFactId, suspicionBoard, chooseBanishmentVote, recordRound, revealCascade } from './deduction.js';
 
 /**
  * One player names another in front of everybody.
  *
- * Every listener runs their own read-skill check (inside learn), so a room does
- * not move as a bloc. What scales the claim before it gets there is the
- * accuser: their `social` for how well it is put, and each listener's own bond
- * with them for whether it is worth hearing.
+ * The claim is OFFERED to every listener in the room, but belief is filtered
+ * per listener: each one runs their own read-skill check (inside learn), and
+ * learn()'s accept gate goes negative below a credibility of 0.55 while a bare
+ * accusation here only ever supplies ~0.3-0.45 — so roughly one in five actually
+ * come to believe it, not the whole room at once. What scales the claim before
+ * it gets there is the accuser: their `social` for how well it is put, and each
+ * listener's own bond with them for whether it is worth hearing.
  */
 export function broadcast(accuser, target, ep, rng = Math.random) {
   const room = (gs.activePlayers || []).filter(n => n !== accuser && n !== target);
@@ -107,5 +110,6 @@ export function runRoundTable(ep, rng = Math.random) {
     ballots, revotes, accusations };
   recordRound(round);
   gs.activePlayers = living.filter(n => n !== banished);
+  revealCascade(banished, wasTraitor, ep, rng);
   return { ...round, wasTraitor, tally: tally(ballots) };
 }

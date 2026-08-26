@@ -54,9 +54,23 @@ export function probeWorld({ aTraitor, bTraitor, turret }) {
   setBond(A, B, 4);
   setBond(PROBE_CAST[2], PROBE_CAST[3], -3);
   gs.tr.rounds.push({ ep: PROBE_EP - 1, murdered: PROBE_CAST[5], murderTarget: PROBE_CAST[5] });
-  for (const kind of ['trust', 'suspicion', 'cover', 'callback', 'testing', 'grief',
-    'romance', 'romance-spark', 'romance-showmance']) {
-    openThread(kind, [A, B], PROBE_EP - 2, 'seed');
+  // Threads of every kind this pool opens, on the PAIR and on each actor
+  // ALONE. Both shapes are needed and neither is optional:
+  //   - `findOpenThread(kind, [actor])` keys on the exact party set, so a
+  //     cover event looking for one Traitor's own open cover story does not
+  //     match a thread opened on the pair (`cover-rehearsed-story-advance`).
+  //   - `openThreadsFor` filters on `heatAt(t, ep) > 0`, and heat decays 0.5 a
+  //     round from 1 on open, so a thread seeded two rounds back is already
+  //     stone cold by PROBE_EP and invisible (`trust-late-checkin`,
+  //     `trust-vow-of-silence`). Seeding the same thread again one round later
+  //     advances it instead of duplicating it, which leaves it warm.
+  const THREAD_KINDS = ['trust', 'suspicion', 'cover', 'callback', 'testing', 'grief',
+    'romance', 'romance-spark', 'romance-showmance'];
+  for (const parties of [[A, B], [A], [B]]) {
+    for (const kind of THREAD_KINDS) {
+      openThread(kind, parties, PROBE_EP - 2, 'seed');
+      openThread(kind, parties, PROBE_EP - 1, 'seed');
+    }
   }
   setFranchiseLedger({
     v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {

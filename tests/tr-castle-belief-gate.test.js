@@ -23,9 +23,23 @@
 //      have a js/tr/castle/ frame in it. This catches a belief write wherever
 //      it is laundered through — a castle event calling a helper that calls
 //      learn is still a castle event writing a belief.
-//   2. SOURCE. No file under js/tr/castle/ may import js/knowledge.js at all.
+//   2. COVERAGE. 20 real seasons only ever REACH about three quarters of the
+//      pool, and a fix-round-2 re-review defeated this file by putting the
+//      laundered write in one of the events the seasons never reached — a
+//      whole family of eleven (callback) plus five romance, two trust and one
+//      cover event, none of which fire without a franchise ledger the guard
+//      did not install. The seasons now run on the same returnee fixture the
+//      400-season sweep uses, AND a second arm executes every registered
+//      event's fire() directly, at four different rolls so each side of every
+//      fork runs. That arm asserts its own coverage over `EVENTS`, so a new
+//      event cannot slip in unexercised: the assertion is a rule over the
+//      pool, never a list of ids.
+//   3. SOURCE. No file under js/tr/castle/ may import js/knowledge.js at all.
 //      Cheaper, blunter, and it fails at the moment the import is typed rather
-//      than at the moment a season happens to reach that event.
+//      than at the moment a season happens to reach that event. It walks the
+//      castle tree RECURSIVELY and catches `await import('...')` as well as a
+//      static `from '...'`, because a non-static import is exactly what an
+//      author reaching for the knowledge layer would find first.
 //
 // FILENAME. Deliberately NOT *-audit.test.js: vitest.config.js excludes that
 // pattern from `npm test`, and this project has now shipped two guards into
@@ -54,7 +68,20 @@ vi.mock('../js/knowledge.js', async (importOriginal) => {
 
 import { setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
+import { EVENTS } from '../js/tr/events.js';
+import { seedFranchiseHistory } from './helpers/tr-castle-fixture.js';
+import { PROBE_CAST, PROBE_EP, forkRng, probeWorld } from './helpers/tr-probe-world.js';
 import roster from '../franchise_roster.json';
+
+// Side-effect imports: headless.js already pulls the whole pool in, but the
+// direct-execution arm reads EVENTS itself and must not depend on that.
+import '../js/tr/castle/trust.js';
+import '../js/tr/castle/suspicion.js';
+import '../js/tr/castle/grief.js';
+import '../js/tr/castle/cover.js';
+import '../js/tr/castle/romance.js';
+import '../js/tr/castle/callback.js';
+import '../js/tr/castle/testing.js';
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
@@ -80,6 +107,11 @@ describe('CASTLE EVENTS WRITE ZERO BELIEFS (the plan\'s #1 constraint)', () => {
     try {
       for (let i = 1; i <= GUARD_SEASONS; i++) {
         setPlayers(ROSTER);
+        // WITHOUT THIS LINE the whole callback family (11 events), five
+        // romance, two trust and one cover event never run inside this guard,
+        // and a belief write parked in any of them stays green. Same fixture
+        // as the 400-season sweep, deliberately.
+        seedFranchiseHistory(CAST);
         playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: i });
       }
     } finally {
@@ -103,14 +135,80 @@ describe('CASTLE EVENTS WRITE ZERO BELIEFS (the plan\'s #1 constraint)', () => {
       .toBe(0);
   });
 
+  // ── ARM 2: EXECUTE EVERY EVENT, NOT THE ONES A SEASON HAPPENED TO REACH ──
+  //
+  // Seasons are the realistic arm; they are not the complete one, and this
+  // guard's job is completeness. Here every registered event's fire() is run
+  // directly in the probe world at four rolls, so both the rare events and
+  // the far side of every fork execute. The coverage assertion below is what
+  // stops this from silently narrowing again: it is derived from EVENTS, so
+  // an event added tomorrow is covered the moment it is registered, or this
+  // test goes red naming it.
+  const SWEEP_ROLLS = [0.05, 0.35, 0.65, 0.95];
+
+  it('every registered event\'s fire() runs here, and none of them reaches learn()', () => {
+    const prevLimit = Error.stackTraceLimit;
+    Error.stackTraceLimit = 10;
+    learnStacks.length = 0;
+    const ran = new Set();
+    const inert = [];
+    try {
+      for (const ev of EVENTS) {
+        let produced = false;
+        for (const roll of SWEEP_ROLLS) {
+          probeWorld({ aTraitor: true, bTraitor: true, turret: true });
+          const ctx = { ep: PROBE_EP, window: ev.window, act: 'middle',
+            living: [...PROBE_CAST], actors: [PROBE_CAST[0], PROBE_CAST[1]] };
+          let out = null;
+          try { out = ev.fire(ctx, forkRng(roll)); } catch { /* recorded as inert below */ }
+          if (out != null) produced = true;
+        }
+        if (produced) ran.add(ev.id); else inert.push(ev.id);
+      }
+    } finally {
+      Error.stackTraceLimit = prevLimit;
+    }
+
+    // COVERAGE, asserted as a rule over the pool. An event whose fire() cannot
+    // be made to produce an outcome in the richest world this suite can build
+    // is either dead content or content this guard cannot see inside — both
+    // are reasons to go red, not to shrink the claim.
+    expect(inert, 'these registered events produced no outcome at any roll, so the belief gate never looked inside them: ' + inert.join(', '))
+      .toEqual([]);
+    expect(ran.size, 'coverage regressed below the registry').toBe(EVENTS.length);
+
+    const fromCastle = learnStacks.filter(hasCastleFrame);
+    const sample = fromCastle.slice(0, 2).join('\n---\n');
+    expect(fromCastle.length,
+      fromCastle.length + ' learn() calls came from a castle event while executing the whole pool:' + sample)
+      .toBe(0);
+  });
+
   it('no file under js/tr/castle/ imports js/knowledge.js', () => {
     const offenders = [];
-    for (const f of fs.readdirSync(CASTLE_DIR).filter(n => n.endsWith('.js'))) {
-      const src = fs.readFileSync(path.join(CASTLE_DIR, f), 'utf8');
+    // RECURSIVE. A subdirectory under js/tr/castle/ is the cheapest way to put
+    // a file outside a flat readdirSync, and it costs nothing to walk.
+    const files = [];
+    (function walk(dir) {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) walk(full);
+        else if (e.name.endsWith('.js')) files.push(full);
+      }
+    })(CASTLE_DIR);
+    expect(files.length, 'found no castle sources to scan — the path is wrong and this test is vacuous')
+      .toBeGreaterThan(5);
+    for (const full of files) {
+      const src = fs.readFileSync(full, 'utf8');
       // Strip line comments so the family headers, which discuss learn() and
       // knowledge.js by name on purpose, do not read as violations.
       const code = src.split('\n').filter(l => !l.trim().startsWith('//')).join('\n');
-      if (/from\s+['"][^'"]*knowledge\.js['"]/.test(code)) offenders.push(f);
+      // `from '...'` catches a static import or re-export; `import(` on its
+      // own catches the dynamic form, which the old `from`-only pattern let
+      // straight through.
+      if (/(from|import)\s*\(?\s*['"][^'"]*knowledge\.js['"]/.test(code)) {
+        offenders.push(path.relative(CASTLE_DIR, full));
+      }
     }
     expect(offenders, `castle modules importing the knowledge layer: ${offenders.join(', ')}`).toEqual([]);
   });

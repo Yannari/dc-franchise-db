@@ -273,3 +273,46 @@ describe('reading the ballots', () => {
     expect(suspicion('Heather', 'Owen', 7)).toBeLessThan(1);
   });
 });
+
+import { suspicionBoard, chooseBanishmentVote } from '../js/tr/deduction.js';
+import { setBond } from '../js/bonds.js';
+
+describe('turning belief into a vote', () => {
+  beforeEach(() => {
+    recordAlignment('Gwen', true, 1, 'selection');
+    ['Heather', 'Owen', 'Leshawna', 'Noah', 'Duncan'].forEach(n => recordAlignment(n, false, 1, 'selection'));
+    seedTraitorKnowledge(1);
+  });
+
+  it('ranks by belief, and never nominates the voter', () => {
+    learn('Heather', alignmentFactId('Gwen'),
+      { source: 't', sourceType: 'deduced', confidence: 0.6, ep: 2, rng: () => 0.01 });
+    const board = suspicionBoard('Heather', 2);
+    expect(board[0].name).toBe('Gwen');
+    expect(board.map(r => r.name)).not.toContain('Heather');
+  });
+
+  it('a strong bond protects somebody the evidence points at', () => {
+    learn('Heather', alignmentFactId('Gwen'),
+      { source: 't', sourceType: 'deduced', confidence: 0.6, ep: 2, rng: () => 0.01 });
+    const cold = suspicion('Heather', 'Gwen', 2);
+    setBond('Heather', 'Gwen', 9);
+    const warm = suspicion('Heather', 'Gwen', 2);
+    expect(warm, 'a close friend is suspected exactly as much as a stranger').toBeLessThan(cold);
+  });
+
+  it('a traitor never votes for a fellow traitor while a faithful is available', () => {
+    recordAlignment('Duncan', true, 1, 'selection');
+    seedTraitorKnowledge(1);
+    const pick = chooseBanishmentVote('Gwen', ['Duncan', 'Heather', 'Owen'], 2, seededRng(9));
+    expect(pick).not.toBe('Duncan');
+  });
+
+  it('with no evidence at all, the room does not converge', () => {
+    // Round one: nobody knows anything. Votes must scatter, or the format is
+    // decided before it starts.
+    const picks = ['Heather', 'Owen', 'Leshawna', 'Noah', 'Duncan']
+      .map((v, i) => chooseBanishmentVote(v, ['Gwen', 'Heather', 'Owen', 'Leshawna', 'Noah', 'Duncan'], 1, seededRng(i + 1)));
+    expect(new Set(picks).size, 'the whole room picked the same name on no information').toBeGreaterThan(1);
+  });
+});

@@ -21,7 +21,7 @@
 // case in every reader.
 import { gs } from '../core.js';
 import { learn, believes } from '../knowledge.js';
-import { alignmentFactId, livingTraitors } from './roles.js';
+import { alignmentFactId, livingTraitors, alignmentAt } from './roles.js';
 import { getBond } from '../bonds.js';
 
 export { alignmentFactId };
@@ -164,4 +164,37 @@ export function suspicion(observer, target, ep) {
   // reader ends up voting for the person they just cleared.
   if (b.valence === 'false') return 0;
   return Math.max(0, b.effectiveConfidence * bondResistance(observer, target));
+}
+
+/** Everyone `observer` could name, most suspected first. */
+export function suspicionBoard(observer, ep, candidates = null) {
+  const pool = (candidates || gs.activePlayers || []).filter(n => n !== observer);
+  return pool
+    .map(name => ({ name, score: suspicion(observer, name, ep) }))
+    .sort((a, b) => b.score - a.score);
+}
+
+/**
+ * Who does `voter` write down?
+ *
+ * The noise term is load-bearing in both directions. Without it a room with any
+ * shared evidence votes unanimously every single round, which no Round Table has
+ * ever done; and a room with NO evidence votes for whoever sorts first, which
+ * would decide episode one alphabetically.
+ */
+export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
+  const pool = (candidates || []).filter(n => n !== voter);
+  if (!pool.length) return null;
+
+  // A Traitor knows exactly who not to name, and will spend a Faithful to
+  // protect the pact — until there is nobody else left to spend.
+  const isTraitor = alignmentAt(voter, ep) === 'traitor';
+  const safe = isTraitor ? pool.filter(n => alignmentAt(n, ep) !== 'traitor') : pool;
+  const usable = safe.length ? safe : pool;
+
+  const scored = usable.map(name => ({
+    name,
+    score: suspicion(voter, name, ep) + rng() * 0.35,
+  })).sort((a, b) => b.score - a.score);
+  return scored[0].name;
 }

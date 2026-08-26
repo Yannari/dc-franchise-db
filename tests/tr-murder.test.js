@@ -61,13 +61,24 @@ describe('each traitor forms their own preference', () => {
       .toBeGreaterThan(0.5);
   });
 
-  it('a traitor will not name someone they are close to', () => {
-    const t = TRAITORS[0];
-    const cold = formPreference(t, 2, seededRng(9)).target;
-    world();
-    setBond(t, cold, 9);
-    const warm = formPreference(t, 2, seededRng(9)).target;
-    expect(warm, 'a close friend was named exactly as readily as a stranger').not.toBe(cold);
+  it('a traitor is measurably less likely to name someone they are close to', () => {
+    // Population, not one draw: a single seed flips only ~82% of the time
+    // (scatter can still outweigh a fresh +9 bond on any given night), so
+    // asserting one seed makes this test fail on roughly 1 in 5 alternate
+    // seeds even though the underlying preference is real.
+    let flipped = 0;
+    for (let s = 1; s <= 60; s++) {
+      world();
+      const t = TRAITORS[0];
+      const cold = formPreference(t, 2, seededRng(s)).target;
+      world();
+      setBond(t, cold, 9);
+      const warm = formPreference(t, 2, seededRng(s)).target;
+      if (warm !== cold) flipped++;
+    }
+    const rate = flipped / 60;
+    console.log(`[population] bonding +9 moves the pick off the original target: ${(rate * 100).toFixed(1)}%`);
+    expect(rate, 'raising the bond rarely changed who got named').toBeGreaterThan(0.6);
   });
 });
 
@@ -85,12 +96,35 @@ describe('the room resolves it socially, not correctly', () => {
   });
 
   it('writes the overrule to the season ledger, not just the return value', () => {
-    runConclave(3, seededRng(11));
-    if (gs.tr.conclaveTension.length) {
+    const r = runConclave(3, seededRng(11));
+    // Equality, unconditional — not "if there's anything to check". A
+    // conditional-on-nonempty assertion goes green if a future change stops
+    // writing the ledger at all, which is exactly the failure mode this test
+    // exists to catch. The ledger must equal what was returned, seed empty
+    // or not.
+    expect(gs.tr.conclaveTension).toEqual(r.overruled);
+    if (r.overruled.length) {
       expect(gs.tr.conclaveTension[0]).toHaveProperty('winner');
       expect(gs.tr.conclaveTension[0]).toHaveProperty('loser');
       expect(gs.tr.conclaveTension[0].ep).toBe(3);
     }
+  });
+
+  it('overrules actually happen — the ledger is not always empty', () => {
+    // Population: measured 97.5-ish% of seeds produce at least one overrule
+    // in this 3-traitor cast; bar set well below that with headroom so a
+    // regression that makes overrules rare (not just this exact seed) fails
+    // loudly instead of the assertion silently doing nothing.
+    let withOverrule = 0;
+    for (let s = 1; s <= 60; s++) {
+      world();
+      const r = runConclave(3, seededRng(s));
+      if (r.overruled.length) withOverrule++;
+    }
+    const rate = withOverrule / 60;
+    console.log(`[population] conclaves with at least one overrule: ${(rate * 100).toFixed(1)}%`);
+    expect(rate, 'nobody is ever overruled — the ledger would never get written')
+      .toBeGreaterThan(0.7);
   });
 
   it('the loudest traitor does not always win — that would be a calculation', () => {

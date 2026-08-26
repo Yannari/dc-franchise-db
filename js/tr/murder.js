@@ -35,10 +35,11 @@ function _pairScatter(a, b) {
 /**
  * One Traitor's private opinion about who should die tonight.
  *
- * `conviction` is how hard they will push it in the room, and it comes from
- * their own confidence rather than from whether they are right — a certain
- * fool argues harder than a hesitant strategist, which is the whole reason the
- * room can make a bad decision.
+ * `conviction` is the margin between their top pick and their runner-up, plus
+ * a per-read bonus — someone with a clear best answer pushes it harder than
+ * someone genuinely torn between two names. It is NOT "a fool argues loudest":
+ * that mechanism is real, but it lives in runConclave's social weight, where a
+ * high-`social` low-`read` Traitor can out-argue a quieter, better read.
  */
 export function formPreference(traitor, ep, rng = Math.random) {
   const targets = livingFaithfuls(ep).filter(n => n !== traitor);
@@ -52,13 +53,12 @@ export function formPreference(traitor, ep, rng = Math.random) {
     // table will never remove. A beloved, obviously-Faithful player can only
     // be taken this way — and a SUSPICIOUS Faithful is worth more alive,
     // because the table will spend itself on them for free.
-    const beloved = ((ts.social || 5) / 10);
-    const heat = _publicHeatAgainst(name, ep);      // how suspected they already are
-    let score = beloved * 1.1 - heat * 1.3;
-
+    const beloved = (ts.social || 5) / 10;
+    const heat = _publicHeatAgainst(name);      // how suspected they already are
     // The one who is onto them. Read off PUBLIC behaviour only — a Traitor
     // cannot see beliefs, only who has been saying their name out loud.
-    score += _accusedMe(traitor, name, ep) * 1.4;
+    const accused = _accusedMe(traitor, name);
+    let score = beloved * 1.1 - heat * 1.3 + accused * 1.4;
 
     // Never someone they visibly clashed with — the room connects it by
     // breakfast — and never someone they cannot bring themselves to name.
@@ -75,19 +75,28 @@ export function formPreference(traitor, ep, rng = Math.random) {
     const scatter = (_pairScatter(traitor, name) - 0.5) * 2 + (rng() - 0.5) * 2;
     score = score * (0.25 + read * 0.55) + scatter * (1.15 - read * 0.55);
 
-    return { name, score };
+    // Carry the raw terms alongside the score so _reasonFor can read what
+    // actually drove THIS pick instead of recomputing it — a recompute can
+    // silently disagree with the number that won, and Task 2 keys
+    // murderCost off this label.
+    return { name, score, beloved, heat, accused };
   }).sort((a, b) => b.score - a.score);
 
   const pick = scored[0];
   return {
     target: pick.name,
-    reason: _reasonFor(traitor, pick.name, ep),
+    reason: _reasonFor(pick),
     conviction: Math.max(0.1, Math.min(1, (pick.score - (scored[1]?.score ?? 0)) + read * 0.5)),
   };
 }
 
-/** How much heat this player is already carrying in public. */
-function _publicHeatAgainst(name, ep) {
+/**
+ * How much heat this player is already carrying in public. Looks at only the
+ * last two rounds, deliberately: recent heat is what makes them a decoy right
+ * now, and old heat that never re-fired has usually cooled off (the table
+ * cleared them, or moved on).
+ */
+function _publicHeatAgainst(name) {
   const rounds = gs.tr?.rounds || [];
   const recent = rounds.slice(-2);
   let votes = 0, ballots = 0;
@@ -101,8 +110,13 @@ function _publicHeatAgainst(name, ep) {
   return ballots ? votes / ballots : 0;
 }
 
-/** Has `name` publicly named `traitor` at a Round Table? Public information only. */
-function _accusedMe(traitor, name, ep) {
+/**
+ * Has `name` publicly named `traitor` at a Round Table? Public information
+ * only. Scans every round played, unlike the recency window above: unlike
+ * heat, being fingered by a specific person is not something a Traitor
+ * forgets just because a few episodes passed without a repeat.
+ */
+function _accusedMe(traitor, name) {
   const rounds = gs.tr?.rounds || [];
   let hits = 0;
   for (const r of rounds) {
@@ -112,21 +126,27 @@ function _accusedMe(traitor, name, ep) {
   return Math.min(1, hits * 0.5);
 }
 
-/** Why this name, in words the VP and the evidence layer can both read. */
-function _reasonFor(traitor, name, ep) {
-  if (_accusedMe(traitor, name, ep) > 0) return 'onto-me';
-  if (_publicHeatAgainst(name, ep) > 0.25) return 'wasted-decoy';  // a bad reason, deliberately reachable
-  const ts = pStats(name);
-  if ((ts.social || 5) >= 7) return 'beloved';
+/**
+ * Why this name, in words the VP and the evidence layer can both read.
+ * Reads the terms the scoring loop already computed for the winning pick
+ * rather than recomputing them, so the label can never disagree with the
+ * number that actually won.
+ */
+function _reasonFor(pick) {
+  if (pick.accused > 0) return 'onto-me';
+  if (pick.heat > 0.25) return 'wasted-decoy';  // a bad reason, deliberately reachable
+  if (pick.beloved >= 0.7) return 'beloved';
   return 'convenient';
 }
 
 /**
  * The argument, and its result.
  *
- * Resolved on social weight and conviction — NOT on whose read is better. The
- * best read in the room loses regularly, and that is the mechanism by which
- * the Traitors murder the wrong person and then have to live with each other.
+ * Resolved on social weight and conviction — NOT on whose read is better. This
+ * is where a loud, wrong Traitor can out-argue a quiet, correct one: a high
+ * `social` stat outweighs another Traitor's better-read conviction, so the
+ * best read in the room loses regularly and the Traitors murder the wrong
+ * person and then have to live with each other.
  */
 export function runConclave(ep, rng = Math.random) {
   const traitors = livingTraitors(ep);

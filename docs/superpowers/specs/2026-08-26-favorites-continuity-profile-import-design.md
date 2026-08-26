@@ -59,7 +59,7 @@ The roster record adds:
   "voice": "Compact behavioral and dialogue guide.",
   "profileSources": {
     "personality": [
-      { "label": "Total Drama Wiki — Bowie", "url": "https://...", "kind": "source-canon" }
+      { "label": "Total Drama Wiki — Bowie", "url": "https://totaldrama.fandom.com/wiki/Bowie", "kind": "source-canon" }
     ],
     "birthdate": [],
     "stats": [

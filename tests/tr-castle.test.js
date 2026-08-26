@@ -616,6 +616,235 @@ describe('cover: role overrides archetype', () => {
   });
 });
 
+// ═════════════════════════════════════════════════════════════════════
+// COVER'S TWO FORKS, PER-BRANCH (fix round 2, R5)
+// ═════════════════════════════════════════════════════════════════════
+//
+// cover.js's seven `*Score` constants were in no mutation list at all. Zeroing
+// them one at a time — the mutation that actually isolates a branch, rather
+// than flattening every branch to 0.5 and letting `floor(roll*N)` pick
+// positionally — left FIVE of the seven alive: `suspiciousScore` and
+// `slipScore` in cover-story-check, and all three of cover-alibi-crumbles.
+// The two tests above cover convincing and awkward and nothing else.
+//
+// cover-story-check's fork needs TWO rolls and not one, which is worth stating
+// because every other fork in this file gets away with one. Its bands are
+// convincing = c*0.5, awkward = 0.3 flat, suspicious = (1-c)*0.35,
+// slip = (1-c)*0.25, over a competence c clamped to [0.05, 0.95]. At c = 0.95
+// convincing runs to 59% of the total; at c = 0.05 slip does not start until
+// 73.5%. No single roll is inside both, so there is no value at which all four
+// branches are reachable by SOME stat line. Splitting the fork at its own
+// midpoint is the honest fix; pretending one roll covers it is not.
+describe('cover: the story-check fork, on the two branches nothing was testing', () => {
+  const CAST2 = ['Turncoat', 'Partner'];
+  function ctxFor(ep) { return { ep, window: 'evening', act: 'middle', living: CAST2, actors: CAST2 }; }
+
+  // competence = strat*.04 + bold*.03 + temp*.03, minus .25 for a nice
+  // archetype, clamped to [0.05, 0.95]. Villain throughout, so the clamp and
+  // the archetype penalty are not what is moving here — only the stats are.
+  function turncoatWith(stats) {
+    setup(CAST2, [makePlayer('Turncoat', 'villain', stats), makePlayer('Partner', 'floater')]);
+    recordAlignment('Turncoat', true, 1, 'selection');
+    return EVENTS.find(e => e.id === 'cover-story-check');
+  }
+
+  // ONE ROLL, TWO STAT LINES, for the bottom half of the fork.
+  const BAD_HALF_ROLL = 0.80;
+
+  it('half-competent, the check reads SUSPICIOUS: c 0.50, roll 0.80 lands in [0.647, 0.853]', () => {
+    const ev = turncoatWith({ strategic: 5, boldness: 5, temperament: 5 });
+    const result = ev.fire(ctxFor(4), scriptedRng([BAD_HALF_ROLL]));
+    expect(result.competence).toBeCloseTo(0.5, 5);
+    expect(result.branch).toBe('suspicious');
+    // The partner half-clocked it: suspicious is the first branch that costs
+    // a bond, which is what separates it from awkward above it.
+    expect(result.bondDelta).toBe(-1);
+  });
+
+  it('flatly incompetent, the SAME roll becomes a SLIP: c 0.05, roll 0.80 lands in [0.735, 1]', () => {
+    const ev = turncoatWith({ strategic: 0, boldness: 0, temperament: 0 });
+    const result = ev.fire(ctxFor(4), scriptedRng([BAD_HALF_ROLL]));
+    expect(result.competence).toBeCloseTo(0.05, 5);
+    expect(result.branch).toBe('slip');
+    // Twice the cost of being half-clocked: the partner had to watch it fall
+    // apart. Asserted so zeroing slipScore cannot be rescued by the branch
+    // name alone.
+    expect(result.bondDelta).toBe(-2);
+  });
+});
+
+describe('cover-alibi-crumbles forks three ways on the SAME roll', () => {
+  const CAST2 = ['Turncoat', 'Partner'];
+  function ctxFor(ep) { return { ep, window: 'after-table', act: 'middle', living: CAST2, actors: CAST2 }; }
+
+  // holds = strat*.04 + temp*.04 + .1; wobbles = .35 flat;
+  // collapses = (10-temp)*.05 + (10-strat)*.02. Unlike cover-story-check this
+  // fork DOES have a roll at which all three are reachable, because the flat
+  // middle band never shrinks: 0.5.
+  const ROLL = 0.5;
+
+  function crumbleWith(stats) {
+    setup(CAST2, [makePlayer('Turncoat', 'villain', stats), makePlayer('Partner', 'floater')]);
+    recordAlignment('Turncoat', true, 1, 'selection');
+    return EVENTS.find(e => e.id === 'cover-alibi-crumbles');
+  }
+
+  it('HOLDS: strategic 10 and temperament 10 — holds 0.90 of 1.25, so 0.5 is inside it', () => {
+    const ev = crumbleWith({ strategic: 10, temperament: 10 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
+    expect(result.branch).toBe('holds');
+    expect(result.bondDelta).toBe(0.5);
+  });
+
+  it('WOBBLES: the same roll at strategic 5 and temperament 5 — wobbles 0.35 of 1.20, at [0.417, 0.708]', () => {
+    const ev = crumbleWith({ strategic: 5, temperament: 5 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
+    expect(result.branch).toBe('wobbles');
+    expect(result.bondDelta).toBe(-0.5);
+  });
+
+  it('COLLAPSES: the same roll at strategic 0 and temperament 0 — collapses 0.70 of 1.15, from 0.391', () => {
+    const ev = crumbleWith({ strategic: 0, temperament: 0 });
+    const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
+    expect(result.branch).toBe('collapses');
+    expect(result.bondDelta).toBe(-2);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// THE THREE FORKS NOTHING WAS TESTING AT ALL (fix round 2, R5)
+// ═════════════════════════════════════════════════════════════════════
+//
+// R5 asked for cover.js, which had never been in a mutation list. Running the
+// same per-branch zeroing across every `*Score` in the pool — the honest way
+// to ask the question, rather than checking only the constants somebody had
+// already thought about — found three more forks with NO test on any branch:
+// susp-group-pressure-crack, testing-loyalty-oath and trust-secret-swap. Nine
+// live mutants between them. Same defect as cover's, found the same way, so
+// fixed here rather than written down for a later round.
+//
+// Each block states its own roll and the arithmetic that makes every branch
+// reachable at it, in the shape the header above established.
+describe('susp-group-pressure-crack forks on the PRESSURED player, three ways', () => {
+  const CAST2 = ['Presser', 'Pressed'];
+  function ctxFor(ep) { return { ep, window: 'evening', act: 'middle', living: [...CAST2, 'C', 'D', 'E'], actors: CAST2 }; }
+
+  // Reads pStats(actors[1]) — the one under pressure, not the one applying it.
+  // holds = temp*.05 + bold*.03 + .1; cracks = (10-temp)*.06 + .1;
+  // redirects = strat*.04 + soc*.03. All three contain 0.7:
+  //   temp/bold 10, strat/soc 0  -> holds .9 of 1.0        -> 0.7 is holds
+  //   everything 0               -> holds .1 of 0.8        -> 0.7 is cracks
+  //   everything 10              -> cracks ends at .588    -> 0.7 is redirects
+  const ROLL = 0.7;
+
+  function pressedWith(stats) {
+    setup(CAST2, [makePlayer('Presser', 'floater'), makePlayer('Pressed', 'floater', stats)]);
+    return EVENTS.find(e => e.id === 'susp-group-pressure-crack');
+  }
+
+  it('HOLDS: temperament 10 and boldness 10, nothing to redirect with', () => {
+    const ev = pressedWith({ temperament: 10, boldness: 10, strategic: 0, social: 0 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL]));
+    expect(result.branch).toBe('holds');
+    expect(result.bondDelta).toBe(0.5);
+  });
+
+  it('CRACKS: the same roll with everything at 0', () => {
+    const ev = pressedWith({ temperament: 0, boldness: 0, strategic: 0, social: 0 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL]));
+    expect(result.branch).toBe('cracks');
+    expect(result.bondDelta).toBe(-2);
+  });
+
+  it('REDIRECTS: the same roll, calm AND capable — strategic 10 and social 10 on top of the holds line', () => {
+    const ev = pressedWith({ temperament: 10, boldness: 10, strategic: 10, social: 10 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL]));
+    expect(result.branch).toBe('redirects');
+    expect(result.bondDelta).toBe(-1);
+  });
+});
+
+describe('testing-loyalty-oath forks on the player being ASKED, three ways', () => {
+  const CAST2 = ['Asker', 'Asked'];
+  function ctxFor(ep) { return { ep, window: 'evening', act: 'middle', living: [...CAST2, 'C'], actors: CAST2 }; }
+
+  // sincere = loy*.05 + bold*.03 + .1; reluctant = .35 flat;
+  // refuses = (10-loy)*.05 + (10-bold)*.015. 0.55 is inside all three:
+  //   loy/bold 10 -> sincere .9 of 1.25, ends at .720
+  //   loy/bold 5  -> sincere ends .426, reluctant ends .723
+  //   loy/bold 0  -> reluctant ends .409, refuses runs to 1
+  const ROLL = 0.55;
+
+  function askedWith(stats) {
+    setup(CAST2, [makePlayer('Asker', 'floater'), makePlayer('Asked', 'floater', stats)]);
+    setBond('Asker', 'Asked', 4);
+    return EVENTS.find(e => e.id === 'testing-loyalty-oath');
+  }
+
+  it('SINCERE: loyalty 10 and boldness 10 — the oath is taken without hesitating', () => {
+    const ev = askedWith({ loyalty: 10, boldness: 10 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL]));
+    expect(result.branch).toBe('sincere');
+    expect(result.bondDelta).toBe(2);
+  });
+
+  it('RELUCTANT: the same roll at loyalty 5 and boldness 5 — said, but visibly effortful', () => {
+    const ev = askedWith({ loyalty: 5, boldness: 5 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL]));
+    expect(result.branch).toBe('reluctant');
+    // Reluctant costs nothing and gains nothing on purpose — the beat is the
+    // hesitation, not a change in how the two feel. Asserted so a mutant that
+    // collapses reluctant into sincere cannot pass on the branch name alone.
+    expect(result.bondDelta).toBe(0);
+  });
+
+  it('REFUSES: the same roll at loyalty 0 and boldness 0 — a public refusal', () => {
+    const ev = askedWith({ loyalty: 0, boldness: 0 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL]));
+    expect(result.branch).toBe('refuses');
+    expect(result.bondDelta).toBe(-2);
+  });
+});
+
+describe('trust-secret-swap forks on the CONFIDANT, three ways', () => {
+  const CAST2 = ['Teller', 'Told'];
+  function ctxFor(ep) { return { ep, window: 'evening', act: 'middle', living: CAST2, actors: CAST2 }; }
+
+  // keep = loy*.06 + temp*.04; accident = (10-soc)*.05 + .15;
+  // deliberate = strat*.05 + (10-loy)*.05. 0.6 is inside all three:
+  //   loy/temp/soc 10, strat 0 -> keep 1.00 of 1.15, ends at .870
+  //   loy/temp 5, soc/strat 0  -> keep ends .357, accident ends .821
+  //   loy/temp 0, soc/strat 10 -> accident ends .130, deliberate runs to 1
+  const ROLL = 0.6;
+
+  function toldWith(stats) {
+    setup(CAST2, [makePlayer('Teller', 'floater'), makePlayer('Told', 'floater', stats)]);
+    setBond('Teller', 'Told', 4);
+    return EVENTS.find(e => e.id === 'trust-secret-swap');
+  }
+
+  it('KEPT: loyalty 10, temperament 10, social 10, strategic 0', () => {
+    const ev = toldWith({ loyalty: 10, temperament: 10, social: 10, strategic: 0 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL]));
+    expect(result.branch).toBe('kept');
+    expect(result.bondDelta).toBe(1);
+  });
+
+  it('LEAKED BY ACCIDENT: the same roll, middling loyalty with social 0 — it got out, nobody sold it', () => {
+    const ev = toldWith({ loyalty: 5, temperament: 5, social: 0, strategic: 0 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL]));
+    expect(result.branch).toBe('leakedAccident');
+    expect(result.bondDelta).toBe(-1);
+  });
+
+  it('LEAKED DELIBERATELY: the same roll, loyalty 0 and strategic 10 — it was spent, and it costs triple', () => {
+    const ev = toldWith({ loyalty: 0, temperament: 0, social: 10, strategic: 10 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL]));
+    expect(result.branch).toBe('leakedDeliberate');
+    expect(result.bondDelta).toBe(-3);
+  });
+});
+
 describe('romance: the liability-exposed flagship forks on the DOUBTING partner\'s own read', () => {
   const CAST2 = ['Doubter', 'Partner'];
   function ctxFor(ep) { return { ep, window: 'after-table', act: 'middle', living: CAST2, actors: CAST2 }; }

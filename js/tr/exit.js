@@ -8,7 +8,13 @@
 // The famous case falls out of the general rule rather than being written as a
 // special case: somebody recruited two nights ago has almost no loyalty to the
 // people who turned them, so their burn probability is naturally high, while a
-// Traitor of nine rounds' standing goes quietly. Nobody had to script that.
+// long-serving Traitor burns far less often (not never — measured ~27.5% at
+// tenure 8, against ~92% at tenure 1). The general tenure gradient is real on
+// its own (~30 points across the range); the `+0.35` amplification below is
+// what pushes the narrow fresh-recruit case the rest of the way. Nobody had to
+// script the fresh-recruit case as a special rule — but the amplification
+// carries most of that specific gap, and the docstring below says so rather
+// than pretending the base gradient alone would have been enough.
 import { gs } from '../core.js';
 import { pStats } from '../players.js';
 import { alignmentAt } from './roles.js';
@@ -40,7 +46,13 @@ export function exitSpeech(name, ep, rng = Math.random) {
   let target = null, conviction = 0;
   if (isTraitor) {
     const allies = (gs.activePlayers || []).filter(n => n !== name && alignmentAt(n, ep) === 'traitor');
-    target = allies[Math.floor(rng() * allies.length)] ?? null;
+    // Explicit, not `allies[Math.floor(rng() * 0)]` falling through to
+    // `undefined ?? null` — a last-Traitor-standing arm silently hit that
+    // NaN-index path and returned early at `if (!target)` below, which is
+    // exactly what hid the ally-presence confound in an earlier version of
+    // the tenure test (the "founder" arm had no living ally, so it measured
+    // "has an ally" vs "has none", not tenure).
+    target = allies.length ? allies[Math.floor(rng() * allies.length)] : null;
     conviction = 1;
   } else {
     const board = suspicionBoard(name, ep).filter(r => r.score > 0);
@@ -70,8 +82,11 @@ export function exitSpeech(name, ep, rng = Math.random) {
   if ((st.temperament || 5) <= 3) p += 0.12;        // some people simply cannot hold it
 
   const burns = rng() < Math.max(0.02, Math.min(0.95, p));
-  return {
-    burns, target, conviction,
-    text: burns ? `${name} names ${target} on the way out.` : `${name} says nothing useful.`,
-  };
+  // Null target/conviction on a non-burn so the contract is unambiguous: a
+  // speech that "says nothing useful" carries no name. Nothing consumes this
+  // yet, but a future caller reading `.target` without gating on `.burns`
+  // would otherwise attach a random innocent person to that inert text.
+  return burns
+    ? { burns, target, conviction, text: `${name} names ${target} on the way out.` }
+    : { burns, target: null, conviction: null, text: `${name} says nothing useful.` };
 }

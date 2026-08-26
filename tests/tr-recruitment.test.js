@@ -190,26 +190,31 @@ describe('the way somebody leaves', () => {
     gs.activePlayers = CAST.filter(n => n !== CAST[0]);
   });
 
-  it('a two-night recruit burns their recruiter far more often than a founder does', () => {
-    const burnRate = (setup) => {
+  it('burn probability drops with tenure, holding ally-presence fixed', () => {
+    // A 3-Traitor world so a banishment still leaves an ally alive in EVERY
+    // arm. The original version of this test compared a freshly-recruited
+    // CAST[5] (who has a living ally, CAST[1]) against CAST[1] as the sole
+    // survivor of a 2-Traitor world (no living ally at all) — that measured
+    // "has an ally" vs "has none", not tenure, and passed unchanged even with
+    // the tenure discount and the rare-state amplification both deleted from
+    // exit.js. Forcing CAST[1]'s tenure directly, with CAST[2] alive as its
+    // ally in both arms, isolates tenure as the only variable.
+    const burnRate = (tenureEp) => {
       let burns = 0;
       for (let s = 1; s <= 80; s++) {
-        world();
+        world(CAST.slice(0, 3));
         recordRound({ ep: 3, banished: CAST[0], banishedWasTraitor: true, murdered: null, ballots: [] });
         gs.activePlayers = CAST.filter(n => n !== CAST[0]);
-        const who = setup(s);
-        if (exitSpeech(who, 5, seededRng(s)).burns) burns++;
+        gs.tr.roleHistory.push({ name: CAST[1], from: 'traitor', to: 'traitor', ep: tenureEp, via: 'test-tenure' });
+        if (exitSpeech(CAST[1], 5, seededRng(s)).burns) burns++;
       }
       return burns / 80;
     };
-    const fresh = burnRate((s) => {
-      offerRecruitment(CAST[5], 4, () => 0.01, { mode: 'note' });
-      return CAST[5];
-    });
-    const founder = burnRate(() => CAST[1]);   // traitor since episode 1
-    console.log(`[population] fresh recruit burns ${(fresh * 100).toFixed(0)}%, ` +
-                `founder burns ${(founder * 100).toFixed(0)}%`);
-    expect(fresh, 'a two-night recruit is as loyal as a nine-round traitor').toBeGreaterThan(founder);
+    const fresh = burnRate(4);    // ep5 - ep4 = tenure 1
+    const founder = burnRate(1);  // ep5 - ep1 = tenure 4 (same tenure as the original founder arm)
+    console.log(`[population] tenure-1 burns ${(fresh * 100).toFixed(0)}%, ` +
+                `tenure-4 burns ${(founder * 100).toFixed(0)}%`);
+    expect(fresh, 'tenure made no difference to whether an ally-having Traitor burns').toBeGreaterThan(founder);
   });
 
   it('a burn names somebody real, and never the speaker', () => {
@@ -223,13 +228,44 @@ describe('the way somebody leaves', () => {
     }
   });
 
-  it('a faithful can leave angry too, and be wrong about who', () => {
-    let named = 0;
-    for (let s = 1; s <= 60; s++) {
-      world();
-      const sp = exitSpeech(CAST[7], 5, seededRng(s));
-      if (sp.target) named++;
-    }
-    expect(named, 'no faithful ever says anything on the way out').toBeGreaterThan(0);
+  it('a low-loyalty faithful burns far more often than a high-loyalty one, and can be wrong about who', () => {
+    // Same population-comparison shape as the recruitment-acceptance test
+    // above: exclude the actual Traitors, sort the rest by loyalty, and
+    // measure the two extremes across fresh worlds.
+    const TRAITOR_NAMES = CAST.slice(0, 2);
+    const byLoyalty = [...roster.players.slice(0, 10)]
+      .filter(p => !TRAITOR_NAMES.includes(p.name) && p.name !== CAST[0])
+      .sort((a, b) => (b.stats.loyalty || 5) - (a.stats.loyalty || 5));
+    const loyal = byLoyalty[0].name, disloyal = byLoyalty[byLoyalty.length - 1].name;
+
+    const measure = (name) => {
+      let burns = 0, wrong = 0;
+      for (let s = 1; s <= 80; s++) {
+        world();
+        recordRound({ ep: 3, banished: CAST[0], banishedWasTraitor: true, murdered: null, ballots: [] });
+        gs.activePlayers = CAST.filter(n => n !== CAST[0]);
+        const sp = exitSpeech(name, 5, seededRng(s));
+        if (sp.burns) {
+          burns++;
+          // No Faithful in this fixture ever forms real evidence (nothing
+          // calls ballotEvidence/murderEvidence), so every burn here is the
+          // no-evidence fallback guess. CAST[1] is the only living Traitor,
+          // so a target that isn't CAST[1] is a wrong accusation — the
+          // "wrong about who" this test's title names.
+          if (sp.target !== CAST[1]) wrong++;
+        }
+      }
+      return { rate: burns / 80, wrong };
+    };
+    const rLoyal = measure(loyal), rDisloyal = measure(disloyal);
+    console.log(`[population] ${loyal} (loyal) burns ${(rLoyal.rate * 100).toFixed(0)}%, ` +
+                `${disloyal} (disloyal) burns ${(rDisloyal.rate * 100).toFixed(0)}%`);
+    expect(rDisloyal.rate, 'a low-loyalty faithful is no angrier on the way out than a high-loyalty one')
+      .toBeGreaterThan(rLoyal.rate);
+    expect(rDisloyal.rate, 'measured population rate should clear a real floor, not just edge out the other arm')
+      .toBeGreaterThan(0.10);
+    expect(rLoyal.rate, 'a high-loyalty faithful should almost never burn anyone').toBeLessThan(0.10);
+    expect(rDisloyal.wrong, 'an evidence-free faithful should sometimes name the wrong person')
+      .toBeGreaterThan(0);
   });
 });

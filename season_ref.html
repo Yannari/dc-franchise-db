@@ -437,8 +437,8 @@
 window._showsReady = new Promise(resolve => { window._showsResolve = resolve; });
 </script>
 <script type="module">
-  import { parseSeasonRef, seasonId, DEFAULT_FORMAT } from './js/shows.js';
-  window.shows = { parseSeasonRef, seasonId, DEFAULT_FORMAT };
+  import { parseSeasonRef, seasonId, showName, DEFAULT_FORMAT } from './js/shows.js';
+  window.shows = { parseSeasonRef, seasonId, showName, DEFAULT_FORMAT };
   /* The wiki tab is an ARTICLE, and the site already has an article
      stylesheet — the one the character pages use. Borrowing it rather than
      writing a second one is the whole reason the two read as the same
@@ -451,9 +451,8 @@ window._showsReady = new Promise(resolve => { window._showsResolve = resolve; })
 </script>
 
 <script>
-/* The registry is handed to this classic script as a narrow surface; these are
-   the display names it needs and nothing more. */
-const SHOW_NAMES={'total-drama':'Total Drama','big-brother':'Big Brother'};
+/* Display names come through window.shows above. The copy that used to sit
+   here headed an unlisted show's page with its slug. */
 const SEASON_COLORS=['#60a5fa','#a78bfa','#34d399','#f59e0b','#fb923c','#f472b6','#38bdf8','#fbbf24','#e879f9'];
 
 function slugify(n){return(n||'').toLowerCase().replace(/[^a-z0-9]/g,'-');}
@@ -566,7 +565,7 @@ function buildRecords(season){
        Drama keeps the bare form every bookmark and heading already uses. */
     const isDefaultShow = !ref.format || ref.format === shows.DEFAULT_FORMAT;
     const showPrefix = isDefaultShow ? 'S' : shows.seasonId(ref.format, sn).split('-')[0].toUpperCase();
-    const seasonLabel = isDefaultShow ? `Season ${sn}` : `${SHOW_NAMES[ref.format] || ref.format} ${sn}`;
+    const seasonLabel = isDefaultShow ? `Season ${sn}` : `${shows.showName(ref.format)} ${sn}`;
     document.title = showPrefix + sn + ' — ' + s.title;
     document.getElementById('footer-sub').textContent=s.title+' • '+s.castSize+' players';
 

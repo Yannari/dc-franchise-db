@@ -474,7 +474,7 @@ describe('the roster owns voice and profile provenance', () => {
   });
 
   it('carries both fields through the Studio draft and save entry', () => {
-    expect(studio).toMatch(/import\s*\{\s*selectProfileVoice\s*\}\s*from\s*['"]\.\/profile-import\.js['"]/);
+    expect(studio).toMatch(/import\s*\{[^}]*selectProfileVoice[^}]*\}\s*from\s*['"]\.\/profile-import\.js['"]/);
     expect(studio).toMatch(/profileSources:\s*\{\}/);
     expect(studio).toMatch(/voice:\s*d\.voice/);
     expect(studio).toMatch(/profileSources:\s*d\.profileSources/);

@@ -6,7 +6,10 @@ A Total Drama season in which each tribe carries one to three **coaches**:
 franchise winners and finalists who advise, train and manipulate, but do not
 compete. Their tribes are made of vets who underperformed and of newbies. A
 coach's goal is to survive to the merge, where they finally become a full
-player.
+player — but what they do on the way is not one thing. Influence is their only
+currency, and whether they spend it on controlling the tribe, winning
+challenges, or simply enjoying themselves is set by their archetype. See
+"Influence, and What a Coach Wants".
 
 The twist exists to create a kind of player the engine has never had: someone
 with real influence and no ballot, whose danger is proportional to how well
@@ -290,6 +293,82 @@ plays favourites has more to lose by doing it than an unknown one would.
 
 That is the cleanest expression of the twist's whole thesis: the more
 accomplished the coach, the further there is to fall.
+
+## Influence, and What a Coach Wants
+
+A coach has no ballot, so **influence is their vote**. Everything else in this
+design is a way of building it or spending it:
+
+```
+influence = banked training  (what they are owed)
+          + bonds            (who likes them)
+          + awe              (who is impressed by them)
+          + alliance standing (who is counting on them)
+```
+
+### Coaches form alliances
+
+Coaches may join and found alliances like anybody else. Membership means
+something specific for them: they bring no vote, they bring **their protégés'
+votes**, plus information and cover. A coach with three loyal protégés is worth
+more to an alliance than a contestant with one ballot — and is priced
+accordingly by the people who need him.
+
+### What they want with it
+
+The engine has been treating "survive to the merge" as every coach's goal. It
+is not. **What a coach spends influence on is set by archetype and stats**, and
+the spread is most of what makes two coaches on one tribe different:
+
+| agenda | archetypes | spends influence on |
+|---|---|---|
+| **Control** | mastermind, schemer, villain | running the tribe through their protégés |
+| **Win** | challenge-beast | making the tribe unbeatable, and nothing else |
+| **Support** | hero, loyal-soldier, social-butterfly, showmancer | genuinely helping; here to enjoy it |
+| **Survive** | goat, floater, underdog | whatever keeps them past the next vote |
+| **Disrupt** | chaos-agent, hothead, wildcard | whatever is most interesting this episode |
+
+Neutrals shift toward Control only at strategic ≥ 6 and loyalty ≤ 4, which is
+the project's existing scheming gate rather than a new rule.
+
+### The symmetric trap
+
+The agendas are not balanced, and deliberately so:
+
+- A **Control** coach builds real influence and can defend himself at a
+  vote — but visible control makes him the tribe's biggest threat, and the
+  strategic contestants read his fame as a résumé rather than a reason to
+  admire him.
+- A **Support** coach never becomes a threat and nobody wants him gone — but
+  he has built no influence, so when the vote does come he cannot stop it.
+
+Both die, for opposite reasons. Playing safe is not safe; it is a different
+way of losing. That is the strategic spine of the twist, and it means "was this
+a good coach" is not answerable from stats alone.
+
+### Betrayal, and who gets blamed for it
+
+`detectBetrayals()` reads the ballot: a betrayal is an ally's name written by
+an ally. **A coach never writes a name**, so the detector as built cannot see a
+coach betray anyone.
+
+That is not a gap to patch. It is the twist's best emergent property.
+
+A coach betrays by steering protégés against an ally, by poaching, by handing
+an advantage to the wrong person, or by breaking a coach-to-coach pact. None of
+it appears on a ballot. What appears on the ballot is **the protégé's name,
+written where the alliance did not expect it** — so the existing betrayal
+machinery, working exactly as designed, blames the contestant who cast the vote
+rather than the coach who caused it.
+
+The repository already knows this failure shape: undetected flips blame the
+wrong person. Here it is not a failure, it is the mechanic. A coach can burn an
+alliance and have a protégé take the fall, and the protégé may not know it
+happened.
+
+Detection of the coach requires something the ballot cannot supply — high
+intuition, a witness to the session, or a second protégé comparing notes — and
+should be rare enough that most of it goes unpunished.
 
 ## Advantages: One Law
 

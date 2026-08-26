@@ -2,7 +2,8 @@
 // filenames, storage keys, every sentence a screen generates about a season —
 // comes from this entry, so it is worth asserting rather than assuming.
 import { describe, expect, it } from 'vitest';
-import { SHOWS } from '../js/shows.js';
+import { readFileSync } from 'node:fs';
+import { SHOWS, formatPrefix, showShort, showIcon, showAccent } from '../js/shows.js';
 
 describe('the traitors registry entry', () => {
   it('is registered with the prefix every filename depends on', () => {
@@ -57,5 +58,35 @@ describe('the traitors registry entry', () => {
     // The other two shows must NOT gain this behaviour.
     expect(SHOWS['total-drama'].historyFromLedger).toBeFalsy();
     expect(SHOWS['big-brother'].historyFromLedger).toBeFalsy();
+  });
+});
+
+describe('identity lives only in the registry', () => {
+  it('exposes every identity field a screen needs', () => {
+    expect(formatPrefix('traitors')).toBe('tr');
+    expect(showShort('traitors')).toBe('TR');
+    expect(showIcon('traitors')).toBe(SHOWS['traitors'].emoji);
+    expect(typeof showAccent('traitors')).toBe('string');
+    // An unknown format must not throw, and must not silently be Total Drama.
+    expect(() => showIcon('nope')).not.toThrow();
+    expect(showIcon('nope')).not.toBe(SHOWS['total-drama'].emoji);
+    expect(showShort('nope')).not.toBe(SHOWS['total-drama'].short);
+  });
+
+  // Each of these files held its own copy of the show list. Every one was a
+  // place a third show could be forgotten, and none of them errored — they
+  // described the new show as Total Drama.
+  const COLLAPSED = [
+    'player.html', 'js/wiki.js', 'js/wiki-view.js', 'season_ref.html',
+    'current-season.html', 'compare.html', 'franchise.html', 'js/alumni.js',
+  ];
+
+  it.each(COLLAPSED)('%s holds no show list of its own', (file) => {
+    // Repo-root-relative, the idiom the rest of tests/ uses: vitest runs from
+    // the repo root, and import.meta.url does not survive its transform here.
+    const src = readFileSync(file, 'utf8');
+    // An object literal keyed by show slug is the shape being banned.
+    expect(src, `${file} still maps show identity locally`)
+      .not.toMatch(/['"]total-drama['"]\s*:/);
   });
 });

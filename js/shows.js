@@ -13,7 +13,7 @@
 
 export const SHOWS = {
   'total-drama': {
-    prefix: 'td', name: 'Total Drama', short: 'TD', emoji: '🎬',
+    prefix: 'td', name: 'Total Drama', short: 'TD', emoji: '🎬', accent: '#7d4cff',
     // What this show calls its people, its rounds and leaving. Every page and
     // prompt that describes a season needs these four words, and hardcoding
     // them is how a Total Drama season came to be told it had houseguests who
@@ -56,7 +56,7 @@ export const SHOWS = {
     ],
   },
   'big-brother': {
-    prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹',
+    prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹', accent: '#38bdf8',
     words: { player: 'houseguest', players: 'houseguests', round: 'Week', exit: 'evicted',
       comp: 'competition', comps: 'competition wins', compBeast: 'comp beast', compWon: 'competitions',
       audienceAward: "America's Favourite Houseguest" },
@@ -89,7 +89,7 @@ export const SHOWS = {
   //    show — the two things `isReturnee` has safely meant at once for fifteen
   //    seasons. `historyFromLedger` below is that split.
   'traitors': {
-    prefix: 'tr', name: 'The Traitors', short: 'TR', emoji: '🗡️',
+    prefix: 'tr', name: 'The Traitors', short: 'TR', emoji: '🗡️', accent: '#b91c3c',
     words: { player: 'player', players: 'players', round: 'Episode', exit: 'banished',
       comp: 'mission', comps: 'missions won', compBeast: 'mission asset',
       compWon: 'missions' },
@@ -157,6 +157,19 @@ export function showWords(format) {
 export function showName(format) {
   return SHOWS[format]?.name || SHOWS[DEFAULT_FORMAT].name;
 }
+
+// Identity accessors. These exist so that no screen has to hold its own copy of
+// the show list. Eight files did, none of them errored, and every one was a
+// place a third show would have been drawn as Total Drama.
+//
+// Unknown formats return a neutral value rather than falling back to the
+// default show: being told nothing is recoverable, being told the wrong show is
+// not. formatPrefix() above is the deliberate exception and keeps its Total
+// Drama fallback, because for a PREFIX an absent format really is Total Drama —
+// that is the bare-integer rule the whole site depends on.
+export function showShort(fmt)  { return SHOWS[fmt]?.short  || ''; }
+export function showIcon(fmt)   { return SHOWS[fmt]?.emoji  || ''; }
+export function showAccent(fmt) { return SHOWS[fmt]?.accent || 'var(--accent)'; }
 
 /** "td-14" — the string form used in URLs and cross-references. */
 export function seasonId(format, number) {

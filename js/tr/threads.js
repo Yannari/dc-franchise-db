@@ -22,9 +22,33 @@
 // fragmented into an unreachable duplicate.
 import { gs } from '../core.js';
 
-/** Deterministic id: same parties, same kind, same opening episode → same thread. */
-function _id(kind, parties, ep) {
-  return `${kind}:${[...parties].sort().join('|')}:${ep}`;
+/**
+ * Deterministic id: same parties, same kind, same opening episode → same id.
+ *
+ * WHICH IS A COLLISION, NOT AN IDENTITY, IF THAT STORY HAPPENS TWICE IN ONE
+ * ROUND (whole-plan review, finding 8). Close a suspicion thread on A and B at
+ * episode 5 and open another one on A and B at episode 5 — two same-family
+ * events landing on the same pair in the same round, where the first resolves
+ * — and both entries key `suspicion:A|B:5`. `advanceThread`, `closeThread` and
+ * `abandonThread` all resolve an id with `threads.find(x => x.id === id)`,
+ * which hits the CLOSED one first and bails on `state !== 'open'`, so the new
+ * thread is unadvanceable from the moment it is created: every later beat that
+ * tried to continue it silently did nothing. Reachable in a real season, and
+ * the test that reopens a thread deliberately did it at episode 9, stepping
+ * round the one case that breaks.
+ *
+ * `taken` is the set of ids already in play. A second thread with the same
+ * natural key gets `#2`, a third `#3`. Still deterministic — it depends only
+ * on how many such threads already exist, which is itself deterministic — and
+ * the ordinary case, one thread per (kind, parties, ep), is untouched, so no
+ * existing id changes shape.
+ */
+function _id(kind, parties, ep, taken) {
+  const base = `${kind}:${[...parties].sort().join('|')}:${ep}`;
+  if (!taken || !taken.has(base)) return base;
+  let n = 2;
+  while (taken.has(`${base}#${n}`)) n++;
+  return `${base}#${n}`;
 }
 
 function _partyKey(parties) {
@@ -64,7 +88,7 @@ export function openThread(kind, parties, ep, seed = '') {
     return existing;
   }
 
-  const id = _id(kind, parties, ep);
+  const id = _id(kind, parties, ep, new Set(gs.tr.threads.map(t => t.id)));
   const t = { id, kind, parties: [...parties], openedEp: ep, lastEp: ep,
     state: 'open', beats: [{ ep, eventId: seed, note: seed }], heat: 1, outcome: null };
   gs.tr.threads.push(t);

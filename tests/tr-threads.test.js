@@ -146,6 +146,39 @@ describe('a thread accumulates', () => {
     expect(gs.tr.threads.filter(x => x.kind === 'suspicion').length).toBe(2);
   });
 
+  // ── THE SAME EPISODE, WHICH IS THE CASE THAT BROKE ──
+  //
+  // The test above reopens at episode 9, which sidesteps the bug entirely: the
+  // id carries the opening episode, so 2 and 9 differ and nothing collides.
+  // Close and reopen in the SAME round — two same-family events landing on one
+  // pair in one round, the first of which resolves — and both threads keyed
+  // `suspicion:A|B:5`. Every id lookup (`advanceThread`, `closeThread`,
+  // `abandonThread`) uses `threads.find`, which returns the CLOSED one, so the
+  // new thread was unadvanceable from birth and every beat aimed at it
+  // silently did nothing.
+  it('close and reopen in the SAME episode gives two threads with two ids, and the new one advances', () => {
+    const t = openThread('suspicion', [CAST[0], CAST[1]], 5, 'noticed something');
+    closeThread(t.id, 5, 'denied-convincingly');
+    const reopened = openThread('suspicion', [CAST[0], CAST[1]], 5, 'and then noticed something else');
+
+    expect(reopened.id).not.toBe(t.id);
+    expect(gs.tr.threads.filter(x => x.kind === 'suspicion')).toHaveLength(2);
+
+    // The whole point: the new thread is usable. Under the collision this
+    // returned null, because find() reached the closed thread first.
+    const advanced = advanceThread(reopened.id, 6, 'and would not let it go');
+    expect(advanced, 'advanceThread returned null — the id resolved to the closed thread')
+      .not.toBeNull();
+    expect(advanced.id).toBe(reopened.id);
+    expect(advanced.beats).toHaveLength(2);
+
+    // And the closed one is still closed, with its ending intact.
+    const closed = gs.tr.threads.find(x => x.id === t.id);
+    expect(closed.state).toBe('closed');
+    expect(closed.outcome).toBe('denied-convincingly');
+    expect(closed.beats).toHaveLength(1);
+  });
+
   it('a revive writes residue for the revival episode, for both parties', () => {
     const t = openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
     advanceThread(t.id, 3, 'first follow-up');

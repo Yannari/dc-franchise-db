@@ -4735,6 +4735,25 @@
         "temperament": 2
       },
       "profileSources": {}
+    },
+    {
+      "name": "Manu",
+      "slug": "manu",
+      "gender": "nb",
+      "sexuality": "straight",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 7,
+        "endurance": 6,
+        "mental": 3,
+        "social": 7,
+        "strategic": 3,
+        "loyalty": 8,
+        "boldness": 4,
+        "intuition": 6,
+        "temperament": 7
+      },
+      "profileSources": {}
     }
   ]
 }

@@ -43,9 +43,33 @@ import { runWindow, startRoundBudget } from './events.js';
  * is a user-facing replay handle, and raising the season count on contiguous
  * seeds would only add correlated samples of the same Traitor.
  */
-function rngFor(seed) {
+export function rngFor(seed) {
   let s = Math.imul((seed >>> 0) || 1, 2654435761) >>> 0;
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+}
+
+/**
+ * The castle layer's own stream — round budgets today, and (once Tasks 5/6
+ * ship content) every pickEvent() roll a window makes — kept OFF the game's
+ * own rng on purpose.
+ *
+ * WHY THIS CANNOT WAIT UNTIL IT COSTS SOMETHING. Right now the pool is
+ * empty and isolating this stream changes nothing observable — but from the
+ * moment a single castle event is registered, runWindow will draw several
+ * pickEvent() rolls a round. If those rolls came out of the SAME stream the
+ * murder, vote and ballots are drawn from, then registering one new event or
+ * nudging one weight would shift every later draw's position in that stream
+ * and silently re-roll every murder, ballot and banishment for the rest of
+ * every season — the placebo control in tr-calibration.test.js exists
+ * specifically to prove the engine deduces rather than merely believes, and
+ * it cannot do that if a content change can move its numbers on its own.
+ * This is the same shape of bug `rngFor`'s own doc comment describes for an
+ * unhashed seed, just triggered by editing content instead of picking a
+ * seed. `_seedStartingBonds` already does this for the bond fixture, keyed
+ * off a DIFFERENT multiplier so the two derived streams do not correlate.
+ */
+function castleRngFor(seed) {
+  return rngFor((seed * 40503) >>> 0 || 13);
 }
 
 /**
@@ -162,6 +186,9 @@ function _night(ep, rng) {
 export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds = 40,
   evidence = ballotEvidence } = {}) {
   const rng = rngFor(seed);
+  // The narrative layer's OWN stream — see castleRngFor's doc comment for why
+  // round budgets (and later, window draws) must never share the game rng.
+  const castleRng = castleRngFor(seed);
   // gs is null until a season exists (js/core.js), so the harness creates one.
   setGs({ bonds: {}, activePlayers: [...cast] });
   gs.tr = initTraitorsState();
@@ -189,15 +216,15 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // that does not happen) and after-table (which reacts to a reveal cascade
   // that did not run) are skipped; night runs after the conclave same as
   // always.
-  startRoundBudget(rng);
+  startRoundBudget(castleRng, 5); // 5 windows this round: no evening/after-table without a table
   const castle1 = [
-    ...runWindow('dawn', ep, rng),
-    ...runWindow('morning', ep, rng),
-    ...runWindow('journey-out', ep, rng),
-    ...runWindow('journey-back', ep, rng),
+    ...runWindow('dawn', ep, castleRng),
+    ...runWindow('morning', ep, castleRng),
+    ...runWindow('journey-out', ep, castleRng),
+    ...runWindow('journey-back', ep, castleRng),
   ];
   const n1 = _night(ep, rng);
-  castle1.push(...runWindow('night', ep, rng));
+  castle1.push(...runWindow('night', ep, castleRng));
   log.push({ ep, banished: null, wasTraitor: null, ...n1,
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
 
@@ -207,13 +234,15 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     const fa = livingFaithfuls(ep).length;
     if (!tr || alive.length <= 3 || fa <= tr) break;
 
-    // A fresh 4-8 spending money for this round's seven windows. Windows
-    // slot around the evidence/table/night contract below WITHOUT disturbing
-    // it — see that comment for why the three calls it wraps cannot reorder.
-    startRoundBudget(rng);
+    // A fresh 4-8 spending money for this round's seven windows, drawn from
+    // the castle layer's own stream (never the game rng — see castleRngFor).
+    // Windows slot around the evidence/table/night contract below WITHOUT
+    // disturbing it — see that comment for why the three calls it wraps
+    // cannot reorder.
+    startRoundBudget(castleRng, 7);
     const castleEvents = [
-      ...runWindow('dawn', ep, rng),
-      ...runWindow('morning', ep, rng),
+      ...runWindow('dawn', ep, castleRng),
+      ...runWindow('morning', ep, castleRng),
     ];
 
     // ORDER IS THE CONTRACT. Both evidence sources read the round that just
@@ -228,16 +257,16 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // itself would run — there is no mission engine yet (a later plan builds
     // one), so these two windows simply run as social scenes with nothing
     // mechanical behind them, same as they do on night one.
-    castleEvents.push(...runWindow('journey-out', ep, rng), ...runWindow('journey-back', ep, rng));
-    castleEvents.push(...runWindow('evening', ep, rng));
+    castleEvents.push(...runWindow('journey-out', ep, castleRng), ...runWindow('journey-back', ep, castleRng));
+    castleEvents.push(...runWindow('evening', ep, castleRng));
     const r = runRoundTable(ep, rng);
     if (!r) break;   // an empty castle: nothing left to banish
     // The reveal cascade has already run inside runRoundTable by the time
     // after-table fires — that is the whole point of the window: someone
     // was just revealed.
-    castleEvents.push(...runWindow('after-table', ep, rng));
+    castleEvents.push(...runWindow('after-table', ep, castleRng));
     const night = _night(ep, rng);
-    castleEvents.push(...runWindow('night', ep, rng));
+    castleEvents.push(...runWindow('night', ep, castleRng));
     // aliveAtVote/traitorsAtVote are the population as it stood when the ballots
     // were cast, and they are DATA, not behaviour — nothing in the engine reads
     // them. They exist because the null hypothesis for a banishment is not a

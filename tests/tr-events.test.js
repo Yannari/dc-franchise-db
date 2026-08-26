@@ -11,12 +11,21 @@ import { initTraitorsState } from '../js/tr/state.js';
 import { openThread } from '../js/tr/threads.js';
 import { registerEvent, eligible, pickEvent, validateRegistry, EVENTS, _resetRegistry,
   runWindow, startRoundBudget } from '../js/tr/events.js';
+import { rngFor } from '../js/tr/headless.js';
 import roster from '../franchise_roster.json';
 
 const CAST = roster.players.slice(0, 8).map(p => p.name);
 function seededRng(seed = 1) {
   let s = seed >>> 0;
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+}
+// A generator that returns EXACTLY the scripted sequence, cycling — for
+// tests that need a specific, reproducible actor-selection outcome from
+// runWindow's internal _sceneActors draws rather than whatever an arbitrary
+// seed happens to produce.
+function scriptedRng(values) {
+  let i = 0;
+  return () => { const v = values[i % values.length]; i++; return v; };
 }
 function ctxFor(ep = 3, window = 'evening') {
   return { ep, window, act: ep <= 3 ? 'early' : ep <= 7 ? 'middle' : 'late',
@@ -284,7 +293,7 @@ describe('runWindow: the seven social windows around the four beats', () => {
   });
 
   it('caps a round at 4-8 total castle events across all seven windows, never per window', () => {
-    // A single event, eligible in every window, with no cooldown at all
+    // A single event per window, eligible always, with no cooldown at all
     // (oncePerSeason: false, tiny windows) so the ONLY thing that can stop
     // it firing over and over is the round budget itself.
     const windows = ['dawn', 'morning', 'journey-out', 'journey-back', 'evening', 'after-table', 'night'];
@@ -293,7 +302,13 @@ describe('runWindow: the seven social windows around the four beats', () => {
         cooldown: { event: 0, player: 0, pair: 0 },
         weight: () => 5, fire: () => ({ ok: true }) });
     }
-    const rng = seededRng(9);
+    // seededRng(9) is a BARE unhashed LCG whose first output barely moves
+    // between seeds — exactly the defect that once invalidated an entire
+    // calibration (see rngFor's doc comment in headless.js). Asserting
+    // 4 <= total <= 8 against one draw from it only ever observed a single
+    // value; it never exercised the range. rngFor(seed) is the project's
+    // own hashed generator and is used here for that reason.
+    const rng = rngFor(9);
     const budget = startRoundBudget(rng);
     expect(budget.total).toBeGreaterThanOrEqual(4);
     expect(budget.total).toBeLessThanOrEqual(8);
@@ -304,6 +319,133 @@ describe('runWindow: the seven social windows around the four beats', () => {
     expect(allFired.length).toBeGreaterThanOrEqual(4);
     expect(allFired.length).toBeLessThanOrEqual(8);
     expect(allFired.length).toBe(gs.tr.roundBudget.used);
+  });
+
+  it('the round budget genuinely spans 4-8 across many seeds, not just one value', () => {
+    // Measured: with the unhashed seededRng(9), startRoundBudget returned
+    // total=5 for every seed 1..12 — the same shape of bug the hashed
+    // rngFor exists to prevent (see its doc comment in headless.js). This
+    // draws from a hashed stream across many independent seeds and checks
+    // the FULL range was actually observed, not merely bounded.
+    const seen = new Set();
+    for (let seed = 1; seed <= 60; seed++) {
+      const budget = startRoundBudget(rngFor(seed));
+      seen.add(budget.total);
+    }
+    for (const v of [4, 5, 6, 7, 8]) {
+      expect(seen.has(v), `budget total ${v} was never observed across 60 hashed seeds`).toBe(true);
+    }
+  });
+
+  it('spreads across all seven windows over many rounds — no window is systematically starved', () => {
+    // A per-window cap of 3 against a minimum round total of 4 is
+    // first-come-first-served: dawn and morning alone can spend the entire
+    // round, and evening — where vote pitches live — sees zero, every round
+    // that draws a low total. This asserts the actual behaviour instead of
+    // the comment's claim: every window must fire in a real, non-token
+    // fraction of rounds, not zero.
+    const windows = ['dawn', 'morning', 'journey-out', 'journey-back', 'evening', 'after-table', 'night'];
+    const fires = Object.fromEntries(windows.map(w => [w, 0]));
+    const TRIALS = 150;
+    for (let seed = 1; seed <= TRIALS; seed++) {
+      setPlayers(roster.players.slice(0, 8));
+      setGs({ bonds: {}, activePlayers: [...CAST] });
+      gs.tr = initTraitorsState();
+      _resetRegistry();
+      for (const w of windows) {
+        registerEvent({ id: `always-${w}`, family: 'trust', window: w,
+          cooldown: { event: 0, player: 0, pair: 0 },
+          weight: () => 5, fire: () => ({ ok: true }) });
+      }
+      const rng = rngFor(seed);
+      startRoundBudget(rng, 7);
+      for (const w of windows) {
+        if (runWindow(w, 5, rng).length > 0) fires[w]++;
+      }
+    }
+    // eslint-disable-next-line no-console
+    console.log(`window fire rate over ${TRIALS} rounds: ${JSON.stringify(fires)}`);
+    for (const w of windows) {
+      expect(fires[w], `"${w}" fired in 0/${TRIALS} rounds — systematically starved`).toBeGreaterThan(0);
+    }
+    // The two windows the format leans on hardest for the vote (evening
+    // campaigns for it, after-table reacts to the reveal) must clear a real
+    // bar, not a token one-in-a-hundred fluke.
+    expect(fires.evening / TRIALS).toBeGreaterThan(0.2);
+    expect(fires['after-table'] / TRIALS).toBeGreaterThan(0.2);
+  });
+
+  it('caps a single window call at a fair share of what remains, not a flat number', () => {
+    // Deterministic, not seeded: install the budget by hand so the cap
+    // formula itself is what's under test, independent of what
+    // startRoundBudget happens to draw.
+    gs.tr.roundBudget = { total: 8, used: 0, windowsLeft: 7 };
+    registerEvent({ id: 'always-dawn', family: 'trust', window: 'dawn',
+      cooldown: { event: 0, player: 0, pair: 0 }, weight: () => 5, fire: () => ({ ok: true }) });
+    const fired = runWindow('dawn', 3, seededRng(1));
+    // ceil(8 remaining / 7 windows left) = 2 — dawn may take its fair share,
+    // never the whole pot.
+    expect(fired.length).toBe(2);
+    expect(gs.tr.roundBudget.used).toBe(2);
+    expect(gs.tr.roundBudget.windowsLeft).toBe(6);
+  });
+
+  it('never overspends the round total by even one event', () => {
+    // total=2, windowsLeft=1 (the last window of the round): fair-share cap
+    // is exactly 2 (ceil(2/1)). This is the boundary case for the cap
+    // formula itself — it must exactly cover, not exceed, what's left.
+    gs.tr.roundBudget = { total: 2, used: 0, windowsLeft: 1 };
+    registerEvent({ id: 'always-night', family: 'trust', window: 'night',
+      cooldown: { event: 0, player: 0, pair: 0 }, weight: () => 5, fire: () => ({ ok: true }) });
+    const fired = runWindow('night', 3, seededRng(1));
+    expect(fired.length).toBe(2);
+    expect(gs.tr.roundBudget.used).toBe(2);
+  });
+
+  it('draws nothing once the round budget is already exhausted, even though the cap floors at 1', () => {
+    // remaining = total - used = 0, so cap = max(1, ceil(0/windowsLeft)) = 1
+    // — the Math.max(1, ...) floor means the CAP alone cannot be trusted to
+    // stop a draw once the round is already spent. Only the loop's OTHER
+    // guard, `budget.used < budget.total`, can: with 0 remaining that reads
+    // 3 < 3 (false) and must block every draw. A `<=` mutant reads 3 <= 3
+    // (true) and lets an already-exhausted round draw one more event.
+    gs.tr.roundBudget = { total: 3, used: 3, windowsLeft: 1 };
+    registerEvent({ id: 'always-night', family: 'trust', window: 'night',
+      cooldown: { event: 0, player: 0, pair: 0 }, weight: () => 5, fire: () => ({ ok: true }) });
+    const fired = runWindow('night', 3, seededRng(1));
+    expect(fired.length, 'an exhausted round budget must not draw again').toBe(0);
+    expect(gs.tr.roundBudget.used).toBe(3);
+  });
+
+  it('writes real pair cooldowns through runWindow, not just through a hand-built pickEvent ctx', () => {
+    // runWindow builds ctx.actors itself (via _sceneActors) — this proves
+    // the cooldown scopes pickEvent triggers on THAT path are the real
+    // ones, using a 2-person cast so any "pair" scene is necessarily the
+    // same two people every time, and a scripted rng so the actor draw is
+    // reproducible rather than whatever an arbitrary seed happens to pick.
+    setPlayers(roster.players.slice(0, 2));
+    const pair = roster.players.slice(0, 2).map(p => p.name);
+    setGs({ bonds: {}, activePlayers: [...pair] });
+    gs.tr = initTraitorsState();
+    registerEvent({ id: 'pairev', family: 'trust', window: 'evening',
+      weight: () => 5, fire: (ctx) => ({ actors: ctx.actors }) });
+    // [i-pick, solo-check(>=0.4 => pair), j-pick, pickEvent's weighted roll]
+    const rng = scriptedRng([0.0, 0.9, 0.9, 0.5]);
+
+    gs.tr.roundBudget = { total: 4, used: 0, windowsLeft: 6 };
+    const first = runWindow('evening', 3, rng);
+    expect(first.length).toBe(1);
+    expect(first[0].consequences.actors.sort()).toEqual([...pair].sort());
+
+    // Event scope (2 eps) has lapsed by ep 5 but pair scope (5 eps) has not.
+    gs.tr.roundBudget = { total: 4, used: 0, windowsLeft: 6 };
+    const second = runWindow('evening', 5, rng);
+    expect(second.length, 'the same pair fired the same event again inside the pair window').toBe(0);
+
+    // Pair scope has now lapsed (9 - 3 = 6 >= 5).
+    gs.tr.roundBudget = { total: 4, used: 0, windowsLeft: 6 };
+    const third = runWindow('evening', 9, rng);
+    expect(third.length).toBe(1);
   });
 
   it('rejects an unknown window at registration, before the runner ever sees it', () => {
@@ -386,5 +528,41 @@ describe('window wiring order inside a real season (headless.js contract)', () =
           .toBe('after-table');
       }
     }
+  });
+});
+
+describe('the castle stream is isolated from the game stream', () => {
+  it('registering extra castle content does not change who is murdered, banished, or survives', async () => {
+    // This is the actual argument for finding 5: from Task 5 onward,
+    // runWindow will draw several pickEvent() rolls a round. If those rolls
+    // came out of the SAME stream the murder/vote/ballots are drawn from,
+    // then registering one new castle event (or nudging one weight) would
+    // shift every later draw's position in that stream and silently re-roll
+    // every murder, ballot and banishment for the rest of the season. Two
+    // seasons, identical seed, differing ONLY in how much castle content is
+    // registered, must produce byte-identical game outcomes.
+    const { playTraitorsSeason } = await import('../js/tr/headless.js');
+    const FULL_CAST = roster.players.slice(0, 12).map(p => p.name);
+
+    _resetRegistry();
+    const bare = playTraitorsSeason({ cast: FULL_CAST, traitorCount: 3, seed: 42, maxRounds: 8 });
+
+    _resetRegistry();
+    // A much heavier castle pool: eligible in every window, no cooldown at
+    // all, so it draws the maximum possible number of pickEvent() rolls
+    // every single window of every round — the worst case for perturbing a
+    // shared stream.
+    for (const w of ['dawn', 'morning', 'journey-out', 'journey-back', 'evening', 'after-table', 'night']) {
+      registerEvent({ id: `heavy-${w}`, family: 'trust', window: w,
+        cooldown: { event: 0, player: 0, pair: 0 }, weight: () => 5, fire: () => ({ ok: true }) });
+    }
+    const loaded = playTraitorsSeason({ cast: FULL_CAST, traitorCount: 3, seed: 42, maxRounds: 8 });
+    _resetRegistry();
+
+    expect(loaded.traitors).toEqual(bare.traitors);
+    expect(loaded.survivors.sort()).toEqual(bare.survivors.sort());
+    expect(loaded.winner).toBe(bare.winner);
+    expect(loaded.log.map(r => ({ banished: r.banished, murdered: r.murdered, recruited: r.recruited?.target })))
+      .toEqual(bare.log.map(r => ({ banished: r.banished, murdered: r.murdered, recruited: r.recruited?.target })));
   });
 });

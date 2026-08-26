@@ -71,11 +71,16 @@ export function initTraitorsState() {
     // decision with a tail rather than a free extra body.
     loyaltyDebt: [],
 
-    // This round's shared castle-event spending money: { total, used }.
-    // startRoundBudget() (tr/events.js) draws `total` (4-8) once per round
-    // from the season rng; every runWindow() call across that round's seven
-    // windows depletes the same `used` counter, which is what keeps a round
-    // to 4-8 events TOTAL rather than 4-8 per window. Null between rounds.
+    // This round's shared castle-event spending money:
+    // { total, used, windowsLeft }. startRoundBudget() (tr/events.js) draws
+    // `total` (4-8) once per round from the castle layer's OWN hashed rng
+    // (headless.js) — never the game rng, so registering content can never
+    // perturb the murder/vote/ballot draws. Every runWindow() call across
+    // that round's windows depletes the same `used` counter (what keeps a
+    // round to 4-8 events TOTAL, not 4-8 per window) and decrements
+    // `windowsLeft` (what lets each window cap itself at a fair share of
+    // whatever remains, instead of the earliest windows racing to spend the
+    // whole pot before the rest get a turn). Null between rounds.
     roundBudget: null,
   };
 }

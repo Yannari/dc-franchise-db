@@ -246,17 +246,32 @@ export function pickEvent(ctx, rng) {
 // ── The runner: seven social windows around four mechanical beats (§5.6) ──
 //
 // BUDGET RULE. A round produces 4-8 castle events TOTAL, spread across its
-// seven windows, not 4-8 PER window — an unbounded per-window loop would let
-// a busy dawn burn the whole round before evening (where vote pitches live)
-// ever got a turn. The rule chosen is a per-ROUND budget (drawn once,
-// 4-8 inclusive, from the season's own rng so replay stays exact) combined
-// with a per-WINDOW cap (below) that stops any single window from spending
-// it alone. Both numbers are small and named, not threaded through as
-// magic literals, so a reviewer mutating "the round budget" knows exactly
-// which constant that is.
+// seven windows, not 4-8 PER window. The total is a per-ROUND budget, drawn
+// once from a stream that is NOT the game's own rng (see the note on the
+// caller in headless.js) so replay stays exact and content changes cannot
+// perturb the murder/vote/ballot draws.
+//
+// PER-WINDOW CAP: FAIR SHARE, NOT A FLAT NUMBER. A flat cap (e.g. "3 per
+// window") is first-come-first-served against a shared pot: with a round
+// total of 5 and a flat cap of 3, dawn takes 3, morning takes the remaining
+// 2, and the five windows after morning — including evening, where vote
+// pitches live and feed the Round Table — see zero, every single round that
+// draws a low total, because dawn and morning always go first. That is not
+// a hypothetical; it is what a flat cap of 3 measurably does.
+//
+// Instead each call caps itself at ceil(remaining / windowsLeft), where
+// windowsLeft counts the window making this call. That reserves an even
+// split of whatever is left for whatever hasn't run yet, so an early window
+// can never spend more than its fair share of the pot before later windows
+// get a turn — it self-corrects, too: if dawn's own eligible pool is thin
+// and it draws less than its share, the leftover rolls forward into a
+// larger fair share for everyone still to come, not back to dawn. Only the
+// tightest possible round (total 4, the minimum, spread over 7 windows)
+// still runs out before the last few windows get a turn — that is the
+// budget being small, not the rule being unfair, and it happens on a
+// minority of rounds since the total is redrawn 4-8 every round.
 const ROUND_BUDGET_MIN = 4;
 const ROUND_BUDGET_MAX = 8; // inclusive
-const PER_WINDOW_CAP = 3;   // below ROUND_BUDGET_MIN: no window can exhaust a round alone
 
 /** ep -> act, the same three-band split every event's `acts` multiplier reads. */
 function _actFor(ep) {
@@ -267,35 +282,70 @@ function _actFor(ep) {
  * Draw and install this round's total castle-event budget on `gs.tr`, so
  * every window called during the round (a sequence of separate runWindow
  * calls from headless.js, not one function) shares and depletes the same
- * pot. Drawn from the season's own rng — a bare Math.random() here would
- * break season replay just as surely as one in the vote or the murder.
+ * pot. `windowCount` is how many runWindow calls this round will make (5 on
+ * round one, which has no Round Table; 7 every round after) — it is what
+ * lets the fair-share cap in runWindow divide what's left evenly over what's
+ * actually still coming, rather than assuming seven every time.
+ *
+ * Drawn from whatever `rng` the caller passes — headless.js passes its own
+ * hashed castle-layer stream, never the game's rng directly. See the note
+ * there for why the two must never be the same stream.
  */
-export function startRoundBudget(rng) {
+export function startRoundBudget(rng, windowCount = 7) {
   const total = ROUND_BUDGET_MIN + Math.floor(rng() * (ROUND_BUDGET_MAX - ROUND_BUDGET_MIN + 1));
-  gs.tr.roundBudget = { total, used: 0 };
+  gs.tr.roundBudget = { total, used: 0, windowsLeft: windowCount };
   return gs.tr.roundBudget;
 }
 
 /**
- * Fire whatever this window has to offer, until its own cap or the round's
- * shared budget runs out, or nothing is left eligible. Returns the fired
- * events (each `{ event, consequences }`, as pickEvent returns) so the
- * caller can log them — the budget itself is observable on `gs.tr.roundBudget`
- * for the calibration to measure later, rather than only in this return value.
+ * A scene: who is actually present for whatever this draw turns out to be.
+ * Solo about 40% of the time, a pair otherwise (when there are at least two
+ * living players) — chosen fresh per draw, not once for the whole window,
+ * because two draws in the same window are two different moments, not one.
+ * This is what puts real names on `ctx.actors` so the cooldown scopes in
+ * `pickEvent` (event/player/PAIR) actually have something to key on when
+ * they run through the real runner, instead of only ever being exercised by
+ * a test that hands pickEvent a hand-built ctx directly.
+ */
+function _sceneActors(living, rng) {
+  if (!living.length) return [];
+  const i = Math.floor(rng() * living.length);
+  if (living.length < 2 || rng() < 0.4) return [living[i]];
+  let j = Math.floor(rng() * living.length);
+  while (j === i) j = Math.floor(rng() * living.length);
+  return [living[i], living[j]];
+}
+
+/**
+ * Fire whatever this window has to offer, until its own fair-share cap or
+ * the round's shared budget runs out, or nothing is left eligible. Returns
+ * the fired events (each `{ event, consequences }`, as pickEvent returns) so
+ * the caller can log them — the budget itself is observable on
+ * `gs.tr.roundBudget` for the calibration to measure later, rather than
+ * only in this return value.
  *
  * No castle events are registered yet (that is Tasks 5 and 6), so in a real
- * season this runs seven times a round and returns `[]` every time. That is
- * expected: the point of this task is the plumbing running cleanly with an
- * empty pool, not a season that already has content.
+ * season this runs five or seven times a round and returns `[]` every time.
+ * That is expected: the point of this task is the plumbing running cleanly
+ * with an empty pool, not a season that already has content.
  */
 export function runWindow(window, ep, rng) {
   const fired = [];
   const budget = gs.tr.roundBudget;
   if (!budget) return fired; // no round in progress: nothing to spend
-  const ctx = { ep, window, act: _actFor(ep), living: gs.activePlayers || [] };
+  const living = gs.activePlayers || [];
+  const act = _actFor(ep);
+
+  const remaining = budget.total - budget.used;
+  const windowsLeft = Math.max(1, budget.windowsLeft ?? 1);
+  const cap = Math.max(1, Math.ceil(remaining / windowsLeft));
+  budget.windowsLeft = Math.max(0, (budget.windowsLeft ?? windowsLeft) - 1);
 
   let drawnHere = 0;
-  while (drawnHere < PER_WINDOW_CAP && budget.used < budget.total) {
+  while (drawnHere < cap && budget.used < budget.total) {
+    // A fresh ctx (and fresh actors) per draw, not one shared ctx for the
+    // whole window — see _sceneActors.
+    const ctx = { ep, window, act, living, actors: _sceneActors(living, rng) };
     const result = pickEvent(ctx, rng);
     if (!result) break; // nothing eligible left for this window right now
     fired.push(result);

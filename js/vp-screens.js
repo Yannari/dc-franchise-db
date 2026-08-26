@@ -4091,11 +4091,14 @@ export function rpBuildLateArrival(ep) {
   // episode began is the right answer in that case, and it is the honest one:
   // in a tribeless season the whole game is the room they walked into.
   const camp = (ep.tribesAtStart || []).find(t => t.name === a.tribe) || null;
-  // `activeAtStart` is on the live episode object and NOT on the stored record,
-  // so reading it here left the row empty on every replay. `tribalPlayers` is
-  // the roster a stored episode actually carries.
-  const already = (camp ? (camp.members || [])
-    : (ep.activeAtStart || ep.tribalPlayers || []))
+  // The arrival record carries the room it walked into, captured at the moment
+  // of seating. Deriving it here instead meant guessing from whatever the
+  // stored episode happened to hold, and every candidate is empty on some kind
+  // of episode. The rest is kept as a fallback for records written before the
+  // field existed.
+  const already = (a.alreadyHere && a.alreadyHere.length ? a.alreadyHere
+    : camp ? (camp.members || [])
+      : (ep.activeAtStart || ep.tribalPlayers || []))
     .filter(n => n !== a.name);
   const walkIn = (ep.campEvents?.[a.tribe]?.pre || []).find(e => e.type === 'lateArrival');
 

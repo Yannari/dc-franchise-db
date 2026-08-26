@@ -161,6 +161,17 @@ export function seatLateArrival(ep, { rng = Math.random } = {}) {
   //
   // After a merge there is no tribe to join and none is needed: everybody is
   // already playing as individuals, so they simply walk into the game.
+  // ── WHO WAS ALREADY IN THE ROOM, CAPTURED HERE ──
+  //
+  // Recorded at the moment of seating, before they are added, because this is
+  // the only place the answer is unambiguous. The screen was deriving it
+  // afterwards from whatever the stored episode happened to carry — the tribe
+  // snapshot, then the roster, then the tribal council list — and each of
+  // those is empty on some kind of episode, which is how it ended up printing
+  // "0 PEOPLE WHO HAVE ALREADY DECIDED WHO THEY TRUST" over an empty row.
+  const alreadyHere = tribe
+    ? (tribe.members || []).filter(n => n !== held.name)
+    : (gs.activePlayers || []).filter(n => n !== held.name);
   gs.activePlayers = [...new Set([...(gs.activePlayers || []), held.name])];
   if (tribe) tribe.members = [...new Set([...(tribe.members || []), held.name])];
   held.seated = true;
@@ -184,6 +195,7 @@ export function seatLateArrival(ep, { rng = Math.random } = {}) {
     badgeClass: 'gold',
     arrival: held.name,
     tribe: campName,
+    alreadyHere,
     fromOtherSide: !!away,
   };
 }

@@ -2324,7 +2324,9 @@ export function simulateEpisode() {
       const walkIn = seatLateArrival(ep);
       if (walkIn) {
         ep.lateArrival = { name: walkIn.arrival, tribe: walkIn.tribe,
-          fromOtherSide: walkIn.fromOtherSide };
+          fromOtherSide: walkIn.fromOtherSide,
+          // The room as it stood the moment before they walked into it.
+          alreadyHere: [...(walkIn.alreadyHere || [])] };
         const camp = walkIn.tribe;
         if (!ep.campEvents) ep.campEvents = {};
         if (!ep.campEvents[camp]) ep.campEvents[camp] = { pre: [], post: [] };

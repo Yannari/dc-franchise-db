@@ -5093,14 +5093,40 @@
         "temperament": 6
       },
       "sexuality": "queer",
-      "profileSources": {},
+      "profileSources": {
+        "backstory": [
+          {
+            "label": "Disventure Camp Wiki - Ren",
+            "url": "https://disventure-camp.fandom.com/wiki/Ren",
+            "kind": "source-canon",
+            "quote": "He enjoys traveling, meeting new people"
+          }
+        ],
+        "personality": [
+          {
+            "label": "Disventure Camp Wiki - Ren",
+            "url": "https://disventure-camp.fandom.com/wiki/Ren",
+            "kind": "source-canon",
+            "quote": "Ren is aware that he may come off as strange to some, but has also expressed that this does nothing to stop him from being himself."
+          }
+        ],
+        "voice": [
+          {
+            "label": "Disventure Camp Wiki - Ren",
+            "url": "https://disventure-camp.fandom.com/wiki/Ren",
+            "kind": "source-canon",
+            "quote": "Ren replies back that he wouldn't do such thing as a Saggitarius"
+          }
+        ]
+      },
       "age": 26,
       "birthdate": "1999-12-10",
       "ethnicity": "Latino",
       "nationality": "American Chilean",
       "hometown": "Las Vegas",
       "occupation": "Graphic designer",
-      "descriptor": "The Circus Artist"
+      "descriptor": "The Circus Artist",
+      "voice": "Ren talks like a performer: playful, theatrical, and a little deliberately odd, with jokes and flourishes before he gets to the point. He uses whimsical references, like astrology or circus sounds, to disarm people or make an accusation feel ridiculous. In conflict, he can try to cool things down first, but when pushed he becomes blunt and direct rather than quietly resentful."
     },
     {
       "name": "Sami",

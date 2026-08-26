@@ -198,3 +198,41 @@ export function murderCost(target, reason, ep) {
 
   return { kind: 'clean', cost: 0, blames: [] };
 }
+
+/** Won in a mission (Plan 5). Protects against the NEXT murder only. */
+export function grantShield(name, ep) {
+  if (!gs.tr) return;
+  if (!(gs.tr.shieldedThisRound instanceof Set)) gs.tr.shieldedThisRound = new Set(gs.tr.shieldedThisRound || []);
+  gs.tr.shieldedThisRound.add(name);
+}
+
+export function isShielded(name) {
+  const s = gs.tr?.shieldedThisRound;
+  return s instanceof Set ? s.has(name) : (s || []).includes(name);
+}
+
+/**
+ * Run the conclave and carry out the decision.
+ *
+ * A blocked murder is not a non-event. Nobody dies, every chair is full at
+ * breakfast, and the room learns the Traitors TRIED and hit a Shield — which
+ * narrows who they wanted and proves a Shield was live. That is one of the
+ * strongest deduction sources the format has, and it costs nothing except
+ * remembering to record it.
+ */
+export function resolveMurder(ep, rng = Math.random) {
+  const decision = runConclave(ep, rng);
+  if (!decision.target) return { target: null, blocked: false, victim: null, cost: null };
+
+  const target = decision.target;
+  const cost = murderCost(target, decision.reason, ep);
+
+  if (isShielded(target)) {
+    gs.tr.shieldedThisRound.delete(target);   // spent even though it blocked
+    (gs.tr.blockedMurders ||= []).push({ ep, target });
+    return { target, blocked: true, victim: null, cost, decision };
+  }
+
+  gs.activePlayers = (gs.activePlayers || []).filter(n => n !== target);
+  return { target, blocked: false, victim: target, cost, decision };
+}

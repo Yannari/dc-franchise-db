@@ -48,6 +48,12 @@ export function initTraitorsState() {
 
     // Set-shaped, so it must be declared here. Cleared each round.
     shieldedThisRound: new Set(),
+
+    // Nights the Traitors struck and nobody died: [{ ep, target }].
+    // The TARGET is stored because the VP shows it — the audience knows who
+    // was nearly murdered. The room does not, and must not: only the FACT of
+    // a blocked attempt is public, which is what Task 4 reads.
+    blockedMurders: [],
   };
 }
 

@@ -11,7 +11,7 @@ import { initTraitorsState } from '../js/tr/state.js';
 import { resetKnowledge } from '../js/knowledge.js';
 import { recordAlignment } from '../js/tr/roles.js';
 import { seedTraitorKnowledge } from '../js/tr/deduction.js';
-import { formPreference, runConclave, murderCost } from '../js/tr/murder.js';
+import { formPreference, runConclave, murderCost, grantShield, isShielded, resolveMurder } from '../js/tr/murder.js';
 import { setBond } from '../js/bonds.js';
 import { recordRound } from '../js/tr/deduction.js';
 import roster from '../franchise_roster.json';
@@ -167,5 +167,44 @@ describe('what a bad murder costs', () => {
     const c = murderCost(CAST[7], 'beloved', 3);
     expect(c.kind).toBe('clean');
     expect(c.blames).toHaveLength(0);
+  });
+});
+
+describe('the shield, and the night nobody dies', () => {
+  it('blocks the murder and kills nobody', () => {
+    const r1 = resolveMurder(3, seededRng(7));
+    world();
+    grantShield(r1.target, 3);
+    const r2 = resolveMurder(3, seededRng(7));
+    expect(r2.target).toBe(r1.target);
+    expect(r2.blocked).toBe(true);
+    expect(r2.victim).toBeNull();
+    expect(gs.activePlayers).toContain(r1.target);
+  });
+
+  it('is spent even when it blocks — it does not carry over', () => {
+    const t = resolveMurder(3, seededRng(7)).target;
+    world();
+    grantShield(t, 3);
+    resolveMurder(3, seededRng(7));
+    expect(isShielded(t)).toBe(false);
+  });
+
+  it('records the blocked attempt, because the room can see nobody died', () => {
+    const t = resolveMurder(3, seededRng(7)).target;
+    world();
+    grantShield(t, 3);
+    const r = resolveMurder(3, seededRng(7));
+    expect(r.blocked).toBe(true);
+    expect(gs.tr.blockedMurders).toContainEqual(expect.objectContaining({ ep: 3 }));
+  });
+
+  it('an unshielded murder removes exactly one living faithful', () => {
+    const before = [...gs.activePlayers];
+    const r = resolveMurder(3, seededRng(7));
+    expect(r.blocked).toBe(false);
+    expect(gs.activePlayers).toHaveLength(before.length - 1);
+    expect(gs.activePlayers).not.toContain(r.victim);
+    expect(TRAITORS).not.toContain(r.victim);
   });
 });

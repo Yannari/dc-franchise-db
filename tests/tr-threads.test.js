@@ -4,7 +4,8 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
-import { openThread, advanceThread, closeThread, openThreadsFor, hottest, residueFor }
+import { openThread, advanceThread, closeThread, openThreadsFor, hottest, residueFor,
+  heatAt, findOpenThread, abandonThread }
   from '../js/tr/threads.js';
 import roster from '../franchise_roster.json';
 
@@ -36,9 +37,22 @@ describe('a thread accumulates', () => {
 
   it('cools when nobody feeds it, so a stale story stops steering the season', () => {
     const t = openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
-    const atOpen = hottest(CAST[0], 2)?.heat ?? 0;
-    const stale = hottest(CAST[0], 9)?.heat ?? 0;
-    expect(stale).toBeLessThan(atOpen);
+    advanceThread(t.id, 3, 'again');
+    advanceThread(t.id, 4, 'again'); // heat is now 3, lastEp 4
+    const thread = gs.tr.threads.find(x => x.id === t.id);
+
+    // Direct heatAt observation: the number itself must move with partial
+    // decay, not just "found vs not found" via a `?? 0` fallback.
+    const fed = heatAt(thread, 4);
+    const partiallyStale = heatAt(thread, 6);
+    expect(partiallyStale).toBeLessThan(fed);
+    expect(partiallyStale).toBeGreaterThan(0);
+
+    // hottest() must surface that same decayed number, not just presence.
+    expect(hottest(CAST[0], 6).heat).toBeCloseTo(partiallyStale);
+
+    // Left alone long enough, it drops out of the live pool entirely.
+    expect(hottest(CAST[0], 20)).toBeNull();
   });
 
   it('closes with an outcome, and stops being open', () => {
@@ -48,13 +62,18 @@ describe('a thread accumulates', () => {
     expect(gs.tr.threads.find(x => x.id === t.id).outcome).toBe('banished-and-was-faithful');
   });
 
-  it('leaves residue a later event can cite by episode', () => {
+  it('leaves residue a later event can cite by episode, for BOTH parties', () => {
     const t = openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
     advanceThread(t.id, 4, 'broke the commitment at the table');
-    const res = residueFor(CAST[0]);
-    expect(res.length).toBeGreaterThan(0);
-    expect(res[0]).toHaveProperty('ep');
-    expect(res[0]).toHaveProperty('note');
+    const resA = residueFor(CAST[0]);
+    const resB = residueFor(CAST[1]);
+    // A residue write restricted to the first party passes if only CAST[0]
+    // is ever checked — a thread is citable by BOTH sides or it isn't real.
+    expect(resA.length).toBeGreaterThan(0);
+    expect(resB.length).toBeGreaterThan(0);
+    expect(resA[0]).toHaveProperty('ep');
+    expect(resA[0]).toHaveProperty('note');
+    expect(resB.map(r => r.note)).toContain('broke the commitment at the table');
   });
 
   it('is deterministic — the same season replays the same threads', () => {
@@ -62,5 +81,50 @@ describe('a thread accumulates', () => {
     gs.tr = initTraitorsState();
     const b = openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
     expect(a.id).toBe(b.id);
+  });
+
+  it('re-opening the same story returns the SAME thread — no wipe, no fragmentation', () => {
+    const a = openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
+    const again = openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
+    expect(again.id).toBe(a.id);
+    expect(gs.tr.threads.filter(x => x.kind === 'suspicion').length).toBe(1);
+
+    // Party order must not matter — [A,B] and [B,A] are the same story.
+    const reordered = openThread('suspicion', [CAST[1], CAST[0]], 2, 'eavesdrop');
+    expect(reordered.id).toBe(a.id);
+    expect(gs.tr.threads.filter(x => x.kind === 'suspicion').length).toBe(1);
+  });
+
+  it('a cooled thread is revived, not fragmented into an unreachable duplicate', () => {
+    const t = openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
+    advanceThread(t.id, 3, 'first follow-up');
+    // Nothing feeds it for five episodes — it goes cold, but the pair is not
+    // done: someone brings it back up in episode 8.
+    const revived = openThread('suspicion', [CAST[0], CAST[1]], 8, 'she never let it go');
+
+    // This is the plan's central claim in miniature: the episode-2 beat is
+    // still attached to the SAME thread an episode-8 event revived, not
+    // orphaned on a thread nothing can find any more.
+    expect(revived.id).toBe(t.id);
+    expect(revived.beats[0]).toMatchObject({ ep: 2, note: 'eavesdrop' });
+    expect(revived.lastEp).toBe(8);
+    expect(openThreadsFor(CAST[0], 8).map(x => x.id)).toContain(revived.id);
+    expect(gs.tr.threads.filter(x => x.kind === 'suspicion').length).toBe(1);
+  });
+
+  it('findOpenThread reaches a cold thread regardless of heat', () => {
+    const t = openThread('suspicion', [CAST[0], CAST[1]], 2, 'eavesdrop');
+    // Heat has fully decayed by ep 20 (hottest() would return null here) —
+    // findOpenThread must still find it, because THAT is what lets it revive.
+    expect(hottest(CAST[0], 20)).toBeNull();
+    expect(findOpenThread('suspicion', [CAST[0], CAST[1]])?.id).toBe(t.id);
+  });
+
+  it('an abandoned thread stops being reachable as open, but the record stays', () => {
+    const t = openThread('suspicion', [CAST[2], CAST[3]], 2, 'eavesdrop');
+    abandonThread(t.id, 10);
+    expect(openThreadsFor(CAST[2], 10)).toHaveLength(0);
+    expect(findOpenThread('suspicion', [CAST[2], CAST[3]])).toBeNull();
+    expect(gs.tr.threads.find(x => x.id === t.id).state).toBe('abandoned');
   });
 });

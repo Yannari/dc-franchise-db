@@ -10,18 +10,61 @@
 // `heat` is what makes a live story beat a stale one when the runner picks. It
 // decays on purpose — a suspicion nobody has mentioned in four rounds should
 // stop steering the castle, or the season's second half is decided by its first.
+//
+// The id is `kind:sortedParties:openedEp` and stays fixed for the thread's
+// whole life — it is NOT recomputed from the current episode. If it were,
+// an episode-7 event about the same pair could never find the episode-2
+// thread to advance (the ids would differ), and the season's back half would
+// silently stop obeying "advance a live story before starting a new one" —
+// continuity would survive only through residue, never through the thread
+// itself. `findOpenThread` is the parties-keyed route that keeps a cooled
+// thread reachable so it can be REVIVED ("she never let it go") instead of
+// fragmented into an unreachable duplicate.
 import { gs } from '../core.js';
 
-/** Deterministic id: same parties, same kind, same episode → same thread. */
+/** Deterministic id: same parties, same kind, same opening episode → same thread. */
 function _id(kind, parties, ep) {
   return `${kind}:${[...parties].sort().join('|')}:${ep}`;
 }
 
+function _partyKey(parties) {
+  return [...parties].sort().join('|');
+}
+
+/**
+ * Most recent OPEN thread for this kind + party-set, regardless of how cold
+ * it has gone. This is the lookup `openThread` must consult first — without
+ * it, an ep-scoped id makes a cooled thread permanently unreachable, and
+ * only `abandonThread`/direct array iteration could ever touch it again.
+ */
+export function findOpenThread(kind, parties) {
+  const key = _partyKey(parties);
+  const matches = (gs.tr?.threads || [])
+    .filter(t => t.state === 'open' && t.kind === kind && _partyKey(t.parties) === key);
+  if (!matches.length) return null;
+  return matches.reduce((a, b) => (b.lastEp > a.lastEp ? b : a));
+}
+
 export function openThread(kind, parties, ep, seed = '') {
   if (!gs.tr) return null;
+
+  const existing = findOpenThread(kind, parties);
+  if (existing) {
+    // Calling openThread twice with the exact same (kind, parties, ep, seed)
+    // is a re-announcement of the same beat, not a new one — don't grow the
+    // beat log or residue on every redundant call.
+    const last = existing.beats[existing.beats.length - 1];
+    const isRedundant = last && last.ep === ep && last.note === seed;
+    if (!isRedundant) {
+      existing.beats.push({ ep, eventId: seed, note: seed });
+      existing.heat = Math.min(4, existing.heat + 1);
+      existing.lastEp = ep;
+      _writeResidue(existing, ep, seed);
+    }
+    return existing;
+  }
+
   const id = _id(kind, parties, ep);
-  const existing = gs.tr.threads.find(t => t.id === id);
-  if (existing) return existing;
   const t = { id, kind, parties: [...parties], openedEp: ep, lastEp: ep,
     state: 'open', beats: [{ ep, eventId: seed, note: seed }], heat: 1, outcome: null };
   gs.tr.threads.push(t);
@@ -44,6 +87,21 @@ export function closeThread(id, ep, outcome) {
   if (!t) return null;
   t.state = 'closed';
   t.outcome = outcome;
+  t.lastEp = ep;
+  return t;
+}
+
+/**
+ * Retire a thread nobody ever picked back up. Distinct from `closeThread`:
+ * there is no narrative payoff, just the housekeeping that keeps
+ * `findOpenThread`/`openThreadsFor` from ever surfacing a dead story again.
+ * The array entry stays (it is 100 bytes against a multi-MB `gs` — noise);
+ * only reachability changes.
+ */
+export function abandonThread(id, ep) {
+  const t = gs.tr?.threads?.find(x => x.id === id);
+  if (!t || t.state !== 'open') return null;
+  t.state = 'abandoned';
   t.lastEp = ep;
   return t;
 }

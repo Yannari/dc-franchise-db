@@ -57,7 +57,7 @@
 
 **Interfaces:**
 - Consumes: `livingTraitors`, `livingFaithfuls` from `js/tr/roles.js`; `pStats`, `getBond`. **Deliberately imports NOTHING from `js/tr/deduction.js`** — a Traitor reasons from public behaviour (who said their name out loud, who the room voted for), never from anyone's private beliefs. That restriction is the design, and keeping the import list empty is what enforces it.
-- Produces: `formPreference(traitor, ep, rng) → { target, reason, conviction }`, `runConclave(ep, rng) → { decision, target, argued[], overruled[], tension }`.
+- Produces: `formPreference(traitor, ep, rng) → { target, reason, conviction }`, `runConclave(ep, rng) → { decision, target, reason, decidedBy, argued[], overruled[] }`.
 
 **The design (spec §6.2), and why it is not an optimiser:** nothing computes a best target. Each Traitor forms *their own* preference, weighted by *their own* read quality — `strategic` and `intuition` decide how well they weigh the tool-allocation logic, `boldness` how aggressive, their own bonds who they cannot bring themselves to name. **A low-`strategic` Traitor genuinely picks badly and nothing corrects them.** The room then resolves it *socially* — `social`, bond, and standing — so the best read in the room loses regularly. Disagreement writes `conclaveTension`: a ledger of who overruled whom on which night, which is what gives the endgame betrayal a date rather than a schedule.
 
@@ -668,7 +668,11 @@ const M = {
 export function murderEvidence(ep, rng = Math.random) {
   const rounds = gs.tr?.rounds || [];
   const round = rounds[rounds.length - 1];
-  if (!round || round.ep >= ep) return [];       // only the round that just closed
+  // ONLY the round that just closed. `>= ep` would not be enough: it stops a
+  // same-episode re-read but happily re-emits an OLD round every round after
+  // it, which is precisely the re-walk Plan 2 deleted from ballotEvidence for
+  // costing 0.20-0.23x of lift. The equality is the guard.
+  if (!round || round.ep !== ep - 1) return [];
   const living = gs.activePlayers || [];
   const formed = [];
 
@@ -858,8 +862,12 @@ describe('refusing', () => {
       }
       return yes / 80;
     };
+    // Must exclude the Traitors themselves — offering recruitment to somebody
+    // who is already a Traitor is meaningless and would silently make this
+    // test measure nothing.
+    const TRAITOR_NAMES = CAST.slice(0, 2);
     const byLoyalty = [...roster.players.slice(0, 10)]
-      .filter(p => gs.activePlayers.includes(p.name))
+      .filter(p => !TRAITOR_NAMES.includes(p.name) && p.name !== CAST[0])
       .sort((a, b) => (b.stats.loyalty || 5) - (a.stats.loyalty || 5));
     const loyal = byLoyalty[0].name, disloyal = byLoyalty[byLoyalty.length - 1].name;
     const rLoyal = rate(loyal), rDisloyal = rate(disloyal);

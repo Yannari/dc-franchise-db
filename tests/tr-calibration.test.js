@@ -283,6 +283,17 @@ describe('the castle, measured over many seasons', () => {
     // that oracle. This band does not catch it — not at 0.10, not at 0.05, not
     // at any value — and nobody should believe it does.
     //
+    // SINCE THE `clash-traced` CHANNEL WAS DELETED, THE ORACLE IS WORTH ZERO.
+    // Not "small": zero. `murderCost.blames` was its only route into the belief
+    // store, and murderEvidence no longer reads it, so restoring the pre-fix
+    // `livingTraitors(ep).filter(...)` in js/tr/murder.js and re-running the
+    // twelve-block probe reproduces these numbers BIT-FOR-BIT. The band is left
+    // at 0.10 rather than tightened, because on the post-deletion distribution
+    // (5.76pp mean, sd 1.43, worst block 7.70) a tighter ceiling would catch
+    // nothing that 0.10 does not already catch — the placebo is red at 0.10 on
+    // all twelve blocks and the oracle is red at no ceiling whatsoever. A band
+    // tightened to catch nothing is a band waiting to go red on block noise.
+    //
     // What it DOES still catch is the placebo, which reads +19.2 to +23.1pp and
     // is red on every one of the twelve blocks. That is a real leak of a real
     // class, and it is the only thing this band is currently evidence against.
@@ -292,10 +303,19 @@ describe('the castle, measured over many seasons', () => {
 
     // LATE: by the second half every reveal has re-scored a round of ballots,
     // and the endgame is supposed to be the sharpest table of the season.
-    // Measured 19.02pp mean, sd 1.90, worst block 15.74pp over twelve
-    // decorrelated 200-season blocks — green everywhere, but the thinnest
-    // margin in the file after the growth band, and the number that decided
-    // M.pushedThenDied's price (see js/tr/deduction.js).
+    // Measured 18.31pp mean, sd 1.82, worst block 15.24pp over twelve
+    // decorrelated 200-season blocks — green everywhere, but THE THINNEST GATE
+    // IN THE FILE (0.24pp on its worst block) and the number that decided
+    // M.pushedThenDied's price (see js/tr/deduction.js). Any future change to
+    // the murder layer hits this band first.
+    //
+    // Deleting the `clash-traced` channel moved this 19.02 -> 18.31pp. That is
+    // NOT a 0.71pp loss: measured block-by-block the change is -5.1, +1.5,
+    // -3.9, +1.5, +0.2, +0.5, +1.5, -0.9, +1.3, +0.5, -0.9, -4.6 — seven blocks
+    // up, five down, t = -0.9 against block noise of sd 1.9. It is
+    // indistinguishable from zero, and every other statistic in this file moved
+    // flat or better (board precision worst block 0.253 -> 0.306 over placebo,
+    // growth margin worst 7.07 -> 7.84pp, early worst 8.65 -> 7.70pp).
     expect(late.total, 'no late banishments to measure').toBeGreaterThan(40);
     expect(late.lift, 'the endgame is no sharper than chance -- the reveal cascade is not landing')
       .toBeGreaterThan(0.15);

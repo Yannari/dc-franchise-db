@@ -181,8 +181,16 @@ export function runConclave(ep, rng = Math.random) {
  * conclave be wrong is that the audience can see which wrong thing it did. A
  * flat "bad kill" penalty would be indistinguishable from noise.
  *
- * `blames` is the list of Traitors the room can legitimately reason toward
- * from this kill alone. Task 4 turns it into evidence; nothing else may.
+ * `blames` is the list of people the room can legitimately reason toward from
+ * this kill alone.
+ *
+ * IT CURRENTLY HAS NO CONSUMER, AND THAT IS DELIBERATE, NOT ROT. Task 4 fed it
+ * to a `clash-traced` evidence channel; that channel measured 0.87x at emission
+ * and 0.57x on surviving beliefs — below chance on both — and was deleted. The
+ * FIELD is kept because the thing it computes is still true and still wanted:
+ * "which Traitor the room can legitimately blame" is what the VP renders at
+ * breakfast, and a later plan's counting argument reads it. It is data awaiting
+ * a consumer. What it must never again become is a belief.
  */
 export function murderCost(target, reason, ep) {
   const heat = _publicHeatAgainst(target, ep);
@@ -203,9 +211,23 @@ export function murderCost(target, reason, ep) {
   // This used to read `livingTraitors(ep).filter(...)`, which made the source
   // an ORACLE rather than evidence: measured over 200 seasons of the wired
   // engine it named a Traitor 84 times out of 84, at a belief confidence of
-  // 0.58, and no Faithful could ever be blamed by it. Its cost was +4.9pp of
-  // EARLY lift on its own — the room reading sharp on night three, which is
-  // precisely the one thing the calibration's early band exists to forbid.
+  // 0.58, and no Faithful could ever be blamed by it.
+  //
+  // TWO STALE CLAIMS ABOUT THAT ORACLE, BOTH CORRECTED BY MEASUREMENT.
+  // (1) It was said to cost "+4.9pp of EARLY lift on its own". Re-measured over
+  //     twelve DECORRELATED 200-season blocks it was worth +0.87pp (engine
+  //     6.30pp, oracle 7.18pp) — inside half a block sd, and no early ceiling
+  //     is green on the engine and red on it. The +4.9pp came from the
+  //     correlated seeding rngFor() has since hashed away.
+  // (2) It is now worth EXACTLY ZERO, and not because it was priced down.
+  //     `blames` — the only thing this line feeds — lost its last consumer when
+  //     the `clash-traced` evidence channel was deleted from murderEvidence
+  //     (see js/tr/deduction.js). Restoring the oracle here and re-running the
+  //     probe reproduces the shipped numbers BIT-FOR-BIT on every block. The
+  //     leak the early band was believed to guard against no longer has a route
+  //     into the belief store at any price. The line stays as written anyway:
+  //     it is the correct semantics for a PUBLIC clash, and it must not become
+  //     an oracle again the moment `blames` finds a reader.
   const clashed = (gs.activePlayers || [])
     .filter(n => n !== target && getBond(n, target) <= -6);
   // The COST, unlike the blame, IS a Traitor question: the kill only hurts the

@@ -381,11 +381,15 @@ export function revealCascade(name, wasTraitor, ep, rng = Math.random) {
 //                clash with the victim is uncorrelated with guilt by
 //                construction of the conclave itself.
 //
-// Neither channel is deleted, and neither should be. A false-positive generator
-// is a thing this format is made of: the person who wanted the victim gone, and
-// the person who made no secret of hating them, are the two obvious suspects at
-// breakfast and are usually innocent. What was wrong was the PRICE — the
-// loudest belief in the engine was one of the two carrying the least
+// ONE CHANNEL SURVIVES. An earlier version of this comment argued that neither
+// should be deleted, on the grounds that a false-positive generator is a thing
+// this format is made of. That is true of `pushedThenDied`, which is at least
+// 1.21x — weakly right, and wrong in an interesting way. It is NOT true of
+// `clashTraced`, which measured 0.87x at emission and 0.57x on surviving
+// beliefs: it did not generate the format's false positives, it generated
+// ONLY false positives, at a rate worse than chance. See the deletion note in
+// murderEvidence for the mechanism. What was wrong with `pushedThenDied` was
+// only the PRICE — the loudest belief in the engine was carrying little
 // information, and it diluted every board it touched.
 //
 // pushedThenDied 0.48 -> 0.36. Measured over twelve DECORRELATED 200-season
@@ -397,10 +401,18 @@ export function revealCascade(name, wasTraitor, ep, rng = Math.random) {
 // 1.875x — and that flatness IS the finding: a price that can be cut by a
 // quarter without moving any band was not buying signal.
 //
-// clashTraced stays at 0.24, the cap pairSilence carries for the same reason.
+// THAT SWEEP WAS RUN WITH `clashTraced` STILL PRESENT, AND HAS NOT BEEN REDONE.
+// Since the deletion this is the ONLY murder-shaped channel there is, and late
+// lift now reads 18.31pp mean with a worst block of 15.24pp against the +15pp
+// floor — 0.24pp of headroom, down from 0.74pp. The direction of the sweep is
+// unlikely to have inverted, but "0.36 is the lowest green price" is now an
+// UNVERIFIED claim about a different engine. Anybody repricing this constant
+// must re-run the sweep rather than trust the numbers above, and the honest
+// next question is whether 0.36 is now too LOW rather than too high.
+//
+// clashTraced is gone entirely; see murderEvidence.
 const M = {
   pushedThenDied:  0.36,   // you wanted them gone, and they went — 1.21x, against a 1.20x control
-  clashTraced:     0.24,   // murderCost named you — a suspect, not a signal (0.87x)
 };
 
 /**
@@ -460,18 +472,24 @@ export function murderEvidence(ep, rng = Math.random) {
       }
     }
 
-    // murderCost named somebody: a Traitor who visibly hated the victim.
-    for (const blamed of (round.murderCost?.blames || [])) {
-      if (!living.includes(blamed)) continue;
-      for (const observer of living) {
-        if (observer === blamed) continue;
-        const belief = learn(observer, alignmentFactId(blamed), {
-          source: `made no secret of hating ${victim}`,
-          sourceType: 'deduced', confidence: M.clashTraced, ep, rng,
-        });
-        if (belief) formed.push({ observer, subject: blamed, ep: round.ep, kind: 'clash-traced' });
-      }
-    }
+    // THE `clash-traced` CHANNEL WAS DELETED HERE. DO NOT RE-ADD IT.
+    //
+    // It read `round.murderCost.blames` — the people who visibly clashed with
+    // the victim — and indicted each of them at 0.24. It sounds like the
+    // format's best false positive, and that is exactly what it turned out to
+    // be: a false-positive GENERATOR with no compensating signal.
+    //
+    // Measured 0.87x at emission (n=1456, 17.0% Traitor against a room density
+    // of 19.5%) and 0.57x on the beliefs that SURVIVED to influence a board.
+    // Below 1.0x on both: it named Faithfuls MORE often than chance did.
+    //
+    // The mechanism, so nobody rediscovers it by accident: `formPreference`
+    // PENALISES murdering somebody you visibly clashed with — a Traitor who
+    // kills the person the castle already saw them fighting with is pointing at
+    // themselves. So a clash-traced victim is, by construction of the conclave,
+    // one whose visible enemies are UNLIKELY to be Traitors. The channel was
+    // anti-correlated with guilt by design, not by accident, and no price fixes
+    // a sign error.
   }
 
   return formed;

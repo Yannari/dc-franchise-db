@@ -178,10 +178,9 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // get one round to become a faction before the hunt starts.
   // Nothing has been recorded as a round yet, so this murder leaves no round
   // record and therefore emits no evidence next episode. That is correct and
-  // not a gap: there are no ballots and no accusations on night one, so the
-  // only channel murderEvidence could have read is murderCost's clash trace,
-  // and a clash the room has not yet seen anybody voice at a table is not
-  // something the room can reason from.
+  // not a gap: murderEvidence's one surviving channel is `pushedThenDied`,
+  // which reads ballots and accusations, and night one has neither. There is
+  // nothing about this murder for the room to reason from.
   const n1 = _night(ep, rng);
   log.push({ ep, banished: null, wasTraitor: null, ...n1 });
 

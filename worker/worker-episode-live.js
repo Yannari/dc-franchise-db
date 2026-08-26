@@ -4019,7 +4019,12 @@ export function wikitextToProse(wikitext) {
     .replace(/\{\|[\s\S]*?\|\}/g, " ")                  // tables
     .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, "$1")   // links keep their text
     .replace(/'''?/g, "")
-    .replace(/^\s*[*#:;].*$/gm, " ")                    // list scaffolding
+    // Keep what a list SAYS, drop only its bullet. Deleting the whole line
+    // emptied the Trivia section, which is entirely bulleted and is where a
+    // wiki states the facts an infobox has no row for — a birthday, a
+    // hometown, a sibling. Those fields were coming back blank because the
+    // sentences stating them had already been thrown away here.
+    .replace(/^\s*[*#:;]+\s?/gm, "")
     .replace(/={2,}\s*([^=]+?)\s*={2,}/g, "\n\n$1:\n")
     .replace(/\[\S+\s+([^\]]+)\]/g, "$1")
     // Any table row or template fragment the passes above could not pair up.
@@ -4112,6 +4117,47 @@ export function buildVerifiedProfile(parsed, prose, { url, label, title }) {
   return { fields, profileSources, demoted, overlong };
 }
 
+/**
+ * The parts of an article that describe a PERSON, not a season.
+ *
+ * Measured on a real page: 34,481 characters of prose, of which the infobox
+ * and Personality — the only two sections this job actually reads from — are
+ * the first 2,825. Characters 2,825 to 21,102 are episode-by-episode recap of
+ * three seasons, and the tail is a gallery of image filenames. Sending a flat
+ * 24,000-character slice paid for roughly eight times what it used, and paid
+ * it in the one content that must NOT reach a biography: the per-episode
+ * recap is precisely what "backstory is pre-show only" exists to keep out.
+ *
+ * So sections are chosen rather than truncated. Anything whose heading names a
+ * season is dropped wholesale, along with the gallery and references; what is
+ * left is who they are, plus Trivia, which is where a wiki puts the facts the
+ * infobox has no row for.
+ */
+export function profileRelevantExcerpt(prose, limit = 12000) {
+  const DROP = /^(gallery|references?|appearances?|video log|audition tape|see also|navigation|overall)\b/i;
+  // A heading that names a season or an episode list is recap, whatever the
+  // wiki calls it — "Total Drama Island", "Big Brother 3", "Season 2".
+  const RECAP = /(season\s*\d|^total drama|^big brother|^disventure|\bepisodes?\b)/i;
+
+  const parts = prose.split(/\n\n(?=[A-Z][^\n:]{2,40}:\n)/);
+  const kept = [];
+  for (const part of parts) {
+    const heading = (part.match(/^([^\n:]{2,40}):\n/) || [])[1] || "";
+    if (heading && (DROP.test(heading) || RECAP.test(heading))) continue;
+    kept.push(part);
+  }
+  // Never send nothing: an article whose headings are ALL unfamiliar falls
+  // back to the whole thing rather than to an empty prompt.
+  //
+  // The condition is "kept nothing", not "kept under 200 characters". The
+  // length floor looked like the same guard and was not: an article whose
+  // useful sections are genuinely brief tripped it and got sent whole, which
+  // is the behaviour this function exists to stop. The caller already refuses
+  // a page under 200 characters before excerpting.
+  const out = kept.join("\n\n").trim();
+  return (out ? out : prose).slice(0, limit);
+}
+
 async function generateWikiProfile(body, env) {
   const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
   const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
@@ -4138,10 +4184,7 @@ async function generateWikiProfile(body, env) {
 
   const url = `https://${host}/wiki/${encodeURIComponent(title)}`;
   const label = (Object.values(WIKI_HOSTS).find(w => w.host === host) || {}).label || host;
-  // A long article costs more than it adds: the lead and the personality
-  // sections are near the top, and the tail is episode recap this must not
-  // read into a biography anyway.
-  const excerpt = prose.slice(0, 24000);
+  const excerpt = profileRelevantExcerpt(prose);
 
   const system = [
     "You turn a wiki article about a reality-competition character into a cast profile.",

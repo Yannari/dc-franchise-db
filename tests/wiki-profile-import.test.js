@@ -6,7 +6,7 @@
 // The design document banned live scraping outright. Reversing that was a
 // deliberate call, and this file is the condition it was reversed on.
 import { describe, expect, it } from 'vitest';
-import { buildVerifiedProfile, wikitextToProse } from '../worker/worker-episode-live.js';
+import { buildVerifiedProfile, profileRelevantExcerpt, wikitextToProse } from '../worker/worker-episode-live.js';
 
 const SOURCE = { url: 'https://totaldrama.fandom.com/wiki/Leshawna', label: 'Total Drama Wiki', title: 'Leshawna' };
 
@@ -203,5 +203,50 @@ describe('wikitext becomes quotable prose', () => {
     // become an interpretation.
     const prose = wikitextToProse("{{Infobox|a=b}}\n'''She''' works as a [[hair stylist]].");
     expect(prose).toContain('She works as a hair stylist.');
+  });
+});
+
+// A character article is mostly episode recap, and recap is both the bulk of
+// the cost and the one content that must not reach a biography. Measured on a
+// real 34,481-character page: the two sections this job reads from were the
+// first 2,825, and a flat 24,000-character slice paid for eight times what it
+// used.
+describe('only the parts of an article that describe a person', () => {
+  const ARTICLE = [
+    'Character details:\nfamily: Mother, a cousin',
+    'Personality:\nShe is loud and warm.',
+    'Total Drama Island:\nIn episode one she arrived. In episode two she was voted out.',
+    'Big Brother 3:\nShe was evicted in week four.',
+    'Trivia:\nShe was born in Toronto.',
+    'Gallery:\nLeshawna.png|Her promo picture.',
+    'References:\nSome citation.',
+  ].join('\n\n');
+
+  it('keeps who they are and drops what they did', () => {
+    const out = profileRelevantExcerpt(ARTICLE);
+    expect(out).toContain('family: Mother');
+    expect(out).toContain('She is loud and warm.');
+    // Trivia is where a wiki states what the infobox has no row for.
+    expect(out).toContain('She was born in Toronto.');
+
+    expect(out, 'per-season recap is the bulk of the cost').not.toContain('voted out');
+    expect(out, 'and of the other show too').not.toContain('evicted in week four');
+    expect(out, 'a gallery is filenames').not.toContain('Leshawna.png');
+    expect(out).not.toContain('Some citation');
+  });
+
+  it('sends the whole article rather than nothing when it recognises no headings', () => {
+    const plain = 'She is a hair stylist who grew up in a large family and never backs down.';
+    expect(profileRelevantExcerpt(plain)).toContain('hair stylist');
+  });
+
+  it('keeps what a bullet says and drops only the bullet', () => {
+    // Deleting whole list lines emptied Trivia, which is entirely bulleted —
+    // so the sentences stating a birthday or a hometown were thrown away
+    // before the model ever saw them, and those fields came back blank.
+    const out = wikitextToProse('==Trivia==\n*She was born in Toronto.\n*She has one cousin.');
+    expect(out).toContain('She was born in Toronto.');
+    expect(out).toContain('She has one cousin.');
+    expect(out).not.toMatch(/^\s*\*/m);
   });
 });

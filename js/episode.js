@@ -4123,7 +4123,15 @@ export function simulateEpisode() {
   }
 
   // Helper: run one full vote + idol + resolve (with revote on tie)
-  function runTribal(tribalPlayers, immuneName, allianceSet) {
+  // coachTargets: names of coaches eligible to be voted for at THIS tribal.
+  // Defaults to coachesOf(tribeLabel) — correct for the ordinary single-tribe
+  // vote (both the main tribal and the double-boot second vote reuse the same
+  // tribe). Callers voting a DIFFERENT roster than the outer `tribeLabel`
+  // closure variable describes (a double-tribal merged council spanning
+  // several tribes, or one tribe inside a multi-tribal loop) must pass the
+  // right list explicitly — otherwise every coach on that roster is silently
+  // unreachable as a vote target.
+  function runTribal(tribalPlayers, immuneName, allianceSet, coachTargets = coachesOf(tribeLabel).map(c => c.name)) {
     prepareIntentionsForVote(ep);
     // Read-of-the-room must never include fallout caused by the ballot it
     // appears before. Preserve the relationship cause trail at this boundary.
@@ -4309,7 +4317,7 @@ export function simulateEpisode() {
     // Snapshot bonds before vote — triggers need pre-vote bond values
     ep._preVoteBondSnapshot = { ...gs.bonds };
 
-    const { votes, log, defections, voteMiscommunications, votePitches: _vpResult, pitchIntel:_pitchIntelResult, pitchCounterplay:_pitchCounterplayResult, knowledgeEvents:_knowledgeEventsResult, emotionalDefectionDiagnostics, voteCommitmentDiagnostics } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote, coachesOf(tribeLabel).map(c => c.name));
+    const { votes, log, defections, voteMiscommunications, votePitches: _vpResult, pitchIntel:_pitchIntelResult, pitchCounterplay:_pitchCounterplayResult, knowledgeEvents:_knowledgeEventsResult, emotionalDefectionDiagnostics, voteCommitmentDiagnostics } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote, coachTargets);
     if (emotionalDefectionDiagnostics?.length) ep.emotionalDefectionDiagnostics = emotionalDefectionDiagnostics;
     if (voteCommitmentDiagnostics?.length) ep.voteCommitmentDiagnostics = voteCommitmentDiagnostics;
     if (_vpResult) ep.votePitches = _vpResult;
@@ -4764,7 +4772,7 @@ export function simulateEpisode() {
         return { votes, log, eliminated: loser, isTie: true, tiedPlayers: _nonImmune };
       }
       // Survivor mode: revote, then rocks
-      const rv = simulateVotes(tribalPlayers, [...tribalImmune, ...(ep.idolPlays||[]).map(p => p.player)], allianceSet, gs.lostVotes, ep.openVote, coachesOf(tribeLabel).map(c => c.name));
+      const rv = simulateVotes(tribalPlayers, [...tribalImmune, ...(ep.idolPlays||[]).map(p => p.player)], allianceSet, gs.lostVotes, ep.openVote, coachTargets);
       ep.revoteVotes = rv.votes; ep.revoteLog = rv.log;
       const res2 = resolveVotes(rv.votes);
       if (res2.eliminated) return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _nonImmune };
@@ -4777,7 +4785,7 @@ export function simulateEpisode() {
 
     // Votes wiped (SitD + idol both fired) — run a fresh open vote with all immune players excluded
     if (!res.eliminated && !res.isTie && ep.shotInDark?.safe) {
-      const rv2 = simulateVotes(tribalPlayers, tribalImmune, allianceSet, gs.lostVotes, ep.openVote, coachesOf(tribeLabel).map(c => c.name));
+      const rv2 = simulateVotes(tribalPlayers, tribalImmune, allianceSet, gs.lostVotes, ep.openVote, coachTargets);
       ep.revoteVotes = rv2.votes; ep.revoteLog = rv2.log;
       ep.sidFreshVote = true;
       const res2 = resolveVotes(rv2.votes);
@@ -4816,7 +4824,7 @@ export function simulateEpisode() {
       const eligibleRevoters = tribalPlayers.filter(p => !res.tiedPlayers.includes(p) && !gs.lostVotes.includes(p));
       if (!eligibleRevoters.length) {
         ep.isFullDeadlock = true;
-        const fdRv = simulateVotes(tribalPlayers, tribalImmune.length ? tribalImmune : immuneName, allianceSet, gs.lostVotes, ep.openVote, coachesOf(tribeLabel).map(c => c.name));
+        const fdRv = simulateVotes(tribalPlayers, tribalImmune.length ? tribalImmune : immuneName, allianceSet, gs.lostVotes, ep.openVote, coachTargets);
         ep.revoteVotes = fdRv.votes; ep.revoteLog = fdRv.log;
         const fdRes = resolveVotes(fdRv.votes);
         if (fdRes.eliminated) return { votes, log, eliminated: fdRes.eliminated, isTie: true, tiedPlayers: res.tiedPlayers };
@@ -4938,7 +4946,12 @@ export function simulateEpisode() {
     ep.alliances = _dtAlliances;
     // Pre-tribal idol mechanics
     checkIdolPreTribal(ep, _dtMembers);
-    const _dtResult = runTribal(_dtMembers, null, _dtAlliances);
+    // The merged council spans every losing tribe, not the single tribe the
+    // outer `tribeLabel` closure variable describes (it's null here — this
+    // isn't ep.challengeType === 'tribe') — collect coaches from ALL of them
+    // so none are silently unreachable as a vote target on a double-tribal night.
+    const _dtCoachTargets = _dtLosingTribes.flatMap(t => coachesOf(t.name).map(c => c.name));
+    const _dtResult = runTribal(_dtMembers, null, _dtAlliances, _dtCoachTargets);
     applyCoachElimination(ep, _dtResult); // see applyCoachElimination's header — must run before _dtResult.eliminated is read below
     ep.votes = _dtResult.votes; ep.votingLog = _dtResult.log;
     ep.isTie = _dtResult.isTie; ep.tiedPlayers = _dtResult.tiedPlayers;
@@ -5097,7 +5110,11 @@ export function simulateEpisode() {
       // Pre-tribal idol mechanics per tribe
       checkIdolPreTribal(ep, tribe.members);
       const tAlliances = formAlliances(tribe.members, tribe.name, ep.challengeCategory);
-      const tResult = runTribal(tribe.members, null, tAlliances);
+      // Each losing tribe votes independently — the outer `tribeLabel` closure
+      // variable is null here (this isn't ep.challengeType === 'tribe'), so
+      // without an explicit list this tribe's coaches would be silently
+      // unreachable as a vote target.
+      const tResult = runTribal(tribe.members, null, tAlliances, coachesOf(tribe.name).map(c => c.name));
       applyCoachElimination(ep, tResult); // see applyCoachElimination's header — must run before tResult.eliminated is read below
       // Capture idol plays that fired for THIS tribe
       const _tribeIdolPlays = (ep.idolPlays || []).slice(_preIdolCount);

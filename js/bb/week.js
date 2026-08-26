@@ -2606,6 +2606,22 @@ export function simulateBBWeek(options = {}) {
         variant: options.chainStart || 'safety-comp' });
       if (week.chainOfSafety) {
         skipVeto = true;
+        // ── AND THE BLOCK BUSTER DOES NOT RUN EITHER ──
+        //
+        // They are the same idea twice. The Block Buster puts a third person
+        // on the block and gives the three of them a competition where the
+        // winner comes off it; the chain ends by leaving three people over and
+        // giving them a competition where the winner comes off it. The chain
+        // owns that, and it runs its own.
+        //
+        // The mode was already being skipped in practice — the chain fixes the
+        // block at the two it left over, so there was never a third chair for
+        // the arena to play for — but the week went on RECORDING
+        // `safetyMode: 'block-buster'` for a competition that never happened,
+        // which is a fact about the week that is not true.
+        week.safetyMode = null;
+        week.safetyWinner = null;
+        week.blockBeforeSafety = [];
         week.acts.push(addBeats(week.chainOfSafety,
           { players: [...(week.chainOfSafety.nominees || [])] }));
         // And what the house says about it afterwards. Eleven people made a

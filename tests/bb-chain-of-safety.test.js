@@ -524,3 +524,48 @@ describe('one stretch of house life, not two', () => {
     expect(rendered(chain.ep).length).toBeGreaterThan(2000);
   });
 });
+
+describe('the Block Buster is the same idea twice', () => {
+  const withBlockBuster = () => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+    Object.assign(seasonConfig, {
+      format: 'big-brother', jurySize: 7, finaleSize: 3,
+      bbSafetyMode: 'block-buster', bbSafetyStopsAt: 6,
+      bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house', romance: 'enabled',
+      twistSchedule: [{ episode: 2, type: 'bb-chain-of-safety', chainStart: 'hoh' }],
+    });
+    gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns,
+      threatScore, getBond, getPerceivedBond, ordinal });
+    simulateBBEpisode();
+    const ep = simulateBBEpisode();
+    return { ep, week: gs.bb.weeks[gs.bb.weeks.length - 1] };
+  };
+
+  it('does not claim a competition that never happened', () => {
+    // The Block Buster puts a third person on the block and gives the three of
+    // them a competition the winner comes off. The chain ends by leaving three
+    // over and giving them a competition the winner comes off. The chain owns
+    // that and runs its own — so the arena was already being skipped, and the
+    // week went on recording `safetyMode: 'block-buster'` for it anyway.
+    const { week } = withBlockBuster();
+    expect(week.chainOfSafety, 'the chain did not run at all').toBeTruthy();
+    expect((week.acts || []).some(a => a.type === 'safety'),
+      'the Block Buster arena ran on a week with no third chair').toBe(false);
+    expect(week.safetyMode, 'the week recorded a competition it never held').toBeNull();
+    expect(week.safetyWinner).toBeNull();
+  });
+
+  it('still runs a clean week, block and all', () => {
+    const { week } = withBlockBuster();
+    // Two nominees, not the three a safety season would otherwise seat.
+    expect(week.initialNominees).toHaveLength(2);
+    expect(week.finalNominees).toHaveLength(2);
+    expect(week.chainOfSafety.nominees.sort()).toEqual([...week.finalNominees].sort());
+    // And somebody left, off a real vote.
+    expect(week.evicted).toBeTruthy();
+    expect((week.ballots || []).length).toBeGreaterThan(4);
+  });
+});

@@ -1220,6 +1220,16 @@ export function applyTwist(ep, twist, isPrimary = true) {
   if (isPrimary) ep.twist = twistObj; // backward compat for engine checks
   const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
+  // The arrival itself is handled in episode.js, which owns the roster and the
+  // camp events — this only marks the episode so the screens, the transcript
+  // and the scheduler know which one it was. Nothing here mutates tribes:
+  // doing it at twist time would run BEFORE the episode snapshots the camp,
+  // and the wall would show somebody standing in a tribe they have not walked
+  // into yet.
+  if (engineType === 'late-arrival') {
+    ep.isLateArrival = true;
+  }
+
   // ── TEAM DYNAMICS ──────────────────────────────────────────────────
   if (engineType === 'tribe-swap') {
     if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;

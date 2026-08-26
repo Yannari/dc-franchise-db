@@ -3190,6 +3190,20 @@ export function _textVolunteerDuel(ep, ln, sec) {
 }
 
 export function _textDockArrivals(ep, ln, sec) {
+  // ── THE ONE WHO WAS NOT ON THE DOCK ──
+  //
+  // Written before the dock arrivals return below, because a late arrival
+  // happens on an episode that has no dock arrivals at all — so the early
+  // return would have dropped the single most important thing that happened
+  // in that episode.
+  if (ep.lateArrival) {
+    sec('SOMEBODY ARRIVES');
+    ln(`  ${ep.lateArrival.name} was not here when this season started.`);
+    ln(`  ${ep.lateArrival.name} joins ${ep.lateArrival.tribe}`
+      + `${ep.lateArrival.fromOtherSide ? ' — the camp they were not cast on' : ''}.`);
+    ln('  No bonds, no alliance, no challenge record. Everybody else has had days.');
+    ln('');
+  }
   if (!ep.dockArrivals?.length) return;
   sec('THE ARRIVAL');
   const host = seasonConfig.host || 'Chris';

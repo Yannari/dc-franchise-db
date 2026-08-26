@@ -316,6 +316,13 @@ export const TWIST_CATEGORY_LABEL = Object.fromEntries(
 
 export const TWIST_CATALOG = [
   // Team Dynamics
+  // The oldest device in the genre and the one thing this engine could not do:
+  // a player who was not on the dock. Cast normally, held out of the roster at
+  // episode zero, and put in on the episode the author picked.
+  { id:'late-arrival',     emoji:'🧭', name:'Late Arrival',         category:'team',       phase:'pre-merge',
+    desc:'One player is held back from the start of the season and walks into camp partway through, joining whichever tribe has fewest players — or a camp the author picks. They arrive with nothing: no bonds, no alliance, no challenge record, and a camp that has already decided who it trusts. Being the easiest vote there is IS the twist, and the only thing that fixes it is what they do in the days after they walk in.',
+    engineType:'late-arrival',
+    incompatible:['first-impressions'] },
   { id:'tribe-swap',       emoji:'🔀', name:'Tribe Swap',           category:'team',       phase:'pre-merge',  desc:'All players redistributed between existing tribes.',                        engineType:'tribe-swap'      },
   { id:'tribe-dissolve',   emoji:'💥', name:'Tribe Dissolve',       category:'team',       phase:'pre-merge',  desc:'Tribes reduced by one — all players reshuffled into fewer tribes.',         engineType:'tribe-dissolve'  },
   { id:'tribe-expansion',  emoji:'📈', name:'Tribe Expansion',      category:'team',       phase:'pre-merge',  desc:'A new tribe is formed — all players reshuffled into N+1 groups.',           engineType:'tribe-expansion' },

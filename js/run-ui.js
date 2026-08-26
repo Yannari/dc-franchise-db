@@ -880,6 +880,9 @@ export function renderEpisodeHistory() {
   grid.innerHTML = history.map(ep => {
     const riTag = ep.riChoice==='REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : ep.riChoice==='WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
     const mergeTag = ep.isMerge ? `<span class="ep-hist-tag" style="background:rgba(16,185,129,0.15);color:var(--accent)">MERGE</span>` : '';
+    // Somebody walked IN on this episode, which is the one thing the timeline
+    // has never had to show.
+    const arrivalTag = ep.lateArrival ? `<span class="ep-hist-tag" style="background:rgba(56,189,248,0.15);color:#38bdf8">+ ${ep.lateArrival.name}</span>` : '';
     const finaleTag = ep.isFinale ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">FINALE</span>` : '';
     const slasherTag = ep.isSlasherNight ? `<span class="ep-hist-tag" style="background:rgba(218,54,51,0.15);color:#da3633">Slasher Night</span>` : '';
     const mcTag = ep.isMonsterCash ? `<span class="ep-hist-tag" style="background:rgba(76,175,80,0.15);color:#4caf50">Monster Cash</span>` : '';
@@ -983,7 +986,7 @@ export function renderEpisodeHistory() {
         // One source for who left, so a night that removes two people
         // never has to be taught to a second hand-rolled chain of ternaries.
         : (getEpisodeEliminations(ep).join(' + ') || (ep.isFinale ? 'FTC' : '—'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${mnTag}${mgrTag}${mtfTag}${dpTag}${ilTag}${tiTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${tdtTag}${amgTag}${paTag}${talTag}${nocTag}${bcbTag}${scTag}${womTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${hhTag}${hodTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${iibTag}${fcrTag}${baTag}${ptTag}${prwTag}${amhTag}${cocTag}${rtcTag}${aucTag}${ncTag}</div>
+      <div>${riTag}${arrivalTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${mnTag}${mgrTag}${mtfTag}${dpTag}${ilTag}${tiTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${tdtTag}${amgTag}${paTag}${talTag}${nocTag}${bcbTag}${scTag}${womTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${hhTag}${hodTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${iibTag}${fcrTag}${baTag}${ptTag}${prwTag}${amhTag}${cocTag}${rtcTag}${aucTag}${ncTag}</div>
     </div>`;
   }).join('');
 }
@@ -1600,7 +1603,20 @@ export function runFanVote() {
 
 // Returns an array of { ep, active, phase, engineType } for every episode in the season
 export function buildEpisodeMap() {
-  const cast    = players.length || 18;
+  // ── SOMEBODY WHO IS NOT THERE YET IS NOT IN THE COUNT ──
+  //
+  // A late arrival is cast normally and held out of the roster until the
+  // episode they walk in on, so the season genuinely starts one player
+  // shorter. Counting them from episode one made the projection run a whole
+  // episode long and every "N left" on the way down was one too many.
+  //
+  // They come back as a `return` on their own episode below, which is what
+  // makes the arrival read the way it does on the schedule: fifteen left
+  // before the vote and fifteen left after it, because one walked out of the
+  // door and one walked in.
+  const _lateArrivals = (seasonConfig.twistSchedule || [])
+    .filter(t => t && t.type === 'late-arrival').length;
+  const cast    = Math.max(2, (players.length || 18) - _lateArrivals);
   // A house ALWAYS ends at three, whatever the slider says.
   //
   // `houseFinaleSize()` returns 3 unconditionally because the last night is a
@@ -1735,6 +1751,9 @@ export function buildEpisodeMap() {
     if (_allTypes.includes('exile-duel')) elims = 0;
     _totalElimsToHere += elims;
     let returns = _allTypes.includes('second-chance') ? 1 : 0;
+    // The one who was held back walks in on this episode. Counted as a return
+    // because that is exactly what it is to the numbers.
+    if (_allTypes.includes('late-arrival')) returns += 1;
 
     // ── Big Brother sends people back too ──
     //
@@ -2156,6 +2175,29 @@ export function renderTimeline() {
         return sel('chainStart', starts, t2.chainStart || 'safety-comp', 'Who holds the first link')
           + sel('chainStyle', ends, t2.chainStyle || 'canada', 'How the chain ends');
       };
+      // WHO walks in, and WHICH camp. Both authored on the scheduled entry,
+      // because a late arrival with neither chosen is a twist that quietly
+      // picks somebody for you.
+      if (t.type === 'late-arrival') {
+        const roster = (players || []).map(p2 => p2.name);
+        const tribes = (gs?.tribes || []).map(x => x.name).filter(Boolean);
+        const who = t.arrival && roster.includes(t.arrival) ? t.arrival : '';
+        const camps = { smallest: 'Smallest tribe', other: 'The tribe they were not cast on', own: 'Their own tribe' };
+        tribes.forEach(n => { camps[n] = n; });
+        const cur = t.arrivalTribe || 'smallest';
+        const box = (key, opts, sel, title, blank) => {
+          let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','${key}',this.value)" onclick="event.stopPropagation()" title="${title}" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
+          if (blank) h += `<option value="" ${sel ? '' : 'selected'}>${blank}</option>`;
+          for (const [k, label] of Object.entries(opts)) {
+            h += `<option value="${k}" ${k === sel ? 'selected' : ''}>${label}</option>`;
+          }
+          return h + '</select>';
+        };
+        const cfg = box('arrival', Object.fromEntries(roster.map(n => [n, n])), who,
+          'Who is held back and walks in later', 'Pick a player')
+          + box('arrivalTribe', camps, cur, 'Which camp they walk into');
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${cfg} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'bb-double-eviction') {
         const styles = {
           'fast-forward': 'Fast-Forward (live hour)',
@@ -2712,6 +2754,7 @@ export function assignTwist(twistId) {
     if (twistId === 'bb-double-eviction') entry.deStyle = 'fast-forward';
     if (twistId === 'bb-triple-eviction') entry.teStyle = 'fast-forward';
     if (twistId === 'bb-chain-of-safety') { entry.chainStart = 'safety-comp'; entry.chainStyle = 'canada'; }
+    if (twistId === 'late-arrival') { entry.arrival = ''; entry.arrivalTribe = 'smallest'; }
     if (twistId === 'bb-battle-back') { entry.bbStyle = 'gauntlet'; entry.bbComp = ''; }
     seasonConfig.twistSchedule.push(entry);
   });

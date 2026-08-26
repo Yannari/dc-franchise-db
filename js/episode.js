@@ -11,6 +11,7 @@ import { rollDeparture, departureText } from './departures.js';
 import { checkIdolPlays, checkIdolPreTribal, checkNonIdolAdvantageUse, findAdvantages, handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, simulateLastChance } from './challenges-core.js';
 import { applyTwist, generateTwistScenes, generateDockArrivals, simulateJourney, applyRewardSocialEffects } from './twists.js';
+import { holdOutLateArrival, lateArrivalDue, seatLateArrival } from './late-arrival.js';
 import { applyDisadvantagePenalty } from './disadvantage-vote.js';
 import { updateStrategicReputations } from './reputation.js';
 import { applyObservedStrategicRespect, applySocialStatusEffects } from './relationship-events.js';
@@ -1167,6 +1168,14 @@ export function simulateEpisode() {
   const cfg = seasonConfig;
   // Fire-making / Koh-Lanta force F4 finale — override every episode start
   if ((cfg.firemaking || cfg.finaleFormat === 'fire-making' || cfg.finaleFormat === 'koh-lanta') && cfg.finaleSize < 4) cfg.finaleSize = 4;
+  // ── SOMEBODY IS NOT HERE YET ──
+  //
+  // Held out BEFORE the episode object is built, because `tribesAtStart` and
+  // `activeAtStart` are snapshotted three lines below and every screen in the
+  // viewing party draws the camp off them. Lifted out afterwards, the wall
+  // would show a player standing in a tribe they have not walked into yet —
+  // the same class of bug the Rivals' `_preArrival` flag exists for.
+  if ((gs.episode || 0) === 0) { try { holdOutLateArrival(); } catch { /* season plays as cast */ } }
   const epNum = gs.episode + 1;
   const ep = { num: epNum, bondChanges: [], riDuel: null, isRIReentry: false, isMerge: false,
                 idolFinds: [], idolPlays: [], idolRehide: false, journey: null, twist: null, twists: [], campEvents: {},
@@ -1676,6 +1685,7 @@ export function simulateEpisode() {
     generateInterludeLife(ep);
     gs.episode = epNum;
     gs.episodeHistory.push({
+        lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
       challengeType: null, isMerge: false,
       isInterlude: true, interludeMode: ep.interludeMode,
@@ -1790,6 +1800,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stSN = generateSummaryText(ep);
@@ -2150,6 +2165,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stTDD = generateSummaryText(ep);
@@ -2272,6 +2292,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stSD = generateSummaryText(ep);
@@ -2288,6 +2313,25 @@ export function simulateEpisode() {
   if (gs._shieldActivations) ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
   // Generate dock arrivals for Episode 1 (if not already generated by first-impressions twist)
   if ((gs.episode || 0) === 0 && !ep.dockArrivals) generateDockArrivals(ep);
+  // ── AND THE ONE WHO WAS NOT ON THE DOCK ──
+  //
+  // Seated BEFORE camp events run, so their first day in that camp is a day
+  // they are actually in — alliances forming, people sizing them up. Seated
+  // after, they would spend their own arrival episode invisible to every
+  // conversation happening around them.
+  if (lateArrivalDue(epNum)) {
+    try {
+      const walkIn = seatLateArrival(ep);
+      if (walkIn) {
+        ep.lateArrival = { name: walkIn.arrival, tribe: walkIn.tribe,
+          fromOtherSide: walkIn.fromOtherSide };
+        const camp = walkIn.tribe;
+        if (!ep.campEvents) ep.campEvents = {};
+        if (!ep.campEvents[camp]) ep.campEvents[camp] = { pre: [], post: [] };
+        ep.campEvents[camp].pre.unshift(walkIn);
+      }
+    } catch { /* the season carries on without them */ }
+  }
   generateCampEvents(ep, 'pre');
   checkMoleSabotage(ep); // The Mole: bond sabotage, laying low events, exposure checks
   checkVolunteerExileDuel(ep); // Volunteer Exile Duel: bold player asks to be voted out
@@ -2836,6 +2880,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
         summaryText: '',
         gsSnapshot: window.snapshotGameState(),
       });
@@ -2934,6 +2983,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stYT = generateSummaryText(ep);
@@ -3183,6 +3237,7 @@ export function simulateEpisode() {
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
       gs.episodeHistory.push({
+        lateArrival: ep.lateArrival || null,
         num: epNum, eliminated: _sdLastPlace, riChoice: ep.riChoice || null,
         immunityWinner: ep.immunityWinner || null,
         challengeType: ep.challengeType || 'individual',
@@ -3248,6 +3303,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
         summaryText: '',
         gsSnapshot: window.snapshotGameState(),
       });
@@ -3689,6 +3749,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState() });
     const stLC = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stLC; ep.summaryText = stLC;
@@ -3762,6 +3827,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
         summaryText: '', gsSnapshot: window.snapshotGameState() });
       const stTD = generateSummaryText(ep);
       gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stTD; ep.summaryText = stTD;
@@ -3904,6 +3974,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated || null, riChoice: null,
+        lateArrival: ep.lateArrival || null,
       departure: ep.departure || null,
       immunityWinner: ep.immunityWinner || null, challengeType: ep.challengeType || null,
       isMerge: ep.isMerge, votes: {}, alliances: [], noTribal: true,
@@ -3967,6 +4038,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       isRewardOnly: ep.isRewardOnly || false, rewardChalData: ep.rewardChalData || null,
       summaryText: '', gsSnapshot: window.snapshotGameState() });
     const stNT = generateSummaryText(ep);
@@ -4907,6 +4983,7 @@ export function simulateEpisode() {
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
     gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
+        lateArrival: ep.lateArrival || null,
       immunityWinner: null, challengeType: 'double-tribal', isMerge: ep.isMerge,
       challengeLabel: ep.challengeLabel || null, challengeCategory: ep.challengeCategory || null,
       challengeDesc: ep.challengeDesc || '', challengePlacements: ep.challengePlacements || null,
@@ -4988,6 +5065,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stDT = generateSummaryText(ep);
@@ -5152,6 +5234,7 @@ export function simulateEpisode() {
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
     gs.episodeHistory.push({
+        lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
       immunityWinner: null, challengeType: 'multi-tribal', isMerge: ep.isMerge,
       challengeLabel: ep.challengeLabel || null, challengeCategory: ep.challengeCategory || null,
@@ -5231,6 +5314,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stMT = generateSummaryText(ep);
@@ -5558,6 +5646,7 @@ function simulateJuryRoundtable(ep) {
       }
     }
     gs.episodeHistory.push({
+        lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated || null, firstEliminated: null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: ep.challengeType || 'individual', isMerge: ep.isMerge,
@@ -5673,6 +5762,11 @@ function simulateJuryRoundtable(ep) {
       isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
       isAftermayhem: ep.isAftermayhem || false,
       isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       isRewardOnly: ep.isRewardOnly || false, rewardChalData: ep.rewardChalData || null,
       noChallenge: ep.noChallenge || false,
     });
@@ -5874,6 +5968,7 @@ function simulateJuryRoundtable(ep) {
     }
 
     gs.episodeHistory.push({
+        lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated || null, firstEliminated: null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: ep.challengeType || 'individual', isMerge: ep.isMerge,
@@ -6931,6 +7026,7 @@ function simulateJuryRoundtable(ep) {
   // ── INCREMENT & SAVE ──
   gs.episode = epNum;
   gs.episodeHistory.push({
+        lateArrival: ep.lateArrival || null,
     num: epNum, eliminated: ep.eliminated, firstEliminated: ep.firstEliminated || null, riChoice: ep.riChoice,
     immunityWinner: ep.challengeType === 'tribe' ? null : (ep.immunityWinner || null),
     challengeType: ep.challengeType, isMerge: ep.isMerge,

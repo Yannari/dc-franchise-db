@@ -6450,6 +6450,9 @@ export function generateBBSummaryText(ep) {
   ]) {
     if (!iv) continue;
     sec(heading);
+    // Who was on the other side of the door. Printed FIRST because it is the
+    // walk-out — it happens before the host has asked anything.
+    if (iv.homecoming) ln(`  ${iv.homecoming.line}`);
     iv.questions.forEach(q => {
       ln(`  ${iv.host}: ${q.q}`);
       ln(`  ${iv.evictee}: ${q.a}${q.wrong ? '   (wrong)' : ''}`);

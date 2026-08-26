@@ -26269,6 +26269,8 @@ export function rpBuildBBEvictionInterview(ep, which = null) {
 
   const steps = [
     { kind: 'walkout' },
+    // Straight after the doors open, because that is when it happens.
+    ...(iv.homecoming ? [{ kind: 'homecoming' }] : []),
     ...iv.questions.map(q => ({ kind: 'q', ...q })),
     ...(iv.truth ? [{ kind: 'truth' }] : []),
     ...(iv.goodbyes?.length ? [{ kind: 'byes-intro' }] : []),
@@ -26303,6 +26305,11 @@ export function rpBuildBBEvictionInterview(ep, which = null) {
   const card = (step, i) => {
     if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
     switch (step.kind) {
+      case 'homecoming':
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h"><span class="bbns-pill ${iv.homecoming.strayed ? 'red' : 'gold'}">${
+  iv.homecoming.strayed ? 'THE SEAT AT THE BACK' : 'WAITING AT THE DOOR'}</span></div>
+          <div class="bbns-card-b">${_bbEsc(iv.homecoming.line)}</div></div>`;
       case 'walkout':
         return `<div class="bbns-card is-open">
           <div class="bbns-card-h">${_bbAvatar(iv.evictee, 30)}<span class="bbns-pill red">THE WALK</span></div>

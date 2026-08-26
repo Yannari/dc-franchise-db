@@ -646,6 +646,35 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
       ]),
   };
 
+  // ── WHO IS ON THE OTHER SIDE OF THAT DOOR ──
+  //
+  // Somebody who walked in with a partner at home has been watched by that
+  // partner for the whole season, and the walk-out is the first moment the two
+  // of them are in the same place again. The life log cannot say anything
+  // about it — those events resolve BETWEEN seasons — so if the night does not
+  // say it, nothing ever does, and a houseguest who had a showmance in front
+  // of the person waiting for them simply walks out into no consequence at all.
+  const _at = players.find(pl => pl.name === evictee)?.partnerAtHome || null;
+  let homecoming = null;
+  if (_at) {
+    const strayed = (gs.showmances || []).some(sh => (sh.players || []).includes(evictee)
+      && sh.phase !== 'broken-up');
+    homecoming = {
+      whom: _at.name, stage: _at.stage, strayed,
+      line: strayed
+        ? _pick(rng, [
+          `${_at.name} is not in the audience. The seat that was held all season is empty, and ${evictee} looks at it for slightly too long.`,
+          `The doors open and ${evictee} scans the crowd for one face. It is not there. Everybody watching at home already knew that before ${p.sub} did.`,
+          `${_at.name} came. ${_at.name} is standing at the back, and does not move when ${evictee} sees ${pronouns(_at.name).obj}. Neither of them says anything the microphones can pick up.`,
+        ])
+        : _pick(rng, [
+          `${_at.name} is on their feet before the doors finish opening, and ${evictee} does not make it three steps before being caught.`,
+          `${evictee} spent ${timeIn} being asked about ${_at.name} and answering the same way every time. ${_at.name} is right there, and the answer holds up.`,
+          `The first thing ${evictee} does out of that house is find ${_at.name} in the crowd. Nothing about the game gets a look in for a while.`,
+        ]),
+    };
+  }
+
   // ── The truth panel: what the interview exists to reveal. The host has
   // watched everything; the evictee has watched a version of it. ──
   const evictionAct = (week.acts || []).find(a => a.type === 'eviction');
@@ -858,6 +887,9 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
     betrayedBy: read.betrayedByAlly,
     votes: { ...(week.votes || {}) },
     walkout,
+    // Who was waiting, and whether they still were. Null for anybody who came
+    // in unattached, which is most of the house.
+    homecoming,
     questions,
     truth,
     goodbyes,

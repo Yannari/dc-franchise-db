@@ -4836,7 +4836,7 @@
         "temperament": 8
       },
       "sexuality": "straight",
-      "voice": "White American, The Heiress.",
+      "voice": "Evie speaks with a glamorous, breathy, Jennifer Coolidge-inspired delivery, making even confused or self-centered lines sound airy and polished. Her vocabulary leans wealthy-socialite and self-flattering—lounging, brunch, massages, charisma—and in an argument she is more likely to misunderstand the stakes, take criticism personally, and pivot into a petty vote than make a hard-edged attack.",
       "profileSources": {
         "backstory": [
           {
@@ -4852,6 +4852,14 @@
             "url": "https://disventure-camp.fandom.com/wiki/Evie",
             "kind": "source-canon",
             "quote": "While she presents an air of class and refinement, Evie is actually quite dim."
+          }
+        ],
+        "voice": [
+          {
+            "label": "Disventure Camp Wiki - Evie",
+            "url": "https://disventure-camp.fandom.com/wiki/Evie",
+            "kind": "source-canon",
+            "quote": "Evie's voice, mannerisms, and appearance appear to be partially based off of the actress Jennifer Coolidge."
           }
         ]
       },

@@ -10428,8 +10428,44 @@ export function rpBuildVotingPlans(ep) {
   }
 
   // ── ADVANTAGES IN PLAY ──────────────────────────────────────────────────────
+  // The save card belongs in this section: it is a power somebody is holding
+  // into this tribal and deciding whether to spend, which is exactly what the
+  // idol reads below are about. What it must NOT say is whether the card was
+  // committed or how the peers signed — that is The Signatures' reveal, and
+  // printing it here would give the ending away on the screen before it.
+  const _cardReads = [];
+  {
+    const _crTribe = ep.tribalTribe || ep.loser?.name || '';
+    const _crCards = ep.coachData?.[_crTribe]?.cards || {};
+    const _blocs = (ep.alliances || []).map(a => a.target).filter(Boolean);
+    for (const [coachName, state] of Object.entries(_crCards)) {
+      if (state !== 'unused') continue;
+      const aimed = _blocs.filter(t => t === coachName).length;
+      const peers = Object.keys(_crCards).filter(n => n !== coachName);
+      _cardReads.push({ coachName, aimed, peers });
+    }
+  }
+  if (_cardReads.length) {
+    html += `<div class="rp-vp-section-label">SAVE CARD DEBATE</div>
+      <div style="font-size:10px;color:#8b949e;margin:-5px 0 8px">A coach can only play the card before the votes are read, and only if every other coach on the tribe signs it. What they decided, and what the others signed, stays sealed until Tribal.</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-bottom:14px">${_cardReads.map(r => {
+        const label = r.aimed >= 2 ? 'CORNERED' : r.aimed === 1 ? 'A NAME ON THE BOARD' : 'HOLDING, FOR NOW';
+        const colour = r.aimed >= 2 ? '#f85149' : r.aimed === 1 ? '#d29922' : '#8b949e';
+        const detail = !r.peers.length
+          ? `${r.coachName} is the only coach left on this tribe. There is nobody to sign, so the card cannot be played at all — whatever ${r.coachName} reads tonight, it changes nothing.`
+          : r.aimed >= 2
+            ? `${r.aimed} blocs have named ${r.coachName}. Playing the card means spending it before knowing it was needed; not playing it means going home holding it. ${r.peers.join(' and ')} would have to sign, and ${r.peers.length === 1 ? 'has' : 'have'} not said either way.`
+            : r.aimed === 1
+              ? `One bloc is on ${r.coachName}. Not enough to be certain, more than enough to lose sleep over — and the card is only worth anything if it goes down before the votes are read.`
+              : `Nobody has named ${r.coachName} out loud. The card stays in the pocket, which is the cheapest place for it and the most useless.`;
+        return `<div style="padding:9px 10px;background:rgba(232,135,58,.05);border:1px solid rgba(232,135,58,.18);border-radius:8px">
+          <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:${colour}">${r.coachName} · ${label}</div>
+          <div style="font-size:11px;color:#c9d1d9;margin-top:3px">${detail}</div>
+        </div>`;
+      }).join('')}</div>`;
+  }
   if (ep.idolExposureReads?.length) {
-    html += `<div class="rp-vp-section-label">IDOL HOLDER READS</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-bottom:12px">${ep.idolExposureReads.map(read => {
+    html += `<div class="rp-vp-section-label">ADVANTAGE HOLDER READS</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-bottom:12px">${ep.idolExposureReads.map(read => {
       const label = read.mode === 'countermove' ? 'READS THE LEAK' : read.mode === 'panic' ? 'PARANOID FALSE ALARM' : read.mode === 'unaware' ? 'MISSES THE EXPOSURE' : read.mode === 'defensive' ? 'SENSES DANGER' : 'FEELS SAFE';
       const detail = read.mode === 'countermove' ? `${read.holder} believes ${read.counterTarget} knows and may strike back or prepare the idol.`
         : read.mode === 'panic' ? `${read.holder} thinks the idol is exposed even though no credible leak is recorded.`

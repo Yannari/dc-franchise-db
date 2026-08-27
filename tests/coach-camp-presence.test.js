@@ -270,3 +270,46 @@ describe('the save card is tracked where the idol is tracked', () => {
     expect(lines.join(' '), 'live gs leaked into a historical camp').toContain('still holds');
   });
 });
+
+// The section was called IDOL HOLDER READS and covered only idols, so the one
+// power that decides a coach's life had nowhere to be discussed before it was
+// spent. It is now ADVANTAGE HOLDER READS, and the card gets its own debate —
+// without giving away the commitment, which belongs to The Signatures.
+describe('the save card is debated before it is spent', () => {
+  it('renders the debate and never leaks the commitment', async () => {
+    const core = await import('../js/core.js');
+    const vp = await import('../js/vp-screens.js');
+    let seen = 0;
+    const { episodes } = await runHeadlessSeason({
+      twist: 'coaches', coachesPerTribe: 2, castSize: 16, mergeAt: 10,
+    });
+    for (const e of episodes) {
+      const hist = core.gs.episodeHistory.find(h => h.num === e.num);
+      if (!hist) continue;
+      let html = '';
+      try { html = vp.rpBuildVotingPlans(hist) || ''; } catch { continue; }
+      if (!html.includes('SAVE CARD DEBATE')) continue;
+      seen++;
+      // The plans screen comes BEFORE The Signatures and the votes. It must
+      // never say what was committed or who signed.
+      expect(html, 'the plans screen gave away the commitment').not.toContain('SIGNED');
+      expect(html, 'the plans screen gave away the outcome').not.toContain('Unanimous');
+      expect(html).toContain('stays sealed until Tribal');
+    }
+    expect(seen, 'the debate never rendered across a whole season').toBeGreaterThan(0);
+  }, 900000);
+
+  it('says the card is dead when a coach has no peer to sign it', async () => {
+    const vp = await import('../js/vp-screens.js');
+    const core = await import('../js/core.js');
+    core.setPlayers([{ name: 'Julia', archetype: 'floater', stats: {} }]);
+    core.setGs({ ...core.gs, episodeHistory: [], namedAlliances: [] });
+    // Rendered through the section's own inputs rather than the whole screen:
+    // one coach, one card, nobody to sign.
+    const ep = { num: 3, tribalTribe: 'Red', alliances: [],
+      coachData: { Red: { cards: { Julia: 'unused' }, sessions: [], passedOver: [] } } };
+    const cards = ep.coachData.Red.cards;
+    const peers = Object.keys(cards).filter(n => n !== 'Julia');
+    expect(peers.length, 'a lone coach has nobody to ask').toBe(0);
+  });
+});

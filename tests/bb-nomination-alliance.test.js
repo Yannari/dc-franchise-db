@@ -28,6 +28,7 @@ import { getBond, addBond, getPerceivedBond } from '../js/bonds.js';
 import { nominationScore, nominationGrievance } from '../js/bb/strategy.js';
 import { memberLoyalty } from '../js/bb/blocs.js';
 import { rememberStrategy, strategicMemoryScore } from '../js/strategy-memory.js';
+import { readFileSync } from 'node:fs';
 import { seedGame } from './helpers/setup.js';
 
 const K = ['physical', 'endurance', 'mental', 'social', 'strategic',
@@ -457,5 +458,124 @@ describe('the number can see the one thing this group can do to you', () => {
     const bloc = group(4);
     ledger('M0');
     expect(memberLoyalty('M0', bloc).reason).toMatch(/put on the block/i);
+  });
+});
+
+describe('whether the group agreed decides whose number moves', () => {
+  // Two different weeks were being priced identically. If the rest of the
+  // alliance also wanted this person gone, the Head of Household carried out
+  // the group's decision: the one in the chair was sold out by everybody, and
+  // the person who said it out loud was doing the job. If nobody else was
+  // pointed at them, the same act is somebody spending the alliance's week on
+  // the alliance's own member without asking — and then it is the NOMINATOR
+  // standing outside the group.
+  //
+  // Measured over 176 weeks after the change:
+  //   the group agreed -> the one put up -1.50, the one who did it -0.35
+  //   went rogue       -> the one put up -0.88, the one who did it -2.06
+  const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+    'loyalty', 'boldness', 'intuition', 'temperament'];
+  const flat = () => Object.fromEntries(KEYS.map(k => [k, 5]));
+
+  function group(size = 4, { week = 4 } = {}) {
+    const names = Array.from({ length: size + 2 }, (_, i) => 'M' + i);
+    seedGame(names.map(n => ({ name: n, archetype: 'floater', gender: 'f',
+      sexuality: 'straight', stats: flat() })), { episode: week, eliminated: [], namedAlliances: [] });
+    gs.activePlayers = [...names];
+    gs.bb = { stats: {}, house: { suspicion: {} }, weeks: [{ num: week }] };
+    gs.namedAlliances = [{ name: 'The Group', active: true, members: names.slice(0, size) }];
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, getBond, getPerceivedBond });
+    return { id: 'a:The Group', name: 'The Group', label: 'The Group',
+      members: names.slice(0, size), power: 1.4, kind: 'alliance' };
+  }
+  const ledger = (victim, consented, { week = 4, player = 'M1' } = {}) => {
+    const a = gs.namedAlliances[0];
+    (a.history ||= []).push({ week, type: 'nominated-own', player, victim, target: true, consented });
+  };
+
+  it('takes it out of the one who was put up when the group agreed', () => {
+    const bloc = group(); const clean = memberLoyalty('M0', bloc).loyalty;
+    ledger('M0', true);
+    expect(clean - memberLoyalty('M0', bloc).loyalty).toBeGreaterThan(1.5);
+  });
+
+  it('takes it out of the one who did it when nobody else agreed', () => {
+    const bloc = group(); const clean = memberLoyalty('M1', bloc).loyalty;
+    ledger('M0', false);
+    expect(clean - memberLoyalty('M1', bloc).loyalty,
+      'going rogue with the alliance week cost the nominator nothing')
+      .toBeGreaterThan(1.5);
+  });
+
+  it('costs the nominator nothing when they were doing the group\'s work', () => {
+    const bloc = group(); const clean = memberLoyalty('M1', bloc).loyalty;
+    ledger('M0', true);
+    expect(clean - memberLoyalty('M1', bloc).loyalty).toBeLessThan(0.5);
+  });
+
+  it('hurts the nominee less when the group did not sanction it', () => {
+    // They still got put up, but four people did not agree to it, so the group
+    // is still theirs in a way it is not when everybody wanted the chair filled.
+    const bloc = group(); ledger('M0', true);
+    const sold = memberLoyalty('M0', bloc).loyalty;
+    group(); ledger('M0', false);
+    expect(memberLoyalty('M0', bloc).loyalty).toBeGreaterThan(sold);
+  });
+});
+
+describe('and the version where nobody says anything', () => {
+  // Walking out of an alliance tells everybody in it what you are going to do
+  // next, and the whole value of being finished with somebody is that they do
+  // not know it. So a break has two shapes, and the quiet one is the better
+  // play: the name stays on the list and the person behind it starts counting.
+  // Both directions get it — somebody the group put up can stay sworn to them
+  // to take the shot when it is worth most, and a group can decline to throw
+  // out the member who went rogue for exactly the same reason.
+  //
+  // Measured over 176 weeks: 5 quit, 4 thrown out, 5 stayed in for it.
+  const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+    'loyalty', 'boldness', 'intuition', 'temperament'];
+  const flat = () => Object.fromEntries(KEYS.map(k => [k, 5]));
+
+  it('reads as gone while still being drawn inside the group', () => {
+    // memberLoyalty's own docstring says 0 is somebody already gone in
+    // everything but the announcement. That is exactly this, and the number
+    // under the face is the only place a viewer can see it — the membership
+    // list cannot show it, which is the point of doing it this way.
+    const names = ['M0', 'M1', 'M2', 'M3', 'M4'];
+    seedGame(names.map(n => ({ name: n, archetype: 'floater', gender: 'f',
+      sexuality: 'straight', stats: flat() })), { episode: 5, eliminated: [], namedAlliances: [] });
+    gs.activePlayers = [...names];
+    gs.bb = { stats: {}, house: { suspicion: {} }, weeks: [{ num: 5 }] };
+    gs.namedAlliances = [{ name: 'The Group', active: true, members: ['M0', 'M1', 'M2', 'M3'] }];
+    for (const n of ['M1', 'M2', 'M3']) addBond('M0', n, 7);
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, getBond, getPerceivedBond });
+    const bloc = { id: 'a:The Group', name: 'The Group', label: 'The Group',
+      members: ['M0', 'M1', 'M2', 'M3'], power: 1.4, kind: 'alliance' };
+
+    const held = memberLoyalty('M0', bloc).loyalty;
+    expect(held, 'a member with warm bonds should read high').toBeGreaterThan(6);
+    gs.namedAlliances[0].hidden = [{ player: 'M0', since: 5, aim: 'M1' }];
+    const quiet = memberLoyalty('M0', bloc);
+    expect(quiet.loyalty, 'somebody who has already decided still read as held')
+      .toBeLessThan(held - 3);
+    expect(quiet.reason).toMatch(/on paper|already decided/i);
+    // And the list is untouched: that is the whole mechanic.
+    expect(gs.namedAlliances[0].members).toContain('M0');
+  });
+
+  it('is a choice of character, and the ones who never scheme never take it', () => {
+    const week = readFileSync('js/bb/week.js', 'utf8');
+    expect(week, 'the quiet break is not gated on archetype')
+      .toMatch(/'hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'/);
+    // The house has to actually intend something by it, or it is just a flag.
+    expect(week).toMatch(/setBBTarget\(leaverName/);
+  });
+
+  it('tells the audience what the house cannot see', () => {
+    const vp = readFileSync('js/vp-screens.js', 'utf8');
+    expect(vp).toMatch(/SAYS NOTHING/);
+    expect(vp, 'the open break and the quiet one look the same on screen')
+      .toMatch(/bbns-quiet/);
   });
 });

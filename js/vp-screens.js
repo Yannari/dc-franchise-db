@@ -18507,7 +18507,44 @@ export function rpBuildBBNominations(ep, only = null) {
                 broke.sincere < 0.5 ? ' and never meant a word of it' : ''}. ${_bbEsc(step.name)} is on the wall anyway.`
             : `${_bbEsc(hoh)} and ${_bbEsc(step.name)} shook on the end together. This is not a pawn — ${
                 _bbEsc(step.name)} is the name ${_bbEsc(hoh)} came for.`}
-        </div>` : ''}</div>`;
+        </div>` : ''}
+        ${(() => {
+          /* ── AND WHETHER SOMEBODY IS STILL IN THAT ALLIANCE ON FRIDAY ──
+             Nominating one of your own has two shapes, and the house prices
+             them differently: if the rest of the group also wanted it, the
+             person in the chair was sold out by everybody and may walk away
+             from them; if nobody else was pointed at them, the Head of
+             Household spent the alliance's week on the alliance's own member
+             without asking, and it is the NOMINATOR the group throws out. Both
+             happen and neither is guaranteed — measured at 8 departures across
+             176 weeks. This card exists because the mechanic was otherwise
+             only visible as a name quietly missing from a panel. */
+          const exits = (act?.allianceExits || []).filter(x =>
+            x && (x.victim === step.name || x.player === step.name));
+          if (!exits.length) return '';
+          return exits.map(x => {
+            /* The third outcome, and the best one: nothing comes off the list.
+               Telling an alliance you are finished with them tells them what
+               you will do next, and the entire value of being finished with
+               somebody is that they do not know it. The house cannot see this
+               — that is the point of doing it this way — so the audience is
+               the only party who can, which is what a diary room is for. */
+            if (x.kind === 'hidden') {
+              return `<div class="bbns-broke bbns-quiet">
+                <span>SAYS NOTHING</span>
+                ${x.consented
+                  ? `${_bbEsc(x.player)} does not leave <strong>${_bbEsc(x.alliance)}</strong>, does not raise it, and does not let one thing show. Every person in that room wanted this chair filled, ${_bbEsc(x.player)} is the one sitting in it, and the only version of this worth anything is the one they never see coming.`
+                  : `<strong>${_bbEsc(x.alliance)}</strong> does not throw ${_bbEsc(x.player)} out, and it is not forgiveness. They keep ${_bbEsc(x.player)} exactly where they can see ${_bbEsc(x.player)}, sworn to a group that has already decided how this ends.`}
+              </div>`;
+            }
+            return `<div class="bbns-broke bbns-exit">
+              <span>${x.kind === 'quit' ? 'WALKED AWAY FROM THEM' : 'THROWN OUT BY THEM'}</span>
+              ${x.kind === 'quit'
+                ? `${_bbEsc(x.player)} has left <strong>${_bbEsc(x.alliance)}</strong>. Every one of them wanted this chair filled, and ${_bbEsc(x.player)} is the one who had to sit in it.`
+                : `<strong>${_bbEsc(x.alliance)}</strong> has removed ${_bbEsc(x.player)}. Nobody else in that room was pointed at ${_bbEsc(x.victim)}, and the week got spent on ${_bbEsc(x.victim)} anyway.`}
+            </div>`;
+          }).join('');
+        })()}</div>`;
     }
     if (step.kind === 'shape') {
       // A non-classic structure said out loud — two real targets, a split

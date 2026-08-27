@@ -265,8 +265,21 @@ export function memberLoyalty(name, bloc) {
   // reaches the ledger at all, because that conversation was consensual.
   const _board = (gs.namedAlliances || []).find(a => a.name === (bloc?.label || bloc?.name));
   const _now = Math.max(0, ...((gs.bb?.weeks || []).map(w => Number(w?.num) || 0)));
+  // ── AND WHOSE NUMBER MOVES DEPENDS ON WHETHER THE GROUP AGREED ──
+  //
+  // Two different weeks were being priced identically. If the rest of the
+  // alliance also wanted this person gone, the Head of Household carried out
+  // the group's decision: the one in the chair has been sold out by everybody
+  // and takes all of it, while the person who said it out loud was doing the
+  // job. If nobody else was pointed at them, the same act is somebody spending
+  // the alliance's week on the alliance's own member without asking — and then
+  // it is the NOMINATOR who is standing outside the group, and the nominee
+  // still has four people who did not agree to it.
   const putUp = (_board?.history || []).reduce((worst, h) => {
-    if (h?.type !== 'nominated-own' || h.victim !== name) return worst;
+    if (h?.type !== 'nominated-own') return worst;
+    const isVictim = h.victim === name;
+    const wentRogue = h.consented === false && h.player === name;
+    if (!isVictim && !wentRogue) return worst;
     // A week is only appended to gs.bb.weeks once it is over, so an entry
     // written during the week in progress reads as one week in the FUTURE.
     // Guarding that out meant the drop never appeared on the screens inside
@@ -274,11 +287,24 @@ export function memberLoyalty(name, bloc) {
     const age = Math.max(0, _now - (Number(h.week) || 0));
     if (age > 2) return worst;
     const fade = age === 0 ? 1 : age === 1 ? 0.55 : 0.25;
-    return Math.max(worst, (h.target ? 0.24 : 0.11) * fade);
+    const size = isVictim
+      ? (h.target ? 0.24 : 0.11) * (h.consented === false ? 0.6 : 1)
+      : (h.target ? 0.20 : 0.09);
+    return Math.max(worst, size * fade);
   }, 0);
+
+  // ── STILL ON THE LIST, GONE IN EVERY OTHER SENSE ──
+  //
+  // Somebody who decided to stay sworn to a group precisely so they can take
+  // the shot from inside it is exactly what 0 means at the top of this file:
+  // already gone in everything but the announcement. The membership list
+  // cannot show it — that is the entire point of doing it this way — so the
+  // number under the face is the only place a viewer can see it at all.
+  const _hidden = (_board?.hidden || []).some(h => h?.player === name);
 
   const score = clamp(
     0.42
+    - (_hidden ? 0.5 : 0)
     + inward * 0.045
     + stat * 0.030
     - pullAway * 0.035
@@ -288,8 +314,15 @@ export function memberLoyalty(name, bloc) {
     0, 1);
 
   // Whichever term is doing the most work, said in words.
-  const reason = putUp > 0
-    ? `was put on the block by ${_board?.name || 'this group'}'s own Head of Household`
+  const _rogue = (_board?.history || []).some(h => h?.type === 'nominated-own'
+    && h.consented === false && h.player === name
+    && Math.max(0, _now - (Number(h.week) || 0)) <= 2);
+  const reason = _hidden
+    ? `is in this on paper and has already decided how it ends`
+    : putUp > 0
+    ? (_rogue
+      ? `spent this group's week on one of its own without asking`
+      : `was put on the block by ${_board?.name || 'this group'}'s own Head of Household`)
     : elsewhere > 0.3
     ? `has a second home that is doing better than this one`
     : pullAway > 3

@@ -73,7 +73,7 @@ import { campaignArgument } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
 import { runVoteOperation, resolveFinalPleas } from './vote-operation.js';
 import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions, setBBTarget, getBBTarget } from './shared-strategy.js';
-import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan } from './plans.js';
+import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan, housePlan } from './plans.js';
 import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf, sincerityOf } from './deals.js';
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
 import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster, withRoster } from './blocs.js';
@@ -3732,20 +3732,118 @@ export function simulateBBWeek(options = {}) {
     const ownGroups = (gs.namedAlliances || []).filter(a => a.active !== false
       && (a.members || []).includes(hoh) && (a.members || []).includes(nominee));
     for (const group of ownGroups) {
-      for (const member of group.members || []) {
-        if (member === hoh || member === nominee) continue;
-        if (!(gs.activePlayers || []).includes(member)) continue;
+      /* ── DID THE GROUP AGREE, OR DID ONE OF THEM GO ROGUE? ──
+         These are two different weeks and they were being priced identically.
+         If the rest of the alliance also wants this person gone, the Head of
+         Household is carrying out the group's decision: the one in the chair
+         has been sold out by everybody, and the person who said it out loud is
+         not the problem. If nobody else was pointed at them, the same act is
+         somebody using the alliance's own week on the alliance's own member
+         without asking — and then it is the NOMINATOR who is outside the
+         group, not the nominee.
+
+         Consent is read from what the others actually want, which the house
+         already tracks: their standing target and their own plan. */
+      const others = (group.members || []).filter(n =>
+        n !== hoh && n !== nominee && (gs.activePlayers || []).includes(n));
+      const agrees = others.filter(n => {
+        try { if (getBBTarget(n) === nominee) return true; } catch { /* no target */ }
+        try { return (housePlan(n)?.targets || []).includes(nominee); } catch { return false; }
+      }).length;
+      const consented = others.length ? agrees * 2 >= others.length : false;
+
+      for (const member of others) {
         let care = 0, loyal = 5;
         try { care = Math.max(0, getBond(member, nominee)) / 10; } catch { care = 0; }
         try { loyal = pStats(member)?.loyalty ?? 5; } catch { loyal = 5; }
-        // Somebody who is close to the person in the chair takes it hardest,
-        // and so does somebody for whom the word means something.
+        // Nobody resents a decision they were part of. The trust only moves
+        // when the week was spent without asking them.
+        if (consented) continue;
         const watched = -(isTarget ? 0.34 : 0.18) * (0.35 + care) * (0.5 + loyal / 10);
         try { _cappedBondWindow(() => addBond(member, blamed, watched)); } catch { /* texture */ }
       }
       group.history ||= [];
       group.history.push({ week: week.num, type: 'nominated-own',
-        player: hoh, victim: nominee, target: isTarget });
+        player: hoh, victim: nominee, target: isTarget, consented });
+
+      /* ── AND EITHER WAY, SOMEBODY MAY NOT BE IN THIS ALLIANCE BY FRIDAY ──
+         Not guaranteed, and it should not be: most of these are survived and
+         held against somebody instead. Proportional to how bad it was, to how
+         much the person leaving cares about the word, and — for an expulsion —
+         to whether there is anybody left to do the expelling. */
+      const live = (group.members || []).filter(n => (gs.activePlayers || []).includes(n));
+      if (live.length < 3) continue;
+      const leaverName = consented ? nominee : hoh;
+      let lStats = {};
+      try { lStats = pStats(leaverName) || {}; } catch { lStats = {}; }
+      const loyalty = lStats.loyalty ?? 5;
+      const bold = lStats.boldness ?? 5;
+      const chance = Math.max(0, Math.min(0.38,
+        (isTarget ? 0.16 : 0.06)
+        + (5 - loyalty) * 0.022
+        + (bold - 5) * 0.012
+        + (consented ? 0.05 : 0.09)));
+      if (!(rng() < chance)) continue;
+
+      /* ── AND THE BETTER VERSION OF LEAVING, WHICH IS NOT LEAVING ──
+         Walking out of an alliance tells everybody in it what you are going to
+         do next, and the whole value of knowing you are finished with somebody
+         is that they do not know it. So a break has two shapes: the open one,
+         where a name comes off the list, and the quiet one, where it stays on
+         the list and the person behind it starts counting the days.
+
+         Both directions get it. Somebody the group put up can stay sworn to
+         them and take the shot when it is worth the most; a group that has
+         just watched one of its own spend their week on a member can decline
+         to throw them out for exactly the same reason.
+
+         Who chooses which is character, not chance: this is the play of
+         somebody strategic enough to see the value and disloyal enough to
+         spend it, and the archetypes that never scheme never take it. */
+      const quiet = (() => {
+        let st = {};
+        try { st = pStats(leaverName) || {}; } catch { st = {}; }
+        let arch = '';
+        try { arch = (players.find(pp => pp.name === leaverName) || {}).archetype || ''; } catch { arch = ''; }
+        if (['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(arch)) return false;
+        const scheming = ['villain', 'mastermind', 'schemer'].includes(arch);
+        const odds = Math.max(0, Math.min(0.85,
+          (scheming ? 0.45 : 0.15)
+          + ((st.strategic ?? 5) - 5) * 0.05
+          + (5 - (st.loyalty ?? 5)) * 0.045));
+        return rng() < odds;
+      })();
+
+      week.allianceExits ||= [];
+      if (quiet) {
+        // Nothing moves on the list. What moves is the intention, and the
+        // reading under the face — a member sitting at nearly zero while still
+        // being drawn inside the group is the one the docstring above is
+        // about: already gone in everything but the announcement.
+        group.hidden ||= [];
+        if (!group.hidden.some(h => h.player === leaverName)) {
+          group.hidden.push({ player: leaverName, since: week.num,
+            aim: consented ? hoh : nominee,
+            reason: consented ? 'they all wanted me in that chair' : 'spent our week on one of us' });
+        }
+        try {
+          setBBTarget(leaverName, consented ? hoh : nominee,
+            consented ? 'put me up and expected me to stay sworn to them'
+              : 'used our alliance on one of our own', { week });
+        } catch { /* the intention still stands */ }
+        week.allianceExits.push({ player: leaverName, alliance: group.name,
+          kind: 'hidden', victim: nominee, hoh, target: isTarget, consented });
+        continue;
+      }
+      group.members = (group.members || []).filter(n => n !== leaverName);
+      group.quits ||= [];
+      group.quits.push({ player: leaverName, ep: week.num,
+        reason: consented ? 'the group put me up' : 'used our week on one of us' });
+      if ((group.members || []).filter(n => (gs.activePlayers || []).includes(n)).length < 2) {
+        group.active = false;
+      }
+      week.allianceExits.push({ player: leaverName, alliance: group.name,
+        kind: consented ? 'quit' : 'expelled', victim: nominee, hoh, target: isTarget, consented });
     }
 
     /* AND THE PART THAT ONLY EXISTS IN THIS SEASON.
@@ -3797,7 +3895,7 @@ export function simulateBBWeek(options = {}) {
     if (g) nomGrievances[name] = g;
   }
   if (!chainNoms.length) week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
-    grievances: nomGrievances,
+    grievances: nomGrievances, allianceExits: week.allianceExits || null,
     duo: duoNom, nomFallout: week.nomFallout,
     structure: plan.structure || 'target-pawn', structureWhy: plan.structureWhy || '',
     anonymous: hohSecret,

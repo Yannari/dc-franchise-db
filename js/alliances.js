@@ -18,28 +18,39 @@ const _arch = (n) => players.find(p => p.name === n)?.archetype || 'floater';
 const _VILLAINY = ['villain', 'mastermind', 'schemer'];
 
 /**
- * How dangerous a coach reads as a vote target — the negative half of the
- * fame mechanic. `coach-agenda.js`'s `aweOf` already scores a famous coach as
- * a threat (negative) for the strategic archetypes (mastermind/schemer/
- * villain/perceptive-player); nothing consumed that number, so a coach with a
- * real résumé and a tribe full of trained protégés scored near-zero as a
- * target and was never chosen. Kept strictly proportional — higher fame, more
- * banked training GIVEN (visible value handed out), and an attacker who
- * personally reads fame as a threat all multiply the danger up, never gate it
- * behind a threshold.
+ * How dangerous a coach reads as a vote target — BOTH halves of the fame
+ * mechanic composed into one score. `coach-agenda.js`'s `aweOf` already scores
+ * a famous coach as a threat (negative) for the strategic archetypes
+ * (mastermind/schemer/villain/perceptive-player) and as deference (positive)
+ * for the receptive ones (goat/loyal-soldier/underdog/…). Only the negative
+ * half used to reach targeting, so a tribe of impressionable newbies never got
+ * the shelter the design promised. This averages awe across every attacker in
+ * the group (not just the hub) and lets the sign go both ways: negative mean
+ * awe raises danger (a résumé reads as a threat), positive mean awe lowers it
+ * (the tribe is star-struck and reluctant to boot). Kept strictly
+ * proportional — higher fame, more banked training GIVEN (visible value
+ * handed out), and the group's own composition all move the danger up or
+ * down, never a threshold.
  */
-function _coachTargetDanger(coachName, hubName) {
+export function _coachTargetDanger(coachName, attackers) {
   const rec = coachRecord(coachName);
   if (!rec) return 0;
   const stars = rec.stars ?? 0;
   const given = Object.values(gs.coachTraining?.[coachName] || {}).reduce(
     (sum, byStat) => sum + Object.values(byStat).reduce((s, a) => s + Math.max(0, a), 0), 0);
-  const hubStats = hubName ? pStats(hubName) : null;
+  const group = (attackers || []).filter(Boolean);
   // Reuse aweOf with the coach's own stars as the "gap" — pickTarget has no
   // per-contestant fame proxy of its own; this is a consistent stand-in for
-  // how famous this coach reads to the hub attacker.
-  const hubAwe = hubStats ? aweOf({ gap: stars, stats: hubStats, archetype: _arch(hubName) }) : 0;
-  const attackerBias = hubAwe < 0 ? (1 + Math.min(2, -hubAwe)) : 1;
+  // how famous this coach reads to each attacker.
+  const awes = group.map(a => {
+    const s = pStats(a);
+    return s ? aweOf({ gap: stars, stats: s, archetype: _arch(a) }) : 0;
+  });
+  const meanAwe = awes.length ? awes.reduce((sum, a) => sum + a, 0) / awes.length : 0;
+  // One composed multiplier: negative meanAwe (threat) scales it up to 3x,
+  // exactly as before; positive meanAwe (deference) scales it down toward
+  // 0.1x, mirroring the same magnitude on the other side of zero.
+  const attackerBias = Math.max(0.1, 1 + Math.max(-0.9, Math.min(2, -meanAwe)));
   return (stars * 0.4 + given * 0.5) * attackerBias;
 }
 export function coalitionMajority(members, lostVotes = []) {
@@ -1385,7 +1396,7 @@ export function pickTarget(attackers, victims, challengeLabel) {
       const _hasAlliance = (gs.namedAlliances || []).some(a => a.active && a.members.includes(v) && a.members.some(m => m !== v && attackers.includes(m) === false));
       const _soloMod = _hasAlliance ? 0 : 0.4;
       const _volunteerModPre = gs._volunteerDuelHeat?.[v] === ((gs.episode || 0) + 1) ? 5.0 : 0;
-      const _coachDangerMod = isCoach(v) ? _coachTargetDanger(v, _hub) : 0;
+      const _coachDangerMod = isCoach(v) ? _coachTargetDanger(v, attackers) : 0;
       return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + _soloMod + _volunteerModPre + _coachDangerMod + Math.random() * 0.5);
     } else {
       const allAtTribal = [...attackers, v];

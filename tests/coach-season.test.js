@@ -13,8 +13,13 @@
 // `tribe.members`"). Giving a coach a `.tribe` field before init would let
 // them fall into `gs.tribes` and compete/vote like a contestant, which is
 // exactly the bug this suite exists to catch.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { runHeadlessSeason, episodeEliminated } from './helpers/coach-season.js';
+
+// Same seeded LCG as tests/full-season-audit.test.js — a season driven by
+// Math.random() (as runHeadlessSeason's cast/stat generation and the whole
+// simulation pipeline are) needs a stable generator to be reproducible.
+function lcg(seed) { let s = seed >>> 0; return () => ((s = (1664525 * s + 1013904223) >>> 0) / 0x100000000); }
 
 describe('a season with coaches', () => {
   it('never lets a coach appear in a challenge result', async () => {
@@ -105,11 +110,40 @@ describe('a season with coaches', () => {
     // (The brief's literal sample asserted membership in the FINAL roster,
     // which a mid-jury promoted coach would fail for reasons that have
     // nothing to do with promotion working.)
-    const season = await runHeadlessSeason({ twist: 'coaches', coachesPerTribe: 2 });
+    //
+    // This test used to re-roll an unseeded season on every run. That is
+    // flaky for a real reason, not a bug: a promoted coach becomes an
+    // ordinary contestant the instant they're pushed into activePlayers, and
+    // the SAME merge episode can go on to hold the first post-merge tribal
+    // and vote that very person out before the episode record is captured —
+    // "promoted but missing from activePlayersAfter" is then a true and
+    // correct outcome, not a broken promotion. Fixed two ways: (1) seed the
+    // season with the same LCG the full-season audit uses, so this test
+    // exercises one fixed, reproducible season rather than a new roll every
+    // run; (2) assert the actual invariant regardless — a promoted coach must
+    // be EITHER still active OR provably eliminated after their promotion,
+    // never silently unaccounted for.
+    const spy = vi.spyOn(Math, 'random').mockImplementation(lcg(20260826));
+    let season;
+    try {
+      season = await runHeadlessSeason({ twist: 'coaches', coachesPerTribe: 2 });
+    } finally {
+      spy.mockRestore();
+    }
     const merged = season.episodes.find(e => e.coachPromotions);
     if (!merged) return;   // every coach was voted out; a legitimate season
+    const mergedEpNum = merged.num;
     for (const p of merged.coachPromotions) {
-      expect(merged.activePlayersAfter, `${p.name} promoted but missing from activePlayers at the merge`).toContain(p.name);
+      const stillActiveAtMerge = merged.activePlayersAfter.includes(p.name);
+      // Was this promoted contestant eliminated at or after the merge
+      // episode that promoted them? (before it is impossible — they weren't
+      // a contestant yet.)
+      const eliminatedAfterPromotion = season.episodes.some(e =>
+        e.num >= mergedEpNum && episodeEliminated(e) === p.name);
+      expect(
+        stillActiveAtMerge || eliminatedAfterPromotion,
+        `${p.name} promoted at episode ${mergedEpNum} but is neither in activePlayers afterward nor recorded as eliminated`,
+      ).toBe(true);
     }
   });
 });

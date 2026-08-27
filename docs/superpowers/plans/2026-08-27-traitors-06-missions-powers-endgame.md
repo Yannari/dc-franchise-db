@@ -387,3 +387,53 @@ season-level guard on them will be unfalsifiable for exactly this reason.
   not demonstrated. Reported as such rather than claimed. `_setDaggerSteeringEnabled` exists
   to re-run it. Its unit test reads 60/60 because the fixture carries no information, not
   because the bonus overrides -- the ablation numbers are the honest ones.
+
+## Task 6 done — the pact is a price, and two things it leaves behind
+
+`reluctance = 0.55 * cover^2 * (1 - 0.9*potShare)`, `cover = max(0, (living-2)/2)`, subtracted
+from the fellow's score. Reads the LIVING FIELD, not the candidate pool -- a revote is not an
+endgame. Betrayal 0% at ep2-8 and at every field size 7-20 (0 of 6,415), rising to 47.3% at a
+field of 5 and 54.6% at ep12. Pot conditioned on field=5: 33.3 -> 41.1 -> 48.9 -> 68.2%. Both
+terms independently monotone.
+
+**The technique that made it safe:** the fellow's noise term is HASHED from (voter, fellow,
+ep) rather than drawn, so a Traitor's ballot consumes exactly the draws it always did. A
+season diverges from base ONLY on nights somebody actually turns -- which is what makes the
+band deltas attributable to the mechanism instead of stream drift. This is Plan 5's
+path-neutrality technique applied inside the deduction core, and it should be the default for
+any future change to a decision function.
+
+### 1. The bands now measure something slightly different, and this must not be forgotten
+
+**~0.97pp of the 23.2pp late lift and ~0.54pp of the 35.3pp hit rate is Traitor
+SELF-DESTRUCTION, not deduction.** A Traitor naming a fellow is a correct banishment the room
+did not earn. Six bands moved with |t|>3 (largest 0.97pp), none red, none toward a threshold,
+none retuned.
+
+**No future task may credit the deduction engine with that share.** If a later task wants to
+claim it improved deduction, it must separate the two -- the honest comparison is against a
+head that already contains betrayal, not against Plan 5's numbers.
+
+### 2. A betrayal is SILENT -- the show's biggest moment prints nothing
+
+A Traitor turning on a Traitor produces **no event, no thread beat, no exit line, nothing
+anywhere**. Not a false sentence: no sentence. It is the single most dramatic thing the format
+does, and the season says nothing about it.
+
+**Task 7 or Plan 8 must give it narration**, and it should be the loudest text in the game.
+Note the constraint from Task 3's finding: the knowledge model cannot CLEAR anybody, so the
+fallout of a betrayal can be written as suspicion and shock but not as anyone being exonerated.
+
+### Task 6's other carried facts
+
+- **The hard bar was itself a ground-truth leak.** "X never named Y" was a perfect tell across
+  a whole season. Weighted reluctance REDUCES the ground-truth signature in public behaviour.
+- The missions guard was narrowed a THIRD time (the pot now has a reader), in the Task 2/3
+  shape. Its hold-out arm projects the BALLOT RECORD, not the banishment log -- on the
+  banishment projection the separation was only 1.5 sd at 120 seeds.
+- Pre-existing, found by reading, deliberately NOT fixed: `COMMIT_LINES.kept` in
+  `js/tr/castle/trust.js` asserts how somebody voted from a fork that never inspects a ballot.
+  Fixing it moves bonds and therefore bands, from inside the one task meant to hold them still.
+  **Carry it to a task that is allowed to move bands.**
+- Five stale comments across three files asserted the hard bar as fact. Corrected with
+  measurements attached.

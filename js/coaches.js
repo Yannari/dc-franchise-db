@@ -276,3 +276,21 @@ export function reassignCoaches(tribes) {
   }
   return moved;
 }
+
+/**
+ * How many PEOPLE are living at this camp.
+ *
+ * The number that decides whether a tribe is too small to continue. It is not
+ * `tribe.members.length` and it is not the count of `gs.activePlayers` on it —
+ * both of those answer "how many can compete and vote", and a camp of two
+ * contestants and two coaches is a camp of four. Folding it because two of the
+ * four hold no ballot is the bug this exists to prevent.
+ */
+export function tribeHeadcount(tribe, activeNames) {
+  const name = tribe?.name ?? tribe?.tribeName;
+  const members = tribe?.members || [];
+  const contestants = activeNames
+    ? members.filter(m => activeNames.includes(m)).length
+    : members.length;
+  return contestants + coachesOf(name).length;
+}

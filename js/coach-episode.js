@@ -889,7 +889,12 @@ export function commitSaveCards(ep, tribeLabel, alliances = [], roll = Math.rand
     const votes = peers.map(p => ({ coach: p.name, ...saveCardVerdict(p.name, c.name) }));
     const signed = votes.every(v => v.consents);
 
-    spendTribeCard(tribeLabel);                 // spent on play, needed or not
+    // Spent only if it CARRIES. A refused card never activated — nobody was
+    // saved by it and nothing was consumed — so burning it on a refusal let a
+    // rival destroy the staff's only card just by declining, on top of already
+    // killing the coach who reached for it. Signed and not needed is still a
+    // burn; that is the idol risk the pre-vote commitment exists to create.
+    if (signed) spendTribeCard(tribeLabel);
     if (!gs.coachSaveLedger) gs.coachSaveLedger = [];
     const _epNum = Number(ep?.num || gs.episode || 0);
     for (const v of votes) {

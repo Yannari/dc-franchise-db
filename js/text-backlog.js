@@ -1923,7 +1923,7 @@ export function _textWhyVote(ep, ln, sec) {
     });
     ln(cm.signed
       ? `  Unanimous. The card is live for ${cm.coach}.`
-      : `  Not unanimous. The card is dead the moment it is needed.`);
+      : `  Not unanimous. It does not carry tonight — but it was refused, not played, so the card is still on the tribe for whoever is left to ask again.`);
   });
 
   // Coaches whose tribe folded under them.

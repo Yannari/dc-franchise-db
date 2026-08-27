@@ -40,7 +40,7 @@ import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
 import { applyCoachElimination, coachCardTalk, coachFallout, commitSaveCards, maybeSaveCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
 import { coachStatusEvents } from './coach-status-events.js';
-import { activeCoaches, coachesOf, coachRecord as coachRecordFn } from './coaches.js';
+import { activeCoaches, coachesOf, coachRecord as coachRecordFn, reassignCoaches, tribeHeadcount } from './coaches.js';
 import { runCoachDealBlock } from './coach-deals.js';
 
 // Challenge simulate functions
@@ -7115,10 +7115,15 @@ function simulateJuryRoundtable(ep) {
   if (!gs.isMerged && !ep.isMerge && gs.tribes.length >= 3) {
     const _activeTribes = gs.tribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
     if (_activeTribes.length >= 3) {
-      const _tinyTribes = _activeTribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length <= 2);
+      // A camp of two is two PEOPLE. `gs.activePlayers` holds contestants, so a
+      // tribe of two contestants and two coaches counted as two and was folded
+      // with four people living on it — the coaches then had nowhere to be,
+      // because the distribution below only moves contestants.
+      const _headsOf = t => tribeHeadcount(t, gs.activePlayers);
+      const _tinyTribes = _activeTribes.filter(t => _headsOf(t) <= 2);
       _tinyTribes.forEach(_tinyTribe => {
         const _tinyMembers = _tinyTribe.members.filter(m => gs.activePlayers.includes(m));
-        if (_tinyMembers.length === 0 || _tinyMembers.length > 2) return;
+        if (_headsOf(_tinyTribe) === 0 || _headsOf(_tinyTribe) > 2) return;
         // Only dissolve if there are still 3+ tribes after removal
         const _remainingTribes = gs.tribes.filter(t => t.name !== _tinyTribe.name && t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
         if (_remainingTribes.length < 2) return;
@@ -7141,9 +7146,23 @@ function simulateJuryRoundtable(ep) {
         if (_dissolved.length) {
           // Remove the empty tribe
           gs.tribes = gs.tribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
+          // The distribution above moves contestants only, so the folded camp's
+          // coaches were left pointing at a tribe that had just been removed.
+          // They keep coach status; they simply need a camp that exists.
+          const _coachMoves = reassignCoaches(gs.tribes);
           // Store dissolution data
           if (!ep.tribeDissolutions) ep.tribeDissolutions = [];
-          ep.tribeDissolutions.push({ tribe: _tinyTribe.name, members: _dissolved });
+          ep.tribeDissolutions.push({ tribe: _tinyTribe.name, members: _dissolved, coaches: _coachMoves });
+          _coachMoves.forEach(m => {
+            if (!ep.campEvents) ep.campEvents = {};
+            if (!ep.campEvents[m.to]) ep.campEvents[m.to] = { pre: [], post: [] };
+            if (!ep.campEvents[m.to].post) ep.campEvents[m.to].post = [];
+            ep.campEvents[m.to].post.push({
+              type: 'tribeArrival', players: [m.coach],
+              text: `${m.from} is gone, and ${m.coach} arrives at ${m.to} still holding a clipboard and still holding no vote. ${m.followed ? `${m.followed} of ${m.coach}'s protégés came here too.` : `Not one of ${m.coach}'s protégés is on this beach.`}`,
+              badgeText: 'COACH REASSIGNED', badgeClass: 'red'
+            });
+          });
           // Camp events for arrivals
           _dissolved.forEach(d => {
             const pr = pronouns(d.player);

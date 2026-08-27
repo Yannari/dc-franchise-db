@@ -590,8 +590,8 @@ export function rpBuildCoachSignatures(ep) {
     const outcome = cm.signed
       ? `<div class="cb-sig-outcome cb-sig-yes">Unanimous. The card is live for ${cm.coach} — if the votes come for ${cm.coach} tonight, ${cm.coach} stays.</div>`
       : `<div class="cb-sig-outcome cb-sig-no">Not unanimous. ${cm.refusedBy
-          ? `${cm.refusedBy} would not sign, and the card is dead the moment it is needed.`
-          : 'The card is dead the moment it is needed.'}</div>`;
+          ? `${cm.refusedBy} would not sign, so it does not carry tonight — and ${cm.coach} has nothing to hide behind when the votes are read.`
+          : 'It does not carry tonight.'} The card itself is not spent: it was never played, only refused, and it is still there for whoever is left to ask again.</div>`;
     return `<div class="cb-sig-block">
       <div class="cb-sig-title">${cm.coach} played the save card</div>
       <div class="cb-sig-sub">Sealed before a single vote was read. ${cm.coach} does not know what is in these.</div>

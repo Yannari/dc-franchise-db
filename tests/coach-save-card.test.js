@@ -255,3 +255,33 @@ describe('a coach with nobody to ask', () => {
     expect(ep.coachCardCommits[0].votes.length, 'the peer has to actually be asked').toBe(1);
   });
 });
+
+// A refused card was never played. Burning it on a refusal let a rival destroy
+// the staff's only card just by declining — on top of already killing the
+// coach who reached for it — and the camp panel then reported "spent" over a
+// card nobody had used.
+describe('a refusal does not consume the card', () => {
+  it('leaves the card on the tribe when a peer will not sign', () => {
+    setup({ wayneArch: 'villain', wayneStats: { strategic: 10, loyalty: 1 } });
+    addBond('Julia', 'Wayne', -9);
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [
+      { members: ['Evie'], target: 'Julia' },
+      { members: ['Finn'], target: 'Julia' },
+    ], () => 0);
+    expect(ep.coachCardCommits?.length, 'she never reached for it').toBe(1);
+    expect(ep.coachCardCommits[0].signed).toBe(false);
+    expect(tribeCardState('Red'),
+      'a rival destroyed the card by declining to sign it').toBe('unused');
+  });
+
+  it('still burns a card that carried but was not needed', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 9);
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' }], () => 0);
+    expect(ep.coachCardCommits[0].signed).toBe(true);
+    expect(tribeCardState('Red'),
+      'the idol risk is the whole reason it commits before the votes').toBe('used');
+  });
+});

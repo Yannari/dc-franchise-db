@@ -170,7 +170,7 @@ import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext
 import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults, rockTheDockRevealNext, rockTheDockRevealAll } from './chal/rock-the-dock.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 import { rpBuildCoachBoard, rpBuildCoachPromotion, rpBuildCoachSignatures } from './vp-coaches.js';
-import { campRoster, coachesOf } from './coaches.js';
+import { coachesOf } from './coaches.js';
 import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTChainHunt, rpBuildTTLongboardRace, rpBuildTTResults, ttRevealNext, ttRevealAll } from './chal/tropical-takedown.js';
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults, gpRevealNext, gpRevealAll } from './chal/greeces-pieces.js';
@@ -7667,8 +7667,16 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
   // Coaches live at this camp without ever being in tribe.members — that array
   // answers "who competes and votes", and using it as the camp roster is what
   // made a coach invisible on their own tribe's screen.
-  const _coachNames = isMerge ? [] : coachesOf(tribeName).map(c => c.name);
-  const portraitMembers = campRoster(tribeName, members.filter(n => n));
+  // From the EPISODE, not live gs. `coachesOf` answers who is a coach TODAY,
+  // so replaying episode 1 after a coach was voted out in episode 2 redrew
+  // episode 1's camp without them — the screen quietly rewriting history every
+  // time the roster changed. ep.coachData is the snapshot taken that night.
+  const _epCoachList = ep.coachData?.[tribeName]?.coaches;
+  const _coachNames = isMerge ? []
+    : (_epCoachList || coachesOf(tribeName).map(c => c.name));
+  const _liveMembers = members.filter(n => n);
+  const portraitMembers = isMerge ? _liveMembers
+    : [..._liveMembers, ..._coachNames.filter(n => !_liveMembers.includes(n))];
   // Extended search pool: union of episode-snapshot tribe members (end-of-ep state)
   // so players who swapped INTO this tribe this episode can still get icons matched.
   const snapTribeMembers = (ep.gsSnapshot?.tribes || []).find(t => t.name === tribeName)?.members
@@ -10458,12 +10466,21 @@ export function rpBuildVotingPlans(ep) {
     const _crCoaches = _crData.coaches || [];
     const _blocs = (ep.alliances || []).map(a => a.target).filter(Boolean);
     if ((_crData.card ?? 'unused') === 'unused') {
-      // One card between them, so the read is about which of them needs it —
-      // and spending it on one leaves the other with nothing.
-      for (const coachName of _crCoaches) {
-        const aimed = _blocs.filter(t => t === coachName).length;
-        if (!aimed && _crCoaches.length > 1) continue;   // only the exposed one is a story
-        _cardReads.push({ coachName, aimed, peers: _crCoaches.filter(n => n !== coachName) });
+      const _aimedAt = Object.fromEntries(_crCoaches.map(n => [n, _blocs.filter(t => t === n).length]));
+      const _exposed = _crCoaches.filter(n => _aimedAt[n] > 0);
+      // TWO NAMES, ONE CARD. Rendering this as a paragraph each produced the
+      // same sentence twice with the names swapped, when it is the sharpest
+      // thing the shared card does: each of them has to decide whether to
+      // spend the staff's only card on themselves, knowing the other needs it
+      // and has to sign for it.
+      if (_exposed.length > 1) {
+        _cardReads.push({ contested: _exposed, aimedAt: _aimedAt });
+      } else {
+        for (const coachName of _crCoaches) {
+          const aimed = _aimedAt[coachName];
+          if (!aimed && _crCoaches.length > 1) continue;   // only the exposed one is a story
+          _cardReads.push({ coachName, aimed, peers: _crCoaches.filter(n => n !== coachName) });
+        }
       }
     }
   }
@@ -10471,6 +10488,27 @@ export function rpBuildVotingPlans(ep) {
     html += `<div class="rp-vp-section-label">SAVE CARD DEBATE</div>
       <div style="font-size:10px;color:#8b949e;margin:-5px 0 8px">A coach can only play the card before the votes are read, and only if every other coach on the tribe signs it. What they decided, and what the others signed, stays sealed until Tribal.</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-bottom:14px">${_cardReads.map(r => {
+        if (r.contested) {
+          // Who the room is leaning on hardest, and how the two of them get on
+          // — a staff that likes each other is facing a sacrifice, a staff that
+          // does not is facing a race.
+          const ranked = r.contested.slice().sort((a, b) => r.aimedAt[b] - r.aimedAt[a]);
+          const [first, second] = ranked;
+          const gap = r.aimedAt[first] - r.aimedAt[second];
+          const bond = getBond(first, second);
+          const between = bond >= 2
+            ? `${first} and ${second} get on, which makes this worse rather than easier: whoever signs is handing over the only thing standing between themselves and the next vote.`
+            : bond <= -2
+              ? `${first} and ${second} do not get on, so this is a race rather than a sacrifice. Neither has any reason to sign for the other, and the card may simply go unplayed.`
+              : `Nothing much has passed between ${first} and ${second} either way, so this comes down to which of them believes the room more.`;
+          const shape = gap > 0
+            ? `The room is leaning harder on ${first} (${r.aimedAt[first]} bloc${r.aimedAt[first] === 1 ? '' : 's'}) than on ${second} (${r.aimedAt[second]}), which is an argument ${first} can make and ${second} has to accept.`
+            : `The room is split evenly between them — ${r.aimedAt[first]} bloc${r.aimedAt[first] === 1 ? '' : 's'} each — so there is no honest way to say whose need is greater.`;
+          return `<div style="padding:9px 10px;background:rgba(248,81,73,.06);border:1px solid rgba(248,81,73,.25);border-radius:8px;grid-column:1/-1">
+            <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#f85149">${ranked.join(' AND ')} · TWO NAMES, ONE CARD</div>
+            <div style="font-size:11px;color:#c9d1d9;margin-top:3px">Both of them are on the board and there is one card between them. It saves one, and whoever it does not save has nothing left. ${shape} ${between}</div>
+          </div>`;
+        }
         const label = r.aimed >= 2 ? 'CORNERED' : r.aimed === 1 ? 'A NAME ON THE BOARD' : 'HOLDING, FOR NOW';
         const colour = r.aimed >= 2 ? '#f85149' : r.aimed === 1 ? '#d29922' : '#8b949e';
         const detail = !r.peers.length

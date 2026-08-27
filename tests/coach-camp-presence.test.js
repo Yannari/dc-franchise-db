@@ -518,3 +518,75 @@ describe('a redraw never loses anybody', () => {
     expect(statusChanged, 'a coach was redrawn into a contestant roster').toBe(0);
   }, 900000);
 });
+
+// Episode 1's camp screen changed every time the coach roster did: replayed
+// after a coach was voted out in episode 2, it redrew episode 1 without them,
+// and the survivor lost their COACH badge with them. The screen was reading
+// coachesOf(), which answers who is a coach TODAY, over a night months in the
+// past — the same failure as the save-card status, the confessionals and the
+// alliance membership before it.
+describe('a camp screen shows the night it happened', () => {
+  it('still draws episode 1 with its coaches after every one of them is gone', async () => {
+    const core = await import('../js/core.js');
+    const vp = await import('../js/vp-screens.js');
+    const { episodes } = await runHeadlessSeason({
+      twist: 'coaches', coachesPerTribe: 2, castSize: 18, mergeAt: 6, teams: 3,
+    });
+    const ep1 = episodes[0]?.ep;
+    expect(ep1?.coachData, 'episode 1 recorded no coach data at all').toBeTruthy();
+
+    let expected = 0, shown = 0, badged = 0;
+    for (const [tribe, d] of Object.entries(ep1.coachData)) {
+      const names = d.coaches || [];
+      expected += names.length;
+      const members = (ep1.tribesAtStart || []).find(t => t.name === tribe)?.members || [];
+      let html = '';
+      try { html = vp.rpBuildCampTribe(ep1, tribe, members, 'pre') || ''; } catch { continue; }
+      for (const n of names) {
+        if (html.includes(n)) shown++;
+        // The badge comes from the same list, so it has to survive too.
+        const i = html.indexOf(n);
+        if (i >= 0 && html.slice(i, i + 400).includes('COACH')) badged++;
+      }
+    }
+    expect(expected, 'no coach was at any camp in episode 1').toBeGreaterThan(0);
+    expect(shown, 'episode 1 was redrawn without the coaches who were there').toBe(expected);
+    expect(badged, 'a coach lost their COACH badge on replay').toBe(expected);
+    // And the point of the test: they are gone from the live roster by now.
+    expect((core.gs.coachesEliminated || []).length + (core.gs.coaches || []).filter(c => c.promoted).length,
+      'no coach left the board, so this proves nothing').toBeGreaterThan(0);
+  }, 900000);
+});
+
+// Both coaches on the board with one card between them is the sharpest thing
+// the shared card does, and it rendered as the same paragraph twice with the
+// names swapped: "One bloc is on Bowie…", "One bloc is on Nichelle…". Neither
+// sentence knew the other coach existed, let alone that they were competing
+// for the same card.
+describe('two names, one card', () => {
+  it('reads it as one contested decision rather than two identical ones', async () => {
+    const core = await import('../js/core.js');
+    const vp = await import('../js/vp-screens.js');
+    let contested = 0;
+    for (let r = 0; r < 4 && !contested; r++) {
+      const { episodes } = await runHeadlessSeason({
+        twist: 'coaches', coachesPerTribe: 2, castSize: 18, mergeAt: 6, teams: 3,
+      });
+      for (const e of episodes) {
+        const hist = { ...(core.gs.episodeHistory.find(h => h.num === e.num) || {}), ...e.ep };
+        let html = '';
+        try { html = vp.rpBuildVotingPlans(hist) || ''; } catch { continue; }
+        if (!html.includes('TWO NAMES, ONE CARD')) continue;
+        contested++;
+        // It has to say what makes it a dilemma, not just restate the danger.
+        expect(html).toContain('It saves one, and whoever it does not save has nothing left');
+        // And it must not also print the single-coach read for the same people.
+        const i = html.indexOf('TWO NAMES, ONE CARD');
+        const block = html.slice(i, i + 900);
+        expect(block, 'the contested read fell back to the per-coach wording')
+          .not.toContain('A NAME ON THE BOARD');
+      }
+    }
+    expect(contested, 'both coaches were never targeted at once across four seasons').toBeGreaterThan(0);
+  }, 900000);
+});

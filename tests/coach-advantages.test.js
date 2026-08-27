@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, setGs, setPlayers } from '../js/core.js';
-import { addCoach, coachRecord } from '../js/coaches.js';
+import { addCoach, coachRecord, spendTribeCard, tribeCardState } from '../js/coaches.js';
 import { coachCanPlay, giveAdvantage } from '../js/advantages.js';
 
 const stats = () => ({ physical:5,endurance:5,mental:5,social:5,strategic:5,loyalty:5,boldness:5,intuition:5,temperament:5 });
@@ -44,12 +44,12 @@ describe('handing one over', () => {
     gs.advantages.push({ holder: 'Julia', type: 'idol' });
     expect(giveAdvantage('Julia', 'Evie', gs.advantages[0])).toBe(true);
     expect(gs.advantages[0].holder).toBe('Evie');
-    expect(coachRecord('Julia').saveCard,
-      'the card is the coach’s life, not the price of a gift').toBe('unused');
+    expect(tribeCardState('Red'),
+      'the card is the tribe’s life, not the price of a gift').toBe('unused');
   });
 
   it('still works for a coach who has already spent their card', () => {
-    coachRecord('Julia').saveCard = 'used';
+    spendTribeCard('Red');
     gs.advantages.push({ holder: 'Julia', type: 'idol' });
     expect(giveAdvantage('Julia', 'Evie', gs.advantages[0]),
       'a coach with no card left can still arm somebody').toBe(true);

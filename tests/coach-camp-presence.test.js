@@ -244,18 +244,34 @@ describe('coaches speak at their own tribal', () => {
 // viewer can learn whether it is still out there — exactly the job the idol
 // line does two rows above it.
 describe('the save card is tracked where the idol is tracked', () => {
-  it('reports a held card, and a spent one, in the camp advantage panel', async () => {
-    const vp = await import('../js/vp-screens.js');
-    const held = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'], { Julia: 'unused' });
-    expect(held.join(' ')).toContain("Julia still holds a Coach's Save Card");
-    expect(held.join(' '), 'the rule has to travel with the status').toContain('every other coach on the tribe signs it');
+  // These read the panel builder directly, which reaches into gs for idol
+  // slots. Earlier blocks in this file leave gs wherever a season ended.
+  const groundGs = async () => {
+    const core = await import('../js/core.js');
+    // vp-screens reads `seasonConfig` off the global (main.js supplies it in
+    // the browser); without it this builder throws before reaching the card.
+    globalThis.seasonConfig = { advantages: { idol: { enabled: false } } };
+    core.setGs({ ...(core.gs || {}), idolSlots: {}, advantages: [], coaches: [],
+      coachCards: {}, activePlayers: ['A', 'B'], tribes: [{ name: 'Red', members: ['A', 'B'] }] });
+  };
 
-    const spent = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'], { Julia: 'used' });
-    expect(spent.join(' ')).toContain('has been spent');
-    expect(spent.join(' ')).toContain('nothing standing between Julia and the next vote');
+  it('reports a held card, and a spent one, in the camp advantage panel', async () => {
+    await groundGs();
+    const vp = await import('../js/vp-screens.js');
+    // One card for the whole staff, so the line names all of them at once.
+    const held = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'],
+      { card: 'unused', coaches: ['Julia', 'Wayne'] });
+    expect(held.join(' ')).toContain('Julia and Wayne share one Coach’s Save Card'.replace('’', "'"));
+    expect(held.join(' '), 'the rule has to travel with the status').toContain('every coach on the tribe has to sign it');
+
+    const spent = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'],
+      { card: 'used', coaches: ['Julia', 'Wayne'] });
+    expect(spent.join(' ')).toContain('is spent');
+    expect(spent.join(' ')).toContain('Nothing stands between Julia and Wayne and the next vote');
   });
 
   it('says nothing at all when the season has no coaches', async () => {
+    await groundGs();
     const vp = await import('../js/vp-screens.js');
     const lines = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'], null);
     expect(lines.some(l => l.includes('Save Card'))).toBe(false);
@@ -263,11 +279,14 @@ describe('the save card is tracked where the idol is tracked', () => {
 
   it('is read from the episode snapshot, so a replay shows that night', async () => {
     // 'used' today must not overwrite the 'unused' the episode recorded.
+    await groundGs();
     const vp = await import('../js/vp-screens.js');
     const core = await import('../js/core.js');
-    core.setGs({ ...core.gs, coaches: [{ name: 'Julia', tribe: 'Red', saveCard: 'used', promoted: false }] });
-    const lines = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'], { Julia: 'unused' });
-    expect(lines.join(' '), 'live gs leaked into a historical camp').toContain('still holds');
+    core.setGs({ ...core.gs, coaches: [{ name: 'Julia', tribe: 'Red', promoted: false }],
+      coachCards: { Red: 'used' } });
+    const lines = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'],
+      { card: 'unused', coaches: ['Julia'] });
+    expect(lines.join(' '), 'live gs leaked into a historical camp').toContain('share one');
   });
 });
 
@@ -307,9 +326,8 @@ describe('the save card is debated before it is spent', () => {
     // Rendered through the section's own inputs rather than the whole screen:
     // one coach, one card, nobody to sign.
     const ep = { num: 3, tribalTribe: 'Red', alliances: [],
-      coachData: { Red: { cards: { Julia: 'unused' }, sessions: [], passedOver: [] } } };
-    const cards = ep.coachData.Red.cards;
-    const peers = Object.keys(cards).filter(n => n !== 'Julia');
+      coachData: { Red: { card: 'unused', coaches: ['Julia'], sessions: [], passedOver: [] } } };
+    const peers = (ep.coachData.Red.coaches || []).filter(n => n !== 'Julia');
     expect(peers.length, 'a lone coach has nobody to ask').toBe(0);
   });
 });

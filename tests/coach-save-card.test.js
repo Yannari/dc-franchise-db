@@ -5,7 +5,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, setGs, setPlayers } from '../js/core.js';
 import { addBond } from '../js/bonds.js';
-import { addCoach, coachRecord } from '../js/coaches.js';
+import { addCoach, coachRecord, tribeCardState } from '../js/coaches.js';
 import { commitSaveCards, maybeSaveCoach, offerSaveCard, predictedReplacement, saveCardVerdict } from '../js/coach-episode.js';
 
 const stats = (o = {}) => ({ physical:5,endurance:5,mental:5,social:5,strategic:5,
@@ -22,7 +22,7 @@ function setup({ juliaArch = 'floater', wayneArch = 'hero', wayneStats = {} } = 
     { name: 'Finn', archetype: 'hero', stats: stats() },
   ]);
   setGs({ activePlayers: ['Evie', 'Finn'], coaches: [], coachTraining: {},
-    bonds: {}, namedAlliances: [], coachDeals: [], coachSaveLedger: [],
+    bonds: {}, namedAlliances: [], coachDeals: [], coachSaveLedger: [], coachCards: {},
     tribes: [{ name: 'Red', members: ['Evie', 'Finn'] }], episode: 6 });
   addCoach({ name: 'Julia', tribe: 'Red' });
   addCoach({ name: 'Wayne', tribe: 'Red' });
@@ -182,7 +182,7 @@ describe('the card is played, not triggered', () => {
     const alliances = [{ members: ['Evie'], target: 'Julia' }, { members: ['Finn'], target: 'Julia' }];
     commitSaveCards(ep, 'Red', alliances, () => 0);
     expect(ep.coachCardCommits?.length, 'a coach staring at two blocs never reached for it').toBe(1);
-    expect(coachRecord('Julia').saveCard, 'the card must be gone the moment it is played').toBe('used');
+    expect(tribeCardState('Red'), 'the card must be gone the moment it is played').toBe('used');
   });
 
   it('never commits when no bloc has named them', () => {
@@ -190,7 +190,7 @@ describe('the card is played, not triggered', () => {
     const ep = { num: 6 };
     commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Finn' }], () => 0);
     expect(ep.coachCardCommits).toBeUndefined();
-    expect(coachRecord('Julia').saveCard).toBe('unused');
+    expect(tribeCardState('Red')).toBe('unused');
   });
 
   it('cannot be reached for after the votes — an uncommitted coach goes home', () => {

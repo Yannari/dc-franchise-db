@@ -148,7 +148,9 @@ function _buildSidebarContent(ep) {
       ...(t.sessions || []).map(s => s.coach),
       ...(t.passedOver || []).map(p => p.coach),
     ])];
-    out += `<div class="cb-sb-tribe"><div class="cb-sb-tribe-name">${tribeName}</div>`;
+    const _card = t.card ?? 'unused';
+    out += `<div class="cb-sb-tribe"><div class="cb-sb-tribe-name">${tribeName}</div>
+      <div class="cb-sb-card ${_card === 'unused' ? 'cb-sb-card-held' : 'cb-sb-card-spent'}">Save card: ${_card === 'unused' ? 'HELD' : 'SPENT'} · one between ${coaches.length === 1 ? 'them' : 'the ' + coaches.length}</div>`;
     coaches.forEach(coach => {
       const banked = bankedByCoach[coach] || 0;
       const trained = trainedByCoach[coach] || [];
@@ -156,7 +158,7 @@ function _buildSidebarContent(ep) {
       out += `<div class="cb-sb-coach">
         <div class="cb-sb-coach-name">${_avatar(coach, 'cb-av-tiny cb-av-onlight')} ${coach}</div>
         <div class="cb-sb-banked">Banked: <span class="cb-sb-banked-num">${banked.toFixed(2)}</span></div>
-        <div class="cb-sb-card ${(t.cards?.[coach] ?? 'unused') === 'unused' ? 'cb-sb-card-held' : 'cb-sb-card-spent'}">Save card: ${(t.cards?.[coach] ?? 'unused') === 'unused' ? 'HELD' : 'SPENT'}</div>
+
         <div class="cb-sb-standing">
           ${trained.map(o => `<span class="cb-sb-tag ${o.gain < 0 ? 'cb-sb-tag-damaged' : 'cb-sb-tag-in'}">${_avatar(o.name, 'cb-av-tiny cb-av-onlight')} ${o.name}</span>`).join('')}
           ${passed.map(n => `<span class="cb-sb-tag cb-sb-tag-out" title="no session — passed over by ${coach}">${_avatar(n, 'cb-av-tiny cb-av-onlight')} ${n}</span>`).join('')}
@@ -171,7 +173,7 @@ function _buildSidebarContent(ep) {
   const _anyPeer = Object.values(data).some(t => (t.peerCount || 0) > 1);
   out += `<div class="cb-sb-legend">
     <div class="cb-sb-legend-title">The Save Card</div>
-    <div>One per coach. If the tribe votes a coach out, ${_anyPeer
+    <div>One card for the whole coaching staff, not one each. If the tribe votes a coach out, ${_anyPeer
       ? 'the other coaches on that team can spend it to keep them — and every one of them has to agree. A single refusal sends the coach home.'
       : 'a coach needs another coach on their team to agree to it. Alone, there is nobody to ask, and the card cannot be played.'}</div>
     <div>Spent, it costs a contestant: the coach names who goes instead.</div>

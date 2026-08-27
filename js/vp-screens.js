@@ -7692,7 +7692,7 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
   // Use portrait members (who's actually at camp) for both phases
   const _advMembers = portraitMembers.length ? portraitMembers : _snapMembers;
   const advLines = getTribeAdvantageStatus(tribeName, isMerge, _snapAdvantages, _advMembers,
-    ep.coachData?.[tribeName]?.cards || null);
+    ep.coachData?.[tribeName] || null);
   html += `<div class="rp-camp-toggle-section">
     <button class="rp-camp-toggle-btn" style="border-color:${tc};color:${tc}" onclick="vpToggleSection('adv-${safeId}')">
       SECRET ADVANTAGES <span class="rp-toggle-arrow">\u25b2</span>
@@ -7700,9 +7700,16 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
     <div id="adv-${safeId}" class="rp-camp-toggle-body">`;
   if (advLines.length) {
     advLines.forEach(line => {
-      const mentioned = matchPool.find(n => line.includes(n)) || matchPool.find(n => line.includes(n.split(' ')[0]));
+      // The save card belongs to every coach on the tribe at once, so it gets
+      // every one of their faces rather than whichever name happened to match
+      // first — a shared thing shown as one person's is the display saying the
+      // opposite of the rule underneath it.
+      const _cardLine = line.includes("Coach's Save Card");
+      const _allMentioned = _cardLine
+        ? matchPool.filter(n => line.includes(n))
+        : [matchPool.find(n => line.includes(n)) || matchPool.find(n => line.includes(n.split(' ')[0]))].filter(Boolean);
       html += `<div class="rp-brant-entry">`;
-      if (mentioned) html += `<div class="rp-brant-portraits">${rpPortrait(mentioned)}</div>`;
+      if (_allMentioned.length) html += `<div class="rp-brant-portraits">${_allMentioned.map(n => rpPortrait(n)).join('')}</div>`;
       const _isCard = line.includes("Coach's Save Card");
       html += `<div class="rp-brant-text">${line}</div>
         <span class="rp-brant-badge ${_isCard ? (line.includes('has been spent') ? 'red' : 'gold') : 'gold'}">${_isCard ? 'SAVE CARD' : 'ADVANTAGE'}</span>
@@ -9640,7 +9647,7 @@ export function rpBuildVotingPlans(ep) {
   // no longer in `activeCoaches()`, so anything reading it renders a past
   // tribal as though no coach had ever been there.
   const _epCoachNames = new Set(Object.values(ep.coachData || {})
-    .flatMap(t => Object.keys(t?.cards || {})));
+    .flatMap(t => t?.coaches || []));
 
   const targetWhyPhrase = (targetName, voterName) => {
     // A coach on the block is a different vote from a contestant on the block,
@@ -10436,13 +10443,17 @@ export function rpBuildVotingPlans(ep) {
   const _cardReads = [];
   {
     const _crTribe = ep.tribalTribe || ep.loser?.name || '';
-    const _crCards = ep.coachData?.[_crTribe]?.cards || {};
+    const _crData = ep.coachData?.[_crTribe] || {};
+    const _crCoaches = _crData.coaches || [];
     const _blocs = (ep.alliances || []).map(a => a.target).filter(Boolean);
-    for (const [coachName, state] of Object.entries(_crCards)) {
-      if (state !== 'unused') continue;
-      const aimed = _blocs.filter(t => t === coachName).length;
-      const peers = Object.keys(_crCards).filter(n => n !== coachName);
-      _cardReads.push({ coachName, aimed, peers });
+    if ((_crData.card ?? 'unused') === 'unused') {
+      // One card between them, so the read is about which of them needs it —
+      // and spending it on one leaves the other with nothing.
+      for (const coachName of _crCoaches) {
+        const aimed = _blocs.filter(t => t === coachName).length;
+        if (!aimed && _crCoaches.length > 1) continue;   // only the exposed one is a story
+        _cardReads.push({ coachName, aimed, peers: _crCoaches.filter(n => n !== coachName) });
+      }
     }
   }
   if (_cardReads.length) {
@@ -10533,7 +10544,7 @@ export function rpBuildVotingPlans(ep) {
     // has been promoted at the merge or voted out — so the live lookup comes
     // back empty and the coach silently drops off their own tribal.
     const _planTribe = ep.tribalTribe || ep.loser?.name || '';
-    const _planCoaches = Object.keys(ep.coachData?.[_planTribe]?.cards || {}).map(name => ({ name }));
+    const _planCoaches = (ep.coachData?.[_planTribe]?.coaches || []).map(name => ({ name }));
     const _targets = new Set(namedAlliances.map(a => a.target).filter(Boolean));
     for (const c of _planCoaches) {
       if (_targets.has(c.name)) { confCast.push({ name: c.name, role: 'coach-hunted', target: null }); continue; }
@@ -10585,7 +10596,7 @@ export function rpBuildVotingPlans(ep) {
         // From the episode, for the same reason as everything else here: the
         // live record says whether the card is spent TODAY, not that night.
         const _planTribeName = ep.tribalTribe || ep.loser?.name || '';
-        const _cardLive = (ep.coachData?.[_planTribeName]?.cards?.[name] ?? 'unused') === 'unused';
+        const _cardLive = (ep.coachData?.[_planTribeName]?.card ?? 'unused') === 'unused';
         line = _hp([
           `They have all worked out that I am the cheapest vote on this beach. No idol I am allowed to play, no ballot to hit them back with. ${_cardLive ? 'What I have is one card and the wrong person has to sign it.' : 'And I have nothing left to stop it.'}`,
           `I trained half of them. That is the part nobody says out loud — the reason I am going is that I was good at the job.`,
@@ -11018,7 +11029,7 @@ export function rpBuildTribal(ep) {
   // rather than a contradiction the viewer has to referee.
   // A coach can be the name the whole camp is on, and is not in tribalPlayers.
   const _epCoachNamesTribal = new Set(Object.values(ep.coachData || {})
-    .flatMap(t => Object.keys(t?.cards || {})));
+    .flatMap(t => t?.coaches || []));
   const _forecastReads = buildViewerVoteCommitments(ep.voteCommitmentDiagnostics || []);
   const voteCounts = {};
   _forecastReads.forEach(r => { if (r.predictedBallot) voteCounts[r.predictedBallot] = (voteCounts[r.predictedBallot] || 0) + 1; });
@@ -16009,10 +16020,14 @@ export function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snap
   // still out there. Read from the episode's snapshot, never from live gs —
   // a replay would otherwise report today's answer over an old camp.
   if (coachCards && !isMerge) {
-    for (const [coachName, state] of Object.entries(coachCards)) {
-      lines.push(state === 'unused'
-        ? `${coachName} still holds a Coach's Save Card. It only works if every other coach on the tribe signs it, and it has to be played before the votes are read.`
-        : `${coachName}'s Coach's Save Card has been spent. There is nothing standing between ${coachName} and the next vote.`);
+    const _names = coachCards.coaches || [];
+    const _who = _names.length > 1
+      ? `${_names.slice(0, -1).join(', ')} and ${_names[_names.length - 1]}`
+      : (_names[0] || 'The coach');
+    if (_names.length) {
+      lines.push(coachCards.card === 'unused'
+        ? `${_who} share one Coach's Save Card${_names.length > 1 ? ' between them' : ''}. It saves whichever of them the tribe votes out, every coach on the tribe has to sign it, and it has to be played before the votes are read.`
+        : `The Coach's Save Card is spent. ${_names.length > 1 ? `Nothing stands between ${_who} and the next vote.` : `Nothing stands between ${_who} and the next vote.`}`);
     }
   }
 

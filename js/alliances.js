@@ -11,7 +11,7 @@ import { hasSocialRole, perceivedRoles } from './social-status.js';
 import { addRelationshipDimension } from './relationships.js';
 import { recordBetrayal } from './relationship-events.js';
 import { idolSuspicionModifier, splitVotePreference } from './adaptation.js';
-import { coachesOf, coachRecord, isCoach } from './coaches.js';
+import { coachesOf, coachRecord, isCoach, tribeCardHeld } from './coaches.js';
 import { aweOf } from './coach-agenda.js';
 
 const _arch = (n) => players.find(p => p.name === n)?.archetype || 'floater';
@@ -59,7 +59,7 @@ export function _coachTargetDanger(coachName, attackers) {
   // make the next shot clean. Nobody is neutral about it, so this is never a
   // flat modifier — it is the attackers' own boldness deciding the sign.
   let cardBias = 1;
-  const _cardLive = (gs.coaches || []).some(c => c.name === coachName && c.saveCard === 'unused');
+  const _cardLive = tribeCardHeld(rec.tribe);
   if (_cardLive && group.length) {
     const nerve = group.reduce((sum, a) => {
       const st = pStats(a);

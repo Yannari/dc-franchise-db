@@ -40,7 +40,7 @@ export function sessionsFor(tribeSize) {
  */
 export function addCoach({ name, tribe, sessionsPerEp = 2, stars = 4.5 }) {
   if (!gs.coaches) gs.coaches = [];
-  const record = { name, tribe, saveCard: 'unused', promoted: false, sessionsPerEp, stars };
+  const record = { name, tribe, promoted: false, sessionsPerEp, stars };
   gs.coaches.push(record);
   return record;
 }
@@ -201,4 +201,28 @@ export function coachCanFind(type, source = 'camp') {
   if (!entry?.enabled) return false;
   const sources = entry.sources || ['camp'];
   return sources.includes(source);
+}
+
+/**
+ * ONE SAVE CARD PER TRIBE, not one per coach.
+ *
+ * It was a field on each coach's record, which gave a two-coach tribe two
+ * saves and printed the same sentence twice on every camp screen. One card
+ * between them is the sharper rule and the one the twist wants: spending it on
+ * Julia leaves Wayne permanently exposed, so a peer signing is not just doing
+ * a favour, they are handing over their own insurance. It also explains the
+ * unanimity requirement, which never made sense for a card somebody owned
+ * alone.
+ */
+export function tribeCardState(tribeName) {
+  return (gs.coachCards || {})[tribeName] || 'unused';
+}
+
+export function tribeCardHeld(tribeName) {
+  return tribeCardState(tribeName) === 'unused';
+}
+
+export function spendTribeCard(tribeName) {
+  if (!gs.coachCards) gs.coachCards = {};
+  gs.coachCards[tribeName] = 'used';
 }

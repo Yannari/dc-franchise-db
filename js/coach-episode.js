@@ -4,7 +4,7 @@
 import { gs, players, seasonConfig } from './core.js';
 import { pStats } from './players.js';
 import { addBond, getBond } from './bonds.js';
-import { activeCoaches, bankTraining, coachesOf, coachRecord, isCoach, removeCoach, revokeCoachTraining, sessionsFor } from './coaches.js';
+import { activeCoaches, bankTraining, coachesOf, coachRecord, isCoach, removeCoach, revokeCoachTraining, sessionsFor, spendTribeCard, tribeCardHeld, tribeCardState } from './coaches.js';
 import { pickSessionTargets, sessionGain, teachableStat, aweOf } from './coach-agenda.js';
 import { showWords } from './shows.js';
 import { giveAdvantage } from './advantages.js';
@@ -106,12 +106,9 @@ export function runCoachingBlock(ep, tribe, roll = Math.random, fameGapOf = defa
     // Snapshot the card state per coach. Read live from gs on replay it would
     // show TODAY's answer over a months-old episode; the board has to say what
     // was true that night.
-    const cards = {};
-    for (const c of coaches) {
-      const rec = coachRecord(c.name);
-      cards[c.name] = rec ? rec.saveCard : 'unused';
-    }
-    ep.coachData[tribeName] = { sessions, passedOver, cards, peerCount: coaches.length };
+    ep.coachData[tribeName] = { sessions, passedOver,
+      card: tribeCardState(tribeName), coaches: coaches.map(c => c.name),
+      peerCount: coaches.length };
   }
   return { sessions, passedOver };
 }
@@ -163,7 +160,7 @@ export function eliminateCoach(ep, coachName) {
 export function offerSaveCard(ep, coachName, tribe) {
   const record = coachRecord(coachName);
   if (!record) return { played: false, replacement: null, reason: 'not-a-coach', votes: [] };
-  if (record.saveCard !== 'unused') return { played: false, replacement: null, reason: 'already-used', votes: [] };
+  if (!tribeCardHeld(record.tribe)) return { played: false, replacement: null, reason: 'already-used', votes: [] };
 
   // THE CARD IS BETWEEN THE COACHES OF ONE TEAM. Contestants have nothing to
   // say about it — they already had their say, at the vote. Every other coach
@@ -207,7 +204,7 @@ export function offerSaveCard(ep, coachName, tribe) {
         .slice().sort((a, b) => getBond(coachName, a) - getBond(coachName, b))[0] || null);
   if (!replacement) return { played: false, replacement: null, reason: 'no-replacement', votes };
 
-  record.saveCard = 'used';
+  spendTribeCard(record.tribe);
   if (!ep.coachSaves) ep.coachSaves = [];
   ep.coachSaves.push({ coach: coachName, tribe: tribe?.name ?? tribe?.tribeName, replacement, votes });
   return { played: true, replacement, reason: 'unanimous', votes };
@@ -259,6 +256,24 @@ export function saveCardVerdict(voterCoach, endangered) {
     const myBond = getBond(voterCoach, doomed);
     p -= Math.max(0, myBond) * 0.03;          // losing someone you like hurts
     if (myBond < 0) p += 0.08;                // losing someone you don't, helps
+  }
+
+  // ── THE CARD IS SHARED ────────────────────────────────────────────────
+  // One card per tribe means signing is not a favour, it is handing over your
+  // own insurance. Once it is spent on somebody else, the signer has nothing
+  // left for the night the room turns on them — and the more exposed they are
+  // themselves, the harder that is to do.
+  {
+    const rec = coachRecord(voterCoach);
+    const tribe = (gs.tribes || []).find(t => (t.name ?? t.tribeName) === rec?.tribe);
+    const mates = (tribe?.members || []).filter(m => !isCoach(m));
+    if (mates.length) {
+      const myStanding = mates.reduce((sum, m) => sum + getBond(voterCoach, m), 0) / mates.length;
+      // Disliked by the room = likely to need the card = far less willing to
+      // spend it on a colleague. Proportional, never a cliff.
+      p -= Math.max(0, -myStanding) * 0.07;
+      p += Math.max(0, myStanding) * 0.02;
+    }
   }
 
   // ── STANDING DEALS ────────────────────────────────────────────────────
@@ -365,7 +380,7 @@ export function maybeSaveCoach(ep, result) {
   const commit = (ep.coachCardCommits || []).find(c => c.coach === result.eliminated);
   if (!commit) {
     ep.coachCardNotPlayed = [...(ep.coachCardNotPlayed || []), { coach: result.eliminated,
-      held: record.saveCard === 'unused' }];
+      held: tribeCardHeld(record.tribe) }];
     return false;
   }
   if (!commit.signed) {
@@ -790,7 +805,7 @@ export function coachCardTalk(ep, tribe, roll = Math.random) {
 
   for (const c of coaches) {
     const rec = coachRecord(c.name);
-    if (!rec || rec.saveCard !== 'unused') continue;
+    if (!rec || !tribeCardHeld(tribeName)) continue;
 
     // Exposed: the tribe does not like them much, or they have been ignoring
     // most of it. Both are the states that get a coach voted out.
@@ -845,7 +860,7 @@ export function commitSaveCards(ep, tribeLabel, alliances = [], roll = Math.rand
   const commits = [];
   for (const c of coachesOf(tribeLabel)) {
     const rec = coachRecord(c.name);
-    if (!rec || rec.saveCard !== 'unused') continue;
+    if (!rec || !tribeCardHeld(tribeLabel)) continue;
 
     // What the coach can see: how many voting blocs have named them.
     const aimed = alliances.filter(a => a.target === c.name).length;
@@ -860,7 +875,7 @@ export function commitSaveCards(ep, tribeLabel, alliances = [], roll = Math.rand
     const votes = peers.map(p => ({ coach: p.name, ...saveCardVerdict(p.name, c.name) }));
     const signed = peers.length > 0 && votes.every(v => v.consents);
 
-    rec.saveCard = 'used';                      // spent on play, needed or not
+    spendTribeCard(tribeLabel);                 // spent on play, needed or not
     if (!gs.coachSaveLedger) gs.coachSaveLedger = [];
     const _epNum = Number(ep?.num || gs.episode || 0);
     for (const v of votes) {

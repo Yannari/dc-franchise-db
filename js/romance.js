@@ -974,19 +974,17 @@ export function checkLoveTriangleFormation(ep) {
 
     // Push camp event
     const pc = pronouns(center);
-    const ps0 = pronouns(suitors[0]);
-    const ps1 = pronouns(suitors[1]);
     const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
     if (ep.campEvents?.[tribeName]) {
       const block = ep.campEvents[tribeName];
       const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
       const variants = [
         `The math isn't adding up. ${center} has been spending nights whispering with ${suitors[0]} and mornings laughing with ${suitors[1]}. ` +
-        `${ps0.Sub} noticed. ${ps1.Sub} noticed. Neither has said anything yet — but the silence is louder than any confrontation.`,
+        `${suitors[0]} noticed. ${suitors[1]} noticed. Neither has said anything yet — but the silence is louder than any confrontation.`,
         `Everyone on the tribe can feel it: ${center} is caught between ${suitors[0]} and ${suitors[1]}, and ${pc.sub} doesn't seem to realize ` +
         `how obvious it's become. The question isn't whether this blows up — it's when.`
       ];
-      evts.push({ type: 'triangleTension', text: variants[Math.random() < 0.5 ? 0 : 1], players: [center, suitors[0], suitors[1]] });
+      evts.push({ type: 'triangleTension', sourceType: 'dual-showmance', text: variants[Math.random() < 0.5 ? 0 : 1], players: [center, suitors[0], suitors[1]] });
     }
     ep.triangleEvents.push({ type: 'formation', sourceType: 'dual-showmance', center, suitors: [suitors[0], suitors[1]], ep: epNum });
     return; // max 1 triangle
@@ -1108,7 +1106,7 @@ export function checkLoveTriangleFormation(ep) {
             `There's a new energy around ${inShowmance} that ${partner} can't quite name. ${candidate} lights up whenever ${pc.sub} walks over, ` +
             `laughs a half-second too long at ${pc.posAdj} jokes. It hasn't crossed any lines yet — but the line is getting thinner every day.`
           ];
-          evts.push({ type: 'triangleTension', text: variants[Math.random() < 0.5 ? 0 : 1], players: [inShowmance, partner, candidate] });
+          evts.push({ type: 'triangleTension', sourceType: 'one-sided', text: variants[Math.random() < 0.5 ? 0 : 1], players: [inShowmance, partner, candidate] });
         }
         ep.triangleEvents.push({ type: 'formation', sourceType: 'one-sided', center: inShowmance, suitors: [partner, candidate], ep: epNum });
         return; // max 1 triangle

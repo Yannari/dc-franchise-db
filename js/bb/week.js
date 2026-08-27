@@ -690,6 +690,44 @@ function runHouseRomance(week, rng) {
           `${a} joins ${b} and ${c} in the backyard, but every story has context only the couple understands. ${a} stops trying to enter the conversation.`,
           `${b} promises ${a} they will talk later, then disappears upstairs with ${c}. ${a} waits long enough to realize later is not coming.`,
         ], a, b, c);
+      // ── THE TRIANGLE, IN A HOUSE ──
+      //
+      // The love-triangle stages run in a house — 7 of them across 110 measured
+      // weeks, each producing about ten visible beats — and every stage had a
+      // case here except the one that OPENS it. So the beat that introduces the
+      // triangle fell through to the default, which rewrites "camp" to "house"
+      // and leaves everything else alone, and a Big Brother house was told that
+      // somebody had been "carrying water together, sitting close at fire,
+      // volunteering for the same tasks". The exact bug class this project
+      // keeps a document about: one show's vocabulary printed over the other.
+      //
+      // The two shapes mean different things by the same three names, so the
+      // text has to know which one it is. Dual showmance: `a` is seeing both
+      // `b` and `c`. One-sided: `a` is in a showmance with `b`, and `c` is the
+      // one circling.
+      case 'triangleTension': {
+        // Read off the event, which now carries it. Looking the triangle up in
+        // gs was wrong twice over: one can form and resolve inside a single
+        // week, and two beats about the same trio in the same week both resolve
+        // to whichever triangle the search happens to reach — measured at 4
+        // wrong shapes in 12 beats, dual showmances drawing the line about a
+        // third person circling, which reads as nonsense when the person
+        // circling IS the centre.
+        if ((e.sourceType || 'dual-showmance') === 'dual-showmance') {
+          return romanceLine(e.type, [
+            `${a} spends the night talking to ${b} in the bedroom and the whole of the next morning with ${c} at the kitchen table, and does not appear to notice that both of them are counting.`,
+            `Half this house could tell you ${a} is in two things at once. The only two who have not said it out loud are ${b} and ${c}.`,
+            `${b} and ${c} end up on either side of ${a} at dinner. Nobody says a word about it, and it is the loudest meal of the season.`,
+            `${a} has said the same thing to ${b} and to ${c}, on the same day, in the same words. This is a house with a camera in every room and a very long memory.`,
+          ], a, b, c);
+        }
+        return romanceLine(e.type, [
+          `${c} has started finding reasons to be wherever ${a} is — the storage room, the kitchen at midnight, whichever sofa ${a} sat down on. ${b} has noticed every one of them.`,
+          `${c} laughs half a second too long at ${a}'s jokes. No line has been crossed and nothing has been said out loud, but ${b} has begun keeping count.`,
+          `${b} stops in the bedroom doorway: ${a} and ${c}, heads close, talking too quietly to hear. ${b} turns around before either of them looks up.`,
+          `${a} tells ${c} something ${b} thought was theirs alone. ${b} finds out the way everybody in this house finds out — from somebody else, repeating it back.`,
+        ], a, b, c);
+      }
       default:
         return String(e.text || '')
           .replace(/\bThe tribe\b/g, 'The house').replace(/\bthe tribe\b/g, 'the house')

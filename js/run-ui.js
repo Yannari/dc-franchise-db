@@ -7,7 +7,11 @@
 // `DEMO_LABELS` an object, so reading them off window gave undefined and the
 // ratings section rendered its curve above an empty grid.
 import { DEMOS, DEMO_LABELS } from './ratings.js';
-import { coachesOf } from './coaches.js';
+// Same reason: ADVANTAGES is an array and ADV_SOURCE_LABELS an object, so
+// reading them off window gives undefined and the coach list renders empty.
+import { ADVANTAGES, ADV_SOURCE_LABELS } from './core.js';
+import { COACH_FINDABLE_DEFAULT, coachesOf } from './coaches.js';
+import { coachCanPlay } from './advantages.js';
 
 /**
  * A dry-run switch for the export, sitting under the button that needs it.
@@ -1591,13 +1595,54 @@ export function pickSeasonTwistPlayer(key, id, name) {
  * Builder's existing per-player Coach checkbox, so there is no picker grid
  * here to populate — only the per-tribe count control needs to show/hide.
  */
+/**
+ * Which advantages a coach may find, and from where.
+ *
+ * Mirrors the contestant advantage list deliberately — same row shape, same
+ * source pills — because it is answering the same question about a different
+ * kind of person. The note on each row is the half that differs: finding a
+ * thing and being allowed to use it are separate permissions for a coach.
+ */
+export function buildCoachAdvantageList() {
+  const host = document.getElementById('coach-adv-list');
+  if (!host) return;
+  const cfg = seasonConfig.coachAdvantages || {};
+  host.innerHTML = ADVANTAGES.map(a => {
+    const entry = Object.prototype.hasOwnProperty.call(cfg, a.key)
+      ? cfg[a.key] : COACH_FINDABLE_DEFAULT[a.key];
+    const on = !!entry?.enabled;
+    const sources = entry?.sources || ['camp'];
+    const selfPlay = coachCanPlay(a.key);
+    return `<div class="adv-row" style="align-items:flex-start">
+      <input type="checkbox" id="coach-adv-${a.key}" class="adv-check" ${on ? 'checked' : ''} onchange="updateCoachesUI();saveConfig()">
+      <div style="flex:1">
+        <span style="font-size:13px;color:#e2e8f0;cursor:pointer" onclick="document.getElementById('coach-adv-${a.key}').click()">${a.label}</span>
+        <div style="font-size:10px;color:var(--muted);margin-top:1px">${selfPlay
+          ? 'A coach can play this on themselves.'
+          : 'A coach can hold this but never use it — it has to be handed to a contestant, and that costs their save card.'}</div>
+        <div id="coach-adv-sources-${a.key}" style="display:${on ? 'flex' : 'none'};gap:4px;margin-top:3px;flex-wrap:wrap">
+          ${Object.entries(ADV_SOURCE_LABELS).map(([src, lbl]) => `<label style="font-size:10px;color:var(--muted);display:flex;align-items:center;gap:2px;cursor:pointer;padding:1px 5px;border-radius:3px;border:1px solid var(--border);background:var(--surface2)${src === 'camp' ? '' : ';opacity:.5'}" title="${src === 'camp' ? '' : 'A coach has no journey, auction or exile leg — camp is the only place they can search.'}">
+            <input type="checkbox" id="coach-adv-src-${a.key}-${src}" style="width:11px;height:11px" ${sources.includes(src) ? 'checked' : ''} ${src === 'camp' ? '' : 'disabled'} onchange="saveConfig()">
+            <span>${lbl}</span>
+          </label>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 export function updateCoachesUI() {
   const mode = document.getElementById('cfg-coaches')?.value || 'disabled';
   const perTribeGrp = document.getElementById('coaches-per-tribe-group');
   const manualHint  = document.getElementById('coaches-manual-hint');
   const desc        = document.getElementById('coaches-desc');
+  const advGrp      = document.getElementById('coaches-adv-group');
   if (perTribeGrp) perTribeGrp.style.display = mode === 'auto' ? 'block' : 'none';
   if (manualHint) manualHint.style.display = mode === 'manual' ? 'block' : 'none';
+  if (advGrp) {
+    advGrp.style.display = mode === 'disabled' ? 'none' : 'block';
+    if (mode !== 'disabled') buildCoachAdvantageList();
+  }
   if (desc) {
     const text = {
       'disabled': 'Disabled: No Coaches twist this season.',

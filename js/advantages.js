@@ -8,7 +8,7 @@ import { assessIdolExposure } from './advantage-intel.js';
 import { reputationModifier } from './reputation.js';
 import { getIntentions, intendsToProtect } from './intentions.js';
 import { META_WEIGHTS } from './franchise-meta.js';
-import { coachesOf, coachRecord, isCoach } from './coaches.js';
+import { coachCanFind, coachesOf, coachRecord, isCoach } from './coaches.js';
 
 export function handleAdvantageInheritance(eliminatedName, ep) {
   if (!eliminatedName || !gs.advantages?.length) return;
@@ -65,7 +65,8 @@ export function findAdvantages(ep) {
       // are pulled in from `coachesOf`, never from `gs.activePlayers`: they
       // must never enter that list before promotion. Skipped on the merge
       // slot because every coach is already promoted (or gone) by then.
-      const _tribeCoaches = isMergeSlot ? [] : coachesOf(tribe.name).map(c => c.name);
+      const _tribeCoaches = isMergeSlot || !coachCanFind('idol', 'camp')
+        ? [] : coachesOf(tribe.name).map(c => c.name);
       const shuffled = [...tribe.members, ..._tribeCoaches].sort(() => Math.random() - 0.5);
       for (const name of shuffled) {
         const s = pStats(name);
@@ -136,7 +137,17 @@ export function findAdvantages(ep) {
     if (typeCfg.oncePer === 'season' && (gs.advantagesFoundThisSeason?.[key] || 0) >= max) return;
     if (typeCfg.oncePer === 'phase' && (gs.advantagesFoundThisPhase?.[key] || 0) >= max) return;
 
-    const pool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer && !_advFoundThisEp.has(p)).sort(() => Math.random() - 0.5);
+    // `gs.activePlayers` excludes coaches, so every non-idol advantage was
+    // unreachable to them — which is why the coach-findable powers the design
+    // asked for never worked. They join the pool only for the types a season
+    // has allowed them, and only from camp: there is no journey, auction or
+    // exile leg assigned to a coach.
+    const _findingCoaches = gs.isMerged ? [] : (gs.coaches || [])
+      .filter(c => !c.promoted && coachCanFind(key, 'camp'))
+      .map(c => c.name);
+    const pool = [...gs.activePlayers, ..._findingCoaches]
+      .filter(p => p !== gs.exileDuelPlayer && !_advFoundThisEp.has(p))
+      .sort(() => Math.random() - 0.5);
     for (const name of pool) {
       const s = pStats(name);
       const epScale = Math.min(ep.num * 0.001, epScaleCap);
@@ -838,7 +849,7 @@ export function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = 
 
   // ── Extra Vote ──
   const _evAdvs = gs.advantages.filter(a => a.type === 'extraVote' && tribalPlayers.includes(a.holder)
-    && (!isCoach(a.holder) || coachCanPlay('extra-vote')));
+    && (!isCoach(a.holder) || coachCanPlay('extraVote')));
   for (const _adv of _evAdvs) {
     const _holder = _adv.holder;
     if (_holder === _svSkip) continue; // sole vote makes extra vote redundant
@@ -894,7 +905,7 @@ export function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = 
 
   // ── Vote Steal ──
   const _vsAdvs = gs.advantages.filter(a => a.type === 'voteSteal' && tribalPlayers.includes(a.holder)
-    && (!isCoach(a.holder) || coachCanPlay('vote-steal')));
+    && (!isCoach(a.holder) || coachCanPlay('voteSteal')));
   for (const _adv of _vsAdvs) {
     const _holder = _adv.holder;
     if (_holder === _svSkip) continue; // sole vote makes vote steal redundant

@@ -1020,6 +1020,13 @@ export function saveConfig() {
     moleCoordination: g('cfg-mole-coordination')?.value || 'independent',
     coaches:     g('cfg-coaches')?.value || 'disabled',
     coachesPerTribe: parseInt(g('cfg-coaches-per-tribe')?.value) || 1,
+    // What a coach may find, and from where. Separate from `advantages` above:
+    // that governs contestants, and a coach is not one.
+    coachAdvantages: Object.fromEntries(ADVANTAGES.map(a => {
+      const enabled = !!g('coach-adv-' + a.key)?.checked;
+      const sources = Object.keys(ADV_SOURCE_LABELS).filter(src => g('coach-adv-src-' + a.key + '-' + src)?.checked);
+      return [a.key, { enabled, sources: sources.length ? sources : ['camp'] }];
+    })),
     romance:     g('cfg-romance')?.value || 'enabled',
     autoRewardChallenges: g('cfg-auto-reward')?.checked ?? false,
     replacementOnMedevac: g('cfg-replacement')?.checked ?? false,
@@ -1216,6 +1223,8 @@ export function renderConfig() {
   // docs/superpowers/specs/2026-08-26-coaches-twist-design.md)
   set('cfg-coaches', seasonConfig.coaches || 'disabled');
   set('cfg-coaches-per-tribe', seasonConfig.coachesPerTribe || 1);
+  // Drawn after the mode is set, so the list reflects the saved season.
+  if (typeof buildCoachAdvantageList === 'function') buildCoachAdvantageList();
   updateCoachesUI();
   // Romance
   set('cfg-romance', seasonConfig.romance || 'enabled');

@@ -6,7 +6,7 @@
 // holds immunity, sits on the jury and takes a placement — none of which a
 // coach does. Being outside that array is not a workaround for the twist, it
 // IS the twist, and promotion at the merge is one push into it.
-import { gs } from './core.js';
+import { gs, seasonConfig } from './core.js';
 
 /** Every coach still standing. */
 export function activeCoaches() {
@@ -172,4 +172,33 @@ export function coachVoteReason(coachName, voter) {
     return `${voter} likes ${coachName}, and votes for the coach anyway — a coach costs nothing to cut and nobody comes back for it`;
   }
   return `${coachName} is a coach: no vote, no immunity run, and no allies who lose anything by letting ${coachName} go`;
+}
+
+/**
+ * What a coach is allowed to FIND, and from where.
+ *
+ * Separate from `coachCanPlay` (advantages.js), which governs what they may
+ * play on themselves. A coach can find something they can never use — that is
+ * the point of the advantage law, and the reason handing one over costs the
+ * save card.
+ *
+ * Default when a season has said nothing: the idol, Knowledge is Power and the
+ * Team Swap, from camp. Everything else is contestants-only until a season
+ * turns it on, because a coach who can find anything is a coach nobody needs
+ * to keep.
+ */
+export const COACH_FINDABLE_DEFAULT = {
+  idol:     { enabled: true,  sources: ['camp'] },
+  kip:      { enabled: true,  sources: ['camp'] },
+  teamSwap: { enabled: true,  sources: ['camp'] },
+};
+
+export function coachCanFind(type, source = 'camp') {
+  const cfg = seasonConfig?.coachAdvantages;
+  const entry = (cfg && Object.prototype.hasOwnProperty.call(cfg, type))
+    ? cfg[type]
+    : COACH_FINDABLE_DEFAULT[type];
+  if (!entry?.enabled) return false;
+  const sources = entry.sources || ['camp'];
+  return sources.includes(source);
 }

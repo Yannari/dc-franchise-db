@@ -16,7 +16,7 @@ beforeEach(() => {
   addCoach({ name: 'Julia', tribe: 'Red' });
 });
 
-const tribe = { tribeName: 'Red', members: ['Evie', 'Finn'] };
+const tribe = { name: 'Red', members: ['Evie', 'Finn'] };
 
 describe('the save card', () => {
   it('needs every contestant to agree', () => {
@@ -73,7 +73,7 @@ describe('the save card', () => {
     addBond('Julia', 'Evie', 9);
     addBond('Julia', 'Finn', 8);
     addBond('Julia', 'Yul', 0.5); // weakest bond in the array, but still assent
-    const rigged = { tribeName: 'Red', members: ['Evie', 'Finn', 'Yul'] };
+    const rigged = { name: 'Red', members: ['Evie', 'Finn', 'Yul'] };
     const out = offerSaveCard({ num: 6 }, 'Julia', rigged);
     expect(out.played).toBe(true);
     expect(out.replacement).not.toBe('Yul');

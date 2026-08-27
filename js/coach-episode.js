@@ -47,7 +47,8 @@ export function defaultFameGapOf(coachName, contestantName, tribeCoaches) {
 }
 
 export function runCoachingBlock(ep, tribe, roll = Math.random, fameGapOf = defaultFameGapOf) {
-  const coaches = coachesOf(tribe.tribeName);
+  const tribeName = tribe.name ?? tribe.tribeName;
+  const coaches = coachesOf(tribeName);
   const sessions = [], passedOver = [];
 
   for (const coach of coaches) {
@@ -94,7 +95,7 @@ export function runCoachingBlock(ep, tribe, roll = Math.random, fameGapOf = defa
   }
 
   if (!ep.coachData) ep.coachData = {};
-  ep.coachData[tribe.tribeName] = { sessions, passedOver };
+  ep.coachData[tribeName] = { sessions, passedOver };
   return { sessions, passedOver };
 }
 
@@ -156,7 +157,7 @@ export function offerSaveCard(ep, coachName, tribe) {
 
   record.saveCard = 'used';
   if (!ep.coachSaves) ep.coachSaves = [];
-  ep.coachSaves.push({ coach: coachName, tribe: tribe.tribeName, replacement });
+  ep.coachSaves.push({ coach: coachName, tribe: tribe.name ?? tribe.tribeName, replacement });
   return { played: true, replacement, reason: 'unanimous' };
 }
 
@@ -398,7 +399,8 @@ export function coachFallout(ep, tribe, blockResult, roll = Math.random) {
   }
 
   // ── NEGATIVE: a protégé caught between two coaches ──
-  const tribeCoaches = tribe?.tribeName ? coachesOf(tribe.tribeName) : [];
+  const _tribeName = tribe?.name ?? tribe?.tribeName;
+  const tribeCoaches = _tribeName ? coachesOf(_tribeName) : [];
   if (tribeCoaches.length >= 2) {
     for (const s of sessions) {
       const other = tribeCoaches.find(c => c.name !== s.coach);

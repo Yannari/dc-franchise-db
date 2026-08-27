@@ -356,7 +356,7 @@ Init: `active` (filter exileDuelPlayer), `campKey`, `campEvents`, `chalMemberSco
 - **Romance hooks**: Pass `null` for phases/phaseKey params or they crash trying to push to nonexistent array.
 - **Pre-merge: NO `ep.immunityWinner`** — tribe wins, not individual. Only post-merge sets this.
 - **Generic challenge skip**: Add to BOTH skip conditions in episode.js (dispatch + updateChalRecord guard).
-- **Tribe property**: `tribeName` not `name`. Episode number: `gs.episodeHistory.length` not `+1`.
+- **Tribe property**: `gs.tribes` objects (built by `initGameState()`/`cast-ui.js`) carry `.name`, never `.tribeName` — `episode.js`, `alliances.js`, `camp-events.js`, `romance.js`, `advantages.js`, and `auction.js` all read `.name` (several with an explicit `t.tribeName || t.name` fallback). Read a tribe's name as `tribe.name ?? tribe.tribeName` if a call site must also tolerate the older shape; do not write new code that reads `tribeName` alone. Episode number: `gs.episodeHistory.length` not `+1`.
 - **Reveals after screen switch**: `_reapplyVisibility()` loops 0→idx on every click. Isolate sidebar/map updates in separate try-catch blocks so reapply always runs first.
 - **Reward Twist compatibility**: (1) Add ID to `reward-twist-challenge` incompatible list in core.js. (2) Add engine ID + flag to `_engineFlagMap` in twists.js.
 - **VP atmosphere**: Use `top:46px` not `top:0` — don't cover the 46px `.rp-nav` bar.

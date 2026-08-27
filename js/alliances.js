@@ -11,10 +11,37 @@ import { hasSocialRole, perceivedRoles } from './social-status.js';
 import { addRelationshipDimension } from './relationships.js';
 import { recordBetrayal } from './relationship-events.js';
 import { idolSuspicionModifier, splitVotePreference } from './adaptation.js';
-import { coachesOf } from './coaches.js';
+import { coachesOf, coachRecord, isCoach } from './coaches.js';
+import { aweOf } from './coach-agenda.js';
 
 const _arch = (n) => players.find(p => p.name === n)?.archetype || 'floater';
 const _VILLAINY = ['villain', 'mastermind', 'schemer'];
+
+/**
+ * How dangerous a coach reads as a vote target — the negative half of the
+ * fame mechanic. `coach-agenda.js`'s `aweOf` already scores a famous coach as
+ * a threat (negative) for the strategic archetypes (mastermind/schemer/
+ * villain/perceptive-player); nothing consumed that number, so a coach with a
+ * real résumé and a tribe full of trained protégés scored near-zero as a
+ * target and was never chosen. Kept strictly proportional — higher fame, more
+ * banked training GIVEN (visible value handed out), and an attacker who
+ * personally reads fame as a threat all multiply the danger up, never gate it
+ * behind a threshold.
+ */
+function _coachTargetDanger(coachName, hubName) {
+  const rec = coachRecord(coachName);
+  if (!rec) return 0;
+  const stars = rec.stars ?? 0;
+  const given = Object.values(gs.coachTraining?.[coachName] || {}).reduce(
+    (sum, byStat) => sum + Object.values(byStat).reduce((s, a) => s + Math.max(0, a), 0), 0);
+  const hubStats = hubName ? pStats(hubName) : null;
+  // Reuse aweOf with the coach's own stars as the "gap" — pickTarget has no
+  // per-contestant fame proxy of its own; this is a consistent stand-in for
+  // how famous this coach reads to the hub attacker.
+  const hubAwe = hubStats ? aweOf({ gap: stars, stats: hubStats, archetype: _arch(hubName) }) : 0;
+  const attackerBias = hubAwe < 0 ? (1 + Math.min(2, -hubAwe)) : 1;
+  return (stars * 0.4 + given * 0.5) * attackerBias;
+}
 export function coalitionMajority(members, lostVotes = []) {
   const lost = new Set(lostVotes || []);
   const eligible = (members || []).filter(name => !lost.has(name)).length;
@@ -1358,7 +1385,8 @@ export function pickTarget(attackers, victims, challengeLabel) {
       const _hasAlliance = (gs.namedAlliances || []).some(a => a.active && a.members.includes(v) && a.members.some(m => m !== v && attackers.includes(m) === false));
       const _soloMod = _hasAlliance ? 0 : 0.4;
       const _volunteerModPre = gs._volunteerDuelHeat?.[v] === ((gs.episode || 0) + 1) ? 5.0 : 0;
-      return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + _soloMod + _volunteerModPre + Math.random() * 0.5);
+      const _coachDangerMod = isCoach(v) ? _coachTargetDanger(v, _hub) : 0;
+      return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + _soloMod + _volunteerModPre + _coachDangerMod + Math.random() * 0.5);
     } else {
       const allAtTribal = [...attackers, v];
       const maxBond = allAtTribal.filter(p => p !== v).reduce((m, p) => Math.max(m, getPerceivedBond(p, v)), 0);

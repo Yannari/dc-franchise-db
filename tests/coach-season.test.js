@@ -144,11 +144,26 @@ async function runHeadlessSeason({ twist, coachesPerTribe = 0, castSize = 16, me
       chalMemberScores: hist.chalMemberScores || ep.chalMemberScores || {},
       votingLog: hist.votingLog || ep.votingLog || [],
       coachPromotions: ep.coachPromotions || null,
+      coachElimination: ep.coachElimination || null,
       isMerge: ep.isMerge || false,
       activePlayersAfter: [...core.gs.activePlayers],
     });
   }
   return { episodes, coachNames, finalActivePlayers: [...core.gs.activePlayers], guard };
+}
+
+/**
+ * The name eliminated THIS episode, whichever channel it came through.
+ *
+ * A contestant boot lands on `ep.eliminated`. A coach boot never does —
+ * `applyCoachElimination` (coach-episode.js) deliberately nulls it, because a
+ * coach voted out costs the tribe its coach, not a contestant's game/jury
+ * standing, and records the event on `ep.coachElimination` instead. The two
+ * are mutually exclusive within one episode (a tribal council seats exactly
+ * one result), so reading `eliminated ?? coachElimination[0].coach` is safe.
+ */
+function episodeEliminated(e) {
+  return e.eliminated ?? e.coachElimination?.[0]?.coach ?? null;
 }
 
 describe('a season with coaches', () => {
@@ -195,13 +210,20 @@ describe('a season with coaches', () => {
     // ordinary contestant is not this property; it is property 5 (promotion)
     // running its normal course, so promotions are applied before the
     // eliminated-name check on each episode, exactly like tests 1 and 2.
+    //
+    // A coach vote-out does NOT surface on `ep.eliminated` — see
+    // `applyCoachElimination` (coach-episode.js): it deliberately nulls the
+    // tribal result's `.eliminated` (a coach boot costs the tribe its coach,
+    // not a contestant's game/jury standing) and records the event on
+    // `ep.coachElimination` instead. `episodeEliminated(e)` below reads
+    // whichever of the two actually fired this episode.
     const seasons = await Promise.all(Array.from({ length: 20 }, () =>
       runHeadlessSeason({ twist: 'coaches', coachesPerTribe: 2 })));
     const anyBooted = seasons.some(s => {
       const stillCoach = new Set(s.coachNames);
       return s.episodes.some(e => {
         for (const p of (e.coachPromotions || [])) stillCoach.delete(p.name);
-        return stillCoach.has(e.eliminated);
+        return stillCoach.has(episodeEliminated(e));
       });
     });
     expect(anyBooted, 'in 20 seasons no coach was ever voted out while still a coach').toBe(true);
@@ -210,10 +232,16 @@ describe('a season with coaches', () => {
   it('does not let coaches be booted every single time either', async () => {
     // The free-boot problem, measured. If a coach is the first elimination in
     // nearly every season, the training cost and the awe are not biting.
+    // Same `episodeEliminated` fix as the test above — the naive
+    // `e.eliminated` read undercounts coach boots (it's always null for one),
+    // which would make every season's "first boot" skip past a real coach
+    // vote-out and land on the next contestant instead.
     const seasons = await Promise.all(Array.from({ length: 20 }, () =>
       runHeadlessSeason({ twist: 'coaches', coachesPerTribe: 2 })));
-    const firstBootWasCoach = seasons.filter(s =>
-      s.coachNames.includes(s.episodes.find(e => e.eliminated)?.eliminated)).length;
+    const firstBootWasCoach = seasons.filter(s => {
+      const firstElim = s.episodes.map(episodeEliminated).find(Boolean);
+      return s.coachNames.includes(firstElim);
+    }).length;
     console.log(`COACH FIRST-BOOT RATE: ${firstBootWasCoach}/20`);
     expect(firstBootWasCoach, `${firstBootWasCoach}/20 first boots were coaches`).toBeLessThan(14);
   }, 240000);

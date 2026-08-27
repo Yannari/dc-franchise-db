@@ -46,17 +46,17 @@ const block = {
 
 describe('the fallout', () => {
   it('produces events for both halves', () => {
-    const out = coachFallout({ num: 4 }, { tribeName: 'Red', members: ['Evie', 'Finn'] }, block);
+    const out = coachFallout({ num: 4 }, { name: 'Red', members: ['Evie', 'Finn'] }, block);
     expect(out.length).toBeGreaterThan(0);
   });
 
   it('gives every event the players it is about', () => {
-    const out = coachFallout({ num: 4 }, { tribeName: 'Red', members: ['Evie', 'Finn'] }, block);
+    const out = coachFallout({ num: 4 }, { name: 'Red', members: ['Evie', 'Finn'] }, block);
     assertWellFormed(out);
   });
 
   it('never prints another show’s vocabulary', () => {
-    const out = coachFallout({ num: 4 }, { tribeName: 'Red', members: ['Evie', 'Finn'] }, block);
+    const out = coachFallout({ num: 4 }, { name: 'Red', members: ['Evie', 'Finn'] }, block);
     assertNoWrongShowWords(out);
   });
 });
@@ -64,7 +64,7 @@ describe('the fallout', () => {
 describe('coachBreakthrough — guaranteed on a positive session', () => {
   it('fires, is well-formed, and moves the bond + popularity', () => {
     const before = getBond('Julia', 'Evie');
-    const out = coachFallout({ num: 4 }, { tribeName: 'Red', members: ['Evie', 'Finn'] }, block, alwaysRoll);
+    const out = coachFallout({ num: 4 }, { name: 'Red', members: ['Evie', 'Finn'] }, block, alwaysRoll);
     const ev = out.find(e => e.type === 'coachBreakthrough');
     expect(ev, 'breakthrough must fire on a positive-gain session').toBeTruthy();
     expect(ev.players).toEqual(['Julia', 'Evie']);
@@ -79,7 +79,7 @@ describe('coachBreakthrough — guaranteed on a positive session', () => {
 describe('coachPassedOverNotices — guaranteed per passed-over entry', () => {
   it('fires, is well-formed, and costs a bond — escalating with the streak', () => {
     const before = getBond('Julia', 'Finn');
-    const out = coachFallout({ num: 4 }, { tribeName: 'Red', members: ['Evie', 'Finn'] }, block, alwaysRoll);
+    const out = coachFallout({ num: 4 }, { name: 'Red', members: ['Evie', 'Finn'] }, block, alwaysRoll);
     const ev = out.find(e => e.type === 'coachPassedOverNotices');
     expect(ev).toBeTruthy();
     expect(ev.players).toEqual(['Finn', 'Julia']);
@@ -94,9 +94,9 @@ describe('coachPassedOverNotices — guaranteed per passed-over entry', () => {
     // coachFallout three times with a fresh session/passedOver split each
     // time but the same tribe, so the streak counter on gs persists.
     const onlyPassedOver = { sessions: [], passedOver: [{ coach: 'Julia', contestant: 'Finn' }] };
-    coachFallout({ num: 2 }, { tribeName: 'Red', members: ['Evie', 'Finn'] }, onlyPassedOver, alwaysRoll);
-    coachFallout({ num: 3 }, { tribeName: 'Red', members: ['Evie', 'Finn'] }, onlyPassedOver, alwaysRoll);
-    const out = coachFallout({ num: 4 }, { tribeName: 'Red', members: ['Evie', 'Finn'] }, onlyPassedOver, alwaysRoll);
+    coachFallout({ num: 2 }, { name: 'Red', members: ['Evie', 'Finn'] }, onlyPassedOver, alwaysRoll);
+    coachFallout({ num: 3 }, { name: 'Red', members: ['Evie', 'Finn'] }, onlyPassedOver, alwaysRoll);
+    const out = coachFallout({ num: 4 }, { name: 'Red', members: ['Evie', 'Finn'] }, onlyPassedOver, alwaysRoll);
     const ev = out.find(e => e.type === 'coachPassedOverNotices');
     expect(ev.badgeText).toBe('PATTERN NOTICED');
     assertNoWrongShowWords(out);
@@ -115,7 +115,7 @@ describe('coachDefended — a protégé defends their coach unprompted', () => {
     addCoach({ name: 'Julia', tribe: 'Red' });
     addBond('Julia', 'Theo', 3); // Theo already trusts Julia going in — short of the early-season depth ceiling.
 
-    const tribe = { tribeName: 'Red', members: ['Evie', 'Finn', 'Theo'] };
+    const tribe = { name: 'Red', members: ['Evie', 'Finn', 'Theo'] };
     const localBlock = {
       sessions: [{ coach: 'Julia', contestant: 'Evie', stat: 'endurance', gain: 0.8 }],
       passedOver: [{ coach: 'Julia', contestant: 'Finn' }],
@@ -144,7 +144,7 @@ describe('coachProtegeBond — two trained protégés compare what they got, and
     setGs({ activePlayers: ['Evie', 'Theo'], coaches: [], coachTraining: {}, bonds: {} });
     addCoach({ name: 'Julia', tribe: 'Red' });
 
-    const tribe = { tribeName: 'Red', members: ['Evie', 'Theo'] };
+    const tribe = { name: 'Red', members: ['Evie', 'Theo'] };
     const localBlock = {
       sessions: [
         { coach: 'Julia', contestant: 'Evie', stat: 'endurance', gain: 0.8 },
@@ -168,7 +168,7 @@ describe('coachProtegeBond — two trained protégés compare what they got, and
 describe('coachCompareNotes — a trained protégé and a passed-over one turn sour', () => {
   it('fires when at least one contestant was trained and another was skipped, and costs a bond', () => {
     const before = getBond('Evie', 'Finn');
-    const out = coachFallout({ num: 4 }, { tribeName: 'Red', members: ['Evie', 'Finn'] }, block, alwaysRoll);
+    const out = coachFallout({ num: 4 }, { name: 'Red', members: ['Evie', 'Finn'] }, block, alwaysRoll);
     const ev = out.find(e => e.type === 'coachCompareNotes');
     expect(ev).toBeTruthy();
     expect(ev.players).toEqual(['Evie', 'Finn']);
@@ -192,7 +192,7 @@ describe('coachPoachedProtege — caught between two coaches on the same tribe',
     addCoach({ name: 'Marco', tribe: 'Red' });
     addBond('Marco', 'Evie', 2.5); // Marco already has a foothold with Evie.
 
-    const tribe = { tribeName: 'Red', members: ['Evie'] };
+    const tribe = { name: 'Red', members: ['Evie'] };
     const localBlock = {
       sessions: [{ coach: 'Julia', contestant: 'Evie', stat: 'endurance', gain: 0.8 }],
       passedOver: [],
@@ -221,7 +221,7 @@ describe('coachBadAdvice — a bad session detonates in front of the tribe', () 
       passedOver: [],
     };
     const beforeBond = getBond('Julia', 'Evie');
-    const out = coachFallout({ num: 4 }, { tribeName: 'Red', members: ['Evie', 'Finn'] }, localBlock, alwaysRoll);
+    const out = coachFallout({ num: 4 }, { name: 'Red', members: ['Evie', 'Finn'] }, localBlock, alwaysRoll);
     const ev = out.find(e => e.type === 'coachBadAdvice');
     expect(ev).toBeTruthy();
     expect(ev.players).toEqual(['Evie', 'Julia']);

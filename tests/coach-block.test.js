@@ -20,6 +20,9 @@ beforeEach(() => {
   addCoach({ name: 'Julia', tribe: 'Red', sessionsPerEp: 1 });
 });
 
+// Real gs.tribes objects carry `.name`, never `.tribeName` (js/savestate.js,
+// js/cast-ui.js). This one is kept in the older `tribeName` shape on purpose
+// to cover the `tribe.name ?? tribe.tribeName` fallback in coach-episode.js.
 const tribe = { tribeName: 'Red', members: ['Evie', 'Finn'] };
 
 describe('the coaching block', () => {
@@ -52,7 +55,7 @@ describe('the coaching block', () => {
 
   it('does nothing on a tribe with no coaches', () => {
     const ep = { num: 3 };
-    const out = runCoachingBlock(ep, { tribeName: 'Blue', members: ['Evie'] }, () => 0.5);
+    const out = runCoachingBlock(ep, { name: 'Blue', members: ['Evie'] }, () => 0.5);
     expect(out.sessions).toEqual([]);
   });
 });
@@ -76,14 +79,14 @@ describe('awe of a famous coach accelerates the bond, never the teaching', () =>
 
     const highGapOf = () => 5; // Star is famous, contestant is not.
 
-    runCoachingBlock({ num: 3 }, { tribeName: 'HighTribe', members: ['HighAwe'] }, () => 0.5, highGapOf);
+    runCoachingBlock({ num: 3 }, { name: 'HighTribe', members: ['HighAwe'] }, () => 0.5, highGapOf);
     const highAweBond = getBond('Star', 'HighAwe');
 
     // Reset for the low-awe run so bonds don't carry over.
     setGs({ activePlayers: ['LowAwe'], coaches: [], coachTraining: {}, bonds: {}, episode: 3 });
     addCoach({ name: 'Star', tribe: 'LowTribe', sessionsPerEp: 1 });
 
-    runCoachingBlock({ num: 3 }, { tribeName: 'LowTribe', members: ['LowAwe'] }, () => 0.5, highGapOf);
+    runCoachingBlock({ num: 3 }, { name: 'LowTribe', members: ['LowAwe'] }, () => 0.5, highGapOf);
     const lowAweBond = getBond('Star', 'LowAwe');
 
     expect(highAweBond).toBeGreaterThan(lowAweBond);
@@ -98,13 +101,13 @@ describe('awe of a famous coach accelerates the bond, never the teaching', () =>
     addCoach({ name: 'Star', tribe: 'T', sessionsPerEp: 1 });
 
     const noGap = () => 0;
-    const outNoAwe = runCoachingBlock({ num: 3 }, { tribeName: 'T', members: ['HighAwe'] }, () => 0.5, noGap);
+    const outNoAwe = runCoachingBlock({ num: 3 }, { name: 'T', members: ['HighAwe'] }, () => 0.5, noGap);
     const gainNoAwe = outNoAwe.sessions[0].gain;
 
     setGs({ activePlayers: ['HighAwe'], coaches: [], coachTraining: {}, bonds: {}, episode: 3 });
     addCoach({ name: 'Star', tribe: 'T', sessionsPerEp: 1 });
     const bigGap = () => 5;
-    const outAwe = runCoachingBlock({ num: 3 }, { tribeName: 'T', members: ['HighAwe'] }, () => 0.5, bigGap);
+    const outAwe = runCoachingBlock({ num: 3 }, { name: 'T', members: ['HighAwe'] }, () => 0.5, bigGap);
     const gainAwe = outAwe.sessions[0].gain;
 
     expect(gainAwe).toBeCloseTo(gainNoAwe);
@@ -126,12 +129,12 @@ describe('awe of a famous coach accelerates the bond, never the teaching', () =>
 
     setGs({ activePlayers: ['Newbie'], coaches: [], coachTraining: {}, bonds: {}, episode: 3 });
     addCoach({ name: 'Star', tribe: 'NewbieTribe', sessionsPerEp: 1 });
-    runCoachingBlock({ num: 3 }, { tribeName: 'NewbieTribe', members: ['Newbie'] }, () => 0.5);
+    runCoachingBlock({ num: 3 }, { name: 'NewbieTribe', members: ['Newbie'] }, () => 0.5);
     const newbieBond = getBond('Star', 'Newbie');
 
     setGs({ activePlayers: ['Vet'], coaches: [], coachTraining: {}, bonds: {}, episode: 3 });
     addCoach({ name: 'Star', tribe: 'VetTribe', sessionsPerEp: 1 });
-    runCoachingBlock({ num: 3 }, { tribeName: 'VetTribe', members: ['Vet'] }, () => 0.5);
+    runCoachingBlock({ num: 3 }, { name: 'VetTribe', members: ['Vet'] }, () => 0.5);
     const vetBond = getBond('Star', 'Vet');
 
     expect(newbieBond).toBeGreaterThan(vetBond);
@@ -145,7 +148,7 @@ describe('awe of a famous coach accelerates the bond, never the teaching', () =>
     ]);
     setGs({ activePlayers: ['Newbie'], coaches: [], coachTraining: {}, bonds: {}, episode: 3 });
     addCoach({ name: 'MinorStar', tribe: 'T', sessionsPerEp: 1, stars: 1 });
-    const out = runCoachingBlock({ num: 3 }, { tribeName: 'T', members: ['Newbie'] }, () => 0.5);
+    const out = runCoachingBlock({ num: 3 }, { name: 'T', members: ['Newbie'] }, () => 0.5);
     // gap = 1 - 0 = 1, small but still positive awe for a deferential goat,
     // so the bond gained sits just above the unmultiplied base of 1.
     const bond = getBond('MinorStar', out.sessions[0].contestant);

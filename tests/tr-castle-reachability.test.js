@@ -264,6 +264,32 @@ describe('CALLBACK IS DEAD IN A DEBUT SEASON (documented, not fixed)', () => {
 // cells are not counted — `journey-out`, `journey-back` and `night` hold
 // almost nothing, and counting their absent cells as "zero-advancer" would
 // inflate the number that matters.
+//
+// == UPDATED BY PLAN 5 TASK 2: 27 -> 44, and 10 zero cells -> 1 ==
+//
+// AND THE FINDING THAT CAME WITH IT, because the numbers alone would mislead
+// exactly as the last three copies of them did. `advancesThread` is a
+// DECLARATION, not a capability. `openThread(kind, parties, ...)` consults
+// `findOpenThread` first and FOLDS into an open thread with the same kind and
+// the same party set, so almost every event in this pool was already
+// continuing a story whenever its actors had one of its own family open — the
+// flag only ever controlled two things: whether guard 1 multiplies the event's
+// score, and whether `pickEvent` labels the firing `continued` for the
+// harness. So Plan 5's "in 49% of live-thread scenes NO eligible event could
+// advance it" measured the FLAG and not the pool. What actually gates a
+// continuation is the drawn event's FAMILY matching the thread's kind, plus
+// the 5-episode pair cooldown.
+//
+// Measured, 200 seeded seasons, before and after Task 2's 17 conversions:
+//   mean thread   1.431 -> 1.479 beats      first-beat death  73.9% -> 72.0%
+//   payoff rate   3.96% -> 3.48%            people/season     14.49 -> 14.31
+// With guard 1 flattened the seasons are BIT-IDENTICAL (mean 1.363, 2975
+// live-thread scenes, both arms), which is the proof of the paragraph above:
+// declaring the flag changed no thread's shape, only which events the guard
+// prefers to draw. The conditional continuation rate moves 36.1% -> 56.0%
+// live and 23.3% -> 36.1% with the guard off, almost all of it re-labelling.
+// The second of those breaks a control-arm assertion in tr-calibration.test.js
+// (`dead.rate < 0.30`); see the report for Task 2.
 describe('advancer coverage: the pool shape Plan 5 quotes', () => {
   function cells() {
     const out = new Map();
@@ -277,12 +303,12 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     return out;
   }
 
-  it('81 events, 27 of which can advance a thread', () => {
+  it('81 events, 44 of which can advance a thread', () => {
     expect(EVENTS.length).toBe(81);
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(27);
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(44);
   });
 
-  it('28 non-empty family x window cells: 10 with no advancer, 12 with one, 6 with two or more', () => {
+  it('28 non-empty family x window cells: 1 with no advancer, 13 with one, 14 with two or more', () => {
     const c = cells();
     const counts = [...c.values()];
     const zero = counts.filter(v => v.adv === 0).length;
@@ -294,17 +320,19 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
 
     expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(28);
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
-      + 'can never be continued here, whatever either continuation lever is set to').toBe(10);
+      + 'can never be continued here, whatever either continuation lever is set to').toBe(1);
     expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
-      + 'living here can be advanced at most once every five rounds').toBe(12);
-    expect(many, 'cells with two or more advancers').toBe(6);
+      + 'living here can be advanced at most once every five rounds').toBe(13);
+    expect(many, 'cells with two or more advancers').toBe(14);
     // Named, not just counted: a change that swapped one zero cell for another
     // would keep every total above and still be a different game.
-    expect(zeroNames).toEqual([
-      'callback|dawn', 'callback|morning', 'cover|evening', 'cover|morning',
-      'grief|evening', 'grief|morning', 'romance|morning', 'suspicion|morning',
-      'testing|dawn', 'testing|morning',
-    ]);
+    // ONE LEFT, AND IT IS NAMED SO IT STAYS AWKWARD. `callback|dawn` holds
+    // exactly one event, `callback-recognized`, whose weight() returns 0 when
+    // a callback thread between those two already exists — "they clocked each
+    // other from a previous season" is a thing that can only happen once per
+    // pair, and giving it an advance branch would mean writing a beat that
+    // contradicts its own text. It is left as a zero cell on purpose.
+    expect(zeroNames).toEqual(['callback|dawn']);
   });
 
   it('every family that can open a thread has at least one event that can advance one', () => {
@@ -319,5 +347,75 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
       expect(n, `family "${fam}" has no event that can advance one of its own threads`)
         .toBeGreaterThan(0);
     }
+  });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════
+// RESIDUE IS CITED IN REAL SEASONS (Plan 5 Task 2)
+// ══════════════════════════════════════════════════════════════════════
+//
+// tr-threads.test.js proves the citation helpers work and tr-castle.test.js
+// proves the pool calls them. Neither would notice if the citation never
+// happened in a season that actually plays — the preconditions could all be
+// unreachable, which is the dead-content failure this whole file exists for.
+// So this runs seasons and reads what the castle actually wrote.
+//
+// IT CHECKS THE NUMBER, NOT JUST THE SENTENCE. Every day a citation names must
+// be a day that thread really had a beat on. A citation that invented a number
+// would read exactly as well as one that did not, and nothing else in the
+// suite could tell the difference.
+//
+// THE MUTATION: `residueFor` returning `[]` unconditionally — every citation
+// disappears and the floor below goes red.
+describe('residue is cited in seasons that actually play', () => {
+  const CITE_SEASONS = 60;
+  const cited = [];      // { threadId, ep, days, beatEps, len }
+  let beats = 0;
+  for (let i = 1; i <= CITE_SEASONS; i++) {
+    setPlayers(ROSTER);
+    seedFranchiseHistory(CAST);
+    const res = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 40000 + i });
+    for (const t of (res.threads || [])) {
+      const eps = t.beats.map(b => b.ep);
+      for (const b of t.beats) {
+        beats++;
+        const days = [...String(b.note || '').matchAll(/day (\d+)/g)].map(m => Number(m[1]));
+        if (days.length) cited.push({ threadId: t.id, ep: b.ep, days, beatEps: eps, len: t.beats.length });
+      }
+    }
+  }
+
+  it('citations happen, and every day one names is a real earlier beat of that same thread', () => {
+    const lying = cited.filter(c => c.days.some(d => d >= c.ep || !c.beatEps.includes(d)));
+    const byLen = {};
+    for (const c of cited) byLen[c.len] = (byLen[c.len] || 0) + 1;
+    console.log(`=== CITATIONS (${CITE_SEASONS} seasons) === ${cited.length} of ${beats} beats cite an `
+      + `earlier moment; by thread length ${JSON.stringify(byLen)}`);
+
+    expect(lying.slice(0, 5), 'a citation named a day that thread never had a beat on, or named '
+      + 'the episode it was itself written in').toEqual([]);
+    // The floor. Measured well above this; it is here so the mechanism going
+    // silent — a residue read that quietly returns nothing — is caught in the
+    // only place that runs whole seasons.
+    expect(cited.length, 'no beat in 60 seasons cited an earlier moment').toBeGreaterThan(100);
+  });
+
+  it('the common case is a SHORT thread citing its one earlier moment', () => {
+    // Task 1 left 73.9% of threads dying at their first beat and 3.96% reaching
+    // a payoff, so a citation mechanism that only lit up on the spec's
+    // six-episode thread would be content nobody sees. This asserts the
+    // opposite of the flattering thing: most citations come from threads of
+    // three beats or fewer, and that is fine, because the one-moment form is
+    // the one the text was written around.
+    // TWO-BEAT threads specifically: the shortest thread that can carry a
+    // citation at all, and the one the one-moment form was written for.
+    // Measured 56 of 192 citations; the floor is a third of that, and under
+    // the mutation (`residueFor` -> []) it is zero.
+    const twoBeat = cited.filter(c => c.len === 2).length;
+    expect(cited.length, 'no citations to characterise').toBeGreaterThan(100);
+    expect(twoBeat, 'no citation in 60 seasons came from a two-beat thread — the mechanism '
+      + 'only lights up on long stories, and 73.9% of stories die at beat one')
+      .toBeGreaterThan(20);
   });
 });

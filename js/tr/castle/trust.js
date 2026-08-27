@@ -19,7 +19,8 @@ import { gs } from '../../core.js';
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, closeThread, findOpenThread, openThreadsFor, heatAt } from '../threads.js';
+import { openThread, advanceThread, closeThread, findOpenThread, openThreadsFor, heatAt,
+  advanceCiting } from '../threads.js';
 
 const FAMILY = 'trust';
 
@@ -279,6 +280,10 @@ registerEvent({
 
 registerEvent({
   id: 'trust-late-checkin',
+  // CITES (Plan 5 Task 2). "The arrangement" is whichever one they made, and
+  // the day they made it on is the difference between a check-in and a
+  // sentence about nothing.
+  citesResidue: true,
   family: FAMILY,
   window: 'dawn',
   advancesThread: true,
@@ -314,8 +319,8 @@ registerEvent({
     const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
     addBond(a, b, 1);
-    const advanced = advanceThread(t.id, ctx.ep, `${a} checked in with ${b} — the arrangement was still holding.`);
-    return { branch: 'checked-in', pair: [a, b], threadId: advanced?.id, bondDelta: 1 };
+    const { thread, cited } = advanceCiting(t, ctx.ep, `${a} checked in with ${b} — the arrangement was still holding.`);
+    return { branch: 'checked-in', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1 };
   },
 });
 

@@ -23,7 +23,8 @@
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, closeThread, findOpenThread } from '../threads.js';
+import { openThread, advanceThread, closeThread, findOpenThread, continueThread,
+  advanceCiting } from '../threads.js';
 
 const FAMILY = 'testing';
 
@@ -33,6 +34,9 @@ registerEvent({
   id: 'testing-small-dare',
   family: FAMILY,
   window: 'morning',
+  // The second advancer in `testing|morning`.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -47,8 +51,8 @@ registerEvent({
     const line = compliant
       ? `${a} floated a small, pointless ask, and ${b} just went along with it — no questions.`
       : `${a} floated a small, pointless ask, and ${b} pushed back on it, which told ${a} something.`;
-    const t = openThread(FAMILY, [a, b], ctx.ep, line);
-    return { branch: compliant ? 'complied' : 'refused', pair: [a, b], threadId: t?.id, bondDelta };
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
+    return { branch: compliant ? 'complied' : 'refused', pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
 });
 
@@ -56,6 +60,12 @@ registerEvent({
   id: 'testing-ask-for-alibi-check',
   family: FAMILY,
   window: 'dawn',
+  // ADVANCES AND CITES (Plan 5 Task 2). `testing|dawn` held no advancer at
+  // all, so a test opened at dawn could never be followed up at dawn. A
+  // cross-check is definitionally a repeat: the second one is only worth
+  // narrating against the first, which is what the citation supplies.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -70,8 +80,8 @@ registerEvent({
     const line = checksOut
       ? `${a} quietly cross-checked ${b}'s story with a third person. It matched, clean.`
       : `${a} quietly cross-checked ${b}'s story with a third person. It didn't quite match.`;
-    const t = openThread(FAMILY, [a, b], ctx.ep, line);
-    return { branch: checksOut ? 'checks-out' : 'inconsistent', pair: [a, b], threadId: t?.id, bondDelta };
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
+    return { branch: checksOut ? 'checks-out' : 'inconsistent', pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
 });
 
@@ -162,6 +172,12 @@ registerEvent({
   id: 'testing-double-check-story',
   family: FAMILY,
   window: 'morning',
+  // ADVANCES AND CITES (Plan 5 Task 2). `testing|morning` held no advancer
+  // either. "Walk me through your morning AGAIN" is the single most literal
+  // citation in the pool — the whole event is somebody re-asking a question
+  // they already asked, and the day they first asked it is the point.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return 1;
@@ -175,8 +191,8 @@ registerEvent({
     const line = consistent
       ? `${a} asked ${b} to walk through their morning again. It matched, word for word.`
       : `${a} asked ${b} to walk through their morning again, and it came out different the second time.`;
-    const t = openThread(FAMILY, [a, b], ctx.ep, line);
-    return { branch: consistent ? 'consistent' : 'inconsistent', pair: [a, b], threadId: t?.id, bondDelta };
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
+    return { branch: consistent ? 'consistent' : 'inconsistent', pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
 });
 
@@ -184,6 +200,10 @@ registerEvent({
   id: 'testing-silence-test',
   family: FAMILY,
   window: 'dawn',
+  // The second advancer in `testing|dawn` — see the note on the pair cooldown
+  // above susp-whisper-about-absent.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -198,8 +218,8 @@ registerEvent({
     const line = chases
       ? `${a} went quiet on purpose to see if ${b} would chase it. ${b} did, almost immediately.`
       : `${a} went quiet on purpose to see if ${b} would chase it. ${b} let it be quiet right back.`;
-    const t = openThread(FAMILY, [a, b], ctx.ep, line);
-    return { branch: chases ? 'chased' : 'let-it-go', pair: [a, b], threadId: t?.id, bondDelta };
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
+    return { branch: chases ? 'chased' : 'let-it-go', pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
 });
 
@@ -229,6 +249,9 @@ registerEvent({
   family: FAMILY,
   window: 'after-table',
   advancesThread: true,
+  // CITES (Plan 5 Task 2). "Whatever they'd been asked before" is a sentence
+  // with a hole in it where the day should be.
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -238,8 +261,8 @@ registerEvent({
     const [a, b] = ctx.actors;
     const t = findOpenThread(FAMILY, [a, b]);
     addBond(a, b, 0.5);
-    const advanced = advanceThread(t.id, ctx.ep, `${a} kept quietly checking whether ${b} was still holding up to whatever they'd been asked before.`);
-    return { branch: 'followed-through', pair: [a, b], threadId: advanced?.id, bondDelta: 0.5 };
+    const { thread, cited } = advanceCiting(t, ctx.ep, `${a} kept quietly checking whether ${b} was still holding up to whatever they'd been asked before.`);
+    return { branch: 'followed-through', pair: [a, b], threadId: thread?.id, cited, bondDelta: 0.5 };
   },
 });
 

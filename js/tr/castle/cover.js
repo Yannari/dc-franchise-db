@@ -19,7 +19,7 @@ import { gs, players } from '../../core.js';
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, findOpenThread } from '../threads.js';
+import { openThread, advanceThread, findOpenThread, continueThread, advanceCiting } from '../threads.js';
 import { alignmentAt, livingFaithfuls } from '../roles.js';
 import { knowsAlignmentOf } from '../deduction.js';
 
@@ -33,6 +33,13 @@ registerEvent({
   id: 'cover-preemptive-alibi',
   family: FAMILY,
   window: 'morning',
+  // ADVANCES AND CITES (Plan 5 Task 2). `cover|morning` held no advancer. A
+  // cover story is the one thing in the castle that is EXPLICITLY cumulative
+  // — its whole risk is that it has to keep matching what was already said —
+  // so a Traitor building the next layer of one names the day they laid the
+  // last. This is a solo thread: the party set is the Traitor alone.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
@@ -40,9 +47,9 @@ registerEvent({
   },
   fire(ctx, rng) {
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
-    const t = openThread(FAMILY, [actor], ctx.ep,
+    const { thread, cited } = continueThread(FAMILY, [actor], ctx.ep,
       `${actor} had an answer ready for a question nobody had asked yet.`);
-    return { branch: 'alibi-built', actor, threadId: t?.id };
+    return { branch: 'alibi-built', actor, threadId: thread?.id, cited };
   },
 });
 
@@ -101,6 +108,9 @@ registerEvent({
   family: FAMILY,
   window: 'dawn',
   advancesThread: true,
+  // CITES (Plan 5 Task 2). "The same story again" is a claim ABOUT an earlier
+  // day, and the day is the only thing that makes it a risk.
+  citesResidue: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
@@ -110,8 +120,8 @@ registerEvent({
   fire(ctx) {
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const t = findOpenThread(FAMILY, [actor]);
-    const advanced = advanceThread(t.id, ctx.ep, `${actor} told the same story again, word for word. Nobody clocked the repetition.`);
-    return { branch: 'rehearsed', actor, threadId: advanced?.id };
+    const { thread, cited } = advanceCiting(t, ctx.ep, `${actor} told the same story again, word for word. Nobody clocked the repetition.`);
+    return { branch: 'rehearsed', actor, threadId: thread?.id, cited };
   },
 });
 
@@ -167,6 +177,11 @@ registerEvent({
   id: 'cover-story-check',
   family: FAMILY,
   window: 'evening',
+  // ADVANCES AND CITES (Plan 5 Task 2). `cover|evening` held four events and
+  // no advancer. Being asked to tell it again IS the event, and what makes
+  // the retelling dangerous is the day it has to match.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     // ROLE IS THE ONLY GATE. Any living Traitor may attempt this — a hero
@@ -211,9 +226,9 @@ registerEvent({
     else if (branch === 'slip' && partner) bondDelta = -2;       // partner had to watch it fall apart
     if (bondDelta) addBond(actor, partner, bondDelta);
 
-    const t = openThread(FAMILY, parties, ctx.ep, line);
+    const { thread, cited } = continueThread(FAMILY, parties, ctx.ep, line);
     return { branch, actor, partner, archetype, isNiceButTraitor: NICE_ARCHETYPES.includes(archetype),
-      competence, threadId: t?.id, bondDelta };
+      competence, threadId: thread?.id, cited, bondDelta };
   },
 });
 
@@ -223,6 +238,9 @@ registerEvent({
   id: 'cover-double-bluff',
   family: FAMILY,
   window: 'evening',
+  // The second advancer in `cover|evening`.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     // Needs a Traitor in the scene and somebody they know is NOT in the pact
@@ -240,9 +258,9 @@ registerEvent({
     const a = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const b = ctx.actors.find(n => n !== a);
     addBond(a, b, 1);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
       `${a} floated a suspicion about a fellow Traitor to ${b} — genuine-sounding enough that ${b} took it as proof ${a} couldn't be one.`);
-    return { branch: 'double-bluffed', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+    return { branch: 'double-bluffed', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1 };
   },
 });
 
@@ -348,6 +366,9 @@ registerEvent({
   id: 'cover-feign-fear',
   family: FAMILY,
   window: 'morning',
+  // The second advancer in `cover|morning`.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
@@ -355,9 +376,9 @@ registerEvent({
   },
   fire(ctx) {
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
-    const t = openThread(FAMILY, [actor], ctx.ep,
+    const { thread, cited } = continueThread(FAMILY, [actor], ctx.ep,
       `${actor} performed the exact right amount of fear at breakfast — no more, no less than anyone else.`);
-    return { branch: 'feigned-fear', actor, threadId: t?.id };
+    return { branch: 'feigned-fear', actor, threadId: thread?.id, cited };
   },
 });
 

@@ -85,7 +85,7 @@ import { gs } from '../../core.js';
 import { pStats, romanticCompat } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, closeThread, findOpenThread, heatAt } from '../threads.js';
+import { openThread, advanceThread, closeThread, findOpenThread, heatAt, continueThread } from '../threads.js';
 import { suspicion } from '../deduction.js';
 
 const FAMILY = 'romance';
@@ -294,6 +294,12 @@ registerEvent({
   family: FAMILY,
   window: 'morning',
   rare: true,
+  // ADVANCES AND CITES (Plan 5 Task 2). `romance|morning` held no advancer.
+  // Two people vouching for each other AGAIN, and naming the last night they
+  // did it, is how an alibi stops sounding like an alibi and starts sounding
+  // like an arrangement.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2.5 : 0;
@@ -302,9 +308,9 @@ registerEvent({
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
     addBond(a, b, 0.5);
-    const openedT = openThread(FAMILY, [a, b], ctx.ep,
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
       `${a} and ${b} vouched for each other's whereabouts last night. Nobody thought to ask whether that made it MORE or LESS convincing.`);
-    return { branch: 'shared-alibi', pair: [a, b], threadId: openedT?.id, bondDelta: 0.5 };
+    return { branch: 'shared-alibi', pair: [a, b], threadId: thread?.id, cited, bondDelta: 0.5 };
   },
 });
 
@@ -456,6 +462,9 @@ registerEvent({
   family: FAMILY,
   window: 'morning',
   rare: true,
+  // The second advancer in `romance|morning`.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2.5 : 0;
@@ -463,9 +472,9 @@ registerEvent({
   fire(ctx) {
     const showmance = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = showmance.parties;
-    const t = openThread(FAMILY, [a, b], ctx.ep,
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
       `Somebody pointed out, not unkindly, that ${a} and ${b} getting together was awfully convenient for both their games.`);
-    return { branch: 'called-strategic', pair: [a, b], threadId: t?.id };
+    return { branch: 'called-strategic', pair: [a, b], threadId: thread?.id, cited };
   },
 });
 

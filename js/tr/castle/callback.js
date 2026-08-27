@@ -44,7 +44,7 @@ import { gs } from '../../core.js';
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, closeThread, findOpenThread } from '../threads.js';
+import { openThread, advanceThread, closeThread, findOpenThread, continueThread } from '../threads.js';
 import { activeSeasons } from '../../franchise-meta.js';
 
 const FAMILY = 'callback';
@@ -226,6 +226,11 @@ registerEvent({
   family: FAMILY,
   window: 'morning',
   rare: true,
+  // ADVANCES AND CITES (Plan 5 Task 2). `callback|morning` held no advancer.
+  // A returnee warning the room about somebody is the family's own thesis
+  // said twice, and the second time it lands harder for naming the first.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 4) return 0;
@@ -238,9 +243,9 @@ registerEvent({
     const c = pick(rng, others.length ? others : [a]);
     addBond(a, c, 0.5);
     addBond(a, b, -1);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
       `${a} pulled ${c} aside and told them exactly what ${b} was capable of, from experience.`);
-    return { branch: 'warned', actor: a, about: b, warned: c, threadId: t?.id, bondDelta: -1 };
+    return { branch: 'warned', actor: a, about: b, warned: c, threadId: thread?.id, cited, bondDelta: -1 };
   },
 });
 
@@ -280,6 +285,9 @@ registerEvent({
   id: 'callback-no-history-envy',
   family: FAMILY,
   window: 'morning',
+  // The second advancer in `callback|morning`.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -290,9 +298,9 @@ registerEvent({
   fire(ctx) {
     const [outsider, insider] = ctx.actors;
     addBond(outsider, insider, -0.5);
-    const t = openThread(FAMILY, [outsider, insider], ctx.ep,
+    const { thread, cited } = continueThread(FAMILY, [outsider, insider], ctx.ep,
       `${outsider} sat outside a conversation full of names and seasons they had no part of, and it stung more than they expected.`);
-    return { branch: 'left-out', pair: [outsider, insider], threadId: t?.id, bondDelta: -0.5 };
+    return { branch: 'left-out', pair: [outsider, insider], threadId: thread?.id, cited, bondDelta: -0.5 };
   },
 });
 

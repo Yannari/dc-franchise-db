@@ -16,7 +16,7 @@ import { gs, players } from '../../core.js';
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, findOpenThread } from '../threads.js';
+import { openThread, advanceThread, findOpenThread, continueThread } from '../threads.js';
 import { alignmentAt } from '../roles.js';
 
 const FAMILY = 'grief';
@@ -80,6 +80,12 @@ registerEvent({
   id: 'grief-seating-shift',
   family: FAMILY,
   window: 'morning',
+  // ADVANCES AND CITES (Plan 5 Task 2). `grief|morning` held five events and
+  // no advancer, the largest dead cell in the pool. Grief is cumulative by
+  // nature — the second empty chair is only heavy because of the first — so
+  // the citation is doing the work the family already implied.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return _victimLastNight(ctx.ep) ? 2 : 0;
@@ -87,9 +93,9 @@ registerEvent({
   fire(ctx) {
     const [a, b] = ctx.actors;
     addBond(a, b, 1);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
       `${a} sat somewhere new this morning, and ${b} sat down right next to them without being asked.`);
-    return { branch: 'reseated', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+    return { branch: 'reseated', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1 };
   },
 });
 
@@ -118,6 +124,11 @@ registerEvent({
   id: 'grief-suspicion-of-timing',
   family: FAMILY,
   window: 'morning',
+  // The second advancer in `grief|morning`. "Why last night" is a question
+  // that gets sharper every time it is asked, and the citation is what makes
+  // the second asking sound different from the first.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return _victimLastNight(ctx.ep) ? 1.5 : 0;
@@ -126,9 +137,9 @@ registerEvent({
     const [a, b] = ctx.actors;
     const v = _victimLastNight(ctx.ep);
     addBond(a, b, 1);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
       `${a} said to ${b}, quietly: "of everyone, why ${v}, and why last night?" Neither of them had an answer.`);
-    return { branch: 'timing', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 1 };
+    return { branch: 'timing', pair: [a, b], victim: v, threadId: thread?.id, cited, bondDelta: 1 };
   },
 });
 
@@ -284,6 +295,11 @@ registerEvent({
   family: FAMILY,
   window: 'evening',
   rare: true,
+  // ADVANCES AND CITES (Plan 5 Task 2). The only event in `grief|evening`,
+  // and a toast that names the day the castle lost somebody is exactly what a
+  // toast is for.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -295,9 +311,9 @@ registerEvent({
   fire(ctx) {
     const [a, b] = ctx.actors;
     addBond(a, b, 2);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
       `${a} and ${b} raised a glass, quietly, to everyone the castle had already lost.`);
-    return { branch: 'toasted', pair: [a, b], threadId: t?.id, bondDelta: 2 };
+    return { branch: 'toasted', pair: [a, b], threadId: thread?.id, cited, bondDelta: 2 };
   },
 });
 

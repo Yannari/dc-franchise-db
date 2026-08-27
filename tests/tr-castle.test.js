@@ -17,7 +17,7 @@ import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { getBond, setBond } from '../js/bonds.js';
 import { recordAlignment } from '../js/tr/roles.js';
-import { openThread, findOpenThread } from '../js/tr/threads.js';
+import { openThread, findOpenThread, advanceThread, residueFor } from '../js/tr/threads.js';
 import { EVENTS, eligible, pickEvent, validateRegistry } from '../js/tr/events.js';
 import { setFranchiseLedger } from '../js/franchise-meta.js';
 import { learn } from '../js/knowledge.js';
@@ -1036,5 +1036,136 @@ describe('testing: the decoy-secret flagship forks on the TARGET\'s stats, four 
     const ev = targetWith({ loyalty: 0, temperament: 0, social: 0, strategic: 0, intuition: 10 });
     const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('caughtTest');
+  });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════
+// CITING RESIDUE (Plan 5 Task 2) — the pool-level half
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec §5.4.4: "Residue is what lets episode 7's accusation name episode 2."
+// Until this task `residue` was write-only — every event fed it and NOTHING
+// read it back — so no line the castle ever produced referred to an earlier
+// moment. tr-threads.test.js guards the read side in isolation; this guards
+// that the real pool actually uses it, which is the half that would otherwise
+// rot into a helper nobody calls.
+//
+// WRITTEN AS A RULE OVER THE POOL, not a list of the events Task 2 happened to
+// touch: any event declaring `citesResidue` must, when its actors walk in
+// carrying a story that already has earlier beats, WRITE a note naming one of
+// those beats by day. Add a citing event and forget the citation and this goes
+// red without anyone editing the test.
+//
+// THE MUTATION: `residueFor` returning `[]` unconditionally. Every citation is
+// built from residue, so the whole describe block goes red.
+describe('events cite residue: episode 7 names episode 2', () => {
+  /**
+   * probeWorld seeds a two-beat thread of every kind on both the pair and each
+   * actor alone (eps 3 and 4, PROBE_EP is 5). One more beat makes them three,
+   * which is the spec's worked example — a payoff naming all three moments.
+   */
+  function worldWithHistory() {
+    probeWorld({ aTraitor: true, bTraitor: false, turret: true });
+    for (const t of gs.tr.threads) advanceThread(t.id, PROBE_EP - 1, `the ${t.kind} moment`);
+    // Three preconditions probeWorld does not supply, added HERE rather than
+    // there because probeWorld is shared with the belief gate and the
+    // ground-truth probes, and moving their world moves their measurements:
+    //   - a SECOND death (grief-toast-to-them wants the castle to have lost
+    //     more than one person before it holds a ritual about it);
+    //   - a betrayal on the ledger, since probeWorld's A/B are allies and
+    //     `allies` wins the relation priority (callback-warns-newbies);
+    //   - a THIRD player with a season in common with B, so there is a
+    //     conversation for A to be left out of (callback-no-history-envy).
+    const [A, B, C] = PROBE_CAST;
+    gs.tr.rounds.push({ ep: PROBE_EP - 2, murdered: PROBE_CAST[4], murderTarget: PROBE_CAST[4] });
+    setFranchiseLedger({
+      v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {
+        '1': { seasonName: 'S1', format: 'total-drama', players: {
+          [A]: { allies: [B], rivals: [B], betrayed: [], betrayedBy: [B], showmances: [{ partner: B, ended: 'breakup' }], finalist: true },
+          [B]: { allies: [A], rivals: [A], betrayed: [A], betrayedBy: [], showmances: [{ partner: A, ended: 'breakup' }], finalist: true },
+        } },
+        '2': { seasonName: 'S2', format: 'total-drama', players: {
+          [A]: { allies: [], rivals: [B], betrayed: [], betrayedBy: [B], showmances: [], finalist: false },
+          [B]: { allies: [C], rivals: [A], betrayed: [A], betrayedBy: [], showmances: [], finalist: true },
+          [C]: { allies: [B], rivals: [], betrayed: [], betrayedBy: [], showmances: [], finalist: false },
+        } },
+      } } },
+    });
+  }
+
+  const citing = () => EVENTS.filter(e => e.citesResidue);
+
+  it('every event declaring citesResidue names an earlier day in the note it writes', () => {
+    const [A, B] = PROBE_CAST;
+    const ctx = () => ({ ep: PROBE_EP, window: 'evening', act: 'middle',
+      living: [...PROBE_CAST], actors: [A, B] });
+
+    // TWO WORLDS, because one cannot hold every precondition at once. The hot
+    // world has every thread just fed; `susp-cold-case-revival` needs the
+    // opposite — a thread cooled to somewhere in (0, 1) heat, which is the
+    // "she never let it go" state and is unreachable four days after the last
+    // beat. Same history, read four rounds later.
+    const silent = [], ineligible = [];
+    for (const ev of citing()) {
+      let c = null;
+      for (const ep of [PROBE_EP, PROBE_EP + 4]) {
+        worldWithHistory();
+        if (ep !== PROBE_EP) gs.tr.rounds.push({ ep: ep - 1, murdered: PROBE_CAST[3], murderTarget: PROBE_CAST[3] });
+        const candidate = { ...ctx(), ep };
+        if (ev.weight(candidate) > 0) { c = candidate; break; }
+      }
+      if (!c) { ineligible.push(ev.id); continue; }
+      const before = new Set(residueFor(A).concat(residueFor(B)).map(r => `${r.threadId}:${r.ep}:${r.note}`));
+      ev.fire(c, forkRng(0.5));
+      const written = residueFor(A).concat(residueFor(B))
+        .filter(r => !before.has(`${r.threadId}:${r.ep}:${r.note}`));
+      // Named by DAY, and the day named must be one that really happened
+      // earlier on that thread — a citation that invented a number would read
+      // exactly as well and be a lie.
+      const cited = written.some(r => /(^|[^0-9a-z])day [1-4]([^0-9]|$)/.test(r.note || ''));
+      if (!cited) silent.push(`${ev.id} -> ${JSON.stringify(written.map(w => w.note))}`);
+    }
+
+    expect(ineligible, 'these citing events could not be made eligible in the probe world, '
+      + 'so this sweep never exercised them — a citation nothing can reach is dead content')
+      .toEqual([]);
+    expect(silent, 'these events declare citesResidue and wrote no note naming an earlier day')
+      .toEqual([]);
+  });
+
+  it('the pool actually contains citing events, in more than one family', () => {
+    // Non-vacuity, and the floor that makes the sweep above mean something: it
+    // passes trivially over an empty set. 8 is under the shipped count with
+    // room for ordinary drift; the family spread is what stops one file
+    // carrying the whole mechanism.
+    const ids = citing().map(e => e.id);
+    const families = new Set(citing().map(e => e.family));
+    console.log(`=== CITING EVENTS (${ids.length}) === ${ids.join(', ')}`);
+    expect(ids.length, 'almost nothing in the pool cites residue').toBeGreaterThanOrEqual(8);
+    expect(families.size, 'residue citation is confined to one family').toBeGreaterThanOrEqual(4);
+  });
+
+  it('a citing event on a FRESH pair says nothing about days that never happened', () => {
+    // The degradation case, and the one that actually happens: 73.9% of
+    // threads die at beat one. An event that only reads well on a long thread
+    // is content nobody sees, and one that emits "It went back to day
+    // undefined" on a fresh pair is worse than no citation at all.
+    probeWorld({ aTraitor: true, bTraitor: false, turret: true });
+    const [, , C, D] = PROBE_CAST;   // a pair with no thread of any kind
+    const ctx = { ep: PROBE_EP, window: 'evening', act: 'middle',
+      living: [...PROBE_CAST], actors: [C, D] };
+    let fired = 0;
+    for (const ev of citing()) {
+      if (ev.weight(ctx) <= 0) continue;
+      ev.fire(ctx, forkRng(0.5));
+      fired++;
+    }
+    const notes = residueFor(C).concat(residueFor(D)).map(r => r.note || '');
+    expect(fired, 'no citing event was eligible on a fresh pair — this check is vacuous')
+      .toBeGreaterThan(0);
+    expect(notes.filter(n => /day /.test(n)), 'a fresh pair was handed a citation of a day '
+      + 'that never happened to them').toEqual([]);
+    expect(notes.filter(n => /undefined|NaN/.test(n))).toEqual([]);
   });
 });

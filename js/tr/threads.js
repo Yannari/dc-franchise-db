@@ -148,9 +148,108 @@ export function hottest(name, ep) {
   return open[0] || null;
 }
 
-/** What has been written down about this person, oldest first. */
-export function residueFor(name) {
-  return (gs.tr?.residue?.[name] || []);
+/**
+ * What has been written down about this person, oldest first.
+ *
+ * `opts` narrows it to ONE story and to what was written strictly BEFORE a
+ * given episode, which is what a citing event actually needs: an accusation in
+ * episode 7 may name episode 2, and must not name the beat it is itself in the
+ * middle of writing. Both filters are optional — `residueFor(name)` is
+ * unchanged and still returns everything.
+ */
+export function residueFor(name, { threadId = null, beforeEp = null } = {}) {
+  let out = (gs.tr?.residue?.[name] || []);
+  if (threadId != null) out = out.filter(r => r.threadId === threadId);
+  if (beforeEp != null) out = out.filter(r => r.ep < beforeEp);
+  return out;
+}
+
+/**
+ * The earlier moments of one thread, oldest first, as `{ ep, note }`.
+ *
+ * Read through `residueFor` on purpose rather than off `t.beats`: residue is
+ * the durable record spec §5.4.4 says later events cite, and a citation that
+ * silently fell back to the beat log would keep working with residue deleted —
+ * which is exactly the unfailable-guard shape this project keeps finding.
+ * Parties share the story, so one party's residue IS the thread's residue.
+ */
+export function priorMoments(thread, ep) {
+  if (!thread?.parties?.length) return [];
+  const seen = new Set();
+  const out = [];
+  // ONE MOMENT PER DAY. A thread can take two beats in the same round — the
+  // runner draws several scenes per round and `openThread` folds a second one
+  // into the first thread — and a citation is written in days, so two beats on
+  // day 4 would print "day 4 and day 4". The earliest note of that day wins.
+  for (const r of residueFor(thread.parties[0], { threadId: thread.id, beforeEp: ep })) {
+    if (!r.note || seen.has(r.ep)) continue;
+    seen.add(r.ep);
+    out.push(r);
+  }
+  return out;
+}
+
+/**
+ * One sentence that names the earlier moments of `thread` BY DAY and, for the
+ * one it leads with, by what actually happened.
+ *
+ * DEGRADES DOWNWARD BY DESIGN, and the one-moment form is the important one.
+ * 73.9% of threads still die at their first beat and only 3.96% reach a
+ * payoff, so a citation mechanism that needs the spec's six-episode thread
+ * would be unreachable content. The common case is a two-beat thread with
+ * exactly one earlier moment; that is the form written first, and the
+ * three-moment form (spec §5.2's "naming all three moments") is the rare
+ * flourish on top of it.
+ *
+ * IT LEADS WITH THE OPENING BEAT, never the most recent one. The opening beat
+ * is the only note guaranteed to carry no citation of its own — quoting a
+ * later note would splice a citation inside a citation and the text of a long
+ * thread would grow with every beat.
+ */
+export function citeMoments(thread, ep, max = 3) {
+  const prior = priorMoments(thread, ep).slice(0, max);
+  if (!prior.length) return '';
+  const first = prior[0];
+  if (prior.length === 1) return `It went back to day ${first.ep}: ${first.note}`;
+  const days = prior.slice(1).map(p => `day ${p.ep}`);
+  const tail = days.length === 1
+    ? days[0]
+    : `${days.slice(0, -1).join(', ')} and ${days[days.length - 1]}`;
+  return `It went back to day ${first.ep} — ${first.note} — and it had not stopped since: ${tail}.`;
+}
+
+/**
+ * Advance the open thread these parties already have, or open a fresh one —
+ * and when there IS one, splice its earlier moments into the note by day and
+ * by name before writing it.
+ *
+ * This is the shape every citing event uses, and it exists as one function
+ * because the ORDER is easy to get wrong in a way nothing would catch: the
+ * citation has to be built from the thread as it stood BEFORE this beat is
+ * appended, or every note ends by citing itself.
+ *
+ * Returns `{ thread, note, cited }` — `cited` is the episode numbers named, so
+ * a caller can put them in its consequences and a test can assert on them
+ * without parsing prose.
+ */
+export function continueThread(kind, parties, ep, note, { cite = true, max = 3 } = {}) {
+  const existing = findOpenThread(kind, parties);
+  if (!existing) return { thread: openThread(kind, parties, ep, note), note, cited: [] };
+  return advanceCiting(existing, ep, note, { cite, max });
+}
+
+/**
+ * The same thing for an event that already HAS the thread in hand — several
+ * events look one up in `weight()` and would otherwise pay for a second
+ * `findOpenThread`, which on a party set holding two open threads of one kind
+ * could resolve to a different one than the event decided it was continuing.
+ */
+export function advanceCiting(thread, ep, note, { cite = true, max = 3 } = {}) {
+  if (!thread) return { thread: null, note, cited: [] };
+  const prior = cite ? priorMoments(thread, ep).slice(0, max) : [];
+  const citation = prior.length ? citeMoments(thread, ep, max) : '';
+  const full = citation ? `${note} ${citation}` : note;
+  return { thread: advanceThread(thread.id, ep, full), note: full, cited: prior.map(p => p.ep) };
 }
 
 function _writeResidue(t, ep, note) {

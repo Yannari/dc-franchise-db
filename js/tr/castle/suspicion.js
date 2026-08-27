@@ -14,7 +14,8 @@
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, closeThread, findOpenThread, heatAt } from '../threads.js';
+import { openThread, advanceThread, closeThread, findOpenThread, heatAt, continueThread,
+  advanceCiting } from '../threads.js';
 import { suspicion } from '../deduction.js';
 
 const FAMILY = 'suspicion';
@@ -81,6 +82,9 @@ registerEvent({
   family: FAMILY,
   window: 'dawn',
   advancesThread: true,
+  // CITES (Plan 5 Task 2). A running tally is a list of days; this is the
+  // event in the pool that most obviously owed the reader the days.
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -91,8 +95,8 @@ registerEvent({
     const [a, b] = ctx.actors;
     const t = findOpenThread(FAMILY, [a, b]);
     addBond(a, b, -0.5);
-    const advanced = advanceThread(t.id, ctx.ep, `${a} kept a running mental tally on ${b} and it was not shrinking.`);
-    return { branch: 'tracked', pair: [a, b], threadId: advanced?.id, bondDelta: -0.5 };
+    const { thread, cited } = advanceCiting(t, ctx.ep, `${a} kept a running mental tally on ${b} and it was not shrinking.`);
+    return { branch: 'tracked', pair: [a, b], threadId: thread?.id, cited, bondDelta: -0.5 };
   },
 });
 
@@ -107,6 +111,10 @@ registerEvent({
   window: 'evening',
   rare: true,
   advancesThread: true,
+  // CITES (Plan 5 Task 2). "She never let it go" is unreadable without the
+  // day she is refusing to let go OF — this event was the strongest argument
+  // for the whole mechanism and had no way to say the thing it is about.
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -122,10 +130,10 @@ registerEvent({
   fire(ctx) {
     const [a, b] = ctx.actors;
     const t = findOpenThread(FAMILY, [a, b]);
-    const advanced = advanceThread(t.id, ctx.ep,
+    const { thread, cited } = advanceCiting(t, ctx.ep,
       `${a} brought it up again, completely unprompted — ${b} thought that one was dead.`);
     addBond(a, b, -1);
-    return { branch: 'revived', pair: [a, b], threadId: advanced?.id, bondDelta: -1 };
+    return { branch: 'revived', pair: [a, b], threadId: thread?.id, cited, bondDelta: -1 };
   },
 });
 
@@ -138,6 +146,11 @@ registerEvent({
   id: 'susp-whisper-about-absent',
   family: FAMILY,
   window: 'morning',
+  // The second advancer in `suspicion|morning`. One is not enough on its own:
+  // the pair cooldown is five episodes, so a cell with a single advancer can
+  // continue a given pair's story at most once every five rounds.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -150,8 +163,8 @@ registerEvent({
     const target = pick(rng, others);
     addBond(a, b, 1);
     const note = pick(rng, WHISPER_LINES).replace('{a}', a).replace('{b}', b).replace('{c}', target);
-    const t = openThread(FAMILY, [a, b], ctx.ep, note);
-    return { branch: 'whispered', pair: [a, b], about: target, threadId: t?.id, bondDelta: 1 };
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, note);
+    return { branch: 'whispered', pair: [a, b], about: target, threadId: thread?.id, cited, bondDelta: 1 };
   },
 });
 
@@ -290,6 +303,14 @@ registerEvent({
   id: 'susp-body-language-read',
   family: FAMILY,
   window: 'morning',
+  // ADVANCES AND CITES (Plan 5 Task 2). `suspicion|morning` used to hold three
+  // events and not one that could continue a story, so a suspicion opened in
+  // this window could only ever be continued somewhere else. Watching somebody
+  // for a tell is also the most natural thing in the pool to have done BEFORE:
+  // the second time is the beat that means something, and it means it by
+  // naming the first.
+  advancesThread: true,
+  citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a] = ctx.actors;
@@ -298,9 +319,9 @@ registerEvent({
   fire(ctx) {
     const [a, b] = ctx.actors;
     addBond(a, b, -0.5);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
       `${a} watched ${b}'s hands more than ${b}'s words, and didn't love what they saw.`);
-    return { branch: 'body-read', pair: [a, b], threadId: t?.id, bondDelta: -0.5 };
+    return { branch: 'body-read', pair: [a, b], threadId: thread?.id, cited, bondDelta: -0.5 };
   },
 });
 

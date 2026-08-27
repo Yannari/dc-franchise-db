@@ -5,7 +5,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { openThread, advanceThread, closeThread, openThreadsFor, hottest, residueFor,
-  heatAt, findOpenThread, abandonThread }
+  heatAt, findOpenThread, abandonThread, priorMoments, citeMoments, continueThread }
   from '../js/tr/threads.js';
 import roster from '../franchise_roster.json';
 
@@ -220,5 +220,99 @@ describe('a thread accumulates', () => {
     const again = gs.tr.threads.find(x => x.id === a.id);
     expect(again.beats.length).toBe(beatsBefore);
     expect(residueFor(CAST[0]).length).toBe(residueBefore);
+  });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════
+// CITING RESIDUE (Plan 5 Task 2) — spec §5.4.4, "residue is what lets
+// episode 7's accusation name episode 2"
+// ══════════════════════════════════════════════════════════════════════
+//
+// Before this task `residue` had zero production readers: every event wrote to
+// it and nothing ever read it back, so the accumulation the whole thread system
+// exists for was invisible in the text. These are the unit-level guards on the
+// read side. The pool-level and season-level guards live in tr-castle.test.js
+// and tr-castle-reachability.test.js, because a helper that works in isolation
+// and is called by nothing is the same defect in a different place.
+//
+// THE MUTATION THAT PROVES THEM: `residueFor` returning `[]` unconditionally.
+// Every assertion below reaches the citation through residueFor, deliberately —
+// a citation built off `thread.beats` would survive residue being deleted.
+describe('residue can be cited by name and by day', () => {
+  it('a payoff on a three-beat thread names the day of every earlier beat', () => {
+    const t = openThread('suspicion', [CAST[0], CAST[1]], 2, 'A eavesdropped and heard nothing.');
+    advanceThread(t.id, 3, 'A asked for a vote and did not get one.');
+    advanceThread(t.id, 4, 'B broke the commitment at the table.');
+
+    const cited = citeMoments(gs.tr.threads.find(x => x.id === t.id), 7);
+
+    // The episode numbers themselves, which is the spec's claim stated
+    // literally: an event in episode 7 naming episodes 2, 3 and 4.
+    expect(cited).toContain('day 2');
+    expect(cited).toContain('day 3');
+    expect(cited).toContain('day 4');
+    // And the SPECIFIC moment, not "as before" — the opening beat's own words.
+    expect(cited).toContain('A eavesdropped and heard nothing.');
+    // It must not name the episode it is being spoken in.
+    expect(cited).not.toContain('day 7');
+  });
+
+  it('DEGRADES: a two-beat thread cites its one earlier moment and still reads as a sentence', () => {
+    // This is the case that actually happens. 73.9% of threads die at beat one
+    // and only 3.96% reach a payoff, so a citation that needed three prior
+    // beats would be content nobody ever sees. One prior moment is the shape
+    // the mechanism must be built around.
+    const t = openThread('trust', [CAST[0], CAST[1]], 3, 'They promised each other a vote.');
+
+    const cited = citeMoments(gs.tr.threads.find(x => x.id === t.id), 5);
+
+    expect(cited).toBe('It went back to day 3: They promised each other a vote.');
+  });
+
+  it('a thread with nothing before this episode cites nothing at all', () => {
+    // The single-beat case: no earlier moment exists, so there is no citation
+    // to make and the caller must get an empty string rather than a dangling
+    // "It went back to day undefined".
+    const t = openThread('trust', [CAST[0], CAST[1]], 4, 'first beat');
+    expect(citeMoments(gs.tr.threads.find(x => x.id === t.id), 4)).toBe('');
+    expect(priorMoments(gs.tr.threads.find(x => x.id === t.id), 4)).toEqual([]);
+  });
+
+  it('continueThread writes the citation INTO the beat, built from the thread as it stood before', () => {
+    openThread('suspicion', [CAST[0], CAST[1]], 2, 'A noticed the timeline did not fit.');
+
+    const { thread, note, cited } = continueThread('suspicion', [CAST[0], CAST[1]], 6,
+      'A said it out loud this time.');
+
+    expect(cited).toEqual([2]);
+    expect(note).toContain('day 2');
+    expect(note).toContain('A noticed the timeline did not fit.');
+    // The beat that was just written is the one carrying it — the citation is
+    // narration, not a return value nobody renders.
+    const last = thread.beats[thread.beats.length - 1];
+    expect(last.ep).toBe(6);
+    expect(last.note).toBe(note);
+    // NO SELF-CITATION. If the citation were built after appending the beat,
+    // the note would cite day 6 — itself — and a long thread's text would grow
+    // with every beat as each citation quoted the last one.
+    expect(last.note).not.toContain('day 6');
+  });
+
+  it('continueThread opens a fresh thread, uncited, when there is no story to continue', () => {
+    const { thread, note, cited } = continueThread('grief', [CAST[2], CAST[3]], 4, 'they sat in silence');
+    expect(cited).toEqual([]);
+    expect(note).toBe('they sat in silence');
+    expect(thread.beats).toHaveLength(1);
+  });
+
+  it('residueFor narrows to one story and to what was written before a given episode', () => {
+    const a = openThread('suspicion', [CAST[0], CAST[1]], 2, 'the suspicion');
+    openThread('trust', [CAST[0], CAST[1]], 3, 'the pact');
+    advanceThread(a.id, 5, 'the suspicion, again');
+
+    expect(residueFor(CAST[0]).length).toBe(3);
+    expect(residueFor(CAST[0], { threadId: a.id }).map(r => r.ep)).toEqual([2, 5]);
+    expect(residueFor(CAST[0], { threadId: a.id, beforeEp: 5 }).map(r => r.ep)).toEqual([2]);
   });
 });

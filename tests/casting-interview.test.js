@@ -305,3 +305,69 @@ describe('the person sent to the model', () => {
     expect(btn).toMatch(/backstory: d\.backstory/);
   });
 });
+
+// Every test above reads the worker as TEXT, and text cannot fail on a name
+// that does not exist. The deployed worker called `joinOrigin`, which lives in
+// js/bio.js — a module a standalone Worker script cannot import. Every single
+// interview threw a ReferenceError, Cloudflare answered 1101 with no CORS
+// header, and the only thing the Studio could say was "NetworkError". So this
+// one RUNS the handler, with the model stubbed out.
+describe('the worker actually runs', () => {
+  const questions = INTERVIEW_QUESTIONS.map(x => ({ key: x.key, q: x.q }));
+  const person = {
+    name: 'Test Person', gender: 'f', sexuality: 'bi', archetype: 'hero',
+    age: 24, occupation: 'barista', hometown: 'Nowhere',
+    ethnicity: 'Korean', nationality: 'Korean',
+    voice: 'blunt, fast, funny', backstory: 'raised on a boat',
+    stats: { social: 7, strategic: 4 },
+  };
+
+  const run = async body => {
+    const { default: worker } = await import('../worker/worker-episode-live.js');
+    const real = globalThis.fetch;
+    globalThis.fetch = async () => new Response(JSON.stringify({
+      output_text: JSON.stringify(Object.fromEntries(questions.map(q => [q.key, `answer to ${q.key}`]))),
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    try {
+      return await worker.fetch(new Request('https://w/', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }), { OPENAI_API_KEY: 'test-key' });
+    } finally { globalThis.fetch = real; }
+  };
+
+  it('answers every question instead of throwing', async () => {
+    const res = await run({ mode: 'casting-interview', questions, person });
+    const body = await res.json();
+    expect(res.status, JSON.stringify(body)).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(body.answered).toBe(questions.length);
+  });
+
+  it('joins one origin word without saying it twice', async () => {
+    // The helper the crash was about. Its copy in js/bio.js is what the wiki
+    // renders, and "Korean Korean" is the bug it exists to prevent.
+    let sent = null;
+    const { default: worker } = await import('../worker/worker-episode-live.js');
+    const real = globalThis.fetch;
+    globalThis.fetch = async (_url, init) => {
+      sent = JSON.parse(init.body);
+      return new Response(JSON.stringify({ output_text: JSON.stringify({ [questions[0].key]: 'x' }) }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } });
+    };
+    try {
+      await worker.fetch(new Request('https://w/', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'casting-interview', questions, person }),
+      }), { OPENAI_API_KEY: 'test-key' });
+    } finally { globalThis.fetch = real; }
+    expect(sent.instructions).toContain('Korean');
+    expect(sent.instructions).not.toContain('Korean Korean');
+  });
+
+  it('says so in JSON when the person has no name, rather than crashing', async () => {
+    const res = await run({ mode: 'casting-interview', questions, person: {} });
+    expect(res.status).toBe(400);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+  });
+});

@@ -36,17 +36,39 @@ const KNOWN_WINDOWS = new Set([
 // Guard tuning. Named constants, not magic numbers scattered through _score,
 // so a reviewer mutating "the continuation guard" knows exactly which knob
 // that is.
-const CONTINUATION_BASE = 1;       // a live-but-cold thread still beats a fresh event
-const CONTINUATION_PER_HEAT = 0.5; // a hot thread beats a cold one by more
+// Raised from 1/0.5 in Plan 5 Task 1 round 2, after the two levers were swept
+// JOINTLY rather than one at a time. On its own this knob is nearly inert on
+// thread health — at scene P 0.35, tripling it moves the guard's conditional
+// rate 30.2% -> 36.1% (+20% relative) and the mean thread only 1.397 -> 1.431
+// beats (+2.4%). It is kept at 3x anyway because it is FREE: people coverage,
+// max-single-pair share, every deduction band and the repetition audit are all
+// unmoved, and it buys +29% on the payoff rate (3.08% -> 3.96%), which is the
+// metric Tasks 2-5 actually need since residue can only be cited by a thread
+// that reaches one.
+//
+// WHY IT IS NEARLY INERT, MEASURED, because the answer is the next
+// bottleneck and not a property of this constant: in HALF of all scenes whose
+// actors already share a live thread (49.9%), there is no eligible event that
+// could advance it at all. The guard is a multiplier on a set that is empty
+// half the time. Where an advancer IS available the guard is doing real work —
+// 60.6% of those scenes continue at 1/0.5 and 73.8% at 3/1.5 — so the ceiling
+// is pool coverage, not guard strength. See the note above the bands in
+// tr-calibration.test.js.
+const CONTINUATION_BASE = 3;
+const CONTINUATION_PER_HEAT = 1.5;
 const RARE_MULTIPLIER = 2;         // amplify UP when a rare precondition clears, never down
 
 // How often a scene is convened BECAUSE a story is live, rather than by a
 // uniform draw over the cast. Tuned in Plan 5 Task 1 against a
-// CONTINUATION_SCENE_P = 0 control arm; see the measurement table in
+// CONTINUATION_SCENE_P = 0 control arm; see the joint grid in
 // tr-calibration.test.js. Zero is the control (pure uniform selection, the
 // pre-Plan-5 engine); one would let live threads monopolise every scene and
-// collapse cast coverage, which the coverage band exists to catch.
-export const CONTINUATION_SCENE_P = 0.15;
+// freeze most of the cast out of the season, which the coverage band catches.
+//
+// 0.35 is where the cast-coverage budget binds, not where thread health stops
+// improving: 0.5 would buy 1.6 beats but costs 16.7% of the people who appear
+// in a scene at all and puts 23.4% of a season's scenes on one single pair.
+export const CONTINUATION_SCENE_P = 0.35;
 let _contSceneP = CONTINUATION_SCENE_P;
 
 /**

@@ -416,3 +416,40 @@ describe('the season knows how many people are in it', () => {
     expect(inOutList, 'an eliminated coach never reached the out-list').toBeGreaterThan(0);
   }, 900000);
 });
+
+// Blue reached four people — two contestants and two coaches — and dissolved,
+// because the trigger reads `ep.tribalPlayers`, the BALLOT list, so a tribe of
+// three (one contestant, two coaches) counted as a tribe of one. The rebuild
+// then moved only the contestant, leaving both coaches pointing at a tribe
+// that no longer existed on the board. They were not eliminated; they stopped
+// being anywhere in the game.
+describe('a tribe is not empty while coaches are living in it', () => {
+  it('never leaves a coach attached to a tribe that does not exist', async () => {
+    let orphans = 0, dissolves = 0, dissolvedWithCoaches = 0;
+    for (let r = 0; r < 3; r++) {
+      // Small cast and a late merge, so tribes actually shrink far enough to
+      // reach the dissolution path at all.
+      const { episodes } = await runHeadlessSeason({
+        twist: 'coaches', coachesPerTribe: 2, castSize: 12, mergeAt: 3,
+      });
+      for (const e of episodes) {
+        if (e.ep.tribeDissolve) {
+          dissolves++;
+          const snap = e.ep.gsSnapshot;
+          const gone = e.ep.tribeDissolve.fromTribe;
+          if ((snap?.coaches || []).some(c => !c.promoted && c.tribe === gone)) dissolvedWithCoaches++;
+        }
+        const snap = e.ep.gsSnapshot;
+        if (!snap?.tribes || !snap?.coaches) continue;
+        const live = new Set(snap.tribes.map(t => t.name));
+        for (const c of snap.coaches) {
+          if (!c.promoted && !live.has(c.tribe)) orphans++;
+        }
+      }
+    }
+    expect(dissolves, 'no tribe ever dissolved, so this proves nothing').toBeGreaterThan(0);
+    expect(orphans, 'a coach was left attached to a tribe that no longer exists').toBe(0);
+    expect(dissolvedWithCoaches,
+      'a tribe dissolved while coaches were still living on it').toBe(0);
+  }, 900000);
+});

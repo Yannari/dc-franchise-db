@@ -40,7 +40,7 @@ import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
 import { applyCoachElimination, coachCardTalk, coachFallout, commitSaveCards, maybeSaveCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
 import { coachStatusEvents } from './coach-status-events.js';
-import { activeCoaches, coachesOf } from './coaches.js';
+import { activeCoaches, coachesOf, coachRecord as coachRecordFn } from './coaches.js';
 import { runCoachDealBlock } from './coach-deals.js';
 
 // Challenge simulate functions
@@ -3823,8 +3823,41 @@ export function simulateEpisode() {
     window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
   }
 
+  // ── A TRIBE OF NOTHING BUT COACHES ───────────────────────────────────
+  // Reachable now that coaches keep a tribe alive: one contestant and two
+  // coaches goes to tribal, the contestant is voted out, and what is left
+  // cannot compete in a challenge, cannot lose one, and can never be sent to
+  // another tribal. The staff moves somewhere they can still be played
+  // against rather than sitting on an empty beach for the rest of the season.
+  for (const _emptyTribe of [...(gs.tribes || [])]) {
+    const _tName = _emptyTribe.name ?? _emptyTribe.tribeName;
+    const _left = (_emptyTribe.members || []).filter(m => gs.activePlayers.includes(m));
+    const _stranded = coachesOf(_tName);
+    if (_left.length || !_stranded.length) continue;
+    const _dest = (gs.tribes || []).find(t => (t.name ?? t.tribeName) !== _tName
+      && (t.members || []).filter(m => gs.activePlayers.includes(m)).length >= 1);
+    if (!_dest) continue;
+    const _destName = _dest.name ?? _dest.tribeName;
+    for (const _sc of _stranded) {
+      const _rec = coachRecordFn(_sc.name);
+      if (_rec) _rec.tribe = _destName;
+    }
+    if (gs.coachCards?.[_tName] && !gs.coachCards[_destName]) gs.coachCards[_destName] = gs.coachCards[_tName];
+    if (gs.coachCards) delete gs.coachCards[_tName];
+    gs.tribes = gs.tribes.filter(t => (t.name ?? t.tribeName) !== _tName);
+    ep.coachTribeCollapse = [...(ep.coachTribeCollapse || []),
+      { from: _tName, to: _destName, coaches: _stranded.map(c => c.name) }];
+  }
+
   // ── TRIBE DISSOLUTION: if the losing tribe has only 1 player left, dissolve it ──
-  if (ep.tribalPlayers?.length === 1 && ep.challengeType === 'tribe') {
+  // "One player left" has to mean one PERSON left. `ep.tribalPlayers` is the
+  // ballot list, so a tribe of one contestant and two coaches counted as a
+  // tribe of one and was dissolved with three people living in it — and the
+  // rebuild below moved only the contestant, leaving both coaches attached to
+  // a tribe that no longer existed. They did not leave the game; they stopped
+  // being anywhere in it.
+  const _dissolveCoaches = ep.loser?.name ? coachesOf(ep.loser.name) : [];
+  if (ep.tribalPlayers?.length === 1 && !_dissolveCoaches.length && ep.challengeType === 'tribe') {
     const _soloP = ep.tribalPlayers[0];
     const _fromName = ep.loser.name;
     const _candTribes = gs.tribes.filter(t => t.name !== _fromName && t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
@@ -3840,6 +3873,18 @@ export function simulateEpisode() {
       gs.tribes = gs.tribes
         .filter(t => t.name !== _fromName)
         .map(t => t.name === _destTribe.name ? { ...t, members: [...t.members, _soloP] } : t);
+      // Any coach on the dissolved tribe travels with it. `coach.tribe` is how
+      // coachesOf finds them, and a stale name there is a coach who exists in
+      // gs.coaches and belongs to no tribe on the board.
+      for (const _dc of coachesOf(_fromName)) {
+        const _rec = coachRecordFn(_dc.name);
+        if (_rec) _rec.tribe = _destTribe.name;
+      }
+      // The card travels too: it belongs to a staff, not to a camp.
+      if (gs.coachCards?.[_fromName] && !gs.coachCards[_destTribe.name]) {
+        gs.coachCards[_destTribe.name] = gs.coachCards[_fromName];
+      }
+      if (gs.coachCards) delete gs.coachCards[_fromName];
       ep.tribalPlayers = [];
       ep.noTribal = true;
       // Generate post events — destination tribe now includes the arrival

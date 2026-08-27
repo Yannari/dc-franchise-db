@@ -320,3 +320,218 @@ A clean sample of what ships:
    mutation (test 1) plus the direct base measurement of the three windows' firing
    counts, rather than by running an unwritten-content suite. Same evidence, different
    order; said plainly rather than implied.
+
+---
+---
+
+# Task 4 — ROUND 2 (review response)
+
+**Status: COMPLETE.** `tr-*` suite **256 passed** (254 at round-1 head + 2 new guards; one
+round-1 guard was replaced, one round-1 unit test was superseded and one added).
+`audit:tr-castle` 5 passed. Commit `290e6d24` — "A floor keyed per event cannot see a
+branch die" (9 files, +695/−110).
+
+All seven items addressed. Two extra defects found while fixing R4, and one more found by
+re-reading the dump; all three fixed and guarded.
+
+## R1 — floors keyed per EVENT cannot see a branch die
+
+Reproduced the review's proof exactly: `const quietScore = 0;` in `trust-fall-into-step`
+kills a branch worth 172 firings/400 seasons and 252 tests stay green.
+
+Added **`THE BRANCH FLOOR`** in `tests/tr-castle-reachability.test.js`: the pool produces
+**164 (event, branch) pairs**, the set is PINNED, and each pair must be produced ≥4 times
+per 400 seasons — the same floor the rarest whole event gets. `branch` is now collected on
+every firing in the sweep. The pin catches deletion; the floor catches decay — a floor
+over the keys that are *present* can never see a branch that vanished entirely.
+
+The test header states the shape once, naming all three places this file made the same
+mistake (CLOSER FLOOR — fixed in round 1 after its own mutation exposed it; OUTCOME-BRANCH
+FLOOR — already correct; DEAD-EVENT SWEEP — the one review caught).
+
+- **Mutation:** `const quietScore = 0;` in `trust-fall-into-step` (`journey.js`).
+- **Result: RED** — `a branch appeared or disappeared: expected 163 to deeply equal 164`.
+  Reverted → GREEN.
+
+## R2 — the branches the redistribution starved
+
+It was red on arrival, as predicted. Measured, 400 seasons:
+
+| branch | base | r1 head | r2 head |
+|---|---|---|---|
+| `callback-different-show-different-person:redemption` | 14 | **3** | 7 |
+| `romance-liability-exposed:exposes` | 4 | **2** | ≥10 |
+| `romance-liability-exposed:oblivious` | — | **3** | 5 |
+| `trust-secret-swap:leakedAccident` | 18 | 5 | ≥10 |
+| `trust-vote-commitment-test:kept` | 21 | 7 | ≥10 |
+| `testing-loyalty-oath:reluctant` | 19 | 7 | ≥10 |
+
+**Every one of 164 branches is now ≥4; the minimum is 5.**
+
+Fixed by **relocation, not reweighting** — and relocation rather than a second door,
+because the floor is keyed per (event, branch): a *new* event's branches are new keys and
+leave the starved one exactly where it was. Relocation is also the only content-neutral
+lever here. Moving a scene out of a crowded window gives it more draws *and* gives
+everything left behind more room:
+
+- `trust-secret-swap` evening → **journey-out** (the road out is where you tell someone something)
+- `callback-different-show-different-person` after-table → **journey-out**
+- `romance-liability-exposed` after-table → **night**. This one needed its `exposes` line
+  pool rewritten: the only thing holding it in after-table was two lines putting the
+  doubter on their feet *at the table*. Said out loud in a corridor at two in the morning
+  is the same public act and a better scene — the person hears it from them, not from the
+  room. It forks **four** ways on ~25 firings/400 seasons, so every branch of it sat at or
+  under the floor; volume was the only fix.
+
+Plus one new event, `romance-showmance-on-the-way-back` (journey-back, rare, closer,
+`became-showmance`): romance still had exactly **one** door onto escalation
+(`romance-showmance-forms`, evening), so every event downstream of a showmance was a
+function of how many draws evening got. Round 1 fixed the spark door and left this one.
+
+**A bug in my own new content, found here:** the first version used
+`findOpenThread(kind, exactPair)`. `romance.js` documents at length that a party-exact
+lookup measured ZERO escalations over 60 seasons, because the runner redraws one specific
+pair about once in 300 draws. My event drew 21 firings/400 seasons for it; switching to
+`_threadForActors` (now imported, per R7) took it to 81 and `romance-walked-back-together`
+from 24 to 140.
+
+Family totals, 400 seasons: romance **358 base → 914** (r1: 802), callback **1829 → 1701**
+(r1: 1428 — relocation returned most of what round 1 cost it).
+
+## R3 — the em-dash guard was fitted to the fix
+
+Confirmed: 15 of 3703 beats still shipped three dashes because the offending dash was in
+the HOST note, and my regex only inspected the quoted half.
+
+- **Source:** `citeMoments` now checks *both* sides of the splice —
+  `quoted.includes('—') || String(against || '').includes('—')`.
+- **Guard rewritten from the defect's description**, as instructed:
+  `note.split('—').length > 3`. RED at round-1 head unmutated; 0 of 2691 at round-2 head.
+- **Mutation:** drop the `|| String(against ...)` half. **RED** — `9 of 2781 notes hold
+  more than one em-dash pair`. Reverted → GREEN.
+
+## R4 — one sentence quoted into up to eight beats
+
+`citeMoments` now leads with **the oldest prior moment nobody has quoted yet**, falling
+back to a days-only citation when every one has been used. Deterministic (it reads the
+thread's own beat log — no rng), so replay is unaffected. `_head()` already took only the
+first *sentence*, which is what made the old "always lead with the opening beat" rule
+unnecessary in the first place.
+
+Most-quoted sentence in one season: **4 → 1**.
+
+- **New guard:** `no sentence is quoted into more than three notes of one season`.
+- **Mutation:** `const lead = prior[0];` in place of the `prior.find(...)`. **RED** —
+  `one sentence was quoted into more than three beats of a single season`. Reverted → GREEN.
+
+### Two further defects that R4's fix CREATED, found by re-reading the dump
+
+Varying the lead broke the assumption every `since` in that function rested on — that the
+quoted moment was the earliest. Two real beats came out of the engine naming real days in
+an order that cannot have happened:
+
+> "It went back to day 7 — *Somebody tried to pull at Axel's alibi* — and it had not
+> stopped since: **day 5**."
+>
+> "It had been going on since **day 2**, and again on **day 1**."
+
+`since` is now anchored to `prior[0]` and never to the lead, and the quoting form's
+connective no longer claims an ordering at all ("and it did not stop there"). New unit
+test in `tr-threads.test.js` with **two scenarios**, because the two citation forms come
+from different branches, and **a mutation named for each**:
+
+- quoting form → restore `and it had not stopped since:` → **RED** (`a citation whose lead
+  is not the earliest moment must not say "since"`).
+- days-only form → `since day ${prior[prior.length - 1].ep}` → **RED** (`"since" named day
+  6 while the sentence also names 4`).
+
+Two round-1 unit tests in `tr-threads.test.js` were superseded and updated with the
+reasoning written in, not deleted: R2's rule is "never quote a sentence back at itself",
+not "never quote when the *oldest* moment happens to be that sentence" — with a lead that
+can be chosen, it now quotes day 3 instead of discarding it as collateral. The R2
+invariant it protects (the head appears in the note exactly once) is unchanged and still
+asserted.
+
+## R5 — `grief-shorter-column` had R4's sibling problem
+
+Same fix as `grief-nobody-sleeps`: **four pools of four lines** (`solo-first`,
+`solo-again`, `pair-first`, `pair-again`) on the two real axes — who is present, and
+whether this is the first shorter road or another in a series — and a **branch label that
+carries which**, so the audit's (id, branch) table can see it at all.
+
+## R6 — tense splice
+
+"The castle **is** very quiet at night once there **are** fewer people in it, and {a}
+noticed." → "The castle **went** very quiet at night once there **were** fewer people in
+it, and {a} noticed."
+
+## R7 — duplicated cap
+
+`MAX_ACTIVE_ROMANCES` and `_activeRomanceCount()` are now **exported from `romance.js`**
+and imported by `journey.js`; both local copies deleted. Applied the same rule a second
+time to `_threadForActors`, which R2's fix needed — a second copy of that would have
+re-learned its two documented fixes the hard way.
+
+## An eighth defect, found by re-reading the dump
+
+> "Carrie didn't hide how hard it hit them. **somebody** sat with them and let it be quiet
+> for a while."
+
+Three events fill an absent partner with the stand-in "somebody" — substitution, not
+deletion, as the existing source rule requires — and when the token opened a sentence the
+stand-in opened it in lower case. Added `_sentenceCase()` (exported from `cover.js`,
+applied at all three call sites; a no-op on every authored line, which all begin
+capitalised) and an output guard, which is the right shape here because this defect *is*
+unambiguous in the finished string.
+
+- **Mutation:** drop the wrapper in `grief-morning-reaction`. **RED** — `14 of 2789 notes
+  open a sentence in lower case`. Reverted → GREEN.
+- **The first mutation I tried did not redden**: dropping the wrapper from `_fillPartner`
+  in `cover.js` left it green, because cover's line pools never put `{b}` at the start of a
+  sentence. That is a fact about the test and it is written into the test: the wrapper
+  there is insurance against a future line, not a fix for a live defect. Same lesson as the
+  closer floor in round 1 — I only know because I ran it.
+
+## Pinned ledger, base → round 1 → round 2
+
+| pin | base | r1 | r2 |
+|---|---|---|---|
+| `EVENTS.length` | 81 | 97 | **98** |
+| `advancesThread` | 32 | 39 | 39 |
+| `citesResidue` | 22 | 33 | 33 |
+| cells | 28 | 44 | **45** |
+| zero-advancer cells | 7 | 16 | **18** |
+| one | 13 | 20 | **17** |
+| two-plus | 8 | 8 | **10** |
+| closing (event, outcome) pairs | — | 12 | **13** |
+| (event, branch) pairs | — | — | **164 (new pin)** |
+
+Two cells gained a second advancer in the relocations, which is why `many` rose.
+
+## Distribution, round 1 → round 2 (400 seasons)
+
+evening 2720 → 2647, after-table 2206 → 2100, journey-out 3258 → 3241, journey-back
+1131 → **1216**, night 2658 → 2563. Repetition audit: distinct ids/season 33.7 → **34.2**,
+distinct (id,branch) 38.2 → **39.0**, cross-season Jaccard 0.382 → **0.360** (base 0.333 —
+most of round 1's regression on that diagnostic is back). Closure rate holds at 11.2%.
+Zero dead events, zero starved branches, zero 3-dash notes, zero lowercase sentence starts.
+
+## Concerns
+
+1. **`max single (event,branch) firings in one season` is still 5**, now
+   `grief-nobody-sleeps:awake-paranoid` (base's worst was 4). Both R5-shaped events have
+   been split as far as their real state axes go; going further would mean inventing
+   distinctions the engine does not have. `cooldown: { player: 5 }` remains the lever if
+   Task 6 wants it down.
+2. **The minimum branch is 5 against a floor of 4** — `romance-liability-exposed`'s
+   four-way fork on a rare event. The sweep is deterministic (seeds 1..400), so this is a
+   bar and not a coin, exactly as the rarest-event floor argues for itself; but it is the
+   thinnest thing in the pool and a future content change will trip it first.
+3. **I ran `git stash` in this shared worktree and it popped an unrelated stash**
+   (`WIP on main`) over the tree, conflicting three `bb-*` files. Nothing was lost — the
+   stash entry was kept and `git reset --hard HEAD` restored everything — but base-vs-head
+   measurement in this worktree must not use `git stash`. I used a file swap instead
+   afterwards. Flagging it because Task 5 will want the same base measurements.
+4. **Carried, not addressed:** pair-keyed suspicion threads reading directionally
+   incoherent when cited, as recorded by review. journey-back cites more often than
+   anything before it, so this is now more visible; noted, not redesigned.

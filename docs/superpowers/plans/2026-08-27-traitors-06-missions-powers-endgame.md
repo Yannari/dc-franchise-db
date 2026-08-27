@@ -574,3 +574,63 @@ rounds and pot unchanged — the Seer changes who wins, not the shape of the pha
 - **The meeting has no screen.** `endgame.seer` carries `meetingLine`, `readLine`, both claim
   lines, `truthful` on each, and `seerTruth` — which is all three of §9.1's information layers
   (what the Seer knows, what the room was told, what is true) already on the record.
+
+## Task 8 done — Plan 6 complete at 360 tests
+
+Seven variants, all clearing a floor of 40 per 400 seasons by at least 50: standard 70.30%,
+plain-sight 5.57%, double 5.33%, on-trial 5.19%, dungeon 4.67%, name-your-own 4.51%,
+face-to-face 4.43%.
+
+**Each leaves evidence the others do not** (subject share vs the MEAN OF PER-ROOM Traitor
+shares, living subjects only): on-trial the SPARED z=8.98; plain-sight PROXIMITY z=15.85 plus
+no conclave so no overrule on the ledger (0 across 57 nights vs 820 across 734 standard);
+face-to-face the victim's OWN READ said aloud z=6.34; dungeon WHO CAME BACK UP z=7.75 plus a
+private single-holder read at `deduced`, right 27.8% of the time; double A NAME BOTH VICTIMS
+HAD BEEN PUSHING z=3.60.
+
+**`name-your-own` leaves NOTHING, on purpose, and that is its signature.** The ordinary
+channel fires over a Traitor's body and indicts pushers who are 0.8% Traitor against a room of
+20.4% -- **z = -12.83**. The variant's evidence is that the normal evidence LIES. The pact pays
+in grudges instead.
+
+### 400 seasons is NOT enough to price a rare channel
+
+The double's evidence read **z=2.80 at 400 seasons and z=0.88 at 1,200** -- a false positive at
+nearly three sigma, on the sample size this project has used as its default all plan. Every
+enrichment figure in Task 8 was re-taken at 1,200.
+
+**Carry this: the standard 400-season sweep is adequate for pool-wide statistics and NOT for a
+channel that fires on ~5% of nights.** Size the sample to the rarity of the thing measured,
+not to habit.
+
+### Two more guards that survived their first mutation
+
+- A chapel prose guard **only agreed with itself** -- fixed by recording the pool key and
+  checking the text really came from that pool. This is the same shape as Task 5's, and the
+  second appearance in two tasks: a prose guard that verifies a string against a rule it
+  derived from the same string proves nothing.
+- A missing **living-subject filter** made the double's channel read z=0.88, because most
+  names it indicted had already left the castle. With the filter, z=3.60. **A channel measured
+  over dead subjects is measuring nothing** -- check the population before the statistic.
+
+### Bands: five moved, none retuned, each attributed by three-arm ablation
+
+Faithful win 44.0 -> 53.0%, early lift 2.4 -> 4.4pp, late lift 20.0 -> 22.3pp, pact endgame
+betrayal 48.53 -> 38.94%, blocked murders 8 -> 11.
+
+The ablation splits them cleanly: **the faithful-win swing is ENTIRELY MECHANICAL** --
+`name-your-own` kills a Traitor the room did not earn, and **no later task may credit
+deduction with it** (this is now the second such carve-out, alongside Task 6's ~0.97pp of
+self-destruction). The deduction movement is **entirely the channels**; the mechanic alone
+makes the room slightly worse.
+
+Outside the calibration file, `tr-castle-prose.test.js`'s rarest-key floor was crossed because
+seasons now END SOONER -- fixed by raising the sample 3,200 -> 4,200, **not the threshold**.
+
+### Still carried out of Plan 6
+
+- `shield.cost` has no reader after four tasks.
+- `COMMIT_LINES.kept` in `js/tr/castle/trust.js` is wrong and needs a task allowed to move
+  bands. Every task since Plan 5 has declined it for the same correct reason.
+- `voice-on-the-stair` writes ~23 times in 200 seasons against a floor of 12 -- guarded, but
+  near the edge of measurability.

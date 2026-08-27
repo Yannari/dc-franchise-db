@@ -69,6 +69,30 @@ export function findOpenThread(kind, parties) {
   return matches.reduce((a, b) => (b.lastEp > a.lastEp ? b : a));
 }
 
+/**
+ * ep -> act. THE ONE DEFINITION (spec 5.2 gives a thread an `act`; 5.4.3 gives
+ * an event `acts` multipliers keyed by the same three names). It lives here and
+ * not in events.js because a thread has to be stamped with the act it OPENED in
+ * and events.js already imports this module - the other direction would be a
+ * cycle, and two copies of a three-way split is exactly the drift this project
+ * keeps finding.
+ */
+export function actFor(ep) {
+  return ep <= 3 ? 'early' : ep <= 7 ? 'middle' : 'late';
+}
+
+/**
+ * How a beat REFERS to an act out loud. A thread still open two acts after it
+ * opened is a different sentence from one opened this morning, and "the early
+ * act" is production vocabulary, not something a person in the castle would say.
+ */
+const ACT_PHRASE = {
+  early: 'the first days in the castle',
+  middle: 'the middle of the season',
+  late: 'the back half',
+};
+export function actPhrase(act) { return ACT_PHRASE[act] || null; }
+
 export function openThread(kind, parties, ep, seed = '') {
   if (!gs.tr) return null;
 
@@ -89,7 +113,11 @@ export function openThread(kind, parties, ep, seed = '') {
   }
 
   const id = _id(kind, parties, ep, new Set(gs.tr.threads.map(t => t.id)));
-  const t = { id, kind, parties: [...parties], openedEp: ep, lastEp: ep,
+  // `act` is the act the thread OPENED in (spec 5.2), stamped once and never
+  // recomputed - the whole point of the field is that an episode-9 beat can ask
+  // whether this story started in a different part of the season, which a value
+  // derived from "now" could never answer.
+  const t = { id, kind, parties: [...parties], openedEp: ep, lastEp: ep, act: actFor(ep),
     state: 'open', beats: [{ ep, eventId: seed, note: seed }], heat: 1, outcome: null };
   gs.tr.threads.push(t);
   _writeResidue(t, ep, seed);
@@ -113,6 +141,63 @@ export function closeThread(id, ep, outcome) {
   t.outcome = outcome;
   t.lastEp = ep;
   return t;
+}
+
+/**
+ * WHAT A CLOSED OUTCOME MEANS, coarsely (spec 5.5: a fork writes different
+ * residue and opens different downstream events). Events do not branch on the
+ * eleven literal strings - that would be a list of known cases, and the
+ * twelfth close site would silently fall off the end of every one of them.
+ * They branch on the SENSE, and a source rule in tr-threads.test.js fails when
+ * a `closeThread` call in js/tr/castle/ passes an outcome this map has never
+ * heard of.
+ *
+ *   walked  - scrutiny arrived and they came out the other side of it
+ *   cracked - scrutiny arrived and something came out of them
+ *   coupled - the story was a romance and it resolved as one
+ */
+const OUTCOME_SENSE = {
+  'denied-convincingly': 'walked',
+  'passed-clean': 'walked',
+  'defended-by-history': 'walked',
+  'turned-back': 'walked',
+  'buried': 'walked',
+  'confessed-unrelated': 'cracked',
+  'test-exposed': 'cracked',
+  'failed-maliciously': 'cracked',
+  'exposed': 'cracked',
+  'became-showmance': 'coupled',
+  'broken-up': 'coupled',
+};
+
+/** The sense of a closed thread's outcome, or null if the string is unknown. */
+export function outcomeSense(outcome) { return OUTCOME_SENSE[outcome] ?? null; }
+
+/** Every outcome string this module knows how to read. For the source rule. */
+export function knownOutcomes() { return Object.keys(OUTCOME_SENSE); }
+
+/**
+ * The most recently CLOSED thread this person was a party to.
+ *
+ * KEYED ON THE PERSON, NOT ON THE PAIR, and that is a reachability decision
+ * rather than a taste one. Measured over 200 seasons at the shipped operating
+ * point: 24.0 threads open per season and 0.84 CLOSE - 3.5% - so a scene whose
+ * exact party set has a closed thread of the matching family occurs in 1.1% of
+ * scenes, and a branch gated on that would be content nobody ever sees. The
+ * same closure reaches an ACTOR in 8.0% of scenes, because a payoff is a thing
+ * the castle remembers about a PERSON: they talked their way out of it once,
+ * and the next person to look at them sideways knows that.
+ */
+export function lastClosedThread(name, { kind = null, beforeEp = null } = {}) {
+  let best = null;
+  for (const t of (gs.tr?.threads || [])) {
+    if (t.state !== 'closed' || !t.outcome) continue;
+    if (!t.parties.includes(name)) continue;
+    if (kind != null && t.kind !== kind) continue;
+    if (beforeEp != null && !(t.lastEp < beforeEp)) continue;
+    if (!best || t.lastEp >= best.lastEp) best = t;
+  }
+  return best;
 }
 
 /**

@@ -18,7 +18,7 @@
 import { gs, players } from '../../core.js';
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
-import { registerEvent } from '../events.js';
+import { registerEvent, isNervy } from '../events.js';
 import { openThread, advanceThread, findOpenThread, continueThread, advanceCiting } from '../threads.js';
 import { alignmentAt, livingFaithfuls } from '../roles.js';
 import { knowsAlignmentOf } from '../deduction.js';
@@ -150,13 +150,24 @@ registerEvent({
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     if (!actor) return 0;
-    return pStats(actor).temperament < 4 ? 2 : 0;
+    // SPEC 5.3, EMOTIONAL STATE, on the actor's OWN state and their OWN role,
+    // which is the one thing a castle event is allowed to know for certain.
+    // A Traitor the room actually voted for last night is not composed; a
+    // steady one who nobody wrote down has nothing to sweat about yet. Note
+    // this WIDENS eligibility rather than only scaling it: pressure does to a
+    // calm liar what a low temperament does to a nervous one.
+    const nervy = isNervy(ctx.state?.[actor]);
+    if (pStats(actor).temperament < 4) return nervy ? 3 : 2;
+    return ctx.state?.[actor] === 'desperate' ? 2 : 0;
   },
   fire(ctx) {
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
-    const t = openThread(FAMILY, [actor], ctx.ep,
-      `${actor} broke a small sweat on a completely ordinary follow-up question.`);
-    return { branch: 'tell', actor, threadId: t?.id };
+    const pressed = isNervy(ctx.state?.[actor]);
+    const note = pressed
+      ? `${actor} broke a small sweat on a completely ordinary follow-up question, with last night's votes still sitting on the table behind them.`
+      : `${actor} broke a small sweat on a completely ordinary follow-up question.`;
+    const t = openThread(FAMILY, [actor], ctx.ep, note);
+    return { branch: 'tell', actor, threadId: t?.id, underPressure: pressed };
   },
 });
 

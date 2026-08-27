@@ -15,7 +15,7 @@
 import { gs, players } from '../../core.js';
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
-import { registerEvent } from '../events.js';
+import { registerEvent, isNervy } from '../events.js';
 import { openThread, advanceThread, findOpenThread, continueThread } from '../threads.js';
 import { alignmentAt } from '../roles.js';
 
@@ -352,13 +352,23 @@ registerEvent({
   window: 'dawn',
   weight(ctx) {
     if (ctx.actors?.length !== 1) return 0;
-    return _victimLastNight(ctx.ep) ? 1 : 0;
+    if (!_victimLastNight(ctx.ep)) return 0;
+    // SPEC 5.3, EMOTIONAL STATE. The person who goes off on their own to fall
+    // apart is overwhelmingly the person the room was voting for last night.
+    // ctx.state is READ-ONLY here: a frozen view of the round record.
+    return isNervy(ctx.state?.[ctx.actors[0]]) ? 2.5 : 1;
   },
   fire(ctx) {
     const actor = ctx.actors[0];
+    const state = ctx.state?.[actor];
+    const why = state === 'desperate'
+      ? ` It was not really about the empty chair; ${actor} had watched the room write their own name down and was still counting.`
+      : state === 'paranoid'
+        ? ` Somebody had said ${actor}'s name at that table, and it had not stopped ringing since.`
+        : '';
     const t = openThread(FAMILY, [actor], ctx.ep,
-      `${actor} found somewhere nobody could see them and let it out, alone, before breakfast.`);
-    return { branch: 'cried-alone', actor, threadId: t?.id };
+      `${actor} found somewhere nobody could see them and let it out, alone, before breakfast.${why}`);
+    return { branch: 'cried-alone', actor, threadId: t?.id, state: state || 'content' };
   },
 });
 

@@ -17,7 +17,7 @@ import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { getBond, setBond } from '../js/bonds.js';
 import { recordAlignment } from '../js/tr/roles.js';
-import { openThread, findOpenThread, advanceThread, residueFor } from '../js/tr/threads.js';
+import { openThread, findOpenThread, advanceThread, closeThread, residueFor } from '../js/tr/threads.js';
 import { EVENTS, eligible, pickEvent, validateRegistry } from '../js/tr/events.js';
 import { setFranchiseLedger } from '../js/franchise-meta.js';
 import { learn } from '../js/knowledge.js';
@@ -1167,5 +1167,245 @@ describe('events cite residue: episode 7 names episode 2', () => {
     expect(notes.filter(n => /day /.test(n)), 'a fresh pair was handed a citation of a day '
       + 'that never happened to them').toEqual([]);
     expect(notes.filter(n => /undefined|NaN/.test(n))).toEqual([]);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE THREE SPEC GAPS, READ BY THE REAL POOL (Plan 5 Task 3)
+// ══════════════════════════════════════════════════════════════════════
+//
+// tr-events.test.js proves ctx CARRIES the three things; tr-threads.test.js
+// proves threads.js RECORDS them. These prove the shipped pool READS them,
+// which is the half that decides whether any of it is content or plumbing.
+describe('the pool reads emotional state (spec 5.3)', () => {
+  const A = 'Watcher', B = 'Watched';
+  const PEOPLE = [A, B, 'Third', 'Fourth', 'Fifth'];
+
+  function world() {
+    setup(PEOPLE, PEOPLE.map(n => makePlayer(n, 'floater', {})));
+  }
+  /**
+   * A castle with something going on in it, so the state readers are reachable
+   * at all: an open story between A and B, a murder last night, and A carrying
+   * the Traitor seat. Without all three the sweep below compares two worlds in
+   * which nothing was eligible and passes on an empty sample.
+   */
+  function busyWorld() {
+    world();
+    PEOPLE.forEach(n => recordAlignment(n, n === A, 1, 'selection'));
+    openThread('suspicion', [A, B], 4, 'it started here');
+    gs.tr.rounds.push({ ep: 4, banished: null, murdered: 'Fifth', ballots: [], accusations: [] });
+    gs.activePlayers = PEOPLE.filter(n => n !== 'Fifth');
+  }
+  /**
+   * Every registered event's weight across BOTH scene shapes the pool draws -
+   * a pair and a solo - because two of the three state readers are pair events
+   * and the third is solo, and a sweep over one shape would miss the other.
+   */
+  function weightsWith(state) {
+    const out = {};
+    for (const ev of EVENTS) {
+      for (const actors of [[A, B], [A]]) {
+        const ctx = { ep: 5, window: ev.window, act: 'middle',
+          living: [...(gs.activePlayers || PEOPLE)], actors, state };
+        out[`${ev.id}/${actors.length}`] = ev.weight(ctx);
+      }
+    }
+    return out;
+  }
+
+  // A RULE OVER THE POOL, not a list of the events I happened to edit. If a
+  // later task removes every state read, this goes red without anyone having
+  // to remember to delete a named case.
+  it('flipping the scene from calm to under-pressure moves at least four event weights', () => {
+    busyWorld();
+    const calm = weightsWith(Object.freeze({ [A]: 'content', [B]: 'content' }));
+    busyWorld();
+    const nervy = weightsWith(Object.freeze({ [A]: 'desperate', [B]: 'desperate' }));
+    const live = Object.values(calm).filter(w => w > 0).length;
+    expect(live, 'nothing was eligible in the calm arm - the comparison is vacuous')
+      .toBeGreaterThanOrEqual(10);
+    const moved = Object.keys(calm).filter(k => calm[k] !== nervy[k]);
+    // FOUR IS THE MEASURED COUNT, NOT A ROUND NUMBER, and it is a floor set
+    // AT the measurement on purpose: three events read state, and one of them
+    // (cover-cold-sweat-tell) is eligible in both scene shapes, so the honest
+    // total is four keys. Set below four and deleting a reader would leave this
+    // green - the mutation that proves this guard is removing the state read
+    // from ANY ONE of the three, which drops the count to three or two.
+    expect(moved.length, `no registered event reads ctx.state: ${moved.join(', ')}`)
+      .toBeGreaterThanOrEqual(4);
+    // And UPWARDS: state is an amplifier like every other guard in this engine,
+    // never a penalty on the people the room is already hunting.
+    for (const k of moved) expect(nervy[k], `${k} went DOWN under pressure`).toBeGreaterThan(calm[k]);
+  });
+
+  it('grief-someone-cries-alone: the person the room voted for is far likelier to be the one who does', () => {
+    world();
+    // The precondition the event has of its own: somebody died last night.
+    gs.tr.rounds.push({ ep: 4, banished: null, murdered: 'Fifth', ballots: [], accusations: [] });
+    gs.activePlayers = PEOPLE.filter(n => n !== 'Fifth');
+    const ev = EVENTS.find(e => e.id === 'grief-someone-cries-alone');
+    const solo = st => ({ ep: 5, window: 'dawn', act: 'middle', living: [...gs.activePlayers], actors: [A], state: st });
+    expect(ev.weight(solo(Object.freeze({ [A]: 'content' })))).toBe(1);
+    expect(ev.weight(solo(Object.freeze({ [A]: 'paranoid' })))).toBe(2.5);
+    expect(ev.weight(solo(Object.freeze({ [A]: 'desperate' })))).toBe(2.5);
+    // ...and the sentence it writes is a different sentence.
+    const notes = ['content', 'paranoid', 'desperate'].map(st => {
+      setup(PEOPLE, PEOPLE.map(n => makePlayer(n, 'floater', {})));
+      gs.tr.rounds.push({ ep: 4, banished: null, murdered: 'Fifth', ballots: [], accusations: [] });
+      ev.fire(solo(Object.freeze({ [A]: st })), seededRng(3));
+      return gs.tr.threads[gs.tr.threads.length - 1].beats[0].note;
+    });
+    expect(new Set(notes).size, 'the three states wrote the same sentence').toBe(3);
+  });
+
+  // ── ctx.state IS READ-ONLY IN CASTLE EVENTS, AS A RULE OVER THE POOL ──
+  //
+  // Not "the events I wrote do not write it": every registered event's fire()
+  // is executed against a FROZEN map, which throws in strict module code the
+  // instant anything assigns to it. An event that authored its own actor's
+  // emotional state would be editing a derived view of the round record by a
+  // side door the belief gate does not watch.
+  it('no registered event writes to ctx.state', () => {
+    const offenders = [];
+    let ran = 0;
+    for (const ev of EVENTS) {
+      probeWorld({ aTraitor: true, bTraitor: false, turret: true });
+      const state = Object.freeze(Object.fromEntries(PROBE_CAST.map(n => [n, 'paranoid'])));
+      const ctx = { ep: PROBE_EP, window: ev.window, act: 'middle',
+        living: [...PROBE_CAST], actors: [PROBE_CAST[0], PROBE_CAST[1]], state };
+      try { ev.fire(ctx, forkRng(0.5)); ran++; } catch (e) {
+        if (/read only|not extensible|Cannot add|Cannot assign/i.test(e.message)) {
+          offenders.push(ev.id + ': ' + e.message);
+        }
+      }
+    }
+    expect(offenders, 'these events write to ctx.state, which is a frozen view of the round record')
+      .toEqual([]);
+    expect(ran, 'almost nothing ran - this sweep is vacuous').toBeGreaterThanOrEqual(EVENTS.length * 0.5);
+  });
+});
+
+describe('the pool reads a thread act (spec 5.2)', () => {
+  const PEOPLE = ['Alma', 'Bex', 'Cyd', 'Dov', 'Eze'];
+  const A = PEOPLE[0], B = PEOPLE[1];
+
+  it('susp-cold-case-revival weighs a story from an EARLIER act above one from this act', () => {
+    const ev = EVENTS.find(e => e.id === 'susp-cold-case-revival');
+    // The event's own precondition: an open suspicion thread that has cooled
+    // to 0 < heat < 1. heat 1 at open, decaying 0.5 a round of silence, so a
+    // thread opened at ep N and untouched is in band at ep N+2.
+    function weightFor(openEp, nowEp, act) {
+      setup(PEOPLE, PEOPLE.map(n => makePlayer(n, 'floater', {})));
+      openThread('suspicion', [A, B], openEp, 'she noticed something');
+      return ev.weight({ ep: nowEp, window: 'evening', act, living: [...PEOPLE], actors: [A, B] });
+    }
+    // Same heat band in both arms - ep gap of 2 either way - so the ONLY thing
+    // that differs is which act the thread was opened in.
+    // heat is 1 at open and decays 0.5 per silent round, so the band 0<heat<1
+    // is exactly a gap of ONE round. Both arms use that same gap.
+    expect(weightFor(3, 4, 'middle')).toBe(6);   // opened in the early act, revived in the middle
+    expect(weightFor(5, 6, 'middle')).toBe(4);   // opened and revived in the same act
+  });
+
+  it('susp-pattern-tracking says the act out loud when the tally started in a different one', () => {
+    const ev = EVENTS.find(e => e.id === 'susp-pattern-tracking');
+    function noteFor(openEp, nowEp, act) {
+      setup(PEOPLE, PEOPLE.map(n => makePlayer(n, 'floater', {})));
+      openThread('suspicion', [A, B], openEp, 'first look');
+      const r = ev.fire({ ep: nowEp, window: 'dawn', act, living: [...PEOPLE], actors: [A, B] }, seededRng(1));
+      const t = gs.tr.threads[0];
+      return { r, note: t.beats[t.beats.length - 1].note };
+    }
+    const across = noteFor(2, 9, 'late');
+    const within = noteFor(8, 9, 'late');
+    expect(across.r.acrossActs).toBe(true);
+    expect(within.r.acrossActs).toBe(false);
+    expect(across.note).toContain('started back in');
+    expect(within.note).not.toContain('started back in');
+    // The phrase is castle vocabulary, not the engine's label for the act.
+    expect(across.note).not.toContain('early');
+  });
+});
+
+describe('the pool branches on a CLOSED thread outcome (spec 5.5)', () => {
+  const PEOPLE = ['Alma', 'Bex', 'Cyd', 'Dov', 'Eze'];
+  const A = PEOPLE[0], B = PEOPLE[1], C = PEOPLE[2];
+
+  function world() { setup(PEOPLE, PEOPLE.map(n => makePlayer(n, 'floater', {}))); }
+  /** Close a thread about `who`, with `outcome`, at ep 3. */
+  function history(who, outcome) {
+    const t = openThread('suspicion', [who, who === C ? A : C], 2, 'it came up once');
+    closeThread(t.id, 3, outcome);
+  }
+
+  it('susp-noticed-inconsistency weighs the person who WALKED away from it last time higher', () => {
+    const ev = EVENTS.find(e => e.id === 'susp-noticed-inconsistency');
+    const ctx = { ep: 6, window: 'after-table', act: 'middle', living: [...PEOPLE], actors: [A, B] };
+    world();
+    const cold = ev.weight(ctx);
+    world(); history(B, 'denied-convincingly');
+    const walked = ev.weight(ctx);
+    world(); history(B, 'confessed-unrelated');
+    const cracked = ev.weight(ctx);
+    expect(cold).toBeGreaterThan(0);
+    expect(walked).toBeCloseTo(cold * 1.5, 6);
+    expect(cracked).toBe(cold);   // the SENSE is what moves it, not merely "there was one"
+  });
+
+  it('and says a different sentence for each sense - walked, cracked, and no history at all', () => {
+    const ev = EVENTS.find(e => e.id === 'susp-noticed-inconsistency');
+    const ctx = { ep: 6, window: 'after-table', act: 'middle', living: [...PEOPLE], actors: [A, B] };
+    function fireWith(outcome) {
+      world();
+      if (outcome) history(B, outcome);
+      const r = ev.fire(ctx, seededRng(11));
+      const t = gs.tr.threads.find(x => x.id === r.threadId);
+      return { r, note: t.beats[t.beats.length - 1].note };
+    }
+    const none = fireWith(null);
+    const walked = fireWith('denied-convincingly');
+    const cracked = fireWith('confessed-unrelated');
+    expect(none.r.priorOutcome).toBeNull();
+    expect(walked.r.priorOutcome).toBe('denied-convincingly');
+    expect(cracked.r.priorOutcome).toBe('confessed-unrelated');
+    expect(walked.note).toContain('walked out of it clean');
+    expect(cracked.note).toContain('something came out');
+    expect(none.note).not.toContain('walked out of it clean');
+    expect(none.note).not.toContain('something came out');
+    // NO DAY NUMBER. "day N" is same-thread residue vocabulary and the output
+    // guard in tr-castle-reachability.test.js holds it to that meaning; the
+    // first draft of these lines named the CLOSED thread's day and tripped it.
+    expect(walked.note).not.toMatch(/day \d/);
+    expect(cracked.note).not.toMatch(/day \d/);
+  });
+
+  it('an open thread with the same shape changes nothing - it is the CLOSURE that is readable', () => {
+    const ev = EVENTS.find(e => e.id === 'susp-noticed-inconsistency');
+    const ctx = { ep: 6, window: 'after-table', act: 'middle', living: [...PEOPLE], actors: [A, B] };
+    world();
+    const cold = ev.weight(ctx);
+    world();
+    openThread('suspicion', [B, C], 2, 'it came up once');   // opened, never closed
+    expect(ev.weight(ctx)).toBe(cold);
+  });
+
+  it('a rule over the pool: at least three events read a closed outcome', () => {
+    // Written as a rule so a later task deleting the readers goes red without
+    // anyone maintaining a list. `priorOutcome` on the consequences is how an
+    // event declares it looked.
+    const readers = [];
+    for (const ev of EVENTS) {
+      world();
+      history(B, 'denied-convincingly');
+      const ctx = { ep: 6, window: ev.window, act: 'middle', living: [...PEOPLE], actors: [A, B] };
+      if (!(ev.weight(ctx) > 0)) continue;
+      let plain;
+      try { plain = ev.fire(ctx, seededRng(5)); } catch { continue; }
+      if (plain == null || !('priorOutcome' in plain)) continue;
+      readers.push(ev.id);
+    }
+    expect(readers.length, 'only these events expose a priorOutcome: ' + readers.join(', '))
+      .toBeGreaterThanOrEqual(3);
   });
 });

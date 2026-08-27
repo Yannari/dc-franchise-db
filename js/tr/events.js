@@ -26,7 +26,7 @@
 // validateRegistry(), a sandboxed sweep a test calls deliberately, never the
 // engine.
 import { gs } from '../core.js';
-import { findOpenThread, heatAt, openThreads } from './threads.js';
+import { findOpenThread, heatAt, openThreads, actFor } from './threads.js';
 
 /** Windows a round is built from (spec §5.6) — registerEvent rejects any other. */
 const KNOWN_WINDOWS = new Set([
@@ -403,9 +403,82 @@ export function pickEvent(ctx, rng) {
 const ROUND_BUDGET_MIN = 4;
 const ROUND_BUDGET_MAX = 8; // inclusive
 
-/** ep -> act, the same three-band split every event's `acts` multiplier reads. */
+/**
+ * ep -> act, the same three-band split every event's `acts` multiplier reads.
+ * Delegates to threads.js so a thread's stamped `act` and a ctx's `act` can
+ * never disagree about where episode 4 sits.
+ */
 function _actFor(ep) {
-  return ep <= 3 ? 'early' : ep <= 7 ? 'middle' : 'late';
+  return actFor(ep);
+}
+
+// ── EMOTIONAL STATE (spec 5.3) ────────────────────────────────────────────
+//
+// `ctx` is specified to carry state, "emotional - `paranoid` and `desperate`
+// already exist and knowledge.js already reads them", and no castle event read
+// it. The vocabulary is shared with js/knowledge.js's spreadRate() and
+// js/players.js's getPlayerState() on purpose; the SOURCE is not.
+//
+// WHY THIS DOES NOT READ gs.playerStates. That store is written by the Total
+// Drama episode loop (js/bonds.js flips a player to 'desperate' or 'paranoid'
+// there). A Traitors season is built by playTraitorsSeason, which creates a
+// `gs` holding bonds and activePlayers and nothing else, so every read of it
+// would return the default 'content' forever - a branch that exists, looks
+// live, and is unreachable, which is the one failure mode this project's
+// sweeps exist to catch. So state is DERIVED from what the castle actually
+// knows about a person, and it is derived from PUBLIC facts only: the ballots
+// and the accusations of the last Round Table, which everybody in the room
+// watched happen. No alignment, no belief, no ground truth.
+//
+// THRESHOLDS, MEASURED over 200 seasons rather than guessed. Per actor-slot in
+// a scene: taking 3+ votes and still being here reads at 3.5%, taking any vote
+// at all reads at 35%. Naming alone is nearly useless as a signal - debate()
+// has every speaker name their top read, so in a room of nineteen almost
+// everybody is named by somebody - which is why one accuser is not enough and
+// two is the bar.
+const DESPERATE_VOTES = 3;
+const PARANOID_ACCUSERS = 2;
+
+/**
+ * How this person is holding up, as of the last Round Table that has happened.
+ *
+ * "The last table that has happened" is literally the last recorded round, and
+ * that is correct for every window without a special case: dawn, morning and
+ * the two journey windows run before runRoundTable pushes this episode's round,
+ * so they see episode-1; after-table and night run after it, so they see this
+ * one. That is exactly the state each of those windows is about.
+ */
+export function emotionalStateOf(name) {
+  const rounds = gs.tr?.rounds || [];
+  const last = rounds[rounds.length - 1];
+  if (!last) return 'content';
+  let votes = 0;
+  for (const b of (last.ballots || [])) if (b.voted === name) votes++;
+  if (votes >= DESPERATE_VOTES) return 'desperate';
+  let accusers = 0;
+  for (const a of (last.accusations || [])) if (a.target === name) accusers++;
+  if (votes >= 1 || accusers >= PARANOID_ACCUSERS) return 'paranoid';
+  return 'content';
+}
+
+/** Either of the two states spec 5.3 names, as one question most events ask. */
+export function isNervy(state) { return state === 'paranoid' || state === 'desperate'; }
+
+/**
+ * The scene's state map, FROZEN.
+ *
+ * Castle events read `ctx.state` and must never write it: it is a derived view
+ * of the round record, so a write would be a castle event editing what the room
+ * remembers about the last vote through a side door - and the belief gate
+ * (tr-castle-belief-gate.test.js) watches learn(), not this. Module code is
+ * strict, so an assignment throws rather than being quietly dropped, and
+ * tr-castle.test.js runs every registered event's fire() against a frozen map
+ * as a rule over the whole pool.
+ */
+function _stateFor(actors) {
+  const out = {};
+  for (const n of (actors || [])) out[n] = emotionalStateOf(n);
+  return Object.freeze(out);
 }
 
 /**
@@ -501,7 +574,8 @@ export function runWindow(window, ep, rng) {
   while (drawnHere < cap && budget.used < budget.total) {
     // A fresh ctx (and fresh actors) per draw, not one shared ctx for the
     // whole window — see _sceneActors.
-    const ctx = { ep, window, act, living, actors: _sceneActors(living, rng, ep) };
+    const actors = _sceneActors(living, rng, ep);
+    const ctx = { ep, window, act, living, actors, state: _stateFor(actors) };
     const result = pickEvent(ctx, rng);
     if (!result) break; // nothing eligible left for this window right now
     fired.push(result);

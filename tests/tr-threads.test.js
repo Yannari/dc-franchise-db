@@ -6,8 +6,9 @@ import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { openThread, advanceThread, closeThread, openThreadsFor, hottest, residueFor,
   heatAt, findOpenThread, abandonThread, priorMoments, citeMoments, continueThread,
-  advanceCiting }
+  advanceCiting, actFor, actPhrase, lastClosedThread, outcomeSense, knownOutcomes }
   from '../js/tr/threads.js';
+import { readdirSync, readFileSync } from 'node:fs';
 import roster from '../franchise_roster.json';
 
 const CAST = roster.players.slice(0, 8).map(p => p.name);
@@ -367,5 +368,124 @@ describe('a citation is punctuated, and never quotes a sentence back at itself',
     // guarantees the thread in its own weight(); a null here is a weight/fire
     // disagreement and must fail loudly, not return { thread: null }.
     expect(() => advanceCiting(null, 4, 'a beat nobody will ever see')).toThrow(/no thread to advance/);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// SPEC 5.2: A THREAD CARRIES THE ACT IT OPENED IN
+// ══════════════════════════════════════════════════════════════════════
+//
+// `thread: { id, kind, parties[], openedEp, act, state, evidence[], heat }` —
+// the implementation had every field but `act`. It is not decoration: guard 4
+// (`acts`) prices an episode-9 castle differently from an episode-2 one, and a
+// STORY that began in a different part of the season is the same distinction
+// made about a thread rather than about a draw.
+//
+// THE MUTATION: delete `act: actFor(ep)` from the object literal in
+// `openThread`. Every assertion in this block goes red, and so do the two
+// castle-side act branches in tr-castle.test.js.
+describe('a thread knows which act it opened in (spec 5.2)', () => {
+  const [A, B] = CAST;
+
+  it('stamps the act at open, by the same three-band split ctx.act uses', () => {
+    expect(openThread('suspicion', [A, B], 2, 'early beat').act).toBe('early');
+    expect(openThread('trust', [A, B], 5, 'middle beat').act).toBe('middle');
+    expect(openThread('grief', [A, B], 9, 'late beat').act).toBe('late');
+    // The boundaries themselves, because an off-by-one here would silently
+    // reclassify a fifth of every season and nothing else would notice.
+    expect([1, 2, 3].map(actFor)).toEqual(['early', 'early', 'early']);
+    expect([4, 5, 6, 7].map(actFor)).toEqual(['middle', 'middle', 'middle', 'middle']);
+    expect([8, 9, 20].map(actFor)).toEqual(['late', 'late', 'late']);
+  });
+
+  it('KEEPS the act it opened in when it is advanced two acts later', () => {
+    // The whole point of the field. A value recomputed from "now" could never
+    // answer "did this story start somewhere else", which is what the two
+    // castle readers ask.
+    const t = openThread('suspicion', [A, B], 2, 'opened in the early act');
+    advanceThread(t.id, 9, 'still going');
+    const stored = gs.tr.threads.find(x => x.id === t.id);
+    expect(stored.act).toBe('early');
+    expect(stored.lastEp).toBe(9);
+    expect(actFor(stored.lastEp)).toBe('late');   // ...and "now" says otherwise
+  });
+
+  it('every act a thread can be stamped with has a way of being said out loud', () => {
+    // The events name the act in prose. A missing phrase would print "null" or
+    // silently drop the clause, and the branch would look live and say nothing.
+    for (const ep of [1, 3, 4, 7, 8, 12]) {
+      const phrase = actPhrase(actFor(ep));
+      expect(phrase, `no phrase for the act at ep ${ep}`).toBeTruthy();
+      expect(phrase).not.toBe(actFor(ep));   // castle vocabulary, not the engine's label
+    }
+    expect(actPhrase('nonsense')).toBeNull();
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// SPEC 5.5: A CLOSED THREAD'S OUTCOME IS READABLE
+// ══════════════════════════════════════════════════════════════════════
+//
+// `closeThread` has written an outcome since it was built and nothing read it,
+// so the eleven distinct outcomes the pool produces were eleven ways of writing
+// the same thing. These two queries are what castle events branch on.
+//
+// THE MUTATION: `closeThread` setting `t.outcome = null` instead of `outcome`.
+// Every assertion here goes red, and so does the castle-side branch test.
+describe('a closed thread can be read back by outcome (spec 5.5)', () => {
+  const [A, B, C] = CAST;
+
+  it('finds the most recent closed thread a person was party to', () => {
+    const t1 = openThread('suspicion', [A, B], 2, 'first');
+    closeThread(t1.id, 3, 'denied-convincingly');
+    const t2 = openThread('testing', [B, C], 5, 'second');
+    closeThread(t2.id, 6, 'confessed-unrelated');
+
+    expect(lastClosedThread(B)?.outcome).toBe('confessed-unrelated');
+    expect(lastClosedThread(A)?.outcome).toBe('denied-convincingly');
+    // Kind and time filters, both used by the readers.
+    expect(lastClosedThread(B, { kind: 'suspicion' })?.outcome).toBe('denied-convincingly');
+    expect(lastClosedThread(B, { beforeEp: 6 })?.outcome).toBe('denied-convincingly');
+    expect(lastClosedThread(B, { beforeEp: 3 })).toBeNull();
+  });
+
+  it('never returns a thread that is still open — an unfinished story has no outcome to read', () => {
+    openThread('suspicion', [A, B], 2, 'still going');
+    expect(lastClosedThread(A)).toBeNull();
+    expect(lastClosedThread(B)).toBeNull();
+  });
+
+  it('turns an outcome into a sense, and an unknown string into null rather than a guess', () => {
+    expect(outcomeSense('denied-convincingly')).toBe('walked');
+    expect(outcomeSense('confessed-unrelated')).toBe('cracked');
+    expect(outcomeSense('became-showmance')).toBe('coupled');
+    expect(outcomeSense('a-thing-nobody-wrote')).toBeNull();
+    expect(outcomeSense(undefined)).toBeNull();
+  });
+
+  // ── THE SOURCE RULE, AND WHY IT IS ONE ──
+  //
+  // Events branch on the SENSE of an outcome, never on the eleven literals, so
+  // an author adding a twelfth close site gets `null` back and their story
+  // silently stops being readable — no error, no failing season, just a branch
+  // that never fires again. No output check can catch that: the run where the
+  // twelfth outcome first closes may be one season in a hundred, and a green
+  // suite is exactly what it looks like. The source is exhaustive and instant.
+  it('every outcome the castle pool actually closes with has a sense', () => {
+    const dir = 'js/tr/castle/';
+    const known = new Set(knownOutcomes());
+    const unknown = [];
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith('.js')) continue;
+      const src = readFileSync(dir + f, 'utf8');
+      for (const m of src.matchAll(/closeThread\([^;]*?,\s*'([^']+)'\s*\)/g)) {
+        if (!known.has(m[1])) unknown.push(`${f}: '${m[1]}'`);
+      }
+    }
+    expect(unknown, 'these outcomes are written by an event and cannot be read by one — '
+      + 'add them to OUTCOME_SENSE in js/tr/threads.js').toEqual([]);
+    // Guard on the guard: a regex that matched nothing would pass this and
+    // every mutant with it.
+    expect(known.size).toBeGreaterThanOrEqual(8);
   });
 });

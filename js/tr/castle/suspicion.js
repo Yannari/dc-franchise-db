@@ -13,9 +13,9 @@
 // here calls learn().
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
-import { registerEvent } from '../events.js';
+import { registerEvent, isNervy } from '../events.js';
 import { openThread, advanceThread, closeThread, findOpenThread, heatAt, continueThread,
-  advanceCiting } from '../threads.js';
+  advanceCiting, actPhrase, lastClosedThread, outcomeSense } from '../threads.js';
 import { suspicion } from '../deduction.js';
 
 const FAMILY = 'suspicion';
@@ -37,14 +37,35 @@ registerEvent({
     // A cold or hostile pair is a much likelier source of nitpicking than a
     // warm one — this is not free-floating suspicion, it wants a seam.
     const [a, b] = ctx.actors;
-    return getBond(a, b) <= 1 ? 2 : 0.5;
+    const base = getBond(a, b) <= 1 ? 2 : 0.5;
+    // SPEC 5.5, BRANCHING ON A CLOSED THREAD'S OUTCOME. Somebody whose last
+    // story ended with them talking their way out of it is somebody a small
+    // inconsistency is worth noticing about, and the castle knows which of
+    // those it was because closeThread wrote the outcome down.
+    return outcomeSense(lastClosedThread(b, { beforeEp: ctx.ep })?.outcome) === 'walked'
+      ? base * 1.5 : base;
   },
   fire(ctx, rng) {
     const [a, b] = ctx.actors;
     addBond(a, b, -1);
-    const note = pick(rng, NOTICE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    let note = pick(rng, NOTICE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const prior = lastClosedThread(b, { beforeEp: ctx.ep });
+    const sense = outcomeSense(prior?.outcome);
+    // A WHOLE SENTENCE, APPENDED, never a clause spliced into a sentence some
+    // other line pool owns. Task 2's truncation bug came from editing inside a
+    // sentence whose shape a later author was free to change.
+    //
+    // AND IT NAMES NO DAY. "day N" is Task 2's residue vocabulary and the
+    // output guard in tr-castle-reachability.test.js holds it to a strict
+    // meaning: every day a note names must be a beat of the thread that note
+    // belongs to. This sentence is about a DIFFERENT, closed thread, so it
+    // names what happened and not when - the guard caught the first draft of
+    // these lines doing exactly that, which is the guard working.
+    if (sense === 'walked') note += ` ${b} had been asked about something before, and had walked out of it clean.`;
+    else if (sense === 'cracked') note += ` The last time anybody leaned on ${b}, something came out.`;
     const t = openThread(FAMILY, [a, b], ctx.ep, note);
-    return { branch: 'noticed', pair: [a, b], threadId: t?.id, bondDelta: -1 };
+    return { branch: 'noticed', pair: [a, b], threadId: t?.id, bondDelta: -1,
+      priorOutcome: prior?.outcome ?? null };
   },
 });
 
@@ -89,14 +110,22 @@ registerEvent({
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
     const t = findOpenThread(FAMILY, [a, b]);
-    return t ? 3 : 0;
+    if (!t) return 0;
+    // SPEC 5.3, EMOTIONAL STATE. Somebody the room voted for last night keeps a
+    // longer list. ctx.state is READ-ONLY here: it is a frozen view of the
+    // round record, not somewhere an event may write.
+    return isNervy(ctx.state?.[a]) ? 4.5 : 3;
   },
   fire(ctx) {
     const [a, b] = ctx.actors;
     const t = findOpenThread(FAMILY, [a, b]);
     addBond(a, b, -0.5);
-    const { thread, cited } = advanceCiting(t, ctx.ep, `${a} kept a running mental tally on ${b} and it was not shrinking.`);
-    return { branch: 'tracked', pair: [a, b], threadId: thread?.id, cited, bondDelta: -0.5 };
+    // SPEC 5.2, THE THREAD'S OWN ACT. A tally that started in a different part
+    // of the season is a different sentence from one started this morning.
+    const since = t.act && t.act !== ctx.act ? `, started back in ${actPhrase(t.act)},` : '';
+    const { thread, cited } = advanceCiting(t, ctx.ep, `${a} kept a running mental tally on ${b}${since} and it was not shrinking.`);
+    return { branch: 'tracked', pair: [a, b], threadId: thread?.id, cited, bondDelta: -0.5,
+      acrossActs: !!since };
   },
 });
 
@@ -125,15 +154,22 @@ registerEvent({
     // Weight raised from 2 to 4 (whole-plan review, finding 5): the heat band
     // this needs is narrow AND `evening` is the pool's most crowded window, so
     // even with `rare`'s amplifier it was firing once in ninety seasons.
-    return heat > 0 && heat < 1 ? 4 : 0;
+    if (!(heat > 0 && heat < 1)) return 0;
+    // SPEC 5.2, THE THREAD'S OWN ACT. "She never let it go" is a bigger beat
+    // when the thing she never let go of belongs to an earlier part of the
+    // season than the one everybody is now in.
+    return t.act && t.act !== ctx.act ? 6 : 4;
   },
   fire(ctx) {
     const [a, b] = ctx.actors;
     const t = findOpenThread(FAMILY, [a, b]);
+    const since = t.act && t.act !== ctx.act
+      ? ` It had been sitting open since ${actPhrase(t.act)}.` : '';
     const { thread, cited } = advanceCiting(t, ctx.ep,
-      `${a} brought it up again, completely unprompted — ${b} thought that one was dead.`);
+      `${a} brought it up again, completely unprompted — ${b} thought that one was dead.${since}`);
     addBond(a, b, -1);
-    return { branch: 'revived', pair: [a, b], threadId: thread?.id, cited, bondDelta: -1 };
+    return { branch: 'revived', pair: [a, b], threadId: thread?.id, cited, bondDelta: -1,
+      acrossActs: !!since };
   },
 });
 
@@ -161,9 +197,18 @@ registerEvent({
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others);
     addBond(a, b, 1);
-    const note = pick(rng, WHISPER_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
+    let note = pick(rng, WHISPER_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
+    // SPEC 5.5. Comparing notes on somebody IS remembering how the last story
+    // about them ended. No day number here either - see the note in
+    // susp-noticed-inconsistency.
+    const prior = lastClosedThread(target, { beforeEp: ctx.ep });
+    const sense = outcomeSense(prior?.outcome);
+    if (sense === 'walked') note += ` The last time somebody put ${target} on the spot, ${target} had walked away from it, and that was most of what there was to say.`;
+    else if (sense === 'cracked') note += ` They kept coming back to the thing that had already come out of ${target} once.`;
+    else if (sense === 'coupled') note += ` Half of it was really about who ${target} had been spending their evenings with.`;
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, note);
-    return { branch: 'whispered', pair: [a, b], about: target, threadId: thread?.id, cited, bondDelta: 1 };
+    return { branch: 'whispered', pair: [a, b], about: target, threadId: thread?.id, cited, bondDelta: 1,
+      priorOutcome: prior?.outcome ?? null };
   },
 });
 
@@ -317,9 +362,19 @@ registerEvent({
   fire(ctx) {
     const [a, b] = ctx.actors;
     addBond(a, b, -0.5);
+    // SPEC 5.5. What `a` is watching FOR depends on how the last story about
+    // `b` ended: a person who came apart once is watched for the next crack.
+    const prior = lastClosedThread(b, { beforeEp: ctx.ep });
+    const sense = outcomeSense(prior?.outcome);
+    const because = sense === 'cracked'
+      ? ` ${a} had seen ${b} come apart once already and was waiting for it to happen twice.`
+      : sense === 'walked'
+        ? ` Whatever ${b} did the last time somebody asked had worked, and ${a} wanted to know how.`
+        : '';
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      `${a} watched ${b}'s hands more than ${b}'s words, and didn't love what they saw.`);
-    return { branch: 'body-read', pair: [a, b], threadId: thread?.id, cited, bondDelta: -0.5 };
+      `${a} watched ${b}'s hands more than ${b}'s words, and didn't love what they saw.${because}`);
+    return { branch: 'body-read', pair: [a, b], threadId: thread?.id, cited, bondDelta: -0.5,
+      priorOutcome: prior?.outcome ?? null };
   },
 });
 

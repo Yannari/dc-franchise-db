@@ -10,7 +10,8 @@ import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { openThread } from '../js/tr/threads.js';
 import { registerEvent, eligible, pickEvent, validateRegistry, EVENTS, _resetRegistry,
-  runWindow, startRoundBudget, _sceneActors, _setContinuationSceneP } from '../js/tr/events.js';
+  runWindow, startRoundBudget, _sceneActors, _setContinuationSceneP,
+  emotionalStateOf, isNervy } from '../js/tr/events.js';
 import { rngFor } from '../js/tr/headless.js';
 import roster from '../franchise_roster.json';
 
@@ -652,5 +653,127 @@ describe('scene selection reconvenes a live story', () => {
     expect(cold, 'the hot thread lost its edge — heat is not weighting anything, '
       + 'selection is uniform over live threads')
       .toBeLessThan(120);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// SPEC 5.3: ctx CARRIES EMOTIONAL STATE
+// ══════════════════════════════════════════════════════════════════════
+//
+// "`ctx` carries: role, position, bond, stats, STATE (emotional — `paranoid`
+// and `desperate` already exist and knowledge.js already reads them), and
+// history." It carried everything but state, so no event in the pool could
+// tell a person the room had just voted for from a person nobody mentioned.
+//
+// THE SOURCE IS THE ROUND RECORD, NOT gs.playerStates. That store belongs to
+// the Total Drama episode loop and a Traitors season never writes it, so a
+// read of it would return 'content' for every player in every season — a
+// branch that exists, looks live and is unreachable. These tests therefore
+// build the state the only way the castle can: ballots and accusations.
+//
+// THE MUTATION: `_stateFor` in js/tr/events.js returning `Object.freeze({})`.
+// The two runWindow tests below go red.
+describe('emotional state reaches ctx (spec 5.3)', () => {
+  const [A, B] = CAST;
+
+  function tableWhere(votesFor = {}, accusedBy = {}) {
+    const ballots = [];
+    for (const [target, n] of Object.entries(votesFor)) {
+      for (let i = 0; i < n; i++) ballots.push({ voter: `voter${target}${i}`, voted: target, channel: 'banishment' });
+    }
+    const accusations = [];
+    for (const [target, n] of Object.entries(accusedBy)) {
+      for (let i = 0; i < n; i++) accusations.push({ accuser: `acc${target}${i}`, target });
+    }
+    gs.tr.rounds.push({ ep: 4, banished: 'nobody', ballots, accusations });
+  }
+
+  it('reads the last table: three votes is desperate, one is paranoid, none is content', () => {
+    tableWhere({ [A]: 3, [B]: 1 });
+    expect(emotionalStateOf(A)).toBe('desperate');
+    expect(emotionalStateOf(B)).toBe('paranoid');
+    expect(emotionalStateOf(CAST[2])).toBe('content');
+    expect([isNervy('paranoid'), isNervy('desperate'), isNervy('content')]).toEqual([true, true, false]);
+  });
+
+  it('two accusers is enough on its own; one is not', () => {
+    // debate() has nearly every speaker name somebody, so "was named once" is
+    // close to universal and carries no information. Two is the bar, measured.
+    tableWhere({}, { [A]: 2, [B]: 1 });
+    expect(emotionalStateOf(A)).toBe('paranoid');
+    expect(emotionalStateOf(B)).toBe('content');
+  });
+
+  it('is content before the first table, rather than throwing or guessing', () => {
+    expect(emotionalStateOf(A)).toBe('content');
+  });
+
+  // ── THE CLAIM ITSELF, OBSERVED THROUGH THE RUNNER ──
+  //
+  // Asserted on WHAT FIRED across the real runWindow path, not on a ctx shape
+  // handed to a hand-built assertion — a test that reads back an object it
+  // constructed proves the test can build objects.
+  it('an event weights DIFFERENTLY for a paranoid actor than for a calm one', () => {
+    const seen = [];
+    registerEvent({
+      id: 'only-for-the-nervy', family: 'suspicion', window: 'evening',
+      weight: ctx => (isNervy(ctx.state?.[ctx.actors?.[0]]) ? 50 : 0),
+      fire: ctx => { seen.push(ctx.actors[0]); return { ok: true }; },
+    });
+    registerEvent({
+      id: 'always-available', family: 'trust', window: 'evening',
+      weight: () => 1, fire: () => ({ ok: true }),
+    });
+
+    // ARM 1: nobody took a vote. The nervy event is ineligible every draw.
+    tableWhere({});
+    setGs({ bonds: {}, activePlayers: [...CAST], tr: gs.tr });
+    let calmFirings = 0;
+    for (let i = 0; i < 40; i++) {
+      gs.tr.cooldowns = { event: {}, player: {}, pair: {} };
+      startRoundBudget(seededRng(100 + i), 1);
+      for (const r of runWindow('evening', 5, seededRng(500 + i))) {
+        if (r.event.id === 'only-for-the-nervy') calmFirings++;
+      }
+    }
+    expect(calmFirings, 'a calm cast reached an event gated on paranoia').toBe(0);
+
+    // ARM 2: the same draws, with the whole room having taken three votes.
+    gs.tr.rounds.length = 0;
+    tableWhere(Object.fromEntries(CAST.map(n => [n, 3])));
+    let nervyFirings = 0;
+    for (let i = 0; i < 40; i++) {
+      gs.tr.cooldowns = { event: {}, player: {}, pair: {} };
+      startRoundBudget(seededRng(100 + i), 1);
+      for (const r of runWindow('evening', 5, seededRng(500 + i))) {
+        if (r.event.id === 'only-for-the-nervy') nervyFirings++;
+      }
+    }
+    expect(nervyFirings, 'ctx.state never reached weight() through runWindow').toBeGreaterThan(30);
+    expect(seen.every(n => CAST.includes(n))).toBe(true);
+  });
+
+  it('ctx.state is READ-ONLY: an event that tries to write it throws rather than editing the round record', () => {
+    // Castle events condition on state and must never author it — it is a
+    // derived view of the ballots, so a write would be an event quietly
+    // editing what the room remembers about last night, by a route the belief
+    // gate does not watch. Module code is strict, so a frozen map throws.
+    let frozen = null, threw = null;
+    registerEvent({
+      id: 'would-rewrite-history', family: 'cover', window: 'night',
+      weight: () => 5,
+      fire: (ctx) => {
+        frozen = Object.isFrozen(ctx.state);
+        try { ctx.state[ctx.actors[0]] = 'content'; } catch (e) { threw = e; }
+        return { ok: true };
+      },
+    });
+    gs.tr.rounds.push({ ep: 4, banished: 'nobody',
+      ballots: CAST.map(n => ({ voter: n, voted: CAST[0], channel: 'banishment' })), accusations: [] });
+    startRoundBudget(seededRng(7), 1);
+    runWindow('night', 5, seededRng(9));
+    expect(frozen, 'ctx.state was handed out unfrozen').toBe(true);
+    expect(threw, 'writing to ctx.state did not throw').toBeInstanceOf(TypeError);
+    expect(emotionalStateOf(CAST[0])).toBe('desperate');   // ...and nothing moved
   });
 });

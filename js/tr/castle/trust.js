@@ -20,7 +20,7 @@ import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
 import { openThread, advanceThread, closeThread, findOpenThread, openThreadsFor, heatAt,
-  advanceCiting } from '../threads.js';
+  advanceCiting, lastClosedThread, outcomeSense } from '../threads.js';
 
 const FAMILY = 'trust';
 
@@ -101,9 +101,20 @@ registerEvent({
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others);
     addBond(a, b, 1);
-    const note = pick(rng, TRADE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
+    let note = pick(rng, TRADE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
+    // SPEC 5.5, BRANCHING ON A CLOSED THREAD'S OUTCOME. An honest read on
+    // somebody is mostly a memory of how the last thing about them ended, and
+    // the castle wrote that down when closeThread named the outcome.
+    const prior = lastClosedThread(target, { beforeEp: ctx.ep });
+    const sense = outcomeSense(prior?.outcome);
+    // NO DAY NUMBER: see the note in suspicion.js's susp-noticed-inconsistency.
+    // "day N" belongs to same-thread residue citation and is guarded as such.
+    if (sense === 'walked') note += ` Both of them remembered ${target} being asked once, and coming out of it clean.`;
+    else if (sense === 'cracked') note += ` Neither of them had forgotten what came out of ${target} the last time.`;
+    else if (sense === 'coupled') note += ` Whatever ${target} was doing, it had stopped being a secret a while ago.`;
     const t = openThread(FAMILY, [a, b], ctx.ep, note);
-    return { branch: 'traded-reads', pair: [a, b], about: target, threadId: t?.id };
+    return { branch: 'traded-reads', pair: [a, b], about: target, threadId: t?.id,
+      priorOutcome: prior?.outcome ?? null };
   },
 });
 

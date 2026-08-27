@@ -443,10 +443,38 @@ const PARANOID_ACCUSERS = 2;
  * How this person is holding up, as of the last Round Table that has happened.
  *
  * "The last table that has happened" is literally the last recorded round, and
- * that is correct for every window without a special case: dawn, morning and
- * the two journey windows run before runRoundTable pushes this episode's round,
- * so they see episode-1; after-table and night run after it, so they see this
- * one. That is exactly the state each of those windows is about.
+ * that is correct for every window without a special case. FIVE windows run
+ * BEFORE runRoundTable pushes this episode's round - dawn, morning, the two
+ * journey windows and EVENING (headless.js runs evening immediately before the
+ * table, which is the point of it: vote pitches live there) - so all five see
+ * episode-1. after-table and night run after it and see this one. That is
+ * exactly the state each of those windows is about.
+ *
+ * ── REVOTES ARE DELIBERATELY NOT COUNTED, AND HERE IS THE PRICE ──
+ *
+ * Only `round.ballots` is read. `round.revotes` (roundtable.js) holds the
+ * tie-break rounds, and a vote cast there is NOT on the same scale as a
+ * first-round vote: the electorate is the room MINUS the tied players and the
+ * slate is only the tied players, so a revote concentrates two or three votes
+ * onto two or three names by construction. Folding those counts into
+ * DESPERATE_VOTES would mean three votes in a four-ballot revote reading
+ * exactly as three votes in a nineteen-ballot free choice, which is not the
+ * same fact about the same person.
+ *
+ * THE COST, MEASURED over 200 seasons: 21.7% of rounds go to a revote (1.63 a
+ * season), and 0.895 people per season take 3+ votes ONLY in one and therefore
+ * read `content` here when the room plainly came for them. That is a real miss
+ * and it is not fixed.
+ *
+ * IT IS NOT FIXED BY ADDING REVOTES, EITHER, and the measurement says why: a
+ * tie at the TOP of a first-round count already reads `desperate` through
+ * `ballots`, so the 179 cases are ties at a LOW count - two-all in a room of
+ * five, late in a season. What that actually exposes is that these thresholds
+ * are absolute counts in a room that shrinks from nineteen people to four, so
+ * two votes late is a bigger fact than two votes early and nothing here knows
+ * it. The honest fix is scaling the thresholds by field size, which is a
+ * different change with its own measurement, not a special case bolted on
+ * here. Stated plainly and left open.
  */
 export function emotionalStateOf(name) {
   const rounds = gs.tr?.rounds || [];

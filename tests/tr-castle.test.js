@@ -1380,14 +1380,38 @@ describe('the pool branches on a CLOSED thread outcome (spec 5.5)', () => {
     expect(cracked.note).not.toMatch(/day \d/);
   });
 
-  it('an open thread with the same shape changes nothing - it is the CLOSURE that is readable', () => {
+  // ── REPLACED IN ROUND 2, AND WHY THE OLD ONE WAS WORSE THAN NOTHING ──
+  //
+  // This slot used to hold "an open thread with the same shape changes nothing
+  // - it is the CLOSURE that is readable", which opened a thread and never
+  // closed it and asserted the weight did not move. It stayed GREEN under the
+  // mutation that inverts `lastClosedThread`'s open-thread guard, because an
+  // open thread carries `outcome: null` anyway: the sense comes back null and
+  // the weight is equal for a reason that has nothing to do with the guard the
+  // test named. A test that passes for the wrong reason reads as coverage and
+  // is not any.
+  //
+  // What the code DOES control here is WHOSE history is consulted. The reader
+  // is keyed on `b` - the person being looked at - and keying it on `a` would
+  // be a one-character authoring slip that no other assertion in this file
+  // would catch, because both actors are in the scene and both weights are
+  // real numbers.
+  it('it is the history of the person being LOOKED AT that counts, not the person looking', () => {
     const ev = EVENTS.find(e => e.id === 'susp-noticed-inconsistency');
     const ctx = { ep: 6, window: 'after-table', act: 'middle', living: [...PEOPLE], actors: [A, B] };
     world();
     const cold = ev.weight(ctx);
-    world();
-    openThread('suspicion', [B, C], 2, 'it came up once');   // opened, never closed
-    expect(ev.weight(ctx)).toBe(cold);
+    world(); history(A, 'denied-convincingly');     // the WATCHER walked away from one
+    expect(ev.weight(ctx), 'the watching player own history moved the weight').toBe(cold);
+    world(); history(B, 'denied-convincingly');     // the WATCHED one did
+    expect(ev.weight(ctx)).toBeCloseTo(cold * 1.5, 6);
+    // ...and the sentence names the watched one, never the watcher.
+    world(); history(B, 'denied-convincingly');
+    const r = ev.fire(ctx, seededRng(11));   // once - .find() re-runs its callback
+    const t = gs.tr.threads.find(x => x.id === r.threadId);
+    const note = t.beats[t.beats.length - 1].note;
+    expect(note).toContain(`${B} had been asked about something before`);
+    expect(note).not.toContain(`${A} had been asked about something before`);
   });
 
   it('a rule over the pool: at least three events read a closed outcome', () => {

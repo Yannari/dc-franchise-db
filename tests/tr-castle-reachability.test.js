@@ -95,7 +95,13 @@ function runSeasons(n, seedBase = 0) {
     const fired = [];
     for (const round of res.log) {
       for (const ce of (round.castleEvents || [])) {
-        fired.push({ ep: round.ep, id: ce.event.id, family: ce.event.family });
+        // `priorOutcome` is how an event declares it looked at a CLOSED
+        // thread's outcome, and `null` vs absent is the distinction the
+        // branch floor below is built on: absent means the event does not
+        // read outcomes at all, null means it read and found nothing.
+        fired.push({ ep: round.ep, id: ce.event.id, family: ce.event.family,
+          readsOutcome: !!ce.consequences && 'priorOutcome' in ce.consequences,
+          priorOutcome: ce.consequences?.priorOutcome ?? null });
       }
     }
     perSeason.push(fired);
@@ -532,5 +538,85 @@ describe('token substitution is global, in every castle file', () => {
     }
     expect(cutters, 'a token must be filled with a name or a stand-in — deleting the clause '
       + 'around it leaves a fragment whenever the token is not sentence-initial').toEqual([]);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE OUTCOME-BRANCH FLOOR (Plan 5 Task 3, round 2 - review finding R1)
+// ══════════════════════════════════════════════════════════════════════
+//
+// THE HOLE THIS CLOSES, STATED AS THE FAILURE IT ALLOWS. Task 3 gave four
+// events a branch that fires only when one of their subjects has a CLOSED
+// thread behind them. Nothing in the suite could see that branch:
+//
+//   - the dead-event sweep above is EVENT-keyed, and all four events fire
+//     632 times per 200 seasons whether or not a single thread ever closes;
+//   - the audit file's (id, branch) tables key on `consequences.branch`,
+//     which these clauses never touch - they set `priorOutcome`;
+//   - every unit test in tr-castle.test.js builds the closed thread by hand,
+//     so all of them stay green in a world where closures never happen.
+//
+// So if Tasks 4 or 5 move the payoff rate toward zero - and the Task 2
+// corollary says declaring advancers does exactly that, at roughly one payoff
+// per 4.5 extra beats - all four branches go dead and 247 tests stay green.
+// That is precisely the failure the dead-event sweep exists to prevent, and
+// these branches were sitting outside it.
+//
+// WHERE THE NUMBERS COME FROM. Threads close 0.84 times a season (3.5% of the
+// 24 that open), which is what makes this rare and is measured, not assumed.
+// Over the 400 seasons this file already plays, the four readers take their
+// clause 18 / 16 / 12 / 12 times. The per-reader floor is 4 - the same floor
+// the pool's rarest EVENT is held to, a few lines above, and for the same
+// reason: something sliding from 12 takes to 2 is on its way to dead and this
+// run should say so before it gets there. The total floor is 20 against a
+// measured 58.
+//
+// THE MUTATION: make `closeThread` leave the thread open (delete
+// `t.state = 'closed';`). No thread ever closes, every clause goes to zero,
+// and this block goes red while every other test in the repo stays green -
+// which is the whole point of it.
+describe('THE OUTCOME-BRANCH FLOOR: a clause nobody can reach is dead content', () => {
+  it('every event that reads a closed outcome actually takes its branch in real seasons', () => {
+    const fired = {}, took = {};
+    for (const f of ALL_FIRINGS) {
+      if (!f.readsOutcome) continue;
+      fired[f.id] = (fired[f.id] || 0) + 1;
+      if (f.priorOutcome) took[f.id] = (took[f.id] || 0) + 1;
+    }
+    const readers = Object.keys(fired).sort();
+    const total = Object.values(took).reduce((a, b) => a + b, 0);
+    console.log(`
+=== OUTCOME-BRANCH TAKES (${SWEEP_SEASONS} seasons) ===`);
+    for (const id of readers) console.log(`   ${took[id] || 0}	of ${fired[id]}	${id}`);
+    console.log(`   ${total}	total`);
+
+    // The readers still exist at all. Without this the two floors below pass
+    // vacuously the moment somebody deletes every reader.
+    expect(readers.length, `only these events read a closed outcome: ${readers.join(', ')}`)
+      .toBeGreaterThanOrEqual(4);
+    // Each one is individually reachable...
+    const starved = readers.filter(id => (took[id] || 0) < 4)
+      .map(id => `${id}: ${took[id] || 0} of ${fired[id]} firings`);
+    expect(starved, 'these outcome branches are on their way to dead content').toEqual([]);
+    // ...and the mechanism as a whole has not gone quiet.
+    expect(total, 'no castle event reached a closed thread in 400 seasons').toBeGreaterThanOrEqual(20);
+  });
+
+  it('and threads really do close in these seasons - the floor above is not measuring nothing', () => {
+    // Guard on the guard. If closures were impossible the block above could
+    // only ever be red, and a future reader deserves to know which of the two
+    // broke: the branch, or the thing it depends on.
+    let opened = 0, closed = 0;
+    for (let i = 1; i <= 60; i++) {
+      setPlayers(ROSTER);
+      seedFranchiseHistory(CAST);
+      const res = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: i });
+      opened += res.threads.length;
+      closed += res.threads.filter(t => t.state === 'closed' && t.outcome).length;
+    }
+    console.log(`=== CLOSURES === ${closed} of ${opened} threads closed over 60 seasons `
+      + `(${(closed / opened * 100).toFixed(2)}%, ${(closed / 60).toFixed(2)} a season)`);
+    expect(closed, 'no thread closed at all - the outcome branch has nothing to read')
+      .toBeGreaterThanOrEqual(20);
   });
 });

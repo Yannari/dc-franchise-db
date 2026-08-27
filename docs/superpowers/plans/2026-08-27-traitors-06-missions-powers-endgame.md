@@ -272,3 +272,36 @@ others. **A test must read the value under test, never recompute it.**
 - **Task 3 must narrow the missions-grant-nothing guard a SECOND time**, for the Shield, the
   same way Task 2 did for chess: hold the shield-granting archetype out of the equivalence
   arm, and add an arm proving the hold-out actually holds something out.
+
+## Task 3's architectural finding: the knowledge model cannot CLEAR anybody
+
+A blocked murder should exonerate its target -- the Traitors chose them and failed, so they
+are not a Traitor. **It cannot, and this is structural.** `learn()` has no clearing primitive,
+and writing an exoneration through `_assess` makes roughly **seven readers in ten SUSPECT the
+person it clears**, because the model reads any alignment traffic about someone as evidence
+against them.
+
+So the model can express "I think X is a Traitor" and cannot express "I know X is not."
+Building a clearing primitive is a design act with its own sweep -- it touches every reader in
+`deduction.js` and would need the full band re-derivation. **Recorded, not attempted.**
+
+Consequences to carry:
+- The blocked-night read fires ~15 times in 200 seasons. Anything that makes the conclave
+  better informed drives it toward zero, so it is fragile to later tasks.
+- Any future mechanic whose fiction is "this proves someone innocent" hits the same wall.
+  Check against this before designing one.
+
+## Task 3's other carried facts
+
+- **A pact-wide Traitor blind spot was measured and rejected before it shipped**: it produced
+  ONE block in 200 seasons -- the format's strongest read, written but unreachable. Per-Traitor
+  gives 13 in 200 and is the truer model. Implemented as a score PENALTY, not a candidate
+  filter, because a filter consumes one fewer rng draw per candidate and re-rolls the season.
+- `CHESS_WEIGHT` went 2 -> 3 so a seventh archetype did not silently take a fifth of Task 2's
+  +3.28pp off a calibration band. **Adding an archetype dilutes every existing one** -- the
+  mission pool is a selection, so check what a new entry costs the ones already measured.
+- Early lift drifted 3.88 -> 4.60pp (t=1.39, under the 3-sd bar, ceiling 10pp). A three-arm
+  ablation attributed all of it to the belief channel, not the mechanic: **coverage, not
+  information.** Mitigated with a fiction rule, not a price.
+- `gs.tr.pot` still has no reader, and now neither does the recorded `shield.cost`. Both wait
+  on the endgame.

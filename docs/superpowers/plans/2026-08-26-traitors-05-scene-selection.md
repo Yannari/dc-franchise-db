@@ -425,3 +425,18 @@ citation suite green except one new guard, and that one catches it only by accid
 the filter that stops a citation quoting itself or a later moment -- a season recapping
 events that have not happened. It was verified correct by direct measurement in Task 2 (0
 violations in 758 citations) but it is not properly GUARDED. Task 6 should close it.
+
+### NEVER `git stash` in this worktree
+
+Task 4 round 2 ran `git stash` to take a base measurement and popped an unrelated
+`WIP on main` stash over the tree. Nothing was lost (`reset --hard` restored it, both
+stashes still listed and verified), but the hazard is structural and will recur:
+
+**Stashes are per-REPOSITORY, not per-worktree.** `worktree-traitors` shares one stash stack
+with the main `dc-franchise-db` checkout, which carries live uncommitted work that is not
+this plan's -- currently `js/bb/week.js`, `js/romance.js` and untracked test files on `main`.
+A stash/pop cycle here reaches into that stack.
+
+**To take a base measurement, copy the files aside and copy them back, or check the base
+revision out into a SEPARATE temporary worktree.** Never stash, never `reset --hard` on a
+tree you did not verify is yours, and never `git add -A`.

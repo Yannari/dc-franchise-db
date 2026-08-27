@@ -224,7 +224,9 @@ describe('the record reaches the writers', () => {
   it('carries the analysis back into the season document', () => {
     const src = read('js/stats-export.js');
     for (const field of ['gameArchetype', 'resume', 'demiseKind', 'optimalLine', 'ceiling']) {
-      expect(src).toMatch(new RegExp(`aiP\.${field}`));
+      // `\.` inside a template literal is eaten by the string parser and the
+      // dot then matches ANY character, so `aiPXresume` satisfied this. Doubled.
+      expect(src).toMatch(new RegExp(`aiP\\.${field}`));
     }
   });
 

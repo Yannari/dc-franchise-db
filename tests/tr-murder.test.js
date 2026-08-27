@@ -673,10 +673,20 @@ describe('the twist catalogue: one shape a night, and each leaves its own trail'
             // unrepresentable — this checks the key was actually used.
             // Whole words only. The roster contains a one-letter name, and a
             // substring sweep reported every sentence with a capital B in it.
+            //
+            // THE ESCAPE IS DOUBLED, AND THAT IS THE WHOLE GUARD. Written as
+            // `` `\b${n}\b` `` this was U+0008 (backspace) on both ends — a
+            // template literal parses `\b` as a string escape before the regex
+            // ever sees it, so the pattern was structurally incapable of
+            // matching and the assertion had passed on every implementation
+            // since it was written. Verified: source char codes 8,66,111,98,8
+            // and `rx.test('Bob was named in the chapel.')` === false.
+            // Any regex escape inside a string or template literal needs the
+            // second backslash; `\\b` survives the parser, `\b` does not.
             for (const n of BIG_CAST) {
               if (n === r.murderTarget || n.length < 3) continue;
               expect(r.variantLine, `a silent chapel printed the name ${n}`)
-                .not.toMatch(new RegExp(`\b${n}\b`));
+                .not.toMatch(new RegExp(`\\b${n}\\b`));
             }
           }
         }

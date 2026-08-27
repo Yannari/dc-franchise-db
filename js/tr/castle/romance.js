@@ -130,6 +130,34 @@ function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 // EXPORTED (round 2, R7's rule applied a second time): js/tr/castle/journey.js
 // needs exactly this lookup and exactly these reasons, and a second copy would
 // have re-learned the two fixes above the hard way.
+//
+// WHOLE-PLAN REVIEW, F4: `some` IS DELIBERATE, AND `every` WAS TRIED AND
+// REJECTED ON MEASUREMENT. The finding is real - a scene drawn as (Chef
+// Hatchet + Amy) matches Amy's showmance with Beardo, narrates "Beardo and
+// Amy...", bonds Beardo<->Amy, and Chef Hatchet is convened and then absent.
+// 215 such firings per 200 seasons across the thirteen events using this
+// helper and trust.js's twin. Requiring `every` convened actor to be a party
+// removes all 215.
+//
+// IT ALSO REMOVES 73% OF THIS FAMILY'S REACH. Against a given couple, `some`
+// is eligible on ~15.7% of draws (solo 4.0%, exact pair 0.3%, one-partner-
+// plus-anybody 11.4%); `every` keeps only the first two, a 3.6x cut. Measured
+// over 400 seasons: romance-shields-target-together 50 -> 9,
+// romance-strategic-optics 33 -> 6, romance-shared-alibi 25 -> 5,
+// romance-protection-instinct 47 -> 14, trust-vow-of-silence 48 -> 28. And
+// `romance-liability-exposed`, already the pool's thinnest four-way fork, put
+// three of its four branches under the branch floor in
+// tr-castle-reachability.test.js and could NOT be recovered: weight 3 -> 9 ->
+// 15 moved its worst branch 15 -> 21 -> 22 against a floor of 24, and a
+// cooldown override on top of that reached 23. The event is capped by how
+// often a showmance partner is drawn at all, not by what it is worth once
+// drawn.
+//
+// SO THE HALF OF THE DEFECT THAT COULD BE FIXED WITHOUT BURNING THE FAMILY
+// WAS: see `pickEvent` in js/tr/events.js, which now keys the player and pair
+// cooldowns on the people the event actually WROTE as well as the ones the
+// scene convened. The uncorrected half is stated rather than hidden: the
+// outsider still spends a scene draw on a story they have no part of.
 export function _threadForActors(kind, actors) {
   const threads = gs.tr?.threads || [];
   const names = actors || [];
@@ -202,10 +230,19 @@ registerEvent({
   family: FAMILY,
   window: 'evening',
   rare: true,
+  // NOT THE SAME DAY (whole-plan review, F7). Every band in this plan measures
+  // a thread's length in BEATS and none in EPISODES, so a spark that becomes a
+  // showmance in the same evening it was struck reads as healthy accumulation
+  // - two beats - while being an arc with no time in it. 28.6% of escalations
+  // were same-day. A castle where people are in each other's company all day
+  // can move fast, but it cannot move from "neither of them planned it that
+  // way" to a thing the castle has to plan around between two draws of the same
+  // window.
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const t = _threadForActors(SPARK_KIND, ctx.actors, ctx.ep);
-    return t ? 6 + heatAt(t, ctx.ep) * 6 : 0;
+    if (!t || ctx.ep <= t.openedEp) return 0;
+    return 6 + heatAt(t, ctx.ep) * 6;
   },
   fire(ctx) {
     const spark = _threadForActors(SPARK_KIND, ctx.actors, ctx.ep);
@@ -302,10 +339,15 @@ registerEvent({
   // unreachable one at this family's actual event frequency. Loosened to
   // `< 5` — reachable after a single fight or two jealousy incidents, which
   // is what "a real breakup" should cost, not four.
+  // AND NOT THE SAME DAY EITHER (F7). 14 of 26 breakups landed in the very
+  // episode the showmance formed and 3 more in the next one - an entire arc,
+  // spark to breakup, inside one day. The bond floor below is what makes a
+  // breakup earned; elapsed time is what makes it a story.
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
-    return t && getBond(...t.parties) < 5 ? 2 : 0;
+    if (!t || ctx.ep <= t.openedEp) return 0;
+    return getBond(...t.parties) < 5 ? 2 : 0;
   },
   fire(ctx) {
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);

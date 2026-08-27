@@ -1,136 +1,278 @@
-// What being in somebody's alliance is actually worth.
+// Per-member alliance loyalty — the number under the face.
 //
-// Reported as a feeling — "sometimes I feel like the alliances are useless" —
-// and measured before anything was changed. Twenty seasons, 14 houseguests:
-// being sworn to the Head of Household moved the odds of going up from 27.9%
-// to 18.1%. Real, but not what an alliance means.
+// Alliances form in week one, ten seasons out of ten, averaging 2.4 of them by
+// the end of the first episode. None of that was visible: the Big Brother
+// visual player had no alliance surface at all (rpBuildAllianceMap is wired
+// only into the Survivor branch), so the whole strategic layer was legible
+// only as prose scattered through twenty-five House Life beats.
 //
-// Two separate faults sat behind that, and only one of them was the decision:
-//
-//   1. THE PRICE OF AN ALLIANCE WAS THE SAME FOR EVERYBODY. `bbHeat` carried a
-//      flat alliance term, so a loyalty-9 soldier and a loyalty-1 schemer
-//      valued the same alliance identically. Loyal people follow their
-//      alliance; that is most of what the stat is for.
-//   2. IT WAS ADDITIVE. The same trap the shield discount in this file
-//      documents: whatever the reasons to nominate somebody add up to, a
-//      constant cannot keep up with the pile — and the pile is biggest for
-//      exactly the players an alliance most wants to protect.
-//
-// What was NOT wrong: of 23 ceremonies that targeted an ally with three or
-// more outsiders free, 22 had a real grievance behind them. The house always
-// had a reason. The ceremony never said it, which is the other half of this
-// and lives in bb-nomination-reasons.test.js.
-// @vitest-environment jsdom
-import { describe, expect, it } from 'vitest';
-import { gs, seasonConfig, players } from '../js/core.js';
-import { pStats, pronouns } from '../js/players.js';
-import { getBond, addBond, getPerceivedBond } from '../js/bonds.js';
-import { nominationScore, nominationGrievance } from '../js/bb/strategy.js';
-import { rememberStrategy } from '../js/strategy-memory.js';
+// Group cohesion already existed in blocs.js and answers a DIFFERENT question:
+// does this six hold together, averaged over every pair. A six can measure
+// warm and still contain one person at the edge of it — and that person
+// decides the season. This is the per-person view, and the assertions below
+// are about it behaving like loyalty rather than like a random number.
+import { beforeEach, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { gs, players, seasonConfig, relationships } from '../js/core.js';
+import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
+import { getBond, getPerceivedBond, bKey, bondLabel, addBond } from '../js/bonds.js';
+import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
+import { memberLoyalty, blocRoster, listBlocs } from '../js/bb/blocs.js';
+import { rpBuildBBHouseLife, rpBuildBBOverview } from '../js/vp-screens.js';
+import { generateBBSummaryText } from '../js/text-backlog.js';
 import { seedGame } from './helpers/setup.js';
+import { withSeededRandom } from './helpers/rng.js';
 
-const K = ['physical', 'endurance', 'mental', 'social', 'strategic',
-  'loyalty', 'boldness', 'intuition', 'temperament'];
-const stat = over => Object.fromEntries(K.map(k => [k, over?.[k] ?? 5]));
+const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly',
+  'Hicks', 'Emmah', 'Millie', 'Caleb'];
+const ARCH = ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer', 'floater',
+  'villain', 'loyal-soldier', 'underdog', 'goat', 'hothead', 'wildcard'];
+const CAST = NAMES.map((name, i) => ({
+  name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[i],
+}));
 
-/** A house of six, an alliance of three, and a named loyalty for the HOH. */
-function house(loyalty, { allied = true } = {}) {
-  const names = ['Hoh', 'Ally', 'Outsider', 'D', 'E', 'F'];
-  seedGame(names.map(n => ({ name: n, archetype: 'floater', gender: 'f',
-    sexuality: 'straight', stats: stat(n === 'Hoh' ? { loyalty } : null) })),
-  { episode: 6, eliminated: [], namedAlliances: [] });
-  gs.activePlayers = [...names];
-  gs.bb = { stats: {}, house: { suspicion: {} }, weeks: [] };
-  gs.showmances = []; gs.intentions = {}; gs.strategicMemories = {};
-  gs.namedAlliances = allied
-    ? [{ name: 'The Pact', active: true, members: ['Hoh', 'Ally', 'D'] }] : [];
-  Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, getBond, getPerceivedBond });
+function house() {
+  seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+  Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
+    ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+  Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
+    bbHaveNots: 'off', bbSafetyMode: 'off', twistSchedule: [] });
+  gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+  gs.episodeHistory = []; gs.showmances = []; gs.namedAlliances = []; gs.jury = [];
 }
-// Same seed for every call, so the only thing moving is the thing under test.
-const score = name => nominationScore('Hoh', name, () => 0.5);
 
-describe('loyalty decides what an alliance is worth', () => {
-  it('makes a loyal head of household protect their own people', () => {
-    house(10);
-    const loyal = score('Ally');
-    house(0);
-    const faithless = score('Ally');
-    expect(loyal, 'loyalty bought the ally nothing').toBeLessThan(faithless);
+/** A four-person alliance with no bonds set, so each test states its own. */
+function bloc(members = ['Bowie', 'Chase', 'Ripper', 'Scary']) {
+  return { id: 'test-bloc', name: 'The Test', kind: 'alliance', members, power: 0.5, share: 0.3 };
+}
+
+describe('what moves a member’s loyalty', () => {
+  beforeEach(house);
+
+  it('rises with how they feel about these specific people', () => {
+    const b = bloc();
+    const cold = memberLoyalty('Bowie', b).loyalty;
+    for (const other of ['Chase', 'Ripper', 'Scary']) addBond('Bowie', other, 8);
+    const warm = memberLoyalty('Bowie', b).loyalty;
+    expect(warm).toBeGreaterThan(cold);
   });
 
-  it('leaves an average houseguest close to where they were', () => {
-    // A spread around the old behaviour, not a blanket buff — the measured
-    // overall protection ratio stayed at 1.56x while the two ends pulled
-    // apart (1.27x disloyal, 1.63x loyal).
-    house(5);
-    const middling = score('Ally');
-    house(0);
-    const faithless = score('Ally');
-    house(10);
-    const loyal = score('Ally');
-    expect(middling).toBeLessThan(faithless);
-    expect(middling).toBeGreaterThan(loyal);
+  it('reads THEIR bonds, not the group average', () => {
+    // The whole reason this exists. Everybody else adores each other; Bowie
+    // cannot stand any of them. Cohesion looks fine, Bowie is gone.
+    const b = bloc();
+    addBond('Chase', 'Ripper', 9); addBond('Chase', 'Scary', 9); addBond('Ripper', 'Scary', 9);
+    for (const other of ['Chase', 'Ripper', 'Scary']) addBond('Bowie', other, -6);
+    const roster = blocRoster(b);
+    expect(roster.weakest?.name, 'the odd one out was not identified').toBe('Bowie');
+    const bowie = roster.members.find(m => m.name === 'Bowie');
+    const chase = roster.members.find(m => m.name === 'Chase');
+    expect(bowie.loyalty).toBeLessThan(chase.loyalty);
   });
 
-  it('never protects somebody outside the alliance', () => {
-    house(10);
-    const before = score('Outsider');
-    house(0);
-    expect(score('Outsider')).toBeCloseTo(before, 5);
+  it('separates two people with identical bonds by the loyalty stat', () => {
+    // Same relationships, different person. This is the difference between
+    // somebody who flips and somebody who does not, and it is what the stat is
+    // for — it was read in twenty-four files and shown in none.
+    const b = bloc(['Bowie', 'Chase', 'Ripper']);
+    for (const [a, c] of [['Bowie', 'Chase'], ['Bowie', 'Ripper'], ['Chase', 'Ripper']]) {
+      addBond(a, c, 5);
+    }
+    const loyal = players.find(p => p.name === 'Bowie');
+    const flighty = players.find(p => p.name === 'Chase');
+    loyal.stats = { ...loyal.stats, loyalty: 10 };
+    flighty.stats = { ...flighty.stats, loyalty: 1 };
+    expect(memberLoyalty('Bowie', b).loyalty)
+      .toBeGreaterThan(memberLoyalty('Chase', b).loyalty);
+  });
+
+  it('falls when their closest person in the house is outside the group', () => {
+    const b = bloc();
+    for (const other of ['Chase', 'Ripper', 'Scary']) addBond('Bowie', other, 3);
+    const held = memberLoyalty('Bowie', b).loyalty;
+    addBond('Bowie', 'Caleb', 10); // Caleb is not in it
+    const pulled = memberLoyalty('Bowie', b).loyalty;
+    expect(pulled, 'somebody better outside did not loosen them').toBeLessThan(held);
+  });
+
+  it('does not punish a popular houseguest for having friends', () => {
+    // Warm outside but warmer inside: that is not disloyalty, that is a
+    // sociable person, and the reading has to tell the difference.
+    const b = bloc();
+    for (const other of ['Chase', 'Ripper', 'Scary']) addBond('Bowie', other, 9);
+    const before = memberLoyalty('Bowie', b).loyalty;
+    addBond('Bowie', 'Caleb', 5);
+    expect(memberLoyalty('Bowie', b).loyalty).toBe(before);
+  });
+
+  it('stays inside 0 to 10 under absurd inputs', () => {
+    const b = bloc();
+    for (const other of ['Chase', 'Ripper', 'Scary']) addBond('Bowie', other, 10);
+    expect(memberLoyalty('Bowie', b).loyalty).toBeLessThanOrEqual(10);
+    for (const other of ['Chase', 'Ripper', 'Scary']) addBond('Bowie', other, -20);
+    const low = memberLoyalty('Bowie', b).loyalty;
+    expect(low).toBeGreaterThanOrEqual(0);
+    expect(low).toBeLessThan(3);
+  });
+
+  it('always gives a reason a viewer could read', () => {
+    const b = bloc();
+    for (const m of blocRoster(b).members) {
+      expect(typeof m.reason).toBe('string');
+      expect(m.reason.length).toBeGreaterThan(8);
+    }
   });
 });
 
-describe('but loyalty is not owed to somebody who broke it', () => {
-  it('stops shielding an ally the head of household remembers being crossed by', () => {
-    // The whole point. Without this the discount becomes a shield and
-    // alliances turn unbreakable, which is the opposite failure.
-    house(10);
-    const protectedScore = score('Ally');
-    house(10);
-    rememberStrategy('Hoh', 'Ally', 'alliance-betrayal', 4, 3);
-    expect(score('Ally'), 'a remembered betrayal still bought them the discount')
-      .toBeGreaterThan(protectedScore);
+describe('naming the crack', () => {
+  beforeEach(house);
+
+  it('does not invent one when everybody is equally committed', () => {
+    // Somebody has to sort last. That is not a weak link, and calling it one
+    // would make the flag meaningless.
+    const b = bloc();
+    for (const [x, y] of [['Bowie', 'Chase'], ['Bowie', 'Ripper'], ['Bowie', 'Scary'],
+      ['Chase', 'Ripper'], ['Chase', 'Scary'], ['Ripper', 'Scary']]) addBond(x, y, 7);
+    const roster = blocRoster(b);
+    expect(roster.cracking, `invented a crack: ${roster.weakest?.name}`).toBe(false);
+    expect(roster.weakest).toBeNull();
   });
 
-  it('stops shielding an ally the head of household suspects', () => {
-    house(10);
-    const protectedScore = score('Ally');
-    house(10);
-    gs.bb.house.suspicion['Hoh→Ally'] = 6;
-    expect(score('Ally')).toBeGreaterThan(protectedScore);
+  it('never calls somebody a crack while saying they are held', () => {
+    // A pair where one is marginally lower than the other reported
+    // "CRACK: Millie — is held by the room", which contradicts itself. A crack
+    // has to be somebody actually loose, not merely whoever sorted last.
+    const b = bloc(['Bowie', 'Chase']);
+    addBond('Bowie', 'Chase', 9);
+    const roster = blocRoster(b);
+    expect(roster.cracking).toBe(false);
+    for (const m of roster.members) expect(m.loyalty).toBeGreaterThan(5);
+  });
+
+  it('needs three members before a gap counts as a crack', () => {
+    // In a pair one of the two is always lower; that is arithmetic, not drama.
+    const pair = bloc(['Bowie', 'Chase']);
+    addBond('Bowie', 'Chase', 6);
+    const loyal = players.find(p => p.name === 'Bowie');
+    const flighty = players.find(p => p.name === 'Chase');
+    loyal.stats = { ...loyal.stats, loyalty: 10 };
+    flighty.stats = { ...flighty.stats, loyalty: 4 };
+    expect(blocRoster(pair).cracking).toBe(false);
+  });
+
+  it('names one when somebody is genuinely adrift', () => {
+    const b = bloc();
+    for (const [x, y] of [['Chase', 'Ripper'], ['Chase', 'Scary'], ['Ripper', 'Scary']]) {
+      addBond(x, y, 8);
+    }
+    for (const other of ['Chase', 'Ripper', 'Scary']) addBond('Bowie', other, -4);
+    const roster = blocRoster(b);
+    expect(roster.cracking).toBe(true);
+    expect(roster.weakest.name).toBe('Bowie');
   });
 });
 
-describe('the reason gets recorded at the ceremony', () => {
-  it('says nothing at all about somebody who is not in the alliance', () => {
-    // An ordinary nomination is not a betrayal and must never be narrated as
-    // one.
-    house(5);
-    expect(nominationGrievance('Hoh', 'Outsider')).toBeNull();
+describe('in a played season', () => {
+  it('reaches the episode, the transcript and the screen', () => {
+    house();
+    let ep = null;
+    for (let seed = 1; seed <= 12 && !ep?.allianceBoard?.length; seed++) {
+      house();
+      ep = withSeededRandom(seed * 9, () => simulateBBEpisode());
+    }
+    expect(ep?.allianceBoard?.length, 'no alliance board after a played week')
+      .toBeGreaterThan(0);
+
+    const b = ep.allianceBoard[0];
+    expect(b.members.length).toBeGreaterThan(1);
+    for (const m of b.members) {
+      expect(m.loyalty).toBeGreaterThanOrEqual(0);
+      expect(m.loyalty).toBeLessThanOrEqual(10);
+    }
+    // Sorted firmest-first, so the board reads top to bottom.
+    const vals = b.members.map(m => m.loyalty);
+    expect([...vals].sort((x, y) => y - x)).toEqual(vals);
+
+    // BOTH transcript writers. The act-coverage guard only walks act TYPES,
+    // and the board is a week-level field rather than an act — which is
+    // exactly how it reached the tests-facing writer and missed the in-app
+    // one on the first pass.
+    const text = summariseWeek(gs.bb.weeks[gs.bb.weeks.length - 1]);
+    expect(text, 'missing from summariseWeek').toMatch(/THE ALLIANCE BOARD/);
+    const backlog = generateBBSummaryText(ep);
+    expect(backlog, 'missing from the in-app text backlog').toMatch(/THE ALLIANCE BOARD/);
+    for (const m of b.members) {
+      expect(backlog, `${m.name} is not in the backlog board`).toContain(m.name);
+      expect(backlog).toContain(m.loyalty.toFixed(1));
+    }
+
+    // No screen of its own. The number goes under the avatar in the alliance
+    // panel House Life already had — one digit per face is the whole feature,
+    // and a dedicated page was more furniture than it was worth.
+    // Note the panel shows the alliances that existed AT THAT BEAT, which is
+    // correct and is not the same list as the end-of-week board — a group that
+    // formed on Wednesday is on the board and not in Monday's panel. So the
+    // check is that every digit drawn is a real member's hold, not that any
+    // particular group appears.
+    const houseActs = (ep.acts || []).filter(a => a.type === 'house');
+    const drawn = houseActs
+      .map((a, i) => rpBuildBBHouseLife(ep, a, i + 1))
+      .filter(html => /bbf-hold/.test(html));
+    expect(drawn.length, 'no House Life panel drew a hold digit').toBeGreaterThan(0);
+
+    const real = new Set(ep.allianceBoard
+      .flatMap(x => x.members.map(m => m.loyalty.toFixed(1))));
+    for (const html of drawn) {
+      const digits = [...html.matchAll(/class="bbf-hold[^"]*"[\s\S]*?<b[^>]*>([\d.]+)<\/b>/g)]
+        .map(m => m[1]);
+      expect(digits.length).toBeGreaterThan(0);
+      for (const d of digits) {
+        expect(real.has(d), `${d} is not any member's hold on the board`).toBe(true);
+      }
+    }
+
+    // ...and the reasoning behind the digits lives on House Status.
+    const status = rpBuildBBOverview(ep, 'closing');
+    expect(status).toMatch(/holding on/i);
+    for (const m of b.members) expect(status).toContain(m.name);
   });
 
-  it('names which betrayal, not just that there was one', () => {
-    house(5);
-    rememberStrategy('Hoh', 'Ally', 'voted-for-me', 4, 3);
-    const g = nominationGrievance('Hoh', 'Ally');
-    expect(g.kind).toBe('betrayal');
-    expect(g.memory?.type, 'the house holds the receipt and did not read it')
-      .toBe('voted-for-me');
-    expect(g.alliance).toBe('The Pact');
+  it('does not stack the holds panel on top of the suspicion caption', () => {
+    // The caption under the suspicion bar was position:absolute inside a
+    // 4px-tall track, so it took no layout space at all and the holds panel
+    // rendered straight through it. Anything that follows that bar has to be
+    // able to sit under a caption that is one line or three, which means the
+    // caption has to be in normal flow rather than every sibling guessing a
+    // margin — .bbb-hunt guessed 14px and was already too small.
+    const css = readFileSync('css/simulator.css', 'utf8');
+    const from = css.indexOf('.bbb-bar span');
+    expect(from, 'the suspicion caption rule vanished').toBeGreaterThan(-1);
+    const rule = css.slice(from, css.indexOf('}', from));
+    expect(rule, 'the caption is absolutely positioned again — siblings will overlap it')
+      .not.toMatch(/position\s*:\s*absolute/);
+    expect(rule).toMatch(/display\s*:\s*block/);
   });
 
-  it('calls a suspicion a suspicion', () => {
-    // The betrayal line has the head of household state that a promise was
-    // broken. A faint memory does not support that claim; this one says out
-    // loud that there is no proof.
-    house(5);
-    gs.bb.house.suspicion['Hoh→Ally'] = 6;
-    expect(nominationGrievance('Hoh', 'Ally').kind).toBe('suspicion');
+  it('leaves the alliance panel readable when a week has no board', () => {
+    // Old saves and any cycle that ended before the snapshot: the panel must
+    // fall back to the bare avatar rather than breaking.
+    house();
+    const ep = withSeededRandom(9, () => simulateBBEpisode());
+    const houseAct = (ep.acts || []).find(a => a.type === 'house');
+    const life = rpBuildBBHouseLife({ ...ep, allianceBoard: [] }, houseAct, 1);
+    expect(life).toBeTruthy();
+    expect(life).not.toMatch(/bbf-hold/);
   });
 
-  it('admits when there is no grievance at all', () => {
-    house(5);
-    addBond('Hoh', 'Ally', 4);
-    expect(nominationGrievance('Hoh', 'Ally').kind).toBe('no-grievance');
+  it('leaves group cohesion alone', () => {
+    // Deliberately NOT wired into _measure: cohesion feeds power, power feeds
+    // targeting, and targeting feeds whole seasons. A screen is not worth
+    // re-rolling every read in the house for.
+    house();
+    withSeededRandom(9, () => simulateBBEpisode());
+    for (const b of listBlocs()) {
+      expect(b.loyalty).toBeGreaterThanOrEqual(0.2);
+      expect(b.loyalty).toBeLessThanOrEqual(1);
+    }
   });
 });

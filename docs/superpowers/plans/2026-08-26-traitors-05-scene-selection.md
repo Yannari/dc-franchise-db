@@ -620,3 +620,56 @@ from ordinary drift.
 
 So Task 9 builds the control arm first, and Task 8 then adds content against a band that can
 actually tell a regression from a shift.
+
+## Task 9 done — and three findings that outrank the band it shipped
+
+New band: `late.lift - blind.lift > 0.22`, engine 41.31pp, with two tripwires bounding the
+control. `_setVoteSuspicionMult(m)` ablates the belief channel at the ballot itself
+(`chooseBanishmentVote`), not at the `evidence` hook -- swapping `evidence` would leave
+`revealCascade` and `murderEvidence` running. The control is NOT zero: blind ballots score
+**-17.63pp, below chance**, because a Traitor is barred from naming the pact. Sampling sd
+0.0331 over six decorrelated blocks; worst adverse content file `trust.js` at -0.0466.
+
+### 1. The old floor was not merely stale-shaped -- it was already RED
+
+`late lift > 0.15` read **0.1403 on block 400 at FULL strength**. It was thinner than its own
+comment claimed and would have flaked on a block nobody had run. Two of this plan's bands
+have now turned out to be failing or near-failing before anyone touched them, which is an
+argument for measuring every band across decorrelated blocks rather than on one.
+
+### 2. A control arm cancels composition drift ONLY if the control is exposed to it too
+
+The separation is barely more content-robust than the absolute it replaced: **4.66pp per
+adverse file against the live arm's 4.79pp.** Blinding the ballot also stops BONDS reaching
+the vote, so the control moves at most 1.32pp under content change and the separation
+inherits nearly all of the live arm's exposure.
+
+This is the second time the "control arm" lesson has needed narrowing, and the general
+statement is now: **a control cancels a source of drift only when BOTH arms are exposed to
+it.** Ablating the mechanism under test usually also ablates the pathway that content travels
+on -- which is exactly when the control stops helping. Check the control's own perturbation
+response, not just the live arm's.
+
+Consequence: **Task 8 must re-check this band.** Two `trust`-sized content files breach the
+worst block.
+
+### 3. The calibration roster never fires 11 of the 98 events
+
+All of `callback.js` -- 11 events -- fire ZERO times on the calibration roster, which is why
+`minus-callback` measures exactly 0.0000. Callback events need franchise history and the
+roster has none.
+
+**So every band in `tests/tr-calibration.test.js` is measured on an engine missing 11% of its
+pool**, and no band in the file can see a callback regression at all. This is the
+written-but-unreachable class at the level of the HARNESS rather than the content: the events
+are reachable in a real season and unreachable in the thing that certifies the engine.
+
+### Task 11 (NEW): give the calibration roster franchise history
+
+Add prior-season history to the calibration roster so `callback.js` fires, then re-derive
+every band in the file against the complete pool. Until then, every figure in that file is
+conditional on an engine missing eleven events, and the plan's history of "no band moved"
+verdicts inherits that condition.
+
+Sequence it AFTER Task 8, since Task 8 changes what those events say but not whether they
+fire -- and re-deriving twice would waste the run.

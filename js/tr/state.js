@@ -34,6 +34,22 @@ export function initTraitorsState() {
     pot: 0,
     potCeiling: 0,
 
+    // Every mission this season ran, in order:
+    //   { id, ep, name, teams, quality, gross, earned, potAfter, sideObjectives, summary }
+    // `gross` and `earned` differ once the pot is near its ceiling — a season
+    // that wins 15,000 with 4,000 of headroom left banks 4,000, and the rest
+    // is gone rather than owed. Kept because the pot alone cannot say WHY it
+    // stalled: a season that stopped earning because the cast kept failing and
+    // a season that stopped because it had already filled the pot look
+    // identical from `pot` and completely different from here.
+    missions: [],
+
+    // Every mission narration template printed this season. Prose bookkeeping
+    // and nothing else: four variants per category is four variants only if
+    // the season remembers which it has spent, and a nine-mission season runs
+    // the same archetype three times. Plain strings, so it survives a save.
+    missionLines: [],
+
     // Open narrative threads — see spec section 5.2. Events prefer to advance
     // one of these over starting something new, which is the single rule that
     // keeps a season from reading as forty unconnected incidents.

@@ -16,6 +16,7 @@ import { seedTraitorKnowledge, ballotEvidence, murderEvidence } from './deductio
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
 import { runWindow, startRoundBudget } from './events.js';
+import { runMission, POT_CEILING } from './missions.js';
 
 // TASK 6 WIRING DECISION: the castle event pool is now live in every real
 // season. Side-effect imports only — nothing here is called directly; each
@@ -111,6 +112,31 @@ export function _castleRngFor(seed) {
   const s = (seed >>> 0) || 1;
   let derived = Math.imul(s, 40503) >>> 0;
   if (derived === s || derived === 0) derived = (derived ^ 0x9E3779B9) >>> 0 || 13;
+  return rngFor(derived);
+}
+
+/**
+ * The missions' own stream, for the third time and the same reason.
+ *
+ * `_castleRngFor`'s comment explains the mechanism in full and it applies here
+ * unchanged: a mission takes a dozen draws an afternoon (the team shuffle
+ * alone takes one per player), and if those came out of the game rng then
+ * adding a sixth mission archetype — or changing how many side objectives one
+ * rolls — would shift the position of every subsequent murder, ballot and
+ * banishment in the stream and re-roll the rest of the season. The
+ * calibration bands are population measurements over fixed seeds; a content
+ * edit that moves them is indistinguishable from an engine change that moves
+ * them, and the whole point of those bands is to tell the two apart.
+ *
+ * Different odd multiplier from the castle stream so the two do not correlate,
+ * and the same fixed-point guard: an odd multiply is a bijection mod 2**32, so
+ * `derived === s` is the only way this stream can coincide with the game's,
+ * and one comparison closes it exhaustively rather than probabilistically.
+ */
+export function _missionRngFor(seed) {
+  const s = (seed >>> 0) || 1;
+  let derived = Math.imul(s, 2246822519) >>> 0;
+  if (derived === s || derived === 0) derived = (derived ^ 0x85EBCA6B) >>> 0 || 29;
   return rngFor(derived);
 }
 
@@ -231,9 +257,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // The narrative layer's OWN stream — see castleRngFor's doc comment for why
   // round budgets (and later, window draws) must never share the game rng.
   const castleRng = _castleRngFor(seed);
+  // And the missions', off both of them — see _missionRngFor.
+  const missionRng = _missionRngFor(seed);
   // gs is null until a season exists (js/core.js), so the harness creates one.
   setGs({ bonds: {}, activePlayers: [...cast] });
   gs.tr = initTraitorsState();
+  gs.tr.potCeiling = POT_CEILING;
   resetKnowledge();
   _seedStartingBonds(cast, seed);
 
@@ -263,11 +292,15 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     ...runWindow('dawn', ep, castleRng),
     ...runWindow('morning', ep, castleRng),
     ...runWindow('journey-out', ep, castleRng),
-    ...runWindow('journey-back', ep, castleRng),
   ];
+  // The mission sits BETWEEN the two journey windows because that is what the
+  // journey is: out to the mission, and back from it. Night one has one too —
+  // the show does — even though it has no Round Table.
+  const mission1 = runMission(ep, missionRng);
+  castle1.push(...runWindow('journey-back', ep, castleRng));
   const n1 = _night(ep, rng);
   castle1.push(...runWindow('night', ep, castleRng));
-  log.push({ ep, banished: null, wasTraitor: null, ...n1,
+  log.push({ ep, banished: null, wasTraitor: null, ...n1, mission: mission1,
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
 
   while (ep++ < maxRounds) {
@@ -295,11 +328,15 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // onto the round the table just produced.
     evidence(ep, rng);
     murderEvidence(ep, rng);
-    // journey-out/journey-back sit here because that is where the mission
-    // itself would run — there is no mission engine yet (a later plan builds
-    // one), so these two windows simply run as social scenes with nothing
-    // mechanical behind them, same as they do on night one.
-    castleEvents.push(...runWindow('journey-out', ep, castleRng), ...runWindow('journey-back', ep, castleRng));
+    // journey-out/journey-back bracket the mission, which is what the journey
+    // is for. The mission draws from its OWN stream (see _missionRngFor), so
+    // it sits inside the order contract above without disturbing a single one
+    // of the game rng's draws — the evidence/table/night sequence either side
+    // of it is bit-identical whether missions run or not, which is what
+    // tests/tr-missions.test.js asserts directly.
+    castleEvents.push(...runWindow('journey-out', ep, castleRng));
+    const mission = runMission(ep, missionRng);
+    castleEvents.push(...runWindow('journey-back', ep, castleRng));
     castleEvents.push(...runWindow('evening', ep, castleRng));
     const r = runRoundTable(ep, rng);
     if (!r) break;   // an empty castle: nothing left to banish
@@ -317,7 +354,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // Traitor hit for reasons that have nothing to do with deduction. Without
     // these two numbers there is no way to tell a room that learned something
     // from a room that simply ran out of Faithfuls.
-    log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...night,
+    log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...night, mission,
       alive: alive.length, aliveAtVote: alive.length, traitorsAtVote: tr,
       castleEvents, budget: { ...gs.tr.roundBudget } });
   }
@@ -340,6 +377,11 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // population. Copied out for the same reason `rounds` and `roleHistory`
     // are.
     threads: [...(gs.tr.threads || [])],
+    // The money, and every afternoon that earned it. Copied out for the same
+    // reason as `rounds` and `threads`: the next season replaces gs wholesale.
+    missions: [...(gs.tr.missions || [])],
+    pot: gs.tr.pot,
+    potCeiling: gs.tr.potCeiling,
     survivors: [...(gs.activePlayers || [])],
     winner: survivingTraitors.length ? 'traitors' : 'faithfuls',
   };

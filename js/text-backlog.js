@@ -1850,8 +1850,21 @@ export function _textWhyVote(ep, ln, sec) {
   // then names who dies in his place) would vanish into silence.
   (ep.coachSaves || []).forEach(save => {
     const _svP = pronouns(save.coach);
-    ln(`SAVE CARD PLAYED — ${save.tribe ? `${save.tribe} ` : 'The tribe '}unanimously agreed to save ${save.coach}.`);
+    const _signers = (save.votes || []).map(v => v.coach);
+    ln(`SAVE CARD PLAYED — ${_signers.length ? `${_signers.join(' and ')} signed for ${save.coach}` : `The card was played for ${save.coach}`}. It needs every coach on the team, and got them.`);
     ln(`  ${save.coach} named the replacement: ${save.replacement || '???'} goes home in ${_svP.posAdj} place.`);
+  });
+
+  // The refusal is the louder half. A coach goes home because one colleague
+  // would not sign, and the reason is on the record.
+  (ep.coachSaveRefusals || []).forEach(rf => {
+    ln(`THE CARD IS NOT SIGNED — ${rf.refusedBy} refused to save ${rf.coach}.`);
+    if (rf.reason === 'costs-my-protege' && rf.doomed) {
+      ln(`  Signing would have cost ${rf.refusedBy} their own protégé: ${rf.doomed} was the name on the card.`);
+    } else if (rf.reason === 'returning-the-favour') {
+      ln(`  ${rf.refusedBy} was refused once before, and remembers it.`);
+    }
+    ln(`  The card only works if every coach on the team signs it. ${rf.coach} goes home.`);
   });
 
   // Multi-tribal summaries

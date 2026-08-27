@@ -11636,6 +11636,52 @@ export function rpBuildVotes(ep) {
   // Super Idol plays AFTER votes are read — exclude from pre-vote section
   const _voteIdolPlays = (ep.idolPlays1 || ep.idolPlays || []).filter(p => !p.superIdol);
   let _advHtml = '';
+
+  // ── THE COACH'S SAVE CARD ──────────────────────────────────────────────
+  // It settles a life at this council and looked like nothing: no card, no
+  // play, no screen. It reads as an advantage play because that is what it
+  // is — with the difference that this one names somebody to go instead, and
+  // the peers who signed knew who before they agreed.
+  for (const _sv of (ep.coachSaves || [])) {
+    const _signers = (_sv.votes || []).map(v => v.coach);
+    _advHtml += `<div class="tv-advantage-play" style="border-color:rgba(232,135,58,0.45)">
+      <div class="tv-advantage-play-left">
+        ${rpPortrait(_sv.coach)}
+      </div>
+      <div class="tv-advantage-play-body">
+        <div class="tv-advantage-play-badge" style="color:#e8873a;background:rgba(232,135,58,0.12);border-color:rgba(232,135,58,0.3)">COACH'S SAVE CARD</div>
+        <div class="tv-advantage-play-title">${_sv.coach} is saved by the card</div>
+        <div class="tv-advantage-play-desc">The votes were for ${_sv.coach}. ${_signers.length
+          ? `${_signers.join(' and ')} signed — the card needs every coach on the team, and got them.`
+          : 'The card was played.'} ${_sv.coach} stays.</div>
+        ${_sv.replacement ? `<div class="tv-advantage-play-result">It is not free: ${_sv.coach} names ${_sv.replacement}, who leaves instead.</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  // A refusal is the louder beat — a coach goes home because one colleague
+  // would not sign, and the reason is on the record.
+  for (const _rf of (ep.coachSaveRefusals || [])) {
+    const _why = {
+      'costs-my-protege': `signing would have cost ${_rf.refusedBy} their own protégé${_rf.doomed ? ` — ${_rf.doomed} was the name on the card` : ''}`,
+      'returning-the-favour': `${_rf.refusedBy} was refused once, and remembers it`,
+      'pact-already-broken': `whatever ${_rf.coach} and ${_rf.refusedBy} agreed, it was already broken`,
+      'bad-blood': `${_rf.refusedBy} and ${_rf.coach} were never going to do each other favours`,
+      'rival-outbuilding': `${_rf.coach} has more of this tribe built than ${_rf.refusedBy} does`,
+      'strategic': `${_rf.refusedBy} did the arithmetic and it did not come out in ${_rf.coach}'s favour`,
+    }[_rf.reason] || `${_rf.refusedBy} would not sign`;
+    _advHtml += `<div class="tv-advantage-play" style="border-color:rgba(248,81,73,0.45)">
+      <div class="tv-advantage-play-left">
+        ${rpPortrait(_rf.refusedBy)}
+      </div>
+      <div class="tv-advantage-play-body">
+        <div class="tv-advantage-play-badge" style="color:#f85149;background:rgba(248,81,73,0.12);border-color:rgba(248,81,73,0.3)">THE CARD IS NOT SIGNED</div>
+        <div class="tv-advantage-play-title">${_rf.refusedBy} refuses to save ${_rf.coach}</div>
+        <div class="tv-advantage-play-desc">The card only works if every coach on the team signs it. ${_rf.refusedBy} does not — ${_why}.</div>
+        <div class="tv-advantage-play-result">${_rf.coach} goes home.</div>
+      </div>
+    </div>`;
+  }
   _voteIdolPlays.forEach((play) => {
     const { player, votesNegated, type, playedFor, target, stolenFrom } = play;
     if (type === 'legacy') {

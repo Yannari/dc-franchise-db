@@ -179,19 +179,32 @@ export function offerSaveCard(ep, coachName, tribe) {
   if (!peers.length) return { played: false, replacement: null, reason: 'no-peers', votes: [] };
 
   const votes = peers.map(p => ({ coach: p.name, ...saveCardVerdict(p.name, coachName) }));
+  // The ledger outlives the episode. Who signed and who would not is the
+  // memory the next decision reads — a coach who refused you once does not
+  // get signed for, and a coach who saved you is not easily refused.
+  if (!gs.coachSaveLedger) gs.coachSaveLedger = [];
+  const _ep = Number(ep?.num || gs.episode || 0);
+  for (const v of votes) {
+    gs.coachSaveLedger.push(v.consents
+      ? { signer: v.coach, saved: coachName, ep: _ep, reason: v.reason }
+      : { refuser: v.coach, saved: coachName, ep: _ep, reason: v.reason });
+  }
+
   const refuser = votes.find(v => !v.consents);
   if (refuser) {
     if (!ep.coachSaveRefusals) ep.coachSaveRefusals = [];
-    ep.coachSaveRefusals.push({ coach: coachName, refusedBy: refuser.coach, reason: refuser.reason, votes });
+    ep.coachSaveRefusals.push({ coach: coachName, refusedBy: refuser.coach,
+      reason: refuser.reason, doomed: refuser.doomed || null, votes });
     return { played: false, replacement: null, reason: `refused:${refuser.coach}`, votes };
   }
 
   // Unanimous. The card removes a contestant, never another coach — the
   // filter guards against a caller seeding the tribe roster incorrectly.
-  const replacement = (tribe?.members || [])
-    .filter(m => !isCoach(m))
-    .slice()
-    .sort((a, b) => getBond(coachName, a) - getBond(coachName, b))[0] || null;
+  // Same rule the peers were shown when they decided — they signed knowing
+  // exactly who it would cost, so the card must not name somebody else now.
+  const replacement = predictedReplacement(coachName)
+    || ((tribe?.members || []).filter(m => !isCoach(m))
+        .slice().sort((a, b) => getBond(coachName, a) - getBond(coachName, b))[0] || null);
   if (!replacement) return { played: false, replacement: null, reason: 'no-replacement', votes };
 
   record.saveCard = 'used';
@@ -229,15 +242,71 @@ export function saveCardVerdict(voterCoach, endangered) {
 
   // The rival read: a coach whose colleague has more of the tribe invested in
   // them is looking at the person most likely to outlast them.
-  const mine = Object.keys(gs.coachTraining?.[voterCoach] || {}).length;
-  const theirs = Object.keys(gs.coachTraining?.[endangered] || {}).length;
-  p -= Math.max(0, theirs - mine) * 0.06;
+  const myProteges = Object.keys(gs.coachTraining?.[voterCoach] || {});
+  const theirProteges = Object.keys(gs.coachTraining?.[endangered] || {});
+  p -= Math.max(0, theirProteges.length - myProteges.length) * 0.06;
+
+  // ── THE PRICE OF SIGNING ──────────────────────────────────────────────
+  // The card does not save a coach for free: it names a CONTESTANT to go
+  // instead, and the endangered coach names the one they like least. That can
+  // be the protégé this voter has spent the whole season building. Signing is
+  // not a favour when it costs you your best player, and this is the factor
+  // that makes the decision genuinely strategic rather than a popularity read.
+  const doomed = predictedReplacement(endangered);
+  let costsMine = false;
+  if (doomed) {
+    if (myProteges.includes(doomed)) { p -= 0.3; costsMine = true; }
+    const myBond = getBond(voterCoach, doomed);
+    p -= Math.max(0, myBond) * 0.03;          // losing someone you like hurts
+    if (myBond < 0) p += 0.08;                // losing someone you don't, helps
+  }
+
+  // ── STANDING DEALS ────────────────────────────────────────────────────
+  // A non-aggression pact is worth nothing if it evaporates the moment it is
+  // expensive. Honouring it pulls hard toward yes; a pact already broken
+  // between these two pulls the other way.
+  const deals = (gs.coachDeals || []).filter(d =>
+    d.players?.includes(voterCoach) && d.players?.includes(endangered));
+  const livePact = deals.find(d => d.active && !d.broken);
+  const brokenPact = deals.find(d => d.broken);
+  if (livePact) p += livePact.type === 'non-aggression' ? 0.25 : 0.15;
+  if (brokenPact) p -= 0.2;
+
+  // ── THE DEBT ──────────────────────────────────────────────────────────
+  // Somebody who signed for you does not get refused easily.
+  const signedForMe = (gs.coachSaveLedger || []).some(r => r.signer === endangered && r.saved === voterCoach);
+  const refusedMe = (gs.coachSaveLedger || []).some(r => r.refuser === endangered && r.saved === voterCoach);
+  if (signedForMe) p += 0.3;
+  if (refusedMe) p -= 0.35;
 
   const consents = p >= 0.5;
   const reason = !consents
-    ? (bond < 0 ? 'bad-blood' : theirs > mine ? 'rival-outbuilding' : COLD.includes(arche) ? 'strategic' : 'unconvinced')
-    : (allied ? 'allied' : bond > 2 ? 'friendship' : 'decency');
-  return { consents, reason, score: Math.round(p * 100) / 100 };
+    ? (costsMine ? 'costs-my-protege'
+      : refusedMe ? 'returning-the-favour'
+      : brokenPact ? 'pact-already-broken'
+      : bond < 0 ? 'bad-blood'
+      : theirProteges.length > myProteges.length ? 'rival-outbuilding'
+      : COLD.includes(arche) ? 'strategic' : 'unconvinced')
+    : (signedForMe ? 'debt'
+      : livePact ? 'pact'
+      : allied ? 'allied'
+      : bond > 2 ? 'friendship' : 'decency');
+  return { consents, reason, score: Math.round(p * 100) / 100, doomed, costsMine };
+}
+
+/**
+ * Who this coach would name if the card were played for them — the contestant
+ * on their tribe they like least. Exported because the decision to SIGN turns
+ * on it: a peer needs to know who dies before agreeing to it.
+ */
+export function predictedReplacement(coachName) {
+  const rec = coachRecord(coachName);
+  if (!rec) return null;
+  const tribe = (gs.tribes || []).find(t => (t.name ?? t.tribeName) === rec.tribe);
+  return (tribe?.members || [])
+    .filter(m => !isCoach(m))
+    .slice()
+    .sort((a, b) => getBond(coachName, a) - getBond(coachName, b))[0] || null;
 }
 
 /**

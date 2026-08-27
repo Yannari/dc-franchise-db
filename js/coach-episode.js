@@ -144,6 +144,15 @@ export function eliminateCoach(ep, coachName) {
   removeCoach(coachName);
   if (!ep.coachElimination) ep.coachElimination = [];
   ep.coachElimination.push({ coach: coachName, tribe, lost, reactions });
+  // Season-level record. A coach boot is deliberately kept out of
+  // `gs.eliminated` — that list feeds placements, the jury and every
+  // contestant-only reader — but a coach who is gone is gone, and every roster
+  // screen was showing them as neither playing nor out, which is to say not
+  // showing them at all.
+  if (!gs.coachesEliminated) gs.coachesEliminated = [];
+  if (!gs.coachesEliminated.some(c => c.coach === coachName)) {
+    gs.coachesEliminated.push({ coach: coachName, tribe, ep: Number(ep?.num || gs.episode || 0) });
+  }
   return { lost, reactions };
 }
 

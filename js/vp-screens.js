@@ -785,9 +785,19 @@ export function rpBuildColdOpen(ep) {
   const elimAtStart = new Set(prevSnap.eliminated || []);
   const riAtStart   = new Set(prevSnap.riPlayers  || []);
   const exilePlayer = prevSnap.exileDuelPlayer || null;
+  // Coaches are at camp and in the game. `tribes[].members` answers "who
+  // competes and votes" and they are correctly absent from it, so this screen
+  // showed a tribe of four when five people were living there — and a coach
+  // who had been voted out appeared in neither the tribe nor the out-list,
+  // which is to say vanished from the season entirely.
+  const _rosterCoaches = (prevSnap.coaches || []).filter(c => !c.promoted);
+  const _coachByTribe = {};
+  for (const c of _rosterCoaches) (_coachByTribe[c.tribe] ||= []).push(c.name);
+  const _coachOut = (prevSnap.coachesEliminated || []).map(c => c.coach);
+
   const activeAtStart = tribesAtStart
-    ? new Set(tribesAtStart.flatMap(t => t.members))
-    : new Set(allPlayers.filter(n => !elimAtStart.has(n) && !riAtStart.has(n)));
+    ? new Set([...tribesAtStart.flatMap(t => t.members), ..._rosterCoaches.map(c => c.name)])
+    : new Set(allPlayers.filter(n => !elimAtStart.has(n) && !riAtStart.has(n) && !_coachOut.includes(n)));
 
   const countActive = activeAtStart.size;
   const phaseLabel  = ep.isMerge ? 'Merge Episode'
@@ -809,7 +819,7 @@ export function rpBuildColdOpen(ep) {
       html += `<div class="rp-tribe">
         <div class="rp-tribe-head" style="color:${tc};border-color:${tc}">
           ${tribe.name}
-          <span class="rp-tribe-count">${tribe.members.length} left</span>
+          <span class="rp-tribe-count">${tribe.members.length} left${(_coachByTribe[tribe.name] || []).length ? ` · ${(_coachByTribe[tribe.name] || []).length} coach${(_coachByTribe[tribe.name] || []).length === 1 ? '' : 'es'}` : ''}</span>
         </div>
         <div class="rp-portrait-row">
           ${tribe.members.map(name => {
@@ -817,6 +827,7 @@ export function rpBuildColdOpen(ep) {
             const cls   = name === exilePlayer ? 'sitd' : '';
             return rpPortrait(name, cls, badge);
           }).join('')}
+          ${(_coachByTribe[tribe.name] || []).map(name => rpPortrait(name, '', 'Coach')).join('')}
         </div>
       </div>`;
     });
@@ -828,7 +839,7 @@ export function rpBuildColdOpen(ep) {
   }
 
   // ── Eliminated players ──
-  const elimList = allPlayers.filter(n => elimAtStart.has(n) || riAtStart.has(n));
+  const elimList = allPlayers.filter(n => elimAtStart.has(n) || riAtStart.has(n) || _coachOut.includes(n));
   if (elimList.length) {
     html += `<div class="rp-co-divider"></div>
     <div class="rp-co-elim-head">Out of the game</div>

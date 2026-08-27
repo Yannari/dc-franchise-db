@@ -374,3 +374,45 @@ describe('the forecast and the result are reconciled', () => {
       'the tribal screen is naming the boot before the reveal again').toBeLessThan(0.5);
   }, 900000);
 });
+
+// Coaches are in neither gs.activePlayers nor gs.eliminated. The roster screen
+// reads both, so a coach appeared as neither playing nor out — which renders
+// as not existing — and the merge counted only contestants, firing when four
+// more people were still living at camp and then promoting them into a merge
+// that was supposed to be full.
+describe('the season knows how many people are in it', () => {
+  it('fires the merge on everyone still in the game, coaches included', async () => {
+    const core = await import('../js/core.js');
+    const { episodes } = await runHeadlessSeason({
+      twist: 'coaches', coachesPerTribe: 2, castSize: 16, mergeAt: 10,
+    });
+    const merge = episodes.find(e => e.isMerge);
+    expect(merge, 'the season never merged').toBeTruthy();
+    const prev = episodes[episodes.indexOf(merge) - 1];
+    const contestants = prev ? prev.activePlayersAfter.length : 0;
+    const coachesLeft = (core.gs.coaches || []).length - (core.gs.coachesEliminated || []).length;
+    expect(contestants + coachesLeft,
+      'the merge fired with more people at camp than the merge is meant to hold')
+      .toBeLessThanOrEqual(10);
+  }, 900000);
+
+  it('shows coaches on the roster and eliminated coaches in the out-list', async () => {
+    const core = await import('../js/core.js');
+    const vp = await import('../js/vp-screens.js');
+    const { episodes, coachNames } = await runHeadlessSeason({
+      twist: 'coaches', coachesPerTribe: 2, castSize: 16, mergeAt: 10,
+    });
+    let onRoster = 0, inOutList = 0, checked = 0;
+    for (const e of episodes) {
+      const hist = { ...(core.gs.episodeHistory.find(h => h.num === e.num) || {}), ...e.ep };
+      let html = '';
+      try { html = vp.rpBuildColdOpen(hist) || ''; } catch { continue; }
+      checked++;
+      if (coachNames.some(n => html.includes(n))) onRoster++;
+      if ((core.gs.coachesEliminated || []).some(c => html.includes(c.coach))) inOutList++;
+    }
+    expect(checked).toBeGreaterThan(0);
+    expect(onRoster, 'no coach appeared on the roster in any episode').toBeGreaterThan(0);
+    expect(inOutList, 'an eliminated coach never reached the out-list').toBeGreaterThan(0);
+  }, 900000);
+});

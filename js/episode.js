@@ -40,7 +40,7 @@ import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
 import { applyCoachElimination, coachCardTalk, coachFallout, commitSaveCards, maybeSaveCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
 import { coachStatusEvents } from './coach-status-events.js';
-import { coachesOf } from './coaches.js';
+import { activeCoaches, coachesOf } from './coaches.js';
 import { runCoachDealBlock } from './coach-deals.js';
 
 // Challenge simulate functions
@@ -1370,7 +1370,13 @@ export function simulateEpisode() {
   if (!gs.blowupHeatNextEp) gs.blowupHeatNextEp = new Set();
   // Beware holders lose their vote each tribal until all tribes have found their beware
   // Skip if this is a merge episode — bewares activate at merge and votes are restored
-  const _willMerge = !gs.isMerged && gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
+  // Coaches count toward the merge. They are not in `gs.activePlayers` —
+  // that array means "competes and votes" — but they are people still in the
+  // game, and every one of them becomes a full player the moment the merge
+  // fires. Counting only contestants meant a mergeAt of 12 triggered with
+  // sixteen people at camp, and then promoted four more into a merge that was
+  // supposed to have twelve.
+  const _willMerge = !gs.isMerged && (gs.activePlayers.length + activeCoaches().length) <= (seasonConfig.mergeAt || 12);
   if (gs.bewares && seasonConfig.advantages?.beware?.enabled && !_willMerge) {
     Object.values(gs.bewares).forEach(b => {
       if (b.holder && !b.activated && gs.activePlayers.includes(b.holder)) {
@@ -1595,7 +1601,7 @@ export function simulateEpisode() {
   // the pre-return count.
   // Subtract this episode's actual returnee count (a rescue return can bring back >1) so the
   // "merging this episode?" flag matches the merge check below and the format designer's projection.
-  gs._mergingThisEp = !gs.isMerged && (gs.activePlayers.length - (isReentry ? (ep.riReentrants?.length || 1) : 0)) <= cfg.mergeAt;
+  gs._mergingThisEp = !gs.isMerged && (gs.activePlayers.length + activeCoaches().length - (isReentry ? (ep.riReentrants?.length || 1) : 0)) <= cfg.mergeAt;
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));
   // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)
   const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction','first-impressions','schoolyard-pick'];
@@ -1639,7 +1645,7 @@ export function simulateEpisode() {
   // and pushed the merge later than the format designer projected (it counts every returnee).
   const _reentryCount = isReentry ? (ep.riReentrants?.length || 1) : 0;
   const _preReturnActive = gs.activePlayers.length - _reentryCount - _twistReturns;
-  const isMerge = !gs.isMerged && _preReturnActive <= cfg.mergeAt;
+  const isMerge = !gs.isMerged && (_preReturnActive + activeCoaches().length) <= cfg.mergeAt;
   if (isMerge) {
     ep.isMerge = true; gs.isMerged = true; gs.phase = 'post-merge'; gs.tribes = [];
     if (gs.coaches?.length) promoteCoaches(ep);

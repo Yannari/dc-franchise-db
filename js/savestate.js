@@ -557,6 +557,12 @@ export function snapshotGameState() {
     tribes:       gs.tribes.map(t => ({ name: t.name, members: [...t.members] })),
     riPlayers:    [...gs.riPlayers],
     eliminated:   [...gs.eliminated],
+    // Coaches are in neither `activePlayers` nor `eliminated`, so without
+    // these two the roster screen shows a coach as neither playing nor out —
+    // which renders as not existing.
+    coaches:            (gs.coaches || []).map(c => ({ ...c })),
+    coachesEliminated:  (gs.coachesEliminated || []).map(c => ({ ...c })),
+    coachCards:         { ...(gs.coachCards || {}) },
     jury:         [...(gs.jury || [])],
     namedAlliances: (gs.namedAlliances || [])
       .filter(a => a.active)

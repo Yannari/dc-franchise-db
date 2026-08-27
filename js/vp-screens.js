@@ -7691,7 +7691,8 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
     : null;
   // Use portrait members (who's actually at camp) for both phases
   const _advMembers = portraitMembers.length ? portraitMembers : _snapMembers;
-  const advLines = getTribeAdvantageStatus(tribeName, isMerge, _snapAdvantages, _advMembers);
+  const advLines = getTribeAdvantageStatus(tribeName, isMerge, _snapAdvantages, _advMembers,
+    ep.coachData?.[tribeName]?.cards || null);
   html += `<div class="rp-camp-toggle-section">
     <button class="rp-camp-toggle-btn" style="border-color:${tc};color:${tc}" onclick="vpToggleSection('adv-${safeId}')">
       SECRET ADVANTAGES <span class="rp-toggle-arrow">\u25b2</span>
@@ -7702,8 +7703,9 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
       const mentioned = matchPool.find(n => line.includes(n)) || matchPool.find(n => line.includes(n.split(' ')[0]));
       html += `<div class="rp-brant-entry">`;
       if (mentioned) html += `<div class="rp-brant-portraits">${rpPortrait(mentioned)}</div>`;
+      const _isCard = line.includes("Coach's Save Card");
       html += `<div class="rp-brant-text">${line}</div>
-        <span class="rp-brant-badge gold">ADVANTAGE</span>
+        <span class="rp-brant-badge ${_isCard ? (line.includes('has been spent') ? 'red' : 'gold') : 'gold'}">${_isCard ? 'SAVE CARD' : 'ADVANTAGE'}</span>
       </div>`;
     });
   } else {
@@ -15814,7 +15816,7 @@ export function getTribeRelationshipHighlights(members, snapshot) {
   return notable.slice(0, cap);
 }
 
-export function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snapMembers) {
+export function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snapMembers, coachCards = null) {
   const lines = [];
   const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet', teamSwap:'Team Swap', voteBlock:'Vote Block', safetyNoPower:'Safety Without Power', soleVote:'Sole Vote' };
   const members = snapMembers || (isMerge ? gs.activePlayers : (gs.tribes.find(t => t.name === tribeName)?.members || []));
@@ -15899,6 +15901,18 @@ export function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snap
       lines.push(`${adv.holder} has the ${label} (found ep.${adv.foundEp}).`);
     }
   });
+  // The save card belongs here for the same reason the idol does: it decides
+  // a life at tribal and the viewer has no other way to know whether it is
+  // still out there. Read from the episode's snapshot, never from live gs —
+  // a replay would otherwise report today's answer over an old camp.
+  if (coachCards && !isMerge) {
+    for (const [coachName, state] of Object.entries(coachCards)) {
+      lines.push(state === 'unused'
+        ? `${coachName} still holds a Coach's Save Card. It only works if every other coach on the tribe signs it, and it has to be played before the votes are read.`
+        : `${coachName}'s Coach's Save Card has been spent. There is nothing standing between ${coachName} and the next vote.`);
+    }
+  }
+
   return lines;
 }
 

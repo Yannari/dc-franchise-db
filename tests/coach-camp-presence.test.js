@@ -239,3 +239,34 @@ describe('coaches speak at their own tribal', () => {
       'no coach said anything at any tribal across two seasons').toBeGreaterThan(0);
   }, 900000);
 });
+
+// The card decides a life at tribal and the camp screen is the only place a
+// viewer can learn whether it is still out there — exactly the job the idol
+// line does two rows above it.
+describe('the save card is tracked where the idol is tracked', () => {
+  it('reports a held card, and a spent one, in the camp advantage panel', async () => {
+    const vp = await import('../js/vp-screens.js');
+    const held = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'], { Julia: 'unused' });
+    expect(held.join(' ')).toContain("Julia still holds a Coach's Save Card");
+    expect(held.join(' '), 'the rule has to travel with the status').toContain('every other coach on the tribe signs it');
+
+    const spent = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'], { Julia: 'used' });
+    expect(spent.join(' ')).toContain('has been spent');
+    expect(spent.join(' ')).toContain('nothing standing between Julia and the next vote');
+  });
+
+  it('says nothing at all when the season has no coaches', async () => {
+    const vp = await import('../js/vp-screens.js');
+    const lines = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'], null);
+    expect(lines.some(l => l.includes('Save Card'))).toBe(false);
+  });
+
+  it('is read from the episode snapshot, so a replay shows that night', async () => {
+    // 'used' today must not overwrite the 'unused' the episode recorded.
+    const vp = await import('../js/vp-screens.js');
+    const core = await import('../js/core.js');
+    core.setGs({ ...core.gs, coaches: [{ name: 'Julia', tribe: 'Red', saveCard: 'used', promoted: false }] });
+    const lines = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'], { Julia: 'unused' });
+    expect(lines.join(' '), 'live gs leaked into a historical camp').toContain('still holds');
+  });
+});

@@ -4999,12 +4999,12 @@
         "physical": 5,
         "endurance": 5,
         "mental": 7,
-        "social": 2,
+        "social": 3,
         "strategic": 5,
         "loyalty": 7,
         "boldness": 6,
         "intuition": 6,
-        "temperament": 2
+        "temperament": 3
       },
       "sexuality": "lesbian",
       "voice": "Nura speaks in a dry, deadpan rhythm, with sarcasm and complaint as her default modes. In an argument, she tends to needle people with blunt pessimistic observations and mock-politeness rather than emotional appeals. Her vocabulary leans cynical and theatrical, turning ordinary annoyances into dark jokes about life, death, and failure.",

@@ -210,8 +210,29 @@ describe('the Shield: won in a mission, and gone by the next one', () => {
 
 describe('semi-visibly: some of the room saw it, and some did not', () => {
   it('the witness list is a genuine split, at both ends', () => {
-    const shields = allShields(seasons(120));
-    expect(shields.length, 'no Shields were won at all').toBeGreaterThan(120);
+    // 1,000 SEASONS, AND THE SAMPLE IS WHAT MOVED — NOT THE THRESHOLDS.
+    //
+    // (Whole-plan review, F7.) This ran 120 seasons against a floor of 120
+    // Shields, and it was written when the Reliquary yielded 1.67 Shields a
+    // season. Task 4's relic split took that to 1.12 and Task 8's shorter
+    // seasons to 1.05, and neither task re-measured this file. Re-measured at
+    // 1,200 seasons: 1,260 Shields, 1.050 a season, so 120 seasons expects 126
+    // against a floor of 120 — HALF A STANDARD DEVIATION. The floor was doing
+    // nothing except waiting to go red for no reason.
+    //
+    // The `unseen` arm below was worse and is the one the review singled out:
+    // Shields seen by NOBODY are 11 in 1,260 (0.87%, not the ~3% the old
+    // comment claimed), so 120 seasons expected ONE, and a floor of zero on an
+    // expectation of one is a coin flip in a hat.
+    //
+    // A season costs about six milliseconds, so the honest fix is more of them
+    // rather than a threshold moved down to meet a shrunken rate. 1,200 and not
+    // 1,000 is set by the `unseen` arm alone: at 1,000 it expects 9.2, which is
+    // 3.0 sd against a floor of zero and lands ON this project's bar rather
+    // than clear of it. At 1,200 it expects 11.0 (3.3 sd), and the Shield count
+    // expects 1,260 against a floor of 1,050 (5.9 sd).
+    const shields = allShields(seasons(1200));
+    expect(shields.length, 'no Shields were won at all').toBeGreaterThan(1050);
 
     let unseen = 0, seenBySomeone = 0;
     for (const s of shields) {
@@ -221,15 +242,17 @@ describe('semi-visibly: some of the room saw it, and some did not', () => {
     }
     // BOTH ENDS REACHABLE, and neither dominant. A model where everybody always
     // sees is an announcement and a model where nobody ever does is a private
-    // coin flip; the mechanic is the middle. Measured over 120 seasons: ~3% of
-    // Shields are seen by nobody at all and the rest by a minority of the room.
+    // coin flip; the mechanic is the middle. Re-measured at 1,200 seasons:
+    // 0.87% of Shields are seen by nobody at all — the old comment here said
+    // ~3%, a pre-dilution figure — and the rest by a minority of the room.
     expect(unseen, 'every single Shield was seen by somebody: the model is an announcement')
       .toBeGreaterThan(0);
     expect(seenBySomeone, 'no Shield was ever seen by anybody: the model is a private coin')
       .toBeGreaterThan(shields.length * 0.5);
     // And the room is genuinely split rather than nearly-all or nearly-none.
-    // Measured mean share ~0.30 over 120 seasons (n>200 Shields, so the sem on
-    // this mean is under a point) — the floor and ceiling below sit many sd out.
+    // Re-measured at 1,200 seasons: mean share 29.7%, and NOT ONE Shield in
+    // 1,260 was seen by the entire room — the floor and ceiling below sit many
+    // sd out either way.
     // Against the room AS IT WAS, read off the ledger. Written first as
     // `s.roomSize ?? 12`, which is a fabricated denominator wearing a real
     // one's clothes: the field did not exist, so every Shield in every season
@@ -252,13 +275,23 @@ describe('semi-visibly: some of the room saw it, and some did not', () => {
     // project. `visibility` is written by the same call that writes
     // `witnesses`, and the line is drawn from the pool that tier names, so
     // "not one person saw it" cannot print over a witness list.
-    // 200 seasons and not 80 BECAUSE OF THE RAREST POOL. `most` needs over half
-    // a room to notice a find, which happens about 2.7% of the time — 9 firings
-    // in 200 seasons, so a floor of 1 sits three sd below the measurement,
-    // where over 80 it would be an expected 3.6 and would come back zero one
-    // run in forty. A reachability floor that flakes is worse than none: it
-    // teaches the next person to delete it.
-    const shields = allShields(seasons(200));
+    // 1,000 SEASONS BECAUSE OF THE TWO RAREST POOLS, and the arithmetic here
+    // was correct when it was written and is not any more (whole-plan review,
+    // F7). It said `most` fires on 2.7% of Shields — 9 in 200 seasons, three sd
+    // clear of a floor of 1. Re-measured at 1,200 seasons AFTER Task 4 halved
+    // the Shield rate and Task 8 shortened the seasons: `most` is 19 of 1,260
+    // (1.6%) and `unseen` 11 (0.87%), which over 200 seasons is an expected 3.2
+    // and 1.8 — 1.8 sd and 1.4 sd, exactly the flaky reachability floor the old
+    // comment set out to avoid, arrived at by the rate moving underneath it
+    // rather than by anyone choosing it.
+    //
+    // A reachability floor is a Poisson count against zero, so its separation
+    // is sqrt(the expectation) and the ONLY lever is the sample. At 1,000
+    // seasons `most` expects 15.8 (4.0 sd) and `unseen` 9.2 — and 9.2 is 3.0
+    // sd, ON the bar rather than clear of it, which is what sets the sample at
+    // 1,200: `most` 19.0 (4.4 sd) and `unseen` 11.0 (3.3 sd). Nothing below was
+    // lowered to fit.
+    const shields = allShields(seasons(1200));
     const tiers = {};
     for (const s of shields) {
       tiers[s.visibility] = (tiers[s.visibility] || 0) + 1;
@@ -273,9 +306,13 @@ describe('semi-visibly: some of the room saw it, and some did not', () => {
     }
     console.log('[population] visibility tiers:', tiers);
     // Reachability of the pools, which is Task 1's own defect (forty
-    // unreachable narration lines) asserted rather than assumed. `most` is the
-    // rarest by construction — it needs over half a room to notice — so it is
-    // reported and floored at 1 over 80 seasons rather than banded.
+    // unreachable narration lines) asserted rather than assumed. `most` and
+    // `unseen` are the rare ones by construction — over half a room noticing,
+    // or nobody at all — and the sample above is sized to them. Expected at
+    // 1,200 seasons: some 1,087, few 143, most 19,
+    // unseen 11. The two large pools are floored at the same zero
+    // as the small ones because for them it is a formality; the sample exists
+    // for the other two.
     expect(tiers.unseen || 0, 'the "nobody saw it" pool is unreachable').toBeGreaterThan(0);
     expect(tiers.few || 0).toBeGreaterThan(0);
     expect(tiers.some || 0).toBeGreaterThan(0);
@@ -397,10 +434,13 @@ describe('only the people who saw it can read the night that followed', () => {
 
   it('the two readings split on the block, and both are reachable', () => {
     // "The Traitors chose them and failed" vs "the Traitors never chose them".
-    // 200 seasons because the blocked branch fires about once in fifteen: at
-    // that rate the expected count here is ~13 and the floor of 1 sits over
-    // three sd below it, which is the separation this project requires of a
-    // sampled assertion.
+    // 200 seasons because the blocked branch is rare: re-measured at 1,200
+    // seasons it is 63 blocked Shields of 1,260, 0.052 a season, so the
+    // expected count here is 10.5 and a floor of zero sits 3.2 sd below it on
+    // the Poisson. That is the separation this project requires, and it is
+    // stated from a re-measurement rather than inherited — the figure that used
+    // to be written here was ~13, taken before Task 4's relic split cut the
+    // Shield rate (whole-plan review, F7).
     const { seasons: ss, writes, per } = shieldWrites(200);
     let blockedShields = 0, expiredShields = 0;
     for (const s of ss) {
@@ -939,11 +979,22 @@ describe('and it is still there at the end: the Dagger reaches the endgame', () 
   });
 
   it('the commonest ending is that it was never used, which is the point', () => {
-    const ss = seasons(SEASONS);
+    // 1,200 SEASONS FOR THE RAREST OUTCOME (whole-plan review, F7). The `held`
+    // arm — a Dagger still in a living hand when the season runs out — is the
+    // state Task 7's endgame inherits and the one a 3-3 finale deadlock is
+    // broken from, and it is the rarest of the three. The comment that used to
+    // stand below quoted 24 in 400 seasons; re-measured at 1,200 it is 39, i.e.
+    // 13 in 400, and against the old floor of 5 that is 2.2 sd. Under the bar,
+    // and under it because Task 4 halved the relic rate and Task 8 shortened
+    // the seasons without either task re-measuring here.
+    //
+    // The sample moved, not the floors — which are RAISED, in proportion.
+    const N = 1200;
+    const ss = seasons(N);
     const daggers = allDaggers(ss);
     const by = {};
     for (const d of daggers) by[d.outcome] = (by[d.outcome] || 0) + 1;
-    console.log('[population] Dagger outcomes over 400 seasons:', JSON.stringify(by));
+    console.log(`[population] Dagger outcomes over ${N} seasons:`, JSON.stringify(by));
 
     // Every record is closed, and 'held' at the end of a season means exactly
     // one thing: unspent, and its owner is still standing. A record that used
@@ -964,15 +1015,17 @@ describe('and it is still there at the end: the Dagger reaches the endgame', () 
     }
     // BOTH ENDINGS REACHABLE. A Dagger that always reached the last table
     // would be an entitlement rather than a gamble, and one that never did
-    // would be the mid-game trinket this design exists to avoid. Measured over
-    // 400 seasons: 106 drawn, 71 lost with their holder, 24 still in a
-    // survivor's hand when the season ran out of rounds — the last of which is
-    // the state the endgame (Task 7) inherits and the only one from which a
-    // 3-3 deadlock can be broken.
+    // would be the mid-game trinket this design exists to avoid. RE-MEASURED
+    // over 1,200 seasons: 564 Daggers, 330 drawn, 195 buried with their holder,
+    // 39 still in a survivor's hand when the season ran out of rounds. Each
+    // floor below is set about 3.5-5 sd under its measurement on the Poisson:
+    //   played  330 expected, sd 18.2, floor 250 -> 4.4 sd
+    //   lost    195 expected, sd 14.0, floor 120 -> 5.4 sd
+    //   held     39 expected, sd  6.2, floor  15 -> 3.8 sd
     expect(by.held || 0, 'no Dagger ever survived to the end of a season unspent')
-      .toBeGreaterThan(5);
-    expect(by.lost || 0, 'a Dagger was never once buried with its holder').toBeGreaterThan(20);
-    expect(by.played || 0, 'no Dagger was ever drawn').toBeGreaterThan(40);
+      .toBeGreaterThan(15);
+    expect(by.lost || 0, 'a Dagger was never once buried with its holder').toBeGreaterThan(120);
+    expect(by.played || 0, 'no Dagger was ever drawn').toBeGreaterThan(250);
   });
 
   it('one relic per afternoon, and a Dagger only once the castle is small', () => {
@@ -1034,7 +1087,14 @@ describe('and it is still there at the end: the Dagger reaches the endgame', () 
     // TONIGHT", which is true of a Shield and false of a Dagger, and it
     // printed over a woman who was still carrying hers when she was banished
     // the following evening. Found by dumping dagger seasons and reading them.
-    const daggers = allDaggers(seasons(200));
+    //
+    // 1,000 SEASONS FOR THE SAME REASON AS THE SHIELD'S TIER ARM (whole-plan
+    // review, F7). Re-measured at 1,200: 564 Daggers, tiers few 290, some 201,
+    // unseen 48, most 25. Over 200 seasons the two rare pools expected 4.2 and
+    // 8.0, so their reachability floors sat at 2.0 sd and 2.8 sd — under this
+    // project's bar, and there because the relic rate moved rather than because
+    // anyone chose it. At 1,200 they expect 25 (5.0 sd) and 48 (6.9 sd).
+    const daggers = allDaggers(seasons(1200));
     const tiers = {};
     for (const d of daggers) {
       tiers[d.visibility] = (tiers[d.visibility] || 0) + 1;

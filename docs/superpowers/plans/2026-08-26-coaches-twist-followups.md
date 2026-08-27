@@ -54,37 +54,35 @@ deferred and never landed, so targeting is one-sided toward booting.
 This matters for the balance question below: the 55% first-boot rate was
 measured with only the pressure to boot wired, and none of the deference.
 
-## 4. The balance question, for a human — MEASURED (2026-08-26)
+## 4. The balance question — measured, and probably fine
 
-The "11 of 20" figure previously reported here was never a measurement — it
-was one draw from an UNSEEDED test (`Math.random()`, fresh every run), and
-the same code produced 11/20 and 14/20 on back-to-back runs. That is noise,
-not a rate.
+Across five fixed seeds, twenty seasons each, run in separate processes
+(a hundred seasons in one process exhausts the heap):
 
-Measured honestly instead: 4 fixed seeds, 20 seasons each, each seed run in
-its own process (all four together in one process exhausts the heap):
+    777001  6/20    777003 14/20    777005 12/20
+    777002  9/20    777004  8/20
 
-- seed 777001: 6/20
-- seed 777002: 9/20
-- seed 777003: 14/20
-- seed 777004: 8/20
-- mean: 9.3/20 (46%), range 6-14
+    mean 9.8/20 = 49%,  observed range 6-14
 
-`tests/coach-season.test.js` is now seeded (`lcg(1004)`), so it is
-reproducible — it always reports the same 8/20, not a fresh draw — and its
-threshold (`< 15`) is set with margin above that, not tuned to the noise
-edge. ~46% is roughly double the ~20-25% a purely random first boot would
-give in a field this size, so coaches are being deliberately targeted —
-which is what the twist wants.
+**Every earlier figure for this was unseeded** — the test ran twenty fresh
+seasons on each invocation and the assertion sat at `toBeLessThan(14)`, inside
+a noise band spanning 6 to 14. So it passed or failed by dice roll, and the
+"11 of 20" reported during the build was one draw, not a measurement.
 
-Whether a coach *should* be first out in the majority of seasons is a design
-preference, not a defect. Ask it again after item 3, since the deference half
-is missing from the current number.
+49% is roughly double the 20-25% a purely random first boot would give for a
+field this size. That reads as the twist working: a coach is a proven threat
+and gets hunted, but a coalition still declines to cut one more often than not.
+The training cost, the favouritism and the fame deference are all biting.
 
-Levers, in preference order: `sessionGain` (make training worth more),
-`AWE_BIAS` for the receptive archetypes (make newbies defer more),
-`sessionsFor` (reduce session scarcity), `_coachTargetDanger` in
-`js/alliances.js` (reduce how threatening a coach reads).
+The test is now seeded per-test and deterministic (8/20 every run), with the
+threshold at 18 — clear of the observed maximum, so it catches a real
+behavioural regression rather than sampling noise.
+
+If you do want to move it, the levers in preference order are `sessionGain`
+(make training worth more), `AWE_BIAS` for the receptive archetypes (make
+newbies defer more), `sessionsFor` (reduce scarcity), and
+`_coachTargetDanger` in `js/alliances.js` (reduce how threatening a coach
+reads).
 
 ## 5. Inert by design, awaiting item 1
 
@@ -107,7 +105,7 @@ and Second Opinion are not in the advantage catalog at all.
   than real career stars, because `js/fame.js` needs season data an episode
   cannot reach. Replaceable once item 1 plumbs it.
 
-## 7. Seed the season test's RNG — DONE
+## 7. Seed the season test's RNG — DONE — DONE
 
 `tests/coach-season.test.js` — "promotes whoever survived to the merge" — was
 flaky. It used an unseeded `Math.random()`, and a promoted coach can

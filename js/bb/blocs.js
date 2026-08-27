@@ -193,9 +193,33 @@ export function memberLoyalty(name, bloc) {
   const stat = pStats(name).loyalty ?? 5;
   const outsiders = live().filter(n => n !== name && !bloc.members.includes(n));
   const outward = outsiders.length ? Math.max(...outsiders.map(n => getBond(name, n))) : -10;
-  const elsewhere = blocsWith(name)
-    .filter(b => b.id !== bloc.id)
-    .reduce((sum, b) => sum + b.power, 0);
+  // ── A COMPETING HOME IS A COMPARISON, NOT A HEADCOUNT ──
+  //
+  // This summed the ABSOLUTE power of every other bloc and subtracted 0.16 of
+  // it from a score capped at 1.0. But `power` is `share x cohesion x size` —
+  // a six in a house of twelve is about 1.8, and it climbs as the house
+  // shrinks — so the term was never on the scale the coefficient was written
+  // for. Measured over eight seasons: with no other bloc the mean reading is
+  // 7.2 and nobody sits at zero; with three, the mean is 0.6 and 75% of
+  // members read exactly 0.0; with four, all of them do. Being in more rooms
+  // zeroed you even when THIS was the strongest room you were in — and 0.0 is
+  // documented above as somebody already gone in everything but the
+  // announcement, which is not what a well-connected houseguest is.
+  //
+  // The reason string this function prints has always said "has a second home
+  // that is doing better than this one". That is the right idea and the code
+  // never did it. It does now: the strongest rival home, measured against this
+  // one, so a member of the best bloc in the house is not punished for also
+  // being in a weak side deal.
+  const rivals = blocsWith(name).filter(b => b.id !== bloc.id);
+  const here = Number(bloc?.power) || 0;
+  const rival = rivals.length ? Math.max(...rivals.map(b => Number(b.power) || 0)) : 0;
+  // Unmeasured bloc (no power on it) — there is nothing to compare against, so
+  // the term stays out rather than dividing by a fallback and inventing one.
+  const elsewhere = here > 0 ? clamp((rival - here) / Math.max(here, 0.5), 0, 1) : 0;
+  // Belonging to several rooms still dilutes a little, because attention is
+  // finite — but it is worth a few tenths, not the whole reading.
+  const spread = Math.min(0.12, Math.max(0, rivals.length - 1) * 0.05);
 
   // A better relationship outside only counts for the amount it BEATS the
   // group by — a well-liked houseguest with friends everywhere is not
@@ -207,11 +231,12 @@ export function memberLoyalty(name, bloc) {
     + inward * 0.045
     + stat * 0.030
     - pullAway * 0.035
-    - elsewhere * 0.16,
+    - elsewhere * 0.30
+    - spread,
     0, 1);
 
   // Whichever term is doing the most work, said in words.
-  const reason = elsewhere > 0.5
+  const reason = elsewhere > 0.3
     ? `has a second home that is doing better than this one`
     : pullAway > 3
       ? `is closer to somebody outside this than to anybody in it`

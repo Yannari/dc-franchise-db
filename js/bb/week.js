@@ -3516,6 +3516,43 @@ export function simulateBBWeek(options = {}) {
     const blamed = week.hohPublic || hoh;
     try { _cappedBondWindow(() => addBond(nominee, blamed, hit)); } catch { /* no bond, no grievance */ }
 
+    /* AND THE ROOM THEY BOTH BELONG TO WATCHED IT HAPPEN.
+       Turning on your own alliance cost exactly one relationship — the person
+       in the chair — and the other four members of the group felt nothing at
+       all, which is the opposite of what the act is for. Everybody in that
+       room has just watched the crown go through one of their own and is
+       working out whether they are next.
+
+       Bonds, deliberately, and nothing binary: it is small per member, it
+       scales with how much that member actually cares about the person who
+       went up and with their own loyalty, and it reaches everything downstream
+       on its own — `memberLoyalty` reads these bonds for its inward term, and
+       a group whose bonds collapse dissolves through the route that already
+       exists. So it CAN break the alliance and is nowhere near guaranteed to.
+
+       Not written to `alliance.betrayals`: that list drives expulsion, and two
+       entries would eject the Head of Household from their own group
+       automatically. The history line keeps it on the record for the jury and
+       the finale without deciding anything. */
+    const ownGroups = (gs.namedAlliances || []).filter(a => a.active !== false
+      && (a.members || []).includes(hoh) && (a.members || []).includes(nominee));
+    for (const group of ownGroups) {
+      for (const member of group.members || []) {
+        if (member === hoh || member === nominee) continue;
+        if (!(gs.activePlayers || []).includes(member)) continue;
+        let care = 0, loyal = 5;
+        try { care = Math.max(0, getBond(member, nominee)) / 10; } catch { care = 0; }
+        try { loyal = pStats(member)?.loyalty ?? 5; } catch { loyal = 5; }
+        // Somebody who is close to the person in the chair takes it hardest,
+        // and so does somebody for whom the word means something.
+        const watched = -(isTarget ? 0.34 : 0.18) * (0.35 + care) * (0.5 + loyal / 10);
+        try { _cappedBondWindow(() => addBond(member, blamed, watched)); } catch { /* texture */ }
+      }
+      group.history ||= [];
+      group.history.push({ week: week.num, type: 'nominated-own',
+        player: hoh, victim: nominee, target: isTarget });
+    }
+
     /* AND THE PART THAT ONLY EXISTS IN THIS SEASON.
        You are on that block because of who you walked in with. Somebody wears
        that, and it is not the Head of Household — it is your partner. Loyalty

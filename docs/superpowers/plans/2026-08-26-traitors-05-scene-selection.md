@@ -580,3 +580,43 @@ band moved" verdict in this plan's history rests on an assumption now known to b
 those verdicts happened to be right rather than provably right.
 
 Not a re-measurement, so it was correctly not cascaded into Task 6.
+
+## Task 7 done, and it found a fourth instance immediately
+
+`tests/unrun-assertions.test.js` runs on every `npm test`. It MEASURES the excluded set by
+spawning `vitest list --filesOnly` and diffing against the files on disk (372 disk, 322
+collected, 50 excluded) -- never by reading `exclude`, which is the mistake it exists to
+prevent. It fails when an excluded file holds an assertion and no runner NAMES it.
+
+On its first run it caught `tests/social-status-audit.test.js`: two live calibration bands
+(`outsiderBootRate < 0.75`, `distinctCenterTop / N > 1.3`) with no npm script. Nothing ran
+them. Fixed with an `audit:social-status` script.
+
+**What it deliberately does not catch:** whether a named runner is ever actually INVOKED.
+No CI job runs any audit, so `audit:tr-castle`'s five assertions are still only checked by
+hand. The line drawn is "somebody gave this file a way to be run" versus "nothing anywhere
+will ever run this". That is NOMINAL coverage, not real coverage, and it is stated as such.
+
+### Task 10 (NEW): `audit:all` is cheap but not stably green
+
+Measured at **124s wall clock** -- easily cheap enough for a nightly job, which would convert
+the audits from nominal to real coverage. But `event-rates-audit.test.js` FAILS under
+`audit:all` and PASSES run alone. Cross-file interference or seed nondeterminism; not
+diagnosed.
+
+Until that is fixed, `audit:all` cannot be wired into `nightly.yml` and the audits' assertions
+remain hand-checked. **Task 10: diagnose the interference, make `audit:all` deterministic,
+then wire it into the nightly workflow.** A test whose result depends on what ran before it is
+the cousin of the unfailable test -- it cannot be trusted in either direction, and a green run
+proves nothing.
+
+### Ordering ruling: Task 9 runs BEFORE Task 8
+
+Task 8 adds content. Task 6's review measured that ONE castle content file moves `late lift`
+by 3.62pp against 8.7pp of headroom -- about 2.4 files' worth -- and `late lift` is the last
+band with no control arm. Running Task 8 first would spend that headroom while the band that
+should catch it is still the stale-constant shape, and a breach would be indistinguishable
+from ordinary drift.
+
+So Task 9 builds the control arm first, and Task 8 then adds content against a band that can
+actually tell a regression from a shift.

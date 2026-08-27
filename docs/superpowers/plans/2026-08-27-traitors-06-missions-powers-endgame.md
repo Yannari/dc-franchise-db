@@ -197,3 +197,43 @@ The user's stated requirements for the visual layer, captured while fresh:
 - **Sidebar, screen organisation, debug** — the live-updating sidebar gated by `_tvState`, the screen sequence, and the debug view.
 - **The observer contract (spec §9.1)** — every builder takes `rpBuild*(ep, observer)`. Three information layers must be renderable: what a given player knows, what the Faithfuls collectively believe, and what is true. **Deciding this now is free; retrofitting it later is a rewrite.**
 - Text backlog is a complete retranscription of every VP narration.
+
+---
+
+## Standing requirement, added after Task 1: a sentence must agree with the ledger
+
+This defect class has now appeared THREE times, twice in Plan 5 and again in Task 1 of this
+plan, each time found by reading and never by an assertion:
+
+1. `grief-nobody-sleeps` printed a bed count wrong on all 363 firings -- it summed a ledger
+   the first murder is deliberately not in.
+2. `callback-no-history-envy` said "names and seasons they had no part of" while its
+   precondition never checked the outsider lacked history -- false on all 157 firings.
+3. Task 1's mission `failed` lines said "nothing earned" over a ~2,000-credit payment.
+
+Plan 5's own rule applies and was not applied: **fixing the instance you noticed does not fix
+the class.** Every task in this plan that emits narration must therefore carry a guard of this
+shape, not merely fix the instances it happens to notice:
+
+**Any sentence asserting a fact about season state must be checked against that state.** A
+printed count agrees with the count; a claimed absence is actually absent; a "nothing
+happened" line does not run over something happening. Where the claim is not mechanically
+checkable, the precondition must encode it -- if the sentence says the outsider has no
+history, `weight()` checks that the outsider has no history.
+
+Task 1 fixed its instance at source (a pass mark, so sentence and ledger cannot disagree),
+which is the right shape: make the contradiction unrepresentable rather than assert against it
+after the fact.
+
+## Handoffs recorded from Task 1
+
+- **Task 3 must narrow the missions-grant-nothing guard deliberately.** It is true today;
+  shields are won in missions, so it becomes "identical except the shield's effects" and needs
+  its own mutation rather than silently weakening.
+- **Task 2's rule is "no alignment belief above `deduced`", NOT "no `learn` call".** The Chess
+  mission is supposed to emit evidence; the constraint is its credibility, not its existence.
+- Missions run on a THIRD hashed rng stream and deliberately write no bonds -- a bond write
+  feeds `bondResistance()` -> `suspicion()` and would move the deduction bands from a content
+  task. The equivalence arm proves it: missions-off reproduces the base log string-for-string
+  over 40 seasons.
+- `gs.tr.pot` still has no reader. The sting exists only in fiction until Task 7 lands.

@@ -12332,7 +12332,10 @@ export function rpBuildVotes(ep) {
   const _hasFireMaking = !!ep.fireMaking;
   const _hasSuperIdol = !!ep.superIdolPlayed;
   // Revote tie: first vote was a tie → went to revote (or rocks). Don't mark anyone eliminated in first-vote tally.
-  const _hasRevoteTie = !ep.firstEliminated && _initialTallyTie && !_hasTiebreaker;
+  // A revote that produced a name settled the tribal. Treating any initial
+  // tie as a standing one printed every tied player as TIE with nobody
+  // eliminated, over a revote that had already resolved it.
+  const _hasRevoteTie = !ep.firstEliminated && _initialTallyTie && !_hasTiebreaker && !ep.revoteResolved;
   const _tallyVotes = _hasSuperIdol && ep.votesBeforeSuperIdol ? ep.votesBeforeSuperIdol : votes;
   const _tallySorted = Object.entries(_tallyVotes).sort(([,a],[,b]) => b-a);
   const _tallyTotal = Object.values(_tallyVotes).reduce((a,b) => a+b, 0);

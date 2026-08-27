@@ -4828,11 +4828,26 @@ export function simulateEpisode() {
         ep.tiebreakerResult = { ...ep.tiebreakerResult, type: 'challenge', winner: _nonImmune.find(p => p !== loser), loser, participants: _nonImmune };
         return { votes, log, eliminated: loser, isTie: true, tiedPlayers: _nonImmune };
       }
-      // Survivor mode: revote, then rocks
-      const rv = simulateVotes(tribalPlayers, [...tribalImmune, ...(ep.idolPlays||[]).map(p => p.player)], allianceSet, gs.lostVotes, ep.openVote, coachTargets);
+      // Survivor mode: revote, then rocks.
+      //
+      // The tied players do not vote in a revote — the screen has always said
+      // so ("X and Y cannot vote") while the simulation let them cast ballots
+      // anyway, because only `gs.lostVotes` was passed. A four-way tie between
+      // four voters then re-ran as the same four-way tie and went to rocks
+      // every time, and the only person entitled to break it was outvoted by
+      // the people the rule exists to silence.
+      const _revoteSilenced = [...new Set([...(gs.lostVotes || []), ..._nonImmune])];
+      const rv = simulateVotes(tribalPlayers, [...tribalImmune, ...(ep.idolPlays||[]).map(p => p.player)], allianceSet, _revoteSilenced, ep.openVote, coachTargets);
       ep.revoteVotes = rv.votes; ep.revoteLog = rv.log;
+      ep.revoteSilenced = _nonImmune;
       const res2 = resolveVotes(rv.votes);
-      if (res2.eliminated) return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _nonImmune };
+      // A revote that produced a name is not a tie any more. Reporting one
+      // made the final tally render every tied player as TIE with nobody
+      // eliminated, over a revote that had just settled it.
+      if (res2.eliminated) {
+        ep.revoteResolved = res2.eliminated;
+        return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _nonImmune, revoteResolved: res2.eliminated };
+      }
       if (res2.isTie) {
         const rockElim = rockDraw(res2.tiedPlayers?.length ? res2.tiedPlayers : _nonImmune);
         ep.isRockDraw = true;
@@ -4906,6 +4921,10 @@ export function simulateEpisode() {
         const rockElim = rockDraw(res2.tiedPlayers);
         return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res2.tiedPlayers };
       }
+      // The revote produced a name, so the tribal is settled. Without this
+       // the final tally rendered every tied player as TIE with nobody
+       // eliminated, over a revote that had already decided it.
+      ep.revoteResolved = res2.eliminated;
       return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: res.tiedPlayers };
     }
     // Safety net: if resolveVotes returned an elimination but the top 2 vote counts are actually tied,
@@ -4933,6 +4952,7 @@ export function simulateEpisode() {
             const rockElim = rockDraw(res2.tiedPlayers);
             return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res2.tiedPlayers };
           }
+          ep.revoteResolved = res2.eliminated;
           return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _lateTied };
         }
       }
@@ -4956,6 +4976,7 @@ export function simulateEpisode() {
             const rockElim = rockDraw(res2.tiedPlayers);
             return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res2.tiedPlayers };
           }
+          ep.revoteResolved = res2.eliminated;
           return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _fcTied };
         }
       }
@@ -5072,7 +5093,7 @@ export function simulateEpisode() {
       chalMemberScores: ep.chalMemberScores || null, chalSitOuts: ep.chalSitOuts || null,
       votes: ep.votes, alliances: (ep.alliances||[]).map(a=>({...a})),
       votingLog: ep.votingLog || [],
-      revoteLog: ep.revoteLog || [], revoteVotes: ep.revoteVotes || null,
+      revoteLog: ep.revoteLog || [], revoteVotes: ep.revoteVotes || null, revoteResolved: ep.revoteResolved || null, revoteSilenced: ep.revoteSilenced || null,
       isTie: ep.isTie || false, tiedPlayers: ep.tiedPlayers ? [...ep.tiedPlayers] : null, isRockDraw: ep.isRockDraw || false,
       sidFreshVote: ep.sidFreshVote || false,
       tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
@@ -5252,7 +5273,7 @@ export function simulateEpisode() {
         idolPlays: _tribeIdolPlays,
         shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null, tribalDisruption: ep.tribalDisruption || null, feastEvents: ep.feastEvents || null, idolWagerResults: ep.idolWagerResults || null,
         tiebreakerResult: ep.tiebreakerResult || null,
-        revoteVotes: ep.revoteVotes || null, revoteLog: ep.revoteLog || null,
+        revoteVotes: ep.revoteVotes || null, revoteLog: ep.revoteLog || null, revoteResolved: ep.revoteResolved || null, revoteSilenced: ep.revoteSilenced || null,
         sidFreshVote: ep.sidFreshVote || false,
         isRockDraw: ep.isRockDraw || false,
       });
@@ -5371,7 +5392,7 @@ export function simulateEpisode() {
       isBasicStraining: ep.isBasicStraining || false, basicStraining: ep.basicStraining || null,
       isTreasureIsland: ep.isTreasureIsland || false, treasureIsland: ep.treasureIsland || null,
       votingLog: ep.votingLog || [],
-      revoteLog: ep.revoteLog || [], revoteVotes: ep.revoteVotes || null,
+      revoteLog: ep.revoteLog || [], revoteVotes: ep.revoteVotes || null, revoteResolved: ep.revoteResolved || null, revoteSilenced: ep.revoteSilenced || null,
       isTie: ep.isTie || false, tiedPlayers: ep.tiedPlayers ? [...ep.tiedPlayers] : null, isRockDraw: ep.isRockDraw || false,
       sidFreshVote: ep.sidFreshVote || false,
       bewareLostVotes: ep.bewareLostVotes || [],

@@ -21144,6 +21144,29 @@ export function rpBuildBBCeremony(ep) {
       `“You did not put me here to lose me.” ${name} directs the sentence at the Head of Household, but the veto belongs to ${holder}.`,
       `${name} asks why the house should gamble on a pawn surviving when the medallion can guarantee it.`,
     ], name, holder, 'pawn');
+    // ── A PLEA IS AIMED AT ONE PERSON, SO READ THAT PERSON FIRST ──
+    //
+    // Threat and repeat-block are facts about the NOMINEE. Warmth is the only
+    // fact here about the two people in the room, and it was checked after
+    // both of them — so somebody begging their closest ally for the medallion
+    // pitched themselves as a useful shield to a person they had been in an
+    // alliance with for six weeks. Same fault as the nomination speech: the
+    // relationship is the most relevant thing in the room and it was queued
+    // behind a stat line.
+    if (warmth >= 4 || (profile.alliance && profile.allies.includes(holder))) return vvar([
+      `"You know me. You know what we've talked about in this house. I'm not going to stand here and pretend that doesn't count for something." ${name} looks straight at ${holder} the whole time.`,
+      `${name} does not make a speech so much as a reminder: "Everything I've said to you, I meant. Do with that what you want." ${holder} does not look away, which everybody notices.`,
+      `"I could list reasons. You already know all of them." ${name} sits back down, and it is somehow the strongest pitch of the day.`,
+      `${name} reminds ${holder} of the vote they planned together and the promise that came with it. “If that still means something, use it.”`,
+      `“I have trusted you with my game,” ${name} tells ${holder}. “I'm asking you to trust me with yours.” The room hears how personal the decision already is.`,
+      `${name} looks at ${holder}, not the rest of the house. “You know what I would do if our places were reversed.” ${holder} has to sit with that answer in public.`,
+      `“You have heard every version of my plan because I trusted you with it.” ${name} turns to ${holder}. “Please don't make that the reason I leave.”`,
+      `${name} reminds ${holder} of the night they promised to protect each other. Nobody else knows the whole conversation, but everybody recognizes a promise being collected.`,
+      `“I am not asking as a nominee. I am asking as your ally.” ${name} sits down before the relationship can be explained away as strategy.`,
+      `${name} tells ${holder}, “If I stay up, you lose somebody who was never coming after you.” The word “was” hangs over the rest of the plea.`,
+      `“You told me I mattered to your game.” ${name} keeps ${p.posAdj} voice steady. “This is where I find out whether that was true.”`,
+      `${name} offers no new deal. ${p.Sub} simply repeats the one ${holder} already accepted and asks whether it survives contact with power.`,
+    ], name, 'ally');
     if (profile.threat >= 7 || profile.comps >= 2) return vvar([
       `${name} does not deny being dangerous. “That is exactly why keeping me helps you. Let the house aim at me before it aims at you.”`,
       `“You know I can win,” ${name} tells ${holder}. “Use the veto and the next competition can belong to both of us.”`,
@@ -21160,20 +21183,6 @@ export function rpBuildBBCeremony(ep) {
       `${name} asks ${holder} to end the cycle instead of trusting the same uncertain numbers that put ${p.obj} here before.`,
       `${name} counts ${profile.blockCount} nominations and one available veto. “Eventually somebody has to decide I am worth more off the block.”`,
     ], name, holder, profile.blockCount, 'repeat-block');
-    if (warmth >= 4 || (profile.alliance && profile.allies.includes(holder))) return vvar([
-      `"You know me. You know what we've talked about in this house. I'm not going to stand here and pretend that doesn't count for something." ${name} looks straight at ${holder} the whole time.`,
-      `${name} does not make a speech so much as a reminder: "Everything I've said to you, I meant. Do with that what you want." ${holder} does not look away, which everybody notices.`,
-      `"I could list reasons. You already know all of them." ${name} sits back down, and it is somehow the strongest pitch of the day.`,
-      `${name} reminds ${holder} of the vote they planned together and the promise that came with it. “If that still means something, use it.”`,
-      `“I have trusted you with my game,” ${name} tells ${holder}. “I'm asking you to trust me with yours.” The room hears how personal the decision already is.`,
-      `${name} looks at ${holder}, not the rest of the house. “You know what I would do if our places were reversed.” ${holder} has to sit with that answer in public.`,
-      `“You have heard every version of my plan because I trusted you with it.” ${name} turns to ${holder}. “Please don't make that the reason I leave.”`,
-      `${name} reminds ${holder} of the night they promised to protect each other. Nobody else knows the whole conversation, but everybody recognizes a promise being collected.`,
-      `“I am not asking as a nominee. I am asking as your ally.” ${name} sits down before the relationship can be explained away as strategy.`,
-      `${name} tells ${holder}, “If I stay up, you lose somebody who was never coming after you.” The word “was” hangs over the rest of the plea.`,
-      `“You told me I mattered to your game.” ${name} keeps ${p.posAdj} voice steady. “This is where I find out whether that was true.”`,
-      `${name} offers no new deal. ${p.Sub} simply repeats the one ${holder} already accepted and asks whether it survives contact with power.`,
-    ], name, 'ally');
     if (['challenge-beast', 'hothead', 'chaos-agent', 'villain'].includes(profile.arch)
       || (stats.boldness || 5) >= 7) return vvar([
       `${name} stands up like it is a competition. "Use it on me and I'll win my way through this house. Leave me up here and I'll do it anyway — but you'll have made an enemy doing it." Half the room admires it. The other half writes it down.`,
@@ -21252,7 +21261,21 @@ export function rpBuildBBCeremony(ep) {
         `${holder} sees danger on both sides of the decision and chooses the version that requires no new enemy tonight.`,
       ],
     };
-    return vvar(lines[act?.reason] || [act?.why || 'The decision follows the relationships and promises already in the house.'], holder, saved, act?.reason || 'reason');
+    // ── THE ENGINE ALREADY WROTE THIS, AND THE SCREEN THREW IT AWAY ──
+    //
+    // `shouldUseVeto` returns a `why` for every branch it can take, and it is
+    // the specific one: it names the tier of the deal being honoured, whether
+    // the replacement pool was down to a single name — "there is only one
+    // person left who can take the chair, so nobody can even call it a move" —
+    // and which of the two enemies the holder decided to buy. The ceremony
+    // read `lines[act.reason]` first and only fell through to it when the
+    // reason was missing from the table, which never happens, so the whole
+    // calculation was computed weekly and printed by nobody.
+    //
+    // The generic pool stays as the fallback: the second ceremony of a double
+    // and a few twist paths build the act without running the decision.
+    if (act?.why) return _bbEsc(act.why);
+    return vvar(lines[act?.reason] || ['The decision follows the relationships and promises already in the house.'], holder, saved, act?.reason || 'reason');
   };
 
   // ── the steps ──

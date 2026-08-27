@@ -623,7 +623,7 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
       : bbAllianceStrength(holder, best.name) > 0
         ? `${best.name} is one of ${holder}'s people. ${forced >= 1
             ? `With one name left to replace them this costs ${holder} almost nothing.`
-            : `It makes an enemy of ${hoh || 'the Head of Household'}, and ${holder} would rather have that than explain themselves later.`}`
+            : `It makes an enemy of ${hoh || 'the Head of Household'}, and ${holder} would rather have that than explain ${pronouns(holder).ref} later.`}`
         : `${holder} would rather have ${best.name} in this house than not${forced >= 0.55
             ? `, and with the replacement all but chosen there is barely a decision here.` : '.'}`;
     return { use: true, save: best.name, reason: 'relationship', why,
@@ -632,14 +632,14 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
 
   const closest = best.name;
   const why = forced >= 1
-    ? `${holder} could take ${closest} down, but there is only one houseguest left to put up in their `
+    ? `${holder} could take ${closest} down, but there is only one houseguest left to put up in ${pronouns(closest).posAdj} `
       + `place and everybody in the room can count. It would change the block without changing the week.`
     : arch === 'goat'
       ? `${holder} does not want to be part of this. Using it makes an enemy of `
         + `${hoh || 'the Head of Household'}; not using it makes an enemy of whoever stays up. `
         + `${holder} picks the enemy who is leaving.`
       : `Taking ${closest} down makes an enemy of ${hoh || 'the Head of Household'} and puts somebody `
-        + `else up who will know exactly who did it. ${holder} decides the block is not their problem.`;
+        + `else up who will know exactly who did it. ${holder} decides the block is not ${pronouns(holder).posAdj} problem.`;
   return { use: false, save: null, reason: 'leave-nominations', why,
     blood: Number((best.cost).toFixed(2)), keep: Number((best.keep).toFixed(2)) };
 }

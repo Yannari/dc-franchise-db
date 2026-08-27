@@ -628,16 +628,29 @@ describe('scene selection reconvenes a live story', () => {
     const restore = _setContinuationSceneP(1);
     const counts = {};
     try {
-      const rng = seededRng(11);
+      const rng = seededRng(29);
       for (let i = 0; i < 400; i++) {
         const key = [..._sceneActors([...CAST], rng, 4)].sort().join('|');
         counts[key] = (counts[key] || 0) + 1;
       }
     } finally { restore(); }
+    // THE ARITHMETIC, because the ceiling below was originally set on a
+    // knife edge and passed on seed luck. At ep 4 the suspicion thread has
+    // decayed to heat 2.5 and the trust thread to 0.5, so heat-weighted
+    // selection sends 0.5/3.0 = one sixth of 400 draws to the cold pair:
+    // expectation 66.7, sd 7.4.
+    //
+    // The mutation this ceiling exists to kill is heat-weighting collapsing to
+    // a uniform draw over live threads, whose expectation is EXACTLY 200 with
+    // an sd of 10. A ceiling of 200 therefore had about even odds of noticing
+    // — it was measured red by 4 on one seed and would have been green on the
+    // next. 120 sits 7.1 sd above the honest expectation and 8 sd below the
+    // mutant's, so it fails on the mutation rather than on the weather.
     const cold = counts[[CAST[2], CAST[3]].sort().join('|')] || 0;
     expect(cold, 'the cold thread was never revived — selection is max-heat, not heat-weighted')
       .toBeGreaterThan(20);
-    expect(cold, 'the hot thread lost its edge — heat is not weighting anything')
-      .toBeLessThan(200);
+    expect(cold, 'the hot thread lost its edge — heat is not weighting anything, '
+      + 'selection is uniform over live threads')
+      .toBeLessThan(120);
   });
 });

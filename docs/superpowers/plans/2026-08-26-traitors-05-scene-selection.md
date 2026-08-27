@@ -210,15 +210,20 @@ beats, first-beat death 87.7% -> 73.9%, payoff 1.91% -> 3.96%, >=3-beat threads 
 Thread length is not P(scene convenes live-thread actors) x P(guard continues it). The
 guard multiplier is nearly inert: +20% relative on its own conditional rate buys +2.4% mean
 beats. The real third term is **P(an advancing event even exists for this scene)**, measured
-at **0.501**. Half of all scenes whose actors share a live thread have NO eligible event
-that could advance it.
+at **0.490** at the shipped 3/1.5 constants (0.499 at the old 1/0.5). Slightly over half of
+all scenes whose actors share a live thread have NO eligible event that could advance it.
 
-Cause is pool composition, measured:
+Cause is pool composition, measured — and these counts are now PINNED in
+`tests/tr-castle-reachability.test.js`, because the first three copies written into this
+repo were all wrong in the same direction and nothing in the suite could tell:
 - only **27 of 81** events set `advancesThread`
-- **11 of 26** (family x window) cells hold **zero** advancers -- e.g. grief has one, dawn
-  only; cover has none in evening
-- **13 more** hold exactly one, and with the 5-episode pair cooldown a thread in a
+- there are **28 non-empty** (family x window) cells
+- **10** hold **zero** advancers -- `callback|dawn`, `callback|morning`, `cover|evening`,
+  `cover|morning`, `grief|evening`, `grief|morning`, `romance|morning`,
+  `suspicion|morning`, `testing|dawn`, `testing|morning`
+- **12 more** hold exactly one, and with the 5-episode pair cooldown a thread in a
   one-advancer cell can advance at most once every five rounds
+- only **6** hold two or more
 - heat decay is NOT a cause: cold revivals hold steady at 4.6% of beats across every cell
 
 ### Binding requirement added to Tasks 2, 4 and 5
@@ -235,9 +240,15 @@ those windows have no advancers at all today.
 
 ### Two further rulings
 
-- **Task 6 must re-derive the continuity band.** At the new operating point the `>0.22`
-  conditional band clears at 36.1% and no longer reddens under its own guard-only mutation.
-  It has gone slack and is currently a passing test that guards nothing.
+- ~~**Task 6 must re-derive the continuity band.**~~ **DONE IN TASK 1, ROUND 3.** The band
+  was modified in Task 1's diff, so it was Task 1's to fix. Re-derived at the shipped
+  operating point: the control arm is now GUARD-ONLY (guard flattened, scene selection left
+  at its shipped value) rather than both-mechanisms-off, and the floor moved 0.22 -> 0.30.
+  Shipped reads 36.14%, the guard-deleted control 23.29%, separation 12.84pp banded at
+  >0.06. Verified RED under the literal mutation
+  `continuationMult = 1 + _contBase + heat * _contPerHeat;` -> `= 1;`.
+  Note the floor is now tied to the shipped `CONTINUATION_SCENE_P`: changing it moves this
+  band, by design, since the band measures the guard's contribution at the operating point.
 - **Do not plan Tasks 2-5 around long threads.** 73.9% of stories still die at beat one.
   Residue citation (Task 2) and outcome-branching (Task 3) must degrade gracefully on a
   1-2 beat thread, because that is the common case and will remain so.

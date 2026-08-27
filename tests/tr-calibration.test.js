@@ -716,61 +716,87 @@ describe('the castle, measured over many seasons', () => {
   // change makes the guard inert, this test goes red on the third assertion
   // even if someone has been generous with the first.
   //
-  // WHAT IT CATCHES, EXACTLY. Verified by mutation, not asserted: setting
-  // CONTINUATION_BASE and CONTINUATION_PER_HEAT to 0 in events.js takes the
-  // shipped block from 26.9% to 21.6% and this test goes RED on the first
-  // assertion. (Both figures predate Plan 5 Task 1; on the current engine the
-  // same mutation lands well above the floor, because scene selection is now
-  // also feeding continuation. This band is the guard's, and it has lost
-  // sensitivity — see the update note below.) It is a band on the guard being SWITCHED OFF, not on the guard
-  // being weak: a HALVED guard reads 24.7% on the shipped block and passes the
-  // floor, and clears the separation assertion below by 0.002. Nothing here
-  // would catch a guard quietly detuned by half, and nothing at 200 seasons a
-  // block could — the halved and shipped distributions overlap.
+  // == RE-DERIVED BY PLAN 5 TASK 1, ROUND 3. THE NUMBERS ABOVE ARE HISTORY. ==
   //
-  // UPDATED BY PLAN 5 TASK 1, AND THE NUMBERS ABOVE ARE NOW HISTORY. Two
-  // things moved under this band, both deliberately, both in the direction it
-  // measures. The shipped guard is 3/1.5, not 1/0.5 (see the note on the
-  // constants in events.js: on its own the multiplier is nearly inert, and it
-  // was raised because at a fixed scene P it is free). And `_sceneActors` now
-  // convenes the parties of a live thread 35% of the time instead of drawing
-  // uniformly, which is what the paragraph this replaces said somebody would
-  // eventually have to do. Live reads 36.1% against 17.7% with BOTH
-  // mechanisms off; the 0.22 floor is untouched and is now cleared by a wide
-  // margin, so this band no longer has much power to detect a detuned guard
-  // — the two bands below are the ones with headroom in both directions.
+  // The paragraph that used to sit here said this was "a band on the guard
+  // being SWITCHED OFF, not on the guard being weak". After Task 1 that was
+  // false in the worst way: it was a band on NOTHING. A reviewer deleted the
+  // entire guard with one line in events.js -
+  //
+  //     continuationMult = 1 + _contBase + heat * _contPerHeat;  ->  = 1;
+  //
+  // - and this test stayed GREEN, at 23.3% against its 0.22 floor, clearing
+  // the separation assertion by 5.6pp. Fifteen of fifteen passing with the
+  // mechanism the band is named for deleted.
+  //
+  // WHY IT WENT SLACK, because the cause matters more than the number. There
+  // are now TWO things that continue a story: this guard, which prefers an
+  // advancing event once actors are in the room, and `_sceneActors`, which
+  // since Task 1 walks the actors of a live thread INTO the room 35% of the
+  // time. The old control arm flattened the guard AND zeroed scene selection,
+  // so "the rule off" meant the whole Plan-5 engine off - and the floor was
+  // chosen against an engine in which scene selection did not exist. Scene
+  // selection alone lifts the conditional rate to 23.3%, well clear of 0.22,
+  // so the floor could never see the guard again.
+  //
+  // THE OBSERVABLE IS STILL THE CONDITIONAL RATE, and that was the question
+  // worth asking before re-deriving. It still isolates the guard cleanly at
+  // the shipped operating point - the guard's marginal contribution is
+  // 36.14% -> 23.29%, a 12.84pp gap, LARGER in absolute terms than the 6.2pp
+  // it had before Task 1, because scene selection supplies the guard with far
+  // more scenes in which there is something to prefer. What was wrong was not
+  // the metric but the CONTROL, and the floor derived from it.
+  //
+  // SO THE CONTROL IS NOW GUARD-ONLY: the guard flattened, scene selection
+  // LEFT AT ITS SHIPPED VALUE. That is the arm that answers "what does this
+  // guard contribute, here, now", and it is strictly the harder control - it
+  // starts 5.6pp higher than the both-off arm it replaces. Measured on 200
+  // seeds at the shipped 0.35 and 3/1.5:
+  //
+  //     shipped                  36.14%   (2994 live-thread scenes)
+  //     guard flattened          23.29%   (2975)   <- the control, and the mutation
+  //     scene selection off      29.22%   (989)
+  //     both off                 17.73%   (1004)
+  //
+  // The floor is 0.30: 6.1pp under the live arm and 6.7pp over the control,
+  // about 4.5 sd either way at a per-block sd of ~0.014. The seam control and
+  // the hard source mutation agree to two decimal places (23.29% vs 23.3%),
+  // which is what makes the seam a legitimate stand-in for deleting the line.
+  //
+  // ONE COUPLING, STATED SO IT IS NOT A SURPRISE LATER: this floor is tied to
+  // the shipped CONTINUATION_SCENE_P. Scene selection feeds the guard the
+  // scenes it acts in, so moving that knob moves this band - at P=0 the live
+  // arm falls to 29.2% and this test goes red. That is correct, not fragile:
+  // the band measures what the guard contributes AT THE OPERATING POINT, and
+  // the assertion that isolates the guard by itself is the separation one,
+  // which needs no floor at all.
+  //
+  // WHAT IT STILL CANNOT CATCH: a guard quietly detuned by half rather than
+  // switched off. That was true before Task 1 and is true now; 200 seasons a
+  // block cannot separate adjacent strengths. The band is honest about being
+  // an off-switch detector, and now it actually is one.
   //
   // WHAT THE DIAGNOSTICS SAY, AND IT IS STILL NOT FLATTERING. The old reading
   // was 89.6% of threads opened, given one beat and never touched again, a
   // mean thread of 1.13 beats and 0.6% ever reaching a payoff. It is now
   // 73.9%, 1.43 beats and 4.0%. That is a real move and it is nowhere near
   // enough: three quarters of stories still die where they start. The reason
-  // is no longer scene selection — it is that only 27 of 81 events set
-  // `advancesThread` and 11 of the 26 (family x window) cells hold none at
-  // all, so half of all scenes convened on a live thread have nothing eligible
-  // that could continue it. `abandonThread` is still never called by the
-  // engine. Recorded here so the next person does not read a green tick as
-  // "the castle tells long stories".
+  // is no longer scene selection - it is that only 27 of 81 events set
+  // `advancesThread` and 10 of the 28 non-empty (family x window) cells hold
+  // none at all, so half of all scenes convened on a live thread have nothing
+  // eligible that could continue it. `abandonThread` is still never called by
+  // the engine. Recorded here so the next person does not read a green tick
+  // as "the castle tells long stories".
   it('CONTINUES A STORY: a live thread is preferred to a fresh one', () => {
     const live = continuity(seasons);
-    // The same seeds, the same content, guard 1 flattened to a multiplier of 1.
-    // Restored in a finally: leaving it flat would silently change every
-    // measurement in this file that runs afterwards.
-    //
-    // BOTH continuation mechanisms are switched off here, not just guard 1.
-    // Since Plan 5 Task 1 there are two of them - the scoring guard, and scene
-    // selection convening the parties of a live thread - and a control that
-    // flattens only the first is no longer "the rule switched off": it still
-    // walks the actors of a live story into the room, which raises the
-    // conditional rate on its own (measured 21.4% with only guard 1 flat,
-    // against 17.7% with both off, on the shipped value). Leaving the control
-    // half-built would have left this band 0.6pp from green-with-the-rule-off.
-    // The 0.22 floor below is UNCHANGED - the control was completed, not the
-    // band retuned.
+    // THE CONTROL: same seeds, same content, scene selection at its SHIPPED
+    // value, and guard 1 flattened to a multiplier of 1 - which is exactly
+    // what deleting the guard's one line in events.js does. Restored in a
+    // finally: leaving it flat would silently change every measurement in
+    // this file that runs afterwards.
     const restore = _setContinuationGuard({ base: 0, perHeat: 0 });
-    const restoreScene = _setContinuationSceneP(0);
     let dead;
-    try { dead = continuity(run()); } finally { restoreScene(); restore(); }
+    try { dead = continuity(run()); } finally { restore(); }
 
     console.log(`continuation: ${(live.rate * 100).toFixed(1)}% of ${live.liveScenes} live-thread scenes `
       + `continued (guard off: ${(dead.rate * 100).toFixed(1)}% of ${dead.liveScenes})`);
@@ -790,15 +816,18 @@ describe('the castle, measured over many seasons', () => {
       .toBeGreaterThan(500);
 
     expect(live.rate, 'the castle starts stories and never continues them — guard 1 is inert')
-      .toBeGreaterThan(0.22);
-    // THE PROOF THE BAND ABOVE CAN FAIL. Same seeds, same pool, rule off.
-    expect(dead.rate, 'the continuation band is green with continuation SWITCHED OFF — '
-      + 'it is measuring the runner re-drawing a pair by chance, not the guard')
-      .toBeLessThan(0.22);
-    // And the separation itself, which does not depend on 0.22 being well
-    // chosen. Worst of twelve decorrelated blocks: +4.33pp.
+      .toBeGreaterThan(0.30);
+    // THE PROOF THE BAND ABOVE CAN FAIL, and the whole reason the floor moved
+    // from 0.22 to 0.30. Same seeds, same pool, same scene selection, guard
+    // deleted. At 0.22 this assertion passed at 23.3% and the band above
+    // passed too, so the guard could be removed entirely with the suite green.
+    expect(dead.rate, 'the continuation band is green with the guard SWITCHED OFF — '
+      + 'it is measuring scene selection walking live-thread actors into the room, not the guard')
+      .toBeLessThan(0.30);
+    // And the separation itself, which does not depend on 0.30 being well
+    // chosen. Measured 12.84pp at the shipped operating point.
     expect(live.rate - dead.rate, 'the continuation guard moved nothing')
-      .toBeGreaterThan(0.03);
+      .toBeGreaterThan(0.06);
   });
 
   // == THE TWO BANDS PLAN 5 TASK 1 EARNS ==============================
@@ -853,10 +882,13 @@ describe('the castle, measured over many seasons', () => {
   //
   // THE CEILING, AND THE THIRD CONSTRAINT NOBODY HAS BUILT YET. Even the most
   // aggressive cell reaches 1.65 beats. The binding constraint is not either
-  // lever: in 49.9% of scenes whose actors already share a live thread, NO
+  // lever: in 49.0% of scenes whose actors already share a live thread, NO
   // eligible event could advance it - only 27 of 81 events set
-  // `advancesThread`, and 11 of the 26 (family x window) cells contain zero of
-  // them (grief has one, in dawn only; cover has none in evening). Where an
+  // `advancesThread`, and 10 of the 28 non-empty (family x window) cells
+  // contain zero of them, 12 more contain exactly one, and just 6 contain two
+  // or more (grief has one advancer, in dawn only; cover has none in evening).
+  // Those counts are pinned in tr-castle-reachability.test.js, because the
+  // first three copies of them written into this repo were all wrong. Where an
   // advancer is available the guard already converts 60.6% of those scenes at
   // 1/0.5 and 73.8% at 3/1.5, so the multiplier is not what is missing.
   // Nothing in scene selection can fix that, and it is Tasks 2-5' problem.
@@ -907,7 +939,7 @@ describe('the castle, measured over many seasons', () => {
     // of scenes a season gets is set by the round budget, so any future change
     // to that budget would move a raw floor without anything having collapsed.
     // Measured 0.912 against a 0.88 floor; across-season sd puts the floor
-    // about 3 sd down. At P=1 it is 0.62 and falling.
+    // about 3 sd down. At P=1 it is 0.304.
     expect(peopleRatio, 'people stopped appearing in scenes at all - live threads are '
       + 'monopolising the castle and most of the cast is frozen out of the season')
       .toBeGreaterThan(0.88);

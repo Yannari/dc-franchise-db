@@ -241,3 +241,83 @@ describe('CALLBACK IS DEAD IN A DEBUT SEASON (documented, not fixed)', () => {
     }
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// ADVANCER COVERAGE, PINNED (Plan 5 Task 1 round 3, R2)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Plan 5 measured that the ceiling on thread length is not either continuation
+// lever but the number of events that can ADVANCE a thread, and where they
+// sit. That measurement was then written into three separate comments and a
+// plan document — and all three copies were WRONG, in the same direction, by
+// the same hand: "26 cells, 11 zero, 13 one" against a true 28 / 10 / 12 / 6.
+// Nothing in the suite could have caught it, because nothing asserted on the
+// shape of the pool at all.
+//
+// So this pins it. It is not a quality bar — Plan 5's binding requirement
+// (no cell below two advancers) is deliberately NOT asserted here, because it
+// is not met yet and Tasks 2, 4 and 5 are what meet it. This is a LEDGER: it
+// fails when the numbers quoted elsewhere stop being true, which is exactly
+// when somebody must go and update them.
+//
+// A cell is a (family x window) pair that has at least one event in it. Empty
+// cells are not counted — `journey-out`, `journey-back` and `night` hold
+// almost nothing, and counting their absent cells as "zero-advancer" would
+// inflate the number that matters.
+describe('advancer coverage: the pool shape Plan 5 quotes', () => {
+  function cells() {
+    const out = new Map();
+    for (const ev of EVENTS) {
+      const k = `${ev.family}|${ev.window}`;
+      if (!out.has(k)) out.set(k, { total: 0, adv: 0 });
+      const c = out.get(k);
+      c.total++;
+      if (ev.advancesThread) c.adv++;
+    }
+    return out;
+  }
+
+  it('81 events, 27 of which can advance a thread', () => {
+    expect(EVENTS.length).toBe(81);
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(27);
+  });
+
+  it('28 non-empty family x window cells: 10 with no advancer, 12 with one, 6 with two or more', () => {
+    const c = cells();
+    const counts = [...c.values()];
+    const zero = counts.filter(v => v.adv === 0).length;
+    const one = counts.filter(v => v.adv === 1).length;
+    const many = counts.filter(v => v.adv >= 2).length;
+    const zeroNames = [...c.entries()].filter(([, v]) => v.adv === 0).map(([k]) => k).sort();
+    console.log(`=== ADVANCER COVERAGE === ${c.size} cells: ${zero} zero, ${one} one, ${many} two-plus`);
+    console.log(`zero-advancer cells: ${zeroNames.join(', ')}`);
+
+    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(28);
+    expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
+      + 'can never be continued here, whatever either continuation lever is set to').toBe(10);
+    expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
+      + 'living here can be advanced at most once every five rounds').toBe(12);
+    expect(many, 'cells with two or more advancers').toBe(6);
+    // Named, not just counted: a change that swapped one zero cell for another
+    // would keep every total above and still be a different game.
+    expect(zeroNames).toEqual([
+      'callback|dawn', 'callback|morning', 'cover|evening', 'cover|morning',
+      'grief|evening', 'grief|morning', 'romance|morning', 'suspicion|morning',
+      'testing|dawn', 'testing|morning',
+    ]);
+  });
+
+  it('every family that can open a thread has at least one event that can advance one', () => {
+    // The weakest true statement about the pool, and the one that would break
+    // first if somebody added a family and forgot its advancers entirely.
+    const perFamily = {};
+    for (const ev of EVENTS) {
+      perFamily[ev.family] ||= 0;
+      if (ev.advancesThread) perFamily[ev.family]++;
+    }
+    for (const [fam, n] of Object.entries(perFamily)) {
+      expect(n, `family "${fam}" has no event that can advance one of its own threads`)
+        .toBeGreaterThan(0);
+    }
+  });
+});

@@ -48,11 +48,15 @@ const KNOWN_WINDOWS = new Set([
 //
 // WHY IT IS NEARLY INERT, MEASURED, because the answer is the next
 // bottleneck and not a property of this constant: in HALF of all scenes whose
-// actors already share a live thread (49.9%), there is no eligible event that
-// could advance it at all. The guard is a multiplier on a set that is empty
-// half the time. Where an advancer IS available the guard is doing real work —
-// 60.6% of those scenes continue at 1/0.5 and 73.8% at 3/1.5 — so the ceiling
-// is pool coverage, not guard strength. See the note above the bands in
+// actors already share a live thread, there is no eligible event that could
+// advance it at all — 49.0% at these shipped 3/1.5 constants, 49.9% at the
+// old 1/0.5. The guard is a multiplier on a set that is empty half the time.
+// Where an advancer IS available the guard is doing real work — 60.6% of those
+// scenes continue at 1/0.5 and 73.8% at 3/1.5 — so the ceiling is pool
+// coverage, not guard strength: only 27 of 81 events set `advancesThread`, and
+// 10 of the 28 non-empty (family x window) cells hold none, 12 hold exactly
+// one, and 6 hold two or more. Those counts are pinned in
+// tr-castle-reachability.test.js. See the note above the bands in
 // tr-calibration.test.js.
 const CONTINUATION_BASE = 3;
 const CONTINUATION_PER_HEAT = 1.5;

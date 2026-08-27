@@ -437,3 +437,60 @@ fallout of a betrayal can be written as suspicion and shock but not as anyone be
   **Carry it to a task that is allowed to move bands.**
 - Five stale comments across three files asserted the hard bar as fact. Corrected with
   measurements attached.
+
+## Task 7 done — a season can now END
+
+Faithful win 45.5%; a Traitor takes everything 218/400 (54.5%), 158 alone and 60 shared;
+endgame rounds mean 1.29 (130 seasons banish nobody, up to 6 tables). Entry field mean 5.50,
+mean pot 63,632, mean payout 37,567. Inside the real show's shape, so nothing was re-priced.
+
+**The loop EXTENDS Task 6's betrayal curve rather than distorting it.** Fields 7-20
+bit-identical base to head. Field 5: 47.3% -> 48.0% (the endgame's own 252 decisions betray at
+48.4%, the same rate). Field 6 dilutes 4.4% -> 3.0% -- a different subpopulation, not a changed
+formula. Fields 4 and 3 are NEW and continue monotonically at 81.0% and 93.9%.
+
+**Eleven deduction bands came back BIT-IDENTICAL**, structurally enforced rather than
+asserted: `rounds` stays the mandated slice and the finale tables return in `endgame.rounds`,
+so the plurality population is not silently redefined under the band that measures it. Two
+numbers moved because the QUANTITY changed meaning and neither was retuned -- faithful win
+40.0 -> 41.0% (`winner` now means who took the money) and the pact's late arm 24.16 -> 48.51%
+(the <=6 bucket now holds endgame ballots; per-field rates unchanged, the mix shifted).
+
+### The defect shape Task 7 caught in its own guard: a timestamp that updates on access
+
+The no-reveal probe keyed on `learnedEp` -- but **`learn()` bumps that field on every call**,
+so an episode-1 turret belief re-dated by a finale rumour read EXACTLY like a reveal. The
+guard now keys on `source === 'the reveal'`.
+
+Generalise: **a field that updates on access cannot testify about when something happened.**
+Check any guard keyed on a timestamp for whether the timestamp means "when this was first
+true" or "when this was last touched". The second answers a different question.
+
+Its other self-caught defect: the completeness arm RECOMPUTED alignment and hit the
+recruitment-era trap -- alignment has eras, so recomputing it at season end misreads anyone
+who flipped. This is the third appearance of "a test must read the value under test, never
+recompute it".
+
+### Betrayal narration shipped
+
+Placed in `roundtable.js`, not `endgame.js`, so it covers the late mandated tables too.
+4-line `lineFor` pool, no rng draw. Four prose defects found by dumping and reading, none by
+assertion: plural verbs over a lone winner and a lone loser, "the Faithfuls beside them get
+nothing" over a castle with none, and an "and...and...and" list. All fixed by making the
+contradiction unrepresentable -- the pool is keyed on taker count and on whether anyone stands
+beside them -- with a ledger-agreement guard alongside.
+
+### Carried
+
+- **`shield.cost` still has no reader.** The endgame gave it no natural home.
+- **The Dagger fires at the endgame's first table**, as Task 4 predicted. `tr-powers.test.js`
+  was going red on exactly the state 7.3 wants and was widened to search `endgame.rounds`.
+  Gating it needs its own decision.
+- **`potShare()` is now shared out of `deduction.js`** -- the FOURTH narrowing of the missions
+  guard, and it had to be a property of the READER: a private copy left the endgame seeing a
+  pot the rest of the engine could not, and the two arms diverged on `survivors`.
+- The endgame plays at whatever field the mandated loop leaves, sometimes 7+. It converges
+  (max 6 tables in 400 seasons), but the show's shape lives in the mandated loop's exit
+  conditions, not here.
+- `COMMIT_LINES.kept` in `js/tr/castle/trust.js` is still wrong and still carried -- fixing it
+  moves bonds, and this task could not move bands either. **It needs a task that is allowed to.**

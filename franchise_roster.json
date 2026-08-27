@@ -4780,13 +4780,13 @@
       "gender": "m",
       "archetype": "underdog",
       "stats": {
-        "physical": 6,
-        "endurance": 6,
-        "mental": 5,
+        "physical": 3,
+        "endurance": 5,
+        "mental": 6,
         "social": 2,
         "strategic": 3,
-        "loyalty": 7,
-        "boldness": 6,
+        "loyalty": 8,
+        "boldness": 5,
         "intuition": 3,
         "temperament": 7
       },

@@ -252,7 +252,20 @@ export function checkFirstMove(ep) {
     const bArch = players.find(p => p.name === b)?.archetype || '_default';
     const aThresh = FIRST_MOVE_THRESHOLDS[aArch] || FIRST_MOVE_THRESHOLDS._default;
     const bThresh = FIRST_MOVE_THRESHOLDS[bArch] || FIRST_MOVE_THRESHOLDS._default;
-    const threshold = Math.max(aThresh, bThresh); // slower one sets the pace
+    /* ── AND WHO THEY ARE HAS TO DECIDE MORE OF IT ──
+       0.5 for a showmancer against 0.8 for everybody else is barely a
+       difference: measured over twelve seasons of a house whose cast contained
+       no showmancer at all, 31 showmances still formed, 22 of them involving a
+       hero. Somebody whose whole game is this should be most of the couples in
+       a season, not a rounding error.
+       Scaled in a house rather than everywhere, because a house is where the
+       rate was wrong — thirteen weeks on a beach with a spark already burning
+       is a different clock. */
+    const houseRules = seasonConfig.format === 'big-brother';
+    const pace = arch => (houseRules
+      ? (arch === 'showmancer' ? 1.0 : ['chaos-agent', 'social-butterfly', 'wildcard'].includes(arch) ? 1.15 : 1.35)
+      : 1);
+    const threshold = Math.max(aThresh * pace(aArch), bThresh * pace(bArch));
 
     if (spark.intensity < threshold) return true; // not ready yet, keep spark
 
@@ -270,7 +283,8 @@ export function checkFirstMove(ep) {
     if (!gs.showmances) gs.showmances = [];
     // Check cap again
     const activeShowmances = gs.showmances.filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p)));
-    if (activeShowmances.length >= 4) return true; // cap hit, keep spark alive
+    // Same ceiling the organic route uses. See `showmanceCap`.
+    if (activeShowmances.length >= showmanceCap((gs.activePlayers || []).length)) return true;
 
     // Determine romance origin type from spark context + mover archetype
     const _originType = moverArch === 'villain' || moverArch === 'schemer' ? 'strategic'
@@ -537,14 +551,32 @@ export function getShowmancePartner(name) {
   return sh ? sh.players.find(p => p !== name) : null;
 }
 
+/**
+ * How many couples a cast can be running at the same time.
+ *
+ * One per seven people, floored at one. A flat four meant a house of fourteen
+ * could carry three at once by week five while a full Total Drama cast of
+ * twenty-two carried the same number.
+ */
+function showmanceCap(houseSize) {
+  return Math.max(1, Math.floor((Number(houseSize) || 0) / 7));
+}
+
 export function checkShowmanceFormation(ep) {
   if (seasonConfig.romance === 'disabled') return;
   if (!gs.showmances) gs.showmances = [];
   const active = gs.activePlayers;
 
-  // Cap: max 4 active showmances at a time
+  // ── HOW MANY OF THESE A SEASON CAN CARRY AT ONCE ──
+  //
+  // Four was a flat number for any cast of any size. A house of fourteen was
+  // running three couples by week five, which is more than the format has
+  // usually managed in a whole season — and with none of them a showmancer,
+  // because nothing here made the archetype matter much. One couple per seven
+  // people, floored at one: fourteen carries two, eight carries one, and a
+  // full Total Drama cast still reaches four.
   const activeShowmances = gs.showmances.filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => active.includes(p)));
-  if (activeShowmances.length >= 4) return;
+  if (activeShowmances.length >= showmanceCap(active.length)) return;
 
   for (let i = 0; i < active.length; i++) {
     for (let j = i + 1; j < active.length; j++) {

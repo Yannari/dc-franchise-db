@@ -64,6 +64,7 @@ import { rememberBBStrategy, allyStake } from './shared-strategy.js';
 import { updateAdaptationFromEpisode } from '../adaptation.js';
 import {
   chooseNominationPlan, chooseReplacement, explainReplacement, initialVotePreference,
+  nominationGrievance,
   shouldUseVeto, houseVoteCommitment, applyHouseBandwagon,
   buildHouseVotePlans,
 } from './strategy.js';
@@ -3552,7 +3553,19 @@ export function simulateBBWeek(options = {}) {
   // NO CEREMONY ON A CHAIN WEEK. The chain act already showed the house
   // arriving at this block; drawing a nomination ceremony on top of it would
   // have a Head of Household turning keys on two people they never chose.
+  // ── WHY THEIR OWN PEOPLE WENT UP, RECORDED WHILE IT IS STILL TRUE ──
+  //
+  // Suspicion and strategic memory keep moving all season, so this cannot be
+  // recomputed when the screen paints — a replay would explain a week-three
+  // nomination with a betrayal from week nine. Empty for any nominee who is
+  // not in a live alliance with the person nominating them.
+  const nomGrievances = {};
+  for (const name of nominees) {
+    const g = nominationGrievance(week.hoh, name);
+    if (g) nomGrievances[name] = g;
+  }
   if (!chainNoms.length) week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
+    grievances: nomGrievances,
     duo: duoNom, nomFallout: week.nomFallout,
     structure: plan.structure || 'target-pawn', structureWhy: plan.structureWhy || '',
     anonymous: hohSecret,

@@ -521,7 +521,19 @@ export function bbHeat(observer, candidate) {
   const nerve = (pStats(observer).boldness - 5) * 0.09;
   const components = {
     threat: bbThreat(candidate), relationship: -relationship * 0.85,
-    alliance: -alliance * 2.2, target, suspicion: suspicion * 0.45,
+    // ── WHAT AN ALLIANCE IS WORTH DEPENDS ON WHO IS HOLDING IT ──
+    //
+    // This was a flat 2.2, so a loyalty-9 soldier and a loyalty-1 schemer
+    // priced the same alliance identically and the only thing separating them
+    // was noise. Loyal people follow their alliance; that is most of what the
+    // stat is for, and nomination — the one week you can act — is where it
+    // should show.
+    //
+    // Written as a spread around the old number rather than a buff: loyalty 5
+    // reproduces 2.2 exactly, so an average houseguest behaves as before while
+    // the ends pull apart (1.1 at zero, 3.3 at ten).
+    alliance: -alliance * 2.2 * (0.5 + (pStats(observer).loyalty ?? 5) / 10),
+    target, suspicion: suspicion * 0.45,
     memory: clamp(memory, -4, 6) * 0.65, familiar, reign,
     fear: dims.fear * nerve,
     respect: Math.max(0, dims.strategicRespect) * 0.3,

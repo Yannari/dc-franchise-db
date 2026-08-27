@@ -18017,6 +18017,97 @@ export function _bbNomReason(hoh, name, role, ep) {
       `"${N}, if I spend this week on somebody else, we are both sitting up there the day I lose this room. I am doing it now, while it is still mine to do."`,
     ]);
   }
+  // ── TURNING ON YOUR OWN ALLIANCE, WITH THE REASON SAID OUT LOUD ──
+  //
+  // Measured over twenty seasons: of the 23 ceremonies where a Head of
+  // Household targeted a live ally with three or more outsiders available, 22
+  // had a real grievance behind them — a betrayal the strategic memory still
+  // holds, a suspicion, or a bond that soured weeks ago. The decision was
+  // never arbitrary. The SPEECH was, because no branch here knew the nominee
+  // was in the nominator's own alliance, so the most dramatic thing this
+  // format does came out as a line about competition wins.
+  //
+  // `grievances` is captured by the ceremony itself (week.js) rather than
+  // recomputed here, so a replay gives the reason that existed that week.
+  const grievance = ((ep?.acts || []).find(a => a.type === 'nominations'
+    && (a.nominees || []).includes(name))?.grievances || {})[name] || null;
+  if (grievance && !(grievance.kind === 'no-grievance' && left <= 5)) {
+    const G = grievance.alliance ? `<strong>${grievance.alliance}</strong>` : 'that alliance';
+    if (grievance.kind === 'betrayal') {
+      // ── NAME THE RECEIPT ──
+      //
+      // The house stores WHICH thing it is holding against somebody, and
+      // `consequence-arcs.js` already groups those types into families — the
+      // lie, the promise, the vote, the ally, the block. A speech that says
+      // "you did not keep your word" while the specific act is sitting in
+      // `strategicMemories` is choosing the vaguer of two available sentences,
+      // and it is the one the viewer cannot check against anything they
+      // watched.
+      const mem = grievance.memory || {};
+      const t = mem.type || '';
+      const when = mem.ep ? ` in week ${mem.ep}` : '';
+      const LIE = ['deceit', 'lied-to-my-face', 'made-it-up', 'sold-me-something',
+        'swore-it-was-not-them', 'went-behind-my-back', 'playing-with-two-bodies',
+        'exposed-alliance-pitch', 'knows-what-they-said-about-them', 'said-it-out-loud',
+        'lie-confirmed', 'leaked-information', 'endgame-deal-discovered'];
+      const PROMISE = ['broke-a-promise', 'broken-promise', 'broke-a-final-two',
+        'broken-final-two', 'final-two', 'promised-and-did-not', 'promised-me-a-seat',
+        'alliance-betrayal', 'crossed-me', 'rogue-vote'];
+      const ALLY = ['eliminated-ally', 'took-my-ally', 'chose-them-over-me'];
+      const BLOCK = ['renomination', 'forced-me-up', 'refused-to-sit', 'made-me-the-pawn',
+        'block-rewritten', 'passed-me-over-in-the-chain', 'left-me-out'];
+
+      if (t === 'voted-for-me') return say([
+        `"${N}, you wrote my name down${when}. Everybody in ${G} watched you do it and then watched me let it go. I am finished letting it go."`,
+        `"${N}, my name came out of that box${when} in your handwriting. I have been gracious about it for long enough."`,
+      ]);
+      if (t === 'overcommitted') return say([
+        `"${N}, you have promised the end of this game to more people than it has room for. I worked out this week that I am one of them, and not the one you meant."`,
+        `"${N}, everybody I speak to thinks they are sitting beside you at the end. They cannot all be right, and I stopped assuming I was the exception."`,
+      ]);
+      if (ALLY.includes(t)) return say(mem.ally ? [
+        `"${N}, you helped send <strong>${_bbEsc(mem.ally)}</strong> home${when}, and then sat in ${G} with me as though it had not happened. This is that conversation, finally."`,
+        `"${N}, <strong>${_bbEsc(mem.ally)}</strong> is not in this house because of a vote you were part of${when}. I have not forgotten one day of it."`,
+      ] : [
+        `"${N}, you helped take somebody out of this house who was mine${when}, and then carried on as though we were fine. We have not been fine since."`,
+        `"${N}, I lost somebody I needed${when} and you were on the other side of that. I have been counting the weeks since."`,
+      ]);
+      if (PROMISE.includes(t)) return say([
+        `"${N}, you promised me something about the end of this game${when} and then made sure it could not happen. A promise that only holds while it costs you nothing was never a promise."`,
+        `"${N}, we agreed how this was supposed to finish${when}. You changed your mind and did not tell me, and that second part is what I actually mind."`,
+      ]);
+      if (LIE.includes(t)) return say([
+        `"${N}, you have been running ${G} in one room and something else in another${when}. I would rather be wrong about that in public than right about it on my way out of the door."`,
+        `"${N}, I found out what you say when I am not in the room${when}. You are extremely good at it. That is precisely the problem."`,
+      ]);
+      if (BLOCK.includes(t)) return say([
+        `"${N}, when it was your week, I was the one sitting in this chair${when}. I am not going to pretend I have forgotten what that felt like."`,
+        `"${N}, you had this power once and you spent it on me${when}. Now I have it, and I am spending it the same way."`,
+      ]);
+      return say([
+        `"${N}, I am not nominating somebody I do not trust. I am nominating somebody I did trust, which is a different thing and a worse one."`,
+        `"${N}, you gave me your word inside ${G} and then you did not keep it. I have spent two weeks deciding whether I imagined it. I did not."`,
+        `"${N}, everybody in this room thinks ${G} is still a thing. You and I both know which week it stopped being one."`,
+      ]);
+    }
+    if (grievance.kind === 'suspicion') return say([
+      `"${N}, you have been in a lot of rooms I was not in. I have no proof and I am not going to stand here and invent some — I have one week of power and a bad feeling, and I am spending one on the other."`,
+      `"${N}, every time this house moves lately you have already spoken to somebody about it. That is either remarkable luck or a second alliance, and I cannot afford to guess which."`,
+      `"${N}, we are supposed to be on the same side, and I am always the last person in ${G} to hear anything. I would rather find out like this than on my way out of the door."`,
+    ]);
+    if (grievance.kind === 'soured') return say([
+      `"${N}, we have not been on the same side of a conversation in weeks. The name of the group is still there. Nothing else about it is."`,
+      `"${N}, whatever we had in the first month is gone, and I am not going to keep protecting something that only exists on paper."`,
+      `"${N}, ${G} is two people being polite to each other in a kitchen. I am not losing this game to a formality."`,
+    ]);
+    // Nothing has gone wrong between them at all — the rarest case, and it must
+    // not borrow one of the grievances above.
+    return say([
+      `"${N}, you have not done one thing to me, and that is the whole problem. You are the best player in ${G}, and if I do not do this now then one of us does it to the other later."`,
+      `"${N}, nobody in this house has been better to me than you. You are also the person I cannot beat, and this is the only week where that is my decision to make."`,
+      `"${N}, I have no complaint and no story. I have a week of power and an alliance I am not going to be able to win from."`,
+    ]);
+  }
   if (bond >= 6) return say([
     `"${N}, you are the last person in this house I wanted to put up, and everybody in here knows it. I am not going to insult you by pretending this was a hard week for anybody but us."`,
     `"${N}, I have nothing to accuse you of. That is what makes this the worst thing I have had to do since I walked in."`,

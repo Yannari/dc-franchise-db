@@ -17477,9 +17477,12 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
           .filter(d => _endedPairs.has(_pairKey(d.players))
             && (d.players || []).every(n => inHouse.has(n)));
         if (!showmances.length && !overNow.length) return '';
-        const said = d => d.type === 'voted-out' ? 'one of them was voted out'
-          : d.type === 'jealousy' ? 'it did not survive the third person'
-          : d.type === 'game' ? 'the game got in the way of it'
+        /* "It just says it ended." There are four ways one of these finishes
+           and the row was calling all of them the same thing. */
+        const said = d => d.type === 'betrayed' ? 'one of them wrote the other name down'
+          : d.type === 'separated' ? 'one of them was evicted'
+          : d.type === 'sabotaged' ? 'somebody in this house engineered it'
+          : d.type === 'faded' ? 'it ran out on its own'
           : 'it ended';
         return `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
         ${showmances.map(sh => `<div class="bbf-ally">

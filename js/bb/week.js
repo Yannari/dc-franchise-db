@@ -549,6 +549,18 @@ function runHouseRomance(week, rng) {
   // SAME block, or half the romance (triangles especially) lands in a bucket
   // the harvest never reads.
   if (gs.mergeName && gs.mergeName !== 'merge') ep.campEvents[gs.mergeName] = mergeBlock;
+  /* ── AND THE THIRD NAME, WHICH IS THE ONE THAT WAS LOSING BEATS ──
+     The comment above covers two of the keys the pipeline uses. It also keys
+     off the TRIBE somebody is standing in — `gs.tribes.find(t => t.members
+     .includes(a))?.name` — and a house has exactly one tribe with a name of
+     its own, so those pushes created a bucket nobody harvests. The organic
+     break-up is one of them: measured, 4 of 6 showmances that ended produced
+     no beat at all, which is why a couple could go from "close" to "it ended"
+     between two screens with nothing said in between.
+     Every tribe name points at the same block. */
+  for (const t of (Array.isArray(gs.tribes) ? gs.tribes : [])) {
+    if (t?.name && !ep.campEvents[t.name]) ep.campEvents[t.name] = mergeBlock;
+  }
   // The pipeline is Total Drama code and writes gs.popularity directly, which
   // walks straight past the house's own switch. Snapshot and restore rather
   // than edit a module the other simulator depends on.

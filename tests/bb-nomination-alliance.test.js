@@ -365,3 +365,97 @@ describe('the alliance panel does not name the evictee', () => {
     expect(checked, 'no evicted alliance member was ever checked').toBeGreaterThan(0);
   });
 });
+
+describe('the number can see the one thing this group can do to you', () => {
+  // Reported from a live watch: "after Ripper nominated Priya when they were
+  // in the same alliance and had other options, neither of their loyalty
+  // dropped in the next house life."
+  //
+  // It was not dropping, and the cause is arithmetic. `inward` averages the
+  // member's bonds with everybody else in the room, and being put on the block
+  // by your own Head of Household lands on exactly ONE of those bonds. In a
+  // seven-strong alliance a -1.4 hit moves the mean of six by -0.23, which the
+  // score multiplies by 0.045 and turns into a tenth of a point. Measured over
+  // 14 seasons the person who was put up moved by a mean of -0.06 across that
+  // week, and went UP as often as down. The same watch showed both halves of
+  // it: the three-strong Double Edge moved 4.7 down 3.7, and the five-strong
+  // Shield Wall, containing the same two people, did not move at all.
+  //
+  // So it is read as an event now, from the ledger the ceremony writes.
+  const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+    'loyalty', 'boldness', 'intuition', 'temperament'];
+  const flat = () => Object.fromEntries(KEYS.map(k => [k, 5]));
+
+  function group(size, { week = 4 } = {}) {
+    const names = Array.from({ length: size + 2 }, (_, i) => 'M' + i);
+    seedGame(names.map(n => ({ name: n, archetype: 'floater', gender: 'f',
+      sexuality: 'straight', stats: flat() })), { episode: week, eliminated: [], namedAlliances: [] });
+    gs.activePlayers = [...names];
+    gs.bb = { stats: {}, house: { suspicion: {} }, weeks: [{ num: week }] };
+    gs.namedAlliances = [{ name: 'The Group', active: true, members: names.slice(0, size) }];
+    for (let i = 1; i < size; i++) addBond('M0', 'M' + i, 6);
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, getBond, getPerceivedBond });
+    return { id: 'a:The Group', name: 'The Group', label: 'The Group',
+      members: names.slice(0, size), power: 1.4, kind: 'alliance' };
+  }
+  const ledger = (victim, { target = true, week = 4 } = {}) => {
+    const a = gs.namedAlliances[0];
+    (a.history ||= []).push({ week, type: 'nominated-own', player: 'M1', victim, target });
+  };
+
+  it('drops the reading of somebody their own alliance put on the block', () => {
+    for (const size of [3, 5, 7]) {
+      const bloc = group(size);
+      const before = memberLoyalty('M0', bloc).loyalty;
+      ledger('M0');
+      const after = memberLoyalty('M0', bloc).loyalty;
+      expect(before - after, `a ${size}-member alliance swallowed the betrayal`)
+        .toBeGreaterThan(0.8);
+    }
+  });
+
+  it('does not swallow it in a big alliance the way the average did', () => {
+    // The whole point: the size of the group must not decide whether the
+    // betrayal is visible.
+    const small = group(3); ledger('M0');
+    const dropSmall = 10 - memberLoyalty('M0', small).loyalty;
+    const big = group(7); ledger('M0');
+    const dropBig = 10 - memberLoyalty('M0', big).loyalty;
+    expect(Math.abs(dropSmall - dropBig)).toBeLessThan(2.5);
+  });
+
+  it('counts the week in progress, which has not been filed yet', () => {
+    // A week is only appended to gs.bb.weeks once it is over, so an entry
+    // written during the week in progress reads as one week in the FUTURE.
+    // Guarding that out meant the drop never appeared on any screen inside the
+    // week it happened — which is exactly where somebody looks for it.
+    const bloc = group(4, { week: 4 });
+    const before = memberLoyalty('M0', bloc).loyalty;
+    ledger('M0', { week: 5 });   // this week; gs.bb.weeks still says 4
+    expect(memberLoyalty('M0', bloc).loyalty).toBeLessThan(before);
+  });
+
+  it('fades, and is gone after two weeks', () => {
+    const bloc = group(4, { week: 9 });
+    ledger('M0', { week: 9 });
+    const fresh = memberLoyalty('M0', bloc).loyalty;
+    gs.namedAlliances[0].history = [];
+    ledger('M0', { week: 6 });
+    expect(memberLoyalty('M0', bloc).loyalty).toBeGreaterThan(fresh);
+  });
+
+  it('costs less for a pawn than for the target', () => {
+    const bloc = group(4);
+    ledger('M0', { target: false });
+    const pawn = memberLoyalty('M0', bloc).loyalty;
+    gs.namedAlliances[0].history = [];
+    ledger('M0', { target: true });
+    expect(memberLoyalty('M0', bloc).loyalty).toBeLessThan(pawn);
+  });
+
+  it('says why, instead of dropping a number with no explanation', () => {
+    const bloc = group(4);
+    ledger('M0');
+    expect(memberLoyalty('M0', bloc).reason).toMatch(/put on the block/i);
+  });
+});

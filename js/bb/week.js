@@ -773,7 +773,7 @@ function runHouseRomance(week, rng) {
           `It goes off in the kitchen with half the house holding plates. ${a} accuses ${c} of moving in on ${b}; ${c} does not deny it, which is worse. ${b} leaves and does not come back.`,
           `${a} and ${c} have circled each other for days. It breaks tonight in the bedroom, loud enough that the have-nots come through from the other room to listen to it.`,
           `${a} calls ${c} a snake. ${c} calls ${a} delusional. ${b} tries to get between them and is shouted down by both of them inside ten seconds.`,
-          `It starts in the kitchen and finishes in the backyard twenty minutes later, having settled nothing at all except which side of this house everybody is on.`,
+          `${a} and ${c} start it in the kitchen and finish it in the backyard twenty minutes later, having settled nothing at all except which side of this house everybody is on.`,
           `"You do not deserve ${b}." ${a} says it across the living room in front of everybody, and ${c} laughs — the kind of laugh that makes the next thirty seconds considerably worse.`,
           `By the time it burns out, ${b} is sitting on the bathroom floor saying "this is my fault" to somebody who does not disagree quickly enough.`,
         ], a, b, c);

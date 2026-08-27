@@ -247,17 +247,50 @@ export function memberLoyalty(name, bloc) {
   // disloyal, they are just popular.
   const pullAway = Math.max(0, outward - inward);
 
+  // ── THE ONE THING THIS GROUP CAN DO TO YOU, WHICH THE MEAN CANNOT SEE ──
+  //
+  // `inward` averages your bonds with everybody else in the room, and the most
+  // important event that can happen inside an alliance lands on exactly ONE of
+  // those bonds: the Head of Household you are sworn to puts you on the block.
+  // Measured over 14 seasons, the reading of the person who was put up moved
+  // by a mean of -0.06 across the week it happened, and in a seven-strong
+  // alliance it went UP as often as down — because a -1.4 hit on one pair
+  // moves the mean of six by -0.23, which this score multiplies by 0.045 and
+  // turns into a tenth of a point. The bigger the group, the more completely
+  // the betrayal disappears into the average.
+  //
+  // So it is read as an event, from the ledger the ceremony writes, and it
+  // fades over two weeks the way the house's own grievances do. Being the
+  // TARGET is most of it; a pawn is a smaller thing and an ASKED pawn never
+  // reaches the ledger at all, because that conversation was consensual.
+  const _board = (gs.namedAlliances || []).find(a => a.name === (bloc?.label || bloc?.name));
+  const _now = Math.max(0, ...((gs.bb?.weeks || []).map(w => Number(w?.num) || 0)));
+  const putUp = (_board?.history || []).reduce((worst, h) => {
+    if (h?.type !== 'nominated-own' || h.victim !== name) return worst;
+    // A week is only appended to gs.bb.weeks once it is over, so an entry
+    // written during the week in progress reads as one week in the FUTURE.
+    // Guarding that out meant the drop never appeared on the screens inside
+    // the week it happened, which is precisely where a viewer looks for it.
+    const age = Math.max(0, _now - (Number(h.week) || 0));
+    if (age > 2) return worst;
+    const fade = age === 0 ? 1 : age === 1 ? 0.55 : 0.25;
+    return Math.max(worst, (h.target ? 0.24 : 0.11) * fade);
+  }, 0);
+
   const score = clamp(
     0.42
     + inward * 0.045
     + stat * 0.030
     - pullAway * 0.035
     - elsewhere * 0.30
-    - spread,
+    - spread
+    - putUp,
     0, 1);
 
   // Whichever term is doing the most work, said in words.
-  const reason = elsewhere > 0.3
+  const reason = putUp > 0
+    ? `was put on the block by ${_board?.name || 'this group'}'s own Head of Household`
+    : elsewhere > 0.3
     ? `has a second home that is doing better than this one`
     : pullAway > 3
       ? `is closer to somebody outside this than to anybody in it`

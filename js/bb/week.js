@@ -1060,9 +1060,27 @@ function _snapshotAllianceBoard(roster = null) {
   } catch { return []; }
 }
 
-function _snapshotHouse(full = true) {
+function _snapshotHouse(full = true, roster = null) {
   const light = {
     bonds: { ...(gs.bonds || {}) },
+    // ── HOW FIRMLY EACH OF THEM WAS HOLDING ON, AT THIS POINT IN THE WEEK ──
+    //
+    // The alliance board was a single per-week number, so the digit under a
+    // face could only ever answer "did this alliance shift since the last
+    // episode". The week where it should visibly move is the week the Head of
+    // Household puts up one of their own — and that happens on Sunday, while
+    // the reading did not change until the following week's House Life.
+    //
+    // Per stretch, the answer becomes "the nomination did that", because the
+    // screen before the ceremony and the screen after it now carry different
+    // numbers. Light on purpose: a name, a reading and the short reason, no
+    // power or share, because this is written several times a week for the
+    // whole season.
+    holds: _snapshotAllianceBoard(roster).map(b => ({
+      name: b.name,
+      members: (b.members || []).map(m => ({ name: m.name, loyalty: m.loyalty, reason: m.reason })),
+      weakest: b.weakest ? b.weakest.name : null,
+    })),
     alliances: (gs.namedAlliances || [])
       .filter(a => a.active !== false && !a.dissolved)
       .map(a => ({ name: a.name, members: [...(a.members || [])], formed: a.formed,
@@ -1451,7 +1469,7 @@ export function simulateBBWeek(options = {}) {
   // The house as it stands before a single thing happens this week. The status
   // screen shown at the top of an episode reads this, so it cannot show an
   // alliance nobody has formed yet or a target nobody has set.
-  week.openingState = _snapshotHouse();
+  week.openingState = _snapshotHouse(true, house);
   // What was promised walking in, so the opening screen cannot show a deal
   // that had not been made yet.
   week.openingDeals = endgameDealSummary(house);
@@ -1662,7 +1680,7 @@ export function simulateBBWeek(options = {}) {
     // finished on — bonds that had not happened yet and alliances nobody had
     // formed on screen. Each stretch carries its own picture now — the light
     // one; only the episode's bookend snapshots carry the heavy stores.
-    act.state = _snapshotHouse(false);
+    act.state = _snapshotHouse(false, week.houseAtStart);
     week.acts.push(act);
     return act;
   };
@@ -5811,7 +5829,7 @@ export function simulateBBWeek(options = {}) {
   week.endgameDeals = endgameDealSummary(gs.activePlayers || []);
   week.housePlans = Object.fromEntries((gs.activePlayers || [])
     .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
-  week.closingState = _snapshotHouse();
+  week.closingState = _snapshotHouse(true, week.houseAtStart);
   week.allianceBoard = _snapshotAllianceBoard(week.houseAtStart);
     week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
     _attachRomance(week, rng);
@@ -7098,7 +7116,7 @@ export function simulateBBWeek(options = {}) {
   week.endgameDeals = endgameDealSummary(gs.activePlayers || []);
   week.housePlans = Object.fromEntries((gs.activePlayers || [])
     .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
-  week.closingState = _snapshotHouse();
+  week.closingState = _snapshotHouse(true, week.houseAtStart);
   week.allianceBoard = _snapshotAllianceBoard(week.houseAtStart);
   week.perceptionChanges = updateBBPerceptions({ house:gs.activePlayers, week, rng });
   _attachRomance(week, rng);

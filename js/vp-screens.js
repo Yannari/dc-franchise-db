@@ -17152,7 +17152,7 @@ function _bbfBondLabel(v) {
  * Falls back to the bare avatar when the week has no board (old saves, and any
  * cycle that ended before the snapshot was taken), so nothing breaks on replay.
  */
-function _bbfHold(name, members, boardFor, away = false, wasBoardFor = null) {
+function _bbfHold(name, members, boardFor, away = false, wasBoardFor = null, bar = 1.5) {
   const board = typeof boardFor === 'function' ? boardFor(members) : null;
   const row = board?.members?.find(m => m.name === name);
   // Behind the wall: no hold is shown, because on a split week nobody on this
@@ -17175,17 +17175,20 @@ function _bbfHold(name, members, boardFor, away = false, wasBoardFor = null) {
   const before = typeof wasBoardFor === 'function'
     ? wasBoardFor(members)?.members?.find(m => m.name === name)?.loyalty : undefined;
   const delta = typeof before === 'number' ? v - before : 0;
-  // 1.5, chosen by measuring rather than by taste. These numbers are made of
-  // bonds and bonds move every week, so a low bar puts an arrow on nearly
-  // every face and answers nothing: across six seasons, 85% of digits move by
-  // 0.3 week to week and 76% by 0.5. At 1.5 it is about a third of them, which
-  // is the difference between "this alliance had a week" and wallpaper.
-  const moved = Math.abs(delta) >= 1.5;
+  // Measured, not picked, and it depends on WHICH gap is being reported —
+  // a week is a much bigger span than one stretch of a week, so a single bar
+  // would either flood the weekly view or say nothing on the hourly one.
+  // Across six seasons: week to week, 85% of digits move by 0.3 and 76% by
+  // 0.5, so the bar is 1.5 and about a third of faces carry an arrow. Stretch
+  // to stretch only 17% move by 0.8 — and 28 of the 37 alliances whose own
+  // Head of Household nominated a member cross it inside that week, which is
+  // exactly the movement this is for.
+  const moved = Math.abs(delta) >= bar;
   const arrow = moved
     ? `<i class="bbf-hold-d ${delta > 0 ? 'up' : 'down'}">${delta > 0 ? '▲' : '▼'}${Math.abs(delta).toFixed(1)}</i>`
     : '';
   const why = moved
-    ? ` — ${delta > 0 ? 'up' : 'down'} ${Math.abs(delta).toFixed(1)} since last week`
+    ? ` — ${delta > 0 ? 'up' : 'down'} ${Math.abs(delta).toFixed(1)} since ${bar < 1.5 ? 'the last feed' : 'last week'}`
     : '';
   return `<span class="bbf-hold ${weak ? 'is-weak' : ''}${moved ? ' has-moved' : ''}" title="${_bbEsc(name)} — ${_bbEsc(row.reason)}${why}">
     ${_bbAvatar(name, 22)}<b style="color:${tone}">${v.toFixed(1)}</b>${arrow}</span>`;
@@ -17291,28 +17294,41 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
     ? new Set(ep.splitHouse.sides[wallSide]) : null;
   const away = n => !!onThisSide && !onThisSide.has(n);
 
-  const boardFor = members => {
+  // ── THE BOARD AS IT STOOD AT THIS STRETCH, NOT AT THE END OF THE WEEK ──
+  //
+  // The week-level board could only answer "did this alliance shift since the
+  // last episode". The stretch snapshots carry their own `holds`, so the
+  // screen before the nomination ceremony and the screen after it hold
+  // different numbers and the arrow points at the thing that actually caused
+  // it. The week board stays as the fallback for records saved before stretch
+  // holds existed, and for the bookend screens that have no stretch.
+  //
+  // Two shapes to accept: the compact stretch hold (weakest is a name) and the
+  // week board (weakest is a row). Normalised here so `_bbfHold` sees one.
+  const pickBoard = (source, members) => {
     const want = new Set(members || []);
     if (want.size < 2) return null;
     let best = null, bestShared = 1;
-    for (const b of ep?.allianceBoard || []) {
+    for (const b of source || []) {
       const shared = (b.members || []).filter(m => want.has(m.name)).length;
       if (shared > bestShared) { best = b; bestShared = shared; }
     }
-    return best;
+    if (!best) return null;
+    const weakest = typeof best.weakest === 'string' ? { name: best.weakest } : best.weakest;
+    return { ...best, weakest };
   };
-  // The same lookup against LAST week's board, so the digit can say whether it
-  // moved. `prior` is already the previous week's episode record.
-  const wasBoardFor = members => {
-    const want = new Set(members || []);
-    if (want.size < 2) return null;
-    let best = null, bestShared = 1;
-    for (const b of prior?.allianceBoard || []) {
-      const shared = (b.members || []).filter(m => want.has(m.name)).length;
-      if (shared > bestShared) { best = b; bestShared = shared; }
-    }
-    return best;
-  };
+  const boardFor = members =>
+    pickBoard(here?.holds, members) || pickBoard(ep?.allianceBoard, members);
+  // What it read on the previous screen of this same week where there is one,
+  // and last week's closing board otherwise — the same rule `sinceLabel` above
+  // already states to the viewer.
+  // 0.8 when the comparison is against the previous screen of this week, 1.5
+  // when it is against last week. See the note in `_bbfHold`.
+  const holdBar = priorAct?.state?.holds ? 0.8 : 1.5;
+  const wasBoardFor = members =>
+    pickBoard(priorAct?.state?.holds, members)
+    || pickBoard(prior?.closingState?.holds, members)
+    || pickBoard(prior?.allianceBoard, members);
 
   const row = p => {
     const [a, b] = p.names;
@@ -17376,7 +17392,7 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
       <div class="bbf-panel-h">Alliances in play<small>${alliances.length || 'none'}</small></div>
       ${alliances.length ? alliances.map(a => `<div class="bbf-ally">
           <span class="bbf-ally-n">${a.name}</span>
-          <span class="bbf-ally-m">${a.members.map(m => _bbfHold(m, a.members, boardFor, away(m), wasBoardFor)).join('')}</span>
+          <span class="bbf-ally-m">${a.members.map(m => _bbfHold(m, a.members, boardFor, away(m), wasBoardFor, holdBar)).join('')}</span>
           <span class="bbf-ally-c">${onThisSide
             ? `${a.members.filter(m => !away(m)).length}/${a.members.length}` : a.members.length}</span>
         </div>`).join('')
@@ -17384,7 +17400,7 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
       ${showmances.length ? `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
         ${showmances.map(sh => `<div class="bbf-ally">
           <span class="bbf-ally-n" style="color:#ff7b72">${(sh.players || []).join(' &amp; ')}</span>
-          <span class="bbf-ally-m">${(sh.players || []).map(m => _bbfHold(m, sh.players || [], boardFor, away(m), wasBoardFor)).join('')}</span>
+          <span class="bbf-ally-m">${(sh.players || []).map(m => _bbfHold(m, sh.players || [], boardFor, away(m), wasBoardFor, holdBar)).join('')}</span>
         </div>`).join('')}` : ''}
     </div>
   </div>`;

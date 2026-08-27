@@ -94,8 +94,10 @@ export function runCoachingBlock(ep, tribe, roll = Math.random, fameGapOf = defa
     }
   }
 
-  if (!ep.coachData) ep.coachData = {};
-  ep.coachData[tribeName] = { sessions, passedOver };
+  if (coaches.length) {
+    if (!ep.coachData) ep.coachData = {};
+    ep.coachData[tribeName] = { sessions, passedOver };
+  }
   return { sessions, passedOver };
 }
 
@@ -112,8 +114,15 @@ export function eliminateCoach(ep, coachName) {
   const tribe = record?.tribe;
   const lost = revokeCoachTraining(coachName);
 
+  // Reactions are scoped to the departing coach's own tribe — pre-merge,
+  // the other tribe has never met him, and manufacturing a reaction for
+  // every contestant in `gs.activePlayers` puts an "unsettled" line on
+  // strangers who have no idea he existed.
+  const tribeObj = (gs.tribes || []).find(t => (t.name ?? t.tribeName) === tribe);
+  const reactionPool = tribeObj ? tribeObj.members : (gs.activePlayers || []);
+
   const reactions = [];
-  for (const name of (gs.activePlayers || [])) {
+  for (const name of reactionPool) {
     const bond = getBond(coachName, name);
     // Thresholds are allowed here: this chooses narrative text, not gameplay.
     const kind = bond >= 5 ? 'grief' : bond <= -3 ? 'relief' : 'unsettled';
@@ -295,10 +304,14 @@ export function coachFallout(ep, tribe, blockResult, roll = Math.random) {
       hero: [
         `${defender} won't let ${skeptic} write ${coachName} off, and it's not a strategic move — it just isn't true, as far as ${defender} is concerned.`,
         `${defender} steps in front of a joke at ${coachName}'s expense and shuts it down flat.`,
+        `${defender} corrects ${skeptic} on the spot, calm and certain, like it's simply a fact that needed fixing.`,
+        `${defender} refuses to let ${coachName}'s name get dragged through the mud on ${defender}'s watch.`,
       ],
       'loyal-soldier': [
         `${defender} tells ${skeptic}, unprompted, that ${coachName} has more than earned the benefit of the doubt.`,
         `${defender} defends ${coachName}'s picks to ${skeptic} like it's a personal matter, not a game one.`,
+        `${defender} reminds ${skeptic} exactly what ${coachName} has done for the tribe, unasked.`,
+        `${defender} won't let ${skeptic}'s grumbling about ${coachName} go unanswered, loyalty first.`,
       ],
       default: [
         `${defender} pushes back on ${skeptic}'s grumbling about ${coachName} — nobody asked ${defender} to.`,
@@ -345,18 +358,26 @@ export function coachFallout(ep, tribe, blockResult, roll = Math.random) {
       villain: [
         `${p.contestant} clocks getting skipped again and quietly starts a list of who ${p.coach} does call on.`,
         `${p.contestant} says nothing to ${p.coach}'s face, and files the snub away for later.`,
+        `${p.contestant} watches ${p.coach} pick someone else and starts thinking about leverage, not feelings.`,
+        `${p.contestant} smiles through getting passed over again, already planning what it'll cost ${p.coach} later.`,
       ],
       hothead: [
         `${p.contestant} doesn't hide being annoyed at getting passed over — ${p.coach} hears about it within the hour.`,
         `${p.contestant} vents loudly about ${p.coach}'s picks to anyone still listening.`,
+        `${p.contestant} snaps at the next person who mentions ${p.coach}'s name, no explanation needed.`,
+        `${p.contestant} makes a point of being visibly annoyed where ${p.coach} can't miss it.`,
       ],
       goat: [
         `${p.contestant} assumes there's a good reason ${p.coach} skipped them and tries not to dwell on it.`,
         `${p.contestant} shrugs off getting left out again, or does a decent job pretending to.`,
+        `${p.contestant} tells themselves it'll be their turn next time, without much conviction.`,
+        `${p.contestant} keeps busy so nobody notices they weren't called on again.`,
       ],
       default: [
         `${p.contestant} notices being left off the board again and says nothing about it.`,
         `${p.contestant} watches someone else get pulled aside and keeps their face carefully neutral.`,
+        `${p.contestant} clocks the pattern quietly and keeps it to themselves for now.`,
+        `${p.contestant} goes about the rest of the day like getting skipped again didn't land, and it clearly did.`,
       ],
     };
     const escalated = [

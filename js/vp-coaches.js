@@ -96,7 +96,7 @@ function _buildSidebarContent(ep) {
     const m = meta[i];
     bankedByCoach[m.coach] = (bankedByCoach[m.coach] || 0) + Number(m.gain || 0);
     if (!trainedByCoach[m.coach]) trainedByCoach[m.coach] = [];
-    trainedByCoach[m.coach].push(m.contestant);
+    trainedByCoach[m.coach].push({ name: m.contestant, gain: Number(m.gain) || 0 });
   }
 
   let out = `<div class="cb-sb-header">THE BOARD</div>`;
@@ -115,7 +115,7 @@ function _buildSidebarContent(ep) {
         <div class="cb-sb-coach-name">${_avatar(coach, 'cb-av-tiny')} ${coach}</div>
         <div class="cb-sb-banked">Banked: <span class="cb-sb-banked-num">${banked.toFixed(2)}</span></div>
         <div class="cb-sb-standing">
-          ${trained.map(n => `<span class="cb-sb-tag cb-sb-tag-in">${n}</span>`).join('')}
+          ${trained.map(o => `<span class="cb-sb-tag ${o.gain < 0 ? 'cb-sb-tag-damaged' : 'cb-sb-tag-in'}">${o.name}</span>`).join('')}
           ${passed.map(n => `<span class="cb-sb-tag cb-sb-tag-out">${n}</span>`).join('')}
         </div>
       </div>`;
@@ -200,6 +200,7 @@ function _shell(content, ep) {
 .cb-play-text strong{color:var(--cb-chalk-yellow);}
 .cb-stat{color:var(--cb-chalk-blue);text-transform:uppercase;letter-spacing:1px;font-size:12px;}
 .cb-play-gain{margin-top:6px;font-family:'Caveat',cursive;font-weight:700;font-size:20px;color:var(--cb-green);}
+.cb-play-gain.cb-play-loss{color:var(--cb-red);}
 
 /* ── flavor line between sessions ── */
 .cb-flavor{text-align:center;font-family:'Caveat',cursive;font-size:15px;color:rgba(245,242,230,0.4);padding:2px 0;font-style:italic;}
@@ -239,6 +240,7 @@ function _shell(content, ep) {
 .cb-sb-tag{font-size:9px;padding:1px 6px;border-radius:8px;letter-spacing:.5px;}
 .cb-sb-tag-in{background:#dcefe0;color:#1f6b46;}
 .cb-sb-tag-out{background:#f4d9d7;color:#a3372f;text-decoration:line-through;}
+.cb-sb-tag-damaged{background:#f7e0b3;color:#8a4b12;}
 
 @media(prefers-reduced-motion:reduce){.cb-shell *,.cb-shell *::before,.cb-shell *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}}
 @media(max-width:800px){.cb-shell{grid-template-columns:1fr;}.cb-sidebar{position:static;}}
@@ -249,6 +251,27 @@ ${content}
 </div>
 ${_buildSidebar(ep)}
 </div>`;
+}
+
+// A coach below 5 in the taught stat teaches badly — the session damages the
+// contestant instead of helping them. That has to read as damage: different
+// wording, not just a different sign on the same sentence.
+const _COACH_DRILL_TEXT_POSITIVE = [
+  (s) => `${_avatar(s.coach)} <strong>${s.coach}</strong> pulls ${_avatar(s.contestant)} <strong>${s.contestant}</strong> aside and drills <span class="cb-stat">${s.stat}</span>.`,
+  (s) => `${_avatar(s.coach)} <strong>${s.coach}</strong> walks ${_avatar(s.contestant)} <strong>${s.contestant}</strong> through a private <span class="cb-stat">${s.stat}</span> session.`,
+  (s) => `${_avatar(s.coach)} <strong>${s.coach}</strong> spends the block breaking down <span class="cb-stat">${s.stat}</span> with ${_avatar(s.contestant)} <strong>${s.contestant}</strong>.`,
+  (s) => `${_avatar(s.coach)} <strong>${s.coach}</strong> and ${_avatar(s.contestant)} <strong>${s.contestant}</strong> run drill after drill on <span class="cb-stat">${s.stat}</span> until it holds.`,
+];
+const _COACH_DRILL_TEXT_NEGATIVE = [
+  (s) => `${_avatar(s.coach)} <strong>${s.coach}</strong> pulls ${_avatar(s.contestant)} <strong>${s.contestant}</strong> aside for a <span class="cb-stat">${s.stat}</span> session that leaves ${s.contestant} worse off than before it started.`,
+  (s) => `${_avatar(s.coach)} <strong>${s.coach}</strong> tries to coach ${_avatar(s.contestant)} <strong>${s.contestant}</strong> up on <span class="cb-stat">${s.stat}</span> and mostly just confuses the fundamentals.`,
+  (s) => `${_avatar(s.coach)} <strong>${s.coach}</strong> talks ${_avatar(s.contestant)} <strong>${s.contestant}</strong> through <span class="cb-stat">${s.stat}</span>, and the advice does not hold up.`,
+  (s) => `${_avatar(s.coach)} <strong>${s.coach}</strong> runs a <span class="cb-stat">${s.stat}</span> drill with ${_avatar(s.contestant)} <strong>${s.contestant}</strong> that undoes more than it teaches.`,
+];
+function _seedIndex(str, n) {
+  let h = 0;
+  for (const ch of String(str)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return h % n;
 }
 
 // ── VP BUILDER ──────────────────────────────────────────────────────
@@ -269,12 +292,17 @@ export function rpBuildCoachBoard(ep) {
     const sessionHtml = sessions.map(s => {
       const idx = steps.length;
       const gainNum = Number(s.gain) || 0;
+      const isDamaging = gainNum < 0;
+      const drillPool = isDamaging ? _COACH_DRILL_TEXT_NEGATIVE : _COACH_DRILL_TEXT_POSITIVE;
+      const drillText = drillPool[_seedIndex(`${s.coach}|${s.contestant}|${s.stat}`, drillPool.length)](s);
+      const sign = gainNum < 0 ? '' : '+';
+      const gainLabel = isDamaging ? `${sign}${gainNum.toFixed(2)} ${s.stat}, cost` : `${sign}${gainNum.toFixed(2)} ${s.stat}, banked`;
       const stepHtml = `<div id="cb-step-board-${idx}" class="cb-step">
         <div class="cb-play-card">
           <div class="cb-play-header">${_icon('clipboard')}<span class="cb-play-label">${s.coach} — private session</span></div>
           <div class="cb-play-diagram">${_icon('play')}</div>
-          <div class="cb-play-text">${_avatar(s.coach)} <strong>${s.coach}</strong> pulls ${_avatar(s.contestant)} <strong>${s.contestant}</strong> aside and drills <span class="cb-stat">${s.stat}</span>.</div>
-          <div class="cb-play-gain">${_icon('star')} +${gainNum.toFixed(2)} ${s.stat}, banked</div>
+          <div class="cb-play-text">${drillText}</div>
+          <div class="cb-play-gain${isDamaging ? ' cb-play-loss' : ''}">${_icon('star')} ${gainLabel}</div>
         </div>
       </div>`;
       steps.push(stepHtml);

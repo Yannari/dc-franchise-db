@@ -13,7 +13,7 @@ import { generateSocialManipulationEvents } from './social-manipulation.js';
 import { simulateTribeChallenge } from './challenges-core.js';
 import { eventAllowedInSetting, settingWeightMod, settingProfile, fillVocab, currentSetting, settingReskin } from './settings.js';
 import { reputationModifier } from './reputation.js';
-import { campRoster } from './coaches.js';
+import { campRoster, isCoach as isCoachName } from './coaches.js';
 import { recordIntimidation, recordProtection, recordBetrayal } from './relationship-events.js';
 import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess } from './camp-access.js';
 import { ensureIntentions, evolveIntentions, getIntentions, evaluateEndgameBeatability } from './intentions.js';
@@ -818,6 +818,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       if (_globalAllianceCount >= _globalCap) continue; // don't form more — skip to next event type
       // Cap: players in too many active alliances shouldn't form more (overcommitted)
       // Strategic players can juggle more alliances without being overcommitted
+      // Coaches present at this camp — the alliance triggers below pair on
+      // bonds, and a coach only has bonds with the people they trained.
+      const _campCoaches = group.filter(n => isCoachName(n));
       const _isOvercommitted = p => {
         const _activeCount = (gs.namedAlliances || []).filter(a => a.active && a.members.includes(p)).length;
         const _cap = 1 + Math.floor(pStats(p).strategic * 0.2); // stat 3=1, stat 5=2, stat 7=2, stat 10=3
@@ -889,6 +892,28 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       }
       if (_ssPair) _triggers.push({ id: 'shared-struggle', weight: 7 });
 
+      // ── TRIGGER: the coach and the player they built ──────────────────
+      // Coaches are 25% of a two-coach camp and were reaching only 13% of its
+      // alliances, because every trigger above pairs on strong mutual bonds
+      // and a coach's relationships form through sessions with one or two
+      // people rather than across the whole beach. The training relationship
+      // IS the basis for an alliance — it is the twist's own answer to how a
+      // coach builds influence — and nothing was using it.
+      let _cpPair = null;
+      for (const _cc of _campCoaches) {
+        if (_isOvercommitted(_cc)) continue;
+        const _banked = Object.entries(gs.coachTraining?.[_cc] || {})
+          .filter(([n]) => group.includes(n) && !_isOvercommitted(n))
+          .sort(([, a], [, b]) => {
+            const sa = Object.values(a).reduce((t, v) => t + Math.max(0, v), 0);
+            const sb = Object.values(b).reduce((t, v) => t + Math.max(0, v), 0);
+            return sb - sa;
+          });
+        const _best = _banked.find(([n]) => getBond(_cc, n) > 0);
+        if (_best) { _cpPair = [_cc, _best[0]]; break; }
+      }
+      if (_cpPair) _triggers.push({ id: 'coach-protege', weight: 9 });
+
       if (!_triggers.length) continue;
 
       // Weighted random pick from available triggers
@@ -898,7 +923,10 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       for (const t of _triggers) { _roll -= t.weight; if (_roll <= 0) { _chosen = t; break; } }
 
       // Execute the chosen trigger
-      if (_chosen.id === 'strategic-pitch') {
+      if (_chosen.id === 'coach-protege' && _cpPair) {
+        const [_cA, _cB] = _cpPair;
+        _createAlliance([_cA, _cB], `${_cA} and ${_cB} stop pretending the sessions were only about drills. What they have been building all along gets a name, and ${_cA} — who cannot vote for it, and cannot be voted out of it by ${_cB} alone — is in it.`);
+      } else if (_chosen.id === 'strategic-pitch') {
         // Pick initiator: highest strategic OR social (social butterflies can recruit too)
         const initiator = _stratPlayers.sort((a,b) => Math.max(pStats(b).strategic, pStats(b).social) - Math.max(pStats(a).strategic, pStats(a).social))[0];
         const _initS = pStats(initiator);

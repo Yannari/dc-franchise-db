@@ -609,7 +609,12 @@ export function renderGameState() {
     html += `<div style="margin-top:8px">`;
     d.tribes.forEach(t => {
       const tc = tribeColor(t.name);
-      html += `<div class="gs-tribe"><div class="gs-tribe-name" style="color:${tc}">${t.name} (${t.members.length})</div><div class="gs-tribe-members">${t.members.join(' \u00b7 ')}</div></div>`;
+      // `t.members` is the contestant list. The coaches living at this camp
+      // are counted separately and named separately, so the number stays
+      // honest about who can compete and the panel stays honest about who is
+      // there — the tenth screen to conflate the two.
+      const _gsCo = coachesOf(t.name).map(c => c.name);
+      html += `<div class="gs-tribe"><div class="gs-tribe-name" style="color:${tc}">${t.name} (${t.members.length}${_gsCo.length ? ` + ${_gsCo.length} coach${_gsCo.length === 1 ? '' : 'es'}` : ''})</div><div class="gs-tribe-members">${[...t.members, ..._gsCo.map(n => `${n} (coach)`)].join(' · ')}</div></div>`;
     });
     html += `</div>`;
   } else {

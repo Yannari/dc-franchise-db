@@ -453,3 +453,30 @@ describe('a tribe is not empty while coaches are living in it', () => {
       'a tribe dissolved while coaches were still living on it').toBe(0);
   }, 900000);
 });
+
+// Coaches are a quarter of a two-coach camp and were reaching 13% of its
+// alliances. Every alliance trigger pairs on strong mutual bonds, and a coach
+// forms bonds through sessions with one or two people rather than across the
+// whole beach — so the relationship the twist is actually built on, coach and
+// protégé, was the one thing no trigger used.
+describe('a coach can be in an alliance with the player they built', () => {
+  it('reaches roughly its share of alliances rather than half of it', async () => {
+    const core = await import('../js/core.js');
+    let total = 0, withCoach = 0;
+    for (let r = 0; r < 3; r++) {
+      const { coachNames } = await runHeadlessSeason({
+        twist: 'coaches', coachesPerTribe: 2, castSize: 18, mergeAt: 6, teams: 3,
+      });
+      for (const a of (core.gs.namedAlliances || [])) {
+        total++;
+        if ((a.members || []).some(m => coachNames.includes(m))) withCoach++;
+      }
+    }
+    expect(total, 'no alliance formed at all').toBeGreaterThan(0);
+    // Two coaches in a camp of eight is a quarter of the room. Half of that
+    // is the failure this fixes; the assertion is deliberately loose because
+    // it is a rate, not a guarantee.
+    expect(withCoach / total,
+      `only ${withCoach} of ${total} alliances included a coach`).toBeGreaterThan(0.12);
+  }, 900000);
+});

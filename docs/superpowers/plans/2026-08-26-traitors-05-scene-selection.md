@@ -318,3 +318,29 @@ that keeps advancing is a story that has not paid off. Since a payoff is what ma
 legible to a viewer, Tasks 4 and 5 should author CLOSING events into the crowded windows
 (evening, after-table) rather than more advancers. This is the opposite of what the first
 amendment's withdrawn coverage target would have produced.
+
+### The declaration is not free (Task 2, round 3)
+
+Guard 1 multiplies a DECLARED advancer by 4x-9x, and `rare` by 2x. Declaring the flag is
+therefore a large weight change, not a label. Ten of Task 2's seventeen conversions landed
+in `morning` and starved `romance-shared-alibi` from 12 firings/400 seasons to 2 -- the
+reachability floor fired and caught it. Those ten were withdrawn (44/81 -> 32/81): payoff
+recovered 3.48% -> 3.93% (base 3.96%) for 0.018 beats of length, and every citation was
+kept, because citing residue never needed the flag.
+
+**Rule for Tasks 4 and 5: declare `advancesThread` only where it is true, and treat each
+declaration as a 4x-9x weight change in that event's window.** Watch the reachability floor
+after any batch of declarations, and read headroom in DECLARATIONS, not in sd -- roughly 17
+remain before the continuity control band goes stale again.
+
+### Guarding prose: some defects are only catchable at the source
+
+Task 2 round 3 found a truncation bug (`"...told it made."` -- a branch deleting from `{b}`
+to end-of-sentence, correct only when `{b}` starts one). Its first guard was an OUTPUT
+regex for a dangling space, and it was GREEN against the broken source.
+
+**No regex over finished prose can distinguish a fragment from a sentence that meant to end
+there.** The working guard was a SOURCE rule (substituted, never cut). Verified again on the
+placeholder bug: mutating one `/\{b\}/g` back to the string form reddens the SOURCE rule and
+does NOT redden the output rule. When authoring prose guards, prefer a rule over the source
+text; use output rules only for defects that are unambiguous in the finished string.

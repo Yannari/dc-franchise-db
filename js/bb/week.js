@@ -76,7 +76,7 @@ import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, 
 import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan } from './plans.js';
 import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf, sincerityOf } from './deals.js';
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
-import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster } from './blocs.js';
+import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster, withRoster } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge, stableRng } from './knowledge.js';
 import { runCallOutChain } from './white-locust.js';
 import { runCampDirector } from './camp-director.js';
@@ -1039,18 +1039,24 @@ function _attachAllianceFallout(week, house) {
  * walkout/expulsion path — because a week that ended strangely still had
  * alliances in it.
  */
-function _snapshotAllianceBoard() {
+function _snapshotAllianceBoard(roster = null) {
   try {
-    const house = gs.activePlayers || [];
-    return listBlocs()
-      .filter(b => (b.members || []).every(m => house.includes(m)))
-      .map(b => ({
-        ...blocRoster(b),
-        name: b.label || b.name || null,
-        power: Math.round((b.power || 0) * 100) / 100,
-        share: Math.round((b.share || 0) * 100) / 100,
-        exposed: !!b.exposed,
-      }));
+    // Computed over the house as it stood THIS WEEK, not the house that is
+    // left after the vote. The board is taken at the end of the week but the
+    // panels that draw it play from Sunday onwards, and a member with no
+    // number under their face is the one piece of information those screens
+    // must not carry: it named the evictee before the ceremony did.
+    const house = (roster && roster.length ? roster : gs.activePlayers) || [];
+    return withRoster(house, () => 
+      listBlocs()
+        .filter(b => (b.members || []).every(m => house.includes(m)))
+        .map(b => ({
+          ...blocRoster(b),
+          name: b.label || b.name || null,
+          power: Math.round((b.power || 0) * 100) / 100,
+          share: Math.round((b.share || 0) * 100) / 100,
+          exposed: !!b.exposed,
+        })));
   } catch { return []; }
 }
 
@@ -5806,7 +5812,7 @@ export function simulateBBWeek(options = {}) {
   week.housePlans = Object.fromEntries((gs.activePlayers || [])
     .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
   week.closingState = _snapshotHouse();
-  week.allianceBoard = _snapshotAllianceBoard();
+  week.allianceBoard = _snapshotAllianceBoard(week.houseAtStart);
     week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
     _attachRomance(week, rng);
     // How they wore it, judged on what the week actually achieved rather than on
@@ -7093,7 +7099,7 @@ export function simulateBBWeek(options = {}) {
   week.housePlans = Object.fromEntries((gs.activePlayers || [])
     .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
   week.closingState = _snapshotHouse();
-  week.allianceBoard = _snapshotAllianceBoard();
+  week.allianceBoard = _snapshotAllianceBoard(week.houseAtStart);
   week.perceptionChanges = updateBBPerceptions({ house:gs.activePlayers, week, rng });
   _attachRomance(week, rng);
   // How they wore it, judged on what the week actually achieved rather than on

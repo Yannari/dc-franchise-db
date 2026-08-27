@@ -313,3 +313,55 @@ describe('nominating your own alliance is felt by the room', () => {
     expect((group.betrayals || []).some(b => b.reason === 'nominated-own')).toBe(false);
   });
 });
+
+describe('the alliance panel does not name the evictee', () => {
+  // Reported from a live watch: one face in the alliance rows had no number
+  // under it, and it was the person about to be evicted — so the panel gave
+  // the result away on screens that play days before the vote.
+  //
+  // The cause was a roster, not a renderer. `_buildBlocs` filters members to
+  // gs.activePlayers and the board is snapshotted AFTER the eviction is
+  // applied, so anybody who had just left was missing from every bloc, while
+  // the alliance row itself still listed them. `_bbfHold` draws a bare avatar
+  // for a member with no board row — which is exactly the tell.
+  it('keeps a hold reading for somebody evicted that week', async () => {
+    const { simulateBBEpisode } = await import('../js/bb-run.js');
+    const { threatScore } = await import('../js/players.js');
+    const { ordinal } = await import('../js/finale.js');
+    const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const spread = n => Object.fromEntries(KEYS.map((k, i) => [k, 1 + ((n * 13 + i * 5) % 10)]));
+    const ARCH = ['mastermind', 'hero', 'floater', 'villain', 'schemer', 'goat',
+      'social-butterfly', 'loyal-soldier', 'wildcard', 'underdog', 'perceptive-player',
+      'challenge-beast'];
+    seedGame(Array.from({ length: 14 }, (_, i) => ({ name: 'P' + i,
+      archetype: ARCH[i % ARCH.length], gender: i % 2 ? 'f' : 'm',
+      sexuality: 'straight', stats: spread(i + 1) })),
+    { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+    gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+    Object.assign(seasonConfig, { format: 'big-brother', jurySize: 7, bbSafetyMode: 'off',
+      finaleSize: 3, bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house',
+      romance: 'enabled', twistSchedule: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, threatScore,
+      getBond, getPerceivedBond, ordinal });
+
+    let checked = 0;
+    for (let w = 0; w < 10; w++) {
+      if (!simulateBBEpisode()) break;
+      const week = gs.bb.weeks[gs.bb.weeks.length - 1];
+      if (!week?.evicted) continue;
+      for (const a of gs.namedAlliances || []) {
+        if (!(a.members || []).includes(week.evicted)) continue;
+        const board = (week.allianceBoard || []).find(b => b.name === a.name);
+        if (!board) continue;
+        checked++;
+        expect((board.members || []).some(m => m.name === week.evicted),
+          `${week.evicted} was evicted in week ${week.num} and vanished from the `
+          + `"${a.name}" board — the missing number is the spoiler`).toBe(true);
+      }
+    }
+    expect(checked, 'no evicted alliance member was ever checked').toBeGreaterThan(0);
+  });
+});

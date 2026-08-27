@@ -843,6 +843,13 @@
     .bbf-hold.is-away b      { color:#6e7681; }
     .bbf-hold.is-weak img, .bbf-hold.is-weak .rp-portrait {
                      outline:1.5px solid #c9343c; outline-offset:1px; border-radius:4px; }
+    /* Whether the number moved since last week. The pair rows beside these
+       have always had arrows; the hold digit did not, so a week that cost an
+       alliance real trust drew identically to a quiet one. */
+    .bbf-hold-d    { font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     font-style:normal; font-weight:700; line-height:1; letter-spacing:-.2px; }
+    .bbf-hold-d.up   { color:#3fb950; }
+    .bbf-hold-d.down { color:#f47067; }
 
     .spl-why       { margin:6px 2px 0; font-size:10.5px; line-height:1.4; color:#8b949e;
                      text-align:center; }

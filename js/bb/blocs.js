@@ -38,7 +38,28 @@ import { pStats } from '../players.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-const live = () => (gs.activePlayers || []).filter(Boolean);
+// ── WHO COUNTS AS IN THE HOUSE, FOR ONE CALCULATION ──
+//
+// Everything here reads the live roster, which is correct all season and
+// wrong at exactly one moment: the alliance board is snapshotted AFTER the
+// eviction has been applied, so the person who just left is missing from
+// every bloc — and the House Life panels that draw that board play BEFORE
+// the vote. The result was that one face in the alliance rows had no number
+// under it, every week, and it was always the person about to go home.
+//
+// `withRoster` lets a caller compute the board over the house as it stood
+// during the week. The cache is keyed off house state, so it is dropped on
+// the way in and on the way out rather than serving an overridden answer to
+// somebody who did not ask for one.
+let _rosterOverride = null;
+const live = () => _rosterOverride || (gs.activePlayers || []).filter(Boolean);
+
+export function withRoster(names, fn) {
+  const prev = _rosterOverride;
+  _rosterOverride = Array.isArray(names) && names.length ? [...new Set(names.filter(Boolean))] : prev;
+  _cache = {};
+  try { return fn(); } finally { _rosterOverride = prev; _cache = {}; }
+}
 const archetypeOf = name => players.find(p => p.name === name)?.archetype || '';
 
 function ensure() {

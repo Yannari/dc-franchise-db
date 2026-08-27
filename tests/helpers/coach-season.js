@@ -102,14 +102,14 @@ function makeCast(n) {
  * one more loop iteration mutates gs.activePlayers/gs.tribes/gs.phase out
  * from under a later call) and stores the result on `episodes[i].text`.
  */
-export async function runHeadlessSeason({ twist, coachesPerTribe = 0, castSize = 16, mergeAt = 10, captureText = false } = {}) {
+export async function runHeadlessSeason({ twist, coachesPerTribe = 0, castSize = 16, mergeAt = 10, captureText = false, teams = 2 } = {}) {
   core.setPlayers(makeCast(castSize));
   const twistSchedule = [];
   if (twist === 'coaches') {
     for (let e = 1; e <= 40; e++) twistSchedule.push({ episode: e, type: 'coaches', id: `coaches-${e}` });
   }
   core.setSeasonConfig({
-    ...core.seasonConfig, name: 'CoachAudit', teams: 2, mergeAt, finaleSize: 3,
+    ...core.seasonConfig, name: 'CoachAudit', teams, mergeAt, finaleSize: 3,
     finaleFormat: 'traditional', jurySize: 7, romance: 'disabled', aftermath: 'disabled',
     popularityEnabled: false, advantages: { idol: { enabled: true } },
     twistSchedule,

@@ -89,3 +89,15 @@ and Second Opinion are not in the advantage catalog at all.
 - Fame uses a two-tier `isReturnee` proxy (newbie 0, returning vet 2.0) rather
   than real career stars, because `js/fame.js` needs season data an episode
   cannot reach. Replaceable once item 1 plumbs it.
+
+## 7. Seed the season test's RNG
+
+`tests/coach-season.test.js` — "promotes whoever survived to the merge" — is
+flaky. It uses an unseeded `Math.random()`, and a promoted coach can
+legitimately be voted out in the same merge episode they join, so the
+assertion sometimes finds them already gone.
+
+That is the twist behaving correctly and the test being unable to tell. This
+repo already has the rule: a bare `Math.random()` breaks replay guards, use a
+stable seeded generator. Seed it and assert against a fixed season rather than
+re-rolling one.

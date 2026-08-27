@@ -287,9 +287,13 @@ export function memberLoyalty(name, bloc) {
     const age = Math.max(0, _now - (Number(h.week) || 0));
     if (age > 2) return worst;
     const fade = age === 0 ? 1 : age === 1 ? 0.55 : 0.25;
+    // Never asking is careless. Asking, being told no, and doing it anyway is
+    // a decision about the people who said no — and the group prices those
+    // very differently.
+    const overruled = h.stance === 'overruled';
     const size = isVictim
       ? (h.target ? 0.24 : 0.11) * (h.consented === false ? 0.6 : 1)
-      : (h.target ? 0.20 : 0.09);
+      : (h.target ? 0.20 : 0.09) * (overruled ? 1.35 : 0.8);
     return Math.max(worst, size * fade);
   }, 0);
 
@@ -317,8 +321,13 @@ export function memberLoyalty(name, bloc) {
   const _rogue = (_board?.history || []).some(h => h?.type === 'nominated-own'
     && h.consented === false && h.player === name
     && Math.max(0, _now - (Number(h.week) || 0)) <= 2);
+  const _overruled = (_board?.history || []).some(h => h?.type === 'nominated-own'
+    && h.stance === 'overruled' && h.player === name
+    && Math.max(0, _now - (Number(h.week) || 0)) <= 2);
   const reason = _hidden
     ? `is in this on paper and has already decided how it ends`
+    : _overruled
+      ? `was told no by this group and went ahead anyway`
     : putUp > 0
     ? (_rogue
       ? `spent this group's week on one of its own without asking`

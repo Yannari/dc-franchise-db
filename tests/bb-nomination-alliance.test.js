@@ -608,3 +608,91 @@ describe('and the screen says who is no longer in what', () => {
     expect(vp, 'it never reaches a screen').toMatch(/is finished —/);
   });
 });
+
+describe('whether they took it to the group first', () => {
+  // Asked whether expulsion was too harsh, or whether Heads of Household just
+  // do not take precautions. It was the second, and it was not their fault:
+  // consent was being read PASSIVELY — whether the rest of the group already
+  // happened to want the nominee gone — because the house had no way to ask.
+  // There is a pawn conversation and nothing at all for "I need to put one of
+  // ours up". 47 of 74 ally-nominations came back rogue, and an alliance being
+  // blindsided by its own Head of Household should not be the default
+  // behaviour of the format.
+  //
+  // Three answers now. Measured over 176 weeks:
+  //   signed off   46%, somebody leaves over it  8%
+  //   never asked  40%,                         19%
+  //   overruled    13%,                         43%
+  it('produces all three answers, with the group agreeing most often', async () => {
+    const { simulateBBEpisode } = await import('../js/bb-run.js');
+    const { threatScore } = await import('../js/players.js');
+    const { ordinal } = await import('../js/finale.js');
+    const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const spread = n => Object.fromEntries(KEYS.map((k, i) => [k, 1 + ((n * 13 + i * 5) % 10)]));
+    const ARCH = ['mastermind', 'hero', 'floater', 'villain', 'schemer', 'goat',
+      'social-butterfly', 'loyal-soldier', 'wildcard', 'underdog', 'perceptive-player',
+      'challenge-beast'];
+    const seen = {};
+    for (let s = 0; s < 8; s++) {
+      seedGame(Array.from({ length: 14 }, (_, i) => ({ name: 'P' + i,
+        archetype: ARCH[i % ARCH.length], gender: i % 2 ? 'f' : 'm',
+        sexuality: 'straight', stats: spread(i + 1) })),
+      { episode: 0, eliminated: [], namedAlliances: [] });
+      gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+      gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+      gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+      Object.assign(seasonConfig, { format: 'big-brother', jurySize: 7, bbSafetyMode: 'off',
+        finaleSize: 3, bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house',
+        romance: 'enabled', twistSchedule: [] });
+      Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, threatScore,
+        getBond, getPerceivedBond, ordinal });
+      for (let w = 0; w < 11; w++) {
+        if (!simulateBBEpisode()) break;
+        const week = gs.bb.weeks[gs.bb.weeks.length - 1];
+        for (const t of week?.allianceConsults || []) {
+          seen[t.stance] = (seen[t.stance] || 0) + 1;
+          expect(t.of).toBeGreaterThan(0);
+          expect(t.agrees).toBeLessThanOrEqual(t.of);
+        }
+      }
+    }
+    const total = Object.values(seen).reduce((a, b) => a + b, 0);
+    expect(total, 'nobody ever nominated their own alliance in eight seasons').toBeGreaterThan(4);
+    expect(seen.sanctioned, 'the group never once signed off on it').toBeGreaterThan(0);
+    // Being blindsided by your own alliance must not be the common case.
+    expect((seen['never-asked'] || 0) / total,
+      'most Heads of Household still put one of their own up without a word')
+      .toBeLessThan(0.55);
+  });
+
+  it('a pawn is a formality and a target is a fight', () => {
+    // Without this distinction a third of ally-nominations came back as the
+    // group being told no and overruled, because members of a tight alliance
+    // have warm bonds with each other and were objecting to a pawn exactly the
+    // way they objected to a target.
+    const week = readFileSync('js/bb/week.js', 'utf8');
+    expect(week).toMatch(/acceptsAt = \(isTarget \? 1\.5 : 5\.5\)/);
+    // And somebody who can sell it, sells it.
+    expect(week).toMatch(/persuasion/);
+  });
+
+  it('prices carelessness below defiance', () => {
+    // These were both 0.05, which said that never asking costs a group exactly
+    // what asking and being told yes costs it.
+    const week = readFileSync('js/bb/week.js', 'utf8');
+    const m = week.match(/stance === 'overruled' \? ([\d.]+) : stance === 'never-asked' \? ([\d.]+) : ([\d.]+)/);
+    expect(m, 'the departure odds no longer read the stance').toBeTruthy();
+    const [, overruled, never, signed] = m.map(Number);
+    expect(overruled).toBeGreaterThan(never);
+    expect(never).toBeGreaterThan(signed);
+  });
+
+  it('puts the conversation on the screen before the keys turn', () => {
+    const vp = readFileSync('js/vp-screens.js', 'utf8');
+    expect(vp).toMatch(/kind: 'consult'/);
+    expect(vp).toMatch(/THE GROUP SIGNED OFF/);
+    expect(vp).toMatch(/TOLD NO, DID IT ANYWAY/);
+    expect(vp).toMatch(/NEVER ASKED THEM/);
+  });
+});

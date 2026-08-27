@@ -3746,11 +3746,69 @@ export function simulateBBWeek(options = {}) {
          already tracks: their standing target and their own plan. */
       const others = (group.members || []).filter(n =>
         n !== hoh && n !== nominee && (gs.activePlayers || []).includes(n));
-      const agrees = others.filter(n => {
+      /* ── DID THEY TALK TO ANYBODY FIRST? ──
+         Consent was being read passively: whether the rest of the group
+         already happened to want this person gone. That made 47 of 74
+         ally-nominations "rogue", and an alliance being blindsided by its own
+         Head of Household is not something that should happen in two weeks out
+         of three. The reason it did is that the house had no way to ASK. There
+         is a pawn conversation, and nothing at all for "I need to put one of
+         ours up".
+         So there are three answers now, not two. They asked and the room
+         agreed. They never asked. Or they asked, were told no, and did it
+         anyway — which is the worst of the three and the only one that is
+         genuinely a betrayal of the group rather than a failure to consult.
+         Whether somebody thinks to have the conversation is character:
+         strategic enough to know the nomination is cheaper if it is sold
+         first, loyal enough to feel owed, and not so bold that asking feels
+         like permission. */
+      const alreadyWants = n => {
         try { if (getBBTarget(n) === nominee) return true; } catch { /* no target */ }
         try { return (housePlan(n)?.targets || []).includes(nominee); } catch { return false; }
+      };
+      const hStats = (() => { try { return pStats(hoh) || {}; } catch { return {}; } })();
+      let hArch = '';
+      try { hArch = (players.find(pp => pp.name === hoh) || {}).archetype || ''; } catch { hArch = ''; }
+      // 0.58 rather than 0.42: at the lower number half of all Heads of
+      // Household put one of their own people up without mentioning it to
+      // anybody, and being blindsided by your own alliance should be a move
+      // somebody chose, not the default behaviour of the format.
+      const talkOdds = Math.max(0.05, Math.min(0.92,
+        0.58
+        + ((hStats.strategic ?? 5) - 5) * 0.05
+        + ((hStats.loyalty ?? 5) - 5) * 0.05
+        + ((hStats.social ?? 5) - 5) * 0.02
+        - ((hStats.boldness ?? 5) - 5) * 0.025
+        - (['villain', 'mastermind', 'schemer'].includes(hArch) ? 0.14 : 0)));
+      const asked = others.length > 0 && rng() < talkOdds;
+      // What the room says when it is asked. Somebody who already wants the
+      // nominee gone says yes; so does somebody who does not much like them.
+      // Anybody close to them argues against it.
+      /* What the room says depends enormously on WHICH chair is being asked
+         for. "One of us has to sit as a pawn" is a formality every alliance in
+         this format agrees to; "one of us is the person I am trying to evict"
+         is a fight. Measured without that distinction, a third of all
+         ally-nominations came back as the Head of Household being told no and
+         going ahead regardless, because members of a tight group have warm
+         bonds with each other and were objecting to a pawn the same way they
+         objected to a target. And somebody who can sell it, sells it. */
+      const persuasion = ((hStats.social ?? 5) - 5) * 0.45 + ((hStats.strategic ?? 5) - 5) * 0.3;
+      const acceptsAt = (isTarget ? 1.5 : 5.5) + persuasion;
+      const agrees = others.filter(n => {
+        if (alreadyWants(n)) return true;
+        let bond = 0;
+        try { bond = getBond(n, nominee) || 0; } catch { bond = 0; }
+        return bond <= acceptsAt;
       }).length;
-      const consented = others.length ? agrees * 2 >= others.length : false;
+      const roomAgrees = others.length ? agrees * 2 >= others.length : false;
+      const stance = !others.length ? 'alone'
+        : !asked ? 'never-asked'
+          : roomAgrees ? 'sanctioned' : 'overruled';
+      const consented = stance === 'sanctioned';
+      if (stance !== 'alone') {
+        (week.allianceConsults ||= []).push({ alliance: group.name, hoh, victim: nominee,
+          stance, target: isTarget, agrees, of: others.length });
+      }
 
       for (const member of others) {
         let care = 0, loyal = 5;
@@ -3764,7 +3822,7 @@ export function simulateBBWeek(options = {}) {
       }
       group.history ||= [];
       group.history.push({ week: week.num, type: 'nominated-own',
-        player: hoh, victim: nominee, target: isTarget, consented });
+        player: hoh, victim: nominee, target: isTarget, consented, stance });
 
       /* ── AND EITHER WAY, SOMEBODY MAY NOT BE IN THIS ALLIANCE BY FRIDAY ──
          Not guaranteed, and it should not be: most of these are survived and
@@ -3782,7 +3840,14 @@ export function simulateBBWeek(options = {}) {
         (isTarget ? 0.16 : 0.06)
         + (5 - loyalty) * 0.022
         + (bold - 5) * 0.012
-        + (consented ? 0.05 : 0.09)));
+        // Asked and ignored the answer is the one a group actually removes
+        // somebody for. Never asking is careless; being told no and doing it
+        // anyway is a decision about them.
+        // Measured at 0.05 for both, which said that never asking costs a
+        // group exactly what asking and being told yes costs it. Not asking is
+        // careless and should mostly cost trust; being told no and going ahead
+        // is the one an alliance actually removes somebody for.
+        + (stance === 'overruled' ? 0.17 : stance === 'never-asked' ? 0.07 : 0.04)));
       if (!(rng() < chance)) continue;
 
       /* ── AND THE BETTER VERSION OF LEAVING, WHICH IS NOT LEAVING ──
@@ -3896,6 +3961,7 @@ export function simulateBBWeek(options = {}) {
   }
   if (!chainNoms.length) week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
     grievances: nomGrievances, allianceExits: week.allianceExits || null,
+    allianceConsults: week.allianceConsults || null,
     duo: duoNom, nomFallout: week.nomFallout,
     structure: plan.structure || 'target-pawn', structureWhy: plan.structureWhy || '',
     anonymous: hohSecret,

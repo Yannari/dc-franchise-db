@@ -1086,6 +1086,11 @@
     .bbf-gone-row  { font-size:10.5px; line-height:1.5; color:#8b949e; }
     .bbf-gone-row b { color:#c9d1d9; }
 
+    /* The group was asked and said yes. Not a betrayal, so not red. */
+    .bbns-signed      { background:rgba(63,185,80,.07); border-color:rgba(63,185,80,.28);
+                     color:#9fd8ab; }
+    .bbns-signed span { color:#3fb950; }
+
     /* Somebody holding two things at once — HOH who won the veto, nominee who
        took themselves off — needs both badges, side by side across the top of
        the frame. */

@@ -18311,6 +18311,16 @@ export function rpBuildBBNominations(ep, only = null) {
     && duoBlocks.flat().length === noms.length;
 
   const steps = [{ kind: 'open' }];
+  /* ── WHETHER THEY TOOK IT TO THE GROUP FIRST ──
+     An alliance being blindsided by its own Head of Household was happening in
+     two weeks out of three, and the reason was that the house had no way to
+     ask: there is a pawn conversation and nothing at all for "I need to put
+     one of ours up". This is that conversation, and it is the difference
+     between a week the group signed off on, one they were never told about,
+     and one where they said no and it happened anyway. */
+  for (const talk of act?.allianceConsults || []) {
+    if (talk) steps.push({ kind: 'consult', talk });
+  }
   if (duoCeremony) {
     duoBlocks.forEach((pair, i) => {
       const target = act.duo.targets?.[i] || pair[0];
@@ -18564,6 +18574,22 @@ export function rpBuildBBNominations(ep, only = null) {
             </div>`;
           }).join('');
         })()}</div>`;
+    }
+    if (step.kind === 'consult') {
+      const t = step.talk;
+      const label = t.stance === 'sanctioned' ? 'THE GROUP SIGNED OFF'
+        : t.stance === 'overruled' ? 'TOLD NO, DID IT ANYWAY' : 'NEVER ASKED THEM';
+      const body = t.stance === 'sanctioned'
+        ? `${_bbEsc(t.hoh)} put it to <strong>${_bbEsc(t.alliance)}</strong> before the ceremony: one of theirs has to sit down, and it has to be ${_bbEsc(t.victim)}. ${t.agrees} of the ${t.of} said yes. Nobody in that room gets to be surprised on Thursday.`
+        : t.stance === 'overruled'
+          ? `${_bbEsc(t.hoh)} did take it to <strong>${_bbEsc(t.alliance)}</strong>, and <strong>${_bbEsc(t.alliance)}</strong> said no — ${t.of - t.agrees} of the ${t.of} argued for ${_bbEsc(t.victim)}. ${_bbEsc(t.hoh)} listened to all of it and used the week exactly as planned.`
+          : `${_bbEsc(t.hoh)} never raised it with <strong>${_bbEsc(t.alliance)}</strong> at all. The first any of them hear that one of their own is going up is when the key turns.`;
+      const cls = t.stance === 'sanctioned' ? 'bbns-signed' : 'bbns-exit';
+      return `<div class="bbns-card is-reason">
+        <div class="bbns-card-h">${_bbAvatar(t.hoh, 30)}<span class="bbns-pill ${t.stance === 'sanctioned' ? 'green' : 'red'}">${label}</span></div>
+        <div class="bbns-card-b"><div class="bbns-broke ${cls}" style="margin-top:0">
+          <span>${_bbEsc(t.alliance)}</span>${body}
+        </div></div></div>`;
     }
     if (step.kind === 'exit') {
       const x = step.exit;

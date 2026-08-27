@@ -1841,6 +1841,19 @@ export function _textWhyVote(ep, ln, sec) {
   sec('WHY THIS VOTE HAPPENED');
   const elim = ep.eliminated;
 
+  // ── SAVE CARD ──
+  // A save card firing rewrites `result.eliminated` to the coach's chosen
+  // replacement BEFORE this function ever sees it (`maybeSaveCoach` /
+  // `offerSaveCard` in coach-episode.js) — the replacement then reads as an
+  // ordinary vote-out below unless this says otherwise first. Without this,
+  // the twist's biggest beat (a tribe unanimously protecting its coach, who
+  // then names who dies in his place) would vanish into silence.
+  (ep.coachSaves || []).forEach(save => {
+    const _svP = pronouns(save.coach);
+    ln(`SAVE CARD PLAYED — ${save.tribe ? `${save.tribe} ` : 'The tribe '}unanimously agreed to save ${save.coach}.`);
+    ln(`  ${save.coach} named the replacement: ${save.replacement || '???'} goes home in ${_svP.posAdj} place.`);
+  });
+
   // Multi-tribal summaries
   if (ep.multiTribalResults?.length) {
     ep.multiTribalResults.forEach(r => {

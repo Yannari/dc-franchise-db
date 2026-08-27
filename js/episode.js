@@ -38,7 +38,7 @@ import { retrofitFranchiseMeta } from './franchise-meta.js';
 import { survivalFlavor, fillVocab } from './settings.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
-import { applyCoachElimination, coachFallout, promoteCoaches, runCoachingBlock } from './coach-episode.js';
+import { applyCoachElimination, coachFallout, maybeSaveCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
 import { coachesOf } from './coaches.js';
 
 // Challenge simulate functions
@@ -4986,6 +4986,7 @@ export function simulateEpisode() {
     // so none are silently unreachable as a vote target on a double-tribal night.
     const _dtCoachTargets = _dtLosingTribes.flatMap(t => coachesOf(t.name).map(c => c.name));
     const _dtResult = runTribal(_dtMembers, null, _dtAlliances, _dtCoachTargets);
+    maybeSaveCoach(ep, _dtResult); // offer the coach's save card before the elimination gate reads .eliminated
     applyCoachElimination(ep, _dtResult); // see applyCoachElimination's header — must run before _dtResult.eliminated is read below
     ep.votes = _dtResult.votes; ep.votingLog = _dtResult.log;
     ep.isTie = _dtResult.isTie; ep.tiedPlayers = _dtResult.tiedPlayers;
@@ -5149,6 +5150,7 @@ export function simulateEpisode() {
       // without an explicit list this tribe's coaches would be silently
       // unreachable as a vote target.
       const tResult = runTribal(tribe.members, null, tAlliances, coachesOf(tribe.name).map(c => c.name));
+      maybeSaveCoach(ep, tResult); // offer the coach's save card before the elimination gate reads .eliminated
       applyCoachElimination(ep, tResult); // see applyCoachElimination's header — must run before tResult.eliminated is read below
       // Capture idol plays that fired for THIS tribe
       const _tribeIdolPlays = (ep.idolPlays || []).slice(_preIdolCount);
@@ -6073,6 +6075,7 @@ function simulateJuryRoundtable(ep) {
 
   // ── VOTE ──
   const r1 = runTribal(ep.tribalPlayers, ep.immunityWinner||null, alliances);
+  maybeSaveCoach(ep, r1); // offer the coach's save card before the elimination gate reads .eliminated
   applyCoachElimination(ep, r1); // see applyCoachElimination's header — must run before r1.eliminated is read below
   // The initial tally is authoritative. In particular, Extra Votes already
   // mutate r1.votes before resolution. Preserve tie metadata even if a legacy
@@ -6379,6 +6382,7 @@ function simulateJuryRoundtable(ep) {
       ep.shotInDark1 = ep.shotInDark || null;
       ep.shotInDark = null;
       const r2 = runTribal(remaining, ep.immunityWinner2, alliances2);
+      maybeSaveCoach(ep, r2); // offer the coach's save card before the elimination gate reads .eliminated
       applyCoachElimination(ep, r2); // see applyCoachElimination's header — must run before r2.eliminated is read below
       ep.votes2 = r2.votes; ep.votingLog2 = r2.log;
       ep.isTie = r2.isTie; ep.tiedPlayers = r2.tiedPlayers;

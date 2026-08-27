@@ -7,6 +7,7 @@ import { addBond, getBond } from './bonds.js';
 import { activeCoaches, bankTraining, coachesOf, coachRecord, isCoach, removeCoach, revokeCoachTraining, sessionsFor } from './coaches.js';
 import { pickSessionTargets, sessionGain, teachableStat, aweOf } from './coach-agenda.js';
 import { showWords } from './shows.js';
+import { giveAdvantage } from './advantages.js';
 
 /** How close this coach is to being voted out, 0..1. Lifts their survive agenda. */
 function vulnerabilityOf(coachName, tribe) {
@@ -196,6 +197,35 @@ export function promoteCoaches(ep) {
   }
   if (promoted.length) ep.coachPromotions = promoted;
   return promoted;
+}
+
+/**
+ * Offer the departing coach's save card BEFORE `applyCoachElimination` reads
+ * `result.eliminated` — a saved coach must never reach revocation.
+ *
+ * Looks the coach's own tribe up from `gs.tribes` via their stored `.tribe`
+ * (never from whatever `tribalPlayers` the caller happened to build — a
+ * double-tribal night merges several tribes' rosters into one ballot, and
+ * the save card's unanimity check is scoped to the coach's OWN tribe only).
+ *
+ * If the tribe is unanimous, the coach survives and `result.eliminated` is
+ * rewritten to the replacement they named — the normal contestant-elimination
+ * path then runs against that name, so placements and jury stay correct.
+ * Returns true if the card fired.
+ */
+export function maybeSaveCoach(ep, result) {
+  if (!result?.eliminated || !isCoach(result.eliminated)) return false;
+  const record = coachRecord(result.eliminated);
+  if (!record) return false;
+  const tribeObj = (gs.tribes || []).find(t => (t.name ?? t.tribeName) === record.tribe);
+  if (!tribeObj) return false;
+
+  const outcome = offerSaveCard(ep, result.eliminated, tribeObj);
+  if (outcome.played && outcome.replacement) {
+    result.eliminated = outcome.replacement;
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -460,6 +490,55 @@ export function coachFallout(ep, tribe, blockResult, roll = Math.random) {
     events.push({
       type: 'coachBadAdvice', players: [s.contestant, s.coach],
       badgeText: 'BAD ADVICE', badgeClass: 'red',
+      text: pick(pool),
+    });
+  }
+
+  // ── RARE: a coach hands a found advantage to a protégé in danger ──
+  // `giveAdvantage` already enforces the cost (the save card), so this is
+  // just the decision to make the trade — gated tight and archetype-driven,
+  // per the project's rule that social decisions scale off stats rather than
+  // a flat coin flip. Support archetypes give to protect a favourite; Control
+  // archetypes give to arm a loyalist. Everyone else barely reaches for it.
+  for (const c of (_tribeName ? coachesOf(_tribeName) : [])) {
+    const record = coachRecord(c.name);
+    if (!record || record.saveCard !== 'unused') continue;
+    const held = (gs.advantages || []).find(a => a.holder === c.name && !a.givenBy);
+    if (!held) continue;
+
+    const cStats = pStats(c.name);
+    const cArche = archetypeOf(c.name);
+    const supportLean = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer'].includes(cArche) ? 1
+      : ['mastermind', 'schemer', 'villain'].includes(cArche) ? 0.6 : 0.2;
+    const chance = supportLean * (cStats.loyalty / 10) * 0.12;
+    if (roll() >= chance) continue;
+
+    // Who it goes to: a favourite (strong bond with the coach) who is the
+    // most exposed to the rest of the tribe (weakest average standing with
+    // everyone else) — the protégé actually in danger, not just the closest one.
+    const favourites = members.filter(m => m !== c.name && getBond(c.name, m) >= 3);
+    if (!favourites.length) continue;
+    const riskOf = m => {
+      const others = members.filter(o => o !== m && o !== c.name);
+      if (!others.length) return 0;
+      return -others.reduce((sum, o) => sum + getBond(m, o), 0) / others.length;
+    };
+    const protege = favourites.sort((a, b) => riskOf(b) - riskOf(a))[0];
+    if (!giveAdvantage(c.name, protege, held)) continue;
+
+    addBond(c.name, protege, 1.0);
+    gs.popularity[protege] = (gs.popularity[protege] || 0) + 0.5;
+    const label = held.type === 'idol' ? 'idol' : held.type === 'legacy' ? 'Legacy Advantage'
+      : held.type === 'amulet' ? 'amulet' : held.type;
+    const pool = [
+      `${c.name} presses the ${label} into ${protege}'s hand before anyone else can see, and just like that, the save card is gone with it.`,
+      `${c.name} decides ${protege} needs the ${label} more than a coach ever will and hands it over — no strings, no card left to play.`,
+      `${c.name} makes the trade nobody saw coming: ${protege} walks away with the ${label}, and ${c.name} walks away with no protection left.`,
+      `${c.name} gives up the one thing keeping a coach safe, all so ${protege} can carry the ${label} into the next vote.`,
+    ];
+    events.push({
+      type: 'coachGivesAdvantage', players: [c.name, protege],
+      badgeText: 'ADVANTAGE HANDED OVER', badgeClass: 'purple',
       text: pick(pool),
     });
   }

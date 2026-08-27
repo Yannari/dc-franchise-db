@@ -476,7 +476,22 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
   const chosen = scored[0].name;
   if (_pactWatch) _pactWatch({ voter, ep, chosen, fellows: [...fellows], pool: [...pool],
     reluctance, living: (gs.activePlayers || []).length,
-    potShare: gs.tr?.potCeiling ? (gs.tr.pot || 0) / gs.tr.potCeiling : 0,
+    // `potShare()`, NOT A SECOND COPY OF IT (whole-plan review, F7). This line
+    // used to recompute the ratio inline, in the file whose own comment on
+    // `potShare` forbids exactly that — so it reported a pot the DECISION could
+    // not see whenever `_pactPotBlind` was on, which is the one arm that turns
+    // the pot off. A watch exists to report what the decision used, and a
+    // measurement that recomputes the value under test is the shape this plan
+    // has now recorded three times.
+    potShare: potShare(),
+    // WHICH PHASE THE DECISION WAS TAKEN IN (whole-plan review, F6). Read off
+    // `gs.tr.endgameFrom`, which endgame.js already sets and nothing else
+    // writes, so this adds no state and no draw. The `living <= 6` bucket in
+    // tr-calibration.test.js was calibrated on 149 mandated decisions and then
+    // silently inherited Task 7's endgame ballots, which are a different
+    // population betraying at a different rate; without this the two cannot be
+    // banded apart.
+    endgame: gs.tr?.endgameFrom != null && ep >= gs.tr.endgameFrom,
     betrayed: fellows.includes(chosen) });
   return chosen;
 }

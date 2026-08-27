@@ -388,6 +388,7 @@ describe('the reveal, and what it does to everybody else', () => {
 // saw. The population arm lives in tests/tr-calibration.test.js and carries a
 // coverage floor for the same reason.
 import { initTraitorsState as _initTr } from '../js/tr/state.js';
+import { _setPactWatch, _setPactPotBlind } from '../js/tr/deduction.js';
 
 const PACT_CAST = ['Amy', 'Beth', 'Cody', 'Dawn', 'Ezekiel', 'Fang', 'Gwen', 'Harold',
   'Izzy', 'Jo', 'Katie', 'Lindsay', 'Mike', 'Noah', 'Owen', 'Pete', 'Quinn', 'Rita',
@@ -503,6 +504,47 @@ describe('the pact has a price, and the price is not infinity', () => {
     recordAlignment('Cody', true, 2, 'selection');
     const pick = chooseBanishmentVote(TA, [TB, 'Cody'], 2, seededRng(3));
     expect([TB, 'Cody']).toContain(pick);
+  });
+
+  it('and what the watch reports about the money is what the decision actually saw', () => {
+    // (Whole-plan review, F7.) The `_pactWatch` payload carried a SECOND
+    // private copy of `potShare` — `gs.tr.potCeiling ? (gs.tr.pot||0)/ceiling
+    // : 0`, written inline in the file whose own comment on `potShare()` says
+    // there must not be two copies, and the reason that comment exists is that
+    // Task 2 lost a whole guard to a rule that lived in two places and drifted.
+    //
+    // The copy bypassed `_pactPotBlind`, which is the ONE control arm that
+    // turns the pot off. So under the hold-out the decision was blind to the
+    // money and the instrument measuring it was not — an ablation reporting
+    // the value it had just ablated. Nothing read the field yet, which is why
+    // it went unnoticed; this is the reader, and it asserts that the
+    // measurement and the decision agree rather than re-deriving either.
+    //
+    // TWO ARMS, because a watch that reported a constant 0 would satisfy the
+    // blinded arm on its own.
+    const seen = { open: [], blind: [] };
+    for (const blind of [false, true]) {
+      const restore = _setPactPotBlind(blind);
+      const stop = _setPactWatch(d => seen[blind ? 'blind' : 'open'].push(d.potShare));
+      try {
+        for (let ep = 2; ep <= 8; ep++) {
+          const living = pactRoom(5, 0.7, TA, TB, ep);
+          chooseBanishmentVote(TA, living.filter(x => x !== TA), ep, seededRng(ep));
+        }
+      } finally { stop(); restore(); }
+    }
+    expect(seen.open.length, 'the watch never fired — nothing was measured').toBeGreaterThan(5);
+    expect(seen.blind.length).toBe(seen.open.length);
+    // The pot is on the table and the watch says so.
+    for (const v of seen.open) {
+      expect(v, 'the watch reports no money in a room holding 70% of the ceiling')
+        .toBeCloseTo(0.7, 6);
+    }
+    // And with the pot held out, the watch reports what the decision saw: none.
+    for (const v of seen.blind) {
+      expect(v, 'the pot was blinded for the DECISION and the watch still reported it — '
+        + 'the measurement is reading a second copy of the rule').toBe(0);
+    }
   });
 });
 

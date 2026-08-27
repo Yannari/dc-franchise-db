@@ -1463,43 +1463,89 @@ describe('the castle, measured over many seasons', () => {
   // what makes it rare — so the denominator here is every ballot on which a
   // Traitor HAD a fellow to name and somebody else to name instead, and the
   // floors below fail loudly if the run stops producing those.
+  //
+  // ── AND THE LATE ARM IS TWO POPULATIONS, BANDED APART ────────────────
+  //
+  // (Whole-plan review, F6.) The `living <= 6` bucket was cut by Task 6 against
+  // 149 MANDATED decisions. Task 7 then added 362 ENDGAME decisions to the same
+  // bucket without touching this file, and they betray at 50.3% against the
+  // mandated half's 11.4% — so the band Task 6 wrote was, by the end of the
+  // plan, carried almost entirely by a mechanism built after it. Pooled, the
+  // arm could not tell a dead mandated channel from a live endgame one. Two
+  // buckets now, each with its own coverage floor and its own band.
+  //
+  // BOTH NUMBERS, AT BOTH SAMPLE SIZES, because this plan's closing correction
+  // is that a lesson learned in one measurement does not reach the others:
+  //
+  //     arm                    200 seasons        1,200 seasons
+  //     full castle (>=10)     0 / 2,770          0 / 16,385
+  //     mid (7-9)              0 / 530            0 / 3,114
+  //     mandated, <=6 living   17 / 149  = 11.41%  175 / 865  = 20.23%
+  //     endgame, <=6 living    182 / 362 = 50.28%  1,008 / 1,996 = 50.50%
+  //
+  // The endgame arm is stable to two decimal places. THE MANDATED ARM IS NOT:
+  // 11.41% on n=149 is 2.7 sd below the 20.23% the larger sample gives, and
+  // that 11.41% is the figure this file's own population reads. So its floor is
+  // cut well under the LOW reading rather than near either — the point of the
+  // band is that the channel is alive, and there is no honest way to bound a
+  // rate this file cannot measure to better than +/-3pp.
   it('THE PACT BREAKS LATE AND NEVER EARLY, over the decisions themselves', () => {
-    const big = { n: 0, b: 0 }, small = { n: 0, b: 0 };
+    const big = { n: 0, b: 0 }, mandated = { n: 0, b: 0 }, endgame = { n: 0, b: 0 };
     const restore = _setPactWatch(d => {
       // No choice was on offer unless there was a fellow AND a non-fellow.
       if (!d.fellows.length || d.fellows.length >= d.pool.length) return;
-      const bucket = d.living >= 10 ? big : (d.living <= 6 ? small : null);
+      const bucket = d.living >= 10 ? big
+        : (d.living <= 6 ? (d.endgame ? endgame : mandated) : null);
       if (!bucket) return;
       bucket.n++;
       if (d.betrayed) bucket.b++;
     });
     try { run(); } finally { restore(); }
 
-    // COVERAGE FIRST. Without these two lines a run that reached neither state
-    // would pass this test while observing nothing at all, which is exactly
-    // how Task 4's guard stayed green with its rule deleted.
+    const pct = (x) => (x.b / x.n * 100).toFixed(2);
+    console.log(`pact: full castle (10+ living) ${big.b}/${big.n} betrayals`
+      + ` = ${pct(big)}%; late MANDATED (<=6 living) ${mandated.b}/${mandated.n}`
+      + ` = ${pct(mandated)}%; ENDGAME (<=6 living) ${endgame.b}/${endgame.n}`
+      + ` = ${pct(endgame)}%`);
+
+    // COVERAGE FIRST, PER ARM AND NEVER POOLED. Without these a run that
+    // reached none of the states would pass while observing nothing, which is
+    // how Task 4's guard stayed green with its rule deleted — and a pooled
+    // floor is carried by one live channel while the other is dead, which is
+    // the shape Task 5 shipped and had to unpick.
     expect(big.n, 'no Traitor ever faced this decision in a full castle — '
       + 'the early arm is vacuous').toBeGreaterThan(2000);
-    expect(small.n, 'no Traitor ever reached a room of six or fewer with a fellow '
-      + 'still in it — the late arm is vacuous').toBeGreaterThan(100);
-
-    console.log(`pact: full castle (10+ living) ${big.b}/${big.n} betrayals`
-      + ` = ${(big.b / big.n * 100).toFixed(2)}%; endgame (<=6 living)`
-      + ` ${small.b}/${small.n} = ${(small.b / small.n * 100).toFixed(2)}%`);
+    expect(mandated.n, 'the mandated loop never once left a Traitor in a room of six or '
+      + 'fewer with a fellow still in it — this arm is vacuous').toBeGreaterThan(100);
+    expect(endgame.n, 'no endgame table ever put the question to a Traitor with a fellow '
+      + 'opposite — the endgame arm is vacuous').toBeGreaterThan(250);
 
     // Early: the pact is not for sale while there is a castle full of people
-    // to spend instead. Measured 0/3,042 over these 200 seasons; the band is
-    // written as a rate rather than as zero so that a single freak room does
-    // not go red on something the model does permit in principle.
+    // to spend instead. Measured 0/2,770 here and 0/16,385 at 1,200 seasons;
+    // the band is written as a rate rather than as zero so that a single freak
+    // room does not go red on something the model does permit in principle.
     expect(big.b / big.n, 'Traitors are naming each other in a full castle — '
       + 'the price is not being charged early').toBeLessThan(0.005);
 
-    // Late: it IS for sale, and this is the state Task 7's endgame is built on.
-    // Measured 36/149 = 24.2%. The floor is a sixth of that.
-    expect(small.b, 'not one Traitor turned on a fellow in 200 seasons — the '
-      + 'endgame is unreachable').toBeGreaterThan(5);
-    expect(small.b / small.n, 'the late betrayal rate has collapsed toward the '
-      + 'old hard bar').toBeGreaterThan(0.04);
+    // LATE AND MANDATED. Task 6's own population, and the one the original
+    // band was cut against. 11.41% here, 20.23% at 1,200; the floor is a
+    // quarter of the low reading and 3.2 sd below it on this sample's own
+    // binomial error, which is as tight as a rate measured on 149 decisions
+    // may honestly be drawn.
+    expect(mandated.b, 'not one Traitor turned on a fellow in the mandated loop — the '
+      + 'channel Task 6 built is dead and the pooled band used to hide it')
+      .toBeGreaterThan(3);
+    expect(mandated.b / mandated.n, 'the late mandated betrayal rate has collapsed toward '
+      + 'the old hard bar').toBeGreaterThan(0.03);
+
+    // THE ENDGAME. Task 7's population, stable at 50.3% / 50.5% across a
+    // sixfold change of sample, so this one can carry a two-sided band: 5.7 sd
+    // to the floor and 5.7 to the ceiling on n=362.
+    expect(endgame.b / endgame.n, 'the endgame has stopped being the place the pact '
+      + 'breaks').toBeGreaterThan(0.35);
+    expect(endgame.b / endgame.n, 'the endgame is now betraying at a rate the mandated '
+      + 'loop never approaches — the price has stopped being charged there at all')
+      .toBeLessThan(0.65);
   });
 
   it('the castle stream never collapses onto the game stream, 2**31 included', () => {

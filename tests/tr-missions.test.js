@@ -91,7 +91,27 @@ import { fileURLToPath } from 'node:url';
 // call across the ~700 seasons this file plays grows an array of several
 // hundred thousand entries; only the credibility guards turn capture on. Left
 // ungated an earlier version of this file was 150s on its own.
-const { learnCalls, capture } = vi.hoisted(() => ({ learnCalls: [], capture: { on: false } }));
+const { learnCalls, capture, callSite } = vi.hoisted(() => ({
+  learnCalls: [], capture: { on: false },
+  /**
+   * `js/<path>:<function>` of whoever called learn(), skipping the mock itself.
+   *
+   * THE FUNCTION NAME AND NOT THE LINE NUMBER: a line number turns every edit
+   * above a writer into a red test, and the thing being identified is the
+   * writer, not where it happens to sit today.
+   */
+  callSite: () => {
+    const lines = String(new Error().stack || '').split('\n').slice(1);
+    for (const l of lines) {
+      const m = l.match(/at\s+(?:async\s+)?([\w$.<>]+)\s+\(.*?[\\/](js[\\/][\w-]+(?:[\\/][\w-]+)*\.js)/);
+      if (!m) continue;
+      const file = m[2].replace(/\\/g, '/');
+      if (/knowledge\.js$/.test(file)) continue;      // the real learn(), and this mock
+      return `${file}:${m[1]}`;
+    }
+    return 'unknown';
+  },
+}));
 
 vi.mock('../js/knowledge.js', async (importOriginal) => {
   const orig = await importOriginal();
@@ -99,8 +119,18 @@ vi.mock('../js/knowledge.js', async (importOriginal) => {
     ...orig,
     learn: (knower, id, opts = {}) => {
       if (capture.on) {
+        // THE CALL SITE, and only for the tier that needs one (whole-plan
+        // review, F7). The `public` allowlist below used to discriminate by
+        // SOURCE STRING, and the recruit writer in js/tr/roles.js already
+        // reuses `'the turret'` — so a fourth `public` writer that passed that
+        // same string was green, and the closed set the whole format rests on
+        // was being guarded by a label anybody can copy. A stack frame cannot
+        // be copied. Taken only on `public` writes (three sites, a few dozen
+        // calls a season) so the ~1,000 ordinary alignment writes per season
+        // do not each pay for an Error object.
+        const site = opts.sourceType === 'public' ? callSite() : null;
         learnCalls.push({ id, sourceType: opts.sourceType, source: opts.source,
-          confidence: opts.confidence });
+          confidence: opts.confidence, site });
       }
       return orig.learn(knower, id, opts);
     },
@@ -528,7 +558,28 @@ describe('nothing learns an alignment above `deduced`', () => {
   //
   // Swept over the whole store of a played season rather than over call sites,
   // so it holds for a writer nobody has thought of yet.
-  const SANCTIONED_PUBLIC = ['the turret', 'the reveal'];
+  //
+  // KEYED ON THE CALL SITE, NOT ON THE SOURCE STRING (whole-plan review, F7).
+  // This was `['the turret', 'the reveal']` — and js/tr/roles.js's recruit
+  // writer already passes `'the turret'`, which is the second of the three
+  // sanctioned sites reusing the first one's label. So the allowlist could not
+  // tell three writers from four, and any new caller that passed the string
+  // `'the turret'` was sanctioned by a guard whose entire job is to notice
+  // exactly that. Named functions, so the set is a list of WRITERS and moving
+  // one down its file does not go red.
+  const SANCTIONED_PUBLIC = [
+    'js/tr/deduction.js:seedTraitorKnowledge',   // the turret, at selection
+    'js/tr/deduction.js:revealCascade',          // the banishment reveal
+    'js/tr/roles.js:offerRecruitment',           // a recruit shown the turret
+  ];
+  // AND THE LABELS THEY WRITE, for the STORE sweep alone. A stored belief keeps
+  // no provenance beyond its source string, so that arm cannot key on the call
+  // site and this is the strongest thing available to it — which is exactly why
+  // it is the weaker of the two and why the write-side guard above is the one
+  // that binds. Two entries for three writers, because `offerRecruitment`
+  // reuses `seedTraitorKnowledge`'s label, and that reuse is the whole reason
+  // a source string cannot be an identity.
+  const SANCTIONED_PUBLIC_LABELS = ['the turret', 'the reveal'];
   // The ONE sanctioned `observed` writer, named by its source string. A second
   // entry in this array is the end of the format, not a maintenance task.
   const SANCTIONED_OBSERVED = ['the seer'];
@@ -608,7 +659,8 @@ describe('nothing learns an alignment above `deduced`', () => {
       if (c.sourceType === 'observed') continue;
       if (c.sourceType === 'public') {
         expect(SANCTIONED_PUBLIC,
-          `a fourth \`public\` alignment writer: "${c.source}"`).toContain(c.source);
+          `a fourth \`public\` alignment writer: ${c.site} (source "${c.source}")`)
+          .toContain(c.site);
         expect(c.confidence,
           'a `public` alignment write passed a confidence — the three legitimate ones pass '
           + 'none, which is what reserves certainty to them').toBeFalsy();
@@ -621,6 +673,17 @@ describe('nothing learns an alignment above `deduced`', () => {
           + 'it, but a caller that thinks it can buy certainty is the bug the clamp hides')
           .toBeLessThanOrEqual(0.62);
       }
+    }
+
+    // AND ALL THREE SANCTIONED SITES ARE ACTUALLY SEEN. An allowlist naming a
+    // writer the sample never reaches is a line of prose, not a guard — the
+    // per-channel coverage rule this file already applies to the mission tells
+    // and to the Seer, applied to its own closed set.
+    const publicSites = new Set(alignment.filter(c => c.sourceType === 'public').map(c => c.site));
+    console.log(`[coverage] \`public\` alignment writers observed: ${[...publicSites].join(', ')}`);
+    for (const s of SANCTIONED_PUBLIC) {
+      expect(publicSites, `${s} never wrote a \`public\` alignment in twelve seasons — the `
+        + 'allowlist sanctions a writer this sample cannot see').toContain(s);
     }
   });
 
@@ -654,7 +717,11 @@ describe('nothing learns an alignment above `deduced`', () => {
           continue;
         }
         if (b.sourceType === 'public') {
-          expect(SANCTIONED_PUBLIC,
+          // LABELS, not call sites — the store keeps no provenance. See the
+          // note on SANCTIONED_PUBLIC_LABELS: this arm cannot tell a fourth
+          // writer from a third one reusing its string, and the write-side
+          // guard above is what closes that.
+          expect(SANCTIONED_PUBLIC_LABELS,
             `a fourth public alignment writer: "${b.source}"`).toContain(b.source);
         } else {
           expect(['deduced', 'rumor'],

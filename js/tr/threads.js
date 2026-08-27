@@ -93,6 +93,35 @@ const ACT_PHRASE = {
 };
 export function actPhrase(act) { return ACT_PHRASE[act] || null; }
 
+// ══════════════════════════════════════════════════════════════════════
+// SPEC CONFORMANCE: §5.2's `evidence[]` DOES NOT EXIST, AND WILL NOT
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec §5.2 writes the shape as
+//   { id, kind, parties[], openedEp, act, state, evidence[], heat }
+// and the shipped shape is
+//   { id, kind, parties, openedEp, lastEp, act, state, beats, heat, outcome }.
+// `act` and `outcome` were built in Plan 5 Task 3; `evidence` was not, and no
+// test anywhere names it. That gap was found by the whole-plan review (F8) and
+// this comment is the ruling on it, so the next reader does not implement a
+// field the engine has deliberately declined.
+//
+// `beats[]` SUBSUMES IT, and the reason is the constraint that governs this
+// whole layer: CASTLE EVENTS WRITE ZERO BELIEFS. `evidence` in this spec is a
+// word with a specific job elsewhere — deduction.js's six evidence sources feed
+// `learn()`, and the belief gate (tests/tr-castle-belief-gate.test.js) exists
+// to keep the castle out of that channel entirely. A thread carrying an
+// `evidence[]` would either be a second, ungated route into belief, or a
+// synonym for "the things that happened on this thread", which is what
+// `beats[]` already is: `{ ep, eventId, note }` per beat, mirrored into
+// `gs.tr.residue` keyed by player, and read back by `priorMoments`/
+// `citeMoments` so episode 7 can name episode 2 — §5.4.4's actual requirement,
+// and the only thing §5.2's worked example ever asks `evidence` to do.
+//
+// So the letter is unmet on purpose and the intent is met by `beats`. If a
+// future plan wants castle-side evidence proper, it needs `gateChannel()`, not
+// a field on a thread.
+
 export function openThread(kind, parties, ep, seed = '') {
   if (!gs.tr) return null;
 

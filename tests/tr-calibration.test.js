@@ -983,7 +983,10 @@ describe('the castle, measured over many seasons', () => {
   // "only 27 of 81 events set `advancesThread`". Task 2 tried raising it to 44 of
   // 81, closing nine of the ten zero-advancer cells; the mean thread
   // moved 1.43 -> 1.48 while the payoff rate FELL and one event was starved
-  // to the edge of dead, so it settled at 32 of 81 with the mean at 1.46. The flag is a declaration,
+  // to the edge of dead, so it settled at 32 of the 81 events the pool held
+  // AT THAT TIME. Task 4 then added seventeen events, and the pool now stands
+  // at 39 advancers of 98 - the figure pinned in
+  // tr-castle-reachability.test.js, which is the only copy to trust. The flag is a declaration,
   // not a capability — `openThread` folds into an open thread of the same kind
   // and parties, so the pool was already continuing stories it had not
   // declared. What actually gates a continuation is the drawn event's FAMILY
@@ -1220,15 +1223,17 @@ describe('the castle, measured over many seasons', () => {
   //
   // THE CEILING, AND THE THIRD CONSTRAINT NOBODY HAS BUILT YET. Even the most
   // aggressive cell reaches 1.65 beats. The binding constraint is not either
-  // lever: in 49.0% of scenes whose actors already share a live thread, NO
-  // eligible event could advance it - only 27 of 81 events set
-  // `advancesThread`, and 10 of the 28 non-empty (family x window) cells
-  // contain zero of them, 12 more contain exactly one, and just 6 contain two
-  // or more (grief has one advancer, in dawn only; cover has none in evening).
-  // Those counts are pinned in tr-castle-reachability.test.js, because the
-  // first three copies of them written into this repo were all wrong. Where an
-  // advancer is available the guard already converts 60.6% of those scenes at
-  // 1/0.5 and 73.8% at 3/1.5, so the multiplier is not what is missing.
+  // lever. The explanation that used to sit here - that only 27 of 81 events
+  // set `advancesThread`, so half of all live-thread scenes had nothing that
+  // could continue them - was REFUTED by Task 2 and its counts are stale twice
+  // over. The flag is a declaration, not a capability (`openThread` folds a
+  // firing into an open thread of the same kind and parties regardless), and
+  // the real gate is family-matching plus the 5-episode pair cooldown. The
+  // live pool shape, pinned in tr-castle-reachability.test.js, is 98 events,
+  // 39 advancers, 45 non-empty (family x window) cells - 18 with none, 17 with
+  // exactly one, 10 with two or more. It is pinned to catch silent drift, not
+  // as a target: the first three copies written into this repo were all wrong
+  // in the same direction and nothing in the suite could tell.
   // Nothing in scene selection can fix that, and it is Tasks 2-5' problem.
   it('STORIES ACCUMULATE: threads run longer than they do under uniform selection', () => {
     const live = continuity(seasons);

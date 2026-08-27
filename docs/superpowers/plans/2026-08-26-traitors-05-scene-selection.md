@@ -258,3 +258,45 @@ those windows have no advancers at all today.
 Task 1 spent 9.0 of the 12% people-coverage budget and reached 17.0% of the 20% max-pair
 ceiling. Roughly 3pp of headroom remains on each. Task 4 and Task 5 add content that will
 move both. If either band breaks, that is a real regression to report, not a band to widen.
+
+---
+
+## Second amendment — the advancer measurement was measuring a label
+
+Task 2 refuted the first amendment's mechanism. Recorded in full because this plan has now
+had two wrong models corrected by measurement, and the pattern matters more than either.
+
+**What the first amendment claimed:** thread death is gated by advancer coverage -- only
+27/81 events set `advancesThread`, 10 of 28 family-window cells hold zero, so half of all
+live-thread scenes have no event that *could* continue the story.
+
+**What is actually true:** `openThread` folds a firing into an open thread of the same kind
+and parties. Nearly every event was already continuing stories. `advancesThread` only
+decided whether guard 1 multiplied the score and whether the harness *labelled* the firing
+a continuation. Proof: with the guard flattened, seasons before and after Task 2's
+re-declaration are BIT-IDENTICAL (mean 1.363, 2975 live-thread scenes, both arms).
+
+So "49% of live-thread scenes have no eligible advancer" measured the declaration rate, not
+the pool's capability. Declaring the truth on 17 more events (27/81 -> 44/81, zero cells
+10 -> 1) bought +3.4% mean thread length (1.431 -> 1.479) and COST 0.5pp of payoff
+(3.96% -> 3.48%).
+
+**The real gate on thread length** is family-matching (a thread of kind X is continued only
+by an event of family X) plus the 5-episode pair cooldown, operating on top of scene
+selection. Not coverage.
+
+### What this changes for the remaining tasks
+
+- **The cell table is a ledger, not a quality bar.** Tasks 4 and 5 must NOT author content
+  to hit a coverage target -- the target was derived from a wrong model. `advancesThread`
+  should be declared where it is *true*, and nowhere else. The pinned ledger in
+  `tests/tr-castle-reachability.test.js` exists to catch silent drift, not to be maximised.
+- **The "no cell below 2 advancers" target from the first amendment is WITHDRAWN.**
+- Task 6 keeps its job: re-measure everything against the final distribution.
+
+### New coupling to carry into Task 6
+
+The continuity control floor is a function of the pool's advancer DECLARATION rate, not
+only of `CONTINUATION_SCENE_P`. Re-labelling moved both arms (shipped 36.14% -> 55.96%,
+guard-off control 23.29% -> 36.07%) while widening separation 12.84pp -> 19.89pp. Any later
+task that declares or undeclares the flag moves this band without touching the guard.

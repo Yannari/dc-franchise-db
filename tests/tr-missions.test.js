@@ -113,6 +113,7 @@ import { playTraitorsSeason, rngFor } from '../js/tr/headless.js';
 import { runMission, POT_CEILING, MISSION_IDS, _setMissionsEnabled,
   _setKnowledgeMissionEnabled, _setShieldMissionEnabled } from '../js/tr/missions.js';
 import { allFacts } from '../js/knowledge.js';
+import { _setPactPotBlind } from '../js/tr/deduction.js';
 import { gs as _gs } from '../js/core.js';
 import roster from '../franchise_roster.json';
 
@@ -257,7 +258,20 @@ describe('missions fund a pot, and fund nothing else', () => {
 
 describe('a mission grants NOTHING but money', () => {
   it('40 seasons are bit-identical with the five money missions on and off', () => {
-    // THE IMMUNITY GUARD, NARROWED BY EXACTLY ONE ARCHETYPE FOR TASK 2.
+    // THE IMMUNITY GUARD, NARROWED A THIRD TIME FOR TASK 6 — AND THIS ONE IS
+    // NOT AN ARCHETYPE, IT IS THE MONEY ITSELF.
+    //
+    // Until Plan 6 Task 6, `gs.tr.pot` had no reader in the engine and this
+    // guard was true of the pot for free. It is now read at the ballot: the
+    // price a Traitor pays to name a fellow falls as the pot grows, which is
+    // the entire strategic sting of a mission and the reason the endgame
+    // exists. So both arms run with `_setPactPotBlind(true)` — the price is
+    // still charged, it just cannot see the money — and the original claim
+    // survives intact for everything else. The arm below proves the hold-out
+    // is holding something real out; without it this is a hole, not a
+    // narrowing.
+    //
+    // THE PREVIOUS NARROWING, BY EXACTLY ONE ARCHETYPE, FOR TASK 2.
     //
     // If a money mission could shield anybody from a murder, save anybody at a
     // table, nudge a ballot or write a single belief, the two arms would
@@ -277,6 +291,7 @@ describe('a mission grants NOTHING but money', () => {
     ].join('|')).join('\n') + `\n${s.winner}|${s.survivors.join(',')}`;
 
     let on, off;
+    const unblind = _setPactPotBlind(true);
     try {
       _setKnowledgeMissionEnabled(false);
       _setShieldMissionEnabled(false);
@@ -287,6 +302,7 @@ describe('a mission grants NOTHING but money', () => {
       _setMissionsEnabled(true);
       _setKnowledgeMissionEnabled(true);
       _setShieldMissionEnabled(true);
+      unblind();
     }
     for (let i = 0; i < on.length; i++) {
       expect(off[i], `season ${i + 1} diverged when the money missions were switched off`)
@@ -295,6 +311,7 @@ describe('a mission grants NOTHING but money', () => {
 
     // Guard on the guard: the arms must differ in the ONE place they should.
     let potsOn;
+    const unblind2 = _setPactPotBlind(true);
     try {
       _setKnowledgeMissionEnabled(false);
       _setShieldMissionEnabled(false);
@@ -305,8 +322,52 @@ describe('a mission grants NOTHING but money', () => {
       _setMissionsEnabled(true);
       _setKnowledgeMissionEnabled(true);
       _setShieldMissionEnabled(true);
+      unblind2();
     }
     expect(potsOn.every(p => p > 0)).toBe(true);
+  });
+
+  it('and the POT is precisely what the third hold-out holds out', () => {
+    // THE THIRD NARROWING'S OWN ARM, and the shape is the same as the Chess
+    // and Shield arms above: a switch that turned off something inert would
+    // leave guard 1 green and prove nothing. Same 120 seeds, the two knowledge
+    // archetypes held out of both arms so the only variable left is whether
+    // the pact's price at the ballot can see the money.
+    //
+    // SEPARATION, STATED, AND FOUR HUNDRED SEEDS RATHER THAN THE 120 THE
+    // OTHER TWO ARMS USE. At 120 seeds this arm measured 15 divergences and
+    // any floor that also caught a half-quiet pot term sat inside 1.5 sd of
+    // binomial noise — the coin flip this project has stopped shipping.
+    //
+    // The rate is low, and the reason is worth recording rather than hiding:
+    // the pot only reaches a DECISION in a room of six or fewer that still
+    // holds two Traitors, which is roughly one season in five, and everywhere
+    // else it moves a number nothing reads. Measured 41/400 = 10.3% of seasons
+    // change a name somebody wrote down. The binomial sd on 400 draws at
+    // p=0.103 is 6.1 seasons, so the floor of 22 below sits 3.1 sd under the
+    // measurement AND under half of it — a pot term gone half quiet lands at
+    // ~20 and still fails.
+    // THE BALLOT RECORD, not the banishment log the other two arms project.
+    // What the pot buys is a NAME SOMEBODY WROTE DOWN, and a projection that
+    // only sees who left throws away every night the price moved a ballot
+    // without moving the plurality. Projecting what it actually changes is not
+    // widening the guard, it is aiming it.
+    const project = (s) => (s.rounds || []).map(r =>
+      (r.ballots || []).map(b => `${b.voter}>${b.voted}`).join(',')).join(String.fromCharCode(10));
+    let blind, seeing;
+    try {
+      _setKnowledgeMissionEnabled(false);
+      _setShieldMissionEnabled(false);
+      const unblind = _setPactPotBlind(true);
+      try { blind = seasons(400).map(project); } finally { unblind(); }
+      seeing = seasons(400).map(project);
+    } finally {
+      _setKnowledgeMissionEnabled(true);
+      _setShieldMissionEnabled(true);
+    }
+    const diverged = seeing.filter((v, i) => v !== blind[i]).length;
+    expect(diverged, `only ${diverged}/400 seasons changed when the pact's price `
+      + 'could see the pot').toBeGreaterThan(22);
   });
 
   it('and the Chess mission is precisely what that hold-out is holding out', () => {

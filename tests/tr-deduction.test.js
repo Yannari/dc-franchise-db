@@ -287,7 +287,11 @@ describe('turning belief into a vote', () => {
     expect(warm, 'a close friend is suspected exactly as much as a stranger').toBeLessThan(cold);
   });
 
-  it('a traitor never votes for a fellow traitor while a faithful is available', () => {
+  it('a traitor does not name a fellow while the castle is full and the pot empty', () => {
+    // This used to read 'never', and 'never' is no longer true — see the pact
+    // price in deduction.js and the band of tests on it below. What is true is
+    // what this fixture is: six living, nothing in the pot, and a Faithful
+    // available to spend instead.
     recordAlignment('Duncan', true, 1, 'selection');
     seedTraitorKnowledge(1);
     const pick = chooseBanishmentVote('Gwen', ['Duncan', 'Heather', 'Owen'], 2, seededRng(9));
@@ -360,5 +364,142 @@ describe('the reveal, and what it does to everybody else', () => {
     revealCascade('Owen', false, 3, seededRng(2));
     const b = believes('Heather', alignmentFactId('Owen'), 3);
     expect(b.valence).toBe('false');   // correctly disbelieved: he was not one
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE PACT HAS A PRICE
+// ══════════════════════════════════════════════════════════════════════
+//
+// chooseBanishmentVote used to filter fellow Traitors out of the pool
+// outright, and the measurement of that is the reason this file has a section:
+// ZERO Traitor-on-Traitor votes in 1,996 seasons. The endgame is entirely about
+// the night one Traitor decides the pot is worth more than the pact, so an
+// absolute bar makes the format's last act unreachable.
+//
+// ASSERTED AT THE DECISION POINT, AND THAT IS DELIBERATE. Task 4 of this plan
+// shipped a population guard that a mutation SURVIVED, because the state it
+// forbade arose in 22 seasons out of 400 and the sample barely contained the
+// case. A betrayal is rarer than that by construction — making it rare is what
+// the price is FOR — so every assertion here is over CALLS to the decision, not
+// over seasons that happen to contain one, and each states how many calls it
+// saw. The population arm lives in tests/tr-calibration.test.js and carries a
+// coverage floor for the same reason.
+import { initTraitorsState as _initTr } from '../js/tr/state.js';
+
+const PACT_CAST = ['Amy', 'Beth', 'Cody', 'Dawn', 'Ezekiel', 'Fang', 'Gwen', 'Harold',
+  'Izzy', 'Jo', 'Katie', 'Lindsay', 'Mike', 'Noah', 'Owen', 'Pete', 'Quinn', 'Rita',
+  'Sam', 'Tyler'];
+const PACT_CEILING = 120000;
+const TA = 'Amy', TB = 'Beth';
+
+/**
+ * A room of `n` living with `potShare` of the pot won, `a` and `b` the Traitors.
+ *
+ * The Faithfuls are given a read on each other at the alignment ceiling, so the
+ * voter has somewhere else to go. A fixture where the fellow Traitor is the
+ * only name with a number on it would betray at any price at all and would be
+ * measuring the fixture rather than the rule — the same failure Task 4's unit
+ * test reported at 60/60.
+ */
+function pactRoom(n, potShare, a, b, ep) {
+  const living = PACT_CAST.slice(0, n);
+  setGs({ bonds: {}, activePlayers: [...living] });
+  gs.tr = _initTr();
+  gs.tr.potCeiling = PACT_CEILING;
+  gs.tr.pot = PACT_CEILING * potShare;
+  resetKnowledge();
+  living.forEach(name => recordAlignment(name, name === a || name === b, 1, 'selection'));
+  seedTraitorKnowledge(ep);
+  // 0.4 is not arbitrary: _assess() rolls acceptance, then rolls again for
+  // whether a sharp reader sees through a claim about someone who is NOT a
+  // Traitor. At 0.01 the voter sees through all three, the board goes blank,
+  // and the fixture betrays at any price because the fellow is the only name
+  // on it. 0.4 accepts and does not detect, which is the room the engine
+  // actually produces: a fellow Traitor at ~0.92 and the best Faithful at
+  // ~0.56, with a 0.35 noise term over each.
+  living.filter(x => x !== a && x !== b).forEach(f =>
+    learn(a, alignmentFactId(f),
+      { source: 'the record', sourceType: 'deduced', confidence: 0.62, ep, rng: () => 0.4 }));
+  return living;
+}
+
+/**
+ * How often, over `pairs x nights x seeds` decisions, a Traitor names the fellow.
+ *
+ * It sweeps the PAIR and the NIGHT as well as the rng seed on purpose. The
+ * fellow Traitor's noise term is hashed from (voter, fellow, night) rather than
+ * drawn — see pactNoise in deduction.js for why the draw count has to be
+ * preserved — so a sweep that varied only the rng seed would hold the fellow's
+ * score constant and read 0% or 100% on the hash rather than on the price.
+ */
+function betrayalRate(n, potShare) {
+  let betrayals = 0, calls = 0;
+  for (let i = 0; i < n; i++) {
+    const a = PACT_CAST[i], b = PACT_CAST[(i + 1) % n];
+    for (let ep = 2; ep <= 21; ep++) {
+      const living = pactRoom(n, potShare, a, b, ep);
+      const pool = living.filter(x => x !== a);
+      for (let s = 1; s <= 6; s++) {
+        calls++;
+        if (chooseBanishmentVote(a, pool, ep, seededRng(s)) === b) betrayals++;
+      }
+    }
+  }
+  return betrayals / calls;
+}
+
+describe('the pact has a price, and the price is not infinity', () => {
+  it('IS PAID in a full castle with nothing in the pot: no fellow is ever named', () => {
+    // 2,400 decisions, not 2,400 seasons. The rule is decided here every time.
+    const rate = betrayalRate(20, 0);
+    expect(rate, 'a Traitor is naming the pact on night one — the price is not being charged')
+      .toBe(0);
+  });
+
+  it('IS AFFORDABLE at the last table with the pot up: the pact does break', () => {
+    // THE TEST THE HARD FILTER FAILS. Five living, 70% of the pot won.
+    const rate = betrayalRate(5, 0.7);
+    expect(rate, 'no Traitor ever turned on a fellow in 600 decisions at the last '
+      + 'table with the pot up — the endgame is unreachable')
+      .toBeGreaterThan(0);
+    // And it is a PRICE, not a new bar in the other direction: a room where
+    // the fellow is always named is a bar too, just an inverted one.
+    expect(rate, 'the fellow Traitor is named every single time — this is a bar, not a price')
+      .toBeLessThan(1);
+  });
+
+  it('FALLS WITH THE FIELD and RISES WITH THE POT, proportionally in both', () => {
+    // Both terms varied against the same room, so nothing else moves.
+    //
+    // Measured over 600 decisions per arm: a room of six at 70% of the pot
+    // 0.0%, a room of five at 10% of the pot 0.0%, five at 70% 14.8%, five at
+    // 90% 80.3%. Binomial sd at n=600 and p=0.15 is 1.5pp, so the 0.10 margins
+    // below stand at roughly 7 sd of the sampling noise on the arm that has
+    // any. The FIELD arm is deliberately the adjacent room — six against five,
+    // not eighteen against five — because a gradient between neighbouring
+    // rooms is the claim, and a distant comparison would be passed by a step.
+    const late = betrayalRate(5, 0.7);
+    const oneBigger = betrayalRate(6, 0.7);
+    const emptyPot = betrayalRate(5, 0.1);
+    const fullPot = betrayalRate(5, 0.9);
+
+    expect(late, 'the field term is inert — a room of six prices the pact the '
+      + 'same as a room of five').toBeGreaterThan(oneBigger + 0.10);
+    expect(late, 'the pot term is inert — a Traitor turns as readily on an empty '
+      + 'pot as on a full one').toBeGreaterThan(emptyPot + 0.10);
+    expect(fullPot, 'the pot term stops mattering once the money is large')
+      .toBeGreaterThan(late + 0.15);
+  });
+
+  it('never charges the price when there is nobody else left to name', () => {
+    // A room that is only Traitors has only Traitors to write down, and the old
+    // filter's `safe.length ? safe : pool` fallback said so. Kept, because a
+    // reluctance applied uniformly to every candidate is not a reluctance.
+    pactRoom(5, 0.7, TA, TB, 2);
+    gs.activePlayers = [TA, TB, 'Cody'];
+    recordAlignment('Cody', true, 2, 'selection');
+    const pick = chooseBanishmentVote(TA, [TB, 'Cody'], 2, seededRng(3));
+    expect([TB, 'Cody']).toContain(pick);
   });
 });

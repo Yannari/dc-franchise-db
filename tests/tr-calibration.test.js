@@ -16,7 +16,7 @@ import { alignmentFactId, ballotEvidence, suspicionBoard } from '../js/tr/deduct
 import { alignmentAt } from '../js/tr/roles.js';
 import { playTraitorsSeason, rngFor, _castleRngFor } from '../js/tr/headless.js';
 import { _setContinuationGuard, _setContinuationSceneP } from '../js/tr/events.js';
-import { _setVoteSuspicionMult } from '../js/tr/deduction.js';
+import { _setVoteSuspicionMult, _setPactWatch } from '../js/tr/deduction.js';
 import roster from '../franchise_roster.json';
 
 // franchise_roster.json is { players: [...] }, NOT a bare array. Reaching for
@@ -322,10 +322,15 @@ describe('the castle, measured over many seasons', () => {
   // the same stream per ballot.
   //
   // WHAT THE CONTROL IS NOT. It is not a base rate and it is not zero: blind
-  // ballots score -17.63pp, well BELOW chance, because chooseBanishmentVote
-  // bars a Traitor from naming the pact, so a room voting on noise
-  // systematically under-hits Traitors. That structural offset is the thing an
-  // absolute floor on the live number silently assumed was constant.
+  // ballots score -17.63pp, well BELOW chance, because a Traitor pays a price
+  // to name the pact (chooseBanishmentVote, Plan 6 Task 6) and that price is
+  // charged against the score — so a room voting on noise alone can never
+  // afford it and systematically under-hits Traitors. That structural offset
+  // is the thing an absolute floor on the live number silently assumed was
+  // constant, and it is unchanged by the price replacing the old hard filter:
+  // measured base vs head over eight 200-season blocks, this control moved by
+  // 0.0000pp, because the price at every field size exceeds the whole 0.35
+  // noise term and nothing else in this arm can outbid it.
   const blindBallot = (() => {
     const restore = _setVoteSuspicionMult(0);
     let blind;
@@ -690,8 +695,8 @@ describe('the castle, measured over many seasons', () => {
   // reads its green tick as a sign the room agrees about anything real.
   it('SANITY: the room votes as neither a bloc nor a coin', () => {
     // The band this replaces asked whether two distinct names got a vote. With
-    // ~13 ballots, a noise term on every score and Traitors structurally barred
-    // from naming the pact, at least one vote always diverges — so it read
+    // ~13 ballots, a noise term on every score and Traitors paying a price they
+    // can almost never afford to name the pact, at least one vote always diverges — so it read
     // 100.0%, and it would read 100.0% on an engine with no deduction in it.
     // A metric that cannot go red is not a metric.
     //
@@ -1444,6 +1449,59 @@ describe('the castle, measured over many seasons', () => {
   // `rngFor` hashes its argument with an odd multiply, a bijection mod 2**32,
   // so two streams coincide IF AND ONLY IF the seeds handed to it are equal.
   // Comparing first draws is therefore a complete test, not a sample.
+  // ── THE PACT BREAKS, AND ONLY WHERE IT SHOULD ────────────────────
+  //
+  // Plan 6 Task 6 replaced an absolute bar on a Traitor naming a fellow (zero
+  // occurrences in 1,996 seasons) with a price that falls as the field shrinks
+  // and the pot grows. This is the POPULATION arm of that guard; the decision
+  // arm is in tests/tr-deduction.test.js.
+  //
+  // IT COUNTS OPPORTUNITIES, NOT SEASONS, AND IT STATES ITS COVERAGE. Task 4 of
+  // this plan shipped a guard a mutation SURVIVED, because the forbidden state
+  // arose in 22 seasons out of 400 and a season-level assertion could not see
+  // the rule break. A betrayal is rarer than that on purpose — the price is
+  // what makes it rare — so the denominator here is every ballot on which a
+  // Traitor HAD a fellow to name and somebody else to name instead, and the
+  // floors below fail loudly if the run stops producing those.
+  it('THE PACT BREAKS LATE AND NEVER EARLY, over the decisions themselves', () => {
+    const big = { n: 0, b: 0 }, small = { n: 0, b: 0 };
+    const restore = _setPactWatch(d => {
+      // No choice was on offer unless there was a fellow AND a non-fellow.
+      if (!d.fellows.length || d.fellows.length >= d.pool.length) return;
+      const bucket = d.living >= 10 ? big : (d.living <= 6 ? small : null);
+      if (!bucket) return;
+      bucket.n++;
+      if (d.betrayed) bucket.b++;
+    });
+    try { run(); } finally { restore(); }
+
+    // COVERAGE FIRST. Without these two lines a run that reached neither state
+    // would pass this test while observing nothing at all, which is exactly
+    // how Task 4's guard stayed green with its rule deleted.
+    expect(big.n, 'no Traitor ever faced this decision in a full castle — '
+      + 'the early arm is vacuous').toBeGreaterThan(2000);
+    expect(small.n, 'no Traitor ever reached a room of six or fewer with a fellow '
+      + 'still in it — the late arm is vacuous').toBeGreaterThan(100);
+
+    console.log(`pact: full castle (10+ living) ${big.b}/${big.n} betrayals`
+      + ` = ${(big.b / big.n * 100).toFixed(2)}%; endgame (<=6 living)`
+      + ` ${small.b}/${small.n} = ${(small.b / small.n * 100).toFixed(2)}%`);
+
+    // Early: the pact is not for sale while there is a castle full of people
+    // to spend instead. Measured 0/3,042 over these 200 seasons; the band is
+    // written as a rate rather than as zero so that a single freak room does
+    // not go red on something the model does permit in principle.
+    expect(big.b / big.n, 'Traitors are naming each other in a full castle — '
+      + 'the price is not being charged early').toBeLessThan(0.005);
+
+    // Late: it IS for sale, and this is the state Task 7's endgame is built on.
+    // Measured 36/149 = 24.2%. The floor is a sixth of that.
+    expect(small.b, 'not one Traitor turned on a fellow in 200 seasons — the '
+      + 'endgame is unreachable').toBeGreaterThan(5);
+    expect(small.b / small.n, 'the late betrayal rate has collapsed toward the '
+      + 'old hard bar').toBeGreaterThan(0.04);
+  });
+
   it('the castle stream never collapses onto the game stream, 2**31 included', () => {
     const collisions = [];
     for (const seed of [1, 2, 7, 13, 99, 12345, 2 ** 31, 2 ** 31 + 1, 2 ** 32 - 1, 0]) {

@@ -328,6 +328,104 @@ export function _setVoteSuspicionMult(m = VOTE_SUSPICION_MULT) {
   return () => { _voteSuspicionMult = prev; };
 }
 
+// WHAT THE PACT IS WORTH AT THE BALLOT, and why it is a price and not a bar.
+//
+// This used to read `pool.filter(n => alignmentAt(n, ep) !== 'traitor')` — an
+// absolute prohibition, measured at ZERO Traitor-on-Traitor votes in 1,996
+// seasons. It is the wrong model of the same show: the pot is collected by
+// whoever is still standing, so a Traitor who lets a fellow live splits the
+// money, and the endgame is entirely about the night that stops being worth it.
+// A bar makes that night unreachable by construction.
+//
+// So it is a PRICE, subtracted from the fellow's score, and it is proportional
+// in both of the things that actually move it — never a threshold, which is
+// this project's standing rule for anything that drives a decision:
+//
+//   the field — squared, because the pact's value is not linear in how many
+//     bodies are left to spend instead. In a room of eighteen there is always
+//     somebody cheaper to name; in a room of five the fellow Traitor IS the
+//     field, and every Faithful spent is a Faithful the pact no longer needs.
+//   the pot  — a full pot buys off most of the loyalty, because that is the
+//     only thing the betrayal is FOR. An empty pot is not worth a knife.
+//
+// The two are correlated in play (a season is worth more the longer it runs),
+// which is the point: the curve is flat at nothing for most of a season and
+// turns up only where the format wants it to.
+//
+// PACT_LOYALTY is priced in ballot-score units. A Traitor's read on a fellow
+// is a `public` belief (the turret), so it scores ~0.5–1.2 after
+// bondResistance, against ~0.3–0.6 for the best Faithful on the board and a
+// noise term of up to 0.35 on each — so a reluctance near 0.4 is where a
+// betrayal becomes a live possibility rather than an arithmetic one. Swept,
+// not chosen: see the report for Plan 6 Task 6.
+const PACT_LOYALTY = 0.55;
+/** The room the format stops at — three left, and the pot on the table. */
+const PACT_FLOOR = 2;
+/** How fast the shrinking field bites. Two bodies is one unit of cover. */
+const PACT_SPAN = 2;
+/** How much of the loyalty a full pot buys off. Never all of it. */
+const POT_GREED = 0.9;
+
+/**
+ * What it costs `voter` tonight to write a fellow Traitor's name down.
+ *
+ * Reads the LIVING FIELD rather than the candidate pool, because a revote is
+ * held over the tied players alone — a three-name revote in a castle of twelve
+ * is not an endgame and must not be priced as one.
+ */
+function pactReluctance() {
+  const living = (gs.activePlayers || []).length;
+  const ceiling = gs.tr?.potCeiling || 0;
+  const potShare = _pactPotBlind || ceiling <= 0
+    ? 0 : Math.max(0, Math.min(1, (gs.tr?.pot || 0) / ceiling));
+  const cover = Math.max(0, (living - PACT_FLOOR) / PACT_SPAN);
+  return PACT_LOYALTY * cover * cover * (1 - POT_GREED * potShare);
+}
+
+// THE POT IS NOW A READER, AND THAT BREAKS AN EQUIVALENCE GUARD ON PURPOSE.
+//
+// tests/tr-missions.test.js asserts that forty seasons are bit-identical with
+// the money missions on and off — "a mission grants NOTHING but money". Until
+// this file, `gs.tr.pot` had no reader anywhere in the engine and that was
+// trivially true. It is now false, and it is MEANT to be false: the whole
+// strategic sting of a mission is that the money the Faithfuls win is the money
+// a Traitor eventually kills a Traitor for.
+//
+// So the guard is NARROWED rather than softened, the same way Task 2 narrowed
+// it for the Chess mission and Task 3 for the Shield: this makes the pact's
+// price blind to the pot, both arms run blind, the original claim survives
+// intact for everything except the one channel, and a SECOND arm proves the
+// hold-out is holding something real out. "Mostly identical" has no failure
+// state; this does.
+//
+// Test-only. Nothing in the show may ever set it.
+let _pactPotBlind = false;
+export function _setPactPotBlind(on = false) {
+  const prev = _pactPotBlind;
+  _pactPotBlind = !!on;
+  return () => { _pactPotBlind = prev; };
+}
+
+/**
+ * The noise term for a fellow Traitor, drawn from a HASH and not from `rng`.
+ *
+ * This is not a stylistic preference, it is what makes the change measurable.
+ * The old filter dropped fellow Traitors out of the map, so a Traitor's ballot
+ * consumed one draw per SAFE candidate; scoring the whole pool off `rng` would
+ * consume more, reroute the season's every subsequent draw, and move every
+ * calibration band by pure stream drift with no way to tell that from the
+ * mechanism. Hashing the fellow's noise leaves the safe candidates drawing in
+ * exactly the order and the count they always did, so a season only diverges
+ * from base on the nights a Traitor actually turns — which is the only thing
+ * this change is supposed to do.
+ */
+function pactNoise(voter, name, ep) {
+  let h = 2166136261;
+  const s = `${voter}|${name}|${ep}`;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return ((h >>> 0) / 4294967296) * 0.35;
+}
+
 /**
  * Who does `voter` write down?
  *
@@ -340,17 +438,48 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
   const pool = (candidates || []).filter(n => n !== voter);
   if (!pool.length) return null;
 
-  // A Traitor knows exactly who not to name, and will spend a Faithful to
-  // protect the pact — until there is nobody else left to spend.
+  // A Traitor knows exactly who not to name, and pays a Faithful to keep it
+  // that way — until the field is small enough and the pot large enough that
+  // the fellow is worth more dead than allied.
   const isTraitor = alignmentAt(voter, ep) === 'traitor';
-  const safe = isTraitor ? pool.filter(n => alignmentAt(n, ep) !== 'traitor') : pool;
-  const usable = safe.length ? safe : pool;
+  const fellows = isTraitor ? pool.filter(n => alignmentAt(n, ep) === 'traitor') : [];
+  // Nothing to be reluctant about when there is nobody else left to name:
+  // a room of Traitors only has Traitors to write down.
+  const reluctance = (fellows.length && fellows.length < pool.length) ? pactReluctance() : 0;
 
-  const scored = usable.map(name => ({
-    name,
-    score: suspicion(voter, name, ep) * _voteSuspicionMult + rng() * 0.35,
-  })).sort((a, b) => b.score - a.score);
-  return scored[0].name;
+  const scored = pool.map(name => {
+    const priced = reluctance > 0 && fellows.includes(name);
+    return {
+      name,
+      score: suspicion(voter, name, ep) * _voteSuspicionMult
+        + (priced ? pactNoise(voter, name, ep) : rng() * 0.35)
+        - (priced ? reluctance : 0),
+    };
+  }).sort((a, b) => b.score - a.score);
+  const chosen = scored[0].name;
+  if (_pactWatch) _pactWatch({ voter, ep, chosen, fellows: [...fellows], pool: [...pool],
+    reluctance, living: (gs.activePlayers || []).length,
+    potShare: gs.tr?.potCeiling ? (gs.tr.pot || 0) / gs.tr.potCeiling : 0,
+    betrayed: fellows.includes(chosen) });
+  return chosen;
+}
+
+// EVERY TIME THE QUESTION IS ASKED, NOT EVERY SEASON IT HAPPENS IN.
+//
+// Task 4 of this plan shipped a guard that a mutation SURVIVED, because the
+// state it forbade occurred in 22 seasons out of 400 and the population barely
+// contained it. A Traitor turning on a Traitor is rarer than that BY DESIGN —
+// the price above is what makes it rare — so a season-level assertion here
+// would be unfalsifiable in exactly the same way. This hook reports the
+// DECISION, every time one is made, so a guard can assert over opportunities
+// rather than over seasons and can state how many opportunities it saw.
+//
+// Test-only. Nothing in the show may ever set it.
+let _pactWatch = null;
+export function _setPactWatch(fn = null) {
+  const prev = _pactWatch;
+  _pactWatch = fn;
+  return () => { _pactWatch = prev; };
 }
 
 /**
@@ -497,8 +626,9 @@ export function revealCascade(name, wasTraitor, ep, rng = Math.random) {
 //
 // WHAT IS STILL TRUE: this channel is weakly right, not sharp. At the emission
 // level it is 1.21x against a 1.20x control, and part of that enrichment is
-// structural — chooseBanishmentVote bars a Traitor from naming the pact, so
-// Traitors' ballots are restricted to Faithfuls. It earns the ceiling because
+// structural — chooseBanishmentVote prices a Traitor's naming of the pact far
+// above anything a mid-season board can outbid, so Traitors' ballots are in
+// practice restricted to Faithfuls until the last table. It earns the ceiling because
 // its edge over an equally loud noise channel is real and increasing, not
 // because it is a good detector. Late lift remains the thinnest gate in the
 // file and any future change to the murder layer hits it first.

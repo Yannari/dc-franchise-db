@@ -39,8 +39,10 @@
 //   `base` here is computed PER EMISSION, from the living population at the
 //   round the belief was formed, and averaged. Never season-wide.
 //
-//   ENRICHMENT IS NOT INFERENCE. chooseBanishmentVote legitimately stops a
-//   Traitor naming the pact, so Traitors' ballots are restricted to Faithfuls;
+//   ENRICHMENT IS NOT INFERENCE. chooseBanishmentVote legitimately prices a
+//   Traitor's naming of the pact out of reach until the last table, so
+//   Traitors' ballots are in practice restricted to Faithfuls (0 exceptions
+//   above six living, measured over 400 seasons);
 //   formPreference draws the victim from livingFaithfuls. Anybody who voted for
 //   the victim therefore inherits an enrichment derived from ground truth that
 //   has nothing whatever to do with the murder. A control drawn the same way
@@ -240,7 +242,8 @@ const CHANNELS = {
    *
    * It indicts everybody who voted for somebody who turned out to be a
    * Faithful — which is genuinely enriched in Traitors (their ballots are
-   * restricted to Faithfuls by chooseBanishmentVote) and therefore reads well
+   * priced onto Faithfuls by chooseBanishmentVote everywhere but the last
+   * table) and therefore reads well
    * above 1.0x against any base. It knows nothing. Its `edge` is the number
    * that has to come out at zero, and it is deliberately built without
    * sampling noise so that "the audit reports no edge here" is a property of

@@ -30,10 +30,20 @@ function _ensureState(key, total) {
   return window._tvState[key];
 }
 
+/** DOM-safe id fragment for a tribe name. */
+function _slugId(name) { return String(name).replace(/\W/g, '') || 'x'; }
+
 function _reapplyVisibility(suffix, upToIdx, total) {
   for (let i = 0; i <= upToIdx; i++) {
     const el = document.getElementById(`cb-step-${suffix}-${i}`);
     if (el) el.classList.add('cb-visible');
+  }
+  // Open each tribe's ledger once that tribe's last session has been revealed.
+  for (const g of (window._cbLedgerGates || [])) {
+    if (upToIdx >= g.lastStep) {
+      const led = document.getElementById(`cb-ledger-${_slugId(g.tribe)}`);
+      if (led) led.classList.add('cb-visible');
+    }
   }
   const counter = document.getElementById(`cb-counter-${suffix}`);
   if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total} sessions`;
@@ -220,6 +230,8 @@ function _shell(content, ep) {
 
 /* ── step visibility ── */
 .cb-step{display:none;}
+.cb-ledger-gated{display:none;}
+.cb-ledger-gated.cb-visible{display:block;}
 .cb-step.cb-visible{display:block;}
 
 /* ── play card (one coaching session) ── */
@@ -360,11 +372,13 @@ export function rpBuildCoachBoard(ep) {
 
   let steps = [];
   let stepMeta = [];
+  const ledgerGates = [];
 
   const tribeBlocks = Object.entries(data).map(([tribeName, t]) => {
     const sessions = Array.isArray(t?.sessions) ? t.sessions : [];
     const passedOver = Array.isArray(t?.passedOver) ? t.passedOver : [];
 
+    const _tribeFirstStep = steps.length;
     const sessionHtml = sessions.map(s => {
       const idx = steps.length;
       const gainNum = Number(s.gain) || 0;
@@ -418,17 +432,28 @@ export function rpBuildCoachBoard(ep) {
         }).join('')
       : `<div class="cb-ledger-empty">Everyone got a session this week.</div>`;
 
+    // The ledger waits for this tribe's last session. It is the ANSWER to the
+    // cards above it — who was left out only means anything once you have seen
+    // who was called on — and while it rendered immediately it also sat under
+    // every hidden card, so each reveal pushed it down and read as cards
+    // arriving at the top of the board.
+    const _tribeLastStep = steps.length - 1;
+    ledgerGates.push({ tribe: tribeName, lastStep: _tribeLastStep });
+    const _ledgerOpen = _tribeLastStep < _tribeFirstStep;  // no sessions: nothing to wait for
     return `<div class="cb-tribe-block">
       <div class="cb-tribe-name">${tribeName}</div>
       ${sessionHtml || '<div class="cb-flavor">No sessions ran this week.</div>'}
-      <div class="cb-ledger">
+      <div id="cb-ledger-${_slugId(tribeName)}" class="cb-ledger cb-ledger-gated${_ledgerOpen ? ' cb-visible' : ''}" data-laststep="${_tribeLastStep}">
         <div class="cb-ledger-title">Passed Over Tonight</div>
         ${ledgerRows}
       </div>
     </div>`;
   }).join('');
 
-  if (typeof window !== 'undefined') window._cbStepMeta = stepMeta;
+  if (typeof window !== 'undefined') {
+    window._cbStepMeta = stepMeta;
+    window._cbLedgerGates = ledgerGates;
+  }
 
   const st = _ensureState(stKey, steps.length);
   // Re-derive visibility classes into the already-built HTML so a re-render
@@ -459,6 +484,14 @@ export function rpBuildCoachBoard(ep) {
   if (st.idx >= 0) {
     for (let i = 0; i <= st.idx; i++) {
       html = html.replace(`id="cb-step-board-${i}" class="cb-step"`, `id="cb-step-board-${i}" class="cb-step cb-visible"`);
+    }
+    // A re-render (screen switch, replay) must reopen the ledgers the viewer
+    // had already earned, or they snap shut on every repaint.
+    for (const g of ledgerGates) {
+      if (st.idx >= g.lastStep) {
+        html = html.replace(`id="cb-ledger-${_slugId(g.tribe)}" class="cb-ledger cb-ledger-gated"`,
+          `id="cb-ledger-${_slugId(g.tribe)}" class="cb-ledger cb-ledger-gated cb-visible"`);
+      }
     }
   }
   return html;

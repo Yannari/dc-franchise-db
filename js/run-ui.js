@@ -7,6 +7,7 @@
 // `DEMO_LABELS` an object, so reading them off window gave undefined and the
 // ratings section rendered its curve above an empty grid.
 import { DEMOS, DEMO_LABELS } from './ratings.js';
+import { coachesOf } from './coaches.js';
 
 /**
  * A dry-run switch for the export, sitting under the button that needs it.
@@ -170,12 +171,14 @@ function _hubEsc(value) {
   return String(value ?? '').replace(/[&<>'"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[c]));
 }
 
-function _hubPortrait(name, cast = players, eliminated = false) {
+function _hubPortrait(name, cast = players, eliminated = false, isCoach = false) {
   const player = (cast || []).find(p => p.name === name);
   const slug = player?.slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  return `<span class="hub-player${eliminated ? ' eliminated' : ''}" title="${_hubEsc(name)}">
+  // A coach is on this tribe without being one of its contestants — shown, but
+  // never counted among the players still competing for the placement.
+  return `<span class="hub-player${eliminated ? ' eliminated' : ''}${isCoach ? ' hub-player-coach' : ''}" title="${_hubEsc(name)}${isCoach ? ' — coach' : ''}">
     <span class="hub-player-face"><img src="assets/avatars/${_hubEsc(slug)}.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${_hubEsc(String(name)[0] || '?')}</span></span>
-    <span class="hub-player-name">${_hubEsc(name)}</span>
+    <span class="hub-player-name">${_hubEsc(name)}${isCoach ? '<b style="display:block;font-size:7px;letter-spacing:1px;opacity:.75">COACH</b>' : ''}</span>
   </span>`;
 }
 
@@ -315,7 +318,14 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
     : _hubHouse
       ? [{ name: displayState.phase === 'finale' ? 'Finalists' : 'The House', color: setting.accent, members: active }]
       : displayState.phase === 'pre-merge' && (displayState.tribes || []).length
-        ? displayState.tribes.map(t => ({ name: t.name, color: typeof tribeColor === 'function' ? tribeColor(t.name) : setting.accent, members: (t.members || []).filter(n => active.includes(n)) })).filter(t => t.members.length)
+        ? displayState.tribes.map(t => {
+            // `members` is the contestant list and stays the contestant list —
+            // "5 remaining" counts who can still take a placement. Coaches ride
+            // alongside it so the tribe on screen matches the tribe at camp.
+            const _m = (t.members || []).filter(n => active.includes(n));
+            return { name: t.name, color: typeof tribeColor === 'function' ? tribeColor(t.name) : setting.accent,
+              members: _m, coaches: coachesOf(t.name).map(c => c.name) };
+          }).filter(t => t.members.length || t.coaches.length)
         : [{ name: displayState.phase === 'finale' ? 'Finalists' : 'Merged Cast', color: setting.accent, members: active }];
   const storylines = [];
   if (latest?.eliminated) storylines.push(`${latest.eliminated}'s exit changes the numbers going into Episode ${nextEpisode}.`);
@@ -402,7 +412,13 @@ export function renderSeasonHub() {
   const latestPortraits = latestElims.map(name => _hubPortrait(name, players, true)).join('');
   const castHtml = _spoilerFree
     ? '<div class="hub-spoiler-lock"><span>◉</span><div><strong>Updated cast hidden</strong><small>Watch in the Visual Player without spoiling this screen, or turn off Spoiler-free to reveal the current state.</small></div></div>'
-    : model.groups.map(group => `<section class="hub-tribe"><header><span class="hub-tribe-dot" style="background:${_hubEsc(group.color)}"></span><strong>${_hubEsc(group.name)}</strong><small>${group.members.length} remaining</small></header><div class="hub-cast-row">${group.members.map(name => _hubPortrait(name)).join('')}</div></section>`).join('');
+    : model.groups.map(group => {
+        const _co = group.coaches || [];
+        const _count = `${group.members.length} remaining${_co.length ? ` · ${_co.length} coach${_co.length === 1 ? '' : 'es'}` : ''}`;
+        const _faces = [...group.members.map(name => _hubPortrait(name)),
+                        ..._co.map(name => _hubPortrait(name, players, false, true))].join('');
+        return `<section class="hub-tribe"><header><span class="hub-tribe-dot" style="background:${_hubEsc(group.color)}"></span><strong>${_hubEsc(group.name)}</strong><small>${_count}</small></header><div class="hub-cast-row">${_faces}</div></section>`;
+      }).join('');
   const latestVotes = Object.entries(model.latest?.votes || {}).sort(([,a],[,b]) => b-a).slice(0, 3).map(([name, count]) => `<span>${_hubEsc(name)} <b>${count}</b></span>`).join('');
   const headlineStatus = _spoilerFree && model.latest
     ? `Episode ${model.latest.num} is ready to watch · outcome hidden`

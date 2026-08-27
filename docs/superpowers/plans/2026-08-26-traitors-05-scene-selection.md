@@ -673,3 +673,61 @@ verdicts inherits that condition.
 
 Sequence it AFTER Task 8, since Task 8 changes what those events say but not whether they
 fire -- and re-deriving twice would waste the run.
+
+---
+
+# PLAN 5 CLOSED — 280 tests, 15 bands, none retuned
+
+## Delivered, measured plan-base (df17dda2) to head on identical seeds
+
+| | base | head |
+|---|---|---|
+| mean thread beats | 1.1363 | **1.5981** |
+| die at first beat | 90.0% | **67.6%** |
+| closure rate | 1.59% | **12.76%** |
+| seasons repeating a sentence 3x | 30.6% | **1.94%** |
+
+Note on the third row: the "3.58% -> 11.20%" figure quoted during the plan was a TASK's local
+start point, not plan base. Fifth occurrence of a delta differenced against a baseline that
+never shipped. Both misquotes understated the result, which is luck, not diligence -- the rule
+was adopted after occurrence two and kept not being applied at the point where a number stops
+being a measurement and becomes a headline.
+
+Note on the second row: part of that improvement is RECLASSIFICATION -- `deadShare` stopped
+counting a closed 1-beat thread as dead. 19.2% of closures still resolve in a single beat.
+
+## The two lessons this plan actually taught
+
+**1. Fixing the instance you noticed does not fix the class.** Written into this plan by
+Task 4 after a floor keyed at event granularity missed a dying branch. Then Task 8 found an
+event that built a payoff sentence and discarded it, fixed that one event, and moved on. The
+whole-plan review found four more. The final sweep found **six** -- two the review had not
+named. The lesson was in the file the whole time; nobody treated "I found a bug of shape X"
+as an instruction to go looking for shape X.
+
+**2. A test suite proves the machine runs. Only reading proves what it produced.** Sixteen
+prose defects were found in this plan by dumping seasons and reading sentences. ZERO by any
+assertion. Two of them were wrong on 100% of firings -- a bed count that was never once
+correct, and a sentence whose precondition never checked the thing the sentence claimed. The
+final round then introduced a seventeenth while fixing the first, and caught it only by
+re-reading.
+
+## Open, deliberately
+
+- **Task 10** -- `audit:all` is 124s but not stably green (`event-rates-audit.test.js` fails
+  under it, passes alone). Until fixed, the audits have NOMINAL not real CI coverage.
+- **Task 11** -- the calibration roster fires zero of the 11 `callback.js` events, so every
+  band certifies an engine missing 11% of its pool. Also re-derive the branch floor as a
+  SHARE, which currently caps how finely branch labels can be split.
+- **F4, half-refused with measurement.** `_threadForActors` matches on `names.some(...)`, so a
+  convened actor can be written out of their own scene. The full fix (`some` -> `every`)
+  removes all 215 orphaned firings but costs 73% of romance's reach and puts
+  `romance-liability-exposed` under the branch floor unrecoverably (weight 3->9->15 moved its
+  worst branch 15->21->22 against a floor of 24). The shipped half keys cooldowns on who the
+  event actually wrote. **`trust.js` carries the same defect and the review did not name it.**
+- Emotional-state thresholds are absolute counts against a room shrinking 19 -> 4.
+- Pair-keyed suspicion threads read directionally incoherent when cited.
+- The ground-truth probes have no all-Faithful arm, so a ground-truth GATE is invisible while
+  a ground-truth ASYMMETRY is caught.
+- The probe fixture recorded a murder while keeping the victim in `activePlayers`; fixed here,
+  but that fixture is shared with the belief gate and the probes.

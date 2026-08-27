@@ -6309,6 +6309,17 @@ export function simulateBBWeek(options = {}) {
       pitches:campaign.pitches, pitchIntel:campaign.intel,
       counterplay:campaign.counterplay, voteChanges:campaign.changed,
       votesAfterAct:tally(ballots, nominees),
+      /* ── THE CAMPAIGN DAYS ARE A STRETCH OF HOUSE LIFE TOO ──
+         The campaign is drawn as a House Life screen, and only `house` acts
+         were carrying a snapshot — so that one screen had no state of its own
+         and the panels silently fell back to the episode's end-of-week
+         picture. Every alliance change a viewer could see between two
+         consecutive House Life screens landed on that one transition: the
+         fourth screen showed the week, the fifth showed the aftermath, and a
+         seven-strong alliance appeared to lose four people and vanish with
+         nothing said about it. Measured at 15 of them across six seasons, all
+         on screen 4 -> 5. */
+      state: _snapshotHouse(false, week.houseAtStart),
     }, { nominees:[...visibleBlock], ballots });
 
     // The pitches were structured data rendered only by a screen of their own.

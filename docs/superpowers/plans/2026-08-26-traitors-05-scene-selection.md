@@ -391,3 +391,37 @@ count, which is a different change with its own measurement. Left open deliberat
 into the source. Whoever takes it should check the same shape elsewhere -- any threshold in
 this engine expressed as a raw count against a population that shrinks all season has the
 same defect latent in it.
+
+### The round budget is zero-sum: new content STARVES old content
+
+Task 4 found this by measurement and it binds Task 5. `startRoundBudget` sets a fixed 4-8
+draws per round, shared across every window. Adding events to empty windows does not add
+firings -- it REDISTRIBUTES them. Measured when journey-out/journey-back/night went from
+0/0/36 to 3258/1131/2658 firings per 400 seasons:
+
+- evening -22%, after-table -30%
+- callback family -22% volume (1829 -> 1428 per 400 seasons)
+- romance, whose whole family hangs off ONE `evening` spark, fell to 128 firings and tripped
+  the rarest-event floor at 2 firings/400 seasons
+
+The romance case is the shape to watch: a family with a single entry point in a crowded
+window is fragile to any content added anywhere else. Task 4 fixed it by giving romance a
+second door in a thin window (`romance-road-spark`, journey-out, same gates, shared 4-active
+cap) rather than by reweighting.
+
+**Rules for Task 5:** any content added anywhere reduces firings everywhere else, so
+(1) measure the whole per-family and per-window distribution base vs head, not just the
+events you touched; (2) watch the rarest-event floor, which is the tripwire that catches
+this; (3) a family whose entry point sits in a crowded window needs a second door, not a
+bigger weight -- reweighting inside a starved window just moves the starvation.
+
+Task 6 should decide whether the fixed 4-8 budget is still right for a 97-event pool, and
+look at callback's 22% loss, which is the largest unaddressed redistribution.
+
+### Open, unassigned: `residueFor`'s `beforeEp` filter is weakly guarded
+
+Task 4 reports that mutating `beforeEp`'s comparison from `<` to `<=` leaves the whole
+citation suite green except one new guard, and that one catches it only by accident. This is
+the filter that stops a citation quoting itself or a later moment -- a season recapping
+events that have not happened. It was verified correct by direct measurement in Task 2 (0
+violations in 758 citations) but it is not properly GUARDED. Task 6 should close it.

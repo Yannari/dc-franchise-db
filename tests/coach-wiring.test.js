@@ -4,14 +4,36 @@ import { readFileSync } from 'node:fs';
 const read = f => readFileSync(f, 'utf8');
 
 describe('the twist is reachable', () => {
-  it('is in the catalog with a phase and a style', () => {
+  // Coaches is a SEASON-LONG system (seasonConfig.coaches, like the Mole),
+  // not a TWIST_CATALOG entry scheduled on a night — see the "Correction"
+  // section at the top of docs/superpowers/specs/2026-08-26-coaches-twist-design.md.
+  // It has no `phase`/`chalStyle` to check because there is no night to
+  // schedule it on.
+  it('is NOT in TWIST_CATALOG — it is a season config, not a scheduled twist', () => {
     const core = read('js/core.js');
-    expect(core).toMatch(/id:\s*'coaches'/);
-    expect(core, 'the randomizer needs a style').toMatch(/id:\s*'coaches'[\s\S]{0,400}chalStyle/);
+    expect(core).not.toMatch(/id:\s*'coaches'/);
   });
 
-  it('sets its flag in applyTwist', () => {
-    expect(read('js/twists.js')).toMatch(/engineType === 'coaches'/);
+  it('is configured in seasonConfig, wired like the Mole', () => {
+    const core = read('js/core.js');
+    expect(core).toMatch(/coaches:\s*'disabled'/);
+    expect(core).toMatch(/coachesPerTribe:/);
+    const castUi = read('js/cast-ui.js');
+    expect(castUi).toMatch(/cfg-coaches/);
+  });
+
+  it('has no engineType branch in applyTwist — there is no night to schedule', () => {
+    expect(read('js/twists.js')).not.toMatch(/engineType === 'coaches'/);
+  });
+
+  it('ep.isCoaches is DERIVED from gs.coaches, not set by applyTwist', () => {
+    const ep = read('js/episode.js');
+    expect(ep).toMatch(/isCoaches:\s*!!\(gs\.coaches\?\.length\)/);
+  });
+
+  it('the production entry point gates on seasonConfig.coaches, not a bare isCoach flag', () => {
+    const save = read('js/savestate.js');
+    expect(save).toMatch(/seasonConfig\.coaches/);
   });
 
   it('runs the block and promotes at the merge', () => {

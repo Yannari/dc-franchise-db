@@ -4090,9 +4090,6 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 3) return;
     ep.isChainOfCommand = true;
 
-  } else if (engineType === 'coaches') {
-    ep.isCoaches = true;
-
   } else if (engineType === 'aftermath') {
     twistObj.aftermath = true; // generateAftermathShow handles everything in patchEpisodeHistory
   } else if (engineType === 'shot-in-dark') {

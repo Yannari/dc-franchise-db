@@ -1,5 +1,40 @@
 # The Coaches Twist — Design
 
+## Correction (2026-08-26): this is a season system, not an episode twist
+
+Coaches were originally built as a `TWIST_CATALOG` entry with
+`phase:'pre-merge'` — the shape used for things scheduled on one specific
+night, like Mutiny or Tribe Swap. That was the wrong shape. A coach exists
+from episode 1 until the merge: they train a tribe every episode, can be
+voted out at any tribal, and are promoted when the merge arrives. Nothing
+about that is a single night's event — it is a condition the whole pre-merge
+phase runs under, exactly like The Mole or Black Vote.
+
+The wrongness was not cosmetic. `promoteCoaches` was gated on `ep.isCoaches`,
+which `applyTwist()` only set true on the episode(s) the twist happened to be
+scheduled for. If a season format did not schedule "Coaches" on the exact
+episode that crossed the merge threshold, `ep.isCoaches` was false that
+episode, `promoteCoaches` never ran, and every surviving coach was stranded
+outside `gs.activePlayers` for the rest of the season — never competing,
+never voting, never on the jury, forever.
+
+The fix: Coaches is now `seasonConfig.coaches` (`disabled` | `manual` |
+`auto`), configured the same way as the Mole (`seasonConfig.mole`), decided
+once at cast time in `initGameState` rather than scheduled on the timeline.
+`ep.isCoaches` still exists, but it is now DERIVED every episode from
+`gs.coaches.length` — true for every pre-merge episode the season actually
+has coaches, never dependent on what got scheduled that night. The
+`TWIST_CATALOG` entry and its `engineType:'coaches'` branch in `applyTwist()`
+are gone; there is no night to schedule.
+
+`manual` mode reuses the Cast Builder's existing per-player Coach checkbox.
+`auto` mode selects `coachesPerTribe` coaches per tribe automatically, using
+`isReturnee` as the casting proxy for "franchise winner or finalist" — the
+same proxy `js/coach-episode.js`'s `defaultFameGapOf` already uses for the
+same reason: `js/fame.js` needs season/rankings data that is not reachable
+from inside a running season. Replace both the day a season builder plumbs
+real `fame.js` output into `gs`.
+
 ## Purpose
 
 A Total Drama season in which each tribe carries one to three **coaches**:

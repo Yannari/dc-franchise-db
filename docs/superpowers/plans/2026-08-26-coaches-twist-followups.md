@@ -3,31 +3,38 @@
 The engine is built, reviewed and measured across 20 headless seasons. This is
 what a final whole-branch review found still open, in the order it must be done.
 
-## 1. There is no way to create a coach — BLOCKING
+## 1. There is no way to create a coach — RESOLVED (2026-08-26)
 
-Nothing in production calls `addCoach`. `gs.coaches` is populated only by
-tests, so selecting **Coaches** in the twist catalog sets `ep.isCoaches`, finds
-no coaches, and does nothing at all.
+This item also uncovered a deeper design error: Coaches was built as an
+EPISODE twist (`TWIST_CATALOG` entry, `phase:'pre-merge'`, scheduled on the
+timeline) when it is actually a SEASON-LONG system — a coach spans the whole
+pre-merge phase, exactly like the Mole. Scheduling it on one night meant
+`ep.isCoaches` (which `promoteCoaches` reads to know the merge happened) was
+only ever true on the scheduled episode; any season that did not schedule
+Coaches on the exact merge episode stranded every surviving coach outside
+`gs.activePlayers` for good.
 
-This is a defect in the plan, not in the implementation: every mechanism was
-specified and no way to create the thing they operate on. It was deliberately
-left out of the final fix wave because *where* coaches get configured is a
-design decision:
+Fixed by making Coaches `seasonConfig.coaches` (`disabled`|`manual`|`auto`,
+plus `seasonConfig.coachesPerTribe`), wired in `initGameState` the same way as
+`seasonConfig.mole`, with `ep.isCoaches` now DERIVED each episode from
+`gs.coaches.length` rather than set by `applyTwist()`. See the "Correction"
+section at the top of the design doc.
 
-- **Cast builder** — pick coaches while assembling the season, alongside
-  returnees. Fits how the roster is already chosen, and lets a coach's `stars`
-  be set per person.
-- **Season config** — a count per tribe, coaches drawn automatically from
-  franchise winners and finalists using `js/fame.js`. Less control, but it is
-  the twist's own casting rule expressed as code.
+- **manual** — the Cast Builder's per-player Coach checkbox (already built;
+  now gated on this mode instead of always reading `p.isCoach`).
+- **auto** — `coachesPerTribe` coaches per tribe, selected using `isReturnee`
+  as the casting proxy for "franchise winner or finalist" (see item 6 below —
+  real `js/fame.js` output still isn't reachable at init).
 
-Whichever is chosen must also decide whether a coach's name appears in
-`tribe.members`. `eliminateCoach` scopes its reactions to the tribe, so if a
-coach is a member they will react to their own elimination.
+A coach's name never appears in `tribe.members` in either mode — the
+exclusion happens before tribes are built, same as it did for the old
+checkbox-only path.
 
-## 2. Manual verification never done — BLOCKING
+## 2. Manual verification never done — no longer blocked
 
-Both were impossible until item 1 exists, and neither is covered by a test.
+Both were impossible until item 1 existed; item 1 is now resolved (a real
+season with `seasonConfig.coaches` set produces coaches through
+`initGameState`), but a browser render still hasn't been done.
 
 - **Render the Coaches' Board in a browser.** This repository has shipped VP
   screens that were written, wired, tested and drew nothing.

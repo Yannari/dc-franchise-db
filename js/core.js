@@ -332,10 +332,6 @@ export const TWIST_CATALOG = [
   { id:'abduction',        emoji:'🫳', name:'Abduction',            category:'team',       phase:'pre-merge',  desc:'Each tribe steals one player from a competing tribe.',                      engineType:'abduction'       },
   { id:'kidnapping',       emoji:'🫳', name:'Kidnapping',           category:'team',       phase:'pre-merge',  desc:'Challenge winner tribe kidnaps one player from the losing tribe. That player skips tribal (safe) and bonds with their captors. Returns next episode.', engineType:'kidnapping' },
   { id:'first-impressions',emoji:'👀', name:'First Impressions',    category:'team',       phase:'pre-merge',  desc:'Each tribe votes someone out on first impressions alone. The "eliminated" players swap tribes instead.', engineType:'first-impressions' },
-  { id:'coaches', emoji:'📋', name:'Coaches', category:'twist',
-    chalStyle:'social', phase:'pre-merge',
-    desc:'Each tribe carries one to three former winners and finalists who train the contestants but never compete. They cannot vote and they can be voted out. Survive to the merge and they finally play.',
-    engineType:'coaches', incompatible:[] },
   // Immunity
   { id:'shared-immunity',  emoji:'🛡️', name:'Shared Immunity',      category:'immunity',   phase:'post-merge', desc:'Immunity winner picks one other player to share the necklace with.',        engineType:'shared-immunity', incompatible:['double-safety','hero-duel'] },
   { id:'double-safety',    emoji:'🛡️', name:'Double Safety',        category:'immunity',   phase:'post-merge', desc:'Two players win immunity — the challenge winner and the runner-up.',         engineType:'double-safety',  incompatible:['shared-immunity','hero-duel'] },
@@ -1507,6 +1503,7 @@ export function defaultConfig() {
     firemaking: false, tiebreakerMode: 'survivor', qem: false, idolRehide: false,
     advExpire: 4, foodWater: 'disabled', survivalDifficulty: 'casual',
     mole: 'disabled', molePlayers: [], moleCoordination: 'independent',
+    coaches: 'disabled', coachesPerTribe: 1,
     romance: 'enabled',
     aftermath: 'disabled',
     fanVoteFrequency: 'disabled',

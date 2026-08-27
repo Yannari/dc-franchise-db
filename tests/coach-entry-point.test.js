@@ -35,8 +35,11 @@ function castWithCoaches() {
 
 function startOnly(cast, config = {}) {
   core.setPlayers(cast);
+  // seasonConfig.coaches gates whether `isCoach` on a player record does
+  // anything at all (see the season-long-system correction in the design
+  // doc) — 'manual' is the mode that reads the Cast Builder checkbox.
   core.setSeasonConfig({ ...core.seasonConfig, name: 'CoachEntry', teams: 2, mergeAt: 8,
-    finaleSize: 3, jurySize: 5, romance: 'disabled', aftermath: 'disabled', ...config });
+    finaleSize: 3, jurySize: 5, romance: 'disabled', aftermath: 'disabled', coaches: 'manual', ...config });
   const ok = initGameState();
   return { ok, gs: core.gs };
 }

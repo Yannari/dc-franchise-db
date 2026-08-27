@@ -1018,6 +1018,8 @@ export function saveConfig() {
     mole:        g('cfg-mole')?.value || 'disabled',
     molePlayers: seasonConfig.molePlayers || [],
     moleCoordination: g('cfg-mole-coordination')?.value || 'independent',
+    coaches:     g('cfg-coaches')?.value || 'disabled',
+    coachesPerTribe: parseInt(g('cfg-coaches-per-tribe')?.value) || 1,
     romance:     g('cfg-romance')?.value || 'enabled',
     autoRewardChallenges: g('cfg-auto-reward')?.checked ?? false,
     replacementOnMedevac: g('cfg-replacement')?.checked ?? false,
@@ -1210,6 +1212,11 @@ export function renderConfig() {
   set('cfg-mole', seasonConfig.mole || 'disabled');
   set('cfg-mole-coordination', seasonConfig.moleCoordination || 'independent');
   updateMoleUI();
+  // Coaches — season-long system, configured like the Mole (see
+  // docs/superpowers/specs/2026-08-26-coaches-twist-design.md)
+  set('cfg-coaches', seasonConfig.coaches || 'disabled');
+  set('cfg-coaches-per-tribe', seasonConfig.coachesPerTribe || 1);
+  updateCoachesUI();
   // Romance
   set('cfg-romance', seasonConfig.romance || 'enabled');
   // Sync slider displays

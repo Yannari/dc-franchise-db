@@ -1182,6 +1182,15 @@ export function simulateEpisode() {
   const ep = { num: epNum, bondChanges: [], riDuel: null, isRIReentry: false, isMerge: false,
                 idolFinds: [], idolPlays: [], idolRehide: false, journey: null, twist: null, twists: [], campEvents: {},
                 revoteVotes: null, revoteLog: null, isRockDraw: false,
+                // Coaches are a SEASON-LONG system (seasonConfig.coaches, like the
+                // Mole), not something scheduled on one night — they train a tribe
+                // every pre-merge episode. DERIVED here from whether the season has
+                // any, not set by applyTwist(): a twist scheduled for only some
+                // episodes previously left `ep.isCoaches` false on the others (and,
+                // worse, false on whichever episode actually crossed the merge —
+                // stranding every surviving coach outside gs.activePlayers for the
+                // rest of the season, since promoteCoaches() was gated on it).
+                isCoaches: !!(gs.coaches?.length),
                 tribesAtStart: gs.tribes.map(t => ({ name: t.name, members: [...t.members] })),
                 activeAtStart: [...gs.activePlayers],
                 exileDuelPlayerAtStart: gs.exileDuelPlayer || null };

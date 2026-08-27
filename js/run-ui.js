@@ -1569,6 +1569,29 @@ export function pickSeasonTwistPlayer(key, id, name) {
   if (typeof saveConfig === 'function') saveConfig();
 }
 
+/**
+ * Coaches — a season-long system configured the same way as the Mole
+ * (seasonConfig.coaches: disabled|manual|auto). 'manual' reuses the Cast
+ * Builder's existing per-player Coach checkbox, so there is no picker grid
+ * here to populate — only the per-tribe count control needs to show/hide.
+ */
+export function updateCoachesUI() {
+  const mode = document.getElementById('cfg-coaches')?.value || 'disabled';
+  const perTribeGrp = document.getElementById('coaches-per-tribe-group');
+  const manualHint  = document.getElementById('coaches-manual-hint');
+  const desc        = document.getElementById('coaches-desc');
+  if (perTribeGrp) perTribeGrp.style.display = mode === 'auto' ? 'block' : 'none';
+  if (manualHint) manualHint.style.display = mode === 'manual' ? 'block' : 'none';
+  if (desc) {
+    const text = {
+      'disabled': 'Disabled: No Coaches twist this season.',
+      'manual':   'You choose who coaches by checking "Coach" on a player in the Cast Builder. A coach trains their tribe every pre-merge episode but never competes or votes, and is promoted to a full player at the merge.',
+      'auto':     'Coaches are selected automatically, one to three per tribe — franchise winners and finalists (proxied by Returning Player status until real career fame is wired in).',
+    };
+    desc.textContent = text[mode] || '';
+  }
+}
+
 export function toggleMolePlayer(name) {
   if (!seasonConfig.molePlayers) seasonConfig.molePlayers = [];
   const idx = seasonConfig.molePlayers.indexOf(name);

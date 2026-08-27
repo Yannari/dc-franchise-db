@@ -795,6 +795,48 @@ export function initGameState() {
     if (!Number(r.leanA)) bondLean[keyA] = aIsWarmer ? def.warm : def.cold;
     if (!Number(r.leanB)) bondLean[keyB] = aIsWarmer ? def.cold : def.warm;
   });
+  // ── COACHES — mode resolution ──
+  //
+  // `seasonConfig.coaches` is the season-long system this twist actually is
+  // (see docs/superpowers/specs/2026-08-26-coaches-twist-design.md): coaches
+  // exist from episode 1 through the merge, so who is a coach must be decided
+  // HERE, before tribes and `activePlayers` are built, not on some scheduled
+  // episode partway through the season.
+  //
+  // 'disabled' (default) ignores any `isCoach` flag a player record carries —
+  // the season config is the single source of truth for whether the twist
+  // runs at all, not stray checkbox state left over from a different season's
+  // cast. 'manual' reads the Cast Builder's per-player Coach checkbox as-is.
+  // 'auto' selects `coachesPerTribe` coaches per tribe automatically.
+  //
+  // Auto-selection's casting rule (see the design doc) is "franchise winners
+  // and finalists" — `js/fame.js` is the project's real answer to "how big a
+  // deal is this person", but it derives its score from season/rankings data
+  // that is not loaded into the live simulator's `gs` (fame.js's own header:
+  // "the site uses it now and the simulator uses it later"). `js/coach-episode.js`
+  // already hit this exact gap for the per-episode fame-gap calculation and
+  // resolved it with a two-tier PROXY read off `isReturnee` (returning vet vs.
+  // newbie) — this reuses the same proxy for the same reason, rather than
+  // inventing a fame number. Replace both the day a season builder plumbs real
+  // fame.js output into `gs`.
+  const _coachMode = seasonConfig.coaches || 'disabled';
+  const _autoCoachNames = new Set();
+  if (_coachMode === 'auto') {
+    const _perTribe = Math.max(1, Math.min(3, parseInt(seasonConfig.coachesPerTribe) || 1));
+    const _byTribe = {};
+    players.forEach(p => { if (p.tribe) (_byTribe[p.tribe] = _byTribe[p.tribe] || []).push(p); });
+    Object.values(_byTribe).forEach(members => {
+      // Returnees first (the proxy for "winner or finalist"); stable sort keeps
+      // cast order among equals so a replayed season picks the same coaches.
+      const _ranked = members.map((p, i) => ({ p, i }))
+        .sort((a, b) => (b.p.isReturnee ? 1 : 0) - (a.p.isReturnee ? 1 : 0) || a.i - b.i);
+      _ranked.slice(0, _perTribe).forEach(({ p }) => _autoCoachNames.add(p.name));
+    });
+  }
+  const isCoachNow = (p) => _coachMode === 'manual' ? !!p.isCoach
+    : _coachMode === 'auto' ? _autoCoachNames.has(p.name)
+    : false;
+
   // Small same-tribe bonus (+0.5)
   //
   // Coaches are excluded here on purpose. `gs.tribes[i].members` — built from
@@ -804,7 +846,7 @@ export function initGameState() {
   // in tribe.members"); `coachesOf()` in js/coaches.js finds them by
   // `coach.tribe` instead.
   const tribeMap = {};
-  players.forEach(p => { if(!p.tribe || p.isCoach) return; if(!tribeMap[p.tribe]) tribeMap[p.tribe]=[]; tribeMap[p.tribe].push(p.name); });
+  players.forEach(p => { if(!p.tribe || isCoachNow(p)) return; if(!tribeMap[p.tribe]) tribeMap[p.tribe]=[]; tribeMap[p.tribe].push(p.name); });
   Object.values(tribeMap).forEach(members => {
     for (let i=0;i<members.length;i++) for (let j=i+1;j<members.length;j++) {
       const k=bKey(members[i],members[j]); bonds[k]=(bonds[k]||0)+0.5;
@@ -905,7 +947,7 @@ export function initGameState() {
   // guard below, which catches the more dangerous version of this problem).
   if (tribeList.length) {
     players.forEach(p => {
-      if (p.tribe || p.isCoach) return;
+      if (p.tribe || isCoachNow(p)) return;
       tribeList.sort((a,b) => a.members.length - b.members.length)[0].members.push(p.name);
     });
   }
@@ -920,7 +962,7 @@ export function initGameState() {
   {
     const _assignedTribes = new Set(players.filter(p => p.tribe).map(p => p.tribe));
     for (const tName of _assignedTribes) {
-      const hasContestant = players.some(p => p.tribe === tName && !p.isCoach);
+      const hasContestant = players.some(p => p.tribe === tName && !isCoachNow(p));
       if (!hasContestant) {
         alert(`Tribe "${tName}" has only coaches assigned and no contestants. Add at least one non-coach player to that tribe before starting.`);
         return false;
@@ -941,7 +983,7 @@ export function initGameState() {
     // placement, and 135 modules take "in this list" to mean all of that.
     // Excluding them here IS the twist. addCoach() below is what makes them
     // findable to the coaching engine instead.
-    activePlayers: players.filter(p => !p.isCoach).map(p=>p.name),
+    activePlayers: players.filter(p => !isCoachNow(p)).map(p=>p.name),
     tribes: tribeList,
     coaches: [], coachTraining: {},
     riPlayers: [], riReturnCount: 0, riDuelHistory: [], riLifeEvents: {},
@@ -1000,16 +1042,17 @@ export function initGameState() {
 
   // ── COACHES — the production entry point ──
   //
-  // Nothing else calls addCoach(). Without this, the Cast Builder's Coach
-  // checkbox sets `isCoach` on the player record and nothing downstream ever
-  // reads it: gs.coaches stays empty, the coaching engine finds no coaches,
-  // and selecting the Coaches twist does nothing at all.
+  // Nothing else calls addCoach(). Without this, `isCoachNow()` picking out a
+  // player record and nothing downstream ever reads it: gs.coaches stays
+  // empty and the coaching engine finds no coaches. `_coachMode === 'disabled'`
+  // makes `isCoachNow` false for everybody, so this is a no-op that season —
+  // no separate guard needed.
   //
   // `p.tribe` is already the tribe's NAME (same string `coachesOf()` matches
   // against) — it survived the tribeMap exclusion above untouched, since that
   // exclusion only kept coaches out of `tribe.members`, not off their own
   // player record.
-  players.filter(p => p.isCoach).forEach(p => addCoach({ name: p.name, tribe: p.tribe }));
+  players.filter(isCoachNow).forEach(p => addCoach({ name: p.name, tribe: p.tribe }));
 
   // Initialize survival values when food/water system is enabled
   if (seasonConfig.foodWater === 'enabled') {

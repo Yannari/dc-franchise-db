@@ -170,7 +170,7 @@ import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext
 import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults, rockTheDockRevealNext, rockTheDockRevealAll } from './chal/rock-the-dock.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 import { rpBuildCoachBoard, rpBuildCoachSignatures } from './vp-coaches.js';
-import { campRoster, coachesOf, isCoach as isCoachName } from './coaches.js';
+import { campRoster, coachesOf } from './coaches.js';
 import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTChainHunt, rpBuildTTLongboardRace, rpBuildTTResults, ttRevealNext, ttRevealAll } from './chal/tropical-takedown.js';
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults, gpRevealNext, gpRevealAll } from './chal/greeces-pieces.js';
@@ -9633,7 +9633,30 @@ export function rpBuildVotingPlans(ep) {
   const _isMerged = _phase !== 'pre-merge';
 
   // Derive a meaningful WHY phrase from the target's actual stats + voter-target bond
+  // Every coach who was on this episode's tribal tribe, taken from the episode
+  // snapshot. Live gs is wrong for a replay: a promoted or eliminated coach is
+  // no longer in `activeCoaches()`, so anything reading it renders a past
+  // tribal as though no coach had ever been there.
+  const _epCoachNames = new Set(Object.values(ep.coachData || {})
+    .flatMap(t => Object.keys(t?.cards || {})));
+
   const targetWhyPhrase = (targetName, voterName) => {
+    // A coach on the block is a different vote from a contestant on the block,
+    // and every line below this was written about contestants. Voting one out
+    // costs nothing — they cannot hit you back next week, because they never
+    // get a ballot — and none of the ordinary rationales can say that.
+    if (_epCoachNames.has(targetName)) {
+      const _trainedMe = Object.keys(gs.coachTraining?.[targetName] || {}).includes(voterName);
+      const _built = Object.keys(gs.coachTraining?.[targetName] || {}).length;
+      return _hp([
+        `${targetName} cannot vote. That is the whole calculation — there is no revenge coming, no ballot with my name on it next week. It is the cheapest shot in this game and everybody can see it.`,
+        `${_built ? `${targetName} has made ${_built} of us better and every one of those people is somebody I have to beat later.` : `${targetName} is the most decorated person on this beach.`} You cut the coach before the coach becomes a player at the merge.`,
+        _trainedMe
+          ? `${targetName} worked with me. I am still writing the name down, because a coach costs nothing to lose and everyone else here costs me an enemy.`
+          : `${targetName} picked favourites all week and I was not one of them. There is no loyalty owed in either direction.`,
+        `Nobody wants to take a swing at a player who can swing back. ${targetName} cannot. That is why the name keeps coming back to ${targetName}.`,
+      ], voterName, targetName);
+    }
     const ts = pStats(targetName);
     const bond = getBond(voterName, targetName);
     const arch = ts.archetype || '';
@@ -9970,7 +9993,7 @@ export function rpBuildVotingPlans(ep) {
       // a camp event could announce an alliance of four and the plan below it
       // would show three — the coach erased from a group they are genuinely
       // in. They are listed, and marked, and never counted as a vote.
-      const _allianceCoaches = a.members.filter(m => isCoachName(m) && !tribalPlayers.includes(m));
+      const _allianceCoaches = a.members.filter(m => _epCoachNames.has(m) && !tribalPlayers.includes(m));
       const membersAtTribal = [...a.members.filter(m => tribalPlayers.includes(m)), ..._allianceCoaches];
       const canVote = membersAtTribal.filter(m => !_vpLostVoteSet.has(m) && !_allianceCoaches.includes(m));
       const cat = a.target ? targetCategory(a.target) : { label: 'No Target', color: '#484f58' };
@@ -10461,6 +10484,26 @@ export function rpBuildVotingPlans(ep) {
     const soloA = soloAlliances.find(a => a.members.includes(player));
     if (soloA?.target) confCast.push({ name: player, role: 'independent', target: soloA.target });
   });
+  // ── COACHES ───────────────────────────────────────────────────────────
+  // A coach could be the unanimous target of a tribal and not say one word
+  // about it, because every source above draws from voting blocs and a coach
+  // is in none of them. The two that matter: the one being hunted, and the
+  // one who spent the week lobbying with no ballot of their own.
+  {
+    // From the EPISODE, never from live gs. `coachesOf` filters on
+    // `!promoted`, and by the time anybody replays this episode every coach
+    // has been promoted at the merge or voted out — so the live lookup comes
+    // back empty and the coach silently drops off their own tribal.
+    const _planTribe = ep.tribalTribe || ep.loser?.name || '';
+    const _planCoaches = Object.keys(ep.coachData?.[_planTribe]?.cards || {}).map(name => ({ name }));
+    const _targets = new Set(namedAlliances.map(a => a.target).filter(Boolean));
+    for (const c of _planCoaches) {
+      if (_targets.has(c.name)) { confCast.push({ name: c.name, role: 'coach-hunted', target: null }); continue; }
+      const _pitch = (ep.votePitches || []).find(v => v.coachPitch && v.pitcher === c.name);
+      if (_pitch) confCast.push({ name: c.name, role: 'coach-lobby', target: _pitch.pitchTarget });
+    }
+  }
+
   // Dedupe
   const _confSeen = new Set();
   const confCastUnique = confCast.filter(c => {
@@ -10500,6 +10543,24 @@ export function rpBuildVotingPlans(ep) {
             `The plan is ${bondTarget}. The relationship says otherwise. One wins tonight — I'm not sure which.`,
           ], name, bondTarget) : null;
         }
+      } else if (role === 'coach-hunted') {
+        // From the episode, for the same reason as everything else here: the
+        // live record says whether the card is spent TODAY, not that night.
+        const _planTribeName = ep.tribalTribe || ep.loser?.name || '';
+        const _cardLive = (ep.coachData?.[_planTribeName]?.cards?.[name] ?? 'unused') === 'unused';
+        line = _hp([
+          `They have all worked out that I am the cheapest vote on this beach. No idol I am allowed to play, no ballot to hit them back with. ${_cardLive ? 'What I have is one card and the wrong person has to sign it.' : 'And I have nothing left to stop it.'}`,
+          `I trained half of them. That is the part nobody says out loud — the reason I am going is that I was good at the job.`,
+          `I do not get a vote tonight. I get a conversation, and then I get whatever they decide. ${_cardLive ? 'Unless the card holds.' : 'That is the whole of it.'}`,
+          `Every one of them is playing to win this. I am playing to still be here on merge day. They know that, and they know it makes me easy.`,
+        ], name);
+      } else if (role === 'coach-lobby' && target) {
+        line = _hp([
+          `I cannot vote. What I can do is remind four people who spent all week making them better, and then say the name ${target} out loud and let it sit.`,
+          `The sessions were not charity. I am not owed a ballot but I am owed a hearing, and tonight I am collecting on it against ${target}.`,
+          `I have no vote and no immunity and no way to make anybody do anything. I have their attention. Tonight that has to be enough to move ${target}.`,
+          `They can ignore me and nothing happens to them. That is the whole problem with being a coach — and it is why I have said ${target}'s name to every single one of them.`,
+        ], name);
       } else if (role === 'independent' && target) {
         line = targetWhyPhrase(target, name);
       }
@@ -10514,7 +10575,11 @@ export function rpBuildVotingPlans(ep) {
         ? `<span class="rp-vp-conf-role">Spearheader</span>`
         : role === 'conflicted'
           ? `<span class="rp-vp-conf-role swing">Conflicted</span>`
-          : `<span class="rp-vp-conf-role" style="color:#388bfd">Independent</span>`;
+          : role === 'coach-hunted'
+            ? `<span class="rp-vp-conf-role" style="color:#f85149">Coach · targeted</span>`
+            : role === 'coach-lobby'
+              ? `<span class="rp-vp-conf-role" style="color:#e8873a">Coach · no vote</span>`
+              : `<span class="rp-vp-conf-role" style="color:#388bfd">Independent</span>`;
       html += `<div class="rp-vp-conf-entry">
         ${rpPortrait(name)}
         <div class="rp-vp-conf-body">

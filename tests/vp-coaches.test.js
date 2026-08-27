@@ -77,3 +77,4 @@ describe('the signatures are read out', () => {
     expect(html).toContain('they run together');
   });
 });
+

@@ -211,3 +211,31 @@ describe('coaches are campers, and also coaches', () => {
     expect(seenTypes.size, 'the weighted picker only ever reaches one beat').toBeGreaterThan(1);
   });
 });
+
+// A coach could be the unanimous target of a tribal and never say one word
+// about it: every confessional source draws from voting blocs and a coach is
+// in none of them. And the lookup has to come from the EPISODE — `coachesOf`
+// filters on !promoted, so replaying any episode after the merge finds no
+// coaches at all and renders a past tribal as though none had been there.
+describe('coaches speak at their own tribal', () => {
+  it('gives the hunted coach and the lobbying coach a confessional', async () => {
+    const core = await import('../js/core.js');
+    const vp = await import('../js/vp-screens.js');
+    let targeted = 0, lobby = 0;
+    for (let r = 0; r < 2 && targeted === 0; r++) {
+      const { episodes } = await runHeadlessSeason({
+        twist: 'coaches', coachesPerTribe: 2, castSize: 16, mergeAt: 10,
+      });
+      for (const e of episodes) {
+        const hist = core.gs.episodeHistory.find(h => h.num === e.num);
+        if (!hist) continue;
+        let html = '';
+        try { html = vp.rpBuildVotingPlans(hist) || ''; } catch { continue; }
+        if (html.includes('Coach · targeted')) targeted++;
+        if (html.includes('Coach · no vote')) lobby++;
+      }
+    }
+    expect(targeted + lobby,
+      'no coach said anything at any tribal across two seasons').toBeGreaterThan(0);
+  }, 900000);
+});

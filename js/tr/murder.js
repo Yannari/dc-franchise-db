@@ -14,7 +14,7 @@ import { gs } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond } from '../bonds.js';
 import { livingTraitors, livingFaithfuls } from './roles.js';
-import { shieldSeenBy } from './powers.js';
+import { shieldSeenBy, daggerSeenBy } from './powers.js';
 
 /**
  * How hard the conclave steers off a Shield it knows about.
@@ -25,6 +25,26 @@ import { shieldSeenBy } from './powers.js';
  * not an edge case to special-case away.
  */
 const KNOWN_SHIELD_PENALTY = 12;
+
+/**
+ * How hard the conclave steers ONTO a Dagger it knows about.
+ *
+ * The mirror of the Shield's penalty and deliberately an order of magnitude
+ * softer. A known Shield is an ABSOLUTE fact about tonight — throwing the
+ * night at a wall achieves nothing whatever, so 12 is correct there. A known
+ * Dagger is a JUDGEMENT about a table two or three nights away: the holder
+ * doubles a vote at some point, probably against a Traitor, and taking them
+ * out early is worth doing but not worth doing instead of taking out the
+ * person who is currently dismantling the pact in front of the room. At 2.5 it
+ * moves a marginal call and loses to a strong one, which is the weight it
+ * deserves.
+ *
+ * A BONUS AND NOT A FILTER, for the reason spelled out at the Shield's penalty
+ * below: the per-candidate scatter draws once per name, so promoting a name by
+ * removing the others would consume a different number of draws and re-roll
+ * every murder and ballot after it.
+ */
+const KNOWN_DAGGER_BONUS = 2.5;
 
 /**
  * Deterministic scatter for a (traitor, target) pair.
@@ -60,6 +80,10 @@ export function formPreference(traitor, ep, rng = Math.random) {
   // Read once for the whole scoring loop: it is a property of THIS Traitor's
   // night, not of the candidate.
   const knownShield = shieldSeenBy(traitor, ep);
+  // And the same question about the other power: a name this Traitor watched
+  // walk back up the stair with a Dagger in their hand, or null. Per Traitor,
+  // never per pact — see shieldSeenBy.
+  const knownDagger = daggerSeenBy(traitor, ep);
 
   const scored = targets.map(name => {
     const ts = pStats(name);
@@ -107,6 +131,13 @@ export function formPreference(traitor, ep, rng = Math.random) {
     // and _castleRngFor both exist to prevent. Applied after the read-quality
     // multiply so it cannot be scaled away by a Traitor who reads badly.
     if (name === knownShield) score -= KNOWN_SHIELD_PENALTY;
+    // THE OTHER DIRECTION. A Faithful carrying a Dagger is a Faithful who gets
+    // two votes at a table nobody can predict, and the Traitor who saw it won
+    // is the only person in the pact who can act on that. Applied at the same
+    // point and for the same reason as the Shield's penalty: after the
+    // read-quality multiply, so a Traitor who reads the room badly cannot
+    // scale away a thing they SAW.
+    if (name === knownDagger) score += KNOWN_DAGGER_BONUS;
 
     // Carry the raw terms alongside the score so _reasonFor can read what
     // actually drove THIS pick instead of recomputing it — a recompute can

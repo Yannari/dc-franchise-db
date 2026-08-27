@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════
-// tr/powers.js — the Shield, and the half of the room that saw it won
+// tr/powers.js — the Shield, the Dagger, and the half of the room that saw
 // ══════════════════════════════════════════════════════════════════════
 //
 // Spec 7.3. A Shield blocks the NEXT MURDER ONLY. It never protects at the
@@ -166,6 +166,14 @@ const stat = (name, key) => {
 // on the ledger (`visibility`) and read back by the test, never re-derived from
 // the count with a second copy of these cuts — Task 2's duplicate-source
 // defect, which was the third of its kind in this project.
+// AND THE POOL IS SHARED WITH THE DAGGER, SO IT MUST NOT NAME A RELIC. From
+// the top of the stair nobody can tell what came out of the casket, which is
+// why one pool is right for both — but it is also why the third `some` line
+// used to end "exactly what she is carrying TONIGHT" and had to stop. Tonight
+// is a true thing to say about a Shield and a false one about a Dagger, which
+// does not expire, and it printed over a woman who was still carrying hers
+// when she was banished the following evening. Found by dumping dagger seasons
+// and reading them. Every line here is about WHO SAW and nothing else.
 const SEEN_LINES = {
   unseen: [
     'Nobody saw {who} do it. Not one person in the castle can say where {they} went or what {they} came back with.',
@@ -182,7 +190,7 @@ const SEEN_LINES = {
   some: [
     'Several people watched {who} walk back with it, and they will tell the ones who missed it by dinner.',
     'Enough of the room saw to make it a fact for some of them and a rumour for the rest.',
-    '{who} did not get away with it quietly. A handful of people know exactly what {they} is carrying tonight.',
+    '{who} did not get away with it quietly. A handful of people know exactly what {they} came back up that stair with.',
     'It was seen by more people than {who} would have chosen and fewer than would have made it common knowledge, which is the worst available number.',
   ],
   most: [
@@ -193,11 +201,20 @@ const SEEN_LINES = {
   ],
 };
 
+// {They} IS HERE BECAUSE A LINE PRINTED IT RAW. The Shield's pools never open
+// a sentence with a pronoun, so the capitalised forms were never needed and
+// never noticed missing; the Dagger's do, and the first dump of a dagger
+// season read "Chase did not wait for the ballots. {They} put it on the table"
+// to twelve seasons in a row. Every form the pronoun helper offers is wired,
+// not just the ones today's pools happen to use.
 const _render = (tpl, who, pr) => tpl
   .split('{who}').join(who)
   .split('{they}').join(pr.sub)
   .split('{them}').join(pr.obj)
-  .split('{their}').join(pr.posAdj);
+  .split('{their}').join(pr.posAdj)
+  .split('{They}').join(pr.Sub)
+  .split('{Them}').join(pr.Obj)
+  .split('{Their}').join(pr.PosAdj);
 
 const pick = (rng, arr) => arr[Math.min(arr.length - 1, Math.floor(rng() * arr.length))];
 
@@ -207,6 +224,32 @@ function _visibility(seen, roomSize) {
   const share = roomSize > 0 ? seen / roomSize : 1;
   if (share >= SEEN_MOST) return 'most';
   return seen <= SEEN_FEW_MAX ? 'few' : 'some';
+}
+
+/**
+ * Who saw somebody break away from a mission and come back carrying something.
+ *
+ * ONE ROLL PER LIVING PLAYER, IN ROSTER ORDER, holder skipped — and the draw
+ * pattern is part of the contract rather than an implementation detail. The
+ * Reliquary hands out either a Shield or a Dagger on the same afternoon by the
+ * same act, so both awards must consume the same draws in the same order; if
+ * they did not, which relic was down there would shift the missions' stream
+ * from that afternoon on and every later mission, tell and pot payment in the
+ * season would be a different number. The relic changes what somebody is
+ * holding, never which numbers the season draws.
+ */
+function _whoSaw(holder, teams, living, rng) {
+  const mine = (teams || []).find(t => (t.members || []).includes(holder));
+  const witnesses = [];
+  for (const name of living) {
+    if (name === holder) continue;
+    const near = !!mine && mine.members.includes(name);
+    const p = near
+      ? SAW.teamBase + SAW.teamPerPoint * (stat(name, 'intuition') / 10)
+      : SAW.farBase + SAW.farPerPoint * (stat(name, 'intuition') / 10);
+    if (rng() < clamp01(p)) witnesses.push(name);
+  }
+  return witnesses;
 }
 
 /**
@@ -232,16 +275,7 @@ function _visibility(seen, roomSize) {
 export function awardShield(holder, teams, ep, rng) {
   if (!gs?.tr || !holder) return null;
   const living = gs.activePlayers || [];
-  const mine = (teams || []).find(t => (t.members || []).includes(holder));
-  const witnesses = [];
-  for (const name of living) {
-    if (name === holder) continue;
-    const near = !!mine && mine.members.includes(name);
-    const p = near
-      ? SAW.teamBase + SAW.teamPerPoint * (stat(name, 'intuition') / 10)
-      : SAW.farBase + SAW.farPerPoint * (stat(name, 'intuition') / 10);
-    if (rng() < clamp01(p)) witnesses.push(name);
-  }
+  const witnesses = _whoSaw(holder, teams, living, rng);
 
   const roomSize = Math.max(0, living.length - 1);
   const rec = {
@@ -437,4 +471,253 @@ export function expireShields(ep) {
   if (gs.tr.shieldedThisRound instanceof Set) gs.tr.shieldedThisRound.clear();
   else gs.tr.shieldedThisRound = new Set();
   return s;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE DAGGER — spec 7.3, and the one power that is supposed to be OLD when
+// it is finally used
+// ══════════════════════════════════════════════════════════════════════
+//
+// "Doubles your vote at the next banishment. Historically decides seasons by
+// breaking 3-3 endgame deadlocks." Those are two sentences of one bullet and
+// they pull against each other, so the reconciliation is written down here
+// rather than left implicit in a constant.
+//
+// A power handed over on the afternoon it is found and spent that same evening
+// can never break a 3-3 deadlock, because a room of six is eight afternoons
+// after the room the Reliquary usually runs in. So the Dagger is a KEPT thing:
+// it is won, it is carried, and "the next banishment" is the next banishment
+// after its holder draws it. Everything below exists to make the second
+// sentence true — the acquisition is gated to a castle small enough for one
+// extra vote to matter, the holder's own nerve decides how much smaller they
+// are prepared to let it get, and nothing expires it. The commonest ending for
+// a Dagger is that its holder is murdered still carrying it, which is the
+// right shape for a power whose whole value is in the last three tables.
+//
+// ── WHAT IT IS NOT ──────────────────────────────────────────────────────
+//
+// IT IS NOT A SECOND BALLOT, AND THAT DISTINCTION IS THE WHOLE
+// IMPLEMENTATION. Ballots at the Round Table are read out loud, one at a time,
+// and they are the only `public`-credibility facts this game has:
+// `ballotEvidence` reads them, `shieldEvidence` reads them, and the entire
+// deduction model is built on their being what the room actually heard. A
+// doubled vote that appended a second ballot would fabricate a public fact — a
+// name said twice by one mouth — and every belief downstream of it would be
+// reasoning from something that did not happen.
+//
+// So the Dagger is implemented in `runRoundTable`'s TALLY and nowhere near the
+// ballot. One voter, one name, said once, recorded once, read aloud once; the
+// COUNTING is what changes. `daggerWeights()` is the only thing the table asks
+// for and the only thing it gets.
+//
+// IT WRITES NO BELIEFS AND NO BONDS. Not an omission — a mission writes no
+// bonds for the same reason (js/tr/missions.js), and it is why the calibration
+// bands can still tell an engine change from a content change: a bond write
+// feeds `bondResistance()` into `suspicion()`, and this task would then be
+// moving the deduction bands from a power that has nothing to do with
+// deduction. What the Dagger does to the room it does through the tally and
+// through the conclave steering below, both of which are decisions rather than
+// beliefs.
+//
+// ── RNG ─────────────────────────────────────────────────────────────────
+//
+// Both draws — who saw it, and how long its holder will sit on it — come off
+// the MISSIONS' stream at the moment it is awarded. The table itself takes NO
+// draw: `daggerWeights()` reads `drawAt`, a number already written down, and
+// compares it with the size of the room. That is the same discipline the
+// Shield's conclave penalty follows and for the same reason. A single roll
+// inside `runRoundTable` would displace every ballot, murder and banishment
+// after it in the game's own stream, and a season in which a Dagger existed
+// could no longer be compared with the season in which it did not.
+
+/**
+ * How many votes a drawn Dagger counts for. Exported so the guard reads the
+ * number under test rather than carrying its own copy of it — a test that
+ * recomputes the rule it is checking is the duplicate-source defect this
+ * project has now found three times.
+ */
+export const DAGGER_VOTES = 2;
+
+/**
+ * The castle has to be small before the vault has a Dagger in it.
+ *
+ * NOT A DIFFICULTY KNOB — it is the mechanism by which the spec's second
+ * sentence is true at all. Measured over 200 seasons, the Reliquary runs 428
+ * times and the searcher comes back with something on 334 of them; if every
+ * one of those finds could be a Dagger, most Daggers would be won in a room of
+ * eighteen, where a doubled vote is a rounding error its holder would then
+ * have to survive eight more tables to spend. Gated at twelve, a Dagger is won
+ * late enough to be worth carrying and early enough that carrying it is a
+ * decision.
+ *
+ * WHAT THE GATE COSTS THE SHIELD, because an archetype's output is a
+ * denominator and this splits one: the Reliquary yields ONE relic, so every
+ * Dagger is a Shield that did not happen. The numbers are in
+ * task-4-report.md. That is the honest cost of NOT adding an eighth
+ * archetype, which would instead have diluted `blind-chess` and taken a share
+ * of Task 2's measured +3.28pp off a calibration band from a task that never
+ * touched the channel.
+ */
+const DAGGER_FROM_LIVING = 12;
+
+/**
+ * How small a room a holder will let it get to before drawing it.
+ *
+ * The floor is four because a season stops at three and a Dagger nobody could
+ * ever draw is a prop; the ceiling is nine because above that a second vote
+ * stops deciding anything and the holder is simply impatient. Proportional in
+ * boldness and inversely in temperament — a bold, hot player draws it the
+ * first night it might help, a patient one waits for the room where it cannot
+ * fail to — with a noise term wide enough that neither is certain, because the
+ * interesting Dagger is the one drawn a table too early.
+ *
+ * ROLLED ONCE, AT ACQUISITION, AND WRITTEN DOWN. The table must not roll: see
+ * the RNG note above.
+ */
+const DRAW_FLOOR = 4;
+const DRAW_CEIL = 9;
+const DRAW_NERVE = 0.35;
+const DRAW_PATIENCE = 0.35;
+const DRAW_NOISE = 0.5;
+
+/**
+ * What the room hears when somebody draws it.
+ *
+ * The ACQUISITION is semi-visible — the same witness model the Shield uses,
+ * because it is the same act of walking away from a carry — but the DRAW is
+ * public, and it has to be. The ballots are read out one at a time in front of
+ * everybody; a room that heard three names for one player and two for another
+ * and then watched the first one leave has been shown arithmetic that does not
+ * work. The Dagger is declared, out loud, and then the ballots are read
+ * normally.
+ */
+const DRAW_LINES = [
+  '{who} did not wait for the ballots. {They} put it on the table in front of everybody first, and the room went very quiet.',
+  'Before a single name was read, {who} laid it down where the whole table could see it. Two votes tonight, and everybody knew whose.',
+  '{who} took it out early, before the debate had properly finished, and let it sit there while people worked out what it meant.',
+  'It came out of a pocket and onto the wood without a word, and after that nobody said anything that was not about it. {who} was voting twice.',
+];
+
+/**
+ * Award the Dagger found in a mission.
+ *
+ * Same afternoon, same act, same witnesses, same draws in the same order as
+ * `awardShield` — see `_whoSaw`. What differs is entirely on the far side of
+ * it: nothing is granted to js/tr/murder.js, nothing expires, and a `drawAt`
+ * is rolled here so that the table never has to.
+ */
+export function awardDagger(holder, teams, ep, rng) {
+  if (!gs?.tr || !holder) return null;
+  const living = gs.activePlayers || [];
+  const witnesses = _whoSaw(holder, teams, living, rng);
+  const roomSize = Math.max(0, living.length - 1);
+
+  const impulse = clamp01(0.5
+    + DRAW_NERVE * ((stat(holder, 'boldness') - 5) / 5)
+    - DRAW_PATIENCE * ((stat(holder, 'temperament') - 5) / 5)
+    + (rng() - 0.5) * DRAW_NOISE);
+
+  const rec = {
+    ep, holder, witnesses, roomSize,
+    visibility: _visibility(witnesses.length, roomSize),
+    pactAware: witnesses.some(n => alignmentAt(n, ep) === 'traitor'),
+    drawAt: DRAW_FLOOR + Math.round((DRAW_CEIL - DRAW_FLOOR) * impulse),
+    outcome: 'held', playedEp: null, target: null, banished: null,
+  };
+  rec.seenLine = _render(pick(rng, SEEN_LINES[rec.visibility]), holder, pronouns(holder));
+  rec.drawLine = _render(pick(rng, DRAW_LINES), holder, pronouns(holder));
+  (gs.tr.daggers ||= []).push(rec);
+  return rec;
+}
+
+/**
+ * Whether this afternoon's vault has a Dagger in it rather than a Shield.
+ *
+ * ONE AT A TIME, and the second clause is not belt and braces. A Dagger does
+ * not expire, so without it a late season with two Reliquaries in it would put
+ * two of them in two pockets — and `daggerWeights` can only ever draw the
+ * first, so the second would be a power that existed, was recorded, was
+ * witnessed, and could never be used. That is the exact shape of the
+ * pact-wide blind spot Task 3 measured and rejected: written but unreachable.
+ */
+export function daggerAfternoon(living) {
+  return (living || []).length <= DAGGER_FROM_LIVING && !heldDagger();
+}
+
+/** The Dagger still in somebody's pocket, or null. At most one is ever held. */
+export function heldDagger() {
+  return (gs.tr?.daggers || []).find(d => d.outcome === 'held') || null;
+}
+
+/**
+ * Close out any Dagger whose holder has left the castle still carrying it.
+ *
+ * THE COMMONEST ENDING, and it is recorded as its own outcome rather than left
+ * as 'held' forever, because 'held' at the end of a season has to keep meaning
+ * one thing: it got to the end unspent and its holder is still standing. A
+ * record that used the same word for a dead man's pocket and for a live
+ * finalist's would make the measurement this task owes unanswerable — the
+ * shape of Task 2's field that was `0` on a quiet night and `undefined` on a
+ * quieter one.
+ */
+export function settleDaggers(ep) {
+  const living = gs.activePlayers || [];
+  for (const d of (gs.tr?.daggers || [])) {
+    if (d.outcome === 'held' && !living.includes(d.holder)) {
+      d.outcome = 'lost';
+      d.lostEp = ep;
+    }
+  }
+}
+
+/**
+ * What ONE Traitor knows about a Dagger in play, and nothing more.
+ *
+ * Per Traitor and not per pact, for exactly the reasons `shieldSeenBy` gives
+ * at length: a pact-wide check hands one witness's knowledge to everybody, and
+ * the conclave's disagreement — the thing that makes `conclaveTension` a
+ * record rather than a schedule — stops happening.
+ */
+export function daggerSeenBy(traitor, ep) {
+  if (!_steering) return null;
+  const d = heldDagger();
+  if (!d || d.holder === traitor) return null;
+  if (ep != null && d.ep > ep) return null;
+  return d.witnesses.includes(traitor) ? d.holder : null;
+}
+
+/**
+ * Test-only ablation of the conclave's interest in a Dagger it saw won, so the
+ * band arm can separate "a Dagger exists" from "the pact went after it".
+ * Same contract as `_setShieldReadsEnabled`: nothing in the show may call it.
+ */
+let _steering = true;
+export function _setDaggerSteeringEnabled(on) { _steering = on !== false; }
+
+/**
+ * The table asks this, once, and it is the ONLY thing the Dagger does to a
+ * banishment.
+ *
+ * Returns `{ [holder]: DAGGER_VOTES }` and marks the Dagger drawn, or null.
+ * NO RNG: `drawAt` was rolled at acquisition precisely so that this call
+ * cannot displace a single draw of the game's own stream, and a season with a
+ * Dagger in it can therefore still be compared with the season without one.
+ *
+ * The holder must be in the room — a Dagger belonging to somebody murdered
+ * last night is not drawn from beyond the grave, and `settleDaggers` will
+ * already have closed that record anyway.
+ */
+export function daggerWeights(ep, living) {
+  const d = heldDagger();
+  if (!d) return null;
+  if (!(living || []).includes(d.holder)) return null;
+  if ((living || []).length > d.drawAt) return null;
+  d.outcome = 'played';
+  d.playedEp = ep;
+  return { [d.holder]: DAGGER_VOTES };
+}
+
+/** The Dagger drawn at a given table, for the round record and for the VP. */
+export function daggerDrawnAt(ep) {
+  return (gs.tr?.daggers || []).find(d => d.playedEp === ep) || null;
 }

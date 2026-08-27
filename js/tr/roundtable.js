@@ -24,6 +24,7 @@ import { learn } from '../knowledge.js';
 import { alignmentAt } from './roles.js';
 import { alignmentFactId, suspicionBoard, chooseBanishmentVote, recordRound, revealCascade } from './deduction.js';
 import { exitSpeech } from './exit.js';
+import { daggerWeights, daggerDrawnAt, DAGGER_VOTES } from './powers.js';
 
 /**
  * One player names another in front of everybody.
@@ -78,9 +79,26 @@ function debate(ep, rng) {
   return accusations;
 }
 
-function tally(ballots) {
+/**
+ * Count the ballots. One name each, and one of them may be worth two.
+ *
+ * THE DAGGER LIVES HERE AND NOWHERE ELSE, and the reason is the single most
+ * load-bearing fact about this file. A ballot is a PUBLIC fact — it is read
+ * out loud at the table, `ballotEvidence` and `shieldEvidence` both read the
+ * array below, and they are the only `public`-credibility facts the deduction
+ * model has. Doubling a vote by pushing a second ballot would put a name into
+ * that record that nobody said, and every belief formed downstream of it would
+ * be reasoning about a sentence the room never heard.
+ *
+ * So the ballots are untouched — one voter, one name, said once — and the
+ * WEIGHT is applied while counting. `weights` is a plain `{ voter: n }` map and
+ * is absent on every table that has no Dagger drawn at it, which is nearly all
+ * of them; `|| 1` is the whole of the default and the shape is deliberately
+ * open so the endgame can hand it something else without touching this.
+ */
+function tally(ballots, weights) {
   const t = {};
-  for (const b of ballots) if (b.voted) t[b.voted] = (t[b.voted] || 0) + 1;
+  for (const b of ballots) if (b.voted) t[b.voted] = (t[b.voted] || 0) + (weights?.[b.voter] || 1);
   return t;
 }
 
@@ -89,13 +107,20 @@ export function runRoundTable(ep, rng = Math.random) {
   const living = [...(gs.activePlayers || [])];
   const accusations = debate(ep, rng);
 
+  // THE DAGGER IS DECLARED BEFORE A NAME IS READ, and the call takes NO rng
+  // draw: whether tonight is the night was decided when the thing was won
+  // (js/tr/powers.js), so a table with a Dagger at it draws exactly as many
+  // numbers as a table without one and the two seasons remain comparable.
+  const weights = daggerWeights(ep, living);
+  const daggerHolder = weights ? Object.keys(weights)[0] : null;
+
   const ballots = living.map(voter => ({
     voter,
     voted: chooseBanishmentVote(voter, living, ep, rng),
     channel: 'banishment',
   }));
 
-  let result = resolveVotes(tally(ballots));
+  let result = resolveVotes(tally(ballots, weights));
   const revotes = [];
   // The format's tie rule: only the tied are eligible, and they do not vote.
   // Capped, because a tiny room can deadlock indefinitely; the last resort is a
@@ -108,7 +133,11 @@ export function runRoundTable(ep, rng = Math.random) {
       voter, voted: chooseBanishmentVote(voter, tied, ep, rng), channel: 'banishment-revote',
     }));
     revotes.push({ tied, ballots: rvBallots });
-    result = resolveVotes(tally(rvBallots));
+    // The Dagger carries into the revote it failed to prevent — it is drawn
+    // for a BANISHMENT, and a revote is the same banishment still being
+    // decided rather than a new one. It does nothing when its holder is one of
+    // the tied, since the tied do not vote.
+    result = resolveVotes(tally(rvBallots, weights));
     if (result.isTie && !voters.length) break;
   }
   // The last-resort draw, and the reason it is written this defensively.
@@ -131,6 +160,19 @@ export function runRoundTable(ep, rng = Math.random) {
   const wasTraitor = alignmentAt(banished, ep) === 'traitor';
   const round = { ep, banished, banishedWasTraitor: wasTraitor, murdered: null,
     ballots, revotes, accusations };
+  if (daggerHolder) {
+    // Recorded on the round, because the room watched it happen: the draw is
+    // public even though the win was not. `votes` is read off the exported
+    // constant rather than written as a literal 2, so the record and the tally
+    // cannot come to disagree about how much a Dagger is worth.
+    const drawn = daggerDrawnAt(ep);
+    round.dagger = { holder: daggerHolder, votes: DAGGER_VOTES,
+      line: drawn?.drawLine || null };
+    if (drawn) {
+      drawn.target = ballots.find(b => b.voter === daggerHolder)?.voted || null;
+      drawn.banished = banished;
+    }
+  }
   recordRound(round);
   gs.activePlayers = living.filter(n => n !== banished);
   revealCascade(banished, wasTraitor, ep, rng);
@@ -147,5 +189,5 @@ export function runRoundTable(ep, rng = Math.random) {
   // moves early lift by under 1pp across five 200-season blocks, which is the
   // rng stream shifting and nothing else.
   round.exitSpeech = exitSpeech(banished, ep, rng);
-  return { ...round, wasTraitor, tally: tally(ballots) };
+  return { ...round, wasTraitor, tally: tally(ballots, weights) };
 }

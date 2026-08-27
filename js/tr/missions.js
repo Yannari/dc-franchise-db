@@ -82,7 +82,7 @@ import { alignmentAt } from './roles.js';
 // the Shield is won on — who broke away from the carry, whether they found
 // anything, and what it cost the castle in money. Nothing about who saw it,
 // how long it lasts or what anybody concludes from it is decided here.
-import { awardShield } from './powers.js';
+import { awardShield, awardDagger, daggerAfternoon } from './powers.js';
 
 /**
  * The most a season's missions can ever be worth.
@@ -1159,8 +1159,26 @@ export function runMission(ep, rng) {
     // The `shield` key is the ONE immunity-shaped field a mission record is
     // allowed to carry, and tests/tr-missions.test.js names it explicitly
     // rather than loosening the scan that used to forbid all of them.
-    const won = reliquary.found ? awardShield(reliquary.searcher, teams, ep, rng) : null;
-    rec.shield = {
+    //
+    // WHICH RELIC IS DOWN THERE IS DECIDED BY THE SEASON, NOT BY THE SEARCH,
+    // and the record carries exactly one of the two keys so that no sentence
+    // can end up describing the wrong afternoon. A Dagger afternoon writes
+    // `rec.dagger` and no `rec.shield` at all — including when the searcher
+    // comes back empty, because what they failed to find was a Dagger. Reading
+    // it the other way round is how "the hour bought nothing" ends up printed
+    // over a prize, which is the defect class this plan carries a standing
+    // requirement for.
+    //
+    // The find and miss prose is shared on purpose rather than duplicated:
+    // SEARCH_FOUND says "something that was not a reliquary" and never says
+    // what, because from the top of the stair nobody can tell.
+    const isDagger = daggerAfternoon(living);
+    const won = reliquary.found
+      ? (isDagger
+        ? awardDagger(reliquary.searcher, teams, ep, rng)
+        : awardShield(reliquary.searcher, teams, ep, rng))
+      : null;
+    rec[isDagger ? 'dagger' : 'shield'] = {
       searcher: reliquary.searcher,
       found: reliquary.found,
       // WHAT THE HUNT COST THE CASTLE, in the pot's own currency, recorded per

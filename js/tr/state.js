@@ -86,6 +86,20 @@ export function initTraitorsState() {
     // case and the format intends it to be.
     shields: [],
 
+    // Every Dagger won this season, oldest first:
+    //   { ep, holder, witnesses, roomSize, visibility, seenLine, drawAt,
+    //     pactAware, outcome, playedEp, target, banished }
+    // A Dagger DOES NOT EXPIRE — unlike a Shield it is kept until its holder
+    // draws it, which is the only reason it can reach the endgame at all
+    // (spec 7.3: it breaks 3-3 deadlocks, and nothing spent in week two ever
+    // breaks one). `drawAt` is the room size at or below which this holder
+    // will use it, rolled at acquisition, so the table reads a recorded
+    // decision instead of taking a draw off the game's own stream.
+    // `outcome` is 'held' until it is either 'played' or 'lost' — lost meaning
+    // the holder left the castle still carrying it, which is the commonest
+    // ending a Dagger has.
+    daggers: [],
+
     // Nights the Traitors struck and nobody died: [{ ep, target }].
     // The TARGET is stored because the VP shows it — the audience knows who
     // was nearly murdered. The room does not, and must not: only the FACT of

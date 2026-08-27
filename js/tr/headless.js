@@ -17,7 +17,7 @@ import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
 import { runWindow, startRoundBudget } from './events.js';
 import { runMission, POT_CEILING } from './missions.js';
-import { shieldEvidence, expireShields } from './powers.js';
+import { shieldEvidence, expireShields, settleDaggers } from './powers.js';
 
 // TASK 6 WIRING DECISION: the castle event pool is now live in every real
 // season. Side-effect imports only — nothing here is called directly; each
@@ -317,6 +317,13 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // ballot after it (see _missionRngFor).
   shieldEvidence(ep, missionRng, n1);
   expireShields(ep);
+  // A Dagger is NOT expired here — that is the whole difference between the
+  // two powers, and the reason one of them can reach the endgame. What this
+  // does is close the record of anybody who left the castle this round still
+  // carrying one, so that 'held' keeps meaning "unspent, and its owner is
+  // still standing". It runs after the night rather than after the table
+  // because a round takes two people and this has to catch both.
+  settleDaggers(ep);
   castle1.push(...runWindow('night', ep, castleRng));
   log.push({ ep, banished: null, wasTraitor: null, ...n1, mission: mission1,
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
@@ -368,6 +375,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // Same pair, same order, same stream — see the note on night one.
     shieldEvidence(ep, missionRng, night);
     expireShields(ep);
+    settleDaggers(ep);   // see night one: the banished and the murdered, both
     castleEvents.push(...runWindow('night', ep, castleRng));
     // aliveAtVote/traitorsAtVote are the population as it stood when the ballots
     // were cast, and they are DATA, not behaviour — nothing in the engine reads
@@ -409,6 +417,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // plays 200 seasons and then reads gs.tr.shields is reading season 200 and
     // calling it a population.
     shields: [...(gs.tr.shields || [])],
+    // Every Dagger the season awarded, with its witnesses, the room size its
+    // holder was waiting for, and how it ended. A record still reading 'held'
+    // at the end of a season is the interesting one: it reached the last table
+    // unspent, which is the only state from which spec 7.3's 3-3 deadlock can
+    // ever be broken.
+    daggers: [...(gs.tr.daggers || [])],
     pot: gs.tr.pot,
     potCeiling: gs.tr.potCeiling,
     survivors: [...(gs.activePlayers || [])],

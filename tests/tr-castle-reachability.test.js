@@ -86,9 +86,41 @@ import '../js/tr/castle/journey.js';
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
-const SWEEP_SEASONS = 400;
+// ── PLAN 5 TASK 6: 400 -> 1600, AND EVERY FLOOR IN THIS FILE SCALES WITH IT ──
+//
+// 400 was derived from the pool as it stood, and it was enough for the
+// EVENT-keyed sweeps. It was not enough for the BRANCH-keyed one Task 4 added.
+// Task 5 measured why, and the finding is general: a content change does not
+// nudge a low count, it RESAMPLES it, because changing which event a draw
+// lands on changes what is on cooldown next round and reroutes the whole
+// seeded path from there. `romance-liability-exposed:exposes` read 8, 7, 4, 5
+// and 6 across five arms of identical decisions. THE BRANCH FLOOR shipped at 4
+// against a threshold of 4: zero margin, on a quantity whose own noise is
+// larger than the margin. It would have reddened on a change that starved
+// nothing and stayed green on one that did.
+//
+// The fix is the cheapest of the three the plan listed: raise the measurement
+// until the count is a measurement. Seeds are fixed, so this costs only
+// runtime. Measured over four DISJOINT 1600-season blocks (seed bases 0, 1600,
+// 3200, 4800), re-running the whole sweep per block:
+//
+//   rarest BRANCH   21, 22, 19, 18   mean 20.0   sd 1.83
+//   rarest EVENT    32, 32, 36, 29   mean 32.25  sd 2.87
+//
+// At 400 the same two statistics were 4 and 7. So the branch floor is honestly
+// derivable at last: 12 is 4.4 sd under the rarest branch, and the event floor
+// of 16 is 5.7 sd under the rarest event.
+//
+// AND THE FLOORS ARE NOW WRITTEN AS RATES, not as constants. Every count floor
+// in this file was a bare integer paired to a season count in a comment, which
+// is the same stale-constant shape Task 6 swept out of tr-calibration.test.js:
+// change SWEEP_SEASONS and each of them silently tightens or loosens by the
+// same factor. `PER400(n)` says "n firings per 400 seasons" and scales, so the
+// season count can be raised again by editing one number.
+const SWEEP_SEASONS = 1600;
+const PER400 = n => Math.round(n * SWEEP_SEASONS / 400);
 
-function runSeasons(n, seedBase = 0) {
+function runSeasons(n, seedBase = 0, threadSink = null) {
   const perSeason = [];
   for (let i = 1; i <= n; i++) {
     setPlayers(ROSTER);
@@ -123,11 +155,17 @@ function runSeasons(n, seedBase = 0) {
       }
     }
     perSeason.push(fired);
+    // THE SEASON'S THREADS, for the prior-outcome ORDER rule at the foot of
+    // this file. It needs the closure the firing read, not just the label the
+    // firing recorded, and `res.threads` is the only place that survives.
+    if (threadSink) threadSink.push((res.threads || []).map(t => ({
+      state: t.state, outcome: t.outcome, lastEp: t.lastEp, parties: [...t.parties] })));
   }
   return perSeason;
 }
 
-const SEASONS = runSeasons(SWEEP_SEASONS);
+const SEASON_THREADS = [];
+const SEASONS = runSeasons(SWEEP_SEASONS, 0, SEASON_THREADS);
 const ALL_FIRINGS = SEASONS.flat();
 
 describe('THE DEAD-EVENT SWEEP', () => {
@@ -157,7 +195,7 @@ describe('THE DEAD-EVENT SWEEP', () => {
     // seeds, so this is a bar and not a coin.
     const floor = rarest[0];
     expect(floor.n, `the rarest event in the pool is ${floor.id} at ${floor.n} firings in ${SWEEP_SEASONS} seasons — one season in ${Math.round(SWEEP_SEASONS / Math.max(1, floor.n))}`)
-      .toBeGreaterThanOrEqual(4);
+      .toBeGreaterThanOrEqual(PER400(4));
   });
 
   it('registers 80+ events across the seven families (honest count, not padded to a target)', () => {
@@ -915,11 +953,12 @@ describe('THE OUTCOME-BRANCH FLOOR: a clause nobody can reach is dead content', 
     expect(readers.length, `only these events read a closed outcome: ${readers.join(', ')}`)
       .toBeGreaterThanOrEqual(4);
     // Each one is individually reachable...
-    const starved = readers.filter(id => (took[id] || 0) < 4)
+    const starved = readers.filter(id => (took[id] || 0) < PER400(4))
       .map(id => `${id}: ${took[id] || 0} of ${fired[id]} firings`);
     expect(starved, 'these outcome branches are on their way to dead content').toEqual([]);
     // ...and the mechanism as a whole has not gone quiet.
-    expect(total, 'no castle event reached a closed thread in 400 seasons').toBeGreaterThanOrEqual(20);
+    expect(total, `no castle event reached a closed thread in ${SWEEP_SEASONS} seasons`)
+      .toBeGreaterThanOrEqual(PER400(20));
   });
 
   it('and threads really do close in these seasons - the floor above is not measuring nothing', () => {
@@ -986,7 +1025,7 @@ describe('THE WINDOW SWEEP: every window spec 5.6 names is a window the show use
       + 'runWindow on them every round and they can only ever return []').toEqual([]);
 
     const silent = [...KNOWN_WINDOWS]
-      .filter(w => (perWindow[w] || 0) < 200)
+      .filter(w => (perWindow[w] || 0) < PER400(200))
       .map(w => `${w}: ${perWindow[w] || 0} firings from ${registered[w] || 0} events`);
     expect(silent, `these windows hold content that a season almost never reaches, in `
       + `${SWEEP_SEASONS} seasons`).toEqual([]);
@@ -1084,10 +1123,11 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
     // ledger: a list that must be maintained deliberately, not a bar.
     expect(Object.keys(perOutcome).sort(), 'a closing branch appeared or disappeared')
       .toEqual(CLOSING_BRANCHES);
-    const starved = Object.entries(perOutcome).filter(([, n]) => n < 4)
+    const starved = Object.entries(perOutcome).filter(([, n]) => n < PER400(4))
       .map(([k, n]) => `${k}: ${n} closures`);
     expect(starved, 'these closing branches are on their way to dead content').toEqual([]);
-    expect(total, 'no event closed a thread in 400 seasons').toBeGreaterThanOrEqual(100);
+    expect(total, `no event closed a thread in ${SWEEP_SEASONS} seasons`)
+      .toBeGreaterThanOrEqual(PER400(100));
 
     // EVERY OUTCOME THESE EVENTS WRITE IS ONE js/tr/threads.js CAN READ. The
     // source rule in tr-threads.test.js checks the literal strings in the
@@ -1318,12 +1358,105 @@ describe('THE BRANCH FLOOR: a fork nobody takes is dead content inside a live ev
     for (const b of bottom) console.log(`   ${b.n}\t${b.k}`);
 
     expect(keys, 'a branch appeared or disappeared from the pool').toEqual(BRANCHES);
-    const starved = bottom.filter(b => b.n < 4).map(b => `${b.k}: ${b.n}`);
+    // == RE-DERIVED BY PLAN 5 TASK 6: 4 per 400 seasons -> 3 per 400 ==========
+    //
+    // Not a loosening. The old floor of 4 was measured at 400 seasons against a
+    // rarest branch of 4 — zero margin, on a count whose own resampling noise
+    // is larger than the whole margin. Raising the sweep to 1600 turns that
+    // count into a measurement: the rarest branch reads 20.0 (sd 1.83 over four
+    // disjoint 1600-season blocks) and PER400(3) = 12 sits 4.4 sd under it.
+    // In per-400 terms the floor moved 4 -> 3 while the margin went from 0.0 sd
+    // to 4.4 sd, because the thing that changed is how well the number is
+    // known, not how much is being demanded of the content.
+    //
+    // WHAT IT STILL CATCHES: a branch falling below one firing per 133 seasons,
+    // and a branch dying outright. What it deliberately does NOT do is police
+    // ordinary resampling — a branch moving 20 -> 15 on an unrelated content
+    // change is noise, and the old floor would have called it a regression.
+    const starved = bottom.filter(b => b.n < PER400(3)).map(b => `${b.k}: ${b.n}`);
     expect(starved, `these branches are on their way to dead content — an event-keyed `
       + `floor cannot see this, which is why this one is keyed per branch`).toEqual([]);
   });
 });
 
+
+
+// ══════════════════════════════════════════════════════════════════════
+// THE PRIOR-OUTCOME ORDER RULE (Plan 5 Task 6)
+// ══════════════════════════════════════════════════════════════════════
+//
+// `lastClosedThread(name, { beforeEp })` and `residueFor(name, { beforeEp })`
+// are the two filters that stop a season recapping something that has not
+// happened yet. Both were verified correct by direct measurement in Task 2
+// (0 violations in 758 citations) and neither was properly GUARDED, which is
+// not the same thing: a filter nothing checks is a filter the next edit can
+// delete.
+//
+// RE-MEASURED IN TASK 6, because the plan's open item said the citation half
+// was caught only by one accidental guard and that is no longer true.
+// Mutating `residueFor`'s comparison from `<` to `<=` now reddens FOUR tests
+// in three files, two of them season-level rules — tr-threads.test.js's unit
+// on `beforeEp`, tr-castle.test.js's fresh-pair rule, and this file's own
+// "every day one names is a real earlier beat", whose `d >= c.ep` clause is a
+// deliberate rule and not an accident. That half is closed.
+//
+// THE HALF THAT WAS STILL OPEN is `lastClosedThread`. Mutating ITS comparison
+// the same way — `!(t.lastEp < beforeEp)` -> `!(t.lastEp <= beforeEp)` —
+// reddened exactly one assertion in the whole repo, a hand-built unit in
+// tr-threads.test.js. Nothing looked at whether a season that actually plays
+// ever branches on a payoff that had not landed yet. This is that rule.
+//
+// RULE-SHAPED, over every firing that reports a `priorOutcome` at all: some
+// thread carrying that outcome must have closed STRICTLY BEFORE the episode
+// doing the reading. A list of the four events that currently read outcomes
+// would need editing on every content change and would cover nothing new.
+//
+// WHY IT DOES NOT ALSO REQUIRE THE CLOSURE TO INVOLVE SOMEBODY IN THE ROOM,
+// which was the first draft and was WRONG. `lastClosedThread` is called on the
+// SUBJECT of the scene, who is frequently not in it: `susp-whisper-about-absent`
+// is by construction about the person who is absent. Requiring party overlap
+// with `ce.actors` reported 239 false violations of 532 reads at head — a
+// guard that is red on correct code, which is worse than no guard. A firing
+// records the outcome LABEL it read, not the thread, so "a thread with this
+// outcome had already closed" is the strongest reconstruction available from
+// what survives, and it is enough: it is exactly the ordering the `beforeEp`
+// filter enforces, and the mutation drives it to 83 violations.
+//
+// THE MUTATION: in js/tr/threads.js, `!(t.lastEp < beforeEp)` ->
+// `!(t.lastEp <= beforeEp)`. Verified RED here and GREEN before.
+describe('THE PRIOR-OUTCOME ORDER RULE: nothing is recapped before it happens', () => {
+  it('every closed outcome an event branches on had closed before the episode that read it', () => {
+    const violations = [];
+    let checked = 0;
+    for (let i = 0; i < SEASONS.length; i++) {
+      const closed = (SEASON_THREADS[i] || []).filter(t => t.state === 'closed' && t.outcome);
+      for (const f of SEASONS[i]) {
+        if (!f.priorOutcome) continue;
+        checked++;
+        const shared = closed.filter(t => t.outcome === f.priorOutcome);
+        if (shared.some(t => t.lastEp < f.ep)) continue;
+        const when = shared.map(t => t.lastEp).sort((a, b) => a - b);
+        violations.push(`season ${i + 1} ep ${f.ep} ${f.id} read "${f.priorOutcome}" `
+          + `but the only closures it could have read are at ep ${JSON.stringify(when)}`);
+      }
+    }
+    console.log(`
+=== PRIOR-OUTCOME ORDER (${SWEEP_SEASONS} seasons) === `
+      + `${checked} firings branched on a closed outcome, ${violations.length} of them on a `
+      + `closure that had not happened yet`);
+
+    // NON-VACUITY FIRST, and it is the half that makes this failable at all:
+    // if no event ever branched on an outcome the rule below would be
+    // trivially true. PER400(20) is the same floor THE OUTCOME-BRANCH FLOOR
+    // uses for the same quantity, so the two cannot disagree about whether
+    // the mechanism is alive.
+    expect(checked, 'no firing branched on a closed outcome - this rule would be vacuous')
+      .toBeGreaterThanOrEqual(PER400(20));
+    expect(violations.slice(0, 5), `${violations.length} firings branched on a thread that `
+      + 'closed in or after the episode that read it - a season recapping something that has '
+      + 'not happened').toEqual([]);
+  });
+});
 
 // ══════════════════════════════════════════════════════════════════════
 // THE ONCE-PER-SEASON RULE (Plan 5 Task 5)
@@ -1381,7 +1514,7 @@ describe('THE ONCE-PER-SEASON RULE: a signature moment happens once', () => {
     // toward unreachable - which `oncePerSeason` makes easier, since it can
     // only ever reduce firings - is caught here rather than only by the
     // dead-event sweep's floor of 4.
-    const quiet = declared.filter(id => (seasonsWith[id] || 0) < 40)
+    const quiet = declared.filter(id => (seasonsWith[id] || 0) < PER400(40))
       .map(id => `${id}: reached ${seasonsWith[id] || 0} of ${SWEEP_SEASONS} seasons`);
     expect(quiet, 'a oncePerSeason event is now so rare that "at most once" is close to '
       + 'vacuous for it').toEqual([]);

@@ -247,6 +247,40 @@ function continuity(seasons) {
     lens };
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// PLAN 5 TASK 6: EVERY BAND IN THIS FILE RE-MEASURED AT HEAD
+// ══════════════════════════════════════════════════════════════════════
+//
+// Tasks 1-5 moved scene selection, thread continuity, residue citation, three
+// spec gaps, 16 new events and three anti-repetition guards. Every band below
+// was calibrated against a distribution those tasks changed, so all of them
+// were re-measured against the same 200 seeds, and the plan's base revision
+// (df17dda2, 81 events) was re-run for comparison rather than trusted from a
+// report. Nothing here was moved to accommodate a failure; two bands were
+// re-EXPRESSED, and the reasons are on them.
+//
+//   band                     base (81 ev)   head (98 ev)   threshold
+//   traitor-hit rate            0.3383         0.3487       > 0.22
+//   early lift                  0.0372         0.0266       < 0.10
+//   late lift                   0.2042         0.2368       > 0.15
+//   faithful win rate           0.4600         0.4950       0.10 - 0.75
+//   mean plurality share        0.4031         0.4034       0.20 - 0.55
+//
+// THE DEDUCTION BANDS ARE NOT INSULATED FROM CASTLE CONTENT, and this file
+// used to assume they were. Castle events write zero beliefs by construction
+// (tr-castle-belief-gate.test.js), so the assumption was that content cannot
+// reach the room's reasoning — but they move bonds, and bonds move ballots.
+// Seventeen new events moved late lift +3.3pp and early lift -1.1pp. Both
+// moved in the safe direction here; neither was going to.
+//
+// LATE LIFT IS THE ONE TO WATCH. It is the last band in this file that is an
+// ABSOLUTE constant against a measurement content demonstrably moves, and its
+// own comment already records a worst-of-twelve-blocks of 15.19pp against a
+// floor of 15.0. Head's point estimate is 23.68pp, so it has much more room
+// than it did — but the SHAPE is the one Task 6 swept out of the two
+// continuity bands below, and there is no in-suite control arm for it to be
+// re-expressed against without doubling the run. Left absolute, deliberately,
+// and written down so the next person to move castle content checks it.
 describe('the castle, measured over many seasons', () => {
   const seasons = run();
 
@@ -883,19 +917,47 @@ describe('the castle, measured over many seasons', () => {
     // the dead-event floor in tr-castle-reachability.test.js. Those ten
     // declarations were withdrawn; the citations they carried were kept, since
     // citing residue never needed the flag.
-    expect(live.rate, 'the castle starts stories and never continues them — guard 1 is inert')
-      .toBeGreaterThan(0.38);
-    // THE PROOF THE BAND ABOVE CAN FAIL. Same seeds, same pool, same scene
-    // selection, guard deleted. This is the assertion that caught the old 0.30
-    // floor going stale, and it is the one that will catch 0.38 going stale
-    // too — it re-derives the separation on every run, so it cannot rot the way
-    // a remembered number does.
-    expect(dead.rate, 'the continuation band is green with the guard SWITCHED OFF — '
-      + 'it is measuring scene selection walking live-thread actors into the room, not the guard')
-      .toBeLessThan(0.38);
-    // And the separation itself, which does not depend on 0.38 being well
-    // chosen. Measured 15.74pp at the shipped operating point (12.84pp before
-    // Task 2 widened the observable).
+    // == PLAN 5 TASK 6: THE ABSOLUTE FLOOR IS DELETED, NOT MOVED ==========
+    //
+    // It was 0.22, then 0.30, then 0.38, re-derived twice by content change,
+    // and each rotation of that treadmill left a window in which the band was
+    // guarding nothing (Task 1 found the guard could be deleted outright with
+    // the file still green). The reason is structural and is written up in the
+    // plan: an ABSOLUTE floor on the live arm rots whenever content moves the
+    // measurement, while a comparison between the live arm and a control
+    // measured IN THE SAME RUN does not, because both sides move together.
+    //
+    // At head both arms had moved again — live 44.4%, control 33.4% — so 0.38
+    // sat 4.6pp above the control and was one content change from being walked
+    // through for the third time. It is replaced by a RATIO against the same
+    // control, which is the same statement with nothing to go stale.
+    //
+    // MEASURED over six DECORRELATED 200-season blocks (seed bases 0, 200,
+    // 400, 600, 800, 1000), each block re-running both arms on its own seeds:
+    //
+    //     ratio  1.3278 1.3232 1.2883 1.3621 1.3133 1.3366   mean 1.3252  sd 0.0250
+    //     sep    0.1095 0.1088 0.0992 0.1188 0.1041 0.1121   mean 0.1088  sd 0.0067
+    //
+    // 1.20 is 5.0 sd under the ratio; 0.06 is 7.3 sd under the separation.
+    // Under the mutation both are EXACTLY 1.000 and 0.000, since flattening
+    // the multiplier makes the two arms the same 200 seasons.
+    //
+    // THE COUPLINGS THE OLD FLOOR HAD ARE GONE WITH IT. It tracked the guard's
+    // strength, `CONTINUATION_SCENE_P`, and the pool's `advancesThread`
+    // declaration rate; the first is what the band is named for and the other
+    // two moved it without anything having broken. A ratio between two arms
+    // that both see those changes is blind to all three by construction — the
+    // "roughly 17 declarations of headroom" bookkeeping this comment used to
+    // carry is no longer a thing anybody has to track.
+    //
+    // WHAT IT STILL CANNOT CATCH is unchanged: a guard detuned by half rather
+    // than switched off. 200 seasons a block cannot separate adjacent
+    // strengths. This is an off-switch detector and says so.
+    expect(live.rate / dead.rate, 'the castle starts stories and never continues them — '
+      + 'the guard buys no more continuation than the same seeds buy with it flattened')
+      .toBeGreaterThan(1.20);
+    // And the separation in absolute points, which is the same statement in
+    // the units the diagnostics print. Measured 0.1088.
     expect(live.rate - dead.rate, 'the continuation guard moved nothing')
       .toBeGreaterThan(0.06);
   });
@@ -973,20 +1035,31 @@ describe('the castle, measured over many seasons', () => {
     // Non-vacuity: no threads at all would make every ratio here meaningless.
     expect(live.threads, 'no threads were opened - these ratios are noise').toBeGreaterThan(2000);
 
-    // The floor sits between the two measurements with headroom on both sides:
-    // 1.431 live, 1.139 under uniform selection. Over ~4600 threads the sd of
-    // this mean is about 0.011, so 1.28 is roughly 13 sd from each arm.
-    expect(live.meanLen, 'threads are no longer than they were under uniform actor selection - '
-      + 'scene selection is not reconvening live stories')
-      .toBeGreaterThan(1.28);
-    // THE PROOF THE FLOOR CAN FAIL. Same seeds, same pool, selection made
-    // uninformative. If this ever comes in ABOVE the floor, the floor is
-    // measuring something other than the change it is named for.
-    expect(sceneOff.meanLen, 'the thread-health band is green with scene selection SWITCHED OFF - '
-      + 'it is measuring the runner re-drawing a pair by chance, not the selector')
-      .toBeLessThan(1.28);
-    // And the separation itself, which does not depend on 1.28 being well
-    // chosen. Measured +0.293 beats.
+    // == PLAN 5 TASK 6: THE ABSOLUTE FLOOR IS DELETED, NOT MOVED ==========
+    //
+    // Same treatment as the continuation band above, and this one was already
+    // most of the way to the failure. 1.28 was derived when the live arm read
+    // 1.431 and the uniform control 1.139. Tasks 2-5 moved BOTH arms up: at
+    // head the control reads 1.2678, which is 0.0122 UNDER its own ceiling
+    // against an across-block sd of 0.0057 — 2.1 sd, the same knife-edge class
+    // as the 2.14 sd assertion Task 2 found. One more content change and the
+    // control walks through 1.28, at which point the pair of assertions is
+    // guarding nothing and the file is still green.
+    //
+    // MEASURED over six decorrelated 200-season blocks (bases 0..1000), both
+    // arms re-run per block:
+    //
+    //     ratio  1.2620 1.2593 1.2405 1.2634 1.2486 1.2528  mean 1.2544  sd 0.0089
+    //     sep    0.3321 0.3287 0.3047 0.3332 0.3178 0.3188  mean 0.3226  sd 0.0110
+    //
+    // 1.15 is 11.8 sd under the ratio; 0.15 is 15.7 sd under the separation.
+    // Under the mutation (CONTINUATION_SCENE_P = 0) the two arms are the same
+    // 200 seasons, so the ratio is exactly 1.000 and the separation 0.000.
+    expect(live.meanLen / sceneOff.meanLen, 'threads are no longer than they were under '
+      + 'uniform actor selection - scene selection is not reconvening live stories')
+      .toBeGreaterThan(1.15);
+    // And the separation in beats, which is the same statement in the units
+    // the diagnostics print. Measured +0.323 beats.
     expect(live.meanLen - sceneOff.meanLen, 'thread-aware scene selection moved nothing')
       .toBeGreaterThan(0.15);
   });
@@ -1008,14 +1081,35 @@ describe('the castle, measured over many seasons', () => {
     // A RATIO AGAINST THE CONTROL, not a remembered count: the absolute number
     // of scenes a season gets is set by the round budget, so any future change
     // to that budget would move a raw floor without anything having collapsed.
-    // Measured 0.912 against a 0.88 floor; across-season sd puts the floor
-    // about 3 sd down. At P=1 it is 0.304.
+    // This was already the right shape and Task 6 left it alone; the two bands
+    // above were converted to match it.
+    //
+    // RE-MEASURED AT HEAD (Task 6), six decorrelated 200-season blocks, both
+    // arms per block: 0.9199 0.9071 0.9253 0.9224 0.8980 0.9142 — mean 0.9145,
+    // sd 0.0100. The 0.88 floor is 3.4 sd down. That is the THINNEST margin
+    // left in this file and it is stated rather than widened: the honest
+    // reading is that Tasks 1-5 spent most of the coverage budget, so the next
+    // task to add scene-hungry content should expect to meet this band first.
+    // At P=1 it is 0.304.
     expect(peopleRatio, 'people stopped appearing in scenes at all - live threads are '
       + 'monopolising the castle and most of the cast is frozen out of the season')
       .toBeGreaterThan(0.88);
     // The other half of monopoly, and the half a ratio cannot see: coverage can
     // look fine in aggregate while one pair takes a quarter of every season.
-    // Measured 17.0% against a 20% ceiling, and 7.6% under uniform selection.
+    //
+    // THIS ONE IS DELIBERATELY ABSOLUTE, and Task 6 checked it against the
+    // shape it was sweeping for and kept it. The other absolute constants in
+    // this file were floors COPIED OUT OF A MEASUREMENT, which is what rots.
+    // This is a DESIGN BOUND — "no two people may own a fifth of a season" —
+    // on a quantity that is a share by construction and so cannot drift with
+    // the round budget or the pool size. Converting it to a ratio against the
+    // uniform control would be strictly worse: if a future change made the
+    // control monopolise too, a ratio ceiling would let the live arm rise with
+    // it, which is the exact failure the band exists to catch.
+    //
+    // RE-MEASURED AT HEAD, six decorrelated 200-season blocks: 0.1407 0.1535
+    // 0.1440 0.1550 0.1476 0.1484 — mean 0.1482, sd 0.0055, so the 0.20
+    // ceiling is 9.4 sd up. Uniform selection reads 0.0636 (ratio 2.33x).
     expect(live.maxPairShare, 'one pair has taken over the season - the castle is now '
       + 'two people talking with the rest of the cast as extras')
       .toBeLessThan(0.20);

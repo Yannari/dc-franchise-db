@@ -3856,9 +3856,20 @@ export function simulateEpisode() {
   // rebuild below moved only the contestant, leaving both coaches attached to
   // a tribe that no longer existed. They did not leave the game; they stopped
   // being anywhere in it.
+  // A camp folds when there are two people left in it, coaches included. It
+  // used to fold at one CONTESTANT and ignore the coaches entirely, which both
+  // fired late for a coach-free tribe and fired on a camp of five where three
+  // of them happened not to hold a ballot.
   const _dissolveCoaches = ep.loser?.name ? coachesOf(ep.loser.name) : [];
-  if (ep.tribalPlayers?.length === 1 && !_dissolveCoaches.length && ep.challengeType === 'tribe') {
-    const _soloP = ep.tribalPlayers[0];
+  const _dissolveHeads = (ep.tribalPlayers?.length || 0) + _dissolveCoaches.length;
+  // At least one contestant: a camp of nothing but coaches is folded by the
+  // block above, and everything below here reads _soloP for bonds and pronouns.
+  if ((ep.tribalPlayers?.length || 0) >= 1 && _dissolveHeads <= 2 && ep.challengeType === 'tribe') {
+    // Everybody left moves, not just a lone survivor — and everybody keeps
+    // what they are. A contestant arrives a contestant; a coach arrives a
+    // coach, still unable to compete or vote, at whatever camp takes them.
+    const _movers = [...(ep.tribalPlayers || [])];
+    const _soloP = _movers[0];
     const _fromName = ep.loser.name;
     const _candTribes = gs.tribes.filter(t => t.name !== _fromName && t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
     if (_candTribes.length) {
@@ -3868,11 +3879,11 @@ export function simulateEpisode() {
         const bB = b.members.reduce((s, m) => s + getBond(_soloP, m), 0) / (b.members.length || 1);
         return bB - bA;
       })[0];
-      ep.tribeDissolve = { player: _soloP, fromTribe: _fromName, toTribe: _destTribe.name };
-      // Rebuild tribe list: remove dissolved tribe, add player to destination
+      ep.tribeDissolve = { player: _soloP, players: _movers, fromTribe: _fromName, toTribe: _destTribe.name };
+      // Rebuild tribe list: remove dissolved tribe, add the survivors
       gs.tribes = gs.tribes
         .filter(t => t.name !== _fromName)
-        .map(t => t.name === _destTribe.name ? { ...t, members: [...t.members, _soloP] } : t);
+        .map(t => t.name === _destTribe.name ? { ...t, members: [...t.members, ..._movers] } : t);
       // Any coach on the dissolved tribe travels with it. `coach.tribe` is how
       // coachesOf finds them, and a stale name there is a coach who exists in
       // gs.coaches and belongs to no tribe on the board.

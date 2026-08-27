@@ -2,6 +2,7 @@
 import { gs, seasonConfig, players, TWIST_CATALOG } from './core.js';
 import { pStats, pronouns, getPlayerState } from './players.js';
 import { getBond, addBond, floorBondsInvolving } from './bonds.js';
+import { reassignCoaches } from './coaches.js';
 import { wRandom, computeHeat, formAlliances, nameNewAlliance } from './alliances.js';
 import { runAuction } from './auction.js';
 import { simulateDisadvantageVote } from './disadvantage-vote.js';
@@ -1253,6 +1254,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
       members: allActive.slice(i * perTribe, i === tribeNames.length - 1 ? allActive.length : (i+1)*perTribe),
     }));
     if (seasonConfig.advantages?.idol?.enabled) tribeNames.forEach(n => { gs.idolSlots[n] = seasonConfig.idolsPerTribe || 1; });
+    twistObj.coachMoves = reassignCoaches(gs.tribes);
     gs.sitOutHistory = {}; // back-to-back rule resets after a tribe swap
     twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
 
@@ -1275,6 +1277,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
     }));
     if (seasonConfig.advantages?.idol?.enabled) keptNames.forEach(n => { gs.idolSlots[n] = seasonConfig.idolsPerTribe || 1; });
     gs.sitOutHistory = {};
+    // The redraw was built from gs.activePlayers, which has no coaches in
+    // it, so the dissolved camp's staff would still be pointing at a name
+    // that no longer exists on the board.
+    twistObj.coachMoves = reassignCoaches(gs.tribes);
     twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
     twistObj.dissolvedTribe = dissolvedName;
 
@@ -1295,6 +1301,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
       name,
       members: allActive.slice(i * perTribe, i === numTribes - 1 ? allActive.length : (i+1) * perTribe),
     }));
+    reassignCoaches(gs.tribes);   // a new tribe is a new board; nobody may be left off it
     if (seasonConfig.advantages?.idol?.enabled) gs.tribes.forEach(t => { gs.idolSlots[t.name] = seasonConfig.idolsPerTribe || 1; });
     twistObj.newTribes  = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
     twistObj.expansion  = true;
@@ -1441,6 +1448,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
 
     // Assign tribes
     gs.tribes = tribeNames.map((name, i) => ({ name, members: [...teams[i]] }));
+    reassignCoaches(gs.tribes);   // picked teams are a redraw too
 
     // Handle exile — wire into exile island system for advantage search + VP screen
     if (exiled) {

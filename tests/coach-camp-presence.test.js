@@ -480,3 +480,41 @@ describe('a coach can be in an alliance with the player they built', () => {
       `only ${withCoach} of ${total} alliances included a coach`).toBeGreaterThan(0.12);
   }, 900000);
 });
+
+// Yellow folded with five people on it — three contestants and two coaches —
+// because the tribe-swap twist rebuilds gs.tribes from gs.activePlayers, which
+// has no coaches in it. The dropped camp's staff kept pointing at a name no
+// longer on the board and fell out of the season without being eliminated or
+// promoted. Four separate redraws had the same hole: swap, tribe reduction,
+// expansion, and the schoolyard pick.
+describe('a redraw never loses anybody', () => {
+  it('leaves no coach attached to a tribe that does not exist, through swaps and dissolutions', async () => {
+    let orphans = 0, dissolves = 0, movedTooMany = 0, statusChanged = 0;
+    for (let r = 0; r < 3; r++) {
+      const { episodes } = await runHeadlessSeason({
+        twist: 'coaches', coachesPerTribe: 2, castSize: 18, mergeAt: 4, teams: 3,
+      });
+      for (const e of episodes) {
+        if (e.ep.tribeDissolve) {
+          dissolves++;
+          // A camp folds at two heads, so it can never hand over more than two.
+          if ((e.ep.tribeDissolve.players || []).length > 2) movedTooMany++;
+        }
+        const snap = e.ep.gsSnapshot;
+        if (!snap?.tribes || !snap?.coaches) continue;
+        const live = new Set(snap.tribes.map(t => t.name));
+        for (const c of snap.coaches) {
+          if (c.promoted) continue;
+          if (!live.has(c.tribe)) orphans++;
+          // Status survives a redraw: a coach is never rewritten into a
+          // tribe's contestant roster.
+          if (snap.tribes.some(t => (t.members || []).includes(c.name))) statusChanged++;
+        }
+      }
+    }
+    expect(dissolves, 'no tribe folded, so this proves nothing').toBeGreaterThan(0);
+    expect(orphans, 'a coach was left on a tribe that no longer exists').toBe(0);
+    expect(movedTooMany, 'a camp handed over more people than it should have had').toBe(0);
+    expect(statusChanged, 'a coach was redrawn into a contestant roster').toBe(0);
+  }, 900000);
+});

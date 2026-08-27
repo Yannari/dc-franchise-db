@@ -226,3 +226,53 @@ export function spendTribeCard(tribeName) {
   if (!gs.coachCards) gs.coachCards = {};
   gs.coachCards[tribeName] = 'used';
 }
+
+/**
+ * Put every coach on a tribe that exists, after the board has been redrawn.
+ *
+ * Tribe swaps, expansions and schoolyard picks all rebuild `gs.tribes` from
+ * `gs.activePlayers`, which has no coaches in it — so a coach whose camp was
+ * dissolved kept pointing at a name that was no longer on the board and
+ * dropped out of the season without being eliminated, promoted, or anything
+ * else. `coach.tribe` is the only way coachesOf finds them.
+ *
+ * A coach follows their protégés where there is a clear majority of them, and
+ * otherwise fills the smallest staff — so a reshuffle does not leave one camp
+ * with every coach and another with none. Coach status is never changed by a
+ * redraw: a coach stays a coach, a contestant stays a contestant.
+ */
+export function reassignCoaches(tribes) {
+  const names = (tribes || []).map(t => t.name ?? t.tribeName).filter(Boolean);
+  if (!names.length) return [];
+  const moved = [];
+  const load = Object.fromEntries(names.map(n => [n, 0]));
+  for (const c of activeCoaches()) if (names.includes(c.tribe)) load[c.tribe]++;
+
+  for (const coach of activeCoaches()) {
+    if (names.includes(coach.tribe)) continue;          // still somewhere real
+    const proteges = Object.keys(gs.coachTraining?.[coach.name] || {});
+    const byTribe = {};
+    for (const t of (tribes || [])) {
+      const tn = t.name ?? t.tribeName;
+      byTribe[tn] = (t.members || []).filter(m => proteges.includes(m)).length;
+    }
+    const best = names.slice().sort((a, b) =>
+      (byTribe[b] || 0) - (byTribe[a] || 0) || load[a] - load[b])[0];
+    const from = coach.tribe;
+    coach.tribe = best;
+    load[best]++;
+    moved.push({ coach: coach.name, from, to: best, followed: byTribe[best] || 0 });
+  }
+
+  // The save card belongs to a staff. If its camp is gone, it travels with
+  // them; a card keyed to a tribe nobody is on can never be played again.
+  if (gs.coachCards) {
+    for (const key of Object.keys(gs.coachCards)) {
+      if (names.includes(key)) continue;
+      const dest = moved.find(m => m.from === key)?.to;
+      if (dest && !gs.coachCards[dest]) gs.coachCards[dest] = gs.coachCards[key];
+      delete gs.coachCards[key];
+    }
+  }
+  return moved;
+}

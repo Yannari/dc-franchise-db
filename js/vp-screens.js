@@ -17407,11 +17407,15 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
             ? `${a.members.filter(m => !away(m)).length}/${a.members.length}` : a.members.length}</span>
         </div>`).join('')
         : `<div style="font-size:11px;color:#484f58">Nothing anybody has been willing to name.</div>`}
-      ${(ep?.allianceDissolved || []).length ? `<div class="bbf-gone">
+      ${(ep?.allianceDissolved || []).length || (ep?.allianceDepartures || []).length ? `<div class="bbf-gone">
         ${(ep.allianceDissolved || []).map(d => `<div class="bbf-gone-row">
-          <b>${_bbEsc(d.name)}</b> is finished — ${d.reason === 'trust-collapsed'
-            ? `nobody left in it trusts anybody else in it`
-            : `there is nobody left in it`}.
+          <b>${_bbEsc(d.name)}</b> is finished — ${
+            d.reason === 'insufficient-live-members' ? `there is nobody left in it`
+            : d.reason === 'betrayal' ? `it could not survive being betrayed from the inside`
+            : `nobody left in it trusts anybody else in it`}.
+        </div>`).join('')}
+        ${(ep.allianceDepartures || []).map(d => `<div class="bbf-gone-row">
+          <b>${_bbEsc(d.alliance || 'The alliance')}</b> has thrown ${_bbEsc(d.player)} out — ${_bbEsc(d.reason || 'expelled')}.
         </div>`).join('')}
       </div>` : ''}
       ${showmances.length ? `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>

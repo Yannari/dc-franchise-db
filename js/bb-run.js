@@ -227,6 +227,8 @@ export function weekToEpisode(week) {
     // them and the viewer is left to work out on their own that a five-week
     // alliance is over.
     allianceDissolved: (week.allianceDissolved || []).map(d => ({ ...d, members: [...(d.members || [])] })),
+    // Members an alliance threw out on its own, from the shared trust decay.
+    allianceDepartures: (week.allianceDepartures || []).map(d => ({ ...d })),
     // The Battle of the Block's own fields. `botbStoodDown` records WHY a
     // scheduled battle did not happen, so a week that quietly ran as an
     // ordinary one can still say so on the debug screen instead of looking

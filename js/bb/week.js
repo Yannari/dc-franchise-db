@@ -963,7 +963,36 @@ function runHouseMaintenance(week, rng = Math.random) {
     }],
     ['perceived bonds', () => checkPerceivedBondTriggers(ep)],
     ['bond recovery', () => recoverBonds(ep)],
-    ['alliance trust', () => decayAllianceTrust(week.num)],
+    /* ── THE OTHER PLACE ALLIANCES DIE ──
+       `decayAllianceTrust` is shared Total Drama code and it ends alliances of
+       its own accord — bonds collapsed, betrayals stacked up — writing them to
+       `gs.allianceDissolutions` and expelled members to `gs._pendingExpulsions`.
+       Both of those stores are read by episode.js and camp-events.js, which a
+       house never calls. So a five-strong alliance could stop existing between
+       one week and the next with nothing anywhere saying so: measured across
+       eight seasons, 15 alliances vanished between weeks with two or more
+       members still in the house, and 5 of them had no explanation on any
+       screen — every one of those five came through here.
+       Harvested onto the week, where the panel already knows how to say it.
+       The expulsions are SPLICED rather than copied: nothing in a house
+       consumes that queue, so it would otherwise grow for the whole season. */
+    ['alliance trust', () => {
+      const dissolvedBefore = (gs.allianceDissolutions || []).length;
+      const expelledBefore = (gs._pendingExpulsions || []).length;
+      decayAllianceTrust(week.num);
+      for (const d of (gs.allianceDissolutions || []).slice(dissolvedBefore)) {
+        (week.allianceDissolved ||= []).push({
+          name: d.name, reason: d.reason || 'trust-collapsed',
+          members: [...(d.members || [])], trust: null,
+        });
+      }
+      const fresh = (gs._pendingExpulsions || []).splice(expelledBefore);
+      for (const x of fresh) {
+        (week.allianceDepartures ||= []).push({
+          player: x.player, alliance: x.alliance, reason: x.reason || 'expelled',
+        });
+      }
+    }],
     ['intentions', () => tickIntentions(ep)],
     ['status effects', () => applySocialStatusEffects(ep)],
     ['social status', () => updateSocialStatus(ep)],

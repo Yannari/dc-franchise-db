@@ -823,3 +823,95 @@ describe('the speech only claims what the speaker knows', () => {
     expect(vp).toMatch(/_sees >= 0\.25/);
   });
 });
+
+describe('an alliance that stops existing says so', () => {
+  // "The Double Edge disappeared and I am not sure why." A five-strong group
+  // was in one week's panel and gone from the next with four of its members
+  // still in the house.
+  //
+  // There are TWO places an alliance can die in a house, and only one of them
+  // was talking. `reconcileAlliances` in bb/shared-strategy ends a group whose
+  // trust collapses and now records it. `decayAllianceTrust` in alliances.js —
+  // shared Total Drama code, called from the week's maintenance list — ends
+  // them too, for bonds collapsing or betrayals stacking up, and writes to
+  // `gs.allianceDissolutions`. It also expels members into
+  // `gs._pendingExpulsions`. Both of those stores are read by episode.js and
+  // camp-events.js, which a house never calls: the queue grew all season and
+  // nothing was ever said.
+  //
+  // Measured across eight seasons before the fix: 15 alliances vanished
+  // between weeks with two or more members still in the house, and 5 had no
+  // explanation on any screen — every one of the five came through that path.
+  it('explains every alliance that vanishes between weeks', async () => {
+    const { simulateBBEpisode } = await import('../js/bb-run.js');
+    const { threatScore } = await import('../js/players.js');
+    const { ordinal } = await import('../js/finale.js');
+    const vp = await import('../js/vp-screens.js');
+    const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const spread = n => Object.fromEntries(KEYS.map((k, i) => [k, 1 + ((n * 13 + i * 5) % 10)]));
+    const ARCH = ['mastermind', 'hero', 'showmancer', 'villain', 'schemer', 'goat',
+      'social-butterfly', 'loyal-soldier', 'wildcard', 'underdog', 'perceptive-player',
+      'challenge-beast'];
+
+    const unexplained = [];
+    let checked = 0;
+    for (let s = 0; s < 4; s++) {
+      seedGame(Array.from({ length: 18 }, (_, i) => ({ name: 'P' + i,
+        archetype: ARCH[i % ARCH.length], gender: i % 2 ? 'f' : 'm',
+        sexuality: 'straight', stats: spread(i + 1) })),
+      { episode: 0, eliminated: [], namedAlliances: [] });
+      gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+      gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+      gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+      Object.assign(seasonConfig, { format: 'big-brother', jurySize: 7, bbSafetyMode: 'off',
+        finaleSize: 3, bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house',
+        romance: 'enabled', twistSchedule: [] });
+      Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, threatScore,
+        getBond, getPerceivedBond, ordinal });
+
+      let prev = null;
+      for (let w = 0; w < 6; w++) {
+        const ep = simulateBBEpisode();
+        if (!ep) break;
+        vp.buildBBWeekScreens(ep);
+        for (const k of Object.keys(vp._tvState)) {
+          const st = vp._tvState[k];
+          if (st && typeof st === 'object' && 'idx' in st) st.idx = 9999;
+        }
+        const html = (vp.buildBBWeekScreens(ep) || []).map(x => x.html || '').join(' ');
+        const acts = (ep.acts || []).filter(a => a.type === 'house' && a.state?.alliances);
+        const here = new Set((acts[0]?.state?.alliances || []).map(a => a.name));
+        if (prev) {
+          for (const a of prev.last) {
+            if (here.has(a.name)) continue;
+            const alive = (a.members || []).filter(m => (gs.activePlayers || []).includes(m));
+            if (alive.length < 2) continue;   // everybody left; that explains itself
+            checked++;
+            const both = prev.html + html;
+            const said = (/is finished/.test(both) || /has thrown/.test(both))
+              && both.includes(a.name);
+            if (!said) {
+              unexplained.push(`"${a.name}" was in week ${prev.ep.num} and gone from week `
+                + `${ep.num} with ${alive.length} members still in the house`);
+            }
+          }
+        }
+        prev = { ep, last: acts[acts.length - 1]?.state?.alliances || [], html };
+      }
+    }
+    expect(checked, 'no alliance ever vanished, so nothing was tested').toBeGreaterThan(2);
+    expect(unexplained, `alliances that disappeared with nothing said:\n  ${unexplained.join('\n  ')}`)
+      .toHaveLength(0);
+  });
+
+  it('does not let the expulsion queue grow for a whole season', () => {
+    // gs._pendingExpulsions is drained by camp-events.js in Total Drama. A
+    // house never calls it, so the queue accumulated every expelled member for
+    // the length of the season and nothing ever read one.
+    const week = readFileSync('js/bb/week.js', 'utf8');
+    expect(week).toMatch(/_pendingExpulsions \|\| \[\]\)\.splice\(/);
+    expect(week, 'the other dissolution store is still unread in a house')
+      .toMatch(/allianceDissolutions \|\| \[\]\)\.slice\(dissolvedBefore\)/);
+  });
+});

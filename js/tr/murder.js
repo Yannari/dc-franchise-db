@@ -15,6 +15,9 @@ import { pStats } from '../players.js';
 import { getBond } from '../bonds.js';
 import { livingTraitors, livingFaithfuls } from './roles.js';
 import { shieldSeenBy, daggerSeenBy } from './powers.js';
+import { pickVariant, buildDeathList, dinnerNeighbours, chapelPlea, dungeonCompanion,
+  dungeonVoice, chooseSacrifice, variantLine, PLAIN_SIGHT_METHODS } from './murder-variants.js';
+import { _lineHash } from './castle/lines.js';
 
 /**
  * How hard the conclave steers off a Shield it knows about.
@@ -340,18 +343,223 @@ export function isShielded(name) {
  * remembering to record it.
  */
 export function resolveMurder(ep, rng = Math.random) {
+  // WHICH SHAPE TONIGHT TAKES, decided before anybody meets, and by a HASH
+  // rather than a draw (js/tr/murder-variants.js). A standard night therefore
+  // consumes exactly the numbers it consumed before the catalogue existed,
+  // which is the whole reason a season with no twist in it is bit-identical to
+  // the engine that had none available.
+  const variant = pickVariant(ep);
+
+  // ── THE TWO VARIANTS THAT DO NOT HOLD A CONCLAVE ────────────────────
+  if (variant === 'plain-sight') {
+    const out = _plainSight(ep, rng);
+    if (out) return out;
+  } else if (variant === 'name-your-own') {
+    const out = _forcedSacrifice(ep);
+    if (out) return out;
+  }
+  // Either the variant was infeasible after all (a feasibility gate reads the
+  // room, and the room can be emptier than the gate expected once a
+  // recruitment or an execution has been through it) or it is one of the four
+  // that argue first. Fall through to the conclave.
+
+  const tensionBefore = (gs.tr.conclaveTension || []).length;
   const decision = runConclave(ep, rng);
-  if (!decision.target) return { target: null, blocked: false, victim: null, cost: null };
+  if (!decision.target) return { target: null, blocked: false, victim: null, cost: null,
+    variant: 'standard', variantData: null };
 
   const target = decision.target;
   const cost = murderCost(target, decision.reason, ep);
 
+  // Everything the variant needs is read BEFORE anybody is removed: a chapel
+  // plea comes off a board that only exists while its owner is alive, and a
+  // dungeon companion is drawn from a room the victim is still standing in.
+  const shaped = _shapeNight(variant, ep, decision, target, tensionBefore);
+
   if (isShielded(target)) {
     gs.tr.shieldedThisRound.delete(target);   // spent even though it blocked
     (gs.tr.blockedMurders ||= []).push({ ep, target });
-    return { target, blocked: true, victim: null, cost, decision };
+    return { target, blocked: true, victim: null, cost, decision,
+      variant: shaped.variant, variantData: shaped.data, variantLine: shaped.line,
+      variantLineKey: shaped.lineKey };
   }
 
   gs.activePlayers = (gs.activePlayers || []).filter(n => n !== target);
-  return { target, blocked: false, victim: target, cost, decision };
+  // The second body, and only a double murder has one. It takes its own Shield
+  // check, because a Shield covers a NAME and not a night.
+  let second = null;
+  if (shaped.variant === 'double' && shaped.data?.victims?.[1]) {
+    const other = shaped.data.victims[1];
+    if (isShielded(other)) {
+      gs.tr.shieldedThisRound.delete(other);
+      (gs.tr.blockedMurders ||= []).push({ ep, target: other });
+      shaped.data.victims = [target];
+      shaped.data.secondBlocked = other;
+    } else {
+      gs.activePlayers = (gs.activePlayers || []).filter(n => n !== other);
+      second = other;
+    }
+  }
+  return { target, blocked: false, victim: target, cost, decision, second,
+    variant: shaped.variant, variantData: shaped.data, variantLine: shaped.line,
+    variantLineKey: shaped.lineKey };
+}
+
+/**
+ * The four variants that still hold a conclave, shaped after it has decided.
+ *
+ * Returns `{ variant, data, line }` and degrades to `standard` rather than
+ * throwing when the room turns out not to support the shape — a twist that
+ * cannot be run is a night that runs normally, not a crash and not an empty
+ * record with a variant name on it.
+ */
+function _shapeNight(variant, ep, decision, target, tensionBefore) {
+  const std = { variant: 'standard', data: null, line: null, lineKey: null };
+  if (variant === 'on-trial') {
+    const { list, spared } = buildDeathList(ep, target, decision.decidedBy);
+    if (!spared.length) return std;
+    const subs = { a: list[0], b: list[1], c: list[2] };
+    const l = variantLine(`on-trial-${spared.length}`, ep, subs);
+    return { variant, data: { list, spared }, line: l.text, lineKey: l.key };
+  }
+  if (variant === 'face-to-face') {
+    // READ WHILE THEY ARE STILL ALIVE. suspicionBoard walks the living, so a
+    // plea taken after the removal would be a plea from somebody who is not in
+    // the room and would silently come back empty on every firing.
+    const plea = chapelPlea(target, ep);
+    const l = variantLine(plea ? 'chapel-named' : 'chapel-silent', ep,
+      { victim: target, plea: plea || '' });
+    return { variant, data: { plea }, line: l.text, lineKey: l.key };
+  }
+  if (variant === 'dungeon') {
+    const companion = dungeonCompanion(ep, target);
+    if (!companion) return std;
+    const voice = dungeonVoice(ep, companion, target);
+    const l = variantLine('dungeon-back', ep, { victim: target, companion });
+    return { variant, data: { companion, voice }, line: l.text, lineKey: l.key };
+  }
+  if (variant === 'double') {
+    // THE SECOND NAME IS THE ARGUMENT THE PACT LOST. The Traitor who was
+    // overruled gets their target after all, which is why this is the one
+    // night that leaves no grudge: the tension entries runConclave just wrote
+    // for that name are lifted again below, because nobody was actually
+    // overruled once both names were used.
+    const beaten = (decision.overruled || []).find(o => o.theirTarget
+      && o.theirTarget !== target
+      && (gs.activePlayers || []).includes(o.theirTarget));
+    // NO OVERRULE, NO SECOND NAME. A unanimous conclave wanted one person
+    // dead, so there is no second name for the format to hand them and the
+    // night runs standard. That is also what keeps every line in the `double`
+    // pool true without needing to be keyed on anything: the second body is
+    // always somebody a Traitor argued for and lost.
+    if (!beaten) return std;
+    const other = beaten.theirTarget;
+    const tension = gs.tr.conclaveTension || [];
+    gs.tr.conclaveTension = [
+      ...tension.slice(0, tensionBefore),
+      ...tension.slice(tensionBefore).filter(o => o.theirTarget !== other),
+    ];
+    const l = variantLine('double', ep, { a: target, b: other });
+    return { variant, data: { victims: [target, other] }, line: l.text, lineKey: l.key };
+  }
+  return std;
+}
+
+/** One name out of `names`, chosen by hash. No draw. */
+function _hashPick(names, key) {
+  if (!names.length) return null;
+  const sorted = [...names].sort();
+  return sorted[Math.floor((_lineHash(`${key}|${sorted.join(',')}`) / 4294967296) * sorted.length)
+    % sorted.length];
+}
+
+/**
+ * MURDER IN PLAIN SIGHT — and the missing conclave is the mechanic, not a
+ * saving on lines of code.
+ *
+ * One Traitor acts alone at a dinner party. Nobody meets, so nobody is
+ * overruled, so `gs.tr.conclaveTension` takes nothing — this is the one night
+ * the pact can take a body without anybody having to lose an argument about
+ * it, and it is therefore the one night that costs the pact nothing at the
+ * endgame. That is a real and measurable difference between this variant and
+ * every other one, and it exists nowhere in the prose.
+ *
+ * `formPreference` still runs, once, for the actor: they are choosing, they
+ * are just not being argued with.
+ */
+function _plainSight(ep, rng) {
+  const pact = livingTraitors(ep);
+  if (!pact.length) return null;
+  const actor = _hashPick(pact, `plain-sight-actor|${ep}`);
+  const pref = formPreference(actor, ep, rng);
+  if (!pref.target) return null;
+  const target = pref.target;
+  const cost = murderCost(target, pref.reason, ep);
+  const method = PLAIN_SIGHT_METHODS[
+    _lineHash(`plain-sight-method|${ep}|${target}`) % PLAIN_SIGHT_METHODS.length];
+  const nearby = dinnerNeighbours(ep, actor, target);
+  const data = { actor, method, nearby };
+  const l = variantLine('plain-sight', ep, { who: actor, victim: target, method });
+  const line = l.text, lineKey = l.key;
+  const decision = { decision: 'murder', target, reason: pref.reason, decidedBy: actor,
+    argued: [{ traitor: actor, ...pref }], overruled: [] };
+
+  if (isShielded(target)) {
+    gs.tr.shieldedThisRound.delete(target);
+    (gs.tr.blockedMurders ||= []).push({ ep, target });
+    return { target, blocked: true, victim: null, cost, decision,
+      variant: 'plain-sight', variantData: data, variantLine: line, variantLineKey: lineKey };
+  }
+  gs.activePlayers = (gs.activePlayers || []).filter(n => n !== target);
+  return { target, blocked: false, victim: target, cost, decision, second: null,
+    variant: 'plain-sight', variantData: data, variantLine: line, variantLineKey: lineKey };
+}
+
+/**
+ * TRAITORS FORCED TO NAME ONE OF THEIR OWN.
+ *
+ * No conclave either, and for the opposite reason: there is nothing to argue
+ * about, only somebody to sign for it. The pact's loudest voice picks the
+ * fellow they can least stand, and EVERY SURVIVING TRAITOR takes a
+ * `conclaveTension` entry naming the decider — which is the same ledger the
+ * endgame betrayal reads, so a season that ran this night arrives at the
+ * finale with a pact that has a reason.
+ *
+ * TAKES NO RNG DRAW AT ALL, unlike every other path through this file. That is
+ * deliberate and it is the honest accounting: nothing here is uncertain. The
+ * consequence is that a `name-your-own` night re-routes the stream hard, which
+ * is a mechanism acting and not a leak.
+ *
+ * IT LEAVES NO EVIDENCE OF ITS OWN, and the absence is the design — see the
+ * header of js/tr/murder-variants.js. `murderEvidence` fires over a Traitor's
+ * body and indicts whoever pushed that name at the table, which is to say the
+ * people who had it right. The room is handed a fluent, confident, backwards
+ * read, and there is no channel here to soften it.
+ */
+function _forcedSacrifice(ep) {
+  const { decider, victim } = chooseSacrifice(ep);
+  if (!decider || !victim) return null;
+  const cost = murderCost(victim, 'forced', ep);
+  const l = variantLine('name-your-own', ep, { decider, victim });
+  const line = l.text, lineKey = l.key;
+  const decision = { decision: 'murder', target: victim, reason: 'forced',
+    decidedBy: decider, argued: [], overruled: [] };
+  const data = { decider, sacrificed: victim };
+
+  if (isShielded(victim)) {
+    gs.tr.shieldedThisRound.delete(victim);
+    (gs.tr.blockedMurders ||= []).push({ ep, target: victim });
+    return { target: victim, blocked: true, victim: null, cost, decision,
+      variant: 'name-your-own', variantData: data, variantLine: line, variantLineKey: lineKey };
+  }
+  // The grudge, and it is the whole price of the night. Written in the shape
+  // the endgame already reads: the survivor lost an argument they were never
+  // allowed to have, over a target that was one of their own.
+  const survivors = livingTraitors(ep).filter(n => n !== victim && n !== decider);
+  (gs.tr.conclaveTension ||= []).push(...survivors.map(loser => ({
+    ep, winner: decider, loser, target: victim, theirTarget: null, forced: true,
+  })));
+  gs.activePlayers = (gs.activePlayers || []).filter(n => n !== victim);
+  return { target: victim, blocked: false, victim, cost, decision, second: null,
+    variant: 'name-your-own', variantData: data, variantLine: line, variantLineKey: lineKey };
 }

@@ -13,6 +13,7 @@ import { setBond } from '../bonds.js';
 import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
   canRecruit, chooseRecruit, offerRecruitment } from './roles.js';
 import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence } from './deduction.js';
+import { variantEvidence } from './murder-variants.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
 import { runWindow, startRoundBudget } from './events.js';
@@ -238,8 +239,25 @@ function _night(ep, rng) {
     last.murderTarget = m.target;
     // murderEvidence reads this NEXT round; it must be on the round record.
     last.murderCost = m.cost;
+    // AND SO DOES variantEvidence, under the same once-guard. The shape of the
+    // night has to be on the ROUND and not merely in this return value,
+    // because the room reads it at the following breakfast and by then this
+    // frame is long gone. `secondVictim` is a double murder's other body: it
+    // is recorded separately rather than turning `murdered` into an array,
+    // because ten readers across the engine and the export shape treat
+    // `murdered` as one name and quietly rewriting it into a list is how a
+    // count starts disagreeing with the ledger.
+    last.variant = m.variant || 'standard';
+    last.variantData = m.variantData || null;
+    last.variantLine = m.variantLine || null;
+    // The POOL the sentence came out of, not just the sentence. See
+    // `variantLine` in murder-variants.js: a guard that reads only the
+    // rendered text can be made to agree with itself.
+    last.variantLineKey = m.variantLineKey || null;
+    last.secondVictim = m.second || null;
   }
   return { murdered: m.victim, murderTarget: m.target, blocked: m.blocked,
+    variant: m.variant || 'standard', secondVictim: m.second || null,
     recruited: null, executed: null, livingAtMurder };
 }
 
@@ -354,6 +372,14 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // onto the round the table just produced.
     evidence(ep, rng);
     murderEvidence(ep, rng);
+    // EVIDENCE SOURCE 5 — the SHAPE of last night, spec 7.4. Sits here rather
+    // than anywhere else for exactly murderEvidence's reason: it reads the
+    // round that just closed and carries the same `round.ep === ep - 1`
+    // once-guard, so it has to run before runRoundTable opens a new one. On a
+    // standard night it returns before it takes a single draw, which is what
+    // keeps a twist-free season bit-identical to the engine that had no
+    // catalogue in it.
+    variantEvidence(ep, rng);
     // journey-out/journey-back bracket the mission, which is what the journey
     // is for. The mission draws from its OWN stream (see _missionRngFor), so
     // it sits inside the order contract above without disturbing a single one
@@ -417,6 +443,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // Nights the Traitors struck and nobody died. Copied out because the next
     // season replaces gs wholesale.
     blockedMurders: [...(gs.tr.blockedMurders || [])],
+    // Who overruled whom, and on which night. Copied out for the same reason
+    // as everything else here, and needed from outside because the ABSENCE of
+    // an entry is what proves Murder in Plain Sight held no conclave — a fact
+    // that lives nowhere on the round record, because a meeting that did not
+    // happen writes nothing.
+    conclaveTension: [...(gs.tr.conclaveTension || [])],
     roleHistory: [...(gs.tr.roleHistory || [])],
     // Every narrative thread the castle opened, with its full beat log.
     // HARNESS DATA, NOT BEHAVIOUR — nothing in the engine reads this copy.

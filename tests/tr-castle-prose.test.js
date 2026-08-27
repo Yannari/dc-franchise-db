@@ -86,7 +86,18 @@ const NAMES = [...CAST].sort((a, b) => b.length - a.length);
 // must go red rather than quietly start measuring nothing.
 //
 // Wall clock: ~23s. Measured, not estimated.
-const PROSE_SEASONS = 3200;
+// FOUR THOUSAND TWO HUNDRED, RAISED FROM 3,200 BY TASK 8 AND NOT BY MOVING
+// THE FLOOR. The murder-variant catalogue (spec 7.4) ends seasons sooner --
+// `name-your-own` kills a Traitor and the loop exits when the pact runs out,
+// `double` empties two chairs a night -- so every castle key fires slightly
+// less often per season and the rarest family in the pool,
+// `romance-liability-exposed`, fell from 44/48/54 firings to 35/41/47. The
+// floor of 40 below is a STATISTICAL requirement about how many firings it
+// takes before a four-line pool would reliably be seen; it is not a property
+// of the castle to be preserved, and the honest response to fewer firings per
+// season is more seasons, never a smaller number in the assertion. 4,200
+// restores the rarest key to 51.
+const PROSE_SEASONS = 4200;
 
 /** The first sentence of a note — the part a line pool owns. See the header. */
 function lead(note) { return String(note || '').split(/(?<=[.!?])[ ]/)[0]; }

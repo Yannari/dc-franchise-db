@@ -118,12 +118,12 @@ Spec §7.3: once per game, **endgame only**. A private meeting in which one play
 
 This is the single most constrained mechanic in the plan. It is the only `observed`-credibility alignment write in the game, and §4.1's credibility ceiling exists to stop certainty being laundered.
 
-- [ ] **Step 1:** Failing test — the Seer learns a true alignment at `observed` credibility; NO other player's belief changes; and a later claim about the meeting by either party is `rumor`, not `observed`.
-- [ ] **Step 2:** Run, confirm fail.
-- [ ] **Step 3:** Implement. Gate to the endgame. Once per game, globally.
-- [ ] **Step 4:** Run; **verify the credibility ceiling still holds** — exactly three `public` alignment writes and now exactly one `observed`.
-- [ ] **Step 5: Mutation** — write the Seer's read at `public` → the ceiling guard RED. Let a second Seer read happen → RED. Let a bystander learn it → RED.
-- [ ] **Step 6:** Commit.
+- [x] **Step 1:** Failing test — the Seer learns a true alignment at `observed` credibility; NO other player's belief changes; and a later claim about the meeting by either party is `rumor`, not `observed`.
+- [x] **Step 2:** Run, confirm fail.
+- [x] **Step 3:** Implement. Gate to the endgame. Once per game, globally.
+- [x] **Step 4:** Run; **verify the credibility ceiling still holds** — exactly three `public` alignment writes and now exactly one `observed`.
+- [x] **Step 5: Mutation** — write the Seer's read at `public` → the ceiling guard RED. Let a second Seer read happen → RED. Let a bystander learn it → RED.
+- [x] **Step 6:** Commit.
 
 ---
 
@@ -494,3 +494,83 @@ beside them -- with a ledger-agreement guard alongside.
   conditions, not here.
 - `COMMIT_LINES.kept` in `js/tr/castle/trust.js` is still wrong and still carried -- fixing it
   moves bonds, and this task could not move bands either. **It needs a task that is allowed to.**
+
+
+## Task 5 done — the one certain thing, and the two people who may lie about it
+
+The Seer ships: once per game, endgame only, `observed`, and there is now **exactly one**
+`observed` alignment source in the whole store (`'the seer'`, 389 beliefs over 400 seasons)
+against the three sanctioned `public` write sites. Fires in 97.3% of seasons; the misses are
+endgame rooms below three.
+
+### 1. It is not louder than a deduction — it is surer of itself, and that is the whole design
+
+`learn()` clamps it to `ALIGNMENT_CRED_CEILING` like everything else, so the Seer writes 0.62,
+the number `blind-chess` already sits at. What `observed` buys is the `direct` branch:
+unconditional acceptance and a valence from ground truth instead of an intuition roll. **That
+is also what makes it the ONLY clearing primitive in this engine** — a clean read writes
+`valence: 'false'` deterministically and overrides whatever the Seer already believed, which no
+non-direct write can do (Task 3's wall stands everywhere else). Any future mechanic wanting to
+clear somebody hits that wall unless it goes through `observed`, which must never widen.
+
+### 2. In this format, ANY stat correlates with alignment among the survivors
+
+Selection weighted by `intuition` — which says nothing about a cloak — put Traitors in the
+Seer's seat **38.7%** of the time in rooms that were 18.1% Traitor. Selection is uniform and the
+base rate was taken at the same table, so neither explains it. **Survivorship does:** a Traitor
+who reads badly is banished and a Faithful who reads badly is not, so the Traitors who *reach*
+an endgame are intuition-selected and the Faithfuls beside them are not.
+
+**Generalise: a rule that must be alignment-blind at the endgame has to be blind to stats too,
+or prove otherwise against the base rate at the same table.** Now one hash indexed into the
+sorted room: z = 0.23 (n=389), z = −0.10 (n=1,553).
+
+Two estimator lessons fell out of measuring it, both "fix the estimator, not the threshold":
+- **The null is a mean of per-room shares, not a pooled share.** Pooling weights big rooms while
+  the draw happens once per room, and endgame rooms that are Traitor-dense are the small ones.
+  That mismatch alone read as a 10pp leak.
+- **A per-player hash is fixed forever**, so the same names win the same nights in every season
+  ever played, and a name that reaches episode eleven more often when wearing a cloak hands that
+  correlation over. Measured z = 2.61 at n=1,553 — under the bar, consistently signed, removed
+  for nothing by hashing the room instead.
+
+### 3. Two mutations survived, in two new shapes
+
+- **A prose guard that only agreed with itself.** "A line calling itself a lie sits on a claim
+  recorded as one" is green when a mutation makes `truthful` a constant, because the lying pool
+  simply stops being reached and the pools stay self-consistent. The rule that binds is that
+  each claim kind asserts a *different fact* and `truthful` must agree with the one it asserts.
+- **A pooled floor over two channels.** "Some claim reached somebody" is carried by one live
+  channel while the other is dead. Per-channel floors.
+
+And a third, about the mutation rather than the guard: **the endgame gate is defence-in-depth
+over the CALL SITE, and a gate mutation alone is unfalsifiable while only one caller exists.**
+The mutation that actually breaks the equivalence arm is calling `openSeer` inside the mandated
+loop; that takes the arm, the gate guard and a calibration band red together.
+
+### 4. Bands: fourteen unchanged structurally, one moved and it is the declared sanity check
+
+No rng draw anywhere in the Seer, so the mandated season is **bit-identical** base to head over
+400 seasons on nine projections (`log`, `rounds`, `missions`, `shields`, `pot`, `roleHistory`,
+`blockedMurders`, `threads`, `traitors`) — shipped as a test with a hold-out arm. Every band
+computed from those is arithmetically unchanged. The only band reading `s.winner` moves
+**41.0 → 44.0%** against bounds of 10–75%, on the file's own population; 41.0% reproduces Task
+7's figure exactly. Not retuned.
+
+Endgame outcomes: faithful win 45.5 → 48.8%, a Traitor takes it 218 → 205. Entry field, endgame
+rounds and pot unchanged — the Seer changes who wins, not the shape of the phase.
+
+### 5. Carried
+
+- **`shield.cost` still has no reader.** Three tasks now.
+- **`COMMIT_LINES.kept` in `js/tr/castle/trust.js` is still wrong**, and still needs a task
+  allowed to move bands.
+- **97.3% availability is deliberate**, so the once-per-game rule is re-decided on every endgame
+  table and the refusal path carries the coverage. Making the Seer a power a season might not
+  have means re-deriving every floor in `tr-powers.test.js`, and the deltas above are quoted at
+  this availability.
+- **If a later task wants the Seer to matter more, the lever is the claim economy, not the
+  credibility.** There is no headroom above the ceiling and there must not be.
+- **The meeting has no screen.** `endgame.seer` carries `meetingLine`, `readLine`, both claim
+  lines, `truthful` on each, and `seerTruth` — which is all three of §9.1's information layers
+  (what the Seer knows, what the room was told, what is true) already on the record.

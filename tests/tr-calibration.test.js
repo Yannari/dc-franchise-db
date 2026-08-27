@@ -758,15 +758,19 @@ describe('the castle, measured over many seasons', () => {
   //     scene selection off      29.22%   (989)
   //     both off                 17.73%   (1004)
   //
-  // The floor is 0.30: 6.1pp under the live arm and 6.7pp over the control,
-  // about 4.5 sd either way at a per-block sd of ~0.014. The seam control and
-  // the hard source mutation agree to two decimal places (23.29% vs 23.3%),
-  // which is what makes the seam a legitimate stand-in for deleting the line.
+  // The floor was 0.30 against those numbers. TASK 2 MOVED BOTH ARMS by
+  // widening what `continued` counts (55.96% / 36.07%) and the floor is now
+  // 0.45 — see the block immediately above the assertion for the derivation
+  // and for the third input this floor turns out to depend on. The seam
+  // control and the hard source mutation agree to two decimal places (23.29%
+  // vs 23.3%), which is what makes the seam a legitimate stand-in for deleting
+  // the line, and that agreement is unaffected by the re-derivation.
   //
-  // ONE COUPLING, STATED SO IT IS NOT A SURPRISE LATER: this floor is tied to
-  // the shipped CONTINUATION_SCENE_P. Scene selection feeds the guard the
-  // scenes it acts in, so moving that knob moves this band - at P=0 the live
-  // arm falls to 29.2% and this test goes red. That is correct, not fragile:
+  // ONE COUPLING, STATED SO IT IS NOT A SURPRISE LATER — AND SINCE TASK 2,
+  // TWO. This floor is tied to the shipped CONTINUATION_SCENE_P: scene
+  // selection feeds the guard the scenes it acts in, so moving that knob moves
+  // this band. It is ALSO tied to how many events declare `advancesThread`,
+  // which is what moved it the second time. That is correct, not fragile:
   // the band measures what the guard contributes AT THE OPERATING POINT, and
   // the assertion that isolates the guard by itself is the separation one,
   // which needs no floor at all.
@@ -778,15 +782,22 @@ describe('the castle, measured over many seasons', () => {
   //
   // WHAT THE DIAGNOSTICS SAY, AND IT IS STILL NOT FLATTERING. The old reading
   // was 89.6% of threads opened, given one beat and never touched again, a
-  // mean thread of 1.13 beats and 0.6% ever reaching a payoff. It is now
-  // 73.9%, 1.43 beats and 4.0%. That is a real move and it is nowhere near
-  // enough: three quarters of stories still die where they start. The reason
-  // is no longer scene selection - it is that only 27 of 81 events set
-  // `advancesThread` and 10 of the 28 non-empty (family x window) cells hold
-  // none at all, so half of all scenes convened on a live thread have nothing
-  // eligible that could continue it. `abandonThread` is still never called by
-  // the engine. Recorded here so the next person does not read a green tick
-  // as "the castle tells long stories".
+  // mean thread of 1.13 beats and 0.6% ever reaching a payoff. After Task 1 it
+  // was 73.9%, 1.43 beats and 4.0%; after Task 2 it is 72.0%, 1.48 beats and
+  // 3.5%. That is a real move and it is nowhere near enough: seven stories in
+  // ten still die where they start.
+  //
+  // AND THE REASON IS NOT WHAT THIS COMMENT USED TO SAY. It blamed the pool:
+  // "only 27 of 81 events set `advancesThread`". Task 2 raised that to 44 of
+  // 81 and closed nine of the ten zero-advancer cells, and the mean thread
+  // moved 1.43 -> 1.48 while the payoff rate FELL. The flag is a declaration,
+  // not a capability — `openThread` folds into an open thread of the same kind
+  // and parties, so the pool was already continuing stories it had not
+  // declared. What actually gates a continuation is the drawn event's FAMILY
+  // matching the thread's kind, plus the 5-episode pair cooldown.
+  // `abandonThread` is still never called by the engine. Recorded here so the
+  // next person does not read a green tick as "the castle tells long
+  // stories", and does not spend Task 4 or 5 adding flags expecting length.
   it('CONTINUES A STORY: a live thread is preferred to a fresh one', () => {
     const live = continuity(seasons);
     // THE CONTROL: same seeds, same content, scene selection at its SHIPPED
@@ -815,17 +826,59 @@ describe('the castle, measured over many seasons', () => {
     expect(dead.liveScenes, 'the control produced no live-thread scenes to compare against')
       .toBeGreaterThan(500);
 
+    // == RE-DERIVED AGAIN BY PLAN 5 TASK 2. 0.30 -> 0.45. ==
+    //
+    // WHAT MOVED, AND IT WAS NOT THE GUARD. Task 2 raised the number of events
+    // DECLARING `advancesThread` from 27 of 81 to 44 of 81. `continued` is
+    // defined in pickEvent as `chosen.advancesThread &&
+    // findOpenThread(chosen.family, actors)`, so widening the declaration
+    // widens the observable itself — both arms of this band moved up together:
+    //
+    //     shipped                  36.14%  ->  55.96%
+    //     guard flattened          23.29%  ->  36.07%   <- the control
+    //     separation               12.84pp ->  19.89pp
+    //
+    // The control passed straight through the old 0.30 floor, which is what
+    // forced this re-derivation: at 0.30 the floor above could be cleared with
+    // the guard deleted, and a floor that cannot fail is not evidence. Nothing
+    // about the guard got weaker — its marginal contribution GREW by 7pp.
+    //
+    // THE THIRD THING THIS FLOOR IS A FUNCTION OF, stated plainly because two
+    // consecutive tasks have now moved it and the next person deserves to know
+    // before they move it a third time. The floor tracks:
+    //   1. the continuation guard's strength (what the band is named for),
+    //   2. `CONTINUATION_SCENE_P` — scene selection feeds the guard the scenes
+    //      it acts in (Task 1 recorded this),
+    //   3. THE POOL'S ADVANCER DECLARATION RATE — how many events set
+    //      `advancesThread` at all. This one is not a mechanism, it is a
+    //      MEASUREMENT SURFACE: `advancesThread` is a declaration, not a
+    //      capability, because `openThread` already folds into an open thread
+    //      with the same kind and party set. With the guard flattened, the
+    //      seasons before and after Task 2 are BIT-IDENTICAL (mean thread
+    //      1.363, 2975 live-thread scenes, both arms) — no thread changed
+    //      shape; more of what was already happening simply got labelled.
+    //      Change the flag count and you move this floor, by construction.
+    //
+    // WHERE 0.45 COMES FROM. It sits between the two arms with room on both
+    // sides: 10.96pp over the live arm and 8.43pp under the control. The sd of
+    // the 200-season figure, measured by splitting these same seeds into eight
+    // 25-season blocks and scaling, is 0.0079 live and 0.0075 control — 13.9
+    // and 12.0 sd respectively. Against the more pessimistic per-200-season
+    // block sd of ~0.014 this file quoted before Task 1, it is still 7.8 and
+    // 6.0 sd. Either reading is a bar and not a coin.
     expect(live.rate, 'the castle starts stories and never continues them — guard 1 is inert')
-      .toBeGreaterThan(0.30);
-    // THE PROOF THE BAND ABOVE CAN FAIL, and the whole reason the floor moved
-    // from 0.22 to 0.30. Same seeds, same pool, same scene selection, guard
-    // deleted. At 0.22 this assertion passed at 23.3% and the band above
-    // passed too, so the guard could be removed entirely with the suite green.
+      .toBeGreaterThan(0.45);
+    // THE PROOF THE BAND ABOVE CAN FAIL. Same seeds, same pool, same scene
+    // selection, guard deleted. This is the assertion that caught the old 0.30
+    // floor going stale, and it is the one that will catch 0.45 going stale
+    // too — it re-derives the separation on every run, so it cannot rot the way
+    // a remembered number does.
     expect(dead.rate, 'the continuation band is green with the guard SWITCHED OFF — '
       + 'it is measuring scene selection walking live-thread actors into the room, not the guard')
-      .toBeLessThan(0.30);
-    // And the separation itself, which does not depend on 0.30 being well
-    // chosen. Measured 12.84pp at the shipped operating point.
+      .toBeLessThan(0.45);
+    // And the separation itself, which does not depend on 0.45 being well
+    // chosen. Measured 19.89pp at the shipped operating point (12.84pp before
+    // Task 2 widened the observable).
     expect(live.rate - dead.rate, 'the continuation guard moved nothing')
       .toBeGreaterThan(0.06);
   });

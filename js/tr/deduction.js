@@ -294,6 +294,40 @@ export function suspicionBoard(observer, ep, candidates = null) {
     .sort((a, b) => b.score - a.score);
 }
 
+// How loudly the belief store speaks at the ballot. One, always, in the show.
+//
+// THIS SEAM EXISTS BECAUSE `late lift` HAD NO CONTROL ARM. That band asserts
+// the endgame is sharper than chance, and it was an ABSOLUTE constant against
+// a number castle content demonstrably moves: seventeen new events moved it
+// +3.3pp, and unregistering one content file alone moves it -3.6pp. The file
+// used to assume the zero-belief-write constraint insulated the deduction
+// bands from the castle. It does not — castle events move BONDS, bondResistance
+// reads bonds, and suspicion() is multiplied by it, so the castle reaches the
+// ballot without ever writing a belief.
+//
+// The control arm needs the same seeds, the same content and the same code
+// path with the DEDUCTION CHANNEL SWITCHED OFF, and switching it off means the
+// ballot reading no beliefs. Multiplying here rather than inside suspicion()
+// is deliberate: suspicionBoard() must keep telling the truth so the board
+// precision probe is unaffected, and the noise draw below must stay in the
+// stream so the control consumes exactly the same rng as the live arm.
+//
+// Nothing in the show may ever call the setter; it is the same contract as
+// `_setContinuationGuard` and as `evidence` in playTraitorsSeason.
+const VOTE_SUSPICION_MULT = 1;
+let _voteSuspicionMult = VOTE_SUSPICION_MULT;
+
+/**
+ * Test-only: detune (0.25) or ablate (0) the belief channel at the ballot.
+ * Returns a restore function — call it in a `finally`, because leaving the
+ * ballot blind would silently change every measurement that runs afterwards.
+ */
+export function _setVoteSuspicionMult(m = VOTE_SUSPICION_MULT) {
+  const prev = _voteSuspicionMult;
+  _voteSuspicionMult = m;
+  return () => { _voteSuspicionMult = prev; };
+}
+
 /**
  * Who does `voter` write down?
  *
@@ -314,7 +348,7 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
 
   const scored = usable.map(name => ({
     name,
-    score: suspicion(voter, name, ep) + rng() * 0.35,
+    score: suspicion(voter, name, ep) * _voteSuspicionMult + rng() * 0.35,
   })).sort((a, b) => b.score - a.score);
   return scored[0].name;
 }

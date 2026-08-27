@@ -16,6 +16,7 @@ import { alignmentFactId, ballotEvidence, suspicionBoard } from '../js/tr/deduct
 import { alignmentAt } from '../js/tr/roles.js';
 import { playTraitorsSeason, rngFor, _castleRngFor } from '../js/tr/headless.js';
 import { _setContinuationGuard, _setContinuationSceneP } from '../js/tr/events.js';
+import { _setVoteSuspicionMult } from '../js/tr/deduction.js';
 import roster from '../franchise_roster.json';
 
 // franchise_roster.json is { players: [...] }, NOT a bare array. Reaching for
@@ -262,7 +263,7 @@ function continuity(seasons) {
 //   band                     base (81 ev)   head (98 ev)   threshold
 //   traitor-hit rate            0.3383         0.3487       > 0.22
 //   early lift                  0.0372         0.0266       < 0.10
-//   late lift                   0.2042         0.2368       > 0.15
+//   late lift                   0.2042         0.2368       (see Task 9)
 //   faithful win rate           0.4600         0.4950       0.10 - 0.75
 //   mean plurality share        0.4031         0.4034       0.20 - 0.55
 //
@@ -273,14 +274,21 @@ function continuity(seasons) {
 // Seventeen new events moved late lift +3.3pp and early lift -1.1pp. Both
 // moved in the safe direction here; neither was going to.
 //
-// LATE LIFT IS THE ONE TO WATCH. It is the last band in this file that is an
-// ABSOLUTE constant against a measurement content demonstrably moves, and its
-// own comment already records a worst-of-twelve-blocks of 15.19pp against a
-// floor of 15.0. Head's point estimate is 23.68pp, so it has much more room
-// than it did — but the SHAPE is the one Task 6 swept out of the two
-// continuity bands below, and there is no in-suite control arm for it to be
-// re-expressed against without doubling the run. Left absolute, deliberately,
-// and written down so the next person to move castle content checks it.
+// LATE LIFT WAS THE ONE TO WATCH, AND PLAN 5 TASK 9 GAVE IT A CONTROL ARM.
+// It was the last band in this file that was an ABSOLUTE constant against a
+// measurement content demonstrably moves, and the Task 6 note that used to sit
+// here left it that way on the grounds that no control could be built without
+// doubling the run. That was wrong on both counts: the run costs about a
+// second, and the band was thinner than the note claimed. Re-measured over six
+// DECORRELATED 200-season blocks at head, the live figure reads
+//
+//     0.2368  0.1977  0.1403  0.1892  0.1746  0.2080   mean 0.1911  sd 0.0325
+//
+// so the shipped 0.15 floor is RED on block 400 (0.1403) on an engine nobody
+// had touched. The shipped seed block flattered it, exactly as this file's
+// own 60-season note warned about a different band. It is replaced below by a
+// separation against an in-run control, and the derivation is on the
+// assertion.
 describe('the castle, measured over many seasons', () => {
   const seasons = run();
 
@@ -297,6 +305,32 @@ describe('the castle, measured over many seasons', () => {
   const sceneOff = (() => {
     const restore = _setContinuationSceneP(0);
     try { return continuity(run()); } finally { restore(); }
+  })();
+
+  // THE BLIND-BALLOT CONTROL ARM, earned by Plan 5 Task 9 and used by the late
+  // band below. Same seeds, same castle content, same code path, with the
+  // DEDUCTION CHANNEL SWITCHED OFF at the one place it reaches a decision:
+  // chooseBanishmentVote scores every candidate on the noise term alone.
+  //
+  // WHY THE ABLATION IS AT THE BALLOT AND NOT AT THE EVIDENCE HOOK. Swapping
+  // `evidence` out (the placebo's seam) removes one of three writers - the
+  // reveal cascade and murderEvidence still run - so it is a partial ablation
+  // of the channel this band is named for. Zeroing the multiplier removes the
+  // belief store's whole influence on the vote in one place, keeps
+  // suspicionBoard() honest so the BOARD PRECISION probe is unaffected, and
+  // leaves the rng draw in chooseBanishmentVote untouched so both arms consume
+  // the same stream per ballot.
+  //
+  // WHAT THE CONTROL IS NOT. It is not a base rate and it is not zero: blind
+  // ballots score -17.63pp, well BELOW chance, because chooseBanishmentVote
+  // bars a Traitor from naming the pact, so a room voting on noise
+  // systematically under-hits Traitors. That structural offset is the thing an
+  // absolute floor on the live number silently assumed was constant.
+  const blindBallot = (() => {
+    const restore = _setVoteSuspicionMult(0);
+    let blind;
+    try { blind = run(); } finally { restore(); }
+    return { early: liftOver(blind, EARLY), late: liftOver(blind, LATE) };
   })();
 
   it('finishes every season without hanging or crashing', () => {
@@ -453,30 +487,154 @@ describe('the castle, measured over many seasons', () => {
     // LATE: by the second half every reveal has re-scored a round of ballots,
     // and the endgame is supposed to be the sharpest table of the season.
     //
-    // Measured 20.19pp mean, sd 2.72, worst block 15.19pp over twelve
-    // decorrelated 200-season blocks at the repriced M.pushedThenDied = 0.62
-    // (was 19.11pp mean / worst 15.03 at 0.36). STILL THE THINNEST GATE IN THE
-    // FILE — 0.19pp on its worst block, up from 0.03pp — and any future change
-    // to the murder layer hits it first.
+    // == PLAN 5 TASK 9: THE ABSOLUTE FLOOR IS REPLACED BY A SEPARATION ==
     //
-    // THE WORST BLOCK IS NOT A RESULT AND WAS NOT USED AS ONE. Across the
-    // price sweep the worst-of-twelve wandered 13.70 / 14.35 / 15.03 / 15.19 /
-    // 16.82pp with no monotone relation to price, against a per-block sd of
-    // 1.7 — it is one unlucky block, exactly the statistic that produced this
-    // project's three most flattering refuted numbers. The price was decided
-    // on the channel's edge over a matched noise control, not on this figure.
-    // The figure is quoted only to say how much room the band has left.
+    // It was `late.lift > 0.15`, a constant carried since before the castle
+    // had content, and the assumption underneath it was that the zero-belief-
+    // write constraint insulated this number from the castle. IT DOES NOT.
+    // Castle events write no beliefs, but they call addBond, bondResistance()
+    // reads bonds, and suspicion() is multiplied by it -- so the castle reaches
+    // the ballot without writing a single belief. Measured at head, 200 seeds,
+    // one content FILE unregistered at a time:
     //
-    // Deleting the `clash-traced` channel moved this 19.02 -> 18.31pp. That is
-    // NOT a 0.71pp loss: measured block-by-block the change is -5.1, +1.5,
-    // -3.9, +1.5, +0.2, +0.5, +1.5, -0.9, +1.3, +0.5, -0.9, -4.6 — seven blocks
-    // up, five down, t = -0.9 against block noise of sd 1.9. It is
-    // indistinguishable from zero, and every other statistic in this file moved
-    // flat or better (board precision worst block 0.253 -> 0.306 over placebo,
-    // growth margin worst 7.07 -> 7.84pp, early worst 8.65 -> 7.70pp).
+    //     minus-trust      live 0.1889  (-0.0479)   <- worst adverse
+    //     minus-journey    live 0.2006  (-0.0362)
+    //     minus-grief      live 0.2291  (-0.0078)
+    //     minus-callback   live 0.2368  (+0.0000)   <- fires zero times here
+    //     minus-testing    live 0.2439  (+0.0071)
+    //     minus-cover      live 0.2472  (+0.0104)
+    //     minus-romance    live 0.2519  (+0.0151)
+    //     minus-suspicion  live 0.2790  (+0.0422)
+    //
+    // One content file is worth up to 4.8pp of a band that had 8.7pp of
+    // headroom. This plan ships one or two files' worth of content per task.
+    //
+    // THE OBSERVABLE IS NOW live_late - blind_late, against the control arm
+    // built at the top of this describe: the same seeds, the same castle, the
+    // ballot reading no beliefs. Six decorrelated 200-season blocks (seed
+    // bases 0, 200, 400, 600, 800, 1000), both arms re-run per block:
+    //
+    //     live   0.2368  0.1977  0.1403  0.1892  0.1746  0.2080   mean 0.1911  sd 0.0325
+    //     blind -0.1763 -0.1775 -0.1786 -0.1879 -0.1642 -0.1682   mean -0.1755 sd 0.0084
+    //     sep    0.4131  0.3752  0.3189  0.3771  0.3388  0.3762   mean 0.3665  sd 0.0331
+    //
+    // WHAT THE CONTROL BUYS, STATED HONESTLY, BECAUSE TASK 6 LEARNED THIS THE
+    // EXPENSIVE WAY. A control arm protects against the thing it ABLATES and
+    // nothing else:
+    //   - sampling drift in the OFFSET  - removed. The blind arm is stable to
+    //     sd 0.0084 across blocks, so the structural -17.6pp the live number
+    //     used to be measured against is now re-derived every run instead of
+    //     being baked into a constant.
+    //   - mechanism-strength drift      - removed (both arms share every input
+    //     to the vote except the multiplier).
+    //   - COMPOSITION drift             - NOT removed, and barely reduced.
+    //     Re-running BOTH arms per content file:
+    //
+    //       minus-trust      sep 0.3665  (-0.0466)   <- worst adverse
+    //       minus-journey    sep 0.3702  (-0.0429)
+    //       minus-grief      sep 0.4018  (-0.0113)
+    //       minus-callback   sep 0.4131  (+0.0000)
+    //       minus-romance    sep 0.4323  (+0.0192)
+    //       minus-cover      sep 0.4330  (+0.0198)
+    //       minus-testing    sep 0.4334  (+0.0203)
+    //       minus-suspicion  sep 0.4431  (+0.0300)
+    //
+    //     4.66pp adverse per file against 4.79pp on the live arm. The reason
+    //     is structural and worth writing down: with the ballot blind, bonds
+    //     cannot reach the vote at all, so removing castle content moves the
+    //     control almost not at all (max 1.32pp) and the separation inherits
+    //     the live arm's exposure nearly whole. This band is content-priced,
+    //     not content-proof, and anyone adding castle content must re-check it.
+    //
+    // WHERE 0.22 COMES FROM. Worst live block 0.3189 minus 0.0989 of headroom
+    // = 2.1 adverse content files; on the shipped block (0.4131) it is 4.1.
+    // The ablation reads EXACTLY 0.0000, so the assertion keeps 0.22 of margin
+    // against the thing it is named for.
+    //
+    // WHAT IT CATCHES AND WHAT IT CANNOT, swept on the same 200 seeds by
+    // detuning the same multiplier the control zeroes:
+    //
+    //     mult 1.00 (shipped)  late  0.2368   sep 0.4131
+    //     mult 0.75            late  0.1367   sep 0.3130
+    //     mult 0.50            late  0.1342   sep 0.3105
+    //     mult 0.25            late  0.0193   sep 0.1956   <- RED
+    //     mult 0.10            late -0.0679   sep 0.1084   <- RED
+    //     mult 0.00            late -0.1763   sep 0.0000   <- RED
+    //
+    // So it catches the channel switched off and the channel at a quarter
+    // strength. It does NOT catch a half-strength ballot channel -- and NO
+    // floor here can, because the 0.75 and 0.50 arms (0.3130, 0.3105) sit
+    // inside the full-strength block range (0.3189-0.4131). 200 seasons a
+    // block cannot separate adjacent strengths; the continuity band below
+    // reached the same wall and says so. A floor placed at 0.31 to catch them
+    // would have 0.9 content files of headroom and would be walked through by
+    // the next task that adds events, which is how the 0.15 got here.
+    //
+    // AND THE CONTROL IS BOUNDED, BECAUSE A CONTROL CAN DRIFT TOO. A
+    // separation is only evidence if the arm it is measured against stays
+    // uninformative. If the blind arm drifted DOWNWARD the separation would
+    // widen and could hide a live-arm collapse -- the same shape as the Task 6
+    // scan that erased its own evidence. Blind late lift is -0.1755 mean, sd
+    // 0.0084 across blocks and -0.1895..-0.1641 across content perturbations.
+    //
+    // BOTH BOUNDS ARE PLACED WHERE A MUTATION ACTUALLY CROSSES THEM, not at a
+    // round number. Upper: deleting `* _voteSuspicionMult` in deduction.js
+    // makes the control arm the live engine, +0.2368 -- red at -0.05 by a
+    // mile, and that is the seam failing silently, which is the likeliest way
+    // this band dies. Lower: an ANTI-informative ballot is the furthest down
+    // the arm can be driven, and it saturates -- mult -1 reads -0.2314, -3
+    // reads -0.2517, -100 reads -0.2412. So -0.22 is red on all of those and
+    // -0.30 would have been red on none of them, i.e. unfailable. -0.22 sits
+    // 3.6 block-sd and 2.3 content-file-widths (max observed 0.0132) below the
+    // worst honest reading. Tripwires on the harness, not bands on the engine.
     expect(late.total, 'no late banishments to measure').toBeGreaterThan(40);
-    expect(late.lift, 'the endgame is no sharper than chance -- the reveal cascade is not landing')
-      .toBeGreaterThan(0.15);
+    expect(blindBallot.late.total, 'the blind-ballot control produced no late banishments')
+      .toBeGreaterThan(40);
+    console.log(`late lift: engine ${(late.lift * 100).toFixed(2)}pp vs blind ballot `
+      + `${(blindBallot.late.lift * 100).toFixed(2)}pp = separation `
+      + `${((late.lift - blindBallot.late.lift) * 100).toFixed(2)}pp`);
+    // Diagnostic, asserted nowhere: the blind arm's EARLY lift, which is the
+    // same structural offset measured before any reveal has landed. The gap
+    // between the two blind halves (-4.2pp early, -17.6pp late) is the
+    // population effect the null already prices out; it is printed so a future
+    // reader can see the offset is not a constant across the season either.
+    console.log(`[diagnostic, NOT a gate] blind ballot early ${(blindBallot.early.lift * 100).toFixed(2)}pp`
+      + ` -> late ${(blindBallot.late.lift * 100).toFixed(2)}pp`);
+
+    // TRIPWIRE, NOT A GATE: the control must still be a control.
+    expect(blindBallot.late.lift,
+      'the blind ballot is SHARP in the endgame -- it has information in it and is no longer a control')
+      .toBeLessThan(-0.05);
+    expect(blindBallot.late.lift,
+      'the blind ballot is ANTI-informative -- it has fallen below its structural offset and is '
+      + 'propping up the separation below rather than the engine earning it')
+      .toBeGreaterThan(-0.22);
+
+    // THE MUTATIONS THAT PROVE ALL THREE, RUN RATHER THAN CLAIMED. Each was
+    // applied, the file run, and reverted:
+    //
+    //   1. `score: rng() * 0.35` (the belief term deleted outright)
+    //      -> five tests red, but the FIRST failure in this one is the
+    //         `rate > 0.22` line at 0.1213, so the gate is not even reached.
+    //         A hard ablation is not a proof of THIS assertion.
+    //   2. `... * _voteSuspicionMult * 0.25` (the channel at quarter strength)
+    //      -> the gate is the first line to fail here, at exactly the swept
+    //         0.1956 against 0.22, with `rate > 0.22` and `early < 0.10` both
+    //         still green. This is the gate's proof.
+    //   3. `* _voteSuspicionMult` deleted (the seam made inert, so the control
+    //      arm is silently the live engine)
+    //      -> ONE failure in the whole file: the upper tripwire, at +0.2368.
+    //         Nothing else here notices, which is why that tripwire is not
+    //         redundant with the gate.
+    //   4. the control arm called with -1 instead of 0
+    //      -> ONE failure: the lower tripwire, at -0.2314 against -0.22. The
+    //         gate stays green at 0.4682, which is the propping-up this bound
+    //         exists to catch.
+    //
+    // THE GATE.
+    expect(late.lift - blindBallot.late.lift,
+      'the endgame is no sharper than a ballot that reads no beliefs -- the reveal cascade is not landing')
+      .toBeGreaterThan(0.22);
   });
 
   // SANITY CHECK, NOT A GATE. This band cannot fail on anything that runs. The

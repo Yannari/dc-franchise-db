@@ -1,0 +1,208 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Coaches' Board preview</title>
+<style>body{margin:0;background:#0f0f1e;color:#eee;font-family:system-ui}
+.rp-nav{height:46px;background:#1a1a2e;display:flex;align-items:center;padding:0 16px;
+  font:600 13px system-ui;color:#9af;border-bottom:1px solid #333}</style></head>
+<body><div class="rp-nav">VIEWING PARTY &middot; Episode 4 &middot; (nav bar — the board must not cover this)</div>
+
+<div class="cb-shell" data-phase="board">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@400;700&display=swap');
+
+.cb-shell{--cb-board:#173829;--cb-board-dark:#0d2318;--cb-chalk:#f5f2e6;--cb-chalk-yellow:#f0d878;--cb-chalk-pink:#ff9ab3;--cb-chalk-blue:#9ad9e8;--cb-cork:#b0824f;--cb-cork-dark:#7d5a34;--cb-red:#e2564f;--cb-green:#63b892;max-width:1100px;margin:0 auto;font-family:'Kalam',cursive;color:var(--cb-chalk);position:relative;display:grid;grid-template-columns:1fr 260px;gap:16px;}
+.cb-shell *{box-sizing:border-box;}
+
+/* ── ambient chalk dust — fixed, sits below the nav bar ── */
+.cb-atmo{position:fixed;top:46px;left:0;right:0;bottom:0;z-index:-1;pointer-events:none;overflow:hidden;background:var(--cb-board-dark);}
+.cb-dust{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--cb-chalk);opacity:.25;animation:cb-drift 9s linear infinite;}
+.cb-dust:nth-child(1){top:10%;left:8%;animation-duration:8s;}
+.cb-dust:nth-child(2){top:30%;left:70%;animation-duration:11s;animation-delay:1s;}
+.cb-dust:nth-child(3){top:55%;left:22%;animation-duration:7s;animation-delay:2s;}
+.cb-dust:nth-child(4){top:75%;left:85%;animation-duration:10s;animation-delay:.5s;}
+.cb-dust:nth-child(5){top:20%;left:45%;animation-duration:9s;animation-delay:3s;}
+@keyframes cb-drift{0%{transform:translateY(0) translateX(0);opacity:.05;}30%{opacity:.3;}100%{transform:translateY(-60px) translateX(12px);opacity:0;}}
+
+/* ── board header ── */
+.cb-board-bg{background:var(--cb-board);border:10px solid #4a3524;border-radius:6px;box-shadow:inset 0 0 60px rgba(0,0,0,0.45),0 6px 18px rgba(0,0,0,0.4);position:relative;padding:0;overflow:hidden;}
+.cb-board-bg::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.02) 1px,transparent 1px);background-size:6px 6px;pointer-events:none;}
+.cb-board-head{text-align:center;padding:26px 20px 14px;position:relative;}
+.cb-board-title{font-family:'Caveat',cursive;font-weight:700;font-size:44px;letter-spacing:1px;color:var(--cb-chalk);text-shadow:0 0 3px rgba(255,255,255,0.15);transform:rotate(-1deg);display:inline-block;}
+.cb-board-sub{font-family:'Kalam',cursive;font-size:12px;color:var(--cb-chalk-yellow);letter-spacing:3px;text-transform:uppercase;margin-top:2px;}
+.cb-board-underline{width:220px;height:3px;background:var(--cb-chalk);opacity:.6;margin:6px auto 0;border-radius:2px;}
+
+/* ── CSS icon system (no emoji) ── */
+.cb-icon{width:24px;height:24px;position:relative;flex-shrink:0;display:inline-block;}
+.cb-icon.icon-clipboard{background:var(--cb-chalk-yellow);border-radius:2px;}
+.cb-clip-clip{position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:10px;height:6px;background:#8a6a2f;border-radius:2px;}
+.cb-icon.icon-whistle{border:2px solid var(--cb-chalk);border-radius:50% 50% 50% 4px;}
+.cb-icon.icon-play{border:2px solid var(--cb-chalk);border-radius:50%;}
+.cb-play-x,.cb-play-x2{position:absolute;width:2px;height:8px;background:var(--cb-chalk);top:6px;left:7px;}
+.cb-play-x{transform:rotate(45deg);}
+.cb-play-x2{transform:rotate(-45deg);}
+.cb-play-o{position:absolute;width:6px;height:6px;border:2px solid var(--cb-chalk-yellow);border-radius:50%;top:5px;right:4px;}
+.cb-play-arrow{position:absolute;bottom:2px;left:3px;width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid var(--cb-chalk-blue);}
+.cb-icon.icon-chalkmark{width:20px;height:20px;}
+.cb-icon.icon-chalkmark::before,.cb-icon.icon-chalkmark::after{content:'';position:absolute;top:9px;left:1px;width:18px;height:2px;background:var(--cb-red);}
+.cb-icon.icon-chalkmark::before{transform:rotate(30deg);}
+.cb-icon.icon-chalkmark::after{transform:rotate(-30deg);}
+.cb-icon.icon-star{width:16px;height:16px;background:var(--cb-chalk-yellow);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);}
+.cb-icon.icon-pin{width:10px;height:10px;border-radius:50%;background:var(--cb-red);box-shadow:0 2px 2px rgba(0,0,0,0.4);}
+
+/* ── tribe section on the board ── */
+.cb-tribe-block{padding:6px 22px 22px;}
+.cb-tribe-name{font-family:'Caveat',cursive;font-weight:700;font-size:26px;color:var(--cb-chalk-blue);border-bottom:2px dashed rgba(154,217,232,0.35);padding-bottom:4px;margin-bottom:10px;transform:rotate(-.4deg);}
+
+/* ── step visibility ── */
+.cb-step{display:none;}
+.cb-step.cb-visible{display:block;}
+
+/* ── play card (one coaching session) ── */
+.cb-play-card{background:rgba(0,0,0,0.18);border:2px dashed rgba(245,242,230,0.35);border-radius:8px;padding:12px 14px;margin:8px 0;position:relative;animation:cb-chalk-write .45s ease-out forwards;}
+@keyframes cb-chalk-write{0%{opacity:0;transform:translateY(6px) scale(.98);}100%{opacity:1;transform:translateY(0) scale(1);}}
+.cb-play-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.cb-play-label{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--cb-chalk-yellow);}
+.cb-play-diagram{display:inline-block;margin:2px 0 6px;}
+.cb-play-text{font-size:15px;line-height:1.5;color:var(--cb-chalk);}
+.cb-play-text strong{color:var(--cb-chalk-yellow);}
+.cb-stat{color:var(--cb-chalk-blue);text-transform:uppercase;letter-spacing:1px;font-size:12px;}
+.cb-play-gain{margin-top:6px;font-family:'Caveat',cursive;font-weight:700;font-size:20px;color:var(--cb-green);}
+.cb-play-gain.cb-play-loss{color:var(--cb-red);}
+
+/* ── flavor line between sessions ── */
+.cb-flavor{text-align:center;font-family:'Caveat',cursive;font-size:15px;color:rgba(245,242,230,0.4);padding:2px 0;font-style:italic;}
+
+/* ── the ledger: passed-over contestants, NOT cards, a marked column ── */
+.cb-ledger{background:var(--cb-cork);border:6px solid var(--cb-cork-dark);border-radius:6px;padding:12px 14px;margin-top:14px;box-shadow:inset 0 0 24px rgba(0,0,0,0.25);}
+.cb-ledger-title{font-family:'Caveat',cursive;font-weight:700;font-size:20px;color:#2b1c0e;text-align:center;letter-spacing:1px;margin-bottom:8px;}
+.cb-ledger-row{display:flex;align-items:center;gap:8px;padding:5px 6px;border-bottom:1px dotted rgba(43,28,14,0.35);}
+.cb-ledger-row:last-child{border-bottom:none;}
+/* skipped by EVERY coach on the tribe — the unanimous, most pointed slight */
+.cb-ledger-row-total{background:rgba(226,86,79,0.14);border-radius:4px;box-shadow:inset 3px 0 0 var(--cb-red);}
+.cb-ledger-row-total .cb-ledger-coach{color:#a3372f;font-weight:700;}
+.cb-ledger-name{font-family:'Kalam',cursive;font-size:14px;color:#2b1c0e;position:relative;}
+.cb-ledger-name::after{content:'';position:absolute;left:-2px;right:-2px;top:50%;height:2px;background:var(--cb-red);transform:rotate(-2deg);}
+.cb-ledger-coach{margin-left:auto;font-size:10px;color:#5c3f1f;letter-spacing:1px;text-transform:uppercase;}
+.cb-ledger-empty{text-align:center;font-size:12px;color:#5c3f1f;padding:6px 0;}
+
+/* ── avatars — chalkboard portraits, with a text-fallback for missing PNGs ── */
+.cb-av-wrap{display:inline-flex;vertical-align:middle;}
+.cb-av{width:30px;height:30px;border-radius:50%;border:2px solid var(--cb-chalk);object-fit:cover;vertical-align:middle;}
+.cb-av-tiny{width:16px;height:16px;border-width:1px;}
+.cb-av-fallback{display:none;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:2px solid var(--cb-chalk);background:rgba(245,242,230,0.15);color:var(--cb-chalk);font-family:'Caveat',cursive;font-weight:700;font-size:15px;line-height:1;}
+.cb-av-fallback.cb-av-tiny{width:16px;height:16px;font-size:9px;border-width:1px;}
+/* on cork/parchment backgrounds (ledger, sidebar) the chalk-white border and
+   fill are invisible — swap to the cork-dark palette so it reads there too. */
+.cb-av.cb-av-onlight,.cb-av-fallback.cb-av-onlight{border-color:var(--cb-cork-dark);}
+.cb-av-fallback.cb-av-onlight{background:rgba(125,90,52,0.18);color:#2b1c0e;}
+
+/* ── sticky reveal controls ── */
+.cb-controls{position:sticky;bottom:0;z-index:100;display:flex;justify-content:center;align-items:center;gap:14px;padding:8px 20px;background:rgba(13,35,24,0.95);border-top:2px dashed var(--cb-chalk-yellow);border-radius:0 0 6px 6px;}
+.cb-btn{padding:7px 18px;border:2px solid var(--cb-chalk-yellow);border-radius:6px;background:transparent;color:var(--cb-chalk-yellow);font-family:'Kalam',cursive;font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.cb-btn:hover{background:var(--cb-chalk-yellow);color:#2b1c0e;}
+.cb-btn-primary{background:var(--cb-chalk-yellow);color:#2b1c0e;}
+.cb-counter{font-size:11px;color:var(--cb-chalk);letter-spacing:1px;}
+
+/* ── sidebar / clipboard panel ── */
+.cb-sidebar{position:sticky;top:16px;align-self:start;}
+.cb-clipboard-panel{background:linear-gradient(180deg,#e9dfc4,#d9caa0);border:4px solid #a9784f;border-radius:8px;overflow:hidden;color:#2b1c0e;}
+.cb-sb-header{background:var(--cb-cork-dark);color:var(--cb-chalk);font-family:'Caveat',cursive;font-weight:700;font-size:20px;letter-spacing:2px;text-align:center;padding:8px;}
+.cb-sb-tribe{padding:10px 12px;border-bottom:1px dashed rgba(43,28,14,0.25);}
+.cb-sb-tribe-name{font-family:'Caveat',cursive;font-weight:700;font-size:17px;color:#4a3524;margin-bottom:4px;}
+.cb-sb-coach{padding:6px 0;}
+.cb-sb-coach-name{font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px;}
+.cb-sb-banked{font-size:10px;color:#5c3f1f;margin:2px 0;}
+.cb-sb-banked-num{color:#1f6b46;font-weight:700;}
+.cb-sb-standing{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;}
+.cb-sb-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:1px 6px 1px 3px;border-radius:8px;letter-spacing:.5px;}
+.cb-sb-tag-in{background:#dcefe0;color:#1f6b46;}
+.cb-sb-tag-out{background:#f4d9d7;color:#a3372f;text-decoration:line-through;}
+.cb-sb-tag-damaged{background:#f7e0b3;color:#8a4b12;}
+
+@media(prefers-reduced-motion:reduce){.cb-shell *,.cb-shell *::before,.cb-shell *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}}
+@media(max-width:800px){.cb-shell{grid-template-columns:1fr;}.cb-sidebar{position:static;}}
+</style>
+<div class="cb-atmo"><div class="cb-dust"></div><div class="cb-dust"></div><div class="cb-dust"></div><div class="cb-dust"></div><div class="cb-dust"></div></div>
+<div class="cb-main">
+
+    <div class="cb-board-bg">
+      <div class="cb-board-head">
+        <div class="cb-board-title">The Coaches' Board</div>
+        <div class="cb-board-underline"></div>
+        <div class="cb-board-sub">Episode 4 — Who Got Called On</div>
+      </div>
+      <div class="cb-tribe-block">
+      <div class="cb-tribe-name">Tribe Kalua</div>
+      <div id="cb-step-board-0" class="cb-step">
+        <div class="cb-play-card">
+          <div class="cb-play-header"><div class="cb-icon icon-clipboard"><div class="cb-clip-clip"></div></div><span class="cb-av-wrap"><img class="cb-av cb-av-tiny" src="assets/avatars/wayne.png" alt="Wayne" title="Wayne" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback cb-av-tiny" style="display:none">W</span></span><span class="cb-play-label">Wayne — private session</span></div>
+          <div class="cb-play-diagram"><div class="cb-icon icon-play"><div class="cb-play-x"></div><div class="cb-play-x2"></div><div class="cb-play-o"></div><div class="cb-play-arrow"></div></div></div>
+          <div class="cb-play-text"><span class="cb-av-wrap"><img class="cb-av " src="assets/avatars/wayne.png" alt="Wayne" title="Wayne" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback " style="display:none">W</span></span> <strong>Wayne</strong> spends the block breaking down <span class="cb-stat">endurance</span> with <span class="cb-av-wrap"><img class="cb-av " src="assets/avatars/evie.png" alt="Evie" title="Evie" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback " style="display:none">E</span></span> <strong>Evie</strong>.</div>
+          <div class="cb-play-gain"><div class="cb-icon icon-star"></div> +0.80 endurance, banked</div>
+        </div>
+      </div><div id="cb-step-board-1" class="cb-step">
+        <div class="cb-play-card">
+          <div class="cb-play-header"><div class="cb-icon icon-clipboard"><div class="cb-clip-clip"></div></div><span class="cb-av-wrap"><img class="cb-av cb-av-tiny" src="assets/avatars/julia.png" alt="Julia" title="Julia" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback cb-av-tiny" style="display:none">J</span></span><span class="cb-play-label">Julia — private session</span></div>
+          <div class="cb-play-diagram"><div class="cb-icon icon-play"><div class="cb-play-x"></div><div class="cb-play-x2"></div><div class="cb-play-o"></div><div class="cb-play-arrow"></div></div></div>
+          <div class="cb-play-text"><span class="cb-av-wrap"><img class="cb-av " src="assets/avatars/julia.png" alt="Julia" title="Julia" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback " style="display:none">J</span></span> <strong>Julia</strong> and <span class="cb-av-wrap"><img class="cb-av " src="assets/avatars/nadia.png" alt="Nadia" title="Nadia" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback " style="display:none">N</span></span> <strong>Nadia</strong> run drill after drill on <span class="cb-stat">social</span> until it holds.</div>
+          <div class="cb-play-gain"><div class="cb-icon icon-star"></div> +0.60 social, banked</div>
+        </div>
+      </div><div id="cb-step-board-2" class="cb-step">
+        <div class="cb-play-card">
+          <div class="cb-play-header"><div class="cb-icon icon-clipboard"><div class="cb-clip-clip"></div></div><span class="cb-av-wrap"><img class="cb-av cb-av-tiny" src="assets/avatars/wayne.png" alt="Wayne" title="Wayne" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback cb-av-tiny" style="display:none">W</span></span><span class="cb-play-label">Wayne — private session</span></div>
+          <div class="cb-play-diagram"><div class="cb-icon icon-play"><div class="cb-play-x"></div><div class="cb-play-x2"></div><div class="cb-play-o"></div><div class="cb-play-arrow"></div></div></div>
+          <div class="cb-play-text"><span class="cb-av-wrap"><img class="cb-av " src="assets/avatars/wayne.png" alt="Wayne" title="Wayne" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback " style="display:none">W</span></span> <strong>Wayne</strong> pulls <span class="cb-av-wrap"><img class="cb-av " src="assets/avatars/toby.png" alt="Toby" title="Toby" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback " style="display:none">T</span></span> <strong>Toby</strong> aside for a <span class="cb-stat">boldness</span> session that leaves Toby worse off than before it started.</div>
+          <div class="cb-play-gain cb-play-loss"><div class="cb-icon icon-star"></div> -0.40 boldness, cost</div>
+        </div>
+      </div>
+      <div class="cb-ledger">
+        <div class="cb-ledger-title">Passed Over Tonight</div>
+        <div class="cb-ledger-row"><div class="cb-icon icon-chalkmark"></div><span class="cb-av-wrap"><img class="cb-av cb-av-tiny cb-av-onlight" src="assets/avatars/raj.png" alt="Raj" title="Raj" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback cb-av-tiny cb-av-onlight" style="display:none">R</span></span><span class="cb-ledger-name">Raj</span> <span class="cb-ledger-coach">sat out <strong>Wayne</strong>'s sessions this week</span></div><div class="cb-ledger-row cb-ledger-row-total"><div class="cb-icon icon-chalkmark"></div><span class="cb-av-wrap"><img class="cb-av cb-av-tiny cb-av-onlight" src="assets/avatars/damien.png" alt="Damien" title="Damien" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback cb-av-tiny cb-av-onlight" style="display:none">D</span></span><span class="cb-ledger-name">Damien</span> <span class="cb-ledger-coach">called on by nobody — a clean sweep of neglect</span></div>
+      </div>
+    </div><div class="cb-tribe-block">
+      <div class="cb-tribe-name">Tribe Vantu</div>
+      <div id="cb-step-board-3" class="cb-step">
+        <div class="cb-play-card">
+          <div class="cb-play-header"><div class="cb-icon icon-clipboard"><div class="cb-clip-clip"></div></div><span class="cb-av-wrap"><img class="cb-av cb-av-tiny" src="assets/avatars/julia.png" alt="Julia" title="Julia" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback cb-av-tiny" style="display:none">J</span></span><span class="cb-play-label">Julia — private session</span></div>
+          <div class="cb-play-diagram"><div class="cb-icon icon-play"><div class="cb-play-x"></div><div class="cb-play-x2"></div><div class="cb-play-o"></div><div class="cb-play-arrow"></div></div></div>
+          <div class="cb-play-text"><span class="cb-av-wrap"><img class="cb-av " src="assets/avatars/julia.png" alt="Julia" title="Julia" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback " style="display:none">J</span></span> <strong>Julia</strong> walks <span class="cb-av-wrap"><img class="cb-av " src="assets/avatars/toby.png" alt="Toby" title="Toby" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback " style="display:none">T</span></span> <strong>Toby</strong> through a private <span class="cb-stat">strategic</span> session.</div>
+          <div class="cb-play-gain"><div class="cb-icon icon-star"></div> +0.50 strategic, banked</div>
+        </div>
+      </div>
+      <div class="cb-ledger">
+        <div class="cb-ledger-title">Passed Over Tonight</div>
+        <div class="cb-ledger-empty">Everyone got a session this week.</div>
+      </div>
+    </div>
+      <div id="cb-controls-board" class="cb-controls">
+        <button class="cb-btn cb-btn-primary" onclick="coachRevealNext('cb-board',4)">Reveal Next</button>
+        <span id="cb-counter-board" class="cb-counter">0 / 4 sessions</span>
+        <button class="cb-btn" onclick="coachRevealAll('cb-board',4)">Reveal All</button>
+      </div>
+    </div>
+  
+</div>
+<div class="cb-sidebar"><div id="cb-sidebar-inner" class="cb-clipboard-panel">
+    <div class="cb-sb-header">THE BOARD</div><div class="cb-sb-tribe"><div class="cb-sb-tribe-name">Tribe Kalua</div><div class="cb-sb-coach">
+        <div class="cb-sb-coach-name"><span class="cb-av-wrap"><img class="cb-av cb-av-tiny cb-av-onlight" src="assets/avatars/wayne.png" alt="Wayne" title="Wayne" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback cb-av-tiny cb-av-onlight" style="display:none">W</span></span> Wayne</div>
+        <div class="cb-sb-banked">Banked: <span class="cb-sb-banked-num">0.00</span></div>
+        <div class="cb-sb-standing">
+          
+          <span class="cb-sb-tag cb-sb-tag-out" title="no session — passed over by Wayne"><span class="cb-av-wrap"><img class="cb-av cb-av-tiny cb-av-onlight" src="assets/avatars/raj.png" alt="Raj" title="Raj" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback cb-av-tiny cb-av-onlight" style="display:none">R</span></span> Raj</span><span class="cb-sb-tag cb-sb-tag-out" title="no session — passed over by Wayne"><span class="cb-av-wrap"><img class="cb-av cb-av-tiny cb-av-onlight" src="assets/avatars/damien.png" alt="Damien" title="Damien" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback cb-av-tiny cb-av-onlight" style="display:none">D</span></span> Damien</span>
+        </div>
+      </div><div class="cb-sb-coach">
+        <div class="cb-sb-coach-name"><span class="cb-av-wrap"><img class="cb-av cb-av-tiny cb-av-onlight" src="assets/avatars/julia.png" alt="Julia" title="Julia" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback cb-av-tiny cb-av-onlight" style="display:none">J</span></span> Julia</div>
+        <div class="cb-sb-banked">Banked: <span class="cb-sb-banked-num">0.00</span></div>
+        <div class="cb-sb-standing">
+          
+          <span class="cb-sb-tag cb-sb-tag-out" title="no session — passed over by Julia"><span class="cb-av-wrap"><img class="cb-av cb-av-tiny cb-av-onlight" src="assets/avatars/damien.png" alt="Damien" title="Damien" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback cb-av-tiny cb-av-onlight" style="display:none">D</span></span> Damien</span>
+        </div>
+      </div></div><div class="cb-sb-tribe"><div class="cb-sb-tribe-name">Tribe Vantu</div><div class="cb-sb-coach">
+        <div class="cb-sb-coach-name"><span class="cb-av-wrap"><img class="cb-av cb-av-tiny cb-av-onlight" src="assets/avatars/julia.png" alt="Julia" title="Julia" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback cb-av-tiny cb-av-onlight" style="display:none">J</span></span> Julia</div>
+        <div class="cb-sb-banked">Banked: <span class="cb-sb-banked-num">0.00</span></div>
+        <div class="cb-sb-standing">
+          
+          
+        </div>
+      </div></div>
+  </div></div>
+</div>
+</body></html>

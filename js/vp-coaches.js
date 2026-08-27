@@ -1,3 +1,6 @@
+import { players } from './core.js';
+import { resolveAvatarSlug } from './players.js';
+
 // js/vp-coaches.js — The Coaches' Board: a chalkboard + playbook VP screen for
 // the coaching twist. Reads ep.coachData, shaped:
 //   ep.coachData = { [tribeName]: { sessions: [{coach,contestant,stat,gain}],
@@ -33,7 +36,7 @@ function _reapplyVisibility(suffix, upToIdx, total) {
     if (el) el.classList.add('cb-visible');
   }
   const counter = document.getElementById(`cb-counter-${suffix}`);
-  if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total}`;
+  if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total} sessions`;
   if (upToIdx >= total - 1) {
     const controls = document.getElementById(`cb-controls-${suffix}`);
     if (controls) {
@@ -75,11 +78,33 @@ function _icon(type) {
   return map[type] || '';
 }
 
-function _slug(name) { return String(name || '').toLowerCase().replace(/\s+/g, '-'); }
+function _fallbackSlug(name) {
+  return String(name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
 
+// Resolve a portrait slug the same way the rest of the app does — via the
+// roster record's resolveAvatarSlug() (which knows about -returnee variants),
+// not a guess from the display name. Falls back to a slugified name for
+// contestants/coaches that aren't in `players` (shouldn't happen, but a
+// blank hole is worse than a slightly-wrong guess).
+function _avatarSlug(name) {
+  const p = players.find(x => x.name === name);
+  if (p) {
+    try {
+      const slug = resolveAvatarSlug(p);
+      if (slug) return slug;
+    } catch { /* fall through to guess */ }
+  }
+  return _fallbackSlug(name);
+}
+
+// A portrait with a mandatory text fallback — a missing PNG must degrade to
+// a name/initial, never a blank hole. `cls` may include size (cb-av-tiny)
+// and/or a background hint (cb-av-onlight) for cork/parchment contexts.
 function _avatar(name, cls = '') {
-  const slug = _slug(name);
-  return `<img class="cb-av ${cls}" src="assets/avatars/${slug}.png" alt="${name}" title="${name}">`;
+  const slug = _avatarSlug(name);
+  const init = (name || '?')[0].toUpperCase();
+  return `<span class="cb-av-wrap"><img class="cb-av ${cls}" src="assets/avatars/${slug}.png" alt="${name}" title="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback ${cls}" style="display:none">${init}</span></span>`;
 }
 
 // ── Sidebar ─────────────────────────────────────────────────────────
@@ -119,11 +144,11 @@ function _buildSidebarContent(ep) {
       const trained = trainedByCoach[coach] || [];
       const passed = (t.passedOver || []).filter(p => p.coach === coach).map(p => p.contestant);
       out += `<div class="cb-sb-coach">
-        <div class="cb-sb-coach-name">${_avatar(coach, 'cb-av-tiny')} ${coach}</div>
+        <div class="cb-sb-coach-name">${_avatar(coach, 'cb-av-tiny cb-av-onlight')} ${coach}</div>
         <div class="cb-sb-banked">Banked: <span class="cb-sb-banked-num">${banked.toFixed(2)}</span></div>
         <div class="cb-sb-standing">
-          ${trained.map(o => `<span class="cb-sb-tag ${o.gain < 0 ? 'cb-sb-tag-damaged' : 'cb-sb-tag-in'}">${o.name}</span>`).join('')}
-          ${passed.map(n => `<span class="cb-sb-tag cb-sb-tag-out">${n}</span>`).join('')}
+          ${trained.map(o => `<span class="cb-sb-tag ${o.gain < 0 ? 'cb-sb-tag-damaged' : 'cb-sb-tag-in'}">${_avatar(o.name, 'cb-av-tiny cb-av-onlight')} ${o.name}</span>`).join('')}
+          ${passed.map(n => `<span class="cb-sb-tag cb-sb-tag-out" title="no session — passed over by ${coach}">${_avatar(n, 'cb-av-tiny cb-av-onlight')} ${n}</span>`).join('')}
         </div>
       </div>`;
     });
@@ -217,14 +242,24 @@ function _shell(content, ep) {
 .cb-ledger-title{font-family:'Caveat',cursive;font-weight:700;font-size:20px;color:#2b1c0e;text-align:center;letter-spacing:1px;margin-bottom:8px;}
 .cb-ledger-row{display:flex;align-items:center;gap:8px;padding:5px 6px;border-bottom:1px dotted rgba(43,28,14,0.35);}
 .cb-ledger-row:last-child{border-bottom:none;}
+/* skipped by EVERY coach on the tribe — the unanimous, most pointed slight */
+.cb-ledger-row-total{background:rgba(226,86,79,0.14);border-radius:4px;box-shadow:inset 3px 0 0 var(--cb-red);}
+.cb-ledger-row-total .cb-ledger-coach{color:#a3372f;font-weight:700;}
 .cb-ledger-name{font-family:'Kalam',cursive;font-size:14px;color:#2b1c0e;position:relative;}
 .cb-ledger-name::after{content:'';position:absolute;left:-2px;right:-2px;top:50%;height:2px;background:var(--cb-red);transform:rotate(-2deg);}
 .cb-ledger-coach{margin-left:auto;font-size:10px;color:#5c3f1f;letter-spacing:1px;text-transform:uppercase;}
 .cb-ledger-empty{text-align:center;font-size:12px;color:#5c3f1f;padding:6px 0;}
 
-/* ── avatars ── */
+/* ── avatars — chalkboard portraits, with a text-fallback for missing PNGs ── */
+.cb-av-wrap{display:inline-flex;vertical-align:middle;}
 .cb-av{width:30px;height:30px;border-radius:50%;border:2px solid var(--cb-chalk);object-fit:cover;vertical-align:middle;}
-.cb-av-tiny{width:16px;height:16px;border:1px solid var(--cb-chalk);}
+.cb-av-tiny{width:16px;height:16px;border-width:1px;}
+.cb-av-fallback{display:none;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:2px solid var(--cb-chalk);background:rgba(245,242,230,0.15);color:var(--cb-chalk);font-family:'Caveat',cursive;font-weight:700;font-size:15px;line-height:1;}
+.cb-av-fallback.cb-av-tiny{width:16px;height:16px;font-size:9px;border-width:1px;}
+/* on cork/parchment backgrounds (ledger, sidebar) the chalk-white border and
+   fill are invisible — swap to the cork-dark palette so it reads there too. */
+.cb-av.cb-av-onlight,.cb-av-fallback.cb-av-onlight{border-color:var(--cb-cork-dark);}
+.cb-av-fallback.cb-av-onlight{background:rgba(125,90,52,0.18);color:#2b1c0e;}
 
 /* ── sticky reveal controls ── */
 .cb-controls{position:sticky;bottom:0;z-index:100;display:flex;justify-content:center;align-items:center;gap:14px;padding:8px 20px;background:rgba(13,35,24,0.95);border-top:2px dashed var(--cb-chalk-yellow);border-radius:0 0 6px 6px;}
@@ -244,7 +279,7 @@ function _shell(content, ep) {
 .cb-sb-banked{font-size:10px;color:#5c3f1f;margin:2px 0;}
 .cb-sb-banked-num{color:#1f6b46;font-weight:700;}
 .cb-sb-standing{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;}
-.cb-sb-tag{font-size:9px;padding:1px 6px;border-radius:8px;letter-spacing:.5px;}
+.cb-sb-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:1px 6px 1px 3px;border-radius:8px;letter-spacing:.5px;}
 .cb-sb-tag-in{background:#dcefe0;color:#1f6b46;}
 .cb-sb-tag-out{background:#f4d9d7;color:#a3372f;text-decoration:line-through;}
 .cb-sb-tag-damaged{background:#f7e0b3;color:#8a4b12;}
@@ -281,6 +316,40 @@ function _seedIndex(str, n) {
   return h % n;
 }
 
+// A passed-over contestant got NO coaching session from a coach this
+// episode, while their tribemates got pulled aside and drilled. That's the
+// resentment engine this whole ledger exists for — the wording has to say
+// so plainly, not read as a data gap.
+//
+// One row per CONTESTANT (not one row per coach who skipped them) — a
+// contestant skipped by every coach on their tribe has nobody in their
+// corner, which is a materially different, more pointed story than being
+// skipped by one coach who trained someone else this week. Escalate the
+// wording when the skip is unanimous.
+function _joinCoaches(coaches) {
+  if (coaches.length === 1) return `<strong>${coaches[0]}</strong>`;
+  if (coaches.length === 2) return `<strong>${coaches[0]}</strong> or <strong>${coaches[1]}</strong>`;
+  const head = coaches.slice(0, -1).map(c => `<strong>${c}</strong>`).join(', ');
+  return `${head}, or <strong>${coaches[coaches.length - 1]}</strong>`;
+}
+const _PASSED_OVER_TEXT = [
+  (p) => `no session from ${p.coachList} tonight`,
+  (p) => `${p.coachList} never called ${p.contestant}'s name`,
+  (p) => `passed over while the rest of the board got drilled by ${p.coachList}`,
+  (p) => `sat out ${p.coachList}'s sessions this week`,
+];
+const _PASSED_OVER_ALL_TEXT = [
+  (p) => `every coach on the tribe skipped ${p.contestant} tonight — nobody trained them`,
+  (p) => `not one session, from anyone — ${p.contestant} is on their own`,
+  (p) => `the whole coaching staff passed on ${p.contestant} this week`,
+  (p) => `called on by nobody — a clean sweep of neglect`,
+];
+function _passedOverLine(p) {
+  const unanimous = p.allCoaches && p.coaches.length > 1;
+  const pool = unanimous ? _PASSED_OVER_ALL_TEXT : _PASSED_OVER_TEXT;
+  return pool[_seedIndex(`${p.contestant}|${p.coaches.join(',')}|passedover`, pool.length)](p);
+}
+
 // ── VP BUILDER ──────────────────────────────────────────────────────
 export function rpBuildCoachBoard(ep) {
   const data = ep && ep.coachData;
@@ -306,7 +375,7 @@ export function rpBuildCoachBoard(ep) {
       const gainLabel = isDamaging ? `${sign}${gainNum.toFixed(2)} ${s.stat}, cost` : `${sign}${gainNum.toFixed(2)} ${s.stat}, banked`;
       const stepHtml = `<div id="cb-step-board-${idx}" class="cb-step">
         <div class="cb-play-card">
-          <div class="cb-play-header">${_icon('clipboard')}<span class="cb-play-label">${s.coach} — private session</span></div>
+          <div class="cb-play-header">${_icon('clipboard')}${_avatar(s.coach, 'cb-av-tiny')}<span class="cb-play-label">${s.coach} — private session</span></div>
           <div class="cb-play-diagram">${_icon('play')}</div>
           <div class="cb-play-text">${drillText}</div>
           <div class="cb-play-gain${isDamaging ? ' cb-play-loss' : ''}">${_icon('star')} ${gainLabel}</div>
@@ -322,15 +391,38 @@ export function rpBuildCoachBoard(ep) {
     // that left every line reading "P2left off by Coach_Ravu_1" with zero
     // space. A literal space between the two spans fixes both renderings:
     // CSS still owns the visual gap, and stripped text now separates them.
-    const ledgerRows = passedOver.length
-      ? passedOver.map(p => `<div class="cb-ledger-row">${_icon('chalkmark')}<span class="cb-ledger-name">${p.contestant}</span> <span class="cb-ledger-coach">left off by ${p.coach}</span></div>`).join('')
+    //
+    // "left off by X" reads as missing data, not as the slight it is: this
+    // contestant got no coaching session from X tonight while their
+    // tribemates were pulled aside and trained. Spell that out, and rotate
+    // the phrasing so the ledger doesn't repeat itself episode to episode.
+    // Group by CONTESTANT, not by coach — a contestant skipped by both
+    // coaches on their tribe belongs on one row naming both, not two
+    // separate rows that hide how total the neglect was.
+    const tribeCoaches = [...new Set([
+      ...sessions.map(s => s.coach),
+      ...passedOver.map(p => p.coach),
+    ])];
+    const skippedBy = {};
+    passedOver.forEach(p => {
+      if (!skippedBy[p.contestant]) skippedBy[p.contestant] = [];
+      if (!skippedBy[p.contestant].includes(p.coach)) skippedBy[p.contestant].push(p.coach);
+    });
+    const skippedNames = Object.keys(skippedBy);
+    const ledgerRows = skippedNames.length
+      ? skippedNames.map(contestant => {
+          const coaches = skippedBy[contestant];
+          const allCoaches = tribeCoaches.length > 1 && coaches.length >= tribeCoaches.length;
+          const line = _passedOverLine({ contestant, coaches, coachList: _joinCoaches(coaches), allCoaches });
+          return `<div class="cb-ledger-row${allCoaches ? ' cb-ledger-row-total' : ''}">${_icon('chalkmark')}${_avatar(contestant, 'cb-av-tiny cb-av-onlight')}<span class="cb-ledger-name">${contestant}</span> <span class="cb-ledger-coach">${line}</span></div>`;
+        }).join('')
       : `<div class="cb-ledger-empty">Everyone got a session this week.</div>`;
 
     return `<div class="cb-tribe-block">
       <div class="cb-tribe-name">${tribeName}</div>
       ${sessionHtml || '<div class="cb-flavor">No sessions ran this week.</div>'}
       <div class="cb-ledger">
-        <div class="cb-ledger-title">Left Off the Board</div>
+        <div class="cb-ledger-title">Passed Over Tonight</div>
         ${ledgerRows}
       </div>
     </div>`;
@@ -353,7 +445,7 @@ export function rpBuildCoachBoard(ep) {
       ${tribeBlocks}
       <div id="cb-controls-board" class="cb-controls">
         <button class="cb-btn cb-btn-primary" onclick="coachRevealNext('cb-board',${total})">Reveal Next</button>
-        <span id="cb-counter-board" class="cb-counter">${Math.max(0, st.idx + 1)} / ${total}</span>
+        <span id="cb-counter-board" class="cb-counter">${Math.max(0, st.idx + 1)} / ${total} sessions</span>
         <button class="cb-btn" onclick="coachRevealAll('cb-board',${total})">Reveal All</button>
       </div>
     </div>

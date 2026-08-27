@@ -132,6 +132,7 @@ import * as runUiMod from './run-ui.js';
 import * as vpScreensMod from './vp-screens.js';
 import * as vpFinaleMod from './vp-finale.js';
 import * as vpUiMod from './vp-ui.js';
+import * as vpCoachesMod from './vp-coaches.js';
 import * as savestateMod from './savestate.js';
 import * as statsExportMod from './stats-export.js';
 import * as audioMod from './audio.js';
@@ -228,7 +229,7 @@ const extractedModules = [
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, mineOverMatterMod, treasureIslandMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, hauntedHouseMod, hungOutMod, merryGoRoundMod, mazeOfTheFallenMod, demonsPlainerVpMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
   truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, iceIceBabyMod, findersCreepersMod, backstabbersAhoyMod, projectRunawayMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, auctionVpMod, settingsMod, themesMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
-  castUiMod, castRoomMod, studioMod, quickSetupMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
+  castUiMod, castRoomMod, studioMod, quickSetupMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod, vpCoachesMod,
   savestateMod,
   statsExportMod,
   audioMod,

@@ -31,6 +31,16 @@ export default defineConfig({
     //
     // The list lives in vitest.slow.js so this file and vitest.sim.config.js
     // cannot drift apart.
+    // ── BOTH EXCLUSIONS ARE WATCHED ──
+    //
+    // Anything named below is collected by no default job, and that is
+    // invisible from inside the file: an `*-audit.test.js` looks like a test,
+    // passes when you run it by hand, and guards nothing. Three times a
+    // load-bearing band has been written into one anyway.
+    //
+    // `tests/unrun-assertions.test.js` runs on every `npm test`, MEASURES what
+    // this config actually collects, and fails if an excluded file asserts
+    // without a named runner. If you add an exclusion here, it stays covered.
     exclude: [...defaultExclude, 'tests/**/*-audit.test.js', ...SLOW_GLOBS],
     environment: 'jsdom',
     // Several suites here play whole seasons rather than asserting on a

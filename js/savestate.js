@@ -8,6 +8,7 @@ import { generateAftermathShow } from './aftermath.js';
 import { _checkMoleExposure } from './camp-events.js';
 import { setFranchiseLedger, franchiseLedger, buildFranchiseMeta, META_WEIGHTS } from './franchise-meta.js';
 import { lifeSeeds } from './life-cast.js';
+import { addCoach } from './coaches.js';
 
 // ── IndexedDB wrapper (replaces localStorage for gs + checkpoints) ──
 const DB_NAME = 'dc_franchise_db';
@@ -795,8 +796,15 @@ export function initGameState() {
     if (!Number(r.leanB)) bondLean[keyB] = aIsWarmer ? def.cold : def.warm;
   });
   // Small same-tribe bonus (+0.5)
+  //
+  // Coaches are excluded here on purpose. `gs.tribes[i].members` — built from
+  // this map a few lines down — is read by 135 modules as "who competes,
+  // votes and can be eliminated by a challenge loss." A coach trains a tribe
+  // without ever joining that roster (js/coach-episode.js: "Coaches are never
+  // in tribe.members"); `coachesOf()` in js/coaches.js finds them by
+  // `coach.tribe` instead.
   const tribeMap = {};
-  players.forEach(p => { if(!p.tribe) return; if(!tribeMap[p.tribe]) tribeMap[p.tribe]=[]; tribeMap[p.tribe].push(p.name); });
+  players.forEach(p => { if(!p.tribe || p.isCoach) return; if(!tribeMap[p.tribe]) tribeMap[p.tribe]=[]; tribeMap[p.tribe].push(p.name); });
   Object.values(tribeMap).forEach(members => {
     for (let i=0;i<members.length;i++) for (let j=i+1;j<members.length;j++) {
       const k=bKey(members[i],members[j]); bonds[k]=(bonds[k]||0)+0.5;
@@ -892,11 +900,32 @@ export function initGameState() {
   const tribeList = Object.entries(tribeMap).map(([name,members]) => ({name, members:[...members]}));
 
   // Any player with no tribe property gets added to the smallest tribe so nobody is orphaned
+  // — contestants only. A coach with no tribe set stays out of tribe.members
+  // entirely; they simply never get a coaching assignment (see the all-coach
+  // guard below, which catches the more dangerous version of this problem).
   if (tribeList.length) {
     players.forEach(p => {
-      if (p.tribe) return;
+      if (p.tribe || p.isCoach) return;
       tribeList.sort((a,b) => a.members.length - b.members.length)[0].members.push(p.name);
     });
+  }
+
+  // ── A TRIBE OF ONLY COACHES HAS NOBODY TO COMPETE ──
+  //
+  // Coaches are deliberately excluded from tribe.members above, so a tribe
+  // whose every assigned player is marked isCoach ends up with zero
+  // contestants — no one to score a challenge, vote, or be eliminated. That is
+  // not a smaller season, it is a tribe the engine cannot run. Refuse to
+  // start rather than silently produce a broken one.
+  {
+    const _assignedTribes = new Set(players.filter(p => p.tribe).map(p => p.tribe));
+    for (const tName of _assignedTribes) {
+      const hasContestant = players.some(p => p.tribe === tName && !p.isCoach);
+      if (!hasContestant) {
+        alert(`Tribe "${tName}" has only coaches assigned and no contestants. Add at least one non-coach player to that tribe before starting.`);
+        return false;
+      }
+    }
   }
 
   const idolSlots = {};
@@ -907,8 +936,14 @@ export function initGameState() {
 
   setGs({
     initialized: true, episode: 0, phase: 'pre-merge', isMerged: false,
-    activePlayers: players.map(p=>p.name),
+    // Coaches are cast members — pStats, pronouns and archetype must resolve
+    // for them — but they never compete, vote, hold immunity or take a
+    // placement, and 135 modules take "in this list" to mean all of that.
+    // Excluding them here IS the twist. addCoach() below is what makes them
+    // findable to the coaching engine instead.
+    activePlayers: players.filter(p => !p.isCoach).map(p=>p.name),
     tribes: tribeList,
+    coaches: [], coachTraining: {},
     riPlayers: [], riReturnCount: 0, riDuelHistory: [], riLifeEvents: {},
     riArrivalEp: {}, riQuits: [], riAlliancesFormed: [],
     eliminated: [], bonds, bondLean, relationshipDimensions: {}, perceivedBonds: {}, knowledge: {},
@@ -962,6 +997,19 @@ export function initGameState() {
     // Control Room could sync Total Drama episodes into a Big Brother season.
     format: seasonFormat(seasonConfig),
   });
+
+  // ── COACHES — the production entry point ──
+  //
+  // Nothing else calls addCoach(). Without this, the Cast Builder's Coach
+  // checkbox sets `isCoach` on the player record and nothing downstream ever
+  // reads it: gs.coaches stays empty, the coaching engine finds no coaches,
+  // and selecting the Coaches twist does nothing at all.
+  //
+  // `p.tribe` is already the tribe's NAME (same string `coachesOf()` matches
+  // against) — it survived the tribeMap exclusion above untouched, since that
+  // exclusion only kept coaches out of `tribe.members`, not off their own
+  // player record.
+  players.filter(p => p.isCoach).forEach(p => addCoach({ name: p.name, tribe: p.tribe }));
 
   // Initialize survival values when food/water system is enabled
   if (seasonConfig.foodWater === 'enabled') {

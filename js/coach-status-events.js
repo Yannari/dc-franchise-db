@@ -191,7 +191,7 @@ export function coachStatusEvents(ep, tribe, roll = Math.random) {
       text: pickFrom([
         `${coach.name} has something ${cp.sub} cannot use on ${cp.ref} and cannot bring ${cp.ref} to give away yet. It sits there being useless and valuable at once.`,
         `The advantage in ${cp.posAdj} pocket only works in somebody else's hands. ${coach.name} spends the evening deciding whether ${fav} is that somebody.`,
-        `${coach.name} turns the thing over and puts it back. Handing it to ${fav} costs the save card, and the save card is what keeps ${cp.obj} here.`,
+        `${coach.name} turns the thing over and puts it back. Handing it to ${fav} means never seeing it again, and ${cp.sub} ${has(['are','is'])} not sure ${fav} has earned that yet.`,
         `Everything ${coach.name} has found is worth more to ${fav} than to ${cp.obj}, and that is the whole problem with being a coach.`,
       ], roll) };
   });

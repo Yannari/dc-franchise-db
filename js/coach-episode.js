@@ -710,14 +710,15 @@ export function coachFallout(ep, tribe, blockResult, roll = Math.random) {
   }
 
   // ── RARE: a coach hands a found advantage to a protégé in danger ──
-  // `giveAdvantage` already enforces the cost (the save card), so this is
-  // just the decision to make the trade — gated tight and archetype-driven,
+  // Giving no longer costs the save card — the two were never related, and
+  // pricing a transfer in the coach's own survival meant nobody ever paid it.
+  // What remains is the decision itself: gated and archetype-driven,
   // per the project's rule that social decisions scale off stats rather than
   // a flat coin flip. Support archetypes give to protect a favourite; Control
   // archetypes give to arm a loyalist. Everyone else barely reaches for it.
   for (const c of (_tribeName ? coachesOf(_tribeName) : [])) {
     const record = coachRecord(c.name);
-    if (!record || record.saveCard !== 'unused') continue;
+    if (!record) continue;
     const held = (gs.advantages || []).find(a => a.holder === c.name && !a.givenBy);
     if (!held) continue;
 
@@ -725,7 +726,9 @@ export function coachFallout(ep, tribe, blockResult, roll = Math.random) {
     const cArche = archetypeOf(c.name);
     const supportLean = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer'].includes(cArche) ? 1
       : ['mastermind', 'schemer', 'villain'].includes(cArche) ? 0.6 : 0.2;
-    const chance = supportLean * (cStats.loyalty / 10) * 0.12;
+    // Was 0.12 when the price was the coach's own life. Handing over a thing
+    // you found is a smaller decision than that, and should actually happen.
+    const chance = supportLean * (cStats.loyalty / 10) * 0.4;
     if (roll() >= chance) continue;
 
     // Who it goes to: a favourite (strong bond with the coach) who is the

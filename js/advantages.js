@@ -1224,18 +1224,27 @@ export function coachCanPlay(type) {
 }
 
 /**
- * Hand an advantage to a contestant. It costs the coach their save card.
+ * Hand an advantage to a contestant.
  *
- * Surrendering the protection that keeps you alive to arm a favourite is
- * meant to be a hard choice, not a reflex.
+ * This used to cost the coach their save card, and that never made sense: the
+ * card is a life-or-death consensus between the coaches of a tribe, and
+ * pricing an idol transfer in it linked two mechanics that have nothing to do
+ * with each other. It also made the transfer nearly impossible — the card is
+ * usually the only thing keeping the coach alive, so nobody would ever pay it,
+ * and the "coaches can arm their protégés" rule was dead on arrival.
+ *
+ * The cost of giving an advantage away is giving the advantage away. A coach
+ * loses a thing they found, permanently, to a player who will use it in a game
+ * the coach is not yet allowed to win. `givenBy` records where it came from so
+ * the debt is legible to everything downstream.
  */
 export function giveAdvantage(coachName, contestant, advantage) {
   const record = coachRecord(coachName);
-  if (!record || record.saveCard !== 'unused') return false;
+  if (!record) return false;
   if (!advantage || advantage.holder !== coachName) return false;
   advantage.holder = contestant;
   advantage.givenBy = coachName;
-  record.saveCard = 'used';
+  advantage.givenEp = gs.episode || 0;
   return true;
 }
 

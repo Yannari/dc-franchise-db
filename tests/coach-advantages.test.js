@@ -34,17 +34,37 @@ describe('a coach’s power always targets somebody else', () => {
 });
 
 describe('handing one over', () => {
-  it('moves the advantage and burns the save card', () => {
+  // This used to cost the coach their save card. The two mechanics have
+  // nothing to do with each other — the card is a life-or-death consensus
+  // between the coaches of a tribe — and pricing an idol transfer in it made
+  // the transfer never happen, because the card is usually the only thing
+  // keeping its owner alive. "Coaches can arm their protégés" was dead on
+  // arrival. The cost of giving an advantage away is giving it away.
+  it('moves the advantage and leaves the save card alone', () => {
     gs.advantages.push({ holder: 'Julia', type: 'idol' });
     expect(giveAdvantage('Julia', 'Evie', gs.advantages[0])).toBe(true);
     expect(gs.advantages[0].holder).toBe('Evie');
-    expect(coachRecord('Julia').saveCard).toBe('used');
+    expect(coachRecord('Julia').saveCard,
+      'the card is the coach’s life, not the price of a gift').toBe('unused');
   });
 
-  it('refuses when the card is already spent', () => {
+  it('still works for a coach who has already spent their card', () => {
     coachRecord('Julia').saveCard = 'used';
     gs.advantages.push({ holder: 'Julia', type: 'idol' });
+    expect(giveAdvantage('Julia', 'Evie', gs.advantages[0]),
+      'a coach with no card left can still arm somebody').toBe(true);
+    expect(gs.advantages[0].holder).toBe('Evie');
+  });
+
+  it('records who it came from, so the debt is legible downstream', () => {
+    gs.advantages.push({ holder: 'Julia', type: 'idol' });
+    giveAdvantage('Julia', 'Evie', gs.advantages[0]);
+    expect(gs.advantages[0].givenBy).toBe('Julia');
+  });
+
+  it('refuses to move something the coach does not hold', () => {
+    gs.advantages.push({ holder: 'Finn', type: 'idol' });
     expect(giveAdvantage('Julia', 'Evie', gs.advantages[0])).toBe(false);
-    expect(gs.advantages[0].holder).toBe('Julia');
+    expect(gs.advantages[0].holder).toBe('Finn');
   });
 });

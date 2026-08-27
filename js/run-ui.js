@@ -1619,7 +1619,7 @@ export function buildCoachAdvantageList() {
         <span style="font-size:13px;color:#e2e8f0;cursor:pointer" onclick="document.getElementById('coach-adv-${a.key}').click()">${a.label}</span>
         <div style="font-size:10px;color:var(--muted);margin-top:1px">${selfPlay
           ? 'A coach can play this on themselves.'
-          : 'A coach can hold this but never use it — it has to be handed to a contestant, and that costs their save card.'}</div>
+          : 'A coach can hold this but never use it on themselves. It is only worth anything in somebody else’s hands, so a coach who finds one decides which contestant to arm with it.'}</div>
         <div id="coach-adv-sources-${a.key}" style="display:${on ? 'flex' : 'none'};gap:4px;margin-top:3px;flex-wrap:wrap">
           ${Object.entries(ADV_SOURCE_LABELS).map(([src, lbl]) => `<label style="font-size:10px;color:var(--muted);display:flex;align-items:center;gap:2px;cursor:pointer;padding:1px 5px;border-radius:3px;border:1px solid var(--border);background:var(--surface2)${src === 'camp' ? '' : ';opacity:.5'}" title="${src === 'camp' ? '' : 'A coach has no journey, auction or exile leg — camp is the only place they can search.'}">
             <input type="checkbox" id="coach-adv-src-${a.key}-${src}" style="width:11px;height:11px" ${sources.includes(src) ? 'checked' : ''} ${src === 'camp' ? '' : 'disabled'} onchange="saveConfig()">

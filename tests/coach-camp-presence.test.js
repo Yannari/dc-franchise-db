@@ -313,3 +313,46 @@ describe('the save card is debated before it is spent', () => {
     expect(peers.length, 'a lone coach has nobody to ask').toBe(0);
   });
 });
+
+// Roughly half of all tribals end on a name the plans screen did not forecast
+// — measured at 48% with no coaches in the season at all, so it is the
+// simulator's own behaviour and not this twist's. Every deviation already
+// carried a reason on its own ballot, but nothing said the PLAN had collapsed,
+// so a viewer diffing two screens concluded the target changed for no reason.
+//
+// Separately, the Tribal Council danger board was built from votingLog — the
+// ballots already cast — while rendering BEFORE the reveal. It printed the
+// result one screen early, and contradicted the plans three sections above it.
+describe('the forecast and the result are reconciled', () => {
+  it('states a verdict on every tribal, and never spoils the boot beforehand', async () => {
+    const core = await import('../js/core.js');
+    const vp = await import('../js/vp-screens.js');
+    let verdicts = 0, spoiled = 0, tribals = 0;
+    const { episodes } = await runHeadlessSeason({
+      twist: 'coaches', coachesPerTribe: 2, castSize: 16, mergeAt: 10,
+    });
+    for (const e of episodes) {
+      const hist = { ...(core.gs.episodeHistory.find(h => h.num === e.num) || {}), ...e.ep };
+      if (!hist.num || !(hist.votingLog || []).length) continue;
+      tribals++;
+      let votes = '';
+      try { votes = vp.rpBuildVotes(hist) || ''; } catch { continue; }
+      if (votes.includes('THE PLAN HELD') || votes.includes('THE PLAN COLLAPSED')) verdicts++;
+
+      // The tribal screen runs before the reveal and must not name the boot.
+      let tribal = '';
+      try { tribal = vp.rpBuildTribal(hist) || ''; } catch { tribal = ''; }
+      const elim = hist.eliminated;
+      if (elim && tribal.includes('#1 TARGET')) {
+        const seg = tribal.slice(tribal.indexOf('#1 TARGET'), tribal.indexOf('#1 TARGET') + 300);
+        if (seg.includes(elim)) spoiled++;
+      }
+    }
+    expect(tribals, 'no tribal ran at all').toBeGreaterThan(0);
+    expect(verdicts, 'not one tribal said whether the plan held').toBeGreaterThan(0);
+    // The board reads the forecast now, so naming the boot is possible only by
+    // coincidence — but it must not be systematic.
+    expect(spoiled / tribals,
+      'the tribal screen is naming the boot before the reveal again').toBeLessThan(0.5);
+  }, 900000);
+});

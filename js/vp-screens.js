@@ -11005,11 +11005,30 @@ export function rpBuildTribal(ep) {
   const tc = tribeColor(tribalTribeName);
   const vlog = ep.votingLog || [];
 
-  // Vote counts for danger board
+  // ── WHAT THE CAMP THINKS, NOT WHAT THE CAMP DID ──────────────────────
+  // This board was built from `votingLog` — the ballots that were actually
+  // cast — and it renders on the Tribal Council screen, which comes BEFORE
+  // the vote reveal. So it quietly printed the result one screen early, and
+  // it disagreed with the Voting Plans three sections above it, because the
+  // plans show the forecast and this showed the outcome. Two systems, one
+  // screen, opposite answers, and the wrong one spoiled the episode.
+  //
+  // It reads the forecast now: who the room BELIEVES the vote is on. When the
+  // plan holds these agree, and when it collapses the divergence is the story
+  // rather than a contradiction the viewer has to referee.
+  // A coach can be the name the whole camp is on, and is not in tribalPlayers.
+  const _epCoachNamesTribal = new Set(Object.values(ep.coachData || {})
+    .flatMap(t => Object.keys(t?.cards || {})));
+  const _forecastReads = buildViewerVoteCommitments(ep.voteCommitmentDiagnostics || []);
   const voteCounts = {};
-  vlog.forEach(({ voted }) => { if (voted) voteCounts[voted] = (voteCounts[voted]||0)+1; });
+  _forecastReads.forEach(r => { if (r.predictedBallot) voteCounts[r.predictedBallot] = (voteCounts[r.predictedBallot] || 0) + 1; });
+  // Older episodes carry no diagnostics. Falling back to the ballots keeps
+  // them rendering, and by then the votes are already public anyway.
+  if (!Object.keys(voteCounts).length) {
+    vlog.forEach(({ voted }) => { if (voted) voteCounts[voted] = (voteCounts[voted]||0)+1; });
+  }
   const dangerSorted = Object.entries(voteCounts)
-    .filter(([n]) => tribal.includes(n))
+    .filter(([n]) => tribal.includes(n) || _epCoachNamesTribal.has(n))
     .sort(([,a],[,b]) => b-a)
     .slice(0, 3);
 
@@ -12334,6 +12353,54 @@ export function rpBuildVotes(ep) {
       </div>`;
     });
     html += `</div>`;
+  }
+
+  // ── WHY THE PLAN DID OR DID NOT HOLD ─────────────────────────────────
+  // Roughly half of all tribals end on a name other than the one the plans
+  // screen forecast. Every deviation already had a reason attached to its own
+  // ballot, but they arrived as disconnected lines with nothing saying the
+  // plan had collapsed — the viewer was left to diff two screens themselves
+  // and conclude the target "changed for no reason".
+  {
+    const _fReads = buildViewerVoteCommitments(ep.voteCommitmentDiagnostics || []);
+    const _fCounts = {};
+    _fReads.forEach(r => { if (r.predictedBallot) _fCounts[r.predictedBallot] = (_fCounts[r.predictedBallot] || 0) + 1; });
+    const _forecastName = Object.entries(_fCounts).sort(([,a],[,b]) => b - a)[0]?.[0] || null;
+    const _actual = {};
+    vlog.forEach(v => { if (v.voted && v.voter !== 'THE GAME') _actual[v.voted] = (_actual[v.voted] || 0) + 1; });
+    const _actualName = Object.entries(_actual).sort(([,a],[,b]) => b - a)[0]?.[0] || null;
+
+    if (_forecastName && _actualName) {
+      // The forecast target is excluded: somebody declining to vote for
+      // themselves is not a defection, and counting it made the target the
+      // loudest name in the list of people who broke the plan.
+      const _strayed = vlog.filter(v => v.voter !== 'THE GAME' && v.voted
+        && v.voted !== _forecastName && v.voter !== _forecastName);
+      // Named causes first, and only named causes. A hard collapse strays
+      // every ballot at once, and listing seven people who "went their own
+      // way" is not an explanation — it is the absence of one, printed seven
+      // times. Where the reasons are genuinely diffuse, say that instead.
+      const _specific = [];
+      let _diffuse = 0;
+      for (const v of _strayed) {
+        const r = String(v.reason || '');
+        if (/\[MISCOMMUNICATION\]/i.test(r)) _specific.push(`${v.voter} wrote the wrong name trying to follow it`);
+        else if (/\[LATE PITCH\]|\[LIVE COALITION\]/i.test(r)) _specific.push(`a late pitch moved ${v.voter}`);
+        else if (/self-preservation|struck before/i.test(r)) _specific.push(`${v.voter} saw their own name coming and struck first`);
+        else if (v.planBreak || /broke own bloc/i.test(r)) _specific.push(`${v.voter} broke the bloc they helped build`);
+        else _diffuse++;
+      }
+      const _causes = _specific.slice(0, 3);
+      if (_diffuse >= 3) _causes.push(`${_diffuse} more moved without ever saying so out loud`);
+      else if (_diffuse && !_specific.length) _causes.push('the name moved late, and quietly');
+      const held = _forecastName === _actualName;
+      html += `<div style="margin:16px 0 4px;padding:12px 14px;background:${held ? 'rgba(63,185,80,.05)' : 'rgba(248,81,73,.05)'};border:1px solid ${held ? 'rgba(63,185,80,.22)' : 'rgba(248,81,73,.25)'};border-radius:10px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:${held ? '#3fb950' : '#f85149'};margin-bottom:4px">${held ? 'THE PLAN HELD' : 'THE PLAN COLLAPSED'}</div>
+        <div style="font-size:12px;color:#c9d1d9;line-height:1.55">${held
+          ? `The room went into this on <strong>${_forecastName}</strong>, and ${_strayed.length ? `${_strayed.length} ballot${_strayed.length === 1 ? '' : 's'} strayed without changing the result` : 'not one ballot strayed'}.`
+          : `The room went into this on <strong>${_forecastName}</strong> and came out on <strong>${_actualName}</strong>. ${_causes.length ? _causes.join('; ').replace(/^./, m => m.toUpperCase()) + '.' : 'The names moved late and quietly.'}`}</div>
+      </div>`;
+    }
   }
 
   // ── THE COACH'S SAVE CARD — RESOLVED AFTER THE VOTES ──

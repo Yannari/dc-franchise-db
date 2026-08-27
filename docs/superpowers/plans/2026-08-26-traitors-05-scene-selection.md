@@ -373,3 +373,21 @@ The structural argument survives the correction, on two occurrences rather than 
 re-express it as a ratio against the control.** Sweep the suite for bands of the same shape
 -- an absolute constant compared against a measurement content can move. Two rotations of
 that treadmill have already cost two fix rounds, and each left a window guarding nothing.
+
+### Carried finding: absolute counts in a shrinking room
+
+Task 3 documented rather than patched an issue in `emotionalStateOf`. The emotional-state
+thresholds (`paranoid`, `desperate`) are ABSOLUTE vote counts, but the room shrinks from ~19
+players to 4 across a season. Three votes against you in a nineteen-ballot free choice and
+three in a four-ballot revote are not the same experience, and the engine currently reads
+them the same.
+
+Measured: 21.7% of rounds revote; 0.895 people a season take 3+ votes only in a revote and
+therefore read `content`. Revotes were deliberately NOT folded in, because doing so would
+have conflated those two cases and made the conflation worse.
+
+The honest fix is to express these thresholds as a SHARE of the living room rather than a
+count, which is a different change with its own measurement. Left open deliberately, written
+into the source. Whoever takes it should check the same shape elsewhere -- any threshold in
+this engine expressed as a raw count against a population that shrinks all season has the
+same defect latent in it.

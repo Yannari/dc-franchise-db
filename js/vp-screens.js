@@ -17919,7 +17919,7 @@ function _bbOrdinal(n) {
  * Which reason gets used is whichever is most TRUE of that houseguest, so the
  * same nominee does not get the same speech twice in a season.
  */
-function _bbNomReason(hoh, name, role, ep) {
+export function _bbNomReason(hoh, name, role, ep) {
   const rec = (typeof gs !== 'undefined' && gs.bb?.stats?.[name]) || {};
   // Block Buster wins count. Somebody who has fought their way off the block
   // twice is a competitor the house has watched win under the most pressure
@@ -17929,6 +17929,12 @@ function _bbNomReason(hoh, name, role, ep) {
   const bond = typeof getPerceivedBond === 'function' ? getPerceivedBond(hoh, name) : 0;
   const allies = ((typeof gs !== 'undefined' && gs.namedAlliances) || [])
     .filter(a => a.active !== false && (a.members || []).includes(name) && !(a.members || []).includes(hoh));
+  const together = ((typeof gs !== 'undefined' && gs.namedAlliances) || [])
+    .some(a => a.active !== false && (a.members || []).includes(name) && (a.members || []).includes(hoh));
+  const showmance = ((typeof gs !== 'undefined' && gs.showmances) || [])
+    .some(sh => sh && sh.phase !== 'broken-up' && !sh.broken
+      && (sh.players || []).includes(hoh) && (sh.players || []).includes(name));
+  const left = ((typeof gs !== 'undefined' && gs.activePlayers) || []).length;
   const plan = (typeof gs !== 'undefined' && gs.intentions?.[hoh]) || {};
   const grudge = (plan.revenge || []).includes(name);
   const weekNumber = Math.max(1, Number(ep?.num) || Number(gs?.episode) || 1);
@@ -17938,33 +17944,94 @@ function _bbNomReason(hoh, name, role, ep) {
       ? 'for two weeks'
       : `for ${weekNumber} weeks`;
 
+  // ── ONE LINE PER BRANCH WAS THE OTHER HALF OF THE PROBLEM ──
+  //
+  // Every reason returned a single fixed sentence, so the same nomination
+  // speech ran word for word every time the same condition came up — and the
+  // conditions that fire most are the ones a viewer therefore hears most.
+  // Seeded on the pair and the week, so a replay says what it said the first
+  // time rather than rerolling the ceremony.
+  const say = list => {
+    const seed = `${hoh}|${name}|${weekNumber}`;
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+    return list[h % list.length];
+  };
+  const N = `<strong>${name}</strong>`;
+
   if (role === 'pawn') {
-    if (bond >= 3) return `"<strong>${name}</strong>, you are the only person in this house I could ask to do this, and that is exactly why I am asking. You are not the one going home."`;
-    if ((st.social ?? 5) >= 7) return `"<strong>${name}</strong>, you can talk to anybody in here. Give you time before the vote and you will find the numbers."`;
-    return `"<strong>${name}</strong>, I need a second chair filled and I picked the person least likely to hold it against me. I hope I picked right."`;
+    if (bond >= 3) return say([
+      `"${N}, you are the only person in this house I could ask to do this, and that is exactly why I am asking. You are not the one going home."`,
+      `"${N}, I need somebody in that chair who will still talk to me on Friday. That is you, and I am sorry it is you."`,
+      `"${N}, this is a formality, and I need you to hear me say that out loud, in front of everybody, before you sit down."`,
+    ]);
+    if ((st.social ?? 5) >= 7) return say([
+      `"${N}, you can talk to anybody in here. Give you time before the vote and you will find the numbers."`,
+      `"${N}, I am not worried about you and neither should you be. You will have talked half this room round by Thursday."`,
+    ]);
+    return say([
+      `"${N}, I need a second chair filled and I picked the person least likely to hold it against me. I hope I picked right."`,
+      `"${N}, somebody has to sit there. I have no reason beyond that and I am not going to pretend I do."`,
+    ]);
   }
 
-  if (grudge) {
-    return `"<strong>${name}</strong>, this is personal and I am not going to insult you by saying it is not. You know what you did and so does everybody in this room."`;
-  }
-  if (comps >= 2) {
-    return `"<strong>${name}</strong>, you have won ${comps} competitions. I cannot beat you at the end and I am not going to wait around and hope somebody else takes the shot."`;
-  }
-  if (allies.length) {
-    return `"<strong>${name}</strong>, there is a group in this house that does not include me, and you are in it. That is the whole reason. Nothing about you personally."`;
-  }
-  if (bond <= -3) {
-    return `"<strong>${name}</strong>, we have not been able to have a straight conversation ${frictionTime}. I would rather do this than keep pretending we are fine."`;
-  }
-  if ((st.social ?? 5) >= 7) {
-    return `"<strong>${name}</strong>, everybody in this house likes you. That is a résumé, and it beats mine, and I only get one week where I can do anything about it."`;
-  }
-  if ((st.strategic ?? 5) >= 7) {
-    return `"<strong>${name}</strong>, you are running more of this house than you let on. I would rather take the shot now than wait until everybody else sees it too."`;
-  }
-  return `"<strong>${name}</strong>, somebody had to go up and there was no version of this week where it was going to feel fair. I am sorry it is you."`;
+  // ── THE RELATIONSHIP IS READ BEFORE THE PLAN IS ──
+  //
+  // Every branch below used to sit behind `grudge`, which comes off the plan
+  // and knows nothing about how these two actually get on. So a Head of
+  // Household nominated the person they were in a showmance with and told
+  // them "this is personal and you know what you did" — to somebody they were
+  // inseparable from, in a house of four where everybody left was a friend.
+  //
+  // A nomination that costs the person making it is the most interesting one
+  // the format produces, and it was being written as the coldest.
+  if (showmance) return say([
+    `"${N}. There is no way to do this that does not make me the person who did it. I am not going to dress it up, and I am not going to stand here and cry about it either."`,
+    `"${N}, everybody in this room has been waiting to see whether I would. That is the whole problem, and it is exactly why it has to be you."`,
+    `"${N}, I would rather be the one who does this than sit here and let somebody else decide it for both of us."`,
+  ]);
+  if (bond >= 6) return say([
+    `"${N}, you are the last person in this house I wanted to put up, and everybody in here knows it. I am not going to insult you by pretending this was a hard week for anybody but us."`,
+    `"${N}, I have nothing to accuse you of. That is what makes this the worst thing I have had to do since I walked in."`,
+    `"${N}, if there had been anybody else I could sit down, I would have. There was not, and you would have done the same."`,
+  ]);
+  // The honest endgame reason, and the one the house actually gives.
+  if (left <= 5 && (bond >= 2 || together)) return say([
+    `"${N}, there is nobody left in this house who is not a friend. That is what this week is. Somebody I like is going up, and it is you."`,
+    `"${N}, we have run out of other people. I am not going to insult you with a reason that is really just arithmetic."`,
+    `"${N}, this late there is no such thing as a safe nomination or a fair one. You are up because somebody had to be."`,
+  ]);
+
+  if (grudge && bond < 3) return say([
+    `"${N}, this is personal and I am not going to insult you by saying it is not. You know what you did and so does everybody in this room."`,
+    `"${N}, I have been waiting for this since the week you decided I was somebody you could use. Here it is."`,
+    `"${N}, I do not have a strategic reason and I am not going to invent one. This is about you and me."`,
+  ]);
+  if (comps >= 2) return say([
+    `"${N}, you have won ${comps} competitions. I cannot beat you at the end and I am not going to wait around and hope somebody else takes the shot."`,
+    `"${N}, ${comps} wins. Anybody sitting next to you at the end loses, and everybody in this room can count."`,
+  ]);
+  if (allies.length && bond < 3) return say([
+    `"${N}, there is a group in this house that does not include me, and you are in it. That is the whole reason. Nothing about you personally."`,
+    `"${N}, you have numbers and I am not one of them. I would rather do something about that this week than next."`,
+  ]);
+  if (bond <= -3) return say([
+    `"${N}, we have not been able to have a straight conversation ${frictionTime}. I would rather do this than keep pretending we are fine."`,
+    `"${N}, neither of us has been pretending to like the other one ${frictionTime}. This is not going to surprise you."`,
+  ]);
+  if ((st.social ?? 5) >= 7) return say([
+    `"${N}, everybody in this house likes you. That is a résumé, it beats mine, and I only get one week where I can do anything about it."`,
+    `"${N}, you have not made an enemy in here yet. That is a better game than mine, and it is exactly why you are up."`,
+  ]);
+  if ((st.strategic ?? 5) >= 7) return say([
+    `"${N}, you are running more of this house than you let on. I would rather take the shot now than wait until everybody else sees it too."`,
+    `"${N}, every conversation in this house seems to go through you. I only get one week to do anything about that."`,
+  ]);
+  return say([
+    `"${N}, somebody had to go up and there was no version of this week where it was going to feel fair. I am sorry it is you."`,
+    `"${N}, I do not have a speech for this. Somebody had to sit there, and I made a choice I have to live with."`,
+  ]);
 }
-
 /**
  * The nomination ceremony.
  *

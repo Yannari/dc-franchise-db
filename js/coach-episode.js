@@ -8,6 +8,7 @@ import { activeCoaches, bankTraining, coachesOf, coachRecord, isCoach, removeCoa
 import { pickSessionTargets, sessionGain, teachableStat, aweOf } from './coach-agenda.js';
 import { showWords } from './shows.js';
 import { giveAdvantage } from './advantages.js';
+import { nonAggressionBars } from './coach-deals.js';
 
 /** How close this coach is to being voted out, 0..1. Lifts their survive agenda. */
 function vulnerabilityOf(coachName, tribe) {
@@ -58,9 +59,14 @@ export function runCoachingBlock(ep, tribe, roll = Math.random, fameGapOf = defa
     const budget = coach.sessionsPerEp || sessionsFor(tribe.members.length);
     const discipline = teachableStat(coachStats);
 
-    const candidates = tribe.members.map(name => ({
-      name, stats: pStats(name), bond: getBond(coach.name, name), atRisk: 0,
-    }));
+    // Coach Against Coach's non-aggression channel is enforced HERE, not just
+    // narrated — a coach who agreed to stay out of a rival's corner never
+    // even sees that rival's strong protégés in their own candidate pool.
+    const candidates = tribe.members
+      .filter(name => !nonAggressionBars(coach.name, name, tribe))
+      .map(name => ({
+        name, stats: pStats(name), bond: getBond(coach.name, name), atRisk: 0,
+      }));
 
     const picked = pickSessionTargets({
       coach: { stats: coachStats, archetype, vulnerability: vulnerabilityOf(coach.name, tribe) },

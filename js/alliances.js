@@ -1397,7 +1397,12 @@ export function pickTarget(attackers, victims, challengeLabel) {
       const _soloMod = _hasAlliance ? 0 : 0.4;
       const _volunteerModPre = gs._volunteerDuelHeat?.[v] === ((gs.episode || 0) + 1) ? 5.0 : 0;
       const _coachDangerMod = isCoach(v) ? _coachTargetDanger(v, attackers) : 0;
-      return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + _soloMod + _volunteerModPre + _coachDangerMod + Math.random() * 0.5);
+      // Coach Against Coach's "the fall" — a coach who bargained to take this
+      // exact vote, in exchange for the survivor protecting their protégés.
+      // Neither of them has a ballot, so this is the only lever that makes
+      // the bargain real rather than a line of dialogue.
+      const _coachFallMod = (isCoach(v) && gs._coachFallHeat?.[v] === ((gs.episode || 0) + 1)) ? 5.0 : 0;
+      return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + _soloMod + _volunteerModPre + _coachDangerMod + _coachFallMod + Math.random() * 0.5);
     } else {
       const allAtTribal = [...attackers, v];
       const maxBond = allAtTribal.filter(p => p !== v).reduce((m, p) => Math.max(m, getPerceivedBond(p, v)), 0);

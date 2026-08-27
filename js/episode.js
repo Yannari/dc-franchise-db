@@ -40,6 +40,7 @@ import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
 import { applyCoachElimination, coachFallout, maybeSaveCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
 import { coachesOf } from './coaches.js';
+import { runCoachDealBlock } from './coach-deals.js';
 
 // Challenge simulate functions
 import { simulateCliffDive } from './chal/cliff-dive.js';
@@ -2365,7 +2366,12 @@ export function simulateEpisode() {
       };
       const blockResult = runCoachingBlock(ep, tribe, roll);
       const falloutEvents = coachFallout(ep, tribe, blockResult, roll);
-      if (falloutEvents.length) {
+      // Coach Against Coach: only meaningful once a tribe carries two coaches
+      // competing for the same pool. `runCoachDealBlock` is itself a no-op
+      // below that, so it is safe to call on every tribe every episode.
+      const dealEvents = runCoachDealBlock(ep, tribe, roll);
+      const coachEvents = [...falloutEvents, ...dealEvents];
+      if (coachEvents.length) {
         if (!ep.campEvents) ep.campEvents = {};
         if (!ep.campEvents[tribeKey]) ep.campEvents[tribeKey] = { pre: [], post: [] };
         // Consequence, not cause: these events narrate what the coaching
@@ -2373,7 +2379,7 @@ export function simulateEpisode() {
         // `_textCampPre` prints long before that section — pushing here into
         // `.pre` puts the fallout ("the drill worked") a full section ahead
         // of the drill it's describing. `.post` prints after COACHING.
-        ep.campEvents[tribeKey].post.push(...falloutEvents);
+        ep.campEvents[tribeKey].post.push(...coachEvents);
       }
     });
   }

@@ -345,26 +345,31 @@ placeholder bug: mutating one `/\{b\}/g` back to the string form reddens the SOU
 does NOT redden the output rule. When authoring prose guards, prefer a rule over the source
 text; use output rules only for defects that are unambiguous in the finished string.
 
-### Task 6 must make the continuity band self-calibrating, not re-derive it again
+### CORRECTED: Task 6 should make the continuity band self-calibrating
 
-The continuity band has now gone stale THREE times: once in Task 1 (floor 0.22, cleared by
-scene selection alone), once in Task 2 (0.30 -> settled 0.38 after a declaration withdrawal),
-and again in Task 3, which moved both arms without touching a single declaration and left the
-floor roughly four times below measurement.
+**This section originally claimed the band went stale three times, the third being Task 3.
+That was wrong and the claim was mine.** Task 3's report compared head against a STALE
+baseline -- the withdrawn 17-declaration pass from Task 2 round 2, which never shipped.
+Measured base (e70df3d0) to head (e14988bd) on identical seeds: arms 46.2/30.5 -> 46.5/30.3,
+separation 15.7pp -> **16.2pp**. The arms moved 0.3pp and the separation WIDENED. The 0.38
+floor has exactly the headroom it had before Task 3, and Task 3 needs no explanation.
 
-The cause is structural, not carelessness. The band has two assertions:
+I accepted a reported delta without checking what it was differenced against, and promoted
+it into this plan as a durable lesson. **Rule for the rest of this plan: measure base vs
+head, not report vs memory.** A report's numbers are a claim about a comparison; the
+baseline is the half that goes stale silently.
 
-1. an ABSOLUTE floor on the live arm -- goes stale whenever content changes, because it is
-   a constant compared against a moving measurement
-2. a SEPARATION between the live arm and a control arm measured in the same run -- does NOT
-   go stale, because both sides move together
+The honest record is that the band went stale TWICE, both times from content change:
+Task 1 (floor 0.22, cleared by scene selection alone) and Task 2 (0.30, re-derived to 0.38
+after the declaration withdrawal moved both arms).
 
-Only (1) keeps rotting. (2) is self-calibrating by construction: it re-derives the
-comparison every run, which is the whole point of an in-suite control arm.
+The structural argument survives the correction, on two occurrences rather than three:
 
-**Task 6 ruling: keep the separation assertion, and either delete the absolute floor or
-re-express it as a ratio against the control arm.** A constant compared against a moving
-measurement is a maintenance treadmill that has already consumed three fix rounds, and each
-time it went stale it spent a window silently guarding nothing. Any band in this suite with
-the same shape (absolute constant vs a measurement that content moves) should get the same
-treatment -- Task 6 should sweep for them, not just fix this one.
+1. an ABSOLUTE floor on the live arm goes stale whenever content moves the measurement
+2. a SEPARATION between live and control arms measured in the same run does NOT, because
+   both sides move together
+
+**Task 6 ruling stands: keep the separation, and either delete the absolute floor or
+re-express it as a ratio against the control.** Sweep the suite for bands of the same shape
+-- an absolute constant compared against a measurement content can move. Two rotations of
+that treadmill have already cost two fix rounds, and each left a window guarding nothing.

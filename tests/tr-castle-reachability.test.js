@@ -1179,6 +1179,22 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // THE MUTATION: `const quietScore = 0;` in `trust-fall-into-step`
 // (js/tr/castle/journey.js) — the one review used to prove the dead-event
 // sweep could not see it.
+// PLAN 5 TASK 8 added four splits (164 keys -> 168). Four events returned a
+// CONSTANT branch label over state that genuinely forked the scene, which made
+// this table blind to a repeat inside them — `susp-misread-tell` read as one
+// outcome fired 345 times per 400 seasons when it is two. The splits are:
+// `grief-headcount` on pair/solo, `susp-alliance-shape-guess` on whether the
+// map was already drawn, `susp-misread-tell` on whether the misreader is nervy,
+// and `susp-pattern-tracking` on whether the tally crosses acts.
+//
+// THE SPLITS WERE CHOSEN AGAINST THIS FLOOR, not in spite of it. Splitting
+// `susp-body-language-read` on its prior-outcome sense measured 162 / 3 / 17
+// per 400 seasons — two new cells at or beside the floor of 3, on counts the
+// resampling finding says are redrawn rather than nudged by any later content
+// change — so that one keeps a constant label and varies its SENTENCE instead.
+// Same for `susp-misread-tell`, where the raw `desperate` state reads 6 per 400
+// and `nervy` (paranoid OR desperate) reads 59. The rarest of the six new cells
+// is 59 per 400. A repeat-detecting label is not worth a knife-edge band.
 const BRANCHES = [
   'callback-competitive-history:rivalry-carried-over',
   'callback-different-show-different-person:disappointment',
@@ -1226,7 +1242,8 @@ const BRANCHES = [
   'grief-castle-in-view:buried',
   'grief-castle-in-view:carried',
   'grief-empty-chair:empty-chair',
-  'grief-headcount:headcount',
+  'grief-headcount:headcount-pair',
+  'grief-headcount:headcount-solo',
   'grief-keepsake:keepsake',
   'grief-morning-reaction:mourn',
   'grief-morning-reaction:opportunistic',
@@ -1264,6 +1281,7 @@ const BRANCHES = [
   'romance-strategic-optics:called-strategic',
   'romance-walked-back-together:walked-back-together',
   'susp-alliance-shape-guess:shape-guessed',
+  'susp-alliance-shape-guess:shape-redrawn',
   'susp-body-language-read:body-read',
   'susp-cold-case-revival:revived',
   'susp-defensive-overcorrect:overcorrected',
@@ -1276,13 +1294,15 @@ const BRANCHES = [
   'susp-let-it-go-on-the-road-back:cleared',
   'susp-let-it-go-on-the-road-back:hardened',
   'susp-let-it-go-on-the-road-back:slipped',
-  'susp-misread-tell:misread',
+  'susp-misread-tell:misread-calm',
+  'susp-misread-tell:misread-nervy',
   'susp-noticed-inconsistency:noticed',
   'susp-out-of-earshot:agreed',
   'susp-out-of-earshot:defended',
   'susp-out-of-earshot:hedged',
   'susp-overheard-conversation:overheard',
   'susp-pattern-tracking:tracked',
+  'susp-pattern-tracking:tracked-since',
   'susp-private-accusation:confess',
   'susp-private-accusation:denies',
   'susp-private-accusation:denyWeak',

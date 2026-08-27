@@ -88,6 +88,8 @@ import { registerEvent } from '../events.js';
 import { openThread, advanceThread, closeThread, findOpenThread, heatAt, continueThread } from '../threads.js';
 import { suspicion } from '../deduction.js';
 
+import { lineFor } from './lines.js';
+
 const FAMILY = 'romance';
 const SPARK_KIND = 'romance-spark';
 const SHOWMANCE_KIND = 'romance-showmance';
@@ -159,6 +161,9 @@ const SPARK_LINES = [
   '{a} and {b} sat closer than the conversation strictly required, and both of them noticed.',
   'Something shifted between {a} and {b} tonight that had nothing to do with the game.',
   '{a} caught {b}\'s eye across the room and it lasted a beat too long to be nothing.',
+  '{a} made {b} laugh, twice, and then spent the rest of the evening trying to do it again.',
+  'They were the last two awake, {a} and {b}, and neither of them went to bed.',
+  '{b} said something ordinary and {a} looked at them for a second too long afterwards.',
 ];
 
 registerEvent({
@@ -184,6 +189,14 @@ registerEvent({
   },
 });
 
+const SHOWMANCE_FORM_LINES = [
+  '{a} and {b} stopped pretending it was nothing. The castle has a showmance now.',
+  'By breakfast everybody knew about {a} and {b}, and {a} and {b} had stopped minding.',
+  '{a} and {b} arrived together and left together and did not explain either.',
+  'It stopped being deniable somewhere last night. {a} and {b} are a thing the castle has to plan around now.',
+  'Nobody announced anything. {a} and {b} simply stopped sitting apart.',
+];
+
 registerEvent({
   id: 'romance-showmance-forms',
   family: FAMILY,
@@ -200,10 +213,18 @@ registerEvent({
     closeThread(spark.id, ctx.ep, 'became-showmance');
     addBond(a, b, 2);
     const t = openThread(SHOWMANCE_KIND, [a, b], ctx.ep,
-      `${a} and ${b} stopped pretending it was nothing. The castle has a showmance now.`);
+      lineFor(SHOWMANCE_FORM_LINES, `romance-showmance-forms|${ctx.ep}`, { a, b }));
     return { branch: 'showmance-formed', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
+
+const PROTECT_LINES = [
+  '{a} put themselves between {b} and a room that was getting a little too interested in {b}\'s name.',
+  'The moment {b}\'s name came up, {a} was talking, and kept talking until it had gone away again.',
+  '{a} made it very clear, without ever raising their voice, that coming for {b} meant coming for both of them.',
+  '{a} took a question aimed at {b} and answered it themselves, badly, on purpose.',
+  '{b} did not need defending. {a} defended them anyway, in front of everybody.',
+];
 
 registerEvent({
   id: 'romance-protection-instinct',
@@ -222,10 +243,19 @@ registerEvent({
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
     addBond(a, b, 1);
-    const advanced = advanceThread(t.id, ctx.ep, `${a} put themselves between ${b} and a room that was getting a little too interested in ${b}'s name.`);
+    const advanced = advanceThread(t.id, ctx.ep,
+      lineFor(PROTECT_LINES, `romance-protection-instinct|${ctx.ep}`, { a, b }));
     return { branch: 'protected', pair: [a, b], threadId: advanced?.id, bondDelta: 1 };
   },
 });
+
+const JEALOUSY_LINES = [
+  '{a} didn\'t love how much time {b} was spending with {c}, and said so.',
+  '{a} asked what {b} and {c} had been talking about for that long, and did not like being the kind of person who asks.',
+  '{b} came back from a conversation with {c} to find {a} had been counting the minutes.',
+  '{a} made a joke about {c} that was not a joke, and {b} heard which one it was.',
+  'It was not about {c} at all, and both {a} and {b} knew that, and they had the row anyway.',
+];
 
 registerEvent({
   id: 'romance-jealousy-third-party',
@@ -244,10 +274,18 @@ registerEvent({
     const third = pick(rng, others.length ? others : [a]);
     addBond(a, b, -1);
     const openedT = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} didn't love how much time ${b} was spending with ${third}, and said so.`);
+      lineFor(JEALOUSY_LINES, `romance-jealousy-third-party|${ctx.ep}`, { a, b, c: third }));
     return { branch: 'jealousy', pair: [a, b], third, threadId: openedT?.id, bondDelta: -1 };
   },
 });
+
+const BREAKUP_LINES = [
+  '{a} and {b} ended it, in front of enough people that everyone would know by lunch.',
+  'It finished in the kitchen, with an audience, and neither {a} nor {b} lowered their voice for it.',
+  '{a} and {b} stopped, and the castle watched them stop, and nobody pretended otherwise.',
+  'Whatever {a} and {b} had, it was over by the time the plates were cleared, and publicly.',
+  '{b} walked away from {a} mid-sentence, and that was the end of it, in front of four people.',
+];
 
 registerEvent({
   id: 'romance-showmance-breakup',
@@ -275,10 +313,18 @@ registerEvent({
     closeThread(t.id, ctx.ep, 'broken-up');
     addBond(a, b, -2);
     const residueThread = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} and ${b} ended it, in front of enough people that everyone would know by lunch.`);
+      lineFor(BREAKUP_LINES, `romance-showmance-breakup|${ctx.ep}`, { a, b }));
     return { branch: 'broke-up', pair: [a, b], threadId: residueThread?.id, bondDelta: -2 };
   },
 });
+
+const SHIELD_LINES = [
+  '{a} and {b} quietly agreed: if either of their names comes up tomorrow, the other one is speaking first.',
+  'Last thing before sleep, {a} and {b} worked out who says what if it goes wrong tomorrow.',
+  '{a} and {b} agreed on a signal, which is either very sweet or very organised.',
+  'Whoever gets named first, the other one stands up. {a} and {b} settled that in the dark and did not discuss it again.',
+  '{b} told {a} not to defend them tomorrow. {a} agreed, and both of them knew {a} was lying.',
+];
 
 registerEvent({
   id: 'romance-shields-target-together',
@@ -294,10 +340,19 @@ registerEvent({
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
     addBond(a, b, 1);
-    const advanced = advanceThread(t.id, ctx.ep, `${a} and ${b} quietly agreed: if either of their names comes up tomorrow, the other one is speaking first.`);
+    const advanced = advanceThread(t.id, ctx.ep,
+      lineFor(SHIELD_LINES, `romance-shields-target-together|${ctx.ep}`, { a, b }));
     return { branch: 'shield-pact', pair: [a, b], threadId: advanced?.id, bondDelta: 1 };
   },
 });
+
+const SHARED_ALIBI_LINES = [
+  '{a} and {b} vouched for each other\'s whereabouts last night. Nobody thought to ask whether that made it MORE or LESS convincing.',
+  'Asked separately, {a} and {b} gave the same account of the night, which proves either everything or nothing.',
+  '{a} was with {b}. {b} was with {a}. The room had to decide what that was worth.',
+  'The two people least able to clear each other cleared each other, and did it with a straight face.',
+  '{a} answered for {b} before {b} could answer, which {a} realised afterwards had not helped.',
+];
 
 registerEvent({
   id: 'romance-shared-alibi',
@@ -318,7 +373,7 @@ registerEvent({
     const [a, b] = t.parties;
     addBond(a, b, 0.5);
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      `${a} and ${b} vouched for each other's whereabouts last night. Nobody thought to ask whether that made it MORE or LESS convincing.`);
+      lineFor(SHARED_ALIBI_LINES, `romance-shared-alibi|${ctx.ep}`, { a, b }));
     return { branch: 'shared-alibi', pair: [a, b], threadId: thread?.id, cited, bondDelta: 0.5 };
   },
 });
@@ -366,14 +421,20 @@ const LIABILITY_LINES = {
   oblivious: [
     '{a} spent the whole day next to {b} and never once felt the ground shift.',
     'Whatever was true about {b}, {a} was nowhere close to seeing it.',
+    '{a} defended {b} twice today, warmly, and had no idea what they were defending.',
+    '{b} left three separate openings and {a} walked past every one of them.',
   ],
   suspicious: [
     '{a} couldn\'t say why, exactly, but something about {b} had started to sit wrong.',
     'A small, cold thought about {b} took root in {a} and refused to leave.',
+    '{a} caught themselves checking where {b} had been, and was appalled at themselves for checking.',
+    'Nothing {b} did was wrong. {a} started counting the things anyway.',
   ],
   confronts: [
     '{a} asked {b}, privately and directly, if there was something {a} needed to know.',
     'It came out quiet and it came out honest: {a} looked at {b} and asked them to explain themselves.',
+    '{a} closed the door, sat down, and asked {b} the question they had been not-asking for three days.',
+    '"Just tell me," {a} said to {b}, and meant it, and waited a long time for the answer.',
   ],
   // REWRITTEN FOR `night` (round 2, R2). These two lines used to put the
   // doubter on their feet AT THE ROUND TABLE, which is the only thing that
@@ -385,8 +446,30 @@ const LIABILITY_LINES = {
     '{a} said it out loud at two in the morning, loudly enough that it was not just {b} who heard it.',
     '{a} woke half the corridor telling {b}, and everybody who came out of their room, exactly what they now believed.',
     '{a} did not wait for morning, or for witnesses, and got both anyway.',
+    '{a} said {b}\'s name and the word out loud in the corridor, and three doors opened.',
+    'Whatever {a} had meant to do with it, what {a} actually did was tell the whole floor at once.',
   ],
 };
+
+// FOUND BY COUNTING WHAT THE SEASONS ACTUALLY PRINTED, not by reading the
+// source. `exposes` built `line` out of the five-line pool above and then
+// never wrote it anywhere: the branch closes the showmance and opens a COVER
+// thread, and the cover thread's note was a hard-coded sentence. So the
+// flagship's loudest branch printed one constant across 61 firings per 3200
+// seasons while its own pool sat unused — dead content inside a live branch,
+// which is exactly the class the branch floor exists for and cannot see,
+// because the branch fires perfectly well.
+//
+// The fix keeps the exposure sentence (the pooled one) as the LEAD, so it is
+// what a reader sees and what a later citation quotes, and gives the
+// damage-control half its own pool behind it.
+const EXPOSED_AFTERMATH_LINES = [
+  '{b}\'s own showmance just stood up and named them in front of the room. Damage control starts now.',
+  'The person who slept next to {b} has just told the castle what they think {b} is. There is no version of tomorrow where {b} is not answering for that.',
+  'Whatever cover {b} had, it was mostly {a}, and {a} has just spent it in public.',
+  '{b} now has to explain, to everybody, why the one person who knows them best said that out loud.',
+  'By breakfast the whole castle will have it. {b} has until breakfast.',
+];
 
 registerEvent({
   id: 'romance-liability-exposed',
@@ -467,12 +550,21 @@ registerEvent({
       addBond(doubter, suspected, bondDelta);
       if (showmance) closeThread(showmance.id, ctx.ep, 'exposed');
       const coverThread = openThread('cover', [suspected], ctx.ep,
-        `${suspected}'s own showmance just stood up and named them in front of the room. Damage control starts now.`);
+        `${line} ${lineFor(EXPOSED_AFTERMATH_LINES, `romance-liability-exposed|exposes|${ctx.ep}`,
+          { a: doubter, b: suspected })}`);
       threadId = coverThread?.id ?? threadId;
     }
     return { branch, doubter, suspected, threadId, bondDelta };
   },
 });
+
+const FIGHT_LINES = [
+  '{a} and {b} had a real fight, loud enough that the room pretended not to notice.',
+  'It started over nothing and got somewhere real, and everybody downstairs heard the end of it.',
+  '{a} said something to {b} that could not be taken back, and did not take it back.',
+  '{b} walked out on {a} mid-argument and the door said the rest.',
+  'Two people who had been finishing each other\'s sentences spent an evening interrupting them instead.',
+];
 
 registerEvent({
   id: 'romance-showmance-fight',
@@ -488,10 +580,19 @@ registerEvent({
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
     addBond(a, b, -1.5);
-    const advanced = advanceThread(t.id, ctx.ep, `${a} and ${b} had a real fight, loud enough that the room pretended not to notice.`);
+    const advanced = advanceThread(t.id, ctx.ep,
+      lineFor(FIGHT_LINES, `romance-showmance-fight|${ctx.ep}`, { a, b }));
     return { branch: 'showmance-fight', pair: [a, b], threadId: advanced?.id, bondDelta: -1.5 };
   },
 });
+
+const OPTICS_LINES = [
+  'Somebody pointed out, not unkindly, that {a} and {b} getting together was awfully convenient for both their games.',
+  'The word "convenient" got used about {a} and {b} this morning, and it travelled.',
+  'Two votes that always land together stop looking like a couple and start looking like a bloc, and the room said so.',
+  '{a} and {b} were asked, more or less to their faces, whether any of it was real.',
+  'Nobody doubted {a} and {b} liked each other. Several people doubted that was all it was.',
+];
 
 registerEvent({
   id: 'romance-strategic-optics',
@@ -511,10 +612,18 @@ registerEvent({
     const showmance = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = showmance.parties;
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      `Somebody pointed out, not unkindly, that ${a} and ${b} getting together was awfully convenient for both their games.`);
+      lineFor(OPTICS_LINES, `romance-strategic-optics|${ctx.ep}`, { a, b }));
     return { branch: 'called-strategic', pair: [a, b], threadId: thread?.id, cited };
   },
 });
+
+const GRIEF_SPARK_LINES = [
+  '{a} and {b} leaned on each other after last night, and it turned into something neither of them expected.',
+  '{b} was the one who found {a} this morning, and neither of them moved for a long time afterwards.',
+  'It was meant to be comfort. Somewhere in the middle of it, for {a} and {b}, it stopped being only that.',
+  '{a} held on to {b} a little longer than the moment strictly needed, and {b} let them.',
+  'Grief put {a} and {b} in the same room at six in the morning, and something else kept them there.',
+];
 
 registerEvent({
   id: 'romance-comfort-after-loss-sparks',
@@ -554,7 +663,7 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 1.5);
     const t = openThread(SPARK_KIND, [a, b], ctx.ep,
-      `${a} and ${b} leaned on each other after last night, and it turned into something neither of them expected.`);
+      lineFor(GRIEF_SPARK_LINES, `romance-comfort-after-loss-sparks|${ctx.ep}`, { a, b }));
     return { branch: 'grief-spark', pair: [a, b], threadId: t?.id, bondDelta: 1.5 };
   },
 });

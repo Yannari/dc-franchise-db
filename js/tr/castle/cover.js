@@ -56,10 +56,21 @@ function _fillPartner(line, a, partner) {
   return _sentenceCase(line.replace(/\{a\}/g, a).replace(/\{b\}/g, partner || 'somebody'));
 }
 
+import { lineFor } from './lines.js';
+
 const NICE_ARCHETYPES = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 function isTraitor(name, ep) { return alignmentAt(name, ep) === 'traitor'; }
+
+const PREEMPTIVE_LINES = [
+  '{a} had an answer ready for a question nobody had asked yet.',
+  '{a} mentioned, unprompted, where they had been last night, and then had to sit with having mentioned it.',
+  'Nobody had raised it. {a} raised it themselves, cleared it up, and moved the conversation along.',
+  '{a} worked out overnight what the awkward question was going to be, and had the boring answer waiting for it.',
+  '{a} volunteered a detail so small nobody would ever have thought to check it, which was the whole point.',
+  'The story {a} told at breakfast was answering something, and nobody at the table could have said what.',
+];
 
 registerEvent({
   id: 'cover-preemptive-alibi',
@@ -79,10 +90,18 @@ registerEvent({
   fire(ctx, rng) {
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const { thread, cited } = continueThread(FAMILY, [actor], ctx.ep,
-      `${actor} had an answer ready for a question nobody had asked yet.`);
+      lineFor(PREEMPTIVE_LINES, `cover-preemptive-alibi|${ctx.ep}`, { a: actor }));
     return { branch: 'alibi-built', actor, threadId: thread?.id, cited };
   },
 });
+
+const SACRIFICE_ALLY_LINES = [
+  '{a} threw suspicion at {b} in front of the room — their own ally, on purpose, to clear both their names.',
+  'In front of everybody, {a} named {b}. {b} understood the manoeuvre and did not enjoy being the material for it.',
+  '{a} needed the room to watch somebody, and picked the person they could most afford to be wrong about.',
+  '{a} spent {b} to buy a morning of not being looked at, and did it smoothly enough that only {b} knew the price.',
+  '{a} asked {b} a question in front of the room that {a} already knew the answer to.',
+];
 
 registerEvent({
   id: 'cover-suspect-own-ally',
@@ -112,10 +131,19 @@ registerEvent({
     // is staged, which is why this still moves the bond down.
     addBond(a, b, -1);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} threw suspicion at ${b} in front of the room — their own ally, on purpose, to clear both their names.`);
+      lineFor(SACRIFICE_ALLY_LINES, `cover-suspect-own-ally|${ctx.ep}`, { a, b }));
     return { branch: 'sacrificed-ally', pair: [a, b], threadId: t?.id, bondDelta: -1 };
   },
 });
+
+const PLANT_NAME_LINES = [
+  '{a} found three separate ways to work {c}\'s name into casual conversation today.',
+  'By the evening, four different people had heard {c}\'s name from {a} and none of them noticed where it came from.',
+  '{a} never accused {c} of anything. {a} just kept putting {c} in sentences.',
+  '{a} asked two people, separately, whether they had seen {c} last night. Neither had. Both remembered being asked.',
+  '{a} said {c}\'s name once at breakfast, once on the stairs and once at the door, and let the room do the rest.',
+  '{a} defended {c}, warmly, to somebody who had not attacked them, and left the name hanging in the air.',
+];
 
 registerEvent({
   id: 'cover-plant-a-name',
@@ -135,10 +163,21 @@ registerEvent({
     // plant itself proves nothing and must not read as evidence of anything
     // to the deduction layer.
     const t = openThread(FAMILY, [actor], ctx.ep,
-      `${actor} found three separate ways to work ${target}'s name into casual conversation today.`);
+      lineFor(PLANT_NAME_LINES, `cover-plant-a-name|${ctx.ep}`, { a: actor, c: target }));
     return { branch: 'planted', actor, target, threadId: t?.id };
   },
 });
+
+const REHEARSED_LINES = [
+  '{a} told the same story again, word for word. Nobody clocked the repetition.',
+  '{a} gave the account a second time and did not change a syllable of it, which is not how people remember things.',
+  'Asked again, {a} produced the identical version — same details, same order, same small joke in the middle.',
+  '{a} had said it enough times now that it came out smooth, and smooth was the risk.',
+  'The story had stopped being something {a} remembered and become something {a} recited.',
+  '{a} used the same three words in the same three places, for the third day running.',
+  'Nobody was checking any more, and {a} told it exactly the same way regardless.',
+  '{a} could have said it backwards by now, and had privately checked that they could.',
+];
 
 registerEvent({
   id: 'cover-rehearsed-story-advance',
@@ -159,10 +198,26 @@ registerEvent({
   fire(ctx) {
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const t = findOpenThread(FAMILY, [actor]);
-    const { thread, cited } = advanceCiting(t, ctx.ep, `${actor} told the same story again, word for word. Nobody clocked the repetition.`);
+    const { thread, cited } = advanceCiting(t, ctx.ep,
+      lineFor(REHEARSED_LINES, `cover-rehearsed-story-advance|${ctx.ep}`, { a: actor }));
     return { branch: 'rehearsed', actor, threadId: thread?.id, cited };
   },
 });
+
+const COLD_SWEAT_LINES = {
+  pressed: [
+    '{a} broke a small sweat on a completely ordinary follow-up question, with last night\'s votes still sitting on the table behind them.',
+    'Somebody asked {a} something harmless and {a} answered it like it was the second question in a much worse conversation.',
+    '{a} had been written down last night and it was showing in how carefully they were holding their hands.',
+    'The question was nothing. {a}\'s face, with the room still watching them from yesterday, was not nothing.',
+  ],
+  calm: [
+    '{a} broke a small sweat on a completely ordinary follow-up question.',
+    '{a} took a beat too long over something entirely routine, and knew it while it was happening.',
+    'Nothing about the question was difficult, and {a} still had to swallow before answering it.',
+    '{a} laughed at the wrong volume and spent the next minute wondering who had heard it.',
+  ],
+};
 
 registerEvent({
   id: 'cover-cold-sweat-tell',
@@ -185,9 +240,8 @@ registerEvent({
   fire(ctx) {
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const pressed = isNervy(ctx.state?.[actor]);
-    const note = pressed
-      ? `${actor} broke a small sweat on a completely ordinary follow-up question, with last night's votes still sitting on the table behind them.`
-      : `${actor} broke a small sweat on a completely ordinary follow-up question.`;
+    const note = lineFor(COLD_SWEAT_LINES[pressed ? 'pressed' : 'calm'],
+      `cover-cold-sweat-tell|${ctx.ep}|${pressed}`, { a: actor });
     const t = openThread(FAMILY, [actor], ctx.ep, note);
     return { branch: 'tell', actor, threadId: t?.id, underPressure: pressed };
   },
@@ -208,18 +262,31 @@ const OUTCOME_LINES = {
   convincing: [
     '{a} told a clean, boring, believable story, and the room moved on without a second look.',
     'Whatever {a} said, it landed exactly as ordinary as intended.',
+    '{a} was so unremarkable about it that {b} lost interest halfway through and asked about lunch.',
+    '{a} got a detail slightly wrong on purpose, corrected it, and that was what sold the whole thing.',
+    '{a} told it flat, without a single flourish, and the room let it go by.',
   ],
   awkward: [
     '{a}\'s story had a wobble in it. Nobody happened to be listening closely enough to catch it.',
     'It wasn\'t {a}\'s best work, but it got through.',
+    '{a} lost the thread for half a sentence and found it again before anybody looked up.',
+    'There was a seam in it, and {a} talked straight over the seam.',
   ],
   suspicious: [
     '{a}\'s answer came a half-second too fast, and at least one person in the room noticed.',
+    '{a} was helpful about it. {a} was, on reflection, quite a lot more helpful about it than anybody needed.',
+    'There was a version of that answer that took ten words, and {a} used forty.',
+    '{a} finished, and the pause afterwards was a beat longer than a boring answer earns.',
     'Something about the way {a} told it made {b} quietly file it away.',
+    '{a} answered a question about the kitchen with an alibi for the corridor, and {b} noticed the difference.',
+    '{b} had not been suspicious of {a} until {a} was quite that helpful about it.',
   ],
   slip: [
     '{a} said too much, too fast, and had to walk it back in real time.',
     'The story fell apart in {a}\'s own mouth halfway through telling it.',
+    '{a} named a room, then a different room, and then tried to make both of them true.',
+    '{a} corrected themselves out loud, twice, on a question about where they had been standing.',
+    '{a} put themselves somewhere at a time {b} could prove they had not been, and heard it land.',
   ],
 };
 
@@ -290,6 +357,14 @@ registerEvent({
 
 // ── Task 6 additions ────────────────────────────────────────────────────
 
+const DOUBLE_BLUFF_LINES = [
+  '{a} floated a suspicion about a fellow Traitor to {b} — genuine-sounding enough that {b} took it as proof {a} couldn\'t be one.',
+  '{a} handed {b} a real name off the turret and let {b} think they had found it themselves.',
+  'The safest thing {a} said all day was the truth, aimed at somebody {a} could afford to lose.',
+  '{a} told {b} they were frightened of one of the Traitors by name, and {b} filed {a} under the frightened.',
+  'Nobody suspects the person doing the suspecting. {a} spent the evening making sure {b} understood that about {a}.',
+];
+
 registerEvent({
   id: 'cover-double-bluff',
   family: FAMILY,
@@ -315,10 +390,18 @@ registerEvent({
     const b = ctx.actors.find(n => n !== a);
     addBond(a, b, 1);
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      `${a} floated a suspicion about a fellow Traitor to ${b} — genuine-sounding enough that ${b} took it as proof ${a} couldn't be one.`);
+      lineFor(DOUBLE_BLUFF_LINES, `cover-double-bluff|${ctx.ep}`, { a, b }));
     return { branch: 'double-bluffed', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1 };
   },
 });
+
+const RECRUIT_COVER_LINES = [
+  '{a} had a whole cover story ready for where they\'d been the night they made that offer. Nobody had even asked.',
+  '{a} has an account of that night ready to go, polished, unrequested, and gathering dust.',
+  'Somewhere in {a}\'s head is a very good explanation for a conversation nobody knows happened.',
+  '{a} keeps almost bringing up that night and then not bringing it up.',
+  '{a} rehearsed it once more in the mirror, for an audience that has not asked and might never.',
+];
 
 registerEvent({
   id: 'cover-decline-recruit-offer-story',
@@ -334,7 +417,7 @@ registerEvent({
     const debts = gs.tr?.loyaltyDebt || [];
     const actor = ctx.actors.find(n => debts.some(d => d.recruiter === n));
     const t = openThread(FAMILY, [actor], ctx.ep,
-      `${actor} had a whole cover story ready for where they'd been the night they made that offer. Nobody had even asked.`);
+      lineFor(RECRUIT_COVER_LINES, `cover-decline-recruit-offer-story|${ctx.ep}`, { a: actor }));
     return { branch: 'recruit-story-covered', actor, threadId: t?.id };
   },
 });
@@ -343,14 +426,20 @@ const ALIBI_CRUMBLE_LINES = {
   holds: [
     '{a}\'s cover story took a real question and shrugged it off without a wobble.',
     'Somebody tried to pull at {a}\'s alibi. It didn\'t give.',
+    'Two people came at {a}\'s account from two directions and it was the same account both times.',
+    '{a} invited them to check it, which is the last thing anybody does with a story that will not hold.',
   ],
   wobbles: [
     '{a}\'s alibi survived, but it took an extra beat longer than it should have.',
     'There was a small gap in {a}\'s story that {a} had to paper over out loud.',
+    '{a} had to add a sentence that had not been in it yesterday, and the addition was audible.',
+    'The alibi held, but {a} had to hold it, and holding it was visible work.',
   ],
   collapses: [
     '{a}\'s cover story came apart the moment someone actually pushed on it.',
     'The alibi didn\'t survive contact — {a} had to abandon it mid-sentence.',
+    'Somebody had been in that corridor too, and said so, and there was nothing left of {a}\'s version.',
+    '{a} tried a third variant, in front of everybody, and it was worse than the second.',
   ],
 };
 
@@ -395,6 +484,14 @@ registerEvent({
   },
 });
 
+const BLEND_LINES = [
+  '{a} sat with {b} and helped them grieve — the same night\'s work {a} had a hand in causing.',
+  '{a} made sure {b} ate something this morning, and meant it, and had also been in the turret.',
+  '{b} cried and {a} was the one holding them, which was true and monstrous at the same time.',
+  '{a} said all the right things to {b} about last night, and knew every one of them from the other side.',
+  'Nobody comforted {b} better than {a} did, and nobody had less right to.',
+];
+
 registerEvent({
   id: 'cover-blend-with-victims-friends',
   family: FAMILY,
@@ -415,10 +512,18 @@ registerEvent({
     const b = ctx.actors.find(n => n !== a);
     addBond(a, b, 1);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} sat with ${b} and helped them grieve — the same night's work ${a} had a hand in causing.`);
+      lineFor(BLEND_LINES, `cover-blend-with-victims-friends|${ctx.ep}`, { a, b }));
     return { branch: 'blended-in', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
+
+const FEIGN_FEAR_LINES = [
+  '{a} performed the exact right amount of fear at breakfast — no more, no less than anyone else.',
+  '{a} was frightened at precisely the average volume of the room, which took some doing.',
+  '{a} let their voice go once, briefly, and then got it back, and everybody saw both halves.',
+  '{a} checked what frightened looked like on the two people nearest them, and did that.',
+  'The trick is not looking calm. {a} knows that, and spent breakfast not looking calm.',
+];
 
 registerEvent({
   id: 'cover-feign-fear',
@@ -434,10 +539,18 @@ registerEvent({
   fire(ctx) {
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const { thread, cited } = continueThread(FAMILY, [actor], ctx.ep,
-      `${actor} performed the exact right amount of fear at breakfast — no more, no less than anyone else.`);
+      lineFor(FEIGN_FEAR_LINES, `cover-feign-fear|${ctx.ep}`, { a: actor }));
     return { branch: 'feigned-fear', actor, threadId: thread?.id, cited };
   },
 });
+
+const SWAP_STORY_LINES = [
+  '{a} and {b} ran their stories past each other before anyone else was awake, and smoothed out the parts that didn\'t match.',
+  'Before the castle was up, {a} and {b} agreed on what time it had been, and stuck to it all day.',
+  '{a} and {b} found the one detail they had different and picked the duller of the two.',
+  'They rehearsed it once each, {a} then {b}, and then never spoke about it again.',
+  '{b} had put themselves in the wrong room. {a} noticed at dawn, and moved them.',
+];
 
 registerEvent({
   id: 'cover-swap-story-with-partner',
@@ -466,7 +579,7 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 1);
     const existing = findOpenThread(FAMILY, [a, b]);
-    const note = `${a} and ${b} ran their stories past each other before anyone else was awake, and smoothed out the parts that didn't match.`;
+    const note = lineFor(SWAP_STORY_LINES, `cover-swap-story-with-partner|${ctx.ep}`, { a, b });
     const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'synchronized', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
@@ -487,16 +600,25 @@ const ALONE_LINES = {
     '{a} was asleep inside ten minutes. Whatever the day had cost, it was not costing this.',
     '{a} went over the day once, found nothing that needed fixing, and slept.',
     'Nobody watching would have guessed anything from how easily {a} went down that night.',
+    '{a} slept the sleep of somebody with nothing on their mind, which is a skill and not an innocence.',
+    'The day did not follow {a} up the stairs. It rarely does.',
+    '{a} put the whole thing down at the door of the room and picked it back up in the morning.',
   ],
   sleepless: [
     '{a} lay awake running the whole day backwards, looking for the moment it had gone wrong.',
     'It was nearly light before {a} stopped rehearsing tomorrow\'s version of today.',
     '{a} counted every conversation twice and could not make the last one come out clean.',
+    'Every time {a} nearly went under, the same sentence came back and sat them up again.',
+    '{a} got up twice to check something nobody was going to check.',
+    '{a} argued with somebody who was asleep two rooms away, at length, and lost.',
   ],
   nearly: [
     '{a} got as far as opening their mouth to say it out loud, in an empty room, and stopped.',
     'There was a moment that night where {a} genuinely nearly told somebody, and it passed.',
     '{a} said the true version once, quietly, to nobody, just to hear what it sounded like.',
+    '{a} had a whole confession composed by two in the morning and nowhere to put it.',
+    'It nearly came out of {a} at the bottom of the stairs, to the first person they saw, and did not.',
+    '{a} got as far as the shape of the first word and turned it into something else.',
   ],
 };
 

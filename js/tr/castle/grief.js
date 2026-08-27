@@ -19,6 +19,7 @@ import { registerEvent, isNervy } from '../events.js';
 import { _sentenceCase } from './cover.js';
 import { openThread, advanceThread, findOpenThread, continueThread } from '../threads.js';
 import { alignmentAt } from '../roles.js';
+import { lineFor } from './lines.js';
 
 const FAMILY = 'grief';
 
@@ -36,6 +37,9 @@ const EMPTY_CHAIR_LINES = [
   '{a} and {b} both ended up staring at the same empty seat at breakfast.',
   'Nobody moved {v}\'s chair. {a} and {b} noticed at the same time that nobody had.',
   '{a} caught {b} looking at the gap at the table before either of them said anything.',
+  'Somebody had laid the table for the number they had yesterday. {a} and {b} both counted the places.',
+  '{b} pulled out {v}\'s chair without thinking, realised, and put it back. {a} pretended not to have seen.',
+  'There was too much room at the table now. {a} said so, badly, and {b} knew what they meant.',
 ];
 
 registerEvent({
@@ -56,6 +60,31 @@ registerEvent({
   },
 });
 
+// Two SHAPES here, pair and solo, and each had exactly one sentence in it.
+// `{n}` is how many are left, which is the only thing the beat is about.
+const HEADCOUNT_LINES = {
+  pair: [
+    '{a} said it out loud so {b} didn\'t have to: {n} of them left.',
+    '{a} got to {n} and stopped. {b} had got there first and had not wanted to be the one to say it.',
+    '"{n}," said {a}, to nobody in particular, and {b} did not correct them.',
+    '{b} watched {a} count the room on their fingers and get to {n} both times.',
+    '{a} and {b} arrived at {n} separately and then had to sit with it together.',
+    '{b} said the number first. {a} had been hoping to get through breakfast without hearing it.',
+    'Neither {a} nor {b} needed to count. Both of them did, and both of them got {n}.',
+    '{a} started to say how many were left, stopped, and {b} finished it: {n}.',
+  ],
+  solo: [
+    '{a} counted the castle twice, like the number might change.',
+    '{a} counted the room, got {n}, and counted it again to be sure of something.',
+    'There were {n} of them. {a} had known that before counting and counted anyway.',
+    '{a} did the arithmetic without meaning to, the way you check a pocket for keys.',
+    '{a} counted heads at breakfast and could not stop doing it for the rest of the morning.',
+    '{a} had known it was {n} before counting, and had counted three times since getting up anyway.',
+    '{a} counted the chairs instead of the people, which came to the same thing.',
+    'Somewhere between the stairs and the table {a} had done the sum again without deciding to.',
+  ],
+};
+
 registerEvent({
   id: 'grief-headcount',
   family: FAMILY,
@@ -72,14 +101,25 @@ registerEvent({
     const actors = ctx.actors;
     const remaining = (ctx.living || []).length;
     const v = _victimLastNight(ctx.ep);
-    const note = actors.length === 2
-      ? `${actors[0]} said it out loud so ${actors[1]} didn't have to: ${remaining} of them left.`
-      : `${actors[0]} counted the castle twice, like the number might change.`;
+    const shape = actors.length === 2 ? 'pair' : 'solo';
+    const note = lineFor(HEADCOUNT_LINES[shape], `grief-headcount|${ctx.ep}|${remaining}`,
+      { a: actors[0], b: actors[1] || 'somebody', n: String(remaining) });
     const t = openThread(FAMILY, actors, ctx.ep, note);
     if (actors.length === 2) addBond(actors[0], actors[1], 1);
-    return { branch: 'headcount', actors, victim: v, remaining, threadId: t?.id };
+    // THE BRANCH CARRIES THE SHAPE. One person counting alone and two people
+    // arriving at the same number are different scenes, and the (id, branch)
+    // table read 56 firings per 400 seasons as one.
+    return { branch: `headcount-${shape}`, actors, victim: v, remaining, threadId: t?.id };
   },
 });
+
+const RESEATED_LINES = [
+  '{a} sat somewhere new this morning, and {b} sat down right next to them without being asked.',
+  'Nobody sits where they sat on the first day any more. {a} moved again, and {b} moved with them.',
+  '{a} took the chair furthest from the door and {b} took the one beside it, and neither explained.',
+  'The table had reorganised itself overnight. {a} ended up next to {b}, and both of them were fine with that.',
+  '{a} moved a seat along to close the gap, and {b} moved along after them.',
+];
 
 registerEvent({
   id: 'grief-seating-shift',
@@ -98,10 +138,18 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 1);
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      `${a} sat somewhere new this morning, and ${b} sat down right next to them without being asked.`);
+      lineFor(RESEATED_LINES, `grief-seating-shift|${ctx.ep}`, { a, b }));
     return { branch: 'reseated', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1 };
   },
 });
+
+const SHARED_MOURNING_LINES = [
+  '{a} and {b} didn\'t talk much this morning. They didn\'t need to.',
+  '{a} sat down next to {b} and stayed there, and that was the entire conversation.',
+  'Whatever {a} and {b} had before this morning, it was heavier by lunchtime and neither of them mentioned it.',
+  '{b} made two cups of tea without asking, and {a} took one, and that was enough.',
+  'They did the washing up together, {a} and {b}, very slowly, for much longer than it took.',
+];
 
 registerEvent({
   id: 'grief-shared-mourning-bond',
@@ -118,11 +166,20 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 2);
     const existing = findOpenThread(FAMILY, [a, b]);
-    const note = `${a} and ${b} didn't talk much this morning. They didn't need to.`;
+    const note = lineFor(SHARED_MOURNING_LINES, `grief-shared-mourning-bond|${ctx.ep}`, { a, b });
     const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'shared-mourning', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
+
+const TIMING_LINES = [
+  '{a} said to {b}, quietly: "of everyone, why {v}, and why last night?" Neither of them had an answer.',
+  '"Why {v}," {a} kept saying to {b}, "and why now." It was not really a question by the fourth time.',
+  '{b} pointed out to {a} that {v} had been about to say something at that table. Neither of them liked where that went.',
+  '{a} wanted to know what {v} knew. {b} wanted to know who else had wondered that before last night.',
+  'Of everybody in the castle, {v}. {a} could not make it fit, and {b} had been trying for an hour longer.',
+  '{a} asked {b} what {v} had done to deserve going first, and got a silence that was itself an answer.',
+];
 
 registerEvent({
   id: 'grief-suspicion-of-timing',
@@ -141,7 +198,7 @@ registerEvent({
     const v = _victimLastNight(ctx.ep);
     addBond(a, b, 1);
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      `${a} said to ${b}, quietly: "of everyone, why ${v}, and why last night?" Neither of them had an answer.`);
+      lineFor(TIMING_LINES, `grief-suspicion-of-timing|${ctx.ep}`, { a, b, v }));
     return { branch: 'timing', pair: [a, b], victim: v, threadId: thread?.id, cited, bondDelta: 1 };
   },
 });
@@ -180,18 +237,27 @@ const REACTION_LINES = {
   mourn: [
     '{a} didn\'t hide how hard it hit them. {b} sat with them and let it be quiet for a while.',
     '{a} said {v}\'s name out loud like it needed saying, and {b} agreed.',
+    '{a} cried at the table, in front of everyone, and did not apologise for it. {b} thought better of them for it.',
+    '{a} kept starting sentences about {v} and not finishing them, and {b} let every one of them go unfinished.',
   ],
   suspicious: [
     '{a} skipped past the grief entirely and went straight to "who benefits from this?" {b} didn\'t have a good answer.',
     '{a} was already building a theory before breakfast was over, and said as much to {b}.',
+    'Before anybody had said {v}\'s name twice, {a} was asking {b} who had been out of their room.',
+    '{a} wanted the timeline, not the eulogy, and made {b} walk through the whole evening with them.',
   ],
   stoic: [
     '{a} said almost nothing all morning. {b} noticed, and let them have it.',
     '{a} went quiet in a way that read as more, not less.',
+    '{a} ate breakfast, cleared the plate, and answered every question with one word.',
+    'Whatever {a} was doing with it, they were doing it somewhere nobody could watch.',
+    '{a} was up before anybody, dressed, useful, and completely unreachable.',
   ],
   opportunistic: [
     '{a} used the room\'s grief to steer {b} toward exactly where {a} wanted the suspicion to land — smoothly enough that {b} never felt managed.',
     '{a} tried to use the moment to move {b} where they wanted, and it came out clumsy enough that {b} half-noticed something was off.',
+    '{a} grieved convincingly for {v} and, in the same breath, put a name in {b}\'s head that had not been there at breakfast.',
+    '{a} was a fraction too keen to comfort {b}, and a fraction too keen to tell them who to look at, and {b} clocked the second part.',
   ],
 };
 
@@ -269,6 +335,14 @@ registerEvent({
 
 // ── Task 6 additions ────────────────────────────────────────────────────
 
+const KEEPSAKE_LINES = [
+  '{a} quietly kept something small of {v}\'s — nobody asked, and {a} didn\'t offer an explanation.',
+  'Something of {v}\'s went missing from the room. {a} knew exactly where it was.',
+  '{a} took one thing off {v}\'s side of the room before anybody else went in, and never said what.',
+  'It was not worth anything. {a} put it in a pocket anyway and kept checking it was still there.',
+  '{a} folded {v}\'s jumper properly before leaving it, which nobody had asked anybody to do.',
+];
+
 registerEvent({
   id: 'grief-keepsake',
   family: FAMILY,
@@ -281,10 +355,18 @@ registerEvent({
     const actor = ctx.actors[0];
     const v = _victimLastNight(ctx.ep);
     const t = openThread(FAMILY, [actor], ctx.ep,
-      `${actor} quietly kept something small of ${v}'s — nobody asked, and ${actor} didn't offer an explanation.`);
+      lineFor(KEEPSAKE_LINES, `grief-keepsake|${ctx.ep}`, { a: actor, v }));
     return { branch: 'keepsake', actor, victim: v, threadId: t?.id };
   },
 });
+
+const BLAME_ROOM_LINES = [
+  '{a} said out loud that somebody in this castle let {v} die. {b} didn\'t disagree.',
+  '"One of us sat at that table last night and knew," {a} said, to the room, and {b} watched who looked up.',
+  '{a} was not grieving so much as furious, and {b} caught the edge of it.',
+  '{b} said it was nobody\'s fault. {a} said that was exactly the problem, and the room heard both.',
+  '{a} pointed out that {v} had been sitting between two people last night, and neither of them was going to say who.',
+];
 
 registerEvent({
   id: 'grief-blame-the-room',
@@ -299,10 +381,21 @@ registerEvent({
     addBond(a, b, -0.5);
     const v = _victimLastNight(ctx.ep);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} said out loud that somebody in this castle let ${v} die. ${b} didn't disagree.`);
+      lineFor(BLAME_ROOM_LINES, `grief-blame-the-room|${ctx.ep}`, { a, b, v }));
     return { branch: 'blamed-room', pair: [a, b], victim: v, threadId: t?.id, bondDelta: -0.5 };
   },
 });
+
+const TOAST_LINES = [
+  '{a} and {b} raised a glass, quietly, to everyone the castle had already lost.',
+  '{a} poured two, handed one to {b}, and neither of them said what it was for.',
+  'They went through the names, {a} and {b}, in order, and drank once at the end of the list.',
+  '{a} lifted a glass to the empty end of the table and {b} lifted one back.',
+  '{b} started to make a toast, could not finish it, and {a} finished it for them.',
+  '{a} and {b} drank to the ones who went first, which by now was most of the people they came in with.',
+  'It was not a ceremony. {a} said a name, {b} said a name, and they both drank.',
+  '{a} left a glass on the table for nobody, and {b} did not move it.',
+];
 
 registerEvent({
   id: 'grief-toast-to-them',
@@ -326,10 +419,22 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 2);
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      `${a} and ${b} raised a glass, quietly, to everyone the castle had already lost.`);
+      lineFor(TOAST_LINES, `grief-toast-to-them|${ctx.ep}`, { a, b }));
     return { branch: 'toasted', pair: [a, b], threadId: thread?.id, cited, bondDelta: 2 };
   },
 });
+
+// ONCE PER SEASON, so it never repeats WITHIN a castle — but a reader who
+// watches four seasons meets it four times, and it read identically all four.
+// Every line here still asserts the ROOM crossed the threshold, which is the
+// claim `oncePerSeason` is defending; see the long note on the flag below.
+const NUMB_LINES = [
+  'The castle had stopped flinching at the empty chair. {a} said so out loud to {b}, and hated that nobody argued.',
+  'Nobody looked up when the number changed this morning. {a} pointed that out to {b}, and the room let it stand.',
+  'Breakfast happened at the normal speed today. {a} said to {b} that it should not have, and {b} had no answer to that.',
+  'Somewhere in the last few days the castle had started treating this as weather. {a} named it to {b}; nobody in earshot disagreed.',
+  'The room had got good at this. {a} said the words to {b} and hated every one of them, and still nobody argued.',
+];
 
 registerEvent({
   id: 'grief-numb-to-it-now',
@@ -369,11 +474,19 @@ registerEvent({
     const [a, b] = ctx.actors;
     const v = _victimLastNight(ctx.ep);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `The castle had stopped flinching at the empty chair. ${a} said so out loud to ${b}, and hated that nobody argued.`);
+      lineFor(NUMB_LINES, `grief-numb-to-it-now|${ctx.ep}`, { a, b }));
     // No bond move — the point of this one IS the absence of a felt reaction.
     return { branch: 'numb', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 0 };
   },
 });
+
+const CRIES_ALONE_LINES = [
+  '{a} found somewhere nobody could see them and let it out, alone, before breakfast.',
+  '{a} went to the far end of the corridor to do it where the walls were thick enough.',
+  'Nobody saw {a} between the bell and breakfast, and {a} came down with a very carefully arranged face.',
+  '{a} cried in the one room of the castle with no window in the door, and then washed their face and went down.',
+  'It came out of {a} all at once, in private, and was finished and put away before anybody else was up.',
+];
 
 registerEvent({
   id: 'grief-someone-cries-alone',
@@ -395,8 +508,9 @@ registerEvent({
       : state === 'paranoid'
         ? ` Somebody had said ${actor}'s name at that table, and it had not stopped ringing since.`
         : '';
-    const t = openThread(FAMILY, [actor], ctx.ep,
-      `${actor} found somewhere nobody could see them and let it out, alone, before breakfast.${why}`);
+    const line = lineFor(CRIES_ALONE_LINES, `grief-someone-cries-alone|${ctx.ep}|${state || 'content'}`,
+      { a: actor });
+    const t = openThread(FAMILY, [actor], ctx.ep, `${line}${why}`);
     return { branch: 'cried-alone', actor, threadId: t?.id, state: state || 'content' };
   },
 });
@@ -416,6 +530,14 @@ registerEvent({
 // threads — that never led anywhere and now never will. Murder victims are
 // always Faithfuls, and Faithfuls collect suspicion threads constantly, so
 // this fires routinely instead of never.
+const WRONGLY_SUSPECTED_LINES = [
+  '{a} and {b} realized, too late, that {v} had spent their last days under a suspicion that never actually went anywhere.',
+  'Whatever {a} and {b} had thought about {v} last week, they were not going to get to find out now.',
+  '{b} reminded {a} what they had both been saying about {v} three days ago. Neither of them enjoyed the reminder.',
+  '{v} had been answering questions right up until the end, and {a} and {b} worked out this morning that none of them had mattered.',
+  'The case against {v} died with {v}, and {a} and {b} were the only two still holding it.',
+];
+
 registerEvent({
   id: 'grief-wrongly-suspected-irony',
   family: FAMILY,
@@ -432,7 +554,7 @@ registerEvent({
     const v = _victimLastNight(ctx.ep);
     addBond(a, b, 1);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} and ${b} realized, too late, that ${v} had spent their last days under a suspicion that never actually went anywhere.`);
+      lineFor(WRONGLY_SUSPECTED_LINES, `grief-wrongly-suspected-irony|${ctx.ep}`, { a, b, v }));
     return { branch: 'wrongly-suspected-irony', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -457,18 +579,24 @@ const NIGHT_AWAKE_LINES = {
     'It was not the empty beds keeping {a} awake. It was the number of people who had said their name at that table.',
     '{a} went over the ballots in the dark until the order they had been read out stopped meaning anything.',
     'There is no version of tonight {a} could lie down with, and {a} tried all of them before it got light.',
+    '{a} spent the night deciding what to say in the morning, and threw all of it away by five.',
+    'Somebody in this building had written {a}\'s name down tonight, and {a} lay there going through who.',
   ],
   paranoid: [
     'Somebody had said {a}\'s name tonight, and {a} spent the dark working out who else had been thinking it.',
     '{a} lay awake going through the room one by one, deciding which of them had meant it.',
     'One name said out loud at that table was enough to keep {a} up until the corridor started making noises.',
     '{a} kept coming back to who had looked away first, and could not let the question go long enough to sleep.',
+    'Every time {a} nearly went under, the room reassembled itself behind their eyes and started talking again.',
+    '{a} counted who had been kind to them today and could not decide what any of it had meant.',
   ],
   content: [
     '{a} lay awake with the empty beds, doing the arithmetic nobody says out loud.',
     'The castle went very quiet at night once there were fewer people in it, and {a} noticed.',
     '{a} listened to a building built for a lot more people than were still in it.',
     'It took {a} a long time to get to sleep, and it was not fear, and it was not nothing either.',
+    '{a} could hear how much room there was above them, and had never noticed the ceiling before.',
+    'The corridor settles at night, and {a} lay listening to a building doing nothing in particular.',
   ],
 };
 

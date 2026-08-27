@@ -17,6 +17,7 @@ import { registerEvent, isNervy } from '../events.js';
 import { openThread, advanceThread, closeThread, findOpenThread, heatAt, continueThread,
   advanceCiting, actPhrase, lastClosedThread, outcomeSense } from '../threads.js';
 import { suspicion } from '../deduction.js';
+import { lineFor } from './lines.js';
 
 const FAMILY = 'suspicion';
 
@@ -26,6 +27,9 @@ const NOTICE_LINES = [
   '{a} noticed {b}\'s story about last night had a detail that didn\'t match this morning.',
   'Something small in how {b} answered a question made {a} quietly file it away.',
   '{a} couldn\'t say exactly what it was, but {b}\'s timeline felt off by a beat.',
+  '{b} corrected themselves halfway through a sentence, and {a} heard the correction more than the sentence.',
+  '{a} asked {b} the same question twice, an hour apart, and got two answers that were nearly the same.',
+  '{b} was a shade too precise about where they had been, and precision is what people build, not what they remember.',
 ];
 
 registerEvent({
@@ -76,6 +80,10 @@ registerEvent({
 const OVERHEARD_LINES = [
   '{a} and {b} both clocked {c} and {d} deep in a conversation that stopped the second anyone got close.',
   'Nobody heard a word of it, but {a} and {b} agreed: {c} and {d} were talking about SOMETHING.',
+  '{c} and {d} broke apart the moment {a} rounded the corner, and {b} had seen it too.',
+  '{a} pointed {b} at the pair of them without pointing at all — just a look, and {b} understood it.',
+  'It was the standing too close that did it. {a} and {b} both noticed how little air there was between {c} and {d}.',
+  '{c} laughed at something {d} said and neither of them looked comfortable doing it. {a} and {b} filed that away together.',
 ];
 
 registerEvent({
@@ -102,6 +110,18 @@ registerEvent({
   },
 });
 
+// A tally is a shape, and the shape is what varies: what {a} is actually
+// counting differs from pair to pair even though the beat is the same one.
+// `{since}` is the thread's own act, spliced where each line wants it.
+const TALLY_LINES = [
+  '{a} kept a running mental tally on {b}{since} and it was not shrinking.',
+  '{a} had a list about {b}{since}, and every day put something else on it.',
+  'Nothing {b} did on its own was worth anything. {a} had been adding them up{since}, and the total was.',
+  '{a} could have recited {b}\'s week back to them, hour by hour{since}, and had not been asked to.',
+  'It was not one thing with {b}. {a} had stopped counting the things{since} and started counting the days.',
+  '{a} noticed another one{since}, said nothing about it, and moved it onto the pile with the rest.',
+];
+
 registerEvent({
   id: 'susp-pattern-tracking',
   family: FAMILY,
@@ -127,8 +147,15 @@ registerEvent({
     // SPEC 5.2, THE THREAD'S OWN ACT. A tally that started in a different part
     // of the season is a different sentence from one started this morning.
     const since = t.act && t.act !== ctx.act ? `, started back in ${actPhrase(t.act)},` : '';
-    const { thread, cited } = advanceCiting(t, ctx.ep, `${a} kept a running mental tally on ${b}${since} and it was not shrinking.`);
-    return { branch: 'tracked', pair: [a, b], threadId: thread?.id, cited, bondDelta: -0.5,
+    // THE BRANCH CARRIES THE STATE, not a constant. A tally that has been
+    // running since an earlier act is a different beat from one that started
+    // this morning, and until this branch said so the audit's (id, branch)
+    // table read both as one thing fired 257 times per 400 seasons and could
+    // not see a repeat inside it. Same reasoning as `grief-nobody-sleeps`.
+    const note = lineFor(TALLY_LINES, `susp-pattern-tracking|${ctx.ep}|${!!since}`,
+      { a, b, since });
+    const { thread, cited } = advanceCiting(t, ctx.ep, note);
+    return { branch: since ? 'tracked-since' : 'tracked', pair: [a, b], threadId: thread?.id, cited, bondDelta: -0.5,
       acrossActs: !!since };
   },
 });
@@ -138,6 +165,14 @@ registerEvent({
 // (findOpenThread reaches a cold-but-open thread; heatAt lets us tell cold
 // from dead). Gated `rare` so the RARE_MULTIPLIER amplification actually has
 // something to amplify once the precondition (an old, cooled thread) exists.
+const COLD_CASE_LINES = [
+  '{a} brought it up again, completely unprompted — {b} thought that one was dead.',
+  'Out of nowhere, over nothing, {a} went straight back to it, and {b} had genuinely stopped expecting that.',
+  '{b} had assumed it was finished. {a} had assumed no such thing, and said so in front of people.',
+  'Everyone else had moved on from it weeks ago. {a} produced it again like it had never been put down.',
+  '{a} said "I never actually got an answer about that," and {b}\'s face did most of the reply.',
+];
+
 registerEvent({
   id: 'susp-cold-case-revival',
   family: FAMILY,
@@ -170,7 +205,7 @@ registerEvent({
     const since = t.act && t.act !== ctx.act
       ? ` It had been sitting open since ${actPhrase(t.act)}.` : '';
     const { thread, cited } = advanceCiting(t, ctx.ep,
-      `${a} brought it up again, completely unprompted — ${b} thought that one was dead.${since}`);
+      `${lineFor(COLD_CASE_LINES, `susp-cold-case-revival|${ctx.ep}`, { a, b })}${since}`);
     addBond(a, b, -1);
     return { branch: 'revived', pair: [a, b], threadId: thread?.id, cited, bondDelta: -1,
       acrossActs: !!since };
@@ -180,6 +215,10 @@ registerEvent({
 const WHISPER_LINES = [
   '{a} and {b} spent breakfast quietly comparing notes on {c}, who had no idea.',
   'Out of earshot of {c}, {a} told {b} exactly what they thought was going on there.',
+  '{a} waited until {c} was out of the room before finishing the sentence, and {b} understood why.',
+  '{a} and {b} kept their voices under the noise of the kitchen and said {c}\'s name in it twice.',
+  'Neither {a} nor {b} would have said any of it to {c}\'s face, which was rather the point of saying it here.',
+  '{b} asked what {a} made of {c}, and got a much longer answer than the question deserved.',
 ];
 
 registerEvent({
@@ -241,18 +280,26 @@ const ACCUSE_LINES = {
   denies: [
     '{b} looked {a} dead in the eye and calmly took the accusation apart, point by point.',
     '{a} pushed. {b} didn\'t flinch, and by the end {a} wasn\'t sure they still believed it either.',
+    '{b} answered every part of it, in order, without raising their voice once — and that was what settled it.',
+    '{a} came in with an accusation and left with an apology they had not planned on giving.',
   ],
   denyWeak: [
     '{b} said the words "that\'s not true" but their voice did something else entirely.',
     '{a} watched {b} deny it, and the denial made {a} more sure, not less.',
+    '{b} denied it three times, and nobody had asked twice.',
+    '{b} answered the question {a} had not asked, which told {a} everything about the one they had.',
   ],
   turned: [
     '{b} didn\'t answer the accusation — they asked {a} why they were so desperate to make it.',
     'By the end of it, somehow {a} was the one explaining themselves.',
+    '{b} let the accusation sit for a second and then asked who had put it in {a}\'s head.',
+    'It stopped being about {b} inside a minute, and {a} could not work out when.',
   ],
   confess: [
     '{b} broke, but not about what {a} thought — they admitted to something else entirely.',
     'Cornered, {b} confessed to a different secret altogether, and it landed almost as hard.',
+    '{b} gave {a} something true to get out of the room, and it was not the thing {a} came for.',
+    '{a} asked one question and {b} answered a heavier one, unprompted, and then looked appalled at themselves.',
   ],
 };
 
@@ -324,6 +371,10 @@ registerEvent({
 const TIMELINE_LINES = [
   '{a} and {b} laid out {c}\'s account side by side, and it didn\'t line up cleanly.',
   'Neither {a} nor {b} could quite make {c}\'s morning add up the way {c} told it.',
+  '{a} remembered {c} in the kitchen, {b} remembered {c} nowhere near it, and both of them were sure.',
+  'Between them, {a} and {b} could account for every hour of {c}\'s day except the one that mattered.',
+  '{b} walked {a} through where {c} said they had been, and it took two attempts to get to the end of it.',
+  '{a} counted it out on their fingers for {b}. The hours were there; {c} was not in all of them.',
 ];
 
 registerEvent({
@@ -346,6 +397,15 @@ registerEvent({
     return { branch: 'crosschecked', pair: [a, b], about: target, threadId: t?.id, bondDelta: 0.5 };
   },
 });
+
+const BODY_READ_LINES = [
+  '{a} watched {b}\'s hands more than {b}\'s words, and didn\'t love what they saw.',
+  '{b} talked. {a} watched where {b} was looking while they did it, which was anywhere else.',
+  '{a} had stopped listening to {b} some time ago and started watching them instead.',
+  'Nothing {b} said was wrong. It was the shoulders, and {a} could not have explained it to anybody.',
+  '{a} clocked how carefully {b} was sitting still, and people do not sit that still by accident.',
+  '{b} smiled at the right moment and held it about a second past the right length, and {a} counted the second.',
+];
 
 registerEvent({
   id: 'susp-body-language-read',
@@ -375,12 +435,29 @@ registerEvent({
       : sense === 'walked'
         ? ` Whatever ${b} did the last time somebody asked had worked, and ${a} wanted to know how.`
         : '';
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      `${a} watched ${b}'s hands more than ${b}'s words, and didn't love what they saw.${because}`);
-    return { branch: 'body-read', pair: [a, b], threadId: thread?.id, cited, bondDelta: -0.5,
+    const note = lineFor(BODY_READ_LINES, `susp-body-language-read|${ctx.ep}|${sense}`, { a, b });
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, `${note}${because}`);
+    // THE BRANCH STAYS CONSTANT HERE, DELIBERATELY. Splitting it on `sense`
+    // measured 162 / 3 / 17 per 400 seasons against a branch floor of 3 —
+    // two new cells at or beside the floor, on counts the resampling finding
+    // says are redrawn rather than nudged by any later content change. The
+    // sense varies the SENTENCE instead (it is in the line key above), which
+    // is what a reader actually notices; buying a repeat-detecting label at
+    // the price of a knife-edge band is a bad trade.
+    return { branch: 'body-read',
+      pair: [a, b], threadId: thread?.id, cited, bondDelta: -0.5,
       priorOutcome: prior?.outcome ?? null };
   },
 });
+
+const SHAPE_GUESS_LINES = [
+  '{a} and {b} sketched out, in whispers, who they thought was actually working together.',
+  '{a} named three people to {b} and drew a line between two of them, and {b} moved the line.',
+  'They agreed on the shape of it, {a} and {b} — a middle, an outside, and one person they could not place.',
+  '{a} asked {b} who they would put in a room together if they wanted to hear something true.',
+  'Between them, {a} and {b} built a map of the castle out of who sat where at breakfast.',
+  '{b} said a name. {a} said a second one and did not have to explain the connection.',
+];
 
 registerEvent({
   id: 'susp-alliance-shape-guess',
@@ -396,9 +473,11 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 0.5);
     const existing = findOpenThread(FAMILY, [a, b]);
-    const note = `${a} and ${b} sketched out, in whispers, who they thought was actually working together.`;
+    const note = lineFor(SHAPE_GUESS_LINES, `susp-alliance-shape-guess|${ctx.ep}|${!!existing}`, { a, b });
     const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
-    return { branch: 'shape-guessed', pair: [a, b], threadId: t?.id, bondDelta: 0.5 };
+    // THE BRANCH CARRIES THE STATE: two people drawing the map for the first
+    // time and two people redrawing one they already have are not one scene.
+    return { branch: existing ? 'shape-redrawn' : 'shape-guessed', pair: [a, b], threadId: t?.id, bondDelta: 0.5 };
   },
 });
 
@@ -417,6 +496,14 @@ registerEvent({
 // belief, is what `a` could actually act on, and is exactly what the room is
 // allowed to feed back into itself. Whether the read is right is not this
 // event's business; that is the joke.
+const OVERCORRECT_LINES = [
+  '{b} explained themselves to {a} for far longer than the question actually required, and it did not help.',
+  '{a} asked something almost polite and got back a defence nobody had requested.',
+  '{b} gave {a} an alibi for a morning {a} had not mentioned, which was the first {a} had heard of any of it.',
+  'Every extra sentence {b} added made the first one look worse, and {b} kept adding them.',
+  '{b} answered, and then answered again, and then answered a third time in case {a} had missed it. {a} had not.',
+];
+
 registerEvent({
   id: 'susp-defensive-overcorrect',
   family: FAMILY,
@@ -431,7 +518,7 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, -1);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${b} explained themselves to ${a} for far longer than the question actually required, and it did not help.`);
+      lineFor(OVERCORRECT_LINES, `susp-defensive-overcorrect|${ctx.ep}`, { a, b }));
     return { branch: 'overcorrected', pair: [a, b], threadId: t?.id, bondDelta: -1 };
   },
 });
@@ -440,14 +527,20 @@ const GROUP_PRESSURE_LINES = {
   holds: [
     '{b} took the whole room leaning on them and didn\'t budge an inch.',
     'Six people staring at {b} at once, and {b} just waited them out.',
+    'The room asked {b} the same thing four different ways and got the same answer four times.',
+    '{b} let the questions pile up and then answered the first one, calmly, as if the rest had not happened.',
   ],
   cracks: [
     '{b} folded under the group pressure fast, and it showed.',
     'It took less than a minute for {b} to start contradicting themselves.',
+    '{b} started explaining before anyone had actually accused them of anything.',
+    'Somewhere in the third answer {b} stopped talking to the room and started talking to themselves.',
   ],
   redirects: [
     '{b} took the group\'s pressure and pointed it at somebody else entirely.',
     'By the end, the room had forgotten it was ever asking {b} anything.',
+    '{b} answered a question about themselves with a question about somebody else, and the room chased it.',
+    '{b} handed the room a better target than themselves, and the room took it without noticing the trade.',
   ],
 };
 
@@ -486,6 +579,20 @@ registerEvent({
   },
 });
 
+// THE EVENT THIS TASK IS NAMED AFTER. It printed one sentence, and season
+// seed=3 printed it in episodes 1, 4, 8 and 10 — four identical lines in one
+// castle. Task 5 widened its cooldown to three episodes, which took the worst
+// season from four firings to three and was palliative. This is the fix.
+const MISREAD_LINES = [
+  '{a} clocked a completely harmless habit of {b}\'s and decided it meant something.',
+  '{b} does that thing with their sleeve when they are bored. {a} has decided it is not boredom.',
+  '{a} watched {b} do something {b} has done every day of their life and read a confession into it.',
+  'It was the way {b} said good morning. {a} could not have told you what was wrong with it, only that something was.',
+  '{b} laughed a beat late at something and {a} built an entire theory on the beat.',
+  '{a} decided {b} blinks too much when {b} is lying, having never once seen {b} lie.',
+  '{b} sat with their back to the door, the way {b} has sat since the first night, and {a} noticed it for the first time and hated it.',
+];
+
 registerEvent({
   id: 'susp-misread-tell',
   family: FAMILY,
@@ -505,9 +612,14 @@ registerEvent({
   // (Against the pool BEFORE this task it reads 302 -> 343, because the act
   // profile above concentrates it into the early act where it belongs; the
   // two levers pull in opposite directions on purpose - it happens in the
-  // first days, and it does not happen on a loop.) The real fix is a line
-  // pool, and it is not this task's - see the report's open items, where a
-  // good half of this pool turns out to write a constant.
+  // first days, and it does not happen on a loop.)
+  //
+  // PLAN 5 TASK 8 SHIPPED THE REAL FIX, and the cooldown stays anyway. The
+  // event now has a seven-line pool (MISREAD_LINES above), so the sentence is
+  // no longer the argument for holding it off; the SCENE still is. Somebody
+  // inventing a tell out of a mannerism twice in three days is one person
+  // behaving oddly, not two beats of a story, and that was true before the
+  // pool was thin and is true now that it is not.
   cooldown: { event: 3 },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
@@ -521,10 +633,20 @@ registerEvent({
   },
   fire(ctx) {
     const [a, b] = ctx.actors;
+    const state = ctx.state?.[a] || 'content';
+    // NERVY, not the raw state: `desperate` on its own reads 6 firings per 400
+    // seasons, which is inside the noise the branch floor sits in. Paranoid
+    // and desperate are the same scene from the reader's side — somebody the
+    // room came for last night, inventing evidence — and that is the split
+    // worth labelling. The raw state still varies the sentence.
+    const nervy = isNervy(state);
     addBond(a, b, -0.5);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} clocked a completely harmless habit of ${b}'s and decided it meant something.`);
-    return { branch: 'misread', pair: [a, b], threadId: t?.id, bondDelta: -0.5 };
+      lineFor(MISREAD_LINES, `susp-misread-tell|${ctx.ep}|${state}`, { a, b }));
+    // THE BRANCH CARRIES THE STATE. Somebody the room came for last night
+    // inventing a tell is a different scene from somebody comfortable doing
+    // it, and the (id, branch) table could not tell them apart before.
+    return { branch: nervy ? 'misread-nervy' : 'misread-calm', pair: [a, b], threadId: t?.id, bondDelta: -0.5, state };
   },
 });
 
@@ -542,16 +664,28 @@ const DOOR_LINES = {
     '{a} was awake when {b} went past the door, and counted how long it was before {b} came back.',
     'Somebody moved in the corridor after lights-out. {a} knew whose footsteps they were, and said nothing.',
     '{a} lay still and listened to somebody who was not in their own room, and was fairly sure it was {b}.',
+    'Two doors down, a floorboard did what floorboards do, and {a} lay awake deciding it was {b}.',
+    '{a} heard the corridor door on its slow hinge, twice, and both times it was going the wrong way for {b} to be innocent.',
+    'Somebody was awake at the wrong end of the night, and {a} was awake enough to know which end {b} slept at.',
+    '{a} put the pillow over their head and could still hear whoever it was, and still thought it was {b}.',
   ],
   imagined: [
     '{a} spent half the night sure somebody had walked past, and half of it sure they had made it up.',
     'There was a sound in the corridor and {a} built four hours of theory on it before dawn.',
     '{a} heard something, decided it was {b}, and had no reason at all for deciding that.',
+    'The castle settles at night the way old buildings do, and {a} gave every crack of it {b}\'s name.',
+    '{a} was certain, at two in the morning, and much less certain about it at breakfast.',
+    'The corridor was empty all night. {a} filled it with {b} anyway.',
+    '{a} did not so much hear something as decide, in the dark, that they had.',
   ],
   caught: [
     '{b} came back past the door and found {a} sitting up, wide awake, waiting to see who it would be.',
     '{a} did not bother hiding that they had been listening, and {b} did not bother explaining.',
     'They looked straight at each other in the corridor at three in the morning and neither said a word about it.',
+    '{a} opened the door at exactly the wrong moment for {b}, and both of them knew it instantly.',
+    '{b} said they had gone for water. {a} had been counting, and it had been a very long glass of water.',
+    '{a} was sitting on the stairs when {b} came back up them, and neither pretended to be surprised.',
+    '{b} froze at the top of the corridor because {a}\'s door was open, and {a} was behind it.',
   ],
 };
 

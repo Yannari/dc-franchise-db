@@ -22,6 +22,8 @@ import { registerEvent } from '../events.js';
 import { openThread, advanceThread, closeThread, findOpenThread, openThreadsFor, heatAt,
   advanceCiting, lastClosedThread, outcomeSense } from '../threads.js';
 
+import { lineFor } from './lines.js';
+
 const FAMILY = 'trust';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
@@ -83,6 +85,9 @@ const TRADE_LINES = [
   '{a} and {b} compared notes on {c} — quietly, and to no one else.',
   '{a} asked {b} point blank what they made of {c}. {b} told them.',
   'Walking back from breakfast, {a} and {b} traded honest reads on {c}.',
+  '{a} and {b} spent ten minutes on {c} and did not once say anything they would repeat elsewhere.',
+  '"What do you actually think about {c}," {b} asked, and {a} answered the actual question.',
+  '{a} gave {b} the version of their read on {c} that had the doubts still in it.',
 ];
 
 registerEvent({
@@ -122,6 +127,14 @@ registerEvent({
 // so the RARE_MULTIPLIER guard in events.js can do its job: a rare event
 // that never gets the amplification cannot outbid common events on raw
 // weight, no matter how good it reads).
+const CIRCLE_LINES = [
+  '{a} and {b} agreed, without quite saying the word, that they were a unit now.',
+  'Nobody said "alliance". {a} and {b} both left the conversation knowing that was what it had been.',
+  '{a} started saying "we" about things {a} used to say "I" about, and {b} did not correct it.',
+  'It was decided somewhere between the stairs and the door, by {a} and {b}, and never announced.',
+  '{b} said "you and me, then," and {a} said "you and me," and that was the whole ceremony.',
+];
+
 registerEvent({
   id: 'trust-circle-forms',
   family: FAMILY,
@@ -142,7 +155,7 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 2);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} and ${b} agreed, without quite saying the word, that they were a unit now.`);
+      lineFor(CIRCLE_LINES, `trust-circle-forms|${ctx.ep}`, { a, b }));
     return { branch: 'circle', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
@@ -175,18 +188,26 @@ const COMMIT_LINES = {
   kept: [
     '{b} looked {a} in the eye and said "count on it" — and meant it enough to actually do it.',
     'When the moment came, {b} voted exactly the way they told {a} they would.',
+    '{b} gave {a} a name and then wrote that name down, which is rarer here than it sounds.',
+    '{a} did not have to check. {b} had said it, and {b} did it.',
   ],
   broken: [
     '{b} promised {a} their vote, smiled, and cast it somewhere else entirely.',
     '{a} believed {b}. The ballot said otherwise.',
+    '{b} said the right name to {a} at lunch and a different one on the slate.',
+    'The promise held right up until the pen, and then it did not.',
   ],
   deflected: [
     '{b} never actually said yes — they talked around it until {a} stopped pushing.',
     '{a} asked for a number. {b} gave them a vibe.',
+    '{b} agreed with everything {a} said and committed to none of it.',
+    '{a} asked twice. {b} answered a slightly different question both times.',
   ],
   turned: [
     '{b} answered the ask with an ask of their own: "you first."',
     'Instead of committing, {b} turned it around on {a} — now THEY owe an answer.',
+    '{b} wanted to know why {a} needed to know, and would not move until {a} answered that.',
+    'By the end {a} had made a promise and {b} had made none, and neither had planned that.',
   ],
 };
 
@@ -255,6 +276,14 @@ registerEvent({
   },
 });
 
+const HUDDLE_LINES = [
+  '{a} and {b} sat close after last night, and neither one pretended they weren\'t scared.',
+  '{a} and {b} found each other before anybody else was down, and stayed together all morning.',
+  'Neither {a} nor {b} said the word "frightened". They sat shoulder to shoulder for an hour instead.',
+  '{a} got to {b} first, and {b} had been waiting to be got to.',
+  'Whatever else was true this morning, {a} and {b} were not going to be alone in it.',
+];
+
 registerEvent({
   id: 'trust-post-murder-huddle',
   family: FAMILY,
@@ -269,10 +298,18 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 2);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} and ${b} sat close after last night, and neither one pretended they weren't scared.`);
+      lineFor(HUDDLE_LINES, `trust-post-murder-huddle|${ctx.ep}`, { a, b }));
     return { branch: 'huddled', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
+
+const PACT_LINES = [
+  '{a} and {b} made it explicit: whatever happens, neither one puts the other\'s name down.',
+  '{a} said it plainly to {b} — never you, not once, not even as a spare.',
+  'They shook on it, {a} and {b}, which nobody in this castle does lightly.',
+  '{b} asked {a} for the one guarantee worth having, and got it, and gave it back.',
+  '{a} and {b} agreed there was no version of any night where either wrote the other down.',
+];
 
 registerEvent({
   id: 'trust-protect-pact',
@@ -289,11 +326,19 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 1);
     const existing = findOpenThread(FAMILY, [a, b]);
-    const note = `${a} and ${b} made it explicit: whatever happens, neither one puts the other's name down.`;
+    const note = lineFor(PACT_LINES, `trust-protect-pact|${ctx.ep}`, { a, b });
     const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'pact', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
+
+const CHECKIN_LINES = [
+  '{a} checked in with {b} — the arrangement was still holding.',
+  '{a} caught {b} on the stairs, asked nothing in particular, and got the answer they wanted.',
+  'Neither of them named it. {a} asked if they were still good and {b} said they were.',
+  '{a} wanted to hear it out loud again this morning, and {b} said it again without complaint.',
+  'It took four words at the door, and {a} went into the day steadier for them.',
+];
 
 registerEvent({
   id: 'trust-late-checkin',
@@ -340,7 +385,8 @@ registerEvent({
     const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
     addBond(a, b, 1);
-    const { thread, cited } = advanceCiting(t, ctx.ep, `${a} checked in with ${b} — the arrangement was still holding.`);
+    const { thread, cited } = advanceCiting(t, ctx.ep,
+      lineFor(CHECKIN_LINES, `trust-late-checkin|${ctx.ep}`, { a, b }));
     return { branch: 'checked-in', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1 };
   },
 });
@@ -365,6 +411,10 @@ function _sawMurderLastNight(ctx) {
 const SHARE_SUSPICION_LINES = [
   '{a} told {b}, flat out, who they were actually worried about — no hedging.',
   '{a} handed {b} a real read on {c}, the kind you only give someone you trust.',
+  '{a} could have hedged about {c} and did not, which {b} noticed and valued.',
+  '"It\'s {c}," said {a}, with nothing else attached, and let {b} do what they liked with it.',
+  '{a} gave {b} the unflattering version of what they thought about {c}, out loud, first.',
+  '{b} asked {a} straight and {a} answered straight, and {c}\'s name was in the answer.',
 ];
 
 registerEvent({
@@ -390,6 +440,14 @@ registerEvent({
   },
 });
 
+const INVITE_LINES = [
+  '{a} told {b}, in so many words: you\'re one of the people I\'m actually playing this with.',
+  '{a} let {b} see the whole plan, including the parts that made {a} look bad.',
+  'There is a shorter list than the one {a} talks about, and {a} told {b} they were on it.',
+  '{a} stopped managing {b} and started including them, and said so.',
+  '{b} realised halfway through that {a} was telling them the real version, and {a} let them realise it.',
+];
+
 registerEvent({
   id: 'trust-inner-circle-invite',
   // `rare: true` (whole-plan review, finding 5): this gates on a state that is
@@ -407,10 +465,18 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 1);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} told ${b}, in so many words: you're one of the people I'm actually playing this with.`);
+      lineFor(INVITE_LINES, `trust-inner-circle-invite|${ctx.ep}`, { a, b }));
     return { branch: 'invited-in', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
+
+const FAVOR_LINES = [
+  '{b} did {a} a small, real favor tonight — the kind that only makes sense if the pact still holds.',
+  '{b} took something off {a}\'s plate without being asked and without mentioning it afterwards.',
+  '{b} covered for {a} over something trivial, which is how you find out about the untrivial ones.',
+  'Nobody saw {b} do it except {a}, and {b} had made sure of that.',
+  '{a} had not asked. {b} had noticed anyway, and dealt with it.',
+];
 
 registerEvent({
   id: 'trust-return-favor',
@@ -426,11 +492,19 @@ registerEvent({
     const [a, b] = ctx.actors;
     const existing = findOpenThread(FAMILY, [a, b]);
     addBond(a, b, 1);
-    const note = `${b} did ${a} a small, real favor tonight — the kind that only makes sense if the pact still holds.`;
+    const note = lineFor(FAVOR_LINES, `trust-return-favor|${ctx.ep}`, { a, b });
     const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'favor-returned', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
+
+const VOW_LINES = [
+  '{a} and {b} agreed: whatever was said between them stays between them.',
+  '{a} asked {b} never to repeat it, and {b} said they would not, and both of them believed it.',
+  'They drew a line around the conversation, {a} and {b}, and agreed nothing crossed it.',
+  '{b} promised {a} that nobody else would ever hear a word of it, including the parts that were nothing.',
+  'It was a small agreement about a small thing, and {a} and {b} both understood it was not.',
+];
 
 registerEvent({
   id: 'trust-vow-of-silence',
@@ -451,11 +525,20 @@ registerEvent({
   fire(ctx) {
     const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    const advanced = advanceThread(t.id, ctx.ep, `${a} and ${b} agreed: whatever was said between them stays between them.`);
+    const advanced = advanceThread(t.id, ctx.ep,
+      lineFor(VOW_LINES, `trust-vow-of-silence|${ctx.ep}`, { a, b }));
     addBond(a, b, 0.5);
     return { branch: 'vowed-silence', pair: [a, b], threadId: advanced?.id, bondDelta: 0.5 };
   },
 });
+
+const DEFEND_LINES = [
+  'When somebody brought {b}\'s name up sideways, {a} shut it down before it went anywhere.',
+  '{b} was not in the room. {a} argued for them anyway, and won the argument.',
+  '{a} spent capital defending {b} to people who were never going to tell {b} about it.',
+  'The name came up and {a} said "no" before anybody had finished the sentence.',
+  '{a} could have let {b}\'s name sit there and gain weight. {a} took it off the table instead.',
+];
 
 registerEvent({
   id: 'trust-defend-in-absentia',
@@ -474,7 +557,7 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 2);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `When somebody brought ${b}'s name up sideways, ${a} shut it down before it went anywhere.`);
+      lineFor(DEFEND_LINES, `trust-defend-in-absentia|${ctx.ep}`, { a, b }));
     return { branch: 'defended', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
@@ -487,14 +570,20 @@ const SECRET_SWAP_LINES = {
   kept: [
     '{b} sat on what {a} told them. It never came up again, anywhere.',
     'Whatever {a} said, it went into {b} and stayed there.',
+    '{b} had two chances to spend it and did not take either of them.',
+    'Weeks later {a} would still be the only other person who knew, and {a} would know that.',
   ],
   leakedAccident: [
     '{b} didn\'t mean to repeat it — it just slipped out in a different conversation entirely.',
     'The secret got out through {b}, and {b} looked as surprised as anyone that it had.',
+    '{b} assumed everyone already knew, said so out loud, and discovered they had not.',
+    'It came out of {b} as an aside, in a room {a} was not in, and never went back in.',
   ],
   leakedDeliberate: [
     '{b} traded {a}\'s secret to somebody else for something better.',
     '{b} decided {a}\'s secret was worth more spent than kept.',
+    '{b} waited until it would do the most good — for {b} — and then told the right person.',
+    '{b} did the arithmetic on {a}\'s secret and sold at the top.',
   ],
 };
 
@@ -557,16 +646,22 @@ const LAST_WORD_LINES = {
     'The candles were out before {b} said it: whatever happens tomorrow, {a} has it in writing now, or as close as this place gets.',
     '{b} waited until the room was dark to give {a} the promise straight, with no conditions attached to it.',
     'It was the last thing either of them said that night, and {b} meant it: {a} would not be alone at that table.',
+    '{b} said {a}\'s name back to them in the dark, once, as a promise, and left it at that.',
+    'There were no terms on it. {b} made sure {a} heard that there were no terms on it.',
   ],
   hedged: [
     '{a} asked in the dark and {b} gave an answer with just enough air in it to climb back out of later.',
     '{b} said something that sounded like yes to {a}, and neither of them called it what it was.',
     'The answer {b} gave {a} at lights-out would have covered either outcome, which {a} noticed and let go.',
+    '{b} promised {a} everything except the one thing {a} had asked for.',
+    '{a} lay there afterwards working out what {b} had actually agreed to, and could not.',
   ],
   broken: [
     '{b} told {a} in the dark that they could not promise that, and did not soften it.',
     'It ended at lights-out. {b} said no to {a}, plainly, and rolled over.',
     '{a} finally asked outright, and the answer {b} gave closed the whole thing.',
+    '{b} was kind about it, which somehow made it worse, and {a} did not ask twice.',
+    '"I can\'t," said {b}, into the dark, and {a} stopped asking anyone anything that night.',
   ],
 };
 

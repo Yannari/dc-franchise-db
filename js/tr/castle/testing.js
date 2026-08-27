@@ -23,12 +23,147 @@
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
+import { lineFor } from './lines.js';
 import { openThread, advanceThread, closeThread, findOpenThread, continueThread,
   advanceCiting } from '../threads.js';
 
 const FAMILY = 'testing';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
+
+// Line pools chosen by hash, not by rng — see lines.js for why a `pick()`
+// added to an event that did not already have one reroutes the season.
+const DARE_LINES = {
+  complied: [
+    '{a} floated a small, pointless ask, and {b} just went along with it — no questions.',
+    '{a} asked {b} for something trivial and slightly odd, and {b} did it without breaking stride.',
+    '{b} swapped seats because {a} asked them to, and never asked why.',
+    '{a} tested it with something that did not matter at all, and {b} passed without noticing there had been a test.',
+  ],
+  refused: [
+    '{a} floated a small, pointless ask, and {b} pushed back on it, which told {a} something.',
+    '{b} wanted to know why before doing a thing that took four seconds, and {a} filed that.',
+    '{a} asked for nothing much and {b} said no to it, pleasantly, and completely.',
+    '{b} laughed and did not move, and the not moving was the answer {a} came for.',
+  ],
+};
+
+const ALIBI_CHECK_LINES = {
+  ok: [
+    '{a} quietly cross-checked {b}\'s story with a third person. It matched, clean.',
+    '{a} took {b}\'s account to somebody else and came back with nothing to worry about.',
+    'Two people put {b} in the same place at the same time, and {a} had asked them separately.',
+    '{a} went looking for a hole in {b}\'s evening and did not find one.',
+    '{a} asked around about {b} without ever saying they were asking, and everything came back fine.',
+  ],
+  bad: [
+    '{a} quietly cross-checked {b}\'s story with a third person. It didn\'t quite match.',
+    '{a} asked somebody else where {b} had been, and got a different room.',
+    'The times were nearly right. Nearly was the problem, and {a} noticed it.',
+    '{b}\'s version had one person in it who did not remember being there, and {a} had asked them first.',
+    'Somebody else put {b} somewhere {b} had not mentioned, and {a} did not point that out.',
+  ],
+};
+
+const OATH_LINES = {
+  sincere: [
+    '{a} asked {b} to commit to it in front of the room, and {b} did, without hesitating.',
+    '{a} put the question publicly and {b} answered it publicly, straight away, and meant it.',
+    '{b} said yes before {a} had finished asking, in front of everybody.',
+    '{a} wanted it said out loud where witnesses were, and {b} said it out loud.',
+  ],
+  reluctant: [
+    '{b} said what {a} wanted to hear, but it took visible effort to get there.',
+    '{b} got to the right answer the long way round, and the room watched the whole route.',
+    '{a} got the commitment. {a} also got a pause before it that everybody heard.',
+    '{b} agreed, eventually, in a voice that was doing something other than agreeing.',
+  ],
+  refuses: [
+    '{b} flatly refused to make the commitment {a} was asking for, publicly.',
+    '{b} said they were not going to promise anybody anything, and said it to the room, not to {a}.',
+    '{a} asked for a promise and got a lecture about promises.',
+    '{b} would not say the words, and did not pretend to be sorry about it.',
+  ],
+};
+
+const REVERSE_PSYCH_LINES = {
+  calm: [
+    '{a} pretended to distrust {b} just to see the reaction. {b} just laughed it off.',
+    '{a} accused {b} of something they did not believe, and {b} agreed with them cheerfully.',
+    '{a} baited {b}, badly on purpose, and {b} took it exactly as seriously as it deserved.',
+    '{b} saw it coming, said so, and made {a} say what they were actually after.',
+  ],
+  rattled: [
+    '{a} pretended to distrust {b} just to see the reaction, and {b} got visibly rattled.',
+    '{a} said something they did not mean and {b} spent ten minutes answering it.',
+    'It was not a real accusation. {b} defended themselves from it like it was.',
+    '{b}\'s face did the whole thing before {b}\'s mouth caught up, and {a} watched both.',
+  ],
+};
+
+const HYPOTHETICAL_LINES = {
+  reassured: [
+    '{a} asked {b} what they\'d do if {a} got banished next. {b}\'s answer landed as sincere.',
+    '"If it\'s me tomorrow," said {a}, and {b} answered the whole question, properly.',
+    '{a} put the worst version of tomorrow to {b}, and {b} did not flinch from it.',
+    '{b} told {a} exactly who they would go after, and it was believable.',
+  ],
+  hedged: [
+    '{a} asked {b} what they\'d do if {a} got banished next. {b} hedged, and {a} noticed the hedge.',
+    '{a} asked a direct question about tomorrow and got a paragraph about today.',
+    '{b} said it would not come to that, twice, and did not say what they would do if it did.',
+    '{b} answered around the edges of it, and {a} let them, and remembered.',
+  ],
+};
+
+const DOUBLE_CHECK_LINES = {
+  consistent: [
+    '{a} asked {b} to walk through their morning again. It matched, word for word.',
+    '{a} made {b} tell it a second time and it came out the same, including the boring parts.',
+    'Second telling, same order, same details. {a} had been hoping for otherwise.',
+    '{b} retold it with a shrug and got every hour of it right.',
+    '{a} asked for it again out of order and {b} reassembled it without a wobble.',
+  ],
+  inconsistent: [
+    '{a} asked {b} to walk through their morning again, and it came out different the second time.',
+    'The second version had a room in it the first version did not, and {a} caught it.',
+    '{b} moved half an hour around between the two tellings and did not notice doing it.',
+    '{a} asked again and got a tidier story, which is worse than a messier one.',
+    'The second version was missing the one detail {a} had actually been listening for.',
+  ],
+};
+
+const SILENCE_LINES = {
+  chased: [
+    '{a} went quiet on purpose to see if {b} would chase it. {b} did, almost immediately.',
+    '{a} stopped talking mid-thought, and {b} could not leave it there.',
+    '{a} let the silence run, and {b} filled it, twice.',
+    '{b} came and found {a} an hour later to finish the sentence {a} had abandoned.',
+  ],
+  letgo: [
+    '{a} went quiet on purpose to see if {b} would chase it. {b} let it be quiet right back.',
+    '{a} left a gap. {b} sat in it comfortably and said nothing at all.',
+    '{a} was waiting to be asked. {b} did not ask, and it was a long morning.',
+    '{b} matched the silence exactly, which told {a} either a great deal or nothing.',
+  ],
+};
+
+const COLD_READ_LINES = [
+  '{a} dropped a leading line about {c} into the conversation, purely to watch what crossed {b}\'s face.',
+  '{a} said something almost true about {c} and spent the whole sentence watching {b} instead.',
+  '{a} put {c}\'s name down in front of {b} like a card, face up, and waited.',
+  '{a} pretended to have heard something about {c}. {b}\'s reaction was the information {a} was after.',
+  '{a} mentioned {c} in the wrong context on purpose, and read {b} instead of listening to them.',
+];
+
+const FOLLOW_THROUGH_LINES = [
+  '{a} kept quietly checking whether {b} was still holding up to whatever they\'d been asked before.',
+  '{a} never said the word out loud again, and went on checking every day that {b} was keeping it.',
+  '{b} did not know they were still being marked. {a} was still marking.',
+  '{a} looked for the day {b} would let it slip, and it had not been today either.',
+  'It had been asked once and never repeated, and {a} was watching the answer hold.',
+];
+
 
 registerEvent({
   id: 'testing-small-dare',
@@ -47,9 +182,8 @@ registerEvent({
     const compliant = rng() < Math.max(0.1, Math.min(0.9, st.loyalty / 10));
     const bondDelta = compliant ? 0.5 : -0.5;
     addBond(a, b, bondDelta);
-    const line = compliant
-      ? `${a} floated a small, pointless ask, and ${b} just went along with it — no questions.`
-      : `${a} floated a small, pointless ask, and ${b} pushed back on it, which told ${a} something.`;
+    const line = lineFor(DARE_LINES[compliant ? 'complied' : 'refused'],
+      `testing-small-dare|${ctx.ep}|${compliant}`, { a, b });
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
     return { branch: compliant ? 'complied' : 'refused', pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
@@ -80,9 +214,8 @@ registerEvent({
     const checksOut = rng() < Math.max(0.15, Math.min(0.9, st.temperament / 10));
     const bondDelta = checksOut ? 0.5 : -1;
     addBond(a, b, bondDelta);
-    const line = checksOut
-      ? `${a} quietly cross-checked ${b}'s story with a third person. It matched, clean.`
-      : `${a} quietly cross-checked ${b}'s story with a third person. It didn't quite match.`;
+    const line = lineFor(ALIBI_CHECK_LINES[checksOut ? 'ok' : 'bad'],
+      `testing-ask-for-alibi-check|${ctx.ep}|${checksOut}`, { a, b });
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
     return { branch: checksOut ? 'checks-out' : 'inconsistent', pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
@@ -112,11 +245,7 @@ registerEvent({
     else if (roll < sincereScore + reluctantScore) branch = 'reluctant';
     else branch = 'refuses';
 
-    const line = branch === 'sincere'
-      ? `${a} asked ${b} to commit to it in front of the room, and ${b} did, without hesitating.`
-      : branch === 'reluctant'
-        ? `${b} said what ${a} wanted to hear, but it took visible effort to get there.`
-        : `${b} flatly refused to make the commitment ${a} was asking for, publicly.`;
+    const line = lineFor(OATH_LINES[branch], `testing-loyalty-oath|${ctx.ep}|${branch}`, { a, b });
     const bondDelta = branch === 'sincere' ? 2 : branch === 'reluctant' ? 0 : -2;
     if (bondDelta) addBond(a, b, bondDelta);
     const existing = findOpenThread(FAMILY, [a, b]);
@@ -144,9 +273,8 @@ registerEvent({
     const staysCalm = rng() < Math.max(0.1, Math.min(0.9, st.temperament / 10));
     const bondDelta = staysCalm ? 0.5 : -1;
     addBond(a, b, bondDelta);
-    const line = staysCalm
-      ? `${a} pretended to distrust ${b} just to see the reaction. ${b} just laughed it off.`
-      : `${a} pretended to distrust ${b} just to see the reaction, and ${b} got visibly rattled.`;
+    const line = lineFor(REVERSE_PSYCH_LINES[staysCalm ? 'calm' : 'rattled'],
+      `testing-reverse-psychology|${ctx.ep}|${staysCalm}`, { a, b });
     const t = openThread(FAMILY, [a, b], ctx.ep, line);
     return { branch: staysCalm ? 'stayed-calm' : 'got-rattled', pair: [a, b], threadId: t?.id, bondDelta };
   },
@@ -167,9 +295,8 @@ registerEvent({
     const reassures = rng() < Math.max(0.15, Math.min(0.9, st.loyalty / 10));
     const bondDelta = reassures ? 1 : -0.5;
     addBond(a, b, bondDelta);
-    const line = reassures
-      ? `${a} asked ${b} what they'd do if ${a} got banished next. ${b}'s answer landed as sincere.`
-      : `${a} asked ${b} what they'd do if ${a} got banished next. ${b} hedged, and ${a} noticed the hedge.`;
+    const line = lineFor(HYPOTHETICAL_LINES[reassures ? 'reassured' : 'hedged'],
+      `testing-hypothetical-loyalty-question|${ctx.ep}|${reassures}`, { a, b });
     const t = openThread(FAMILY, [a, b], ctx.ep, line);
     return { branch: reassures ? 'reassured' : 'hedged', pair: [a, b], threadId: t?.id, bondDelta };
   },
@@ -197,9 +324,8 @@ registerEvent({
     const consistent = rng() < Math.max(0.15, Math.min(0.9, st.temperament / 10 * 0.6 + 0.3));
     const bondDelta = consistent ? 0 : -1;
     if (bondDelta) addBond(a, b, bondDelta);
-    const line = consistent
-      ? `${a} asked ${b} to walk through their morning again. It matched, word for word.`
-      : `${a} asked ${b} to walk through their morning again, and it came out different the second time.`;
+    const line = lineFor(DOUBLE_CHECK_LINES[consistent ? 'consistent' : 'inconsistent'],
+      `testing-double-check-story|${ctx.ep}|${consistent}`, { a, b });
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
     return { branch: consistent ? 'consistent' : 'inconsistent', pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
@@ -224,9 +350,8 @@ registerEvent({
     const chases = rng() < Math.max(0.1, Math.min(0.9, st.social / 10 * 0.5 + st.loyalty / 10 * 0.4));
     const bondDelta = chases ? 1 : -1;
     addBond(a, b, bondDelta);
-    const line = chases
-      ? `${a} went quiet on purpose to see if ${b} would chase it. ${b} did, almost immediately.`
-      : `${a} went quiet on purpose to see if ${b} would chase it. ${b} let it be quiet right back.`;
+    const line = lineFor(SILENCE_LINES[chases ? 'chased' : 'letgo'],
+      `testing-silence-test|${ctx.ep}|${chases}`, { a, b });
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
     return { branch: chases ? 'chased' : 'let-it-go', pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
@@ -247,7 +372,7 @@ registerEvent({
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others.length ? others : [b]);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} dropped a leading line about ${target} into the conversation, purely to watch what crossed ${b}'s face.`);
+      lineFor(COLD_READ_LINES, `testing-cold-read-check|${ctx.ep}`, { a, b, c: target }));
     addBond(a, b, 0);
     return { branch: 'cold-read', pair: [a, b], target, threadId: t?.id };
   },
@@ -270,7 +395,8 @@ registerEvent({
     const [a, b] = ctx.actors;
     const t = findOpenThread(FAMILY, [a, b]);
     addBond(a, b, 0.5);
-    const { thread, cited } = advanceCiting(t, ctx.ep, `${a} kept quietly checking whether ${b} was still holding up to whatever they'd been asked before.`);
+    const { thread, cited } = advanceCiting(t, ctx.ep,
+      lineFor(FOLLOW_THROUGH_LINES, `testing-follow-through-check|${ctx.ep}`, { a, b }));
     return { branch: 'followed-through', pair: [a, b], threadId: thread?.id, cited, bondDelta: 0.5 };
   },
 });
@@ -307,18 +433,26 @@ const DECOY_LINES = {
   keptQuiet: [
     '{a} planted a fake secret with {b} and it never went anywhere. Not a whisper.',
     '{b} sat on the planted secret completely. It was a clean pass.',
+    '{a} waited two days for the fake to surface somewhere. It never did.',
+    '{b} was told something worth telling and told nobody, and did not once mention not telling.',
   ],
   innocent: [
     '{b} repeated the planted secret to somebody else within the day — no malice, just couldn\'t help it.',
     'The fake secret got out through {b}, and {b} clearly hadn\'t meant for it to.',
+    '{b} told one person, in confidence, who told one person, in confidence, and {a} heard it back by evening.',
+    'It came back to {a} with {b}\'s phrasing still on it, which was answer enough.',
   ],
   malicious: [
     '{b} took the planted secret and spent it deliberately, for something they wanted.',
     '{b} traded {a}\'s "secret" for leverage the moment it was useful.',
+    '{b} did not just repeat it. {b} improved it, and aimed the improved version at somebody.',
+    '{a} watched {b} sell it, knowingly, to the person it would do the most damage with.',
   ],
   caughtTest: [
     '{b} looked {a} dead in the eye and said "you\'re testing me, aren\'t you?" — and {a} had no good answer.',
     '{b} saw straight through the plant, and made sure {a} knew they had.',
+    '{b} repeated the fake secret back to {a}, word perfect, with an eyebrow up.',
+    '"That\'s not true," {b} said, pleasantly, "and you know it isn\'t." {a} did know it.',
   ],
 };
 
@@ -389,16 +523,19 @@ const NIGHT_CHECK_LINES = {
     '{a} went back over what they had asked {b} and what {b} had done about it, and it came out clean.',
     'Before sleeping {a} put the whole test back together in their head, and {b} passed it twice.',
     '{a} had been waiting all day for the thing that would prove them wrong about {b}, and it never arrived.',
+    '{a} could not find the seam, and went to sleep having decided that meant there was not one.',
   ],
   failed: [
     '{a} laid the day out before sleeping and found the exact place {b} had failed it.',
     'It took until lights-out for {a} to see it, and then it was the only thing {a} could see.',
     '{a} worked out what {b} had actually done with it, and stopped pretending otherwise.',
+    'One sentence from the afternoon came back to {a} at midnight with a different meaning on it.',
   ],
   inconclusive: [
     '{a} could not make the day prove anything about {b} either way, and it kept them up.',
     'The test came back neither one thing nor the other, and {a} hated that more than a failure.',
     '{a} ran it back three times before sleeping and still had nothing to show for it.',
+    'Every reading of it worked. That was the problem, and {a} knew it was the problem.',
   ],
 };
 

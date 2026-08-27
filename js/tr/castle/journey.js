@@ -67,16 +67,22 @@ const STEP_LINES = {
     '{b} fell into step with {a} on the way out and said more in ten minutes of walking than in three days indoors.',
     'Out of the castle\'s hearing, {b} told {a} the thing they had been carrying around all week.',
     'Walking put {b} at ease in a way the great hall never had, and {a} got the honest version.',
+    'Two miles from anybody, {b} told {a} something {b} had not planned on telling anybody at all.',
+    '{b} talked for the whole first hill and {a} did not interrupt once, and got the lot.',
   ],
   probed: [
     '{b} kept pace with {a} the whole way out and asked questions the whole way out with it.',
     'Somewhere on the road {a} realised {b} had been steering the conversation since the gate.',
     '{b} spent the walk taking {a} apart very politely, one small question at a time.',
+    'Every answer {a} gave got a follow-up, and {b} never once sounded like they were interrogating anybody.',
+    '{b} asked {a} about the weather, then about breakfast, then about last night, in that order.',
   ],
   quiet: [
     '{a} and {b} walked the whole way without saying much, and neither of them minded.',
     '{b} had nothing to say on the road out, and {a} decided not to fill the gap.',
     'It was a long walk and {b} spent it inside their own head, with {a} beside them.',
+    '{a} tried twice to start something and {b} let both attempts die, without any rudeness in it.',
+    'They matched pace for an hour, {a} and {b}, and that was the whole of the conversation.',
   ],
 };
 
@@ -127,16 +133,22 @@ const EARSHOT_LINES = {
     '{a} waited until the castle was out of sight to say {c}\'s name, and {b} said they had been thinking it too.',
     'Off the path, {a} finally said what they thought about {c}. {b} did not need convincing.',
     '{a} tried the theory about {c} out on {b} where nobody could overhear it, and it landed.',
+    'The second the gate was behind them, {a} said {c}, and {b} said {c} back.',
+    '{a} and {b} spent the middle of the road agreeing about {c} in more detail than either had planned.',
   ],
   hedged: [
     '{a} floated {c}\'s name on the road and {b} neither agreed nor argued, which {a} noticed.',
     'Out of earshot {a} named {c}. {b} said "maybe" and changed the subject before the next bend.',
     '{a} put {c} in front of {b} and got a shrug for it, and walked the rest of the way wondering why.',
+    '{b} agreed that {c} was worth watching, and would not say a word about what they had seen.',
+    '{a} said {c} was the one. {b} said everyone was the one, and laughed, and left it.',
   ],
   defended: [
     '{a} said {c}\'s name out on the road and {b} shut it down flat.',
     '{b} would not have a word said about {c}, not even out here where nobody was listening.',
     '{a} learned something on that walk, and it was about {b}, not about {c}.',
+    '{b} told {a} to leave {c} alone, out on the road, with more heat than the question had.',
+    '{a} had picked the one name {b} would not hear, and found that out a mile from the castle.',
   ],
 };
 
@@ -190,16 +202,22 @@ const ROAD_REHEARSAL_LINES = {
     '{a} used the walk to run their own story back through, start to finish, and could not find a seam in it.',
     'By the time the castle was out of sight {a} had the whole account smooth enough to say in their sleep.',
     '{a} spent the road out rehearsing, and came off it with an answer for every question anybody had left.',
+    '{a} walked the whole account through twice, out loud, under their breath, and it held both times.',
+    'The road was long enough for {a} to test every version and keep the plainest one.',
   ],
   serviceable: [
     '{a} went over their story on the walk and got most of it to hold, which would have to do.',
     'There was one part {a} still could not say twice the same way, and the road ran out before it was fixed.',
     '{a} practised until the account was good enough, and tried not to think about the part that was not.',
+    '{a} got it down to one weak hour and decided one weak hour was survivable.',
+    'By the last mile the story worked, provided nobody asked about the middle of it.',
   ],
   overcooked: [
     '{a} rehearsed the story so many times on the way out that it stopped sounding like something that happened.',
     'By the last mile {a}\'s account had grown three details it did not need and could not lose.',
     '{a} polished it past the point of being believable and knew it, and could not stop.',
+    'The version {a} walked back with had a time on every hour of it, which no honest person has.',
+    '{a} added a small human detail, and then another, and by the gate it was a performance.',
   ],
 };
 
@@ -244,16 +262,22 @@ const WALK_PICK_LINES = {
     '{a} chose {b} to walk with instead of the obvious person, and {b} spent the road visibly pleased about it.',
     '{b} had not expected to be picked, and did not hide how much it landed.',
     '{a} dropped back to walk with {b}, and {b} took it as exactly what it looked like.',
+    '{b} had been braced for a long walk on their own, and spent the whole of it grinning instead.',
+    'Being chosen did something visible to {b}, and {a} saw it happen and said nothing.',
   ],
   wary: [
     '{a} chose {b} to walk with, and {b} spent the whole road working out why.',
     '{b} noticed they had been picked and did not once believe it was an accident.',
     '{a} fell in beside {b}, and {b} answered every question with a shorter question.',
+    '{b} was perfectly pleasant for two hours and gave {a} absolutely nothing.',
+    '{b} kept half a step ahead the whole way, which is not where you walk with a friend.',
   ],
   transactional: [
     '{b} understood the pick immediately, priced it, and started talking about what happened at the next vote.',
     '{a} picked {b} for the walk and {b} had turned it into an arrangement before the first hill.',
     '{b} accepted the company and made sure {a} knew what it would be worth later.',
+    '{b} was glad of the walk and said so, and then said what they wanted for it.',
+    'By the second hill {b} had stopped talking about the walk and started talking about the vote.',
   ],
 };
 
@@ -370,6 +394,8 @@ const ROAD_SPARK_LINES = [
   '{a} and {b} walked the whole road out beside each other and neither of them had planned it that way.',
   'Out of the castle and away from everybody, {a} and {b} talked about nothing in particular for two hours.',
   'Somewhere on the road out {a} said something small and stupid and {b} laughed longer than it deserved.',
+  '{a} and {b} fell behind the group by about fifty yards and stayed exactly fifty yards behind it.',
+  'Neither {a} nor {b} could have told you what they talked about on the road out, only that it went quickly.',
 ];
 
 // A SECOND ENTRY POINT FOR ROMANCE, AND IT IS A FIX, NOT A FLOURISH.
@@ -430,21 +456,29 @@ const SETTLED_LINES = {
     'Whatever had been sitting between {a} and {b} all day, {b} answered it straight on the walk home, and that was that.',
     'By the time the castle came back into view {b} had given {a} the answer they had been waiting for.',
     '{b} said the thing plainly on the road back. {a} believed it, and stopped asking.',
+    'It took {b} one sentence on the walk home, and {a} had been waiting three days for it.',
+    '{b} said it without being asked, halfway back, and {a} did not need to hear it twice.',
   ],
   dropped: [
     '{a} decided somewhere on the way back that it was not worth carrying and let it go.',
     'Neither {a} nor {b} raised it again on the road home. It was simply over.',
     'The walk back was long enough for {a} to talk themselves out of it entirely.',
+    '{a} started to bring it up at the third mile and decided, mid-breath, not to bother.',
+    'By the gate {a} could not remember why it had mattered enough to carry all day.',
   ],
   soured: [
     'It came apart on the walk back. {b} said the wrong thing and {a} stopped pretending.',
     'Whatever {a} and {b} had, it did not survive the road home.',
     '{b} pushed it one sentence too far on the way back, and {a} was done.',
+    '{b} explained, and then explained the explanation, and {a} walked the last mile alone.',
+    'There was a version of the road home where {a} and {b} were fine. {b} talked past it.',
   ],
   unresolved: [
     'They talked the whole way back and settled nothing, and both of them knew it.',
     '{a} and {b} got to the gate with the same question still open between them.',
     'The castle came back into view before {a} and {b} had got anywhere near the end of it.',
+    '{a} and {b} agreed to finish it later, which both of them heard as what it was.',
+    'The road ran out before the conversation did, and {a} and {b} carried the rest of it inside.',
   ],
 };
 
@@ -505,16 +539,22 @@ const LET_IT_GO_LINES = {
     'On the road back {b} answered it, properly, and {a} could not find anything wrong with the answer.',
     '{b} finally gave {a} the whole account on the walk home, and it held together.',
     'By the gate {a} had run out of ways to make {b} look guilty, and said so.',
+    '{b} walked {a} through it hour by hour on the way home and it survived every hour.',
+    '{a} came back through the gate having decided, for now, that they had been wrong about {b}.',
   ],
   slipped: [
     'It was a long walk and {b} talked too much on it. {a} got something out of it that {b} did not mean to give.',
     'Somewhere on the road home {b} said one sentence too many, and {a} heard it.',
     'The walk back went on long enough that {b} contradicted themselves, and {a} was still listening.',
+    '{b} volunteered a detail nobody had asked for, on the road home, and it was the wrong one.',
+    '{a} had almost let it go when {b} said the thing that made letting it go impossible.',
   ],
   hardened: [
     'Nothing about the walk back changed {a}\'s mind about {b}, and {b} could tell.',
     '{b} spent the road home defending themselves to {a}, and made it worse with every mile.',
     'By the time the castle came back into view {a} was more certain about {b}, not less.',
+    '{b} answered everything on the walk home, at length, and {a} believed none of it.',
+    'The road back gave {b} every chance to fix it with {a}, and {b} used all of them badly.',
   ],
 };
 
@@ -560,11 +600,15 @@ const STORY_SURVIVED_LINES = {
     'A whole day out of the castle and nobody caught {a} in anything. The story was still standing at the gate.',
     '{a} got through the entire journey without having to change a single word of it.',
     'By the walk home {a} had stopped bracing for the question, because it never came.',
+    'Nobody out there had any interest in {a} at all, which was the best news {a} had had all week.',
+    '{a} said the same three sentences to four different people and none of them blinked.',
   ],
   frayed: [
     '{a} had to patch it twice on the road and neither patch was clean.',
     'The story got {a} home, but it had lost a piece somewhere out there.',
     '{a} spent the walk back quietly listing everything they would have to remember differently now.',
+    'One person on the road out remembered it differently, and {a} had to agree with them.',
+    '{a} came home with a story that worked and one loose end they could not tie off.',
   ],
   // THE ACCOUNT COMES APART, NOT THE PERSON. This branch closes the cover
   // THREAD with `exposed`, and a sentence implying the room now knows what
@@ -575,6 +619,8 @@ const STORY_SURVIVED_LINES = {
     'Somebody asked the one question on the road back, and {a} did not have an answer that matched the last one.',
     'The account came apart in the open, hours from the castle, and {a} had nothing to put in its place.',
     '{a} heard their own story fall over on the walk home and could not pick it back up.',
+    'It went wrong in the open, in front of people, and {a} had a whole road home to think about it.',
+    '{a} answered too fast, out there where there was nowhere to go, and the answer was wrong.',
   ],
 };
 
@@ -626,11 +672,15 @@ const CASTLE_IN_VIEW_LINES = {
     '{a} and {b} talked about the ones who were gone the whole way back, and by the gate they had said everything there was.',
     'Somewhere on the road home {a} and {b} stopped talking about the dead and started talking about tomorrow.',
     'They left it out there on the road. {a} and {b} came back through the gate lighter than they went out.',
+    '{a} and {b} said the last of it at the last bend, and walked in with nothing owed.',
+    'It got said properly, out there, and {a} and {b} both put it down before the gate.',
   ],
   carried: [
     'The castle came back into view and {a} felt the whole thing land on them again, with {b} right there.',
     '{a} and {b} had almost stopped thinking about it, and then they saw the roof.',
     'Coming back through the gate put it straight back on {a} and {b} both.',
+    '{a} and {b} had a good day, right up until the towers came over the hill.',
+    'The walk home was fine. The last two hundred yards of it were not, for either of them.',
   ],
 };
 
@@ -672,6 +722,8 @@ const WALKED_BACK_LINES = [
   '{a} and {b} were the last two through the gate, and neither of them had been walking fast.',
   'The road back took {a} and {b} longer than it took anybody else, and nobody said anything about it.',
   '{a} and {b} came in from the road still talking, hours after they had run out of things to say.',
+  'Somebody held the gate for {a} and {b} for rather longer than they had expected to have to.',
+  '{a} and {b} stopped twice on the way back for no reason either of them offered.',
 ];
 
 // RARE, AND DECLARED (spec §5.4.1). The precondition is a spark that already

@@ -47,6 +47,8 @@ import { registerEvent } from '../events.js';
 import { openThread, advanceThread, closeThread, findOpenThread, continueThread } from '../threads.js';
 import { activeSeasons } from '../../franchise-meta.js';
 
+import { lineFor } from './lines.js';
+
 const FAMILY = 'callback';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
@@ -85,6 +87,17 @@ function strongestRelation(history) {
   return history[0] || null;
 }
 
+const RECOGNIZED_LINES = [
+  '{a} and {b} clocked each other from a previous season before either one said a word about it.',
+  '{a} knew exactly who {b} was the moment they walked in, and said nothing, and so did {b}.',
+  'Neither {a} nor {b} needed an introduction, and both of them sat through one anyway.',
+  'It took {a} half a second to place {b}, and about the same for {b} to notice being placed.',
+  '{a} and {b} shook hands like strangers in front of a room that had no idea.',
+  'There was a look between {a} and {b} at the door that was several seasons long.',
+  '{a} said "hello" to {b} in a tone that had a whole season folded into it.',
+  '{b} clocked {a} across the hall and went back to their conversation a beat too smoothly.',
+];
+
 registerEvent({
   id: 'callback-recognized',
   family: FAMILY,
@@ -103,10 +116,18 @@ registerEvent({
     const [a, b] = ctx.actors;
     const strongest = strongestRelation(sharedHistory(a, b));
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} and ${b} clocked each other from a previous season before either one said a word about it.`);
+      lineFor(RECOGNIZED_LINES, `callback-recognized|${ctx.ep}|${strongest?.relation || 'none'}`, { a, b }));
     return { branch: 'recognized', pair: [a, b], relation: strongest?.relation, threadId: t?.id };
   },
 });
+
+const REFORM_LINES = [
+  '{a} and {b} picked their old alliance back up like no time had passed at all.',
+  'It took {a} and {b} about a minute to be exactly what they had been last time.',
+  '{a} and {b} did not renegotiate anything. The old terms simply resumed.',
+  'Whatever {a} and {b} built last time was apparently still standing, and they moved back into it.',
+  '{b} said "same as before?" and {a} said "same as before," and that was a whole alliance done.',
+];
 
 registerEvent({
   id: 'callback-old-alliance-reforms',
@@ -123,11 +144,19 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 2);
     const existing = findOpenThread(FAMILY, [a, b]);
-    const note = `${a} and ${b} picked their old alliance back up like no time had passed at all.`;
+    const note = lineFor(REFORM_LINES, `callback-old-alliance-reforms|${ctx.ep}`, { a, b });
     const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'alliance-reformed', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
+
+const GRUDGE_LINES = [
+  '{a} still hadn\'t forgiven what {b} did to them, seasons ago, and made sure {b} knew it.',
+  '{a} brought up something {b} had assumed everybody had forgotten, and nobody had.',
+  'It had been years. {a} produced it in full detail, in front of people, anyway.',
+  '{b} apologised for it once, apparently, and {a} has apparently never accepted it.',
+  '{a} does not talk about {b} very much, and every time {a} does it is about the same night.',
+];
 
 registerEvent({
   id: 'callback-grudge-resurfaces',
@@ -143,10 +172,18 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, -2);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} still hadn't forgiven what ${b} did to them, seasons ago, and made sure ${b} knew it.`);
+      lineFor(GRUDGE_LINES, `callback-grudge-resurfaces|${ctx.ep}`, { a, b }));
     return { branch: 'grudge-resurfaced', pair: [a, b], threadId: t?.id, bondDelta: -2 };
   },
 });
+
+const REUNION_LINES = [
+  '{a} and {b} found out the old feelings hadn\'t actually gone anywhere.',
+  'Whatever {a} and {b} had ended, apparently, only on paper.',
+  '{a} and {b} were fine, and adult, and completely over it, for about two days.',
+  'It turns out {a} and {b} still have all their old shorthand, and it still works.',
+  '{b} laughed at something the way they used to, and {a} was in trouble again immediately.',
+];
 
 registerEvent({
   id: 'callback-showmance-reunion-spark',
@@ -165,10 +202,18 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 2);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} and ${b} found out the old feelings hadn't actually gone anywhere.`);
+      lineFor(REUNION_LINES, `callback-showmance-reunion-spark|${ctx.ep}`, { a, b }));
     return { branch: 'reunion-spark', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
+
+const RIVALRY_LINES = [
+  'Whatever it was between {a} and {b} last time, it clearly hadn\'t cooled off.',
+  '{a} and {b} were competing about something before either of them noticed they had started.',
+  'Everything between {a} and {b} is still a scoreboard, and both of them can read it.',
+  '{a} disagreed with {b} on a point neither of them cared about, purely out of habit.',
+  'Put {a} and {b} in a room and the temperature does the same thing it always did.',
+];
 
 registerEvent({
   id: 'callback-competitive-history',
@@ -183,10 +228,18 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, -1);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `Whatever it was between ${a} and ${b} last time, it clearly hadn't cooled off.`);
+      lineFor(RIVALRY_LINES, `callback-competitive-history|${ctx.ep}`, { a, b }));
     return { branch: 'rivalry-carried-over', pair: [a, b], threadId: t?.id, bondDelta: -1 };
   },
 });
+
+const DEFEND_HISTORY_LINES = [
+  '{a} shut down the suspicion around {b} with the one thing nobody else in the room could offer: they\'d already vouched for each other once before.',
+  '"I have played a whole season with {b}," said {a}, and the room had no answer to that.',
+  '{a} produced a reason to trust {b} that predated everybody else in the castle.',
+  'Nobody else in the room had ever seen {b} under pressure. {a} had, and said so, and it landed.',
+  '{a} did not defend {b}\'s answer. {a} defended {b}, out of a history the room could not argue with.',
+];
 
 registerEvent({
   id: 'callback-protects-old-ally-from-vote',
@@ -220,10 +273,19 @@ registerEvent({
     addBond(defender, defended, 2);
     closeThread(susp.id, ctx.ep, 'defended-by-history');
     const t = openThread(FAMILY, [defender, defended], ctx.ep,
-      `${defender} shut down the suspicion around ${defended} with the one thing nobody else in the room could offer: they'd already vouched for each other once before.`);
+      lineFor(DEFEND_HISTORY_LINES, `callback-protects-old-ally-from-vote|${ctx.ep}`,
+        { a: defender, b: defended }));
     return { branch: 'defended-by-history', pair: [defender, defended], threadId: t?.id, bondDelta: 2 };
   },
 });
+
+const WARN_LINES = [
+  '{a} pulled {c} aside and told them exactly what {b} was capable of, from experience.',
+  '{a} gave {c} the short version of what {b} did last time, and {c} went very quiet.',
+  '"Whatever {b} tells you," {a} said to {c}, "remember I said this first."',
+  '{a} does not warn people about many players. {a} warned {c} about {b} before breakfast.',
+  '{c} had no reason to distrust {b} until {a} spent ten minutes supplying several.',
+];
 
 registerEvent({
   id: 'callback-warns-newbies',
@@ -251,10 +313,37 @@ registerEvent({
     addBond(a, c, 0.5);
     addBond(a, b, -1);
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      `${a} pulled ${c} aside and told them exactly what ${b} was capable of, from experience.`);
+      lineFor(WARN_LINES, `callback-warns-newbies|${ctx.ep}`, { a, b, c }));
     return { branch: 'warned', actor: a, about: b, warned: c, threadId: thread?.id, cited, bondDelta: -1 };
   },
 });
+
+const DIFFERENT_PERSON_LINES = {
+  redemption: [
+    '{a} admitted {b} was playing a completely different game than the one {a} remembered — and it was throwing them.',
+    '{a} came in ready to dislike {b} and has spent a week failing to.',
+    'Whoever {b} was last time, {a} has had to concede this is not that person.',
+    '{a} keeps waiting for the old {b} to show up, and is starting to think they will not.',
+    '{b} has done two things this week that the {b} in {a}\'s head would never have done.',
+    '{a} has caught themselves enjoying {b}\'s company, which was not the plan at all.',
+  ],
+  disappointment: [
+    '{a} expected {b} to be exactly who they were last time. This {b} was a stranger wearing the name.',
+    '{a} had been looking forward to seeing {b} again, and got somebody colder than they remembered.',
+    'The {b} that {a} liked seems to have stayed at home this season.',
+    '{a} tried the old shorthand on {b} twice, and it did not work either time.',
+    '{b} has been perfectly polite to {a} all week, and {a} would prefer almost anything else.',
+    'Whatever {a} remembered liking about {b} has not turned up yet.',
+  ],
+  dissonance: [
+    '{a} kept comparing this version of {b} to the one they remembered, out loud, to {b}\'s visible annoyance.',
+    '{a} has said "you never used to" to {b} three times today, and {b} has counted all three.',
+    '{b} would quite like to be judged on this season, and {a} keeps producing the last one.',
+    '{a} narrated the old {b} at the new {b} until {b} stopped answering.',
+    '{a} keeps introducing {b} by something {b} did four years ago.',
+    'Every conversation {a} has with {b} has a third person in it, and it is the old {b}.',
+  ],
+};
 
 registerEvent({
   id: 'callback-different-show-different-person',
@@ -282,22 +371,25 @@ registerEvent({
     const negative = strongest && ['betrayed-by-them', 'betrayed-them', 'rivals'].includes(strongest.relation);
     const currentBond = getBond(a, b);
     let bondDelta = 0;
-    let note;
-    if (negative && currentBond >= 2) {
-      bondDelta = 1;
-      note = `${a} admitted ${b} was playing a completely different game than the one ${a} remembered — and it was throwing them.`;
-    } else if (!negative && currentBond <= 0) {
-      bondDelta = -0.5;
-      note = `${a} expected ${b} to be exactly who they were last time. This ${b} was a stranger wearing the name.`;
-    } else {
-      note = `${a} kept comparing this version of ${b} to the one they remembered, out loud, to ${b}'s visible annoyance.`;
-    }
+    let branch;
+    if (negative && currentBond >= 2) { bondDelta = 1; branch = 'redemption'; }
+    else if (!negative && currentBond <= 0) { bondDelta = -0.5; branch = 'disappointment'; }
+    else branch = 'dissonance';
+    const note = lineFor(DIFFERENT_PERSON_LINES[branch],
+      `callback-different-show-different-person|${ctx.ep}|${branch}`, { a, b });
     if (bondDelta) addBond(a, b, bondDelta);
     const t = openThread(FAMILY, [a, b], ctx.ep, note);
-    return { branch: negative && currentBond >= 2 ? 'redemption' : (!negative && currentBond <= 0 ? 'disappointment' : 'dissonance'),
-      pair: [a, b], threadId: t?.id, bondDelta };
+    return { branch, pair: [a, b], threadId: t?.id, bondDelta };
   },
 });
+
+const ENVY_LINES = [
+  '{a} sat outside a conversation full of names and seasons they had no part of, and it stung more than they expected.',
+  '{b} and two others spent twenty minutes on a season {a} had watched from a sofa.',
+  '{a} laughed in the right places at a story {a} was not in, and went to bed early.',
+  'Everybody at that table had a shared history except {a}, and everybody at that table forgot it except {a}.',
+  '{a} asked one question about it, got a kind answer, and did not ask a second.',
+];
 
 registerEvent({
   id: 'callback-no-history-envy',
@@ -320,10 +412,18 @@ registerEvent({
     const [outsider, insider] = ctx.actors;
     addBond(outsider, insider, -0.5);
     const { thread, cited } = continueThread(FAMILY, [outsider, insider], ctx.ep,
-      `${outsider} sat outside a conversation full of names and seasons they had no part of, and it stung more than they expected.`);
+      lineFor(ENVY_LINES, `callback-no-history-envy|${ctx.ep}`, { a: outsider, b: insider }));
     return { branch: 'left-out', pair: [outsider, insider], threadId: thread?.id, cited, bondDelta: -0.5 };
   },
 });
+
+const ALUMNI_LINES = [
+  '{a} and {b} had already gone the distance together once. That kind of thing doesn\'t just evaporate.',
+  '{a} and {b} have both sat in the last chairs of a season, and neither had to explain to the other what that costs.',
+  'Everybody else here is guessing what the end feels like. {a} and {b} are not.',
+  '{a} and {b} were the last two standing once, and something of that walked in with them.',
+  'There was an ease between {a} and {b} that comes from having survived the same finish together.',
+];
 
 registerEvent({
   id: 'callback-shared-alumni-status',
@@ -339,7 +439,7 @@ registerEvent({
     const [a, b] = ctx.actors;
     addBond(a, b, 3);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} and ${b} had already gone the distance together once. That kind of thing doesn't just evaporate.`);
+      lineFor(ALUMNI_LINES, `callback-shared-alumni-status|${ctx.ep}`, { a, b }));
     return { branch: 'alumni-bond', pair: [a, b], threadId: t?.id, bondDelta: 3 };
   },
 });
@@ -376,18 +476,26 @@ const CONFRONTATION_LINES = {
   reconciles: [
     '{a} finally said out loud what happened between them and {b}, and meant it when they said it was fine now.',
     '{a} and {b} actually talked it through, properly, for the first time since it happened.',
+    '{b} apologised, badly, and {a} accepted it anyway, and both of them looked lighter afterwards.',
+    'It took {a} and {b} an hour and a half and it should have taken them a season and a half.',
   ],
   grudge: [
     '{a} brought the whole thing back up, unprompted, and it went about as well as last time.',
     'It turned into the exact fight {a} and {b} had already had once before.',
+    '{a} wanted an apology and {b} wanted it dropped, which is where they were last time too.',
+    '{a} listed it out in order, {b} disputed the order, and nothing at all was resolved.',
   ],
   strategic: [
     '{a} made it very clear, calmly, that the history between them was a card {a} could play whenever they wanted.',
     '{a} treated the whole thing like leverage, and {b} clocked exactly what was happening.',
+    '{a} did not threaten {b} with any of it. {a} simply mentioned that they remembered it well.',
+    '"People here don\'t know that story yet," {a} said to {b}, pleasantly, and left it hanging.',
   ],
   buries: [
     '{a} decided, out loud, that whatever happened before stays in the season it happened in.',
     '{a} told {b} they weren\'t interested in relitigating any of it, and left it there.',
+    '{a} waved the whole history off in one sentence and genuinely never raised it again.',
+    '"Different game, different castle," {a} said to {b}, and started talking about something else.',
   ],
 };
 

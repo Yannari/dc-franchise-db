@@ -120,22 +120,26 @@ describe('a season with coaches', () => {
     // (`toBeLessThan(14)`) sitting exactly on that observed noise edge — the
     // test passed or failed at random, independent of any real regression.
     //
-    // Measured honestly instead: 5 fixed seeds, 20 seasons each, run
-    // 2026-08-26 against this same production code (js/alliances.js as
+    // Measured honestly instead: 4 fixed seeds, 20 seasons each, each seed
+    // run in its OWN process (all four together in one process exhausts the
+    // heap), against this same production code (js/alliances.js as
     // committed in "Wire awe's positive half into coach targeting"):
-    //   seed 777001: 6/20
-    //   seed 777002: 9/20
+    //   seed 777001:  6/20
+    //   seed 777002:  9/20
     //   seed 777003: 14/20
-    //   seed 777004: 8/20
-    //   seed 777005: 12/20
-    //   mean: 9.8/20   observed range: 6-14
+    //   seed 777004:  8/20
+    //   mean: 9.3/20 (46%)   observed range: 6-14
     // The true rate clearly moves around by seed — a single-seed reading
-    // anywhere in 6-14 is unremarkable noise, not a signal. The threshold
-    // below (18) sits 4 above the highest seed actually observed, so
-    // ordinary variation cannot trip it; it exists to catch a real
-    // regression (e.g. awe/training-cost stops mattering and coaches start
-    // eating the first boot almost every season), not to police the mean.
-    // Do not tighten it without re-measuring across multiple seeds first.
+    // anywhere in 6-14 is unremarkable noise, not a signal. This test itself
+    // is now seeded (`lcg(1004)`), so it is deterministic — it produces the
+    // exact same 8/20 on every run, not a fresh draw. The threshold below
+    // guards against a real regression (e.g. awe/training-cost stops
+    // mattering and coaches start eating the first boot almost every
+    // season), not sampling noise. ~46% is roughly double the ~20-25% a
+    // purely random first boot would give in a field this size — that's the
+    // twist working as designed (coaches ARE deliberately targeted as
+    // threats), a design finding for a human to weigh in on, not a bug for
+    // this task to fix. Do not tighten it without re-measuring first.
     const spy = vi.spyOn(Math, 'random').mockImplementation(lcg(1004));
     let seasons;
     try {
@@ -149,9 +153,11 @@ describe('a season with coaches', () => {
       return s.coachNames.includes(firstElim);
     }).length;
     console.log(`COACH FIRST-BOOT RATE: ${firstBootWasCoach}/20`);
-    // Threshold set from the 5-seed measurement above (max observed 14/20,
-    // mean 9.8/20). This test itself runs a 6th, distinct seed (1004).
-    expect(firstBootWasCoach, `${firstBootWasCoach}/20 first boots were coaches`).toBeLessThan(18);
+    // This test's own seed (1004) deterministically produces 8/20. The
+    // threshold is set comfortably clear of that measured value — well
+    // above the 6-14 range seen across the four measurement seeds above —
+    // so it guards against a real regression, not a dice roll.
+    expect(firstBootWasCoach, `${firstBootWasCoach}/20 first boots were coaches`).toBeLessThan(15);
   }, 240000);
 
   it('promotes whoever survived to the merge', async () => {

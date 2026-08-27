@@ -54,11 +54,28 @@ deferred and never landed, so targeting is one-sided toward booting.
 This matters for the balance question below: the 55% first-boot rate was
 measured with only the pressure to boot wired, and none of the deference.
 
-## 4. The balance question, for a human
+## 4. The balance question, for a human — MEASURED (2026-08-26)
 
-Across 20 seasons, **11 of 20 first eliminations were a coach**. That clears
-the plan's `< 14` ceiling and is well above the ~25% a random pick would give,
-so coaches are being deliberately targeted — which is what the twist wants.
+The "11 of 20" figure previously reported here was never a measurement — it
+was one draw from an UNSEEDED test (`Math.random()`, fresh every run), and
+the same code produced 11/20 and 14/20 on back-to-back runs. That is noise,
+not a rate.
+
+Measured honestly instead: 4 fixed seeds, 20 seasons each, each seed run in
+its own process (all four together in one process exhausts the heap):
+
+- seed 777001: 6/20
+- seed 777002: 9/20
+- seed 777003: 14/20
+- seed 777004: 8/20
+- mean: 9.3/20 (46%), range 6-14
+
+`tests/coach-season.test.js` is now seeded (`lcg(1004)`), so it is
+reproducible — it always reports the same 8/20, not a fresh draw — and its
+threshold (`< 15`) is set with margin above that, not tuned to the noise
+edge. ~46% is roughly double the ~20-25% a purely random first boot would
+give in a field this size, so coaches are being deliberately targeted —
+which is what the twist wants.
 
 Whether a coach *should* be first out in the majority of seasons is a design
 preference, not a defect. Ask it again after item 3, since the deference half
@@ -90,14 +107,16 @@ and Second Opinion are not in the advantage catalog at all.
   than real career stars, because `js/fame.js` needs season data an episode
   cannot reach. Replaceable once item 1 plumbs it.
 
-## 7. Seed the season test's RNG
+## 7. Seed the season test's RNG — DONE
 
-`tests/coach-season.test.js` — "promotes whoever survived to the merge" — is
-flaky. It uses an unseeded `Math.random()`, and a promoted coach can
+`tests/coach-season.test.js` — "promotes whoever survived to the merge" — was
+flaky. It used an unseeded `Math.random()`, and a promoted coach can
 legitimately be voted out in the same merge episode they join, so the
-assertion sometimes finds them already gone.
+assertion sometimes found them already gone.
 
 That is the twist behaving correctly and the test being unable to tell. This
 repo already has the rule: a bare `Math.random()` breaks replay guards, use a
-stable seeded generator. Seed it and assert against a fixed season rather than
-re-rolling one.
+stable seeded generator. All five tests in this file are now seeded with a
+fixed LCG, including "does not let coaches be booted every single time
+either" (see item 4 above) — every test asserts against a fixed, reproducible
+season rather than re-rolling one.

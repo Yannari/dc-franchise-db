@@ -129,9 +129,17 @@ export function learn(knower, id, { source = 'observation', sourceType = 'observ
   const direct = sourceType === 'public' || sourceType === 'observed';
   // The same rule, applied to the floor the direct branch installs: `observed`
   // would otherwise force 0.9 onto an alignment and walk straight over the
-  // ceiling without ever touching `cred`. Nobody observes an alignment today
-  // and nobody may start to. Inert for every other fact type, which is every
-  // caller of this branch that exists.
+  // ceiling without ever touching `cred`.
+  //
+  // EXACTLY ONE CALLER OBSERVES AN ALIGNMENT and there may never be a second:
+  // the Seer (js/tr/deduction.js `seerEvidence`, spec 7.3), once per game, in
+  // the endgame, to one person about one person. It lands HERE, at the ceiling
+  // — the same number the sharpest deduction in the game writes — because what
+  // `observed` buys it is not confidence but the `direct` branch above:
+  // unconditional acceptance and a valence taken from ground truth instead of
+  // from an intuition roll. That is the entire difference, and it is what stops
+  // the one certain thing in the format from being louder than a suspicion when
+  // it is repeated. Inert for every other fact type.
   const directFloor = sourceType === 'public' ? 1
     : (fact.type === 'alignment' ? ALIGNMENT_CRED_CEILING : 0.9);
   const res = direct

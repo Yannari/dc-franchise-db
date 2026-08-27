@@ -34,7 +34,7 @@ import { pStats } from '../players.js';
 import { alignmentAt, livingTraitors } from './roles.js';
 import { suspicion, knowsAlignmentOf, potShare } from './deduction.js';
 import { runRoundTable } from './roundtable.js';
-import { settleDaggers } from './powers.js';
+import { settleDaggers, openSeer } from './powers.js';
 import { lineFor, _lineHash } from './castle/lines.js';
 
 /** A stable 0..1 from a string. No rng draw — see the note on the choice. */
@@ -271,6 +271,11 @@ export function runEndgame(startEp, rng = Math.random) {
   const rounds = [];
   const ballots = [];
   let ep = startEp;
+  // THE SEER'S GATE, AND IT IS STATE RATHER THAN AN ARGUMENT. `openSeer` reads
+  // this and nothing else to decide whether the game is in its endgame, so the
+  // mandated loop cannot open one by passing the right flag — there is no flag
+  // to pass, and nothing but this line ever writes the field.
+  gs.tr.endgameFrom = startEp;
   // The loop terminates on its own — every table removes somebody, so the room
   // shrinks monotonically — but a season is not a place to rely on that alone.
   let guard = (gs.activePlayers || []).length + 2;
@@ -278,6 +283,14 @@ export function runEndgame(startEp, rng = Math.random) {
     const living = [...(gs.activePlayers || [])];
     // One person cannot banish anybody, so the question has only one answer.
     if (living.length < 2) break;
+    // ASKED EVERY TIME, AND ANSWERED YES EXACTLY ONCE (spec 7.3). It is put
+    // here, before the ask, because that is what the power is for: a private
+    // meeting whose one certain answer is spent on the question the room is
+    // about to be asked. Re-offering it on every table is deliberate — a rule
+    // decided once a season is a rule no sampled assertion can catch breaking
+    // (Task 4's mutation survived for precisely that reason), so the refusal
+    // runs as often as the grant and the guards assert on both.
+    openSeer(ep);
     const choices = secretBallot(living, ep);
     ballots.push({ ep, choices, living });
     if (!choices.some(c => c.choice === 'banish')) break;
@@ -291,5 +304,9 @@ export function runEndgame(startEp, rng = Math.random) {
   settleDaggers(ep);
   const result = resolvePot(ep);
   return { ...result, rounds, ballots, endEp: ep,
+    // The one private meeting of the season, or null if the endgame never had
+    // a room big enough to hold one. Handed back rather than left on `gs`
+    // because the next season replaces `gs` wholesale.
+    seer: gs.tr?.seer || null,
     banished: rounds.map(r => r.banished) };
 }

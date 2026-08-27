@@ -87,6 +87,8 @@ import { pStats, pronouns } from '../players.js';
 import { learn, ALIGNMENT_CRED_CEILING } from '../knowledge.js';
 import { alignmentFactId, alignmentAt } from './roles.js';
 import { grantShield } from './murder.js';
+import { suspicion, knowsAlignmentOf, seerEvidence, seerClaimEvidence } from './deduction.js';
+import { lineFor, _lineHash } from './castle/lines.js';
 
 /**
  * How loud each Shield-shaped inference is allowed to be.
@@ -720,4 +722,461 @@ export function daggerWeights(ep, living) {
 /** The Dagger drawn at a given table, for the round record and for the VP. */
 export function daggerDrawnAt(ep) {
   return (gs.tr?.daggers || []).find(d => d.playedEp === ep) || null;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE SEER — one question, once, and two people who may lie about it
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec §7.3. ONCE PER GAME, ENDGAME ONLY. A private meeting in which one
+// player must TRUTHFULLY confirm their alignment. Only the Seer sees it, and
+// BOTH PARTIES MAY LIE ABOUT IT AFTERWARDS.
+//
+// Every clause of that is a restriction, and together they are the most
+// constrained mechanic in the format. The belief it writes is the game's ONE
+// `observed` alignment belief and there may never be a second — the write, and
+// the reason the tier is what it is, are in js/tr/deduction.js
+// (`seerEvidence`). What is here is the POWER: who holds it, whom they read,
+// the endgame gate, the once-per-game rule, and the two lies.
+//
+// ── WHY IT IS NOT WON IN A MISSION ─────────────────────────────────────
+//
+// The Shield and the Dagger are, and the Seer deliberately is not. The
+// Reliquary yields exactly ONE relic per afternoon (Task 4), so a third relic
+// would take its share out of the other two — Shields already fell 1.67 -> 1.12
+// a season when the Dagger was added, and `CHESS_WEIGHT` had to move once
+// already to stop a new archetype quietly eating a measured band. A power that
+// can only be used in the endgame has no business being priced against powers
+// that are used all season. It is offered when the endgame opens, to the room
+// that reached it.
+//
+// ── WHO GETS IT, AND WHY SELECTION MAY NOT LOOK AT A CLOAK ─────────────
+//
+// ALIGNMENT-BLIND, ABSOLUTELY. If the holder were chosen with any regard to
+// who is a Traitor then the mere EXISTENCE of a Seer would be a tell, and the
+// engine would be leaking ground truth through the shape of its own draws —
+// the exact defect Task 6 removed from `chooseBanishmentVote`, where "X never
+// named Y" was a perfect season-long tell.
+//
+// SO IT IS A PURE HASH OVER THE ROOM, AND THE FIRST DRAFT WAS NOT. It weighted
+// the choice by `intuition` — "whoever went looking", which reads as
+// alignment-blind because `intuition` says nothing about a cloak — and the
+// guard measured Traitors holding the Seer 38.7% of the time in rooms that
+// were 18.1% Traitor. Selection is uniform (js/tr/roles.js) and the base rate
+// is taken at the same table, so neither explains it. SURVIVORSHIP does: a
+// Traitor with poor intuition is caught and banished, a Faithful with poor
+// intuition is not, so the Traitors who REACH an endgame are intuition-
+// selected and the Faithfuls beside them are not. Conditioning on any stat
+// the game has been filtering on all season conditions on alignment.
+//
+// Generalise, because this is not a fact about `intuition`: in a format that
+// eliminates people on how well they play, ANY stat correlates with alignment
+// among the survivors even when it is independent of alignment at casting. A
+// rule that must be alignment-blind at the endgame has to be blind to stats
+// too, or prove otherwise against the base rate at the same table.
+//
+// ── WHOM THEY READ ─────────────────────────────────────────────────────
+//
+// The top of their own suspicion board, among the people they do not already
+// KNOW about. Belief-side on both counts: `knowsAlignmentOf` is the turret
+// test, so a Traitor does not waste the one question of the season on a fellow
+// they were shown on night one, and a Faithful — who knows nobody — reads the
+// whole room. One rule, no branch on role, no ground truth anywhere in it.
+//
+// ── AND THEN BOTH OF THEM LIE ──────────────────────────────────────────
+//
+// The Seer may name the subject to the castle whether or not the read
+// justifies it; the subject may deny it, claim they were cleared, or turn it
+// round and accuse the Seer of having a reason to be asking. Every one of
+// those is a `rumor` (`seerClaimEvidence`), which is what stops the one
+// certain thing in the game from reaching anybody but the person who bought
+// it. The claims a lying Traitor makes and the claims a truthful Faithful
+// makes are indistinguishable at the tier they arrive at, which is the format.
+//
+// ── RNG ────────────────────────────────────────────────────────────────
+//
+// NOT ONE DRAW, anywhere in this section. Selection, the subject, and both
+// decisions to speak are hashed from state the season already has; the read
+// takes `learn()`'s direct branch, which rolls nothing; and the claims run on
+// a stream hashed from the claim. So a season with a Seer in it draws exactly
+// the numbers the same season without one drew, and the endgame diverges only
+// where somebody actually acts on what was said. Task 6's technique, and it is
+// the default for any change to a decision function.
+
+/** A stable 0..1 from a string. No draw. */
+const hash01 = (key) => _lineHash(key) / 4294967296;
+
+/**
+ * Below this the meeting is not worth having: at two living players the
+ * endgame is already a coin toss between them, and the Seer would be reading
+ * the only other person in the building.
+ */
+export const SEER_MIN_ROOM = 3;
+
+// ── the two decisions to speak ─────────────────────────────────────────
+//
+// A Faithful who saw a cloak says so — this is the best evidence anybody in
+// the castle has ever had and sitting on it wins nothing. A Faithful who saw a
+// Faithful and names them anyway is telling a lie for a strategic reason, and
+// it is rare rather than impossible, because the endgame does contain people
+// who would rather the room banished somebody harmless than looked at them.
+const SAY_TRUE_TRAITOR = 0.85;
+const SAY_FALSE_BASE = 0.08;
+const SAY_FALSE_BOLD = 0.14;
+// A Traitor holding the Seer will not name a cloak, ever: the pact is worth
+// more than the read. What a Traitor Seer does with the power is LIE with it,
+// and a clean read is the licence to do so.
+const SAY_TRAITOR_LIES = 0.62;
+// Accused in front of the room, the subject either denies it or turns it round
+// — "why does a Faithful need a private word with me?" is the answer that has
+// ended seasons, and it is available to a guilty subject and an innocent one
+// alike.
+const COUNTER_BASE = 0.32;
+const COUNTER_BOLD = 0.36;
+// Unaccused, the subject may still bring the meeting up themselves, to bank
+// the only thing it can be spun into: "she checked me."
+const CLEARED_P = 0.55;
+
+// ── prose ──────────────────────────────────────────────────────────────
+//
+// EVERY POOL IS KEYED ON THE FACT IT ASSERTS, which is this plan's standing
+// requirement applied at the only point where it is genuinely awkward: a claim
+// may be a LIE, so the narration and the belief that claim writes deliberately
+// disagree. That is not a ledger defect and a naive agreement guard would call
+// it one. The rule that actually binds here is that a sentence must agree with
+// the CLAIM RECORD — with `kind` and with `truthful` — not with ground truth,
+// because the record is what the sentence is describing. Keying the pools on
+// exactly those two fields makes the contradiction unrepresentable rather than
+// asserted against afterwards.
+const MEETING_LINES = [
+  'The room is small, the door is shut, and the question only gets asked once. {who} asks it.',
+  'A corridor nobody else is using, and {who} standing in it waiting to be answered.',
+  '{who} calls in a favour the format only grants one of, and shuts the door behind {them}.',
+  'No witnesses, no second chance, and one honest answer owed. {who} collects it.',
+];
+// KEYED ON WHAT WAS ACTUALLY SEEN, AND ON TWO FACTS THE SENTENCES TURN ON.
+//
+// Nothing may be swapped between these pools: a line under `traitor-` says a
+// cloak was found and a line under `faithful-` says one was not. The two
+// further splits are this plan's standing requirement, and both were found by
+// dumping seasons and reading them rather than by any assertion:
+//
+//   * "{who} has been one all along" is FALSE of a recruit, and roughly a
+//     third of the Traitors alive at the endgame are recruits. The era model
+//     already knows which, so the sentence chooses the pool instead of being
+//     asserted inside one.
+//   * "has spent the season being suspected" is FALSE over a player the Seer
+//     held nothing at all against — and the subject is picked off a board that
+//     is genuinely flat in some endgames, so the claim really does run over its
+//     own negation. `priorSuspicion` is read BEFORE the write (the read
+//     overwrites it) and decides the pool.
+const READ_LINES = {
+  'traitor-original': [
+    '{who} says the word out loud, and it is the wrong one. A cloak, sitting a foot away.',
+    'The answer comes back and it is the answer nobody wants at this range: {who} is a Traitor.',
+    'A Traitor. {who} has been one since the first night and has just had to say so, once, out loud.',
+    '{who} tells the truth because the format makes {them}, and the truth is a cloak.',
+  ],
+  'traitor-recruited': [
+    'A Traitor, and a new one. {who} took the cloak partway through and has just had to admit it.',
+    '{who} was a Faithful in this castle not long ago. {They} {is} not one now, and says so.',
+    'The answer is a cloak {who} was not wearing when the season started.',
+    '{who} tells the truth because the format makes {them}: turned, and recently.',
+  ],
+  'faithful-suspected': [
+    '{who} tells the truth and the truth is nothing at all: a Faithful, exactly as advertised.',
+    'A Faithful — and the one person in the castle who suspected {them} now knows better.',
+    'Clean. The one certain answer the season had to give was spent here, and it comes back clean.',
+    '{who} is what {they} said {they} {was}, and the doubt about {them} dies in that room.',
+  ],
+  'faithful-cold': [
+    '{who} tells the truth and the truth is nothing at all: a Faithful, exactly as advertised.',
+    'A Faithful, and nobody had said otherwise. The answer confirms a thing nobody was arguing.',
+    'Clean, and the question was never much more than a formality.',
+    '{who} is what {they} said {they} {was}, and one person in the castle now knows it for certain.',
+  ],
+};
+const SEER_CLAIM_LINES = {
+  // Named, and the read said Traitor.
+  'named-true': [
+    '{who} walks back in and says the name, and every word of it is true.',
+    'No hedging. {who} tells the room what {they} saw, and what {they} saw was a cloak.',
+    '{who} names {them} in front of everybody, and is right.',
+    'The best evidence anybody in this castle has had, said out loud by {who}, and correct.',
+  ],
+  // Named, and the read said Faithful. A lie, told deliberately.
+  'named-lie': [
+    '{who} walks back in and says the name anyway. It is a lie, and it is a good one.',
+    '{who} tells the room {they} found a Traitor. {They} found nothing of the kind.',
+    'The read was clean and {who} names {them} regardless — the meeting was never going to be wasted.',
+    'A private word, and then a public accusation with nothing behind it. {who} says it without blinking.',
+  ],
+  silent: [
+    '{who} comes back and says nothing at all, which is its own kind of answer.',
+    'Whatever passed in that room stays there. {who} keeps it.',
+    '{who} sits back down with the only certain thing in the castle and does not spend it.',
+    'Not a word out of {who}. The room notices the door and nothing else.',
+  ],
+};
+const SUBJECT_CLAIM_LINES = {
+  // Accused, and denying it. True if the subject really is a Faithful.
+  'deny-true': [
+    '{who} denies it flatly, and {they} {is} telling the truth.',
+    'Not what happened, says {who}, who is right, and who has no way of proving it.',
+    '{who} says it did not go like that, and it did not.',
+    'An honest denial from {who}, which sounds exactly like the other kind.',
+  ],
+  'deny-lie': [
+    '{who} denies it flatly, and {they} {is} lying.',
+    '{who} says it is not what happened, and knows perfectly well that it was.',
+    '{who} calls it a fabrication. {They} confirmed it in that room an hour ago.',
+    'The denial is quick, warm and completely false. {who} has had practice.',
+  ],
+  // Turning it round on the Seer. True if the Seer really is a Traitor.
+  'counter-true': [
+    '{who} turns it round: why did that meeting need a closed door? As it happens, {they} {is} right.',
+    'Instead of answering, {who} asks what a Faithful wanted with a private room — and hits it.',
+    '{who} names {their} accuser back, and is correct.',
+    '{who} asks the room to wonder why {they} {was} wanted alone. It is a deflection, and it is also true.',
+  ],
+  'counter-lie': [
+    '{who} turns it round on {their} accuser, and it is pure invention.',
+    'Instead of answering, {who} asks what a Faithful wanted with a private room. Nothing did. But it is asked.',
+    '{who} names {their} accuser back, with nothing behind it but nerve.',
+    'A clean deflection and a false one. {who} has decided the room can only look at one of them.',
+  ],
+  // Volunteering the meeting, unaccused. True if the subject is a Faithful.
+  'cleared-true': [
+    '{who} brings the meeting up unprompted: {they} {was} asked, and {they} came out clean.',
+    '{who} tells the room {they} {was} the one who got checked. It is true, and it changes nothing.',
+    '{who} says {they} {has} been cleared. {They} {has}. Nobody moves.',
+    'An honest account of a private meeting from {who}. The room has no way of telling.',
+  ],
+  'cleared-lie': [
+    '{who} brings the meeting up unprompted, and turns it into an alibi {they} {was} never given.',
+    '{who} tells the room {they} got checked and came out clean. {They} came out a Traitor.',
+    '{who} says {they} {has} been cleared. {They} {has} not.',
+    'A private meeting, spun in public by the one person in it with a reason to. {who} does it well.',
+  ],
+  silent: [
+    '{who} does not mention it, and neither does anybody else.',
+    'Nothing from {who}. The meeting stays where it happened.',
+    '{who} lets it go, which is either nerve or nothing to say.',
+    'No account from {who} at all. The room never learns there was a room.',
+  ],
+};
+
+/**
+ * Fill a hashed line's pronoun slots for one named person.
+ *
+ * THE VERB SLOTS ARE NOT A CONVENIENCE. The first dump of this section printed
+ * "Anne Maria is what she said she were", "Bridgette says she have been
+ * cleared" and "B tells the room he were the one who got checked" — eleven
+ * lines across five pools, every one of them a verb conjugated for singular
+ * `they` and then printed over a `she` or a `he`. It is Task 4's shared-pool
+ * defect in a new place: a pool written for one pronoun and printed for three.
+ *
+ * Hand-avoiding a conjugated verb in every future line is the fix that lasts
+ * until the next line, so the pools do not contain conjugated verbs at all.
+ * `{is}`, `{was}` and `{has}` are filled from the same pronoun table that fills
+ * `{they}`, which makes the disagreement unrepresentable rather than something
+ * to notice in a dump.
+ */
+function _fill(pool, key, who, subs = {}) {
+  const pr = pronouns(who);
+  const plural = pr.sub === 'they';
+  return lineFor(pool, key, { who, ...subs })
+    .split('{is}').join(plural ? 'are' : 'is')
+    .split('{was}').join(plural ? 'were' : 'was')
+    .split('{has}').join(plural ? 'have' : 'has')
+    .split('{they}').join(pr.sub)
+    .split('{them}').join(pr.obj)
+    .split('{their}').join(pr.posAdj)
+    .split('{They}').join(pr.Sub)
+    .split('{Them}').join(pr.Obj)
+    .split('{Their}').join(pr.PosAdj);
+}
+
+// The hook the guards assert through — test-only, same contract as
+// `_setPactWatch`. It fires on EVERY decision, including the refusals, because
+// a once-per-game power is rare by construction and Task 4 shipped a guard a
+// mutation survived for exactly that reason: a season-level assertion about
+// something that happens once cannot see the rule break. This one is asserted
+// where it is DECIDED.
+let _seerWatch = null;
+export function _setSeerWatch(fn = null) {
+  const prev = _seerWatch;
+  _seerWatch = fn;
+  return () => { _seerWatch = prev; };
+}
+
+/** Test-only ablation, so a base-vs-head arm can be run inside one build. */
+let _seerOn = true;
+export function _setSeerEnabled(on) { _seerOn = on !== false; }
+
+/** The season's Seer record, or null. There is at most one, ever. */
+export function seerRead() { return gs.tr?.seer || null; }
+
+/**
+ * Offer the Seer, if the game is in a state that allows it.
+ *
+ * ASKED EVERY TIME THE ENDGAME PUTS ITS QUESTION, and refused every time but
+ * the first. That is deliberate: the once-per-game rule is only guardable if
+ * it is actually re-decided, and a rule decided once in a season is a rule no
+ * sampled assertion can catch breaking.
+ *
+ * Returns the record on the one occasion it fires, and null — with a reason
+ * handed to the watch — every other time.
+ */
+export function openSeer(ep) {
+  const deny = (reason) => {
+    if (_seerWatch) _seerWatch({ ep, fired: false, reason, seer: null, subject: null });
+    return null;
+  };
+  if (!gs?.tr) return null;
+  if (!_seerOn) return deny('ablated');
+  // THE ENDGAME GATE, AND IT IS A PROPERTY OF SEASON STATE RATHER THAN AN
+  // ARGUMENT. `gs.tr.endgameFrom` is written by runEndgame and by nothing
+  // else, so the mandated loop cannot open a Seer by passing the right flag —
+  // there is no flag to pass.
+  const from = gs.tr.endgameFrom;
+  if (from == null || ep < from) return deny('not the endgame');
+  // ONCE PER GAME, GLOBALLY. Not once per round, not once per player.
+  if (gs.tr.seer) return deny('already used');
+
+  const living = [...(gs.activePlayers || [])];
+  if (living.length < SEER_MIN_ROOM) return deny('room too small');
+
+  // UNIFORM OVER THE ROOM, and the header says at length why it may not be
+  // anything else.
+  //
+  // ONE HASH, INDEXED INTO THE ROOM — not a hash per player with the highest
+  // winning, which was the second draft and carried a residual of its own. A
+  // per-player hash is FIXED for a given (name, ep), so the same names win the
+  // same nights in every season the game is ever played, and a name that
+  // reaches episode eleven disproportionately often when it is wearing a cloak
+  // hands that correlation straight to the Seer. Measured at z = 2.61 over
+  // 1,553 grants: under the 3-sd bar, consistently signed, and removable for
+  // nothing. Hashing the ROOM and indexing into it gives every seat at a given
+  // table the same chance and leaves no player a standing advantage.
+  const seats = [...living].sort();
+  const holder = seats[Math.floor(hash01(`seer-holder|${ep}|${seats.join('|')}`) * seats.length)];
+
+  // Belief-side, both clauses. `knowsAlignmentOf` is the turret test, so this
+  // reads "the people I have not been shown" and never "the Faithfuls".
+  const pool = living.filter(n => n !== holder && !knowsAlignmentOf(holder, n, ep));
+  if (!pool.length) return deny('nobody left to ask');
+  const subject = pool
+    .map(n => ({ n, s: suspicion(holder, n, ep) + hash01(`seer-subject|${holder}|${n}|${ep}`) * 1e-3 }))
+    .sort((a, b) => (b.s - a.s) || (a.n < b.n ? -1 : 1))[0].n;
+  // READ BEFORE THE WRITE, because the write overwrites it. This is what the
+  // Seer held against them walking in, and it is the fact one of the read
+  // pools turns on — a sentence about somebody having been suspected all
+  // season must not print over somebody nobody suspected.
+  const priorSuspicion = suspicion(holder, subject, ep);
+
+  // GROUND TRUTH, READ AT THE ONE MOMENT THE FORMAT COMPELS IT. The subject is
+  // made to answer honestly; that is the mechanic. `alignmentAt` and not
+  // `fact.truth`, because alignment has ERAS and a read is true AS OF the
+  // episode it happened — a recruit who flips afterwards does not make it
+  // retroactively false, and nothing may recompute this at season end.
+  const truth = alignmentAt(subject, ep) === 'traitor' ? 'traitor' : 'faithful';
+  // WHICH ERA, not merely which alignment. A recruit has not "been one all
+  // along" and the pool that says so must never print over them. Read off the
+  // era list rather than off `roleHistory`, because the eras are the model and
+  // anything else is a second copy of it.
+  const eras = gs.tr.alignment?.[subject] || [];
+  const recruited = truth === 'traitor'
+    && eras.filter(e => e.sinceEp <= ep).some(e => e.truth === false);
+  const readKey = truth === 'traitor'
+    ? (recruited ? 'traitor-recruited' : 'traitor-original')
+    : (priorSuspicion > 0 ? 'faithful-suspected' : 'faithful-cold');
+  const rec = {
+    ep, seer: holder, subject, truth, priorSuspicion, recruited, readKey,
+    // WHAT THE SEER THEMSELVES IS, recorded at the read's own episode and never
+    // recomputed. The subject's counter-accusation asserts a fact about the
+    // Seer, so `truthful` on that claim can only be checked against this — and
+    // reading it back later means reading it out of a `gs` that has been
+    // replaced by a different castle, which is the era trap by another route.
+    seerTruth: alignmentAt(holder, ep) === 'traitor' ? 'traitor' : 'faithful',
+    // The room the meeting was held in front of, recorded rather than
+    // re-derived: the claims below are addressed to it, and by the time
+    // anything reads this record the castle is a different size.
+    room: living,
+    meetingLine: _fill(MEETING_LINES, `seer-meeting|${ep}`, holder),
+    readLine: _fill(READ_LINES[readKey], `seer-read|${ep}|${readKey}`, subject),
+    claims: [],
+  };
+
+  gs.tr.seer = rec;
+  // THE WRITE, AND IT GOES TO ONE PERSON. Nobody else in the castle learns a
+  // thing from the meeting itself; everything the rest of the room ever gets
+  // is a claim, at `rumor`, below.
+  const belief = seerEvidence(holder, subject, ep);
+  rec.belief = belief
+    ? { sourceType: belief.sourceType, confidence: belief.confidence, valence: belief.valence }
+    : null;
+
+  _seerClaims(rec, ep);
+  if (_seerWatch) _seerWatch({ ep, fired: true, reason: null, seer: holder, subject, rec });
+  return rec;
+}
+
+/**
+ * What each of them says afterwards, and it is the half of §7.3 that keeps the
+ * ceiling standing. See `seerClaimEvidence` in js/tr/deduction.js for why an
+ * accusation is a `rumor` however certain the person making it is.
+ *
+ * BOTH DECISIONS READ THE SPEAKER'S OWN KNOWLEDGE AND NOTHING ELSE. The Seer
+ * knows the read because they bought it; the subject knows their own cloak,
+ * which is the one piece of ground truth this engine has always let a player
+ * have. Neither reads anybody else's.
+ */
+function _seerClaims(rec, ep) {
+  const { seer, subject, truth, room } = rec;
+  const seerIsTraitor = alignmentAt(seer, ep) === 'traitor';
+  const bold = (name) => (stat(name, 'boldness') || 5) / 10;
+
+  // ── the Seer speaks, or does not ──
+  let sKind = 'silent';
+  const roll = hash01(`seer-say|${seer}|${subject}|${ep}`);
+  if (truth === 'traitor') {
+    // A Traitor Seer does not hand the room a fellow, at any price.
+    if (!seerIsTraitor && roll < SAY_TRUE_TRAITOR) sKind = 'named';
+  } else if (seerIsTraitor) {
+    if (roll < SAY_TRAITOR_LIES) sKind = 'named';
+  } else if (roll < SAY_FALSE_BASE + SAY_FALSE_BOLD * bold(seer)) {
+    sKind = 'named';
+  }
+  const named = sKind === 'named';
+  const sTruthful = named ? truth === 'traitor' : null;
+  const sKey = named ? (sTruthful ? 'named-true' : 'named-lie') : 'silent';
+  rec.claims.push({
+    by: seer, kind: sKind, about: named ? subject : null,
+    truthful: sTruthful, spreads: named,
+    heard: named ? seerClaimEvidence(seer, subject, room, ep, 'named') : [],
+    line: _fill(SEER_CLAIM_LINES[sKey], `seer-claim|${ep}|${sKey}`, seer, { them: subject }),
+  });
+
+  // ── and then the subject answers, or brings it up unprompted ──
+  const r2 = hash01(`seer-answer|${subject}|${seer}|${ep}`);
+  let kind, truthful;
+  if (named) {
+    if (r2 < COUNTER_BASE + COUNTER_BOLD * bold(subject)) {
+      kind = 'counter'; truthful = seerIsTraitor;
+    } else {
+      kind = 'deny'; truthful = truth === 'faithful';
+    }
+  } else if (r2 < CLEARED_P) {
+    kind = 'cleared'; truthful = truth === 'faithful';
+  } else {
+    kind = 'silent'; truthful = null;
+  }
+  const key = kind === 'silent' ? 'silent' : `${kind}-${truthful ? 'true' : 'lie'}`;
+  rec.claims.push({
+    by: subject, kind, about: kind === 'counter' ? seer : null, truthful,
+    spreads: kind === 'counter',
+    heard: kind === 'counter' ? seerClaimEvidence(subject, seer, room, ep, 'counter') : [],
+    line: _fill(SUBJECT_CLAIM_LINES[key], `seer-answer|${ep}|${key}`, subject),
+  });
 }

@@ -31,6 +31,7 @@ import { gs } from '../core.js';
 import { recordFact, learn, believes, ALIGNMENT_CRED_CEILING } from '../knowledge.js';
 import { alignmentFactId, livingTraitors, alignmentAt } from './roles.js';
 import { getBond } from '../bonds.js';
+import { _lineHash } from './castle/lines.js';
 
 export { alignmentFactId };
 
@@ -920,4 +921,115 @@ export function missionEvidence(ep, rng = Math.random) {
   // Plan 8, the observer-scoped VP) can count what actually formed.
   m.beliefsFormed = formed.length;
   return formed;
+}
+
+// ── THE SEER: THE GAME'S ONE `observed` ALIGNMENT BELIEF ────────────────
+//
+// Spec §7.3. Once per game, endgame only. A private meeting in which one
+// player must TRUTHFULLY confirm their alignment. Only the Seer sees it, and
+// both parties may lie about it afterwards.
+//
+// It lives here for the reason `missionEvidence` does — every evidence source
+// in this game is in this file, and the rule that binds this one is this
+// file's rule. The POWER's lifecycle (who holds it, whom they read, once per
+// game, and the endgame gate) is js/tr/powers.js; this is the write.
+//
+// ── WHY `observed`, AND WHY THERE MAY NEVER BE A SECOND ─────────────────
+//
+// §4.1's closed set has exactly three `public` writers — the turret seeding,
+// the banishment reveal, and a recruit shown the turret — and from this task
+// exactly ONE `observed` writer, which is this one. That ceiling is the whole
+// reason `knowsAlignmentOf()` can answer "does this player KNOW, or merely
+// suspect": one more writer at either tier and the distinction stops existing,
+// and with it the format. `blind-chess` is already priced AT
+// ALIGNMENT_CRED_CEILING with no headroom above it, so a louder tell has
+// nowhere to go — and the Seer does not take that headroom either.
+//
+// THE SEER IS NOT LOUDER THAN A DEDUCTION. IT IS SURER OF ITSELF.
+//
+// learn() clamps every non-`public` alignment write to ALIGNMENT_CRED_CEILING,
+// this one included, so the NUMBER the Seer writes is 0.62 — the same number
+// the sharpest chess tell writes. What `observed` buys is not confidence but
+// the `direct` branch: the write bypasses `_assess` entirely, so it is ACCEPTED
+// unconditionally and its valence comes from the fact's truth rather than from
+// an intuition roll. A Seer never misreads the room and never fails to hear
+// what was said. That is the whole of the difference, and it is why the
+// mechanic cannot be used to launder certainty: a Seer who tells the castle
+// what they saw is making a `rumor`, exactly like everybody else.
+//
+// ── IT IS ALSO THE ONLY THING IN THE ENGINE THAT CAN CLEAR SOMEBODY ─────
+//
+// Task 3 recorded that the knowledge model has no clearing primitive: `learn()`
+// routes non-direct alignment writes through `_assess`, whose valence comes
+// from a detection roll, so "write a belief about an innocent" leaves about
+// seven readers in ten SUSPECTING the person the evidence exonerates. The
+// direct branch is the exception, and it is an exception of exactly one:
+// reading a Faithful writes `valence: 'false'` deterministically, `suspicion()`
+// returns 0 on a `false` valence, and — because learn() re-decides valence on
+// `res.confidence >= belief.confidence` and no alignment belief may exceed the
+// ceiling this one is written at — the Seer's read OVERRIDES whatever that
+// player already believed.
+//
+// So the model can now say "I know they are not", once a season, to one
+// person, about one person. It cannot be generalised without generalising
+// `observed`, which is the thing that must never happen.
+export const SEER_SOURCE = 'the seer';
+export const SEER_CRED = 'observed';
+
+/**
+ * The read itself. Writes to the Seer and to NOBODY ELSE.
+ *
+ * Returns the belief, or null if there was nothing to read. No rng: the direct
+ * branch of `learn()` takes no draw, which is what lets the endgame's tables
+ * stay comparable with the ones a season without a Seer would have sat.
+ */
+export function seerEvidence(seer, subject, ep) {
+  if (!seer || !subject || seer === subject) return null;
+  return learn(seer, alignmentFactId(subject), {
+    // NO `confidence` OVERRIDE, deliberately. The three `public` writers pass
+    // none either; passing one here would be a caller trying to price the most
+    // credible thing in the game, which is exactly what the ceiling forbids.
+    source: SEER_SOURCE, sourceType: SEER_CRED, ep,
+  });
+}
+
+/** A hashed stream, so a rumour costs the season no draw. Task 6's technique. */
+function _hashRng(key) {
+  let h = _lineHash(key) >>> 0;
+  return () => { h = (Math.imul(h, 1664525) + 1013904223) >>> 0; return h / 4294967296; };
+}
+
+/**
+ * What either party SAYS about the meeting afterwards — and it is a `rumor`,
+ * whoever says it and whether or not it is true.
+ *
+ * THIS IS THE HALF OF §7.3 THAT PROTECTS THE CEILING. The Seer holds the one
+ * certain thing anybody in this castle will ever hold; the moment they open
+ * their mouth about it, it is one person's word, indistinguishable from the
+ * word of a Traitor inventing the same sentence. Both parties may lie, so
+ * neither can be believed, so nothing certain leaves that room. A claim that
+ * wrote at the tier it was formed at would hand the whole castle the Seer's
+ * certainty on a sentence, which is the laundering §4.1 exists to stop.
+ *
+ * Only an ACCUSATION propagates. "I checked them and they are clean" is
+ * unrepresentable for the reason above — the model has no clearing primitive
+ * outside the Seer's own direct read — and it is also the sentence nobody in
+ * this format has ever believed, so the fiction and the engine agree for once.
+ * Those claims are recorded with `spreads: false` and say nothing to anybody.
+ *
+ * `rng` is hashed from the claim, so the endgame's own stream is untouched.
+ */
+export function seerClaimEvidence(claimant, accused, listeners, ep, tag = 'claim') {
+  const heard = [];
+  for (const l of (listeners || [])) {
+    if (l === claimant || l === accused) continue;
+    const b = learn(l, alignmentFactId(accused), {
+      source: `${SEER_SOURCE} (${tag})`,
+      // NEVER the tier it was formed at. See above.
+      sourceType: 'rumor', ep,
+      rng: _hashRng(`seer-claim|${tag}|${claimant}|${accused}|${l}|${ep}`),
+    });
+    if (b) heard.push(l);
+  }
+  return heard;
 }

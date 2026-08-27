@@ -15,7 +15,9 @@ import {
 } from '../js/tr/roles.js';
 import {
   alignmentFactId, seedTraitorKnowledge, recordRound, ballotEvidence, suspicion,
+  seerEvidence, seerClaimEvidence, SEER_CRED,
 } from '../js/tr/deduction.js';
+import { ALIGNMENT_CRED_CEILING } from '../js/knowledge.js';
 
 const CAST = ['Gwen', 'Duncan', 'Heather', 'Owen', 'Leshawna', 'Noah'];
 function seededRng(seed = 1) {
@@ -501,5 +503,165 @@ describe('the pact has a price, and the price is not infinity', () => {
     recordAlignment('Cody', true, 2, 'selection');
     const pick = chooseBanishmentVote(TA, [TB, 'Cody'], 2, seededRng(3));
     expect([TB, 'Cody']).toContain(pick);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE SEER — the one `observed` alignment belief, at the write itself
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec §7.3, and §4.1's ceiling is what binds it. tests/tr-missions.test.js
+// asserts the closed set over every write in a played season; this file
+// asserts the SHAPE of the single sanctioned exception, at the function that
+// makes it, where there is no sampling to hide behind.
+//
+// The three things the mechanic is, restated as assertions:
+//
+//   1. IT IS TRUE. The subject must confirm their alignment truthfully, so the
+//      belief's valence tracks ground truth as of the read's own episode —
+//      `accurate` over a Traitor, `false` over a Faithful — and never a roll.
+//   2. ONLY THE SEER SEES IT. One belief, one knower. Nobody else in the store
+//      moves at all.
+//   3. WHAT EITHER OF THEM SAYS AFTERWARDS IS A RUMOUR. That is the clause
+//      that protects the ceiling: the most credible thing anybody will ever
+//      hold becomes, the moment it is spoken, one person's word.
+describe('the Seer: the game\'s one `observed` alignment belief', () => {
+  const SEER = 'Gwen', SUBJECT = 'Duncan', ROOM = ['Heather', 'Owen', 'Leshawna'];
+
+  function board(traitors) {
+    setGs({ bonds: {}, activePlayers: [...CAST] });
+    gs.tr = initTraitorsState();
+    resetKnowledge();
+    CAST.forEach(n => recordAlignment(n, traitors.includes(n), 1, 'selection'));
+    seedTraitorKnowledge(1);
+  }
+
+  /** Everything anybody in the store believes about anybody's alignment. */
+  function snapshot() {
+    const out = {};
+    for (const subj of CAST) {
+      for (const knower of CAST) {
+        const b = believes(knower, alignmentFactId(subj), 9);
+        if (b) out[`${knower}->${subj}`] = `${b.sourceType}|${b.confidence}|${b.valence}`;
+      }
+    }
+    return out;
+  }
+
+  it('writes the truth about a Traitor, at `observed`, to the Seer and to nobody else', () => {
+    board([SUBJECT, 'Heather']);
+    const before = snapshot();
+    const b = seerEvidence(SEER, SUBJECT, 9);
+
+    expect(b, 'the read wrote nothing at all').toBeTruthy();
+    expect(b.sourceType).toBe(SEER_CRED);
+    expect(SEER_CRED).toBe('observed');
+    // AT THE CEILING, NOT ABOVE IT. `observed` buys the direct branch of
+    // learn() -- unconditional acceptance, valence from ground truth -- and
+    // deliberately not a louder number: `blind-chess` is priced at exactly this
+    // figure and there is no headroom above it for anything.
+    expect(b.confidence).toBe(ALIGNMENT_CRED_CEILING);
+    expect(b.valence, 'a Traitor read did not come back as a true belief').toBe('accurate');
+
+    const after = snapshot();
+    const moved = Object.keys(after).filter(k => after[k] !== before[k]);
+    expect(moved, 'the private meeting was not private: somebody other than the Seer moved')
+      .toEqual([`${SEER}->${SUBJECT}`]);
+  });
+
+  it('and the truth about a Faithful, which is the only clearing this engine can do', () => {
+    // Task 3 recorded that the model cannot CLEAR anybody: `_assess` reads any
+    // alignment traffic about a person as evidence against them, so writing an
+    // exoneration leaves ~7 readers in 10 suspecting the person it exonerates.
+    // The direct branch is the single exception and this is it, which is why
+    // the exception may never be widened.
+    board(['Heather']);
+    // The Seer walks in already sure of them, at the loudest an inference goes.
+    // The scripted rolls ARE the finding: _assess draws accept, then the
+    // confidence jitter, then the lie-detection roll -- and a detection roll
+    // that FAILS is what turns a true fact about an innocent into a suspicion
+    // of them. Roughly seven readers in ten land here, which is why an
+    // exoneration cannot be routed through this door.
+    const script = [0.01, 0.5, 0.99];
+    let i = 0;
+    learn(SEER, alignmentFactId(SUBJECT), { sourceType: 'deduced', ep: 9, rng: () => script[i++] });
+    const prior = believes(SEER, alignmentFactId(SUBJECT), 9);
+    expect(prior?.valence, 'the fixture did not plant a suspicion to be cleared').toBe('accurate');
+    expect(suspicion(SEER, SUBJECT, 9), 'the planted suspicion did not reach the board')
+      .toBeGreaterThan(0);
+
+    const b = seerEvidence(SEER, SUBJECT, 9);
+    expect(b.sourceType).toBe('observed');
+    expect(b.valence, 'a clean read did not overturn the suspicion sitting on top of it')
+      .toBe('false');
+    expect(suspicion(SEER, SUBJECT, 9),
+      'the Seer still suspects somebody they watched confirm they were Faithful').toBe(0);
+  });
+
+  it('a claim about the meeting is a `rumor`, from either of them, true or false', () => {
+    // THE CLAUSE THAT PROTECTS THE CEILING. Both parties may lie afterwards, so
+    // neither can be believed, so nothing certain leaves that room. A claim
+    // written at the tier it was FORMED at would hand the castle the Seer's
+    // certainty on a sentence, which is the laundering §4.1 exists to stop.
+    board([SUBJECT]);
+    seerEvidence(SEER, SUBJECT, 9);
+
+    // Truthful: the Seer names the Traitor they really saw.
+    const heard = seerClaimEvidence(SEER, SUBJECT, CAST, 9, 'named');
+    for (const l of heard) {
+      const b = believes(l, alignmentFactId(SUBJECT), 9);
+      expect(b.sourceType,
+        `${l} heard a claim about the meeting and recorded it as ${b.sourceType}`).toBe('rumor');
+      expect(b.confidence).toBeLessThanOrEqual(ALIGNMENT_CRED_CEILING);
+    }
+    expect(heard.length, 'nobody heard the claim at all: this guard observed nothing')
+      .toBeGreaterThan(0);
+    // The two people in the room are not an audience for a claim about it.
+    expect(heard).not.toContain(SEER);
+    expect(heard).not.toContain(SUBJECT);
+    // And the Seer's OWN belief is untouched by having said it out loud.
+    expect(believes(SEER, alignmentFactId(SUBJECT), 9).sourceType).toBe('observed');
+
+    // A lie: the subject accuses the Seer, who is a Faithful. Same tier.
+    const back = seerClaimEvidence(SUBJECT, SEER, CAST, 9, 'counter');
+    for (const l of back) {
+      expect(believes(l, alignmentFactId(SEER), 9).sourceType,
+        'a lie about the meeting arrived louder than a rumour').toBe('rumor');
+    }
+    expect(back.length, 'the counter-accusation reached nobody').toBeGreaterThan(0);
+  });
+
+  it('costs the caller no rng draw, so a season with a Seer draws what one without drew', () => {
+    // Task 6's technique, which is what keeps the endgame's tables comparable.
+    // The read takes learn()'s direct branch (no roll at all) and the claims
+    // run on a stream hashed from the claim, so neither touches the season's.
+    board([SUBJECT]);
+    let draws = 0;
+    const counting = () => { draws++; return 0.5; };
+    // seerEvidence takes no rng parameter BY DESIGN; the claim path takes its
+    // own hashed one. A caller handing this one in would be ignored, which is
+    // the assertion: nothing here can be made to consume the season's stream.
+    seerEvidence(SEER, SUBJECT, 9, counting);
+    seerClaimEvidence(SEER, SUBJECT, CAST, 9, 'named', counting);
+    expect(draws, 'the Seer consumed a draw from a stream handed to it').toBe(0);
+  });
+
+  it('reads the era, not the season-end alignment — a later flip does not unmake it', () => {
+    // ALIGNMENT HAS ERAS and this trap has now caught three tasks. A read is
+    // true AS OF the episode it happened; a subject recruited afterwards does
+    // not make it retroactively false, and nothing may recompute alignment at
+    // season end to check it.
+    board([]);
+    const b = seerEvidence(SEER, SUBJECT, 4);
+    expect(b.valence, 'the read of a Faithful was not recorded as one').toBe('false');
+    expect(truthAtLearn(SUBJECT, 4), 'the fixture did not start them Faithful').toBe(false);
+
+    recordAlignment(SUBJECT, true, 8, 'recruitment');
+    expect(alignmentAt(SUBJECT, 9), 'the recruitment did not take').toBe('traitor');
+    // The belief is unchanged, and it was CORRECT when it was formed.
+    const still = believes(SEER, alignmentFactId(SUBJECT), 9);
+    expect(still.valence).toBe('false');
+    expect(truthAtLearn(SUBJECT, 4),
+      'the era model lost the episode-4 truth the read was made against').toBe(false);
   });
 });

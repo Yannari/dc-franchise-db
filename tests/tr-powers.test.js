@@ -63,13 +63,14 @@ vi.mock('../js/knowledge.js', async (importOriginal) => {
 import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { resetKnowledge, ALIGNMENT_CRED_CEILING } from '../js/knowledge.js';
-import { recordAlignment } from '../js/tr/roles.js';
+import { recordAlignment, alignmentAt } from '../js/tr/roles.js';
 import { seedTraitorKnowledge } from '../js/tr/deduction.js';
 import { grantShield, isShielded, resolveMurder, formPreference } from '../js/tr/murder.js';
 import { runRoundTable } from '../js/tr/roundtable.js';
 import { awardShield, liveShield, shieldSeenBy, shieldEvidence, expireShields,
   awardDagger, heldDagger, daggerSeenBy, daggerWeights, settleDaggers, daggerAfternoon,
-  _setDaggerSteeringEnabled, DAGGER_VOTES } from '../js/tr/powers.js';
+  _setDaggerSteeringEnabled, DAGGER_VOTES,
+  openSeer, seerRead, _setSeerWatch, _setSeerEnabled, SEER_MIN_ROOM } from '../js/tr/powers.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { POT_CEILING } from '../js/tr/missions.js';
 import roster from '../franchise_roster.json';
@@ -973,5 +974,390 @@ describe('and it is still there at the end: the Dagger reaches the endgame', () 
     expect(tiers.few || 0).toBeGreaterThan(0);
     expect(tiers.some || 0).toBeGreaterThan(0);
     expect(tiers.unseen || 0, 'no Dagger was ever won unobserved').toBeGreaterThan(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE SEER — once per game, endgame only, and two people who may lie
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec §7.3. The write and its credibility are guarded in
+// tests/tr-deduction.test.js and in tests/tr-missions.test.js's closed set;
+// what is guarded here is the POWER — the endgame gate, the once-per-game
+// rule, the alignment-blindness of who gets it, and the two lies.
+//
+// EVERY RULE IS ASSERTED WHERE IT IS DECIDED, and that is not a stylistic
+// preference. Task 4 of this plan shipped a guard a live mutation SURVIVED,
+// because the state it forbade was reachable in 22 seasons out of 400 and a
+// season-level assertion could not see the rule break. A once-per-game,
+// endgame-only power is rarer than that by construction: one grant per season,
+// against tens of thousands of other decisions. So `_setSeerWatch` observes
+// EVERY offer, including the refusals — `openSeer` is called on every endgame
+// table precisely so that the refusals outnumber the grants and the rule is
+// re-decided rather than decided once — and every population arm below carries
+// a coverage floor proving the sample contains the case it is about.
+describe('the Seer: once per game, and only when the game is nearly over', () => {
+  /** Every offer the season made, granted or refused. */
+  function watched(n, first = 1) {
+    const offers = [];
+    const off = _setSeerWatch(o => offers.push({ ...o, season: offers.length }));
+    try {
+      setPlayers(ROSTER20);
+      const ss = Array.from({ length: n }, (_, i) => {
+        const from = offers.length;
+        const s = playTraitorsSeason({ cast: CAST20, traitorCount: 3, seed: first + i });
+        return { s, offers: offers.slice(from) };
+      });
+      return ss;
+    } finally { off(); }
+  }
+
+  it('is offered at every endgame table and granted exactly once', () => {
+    const runs = watched(120);
+    let grants = 0, refusals = 0, reAsked = 0;
+    for (const { s, offers } of runs) {
+      expect(offers.length, 'a season put no Seer question at all').toBeGreaterThan(0);
+      const fired = offers.filter(o => o.fired);
+      // THE RULE, AT THE DECISION. Not "the store holds one record" — that is
+      // a statement about what survived — but "the engine said yes once".
+      expect(fired.length,
+        `the Seer was granted ${fired.length} times in one game`).toBeLessThanOrEqual(1);
+      grants += fired.length;
+      refusals += offers.length - fired.length;
+      // Every refusal after a grant must be the once-per-game rule and not an
+      // accident of the room emptying: this is the arm the "second read" mutation
+      // has to break.
+      const at = offers.findIndex(o => o.fired);
+      if (at >= 0) {
+        for (const o of offers.slice(at + 1)) {
+          expect(o.reason, 'a later table refused the Seer for a reason other than the rule')
+            .toBe('already used');
+          reAsked++;
+        }
+      }
+      // And the record the season hands back agrees with what was decided.
+      expect(!!s.endgame.seer, 'the season record disagrees with the decision log')
+        .toBe(fired.length === 1);
+    }
+    // COVERAGE FLOORS, and they are the half of this guard that Task 4 was
+    // missing. `<= 1` is satisfied by zero and every rule about a rare thing
+    // is satisfiable by never reaching it.
+    expect(grants, 'the Seer never fired at all in 120 seasons').toBeGreaterThan(100);
+    expect(refusals, 'no offer was ever refused: the once-per-game branch is unexercised')
+      .toBeGreaterThan(20);
+    expect(reAsked,
+      'no season ever re-asked after a grant, so "already used" was never the answer and a '
+      + 'second read could not have been caught').toBeGreaterThan(15);
+  });
+
+  it('is never offered outside the endgame, whoever asks', () => {
+    // THE GATE IS SEASON STATE, NOT AN ARGUMENT. There is no flag a caller can
+    // pass to open a Seer during the mandated season, which is the point: the
+    // mandated season is where the fifteen calibration bands are measured, and
+    // an `observed` belief inside it would move them.
+    world(CAST10, CAST10.slice(0, 3));
+    expect(gs.tr.endgameFrom, 'a fresh season already thinks it is in its endgame').toBe(null);
+    expect(openSeer(4), 'the Seer opened during the mandated season').toBe(null);
+    expect(seerRead(), 'a refused offer still left a record behind').toBe(null);
+
+    // Opened by hand at the endgame's own gate it fires; opened at the same
+    // episode with the room below the floor it does not. Both arms so the
+    // refusal above is about the GATE and not about the fixture being too
+    // small to hold a meeting either way.
+    gs.tr.endgameFrom = 4;
+    expect(openSeer(4), 'the gate was open and the Seer still refused').toBeTruthy();
+    expect(seerRead().ep).toBe(4);
+
+    world(CAST10.slice(0, SEER_MIN_ROOM - 1), [CAST10[0]]);
+    gs.tr.endgameFrom = 4;
+    expect(openSeer(4), 'a room below the floor still held a private meeting').toBe(null);
+
+    // And in a played season every grant sits at or after the episode the
+    // endgame opened on, read from the record rather than recomputed.
+    for (const { s, offers } of watched(40, 500)) {
+      const start = s.endgame.rounds.length || s.endgame.ballots.length
+        ? s.endgame.ballots[0].ep : null;
+      for (const o of offers.filter(x => x.fired)) {
+        expect(o.ep, 'a Seer fired before the endgame opened').toBeGreaterThanOrEqual(start);
+      }
+    }
+  });
+
+  it('the read goes to the Seer and to nobody else in the castle', () => {
+    // Asserted over the WRITES rather than over the store, for Task 2's first
+    // reason: learn() overwrites, so a season-end sweep measures the survivors
+    // of an overwriting process. This is the arm the "let a bystander learn it"
+    // mutation has to break.
+    learnCalls.length = 0;
+    capture.on = true;
+    let seen = 0;
+    try {
+      setPlayers(ROSTER20);
+      for (let i = 1; i <= 25; i++) {
+        const from = learnCalls.length;
+        const s = playTraitorsSeason({ cast: CAST20, traitorCount: 3, seed: i });
+        const r = s.endgame.seer;
+        const obs = learnCalls.slice(from)
+          .filter(c => /^alignment:/.test(c.id) && c.sourceType === 'observed');
+        if (!r) { expect(obs.length, 'an `observed` write with no Seer behind it').toBe(0); continue; }
+        expect(obs.length, 'the private meeting wrote more than one belief').toBe(1);
+        expect(obs[0].knower, 'somebody who was not the Seer learned the read').toBe(r.seer);
+        expect(obs[0].id).toBe(`alignment:${r.subject}`);
+        seen++;
+      }
+    } finally { capture.on = false; }
+    expect(seen, 'no Seer read was observed at all: this guard swept nothing')
+      .toBeGreaterThan(20);
+  });
+
+  it('the read is TRUE as of the episode it happened, eras and all', () => {
+    // A recruit who flips afterwards does not make an earlier read false, and
+    // NOTHING may recompute alignment at season end to check — three tasks have
+    // now hit that trap. This reads the value under test: the record's own
+    // `truth`, against the era model at the record's own episode.
+    let checked = 0, recruits = 0;
+    for (const { s } of watched(60)) {
+      const r = s.endgame.seer;
+      if (!r) continue;
+      // NOTHING HERE RECOMPUTES ALIGNMENT, and the first draft of this line did
+      // — `alignmentAt(r.subject, r.ep)` over a record from season 12 while
+      // `gs` holds season 60, which is the era trap arriving by a new route.
+      // The record's own `truth` IS the value under test; what is asserted is
+      // that the belief the write produced agrees with it.
+      expect(r.belief.valence, 'the belief disagreed with what the subject confirmed')
+        .toBe(r.truth === 'traitor' ? 'accurate' : 'false');
+      if (r.recruited) recruits++;
+      checked++;
+    }
+    expect(checked, 'no read to check').toBeGreaterThan(40);
+    expect(recruits,
+      'no Seer ever read a recruited Traitor, so the era branch of this guard and of the '
+      + 'read pools is unexercised').toBeGreaterThan(0);
+  });
+
+  it('who holds it does not depend on who is wearing a cloak', () => {
+    // ALIGNMENT-BLIND SELECTION, and the reason is a leak rather than fairness:
+    // if the holder were chosen with any regard to alignment then the mere
+    // existence of a Seer would be a tell, which is exactly the ground-truth
+    // signature Task 6 removed from `chooseBanishmentVote`.
+    // Ground truth is read INSIDE the season it belongs to — `gs` is replaced
+    // wholesale by the next one, so `alignmentAt` after the loop would answer
+    // about a different castle (the era trap by another route).
+    // THE NULL IS A MEAN OF PER-ROOM SHARES, NOT A POOLED SHARE, and the first
+    // draft got that wrong in a way that read as a leak. Pooling every seat in
+    // 200 endgames weights big rooms heavily; the Seer is drawn once per
+    // endgame from ITS room, and endgame rooms that are Traitor-dense are the
+    // small ones (one cloak in a final three is 33%, one in a seven is 14%).
+    // The pooled figure came out 23.9% against an observed 34.0% purely from
+    // that mismatch. Under the correct null each grant contributes its own
+    // room's share, which is exactly the probability that grant had of landing
+    // on a cloak. Fix the estimator, not the threshold.
+    let traitorSeers = 0, seers = 0, expected = 0, variance = 0;
+    const off = _setSeerWatch(o => {
+      if (!o.fired) return;
+      seers++;
+      if (alignmentAt(o.seer, o.ep) === 'traitor') traitorSeers++;
+      const room = o.rec.room;
+      const p = room.filter(n => alignmentAt(n, o.ep) === 'traitor').length / room.length;
+      expected += p;
+      variance += p * (1 - p);
+    });
+    try {
+      setPlayers(ROSTER20);
+      for (let i = 1; i <= 200; i++) playTraitorsSeason({ cast: CAST20, traitorCount: 3, seed: i });
+    } finally { off(); }
+    // Poisson-binomial: the sd of the count under the null, stated rather than
+    // implied, because a sampled assertion with an unstated separation is a
+    // coin flip.
+    const sd = Math.sqrt(variance);
+    const z = (traitorSeers - expected) / sd;
+    expect(Math.abs(z),
+      `Traitors held the Seer ${traitorSeers} times against ${expected.toFixed(1)} expected `
+      + `from the rooms they were drawn from (sd ${sd.toFixed(2)}, z ${z.toFixed(2)}) — `
+      + 'selection is reading something that correlates with a cloak').toBeLessThan(3);
+    expect(seers).toBeGreaterThan(150);
+  });
+
+  it('both of them may lie about it afterwards, and both actually do', () => {
+    // §7.3's last clause, and it is the one that keeps the ceiling standing:
+    // the most credible thing in the game becomes one person's word the moment
+    // it is spoken. Every reachable claim shape must actually be reached, or
+    // the guard is green about branches nobody has ever run.
+    const kinds = {}, byLiar = { seer: 0, subject: 0 };
+    // Per-kind listener totals. A `spreads` flag is a claim about what the
+    // record MEANS; these are what actually left the room. Silencing one of the
+    // two accusation channels leaves the other's total intact, so a single
+    // pooled floor goes green over a dead channel — which is how a mutation
+    // that stopped every counter-accusation reaching anybody survived the
+    // first draft of this guard.
+    const reached = { named: 0, counter: 0 };
+    let claims = 0;
+    for (const { s } of watched(200)) {
+      const r = s.endgame.seer;
+      if (!r) continue;
+      expect(r.claims.length, 'a meeting produced no account from either party').toBe(2);
+      expect(r.claims[0].by).toBe(r.seer);
+      expect(r.claims[1].by).toBe(r.subject);
+      for (const c of r.claims) {
+        claims++;
+        kinds[`${c.by === r.seer ? 'seer' : 'subj'}:${c.kind}:${c.truthful}`] =
+          (kinds[`${c.by === r.seer ? 'seer' : 'subj'}:${c.kind}:${c.truthful}`] || 0) + 1;
+        if (c.truthful === false) byLiar[c.by === r.seer ? 'seer' : 'subject']++;
+        // A claim that says nothing must not have told anybody anything, and a
+        // claim that spreads must be an accusation with a name on it.
+        if (!c.spreads) expect(c.heard, `a ${c.kind} claim reached listeners`).toEqual([]);
+        else {
+          expect(c.about, 'a spreading claim named nobody').toBeTruthy();
+          reached[c.kind] += c.heard.length;
+        }
+      }
+    }
+    expect(claims).toBeGreaterThan(300);
+    for (const k of ['named', 'counter']) {
+      expect(reached[k],
+        `no ${k} claim in 200 seasons reached a single listener — that channel is recorded as `
+        + 'spreading and spreads nothing').toBeGreaterThan(20);
+    }
+    expect(byLiar.seer, 'the Seer never once lied about the meeting').toBeGreaterThan(10);
+    expect(byLiar.subject, 'the subject never once lied about the meeting').toBeGreaterThan(10);
+    // Every branch reachable, so nothing below is a dead pool.
+    for (const k of ['seer:named:true', 'seer:named:false', 'seer:silent:null',
+      'subj:deny:true', 'subj:deny:false', 'subj:counter:true', 'subj:counter:false',
+      'subj:cleared:true', 'subj:cleared:false', 'subj:silent:null']) {
+      expect(kinds[k] || 0, `the claim branch ${k} never fired in 200 seasons`)
+        .toBeGreaterThan(0);
+    }
+  });
+
+  it('changes nothing about the mandated season it was never in', () => {
+    // THE EQUIVALENCE ARM, and it is what the "not one draw" claim in
+    // js/tr/powers.js actually rests on. The Seer is endgame-only, so every
+    // episode the fifteen calibration bands are measured over must come back
+    // BIT-IDENTICAL with the power ablated — not "inside its band", identical.
+    // A band that merely holds cannot distinguish a mechanism with no effect
+    // from a stream shift that happened to land inside a tolerance.
+    const FIELDS = ['log', 'rounds', 'missions', 'shields', 'pot', 'roleHistory',
+      'blockedMurders', 'threads', 'traitors'];
+    const arm = (on) => {
+      _setSeerEnabled(on);
+      try {
+        setPlayers(ROSTER20);
+        return Array.from({ length: 40 }, (_, i) => {
+          const s = playTraitorsSeason({ cast: CAST20, traitorCount: 3, seed: i + 1 });
+          return { key: JSON.stringify(Object.fromEntries(FIELDS.map(k => [k, s[k]]))),
+            seer: !!s.endgame.seer };
+        });
+      } finally { _setSeerEnabled(true); }
+    };
+    const off = arm(false), on = arm(true);
+    for (let i = 0; i < off.length; i++) {
+      expect(on[i].key, `season ${i + 1}'s mandated record moved when the Seer was switched on`)
+        .toBe(off[i].key);
+    }
+    // Guard on the guard: the ablation must actually ablate, or this arm is
+    // comparing a thing to itself. `gs.tr.daggers` is deliberately NOT in the
+    // projection above — a Dagger carried into the endgame is settled there, so
+    // its outcome is endgame state that happens to be copied out with the
+    // season's.
+    expect(off.filter(r => r.seer).length, 'the ablated arm still held a Seer').toBe(0);
+    expect(on.filter(r => r.seer).length, 'the live arm held no Seer: nothing was held out')
+      .toBeGreaterThan(30);
+  });
+
+  it('and what a claim tells the room is a rumour, however sure the speaker is', () => {
+    learnCalls.length = 0;
+    capture.on = true;
+    let spread = 0;
+    try {
+      setPlayers(ROSTER20);
+      for (let i = 1; i <= 25; i++) {
+        const from = learnCalls.length;
+        const s = playTraitorsSeason({ cast: CAST20, traitorCount: 3, seed: i });
+        const r = s.endgame.seer;
+        if (!r) continue;
+        const mine = learnCalls.slice(from).filter(c => /^the seer/.test(c.source || ''));
+        for (const c of mine) {
+          if (c.source === 'the seer') continue;          // the read itself
+          expect(c.sourceType,
+            `a claim about the meeting was written at ${c.sourceType}`).toBe('rumor');
+          expect(c.confidence,
+            'a claim priced itself instead of taking the rumour tier').toBeFalsy();
+          spread++;
+        }
+      }
+    } finally { capture.on = false; }
+    expect(spread, 'no claim ever reached anybody: this guard swept nothing').toBeGreaterThan(20);
+  });
+
+  it('every sentence about the meeting agrees with the record it describes', () => {
+    // THE STANDING REQUIREMENT, AND THE PLACE IT IS GENUINELY AWKWARD. Half of
+    // these sentences describe a LIE, so the narration and the belief that
+    // claim writes deliberately disagree — a ledger guard checking prose
+    // against GROUND TRUTH would fire on every one of them and be wrong. What
+    // binds is agreement with the CLAIM RECORD: `kind` and `truthful` are what
+    // the sentence is about, and the pools are keyed on exactly those, so this
+    // asserts the keying held rather than re-deriving it.
+    const LIE = /\b(lie|lying|false|invention|fabrication|nothing of the kind|not\.)\b/i;
+    let named = 0, lied = 0, cleanReads = 0, coldReads = 0, recruitReads = 0;
+    for (const { s } of watched(200)) {
+      const r = s.endgame.seer;
+      if (!r) continue;
+      // The read line must describe the read that happened.
+      expect(r.readKey.startsWith(r.truth), `read line keyed ${r.readKey} over a ${r.truth}`)
+        .toBe(true);
+      if (r.truth === 'faithful') {
+        // "spent the season being suspected" may not print over somebody the
+        // Seer held nothing against, and vice versa.
+        expect(r.readKey).toBe(r.priorSuspicion > 0 ? 'faithful-suspected' : 'faithful-cold');
+        if (r.priorSuspicion > 0) cleanReads++; else coldReads++;
+      } else {
+        // "has been one since the first night" may not print over a recruit.
+        expect(r.readKey).toBe(r.recruited ? 'traitor-recruited' : 'traitor-original');
+        if (r.recruited) recruitReads++;
+      }
+      for (const c of r.claims) {
+        if (c.kind === 'silent') {
+          expect(c.truthful, 'a silence was scored as a truth or a lie').toBe(null);
+          continue;
+        }
+        // A line calling itself a lie must sit on a claim recorded as one.
+        if (LIE.test(c.line)) {
+          expect(c.truthful, `"${c.line}" calls itself false over a truthful claim`).toBe(false);
+          lied++;
+        }
+        // AND `truthful` ITSELF MUST AGREE WITH THE FACT THE CLAIM ASSERTS,
+        // which is the assertion that actually binds. Without it the prose
+        // above only ever agrees with a field nothing checks: a mutation
+        // scoring every accusation as truthful SURVIVED the regex arm, because
+        // it simply stopped the lying pool from being reached and the pools
+        // stayed self-consistent about a `truthful` that had become a
+        // constant. Each kind asserts a different fact, so each is checked
+        // against the one it asserts, out of the record and never recomputed.
+        const asserts = {
+          named: r.truth === 'traitor',            // "the subject is a Traitor"
+          deny: r.truth === 'faithful',            // "I am not"
+          cleared: r.truth === 'faithful',         // "I was checked and I am clean"
+          counter: r.seerTruth === 'traitor',      // "my accuser is the Traitor"
+        }[c.kind];
+        expect(c.truthful,
+          `a ${c.kind} claim was scored truthful=${c.truthful} while asserting something `
+          + `${asserts ? 'true' : 'false'} about the record`).toBe(asserts);
+        if (c.kind === 'named') { expect(c.about).toBe(r.subject); named++; }
+        if (c.kind === 'counter') expect(c.about).toBe(r.seer);
+        // Nothing may print an unfilled slot — the verb slots included, which
+        // is what eleven lines in this section's first dump got wrong.
+        expect(c.line, `unfilled placeholder in "${c.line}"`).not.toMatch(/\{[a-zA-Z]+\}/);
+      }
+      for (const l of [r.meetingLine, r.readLine]) {
+        expect(l, `unfilled placeholder in "${l}"`).not.toMatch(/\{[a-zA-Z]+\}/);
+      }
+    }
+    // Coverage on all four keyed branches, so none of the splits above is a
+    // rule about a case that never occurs.
+    expect(named, 'nobody was ever named').toBeGreaterThan(20);
+    expect(lied, 'no line ever called itself a lie').toBeGreaterThan(20);
+    expect(cleanReads, 'no read of a suspected Faithful').toBeGreaterThan(10);
+    expect(coldReads, 'no read of a Faithful nobody suspected').toBeGreaterThan(5);
+    expect(recruitReads, 'no read of a recruited Traitor').toBeGreaterThan(0);
   });
 });

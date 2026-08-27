@@ -446,7 +446,9 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     potCeiling: gs.tr.potCeiling,
     survivors: [...(gs.activePlayers || [])],
     // The choices, the finale tables and who walked out with the pot. The
-    // whole phase record — see js/tr/endgame.js.
+    // whole phase record — see js/tr/endgame.js. `endgame.seer` is the one
+    // private meeting the season held, copied out of `gs` with everything
+    // else for the reason `rounds` and `missions` are.
     endgame,
     // WHO WON IS NOW DECIDED BY THE ENDGAME AND NOT BY THE LOOP EXITING. It is
     // the same question answered at the same moment it is really answered:

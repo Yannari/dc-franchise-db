@@ -100,6 +100,21 @@ export function initTraitorsState() {
     // ending a Dagger has.
     daggers: [],
 
+    // THE SEER, and there is at most one of these in a whole season:
+    //   { ep, seer, subject, truth, room, meetingLine, readLine, belief, claims }
+    // Spec 7.3: once per game, endgame only, one player made to confirm their
+    // alignment truthfully to one other. The belief it writes is the game's
+    // ONE `observed` alignment belief and there may never be a second — see
+    // the ceiling note in js/knowledge.js. `claims` is what each of the two
+    // said about it afterwards, at `rumor`, true or false.
+    seer: null,
+
+    // The episode the endgame opened on, or null while the mandated loop is
+    // still running. Written by runEndgame and read by openSeer, which is the
+    // whole of the Seer's endgame gate: it is a property of season state, so
+    // no caller can fake it.
+    endgameFrom: null,
+
     // Nights the Traitors struck and nobody died: [{ ep, target }].
     // The TARGET is stored because the VP shows it — the audience knows who
     // was nearly murdered. The room does not, and must not: only the FACT of

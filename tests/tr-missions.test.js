@@ -510,8 +510,14 @@ describe('nothing learns an alignment above `deduced`', () => {
   //   `public`   -- exactly three writers, all of them people looking at each
   //                other rather than inferring: the turret seeding, the
   //                banishment reveal, and a recruit being shown the turret.
-  //   `observed` -- exactly one, ever: the Seer, which does not exist yet, so
-  //                the correct assertion today is ZERO.
+  //   `observed` -- exactly one, ever: the Seer (spec 7.3), once per game, in
+  //                the endgame. It arrives at ALIGNMENT_CRED_CEILING like
+  //                everything else -- what `observed` buys it is learn()'s
+  //                direct branch, not a louder number -- and anything either
+  //                party SAYS about it afterwards is a `rumor` like any other
+  //                claim. The correct assertion is now EXACTLY ONE PER SEASON,
+  //                not zero and not "at most one": a bound that permits zero
+  //                would go green on a Seer that never fired.
   //   everything else -- `deduced` or `rumor`, capped by learn() at
   //                ALIGNMENT_CRED_CEILING, and therefore a suspicion however
   //                sure of it anybody is.
@@ -523,6 +529,9 @@ describe('nothing learns an alignment above `deduced`', () => {
   // Swept over the whole store of a played season rather than over call sites,
   // so it holds for a writer nobody has thought of yet.
   const SANCTIONED_PUBLIC = ['the turret', 'the reveal'];
+  // The ONE sanctioned `observed` writer, named by its source string. A second
+  // entry in this array is the end of the format, not a maintenance task.
+  const SANCTIONED_OBSERVED = ['the seer'];
 
   function alignmentBeliefs() {
     return allFacts()
@@ -536,9 +545,19 @@ describe('nothing learns an alignment above `deduced`', () => {
     // call rather than at whatever survived to the end of the season.
     learnCalls.length = 0;
     capture.on = true;
+    // The seasons are sliced out of the spy log by index rather than run
+    // together, so "once per GAME" can be counted per game. `learnedEp` cannot
+    // do that job: learn() bumps it on every call, so it says when a belief was
+    // last touched and not when it was formed, and Task 7's no-reveal guard was
+    // fooled by exactly that.
+    const perSeason = [];
     try {
       setPlayers(ROSTER);
-      for (let i = 1; i <= 12; i++) playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: i });
+      for (let i = 1; i <= 12; i++) {
+        const from = learnCalls.length;
+        playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: i });
+        perSeason.push(learnCalls.slice(from));
+      }
     } finally { capture.on = false; }
 
     const alignment = learnCalls.filter(c => /^alignment:/.test(c.id));
@@ -558,10 +577,35 @@ describe('nothing learns an alignment above `deduced`', () => {
       'the mission channel only ever wrote one tier — the other is unreachable')
       .toEqual(new Set(['deduced', 'rumor']));
 
+    // AT MOST ONE `observed` WRITE PER GAME -- counted per game, because twelve
+    // seasons with one write each and one season with twelve are the same total
+    // and only one of them is the format.
+    const observed = alignment.filter(c => c.sourceType === 'observed');
+    for (const c of observed) {
+      expect(SANCTIONED_OBSERVED,
+        `a second \`observed\` alignment writer: "${c.source}"`).toContain(c.source);
+      expect(c.confidence,
+        'the Seer passed a confidence -- the tiers that mean "looked at rather than inferred" '
+        + 'pass none, which is what stops a caller pricing certainty').toBeFalsy();
+    }
+    let seasonsWithSeer = 0;
+    for (let i = 0; i < perSeason.length; i++) {
+      const n = perSeason[i].filter(c => /^alignment:/.test(c.id) && c.sourceType === 'observed').length;
+      expect(n, `season ${i + 1} wrote ${n} \`observed\` alignment beliefs; the format allows one`)
+        .toBeLessThanOrEqual(1);
+      if (n) seasonsWithSeer++;
+    }
+    // Coverage floor. A "<= 1" bound is satisfied by zero, and a once-per-game
+    // power is rare BY CONSTRUCTION -- which is precisely the shape of guard
+    // that went green through a live mutation in Task 4. This says the sample
+    // actually contains the case the bound is about.
+    expect(seasonsWithSeer,
+      'no Seer read happened in any of twelve seasons: the one `observed` writer this guard '
+      + 'now sanctions was never observed, so its half of the closed set is unexercised')
+      .toBeGreaterThan(8);
+
     for (const c of alignment) {
-      expect(c.sourceType,
-        `an alignment was learned as \`observed\` from "${c.source}" — the Seer is the only `
-        + 'one there may ever be, and it does not exist yet').not.toBe('observed');
+      if (c.sourceType === 'observed') continue;
       if (c.sourceType === 'public') {
         expect(SANCTIONED_PUBLIC,
           `a fourth \`public\` alignment writer: "${c.source}"`).toContain(c.source);
@@ -582,7 +626,7 @@ describe('nothing learns an alignment above `deduced`', () => {
 
   it('and what the room is left holding at the end of a season obeys the same rule', () => {
     setPlayers(ROSTER);
-    let seen = 0, missionSourced = 0;
+    let seen = 0, missionSourced = 0, observedSurvivors = 0;
     for (let i = 1; i <= 12; i++) {
       playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: i });
       const beliefs = alignmentBeliefs();
@@ -591,12 +635,24 @@ describe('nothing learns an alignment above `deduced`', () => {
       // of read that has silently measured an empty object before.
       expect(beliefs.length, 'the belief store is empty -- this sweep is reading nothing')
         .toBeGreaterThan(50);
+      // AT MOST ONE `observed` BELIEF SURVIVES A SEASON, and here the bound is
+      // one-sided ON PURPOSE. This arm sweeps the STORE, which holds the
+      // survivors of an overwriting process (Task 2's first defect shape), so
+      // "exactly one" would be an assertion about survival rather than about
+      // the rule. The write-side arm above is where the count is binding; this
+      // one adds that no OTHER source ever reaches the tier.
+      const obs = beliefs.filter(b => b.sourceType === 'observed');
+      expect(obs.length, 'more than one `observed` alignment belief survived a season')
+        .toBeLessThanOrEqual(1);
+      observedSurvivors += obs.length;
       for (const b of beliefs) {
         seen++;
         if (/^(threw a board|finished a board)/.test(b.source)) missionSourced++;
-        expect(b.sourceType,
-          `an alignment belief arrived as observed from "${b.source}" -- the Seer is the `
-          + 'only one there may ever be').not.toBe('observed');
+        if (b.sourceType === 'observed') {
+          expect(SANCTIONED_OBSERVED,
+            `a second observed alignment writer: "${b.source}"`).toContain(b.source);
+          continue;
+        }
         if (b.sourceType === 'public') {
           expect(SANCTIONED_PUBLIC,
             `a fourth public alignment writer: "${b.source}"`).toContain(b.source);
@@ -614,6 +670,11 @@ describe('nothing learns an alignment above `deduced`', () => {
     expect(missionSourced,
       'no surviving belief in twelve seasons came from a mission tell -- the sweep above is '
       + 'not covering the channel this task added').toBeGreaterThan(0);
+    // Coverage floor on the other half of the closed set, so the <= 1 bound
+    // above cannot pass by never seeing an `observed` belief at all.
+    expect(observedSurvivors,
+      'no `observed` belief survived any of twelve seasons -- the Seer half of this sweep '
+      + 'observed nothing').toBeGreaterThan(5);
   });
 });
 

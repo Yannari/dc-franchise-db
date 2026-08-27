@@ -1,5 +1,9 @@
 # Coaches Twist — what is left
 
+> **Status 2026-08-27.** Items 1, 3, 5, 7 and the coach-vs-coach half of 6 are
+> DONE. Item 4 is measured. What genuinely remains is at the bottom under
+> "Still open".
+
 The engine is built, reviewed and measured across 20 headless seasons. This is
 what a final whole-branch review found still open, in the order it must be done.
 
@@ -118,3 +122,52 @@ stable seeded generator. All five tests in this file are now seeded with a
 fixed LCG, including "does not let coaches be booted every single time
 either" (see item 4 above) — every test asserts against a fixed, reproducible
 season rather than re-rolling one.
+
+
+---
+
+# Still open
+
+## A human has not looked at the board
+
+Everything else has been verified by reading real generated text. The VP screen
+has only ever been rendered to stripped text and static-checked. No browser
+automation was available in the session that built this.
+
+`coaches-board-preview.html` in the worktree root is a standalone render of a
+real board — two tribes, a damaging session, and a passed-over ledger — with a
+fake nav bar at the top so you can confirm the atmosphere layer does not cover
+it. Open it in a browser. Reveals will not work (they need the app), but layout,
+colour, spacing and the damaged-session styling will.
+
+Nine static checks pass on it: no emoji, cb- prefix throughout, atmosphere at
+top:46px, real reduced-motion block, max-width 1100, negative gains rendering
+with a minus rather than `+-`, damaged sessions styled distinctly, no
+undefined/NaN, no cross-show vocabulary.
+
+## The pre-challenge read
+
+The spec's Challenge section has two halves. The training bonus reaching
+challenge scoring is built. The other half — a coach spending a session on a
+read that gives their proteges an edge if they guess the discipline right — was
+scoped out of the plan and never built.
+
+## Fame is still a two-tier proxy
+
+`coach.stars` defaults to 4.5 and a contestant is 0 or 2.0 depending on
+`isReturnee`. Real career fame lives in `js/fame.js` but needs season data an
+episode cannot reach. Now that coaches are created at `initGameState`, that IS
+a place the databases are reachable — compute real stars there and store them
+on the coach record.
+
+## Deal events have no VP card style
+
+The three coach-vs-coach event types render through the generic camp-event
+fallback, the same as `coachFallout`'s events. Fine, but a truce or a betrayal
+between two finalists deserves its own card.
+
+## The double-tribal primary pick
+
+`formAlliances` matches on the joined label, so a coach cannot be the majority
+alliance's PRIMARY target on a double-tribal night. Reachable via secondary
+paths. Accepted limitation, recorded rather than fixed.

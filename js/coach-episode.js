@@ -838,7 +838,7 @@ export function coachCardTalk(ep, tribe, roll = Math.random) {
  * on their own read of the room; whether their peers actually signed is not
  * known to them until it matters.
  */
-export function commitSaveCards(ep, tribeLabel, alliances = []) {
+export function commitSaveCards(ep, tribeLabel, alliances = [], roll = Math.random) {
   const commits = [];
   for (const c of coachesOf(tribeLabel)) {
     const rec = coachRecord(c.name);
@@ -851,7 +851,7 @@ export function commitSaveCards(ep, tribeLabel, alliances = []) {
     // Reading the room is intuition; committing on that read is boldness.
     const danger = Math.min(1, aimed * 0.45);
     const play = danger * (0.45 + st.intuition * 0.04) * (0.6 + st.boldness * 0.04);
-    if (Math.random() >= Math.min(0.95, play)) continue;
+    if (roll() >= Math.min(0.95, play)) continue;
 
     const peers = coachesOf(tribeLabel).filter(p => p.name !== c.name);
     const votes = peers.map(p => ({ coach: p.name, ...saveCardVerdict(p.name, c.name) }));

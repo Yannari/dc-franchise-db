@@ -39,6 +39,7 @@ import { survivalFlavor, fillVocab } from './settings.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
 import { applyCoachElimination, coachCardTalk, coachFallout, commitSaveCards, maybeSaveCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
+import { coachStatusEvents } from './coach-status-events.js';
 import { coachesOf } from './coaches.js';
 import { runCoachDealBlock } from './coach-deals.js';
 
@@ -2373,7 +2374,10 @@ export function simulateEpisode() {
       // The card gets discussed before it ever has to be played — otherwise a
       // refusal at tribal arrives with no build-up and no explanation.
       const cardEvents = coachCardTalk(ep, tribe, roll);
-      const coachEvents = [...falloutEvents, ...dealEvents, ...cardEvents];
+      // Being a coach, rather than doing the coaching. Fame, the missing
+      // ballot, the card in the room, and a merge nobody else is playing for.
+      const statusEvents = coachStatusEvents(ep, tribe, roll);
+      const coachEvents = [...falloutEvents, ...dealEvents, ...cardEvents, ...statusEvents];
       if (coachEvents.length) {
         if (!ep.campEvents) ep.campEvents = {};
         if (!ep.campEvents[tribeKey]) ep.campEvents[tribeKey] = { pre: [], post: [] };

@@ -158,3 +158,56 @@ describe('a coach can argue, without ever voting', () => {
     }
   }, 600000);
 });
+
+// Twelve of the thirteen coach event types were the training ledger in
+// different hats. These are about BEING a coach: the fame, the missing ballot,
+// the card in the room, and a merge nobody else is playing for.
+describe('coaches are campers, and also coaches', () => {
+  it('produces status beats that are not about the sessions', async () => {
+    const seen = new Set();
+    for (let r = 0; r < 2; r++) {
+      const { episodes } = await runHeadlessSeason({
+        twist: 'coaches', coachesPerTribe: 2, castSize: 16, mergeAt: 10,
+      });
+      for (const e of episodes) {
+        for (const phases of Object.values(e.ep.campEvents || {})) {
+          for (const ph of ['pre', 'post']) {
+            for (const ev of (phases?.[ph] || [])) {
+              if (/^coach(Starstruck|Unimpressed|PullsRank|ShineWearsOff|NoBallotWeightless|SaysTheUnsayable|CardFlinch|CardFlush|IdleAdvantage|PlayingForTheMerge|OwnSeason)$/.test(ev.type)) {
+                seen.add(ev.type);
+                expect(ev.players?.length, `${ev.type} named nobody`).toBeGreaterThan(0);
+                expect(ev.badgeText, `${ev.type} has no badge`).toBeTruthy();
+              }
+            }
+          }
+        }
+      }
+    }
+    expect(seen.size, 'no status beat fired at all in two seasons').toBeGreaterThan(3);
+  }, 600000);
+
+  it('reacts to fame at all — aweOf produced no event before this', async () => {
+    const { coachStatusEvents } = await import('../js/coach-status-events.js');
+    const core = await import('../js/core.js');
+    core.setPlayers([
+      { name: 'Bowie', archetype: 'hero', stats: { physical:5,endurance:5,mental:5,social:8,strategic:5,loyalty:5,boldness:5,intuition:5,temperament:5 } },
+      { name: 'Ana', archetype: 'underdog', stats: { physical:5,endurance:5,mental:3,social:5,strategic:2,loyalty:8,boldness:2,intuition:2,temperament:5 } },
+      { name: 'Bo', archetype: 'villain', stats: { physical:5,endurance:5,mental:8,social:5,strategic:9,loyalty:2,boldness:9,intuition:8,temperament:5 } },
+    ]);
+    core.setGs({ ...core.gs, coaches: [], coachTraining: {}, bonds: {}, advantages: [],
+      tribes: [{ name: 'Red', members: ['Ana', 'Bo'] }], episode: 5 });
+    const { addCoach } = await import('../js/coaches.js');
+    addCoach({ name: 'Bowie', tribe: 'Red', stars: 5 });
+
+    // Deterministic, and the SECOND call is the weighted pin — sweep it across
+    // the whole range or every iteration lands in the same bucket.
+    const seenTypes = new Set();
+    for (let k = 0; k < 80; k++) {
+      let n = 0;
+      const roll = () => { const v = (0.011 + k * 0.0123 + n * 0.37) % 1; n++; return v; };
+      coachStatusEvents({ num: 5 }, { name: 'Red', members: ['Ana', 'Bo'] }, roll)
+        .forEach(e => seenTypes.add(e.type));
+    }
+    expect(seenTypes.size, 'the weighted picker only ever reaches one beat').toBeGreaterThan(1);
+  });
+});

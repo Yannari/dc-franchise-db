@@ -180,7 +180,7 @@ describe('the card is played, not triggered', () => {
     setPlayers([{ name: 'Julia', archetype: 'floater', stats: stats({ intuition: 10, boldness: 10 }) },
       ...['Wayne', 'Evie', 'Finn'].map(n => ({ name: n, archetype: 'hero', stats: stats() }))]);
     const alliances = [{ members: ['Evie'], target: 'Julia' }, { members: ['Finn'], target: 'Julia' }];
-    commitSaveCards(ep, 'Red', alliances);
+    commitSaveCards(ep, 'Red', alliances, () => 0);
     expect(ep.coachCardCommits?.length, 'a coach staring at two blocs never reached for it').toBe(1);
     expect(coachRecord('Julia').saveCard, 'the card must be gone the moment it is played').toBe('used');
   });
@@ -188,7 +188,7 @@ describe('the card is played, not triggered', () => {
   it('never commits when no bloc has named them', () => {
     setup();
     const ep = { num: 6 };
-    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Finn' }]);
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Finn' }], () => 0);
     expect(ep.coachCardCommits).toBeUndefined();
     expect(coachRecord('Julia').saveCard).toBe('unused');
   });
@@ -209,8 +209,7 @@ describe('the card is played, not triggered', () => {
     addBond('Julia', 'Finn', -6);
     const ep = { num: 6 };
     commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' },
-      { members: ['Finn'], target: 'Julia' }, { members: ['Wayne'], target: 'Julia' }]);
-    if (!ep.coachCardCommits) return;   // commitment is probabilistic
+      { members: ['Finn'], target: 'Julia' }, { members: ['Wayne'], target: 'Julia' }], () => 0);
     const result = { eliminated: 'Julia' };
     expect(maybeSaveCoach(ep, result)).toBe(true);
     expect(result.eliminated).toBe('Finn');

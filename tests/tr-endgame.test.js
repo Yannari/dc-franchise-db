@@ -170,6 +170,71 @@ describe('nobody is revealed in the endgame', () => {
       'somebody was revealed at an endgame table — the survivors are no longer on nerve alone')
       .toEqual([]);
   });
+
+  it('nor does anybody name a certain name on the way out of a finale table', () => {
+    // THE SECOND REVEAL, and the belief-store probe above cannot see it.
+    //
+    // `revealCascade` is switched off in the endgame; `exitSpeech` was not.
+    // exit.js builds a Traitor's speech out of GROUND TRUTH — it picks the
+    // target from the living Traitors and stamps `conviction: 1` — and the
+    // record ships to callers on `endgame.rounds[].exitSpeech`. That is a
+    // certain, correct alignment leaving a phase spec §8 says has no reveals
+    // in it. Measured before the fix: 189 of 1,680 endgame rounds over 1,200
+    // seasons, 11.3%; seed 3 "Brightly names Brody on the way out", both
+    // Traitors. It writes no belief, so nothing in the store betrays it and
+    // the probe above is green over the top of it.
+    //
+    // THE RULE IS ASSERTED ON EVERY TABLE, not on a season, and it is blind
+    // to alignment: a Faithful's speech leaks nothing, but suppressing only
+    // the Traitors' would make the silence itself the tell.
+    //
+    // THREE ARMS, because the assertion is a NEGATIVE and a negative over a
+    // dead channel is free. (1) coverage — the endgame really did banish
+    // Traitors, which is the state that carried the leak. (2) the control —
+    // mandated tables still carry speeches, so `exitSpeech` is not simply
+    // switched off everywhere with this test green by vacuity. (3) the
+    // control's own coverage — mandated tables still produce CERTAIN speeches,
+    // so the exact leaking shape is demonstrably reachable in this build and
+    // its absence from the endgame is suppression rather than extinction.
+    let egTables = 0, egTraitorsBanished = 0;
+    const egSpoke = [];
+    let mandTables = 0, mandSpeeches = 0, mandBurns = 0, mandCertain = 0;
+    seasons(SEASONS, (s) => {
+      const startEp = s.endgame.ballots[0]?.ep ?? Infinity;
+      for (const r of s.endgame.rounds) {
+        egTables++;
+        if (r.banishedWasTraitor) egTraitorsBanished++;
+        if (r.exitSpeech) egSpoke.push(`${r.banished} @ep${r.ep}: ${r.exitSpeech.text}`);
+      }
+      for (const r of s.rounds) {
+        if (!r.banished || r.ep >= startEp) continue;
+        mandTables++;
+        if (!r.exitSpeech) continue;
+        mandSpeeches++;
+        if (r.exitSpeech.burns) mandBurns++;
+        if (r.exitSpeech.burns && r.exitSpeech.conviction === 1) mandCertain++;
+      }
+    });
+    console.log(`[coverage] ${egTables} endgame tables (${egTraitorsBanished} banished a Traitor), `
+      + `${egSpoke.length} carried a speech; control: ${mandSpeeches}/${mandTables} mandated tables `
+      + `spoke, ${mandBurns} burned, ${mandCertain} of those at conviction 1`);
+
+    expect(egTables, 'no endgame table sat — the probe saw nothing').toBeGreaterThan(150);
+    expect(egTraitorsBanished, 'no endgame table ever banished a Traitor, so the leaking state '
+      + 'never arose and this assertion is vacuous').toBeGreaterThan(30);
+    // THE CONTROL, BEFORE THE ASSERTION. If exit speeches stopped being
+    // generated at all, the endgame arm would be green for the wrong reason.
+    expect(mandSpeeches / mandTables, 'mandated banishments have stopped carrying an exit speech — '
+      + 'the endgame arm below is green by vacuity, not by suppression').toBeGreaterThan(0.99);
+    expect(mandCertain, 'not one certain (conviction 1) exit speech anywhere in the season — the '
+      + 'exact shape this test forbids is unreachable, so forbidding it proves nothing')
+      .toBeGreaterThan(20);
+
+    expect(egSpoke.slice(0, 5),
+      'somebody spoke on the way out of a finale table — spec §8 leaves the survivors on nerve '
+      + 'alone, and a banished Traitor names a fellow from ground truth at conviction 1')
+      .toEqual([]);
+  });
 });
 
 // ══════════════════════════════════════════════════════════════════════

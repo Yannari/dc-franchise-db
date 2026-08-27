@@ -153,10 +153,13 @@ function betrayals(ballots, ep) {
  * A player banished in the finale does not say what they were, so the reveal
  * cascade — the mechanism that converts a round of meaningless ballots into
  * evidence, and the reason late tables are sharper than early ones — is
- * switched OFF there. Passing `false` must not change anything else: the
- * debate, the ballots, the tie rule and the exit speech all run as they always
- * do, and the round record still carries `banishedWasTraitor` because that is
- * the export shape and the audience is not the room.
+ * switched OFF there. It also suppresses the RECORD of the exit speech, which
+ * is the other place a certain alignment escaped — see the long note at the
+ * bottom of this function. Everything else runs exactly as it always does: the
+ * debate, the ballots, the tie rule, and the speech itself is still generated
+ * so the rng stream is untouched. The round record still carries
+ * `banishedWasTraitor` because that is the export shape and the audience is
+ * not the room.
  */
 export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
   const living = [...(gs.activePlayers || [])];
@@ -243,6 +246,33 @@ export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
   // nothing rebuilds the speech itself. Measured inert: suppressing this call
   // moves early lift by under 1pp across five 200-season blocks, which is the
   // rng stream shifting and nothing else.
-  round.exitSpeech = exitSpeech(banished, ep, rng);
+  //
+  // ── AND IT IS THE SECOND REVEAL IN THIS FUNCTION (spec §8) ──────────
+  //
+  // `reveal: false` suppresses `revealCascade` one line above and stopped
+  // there, but a Traitor's exit speech is drawn from GROUND TRUTH: exit.js
+  // picks the target out of the living Traitors and stamps `conviction: 1`.
+  // So a finale banishment shipped a certain, correct alignment on
+  // `endgame.rounds[].exitSpeech`, where spec §8 says there are no reveals
+  // and the survivors go on nerve alone. Measured 189 of 1,680 endgame
+  // rounds over 1,200 seasons (11.3%) — e.g. seed 3, "Brightly names Brody
+  // on the way out", both Traitors. Invisible only because nothing reads the
+  // field yet; Plan 8 builds the reader.
+  //
+  // SUPPRESSED FOR EVERYBODY, NOT JUST FOR TRAITORS. A Faithful's speech
+  // leaks nothing — it comes off a suspicion board — so laundering only the
+  // Traitor branch was the obvious smaller fix and it is wrong: if Traitors
+  // are the only people who leave the finale in silence, the silence IS the
+  // reveal. The rule has to be blind to alignment to be a rule at all.
+  //
+  // THE CALL STILL HAPPENS AND ITS RESULT IS DROPPED, deliberately.
+  // `exitSpeech` draws from `rng` (the target when there is no board, and the
+  // burn roll), and the endgame runs table after table off this same stream.
+  // Skipping the call would shift every draw after it and re-roll the phase,
+  // so Task 7's endgame measurements would no longer describe head. Consuming
+  // the draws and discarding the record keeps the finale bit-identical and
+  // costs one dead object per banishment. Do not "optimise" this away.
+  const speech = exitSpeech(banished, ep, rng);
+  round.exitSpeech = reveal ? speech : null;
   return { ...round, wasTraitor, tally: tally(ballots, weights) };
 }

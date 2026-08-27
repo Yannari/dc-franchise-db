@@ -76,7 +76,7 @@ import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, 
 import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan, housePlan } from './plans.js';
 import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf, sincerityOf } from './deals.js';
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
-import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster, withRoster } from './blocs.js';
+import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster, withRoster, blocExposure } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge, stableRng } from './knowledge.js';
 import { runCallOutChain } from './white-locust.js';
 import { runCampDirector } from './camp-director.js';
@@ -1224,9 +1224,16 @@ function _snapshotAllianceBoard(roster = null) {
         .map(b => ({
           ...blocRoster(b),
           name: b.label || b.name || null,
+          kind: b.kind || 'alliance',
           power: Math.round((b.power || 0) * 100) / 100,
           share: Math.round((b.share || 0) * 100) / 100,
           exposed: !!b.exposed,
+          // How much of the house has worked out this group exists, as a
+          // number rather than a flag: the House Status screen draws it as a
+          // percentage, and without it that screen has to recompute the whole
+          // bloc live — which is what made a replay of week 11 show the
+          // alliances as they stood in week 15.
+          seen: (() => { try { return Math.round(blocExposure(b) * 100) / 100; } catch { return 0; } })(),
         })));
   } catch { return []; }
 }

@@ -696,3 +696,83 @@ describe('whether they took it to the group first', () => {
     expect(vp).toMatch(/NEVER ASKED THEM/);
   });
 });
+
+describe('reloading one old episode', () => {
+  // Reported while testing a single episode rather than a whole season: an
+  // alliance "that doesn't appear every time and loses members for no reason".
+  //
+  // Two screens of the same week were reading two different sources. House
+  // Status built its rows from listBlocs(), which reads the LIVE game state,
+  // while every panel beside it reads the week's own snapshot. Watching a
+  // season straight through those are the same thing; reopening week 11 of a
+  // finished season they are not, and the screens disagreed in both directions
+  // at once — House Status drew The Majority with the four members it ended up
+  // with while the panel drew the two it was founded with, and drew The Shield
+  // Wall with the two it was reduced to while the panel had all four.
+  //
+  // The disappearing act had the same cause: the live list is filtered to
+  // people still in the house NOW, so any group that had since lost somebody
+  // was dropped from the screen entirely. Measured before the fix, all 25
+  // alliances on replayed episodes disagreed with their own week, most of them
+  // by not being drawn at all.
+  it('draws the alliances of that week, not of right now', async () => {
+    const { simulateBBEpisode } = await import('../js/bb-run.js');
+    const { threatScore } = await import('../js/players.js');
+    const { ordinal } = await import('../js/finale.js');
+    const vp = await import('../js/vp-screens.js');
+    const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const spread = n => Object.fromEntries(KEYS.map((k, i) => [k, 1 + ((n * 13 + i * 5) % 10)]));
+    const ARCH = ['mastermind', 'hero', 'floater', 'villain', 'schemer', 'goat',
+      'social-butterfly', 'loyal-soldier', 'wildcard', 'underdog', 'perceptive-player',
+      'challenge-beast'];
+    seedGame(Array.from({ length: 14 }, (_, i) => ({ name: 'P' + i,
+      archetype: ARCH[i % ARCH.length], gender: i % 2 ? 'f' : 'm',
+      sexuality: 'straight', stats: spread(i + 1) })),
+    { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+    gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+    Object.assign(seasonConfig, { format: 'big-brother', jurySize: 7, bbSafetyMode: 'off',
+      finaleSize: 3, bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house',
+      romance: 'enabled', twistSchedule: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, threatScore,
+      getBond, getPerceivedBond, ordinal });
+
+    // Play the season through, then go back and open the early episodes, which
+    // is what testing one episode actually does.
+    const eps = [];
+    for (let w = 0; w < 10; w++) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      const week = gs.bb.weeks[gs.bb.weeks.length - 1];
+      eps.push({ ep, board: (week?.allianceBoard || []).map(b => ({
+        name: b.name, members: (b.members || []).map(m => m.name) })) });
+    }
+
+    const out = [];
+    let mismatches = 0, checked = 0;
+    for (const { ep, board } of eps.slice(0, Math.max(1, eps.length - 3))) {
+      const html = vp.rpBuildBBOverview(ep, 'closing') || '';
+      for (const b of board) {
+        checked++;
+        // Read the count out of the alliance's OWN row. Checking that the names
+        // merely appear somewhere in the html proves nothing — every
+        // houseguest is on that screen several times over, which is why the
+        // first version of this test passed against the bug.
+        const at = html.indexOf(`<strong>${b.name}</strong>`);
+        const shown = at < 0 ? null
+          : Number((html.slice(at).match(/bbb-votes">(\d+) members/) || [])[1] ?? NaN);
+        if (at < 0 || shown !== b.members.length) {
+          mismatches++;
+          if (out.length < 8) {
+            out.push(`week ${ep.num}: "${b.name}" — the week recorded ${b.members.length}`
+              + ` (${b.members.join(', ')}), the screen drew ${at < 0 ? 'nothing' : shown}`);
+          }
+        }
+      }
+    }
+    expect(checked, 'no alliance was ever checked').toBeGreaterThan(5);
+    expect(mismatches, `the status screen disagrees with the week it is drawing:\n${out.join('\n')}`).toBe(0);
+  });
+});

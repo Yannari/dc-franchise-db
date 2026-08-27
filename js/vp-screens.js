@@ -17205,7 +17205,17 @@ function _bbfHold(name, members, boardFor, away = false, wasBoardFor = null, bar
  */
 function _bbHoldDetail(bloc) {
   let roster = null;
-  try { roster = typeof blocRoster === 'function' ? blocRoster(bloc) : null; } catch { roster = null; }
+  // Prefer the readings recorded WITH the week. Recomputing them here reads
+  // today's bonds, so a replayed episode explained its own numbers using
+  // relationships that had not happened yet.
+  if (Array.isArray(bloc?.holds) && bloc.holds.length && typeof bloc.holds[0] === 'object') {
+    const rows = [...bloc.holds].sort((a, b) => b.loyalty - a.loyalty);
+    const weak = typeof bloc.weakest === 'string'
+      ? rows.find(r => r.name === bloc.weakest) : bloc.weakest;
+    roster = { members: rows, weakest: weak || null,
+      average: rows.reduce((sum, r) => sum + r.loyalty, 0) / rows.length };
+  }
+  try { roster = roster || (typeof blocRoster === 'function' ? blocRoster(bloc) : null); } catch { roster = roster || null; }
   if (!roster?.members?.length) return '';
   const tone = v => v >= 7 ? '#3fb950' : v >= 5 ? '#57a6e8' : v >= 3.5 ? '#d29922' : '#f47067';
   const rows = roster.members.map(m => `<div class="bbb-hold-row">
@@ -26162,14 +26172,38 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
   // people have worked out it exists — was invisible. A secret four and a four
   // the whole house has been shouting about looked identical on this screen and
   // behaved identically in the threat model.
+  /* ── THE ALLIANCES OF THAT WEEK, NOT OF RIGHT NOW ──
+     This built its rows from `listBlocs()`, which reads the live game state.
+     Watching a season straight through, live and this week are the same thing.
+     Reloading a single old episode, they are not — and the two screens of one
+     week then disagreed in both directions at once: House Status drew The
+     Majority with the four members it ended up with while the House Life panel
+     beside it drew the two it was founded with, and drew The Shield Wall with
+     the two it was reduced to while the panel had all four. Reported as an
+     alliance that "doesn't appear every time and loses members for no reason".
+     The episode's own board is the right source: it is snapshotted at the end
+     of that week and it is what every other panel on the screen already reads. */
   let blocRows = [];
-  try {
-    blocRows = (typeof listBlocs === 'function' ? listBlocs() : [])
-      .filter(b => (b.members || []).every(m => stillIn.includes(m)));
-  } catch { blocRows = []; }
+  const _boardRows = (ep?.allianceBoard || []).filter(b =>
+    (b.members || []).every(m => stillIn.includes(typeof m === 'string' ? m : m.name)));
+  if (_boardRows.length) {
+    blocRows = _boardRows.map(b => ({
+      id: b.id, label: b.name, name: b.name, kind: b.kind || 'alliance',
+      members: (b.members || []).map(m => (typeof m === 'string' ? m : m.name)),
+      share: b.share || 0, power: b.power || 0, seen: b.seen,
+      holds: b.members || [], weakest: b.weakest || null,
+    }));
+  } else {
+    try {
+      blocRows = (typeof listBlocs === 'function' ? listBlocs() : [])
+        .filter(b => (b.members || []).every(m => stillIn.includes(m)));
+    } catch { blocRows = []; }
+  }
 
   const blocBody = blocRows.length ? blocRows.map(b => {
-    const seen = (() => { try { return blocExposure(b); } catch { return 0; } })();
+    const seen = typeof b.seen === 'number'
+      ? b.seen
+      : (() => { try { return blocExposure(b); } catch { return 0; } })();
     const pct = Math.round(seen * 100);
     const state = seen >= 0.8 ? { label: 'EVERYBODY KNOWS', color: '#f85149' }
       : seen >= 0.5 ? { label: 'AN OPEN SECRET', color: '#d29922' }

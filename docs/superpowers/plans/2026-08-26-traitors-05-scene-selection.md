@@ -519,3 +519,13 @@ seasons before and after and assert the firing tables are bit-identical.
 
 This also means Task 8 can run before or after Task 6 without disturbing it, which was the
 only reason the original ordering note existed.
+
+### Temporary worktrees empty `node_modules/.bin` — run `npm rebuild`
+
+Twice now, creating and removing a temporary git worktree (for a base measurement or a
+mutation probe) has left `worktree-traitors/node_modules/.bin` with zero entries, so `npx
+vitest` fails with "vitest is not recognized" while the packages themselves are fine.
+
+`npm rebuild` restores the 45 shims in a few seconds. `node node_modules/vitest/vitest.mjs
+run <files>` also works without them. Neither the packages nor the repo are damaged -- only
+the shims. Check this first if a task reports the test runner missing.

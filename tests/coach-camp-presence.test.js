@@ -262,7 +262,7 @@ describe('the save card is tracked where the idol is tracked', () => {
     const held = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'],
       { card: 'unused', coaches: ['Julia', 'Wayne'] });
     expect(held.join(' ')).toContain('Julia and Wayne share one Coach’s Save Card'.replace('’', "'"));
-    expect(held.join(' '), 'the rule has to travel with the status').toContain('every coach on the tribe has to sign it');
+    expect(held.join(' '), 'the rule has to travel with the status').toContain('every other coach on the tribe has to sign it');
 
     const spent = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'],
       { card: 'used', coaches: ['Julia', 'Wayne'] });
@@ -286,7 +286,7 @@ describe('the save card is tracked where the idol is tracked', () => {
       coachCards: { Red: 'used' } });
     const lines = vp.getTribeAdvantageStatus('Red', false, [], ['A', 'B'],
       { card: 'unused', coaches: ['Julia'] });
-    expect(lines.join(' '), 'live gs leaked into a historical camp').toContain('share one');
+    expect(lines.join(' '), 'live gs leaked into a historical camp').toContain('holds the');
   });
 });
 

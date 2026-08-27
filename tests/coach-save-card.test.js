@@ -40,20 +40,29 @@ describe('who gets a say', () => {
     expect(out.reason).toBe('refused:Wayne');
   });
 
-  it('a lone coach has no net at all — there is no consensus to reach', () => {
+  // Unanimity means every peer signs. With no peers there is nobody to
+  // withhold a signature, so it carries vacuously. The rule was the other way
+  // round and the measurement killed it: coaches are voted out constantly, so
+  // "no peers, no card" meant the first coach boot disarmed the card for the
+  // rest of the season — a bloc named a coach 29 times across four seasons and
+  // 15 of those the coach was the last one on their tribe.
+  it('a lone coach plays it alone — there is nobody left to refuse', () => {
     setup();
-    setGs({ ...gs, coaches: [] });
+    setGs({ ...gs, coaches: [], coachCards: {} });
     addCoach({ name: 'Julia', tribe: 'Red' });
+    addBond('Julia', 'Finn', -4);
     const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
-    expect(out.played).toBe(false);
-    expect(out.reason).toBe('no-peers');
+    expect(out.played, 'the last coach standing was left with no net at all').toBe(true);
+    expect(out.votes, 'nobody was asked, because there was nobody to ask').toEqual([]);
+    expect(out.replacement).toBe('Finn');
   });
 
   it('ignores a coach on a different team', () => {
     setup({ wayneArch: 'villain', wayneStats: { strategic: 10, loyalty: 1 } });
     coachRecord('Wayne').tribe = 'Blue';
     const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
-    expect(out.reason, 'Blue’s coach is not Red’s business').toBe('no-peers');
+    expect(out.votes, 'Blue’s coach was asked about Red’s card').toEqual([]);
+    expect(out.played, 'with no peer on her own tribe, it carries').toBe(true);
   });
 });
 
@@ -216,13 +225,12 @@ describe('the card is played, not triggered', () => {
   });
 });
 
-// A lone coach has no consensus to reach, so there is nothing to play. This
-// guard existed in offerSaveCard and was missing from commitSaveCards, so a
-// sole coach committed the card to a vote that could not happen: the card was
-// spent for nothing, and The Signatures reported a refusal from a person who
-// did not exist ("Not unanimous. Somebody would not sign").
+// The Millie case: a sole coach committed the card, an empty votes array read
+// as "not unanimous", and The Signatures reported a refusal from a person who
+// did not exist. The card now carries vacuously instead — nobody to ask means
+// nobody to refuse — but it must still actually commit and still be spent.
 describe('a coach with nobody to ask', () => {
-  it('never commits the card, and never spends it', () => {
+  it('commits the card and it carries, with no signatures to read', () => {
     setup();
     setGs({ ...gs, coaches: [], coachCards: {} });
     addCoach({ name: 'Julia', tribe: 'Red' });
@@ -231,11 +239,14 @@ describe('a coach with nobody to ask', () => {
       { members: ['Evie'], target: 'Julia' },
       { members: ['Finn'], target: 'Julia' },
     ], () => 0);
-    expect(ep.coachCardCommits, 'a card was played into an empty room').toBeUndefined();
-    expect(tribeCardState('Red'), 'the card must survive a night it could not be played').toBe('unused');
+    expect(ep.coachCardCommits?.length, 'a lone coach could not reach for it at all').toBe(1);
+    expect(ep.coachCardCommits[0].signed,
+      'an empty signature list must read as unanimous, not as a refusal').toBe(true);
+    expect(ep.coachCardCommits[0].refusedBy).toBe(null);
+    expect(tribeCardState('Red'), 'played means spent').toBe('used');
   });
 
-  it('still commits when a peer exists to sign', () => {
+  it('still asks the peer when there is one', () => {
     setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
     addBond('Julia', 'Wayne', 8);
     const ep = { num: 6 };

@@ -179,7 +179,7 @@ function _buildSidebarContent(ep) {
     <div class="cb-sb-legend-title">The Save Card</div>
     <div>One card for the whole coaching staff, not one each. If the tribe votes a coach out, ${_anyPeer
       ? 'the other coaches on that team can spend it to keep them — and every one of them has to agree. A single refusal sends the coach home.'
-      : 'a coach needs another coach on their team to agree to it. Alone, there is nobody to ask, and the card cannot be played.'}</div>
+      : 'with no other coach left on the team there is nobody to withhold a signature, so it carries on its own.'}</div>
     <div>Spent, it costs a contestant: the coach names who goes instead.</div>
   </div>`;
 

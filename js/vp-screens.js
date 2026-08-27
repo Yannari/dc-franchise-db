@@ -10474,7 +10474,7 @@ export function rpBuildVotingPlans(ep) {
         const label = r.aimed >= 2 ? 'CORNERED' : r.aimed === 1 ? 'A NAME ON THE BOARD' : 'HOLDING, FOR NOW';
         const colour = r.aimed >= 2 ? '#f85149' : r.aimed === 1 ? '#d29922' : '#8b949e';
         const detail = !r.peers.length
-          ? `${r.coachName} is the only coach left on this tribe. There is nobody to sign, so the card cannot be played at all — whatever ${r.coachName} reads tonight, it changes nothing.`
+          ? `${r.coachName} is the only coach left on this tribe, so there is nobody who can refuse. The card is ${r.coachName}'s alone to spend — and spending it wrong wastes the only one the staff had.`
           : r.aimed >= 2
             ? `${r.aimed} blocs have named ${r.coachName}. Playing the card means spending it before knowing it was needed; not playing it means going home holding it. ${r.peers.join(' and ')} would have to sign, and ${r.peers.length === 1 ? 'has' : 'have'} not said either way.`
             : r.aimed === 1
@@ -16037,7 +16037,7 @@ export function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snap
       : (_names[0] || 'The coach');
     if (_names.length) {
       lines.push(coachCards.card === 'unused'
-        ? `${_who} share one Coach's Save Card${_names.length > 1 ? ' between them' : ''}. It saves whichever of them the tribe votes out, every coach on the tribe has to sign it, and it has to be played before the votes are read.`
+        ? `${_who} ${_names.length > 1 ? 'share one' : 'holds the'} Coach's Save Card${_names.length > 1 ? ' between them' : ''}. It saves whichever of them the tribe votes out${_names.length > 1 ? ', every other coach on the tribe has to sign it' : ''}, and it has to be played before the votes are read.`
         : `The Coach's Save Card is spent. ${_names.length > 1 ? `Nothing stands between ${_who} and the next vote.` : `Nothing stands between ${_who} and the next vote.`}`);
     }
   }

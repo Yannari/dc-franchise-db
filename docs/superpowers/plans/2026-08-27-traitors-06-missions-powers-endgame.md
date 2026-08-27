@@ -353,3 +353,37 @@ property only one of them has.**
 weights)` takes an open `{ voter: n }` map, so the endgame can weight a vote without touching it.
 `drawAt` is capped at 9 and the season loop stops at 3, so a Dagger carried to the finale fires at
 the endgame's first table unless `daggerWeights` is gated further.
+
+## Task 4's defect shape: unfalsifiable because the forbidden state is RARE
+
+A mutation SURVIVED. The guard forbade a second Dagger being held, but only **22 seasons in
+400** ever award a second Dagger at all, so the sample barely contained the forbidden state
+and the assertion could not see the rule break.
+
+**This is distinct from the eighteen unfailable tests and from the knife-edge class.** The
+assertion was well-formed and the margin was irrelevant -- the POPULATION did not contain
+enough of the case. Fixed by asserting where the rule is DECIDED (at the award site, every
+time) plus a coverage floor proving the sample contains the case at all.
+
+**Generalise: before asserting a rule over sampled seasons, count how often the sample
+actually reaches the state the rule forbids.** If it is rare, assert at the decision point and
+add a coverage floor. This bites hardest on rules about things that are rare BY DESIGN --
+which is most interesting game mechanics.
+
+**Task 6 walks straight into this.** Traitor-on-Traitor votes are rare by construction; a
+season-level guard on them will be unfalsifiable for exactly this reason.
+
+## Task 4's other carried facts
+
+- The Dagger is KEPT, not spent the day it is won -- §7.3's two sentences cannot both hold
+  otherwise. Won once the castle is down to twelve, drawn when the room is small enough. No
+  draw ever happens in a room bigger than 9.
+- `runRoundTable` takes **no new rng draw**; doubling is entirely in `tally(ballots, weights)`
+  and ballots are untouched, so a doubled vote still reads as ONE name aloud.
+- **No eighth archetype**, to avoid diluting `blind-chess` again -- the Reliquary yields ONE
+  relic, so the cost landed on the Shield instead (1.67 -> 1.12/season). Restoring it via
+  `SHIELD_WEIGHT` would re-open the `CHESS_WEIGHT` arithmetic Task 3 closed.
+- The conclave-steering ablation is **2.5 sd, under the 3-sd bar** -- consistently signed,
+  not demonstrated. Reported as such rather than claimed. `_setDaggerSteeringEnabled` exists
+  to re-run it. Its unit test reads 60/60 because the fixture carries no information, not
+  because the bonus overrides -- the ablation numbers are the honest ones.

@@ -60,6 +60,10 @@ registerEvent({
   id: 'grief-headcount',
   family: FAMILY,
   window: 'morning',
+  // ACT: CLOSING (spec 5.4.3, 'late: paranoid, surgical, thread-closing,
+  // counting arguments'). Counting the castle twice like the number might
+  // change is a different scene at six people than at eighteen.
+  acts: { early: 0.5, late: 1.7 },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _victimLastNight(ctx.ep) ? 1.5 : 0;
@@ -332,6 +336,16 @@ registerEvent({
   family: FAMILY,
   window: 'dawn',
   acts: { late: 2 },
+  // ONCE PER SEASON (spec 5.4.2, 'signature moments cannot cheapen
+  // themselves'). THE RULE THIS EVENT MATCHES AND ITS NEIGHBOURS DO NOT:
+  // the sentence asserts something about the CASTLE crossing a line, not
+  // about the two people standing in the scene. A room goes numb once. Two
+  // different pairs both discovering, in the same season, that the empty
+  // chair has stopped registering is the same beat told twice, and the
+  // second telling makes the first untrue - it had already stopped
+  // registering. Contrast `grief-empty-chair` or `grief-headcount`, which
+  // are about THIS victim and THIS morning and are supposed to recur.
+  oncePerSeason: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const deaths = (gs.tr?.rounds || []).filter(r => r.murdered).length;

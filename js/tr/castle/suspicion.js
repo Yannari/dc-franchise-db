@@ -32,6 +32,10 @@ registerEvent({
   id: 'susp-noticed-inconsistency',
   family: FAMILY,
   window: 'after-table',
+  // ACT: TESTING (spec 5.4.3, 'middle: testing, doubting, thread-advancing').
+  // Catching a contradiction needs a stock of earlier statements to catch it
+  // against, and needs the room still large enough to be worth building on.
+  acts: { early: 0.7, middle: 1.4, late: 0.8 },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     // A cold or hostile pair is a much likelier source of nitpicking than a
@@ -486,6 +490,25 @@ registerEvent({
   id: 'susp-misread-tell',
   family: FAMILY,
   window: 'morning',
+  // ACT: OPENING. Deciding a harmless habit means something is what suspicion
+  // looks like when there is no evidence yet. Late in a season the room has
+  // ballots, timelines and bodies to argue from, and does not need a habit.
+  acts: { early: 1.6, late: 0.5 },
+  // COOLDOWN OVERRIDE, AND THIS ONE WAS FOUND BY READING A DUMPED SEASON.
+  // `fire()` writes ONE line, with no pool behind it, so every firing is the
+  // same sentence with different names in it. Season seed=3 printed it in
+  // episodes 1, 4, 8 and 10 - four identical sentences in one castle. The
+  // engine default of two episodes is wrong for a single-line event: it is
+  // calibrated for events that at least vary their own text. Widened to three:
+  // measured 355 firings per 400 seasons before the widening and 343 after,
+  // and the worst case in a single season drops from four firings to three.
+  // (Against the pool BEFORE this task it reads 302 -> 343, because the act
+  // profile above concentrates it into the early act where it belongs; the
+  // two levers pull in opposite directions on purpose - it happens in the
+  // first days, and it does not happen on a loop.) The real fix is a line
+  // pool, and it is not this task's - see the report's open items, where a
+  // good half of this pool turns out to write a constant.
+  cooldown: { event: 3 },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -536,6 +559,14 @@ registerEvent({
   id: 'susp-heard-in-the-corridor',
   family: FAMILY,
   window: 'night',
+  // COOLDOWN OVERRIDE (spec 5.4.2). The pool's single most-fired event: 935
+  // firings per 400 seasons, up to FIVE in one season. The default 3-episode
+  // player window is wrong here in a way it is not wrong elsewhere, because
+  // this beat is about the same person lying in the same corridor hearing
+  // the same kind of nothing - the second telling adds no information and
+  // reads as the castle looping. The pair and event scopes are left alone:
+  // a DIFFERENT person hearing something the next night is a real scene.
+  cooldown: { player: 5 },
   citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;

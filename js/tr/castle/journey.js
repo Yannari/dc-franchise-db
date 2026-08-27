@@ -338,6 +338,14 @@ registerEvent({
   id: 'grief-shorter-column',
   family: 'grief',
   window: 'journey-out',
+  // COOLDOWN OVERRIDE (spec 5.4.2). 878 firings per 400 seasons, up to five
+  // in one - second only to `susp-heard-in-the-corridor`, and for the same
+  // structural reason: it needs only a death to have happened, so once the
+  // season is underway it is eligible on every road out forever. The default
+  // 2-episode event window lets the show narrate the shrinking column every
+  // other episode, which is the one observation that genuinely does not need
+  // restating - the audience can see the column. Both scopes widened.
+  cooldown: { event: 3, player: 5 },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     // The castle has to have lost somebody for the road to be shorter.
@@ -447,6 +455,9 @@ registerEvent({
   id: 'trust-settled-on-the-way-back',
   family: 'trust',
   window: 'journey-back',
+  // ACT: CLOSING. Four branches, three of which end a trust story. Settling
+  // things belongs to the part of the season that is running out of road.
+  acts: { early: 0.7, late: 1.5 },
   advancesThread: true,
   citesResidue: true,
   weight(ctx) {
@@ -627,6 +638,9 @@ registerEvent({
   id: 'grief-castle-in-view',
   family: 'grief',
   window: 'journey-back',
+  // ACT: CLOSING. This event buries or carries a grief thread on the road
+  // home — thread-closing, which spec 5.4.3 puts in the back half.
+  acts: { early: 0.6, late: 1.5 },
   advancesThread: true,
   citesResidue: true,
   weight(ctx) {

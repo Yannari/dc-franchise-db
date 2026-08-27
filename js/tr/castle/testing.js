@@ -59,6 +59,10 @@ registerEvent({
   id: 'testing-ask-for-alibi-check',
   family: FAMILY,
   window: 'dawn',
+  // ACT: TESTING. Asking somebody to vouch for a night presumes there are
+  // nights worth asking about and enough people left that an alibi can be
+  // checked against somebody else's.
+  acts: { early: 0.7, middle: 1.4, late: 0.8 },
   // ADVANCES AND CITES (Plan 5 Task 2). `testing|dawn` held no advancer at
   // all, so a test opened at dawn could never be followed up at dawn. A
   // cross-check is definitionally a repeat: the second one is only worth
@@ -125,6 +129,10 @@ registerEvent({
   id: 'testing-reverse-psychology',
   family: FAMILY,
   window: 'after-table',
+  // ACT: TESTING. Baiting somebody to watch their face is a mid-season move:
+  // early there is nothing to bait them about, late the room is too small for
+  // a test this indirect to stay private.
+  acts: { early: 0.7, middle: 1.4, late: 0.8 },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -171,6 +179,9 @@ registerEvent({
   id: 'testing-double-check-story',
   family: FAMILY,
   window: 'morning',
+  // ACT: TESTING. Going back over a story you were already told is the
+  // middle-act instinct: doubt with the patience to be quiet about it.
+  acts: { early: 0.7, middle: 1.4, late: 0.8 },
   // ADVANCES AND CITES (Plan 5 Task 2). `testing|morning` held no advancer
   // either. "Walk me through your morning AGAIN" is the single most literal
   // citation in the pool — the whole event is somebody re-asking a question

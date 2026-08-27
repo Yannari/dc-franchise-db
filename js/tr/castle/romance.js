@@ -209,6 +209,9 @@ registerEvent({
   id: 'romance-protection-instinct',
   family: FAMILY,
   window: 'dawn',
+  // ACT: CLOSING. Standing in front of the vote for somebody is a late-season
+  // shape: early nobody is close enough to the block for it to cost anything.
+  acts: { early: 0.5, late: 1.7 },
   advancesThread: true,
   rare: true,
   weight(ctx) {
@@ -399,6 +402,16 @@ registerEvent({
   // have started to doubt, which is not a thing that happens in a crowded
   // room. Only the `exposes` line pool had to change; see the note on it.
   window: 'night',
+  // ACT: CLOSING. A showmance standing up and naming its own partner in
+  // front of the room is a back-half beat by construction - it needs a
+  // showmance old enough to be a liability and a room small enough for the
+  // naming to matter. Measured 0 early, 6 middle, 17 late per 400 seasons
+  // before this was declared, which is the tag written down rather than
+  // imposed. It also protects the pool's thinnest four-way fork: this event
+  // fires ~23 times per 400 seasons across FOUR branches, so every branch
+  // sits within ordinary path noise of the reachability floor, and the tag
+  // concentrates the firings it does get in the act it belongs to.
+  acts: { early: 0.4, late: 2.5 },
   advancesThread: true,
   rare: true,
   weight(ctx) {
@@ -484,6 +497,9 @@ registerEvent({
   id: 'romance-strategic-optics',
   family: FAMILY,
   window: 'morning',
+  // ACT: CLOSING. 'Your relationship is a strategy and people are saying so'
+  // needs a room that has started reading everything as strategy.
+  acts: { early: 0.5, late: 1.6 },
   rare: true,
   // The second advancer in `romance|morning`.
     citesResidue: true,
@@ -504,6 +520,10 @@ registerEvent({
   id: 'romance-comfort-after-loss-sparks',
   family: FAMILY,
   window: 'dawn',
+  // ACT: OPENING. A spark is only a story if there is season left for it to
+  // become one - every escalation this family owns (showmance, jealousy,
+  // the liability, the breakup) is downstream of it and needs episodes.
+  acts: { early: 1.3, middle: 1.2, late: 0.5 },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;

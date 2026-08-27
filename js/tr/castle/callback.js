@@ -89,6 +89,10 @@ registerEvent({
   id: 'callback-recognized',
   family: FAMILY,
   window: 'dawn',
+  // ACT: OPENING (spec 5.4.3, 'early: broad, social, thread-opening').
+  // Clocking somebody from a previous season happens before either of them has
+  // said a word in THIS one. By the back half everybody has been re-met.
+  acts: { early: 1.6, late: 0.5 },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -225,6 +229,10 @@ registerEvent({
   id: 'callback-warns-newbies',
   family: FAMILY,
   window: 'morning',
+  // ACT: OPENING, hard. A warning is only useful before the person warned has
+  // formed their own read — 'I'm telling you now' is the whole speech, and it
+  // is not a speech anybody makes at final five.
+  acts: { early: 2, late: 0.4 },
   rare: true,
   // ADVANCES AND CITES (Plan 5 Task 2). `callback|morning` held no advancer.
   // A returnee warning the room about somebody is the family's own thesis
@@ -295,6 +303,10 @@ registerEvent({
   id: 'callback-no-history-envy',
   family: FAMILY,
   window: 'morning',
+  // ACT: OPENING. Sitting outside a conversation full of seasons you had no
+  // part of is a first-days sting; nine episodes in, this room has its own
+  // history and the franchise one has stopped being the only currency.
+  acts: { early: 1.6, late: 0.5 },
   // The second advancer in `callback|morning`.
     citesResidue: true,
   weight(ctx) {

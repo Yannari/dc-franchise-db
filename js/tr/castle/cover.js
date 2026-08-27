@@ -92,6 +92,12 @@ registerEvent({
   rare: true,
   family: FAMILY,
   window: 'evening',
+  // ACT: TESTING. Throwing your own ally to the room to clear both names
+  // needs a room already hunting somebody (so not the first days) and a
+  // partner still alive to spend (so not the last). The measured centre of
+  // gravity agreed before this was declared: 2 firings early, 6 middle, 1
+  // late per 400 seasons.
+  acts: { early: 0.6, middle: 1.5, late: 0.7 },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;

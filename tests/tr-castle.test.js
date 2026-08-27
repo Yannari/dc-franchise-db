@@ -108,6 +108,87 @@ describe('the pool loads cleanly', () => {
     expect(broken).toEqual([]);
   });
 
+  // ══════════════════════════════════════════════════════════════════
+  // THE THREE ANTI-REPETITION GUARDS ARE WIRED INTO CONTENT (Plan 5 Task 5)
+  // ══════════════════════════════════════════════════════════════════
+  //
+  // Spec §5.4.2 and §5.4.3 give the pool three levers against an episode-9
+  // castle sounding like an episode-2 one: `acts` pacing multipliers, a
+  // `oncePerSeason` block for signature moments, and per-event `cooldown`
+  // overrides where the engine's 2/3/5 defaults are wrong. All three were
+  // SHIPPED AND TESTED IN THE ENGINE — tests/tr-events.test.js has a unit for
+  // each — and then used by almost nothing: `acts` by 2 events of 98,
+  // `oncePerSeason` by 0, `cooldown` by 0. A guard nobody declares is a guard
+  // that cannot fire, and the engine tests stay green either way, because they
+  // build their own events.
+  //
+  // So this is the DECLARATION half, and the reachability sweep
+  // (tests/tr-castle-reachability.test.js) is the half that plays seasons and
+  // checks the declarations do something. Written as counts over the whole
+  // pool rather than as a list of tagged ids: a list would need editing every
+  // time somebody tags one more event, which is how a list-shaped guard ends
+  // up being maintained down to nothing.
+  //
+  // THE MUTATION: delete any one `acts:` / `oncePerSeason:` / `cooldown:`
+  // block from js/tr/castle/ and the matching floor drops by one. The floors
+  // are set a little under the shipped counts so ordinary content movement
+  // does not trip them, and far enough above zero that the "declared by
+  // nobody" state this task found cannot come back silently.
+  it('content actually declares all three anti-repetition guards, not just the engine', () => {
+    const tagged = EVENTS.filter(e => e.acts);
+    const once = EVENTS.filter(e => e.oncePerSeason);
+    const tuned = EVENTS.filter(e => e.cooldown);
+    console.log(`=== GUARD DECLARATIONS === acts ${tagged.length}, oncePerSeason ${once.length}, `
+      + `cooldown ${tuned.length}, of ${EVENTS.length} events`);
+    expect(tagged.length, 'no meaningful number of events declares an `acts` pacing profile — '
+      + 'spec 5.4.3 exists so an episode-2 castle does not sound like an episode-9 one')
+      .toBeGreaterThanOrEqual(15);
+    expect(once.length, 'no event declares `oncePerSeason` — spec 5.4.2 gives signature '
+      + 'moments a way not to cheapen themselves and nothing uses it').toBeGreaterThanOrEqual(1);
+    expect(tuned.length, 'no event overrides the default 2/3/5 cooldown windows — the '
+      + 'defaults cannot be right for every event in a 98-event pool')
+      .toBeGreaterThanOrEqual(2);
+  });
+
+  it('every declared `acts` profile is well formed and actually tilts', () => {
+    // A profile of all-1s, or one keyed on a name `actFor` never returns, is a
+    // declaration that reads as pacing and does nothing — the same
+    // written-but-unreachable shape the dead-event sweep exists for, one level
+    // down inside a live event.
+    const bad = [];
+    for (const ev of EVENTS) {
+      if (!ev.acts) continue;
+      const keys = Object.keys(ev.acts);
+      for (const k of keys) {
+        if (!['early', 'middle', 'late'].includes(k)) bad.push(`${ev.id}: unknown act "${k}"`);
+        if (!(ev.acts[k] > 0)) bad.push(`${ev.id}: act "${k}" is ${ev.acts[k]} — a non-positive `
+          + 'multiplier makes the event unreachable in that act rather than rarer');
+      }
+      const vals = ['early', 'middle', 'late'].map(k => ev.acts[k] ?? 1);
+      if (vals.every(v => v === vals[0])) bad.push(`${ev.id}: every act multiplies by ${vals[0]} — `
+        + 'a flat profile is a no-op wearing the shape of a pacing decision');
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('every `cooldown` override is a PARTIAL over the three real scopes', () => {
+    // The engine reads `{ event?, player?, pair? }` and falls back per scope.
+    // A scalar, or a typo'd key, silently takes the default for everything —
+    // the override looks live in the source and is inert in the game.
+    const bad = [];
+    for (const ev of EVENTS) {
+      if (!ev.cooldown) continue;
+      if (typeof ev.cooldown !== 'object') { bad.push(`${ev.id}: cooldown is not an object`); continue; }
+      const keys = Object.keys(ev.cooldown);
+      if (!keys.length) bad.push(`${ev.id}: empty cooldown override`);
+      for (const k of keys) {
+        if (!['event', 'player', 'pair'].includes(k)) bad.push(`${ev.id}: unknown cooldown scope "${k}"`);
+        else if (!(ev.cooldown[k] >= 0)) bad.push(`${ev.id}: cooldown.${k} is ${ev.cooldown[k]}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
   it('every registered event declares a known window and a unique id', () => {
     const ids = new Set();
     for (const ev of EVENTS) {

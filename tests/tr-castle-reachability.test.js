@@ -70,7 +70,7 @@ import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { EVENTS, KNOWN_WINDOWS } from '../js/tr/events.js';
-import { outcomeSense } from '../js/tr/threads.js';
+import { actFor, outcomeSense } from '../js/tr/threads.js';
 import { seedFranchiseHistory, seedEmptyHistory } from './helpers/tr-castle-fixture.js';
 import roster from '../franchise_roster.json';
 
@@ -103,6 +103,11 @@ function runSeasons(n, seedBase = 0) {
         // read outcomes at all, null means it read and found nothing.
         fired.push({ ep: round.ep, id: ce.event.id, family: ce.event.family,
           window: ce.event.window,
+          // WHO WAS IN THE ROOM. Recorded for the cooldown sweep's player and
+          // pair arms (Plan 5 Task 5): those two scopes cannot be checked from
+          // an episode list alone, and `fire()` has already run by the time the
+          // harness sees the firing, so this is the only place it survives.
+          actors: [...(ce.actors || [])],
           // THE BRANCH THE FIRING ACTUALLY TOOK. See THE BRANCH FLOOR: an
           // event-keyed count cannot see a fork collapse, and three floors in
           // this file were event-keyed.
@@ -216,9 +221,30 @@ describe('THE FAMILY-DOMINANCE BAND', () => {
 });
 
 describe('THE COOLDOWN SWEEP: does the engine\'s own cooldown hold in real seasons?', () => {
+  // ── ALL THREE SCOPES, NOT JUST THE FIRST (Plan 5 Task 5) ──
+  //
+  // This sweep used to check the EVENT scope alone, and read the per-event
+  // override while doing it (`byId[id]?.cooldown?.event ?? 2`) - so it was
+  // already the guard on a `cooldown` override before any content declared
+  // one. The other two scopes had no season-level check at all, which meant a
+  // content author could widen `cooldown.player` or `cooldown.pair`, ship it,
+  // and nothing outside tests/tr-events.test.js's synthetic events would ever
+  // execute the widened value. Task 5 declares two overrides and one of them
+  // is `player`, so the missing arms are written here rather than left as a
+  // scope that happens not to be covered.
+  //
+  // Rule-shaped over `EVENTS` and over whatever each event declares, so an
+  // override added tomorrow is checked tomorrow.
+  //
+  // THE MUTATION: in js/tr/events.js, `const playerWindow = ev.cooldown?.player
+  // ?? PLAYER_COOLDOWN_EPS;` -> `= 0;`. The event arm stays green (it reads a
+  // different constant) and the player arm goes red - which is the isolation
+  // the unequal 2/3/5 defaults exist to give.
+  const byId = {};
+  for (const ev of EVENTS) byId[ev.id] = ev;
+  const pairKey = actors => [...actors].sort().join('|');
+
   it('no event fires again inside its own event-scope cooldown, in any real season', () => {
-    const byId = {};
-    for (const ev of EVENTS) byId[ev.id] = ev;
     const violations = [];
     for (const season of SEASONS) {
       const epsById = {};
@@ -232,6 +258,110 @@ describe('THE COOLDOWN SWEEP: does the engine\'s own cooldown hold in real seaso
       }
     }
     expect(violations, JSON.stringify(violations.slice(0, 10))).toEqual([]);
+  });
+
+  it('no event fires again on the same PLAYER inside its player-scope cooldown', () => {
+    const violations = [];
+    let observed = 0;
+    for (const season of SEASONS) {
+      const eps = {};
+      for (const f of season) for (const p of f.actors) (eps[`${f.id}\u0000${p}`] ||= []).push(f.ep);
+      for (const [key, list] of Object.entries(eps)) {
+        observed++;
+        const id = key.split('\u0000')[0];
+        const window = byId[id]?.cooldown?.player ?? 3;
+        const sorted = [...list].sort((a, b) => a - b);
+        for (let i = 1; i < sorted.length; i++) {
+          if (sorted[i] - sorted[i - 1] < window) {
+            violations.push({ key: key.replace('\u0000', ':'), gap: sorted[i] - sorted[i - 1], window });
+          }
+        }
+      }
+    }
+    expect(violations.slice(0, 10), `${violations.length} player-scope cooldown violations`).toEqual([]);
+    // Guard on the guard: actors have to be reaching this sweep at all, or
+    // the loop above iterates nothing and asserts nothing.
+    expect(observed, 'no (event, player) pair was observed - the harness is not recording actors')
+      .toBeGreaterThan(1000);
+  });
+
+  it('no event fires again on the same PAIR inside its pair-scope cooldown', () => {
+    const violations = [];
+    let observed = 0;
+    for (const season of SEASONS) {
+      const eps = {};
+      for (const f of season) {
+        if (f.actors.length < 2) continue;
+        (eps[`${f.id}\u0000${pairKey(f.actors)}`] ||= []).push(f.ep);
+      }
+      for (const [key, list] of Object.entries(eps)) {
+        observed++;
+        const id = key.split('\u0000')[0];
+        const window = byId[id]?.cooldown?.pair ?? 5;
+        const sorted = [...list].sort((a, b) => a - b);
+        for (let i = 1; i < sorted.length; i++) {
+          if (sorted[i] - sorted[i - 1] < window) {
+            violations.push({ key: key.replace('\u0000', ':'), gap: sorted[i] - sorted[i - 1], window });
+          }
+        }
+      }
+    }
+    expect(violations.slice(0, 10), `${violations.length} pair-scope cooldown violations`).toEqual([]);
+    expect(observed, 'no (event, pair) was observed').toBeGreaterThan(1000);
+  });
+
+  it('the two declared cooldown overrides are the reason a gap is wider than the default', () => {
+    // The three sweeps above read `ev.cooldown ?? default`, so they pass
+    // whether or not any override exists - they check the engine honours what
+    // is declared, not that anything IS declared. This one checks the
+    // OVERRIDES ARE LIVE: for every event that widens a scope past the
+    // default, the tightest gap actually observed in 400 seasons must be at
+    // least the widened value, and must be wider than the default it replaced.
+    // Without that second half, an override on an event that only ever fires
+    // once a season would read as working while doing nothing.
+    const DEFAULTS = { event: 2, player: 3, pair: 5 };
+    const widened = EVENTS.filter(e => e.cooldown
+      && Object.entries(e.cooldown).some(([k, v]) => v > (DEFAULTS[k] ?? 0)));
+    expect(widened.length, 'no event widens any cooldown scope past the engine default')
+      .toBeGreaterThanOrEqual(1);
+
+    const report = [];
+    for (const ev of widened) {
+      for (const [scope, value] of Object.entries(ev.cooldown)) {
+        if (!(value > DEFAULTS[scope])) continue;
+        let tightest = Infinity;
+        for (const season of SEASONS) {
+          const eps = {};
+          for (const f of season) {
+            if (f.id !== ev.id) continue;
+            if (scope === 'event') (eps.all ||= []).push(f.ep);
+            else if (scope === 'player') for (const p of f.actors) (eps[p] ||= []).push(f.ep);
+            else if (f.actors.length >= 2) (eps[pairKey(f.actors)] ||= []).push(f.ep);
+          }
+          for (const list of Object.values(eps)) {
+            const sorted = [...list].sort((a, b) => a - b);
+            for (let i = 1; i < sorted.length; i++) tightest = Math.min(tightest, sorted[i] - sorted[i - 1]);
+          }
+        }
+        report.push({ id: ev.id, scope, declared: value, default: DEFAULTS[scope], tightest });
+      }
+    }
+    console.log(`\n=== DECLARED COOLDOWN OVERRIDES (${SWEEP_SEASONS} seasons) ===`);
+    for (const r of report) {
+      console.log(`   ${r.id}.${r.scope}: declared ${r.declared} (default ${r.default}), `
+        + `tightest observed gap ${r.tightest === Infinity ? 'never repeated' : r.tightest}`);
+    }
+    const inert = report.filter(r => r.tightest < r.declared)
+      .map(r => `${r.id}.${r.scope}: observed a gap of ${r.tightest} against a declared ${r.declared}`);
+    expect(inert, 'a widened cooldown was not honoured').toEqual([]);
+    // ...and at least one of them is doing WORK: a repeat that would have been
+    // legal under the default is not legal now and does not happen. If every
+    // widened override only ever sat above a gap the default already forbade,
+    // the declarations would be decoration.
+    const biting = report.filter(r => r.tightest !== Infinity && r.tightest >= r.declared
+      && r.declared > r.default);
+    expect(biting.length, 'every widened cooldown sits on an event that never repeats anyway, '
+      + 'so no override in the pool is doing anything').toBeGreaterThanOrEqual(1);
   });
 });
 
@@ -1171,4 +1301,173 @@ describe('THE BRANCH FLOOR: a fork nobody takes is dead content inside a live ev
     expect(starved, `these branches are on their way to dead content — an event-keyed `
       + `floor cannot see this, which is why this one is keyed per branch`).toEqual([]);
   });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════
+// THE ONCE-PER-SEASON RULE (Plan 5 Task 5)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec 5.4.2 gives signature moments a `oncePerSeason` flag "so signature
+// moments cannot cheapen themselves". The engine has honoured it since Plan 4
+// and tests/tr-events.test.js has a unit for it built on a synthetic event.
+// No castle event declared it, so in the game it did nothing at all - an
+// engine test cannot tell a working guard from a guard nothing uses, because
+// it brings its own content.
+//
+// RULE-SHAPED: every event that DECLARES the flag, whichever ones those are,
+// checked over the seasons this file already plays. A list of known ids would
+// need editing on every content change and would cover nothing new.
+//
+// NON-VACUITY IS THE OTHER HALF, and it is the half that makes this test
+// failable at all: at base, "every oncePerSeason event fires at most once" was
+// trivially TRUE, because the set was empty. So the same test asserts the flag
+// is declared, and that the declaring events reach a season often enough that
+// the first assertion is measuring something.
+//
+// THE MUTATION: in js/tr/events.js, delete `if (ev.oncePerSeason) return true;`
+// from `_onCooldown`. `grief-numb-to-it-now` then fires twice in 8 of these 400
+// seasons and this goes red - while tests/tr-events.test.js's own unit for the
+// flag goes red too, which is the point: one is the engine, this is the game.
+describe('THE ONCE-PER-SEASON RULE: a signature moment happens once', () => {
+  it('no event declaring oncePerSeason fires twice in one season, and some do fire', () => {
+    const declared = EVENTS.filter(e => e.oncePerSeason).map(e => e.id);
+    expect(declared.length, 'no castle event declares `oncePerSeason`, so the assertion below '
+      + 'passes over an empty set - spec 5.4.2 asks for the flag to be USED, and this is the '
+      + 'state Plan 5 Task 5 found: the guard shipped, tested, and declared by nobody')
+      .toBeGreaterThanOrEqual(1);
+
+    const seasonsWith = {};
+    const doubles = [];
+    for (let s = 0; s < SEASONS.length; s++) {
+      const counts = {};
+      for (const f of SEASONS[s]) {
+        if (!declared.includes(f.id)) continue;
+        counts[f.id] = (counts[f.id] || 0) + 1;
+      }
+      for (const [id, n] of Object.entries(counts)) {
+        seasonsWith[id] = (seasonsWith[id] || 0) + 1;
+        if (n > 1) doubles.push(`${id}: ${n} firings in season ${s + 1}`);
+      }
+    }
+    console.log(`\n=== ONCE-PER-SEASON (${SWEEP_SEASONS} seasons) ===`);
+    for (const id of declared) console.log(`   ${seasonsWith[id] || 0}\tseasons\t${id}`);
+
+    expect(doubles.slice(0, 5), 'a signature moment happened twice in one season').toEqual([]);
+    // ...and it happens often enough that the check above has seasons to run
+    // against. 40 is well under the measured 100 for `grief-numb-to-it-now`, so
+    // ordinary content drift does not trip it, but a flagged event sliding
+    // toward unreachable - which `oncePerSeason` makes easier, since it can
+    // only ever reduce firings - is caught here rather than only by the
+    // dead-event sweep's floor of 4.
+    const quiet = declared.filter(id => (seasonsWith[id] || 0) < 40)
+      .map(id => `${id}: reached ${seasonsWith[id] || 0} of ${SWEEP_SEASONS} seasons`);
+    expect(quiet, 'a oncePerSeason event is now so rare that "at most once" is close to '
+      + 'vacuous for it').toEqual([]);
+  });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════
+// THE ACT-PACING RULE, WITH AN IN-SUITE CONTROL ARM (Plan 5 Task 5)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec 5.4.3: "Early: broad, social, thread-opening. Middle: testing,
+// doubting, thread-advancing. Late: paranoid, surgical, thread-closing,
+// counting arguments. An episode-2 castle must not sound like an episode-9
+// castle." `acts` is the multiplier that does it, and before this task two
+// events of ninety-eight declared one.
+//
+// WHY A CONTROL ARM AND NOT A PLAIN SHARE ASSERTION. The obvious guard - "an
+// act-tagged event's share of firings differs between early and late" - is
+// UNFAILABLE against this pool, and the reason is the whole point of the
+// declaration: a tag is written where the tone already belongs, so the event
+// was ALREADY act-skewed by its own weight() before anything was declared.
+// `callback-recognized` reads 233/134/68 with no tag at all, because you can
+// only clock somebody from a previous season once. Flatten every multiplier to
+// 1 and that assertion stays green.
+//
+// So this measures the TAG's contribution the way Plan 5's global constraint
+// requires: against an uninformative control with the content removed and the
+// shape preserved. The control arm plays THE SAME 400 SEEDS with `ev.acts`
+// deleted from every event and nothing else touched. For each tagged event,
+// take its share of its own WINDOW's firings in the act its profile favours
+// most and in the act it favours least (window-relative, because the budget
+// gives different acts different volumes), and compare the ratio between the
+// arms. Laplace smoothing on both terms, because several tagged events are
+// state-gated to near-zero in one act - `grief-numb-to-it-now` needs two
+// deaths and cannot fire in `early` at all - and an unsmoothed ratio there is
+// a division by luck rather than a measurement.
+//
+// THE MUTATION: in js/tr/events.js, `const actMult = ev.acts?.[ctx.act] ?? 1;`
+// -> `const actMult = 1;`. The two arms then play identically, every gain is
+// exactly 1.000, and both assertions below go red. Note that flattening also
+// makes tr-events.test.js's own `acts` unit red - again, that one is the
+// engine and this one is the game.
+describe('THE ACT-PACING RULE: a declared act profile moves the season', () => {
+  it('the tags tilt each event toward its own act, measured against an acts-stripped control', () => {
+    const tagged = EVENTS.filter(e => e.acts);
+    expect(tagged.length, 'nothing declares `acts`, so there is nothing to measure - this is '
+      + 'the state Plan 5 Task 5 found, 2 events of 98').toBeGreaterThanOrEqual(15);
+
+    // The control: content removed, shape preserved. Restored in a finally so
+    // a failure here cannot leave the pool flattened for the rest of the file.
+    const saved = new Map();
+    let control;
+    try {
+      for (const ev of EVENTS) if (ev.acts) { saved.set(ev.id, ev.acts); delete ev.acts; }
+      control = runSeasons(SWEEP_SEASONS).flat();
+    } finally {
+      for (const ev of EVENTS) if (saved.has(ev.id)) ev.acts = saved.get(ev.id);
+    }
+
+    const tally = firings => {
+      const byIdAct = {}, byWinAct = {};
+      for (const f of firings) {
+        const act = actFor(f.ep);
+        byIdAct[`${f.id}|${act}`] = (byIdAct[`${f.id}|${act}`] || 0) + 1;
+        byWinAct[`${f.window}|${act}`] = (byWinAct[`${f.window}|${act}`] || 0) + 1;
+      }
+      return { byIdAct, byWinAct };
+    };
+    const live = tally(ALL_FIRINGS);
+    const ctrl = tally(control);
+    const ACTS = ['early', 'middle', 'late'];
+
+    const rows = tagged.map(ev => {
+      const mult = k => ev.acts[k] ?? 1;
+      const fav = ACTS.reduce((x, y) => (mult(y) > mult(x) ? y : x));
+      const least = ACTS.reduce((x, y) => (mult(y) < mult(x) ? y : x));
+      // Window-relative share, Laplace-smoothed on both terms.
+      const share = (d, act) => ((d.byIdAct[`${ev.id}|${act}`] || 0) + 1)
+        / ((d.byWinAct[`${ev.window}|${act}`] || 0) + 1);
+      const rLive = share(live, fav) / share(live, least);
+      const rCtrl = share(ctrl, fav) / share(ctrl, least);
+      return { id: ev.id, fav, least, gain: rLive / rCtrl,
+        n: ACTS.reduce((s, k) => s + (live.byIdAct[`${ev.id}|${k}`] || 0), 0) };
+    }).sort((a, b) => a.gain - b.gain);
+
+    console.log(`\n=== ACT TILT vs ACTS-STRIPPED CONTROL (${SWEEP_SEASONS} seasons each arm) ===`);
+    for (const r of rows) {
+      console.log(`   ${r.gain.toFixed(3)}x\t${r.fav}>${r.least}\t${String(r.n).padStart(4)} firings\t${r.id}`);
+    }
+    const geo = Math.exp(rows.reduce((s, r) => s + Math.log(r.gain), 0) / rows.length);
+    const moved = rows.filter(r => r.gain > 1.05).length;
+    console.log(`   geometric mean ${geo.toFixed(3)}x; ${moved} of ${rows.length} tagged events moved >5%`);
+
+    // THE HEADLINE. Measured 1.61x. The floor is 1.30, clear of the shipped
+    // value and clear of 1.000 - the value the mutation produces EXACTLY,
+    // since with `actMult` flattened the two arms are the same 400 seasons.
+    expect(geo, 'the act profiles do not move an event\'s share of its own window any more '
+      + 'than deleting them does - the declarations are decoration')
+      .toBeGreaterThan(1.30);
+    // AND PER EVENT, because a geometric mean can be carried by three big
+    // movers while most of the pool's tags do nothing. Measured 18 of 19; the
+    // bar is three quarters. The one that does not move is
+    // `romance-liability-exposed`, which is state-gated to zero `early`
+    // firings in BOTH arms, so no multiplier on `early` can reach it.
+    expect(moved, `only ${moved} of ${rows.length} act-tagged events shifted their share of `
+      + 'their own window by more than 5% against the control')
+      .toBeGreaterThanOrEqual(Math.ceil(rows.length * 0.75));
+  }, 120000);
 });

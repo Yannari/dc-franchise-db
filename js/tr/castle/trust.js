@@ -126,6 +126,12 @@ registerEvent({
   id: 'trust-circle-forms',
   family: FAMILY,
   window: 'evening',
+  // ACT: OPENING (spec 5.4.3, 'early: broad, social, thread-opening'). Two
+  // people deciding they are a unit is a thing that happens while there is
+  // still a season left to be a unit FOR; in the back half the alliances
+  // that exist are the ones that already exist, and what is left is
+  // testing and breaking them.
+  acts: { early: 1.4, middle: 1.2, late: 0.5 },
   rare: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
@@ -298,7 +304,11 @@ registerEvent({
   family: FAMILY,
   window: 'dawn',
   advancesThread: true,
-  acts: { late: 1.5 },
+  // ACT: CLOSING. Widened from `{ late: 1.5 }` into a full profile by Plan 5
+  // Task 5: a quiet check-in on somebody after the table reads as ordinary
+  // manners in week one and as a survival move at final six, so the early
+  // term earns its place as much as the late one.
+  acts: { early: 0.6, late: 1.5 },
   // DECISION (round 1 fix): originally gated on `heatAt >= 1`. Heat starts at
   // 1 on open and decays 0.5 per round of silence, and this window (dawn)
   // only ever sees a trust thread AFTER at least one full round has elapsed

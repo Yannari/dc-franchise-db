@@ -185,10 +185,15 @@ describe('last words at the door', () => {
     // finished. That works only when the first confrontation happens late
     // enough, and it broke the moment an unrelated change moved the seasons
     // around: seed 7 now fights in week one, and by the finale the entry for
-    // that pair is not in the map at all — measured across these eight seeds,
-    // a season-end read finds the entry for some week-one confrontations and
-    // not others. That is worth its own look and is nothing to do with what
-    // this test is about, which is whether going public costs the challenger.
+    // that pair is not in the map at all.
+    //
+    // That is the 'suspicion fades' step in week.js doing its job, not a leak.
+    // Suspicion decays 0.78 a week and any entry under 0.3 is deleted as
+    // noise, so a week-one confrontation worth 2.56 is traced down through ten
+    // weekly decays and removed around week ten. A season-end read therefore
+    // finds the entry for a late confrontation and nothing for an early one,
+    // which says something true about the house and nothing about whether
+    // going public cost the challenger.
     //
     // So: every confrontation across the sweep, asserted on the record that
     // provably survives to the end of the season, plus suspicion wherever the

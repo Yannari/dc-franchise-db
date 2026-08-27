@@ -237,3 +237,38 @@ after the fact.
   task. The equivalence arm proves it: missions-off reproduces the base log string-for-string
   over 40 seasons.
 - `gs.tr.pot` still has no reader. The sting exists only in fiction until Task 7 lands.
+
+## Task 2 added two defect shapes to the taxonomy
+
+Both were found the same way: a guard that was GREEN on its first draft, caught only by
+running the mutation it was written for.
+
+**1. A store sweep measures SURVIVORS of an overwriting process, not writes.** The
+credibility guard swept the belief store and passed a mutation writing at `observed`, because
+only 2 of ~250 mission beliefs survive a season -- later writes overwrite earlier ones, so the
+store at season end is a tiny biased sample of what was written. **The rule binds the write,
+so the guard must inspect the write.** It now checks every `learn()` call's arguments.
+
+Generalise: whenever a rule constrains an ACTION, guarding the resulting STATE is only valid
+if state retains every action. Ask what fraction of actions survive into the state you are
+asserting on.
+
+**2. Duplicate-source drift, again.** The tier-reachability test re-derived the tier from
+`quality` using its OWN copy of the cuts, so moving the real cuts left it green. `runMission`
+now records `rec.tier` and the test reads it. This is the third appearance of two copies of
+one rule in this project -- the act-name triplication and the pool-shape figures were the
+others. **A test must read the value under test, never recompute it.**
+
+## Task 2's other carried facts
+
+- The chess channel is priced AT `ALIGNMENT_CRED_CEILING` -- **no headroom remains for a
+  later, louder tell.** Any future mechanic wanting to be more credible than this one has
+  nowhere to go without raising the ceiling, which the whole deduction model is built around.
+- **26.8% of seasons still have no evidence source 4 at all.** A second knowledge archetype
+  would roughly double emission; that is a design decision, not a copy-paste.
+- Pricing is the whole ballgame: at the first taste-chosen price the channel was inert at
+  +0.10pp. It was swept 0.20->0.62 against a matched noise arm -- monotone for the real
+  channel, flat-to-falling for noise -- before shipping at +3.28pp, t=8.90, 12/12 blocks.
+- **Task 3 must narrow the missions-grant-nothing guard a SECOND time**, for the Shield, the
+  same way Task 2 did for chess: hold the shield-granting archetype out of the equivalence
+  arm, and add an arm proving the hold-out actually holds something out.

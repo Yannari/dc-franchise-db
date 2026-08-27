@@ -52,12 +52,20 @@ export const KNOWN_WINDOWS = new Set([
 // advance it at all — 49.0% at these shipped 3/1.5 constants, 49.9% at the
 // old 1/0.5. The guard is a multiplier on a set that is empty half the time.
 // Where an advancer IS available the guard is doing real work — 60.6% of those
-// scenes continue at 1/0.5 and 73.8% at 3/1.5 — so the ceiling is pool
-// coverage, not guard strength: only 27 of 81 events set `advancesThread`, and
-// 10 of the 28 non-empty (family x window) cells hold none, 12 hold exactly
-// one, and 6 hold two or more. Those counts are pinned in
-// tr-castle-reachability.test.js. See the note above the bands in
-// tr-calibration.test.js.
+// scenes continue at 1/0.5 and 73.8% at 3/1.5.
+//
+// THE "POOL COVERAGE IS THE CEILING" CLAIM THAT USED TO END THIS PARAGRAPH IS
+// WITHDRAWN, and the counts it quoted are stale twice over. Plan 5's second
+// amendment proved `advancesThread` is a DECLARATION, not a capability:
+// `openThread` folds a firing into an open thread of the same kind and
+// parties whether or not anything is declared, and with guard 1 flattened,
+// seasons before and after a re-declaration pass are bit-identical. What
+// actually gates a continuation is family-matching plus the 5-episode pair
+// cooldown. The live pool shape, pinned in tr-castle-reachability.test.js, is
+// now 98 events, 39 of them advancers, over 45 non-empty (family x window)
+// cells: 18 hold none, 17 hold exactly one, 10 hold two or more. That table is
+// a ledger for catching silent drift, not a quality bar to be maximised. See
+// the note above the bands in tr-calibration.test.js.
 const CONTINUATION_BASE = 3;
 const CONTINUATION_PER_HEAT = 1.5;
 const RARE_MULTIPLIER = 2;         // amplify UP when a rare precondition clears, never down
@@ -177,6 +185,25 @@ export function validateRegistry(makeCtx, rng) {
 
 function _pairKey(actors) {
   return [...actors].sort().join('|');
+}
+
+/**
+ * The people an event's own result says the scene was about.
+ *
+ * Read off the result rather than off `ctx.actors` because thirteen events
+ * narrate a thread's parties instead of the convened pair — see the note in
+ * `pickEvent`. Unknown shapes yield nothing, which degrades to the old
+ * behaviour rather than to a wrong key.
+ */
+function _participants(res) {
+  const out = new Set();
+  for (const k of ['pair', 'actors', 'parties']) {
+    if (Array.isArray(res?.[k])) for (const n of res[k]) if (typeof n === 'string') out.add(n);
+  }
+  for (const k of ['actor', 'doubter', 'suspected', 'onTheSpot']) {
+    if (typeof res?.[k] === 'string') out.add(res[k]);
+  }
+  return [...out];
 }
 
 /**
@@ -367,6 +394,38 @@ export function pickEvent(ctx, rng) {
     && _threadThisEventWouldAdvance(chosen, ctx));
 
   const consequences = chosen.fire(ctx, rng);
+
+  // ── WHO WAS ACTUALLY IN THE SCENE (whole-plan review, F4) ──────────────
+  //
+  // The three cooldown scopes above key on `ctx.actors`, the people the scene
+  // sampler CONVENED. For most of the pool those are the people the event
+  // writes about, and the keys are right. For thirteen events they are not:
+  // `_threadForActors` (js/tr/castle/romance.js, and trust.js's twin) matches
+  // a thread on ANY convened actor and then narrates the thread's own parties,
+  // so a scene drawn as (Chef Hatchet + Amy) prints "Beardo and Amy" — and
+  // Beardo, the person the scene is about, took no cooldown at all. The same
+  // couple could then be run through the same event again next episode behind
+  // a different third party, indefinitely, because nothing the check looks at
+  // had ever recorded them.
+  //
+  // So the participants an event REPORTS are keyed too. That is not a second
+  // guess at who was in the room: `pair`/`actors`/`actor` are the fields the
+  // events already return to say who the sentence was about, and the shape is
+  // pinned by tr-castle.test.js. The convened actors keep their keys as well —
+  // a draw was spent on them either way — so this can only ever ADD protection.
+  //
+  // WHAT IT DOES NOT FIX, said plainly: the outsider is still convened for a
+  // story they have no part of. The predicate fix that would end that
+  // (`some` -> `every`) costs 73% of the romance family's reach and pushes
+  // `romance-liability-exposed` under the branch floor; measured, rejected,
+  // and written up over `_threadForActors`.
+  for (const p of _participants(consequences)) {
+    if (ctx.actors?.includes(p)) continue;
+    cds.player[`${chosen.id}:${p}`] = ctx.ep;
+  }
+  const wrote = _participants(consequences);
+  if (wrote.length >= 2) cds.pair[`${chosen.id}:${_pairKey(wrote)}`] = ctx.ep;
+
   // `actors` is harness data too — nothing in the engine reads it. The
   // coverage band needs to count DISTINCT pairs convened per season, and after
   // fire() has run there is no way to recover who was in the room.
@@ -411,6 +470,31 @@ const ROUND_BUDGET_MAX = 8; // inclusive
 function _actFor(ep) {
   return actFor(ep);
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SPEC CONFORMANCE: §5.3's `ctx` NAMES SIX THINGS AND CARRIES ONE
+// ══════════════════════════════════════════════════════════════════════
+//
+// Written down because §5.3 currently READS as satisfied and is not (whole-plan
+// review, F8). The spec says `ctx` carries role, position, bond, stats, state
+// and history. The object built below is
+//   { ep, window, act, living, actors, state }
+// — `state` is the only one of the six on it.
+//
+// THE INTENT IS MET AND THE LETTER IS NOT, and the difference matters to
+// whoever reads §5.3 next. The other five are reachable from inside `weight()`
+// and `fire()` by direct import, and every one of them is used that way today:
+// role via `alignmentAt` (js/tr/roles.js, and ONLY for the acting player's own
+// role — probes A/B/C in tests/tr-castle.test.js enforce that), bond via
+// `getBond`, stats via `pStats`, history via `activeSeasons` and the thread
+// store, position via `gs.tr.rounds` and `ctx.living`. Copying them onto `ctx`
+// would buy nothing but a second place for each to be wrong.
+//
+// `state` is on `ctx` for a reason the others do not have: it is DERIVED and
+// FROZEN. `emotionalStateOf` reads the last round's public ballots and
+// accusations, and freezing the map is what stops a castle event writing what
+// the room remembers about the last vote through a side door — a channel the
+// belief gate does not watch, because it watches `learn()`.
 
 // ── EMOTIONAL STATE (spec 5.3) ────────────────────────────────────────────
 //

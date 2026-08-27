@@ -43,6 +43,12 @@ function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
  * thread's own `parties`, rather than requiring the scene to already be
  * that exact pair.
  */
+// WHOLE-PLAN REVIEW, F4: this helper has the same loose match as romance.js's
+// twin, for the same reason, and the same `every` fix was tried on both and
+// rejected on the same measurement. See the long note over
+// `_threadForActors` in js/tr/castle/romance.js. The half that WAS fixed is
+// in `pickEvent` (js/tr/events.js): the cooldowns now key on who the event
+// actually wrote, not only on who the scene convened.
 function _threadForActors(kind, actors, ep) {
   for (const n of actors || []) {
     const hit = openThreadsFor(n, ep).find(t => t.kind === kind);

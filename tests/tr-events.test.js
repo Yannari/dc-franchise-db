@@ -277,6 +277,57 @@ describe('pickEvent actually spends the score', () => {
   });
 });
 
+describe('cooldowns key on who the event WROTE, not only on who was convened', () => {
+  // WHOLE-PLAN REVIEW, F4. Thirteen castle events find a thread by asking
+  // whether ANY convened actor is a party to it, then narrate the thread's own
+  // parties (`_threadForActors`, js/tr/castle/romance.js and trust.js's twin).
+  // So a scene drawn as (Chef Hatchet + Amy) prints "Beardo and Amy" — and
+  // before this fix Beardo, the person the sentence was about, took no
+  // cooldown of any kind. The same couple could be run through the same event
+  // again next episode behind a different third party, forever, because
+  // nothing the eligibility check reads had ever recorded them.
+  //
+  // WRITTEN AS A RULE ABOUT THE RUNNER, over a synthetic event, and
+  // deliberately not as a list of the thirteen: the defect is that pickEvent
+  // keyed the wrong people, and any future event that reports participants the
+  // scene did not convene inherits the fix without editing this test.
+  it('a participant the event names but the scene did not convene takes a player cooldown', () => {
+    _resetRegistry();
+    setPlayers(roster.players.slice(0, 8));
+    setGs({ bonds: {}, activePlayers: [...CAST] });
+    gs.tr = initTraitorsState();
+    const [convened, offstage] = [CAST[0], CAST[5]];
+    registerEvent({ id: 'offstage-pair', family: 'romance', window: 'evening',
+      weight: () => 1, fire: () => ({ branch: 'x', pair: [offstage, CAST[6]] }) });
+    const ctx = { ...ctxFor(3), actors: [convened] };
+    pickEvent(ctx, seededRng(7));
+
+    const cds = gs.tr.cooldowns;
+    expect(cds.player[`offstage-pair:${offstage}`],
+      'the person the sentence was about took no cooldown').toBe(3);
+    expect(cds.player[`offstage-pair:${CAST[6]}`]).toBe(3);
+    expect(cds.pair[`offstage-pair:${[offstage, CAST[6]].sort().join('|')}`],
+      'the pair the sentence was about took no pair cooldown').toBe(3);
+    // AND THE CONVENED ACTOR KEEPS THEIRS. A draw was spent on them either
+    // way, so this can only ever ADD protection, never move it.
+    expect(cds.player[`offstage-pair:${convened}`]).toBe(3);
+  });
+
+  it('an ordinary event that names exactly its convened actors is unaffected', () => {
+    _resetRegistry();
+    setPlayers(roster.players.slice(0, 8));
+    setGs({ bonds: {}, activePlayers: [...CAST] });
+    gs.tr = initTraitorsState();
+    registerEvent({ id: 'ordinary', family: 'trust', window: 'evening',
+      weight: () => 1, fire: (c) => ({ branch: 'x', pair: [...c.actors] }) });
+    const ctx = { ...ctxFor(3), actors: [CAST[0], CAST[1]] };
+    pickEvent(ctx, seededRng(7));
+    const keys = Object.keys(gs.tr.cooldowns.player).sort();
+    expect(keys, 'the fix must not invent cooldowns for people who were never in the scene')
+      .toEqual([`ordinary:${CAST[0]}`, `ordinary:${CAST[1]}`].sort());
+  });
+});
+
 describe('runWindow: the seven social windows around the four beats', () => {
   it('only fires events registered for that window', () => {
     registerEvent({ id: 'dawn-only', family: 'grief', window: 'dawn',

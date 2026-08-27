@@ -579,3 +579,32 @@ describe('and the version where nobody says anything', () => {
       .toMatch(/bbns-quiet/);
   });
 });
+
+describe('and the screen says who is no longer in what', () => {
+  it('gives the exit its own card rather than hiding it inside a nominee card', () => {
+    // Reported from a real week: Priya nominated a member of The Shield Wall,
+    // vanished from it between one screen and the next, and the ceremony said
+    // nothing at all. The card was keyed on the NOMINEE's name — which draws
+    // for somebody who quit after the group put them up, and draws nothing for
+    // the far more common case, where the person removed is the Head of
+    // Household being thrown out for spending the alliance's week on one of
+    // its own. The Head of Household has no card on that screen.
+    const vp = readFileSync('js/vp-screens.js', 'utf8');
+    expect(vp, 'the exit is still only drawn inside a nominee card')
+      .toMatch(/steps\.push\(\{ kind: 'exit'/);
+    expect(vp).toMatch(/step\.kind === 'exit'/);
+    expect(vp).toMatch(/THROWN OUT BY THEM/);
+  });
+
+  it('says when an alliance ends instead of just not drawing it', () => {
+    // The other half of the same report: The Safety Net was in the panel
+    // before the veto ceremony and simply gone after it. `reconcileAlliances`
+    // computes a dissolutionReason on the line above and nothing ever read it.
+    const shared = readFileSync('js/bb/shared-strategy.js', 'utf8');
+    expect(shared, 'a dissolution still tells nobody').toMatch(/allianceDissolved/);
+    const run = readFileSync('js/bb-run.js', 'utf8');
+    expect(run, 'it never reaches the episode').toMatch(/allianceDissolved/);
+    const vp = readFileSync('js/vp-screens.js', 'utf8');
+    expect(vp, 'it never reaches a screen').toMatch(/is finished —/);
+  });
+});

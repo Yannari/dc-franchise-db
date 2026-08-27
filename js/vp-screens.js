@@ -17397,6 +17397,13 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
             ? `${a.members.filter(m => !away(m)).length}/${a.members.length}` : a.members.length}</span>
         </div>`).join('')
         : `<div style="font-size:11px;color:#484f58">Nothing anybody has been willing to name.</div>`}
+      ${(ep?.allianceDissolved || []).length ? `<div class="bbf-gone">
+        ${(ep.allianceDissolved || []).map(d => `<div class="bbf-gone-row">
+          <b>${_bbEsc(d.name)}</b> is finished — ${d.reason === 'trust-collapsed'
+            ? `nobody left in it trusts anybody else in it`
+            : `there is nobody left in it`}.
+        </div>`).join('')}
+      </div>` : ''}
       ${showmances.length ? `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
         ${showmances.map(sh => `<div class="bbf-ally">
           <span class="bbf-ally-n" style="color:#ff7b72">${(sh.players || []).join(' &amp; ')}</span>
@@ -18327,6 +18334,18 @@ export function rpBuildBBNominations(ep, only = null) {
     steps.push({ kind: 'shape' });
   }
   steps.push({ kind: 'complete' });
+  /* ── AND WHO IS NOT IN THAT ALLIANCE ANY MORE ──
+     These were being drawn inside the nominee's own card, keyed on the
+     nominee's name — which works for somebody who quit after the group put
+     them up, and renders NOTHING for the far more common case, where the
+     person who leaves is the Head of Household being thrown out for spending
+     the alliance's week on one of its own. The Head of Household has no card
+     on this screen. Reported from a real week: Priya nominated a member of
+     The Shield Wall, disappeared from it, and the ceremony said nothing at
+     all about it. */
+  for (const exit of act?.allianceExits || []) {
+    if (exit) steps.push({ kind: 'exit', exit });
+  }
   reactions.forEach(b => steps.push({ kind: 'beat', beat: b }));
 
   const done = state.idx >= steps.length - 1;
@@ -18545,6 +18564,24 @@ export function rpBuildBBNominations(ep, only = null) {
             </div>`;
           }).join('');
         })()}</div>`;
+    }
+    if (step.kind === 'exit') {
+      const x = step.exit;
+      const label = x.kind === 'quit' ? 'WALKED AWAY FROM THEM'
+        : x.kind === 'hidden' ? 'SAYS NOTHING' : 'THROWN OUT BY THEM';
+      const body = x.kind === 'quit'
+        ? `${_bbEsc(x.player)} has left <strong>${_bbEsc(x.alliance)}</strong>. Every one of them wanted that chair filled, and ${_bbEsc(x.player)} is the one who had to sit in it.`
+        : x.kind === 'hidden'
+          ? (x.consented
+            ? `${_bbEsc(x.player)} does not leave <strong>${_bbEsc(x.alliance)}</strong>, does not raise it, and does not let one thing show. Every person in that room wanted the chair filled and ${_bbEsc(x.player)} is the one in it — and the only version of this worth anything is the one they never see coming.`
+            : `<strong>${_bbEsc(x.alliance)}</strong> does not throw ${_bbEsc(x.player)} out, and it is not forgiveness. They keep ${_bbEsc(x.player)} exactly where they can see ${_bbEsc(x.player)}, sworn to a group that has already decided how this ends.`)
+          : `<strong>${_bbEsc(x.alliance)}</strong> has removed ${_bbEsc(x.player)}. Nobody else in that room was pointed at ${_bbEsc(x.victim)}, and the week got spent on ${_bbEsc(x.victim)} anyway.`;
+      const cls = x.kind === 'hidden' ? 'bbns-quiet' : 'bbns-exit';
+      return `<div class="bbns-card is-reason">
+        <div class="bbns-card-h">${_bbAvatar(x.player, 30)}<span class="bbns-pill ${x.kind === 'hidden' ? 'blue' : 'red'}">${label}</span></div>
+        <div class="bbns-card-b"><div class="bbns-broke ${cls}" style="margin-top:0">
+          <span>${_bbEsc(x.alliance)}</span>${body}
+        </div></div></div>`;
     }
     if (step.kind === 'shape') {
       // A non-classic structure said out loud — two real targets, a split

@@ -1081,6 +1081,11 @@
                      color:#a9c9ee; }
     .bbns-quiet span { color:#58a6ff; }
 
+    /* An alliance that ENDED this week. It used to just stop being drawn. */
+    .bbf-gone      { margin-top:9px; padding-top:8px; border-top:1px dashed #30363d; }
+    .bbf-gone-row  { font-size:10.5px; line-height:1.5; color:#8b949e; }
+    .bbf-gone-row b { color:#c9d1d9; }
+
     /* Somebody holding two things at once — HOH who won the veto, nominee who
        took themselves off — needs both badges, side by side across the top of
        the frame. */

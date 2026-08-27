@@ -719,7 +719,7 @@ function memberSetIsViable(members) {
  * Keep the standing alliances honest each week: recompute their internal trust,
  * and dissolve the ones that have lost their people or lost faith in each other.
  */
-function reconcileAlliances(house, weekNum) {
+function reconcileAlliances(house, weekNum, week = null) {
   const live = new Set(house);
   for (const alliance of allianceStore()) {
     if (alliance.active === false || alliance.dissolved) continue;
@@ -733,6 +733,20 @@ function reconcileAlliances(house, weekNum) {
       alliance.active = false;
       alliance.dissolved = weekNum;
       alliance.dissolutionReason = activeMembers.length <= 1 ? 'insufficient-live-members' : 'trust-collapsed';
+      /* ── AND SAY SO ──
+         A group the viewer has been watching for ten weeks was disappearing
+         from the alliance panel between one screen and the next, with the
+         reason computed on the line above and read by nobody. Reported from a
+         real week: The Safety Net was in the panel before the veto ceremony
+         and simply gone after it. */
+      if (week) {
+        (week.allianceDissolved ||= []).push({
+          name: alliance.name || alliance.label || 'an alliance',
+          reason: alliance.dissolutionReason,
+          members: [...activeMembers],
+          trust: Number.isFinite(alliance.trust) ? Math.round(alliance.trust * 100) / 100 : null,
+        });
+      }
     }
   }
 }
@@ -880,7 +894,7 @@ function formationTriggers(house, week, rng) {
 
 export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.activePlayers || [], week = null, rng = Math.random } = {}) {
   const weekNum = currentRound(week);
-  reconcileAlliances(house, weekNum);
+  reconcileAlliances(house, weekNum, week);
   if (phase !== 'opening' || house.length < 3) return { formed:null, alliances:allianceStore() };
 
   // Scales with the house, as on the island: a full house supports several
@@ -1176,7 +1190,7 @@ export function settleBBAllianceWeek(week, rng = Math.random) {
       incidents.push({ alliance:alliance.name, ...incident, repair });
     }
   }
-  reconcileAlliances(gs.activePlayers || [], week.num);
+  reconcileAlliances(gs.activePlayers || [], week.num, week);
   return incidents;
 }
 

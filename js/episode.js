@@ -38,7 +38,7 @@ import { retrofitFranchiseMeta } from './franchise-meta.js';
 import { survivalFlavor, fillVocab } from './settings.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
-import { applyCoachElimination, coachCardTalk, coachFallout, maybeSaveCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
+import { applyCoachElimination, coachCardTalk, coachFallout, commitSaveCards, maybeSaveCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
 import { coachesOf } from './coaches.js';
 import { runCoachDealBlock } from './coach-deals.js';
 
@@ -4360,6 +4360,10 @@ export function simulateEpisode() {
     // Snapshot bonds before vote — triggers need pre-vote bond values
     ep._preVoteBondSnapshot = { ...gs.bonds };
 
+    // The save card commits HERE — before a single vote is read, like an idol.
+    // A coach reads the blocs aiming at them and decides; the peers' signatures
+    // are cast privately and stay sealed until tribal.
+    commitSaveCards(ep, tribeLabel, allianceSet);
     const { votes, log, defections, voteMiscommunications, votePitches: _vpResult, pitchIntel:_pitchIntelResult, pitchCounterplay:_pitchCounterplayResult, knowledgeEvents:_knowledgeEventsResult, emotionalDefectionDiagnostics, voteCommitmentDiagnostics } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote, coachTargets);
     if (emotionalDefectionDiagnostics?.length) ep.emotionalDefectionDiagnostics = emotionalDefectionDiagnostics;
     if (voteCommitmentDiagnostics?.length) ep.voteCommitmentDiagnostics = voteCommitmentDiagnostics;

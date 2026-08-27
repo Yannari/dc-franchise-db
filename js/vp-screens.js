@@ -11653,11 +11653,43 @@ export function rpBuildVotes(ep) {
       </div>
       <div class="tv-advantage-play-body">
         <div class="tv-advantage-play-badge" style="color:#e8873a;background:rgba(232,135,58,0.12);border-color:rgba(232,135,58,0.3)">COACH'S SAVE CARD</div>
-        <div class="tv-advantage-play-title">${_sv.coach} is saved by the card</div>
+        <div class="tv-advantage-play-title">${_sv.coach} is eliminated — and the save card was <span style="color:#3fb950">USED</span></div>
         <div class="tv-advantage-play-desc">The votes were for ${_sv.coach}. ${_signers.length
           ? `${_signers.join(' and ')} signed — the card needs every coach on the team, and got them.`
           : 'The card was played.'} ${_sv.coach} stays.</div>
         ${_sv.replacement ? `<div class="tv-advantage-play-result">It is not free: ${_sv.coach} names ${_sv.replacement}, who leaves instead.</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  // Held, and never played. The card was in their pocket and they did not
+  // read the room in time — the other half of committing before the votes.
+  for (const _np of (ep.coachCardNotPlayed || [])) {
+    if (!_np.held) continue;
+    _advHtml += `<div class="tv-advantage-play" style="border-color:rgba(139,148,158,0.35)">
+      <div class="tv-advantage-play-left">${rpPortrait(_np.coach)}</div>
+      <div class="tv-advantage-play-body">
+        <div class="tv-advantage-play-badge" style="color:#8b949e;background:rgba(139,148,158,0.1);border-color:rgba(139,148,158,0.25)">SAVE CARD NOT USED</div>
+        <div class="tv-advantage-play-title">${_np.coach} is eliminated — and the save card was <span style="color:#8b949e">NOT USED</span></div>
+        <div class="tv-advantage-play-desc">The card had to be committed before the votes were read. ${_np.coach} did not see it coming, and goes home holding it.</div>
+      </div>
+    </div>`;
+  }
+
+  // Played and not needed. Only possible because the card commits before the
+  // votes are read: the coach read the room wrong and spent it on a night
+  // nobody was coming for them. This is what stops the card being unloseable.
+  for (const _cm of (ep.coachCardCommits || [])) {
+    const _wasSaved = (ep.coachSaves || []).some(v => v.coach === _cm.coach);
+    const _wasRefused = (ep.coachSaveRefusals || []).some(v => v.coach === _cm.coach);
+    if (_wasSaved || _wasRefused) continue;
+    _advHtml += `<div class="tv-advantage-play" style="border-color:rgba(139,148,158,0.35)">
+      <div class="tv-advantage-play-left">${rpPortrait(_cm.coach)}</div>
+      <div class="tv-advantage-play-body">
+        <div class="tv-advantage-play-badge" style="color:#8b949e;background:rgba(139,148,158,0.1);border-color:rgba(139,148,158,0.25)">SAVE CARD BURNED</div>
+        <div class="tv-advantage-play-title">${_cm.coach} played the card and did not need it</div>
+        <div class="tv-advantage-play-desc">${_cm.coach} read the room as coming for them and committed the card before a vote was read. The votes went elsewhere.</div>
+        <div class="tv-advantage-play-result">The card is gone. ${_cm.coach} has no protection left.</div>
       </div>
     </div>`;
   }
@@ -11679,7 +11711,7 @@ export function rpBuildVotes(ep) {
       </div>
       <div class="tv-advantage-play-body">
         <div class="tv-advantage-play-badge" style="color:#f85149;background:rgba(248,81,73,0.12);border-color:rgba(248,81,73,0.3)">THE CARD IS NOT SIGNED</div>
-        <div class="tv-advantage-play-title">${_rf.refusedBy} refuses to save ${_rf.coach}</div>
+        <div class="tv-advantage-play-title">${_rf.coach} is eliminated — the card was played, and <span style="color:#f85149">NOT SIGNED</span></div>
         <div class="tv-advantage-play-desc">The card only works if every coach on the team signs it. ${_rf.refusedBy} does not — ${_why}.</div>
         <div class="tv-advantage-play-result">${_rf.coach} goes home.</div>
       </div>

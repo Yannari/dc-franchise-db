@@ -358,12 +358,33 @@ export function maybeSaveCoach(ep, result) {
   const tribeObj = (gs.tribes || []).find(t => (t.name ?? t.tribeName) === record.tribe);
   if (!tribeObj) return false;
 
-  const outcome = offerSaveCard(ep, result.eliminated, tribeObj);
-  if (outcome.played && outcome.replacement) {
-    result.eliminated = outcome.replacement;
-    return true;
+  // The card was committed before the votes were read (commitSaveCards). This
+  // only resolves what was already sealed — a coach who did not play cannot
+  // reach back for it now, which is the whole reason the card is frightening
+  // rather than merely inconvenient.
+  const commit = (ep.coachCardCommits || []).find(c => c.coach === result.eliminated);
+  if (!commit) {
+    ep.coachCardNotPlayed = [...(ep.coachCardNotPlayed || []), { coach: result.eliminated,
+      held: record.saveCard === 'unused' }];
+    return false;
   }
-  return false;
+  if (!commit.signed) {
+    ep.coachSaveRefusals = [...(ep.coachSaveRefusals || []), { coach: commit.coach,
+      refusedBy: commit.refusedBy, reason: commit.votes.find(v => !v.consents)?.reason,
+      doomed: commit.votes.find(v => !v.consents)?.doomed || null,
+      votes: commit.votes, noPeers: commit.noPeers }];
+    return false;
+  }
+
+  const replacement = predictedReplacement(commit.coach)
+    || (tribeObj.members || []).filter(m => !isCoach(m))
+        .slice().sort((a, b) => getBond(commit.coach, a) - getBond(commit.coach, b))[0];
+  if (!replacement) return false;
+
+  ep.coachSaves = [...(ep.coachSaves || []), { coach: commit.coach, tribe: commit.tribe,
+    replacement, votes: commit.votes }];
+  result.eliminated = replacement;
+  return true;
 }
 
 /**
@@ -802,4 +823,54 @@ export function coachCardTalk(ep, tribe, roll = Math.random) {
     break;  // one card conversation per tribe per episode
   }
   return events;
+}
+
+/**
+ * The card is committed BEFORE the votes are read, like an idol.
+ *
+ * Reactively saving whoever turned out to be eliminated made the card
+ * unloseable — a coach could never spend it wrong, so it cost nothing to hold
+ * and frightened nobody. Played like an idol it can be wasted, which is what
+ * makes holding one a real decision and makes the threat of one worth
+ * respecting.
+ *
+ * The signatures are cast privately here and read at tribal. A coach commits
+ * on their own read of the room; whether their peers actually signed is not
+ * known to them until it matters.
+ */
+export function commitSaveCards(ep, tribeLabel, alliances = []) {
+  const commits = [];
+  for (const c of coachesOf(tribeLabel)) {
+    const rec = coachRecord(c.name);
+    if (!rec || rec.saveCard !== 'unused') continue;
+
+    // What the coach can see: how many voting blocs have named them.
+    const aimed = alliances.filter(a => a.target === c.name).length;
+    if (!aimed) continue;                       // no read, no reason to spend
+    const st = pStats(c.name);
+    // Reading the room is intuition; committing on that read is boldness.
+    const danger = Math.min(1, aimed * 0.45);
+    const play = danger * (0.45 + st.intuition * 0.04) * (0.6 + st.boldness * 0.04);
+    if (Math.random() >= Math.min(0.95, play)) continue;
+
+    const peers = coachesOf(tribeLabel).filter(p => p.name !== c.name);
+    const votes = peers.map(p => ({ coach: p.name, ...saveCardVerdict(p.name, c.name) }));
+    const signed = peers.length > 0 && votes.every(v => v.consents);
+
+    rec.saveCard = 'used';                      // spent on play, needed or not
+    if (!gs.coachSaveLedger) gs.coachSaveLedger = [];
+    const _epNum = Number(ep?.num || gs.episode || 0);
+    for (const v of votes) {
+      gs.coachSaveLedger.push(v.consents
+        ? { signer: v.coach, saved: c.name, ep: _epNum, reason: v.reason }
+        : { refuser: v.coach, saved: c.name, ep: _epNum, reason: v.reason });
+    }
+    commits.push({ coach: c.name, tribe: tribeLabel, votes, signed,
+      refusedBy: votes.find(v => !v.consents)?.coach || null,
+      noPeers: peers.length === 0 });
+  }
+  if (commits.length) {
+    ep.coachCardCommits = [...(ep.coachCardCommits || []), ...commits];
+  }
+  return commits;
 }

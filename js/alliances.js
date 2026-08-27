@@ -51,7 +51,27 @@ export function _coachTargetDanger(coachName, attackers) {
   // exactly as before; positive meanAwe (deference) scales it down toward
   // 0.1x, mirroring the same magnitude on the other side of zero.
   const attackerBias = Math.max(0.1, 1 + Math.max(-0.9, Math.min(2, -meanAwe)));
-  return (stars * 0.4 + given * 0.5) * attackerBias;
+
+  // ── THE CARD IN THE ROOM ──────────────────────────────────────────────
+  // An unused save card cuts both ways, and which way depends on who is
+  // holding the axe. Cautious players will not spend a tribal on a name that
+  // can survive it; bold ones go at the coach precisely to burn the card and
+  // make the next shot clean. Nobody is neutral about it, so this is never a
+  // flat modifier — it is the attackers' own boldness deciding the sign.
+  let cardBias = 1;
+  const _cardLive = (gs.coaches || []).some(c => c.name === coachName && c.saveCard === 'unused');
+  if (_cardLive && group.length) {
+    const nerve = group.reduce((sum, a) => {
+      const st = pStats(a);
+      if (!st) return sum;
+      // Boldness pushes toward flushing it, caution toward leaving it alone;
+      // strategic players see the value in burning it either way.
+      return sum + (st.boldness - 5) * 0.09 + (st.strategic - 5) * 0.05;
+    }, 0) / group.length;
+    cardBias = Math.max(0.35, Math.min(1.6, 1 + nerve));
+  }
+
+  return (stars * 0.4 + given * 0.5) * attackerBias * cardBias;
 }
 export function coalitionMajority(members, lostVotes = []) {
   const lost = new Set(lostVotes || []);

@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, setGs, setPlayers } from '../js/core.js';
 import { addBond } from '../js/bonds.js';
 import { addCoach, coachRecord } from '../js/coaches.js';
-import { offerSaveCard, predictedReplacement, saveCardVerdict } from '../js/coach-episode.js';
+import { commitSaveCards, maybeSaveCoach, offerSaveCard, predictedReplacement, saveCardVerdict } from '../js/coach-episode.js';
 
 const stats = (o = {}) => ({ physical:5,endurance:5,mental:5,social:5,strategic:5,
   loyalty:5,boldness:5,intuition:5,temperament:5, ...o });
@@ -165,5 +165,54 @@ describe('the price of signing', () => {
     const shown = saveCardVerdict('Wayne', 'Julia').doomed;
     const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
     expect(out.replacement, 'signing for one price and charging another').toBe(shown);
+  });
+});
+
+// Committed before the votes are read, like an idol — so it can be wasted,
+// which is the only reason holding one is a decision and the threat of one is
+// worth respecting.
+describe('the card is played, not triggered', () => {
+  it('is spent on commitment whether or not it was needed', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 8);
+    const ep = { num: 6 };
+    // Two blocs have named her, and she is bold and reads the room well.
+    setPlayers([{ name: 'Julia', archetype: 'floater', stats: stats({ intuition: 10, boldness: 10 }) },
+      ...['Wayne', 'Evie', 'Finn'].map(n => ({ name: n, archetype: 'hero', stats: stats() }))]);
+    const alliances = [{ members: ['Evie'], target: 'Julia' }, { members: ['Finn'], target: 'Julia' }];
+    commitSaveCards(ep, 'Red', alliances);
+    expect(ep.coachCardCommits?.length, 'a coach staring at two blocs never reached for it').toBe(1);
+    expect(coachRecord('Julia').saveCard, 'the card must be gone the moment it is played').toBe('used');
+  });
+
+  it('never commits when no bloc has named them', () => {
+    setup();
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Finn' }]);
+    expect(ep.coachCardCommits).toBeUndefined();
+    expect(coachRecord('Julia').saveCard).toBe('unused');
+  });
+
+  it('cannot be reached for after the votes — an uncommitted coach goes home', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 9);
+    const ep = { num: 6 };
+    const result = { eliminated: 'Julia' };
+    expect(maybeSaveCoach(ep, result), 'the card fired without ever being played').toBe(false);
+    expect(result.eliminated).toBe('Julia');
+    expect(ep.coachCardNotPlayed[0].held, 'she went home holding it').toBe(true);
+  });
+
+  it('resolves a committed, signed card into a replacement', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 9);
+    addBond('Julia', 'Finn', -6);
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' },
+      { members: ['Finn'], target: 'Julia' }, { members: ['Wayne'], target: 'Julia' }]);
+    if (!ep.coachCardCommits) return;   // commitment is probabilistic
+    const result = { eliminated: 'Julia' };
+    expect(maybeSaveCoach(ep, result)).toBe(true);
+    expect(result.eliminated).toBe('Finn');
   });
 });

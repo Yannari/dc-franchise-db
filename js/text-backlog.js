@@ -1855,6 +1855,18 @@ export function _textWhyVote(ep, ln, sec) {
     ln(`  ${save.coach} named the replacement: ${save.replacement || '???'} goes home in ${_svP.posAdj} place.`);
   });
 
+  // Committed before the votes and not needed, or never committed at all —
+  // both only exist because the card is played like an idol.
+  (ep.coachCardCommits || []).forEach(cm => {
+    if ((ep.coachSaves || []).some(v => v.coach === cm.coach)) return;
+    if ((ep.coachSaveRefusals || []).some(v => v.coach === cm.coach)) return;
+    ln(`SAVE CARD BURNED — ${cm.coach} committed the card before the votes were read. The votes went elsewhere. It is gone.`);
+  });
+  (ep.coachCardNotPlayed || []).forEach(np => {
+    if (!np.held) return;
+    ln(`SAVE CARD NOT USED — ${np.coach} goes home holding it. The card had to be committed before the votes were read.`);
+  });
+
   // The refusal is the louder half. A coach goes home because one colleague
   // would not sign, and the reason is on the record.
   (ep.coachSaveRefusals || []).forEach(rf => {

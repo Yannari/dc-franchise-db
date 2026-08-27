@@ -154,27 +154,82 @@ export function eliminateCoach(ep, coachName) {
  */
 export function offerSaveCard(ep, coachName, tribe) {
   const record = coachRecord(coachName);
-  if (!record) return { played: false, replacement: null, reason: 'not-a-coach' };
-  if (record.saveCard !== 'unused') return { played: false, replacement: null, reason: 'already-used' };
+  if (!record) return { played: false, replacement: null, reason: 'not-a-coach', votes: [] };
+  if (record.saveCard !== 'unused') return { played: false, replacement: null, reason: 'already-used', votes: [] };
 
-  // Every contestant must be willing, and willing means a positive bond —
-  // never having interacted (bond 0) does not count as agreeing.
-  const holdout = tribe.members.find(m => getBond(coachName, m) <= 0);
-  if (holdout) return { played: false, replacement: null, reason: `holdout:${holdout}` };
+  // THE CARD IS BETWEEN THE COACHES OF ONE TEAM. Contestants have nothing to
+  // say about it — they already had their say, at the vote. Every other coach
+  // on this tribe has to agree, which makes a single rival enough to end a
+  // colleague, and makes refusing the cheapest kill in the game: you never
+  // need the numbers at tribal, you need one peer who would rather not.
+  // Tribe size decides how much of a net exists at all — a lone coach has
+  // none, and on a two-coach tribe one rival holds the other's life.
+  const peers = coachesOf(record.tribe).filter(c => c.name !== coachName);
+  // No peers, no consensus to reach. The last coach standing has no net, and
+  // that is the rule, not an oversight — a card you can play alone is not a
+  // consensus card.
+  if (!peers.length) return { played: false, replacement: null, reason: 'no-peers', votes: [] };
 
-  // He chooses. Never another coach — the card removes a contestant. Coaches
-  // are never in `tribe.members` (they live outside `gs.activePlayers`), but
-  // the filter is kept as a defensive guard against a caller seeding the
-  // tribe roster incorrectly.
-  const replacement = tribe.members
+  const votes = peers.map(p => ({ coach: p.name, ...saveCardVerdict(p.name, coachName) }));
+  const refuser = votes.find(v => !v.consents);
+  if (refuser) {
+    if (!ep.coachSaveRefusals) ep.coachSaveRefusals = [];
+    ep.coachSaveRefusals.push({ coach: coachName, refusedBy: refuser.coach, reason: refuser.reason, votes });
+    return { played: false, replacement: null, reason: `refused:${refuser.coach}`, votes };
+  }
+
+  // Unanimous. The card removes a contestant, never another coach — the
+  // filter guards against a caller seeding the tribe roster incorrectly.
+  const replacement = (tribe?.members || [])
     .filter(m => !isCoach(m))
     .slice()
     .sort((a, b) => getBond(coachName, a) - getBond(coachName, b))[0] || null;
+  if (!replacement) return { played: false, replacement: null, reason: 'no-replacement', votes };
 
   record.saveCard = 'used';
   if (!ep.coachSaves) ep.coachSaves = [];
-  ep.coachSaves.push({ coach: coachName, tribe: tribe.name ?? tribe.tribeName, replacement });
-  return { played: true, replacement, reason: 'unanimous' };
+  ep.coachSaves.push({ coach: coachName, tribe: tribe?.name ?? tribe?.tribeName, replacement, votes });
+  return { played: true, replacement, reason: 'unanimous', votes };
+}
+
+/**
+ * One coach deciding whether to save another — proportional, never a table.
+ *
+ * Easy when they get on and run together, hard when they don't and the other
+ * one plays the game for a living. Archetype sets the starting lean, the
+ * relationship moves it, and a coach whose protégés are being out-trained has
+ * a reason to let a colleague go that has nothing to do with liking them.
+ */
+export function saveCardVerdict(voterCoach, endangered) {
+  const st = pStats(voterCoach);
+  const arche = players.find(p => p.name === voterCoach)?.archetype;
+  const bond = getBond(voterCoach, endangered);
+  const allied = (gs.namedAlliances || []).some(a =>
+    a.active && a.members.includes(voterCoach) && a.members.includes(endangered));
+
+  // Nice archetypes lean toward saving; the strategic and villainous lean
+  // away. Everyone else sits near the middle and lets the relationship decide.
+  const NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
+  const COLD = ['villain', 'mastermind', 'schemer'];
+  const lean = NICE.includes(arche) ? 0.75 : COLD.includes(arche) ? 0.2 : 0.45;
+
+  // Loyalty pulls toward yes, strategic play pulls toward no — proportional
+  // to the stat, never a threshold.
+  let p = lean + (st.loyalty / 10) * 0.3 - (st.strategic / 10) * 0.3;
+  p += Math.max(-10, Math.min(10, bond)) * 0.045;   // the relationship
+  if (allied) p += 0.2;                              // running together
+
+  // The rival read: a coach whose colleague has more of the tribe invested in
+  // them is looking at the person most likely to outlast them.
+  const mine = Object.keys(gs.coachTraining?.[voterCoach] || {}).length;
+  const theirs = Object.keys(gs.coachTraining?.[endangered] || {}).length;
+  p -= Math.max(0, theirs - mine) * 0.06;
+
+  const consents = p >= 0.5;
+  const reason = !consents
+    ? (bond < 0 ? 'bad-blood' : theirs > mine ? 'rival-outbuilding' : COLD.includes(arche) ? 'strategic' : 'unconvinced')
+    : (allied ? 'allied' : bond > 2 ? 'friendship' : 'decency');
+  return { consents, reason, score: Math.round(p * 100) / 100 };
 }
 
 /**

@@ -1,91 +1,118 @@
+// The save card is a deal between the coaches of ONE TEAM, not a poll of the
+// tribe. Contestants already had their say — at the vote. Every other coach on
+// that tribe has to agree, so refusing is the cheapest kill in the game: you
+// never need the numbers at tribal, you need one peer who would rather not.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { setGs, setPlayers } from '../js/core.js';
+import { gs, setGs, setPlayers } from '../js/core.js';
 import { addBond } from '../js/bonds.js';
 import { addCoach, coachRecord } from '../js/coaches.js';
-import { offerSaveCard } from '../js/coach-episode.js';
+import { offerSaveCard, saveCardVerdict } from '../js/coach-episode.js';
 
-const stats = () => ({ physical:5,endurance:5,mental:5,social:5,strategic:5,loyalty:5,boldness:5,intuition:5,temperament:5 });
-
-beforeEach(() => {
-  setPlayers([
-    { name: 'Julia', archetype: 'schemer', stats: stats() },
-    { name: 'Evie', archetype: 'goat', stats: stats() },
-    { name: 'Finn', archetype: 'hero', stats: stats() },
-  ]);
-  setGs({ activePlayers: ['Evie', 'Finn'], coaches: [], coachTraining: {}, bonds: {}, episode: 6 });
-  addCoach({ name: 'Julia', tribe: 'Red' });
-});
+const stats = (o = {}) => ({ physical:5,endurance:5,mental:5,social:5,strategic:5,
+  loyalty:5,boldness:5,intuition:5,temperament:5, ...o });
 
 const tribe = { name: 'Red', members: ['Evie', 'Finn'] };
 
-describe('the save card', () => {
-  it('needs every contestant to agree', () => {
-    addBond('Julia', 'Evie', 9);
-    addBond('Julia', 'Finn', -8);   // one holdout is enough
+// Julia is on the block. Wayne is the peer who decides.
+function setup({ juliaArch = 'floater', wayneArch = 'hero', wayneStats = {} } = {}) {
+  setPlayers([
+    { name: 'Julia', archetype: juliaArch, stats: stats() },
+    { name: 'Wayne', archetype: wayneArch, stats: stats(wayneStats) },
+    { name: 'Evie', archetype: 'goat', stats: stats() },
+    { name: 'Finn', archetype: 'hero', stats: stats() },
+  ]);
+  setGs({ activePlayers: ['Evie', 'Finn'], coaches: [], coachTraining: {},
+    bonds: {}, namedAlliances: [], episode: 6 });
+  addCoach({ name: 'Julia', tribe: 'Red' });
+  addCoach({ name: 'Wayne', tribe: 'Red' });
+}
+
+describe('who gets a say', () => {
+  it('asks the other coach on the team, not the contestants', () => {
+    setup({ wayneArch: 'villain', wayneStats: { strategic: 10, loyalty: 1 } });
+    // The contestants adore her. It is not their card.
+    addBond('Julia', 'Evie', 10);
+    addBond('Julia', 'Finn', 10);
+    addBond('Julia', 'Wayne', -8);
+    const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
+    expect(out.played, 'a rival coach refusing must end it regardless of the tribe').toBe(false);
+    expect(out.reason).toBe('refused:Wayne');
+  });
+
+  it('a lone coach has no net at all — there is no consensus to reach', () => {
+    setup();
+    setGs({ ...gs, coaches: [] });
+    addCoach({ name: 'Julia', tribe: 'Red' });
     const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
     expect(out.played).toBe(false);
+    expect(out.reason).toBe('no-peers');
   });
 
-  it('treats an untouched bond (0) as silence, not consent', () => {
-    // Julia never interacted with Finn at all — default bond is 0. Silence
-    // is not agreement: unanimity requires every contestant to be POSITIVE.
-    addBond('Julia', 'Evie', 9);
-    // Finn's bond with Julia is left at the default 0.
+  it('ignores a coach on a different team', () => {
+    setup({ wayneArch: 'villain', wayneStats: { strategic: 10, loyalty: 1 } });
+    coachRecord('Wayne').tribe = 'Blue';
     const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
-    expect(out.played).toBe(false);
-    expect(out.reason).toBe('holdout:Finn');
+    expect(out.reason, 'Blue’s coach is not Red’s business').toBe('no-peers');
+  });
+});
+
+describe('the decision is strategic, and scales with who is making it', () => {
+  it('is easy for a friendly peer who runs with them', () => {
+    setup({ wayneArch: 'loyal-soldier', wayneStats: { loyalty: 9, strategic: 2 } });
+    addBond('Julia', 'Wayne', 7);
+    expect(saveCardVerdict('Wayne', 'Julia').consents).toBe(true);
   });
 
-  it('plays when the tribe is unanimous', () => {
-    addBond('Julia', 'Evie', 9);
-    addBond('Julia', 'Finn', 8);
-    const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
+  it('is hard for a strategic peer who does not get on with them', () => {
+    setup({ wayneArch: 'mastermind', wayneStats: { strategic: 9, loyalty: 2 } });
+    addBond('Julia', 'Wayne', -5);
+    const v = saveCardVerdict('Wayne', 'Julia');
+    expect(v.consents).toBe(false);
+    expect(v.reason).toBe('bad-blood');
+  });
+
+  it('an alliance between the two coaches moves the decision toward yes', () => {
+    setup({ wayneArch: 'floater', wayneStats: { strategic: 6, loyalty: 5 } });
+    const bare = saveCardVerdict('Wayne', 'Julia').score;
+    gs.namedAlliances = [{ active: true, members: ['Wayne', 'Julia'], name: 'The Staff' }];
+    expect(saveCardVerdict('Wayne', 'Julia').score).toBeGreaterThan(bare);
+  });
+
+  it('a peer whose colleague has built more of the tribe is likelier to let them go', () => {
+    setup({ wayneArch: 'floater', wayneStats: { strategic: 6, loyalty: 5 } });
+    const bare = saveCardVerdict('Wayne', 'Julia').score;
+    gs.coachTraining = { Julia: { Evie: { social: 1 }, Finn: { mental: 1 } }, Wayne: {} };
+    const rivalled = saveCardVerdict('Wayne', 'Julia');
+    expect(rivalled.score).toBeLessThan(bare);
+  });
+});
+
+describe('when it does fire', () => {
+  it('names a contestant to go instead, never another coach', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 8);
+    addBond('Julia', 'Evie', 6);
+    addBond('Julia', 'Finn', -2);   // the one she likes least pays
+    const ep = { num: 6 };
+    const out = offerSaveCard(ep, 'Julia', tribe);
     expect(out.played).toBe(true);
-    expect(coachRecord('Julia').saveCard).toBe('used');
-  });
-
-  it('makes the coach name who dies for it', () => {
-    // The tribe agrees to save him; HE chooses who goes instead. That turns
-    // protection into a poisoned gift and guarantees it creates the next
-    // resentment rather than resolving the current one.
-    addBond('Julia', 'Evie', 9);
-    addBond('Julia', 'Finn', 8);
-    const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
-    expect(tribe.members).toContain(out.replacement);
-  });
-
-  it('a coach who is not a tribe member is never selected', () => {
-    addCoach({ name: 'Yul', tribe: 'Red' });
-    addBond('Julia', 'Evie', 9);
-    addBond('Julia', 'Finn', 8);
-    const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
-    expect(out.replacement).not.toBe('Yul');
-  });
-
-  it('filters out a coach even if one is wrongly seeded into tribe.members', () => {
-    // Real callers never put a coach in tribe.members (coaches never enter
-    // gs.activePlayers). This seeds it wrong ON PURPOSE, with Yul given the
-    // WEAKEST bond of anyone in the array (but still positive, so the
-    // unanimity check itself passes), so the plain lowest-bond sort would
-    // name Yul first if the isCoach filter were not there. A filter with no
-    // coverage is indistinguishable from a filter that does nothing.
-    addCoach({ name: 'Yul', tribe: 'Red' });
-    addBond('Julia', 'Evie', 9);
-    addBond('Julia', 'Finn', 8);
-    addBond('Julia', 'Yul', 0.5); // weakest bond in the array, but still assent
-    const rigged = { name: 'Red', members: ['Evie', 'Finn', 'Yul'] };
-    const out = offerSaveCard({ num: 6 }, 'Julia', rigged);
-    expect(out.played).toBe(true);
-    expect(out.replacement).not.toBe('Yul');
-    expect(['Evie', 'Finn']).toContain(out.replacement);
+    expect(out.replacement).toBe('Finn');
+    expect(ep.coachSaves[0].coach).toBe('Julia');
   });
 
   it('cannot be played twice', () => {
-    addBond('Julia', 'Evie', 9);
-    addBond('Julia', 'Finn', 8);
-    offerSaveCard({ num: 6 }, 'Julia', tribe);
-    const second = offerSaveCard({ num: 7 }, 'Julia', tribe);
-    expect(second.played).toBe(false);
-    expect(second.reason).toBe('already-used');
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 8);
+    expect(offerSaveCard({ num: 6 }, 'Julia', tribe).played).toBe(true);
+    expect(offerSaveCard({ num: 7 }, 'Julia', tribe).reason).toBe('already-used');
+  });
+
+  it('records the refusal so the season can talk about it', () => {
+    setup({ wayneArch: 'villain', wayneStats: { strategic: 10, loyalty: 1 } });
+    addBond('Julia', 'Wayne', -9);
+    const ep = { num: 6 };
+    offerSaveCard(ep, 'Julia', tribe);
+    expect(ep.coachSaveRefusals[0].refusedBy).toBe('Wayne');
+    expect(ep.coachSaveRefusals[0].coach).toBe('Julia');
   });
 });

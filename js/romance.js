@@ -985,8 +985,25 @@ export function checkShowmanceBreakup(ep) {
       sh.phase = 'broken-up';
       sh.breakupEp = ep.num || (gs.episode || 0) + 1;
       sh.breakupVoter = partner;
-      // Named, so the screen can say which of the four endings this was.
-      sh.breakupType = 'betrayed';
+      /* ── A BETRAYAL ALWAYS TANKS IT. IT DOES NOT ALWAYS END IT ──
+         Writing your partner's name down cost five bond and ended the
+         relationship, every time, whatever it had been — which prices a
+         six-week ride-or-die exactly like a fortnight-old flirtation. What the
+         hit does is not in question; whether the relationship survives it
+         depends on how much there was to survive on.
+         Depth is what they had before tonight: the bond, a real bonus for a
+         couple who had already sworn to go down together, and a little for
+         time served. Even at the top it is under a coin flip, because most of
+         these do not survive being voted out by the person you were with. */
+      const _before = getBond(partner, elim);
+      const _depth = _before
+        + (sh.phase === 'ride-or-die' ? 3 : 0)
+        + Math.min(2, (sh.episodesActive || 0) * 0.3);
+      const _survives = Math.random() < Math.max(0, Math.min(0.5, (_depth - 6) / 9));
+      // Named, so the screen can say which ending this was — and so the life
+      // layer knows whether these two walked out of the season as a couple.
+      // 'betrayed-survived' is read as intact, the way 'separated' is.
+      sh.breakupType = _survives ? 'betrayed-survived' : 'betrayed';
       addBond(partner, elim, -5.0); // devastating collapse
       ep.showmanceBreakup = { voter: partner, eliminated: elim, bond: getBond(partner, elim) };
     } else {

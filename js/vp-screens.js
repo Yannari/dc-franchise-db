@@ -17283,7 +17283,22 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
   }
 
   const _pairKey = list => [...(list || [])].sort().join('|');
+  /* ── ONLY THE ENDINGS THAT HAPPENED IN THE HOUSE ──
+     House Life runs BEFORE the vote. An ending caused by the eviction — the
+     partner writing their name down, or simply being the one who left — is not
+     known to anybody on these screens, and drawing it here tells the viewer who
+     is going home and how the vote went before the ceremony does. It is a
+     spoiler in the same shape as the missing hold digit was.
+     And `separated` is not a break-up at all. romance.js says so where it sets
+     the type — "not betrayal, relationship intact, just physically apart" — it
+     keeps the bond high on purpose because it is grief rather than anger, and
+     `phase` only goes to broken-up because the couple is no longer a couple IN
+     THE HOUSE. stats-export.js already refuses to read it as an ending; this
+     panel should not either. The pair leaves these rows on its own next week,
+     when one of them is no longer in the house. */
+  const _endedHere = d => d?.type === 'faded' || d?.type === 'sabotaged';
   const _endedPairs = new Set((ep?.showmanceEnded || [])
+    .filter(_endedHere)
     .filter(d => _lastStretch
       || !_stillHere(here?.showmances, sh => _pairKey(sh.players) === _pairKey(d.players)))
     .map(d => _pairKey(d.players)));
@@ -17474,14 +17489,12 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
            dissolved alliance gets, and for the same reason: a pair that simply
            stops being drawn reads as a bug rather than as a break-up. */
         const overNow = (ep?.showmanceEnded || [])
-          .filter(d => _endedPairs.has(_pairKey(d.players))
+          .filter(d => _endedHere(d) && _endedPairs.has(_pairKey(d.players))
             && (d.players || []).every(n => inHouse.has(n)));
         if (!showmances.length && !overNow.length) return '';
         /* "It just says it ended." There are four ways one of these finishes
            and the row was calling all of them the same thing. */
-        const said = d => d.type === 'betrayed' ? 'one of them wrote the other name down'
-          : d.type === 'separated' ? 'one of them was evicted'
-          : d.type === 'sabotaged' ? 'somebody in this house engineered it'
+        const said = d => d.type === 'sabotaged' ? 'somebody in this house engineered it'
           : d.type === 'faded' ? 'it ran out on its own'
           : 'it ended';
         return `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>

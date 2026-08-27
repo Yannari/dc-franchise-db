@@ -108,3 +108,75 @@ describe('the number of couples a house can carry', () => {
     expect(romance).toMatch(/const pace = arch => \(houseRules[\s\S]*?: 1\);/);
   });
 });
+
+describe('what House Life is allowed to know about a couple ending', () => {
+  // Reported as "this is spoiling me": a House Life screen said "one of them
+  // wrote the other name down", which tells the viewer who is going home AND
+  // how the vote went, before the ceremony does. House Life runs BEFORE the
+  // vote; nobody on those screens knows either thing.
+  //
+  // Measured over twelve seasons: 4 of 4 eviction-caused endings were drawn on
+  // a pre-vote screen. None are now, and the ten that happened IN the house
+  // still are.
+  //
+  // The second half is a definition. `separated` is not a break-up at all —
+  // romance.js says so where it sets the type ("not betrayal, relationship
+  // intact, just physically apart"), keeps the bond high on purpose because it
+  // is grief rather than anger, and only moves `phase` to broken-up because
+  // they are no longer a couple IN THE HOUSE. stats-export.js already refuses
+  // to read it as an ending, so the life layer can still pair them afterwards.
+  // This panel had been calling it one.
+  it('shows only the endings that happened in the house', async () => {
+    const vp = await import('../js/vp-screens.js');
+    const { simulateBBEpisode } = await import('../js/bb-run.js');
+    const { threatScore } = await import('../js/players.js');
+    const { ordinal } = await import('../js/finale.js');
+    const { addBond } = await import('../js/bonds.js');
+    const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const spread = n => Object.fromEntries(KEYS.map((k, i) => [k, 1 + ((n * 13 + i * 5) % 10)]));
+    const ARCH = ['mastermind', 'hero', 'showmancer', 'villain', 'schemer', 'goat',
+      'social-butterfly', 'loyal-soldier', 'wildcard', 'showmancer', 'perceptive-player',
+      'challenge-beast'];
+    let evictionKind = 0, leaked = 0, drawn = 0;
+    const rows = [];
+    for (let s = 0; s < 8; s++) {
+      seedGame(Array.from({ length: 16 }, (_, i) => ({ name: 'P' + i,
+        archetype: ARCH[i % ARCH.length], gender: i % 2 ? 'f' : 'm',
+        sexuality: 'straight', stats: spread(i + 1) })),
+      { episode: 0, eliminated: [], namedAlliances: [] });
+      gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+      gs.popularity = {}; gs.romanticSparks = [];
+      gs.showmances = [{ players: ['P0', 'P1'], phase: 'established', sparkEp: 0,
+        episodesActive: 5, tested: false, origin: 'arrived-together' }];
+      addBond('P0', 'P1', -2);
+      gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+      Object.assign(seasonConfig, { format: 'big-brother', jurySize: 7, bbSafetyMode: 'off',
+        finaleSize: 3, bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house',
+        romance: 'enabled', twistSchedule: [] });
+      Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, threatScore,
+        getBond, getPerceivedBond, ordinal });
+      for (let w = 0; w < 6; w++) {
+        const ep = simulateBBEpisode();
+        if (!ep) break;
+        if (!(ep.showmanceEnded || []).length) continue;
+        const houseActs = (ep.acts || []).filter(a => a.type === 'house');
+        const html = houseActs.map((a, i) => vp.rpBuildBBHouseLife(ep, a, i + 1) || '').join(' ');
+        for (const d of ep.showmanceEnded) {
+          const named = (d.players || []).every(n => html.includes(n));
+          if (d.type === 'betrayed' || d.type === 'separated') {
+            evictionKind++;
+            if (named && /wrote the other name down|was evicted/.test(html)) {
+              leaked++;
+              rows.push(`${(d.players || []).join(' & ')} (${d.type}) on a pre-vote screen`);
+            }
+          } else if (named && /bbf-ally is-over/.test(html)) drawn++;
+        }
+      }
+    }
+    expect(leaked, `House Life gave away the vote: ${rows.join(' | ')}`).toBe(0);
+    // And the ones that DID happen in the house still have to be shown, or this
+    // passes by drawing nothing at all.
+    expect(drawn, 'no in-house ending was drawn either').toBeGreaterThan(0);
+  });
+});

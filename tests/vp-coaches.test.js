@@ -42,3 +42,38 @@ describe('the coaches’ board', () => {
     expect(html).toMatch(/prefers-reduced-motion/);
   });
 });
+
+// The sealed half of the card, read like a vote. The peers signed or refused
+// before a single ballot was cast and the coach it was played for does not
+// know which — so this is read BEFORE the votes, or the ending is given away
+// twice.
+describe('the signatures are read out', () => {
+  it('renders every peer verdict with its reason, and wires its own reveals', async () => {
+    const { rpBuildCoachSignatures } = await import('../js/vp-coaches.js');
+    const html = rpBuildCoachSignatures({ num: 6, coachCardCommits: [
+      { coach: 'Julia', tribe: 'Red', signed: false, refusedBy: 'Wayne',
+        votes: [{ coach: 'Wayne', consents: false, reason: 'costs-my-protege' },
+                { coach: 'Ada', consents: true, reason: 'debt' }] }] });
+    expect(html).toContain('REFUSED');
+    expect(html).toContain('SIGNED');
+    expect(html).toContain('their own protégé');
+    expect(html).toContain('Not unanimous');
+    // Two signatures plus the outcome card = three steps.
+    expect(html).toContain("coachRevealNext('cb-sigs',3)");
+    expect(html).not.toContain('undefined');
+  });
+
+  it('draws nothing at all when no card was played', async () => {
+    const { rpBuildCoachSignatures } = await import('../js/vp-coaches.js');
+    expect(rpBuildCoachSignatures({ num: 6 })).toBe('');
+  });
+
+  it('says the card is live when every peer signed', async () => {
+    const { rpBuildCoachSignatures } = await import('../js/vp-coaches.js');
+    const html = rpBuildCoachSignatures({ num: 6, coachCardCommits: [
+      { coach: 'Julia', tribe: 'Red', signed: true, refusedBy: null,
+        votes: [{ coach: 'Wayne', consents: true, reason: 'allied' }] }] });
+    expect(html).toContain('Unanimous');
+    expect(html).toContain('they run together');
+  });
+});

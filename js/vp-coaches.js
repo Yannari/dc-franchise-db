@@ -243,6 +243,18 @@ function _shell(content, ep) {
 /* ── step visibility ── */
 .cb-step{display:none;}
 .cb-ledger-gated{display:none;}
+.cb-sig-block{margin:14px 0;padding:10px 12px;border:2px dashed rgba(245,242,230,0.25);border-radius:8px;}
+.cb-sig-title{font-family:'Caveat',cursive;font-size:22px;font-weight:700;color:var(--cb-chalk-yellow);}
+.cb-sig-sub{font-size:11px;opacity:.75;margin-bottom:8px;}
+.cb-sig-card{display:flex;align-items:center;gap:10px;padding:8px 10px;margin:6px 0;border-radius:6px;background:rgba(0,0,0,0.22);border-left:4px solid;}
+.cb-sig-yes{border-color:#3fb950;}
+.cb-sig-no{border-color:#f85149;}
+.cb-sig-head{display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px;min-width:150px;}
+.cb-sig-mark{font-family:'Caveat',cursive;font-size:24px;font-weight:700;letter-spacing:1px;min-width:110px;}
+.cb-sig-yes .cb-sig-mark{color:#3fb950;}
+.cb-sig-no .cb-sig-mark{color:#f85149;}
+.cb-sig-why{font-size:11px;opacity:.8;flex:1;}
+.cb-sig-outcome{margin-top:8px;padding:8px 10px;border-radius:6px;font-size:12px;font-weight:600;background:rgba(0,0,0,0.28);border-left:4px solid;}
 .cb-sb-card{font-size:9px;letter-spacing:1px;font-weight:800;margin-top:2px;}
 .cb-sb-card-held{color:#1f7a3d;}
 .cb-sb-card-spent{color:#8a8175;text-decoration:line-through;}
@@ -510,6 +522,86 @@ export function rpBuildCoachBoard(ep) {
         html = html.replace(`id="cb-ledger-${_slugId(g.tribe)}" class="cb-ledger cb-ledger-gated"`,
           `id="cb-ledger-${_slugId(g.tribe)}" class="cb-ledger cb-ledger-gated cb-visible"`);
       }
+    }
+  }
+  return html;
+}
+
+
+/**
+ * THE SIGNATURES — the sealed half of the save card, read like a vote.
+ *
+ * The peers signed or refused at the moment the card was committed, before a
+ * single ballot was read, and the coach it was played for did not know which.
+ * Reading them one at a time is not decoration: it is the only moment in the
+ * season where the coach-vs-coach relationship is settled in public, and a
+ * refusal read out is a season-long grudge starting on camera.
+ */
+export function rpBuildCoachSignatures(ep) {
+  const commits = ep.coachCardCommits || [];
+  if (!commits.length) return '';
+  const stKey = 'cb-sigs';
+  const total = commits.reduce((n, c) => n + (c.votes || []).length, 0);
+  const st = _ensureState(stKey, total);
+
+  const WHY = {
+    'costs-my-protege': 'it would have cost them their own protégé',
+    'returning-the-favour': 'they were refused once, and remember it',
+    'pact-already-broken': 'the pact between them was already broken',
+    'bad-blood': 'there was never going to be a favour here',
+    'rival-outbuilding': 'the coach they were asked to save has built more of this tribe',
+    'strategic': 'the arithmetic did not come out in their favour',
+    'unconvinced': 'they were not convinced',
+    'debt': 'they owed this one, and paid it',
+    'pact': 'a pact between them is still standing',
+    'allied': 'they run together',
+    'friendship': 'they are friends, and it was never in doubt',
+    'decency': 'no reason beyond the plain one',
+  };
+
+  let idx = 0;
+  const blocks = commits.map(cm => {
+    const rows = (cm.votes || []).map(v => {
+      const i = idx++;
+      return `<div id="cb-step-sigs-${i}" class="cb-step">
+        <div class="cb-sig-card ${v.consents ? 'cb-sig-yes' : 'cb-sig-no'}">
+          <div class="cb-sig-head">${_avatar(v.coach, 'cb-av-tiny')}<span>${v.coach}</span></div>
+          <div class="cb-sig-mark">${v.consents ? 'SIGNED' : 'REFUSED'}</div>
+          <div class="cb-sig-why">${WHY[v.reason] || 'no reason given'}</div>
+        </div>
+      </div>`;
+    }).join('');
+    const outcome = cm.signed
+      ? `<div class="cb-sig-outcome cb-sig-yes">Unanimous. The card is live for ${cm.coach} — if the votes come for ${cm.coach} tonight, ${cm.coach} stays.</div>`
+      : `<div class="cb-sig-outcome cb-sig-no">Not unanimous. ${cm.refusedBy || 'Somebody'} would not sign, and the card is dead the moment it is needed.</div>`;
+    return `<div class="cb-sig-block">
+      <div class="cb-sig-title">${cm.coach} played the save card</div>
+      <div class="cb-sig-sub">Sealed before a single vote was read. ${cm.coach} does not know what is in these.</div>
+      ${rows}
+      <div id="cb-step-sigs-${idx++}" class="cb-step">${outcome}</div>
+    </div>`;
+  }).join('');
+
+  const realTotal = idx;
+  _ensureState(stKey, realTotal).total = realTotal;
+
+  let html = _shell(`<div class="cb-board-bg">
+    <div class="cb-board-head">
+      <div class="cb-board-title">The Signatures</div>
+      <div class="cb-board-underline"></div>
+      <div class="cb-board-sub">Episode ${ep.num || ''} — the card only works if every coach signs</div>
+    </div>
+    ${blocks}
+    <div id="cb-controls-sigs" class="cb-controls">
+      <button class="cb-btn cb-btn-primary" onclick="coachRevealNext('cb-sigs',${realTotal})">Read Next</button>
+      <span id="cb-counter-sigs" class="cb-counter">${Math.max(0, st.idx + 1)} / ${realTotal} signatures</span>
+      <button class="cb-btn" onclick="coachRevealAll('cb-sigs',${realTotal})">Read All</button>
+    </div>
+  </div>`, ep);
+
+  if (st.idx >= 0) {
+    for (let i = 0; i <= st.idx; i++) {
+      html = html.replace(`id="cb-step-sigs-${i}" class="cb-step"`, `id="cb-step-sigs-${i}" class="cb-step cb-visible"`);
     }
   }
   return html;

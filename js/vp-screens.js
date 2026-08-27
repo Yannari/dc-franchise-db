@@ -169,7 +169,7 @@ import { rpBuildNMTitleCard, rpBuildNMSecurity, rpBuildNMGallery, rpBuildNMAssem
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext, tlsRevealAll } from './chal/truth-or-shark.js';
 import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults, rockTheDockRevealNext, rockTheDockRevealAll } from './chal/rock-the-dock.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
-import { rpBuildCoachBoard } from './vp-coaches.js';
+import { rpBuildCoachBoard, rpBuildCoachSignatures } from './vp-coaches.js';
 import { campRoster, coachesOf } from './coaches.js';
 import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTChainHunt, rpBuildTTLongboardRace, rpBuildTTResults, ttRevealNext, ttRevealAll } from './chal/tropical-takedown.js';
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
@@ -15049,6 +15049,12 @@ export function buildVPScreens(epRecord) {
       if (_evScoutHtml) vpScreens.push({ id:'emissary-scouting', label:'The Emissary', html: _evScoutHtml });
     }
     vpScreens.push({ id:'tribal', label:'Tribal Council', html: rpBuildTribal(ep) });
+    // Read BEFORE the votes. The signatures were sealed before a ballot was
+    // cast, and the coach they were played for does not know what is in them —
+    // reading them after the result would give away the ending twice.
+    if ((ep.coachCardCommits || []).length) {
+      vpScreens.push({ id:'cb-sigs', label:'The Signatures', html: rpBuildCoachSignatures(ep) });
+    }
     vpScreens.push({ id:'votes',  label:'The Votes',      html: rpBuildVotes(ep) });
     // (Standalone "The Web" + "Who Knew What" viewer screens removed — both are
     // now in the player-centric "The Web" debug tab. Per-episode snapshots are

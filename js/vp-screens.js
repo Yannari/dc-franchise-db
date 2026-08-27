@@ -170,7 +170,7 @@ import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext
 import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults, rockTheDockRevealNext, rockTheDockRevealAll } from './chal/rock-the-dock.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 import { rpBuildCoachBoard, rpBuildCoachSignatures } from './vp-coaches.js';
-import { campRoster, coachesOf } from './coaches.js';
+import { campRoster, coachesOf, isCoach as isCoachName } from './coaches.js';
 import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTChainHunt, rpBuildTTLongboardRace, rpBuildTTResults, ttRevealNext, ttRevealAll } from './chal/tropical-takedown.js';
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults, gpRevealNext, gpRevealAll } from './chal/greeces-pieces.js';
@@ -9965,8 +9965,14 @@ export function rpBuildVotingPlans(ep) {
       <div class="rp-vp-plans-row">`;
     namedAlliances.forEach((a, aIdx) => {
       const spear = allianceSpear(a.members);
-      const membersAtTribal = a.members.filter(m => tribalPlayers.includes(m));
-      const canVote = membersAtTribal.filter(m => !_vpLostVoteSet.has(m));
+      // A coach in this alliance is standing right there and holds no ballot.
+      // Filtering by tribalPlayers (the VOTER list) dropped them silently, so
+      // a camp event could announce an alliance of four and the plan below it
+      // would show three — the coach erased from a group they are genuinely
+      // in. They are listed, and marked, and never counted as a vote.
+      const _allianceCoaches = a.members.filter(m => isCoachName(m) && !tribalPlayers.includes(m));
+      const membersAtTribal = [...a.members.filter(m => tribalPlayers.includes(m)), ..._allianceCoaches];
+      const canVote = membersAtTribal.filter(m => !_vpLostVoteSet.has(m) && !_allianceCoaches.includes(m));
       const cat = a.target ? targetCategory(a.target) : { label: 'No Target', color: '#484f58' };
       const splitPlan = (ep.splitVotePlans || []).find(sp => sp.alliance === a.label);
       const _reliability = (() => {
@@ -10057,12 +10063,13 @@ export function rpBuildVotingPlans(ep) {
       membersAtTribal.forEach(member => {
         const isSpear = member === spear;
         const isConflicted = _seenConflicted.has(member);
-        const isNoVote = _vpLostVoteSet.has(member);
+        const isAllianceCoach = _allianceCoaches.includes(member);
+        const isNoVote = _vpLostVoteSet.has(member) || isAllianceCoach;
         const opacity = isNoVote ? 'opacity:0.4;' : '';
         ph += `<div class="rp-vp-member-row" style="${opacity}">
           ${rpPortrait(member, isNoVote ? '' : 'sm')}
           <div class="rp-vp-member-info">
-            <div class="rp-vp-member-name">${member}${isSpear ? ` <span class="rp-vp-spear-badge">Spearheader</span>` : ''}${isConflicted ? ` <span style="font-size:11px;color:#d29922">\u26A0</span>` : ''}${isNoVote ? ` <span style="font-size:9px;color:#f85149;font-weight:600">NO VOTE</span>` : ''}</div>
+            <div class="rp-vp-member-name">${member}${isAllianceCoach ? ` <span class="rp-vp-spear-badge" style="background:rgba(232,135,58,0.18);color:#e8873a">Coach · no vote</span>` : ''}${isSpear ? ` <span class="rp-vp-spear-badge">Spearheader</span>` : ''}${isConflicted ? ` <span style="font-size:11px;color:#d29922">\u26A0</span>` : ''}${isNoVote ? ` <span style="font-size:9px;color:#f85149;font-weight:600">NO VOTE</span>` : ''}</div>
           </div>
         </div>`;
       });

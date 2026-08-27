@@ -103,7 +103,15 @@ export function runCoachingBlock(ep, tribe, roll = Math.random, fameGapOf = defa
 
   if (coaches.length) {
     if (!ep.coachData) ep.coachData = {};
-    ep.coachData[tribeName] = { sessions, passedOver };
+    // Snapshot the card state per coach. Read live from gs on replay it would
+    // show TODAY's answer over a months-old episode; the board has to say what
+    // was true that night.
+    const cards = {};
+    for (const c of coaches) {
+      const rec = coachRecord(c.name);
+      cards[c.name] = rec ? rec.saveCard : 'unused';
+    }
+    ep.coachData[tribeName] = { sessions, passedOver, cards, peerCount: coaches.length };
   }
   return { sessions, passedOver };
 }
@@ -666,4 +674,63 @@ export function coachFallout(ep, tribe, blockResult, roll = Math.random) {
 /** Which coach passed over this contestant — used only inside coachFallout's compare-notes text. */
 function _coachOf(passedOverList, name) {
   return passedOverList.find(p => p.contestant === name)?.coach || 'their coach';
+}
+
+/**
+ * The coaches talk about the card before they ever have to use it.
+ *
+ * The save card decided a coach's life in one silent line at the moment of
+ * elimination — no build-up, no discussion, and no way for a viewer to learn
+ * the rule existed until it fired. This is the build-up: when a coach is
+ * exposed, the peers who would have to sign for them say, on camera, whether
+ * they would. It previews the real verdict (`saveCardVerdict`), so a refusal
+ * at tribal has been visible for an episode before it lands.
+ */
+export function coachCardTalk(ep, tribe, roll = Math.random) {
+  const events = [];
+  const tribeName = tribe?.name ?? tribe?.tribeName;
+  if (!tribeName) return events;
+  const coaches = coachesOf(tribeName);
+  if (coaches.length < 2) return events;   // nobody to ask, nothing to discuss
+  const members = (tribe.members || []).filter(m => !isCoach(m));
+  if (!members.length) return events;
+
+  for (const c of coaches) {
+    const rec = coachRecord(c.name);
+    if (!rec || rec.saveCard !== 'unused') continue;
+
+    // Exposed: the tribe does not like them much, or they have been ignoring
+    // most of it. Both are the states that get a coach voted out.
+    const avgBond = members.reduce((s, m) => s + getBond(c.name, m), 0) / members.length;
+    const trained = Object.keys(gs.coachTraining?.[c.name] || {}).length;
+    const exposure = Math.max(0, -avgBond) * 0.12 + Math.max(0, members.length - trained) * 0.05;
+    if (roll() >= Math.min(0.7, exposure)) continue;
+
+    const peers = coaches.filter(p => p.name !== c.name);
+    const peer = peers[Math.floor(roll() * peers.length)] || peers[0];
+    const verdict = saveCardVerdict(peer.name, c.name);
+    const pool = verdict.consents
+      ? [
+          `${c.name} raises the card with ${peer.name} — quietly, the way you ask a favour you are not sure of. ${peer.name} says yes before ${c.name} finishes asking.`,
+          `${peer.name} tells ${c.name} not to worry about the card. "If it comes to that, I sign." It is the only promise either of them has.`,
+          `${c.name} and ${peer.name} agree it without saying much: if the tribe comes for either of them, the card gets played.`,
+          `"You'd sign for me." ${c.name} means it as a question. ${peer.name} treats it as one, and answers it.`,
+        ]
+      : [
+          `${c.name} asks ${peer.name} straight out whether the card would be signed. ${peer.name} does not say no. ${peer.name} does not say yes either.`,
+          `${peer.name} listens to ${c.name} talk about the card and changes the subject. ${c.name} notices exactly how ${peer.name} did it.`,
+          `${c.name} wants the card understood in advance. ${peer.name} says it depends, and will not say on what.`,
+          `The card comes up between ${c.name} and ${peer.name}. ${peer.name} points out that it only works if everyone signs — and lets that sit there.`,
+        ];
+    events.push({
+      type: 'coachCardTalk', players: [c.name, peer.name],
+      badgeText: verdict.consents ? 'THE CARD IS PROMISED' : 'THE CARD IS NOT PROMISED',
+      badgeClass: verdict.consents ? 'green' : 'red',
+      text: pool[Math.floor(roll() * pool.length)],
+    });
+    // A promise made is worth something; a promise withheld costs.
+    addBond(c.name, peer.name, verdict.consents ? 0.4 : -0.3);
+    break;  // one card conversation per tribe per episode
+  }
+  return events;
 }

@@ -156,6 +156,7 @@ function _buildSidebarContent(ep) {
       out += `<div class="cb-sb-coach">
         <div class="cb-sb-coach-name">${_avatar(coach, 'cb-av-tiny cb-av-onlight')} ${coach}</div>
         <div class="cb-sb-banked">Banked: <span class="cb-sb-banked-num">${banked.toFixed(2)}</span></div>
+        <div class="cb-sb-card ${(t.cards?.[coach] ?? 'unused') === 'unused' ? 'cb-sb-card-held' : 'cb-sb-card-spent'}">Save card: ${(t.cards?.[coach] ?? 'unused') === 'unused' ? 'HELD' : 'SPENT'}</div>
         <div class="cb-sb-standing">
           ${trained.map(o => `<span class="cb-sb-tag ${o.gain < 0 ? 'cb-sb-tag-damaged' : 'cb-sb-tag-in'}">${_avatar(o.name, 'cb-av-tiny cb-av-onlight')} ${o.name}</span>`).join('')}
           ${passed.map(n => `<span class="cb-sb-tag cb-sb-tag-out" title="no session — passed over by ${coach}">${_avatar(n, 'cb-av-tiny cb-av-onlight')} ${n}</span>`).join('')}
@@ -164,6 +165,17 @@ function _buildSidebarContent(ep) {
     });
     out += `</div>`;
   });
+
+  // The rule, said once, where it is being used. Nothing in the season ever
+  // told the viewer what the card was or who gets a say in it.
+  const _anyPeer = Object.values(data).some(t => (t.peerCount || 0) > 1);
+  out += `<div class="cb-sb-legend">
+    <div class="cb-sb-legend-title">The Save Card</div>
+    <div>One per coach. If the tribe votes a coach out, ${_anyPeer
+      ? 'the other coaches on that team can spend it to keep them — and every one of them has to agree. A single refusal sends the coach home.'
+      : 'a coach needs another coach on their team to agree to it. Alone, there is nobody to ask, and the card cannot be played.'}</div>
+    <div>Spent, it costs a contestant: the coach names who goes instead.</div>
+  </div>`;
 
   return out;
 }
@@ -231,6 +243,12 @@ function _shell(content, ep) {
 /* ── step visibility ── */
 .cb-step{display:none;}
 .cb-ledger-gated{display:none;}
+.cb-sb-card{font-size:9px;letter-spacing:1px;font-weight:800;margin-top:2px;}
+.cb-sb-card-held{color:#1f7a3d;}
+.cb-sb-card-spent{color:#8a8175;text-decoration:line-through;}
+.cb-sb-legend{margin-top:10px;padding:8px 9px;border-top:2px dashed rgba(43,28,14,0.3);font-size:10px;line-height:1.45;color:#3d2a15;}
+.cb-sb-legend-title{font-family:'Caveat',cursive;font-weight:700;font-size:16px;color:#2b1c0e;margin-bottom:3px;}
+.cb-sb-legend div+div{margin-top:4px;}
 .cb-ledger-gated.cb-visible{display:block;}
 .cb-step.cb-visible{display:block;}
 

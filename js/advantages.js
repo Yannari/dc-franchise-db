@@ -1201,7 +1201,12 @@ export function pickNomineeWithDrama(pool, weightFn) {
  * than the targeting rule and a hidden hand in a pre-merge vote makes the vote
  * unreadable.
  */
-const COACH_PLAYABLE = new Set(['kip', 'fake-idol', 'team-switch', 'loan', 'second-opinion']);
+// Real advantage types only. This set previously named 'team-switch', 'loan'
+// and 'second-opinion' — none of which are ever created anywhere, and the
+// catalog's key is `teamSwap`, so even the first would never have matched. A
+// permission list naming three things that do not exist grants nothing; the
+// two real entries were carrying the whole rule by themselves.
+const COACH_PLAYABLE = new Set(['kip', 'fake-idol', 'teamSwap']);
 
 export function coachCanPlay(type) {
   return COACH_PLAYABLE.has(type);

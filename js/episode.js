@@ -38,7 +38,7 @@ import { retrofitFranchiseMeta } from './franchise-meta.js';
 import { survivalFlavor, fillVocab } from './settings.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
-import { applyCoachElimination, coachFallout, maybeSaveCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
+import { applyCoachElimination, coachCardTalk, coachFallout, maybeSaveCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
 import { coachesOf } from './coaches.js';
 import { runCoachDealBlock } from './coach-deals.js';
 
@@ -2370,7 +2370,10 @@ export function simulateEpisode() {
       // competing for the same pool. `runCoachDealBlock` is itself a no-op
       // below that, so it is safe to call on every tribe every episode.
       const dealEvents = runCoachDealBlock(ep, tribe, roll);
-      const coachEvents = [...falloutEvents, ...dealEvents];
+      // The card gets discussed before it ever has to be played — otherwise a
+      // refusal at tribal arrives with no build-up and no explanation.
+      const cardEvents = coachCardTalk(ep, tribe, roll);
+      const coachEvents = [...falloutEvents, ...dealEvents, ...cardEvents];
       if (coachEvents.length) {
         if (!ep.campEvents) ep.campEvents = {};
         if (!ep.campEvents[tribeKey]) ep.campEvents[tribeKey] = { pre: [], post: [] };

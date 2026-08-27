@@ -385,7 +385,27 @@ export function shieldEvidence(ep, rng = Math.random, night = null) {
   // silently could not fire on night one would be a suppression nobody wrote.
   if (!night || !night.murderTarget) return [];
 
-  const blocked = !!night.blocked && night.murderTarget === s.holder;
+  // READ OFF THE LEDGER, NOT OFF THE NIGHT'S SENTENCE (whole-plan review, F2).
+  //
+  // This was `!!night.blocked && night.murderTarget === s.holder`, which
+  // assumes a night has exactly one target — and the `double` variant has two.
+  // When the SECOND victim is the one holding the Shield, murder.js writes a
+  // `blockedMurders` record for them while `resolveMurder` correctly returns
+  // `blocked: false` (the first victim did die) and `murderTarget` is the
+  // first victim's name. So the holder was chosen, went for, and saved, and
+  // this branch read `false` and narrated the `unused` line instead: "the
+  // Traitors had a protected player in front of them and went elsewhere",
+  // over a night they went straight at them. That is the ledger-disagreement
+  // class this plan carries a standing requirement for — the shield record
+  // says `outcome:'blocked'` while the sentence says they were never
+  // approached. Reproduced at seeds 613 (ep3) and 1086 (ep5); 2 in 1,200
+  // seasons, 0.60% of doubles.
+  //
+  // `gs.tr.blockedMurders` is the one place every block is written, by every
+  // path, whichever slot of whichever variant it happened in. Asking it about
+  // THIS HOLDER cannot go out of step with it the way a reconstruction from
+  // `night.blocked` did.
+  const blocked = (gs.tr?.blockedMurders || []).some(b => b.ep === ep && b.target === s.holder);
   const witnesses = s.witnesses.filter(n => living.includes(n));
 
   if (blocked) {

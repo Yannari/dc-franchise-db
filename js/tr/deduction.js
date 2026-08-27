@@ -696,8 +696,6 @@ export function murderEvidence(ep, rng = Math.random) {
   // know who was protected. Same fact, same price, an audience of three or
   // four instead of the castle. Deleting `!blocked` here would hand that read
   // to everybody, which is the leak the suppression test exists to catch.
-  const blocked = (gs.tr?.blockedMurders || []).some(b => b.ep === round.ep);
-
   // THE ATTEMPT, not the death — and the difference is what keeps `!blocked`
   // load-bearing. The harness records `murderTarget` on every night the
   // conclave chose somebody and `murdered` only when they actually died, so a
@@ -708,6 +706,21 @@ export function murderEvidence(ep, rng = Math.random) {
   // works. `?? round.murdered` keeps older round records (and fixtures that
   // record only the death) reading correctly.
   const victim = round.murderTarget ?? round.murdered;
+
+  // SUPPRESSED FOR THE PERSON WHO SURVIVED IT, NOT FOR THE WHOLE NIGHT
+  // (whole-plan review, F2). This was `.some(b => b.ep === round.ep)`, so any
+  // block anywhere on the night silenced the channel entirely. The `double`
+  // variant kills two people, and when only the SECOND of them holds a Shield
+  // the night carries a real body AND a block: the channel went quiet over a
+  // corpse and nobody who spent the evening pushing the person who actually
+  // died was indicted for it. Reproduced at seeds 613 (ep3) and 1086 (ep5).
+  //
+  // The reason for the suppression is unchanged and still exact — nobody died,
+  // so nobody can be indicted for having wanted them gone — and it is a
+  // statement about THIS victim, so it is now asked about this victim. On
+  // every single-target night the two forms are identical, which is why the
+  // eleven deduction bands do not move.
+  const blocked = (gs.tr?.blockedMurders || []).some(b => b.ep === round.ep && b.target === victim);
 
   if (victim && !blocked) {
     // You pushed their name at the table, and that night they died.

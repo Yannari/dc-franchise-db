@@ -64,7 +64,7 @@ import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { resetKnowledge, ALIGNMENT_CRED_CEILING } from '../js/knowledge.js';
 import { recordAlignment, alignmentAt } from '../js/tr/roles.js';
-import { seedTraitorKnowledge } from '../js/tr/deduction.js';
+import { seedTraitorKnowledge, murderEvidence } from '../js/tr/deduction.js';
 import { grantShield, isShielded, resolveMurder, formPreference } from '../js/tr/murder.js';
 import { runRoundTable } from '../js/tr/roundtable.js';
 import { awardShield, liveShield, shieldSeenBy, shieldEvidence, expireShields,
@@ -437,6 +437,90 @@ describe('only the people who saw it can read the night that followed', () => {
     expect(blockedShields, 'no Shield ever blocked a murder in 200 seasons').toBeGreaterThan(0);
     expect(untested.length, 'the liability read never fired').toBeGreaterThan(100);
     expect(nearly.length, 'the blocked-night read is unreachable').toBeGreaterThan(0);
+  });
+
+  it('a night with TWO names on it still knows which of them it failed to reach', () => {
+    // ASSERTED WHERE IT IS DECIDED, BECAUSE THE STATE IS ALL BUT UNREACHABLE
+    // BY SAMPLING. A `double` whose SECOND victim happens to be the one
+    // holding the Shield occurs twice in 1,200 seasons — 2 of 331 doubles,
+    // 0.60%. Task 4 of this plan shipped a guard a mutation survived over a
+    // state that arose 22 times in 400 seasons; this one is thirty times
+    // rarer, so a population arm here would be theatre. The night is built
+    // instead, exactly, and the two readers are run over it directly.
+    //
+    // WHAT WENT WRONG. `resolveMurder` returns `blocked: false` on such a
+    // night — correctly, the FIRST victim died — while writing a
+    // `blockedMurders` record for the second. Both readers reconstructed
+    // "was tonight a block?" for themselves instead of asking that ledger:
+    //   - powers.js narrated `unused`, "the Traitors had a protected player
+    //     in front of them and went elsewhere", over a night they went
+    //     straight at the holder and were stopped. The shield record says
+    //     `outcome: 'blocked'` in the same breath. That is the standing
+    //     ledger-agreement requirement, broken.
+    //   - deduction.js suppressed the whole `pushedThenDied` channel over a
+    //     night with a real body in it, so nobody who spent the evening
+    //     pushing the person who actually died was indicted for it.
+    // Reproduced in real seasons at seeds 613 (ep3) and 1086 (ep5).
+    const T = CAST10.slice(0, 3);
+    const [dead, holder] = [CAST10[3], CAST10[4]];
+    const pusherOfDead = CAST10[5], pusherOfHolder = CAST10[8];
+    world(CAST10, T);
+
+    const ep = 3;
+    const sh = awardShield(holder, [[holder, ...CAST10.slice(5)]], ep, seededRng(9));
+    // The witnesses are what this channel writes TO, so the arm is worthless
+    // without at least one who is neither the holder nor a pusher.
+    sh.witnesses = [CAST10[6], CAST10[7]];
+
+    // THE TABLE THAT CAME FIRST — both readers take their pushers off it, and
+    // the night is written back onto the round it produced.
+    gs.tr.rounds = [{ ep, banished: null, murderTarget: dead, murdered: dead,
+      accusations: [{ accuser: pusherOfDead, target: dead },
+        { accuser: pusherOfHolder, target: holder }],
+      ballots: [{ voter: pusherOfDead, voted: dead, channel: 'banishment' },
+        { voter: pusherOfHolder, voted: holder, channel: 'banishment' }] }];
+
+    // THE NIGHT, IN THE SHAPE resolveMurder LEAVES IT. `dead` died; `holder`
+    // was the second name and the Shield stopped it. Both facts are on the
+    // ledger; `blocked` on the night object refers to the first victim only.
+    gs.tr.blockedMurders = [{ ep, target: holder }];
+    gs.activePlayers = gs.activePlayers.filter(n => n !== dead);
+    const night = { ep, murderTarget: dead, blocked: false, victim: dead,
+      variant: 'double', variantData: { victims: [dead], secondBlocked: holder } };
+
+    capture.on = true;
+    learnCalls.length = 0;
+    const shieldReads = shieldEvidence(ep, seededRng(11), night);
+    capture.on = false;
+
+    const kinds = new Set(shieldReads.map(r => r.kind));
+    expect(shieldReads.length, 'the Shield channel said nothing at all on a night it '
+      + 'was spent — the arm is vacuous').toBeGreaterThan(0);
+    expect(kinds, 'the Shield was USED and the channel narrated it as untouched: the shield '
+      + `record says outcome=blocked while the sentence says the Traitors went nowhere near ${holder}`)
+      .not.toContain('shield-untested');
+    expect([...kinds], 'the blocked reading did not fire for the holder of a Shield that blocked')
+      .toContain('pushed-then-nearly-died');
+    // THE SENTENCE ITSELF, not just the branch label — a key nobody honours is
+    // the defect shape Task 8 recorded twice.
+    for (const w of learnCalls) {
+      expect(w.source, `a Shield read on a blocked night still says the Traitors could not touch `
+        + `anybody: "${w.source}"`).not.toMatch(/could not touch/);
+    }
+    // AND THE LEDGER AGREES WITH ITSELF: liveShield's own outcome and the
+    // sentence are now both derived from `blockedMurders`.
+    expect(liveShield(ep).holder).toBe(holder);
+
+    // ── THE SECOND READER, over the same round ──────────────────────────
+    //
+    // murderEvidence reads the round that just CLOSED, so it is asked at
+    // `ep + 1` about the round written above.
+    const murderReads = murderEvidence(ep + 1, seededRng(13));
+    expect(murderReads.map(r => r.kind), 'a real body on a night that also carried a block, and '
+      + 'the pushed-then-died channel stayed silent over it — the suppression is for the person '
+      + 'who SURVIVED, not for the night').toContain('pushed-then-died');
+    expect(new Set(murderReads.map(r => r.subject)), 'the channel indicted somebody other than '
+      + `the person who pushed ${dead}`).toEqual(new Set([pusherOfDead]));
   });
 
   it('never learns an alignment above `deduced`, and never at `observed`', () => {

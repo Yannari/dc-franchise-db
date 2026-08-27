@@ -24,6 +24,7 @@ import { learn } from '../knowledge.js';
 import { alignmentAt } from './roles.js';
 import { alignmentFactId, suspicionBoard, chooseBanishmentVote, recordRound, revealCascade } from './deduction.js';
 import { exitSpeech } from './exit.js';
+import { lineFor } from './castle/lines.js';
 import { daggerWeights, daggerDrawnAt, DAGGER_VOTES } from './powers.js';
 
 /**
@@ -102,8 +103,62 @@ function tally(ballots, weights) {
   return t;
 }
 
-/** Run one Round Table end to end. Returns the round record, already stored. */
-export function runRoundTable(ep, rng = Math.random) {
+// WHAT A TRAITOR NAMING A TRAITOR SOUNDS LIKE, and why this pool exists at all.
+//
+// Plan 6 Task 6 made the pact a price rather than a bar, so a Traitor CAN write
+// a fellow's name down — and the season then said nothing about it. No event, no
+// thread beat, no exit line: the single most dramatic thing the format does
+// produced not one sentence anywhere. Task 7 is where the format's betrayals
+// mostly happen, so it is where the silence gets closed.
+//
+// Two rules bind these lines. They are chosen by `lineFor` and take NO rng draw,
+// so adding to the pool cannot reroute a season (see tr/castle/lines.js). And
+// every one of them may only assert what the record itself guarantees: that
+// `voter` and `target` were both in the pact on this night and that the voter
+// wrote the other's name down. Nothing here may claim the vote landed, that the
+// room noticed, or that anybody was cleared — Task 3 measured that this
+// knowledge model cannot exonerate anyone, so a betrayal's fallout is shock and
+// suspicion and never innocence.
+const BETRAYAL_LINES = [
+  '{voter} writes down the name of somebody {voter} shared the turret with.',
+  'The pact is worth less to {voter} tonight than what is left on the table: {target}, in {voter}’s own hand.',
+  '{voter} names {target} — and only the two of them know what that ballot really is.',
+  'Whatever {voter} and {target} swore upstairs, {voter} has just put it on a slate.',
+];
+
+/**
+ * Every ballot at this table that one Traitor cast against another.
+ *
+ * A RECORD, not a mechanism: nothing in the engine reads it, exactly like
+ * `banishedWasTraitor` and `aliveAtVote`. It reads ground truth because it is a
+ * record of what happened rather than of what anybody believed, and it is the
+ * only place the season can say a betrayal occurred at all.
+ */
+function betrayals(ballots, ep) {
+  const out = [];
+  for (const b of ballots) {
+    if (!b.voted || b.channel !== 'banishment') continue;
+    if (alignmentAt(b.voter, ep) !== 'traitor') continue;
+    if (alignmentAt(b.voted, ep) !== 'traitor') continue;
+    out.push({ voter: b.voter, target: b.voted,
+      line: lineFor(BETRAYAL_LINES, `tr-betrayal|${ep}`, { voter: b.voter, target: b.voted }) });
+  }
+  return out;
+}
+
+/**
+ * Run one Round Table end to end. Returns the round record, already stored.
+ *
+ * `reveal` is the endgame's one change to this file (spec §8, Plan 6 Task 7).
+ * A player banished in the finale does not say what they were, so the reveal
+ * cascade — the mechanism that converts a round of meaningless ballots into
+ * evidence, and the reason late tables are sharper than early ones — is
+ * switched OFF there. Passing `false` must not change anything else: the
+ * debate, the ballots, the tie rule and the exit speech all run as they always
+ * do, and the round record still carries `banishedWasTraitor` because that is
+ * the export shape and the audience is not the room.
+ */
+export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
   const living = [...(gs.activePlayers || [])];
   const accusations = debate(ep, rng);
 
@@ -159,7 +214,7 @@ export function runRoundTable(ep, rng = Math.random) {
 
   const wasTraitor = alignmentAt(banished, ep) === 'traitor';
   const round = { ep, banished, banishedWasTraitor: wasTraitor, murdered: null,
-    ballots, revotes, accusations };
+    ballots, revotes, accusations, betrayals: betrayals(ballots, ep) };
   if (daggerHolder) {
     // Recorded on the round, because the room watched it happen: the draw is
     // public even though the win was not. `votes` is read off the exported
@@ -175,7 +230,7 @@ export function runRoundTable(ep, rng = Math.random) {
   }
   recordRound(round);
   gs.activePlayers = living.filter(n => n !== banished);
-  revealCascade(banished, wasTraitor, ep, rng);
+  if (reveal) revealCascade(banished, wasTraitor, ep, rng);
   // THE SPEECH, on the round record where the export shape and the VP can read
   // it. Generated from what the LEAVER believes, so it must run after the
   // removal — a banished player names somebody still in the castle.

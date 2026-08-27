@@ -826,7 +826,13 @@ describe('and it is still there at the end: the Dagger reaches the endgame', () 
     for (const s of ss) {
       for (const d of s.daggers) {
         if (d.outcome !== 'played') continue;
-        const round = s.rounds.find(r => r.ep === d.playedEp);
+        // BOTH LISTS, because a kept Dagger's whole purpose is to reach the
+        // last table and `playTraitorsSeason` hands the endgame's tables back
+        // separately from the mandated season's (js/tr/headless.js explains
+        // why). Searching `s.rounds` alone made this assertion go red on the
+        // very state spec 7.3 wants: a Dagger drawn in the finale.
+        const round = [...s.rounds, ...(s.endgame?.rounds || [])]
+          .find(r => r.ep === d.playedEp);
         expect(round, `a Dagger was drawn at ep ${d.playedEp}, where no table sat`).toBeTruthy();
         expect(round.dagger?.holder, 'a Dagger was drawn and the round did not record it')
           .toBe(d.holder);

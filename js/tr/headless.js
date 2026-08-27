@@ -18,6 +18,7 @@ import { resolveMurder } from './murder.js';
 import { runWindow, startRoundBudget } from './events.js';
 import { runMission, POT_CEILING } from './missions.js';
 import { shieldEvidence, expireShields, settleDaggers } from './powers.js';
+import { runEndgame } from './endgame.js';
 
 // TASK 6 WIRING DECISION: the castle event pool is now live in every real
 // season. Side-effect imports only — nothing here is called directly; each
@@ -390,11 +391,29 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
       castleEvents, budget: { ...gs.tr.roundBudget } });
   }
 
-  const survivingTraitors = livingTraitors(ep);
+  // THE ENDGAME (spec 8), and it is the reason a season can now END rather
+  // than merely stop. The loop above exits on the format's own conditions —
+  // the pact is dead, or the room is down to three, or the Faithfuls no longer
+  // outnumber them — and every one of those used to be where the record simply
+  // stopped being written. From here the survivors are asked the private
+  // question instead of the public one, and the money finally has a reader.
+  const mandatedRounds = gs.tr.rounds.length;
+  const endgame = runEndgame(ep, rng);
+
   return {
     traitors,
     log,
-    rounds: gs.tr.rounds,
+    // THE MANDATED SEASON'S ROUNDS, and the slice is deliberate. The endgame's
+    // tables are Round Tables and are recorded on `gs.tr.rounds` like any
+    // other, but they are a different game — three or four people, no reveal
+    // to reason from, and a question that is not "who is the Traitor" — and
+    // the calibration bands are population measurements of the deduction
+    // engine over the mandated season. Folding a handful of three-ballot
+    // finale tables into that population would move those bands by changing
+    // WHAT IS BEING COUNTED rather than by changing the engine, which is the
+    // exact confusion the bands exist to prevent. They are handed back in
+    // `endgame.rounds` instead, and nothing is lost.
+    rounds: gs.tr.rounds.slice(0, mandatedRounds),
     // Nights the Traitors struck and nobody died. Copied out because the next
     // season replaces gs wholesale.
     blockedMurders: [...(gs.tr.blockedMurders || [])],
@@ -426,6 +445,13 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     pot: gs.tr.pot,
     potCeiling: gs.tr.potCeiling,
     survivors: [...(gs.activePlayers || [])],
-    winner: survivingTraitors.length ? 'traitors' : 'faithfuls',
+    // The choices, the finale tables and who walked out with the pot. The
+    // whole phase record — see js/tr/endgame.js.
+    endgame,
+    // WHO WON IS NOW DECIDED BY THE ENDGAME AND NOT BY THE LOOP EXITING. It is
+    // the same question answered at the same moment it is really answered:
+    // any Traitor left standing when the room stops banishing takes all of the
+    // money, and only a castle with nobody in a cloak splits it.
+    winner: endgame.winner,
   };
 }

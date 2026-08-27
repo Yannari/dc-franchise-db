@@ -375,11 +375,27 @@ const POT_GREED = 0.9;
  */
 function pactReluctance() {
   const living = (gs.activePlayers || []).length;
-  const ceiling = gs.tr?.potCeiling || 0;
-  const potShare = _pactPotBlind || ceiling <= 0
-    ? 0 : Math.max(0, Math.min(1, (gs.tr?.pot || 0) / ceiling));
   const cover = Math.max(0, (living - PACT_FLOOR) / PACT_SPAN);
-  return PACT_LOYALTY * cover * cover * (1 - POT_GREED * potShare);
+  return PACT_LOYALTY * cover * cover * (1 - POT_GREED * potShare());
+}
+
+/**
+ * How much of the ceiling is actually on the table, 0..1 — and 0 to anybody
+ * while the pot is held out.
+ *
+ * EXPORTED BECAUSE THERE ARE TWO READERS NOW AND THERE MUST NOT BE TWO COPIES.
+ * The pact's price above is one; js/tr/endgame.js is the other, where the same
+ * money decides whether a Traitor forces one more table rather than banking a
+ * share. Task 2 of this plan lost a whole guard to a rule that existed in two
+ * places and drifted, so the hold-out below has to be a property of the READER
+ * and not of each caller — a second private copy in endgame.js would leave that
+ * file's arm of the missions guard silently unblinded, which is precisely how
+ * this function came to be extracted.
+ */
+export function potShare() {
+  const ceiling = gs.tr?.potCeiling || 0;
+  if (_pactPotBlind || ceiling <= 0) return 0;
+  return Math.max(0, Math.min(1, (gs.tr?.pot || 0) / ceiling));
 }
 
 // THE POT IS NOW A READER, AND THAT BREAKS AN EQUIVALENCE GUARD ON PURPOSE.

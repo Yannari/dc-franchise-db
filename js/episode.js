@@ -705,7 +705,7 @@ export function generateSurvivalEvents(ep) {
               } else if (_rS.loyalty >= 7 || _rS.social >= 7) {
                 // Grateful/humble — rebuilds bonds
                 _returnText = _pick([
-                  `${_replacement} comes back with tears in ${_rPr.pos} eyes. "I didn't think I'd get this chance. I'm not wasting it." ${_rPr.Sub} hugs the first person ${_rPr.sub} ${_rPr.sub==='they'?'see':'sees'}. The tribe is shaken — but there's something genuine about the gratitude.`,
+                  `${_replacement} comes back with tears in ${_rPr.posAdj} eyes. "I didn't think I'd get this chance. I'm not wasting it." ${_rPr.Sub} hugs the first person ${_rPr.sub} ${_rPr.sub==='they'?'see':'sees'}. The tribe is shaken — but there's something genuine about the gratitude.`,
                   `"I know I was voted out. I know why. And I'm not holding grudges," ${_replacement} says. "I just want to play. Whatever happened before — clean slate." Some believe ${_rPr.obj}. Some don't.`,
                 ], _replacement + 'grateful');
                 gs.activePlayers.filter(p => p !== _replacement).forEach(p => addBond(_replacement, p, 0.3));
@@ -1317,7 +1317,7 @@ export function simulateEpisode() {
     ep.twistNarrativeEvents = ep.twistNarrativeEvents || {};
     const _amNarrKey = gs.isMerged ? 'merge' : _amTribe;
     ep.twistNarrativeEvents[_amNarrKey] = { type: 'rumor', players: [_amW], text:
-      `The tribe looks up. ${_amW} is walking into camp. ${_amPr.Sub} won the Aftermayhem — fought through traps, board games, and brutal challenges to earn ${_amPr.pos} way back. Some faces light up. Others go very, very still. The game just changed.` };
+      `The tribe looks up. ${_amW} is walking into camp. ${_amPr.Sub} won the Aftermayhem — fought through traps, board games, and brutal challenges to earn ${_amPr.posAdj} way back. Some faces light up. Others go very, very still. The game just changed.` };
     if (!ep.campEvents) ep.campEvents = {};
     const _amCampKey = gs.isMerged ? (gs.mergeName || 'merge') : _amTribe;
     if (!ep.campEvents[_amCampKey]) ep.campEvents[_amCampKey] = { pre: [], post: [] };
@@ -2398,7 +2398,7 @@ export function simulateEpisode() {
       const texts = [
         `${r.name} comes back from the Journey empty-handed — and without a vote. ${p.Sub} say${p.sub==='they'?'':'s'} nothing about what happened. The tribe notices the silence.`,
         `${r.name} returns from the Journey. ${p.Sub} lost. No advantage, no vote at the next tribal. ${p.Sub} sit${p.sub==='they'?'':'s'} by the fire and stare${p.sub==='they'?'':'s'} at the flames.`,
-        `${r.name} walks back into camp with nothing. The Journey cost ${p.obj} ${p.pos} vote. The tribe reads it on ${p.pos} face before ${p.sub} say${p.sub==='they'?'':'s'} a word.`,
+        `${r.name} walks back into camp with nothing. The Journey cost ${p.obj} ${p.posAdj} vote. The tribe reads it on ${p.posAdj} face before ${p.sub} say${p.sub==='they'?'':'s'} a word.`,
       ];
       const text = texts[([...r.name].reduce((s,c) => s + c.charCodeAt(0), 0) + ep.num) % texts.length];
       evts.unshift({ type: 'journeyLoss', players: [r.name], text });
@@ -3473,7 +3473,7 @@ export function simulateEpisode() {
             ? _pick([
               `${detector} pulls ${ct.thrower} aside after the challenge. "You threw that." ${ct.thrower} starts to deny it. ${detector}: "Don't. I watched you. You're better than that performance and we both know it." The accusation hangs in the air.`,
               `"Interesting performance out there, ${ct.thrower}," ${detector} says at camp. The sarcasm is barely concealed. "Funny how someone with ${tS.physical >= 7 ? 'your physical ability' : 'your track record'} suddenly can't keep up." ${ct.thrower}'s jaw tightens.`,
-              `${detector} to confessional: "I've seen ${ct.thrower} compete. That was not ${tPr.pos} best. That was ${tPr.pos} worst — on purpose. ${tPr.Sub} ${tPr.sub==='they'?'think':'thinks'} nobody noticed. I noticed."`,
+              `${detector} to confessional: "I've seen ${ct.thrower} compete. That was not ${tPr.posAdj} best. That was ${tPr.posAdj} worst — on purpose. ${tPr.Sub} ${tPr.sub==='they'?'think':'thinks'} nobody noticed. I noticed."`,
             ])
             : _pick([
               `${detector} doesn't say anything to ${ct.thrower} directly. But at camp, ${dPr.sub} ${dPr.sub==='they'?'mention':'mentions'} to someone: "Did that challenge look off to you? ${ct.thrower} just... stopped trying." The seed is planted.`,
@@ -3620,11 +3620,11 @@ export function simulateEpisode() {
     const _postArr = Array.isArray(_ce) ? _ce : (_ce.post = _ce.post || []);
     const _sp = pronouns(sharedTw.sharedWith);
     _postArr.unshift({ type: 'bond', players: [ep.immunityWinner, sharedTw.sharedWith],
-      text: `${ep.immunityWinner} walks over to ${sharedTw.sharedWith} and places the necklace around ${_sp.pos} neck. No words needed. The tribe watches in silence.` });
+      text: `${ep.immunityWinner} walks over to ${sharedTw.sharedWith} and places the necklace around ${_sp.posAdj} neck. No words needed. The tribe watches in silence.` });
     if (sharedTw.snubbed) {
       const _snP = pronouns(sharedTw.snubbed);
       _postArr.push({ type: 'doubt', players: [sharedTw.snubbed, ep.immunityWinner],
-        text: `${sharedTw.snubbed} stares at the ground. ${_snP.Sub} thought that necklace was coming ${_snP.pos} way. It didn't. That changes things.` });
+        text: `${sharedTw.snubbed} stares at the ground. ${_snP.Sub} thought that necklace was coming ${_snP.posAdj} way. It didn't. That changes things.` });
     }
   }
   if (dblSafeTw?.secondImmune && _mergeCampKey && ep.campEvents?.[_mergeCampKey]) {

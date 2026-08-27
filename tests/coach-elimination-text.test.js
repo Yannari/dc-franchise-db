@@ -49,13 +49,13 @@ describe('the coaching section prints before its own fallout', () => {
     for (let i = 0; i < 10 && !hit; i++) {
       const season = await runHeadlessSeason({ twist: 'coaches', coachesPerTribe: 2, captureText: true });
       hit = season.episodes.find(e => e.text && e.text.includes('=== COACHING ===')
-        && /BREAKTHROUGH|LEFT OFF AGAIN|PATTERN NOTICED|COMPARING NOTES|BAD ADVICE|DEFENDED THE COACH|BONDING|CAUGHT BETWEEN COACHES/.test(e.text));
+        && /BREAKTHROUGH|LEFT OFF AGAIN|PATTERN NOTICED|COMPARING NOTES|BAD ADVICE|DEFENDED THE COACH|PROTEGES COMPARE|CAUGHT BETWEEN COACHES/.test(e.text));
     }
     expect(hit, 'no episode produced both a coaching section and a fallout event to check ordering with').toBeTruthy();
 
     const coachingIdx = hit.text.indexOf('=== COACHING ===');
     const falloutMarkers = ['[BREAKTHROUGH]', '[LEFT OFF AGAIN]', '[PATTERN NOTICED]', '[COMPARING NOTES]',
-      '[BAD ADVICE]', '[DEFENDED THE COACH]', '[BONDING]', '[CAUGHT BETWEEN COACHES]'];
+      '[BAD ADVICE]', '[DEFENDED THE COACH]', '[PROTEGES COMPARE]', '[CAUGHT BETWEEN COACHES]'];
     for (const marker of falloutMarkers) {
       const idx = hit.text.indexOf(marker);
       if (idx === -1) continue;

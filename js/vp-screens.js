@@ -170,6 +170,7 @@ import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext
 import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults, rockTheDockRevealNext, rockTheDockRevealAll } from './chal/rock-the-dock.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 import { rpBuildCoachBoard } from './vp-coaches.js';
+import { campRoster, coachesOf } from './coaches.js';
 import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTChainHunt, rpBuildTTLongboardRace, rpBuildTTResults, ttRevealNext, ttRevealAll } from './chal/tropical-takedown.js';
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults, gpRevealNext, gpRevealAll } from './chal/greeces-pieces.js';
@@ -7652,7 +7653,11 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
   const isMerge = tribeName === 'merge' || tribeName === (gs.mergeName || 'merged');
   const displayName = isMerge ? (gs.mergeName || 'Merged Tribe') : tribeName;
   const safeId = tribeName.replace(/\W/g, '') + phase + ep.num;
-  const portraitMembers = members.filter(n => n);
+  // Coaches live at this camp without ever being in tribe.members — that array
+  // answers "who competes and votes", and using it as the camp roster is what
+  // made a coach invisible on their own tribe's screen.
+  const _coachNames = isMerge ? [] : coachesOf(tribeName).map(c => c.name);
+  const portraitMembers = campRoster(tribeName, members.filter(n => n));
   // Extended search pool: union of episode-snapshot tribe members (end-of-ep state)
   // so players who swapped INTO this tribe this episode can still get icons matched.
   const snapTribeMembers = (ep.gsSnapshot?.tribes || []).find(t => t.name === tribeName)?.members
@@ -7667,7 +7672,9 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
   // Full tribe portrait row
   if (portraitMembers.length) {
     html += `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:28px;flex-wrap:wrap">
-      ${portraitMembers.map(n => rpPortrait(n)).join('')}
+      ${portraitMembers.map(n => _coachNames.includes(n)
+        ? `<div style="position:relative;display:inline-block">${rpPortrait(n)}<div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:${tc};color:#0b0b0b;font-size:8px;font-weight:800;letter-spacing:1px;padding:1px 5px;border-radius:3px;white-space:nowrap">COACH</div></div>`
+        : rpPortrait(n)).join('')}
     </div>`;
   }
 

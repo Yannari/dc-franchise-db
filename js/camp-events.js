@@ -13,6 +13,7 @@ import { generateSocialManipulationEvents } from './social-manipulation.js';
 import { simulateTribeChallenge } from './challenges-core.js';
 import { eventAllowedInSetting, settingWeightMod, settingProfile, fillVocab, currentSetting, settingReskin } from './settings.js';
 import { reputationModifier } from './reputation.js';
+import { campRoster } from './coaches.js';
 import { recordIntimidation, recordProtection, recordBetrayal } from './relationship-events.js';
 import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess } from './camp-access.js';
 import { ensureIntentions, evolveIntentions, getIntentions, evaluateEndgameBeatability } from './intentions.js';
@@ -6908,7 +6909,15 @@ export function generateCampEvents(ep, phase = 'both') {
   }
 
   // ── Per-group event count: total split across pre and post ──
-  const getGroupPresent = (tribe) => gs.exiledThisEp ? tribe.members.filter(m => m !== gs.exiledThisEp) : tribe.members;
+  // Coaches live at camp even though they never compete or vote, so the camp
+  // group is campRoster(), not tribe.members. Using tribe.members here made a
+  // coach ineligible for all 110 event types and invisible in every sentence
+  // the season generated about their own tribe.
+  const getGroupPresent = (tribe) => {
+    const name = tribe.name ?? tribe.tribeName;
+    const roster = campRoster(name, tribe.members);
+    return gs.exiledThisEp ? roster.filter(m => m !== gs.exiledThisEp) : roster;
+  };
   const totalForGroup = (present) => Math.floor(Math.random() * 5) + Math.max(8, Math.floor(present.length * 1.4));
 
   // ── PRE-CHALLENGE phase: initialize structure, fill pre events ──

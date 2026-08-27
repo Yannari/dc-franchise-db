@@ -14,6 +14,7 @@ import { currentCampAccessEpisode, findConversationAccess } from './camp-access.
 import { hasSocialRole, perceivedRoles } from './social-status.js';
 import { pitchInitiationModifier, approachBudgetModifier, lieChanceModifier, verificationModifier, learnedCaution } from './adaptation.js';
 import { META_WEIGHTS } from './franchise-meta.js';
+import { isCoach, coachVoteReason } from './coaches.js';
 
 // Alliance-trust belief-reading: a voter is "out of the loop" if the target plan
 // is circulating (someone knows it) but THEY don't hold a (non-dismissed) belief
@@ -797,6 +798,13 @@ export function buildVoteReason(voter, target, type, ctx = {}) {
 export function ensureVoteReasonMatchesTarget(voter, target, reason, lateTrigger = null, roster = []) {
   const text = String(reason || '').trim();
   if (!target || !text) return text || 'strategic read';
+  // A coach on the block gets explained as a coach. Contestant prose about
+  // "the room settling on a name" is true but says nothing about the one fact
+  // that makes this vote cheap — the target has no ballot and no idol to run.
+  if (isCoach(target) && !/coach/i.test(text)) {
+    const _cr = coachVoteReason(target, voter);
+    if (_cr) return _cr;
+  }
   const lower = text.toLowerCase();
   if (lower.includes(String(target).toLowerCase())) return text;
   const mentioned = (roster || []).filter(name => name !== voter && name !== target

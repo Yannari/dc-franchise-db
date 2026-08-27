@@ -379,16 +379,44 @@ export function coachFallout(ep, tribe, blockResult, roll = Math.random) {
       ];
       events.push({
         type: 'coachProtegeBond', players: [a, b],
-        badgeText: 'BONDING', badgeClass: 'green',
+        // NOT 'BONDING' — camp-events.js emits that badge for ordinary `bond`
+        // and `tdBond` events too, so coach fallout was indistinguishable from
+        // two contestants getting along, in the VP and in every ordering check.
+        badgeText: 'PROTEGES COMPARE', badgeClass: 'green',
         text: pick(pool),
       });
     }
   }
 
   // ── NEGATIVE: the passed-over contestant noticing — guaranteed, and it escalates ──
+  // GROUPED BY CONTESTANT, not by (coach, contestant) pair. Two things broke
+  // when this looped over pairs: the camp filled with one near-identical
+  // notice per coach per contestant per episode (124 of 598 coach events in a
+  // 16-cast audit season), and the streak counter — which is keyed by
+  // contestant — incremented once PER COACH, so a single skipped episode read
+  // as "the 2nd round running" on a two-coach tribe. Being passed over by
+  // every coach on the tribe is worse than by one, so that becomes louder
+  // wording, not a second event.
+  const _passedByContestant = new Map();
   for (const p of passedOver) {
+    if (!_passedByContestant.has(p.contestant)) _passedByContestant.set(p.contestant, []);
+    _passedByContestant.get(p.contestant).push(p.coach);
+  }
+  const _coachCount = new Set(passedOver.map(p => p.coach)).size;
+  for (const [_contestant, _coaches] of _passedByContestant) {
+    const p = { contestant: _contestant, coach: _coaches[0] };
+    const unanimous = _coachCount > 1 && _coaches.length >= _coachCount;
     gs._coachPassStreak[p.contestant] = (gs._coachPassStreak[p.contestant] || 0) + 1;
     const streak = gs._coachPassStreak[p.contestant];
+    // Being skipped once is a Tuesday; a pattern is a story. Rising odds keep
+    // the escalation the design wants without narrating every single miss.
+    // Unanimous raises the odds rather than bypassing them: on a small tribe
+    // with a two-session budget, getting nothing from anybody is the ORDINARY
+    // week, and narrating it every time is how the board filled with neglect
+    // and nothing else. A standing pattern (streak 3+) is always worth saying.
+    let _odds = streak >= 3 ? 1 : streak === 2 ? 0.55 : 0.25;
+    if (unanimous) _odds = Math.min(1, _odds * 1.8);
+    if (roll() >= _odds) continue;
     const arche = archetypeOf(p.contestant);
     const early = {
       villain: [
@@ -417,16 +445,44 @@ export function coachFallout(ep, tribe, blockResult, roll = Math.random) {
       ],
     };
     const escalated = [
-      `${p.contestant} has stopped pretending it's a coincidence — this is the ${streak === 3 ? 'third' : `${streak}th`} ${W.round} running ${p.coach} has passed them over.`,
+      `${p.contestant} has stopped pretending it's a coincidence — this is the ${streak === 3 ? 'third' : `${streak}th`} ${W.round.toLowerCase()} running ${p.coach} has passed them over.`,
       `${p.contestant} is openly keeping count now: ${streak} straight ${W.round.toLowerCase()}s without a single session from ${p.coach}.`,
       `${p.contestant} brings up the streak unprompted to a tribemate — ${streak} ${W.round.toLowerCase()}s of being skipped is no longer nothing.`,
       `${p.contestant} has quietly decided ${p.coach}'s neglect is a pattern, not an accident, after ${streak} ${W.round.toLowerCase()}s of it.`,
     ];
-    const pool = streak >= 3 ? escalated : (early[arche] || early.default);
-    addBond(p.coach, p.contestant, -0.2 * Math.min(streak, 3));
+    // Nobody at all called on them — a different, worse fact than one coach
+    // choosing somebody else, so it gets its own words rather than two rows.
+    const _names = _coaches.length === 2
+      ? `${_coaches[0]} or ${_coaches[1]}`
+      : _coaches.slice(0, -1).join(', ') + ` or ${_coaches[_coaches.length - 1]}`;
+    const unanimousPool = [
+      `Not one session, from anyone — ${p.contestant} got no call from ${_names}, and spends the day working out what that means.`,
+      `Every coach on the tribe skipped ${p.contestant} tonight. ${p.contestant} noticed, and so did everyone watching who got picked instead.`,
+      `${p.contestant} waits to be pulled aside by ${_names}. Neither comes. ${p.contestant} stops waiting.`,
+      `${p.contestant} is the only one nobody wanted to train today, and there is no version of that ${p.contestant} can read as an accident.`,
+    ];
+    // A standing pattern outranks a single unanimous night — "this is not an
+    // accident" is what turns neglect into a vote, and on a two-coach tribe
+    // almost every skip is unanimous, so checking unanimous first buried the
+    // escalation entirely. Worst case (a pattern AND nobody at all) gets its
+    // own strongest wording rather than falling back to naming one coach.
+    const unanimousStreak = [
+      `${p.contestant} has been passed over by every coach on this tribe ${streak} ${W.round.toLowerCase()}s running now, and has stopped calling it bad luck.`,
+      `${streak} ${W.round.toLowerCase()}s, ${_coaches.length} coaches, not one session. ${p.contestant} has done that arithmetic more than once.`,
+      `${p.contestant} says it out loud to a tribemate: nobody has trained them in ${streak} ${W.round.toLowerCase()}s. Not ${_names}. Nobody.`,
+      `Whatever ${_names} are building, ${p.contestant} is ${streak} ${W.round.toLowerCase()}s into knowing they are not part of it.`,
+    ];
+    const pool = streak >= 3 && unanimous ? unanimousStreak
+      : streak >= 3 ? escalated
+      : unanimous ? unanimousPool
+      : (early[arche] || early.default);
+    // Every coach who skipped them still pays the resentment, exactly as the
+    // per-pair loop used to — grouping changed the narration, not the cost.
+    for (const c of _coaches) addBond(c, p.contestant, -0.2 * Math.min(streak, 3));
     events.push({
-      type: 'coachPassedOverNotices', players: [p.contestant, p.coach],
-      badgeText: streak >= 3 ? 'PATTERN NOTICED' : 'LEFT OFF AGAIN', badgeClass: 'red',
+      type: 'coachPassedOverNotices', players: [p.contestant, ..._coaches],
+      badgeText: unanimous ? 'NOBODY CALLED ON THEM' : streak >= 3 ? 'PATTERN NOTICED' : 'LEFT OFF AGAIN',
+      badgeClass: 'red',
       text: pick(pool),
     });
   }

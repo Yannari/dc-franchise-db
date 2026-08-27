@@ -847,7 +847,13 @@ export function initGameState() {
   // `coach.tribe` instead.
   const tribeMap = {};
   players.forEach(p => { if(!p.tribe || isCoachNow(p)) return; if(!tribeMap[p.tribe]) tribeMap[p.tribe]=[]; tribeMap[p.tribe].push(p.name); });
-  Object.values(tribeMap).forEach(members => {
+  // Seeded from a roster that INCLUDES coaches. tribeMap is contestant-only
+  // because it becomes gs.tribes, but bonds are about who shares a camp — and
+  // a coach seeded at flat zero starts every early camp event colder than any
+  // contestant pair, a hidden asymmetry nothing in the twist asks for.
+  const bondMap = {};
+  players.forEach(p => { if(!p.tribe) return; (bondMap[p.tribe] ||= []).push(p.name); });
+  Object.values(bondMap).forEach(members => {
     for (let i=0;i<members.length;i++) for (let j=i+1;j<members.length;j++) {
       const k=bKey(members[i],members[j]); bonds[k]=(bonds[k]||0)+0.5;
     }

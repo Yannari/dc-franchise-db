@@ -2359,7 +2359,12 @@ export function simulateEpisode() {
       if (falloutEvents.length) {
         if (!ep.campEvents) ep.campEvents = {};
         if (!ep.campEvents[tribeKey]) ep.campEvents[tribeKey] = { pre: [], post: [] };
-        ep.campEvents[tribeKey].pre.push(...falloutEvents);
+        // Consequence, not cause: these events narrate what the coaching
+        // block (rendered later, in the === COACHING === section) just did.
+        // `_textCampPre` prints long before that section — pushing here into
+        // `.pre` puts the fallout ("the drill worked") a full section ahead
+        // of the drill it's describing. `.post` prints after COACHING.
+        ep.campEvents[tribeKey].post.push(...falloutEvents);
       }
     });
   }

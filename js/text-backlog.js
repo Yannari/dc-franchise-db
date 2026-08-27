@@ -148,6 +148,11 @@ export function _textTwistChallenge(ep, ln, sec, dataKey, label, vpBuilders) {
         .replace(/&quot;/g, '"')
         .replace(/&#39;/g, "'")
         .replace(/&nbsp;/g, ' ')
+        // A stripped self-closing tag (e.g. an avatar <img>) leaves whatever
+        // literal spaces surrounded it in the template behind, adjacent to
+        // each other — "walks  P1 through" instead of "walks P1 through".
+        // Collapse runs of spaces/tabs (never newlines) down to one.
+        .replace(/[ \t]{2,}/g, ' ')
         .split('\n')
         .map(l => l.trim())
         .filter(l => l.length > 0)
@@ -1804,6 +1809,33 @@ export function _textTheVotes(ep, ln, sec) {
   }
 }
 
+// ── COACH VOTED OUT ──
+// A coach boot is discarded by `applyCoachElimination` before contestant
+// elimination machinery ever sees it — `result.eliminated` is nulled and the
+// real event lives on `ep.coachElimination` instead (coach-episode.js). This
+// is the twist's largest emotional beat (grief/relief/unsettled reactions
+// computed by `eliminateCoach`) and it must read as a real vote-out, not
+// silence.
+function _textCoachElimination(ce, ln) {
+  ln(`${ce.coach} was voted out. The tribe cut its own coach.`);
+  if (ce.tribe) ln(`  Tribe: ${ce.tribe}`);
+  const lostEntries = Object.entries(ce.lost || {})
+    .map(([name, stats]) => ({ name, total: Object.values(stats || {}).reduce((a, b) => a + (Number(b) || 0), 0) }))
+    .filter(e => e.total !== 0);
+  if (lostEntries.length) {
+    ln(`  Banked training revoked, effective immediately: ${lostEntries.map(e => `${e.name} (${e.total >= 0 ? '-' : '+'}${Math.abs(e.total).toFixed(2)})`).join(', ')}`);
+  } else {
+    ln(`  No banked training to revoke.`);
+  }
+  const reactions = ce.reactions || [];
+  const grief = reactions.filter(r => r.kind === 'grief').map(r => r.contestant);
+  const relief = reactions.filter(r => r.kind === 'relief').map(r => r.contestant);
+  const unsettled = reactions.filter(r => r.kind === 'unsettled').map(r => r.contestant);
+  if (grief.length) ln(`  Grief: ${grief.join(', ')} — genuinely torn up about it.`);
+  if (relief.length) ln(`  Relief: ${relief.join(', ')} — glad to see him go.`);
+  if (unsettled.length) ln(`  Unsettled: ${unsettled.join(', ')} — not sure how to feel.`);
+}
+
 // ── WHY THIS VOTE HAPPENED ──
 export function _textWhyVote(ep, ln, sec) {
   sec('WHY THIS VOTE HAPPENED');
@@ -2022,6 +2054,13 @@ export function _textWhyVote(ep, ln, sec) {
   } else if (ep.tribeDissolve) {
     const _td = ep.tribeDissolve;
     ln(`No vote this episode. ${_td.fromTribe} dissolved. ${_td.player} is now on ${_td.toTribe}.`);
+  } else if (ep.coachElimination?.length) {
+    // A coach boot never sets ep.eliminated — applyCoachElimination
+    // (coach-episode.js) deliberately nulls it, because the tribe loses its
+    // coach, not a contestant's game. Without this branch every reader saw
+    // "No elimination this episode" on a night the tribe voted 6-1 to cut
+    // its coach.
+    ep.coachElimination.forEach(ce => _textCoachElimination(ce, ln));
   } else {
     ln('No elimination this episode.');
   }
@@ -2134,6 +2173,7 @@ export function _textWhyVote(ep, ln, sec) {
   else if (ep.isTripleDogDare && ep.tripleDogDare?.eliminated) ln(ep.tripleDogDare.eliminated + ' — Triple Dog Dare (failed dare)');
   else if (ep.lastChance) ln(`${ep.lastChance.loser} — Last Chance Challenge (lost to ${ep.lastChance.winner})`);
   else if (elim) { ln(elim); if (cfg.ri) ln(`Chose: ${ep.riChoice || 'N/A'}`); }
+  else if (ep.coachElimination?.length) ln(ep.coachElimination.map(ce => `${ce.coach} — Coach Voted Out`).join(', '));
   else ln('No elimination.');
 }
 

@@ -12,12 +12,19 @@
 // to read as a mark against them — a name left off the board — because that
 // visible neglect is what later makes a contestant vote their coach out.
 
-const _tvState = {};
-
+// Reveal state lives on window._tvState, not a module-local object — the
+// same convention every other twist VP builder follows (see get-a-clue.js
+// etc). `_textTwistChallenge` (text-backlog.js) forces every key on
+// window._tvState to a fully-revealed idx via a Proxy so the text backlog
+// gets the complete session log; a module-local `_tvState` here is invisible
+// to that proxy, so the sidebar's reveal-gated totals never see the forced
+// reveal and stay stuck at idx -1 (Banked: 0.00) even when the log above
+// shows real gains.
 function _ensureState(key, total) {
-  if (!_tvState[key]) _tvState[key] = { idx: -1, total };
-  _tvState[key].total = total;
-  return _tvState[key];
+  if (!window._tvState) window._tvState = {};
+  if (!window._tvState[key]) window._tvState[key] = { idx: -1, total };
+  window._tvState[key].total = total;
+  return window._tvState[key];
 }
 
 function _reapplyVisibility(suffix, upToIdx, total) {
@@ -85,7 +92,7 @@ function _buildSidebar(ep) {
 function _buildSidebarContent(ep) {
   const data = ep.coachData;
   if (!data) return '';
-  const st = _tvState['cb-board'];
+  const st = (typeof window !== 'undefined' && window._tvState) ? window._tvState['cb-board'] : null;
   const revealIdx = st ? st.idx : -1;
   const meta = (typeof window !== 'undefined' && window._cbStepMeta) ? window._cbStepMeta : [];
 
@@ -310,8 +317,13 @@ export function rpBuildCoachBoard(ep) {
       return stepHtml;
     }).join('');
 
+    // The visual gap between name and reason is CSS (`flex; gap:8px`), which
+    // doesn't survive `_textStripHtml`'s tag-stripping in the text backlog —
+    // that left every line reading "P2left off by Coach_Ravu_1" with zero
+    // space. A literal space between the two spans fixes both renderings:
+    // CSS still owns the visual gap, and stripped text now separates them.
     const ledgerRows = passedOver.length
-      ? passedOver.map(p => `<div class="cb-ledger-row">${_icon('chalkmark')}<span class="cb-ledger-name">${p.contestant}</span><span class="cb-ledger-coach">left off by ${p.coach}</span></div>`).join('')
+      ? passedOver.map(p => `<div class="cb-ledger-row">${_icon('chalkmark')}<span class="cb-ledger-name">${p.contestant}</span> <span class="cb-ledger-coach">left off by ${p.coach}</span></div>`).join('')
       : `<div class="cb-ledger-empty">Everyone got a session this week.</div>`;
 
     return `<div class="cb-tribe-block">

@@ -215,3 +215,32 @@ describe('the card is played, not triggered', () => {
     expect(result.eliminated).toBe('Finn');
   });
 });
+
+// A lone coach has no consensus to reach, so there is nothing to play. This
+// guard existed in offerSaveCard and was missing from commitSaveCards, so a
+// sole coach committed the card to a vote that could not happen: the card was
+// spent for nothing, and The Signatures reported a refusal from a person who
+// did not exist ("Not unanimous. Somebody would not sign").
+describe('a coach with nobody to ask', () => {
+  it('never commits the card, and never spends it', () => {
+    setup();
+    setGs({ ...gs, coaches: [], coachCards: {} });
+    addCoach({ name: 'Julia', tribe: 'Red' });
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [
+      { members: ['Evie'], target: 'Julia' },
+      { members: ['Finn'], target: 'Julia' },
+    ], () => 0);
+    expect(ep.coachCardCommits, 'a card was played into an empty room').toBeUndefined();
+    expect(tribeCardState('Red'), 'the card must survive a night it could not be played').toBe('unused');
+  });
+
+  it('still commits when a peer exists to sign', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 8);
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' }], () => 0);
+    expect(ep.coachCardCommits?.length).toBe(1);
+    expect(ep.coachCardCommits[0].votes.length, 'the peer has to actually be asked').toBe(1);
+  });
+});

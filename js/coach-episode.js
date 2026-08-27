@@ -880,9 +880,15 @@ export function commitSaveCards(ep, tribeLabel, alliances = [], roll = Math.rand
     const play = danger * (0.45 + st.intuition * 0.04) * (0.6 + st.boldness * 0.04);
     if (roll() >= Math.min(0.95, play)) continue;
 
+    // No peers, no consensus to reach — and therefore nothing to play. This
+    // guard exists in offerSaveCard and was missing here, so a lone coach
+    // committed the card to a vote that could not happen: the card was spent
+    // for nothing and the Signatures screen reported a refusal from a person
+    // who did not exist.
     const peers = coachesOf(tribeLabel).filter(p => p.name !== c.name);
+    if (!peers.length) continue;
     const votes = peers.map(p => ({ coach: p.name, ...saveCardVerdict(p.name, c.name) }));
-    const signed = peers.length > 0 && votes.every(v => v.consents);
+    const signed = votes.every(v => v.consents);
 
     spendTribeCard(tribeLabel);                 // spent on play, needed or not
     if (!gs.coachSaveLedger) gs.coachSaveLedger = [];
@@ -893,8 +899,7 @@ export function commitSaveCards(ep, tribeLabel, alliances = [], roll = Math.rand
         : { refuser: v.coach, saved: c.name, ep: _epNum, reason: v.reason });
     }
     commits.push({ coach: c.name, tribe: tribeLabel, votes, signed,
-      refusedBy: votes.find(v => !v.consents)?.coach || null,
-      noPeers: peers.length === 0 });
+      refusedBy: votes.find(v => !v.consents)?.coach || null });
   }
   if (commits.length) {
     ep.coachCardCommits = [...(ep.coachCardCommits || []), ...commits];

@@ -46,7 +46,11 @@ function _reapplyVisibility(suffix, upToIdx, total) {
     }
   }
   const counter = document.getElementById(`cb-counter-${suffix}`);
-  if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total} sessions`;
+  // The noun belongs to the screen, not to the helper. Both screens share this
+  // reveal code, so the board's "sessions" was being printed over the
+  // Signatures' counter on every click.
+  const noun = suffix === 'sigs' ? 'signatures' : 'sessions';
+  if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total} ${noun}`;
   if (upToIdx >= total - 1) {
     const controls = document.getElementById(`cb-controls-${suffix}`);
     if (controls) {
@@ -575,7 +579,9 @@ export function rpBuildCoachSignatures(ep) {
     }).join('');
     const outcome = cm.signed
       ? `<div class="cb-sig-outcome cb-sig-yes">Unanimous. The card is live for ${cm.coach} — if the votes come for ${cm.coach} tonight, ${cm.coach} stays.</div>`
-      : `<div class="cb-sig-outcome cb-sig-no">Not unanimous. ${cm.refusedBy || 'Somebody'} would not sign, and the card is dead the moment it is needed.</div>`;
+      : `<div class="cb-sig-outcome cb-sig-no">Not unanimous. ${cm.refusedBy
+          ? `${cm.refusedBy} would not sign, and the card is dead the moment it is needed.`
+          : 'The card is dead the moment it is needed.'}</div>`;
     return `<div class="cb-sig-block">
       <div class="cb-sig-title">${cm.coach} played the save card</div>
       <div class="cb-sig-sub">Sealed before a single vote was read. ${cm.coach} does not know what is in these.</div>

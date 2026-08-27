@@ -17241,6 +17241,16 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
   // the first screen of a week showed numbers that had not happened yet and
   // alliances nobody had formed on screen.
   const here = act?.state || null;
+  /* ── WHERE IN THE WEEK THIS SCREEN SITS ──
+     Something that ends is greyed from the stretch it is actually gone from,
+     and on the last screen of the week for the ones that die in the
+     maintenance pass after the final snapshot — which is most of them. Greying
+     it on EVERY screen of the week put "it ended" at the top of week one over a
+     feed that then showed the couple getting together. */
+  const _lastStretch = act?.type === 'campaign'
+    || (houseActs.length ? houseActs.indexOf(act) === houseActs.length - 1 : true);
+  const _stillHere = (list, has) => (list || []).some(has);
+
   const snap = ep.gsSnapshot || {};
   const bonds = here?.bonds || snap.bonds || (typeof gs !== 'undefined' && gs.bonds) || {};
   const inHouse = new Set(house);
@@ -17272,8 +17282,11 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
     best.names.forEach(n => seen.add(n));
   }
 
+  const _pairKey = list => [...(list || [])].sort().join('|');
   const _endedPairs = new Set((ep?.showmanceEnded || [])
-    .map(d => [...(d.players || [])].sort().join('|')));
+    .filter(d => _lastStretch
+      || !_stillHere(here?.showmances, sh => _pairKey(sh.players) === _pairKey(d.players)))
+    .map(d => _pairKey(d.players)));
   const showmances = (here?.showmances || snap.showmances || (typeof gs !== 'undefined' && gs.showmances) || [])
     .filter(sh => !_endedPairs.has([...(sh.players || [])].sort().join('|')))
     .filter(sh => sh.phase !== 'broken-up' && !sh.broken && (sh.players || []).every(n => inHouse.has(n)));
@@ -17288,7 +17301,10 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
      come out of the live list here and are drawn once, greyed, at the bottom —
      which is also what stops one screen showing a group as in play and finished
      at the same time. */
-  const _endedNames = new Set((ep?.allianceDissolved || []).map(d => d.name));
+  const _endedNames = new Set((ep?.allianceDissolved || [])
+    .filter(d => _lastStretch
+      || !_stillHere(here?.alliances, a => a.name === d.name))
+    .map(d => d.name));
   const alliances = (here?.alliances || snap.namedAlliances || (typeof gs !== 'undefined' && gs.namedAlliances) || [])
     .filter(a => a.active !== false && !_endedNames.has(a.name))
     .map(a => ({ ...a, members: (a.members || []).filter(m => inHouse.has(m)) }))
@@ -17432,7 +17448,7 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
            same week still show it alive, because it was; the next episode
            drops it entirely, because `allianceDissolved` is per week. */
         const _snapAll = here?.alliances || snap.namedAlliances || [];
-        const gone = (ep?.allianceDissolved || []).map(d => ({
+        const gone = (ep?.allianceDissolved || []).filter(d => _endedNames.has(d.name)).map(d => ({
           ...d,
           // Prefer the roster the week itself was drawing.
           members: ((_snapAll.find(a => a.name === d.name)?.members) || d.members || [])
@@ -17458,7 +17474,8 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
            dissolved alliance gets, and for the same reason: a pair that simply
            stops being drawn reads as a bug rather than as a break-up. */
         const overNow = (ep?.showmanceEnded || [])
-          .filter(d => (d.players || []).every(n => inHouse.has(n)));
+          .filter(d => _endedPairs.has(_pairKey(d.players))
+            && (d.players || []).every(n => inHouse.has(n)));
         if (!showmances.length && !overNow.length) return '';
         const said = d => d.type === 'voted-out' ? 'one of them was voted out'
           : d.type === 'jealousy' ? 'it did not survive the third person'

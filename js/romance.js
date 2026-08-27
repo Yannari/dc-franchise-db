@@ -741,7 +741,21 @@ export function updateShowmancePhases(ep) {
     // anymore, just two people who used to be. No fight or betrayal required. Sparks are exempt
     // (too new — they form above the line and transition to honeymoon before this can bite).
     const _preBond = getBond(a, b);
-    if (_preBond < 3 && sh.phase !== 'spark') {
+    /* ── TWO THINGS THIS RULE WAS NEVER WRITTEN FOR ──
+       A couple who WALKED IN TOGETHER starts at `established` with whatever
+       bond the life layer seeded, which for a dating stage is often under
+       three — so a relationship that existed before the show evaporated on the
+       first maintenance pass of week one, with the panel dutifully reporting
+       it. They are not a spark that failed to take: they have history, and a
+       weekend of game pressure does not end a real relationship. They fade
+       only if it goes genuinely cold.
+       And nothing should fade in its first week in the house. The bond has not
+       had a single stretch of house life to move in, and "quietly ran its
+       course" over three days reads as a bug because it is one. */
+    const _fromHome = sh.origin === 'arrived-together';
+    const _tooNew = (sh.episodesActive || 0) < 2;
+    const _floor = _fromHome ? 1.5 : 3;
+    if (!_tooNew && _preBond < _floor && sh.phase !== 'spark') {
       sh.phase = 'broken-up';
       sh.breakupEp = epNum;
       sh.breakupType = 'faded'; // neither voted the other out — just fell apart

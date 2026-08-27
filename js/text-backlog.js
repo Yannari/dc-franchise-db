@@ -1148,7 +1148,12 @@ export function _textVotingPlans(ep, ln, sec) {
   if (ep.votePitches?.length) {
     ln('FLIP NEGOTIATIONS:');
     ep.votePitches.forEach(p => {
-      ln(`  ${p.pitcher} pitched ${p.pitchTarget}, claiming ${p.claimedSupport} possible votes${p.liedAboutNumbers ? ' (exaggerated)' : ''}.`);
+      // A coach pitching is a different fact from a contestant pitching: they
+      // hold no ballot, so everything they get is persuasion and the listener
+      // pays nothing for ignoring them.
+      ln(p.coachPitch
+        ? `  ${p.pitcher} (coach — no vote) worked the tribe against ${p.pitchTarget}${p.coachCornered ? ', with ' + p.pitcher + "'s own name in the pile" : ''}. ${(p.coachProteges || []).length ? `${(p.coachProteges || []).join(', ')} owe ${p.pitcher} training time.` : 'Nobody on this tribe owes them anything.'}`
+        : `  ${p.pitcher} pitched ${p.pitchTarget}, claiming ${p.claimedSupport} possible votes${p.liedAboutNumbers ? ' (exaggerated)' : ''}.`);
       ln(`    Confirmed coalition: ${p.confirmedCoalition?.join(', ') || 'none'}. Accepted: ${p.flipped?.join(', ') || 'none'}.`);
       if (p.resolution === 'dissolved-after-conflict-check') ln('    Resolution: dissolved after overlapping promises were reconciled; those voters chose another coalition.');
       const rejected = (p.responses || []).filter(r => !r.accepted);
@@ -1807,6 +1812,46 @@ export function _textTheVotes(ep, ln, sec) {
     });
     if (ep.multiTribalElims?.length > 1) ln(`\nTotal eliminated: ${ep.multiTribalElims.join(', ')}`);
   }
+  // ── WHY THE PLAN DID OR DID NOT HOLD ─────────────────────────────────
+  // Roughly half of tribals end on a name the plans did not forecast. Every
+  // deviation carries a reason on its own line above, but nothing said the
+  // PLAN had collapsed — so a reader diffing the two sections concluded the
+  // target changed for no reason. The VP says it; the transcript did not.
+  {
+    const _fc = {};
+    (ep.voteCommitmentDiagnostics || []).forEach(r => {
+      const b = r.predictedBallot || r.committedTarget;
+      if (b) _fc[b] = (_fc[b] || 0) + 1;
+    });
+    const _forecast = Object.entries(_fc).sort(([, a], [, b]) => b - a)[0]?.[0] || null;
+    const _ac = {};
+    (ep.votingLog || []).forEach(v => { if (v.voted && v.voter !== 'THE GAME') _ac[v.voted] = (_ac[v.voted] || 0) + 1; });
+    const _actual = Object.entries(_ac).sort(([, a], [, b]) => b - a)[0]?.[0] || null;
+    if (_forecast && _actual) {
+      const _strayed = (ep.votingLog || []).filter(v => v.voter !== 'THE GAME' && v.voted
+        && v.voted !== _forecast && v.voter !== _forecast);
+      const _specific = [];
+      let _diffuse = 0;
+      _strayed.forEach(v => {
+        const r = String(v.reason || '');
+        if (/\[MISCOMMUNICATION\]/i.test(r)) _specific.push(`${v.voter} wrote the wrong name trying to follow it`);
+        else if (/\[LATE PITCH\]|\[LIVE COALITION\]/i.test(r)) _specific.push(`a late pitch moved ${v.voter}`);
+        else if (/self-preservation|struck before/i.test(r)) _specific.push(`${v.voter} saw their own name coming and struck first`);
+        else if (v.planBreak || /broke own bloc/i.test(r)) _specific.push(`${v.voter} broke the bloc they helped build`);
+        else _diffuse++;
+      });
+      const _causes = _specific.slice(0, 3);
+      if (_diffuse >= 3) _causes.push(`${_diffuse} more moved without ever saying so out loud`);
+      else if (_diffuse && !_specific.length) _causes.push('the name moved late, and quietly');
+      ln('');
+      if (_forecast === _actual) {
+        ln(`THE PLAN HELD — the room went into this on ${_forecast}, and ${_strayed.length ? `${_strayed.length} ballot${_strayed.length === 1 ? '' : 's'} strayed without changing the result` : 'not one ballot strayed'}.`);
+      } else {
+        ln(`THE PLAN COLLAPSED — the room went into this on ${_forecast} and came out on ${_actual}.`);
+        if (_causes.length) ln(`  ${_causes.join('; ').replace(/^./, m => m.toUpperCase())}.`);
+      }
+    }
+  }
 }
 
 // ── COACH VOTED OUT ──
@@ -1848,10 +1893,49 @@ export function _textWhyVote(ep, ln, sec) {
   // ordinary vote-out below unless this says otherwise first. Without this,
   // the twist's biggest beat (a tribe unanimously protecting its coach, who
   // then names who dies in his place) would vanish into silence.
+  // ── THE SIGNATURES, READ OUT ──────────────────────────────────────────
+  // The VP reads each peer's sealed verdict one at a time with the reason
+  // underneath; the backlog had only the summary line, so the one moment where
+  // the coach-vs-coach relationship settles in public existed on screen and
+  // nowhere in the transcript.
+  const _sigWhy = {
+    'costs-my-protege': 'it would have cost them their own protege',
+    'returning-the-favour': 'they were refused once, and remember it',
+    'pact-already-broken': 'the pact between them was already broken',
+    'bad-blood': 'there was never going to be a favour here',
+    'rival-outbuilding': 'the coach they were asked to save has built more of this tribe',
+    'strategic': 'the arithmetic did not come out in their favour',
+    'unconvinced': 'they were not convinced',
+    'debt': 'they owed this one, and paid it',
+    'pact': 'a pact between them is still standing',
+    'allied': 'they run together',
+    'friendship': 'they are friends, and it was never in doubt',
+    'decency': 'no reason beyond the plain one',
+  };
+  (ep.coachCardCommits || []).forEach(cm => {
+    if (!(cm.votes || []).length) {
+      ln(`THE SIGNATURES — ${cm.coach} played the card with no other coach left to sign. It carries.`);
+      return;
+    }
+    ln(`THE SIGNATURES — ${cm.coach} played the save card. Sealed before a single vote was read.`);
+    cm.votes.forEach(v => {
+      ln(`  ${v.coach}: ${v.consents ? 'SIGNED' : 'REFUSED'} — ${_sigWhy[v.reason] || 'no reason given'}.`);
+    });
+    ln(cm.signed
+      ? `  Unanimous. The card is live for ${cm.coach}.`
+      : `  Not unanimous. The card is dead the moment it is needed.`);
+  });
+
+  // Coaches whose tribe folded under them.
+  (ep.coachTribeCollapse || []).forEach(c => {
+    ln(`${c.from} is gone and had nobody left to compete for it. ${(c.coaches || []).join(' and ')} move to ${c.to} — a staff without a tribe cannot lose a challenge, and cannot be voted out of one either.`);
+  });
+
   (ep.coachSaves || []).forEach(save => {
     const _svP = pronouns(save.coach);
-    const _signers = (save.votes || []).map(v => v.coach);
-    ln(`SAVE CARD PLAYED — ${_signers.length ? `${_signers.join(' and ')} signed for ${save.coach}` : `The card was played for ${save.coach}`}. It needs every coach on the team, and got them.`);
+    // THE SIGNATURES above already read every signer out one at a time; this
+    // is the outcome, not a second recital of the same names.
+    ln(`SAVE CARD PLAYED — the votes were for ${save.coach}, and ${save.coach} stays.`);
     ln(`  ${save.coach} named the replacement: ${save.replacement || '???'} goes home in ${_svP.posAdj} place.`);
   });
 

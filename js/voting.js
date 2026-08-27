@@ -965,6 +965,101 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       _pitchCount++;
     });
   }
+  // ── COACH INFLUENCE ───────────────────────────────────────────────────
+  // A coach casts no ballot and is not therefore powerless. Their leverage is
+  // exactly what the twist says it is: the training they have handed out and
+  // the standing that comes with it. They work the same pitch pipeline every
+  // contestant uses — responses, flips, leaks, counterplay — so a coach can
+  // argue for a name, and can argue for their own life when the room turns on
+  // them. Coaches are pitchers only: never in `_pitchCandidates`, which
+  // doubles as the recipient pool and the eligible-voter count.
+  // `_pitchCandidates` above is block-scoped; this is the same set — the
+  // contestants who can still be talked to and can still cast a ballot.
+  const _coachAudience = tribalPlayers.filter(p => !lostVotes.includes(p));
+  for (const coach of extraTargets) {
+    if (_votePitches.filter(v => v.coachPitch).length >= 2) break;
+    const cS = pStats(coach);
+    const banked = gs.coachTraining?.[coach] || {};
+    const proteges = Object.keys(banked).filter(n => tribalPlayers.includes(n));
+    const stars = (gs.coaches || []).find(c => c.name === coach)?.stars ?? 4.5;
+
+    // Cornered coaches fight. Anything else is a coach who watches their own
+    // elimination without opening their mouth, which is the thing the twist
+    // was accused of being.
+    const aimedAtMe = _forecastCounts[coach] || 0;
+    const cornered = aimedAtMe >= 1;
+    const weight = cS.social * 0.05 + cS.strategic * 0.035 + stars * 0.02 + proteges.length * 0.03;
+    const chance = cornered ? Math.min(0.92, 0.5 + weight) : Math.min(0.35, weight * 0.45);
+    if (Math.random() >= chance) continue;
+
+    // Who they argue for. Cornered, it is anybody but themselves — the
+    // biggest forecast pile that is not the coach. Otherwise they protect
+    // what they have built: whoever their protégés' votes are landing on.
+    const _notMe = tribalPlayers.filter(n => n !== coach && !lostVotes.includes(n));
+    if (!_notMe.length) continue;
+    // Never spend a protégé while somebody else is available. A coach arguing
+    // for the elimination of the player they have been building all season
+    // reads as nonsense and destroys the relationship the influence runs on —
+    // and a coach who has trained the whole tribe has genuinely run out of
+    // other names, which is its own kind of trapped.
+    const _outsiders = _notMe.filter(n => !proteges.includes(n));
+    const _pool = _outsiders.length ? _outsiders : _notMe;
+    const pitchTarget = cornered
+      ? _pool.slice().sort((a, b) =>
+          (_forecastCounts[b] || 0) - (_forecastCounts[a] || 0)
+          || getBond(coach, a) - getBond(coach, b))[0]
+      : _pool.slice().sort((a, b) => getBond(coach, a) - getBond(coach, b))[0];
+    if (!pitchTarget) continue;
+
+    const _flipped = [], _responses = [], _leaks = [];
+    // Protégés first — that is what the sessions bought.
+    const _recipients = _coachAudience
+      .filter(v => v !== pitchTarget)
+      .sort((a, b) => (proteges.includes(b) ? 1 : 0) - (proteges.includes(a) ? 1 : 0)
+        || getBond(coach, b) - getBond(coach, a))
+      .slice(0, Math.max(2, Math.min(6, 2 + Math.round((cS.social + cS.strategic) / 6))));
+
+    for (const voter of _recipients) {
+      const vS = pStats(voter);
+      const _voterRead = observedCommitments.find(read => read.voter === voter);
+      // The leverage, quantified: hours banked into this person, the bond, and
+      // how far above them the coach's career sits.
+      const bankedHere = Object.values(banked[voter] || {}).reduce((t, n) => t + Math.max(0, n), 0);
+      // The sessions ARE the leverage, so they have to be worth something. A
+      // banked total sits around 0.3-1.5 per protégé, which multiplied thinly
+      // produced a coach who could talk all week and move nobody — the twist's
+      // whole premise failing quietly. Fame carries the rest: a five-star
+      // career gets listened to by people who grew up watching it.
+      const trust = Math.max(-3, Math.min(6,
+        getBond(coach, voter) * 0.45
+        + bankedHere * 2.6
+        + (proteges.includes(voter) ? 0.8 : 0)
+        + (stars - 3) * 0.45
+        + cS.social * 0.06));
+      const response = evaluatePitchResponse({ trust, tacticalCredibility: 0.5, loyalty: vS.loyalty,
+        targetBond: targetProtection(voter, pitchTarget), claimedSupport: Math.max(1, _flipped.length + 1),
+        eligibleVoters: _coachAudience.length, confirmedSupport: _flipped.length + 1,
+        strategic: vS.strategic, intuition: vS.intuition, emotional: getPlayerState(voter).emotional,
+        liar: false, selfTargeted: (_forecastCounts[voter] || 0) >= 2,
+        competingSupport: _forecastCounts[voter] || 0,
+        commitmentStrength: _voterRead?.commitmentStrength || 0,
+        reputationMod: 0, verificationMod: verificationModifier(voter), learnedCaution: learnedCaution(voter),
+        leakMod: 0,
+        majority: _voterRead?.majority || Math.floor(_coachAudience.length / 2) + 1 });
+      _responses.push({ voter, ...response });
+      if (response.accepted) _flipped.push(voter);
+      if (response.leaked) _leaks.push(voter);
+    }
+
+    _votePitches.push({ pitcher: coach, pitchTarget, originalTarget: null,
+      claimedSupport: Math.max(1, _flipped.length), liedAboutNumbers: false,
+      existingSupporters: [], responses: _responses, flipped: _flipped,
+      confirmedCoalition: _flipped, leaks: _leaks, overheardBy: [],
+      approachBudget: _recipients.length, attemptedContacts: _recipients.length,
+      success: _flipped.length > 0,
+      coachPitch: true, coachCornered: cornered, coachProteges: proteges });
+  }
+
   resolveCompetingPitches(_votePitches, observedCommitments);
   recordPitchKnowledge(_votePitches);
   const _knowledgeEvents = spreadKnowledgeForRound(tribalPlayers);

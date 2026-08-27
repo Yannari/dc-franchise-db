@@ -10235,9 +10235,12 @@ export function rpBuildVotingPlans(ep) {
           return `<div style="margin-top:4px"><strong style="color:#c9d1d9">📍 ${group.location} · ${group.window}</strong><br>${group.people.join(', ')} could be approached · ${exposure}${group.nearby.size ? ` · other players were nearby` : ''}</div>`;
         }).join('');
         return `<div style="padding:10px 11px;background:rgba(56,139,253,.04);border:1px solid rgba(56,139,253,.16);border-radius:8px">
-          <div style="font-size:10px;font-weight:800;color:#79c0ff">${p.pitcher} tried to build a vote against ${p.pitchTarget}</div>
-          <div style="font-size:10px;color:#8b949e;margin-top:3px">Reached ${contacts.length} of a possible ${p.approachBudget || contacts.length} direct conversations. Other players may still hear the name through allies, leaks, or their own plans.</div>
-          ${accessRows || `<div style="font-size:10px;color:#8b949e;margin-top:4px">No shared post-challenge window was available.</div>`}
+          <div style="font-size:10px;font-weight:800;color:${p.coachPitch ? '#e8873a' : '#79c0ff'}">${p.coachPitch
+            ? `${p.pitcher} <span style="opacity:.8">(coach — no vote)</span> worked the tribe against ${p.pitchTarget}${p.coachCornered ? ` — with ${p.pitcher}'s own name in the pile` : ''}`
+            : `${p.pitcher} tried to build a vote against ${p.pitchTarget}`}</div>
+          ${p.coachPitch ? `<div style="font-size:10px;color:#8b949e;margin-top:3px">A coach cannot vote. What they can do is spend what the sessions bought${(p.coachProteges || []).length ? `: ${p.coachProteges.join(', ')} owe ${p.pitcher} training time` : ''}. ${(p.flipped || []).length ? `${p.flipped.join(', ')} moved.` : 'Nobody moved.'}</div>` : ''}
+          ${p.coachPitch ? '' : `<div style="font-size:10px;color:#8b949e;margin-top:3px">Reached ${contacts.length} of a possible ${p.approachBudget || contacts.length} direct conversations. Other players may still hear the name through allies, leaks, or their own plans.</div>
+          ${accessRows || `<div style="font-size:10px;color:#8b949e;margin-top:4px">No shared post-challenge window was available.</div>`}`}
         </div>`;
       }).join('')}</div>`;
     html += `<div class="rp-vp-section-label">FLIP NEGOTIATIONS</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:8px;margin-bottom:14px">${ep.votePitches.map(p => {

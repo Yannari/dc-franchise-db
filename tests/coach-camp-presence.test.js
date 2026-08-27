@@ -112,3 +112,49 @@ describe('a coach is visible in a real season', () => {
     }
   }, 240000);
 });
+
+// A coach casts no ballot and is not therefore powerless. Their leverage is
+// what the twist says it is — the training they handed out and the standing
+// that came with it — spent through the same pitch pipeline every contestant
+// uses. Without this a coach watches their own elimination without opening
+// their mouth, which is the thing the twist was accused of being.
+describe('a coach can argue, without ever voting', () => {
+  it('pitches, and can move a ballot, while never appearing as a voter', async () => {
+    let pitches = [], votedByCoach = 0;
+    for (let r = 0; r < 3 && pitches.length < 3; r++) {
+      const { episodes, coachNames } = await runHeadlessSeason({
+        twist: 'coaches', coachesPerTribe: 2, castSize: 16, mergeAt: 10,
+      });
+      // Only while they are still coaches. Promotion at the merge makes them
+      // full players, and a promoted coach voting is the twist working.
+      let merged = false;
+      for (const e of episodes) {
+        if (e.isMerge) merged = true;
+        pitches.push(...(e.ep.votePitches || []).filter(p => p.coachPitch));
+        if (!merged) {
+          votedByCoach += (e.votingLog || []).filter(v => coachNames.includes(v.voter)).length;
+        }
+      }
+    }
+    expect(pitches.length, 'a coach never opened their mouth across three seasons').toBeGreaterThan(0);
+    expect(votedByCoach, 'a coach cast a ballot — the one thing the twist forbids').toBe(0);
+  }, 600000);
+
+  it('never argues for the elimination of its own protégé while anyone else is available', async () => {
+    for (let r = 0; r < 2; r++) {
+      const { episodes } = await runHeadlessSeason({
+        twist: 'coaches', coachesPerTribe: 2, castSize: 16, mergeAt: 10,
+      });
+      for (const e of episodes) {
+        for (const p of (e.ep.votePitches || []).filter(x => x.coachPitch)) {
+          const proteges = p.coachProteges || [];
+          if (!proteges.includes(p.pitchTarget)) continue;
+          // Only legitimate when the coach has trained everybody available.
+          const others = (e.ep.tribalPlayers || []).filter(n => n !== p.pitcher && !proteges.includes(n));
+          expect(others.length,
+            `${p.pitcher} pitched their own protégé ${p.pitchTarget} with ${others.join(', ')} available`).toBe(0);
+        }
+      }
+    }
+  }, 600000);
+});

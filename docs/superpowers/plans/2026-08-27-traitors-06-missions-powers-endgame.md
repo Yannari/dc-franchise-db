@@ -305,3 +305,51 @@ Consequences to carry:
   information.** Mitigated with a fiction rule, not a price.
 - `gs.tr.pot` still has no reader, and now neither does the recorded `shield.cost`. Both wait
   on the endgame.
+
+## Task 4's carried facts, and the mutation that survived
+
+**A guard over a POPULATION can be unfalsifiable while looking fine.** The one-Dagger-at-a-time rule
+was asserted across 120 seasons and stayed GREEN with the rule deleted, because only 22 seasons in
+400 award a second Dagger at all and the overlap it forbids is rarer still. The fix was to assert
+the rule where it is DECIDED (`daggerAfternoon`, which fires every time) and to put a coverage floor
+on the population arm so it can no longer pass while observing nothing. This is Task 2's "necessary,
+not sufficient" in a third shape, alongside the store sweep and the recomputed value: **before
+trusting a population guard, ask how many times the forbidden state is even reachable in the sample
+you are asserting over.**
+
+**The Dagger is a KEPT power, and that is a reading of the spec rather than an embellishment.**
+§7.3's two sentences — "doubles your vote at the next banishment" and "breaks 3-3 endgame deadlocks"
+— cannot both be true of a power spent the afternoon it is won. So it is carried; `drawAt` (the room
+size at which its holder's nerve gives out) is rolled at ACQUISITION on the missions' stream, and the
+table reads a number already written down. **`runRoundTable` takes no new rng draw**, so a season
+with a Dagger in it remains comparable with the season without one.
+
+**The relic split cost the Shield, on purpose, to protect the Chess channel.** The Reliquary yields
+ONE relic and a Dagger only below twelve living, so Shields fall 1.67 → 1.12 a season and blocked
+murders 13 → 8 per 200. An eighth archetype would instead have re-opened the `CHESS_WEIGHT`
+arithmetic Task 3 closed. **Anyone restoring the Shield rate via `SHIELD_WEIGHT` must re-derive
+`CHESS_WEIGHT` with it.**
+
+**A doubled vote lives in the tally, and the guard is a PAIR of tests.** One says the count changed;
+the other says the read-aloud record did not (identical ballot strings, one ballot per voter, no
+weight field on a ballot). The mutation that implements the doubling as a duplicate ballot passes the
+first and fails the second, which is the only arrangement that actually protects the public-facts
+invariant.
+
+**Bands: early lift 2.0 → 2.3pp, late 19.4 → 19.6pp, base vs head on the same command.** No band
+moved. Note for later tasks that this file's default population reads early lift at ~2pp, not the
+~4.60pp measured on Task 3's larger decorrelated blocks — quoting the wrong one is how a delta gets
+differenced against a baseline that never shipped.
+
+**Two prose defects, both found by dumping seasons and reading, neither by an assertion.**
+`_render` had no capitalised pronoun forms, so a Dagger draw line printed `{They}` on 100% of
+firings. And the witness-tier pool, shared with the Shield, contained one line ending "exactly what
+she is carrying TONIGHT" — true of a Shield, false of a Dagger, printed over a woman still carrying
+hers when she was banished the next evening. **A pool shared between two mechanics must not name a
+property only one of them has.**
+
+**For Task 7.** `gs.tr.daggers` reaches the endgame with an unspent Dagger in a survivor's hand in
+6% of seasons (24 in 400); that is the state a 3-3 finale deadlock is broken from. `tally(ballots,
+weights)` takes an open `{ voter: n }` map, so the endgame can weight a vote without touching it.
+`drawAt` is capped at 9 and the season loop stops at 3, so a Dagger carried to the finale fires at
+the endgame's first table unless `daggerWeights` is gated further.

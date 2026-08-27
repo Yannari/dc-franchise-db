@@ -69,7 +69,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
-import { EVENTS } from '../js/tr/events.js';
+import { EVENTS, KNOWN_WINDOWS } from '../js/tr/events.js';
+import { outcomeSense } from '../js/tr/threads.js';
 import { seedFranchiseHistory, seedEmptyHistory } from './helpers/tr-castle-fixture.js';
 import roster from '../franchise_roster.json';
 
@@ -81,6 +82,7 @@ import '../js/tr/castle/cover.js';
 import '../js/tr/castle/romance.js';
 import '../js/tr/castle/callback.js';
 import '../js/tr/castle/testing.js';
+import '../js/tr/castle/journey.js';
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
@@ -100,8 +102,15 @@ function runSeasons(n, seedBase = 0) {
         // branch floor below is built on: absent means the event does not
         // read outcomes at all, null means it read and found nothing.
         fired.push({ ep: round.ep, id: ce.event.id, family: ce.event.family,
+          window: ce.event.window,
           readsOutcome: !!ce.consequences && 'priorOutcome' in ce.consequences,
-          priorOutcome: ce.consequences?.priorOutcome ?? null });
+          priorOutcome: ce.consequences?.priorOutcome ?? null,
+          // `outcome` is how an event declares it CLOSED a thread, and the
+          // absent/null distinction is the same one `priorOutcome` uses:
+          // absent means the event has no closing branch at all, null means it
+          // had one and this firing did not take it. See THE CLOSER FLOOR.
+          writesOutcome: !!ce.consequences && 'outcome' in ce.consequences,
+          outcome: ce.consequences?.outcome ?? null });
       }
     }
     perSeason.push(fired);
@@ -314,15 +323,28 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     return out;
   }
 
-  it('81 events, 32 of which can advance a thread and 22 of which cite residue', () => {
-    expect(EVENTS.length).toBe(81);
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(32);
+  it('97 events, 39 of which can advance a thread and 33 of which cite residue', () => {
+    // MOVED BY PLAN 5 TASK 4, deliberately: 81 -> 97 events. Sixteen new ones
+    // populate the three windows that held almost nothing (`journey-out` and
+    // `journey-back` held ZERO between them; `night` held one, and drew 36 of
+    // 13,553 firings across 400 seasons).
+    //
+    // SEVEN of those sixteen declare `advancesThread` (32 -> 39). That is a
+    // deliberate MINORITY, because Plan 5's second amendment measured what the
+    // declaration costs: guard 1 multiplies a declared advancer by 4x-9x while
+    // `rare` multiplies by only 2x, so a declaration is a large weight change
+    // inside its own window, not a label. All seven sit in `journey-out`,
+    // `journey-back` or `night` — windows holding five or six events each —
+    // and never in `morning` or `evening`, which is where ten declarations
+    // once starved `romance-shared-alibi` from 12 firings to 2.
+    expect(EVENTS.length).toBe(97);
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(39);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
-    // citing residue needs no flag, so ten events cite without declaring.
-    expect(EVENTS.filter(e => e.citesResidue).length).toBe(22);
+    // citing residue needs no flag, so eleven events cite without declaring.
+    expect(EVENTS.filter(e => e.citesResidue).length).toBe(33);
   });
 
-  it('28 non-empty family x window cells: 7 with no advancer, 13 with one, 8 with two or more', () => {
+  it('44 non-empty family x window cells: 16 with no advancer, 20 with one, 8 with two or more', () => {
     const c = cells();
     const counts = [...c.values()];
     const zero = counts.filter(v => v.adv === 0).length;
@@ -332,11 +354,21 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     console.log(`=== ADVANCER COVERAGE === ${c.size} cells: ${zero} zero, ${one} one, ${many} two-plus`);
     console.log(`zero-advancer cells: ${zeroNames.join(', ')}`);
 
-    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(28);
+    // MOVED BY PLAN 5 TASK 4: 28 cells -> 44. Populating three empty windows
+    // opens sixteen new cells by construction, and most of a NEW cell's first
+    // occupant is not an advancer, so the zero count rises with them. THAT IS
+    // NOT A REGRESSION AND THE LEDGER IS NOT A QUALITY BAR — Plan 5's second
+    // amendment withdrew the "no cell below 2 advancers" target after proving
+    // the measurement behind it was measuring a declaration rate rather than
+    // the pool's capability (`openThread` folds a firing into an open thread
+    // of the same kind and parties whether or not anything is declared; with
+    // guard 1 flattened, seasons before and after a re-declaration pass were
+    // bit-identical). This table exists to catch silent drift, and that is all.
+    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(44);
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
-      + 'can never be continued here, whatever either continuation lever is set to').toBe(7);
+      + 'can never be continued here, whatever either continuation lever is set to').toBe(16);
     expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
-      + 'living here can be advanced at most once every five rounds').toBe(13);
+      + 'living here can be advanced at most once every five rounds').toBe(20);
     expect(many, 'cells with two or more advancers').toBe(8);
     // Named, not just counted: a change that swapped one zero cell for another
     // would keep every total above and still be a different game.
@@ -356,9 +388,31 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // between those two already exists — "they clocked each other from a
     // previous season" happens once per pair, and an advance branch would write
     // a beat contradicting its own text.
+    //
+    // THE NINE NEW ZERO CELLS ARE ALL IN THE THREE WINDOWS TASK 4 OPENED, and
+    // each is a cell holding exactly one event which does not attach to a
+    // thread its actors already have:
+    //   `*|journey-out`  — the road OUT is where stories start. Four of that
+    //                      window's six events open a thread rather than
+    //                      continue one; the two that continue
+    //                      (`trust-fall-into-step`, `cover-road-rehearsal`)
+    //                      are why `trust|journey-out` and the cover solo
+    //                      thread are not on this list.
+    //   `*|night`        — `susp-heard-in-the-corridor` writes a fresh beat
+    //                      about a fresh noise and `grief-nobody-sleeps` is a
+    //                      solo scene with nobody to continue anything with.
+    //   `romance|journey-back` — `romance-walked-back-together` DOES advance a
+    //                      thread; it advances a `romance-spark` /
+    //                      `romance-showmance` thread, and guard 1 keys on
+    //                      `ev.family`, which is `romance`. Declaring the flag
+    //                      there would buy a multiplier that never fires. See
+    //                      the note on that event.
     expect(zeroNames).toEqual([
-      'callback|dawn', 'callback|morning', 'cover|morning', 'grief|morning',
-      'romance|morning', 'suspicion|morning', 'testing|morning',
+      'callback|dawn', 'callback|morning', 'cover|journey-out', 'cover|morning',
+      'cover|night', 'grief|journey-out', 'grief|morning', 'grief|night',
+      'romance|journey-back', 'romance|journey-out', 'romance|morning',
+      'suspicion|journey-out', 'suspicion|morning', 'suspicion|night',
+      'testing|journey-out', 'testing|morning',
     ]);
   });
 
@@ -469,6 +523,39 @@ describe('residue is cited in seasons that actually play', () => {
     const leaks = notes.filter(n => /\{[abcdv]\}/.test(n.note));
     expect(leaks.slice(0, 5).map(n => n.note), `${leaks.length} of ${notes.length} notes `
       + 'shipped an unsubstituted placeholder').toEqual([]);
+  });
+
+  it('no citation nests an em-dash inside its own em-dash parenthetical', () => {
+    // FOUND BY DUMPING SEASONS AND READING THEM (Plan 5 Task 4). `citeMoments`
+    // splices the quoted moment between two em-dashes, and `cover-feign-fear`
+    // writes a note that already contains one:
+    //
+    //   "...and slept. It went back to day 1 \u2014 Amy performed the exact right
+    //    amount of fear at breakfast \u2014 no more, no less than anyone else \u2014 and
+    //    it had not stopped since: day 2."
+    //
+    // Four dashes in one sentence and no way to tell which pair is the aside.
+    // Neither existing prose guard could see it: the note holds no placeholder,
+    // quotes nothing back at itself, and splices no full stop against a dash.
+    // The note is also well-formed ON ITS OWN and only breaks when spliced,
+    // which is why this one is legitimately an OUTPUT rule rather than a source
+    // rule \u2014 the defect is created by the join, not written by any author.
+    //
+    // THE MUTATION: in js/tr/threads.js, delete the `quoted.includes` branch in
+    // `citeMoments` so the em-dash form is used unconditionally.
+    const nested = notes.filter(n => {
+      for (const m of n.note.matchAll(/It went back to day \d+ \u2014 (.*?) \u2014 and it had not stopped since/g)) {
+        if (m[1].includes('\u2014')) return true;
+      }
+      return false;
+    });
+    expect(nested.slice(0, 5).map(n => n.note), `${nested.length} of ${notes.length} notes `
+      + 'quote an em-dashed sentence inside an em-dashed parenthetical').toEqual([]);
+    // Guard on the guard: the regex has to be able to match SOMETHING, or this
+    // passes against any mutant at all.
+    const parentheticals = notes.filter(n => /It went back to day \d+ \u2014 /.test(n.note));
+    expect(parentheticals.length, 'no citation used the em-dash parenthetical form at all \u2014 '
+      + 'this check matched nothing and asserted nothing').toBeGreaterThan(10);
   });
 
   it('no note quotes its own head sentence back at itself', () => {
@@ -618,5 +705,162 @@ describe('THE OUTCOME-BRANCH FLOOR: a clause nobody can reach is dead content', 
       + `(${(closed / opened * 100).toFixed(2)}%, ${(closed / 60).toFixed(2)} a season)`);
     expect(closed, 'no thread closed at all - the outcome branch has nothing to read')
       .toBeGreaterThanOrEqual(20);
+  });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════
+// THE WINDOW SWEEP (Plan 5 Task 4)
+// ══════════════════════════════════════════════════════════════════════
+//
+// A WINDOW WITH NO CONTENT IS DEAD CODE THAT NOTHING IN THIS SUITE COULD SEE.
+// Spec 5.6 gives a round SEVEN windows and js/tr/events.js validates every
+// registration against exactly those seven. Before this task, two of them
+// (`journey-out`, `journey-back`) held zero events and a third (`night`) held
+// one, drawing 36 firings out of 13,553 across the 400 seasons below. Every
+// round of every season ran `runWindow` on all seven, found nothing eligible
+// in three of them, and returned — and 249 tests were green, because every
+// other guard in this file is EVENT-keyed: an event that does not exist has no
+// id to be missing from a count.
+//
+// So this is written as a rule over `KNOWN_WINDOWS` itself rather than as a
+// list of window names, for the reason this project keeps re-learning: a list
+// of known cases would not have covered the eighth window either.
+//
+// THE FLOOR IS 200 IN 400 SEASONS — one firing every other season — and it is
+// deliberately far under the measured minimum (`journey-back`, 1126) rather
+// than tuned to it. What it is asserting is "this window is part of the show",
+// not "this window drew its current share": a share floor would be an absolute
+// constant against a number any future content change moves, which is the
+// treadmill this plan has already been round twice.
+//
+// THE MUTATION: delete `...runWindow('journey-back', ep, castleRng),` from the
+// round loop in js/tr/headless.js. That window drops to 0 and this goes red.
+describe('THE WINDOW SWEEP: every window spec 5.6 names is a window the show uses', () => {
+  it('all seven windows hold registered events, and all seven fire in real seasons', () => {
+    const perWindow = {};
+    for (const f of ALL_FIRINGS) perWindow[f.window] = (perWindow[f.window] || 0) + 1;
+    const registered = {};
+    for (const ev of EVENTS) registered[ev.window] = (registered[ev.window] || 0) + 1;
+
+    console.log(`\n=== PER-WINDOW (${SWEEP_SEASONS} seasons) ===`);
+    for (const w of KNOWN_WINDOWS) {
+      console.log(`   ${perWindow[w] || 0}\tfirings\t${registered[w] || 0}\tevents\t${w}`);
+    }
+
+    const empty = [...KNOWN_WINDOWS].filter(w => !registered[w]);
+    expect(empty, 'these windows hold no registered event at all — the runner calls '
+      + 'runWindow on them every round and they can only ever return []').toEqual([]);
+
+    const silent = [...KNOWN_WINDOWS]
+      .filter(w => (perWindow[w] || 0) < 200)
+      .map(w => `${w}: ${perWindow[w] || 0} firings from ${registered[w] || 0} events`);
+    expect(silent, `these windows hold content that a season almost never reaches, in `
+      + `${SWEEP_SEASONS} seasons`).toEqual([]);
+
+    // Guard on the guard: if KNOWN_WINDOWS ever came back empty both checks
+    // above would pass having asserted nothing.
+    expect(KNOWN_WINDOWS.size).toBe(7);
+  });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════
+// THE CLOSER FLOOR (Plan 5 Task 4)
+// ══════════════════════════════════════════════════════════════════════
+//
+// A STORY THAT KEEPS ADVANCING IS A STORY THAT HAS NOT PAID OFF, and a payoff
+// is what makes a thread legible to a viewer. Plan 5's second amendment
+// measured the pool's real deficit here: threads closed 3.58% of the time,
+// 0.86 a season out of 24 opened, and declaring more advancers made it WORSE
+// (one payoff traded per 4.5 extra beats). Task 4's whole content brief was to
+// add CLOSERS rather than advancers.
+//
+// This is the guard that keeps them alive. It is the same shape as THE
+// OUTCOME-BRANCH FLOOR above and for the same reason: a closing branch is a
+// clause inside an event that fires constantly, so the dead-event sweep cannot
+// see it. `cover-story-survived-the-day` fires whether or not its `held`
+// branch is ever taken, and if the branch scores were retuned so that one
+// never happened, every other test in this repo would stay green.
+//
+// RULE-SHAPED, NOT A LIST. Membership is "the event reported an `outcome` key
+// at all", read off the firing, so any future event that closes a thread and
+// says so is covered automatically. The absent/null distinction is what makes
+// that work: absent means no closing branch exists, null means one exists and
+// this firing did not take it.
+//
+// IT IS KEYED PER (EVENT, OUTCOME), NOT PER EVENT, and that distinction is
+// the whole guard rather than a detail. The first version of this counted
+// closures per event id, and it stayed GREEN under its own stated mutation:
+// `cover-story-survived-the-day` writes `passed-clean` on one branch and
+// `exposed` on another, so zeroing the first branch's score simply moved every
+// closure onto the second and the event's total did not change. A guard that
+// survives the mutation it names is the eighteenth unfailable test found in
+// this project, and it was found by RUNNING the mutation rather than by
+// reasoning about it.
+//
+// THE FLOOR IS 4 PER (EVENT, OUTCOME), the same number the pool's rarest EVENT
+// is held to a few hundred lines above, and for the same reason: something
+// sliding from 40 takes to 2 is on its way to dead and this run should say so
+// before it gets there.
+//
+// THE MUTATION: in js/tr/castle/journey.js, zero the closing branch of one
+// closer — `const holdScore = 0;` in `cover-story-survived-the-day` — and that
+// event's `passed-clean` closures go to zero while its firings, and its
+// `exposed` closures, do not.
+const CLOSING_BRANCHES = [
+  'cover-story-survived-the-day:exposed',
+  'cover-story-survived-the-day:passed-clean',
+  'grief-castle-in-view:buried',
+  'susp-let-it-go-on-the-road-back:confessed-unrelated',
+  'susp-let-it-go-on-the-road-back:denied-convincingly',
+  'testing-night-scores-it:failed-maliciously',
+  'testing-night-scores-it:passed-clean',
+  'trust-last-word-before-lights-out:passed-clean',
+  'trust-last-word-before-lights-out:turned-back',
+  'trust-settled-on-the-way-back:buried',
+  'trust-settled-on-the-way-back:passed-clean',
+  'trust-settled-on-the-way-back:turned-back',
+];
+
+describe('THE CLOSER FLOOR: an event that can end a story must actually end one', () => {
+  it('every closing branch in the pool is taken in real seasons', () => {
+    const fired = {}, closedBy = {}, perOutcome = {}, senses = {};
+    for (const f of ALL_FIRINGS) {
+      if (!f.writesOutcome) continue;
+      fired[f.id] = (fired[f.id] || 0) + 1;
+      if (f.outcome) {
+        closedBy[f.id] = (closedBy[f.id] || 0) + 1;
+        perOutcome[`${f.id}:${f.outcome}`] = (perOutcome[`${f.id}:${f.outcome}`] || 0) + 1;
+        senses[f.outcome] = (senses[f.outcome] || 0) + 1;
+      }
+    }
+    const closers = Object.keys(fired).sort();
+    const total = Object.values(closedBy).reduce((a, b) => a + b, 0);
+    console.log(`\n=== CLOSING BRANCHES TAKEN (${SWEEP_SEASONS} seasons) ===`);
+    for (const k of Object.keys(perOutcome).sort()) console.log(`   ${perOutcome[k]}\t${k}`);
+    for (const id of closers) console.log(`   ${closedBy[id] || 0}\tof ${fired[id]}\tTOTAL ${id}`);
+    console.log(`   outcomes written: ${JSON.stringify(senses)}`);
+
+    expect(closers.length, `only these events report a closing branch: ${closers.join(', ')}`)
+      .toBeGreaterThanOrEqual(6);
+    // THE SET OF (event, outcome) PAIRS IS PINNED, because a branch that stops
+    // firing entirely vanishes from `perOutcome` and a floor over the keys
+    // that ARE there could never see it. This is the same shape as the cell
+    // ledger: a list that must be maintained deliberately, not a bar.
+    expect(Object.keys(perOutcome).sort(), 'a closing branch appeared or disappeared')
+      .toEqual(CLOSING_BRANCHES);
+    const starved = Object.entries(perOutcome).filter(([, n]) => n < 4)
+      .map(([k, n]) => `${k}: ${n} closures`);
+    expect(starved, 'these closing branches are on their way to dead content').toEqual([]);
+    expect(total, 'no event closed a thread in 400 seasons').toBeGreaterThanOrEqual(100);
+
+    // EVERY OUTCOME THESE EVENTS WRITE IS ONE js/tr/threads.js CAN READ. The
+    // source rule in tr-threads.test.js checks the literal strings in the
+    // castle files; this checks the ones that actually reach a season, which
+    // is the half a source scan cannot do for a value built at runtime.
+    const unreadable = Object.keys(senses).filter(o => outcomeSense(o) == null);
+    expect(unreadable, 'these outcomes were written by a season and no event can branch '
+      + 'on them — add them to OUTCOME_SENSE in js/tr/threads.js').toEqual([]);
   });
 });

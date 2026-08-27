@@ -37,6 +37,7 @@ import '../js/tr/castle/cover.js';
 import '../js/tr/castle/romance.js';
 import '../js/tr/castle/callback.js';
 import '../js/tr/castle/testing.js';
+import '../js/tr/castle/journey.js';
 
 const BASE_CAST = roster.players.slice(0, 6).map(p => p.name);
 
@@ -1164,7 +1165,15 @@ describe('events cite residue: episode 7 names episode 2', () => {
     const notes = residueFor(C).concat(residueFor(D)).map(r => r.note || '');
     expect(fired, 'no citing event was eligible on a fresh pair — this check is vacuous')
       .toBeGreaterThan(0);
-    expect(notes.filter(n => /day /.test(n)), 'a fresh pair was handed a citation of a day '
+    // `/day \d/`, NOT `/day /` (Plan 5 Task 4). The looser pattern matched
+    // ordinary English — "laid the day out before sleeping", "a whole day out
+    // of the castle" — and went red on prose containing no citation at all,
+    // which would have made the word "day" unwritable anywhere in js/tr/castle/
+    // for the life of the project. It is a TIGHTENING of the estimator, not a
+    // loosening of the bar: `citeMoments` (js/tr/threads.js) emits a day only
+    // ever as `day ${ep}`, so every citation it can produce still matches, and
+    // a fabricated one ("day undefined") is caught by the next assertion.
+    expect(notes.filter(n => /day \d/.test(n)), 'a fresh pair was handed a citation of a day '
       + 'that never happened to them').toEqual([]);
     expect(notes.filter(n => /undefined|NaN/.test(n))).toEqual([]);
   });

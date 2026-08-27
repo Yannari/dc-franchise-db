@@ -407,3 +407,69 @@ registerEvent({
     return { branch: 'wrongly-suspected-irony', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 1 };
   },
 });
+
+
+// -- PLAN 5 TASK 4: THE `night` WINDOW ----------------------------------
+//
+// The `night` window runs after the Round Table, so `ctx.state` here is the
+// state of the room AS OF TONIGHT'S VOTE, not yesterday's - see the note on
+// emotionalStateOf in events.js, which walks through which windows see which
+// table. That is the whole point of putting a grief event here: somebody who
+// watched the room write their name down tonight is lying awake with the
+// empty rooms, and that is a different scene from the one at breakfast.
+
+// FOUR VARIANTS PER STATE, not two. This event is solo-capable and `night` is
+// a thin window, so it draws several times in a single season - the audit's
+// within-season repetition table caught it at five firings of one branch in one
+// season with a two-line pool, which is how a castle starts reading as a loop.
+const NIGHT_AWAKE_LINES = {
+  desperate: [
+    '{a} did not sleep. They had watched the room write their own name down and then had to lie in the dark and count how many.',
+    'It was not the empty beds keeping {a} awake. It was the number of people who had said their name at that table.',
+    '{a} went over the ballots in the dark until the order they had been read out stopped meaning anything.',
+    'There is no version of tonight {a} could lie down with, and {a} tried all of them before it got light.',
+  ],
+  paranoid: [
+    'Somebody had said {a}\'s name tonight, and {a} spent the dark working out who else had been thinking it.',
+    '{a} lay awake going through the room one by one, deciding which of them had meant it.',
+    'One name said out loud at that table was enough to keep {a} up until the corridor started making noises.',
+    '{a} kept coming back to who had looked away first, and could not let the question go long enough to sleep.',
+  ],
+  content: [
+    '{a} lay awake with the empty beds, doing the arithmetic nobody says out loud.',
+    'The castle is very quiet at night once there are fewer people in it, and {a} noticed.',
+    '{a} listened to a building built for a lot more people than were still in it.',
+    'It took {a} a long time to get to sleep, and it was not fear, and it was not nothing either.',
+  ],
+};
+
+registerEvent({
+  id: 'grief-nobody-sleeps',
+  family: FAMILY,
+  window: 'night',
+  weight(ctx) {
+    if (ctx.actors?.length !== 1) return 0;
+    // The castle has to have lost somebody for there to be an empty room.
+    if (!(gs.tr?.rounds || []).some(r => r.murdered)) return 0;
+    return isNervy(ctx.state?.[ctx.actors[0]]) ? 2.5 : 1.2;
+  },
+  fire(ctx, rng) {
+    const actor = ctx.actors[0];
+    const state = ctx.state?.[actor] || 'content';
+    // EVERY empty bed, not only the murdered ones. The weight above needs a
+    // murder to have happened (this is the grief family, and a banishment is
+    // something the room did in daylight), but the thing a person counts at
+    // three in the morning is how many beds are empty, and a banishment
+    // empties one exactly as thoroughly.
+    const gone = (gs.tr?.rounds || []).reduce((n, r) => n + (r.murdered ? 1 : 0) + (r.banished ? 1 : 0), 0);
+    const line = pick(rng, NIGHT_AWAKE_LINES[state] || NIGHT_AWAKE_LINES.content)
+      .replace(/\{a\}/g, actor);
+    const tail = gone === 1 ? 'One empty bed, so far.' : `${gone} empty beds, so far.`;
+    const t = openThread(FAMILY, [actor], ctx.ep, `${line} ${tail}`);
+    // THE BRANCH IS THE STATE. Returning a constant label made the audit's
+    // (id, branch) table read this as one outcome fired five times in a
+    // season when it is three genuinely different scenes chosen by the last
+    // Round Table, and that table is how repetition gets noticed at all.
+    return { branch: `awake-${state}`, actor, state, gone, threadId: t?.id };
+  },
+});

@@ -449,3 +449,66 @@ registerEvent({
     return { branch: 'synchronized', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
+
+
+// -- PLAN 5 TASK 4: THE `night` WINDOW ----------------------------------
+//
+// The `night` window runs LAST in the round - after the Round Table and after
+// the conclave. For a Traitor that is the one hour of the day with nobody to
+// perform for, and it is the only scene in this file where the cover story is
+// not being told to anybody. SOLO-CAPABLE deliberately: `_sceneActors` draws a
+// single actor about 40% of the time, and a window whose whole pool demands a
+// pair is a window that returns nothing on those draws.
+
+const ALONE_LINES = {
+  steady: [
+    '{a} was asleep inside ten minutes. Whatever the day had cost, it was not costing this.',
+    '{a} went over the day once, found nothing that needed fixing, and slept.',
+    'Nobody watching would have guessed anything from how easily {a} went down that night.',
+  ],
+  sleepless: [
+    '{a} lay awake running the whole day backwards, looking for the moment it had gone wrong.',
+    'It was nearly light before {a} stopped rehearsing tomorrow\'s version of today.',
+    '{a} counted every conversation twice and could not make the last one come out clean.',
+  ],
+  nearly: [
+    '{a} got as far as opening their mouth to say it out loud, in an empty room, and stopped.',
+    'There was a moment that night where {a} genuinely nearly told somebody, and it passed.',
+    '{a} said the true version once, quietly, to nobody, just to hear what it sounded like.',
+  ],
+};
+
+registerEvent({
+  id: 'cover-alone-with-it',
+  family: FAMILY,
+  window: 'night',
+  // A cover story is personal - see the note on _threadThisEventWouldAdvance
+  // in events.js. Solo scope, or a two-person scene silently misses the thread.
+  threadScope: 'solo',
+  citesResidue: true,
+  weight(ctx) {
+    if (!ctx.actors?.length) return 0;
+    const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
+    if (!actor) return 0;
+    // The night after the room came for you is a different night.
+    return isNervy(ctx.state?.[actor]) ? 3 : 2;
+  },
+  fire(ctx, rng) {
+    const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
+    const st = pStats(actor);
+    // Competence at carrying it, not permission to have it.
+    const steadyScore = (st.temperament / 10) * 0.6 + (st.strategic / 10) * 0.3;
+    const sleeplessScore = (1 - st.temperament / 10) * 0.6 + 0.2;
+    const nearlyScore = (st.loyalty / 10) * 0.5 + (1 - st.boldness / 10) * 0.3;
+    const total = steadyScore + sleeplessScore + nearlyScore;
+    const roll = rng() * total;
+    let branch;
+    if (roll < steadyScore) branch = 'steady';
+    else if (roll < steadyScore + sleeplessScore) branch = 'sleepless';
+    else branch = 'nearly';
+
+    const line = pick(rng, ALONE_LINES[branch]).replace(/\{a\}/g, actor);
+    const { thread, cited } = continueThread(FAMILY, [actor], ctx.ep, line);
+    return { branch, actor, threadId: thread?.id, cited, state: ctx.state?.[actor] || 'content' };
+  },
+});

@@ -326,7 +326,19 @@ export function citeMoments(thread, ep, max = 3, against = null) {
   // The quoted note is spliced INSIDE an em-dash parenthetical, so its own full
   // stop has to come off (review R3) or every multi-moment citation reads
   // "...anyone else. — and it had not stopped since: day 5 and day 6."
-  return `It went back to day ${first.ep} — ${_head(first.note)} — and it had not stopped since: ${tail}.`;
+  const quoted = _head(first.note);
+  // AND IF THE QUOTED SENTENCE ALREADY HOLDS AN EM-DASH, THE PARENTHETICAL
+  // CANNOT BE ONE (Plan 5 Task 4, found by dumping seasons and reading them).
+  // `cover-feign-fear` writes "X performed the exact right amount of fear at
+  // breakfast — no more, no less than anyone else.", and quoting that between
+  // two more em-dashes produced four dashes in one sentence with no way to
+  // tell which pair was the aside. Nothing could have caught it upstream: the
+  // note is well-formed on its own and only breaks when spliced. So the
+  // splice picks a delimiter the quoted text does not already use.
+  if (quoted.includes('—')) {
+    return `It went back to day ${first.ep}: ${quoted}. It had not stopped since: ${tail}.`;
+  }
+  return `It went back to day ${first.ep} — ${quoted} — and it had not stopped since: ${tail}.`;
 }
 
 /**

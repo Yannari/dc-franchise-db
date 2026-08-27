@@ -504,3 +504,67 @@ registerEvent({
     return { branch: 'misread', pair: [a, b], threadId: t?.id, bondDelta: -0.5 };
   },
 });
+
+
+// -- PLAN 5 TASK 4: THE `night` WINDOW ----------------------------------
+//
+// Night is the one window where the castle is quiet enough that a floorboard
+// is information. This is NOT a belief write and does not pretend to be one:
+// hearing somebody move at three in the morning tells you nothing about what
+// they are, which is the joke the whole format runs on. It moves a bond and
+// writes a suspicion beat, and the room does the rest of the work wrong.
+
+const DOOR_LINES = {
+  heard: [
+    '{a} was awake when {b} went past the door, and counted how long it was before {b} came back.',
+    'Somebody moved in the corridor after lights-out. {a} knew whose footsteps they were, and said nothing.',
+    '{a} lay still and listened to somebody who was not in their own room, and was fairly sure it was {b}.',
+  ],
+  imagined: [
+    '{a} spent half the night sure somebody had walked past, and half of it sure they had made it up.',
+    'There was a sound in the corridor and {a} built four hours of theory on it before dawn.',
+    '{a} heard something, decided it was {b}, and had no reason at all for deciding that.',
+  ],
+  caught: [
+    '{b} came back past the door and found {a} sitting up, wide awake, waiting to see who it would be.',
+    '{a} did not bother hiding that they had been listening, and {b} did not bother explaining.',
+    'They looked straight at each other in the corridor at three in the morning and neither said a word about it.',
+  ],
+};
+
+registerEvent({
+  id: 'susp-heard-in-the-corridor',
+  family: FAMILY,
+  window: 'night',
+  citesResidue: true,
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a] = ctx.actors;
+    // SPEC 5.3. Somebody the room came for today does not sleep, and does not
+    // stop listening. ctx.state is a frozen, read-only view of the last table.
+    return isNervy(ctx.state?.[a]) ? 3 : 1.5;
+  },
+  fire(ctx, rng) {
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    // What the listener ends up with: a sharp one hears a real thing, an
+    // anxious one invents one, and a bold mover gets seen coming back.
+    const heardScore = (sa.intuition / 10) * 0.6 + 0.15;
+    const imaginedScore = (1 - sa.temperament / 10) * 0.6 + 0.2;
+    const caughtScore = (sb.boldness / 10) * 0.5 + (1 - sb.intuition / 10) * 0.4;
+    const total = heardScore + imaginedScore + caughtScore;
+    const roll = rng() * total;
+    let branch;
+    if (roll < heardScore) branch = 'heard';
+    else if (roll < heardScore + imaginedScore) branch = 'imagined';
+    else branch = 'caught';
+
+    const line = pick(rng, DOOR_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const bondDelta = branch === 'caught' ? -1.5 : -0.5;
+    addBond(a, b, bondDelta);
+    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
+    return { branch, pair: [a, b], threadId: thread?.id, cited, bondDelta,
+      state: ctx.state?.[a] || 'content' };
+  },
+});

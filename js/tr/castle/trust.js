@@ -520,4 +520,78 @@ registerEvent({
   },
 });
 
+
+// -- PLAN 5 TASK 4: THE `night` WINDOW ----------------------------------
+//
+// `night` held ONE event in the whole pool (romance-shields-target-together)
+// and drew 16 firings in 200 seasons - 0.24% of everything the castle did. It
+// is also the last window of the round, so it runs AFTER the Round Table and
+// AFTER the conclave: whatever the room decided today is already decided, and
+// the only thing left is what two people say about it in the dark.
+//
+// A CLOSER, for the reason Plan 5's second amendment gives: the pool opens 22
+// threads a season and closes 0.86 of them. Lights-out is where a promise
+// either gets made properly or stops being worth making.
+
+const LAST_WORD_LINES = {
+  sworn: [
+    'The candles were out before {b} said it: whatever happens tomorrow, {a} has it in writing now, or as close as this place gets.',
+    '{b} waited until the room was dark to give {a} the promise straight, with no conditions attached to it.',
+    'It was the last thing either of them said that night, and {b} meant it: {a} would not be alone at that table.',
+  ],
+  hedged: [
+    '{a} asked in the dark and {b} gave an answer with just enough air in it to climb back out of later.',
+    '{b} said something that sounded like yes to {a}, and neither of them called it what it was.',
+    'The answer {b} gave {a} at lights-out would have covered either outcome, which {a} noticed and let go.',
+  ],
+  broken: [
+    '{b} told {a} in the dark that they could not promise that, and did not soften it.',
+    'It ended at lights-out. {b} said no to {a}, plainly, and rolled over.',
+    '{a} finally asked outright, and the answer {b} gave closed the whole thing.',
+  ],
+};
+
+registerEvent({
+  id: 'trust-last-word-before-lights-out',
+  family: FAMILY,
+  window: 'night',
+  // TRUE: the event only exists where these two already have an open trust
+  // story, and it writes its beat onto that thread before resolving it.
+  advancesThread: true,
+  citesResidue: true,
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    return findOpenThread(FAMILY, ctx.actors) ? 3 : 0;
+  },
+  fire(ctx, rng) {
+    const [a, b] = ctx.actors;
+    const st = pStats(b);
+    const bond = getBond(a, b);
+    // The person being ASKED is the one under test, same shape as this
+    // family's flagship. Nerve is what the dark changes: a bold, loyal player
+    // commits, a cautious one buys an exit, and a low-loyalty player says no.
+    const swearScore = (st.loyalty / 10) * 0.5 + (st.boldness / 10) * 0.3 + Math.max(0, bond) / 10 * 0.2;
+    const hedgeScore = (1 - st.boldness / 10) * 0.6 + 0.2;
+    const breakScore = (1 - st.loyalty / 10) * 0.5 + (st.strategic / 10) * 0.5;
+    const total = swearScore + hedgeScore + breakScore;
+    const roll = rng() * total;
+    let branch;
+    if (roll < swearScore) branch = 'sworn';
+    else if (roll < swearScore + hedgeScore) branch = 'hedged';
+    else branch = 'broken';
+
+    const line = pick(rng, LAST_WORD_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const thread = findOpenThread(FAMILY, [a, b]);
+    const bondDelta = branch === 'sworn' ? 3 : branch === 'hedged' ? 0 : -2;
+    if (bondDelta) addBond(a, b, bondDelta);
+    // Write the beat FIRST so the payoff carries the story it is paying off,
+    // then resolve. `hedged` is the branch that leaves it open, and it has to
+    // exist or this becomes an event that ends every trust story it touches.
+    const { note, cited } = advanceCiting(thread, ctx.ep, line);
+    const outcome = branch === 'sworn' ? 'passed-clean' : branch === 'broken' ? 'turned-back' : null;
+    if (outcome) closeThread(thread.id, ctx.ep, outcome);
+    return { branch, pair: [a, b], threadId: thread.id, cited, note, outcome, bondDelta };
+  },
+});
+
 export const _internal = { _sawMurderLastNight };

@@ -43,6 +43,7 @@ import '../tr/castle/cover.js';
 import '../tr/castle/romance.js';
 import '../tr/castle/callback.js';
 import '../tr/castle/testing.js';
+import '../tr/castle/journey.js';
 
 /**
  * The season's random stream — and the hash in front of it is load-bearing.

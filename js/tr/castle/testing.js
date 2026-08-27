@@ -364,3 +364,68 @@ registerEvent({
     return { branch, pair: [a, b], threadId, bondDelta };
   },
 });
+
+
+// -- PLAN 5 TASK 4: THE `night` WINDOW ----------------------------------
+//
+// The last check of the day, and the one that ends the probe. A test that is
+// never scored is not a test, and until this event the only place a testing
+// thread could be RESOLVED was `testing-decoy-secret` in evening - one event,
+// in the pool's most crowded window, behind a 5-episode pair cooldown.
+
+const NIGHT_CHECK_LINES = {
+  confirmed: [
+    '{a} went back over what they had asked {b} and what {b} had done about it, and it came out clean.',
+    'Before sleeping {a} put the whole test back together in their head, and {b} passed it twice.',
+    '{a} had been waiting all day for the thing that would prove them wrong about {b}, and it never arrived.',
+  ],
+  failed: [
+    '{a} laid the day out before sleeping and found the exact place {b} had failed it.',
+    'It took until lights-out for {a} to see it, and then it was the only thing {a} could see.',
+    '{a} worked out what {b} had actually done with it, and stopped pretending otherwise.',
+  ],
+  inconclusive: [
+    '{a} could not make the day prove anything about {b} either way, and it kept them up.',
+    'The test came back neither one thing nor the other, and {a} hated that more than a failure.',
+    '{a} ran it back three times before sleeping and still had nothing to show for it.',
+  ],
+};
+
+registerEvent({
+  id: 'testing-night-scores-it',
+  family: FAMILY,
+  window: 'night',
+  advancesThread: true,
+  citesResidue: true,
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    return findOpenThread(FAMILY, ctx.actors) ? 3 : 0;
+  },
+  fire(ctx, rng) {
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    // TWO PEOPLE'S STATS, because a test result is a joint fact: whether the
+    // tested player held (loyalty, temperament) AND whether the tester was
+    // sharp enough to read what they saw (mental, intuition).
+    const passScore = (sb.loyalty / 10) * 0.5 + (sb.temperament / 10) * 0.4;
+    const failScore = (1 - sb.loyalty / 10) * 0.5 + (sa.intuition / 10) * 0.4;
+    const noneScore = (1 - sa.mental / 10) * 0.6 + 0.2;
+    const total = passScore + failScore + noneScore;
+    const roll = rng() * total;
+    let branch;
+    if (roll < passScore) branch = 'confirmed';
+    else if (roll < passScore + failScore) branch = 'failed';
+    else branch = 'inconclusive';
+
+    const line = pick(rng, NIGHT_CHECK_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const thread = findOpenThread(FAMILY, [a, b]);
+    const bondDelta = branch === 'confirmed' ? 2 : branch === 'failed' ? -2.5 : 0;
+    if (bondDelta) addBond(a, b, bondDelta);
+    const { note, cited } = advanceCiting(thread, ctx.ep, line);
+    const outcome = branch === 'confirmed' ? 'passed-clean'
+      : branch === 'failed' ? 'failed-maliciously' : null;
+    if (outcome) closeThread(thread.id, ctx.ep, outcome);
+    return { branch, pair: [a, b], threadId: thread.id, cited, note, outcome, bondDelta };
+  },
+});

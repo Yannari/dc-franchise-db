@@ -29,7 +29,7 @@ import { gs } from '../core.js';
 import { findOpenThread, heatAt, openThreads, actFor } from './threads.js';
 
 /** Windows a round is built from (spec §5.6) — registerEvent rejects any other. */
-const KNOWN_WINDOWS = new Set([
+export const KNOWN_WINDOWS = new Set([
   'dawn', 'morning', 'journey-out', 'journey-back', 'evening', 'after-table', 'night',
 ]);
 

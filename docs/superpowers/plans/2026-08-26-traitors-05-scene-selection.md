@@ -484,3 +484,38 @@ branch's count is stable (the cheapest fix, since seeds are fixed and this costs
 runtime); or band the branch's SHARE of its event rather than an absolute count; or accept a
 lower floor with the noise stated. Whichever is chosen, state the separation the way every
 other band in this suite now does.
+
+### CORRECTION to Task 8: it is NOT distribution-neutral, and it must not consume rng draws
+
+I wrote that Task 8 "moves no distribution -- it changes only which sentence a firing prints."
+**That is false and it misplanned the task.** `fire(ctx, rng)` receives the SAME castle rng
+stream that drives `_sceneActors` and `pickEvent` (js/tr/events.js:605-606). Adding a
+`pick(rng, ...)` consumes an extra draw and reroutes the season from that point on.
+
+Measured, one event given a 4-line pool: firings 19015 -> 18459 (-2.9%), 38 of 41 low-count
+branches moved (mean |rel| 20.9%), and `romance-liability-exposed:oblivious` driven to 3,
+BELOW the branch floor. One cosmetic edit reddens the suite today. Forty-four events would be
+a pool-wide redistribution.
+
+**The refined rule, which also sharpens the resampling ruling above.** Not every content
+change resamples. Measured across four arms:
+
+- adding a variant to an EXISTING `pick()` pool -> **bit-identical** (`pick(rng, arr)` draws
+  once regardless of array length, so this is path-neutral by construction)
+- a weight change of +1e-6 -> bit-identical
+- a weight change of +1% on one unrelated event -> 6 of 41 low-count branches move, all by
+  exactly +/-1, mean |rel| 1.2%
+- a change that alters which event is drawn, or consumes an EXTRA rng draw -> 38-43 of ~45
+  low-count branches move, mean |rel| 20-28%
+
+So the hazard is specifically: **changing the draw sequence.** Everything else is safe.
+
+**Task 8 design ruling: do not introduce new `pick(rng, ...)` calls into constant-writing
+events.** Select the line deterministically from state the event already has -- a hash of
+(event id, actor names, ep, branch) -- which is varied, reproducible, and provably consumes
+no draw. Where an event ALREADY calls `pick()`, adding variants to that existing pool is
+free and is the preferred route. Verify path-neutrality the way the reviewer did: run 400
+seasons before and after and assert the firing tables are bit-identical.
+
+This also means Task 8 can run before or after Task 6 without disturbing it, which was the
+only reason the original ordering note existed.

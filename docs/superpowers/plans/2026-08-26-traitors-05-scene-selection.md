@@ -529,3 +529,54 @@ vitest` fails with "vitest is not recognized" while the packages themselves are 
 `npm rebuild` restores the 45 shims in a few seconds. `node node_modules/vitest/vitest.mjs
 run <files>` also works without them. Neither the packages nor the repo are damaged -- only
 the shims. Check this first if a task reports the test runner missing.
+
+---
+
+## Task 6 corrections — two more of my claims were differenced against baselines that never shipped
+
+**"Callback lost 22% of volume" is wrong.** Measured base `df17dda2` to head on identical
+seeds: callback **1892 -> 1743, -7.9%**, while TOTAL firings went **12,628 -> 19,022,
++50.6%**. Its SHARE fell 15.0% -> 9.2%, which is arithmetic, not starvation. The
+1829 -> 1428 -> 1701 sequence I recorded came from intermediate reports whose baselines never
+shipped. No fix was needed and none was made.
+
+The real callback finding is different and PRE-EXISTING: four of its eleven events take
+**90.2%** of the family (88.3% at base). A per-event dominance band cannot see it. That is
+content work, not calibration.
+
+**"The round budget is ZERO-SUM: new content STARVES old content" is too strong.** Budget
+utilisation was **60.9% at base** -- 39% of every round went unspent, because three windows
+held no content to spend it on. Task 4's fill converted that slack into 6,394 EXTRA firings
+rather than redistributing a fixed pot. Utilisation is now **90.7%**, so the constraint is
+real from here on, but it was not the mechanism when I wrote the rule. The per-window
+`ceil(remaining/windowsLeft)` fair-share cap is what moved evening and after-table, not a
+fixed pot.
+
+**Ruling: keep the 4-8 budget.** Raising it would make Task 8's constant-sentence repetition
+strictly worse (every event fires more often WITHIN a season), amends a spec value (5.6), and
+resamples every band for volume nobody has measured a need for.
+
+**The process lesson, now at four occurrences.** I adopted "measure base vs head, not report
+vs memory" for MEASUREMENTS and then kept promoting reported deltas into this plan's LESSONS
+without applying it. A number that reaches a plan as a rule outlives the report it came from
+and is read by every later task as settled fact. Lessons need the discipline more than
+measurements do, not less.
+
+## Task 9 (NEW): the deduction bands are not insulated, and `late lift` needs a control arm
+
+`late lift > 0.15` is the last band in the calibration file carrying the stale-constant shape,
+and Task 6 measured that **castle content DOES move it -- +3.3pp base to head.**
+
+This falsifies an assumption written into that file and into my Task 4 ruling: that the
+zero-belief-write constraint insulates the deduction bands from castle content. It does not.
+**Castle events move bonds, and bonds move ballots.** The belief firewall stops the castle
+writing what the room KNOWS; nothing stops it changing how the room FEELS, and votes read
+both. It moved the safe way this time, which is luck rather than design.
+
+**Task 9: give `late lift` a control arm** in the shape that has worked five times in this
+plan -- the same seeds, the same code path, with the deduction channel it measures switched
+off -- and band the separation rather than the absolute value. Until then, every "no deduction
+band moved" verdict in this plan's history rests on an assumption now known to be false, and
+those verdicts happened to be right rather than provably right.
+
+Not a re-measurement, so it was correctly not cascaded into Task 6.

@@ -605,7 +605,10 @@ describe('and the screen says who is no longer in what', () => {
     const run = readFileSync('js/bb-run.js', 'utf8');
     expect(run, 'it never reaches the episode').toMatch(/allianceDissolved/);
     const vp = readFileSync('js/vp-screens.js', 'utf8');
-    expect(vp, 'it never reaches a screen').toMatch(/is finished —/);
+    // The alliance keeps its row and is greyed out, rather than being replaced
+    // by a sentence under a list that still showed it in play.
+    expect(vp, 'it never reaches a screen').toMatch(/bbf-ally is-over/);
+    expect(vp).toMatch(/nobody left trusts anybody/);
   });
 });
 
@@ -889,7 +892,8 @@ describe('an alliance that stops existing says so', () => {
             if (alive.length < 2) continue;   // everybody left; that explains itself
             checked++;
             const both = prev.html + html;
-            const said = (/is finished/.test(both) || /has thrown/.test(both))
+            // Greyed in the list, or named in the thrown-out line under it.
+            const said = (/is-over/.test(both) || /has thrown/.test(both))
               && both.includes(a.name);
             if (!said) {
               unexplained.push(`"${a.name}" was in week ${prev.ep.num} and gone from week `

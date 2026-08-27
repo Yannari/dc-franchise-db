@@ -1324,10 +1324,29 @@ function _snapshotHouse(full = true, roster = null) {
 }
 
 function _attachRomance(week, rng) {
+  /* ── COUPLES THAT ENDED THIS WEEK ──
+     `_snapshotHouse` filters broken showmances out of every stretch, exactly as
+     it drops a dissolved alliance, so a couple stopped being drawn with nothing
+     said. Recorded by DIFFING across this stage rather than by reading
+     `breakupEp`: the romance pipeline runs after the week's closing snapshot,
+     so a snapshot taken there saw none of it — measured at 14 break-ups and 0
+     recorded — and two of the paths that end a couple never set the field at
+     all. */
+  const _liveKey = sh => [...(sh.players || [])].sort().join('|');
+  const _before = new Map((gs.showmances || [])
+    .filter(sh => sh.phase !== 'broken-up' && !sh.broken)
+    .map(sh => [_liveKey(sh), sh]));
   // These beats are appended to an act whose cap window has already closed,
   // so the bridges' addBond calls were the biggest hole in the fence.
   const beats = _cappedBondWindow(() =>
     [...runHouseRomance(week, rng), ...runHouseMaintenance(week, rng)]);
+  for (const sh of gs.showmances || []) {
+    const key = _liveKey(sh);
+    if (!_before.has(key)) continue;
+    if (sh.phase !== 'broken-up' && !sh.broken) continue;
+    (week.showmanceEnded ||= []).push({ players: [...(sh.players || [])],
+      type: sh.breakupType || null, by: sh.breakupVoter || null });
+  }
   // A house showmance forms ORGANICALLY — the shared pipeline stamps it
   // "camp events", which answers nothing. The week knows better: it just
   // aired the scenes. A newly formed showmance gets the last beat this week

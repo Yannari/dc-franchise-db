@@ -17159,9 +17159,11 @@ function _bbfHold(name, members, boardFor, away = false, wasBoardFor = null, bar
   // side knows how that person is holding up. Present, unreachable, greyed.
   if (away) {
     return `<span class="bbf-hold is-away" title="${_bbEsc(name)} — on the other side of the wall">
-      ${_bbAvatar(name, 22)}<b>·</b></span>`;
+      <span class="bbf-hold-face">${_bbAvatar(name, 34)}</span><b>·</b></span>`;
   }
-  if (!row) return _bbAvatar(name, 22);
+  // No board row means no reading to show. A `.bbf-hold` wrapper here would
+  // draw an empty holder where a digit belongs.
+  if (!row) return _bbAvatar(name, 34);
   const v = row.loyalty;
   const tone = v >= 7 ? '#3fb950' : v >= 5 ? '#57a6e8' : v >= 3.5 ? '#d29922' : '#f47067';
   const weak = board.weakest?.name === name;
@@ -17191,7 +17193,8 @@ function _bbfHold(name, members, boardFor, away = false, wasBoardFor = null, bar
     ? ` — ${delta > 0 ? 'up' : 'down'} ${Math.abs(delta).toFixed(1)} since ${bar < 1.5 ? 'the last feed' : 'last week'}`
     : '';
   return `<span class="bbf-hold ${weak ? 'is-weak' : ''}${moved ? ' has-moved' : ''}" title="${_bbEsc(name)} — ${_bbEsc(row.reason)}${why}">
-    ${_bbAvatar(name, 22)}<b style="color:${tone}">${v.toFixed(1)}</b>${arrow}</span>`;
+    <span class="bbf-hold-face">${_bbAvatar(name, 34)}</span>
+    <b style="color:${tone}">${v.toFixed(1)}</b>${arrow}</span>`;
 }
 
 /**
@@ -17269,13 +17272,25 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
     best.names.forEach(n => seen.add(n));
   }
 
+  const _endedPairs = new Set((ep?.showmanceEnded || [])
+    .map(d => [...(d.players || [])].sort().join('|')));
   const showmances = (here?.showmances || snap.showmances || (typeof gs !== 'undefined' && gs.showmances) || [])
+    .filter(sh => !_endedPairs.has([...(sh.players || [])].sort().join('|')))
     .filter(sh => sh.phase !== 'broken-up' && !sh.broken && (sh.players || []).every(n => inHouse.has(n)));
   const isShowmance = (a, b) => showmances.some(sh =>
     (sh.players || []).includes(a) && (sh.players || []).includes(b));
 
+  /* ── A GROUP THE WEEK HAS ALREADY BURIED IS NOT IN PLAY ──
+     Most alliances die in the maintenance pass that runs AFTER the last stretch
+     is snapshotted, so they are still listed in every screen of the week they
+     ended in and then simply absent from the next episode. Measured: only 4 of
+     22 dissolutions ever reached a screen that could show them as over. They
+     come out of the live list here and are drawn once, greyed, at the bottom —
+     which is also what stops one screen showing a group as in play and finished
+     at the same time. */
+  const _endedNames = new Set((ep?.allianceDissolved || []).map(d => d.name));
   const alliances = (here?.alliances || snap.namedAlliances || (typeof gs !== 'undefined' && gs.namedAlliances) || [])
-    .filter(a => a.active !== false)
+    .filter(a => a.active !== false && !_endedNames.has(a.name))
     .map(a => ({ ...a, members: (a.members || []).filter(m => inHouse.has(m)) }))
     .filter(a => a.members.length >= 2)
     .slice(0, 5);
@@ -17347,7 +17362,7 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
     const moved = Math.abs(delta) >= 0.4;
     const pct = Math.min(100, Math.abs(p.v) * 10);
     return `<div class="bbf-rel">
-      <span class="bbf-rel-faces">${_bbAvatar(a, 24)}${_bbAvatar(b, 24)}</span>
+      <span class="bbf-rel-faces">${_bbAvatar(a, 34)}${_bbAvatar(b, 34)}</span>
       <span class="bbf-rel-who">${a} &amp; ${b}</span>
       <span class="bbf-rel-mid">
         <span class="bbf-rel-lab" style="color:${lab.color}">${lab.word}${
@@ -17407,22 +17422,60 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
             ? `${a.members.filter(m => !away(m)).length}/${a.members.length}` : a.members.length}</span>
         </div>`).join('')
         : `<div style="font-size:11px;color:#484f58">Nothing anybody has been willing to name.</div>`}
-      ${(ep?.allianceDissolved || []).length || (ep?.allianceDepartures || []).length ? `<div class="bbf-gone">
-        ${(ep.allianceDissolved || []).map(d => `<div class="bbf-gone-row">
-          <b>${_bbEsc(d.name)}</b> is finished — ${
-            d.reason === 'insufficient-live-members' ? `there is nobody left in it`
-            : d.reason === 'betrayal' ? `it could not survive being betrayed from the inside`
-            : `nobody left in it trusts anybody else in it`}.
-        </div>`).join('')}
-        ${(ep.allianceDepartures || []).map(d => `<div class="bbf-gone-row">
+      ${(() => {
+        /* ── A GROUP THAT ENDED STAYS IN THE LIST, GREYED, UNTIL THE WEEK IS OVER ──
+           It used to be a sentence UNDER the panel while the alliance was still
+           drawn above it in full colour, so one screen said a group was in play
+           and finished at the same time. Now it keeps its row — the same faces,
+           the same holds — greyed out with the reason where the member count
+           was, from the stretch it actually died in. Earlier screens of the
+           same week still show it alive, because it was; the next episode
+           drops it entirely, because `allianceDissolved` is per week. */
+        const _snapAll = here?.alliances || snap.namedAlliances || [];
+        const gone = (ep?.allianceDissolved || []).map(d => ({
+          ...d,
+          // Prefer the roster the week itself was drawing.
+          members: ((_snapAll.find(a => a.name === d.name)?.members) || d.members || [])
+            .filter(m => inHouse.has(m)),
+        })).filter(d => (d.members || []).length);
+        const why = d => d.reason === 'insufficient-live-members' ? 'nobody left in it'
+          : d.reason === 'betrayal' ? 'betrayed from the inside'
+          : 'nobody left trusts anybody';
+        const rows = gone.map(d => `<div class="bbf-ally is-over">
+          <span class="bbf-ally-n">${_bbEsc(d.name)}</span>
+          <span class="bbf-ally-m">${(d.members || []).map(m =>
+            `<span class="bbf-hold"><span class="bbf-hold-face">${_bbAvatar(m, 34)}</span><b>·</b></span>`).join('')}</span>
+          <span class="bbf-ally-c">${why(d)}</span>
+        </div>`).join('');
+        const thrown = (ep?.allianceDepartures || []).map(d => `<div class="bbf-gone-row">
           <b>${_bbEsc(d.alliance || 'The alliance')}</b> has thrown ${_bbEsc(d.player)} out — ${_bbEsc(d.reason || 'expelled')}.
-        </div>`).join('')}
-      </div>` : ''}
-      ${showmances.length ? `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
+        </div>`).join('');
+        return rows + (thrown ? `<div class="bbf-gone">${thrown}</div>` : '');
+      })()}
+      ${(() => {
+        /* A couple that ended keeps its row for the rest of the episode, greyed,
+           with what happened where the holds were — the same treatment a
+           dissolved alliance gets, and for the same reason: a pair that simply
+           stops being drawn reads as a bug rather than as a break-up. */
+        const overNow = (ep?.showmanceEnded || [])
+          .filter(d => (d.players || []).every(n => inHouse.has(n)));
+        if (!showmances.length && !overNow.length) return '';
+        const said = d => d.type === 'voted-out' ? 'one of them was voted out'
+          : d.type === 'jealousy' ? 'it did not survive the third person'
+          : d.type === 'game' ? 'the game got in the way of it'
+          : 'it ended';
+        return `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
         ${showmances.map(sh => `<div class="bbf-ally">
           <span class="bbf-ally-n" style="color:#ff7b72">${(sh.players || []).join(' &amp; ')}</span>
           <span class="bbf-ally-m">${(sh.players || []).map(m => _bbfHold(m, sh.players || [], boardFor, away(m), wasBoardFor, holdBar)).join('')}</span>
-        </div>`).join('')}` : ''}
+        </div>`).join('')}
+        ${overNow.map(d => `<div class="bbf-ally is-over">
+          <span class="bbf-ally-n" style="color:#ff7b72">${(d.players || []).join(' &amp; ')}</span>
+          <span class="bbf-ally-m">${(d.players || []).map(m =>
+            `<span class="bbf-hold"><span class="bbf-hold-face">${_bbAvatar(m, 34)}</span><b>·</b></span>`).join('')}</span>
+          <span class="bbf-ally-c">${said(d)}</span>
+        </div>`).join('')}`;
+      })()}
     </div>
   </div>`;
 }

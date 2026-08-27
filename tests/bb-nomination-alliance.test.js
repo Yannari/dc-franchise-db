@@ -776,3 +776,50 @@ describe('reloading one old episode', () => {
     expect(mismatches, `the status screen disagrees with the week it is drawing:\n${out.join('\n')}`).toBe(0);
   });
 });
+
+describe('the speech only claims what the speaker knows', () => {
+  // "I hope this appears really only when they know about their alliance, or at
+  // least that there is something."
+  //
+  // It did not. The line read gs.namedAlliances directly — the truth of the
+  // house rather than anything the Head of Household had worked out — so
+  // somebody with no idea a group existed announced its existence at their own
+  // ceremony. Measured over ten seasons: of twelve such speeches, SIX were
+  // given by somebody whose knowledge of that group was zero.
+  //
+  // The house has tracked who has noticed what, per person, on a 0..1 scale,
+  // the whole time. It asks now: above 0.55 they can state it as a fact,
+  // between 0.25 and 0.55 they can only say what they have noticed, and below
+  // that this branch has nothing to offer and the speech falls through to a
+  // reason they can stand behind.
+  it('does not announce an alliance the speaker has never noticed', async () => {
+    const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const flat = () => Object.fromEntries(KEYS.map(k => [k, 5]));
+    const names = ['Hoh', 'Them', 'A', 'B', 'C', 'D'];
+    seedGame(names.map(n => ({ name: n, archetype: 'floater', gender: 'f',
+      sexuality: 'straight', stats: flat() })), { episode: 6, eliminated: [], namedAlliances: [] });
+    gs.activePlayers = [...names];
+    gs.bb = { stats: {}, house: { suspicion: {} }, weeks: [{ num: 6 }], blocs: null };
+    gs.showmances = []; gs.intentions = {}; gs.knowledge = {};
+    gs.namedAlliances = [{ name: 'The Secret', active: true, members: ['Them', 'A', 'B'] }];
+    addBond('Hoh', 'Them', -1);
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, getBond, getPerceivedBond });
+
+    // Nobody has told the Head of Household anything.
+    const { _bbNomReason } = await import('../js/vp-screens.js');
+    const line = _bbNomReason('Hoh', 'Them', 'target', { num: 6 });
+    expect(line, 'a group they have never heard of, announced as fact')
+      .not.toMatch(/group in this house that does not include me|you have numbers and I am not one of them/);
+    expect(line, 'a hunch they have no basis for')
+      .not.toMatch(/cannot prove any of this|luckiest person in this house/);
+  });
+
+  it('reads the house knowledge layer rather than the roster', () => {
+    const vp = readFileSync('js/vp-screens.js', 'utf8');
+    expect(vp).toMatch(/knowledgeOf\(hoh, `a:\$\{a\.name\}`\)/);
+    // Three answers, not two.
+    expect(vp).toMatch(/_sees >= 0\.55/);
+    expect(vp).toMatch(/_sees >= 0\.25/);
+  });
+});

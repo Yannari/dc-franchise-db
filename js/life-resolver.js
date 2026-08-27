@@ -341,7 +341,7 @@ export function fameOf(career) {
  *           correct: the resolver should not invent a couple out of nothing.
  */
 export function resolveOffSeason({
-  season, careers = [], events = [], cast = [], pairs = [], seedSalt = '',
+  season, careers = [], events = [], cast = [], pairs = [], brokenPairs = [], seedSalt = '',
   // Who knows whom. Built once by the caller and passed in, since it is the
   // same for every player in one resolution.
   graph = null,
@@ -372,6 +372,11 @@ export function resolveOffSeason({
   // The key is built inline rather than through `pairKey`, which is declared
   // forty lines below this and would be in its temporal dead zone here.
   const fromSeasonPair = new Set(pairs.map(x => [x[0], x[1]].sort().join('|')));
+  // Couples the audience watched break up. `pairs` deliberately excludes them,
+  // which is right for proposing NEW couples and wrong for the ones who were
+  // already together: without this the off-season rolled the ordinary odds on
+  // a relationship the season had already ended on screen.
+  const endedOnScreen = new Set((brokenPairs || []).map(x => [x[0], x[1]].sort().join('|')));
   // Handled once per couple: a relationship is ONE event, so resolving it from
   // both sides would either duplicate it or, worse, move it two stages.
   const settled = new Set();
@@ -581,14 +586,19 @@ export function resolveOffSeason({
         endChance = Math.max(endChance, 0.72);
       }
 
-      if (r() < endChance) {
+      // What the audience watched is not a probability. If this couple's
+      // showmance ended on screen this season, the relationship ended; the only
+      // thing left to decide is what it is called.
+      const brokeOnScreen = endedOnScreen.has(pairKey(slug, partner));
+      if (brokeOnScreen || r() < endChance) {
         // A marriage separates before it divorces; anything else just ends, and
         // how loudly depends on how public it was.
         const kind = stage === 'married' ? 'separated'
           : stage === 'engaged' || stage === 'living-together' ? 'broke-up'
-          // Nothing that follows an affair "quietly ended". The row above says
+          // Nothing that follows an affair "quietly ended", and nothing that
+          // happened in front of a camera crew did either. The row above says
           // what happened; this one must not contradict it by shrugging.
-          : (!strayed && r() < 0.5) ? 'quietly-ended' : 'broke-up';
+          : (!strayed && !brokeOnScreen && r() < 0.5) ? 'quietly-ended' : 'broke-up';
         emit(slug, kind, { whom: partner });
       } else if (r() < (RATES.advance[stage] || 0)) {
         // A couple that came out of a season together, or has already been

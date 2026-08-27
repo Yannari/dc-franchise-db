@@ -18240,9 +18240,27 @@ export function _bbNomReason(hoh, name, role, ep) {
     `"${N}, you have won ${comps} competitions. I cannot beat you at the end and I am not going to wait around and hope somebody else takes the shot."`,
     `"${N}, ${comps} wins. Anybody sitting next to you at the end loses, and everybody in this room can count."`,
   ]);
-  if (allies.length && bond < 3) return say([
+  /* ── ONLY IF THEY ACTUALLY KNOW ABOUT IT ──
+     This read `gs.namedAlliances` directly, which is the truth of the house
+     rather than anything the Head of Household has worked out — so somebody
+     with no idea a group existed announced its existence at their own
+     ceremony. The house already tracks who has noticed what, per person, on a
+     0..1 scale; this now asks.
+     Three answers, because "I know" and "I suspect" are different sentences
+     and neither of them is "I have no idea": above 0.55 they can say it as a
+     fact, between 0.25 and 0.55 they can only say what they have noticed, and
+     below that this branch has nothing to offer and the speech falls through
+     to a reason they can actually stand behind. */
+  const _sees = allies.reduce((most, a) => {
+    try { return Math.max(most, knowledgeOf(hoh, `a:${a.name}`)); } catch { return most; }
+  }, 0);
+  if (allies.length && bond < 3 && _sees >= 0.55) return say([
     `"${N}, there is a group in this house that does not include me, and you are in it. That is the whole reason. Nothing about you personally."`,
     `"${N}, you have numbers and I am not one of them. I would rather do something about that this week than next."`,
+  ]);
+  if (allies.length && bond < 3 && _sees >= 0.25) return say([
+    `"${N}, I cannot prove any of this, and I am not going to stand here and pretend I can. The same names keep coming out of the same rooms, and yours is one of them."`,
+    `"${N}, either you are in something or you are the luckiest person in this house. I have to pick one of those to believe, and I have one week to be wrong in."`,
   ]);
   if (bond <= -3) return say([
     `"${N}, we have not been able to have a straight conversation ${frictionTime}. I would rather do this than keep pretending we are fine."`,

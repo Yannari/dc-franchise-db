@@ -137,6 +137,34 @@ export function lifeContext(pdb = {}, sdb = {}, roster = {}) {
       castBySeason.get(d.seasonId).push(p.id);
     }
   }
+  /**
+   * Couples whose showmance ENDED on screen this season.
+   *
+   * `pairsFor` drops these, correctly — they did not walk out of the finale
+   * together, so they must not be proposed as a new couple. But a pair who
+   * were ALREADY together walking in, and broke up in front of the audience,
+   * were then resolved as though the season had not happened: the off-season
+   * rolled the ordinary odds and mostly kept them together. The log has to
+   * agree with the episodes.
+   */
+  const brokenPairsFor = seasonId => {
+    const out = [];
+    const seen = new Set();
+    for (const c of careers) {
+      for (const d of c.details || []) {
+        if (d.seasonId !== seasonId || !d.showmance) continue;
+        if (d.showmanceEnded !== 'broken') continue;
+        const other = careers.find(x => x.name === d.showmance);
+        if (!other) continue;
+        const key = [c.id, other.id].sort().join('|');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push([c.id, other.id]);
+      }
+    }
+    return out;
+  };
+
   const pairsFor = seasonId => {
     const out = [];
     const seen = new Set();
@@ -164,6 +192,7 @@ export function lifeContext(pdb = {}, sdb = {}, roster = {}) {
     careers,
     castBySeason,
     pairsFor,
+    brokenPairsFor,
     names: Object.fromEntries(players.map(p => [p.id, p.name])),
     people,
     graph: socialGraph(careers),
@@ -207,6 +236,7 @@ export function resolveGapWith(ctx, season, log) {
     people: ctx.people,
     cast: ctx.castBySeason.get(season.seasonId) || [],
     pairs: ctx.pairsFor(season.seasonId),
+    brokenPairs: ctx.brokenPairsFor ? ctx.brokenPairsFor(season.seasonId) : [],
   });
 }
 

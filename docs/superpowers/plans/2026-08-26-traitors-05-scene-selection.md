@@ -300,3 +300,21 @@ The continuity control floor is a function of the pool's advancer DECLARATION ra
 only of `CONTINUATION_SCENE_P`. Re-labelling moved both arms (shipped 36.14% -> 55.96%,
 guard-off control 23.29% -> 36.07%) while widening separation 12.84pp -> 19.89pp. Any later
 task that declares or undeclares the flag moves this band without touching the guard.
+
+### Corollary for Tasks 4 and 5: add CLOSERS, not advancers
+
+Task 2 measured why declaring 17 more advancers cost 0.5pp of payoff rate. Closer events
+were not out-drawn -- their yield fell. A closer firing closed a thread 0.390 times before,
+0.347 after (-11%): it lands more often on a pair with no open thread of its own family and
+opens one instead of closing one. Guard 1's boost is family-scoped, so newly-declared
+advancers take a larger share of exactly the scenes where a matching live thread exists,
+and closers get the remainder.
+
+Measured, 200 seasons: closer firings 467 -> 450 (-3.6%), threads opened 4601 -> 4483
+(-2.6%), threads CLOSED 182 -> 156 (-14.3%).
+
+**The flag trades payoffs for length at roughly one payoff per 4.5 extra beats.** A story
+that keeps advancing is a story that has not paid off. Since a payoff is what makes a thread
+legible to a viewer, Tasks 4 and 5 should author CLOSING events into the crowded windows
+(evening, after-table) rather than more advancers. This is the opposite of what the first
+amendment's withdrawn coverage target would have produced.

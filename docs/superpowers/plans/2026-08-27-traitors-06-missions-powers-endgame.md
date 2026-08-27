@@ -634,3 +634,50 @@ seasons now END SOONER -- fixed by raising the sample 3,200 -> 4,200, **not the 
   bands. Every task since Plan 5 has declined it for the same correct reason.
 - `voice-on-the-stair` writes ~23 times in 200 seasons against a floor of 12 -- guarded, but
   near the edge of measurability.
+
+---
+
+# CORRECTION: carve-out B was INVERTED, and it was my error to record it
+
+The plan stated: *"the faithful-win swing is ENTIRELY MECHANICAL -- `name-your-own` kills a
+Traitor the room did not earn, and no later task may credit deduction with it."*
+
+**That is backwards.** Three-arm ablation on identical seeds, paired McNemar:
+
+| n | variants OFF | mechanic-only | full | swing | mechanic share |
+|---|---|---|---|---|---|
+| 200 | 44.00% | 53.50% | 53.00% | 9.00pp | **105.6%** |
+| 400 | 48.75% | 53.25% | 55.25% | 6.50pp | 69.2% |
+| **1200** | **50.92%** | **51.17%** | **54.58%** | **3.67pp** | **6.8%** |
+
+mechanic-only vs variants-off = +0.25pp, **p=0.86**. Full vs mechanic-only = +3.42pp,
+**p=0.021**. **The evidence channels carry 93% of the effect.** The instruction is STRUCK, not
+softened: later tasks MAY credit deduction with this.
+
+**How it happened, and it is the sharpest lesson of the plan.** Task 8 discovered that 400
+seasons is too small to price a channel firing on ~5% of nights -- and then took this
+attribution at **200** seasons, on `name-your-own`, which fires ~47 times in 200 seasons. It
+applied its own lesson to its enrichment z-scores and not to its band attribution, in the same
+task. I read the number and promoted it into this plan as binding on every future task.
+
+**A lesson learned in one measurement does not automatically reach the other measurements in
+the same task.** When a task establishes a methodological finding, sweep that task's OWN
+figures against it before recording any of them.
+
+Carve-out A (Task 6, ~0.97pp of late lift is Traitor self-destruction) is **CONFIRMED in
+sign**. A paired static recount -- drop every Traitor-on-Traitor ballot, re-resolve plurality
+-- gives 0.16pp of a 24.68pp late lift over 3,170 tables; the plan's 0.97pp is a full
+re-simulation including downstream population effects. Both small, same-signed, and the
+carve-out errs toward over-reserving. **Keep it.**
+
+## Also correct in the record
+
+- **Murder variant percentages are quoted against an unstated denominator.** The plan's
+  standard 70.30% / others 4.43-5.57% does not reproduce: over all nights it is 81.63% /
+  2.74-3.45%, over ep>=2 nights 79.14% / 3.11-3.91%. The **counts** reconcile (92-115 firings
+  per 400 seasons each). Restate against a named denominator.
+- Betrayal @3 reads 88.56% +/- 4.06 at n=1200, not 93.9% (plan high ~2.6 sd). @5 reads 42.53%
+  vs the plan's ~47% (~1.6 sd high). Both were 400-season figures on rare states -- the same
+  sample-size problem, smaller.
+- Task 7's pot figure (63,632) was taken before Task 8 shortened seasons and never re-taken.
+  Head is 60,780.

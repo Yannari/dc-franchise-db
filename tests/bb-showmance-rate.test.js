@@ -6,9 +6,11 @@
 // involving a hero — because the two things that were supposed to control this
 // barely did.
 //
-//   THE CAP WAS A FLAT FOUR. A house of fourteen could carry three couples at
-//   once while a full Total Drama cast of twenty-two carried the same number.
-//   It is one per seven people now, floored at one: fourteen carries two.
+//   THE CAP WAS A FLAT FOUR, and it counted couples who had walked in
+//   TOGETHER — so a cast with a history could never form a new one at all,
+//   while a house of fourteen still ran three. It is three concurrent now,
+//   counting only the ones that formed in the house, and it tapers as the
+//   roster shrinks because three couples among a final six is a double date.
 //
 //   THE ARCHETYPE BARELY MATTERED. The first move needs a spark to reach a
 //   threshold, and that threshold was 0.5 for a showmancer against 0.8 for
@@ -59,9 +61,10 @@ describe('the number of couples a house can carry', () => {
         if (!simulateBBEpisode()) break;
         weeks++;
         const live = (gs.showmances || []).filter(sh => sh.phase !== 'broken-up'
+          && sh.origin !== 'arrived-together'
           && (sh.players || []).every(p => (gs.activePlayers || []).includes(p)));
-        // One per seven people, and the roster only shrinks.
-        const room = Math.max(1, Math.floor((gs.activePlayers || []).length / 7));
+        // Three, tapering with the roster, and counting only what formed here.
+        const room = Math.max(1, Math.min(3, Math.floor((gs.activePlayers || []).length / 4)));
         expect(live.length,
           `${live.length} live showmances with ${(gs.activePlayers || []).length} in the house`)
           .toBeLessThanOrEqual(room + 1);   // +1: a couple can outlive the shrinking cap
@@ -69,14 +72,18 @@ describe('the number of couples a house can carry', () => {
       }
     }
     expect(weeks).toBeGreaterThan(20);
-    // The reported season had three at once in a house of fourteen.
-    expect(peak, 'still running three couples at once in a full house').toBeLessThan(3);
+    expect(peak, 'more concurrent couples than the ceiling allows').toBeLessThanOrEqual(3);
   });
 
   it('scales the ceiling with the cast instead of using a flat four', () => {
     const romance = readFileSync('js/romance.js', 'utf8');
     expect(romance, 'the cap is still a constant').toMatch(/function showmanceCap/);
-    expect(romance).toMatch(/Math\.max\(1, Math\.floor\(\(Number\(houseSize\) \|\| 0\) \/ 7\)\)/);
+    expect(romance).toMatch(/Math\.max\(1, Math\.min\(3, Math\.floor\(\(Number\(houseSize\) \|\| 0\) \/ 4\)\)\)/);
+    // A couple who walked in together is not something the season decided to
+    // make, and counting them meant a cast with a history could never form a
+    // new one.
+    expect(romance, 'the cap still counts couples who arrived together')
+      .toMatch(/origin !== 'arrived-together'/);
     // Both routes into a showmance have to respect it, or the other one
     // quietly becomes the way every couple forms.
     expect((romance.match(/showmanceCap\(/g) || []).length,

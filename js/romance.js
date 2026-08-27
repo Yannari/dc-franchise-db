@@ -282,8 +282,8 @@ export function checkFirstMove(ep) {
     // Create the actual showmance
     if (!gs.showmances) gs.showmances = [];
     // Check cap again
-    const activeShowmances = gs.showmances.filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p)));
-    // Same ceiling the organic route uses. See `showmanceCap`.
+    const activeShowmances = formedHere(gs.showmances, gs.activePlayers || []);
+    // Same ceiling the organic route uses. See `showmanceCap` and `formedHere`.
     if (activeShowmances.length >= showmanceCap((gs.activePlayers || []).length)) return true;
 
     // Determine romance origin type from spark context + mover archetype
@@ -554,12 +554,32 @@ export function getShowmancePartner(name) {
 /**
  * How many couples a cast can be running at the same time.
  *
- * One per seven people, floored at one. A flat four meant a house of fourteen
- * could carry three at once by week five while a full Total Drama cast of
- * twenty-two carried the same number.
+ * Three, which is the number the format can carry without every conversation
+ * in the house being a relationship — and it counts only the ones that FORMED
+ * here (see `formedHere`), because a pair who walked in together is not
+ * something the season decided to do.
+ *
+ * The taper is for the end of a season rather than the start of one: three
+ * couples among a final six is not a house, it is a double date, so the
+ * ceiling comes down as the roster does.
  */
 function showmanceCap(houseSize) {
-  return Math.max(1, Math.floor((Number(houseSize) || 0) / 7));
+  return Math.max(1, Math.min(3, Math.floor((Number(houseSize) || 0) / 4)));
+}
+
+/**
+ * The couples this ceiling is actually about.
+ *
+ * A pair who walked in together is not something the season decided to make —
+ * it arrived, out of the life layer, already true. Counting them against the
+ * cap meant a cast carrying two established couples could never form a single
+ * new one, which is the opposite of what the limit is for: it exists to stop
+ * the house pairing everybody off, not to punish a cast for having a history.
+ */
+function formedHere(list, active) {
+  return (list || []).filter(sh => sh.phase !== 'broken-up'
+    && sh.origin !== 'arrived-together'
+    && (sh.players || []).every(p => active.includes(p)));
 }
 
 export function checkShowmanceFormation(ep) {
@@ -569,13 +589,11 @@ export function checkShowmanceFormation(ep) {
 
   // ── HOW MANY OF THESE A SEASON CAN CARRY AT ONCE ──
   //
-  // Four was a flat number for any cast of any size. A house of fourteen was
-  // running three couples by week five, which is more than the format has
-  // usually managed in a whole season — and with none of them a showmancer,
-  // because nothing here made the archetype matter much. One couple per seven
-  // people, floored at one: fourteen carries two, eight carries one, and a
-  // full Total Drama cast still reaches four.
-  const activeShowmances = gs.showmances.filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => active.includes(p)));
+  // Four was a flat number for any cast of any size, and it counted couples
+  // who had walked in already together — so a cast with a history could never
+  // form a new one, and a house of fourteen was still running three by week
+  // five with none of them a showmancer. See `showmanceCap` and `formedHere`.
+  const activeShowmances = formedHere(gs.showmances, active);
   if (activeShowmances.length >= showmanceCap(active.length)) return;
 
   for (let i = 0; i < active.length; i++) {

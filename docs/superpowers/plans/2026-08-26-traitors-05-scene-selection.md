@@ -29,7 +29,7 @@
 - **The continuation guard already works** and must not be re-implemented. Given actors who have a live thread, it continues at 0.2606 vs 0.1989 with the guard off, monotone across OFF/HALF/SHIPPED/DOUBLE, banded `>0.22` in `tests/tr-calibration.test.js` with an in-suite control arm. This plan changes *which scenes get convened*, not how the guard scores them once convened.
 - **Do not band unconditional advance-share.** It reads 11.6% live vs 11.0% with the guard flattened — overlapping distributions dominated by the runner re-drawing a pair by chance. `pickEvent` samples `liveThread` and `continued` before `fire()` runs precisely so the *conditional* rate is measurable; use those.
 - **Current measured baseline** (shipped, before this plan): threads average 1.13 beats; 89.4% die at their first beat; 0.7% reach a payoff; `abandonThread` has no caller; `residue` has zero production readers; `acts:` is used by 2 of 81 events, `oncePerSeason` by 0, `ev.cooldown` by 0; windows `journey-out` and `journey-back` hold 0 events and `night` holds 1.
-- **Commands:** `npx vitest run tests/tr-*.test.js` (231 tests incl. registry), `npx vitest run tests/tr-calibration.test.js` (13 bands), `npm run audit:tr-castle` (5).
+- **Commands:** `npx vitest run tests/tr-*.test.js` (198 tests at plan base df17dda2; the registry suite is separate), `npx vitest run tests/tr-calibration.test.js` (13 bands), `npm run audit:tr-castle` (5).
 
 ---
 
@@ -79,7 +79,7 @@ function _sceneActors(living, rng, ep) {
 
 - [ ] **Step 4: Run the test, confirm it passes.**
 
-- [ ] **Step 5: Thread the `ep` parameter** through every `_sceneActors` call in `runWindow`. Run the full `tests/tr-*.test.js` suite; all 231 must stay green and all 13 bands must hold. If a band breaks, STOP and report it — do not retune.
+- [ ] **Step 5: Thread the `ep` parameter** through every `_sceneActors` call in `runWindow`. Run the full `tests/tr-*.test.js` suite; all must stay green and all 13 bands must hold. If a band breaks, STOP and report it — do not retune.
 
 - [ ] **Step 6: Measure and tune, against a control.** Over >=200 seasons on decorrelated seeds, measure with `CONTINUATION_SCENE_P` at 0 (control), 0.25, 0.5, 0.75: mean thread beats, share dying at first beat, payoff rate, and **distinct pairs appearing in scenes per season** (the anti-monopoly measure). Pick the value that lengthens threads while keeping distinct-pair coverage within 15% of the control. Report the whole table, not just the chosen value.
 
@@ -197,3 +197,53 @@ Three separate times in this project a guard has been placed in a file matching 
 ## Ordering note
 
 Task 1 gates Tasks 2, 3 and 5: residue, thread `act`/`outcome` and act-pacing are all unmeasurable while 89.4% of threads die at their first beat. Task 4 is independent and may run any time. Task 6 must run last. Task 7 is independent.
+
+---
+
+## Amendment after Task 1 — advancer coverage is the binding constraint
+
+Task 1 shipped `CONTINUATION_SCENE_P = 0.35` with guard `3/1.5`: mean thread 1.139 -> 1.431
+beats, first-beat death 87.7% -> 73.9%, payoff 1.91% -> 3.96%, >=3-beat threads 2.42% ->
+9.87%. Costs 9.0% of people-coverage and takes the busiest pair to 17.0%.
+
+**The model in this plan's Architecture section was wrong and the measurement corrected it.**
+Thread length is not P(scene convenes live-thread actors) x P(guard continues it). The
+guard multiplier is nearly inert: +20% relative on its own conditional rate buys +2.4% mean
+beats. The real third term is **P(an advancing event even exists for this scene)**, measured
+at **0.501**. Half of all scenes whose actors share a live thread have NO eligible event
+that could advance it.
+
+Cause is pool composition, measured:
+- only **27 of 81** events set `advancesThread`
+- **11 of 26** (family x window) cells hold **zero** advancers -- e.g. grief has one, dawn
+  only; cover has none in evening
+- **13 more** hold exactly one, and with the 5-episode pair cooldown a thread in a
+  one-advancer cell can advance at most once every five rounds
+- heat decay is NOT a cause: cold revivals hold steady at 4.6% of beats across every cell
+
+### Binding requirement added to Tasks 2, 4 and 5
+
+Every task that authors or edits castle content must raise advancer coverage, and must
+report the cell table before and after. Target: **no (family x window) cell that can host a
+thread kind holds fewer than 2 advancing events**, and overall `advancesThread` coverage
+rises from 27/81 toward at least half the pool. An event "advances" only if it can attach
+to a thread its actors already have -- adding the flag without the attachment is exactly
+the dead-content failure Plan 4's reachability sweep exists to catch.
+
+Task 4's new journey/night events are the cheapest place to fix the zero cells, because
+those windows have no advancers at all today.
+
+### Two further rulings
+
+- **Task 6 must re-derive the continuity band.** At the new operating point the `>0.22`
+  conditional band clears at 36.1% and no longer reddens under its own guard-only mutation.
+  It has gone slack and is currently a passing test that guards nothing.
+- **Do not plan Tasks 2-5 around long threads.** 73.9% of stories still die at beat one.
+  Residue citation (Task 2) and outcome-branching (Task 3) must degrade gracefully on a
+  1-2 beat thread, because that is the common case and will remain so.
+
+### Coverage budget
+
+Task 1 spent 9.0 of the 12% people-coverage budget and reached 17.0% of the 20% max-pair
+ceiling. Roughly 3pp of headroom remains on each. Task 4 and Task 5 add content that will
+move both. If either band breaks, that is a real regression to report, not a band to widen.

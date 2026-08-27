@@ -17985,11 +17985,38 @@ export function _bbNomReason(hoh, name, role, ep) {
   //
   // A nomination that costs the person making it is the most interesting one
   // the format produces, and it was being written as the coldest.
-  if (showmance) return say([
-    `"${N}. There is no way to do this that does not make me the person who did it. I am not going to dress it up, and I am not going to stand here and cry about it either."`,
-    `"${N}, everybody in this room has been waiting to see whether I would. That is the whole problem, and it is exactly why it has to be you."`,
-    `"${N}, I would rather be the one who does this than sit here and let somebody else decide it for both of us."`,
-  ]);
+  // ── AND SAY WHICH OF THE TWO REASONS IT IS ──
+  //
+  // There are exactly two, they are not the same reason, and which one is true
+  // depends on how many people are left. Writing one vague line for both gave
+  // the ceremony "I would rather be the one who does this than let somebody
+  // else decide it for both of us" — a sentence shaped like an argument with
+  // no argument inside it, since at four the Head of Household IS the somebody
+  // else. A viewer cannot disagree with a reason they cannot follow.
+  if (showmance) {
+    // THE ONE VOTE. Two of three go up, so there IS a choice at four — the
+    // draft claimed their name was unavoidable, and it was not; the Head of
+    // Household picked who to leave OFF. And leaving somebody off is the whole
+    // decision, because `voters` excludes the Head of Household and both
+    // nominees: at four exactly one person votes, and it is the one not
+    // sitting down. Nobody is choosing who goes home. They are choosing who
+    // decides, and that is a far better reason than the arithmetic that is not
+    // even true.
+    if (left <= 4) return say([
+      `"${N}, there is one vote this week and it belongs to whoever I leave off this block. I have picked who holds it. That was the only decision I got and I have made it."`,
+      `"${N}, two of the three of you were always sitting down. I chose which one did not, and that choice was about who I can predict on Thursday and nothing else."`,
+      `"${N}, at four, going up is not the same as going home — one person votes and the rest of us play for that veto. I would rather you were fighting for it than trusting somebody else to save you."`,
+    ]);
+    // THE PAIR. The house prices a showmance as one player holding two votes,
+    // which makes both of them the same target — so the only thing left to
+    // decide is which week it happens in, and who is holding the power when
+    // it does.
+    return say([
+      `"${N}, this house counts the two of us as one person with two votes. Whoever comes for me comes for you, and I would rather that happened in a week I am running than one I am not."`,
+      `"${N}, every single person in here has been waiting to find out whether I could put you up. They have been building their weeks around the answer being no, and I need that to stop being worth anything."`,
+      `"${N}, if I spend this week on somebody else, we are both sitting up there the day I lose this room. I am doing it now, while it is still mine to do."`,
+    ]);
+  }
   if (bond >= 6) return say([
     `"${N}, you are the last person in this house I wanted to put up, and everybody in here knows it. I am not going to insult you by pretending this was a hard week for anybody but us."`,
     `"${N}, I have nothing to accuse you of. That is what makes this the worst thing I have had to do since I walked in."`,

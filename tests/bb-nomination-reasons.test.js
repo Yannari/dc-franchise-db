@@ -49,6 +49,44 @@ describe('the relationship is read before the plan', () => {
     expect(line).toContain('Priya');
   });
 
+  it('gives a reason the viewer can actually follow', () => {
+    // The first fix put the right BRANCH in front of this scene and then wrote
+    // atmosphere into it: "I would rather be the one who does this than let
+    // somebody else decide it for both of us" — at final four, where the Head
+    // of Household IS the somebody else. A sentence shaped like an argument
+    // with no argument inside it.
+    //
+    // There are two real reasons to nominate your own showmance and they are
+    // not the same reason. At four it is the single vote: `voters` excludes
+    // the Head of Household and both nominees, so exactly one person votes and
+    // it is the one left OFF the block. Nobody is choosing who goes home there
+    // — they are choosing who decides. (The draft said the nominee's name was
+    // unavoidable. Two of three go up: it was avoidable, and saying otherwise
+    // was a lie the viewer can check.) Before four it is the pair — the house
+    // prices a showmance as one player with two votes, so the only thing left
+    // to decide is which week it happens in.
+    const scene = (cast, week) => {
+      house(cast);
+      addBond(cast[0], cast[1], 9);
+      gs.showmances = [{ players: [cast[0], cast[1]], phase: 'showmance' }];
+      return _bbNomReason(cast[0], cast[1], 'target', { num: week });
+    };
+    const endgame = scene(['Zee', 'Priya', 'Bowie', 'Julia'], 9);
+    expect(endgame, 'the endgame reason is not the one vote')
+      .toMatch(/one vote this week|which one did not|one person votes/i);
+    // And never the claim that their name could not have been left off.
+    expect(endgame).not.toMatch(/always going to have your name|had to start with somebody/i);
+
+    const mid = scene(['Zee', 'Priya', 'A', 'B', 'C', 'D', 'E', 'F', 'G'], 4);
+    expect(mid, 'mid-season gave the endgame arithmetic, which is not true yet')
+      .toMatch(/one person with two votes|whether I could put you up|both sitting up there/i);
+
+    // And the vague line is gone from both.
+    for (const line of [endgame, mid]) {
+      expect(line).not.toMatch(/decide it for both of us/i);
+    }
+  });
+
   it('does not tell somebody they are close to that it is nothing personal', () => {
     house(['Zee', 'Priya', 'Bowie', 'Julia']);
     addBond('Zee', 'Priya', 9);

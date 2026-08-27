@@ -538,8 +538,17 @@ export function murderEvidence(ep, rng = Math.random) {
 
   // A blocked attempt is public: nobody died and everybody can count chairs.
   // It teaches that a Shield was live, which is information about the GAME
-  // rather than about a person, so it forms no belief here — it is read by
-  // the VP and by a later plan's counting argument. Recorded for both.
+  // rather than about a person, so it forms no belief HERE — this channel
+  // speaks to the whole room, and the whole room cannot name the target of a
+  // murder that did not happen.
+  //
+  // THE PEOPLE WHO CAN NAME IT ARE HANDLED ELSEWHERE, and the suppression
+  // below stays exactly as it was. `shieldEvidence()` in js/tr/powers.js runs
+  // the same "you pushed them and that night the Traitors came for them"
+  // inference for the players who WATCHED the Shield being won and therefore
+  // know who was protected. Same fact, same price, an audience of three or
+  // four instead of the castle. Deleting `!blocked` here would hand that read
+  // to everybody, which is the leak the suppression test exists to catch.
   const blocked = (gs.tr?.blockedMurders || []).some(b => b.ep === round.ep);
 
   // THE ATTEMPT, not the death — and the difference is what keeps `!blocked`

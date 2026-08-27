@@ -17,6 +17,7 @@ import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
 import { runWindow, startRoundBudget } from './events.js';
 import { runMission, POT_CEILING } from './missions.js';
+import { shieldEvidence, expireShields } from './powers.js';
 
 // TASK 6 WIRING DECISION: the castle event pool is now live in every real
 // season. Side-effect imports only — nothing here is called directly; each
@@ -306,6 +307,16 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   missionEvidence(ep, missionRng);
   castle1.push(...runWindow('journey-back', ep, castleRng));
   const n1 = _night(ep, rng);
+  // THE SHIELD IS RESOLVED THE MOMENT THE NIGHT IS, and in this order for two
+  // reasons. `shieldEvidence` has to run while the Shield is still live —
+  // it reads which Shield tonight's block belongs to — and `expireShields`
+  // has to run before the next round can start, because a Shield blocks the
+  // NEXT MURDER ONLY and nothing about it carries over. Both take the
+  // MISSIONS' rng stream: the Shield came out of a mission, and an acceptance
+  // roll drawn from the game's own stream would displace every murder and
+  // ballot after it (see _missionRngFor).
+  shieldEvidence(ep, missionRng, n1);
+  expireShields(ep);
   castle1.push(...runWindow('night', ep, castleRng));
   log.push({ ep, banished: null, wasTraitor: null, ...n1, mission: mission1,
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
@@ -354,6 +365,9 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // was just revealed.
     castleEvents.push(...runWindow('after-table', ep, castleRng));
     const night = _night(ep, rng);
+    // Same pair, same order, same stream — see the note on night one.
+    shieldEvidence(ep, missionRng, night);
+    expireShields(ep);
     castleEvents.push(...runWindow('night', ep, castleRng));
     // aliveAtVote/traitorsAtVote are the population as it stood when the ballots
     // were cast, and they are DATA, not behaviour — nothing in the engine reads
@@ -389,6 +403,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // The money, and every afternoon that earned it. Copied out for the same
     // reason as `rounds` and `threads`: the next season replaces gs wholesale.
     missions: [...(gs.tr.missions || [])],
+    // Every Shield the season awarded, with its witnesses and how it ended
+    // ('blocked' or 'expired'). Copied out for the same reason `rounds` and
+    // `missions` are: the next season replaces gs wholesale, so a caller that
+    // plays 200 seasons and then reads gs.tr.shields is reading season 200 and
+    // calling it a population.
+    shields: [...(gs.tr.shields || [])],
     pot: gs.tr.pot,
     potCeiling: gs.tr.potCeiling,
     survivors: [...(gs.activePlayers || [])],

@@ -14,6 +14,17 @@ import { gs } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond } from '../bonds.js';
 import { livingTraitors, livingFaithfuls } from './roles.js';
+import { shieldSeenBy } from './powers.js';
+
+/**
+ * How hard the conclave steers off a Shield it knows about.
+ *
+ * Large enough to be decisive and finite rather than -Infinity, so that when
+ * the last living Faithful is the one holding the Shield the pact still has a
+ * target and still wastes its night on them — which is the correct outcome and
+ * not an edge case to special-case away.
+ */
+const KNOWN_SHIELD_PENALTY = 12;
 
 /**
  * Deterministic scatter for a (traitor, target) pair.
@@ -46,6 +57,9 @@ export function formPreference(traitor, ep, rng = Math.random) {
   if (!targets.length) return { target: null, reason: 'nobody left', conviction: 0 };
   const st = pStats(traitor);
   const read = ((st.strategic || 5) * 0.6 + (st.intuition || 5) * 0.4) / 10;
+  // Read once for the whole scoring loop: it is a property of THIS Traitor's
+  // night, not of the candidate.
+  const knownShield = shieldSeenBy(traitor, ep);
 
   const scored = targets.map(name => {
     const ts = pStats(name);
@@ -74,6 +88,25 @@ export function formPreference(traitor, ep, rng = Math.random) {
     // the same target and the conclave has nothing to argue about.
     const scatter = (_pairScatter(traitor, name) - 0.5) * 2 + (rng() - 0.5) * 2;
     score = score * (0.25 + read * 0.55) + scatter * (1.15 - read * 0.55);
+
+    // THE ONE THING A SHIELD CHANGES ABOUT THE CONCLAVE, and only for the
+    // Traitor who SAW IT WON. `shieldSeenBy` (js/tr/powers.js) returns a name
+    // only when THIS Traitor is on the recorded witness list; a Shield this
+    // Traitor did not see is invisible here, and they will argue for the
+    // protected name like anybody else. Since runConclave resolves on social
+    // weight rather than on who is right, a blind Traitor can out-argue a
+    // Traitor who watched the thing being handed over — and the pact spends
+    // its night on a wall. That is the whole value of the visibility model
+    // from the Traitors' side: seeing a Shield awarded is worth a night to the
+    // person who saw it.
+    //
+    // A PENALTY AND NOT A FILTER, DELIBERATELY. The scatter above draws once
+    // per candidate, so dropping a name from `targets` would consume one draw
+    // fewer and shift every murder, ballot and banishment after it — a
+    // gameplay edit re-rolling the season, which is the coupling _missionRngFor
+    // and _castleRngFor both exist to prevent. Applied after the read-quality
+    // multiply so it cannot be scaled away by a Traitor who reads badly.
+    if (name === knownShield) score -= KNOWN_SHIELD_PENALTY;
 
     // Carry the raw terms alongside the score so _reasonFor can read what
     // actually drove THIS pick instead of recomputing it — a recompute can
@@ -245,7 +278,16 @@ export function murderCost(target, reason, ep) {
   return { kind: 'clean', cost: 0, blames: [] };
 }
 
-/** Won in a mission (Plan 5). Protects against the NEXT murder only. */
+/**
+ * Won in a mission (js/tr/missions.js `the-reliquary`). Protects against the
+ * NEXT murder only — `expireShields()` in js/tr/powers.js clears the set the
+ * moment the night is over, whether or not anything was thrown at it.
+ *
+ * NEVER protects at the Round Table, and nothing in js/tr/roundtable.js reads
+ * this set. That is asserted rather than left to hold by accident: a banished
+ * player is banished identically with a live Shield and without one
+ * (tests/tr-powers.test.js).
+ */
 export function grantShield(name, ep) {
   if (!gs.tr) return;
   if (!(gs.tr.shieldedThisRound instanceof Set)) gs.tr.shieldedThisRound = new Set(gs.tr.shieldedThisRound || []);

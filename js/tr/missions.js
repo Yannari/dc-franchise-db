@@ -77,6 +77,12 @@ import { pStats, pronouns } from '../players.js';
 // anywhere. Read the shape of `tells` below: it carries a deviation and a
 // direction, and never a role.
 import { alignmentAt } from './roles.js';
+// THE POWER LAYER. The Shield's block mechanic lives in js/tr/murder.js and
+// its visibility model in js/tr/powers.js; this file owns only the AFTERNOON
+// the Shield is won on — who broke away from the carry, whether they found
+// anything, and what it cost the castle in money. Nothing about who saw it,
+// how long it lasts or what anybody concludes from it is decided here.
+import { awardShield } from './powers.js';
 
 /**
  * The most a season's missions can ever be worth.
@@ -237,9 +243,20 @@ const CHESS_MIN_ROUNDS = 4;
  * HALF OF ALL SEASONS CONTAIN NO EVIDENCE SOURCE 4 AT ALL. Spec 7.2 asks for
  * an archetype that makes knowledge the currency so that source exists; a
  * source absent from half the seasons is not one the format can be said to
- * have. At weight 2, measured over 600 seasons: 1.01 Chess missions a season,
- * present in 73.2% of them. Still not every season — the gate means a short
- * one may never get there — but the common case rather than the coin flip.
+ * have. At weight 2 in a pool of six, measured over 600 seasons: 1.01 Chess
+ * missions a season, present in 73.2% of them. Still not every season — the
+ * gate means a short one may never get there — but the common case rather than
+ * the coin flip.
+ *
+ * IT IS 3 AND NOT 2 BECAUSE THE POOL GREW, AND THAT IS ARITHMETIC RATHER THAN
+ * A REPRICING. Task 3 adds a seventh archetype at weight 2, which would have
+ * cut this one's share from 2/7 to 2/9 and taken about a fifth of the emission
+ * — and with it about a fifth of the +3.28pp below — off a band, from a task
+ * that never touched the channel. At weight 3 in a pool of ten the Chess
+ * mission's measured per-season rate is held where Task 2 put it. The rule
+ * this encodes: an archetype added to the rotation must state what it does to
+ * every other archetype's rate, because the rotation is a denominator and the
+ * calibration bands are measured on the numerators.
  *
  * It is also the format's own emphasis: this is the mission whose material is
  * the season itself, so it is the one the castle comes back to as there gets
@@ -252,7 +269,51 @@ const CHESS_MIN_ROUNDS = 4;
  * how much of this format's deduction should come from one archetype, not a
  * free improvement — see the price note in js/tr/deduction.js.
  */
-const CHESS_WEIGHT = 2;
+const CHESS_WEIGHT = 3;
+
+/**
+ * How often the Shield archetype comes up, and why it is not 1.
+ *
+ * Weighted alongside `blind-chess` rather than sitting in the pool at an even
+ * one-in-seven, for the same reason that one is: a power that appears in a
+ * third of seasons is not a power the format has. At weight 2 the Reliquary
+ * runs about 2.3 times a season and produces about 1.3 Shields (the searcher
+ * does not always find it), which is roughly the show's own rate.
+ *
+ * IT ALSO HAS TO NOT DILUTE THE CHESS CHANNEL. Adding a seventh archetype
+ * lowers every other archetype's share, and `blind-chess` carries the whole of
+ * evidence source 4 — its rate is worth +3.28pp of late lift and would fall
+ * with it. CHESS_WEIGHT was raised from 2 to 3 alongside this so that the
+ * Chess mission's per-season rate is held where Task 2 measured it, which is
+ * the difference between a band moving because this task changed the engine
+ * and a band moving because this task changed a denominator.
+ */
+const SHIELD_WEIGHT = 2;
+
+/**
+ * Who walks away from the line to go looking, and it is a character question.
+ *
+ * Proportional in boldness and inversely proportional to loyalty, never a
+ * threshold on either: leaving five people carrying your end of the work to
+ * chase something for yourself is exactly the trade the archetype is about.
+ * The floor is small and non-zero so that a cautious, dutiful cast still
+ * produces somebody — a mission where nobody ever breaks away has no Shield in
+ * it and no afternoon either.
+ */
+const SEARCH_FLOOR = 0.05;
+const SEARCH_BOLD = 0.55;
+const SEARCH_LOYAL = 0.70;
+
+/**
+ * And whether they actually find it. Intuition, because the caskets are
+ * identical and the trick is noticing which one is the wrong weight.
+ *
+ * Deliberately short of certain at the top of the range: an afternoon spent
+ * hunting is an afternoon the castle was paid nothing for, and it has to be
+ * possible to spend it for nothing. Measured at ~57% over the roster.
+ */
+const FIND_BASE = 0.45;
+const FIND_PER_POINT = 0.55;
 
 // ══════════════════════════════════════════════════════════════════════
 // THE ARCHETYPES
@@ -488,6 +549,50 @@ const ARCHETYPES = [
       { id: 'sit-it-out', label: 'call the finish from the far end of the hall', stat: 'intuition' },
     ],
   },
+  {
+    id: 'the-reliquary',
+    name: 'The Reliquary',
+    teams: ['Bells', 'Bones'],
+    // The last stat in the game to be used by a mission, and the right one for
+    // this afternoon: the carry is a line of people handing caskets up a stair
+    // for an hour, and the whole archetype is about whether you stay in it.
+    primary: 'endurance', secondary: 'loyalty',
+    // THE FLAG THE TASK HANGS ON, and the counterpart of `knowledge: true`
+    // above. It routes the archetype through _runReliquary, which is the only
+    // place in this file a player leaves their team — and the only place a
+    // mission produces anything a player carries out of the afternoon.
+    power: 'shield',
+    lines: {
+      triumph: [
+        'Every casket came up the stair, in order, in an hour, and the chapel was empty enough at the end to hear the ropes creak.',
+        'They found the rhythm in the first ten minutes and never once broke it, which on that stair has not happened before.',
+        'Two lines, one pace, and the last reliquary set down on the flags with the light still coming through the window.',
+        'The vault gave up everything it had. Nobody dropped anything and nobody needed to be told twice.',
+      ],
+      solid: [
+        'Most of the caskets came up. The three still down there are the three nobody could get a grip on.',
+        'A long hour on a cold stair, honestly worked, and a haul that will not be talked about.',
+        'The line held together, mostly, and the pace went with whoever was slowest, which is how a carry works.',
+        'Respectable. Somebody dropped one near the top and the sound of it is the only thing anybody will remember.',
+      ],
+      scraped: [
+        'One casket, carried up by people who had stopped speaking to each other about halfway.',
+        'The line came apart early and never re-formed, and what reached the flags reached them alone.',
+        'They spent most of the hour arguing about the order and the last ten minutes making up for it, badly.',
+        'Barely anything came out of that chapel, and what did came out at the very end.',
+      ],
+      failed: [
+        'Nothing came up the stair at all. Two lines, one hour, and a vault exactly as full as it started.',
+        'The first casket went over on the third step and after that nobody wanted to be underneath one.',
+        'They never got a line working. The reliquaries are still down there and the crew had to go and count them.',
+        'A wasted afternoon in a cold room, and the castle is not a penny better off for it.',
+      ],
+    },
+    side: [
+      { id: 'the-top-step', label: 'take the top step alone with the heaviest of them', stat: 'physical' },
+      { id: 'count-the-niches', label: 'work out how many were down there before anybody counted', stat: 'mental' },
+    ],
+  },
 ];
 
 /** Every archetype id, for tests and for anything enumerating the catalogue. */
@@ -524,6 +629,28 @@ export function _setMissionsEnabled(on) { _enabled = on !== false; }
 let _knowledgeMission = true;
 export function _setKnowledgeMissionEnabled(on) { _knowledgeMission = on !== false; }
 
+/**
+ * Test-only, and it narrows the equivalence arm for the SECOND time — the same
+ * shape as `_setKnowledgeMissionEnabled` and for the same reason (Task 1 and
+ * Task 2 handoffs, both explicit about this).
+ *
+ * Task 1 asserted "a mission grants nothing at all". Task 2 narrowed it to "the
+ * five MONEY missions grant nothing at all", holding the knowledge archetype
+ * out of both arms. The Reliquary breaks it again, on purpose: it hands
+ * somebody a Shield, and a Shield stops a murder, which is about as far from
+ * "grants nothing" as a mission can get. The honest narrowing is not to weaken
+ * the assertion — "mostly identical" has no failure state — but to hold the ONE
+ * new sanctioned channel out and re-run the identical total equivalence over
+ * the five money missions, which still buy exactly nothing.
+ *
+ * Each hold-out ships with an arm proving it holds something OUT, or a switch
+ * that turned off something inert would leave the guard green and say nothing.
+ *
+ * Nothing in the show may call this.
+ */
+let _shieldMission = true;
+export function _setShieldMissionEnabled(on) { _shieldMission = on !== false; }
+
 const clamp01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
 const pick = (rng, arr) => arr[Math.min(arr.length - 1, Math.floor(rng() * arr.length))];
 const stat = (name, key) => {
@@ -535,10 +662,18 @@ const stat = (name, key) => {
 function _chooseArchetype(rng) {
   const last = gs?.tr?.missions?.length ? gs.tr.missions[gs.tr.missions.length - 1].id : null;
   const rounds = (gs?.tr?.rounds || []).length;
-  const eligible = ARCHETYPES.flatMap(m => (m.knowledge
-    ? (_knowledgeMission && rounds >= CHESS_MIN_ROUNDS
-      ? Array(CHESS_WEIGHT).fill(m) : [])
-    : [m]));
+  const eligible = ARCHETYPES.flatMap(m => {
+    if (m.knowledge) {
+      return _knowledgeMission && rounds >= CHESS_MIN_ROUNDS
+        ? Array(CHESS_WEIGHT).fill(m) : [];
+    }
+    // No round gate on the Shield, unlike the Chess mission: a Shield needs no
+    // history to make sense of, and the format hands them out from the first
+    // afternoon. A Shield won on night one blocks night one's murder, which is
+    // the format working rather than an edge case.
+    if (m.power === 'shield') return _shieldMission ? Array(SHIELD_WEIGHT).fill(m) : [];
+    return [m];
+  });
   const pool = eligible.filter(m => m.id !== last);
   return pick(rng, pool.length ? pool : eligible);
 }
@@ -722,6 +857,87 @@ function _runChess(m, living, ep, rng) {
 }
 
 /**
+ * The Reliquary. A carry, and one person who does not do it.
+ *
+ * MEASURED COST: 14.9% of the afternoon's quality, about 1,200 credits, over
+ * 428 Reliquary missions — the same missions scored with the searcher's
+ * contribution added back come in at 0.458 against 0.389 as played.
+ *
+ * Returns `{ teams, searcher, found }`. The Shield is not granted here — that
+ * is `awardShield()` in js/tr/powers.js, which owns who saw it and how long it
+ * lasts. What this function owns is the COST, and the cost is the point:
+ *
+ * THE SEARCHER CONTRIBUTES NOTHING TO THEIR TEAM, and the denominator does not
+ * shrink to cover for them. A team carrying caskets a body down is a team a
+ * body down, so a Shield is paid for out of the pot by everybody, including
+ * the people who did not want one and the people who never knew it was found.
+ * That is the structural sting spec 7.2 gives the missions, arriving one layer
+ * further in: a Faithful may be funding a Traitor's prize AND paying for the
+ * Shield that keeps a Traitor's target alive one more night, out of the same
+ * hour of work.
+ *
+ * The searcher pays the hour whether or not they find anything, which is what
+ * makes breaking away a gamble instead of a purchase.
+ */
+function _runReliquary(m, living, rng) {
+  const split = _splitTeams(living, rng);
+  // Who walks off. Weighted rather than picked: boldness up, loyalty down,
+  // proportional in both, and a floor so a dutiful cast still produces
+  // somebody. One draw, so the stream does not depend on the cast.
+  const weights = living.map(n => SEARCH_FLOOR
+    + SEARCH_BOLD * (stat(n, 'boldness') / 10) * (1 - SEARCH_LOYAL * (stat(n, 'loyalty') / 10)));
+  const total = weights.reduce((a, b) => a + b, 0);
+  let roll = rng() * total;
+  let searcher = living[living.length - 1];
+  for (let i = 0; i < living.length; i++) {
+    roll -= weights[i];
+    if (roll <= 0) { searcher = living[i]; break; }
+  }
+  const found = rng() < clamp01(FIND_BASE + FIND_PER_POINT * (stat(searcher, 'intuition') / 10));
+
+  const teams = [];
+  // The same two teams scored a second way, with the searcher's hour put back
+  // in. It costs no rng draw — the swing is drawn once and shared — and it is
+  // what lets `runMission` RECORD the cost of the hunt instead of leaving it a
+  // claim in a comment. A design whose whole point is that somebody pays for
+  // the Shield should be able to say how much.
+  const asIfPresent = [];
+  for (let i = 0; i < split.length; i++) {
+    const members = split[i];
+    const swing = (rng() - 0.5) * SWING;
+    const full = members.reduce((s, n) =>
+      s + (0.55 * stat(n, m.primary) + 0.45 * stat(n, m.secondary)) / 10, 0);
+    const mine = members.includes(searcher)
+      ? (0.55 * stat(searcher, m.primary) + 0.45 * stat(searcher, m.secondary)) / 10 : 0;
+    const denom = Math.max(1, members.length);
+    teams.push({ name: m.teams[i], members, perf: clamp01((full - mine) / denom + swing) });
+    asIfPresent.push(clamp01(full / denom + swing));
+  }
+  return { teams, searcher, found, asIfPresent };
+}
+
+// The afternoon's own account of somebody leaving the line. Both pools are
+// claims about the CARRY and never about the Shield's consequences — whether
+// anybody makes anything of it tonight is decided after the conclave, by
+// people this file cannot see.
+// {They} rather than {they} where a template starts a sentence with it: the
+// pronoun table has both cases and the first dump printed "he came back up
+// with something that was not a reliquary" mid-paragraph, with the full stop
+// in front of it.
+const SEARCH_FOUND = [
+  '{who} was not on the stair for the last third of it. {They} came back up with something that was not a reliquary.',
+  'Somewhere in the second hour {who} stopped carrying and started opening, and one of the caskets was the wrong weight.',
+  '{who} left the line, went along the niches on {their} own, and found the one thing down there worth finding.',
+  'The line was a body short for twenty minutes. {who} came back holding it, and did not put it down.',
+];
+const SEARCH_MISSED = [
+  '{who} spent half the carry opening caskets alone and came back up with dust on {their} hands and nothing in them.',
+  'Whatever {who} thought was down there, {they} did not find it — and the line noticed the gap where {they} should have been.',
+  '{who} broke off to go looking, stayed gone a long time, and returned with an expression that answered the question.',
+  'An hour of somebody else\'s work went undone while {who} searched the niches for something that was not in them.',
+];
+
+/**
  * Which tier of prose the afternoon deserves. Narration only.
  *
  * CUT AGAINST THE MEASURED DISTRIBUTION, not against the 0..1 the number
@@ -816,8 +1032,11 @@ function _freshPick(rng, pool, window = 0) {
   return chosen;
 }
 
-function _runSideObjectives(m, teams, rng) {
-  const field = teams.flatMap(t => t.members);
+function _runSideObjectives(m, teams, rng, exclude = null) {
+  // The searcher is off down the niches and cannot also be the one taking the
+  // top step alone — a record that says both is a record contradicting itself,
+  // which is the defect class this plan has now found three times.
+  const field = teams.flatMap(t => t.members).filter(n => n !== exclude);
   const out = [];
   const count = rng() < 0.45 ? 2 : 1;
   const chosen = [];
@@ -836,6 +1055,25 @@ function _runSideObjectives(m, teams, rng) {
     });
   }
   return out;
+}
+
+/**
+ * What the searcher's absence cost the pot, in credits.
+ *
+ * Scores the SAME afternoon with the searcher's hour put back in and takes the
+ * difference in gross. Never negative: the searcher's contribution can only
+ * raise a team's mean, and `quality` is monotone in the blend. Side objectives
+ * are excluded from both sides — they are the same either way — so the number
+ * is the carry and nothing else.
+ */
+function _reliquaryCost(reliquary) {
+  const q = (perfs) => {
+    const blend = BEST_WEIGHT * Math.max(perfs[0], perfs[1])
+      + (1 - BEST_WEIGHT) * Math.min(perfs[0], perfs[1]);
+    const quality = clamp01((blend - DIFFICULTY) / (1 - DIFFICULTY));
+    return Math.round(MISSION_MAX * (quality < PASS_MARK ? 0 : quality));
+  };
+  return Math.max(0, q(reliquary.asIfPresent) - q(reliquary.teams.map(t => t.perf)));
 }
 
 /**
@@ -864,13 +1102,16 @@ export function runMission(ep, rng) {
   // throws their board really does cost the castle part of the pot, which is
   // the sabotage half of spec 4.4's fourth source.
   const chess = m.knowledge ? _runChess(m, living, ep, rng) : null;
-  const teams = chess ? chess.teams : _drawTeams(living, m, rng);
+  // And the power archetype scores off a team that is a body short, because
+  // somebody left it. See _runReliquary.
+  const reliquary = m.power === 'shield' ? _runReliquary(m, living, rng) : null;
+  const teams = chess ? chess.teams : (reliquary ? reliquary.teams : _drawTeams(living, m, rng));
   const best = Math.max(teams[0].perf, teams[1].perf);
   const worst = Math.min(teams[0].perf, teams[1].perf);
   const blend = BEST_WEIGHT * best + (1 - BEST_WEIGHT) * worst;
   const quality = clamp01((blend - DIFFICULTY) / (1 - DIFFICULTY));
 
-  const sideObjectives = _runSideObjectives(m, teams, rng);
+  const sideObjectives = _runSideObjectives(m, teams, rng, reliquary?.searcher || null);
   const gross = Math.round(MISSION_MAX * (quality < PASS_MARK ? 0 : quality))
     + sideObjectives.reduce((s, o) => s + o.bonus, 0);
 
@@ -909,6 +1150,35 @@ export function runMission(ep, rng) {
         _freshPick(rng, chess.readers.length === 1 ? CHESS_SOLVER_ONE : CHESS_SOLVERS),
         _andList(chess.readers), ''));
     }
+  }
+  if (reliquary) {
+    // THE ACQUISITION PATH, and the only thing a mission has ever handed a
+    // player. `awardShield` decides who saw it and grants the Shield through
+    // js/tr/murder.js's existing `grantShield`; what is recorded here is the
+    // afternoon — who went looking and whether they came back with anything.
+    // The `shield` key is the ONE immunity-shaped field a mission record is
+    // allowed to carry, and tests/tr-missions.test.js names it explicitly
+    // rather than loosening the scan that used to forbid all of them.
+    const won = reliquary.found ? awardShield(reliquary.searcher, teams, ep, rng) : null;
+    rec.shield = {
+      searcher: reliquary.searcher,
+      found: reliquary.found,
+      // WHAT THE HUNT COST THE CASTLE, in the pot's own currency, recorded per
+      // afternoon rather than recomputed by whoever wants to know. Positive on
+      // every Reliquary, including the ones the searcher came back from empty
+      // — the hour is spent either way, which is what makes breaking away a
+      // gamble and not a purchase. Measured mean ~1,100 credits, about 15% of
+      // the afternoon.
+      cost: _reliquaryCost(reliquary),
+      holder: won ? won.holder : null,
+      witnesses: won ? [...won.witnesses] : [],
+      visibility: won ? won.visibility : null,
+      lines: [
+        _render3(_freshPick(rng, reliquary.found ? SEARCH_FOUND : SEARCH_MISSED, 2),
+          reliquary.searcher, pronouns(reliquary.searcher)),
+        ...(won ? [won.seenLine] : []),
+      ],
+    };
   }
   if (!Array.isArray(gs.tr.missions)) gs.tr.missions = [];
   gs.tr.missions.push(rec);

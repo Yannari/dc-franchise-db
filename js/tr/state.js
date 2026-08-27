@@ -72,8 +72,19 @@ export function initTraitorsState() {
     // rather than a schedule. Read by the exit blowup and (later) the endgame.
     conclaveTension: [],
 
-    // Set-shaped, so it must be declared here. Cleared each round.
+    // Set-shaped, so it must be declared here. Cleared each round by
+    // expireShields() (js/tr/powers.js) — which is what "expires unused"
+    // means, and the reason a Shield is a gamble rather than a purchase.
     shieldedThisRound: new Set(),
+
+    // Every Shield won this season, oldest first:
+    //   { ep, holder, witnesses, visibility, pactAware, outcome, seenLine }
+    // `witnesses` is the SEMI-VISIBILITY: the players who saw it won, and the
+    // only ones who may ever form a read off what the following night did or
+    // did not do to the holder. `outcome` is 'pending' until the night
+    // resolves and then 'blocked' or 'expired' — the second is the common
+    // case and the format intends it to be.
+    shields: [],
 
     // Nights the Traitors struck and nobody died: [{ ep, target }].
     // The TARGET is stored because the VP shows it — the audience knows who

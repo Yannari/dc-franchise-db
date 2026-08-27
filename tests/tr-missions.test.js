@@ -36,6 +36,22 @@
 //                 precisely one archetype and not one thing more — and paired
 //                 with a guard-on-the-guard proving that archetype is what
 //                 breaks it, so the hold-out cannot quietly become a hole.
+//
+// AND NARROWED A SECOND TIME FOR TASK 3, THE SAME WAY, WHICH IS THE POINT.
+// The Shield is won in a mission (spec 7.3), so an archetype now hands a player
+// something that stops a murder — about as far from "grants nothing" as a
+// mission can get. The dishonest repair is to soften the claim until the new
+// thing fits inside it; "mostly identical" has no failure state, and a guard
+// that quietly weakens because the next task made it inconvenient is how this
+// project accumulated eighteen unfailable tests. So the Shield archetype is
+// held out of BOTH arms too (`_setShieldMissionEnabled(false)`), the original
+// claim survives intact for the FIVE MONEY MISSIONS, and a second
+// guard-on-the-guard proves the second hold-out is holding something out.
+//
+//   guard 1  now  the five money missions, both power archetypes held out,
+//                 40 seasons bit-identical. Two hold-outs, two arms proving
+//                 each hold-out is load-bearing, and one claim that has not
+//                 been weakened: a MONEY mission buys nothing but money.
 //   guard 3  was  "no learn() call originates inside js/tr/missions.js" plus a
 //                 source scan for the import. Both are STILL TRUE — the
 //                 emission lives in js/tr/deduction.js — and both are now
@@ -95,7 +111,7 @@ import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { playTraitorsSeason, rngFor } from '../js/tr/headless.js';
 import { runMission, POT_CEILING, MISSION_IDS, _setMissionsEnabled,
-  _setKnowledgeMissionEnabled } from '../js/tr/missions.js';
+  _setKnowledgeMissionEnabled, _setShieldMissionEnabled } from '../js/tr/missions.js';
 import { allFacts } from '../js/knowledge.js';
 import { gs as _gs } from '../js/core.js';
 import roster from '../franchise_roster.json';
@@ -263,12 +279,14 @@ describe('a mission grants NOTHING but money', () => {
     let on, off;
     try {
       _setKnowledgeMissionEnabled(false);
+      _setShieldMissionEnabled(false);
       on = seasons(40).map(project);
       _setMissionsEnabled(false);
       off = seasons(40).map(project);
     } finally {
       _setMissionsEnabled(true);
       _setKnowledgeMissionEnabled(true);
+      _setShieldMissionEnabled(true);
     }
     for (let i = 0; i < on.length; i++) {
       expect(off[i], `season ${i + 1} diverged when the money missions were switched off`)
@@ -279,10 +297,15 @@ describe('a mission grants NOTHING but money', () => {
     let potsOn;
     try {
       _setKnowledgeMissionEnabled(false);
+      _setShieldMissionEnabled(false);
       potsOn = seasons(5).map(s => s.pot);
       _setMissionsEnabled(false);
       expect(seasons(5).map(s => s.pot)).toEqual([0, 0, 0, 0, 0]);
-    } finally { _setMissionsEnabled(true); _setKnowledgeMissionEnabled(true); }
+    } finally {
+      _setMissionsEnabled(true);
+      _setKnowledgeMissionEnabled(true);
+      _setShieldMissionEnabled(true);
+    }
     expect(potsOn.every(p => p > 0)).toBe(true);
   });
 
@@ -297,12 +320,20 @@ describe('a mission grants NOTHING but money', () => {
     // reader gate that never opens, an emission hook silently unwired).
     const project = (s) => s.log.map(r =>
       [r.ep, r.banished, r.wasTraitor, r.murdered].join('|')).join(String.fromCharCode(10));
-    let without;
+    // The Shield archetype is out of BOTH arms here: this measures what the
+    // CHESS hold-out holds out, and a second live power in the rotation would
+    // only add noise to that difference.
+    let without, withIt;
     try {
+      _setShieldMissionEnabled(false);
       _setKnowledgeMissionEnabled(false);
       without = seasons(120).map(project);
-    } finally { _setKnowledgeMissionEnabled(true); }
-    const withIt = seasons(120).map(project);
+      _setKnowledgeMissionEnabled(true);
+      withIt = seasons(120).map(project);
+    } finally {
+      _setKnowledgeMissionEnabled(true);
+      _setShieldMissionEnabled(true);
+    }
     const diverged = withIt.filter((v, i) => v !== without[i]).length;
     // SEPARATION, STATED, and 120 seasons rather than 40 because of it.
     // Measured 45/120 = 37.5% of seasons change their banishment/murder log. At
@@ -315,16 +346,87 @@ describe('a mission grants NOTHING but money', () => {
       .toBeGreaterThan(15);
   });
 
-  it('no mission record carries an immunity-shaped field', () => {
+  it('and the Shield mission is precisely what the SECOND hold-out holds out', () => {
+    // THE SECOND NARROWING'S OWN ARM. Without it the new hold-out is a hole:
+    // a switch that turned off something inert would leave guard 1 green and
+    // say nothing at all. Same 120 seeds, the Chess mission held out of both
+    // arms so this measures ONE difference, and the only remaining variable is
+    // whether the Reliquary is in the rotation.
+    //
+    // SEPARATION, STATED. Measured 59/120 = 49.2% of seasons change their
+    // banishment/murder log. It is not 120/120, and the reason is worth
+    // recording: missions draw from their own rng stream, so swapping which
+    // archetype ran on a given afternoon moves no game draw at all — a season
+    // diverges only where the Shield actually CHANGED something, which is a
+    // conclave steering off a name it saw protected, a murder it walked into,
+    // or a witness's read moving a ballot. Half of all seasons is what those
+    // three are worth between them.
+    //
+    // The binomial sd on 120 draws at p=0.49 is 5.5 seasons, so the floor below
+    // sits 5.3 sd under the measurement — placed where a Shield that had gone
+    // HALF inert would still fail (a searcher who never finds anything, a grant
+    // that never reaches `shieldedThisRound`, an expiry that fires before the
+    // night instead of after it), rather than only catching one gone silent.
+    const project = (s) => s.log.map(r =>
+      [r.ep, r.banished, r.wasTraitor, r.murdered, r.blocked].join('|')).join(String.fromCharCode(10));
+    let without, withIt;
+    try {
+      _setKnowledgeMissionEnabled(false);
+      _setShieldMissionEnabled(false);
+      without = seasons(120).map(project);
+      _setShieldMissionEnabled(true);
+      withIt = seasons(120).map(project);
+    } finally {
+      _setKnowledgeMissionEnabled(true);
+      _setShieldMissionEnabled(true);
+    }
+    const diverged = withIt.filter((v, i) => v !== without[i]).length;
+    expect(diverged, `only ${diverged}/120 seasons changed when the Shield mission was added`)
+      .toBeGreaterThan(30);
+  });
+
+  it('no mission record carries an immunity-shaped field, except the one that does', () => {
+    // NARROWED BY NAMING THE EXCEPTION, NOT BY LOOSENING THE PATTERN. The scan
+    // is unchanged and still runs over every key of every mission record; what
+    // is new is a single sanctioned path, `<mission>.shield`, which exists on
+    // the Reliquary and nowhere else. Naming it keeps the guard's failure state
+    // intact: a `save` on a coffin dig, an `immunity` on a chess board, or a
+    // second archetype quietly growing a `shield` key all still fail.
+    //
+    // AND IMMUNITY IS NOT WHAT IT GRANTS, which is the substance rather than
+    // the spelling. Spec 7.2 forbids a mission granting immunity — safety at
+    // the Round Table — and spec 7.3's Shield explicitly never gives that. The
+    // assertion that it does not is in tests/tr-powers.test.js, where the same
+    // seeded table banishes the same person with a live Shield and without one.
     const bad = /immun|shield|protect|save[ds]?$|safe/i;
+    const sanctioned = new Set(['the-reliquary.shield']);
     const walk = (v, trail) => {
       if (!v || typeof v !== 'object') return;
       for (const k of Object.keys(v)) {
-        expect(bad.test(k), `${trail}.${k} looks like immunity`).toBe(false);
-        walk(v[k], `${trail}.${k}`);
+        const path = `${trail}.${k}`;
+        if (sanctioned.has(path)) continue;   // walked below, on its own terms
+        expect(bad.test(k), `${path} looks like immunity`).toBe(false);
+        walk(v[k], path);
       }
     };
-    seasons(8).forEach(s => s.missions.forEach(m => walk(m, m.id)));
+    const runs = seasons(8);
+    runs.forEach(s => s.missions.forEach(m => walk(m, m.id)));
+
+    // The exception, on its own terms: it appears ONLY on the Reliquary, and
+    // it carries an afternoon rather than a right — who went looking, whether
+    // they found it, who ended up holding it and who saw. Nothing that reads
+    // as a claim on the table.
+    let seen = 0;
+    for (const s of runs) {
+      for (const m of s.missions) {
+        if (!m.shield) continue;
+        expect(m.id, 'an archetype that is not the Reliquary grew a shield').toBe('the-reliquary');
+        expect(Object.keys(m.shield).sort())
+          .toEqual(['cost', 'found', 'holder', 'lines', 'searcher', 'visibility', 'witnesses']);
+        seen++;
+      }
+    }
+    expect(seen, 'no Reliquary ran at all: the exception is unexercised').toBeGreaterThan(5);
   });
 });
 

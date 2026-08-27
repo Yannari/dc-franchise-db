@@ -1388,26 +1388,31 @@ describe('the castle, measured over many seasons', () => {
 
   // A BLOCKED MURDER IS VISIBLE — AND TODAY IT STRUCTURALLY CANNOT HAPPEN.
   //
-  // This is the band the plan asks for, inverted into a TRIPWIRE, and the
-  // inversion is the honest form of it right now. `grantShield` has exactly one
-  // caller in the whole repo and it is tests/tr-murder.test.js: Shields are won
-  // in missions, missions are Plan 5, and until they exist no season can
-  // produce a night where nobody dies. Writing `toBeGreaterThan(0)` today would
-  // be a band that is red on arrival and would be "fixed" by someone deleting
-  // it; asserting the zero says the same thing and cannot be silently lost.
+  // THE TRIPWIRE HAS FIRED AND THIS IS THE BAND IT WAS HOLDING THE PLACE FOR.
   //
-  // PLAN 5 MUST REPLACE THIS. The moment a mission awards a Shield this test
-  // goes red, and the correct response is to measure the blocked-murder count
-  // and swap the assertion for the plan's original:
-  //     expect(blocked, 'the shield path never fired').toBeGreaterThan(0);
+  // What stood here asserted `blocked === 0` and said, in as many words, that
+  // the moment a mission awarded a Shield the count was to be MEASURED and the
+  // assertion swapped for the plan's original. Both have now happened: the
+  // Reliquary (js/tr/missions.js) awards Shields, js/tr/powers.js decides who
+  // saw it won, and a season reaches this state on its own.
   //
-  // The path itself is NOT unexercised in the meantime — tests/tr-murder.test.js
-  // grants a Shield directly and asserts that the murder is blocked, that the
-  // Shield is spent anyway, that the attempt is recorded, and (in
-  // tr-murder.test.js's suppression test) that a blocked night forms no belief
-  // while an otherwise identical unblocked night does. What is untested is only
-  // whether a SEASON ever reaches that state on its own, and today it cannot.
-  it('A BLOCKED MURDER IS VISIBLE: awaiting Plan 5 — nothing grants a shield yet', () => {
+  // MEASURED, so the floor below is placed rather than hoped for. Over 400
+  // seasons: 1.66 Shields a season, of which 4.1% block a murder — 0.068
+  // blocked murders a season, or about one season in fifteen. Over the 200
+  // seasons this file plays the expectation is therefore ~13.6, and a Poisson
+  // sd of 3.7 puts a floor of zero 3.7 sd below the measurement, which is the
+  // separation this project requires of a sampled assertion.
+  //
+  // WHY IT IS RARE, AND WHY THAT IS THE DESIGN RATHER THAN A SHORTFALL. A
+  // Shield only blocks anything if the Traitor who wins the conclave's argument
+  // is BOTH blind to it (they were not among the players who saw it won) and
+  // happens to be pointed at the holder out of a room of ten or more. Nearly
+  // every Shield expires unused, which is what makes winning one a gamble
+  // rather than a purchase — and, since the room saw some of them won, a
+  // liability the next morning. If this number ever climbs towards one a
+  // season, something has made Shields common or the conclave blind, and both
+  // are regressions.
+  it('A BLOCKED MURDER IS VISIBLE: a season reaches the state on its own', () => {
     const blocked = seasons.reduce((n, s) => n + (s.blockedMurders?.length || 0), 0);
     const murders = seasons.reduce((n, s) => n + s.log.filter(r => r.murdered).length, 0);
     // Executions are the OTHER way the castle loses somebody at night: a
@@ -1417,13 +1422,14 @@ describe('the castle, measured over many seasons', () => {
     // but a death that no number reports is a death no measurement can find,
     // and until offerRecruitment returned `executed` this one was invisible.
     const executed = seasons.reduce((n, s) => n + s.log.filter(r => r.executed).length, 0);
+    const shields = seasons.reduce((n, s) => n + (s.shields?.length || 0), 0);
     console.log(`blocked murders across ${seasons.length} seasons: ${blocked} `
-      + `(against ${murders} completed murders and ${executed} refused-ultimatum executions) `
-      + `— structurally zero until missions exist`);
+      + `(against ${murders} completed murders, ${executed} refused-ultimatum executions `
+      + `and ${shields} Shields won, ${(blocked / Math.max(1, shields) * 100).toFixed(1)}% of which blocked something)`);
     expect(murders, 'no murders at all: this comparison would be vacuous').toBeGreaterThan(200);
-    expect(blocked,
-      'A SHIELD FIRED IN A SEASON. Plan 5 has landed: measure the count and replace '
-      + 'this tripwire with expect(blocked).toBeGreaterThan(0).').toBe(0);
+    expect(shields, 'no Shield was won at all: the block path cannot be reached')
+      .toBeGreaterThan(100);
+    expect(blocked, 'the shield path never fired in 200 seasons').toBeGreaterThan(0);
   });
 
   // ── THE CASTLE STREAM IS NEVER THE GAME STREAM (finding 14) ──

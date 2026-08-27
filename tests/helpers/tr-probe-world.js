@@ -54,6 +54,14 @@ export function probeWorld({ aTraitor, bTraitor, turret }) {
   setBond(A, B, 4);
   setBond(PROBE_CAST[2], PROBE_CAST[3], -3);
   gs.tr.rounds.push({ ep: PROBE_EP - 1, murdered: PROBE_CAST[5], murderTarget: PROBE_CAST[5] });
+  // AND THE VICTIM LEAVES THE CASTLE. This world used to record a murder and
+  // keep the victim in `activePlayers`, which no real season can do — and
+  // anything deriving a count from cast-minus-living (js/tr/state.js's
+  // `peopleLost`/`murderCount`, written for F1 because `rounds` misses night
+  // one's murder) read this world as having lost nobody. A fixture that
+  // contradicts the state it is modelling makes the events measured in it
+  // unreachable for reasons the engine does not have.
+  gs.activePlayers = gs.activePlayers.filter(n => n !== PROBE_CAST[5]);
   // Threads of every kind this pool opens, on the PAIR and on each actor
   // ALONE. Both shapes are needed and neither is optional:
   //   - `findOpenThread(kind, [actor])` keys on the exact party set, so a

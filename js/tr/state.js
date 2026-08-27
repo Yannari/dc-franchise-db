@@ -85,6 +85,53 @@ export function initTraitorsState() {
   };
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// HOW MANY PEOPLE THE CASTLE HAS LOST — ONE SOURCE, BECAUSE THE OBVIOUS
+// ONE IS WRONG
+// ══════════════════════════════════════════════════════════════════════
+//
+// `gs.tr.rounds` is NOT a census of the dead. Night one's murder deliberately
+// leaves no round record (js/tr/headless.js: there is no Round Table on night
+// one, so nothing is pushed), so every count derived by summing `rounds` is
+// short by at least one for the whole season. `grief-nobody-sleeps` printed
+// that count to the viewer — "2 empty beds, so far" on a night with three —
+// and was measured wrong on 100% of 363 firings across 200 seasons.
+//
+// The living cast is the honest source: it is decremented by every exit
+// whatever recorded it. `castSize()` reads the alignment ledger, which
+// receives one entry per player at selection and is never pruned, so
+// cast − living is the number of people who are gone.
+//
+// USE THESE, NOT `rounds.filter(...)`, for anything a sentence prints or a
+// branch is chosen by. The rule the whole-plan review wrote for this defect:
+// any event emitting a count must agree with the season state it claims to
+// describe, and `tests/tr-castle.test.js` now asserts it over the pool.
+
+/** How many people started the season. 0 before selection has run. */
+export function castSize(g) {
+  return Object.keys(g?.tr?.alignment || {}).length;
+}
+
+/** How many people are gone — murdered, banished, however they left. */
+export function peopleLost(g) {
+  const cast = castSize(g);
+  if (!cast) return 0;
+  return Math.max(0, cast - (g?.activePlayers || []).length);
+}
+
+/**
+ * How many people the Traitors have murdered, night one included.
+ *
+ * Derived, not counted: banishments are ALL on the round record (there is no
+ * banishment without a Round Table), so the murders are everyone else who is
+ * gone. This is the count `_deaths()` and the grief family's `deaths >= 2`
+ * gates want and the round sum cannot give them.
+ */
+export function murderCount(g) {
+  const banished = (g?.tr?.rounds || []).filter(r => r.banished).length;
+  return Math.max(0, peopleLost(g) - banished);
+}
+
 /** Field names on gs.tr that hold Sets and need flattening before a save. */
 const TR_SETS = ['shieldedThisRound'];
 

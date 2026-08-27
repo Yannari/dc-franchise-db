@@ -1176,6 +1176,18 @@ describe('events cite residue: episode 7 names episode 2', () => {
    */
   function worldWithHistory() {
     probeWorld({ aTraitor: true, bTraitor: false, turret: true });
+    // A FOURTH SHAPE, LOCAL TO THIS SWEEP: the same thread kinds on [D, B].
+    // probeWorld seeds [A, B], [A] and [B] because that is what its own probes
+    // need, and it is shared with the belief gate and the ground-truth probes,
+    // whose measurements move if its world does. This sweep additionally
+    // convenes [D, B] (see SCENES below) for events whose precondition is that
+    // the first actor is a STRANGER to the second, and a citation needs the
+    // pair it is convened on to have earlier beats of its own.
+    const [, Bx, , Dx] = PROBE_CAST;
+    for (const kind of ['callback', 'trust', 'suspicion', 'grief', 'testing', 'cover']) {
+      openThread(kind, [Dx, Bx], PROBE_EP - 2, 'seed');
+      openThread(kind, [Dx, Bx], PROBE_EP - 1, 'seed');
+    }
     for (const t of gs.tr.threads) advanceThread(t.id, PROBE_EP - 1, `the ${t.kind} moment`);
     // Three preconditions probeWorld does not supply, added HERE rather than
     // there because probeWorld is shared with the belief gate and the
@@ -1188,6 +1200,7 @@ describe('events cite residue: episode 7 names episode 2', () => {
     //     conversation for A to be left out of (callback-no-history-envy).
     const [A, B, C] = PROBE_CAST;
     gs.tr.rounds.push({ ep: PROBE_EP - 2, murdered: PROBE_CAST[4], murderTarget: PROBE_CAST[4] });
+    gs.activePlayers = gs.activePlayers.filter(n => n !== PROBE_CAST[4]);
     setFranchiseLedger({
       v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {
         '1': { seasonName: 'S1', format: 'total-drama', players: {
@@ -1206,7 +1219,17 @@ describe('events cite residue: episode 7 names episode 2', () => {
   const citing = () => EVENTS.filter(e => e.citesResidue);
 
   it('every event declaring citesResidue names an earlier day in the note it writes', () => {
-    const [A, B] = PROBE_CAST;
+    const [A, B, , D] = PROBE_CAST;
+    // TWO SCENES, not one, and for the same reason as the two episodes below.
+    // [A, B] is the pair every thread in the probe world is seeded on, so it
+    // is tried first and is what nearly every citing event needs. But an event
+    // whose precondition is the ABSENCE of a relationship cannot be reached by
+    // the pair the world gives every relationship to: `callback-no-history-envy`
+    // (F2) now requires the first actor to share no STORY with the second,
+    // which A and B are constructed to fail. [D, B] is the same world seen
+    // from somebody it did not happen to. A sweep that can only convene one
+    // pair can only ever exercise events about that pair.
+    const SCENES = [[A, B], [D, B]];
     const ctx = () => ({ ep: PROBE_EP, window: 'evening', act: 'middle',
       living: [...PROBE_CAST], actors: [A, B] });
 
@@ -1218,17 +1241,23 @@ describe('events cite residue: episode 7 names episode 2', () => {
     const silent = [], ineligible = [];
     for (const ev of citing()) {
       let c = null;
+      outer:
       for (const ep of [PROBE_EP, PROBE_EP + 4]) {
-        worldWithHistory();
-        if (ep !== PROBE_EP) gs.tr.rounds.push({ ep: ep - 1, murdered: PROBE_CAST[3], murderTarget: PROBE_CAST[3] });
-        const candidate = { ...ctx(), ep };
-        if (ev.weight(candidate) > 0) { c = candidate; break; }
+        for (const actors of SCENES) {
+          worldWithHistory();
+          if (ep !== PROBE_EP) {
+            gs.tr.rounds.push({ ep: ep - 1, murdered: PROBE_CAST[4], murderTarget: PROBE_CAST[4] });
+          }
+          const candidate = { ...ctx(), ep, actors, living: gs.activePlayers.slice() };
+          if (ev.weight(candidate) > 0) { c = candidate; break outer; }
+        }
       }
       if (!c) { ineligible.push(ev.id); continue; }
-      const before = new Set(residueFor(A).concat(residueFor(B)).map(r => `${r.threadId}:${r.ep}:${r.note}`));
+      const watched = [...new Set([A, B, ...c.actors])];
+      const all = () => watched.flatMap(n => residueFor(n));
+      const before = new Set(all().map(r => `${r.threadId}:${r.ep}:${r.note}`));
       ev.fire(c, forkRng(0.5));
-      const written = residueFor(A).concat(residueFor(B))
-        .filter(r => !before.has(`${r.threadId}:${r.ep}:${r.note}`));
+      const written = all().filter(r => !before.has(`${r.threadId}:${r.ep}:${r.note}`));
       // Named by DAY, and the day named must be one that really happened
       // earlier on that thread — a citation that invented a number would read
       // exactly as well and be a lie.
@@ -1548,5 +1577,136 @@ describe('the pool branches on a CLOSED thread outcome (spec 5.5)', () => {
     }
     expect(readers.length, 'only these events expose a priorOutcome: ' + readers.join(', '))
       .toBeGreaterThanOrEqual(3);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// A PRECONDITION MUST ENCODE ITS OWN SENTENCE (whole-plan review, F2)
+// ══════════════════════════════════════════════════════════════════════
+//
+// `callback-no-history-envy` prints a line about somebody sitting outside a
+// conversation they have no part of, and its weight() checked only that the
+// OTHER actor shares history with somebody. Nothing checked the outsider
+// LACKS it — so on the returnee casts this family exists for, where everybody
+// co-starred with everybody, the claim was false on all 157 firings per 200
+// seasons. Season 42 contradicted itself inside one thread: ep1 "no part of",
+// ep2 "finally said out loud what happened between them and Beth".
+//
+// AND IT WAS INVISIBLE TO MUTATION, which is the part worth recording. The
+// calibration roster fires zero callback events (Task 9, finding 3) and the
+// castle fixture gives every pair a shared season, so BOTH arms of the
+// predicate were constant: nothing anywhere could tell the old check from the
+// new one. That is what this file was missing and what the two cases below
+// are. They are per-event on purpose — the general rule ("an event whose line
+// asserts an absence must gate on that absence") is not mechanisable, so the
+// honest thing is a named case with the reason attached rather than a
+// rule-shaped test that does not actually test the rule.
+describe('callback-no-history-envy: the outsider must actually be an outsider', () => {
+  const [A, B, C] = PROBE_CAST;
+  const ev = () => EVENTS.find(e => e.id === 'callback-no-history-envy');
+  const ctx = () => ({ ep: 4, window: 'morning', act: 'middle',
+    living: [...PROBE_CAST], actors: [A, B] });
+
+  /** A ledger where A and B stand in `rel` to each other, and B allies C. */
+  function ledger(rel) {
+    const aRec = { allies: [], rivals: [], betrayed: [], betrayedBy: [], showmances: [] };
+    const bRec = { allies: [C], rivals: [], betrayed: [], betrayedBy: [], showmances: [] };
+    if (rel === 'allies') { aRec.allies = [B]; bRec.allies = [A, C]; }
+    if (rel === 'rivals') { aRec.rivals = [B]; bRec.rivals = [A]; }
+    setFranchiseLedger({
+      v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {
+        '1': { seasonName: 'S1', format: 'total-drama', players: {
+          [A]: aRec, [B]: bRec,
+          [C]: { allies: [B], rivals: [], betrayed: [], betrayedBy: [], showmances: [] },
+        } },
+      } } },
+    });
+  }
+
+  it('FIRES when the outsider only ever co-starred and the insider has a real story with somebody else', () => {
+    probeWorld({ aTraitor: false, bTraitor: false, turret: false });
+    ledger('costars-only');
+    expect(ev().weight(ctx()), 'the scene the line describes is unreachable').toBeGreaterThan(0);
+  });
+
+  it('DOES NOT FIRE when the outsider and the insider were allies in a prior season', () => {
+    probeWorld({ aTraitor: false, bTraitor: false, turret: false });
+    ledger('allies');
+    expect(ev().weight(ctx()), 'the line says they had no part of it, and they were allies')
+      .toBe(0);
+  });
+
+  it('DOES NOT FIRE when the outsider and the insider were rivals in a prior season', () => {
+    probeWorld({ aTraitor: false, bTraitor: false, turret: false });
+    ledger('rivals');
+    expect(ev().weight(ctx()), 'a rivalry is a shared story too — the strongest kind')
+      .toBe(0);
+  });
+
+  it('DOES NOT FIRE when nobody in the room has a real story with the insider', () => {
+    // The half of the predicate that was already there, kept honest: merely
+    // having been cast alongside somebody is not a conversation to be left out
+    // of, and `sharedHistory` calls that `costars` for every pair alive.
+    probeWorld({ aTraitor: false, bTraitor: false, turret: false });
+    setFranchiseLedger({
+      v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {
+        '1': { seasonName: 'S1', format: 'total-drama', players: Object.fromEntries(
+          PROBE_CAST.map(n => [n, { allies: [], rivals: [], betrayed: [], betrayedBy: [], showmances: [] }])) },
+      } } },
+    });
+    expect(ev().weight(ctx())).toBe(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// ROMANCE ARCS TAKE TIME (whole-plan review, F7)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Every band in this plan measures a thread's length in BEATS and none of them
+// in EPISODES, so a whole arc inside one day — spark, showmance, breakup —
+// scores as healthy accumulation. Measured before the fix, 200 seasons: 28.6%
+// of escalations happened in the episode the spark was struck, and 14 of 26
+// breakups in the episode the showmance formed. The cost of the gate was
+// measured too: escalations 105 -> 94 per 200 seasons, and every reachability
+// floor stayed green.
+//
+// Guarded on the WEIGHT rather than on dumped seasons, because "no romance
+// thread ever closed in its opening episode" is a statement about a
+// distribution that a lucky block can satisfy without the gate existing.
+describe('a romance thread cannot resolve in the episode it opened', () => {
+  const [A, B] = PROBE_CAST;
+  const evId = id => EVENTS.find(e => e.id === id);
+  const ctxAt = ep => ({ ep, window: 'evening', act: 'middle',
+    living: [...PROBE_CAST], actors: [A, B] });
+
+  function worldWithSpark(kind, openedEp) {
+    probeWorld({ aTraitor: false, bTraitor: false, turret: false });
+    gs.tr.threads = gs.tr.threads.filter(t => !t.kind.startsWith('romance'));
+    openThread(kind, [A, B], openedEp, 'they noticed each other');
+    setBond(A, B, 2);
+  }
+
+  it('a spark struck tonight does not become a showmance tonight', () => {
+    worldWithSpark('romance-spark', 5);
+    expect(evId('romance-showmance-forms').weight(ctxAt(5))).toBe(0);
+  });
+
+  it('and does become one tomorrow', () => {
+    worldWithSpark('romance-spark', 5);
+    expect(evId('romance-showmance-forms').weight(ctxAt(6))).toBeGreaterThan(0);
+  });
+
+  it('the same gate on the road home', () => {
+    worldWithSpark('romance-spark', 5);
+    const ev = evId('romance-showmance-on-the-way-back');
+    expect(ev.weight({ ...ctxAt(5), window: 'journey-back' })).toBe(0);
+    expect(ev.weight({ ...ctxAt(6), window: 'journey-back' })).toBeGreaterThan(0);
+  });
+
+  it('a showmance formed tonight does not break up tonight', () => {
+    worldWithSpark('romance-showmance', 5);
+    const ev = evId('romance-showmance-breakup');
+    expect(ev.weight({ ...ctxAt(5), window: 'after-table' })).toBe(0);
+    expect(ev.weight({ ...ctxAt(6), window: 'after-table' })).toBeGreaterThan(0);
   });
 });

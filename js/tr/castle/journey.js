@@ -51,12 +51,17 @@ import { openThread, advanceThread, closeThread, findOpenThread, continueThread,
 import { alignmentAt } from '../roles.js';
 import { MAX_ACTIVE_ROMANCES, _activeRomanceCount, _threadForActors } from './romance.js';
 import { _sentenceCase } from './cover.js';
+import { murderCount } from '../state.js';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 function isTraitor(name, ep) { return alignmentAt(name, ep) === 'traitor'; }
 
-/** How many people the castle has already lost, from the round record. */
-function _deaths() { return (gs.tr?.rounds || []).filter(r => r.murdered).length; }
+// NOT FROM THE ROUND RECORD (whole-plan review, F1). Night one's murder is
+// never pushed as a round, so `rounds.filter(r => r.murdered)` undercounts by
+// one all season — which here decided which BRANCH of the shrinking-column
+// scene ran ("first" vs "again"), and the count is printed by grief.js.
+/** How many people the castle has already lost. */
+function _deaths() { return murderCount(gs); }
 
 // ══════════════════════════════════════════════════════════════════════
 // journey-out — the walk away from the castle
@@ -805,8 +810,9 @@ registerEvent({
     const t = _threadForActors('romance-spark', ctx.actors);
     // A still-warm spark, the same precondition `romance-showmance-forms`
     // applies: a day out of the castle escalates something live, not something
-    // that fizzled three rounds ago.
-    return t && heatAt(t, ctx.ep) > 0 ? 2.5 : 0;
+    // that fizzled three rounds ago. And not one struck this morning either -
+    // see F7 on the twin in romance.js.
+    return t && ctx.ep > t.openedEp && heatAt(t, ctx.ep) > 0 ? 2.5 : 0;
   },
   fire(ctx, rng) {
     const spark = _threadForActors('romance-spark', ctx.actors);

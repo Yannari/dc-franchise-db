@@ -20,6 +20,7 @@ import { _sentenceCase } from './cover.js';
 import { openThread, advanceThread, findOpenThread, continueThread } from '../threads.js';
 import { alignmentAt } from '../roles.js';
 import { lineFor } from './lines.js';
+import { peopleLost, murderCount } from '../state.js';
 
 const FAMILY = 'grief';
 
@@ -412,7 +413,7 @@ registerEvent({
     if ((ctx.living || []).length < 3) return 0;
     // Reachable, uncommon state: the castle has lost more than one person —
     // by the second death, a ritual like this has grounds to exist.
-    const deaths = (gs.tr?.rounds || []).filter(r => r.murdered).length;
+    const deaths = murderCount(gs);
     return deaths >= 2 ? 2 : 0;
   },
   fire(ctx) {
@@ -467,7 +468,7 @@ registerEvent({
   oncePerSeason: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
-    const deaths = (gs.tr?.rounds || []).filter(r => r.murdered).length;
+    const deaths = murderCount(gs);
     return deaths >= 2 && _victimLastNight(ctx.ep) ? 1.5 : 0;
   },
   fire(ctx) {
@@ -573,6 +574,19 @@ registerEvent({
 // a thin window, so it draws several times in a single season - the audit's
 // within-season repetition table caught it at five firings of one branch in one
 // season with a two-line pool, which is how a castle starts reading as a loop.
+// SIX LINES A STATE WAS ENOUGH WHEN THIS EVENT FIRED 383 TIMES PER 400
+// SEASONS. F1's gate correction (the first murder leaves no round record, so
+// `rounds.some(r => r.murdered)` was false on the very night the castle first
+// had an empty bed in it) took it to 553, and the repetition ceiling in
+// tests/tr-castle-prose.test.js moved with it: seasons printing one sentence
+// three times went 1.5% -> 2.28%, and two seasons in 3200 reached four.
+//
+// FOUR MORE PER STATE, AND THEY ARE FREE. `pick(rng, arr)` draws once whatever
+// the array length is, so adding variants to an EXISTING pool consumes no
+// extra rng draw and the firing table is bit-identical - the one content edit
+// Plan 5's Task 8 correction measured as path-neutral by construction. This is
+// the preferred route for exactly that reason; a new `pick()` call would have
+// rerouted the season.
 const NIGHT_AWAKE_LINES = {
   desperate: [
     '{a} did not sleep. They had watched the room write their own name down and then had to lie in the dark and count how many.',
@@ -581,6 +595,10 @@ const NIGHT_AWAKE_LINES = {
     'There is no version of tonight {a} could lie down with, and {a} tried all of them before it got light.',
     '{a} spent the night deciding what to say in the morning, and threw all of it away by five.',
     'Somebody in this building had written {a}\'s name down tonight, and {a} lay there going through who.',
+    '{a} rehearsed being surprised, in the dark, for a morning {a} was fairly sure would not come.',
+    'Twice in the night {a} got as far as the door and both times sat back down on the end of the bed.',
+    '{a} worked out, lying there, exactly which two people would have to change their minds, and could not think how.',
+    'The dark did not help. {a} had run out of ways to make tomorrow come out differently by about two.',
   ],
   paranoid: [
     'Somebody had said {a}\'s name tonight, and {a} spent the dark working out who else had been thinking it.',
@@ -589,6 +607,10 @@ const NIGHT_AWAKE_LINES = {
     '{a} kept coming back to who had looked away first, and could not let the question go long enough to sleep.',
     'Every time {a} nearly went under, the room reassembled itself behind their eyes and started talking again.',
     '{a} counted who had been kind to them today and could not decide what any of it had meant.',
+    '{a} listened to the corridor for a long time and could not decide whether it had gone quiet or always was.',
+    'Somewhere in the dark {a} started ranking the room by who had not looked at them, which is no way to sleep.',
+    'Every creak in the building was somebody deciding something about {a}, and {a} knew that was nonsense, and lay there anyway.',
+    '{a} replayed one sentence from the table until they had heard four different meanings in it.',
   ],
   content: [
     '{a} lay awake with the empty beds, doing the arithmetic nobody says out loud.',
@@ -597,6 +619,10 @@ const NIGHT_AWAKE_LINES = {
     'It took {a} a long time to get to sleep, and it was not fear, and it was not nothing either.',
     '{a} could hear how much room there was above them, and had never noticed the ceiling before.',
     'The corridor settles at night, and {a} lay listening to a building doing nothing in particular.',
+    '{a} slept badly and could not have told anybody what about, which was somehow worse.',
+    'The place makes different noises with fewer people in it, and {a} had started noticing which.',
+    '{a} lay there thinking about nothing much, in a room that used to have somebody else breathing in it.',
+    'It is a big building to be quiet in, and {a} was awake for a good hour of it.',
   ],
 };
 
@@ -607,7 +633,11 @@ registerEvent({
   weight(ctx) {
     if (ctx.actors?.length !== 1) return 0;
     // The castle has to have lost somebody for there to be an empty room.
-    if (!(gs.tr?.rounds || []).some(r => r.murdered)) return 0;
+    // SAME SOURCE AS THE COUNT BELOW (F1). `rounds.some(r => r.murdered)` is
+    // false on the night of the first murder, because that murder has no round
+    // record — so the one night the castle most obviously has an empty bed in
+    // it was the one night this event could not fire.
+    if (peopleLost(gs) < 1) return 0;
     return isNervy(ctx.state?.[ctx.actors[0]]) ? 2.5 : 1.2;
   },
   fire(ctx, rng) {
@@ -618,7 +648,12 @@ registerEvent({
     // something the room did in daylight), but the thing a person counts at
     // three in the morning is how many beds are empty, and a banishment
     // empties one exactly as thoroughly.
-    const gone = (gs.tr?.rounds || []).reduce((n, r) => n + (r.murdered ? 1 : 0) + (r.banished ? 1 : 0), 0);
+    // FROM THE LIVING CAST, NOT FROM `rounds` (whole-plan review, F1). Night
+    // one's murder leaves no round record, so summing `rounds` printed a
+    // number that was short by at least one on every single firing — 363 of
+    // 363 wrong across 200 seasons. `peopleLost` is cast minus living, which
+    // cannot miss an exit that has no paperwork.
+    const gone = peopleLost(gs);
     const line = pick(rng, NIGHT_AWAKE_LINES[state] || NIGHT_AWAKE_LINES.content)
       .replace(/\{a\}/g, actor);
     const tail = gone === 1 ? 'One empty bed, so far.' : `${gone} empty beds, so far.`;

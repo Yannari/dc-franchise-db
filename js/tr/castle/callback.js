@@ -77,6 +77,21 @@ function sharedHistory(a, b) {
   return out;
 }
 
+/**
+ * Shared seasons where something actually HAPPENED between the two - not the
+ * mere fact of having been cast together.
+ *
+ * `sharedHistory` reports `costars` for any pair who were in one season, which
+ * on a returnee cast is every pair alive. Any event whose sentence claims two
+ * people have (or lack) HISTORY in the ordinary sense has to filter that out,
+ * or it is asserting something true of the entire room. See F2 on
+ * `callback-no-history-envy`.
+ */
+const STORY_RELATIONS = new Set(['allies', 'betrayed-them', 'betrayed-by-them', 'showmance', 'rivals']);
+function storyWith(a, b) {
+  return sharedHistory(a, b).filter(h => STORY_RELATIONS.has(h.relation));
+}
+
 /** The single strongest signal across every shared season, positive or negative. */
 function strongestRelation(history) {
   const priority = ['betrayed-by-them', 'betrayed-them', 'rivals', 'showmance', 'allies', 'costars'];
@@ -334,6 +349,15 @@ const DIFFERENT_PERSON_LINES = {
     '{a} tried the old shorthand on {b} twice, and it did not work either time.',
     '{b} has been perfectly polite to {a} all week, and {a} would prefer almost anything else.',
     'Whatever {a} remembered liking about {b} has not turned up yet.',
+    // THREE ADDED AFTER READING A DUMP: this pool produced the worst
+    // within-season repeat in 3200 seasons (four printings of "had been
+    // looking forward to seeing"). `lineFor` consumes no rng, so widening the
+    // pool is path-neutral - verified bit-identical on the 400-season firing
+    // table - and a wider pool is the only lever that does not move anything
+    // else.
+    '{a} keeps starting sentences to {b} that only made sense last season, and stopping halfway.',
+    'There is a version of {b} that {a} came here to see, and it did not travel.',
+    '{a} gave it a week before admitting to themselves that {b} had changed.',
   ],
   dissonance: [
     '{a} kept comparing this version of {b} to the one they remembered, out loud, to {b}\'s visible annoyance.',
@@ -383,11 +407,22 @@ registerEvent({
   },
 });
 
+// LINES REWRITTEN TO MATCH THE PREDICATE, NOT THE OTHER WAY ROUND (whole-plan
+// review, F2). These used to claim {a} "had no part of" the SEASONS being
+// talked about, and on this franchise's returnee casts that is false for
+// nearly everybody: a cast where twenty people played the same two prior
+// seasons has no strangers in it. What it does have is people who were IN the
+// season and not in the STORY - who never allied, never fell out, never
+// betrayed anybody - and that is what the gate below now checks and what these
+// sentences now say. Season 42 used to run "no part of them" in episode 1 and
+// "finally said out loud what happened between them and Beth" in episode 2,
+// contradicting itself inside one thread; there is nothing left to contradict.
 const ENVY_LINES = [
-  '{a} sat outside a conversation full of names and seasons they had no part of, and it stung more than they expected.',
-  '{b} and two others spent twenty minutes on a season {a} had watched from a sofa.',
+  '{a} sat outside a conversation about who did what to whom, and had done none of it to anybody.',
+  '{b} and two others spent twenty minutes on a falling-out {a} had only ever heard about.',
   '{a} laughed in the right places at a story {a} was not in, and went to bed early.',
-  'Everybody at that table had a shared history except {a}, and everybody at that table forgot it except {a}.',
+  'Everybody at that table had done something to somebody at that table, except {a}.',
+  '{a} was in that season too, and nobody telling it needed to mention {a} once.',
   '{a} asked one question about it, got a kind answer, and did not ask a second.',
 ];
 
@@ -401,12 +436,26 @@ registerEvent({
   acts: { early: 1.6, late: 0.5 },
   // The second advancer in `callback|morning`.
     citesResidue: true,
+  // THE PRECONDITION NOW ENCODES ITS OWN SENTENCE (whole-plan review, F2).
+  // It used to check ONLY that the insider shares history with somebody, and
+  // nothing whatsoever about the outsider - so on the returnee casts this
+  // family is built for, where everybody co-starred with everybody, the line
+  // was false on all 157 firings per 200 seasons.
+  //
+  // `sharedHistory` returns `costars` for any two people who were in the same
+  // season, which is why "did they share a season" cannot be the test. The
+  // test is whether they share a STORY: an alliance, a rivalry, a betrayal, a
+  // showmance. The outsider must have none of that with the insider, and there
+  // must be a third person the insider DOES have it with and the outsider does
+  // not. That is a conversation about something that happened, held in front
+  // of somebody it did not happen to.
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
     const [outsider, insider] = ctx.actors;
+    if (storyWith(outsider, insider).length) return 0;
     const others = ctx.living.filter(n => n !== outsider && n !== insider);
-    return others.some(n => sharedHistory(insider, n).length) ? 1 : 0;
+    return others.some(n => storyWith(insider, n).length && !storyWith(outsider, n).length) ? 1 : 0;
   },
   fire(ctx) {
     const [outsider, insider] = ctx.actors;
@@ -548,8 +597,15 @@ registerEvent({
       const t = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, [a, b], ctx.ep, line);
       threadId = t?.id ?? threadId;
     } else {
-      if (existing) closeThread(existing.id, ctx.ep, 'buried');
-      else threadId = openThread(FAMILY, [a, b], ctx.ep, line)?.id;
+      // WRITE THE BEAT, THEN CLOSE (whole-plan review, F3). `closeThread` sets
+      // state and outcome and writes NOTHING — no beat, no residue — so a
+      // branch that computed a line and went straight to it printed nothing at
+      // all. This is the payoff scene of the story it is closing; it has to say
+      // what happened before it says it is over.
+      if (existing) {
+        advanceThread(existing.id, ctx.ep, line);
+        closeThread(existing.id, ctx.ep, 'buried');
+      } else threadId = openThread(FAMILY, [a, b], ctx.ep, line)?.id;
     }
     return { branch, pair: [a, b], relation: strongest?.relation, threadId, bondDelta };
   },

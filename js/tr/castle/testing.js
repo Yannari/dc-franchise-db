@@ -488,8 +488,16 @@ registerEvent({
     if (branch === 'keptQuiet') {
       bondDelta = 2;
       addBond(a, b, bondDelta);
-      if (existing) { closeThread(existing.id, ctx.ep, 'passed-clean'); threadId = existing.id; }
-      else threadId = openThread(FAMILY, [a, b], ctx.ep, line)?.id;
+      // WRITE THE BEAT, THEN CLOSE (whole-plan review, F3). `closeThread` sets
+      // state and outcome and writes NOTHING — no beat, no residue — so a
+      // branch that computed a line and went straight to it printed nothing at
+      // all. This is the payoff scene of the story it is closing; it has to say
+      // what happened before it says it is over.
+      if (existing) {
+        advanceThread(existing.id, ctx.ep, line);
+        closeThread(existing.id, ctx.ep, 'passed-clean');
+        threadId = existing.id;
+      } else threadId = openThread(FAMILY, [a, b], ctx.ep, line)?.id;
     } else if (branch === 'innocent') {
       bondDelta = -1;
       addBond(a, b, bondDelta);
@@ -498,13 +506,29 @@ registerEvent({
     } else if (branch === 'malicious') {
       bondDelta = -3;
       addBond(a, b, bondDelta);
-      if (existing) { closeThread(existing.id, ctx.ep, 'failed-maliciously'); threadId = existing.id; }
-      else threadId = openThread(FAMILY, [a, b], ctx.ep, line)?.id;
+      // WRITE THE BEAT, THEN CLOSE (whole-plan review, F3). `closeThread` sets
+      // state and outcome and writes NOTHING — no beat, no residue — so a
+      // branch that computed a line and went straight to it printed nothing at
+      // all. This is the payoff scene of the story it is closing; it has to say
+      // what happened before it says it is over.
+      if (existing) {
+        advanceThread(existing.id, ctx.ep, line);
+        closeThread(existing.id, ctx.ep, 'failed-maliciously');
+        threadId = existing.id;
+      } else threadId = openThread(FAMILY, [a, b], ctx.ep, line)?.id;
     } else {
       bondDelta = -1;
       addBond(a, b, bondDelta);
-      if (existing) { closeThread(existing.id, ctx.ep, 'test-exposed'); threadId = existing.id; }
-      else threadId = openThread(FAMILY, [a, b], ctx.ep, line)?.id;
+      // WRITE THE BEAT, THEN CLOSE (whole-plan review, F3). `closeThread` sets
+      // state and outcome and writes NOTHING — no beat, no residue — so a
+      // branch that computed a line and went straight to it printed nothing at
+      // all. This is the payoff scene of the story it is closing; it has to say
+      // what happened before it says it is over.
+      if (existing) {
+        advanceThread(existing.id, ctx.ep, line);
+        closeThread(existing.id, ctx.ep, 'test-exposed');
+        threadId = existing.id;
+      } else threadId = openThread(FAMILY, [a, b], ctx.ep, line)?.id;
     }
     return { branch, pair: [a, b], threadId, bondDelta };
   },

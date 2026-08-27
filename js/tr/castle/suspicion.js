@@ -340,8 +340,15 @@ registerEvent({
 
     if (branch === 'denies') {
       bondDelta = 0;
-      if (existing) closeThread(existing.id, ctx.ep, 'denied-convincingly');
-      else threadId = openThread(FAMILY, [accuser, accused], ctx.ep, line)?.id;
+      // WRITE THE BEAT, THEN CLOSE (whole-plan review, F3). `closeThread` sets
+      // state and outcome and writes NOTHING — no beat, no residue — so a
+      // branch that computed a line and went straight to it printed nothing at
+      // all. This is the payoff scene of the story it is closing; it has to say
+      // what happened before it says it is over.
+      if (existing) {
+        advanceThread(existing.id, ctx.ep, line);
+        closeThread(existing.id, ctx.ep, 'denied-convincingly');
+      } else threadId = openThread(FAMILY, [accuser, accused], ctx.ep, line)?.id;
     } else if (branch === 'denyWeak') {
       bondDelta = -1;
       addBond(accuser, accused, bondDelta);
@@ -359,8 +366,15 @@ registerEvent({
     } else {
       bondDelta = 1;
       addBond(accuser, accused, bondDelta);
-      if (existing) closeThread(existing.id, ctx.ep, 'confessed-unrelated');
-      else threadId = openThread(FAMILY, [accuser, accused], ctx.ep, line)?.id;
+      // WRITE THE BEAT, THEN CLOSE (whole-plan review, F3). `closeThread` sets
+      // state and outcome and writes NOTHING — no beat, no residue — so a
+      // branch that computed a line and went straight to it printed nothing at
+      // all. This is the payoff scene of the story it is closing; it has to say
+      // what happened before it says it is over.
+      if (existing) {
+        advanceThread(existing.id, ctx.ep, line);
+        closeThread(existing.id, ctx.ep, 'confessed-unrelated');
+      } else threadId = openThread(FAMILY, [accuser, accused], ctx.ep, line)?.id;
     }
     return { branch, pair: [accuser, accused], threadId, bondDelta };
   },

@@ -91,6 +91,11 @@ const PROSE_SEASONS = 3200;
 /** The first sentence of a note — the part a line pool owns. See the header. */
 function lead(note) { return String(note || '').split(/(?<=[.!?])[ ]/)[0]; }
 
+/** A note minus any citation appended to it — see `citeMoments` in threads.js. */
+function authored(note) {
+  return String(note || '').split(/It went back to day |It had been going on since day |It did not stop there: /)[0];
+}
+
 /** Two sentences that differ only in who is in them are ONE sentence here. */
 function mask(s) {
   let out = String(s);
@@ -112,10 +117,22 @@ for (const ev of EVENTS) {
     for (const t of (gs?.tr?.threads || [])) for (const b of t.beats) before.add(b);
     const res = orig.call(this, ctx, rng);
     const notes = [];
+    const raw = [];
     for (const t of (gs?.tr?.threads || [])) {
-      for (const b of t.beats) if (!before.has(b) && b.note) notes.push(mask(lead(b.note)));
+      for (const b of t.beats) if (!before.has(b) && b.note) { notes.push(mask(lead(b.note))); raw.push(String(b.note)); }
     }
-    FIRINGS.push({ season: _season, key: `${ev.id}:${res?.branch ?? '(none)'}`, notes });
+    // The season facts a printed number is allowed to be about, sampled at the
+    // moment the sentence was written. See THE NUMBER RULE below.
+    const rounds = gs?.tr?.rounds || [];
+    const truth = {
+      ep: ctx.ep,
+      living: (gs?.activePlayers || []).length,
+      cast: Object.keys(gs?.tr?.alignment || {}).length,
+      banished: rounds.filter(r => r.banished).length,
+    };
+    truth.lost = Math.max(0, truth.cast - truth.living);
+    truth.murders = Math.max(0, truth.lost - truth.banished);
+    FIRINGS.push({ season: _season, key: `${ev.id}:${res?.branch ?? '(none)'}`, notes, raw, truth });
     return res;
   };
 }
@@ -252,5 +269,111 @@ describe('THE REPETITION CEILING: what a viewer actually notices', () => {
     const over = WORST_PER_SEASON.filter(w => w.worst > 4);
     expect(over.map(w => `season ${w.season}: ${w.worst}x "${w.what}"`),
       'a season printed one sentence five or more times').toEqual([]);
+  });
+});
+
+describe('THE SILENCE FLOOR: a scene that prints nothing is not a scene', () => {
+  // WHY THIS EXISTS, AND WHY THE TWO RULES ABOVE COULD NOT SEE IT (whole-plan
+  // review, F5). Both of them key on the sentences a firing WROTE. A firing
+  // that writes none contributes zero sentences and still increments its own
+  // firing count, so a branch that is silent 86% of the time passed the
+  // variety floor on the 14% that spoke, and passed the repetition ceiling
+  // because absence is not repetition. Nothing counted absence.
+  //
+  // What it was hiding: four events computed a line, called `closeThread`
+  // (which writes no beat and no residue) and threw the sentence away — so the
+  // PAYOFF SCENE of a story the castle had been telling printed nothing at
+  // all. Measured before the fix, per 400 seasons:
+  //
+  //     susp-private-accusation:denies      53/62 silent  (86%)
+  //     susp-private-accusation:confess     45/58 silent  (78%)
+  //     testing-decoy-secret:keptQuiet      15/72 silent  (21%)
+  //     testing-decoy-secret:caughtTest      8/39 silent  (21%)
+  //     callback-history-confrontation:buries 24/122 silent (20%)
+  //     testing-decoy-secret:malicious       6/45 silent  (13%)
+  //
+  // Task 8 had found the identical defect in `romance-liability-exposed:
+  // exposes` and fixed that one event. This is the rule that makes the class
+  // visible, which is the lesson Task 4 wrote into the plan.
+  it('every firing of every event writes at least one thread beat', () => {
+    const per = new Map();
+    for (const f of FIRINGS) {
+      if (!per.has(f.key)) per.set(f.key, { n: 0, silent: 0 });
+      const e = per.get(f.key);
+      e.n++;
+      if (!f.notes.length) e.silent++;
+    }
+    const rows = [...per].map(([k, v]) => ({ k, ...v })).filter(r => r.silent)
+      .sort((a, b) => b.silent / b.n - a.silent / a.n);
+    console.log(`
+=== SILENT FIRINGS (${PROSE_SEASONS} seasons, ${per.size} keys) ===`);
+    for (const r of rows.slice(0, 10)) console.log(`   ${(100 * r.silent / r.n).toFixed(1)}%	${r.silent}/${r.n}	${r.k}`);
+    if (!rows.length) console.log('   none');
+
+    expect(FIRINGS.length, 'no firings captured — this assertion is vacuous').toBeGreaterThan(100000);
+    // ZERO, NOT A SHARE, and that is deliberate. A branch is either wired to
+    // write its sentence or it is not; the shares above are the share of
+    // firings that took the unwired path, not sampling noise. If a legitimate
+    // silent branch is ever authored, it belongs in this comment with its
+    // reason, not under a loosened threshold.
+    expect(rows.map(r => `${r.k}: ${r.silent}/${r.n} firings printed nothing`),
+      'these branches computed a scene and wrote no sentence — the payoff prints nothing')
+      .toEqual([]);
+  });
+});
+
+describe('THE NUMBER RULE: a printed count must be true of the season it is printed in', () => {
+  // WHOLE-PLAN REVIEW, F1: there was no assertion anywhere on a number a
+  // castle event prints. `grief-nobody-sleeps` summed `gs.tr.rounds` to count
+  // the empty beds, and night one's murder deliberately leaves no round
+  // record — so the count was short by at least one on 363 of 363 firings
+  // across 200 seasons. The viewer read "2 empty beds, so far" on a night
+  // with three in it.
+  //
+  // A RULE OVER THE POOL, NOT A CHECK ON THAT EVENT. Any digit a castle
+  // sentence prints must equal a fact the season state can justify at the
+  // moment it was written: how many are gone, how many are left, how many
+  // were murdered, how many were banished, how many started — or an episode
+  // number that has already happened, which is what Task 2's citations print
+  // ("It went back to day 3"). A number that matches none of those is either
+  // wrong or is a fact this rule has never heard of, and both need a human.
+  it('every number in every castle sentence is a fact about that season', () => {
+    const bad = new Map();
+    let checked = 0;
+    for (const f of FIRINGS) {
+      const t = f.truth;
+      const ok = new Set([t.living, t.lost, t.murders, t.banished, t.cast]);
+      for (let e = 1; e <= t.ep; e++) ok.add(e);
+      for (const note of f.raw) {
+        // THE AUTHORED PART ONLY, and this is what makes the rule sharp rather
+        // than vacuous. A note may carry a citation appended to it, and a
+        // citation QUOTES an earlier note verbatim — "seventeen of us" was
+        // true on day 1 and is not a claim about today. Admitting every
+        // historically-true value to the allowed set instead would have let
+        // F1's own defect through, because a count short by one is exactly a
+        // count that was true one round ago.
+        //
+        // The cut is at the citation's two openers (threads.js `citeMoments`)
+        // and NOT at the end of the first sentence, which is the other obvious
+        // way to write this and is wrong: `grief-nobody-sleeps` prints its
+        // count in a SECOND sentence ("... 3 empty beds, so far."), so a
+        // lead-only rule was green against the very defect it was written for.
+        // Verified by running the mutation, not by reading the code.
+        for (const m of authored(note).match(/\d+/g) || []) {
+          checked++;
+          if (ok.has(Number(m))) continue;
+          const k = `${f.key} printed ${m} (living ${t.living}, lost ${t.lost}, `
+            + `murdered ${t.murders}, banished ${t.banished}, ep ${t.ep})`;
+          if (!bad.has(k)) bad.set(k, 0);
+          bad.set(k, bad.get(k) + 1);
+        }
+      }
+    }
+    console.log(`
+=== NUMBERS CHECKED (${PROSE_SEASONS} seasons) === ${checked}`);
+    expect(checked, 'no numbers were printed at all — this assertion is vacuous')
+      .toBeGreaterThan(1000);
+    expect([...bad].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${k} x${v}`),
+      'these sentences printed a number the season state cannot justify').toEqual([]);
   });
 });

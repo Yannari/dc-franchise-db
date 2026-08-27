@@ -47,8 +47,10 @@ import { pStats, romanticCompat } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
 import { openThread, advanceThread, closeThread, findOpenThread, continueThread,
-  advanceCiting } from '../threads.js';
+  advanceCiting, heatAt } from '../threads.js';
 import { alignmentAt } from '../roles.js';
+import { MAX_ACTIVE_ROMANCES, _activeRomanceCount, _threadForActors } from './romance.js';
+import { _sentenceCase } from './cover.js';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 function isTraitor(name, ep) { return alignmentAt(name, ep) === 'traitor'; }
@@ -287,22 +289,51 @@ registerEvent({
   },
 });
 
-const SHORT_COLUMN_LINES = [
-  'The group that left the castle was noticeably shorter than the last one, and {a} was the one who said so.',
-  '{a} counted the people on the road out and wished they had not.',
-  'Somebody used to walk at the front of this. {a} noticed the gap where they should have been.',
-];
-const SHORT_COLUMN_PAIR_LINES = [
-  'The group leaving was shorter again. {a} said it out loud and {b} only nodded.',
-  '{a} and {b} both clocked how much smaller the column out of the gate had got.',
-  'Neither {a} nor {b} said anything about it, but both of them counted the road out.',
-];
+// FOUR POOLS, NOT TWO, AND A BRANCH LABEL THAT SAYS WHICH (round 2, R5). This
+// is the most-fired new event in the pool - 906 firings per 400 seasons - it is
+// solo-capable, and it shipped with three lines and a CONSTANT branch label.
+// The repetition audit's (id, branch) table is the only thing in this project
+// that notices a season looping, and a constant label makes an event
+// structurally invisible to it: every firing collapses onto one row whatever
+// the scene was. `grief-nobody-sleeps` had the same defect and got the same
+// fix; this one was missed.
+//
+// The two real axes are who is present (a lone actor or a pair) and whether
+// this is the FIRST time the road out has been shorter or another one in a
+// series. Those are different scenes, so they are four pools and four branch
+// labels rather than one pool of six lines.
+const SHORT_COLUMN_LINES = {
+  'solo-first': [
+    'The group that left the castle was noticeably shorter than the last one, and {a} was the one who said so.',
+    '{a} counted the people on the road out and wished they had not.',
+    'Somebody used to walk at the front of this. {a} noticed the gap where they should have been.',
+    'It was the first time the road out had felt short, and {a} could not stop doing the arithmetic.',
+  ],
+  'solo-again': [
+    '{a} had stopped counting the people on the road out, and hated that they knew the number anyway.',
+    'The column out of the gate got shorter every time, and {a} had started walking at the back of it.',
+    '{a} looked at how few of them were on the road now and could remember every single gap in it.',
+    'There was more road than people by this point, and {a} was the only one who said anything about it.',
+  ],
+  'pair-first': [
+    'The group leaving was shorter than last time. {a} said it out loud and {b} only nodded.',
+    '{a} and {b} both clocked how much smaller the column out of the gate had got.',
+    'Neither {a} nor {b} said anything about it, but both of them counted the road out.',
+    '{a} caught {b} looking back at the gate to check the number, and did not mention it.',
+  ],
+  'pair-again': [
+    '{a} and {b} had both stopped counting out loud, which was its own way of counting.',
+    'The road out was shorter again. {a} started to say so and {b} said they already knew.',
+    '{a} and {b} walked out through a gate that used to be crowded, and neither of them filled the silence.',
+    'By now {a} and {b} could have named everybody missing from the road without stopping to think.',
+  ],
+};
 
 // SOLO-CAPABLE ON PURPOSE. `_sceneActors` draws one actor about 40% of the
 // time when it is not walking a live thread into the room, and a window whose
 // whole pool demands a pair simply returns nothing on those draws — content
 // that exists and is skipped, which is the failure the reachability sweep is
-// for. Two of this window's five events take a lone actor.
+// for. Two of this window's events take a lone actor.
 registerEvent({
   id: 'grief-shorter-column',
   family: 'grief',
@@ -314,16 +345,14 @@ registerEvent({
   },
   fire(ctx, rng) {
     const [a, b] = ctx.actors;
-    let line;
-    if (b) {
-      line = pick(rng, SHORT_COLUMN_PAIR_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
-      addBond(a, b, 1);
-    } else {
-      line = pick(rng, SHORT_COLUMN_LINES).replace(/\{a\}/g, a);
-    }
+    const deaths = _deaths();
+    const branch = `${b ? 'pair' : 'solo'}-${deaths >= 2 ? 'again' : 'first'}`;
+    const line = _sentenceCase(pick(rng, SHORT_COLUMN_LINES[branch])
+      .replace(/\{a\}/g, a).replace(/\{b\}/g, b || 'somebody'));
+    if (b) addBond(a, b, 1);
     const parties = b ? [a, b] : [a];
     const t = openThread('grief', parties, ctx.ep, line);
-    return { branch: 'shorter-column', actors: [...ctx.actors], deaths: _deaths(),
+    return { branch, actors: [...ctx.actors], deaths,
       threadId: t?.id, bondDelta: b ? 1 : 0 };
   },
 });
@@ -351,14 +380,10 @@ const ROAD_SPARK_LINES = [
 //
 // The gates are `romance-spark`'s own, deliberately identical: not already
 // paired, romantically compatible (CLAUDE.md's rule), and under the castle's
-// local 4-active cap — enforced here by counting open spark/showmance
-// threads, the same substrate romance.js counts, so the two doors share one
-// cap rather than each having their own.
-const MAX_ACTIVE_ROMANCES = 4;
-function _activeRomanceCount() {
-  return (gs.tr?.threads || []).filter(t => t.state === 'open'
-    && (t.kind === 'romance-spark' || t.kind === 'romance-showmance')).length;
-}
+// local 4-active cap - IMPORTED from romance.js (round 2, R7), not copied.
+// This file used to hold its own `MAX_ACTIVE_ROMANCES = 4` and its own count
+// helper, which held the same number today and would have desynced silently
+// the first time either was tuned. One cap, one definition, two doors.
 
 registerEvent({
   id: 'romance-road-spark',
@@ -653,19 +678,79 @@ registerEvent({
   // the amendment measured and withdrew. The event still advances a real
   // thread; guard 1 simply cannot see it.
   weight(ctx) {
-    if (ctx.actors?.length !== 2) return 0;
-    return findOpenThread('romance-spark', ctx.actors)
-      || findOpenThread('romance-showmance', ctx.actors) ? 2 : 0;
+    if (!ctx.actors?.length) return 0;
+    // Same lookup, same reason as `romance-showmance-on-the-way-back` above.
+    return _threadForActors('romance-showmance', ctx.actors)
+      || _threadForActors('romance-spark', ctx.actors) ? 2 : 0;
   },
   fire(ctx, rng) {
-    const [a, b] = ctx.actors;
-    const kind = findOpenThread('romance-showmance', [a, b]) ? 'romance-showmance' : 'romance-spark';
-    const thread = findOpenThread(kind, [a, b]);
+    const kind = _threadForActors('romance-showmance', ctx.actors) ? 'romance-showmance' : 'romance-spark';
+    const thread = _threadForActors(kind, ctx.actors);
+    const [a, b] = thread.parties;
     addBond(a, b, 2);
     const line = pick(rng, WALKED_BACK_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const advanced = advanceThread(thread.id, ctx.ep, line);
     return { branch: 'walked-back-together', pair: [a, b], kind,
       threadId: advanced?.id ?? thread.id, bondDelta: 2 };
+  },
+});
+
+const CAME_BACK_HOLDING_LINES = [
+  '{a} and {b} came back through the gate close enough together that nobody in the courtyard had to ask.',
+  'Whatever the road did to {a} and {b}, they walked back in as a pair and stopped pretending otherwise.',
+  'They were the last two in off the road, and by the time {a} and {b} reached the gate it was not a secret any more.',
+  '{a} and {b} did not announce it. They did not have to; the whole castle watched them come back up the path.',
+];
+
+// THE SECOND DOOR ON ESCALATION, and the fix for R2's worst casualty.
+//
+// `romance-showmance-forms` (romance.js, `evening`) is the ONLY way a spark
+// becomes a showmance, and EVERY event downstream of a showmance is therefore
+// a function of how many draws `evening` gets. When this task took 22% of
+// them, `romance-liability-exposed` - the family's flagship - held at 21
+// firings per 400 seasons but split them across four branches, and its
+// `exposes` branch fell to 2, under the reachability floor. Reweighting it in
+// `after-table` would only have starved its neighbours, and it cannot be
+// relocated: its own prose has the doubter standing up AT THE TABLE.
+//
+// So the fix is upstream and structural, the same shape as `romance-road-spark`
+// one window earlier: a second escalation door in a window that is not
+// contested. It moves nothing about `romance-liability-exposed` except how
+// often the state it needs exists at all.
+//
+// IT IS ALSO A CLOSER. `became-showmance` retires the spark thread, so this
+// costs the cap nothing (one open romance thread becomes one open romance
+// thread) and pays into the metric this task exists to move.
+registerEvent({
+  id: 'romance-showmance-on-the-way-back',
+  family: 'romance',
+  window: 'journey-back',
+  rare: true,
+  weight(ctx) {
+    if (!ctx.actors?.length) return 0;
+    // `_threadForActors`, NOT `findOpenThread` — imported from romance.js, and
+    // the difference is the whole reachability of this event. A party-exact
+    // lookup asks the runner to redraw one specific pair, which at a 20-person
+    // cast happens about once in 300 draws; romance.js measured ZERO
+    // escalations across 60 seasons that way before it was fixed there. This
+    // asks whether EITHER person in the scene is in a spark, and takes the
+    // real partner from the thread. First version of this event shipped with
+    // the exact form and drew 21 firings per 400 seasons for it.
+    const t = _threadForActors('romance-spark', ctx.actors);
+    // A still-warm spark, the same precondition `romance-showmance-forms`
+    // applies: a day out of the castle escalates something live, not something
+    // that fizzled three rounds ago.
+    return t && heatAt(t, ctx.ep) > 0 ? 2.5 : 0;
+  },
+  fire(ctx, rng) {
+    const spark = _threadForActors('romance-spark', ctx.actors);
+    const [a, b] = spark.parties;
+    closeThread(spark.id, ctx.ep, 'became-showmance');
+    addBond(a, b, 2);
+    const note = pick(rng, CAME_BACK_HOLDING_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const t = openThread('romance-showmance', [a, b], ctx.ep, note);
+    return { branch: 'showmance-on-the-road', pair: [a, b], threadId: t?.id,
+      outcome: 'became-showmance', bondDelta: 2 };
   },
 });
 

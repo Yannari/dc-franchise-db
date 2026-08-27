@@ -340,16 +340,79 @@ describe('a citation is punctuated, and never quotes a sentence back at itself',
     expect(note.split('Bowie had an answer').length - 1).toBe(1);
   });
 
-  it('keeps the DAYS when it drops a self-quote, if there are other days to name (R2)', () => {
+  it('quotes a DIFFERENT day rather than dropping the quote, when one is available (R2 + R4)', () => {
+    // BEHAVIOUR CHANGED IN PLAN 5 TASK 4 ROUND 2, and the invariant did not.
+    // R2's rule is "never quote a sentence back at itself"; it is not "never
+    // quote when the OLDEST moment happens to be that sentence". The old code
+    // conflated the two because the lead was always prior[0], so a self-quote
+    // on day 1 discarded day 3's perfectly good sentence as collateral. Since
+    // R4 the lead is chosen, so it simply skips day 1 and quotes day 3.
+    //
+    // The R2 invariant is the last assertion, unchanged and still the point:
+    // the head appears in the note exactly once.
     const LINE = 'Bowie had an answer ready for a question nobody had asked yet.';
     const t = openThread('cover', [CAST[0]], 1, LINE);
     advanceThread(t.id, 3, 'Something else entirely happened.');
 
     const { note } = advanceCiting(findOpenThread('cover', [CAST[0]]), 6, LINE);
 
-    expect(note).toContain('It had been going on since day 1, and again on day 3.');
-    // The quote is gone; the accounting is not.
+    expect(note).toContain('It went back to day 3');
+    expect(note).toContain('Something else entirely happened');
+    expect(note).toContain('day 1');            // the earlier day is still named
+    // The self-quote is gone; the accounting is not.
     expect(note.split('Bowie had an answer').length - 1).toBe(1);
+  });
+
+  it('only the EARLIEST day may be called "since", and the quoting form never claims an order (R4 follow-up)', () => {
+    // FOUND BY READING A DUMP, AND CREATED BY R4 ITSELF. Varying which moment
+    // leads broke the assumption every "since" in citeMoments rested on - that
+    // the quoted moment was the earliest one. Two real beats came out of the
+    // engine naming real days in an order that cannot have happened:
+    //
+    //   "It went back to day 7 - ... - and it had not stopped since: day 5."
+    //   "It had been going on since day 2, and again on day 1."
+    //
+    // The invariant has two halves and they need two different scenarios,
+    // because the two forms of a citation are produced by different branches.
+
+    // FORM 1 - a quoted lead. The lead is chosen and may be ANY prior moment,
+    // so the connective must not claim the lead is the earliest. It says "it
+    // did not stop there", and the word "since" may not appear at all.
+    const t1 = openThread('cover', [CAST[2]], 1, 'The first thing that happened.');
+    // Day 3 QUOTES day 1, which is what makes day 1 already-quoted and pushes
+    // the lead onto a later moment - the exact situation that produced the bug.
+    advanceThread(t1.id, 3, 'The second thing. The first thing that happened.');
+    advanceThread(t1.id, 5, 'The third thing that happened.');
+
+    const quoting = citeMoments(findOpenThread('cover', [CAST[2]]), 9);
+    expect(quoting).toContain('It went back to day 3');   // not day 1: already quoted
+    expect(quoting).toContain('day 1');                    // the earlier day is still named
+    expect(quoting, `a citation whose lead is not the earliest moment must not say "since": ${quoting}`)
+      .not.toMatch(/since/);
+    // THE MUTATION for this half: in js/tr/threads.js, restore the old
+    // connective - `and it had not stopped since: ${_days(others)}` in place of
+    // `and it did not stop there: ${_days(others)}`.
+
+    // FORM 2 - every moment already quoted, so there is no lead and the
+    // citation is days only. THIS form does say "since", and the day it names
+    // must be the smallest one in the sentence.
+    // `_head` compares FIRST SENTENCES, so "already quoted" means a later note
+    // repeats that opening sentence. Both earlier heads are repeated below,
+    // which leaves citeMoments with nothing new to quote.
+    const LINE = 'A sentence this thread keeps repeating.';
+    const t2 = openThread('trust', [CAST[3]], 2, LINE);
+    advanceThread(t2.id, 4, `Beat two. ${LINE}`);
+    advanceThread(t2.id, 6, 'Beat two. And something after it.');
+
+    const daysOnly = citeMoments(findOpenThread('trust', [CAST[3]]), 9);
+    expect(daysOnly, `expected the days-only form, got: ${daysOnly}`).toMatch(/going on since/);
+    const days = [...daysOnly.matchAll(/day (\d+)/g)].map(m => Number(m[1]));
+    const since = Number(/going on since day (\d+)/.exec(daysOnly)[1]);
+    expect(days.length).toBeGreaterThan(1);
+    expect(since, `"since" named day ${since} while the sentence also names ${Math.min(...days)}: ${daysOnly}`)
+      .toBe(Math.min(...days));
+    // THE MUTATION for this half: `since day ${prior[prior.length - 1].ep}` in
+    // place of `since day ${earliest.ep}`.
   });
 
   it('strips the quoted note\'s full stop before splicing it inside the dashes (R3)', () => {
@@ -359,7 +422,12 @@ describe('a citation is punctuated, and never quotes a sentence back at itself',
 
     const cited = citeMoments(findOpenThread('cover', [CAST[1]]), 8);
 
-    expect(cited).toContain('at breakfast — and it had not stopped since: day 5.');
+    // The connective changed in round 2 ("had not stopped since" -> "did not
+    // stop there") because "since" may only ever name the EARLIEST day and the
+    // quoted day is no longer guaranteed to be it. What this test is actually
+    // about - the quoted note's own full stop coming off before the splice - is
+    // unchanged, and is the second assertion.
+    expect(cited).toContain('at breakfast — and it did not stop there: day 5.');
     expect(cited).not.toContain('. —');
   });
 

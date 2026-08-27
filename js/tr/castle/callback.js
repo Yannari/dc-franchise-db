@@ -251,7 +251,18 @@ registerEvent({
 registerEvent({
   id: 'callback-different-show-different-person',
   family: FAMILY,
-  window: 'after-table',
+  // RELOCATED BY PLAN 5 TASK 4 ROUND 2 (R2), and relocation rather than
+  // reweighting is the point. Filling three empty windows took 22% of
+  // `evening`'s draws and 30% of `after-table`'s, because the round budget is
+  // a fixed 4-8 for the WHOLE round. That starved BRANCHES inside events whose
+  // own totals still looked fine, which is invisible to any event-keyed floor.
+  // A bigger weight in a crowded window only moves the starvation onto its
+  // neighbours; moving the scene to a thin window is content-neutral and gives
+  // everything left behind more room. This scene needs no particular room to
+  // happen in, and the road out is a better one for it than the one it had.
+  // Its `redemption` branch measured 3 takes per 400 seasons at head against
+  // 14 at base - the single worst per-branch casualty of the redistribution.
+  window: 'journey-out',
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;

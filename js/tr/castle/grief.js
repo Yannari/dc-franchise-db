@@ -16,6 +16,7 @@ import { gs, players } from '../../core.js';
 import { pStats } from '../../players.js';
 import { addBond, getBond } from '../../bonds.js';
 import { registerEvent, isNervy } from '../events.js';
+import { _sentenceCase } from './cover.js';
 import { openThread, advanceThread, findOpenThread, continueThread } from '../threads.js';
 import { alignmentAt } from '../roles.js';
 
@@ -229,9 +230,9 @@ registerEvent({
     // See the note on _partnerSafe in cover.js — the old strip left sentences
     // ending on their own verb whenever `{b}` sat mid-clause, and every one of
     // those was quotable by a later citation.
-    let line = pick(rng, _partnerSafe(REACTION_LINES[branch], partner))
+    let line = _sentenceCase(pick(rng, _partnerSafe(REACTION_LINES[branch], partner))
       .replace(/\{a\}/g, reactor).replace(/\{v\}/g, victim)
-      .replace(/\{b\}/g, partner || 'somebody');
+      .replace(/\{b\}/g, partner || 'somebody'));
 
     // Every branch has to leave SOMETHING — a solo scene (no partner drawn)
     // still writes residue on the reactor even when it can't move a bond,
@@ -437,7 +438,7 @@ const NIGHT_AWAKE_LINES = {
   ],
   content: [
     '{a} lay awake with the empty beds, doing the arithmetic nobody says out loud.',
-    'The castle is very quiet at night once there are fewer people in it, and {a} noticed.',
+    'The castle went very quiet at night once there were fewer people in it, and {a} noticed.',
     '{a} listened to a building built for a lot more people than were still in it.',
     'It took {a} a long time to get to sleep, and it was not fear, and it was not nothing either.',
   ],

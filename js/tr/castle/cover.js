@@ -35,9 +35,25 @@ function _partnerSafe(pool, partner) {
   return safe.length ? safe : pool;
 }
 
+
+/**
+ * Re-capitalise the start of every sentence.
+ *
+ * FOUND BY READING OUTPUT (Plan 5 Task 4 round 2). Three events fill an absent
+ * partner with the stand-in "somebody" - the substitution the source rule in
+ * tr-castle-reachability.test.js requires, because DELETING the clause leaves a
+ * fragment. When `{b}` happens to open a sentence, the stand-in opens it in
+ * lower case: "Carrie didn't hide how hard it hit them. somebody sat with them
+ * and let it be quiet for a while." Every authored line already begins with a
+ * capital, so this is a no-op on all of them and only ever fixes a stand-in.
+ */
+export function _sentenceCase(line) {
+  return String(line).replace(/(^|[.!?]\s+)([a-z])/g, (m, pre, ch) => pre + ch.toUpperCase());
+}
+
 /** Fill both tokens. An absent partner becomes an unnamed onlooker, never a hole. */
 function _fillPartner(line, a, partner) {
-  return line.replace(/\{a\}/g, a).replace(/\{b\}/g, partner || 'somebody');
+  return _sentenceCase(line.replace(/\{a\}/g, a).replace(/\{b\}/g, partner || 'somebody'));
 }
 
 const NICE_ARCHETYPES = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];

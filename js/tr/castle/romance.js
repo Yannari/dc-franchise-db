@@ -125,7 +125,10 @@ function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
  * check on top of this, because escalating a spark specifically wants a
  * still-warm one — that design choice is unaffected.
  */
-function _threadForActors(kind, actors) {
+// EXPORTED (round 2, R7's rule applied a second time): js/tr/castle/journey.js
+// needs exactly this lookup and exactly these reasons, and a second copy would
+// have re-learned the two fixes above the hard way.
+export function _threadForActors(kind, actors) {
   const threads = gs.tr?.threads || [];
   const names = actors || [];
   const matches = threads.filter(t => t.state === 'open' && t.kind === kind
@@ -142,8 +145,12 @@ function _threadForActors(kind, actors) {
  * escalation/reaction events operate on a pairing that already exists and
  * don't add to the count.
  */
-const MAX_ACTIVE_ROMANCES = 4;
-function _activeRomanceCount() {
+// EXPORTED (Plan 5 Task 4 round 2, R7). js/tr/castle/journey.js opens the
+// second door into this family and has to obey the SAME cap; it had its own
+// copy of both, and two copies of a constant desync silently - the failure
+// would be five concurrent showmances in a season, with nothing red.
+export const MAX_ACTIVE_ROMANCES = 4;
+export function _activeRomanceCount() {
   const threads = gs.tr?.threads || [];
   return threads.filter(t => t.state === 'open' && (t.kind === SPARK_KIND || t.kind === SHOWMANCE_KIND)).length;
 }
@@ -365,16 +372,33 @@ const LIABILITY_LINES = {
     '{a} asked {b}, privately and directly, if there was something {a} needed to know.',
     'It came out quiet and it came out honest: {a} looked at {b} and asked them to explain themselves.',
   ],
+  // REWRITTEN FOR `night` (round 2, R2). These two lines used to put the
+  // doubter on their feet AT THE ROUND TABLE, which is the only thing that
+  // held this event in `after-table` - and holding it there was costing all
+  // four of its branches. Said out loud in a corridor at two in the morning
+  // with the house waking up is the same public act, and it is a better one:
+  // the person hears it from them, not from the room.
   exposes: [
-    '{a} said it out loud, in front of the room, about the person they had been sleeping next to.',
-    '{a} stood up at the table and told everyone exactly what they now believed about {b}.',
+    '{a} said it out loud at two in the morning, loudly enough that it was not just {b} who heard it.',
+    '{a} woke half the corridor telling {b}, and everybody who came out of their room, exactly what they now believed.',
+    '{a} did not wait for morning, or for witnesses, and got both anyway.',
   ],
 };
 
 registerEvent({
   id: 'romance-liability-exposed',
   family: FAMILY,
-  window: 'after-table',
+  // RELOCATED `after-table` -> `night` (round 2, R2). This is the family's
+  // flagship and it forks FOUR ways on 25 firings per 400 seasons, so every
+  // branch of it sat at or under the reachability floor - `exposes` at 2,
+  // `oblivious` at 3. Four branches on a rare event need volume, and
+  // `after-table` is the second most contested window in the pool and lost 30%
+  // of its draws to this task. `night` runs immediately after it, so every
+  // belief this event reads is at least as fresh, and the scene is better
+  // there on the merits: this is a person lying awake next to somebody they
+  // have started to doubt, which is not a thing that happens in a crowded
+  // room. Only the `exposes` line pool had to change; see the note on it.
+  window: 'night',
   advancesThread: true,
   rare: true,
   weight(ctx) {

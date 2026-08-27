@@ -286,10 +286,21 @@ export function priorMoments(thread, ep) {
  * three-moment form (spec §5.2's "naming all three moments") is the rare
  * flourish on top of it.
  *
- * IT LEADS WITH THE OPENING BEAT, never the most recent one. The opening beat
- * is the only note guaranteed to carry no citation of its own — quoting a
- * later note would splice a citation inside a citation and the text of a long
- * thread would grow with every beat.
+ * IT USED TO LEAD WITH THE OPENING BEAT, ALWAYS, and that was a bug at length
+ * (round 2, R4). The stated reason was that the opening beat is the only note
+ * guaranteed to carry no citation of its own — but `_head()` already solves
+ * that, since it takes only the first SENTENCE of a note, which is the part an
+ * event authored and never the citation appended after it. What the rule
+ * actually produced was one sentence quoted verbatim in up to eight beats of a
+ * single thread: found in a dump as four consecutive beats of one cover thread
+ * repeating `cover-road-rehearsal`'s opener, twice sitting directly underneath
+ * "X told the same story again, word for word. Nobody clocked the repetition."
+ * The engine narrated its own bug.
+ *
+ * SO THE LEAD IS THE OLDEST PRIOR MOMENT NOT ALREADY QUOTED IN THIS THREAD,
+ * and when every one of them has been quoted the citation drops to naming days
+ * only. Deterministic — it reads the thread's own beat log, no rng — so replay
+ * is unaffected.
  */
 /**
  * The first sentence of a note, without its full stop, which is the unit two
@@ -301,44 +312,96 @@ function _head(note) {
   return first.trim().replace(/[.!?]+$/, '');
 }
 
+/**
+ * Has this head sentence already been quoted somewhere in the thread?
+ *
+ * A head occurs once in its OWN beat by construction, so "quoted" means a
+ * second occurrence. Counted over the thread's beat log rather than tracked on
+ * the thread, because the beat log is the durable record and a counter would
+ * be one more thing to keep in sync with it.
+ */
+function _alreadyQuoted(thread, head) {
+  if (!head) return true;
+  let n = 0;
+  for (const b of (thread.beats || [])) {
+    if (String(b.note || '').includes(head)) n++;
+    if (n > 1) return true;
+  }
+  return false;
+}
+
 export function citeMoments(thread, ep, max = 3, against = null) {
   const prior = priorMoments(thread, ep).slice(0, max);
   if (!prior.length) return '';
-  const first = prior[0];
-  const days = prior.slice(1).map(p => `day ${p.ep}`);
-  const tail = days.length === 1
-    ? days[0]
-    : `${days.slice(0, -1).join(', ')} and ${days[days.length - 1]}`;
 
-  // DO NOT QUOTE A SENTENCE BACK AT ITSELF (review R2). Several events write a
-  // CONSTANT note — `cover-preemptive-alibi`, `cover-feign-fear`,
-  // `cover-rehearsed-story-advance`, `susp-pattern-tracking` — so the second
-  // time one fires on the same thread, the moment it quotes is the sentence it
-  // is being appended to, and the beat reads "X. It went back to day 1: X."
-  // Measured at 22 of 758 citations. The day is still worth naming; the quote
-  // is not, so the quote is what gets dropped.
-  if (against != null && _head(first.note) === _head(against)) {
-    if (!days.length) return '';
-    return `It had been going on since day ${first.ep}, and again on ${tail}.`;
+  // TWO DIFFERENT MOMENTS, AND CONFLATING THEM IS A BUG I SHIPPED AND THEN
+  // READ IN A DUMP (round 2, R4 follow-up).
+  //
+  //   EARLIEST — the day the story started. It is the only day the word
+  //              "since" may ever name. `priorMoments` returns oldest-first,
+  //              so it is prior[0], always.
+  //   LEAD     — the moment worth QUOTING. Since R4 this is no longer the
+  //              earliest, and the first version of that fix left "since"
+  //              pointing at the lead: a thread produced "It went back to day 7
+  //              ... and it had not stopped since: day 5", and another produced
+  //              "It had been going on since day 2, and again on day 1." Both
+  //              name real beats, in an order that cannot have happened.
+  //
+  // So "since" is anchored to EARLIEST, the quote is taken from LEAD, and every
+  // other day is listed in ascending order with a connective that does not
+  // claim an ordering ("it did not stop there").
+  const earliest = prior[0];
+  const headAgainst = against != null ? _head(against) : null;
+  // Never quote the sentence we are appending to (review R2), and never quote
+  // one this thread has already quoted (R4).
+  const lead = prior.find((m) => {
+    const h = _head(m.note);
+    return h !== headAgainst && !_alreadyQuoted(thread, h);
+  }) || null;
+
+  const _days = (list) => {
+    const d = list.map((m) => `day ${m.ep}`);
+    return d.length === 1 ? d[0] : `${d.slice(0, -1).join(', ')} and ${d[d.length - 1]}`;
+  };
+
+  // NOTHING LEFT WORTH QUOTING — every prior moment is either the sentence
+  // being written or one this thread has already quoted. Naming the days is
+  // still true and still worth saying; a fifth copy of the same sentence is not.
+  if (!lead) {
+    const rest = prior.filter((m) => m !== earliest).sort((a, b) => a.ep - b.ep);
+    // R2's original ruling, kept: with nothing else to name, say nothing. A
+    // bare "It had been going on since day 1." appended to the day-1 sentence
+    // itself is accounting, not a beat.
+    if (!rest.length) return '';
+    return `It had been going on since day ${earliest.ep}, and again on ${_days(rest)}.`;
   }
 
-  if (!days.length) return `It went back to day ${first.ep}: ${first.note}`;
+  const others = prior.filter((m) => m !== lead).sort((a, b) => a.ep - b.ep);
+  // ONE MOMENT ONLY. `_head` and not the whole note, so a citation is never
+  // spliced inside a citation — which is the guarantee the old "always lead
+  // with the opening beat" rule used to provide and R4 removed.
+  const quoted = _head(lead.note);
+  if (!others.length) return `It went back to day ${lead.ep}: ${quoted}.`;
+
   // The quoted note is spliced INSIDE an em-dash parenthetical, so its own full
   // stop has to come off (review R3) or every multi-moment citation reads
-  // "...anyone else. — and it had not stopped since: day 5 and day 6."
-  const quoted = _head(first.note);
-  // AND IF THE QUOTED SENTENCE ALREADY HOLDS AN EM-DASH, THE PARENTHETICAL
-  // CANNOT BE ONE (Plan 5 Task 4, found by dumping seasons and reading them).
+  // "...anyone else. — and it did not stop there: day 5 and day 6."
+  //
+  // AND THE PARENTHETICAL CANNOT BE AN EM-DASH PAIR IF EITHER SIDE OF THE
+  // SPLICE ALREADY HOLDS ONE — the quoted moment OR the host note it is being
+  // appended to (round 2, R3; the first version of this checked only the quoted
+  // half and 15 of 3703 beats still shipped three dashes).
   // `cover-feign-fear` writes "X performed the exact right amount of fear at
-  // breakfast — no more, no less than anyone else.", and quoting that between
-  // two more em-dashes produced four dashes in one sentence with no way to
-  // tell which pair was the aside. Nothing could have caught it upstream: the
-  // note is well-formed on its own and only breaks when spliced. So the
-  // splice picks a delimiter the quoted text does not already use.
-  if (quoted.includes('—')) {
-    return `It went back to day ${first.ep}: ${quoted}. It had not stopped since: ${tail}.`;
+  // breakfast — no more, no less than anyone else.", and whichever end of the
+  // splice that sentence lands on, the result is three or four dashes in one
+  // sentence with no way to tell which pair is the aside. Nothing upstream
+  // could catch it: both halves are well-formed alone and only the JOIN breaks.
+  // The guard for this is written from that description — "more than one
+  // em-dash pair in a note" — and not from the shape of this fix.
+  if (quoted.includes('—') || String(against || '').includes('—')) {
+    return `It went back to day ${lead.ep}: ${quoted}. It did not stop there: ${_days(others)}.`;
   }
-  return `It went back to day ${first.ep} — ${quoted} — and it had not stopped since: ${tail}.`;
+  return `It went back to day ${lead.ep} — ${quoted} — and it did not stop there: ${_days(others)}.`;
 }
 
 /**

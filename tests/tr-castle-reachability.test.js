@@ -103,6 +103,10 @@ function runSeasons(n, seedBase = 0) {
         // read outcomes at all, null means it read and found nothing.
         fired.push({ ep: round.ep, id: ce.event.id, family: ce.event.family,
           window: ce.event.window,
+          // THE BRANCH THE FIRING ACTUALLY TOOK. See THE BRANCH FLOOR: an
+          // event-keyed count cannot see a fork collapse, and three floors in
+          // this file were event-keyed.
+          branch: ce.consequences?.branch ?? '(none)',
           readsOutcome: !!ce.consequences && 'priorOutcome' in ce.consequences,
           priorOutcome: ce.consequences?.priorOutcome ?? null,
           // `outcome` is how an event declares it CLOSED a thread, and the
@@ -323,8 +327,14 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     return out;
   }
 
-  it('97 events, 39 of which can advance a thread and 33 of which cite residue', () => {
-    // MOVED BY PLAN 5 TASK 4, deliberately: 81 -> 97 events. Sixteen new ones
+  it('98 events, 39 of which can advance a thread and 33 of which cite residue', () => {
+    // MOVED BY PLAN 5 TASK 4, deliberately: 81 -> 98 events (97 after round 1;
+    // round 2 added `romance-showmance-on-the-way-back`, a second escalation
+    // door for a family whose flagship's four branches were all at or under the
+    // branch floor because only one event in the pool could create the state it
+    // needs). Round 2 also RELOCATED three events out of `evening` and
+    // `after-table` into the thin windows, which moves no count here but moves
+    // the cell ledger below. Sixteen new ones
     // populate the three windows that held almost nothing (`journey-out` and
     // `journey-back` held ZERO between them; `night` held one, and drew 36 of
     // 13,553 firings across 400 seasons).
@@ -337,14 +347,14 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // `journey-back` or `night` — windows holding five or six events each —
     // and never in `morning` or `evening`, which is where ten declarations
     // once starved `romance-shared-alibi` from 12 firings to 2.
-    expect(EVENTS.length).toBe(97);
+    expect(EVENTS.length).toBe(98);
     expect(EVENTS.filter(e => e.advancesThread).length).toBe(39);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
     expect(EVENTS.filter(e => e.citesResidue).length).toBe(33);
   });
 
-  it('44 non-empty family x window cells: 16 with no advancer, 20 with one, 8 with two or more', () => {
+  it('45 non-empty family x window cells: 18 with no advancer, 17 with one, 10 with two or more', () => {
     const c = cells();
     const counts = [...c.values()];
     const zero = counts.filter(v => v.adv === 0).length;
@@ -364,12 +374,12 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // of the same kind and parties whether or not anything is declared; with
     // guard 1 flattened, seasons before and after a re-declaration pass were
     // bit-identical). This table exists to catch silent drift, and that is all.
-    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(44);
+    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(45);
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
-      + 'can never be continued here, whatever either continuation lever is set to').toBe(16);
+      + 'can never be continued here, whatever either continuation lever is set to').toBe(18);
     expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
-      + 'living here can be advanced at most once every five rounds').toBe(20);
-    expect(many, 'cells with two or more advancers').toBe(8);
+      + 'living here can be advanced at most once every five rounds').toBe(17);
+    expect(many, 'cells with two or more advancers').toBe(10);
     // Named, not just counted: a change that swapped one zero cell for another
     // would keep every total above and still be a different game.
     // SEVEN, AND THE SHAPE OF THE LIST IS THE FINDING. Six of them are the
@@ -407,12 +417,20 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     //                      `ev.family`, which is `romance`. Declaring the flag
     //                      there would buy a multiplier that never fires. See
     //                      the note on that event.
+    //
+    // ROUND 2 ADDED THREE MORE, all from relocation rather than new content:
+    // `callback|journey-out` and `romance|after-table` are cells that changed
+    // hands (`callback-different-show-different-person` left after-table,
+    // `romance-liability-exposed` left it for night), and `romance|journey-back`
+    // gained a second non-advancer. Two cells gained a second advancer in the
+    // move, which is why `many` went 8 -> 10.
     expect(zeroNames).toEqual([
-      'callback|dawn', 'callback|morning', 'cover|journey-out', 'cover|morning',
-      'cover|night', 'grief|journey-out', 'grief|morning', 'grief|night',
-      'romance|journey-back', 'romance|journey-out', 'romance|morning',
-      'suspicion|journey-out', 'suspicion|morning', 'suspicion|night',
-      'testing|journey-out', 'testing|morning',
+      'callback|dawn', 'callback|journey-out', 'callback|morning',
+      'cover|journey-out', 'cover|morning', 'cover|night',
+      'grief|journey-out', 'grief|morning', 'grief|night',
+      'romance|after-table', 'romance|journey-back', 'romance|journey-out',
+      'romance|morning', 'suspicion|journey-out', 'suspicion|morning',
+      'suspicion|night', 'testing|journey-out', 'testing|morning',
     ]);
   });
 
@@ -462,7 +480,7 @@ describe('residue is cited in seasons that actually play', () => {
       const eps = t.beats.map(b => b.ep);
       for (const b of t.beats) {
         beats++;
-        notes.push({ id: t.id, ep: b.ep, note: String(b.note || '') });
+        notes.push({ season: i, id: t.id, ep: b.ep, note: String(b.note || '') });
         const days = [...String(b.note || '').matchAll(/day (\d+)/g)].map(m => Number(m[1]));
         if (days.length) cited.push({ threadId: t.id, ep: b.ep, days, beatEps: eps, len: t.beats.length });
       }
@@ -525,7 +543,7 @@ describe('residue is cited in seasons that actually play', () => {
       + 'shipped an unsubstituted placeholder').toEqual([]);
   });
 
-  it('no citation nests an em-dash inside its own em-dash parenthetical', () => {
+  it('no note holds more than one em-dash pair', () => {
     // FOUND BY DUMPING SEASONS AND READING THEM (Plan 5 Task 4). `citeMoments`
     // splices the quoted moment between two em-dashes, and `cover-feign-fear`
     // writes a note that already contains one:
@@ -543,19 +561,22 @@ describe('residue is cited in seasons that actually play', () => {
     //
     // THE MUTATION: in js/tr/threads.js, delete the `quoted.includes` branch in
     // `citeMoments` so the em-dash form is used unconditionally.
-    const nested = notes.filter(n => {
-      for (const m of n.note.matchAll(/It went back to day \d+ \u2014 (.*?) \u2014 and it had not stopped since/g)) {
-        if (m[1].includes('\u2014')) return true;
-      }
-      return false;
-    });
+    // WIDENED IN ROUND 2 (R3). The first version matched only the exact shape
+    // of the fix that had just been written - a dash inside the QUOTED half of
+    // the splice - and was green against 15 of 3703 beats that still shipped
+    // three dashes, because the offending dash was in the HOST note instead.
+    // The defect was described in the report as "four dashes in one sentence,
+    // no readable aside", and this is that description: more than one em-dash
+    // pair in a note. Write the guard from the defect, not from the fix.
+    const nested = notes.filter(n => n.note.split('\u2014').length > 3);
     expect(nested.slice(0, 5).map(n => n.note), `${nested.length} of ${notes.length} notes `
-      + 'quote an em-dashed sentence inside an em-dashed parenthetical').toEqual([]);
-    // Guard on the guard: the regex has to be able to match SOMETHING, or this
-    // passes against any mutant at all.
-    const parentheticals = notes.filter(n => /It went back to day \d+ \u2014 /.test(n.note));
-    expect(parentheticals.length, 'no citation used the em-dash parenthetical form at all \u2014 '
-      + 'this check matched nothing and asserted nothing').toBeGreaterThan(10);
+      + 'hold more than one em-dash pair - whichever half of the splice the second one '
+      + 'came from, a reader cannot tell which pair is the aside').toEqual([]);
+    // Guard on the guard: em-dashes have to occur at all, or this passes
+    // against any mutant.
+    const dashed = notes.filter(n => n.note.includes('\u2014'));
+    expect(dashed.length, 'no note used an em-dash at all - this check matched nothing '
+      + 'and asserted nothing').toBeGreaterThan(10);
   });
 
   it('no note quotes its own head sentence back at itself', () => {
@@ -569,6 +590,67 @@ describe('residue is cited in seasons that actually play', () => {
     });
     expect(echoes.slice(0, 5).map(n => n.note), `${echoes.length} of ${notes.length} notes `
       + 'contain their own first sentence twice').toEqual([]);
+  });
+
+  it('no sentence is quoted into more than three notes of one season', () => {
+    // R4, FOUND IN A DUMP. `citeMoments` used to lead with the thread's OPENING
+    // beat, always, so a thread that ran eight beats quoted the same sentence
+    // into all eight of them. The dump had four consecutive beats of one cover
+    // thread repeating `cover-road-rehearsal`'s opener, twice sitting directly
+    // underneath "X told the same story again, word for word. Nobody clocked
+    // the repetition." - the engine narrating its own bug. Nothing in the suite
+    // could see it: every note was well-formed, named a real day, and quoted a
+    // sentence that genuinely happened. Repetition is not malformation, and
+    // only counting catches it.
+    //
+    // THREE, not one: a sentence recurring twice across a whole season is a
+    // callback, and the fix (lead with the oldest moment nobody has quoted yet)
+    // deliberately still allows a repeat once every prior moment is used up.
+    //
+    // THE MUTATION: in js/tr/threads.js, `const lead = prior[0];` in place of
+    // the `prior.find(...)` that skips already-quoted moments.
+    const perSeason = new Map();
+    const RE = /It went back to day \d+[:—] (.*?)(?: — and it had not stopped| It had not stopped|$)/g;
+    for (const n of notes) {
+      for (const m of n.note.matchAll(RE)) {
+        const head = m[1].trim().replace(/\.$/, '');
+        if (head.length < 25) continue;
+        const key = `${n.season}\u0000${head}`;
+        perSeason.set(key, (perSeason.get(key) || 0) + 1);
+      }
+    }
+    const worst = [...perSeason.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    console.log('=== MOST-QUOTED SENTENCE IN ONE SEASON ===');
+    for (const [k, c] of worst) console.log(`   ${c}x  ${k.split('\u0000')[1].slice(0, 70)}`);
+    const repeated = worst.filter(([, c]) => c > 3)
+      .map(([k, c]) => `${c}x  ${k.split('\u0000')[1].slice(0, 70)}`);
+    expect(repeated, 'one sentence was quoted into more than three beats of a single '
+      + 'season - a thread is re-quoting the same moment every time it advances').toEqual([]);
+    // Guard on the guard: quotations have to be happening, or nothing is counted.
+    expect(perSeason.size, 'no note quoted an earlier moment at all in these seasons')
+      .toBeGreaterThan(50);
+  });
+
+  it('no note starts a sentence in lower case', () => {
+    // FOUND BY READING OUTPUT (round 2). Three events fill an absent partner
+    // with the stand-in "somebody" - substitution, not deletion, because the
+    // source rule below requires it - and when the token opened a sentence the
+    // stand-in opened it in lower case: "...how hard it hit them. somebody sat
+    // with them and let it be quiet for a while." This one IS unambiguous in
+    // the finished string, which is what makes an output rule the right shape
+    // for it: every authored line in js/tr/castle/ begins with a capital.
+    //
+    // THE MUTATION: drop the `_sentenceCase(...)` wrapper from
+    // `grief-morning-reaction` in js/tr/castle/grief.js - 14 of 2789 notes.
+    // NOT from `_fillPartner` in cover.js, which was the first mutation tried
+    // and left this GREEN: cover's own line pools never put `{b}` at the start
+    // of a sentence, so that call site cannot produce the defect today. A
+    // mutation that does not redden is a fact about the test, and this one is
+    // that the wrapper on `_fillPartner` is insurance against a future line
+    // rather than a fix for a live defect.
+    const lower = notes.filter(n => /[.!?] +[a-z]/.test(n.note));
+    expect(lower.slice(0, 5).map(n => n.note), `${lower.length} of ${notes.length} notes `
+      + 'open a sentence in lower case').toEqual([]);
   });
 
   it('no note splices a full stop against the em-dash that follows it', () => {
@@ -812,6 +894,7 @@ const CLOSING_BRANCHES = [
   'cover-story-survived-the-day:exposed',
   'cover-story-survived-the-day:passed-clean',
   'grief-castle-in-view:buried',
+  'romance-showmance-on-the-way-back:became-showmance',
   'susp-let-it-go-on-the-road-back:confessed-unrelated',
   'susp-let-it-go-on-the-road-back:denied-convincingly',
   'testing-night-scores-it:failed-maliciously',
@@ -862,5 +945,230 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
     const unreadable = Object.keys(senses).filter(o => outcomeSense(o) == null);
     expect(unreadable, 'these outcomes were written by a season and no event can branch '
       + 'on them — add them to OUTCOME_SENSE in js/tr/threads.js').toEqual([]);
+  });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════
+// THE BRANCH FLOOR (Plan 5 Task 4, round 2 — R1)
+// ══════════════════════════════════════════════════════════════════════
+//
+// A FLOOR KEYED PER EVENT CANNOT SEE A BRANCH DIE. This is one mistake this
+// file made in three separate places, and the whole point of writing it down
+// once at this size is that it is a SHAPE, not three bugs:
+//
+//   - THE CLOSER FLOOR (below) shipped keyed per event, and stayed green under
+//     its own stated mutation: zeroing one closing branch simply moved every
+//     closure onto the same event's other outcome. Fixed there by keying on
+//     (event, outcome).
+//   - THE OUTCOME-BRANCH FLOOR (below) already knew this and keys on the take,
+//     not the firing — which is why it was the one that worked.
+//   - THE DEAD-EVENT SWEEP (above) is still event-keyed, and covers nothing
+//     underneath an event that fires. Proof, from review: `const quietScore =
+//     0;` in `trust-fall-into-step` kills a branch worth 172 firings per 400
+//     seasons and three of its nine text variants, and every one of 252 tests
+//     stays green.
+//
+// So this is the general form of all three: EVERY (event, branch) pair the
+// pool can produce must be produced, at least 4 times in 400 seasons — the
+// same floor the rarest whole EVENT is held to a few hundred lines above, for
+// the same reason. A branch is content exactly as much as an event is, and it
+// is content nothing else in this repo counts.
+//
+// THE SET IS PINNED, NOT JUST FLOORED, and that is not belt-and-braces: a
+// branch that stops firing entirely vanishes from the tally, so a floor over
+// the keys that ARE present could never see it go. The pin is the part that
+// catches deletion; the floor is the part that catches decay. Same reasoning
+// as the cell ledger.
+//
+// `(none)` is a legitimate key: plenty of events return consequences with no
+// `branch` field because they have exactly one thing they do.
+//
+// THE MUTATION: `const quietScore = 0;` in `trust-fall-into-step`
+// (js/tr/castle/journey.js) — the one review used to prove the dead-event
+// sweep could not see it.
+const BRANCHES = [
+  'callback-competitive-history:rivalry-carried-over',
+  'callback-different-show-different-person:disappointment',
+  'callback-different-show-different-person:dissonance',
+  'callback-different-show-different-person:redemption',
+  'callback-grudge-resurfaces:grudge-resurfaced',
+  'callback-history-confrontation:buries',
+  'callback-history-confrontation:grudge',
+  'callback-history-confrontation:reconciles',
+  'callback-history-confrontation:strategic',
+  'callback-no-history-envy:left-out',
+  'callback-old-alliance-reforms:alliance-reformed',
+  'callback-protects-old-ally-from-vote:defended-by-history',
+  'callback-recognized:recognized',
+  'callback-shared-alumni-status:alumni-bond',
+  'callback-showmance-reunion-spark:reunion-spark',
+  'callback-warns-newbies:warned',
+  'cover-alibi-crumbles:collapses',
+  'cover-alibi-crumbles:holds',
+  'cover-alibi-crumbles:wobbles',
+  'cover-alone-with-it:nearly',
+  'cover-alone-with-it:sleepless',
+  'cover-alone-with-it:steady',
+  'cover-blend-with-victims-friends:blended-in',
+  'cover-cold-sweat-tell:tell',
+  'cover-decline-recruit-offer-story:recruit-story-covered',
+  'cover-double-bluff:double-bluffed',
+  'cover-feign-fear:feigned-fear',
+  'cover-plant-a-name:planted',
+  'cover-preemptive-alibi:alibi-built',
+  'cover-rehearsed-story-advance:rehearsed',
+  'cover-road-rehearsal:airtight',
+  'cover-road-rehearsal:overcooked',
+  'cover-road-rehearsal:serviceable',
+  'cover-story-check:awkward',
+  'cover-story-check:convincing',
+  'cover-story-check:slip',
+  'cover-story-check:suspicious',
+  'cover-story-survived-the-day:broke',
+  'cover-story-survived-the-day:frayed',
+  'cover-story-survived-the-day:held',
+  'cover-suspect-own-ally:sacrificed-ally',
+  'cover-swap-story-with-partner:synchronized',
+  'grief-blame-the-room:blamed-room',
+  'grief-castle-in-view:buried',
+  'grief-castle-in-view:carried',
+  'grief-empty-chair:empty-chair',
+  'grief-headcount:headcount',
+  'grief-keepsake:keepsake',
+  'grief-morning-reaction:mourn',
+  'grief-morning-reaction:opportunistic',
+  'grief-morning-reaction:stoic',
+  'grief-morning-reaction:suspicious',
+  'grief-nobody-sleeps:awake-content',
+  'grief-nobody-sleeps:awake-desperate',
+  'grief-nobody-sleeps:awake-paranoid',
+  'grief-numb-to-it-now:numb',
+  'grief-seating-shift:reseated',
+  'grief-shared-mourning-bond:shared-mourning',
+  'grief-shorter-column:pair-again',
+  'grief-shorter-column:pair-first',
+  'grief-shorter-column:solo-again',
+  'grief-shorter-column:solo-first',
+  'grief-someone-cries-alone:cried-alone',
+  'grief-suspicion-of-timing:timing',
+  'grief-toast-to-them:toasted',
+  'grief-wrongly-suspected-irony:wrongly-suspected-irony',
+  'romance-comfort-after-loss-sparks:grief-spark',
+  'romance-jealousy-third-party:jealousy',
+  'romance-liability-exposed:confronts',
+  'romance-liability-exposed:exposes',
+  'romance-liability-exposed:oblivious',
+  'romance-liability-exposed:suspicious',
+  'romance-protection-instinct:protected',
+  'romance-road-spark:road-spark',
+  'romance-shared-alibi:shared-alibi',
+  'romance-shields-target-together:shield-pact',
+  'romance-showmance-breakup:broke-up',
+  'romance-showmance-fight:showmance-fight',
+  'romance-showmance-forms:showmance-formed',
+  'romance-showmance-on-the-way-back:showmance-on-the-road',
+  'romance-spark:sparked',
+  'romance-strategic-optics:called-strategic',
+  'romance-walked-back-together:walked-back-together',
+  'susp-alliance-shape-guess:shape-guessed',
+  'susp-body-language-read:body-read',
+  'susp-cold-case-revival:revived',
+  'susp-defensive-overcorrect:overcorrected',
+  'susp-group-pressure-crack:cracks',
+  'susp-group-pressure-crack:holds',
+  'susp-group-pressure-crack:redirects',
+  'susp-heard-in-the-corridor:caught',
+  'susp-heard-in-the-corridor:heard',
+  'susp-heard-in-the-corridor:imagined',
+  'susp-let-it-go-on-the-road-back:cleared',
+  'susp-let-it-go-on-the-road-back:hardened',
+  'susp-let-it-go-on-the-road-back:slipped',
+  'susp-misread-tell:misread',
+  'susp-noticed-inconsistency:noticed',
+  'susp-out-of-earshot:agreed',
+  'susp-out-of-earshot:defended',
+  'susp-out-of-earshot:hedged',
+  'susp-overheard-conversation:overheard',
+  'susp-pattern-tracking:tracked',
+  'susp-private-accusation:confess',
+  'susp-private-accusation:denies',
+  'susp-private-accusation:denyWeak',
+  'susp-private-accusation:turned',
+  'susp-timeline-crosscheck:crosschecked',
+  'susp-whisper-about-absent:whispered',
+  'testing-ask-for-alibi-check:checks-out',
+  'testing-ask-for-alibi-check:inconsistent',
+  'testing-cold-read-check:cold-read',
+  'testing-decoy-secret:caughtTest',
+  'testing-decoy-secret:innocent',
+  'testing-decoy-secret:keptQuiet',
+  'testing-decoy-secret:malicious',
+  'testing-double-check-story:consistent',
+  'testing-double-check-story:inconsistent',
+  'testing-follow-through-check:followed-through',
+  'testing-hypothetical-loyalty-question:hedged',
+  'testing-hypothetical-loyalty-question:reassured',
+  'testing-loyalty-oath:refuses',
+  'testing-loyalty-oath:reluctant',
+  'testing-loyalty-oath:sincere',
+  'testing-night-scores-it:confirmed',
+  'testing-night-scores-it:failed',
+  'testing-night-scores-it:inconclusive',
+  'testing-reverse-psychology:got-rattled',
+  'testing-reverse-psychology:stayed-calm',
+  'testing-silence-test:chased',
+  'testing-silence-test:let-it-go',
+  'testing-small-dare:complied',
+  'testing-small-dare:refused',
+  'testing-who-you-walk-with:flattered',
+  'testing-who-you-walk-with:transactional',
+  'testing-who-you-walk-with:wary',
+  'trust-circle-forms:circle',
+  'trust-confide-fear:confided',
+  'trust-defend-in-absentia:defended',
+  'trust-fall-into-step:confided',
+  'trust-fall-into-step:probed',
+  'trust-fall-into-step:quiet',
+  'trust-inner-circle-invite:invited-in',
+  'trust-last-word-before-lights-out:broken',
+  'trust-last-word-before-lights-out:hedged',
+  'trust-last-word-before-lights-out:sworn',
+  'trust-late-checkin:checked-in',
+  'trust-post-murder-huddle:huddled',
+  'trust-protect-pact:pact',
+  'trust-return-favor:favor-returned',
+  'trust-secret-swap:kept',
+  'trust-secret-swap:leakedAccident',
+  'trust-secret-swap:leakedDeliberate',
+  'trust-settled-on-the-way-back:dropped',
+  'trust-settled-on-the-way-back:held',
+  'trust-settled-on-the-way-back:soured',
+  'trust-settled-on-the-way-back:unresolved',
+  'trust-share-suspicion-honestly:shared-suspicion',
+  'trust-trade-reads:traded-reads',
+  'trust-vote-commitment-test:broken',
+  'trust-vote-commitment-test:deflected',
+  'trust-vote-commitment-test:kept',
+  'trust-vote-commitment-test:turned',
+  'trust-vow-of-silence:vowed-silence',
+];
+
+describe('THE BRANCH FLOOR: a fork nobody takes is dead content inside a live event', () => {
+  it('every (event, branch) pair the pool can produce is produced in real seasons', () => {
+    const perBranch = {};
+    for (const f of ALL_FIRINGS) {
+      const k = `${f.id}:${f.branch}`;
+      perBranch[k] = (perBranch[k] || 0) + 1;
+    }
+    const keys = Object.keys(perBranch).sort();
+    const bottom = keys.map(k => ({ k, n: perBranch[k] })).sort((a, b) => a.n - b.n).slice(0, 12);
+    console.log(`\n=== RAREST TWELVE BRANCHES (${SWEEP_SEASONS} seasons, ${keys.length} branches) ===`);
+    for (const b of bottom) console.log(`   ${b.n}\t${b.k}`);
+
+    expect(keys, 'a branch appeared or disappeared from the pool').toEqual(BRANCHES);
+    const starved = bottom.filter(b => b.n < 4).map(b => `${b.k}: ${b.n}`);
+    expect(starved, `these branches are on their way to dead content — an event-keyed `
+      + `floor cannot see this, which is why this one is keyed per branch`).toEqual([]);
   });
 });

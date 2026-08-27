@@ -169,7 +169,7 @@ import { rpBuildNMTitleCard, rpBuildNMSecurity, rpBuildNMGallery, rpBuildNMAssem
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext, tlsRevealAll } from './chal/truth-or-shark.js';
 import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults, rockTheDockRevealNext, rockTheDockRevealAll } from './chal/rock-the-dock.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
-import { rpBuildCoachBoard, rpBuildCoachSignatures } from './vp-coaches.js';
+import { rpBuildCoachBoard, rpBuildCoachPromotion, rpBuildCoachSignatures } from './vp-coaches.js';
 import { campRoster, coachesOf } from './coaches.js';
 import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTChainHunt, rpBuildTTLongboardRace, rpBuildTTResults, ttRevealNext, ttRevealAll } from './chal/tropical-takedown.js';
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
@@ -14121,6 +14121,12 @@ export function buildVPScreens(epRecord) {
   // ── 3b. Tied Destinies announcement (before camp — pairing is revealed at episode start) ──
   const _tdAnnounceHtml = rpBuildTiedDestinies(ep);
   if (_tdAnnounceHtml) vpScreens.push({ id:'tied-destinies', label:'Tied Destinies', html: _tdAnnounceHtml });
+
+  // The staff joins the game. Placed with the merge beats, before the camp
+  // screens that will show them as ordinary players for the first time.
+  if ((ep.coachPromotions || []).length) {
+    vpScreens.push({ id:'cb-promo', label:'Coaches Promoted', html: rpBuildCoachPromotion(ep) });
+  }
 
   // ── 3c. The Coaches' Board (coaching twist, before camp events) ──
   if (ep.isCoaches && ep.coachData) {

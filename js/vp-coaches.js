@@ -49,7 +49,7 @@ function _reapplyVisibility(suffix, upToIdx, total) {
   // The noun belongs to the screen, not to the helper. Both screens share this
   // reveal code, so the board's "sessions" was being printed over the
   // Signatures' counter on every click.
-  const noun = suffix === 'sigs' ? 'signatures' : 'sessions';
+  const noun = suffix === 'sigs' ? 'signatures' : suffix === 'promo' ? 'promoted' : 'sessions';
   if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total} ${noun}`;
   if (upToIdx >= total - 1) {
     const controls = document.getElementById(`cb-controls-${suffix}`);
@@ -249,6 +249,16 @@ function _shell(content, ep) {
 /* ── step visibility ── */
 .cb-step{display:none;}
 .cb-ledger-gated{display:none;}
+.cb-promo-intro{font-size:12px;line-height:1.6;opacity:.85;margin:0 0 14px;padding:10px 12px;border-left:3px solid var(--cb-chalk-yellow);background:rgba(0,0,0,0.18);border-radius:0 6px 6px 0;}
+.cb-promo-card{margin:10px 0;padding:12px 14px;border-radius:8px;background:rgba(0,0,0,0.22);border-left:5px solid;}
+.cb-promo-strong{border-color:#3fb950;}
+.cb-promo-thin{border-color:#8a8175;}
+.cb-promo-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.cb-promo-name{font-family:'Caveat',cursive;font-size:26px;font-weight:700;line-height:1;}
+.cb-promo-role{font-size:9px;letter-spacing:2px;font-weight:800;opacity:.7;}
+.cb-promo-text{font-size:12px;line-height:1.55;}
+.cb-promo-proteges{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;}
+.cb-av-big{width:46px;height:46px;border-radius:6px;object-fit:cover;}
 .cb-sig-block{margin:14px 0;padding:10px 12px;border:2px dashed rgba(245,242,230,0.25);border-radius:8px;}
 .cb-sig-title{font-family:'Caveat',cursive;font-size:22px;font-weight:700;color:var(--cb-chalk-yellow);}
 .cb-sig-sub{font-size:11px;opacity:.75;margin-bottom:8px;}
@@ -610,6 +620,68 @@ export function rpBuildCoachSignatures(ep) {
   if (st.idx >= 0) {
     for (let i = 0; i <= st.idx; i++) {
       html = html.replace(`id="cb-step-sigs-${i}" class="cb-step"`, `id="cb-step-sigs-${i}" class="cb-step cb-visible"`);
+    }
+  }
+  return html;
+}
+
+
+/**
+ * PROMOTION — the only thing a coach was ever playing for.
+ *
+ * They train people who can beat them, hold advantages they are not allowed to
+ * use, sit at a tribal they cannot vote at, and do all of it to reach one
+ * moment. That moment resolved as a line in `ep.coachPromotions` and nothing
+ * drew it: the twist's entire payoff happened off-screen.
+ *
+ * What each of them brings is the season they just had. A coach who trained
+ * people who are still standing arrives sharper (the stake), and a coach who
+ * trained nobody, or trained people who are already gone, arrives with the
+ * weakness the design intends: a whole pre-merge spent making other people
+ * better and nothing banked on themselves.
+ */
+export function rpBuildCoachPromotion(ep) {
+  const promos = ep.coachPromotions || [];
+  if (!promos.length) return '';
+  const stKey = 'cb-promo';
+  const st = _ensureState(stKey, promos.length);
+
+  const cards = promos.map((p, i) => {
+    const surviving = p.surviving || [];
+    const stake = Number(p.stake) || 0;
+    const line = stake > 0
+      ? `${surviving.length} of ${p.name}'s protégé${surviving.length === 1 ? '' : 's'} made it here too. ${p.name} arrives with +${stake.toFixed(2)} strategic for it — the only training ${p.name} has ever banked on themselves.`
+      : `${p.name} arrives with nothing banked. Every session went into somebody else, and none of those people are still here.`;
+    return `<div id="cb-step-promo-${i}" class="cb-step">
+      <div class="cb-promo-card ${stake > 0 ? 'cb-promo-strong' : 'cb-promo-thin'}">
+        <div class="cb-promo-head">${_avatar(p.name, 'cb-av-big')}<div>
+          <div class="cb-promo-name">${p.name}</div>
+          <div class="cb-promo-role">Coach → Player</div>
+        </div></div>
+        <div class="cb-promo-text">${line}</div>
+        ${surviving.length ? `<div class="cb-promo-proteges">${surviving.map(n => `<span class="cb-sb-tag cb-sb-tag-in">${_avatar(n, 'cb-av-tiny cb-av-onlight')} ${n}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  let html = _shell(`<div class="cb-board-bg">
+    <div class="cb-board-head">
+      <div class="cb-board-title">The Staff Joins the Game</div>
+      <div class="cb-board-underline"></div>
+      <div class="cb-board-sub">Episode ${ep.num || ''} &mdash; ${promos.length === 1 ? 'a coach' : `${promos.length} coaches`} reached the merge</div>
+    </div>
+    <div class="cb-promo-intro">They have not competed for a single thing. No challenge, no immunity, no vote. Everything they know about this cast, they learned teaching it to the people they now have to beat &mdash; and every advantage they found went into somebody else's hands.<br><br>From tonight they are players.</div>
+    ${cards}
+    <div id="cb-controls-promo" class="cb-controls">
+      <button class="cb-btn cb-btn-primary" onclick="coachRevealNext('cb-promo',${promos.length})">Call Them Up</button>
+      <span id="cb-counter-promo" class="cb-counter">${Math.max(0, st.idx + 1)} / ${promos.length} promoted</span>
+      <button class="cb-btn" onclick="coachRevealAll('cb-promo',${promos.length})">Call Them All</button>
+    </div>
+  </div>`, ep);
+
+  if (st.idx >= 0) {
+    for (let i = 0; i <= st.idx; i++) {
+      html = html.replace(`id="cb-step-promo-${i}" class="cb-step"`, `id="cb-step-promo-${i}" class="cb-step cb-visible"`);
     }
   }
   return html;

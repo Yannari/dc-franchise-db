@@ -1855,6 +1855,16 @@ export function _textWhyVote(ep, ln, sec) {
     ln(`  ${save.coach} named the replacement: ${save.replacement || '???'} goes home in ${_svP.posAdj} place.`);
   });
 
+  // The staff joining the game. The only thing a coach was playing for, and
+  // the backlog said nothing about it either.
+  (ep.coachPromotions || []).forEach(p => {
+    const surviving = p.surviving || [];
+    ln(`PROMOTED — ${p.name} reached the merge and is a full player from tonight.`);
+    ln(surviving.length
+      ? `  ${surviving.length} of ${p.name}'s protégés are still standing (${surviving.join(', ')}). ${p.name} banks +${(Number(p.stake) || 0).toFixed(2)} strategic for it — the only training ${p.name} has on themselves.`
+      : `  ${p.name} arrives with nothing banked. Every session went into somebody else, and none of them are still here.`);
+  });
+
   // Committed before the votes and not needed, or never committed at all —
   // both only exist because the card is played like an idol.
   (ep.coachCardCommits || []).forEach(cm => {

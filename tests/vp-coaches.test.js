@@ -78,3 +78,31 @@ describe('the signatures are read out', () => {
   });
 });
 
+
+// A coach trains people who can beat them, holds advantages they may not use,
+// and sits at a tribal they cannot vote at — all to reach one moment. That
+// moment resolved as a line in ep.coachPromotions and nothing drew it: the
+// twist's entire payoff happened off-screen.
+describe('the staff joins the game', () => {
+  it('draws a card per promoted coach, and says what they bring', async () => {
+    const { rpBuildCoachPromotion } = await import('../js/vp-coaches.js');
+    const html = rpBuildCoachPromotion({ num: 7, coachPromotions: [
+      { name: 'Julia', stake: 1, surviving: ['Raj', 'Priya'] },
+      { name: 'Wayne', stake: 0, surviving: [] },
+    ] });
+    expect(html).toContain('The Staff Joins the Game');
+    expect(html).toContain('Coach → Player');
+    // The one who coached well arrives sharper…
+    expect(html).toContain("2 of Julia's protégés made it here too");
+    expect(html).toContain('+1.00 strategic');
+    // …and the one who did not arrives with the weakness the design intends.
+    expect(html).toContain('Wayne arrives with nothing banked');
+    expect(html).toContain("coachRevealNext('cb-promo',2)");
+    expect(html).not.toContain('undefined');
+  });
+
+  it('draws nothing when no coach was promoted', async () => {
+    const { rpBuildCoachPromotion } = await import('../js/vp-coaches.js');
+    expect(rpBuildCoachPromotion({ num: 7 })).toBe('');
+  });
+});

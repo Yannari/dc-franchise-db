@@ -159,3 +159,17 @@ function _writeResidue(t, ep, note) {
     (gs.tr.residue[p] ||= []).push({ ep, note, threadId: t.id });
   }
 }
+
+/**
+ * Every OPEN thread, hot or cold. `ep` is accepted for call-site symmetry with
+ * `heatAt(t, ep)` and is deliberately NOT used as a filter: a thread whose heat
+ * has decayed to zero is exactly the "she never let it go" revival case that
+ * `findOpenThread`'s parties-keyed lookup exists to keep reachable. Filtering
+ * on heat here would make a cold thread unreachable by scene selection and
+ * quietly delete revivals from the season — the opposite of what this query is
+ * for. Contrast `openThreadsFor`, which DOES filter on heat because it answers
+ * "what is live for this person right now", a different question.
+ */
+export function openThreads(ep) { // eslint-disable-line no-unused-vars
+  return (gs.tr?.threads || []).filter(t => t.state === 'open');
+}

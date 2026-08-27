@@ -15,7 +15,7 @@ import { learn } from '../js/knowledge.js';
 import { alignmentFactId, ballotEvidence, suspicionBoard } from '../js/tr/deduction.js';
 import { alignmentAt } from '../js/tr/roles.js';
 import { playTraitorsSeason, rngFor, _castleRngFor } from '../js/tr/headless.js';
-import { _setContinuationGuard } from '../js/tr/events.js';
+import { _setContinuationGuard, _setContinuationSceneP } from '../js/tr/events.js';
 import roster from '../franchise_roster.json';
 
 // franchise_roster.json is { players: [...] }, NOT a bare array. Reaching for
@@ -181,15 +181,26 @@ const ALL = b => b;
 function continuity(seasons) {
   let firings = 0, liveScenes = 0, continued = 0;
   let threads = 0, beats = 0, revivals = 0, closed = 0, singleAndCold = 0;
+  let pairSum = 0, peopleSum = 0;
   const lens = {};
   for (const s of seasons) {
+    // COVERAGE, counted per season and averaged — never pooled. Pooling
+    // distinct pairs across 200 seasons hides the failure this measures: a
+    // season where one storyline eats every scene still contributes new pairs
+    // to a pooled set, because it is a different cast from the season before.
+    const pairs = new Set(), people = new Set();
     for (const r of s.log) {
       for (const f of (r.castleEvents || [])) {
         firings++;
         if (f.liveThread) liveScenes++;
         if (f.continued) continued++;
+        const a = f.actors || [];
+        if (a.length >= 2) pairs.add([...a].sort().join('|'));
+        for (const q of a) people.add(q);
       }
     }
+    pairSum += pairs.size;
+    peopleSum += people.size;
     for (const t of (s.threads || [])) {
       threads++;
       beats += t.beats.length;
@@ -212,6 +223,8 @@ function continuity(seasons) {
     }
   }
   return { firings, liveScenes, continued, threads, beats, revivals, closed,
+    pairsPerSeason: pairSum / seasons.length,
+    peoplePerSeason: peopleSum / seasons.length,
     rate: continued / liveScenes,
     liveShare: liveScenes / firings,
     advanceShare: (beats - threads) / beats,
@@ -224,6 +237,21 @@ function continuity(seasons) {
 
 describe('the castle, measured over many seasons', () => {
   const seasons = run();
+
+  // THE SCENE-SELECTION CONTROL ARM, shared by the two bands Plan 5 Task 1
+  // earns. Same seeds, same content, CONTINUATION_SCENE_P zeroed - actor
+  // selection back to a uniform draw over the living cast, which is exactly
+  // the pre-Plan-5 engine. Computed once: two 200-season runs of the same
+  // control would cost a second and tell us the same thing.
+  //
+  // It is a CONTROL and not a remembered base rate on purpose. A floor copied
+  // out of a measurement goes stale the moment content changes; an assertion
+  // that the same seeds with selection made uninformative come in on the wrong
+  // side of that floor re-derives the separation on every run and cannot.
+  const sceneOff = (() => {
+    const restore = _setContinuationSceneP(0);
+    try { return continuity(run()); } finally { restore(); }
+  })();
 
   it('finishes every season without hanging or crashing', () => {
     expect(seasons.length).toBe(SEASONS);
@@ -703,9 +731,21 @@ describe('the castle, measured over many seasons', () => {
     // The same seeds, the same content, guard 1 flattened to a multiplier of 1.
     // Restored in a finally: leaving it flat would silently change every
     // measurement in this file that runs afterwards.
+    //
+    // BOTH continuation mechanisms are switched off here, not just guard 1.
+    // Since Plan 5 Task 1 there are two of them - the scoring guard, and scene
+    // selection convening the parties of a live thread - and a control that
+    // flattens only the first is no longer "the rule switched off": it still
+    // walks the actors of a live story into the room, which raises the
+    // conditional rate on its own (measured 21.4% with only guard 1 flat,
+    // against 17.7% with both off, on the shipped value). Leaving the control
+    // half-built would have left this band 0.6pp from green-with-the-rule-off.
+    // The 0.22 floor below is UNCHANGED - the control was completed, not the
+    // band retuned.
     const restore = _setContinuationGuard({ base: 0, perHeat: 0 });
+    const restoreScene = _setContinuationSceneP(0);
     let dead;
-    try { dead = continuity(run()); } finally { restore(); }
+    try { dead = continuity(run()); } finally { restoreScene(); restore(); }
 
     console.log(`continuation: ${(live.rate * 100).toFixed(1)}% of ${live.liveScenes} live-thread scenes `
       + `continued (guard off: ${(dead.rate * 100).toFixed(1)}% of ${dead.liveScenes})`);
@@ -734,6 +774,96 @@ describe('the castle, measured over many seasons', () => {
     // chosen. Worst of twelve decorrelated blocks: +4.33pp.
     expect(live.rate - dead.rate, 'the continuation guard moved nothing')
       .toBeGreaterThan(0.03);
+  });
+
+  // == THE TWO BANDS PLAN 5 TASK 1 EARNS ==============================
+  //
+  // They guard OPPOSITE failure modes, and that is the whole reason there are
+  // two. A selector that never reconvenes anybody leaves the castle exactly
+  // where it was - forty unconnected incidents. A selector that reconvenes too
+  // eagerly is worse than useless: one storyline eats the season, most of the
+  // cast never appears in a scene at all, and the mean-thread-length band goes
+  // GREENER the more broken it gets. A pair of bands where only one can fail
+  // is half a guard, so each is proved by the mutation that breaks IT:
+  // CONTINUATION_SCENE_P = 0 for the first, = 1 for the second.
+  //
+  // THE MEASURED TABLE the shipped 0.15 was chosen from (200 seasons, seeds
+  // 1..200, every metric against the P=0 control):
+  //
+  //   P      mean beats   die at 1 beat   payoff   distinct pairs/season
+  //   0      1.139        87.7%           1.91%    21.6   (control)
+  //   0.15   1.228        82.5%           2.44%    18.8   (-13.1%)
+  //   0.25   1.292        79.4%           3.11%    17.4   (-19.7%)
+  //   0.35   1.397        76.1%           3.08%    15.2   (-29.9%)
+  //   0.5    1.599        69.0%           4.41%    12.1   (-43.9%)
+  //   0.75   2.206        51.8%           7.96%     6.8   (-68.4%)
+  //
+  // Thread health rises monotonically with the knob and pair coverage falls
+  // monotonically with it, which is the tension these two bands hold open.
+  // 0.15 is the largest value that keeps distinct-pair coverage inside the 15%
+  // budget the plan set. Note what pair coverage is NOT: distinct PEOPLE per
+  // season barely moves over the same sweep (15.9 -> 15.4 -> 15.0 -> 14.4 ->
+  // 13.3 -> 9.9), because revisiting the same pair is the INTENDED effect and
+  // the pair count measures it directly. Both are asserted below; the pair
+  // band is the tight one and the people band is what "cast coverage" means.
+  it('STORIES ACCUMULATE: threads run longer than they do under uniform selection', () => {
+    const live = continuity(seasons);
+    console.log(`thread health: mean ${live.meanLen.toFixed(3)} beats, `
+      + `${(live.deadShare * 100).toFixed(1)}% die at one beat, `
+      + `${(live.closedShare * 100).toFixed(2)}% pay off `
+      + `(uniform selection: ${sceneOff.meanLen.toFixed(3)}, `
+      + `${(sceneOff.deadShare * 100).toFixed(1)}%, ${(sceneOff.closedShare * 100).toFixed(2)}%)`);
+
+    // Non-vacuity: no threads at all would make every ratio here meaningless.
+    expect(live.threads, 'no threads were opened - these ratios are noise').toBeGreaterThan(2000);
+
+    // The floor sits between the two measurements with headroom on both sides:
+    // 1.228 live, 1.139 under uniform selection. Over ~5100 threads the sd of
+    // this mean is about 0.010, so 1.18 is roughly 4-5 sd from each arm.
+    expect(live.meanLen, 'threads are no longer than they were under uniform actor selection - '
+      + 'scene selection is not reconvening live stories')
+      .toBeGreaterThan(1.18);
+    // THE PROOF THE FLOOR CAN FAIL. Same seeds, same pool, selection made
+    // uninformative. If this ever comes in ABOVE the floor, the floor is
+    // measuring something other than the change it is named for.
+    expect(sceneOff.meanLen, 'the thread-health band is green with scene selection SWITCHED OFF - '
+      + 'it is measuring the runner re-drawing a pair by chance, not the selector')
+      .toBeLessThan(1.18);
+    // And the separation itself, which does not depend on 1.18 being well
+    // chosen. Measured +0.089 beats.
+    expect(live.meanLen - sceneOff.meanLen, 'thread-aware scene selection moved nothing')
+      .toBeGreaterThan(0.04);
+  });
+
+  it('THE CAST DOES NOT SHRINK: one storyline has not eaten the season', () => {
+    const live = continuity(seasons);
+    const pairRatio = live.pairsPerSeason / sceneOff.pairsPerSeason;
+    const peopleRatio = live.peoplePerSeason / sceneOff.peoplePerSeason;
+    console.log(`coverage: ${live.pairsPerSeason.toFixed(1)} distinct pairs/season `
+      + `(uniform ${sceneOff.pairsPerSeason.toFixed(1)}, ratio ${pairRatio.toFixed(3)}), `
+      + `${live.peoplePerSeason.toFixed(1)} distinct people/season `
+      + `(uniform ${sceneOff.peoplePerSeason.toFixed(1)}, ratio ${peopleRatio.toFixed(3)})`);
+
+    expect(sceneOff.pairsPerSeason, 'the control convened no pairs to compare against')
+      .toBeGreaterThan(5);
+
+    // A RATIO AGAINST THE CONTROL, not a remembered count: the absolute number
+    // of scenes a season gets is set by the round budget, so any future change
+    // to that budget would move a raw floor without anything having collapsed.
+    //
+    // The tuning criterion was 15% (ratio 0.85) and the shipped value measures
+    // 0.869. The BAND is 0.80, not 0.85 - 0.869 is only about one sd clear of
+    // 0.85 across seasons, and a band that goes red one run in three is not a
+    // band. 0.80 keeps ~3.5 sd of headroom and still fails hard on the failure
+    // it names: at P=0.75 this ratio is 0.31, at P=1 it is lower still.
+    expect(pairRatio, 'scene variety collapsed - live threads are monopolising the castle '
+      + 'and most of the season is now two people talking')
+      .toBeGreaterThan(0.80);
+    // The same claim on the axis the phrase "cast coverage" actually means:
+    // how many DIFFERENT PEOPLE get a scene at all. Revisiting a pair is the
+    // intended effect; never putting half the cast on screen is not.
+    expect(peopleRatio, 'half the cast stopped appearing in scenes')
+      .toBeGreaterThan(0.88);
   });
 
   // ── THE TWO BANDS THIS PLAN EARNS ─────────────────────────────────

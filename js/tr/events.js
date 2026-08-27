@@ -26,7 +26,7 @@
 // validateRegistry(), a sandboxed sweep a test calls deliberately, never the
 // engine.
 import { gs } from '../core.js';
-import { findOpenThread, heatAt } from './threads.js';
+import { findOpenThread, heatAt, openThreads } from './threads.js';
 
 /** Windows a round is built from (spec §5.6) — registerEvent rejects any other. */
 const KNOWN_WINDOWS = new Set([
@@ -39,6 +39,27 @@ const KNOWN_WINDOWS = new Set([
 const CONTINUATION_BASE = 1;       // a live-but-cold thread still beats a fresh event
 const CONTINUATION_PER_HEAT = 0.5; // a hot thread beats a cold one by more
 const RARE_MULTIPLIER = 2;         // amplify UP when a rare precondition clears, never down
+
+// How often a scene is convened BECAUSE a story is live, rather than by a
+// uniform draw over the cast. Tuned in Plan 5 Task 1 against a
+// CONTINUATION_SCENE_P = 0 control arm; see the measurement table in
+// tr-calibration.test.js. Zero is the control (pure uniform selection, the
+// pre-Plan-5 engine); one would let live threads monopolise every scene and
+// collapse cast coverage, which the coverage band exists to catch.
+export const CONTINUATION_SCENE_P = 0.15;
+let _contSceneP = CONTINUATION_SCENE_P;
+
+/**
+ * Test-only seam, the same contract as `_setContinuationGuard`: an exported
+ * const cannot be zeroed by a control arm, and a band whose control cannot be
+ * built is not a measurement. Returns a restore function — call it in a
+ * `finally`, or every measurement that runs afterwards is silently retuned.
+ */
+export function _setContinuationSceneP(p = CONTINUATION_SCENE_P) {
+  const prev = _contSceneP;
+  _contSceneP = p;
+  return () => { _contSceneP = prev; };
+}
 
 // The live values `_score` reads. They are variables and not the constants
 // above for exactly one reason: the continuity band in tr-calibration.test.js
@@ -290,7 +311,10 @@ export function pickEvent(ctx, rng) {
     && findOpenThread(chosen.family, ctx.actors));
 
   const consequences = chosen.fire(ctx, rng);
-  return { event: chosen, consequences, liveThread, continued };
+  // `actors` is harness data too — nothing in the engine reads it. The
+  // coverage band needs to count DISTINCT pairs convened per season, and after
+  // fire() has run there is no way to recover who was in the room.
+  return { event: chosen, consequences, liveThread, continued, actors: [...(ctx.actors || [])] };
 }
 
 // ── The runner: seven social windows around four mechanical beats (§5.6) ──
@@ -357,8 +381,34 @@ export function startRoundBudget(rng, windowCount = 7) {
  * they run through the real runner, instead of only ever being exercised by
  * a test that hands pickEvent a hand-built ctx directly.
  */
-function _sceneActors(living, rng) {
+export function _sceneActors(living, rng, ep) {
   if (!living.length) return [];
+
+  // THE BIAS THAT MAKES STORIES ACCUMULATE. Uniform selection is why threads
+  // died: with ~18 alive and a 60% pair draw, one specific pair reconvenes at
+  // 0.6 * 2/(18*17) ~= 0.4% a draw. The continuation guard in pickEvent scores
+  // continuation correctly and was simply never asked, because nothing ever
+  // convened a scene BECAUSE a story was live. This is a BIAS and not a rule:
+  // the rest of the time selection is the untouched uniform draw, or no new
+  // thread would ever open and the season would be one storyline.
+  //
+  // Threads with a dead party are skipped rather than reconvened with whoever
+  // is left — a scene is the PARTIES of the story, and half of one is a
+  // different story.
+  const alive = new Set(living);
+  const live = openThreads(ep).filter(t => t.parties.length && t.parties.every(p => alive.has(p)));
+  if (live.length && rng() < _contSceneP) {
+    // Heat-weighted, NOT max-heat: the hottest storyline must not monopolise
+    // the season, which is the failure mode the coverage band guards. The 0.15
+    // floor is what keeps a cold-but-open thread revivable — the same "she
+    // never let it go" case findOpenThread's parties-keyed lookup exists for.
+    const total = live.reduce((s, t) => s + Math.max(0.15, heatAt(t, ep)), 0);
+    let roll = rng() * total;
+    let chosen = live[live.length - 1];
+    for (const t of live) { roll -= Math.max(0.15, heatAt(t, ep)); if (roll <= 0) { chosen = t; break; } }
+    return [...chosen.parties];
+  }
+
   const i = Math.floor(rng() * living.length);
   if (living.length < 2 || rng() < 0.4) return [living[i]];
   let j = Math.floor(rng() * living.length);
@@ -395,7 +445,7 @@ export function runWindow(window, ep, rng) {
   while (drawnHere < cap && budget.used < budget.total) {
     // A fresh ctx (and fresh actors) per draw, not one shared ctx for the
     // whole window — see _sceneActors.
-    const ctx = { ep, window, act, living, actors: _sceneActors(living, rng) };
+    const ctx = { ep, window, act, living, actors: _sceneActors(living, rng, ep) };
     const result = pickEvent(ctx, rng);
     if (!result) break; // nothing eligible left for this window right now
     fired.push(result);

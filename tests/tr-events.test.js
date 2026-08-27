@@ -10,7 +10,7 @@ import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { openThread } from '../js/tr/threads.js';
 import { registerEvent, eligible, pickEvent, validateRegistry, EVENTS, _resetRegistry,
-  runWindow, startRoundBudget } from '../js/tr/events.js';
+  runWindow, startRoundBudget, _sceneActors, _setContinuationSceneP } from '../js/tr/events.js';
 import { rngFor } from '../js/tr/headless.js';
 import roster from '../franchise_roster.json';
 
@@ -564,5 +564,80 @@ describe('the castle stream is isolated from the game stream', () => {
     expect(loaded.winner).toBe(bare.winner);
     expect(loaded.log.map(r => ({ banished: r.banished, murdered: r.murdered, recruited: r.recruited?.target })))
       .toEqual(bare.log.map(r => ({ banished: r.banished, murdered: r.murdered, recruited: r.recruited?.target })));
+  });
+});
+
+// ── SCENE SELECTION KNOWS A STORY IS LIVE ────────────────────────────────
+//
+// Uniform actor selection is the structural reason threads died: with ~18
+// alive and a 60% pair draw, one SPECIFIC pair reconvenes at
+// 0.6 * 2/(18*17) ≈ 0.4% a draw. The continuation guard in pickEvent scored
+// continuation correctly and was simply never asked, because nothing convened
+// a scene BECAUSE a story was live.
+//
+// Both arms assert on OBSERVED DRAWS, never on a returned shape: "the function
+// takes an ep now" is not evidence that selection changed, and a test on the
+// signature would be green against a body that ignores it.
+describe('scene selection reconvenes a live story', () => {
+  const A = CAST[0], B = CAST[1];
+
+  it('at p=1, a scene with a live thread between two players convenes exactly those two', () => {
+    openThread('suspicion', [A, B], 3, 'she saw him on the stairs');
+    const restore = _setContinuationSceneP(1);
+    let exact = 0;
+    try {
+      const rng = seededRng(7);
+      for (let i = 0; i < 200; i++) {
+        const actors = _sceneActors([...CAST], rng, 4);
+        if (actors.length === 2 && actors.includes(A) && actors.includes(B)) exact++;
+      }
+    } finally { restore(); }
+    expect(exact, 'the only open thread was never reconvened').toBe(200);
+  });
+
+  it('at p=0, the same pair is drawn no more often than uniform chance', () => {
+    openThread('suspicion', [A, B], 3, 'she saw him on the stairs');
+    const restore = _setContinuationSceneP(0);
+    let exact = 0;
+    const seen = new Set();
+    try {
+      const rng = seededRng(7);
+      for (let i = 0; i < 200; i++) {
+        const actors = _sceneActors([...CAST], rng, 4);
+        if (actors.length === 2 && actors.includes(A) && actors.includes(B)) exact++;
+        seen.add([...actors].sort().join('|'));
+      }
+    } finally { restore(); }
+    // Uniform expectation over 8 living: 0.6 * 2/(8*7) ≈ 2.1%, ≈ 4.3 of 200,
+    // sd ≈ 2.1. Twenty is ~7sd up and still an order of magnitude below the
+    // p=1 arm, so this fails only on a body that ignores the knob.
+    expect(exact, 'the control arm reconvened the thread pair — CONTINUATION_SCENE_P is not respected')
+      .toBeLessThan(20);
+    // Non-vacuity: the draws were actually varied, not 200 empty returns.
+    expect(seen.size, 'the control arm produced almost no distinct scenes').toBeGreaterThan(20);
+  });
+
+  it('spreads its picks across live threads rather than monopolising the hottest', () => {
+    // Heat-weighted, NOT max-heat. A cold-but-open thread must keep a real
+    // chance of revival, or the season's first hot storyline eats the rest of
+    // it and cast coverage collapses.
+    openThread('suspicion', [A, B], 1, 'a');
+    openThread('suspicion', [A, B], 2, 'b');
+    openThread('suspicion', [A, B], 3, 'c'); // same thread, heat 3
+    openThread('trust', [CAST[2], CAST[3]], 3, 'd'); // a colder, separate story
+    const restore = _setContinuationSceneP(1);
+    const counts = {};
+    try {
+      const rng = seededRng(11);
+      for (let i = 0; i < 400; i++) {
+        const key = [..._sceneActors([...CAST], rng, 4)].sort().join('|');
+        counts[key] = (counts[key] || 0) + 1;
+      }
+    } finally { restore(); }
+    const cold = counts[[CAST[2], CAST[3]].sort().join('|')] || 0;
+    expect(cold, 'the cold thread was never revived — selection is max-heat, not heat-weighted')
+      .toBeGreaterThan(20);
+    expect(cold, 'the hot thread lost its edge — heat is not weighting anything')
+      .toBeLessThan(200);
   });
 });

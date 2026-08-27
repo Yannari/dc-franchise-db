@@ -69,7 +69,7 @@
 //   it kills a different number of people out of a different sized room — that
 //   is the mechanism acting and it is the only thing that may move a band.
 import { gs } from '../core.js';
-import { pStats } from '../players.js';
+import { pStats, pronouns } from '../players.js';
 import { getBond } from '../bonds.js';
 import { learn } from '../knowledge.js';
 import { alignmentFactId, livingTraitors, livingFaithfuls } from './roles.js';
@@ -388,14 +388,21 @@ export const VARIANT_LINES = {
     'It happened at the table: {method}, passed across in front of the whole castle, and the castle saw nothing.',
     'The pact did not meet tonight. {who} did not need it — {method}, and {victim} said thank you.',
   ],
+  // THE FIRST LINE OF EACH CHAPEL POOL USED TO SAY ONE NAME THREE AND FOUR
+  // TIMES: "They take B to the chapel and let B speak first. B has nothing to
+  // say. B never worked any of it out." Swept over 1,200 seasons it was 4x in
+  // 18 sentences and 3x in 34 more, across these two templates and no others.
+  // `{vObj}`/`{vSub}`/`{vSubCap}` are the victim's pronouns, expanded by
+  // `variantLine` AFTER the pool has been chosen — see the note there, the
+  // choice must not move.
   'chapel-named': [
-    'They take {victim} to the chapel and let {victim} speak first. The last thing {victim} says is a name, and the name is {plea}.',
+    'They take {victim} to the chapel and let {vObj} speak first. The last thing {vSub} says is a name, and the name is {plea}.',
     'A candle, a locked door, and one sentence allowed. {victim} spends it on {plea}.',
     '{victim} is given the courtesy of a last word and does not waste it: {plea}, said clearly, in front of everybody.',
     'The chapel door shuts on {victim} and the castle hears {plea} through it.',
   ],
   'chapel-silent': [
-    'They take {victim} to the chapel and let {victim} speak first. {victim} has nothing to say. {victim} never worked any of it out.',
+    'They take {victim} to the chapel and let {vObj} speak first. {vSubCap} has nothing to say, and never worked any of it out.',
     'A candle, a locked door, and one sentence allowed — and {victim} cannot think of a single name to put in it.',
     '{victim} is given a last word and gives it back. There was never a read to hand on.',
     'The chapel door shuts on {victim} in silence. Whatever {victim} knew, it was not a name.',
@@ -457,11 +464,27 @@ export const VARIANT_LINES = {
  * the key becoming a label nobody honours.
  *
  * Consumes no rng — see `lineFor`.
+ *
+ * THE VICTIM'S PRONOUNS ARE EXPANDED AFTER THE POOL IS READ, and the order is
+ * the whole point. `lineFor` folds every sub VALUE into the hash that picks the
+ * line, so handing it three more entries would have chosen a different sentence
+ * for every chapel, dungeon and dinner table in every season ever played — a
+ * pool-wide redistribution wearing the clothes of a prose fix, which is the
+ * exact trap js/tr/castle/lines.js was written to avoid. Passing them
+ * separately afterwards leaves the choice bit-identical and changes only the
+ * words inside the two templates that asked for them.
  */
 export function variantLine(kind, ep, subs) {
   const pool = VARIANT_LINES[kind];
   if (!pool) return null;
-  return { key: kind, text: lineFor(pool, `murder-variant|${kind}|${ep}`, subs) };
+  let text = lineFor(pool, `murder-variant|${kind}|${ep}`, subs);
+  if (subs?.victim && /\{v(Sub|Obj|SubCap)\}/.test(text)) {
+    const p = pronouns(subs.victim);
+    text = text.split('{vObj}').join(p.obj)
+      .split('{vSubCap}').join(p.Sub)
+      .split('{vSub}').join(p.sub);
+  }
+  return { key: kind, text };
 }
 
 // ══════════════════════════════════════════════════════════════════════

@@ -17,14 +17,14 @@
 // room converges, and it calls Math.random(), which a season that must replay
 // from a seed cannot afford.
 import { gs } from '../core.js';
-import { pStats } from '../players.js';
+import { pStats, pronouns } from '../players.js';
 import { getBond } from '../bonds.js';
 import { resolveVotes } from '../voting.js';
 import { learn } from '../knowledge.js';
 import { alignmentAt } from './roles.js';
 import { alignmentFactId, suspicionBoard, chooseBanishmentVote, recordRound, revealCascade } from './deduction.js';
 import { exitSpeech } from './exit.js';
-import { lineFor } from './castle/lines.js';
+import { lineFor, _lineHash } from './castle/lines.js';
 import { daggerWeights, daggerDrawnAt, DAGGER_VOTES } from './powers.js';
 
 /**
@@ -119,11 +119,24 @@ function tally(ballots, weights) {
 // room noticed, or that anybody was cleared — Task 3 measured that this
 // knowledge model cannot exonerate anyone, so a betrayal's fallout is shock and
 // suspicion and never innocence.
+//
+// THE FIRST LINE USED TO NAME NOBODY BUT THE BETRAYER, TWICE OVER: "{voter}
+// writes down the name of somebody {voter} shared the turret with." It was the
+// most-fired template in the pool (89 occurrences in a 1,200-season sweep), it
+// repeated the actor, and it never once said WHO — which is the only dramatic
+// content a betrayal line has. `pronouns()` carries the repetition now and the
+// target is on the slate where it belongs.
 const BETRAYAL_LINES = [
-  '{voter} writes down the name of somebody {voter} shared the turret with.',
-  'The pact is worth less to {voter} tonight than what is left on the table: {target}, in {voter}’s own hand.',
+  '{voter} writes down the name of somebody {sub} shared the turret with: {target}.',
+  'The pact is worth less to {voter} tonight than what is left on the table: {target}, in {posAdj} own hand.',
   '{voter} names {target} — and only the two of them know what that ballot really is.',
-  'Whatever {voter} and {target} swore upstairs, {voter} has just put it on a slate.',
+  // "Whatever the two of them swore upstairs" was the first draft of this line
+  // and it was caught by dumping seasons and reading them: with the actor moved
+  // out of the opening clause there is nothing for "the two of them" to refer
+  // BACK to, and the sentence opens on a pronoun with no antecedent. The
+  // passive keeps both names to one mention each and points at nobody until
+  // the clause that names them.
+  'Whatever was sworn upstairs, {voter} has just put {target} on a slate.',
 ];
 
 /**
@@ -133,17 +146,84 @@ const BETRAYAL_LINES = [
  * `banishedWasTraitor` and `aliveAtVote`. It reads ground truth because it is a
  * record of what happened rather than of what anybody believed, and it is the
  * only place the season can say a betrayal occurred at all.
+ *
+ * IT TAKES THE WHOLE TABLE, NOT THE FIRST ROUND OF IT (whole-plan review, F4).
+ * This used to be handed `ballots` alone and to filter on
+ * `channel === 'banishment'`, so a Traitor who named a fellow in the REVOTE was
+ * recorded nowhere and narrated nothing — and Task 6 deliberately made a fellow
+ * eligible to be among the tied, which is what puts them on a revote slate in
+ * the first place. Measured at 1,200 seasons: 438 such ballots, 27.5% of every
+ * betrayal the format produces, silent. The channel filter that hid them was
+ * itself the awareness: `banishment-revote` is a different string, and nothing
+ * ever came back to it.
+ *
+ * ONE RECORD PER PAIR PER TABLE. A voter who names the same fellow in the first
+ * round and again in the revote has not betrayed them twice; they have been
+ * held to it. Two records would print two sentences about one act, which is the
+ * repetition defect F5 is about. `channel` says where it was first cast, so a
+ * reader can still tell a revote-only turn from one that opened the evening.
+ *
+ * EXPORTED FOR ONE REASON: a turn cast ONLY in a revote happens 41 times in
+ * 1,200 seasons (3.4% of all turns), so a guard that waits for one to come
+ * round in a sampled population is the unfalsifiable-by-rarity shape Task 4's
+ * mutation survived. tests/tr-endgame.test.js builds the table instead and
+ * calls this directly. Nothing in the show may call it but `runRoundTable`.
  */
-function betrayals(ballots, ep) {
-  const out = [];
-  for (const b of ballots) {
-    if (!b.voted || b.channel !== 'banishment') continue;
+export function betrayals(round, ep) {
+  const turns = [];
+  const seen = new Set();
+  const everyBallot = [
+    ...(round.ballots || []),
+    ...(round.revotes || []).flatMap(rv => rv.ballots || []),
+  ];
+  for (const b of everyBallot) {
+    if (!b.voted) continue;
     if (alignmentAt(b.voter, ep) !== 'traitor') continue;
     if (alignmentAt(b.voted, ep) !== 'traitor') continue;
-    out.push({ voter: b.voter, target: b.voted,
-      line: lineFor(BETRAYAL_LINES, `tr-betrayal|${ep}`, { voter: b.voter, target: b.voted }) });
+    const pair = `${b.voter} ${b.voted}`;
+    if (seen.has(pair)) continue;
+    seen.add(pair);
+    turns.push({ voter: b.voter, target: b.voted, channel: b.channel });
   }
-  return out;
+  if (!turns.length) return [];
+
+  return turns.map((t, k) => ({ ...t, line: _betrayalLine(t, k, turns, ep) }));
+}
+
+/**
+ * One sentence for one turn, and never the same one twice at a table.
+ *
+ * THE KEY USED TO BE `tr-betrayal|${ep}` ALONE, so every betrayer at one table
+ * hashed identically and 65.7% of multi-betrayal tables printed the same
+ * template twice with the names swapped: "Whatever Brightly and Brody swore
+ * upstairs, Brightly has just put it on a slate." / "Whatever Brody and
+ * Brightly swore upstairs, Brody has just put it on a slate." Every other key
+ * in this plan carries the actor; this one did not. `lineFor` folds the subs
+ * values into its hash, but the subs are the same two names in both
+ * directions, so they could never separate the pair on their own.
+ *
+ * PUTTING THE ACTOR IN THE KEY IS NOT ENOUGH EITHER, and this is the part that
+ * had to be measured rather than reasoned about: two independent hashes into a
+ * four-line pool collide one time in four however they are keyed, and three of
+ * them collide about six times in ten. Rotating the pool per betrayer after
+ * hashing does not help — two independent draws are still two independent
+ * draws, and the first draft of this fix went red on exactly that.
+ *
+ * So the pool is WALKED. ONE hash, taken over the whole table, decides where
+ * the walk starts; the ordinal decides how far along it each betrayer sits.
+ * Distinct by construction for as many betrayers as there are templates, which
+ * is this project's `_pickUnique` rule. A fifth at one table would have to
+ * reuse one, and with three Traitors there is never a fifth. The start hash
+ * takes every name that turned, so two tables do not read alike, and it costs
+ * no rng draw — `_lineHash` is the same free hash `lineFor` uses.
+ */
+function _betrayalLine(turn, k, turns, ep) {
+  const start = _lineHash(`tr-betrayal|${ep}|`
+    + turns.map(t => `${t.voter}>${t.target}`).join('|'));
+  const idx = (start + k) % BETRAYAL_LINES.length;
+  return lineFor([BETRAYAL_LINES[idx]], `tr-betrayal|${ep}|${turn.voter}`,
+    { voter: turn.voter, target: turn.target,
+      sub: pronouns(turn.voter).sub, posAdj: pronouns(turn.voter).posAdj });
 }
 
 /**
@@ -217,7 +297,9 @@ export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
 
   const wasTraitor = alignmentAt(banished, ep) === 'traitor';
   const round = { ep, banished, banishedWasTraitor: wasTraitor, murdered: null,
-    ballots, revotes, accusations, betrayals: betrayals(ballots, ep) };
+    // THE WHOLE TABLE, revotes included — see the note on `betrayals`. By this
+    // line the tie loop has finished, so `revotes` is complete.
+    ballots, revotes, accusations, betrayals: betrayals({ ballots, revotes }, ep) };
   if (daggerHolder) {
     // Recorded on the round, because the room watched it happen: the draw is
     // public even though the win was not. `votes` is read off the exported

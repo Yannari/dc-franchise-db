@@ -18,6 +18,7 @@ import { resetKnowledge, learn, whoKnows } from '../js/knowledge.js';
 import { alignmentFactId, recordAlignment, alignmentAt } from '../js/tr/roles.js';
 import { seedTraitorKnowledge, _setPactPotBlind } from '../js/tr/deduction.js';
 import { endgameChoice, resolvePot, _setEndgameWatch } from '../js/tr/endgame.js';
+import { betrayals } from '../js/tr/roundtable.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import roster from '../franchise_roster.json';
 
@@ -436,6 +437,7 @@ describe('a Traitor naming a Traitor produces a sentence', () => {
     // record lives on the round, so the guard reads the ballots the round
     // itself carries rather than recomputing who was in the pact.
     let ballots = 0, recorded = 0, skipped = 0, lines = new Set();
+    let revoteTables = 0, revoteOnly = 0;
     // TWO THINGS MAKE THIS READABLE FROM OUTSIDE, AND THE SECOND IS A TRAP.
     //
     // Inside the season, because `alignmentAt` answers about the live `gs` and
@@ -455,30 +457,136 @@ describe('a Traitor naming a Traitor produces a sentence', () => {
       const flipped = new Set((s.roleHistory || [])
         .filter(h => h.via !== 'selection').map(h => h.ep));
       for (const r of [...s.rounds, ...s.endgame.rounds]) {
+        // EVERY BALLOT AT THE TABLE, revotes included, and that is the fix to
+        // this guard rather than a widening of it (whole-plan review, F4).
+        // It used to reconstruct from `r.ballots` alone, filtered on
+        // `channel === 'banishment'` — the SAME array and the SAME filter the
+        // bug read — so it agreed with the defect by construction and 27.5%
+        // of all betrayals were silent underneath a green completeness check.
+        // A guard that reconstructs the value under test from the reader's own
+        // inputs cannot see the reader's blind spot; it has to reconstruct
+        // from the table.
+        const everyBallot = [...(r.ballots || []),
+          ...(r.revotes || []).flatMap(rv => rv.ballots || [])];
         recorded += (r.betrayals || []).length;
         for (const b of (r.betrayals || [])) {
           expect(b.line, 'a betrayal was recorded with no sentence attached').toBeTruthy();
           expect(b.line).toContain(b.voter);
-          expect((r.ballots || []).some(x => x.voter === b.voter && x.voted === b.target),
+          expect(b.line, 'a betrayal line does not say who was betrayed — the only dramatic '
+            + 'content the sentence has').toContain(b.target);
+          expect(everyBallot.some(x => x.voter === b.voter && x.voted === b.target),
             'a betrayal was narrated over a ballot nobody cast').toBe(true);
           lines.add(b.line.split(b.voter).join('{v}').split(b.target).join('{t}'));
         }
+        // NO SENTENCE TWICE AT ONE TABLE. The line key used to omit the actor,
+        // so both betrayers at a table hashed to the same template and 65.7%
+        // of multi-betrayal tables printed it twice with the names swapped.
+        // Bounded by the pool size, which is what the rotation can guarantee:
+        // a fifth betrayer at one table must reuse a template because there is
+        // no fifth template. BETRAYAL_LINES is module-private, so the bound is
+        // written here as the number it is and this comment is the reason.
+        const shapes = (r.betrayals || []).map(b =>
+          b.line.split(b.voter).join('{}').split(b.target).join('{}'));
+        expect(new Set(shapes).size, `ep ${r.ep}: two betrayals at one table read out of the `
+          + `same template — ${shapes.join(' / ')}`).toBe(Math.min(shapes.length, 4));
         if (flipped.has(r.ep)) { skipped++; continue; }
-        const real = (r.ballots || []).filter(b => b.voted && b.channel === 'banishment'
-          && alignmentAt(b.voter, r.ep) === 'traitor' && alignmentAt(b.voted, r.ep) === 'traitor');
-        ballots += real.length;
-        expect((r.betrayals || []).length, `ep ${r.ep}: ${real.length} Traitors named a `
-          + `fellow and ${(r.betrayals || []).length} were recorded`).toBe(real.length);
+        // ONE PER PAIR: a voter held to the same name through a revote turned
+        // once, not twice, and the record says so.
+        const real = new Set(everyBallot.filter(b => b.voted
+          && alignmentAt(b.voter, r.ep) === 'traitor' && alignmentAt(b.voted, r.ep) === 'traitor')
+          .map(b => `${b.voter} ${b.voted}`));
+        ballots += real.size;
+        if ((r.revotes || []).length) revoteTables++;
+        revoteOnly += [...real].filter(p =>
+          !(r.ballots || []).some(b => `${b.voter} ${b.voted}` === p)).length;
+        expect((r.betrayals || []).length, `ep ${r.ep}: ${real.size} Traitors named a `
+          + `fellow and ${(r.betrayals || []).length} were recorded`).toBe(real.size);
       }
     });
     console.log(`[coverage] ${ballots} Traitor-on-Traitor ballots over 120 seasons `
       + `(${skipped} tables skipped for a same-episode flip), ${recorded} narrated, `
-      + `${lines.size} distinct sentence shapes`);
+      + `${lines.size} distinct sentence shapes; ${revoteTables} tables went to a revote, `
+      + `${revoteOnly} betrayals happened ONLY in one`);
     expect(ballots, 'not one Traitor turned on a fellow — the guard saw nothing')
       .toBeGreaterThan(60);
+    // THE REVOTE ARM'S OWN COVERAGE. The completeness assertion above is a
+    // statement about revote ballots too now, and a statement about a
+    // population that never occurs is free. This says the population occurs.
+    expect(revoteTables, 'no table in 120 seasons ever went to a revote, so the ballots this '
+      + 'guard was widened to see do not exist in the sample').toBeGreaterThan(50);
+    // AND `revoteOnly` IS REPORTED, NOT ASSERTED ON. A turn cast only in a
+    // revote is 41 in 1,200 seasons (3.4% of all turns), so this population
+    // holds about four and a floor over it would be a coin flip. The rule is
+    // asserted at the decision point in the test below instead — Task 4's
+    // prescription for a rule about a state that is rare by design.
     // Four variants minimum is this project's rule for any pool that can fire
     // more than once in a season, and this one fires several times a finale.
     expect(lines.size, 'a betrayal reads the same way every time').toBeGreaterThanOrEqual(4);
+  });
+
+  it('including the one cast in the revote, where the tie rule puts a fellow on the slate', () => {
+    // ASSERTED WHERE IT IS DECIDED, because the state is rare BY DESIGN.
+    //
+    // `betrayals()` used to be handed the first round of ballots alone and to
+    // filter on `channel === 'banishment'`, so a Traitor who named a fellow in
+    // the REVOTE was recorded nowhere and narrated nothing. Task 6 is what
+    // makes this reachable at all: it made a fellow eligible to be named, and
+    // therefore eligible to be among the tied — and the tied are exactly who a
+    // revote slate is made of. `roundtable.js:140` even carried a dead
+    // `b.channel !== 'banishment'` filter documenting the awareness.
+    //
+    // WHY THIS IS NOT A POPULATION ARM. A turn cast ONLY in a revote happens
+    // 41 times in 1,200 seasons — 3.4% of all turns, about four in the 120
+    // seasons the population arm above plays. Task 4 of this plan shipped a
+    // guard a mutation survived over a state that arose 22 times in 400, and a
+    // floor here would be the same coin flip. The table is built instead, and
+    // `betrayals()` is exported for exactly this.
+    //
+    // The completeness arm above ALSO now reconstructs from revote ballots, so
+    // it will catch a regression whenever the sample happens to contain one.
+    // This is the arm that catches it every single run.
+    trioWorld();
+    recordAlignment('Eb', true, 1, 'recruit');   // Ea and Eb are the pact; Ec is not
+    const ep = 4;
+    const round = {
+      // FIRST ROUND: nobody turns. Ea and Eb both name the Faithful.
+      ballots: [
+        { voter: 'Ea', voted: 'Ec', channel: 'banishment' },
+        { voter: 'Eb', voted: 'Ec', channel: 'banishment' },
+        { voter: 'Ec', voted: 'Ea', channel: 'banishment' },
+      ],
+      // THE REVOTE, and the only place a fellow's name is written down.
+      revotes: [{ tied: ['Ea', 'Eb'], ballots: [
+        { voter: 'Ec', voted: 'Ea', channel: 'banishment-revote' },
+        { voter: 'Eb', voted: 'Ea', channel: 'banishment-revote' },
+      ] }],
+    };
+    const out = betrayals(round, ep);
+    expect(out.length, 'a Traitor wrote a fellow\'s name on a revote slate and the season said '
+      + 'nothing at all about it').toBe(1);
+    expect(out[0]).toMatchObject({ voter: 'Eb', target: 'Ea', channel: 'banishment-revote' });
+    expect(out[0].line, 'the revote betrayal was recorded with no sentence').toBeTruthy();
+    expect(out[0].line).toContain('Eb');
+    expect(out[0].line, 'the sentence does not say who was betrayed').toContain('Ea');
+
+    // AND NOTHING ELSE IS. Ec is a Faithful naming a Traitor twice, which is
+    // the ordinary business of a Round Table and not a betrayal — without this
+    // the test above passes on a function that simply records every ballot.
+    expect(out.some(b => b.voter === 'Ec'), 'a Faithful naming a Traitor was recorded as a '
+      + 'betrayal of the pact').toBe(false);
+
+    // ONE RECORD PER PAIR. Held to the same name through a revote is one turn
+    // pressed twice, not two turns, and two records would print two sentences
+    // about one act.
+    const held = betrayals({
+      ballots: [{ voter: 'Eb', voted: 'Ea', channel: 'banishment' }],
+      revotes: [{ tied: ['Ea', 'Ec'], ballots: [
+        { voter: 'Eb', voted: 'Ea', channel: 'banishment-revote' }] }],
+    }, ep);
+    expect(held.length, 'a Traitor held to one name across a revote was narrated as having '
+      + 'turned twice').toBe(1);
+    expect(held[0].channel, 'the record says the turn happened in the revote when it opened '
+      + 'the evening').toBe('banishment');
   });
 });
 

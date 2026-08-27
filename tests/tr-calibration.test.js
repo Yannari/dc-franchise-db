@@ -938,26 +938,74 @@ describe('the castle, measured over many seasons', () => {
     //     ratio  1.3278 1.3232 1.2883 1.3621 1.3133 1.3366   mean 1.3252  sd 0.0250
     //     sep    0.1095 0.1088 0.0992 0.1188 0.1041 0.1121   mean 0.1088  sd 0.0067
     //
-    // 1.20 is 5.0 sd under the ratio; 0.06 is 7.3 sd under the separation.
-    // Under the mutation both are EXACTLY 1.000 and 0.000, since flattening
-    // the multiplier makes the two arms the same 200 seasons.
+    // == AND THE SAMPLING sd IS NOT THE NUMBER THAT MATTERS (round 2, R1) ==
     //
-    // THE COUPLINGS THE OLD FLOOR HAD ARE GONE WITH IT. It tracked the guard's
-    // strength, `CONTINUATION_SCENE_P`, and the pool's `advancesThread`
-    // declaration rate; the first is what the band is named for and the other
-    // two moved it without anything having broken. A ratio between two arms
-    // that both see those changes is blind to all three by construction — the
-    // "roughly 17 declarations of headroom" bookkeeping this comment used to
-    // carry is no longer a thing anybody has to track.
+    // The first draft of this comment said a ratio against an in-run control
+    // "cannot go stale" and priced it at 5.0 sd against a 1.20 floor. That
+    // claim was TOO STRONG and the 5.0 sd was the wrong statistic. It prices
+    // SAMPLING noise — how much the number wobbles on different seeds — and
+    // the failure that killed the old absolute floors twice was CONTENT
+    // movement, which a ratio reduces but does not remove.
     //
-    // WHAT IT STILL CANNOT CATCH is unchanged: a guard detuned by half rather
-    // than switched off. 200 seasons a block cannot separate adjacent
-    // strengths. This is an off-switch detector and says so.
+    // WHAT A RATIO DOES AND DOES NOT FIX, stated properly:
+    //   - sampling drift        — removed (both arms share the seeds)
+    //   - mechanism drift       — removed (both arms share the guard's inputs)
+    //   - COMPOSITION drift     — NOT removed. Which events exist changes how
+    //     many scenes contain something the guard can prefer, and that moves
+    //     the two arms by DIFFERENT amounts.
+    //
+    // MEASURED, one castle content file removed at a time, 200 seasons, both
+    // arms re-run per file (a file is roughly the unit of content change this
+    // plan makes — Task 4 added 16 events, Task 5 three guards):
+    //
+    //     minus-testing    1.2602   (-0.0676)   <- worst adverse
+    //     minus-suspicion  1.2921   (-0.0358)
+    //     minus-grief      1.2920   (-0.0358)
+    //     minus-romance    1.3081   (-0.0197)
+    //     minus-trust      1.3109   (-0.0170)
+    //     minus-callback   1.3421   (+0.0143)
+    //     minus-cover      1.3478   (+0.0200)
+    //     minus-journey    1.4152   (+0.0873)
+    //
+    // One content file moves this ratio by up to 0.068 — 2.7x the sampling sd
+    // of 0.0250. Deleting the file outright rather than unregistering its
+    // events (the reviewer's method) reads 0.0844 adverse, and that larger
+    // figure is what the floor below is derived against.
+    //
+    // SO THE FLOOR IS 1.10, NOT 1.20. At 1.20 the headroom was 0.1252, which
+    // is 1.5 adverse content files: two of them breach it, and this plan
+    // routinely ships one. At 1.10 the headroom is 0.2278 — 2.7 adverse files
+    // — and the mutation still produces EXACTLY 1.000, so the assertion keeps
+    // 0.10 of margin against the thing it is named for.
+    //
+    // AND THE SEPARATION LINE IS NOT REDUNDANT — IT IS THE DETUNE DETECTOR.
+    // Dropping the ratio to 1.10 costs the ability to catch a weakened guard,
+    // and the separation floor buys it back. Measured, guard strength swept at
+    // a fixed scene P (200 seasons, control re-run each time):
+    //
+    //     guard 3/1.5   (shipped)  ratio 1.3278   sep 0.1095
+    //     guard 2.25/1.125  (75%)  ratio 1.2884   sep 0.0964
+    //     guard 1.5/0.75    (50%)  ratio 1.2419   sep 0.0808
+    //     guard 0.75/0.375  (25%)  ratio 1.1557   sep 0.0520   <- sep is RED
+    //     guard flattened    (0%)  ratio 1.0000   sep 0.0000   <- both RED
+    //
+    // So the pair catches the same detune the old 1.20 floor caught (a quarter
+    // strength guard) while surviving twice the content movement. The
+    // separation's own composition exposure is 0.0173 adverse per file against
+    // 0.0495 of headroom — 2.9 files, so it is the tighter of the two on
+    // content and the looser on detune, which is the right way round.
+    //
+    // WHAT NEITHER CAN CATCH: a guard detuned to half or three-quarters. 200
+    // seasons a block cannot separate adjacent strengths, and no floor here
+    // sits between 1.2419 and 1.2884. The honest normalising fix — condition
+    // the rate on scenes where an advancing event of the matching family is
+    // actually eligible — would remove the composition term at the source, and
+    // is a different measurement with its own derivation. Not done here.
     expect(live.rate / dead.rate, 'the castle starts stories and never continues them — '
       + 'the guard buys no more continuation than the same seeds buy with it flattened')
-      .toBeGreaterThan(1.20);
-    // And the separation in absolute points, which is the same statement in
-    // the units the diagnostics print. Measured 0.1088.
+      .toBeGreaterThan(1.10);
+    // The detune half of the pair, in the units the diagnostics print.
+    // Measured 0.1088; a quarter-strength guard reads 0.0520.
     expect(live.rate - dead.rate, 'the continuation guard moved nothing')
       .toBeGreaterThan(0.06);
   });
@@ -1055,6 +1103,31 @@ describe('the castle, measured over many seasons', () => {
     // 1.15 is 11.8 sd under the ratio; 0.15 is 15.7 sd under the separation.
     // Under the mutation (CONTINUATION_SCENE_P = 0) the two arms are the same
     // 200 seasons, so the ratio is exactly 1.000 and the separation 0.000.
+    //
+    // == IT IS NOT AN OFF-SWITCH DETECTOR, AND THAT WAS WORTH CHECKING ==
+    //
+    // The obvious objection (round 2, R2) is that the mutation IS the control
+    // arm, so the ratio is tautologically 1.000 and the band can only catch a
+    // selector switched off — the caveat the continuation band above carries
+    // honestly. Measured, sweeping the knob instead of asserting the claim:
+    //
+    //     scene P 0.35   (shipped)  meanLen 1.6000   ratio 1.2620   green
+    //     scene P 0.2625     (75%)  meanLen 1.4831   ratio 1.1698   green
+    //     scene P 0.175      (50%)  meanLen 1.4090   ratio 1.1114   RED
+    //     scene P 0.0875     (25%)  meanLen 1.3350   ratio 1.0530   RED
+    //     scene P 0           (0%)  meanLen 1.2678   ratio 1.0000   RED
+    //
+    // The 1.15 floor reddens on a selector HALVED, not only on one deleted.
+    // Its resolution limit is 75%: it cannot separate the shipped value from a
+    // quarter detune, and no honest floor here can, since 1.1698 and 1.2620
+    // are three sampling sd apart on a statistic whose content drift is larger
+    // than that. Stated rather than left as a hope.
+    //
+    // ITS COMPOSITION EXPOSURE, measured the same way as the band above (one
+    // castle content file removed at a time): worst adverse -0.0428
+    // (minus-trust) against 0.1120 of headroom — 2.6 content files. The
+    // separation's worst adverse is -0.0537 against 0.1821 — 3.4 files. This
+    // band did not need widening; the continuation one did.
     expect(live.meanLen / sceneOff.meanLen, 'threads are no longer than they were under '
       + 'uniform actor selection - scene selection is not reconvening live stories')
       .toBeGreaterThan(1.15);

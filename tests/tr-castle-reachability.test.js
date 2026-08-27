@@ -70,7 +70,8 @@ import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { EVENTS, KNOWN_WINDOWS } from '../js/tr/events.js';
-import { actFor, outcomeSense } from '../js/tr/threads.js';
+import { actFor, outcomeSense, openThread, closeThread, advanceThread }
+  from '../js/tr/threads.js';
 import { seedFranchiseHistory, seedEmptyHistory } from './helpers/tr-castle-fixture.js';
 import roster from '../franchise_roster.json';
 
@@ -1345,35 +1346,69 @@ const BRANCHES = [
   'trust-vow-of-silence:vowed-silence',
 ];
 
+// A minimum over 164 cells needs more seasons than a total or a share does —
+// see the derivation on the assertion below. This is the only band in the file
+// that pays for them.
+const BRANCH_SWEEP_SEASONS = 3200;
+const BRANCH_PER400 = n => Math.round(n * BRANCH_SWEEP_SEASONS / 400);
+
 describe('THE BRANCH FLOOR: a fork nobody takes is dead content inside a live event', () => {
   it('every (event, branch) pair the pool can produce is produced in real seasons', () => {
     const perBranch = {};
-    for (const f of ALL_FIRINGS) {
+    for (const f of runSeasons(BRANCH_SWEEP_SEASONS).flat()) {
       const k = `${f.id}:${f.branch}`;
       perBranch[k] = (perBranch[k] || 0) + 1;
     }
     const keys = Object.keys(perBranch).sort();
     const bottom = keys.map(k => ({ k, n: perBranch[k] })).sort((a, b) => a.n - b.n).slice(0, 12);
-    console.log(`\n=== RAREST TWELVE BRANCHES (${SWEEP_SEASONS} seasons, ${keys.length} branches) ===`);
+    console.log(`\n=== RAREST TWELVE BRANCHES (${BRANCH_SWEEP_SEASONS} seasons, ${keys.length} branches) ===`);
     for (const b of bottom) console.log(`   ${b.n}\t${b.k}`);
 
     expect(keys, 'a branch appeared or disappeared from the pool').toEqual(BRANCHES);
     // == RE-DERIVED BY PLAN 5 TASK 6: 4 per 400 seasons -> 3 per 400 ==========
     //
-    // Not a loosening. The old floor of 4 was measured at 400 seasons against a
-    // rarest branch of 4 — zero margin, on a count whose own resampling noise
-    // is larger than the whole margin. Raising the sweep to 1600 turns that
-    // count into a measurement: the rarest branch reads 20.0 (sd 1.83 over four
-    // disjoint 1600-season blocks) and PER400(3) = 12 sits 4.4 sd under it.
-    // In per-400 terms the floor moved 4 -> 3 while the margin went from 0.0 sd
-    // to 4.4 sd, because the thing that changed is how well the number is
-    // known, not how much is being demanded of the content.
+    // SAY IT PLAINLY: THIS IS A LOOSENING. The demand on content fell by a
+    // quarter, from four firings per 400 seasons to three. The first draft of
+    // this comment called it "not a loosening, just precision", and that was
+    // spin. What follows is why it was taken anyway.
+    //
+    // The old floor of 4 was measured at 400 seasons against a rarest branch of
+    // 4 — zero margin, on a count whose own resampling noise is larger than the
+    // whole margin. `romance-liability-exposed:exposes` read 8, 7, 4, 5 and 6
+    // across five arms of identical decisions.
+    //
+    // AND HOLDING THE OLD DEMAND WOULD HAVE SHIPPED ANOTHER KNIFE-EDGE. At
+    // 1600 seasons PER400(4) = 16 sits 2.2 sd under the rarest branch; even at
+    // 3200 it is 2.6 sd. Both are under the 3 sd bar this suite uses, so
+    // "keep 4 and raise the seasons" buys a second version of the same defect.
+    // Three per 400 clears it. That is the trade, stated rather than dressed up.
+    //
+    // == AND THIS BAND GETS ITS OWN, DEEPER SWEEP (round 2, R3) ==============
+    //
+    // It is the only assertion in this file whose statistic is a MINIMUM over
+    // 164 cells. A minimum has a much fatter lower tail than any mean or share
+    // here, so it needs more seasons than the rest of the file to be known as
+    // well. The first derivation used four 1600-season blocks and reported
+    // 4.4 sd; eight blocks put the sd at 3.38, not 1.83, and the margin at
+    // 2.48 sd — the four-block figure was optimistic by 80%, which is exactly
+    // the +/-40% an sd on 3 degrees of freedom carries.
+    //
+    // MEASURED, six disjoint 3200-season blocks (bases 0, 3200, 6400, 9600,
+    // 12800, 16000): rarest branch 50, 37, 52, 45, 46, 52 — mean 47.0, sd 5.73.
+    // PER400(3) = 24 sits 4.01 sd under it, and the worst block observed (37)
+    // clears it by 13. On five degrees of freedom the 90% upper bound on that
+    // sd is 10.1, so the DEFENSIBLE claim is "at least 2.3 sd at 90%
+    // confidence, 4.0 sd on the point estimate". Both numbers are here because
+    // quoting only the point estimate is how the four-block figure misled.
+    //
+    // The rest of the file stays at SWEEP_SEASONS: every other statistic in it
+    // is a total or a share and is already known well enough at 1600.
     //
     // WHAT IT STILL CATCHES: a branch falling below one firing per 133 seasons,
     // and a branch dying outright. What it deliberately does NOT do is police
-    // ordinary resampling — a branch moving 20 -> 15 on an unrelated content
+    // ordinary resampling — a branch moving 47 -> 35 on an unrelated content
     // change is noise, and the old floor would have called it a regression.
-    const starved = bottom.filter(b => b.n < PER400(3)).map(b => `${b.k}: ${b.n}`);
+    const starved = bottom.filter(b => b.n < BRANCH_PER400(3)).map(b => `${b.k}: ${b.n}`);
     expect(starved, `these branches are on their way to dead content — an event-keyed `
       + `floor cannot see this, which is why this one is keyed per branch`).toEqual([]);
   });
@@ -1444,6 +1479,35 @@ describe('THE PRIOR-OUTCOME ORDER RULE: nothing is recapped before it happens', 
 === PRIOR-OUTCOME ORDER (${SWEEP_SEASONS} seasons) === `
       + `${checked} firings branched on a closed outcome, ${violations.length} of them on a `
       + `closure that had not happened yet`);
+
+    // THE ASSUMPTION THIS RULE RESTS ON, CHECKED RATHER THAN ASSUMED (R4).
+    //
+    // `t.lastEp` is the last BEAT's episode, not explicitly the closing one.
+    // The comparisons above are only reading the closing episode because
+    // nothing can beat a thread after it closes: `advanceThread` returns null
+    // unless `state === 'open'`, and `openThread` folds only through
+    // `findOpenThread`, which is open-only. That is a property of two functions
+    // in ANOTHER file. If it ever stops holding, `lastEp` drifts past the
+    // closure and every comparison above silently reads the wrong episode.
+    //
+    // THE OBVIOUS CHECK IS VACUOUS AND WAS WRITTEN FIRST. Scanning the played
+    // seasons for a closed thread whose last beat is later than `lastEp` finds
+    // nothing even when the guard is deleted — because `advanceThread` stamps
+    // `lastEp` on its way past, so the two move together and the drift hides
+    // itself. Measured: with `|| t.state !== 'open'` removed from
+    // `advanceThread`, that scan stays GREEN.
+    //
+    // So the property is asserted DIRECTLY, on the real functions, against the
+    // live state the sweep above has already built.
+    const [pa, pb] = CAST;
+    const probe = openThread('suspicion', [pa, pb], 2, 'r4 probe');
+    closeThread(probe.id, 3, 'buried');
+    const closedAt = probe.lastEp;
+    const advanced = advanceThread(probe.id, 9, 'a beat after the ending');
+    expect(advanced, 'advanceThread accepted a CLOSED thread, so `lastEp` no longer means '
+      + 'the closing episode and every comparison in this rule is reading the wrong number '
+      + '- give closed threads an explicit closing episode').toBeNull();
+    expect(probe.lastEp, "a closed thread's lastEp moved after it closed").toBe(closedAt);
 
     // NON-VACUITY FIRST, and it is the half that makes this failable at all:
     // if no event ever branched on an outcome the rule below would be

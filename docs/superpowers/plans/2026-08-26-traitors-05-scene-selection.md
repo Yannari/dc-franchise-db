@@ -344,3 +344,27 @@ there.** The working guard was a SOURCE rule (substituted, never cut). Verified 
 placeholder bug: mutating one `/\{b\}/g` back to the string form reddens the SOURCE rule and
 does NOT redden the output rule. When authoring prose guards, prefer a rule over the source
 text; use output rules only for defects that are unambiguous in the finished string.
+
+### Task 6 must make the continuity band self-calibrating, not re-derive it again
+
+The continuity band has now gone stale THREE times: once in Task 1 (floor 0.22, cleared by
+scene selection alone), once in Task 2 (0.30 -> settled 0.38 after a declaration withdrawal),
+and again in Task 3, which moved both arms without touching a single declaration and left the
+floor roughly four times below measurement.
+
+The cause is structural, not carelessness. The band has two assertions:
+
+1. an ABSOLUTE floor on the live arm -- goes stale whenever content changes, because it is
+   a constant compared against a moving measurement
+2. a SEPARATION between the live arm and a control arm measured in the same run -- does NOT
+   go stale, because both sides move together
+
+Only (1) keeps rotting. (2) is self-calibrating by construction: it re-derives the
+comparison every run, which is the whole point of an in-suite control arm.
+
+**Task 6 ruling: keep the separation assertion, and either delete the absolute floor or
+re-express it as a ratio against the control arm.** A constant compared against a moving
+measurement is a maintenance treadmill that has already consumed three fix rounds, and each
+time it went stale it spent a window silently guarding nothing. Any band in this suite with
+the same shape (absolute constant vs a measurement that content moves) should get the same
+treatment -- Task 6 should sweep for them, not just fix this one.

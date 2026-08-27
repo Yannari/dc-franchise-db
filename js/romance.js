@@ -1136,7 +1136,71 @@ export function updateLoveTrianglePhases(ep) {
 
     if (!centerAlive || !aAlive || !cAlive) {
       tri.resolved = true;
-      tri.resolution = { type: 'eliminated', who: !centerAlive ? center : !aAlive ? suitorA : suitorC, ep: epNum };
+      const gone = !centerAlive ? center : !aAlive ? suitorA : suitorC;
+      tri.resolution = { type: 'eliminated', who: gone, ep: epNum };
+
+      /* ── THE WAY IT ACTUALLY ENDS, AND IT WAS SILENT ──
+         Measured over 25 played seasons: 20 triangles, mean life 2.3 weeks,
+         and 85% of them ended exactly here — one corner voted out — while the
+         only thing this branch had to say was the rare case where BOTH suitors
+         went in the same week. So the most common ending in the system
+         produced no scene at all. The triangle simply stopped existing between
+         one episode and the next, which is precisely why it never felt like a
+         triangle.
+
+         And the vote is the drama. The ballots are right here, so the one
+         question worth asking gets asked: did the person in the middle put a
+         name on the person they were seeing? */
+      /* The eviction is NOTICED here a week after it happened — this stage runs
+         at the top of the next episode, by which point the current ballots are
+         a fresh empty set and the name being asked about is long gone from
+         them. Measured: the question came back false every single time. So the
+         ballots are taken from the week that actually took them out. */
+      const _weekOf = (gs.bb?.weeks || []).filter(Boolean)
+        .reverse().find(w => w?.evicted === gone || w?.secondEvicted === gone);
+      const ballots = (_weekOf?.ballots?.length ? _weekOf.ballots : (ep.votingLog || [])) || [];
+      const voteOf = who => {
+        const row = ballots.find(v => (v?.voter || v?.name) === who);
+        return row ? (row.evict || row.voted || row.vote || null) : null;
+      };
+      const survivor = gone === center ? null
+        : gone === suitorA ? suitorC : suitorA;
+      const byTheirHand = !!(survivor && voteOf(center) === gone);
+      if (survivor && centerAlive) {
+        // Whatever they were competing over stopped being a competition. The
+        // one left standing gets the ground to themselves, and knows how.
+        addBond(center, survivor, byTheirHand ? 0.9 : 0.5);
+      } else if (!centerAlive && aAlive && cAlive) {
+        // Nothing left to fight about, and nobody left to fight over it with.
+        addBond(suitorA, suitorC, 0.6);
+      }
+      const _cutTribe = gs.isMerged ? (gs.mergeName || 'merge')
+        : (gs.tribes.find(t => t.members.includes(centerAlive ? center : (survivor || suitorA)))?.name || 'merge');
+      if (ep.campEvents?.[_cutTribe]) {
+        const _cutBlock = ep.campEvents[_cutTribe];
+        const _cutEvts = Array.isArray(_cutBlock) ? _cutBlock : (_cutBlock.post || _cutBlock.pre || []);
+        const kind = !centerAlive ? 'center-gone' : (aAlive && cAlive) ? 'center-gone' : 'suitor-gone';
+        const _pick2 = arr => arr[Math.floor(Math.random() * arr.length)];
+        const text = kind === 'center-gone'
+          ? _pick2([
+            `${suitorA} and ${suitorC} spent weeks not speaking over ${center}. Tonight ${center} left, and the two of them are still here, with nothing between them but the argument.`,
+            `The vote took ${center} out of it. ${suitorA} and ${suitorC} are left holding a rivalry with nothing at the middle of it.`,
+          ])
+          : byTheirHand
+            ? _pick2([
+              `${gone} is gone, and ${center} wrote the name. ${survivor} watched ${center} do it and has not decided yet whether that was a choice or a warning.`,
+              `${center} had two people and one vote, and used it. ${gone} left knowing exactly who did it, and ${survivor} is the only one who benefits.`,
+            ])
+            : _pick2([
+              `${gone} is gone, and the thing that was tearing ${center} in half was settled by nine other people in about four seconds.`,
+              `Nobody chose. The house did. ${gone} walked out and ${center} and ${survivor} are suddenly a couple, decided by a vote neither of them controlled.`,
+            ]);
+        _cutEvts.push({ type: 'triangleCut', kind, byTheirHand, text,
+          players: [centerAlive ? center : suitorA, survivor || suitorC, gone] });
+      }
+      ep.triangleEvents = ep.triangleEvents || [];
+      ep.triangleEvents.push({ type: 'triangleCut', kind: !centerAlive ? 'center-gone' : 'suitor-gone',
+        byTheirHand, center, gone, survivor });
       // Both suitors eliminated same episode (double tribal) — center gets lonely event
       if (centerAlive && !aAlive && !cAlive) {
         const pc = pronouns(center);
@@ -1180,7 +1244,7 @@ export function updateLoveTrianglePhases(ep) {
           `The triangle dissolved without a word. ${droppedSuitor} noticed first — ${_pDrop.sub} could feel ${center} pulling away. By the time ${_pDrop.sub} accepted it, it was already over.`,
           `${center} and ${droppedSuitor} barely talk anymore. Whatever spark was there burned out on its own. ${survivingBond} won without having to fight for it.`,
           `The triangle resolved itself. ${center} drifted away from ${droppedSuitor} naturally — no dramatic confrontation, just the slow fade of something that was never going to last.`,
-        ]), players: [center, survivingBond, droppedSuitor] });
+        ]), kind: 'faded', players: [center, survivingBond, droppedSuitor] });
       }
       // Surviving bond becomes a showmance if compatible + bond high enough + cap allows
       const _orgBondVal = getBond(center, survivingBond);
@@ -1211,19 +1275,29 @@ export function updateLoveTrianglePhases(ep) {
     tri.episodesActive++;
 
     // --- Phase transitions ---
-    if (tri.phase === 'tension' && tri.episodesActive >= 3) tri.phase = 'escalation';
-    if (tri.phase === 'escalation' && tri.episodesActive >= 5) tri.phase = 'ultimatum';
+    /* ── PACED TO THE SHOW IT IS RUNNING IN ──
+       Three episodes to escalate and five to the ultimatum assumes three
+       specific people can stay in the game that long. A house evicts somebody
+       every single week: measured across 25 seasons, the mean triangle lives
+       2.3 weeks, 55% never left tension and only 10% ever reached the
+       ultimatum — so the choice, the public fight and the whole back half of
+       the arc were written and almost never seen. Two and four in a house,
+       which is the same shape of arc against a much shorter clock. */
+    const _fast = seasonConfig.format === 'big-brother';
+    if (tri.phase === 'tension' && tri.episodesActive >= (_fast ? 2 : 3)) tri.phase = 'escalation';
+    if (tri.phase === 'escalation' && tri.episodesActive >= (_fast ? 4 : 5)) tri.phase = 'ultimatum';
 
     const pc = pronouns(center);
     const pA = pronouns(suitorA);
     const pC = pronouns(suitorC);
     const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
 
-    const pushEvt = (type, text, players) => {
+    const pushEvt = (type, text, players, kind = null) => {
       if (!ep.campEvents?.[tribeName]) return;
       const block = ep.campEvents[tribeName];
       const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
-      evts.push({ type, text, players: players || [suitorA, center, suitorC] });
+      evts.push({ type, text, kind, sourceType: tri.sourceType || null,
+        players: players || [suitorA, center, suitorC] });
       ep.triangleEvents = ep.triangleEvents || [];
       ep.triangleEvents.push({ type, phase: tri.phase, center, suitors: [suitorA, suitorC] });
     };
@@ -1400,7 +1474,7 @@ export function updateLoveTrianglePhases(ep) {
         `"I've made my decision," ${center} announced. The relief on ${chosen}'s face was matched only by the devastation on ${rejected}'s.`,
         `${center} chose. It wasn't clean, it wasn't painless, but it was done. ${chosen} exhaled. ${rejected} walked to the beach alone.`
       ];
-      pushEvt('triangleUltimatum', _pick(ultimatumVariants));
+      pushEvt('triangleUltimatum', _pick(ultimatumVariants), [center, chosen, rejected]);
 
       // Personality-specific reaction from rejected player
       let reactionText;
@@ -1426,7 +1500,7 @@ export function updateLoveTrianglePhases(ep) {
         ];
         reactionText = _pick(emotionalReactions);
       }
-      pushEvt('triangleResolved', reactionText, [center, chosen, rejected]);
+      pushEvt('triangleResolved', reactionText, [center, chosen, rejected], 'chose');
 
       // Store on episode for VP
       ep.triangleResolution = { center, chosen, rejected, severity: rejSeverity, bondCrash, heatBoost };

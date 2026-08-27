@@ -728,6 +728,139 @@ function runHouseRomance(week, rng) {
           `${a} tells ${c} something ${b} thought was theirs alone. ${b} finds out the way everybody in this house finds out — from somebody else, repeating it back.`,
         ], a, b, c);
       }
+      // ── AND THE REST OF THE TRIANGLE, WHICH IS WHERE THE DRAMA WAS ──
+      //
+      // The arc does not stop at somebody noticing. It escalates, a schemer
+      // works it, it becomes a public fight, the centre is forced to CHOOSE,
+      // and whoever was not chosen reacts in their own register with a bond
+      // crash and heat behind it. All of that ran in the house and none of it
+      // had a case here, so every dramatic beat fell through to the default
+      // and described a beach: a fire to make pointed comments at, a shelter
+      // to shove past, a reward feast to refuse a seat at, somebody out
+      // fishing while the confrontation happened. The beats were never
+      // missing. They were set on the wrong show.
+      case 'triangleConfrontation':
+        // `a` asks the question, `b` is the centre, `c` is the other one.
+        return romanceLine(e.type, [
+          `${a} waits until ${c} is called to the diary room and asks ${b} straight out: "Where do I stand?" ${b} says all the right things. ${a} believes none of them.`,
+          `${a} asks it in the storage room, which everybody in here knows is the one place a private conversation goes public by morning. "I would rather be told than work it out."`,
+          `${a} corners ${b} by the sliding door. "I am not asking you to choose. I am asking you to say what this is." ${b} takes long enough to answer that it becomes the answer.`,
+          `${a} keeps ${pa.posAdj} voice down and ${pa.posAdj} hands still. "I deserve honesty." ${b} says everything is fine, and the word fine does the entire work of a lie.`,
+        ], a, b, c);
+      case 'triangleEscalation':
+        // Four names means somebody is WORKING it: [schemer, suitorA, centre,
+        // suitorC]. Three means the triangle is escalating on its own.
+        if ((e.players || []).length >= 4) {
+          const [sch, s1, mid, s2] = e.players;
+          return romanceLine(e.type, [
+            `${sch} watches the three of them all evening and says it quietly to one ally: "Nobody in that is counting votes. That is three people playing a different game to ours."`,
+            `"${s1} is going to get burned," ${sch} says, "and burned people take the first hand anybody holds out. I intend to be the one holding it."`,
+            `${sch} has been feeding a small doubt to ${s1} and a different small doubt to ${s2}. Neither is big enough to trace. Both are big enough to keep it unstable.`,
+            `${sch} maps it out on the storage room floor for one person: "${mid} picks one of them. The other one comes to us that same night, angry and free."`,
+            `"That is a bomb with three people sitting on it," ${sch} says. "We do not have to build anything. We just have to be on the right side of the room when it goes."`,
+          ], sch, s1, mid, s2);
+        }
+        return romanceLine(e.type, [
+          `${a} and ${c} have stopped pretending. They shared a sofa for an hour tonight without one word between them, and ${b} sat in the middle of it like furniture.`,
+          `${a} has been telling anybody who will listen that ${c} is playing a character in here. Nobody in this house believes that sentence is about the game.`,
+          `${b} tries to have one ordinary conversation with ${a} and ${c} at the kitchen island. Three minutes in, ${b} leaves a full plate where it is and goes to the diary room.`,
+          `${a} says something at dinner about people who cannot make up their minds. ${b} puts a fork down. ${c} does not look up. Nobody asks what that was about, because nobody needs to.`,
+          `${a} will not take the seat beside ${b} in the living room. "Sit with ${c}. That is what you want anyway." Eight people suddenly find something else to look at.`,
+          `${b} asks ${a} for five minutes. "About what? You have been fairly clear." ${a} is in bed by nine, facing the wall, with every light in the room still on.`,
+        ], a, b, c);
+      case 'trianglePublicFight':
+        return romanceLine(e.type, [
+          `It goes off in the kitchen with half the house holding plates. ${a} accuses ${c} of moving in on ${b}; ${c} does not deny it, which is worse. ${b} leaves and does not come back.`,
+          `${a} and ${c} have circled each other for days. It breaks tonight in the bedroom, loud enough that the have-nots come through from the other room to listen to it.`,
+          `${a} calls ${c} a snake. ${c} calls ${a} delusional. ${b} tries to get between them and is shouted down by both of them inside ten seconds.`,
+          `It starts in the kitchen and finishes in the backyard twenty minutes later, having settled nothing at all except which side of this house everybody is on.`,
+          `"You do not deserve ${b}." ${a} says it across the living room in front of everybody, and ${c} laughs — the kind of laugh that makes the next thirty seconds considerably worse.`,
+          `By the time it burns out, ${b} is sitting on the bathroom floor saying "this is my fault" to somebody who does not disagree quickly enough.`,
+        ], a, b, c);
+      case 'triangleUltimatum':
+        // [centre, chosen, rejected]. The choice is in the data now, so the
+        // house can say who walked away with what instead of retelling a
+        // sentence written for a fire pit.
+        return romanceLine(e.type, [
+          `${a} sits ${b} and ${c} down in the backyard, because it is the only room in here without everybody else already on the sofa. "I cannot keep doing this to both of you."`,
+          `${a} pulls ${b} aside first. "It is you. It has been you for a while." Then ${a} goes to find ${c}, and that conversation takes a great deal longer.`,
+          `"I have made up my mind," ${a} says in the kitchen, to both of them at once, which is either brave or the cruellest available way to do it. The house is split on which.`,
+          `${a} chooses. It is not clean and it is not painless, but it is done: ${b} exhales, and ${c} goes out to the backyard alone and stays there most of the night.`,
+        ], a, b, c);
+      case 'triangleResolved': {
+        // Two different scenes arrive under one type. A triangle that FADED is
+        // not the same as one that ended in a choice — and whoever was not
+        // chosen reacts in their own register, which is the beat that decides
+        // whether this becomes a vote three weeks from now.
+        if (e.kind !== 'chose') {
+          return romanceLine(e.type, [
+            `It ends without anybody saying it has ended. ${a} stops looking for ${c} when ${pa.sub} comes into a room. No fight, no conversation — just distance, arriving daily.`,
+            `${c} works it out first, the way people in here always do: not from anything anybody said, but from where ${a} chooses to sit.`,
+            `${a} and ${c} barely speak now. Whatever it was went out on its own, and ${b} did not have to do one thing to win it.`,
+            `No scene and no ultimatum. ${a} drifts, ${c} notices, and this house is talking about something else entirely by Thursday.`,
+          ], a, b, c);
+        }
+        const arch = (players.find(p => p.name === c) || {}).archetype || '';
+        let st = {};
+        try { st = pStats(c) || {}; } catch { st = {}; }
+        if (['villain', 'schemer', 'mastermind'].includes(arch)) {
+          return romanceLine(e.type, [
+            `${c} takes it with a smile that does not reach anything. "That is fine. I would only say that you made that choice in a house where everybody gets a vote."`,
+            `${c} laughs when ${a} finishes. "Upset? You have just handed me my week back and lost the one person in here who was never coming for you."`,
+            `${c} nods slowly, already somewhere else entirely. "Interesting." ${a} has no idea what ${a} has started, and ${c} has no intention of explaining it.`,
+          ], a, b, c);
+        }
+        if ((st.strategic ?? 5) >= 7 && (st.loyalty ?? 5) <= 4) {
+          return romanceLine(e.type, [
+            `${c} takes about four seconds over it. "I understand." Behind that, every number in this house is being counted again from the top.`,
+            `${c} barely moves. "Game respects game." Then ${c} goes to the storage room and has a very different conversation with somebody else.`,
+            `${c} shakes ${a}'s hand over it, which is the most strategic handshake this house has seen all season.`,
+          ], a, b, c);
+        }
+        return romanceLine(e.type, [
+          `${c} says okay twice and cannot manage a third thing. ${b} tries to give ${c} the room and gets it wrong; the bedroom is full and there is nowhere in this house to go.`,
+          `${c} holds it together for the whole conversation and loses it in the shower, which is the only place in here without a camera pointed at ${pa.posAdj} face.`,
+          `${c} asks one question — "was any of it real?" — and ${a} takes long enough that ${c} stops needing an answer.`,
+        ], a, b, c);
+      }
+      case 'triangleCut': {
+        // ── THE ENDING THE HOUSE ACTUALLY PRODUCES ──
+        //
+        // 85% of triangles end with one of the three being voted out, and that
+        // ending used to be silent — the triangle stopped existing between one
+        // episode and the next with nothing said about it, which is most of
+        // why it never felt like a triangle at all.
+        //
+        // [survivor's side]: `a` is whoever is left in the middle, `b` the one
+        // still standing, `c` the one who went. `byTheirHand` is the question
+        // worth asking in a house: the ballots are right there, and sometimes
+        // the person in the middle wrote the name themselves.
+        if (e.kind === 'center-gone') {
+          return romanceLine(e.type, [
+            `${a} and ${b} spent weeks not speaking to each other over ${c}. Tonight ${c} walked out of the door and left the pair of them in here, holding an argument with nothing in the middle of it.`,
+            `The vote solved it. ${c} is gone, and ${a} and ${b} are still here with a rivalry neither of them has any use for now.`,
+            `${a} and ${b} end up in the same kitchen an hour after ${c} leaves, and neither of them can think of a single reason to keep it up.`,
+          ], a, b, c);
+        }
+        if (e.byTheirHand) {
+          return romanceLine(e.type, [
+            `${c} is gone and ${a} wrote the name. ${b} watched ${a} do it and has not worked out yet whether that was a choice about the two of them or a warning about everybody.`,
+            `${a} had two people in this house and one vote to spend, and spent it. ${c} left knowing exactly whose handwriting it was, and ${b} is the only person in here who gained anything.`,
+            `Nobody had to force a decision in the end: ${a} made it on a piece of card. ${b} says the right things about it and thinks about it all night.`,
+          ], a, b, c);
+        }
+        return romanceLine(e.type, [
+          `${c} is gone, and the thing that had been pulling ${a} in half all month was settled by nine other people in about four seconds.`,
+          `Nobody in that triangle chose. The house did. ${c} walked out, and ${a} and ${b} are a couple now by a vote neither of them controlled.`,
+          `${a} does not get to decide after all. ${c} leaves on a Thursday, and by Friday ${a} and ${b} are the only version of this that is left.`,
+        ], a, b, c);
+      }
+      case 'triangleLonely':
+        return romanceLine(e.type, [
+          `${a} sits in a bedroom with two empty beds in it. Both of them went in the same week, and the thing resolved itself in the one way nobody wanted.`,
+          `The house is loud tonight and ${a} is in none of it. Two people left this week, and ${pa.sub} was in something with both of them.`,
+          `${a} makes tea at two in the morning and does not drink any of it. There is nobody left in here to have the argument with.`,
+        ], a, b, c);
       default:
         return String(e.text || '')
           .replace(/\bThe tribe\b/g, 'The house').replace(/\bthe tribe\b/g, 'the house')

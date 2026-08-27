@@ -337,14 +337,28 @@ registerEvent({
   window: 'dawn',
   acts: { late: 2 },
   // ONCE PER SEASON (spec 5.4.2, 'signature moments cannot cheapen
-  // themselves'). THE RULE THIS EVENT MATCHES AND ITS NEIGHBOURS DO NOT:
-  // the sentence asserts something about the CASTLE crossing a line, not
-  // about the two people standing in the scene. A room goes numb once. Two
-  // different pairs both discovering, in the same season, that the empty
-  // chair has stopped registering is the same beat told twice, and the
-  // second telling makes the first untrue - it had already stopped
-  // registering. Contrast `grief-empty-chair` or `grief-headcount`, which
-  // are about THIS victim and THIS morning and are supposed to recur.
+  // themselves').
+  //
+  // THE RULE: the flag belongs on an event whose text asserts that THE CASTLE
+  // has crossed a line, because a second firing of such a text contradicts the
+  // first - the line cannot be crossed twice. It does NOT belong on an event
+  // about how one person feels on one morning, however big that feeling is.
+  //
+  // AND THE LINE BELOW WAS REWRITTEN TO MEET THAT RULE, RATHER THAN THE RULE
+  // BENT TO FIT THE LINE (Task 5 round 2, R1). It used to read "{a} told {b}
+  // the empty chair barely registered anymore, and hated how true that was" -
+  // a claim about {a}, indistinguishable in kind from `grief-empty-chair` or
+  // `grief-headcount`, which this comment then contrasted itself against. Two
+  // people acclimatising on two different mornings is perfectly coherent, so
+  // the justification was post-hoc and the flag was doing something the words
+  // did not ask for. Review caught it, and the honest options were to change
+  // the words or to change the rule. The words changed: the beat is now the
+  // room's threshold, witnessed by two people, and "the castle had stopped
+  // flinching" is a thing that becomes true once and stays true.
+  //
+  // So the precedent this sets for the next person is narrow on purpose: tag
+  // `oncePerSeason` when a SECOND firing would make the FIRST untrue, and
+  // check that against the sentence the event actually writes.
   oncePerSeason: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
@@ -355,7 +369,7 @@ registerEvent({
     const [a, b] = ctx.actors;
     const v = _victimLastNight(ctx.ep);
     const t = openThread(FAMILY, [a, b], ctx.ep,
-      `${a} told ${b} the empty chair barely registered anymore, and hated how true that was.`);
+      `The castle had stopped flinching at the empty chair. ${a} said so out loud to ${b}, and hated that nobody argued.`);
     // No bond move — the point of this one IS the absence of a felt reaction.
     return { branch: 'numb', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 0 };
   },

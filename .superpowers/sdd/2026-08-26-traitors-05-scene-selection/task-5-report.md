@@ -246,3 +246,182 @@ Late acts now read differently from early ones. Seed 205 episodes 1–3 are
 other from a previous season before either one said a word about it"* is a
 stretch that late, and the tag has taken it from 68 late firings to 47 rather
 than to zero. Reported, not banded.
+
+
+---
+
+# Round 2 — five review fixes
+
+**Status: COMPLETE.** `tests/tr-*.test.js` **264 green**, castle audit **5 green**.
+Content state changed in two places (R1, and the withdrawal below); everything
+else is test-only.
+
+## R1 — the `oncePerSeason` rule did not describe the event carrying it
+
+Correct catch. My rule was *"asserts something about the CASTLE crossing a line,
+not about the two people in the scene"*, and the sentence it was justifying —
+*"{a} told {b} the empty chair barely registered anymore, and hated how true
+that was"* — is a claim about {a}, indistinguishable in kind from the two
+neighbours I contrasted it against. Two people acclimatising on two different
+mornings is coherent, so the flag was doing something the words did not ask for.
+
+**I changed the words, not the rule.** The line now reads:
+
+> *The castle had stopped flinching at the empty chair. {a} said so out loud to
+> {b}, and hated that nobody argued.*
+
+That is a claim about the room, and a second firing would make the first untrue
+— the line cannot be crossed twice. The comment now states the rule as a test
+the next person can apply to a sentence (*"tag it when a SECOND firing would
+make the FIRST untrue, and check that against the sentence the event actually
+writes"*), and records that the words moved to meet the rule rather than the
+reverse, so the precedent is not the post-hoc one.
+
+Distribution-neutral: a constant string, no `pick()`, no rng draw. Read as it
+ships, including under citation:
+
+```
+s3  ep4  The castle had stopped flinching at the empty chair. Chet said so out loud to Bowie, and hated that nobody argued.
+s28 ep5  The castle came back into view and Chet felt the whole thing land on them again, with B right there.
+         It went back to day 4: The castle had stopped flinching at the empty chair.
+```
+
+## R2 — the non-vacuity counters counted keys, not keys that can fail
+
+Confirmed exactly, and it was true of BOTH arms, not just the pair one. Measured
+by instrumenting the sweep and then removing the instrumentation:
+
+```
+PLAYER repeating keys 965 of 32150   (3.0%)
+PAIR   repeating keys  34 of 14086   (0.24%)
+```
+
+Both now count `list.length > 1`. Floors 300 (player) and 10 (pair) — the pair
+floor is low because the quantity is low, and deliberately not propped up by
+playing more seasons, since all it has to establish is that the scope is
+consulted at all. The old pair arm would have read 14086 and passed in a world
+where no pair ever repeated and the cooldown was never once consulted.
+
+## R3 — the pair arm's mutation, and one per arm
+
+Ran all three. Each reddens **only** its own arm, which is the isolation the
+unequal 2/3/5 defaults exist to give, now demonstrated rather than asserted:
+
+| mutation in `js/tr/events.js` | result |
+|---|---|
+| `?? PAIR_COOLDOWN_EPS` → `= 0` | **pair arm RED, 83 violations**; event and player arms green |
+| `?? PLAYER_COOLDOWN_EPS` → `= 0` | **player arm RED, 656 violations**; event and pair arms green |
+| `?? EVENT_COOLDOWN_EPS` → `= 0` | **event arm RED**; player and pair arms green |
+
+(656, not the 662 you measured — the withdrawal below moved it.) The
+declared-overrides test also reddens on the player and event mutations, since
+its three overrides live in those scopes.
+
+## R4 — the third copy of the act names
+
+Correct, and the second half of the catch is the sharper one: a hardcoded list
+reddens on *correct* content if `actFor` ever gains a fourth act, so the guard
+would have fought the change it should have been checking. Both my copies now
+derive the set by walking `actFor` over 40 episodes —
+`tests/tr-castle.test.js` (the well-formedness rule) and
+`tests/tr-castle-reachability.test.js` (the fav/least computation in the act
+tilt) — each with a guard that the derivation returned at least two names.
+
+## R5 — the declaration floors were slack
+
+Tightened from 15/1/2 to **18/1/3**, at the shipped counts, in the style of this
+file's other pinned ledgers: removing a declaration should require a deliberate
+edit to the number. Mutations run, all RED:
+
+| mutation | result |
+|---|---|
+| delete `acts:` from `grief-headcount` | acts 17 < 18, **RED** |
+| delete `cooldown: { player: 5 },` from `susp-heard-in-the-corridor` | cooldown 2 < 3, **RED** |
+| delete `oncePerSeason: true,` from `grief-numb-to-it-now` | oncePerSeason 0 < 1, **RED**, and the season rule reddens with it |
+
+The ledger has already earned its keep once — see the withdrawal below, which
+took 19 to 18 by hand.
+
+## Taken, though not required — `romance-comfort-after-loss-sparks`
+
+You were right and the fix is not the one I first reached for. Closing the
+pool's only grief→romance bridge in the late act is a hole **no floor in this
+repo can see**, because every one of them is keyed per event or per branch and
+never per act.
+
+My first correction re-profiled it to `{early: 0.9, middle: 1.3}`. That is a
+near-flat profile — which is precisely what my own well-formedness guard calls
+*"a no-op wearing the shape of a pacing decision"*. So I withdrew it entirely
+instead. The honest reading is that **this event has no act**: it needs a death
+to have happened, which rules out only the first morning, and "grief is heaviest
+when the room is smallest" and "a spark needs runway" are two true things
+pulling opposite ways and cancelling. Its measured 1/7/5 is where the volume is,
+not a statement of tone. An event with no act should say so by being absent from
+the ledger, not by declaring 1s.
+
+```
+late firings per 400 seasons:  base 5  ->  round 1 (OPENING tag) 0  ->  round 2 (no tag) 1
+acts declarations: 19 -> 18
+```
+
+**`grief-headcount`'s near-inert CLOSING tag: left as it is.** It is honestly
+tagged (spec §5.4.3 names "counting arguments" as the late act, and the event
+counts the room), the tilt is real if small (1.131x against the control, the
+second-lowest of 18), and the reason it is small — `_victimLastNight` plus the
+budget — is a property of the event, not of the tag. Deleting a true tag because
+it is not powerful would leave the pool less accurate, and re-rolls the season
+for nothing.
+
+## What the withdrawal cost, and the fifth data point for Task 6
+
+```
+TOTALS   firings 18448 -> 19022  +3.1%     opened 12086 -> 12346  +2.2%
+         closed   1316 ->  1336  +1.5%     beats  18282 -> 18871  +3.2%
+
+WINDOW                              FAMILY
+  dawn          3589 ->  3690  +2.8%   callback   1664 -> 1743  +4.7%
+  morning       3172 ->  3253  +2.6%   testing    2360 -> 2436  +3.2%
+  journey-out   3239 ->  3212  -0.8%   suspicion  4156 -> 4345  +4.5%
+  night         2517 ->  2583  +2.6%   grief      4447 -> 4417  -0.7%
+  evening       2631 ->  2834  +7.7%   cover      3231 -> 3393  +5.0%
+  after-table   2083 ->  2197  +5.5%   trust      1707 -> 1787  +4.7%
+  journey-back  1217 ->  1253  +3.0%   romance     883 ->  901  +2.0%
+
+branches 164 -> 164, none vanished, none appeared
+rarest EVENT  9 -> 7        rarest BRANCH  5 -> 4
+```
+
+**The rarest branch is now 4, at the floor**, and it is
+`romance-liability-exposed:suspicious` — an event the withdrawal does not touch
+at all. This is the resampling, and I now have enough arms to price it. Across
+this task, that one four-way fork's branches read, on identical seeds and
+identical fixtures:
+
+```
+romance-liability-exposed:exposes      8, 7, 4, 5, 6
+romance-liability-exposed:suspicious   5, 7, 6, 5, 4
+```
+
+Nine arms of the same decisions, a branch whose expectation is about 6, and a
+floor of 4. **It ships green at 4 with zero margin**, and I am not going to
+reweight anything to move it, because the plan's own rule forbids fixing a
+starved branch inside a crowded window and because the last three attempts moved
+it by luck in both directions. This is the fifth data point for the Task 6
+ruling already recorded in `64ec0364`, and it argues for the first option listed
+there — more seasons — over a share-based band, since the instability is in the
+count and not in the ratio.
+
+## Noted from your message
+
+- The resampling boundary is more useful stated your way and I have adopted it:
+  a new variant in an **existing** `pick()` pool is bit-identical, and only
+  changes that alter which event is drawn or consume an **extra** rng draw
+  resample low counts. That is why R1 was free and the withdrawal was not.
+- 44 of 98 events emitting one template, 58 calling no `pick()`, and 14 of my
+  19 tags landing on constant-writers is a sharper statement of my concern 3
+  than I could make, and it explains why the act tags feel like they are pushing
+  on the pool's most repetitive half — they are.
+- Task 8's rng finding (a new `pick()` consumes a draw and reroutes the season;
+  select from a hash of existing state instead) is the same mechanism as this
+  task's, arriving from the other direction. Good to have it corrected in the
+  plan before that work starts.

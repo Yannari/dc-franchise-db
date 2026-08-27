@@ -520,10 +520,27 @@ registerEvent({
   id: 'romance-comfort-after-loss-sparks',
   family: FAMILY,
   window: 'dawn',
-  // ACT: OPENING. A spark is only a story if there is season left for it to
-  // become one - every escalation this family owns (showmance, jealousy,
-  // the liability, the breakup) is downstream of it and needs episodes.
-  acts: { early: 1.3, middle: 1.2, late: 0.5 },
+  // NO ACT PROFILE, DELIBERATELY, AND THIS IS A WITHDRAWAL (round 2).
+  // It shipped as OPENING `{1.3, 1.2, 0.5}` on the argument that a spark is
+  // only a story if there is season left for it to become one - every
+  // escalation this family owns is downstream of it and needs episodes. True,
+  // and it cost more than it was worth: measured, the tag took this event's
+  // LATE firings from 5 per 400 seasons to ZERO and closed the pool's only
+  // grief -> romance bridge in the back half - a hole no floor in this repo
+  // can see, because every one of them is keyed per event or per branch and
+  // never per act.
+  //
+  // The second draft re-profiled it to `{0.9, 1.3}`. That is a near-flat
+  // profile, which is the thing tests/tr-castle.test.js's own well-formedness
+  // guard calls "a no-op wearing the shape of a pacing decision" - and the
+  // honest reading is that this event HAS no act. It needs a death to have
+  // happened, which rules out only the first morning; and grief is heaviest
+  // when the room is smallest while romance needs runway, which are two true
+  // things pulling opposite ways and cancelling. Its measured 1/7/5 split is
+  // where the volume is, not a statement of tone.
+  //
+  // So it carries nothing. An event with no act should say so by being
+  // absent from the ledger, not by declaring 1s.
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;

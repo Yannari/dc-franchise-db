@@ -236,10 +236,15 @@ describe('THE COOLDOWN SWEEP: does the engine\'s own cooldown hold in real seaso
   // Rule-shaped over `EVENTS` and over whatever each event declares, so an
   // override added tomorrow is checked tomorrow.
   //
-  // THE MUTATION: in js/tr/events.js, `const playerWindow = ev.cooldown?.player
-  // ?? PLAYER_COOLDOWN_EPS;` -> `= 0;`. The event arm stays green (it reads a
-  // different constant) and the player arm goes red - which is the isolation
-  // the unequal 2/3/5 defaults exist to give.
+  // THE MUTATIONS, ONE PER ARM, and the point of having three is that each
+  // reddens ONLY its own - the isolation the unequal 2/3/5 defaults exist to
+  // give, demonstrated rather than asserted. All three run in js/tr/events.js:
+  //   `const playerWindow = ev.cooldown?.player ?? PLAYER_COOLDOWN_EPS;` -> `= 0;`
+  //       player arm RED, 656 violations; event and pair arms green.
+  //   `const pairWindow = ev.cooldown?.pair ?? PAIR_COOLDOWN_EPS;` -> `= 0;`
+  //       pair arm RED, 83 violations; event and player arms green.
+  //   `const evWindow = ev.cooldown?.event ?? EVENT_COOLDOWN_EPS;` -> `= 0;`
+  //       event arm RED; the other two green.
   const byId = {};
   for (const ev of EVENTS) byId[ev.id] = ev;
   const pairKey = actors => [...actors].sort().join('|');
@@ -267,7 +272,12 @@ describe('THE COOLDOWN SWEEP: does the engine\'s own cooldown hold in real seaso
       const eps = {};
       for (const f of season) for (const p of f.actors) (eps[`${f.id}\u0000${p}`] ||= []).push(f.ep);
       for (const [key, list] of Object.entries(eps)) {
-        observed++;
+        // COUNT ONLY KEYS THAT CAN FAIL (round 2, R2). The loop below cannot
+        // report a violation on a key with a single firing, so counting every
+        // key would let this pass having examined nothing that could ever go
+        // red. See the note on the pair arm, where the two numbers are 34
+        // against 14086.
+        if (list.length > 1) observed++;
         const id = key.split('\u0000')[0];
         const window = byId[id]?.cooldown?.player ?? 3;
         const sorted = [...list].sort((a, b) => a - b);
@@ -279,10 +289,11 @@ describe('THE COOLDOWN SWEEP: does the engine\'s own cooldown hold in real seaso
       }
     }
     expect(violations.slice(0, 10), `${violations.length} player-scope cooldown violations`).toEqual([]);
-    // Guard on the guard: actors have to be reaching this sweep at all, or
-    // the loop above iterates nothing and asserts nothing.
-    expect(observed, 'no (event, player) pair was observed - the harness is not recording actors')
-      .toBeGreaterThan(1000);
+    // Guard on the guard: (event, player) keys with a REPEAT have to be
+    // reaching this sweep, or the loop above examines nothing that could fail.
+    // Measured 965 repeating keys of 32150, i.e. 3.0%; the floor is 300.
+    expect(observed, 'no (event, player) key repeated at all - every gap check above was '
+      + 'vacuous, and the harness may not be recording actors').toBeGreaterThan(300);
   });
 
   it('no event fires again on the same PAIR inside its pair-scope cooldown', () => {
@@ -295,7 +306,13 @@ describe('THE COOLDOWN SWEEP: does the engine\'s own cooldown hold in real seaso
         (eps[`${f.id}\u0000${pairKey(f.actors)}`] ||= []).push(f.ep);
       }
       for (const [key, list] of Object.entries(eps)) {
-        observed++;
+        // ONLY KEYS THAT CAN FAIL, and this arm is why the rule matters: 14086
+        // (event, pair) keys are produced across 400 seasons and just 34 of
+        // them - 0.24% - ever hold a second firing, because the sampler draws
+        // one specific pair about once in 190 attempts. The first version
+        // counted all 14086 and would have read PASSED over a world where no
+        // pair ever repeated and the pair cooldown was never once consulted.
+        if (list.length > 1) observed++;
         const id = key.split('\u0000')[0];
         const window = byId[id]?.cooldown?.pair ?? 5;
         const sorted = [...list].sort((a, b) => a - b);
@@ -307,7 +324,11 @@ describe('THE COOLDOWN SWEEP: does the engine\'s own cooldown hold in real seaso
       }
     }
     expect(violations.slice(0, 10), `${violations.length} pair-scope cooldown violations`).toEqual([]);
-    expect(observed, 'no (event, pair) was observed').toBeGreaterThan(1000);
+    // Measured 34 repeating keys of 14086. The floor is 10 - low because the
+    // quantity itself is low, and deliberately NOT propped up by playing more
+    // seasons, since all it has to prove is that the pair scope is consulted.
+    expect(observed, 'no (event, pair) key repeated at all in 400 seasons - the pair-scope '
+      + 'cooldown was never consulted and the check above is vacuous').toBeGreaterThan(10);
   });
 
   it('the two declared cooldown overrides are the reason a gap is wider than the default', () => {
@@ -1432,7 +1453,10 @@ describe('THE ACT-PACING RULE: a declared act profile moves the season', () => {
     };
     const live = tally(ALL_FIRINGS);
     const ctrl = tally(control);
-    const ACTS = ['early', 'middle', 'late'];
+    // Derived from `actFor`, not restated - see the note on the same
+    // derivation in tests/tr-castle.test.js (round 2, R4).
+    const ACTS = [...new Set(Array.from({ length: 40 }, (_, i) => actFor(i + 1)))];
+    expect(ACTS.length, '`actFor` returned nothing over 40 episodes').toBeGreaterThanOrEqual(2);
 
     const rows = tagged.map(ev => {
       const mult = k => ev.acts[k] ?? 1;

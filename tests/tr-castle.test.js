@@ -17,7 +17,7 @@ import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { getBond, setBond } from '../js/bonds.js';
 import { recordAlignment } from '../js/tr/roles.js';
-import { openThread, findOpenThread, advanceThread, closeThread, residueFor } from '../js/tr/threads.js';
+import { actFor, openThread, findOpenThread, advanceThread, closeThread, residueFor } from '../js/tr/threads.js';
 import { EVENTS, eligible, pickEvent, validateRegistry } from '../js/tr/events.js';
 import { setFranchiseLedger } from '../js/franchise-meta.js';
 import { learn } from '../js/knowledge.js';
@@ -129,25 +129,39 @@ describe('the pool loads cleanly', () => {
   // time somebody tags one more event, which is how a list-shaped guard ends
   // up being maintained down to nothing.
   //
-  // THE MUTATION: delete any one `acts:` / `oncePerSeason:` / `cooldown:`
-  // block from js/tr/castle/ and the matching floor drops by one. The floors
-  // are set a little under the shipped counts so ordinary content movement
-  // does not trip them, and far enough above zero that the "declared by
-  // nobody" state this task found cannot come back silently.
+  // THE FLOORS ARE A LEDGER, NOT A BAR, and they were re-tightened in round 2
+  // (R5) because they were not. `acts` shipped 19 declarations against a
+  // floor of 15, so four profiles could be deleted in silence - which is the
+  // exact failure this test exists to catch, four fifths of the way in. The
+  // numbers now equal the shipped counts, in the style of this repo's other
+  // pinned ledgers (the cell table and CLOSING_BRANCHES in
+  // tests/tr-castle-reachability.test.js): removing a declaration is a
+  // deliberate act and should come with a deliberate edit to the number here.
+  // It has already earned that once - `romance-comfort-after-loss-sparks`
+  // withdrew its profile in the same round and 19 became 18 by hand.
+  //
+  // THE MUTATIONS, one per arm, all run and all RED:
+  //   delete the `acts:` block from `grief-headcount` (js/tr/castle/grief.js)
+  //       -> 17 < 18.
+  //   delete `oncePerSeason: true,` from `grief-numb-to-it-now` -> 0 < 1, and
+  //       THE ONCE-PER-SEASON RULE in the reachability sweep goes red with it.
+  //   delete `cooldown: { player: 5 },` from `susp-heard-in-the-corridor`
+  //       (js/tr/castle/suspicion.js) -> 2 < 3.
   it('content actually declares all three anti-repetition guards, not just the engine', () => {
     const tagged = EVENTS.filter(e => e.acts);
     const once = EVENTS.filter(e => e.oncePerSeason);
     const tuned = EVENTS.filter(e => e.cooldown);
     console.log(`=== GUARD DECLARATIONS === acts ${tagged.length}, oncePerSeason ${once.length}, `
       + `cooldown ${tuned.length}, of ${EVENTS.length} events`);
-    expect(tagged.length, 'no meaningful number of events declares an `acts` pacing profile — '
-      + 'spec 5.4.3 exists so an episode-2 castle does not sound like an episode-9 one')
-      .toBeGreaterThanOrEqual(15);
+    expect(tagged.length, 'the pool declares fewer `acts` pacing profiles than the ledger '
+      + 'above records — spec 5.4.3 exists so an episode-2 castle does not sound like an '
+      + 'episode-9 one, and a profile has gone without this number going with it')
+      .toBeGreaterThanOrEqual(18);
     expect(once.length, 'no event declares `oncePerSeason` — spec 5.4.2 gives signature '
       + 'moments a way not to cheapen themselves and nothing uses it').toBeGreaterThanOrEqual(1);
-    expect(tuned.length, 'no event overrides the default 2/3/5 cooldown windows — the '
-      + 'defaults cannot be right for every event in a 98-event pool')
-      .toBeGreaterThanOrEqual(2);
+    expect(tuned.length, 'the pool overrides fewer cooldown scopes than the ledger above '
+      + 'records — the 2/3/5 defaults cannot be right for every event in a 98-event pool')
+      .toBeGreaterThanOrEqual(3);
   });
 
   it('every declared `acts` profile is well formed and actually tilts', () => {
@@ -155,17 +169,30 @@ describe('the pool loads cleanly', () => {
     // declaration that reads as pacing and does nothing — the same
     // written-but-unreachable shape the dead-event sweep exists for, one level
     // down inside a live event.
+    //
+    // THE ACT NAMES ARE DERIVED FROM `actFor`, NOT RESTATED (round 2, R4).
+    // js/tr/threads.js:80 owns the ep -> act split and its own comment warns
+    // that two copies of a three-way split is exactly the drift this project
+    // keeps finding; the first version of this guard made a third. It also ran
+    // the wrong way round: give `actFor` a fourth act and a hardcoded list
+    // reddens on CORRECT content, which is a guard that fights the change it
+    // should be checking. Walking a season's worth of episodes gives the set
+    // `acts` may legitimately be keyed on, whatever that set becomes.
+    const ACTS = [...new Set(Array.from({ length: 40 }, (_, i) => actFor(i + 1)))];
+    expect(ACTS.length, '`actFor` returned nothing over 40 episodes - the derivation below '
+      + 'would then accept any key at all').toBeGreaterThanOrEqual(2);
+
     const bad = [];
     for (const ev of EVENTS) {
       if (!ev.acts) continue;
       const keys = Object.keys(ev.acts);
       for (const k of keys) {
-        if (!['early', 'middle', 'late'].includes(k)) bad.push(`${ev.id}: unknown act "${k}"`);
-        if (!(ev.acts[k] > 0)) bad.push(`${ev.id}: act "${k}" is ${ev.acts[k]} — a non-positive `
+        if (!ACTS.includes(k)) bad.push(`${ev.id}: act "${k}" is not one `+ `actFor() ever returns (${ACTS.join(', ')})`);
+        if (!(ev.acts[k] > 0)) bad.push(`${ev.id}: act "${k}" is ${ev.acts[k]} - a non-positive `
           + 'multiplier makes the event unreachable in that act rather than rarer');
       }
-      const vals = ['early', 'middle', 'late'].map(k => ev.acts[k] ?? 1);
-      if (vals.every(v => v === vals[0])) bad.push(`${ev.id}: every act multiplies by ${vals[0]} — `
+      const vals = ACTS.map(k => ev.acts[k] ?? 1);
+      if (vals.every(v => v === vals[0])) bad.push(`${ev.id}: every act multiplies by ${vals[0]} - `
         + 'a flat profile is a no-op wearing the shape of a pacing decision');
     }
     expect(bad).toEqual([]);

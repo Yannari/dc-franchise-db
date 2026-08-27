@@ -10903,7 +10903,17 @@ export function rpBuildTribal(ep) {
   const dangerRankLabels = ['#1 TARGET', '#2 TARGET', '#3 WATCH'];
   const dangerColors = ['#f85149', '#d29922', '#8b949e'];
 
-  const seatPlayers = tribal;
+  // ep.tribalPlayers is the BALLOT list. A coach casts no vote and is still
+  // sat at this fire, still on the block, and still the person who can be
+  // sent home tonight — seating them from the ballot list meant a coach could
+  // be voted out at a council they never appeared at.
+  // tribalTribe is null on two of the three episode-history paths, so fall
+  // back to the tribe that actually lost and went to this council.
+  const _tribalTribeName = ep.tribalTribe || ep.loser?.name || null;
+  const _tribalCoaches = _tribalTribeName
+    ? coachesOf(_tribalTribeName).map(c => c.name).filter(n => !tribal.includes(n))
+    : [];
+  const seatPlayers = [...tribal, ..._tribalCoaches];
   let html = `<div class="rp-page tod-night" style="position:relative;overflow:hidden">`;
   html += `<div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%, rgba(232,135,58,0.15), transparent 70%);pointer-events:none;animation:torchFlicker 3.5s ease-in-out infinite alternate"></div>`;
   html += `<div class="rp-eyebrow">Episode ${ep.num}</div>`;
@@ -10914,8 +10924,10 @@ export function rpBuildTribal(ep) {
         ${seatPlayers.map((n, i) => {
           const isOuter = i === 0 || i === 1 || i === seatPlayers.length - 1 || i === seatPlayers.length - 2;
           const arcOffset = isOuter ? 'transform:translateY(6px)' : '';
+          const _isCoach = _tribalCoaches.includes(n);
           return `<div class="vp-stump-wrap" style="${arcOffset};animation:staggerIn 0.4s var(--ease-broadcast) ${i * 60}ms both">
             ${rpPortrait(n)}
+            ${_isCoach ? '<div style="text-align:center;font-size:8px;font-weight:800;letter-spacing:1px;color:#e8873a;margin-top:-2px">COACH · NO VOTE</div>' : ''}
             <div class="vp-stump"></div>
           </div>`;
         }).join('')}

@@ -21,23 +21,62 @@
 //
 // WHAT A MISSION DOES NOT DO, IN THIS TASK, AND IT IS NOT AN OMISSION:
 //
-//   * It writes NO beliefs. None — not alignment, not at any credibility.
-//     A later task adds one archetype whose currency is knowledge, and it
-//     emits `deduced`/`rumor` only; the Seer is the game's single `observed`
+//   * It writes NO beliefs, and it still does not — not one `learn()` call
+//     originates in this file. ONE archetype (`blind-chess`, below) now
+//     produces the OBSERVABLE that evidence source 4 reads: a record of who
+//     played their board unlike themselves. Turning that record into a belief
+//     is `missionEvidence()` in js/tr/deduction.js, which is where every other
+//     evidence source in the game already lives, and it emits `deduced` or
+//     `rumor` and nothing above. The Seer is the game's single `observed`
 //     alignment write and it is not this file's business.
+//
+//     THE RULE IS THE CREDIBILITY, NOT THE CALL. Keeping the emission in
+//     deduction.js is a layering choice, not the guard: a mission that wrote
+//     `deduced` beliefs directly would break no rule of this format. What may
+//     never happen — from here or from there — is an alignment belief above
+//     `deduced`, because the three `public` writers (the turret, the reveal,
+//     a recruit shown the turret) and the Seer's single `observed` are a
+//     CLOSED SET and `knowsAlignmentOf()` discriminates on exactly that.
 //   * It writes NO bonds and touches NO player state. A mission's entire
-//     footprint on a season is `gs.tr.pot` and `gs.tr.missions`. That is
-//     asserted directly in tests/tr-missions.test.js by playing every season
-//     twice, missions on and missions off, and demanding a bit-identical log
-//     of who was banished and who died. It is the strongest available form of
-//     "a mission cannot grant immunity": it cannot grant anything.
+//     footprint on a season is `gs.tr.pot`, `gs.tr.missions` and — for the
+//     one knowledge archetype — the beliefs deduction.js forms off its
+//     record. That is asserted directly in tests/tr-missions.test.js by
+//     playing every season twice with the FIVE MONEY MISSIONS ONLY, missions
+//     on and missions off, and demanding a bit-identical log of who was
+//     banished and who died.
+//
+//     THAT ARM WAS NARROWED FOR THIS TASK AND THE NARROWING IS THE POINT.
+//     Task 1 could assert "a mission grants nothing at all", which is the
+//     strongest possible form of "a mission cannot grant immunity". It is no
+//     longer true, because `blind-chess` is SUPPOSED to move a season: it
+//     feeds the deduction engine. What survives is the same rule with the one
+//     sanctioned channel held out — the money missions still buy nothing, and
+//     the Chess mission buys knowledge and only knowledge. A bond write, a
+//     shield, a nudge to a ballot from any of the six would still show up.
+//
+//     Bonds specifically remain forbidden, and not out of tidiness: a bond
+//     feeds `bondResistance()` -> `suspicion()`, so a mission writing bonds
+//     would move the deduction bands from a content edit and there would be
+//     no way to tell that from an engine change.
 //   * It never consumes the game's own rng. Missions are handed their own
 //     hashed stream by headless.js (`_missionRngFor`) for the same reason the
 //     castle layer has one — a draw taken here would re-roll every murder,
 //     ballot and banishment after it, and the calibration bands would move on
 //     a content edit rather than on an engine change.
 import { gs } from '../core.js';
-import { pStats } from '../players.js';
+import { pStats, pronouns } from '../players.js';
+// THE ONE THING IN THIS FILE THAT READS GROUND TRUTH, and the header note used
+// to say nothing here may. It says so no longer, deliberately: spec 4.4's
+// fourth evidence source is "a Traitor who knows the answer and must not show
+// it", and there is no way to model a dilemma only a Traitor has without
+// asking who the Traitors are. That is legitimate here for the same reason it
+// is legitimate in `chooseBanishmentVote` and forbidden in a castle event: the
+// engine may know; the CASTLE may not, and nothing in js/tr/castle/ imports
+// this file. What the room gets out of it is a BEHAVIOURAL record — how
+// somebody played, against how they were expected to — with no alignment in it
+// anywhere. Read the shape of `tells` below: it carries a deviation and a
+// direction, and never a role.
+import { alignmentAt } from './roles.js';
 
 /**
  * The most a season's missions can ever be worth.
@@ -102,6 +141,118 @@ const BEST_WEIGHT = 0.6;
 
 /** How wide the luck is on a team's day. +/- 9 points of performance. */
 const SWING = 0.18;
+
+// ══════════════════════════════════════════════════════════════════════
+// THE CHESS MISSION — knowledge as the currency (spec 7.2, evidence source 4)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec 7.2 requires AT LEAST ONE archetype in which knowledge is what is being
+// spent, so that spec 4.4's fourth evidence source has something to read. Its
+// words for that source: "a Traitor who knows the answer and must not show it.
+// Sabotage sits here."
+//
+// So the puzzle is about the castle itself. The board is reconstructed from
+// the season's own record — who sat where, who moved when, which piece came
+// off the night somebody died — and a Traitor genuinely holds more of that
+// record than anybody else in the room, because they wrote part of it in the
+// turret. That is not a bonus handed to them. It is a PROBLEM:
+//
+//   * PRESS the advantage and you finish a board you had no business
+//     finishing, in front of eighteen people who thought they knew what you
+//     were good at.
+//   * HOLD it back and you visibly throw a game you should have won, which is
+//     the sabotage the spec names — and it costs the castle money, because the
+//     pot is scored off the boards.
+//
+// Both leave the same kind of mark: you played unlike yourself. THE ROOM
+// CANNOT SEE WHICH IT WAS, and it cannot see alignment either. It sees a
+// deviation from what it expected of you — and what it expected of you is a
+// REPUTATION, not a stat line, which is where the false positives come from
+// and why they must stay. A quiet, sharp Faithful whom nobody rated turning in
+// the best board in the hall is exactly the innocent this format burns.
+//
+// WHO GETS TO READ IT is the part that makes knowledge the currency rather
+// than decoration: only the players who solved their OWN board. You buy the
+// read by playing well. Everybody else was too busy losing to notice.
+
+/** Spread on one player's own board. +/- 7.5 points around their own level. */
+const CHESS_BOARD_SWING = 0.30;
+
+/**
+ * How badly the room misjudges a person before the mission even starts.
+ *
+ * THE SOURCE OF EVERY FALSE POSITIVE THIS CHANNEL HAS, and it is load-bearing
+ * rather than a tolerance. Score the deviation against the player's true stat
+ * line and a Faithful can never deviate far enough to be read at all — the
+ * channel becomes an oracle that names Traitors and only Traitors, which is
+ * not a deduction engine, it is a ground-truth leak wearing a mission's hat.
+ * The room's expectation is a rough public reputation, it is wrong about some
+ * people by a lot, and those are the people it accuses.
+ */
+const CHESS_REP_NOISE = 0.26;
+
+/** What already holding part of the answer is worth on the board. */
+const CHESS_EDGE = 0.17;
+
+/** What deliberately playing badly costs — on the board, and on the pot. */
+const CHESS_HOLD = 0.22;
+
+/** Below this deviation the room reads nothing into it. It was just a game. */
+const CHESS_TELL_CUT = 0.20;
+
+/** How far past the cut a tell has to go before it is as loud as it gets. */
+const CHESS_TELL_SPAN = 0.20;
+
+/**
+ * How much of the season has to have HAPPENED before this board can be built.
+ *
+ * IT IS A FICTIONAL CONSTRAINT AND A CALIBRATION ONE AND THEY AGREE, which is
+ * the only reason it is written as a rule rather than as a tuned number.
+ *
+ * The fiction: the game on the board is reconstructed from the castle's own
+ * record — who sat where, who moved when, which piece came off the night
+ * somebody died. On night one there is no record. On night three there is
+ * barely one, and — the part that matters — a Traitor three days in knows
+ * almost nothing the rest of the hall does not. The dilemma this whole
+ * archetype is built on only exists once the Traitors have something to keep
+ * quiet about.
+ *
+ * The measurement: shipped without this gate, the mission ran from night one
+ * and moved EARLY lift from 3.34pp to 7.51pp over six decorrelated 200-season
+ * blocks, against a pinned band of `< 0.10` with a worst block of 8.65. That
+ * band exists because a format whose room is sharp on night three has no
+ * season in it — the promise is that the LAST table is the sharp one. A
+ * knowledge channel live from the first afternoon is information leaking in
+ * early by the most direct route there is.
+ *
+ * Four closed rounds, so the first Chess board is round six at the earliest.
+ */
+const CHESS_MIN_ROUNDS = 4;
+
+/**
+ * How many places the Chess mission takes in the pool once it has unlocked.
+ *
+ * A NUMBER SET BY A REQUIREMENT, NOT BY TASTE. At an even one-in-six share of
+ * the afternoons past the gate a season runs 0.65 Chess missions, and NEARLY
+ * HALF OF ALL SEASONS CONTAIN NO EVIDENCE SOURCE 4 AT ALL. Spec 7.2 asks for
+ * an archetype that makes knowledge the currency so that source exists; a
+ * source absent from half the seasons is not one the format can be said to
+ * have. At weight 2, measured over 600 seasons: 1.01 Chess missions a season,
+ * present in 73.2% of them. Still not every season — the gate means a short
+ * one may never get there — but the common case rather than the coin flip.
+ *
+ * It is also the format's own emphasis: this is the mission whose material is
+ * the season itself, so it is the one the castle comes back to as there gets
+ * to be more of a season to come back to.
+ *
+ * WHAT IT COSTS, measured over twelve decorrelated 200-season blocks, is
+ * roughly linear in the emission rate: at weight 1 the late-lift separation
+ * moved +2.22pp (t = 5.50), at weight 2 it moves +3.28pp (t = 8.90), and early
+ * lift is unmoved at both. Raising it further is a real design decision about
+ * how much of this format's deduction should come from one archetype, not a
+ * free improvement — see the price note in js/tr/deduction.js.
+ */
+const CHESS_WEIGHT = 2;
 
 // ══════════════════════════════════════════════════════════════════════
 // THE ARCHETYPES
@@ -294,6 +445,49 @@ const ARCHETYPES = [
       { id: 'undersell', label: 'hold a price nobody else would hold', stat: 'temperament' },
     ],
   },
+  {
+    id: 'blind-chess',
+    name: 'The Blind Chess Game',
+    teams: ['White', 'Black'],
+    primary: 'mental', secondary: 'intuition',
+    // THE FLAG THE WHOLE TASK HANGS ON. `knowledge: true` routes this
+    // archetype through _runChess instead of _drawTeams, and it is the only
+    // archetype that produces `tells`. Adding a second one is a real design
+    // decision and not a copy-paste: every tell is an indictment, and this
+    // channel's price was swept against a control at ONE mission archetype in
+    // six. Two would roughly double the emission rate at the same price.
+    knowledge: true,
+    lines: {
+      triumph: [
+        'The hall reconstructed the whole game — every piece back on the square it left, and the finish nobody had been given played out in front of them.',
+        'They read the record faster than the record was written. Both boards were resolved with the light still good.',
+        'Two sides, one answer, and it was the same answer, which has not happened in this hall before.',
+        'It came apart cleanly: the opening from the ledger, the middle from memory, and the end from somebody simply seeing it.',
+      ],
+      solid: [
+        'Most of the board came back. The three or four squares nobody could agree on were, as usual, the ones that mattered.',
+        'Both sides got far enough to be paid and not far enough to be pleased about it.',
+        'A slow, arguing, largely correct afternoon, settled about two moves short of the finish.',
+        'They rebuilt enough of the game to know how it had gone, and not enough to say how it ended.',
+      ],
+      scraped: [
+        'One line of the record came back, and it came back late, and it came back from one person.',
+        'The board stayed mostly empty. What went back on it went back on the strength of a single stubborn reading.',
+        'They lost the thread in the opening and spent the rest of the hour failing to find it again.',
+        'Almost nothing reconstructed, and the little that was is not worth the walk back up the hall.',
+      ],
+      failed: [
+        'The board never came back at all. Two sides, four hours, and a room full of pieces in the wrong places.',
+        'They argued the opening into the ground and never reached the middle of it.',
+        'Not one square agreed on by both sides. The record has kept its game.',
+        'A total failure of reconstruction, conducted at considerable volume.',
+      ],
+    },
+    side: [
+      { id: 'name-the-piece', label: 'name the piece that came off first', stat: 'mental' },
+      { id: 'sit-it-out', label: 'call the finish from the far end of the hall', stat: 'intuition' },
+    ],
+  },
 ];
 
 /** Every archetype id, for tests and for anything enumerating the catalogue. */
@@ -311,6 +505,25 @@ export const MISSION_IDS = ARCHETYPES.map(m => m.id);
 let _enabled = true;
 export function _setMissionsEnabled(on) { _enabled = on !== false; }
 
+/**
+ * Test-only, and it is what NARROWED the equivalence arm rather than deleting
+ * it (Task 1 handoff).
+ *
+ * Task 1 could assert the strongest possible form of "a mission grants no
+ * immunity": play every season twice, missions on and off, and demand a
+ * bit-identical log. `blind-chess` breaks that ON PURPOSE — it feeds the
+ * deduction engine, so a season with it in plays differently, which is the
+ * whole point of the archetype. The honest narrowing is not to weaken the
+ * assertion to something vaguer; it is to hold the ONE sanctioned channel out
+ * and re-run the same total equivalence over the other five. With this off the
+ * money missions must still buy exactly nothing, and they do.
+ *
+ * Nothing in the show may call this. Same contract as `_setMissionsEnabled`
+ * and `_setVoteSuspicionMult`.
+ */
+let _knowledgeMission = true;
+export function _setKnowledgeMissionEnabled(on) { _knowledgeMission = on !== false; }
+
 const clamp01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
 const pick = (rng, arr) => arr[Math.min(arr.length - 1, Math.floor(rng() * arr.length))];
 const stat = (name, key) => {
@@ -321,19 +534,29 @@ const stat = (name, key) => {
 /** Which archetype runs, never the one that ran last. */
 function _chooseArchetype(rng) {
   const last = gs?.tr?.missions?.length ? gs.tr.missions[gs.tr.missions.length - 1].id : null;
-  const pool = ARCHETYPES.filter(m => m.id !== last);
-  return pick(rng, pool.length ? pool : ARCHETYPES);
+  const rounds = (gs?.tr?.rounds || []).length;
+  const eligible = ARCHETYPES.flatMap(m => (m.knowledge
+    ? (_knowledgeMission && rounds >= CHESS_MIN_ROUNDS
+      ? Array(CHESS_WEIGHT).fill(m) : [])
+    : [m]));
+  const pool = eligible.filter(m => m.id !== last);
+  return pick(rng, pool.length ? pool : eligible);
 }
 
-/** Two teams out of the living, in a seeded shuffle. Uneven casts split 1 over. */
-function _drawTeams(living, m, rng) {
+/** A seeded shuffle, split down the middle. Uneven casts split 1 over. */
+function _splitTeams(living, rng) {
   const order = [...living];
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
   }
   const half = Math.ceil(order.length / 2);
-  return [order.slice(0, half), order.slice(half)].map((members, i) => ({
+  return [order.slice(0, half), order.slice(half)];
+}
+
+/** Two teams out of the living, scored on the stat pair the archetype names. */
+function _drawTeams(living, m, rng) {
+  return _splitTeams(living, rng).map((members, i) => ({
     name: m.teams[i],
     members,
     // Competence, then the day. The mean is deliberate: a team is only as good
@@ -345,6 +568,157 @@ function _drawTeams(living, m, rng) {
       + (rng() - 0.5) * SWING,
     ),
   }));
+}
+
+// ── the Chess mission's prose, kept next to the mechanic it describes ──
+//
+// EVERY LINE HERE IS A CLAIM ABOUT THE BOARD AND NEVER ABOUT A BELIEF. That is
+// the standing requirement of this plan ("a sentence must agree with the
+// ledger") honoured at source rather than asserted after the fact: whether
+// anybody actually concluded anything from a tell is decided in
+// `missionEvidence()` by an intuition roll this file cannot see, so no
+// sentence written here is allowed to depend on it. "The room watched X throw
+// a board" is true whatever the room made of it. "The room worked out X was
+// lying" would be a sentence that is false most of the time it prints.
+//
+// The quiet line is the same discipline the other direction: it is reachable
+// ONLY from the `tells.length === 0` branch, so "nothing to read" cannot print
+// over something to read. Not a check — a place the contradiction cannot be
+// written.
+const CHESS_HELD = [
+  '{who} had the ending in front of {them} and put a piece back down. The half of the hall watching noticed.',
+  'Nobody could work out what {who} was doing with a board that was two moves from finished.',
+  '{who} played it out slowly, badly and in the wrong direction, which for {them} took some doing.',
+  'There was a stretch where {who} simply stopped, and the pieces sat there being obvious.',
+];
+const CHESS_PRESSED = [
+  '{who} put the record back together in front of people who did not know {they} could, and could not stop once {they} had started.',
+  'The finish came off {who}\'s side of the hall before anybody else had the opening straight.',
+  '{who} named the square before the argument about it had properly begun, and then had to sit with having done it.',
+  'Whatever {who} had walked in with, it was more than the rest of the hall had, and it showed on the board.',
+];
+const CHESS_QUIET = [
+  'Nobody played out of character. It was two sides of a hall being ordinarily good and ordinarily bad at a hard game.',
+  'For once there was nothing to read into it — every board went about the way the room would have guessed it would.',
+  'A clean afternoon, in the sense that nobody gave anybody anything to talk about over dinner.',
+  'The hall watched each other all the way through and came away with nothing but the game.',
+];
+// TWO POOLS BECAUSE A LIST OF NAMES CAN BE ONE NAME. By the last rounds the
+// hall is four or five people and "above the median board" can come out as a
+// single player — at which point "the ones who actually finished their side of
+// it were Brick" is a sentence that got past a first draft in three of this
+// project's previous plans and was caught, every time, by dumping seasons and
+// reading them rather than by any assertion.
+const CHESS_SOLVERS = [
+  'The ones who actually finished their side of it were {who} — and the ones who finish get to look up.',
+  '{who} came out of it with solved boards, which in this hall buys you the right to have been watching.',
+  'It was {who} who got theirs out; everybody else was still on the opening when the light went.',
+  'Only {who} were still ahead of their own boards by the end, which is the only place in the hall you can see the rest of it from.',
+];
+const CHESS_SOLVER_ONE = [
+  'The only person who actually finished their side of it was {who} — and the one who finishes gets to look up.',
+  '{who} came out of it with a solved board, which in this hall buys you the right to have been watching.',
+  'It was {who} who got theirs out; everybody else was still on the opening when the light went.',
+  'Only {who} was still ahead of their own board by the end, which is the only place in the hall you can see the rest of it from.',
+];
+
+/** English-list a handful of names without inventing an Oxford comma war. */
+function _andList(names) {
+  if (names.length <= 1) return names[0] || '';
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
+
+/**
+ * The Chess mission. Two teams as usual, and a per-player board underneath.
+ *
+ * Returns `{ teams, tells, readers, boards }`. `teams[].perf` is the mean of
+ * the boards rather than the stat pair, so a sandbagged board really does cost
+ * the pot: the sabotage in spec 4.4 is paid for in money by the people who did
+ * not do it.
+ *
+ * THE THREE NUMBERS THAT MAKE A TELL, in the order they matter:
+ *
+ *   level  — what the player is actually capable of, off mental+intuition.
+ *   seen   — what the ROOM thought they were capable of. level plus a
+ *            reputation error. This is the false-positive generator and it is
+ *            deliberate; see CHESS_REP_NOISE.
+ *   board  — what they turned in. level, plus the day's luck, plus the
+ *            dilemma if they had one.
+ *
+ * `board - seen` is the deviation, and it is the only thing that leaves the
+ * function. There is no alignment on the record.
+ */
+function _runChess(m, living, ep, rng) {
+  const teamSplit = _splitTeams(living, rng);
+  const boards = [];
+  for (const name of living) {
+    const level = (0.55 * stat(name, m.primary) + 0.45 * stat(name, m.secondary)) / 10;
+    const seen = level + (rng() - 0.5) * CHESS_REP_NOISE;
+    let board = level + (rng() - 0.5) * CHESS_BOARD_SWING;
+    let dilemma = null;
+    if (alignmentAt(name, ep) === 'traitor') {
+      // Proportional, never a threshold: a cool strategist holds back, a bold
+      // one plays it out and dares the room to make something of it.
+      const pHold = clamp01(0.15 + 0.5 * (stat(name, 'strategic') / 10)
+        - 0.3 * (stat(name, 'boldness') / 10));
+      dilemma = rng() < pHold ? 'held' : 'pressed';
+      board += dilemma === 'held' ? -CHESS_HOLD : CHESS_EDGE;
+    }
+    boards.push({ name, level, seen, board: clamp01(board), dilemma });
+  }
+
+  const byName = new Map(boards.map(b => [b.name, b]));
+  const teams = teamSplit.map((members, i) => ({
+    name: m.teams[i],
+    members,
+    perf: clamp01(members.reduce((a, n) => a + byName.get(n).board, 0)
+      / Math.max(1, members.length)),
+  }));
+
+  const tells = [];
+  for (const b of boards) {
+    const dev = b.board - b.seen;
+    if (Math.abs(dev) < CHESS_TELL_CUT) continue;
+    const strength = clamp01((Math.abs(dev) - CHESS_TELL_CUT) / CHESS_TELL_SPAN);
+    const kind = dev < 0 ? 'held' : 'pressed';
+    const pr = pronouns(b.name);
+    tells.push({
+      player: b.name, kind, dev, strength,
+      // The sentence the deduction layer will cite as its source. It says what
+      // was SEEN — a board played unlike the person playing it — because that
+      // is all anybody saw.
+      source: kind === 'held'
+        ? `threw a board ${b.name} should have won`
+        : `finished a board nobody thought ${b.name} could`,
+      line: _render3(_freshPick(rng, kind === 'held' ? CHESS_HELD : CHESS_PRESSED, 2),
+        b.name, pr),
+    });
+  }
+
+  // WHO CAN READ THE HALL: the players who solved their own board. Knowledge
+  // is the currency of this mission and this is where it is spent — a read is
+  // bought by playing well, not handed to whoever happens to be sharp. The cut
+  // is the mission's OWN median, so a hall of experts does not all qualify and
+  // a hall of amateurs still produces two or three people who saw something.
+  //
+  // AND ANYBODY WHO VISIBLY THREW THEIR BOARD IS OUT OF IT, however high their
+  // number came in. Found by dumping seasons and reading: one mission printed
+  // "nobody could work out what Bowie was doing with a board two moves from
+  // finished" and then, four lines later, "Bowie came out of it with a solved
+  // board". A strong player who sandbags is still above the median, so the
+  // record contradicted itself — the standing requirement of this plan, in the
+  // shape it keeps arriving in. Excluded HERE rather than patched in the prose,
+  // because it is also the truer rule and it sharpens the dilemma the whole
+  // archetype is built on: a Traitor who holds back to stay unreadable gives up
+  // their own read of everybody else. Hiding costs you the afternoon's
+  // information as well as the castle's money.
+  const held = new Set(tells.filter(t => t.kind === 'held').map(t => t.player));
+  const sorted = [...boards].sort((a, b) => b.board - a.board);
+  const cut = sorted[Math.floor(sorted.length / 2)].board;
+  const readers = sorted.filter(b => b.board > cut && !held.has(b.name)).map(b => b.name);
+
+  return { teams, tells, readers, boards };
 }
 
 /**
@@ -397,6 +771,22 @@ const SIDE_LOST = [
   '{who} set out to {what}, briefly, and thought better of it.',
 ];
 const _render = (tpl, who, what) => tpl.split('{who}').join(who).split('{what}').join(what);
+
+/**
+ * The Chess mission's tell lines, which need a pronoun as well as a name.
+ *
+ * `{they}` and `{them}` and `{their}` come from js/players.js's table rather
+ * than from singular they everywhere, because a line reading "put a piece back
+ * down" about a named person is the sort of sentence that gets read aloud.
+ * Verb agreement is why every template using `{they}` is written around a form
+ * that works for both ("{they} could", "once {they} had started") — the table
+ * has no conjugator and inventing one for four lines would be the wrong trade.
+ */
+const _render3 = (tpl, who, pr) => tpl
+  .split('{who}').join(who)
+  .split('{they}').join(pr.sub)
+  .split('{them}').join(pr.obj)
+  .split('{their}').join(pr.posAdj);
 
 /**
  * Pick a line this season has not printed lately.
@@ -469,7 +859,12 @@ export function runMission(ep, rng) {
   if (living.length < MIN_PLAYERS) return null;
 
   const m = _chooseArchetype(rng);
-  const teams = _drawTeams(living, m, rng);
+  // The knowledge archetype scores off per-player boards instead of the stat
+  // pair, because the dilemma has to be able to move the money: a Traitor who
+  // throws their board really does cost the castle part of the pot, which is
+  // the sabotage half of spec 4.4's fourth source.
+  const chess = m.knowledge ? _runChess(m, living, ep, rng) : null;
+  const teams = chess ? chess.teams : _drawTeams(living, m, rng);
   const best = Math.max(teams[0].perf, teams[1].perf);
   const worst = Math.min(teams[0].perf, teams[1].perf);
   const blend = BEST_WEIGHT * best + (1 - BEST_WEIGHT) * worst;
@@ -485,11 +880,36 @@ export function runMission(ep, rng) {
   const earned = Math.min(gross, room);
   gs.tr.pot = (gs.tr.pot || 0) + earned;
 
+  // THE TIER IS RECORDED, NOT RECOMPUTED BY THE READER. A test that re-derives
+  // the tier from `quality` with its own copy of the cuts is a test of its own
+  // arithmetic: move the cut in _tier so a whole tier goes unreachable — Task
+  // 1's actual defect, forty dead lines — and such a test stays green because
+  // it never asked which pool the sentence came out of. The VP will want this
+  // field anyway.
+  const tier = _tier(quality);
   const rec = {
-    id: m.id, ep, name: m.name, teams, quality,
+    id: m.id, ep, name: m.name, teams, quality, tier,
     gross, earned, potAfter: gs.tr.pot, sideObjectives,
-    summary: _freshPick(rng, m.lines[_tier(quality)]),
+    summary: _freshPick(rng, m.lines[tier]),
   };
+  if (chess) {
+    // THE OBSERVABLE, and nothing more. `tells` carries a name, a direction
+    // and a magnitude; `readers` carries who solved their own board. There is
+    // no alignment on either, and neither is a belief — turning them into one
+    // is `missionEvidence()` in js/tr/deduction.js.
+    rec.tells = chess.tells;
+    rec.readers = chess.readers;
+    // Prose. The quiet line is reachable ONLY when there is genuinely nothing
+    // to read, and the solvers line only names people who genuinely solved,
+    // so neither can contradict the record printed beside it.
+    rec.tellLines = chess.tells.map(t => t.line);
+    if (!chess.tells.length) rec.tellLines.push(_freshPick(rng, CHESS_QUIET));
+    else if (chess.readers.length) {
+      rec.tellLines.push(_render(
+        _freshPick(rng, chess.readers.length === 1 ? CHESS_SOLVER_ONE : CHESS_SOLVERS),
+        _andList(chess.readers), ''));
+    }
+  }
   if (!Array.isArray(gs.tr.missions)) gs.tr.missions = [];
   gs.tr.missions.push(rec);
   return rec;

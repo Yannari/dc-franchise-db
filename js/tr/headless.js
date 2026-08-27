@@ -12,7 +12,7 @@ import { resetKnowledge } from '../knowledge.js';
 import { setBond } from '../bonds.js';
 import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
   canRecruit, chooseRecruit, offerRecruitment } from './roles.js';
-import { seedTraitorKnowledge, ballotEvidence, murderEvidence } from './deduction.js';
+import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence } from './deduction.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
 import { runWindow, startRoundBudget } from './events.js';
@@ -297,6 +297,13 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // journey is: out to the mission, and back from it. Night one has one too —
   // the show does — even though it has no Round Table.
   const mission1 = runMission(ep, missionRng);
+  // EVIDENCE SOURCE 4, and it runs on night one like every other beat of the
+  // afternoon. It reads the mission that has JUST happened rather than the
+  // round that just closed, so it is not part of the order contract below and
+  // does not disturb it — and it takes its acceptance rolls off the MISSION
+  // stream, so it displaces no game draw either. What it does change is what
+  // the room believes, which is the point of it.
+  missionEvidence(ep, missionRng);
   castle1.push(...runWindow('journey-back', ep, castleRng));
   const n1 = _night(ep, rng);
   castle1.push(...runWindow('night', ep, castleRng));
@@ -336,6 +343,8 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // tests/tr-missions.test.js asserts directly.
     castleEvents.push(...runWindow('journey-out', ep, castleRng));
     const mission = runMission(ep, missionRng);
+    // Source 4. Same round as the mission it reads, before the table it feeds.
+    missionEvidence(ep, missionRng);
     castleEvents.push(...runWindow('journey-back', ep, castleRng));
     castleEvents.push(...runWindow('evening', ep, castleRng));
     const r = runRoundTable(ep, rng);

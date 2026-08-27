@@ -66,13 +66,13 @@ Spec §7.2: missions grant **money to a shared pot, never immunity**. The pot ha
 
 Spec §7.2: **at least one mission archetype must make knowledge the currency**, so evidence source 4 has something to read. This is the mission that feeds the deduction engine rather than the pot alone.
 
-- [ ] **Step 1:** Failing test — the Chess mission emits evidence into the knowledge model, and a player who performs well in it holds beliefs they did not hold before.
-- [ ] **Step 2:** Run, confirm fail.
-- [ ] **Step 3:** Implement. What a player learns must be `deduced` or `rumor` credibility — **never `public`, never `observed`.** The Seer is the only `observed` alignment write in the game.
-- [ ] **Step 4:** Run; belief gate and ground-truth probes green; bands hold.
-- [ ] **Step 5: Measure** how much this moves late lift, using the control arm from Plan 5's Task 9 (`_setVoteSuspicionMult`). Report the number. This mission is *supposed* to improve deduction — quantify by how much.
-- [ ] **Step 6: Mutation** — make the mission emit nothing → the evidence assertion RED.
-- [ ] **Step 7:** Commit.
+- [x] **Step 1:** Failing test — the Chess mission emits evidence into the knowledge model, and a player who performs well in it holds beliefs they did not hold before.
+- [x] **Step 2:** Run, confirm fail.
+- [x] **Step 3:** Implement. What a player learns must be `deduced` or `rumor` credibility — **never `public`, never `observed`.** The Seer is the only `observed` alignment write in the game.
+- [x] **Step 4:** Run; belief gate and ground-truth probes green; bands hold.
+- [x] **Step 5: Measure** how much this moves late lift, using the control arm from Plan 5's Task 9 (`_setVoteSuspicionMult`). Report the number. This mission is *supposed* to improve deduction — quantify by how much.
+- [x] **Step 6: Mutation** — make the mission emit nothing → the evidence assertion RED.
+- [x] **Step 7:** Commit.
 
 ---
 

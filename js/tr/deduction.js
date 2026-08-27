@@ -594,3 +594,175 @@ export function murderEvidence(ep, rng = Math.random) {
 
   return formed;
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// EVIDENCE SOURCE 4 — mission leakage (spec 4.4)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec 4.4, verbatim: "Any mission where knowledge is the currency (the Chess
+// mission generalised) risks a Traitor who knows the answer and must not show
+// it. Sabotage sits here."
+//
+// The mission itself is js/tr/missions.js, and it deliberately stops one step
+// short of a belief: it produces a BEHAVIOURAL record — `tells`, each a name, a
+// direction and a magnitude, with no alignment anywhere on it — and `readers`,
+// the players who solved their own board. This function is the step that turns
+// that into knowledge, and it lives here because every other evidence source in
+// the game does, and because the credibility rule that binds it is this file's
+// rule.
+//
+// THE CREDIBILITY, WHICH IS THE WHOLE CONSTRAINT ON THIS TASK. `deduced` for a
+// stark tell, `rumor` for a marginal one, and NEVER `public`, NEVER `observed`.
+// The three `public` alignment writers (the turret, the reveal, a recruit shown
+// the turret) and the Seer's single `observed` are a closed set, and
+// `knowsAlignmentOf()` discriminates on exactly that: one more `public` writer
+// and "does this player KNOW, or merely suspect" stops being answerable. What
+// somebody saw across a hall is a suspicion however sure they are of it.
+//
+// WHY ONLY THE SOLVERS READ IT, and it is not flavour. Spec 7.2 asks for an
+// archetype where KNOWLEDGE IS THE CURRENCY; if every observer read every tell
+// then the currency would be intuition, which this engine already spends
+// everywhere (inside `_assess`). Gating the read on the observer's own board
+// is what makes the mission the thing being spent. It also keeps the emission
+// count down — roughly half the hall, not all of it — which matters because
+// every belief formed here dilutes every board it lands on (see the coverage
+// note on board precision in tests/tr-calibration.test.js).
+//
+// WHAT THIS CHANNEL IS WORTH, MEASURED, AND WHAT IT IS NOT.
+//
+// AT EMISSION it is the sharpest read in the engine — and it is still wrong
+// half the time, which is the design. 196 tells over 200 seasons: 61.2% of
+// them name a Traitor against a board density of 25.0% = 2.45x. For scale,
+// `pushedThenDied` measures 1.21x against a 1.20x control and sits at the
+// ceiling. Every other tell burns an innocent, because the room's expectation
+// of a person is a reputation and it is wrong about some people by a lot (see
+// CHESS_REP_NOISE in missions.js). The false positives are not tolerance, they
+// are the mechanism.
+//
+// THE PRICE WAS SWEPT AGAINST TWO CONTROLS, and the first sweep is the reason
+// this comment is not shorter. Priced at 0.20-0.34 — where it started, on the
+// reasoning that one odd afternoon is not the night somebody died — the
+// channel is INERT: 4.5% of its offers are accepted, 0.19 beliefs form per
+// season, and the late-lift separation moves +0.10pp. A channel this well
+// separated at emission, priced so low it never lands, is content.
+//
+// Swept over four prices, six decorrelated 200-season blocks each, alongside a
+// MATCHED NOISE ARM — identical emission count, identical rounds, identical
+// price, the SUBJECT drawn uniformly from the living instead of from the
+// player who was read. Same loudness, no information. The noise arm exists
+// because this file has already been fooled once by coverage: bolting
+// zero-information beliefs onto the engine RAISES aggregate lift, because more
+// beliefs means more chances for _assess()'s ground-truth valence to clear an
+// innocent (see the board-precision note in tests/tr-calibration.test.js).
+// Late lift is not immune to that and an uncontrolled +2pp would prove nothing.
+//
+//   deduced price   real sep    noise sep    edge
+//   0.20 - 0.34      37.47pp     37.50pp     -0.03pp
+//   0.30 - 0.46      37.84pp     37.37pp     +0.47pp
+//   0.38 - 0.55      38.25pp        —
+//   0.46 - 0.62      38.68pp     37.18pp     +1.50pp
+//
+// The real arm rises monotonically in price and the noise arm FALLS slightly.
+// That is a dose-response against a matched control, and it is the only thing
+// in the sweep that is not block noise. Re-measured at the shipped price and
+// the shipped frequency over TWELVE decorrelated 200-season blocks, paired by
+// block, live-minus-blind-ballot separation:
+//
+//   chess off 37.06pp -> chess on 40.34pp    +3.28pp
+//                          sem 0.37, t = 8.90, 12/12 blocks positive
+//   vs the matched noise arm (37.06pp)       +3.28pp
+//                          sem 0.48, t = 6.80, 12/12 blocks positive
+//   early lift             4.33pp -> 4.29pp  -0.04pp, t = -0.23 — unmoved
+//   traitor-hit rate      33.30% -> 34.83%   +1.53pp
+//   faithful win rate     44.71% -> 47.75%   +3.04pp
+//
+// THE NOISE ARM LANDING ON THE SAME NUMBER AS THE OFF ARM IS THE RESULT. An
+// equally loud channel with the subject scrambled buys the room exactly
+// nothing, so the +3.28pp is information and not coverage — which is the one
+// thing the blind-ballot control cannot establish on its own, because
+// `debate()` reads suspicionBoard() unmultiplied and the blind arm is
+// therefore still partially exposed to the channel it is meant to hold out.
+//
+// Do not re-price without re-running BOTH arms. The `pushedThenDied` sweep two
+// hundred lines up was left stale through a channel deletion and was an
+// unverified claim about a different engine for a whole plan.
+const K = {
+  // A stark tell (strength >= K.stark) is somebody visibly playing unlike
+  // themselves in front of a hall, so it arrives `deduced`. A marginal one is
+  // a thing two people muttered about, so it arrives `rumor`.
+  stark:      0.5,
+  // THE CEILING ITSELF, not a copy of its current value — same reason `M`
+  // imports it rather than writing 0.62. A stark tell is as loud as this
+  // engine is ever allowed to be about an alignment, which is where the sweep
+  // above put it and where its emission-level enrichment says it belongs: it
+  // is twice the detector `pushedThenDied` is, and that channel is already
+  // here. It is still a SUSPICION — learn() clamps every non-`public`
+  // alignment belief to this, so "as loud as possible" and "certain" are
+  // different numbers and always will be.
+  deducedMax: ALIGNMENT_CRED_CEILING,
+  deducedMin: 0.46,
+  // A mutter, not a speech. Still above the acceptance knee (learn()'s gate
+  // goes sharply negative below ~0.55 credibility), which is the whole
+  // difference between this channel and the inert one the first sweep priced.
+  rumorMax:   0.48,
+  rumorMin:   0.34,
+};
+
+/**
+ * Evidence source 4 — what a knowledge mission tells the people who solved it.
+ *
+ * Reads ONLY the mission that just ran, this episode. The equality guard is the
+ * same one `murderEvidence` carries and for the same reason: `>=` would stop a
+ * same-episode re-read and then happily re-emit the same afternoon every round
+ * for the rest of the season, which is the re-walk Plan 2 measured as actively
+ * HARMFUL — learn() overwrites a stored valence on a re-roll, so repetition
+ * strips `_assess()`'s protective `false` off precisely the innocent people the
+ * evidence indicts.
+ *
+ * `rng` is the MISSIONS' stream, not the game's. The acceptance rolls here are
+ * the mission's own consequence, and routing them through the game rng would
+ * make adding a sixth archetype re-roll every later murder and ballot — the
+ * thing `_missionRngFor` exists to prevent. The beliefs it forms still change
+ * the season, of course; they change what the room DECIDES, not which numbers
+ * it draws.
+ */
+export function missionEvidence(ep, rng = Math.random) {
+  const missions = gs.tr?.missions || [];
+  const m = missions[missions.length - 1];
+  if (!m || m.ep !== ep) return [];
+  const living = gs.activePlayers || [];
+  const formed = [];
+  // Set on EVERY knowledge mission, including the ones that taught nobody
+  // anything. A field that is 0 on a quiet afternoon and `undefined` on a
+  // quieter one is the same defect class as a sentence disagreeing with the
+  // ledger: two states that mean the same thing and read differently.
+  if (m.tells) m.beliefsFormed = 0;
+  if (!m.tells?.length || !m.readers?.length) return [];
+
+  for (const tell of m.tells) {
+    if (!living.includes(tell.player)) continue;
+    const stark = tell.strength >= K.stark;
+    const conf = stark
+      ? K.deducedMin + (K.deducedMax - K.deducedMin) * tell.strength
+      : K.rumorMin + (K.rumorMax - K.rumorMin) * (tell.strength / K.stark);
+    for (const observer of m.readers) {
+      if (observer === tell.player || !living.includes(observer)) continue;
+      const belief = learn(observer, alignmentFactId(tell.player), {
+        source: tell.source,
+        // The two tiers this channel is allowed, and the only two. A fifth
+        // caller writing `public` or `observed` here would end the format.
+        sourceType: stark ? 'deduced' : 'rumor',
+        confidence: conf, ep, rng,
+      });
+      if (belief) formed.push({ observer, subject: tell.player, kind: tell.kind, ep });
+    }
+  }
+
+  // HARNESS DATA, NOT PROSE. The mission's own narration may not depend on
+  // this — whether a read landed is decided by an intuition roll the hall
+  // cannot see, so a sentence claiming somebody worked something out would be
+  // false most of the times it printed. Recorded so the measurement (and, in
+  // Plan 8, the observer-scoped VP) can count what actually formed.
+  m.beliefsFormed = formed.length;
+  return formed;
+}

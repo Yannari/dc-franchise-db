@@ -440,3 +440,47 @@ A stash/pop cycle here reaches into that stack.
 **To take a base measurement, copy the files aside and copy them back, or check the base
 revision out into a SEPARATE temporary worktree.** Never stash, never `reset --hard` on a
 tree you did not verify is yours, and never `git add -A`.
+
+---
+
+### Task 8 (NEW): half the pool writes a constant
+
+Found in Task 5 by reading dumped seasons; no assertion catches it. Roughly half the castle
+pool emits a SINGLE fixed line. `susp-misread-tell` printed its one line in episodes 1, 4, 8
+and 10 of the same castle. Task 5's third cooldown override took the worst season from 4
+firings to 3, which is palliative, not a fix.
+
+This is the exact failure the whole plan exists to prevent, and it is the one the user named
+first: events that are "surface repetitive", the same handful of moments recurring. A season
+whose stories now accumulate correctly still reads as repetitive if the sentences are
+identical.
+
+**Task 8: give every constant-writing event a line pool**, on the pattern Task 4 used for
+`grief-nobody-sleeps` and `grief-shorter-column` -- four or more variants, and a branch label
+that carries the STATE rather than a constant, so the audit's (id,branch) table can see a
+repeat at all. Guard it as a rule over the pool: no event may ship a single-element line pool,
+and no season may print the same sentence more than N times. Both are RED today.
+
+Ordering: after Task 6, since it moves no distribution -- it changes only which sentence a
+firing prints. Task 6 does not need to wait for it.
+
+### Task 6 must fix the branch floor: it sits inside resampling noise
+
+Task 5 measured that `acts` cannot change eligibility, only which event a draw lands on --
+which changes what is on cooldown next round and reroutes the whole seeded path from there.
+The consequence is general and applies to any content change:
+
+**Counts below roughly 40 per 400 seasons are RESAMPLED by any content change, not nudged.**
+`romance-liability-exposed:exposes` read 8, 7, 4 and 5 across four iterations of the same
+decisions. It ships at 5, against THE BRANCH FLOOR's threshold of 4.
+
+So the branch floor -- built in Task 4 to catch exactly the right defect -- is a knife-edge
+at its own threshold, the same class as the 2.14 sd assertion found in Task 2. It will redden
+on a change that starved nothing and stay green on one that did.
+
+**Task 6 ruling: re-derive the branch floor so the honest value clears the threshold by a
+real margin.** Options, in preference order: raise the measurement to enough seasons that a
+branch's count is stable (the cheapest fix, since seeds are fixed and this costs only
+runtime); or band the branch's SHARE of its event rather than an absolute count; or accept a
+lower floor with the noise stated. Whichever is chosen, state the separation the way every
+other band in this suite now does.

@@ -42,7 +42,7 @@ registerEvent({
   fire(ctx, rng) {
     const [a, b] = ctx.actors;
     addBond(a, b, -1);
-    const note = pick(rng, NOTICE_LINES).replace('{a}', a).replace('{b}', b);
+    const note = pick(rng, NOTICE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const t = openThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'noticed', pair: [a, b], threadId: t?.id, bondDelta: -1 };
   },
@@ -71,7 +71,7 @@ registerEvent({
     const c = others[i], d = others[j] ?? others[i];
     addBond(a, b, 1); // bonded over shared unease, not over the pair they watched
     const note = pick(rng, OVERHEARD_LINES)
-      .replace('{a}', a).replace('{b}', b).replace('{c}', c).replace('{d}', d);
+      .replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, c).replace(/\{d\}/g, d);
     const t = openThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'overheard', observers: [a, b], observed: [c, d], threadId: t?.id, bondDelta: 1 };
   },
@@ -149,8 +149,7 @@ registerEvent({
   // The second advancer in `suspicion|morning`. One is not enough on its own:
   // the pair cooldown is five episodes, so a cell with a single advancer can
   // continue a given pair's story at most once every five rounds.
-  advancesThread: true,
-  citesResidue: true,
+    citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -162,7 +161,7 @@ registerEvent({
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others);
     addBond(a, b, 1);
-    const note = pick(rng, WHISPER_LINES).replace('{a}', a).replace('{b}', b).replace('{c}', target);
+    const note = pick(rng, WHISPER_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'whispered', pair: [a, b], about: target, threadId: thread?.id, cited, bondDelta: 1 };
   },
@@ -238,7 +237,7 @@ registerEvent({
     else if (roll < denyScore + denyWeakScore + turnScore) branch = 'turned';
     else branch = 'confess';
 
-    const line = pick(rng, ACCUSE_LINES[branch]).replace('{a}', accuser).replace('{b}', accused);
+    const line = pick(rng, ACCUSE_LINES[branch]).replace(/\{a\}/g, accuser).replace(/\{b\}/g, accused);
     const existing = findOpenThread(FAMILY, [accuser, accused]);
     let bondDelta = 0;
     let threadId = existing?.id ?? null;
@@ -293,7 +292,7 @@ registerEvent({
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others);
     addBond(a, b, 0.5);
-    const note = pick(rng, TIMELINE_LINES).replace('{a}', a).replace('{b}', b).replace(/\{c\}/g, target);
+    const note = pick(rng, TIMELINE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
     const t = openThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'crosschecked', pair: [a, b], about: target, threadId: t?.id, bondDelta: 0.5 };
   },
@@ -309,8 +308,7 @@ registerEvent({
   // for a tell is also the most natural thing in the pool to have done BEFORE:
   // the second time is the beat that means something, and it means it by
   // naming the first.
-  advancesThread: true,
-  citesResidue: true,
+    citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a] = ctx.actors;
@@ -420,7 +418,7 @@ registerEvent({
     else if (roll < holdsScore + cracksScore) branch = 'cracks';
     else branch = 'redirects';
 
-    const line = pick(rng, GROUP_PRESSURE_LINES[branch]).replace('{a}', a).replace('{b}', b);
+    const line = pick(rng, GROUP_PRESSURE_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     let bondDelta = branch === 'holds' ? 0.5 : branch === 'cracks' ? -2 : -1;
     addBond(a, b, bondDelta);
     const existing = findOpenThread(FAMILY, ctx.actors);

@@ -5,7 +5,8 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { openThread, advanceThread, closeThread, openThreadsFor, hottest, residueFor,
-  heatAt, findOpenThread, abandonThread, priorMoments, citeMoments, continueThread }
+  heatAt, findOpenThread, abandonThread, priorMoments, citeMoments, continueThread,
+  advanceCiting }
   from '../js/tr/threads.js';
 import roster from '../franchise_roster.json';
 
@@ -252,8 +253,12 @@ describe('residue can be cited by name and by day', () => {
     expect(cited).toContain('day 2');
     expect(cited).toContain('day 3');
     expect(cited).toContain('day 4');
-    // And the SPECIFIC moment, not "as before" — the opening beat's own words.
-    expect(cited).toContain('A eavesdropped and heard nothing.');
+    // And the SPECIFIC moment, not "as before" — the opening beat's own words,
+    // with its full stop taken off, because it is spliced INSIDE an em-dash
+    // parenthetical and "…heard nothing. — and it had not stopped since" is
+    // what the unpunctuated version reads like.
+    expect(cited).toContain('A eavesdropped and heard nothing —');
+    expect(cited).not.toContain('. —');
     // It must not name the episode it is being spoken in.
     expect(cited).not.toContain('day 7');
   });
@@ -314,5 +319,53 @@ describe('residue can be cited by name and by day', () => {
     expect(residueFor(CAST[0]).length).toBe(3);
     expect(residueFor(CAST[0], { threadId: a.id }).map(r => r.ep)).toEqual([2, 5]);
     expect(residueFor(CAST[0], { threadId: a.id, beforeEp: 5 }).map(r => r.ep)).toEqual([2]);
+  });
+});
+
+
+// ── Review round 3: the three things a reader saw and no assertion did ──
+describe('a citation is punctuated, and never quotes a sentence back at itself', () => {
+  it('does not quote the sentence it is being appended to (R2)', () => {
+    // Several events write a CONSTANT note, so the second firing on the same
+    // thread would otherwise read "X. It went back to day 1: X." — 22 of 758
+    // citations in a measured season set.
+    const LINE = 'Bowie had an answer ready for a question nobody had asked yet.';
+    openThread('cover', [CAST[0]], 1, LINE);
+
+    const { note, cited } = advanceCiting(findOpenThread('cover', [CAST[0]]), 4, LINE);
+
+    expect(note).toBe(LINE);                    // no citation at all: nothing else to name
+    expect(cited).toEqual([1]);
+    expect(note.split('Bowie had an answer').length - 1).toBe(1);
+  });
+
+  it('keeps the DAYS when it drops a self-quote, if there are other days to name (R2)', () => {
+    const LINE = 'Bowie had an answer ready for a question nobody had asked yet.';
+    const t = openThread('cover', [CAST[0]], 1, LINE);
+    advanceThread(t.id, 3, 'Something else entirely happened.');
+
+    const { note } = advanceCiting(findOpenThread('cover', [CAST[0]]), 6, LINE);
+
+    expect(note).toContain('It had been going on since day 1, and again on day 3.');
+    // The quote is gone; the accounting is not.
+    expect(note.split('Bowie had an answer').length - 1).toBe(1);
+  });
+
+  it('strips the quoted note\'s full stop before splicing it inside the dashes (R3)', () => {
+    const t = openThread('cover', [CAST[1]], 2,
+      'Chase performed the exact right amount of fear at breakfast.');
+    advanceThread(t.id, 5, 'and again');
+
+    const cited = citeMoments(findOpenThread('cover', [CAST[1]]), 8);
+
+    expect(cited).toContain('at breakfast — and it had not stopped since: day 5.');
+    expect(cited).not.toContain('. —');
+  });
+
+  it('throws rather than silently dropping a beat when the thread is missing (R5)', () => {
+    // This replaced advanceThread(t.id, ...), which threw. Every call site
+    // guarantees the thread in its own weight(); a null here is a weight/fire
+    // disagreement and must fail loudly, not return { thread: null }.
+    expect(() => advanceCiting(null, 4, 'a beat nobody will ever see')).toThrow(/no thread to advance/);
   });
 });

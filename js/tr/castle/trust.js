@@ -73,7 +73,7 @@ registerEvent({
   fire(ctx, rng) {
     const [a, b] = ctx.actors;
     addBond(a, b, 1);
-    const note = pick(rng, CONFIDE_LINES).replace('{a}', a).replace('{b}', b);
+    const note = pick(rng, CONFIDE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const t = openThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'confided', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
@@ -101,7 +101,7 @@ registerEvent({
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others);
     addBond(a, b, 1);
-    const note = pick(rng, TRADE_LINES).replace('{a}', a).replace('{b}', b).replace('{c}', target);
+    const note = pick(rng, TRADE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
     const t = openThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'traded-reads', pair: [a, b], about: target, threadId: t?.id };
   },
@@ -206,7 +206,7 @@ registerEvent({
     else if (roll < keepScore + breakScore + deflectScore) branch = 'deflected';
     else branch = 'turned';
 
-    const line = pick(rng, COMMIT_LINES[branch]).replace('{a}', asker).replace('{b}', asked);
+    const line = pick(rng, COMMIT_LINES[branch]).replace(/\{a\}/g, asker).replace(/\{b\}/g, asked);
     const existing = findOpenThread(FAMILY, [asker, asked]);
     let bondDelta = 0;
     let thread;
@@ -362,7 +362,7 @@ registerEvent({
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others.length ? others : [b]);
     addBond(a, b, 1);
-    const note = pick(rng, SHARE_SUSPICION_LINES).replace('{a}', a).replace('{b}', b).replace('{c}', target);
+    const note = pick(rng, SHARE_SUSPICION_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
     const existing = findOpenThread(FAMILY, [a, b]);
     const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'shared-suspicion', pair: [a, b], about: target, threadId: t?.id, bondDelta: 1 };
@@ -500,7 +500,7 @@ registerEvent({
     else if (roll < keepScore + accidentScore) branch = 'leakedAccident';
     else branch = 'leakedDeliberate';
 
-    const line = pick(rng, SECRET_SWAP_LINES[branch]).replace('{a}', a).replace('{b}', b);
+    const line = pick(rng, SECRET_SWAP_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     let bondDelta = branch === 'kept' ? 1 : branch === 'leakedAccident' ? -1 : -3;
     addBond(a, b, bondDelta);
     const existing = findOpenThread(FAMILY, [a, b]);

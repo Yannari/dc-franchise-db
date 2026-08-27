@@ -171,7 +171,7 @@ registerEvent({
   fire(ctx, rng) {
     const [a, b] = ctx.actors;
     addBond(a, b, 1);
-    const note = pick(rng, SPARK_LINES).replace('{a}', a).replace('{b}', b);
+    const note = pick(rng, SPARK_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const t = openThread(SPARK_KIND, [a, b], ctx.ep, note);
     return { branch: 'sparked', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
@@ -298,8 +298,7 @@ registerEvent({
   // Two people vouching for each other AGAIN, and naming the last night they
   // did it, is how an alibi stops sounding like an alibi and starts sounding
   // like an arrangement.
-  advancesThread: true,
-  citesResidue: true,
+    citesResidue: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2.5 : 0;
@@ -406,7 +405,7 @@ registerEvent({
     else if (roll < obliviousScore + suspiciousScore + confrontsScore) branch = 'confronts';
     else branch = 'exposes';
 
-    const line = pick(rng, LIABILITY_LINES[branch]).replace('{a}', doubter).replace('{b}', suspected);
+    const line = pick(rng, LIABILITY_LINES[branch]).replace(/\{a\}/g, doubter).replace(/\{b\}/g, suspected);
     const showmance = findOpenThread(SHOWMANCE_KIND, [x, y]);
     let bondDelta = 0;
     let threadId = showmance?.id ?? null;
@@ -463,8 +462,7 @@ registerEvent({
   window: 'morning',
   rare: true,
   // The second advancer in `romance|morning`.
-  advancesThread: true,
-  citesResidue: true,
+    citesResidue: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2.5 : 0;

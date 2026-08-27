@@ -24,6 +24,22 @@ import { alignmentAt, livingFaithfuls } from '../roles.js';
 import { knowsAlignmentOf } from '../deduction.js';
 
 const FAMILY = 'cover';
+/**
+ * Lines that do not need a partner, when there is no partner to name — and the
+ * whole pool when none of them can avoid it. `pick` draws once either way, so
+ * this does not perturb the rng.
+ */
+function _partnerSafe(pool, partner) {
+  if (partner) return pool;
+  const safe = pool.filter(l => !l.includes('{b}'));
+  return safe.length ? safe : pool;
+}
+
+/** Fill both tokens. An absent partner becomes an unnamed onlooker, never a hole. */
+function _fillPartner(line, a, partner) {
+  return line.replace(/\{a\}/g, a).replace(/\{b\}/g, partner || 'somebody');
+}
+
 const NICE_ARCHETYPES = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
@@ -38,8 +54,7 @@ registerEvent({
   // — its whole risk is that it has to keep matching what was already said —
   // so a Traitor building the next layer of one names the day they laid the
   // last. This is a solo thread: the party set is the Traitor alone.
-  advancesThread: true,
-  citesResidue: true,
+    citesResidue: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
@@ -108,6 +123,8 @@ registerEvent({
   family: FAMILY,
   window: 'dawn',
   advancesThread: true,
+  // The thread is on the ACTOR, not the scene — see _threadThisEventWouldAdvance.
+  threadScope: 'solo',
   // CITES (Plan 5 Task 2). "The same story again" is a claim ABOUT an earlier
   // day, and the day is the only thing that makes it a risk.
   citesResidue: true,
@@ -216,8 +233,14 @@ registerEvent({
     else if (roll < convincingScore + awkwardScore + suspiciousScore) branch = 'suspicious';
     else branch = 'slip';
 
-    let line = pick(rng, OUTCOME_LINES[branch]).replace('{a}', actor);
-    line = partner ? line.replace('{b}', partner) : line.replace(/,?\s*\{b\}[^.]*\./, '.');
+    // NO PARTNER, NO DANGLING CLAUSE (found by reading output, review round 3).
+    // This used to strip from `{b}` to the end of the sentence, which is only
+    // correct when `{b}` STARTS one. "Something about the way {a} told it made
+    // {b} quietly file it away." became "…told it made ." — a sentence ending
+    // on its own verb, which Task 2's citations then quoted into later beats.
+    // Prefer a line that never mentions a partner; fall back to an unnamed
+    // onlooker, which is true (the room is still there) and always grammatical.
+    let line = _fillPartner(pick(rng, _partnerSafe(OUTCOME_LINES[branch], partner)), actor, partner);
 
     const parties = partner ? [actor, partner] : [actor];
     let bondDelta = 0;
@@ -303,6 +326,8 @@ registerEvent({
   family: FAMILY,
   window: 'after-table',
   advancesThread: true,
+  // The thread is on the ACTOR, not the scene — see _threadThisEventWouldAdvance.
+  threadScope: 'solo',
   rare: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
@@ -325,7 +350,7 @@ registerEvent({
     else if (roll < holdsScore + wobblesScore) branch = 'wobbles';
     else branch = 'collapses';
 
-    let line = pick(rng, ALIBI_CRUMBLE_LINES[branch]).replace('{a}', actor);
+    let line = pick(rng, ALIBI_CRUMBLE_LINES[branch]).replace(/\{a\}/g, actor);
     let bondDelta = 0;
     if (partner) {
       bondDelta = branch === 'holds' ? 0.5 : branch === 'wobbles' ? -0.5 : -2;
@@ -367,8 +392,7 @@ registerEvent({
   family: FAMILY,
   window: 'morning',
   // The second advancer in `cover|morning`.
-  advancesThread: true,
-  citesResidue: true,
+    citesResidue: true,
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));

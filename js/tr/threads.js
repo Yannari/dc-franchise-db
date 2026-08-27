@@ -206,16 +206,42 @@ export function priorMoments(thread, ep) {
  * later note would splice a citation inside a citation and the text of a long
  * thread would grow with every beat.
  */
-export function citeMoments(thread, ep, max = 3) {
+/**
+ * The first sentence of a note, without its full stop, which is the unit two
+ * beats are compared on. Notes accumulate citations, so the whole string is not
+ * comparable — the head sentence is the part an event actually authored.
+ */
+function _head(note) {
+  const first = String(note || '').split(/(?<=[.!?])[ ]/)[0];
+  return first.trim().replace(/[.!?]+$/, '');
+}
+
+export function citeMoments(thread, ep, max = 3, against = null) {
   const prior = priorMoments(thread, ep).slice(0, max);
   if (!prior.length) return '';
   const first = prior[0];
-  if (prior.length === 1) return `It went back to day ${first.ep}: ${first.note}`;
   const days = prior.slice(1).map(p => `day ${p.ep}`);
   const tail = days.length === 1
     ? days[0]
     : `${days.slice(0, -1).join(', ')} and ${days[days.length - 1]}`;
-  return `It went back to day ${first.ep} — ${first.note} — and it had not stopped since: ${tail}.`;
+
+  // DO NOT QUOTE A SENTENCE BACK AT ITSELF (review R2). Several events write a
+  // CONSTANT note — `cover-preemptive-alibi`, `cover-feign-fear`,
+  // `cover-rehearsed-story-advance`, `susp-pattern-tracking` — so the second
+  // time one fires on the same thread, the moment it quotes is the sentence it
+  // is being appended to, and the beat reads "X. It went back to day 1: X."
+  // Measured at 22 of 758 citations. The day is still worth naming; the quote
+  // is not, so the quote is what gets dropped.
+  if (against != null && _head(first.note) === _head(against)) {
+    if (!days.length) return '';
+    return `It had been going on since day ${first.ep}, and again on ${tail}.`;
+  }
+
+  if (!days.length) return `It went back to day ${first.ep}: ${first.note}`;
+  // The quoted note is spliced INSIDE an em-dash parenthetical, so its own full
+  // stop has to come off (review R3) or every multi-moment citation reads
+  // "...anyone else. — and it had not stopped since: day 5 and day 6."
+  return `It went back to day ${first.ep} — ${_head(first.note)} — and it had not stopped since: ${tail}.`;
 }
 
 /**
@@ -245,9 +271,15 @@ export function continueThread(kind, parties, ep, note, { cite = true, max = 3 }
  * could resolve to a different one than the event decided it was continuing.
  */
 export function advanceCiting(thread, ep, note, { cite = true, max = 3 } = {}) {
-  if (!thread) return { thread: null, note, cited: [] };
+  // LOUD, NOT SILENT (review R5). This replaced `advanceThread(t.id, ...)`,
+  // which threw on a missing thread. Every call site today guarantees one in
+  // its own `weight()`, so a null here means a weight/fire disagreement — the
+  // exact class validateRegistry() exists to catch — and returning a tidy
+  // `{ thread: null }` would drop the beat and let the season carry on looking
+  // fine. `continueThread` never reaches this path: it opens instead.
+  if (!thread) throw new Error('advanceCiting: no thread to advance — weight() and fire() disagree');
   const prior = cite ? priorMoments(thread, ep).slice(0, max) : [];
-  const citation = prior.length ? citeMoments(thread, ep, max) : '';
+  const citation = prior.length ? citeMoments(thread, ep, max, note) : '';
   const full = citation ? `${note} ${citation}` : note;
   return { thread: advanceThread(thread.id, ep, full), note: full, cited: prior.map(p => p.ep) };
 }

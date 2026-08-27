@@ -229,8 +229,7 @@ registerEvent({
   // ADVANCES AND CITES (Plan 5 Task 2). `callback|morning` held no advancer.
   // A returnee warning the room about somebody is the family's own thesis
   // said twice, and the second time it lands harder for naming the first.
-  advancesThread: true,
-  citesResidue: true,
+    citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 4) return 0;
@@ -286,8 +285,7 @@ registerEvent({
   family: FAMILY,
   window: 'morning',
   // The second advancer in `callback|morning`.
-  advancesThread: true,
-  citesResidue: true,
+    citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -399,7 +397,7 @@ registerEvent({
     else if (roll < reconcileScore + grudgeScore + strategicScore) branch = 'strategic';
     else branch = 'buries';
 
-    const line = pick(rng, CONFRONTATION_LINES[branch]).replace('{a}', a).replace('{b}', b);
+    const line = pick(rng, CONFRONTATION_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const existing = findOpenThread(FAMILY, [a, b]);
     let bondDelta = 0;
     let threadId = existing?.id ?? null;

@@ -234,6 +234,36 @@ function _onCooldown(ev, ctx) {
 }
 
 /**
+ * The thread this event would actually continue, if any.
+ *
+ * WHY THIS IS NOT JUST `findOpenThread(ev.family, ctx.actors)` (review round 3,
+ * R6). A handful of cover events keep a thread on ONE person — a cover story is
+ * personal, and `cover-preemptive-alibi`, `cover-feign-fear`,
+ * `cover-rehearsed-story-advance` and `cover-alibi-crumbles` all open and
+ * advance on `[actor]`. Keyed on the full scene, the lookup misses that thread
+ * whenever the scene happens to hold two people, so guard 1 declined to
+ * multiply a firing that really was a continuation and `pickEvent` labelled it
+ * a fresh beat. The declaration was live in a solo scene and inert in a pair
+ * one, for no reason a reader of the event could see.
+ *
+ * `threadScope: 'solo'` says so out loud. It is deliberately NOT the default:
+ * letting every event fall back to a per-actor lookup would boost a suspicion
+ * event drawn on A and B because A has an open suspicion with somebody else
+ * entirely, which is a different story and not a continuation of anything.
+ */
+function _threadThisEventWouldAdvance(ev, ctx) {
+  if (ev.threadScope === 'solo') {
+    let best = null;
+    for (const p of ctx.actors) {
+      const t = findOpenThread(ev.family, [p]);
+      if (t && (!best || heatAt(t, ctx.ep) > heatAt(best, ctx.ep))) best = t;
+    }
+    return best;
+  }
+  return findOpenThread(ev.family, ctx.actors);
+}
+
+/**
  * Raw weight(ctx), scaled by the four guards. Guards only ever multiply —
  * an event that opts out of a guard (no `acts`, not `rare`, no
  * `advancesThread`) just gets a 1x on that factor, never a penalty.
@@ -249,7 +279,7 @@ function _score(ev, ctx) {
   // still a story beat and still deserves the bonus, not just a hot one.
   let continuationMult = 1;
   if (ev.advancesThread && ctx.actors?.length) {
-    const thread = findOpenThread(ev.family, ctx.actors);
+    const thread = _threadThisEventWouldAdvance(ev, ctx);
     if (thread) {
       const heat = heatAt(thread, ctx.ep);
       continuationMult = 1 + _contBase + heat * _contPerHeat;
@@ -334,7 +364,7 @@ export function pickEvent(ctx, rng) {
         && _pairKey(t.parties) === _pairKey(ctx.actors))
     : false;
   const continued = !!(chosen.advancesThread && ctx.actors?.length
-    && findOpenThread(chosen.family, ctx.actors));
+    && _threadThisEventWouldAdvance(chosen, ctx));
 
   const consequences = chosen.fire(ctx, rng);
   // `actors` is harness data too — nothing in the engine reads it. The

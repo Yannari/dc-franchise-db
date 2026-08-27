@@ -125,25 +125,35 @@ describe('the channel audit', () => {
   // Faithful". If this reads materially more, the audit is measuring the wrong
   // thing and NOTHING may be built on it.
   it('reproduces the known ~0.01x edge of the real pushedThenDied channel', () => {
-    // 400 SEASONS, NOT 100 (Plan 5 Task 2). The band below is `ratio > 1.05`
-    // and it was being read off a 100-season sample. THAT SAMPLE CANNOT
-    // SUPPORT IT. Re-measured at 600 seasons the channel's ratio is 1.1666
-    // with a standard error of 0.042; at 100 seasons n is ~350 and the se is
-    // 0.094, which puts the 1.05 band only 1.24 sd below the true value — so
-    // roughly one content change in nine reddens this test by SAMPLING ALONE,
-    // with nothing whatsoever wrong with the instrument. Task 2 drew that
-    // card: 1.061 before its castle-content edits and 1.026 after, while the
-    // 600-season estimate moved 1.1659 -> 1.1666, i.e. by 0.02 sd. Nothing
-    // happened to the channel.
+    // 800 SEASONS, NOT 100 (Plan 5 Task 2, corrected in review round 3). The
+    // band below is `ratio > 1.05` and it was being read off a 100-season
+    // sample. THAT SAMPLE CANNOT SUPPORT IT. The channel's ratio, estimated
+    // over 600 seasons, is 1.1666 with a standard error of 0.042; at 100
+    // seasons n is ~350 and the se is 0.094, which puts 1.05 only 1.24 sd
+    // below the true value — so roughly one content change in nine reddens
+    // this test by SAMPLING ALONE, with nothing whatsoever wrong with the
+    // instrument. Task 2 drew that card: 1.061 before its castle-content edits
+    // and 1.026 after, while the 600-season estimate moved 1.1659 -> 1.1666,
+    // i.e. by 0.02 sd. Nothing happened to the channel.
     //
-    // THE BAND IS NOT TOUCHED. What was wrong was the estimator, and the fix
-    // for an estimator too noisy for its own threshold is more seasons, never
-    // a lower threshold. At 400 seasons n is ~1340, se(ratio) is 0.053 and
-    // 1.05 sits 3.0 sd below the measurement — a bar, not a coin. It costs
-    // about 2.5 seconds. The protocol note directly below this test says the
-    // same thing about `edge` and its 40-season estimator; this is that lesson
-    // applied to `ratio`, which nobody had checked.
-    const r = measure('pushed-then-died', 400);
+    // AND THE ARITHMETIC HAS TO BE DONE THE RIGHT WAY ROUND, which is what
+    // round 2 got wrong here: the separation is (BEST ESTIMATE OF THE TRUTH −
+    // band) / se at the test's own sample size, NOT (this sample's value −
+    // band) / se. Round 2 read 400 seasons, got a high draw of 1.2104, and
+    // reported 3.0 sd. Against the 1.1666 estimate the same 400-season se of
+    // 0.053 gives 2.2 sd, which still reddens by chance at ~1.5-3%.
+    //
+    // At 800 seasons n is ~2640 and se(ratio) is 0.0376, so 1.05 sits 3.2 sd
+    // below the 1.1666 estimate (4.5 sd below this sample's own 1.2183). That
+    // is a bar and not a coin. It costs about 3.4 seconds against the 0.8 the
+    // 100-season version cost.
+    //
+    // THE BAND IS NOT TOUCHED, in either round. The fix for an estimator too
+    // noisy for its own threshold is more seasons, never a lower threshold.
+    // The protocol note directly below this test says the same thing about
+    // `edge` and its 40-season estimator; this is that lesson applied to
+    // `ratio`, which nobody had checked.
+    const r = measure('pushed-then-died', 800);
     report('pushed-then-died', r);
     expect(r.n).toBeGreaterThan(150);
     // Structurally enriched, exactly as the deduction.js note says: it beats a

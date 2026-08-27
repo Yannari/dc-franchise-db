@@ -65,6 +65,7 @@
 // a real content finding about trust-protect-pact and it is not fixed here. If
 // a future change drops something below the current floor, this sweep goes red
 // — with about 2.5e-3 of chance-miss slack rather than 5e-5.
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
@@ -265,7 +266,7 @@ describe('CALLBACK IS DEAD IN A DEBUT SEASON (documented, not fixed)', () => {
 // almost nothing, and counting their absent cells as "zero-advancer" would
 // inflate the number that matters.
 //
-// == UPDATED BY PLAN 5 TASK 2: 27 -> 44, and 10 zero cells -> 1 ==
+// == UPDATED BY PLAN 5 TASK 2: 27 -> 32, and 10 zero cells -> 7 ==
 //
 // AND THE FINDING THAT CAME WITH IT, because the numbers alone would mislead
 // exactly as the last three copies of them did. `advancesThread` is a
@@ -280,16 +281,20 @@ describe('CALLBACK IS DEAD IN A DEBUT SEASON (documented, not fixed)', () => {
 // continuation is the drawn event's FAMILY matching the thread's kind, plus
 // the 5-episode pair cooldown.
 //
-// Measured, 200 seeded seasons, before and after Task 2's 17 conversions:
-//   mean thread   1.431 -> 1.479 beats      first-beat death  73.9% -> 72.0%
-//   payoff rate   3.96% -> 3.48%            people/season     14.49 -> 14.31
+// Measured, 200 seeded seasons, before and after Task 2:
+//   mean thread   1.431 -> 1.461 beats      first-beat death  73.9% -> 72.3%
+//   payoff rate   3.96% -> 3.93%            people/season     14.49 -> 14.44
+// (At the 44-declaration high-water mark it read 1.479 beats and a payoff rate
+// of 3.48% — MORE length and FEWER payoffs, because guard 1 prefers advancing
+// events over the flagship forks that close a thread. Trimming the ten
+// `morning` declarations recovered the payoffs and cost 0.018 beats.)
 // With guard 1 flattened the seasons are BIT-IDENTICAL (mean 1.363, 2975
 // live-thread scenes, both arms), which is the proof of the paragraph above:
 // declaring the flag changed no thread's shape, only which events the guard
 // prefers to draw. The conditional continuation rate moves 36.1% -> 56.0%
-// live and 23.3% -> 36.1% with the guard off, almost all of it re-labelling.
-// The second of those breaks a control-arm assertion in tr-calibration.test.js
-// (`dead.rate < 0.30`); see the report for Task 2.
+// live and 23.3% -> 30.5% with the guard off, almost all of it re-labelling.
+// The second of those broke a control-arm assertion in tr-calibration.test.js
+// (`dead.rate < 0.30`), whose floor was re-derived to 0.38 as a result.
 describe('advancer coverage: the pool shape Plan 5 quotes', () => {
   function cells() {
     const out = new Map();
@@ -303,12 +308,15 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     return out;
   }
 
-  it('81 events, 44 of which can advance a thread', () => {
+  it('81 events, 32 of which can advance a thread and 22 of which cite residue', () => {
     expect(EVENTS.length).toBe(81);
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(44);
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(32);
+    // Pinned alongside, because Task 2 proved the two are NOT the same thing:
+    // citing residue needs no flag, so ten events cite without declaring.
+    expect(EVENTS.filter(e => e.citesResidue).length).toBe(22);
   });
 
-  it('28 non-empty family x window cells: 1 with no advancer, 13 with one, 14 with two or more', () => {
+  it('28 non-empty family x window cells: 7 with no advancer, 13 with one, 8 with two or more', () => {
     const c = cells();
     const counts = [...c.values()];
     const zero = counts.filter(v => v.adv === 0).length;
@@ -320,19 +328,32 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
 
     expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(28);
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
-      + 'can never be continued here, whatever either continuation lever is set to').toBe(1);
+      + 'can never be continued here, whatever either continuation lever is set to').toBe(7);
     expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
       + 'living here can be advanced at most once every five rounds').toBe(13);
-    expect(many, 'cells with two or more advancers').toBe(14);
+    expect(many, 'cells with two or more advancers').toBe(8);
     // Named, not just counted: a change that swapped one zero cell for another
     // would keep every total above and still be a different game.
-    // ONE LEFT, AND IT IS NAMED SO IT STAYS AWKWARD. `callback|dawn` holds
-    // exactly one event, `callback-recognized`, whose weight() returns 0 when
-    // a callback thread between those two already exists — "they clocked each
-    // other from a previous season" is a thing that can only happen once per
-    // pair, and giving it an advance branch would mean writing a beat that
-    // contradicts its own text. It is left as a zero cell on purpose.
-    expect(zeroNames).toEqual(['callback|dawn']);
+    // SEVEN, AND THE SHAPE OF THE LIST IS THE FINDING. Six of them are the
+    // whole `morning` window, and that is deliberate: Task 2 declared ten
+    // advancers across those six cells, measured what it bought (mean thread
+    // 1.43 -> 1.48) against what it cost (`romance-shared-alibi` starved from
+    // 12 firings per 400 seasons to 2, tripping the dead-event floor above),
+    // and withdrew them. Guard 1 multiplies a declared advancer by 4x-9x while
+    // `rare` multiplies by 2x, so advancers declared in a window out-compete
+    // that window's rare content. `morning` is the pool's most crowded window
+    // and cannot carry them. The CITATIONS those events gained were kept —
+    // citing residue never needed the flag.
+    //
+    // The seventh is `callback|dawn`, which holds exactly one event,
+    // `callback-recognized`, whose weight() returns 0 when a callback thread
+    // between those two already exists — "they clocked each other from a
+    // previous season" happens once per pair, and an advance branch would write
+    // a beat contradicting its own text.
+    expect(zeroNames).toEqual([
+      'callback|dawn', 'callback|morning', 'cover|morning', 'grief|morning',
+      'romance|morning', 'suspicion|morning', 'testing|morning',
+    ]);
   });
 
   it('every family that can open a thread has at least one event that can advance one', () => {
@@ -371,6 +392,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
 describe('residue is cited in seasons that actually play', () => {
   const CITE_SEASONS = 60;
   const cited = [];      // { threadId, ep, days, beatEps, len }
+  const notes = [];      // every note the castle wrote, for the prose guards below
   let beats = 0;
   for (let i = 1; i <= CITE_SEASONS; i++) {
     setPlayers(ROSTER);
@@ -380,6 +402,7 @@ describe('residue is cited in seasons that actually play', () => {
       const eps = t.beats.map(b => b.ep);
       for (const b of t.beats) {
         beats++;
+        notes.push({ id: t.id, ep: b.ep, note: String(b.note || '') });
         const days = [...String(b.note || '').matchAll(/day (\d+)/g)].map(m => Number(m[1]));
         if (days.length) cited.push({ threadId: t.id, ep: b.ep, days, beatEps: eps, len: t.beats.length });
       }
@@ -417,5 +440,97 @@ describe('residue is cited in seasons that actually play', () => {
     expect(twoBeat, 'no citation in 60 seasons came from a two-beat thread — the mechanism '
       + 'only lights up on long stories, and 73.9% of stories die at beat one')
       .toBeGreaterThan(20);
+  });
+
+  // ── THE PROSE GUARDS (review round 3) ────────────────────────────────
+  //
+  // Both of these were found by DUMPING A SEASON'S NOTES AND READING THEM, and
+  // neither was catchable by anything in the suite: every assertion in this
+  // repo checked that a note EXISTED, that it named a real day, that it moved a
+  // bond. None of them read the sentence. Written as rules over every note a
+  // played season produces, not as checks on the events that happened to be
+  // broken.
+
+  it('no note ships a raw {a}/{b}/{c}/{v} placeholder', () => {
+    // `String.prototype.replace` with a STRING pattern substitutes the FIRST
+    // match only. Eleven line pools in this repo contain a line using the same
+    // token twice, and every one of them was being filled with the
+    // single-argument form, so the second occurrence shipped raw: 264 of 6595
+    // beats over 200 seasons, e.g. "…what they made of Beth. {b} told them."
+    // Task 2's citations then re-quoted those broken sentences verbatim into
+    // later beats. The fix is that no castle file uses the string form at all
+    // (see the source guard below); this is the OUTPUT half of that rule.
+    const leaks = notes.filter(n => /\{[abcdv]\}/.test(n.note));
+    expect(leaks.slice(0, 5).map(n => n.note), `${leaks.length} of ${notes.length} notes `
+      + 'shipped an unsubstituted placeholder').toEqual([]);
+  });
+
+  it('no note quotes its own head sentence back at itself', () => {
+    // R2: several events write a CONSTANT note, so a citation on the second
+    // firing quoted the sentence it was being appended to — "X. It went back to
+    // day 1: X." Measured at 22 of 758 citations before the fix.
+    const head = str => String(str).split(/(?<=[.!?])[ ]/)[0].trim().replace(/[.!?]+$/, '');
+    const echoes = notes.filter(n => {
+      const h = head(n.note);
+      return h.length > 20 && n.note.split(h).length - 1 > 1;
+    });
+    expect(echoes.slice(0, 5).map(n => n.note), `${echoes.length} of ${notes.length} notes `
+      + 'contain their own first sentence twice').toEqual([]);
+  });
+
+  it('no note splices a full stop against the em-dash that follows it', () => {
+    // R3: the quoted moment sits INSIDE a parenthetical, so its own stop has to
+    // come off. This affected every three-plus-moment citation.
+    const bad = notes.filter(n => n.note.includes('. —') && n.note.includes('it had not stopped since'));
+    expect(bad.slice(0, 5).map(n => n.note)).toEqual([]);
+  });
+});
+
+// ── THE SOURCE HALF OF THE PLACEHOLDER RULE ──────────────────────────────
+//
+// The output guard above needs a season to run and only sees the lines that
+// happened to be drawn. This one is exhaustive and instant: NO castle file may
+// substitute a token with a string pattern, because a string pattern is
+// first-match-only and whether that matters depends on a line pool somebody
+// else edits later. `/\{a\}/g` costs nothing and cannot go wrong.
+describe('token substitution is global, in every castle file', () => {
+  it('no castle file uses the first-match-only string form of .replace', () => {
+    // Relative to the vitest root, which is the repo root — import.meta.url
+    // is not a file: URL under this environment.
+    const dir = 'js/tr/castle/';
+    const offenders = [];
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith('.js')) continue;
+      const src = readFileSync(dir + f, 'utf8');
+      for (const m of src.matchAll(/\.replace\('(\{[a-z]\})'/g)) {
+        offenders.push(`${f}: .replace('${m[1]}', …)`);
+      }
+    }
+    expect(offenders, 'a string pattern replaces the FIRST match only — use /\\{x\\}/g')
+      .toEqual([]);
+  });
+
+  it('an absent actor is SUBSTITUTED, never cut out of the sentence', () => {
+    // FOUND BY READING OUTPUT, and the reason this is a source rule and not an
+    // output one: the damage it does is grammatical, and no regex over finished
+    // prose can tell "…told it made." from a sentence that meant to end there.
+    //
+    // Two events fill an optional partner. Both used to handle "no partner" by
+    // DELETING from the token to the end of its sentence, which is only correct
+    // when the token starts one. "Something about the way {a} told it made {b}
+    // quietly file it away." became "…told it made." — a sentence ending on its
+    // own verb, and Task 2's citations then quoted that into later beats.
+    // Substituting an unnamed onlooker is true (the room is still there) and
+    // cannot produce a fragment, whatever a future line pool says.
+    const dir = 'js/tr/castle/';
+    const cutters = [];
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith('.js')) continue;
+      for (const m of readFileSync(dir + f, 'utf8').matchAll(/\.replace\(\/[^/\n]*\\\{[a-z]\\\}[^/\n]+\/g?[a-z]*,/g)) {
+        cutters.push(`${f}: ${m[0]}`);
+      }
+    }
+    expect(cutters, 'a token must be filled with a name or a stand-in — deleting the clause '
+      + 'around it leaves a fragment whenever the token is not sentence-initial').toEqual([]);
   });
 });

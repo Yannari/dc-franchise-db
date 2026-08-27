@@ -759,8 +759,8 @@ describe('the castle, measured over many seasons', () => {
   //     both off                 17.73%   (1004)
   //
   // The floor was 0.30 against those numbers. TASK 2 MOVED BOTH ARMS by
-  // widening what `continued` counts (55.96% / 36.07%) and the floor is now
-  // 0.45 — see the block immediately above the assertion for the derivation
+  // widening what `continued` counts (46.23% / 30.49%) and the floor is now
+  // 0.38 — see the block immediately above the assertion for the derivation
   // and for the third input this floor turns out to depend on. The seam
   // control and the hard source mutation agree to two decimal places (23.29%
   // vs 23.3%), which is what makes the seam a legitimate stand-in for deleting
@@ -783,14 +783,15 @@ describe('the castle, measured over many seasons', () => {
   // WHAT THE DIAGNOSTICS SAY, AND IT IS STILL NOT FLATTERING. The old reading
   // was 89.6% of threads opened, given one beat and never touched again, a
   // mean thread of 1.13 beats and 0.6% ever reaching a payoff. After Task 1 it
-  // was 73.9%, 1.43 beats and 4.0%; after Task 2 it is 72.0%, 1.48 beats and
-  // 3.5%. That is a real move and it is nowhere near enough: seven stories in
+  // was 73.9%, 1.43 beats and 4.0%; after Task 2 it is 72.3%, 1.46 beats and
+  // 3.9%. That is a real move and it is nowhere near enough: seven stories in
   // ten still die where they start.
   //
   // AND THE REASON IS NOT WHAT THIS COMMENT USED TO SAY. It blamed the pool:
-  // "only 27 of 81 events set `advancesThread`". Task 2 raised that to 44 of
-  // 81 and closed nine of the ten zero-advancer cells, and the mean thread
-  // moved 1.43 -> 1.48 while the payoff rate FELL. The flag is a declaration,
+  // "only 27 of 81 events set `advancesThread`". Task 2 tried raising it to 44 of
+  // 81, closing nine of the ten zero-advancer cells; the mean thread
+  // moved 1.43 -> 1.48 while the payoff rate FELL and one event was starved
+  // to the edge of dead, so it settled at 32 of 81 with the mean at 1.46. The flag is a declaration,
   // not a capability — `openThread` folds into an open thread of the same kind
   // and parties, so the pool was already continuing stories it had not
   // declared. What actually gates a continuation is the drawn event's FAMILY
@@ -826,58 +827,74 @@ describe('the castle, measured over many seasons', () => {
     expect(dead.liveScenes, 'the control produced no live-thread scenes to compare against')
       .toBeGreaterThan(500);
 
-    // == RE-DERIVED AGAIN BY PLAN 5 TASK 2. 0.30 -> 0.45. ==
+    // == RE-DERIVED BY PLAN 5 TASK 2. 0.30 -> 0.38. ==
     //
-    // WHAT MOVED, AND IT WAS NOT THE GUARD. Task 2 raised the number of events
-    // DECLARING `advancesThread` from 27 of 81 to 44 of 81. `continued` is
-    // defined in pickEvent as `chosen.advancesThread &&
-    // findOpenThread(chosen.family, actors)`, so widening the declaration
-    // widens the observable itself — both arms of this band moved up together:
+    // WHAT MOVED WAS THE OBSERVABLE, NOT THE GUARD. `continued` is defined in
+    // pickEvent as `chosen.advancesThread && (the thread this event would
+    // advance)`, so it counts a DECLARATION. Task 2 changed how many events
+    // declare, and changed what the lookup counts as "the thread this event
+    // would advance" (`threadScope: 'solo'`, for the four cover events whose
+    // thread is keyed on one person rather than on the scene). Both arms moved
+    // together:
     //
-    //     shipped                  36.14%  ->  55.96%
-    //     guard flattened          23.29%  ->  36.07%   <- the control
-    //     separation               12.84pp ->  19.89pp
+    //     shipped                  36.14%  ->  46.23%
+    //     guard flattened          23.29%  ->  30.49%   <- the control
+    //     separation               12.84pp ->  15.74pp
     //
-    // The control passed straight through the old 0.30 floor, which is what
-    // forced this re-derivation: at 0.30 the floor above could be cleared with
-    // the guard deleted, and a floor that cannot fail is not evidence. Nothing
-    // about the guard got weaker — its marginal contribution GREW by 7pp.
+    // The control walked straight through the old 0.30 floor, which is exactly
+    // the failure the control arm exists to detect. Nothing about the guard got
+    // weaker; its marginal contribution grew by 2.9pp.
     //
-    // THE THIRD THING THIS FLOOR IS A FUNCTION OF, stated plainly because two
-    // consecutive tasks have now moved it and the next person deserves to know
-    // before they move it a third time. The floor tracks:
+    // WHERE 0.38 COMES FROM. It sits dead centre between the arms: 8.23pp under
+    // the live arm and 7.51pp over the control. The sd of the 200-season
+    // figure, from splitting these same seeds into eight 25-season blocks and
+    // scaling, is 0.0081 live and 0.0074 control — 10.1 sd either way.
+    //
+    // AND THAT SD MEASURES SEED NOISE, WHICH IS NOT WHAT MOVES THIS BAND. Say
+    // it outright, because 10 sd reads like far more safety than it is: the
+    // seeds here are FIXED, so this test cannot flake, and the sampling sd only
+    // prices "how much would this number wobble on different seeds". What
+    // actually moves it is CONTENT. Task 2's first pass declared 17 more
+    // advancers and moved the live arm 19.8pp — 25 sd — without changing a
+    // single thread's shape. READ THE HEADROOM IN DECLARATIONS, NOT IN SD:
+    // the control arm sits 7.5pp under the floor and 17 declarations were worth
+    // about 7pp of the control, so there is room for roughly 17 more before
+    // this band goes stale again. Tasks 4 and 5 add events.
+    //
+    // THE THIRD THING THIS FLOOR IS A FUNCTION OF, stated because two
+    // consecutive tasks have now moved it. The floor tracks:
     //   1. the continuation guard's strength (what the band is named for),
     //   2. `CONTINUATION_SCENE_P` — scene selection feeds the guard the scenes
     //      it acts in (Task 1 recorded this),
-    //   3. THE POOL'S ADVANCER DECLARATION RATE — how many events set
-    //      `advancesThread` at all. This one is not a mechanism, it is a
-    //      MEASUREMENT SURFACE: `advancesThread` is a declaration, not a
+    //   3. THE POOL'S ADVANCER DECLARATION RATE. Not a mechanism — a
+    //      measurement surface. `advancesThread` is a declaration, not a
     //      capability, because `openThread` already folds into an open thread
     //      with the same kind and party set. With the guard flattened, the
-    //      seasons before and after Task 2 are BIT-IDENTICAL (mean thread
-    //      1.363, 2975 live-thread scenes, both arms) — no thread changed
-    //      shape; more of what was already happening simply got labelled.
-    //      Change the flag count and you move this floor, by construction.
+    //      seasons before and after a pure declaration change are BIT-IDENTICAL
+    //      — no thread changes shape; more of what was already happening simply
+    //      gets labelled. Change the flag count and you move this floor, by
+    //      construction.
     //
-    // WHERE 0.45 COMES FROM. It sits between the two arms with room on both
-    // sides: 10.96pp over the live arm and 8.43pp under the control. The sd of
-    // the 200-season figure, measured by splitting these same seeds into eight
-    // 25-season blocks and scaling, is 0.0079 live and 0.0075 control — 13.9
-    // and 12.0 sd respectively. Against the more pessimistic per-200-season
-    // block sd of ~0.014 this file quoted before Task 1, it is still 7.8 and
-    // 6.0 sd. Either reading is a bar and not a coin.
+    // AND THE DECLARATION IS NOT FREE, which is the other thing Task 2 learned
+    // the hard way. Guard 1 multiplies a declared advancer by 4x-9x; `rare`
+    // multiplies by 2x. So every advancer declared in a window starves that
+    // window's RARE events. Declaring ten advancers in `morning` took
+    // `romance-shared-alibi` from 12 firings per 400 seasons to 2 and tripped
+    // the dead-event floor in tr-castle-reachability.test.js. Those ten
+    // declarations were withdrawn; the citations they carried were kept, since
+    // citing residue never needed the flag.
     expect(live.rate, 'the castle starts stories and never continues them — guard 1 is inert')
-      .toBeGreaterThan(0.45);
+      .toBeGreaterThan(0.38);
     // THE PROOF THE BAND ABOVE CAN FAIL. Same seeds, same pool, same scene
     // selection, guard deleted. This is the assertion that caught the old 0.30
-    // floor going stale, and it is the one that will catch 0.45 going stale
+    // floor going stale, and it is the one that will catch 0.38 going stale
     // too — it re-derives the separation on every run, so it cannot rot the way
     // a remembered number does.
     expect(dead.rate, 'the continuation band is green with the guard SWITCHED OFF — '
       + 'it is measuring scene selection walking live-thread actors into the room, not the guard')
-      .toBeLessThan(0.45);
-    // And the separation itself, which does not depend on 0.45 being well
-    // chosen. Measured 19.89pp at the shipped operating point (12.84pp before
+      .toBeLessThan(0.38);
+    // And the separation itself, which does not depend on 0.38 being well
+    // chosen. Measured 15.74pp at the shipped operating point (12.84pp before
     // Task 2 widened the observable).
     expect(live.rate - dead.rate, 'the continuation guard moved nothing')
       .toBeGreaterThan(0.06);

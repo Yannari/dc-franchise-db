@@ -49,7 +49,7 @@ registerEvent({
     const [a, b] = ctx.actors;
     const v = _victimLastNight(ctx.ep);
     addBond(a, b, 1);
-    const note = pick(rng, EMPTY_CHAIR_LINES).replace('{a}', a).replace('{b}', b).replace('{v}', v);
+    const note = pick(rng, EMPTY_CHAIR_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{v\}/g, v);
     const t = openThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'empty-chair', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 1 };
   },
@@ -84,8 +84,7 @@ registerEvent({
   // no advancer, the largest dead cell in the pool. Grief is cumulative by
   // nature — the second empty chair is only heavy because of the first — so
   // the citation is doing the work the family already implied.
-  advancesThread: true,
-  citesResidue: true,
+    citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return _victimLastNight(ctx.ep) ? 2 : 0;
@@ -127,8 +126,7 @@ registerEvent({
   // The second advancer in `grief|morning`. "Why last night" is a question
   // that gets sharper every time it is asked, and the citation is what makes
   // the second asking sound different from the first.
-  advancesThread: true,
-  citesResidue: true,
+    citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return _victimLastNight(ctx.ep) ? 1.5 : 0;
@@ -166,6 +164,13 @@ registerEvent({
 //                            and this branch is open to them exactly as it is
 //                            to a villain; what differs is how well they sell
 //                            it, scored the same way cover.js scores a lie.
+/** See cover.js: lines that need no partner when there is none to name. */
+function _partnerSafe(pool, partner) {
+  if (partner) return pool;
+  const safe = pool.filter(l => !l.includes('{b}'));
+  return safe.length ? safe : pool;
+}
+
 const REACTION_LINES = {
   mourn: [
     '{a} didn\'t hide how hard it hit them. {b} sat with them and let it be quiet for a while.',
@@ -221,8 +226,12 @@ registerEvent({
     else if (roll < mournScore + suspiciousScore + stoicScore) branch = 'stoic';
     else branch = 'opportunistic';
 
-    let line = pick(rng, REACTION_LINES[branch]).replace('{a}', reactor).replace('{v}', victim);
-    line = partner ? line.replace('{b}', partner) : line.replace(/,?\s*\{b\}[^.]*\./, '.');
+    // See the note on _partnerSafe in cover.js — the old strip left sentences
+    // ending on their own verb whenever `{b}` sat mid-clause, and every one of
+    // those was quotable by a later citation.
+    let line = pick(rng, _partnerSafe(REACTION_LINES[branch], partner))
+      .replace(/\{a\}/g, reactor).replace(/\{v\}/g, victim)
+      .replace(/\{b\}/g, partner || 'somebody');
 
     // Every branch has to leave SOMETHING — a solo scene (no partner drawn)
     // still writes residue on the reactor even when it can't move a bond,

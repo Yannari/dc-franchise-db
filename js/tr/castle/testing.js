@@ -35,8 +35,7 @@ registerEvent({
   family: FAMILY,
   window: 'morning',
   // The second advancer in `testing|morning`.
-  advancesThread: true,
-  citesResidue: true,
+    citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -176,8 +175,7 @@ registerEvent({
   // either. "Walk me through your morning AGAIN" is the single most literal
   // citation in the pool — the whole event is somebody re-asking a question
   // they already asked, and the day they first asked it is the point.
-  advancesThread: true,
-  citesResidue: true,
+    citesResidue: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return 1;
@@ -338,7 +336,7 @@ registerEvent({
     else if (roll < keptScore + innocentScore + maliciousScore) branch = 'malicious';
     else branch = 'caughtTest';
 
-    const line = pick(rng, DECOY_LINES[branch]).replace('{a}', a).replace('{b}', b);
+    const line = pick(rng, DECOY_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const existing = findOpenThread(FAMILY, [a, b]);
     let bondDelta;
     let threadId;

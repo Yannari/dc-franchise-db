@@ -26,7 +26,7 @@ import { gs, seasonConfig, players } from '../js/core.js';
 import { pStats, pronouns } from '../js/players.js';
 import { getBond, addBond, getPerceivedBond } from '../js/bonds.js';
 import { nominationScore, nominationGrievance } from '../js/bb/strategy.js';
-import { rememberStrategy } from '../js/strategy-memory.js';
+import { rememberStrategy, strategicMemoryScore } from '../js/strategy-memory.js';
 import { seedGame } from './helpers/setup.js';
 
 const K = ['physical', 'endurance', 'mental', 'social', 'strategic',
@@ -132,5 +132,57 @@ describe('the reason gets recorded at the ceremony', () => {
     house(5);
     addBond('Hoh', 'Ally', 4);
     expect(nominationGrievance('Hoh', 'Ally').kind).toBe('no-grievance');
+  });
+});
+
+describe('a kindness is not a receipt', () => {
+  // The PRO_SOCIAL list in strategy-memory.js exists because being saved by
+  // somebody was once making people MORE likely to nominate them. It fixed the
+  // sixteen types anybody thought of at the time; everything else in the
+  // codebase still defaults to hostile, and the event library kept growing. A
+  // sweep of what actually reaches a nomination found these being counted as
+  // grievances — including 'alliance', the memory of forming the alliance.
+  const KIND = ['alliance', 'saved-me', 'stood-up-for-me', 'was-there', 'trust',
+    'told-me-to-my-face', 'intel', 'let-me-play', 'handed-me-the-house',
+    'resolve', 'told-me-something-true', 'was-there-at-three-in-the-morning'];
+
+  it('does not make somebody more likely to nominate the person who was good to them', () => {
+    for (const type of KIND) {
+      house(5);
+      const clean = score('Ally');
+      house(5);
+      rememberStrategy('Hoh', 'Ally', type, 4, 3);
+      expect(score('Ally'), `"${type}" counted as a reason to nominate them`)
+        .toBeLessThanOrEqual(clean);
+    }
+  });
+
+  it('scores them the other way, like every other kindness', () => {
+    for (const type of KIND) {
+      house(5);
+      gs.strategicMemories = {};
+      rememberStrategy('Hoh', 'Ally', type, 6, 3);
+      expect(strategicMemoryScore('Hoh', 'Ally', 7), `"${type}" is still a receipt`)
+        .toBeLessThan(0);
+    }
+  });
+
+  it('still counts the hostile half of the same pair', () => {
+    // 'resolve' is the branch where somebody decided NOT to cut you;
+    // 'planning-the-cut' is the branch where they did. Only one of them is a
+    // kindness, and moving the wrong one would make the house unable to react
+    // to being cut.
+    house(5);
+    gs.strategicMemories = {};
+    rememberStrategy('Hoh', 'Ally', 'planning-the-cut', 6, 3);
+    expect(strategicMemoryScore('Hoh', 'Ally', 7)).toBeGreaterThan(0);
+  });
+
+  it('never narrates a kindness as a betrayal', () => {
+    house(5);
+    rememberStrategy('Hoh', 'Ally', 'saved-me', 4, 3);
+    const g = nominationGrievance('Hoh', 'Ally');
+    expect(g.kind, 'the person who saved them was called a traitor for it')
+      .not.toBe('betrayal');
   });
 });

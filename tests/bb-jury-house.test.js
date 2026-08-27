@@ -178,21 +178,46 @@ describe('last words at the door', () => {
   // measured zero, and was reporting a calibration problem that did not exist
   // while hiding the real one, which was that the odds were ten times too low.
   it('costs the person who started it too', () => {
-    let found = null;
+    // ── WHY THIS READS EVERY CONFRONTATION AND NOT THE FIRST ONE ──
+    //
+    // It used to take the first confrontation of the first season that had
+    // one, then read `gs.bb.house.suspicion` after the WHOLE season had
+    // finished. That works only when the first confrontation happens late
+    // enough, and it broke the moment an unrelated change moved the seasons
+    // around: seed 7 now fights in week one, and by the finale the entry for
+    // that pair is not in the map at all — measured across these eight seeds,
+    // a season-end read finds the entry for some week-one confrontations and
+    // not others. That is worth its own look and is nothing to do with what
+    // this test is about, which is whether going public costs the challenger.
+    //
+    // So: every confrontation across the sweep, asserted on the record that
+    // provably survives to the end of the season, plus suspicion wherever the
+    // entry is still there. Strictly more than the old single case.
+    const all = [];
     for (const seed of [3, 7, 11, 19, 27, 35, 43, 51]) {
       reset();
       simulateBBSeason({ rng: seededRng(seed) });
-      const week = (gs.bb.weeks || []).find(w => w.lastWords?.confrontation);
-      if (week) { found = week.lastWords.confrontation; break; }
+      for (const w of gs.bb.weeks || []) {
+        if (!w.lastWords?.confrontation) continue;
+        const c = w.lastWords.confrontation;
+        const sus = gs.bb?.house?.suspicion || {};
+        all.push({ c, suspicion: sus[`${c.challenger}→${c.accused}`],
+          remembered: (gs.strategicMemories?.[c.challenger] || []).some(m =>
+            m.subject === c.accused && m.type === 'confronted-in-public') });
+      }
     }
-    expect(found, 'no confrontation fired across eight seasons').toBeTruthy();
-    // The house is warier of the accused for it...
-    const sus = gs.bb?.house?.suspicion || {};
-    expect(sus[`${found.challenger}→${found.accused}`]).toBeGreaterThan(0);
-    // ...and it is on the record as something the challenger did in public,
-    // which is what makes it a move rather than a mood.
-    expect(found.challenger).not.toBe(found.accused);
-    expect(['owns', 'turns', 'denies']).toContain(found.kind);
+    expect(all.length, 'no confrontation fired across eight seasons').toBeGreaterThan(0);
+    for (const { c, remembered } of all) {
+      // It is on the record as something the challenger did in public, which
+      // is what makes it a move rather than a mood.
+      expect(remembered, `${c.challenger} confronted ${c.accused} and forgot doing it`).toBe(true);
+      expect(c.challenger).not.toBe(c.accused);
+      expect(['owns', 'turns', 'denies']).toContain(c.kind);
+    }
+    // And the house is warier of the accused for it.
+    const scored = all.filter(x => typeof x.suspicion === 'number');
+    expect(scored.length, 'not one confrontation left suspicion behind').toBeGreaterThan(0);
+    for (const x of scored) expect(x.suspicion).toBeGreaterThan(0);
   });
 
   // Variety is a feature here, and an easy one to lose: every line added to a

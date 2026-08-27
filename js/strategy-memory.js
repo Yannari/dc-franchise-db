@@ -17,6 +17,31 @@ const PRO_SOCIAL = new Set([
   'told-me-something-real', 'went-up-for-them', 'sat-when-asked', 'debt',
   'final-plea-saved-me', 'acted-on-the-debt', 'my-person', 'confidence',
   'we-said-what-this-is', 'promise', 'protected-them-quietly', 'comfort',
+  // ── THE SECOND HALF OF THE SAME BUG ──
+  //
+  // The note above says being saved by somebody was making people MORE likely
+  // to nominate them, and it fixed the sixteen types anybody thought of at the
+  // time. Everything else in the codebase still defaults to hostile, and the
+  // library kept growing — so a sweep of what actually reaches a nomination
+  // found these being counted as receipts:
+  //
+  //   'alliance'      the memory of FORMING an alliance with somebody
+  //   'saved-me'      they spent a power keeping you in the house
+  //   'stood-up-for-me'   they defended you in front of the room
+  //   'was-there'     they sat with you after a bad day, or after a friend left
+  //   'trust'         "came to me straight", "told me I was safe"
+  //   'told-me-to-my-face'  they were honest with you instead of comfortable
+  //   'intel'         they brought you information they did not have to
+  //   'let-me-play' / 'handed-me-the-house'  they gave up a turn or a win
+  //   'resolve'       they decided NOT to cut you (the other branch of
+  //                   'planning-the-cut', which stays hostile)
+  //
+  // The nomination ceremony then narrated the kindness as a betrayal, which is
+  // how a Head of Household came to tell the person who had saved them that
+  // they had gone back on their word.
+  'alliance', 'saved-me', 'stood-up-for-me', 'was-there',
+  'was-there-at-three-in-the-morning', 'trust', 'told-me-to-my-face', 'intel',
+  'let-me-play', 'handed-me-the-house', 'resolve', 'told-me-something-true',
 ]);
 const directionOf = type => (PRO_SOCIAL.has(type) ? -0.45 : 1);
 

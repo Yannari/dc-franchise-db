@@ -18046,16 +18046,23 @@ export function _bbNomReason(hoh, name, role, ep) {
       const mem = grievance.memory || {};
       const t = mem.type || '';
       const when = mem.ep ? ` in week ${mem.ep}` : '';
+      // Some of these lines describe a state rather than a moment, and " in
+      // week 4" lands inside the clause instead of after it — "I have tried to
+      // tell you things in week 4" is not a sentence anybody says.
+      const since = mem.ep ? ` since week ${mem.ep}` : '';
       const LIE = ['deceit', 'lied-to-my-face', 'made-it-up', 'sold-me-something',
         'swore-it-was-not-them', 'went-behind-my-back', 'playing-with-two-bodies',
         'exposed-alliance-pitch', 'knows-what-they-said-about-them', 'said-it-out-loud',
-        'lie-confirmed', 'leaked-information', 'endgame-deal-discovered'];
+        'lie-confirmed', 'leaked-information', 'endgame-deal-discovered',
+        'two-versions-of-the-same-plan', 'two-faced', 'denied-the-stray-vote'];
       const PROMISE = ['broke-a-promise', 'broken-promise', 'broke-a-final-two',
         'broken-final-two', 'final-two', 'promised-and-did-not', 'promised-me-a-seat',
-        'alliance-betrayal', 'crossed-me', 'rogue-vote'];
+        'alliance-betrayal', 'crossed-me', 'rogue-vote', 'broke-word-found-out',
+        'final-three', ];
       const ALLY = ['eliminated-ally', 'took-my-ally', 'chose-them-over-me'];
       const BLOCK = ['renomination', 'forced-me-up', 'refused-to-sit', 'made-me-the-pawn',
-        'block-rewritten', 'passed-me-over-in-the-chain', 'left-me-out'];
+        'block-rewritten', 'passed-me-over-in-the-chain', 'left-me-out',
+        'renominated-me', 'humiliation', 'decided-without-me', 'named-on-the-way-out'];
 
       if (t === 'voted-for-me') return say([
         `"${N}, you wrote my name down${when}. Everybody in ${G} watched you do it and then watched me let it go. I am finished letting it go."`,
@@ -18077,16 +18084,53 @@ export function _bbNomReason(hoh, name, role, ep) {
         `"${N}, we agreed how this was supposed to finish${when}. You changed your mind and did not tell me, and that second part is what I actually mind."`,
       ]);
       if (LIE.includes(t)) return say([
-        `"${N}, you have been running ${G} in one room and something else in another${when}. I would rather be wrong about that in public than right about it on my way out of the door."`,
+        `"${N}, you have been running ${G} in one room and something else in another, and I have known${since}. I would rather be wrong about that in public than right about it on my way out of the door."`,
         `"${N}, I found out what you say when I am not in the room${when}. You are extremely good at it. That is precisely the problem."`,
       ]);
       if (BLOCK.includes(t)) return say([
         `"${N}, when it was your week, I was the one sitting in this chair${when}. I am not going to pretend I have forgotten what that felt like."`,
         `"${N}, you had this power once and you spent it on me${when}. Now I have it, and I am spending it the same way."`,
       ]);
+      if (t === 'called-the-vote-on-me') return say([
+        `"${N}, you went round this house counting votes against me${when}, in the week I thought we were counting them together."`,
+        `"${N}, the vote that nearly took me out${when} was yours. Not the house's, not anybody else's — you called it."`,
+      ]);
+      if (t === 'planning-the-cut') return say([
+        `"${N}, I know what you were planning for the two of us${when}, because it got back to me the way everything in this house gets back to everybody. You were going to do this. I am just earlier."`,
+        `"${N}, you had already decided where this ended for me${when}. I would rather be the one who says it out loud first."`,
+      ]);
+      if (t === 'bought-a-vote') return say([
+        `"${N}, you paid somebody for a vote${when}. Everything since has been you telling me we were doing this together."`,
+        `"${N}, there is a vote in this house that you bought${when}. I have never once been able to get that out of my head."`,
+      ]);
+      if (t === 'blamed-me-for-a-vote-i-did-not-cast') return say([
+        `"${N}, you told this house I cast a vote I did not cast${when}. I have spent every week since being the person you said I was."`,
+        `"${N}, you needed somebody to blame${when} and you chose the person sitting next to you in ${G}. That is the whole reason."`,
+      ]);
+      if (['they-are-a-pair', 'house-picked-sides', 'bloc-threat',
+        'an-alliance-inside-the-alliance', 'is-protecting-somebody'].includes(t)) return say([
+        `"${N}, you are in ${G} with me and you are in something else with somebody else, and when this house split${when} I found out which one you counted."`,
+        `"${N}, we are supposed to be the group. You have a second one, and I am not in it."`,
+      ]);
+      if (t === 'cannot-be-told-anything') return say([
+        `"${N}, I have been trying to tell you things${since} and you do not hear any of them. I cannot play a game with somebody I cannot talk to."`,
+        `"${N}, I have brought you every piece of this week and you have done what you were going to do anyway. That is not an alliance, it is an audience."`,
+      ]);
+      if (t === 'accuser-confronted') return say([
+        `"${N}, you stood in front of this house and accused me${when}. You may even have believed it. It does not change where you are sitting now."`,
+        `"${N}, when this house needed somebody to point at, you pointed${when}. I am not going to pretend I have forgotten which way your arm went."`,
+      ]);
+      // ── AND WHEN THE HOUSE CANNOT NAME IT, IT MUST NOT INVENT ONE ──
+      //
+      // This used to say "you gave me your word and then you did not keep it"
+      // for ANY memory that was not in one of the families above — including
+      // types that are not a broken promise at all. A speech that accuses
+      // somebody of something specific has to be reading something specific;
+      // where it is not, it says what it actually knows, which is that this
+      // stopped being what it was.
       return say([
         `"${N}, I am not nominating somebody I do not trust. I am nominating somebody I did trust, which is a different thing and a worse one."`,
-        `"${N}, you gave me your word inside ${G} and then you did not keep it. I have spent two weeks deciding whether I imagined it. I did not."`,
+        `"${N}, something happened between us${when} and neither of us has said it out loud since. I am not going to keep protecting a group that is one conversation we never had."`,
         `"${N}, everybody in this room thinks ${G} is still a thing. You and I both know which week it stopped being one."`,
       ]);
     }

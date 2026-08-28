@@ -395,6 +395,27 @@ export function resolveMurder(ep, rng = Math.random) {
       (gs.tr.blockedMurders ||= []).push({ ep, target: other });
       shaped.data.victims = [target];
       shaped.data.secondBlocked = other;
+      // AND THE SENTENCE GOES WITH THE SECOND BODY (whole-plan review, F2 and
+      // the guard at F8 that was hiding it).
+      //
+      // `_shapeNight` builds the double's line BEFORE anybody is removed,
+      // because that is the only moment both names exist — and every line in
+      // the `double` pool asserts two deaths ("Two chairs, and the castle
+      // counts them twice before it believes it"). On this night there is one
+      // chair. The pool's own comment says the fact it asserts is "guaranteed
+      // by construction"; it is guaranteed by the construction of the CONCLAVE,
+      // and a Shield is not part of that construction.
+      //
+      // Narrated as a standard murder instead, which is what it is: one body,
+      // and an attempt that went nowhere. A `double-blocked` pool was the other
+      // option and is the wrong one — 2 firings in 1,200 seasons cannot reach
+      // even a one-line pool inside the samples this suite plays, which is the
+      // written-but-unreachable shape Task 3 measured and rejected. The block
+      // is still on the ledger, `secondBlocked` still names who lived, and the
+      // Shield's own channel in js/tr/powers.js is what speaks about it.
+      shaped.variant = 'standard';
+      shaped.line = null;
+      shaped.lineKey = null;
     } else {
       gs.activePlayers = (gs.activePlayers || []).filter(n => n !== other);
       second = other;

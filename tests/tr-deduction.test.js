@@ -592,6 +592,13 @@ describe('the Seer: the game\'s one `observed` alignment belief', () => {
 
   it('writes the truth about a Traitor, at `observed`, to the Seer and to nobody else', () => {
     board([SUBJECT, 'Heather']);
+    // `snapshot()` IS A DIFF, NOT A RECOMPUTATION. A review flagged it as the
+    // "test recomputes the value under test" shape and it is the opposite one:
+    // it does not predict what the Seer will write, it records the whole belief
+    // store before and after and asserts that EXACTLY ONE entry moved. The
+    // value under test — the belief itself — is read off `seerEvidence`'s
+    // return, and the snapshot's job is the negative half of the claim, which
+    // no reconstruction of the Seer's own rule could make.
     const before = snapshot();
     const b = seerEvidence(SEER, SUBJECT, 9);
 
@@ -677,15 +684,53 @@ describe('the Seer: the game\'s one `observed` alignment belief', () => {
     // Task 6's technique, which is what keeps the endgame's tables comparable.
     // The read takes learn()'s direct branch (no roll at all) and the claims
     // run on a stream hashed from the claim, so neither touches the season's.
+    // THIS USED TO COUNT A CALLBACK NOTHING COULD CALL (whole-plan review, F8).
+    // It passed `counting` as a FOURTH argument to `seerEvidence(seer, subject,
+    // ep)` and a SIXTH to `seerClaimEvidence(claimant, accused, listeners, ep,
+    // tag)` — parameter positions that do not exist. JavaScript discards them
+    // silently, so `draws` was structurally zero and `.toBe(0)` could not fail
+    // for any implementation whatever, including one that called Math.random on
+    // every line. It read as the strongest possible statement of the rule and
+    // asserted nothing at all.
+    //
+    // WHAT ACTUALLY BINDS, in two arms that can each fail:
+    //
+    //   1. NEITHER FUNCTION DECLARES AN RNG PARAMETER. That is what makes the
+    //      property structural rather than incidental: a caller cannot hand the
+    //      season's stream in even by mistake. Checked by reading the parameter
+    //      LIST and not by `Function.length`, which was the first draft and
+    //      which the mutation walked straight through — `.length` counts only
+    //      the parameters before the first default, so `(seer, subject, ep, rng
+    //      = Math.random)` still reports 3 and the arm stayed green on exactly
+    //      the change it exists to catch. The realistic way an rng gets into a
+    //      function in this codebase is with a default; that is the case that
+    //      has to fail.
+    //   2. NEITHER TOUCHES `Math.random` while it runs, which is where a draw
+    //      would have to come from once there is no parameter to take one on.
+    //      This is the arm the old test was reaching for.
+    //
+    // The season-level consequence — a mandated season bit-identical with the
+    // Seer and without it — is guarded separately in tr-powers.test.js over
+    // nine projections. This is the local statement of why that holds.
     board([SUBJECT]);
+    const params = (fn) => String(fn).slice(String(fn).indexOf('(') + 1,
+      String(fn).indexOf(')')).split(',').map(s => s.trim().split('=')[0].trim()).filter(Boolean);
+    for (const fn of [seerEvidence, seerClaimEvidence]) {
+      const rngish = params(fn).filter(p => /rng|random/i.test(p));
+      expect(rngish, `${fn.name} declares ${rngish.join(', ')} — the Seer can now be handed the `
+        + "season's own stream, and a season with one stops drawing what a season without one drew")
+        .toEqual([]);
+    }
+
+    const realRandom = Math.random;
     let draws = 0;
-    const counting = () => { draws++; return 0.5; };
-    // seerEvidence takes no rng parameter BY DESIGN; the claim path takes its
-    // own hashed one. A caller handing this one in would be ignored, which is
-    // the assertion: nothing here can be made to consume the season's stream.
-    seerEvidence(SEER, SUBJECT, 9, counting);
-    seerClaimEvidence(SEER, SUBJECT, CAST, 9, 'named', counting);
-    expect(draws, 'the Seer consumed a draw from a stream handed to it').toBe(0);
+    Math.random = () => { draws++; return realRandom(); };
+    try {
+      seerEvidence(SEER, SUBJECT, 9);
+      seerClaimEvidence(SEER, SUBJECT, CAST, 9, 'named');
+    } finally { Math.random = realRandom; }
+    expect(draws, 'the Seer reached for Math.random — a season with one no longer draws what a '
+      + 'season without one drew').toBe(0);
   });
 
   it('reads the era, not the season-end alignment — a later flip does not unmake it', () => {

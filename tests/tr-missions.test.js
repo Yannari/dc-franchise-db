@@ -194,13 +194,47 @@ describe('missions fund a pot, and fund nothing else', () => {
       }
 
       // Teams come out of the LIVING, are disjoint, and cover the field.
+      //
+      // AGAINST THE LIVING ROSTER AND NOT AGAINST `CAST` (whole-plan review,
+      // F8). This used to read `all.every(n => CAST.includes(n))`, which is a
+      // claim that the twenty people in this season are twenty of the people
+      // in this season — a mission that put a MURDERED player on a team passed
+      // it, and the sentence above it said "come out of the LIVING". The
+      // standing requirement of this plan is that a claim is checked against
+      // the state it claims, and a comment is a claim.
+      //
+      // WHAT IS CHECKED, AND THE ONE THING THAT IS NOT. Nobody who had ALREADY
+      // left the castle in an earlier round may be on a team. That is the whole
+      // of the defect class and it is exact: `s.log` records who was banished,
+      // murdered and executed each round, and the union over the earlier rounds
+      // is who was gone before this mission was played.
+      //
+      // The tighter claim — that the teams are exactly the living field — is
+      // NOT asserted, and deliberately rather than by omission. The only
+      // roster snapshot on the record is `livingAtMurder`, taken after the
+      // mission and after that night's death, so the one team member the
+      // Traitors killed that night is legitimately absent from it (measured:
+      // ep 2 of seed 1, Caleb). Asserting against it fails on correct
+      // behaviour, and reconstructing a mission-time roster here would be a
+      // second private copy of the round order — the duplicate-source defect
+      // this plan has now recorded three times. If the field-coverage claim is
+      // ever worth guarding, the mission record needs its own roster snapshot,
+      // the way `awardShield` records `roomSize` for exactly this reason.
+      const goneBefore = new Set();
       for (const m of s.missions) {
         expect(m.teams).toHaveLength(2);
         const all = m.teams.flatMap(t => t.members);
         expect(new Set(all).size).toBe(all.length);
         expect(m.teams.every(t => t.members.length > 0)).toBe(true);
-        expect(all.every(n => CAST.includes(n))).toBe(true);
+        const ghosts = all.filter(n => goneBefore.has(n));
+        expect(ghosts, `mission ${m.id} at ep ${m.ep} put people on a team who had already left `
+          + 'the castle').toEqual([]);
+        expect(all.every(n => CAST.includes(n)), 'a team member is not in the cast').toBe(true);
+        const night = s.log.find(l => l.ep === m.ep);
+        for (const n of [night?.banished, night?.murdered, night?.executed]) if (n) goneBefore.add(n);
       }
+      expect(goneBefore.size, 'nobody left the castle all season — the ghost check above never '
+        + 'had a ghost available to catch').toBeGreaterThan(5);
     }
   });
 

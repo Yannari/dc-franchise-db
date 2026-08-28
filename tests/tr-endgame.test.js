@@ -308,6 +308,20 @@ describe('the pot goes where spec §8 says it goes', () => {
     // alignments of the people actually left in the room — and the takers are
     // READ off the record rather than recomputed, so a rule that moves cannot
     // take its own test with it.
+    //
+    // THE `alignmentAt` CALL BELOW IS NOT A RECOMPUTATION OF THE VALUE UNDER
+    // TEST, and the distinction is worth writing down because a review flagged
+    // it and it is the difference between this test working and not. The values
+    // under test are `winner` and `takers`, and both are read off `e`. What is
+    // derived independently is the INPUT — who was wearing a cloak — and it is
+    // derived from the roles ledger, which is the authority on that and is not
+    // written by `resolvePot`. Without an independent derivation of the input
+    // the assertion would be `takers` against itself.
+    //
+    // The era hazard is real and is handled by WHERE it is read, not by not
+    // reading it: `alignmentAt(n, ep)` at `e.endEp`, inside the season. Nobody
+    // is recruited during the endgame, so the endgame's own last episode is the
+    // era every one of these survivors was in when the pot was resolved.
     let traitorEnds = 0, cleanEnds = 0, multiTraitorEnds = 0, robbed = 0;
     // READ INSIDE THE SEASON, NOT AFTER IT. `alignmentAt` answers about
     // whatever castle `gs` currently holds, and `gs` is replaced wholesale by

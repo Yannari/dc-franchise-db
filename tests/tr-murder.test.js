@@ -626,7 +626,7 @@ describe('the twist catalogue: one shape a night, and each leaves its own trail'
     // firings, which is the population size Task 4's surviving mutation lived
     // in. Doubling the sample is the fix; lowering the floor would not be.
     const runs = seasons(400);
-    let named = 0, silent = 0, lines = 0;
+    let named = 0, silent = 0, lines = 0, blockedSeconds = 0, doublesNamingBoth = 0;
     // EVERY POOL AND EVERY LINE IN IT. Two pools in the first draft of this
     // file were written, registered and unreachable -- `on-trial-1` because
     // the death list always ran to three names, and the `{a}, {b} and {c}`
@@ -695,23 +695,110 @@ describe('the twist catalogue: one shape a night, and each leaves its own trail'
             .toContain(r.variantData.companion);
         }
         if (r.variant === 'double') {
+          // UNFAILABLE AS IT STOOD (whole-plan review, F8), and it was hiding
+          // a real defect. It read `if (line.includes(a)) expect(line).toContain(b)`
+          // — a line naming NEITHER victim satisfied it, and every line in the
+          // `double` pool names both by construction, so the branch could only
+          // ever confirm what the substitution had already done.
+          //
+          // What it should assert is that the sentence agrees with the LEDGER:
+          // a night narrated as a double really did produce two bodies. It did
+          // not always. When the second victim held a Shield, `victims` came
+          // back as ONE name while the line still said "the castle counts them
+          // twice" — 2 nights in 1,200 seasons, the same nights F2 is about,
+          // and the old guard destructured `[a, b]` off a one-element array and
+          // asked `toContain(undefined)` on them. Fixed at source: such a night
+          // is narrated as a standard murder now.
+          expect(r.variantData.victims, 'a night recorded as a double did not leave two bodies')
+            .toHaveLength(2);
+          expect(r.variantData.secondBlocked, 'a night with a blocked second victim was still '
+            + 'narrated as a double').toBeFalsy();
+          // BOTH OR NEITHER, which is the pool's actual contract — some of its
+          // lines name nobody ("Two chairs, and the castle counts them twice
+          // before it believes it") and that is deliberate. What may never
+          // happen is one name without the other.
           const [a, b] = r.variantData.victims;
-          if (r.variantLine.includes(a)) {
-            expect(r.variantLine, 'a double-murder line named one body and not the other')
-              .toContain(b);
-          }
+          const hasA = r.variantLine.includes(a), hasB = r.variantLine.includes(b);
+          expect(hasA, `a double-murder line named one body and not the other: ${r.variantLine}`)
+            .toBe(hasB);
+          if (hasA) doublesNamingBoth++;
+        }
+        if (r.variantData?.secondBlocked) {
+          // AND THE CONVERSE, over the whole record rather than over one
+          // branch: a blocked second name means one body, and no sentence
+          // anywhere on that night may claim two.
+          blockedSeconds++;
+          expect(r.variant, 'a shielded second victim left the night narrated as a double')
+            .not.toBe('double');
+          expect(r.variantData.victims, 'a blocked second victim is counted among the dead')
+            .toEqual([r.murderTarget]);
         }
       }
     }
-    console.log(`[population] ${lines} variant sentences; chapel ${named} named / ${silent} silent`);
+    console.log(`[population] ${lines} variant sentences; chapel ${named} named / ${silent} silent;`
+      + ` ${blockedSeconds} nights had their second victim shielded;`
+      + ` ${doublesNamingBoth} double lines named both bodies`);
     console.log('[coverage] lines reached per pool: ' + Object.keys(VARIANT_LINES)
       .map(k => `${k} ${(reached[k]?.size ?? 0)}/${VARIANT_LINES[k].length}`).join(', '));
     for (const [key, pool] of Object.entries(VARIANT_LINES)) {
       expect(reached[key]?.size ?? 0,
         `the ${key} pool has lines nothing ever reaches`).toBe(pool.length);
     }
+    // `blockedSeconds` IS REPORTED AND NOT FLOORED. A double whose second
+    // victim holds a Shield is 2 nights in 1,200 seasons, so this 400-season
+    // population expects 0.67 of one and a floor over it would be a coin flip.
+    // The state is asserted where it is reachable instead — the seeded arm
+    // directly below, which hits both of the nights that exist.
     expect(named, 'no chapel plea ever named anybody').toBeGreaterThan(40);
     expect(silent, 'no chapel plea was ever empty — the split is untested').toBeGreaterThan(20);
+  });
+
+  it('and a double whose second name was shielded is not narrated as a double at all', () => {
+    // TWO NAMED SEASONS, because the state is 2 nights in 1,200 and no sampled
+    // population this suite can afford will contain one reliably (the arm above
+    // expects 0.67 of a night). Task 4's rule for a rule about a rare state is
+    // to assert where it is DECIDED; these two seeds ARE the decision, every
+    // one of it that the engine produces inside 1,200 seasons.
+    //
+    // THE DEFECT. `_shapeNight` builds the double's sentence before anybody is
+    // removed, because that is the only moment both names exist, and every line
+    // in the `double` pool asserts two deaths. If the SECOND name then turns
+    // out to hold a Shield, one person dies and the record still said "the
+    // castle counts them twice". `resolveMurder` now drops back to a standard
+    // murder, which is what the night actually was — the block stays on
+    // `gs.tr.blockedMurders`, `secondBlocked` still names who lived, and the
+    // Shield's own channel in js/tr/powers.js is what speaks about it.
+    //
+    // If a future change reroutes the rng these seeds stop hitting the state,
+    // and the coverage assertion below says so loudly rather than passing.
+    const found = [];
+    for (const seed of [613, 1086]) {
+      setPlayers(BIG_ROSTER);
+      const s = playTraitorsSeason({ cast: BIG_CAST, seed });
+      for (const r of (s.rounds || [])) {
+        if (!r.variantData?.secondBlocked) continue;
+        found.push(`seed ${seed} ep ${r.ep}`);
+        expect(r.variant, 'a night whose second victim was shielded is still narrated as a double')
+          .not.toBe('double');
+        expect(r.variantLine, `a sentence survived onto a night with one body: ${r.variantLine}`)
+          .toBeFalsy();
+        expect(r.variantData.victims, 'the shielded second name is counted among the dead')
+          .toEqual([r.murderTarget]);
+        expect(r.murdered, 'the first victim did not die, so this is not the state at all')
+          .toBe(r.murderTarget);
+        // AND THE BLOCK IS ON THE LEDGER, which is what makes it a block rather
+        // than a night the Traitors simply never went near the holder — the
+        // reading js/tr/powers.js takes off exactly this record (F2).
+        const blocked = (s.blockedMurders || [])
+          .filter(b => b.ep === r.ep && b.target === r.variantData.secondBlocked);
+        expect(blocked, 'the shielded second victim left no blocked-murder record')
+          .toHaveLength(1);
+      }
+    }
+    console.log(`[coverage] blocked-second nights reached: ${found.join(', ') || 'NONE'}`);
+    expect(found, 'neither seeded season produced a double with a shielded second victim any '
+      + 'more — the rng has moved and this guard is now asserting over nothing')
+      .toHaveLength(2);
   });
 
   it('THE LEDGER AGREES WITH THE NIGHT: two bodies on a double, a Traitor on a sacrifice', () => {

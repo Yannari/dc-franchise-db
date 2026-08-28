@@ -1914,15 +1914,15 @@ export function _textWhyVote(ep, ln, sec) {
   };
   (ep.coachCardCommits || []).forEach(cm => {
     if (!(cm.votes || []).length) {
-      ln(`THE SIGNATURES — ${cm.coach} played the card with no other coach left to sign. It carries.`);
+      ln(`THE SIGNATURES — ${cm.calledBy || cm.coach} played the card with no other coach left to sign. It carries.`);
       return;
     }
-    ln(`THE SIGNATURES — ${cm.coach} played the save card. Sealed before a single vote was read.`);
+    ln(`THE SIGNATURES — ${cm.calledBy || cm.coach} calls for the save card. It covers ${(cm.covers || [cm.coach]).join(' and ')} — whichever of them the votes come for. Sealed before a single vote was read.`);
     cm.votes.forEach(v => {
       ln(`  ${v.coach}: ${v.consents ? 'SIGNED' : 'REFUSED'} — ${_sigWhy[v.reason] || 'no reason given'}.`);
     });
     ln(cm.signed
-      ? `  Unanimous. The card is live for ${cm.coach}.`
+      ? `  Unanimous. The card is live for ${(cm.covers || [cm.coach]).join(' and ')}.`
       : `  Not unanimous. It does not carry tonight — but it was refused, not played, so the card is still on the tribe for whoever is left to ask again.`);
   });
 
@@ -1954,7 +1954,7 @@ export function _textWhyVote(ep, ln, sec) {
   (ep.coachCardCommits || []).forEach(cm => {
     if ((ep.coachSaves || []).some(v => v.coach === cm.coach)) return;
     if ((ep.coachSaveRefusals || []).some(v => v.coach === cm.coach)) return;
-    ln(`SAVE CARD BURNED — ${cm.coach} committed the card before the votes were read. The votes went elsewhere. It is gone.`);
+    ln(`SAVE CARD BURNED — ${cm.calledBy || cm.coach} committed the card before the votes were read and it covered ${(cm.covers || [cm.coach]).join(' and ')}. The votes went to a contestant instead. It is gone.`);
   });
   (ep.coachCardNotPlayed || []).forEach(np => {
     if (!np.held) return;

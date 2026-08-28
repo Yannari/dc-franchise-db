@@ -177,8 +177,8 @@ function _buildSidebarContent(ep) {
   const _anyPeer = Object.values(data).some(t => (t.peerCount || 0) > 1);
   out += `<div class="cb-sb-legend">
     <div class="cb-sb-legend-title">The Save Card</div>
-    <div>One card for the whole coaching staff, not one each. If the tribe votes a coach out, ${_anyPeer
-      ? 'the other coaches on that team can spend it to keep them — and every one of them has to agree. A single refusal sends the coach home.'
+    <div>One card for the whole coaching staff, and it covers all of them — whichever coach the tribe votes out is the one it saves. That is why ${_anyPeer
+      ? 'every one of them has to sign for it: they are all protected by it, so they all get a say in spending it. A single refusal leaves the whole staff exposed, refuser included.'
       : 'with no other coach left on the team there is nobody to withhold a signature, so it carries on its own.'}</div>
     <div>Spent, it costs a contestant: the coach names who goes instead.</div>
   </div>`;
@@ -588,13 +588,13 @@ export function rpBuildCoachSignatures(ep) {
       </div>`;
     }).join('');
     const outcome = cm.signed
-      ? `<div class="cb-sig-outcome cb-sig-yes">Unanimous. The card is live for ${cm.coach} — if the votes come for ${cm.coach} tonight, ${cm.coach} stays.</div>`
+      ? `<div class="cb-sig-outcome cb-sig-yes">Unanimous. The card is live for ${(cm.covers || [cm.coach]).join(' and ')} — whichever of them the votes come for tonight, that one stays.</div>`
       : `<div class="cb-sig-outcome cb-sig-no">Not unanimous. ${cm.refusedBy
-          ? `${cm.refusedBy} would not sign, so it does not carry tonight — and ${cm.coach} has nothing to hide behind when the votes are read.`
-          : 'It does not carry tonight.'} The card itself is not spent: it was never played, only refused, and it is still there for whoever is left to ask again.</div>`;
+          ? `${cm.refusedBy} would not sign — and refusing covers ${cm.refusedBy} too, so ${cm.refusedBy} walks into these votes with nothing either.`
+          : 'It does not carry tonight.'} The card itself is not spent: it was never played, only refused, and it is still there to ask about again.</div>`;
     return `<div class="cb-sig-block">
-      <div class="cb-sig-title">${cm.coach} played the save card</div>
-      <div class="cb-sig-sub">Sealed before a single vote was read. ${cm.coach} does not know what is in these.</div>
+      <div class="cb-sig-title">${cm.calledBy || cm.coach} calls for the save card</div>
+      <div class="cb-sig-sub">It covers ${(cm.covers || [cm.coach]).join(' and ')} — whichever of them the votes come for. Sealed before a single vote was read, and ${cm.calledBy || cm.coach} does not know what is in these.</div>
       ${rows}
       <div id="cb-step-sigs-${idx++}" class="cb-step">${outcome}</div>
     </div>`;

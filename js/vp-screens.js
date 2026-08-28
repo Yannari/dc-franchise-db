@@ -10496,17 +10496,21 @@ export function rpBuildVotingPlans(ep) {
           const [first, second] = ranked;
           const gap = r.aimedAt[first] - r.aimedAt[second];
           const bond = getBond(first, second);
+          // The card covers the whole staff, so this is not a race for it —
+          // it is a decision about WHEN. Spend it tonight and whoever falls is
+          // saved; spend it tonight and neither of them has anything for the
+          // rest of the season.
           const between = bond >= 2
-            ? `${first} and ${second} get on, which makes this worse rather than easier: whoever signs is handing over the only thing standing between themselves and the next vote.`
+            ? `${first} and ${second} get on, so the argument is not about who deserves it — it is about whether tonight is really the night to spend the only protection either of them will ever have.`
             : bond <= -2
-              ? `${first} and ${second} do not get on, so this is a race rather than a sacrifice. Neither has any reason to sign for the other, and the card may simply go unplayed.`
-              : `Nothing much has passed between ${first} and ${second} either way, so this comes down to which of them believes the room more.`;
+              ? `${first} and ${second} do not get on, which is the problem: signing costs each of them their own safety net as much as it buys the other's, and neither trusts the other to be worth it.`
+              : `Nothing much has passed between ${first} and ${second} either way, so it comes down to which of them believes the room, and whether the other believes them.`;
           const shape = gap > 0
-            ? `The room is leaning harder on ${first} (${r.aimedAt[first]} bloc${r.aimedAt[first] === 1 ? '' : 's'}) than on ${second} (${r.aimedAt[second]}), which is an argument ${first} can make and ${second} has to accept.`
-            : `The room is split evenly between them — ${r.aimedAt[first]} bloc${r.aimedAt[first] === 1 ? '' : 's'} each — so there is no honest way to say whose need is greater.`;
+            ? `The room is leaning harder on ${first} (${r.aimedAt[first]} bloc${r.aimedAt[first] === 1 ? '' : 's'}) than on ${second} (${r.aimedAt[second]}).`
+            : `The room is split evenly between them — ${r.aimedAt[first]} bloc${r.aimedAt[first] === 1 ? '' : 's'} each.`;
           return `<div style="padding:9px 10px;background:rgba(248,81,73,.06);border:1px solid rgba(248,81,73,.25);border-radius:8px;grid-column:1/-1">
-            <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#f85149">${ranked.join(' AND ')} · TWO NAMES, ONE CARD</div>
-            <div style="font-size:11px;color:#c9d1d9;margin-top:3px">Both of them are on the board and there is one card between them. It saves one, and whoever it does not save has nothing left. ${shape} ${between}</div>
+            <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#f85149">${ranked.join(' AND ')} · BOTH ON THE BOARD, ONE CARD</div>
+            <div style="font-size:11px;color:#c9d1d9;margin-top:3px">Both of them are named tonight and there is one card between them. It covers both — whichever of them the votes come for is the one it saves — but it can only be spent once, and spending it leaves the survivor with nothing for the rest of the season. ${shape} ${between}</div>
           </div>`;
         }
         const label = r.aimed >= 2 ? 'CORNERED' : r.aimed === 1 ? 'A NAME ON THE BOARD' : 'HOLDING, FOR NOW';
@@ -12487,9 +12491,9 @@ export function rpBuildVotes(ep) {
       <div class="tv-advantage-play-body">
         <div class="tv-advantage-play-badge" style="color:#e8873a;background:rgba(232,135,58,0.12);border-color:rgba(232,135,58,0.3)">COACH'S SAVE CARD</div>
         <div class="tv-advantage-play-title">${_sv.coach} is eliminated — and the save card was <span style="color:#3fb950">USED</span></div>
-        <div class="tv-advantage-play-desc">The votes were for ${_sv.coach}. ${_signers.length
-          ? `${_signers.join(' and ')} signed — the card needs every coach on the team, and got them.`
-          : 'The card was played.'} ${_sv.coach} stays.</div>
+        <div class="tv-advantage-play-desc">The votes were for ${_sv.coach}. The staff's card covered every coach on this tribe, and ${_signers.length
+          ? `${_signers.join(' and ')} signed for it${_sv.calledBy && _sv.calledBy !== _sv.coach ? ` after ${_sv.calledBy} called for it` : ''}.`
+          : 'it was played with nobody left to refuse.'} ${_sv.coach} stays.</div>
         ${_sv.replacement ? `<div class="tv-advantage-play-result">It is not free: ${_sv.coach} names ${_sv.replacement}, who leaves instead.</div>` : ''}
       </div>
     </div>`;
@@ -12520,9 +12524,9 @@ export function rpBuildVotes(ep) {
       <div class="tv-advantage-play-left">${rpPortrait(_cm.coach)}</div>
       <div class="tv-advantage-play-body">
         <div class="tv-advantage-play-badge" style="color:#8b949e;background:rgba(139,148,158,0.1);border-color:rgba(139,148,158,0.25)">SAVE CARD BURNED</div>
-        <div class="tv-advantage-play-title">${_cm.coach} played the card and did not need it</div>
-        <div class="tv-advantage-play-desc">${_cm.coach} read the room as coming for them and committed the card before a vote was read. The votes went elsewhere.</div>
-        <div class="tv-advantage-play-result">The card is gone. ${_cm.coach} has no protection left.</div>
+        <div class="tv-advantage-play-title">The card was played and nobody needed it</div>
+        <div class="tv-advantage-play-desc">${_cm.calledBy || _cm.coach} read the room as coming for the staff and committed the card before a vote was read. It covered ${(_cm.covers || [_cm.coach]).join(' and ')}, and the votes went to a contestant instead.</div>
+        <div class="tv-advantage-play-result">The card is gone. ${(_cm.covers || [_cm.coach]).join(' and ')} have no protection left.</div>
       </div>
     </div>`;
   }

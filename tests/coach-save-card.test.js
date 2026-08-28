@@ -285,3 +285,50 @@ describe('a refusal does not consume the card', () => {
       'the idol risk is the whole reason it commits before the votes').toBe('used');
   });
 });
+
+// THE CARD COVERS THE STAFF, NOT THE COACH WHO PLAYED IT. That is the whole
+// reason it needs every signature: each of them is protected by it, so each of
+// them gets a say in spending it.
+//
+// It was built to save only whoever reached for it, so a tribe could play the
+// card, have it signed unanimously — "the card is live for Caleb" — and then
+// watch Millie get voted out with a live card sitting in the staff's pocket.
+describe('the card covers every coach on the tribe', () => {
+  it('names the whole staff as covered, not just the coach who called for it', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 9);
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' }], () => 0);
+    const cm = ep.coachCardCommits?.[0];
+    expect(cm, 'nobody reached for it').toBeTruthy();
+    expect(cm.covers.sort()).toEqual(['Julia', 'Wayne']);
+    expect(cm.calledBy).toBe('Julia');
+  });
+
+  it('saves the OTHER coach when the votes go to them instead', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 9);
+    addBond('Wayne', 'Finn', -6);       // who Wayne would name
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' }], () => 0);
+    expect(ep.coachCardCommits[0].signed).toBe(true);
+
+    // Julia called for it. Wayne is the one the room actually sent home.
+    const result = { eliminated: 'Wayne' };
+    expect(maybeSaveCoach(ep, result),
+      'a live signed card sat in the pocket while the other coach went home').toBe(true);
+    expect(result.eliminated, 'the saved coach names their own replacement').toBe('Finn');
+    expect(ep.coachSaves[0].coach).toBe('Wayne');
+    expect(ep.coachSaves[0].calledBy).toBe('Julia');
+  });
+
+  it('is still spent only once, whichever of them it ends up saving', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 9);
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' }], () => 0);
+    expect(tribeCardState('Red')).toBe('used');
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Wayne' }], () => 0);
+    expect(ep.coachCardCommits.length, 'the staff played a card it no longer had').toBe(1);
+  });
+});

@@ -382,7 +382,12 @@ export function maybeSaveCoach(ep, result) {
   // only resolves what was already sealed — a coach who did not play cannot
   // reach back for it now, which is the whole reason the card is frightening
   // rather than merely inconvenient.
-  const commit = (ep.coachCardCommits || []).find(c => c.coach === result.eliminated);
+  // Any live commit on this coach's tribe covers them — the card protects the
+  // staff, not the individual who called for it. Looking it up by name is what
+  // let a signed, live card sit in a pocket while the other coach went home.
+  const commit = (ep.coachCardCommits || []).find(c =>
+    (c.covers ? c.covers.includes(result.eliminated) : c.coach === result.eliminated)
+    && (!c.tribe || c.tribe === record.tribe));
   if (!commit) {
     ep.coachCardNotPlayed = [...(ep.coachCardNotPlayed || []), { coach: result.eliminated,
       held: tribeCardHeld(record.tribe) }];
@@ -396,13 +401,15 @@ export function maybeSaveCoach(ep, result) {
     return false;
   }
 
-  const replacement = predictedReplacement(commit.coach)
+  // The coach actually being saved names the replacement, not whoever called
+  // for the card.
+  const replacement = predictedReplacement(result.eliminated)
     || (tribeObj.members || []).filter(m => !isCoach(m))
-        .slice().sort((a, b) => getBond(commit.coach, a) - getBond(commit.coach, b))[0];
+        .slice().sort((a, b) => getBond(result.eliminated, a) - getBond(result.eliminated, b))[0];
   if (!replacement) return false;
 
-  ep.coachSaves = [...(ep.coachSaves || []), { coach: commit.coach, tribe: commit.tribe,
-    replacement, votes: commit.votes }];
+  ep.coachSaves = [...(ep.coachSaves || []), { coach: result.eliminated, tribe: commit.tribe,
+    calledBy: commit.calledBy || commit.coach, replacement, votes: commit.votes }];
   result.eliminated = replacement;
   return true;
 }
@@ -862,51 +869,54 @@ export function coachCardTalk(ep, tribe, roll = Math.random) {
  * known to them until it matters.
  */
 export function commitSaveCards(ep, tribeLabel, alliances = [], roll = Math.random) {
-  const commits = [];
-  for (const c of coachesOf(tribeLabel)) {
-    const rec = coachRecord(c.name);
-    if (!rec || !tribeCardHeld(tribeLabel)) continue;
+  const staff = coachesOf(tribeLabel);
+  if (!staff.length || !tribeCardHeld(tribeLabel)) return [];
 
-    // What the coach can see: how many voting blocs have named them.
-    const aimed = alliances.filter(a => a.target === c.name).length;
-    if (!aimed) continue;                       // no read, no reason to spend
-    const st = pStats(c.name);
-    // Reading the room is intuition; committing on that read is boldness.
-    const danger = Math.min(1, aimed * 0.45);
-    const play = danger * (0.45 + st.intuition * 0.04) * (0.6 + st.boldness * 0.04);
-    if (roll() >= Math.min(0.95, play)) continue;
+  // THE CARD COVERS THE STAFF, NOT THE COACH WHO PLAYED IT. That is the whole
+  // reason it needs every signature: each of them is protected by it, so each
+  // of them gets a say in whether it is spent tonight. It was built to save
+  // only the coach who reached for it, which meant a tribe could play the card,
+  // have it signed unanimously, and then watch the OTHER coach get voted out
+  // with a live card in the staff's pocket.
+  const aimedAt = Object.fromEntries(staff.map(c => [c.name, alliances.filter(a => a.target === c.name).length]));
+  const exposed = staff.filter(c => aimedAt[c.name] > 0);
+  if (!exposed.length) return [];
 
-    // Unanimity means every peer must sign. With no peers there is nobody to
-    // withhold a signature, so the card works — vacuously, not by exception.
-    //
-    // It was the other way round, and the measurement killed it: across four
-    // seasons a bloc named a coach 29 times, and 15 of those the coach was
-    // the last one standing on their tribe. Coaches get voted out constantly,
-    // so "no peers, no card" meant the first coach boot disarmed the card for
-    // the rest of the season. The refusal-as-a-weapon rule is untouched; it
-    // just no longer kills the card as collateral.
-    const peers = coachesOf(tribeLabel).filter(p => p.name !== c.name);
-    const votes = peers.map(p => ({ coach: p.name, ...saveCardVerdict(p.name, c.name) }));
-    const signed = votes.every(v => v.consents);
+  // Whoever reads the room decides to reach for it — the most exposed, and
+  // between equals the one who sees it coming soonest. Intuition reads the
+  // danger; boldness is what acts on the read.
+  const reader = exposed.slice().sort((a, b) =>
+    aimedAt[b.name] - aimedAt[a.name]
+    || pStats(b.name).intuition - pStats(a.name).intuition)[0];
+  const st = pStats(reader.name);
+  const danger = Math.min(1, Math.max(...Object.values(aimedAt)) * 0.45);
+  const play = danger * (0.45 + st.intuition * 0.04) * (0.6 + st.boldness * 0.04);
+  if (roll() >= Math.min(0.95, play)) return [];
 
-    // Spent only if it CARRIES. A refused card never activated — nobody was
-    // saved by it and nothing was consumed — so burning it on a refusal let a
-    // rival destroy the staff's only card just by declining, on top of already
-    // killing the coach who reached for it. Signed and not needed is still a
-    // burn; that is the idol risk the pre-vote commitment exists to create.
-    if (signed) spendTribeCard(tribeLabel);
-    if (!gs.coachSaveLedger) gs.coachSaveLedger = [];
-    const _epNum = Number(ep?.num || gs.episode || 0);
-    for (const v of votes) {
-      gs.coachSaveLedger.push(v.consents
-        ? { signer: v.coach, saved: c.name, ep: _epNum, reason: v.reason }
-        : { refuser: v.coach, saved: c.name, ep: _epNum, reason: v.reason });
-    }
-    commits.push({ coach: c.name, tribe: tribeLabel, votes, signed,
-      refusedBy: votes.find(v => !v.consents)?.coach || null });
+  // Every coach on the tribe signs — including the one who called for it, who
+  // is not asked because reaching for it IS their signature.
+  const peers = staff.filter(c => c.name !== reader.name);
+  const votes = peers.map(pc => ({ coach: pc.name, ...saveCardVerdict(pc.name, reader.name) }));
+  const signed = votes.every(v => v.consents);
+
+  if (signed) spendTribeCard(tribeLabel);
+
+  if (!gs.coachSaveLedger) gs.coachSaveLedger = [];
+  const _epNum = Number(ep?.num || gs.episode || 0);
+  for (const v of votes) {
+    gs.coachSaveLedger.push(v.consents
+      ? { signer: v.coach, saved: reader.name, ep: _epNum, reason: v.reason }
+      : { refuser: v.coach, saved: reader.name, ep: _epNum, reason: v.reason });
   }
-  if (commits.length) {
-    ep.coachCardCommits = [...(ep.coachCardCommits || []), ...commits];
-  }
-  return commits;
+
+  const commit = {
+    tribe: tribeLabel,
+    calledBy: reader.name,
+    covers: staff.map(c => c.name),   // every coach on this tribe
+    coach: reader.name,               // kept for readers that pre-date coverage
+    votes, signed,
+    refusedBy: votes.find(v => !v.consents)?.coach || null,
+  };
+  ep.coachCardCommits = [...(ep.coachCardCommits || []), commit];
+  return [commit];
 }

@@ -194,3 +194,53 @@ Both invisible to the manual's §13 commands because they are written across two
 
 **A Traitors season goes down the Total Drama branch in both.** Task 3 must add a
 registry-driven dispatch at 2874 rather than a third branch.
+
+## Task 2 done — and the branch had moved past the brief AGAIN
+
+`c5760de0` had already changed the gate (the spec's line 505 is now 549) to
+`if (!fromLedger && !p.isReturnee) continue;`, with `historyFromLedger: true` already on the
+registry entry. **Three of eight tests were green before source was touched.** What was
+missing was the NAMED predicate: `hasFranchiseHistory` existed nowhere, the question being
+answered by an inlined `_historyFor().length` that nothing outside could test.
+
+**Second task in a row where the plan described a state the branch had passed.** Both times
+the work was still worth doing, because what was missing was the thing that KEEPS the property
+true -- a rule in Task 1, a named and testable predicate here. But brief from the branch.
+
+One divergence kept deliberately: the branch also requires `formatIsRunnable(cfg)`, because a
+season stamped `traitors` before the engine ships falls through to the Total Drama run loop.
+Implementing the brief literally would have reopened that. Pinned with its own mutation.
+
+**Measurement:** Traitors cast (20 alumni, nobody flagged) gets **20/20 profiles under
+`hasFranchiseHistory`, 0/20 under `isReturnee`**. **Total Drama 0/262 and Big Brother 0/17
+classify differently** -- computed season-by-season against the ledger as it stood BEFORE each
+season, verified rather than assumed.
+
+### Evidence source 5 is AVAILABLE but not WIRED
+
+No band could have moved, because **nothing under `js/tr/` reads `gs.franchiseMeta`**. The
+priors are now reachable; `deduction.js` does not yet consult them. And `js/tr/castle/
+callback.js` reads `activeSeasons()` DIRECTLY, so the callback family was never gated by this
+predicate and its content volume is unchanged. **Wiring source 5 into the deduction model is
+an unbuilt task** -- it would move every deduction band and needs its own measurement.
+
+### The grudge system is running on no data
+
+**Zero seeded pairs come back on the real ledger, under either predicate.** Not the predicate's
+fault: `backfillFromSeasonData` writes only placement/winner/finalist/chalWins and **never**
+`betrayed`/`allies`/`showmances`/`blindsidedBy` -- which is exactly what `seededPairs` is built
+from. A real Traitors cast currently gets reputation and résumés but **no grudges**, until
+seasons are re-imported via `backfillFromEnrichedSeason`.
+
+**Data gap, not code gap.** The fixture seeds those fields and the path is guarded, which is
+why every test that exercises grudges passes. Anything calibrated on grudge volume before the
+re-import would be calibrated on an empty set.
+
+### The spec's ledger figures match no file
+
+Spec §11 says "182 players, 279 appearances". `data/seasons/` gives **152 players, 262
+appearances**; `players_database.json` gives **169/279**. Nothing depends on it today, but a
+later task sizing a sample against that figure would be sizing against nothing.
+
+Also: the gate is now a ternary on a two-valued show flag. A future show wanting BOTH semantics
+needs `hasFranchiseHistory(name) || p.isReturnee`. Correct for both current values, flagged.

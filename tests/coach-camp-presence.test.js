@@ -576,12 +576,15 @@ describe('two names, one card', () => {
         const hist = { ...(core.gs.episodeHistory.find(h => h.num === e.num) || {}), ...e.ep };
         let html = '';
         try { html = vp.rpBuildVotingPlans(hist) || ''; } catch { continue; }
-        if (!html.includes('TWO NAMES, ONE CARD')) continue;
+        if (!html.includes('BOTH ON THE BOARD, ONE CARD')) continue;
         contested++;
-        // It has to say what makes it a dilemma, not just restate the danger.
-        expect(html).toContain('It saves one, and whoever it does not save has nothing left');
+        // The dilemma is WHEN to spend it, not who gets it: the card covers
+        // both, so whoever falls tonight is saved and the survivor is left
+        // with nothing for the rest of the season.
+        expect(html).toContain('It covers both');
+        expect(html).toContain('leaves the survivor with nothing');
         // And it must not also print the single-coach read for the same people.
-        const i = html.indexOf('TWO NAMES, ONE CARD');
+        const i = html.indexOf('BOTH ON THE BOARD, ONE CARD');
         const block = html.slice(i, i + 900);
         expect(block, 'the contested read fell back to the per-coach wording')
           .not.toContain('A NAME ON THE BOARD');

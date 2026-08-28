@@ -957,6 +957,12 @@ export const HOSTS_BY_FORMAT = {
     { value: 'Arisa Cox', label: 'Arisa Cox' },
   ],
   'traitors': [
+    // Valeria is the default host and the show's voice: Julie Chen's studio
+    // authority with Blaineley's arch self-regard. Her portrait is
+    // assets/avatars/valeria.png, resolved the same way a player's is, so a
+    // screen never hardcodes a host name -- swapping the host must swap every
+    // line she speaks. See ADDING-A-SHOW.md §14.10 for the bug class.
+    { value: 'Valeria',  label: 'Valeria Sandoval' },
     { value: 'Alistair', label: 'Alistair Crane' },
     { value: 'Claudia',  label: 'Claudia Winterbourne' },
   ],

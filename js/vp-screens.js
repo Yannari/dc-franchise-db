@@ -31,6 +31,8 @@ import { rpBuildConclave, trConclaveRevealNext, trConclaveRevealAll } from './vp
 import { rpBuildRoundTable, trRoundTableRevealNext, trRoundTableRevealAll } from './vp-tr/round-table.js';
 import { rpBuildColdOpen, trColdOpenRevealNext, trColdOpenRevealAll } from './vp-tr/cold-open.js';
 import { rpBuildHouseStatus, trHouseStatusRevealNext, trHouseStatusRevealAll } from './vp-tr/house-status.js';
+import { rpBuildMission, trMissionRevealNext, trMissionRevealAll } from './vp-tr/mission.js';
+import { rpBuildRecruitment, trRecruitmentRevealNext, trRecruitmentRevealAll } from './vp-tr/recruitment.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -13554,6 +13556,16 @@ export function buildVPScreens(epRecord) {
       vpScreens.push({ id: 'tr-status', label: 'The Day Book',
         html: rpBuildHouseStatus(epRecord, _obs) });
     }
+    // THE AFTERNOON, and it sits between the board and the table because
+    // that is where it happens: the castle reads the book over breakfast,
+    // goes out on the estate, comes back and sits down. Registered off the
+    // record rather than off an episode number -- a mission needs four
+    // people and an endgame round runs none, so plenty of rows have no
+    // afternoon and must not get a screen.
+    if (epRecord.tr && epRecord.tr.mission) {
+      vpScreens.push({ id: 'tr-mission', label: 'The Mission',
+        html: rpBuildMission(epRecord, _obs) });
+    }
     if (epRecord.tr && epRecord.tr.table) {
       vpScreens.push({ id: 'tr-round-table', label: 'The Round Table',
         html: rpBuildRoundTable(epRecord, _obs) });
@@ -13561,6 +13573,15 @@ export function buildVPScreens(epRecord) {
     if (epRecord.tr && epRecord.tr.conclave) {
       vpScreens.push({ id: 'tr-conclave', label: 'The Conclave',
         html: rpBuildConclave(epRecord, _obs) });
+    }
+    // AND THE OFFER, WHICH IS THE OTHER THING A NIGHT CAN BE. Recruitment and
+    // murder are exclusive -- the pact gets one action a night -- so this
+    // screen and the conclave are never both registered, and most nights
+    // carry neither. It is last for the same reason the conclave is: it is
+    // the private half of the night, after the room has gone to bed.
+    if (epRecord.tr && epRecord.tr.recruitment) {
+      vpScreens.push({ id: 'tr-recruitment', label: 'The Offer',
+        html: rpBuildRecruitment(epRecord, _obs) });
     }
     return vpScreens;
   }

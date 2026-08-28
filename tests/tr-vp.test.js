@@ -45,6 +45,8 @@ import { rpBuildConclave, conclaveVisibleTo, trConclaveRevealAll, _portrait } fr
 import { rpBuildRoundTable, trRoundTableRevealAll } from '../js/vp-tr/round-table.js';
 import { rpBuildColdOpen, trColdOpenRevealAll } from '../js/vp-tr/cold-open.js';
 import { rpBuildHouseStatus, trHouseStatusRevealAll } from '../js/vp-tr/house-status.js';
+import { rpBuildMission, trMissionRevealAll } from '../js/vp-tr/mission.js';
+import { rpBuildRecruitment, trRecruitmentRevealAll } from '../js/vp-tr/recruitment.js';
 import { buildVPScreens } from '../js/vp-screens.js';
 import { HOSTS_BY_FORMAT } from '../js/quick-setup.js';
 import roster from '../franchise_roster.json';
@@ -350,7 +352,8 @@ describe('no narration names a host', () => {
     // of four. Comments are stripped, because the file's own header has to be
     // able to explain what it is forbidding.
     for (const f of ['js/vp-tr/conclave.js', 'js/vp-tr/style.js', 'js/vp-tr/scenery.js',
-      'js/vp-tr/round-table.js', 'js/vp-tr/cold-open.js', 'js/vp-tr/house-status.js']) {
+      'js/vp-tr/round-table.js', 'js/vp-tr/cold-open.js', 'js/vp-tr/house-status.js',
+      'js/vp-tr/mission.js', 'js/vp-tr/recruitment.js']) {
       const src = readFileSync(new URL('../' + f, import.meta.url), 'utf8')
         .replace(/\/\*[\s\S]*?\*\//g, ' ')
         .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
@@ -1718,7 +1721,7 @@ describe('the fund the board prints is the fund the record carries', () => {
     // confined them: they are separate quantities that look interchangeable
     // from anywhere outside js/tr/crowd.js.
     const FILES = ['conclave.js', 'style.js', 'scenery.js', 'round-table.js',
-      'cold-open.js', 'house-status.js'];
+      'cold-open.js', 'house-status.js', 'mission.js', 'recruitment.js'];
     let scanned = 0;
     for (const f of FILES) {
       const src = readFileSync(new URL('../js/vp-tr/' + f, import.meta.url), 'utf8')
@@ -2167,5 +2170,548 @@ describe("neither screen borrows the turret's lamp", () => {
       expect(rule.exec(c[1]), `${c[0]}: no portrait rule`).toBeTruthy();
       expect(rule.exec(c[1])[0], c[0]).toBe(rule.exec(turret)[0]);
     }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE MISSION AND THE OFFER (Plan 8, Task 4)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Same rule as the rest of this file: the LOOK of these two screens is judged
+// by rendering them, and nothing below asserts anything about CSS. What is
+// guarded here is what stays invisible on a beautiful, finished, working
+// screen:
+//
+//   1. THE FUND ON THE PAGE IS THE FUND ON THE RECORD. The mission is where
+//      the money comes from and the figure is the one thing a viewer will
+//      quote. A wrong number looks exactly like a right one.
+//   2. A RELIC DOES NOT NAME ITS HOLDER TO SOMEBODY WHO WAS NOT THERE. Plan 6
+//      built the Shield semi-visibly on purpose; the asymmetry IS the
+//      mechanic. A screen that names every holder to everybody has deleted it
+//      and looks identical.
+//   3. THE NOTE AND THE ULTIMATUM ARE DIFFERENT EVENTS (spec §6.6), and the
+//      difference is life and death. A refused note must not name the
+//      recruiter to the person who refused it -- the anonymity IS the
+//      survivability, and a screen that prints the name has quietly made a
+//      note exactly as fatal to refuse as an ultimatum.
+//   4. AND BOTH SCREENS ARE REACHABLE FROM A PLAYED SEASON. This project's
+//      signature bug class, asked of `buildVPScreens` rather than of the
+//      builder.
+
+/**
+ * A dedicated, larger seed set for the offer.
+ *
+ * FOUR SEEDS IS NOT ENOUGH FOR THIS SCREEN, and the difference was measured
+ * rather than guessed. Recruitment cannot open until the room has banished a
+ * Traitor and then costs the pact a whole night, so it fires on roughly two
+ * episodes a season; the REFUSED ULTIMATUM -- the branch that produces a body
+ * and is the entire justification for the mode existing -- fired ONCE across
+ * the four seeds the rest of this file uses. One is not a population. At
+ * twelve seeds it fires three times and every other branch fires at least
+ * seven, and every count is asserted before anything is asserted about it.
+ */
+const OFFER_SEEDS = [1, 3, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41];
+const OFFER_RUNS = OFFER_SEEDS.map(season);
+/** Every episode across every offer seed that recorded an approach. */
+const OFFERS = OFFER_RUNS.flatMap(r => r.episodes.filter(e => e.tr && e.tr.recruitment)
+  .map(e => ({ ep: e, run: r })));
+/** Every episode across the shared seeds that recorded an afternoon. */
+const AFTERNOONS = RUNS.flatMap(r => r.episodes.filter(e => e.tr && e.tr.mission)
+  .map(e => ({ ep: e, run: r })));
+
+/** The mission once every card has been revealed, on a fresh reveal state. */
+function missionRevealed(ep, observer = 'audience') {
+  const fresh = { ...ep, num: ++_trN };
+  const first = rpBuildMission(fresh, observer);
+  const m = /trMissionRevealAll\('mission',(\d+),(\d+)\)/.exec(first);
+  expect(m, 'the mission did not emit a reveal handler').toBeTruthy();
+  trMissionRevealAll('mission', Number(m[1]), Number(m[2]));
+  return rpBuildMission(fresh, observer);
+}
+/** The offer once every card has been revealed, on a fresh reveal state. */
+function offerRevealed(ep, observer = 'audience') {
+  const fresh = { ...ep, num: ++_trN };
+  const first = rpBuildRecruitment(fresh, observer);
+  const m = /trRecruitmentRevealAll\('recruitment',(\d+),(\d+)\)/.exec(first);
+  // An observer who was in neither role gets the empty passage and no
+  // controls at all -- that layer is the point, so it is not an error here.
+  if (!m) return first;
+  trRecruitmentRevealAll('recruitment', Number(m[1]), Number(m[2]));
+  return rpBuildRecruitment(fresh, observer);
+}
+/** Only the relic block's markup — the team rosters two cards up are public. */
+function relicBlocks(html) {
+  return String(html).match(/<div class="mi-relic" [\s\S]*?<\/div><\/div>/g) || [];
+}
+
+/**
+ * The screen's NARRATION, with the portrait initials taken out first.
+ *
+ * `_portrait()` draws a fallback glyph of a player's initials inside every
+ * avatar, and this roster contains a player called "B". So `strip()` of a
+ * screen showing ANYBODY whose name starts with B contains a standalone "B",
+ * and a word-bounded search for the recruiter matches a letter that is part
+ * of somebody else's picture. That is a false positive and not a leak: an
+ * avatar that is actually drawn arrives with its full name beside it in
+ * `nt-who-nm`, which every check below still reads. The initials come out,
+ * the names stay in.
+ */
+function narration(html) {
+  return strip(String(html).replace(/<span class="cv-av-ini"[^>]*>[\s\S]*?<\/span>/g, ' '));
+}
+
+// THE SUBTRACTIVE HELPER, ASSERTED. Every negative arm below reads
+// `narration()`, so a regex that ate too much would make the lot of them pass
+// for free -- the same failure shape as a matcher that never matches, running
+// the other way. It has to drop the glyph and keep the sentence.
+describe('the narration helper drops initials and keeps names', () => {
+  it('takes the avatar glyph out and leaves everything else alone', () => {
+    const av = '<span class="cv-av" style="width:54px;height:54px">'
+      + '<span class="cv-av-ini" style="font-size:18px">B</span>'
+      + '<img src="assets/avatars/brick.png" alt=""></span>';
+    const html = av + '<div class="nt-who-nm">Brick</div><p>Chase refused it.</p>';
+    const text = narration(html);
+    expect(mentions(text, 'B'), 'the initials glyph survived').toBe(false);
+    expect(mentions(text, 'Brick'), 'the name was eaten with the glyph').toBe(true);
+    expect(mentions(text, 'Chase'), 'the narration was eaten').toBe(true);
+    expect(text.length, 'the helper returned nothing at all').toBeGreaterThan(20);
+  });
+});
+
+// ── GUARD: THE FUND ───────────────────────────────────────────────────
+describe('the money the mission prints is the money the record carries', () => {
+  it('a real season runs missions at all, or every arm below is vacuous', () => {
+    expect(AFTERNOONS.length, 'no played season recorded a single afternoon')
+      .toBeGreaterThan(20);
+    const paid = AFTERNOONS.filter(({ ep }) => ep.tr.mission.earned > 0);
+    expect(paid.length, 'every afternoon earned nothing, so the arithmetic below '
+      + 'is checked only against zero').toBeGreaterThan(15);
+  });
+
+  it('the record itself agrees with the fund the episode row publishes', () => {
+    // The chain has two links and this is the far one: the afternoon's own
+    // `potAfter` has to be the same quantity the row snapshots, or the screen
+    // can be faithful to a record that is faithful to nothing. Nothing else
+    // in the engine moves the fund, so these must be equal on every row.
+    let checked = 0;
+    for (const { ep } of AFTERNOONS) {
+      expect(ep.tr.mission.potAfter, `ep ${ep.num}: the afternoon's fund is not the row's`)
+        .toBe(ep.tr.pot);
+      checked++;
+    }
+    expect(checked, 'no afternoon was checked').toBeGreaterThan(20);
+  });
+
+  it('and the figure drawn on the page is that number, unmodified', () => {
+    let seen = 0;
+    for (const { ep } of AFTERNOONS) {
+      const html = missionRevealed(ep);
+      // The machine-readable copy and the human-readable one, both checked: a
+      // screen can carry the right attribute over a wrong caption, and a
+      // screen can print the right number in the wrong place.
+      const raw = /<span data-pot="(\d+)">/.exec(html);
+      expect(raw, `ep ${ep.num}: the count drew no fund at all`).toBeTruthy();
+      expect(Number(raw[1]), `ep ${ep.num}: the attribute disagrees with the record`)
+        .toBe(ep.tr.pot);
+      const printed = /<span data-pot="\d+">&pound;([\d,]+)</.exec(html);
+      expect(printed, `ep ${ep.num}: the fund is not printed`).toBeTruthy();
+      expect(Number(printed[1].replace(/,/g, '')),
+        `ep ${ep.num}: the printed fund is not the recorded one`).toBe(ep.tr.pot);
+      // and the afternoon's own take, which is the number the sting is about
+      const earned = /<div class="mi-count-n" data-earned="(\d+)">/.exec(html);
+      expect(earned, `ep ${ep.num}: the take is not drawn`).toBeTruthy();
+      expect(Number(earned[1]), `ep ${ep.num}: the take disagrees with the record`)
+        .toBe(ep.tr.mission.earned);
+      seen++;
+    }
+    expect(seen, 'no mission was rendered, so nothing above was checked')
+      .toBeGreaterThan(20);
+  });
+});
+
+// ── GUARD: A RELIC DOES NOT NAME ITS HOLDER TO A NON-WITNESS ──────────
+describe('the mission does not name a relic holder to somebody who was not there', () => {
+  /** Only the afternoons that actually put a relic in somebody's hands. */
+  const awarded = AFTERNOONS.filter(({ ep }) => {
+    const r = ep.tr.mission.relic;
+    return r && r.found && r.holder;
+  });
+
+  it('a real season awards relics at all, and not to a watching castle', () => {
+    expect(awarded.length, 'no played season handed a relic to anybody, so every arm '
+      + 'below is vacuous').toBeGreaterThan(2);
+    const anyWitnessed = awarded.some(({ ep }) =>
+      (ep.tr.mission.relic.witnesses || []).length > 0);
+    expect(anyWitnessed, 'no relic was seen by anybody, so the entitled half below '
+      + 'proves nothing').toBe(true);
+    const anyBlind = awarded.some(({ ep }) => {
+      const r = ep.tr.mission.relic;
+      return ep.tr.cast.some(n => n !== r.holder && (r.witnesses || []).indexOf(n) < 0);
+    });
+    expect(anyBlind, 'every relic was seen by the whole castle, so the blind half '
+      + 'below proves nothing either').toBe(true);
+  });
+
+  it('the audience is told, and so are the holder and the people who saw it', () => {
+    let told = 0;
+    for (const { ep } of awarded) {
+      const r = ep.tr.mission.relic;
+      const seers = ['audience', 'player:' + r.holder,
+        ...(r.witnesses || []).slice(0, 1).map(w => 'player:' + w)];
+      for (const obs of seers) {
+        const mine = relicBlocks(missionRevealed(ep, obs))
+          .filter(b => b.includes('data-holder="' + r.holder + '"'));
+        expect(mine.length,
+          `ep ${ep.num}: ${obs} was not told who came off the line with it`)
+          .toBeGreaterThan(0);
+        told++;
+      }
+    }
+    expect(told, 'nobody entitled was checked').toBeGreaterThan(6);
+  });
+
+  it('and a player who did not see it is told only that something came back', () => {
+    let checked = 0;
+    for (const { ep } of awarded) {
+      const r = ep.tr.mission.relic;
+      const blind = ep.tr.cast.find(n => n !== r.holder
+        && (r.witnesses || []).indexOf(n) < 0);
+      if (!blind) continue;
+      const blocks = relicBlocks(missionRevealed(ep, 'player:' + blind));
+      // The card is still DRAWN -- the gap in the line was public and the
+      // hour it cost is on the fund. It is the NAME that is missing.
+      expect(blocks.length,
+        `ep ${ep.num}: the relic vanished entirely for ${blind}`).toBeGreaterThan(0);
+      const all = blocks.join('');
+      expect(all.includes('data-holder'),
+        `ep ${ep.num}: the relic carries a holder for ${blind}, who never saw it`)
+        .toBe(false);
+      expect(mentions(narration(all), r.holder),
+        `ep ${ep.num}: ${r.holder} is named on the relic to ${blind}, who never saw it`)
+        .toBe(false);
+      expect(all.includes('data-known="0"'),
+        `ep ${ep.num}: the relic is not marked unattributed for ${blind}`).toBe(true);
+      checked++;
+    }
+    expect(checked, 'no non-witness was checked, so this guard proved nothing')
+      .toBeGreaterThan(2);
+  });
+
+  it('and an hour that bought nothing names its searcher to everybody', () => {
+    // THE OTHER SIDE OF THE GATE, AND IT IS DELIBERATELY OPEN. When nobody
+    // came back with anything there is no relic, no holder and no witness
+    // list -- and the gap in the line was watched by the whole team, which is
+    // what the engine's own miss prose says. Gating a fact the room saw
+    // happen would be a guard on an unreachable secret. This arm exists so
+    // that a later edit closing the gate over a MISS fails here.
+    const missed = AFTERNOONS.filter(({ ep }) => {
+      const r = ep.tr.mission.relic;
+      return r && !r.found;
+    });
+    expect(missed.length, 'no searcher came back empty-handed, so this arm is vacuous')
+      .toBeGreaterThan(1);
+    let checked = 0;
+    for (const { ep } of missed) {
+      const r = ep.tr.mission.relic;
+      const anyone = ep.tr.cast.find(n => n !== r.searcher);
+      const blocks = relicBlocks(missionRevealed(ep, 'player:' + anyone)).join('');
+      expect(blocks.length, `ep ${ep.num}: the empty search drew no card`).toBeGreaterThan(0);
+      expect(blocks.includes('data-awarded="0"'),
+        `ep ${ep.num}: an empty-handed search is drawn as an award`).toBe(true);
+      expect(mentions(narration(blocks), r.searcher),
+        `ep ${ep.num}: ${r.searcher} broke the line in front of the whole team and `
+        + 'the screen will not say so').toBe(true);
+      checked++;
+    }
+    expect(checked, 'no empty search was checked').toBeGreaterThan(1);
+  });
+});
+
+// ── GUARD: THE NOTE AND THE ULTIMATUM ARE DIFFERENT EVENTS ────────────
+describe('the note and the ultimatum are rendered as the different things they are', () => {
+  const notes = OFFERS.filter(({ ep }) => ep.tr.recruitment.mode === 'note');
+  const ults = OFFERS.filter(({ ep }) => ep.tr.recruitment.mode === 'ultimatum');
+  const refusedNotes = notes.filter(({ ep }) => !ep.tr.recruitment.accepted);
+  const refusedUlts = ults.filter(({ ep }) => !ep.tr.recruitment.accepted);
+
+  it('a real season produces both modes and both answers', () => {
+    // EVERY ARM BELOW ITERATES ONE OF THESE LISTS. An empty one passes its
+    // arm for free, which is this plan's most-repeated defect, so the counts
+    // are asserted before anything is asserted about their contents.
+    expect(OFFERS.length, 'no played season recorded an approach at all')
+      .toBeGreaterThan(15);
+    expect(notes.length, 'no offer was delivered as a note').toBeGreaterThan(5);
+    expect(ults.length, 'no offer was delivered face to face').toBeGreaterThan(5);
+    expect(refusedNotes.length, 'no note was refused, so the survivable half of the rule '
+      + 'is never exercised').toBeGreaterThan(3);
+    expect(refusedUlts.length, 'no ultimatum was refused, so the FATAL half of the rule '
+      + 'is never exercised').toBeGreaterThan(1);
+    expect(notes.filter(({ ep }) => ep.tr.recruitment.accepted).length,
+      'no note was accepted').toBeGreaterThan(2);
+    expect(ults.filter(({ ep }) => ep.tr.recruitment.accepted).length,
+      'no ultimatum was accepted').toBeGreaterThan(2);
+    // and a refused ultimatum really does produce a body, which is the whole
+    // reason the mode exists
+    for (const { ep } of refusedUlts) {
+      expect(ep.tr.recruitment.executed,
+        `ep ${ep.num}: an ultimatum was refused and nobody left the castle`)
+        .toBe(ep.tr.recruitment.target);
+    }
+  });
+
+  it('the screen says which kind of offer it is, in the markup and in the words', () => {
+    let seenNote = 0;
+    let seenUlt = 0;
+    for (const { ep } of OFFERS) {
+      const html = offerRevealed(ep);
+      const mode = ep.tr.recruitment.mode;
+      expect(html, `ep ${ep.num}: the shell carries no mode`)
+        .toContain('data-mode="' + mode + '"');
+      const text = strip(html);
+      if (mode === 'note') {
+        expect(html, `ep ${ep.num}: a note is titled as an ultimatum`)
+          .toContain('>THE NOTE<');
+        expect(html, `ep ${ep.num}: a note is titled as an ultimatum`)
+          .not.toContain('>THE ULTIMATUM<');
+        seenNote++;
+      } else {
+        expect(html, `ep ${ep.num}: an ultimatum is titled as a note`)
+          .toContain('>THE ULTIMATUM<');
+        expect(html, `ep ${ep.num}: an ultimatum is titled as a note`)
+          .not.toContain('>THE NOTE<');
+        seenUlt++;
+      }
+      expect(text.length, `ep ${ep.num}: the offer rendered nothing`).toBeGreaterThan(200);
+    }
+    expect(seenNote, 'no note was rendered').toBeGreaterThan(5);
+    expect(seenUlt, 'no ultimatum was rendered').toBeGreaterThan(5);
+  });
+
+  it('and the terms strip states the price of refusing, before the answer is read', () => {
+    // THE MECHANIC ITSELF, ON THE PAGE. The rule is about consequences and
+    // the whole screen is built to make it legible, so the two words it turns
+    // on are checked directly AND against each other: neither may print over
+    // the other's night.
+    let fatal = 0;
+    let survivable = 0;
+    for (const { ep } of OFFERS) {
+      const html = offerRevealed(ep);
+      const term = /<div class="nt-term"[^>]*data-k="If refused">[\s\S]*?<\/div>/.exec(html);
+      expect(term, `ep ${ep.num}: the terms strip does not price a refusal`).toBeTruthy();
+      if (ep.tr.recruitment.mode === 'ultimatum') {
+        expect(term[0], `ep ${ep.num}: an ultimatum is priced as survivable to refuse`)
+          .toContain('Fatal');
+        expect(term[0]).toContain('they have seen your face');
+        expect(term[0]).not.toContain('Survivable');
+        fatal++;
+      } else {
+        expect(term[0], `ep ${ep.num}: a note is priced as fatal to refuse`)
+          .toContain('Survivable');
+        expect(term[0]).toContain('they never saw a face');
+        expect(term[0]).not.toContain('Fatal');
+        survivable++;
+      }
+    }
+    expect(fatal, 'no fatal refusal was priced').toBeGreaterThan(5);
+    expect(survivable, 'no survivable refusal was priced').toBeGreaterThan(5);
+  });
+
+  it('a refused note never names the recruiter to the person who refused it', () => {
+    // THE RULE THE WHOLE SCREEN EXISTS FOR. A note is survivable to refuse
+    // BECAUSE the refuser never learned who asked. A render that names the
+    // author has made a note exactly as fatal as an ultimatum, and looks
+    // identical while doing it.
+    let checked = 0;
+    for (const { ep } of refusedNotes) {
+      const r = ep.tr.recruitment;
+      expect(r.recruiter,
+        `ep ${ep.num}: the record carries no recruiter, so this arm cannot fail`)
+        .toBeTruthy();
+      const html = offerRevealed(ep, 'player:' + r.target);
+      const text = narration(html);
+      expect(text.length, `ep ${ep.num}: the target's own render is empty`)
+        .toBeGreaterThan(200);
+      expect(mentions(text, r.recruiter),
+        `ep ${ep.num}: ${r.target} refused an anonymous note and the screen named `
+        + `${r.recruiter} anyway`).toBe(false);
+      // and the anonymous asker is DRAWN -- a hood with nothing in it, not a
+      // missing card. The castle knows a note arrived; it has no face for it.
+      expect(html, `ep ${ep.num}: the anonymous asker is not drawn at all`)
+        .toContain('class="nt-hood"');
+      expect(html, `ep ${ep.num}: the terms strip names a hand it should not have`)
+        .toContain('Not known to you');
+      checked++;
+    }
+    expect(checked, 'no refused note was checked, so this guard proved nothing')
+      .toBeGreaterThan(3);
+  });
+
+  it('and a refused ULTIMATUM does name them, which is why it kills', () => {
+    // THE OTHER DIRECTION OF THE SAME GATE. A one-way mutation on a two-state
+    // gate proves half of it: forcing the gate shut kills only this arm and
+    // forcing it open kills only the one above. Both are needed.
+    let checked = 0;
+    for (const { ep } of refusedUlts) {
+      const r = ep.tr.recruitment;
+      const html = offerRevealed(ep, 'player:' + r.target);
+      expect(mentions(narration(html), r.recruiter),
+        `ep ${ep.num}: ${r.target} refused ${r.recruiter} to their face and the screen `
+        + 'will not say whose face it was').toBe(true);
+      expect(html, `ep ${ep.num}: a face-to-face asker is drawn as an anonymous hood`)
+        .not.toContain('class="nt-hood"');
+      checked++;
+    }
+    expect(checked, 'no refused ultimatum was checked').toBeGreaterThan(1);
+  });
+
+  it('and an accepted note names them, because the recruit is in the turret now', () => {
+    // The engine writes the alignment fact into both players' knowledge on an
+    // acceptance and into neither on a refusal (`offerRecruitment`), so this
+    // is the screen agreeing with the ledger rather than a third rule.
+    const acceptedNotes = notes.filter(({ ep }) => ep.tr.recruitment.accepted);
+    expect(acceptedNotes.length, 'no note was accepted').toBeGreaterThan(2);
+    let checked = 0;
+    for (const { ep } of acceptedNotes) {
+      const r = ep.tr.recruitment;
+      expect(mentions(narration(offerRevealed(ep, 'player:' + r.target)), r.recruiter),
+        `ep ${ep.num}: ${r.target} accepted and is standing in the turret beside `
+        + `${r.recruiter}, and the screen will not name them`).toBe(true);
+      checked++;
+    }
+    expect(checked, 'no accepted note was checked').toBeGreaterThan(2);
+  });
+
+  it('and somebody who was in neither role is shown an empty passage', () => {
+    // The only screen in the set with a whole observer layer that renders
+    // nothing, and it renders nothing because nothing is what that person
+    // saw. Checked on the STRONGEST case: an offer refused anonymously, where
+    // naming either party would be a leak.
+    let checked = 0;
+    for (const { ep } of refusedNotes) {
+      const r = ep.tr.recruitment;
+      const bystander = ep.tr.cast.find(n => n !== r.target && n !== r.recruiter);
+      expect(bystander, `ep ${ep.num}: the cast holds nobody else`).toBeTruthy();
+      const text = narration(offerRevealed(ep, 'player:' + bystander));
+      expect(mentions(text, r.recruiter),
+        `ep ${ep.num}: ${bystander} was asleep and is told who asked`).toBe(false);
+      expect(mentions(text, r.target),
+        `ep ${ep.num}: ${bystander} was asleep and is told who was asked`).toBe(false);
+      checked++;
+    }
+    expect(checked, 'no bystander was checked').toBeGreaterThan(3);
+  });
+
+  it("and a body from a refused ultimatum carries the registry's own word", () => {
+    // This show has TWO exit words and is the only show that does. A literal
+    // written into a screen is a word a registry change cannot reach, which
+    // is how one show's vocabulary ends up printed over another's departure.
+    const [vote, night] = exitVerbs('traitors');
+    expect(night, 'the registry has no second exit word').toBeTruthy();
+    expect(night, 'the two exit words are the same word, so this arm cannot fail')
+      .not.toBe(vote);
+    const cap = w => w.charAt(0).toUpperCase() + w.slice(1);
+    let checked = 0;
+    for (const { ep } of refusedUlts) {
+      const html = offerRevealed(ep);
+      const row = /<span class="nt-sum-k">([^<]*)<\/span><span class="nt-sum-v" data-tone="wax">([^<]*)</.exec(html);
+      expect(row, `ep ${ep.num}: the body is not entered anywhere`).toBeTruthy();
+      expect(row[1], `ep ${ep.num}: the door is not the registry's word`).toBe(cap(night));
+      expect(row[2], `ep ${ep.num}: the wrong person is entered`)
+        .toBe(ep.tr.recruitment.executed);
+      checked++;
+    }
+    expect(checked, 'no execution was checked').toBeGreaterThan(1);
+  });
+});
+
+// ── GUARD: NEITHER SCREEN SPEAKS ANOTHER SHOW'S LANGUAGE ──────────────
+describe("the mission and the offer use no other show's words", () => {
+  it('nothing either screen prints belongs to another show', () => {
+    let checked = 0;
+    for (const { ep } of AFTERNOONS.slice(0, 20)) {
+      const text = strip(missionRevealed(ep));
+      expect(text.length, 'the mission rendered nothing').toBeGreaterThan(200);
+      expect(foreignWordsIn(text, 'traitors'),
+        `ep ${ep.num}: the mission printed another show's vocabulary`).toEqual([]);
+      checked++;
+    }
+    for (const { ep } of OFFERS.slice(0, 20)) {
+      const text = strip(offerRevealed(ep));
+      expect(text.length, 'the offer rendered nothing').toBeGreaterThan(200);
+      expect(foreignWordsIn(text, 'traitors'),
+        `ep ${ep.num}: the offer printed another show's vocabulary`).toEqual([]);
+      checked++;
+    }
+    expect(checked, 'no screen was scanned').toBeGreaterThan(30);
+  });
+
+  it("and a player observer's render is prose too, so it is checked as well", () => {
+    const { ep } = AFTERNOONS[3];
+    const who = ep.tr.cast[0];
+    expect(strip(missionRevealed(ep, 'player:' + who)).length,
+      'the mission rendered nothing for a player').toBeGreaterThan(200);
+    expect(foreignWordsIn(strip(missionRevealed(ep, 'player:' + who)), 'traitors'),
+      'the mission').toEqual([]);
+    const o = OFFERS[0].ep;
+    const target = o.tr.recruitment.target;
+    expect(strip(offerRevealed(o, 'player:' + target)).length,
+      'the offer rendered nothing for its target').toBeGreaterThan(200);
+    expect(foreignWordsIn(strip(offerRevealed(o, 'player:' + target)), 'traitors'),
+      'the offer').toEqual([]);
+  });
+});
+
+// ── GUARD: BOTH SCREENS ARE REACHABLE FROM A PLAYED SEASON ────────────
+//
+// This project's signature bug class. Asked of `buildVPScreens` rather than of
+// the builder, because calling the builder proves it returns HTML, which is
+// exactly what every unreachable screen in this repo also did.
+describe('the mission and the offer are reachable from a played season', () => {
+  it('every afternoon a season records registers a mission screen', () => {
+    let reached = 0;
+    for (const { ep } of AFTERNOONS) {
+      const hit = buildVPScreens(ep).find(x => x.id === 'tr-mission');
+      expect(hit, `ep ${ep.num}: the mission is not reachable`).toBeTruthy();
+      expect(strip(hit.html).length, `ep ${ep.num}: the mission rendered nothing`)
+        .toBeGreaterThan(200);
+      reached++;
+    }
+    expect(reached, 'no episode reached the mission').toBeGreaterThan(20);
+  });
+
+  it('and every approach registers an offer screen', () => {
+    let reached = 0;
+    for (const { ep } of OFFERS) {
+      const hit = buildVPScreens(ep).find(x => x.id === 'tr-recruitment');
+      expect(hit, `ep ${ep.num}: the offer is not reachable`).toBeTruthy();
+      expect(strip(hit.html).length, `ep ${ep.num}: the offer rendered nothing`)
+        .toBeGreaterThan(200);
+      reached++;
+    }
+    expect(reached, 'no episode reached the offer').toBeGreaterThan(15);
+  });
+
+  it('and an episode with no approach does not register one', () => {
+    // Recruitment and murder are exclusive -- the pact gets one action a
+    // night -- so most nights hold neither, and a screen registered on every
+    // row would be an empty passage four episodes out of five.
+    const quiet = OFFER_RUNS[0].episodes.filter(e => !(e.tr && e.tr.recruitment));
+    expect(quiet.length, 'every episode of that season held an approach')
+      .toBeGreaterThan(3);
+    for (const ep of quiet) {
+      expect(buildVPScreens(ep).find(x => x.id === 'tr-recruitment'),
+        `ep ${ep.num}: an offer screen for a night nobody was asked`).toBeFalsy();
+    }
+  });
+
+  it('and the afternoon sits between the day book and the evening', () => {
+    // The order is the claim: the castle reads the book at breakfast, goes
+    // out on the estate, comes back and sits down at the table.
+    const ep = RUNS[0].episodes.find(e => e.tr && e.tr.mission && e.tr.table);
+    expect(ep, 'no episode held both an afternoon and an evening').toBeTruthy();
+    const ids = buildVPScreens(ep).map(x => x.id);
+    expect(ids.indexOf('tr-status'), 'the day book is not registered').toBeGreaterThan(-1);
+    expect(ids.indexOf('tr-mission')).toBeGreaterThan(ids.indexOf('tr-status'));
+    expect(ids.indexOf('tr-round-table')).toBeGreaterThan(ids.indexOf('tr-mission'));
   });
 });

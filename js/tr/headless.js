@@ -524,6 +524,86 @@ function _powerLedger() {
 }
 
 /**
+ * The afternoon, in the shape the mission screen draws it (`js/vp-tr/mission.js`).
+ *
+ * PLAIN DATA, COPIED, and for the same reason `_conclaveRecord` is: `gs` is
+ * replaced wholesale by the next season and rebuilt wholesale by a load, and
+ * `gs.tr.missions` is the season's whole log rather than this afternoon's
+ * entry. A screen reaching into it would draw whichever mission happened to be
+ * last when the viewer opened the episode.
+ *
+ * THE RELIC BLOCK CARRIES ITS WITNESS LIST, exactly as `_powerLedger` does and
+ * for exactly the same reason: who saw the award is the mechanic's entire
+ * strategic content, and a screen that cannot tell an entitled observer from a
+ * blind one has deleted it. `runMission` writes ONE of `shield`/`dagger` and
+ * never both -- which relic was down there is a fact about the season, not
+ * about the search -- so this copies whichever key is present under a `kind`
+ * rather than flattening the two into one field that would let a sentence
+ * describe the wrong afternoon.
+ *
+ * `null` when no mission ran: fewer than four people left, or an endgame
+ * round, and the screen must not be registered for either.
+ */
+function _missionRecord(m) {
+  if (!m) return null;
+  const relicKey = m.shield ? 'shield' : (m.dagger ? 'dagger' : null);
+  const r = relicKey ? m[relicKey] : null;
+  return {
+    id: m.id, ep: m.ep, name: m.name,
+    teams: (m.teams || []).map(t => ({ name: t.name, members: [...(t.members || [])],
+      perf: t.perf })),
+    quality: m.quality, tier: m.tier, bestTeam: m.bestTeam,
+    gross: m.gross, earned: m.earned, potAfter: m.potAfter,
+    sideObjectives: (m.sideObjectives || []).map(o => ({ ...o })),
+    summary: m.summary || '',
+    // The Chess afternoon's observable, and it is an observable and not a
+    // belief -- see the note in js/tr/missions.js. Absent on every other
+    // archetype rather than empty, so the screen branches on the afternoon it
+    // is drawing rather than on a length.
+    tellLines: m.tellLines ? [...m.tellLines] : null,
+    tells: m.tells ? m.tells.map(t => ({ ...t })) : null,
+    readers: m.readers ? [...m.readers] : null,
+    relic: r ? {
+      kind: relicKey,
+      searcher: r.searcher, found: !!r.found, cost: r.cost || 0,
+      holder: r.holder || null, witnesses: [...(r.witnesses || [])],
+      visibility: r.visibility || null, lines: [...(r.lines || [])],
+    } : null,
+  };
+}
+
+/**
+ * The offer, in the shape the recruitment screen draws it.
+ *
+ * `null` on the great majority of nights -- the pact spends most of them
+ * killing instead, and recruitment cannot open at all until the room has
+ * banished one of them. The screen is registered off this field being present,
+ * never off an episode number.
+ *
+ * MODE IS COPIED FROM THE OFFER AND NEVER RE-DERIVED. `offerRecruitment`
+ * downgrades an ultimatum to a note when there is more than one Traitor left
+ * to be identified -- the fatal refusal is only justified by "they have seen
+ * your face", which is only true when there is one face. A screen deciding the
+ * mode from `livingTraitors` at read time would hold a second copy of that
+ * rule and would eventually draw an ultimatum over a night that ran a note.
+ */
+function _recruitmentRecord(night) {
+  const r = night && night.recruited;
+  if (!r || !r.target) return null;
+  return {
+    target: r.target,
+    recruiter: r.recruiter || null,
+    mode: r.mode === 'ultimatum' ? 'ultimatum' : 'note',
+    accepted: !!r.accepted,
+    // A refused ultimatum is a body. It is NOT a murder -- see the note on
+    // `offerRecruitment` -- and it is on `exits[]` above with the night's own
+    // verb, so the screen takes the word from the registry like everything
+    // else and never writes one.
+    executed: r.executed || null,
+  };
+}
+
+/**
  * The morning this episode opens on, which belongs to the night before it.
  *
  * `lastNight` is the previous row's `exits[]` handed over RAW, so the screen
@@ -565,7 +645,8 @@ function _morning() {
  * vote. A show with two exit channels needs both fields or it credits half its
  * cast with a full season they did not play.
  */
-function _recordEpisode(ep, { banished = null, night = null, endgame = false } = {}) {
+function _recordEpisode(ep, { banished = null, night = null, mission = null,
+  endgame = false } = {}) {
   // THE DOOR, NOT JUST THE NAME. docs/ADDING-A-SHOW.md §5 gives `exits[]` a
   // `verb` and a `channel` and this row was writing neither, so every reader
   // of the episode history knew somebody had gone and not which of the show's
@@ -648,6 +729,13 @@ function _recordEpisode(ep, { banished = null, night = null, endgame = false } =
       // that comes down is `cast` minus `goneBefore`, which is the same list
       // the board opens on -- one derivation, two screens.
       dawn: _morning(),
+      // ── THE AFTERNOON AND THE OFFER (Plan 8, Task 4) ────────────────
+      //
+      // Both `null` on plenty of rows and the screens are registered off
+      // that: a mission needs four people and an endgame round runs none,
+      // and the pact spends most nights killing rather than asking.
+      mission: _missionRecord(mission),
+      recruitment: _recruitmentRecord(night),
     },
   });
   // NO `gs.eliminated` HERE, AND THE OMISSION WAS MEASURED. Maintaining it
@@ -757,7 +845,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   settleDaggers(ep);
   castle1.push(...runWindow('night', ep, castleRng));
   scoreMission(ep, mission1);
-  _recordEpisode(ep, { banished: null, night: n1 });
+  _recordEpisode(ep, { banished: null, night: n1, mission: mission1 });
   log.push({ ep, banished: null, wasTraitor: null, ...n1, mission: mission1,
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
 
@@ -832,7 +920,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // bit-identical with the ledgers in place. See js/tr/crowd.js.
     scoreMission(ep, mission);
     scoreTable(ep, r, { bondOf: getBond });
-    _recordEpisode(ep, { banished: r.banished, night });
+    _recordEpisode(ep, { banished: r.banished, night, mission });
     log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...night, mission,
       alive: alive.length, aliveAtVote: alive.length, traitorsAtVote: tr,
       castleEvents, budget: { ...gs.tr.roundBudget } });

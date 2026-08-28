@@ -17316,7 +17316,14 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
      come out of the live list here and are drawn once, greyed, at the bottom —
      which is also what stops one screen showing a group as in play and finished
      at the same time. */
+  /* Everything that reaches a week is something the house already knows: it
+     either happened before the vote, or it is last week's post-vote fallout
+     arriving in the episode that can show it (week.js queues those rather than
+     printing them on screens that all run before the eviction). The guard
+     stays as a floor in case anything starts tagging itself again. */
+  const _knownNow = d => !d?.postVote;
   const _endedNames = new Set((ep?.allianceDissolved || [])
+    .filter(_knownNow)
     .filter(d => _lastStretch
       || !_stillHere(here?.alliances, a => a.name === d.name))
     .map(d => d.name));
@@ -17463,12 +17470,18 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
            same week still show it alive, because it was; the next episode
            drops it entirely, because `allianceDissolved` is per week. */
         const _snapAll = here?.alliances || snap.namedAlliances || [];
-        const gone = (ep?.allianceDissolved || []).filter(d => _endedNames.has(d.name)).map(d => ({
+        const gone = (ep?.allianceDissolved || [])
+          .filter(d => _knownNow(d) && _endedNames.has(d.name)).map(d => ({
           ...d,
           // Prefer the roster the week itself was drawing.
           members: ((_snapAll.find(a => a.name === d.name)?.members) || d.members || [])
             .filter(m => inHouse.has(m)),
-        })).filter(d => (d.members || []).length);
+        }));
+        // A carried dissolution can arrive with nobody left to draw — the group
+        // ran out of members because they were evicted, which is the whole
+        // reason it ended. It still gets its row and its sentence; it just has
+        // no faces in it.
+        
         const why = d => d.reason === 'insufficient-live-members' ? 'nobody left in it'
           : d.reason === 'betrayal' ? 'betrayed from the inside'
           : 'nobody left trusts anybody';
@@ -17478,7 +17491,7 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
             `<span class="bbf-hold"><span class="bbf-hold-face">${_bbAvatar(m, 34)}</span><b>·</b></span>`).join('')}</span>
           <span class="bbf-ally-c">${why(d)}</span>
         </div>`).join('');
-        const thrown = (ep?.allianceDepartures || []).map(d => `<div class="bbf-gone-row">
+        const thrown = (ep?.allianceDepartures || []).filter(_knownNow).map(d => `<div class="bbf-gone-row">
           <b>${_bbEsc(d.alliance || 'The alliance')}</b> has thrown ${_bbEsc(d.player)} out — ${_bbEsc(d.reason || 'expelled')}.
         </div>`).join('');
         return rows + (thrown ? `<div class="bbf-gone">${thrown}</div>` : '');
@@ -26293,6 +26306,22 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
      alliance that "doesn't appear every time and loses members for no reason".
      The episode's own board is the right source: it is snapshotted at the end
      of that week and it is what every other panel on the screen already reads. */
+  /* ── WHO THIS ALLIANCE THREW OUT, ON THE SCREEN THAT COMES AFTER THE VOTE ──
+     House Life cannot carry these: "voted against an alliance member" says how
+     Thursday went and that screen plays before it. This one is drawn once the
+     week is over, so the member stays in the row with their face struck
+     through and the group says what it did — rather than the name simply not
+     being there next episode with no explanation anywhere. If they are taken
+     back in, the row is just a row again. */
+  const _thrownOut = new Map();
+  const _thrownWhy = new Map();
+  for (const d of (ep?.allianceDepartures || [])) {
+    if (!d?.alliance || !d?.player) continue;
+    if (!_thrownOut.has(d.alliance)) _thrownOut.set(d.alliance, []);
+    _thrownOut.get(d.alliance).push(d.player);
+    _thrownWhy.set(d.alliance, d.reason || 'expelled');
+  }
+
   let blocRows = [];
   const _boardRows = (ep?.allianceBoard || []).filter(b =>
     (b.members || []).every(m => stillIn.includes(typeof m === 'string' ? m : m.name)));
@@ -26343,8 +26372,14 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
         <strong>${_bbEsc(b.label)}</strong>
         <span class="bbb-state" style="color:${state.color}">${state.label}</span>
       </div>
-      <div class="bbb-faces">${b.members.map(m => _bbAvatar(m, 22)).join('')}
+      <div class="bbb-faces">${b.members.map(m => (_thrownOut.get(b.label || b.name) || []).includes(m)
+        ? `<span class="bbb-out" title="${_bbEsc(m)} — thrown out of ${_bbEsc(b.label || b.name)}">${_bbAvatar(m, 22)}</span>`
+        : _bbAvatar(m, 22)).join('')}
         <span class="bbb-votes">${b.members.length} members &middot; up to ${b.members.length} votes &middot; ${Math.round(b.share * 100)}% of the house</span></div>
+      ${(_thrownOut.get(b.label || b.name) || []).length ? `<div class="bbb-out-note">${
+        (_thrownOut.get(b.label || b.name) || []).map(_bbEsc).join(' and ')} ${
+        (_thrownOut.get(b.label || b.name) || []).length > 1 ? 'are' : 'is'} out of it — ${
+        _bbEsc(_thrownWhy.get(b.label || b.name) || 'expelled')}.</div>` : ''}
       <div class="bbb-bar"><i style="width:${pct}%;background:${state.color}"></i>
         <span>Average suspicion among non-members: ${pct}%<br>${awarenessText}</span></div>
       ${_bbHoldDetail(b)}

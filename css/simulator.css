@@ -1110,6 +1110,13 @@
     .bbf-gone-row  { font-size:10.5px; line-height:1.5; color:#8b949e; }
     .bbf-gone-row b { color:#c9d1d9; }
 
+    /* Somebody the alliance threw out, still drawn in the row it happened in
+       so the removal has a place to be seen, then gone next episode. */
+    .bbb-out       { position:relative; display:inline-block; opacity:.4; filter:grayscale(1); }
+    .bbb-out::after{ content:''; position:absolute; left:-1px; right:-1px; top:50%;
+                     height:1.5px; background:#f85149; transform:rotate(-12deg); }
+    .bbb-out-note  { margin-top:5px; font-size:10.5px; color:#f47067; line-height:1.4; }
+
     /* The group was asked and said yes. Not a betrayal, so not red. */
     .bbns-signed      { background:rgba(63,185,80,.07); border-color:rgba(63,185,80,.28);
                      color:#9fd8ab; }

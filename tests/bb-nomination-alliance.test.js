@@ -919,3 +919,66 @@ describe('an alliance that stops existing says so', () => {
       .toMatch(/allianceDissolutions \|\| \[\]\)\.slice\(dissolvedBefore\)/);
   });
 });
+
+describe('post-vote fallout plays in the next episode', () => {
+  // Reported as a spoiler: "The Dock Pact has thrown Axel out — voted against
+  // an alliance member" printed on a House Life screen. That sentence says how
+  // Thursday went, and every screen in an episode runs before Thursday.
+  //
+  // Both of the things the end-of-week maintenance pass produces are like
+  // this: an alliance with nobody left in it, and one that threw a member out
+  // for how they voted. Hiding them would lose them; they are the house waking
+  // up to what the vote did, which is next week's first conversation. So they
+  // queue on gs._bbFalloutQueue and are drained at the top of the following
+  // week, where they draw like any other change to the panel.
+  //
+  // Measured over eight seasons: 61 of them appeared in their own episode
+  // before. Now every departure on a week is one carried from an earlier one.
+  it('never attaches an expulsion to the episode it happened in', async () => {
+    const { simulateBBEpisode } = await import('../js/bb-run.js');
+    const { threatScore } = await import('../js/players.js');
+    const { ordinal } = await import('../js/finale.js');
+    const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const spread = n => Object.fromEntries(KEYS.map((k, i) => [k, 1 + ((n * 13 + i * 5) % 10)]));
+    const SCHEMERS = ['villain', 'schemer', 'mastermind', 'hero', 'schemer', 'villain',
+      'social-butterfly', 'loyal-soldier', 'wildcard', 'underdog', 'villain', 'schemer'];
+    let departures = 0, carried = 0;
+    const rows = [];
+    for (let s = 0; s < 5; s++) {
+      seedGame(Array.from({ length: 16 }, (_, i) => ({ name: 'P' + i,
+        archetype: SCHEMERS[i % SCHEMERS.length], gender: i % 2 ? 'f' : 'm',
+        sexuality: 'straight', stats: spread(i + 1) })),
+      { episode: 0, eliminated: [], namedAlliances: [] });
+      gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+      gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+      gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {}; gs._bbFalloutQueue = [];
+      Object.assign(seasonConfig, { format: 'big-brother', jurySize: 7, bbSafetyMode: 'off',
+        finaleSize: 3, bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house',
+        romance: 'enabled', twistSchedule: [] });
+      Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, threatScore,
+        getBond, getPerceivedBond, ordinal });
+      for (let w = 0; w < 8; w++) if (!simulateBBEpisode()) break;
+      for (const week of gs.bb.weeks || []) {
+        for (const d of week.allianceDepartures || []) {
+          departures++;
+          if (d.carried) carried++;
+          else rows.push(`${d.alliance} threw out ${d.player} in week ${week.num}, its own episode`);
+        }
+      }
+    }
+    expect(departures, 'no alliance threw anybody out, so nothing was tested').toBeGreaterThan(2);
+    expect(carried, `an expulsion landed in the episode it happened in: ${rows.join(' | ')}`)
+      .toBe(departures);
+  });
+
+  it('queues them rather than tagging them onto the week', () => {
+    const week = readFileSync('js/bb/week.js', 'utf8');
+    expect(week).toMatch(/_bbFalloutQueue/);
+    // Drained at the top of a LATER week, never the one that filled it.
+    expect(week).toMatch(/if \(item\.from >= week\.num\) continue;/);
+    // And the other path that ends alliances after the vote uses it too.
+    const shared = readFileSync('js/bb/shared-strategy.js', 'utf8');
+    expect(shared).toMatch(/postVote/);
+  });
+});

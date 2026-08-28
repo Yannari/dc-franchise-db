@@ -992,17 +992,31 @@ function runHouseMaintenance(week, rng = Math.random) {
       const dissolvedBefore = (gs.allianceDissolutions || []).length;
       const expelledBefore = (gs._pendingExpulsions || []).length;
       decayAllianceTrust(week.num);
+      /* ── AND MARK THEM AS AFTER THE VOTE, BECAUSE THEY ARE ──
+         This maintenance pass runs once the eviction has happened, and these
+         two are read off it: an alliance that "has nobody left in it", or one
+         that threw a member out "for voting against an alliance member". Both
+         sentences tell a viewer how Thursday went. House Life plays BEFORE the
+         vote, so it cannot carry either of them — reported as a spoiler, and
+         it is the same one twice. */
+      /* ── HELD BACK FOR NEXT WEEK, WHICH IS WHERE IT BELONGS ANYWAY ──
+         This pass runs after the eviction, and what it produces — an alliance
+         with nobody left in it, or one that threw a member out for voting
+         against an alliance member — says how Thursday went. Every screen in
+         THIS episode runs before that, so none of them can carry it.
+         It is not a thing to hide, though: it is the house waking up to what
+         the vote did, which is next week's first conversation. So it waits, and
+         plays as fallout in the next episode, where it is no longer a spoiler
+         and where the reaction would actually have happened. */
       for (const d of (gs.allianceDissolutions || []).slice(dissolvedBefore)) {
-        (week.allianceDissolved ||= []).push({
+        (gs._bbFalloutQueue ||= []).push({ kind: 'dissolved', from: week.num,
           name: d.name, reason: d.reason || 'trust-collapsed',
-          members: [...(d.members || [])], trust: null,
-        });
+          members: [...(d.members || [])] });
       }
       const fresh = (gs._pendingExpulsions || []).splice(expelledBefore);
       for (const x of fresh) {
-        (week.allianceDepartures ||= []).push({
-          player: x.player, alliance: x.alliance, reason: x.reason || 'expelled',
-        });
+        (gs._bbFalloutQueue ||= []).push({ kind: 'expelled', from: week.num,
+          player: x.player, alliance: x.alliance, reason: x.reason || 'expelled' });
       }
     }],
     ['intentions', () => tickIntentions(ep)],
@@ -1723,6 +1737,22 @@ export function simulateBBWeek(options = {}) {
      against it silently compared with nothing and every ending went
      unrecorded. A list this small is worth holding directly rather than
      depending on what a snapshot happens to carry. */
+  /* Last week's post-vote fallout, arriving in the episode that can show it.
+     Anything queued by a week BEFORE this one is now common knowledge — the
+     vote it followed has been read out — so it is drawn like any other change
+     to the alliance panel. */
+  for (const item of (gs._bbFalloutQueue || [])) {
+    if (item.from >= week.num) continue;
+    if (item.kind === 'dissolved') {
+      (week.allianceDissolved ||= []).push({ name: item.name, reason: item.reason,
+        members: [...(item.members || [])], trust: null, carried: true });
+    } else {
+      (week.allianceDepartures ||= []).push({ player: item.player,
+        alliance: item.alliance, reason: item.reason, carried: true });
+    }
+  }
+  gs._bbFalloutQueue = (gs._bbFalloutQueue || []).filter(item => item.from >= week.num);
+
   week._showmancesAtStart = (gs.showmances || [])
     .filter(sh => sh.phase !== 'broken-up' && !sh.broken)
     .map(sh => [...(sh.players || [])].sort().join('|'));

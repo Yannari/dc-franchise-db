@@ -719,7 +719,7 @@ function memberSetIsViable(members) {
  * Keep the standing alliances honest each week: recompute their internal trust,
  * and dissolve the ones that have lost their people or lost faith in each other.
  */
-function reconcileAlliances(house, weekNum, week = null) {
+function reconcileAlliances(house, weekNum, week = null, postVote = false) {
   const live = new Set(house);
   for (const alliance of allianceStore()) {
     if (alliance.active === false || alliance.dissolved) continue;
@@ -739,7 +739,15 @@ function reconcileAlliances(house, weekNum, week = null) {
          reason computed on the line above and read by nobody. Reported from a
          real week: The Safety Net was in the panel before the veto ceremony
          and simply gone after it. */
-      if (week) {
+      /* After the vote, this is the same fallout week.js queues: it says the
+         group ran out of people, which says who left. It waits for the next
+         episode, where the house is allowed to know. */
+      if (postVote) {
+        (gs._bbFalloutQueue ||= []).push({ kind: 'dissolved', from: weekNum,
+          name: alliance.name || alliance.label || 'an alliance',
+          reason: alliance.dissolutionReason,
+          members: [...activeMembers] });
+      } else if (week) {
         (week.allianceDissolved ||= []).push({
           name: alliance.name || alliance.label || 'an alliance',
           reason: alliance.dissolutionReason,
@@ -1190,7 +1198,7 @@ export function settleBBAllianceWeek(week, rng = Math.random) {
       incidents.push({ alliance:alliance.name, ...incident, repair });
     }
   }
-  reconcileAlliances(gs.activePlayers || [], week.num, week);
+  reconcileAlliances(gs.activePlayers || [], week.num, week, true);
   return incidents;
 }
 

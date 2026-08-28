@@ -6,6 +6,7 @@ import { getBond, getPerceivedBond } from '../bonds.js';
 import { getRelationshipDimension, relationshipDecisionProfile, targetProtection } from '../relationships.js';
 import { bbAllianceStrength, bbHeat, bbThreat, getBBTarget } from './shared-strategy.js';
 import { housePlan } from './plans.js';
+import { strongestStrategicMemory } from '../strategy-memory.js';
 import { dealBetween, sincerityOf, tierOf } from './deals.js';
 import { believesDeal } from './knowledge.js';
 import { duoPartnerFor } from './duos.js';
@@ -63,7 +64,7 @@ export function nominationScore(hoh, candidate, rng = Math.random) {
   const revenge = Math.max(0, -(getBond(hoh, candidate) || 0));
   const heat = bbHeat(hoh, candidate);
   const threatAdjustment = heat.components.threat * (stats.strategic * 0.045 - 0.35);
-  const score = heat.total + threatAdjustment + revenge * 0.75
+  let score = heat.total + threatAdjustment + revenge * 0.75
     + nominationPlanPull(hoh, candidate) + duoNominationPull(hoh, candidate) + noise(rng, 1.6);
   // A promise about the end discounts EVERYTHING above, proportionally. This
   // used to be a flat additive pull inside the plan weight, which lost twice:
@@ -75,9 +76,44 @@ export function nominationScore(hoh, candidate, rng = Math.random) {
   // kept promise cancels about half of it. Insincere deals barely register.
   const deal = dealBetween(hoh, candidate);
   if (deal && score > 0) {
-    return score * (1 - (tierOf(deal) === 'final-two' ? 0.55 : 0.35) * sincerityOf(deal, hoh));
+    score = score * (1 - (tierOf(deal) === 'final-two' ? 0.55 : 0.35) * sincerityOf(deal, hoh));
   }
-  return score;
+  return score * allianceLoyaltyDiscount(hoh, candidate, heat, score);
+}
+
+/**
+ * How much being in the same alliance is worth, to THIS person.
+ *
+ * `bbHeat` already carries an alliance term and it is additive, which is the
+ * same trap the shield discount above documents: whatever the reasons to
+ * nominate somebody add up to, a constant cannot keep up with the pile, and
+ * the pile is largest for exactly the players an alliance most wants to keep.
+ * Measured across twenty seasons, being sworn to the Head of Household moved
+ * the odds of going up from 28% to 18% — real, but not what an alliance means.
+ *
+ * Two things decide the size of it, and the second is what stops this becoming
+ * a shield that makes alliances unbreakable:
+ *
+ *   LOYALTY. Loyal people follow their alliance; that is most of what the stat
+ *   is for, and the one week you hold power is where it should be visible. At
+ *   ten it takes half the reason to nominate away, at five a quarter, at zero
+ *   nothing at all — a schemer is in an alliance for what it does for them.
+ *
+ *   WHETHER THEY HAVE BEEN WRONGED. Loyalty is not obligation to somebody who
+ *   has already broken it. A remembered betrayal or a live suspicion cancels
+ *   the discount in proportion, which is why the loyal Head of Household still
+ *   turns on their own people — with a reason, and the ceremony now says which
+ *   reason it was.
+ */
+function allianceLoyaltyDiscount(hoh, candidate, heat, score) {
+  if (score <= 0) return 1;
+  const strength = bbAllianceStrength(hoh, candidate);
+  if (!strength) return 1;
+  const c = heat?.components || {};
+  const wronged = clamp(Math.max(0, c.memory || 0) / 2.5
+    + Math.max(0, c.suspicion || 0) / 2, 0, 1);
+  const loyalty = clamp((pStats(hoh).loyalty ?? 5) / 10, 0, 1);
+  return 1 - 0.5 * loyalty * (1 - wronged) * clamp(strength / 1.6, 0, 1);
 }
 
 /**
@@ -623,7 +659,7 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
       : bbAllianceStrength(holder, best.name) > 0
         ? `${best.name} is one of ${holder}'s people. ${forced >= 1
             ? `With one name left to replace them this costs ${holder} almost nothing.`
-            : `It makes an enemy of ${hoh || 'the Head of Household'}, and ${holder} would rather have that than explain themselves later.`}`
+            : `It makes an enemy of ${hoh || 'the Head of Household'}, and ${holder} would rather have that than explain ${pronouns(holder).ref} later.`}`
         : `${holder} would rather have ${best.name} in this house than not${forced >= 0.55
             ? `, and with the replacement all but chosen there is barely a decision here.` : '.'}`;
     return { use: true, save: best.name, reason: 'relationship', why,
@@ -632,16 +668,75 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
 
   const closest = best.name;
   const why = forced >= 1
-    ? `${holder} could take ${closest} down, but there is only one houseguest left to put up in their `
+    ? `${holder} could take ${closest} down, but there is only one houseguest left to put up in ${pronouns(closest).posAdj} `
       + `place and everybody in the room can count. It would change the block without changing the week.`
     : arch === 'goat'
       ? `${holder} does not want to be part of this. Using it makes an enemy of `
         + `${hoh || 'the Head of Household'}; not using it makes an enemy of whoever stays up. `
         + `${holder} picks the enemy who is leaving.`
       : `Taking ${closest} down makes an enemy of ${hoh || 'the Head of Household'} and puts somebody `
-        + `else up who will know exactly who did it. ${holder} decides the block is not their problem.`;
+        + `else up who will know exactly who did it. ${holder} decides the block is not ${pronouns(holder).posAdj} problem.`;
   return { use: false, save: null, reason: 'leave-nominations', why,
     blood: Number((best.cost).toFixed(2)), keep: Number((best.keep).toFixed(2)) };
+}
+
+/**
+ * Why somebody put their OWN alliance on the block.
+ *
+ * ── WHAT THE MEASUREMENT SAID ──
+ *
+ * Twenty seasons, every ceremony where the Head of Household targeted a live
+ * ally while three or more people outside the alliance were available: 23 of
+ * them, and 22 had a real grievance behind them — suspicion, a betrayal the
+ * strategic memory still holds, or a bond that had gone sour weeks earlier.
+ * The house was not disrespecting its alliances. It had a reason every time
+ * and the ceremony never said one, so the only thing a viewer could see was a
+ * name going up for no reason anybody had mentioned.
+ *
+ * Captured HERE, at the ceremony, and not read off `bbHeat` when the screen
+ * paints: suspicion and memory keep moving all season, so a replay would
+ * justify a week-three nomination with something that happened in week nine.
+ * Same reason the veto stores its own `why`.
+ *
+ * Returns null for anybody who is not in a live alliance with the nominator —
+ * an ordinary nomination is not a betrayal and must not be narrated as one.
+ */
+export function nominationGrievance(hoh, name) {
+  if (!hoh || !name || hoh === name) return null;
+  const shared = (gs.namedAlliances || []).filter(a => a.active !== false
+    && (a.members || []).includes(hoh) && (a.members || []).includes(name));
+  if (!shared.length) return null;
+  let heat;
+  try { heat = bbHeat(hoh, name); } catch { return null; }
+  const c = heat.components || {};
+  const alliance = shared.sort((a, b) => (b.members || []).length - (a.members || []).length)[0];
+  const live = (alliance.members || []).filter(n => (gs.activePlayers || []).includes(n));
+  const base = { alliance: alliance.name || null, size: live.length,
+    threat: Number((c.threat || 0).toFixed(2)) };
+  // Ordered by how much the house would say it out loud. A remembered betrayal
+  // outranks a suspicion, which outranks two people who simply cooled off.
+  // 1.5, not 0.5: at the low threshold five in six grievances came back as
+  // 'betrayal', and that line has the Head of Household say out loud that a
+  // promise was broken. A faint strategic memory does not support the claim —
+  // it supports the suspicion line one step down, which says the speaker has
+  // no proof.
+  if ((c.memory || 0) > 1.5) {
+    // WHICH betrayal, by name. `strongestStrategicMemory` holds the single
+    // thing most held against somebody — the vote, the ally they helped send
+    // home, the promise — and a speech that says "you know what you did" when
+    // the house is holding the receipt is choosing the weaker line.
+    let mem = null;
+    try { mem = strongestStrategicMemory(hoh, name); } catch { mem = null; }
+    return { ...base, kind: 'betrayal',
+      memory: mem ? { type: mem.type, ep: mem.ep || null,
+        ally: mem.details?.ally || null } : null };
+  }
+  if ((c.suspicion || 0) > 0.3) return { ...base, kind: 'suspicion' };
+  if ((c.relationship || 0) > 0) return { ...base, kind: 'soured' };
+  // The honest remainder: nothing has gone wrong between them at all and the
+  // nomination is arithmetic about who wins this game. One in twenty-three,
+  // and it must not borrow one of the grievances above.
+  return { ...base, kind: 'no-grievance' };
 }
 
 /**

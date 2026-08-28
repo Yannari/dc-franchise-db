@@ -3505,6 +3505,29 @@ function socialUsable(text, packet) {
  * edited by hand; docs/ADDING-A-SHOW.md §13 exists because eight files each
  * kept their own copy of the show list.
  */
+/**
+ * Ethnicity and nationality as ONE description, never the same word twice.
+ *
+ * A hand-copy of `joinOrigin` in js/bio.js, which owns the rule. This file is a
+ * standalone Worker script with no imports — it cannot reach js/, and calling
+ * the browser's copy from here is what made every casting interview fail: a
+ * ReferenceError inside the handler, which Cloudflare answers with a bare 1101
+ * page carrying no CORS header, so the Studio only ever saw "NetworkError".
+ * Keep the two in step; the shared behaviour is asserted in
+ * tests/casting-interview.test.js.
+ */
+function joinOrigin(ethnicity, nationality) {
+  const e = String(ethnicity || "").trim();
+  const n = String(nationality || "").trim();
+  if (!e) return n;
+  if (!n) return e;
+  const le = e.toLowerCase(), ln = n.toLowerCase();
+  if (le === ln) return e;
+  if (ln.startsWith(le + " ")) return n;
+  if (le.startsWith(ln + " ")) return e;
+  return `${e} ${n}`;
+}
+
 async function generateCastingInterview(body, env) {
   const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
   const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });

@@ -186,3 +186,53 @@ describe('reaching a wedding at all', () => {
     expect(pct, `${pct.toFixed(1)}% is not a reality show, it is a dating app`).toBeLessThan(20);
   });
 });
+
+describe('a break-up the audience watched', () => {
+  // Asked directly: when a romance breaks up in the game, do they break up in
+  // the life events too?
+  //
+  // Half of it was already right. `pairsFor` in life-hook.js excludes a
+  // showmance that ended broken, so a couple who split on screen are never
+  // PROPOSED as a new couple afterwards — "they did not walk out of the finale
+  // together" — and the social graph keeps a negative charge between them so a
+  // public falling-out stays reachable.
+  //
+  // The other half was not. A couple who were ALREADY together walking in, and
+  // broke up in front of the audience, fell through both paths: excluded from
+  // `pairs`, so nothing marked the season as having ended anything, and then
+  // rolled at the ordinary odds — which mostly kept them together. The log
+  // could say a couple was fine after the episodes showed them ending.
+  const season = { seasonId: 'bb-4', format: 'big-brother', number: 4 };
+  const careers = [{ id: 'ida', name: 'Ida' }, { id: 'bo', name: 'Bo' }];
+  const people = { ida: { gender: 'f', sexuality: 'straight' }, bo: { gender: 'm', sexuality: 'straight' } };
+  const seasonRank = () => new Map([['bb-3', 1], ['bb-4', 2]]);
+  const together = [{ id: 'e1', player: 'ida', whom: 'bo', kind: 'dating',
+    status: 'approved', seasonId: 'bb-3', seq: 1 }];
+
+  const run = (extra, n = 25) => Array.from({ length: n }, (_, i) =>
+    resolveOffSeason({ season, careers, events: together, cast: ['ida', 'bo'],
+      people, seedSalt: 'b' + i, seasonRank: seasonRank(), ...extra })).flat();
+
+  it('ends the relationship in the log every time', () => {
+    const out = run({ brokenPairs: [['ida', 'bo']] });
+    const ended = out.filter(e => ['broke-up', 'separated', 'quietly-ended'].includes(e.kind));
+    expect(ended.length, 'the season ended it on screen and the log kept them together')
+      .toBe(25);
+  });
+
+  it('does not call it a quiet fade', () => {
+    // It happened in front of a camera crew. "Quietly stopped seeing each
+    // other" contradicts the episodes.
+    const out = run({ brokenPairs: [['ida', 'bo']] });
+    expect(out.filter(e => e.kind === 'quietly-ended')).toHaveLength(0);
+    expect(out.filter(e => e.kind === 'broke-up').length).toBeGreaterThan(0);
+  });
+
+  it('leaves a couple who did NOT break up on screen alone', () => {
+    // The control: same couple, same season, nothing broken. Most of them
+    // survive, which is the whole point of only forcing the ones that ended.
+    const out = run({ pairs: [['ida', 'bo']] });
+    const ended = out.filter(e => ['broke-up', 'separated', 'quietly-ended'].includes(e.kind));
+    expect(ended.length).toBeLessThan(25);
+  });
+});

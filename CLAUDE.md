@@ -18,6 +18,15 @@ the other. "Reached the end without ever being nominated" over a Total Drama
 season (no nominations); "was evicted" over a camp (it votes people out). Any
 generated sentence must take its words from that show's registry entry.
 
+**§11.5 of that document is worth reading before touching ANY simulation
+feature, not only when adding a show.** It is the catalogue of bug classes found
+by playing seasons and reading the output — a system that runs and reaches no
+screen, a screen showing live state on a replayed episode, a speech that knows
+what the character does not, an average that hides the one event it should
+show, a constant calibrated for a different season length, and three ways a
+test has passed against the bug it was written for. Each entry carries the
+measurement that found it.
+
 ## Architecture
 - `simulator.html` — CSS + HTML shell (no JS, loads `js/main.js`)
 - `js/main.js` — entry point, imports all modules, exposes on window for onclick handlers

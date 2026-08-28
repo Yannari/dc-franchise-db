@@ -2725,6 +2725,11 @@ function _showmanceEndedOf(name) {
   // people the audience watched stay together right to the finale walked out
   // of it as exes, and could never be paired in the off-season.
   if (sh.breakupType === 'separated') return 'intact';
+  // The same distinction one line further out: a betrayal always tanks the
+  // relationship, and whether it ENDS it depends on what it was. One that was
+  // deep enough to survive being voted out is not a couple who broke up, and
+  // the life layer must be able to pair them afterwards.
+  if (sh.breakupType === 'betrayed-survived') return 'intact';
   return (sh.broken || sh.phase === 'broken-up' || sh.breakupEp) ? 'broken' : 'intact';
 }
 

@@ -220,14 +220,23 @@ describe('in a played season', () => {
       .filter(html => /bbf-hold/.test(html));
     expect(drawn.length, 'no House Life panel drew a hold digit').toBeGreaterThan(0);
 
-    const real = new Set(ep.allianceBoard
-      .flatMap(x => x.members.map(m => m.loyalty.toFixed(1))));
+    // The digit is sourced from the stretch's OWN snapshot now, not the
+    // end-of-week board: each House Life act carries `state.holds`, so the
+    // screen before a nomination ceremony and the screen after it hold
+    // different numbers and the arrow beside them can point at the thing that
+    // caused the change. The week board stays as the fallback for records
+    // saved before stretch holds existed, so both are accepted here.
+    const real = new Set([
+      ...ep.allianceBoard.flatMap(x => x.members.map(m => m.loyalty.toFixed(1))),
+      ...houseActs.flatMap(a => (a.state?.holds || [])
+        .flatMap(x => (x.members || []).map(m => m.loyalty.toFixed(1)))),
+    ]);
     for (const html of drawn) {
       const digits = [...html.matchAll(/class="bbf-hold[^"]*"[\s\S]*?<b[^>]*>([\d.]+)<\/b>/g)]
         .map(m => m[1]);
       expect(digits.length).toBeGreaterThan(0);
       for (const d of digits) {
-        expect(real.has(d), `${d} is not any member's hold on the board`).toBe(true);
+        expect(real.has(d), `${d} is not any member's hold on any board`).toBe(true);
       }
     }
 
@@ -258,8 +267,11 @@ describe('in a played season', () => {
     // fall back to the bare avatar rather than breaking.
     house();
     const ep = withSeededRandom(9, () => simulateBBEpisode());
+    // Both sources have to go: the stretch's own holds are the primary one
+    // now and the week board is the fallback behind it.
     const houseAct = (ep.acts || []).find(a => a.type === 'house');
-    const life = rpBuildBBHouseLife({ ...ep, allianceBoard: [] }, houseAct, 1);
+    const bare = { ...houseAct, state: { ...(houseAct.state || {}), holds: [] } };
+    const life = rpBuildBBHouseLife({ ...ep, allianceBoard: [] }, bare, 1);
     expect(life).toBeTruthy();
     expect(life).not.toMatch(/bbf-hold/);
   });

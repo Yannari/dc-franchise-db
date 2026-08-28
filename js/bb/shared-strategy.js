@@ -521,7 +521,19 @@ export function bbHeat(observer, candidate) {
   const nerve = (pStats(observer).boldness - 5) * 0.09;
   const components = {
     threat: bbThreat(candidate), relationship: -relationship * 0.85,
-    alliance: -alliance * 2.2, target, suspicion: suspicion * 0.45,
+    // ── WHAT AN ALLIANCE IS WORTH DEPENDS ON WHO IS HOLDING IT ──
+    //
+    // This was a flat 2.2, so a loyalty-9 soldier and a loyalty-1 schemer
+    // priced the same alliance identically and the only thing separating them
+    // was noise. Loyal people follow their alliance; that is most of what the
+    // stat is for, and nomination — the one week you can act — is where it
+    // should show.
+    //
+    // Written as a spread around the old number rather than a buff: loyalty 5
+    // reproduces 2.2 exactly, so an average houseguest behaves as before while
+    // the ends pull apart (1.1 at zero, 3.3 at ten).
+    alliance: -alliance * 2.2 * (0.5 + (pStats(observer).loyalty ?? 5) / 10),
+    target, suspicion: suspicion * 0.45,
     memory: clamp(memory, -4, 6) * 0.65, familiar, reign,
     fear: dims.fear * nerve,
     respect: Math.max(0, dims.strategicRespect) * 0.3,
@@ -707,7 +719,7 @@ function memberSetIsViable(members) {
  * Keep the standing alliances honest each week: recompute their internal trust,
  * and dissolve the ones that have lost their people or lost faith in each other.
  */
-function reconcileAlliances(house, weekNum) {
+function reconcileAlliances(house, weekNum, week = null, postVote = false) {
   const live = new Set(house);
   for (const alliance of allianceStore()) {
     if (alliance.active === false || alliance.dissolved) continue;
@@ -721,6 +733,28 @@ function reconcileAlliances(house, weekNum) {
       alliance.active = false;
       alliance.dissolved = weekNum;
       alliance.dissolutionReason = activeMembers.length <= 1 ? 'insufficient-live-members' : 'trust-collapsed';
+      /* ── AND SAY SO ──
+         A group the viewer has been watching for ten weeks was disappearing
+         from the alliance panel between one screen and the next, with the
+         reason computed on the line above and read by nobody. Reported from a
+         real week: The Safety Net was in the panel before the veto ceremony
+         and simply gone after it. */
+      /* After the vote, this is the same fallout week.js queues: it says the
+         group ran out of people, which says who left. It waits for the next
+         episode, where the house is allowed to know. */
+      if (postVote) {
+        (gs._bbFalloutQueue ||= []).push({ kind: 'dissolved', from: weekNum,
+          name: alliance.name || alliance.label || 'an alliance',
+          reason: alliance.dissolutionReason,
+          members: [...activeMembers] });
+      } else if (week) {
+        (week.allianceDissolved ||= []).push({
+          name: alliance.name || alliance.label || 'an alliance',
+          reason: alliance.dissolutionReason,
+          members: [...activeMembers],
+          trust: Number.isFinite(alliance.trust) ? Math.round(alliance.trust * 100) / 100 : null,
+        });
+      }
     }
   }
 }
@@ -868,7 +902,7 @@ function formationTriggers(house, week, rng) {
 
 export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.activePlayers || [], week = null, rng = Math.random } = {}) {
   const weekNum = currentRound(week);
-  reconcileAlliances(house, weekNum);
+  reconcileAlliances(house, weekNum, week);
   if (phase !== 'opening' || house.length < 3) return { formed:null, alliances:allianceStore() };
 
   // Scales with the house, as on the island: a full house supports several
@@ -1164,7 +1198,7 @@ export function settleBBAllianceWeek(week, rng = Math.random) {
       incidents.push({ alliance:alliance.name, ...incident, repair });
     }
   }
-  reconcileAlliances(gs.activePlayers || [], week.num);
+  reconcileAlliances(gs.activePlayers || [], week.num, week, true);
   return incidents;
 }
 

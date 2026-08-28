@@ -223,6 +223,15 @@ export function weekToEpisode(week) {
     // The alliance board as it stood this week — who is in what, how firmly,
     // and which member is the crack.
     allianceBoard: (week.allianceBoard || []).map(b => ({ ...b, members: (b.members || []).map(m => ({ ...m })) })),
+    // Groups that ENDED this week. Without this the panel simply stops drawing
+    // them and the viewer is left to work out on their own that a five-week
+    // alliance is over.
+    allianceDissolved: (week.allianceDissolved || []).map(d => ({ ...d, members: [...(d.members || [])] })),
+    // Members an alliance threw out on its own, from the shared trust decay.
+    allianceDepartures: (week.allianceDepartures || []).map(d => ({ ...d })),
+    // Couples that ended this week, so the panel can grey the row instead of
+    // simply not drawing it any more.
+    showmanceEnded: (week.showmanceEnded || []).map(d => ({ ...d, players: [...(d.players || [])] })),
     // The Battle of the Block's own fields. `botbStoodDown` records WHY a
     // scheduled battle did not happen, so a week that quietly ran as an
     // ordinary one can still say so on the debug screen instead of looking

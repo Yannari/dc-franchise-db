@@ -164,7 +164,7 @@ const underground = {
     const p = pronouns(planner);
 
     const text = _variant([
-      `${planner} sets the rules and ${other} agrees to all of them: separate rooms at night, no saving seats, thirty seconds between arrivals. It works on about nine of the ${house.length - 2} people it needs to work on.`,
+      `${planner} sets the rules and ${other} agrees to all of them: separate rooms at night, no saving seats, thirty seconds between arrivals. It works on roughly half the ${house.length - 2} people it needs to work on.`,
       `“We're two votes to them. We need to be one vote and a stranger.” ${planner} means it as strategy. ${other} hears it as being asked to be less, and agrees anyway.`,
       `They stop going upstairs together. ${watcher} times the gap between the two of them leaving the kitchen on three separate evenings and gets thirty-one, thirty-four and twenty-nine seconds.`,
       `${planner} and ${other} agree to be visibly bored of each other for a week. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} very good at it. ${other} is not.`,

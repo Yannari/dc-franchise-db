@@ -252,7 +252,20 @@ export function checkFirstMove(ep) {
     const bArch = players.find(p => p.name === b)?.archetype || '_default';
     const aThresh = FIRST_MOVE_THRESHOLDS[aArch] || FIRST_MOVE_THRESHOLDS._default;
     const bThresh = FIRST_MOVE_THRESHOLDS[bArch] || FIRST_MOVE_THRESHOLDS._default;
-    const threshold = Math.max(aThresh, bThresh); // slower one sets the pace
+    /* ── AND WHO THEY ARE HAS TO DECIDE MORE OF IT ──
+       0.5 for a showmancer against 0.8 for everybody else is barely a
+       difference: measured over twelve seasons of a house whose cast contained
+       no showmancer at all, 31 showmances still formed, 22 of them involving a
+       hero. Somebody whose whole game is this should be most of the couples in
+       a season, not a rounding error.
+       Scaled in a house rather than everywhere, because a house is where the
+       rate was wrong — thirteen weeks on a beach with a spark already burning
+       is a different clock. */
+    const houseRules = seasonConfig.format === 'big-brother';
+    const pace = arch => (houseRules
+      ? (arch === 'showmancer' ? 1.0 : ['chaos-agent', 'social-butterfly', 'wildcard'].includes(arch) ? 1.15 : 1.35)
+      : 1);
+    const threshold = Math.max(aThresh * pace(aArch), bThresh * pace(bArch));
 
     if (spark.intensity < threshold) return true; // not ready yet, keep spark
 
@@ -269,8 +282,9 @@ export function checkFirstMove(ep) {
     // Create the actual showmance
     if (!gs.showmances) gs.showmances = [];
     // Check cap again
-    const activeShowmances = gs.showmances.filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p)));
-    if (activeShowmances.length >= 4) return true; // cap hit, keep spark alive
+    const activeShowmances = formedHere(gs.showmances, gs.activePlayers || []);
+    // Same ceiling the organic route uses. See `showmanceCap` and `formedHere`.
+    if (activeShowmances.length >= showmanceCap((gs.activePlayers || []).length)) return true;
 
     // Determine romance origin type from spark context + mover archetype
     const _originType = moverArch === 'villain' || moverArch === 'schemer' ? 'strategic'
@@ -293,7 +307,7 @@ export function checkFirstMove(ep) {
     gs.popularity[b] = (gs.popularity[b] || 0) + 3;
 
     // Camp event
-    const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(mover))?.name || 'merge');
+    const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(mover) || 'merge');
     if (!ep.campEvents) ep.campEvents = {};
     if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
     if (!ep.campEvents[campKey].post) ep.campEvents[campKey].post = [];
@@ -405,7 +419,7 @@ export function checkShowmanceSabotage(ep) {
     });
 
     // Camp event
-    const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(saboteur))?.name || 'merge');
+    const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(saboteur) || 'merge');
     if (!ep.campEvents) ep.campEvents = {};
     if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
     if (!ep.campEvents[campKey].post) ep.campEvents[campKey].post = [];
@@ -537,14 +551,71 @@ export function getShowmancePartner(name) {
   return sh ? sh.players.find(p => p !== name) : null;
 }
 
+/**
+ * How many couples a cast can be running at the same time.
+ *
+ * Three, which is the number the format can carry without every conversation
+ * in the house being a relationship — and it counts only the ones that FORMED
+ * here (see `formedHere`), because a pair who walked in together is not
+ * something the season decided to do.
+ *
+ * The taper is for the end of a season rather than the start of one: three
+ * couples among a final six is not a house, it is a double date, so the
+ * ceiling comes down as the roster does.
+ */
+function showmanceCap(houseSize) {
+  return Math.max(1, Math.min(3, Math.floor((Number(houseSize) || 0) / 4)));
+}
+
+/**
+ * The couples this ceiling is actually about.
+ *
+ * A pair who walked in together is not something the season decided to make —
+ * it arrived, out of the life layer, already true. Counting them against the
+ * cap meant a cast carrying two established couples could never form a single
+ * new one, which is the opposite of what the limit is for: it exists to stop
+ * the house pairing everybody off, not to punish a cast for having a history.
+ */
+function formedHere(list, active) {
+  return (list || []).filter(sh => sh.phase !== 'broken-up'
+    && sh.origin !== 'arrived-together'
+    && (sh.players || []).every(p => active.includes(p)));
+}
+
+/**
+ * The camp a player is standing in, without assuming there is a list of camps.
+ *
+ * `gs.tribes` is an ARRAY once a season is under way and an empty OBJECT before
+ * the first episode has finished setting itself up — so `gs.tribes.find(...)`,
+ * written twenty times across this file, throws in exactly one situation: week
+ * one of a Big Brother house, before `isMerged` is set.
+ *
+ * The throw was invisible and expensive. Every one of these lookups sits in the
+ * line that decides WHERE a beat is filed, immediately after the state change
+ * it is describing — so a showmance was marked broken, the throw happened
+ * before the beat could be pushed, the house romance stage aborted for the rest
+ * of that week, and the panel reported a couple who ended with nothing in the
+ * feed to explain it. Reported as "it just says it ended, where are the house
+ * life events?".
+ */
+function _campOf(name) {
+  const tribes = Array.isArray(gs.tribes) ? gs.tribes : [];
+  return tribes.find(t => (t?.members || []).includes(name))?.name || null;
+}
+
 export function checkShowmanceFormation(ep) {
   if (seasonConfig.romance === 'disabled') return;
   if (!gs.showmances) gs.showmances = [];
   const active = gs.activePlayers;
 
-  // Cap: max 4 active showmances at a time
-  const activeShowmances = gs.showmances.filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => active.includes(p)));
-  if (activeShowmances.length >= 4) return;
+  // ── HOW MANY OF THESE A SEASON CAN CARRY AT ONCE ──
+  //
+  // Four was a flat number for any cast of any size, and it counted couples
+  // who had walked in already together — so a cast with a history could never
+  // form a new one, and a house of fourteen was still running three by week
+  // five with none of them a showmancer. See `showmanceCap` and `formedHere`.
+  const activeShowmances = formedHere(gs.showmances, active);
+  if (activeShowmances.length >= showmanceCap(active.length)) return;
 
   for (let i = 0; i < active.length; i++) {
     for (let j = i + 1; j < active.length; j++) {
@@ -608,7 +679,7 @@ export function checkShowmanceFormation(ep) {
       ep.newShowmances.push({ a, b });
 
       // Push camp event into the tribe they share
-      const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(a))?.name);
+      const tribeName = gs.isMerged ? 'merge' : (_campOf(a));
       if (tribeName && ep.campEvents?.[tribeName]) {
         const block = ep.campEvents[tribeName];
         const evts = Array.isArray(block) ? block : (block.pre || []);
@@ -658,7 +729,7 @@ export function updateShowmancePhases(ep) {
         // Bond boost on rekindle — proportional, not threshold
         addBond(a, b, wasSeparated ? 1.5 : 0.5);
 
-        const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(a))?.name || 'merge');
+        const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(a) || 'merge');
         if (ep.campEvents?.[tribeName]) {
           const block = ep.campEvents[tribeName];
           const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
@@ -691,12 +762,26 @@ export function updateShowmancePhases(ep) {
     // anymore, just two people who used to be. No fight or betrayal required. Sparks are exempt
     // (too new — they form above the line and transition to honeymoon before this can bite).
     const _preBond = getBond(a, b);
-    if (_preBond < 3 && sh.phase !== 'spark') {
+    /* ── TWO THINGS THIS RULE WAS NEVER WRITTEN FOR ──
+       A couple who WALKED IN TOGETHER starts at `established` with whatever
+       bond the life layer seeded, which for a dating stage is often under
+       three — so a relationship that existed before the show evaporated on the
+       first maintenance pass of week one, with the panel dutifully reporting
+       it. They are not a spark that failed to take: they have history, and a
+       weekend of game pressure does not end a real relationship. They fade
+       only if it goes genuinely cold.
+       And nothing should fade in its first week in the house. The bond has not
+       had a single stretch of house life to move in, and "quietly ran its
+       course" over three days reads as a bug because it is one. */
+    const _fromHome = sh.origin === 'arrived-together';
+    const _tooNew = (sh.episodesActive || 0) < 2;
+    const _floor = _fromHome ? 1.5 : 3;
+    if (!_tooNew && _preBond < _floor && sh.phase !== 'spark') {
       sh.phase = 'broken-up';
       sh.breakupEp = epNum;
       sh.breakupType = 'faded'; // neither voted the other out — just fell apart
       const _pA = pronouns(a), _pB = pronouns(b);
-      const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(a))?.name || 'merge');
+      const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(a) || 'merge');
       if (ep.campEvents) {
         if (!ep.campEvents[tribeName]) ep.campEvents[tribeName] = { pre: [], post: [] };
         const block = ep.campEvents[tribeName];
@@ -730,7 +815,7 @@ export function updateShowmancePhases(ep) {
     const bond = getBond(a, b);
     const _pA = pronouns(a), _pB = pronouns(b);
 
-    const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(a))?.name || 'merge');
+    const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(a) || 'merge');
     const pushEvt = (type, text, players) => {
       if (!ep.campEvents?.[tribeName]) return;
       const block = ep.campEvents[tribeName];
@@ -887,12 +972,38 @@ export function checkShowmanceBreakup(ep) {
     const partner = sh.players.find(p => p !== elim);
     if (!gs.activePlayers.includes(partner)) return;
     // Did the partner vote for them?
-    const partnerVotedThem = (ep.votingLog || []).some(v => v.voter === partner && v.voted === elim);
+    /* ── THE WORST WAY A SHOWMANCE CAN END, WHICH A HOUSE COULD NEVER REACH ──
+       A Total Drama ballot names the target `voted`; a Big Brother ballot names
+       it `evict`. Reading only the first meant the partner-wrote-your-name-down
+       branch was unreachable in a house — the most dramatic ending the format
+       has, degrading silently into "separated", which is the line for somebody
+       who simply got evicted. */
+    const partnerVotedThem = (ep.votingLog || [])
+      .some(v => v.voter === partner && (v.voted ?? v.evict) === elim);
     if (partnerVotedThem) {
       // BREAKUP — the ultimate betrayal
       sh.phase = 'broken-up';
       sh.breakupEp = ep.num || (gs.episode || 0) + 1;
       sh.breakupVoter = partner;
+      /* ── A BETRAYAL ALWAYS TANKS IT. IT DOES NOT ALWAYS END IT ──
+         Writing your partner's name down cost five bond and ended the
+         relationship, every time, whatever it had been — which prices a
+         six-week ride-or-die exactly like a fortnight-old flirtation. What the
+         hit does is not in question; whether the relationship survives it
+         depends on how much there was to survive on.
+         Depth is what they had before tonight: the bond, a real bonus for a
+         couple who had already sworn to go down together, and a little for
+         time served. Even at the top it is under a coin flip, because most of
+         these do not survive being voted out by the person you were with. */
+      const _before = getBond(partner, elim);
+      const _depth = _before
+        + (sh.phase === 'ride-or-die' ? 3 : 0)
+        + Math.min(2, (sh.episodesActive || 0) * 0.3);
+      const _survives = Math.random() < Math.max(0, Math.min(0.5, (_depth - 6) / 9));
+      // Named, so the screen can say which ending this was — and so the life
+      // layer knows whether these two walked out of the season as a couple.
+      // 'betrayed-survived' is read as intact, the way 'separated' is.
+      sh.breakupType = _survives ? 'betrayed-survived' : 'betrayed';
       addBond(partner, elim, -5.0); // devastating collapse
       ep.showmanceBreakup = { voter: partner, eliminated: elim, bond: getBond(partner, elim) };
     } else {
@@ -974,19 +1085,17 @@ export function checkLoveTriangleFormation(ep) {
 
     // Push camp event
     const pc = pronouns(center);
-    const ps0 = pronouns(suitors[0]);
-    const ps1 = pronouns(suitors[1]);
-    const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
+    const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(center) || 'merge');
     if (ep.campEvents?.[tribeName]) {
       const block = ep.campEvents[tribeName];
       const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
       const variants = [
         `The math isn't adding up. ${center} has been spending nights whispering with ${suitors[0]} and mornings laughing with ${suitors[1]}. ` +
-        `${ps0.Sub} noticed. ${ps1.Sub} noticed. Neither has said anything yet — but the silence is louder than any confrontation.`,
+        `${suitors[0]} noticed. ${suitors[1]} noticed. Neither has said anything yet — but the silence is louder than any confrontation.`,
         `Everyone on the tribe can feel it: ${center} is caught between ${suitors[0]} and ${suitors[1]}, and ${pc.sub} doesn't seem to realize ` +
         `how obvious it's become. The question isn't whether this blows up — it's when.`
       ];
-      evts.push({ type: 'triangleTension', text: variants[Math.random() < 0.5 ? 0 : 1], players: [center, suitors[0], suitors[1]] });
+      evts.push({ type: 'triangleTension', sourceType: 'dual-showmance', text: variants[Math.random() < 0.5 ? 0 : 1], players: [center, suitors[0], suitors[1]] });
     }
     ep.triangleEvents.push({ type: 'formation', sourceType: 'dual-showmance', center, suitors: [suitors[0], suitors[1]], ep: epNum });
     return; // max 1 triangle
@@ -1015,9 +1124,9 @@ export function checkLoveTriangleFormation(ep) {
 
         // Must be on same tribe
         if (!gs.isMerged) {
-          const candidateTribe = gs.tribes.find(t => t.members.includes(candidate));
-          const targetTribe = gs.tribes.find(t => t.members.includes(inShowmance));
-          if (!candidateTribe || !targetTribe || candidateTribe.name !== targetTribe.name) continue;
+          const candidateTribe = _campOf(candidate);
+          const targetTribe = _campOf(inShowmance);
+          if (!candidateTribe || !targetTribe || candidateTribe !== targetTribe) continue;
         }
 
         // Probability: proportional to bond, capped at 0.30
@@ -1060,7 +1169,7 @@ export function checkLoveTriangleFormation(ep) {
           });
 
           // Subtle formation event (the affair is secret — no big announcement)
-          const _afTribe = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(inShowmance))?.name || 'merge');
+          const _afTribe = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(inShowmance) || 'merge');
           if (ep.campEvents?.[_afTribe]) {
             const _afBlock = ep.campEvents[_afTribe];
             const _afEvts = Array.isArray(_afBlock) ? _afBlock : (_afBlock.post || _afBlock.pre || []);
@@ -1097,7 +1206,7 @@ export function checkLoveTriangleFormation(ep) {
         // Push camp event
         const pc = pronouns(inShowmance);
         const pCand = pronouns(candidate);
-        const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(inShowmance))?.name || 'merge');
+        const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(inShowmance) || 'merge');
         if (ep.campEvents?.[tribeName]) {
           const block = ep.campEvents[tribeName];
           const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
@@ -1108,7 +1217,7 @@ export function checkLoveTriangleFormation(ep) {
             `There's a new energy around ${inShowmance} that ${partner} can't quite name. ${candidate} lights up whenever ${pc.sub} walks over, ` +
             `laughs a half-second too long at ${pc.posAdj} jokes. It hasn't crossed any lines yet — but the line is getting thinner every day.`
           ];
-          evts.push({ type: 'triangleTension', text: variants[Math.random() < 0.5 ? 0 : 1], players: [inShowmance, partner, candidate] });
+          evts.push({ type: 'triangleTension', sourceType: 'one-sided', text: variants[Math.random() < 0.5 ? 0 : 1], players: [inShowmance, partner, candidate] });
         }
         ep.triangleEvents.push({ type: 'formation', sourceType: 'one-sided', center: inShowmance, suitors: [partner, candidate], ep: epNum });
         return; // max 1 triangle
@@ -1138,11 +1247,75 @@ export function updateLoveTrianglePhases(ep) {
 
     if (!centerAlive || !aAlive || !cAlive) {
       tri.resolved = true;
-      tri.resolution = { type: 'eliminated', who: !centerAlive ? center : !aAlive ? suitorA : suitorC, ep: epNum };
+      const gone = !centerAlive ? center : !aAlive ? suitorA : suitorC;
+      tri.resolution = { type: 'eliminated', who: gone, ep: epNum };
+
+      /* ── THE WAY IT ACTUALLY ENDS, AND IT WAS SILENT ──
+         Measured over 25 played seasons: 20 triangles, mean life 2.3 weeks,
+         and 85% of them ended exactly here — one corner voted out — while the
+         only thing this branch had to say was the rare case where BOTH suitors
+         went in the same week. So the most common ending in the system
+         produced no scene at all. The triangle simply stopped existing between
+         one episode and the next, which is precisely why it never felt like a
+         triangle.
+
+         And the vote is the drama. The ballots are right here, so the one
+         question worth asking gets asked: did the person in the middle put a
+         name on the person they were seeing? */
+      /* The eviction is NOTICED here a week after it happened — this stage runs
+         at the top of the next episode, by which point the current ballots are
+         a fresh empty set and the name being asked about is long gone from
+         them. Measured: the question came back false every single time. So the
+         ballots are taken from the week that actually took them out. */
+      const _weekOf = (gs.bb?.weeks || []).filter(Boolean)
+        .reverse().find(w => w?.evicted === gone || w?.secondEvicted === gone);
+      const ballots = (_weekOf?.ballots?.length ? _weekOf.ballots : (ep.votingLog || [])) || [];
+      const voteOf = who => {
+        const row = ballots.find(v => (v?.voter || v?.name) === who);
+        return row ? (row.evict || row.voted || row.vote || null) : null;
+      };
+      const survivor = gone === center ? null
+        : gone === suitorA ? suitorC : suitorA;
+      const byTheirHand = !!(survivor && voteOf(center) === gone);
+      if (survivor && centerAlive) {
+        // Whatever they were competing over stopped being a competition. The
+        // one left standing gets the ground to themselves, and knows how.
+        addBond(center, survivor, byTheirHand ? 0.9 : 0.5);
+      } else if (!centerAlive && aAlive && cAlive) {
+        // Nothing left to fight about, and nobody left to fight over it with.
+        addBond(suitorA, suitorC, 0.6);
+      }
+      const _cutTribe = gs.isMerged ? (gs.mergeName || 'merge')
+        : (_campOf(centerAlive ? center : (survivor || suitorA)) || 'merge');
+      if (ep.campEvents?.[_cutTribe]) {
+        const _cutBlock = ep.campEvents[_cutTribe];
+        const _cutEvts = Array.isArray(_cutBlock) ? _cutBlock : (_cutBlock.post || _cutBlock.pre || []);
+        const kind = !centerAlive ? 'center-gone' : (aAlive && cAlive) ? 'center-gone' : 'suitor-gone';
+        const _pick2 = arr => arr[Math.floor(Math.random() * arr.length)];
+        const text = kind === 'center-gone'
+          ? _pick2([
+            `${suitorA} and ${suitorC} spent weeks not speaking over ${center}. Tonight ${center} left, and the two of them are still here, with nothing between them but the argument.`,
+            `The vote took ${center} out of it. ${suitorA} and ${suitorC} are left holding a rivalry with nothing at the middle of it.`,
+          ])
+          : byTheirHand
+            ? _pick2([
+              `${gone} is gone, and ${center} wrote the name. ${survivor} watched ${center} do it and has not decided yet whether that was a choice or a warning.`,
+              `${center} had two people and one vote, and used it. ${gone} left knowing exactly who did it, and ${survivor} is the only one who benefits.`,
+            ])
+            : _pick2([
+              `${gone} is gone, and the thing that was tearing ${center} in half was settled by nine other people in about four seconds.`,
+              `Nobody chose. The house did. ${gone} walked out and ${center} and ${survivor} are suddenly a couple, decided by a vote neither of them controlled.`,
+            ]);
+        _cutEvts.push({ type: 'triangleCut', kind, byTheirHand, text,
+          players: [centerAlive ? center : suitorA, survivor || suitorC, gone] });
+      }
+      ep.triangleEvents = ep.triangleEvents || [];
+      ep.triangleEvents.push({ type: 'triangleCut', kind: !centerAlive ? 'center-gone' : 'suitor-gone',
+        byTheirHand, center, gone, survivor });
       // Both suitors eliminated same episode (double tribal) — center gets lonely event
       if (centerAlive && !aAlive && !cAlive) {
         const pc = pronouns(center);
-        const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
+        const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(center) || 'merge');
         if (ep.campEvents?.[tribeName]) {
           const block = ep.campEvents[tribeName];
           const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
@@ -1171,7 +1344,7 @@ export function updateLoveTrianglePhases(ep) {
       ep.triangleEvents = ep.triangleEvents || [];
       ep.triangleEvents.push({ type: 'organic-resolve', phase: tri.phase, center, suitors: [suitorA, suitorC], survivingBond });
       // Push visible camp event so the resolution isn't silent
-      const _orgTribe = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
+      const _orgTribe = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(center) || 'merge');
       if (ep.campEvents?.[_orgTribe]) {
         const _orgBlock = ep.campEvents[_orgTribe];
         const _orgEvts = Array.isArray(_orgBlock) ? _orgBlock : (_orgBlock.post || _orgBlock.pre || []);
@@ -1182,7 +1355,7 @@ export function updateLoveTrianglePhases(ep) {
           `The triangle dissolved without a word. ${droppedSuitor} noticed first — ${_pDrop.sub} could feel ${center} pulling away. By the time ${_pDrop.sub} accepted it, it was already over.`,
           `${center} and ${droppedSuitor} barely talk anymore. Whatever spark was there burned out on its own. ${survivingBond} won without having to fight for it.`,
           `The triangle resolved itself. ${center} drifted away from ${droppedSuitor} naturally — no dramatic confrontation, just the slow fade of something that was never going to last.`,
-        ]), players: [center, survivingBond, droppedSuitor] });
+        ]), kind: 'faded', players: [center, survivingBond, droppedSuitor] });
       }
       // Surviving bond becomes a showmance if compatible + bond high enough + cap allows
       const _orgBondVal = getBond(center, survivingBond);
@@ -1203,9 +1376,9 @@ export function updateLoveTrianglePhases(ep) {
 
     // --- Pre-merge freeze: must all be on same tribe ---
     if (!gs.isMerged) {
-      const tribeCenter = gs.tribes.find(t => t.members.includes(center))?.name;
-      const tribeA = gs.tribes.find(t => t.members.includes(suitorA))?.name;
-      const tribeC = gs.tribes.find(t => t.members.includes(suitorC))?.name;
+      const tribeCenter = _campOf(center);
+      const tribeA = _campOf(suitorA);
+      const tribeC = _campOf(suitorC);
       if (!tribeCenter || tribeCenter !== tribeA || tribeCenter !== tribeC) return; // freeze
     }
 
@@ -1213,19 +1386,29 @@ export function updateLoveTrianglePhases(ep) {
     tri.episodesActive++;
 
     // --- Phase transitions ---
-    if (tri.phase === 'tension' && tri.episodesActive >= 3) tri.phase = 'escalation';
-    if (tri.phase === 'escalation' && tri.episodesActive >= 5) tri.phase = 'ultimatum';
+    /* ── PACED TO THE SHOW IT IS RUNNING IN ──
+       Three episodes to escalate and five to the ultimatum assumes three
+       specific people can stay in the game that long. A house evicts somebody
+       every single week: measured across 25 seasons, the mean triangle lives
+       2.3 weeks, 55% never left tension and only 10% ever reached the
+       ultimatum — so the choice, the public fight and the whole back half of
+       the arc were written and almost never seen. Two and four in a house,
+       which is the same shape of arc against a much shorter clock. */
+    const _fast = seasonConfig.format === 'big-brother';
+    if (tri.phase === 'tension' && tri.episodesActive >= (_fast ? 2 : 3)) tri.phase = 'escalation';
+    if (tri.phase === 'escalation' && tri.episodesActive >= (_fast ? 4 : 5)) tri.phase = 'ultimatum';
 
     const pc = pronouns(center);
     const pA = pronouns(suitorA);
     const pC = pronouns(suitorC);
-    const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
+    const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(center) || 'merge');
 
-    const pushEvt = (type, text, players) => {
+    const pushEvt = (type, text, players, kind = null) => {
       if (!ep.campEvents?.[tribeName]) return;
       const block = ep.campEvents[tribeName];
       const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
-      evts.push({ type, text, players: players || [suitorA, center, suitorC] });
+      evts.push({ type, text, kind, sourceType: tri.sourceType || null,
+        players: players || [suitorA, center, suitorC] });
       ep.triangleEvents = ep.triangleEvents || [];
       ep.triangleEvents.push({ type, phase: tri.phase, center, suitors: [suitorA, suitorC] });
     };
@@ -1295,7 +1478,8 @@ export function updateLoveTrianglePhases(ep) {
 
       // 40% chance: tribemates discuss exploiting triangle
       if (Math.random() < 0.40) {
-        const tribeMembers = (gs.isMerged ? active : (gs.tribes.find(t => t.members.includes(center))?.members || []))
+        const tribeMembers = (gs.isMerged ? active : ((Array.isArray(gs.tribes) ? gs.tribes : [])
+          .find(t => (t?.members || []).includes(center))?.members || []))
           .filter(p => p !== center && p !== suitorA && p !== suitorC);
         if (tribeMembers.length > 0) {
           const schemer = _pick(tribeMembers);
@@ -1402,7 +1586,7 @@ export function updateLoveTrianglePhases(ep) {
         `"I've made my decision," ${center} announced. The relief on ${chosen}'s face was matched only by the devastation on ${rejected}'s.`,
         `${center} chose. It wasn't clean, it wasn't painless, but it was done. ${chosen} exhaled. ${rejected} walked to the beach alone.`
       ];
-      pushEvt('triangleUltimatum', _pick(ultimatumVariants));
+      pushEvt('triangleUltimatum', _pick(ultimatumVariants), [center, chosen, rejected]);
 
       // Personality-specific reaction from rejected player
       let reactionText;
@@ -1428,7 +1612,7 @@ export function updateLoveTrianglePhases(ep) {
         ];
         reactionText = _pick(emotionalReactions);
       }
-      pushEvt('triangleResolved', reactionText, [center, chosen, rejected]);
+      pushEvt('triangleResolved', reactionText, [center, chosen, rejected], 'chose');
 
       // Store on episode for VP
       ep.triangleResolution = { center, chosen, rejected, severity: rejSeverity, bondCrash, heatBoost };
@@ -1477,7 +1661,7 @@ export function updateAffairExposure(ep) {
 
     af.episodesActive++;
 
-    const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(cheater))?.name || 'merge');
+    const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (_campOf(cheater) || 'merge');
     const pushEvt = (type, text, players) => {
       if (!ep.campEvents?.[tribeName]) return;
       const block = ep.campEvents[tribeName];
@@ -1717,6 +1901,9 @@ export function _resolveAffairExposure(af, ep, epNum, pushEvt, _pick) {
       primarySh.phase = 'broken-up';
       primarySh.breakupEp = epNum;
       primarySh.breakupVoter = cheater;
+      // The most specific ending in the file, and it was the only one with no
+      // name on it — so it arrived at the panel as "it ended".
+      primarySh.breakupType = 'affair';
     }
     pushEvt('affairChoice', _pick([
       `${cheater} chose ${secretPartner}. In front of everyone. ${partner} didn't cry — just nodded slowly, like ${pp.sub} always knew this was coming.`,

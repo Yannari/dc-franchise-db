@@ -17539,21 +17539,49 @@ function _bbfBondLabel(v) {
  * Falls back to the bare avatar when the week has no board (old saves, and any
  * cycle that ended before the snapshot was taken), so nothing breaks on replay.
  */
-function _bbfHold(name, members, boardFor, away = false) {
+function _bbfHold(name, members, boardFor, away = false, wasBoardFor = null, bar = 1.5) {
   const board = typeof boardFor === 'function' ? boardFor(members) : null;
   const row = board?.members?.find(m => m.name === name);
   // Behind the wall: no hold is shown, because on a split week nobody on this
   // side knows how that person is holding up. Present, unreachable, greyed.
   if (away) {
     return `<span class="bbf-hold is-away" title="${_bbEsc(name)} — on the other side of the wall">
-      ${_bbAvatar(name, 22)}<b>·</b></span>`;
+      <span class="bbf-hold-face">${_bbAvatar(name, 34)}</span><b>·</b></span>`;
   }
-  if (!row) return _bbAvatar(name, 22);
+  // No board row means no reading to show. A `.bbf-hold` wrapper here would
+  // draw an empty holder where a digit belongs.
+  if (!row) return _bbAvatar(name, 34);
   const v = row.loyalty;
   const tone = v >= 7 ? '#3fb950' : v >= 5 ? '#57a6e8' : v >= 3.5 ? '#d29922' : '#f47067';
   const weak = board.weakest?.name === name;
-  return `<span class="bbf-hold ${weak ? 'is-weak' : ''}" title="${_bbEsc(name)} — ${_bbEsc(row.reason)}">
-    ${_bbAvatar(name, 22)}<b style="color:${tone}">${v.toFixed(1)}</b></span>`;
+  // ── AND WHETHER IT MOVED ──
+  //
+  // The pair rows beside this one have carried arrows since they existed, and
+  // the hold digit never has — so a week where the Head of Household put one
+  // of their own people up, and every member of that alliance lost a little
+  // trust for it, looked identical to a week where nothing happened. A number
+  // with no history is not a reading, it is a decoration.
+  const before = typeof wasBoardFor === 'function'
+    ? wasBoardFor(members)?.members?.find(m => m.name === name)?.loyalty : undefined;
+  const delta = typeof before === 'number' ? v - before : 0;
+  // Measured, not picked, and it depends on WHICH gap is being reported —
+  // a week is a much bigger span than one stretch of a week, so a single bar
+  // would either flood the weekly view or say nothing on the hourly one.
+  // Across six seasons: week to week, 85% of digits move by 0.3 and 76% by
+  // 0.5, so the bar is 1.5 and about a third of faces carry an arrow. Stretch
+  // to stretch only 17% move by 0.8 — and 28 of the 37 alliances whose own
+  // Head of Household nominated a member cross it inside that week, which is
+  // exactly the movement this is for.
+  const moved = Math.abs(delta) >= bar;
+  const arrow = moved
+    ? `<i class="bbf-hold-d ${delta > 0 ? 'up' : 'down'}">${delta > 0 ? '▲' : '▼'}${Math.abs(delta).toFixed(1)}</i>`
+    : '';
+  const why = moved
+    ? ` — ${delta > 0 ? 'up' : 'down'} ${Math.abs(delta).toFixed(1)} since ${bar < 1.5 ? 'the last feed' : 'last week'}`
+    : '';
+  return `<span class="bbf-hold ${weak ? 'is-weak' : ''}${moved ? ' has-moved' : ''}" title="${_bbEsc(name)} — ${_bbEsc(row.reason)}${why}">
+    <span class="bbf-hold-face">${_bbAvatar(name, 34)}</span>
+    <b style="color:${tone}">${v.toFixed(1)}</b>${arrow}</span>`;
 }
 
 /**
@@ -17567,7 +17595,17 @@ function _bbfHold(name, members, boardFor, away = false) {
  */
 function _bbHoldDetail(bloc) {
   let roster = null;
-  try { roster = typeof blocRoster === 'function' ? blocRoster(bloc) : null; } catch { roster = null; }
+  // Prefer the readings recorded WITH the week. Recomputing them here reads
+  // today's bonds, so a replayed episode explained its own numbers using
+  // relationships that had not happened yet.
+  if (Array.isArray(bloc?.holds) && bloc.holds.length && typeof bloc.holds[0] === 'object') {
+    const rows = [...bloc.holds].sort((a, b) => b.loyalty - a.loyalty);
+    const weak = typeof bloc.weakest === 'string'
+      ? rows.find(r => r.name === bloc.weakest) : bloc.weakest;
+    roster = { members: rows, weakest: weak || null,
+      average: rows.reduce((sum, r) => sum + r.loyalty, 0) / rows.length };
+  }
+  try { roster = roster || (typeof blocRoster === 'function' ? blocRoster(bloc) : null); } catch { roster = roster || null; }
   if (!roster?.members?.length) return '';
   const tone = v => v >= 7 ? '#3fb950' : v >= 5 ? '#57a6e8' : v >= 3.5 ? '#d29922' : '#f47067';
   const rows = roster.members.map(m => `<div class="bbb-hold-row">
@@ -17590,6 +17628,16 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
   // the first screen of a week showed numbers that had not happened yet and
   // alliances nobody had formed on screen.
   const here = act?.state || null;
+  /* ── WHERE IN THE WEEK THIS SCREEN SITS ──
+     Something that ends is greyed from the stretch it is actually gone from,
+     and on the last screen of the week for the ones that die in the
+     maintenance pass after the final snapshot — which is most of them. Greying
+     it on EVERY screen of the week put "it ended" at the top of week one over a
+     feed that then showed the couple getting together. */
+  const _lastStretch = act?.type === 'campaign'
+    || (houseActs.length ? houseActs.indexOf(act) === houseActs.length - 1 : true);
+  const _stillHere = (list, has) => (list || []).some(has);
+
   const snap = ep.gsSnapshot || {};
   const bonds = here?.bonds || snap.bonds || (typeof gs !== 'undefined' && gs.bonds) || {};
   const inHouse = new Set(house);
@@ -17621,13 +17669,53 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
     best.names.forEach(n => seen.add(n));
   }
 
+  const _pairKey = list => [...(list || [])].sort().join('|');
+  /* ── ONLY THE ENDINGS THAT HAPPENED IN THE HOUSE ──
+     House Life runs BEFORE the vote. An ending caused by the eviction — the
+     partner writing their name down, or simply being the one who left — is not
+     known to anybody on these screens, and drawing it here tells the viewer who
+     is going home and how the vote went before the ceremony does. It is a
+     spoiler in the same shape as the missing hold digit was.
+     And `separated` is not a break-up at all. romance.js says so where it sets
+     the type — "not betrayal, relationship intact, just physically apart" — it
+     keeps the bond high on purpose because it is grief rather than anger, and
+     `phase` only goes to broken-up because the couple is no longer a couple IN
+     THE HOUSE. stats-export.js already refuses to read it as an ending; this
+     panel should not either. The pair leaves these rows on its own next week,
+     when one of them is no longer in the house. */
+  const _endedHere = d => ['faded', 'sabotaged', 'called-off', 'affair'].includes(d?.type);
+  const _endedPairs = new Set((ep?.showmanceEnded || [])
+    .filter(_endedHere)
+    .filter(d => _lastStretch
+      || !_stillHere(here?.showmances, sh => _pairKey(sh.players) === _pairKey(d.players)))
+    .map(d => _pairKey(d.players)));
   const showmances = (here?.showmances || snap.showmances || (typeof gs !== 'undefined' && gs.showmances) || [])
+    .filter(sh => !_endedPairs.has([...(sh.players || [])].sort().join('|')))
     .filter(sh => sh.phase !== 'broken-up' && !sh.broken && (sh.players || []).every(n => inHouse.has(n)));
   const isShowmance = (a, b) => showmances.some(sh =>
     (sh.players || []).includes(a) && (sh.players || []).includes(b));
 
+  /* ── A GROUP THE WEEK HAS ALREADY BURIED IS NOT IN PLAY ──
+     Most alliances die in the maintenance pass that runs AFTER the last stretch
+     is snapshotted, so they are still listed in every screen of the week they
+     ended in and then simply absent from the next episode. Measured: only 4 of
+     22 dissolutions ever reached a screen that could show them as over. They
+     come out of the live list here and are drawn once, greyed, at the bottom —
+     which is also what stops one screen showing a group as in play and finished
+     at the same time. */
+  /* Everything that reaches a week is something the house already knows: it
+     either happened before the vote, or it is last week's post-vote fallout
+     arriving in the episode that can show it (week.js queues those rather than
+     printing them on screens that all run before the eviction). The guard
+     stays as a floor in case anything starts tagging itself again. */
+  const _knownNow = d => !d?.postVote;
+  const _endedNames = new Set((ep?.allianceDissolved || [])
+    .filter(_knownNow)
+    .filter(d => _lastStretch
+      || !_stillHere(here?.alliances, a => a.name === d.name))
+    .map(d => d.name));
   const alliances = (here?.alliances || snap.namedAlliances || (typeof gs !== 'undefined' && gs.namedAlliances) || [])
-    .filter(a => a.active !== false)
+    .filter(a => a.active !== false && !_endedNames.has(a.name))
     .map(a => ({ ...a, members: (a.members || []).filter(m => inHouse.has(m)) }))
     .filter(a => a.members.length >= 2)
     .slice(0, 5);
@@ -17656,16 +17744,41 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
     ? new Set(ep.splitHouse.sides[wallSide]) : null;
   const away = n => !!onThisSide && !onThisSide.has(n);
 
-  const boardFor = members => {
+  // ── THE BOARD AS IT STOOD AT THIS STRETCH, NOT AT THE END OF THE WEEK ──
+  //
+  // The week-level board could only answer "did this alliance shift since the
+  // last episode". The stretch snapshots carry their own `holds`, so the
+  // screen before the nomination ceremony and the screen after it hold
+  // different numbers and the arrow points at the thing that actually caused
+  // it. The week board stays as the fallback for records saved before stretch
+  // holds existed, and for the bookend screens that have no stretch.
+  //
+  // Two shapes to accept: the compact stretch hold (weakest is a name) and the
+  // week board (weakest is a row). Normalised here so `_bbfHold` sees one.
+  const pickBoard = (source, members) => {
     const want = new Set(members || []);
     if (want.size < 2) return null;
     let best = null, bestShared = 1;
-    for (const b of ep?.allianceBoard || []) {
+    for (const b of source || []) {
       const shared = (b.members || []).filter(m => want.has(m.name)).length;
       if (shared > bestShared) { best = b; bestShared = shared; }
     }
-    return best;
+    if (!best) return null;
+    const weakest = typeof best.weakest === 'string' ? { name: best.weakest } : best.weakest;
+    return { ...best, weakest };
   };
+  const boardFor = members =>
+    pickBoard(here?.holds, members) || pickBoard(ep?.allianceBoard, members);
+  // What it read on the previous screen of this same week where there is one,
+  // and last week's closing board otherwise — the same rule `sinceLabel` above
+  // already states to the viewer.
+  // 0.8 when the comparison is against the previous screen of this week, 1.5
+  // when it is against last week. See the note in `_bbfHold`.
+  const holdBar = priorAct?.state?.holds ? 0.8 : 1.5;
+  const wasBoardFor = members =>
+    pickBoard(priorAct?.state?.holds, members)
+    || pickBoard(prior?.closingState?.holds, members)
+    || pickBoard(prior?.allianceBoard, members);
 
   const row = p => {
     const [a, b] = p.names;
@@ -17674,7 +17787,7 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
     const moved = Math.abs(delta) >= 0.4;
     const pct = Math.min(100, Math.abs(p.v) * 10);
     return `<div class="bbf-rel">
-      <span class="bbf-rel-faces">${_bbAvatar(a, 24)}${_bbAvatar(b, 24)}</span>
+      <span class="bbf-rel-faces">${_bbAvatar(a, 34)}${_bbAvatar(b, 34)}</span>
       <span class="bbf-rel-who">${a} &amp; ${b}</span>
       <span class="bbf-rel-mid">
         <span class="bbf-rel-lab" style="color:${lab.color}">${lab.word}${
@@ -17729,16 +17842,75 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
       <div class="bbf-panel-h">Alliances in play<small>${alliances.length || 'none'}</small></div>
       ${alliances.length ? alliances.map(a => `<div class="bbf-ally">
           <span class="bbf-ally-n">${a.name}</span>
-          <span class="bbf-ally-m">${a.members.map(m => _bbfHold(m, a.members, boardFor, away(m))).join('')}</span>
+          <span class="bbf-ally-m">${a.members.map(m => _bbfHold(m, a.members, boardFor, away(m), wasBoardFor, holdBar)).join('')}</span>
           <span class="bbf-ally-c">${onThisSide
             ? `${a.members.filter(m => !away(m)).length}/${a.members.length}` : a.members.length}</span>
         </div>`).join('')
         : `<div style="font-size:11px;color:#484f58">Nothing anybody has been willing to name.</div>`}
-      ${showmances.length ? `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
+      ${(() => {
+        /* ── A GROUP THAT ENDED STAYS IN THE LIST, GREYED, UNTIL THE WEEK IS OVER ──
+           It used to be a sentence UNDER the panel while the alliance was still
+           drawn above it in full colour, so one screen said a group was in play
+           and finished at the same time. Now it keeps its row — the same faces,
+           the same holds — greyed out with the reason where the member count
+           was, from the stretch it actually died in. Earlier screens of the
+           same week still show it alive, because it was; the next episode
+           drops it entirely, because `allianceDissolved` is per week. */
+        const _snapAll = here?.alliances || snap.namedAlliances || [];
+        const gone = (ep?.allianceDissolved || [])
+          .filter(d => _knownNow(d) && _endedNames.has(d.name)).map(d => ({
+          ...d,
+          // Prefer the roster the week itself was drawing.
+          members: ((_snapAll.find(a => a.name === d.name)?.members) || d.members || [])
+            .filter(m => inHouse.has(m)),
+        }));
+        // A carried dissolution can arrive with nobody left to draw — the group
+        // ran out of members because they were evicted, which is the whole
+        // reason it ended. It still gets its row and its sentence; it just has
+        // no faces in it.
+        
+        const why = d => d.reason === 'insufficient-live-members' ? 'nobody left in it'
+          : d.reason === 'betrayal' ? 'betrayed from the inside'
+          : 'nobody left trusts anybody';
+        const rows = gone.map(d => `<div class="bbf-ally is-over">
+          <span class="bbf-ally-n">${_bbEsc(d.name)}</span>
+          <span class="bbf-ally-m">${(d.members || []).map(m =>
+            `<span class="bbf-hold"><span class="bbf-hold-face">${_bbAvatar(m, 34)}</span><b>·</b></span>`).join('')}</span>
+          <span class="bbf-ally-c">${why(d)}</span>
+        </div>`).join('');
+        const thrown = (ep?.allianceDepartures || []).filter(_knownNow).map(d => `<div class="bbf-gone-row">
+          <b>${_bbEsc(d.alliance || 'The alliance')}</b> has thrown ${_bbEsc(d.player)} out — ${_bbEsc(d.reason || 'expelled')}.
+        </div>`).join('');
+        return rows + (thrown ? `<div class="bbf-gone">${thrown}</div>` : '');
+      })()}
+      ${(() => {
+        /* A couple that ended keeps its row for the rest of the episode, greyed,
+           with what happened where the holds were — the same treatment a
+           dissolved alliance gets, and for the same reason: a pair that simply
+           stops being drawn reads as a bug rather than as a break-up. */
+        const overNow = (ep?.showmanceEnded || [])
+          .filter(d => _endedHere(d) && _endedPairs.has(_pairKey(d.players))
+            && (d.players || []).every(n => inHouse.has(n)));
+        if (!showmances.length && !overNow.length) return '';
+        /* "It just says it ended." There are four ways one of these finishes
+           and the row was calling all of them the same thing. */
+        const said = d => d.type === 'sabotaged' ? 'somebody in this house engineered it'
+          : d.type === 'affair' ? 'one of them had been seeing somebody else'
+          : d.type === 'called-off' ? 'one of them ended it'
+          : d.type === 'faded' ? 'it ran out on its own'
+          : 'it ended';
+        return `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
         ${showmances.map(sh => `<div class="bbf-ally">
           <span class="bbf-ally-n" style="color:#ff7b72">${(sh.players || []).join(' &amp; ')}</span>
-          <span class="bbf-ally-m">${(sh.players || []).map(m => _bbfHold(m, sh.players || [], boardFor, away(m))).join('')}</span>
-        </div>`).join('')}` : ''}
+          <span class="bbf-ally-m">${(sh.players || []).map(m => _bbfHold(m, sh.players || [], boardFor, away(m), wasBoardFor, holdBar)).join('')}</span>
+        </div>`).join('')}
+        ${overNow.map(d => `<div class="bbf-ally is-over">
+          <span class="bbf-ally-n" style="color:#ff7b72">${(d.players || []).join(' &amp; ')}</span>
+          <span class="bbf-ally-m">${(d.players || []).map(m =>
+            `<span class="bbf-hold"><span class="bbf-hold-face">${_bbAvatar(m, 34)}</span><b>·</b></span>`).join('')}</span>
+          <span class="bbf-ally-c">${said(d)}</span>
+        </div>`).join('')}`;
+      })()}
     </div>
   </div>`;
 }
@@ -18306,7 +18478,7 @@ function _bbOrdinal(n) {
  * Which reason gets used is whichever is most TRUE of that houseguest, so the
  * same nominee does not get the same speech twice in a season.
  */
-function _bbNomReason(hoh, name, role, ep) {
+export function _bbNomReason(hoh, name, role, ep) {
   const rec = (typeof gs !== 'undefined' && gs.bb?.stats?.[name]) || {};
   // Block Buster wins count. Somebody who has fought their way off the block
   // twice is a competitor the house has watched win under the most pressure
@@ -18316,6 +18488,12 @@ function _bbNomReason(hoh, name, role, ep) {
   const bond = typeof getPerceivedBond === 'function' ? getPerceivedBond(hoh, name) : 0;
   const allies = ((typeof gs !== 'undefined' && gs.namedAlliances) || [])
     .filter(a => a.active !== false && (a.members || []).includes(name) && !(a.members || []).includes(hoh));
+  const together = ((typeof gs !== 'undefined' && gs.namedAlliances) || [])
+    .some(a => a.active !== false && (a.members || []).includes(name) && (a.members || []).includes(hoh));
+  const showmance = ((typeof gs !== 'undefined' && gs.showmances) || [])
+    .some(sh => sh && sh.phase !== 'broken-up' && !sh.broken
+      && (sh.players || []).includes(hoh) && (sh.players || []).includes(name));
+  const left = ((typeof gs !== 'undefined' && gs.activePlayers) || []).length;
   const plan = (typeof gs !== 'undefined' && gs.intentions?.[hoh]) || {};
   const grudge = (plan.revenge || []).includes(name);
   const weekNumber = Math.max(1, Number(ep?.num) || Number(gs?.episode) || 1);
@@ -18325,33 +18503,299 @@ function _bbNomReason(hoh, name, role, ep) {
       ? 'for two weeks'
       : `for ${weekNumber} weeks`;
 
+  // ── ONE LINE PER BRANCH WAS THE OTHER HALF OF THE PROBLEM ──
+  //
+  // Every reason returned a single fixed sentence, so the same nomination
+  // speech ran word for word every time the same condition came up — and the
+  // conditions that fire most are the ones a viewer therefore hears most.
+  // Seeded on the pair and the week, so a replay says what it said the first
+  // time rather than rerolling the ceremony.
+  const say = list => {
+    const seed = `${hoh}|${name}|${weekNumber}`;
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+    return list[h % list.length];
+  };
+  const N = `<strong>${name}</strong>`;
+
+  const _nomAct = (ep?.acts || []).find(a => a.type === 'nominations'
+    && (a.nominees || []).includes(name));
+  const grievance = (_nomAct?.grievances || {})[name] || null;
+
+  /* ── A CHAIR IN A BACKDOOR WEEK IS NOT ABOUT THE PERSON IN IT ──
+     When the plan carries a backdoor target, the people on the block are there
+     to fill the ceremony until the veto moves somebody, and the entire point is
+     that the real name is not on that wall. A speech reaching for a grievance
+     is answering a question nobody asked: the honest line is that this is not
+     about them and they will have to take it on trust for four days. The
+     target is never named, because naming it here is the one thing that would
+     ruin the week.
+     Checked before the grievance, because it beats any receipt — whatever is
+     between these two, it is not why the key turned tonight. */
+  const _backdoor = _nomAct?.backdoorTarget;
+  if (_backdoor && _backdoor !== name && role !== 'target') return say([
+    `"${N}, I am going to ask you to sit in that chair and trust me for four days, and I am not going to explain myself in this room. If I have read this week right, you are not the one who leaves."`,
+    `"${N}, this is not about you, and I am not going to insult you by inventing a reason that it is. Somebody has to sit down for the ceremony to happen at all."`,
+    `"${N}, I need those chairs filled by Thursday and I need you in one of them. That is the whole truth of it, and I know exactly how little it is worth to hear."`,
+  ]);
+
   if (role === 'pawn') {
-    if (bond >= 3) return `"<strong>${name}</strong>, you are the only person in this house I could ask to do this, and that is exactly why I am asking. You are not the one going home."`;
-    if ((st.social ?? 5) >= 7) return `"<strong>${name}</strong>, you can talk to anybody in here. Give you time before the vote and you will find the numbers."`;
-    return `"<strong>${name}</strong>, I need a second chair filled and I picked the person least likely to hold it against me. I hope I picked right."`;
+    if (bond >= 3) return say([
+      `"${N}, you are the only person in this house I could ask to do this, and that is exactly why I am asking. You are not the one going home."`,
+      `"${N}, I need somebody in that chair who will still talk to me on Friday. That is you, and I am sorry it is you."`,
+      `"${N}, this is a formality, and I need you to hear me say that out loud, in front of everybody, before you sit down."`,
+    ]);
+    if ((st.social ?? 5) >= 7) return say([
+      `"${N}, you can talk to anybody in here. Give you time before the vote and you will find the numbers."`,
+      `"${N}, I am not worried about you and neither should you be. You will have talked half this room round by Thursday."`,
+    ]);
+    return say([
+      `"${N}, I need a second chair filled and I picked the person least likely to hold it against me. I hope I picked right."`,
+      `"${N}, somebody has to sit there. I have no reason beyond that and I am not going to pretend I do."`,
+    ]);
   }
 
-  if (grudge) {
-    return `"<strong>${name}</strong>, this is personal and I am not going to insult you by saying it is not. You know what you did and so does everybody in this room."`;
+  // ── THE RELATIONSHIP IS READ BEFORE THE PLAN IS ──
+  //
+  // Every branch below used to sit behind `grudge`, which comes off the plan
+  // and knows nothing about how these two actually get on. So a Head of
+  // Household nominated the person they were in a showmance with and told
+  // them "this is personal and you know what you did" — to somebody they were
+  // inseparable from, in a house of four where everybody left was a friend.
+  //
+  // A nomination that costs the person making it is the most interesting one
+  // the format produces, and it was being written as the coldest.
+  // ── AND SAY WHICH OF THE TWO REASONS IT IS ──
+  //
+  // There are exactly two, they are not the same reason, and which one is true
+  // depends on how many people are left. Writing one vague line for both gave
+  // the ceremony "I would rather be the one who does this than let somebody
+  // else decide it for both of us" — a sentence shaped like an argument with
+  // no argument inside it, since at four the Head of Household IS the somebody
+  // else. A viewer cannot disagree with a reason they cannot follow.
+  if (showmance) {
+    // THE ONE VOTE. Two of three go up, so there IS a choice at four — the
+    // draft claimed their name was unavoidable, and it was not; the Head of
+    // Household picked who to leave OFF. And leaving somebody off is the whole
+    // decision, because `voters` excludes the Head of Household and both
+    // nominees: at four exactly one person votes, and it is the one not
+    // sitting down. Nobody is choosing who goes home. They are choosing who
+    // decides, and that is a far better reason than the arithmetic that is not
+    // even true.
+    if (left <= 4) return say([
+      `"${N}, there is one vote this week and it belongs to whoever I leave off this block. I have picked who holds it. That was the only decision I got and I have made it."`,
+      `"${N}, two of the three of you were always sitting down. I chose which one did not, and that choice was about who I can predict on Thursday and nothing else."`,
+      `"${N}, at four, going up is not the same as going home — one person votes and the rest of us play for that veto. I would rather you were fighting for it than trusting somebody else to save you."`,
+    ]);
+    // THE PAIR. The house prices a showmance as one player holding two votes,
+    // which makes both of them the same target — so the only thing left to
+    // decide is which week it happens in, and who is holding the power when
+    // it does.
+    return say([
+      `"${N}, this house counts the two of us as one person with two votes. Whoever comes for me comes for you, and I would rather that happened in a week I am running than one I am not."`,
+      `"${N}, every single person in here has been waiting to find out whether I could put you up. They have been building their weeks around the answer being no, and I need that to stop being worth anything."`,
+      `"${N}, if I spend this week on somebody else, we are both sitting up there the day I lose this room. I am doing it now, while it is still mine to do."`,
+    ]);
   }
-  if (comps >= 2) {
-    return `"<strong>${name}</strong>, you have won ${comps} competitions. I cannot beat you at the end and I am not going to wait around and hope somebody else takes the shot."`;
+  // ── TURNING ON YOUR OWN ALLIANCE, WITH THE REASON SAID OUT LOUD ──
+  //
+  // Measured over twenty seasons: of the 23 ceremonies where a Head of
+  // Household targeted a live ally with three or more outsiders available, 22
+  // had a real grievance behind them — a betrayal the strategic memory still
+  // holds, a suspicion, or a bond that soured weeks ago. The decision was
+  // never arbitrary. The SPEECH was, because no branch here knew the nominee
+  // was in the nominator's own alliance, so the most dramatic thing this
+  // format does came out as a line about competition wins.
+  //
+  // `grievances` is captured by the ceremony itself (week.js) rather than
+  // recomputed here, so a replay gives the reason that existed that week.
+  grievance: if (grievance && !(grievance.kind === 'no-grievance' && left <= 5)) {
+    const G = grievance.alliance ? `<strong>${grievance.alliance}</strong>` : 'that alliance';
+    if (grievance.kind === 'betrayal') {
+      // ── NAME THE RECEIPT ──
+      //
+      // The house stores WHICH thing it is holding against somebody, and
+      // `consequence-arcs.js` already groups those types into families — the
+      // lie, the promise, the vote, the ally, the block. A speech that says
+      // "you did not keep your word" while the specific act is sitting in
+      // `strategicMemories` is choosing the vaguer of two available sentences,
+      // and it is the one the viewer cannot check against anything they
+      // watched.
+      const mem = grievance.memory || {};
+      const t = mem.type || '';
+      const when = mem.ep ? ` in week ${mem.ep}` : '';
+      // Some of these lines describe a state rather than a moment, and " in
+      // week 4" lands inside the clause instead of after it — "I have tried to
+      // tell you things in week 4" is not a sentence anybody says.
+      const since = mem.ep ? ` since week ${mem.ep}` : '';
+      const LIE = ['deceit', 'lied-to-my-face', 'made-it-up', 'sold-me-something',
+        'swore-it-was-not-them', 'went-behind-my-back', 'playing-with-two-bodies',
+        'exposed-alliance-pitch', 'knows-what-they-said-about-them', 'said-it-out-loud',
+        'lie-confirmed', 'leaked-information', 'endgame-deal-discovered',
+        'two-versions-of-the-same-plan', 'two-faced', 'denied-the-stray-vote'];
+      const PROMISE = ['broke-a-promise', 'broken-promise', 'broke-a-final-two',
+        'broken-final-two', 'final-two', 'promised-and-did-not', 'promised-me-a-seat',
+        'alliance-betrayal', 'crossed-me', 'rogue-vote', 'broke-word-found-out',
+        'final-three', ];
+      const ALLY = ['eliminated-ally', 'took-my-ally', 'chose-them-over-me'];
+      const BLOCK = ['renomination', 'forced-me-up', 'refused-to-sit', 'made-me-the-pawn',
+        'block-rewritten', 'passed-me-over-in-the-chain', 'left-me-out',
+        'renominated-me', 'humiliation', 'decided-without-me', 'named-on-the-way-out'];
+
+      if (t === 'voted-for-me') return say([
+        `"${N}, you wrote my name down${when}. Everybody in ${G} watched you do it and then watched me let it go. I am finished letting it go."`,
+        `"${N}, my name came out of that box${when} in your handwriting. I have been gracious about it for long enough."`,
+      ]);
+      if (t === 'overcommitted') return say([
+        `"${N}, you have promised the end of this game to more people than it has room for. I worked out this week that I am one of them, and not the one you meant."`,
+        `"${N}, everybody I speak to thinks they are sitting beside you at the end. They cannot all be right, and I stopped assuming I was the exception."`,
+      ]);
+      if (ALLY.includes(t)) return say(mem.ally ? [
+        `"${N}, you helped send <strong>${_bbEsc(mem.ally)}</strong> home${when}, and then sat in ${G} with me as though it had not happened. This is that conversation, finally."`,
+        `"${N}, <strong>${_bbEsc(mem.ally)}</strong> is not in this house because of a vote you were part of${when}. I have not forgotten one day of it."`,
+      ] : [
+        `"${N}, you helped take somebody out of this house who was mine${when}, and then carried on as though we were fine. We have not been fine since."`,
+        `"${N}, I lost somebody I needed${when} and you were on the other side of that. I have been counting the weeks since."`,
+      ]);
+      if (PROMISE.includes(t)) return say([
+        `"${N}, you promised me something about the end of this game${when} and then made sure it could not happen. A promise that only holds while it costs you nothing was never a promise."`,
+        `"${N}, we agreed how this was supposed to finish${when}. You changed your mind and did not tell me, and that second part is what I actually mind."`,
+      ]);
+      if (LIE.includes(t)) return say([
+        `"${N}, you have been running ${G} in one room and something else in another, and I have known${since}. I would rather be wrong about that in public than right about it on my way out of the door."`,
+        `"${N}, I found out what you say when I am not in the room${when}. You are extremely good at it. That is precisely the problem."`,
+      ]);
+      if (BLOCK.includes(t)) return say([
+        `"${N}, when it was your week, I was the one sitting in this chair${when}. I am not going to pretend I have forgotten what that felt like."`,
+        `"${N}, you had this power once and you spent it on me${when}. Now I have it, and I am spending it the same way."`,
+      ]);
+      if (t === 'called-the-vote-on-me') return say([
+        `"${N}, you went round this house counting votes against me${when}, in the week I thought we were counting them together."`,
+        `"${N}, the vote that nearly took me out${when} was yours. Not the house's, not anybody else's — you called it."`,
+      ]);
+      if (t === 'planning-the-cut') return say([
+        `"${N}, I know what you were planning for the two of us${when}, because it got back to me the way everything in this house gets back to everybody. You were going to do this. I am just earlier."`,
+        `"${N}, you had already decided where this ended for me${when}. I would rather be the one who says it out loud first."`,
+      ]);
+      if (t === 'bought-a-vote') return say([
+        `"${N}, you paid somebody for a vote${when}. Everything since has been you telling me we were doing this together."`,
+        `"${N}, there is a vote in this house that you bought${when}. I have never once been able to get that out of my head."`,
+      ]);
+      if (t === 'blamed-me-for-a-vote-i-did-not-cast') return say([
+        `"${N}, you told this house I cast a vote I did not cast${when}. I have spent every week since being the person you said I was."`,
+        `"${N}, you needed somebody to blame${when} and you chose the person sitting next to you in ${G}. That is the whole reason."`,
+      ]);
+      if (['they-are-a-pair', 'house-picked-sides', 'bloc-threat',
+        'an-alliance-inside-the-alliance', 'is-protecting-somebody'].includes(t)) return say([
+        `"${N}, you are in ${G} with me and you are in something else with somebody else, and when this house split${when} I found out which one you counted."`,
+        `"${N}, we are supposed to be the group. You have a second one, and I am not in it."`,
+      ]);
+      if (t === 'cannot-be-told-anything') return say([
+        `"${N}, I have been trying to tell you things${since} and you do not hear any of them. I cannot play a game with somebody I cannot talk to."`,
+        `"${N}, I have brought you every piece of this week and you have done what you were going to do anyway. That is not an alliance, it is an audience."`,
+      ]);
+      if (t === 'accuser-confronted') return say([
+        `"${N}, you stood in front of this house and accused me${when}. You may even have believed it. It does not change where you are sitting now."`,
+        `"${N}, when this house needed somebody to point at, you pointed${when}. I am not going to pretend I have forgotten which way your arm went."`,
+      ]);
+      // ── AND WHEN THE HOUSE CANNOT NAME IT, IT MUST NOT INVENT ONE ──
+      //
+      // This used to say "you gave me your word and then you did not keep it"
+      // for ANY memory that was not in one of the families above — including
+      // types that are not a broken promise at all. A speech that accuses
+      // somebody of something specific has to be reading something specific;
+      // where it is not, it says what it actually knows, which is that this
+      // stopped being what it was.
+      /* ── AND WHEN IT CANNOT NAME THE THING, IT SHOULD NOT PRETEND TO ──
+         "I am nominating somebody I did trust, which is a different thing and
+         a worse one" is a mood, not a reason: it tells a viewer that something
+         happened and nothing whatsoever about what. That is worse than not
+         raising it, because the house is visibly holding a receipt it cannot
+         read out.
+         So when the memory has no family here, the speech says nothing about
+         it and falls through to the reasons below — the competition record,
+         the numbers, the game — every one of which the speaker can stand
+         behind. */
+      break grievance;
+    }
+    if (grievance.kind === 'suspicion') return say([
+      `"${N}, you have been in a lot of rooms I was not in. I have no proof and I am not going to stand here and invent some — I have one week of power and a bad feeling, and I am spending one on the other."`,
+      `"${N}, every time this house moves lately you have already spoken to somebody about it. That is either remarkable luck or a second alliance, and I cannot afford to guess which."`,
+      `"${N}, we are supposed to be on the same side, and I am always the last person in ${G} to hear anything. I would rather find out like this than on my way out of the door."`,
+    ]);
+    if (grievance.kind === 'soured') return say([
+      `"${N}, we have not been on the same side of a conversation in weeks. The name of the group is still there. Nothing else about it is."`,
+      `"${N}, whatever we had in the first month is gone, and I am not going to keep protecting something that only exists on paper."`,
+      `"${N}, ${G} is two people being polite to each other in a kitchen. I am not losing this game to a formality."`,
+    ]);
+    // Nothing has gone wrong between them at all — the rarest case, and it must
+    // not borrow one of the grievances above.
+    return say([
+      `"${N}, you have not done one thing to me, and that is the whole problem. You are the best player in ${G}, and if I do not do this now then one of us does it to the other later."`,
+      `"${N}, nobody in this house has been better to me than you. You are also the person I cannot beat, and this is the only week where that is my decision to make."`,
+      `"${N}, I have no complaint and no story. I have a week of power and an alliance I am not going to be able to win from."`,
+    ]);
   }
-  if (allies.length) {
-    return `"<strong>${name}</strong>, there is a group in this house that does not include me, and you are in it. That is the whole reason. Nothing about you personally."`;
-  }
-  if (bond <= -3) {
-    return `"<strong>${name}</strong>, we have not been able to have a straight conversation ${frictionTime}. I would rather do this than keep pretending we are fine."`;
-  }
-  if ((st.social ?? 5) >= 7) {
-    return `"<strong>${name}</strong>, everybody in this house likes you. That is a résumé, and it beats mine, and I only get one week where I can do anything about it."`;
-  }
-  if ((st.strategic ?? 5) >= 7) {
-    return `"<strong>${name}</strong>, you are running more of this house than you let on. I would rather take the shot now than wait until everybody else sees it too."`;
-  }
-  return `"<strong>${name}</strong>, somebody had to go up and there was no version of this week where it was going to feel fair. I am sorry it is you."`;
+  if (bond >= 6) return say([
+    `"${N}, you are the last person in this house I wanted to put up, and everybody in here knows it. I am not going to insult you by pretending this was a hard week for anybody but us."`,
+    `"${N}, I have nothing to accuse you of. That is what makes this the worst thing I have had to do since I walked in."`,
+    `"${N}, if there had been anybody else I could sit down, I would have. There was not, and you would have done the same."`,
+  ]);
+  // The honest endgame reason, and the one the house actually gives.
+  if (left <= 5 && (bond >= 2 || together)) return say([
+    `"${N}, there is nobody left in this house who is not a friend. That is what this week is. Somebody I like is going up, and it is you."`,
+    `"${N}, we have run out of other people. I am not going to insult you with a reason that is really just arithmetic."`,
+    `"${N}, this late there is no such thing as a safe nomination or a fair one. You are up because somebody had to be."`,
+  ]);
+
+  if (grudge && bond < 3) return say([
+    `"${N}, this is personal and I am not going to insult you by saying it is not. You know what you did and so does everybody in this room."`,
+    `"${N}, I have been waiting for this since the week you decided I was somebody you could use. Here it is."`,
+    `"${N}, I do not have a strategic reason and I am not going to invent one. This is about you and me."`,
+  ]);
+  if (comps >= 2) return say([
+    `"${N}, you have won ${comps} competitions. I cannot beat you at the end and I am not going to wait around and hope somebody else takes the shot."`,
+    `"${N}, ${comps} wins. Anybody sitting next to you at the end loses, and everybody in this room can count."`,
+  ]);
+  /* ── ONLY IF THEY ACTUALLY KNOW ABOUT IT ──
+     This read `gs.namedAlliances` directly, which is the truth of the house
+     rather than anything the Head of Household has worked out — so somebody
+     with no idea a group existed announced its existence at their own
+     ceremony. The house already tracks who has noticed what, per person, on a
+     0..1 scale; this now asks.
+     Three answers, because "I know" and "I suspect" are different sentences
+     and neither of them is "I have no idea": above 0.55 they can say it as a
+     fact, between 0.25 and 0.55 they can only say what they have noticed, and
+     below that this branch has nothing to offer and the speech falls through
+     to a reason they can actually stand behind. */
+  const _sees = allies.reduce((most, a) => {
+    try { return Math.max(most, knowledgeOf(hoh, `a:${a.name}`)); } catch { return most; }
+  }, 0);
+  if (allies.length && bond < 3 && _sees >= 0.55) return say([
+    `"${N}, there is a group in this house that does not include me, and you are in it. That is the whole reason. Nothing about you personally."`,
+    `"${N}, you have numbers and I am not one of them. I would rather do something about that this week than next."`,
+  ]);
+  if (allies.length && bond < 3 && _sees >= 0.25) return say([
+    `"${N}, I cannot prove any of this, and I am not going to stand here and pretend I can. The same names keep coming out of the same rooms, and yours is one of them."`,
+    `"${N}, either you are in something or you are the luckiest person in this house. I have to pick one of those to believe, and I have one week to be wrong in."`,
+  ]);
+  if (bond <= -3) return say([
+    `"${N}, we have not been able to have a straight conversation ${frictionTime}. I would rather do this than keep pretending we are fine."`,
+    `"${N}, neither of us has been pretending to like the other one ${frictionTime}. This is not going to surprise you."`,
+  ]);
+  if ((st.social ?? 5) >= 7) return say([
+    `"${N}, everybody in this house likes you. That is a résumé, it beats mine, and I only get one week where I can do anything about it."`,
+    `"${N}, you have not made an enemy in here yet. That is a better game than mine, and it is exactly why you are up."`,
+  ]);
+  if ((st.strategic ?? 5) >= 7) return say([
+    `"${N}, you are running more of this house than you let on. I would rather take the shot now than wait until everybody else sees it too."`,
+    `"${N}, every conversation in this house seems to go through you. I only get one week to do anything about that."`,
+  ]);
+  return say([
+    `"${N}, somebody had to go up and there was no version of this week where it was going to feel fair. I am sorry it is you."`,
+    `"${N}, I do not have a speech for this. Somebody had to sit there, and I made a choice I have to live with."`,
+  ]);
 }
-
 /**
  * The nomination ceremony.
  *
@@ -18412,6 +18856,16 @@ export function rpBuildBBNominations(ep, only = null) {
     && duoBlocks.flat().length === noms.length;
 
   const steps = [{ kind: 'open' }];
+  /* ── WHETHER THEY TOOK IT TO THE GROUP FIRST ──
+     An alliance being blindsided by its own Head of Household was happening in
+     two weeks out of three, and the reason was that the house had no way to
+     ask: there is a pawn conversation and nothing at all for "I need to put
+     one of ours up". This is that conversation, and it is the difference
+     between a week the group signed off on, one they were never told about,
+     and one where they said no and it happened anyway. */
+  for (const talk of act?.allianceConsults || []) {
+    if (talk) steps.push({ kind: 'consult', talk });
+  }
   if (duoCeremony) {
     duoBlocks.forEach((pair, i) => {
       const target = act.duo.targets?.[i] || pair[0];
@@ -18435,6 +18889,18 @@ export function rpBuildBBNominations(ep, only = null) {
     steps.push({ kind: 'shape' });
   }
   steps.push({ kind: 'complete' });
+  /* ── AND WHO IS NOT IN THAT ALLIANCE ANY MORE ──
+     These were being drawn inside the nominee's own card, keyed on the
+     nominee's name — which works for somebody who quit after the group put
+     them up, and renders NOTHING for the far more common case, where the
+     person who leaves is the Head of Household being thrown out for spending
+     the alliance's week on one of its own. The Head of Household has no card
+     on this screen. Reported from a real week: Priya nominated a member of
+     The Shield Wall, disappeared from it, and the ceremony said nothing at
+     all about it. */
+  for (const exit of act?.allianceExits || []) {
+    if (exit) steps.push({ kind: 'exit', exit });
+  }
   reactions.forEach(b => steps.push({ kind: 'beat', beat: b }));
 
   const done = state.idx >= steps.length - 1;
@@ -18615,7 +19081,85 @@ export function rpBuildBBNominations(ep, only = null) {
                 broke.sincere < 0.5 ? ' and never meant a word of it' : ''}. ${_bbEsc(step.name)} is on the wall anyway.`
             : `${_bbEsc(hoh)} and ${_bbEsc(step.name)} shook on the end together. This is not a pawn — ${
                 _bbEsc(step.name)} is the name ${_bbEsc(hoh)} came for.`}
-        </div>` : ''}</div>`;
+        </div>` : ''}
+        ${(() => {
+          /* ── AND WHETHER SOMEBODY IS STILL IN THAT ALLIANCE ON FRIDAY ──
+             Nominating one of your own has two shapes, and the house prices
+             them differently: if the rest of the group also wanted it, the
+             person in the chair was sold out by everybody and may walk away
+             from them; if nobody else was pointed at them, the Head of
+             Household spent the alliance's week on the alliance's own member
+             without asking, and it is the NOMINATOR the group throws out. Both
+             happen and neither is guaranteed — measured at 8 departures across
+             176 weeks. This card exists because the mechanic was otherwise
+             only visible as a name quietly missing from a panel. */
+          const exits = (act?.allianceExits || []).filter(x =>
+            x && (x.victim === step.name || x.player === step.name));
+          if (!exits.length) return '';
+          return exits.map(x => {
+            /* The third outcome, and the best one: nothing comes off the list.
+               Telling an alliance you are finished with them tells them what
+               you will do next, and the entire value of being finished with
+               somebody is that they do not know it. The house cannot see this
+               — that is the point of doing it this way — so the audience is
+               the only party who can, which is what a diary room is for. */
+            if (x.kind === 'hidden') {
+              return `<div class="bbns-broke bbns-quiet">
+                <span>SAYS NOTHING</span>
+                ${x.consented
+                  ? `${_bbEsc(x.player)} does not leave <strong>${_bbEsc(x.alliance)}</strong>, does not raise it, and does not let one thing show. Every person in that room wanted this chair filled, ${_bbEsc(x.player)} is the one sitting in it, and the only version of this worth anything is the one they never see coming.`
+                  : `<strong>${_bbEsc(x.alliance)}</strong> does not throw ${_bbEsc(x.player)} out, and it is not forgiveness. They keep ${_bbEsc(x.player)} exactly where they can see ${_bbEsc(x.player)}, sworn to a group that has already decided how this ends.`}
+              </div>`;
+            }
+            return `<div class="bbns-broke bbns-exit">
+              <span>${x.kind === 'quit' ? 'WALKED AWAY FROM THEM' : 'THROWN OUT BY THEM'}</span>
+              ${x.kind === 'quit'
+                ? `${_bbEsc(x.player)} has left <strong>${_bbEsc(x.alliance)}</strong>. Every one of them wanted this chair filled, and ${_bbEsc(x.player)} is the one who had to sit in it.`
+                : `<strong>${_bbEsc(x.alliance)}</strong> has removed ${_bbEsc(x.player)}. Nobody else in that room was pointed at ${_bbEsc(x.victim)}, and the week got spent on ${_bbEsc(x.victim)} anyway.`}
+            </div>`;
+          }).join('');
+        })()}</div>`;
+    }
+    if (step.kind === 'consult') {
+      const t = step.talk;
+      const label = t.stance === 'sanctioned' ? 'THE GROUP SIGNED OFF'
+        : t.stance === 'overruled' ? 'TOLD NO, DID IT ANYWAY' : 'NEVER ASKED THEM';
+      // One conversation covers everybody from that group who is going up.
+      const who = (t.victims && t.victims.length ? t.victims : [t.victim])
+        .filter(Boolean).map(_bbEsc);
+      const names = who.length > 1
+        ? `${who.slice(0, -1).join(', ')} and ${who[who.length - 1]}`
+        : (who[0] || 'one of them');
+      const plural = who.length > 1;
+      const body = t.stance === 'sanctioned'
+        ? `${_bbEsc(t.hoh)} put it to <strong>${_bbEsc(t.alliance)}</strong> before the ceremony: ${plural ? 'two of theirs have' : 'one of theirs has'} to sit down, and it has to be ${names}. ${t.agrees} of the ${t.of} said yes. Nobody in that room gets to be surprised on Thursday.`
+        : t.stance === 'overruled'
+          ? `${_bbEsc(t.hoh)} did take it to <strong>${_bbEsc(t.alliance)}</strong>, and <strong>${_bbEsc(t.alliance)}</strong> said no — ${t.of - t.agrees} of the ${t.of} argued for ${names}. ${_bbEsc(t.hoh)} listened to all of it and used the week exactly as planned.`
+          : `${_bbEsc(t.hoh)} never raised it with <strong>${_bbEsc(t.alliance)}</strong> at all. The first any of them hear that ${plural ? 'two of their own are' : 'one of their own is'} going up is when the ${plural ? 'keys turn' : 'key turns'}.`;
+      const cls = t.stance === 'sanctioned' ? 'bbns-signed' : 'bbns-exit';
+      return `<div class="bbns-card is-reason">
+        <div class="bbns-card-h">${_bbAvatar(t.hoh, 30)}<span class="bbns-pill ${t.stance === 'sanctioned' ? 'green' : 'red'}">${label}</span></div>
+        <div class="bbns-card-b"><div class="bbns-broke ${cls}" style="margin-top:0">
+          <span>${_bbEsc(t.alliance)}</span>${body}
+        </div></div></div>`;
+    }
+    if (step.kind === 'exit') {
+      const x = step.exit;
+      const label = x.kind === 'quit' ? 'WALKED AWAY FROM THEM'
+        : x.kind === 'hidden' ? 'SAYS NOTHING' : 'THROWN OUT BY THEM';
+      const body = x.kind === 'quit'
+        ? `${_bbEsc(x.player)} has left <strong>${_bbEsc(x.alliance)}</strong>. Every one of them wanted that chair filled, and ${_bbEsc(x.player)} is the one who had to sit in it.`
+        : x.kind === 'hidden'
+          ? (x.consented
+            ? `${_bbEsc(x.player)} does not leave <strong>${_bbEsc(x.alliance)}</strong>, does not raise it, and does not let one thing show. Every person in that room wanted the chair filled and ${_bbEsc(x.player)} is the one in it — and the only version of this worth anything is the one they never see coming.`
+            : `<strong>${_bbEsc(x.alliance)}</strong> does not throw ${_bbEsc(x.player)} out, and it is not forgiveness. They keep ${_bbEsc(x.player)} exactly where they can see ${_bbEsc(x.player)}, sworn to a group that has already decided how this ends.`)
+          : `<strong>${_bbEsc(x.alliance)}</strong> has removed ${_bbEsc(x.player)}. Nobody else in that room was pointed at ${_bbEsc(x.victim)}, and the week got spent on ${_bbEsc(x.victim)} anyway.`;
+      const cls = x.kind === 'hidden' ? 'bbns-quiet' : 'bbns-exit';
+      return `<div class="bbns-card is-reason">
+        <div class="bbns-card-h">${_bbAvatar(x.player, 30)}<span class="bbns-pill ${x.kind === 'hidden' ? 'blue' : 'red'}">${label}</span></div>
+        <div class="bbns-card-b"><div class="bbns-broke ${cls}" style="margin-top:0">
+          <span>${_bbEsc(x.alliance)}</span>${body}
+        </div></div></div>`;
     }
     if (step.kind === 'shape') {
       // A non-classic structure said out loud — two real targets, a split
@@ -21437,6 +21981,29 @@ export function rpBuildBBCeremony(ep) {
       `“You did not put me here to lose me.” ${name} directs the sentence at the Head of Household, but the veto belongs to ${holder}.`,
       `${name} asks why the house should gamble on a pawn surviving when the medallion can guarantee it.`,
     ], name, holder, 'pawn');
+    // ── A PLEA IS AIMED AT ONE PERSON, SO READ THAT PERSON FIRST ──
+    //
+    // Threat and repeat-block are facts about the NOMINEE. Warmth is the only
+    // fact here about the two people in the room, and it was checked after
+    // both of them — so somebody begging their closest ally for the medallion
+    // pitched themselves as a useful shield to a person they had been in an
+    // alliance with for six weeks. Same fault as the nomination speech: the
+    // relationship is the most relevant thing in the room and it was queued
+    // behind a stat line.
+    if (warmth >= 4 || (profile.alliance && profile.allies.includes(holder))) return vvar([
+      `"You know me. You know what we've talked about in this house. I'm not going to stand here and pretend that doesn't count for something." ${name} looks straight at ${holder} the whole time.`,
+      `${name} does not make a speech so much as a reminder: "Everything I've said to you, I meant. Do with that what you want." ${holder} does not look away, which everybody notices.`,
+      `"I could list reasons. You already know all of them." ${name} sits back down, and it is somehow the strongest pitch of the day.`,
+      `${name} reminds ${holder} of the vote they planned together and the promise that came with it. “If that still means something, use it.”`,
+      `“I have trusted you with my game,” ${name} tells ${holder}. “I'm asking you to trust me with yours.” The room hears how personal the decision already is.`,
+      `${name} looks at ${holder}, not the rest of the house. “You know what I would do if our places were reversed.” ${holder} has to sit with that answer in public.`,
+      `“You have heard every version of my plan because I trusted you with it.” ${name} turns to ${holder}. “Please don't make that the reason I leave.”`,
+      `${name} reminds ${holder} of the night they promised to protect each other. Nobody else knows the whole conversation, but everybody recognizes a promise being collected.`,
+      `“I am not asking as a nominee. I am asking as your ally.” ${name} sits down before the relationship can be explained away as strategy.`,
+      `${name} tells ${holder}, “If I stay up, you lose somebody who was never coming after you.” The word “was” hangs over the rest of the plea.`,
+      `“You told me I mattered to your game.” ${name} keeps ${p.posAdj} voice steady. “This is where I find out whether that was true.”`,
+      `${name} offers no new deal. ${p.Sub} simply repeats the one ${holder} already accepted and asks whether it survives contact with power.`,
+    ], name, 'ally');
     if (profile.threat >= 7 || profile.comps >= 2) return vvar([
       `${name} does not deny being dangerous. “That is exactly why keeping me helps you. Let the house aim at me before it aims at you.”`,
       `“You know I can win,” ${name} tells ${holder}. “Use the veto and the next competition can belong to both of us.”`,
@@ -21453,20 +22020,6 @@ export function rpBuildBBCeremony(ep) {
       `${name} asks ${holder} to end the cycle instead of trusting the same uncertain numbers that put ${p.obj} here before.`,
       `${name} counts ${profile.blockCount} nominations and one available veto. “Eventually somebody has to decide I am worth more off the block.”`,
     ], name, holder, profile.blockCount, 'repeat-block');
-    if (warmth >= 4 || (profile.alliance && profile.allies.includes(holder))) return vvar([
-      `"You know me. You know what we've talked about in this house. I'm not going to stand here and pretend that doesn't count for something." ${name} looks straight at ${holder} the whole time.`,
-      `${name} does not make a speech so much as a reminder: "Everything I've said to you, I meant. Do with that what you want." ${holder} does not look away, which everybody notices.`,
-      `"I could list reasons. You already know all of them." ${name} sits back down, and it is somehow the strongest pitch of the day.`,
-      `${name} reminds ${holder} of the vote they planned together and the promise that came with it. “If that still means something, use it.”`,
-      `“I have trusted you with my game,” ${name} tells ${holder}. “I'm asking you to trust me with yours.” The room hears how personal the decision already is.`,
-      `${name} looks at ${holder}, not the rest of the house. “You know what I would do if our places were reversed.” ${holder} has to sit with that answer in public.`,
-      `“You have heard every version of my plan because I trusted you with it.” ${name} turns to ${holder}. “Please don't make that the reason I leave.”`,
-      `${name} reminds ${holder} of the night they promised to protect each other. Nobody else knows the whole conversation, but everybody recognizes a promise being collected.`,
-      `“I am not asking as a nominee. I am asking as your ally.” ${name} sits down before the relationship can be explained away as strategy.`,
-      `${name} tells ${holder}, “If I stay up, you lose somebody who was never coming after you.” The word “was” hangs over the rest of the plea.`,
-      `“You told me I mattered to your game.” ${name} keeps ${p.posAdj} voice steady. “This is where I find out whether that was true.”`,
-      `${name} offers no new deal. ${p.Sub} simply repeats the one ${holder} already accepted and asks whether it survives contact with power.`,
-    ], name, 'ally');
     if (['challenge-beast', 'hothead', 'chaos-agent', 'villain'].includes(profile.arch)
       || (stats.boldness || 5) >= 7) return vvar([
       `${name} stands up like it is a competition. "Use it on me and I'll win my way through this house. Leave me up here and I'll do it anyway — but you'll have made an enemy doing it." Half the room admires it. The other half writes it down.`,
@@ -21545,7 +22098,21 @@ export function rpBuildBBCeremony(ep) {
         `${holder} sees danger on both sides of the decision and chooses the version that requires no new enemy tonight.`,
       ],
     };
-    return vvar(lines[act?.reason] || [act?.why || 'The decision follows the relationships and promises already in the house.'], holder, saved, act?.reason || 'reason');
+    // ── THE ENGINE ALREADY WROTE THIS, AND THE SCREEN THREW IT AWAY ──
+    //
+    // `shouldUseVeto` returns a `why` for every branch it can take, and it is
+    // the specific one: it names the tier of the deal being honoured, whether
+    // the replacement pool was down to a single name — "there is only one
+    // person left who can take the chair, so nobody can even call it a move" —
+    // and which of the two enemies the holder decided to buy. The ceremony
+    // read `lines[act.reason]` first and only fell through to it when the
+    // reason was missing from the table, which never happens, so the whole
+    // calculation was computed weekly and printed by nobody.
+    //
+    // The generic pool stays as the fallback: the second ceremony of a double
+    // and a few twist paths build the act without running the decision.
+    if (act?.why) return _bbEsc(act.why);
+    return vvar(lines[act?.reason] || ['The decision follows the relationships and promises already in the house.'], holder, saved, act?.reason || 'reason');
   };
 
   // ── the steps ──
@@ -26147,14 +26714,54 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
   // people have worked out it exists — was invisible. A secret four and a four
   // the whole house has been shouting about looked identical on this screen and
   // behaved identically in the threat model.
+  /* ── THE ALLIANCES OF THAT WEEK, NOT OF RIGHT NOW ──
+     This built its rows from `listBlocs()`, which reads the live game state.
+     Watching a season straight through, live and this week are the same thing.
+     Reloading a single old episode, they are not — and the two screens of one
+     week then disagreed in both directions at once: House Status drew The
+     Majority with the four members it ended up with while the House Life panel
+     beside it drew the two it was founded with, and drew The Shield Wall with
+     the two it was reduced to while the panel had all four. Reported as an
+     alliance that "doesn't appear every time and loses members for no reason".
+     The episode's own board is the right source: it is snapshotted at the end
+     of that week and it is what every other panel on the screen already reads. */
+  /* ── WHO THIS ALLIANCE THREW OUT, ON THE SCREEN THAT COMES AFTER THE VOTE ──
+     House Life cannot carry these: "voted against an alliance member" says how
+     Thursday went and that screen plays before it. This one is drawn once the
+     week is over, so the member stays in the row with their face struck
+     through and the group says what it did — rather than the name simply not
+     being there next episode with no explanation anywhere. If they are taken
+     back in, the row is just a row again. */
+  const _thrownOut = new Map();
+  const _thrownWhy = new Map();
+  for (const d of (ep?.allianceDepartures || [])) {
+    if (!d?.alliance || !d?.player) continue;
+    if (!_thrownOut.has(d.alliance)) _thrownOut.set(d.alliance, []);
+    _thrownOut.get(d.alliance).push(d.player);
+    _thrownWhy.set(d.alliance, d.reason || 'expelled');
+  }
+
   let blocRows = [];
-  try {
-    blocRows = (typeof listBlocs === 'function' ? listBlocs() : [])
-      .filter(b => (b.members || []).every(m => stillIn.includes(m)));
-  } catch { blocRows = []; }
+  const _boardRows = (ep?.allianceBoard || []).filter(b =>
+    (b.members || []).every(m => stillIn.includes(typeof m === 'string' ? m : m.name)));
+  if (_boardRows.length) {
+    blocRows = _boardRows.map(b => ({
+      id: b.id, label: b.name, name: b.name, kind: b.kind || 'alliance',
+      members: (b.members || []).map(m => (typeof m === 'string' ? m : m.name)),
+      share: b.share || 0, power: b.power || 0, seen: b.seen,
+      holds: b.members || [], weakest: b.weakest || null,
+    }));
+  } else {
+    try {
+      blocRows = (typeof listBlocs === 'function' ? listBlocs() : [])
+        .filter(b => (b.members || []).every(m => stillIn.includes(m)));
+    } catch { blocRows = []; }
+  }
 
   const blocBody = blocRows.length ? blocRows.map(b => {
-    const seen = (() => { try { return blocExposure(b); } catch { return 0; } })();
+    const seen = typeof b.seen === 'number'
+      ? b.seen
+      : (() => { try { return blocExposure(b); } catch { return 0; } })();
     const pct = Math.round(seen * 100);
     const state = seen >= 0.8 ? { label: 'EVERYBODY KNOWS', color: '#f85149' }
       : seen >= 0.5 ? { label: 'AN OPEN SECRET', color: '#d29922' }
@@ -26184,8 +26791,14 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
         <strong>${_bbEsc(b.label)}</strong>
         <span class="bbb-state" style="color:${state.color}">${state.label}</span>
       </div>
-      <div class="bbb-faces">${b.members.map(m => _bbAvatar(m, 22)).join('')}
+      <div class="bbb-faces">${b.members.map(m => (_thrownOut.get(b.label || b.name) || []).includes(m)
+        ? `<span class="bbb-out" title="${_bbEsc(m)} — thrown out of ${_bbEsc(b.label || b.name)}">${_bbAvatar(m, 22)}</span>`
+        : _bbAvatar(m, 22)).join('')}
         <span class="bbb-votes">${b.members.length} members &middot; up to ${b.members.length} votes &middot; ${Math.round(b.share * 100)}% of the house</span></div>
+      ${(_thrownOut.get(b.label || b.name) || []).length ? `<div class="bbb-out-note">${
+        (_thrownOut.get(b.label || b.name) || []).map(_bbEsc).join(' and ')} ${
+        (_thrownOut.get(b.label || b.name) || []).length > 1 ? 'are' : 'is'} out of it — ${
+        _bbEsc(_thrownWhy.get(b.label || b.name) || 'expelled')}.</div>` : ''}
       <div class="bbb-bar"><i style="width:${pct}%;background:${state.color}"></i>
         <span>Average suspicion among non-members: ${pct}%<br>${awarenessText}</span></div>
       ${_bbHoldDetail(b)}

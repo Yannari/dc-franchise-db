@@ -290,7 +290,8 @@ registerEvent({
     const t = openThread(FAMILY, [defender, defended], ctx.ep,
       lineFor(DEFEND_HISTORY_LINES, `callback-protects-old-ally-from-vote|${ctx.ep}`,
         { a: defender, b: defended }));
-    return { branch: 'defended-by-history', pair: [defender, defended], threadId: t?.id, bondDelta: 2 };
+    return { branch: 'defended-by-history', pair: [defender, defended], threadId: t?.id,
+      bondDelta: 2, crowd: { name: defender, colour: 'selfless', mult: 0.75 } };
   },
 });
 

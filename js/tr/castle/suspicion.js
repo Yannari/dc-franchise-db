@@ -251,6 +251,7 @@ registerEvent({
     else if (sense === 'coupled') note += ` Half of it was really about who ${target} had been spending their evenings with.`;
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, note);
     return { branch: 'whispered', pair: [a, b], about: target, threadId: thread?.id, cited, bondDelta: 1,
+      crowd: { name: a, colour: 'cowardly', mult: 0.4 },
       priorOutcome: prior?.outcome ?? null };
   },
 });

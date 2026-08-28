@@ -27,6 +27,7 @@
 // engine.
 import { gs } from '../core.js';
 import { findOpenThread, heatAt, openThreads, actFor } from './threads.js';
+import { applyEventCrowd } from './crowd.js';
 
 /** Windows a round is built from (spec §5.6) — registerEvent rejects any other. */
 export const KNOWN_WINDOWS = new Set([
@@ -426,10 +427,20 @@ export function pickEvent(ctx, rng) {
   const wrote = _participants(consequences);
   if (wrote.length >= 2) cds.pair[`${chosen.id}:${_pairKey(wrote)}`] = ctx.ep;
 
+  // WHAT THE COUNTRY MADE OF IT (spec 10.4). Declared on the consequences by
+  // the event itself — `crowd: { name, colour }` — because the event is the
+  // only thing that knows which branch it took and who it was about, and
+  // derived from the family or the bond delta it would be a guess. Applied
+  // here so no event author ever touches either ledger directly, and it
+  // takes no rng draw, so a season with the ledgers in it is bit-identical to
+  // one without. See js/tr/crowd.js.
+  const crowd = applyEventCrowd(consequences, ctx.ep);
+
   // `actors` is harness data too — nothing in the engine reads it. The
   // coverage band needs to count DISTINCT pairs convened per season, and after
   // fire() has run there is no way to recover who was in the room.
-  return { event: chosen, consequences, liveThread, continued, actors: [...(ctx.actors || [])] };
+  return { event: chosen, consequences, liveThread, continued, crowd,
+    actors: [...(ctx.actors || [])] };
 }
 
 // ── The runner: seven social windows around four mechanical beats (§5.6) ──

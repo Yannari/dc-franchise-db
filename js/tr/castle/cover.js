@@ -164,7 +164,12 @@ registerEvent({
     // to the deduction layer.
     const t = openThread(FAMILY, [actor], ctx.ep,
       lineFor(PLANT_NAME_LINES, `cover-plant-a-name|${ctx.ep}`, { a: actor, c: target }));
-    return { branch: 'planted', actor, target, threadId: t?.id };
+    // A Traitor putting an innocent name in the room's mouth. `cruel` for what
+    // it does to the target and `masterful` for how well it is done — the two
+    // ledgers are the only way to say both at once. See js/tr/crowd.js.
+    return { branch: 'planted', actor, target, threadId: t?.id,
+      crowd: [{ name: actor, colour: 'cruel', mult: 0.5 },
+        { name: actor, colour: 'masterful' }] };
   },
 });
 
@@ -391,7 +396,8 @@ registerEvent({
     addBond(a, b, 1);
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
       lineFor(DOUBLE_BLUFF_LINES, `cover-double-bluff|${ctx.ep}`, { a, b }));
-    return { branch: 'double-bluffed', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1 };
+    return { branch: 'double-bluffed', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1,
+      crowd: { name: a, colour: 'masterful' } };
   },
 });
 
@@ -480,7 +486,12 @@ registerEvent({
     }
     const t = findOpenThread(FAMILY, [actor]);
     const advanced = t ? advanceThread(t.id, ctx.ep, line) : openThread(FAMILY, [actor], ctx.ep, line);
-    return { branch, actor, partner, threadId: advanced?.id, bondDelta };
+    // THE BRANCH IS THE MOMENT. A story that holds is the villain being good
+    // at this; one that collapses is the villain sweating, which the crowd
+    // enjoys more and warms to slightly. A wobble is neither.
+    const colour = branch === 'holds' ? 'masterful' : branch === 'collapses' ? 'exposed' : null;
+    return { branch, actor, partner, threadId: advanced?.id, bondDelta,
+      crowd: colour ? { name: actor, colour } : null };
   },
 });
 

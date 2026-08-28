@@ -564,7 +564,10 @@ registerEvent({
     addBond(a, b, 2);
     const t = openThread(FAMILY, [a, b], ctx.ep,
       lineFor(DEFEND_LINES, `trust-defend-in-absentia|${ctx.ep}`, { a, b }));
-    return { branch: 'defended', pair: [a, b], threadId: t?.id, bondDelta: 2 };
+    // Spending capital on somebody who is not in the room to see it done, and
+    // will never be told. The country is watching and that is the whole point.
+    return { branch: 'defended', pair: [a, b], threadId: t?.id, bondDelta: 2,
+      crowd: { name: a, colour: 'selfless' } };
   },
 });
 

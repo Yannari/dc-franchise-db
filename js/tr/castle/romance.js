@@ -282,7 +282,8 @@ registerEvent({
     addBond(a, b, 1);
     const advanced = advanceThread(t.id, ctx.ep,
       lineFor(PROTECT_LINES, `romance-protection-instinct|${ctx.ep}`, { a, b }));
-    return { branch: 'protected', pair: [a, b], threadId: advanced?.id, bondDelta: 1 };
+    return { branch: 'protected', pair: [a, b], threadId: advanced?.id, bondDelta: 1,
+      crowd: { name: a, colour: 'kind' } };
   },
 });
 

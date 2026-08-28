@@ -359,7 +359,33 @@ stops a two-round cameo topping the board on one good moment, and
 
 The only part that is yours is the NAME: `words.audienceAward` in the registry
 entry ("Fan Favorite", "America's Favourite Houseguest"). If your show has no
-such award, leave it out and call nothing.
+such award, leave it out and call nothing. The Traitors does exactly that.
+
+**Your show has to WRITE `episodeHistory`, or none of the above works.** That is
+the one thing `js/audience.js` needs from a format and the one thing a headless
+season loop is most likely not to have: with no history, `roundsPresent` falls
+back to the whole season for everybody and `audienceStanding` degrades into the
+accrued total divided by a constant — the −0.952 bug restored under a new name,
+passing every test you have. Write one row per round: `{ num, eliminated, exits }`.
+
+**If your show has more than one way out, the second one goes on `exits[]`.**
+`eliminated` is the VOTE — every existing reader of that field means the vote —
+so The Traitors puts the banished there and the murdered on `exits`, which is
+the §5 round shape anyway. Get this wrong and half your cast is credited with a
+full season they did not play.
+
+**If your audience knows something the cast does not, popularity has to say so.**
+The Traitors' viewers have known who is in a cloak since night one, so a Traitor
+playing brilliantly is *entertaining* and not *admirable*, and paying both into
+one column turns `gs.popularity` into a competence score for whichever villain
+the crowd enjoyed most. `js/tr/crowd.js` is the worked example: one colour table
+with an `affection` number and a `spectacle` number, affection into
+`gs.popularity` and spectacle into a second ledger, and positive affection damped
+for anybody the audience knows is lying. Measured, a Faithful's heroism pays 27x
+what a Traitor's best move does in affection, and about a quarter of it in
+spectacle. **And nothing in the engine may read either ledger back** — they are
+written from ground truth, so a read is alignment reaching the cast through a
+side door.
 
 The board is the same trap one level up. A ranking is a position on a board and
 a board ranks ONE show, because the scores are not comparable across shows —

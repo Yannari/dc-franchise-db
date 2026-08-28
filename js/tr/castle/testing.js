@@ -250,7 +250,15 @@ registerEvent({
     if (bondDelta) addBond(a, b, bondDelta);
     const existing = findOpenThread(FAMILY, [a, b]);
     const t = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, [a, b], ctx.ep, line);
-    return { branch, pair: [a, b], threadId: t?.id, bondDelta };
+    // THE EVENT DOES NOT KNOW WHO IT IS WATCHING and must not pretend to. An
+    // oath sworn sincerely reads as `kind` whoever swears it — and a Traitor
+    // swearing one has their affection damped to a quarter by crowd.js anyway,
+    // which is the whole point of putting that rule in ONE place. Declaring
+    // `masterful` here instead paid six Faithfuls a villain's ledger over 100
+    // seasons, because `a` is whoever the scene drew and not a Traitor.
+    return { branch, pair: [a, b], threadId: t?.id, bondDelta,
+      crowd: branch === 'sincere' ? { name: a, colour: 'kind', mult: 0.6 }
+        : branch === 'refuses' ? { name: a, colour: 'cowardly', mult: 0.4 } : null };
   },
 });
 

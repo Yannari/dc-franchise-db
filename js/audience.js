@@ -81,12 +81,23 @@ function _allNames(_gs = gs) {
   return [...names].filter(Boolean);
 }
 
-/** Everyone a round removed from the game, however that show removes people. */
+/**
+ * Everyone a round removed from the game, however that show removes people.
+ *
+ * `exits[]` is the generic channel and the last entry for a reason: it is the
+ * shape docs/ADDING-A-SHOW.md §5 defines for a round, and it is the only one
+ * that can carry a show with MORE THAN ONE WAY OUT. The Traitors banishes and
+ * murders on the same night; `eliminated` is the banishment (every existing
+ * reader of that field means the vote) and the murdered are on `exits`. Read
+ * generically — a name or a `{ name }` — so a fourth show adding a fifth door
+ * needs nothing here either.
+ */
 function _outOf(ep) {
   return [
     ep?.eliminated, ep?.firstEliminated, ep?.suddenDeathEliminated,
     ep?.emissaryEliminated, ep?.hpTiebreakerEliminated, ep?.tiedDestiniesCollateral,
     ...(ep?.multiTribalElims || []),
+    ...(ep?.exits || []).map(x => (typeof x === 'string' ? x : x?.name)),
   ].filter(Boolean);
 }
 

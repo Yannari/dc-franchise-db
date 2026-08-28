@@ -421,7 +421,8 @@ registerEvent({
     addBond(a, b, 2);
     const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
       lineFor(TOAST_LINES, `grief-toast-to-them|${ctx.ep}`, { a, b }));
-    return { branch: 'toasted', pair: [a, b], threadId: thread?.id, cited, bondDelta: 2 };
+    return { branch: 'toasted', pair: [a, b], threadId: thread?.id, cited, bondDelta: 2,
+      crowd: [{ name: a, colour: 'kind', mult: 0.5 }, { name: b, colour: 'kind', mult: 0.5 }] };
   },
 });
 

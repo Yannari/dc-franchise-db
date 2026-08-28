@@ -9,7 +9,7 @@
 import { gs, setGs } from '../core.js';
 import { initTraitorsState } from './state.js';
 import { resetKnowledge } from '../knowledge.js';
-import { setBond } from '../bonds.js';
+import { setBond, getBond } from '../bonds.js';
 import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
   canRecruit, chooseRecruit, offerRecruitment } from './roles.js';
 import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence } from './deduction.js';
@@ -20,6 +20,8 @@ import { runWindow, startRoundBudget } from './events.js';
 import { runMission, POT_CEILING } from './missions.js';
 import { shieldEvidence, expireShields, settleDaggers } from './powers.js';
 import { runEndgame } from './endgame.js';
+import { initCrowd, scoreNight, scoreRecruitment, scoreTable, scoreMission,
+  scoreEndgame } from './crowd.js';
 
 // TASK 6 WIRING DECISION: the castle event pool is now live in every real
 // season. Side-effect imports only — nothing here is called directly; each
@@ -219,6 +221,7 @@ function _night(ep, rng) {
       const offer = offerRecruitment(pick.target, ep, rng,
         { mode: livingTraitors(ep).length === 1 ? 'ultimatum' : 'note', recruiter: pick.recruiter });
       const recruited = { ...offer, target: pick.target };
+      scoreRecruitment(ep, recruited);
       if (last) { last.recruitment = recruited; if (offer.executed) last.executed = offer.executed; }
       // A refused ultimatum kills. It is not a `murdered` — see the note on
       // offerRecruitment — but it is a body, and it is on the log and on the
@@ -241,6 +244,8 @@ function _night(ep, rng) {
   // to be on the round record for the same reason `murderCost` and `variant`
   // are: this frame is gone by the time anything reads the season back.
   const murderBallots = _murderBallots(m);
+  scoreNight(ep, { murderTarget: m.target, murdered: m.victim, blocked: m.blocked,
+    murderBallots }, { bondOf: getBond });
   if (last) {
     last.murderBallots = murderBallots;
     last.murdered = m.victim;
@@ -293,6 +298,37 @@ function _murderBallots(m) {
 }
 
 /**
+ * ONE `episodeHistory` ROW PER EPISODE, and it exists for js/audience.js.
+ *
+ * That module is show-agnostic by construction: it knows only that a show has
+ * rounds and eliminates people from them, and it reads both off
+ * `gs.episodeHistory`. A headless Traitors season built a `gs` holding bonds
+ * and activePlayers and nothing else, so `roundsPresent` fell through to "the
+ * whole season" for everybody and `audienceStanding` became the accrued total
+ * divided by a constant — which is the very quantity §10.4 forbids anyone to
+ * rank by, restored under a new name.
+ *
+ * `exits` is the shape docs/ADDING-A-SHOW.md §5 defines and js/tr/export.js
+ * already builds, and it is the field that carries the MURDERED. `eliminated`
+ * is the banishment alone, exactly as the export shape has it: a murder is not
+ * a vote the room cast, and every existing reader of `eliminated` means the
+ * vote. A show with two exit channels needs both fields or it credits half its
+ * cast with a full season they did not play.
+ */
+function _recordEpisode(ep, { banished = null, night = null } = {}) {
+  const exits = [banished, night?.murdered, night?.secondVictim, night?.executed]
+    .filter(Boolean).map(name => ({ name }));
+  (gs.episodeHistory ||= []).push({ num: ep, eliminated: banished, exits });
+  // NO `gs.eliminated` HERE, AND THE OMISSION WAS MEASURED. Maintaining it
+  // looked obviously right — js/audience.js's `_allNames` unions it — and
+  // deleting it changed nothing at all, because `initCrowd` seeds a ledger row
+  // for the whole cast and that union is already complete. It was code that
+  // existed, looked live and could not be shown to do anything, which is the
+  // one failure mode this project's sweeps exist to catch. If a later reader
+  // genuinely needs the list, it is `castSize` minus `gs.activePlayers`.
+}
+
+/**
  * Play one season. Returns the record and enough log to measure it.
  *
  * `evidence` is an injection point and exists for exactly one caller: the
@@ -314,6 +350,13 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   setGs({ bonds: {}, activePlayers: [...cast] });
   gs.tr = initTraitorsState();
   gs.tr.potCeiling = POT_CEILING;
+  // THE TWO AUDIENCE LEDGERS, and the episode record they are read against.
+  // `gs.episodeHistory` is what js/audience.js counts rounds off — it is the
+  // one thing that module needs from a show and the one thing a headless
+  // season did not have, so without it every player's `roundsPresent` fell
+  // back to the season length and `audienceStanding` degraded to a rescaling
+  // of the accrued total. That is the -0.952 bug wearing a different hat.
+  initCrowd(cast);
   resetKnowledge();
   _seedStartingBonds(cast, seed);
 
@@ -375,6 +418,8 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // because a round takes two people and this has to catch both.
   settleDaggers(ep);
   castle1.push(...runWindow('night', ep, castleRng));
+  scoreMission(ep, mission1);
+  _recordEpisode(ep, { banished: null, night: n1 });
   log.push({ ep, banished: null, wasTraitor: null, ...n1, mission: mission1,
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
 
@@ -443,6 +488,13 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // Traitor hit for reasons that have nothing to do with deduction. Without
     // these two numbers there is no way to tell a room that learned something
     // from a room that simply ran out of Faithfuls.
+    // WHAT THE COUNTRY MADE OF THE DAY (spec 10.4), read off records the
+    // engine has already written. None of these takes an rng draw and none
+    // writes a belief, so every murder, ballot and deduction in the season is
+    // bit-identical with the ledgers in place. See js/tr/crowd.js.
+    scoreMission(ep, mission);
+    scoreTable(ep, r, { bondOf: getBond });
+    _recordEpisode(ep, { banished: r.banished, night });
     log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...night, mission,
       alive: alive.length, aliveAtVote: alive.length, traitorsAtVote: tr,
       castleEvents, budget: { ...gs.tr.roundBudget } });
@@ -456,6 +508,11 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // question instead of the public one, and the money finally has a reader.
   const mandatedRounds = gs.tr.rounds.length;
   const endgame = runEndgame(ep, rng);
+  // The final table's private question, and it is scored from the CHOICES
+  // rather than from who left: a betrayal the room then failed to carry out
+  // was still chosen, and `endgameChoice` is the only place that fact exists.
+  scoreEndgame(endgame);
+  for (const r of endgame.rounds || []) _recordEpisode(r.ep, { banished: r.banished });
 
   return {
     traitors,

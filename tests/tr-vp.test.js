@@ -1435,3 +1435,80 @@ describe('a screen opened and never clicked is not blank', () => {
       'a fresh Round Table revealed more than the beat it is sitting on').toBe(1);
   });
 });
+
+// ── THE CHAIRS DO NOT SIT ON EACH OTHER ───────────────────────────────
+//
+// The ring holds a chair for EVERY name in `gs.tr.castOrder` for the whole
+// season — the living and the memorial seats of everybody already gone — so it
+// is at its most crowded on the last night, not the first, and the size that
+// matters is the cast, never the survivors.
+//
+// Seats used to be spaced evenly in ANGLE. On an ellipse 436 wide and 172 tall
+// that packs them where the curve is steepest, which is the sides: a degree
+// there buys 172 units of table and a degree at the far centre buys 436. They
+// are spaced by ARC LENGTH now — a chair every `perimeter / n` units — which
+// leaves the ellipse exactly as it was and stops the crowding.
+const RING_BOX_W = 960;          // .rt-ring max-width
+const RING_BOX_H = 960 * 0.417;  // .rt-ring padding-top, of that same width
+const DESIGN_W = 1020, DESIGN_H = 452;  // the viewBox the seats are placed in
+const AVATAR = 48;               // .rt-seat .cv-av, before --s scales it
+
+/** Every chair as the browser lays it out: CSS pixels, and its drawn size. */
+function ringSeats(html) {
+  const out = [];
+  const re = /<span class="rt-seat"[^>]*style="left:([\d.]+)%;top:([\d.]+)%;--s:([\d.]+)/g;
+  let m;
+  while ((m = re.exec(html))) {
+    out.push({
+      x: Number(m[1]) / 100 * DESIGN_W * (RING_BOX_W / DESIGN_W),
+      y: Number(m[2]) / 100 * DESIGN_H * (RING_BOX_H / DESIGN_H),
+      d: AVATAR * Number(m[3]),
+    });
+  }
+  return out;
+}
+/** Adjacent chairs, centre to centre, all the way round including the wrap. */
+const seatGaps = seats => seats.map((s, i) => {
+  const t = seats[(i + 1) % seats.length];
+  return { centres: Math.hypot(s.x - t.x, s.y - t.y), need: (s.d + t.d) / 2 };
+});
+
+describe('the ring at the largest cast the show casts', () => {
+  // 24 chairs: the engine's measured shape is ~20 and the format's own upper
+  // bound is 24, and nothing in the config caps it below that. Played here
+  // rather than at module scope so no other arm inherits this gs.
+  const bigTable = () => {
+    const big = roster.players.slice(0, 24);
+    setPlayers(big);
+    playTraitorsSeason({ cast: big.map(p => p.name), traitorCount: 5, seed: 5 });
+    const eps = (gs.episodeHistory || []).filter(e => e.tr && e.tr.table);
+    // the LAST table of the season: every chair filled, most of them memorial
+    const ep = { ...eps[eps.length - 1], num: ++_paintN };
+    const html = tableFullyRevealed(ep);
+    setPlayers(ROSTER);
+    return html;
+  };
+
+  it('seats twenty-four without a portrait touching its neighbour', () => {
+    const seats = ringSeats(bigTable());
+    expect(seats.length, 'the ring did not seat the whole cast').toBe(24);
+    const gaps = seatGaps(seats);
+    const worst = gaps.reduce((a, b) => (b.centres - b.need < a.centres - a.need ? b : a));
+    expect(worst.centres - worst.need,
+      `two portraits overlap by ${(worst.need - worst.centres).toFixed(1)}px at the `
+      + 'tightest pair — the chairs are crowding somewhere on the ring').toBeGreaterThan(8);
+  });
+
+  it('and spaces them evenly the whole way round, not evenly in angle', () => {
+    // A separate property from the one above, and neither implies the other: a
+    // ring can be evenly spaced and still too small for its portraits, and an
+    // unevenly spaced one on a large enough table would never overlap. Even
+    // angle puts 2.5x more table between the far seats than the side ones;
+    // even arc length holds the ratio to about 1.08, the remainder being the
+    // ring box being a hair less tall in CSS than it is in the viewBox.
+    const centres = seatGaps(ringSeats(bigTable())).map(g => g.centres);
+    const ratio = Math.max(...centres) / Math.min(...centres);
+    expect(ratio, `the widest gap round the ring is ${ratio.toFixed(2)}x the tightest — `
+      + 'the chairs are being spaced by angle, not by arc length').toBeLessThan(1.25);
+  });
+});

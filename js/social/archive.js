@@ -19,6 +19,7 @@ import { seasonWinners } from '../records.js';
 import { buildEpisodeFeed } from './feed.js';
 import { seasonDataFile } from './adapter.js';
 import { feedSeed } from './live.js';
+import { roundExits, publicBallots, SHOWS } from '../shows.js';
 
 /**
  * Episodes of a published season.
@@ -128,7 +129,14 @@ export function episodesOf(doc, format) {
  * failure this project already fixed once on the played path.
  */
 function tribalEvents(vote, meta) {
-  const ballots = vote?.votes || [];
+  /* ── THE CONCLAVE IS NOT A ROOM THE AUDIENCE IS IN ─────────────────
+     This read `vote.votes` whole. On a show whose second ballot is SECRET
+     that turned the conclave into public "Accusation" events on five nights
+     of nine — one of them a name nobody had accused of anything, which then
+     generated eighteen posts. `js/social/adapter.js` refuses to write a poll
+     that would reveal this; the archive was revealing it regardless.
+     `publicBallots` takes the private channels off the registry. */
+  const ballots = publicBallots(vote, meta?.format);
   if (ballots.length < 3 || !vote.eliminated) return [];
 
   const targets = new Map();
@@ -241,11 +249,20 @@ export function eventsForEpisode(doc, format, season, episode) {
        side of a dash read a real jury vote as a challenge finish — the same
        class of mistake, in the code meant to catch it. Two numbers anywhere is
        the honest test. */
-    const jury = (ftc.votes || []).length > 0
-      || (tally.match(/\d+/g) || []).length >= 2;
+    const jury = SHOWS[format]?.hasJury
+      && ((ftc.votes || []).length > 0 || (tally.match(/\d+/g) || []).length >= 2);
     const fin = events.find(e => e.kind === 'finale');
     if (fin) {
-      fin.decidedBy = jury ? 'jury' : 'challenge';
+      /* ── "NOT A JURY" IS NOT THE SAME AS "A CHALLENGE" ────────────────
+         This was a two-way flag, so a Traitors finale -- decided by the
+         people still sitting at the last table, with no jury and no final
+         comp -- came out stamped `challenge`, and js/social/feed.js then
+         PERMITTED "final challenge" and "fire-making" posts about it. The
+         guard against invented finale mechanics was licensing them.
+         A show the registry says has no jury gets `endgame`: a decision that
+         is neither, and about which neither claim family may be written. */
+      fin.decidedBy = jury ? 'jury'
+        : (SHOWS[format]?.hasJury ? 'challenge' : 'endgame');
       if (tally) fin.tally = tally;
       if (ftc.note) fin.note = ftc.note;
     }
@@ -362,8 +379,17 @@ export function stillIn(doc, format, episode) {
   const gone = new Set();
   for (const v of doc?.votingHistory || []) {
     const when = Number(v?.episode) || 0;
-    const who = v?.eliminatedSlug || v?.eliminated;
-    if (who && when && when <= ep) gone.add(String(who).toLowerCase());
+    if (!when || when > ep) continue;
+    /* ── EVERY DOOR OUT ────────────────────────────────────────────────
+       This read `eliminatedSlug || eliminated`, which on a show with two ways
+       out is the VOTE and only the vote. On a Traitors finale night with two
+       people alive it returned ELEVEN, nine of them murdered — exactly the
+       leak this function exists to prevent, wearing the other show's clothes.
+       `roundExits` asks the round which doors it has. */
+    for (const x of roundExits(v, format)) {
+      gone.add(String(x.slug || x.name).toLowerCase());
+      gone.add(String(x.name).toLowerCase());
+    }
   }
   const left = cast.filter(p =>
     !gone.has(p.slug.toLowerCase()) && !gone.has(p.name.toLowerCase()));

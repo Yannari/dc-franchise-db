@@ -19,6 +19,8 @@
 // eighteen — see `sliceCastThreads`.
 
 /** A dialogue line: `Name: words`. Same shape the episode player parses. */
+import { showWords, publicBallots, DEFAULT_FORMAT } from './shows.js';
+
 const DIALOGUE = /^([A-Z][a-zA-Z\s'\-]+):\s*(.+)$/;
 /** A bracketed tag: `[SCENE: KITCHEN]`, `[CONFESSIONAL: Ireland]`. */
 const TAG = /^\[(.*)\]$/;
@@ -222,7 +224,10 @@ export function episodeDigest(text, { cap = 5000 } = {}) {
 export function roundLedger(doc = {}) {
   const weeks = Array.isArray(doc.weeks) && doc.weeks.length ? doc.weeks : null;
   const rows = weeks || (Array.isArray(doc.votingHistory) ? doc.votingHistory : []);
-  const word = weeks ? 'Week' : 'Episode';
+  const format = doc.format || DEFAULT_FORMAT;
+  // The round's name, from the registry rather than from which array was
+  // found: a third show that also exports `votingHistory` is not Total Drama.
+  const word = showWords(format).round;
 
   return rows.map((r, idx) => {
     const n = Number(r.week ?? r.episode ?? r.round ?? idx + 1);
@@ -237,7 +242,31 @@ export function roundLedger(doc = {}) {
     if (r.finalNominees?.length) facts.push(`at the vote: ${r.finalNominees.join(' and ')}`);
     if (r.publicVote) facts.push('the house voted out loud, one at a time');
     if (r.tieBreak) facts.push('the vote tied and was broken by the Head of Household');
-    const tally = Object.entries(r.votes || {}).map(([name, c]) => `${name} ${c}`);
+    /* ── A BALLOT LIST IS NOT A TALLY OBJECT ──────────────────────────
+       `votes` arrives in two shapes. Big Brother's week records a COUNT PER
+       NAME (`{ Otherperson: 3 }`); a Total Drama or Traitors round records
+       the BALLOTS (`[{ voter, target }]`). `Object.entries` over an array
+       yields index/element pairs, so every one of fourteen published Total
+       Drama seasons has been emitting
+
+         votes: 0 [object Object], 1 [object Object], ...
+
+       into the facts block the AI wiki-fill is prompted with -- one line per
+       round, with the round's real tally nowhere in it. A list is counted
+       into a tally; an object is read as one.
+       PUBLIC BALLOTS ONLY: a show whose second ballot is secret must not have
+       it counted into the tally the page prints. */
+    const raw = r.votes;
+    const counts = Array.isArray(raw)
+      ? publicBallots(r, format).reduce((acc, v) => {
+        const t = v?.target;
+        if (t) acc[t] = (acc[t] || 0) + 1;
+        return acc;
+      }, {})
+      : (raw || {});
+    const tally = Object.entries(counts)
+      .filter(([, c]) => Number.isFinite(Number(c)))
+      .map(([name, c]) => `${name} ${c}`);
     if (tally.length) facts.push(`votes: ${tally.join(', ')}`);
     // ── WHO LEFT, IN THE SHOW'S OWN VERB ──
     //

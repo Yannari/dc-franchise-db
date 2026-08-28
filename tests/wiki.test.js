@@ -410,7 +410,12 @@ describe('reading a filled season', () => {
     // Under the season's own heading now, with the round word the camp uses.
     expect(html).toMatch(/Voting History/);
     expect(html).toMatch(/<th>Episode<\/th>/);
-    expect(html).toMatch(/Voted to evict/);
+    /* AND THE HEADER IS NOT THE HOUSE'S EITHER. This line asserted "Voted to
+       evict" over a CAMP — two lines above its own comment saying Big
+       Brother's vocabulary must not appear on this grid. A camp eliminates;
+       the word comes from the registry. */
+    expect(html).toMatch(/Voted to eliminate/);
+    expect(html).not.toMatch(/Voted to evict/);
     expect(html).toMatch(/A clown attacked me/);
     // Big Brother's vocabulary must not appear on a camp's grid.
     expect(html).not.toMatch(/Head of Household|Power of Veto/);

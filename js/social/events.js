@@ -20,6 +20,7 @@
 import { EVENT_KINDS } from './topics.js';
 import { classifyEventTone } from '../tone.js';
 import { withReceipts } from './receipts.js';
+import { roundExits, publicBallots } from '../shows.js';
 
 /** A nominal episode runtime, in ms. Posts are stamped across it. */
 export const EPISODE_MS = 42 * 60 * 1000;
@@ -337,8 +338,13 @@ function advantageEvents(ep, meta) {
  */
 export function ballotEvents(ep, meta) {
   const raw = ep?.votes;
+  /* THE PUBLIC BALLOT ONLY. A show with a second, secret ballot keeps both on
+     `votes[]`, so reading it whole counted the conclave's names in with the
+     room's — a "pile-on" computed partly from people who were never in the
+     room. `publicBallots` takes the private channels off the registry and
+     leaves a one-ballot show's list exactly as it was. */
   const pairs = Array.isArray(raw)
-    ? raw.map(v => [v.voterSlug || v.voter, v.targetSlug || v.target])
+    ? publicBallots(ep, meta?.format).map(v => [v.voterSlug || v.voter, v.targetSlug || v.target])
     : Object.entries(raw || {});
   const ballots = pairs.filter(([a, b]) => a && b);
   const boot = ep?.eliminated || ep?.boot;
@@ -361,8 +367,17 @@ function tdEvents(ep, meta) {
   const out = [];
   if (ep.immunityWinner) out.push(event('comp-win', { ...meta, subject: ep.immunityWinner }));
 
-  const gone = ep.eliminated || ep.boot || null;
-  if (gone) out.push(event('eviction', { ...meta, subject: gone }));
+  /* ── EVERY DOOR OUT, NOT JUST THE VOTE ────────────────────────────────
+     `eliminated` is the person the VOTE removed. On a show with a second door
+     the people who left by it produced no event at all, so the audience feed
+     for a night that took two people reacted to one of them and never
+     mentioned the other. `roundExits` normalises a one-door round into the
+     same single-entry list, so this is the same code for every show. */
+  const exits = roundExits(ep, meta?.format);
+  const gone = exits.length ? exits : (ep.boot ? [{ name: ep.boot }] : []);
+  for (const [i, x] of gone.entries()) {
+    out.push(event('eviction', { ...meta, subject: x.name, jitter: (i % 4) * 0.012 }));
+  }
 
   // Who got together. `ep.newShowmances` is `[{ a, b }]` and had never been
   // read by anything, because until now it was never even saved.

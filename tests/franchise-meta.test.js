@@ -711,6 +711,42 @@ describe('returneePools', () => {
     expect(p.legends.find(x => x.name === 'Champ').why).toMatch(/champion/i);
     expect(p.legends[0].slug).toBeTruthy();
   });
+
+  /* ── THE MILESTONE A CAREER NEVER REACHED IS THE SHOW'S OWN ───────────
+     "Never made the merge" was printed over a house, which has no merge, and
+     fixed with a two-way check — `every season is big-brother ? 'jury' :
+     'the merge'` — that then printed "Never made the merge" over a CASTLE,
+     which has neither. Three lines under a comment documenting the identical
+     bug. The word comes from the registry, and a career spanning two shows
+     names no show's milestone, because there is no boundary both have. */
+  it("says the milestone in the show's own word", () => {
+    const early = () => _rec({ placement: 11 });
+    const why = format => {
+      setFranchiseLedger({ seasons: {
+        1: { seasonName: 'S1', castSize: 12, format, players: { Doom: early() } },
+        2: { seasonName: 'S2', castSize: 12, format, players: { Doom: early() } },
+      } });
+      const row = returneePools().redemption.find(x => x.name === 'Doom');
+      expect(row, `${format} produced no redemption row to read`).toBeTruthy();
+      return row.why;
+    };
+    expect(why('total-drama')).toContain('the merge');
+    expect(why('big-brother')).toContain('jury');
+    const tr = why('traitors');
+    expect(tr, 'a castle was told it never made the merge').not.toContain('merge');
+    expect(tr, 'a castle was told it never made jury').not.toContain('jury');
+    expect(tr).toContain('the final table');
+
+    // A career across two shows names NEITHER, because neither boundary is
+    // one both of them have.
+    setFranchiseLedger({ seasons: {
+      1: { seasonName: 'S1', castSize: 12, format: 'total-drama', players: { Doom: early() } },
+      2: { seasonName: 'S2', castSize: 12, format: 'traitors', players: { Doom: early() } },
+    } });
+    const mixed = returneePools().redemption.find(x => x.name === 'Doom').why;
+    expect(mixed).not.toContain('merge');
+    expect(mixed).not.toContain('final table');
+  });
 });
 
 describe('canon lock', () => {

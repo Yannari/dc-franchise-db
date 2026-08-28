@@ -21,7 +21,8 @@ import { playTraitorsSeason } from '../js/tr/headless.js';
 import { SHOWS, DEFAULT_FORMAT, seasonId, formatPrefix, exitVerbs, showWords } from '../js/shows.js';
 import { roundLedger } from '../js/wiki-fill.js';
 import { episodeRecords } from '../js/social/live.js';
-import { episodesOf, eventsForEpisode } from '../js/social/archive.js';
+import { episodesOf, eventsForEpisode, stillIn } from '../js/social/archive.js';
+import { contradictsEvent } from '../js/social/feed.js';
 import { championsIn } from '../js/records.js';
 import { attachRecords } from '../js/wiki-fill-run.js';
 import { _rebuildByShow, _tagSeasonDetail, seasonExporterFor,
@@ -214,6 +215,48 @@ describe('two exit verbs, and each departure gets its own', () => {
     expect(facts).toContain(`was ${MURDER}`);
     // ...and nobody's exit is described in the other two shows' words.
     expect(facts).not.toMatch(/was evicted|was eliminated|voted out/);
+  });
+
+  /* ── AGAINST THE ENGINE, NOT AGAINST THE EXPORT ──────────────────────
+     The arm above, and its sibling in show-vocabulary.test.js, both check
+     that BOTH VERBS APPEAR. Neither checks that the right verb landed on the
+     right person, and the vocabulary one builds its fixture's `exits[]` out
+     of `exitVerbs()` and then asserts the ledger echoed them -- a fact about
+     the fixture. So swapping every murder to "banished" inside js/tr/export.js
+     left that guard green.
+     `season.log[].murdered` is the ENGINE's own record of who the conclave
+     killed, written before any of this ran. Comparing the printed sentence
+     against THAT is the only version of this check that is not circular. */
+  it('names the right verb over the right body, against what the engine did', () => {
+    let checkedMurders = 0;
+    let checkedBanishments = 0;
+    for (const [i, season] of SEASONS.entries()) {
+      const doc = buildTraitorsSeasonDocument(season, { seasonNumber: 1 });
+      const byEp = new Map(roundLedger(doc).map(r => [r.n, (r.facts || []).join(' | ')]));
+      for (const l of season.log || []) {
+        const line = byEp.get(l.ep);
+        if (!line) continue;
+        for (const killed of [l.murdered, l.secondVictim, l.executed].filter(Boolean)) {
+          expect(line, `seed ${SEEDS[i]} ep ${l.ep}: the engine killed ${killed}`)
+            .toContain(`${killed} was ${MURDER}`);
+          expect(line, `seed ${SEEDS[i]} ep ${l.ep}: ${killed} was killed, not voted out`)
+            .not.toContain(`${killed} was ${BANISH}`);
+          checkedMurders++;
+        }
+        if (l.banished) {
+          expect(line, `seed ${SEEDS[i]} ep ${l.ep}: the table banished ${l.banished}`)
+            .toContain(`${l.banished} was ${BANISH}`);
+          expect(line, `seed ${SEEDS[i]} ep ${l.ep}: ${l.banished} was voted out, not killed`)
+            .not.toContain(`${l.banished} was ${MURDER}`);
+          checkedBanishments++;
+        }
+      }
+    }
+    // A COVERAGE FLOOR, because a loop that finds nothing to compare passes.
+    expect(checkedMurders, 'the engine recorded no murders to check against')
+      .toBeGreaterThan(30);
+    expect(checkedBanishments, 'the engine recorded no banishments to check against')
+      .toBeGreaterThan(40);
   });
 });
 
@@ -498,6 +541,21 @@ describe('co-winners, resolved across every reader', () => {
       expect(fin, 'the season has no finale event at all').toBeTruthy();
       expect(fin.decidedBy, 'a Traitors finale was reported as decided by a jury')
         .not.toBe('jury');
+      /* AND NOT BY A CHALLENGE EITHER. "Not a jury" was written as
+         `decidedBy: 'challenge'`, and js/social/feed.js reads that as
+         PERMISSION to post about a final challenge and a fire-making tiebreak
+         -- neither of which this show has. The guard against invented finale
+         mechanics was licensing them. */
+      expect(fin.decidedBy, 'a Traitors finale was reported as decided by a challenge')
+        .not.toBe('challenge');
+      // The reader itself: both claim families are refused on this night.
+      for (const line of ['that is the widest final vote this franchise has had',
+        'she won it in the final challenge', 'the fire-making was the whole season',
+        'the jury vote was never close']) {
+        expect(contradictsEvent(line, fin),
+          `the feed would publish "${line}" about a night that had no such thing`)
+          .toBe(true);
+      }
     }
   });
 
@@ -559,5 +617,117 @@ describe('co-winners, resolved across every reader', () => {
     expect(rec('Alejandro')).toContain('Sanders');
     expect(rec('Cameron'), 'Cameron was handed Alejandro\'s final vote').not.toContain('4-4');
     expect(rec('Cameron'), 'Cameron was handed Alejandro\'s runner-up').not.toContain('Sanders');
+  });
+});
+
+// ══ the conclave is not a room the audience is in ═════════════════════
+//
+// Murder ballots ride on the same `votes[]` as the Round Table's,
+// distinguished only by `channel`. Anything drawn FOR THE PUBLIC that reads
+// `votes[]` whole therefore publishes the show's central secret.
+// `js/social/adapter.js` already refuses to write a poll that would reveal it;
+// `js/social/archive.js` was revealing it anyway, as five nights of
+// "Accusation" events about names nobody had accused of anything out loud.
+describe('what the audience is shown of a night', () => {
+  const doc = buildTraitorsSeasonDocument(SEASONS[0], { seasonNumber: 1 });
+
+  /* Compared as SLUGS. An event's `subject` is sometimes a slug and sometimes
+     a display name, and the first version of this guard compared slugs against
+     names -- so `chris-mclean` was never found in a set holding "Chris McLean"
+     and every conclave leak passed. Two spellings of the same person is how a
+     guard silently checks nothing. */
+  const key = n => String(n || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+  /** Everybody a private ballot named on this round. */
+  const secretTargets = row => new Set((row.votes || [])
+    .filter(v => v.channel === 'murder').map(v => key(v.target)).filter(Boolean));
+
+  it('never derives a public event from a ballot only the conclave cast', () => {
+    let checkedNights = 0;
+    let publicEvents = 0;
+    for (const ep of episodesOf(doc, TRAITORS_FORMAT)) {
+      const row = (doc.votingHistory || []).find(r => r.episode === ep.episode);
+      if (!row) continue;
+      const secret = secretTargets(row);
+      if (!secret.size) continue;
+      checkedNights++;
+      // Who the ROOM named, out loud, at the table.
+      const spoken = new Set((row.votes || [])
+        .filter(v => v.channel !== 'murder').map(v => key(v.target)).filter(Boolean));
+      for (const e of eventsForEpisode(doc, TRAITORS_FORMAT, 1, ep.episode)) {
+        // An `eviction` for the murdered is correct — the audience watched
+        // them go. A `nomination` is the room accusing somebody, and only the
+        // room can do that.
+        if (e.kind !== 'nomination') continue;
+        publicEvents++;
+        const named = key(e.subject);
+        expect(spoken.has(named) || !secret.has(named),
+          `ep ${ep.episode}: ${named} was accused in public on the strength of a `
+          + 'ballot cast at the conclave — the audience is not in that room')
+          .toBe(true);
+      }
+    }
+    // COVERAGE FLOORS, because a season with no conclave ballots and a season
+    // with no public events both pass a loop that never runs.
+    expect(checkedNights, 'no night in this season had a private ballot at all')
+      .toBeGreaterThan(3);
+    expect(publicEvents, 'no public accusation events were produced to check')
+      .toBeGreaterThan(3);
+  });
+
+  it('counts only the room in the tally the page prints', () => {
+    // Same rule, one layer down: `roundLedger` writes the vote counts every
+    // season page and both AI fills read, and a conclave ballot in there is
+    // the secret printed as a number.
+    for (const r of roundLedger(doc)) {
+      const row = (doc.votingHistory || []).find(x => x.episode === r.n);
+      const spoken = (row?.votes || []).filter(v => v.channel !== 'murder');
+      const line = (r.facts || []).find(f => f.startsWith('votes:')) || '';
+      if (!spoken.length) continue;
+      /* AND THE TALLY MUST BE THERE AT ALL. `Object.entries` over a BALLOT
+         LIST yields index/element pairs, so the line came out as
+         "votes: 0 [object Object], 1 [object Object], ..." -- and a version of
+         this guard that only filtered those out would let the whole tally
+         vanish instead, which is the same fact lost by a tidier route. */
+      expect(line, `ep ${r.n}: ${spoken.length} ballots were cast aloud and the `
+        + 'ledger prints no tally at all').toBeTruthy();
+      const total = [...line.matchAll(/\s(\d+)(?:,|$)/g)]
+        .reduce((n, m) => n + Number(m[1]), 0);
+      expect(total, `ep ${r.n}: the printed tally counts more ballots than were cast aloud`)
+        .toBe(spoken.filter(v => v.target).length);
+      // And never `[object Object]`, which is what fourteen published Total
+      // Drama seasons emitted into the wiki-fill prompt.
+      expect(line, 'the ballot list was iterated with Object.entries')
+        .not.toContain('[object Object]');
+    }
+  });
+});
+
+// ══ who is still in the castle ════════════════════════════════════════
+describe('the predictions panel cannot be shown a dead cast', () => {
+  const doc = buildTraitorsSeasonDocument(SEASONS[0], { seasonNumber: 1 });
+
+  it('counts everybody who left, by either door', () => {
+    // `stillIn` read `eliminatedSlug || eliminated` — the VOTE, and only the
+    // vote — so on the finale night of a show that also murders it returned
+    // eleven people with two alive, nine of them dead. This compares against
+    // the placements, which are the record of who was still there.
+    const cast = doc.placements.length;
+    for (const ep of episodesOf(doc, TRAITORS_FORMAT)) {
+      const gone = (doc.votingHistory || [])
+        .filter(r => r.episode <= ep.episode)
+        .flatMap(r => r.exits || []).length;
+      expect(stillIn(doc, TRAITORS_FORMAT, ep.episode).length,
+        `after ep ${ep.episode}, ${gone} people have left a cast of ${cast}`)
+        .toBe(cast - gone);
+    }
+  });
+
+  it('has a season that actually empties, so the arm above is not vacuous', () => {
+    const gone = (doc.votingHistory || []).flatMap(r => r.exits || []).length;
+    expect(gone, 'nobody left this season').toBeGreaterThan(10);
+    const last = episodesOf(doc, TRAITORS_FORMAT).slice(-1)[0];
+    expect(stillIn(doc, TRAITORS_FORMAT, last.episode).length,
+      'the castle is still full on the last night').toBeLessThan(6);
   });
 });

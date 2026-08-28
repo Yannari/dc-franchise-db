@@ -139,6 +139,35 @@ describe('the rubric the board scores this show on', () => {
     expect(tr.social.label).toBe('Wanted');
   });
 
+  /* ── AND THE SENTENCE THE PUBLIC BOARD PRINTS ABOUT IT ────────────────
+     `kind` is a two-valued flag and there are three shows. The blurb was
+     written off it, so the castle -- sharing `survived` with the house -- was
+     described as having "survived the block 3 times" on 9 of 20 blurbs: the
+     opposite of what a murder ballot naming you means, about a show with no
+     block. The rubric's own tooltip beside it already had the right words.
+     Each rubric states its own sentence now. */
+  it('says what its own column means, in its own words', () => {
+    const said = (format, n) => {
+      const rub = _ruRubric(format);
+      const say = rub.social.prose;
+      expect(say, `${format}'s social column has no sentence of its own`).toBeTruthy();
+      return n === 0 ? say.zero : n === 1 ? say.one : say.many(n);
+    };
+    for (const n of [0, 1, 3]) {
+      const tr = String(said(TRAITORS_FORMAT, n) || '');
+      expect(tr.toLowerCase(),
+        `the castle's blurb says "the block" about a show that has none: "${tr}"`)
+        .not.toContain('block');
+      if (n) {
+        expect(tr.toLowerCase(),
+          'the blurb does not say what the number counts').toMatch(/traitor|name/);
+      }
+    }
+    // ...and the house keeps the sentence that is true of the house.
+    expect(String(said('big-brother', 3))).toContain('survived the block');
+    expect(String(said(DEFAULT_FORMAT, 3))).toContain('votes against');
+  });
+
   it('fills every column off a real published season', () => {
     // THE FAILURE THIS EXISTS FOR: a reader that does not know the show reads
     // field names the show does not write, every column loads zero, and the

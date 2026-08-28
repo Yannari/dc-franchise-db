@@ -6,7 +6,7 @@ import { lifeSeeds as _lifeSeeds } from './life-cast.js';
 // SAFE UNDER THE IMPORT RULE ABOVE: ratings.js imports core.js, tone.js and
 // shows.js, all of which are leaves, and nothing imports us back through it.
 import { ratingsForSeason as _ratingsForSeason } from './ratings.js';
-import { SHOWS, DEFAULT_FORMAT, formatPrefix } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT, formatPrefix, showWords } from './shows.js';
 
 // Must match bKey() in bonds.js (can't import it — cycle via players.js).
 export function metaBondKey(a, b) { return [a, b].sort().join('||'); }
@@ -774,6 +774,20 @@ function _castSizeOf(seasonNum, format = null) {
   if (!s) return 0;
   return s.castSize || Object.keys(s.players || {}).length || 0;
 }
+/**
+ * The late-game boundary this CAREER can be said to have missed.
+ *
+ * One show's word over another show's career is this project's central bug:
+ * "Never made the merge" was printed over a house that has no merge, and then,
+ * once fixed for the house, over a castle that has neither. The registry
+ * declares each show's own word. A career spanning two shows names NO show's
+ * milestone, because there is no single boundary both of them have.
+ */
+function _milestoneFor(seasons) {
+  const fmts = new Set((seasons || []).map(s => s.format || DEFAULT_FORMAT));
+  if (fmts.size === 1) return showWords([...fmts][0]).milestone || 'the late game';
+  return 'the late game';
+}
 // The "merge-ish" mark: made it past the halfway cut. When cast size is known we
 // use castSize/2; otherwise fall back to placement ≤ 9 (top-9-ish is the merge in
 // a typical field). Returns true when the player reached/beat that mark.
@@ -976,10 +990,13 @@ export function returneePools() {
     if (c.seasons.length && c.seasons.every(s => !_madeMergeMark(s.placement, _castSizeOf(s.seasonNum)))) {
       const worst = c.seasons.reduce((a, s) => s.placement > (a?.placement || 0) ? s : a, null);
       scored.redemption.push({ name, slug,
-        // A house has no merge -- it has a jury. Said in one show's word over
-        // a career made of the other's, this told houseguests they never
-        // reached a milestone their season does not contain.
-        why: `Never made ${c.seasons.every(s => s.format === 'big-brother') ? 'jury' : 'the merge'}`
+        // A house has no merge -- it has a jury, and a castle has neither.
+        // Said in one show's word over a career made of another's, this told
+        // houseguests they never reached a milestone their season does not
+        // contain -- and then, three lines under that comment, told a
+        // Traitors career exactly the same thing. The word is the registry's,
+        // and a career spanning two shows names no show's milestone at all.
+        why: `Never made ${_milestoneFor(c.seasons)}`
           + ` — best ${_ordinal(c.totals.bestPlacement || (worst ? worst.placement : 0))} in ${c.totals.seasons} run${c.totals.seasons === 1 ? '' : 's'}`,
         rel: c.totals.seasons * 10 + (worst ? worst.placement : 0) });
       claimed.add(name); continue;

@@ -110,7 +110,7 @@ const TERNARY_BACKLOG = {
   'js/cast-ui.js':                3,
   'js/run-ui.js':                 2,
   'js/social/events.js':          1,
-  'js/wiki-view.js':              5,
+  'js/wiki-view.js':              4,
   'player.html':                  1,
   'worker/worker-season-live.js': 1,  // inside a comment describing the bug
 };

@@ -14,6 +14,11 @@
 export const SHOWS = {
   'total-drama': {
     prefix: 'td', name: 'Total Drama', short: 'TD', emoji: '🎬', accent: '#7d4cff',
+    // The season is decided by a body of eliminated players. Not universal:
+    // a castle's last table is a decision by the people still sitting at it,
+    // so a "Jury votes" column over one is a heading about a body that never
+    // met. Screens ask this rather than assuming.
+    hasJury: true,
     // WHERE A LOADED SEASON KEEPS ITS ROUNDS, as a path on `gs`. Declared here
     // because the alternative — `format === 'big-brother' ? gs.bb.weeks :
     // gs.episodeHistory` — is a two-show world, and a third show falls out of
@@ -28,6 +33,22 @@ export const SHOWS = {
     // hand out immunity. A juror was saying "three individual immunities" and
     // "challenge beast" about a houseguest's Heads of Household.
     words: { player: 'contestant', players: 'contestants', round: 'Episode', exit: 'voted out',
+      // `exit` is what HAPPENED to them; `exitAction` is what the room DID.
+      // A ballot column is headed with the act, not the participle, and it
+      // was headed "Voted to evict" over a camp on every one of fourteen
+      // seasons because the only word the registry had was the participle.
+      exitAction: 'eliminate',
+      // The late-game boundary not everybody reaches. A career line saying
+      // "never made the merge" about a house or a castle names a milestone
+      // that show does not contain.
+      milestone: 'the merge',
+      /* THE NOUNS THIS SHOW'S FANS BUILD A HANDLE OUT OF -- see
+         js/social/crowd.js. The word bank there had no format parameter at
+         all, so a third of a Traitors season's posts were signed
+         `@campfireapologist`, `@bigjury`, `@antitribal32`, and not one of 698
+         distinct handles contained a word from the show being watched. */
+      fanWords: ['tribal', 'idol', 'merge', 'campfire', 'marshmallow',
+        'immunity', 'challenge', 'tribe', 'postmerge'],
       comp: 'challenge', comps: 'immunity wins', compBeast: 'challenge beast', compWon: 'immunities',
       // What this show calls the prize nobody in the game votes on. The
       // measure behind it is shared (js/audience.js) and show-agnostic; only
@@ -59,11 +80,29 @@ export const SHOWS = {
       ['rewardWins', 'totalRewardWins'],
       ['idolsFound', 'totalIdolsFound'],
     ],
+    /* WHICH NUMBERS A CHARACTER ARTICLE SHOWS, and what each is called.
+       js/wiki-view.js chose these with `format === 'big-brother' ? A : B`, so
+       every show that is not the house got the CAMP's rows: a Traitors
+       article's own profile panel read "Challenge wins 2" and "Idols found"
+       about somebody who won missions and carried a Dagger. Declared per show
+       so the else branch stops being one particular show. */
+    articleStats: {
+      career: [['challengeWins', 'Challenge wins']],
+      season: [['challengeWins', 'Challenge wins'], ['immunityWins', 'Immunity wins'],
+        ['idolsFound', 'Idols found']],
+      comps: [['challengeWins', 'Challenge wins'], ['immunityWins', 'Immunity wins'],
+        ['rewardWins', 'Reward wins'], ['idolsFound', 'Idols found']],
+    },
   },
   'big-brother': {
     prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹', accent: '#38bdf8',
+    hasJury: true,
     roundsPath: 'bb.weeks',
     words: { player: 'houseguest', players: 'houseguests', round: 'Week', exit: 'evicted',
+      exitAction: 'evict',
+      milestone: 'jury',
+      fanWords: ['veto', 'nomination', 'eviction', 'houseguest', 'block',
+        'hoh', 'jury', 'feeds', 'slop', 'havenot'],
       comp: 'competition', comps: 'competition wins', compBeast: 'comp beast', compWon: 'competitions',
       audienceAward: "America's Favourite Houseguest" },
     // Big Brother is sold on the vote. Strategy is the product rather than the
@@ -81,6 +120,15 @@ export const SHOWS = {
       ['bb.blockBusterWins', 'blockBusterWins'],
       ['bb.timesNominated', 'timesNominated'],
     ],
+    articleStats: {
+      career: [['hohWins', 'HOH wins'], ['vetoWins', 'Veto wins'],
+        ['blockBusterWins', 'Block Buster wins'], ['timesNominated', 'Times nominated']],
+      season: [['bb.hohWins', 'HOH wins'], ['bb.vetoWins', 'Veto wins'],
+        ['bb.blockBusterWins', 'Block Buster wins'], ['bb.timesNominated', 'Times nominated']],
+      comps: [['bb.hohWins', 'HOH wins'], ['bb.vetoWins', 'Veto wins'],
+        ['bb.blockBusterWins', 'Block Buster wins'], ['bb.timesNominated', 'Times nominated'],
+        ['bb.timesOnBlock', 'Times on the block'], ['bb.timesSaved', 'Saved by the veto']],
+    },
   },
   // ── The Traitors ────────────────────────────────────────────────────
   // An all-alumni social deduction format. Two things about it break
@@ -97,7 +145,23 @@ export const SHOWS = {
   'traitors': {
     prefix: 'tr', name: 'The Traitors', short: 'TR', emoji: '🗡️', accent: '#b91c3c',
     roundsPath: 'tr.rounds',
+    // ── THE BALLOTS THE AUDIENCE NEVER SAW ────────────────────────────
+    //
+    // The conclave's murder ballots ride on the same `votes[]` as the Round
+    // Table's, distinguished only by `channel`. Anything drawn for the public
+    // — the archive's events, the feed, a poll — must drop these, or the
+    // show's central secret is printed on the page that exists to guess at
+    // it. `js/social/adapter.js` already refuses to write a poll that would
+    // reveal it; the archive was revealing it anyway, as five nights of
+    // "Accusation" events. Declared here so a fourth show with a private
+    // ballot names its own channel instead of somebody adding a branch.
+    privateBallotChannels: ['murder'],
     words: { player: 'player', players: 'players', round: 'Episode', exit: 'banished',
+      exitAction: 'banish',
+      // No merge and no jury: the castle's boundary is the last table.
+      milestone: 'the final table',
+      fanWords: ['banishment', 'murder', 'traitor', 'faithful', 'roundtable',
+        'conclave', 'castle', 'shield', 'dagger', 'mission', 'turret'],
       // THE SECOND EXIT VERB, and the first one in the registry. `exit` is the
       // vote, because a vote is what most screens are describing; a murder is
       // not a vote and must never be printed as one. Every screen that names a
@@ -143,6 +207,14 @@ export const SHOWS = {
       ['tr.timesMurdered',   'totalTimesMurdered'],
       ['tr.timesBanished',   'totalTimesBanished'],
     ],
+    articleStats: {
+      career: [['missionsWon', 'Missions won'], ['shieldsWon', 'Shields won'],
+        ['roundsAsTraitor', 'Rounds wearing the cloak']],
+      season: [['tr.missionsWon', 'Missions won'], ['tr.shieldsWon', 'Shields won'],
+        ['tr.roundsAsTraitor', 'Rounds wearing the cloak']],
+      comps: [['tr.missionsWon', 'Missions won'], ['tr.shieldsWon', 'Shields won'],
+        ['tr.reads', 'Correct reads'], ['tr.daggersWon', 'Daggers won']],
+    },
   },
 };
 
@@ -190,6 +262,79 @@ export function showWords(format) {
 export function exitVerbs(format) {
   const w = showWords(format);
   return [w.exit, w.exitMurder].filter(Boolean);
+}
+
+/**
+ * EVERYBODY WHO LEFT ON THIS ROUND, with the verb that removed each of them.
+ *
+ * ── why this exists ────────────────────────────────────────────────────
+ *
+ * `js/tr/export.js` writes an `exits[]` on every round precisely because
+ * `eliminated` cannot hold two people, and it shipped with two readers. So
+ * every OTHER screen — the wiki grid, the season page, the archive's
+ * still-in count — went on asking `row.eliminated === name` and a Traitors
+ * season rendered with half its cast never leaving: a murdered player's
+ * article read "3 episodes played · never had a vote cast against them", and
+ * a finale night with two people alive counted eleven.
+ *
+ * Patching the readers one at a time is how the same bug comes back on the
+ * sixth screen nobody rendered. This is the rule instead: ask this, never the
+ * field. A round that carries `exits[]` is believed; a round from a
+ * one-door show is normalised into the same shape from `evicted`/
+ * `eliminated`, with the show's own verb, so a caller writes ONE loop.
+ *
+ * Shape per entry: `{ name, slug, verb, channel }`. `channel` is the door
+ * they left by — `banishment` for a vote of the room, `murder` for the thing
+ * the room did not vote on. On a one-door show it is `vote`, which is what
+ * every existing screen has always been describing.
+ */
+export function roundExits(round, format) {
+  if (!round) return [];
+  const slug = n => String(n).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const given = Array.isArray(round.exits) ? round.exits.filter(x => x && x.name) : [];
+  if (given.length) {
+    return given.map(x => ({
+      name: x.name,
+      slug: x.slug || slug(x.name),
+      verb: x.verb || showWords(format).exit,
+      channel: x.channel || 'vote',
+    }));
+  }
+  // A round with no `exits[]` is a round from a show with one door out. It
+  // still gets the same shape, so nothing downstream has to know which kind
+  // of round it is holding.
+  const gone = round.evicted || round.eliminated || null;
+  if (!gone) return [];
+  return [{ name: gone, slug: round.evictedSlug || round.eliminatedSlug || slug(gone),
+    verb: showWords(format).exit, channel: 'vote' }];
+}
+
+/**
+ * The ballots of this round that the AUDIENCE SAW.
+ *
+ * A show can have more than one ballot in a night and not show them all. The
+ * registry names the private channels; everything else, including a ballot
+ * with no channel at all, is public — because the two shows that have only
+ * ever had one ballot never wrote the field, and a screen must not have to
+ * know which kind of show it is reading.
+ *
+ * Any screen drawn for the public — the archive's events, the feed, a poll —
+ * reads THIS, never `round.votes` directly.
+ */
+export function publicBallots(round, format) {
+  const all = Array.isArray(round?.votes) ? round.votes : [];
+  const secret = new Set(SHOWS[format]?.privateBallotChannels || []);
+  if (!secret.size) return all;
+  return all.filter(b => !b?.channel || !secret.has(b.channel));
+}
+
+/** Did `name` leave on this round, by any door the show has? */
+export function exitedOn(round, name, format) {
+  const want = String(name || '').trim().toLowerCase();
+  if (!want) return false;
+  const wantSlug = want.replace(/[^a-z0-9]+/g, '-');
+  return roundExits(round, format).some(x =>
+    String(x.name).trim().toLowerCase() === want || x.slug === wantSlug);
 }
 
 /**

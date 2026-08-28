@@ -112,8 +112,15 @@ const says = (text, phrases) => {
 export function contradictsEvent(text, event) {
   const decided = event?.decidedBy;
   if (!decided || event.kind !== 'finale') return false;
-  if (decided === 'challenge' && says(text, VOTE_CLAIMS)) return true;
-  if (decided === 'jury' && says(text, COMP_CLAIMS)) return true;
+  /* ── PERMISSION, NOT EXCLUSION ────────────────────────────────────────
+     This read as "if it was a challenge, no vote talk; if it was a jury, no
+     comp talk" -- two rules for two shows, and a third answer therefore
+     permitted BOTH. A show with no jury and no final comp was stamped
+     `challenge` upstream, so this function actively allowed "fire-making"
+     posts about a night that had none. A claim is allowed only where the
+     night's own record NAMES that mechanic. */
+  if (decided !== 'jury' && says(text, VOTE_CLAIMS)) return true;
+  if (decided !== 'challenge' && says(text, COMP_CLAIMS)) return true;
   return false;
 }
 

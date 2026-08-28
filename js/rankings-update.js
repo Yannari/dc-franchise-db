@@ -453,7 +453,13 @@ export const RU_SHOW = {
     strat: { weight: 0.12, scale: 35 },
     // Votes against, on a curve around the cast average.
     social: { kind: 'votes', label: 'Votes vs',
-      title: 'Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below' },
+      title: 'Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below',
+      // HOW THIS COLUMN IS SAID IN A SENTENCE. It used to be worked out from
+      // `kind`, which is a two-valued flag, so the third show -- whose column
+      // is murder ballots -- came out as "survived the block 3 times", the
+      // exact opposite of what being named means there.
+      prose: { zero: 'never received a vote', one: 'voted against once',
+        many: n => `${n} votes against` } },
     // WHERE THIS SHOW KEEPS ITS NUMBERS on a published placement. See `read`
     // on the house's entry below for why this is a function per show and not
     // a ternary in the loader.
@@ -549,7 +555,9 @@ export const RU_SHOW = {
     // 1.0 and 1.5 — it only sets how far apart the board spaces them — so this
     // is a statement about what surviving is worth, not a tiebreak.
     social: { kind: 'survived', label: 'Survived', weight: 1.0, cap: 4,
-      title: 'Eviction nights survived ON THE BLOCK · +1.0 each, max 4 · nominated, voted on, and kept' },
+      title: 'Eviction nights survived ON THE BLOCK · +1.0 each, max 4 · nominated, voted on, and kept',
+      prose: { zero: '', one: 'survived the block once',
+        many: n => `survived the block ${n} times` } },
     // ── WHERE THIS SHOW KEEPS ITS NUMBERS ──
     //
     // `loadSeasonData` used to read these through `isHouse ? A : B` — nine
@@ -675,7 +683,13 @@ export const RU_SHOW = {
     // a cast of 20, one naming is about two-thirds of a place and a full column
     // is two and a half.
     social: { kind: 'survived', label: 'Wanted', weight: 0.9, cap: 4,
-      title: 'Murder ballots naming you · +0.9 each, max 4 · nights a Traitor argued for your name' },
+      title: 'Murder ballots naming you · +0.9 each, max 4 · nights a Traitor argued for your name',
+      // The tooltip beside it already had the right words. The blurb the
+      // PUBLIC BOARD prints said "survived the block", which is the opposite
+      // of the truth about a murder ballot and about a show with no block.
+      prose: { zero: 'no Traitor ever argued for their name',
+        one: 'a Traitor argued for their name once',
+        many: n => `a Traitor argued for their name on ${n} nights` } },
     // Written onto the placement by `traitorsBoardStats` in js/tr/export.js,
     // in the same place the other two shows keep theirs.
     read: (p) => ({
@@ -1327,13 +1341,18 @@ function _ruStatParts(row) {
   if (row.alliances > 0) parts.push(`${row.alliances} alliance${row.alliances>1?'s':''}`);
   if (row.fanFav)        parts.push('fan favorite');
   if (row.quit)          parts.push('quit the game');
-  // The one column that means opposite things on the two shows.
-  if ((rub.social || {}).kind === 'survived') {
-    if (row.socialCol === 1)     parts.push('survived the block once');
-    else if (row.socialCol > 1)  parts.push(`survived the block ${row.socialCol} times`);
-  } else if (row.socialCol === 0) parts.push('never received a vote');
-  else if (row.socialCol === 1)   parts.push('voted against once');
-  else                            parts.push(`${row.socialCol} votes against`);
+  /* THE ONE COLUMN THAT MEANS A DIFFERENT THING ON EVERY SHOW, so it says
+     what its own rubric says it says. A two-branch `kind` check gave the
+     castle the house's sentence -- "survived the block 3 times" about murder
+     ballots, on 9 of 20 blurbs the public board prints.
+     An ABSENT number is not a zero either: with no column loaded this printed
+     "undefined votes against". */
+  const n = Number(row.socialCol);
+  const say = (rub.social || {}).prose;
+  if (say && Number.isFinite(n)) {
+    const line = n === 0 ? say.zero : n === 1 ? say.one : say.many(n);
+    if (line) parts.push(line);
+  }
   return parts;
 }
 

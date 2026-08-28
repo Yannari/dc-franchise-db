@@ -12,7 +12,7 @@
 // Rendered into the Legacy tab by renderRankingsUpdate().
 
 import { extractSeasonTemplate, buildBigBrotherSeasonDocument } from './stats-export.js';
-import { SHOWS } from './shows.js';
+import { SHOWS, parseSeasonRef } from './shows.js';
 import { boardFile } from './ranking-boards.js';
 
 // The tool was written against current-season.html, whose .btn is white-on-dark.
@@ -826,7 +826,12 @@ function _ruShowFormat() {
 /** What show a season document is from, however it arrived. */
 function _ruFormatOfDoc(json) {
   if (json?.format) return json.format;
-  if (typeof json?.seasonId === 'string' && json.seasonId.startsWith('bb-')) return 'big-brother';
+  /* THE PREFIX, ASKED OF THE REGISTRY. `startsWith('bb-')` is a show list one
+     character wide: `tr-1` fell straight past it and was ranked as a Total
+     Drama season. `parseSeasonRef` already resolves any registered prefix and
+     returns null rather than guessing. */
+  const ref = parseSeasonRef(json?.seasonId);
+  if (ref?.format) return ref.format;
   // A document with weeks and no episodes is a house, whatever it forgot to say.
   if (Array.isArray(json?.weeks) && json.weeks.length) return 'big-brother';
   return 'total-drama';

@@ -35,6 +35,9 @@ function examplesBlock() {
      Tribal, fire-making", and left in it would fail the arm it documents.
      Same lesson as the ternary ratchet in show-list-duplication.test.js. */
   return SRC.slice(start, end)
+    // CRLF first: `.` does not match a carriage return, so the line-comment
+    // strip below matches nothing at all on a CRLF file.
+    .replace(/\r\n?/g, '\n')
     .replace(/\/\*[\s\S]*?\*\//g, ' ')
     .split('\n').map(l => l.replace(/(^|\s)\/\/.*$/, '')).join('\n');
 }

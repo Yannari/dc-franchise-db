@@ -24,6 +24,7 @@
 //   node tools/backfill-showmances.mjs --season ... --write
 
 import fs from 'node:fs';
+import { parseSeasonRef } from '../js/shows.js';
 
 const argv = process.argv.slice(2);
 const arg = (n, d = null) => {
@@ -39,7 +40,11 @@ if (!SEASON_PATH) { console.error('Need --season <path>.'); process.exit(1); }
 
 const season = JSON.parse(fs.readFileSync(SEASON_PATH, 'utf8'));
 const pdb = JSON.parse(fs.readFileSync(PDB_PATH, 'utf8'));
-const format = season.format || (String(season.seasonId || '').startsWith('bb-') ? 'big-brother' : 'total-drama');
+// THE PREFIX, ASKED OF THE REGISTRY. `startsWith('bb-')` is a show list one
+// character wide, so this backfilled `tr-1` as a Total Drama season -- and an
+// appearance with no format IS Total Drama, permanently. `parseSeasonRef`
+// resolves any registered prefix and returns null rather than guessing.
+const format = season.format || parseSeasonRef(season.seasonId)?.format || 'total-drama';
 
 /**
  * Did this couple leave the season together?

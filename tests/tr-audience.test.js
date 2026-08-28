@@ -393,7 +393,15 @@ describe('the measurement §10.4 exists for', () => {
     for (const s of RUN.seasons) {
       for (const p of s.placements) {
         P.push(s.popularity[p.name] || 0);
-        S.push((s.popularity[p.name] || 0) / (s.board.find(b => b.name === p.name).rounds + 2));
+        /* ── READ THE STANDING, DO NOT RE-DERIVE IT ────────────────────
+           This computed `popularity / (rounds + 2)` itself — the formula
+           copied out of js/audience.js — so it was a measurement of the
+           FORMULA, not of the function. Deleting the round normalisation
+           inside `audienceStanding` left this whole block green: the number
+           it exists to defend was never once asked for. It reads the board's
+           own `standing` now, which is what `audienceStanding` produced. */
+        const row = s.board.find(b => b.name === p.name);
+        S.push(row.standing);
         PL.push(p.placement);
         if (!s.everTraitor.has(p.name)) {
           FP.push(P[P.length - 1]); FS.push(S[S.length - 1]); FPL.push(p.placement);

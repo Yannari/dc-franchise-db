@@ -615,9 +615,20 @@ function buildRecords(season){
        them named in `winner`.
        The registry module is an enhancement on this page rather than a
        dependency (see the _showsReady race above), so there is a local
-       fallback for the file:// case, exactly as `shows` has. */
+       fallback for the file:// case, exactly as `shows` has.
+
+       AND THE FALLBACK HOLDS THE SAME PRECEDENCE, which it did not: it read
+       the singular `winner` FIRST and the placements only if that was empty,
+       which is the rule inverted. On season 8 -- Alejandro named in `winner`,
+       Alejandro AND Cameron at placement 1 -- this path showed Alejandro
+       alone, so the page was correct with the module loaded and wrong without
+       it. Most complete first: `winners[]`, then the placements at 1, then the
+       singular block. */
     const _won=(window.seasonWinners?window.seasonWinners(s)
-      :(s.winner?[s.winner]:(s.placements||[]).filter(p=>p.placement===1)))
+      :((s.winners&&s.winners.length?s.winners
+        :((s.placements||[]).filter(p=>p.placement===1).length
+          ?(s.placements||[]).filter(p=>p.placement===1)
+          :(s.winner?[typeof s.winner==='string'?{name:s.winner}:s.winner]:[])))))
       .filter(w=>w&&w.name);
 
     // Hero

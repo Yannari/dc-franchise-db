@@ -346,10 +346,63 @@ describe('the pages that read a winner off the document', () => {
     expect(won.map(w => w.name)).toEqual(['B', 'C', 'D', 'E']);
     // ...and it survives a season with neither field rather than throwing.
     expect(new Function('s', 'window', `${code} return _won;`)({}, {})).toEqual([]);
-    // The hero and the winner card read that variable and not `s.winner.name`.
+    /* ── AND THE FALLBACK HOLDS THE RULE, NOT AN INVERSION OF IT ──────
+       The fixture above sets `winner: null`, so it never once exercised the
+       branch where a document has BOTH a singular winner and two placements
+       at 1 — which is season 8, live, today. On that shape the fallback read
+       the singular block first and drew Alejandro alone: right with the
+       module loaded, wrong without it, and this test could not tell. Most
+       complete first: winners[] -> placements at 1 -> winner{}. */
+    const run = doc => new Function('s', 'window', `${code} return _won;`)(doc, {});
+    const SEASON_8 = {
+      winner: { name: 'Alejandro', playerSlug: 'alejandro' },
+      placements: [
+        { name: 'Alejandro', playerSlug: 'alejandro', placement: 1 },
+        { name: 'Cameron', playerSlug: 'cameron', placement: 1 },
+        { name: 'Sanders', playerSlug: 'sanders', placement: 3 },
+      ],
+    };
+    expect(run(SEASON_8).map(w => w.name),
+      'the page fallback names one of season 8 two champions')
+      .toEqual(['Alejandro', 'Cameron']);
+    // `winners[]` outranks both, the way js/records.js orders them.
+    expect(run({ ...SEASON_8, winners: [{ name: 'Zed' }] }).map(w => w.name))
+      .toEqual(['Zed']);
+    // And a document with only the singular block still resolves it.
+    expect(run({ winner: { name: 'Solo' } }).map(w => w.name)).toEqual(['Solo']);
+    // ...including the bare-string form some older records carry.
+    expect(run({ winner: 'Older' }).map(w => w.name)).toEqual(['Older']);
+
+    /* ── AND NOTHING ON THE PAGE DEREFERENCES THE SINGULAR BLOCK ──────
+       This was one negative match on one byte sequence — `accent">🏆
+       ${s.winner.name}` — so reintroducing the identical crash forty-five
+       lines further down, in the winner card, was invisible. The bug is a
+       DEREFERENCE of a field that is null on a split season, wherever it is
+       written, so the whole file is swept for one. `s.winner?.x` and
+       `s.winner&&s.winner.x` are guarded and allowed. */
+    // Comments stripped: the note explaining this very bug quotes the shape,
+    // and a source-text sweep that counts comments checks the wrong thing.
+    // CRLF first -- `.` does not match a carriage return, so the line-comment
+    // strip matches nothing at all on a CRLF file.
+    const codeOnly = src.replace(/\r\n?/g, '\n')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .split('\n').map(l => l.replace(/(^|\s)\/\/.*$/, '')).join('\n');
+    const unguarded = codeOnly.split('\n').filter((line) => {
+      const at = line.search(/s\.winner\.[a-zA-Z]/);
+      if (at < 0) return false;
+      // GUARDED ON THE SAME LINE, which is the only place a guard reaches a
+      // template expression. An earlier `const w = s.winner` on some other
+      // line is not a guard, and allowing it let the identical crash back in
+      // forty-five lines further down.
+      return !/s\.winner\s*(&&|\?)|typeof\s+s\.winner/.test(line.slice(0, at + 8));
+    }).map(l => l.trim().slice(0, 90));
+    expect(unguarded,
+      'an unguarded `s.winner.x` — null on a split season, which is a TypeError '
+      + 'before the page draws anything')
+      .toEqual([]);
+    // The hero and the winner card read the resolved list.
     expect(src).toContain('${_won.map(w=>w.name).join(" &amp; ")}');
     expect(src).toContain('${_won.map(x=>{');
-    expect(src).not.toContain('accent">🏆 ${s.winner.name}');
   });
 
   it('voting-analytics captions every winner, not placements[0]', () => {

@@ -444,6 +444,11 @@ window._showsReady = new Promise(resolve => { window._showsResolve = resolve; })
      writing a second one is the whole reason the two read as the same
      encyclopaedia rather than as a dashboard with a wiki-shaped tab in it. */
   import { WIKI_CSS } from './js/wiki-view.js';
+  /* Who won, however many of them there were. `winner{}` is singular and a
+     season that ended in a split leaves it null, so reading it directly threw
+     on the hero line before the page drew anything at all. */
+  import { seasonWinners } from './js/records.js';
+  window.seasonWinners = seasonWinners;
   const wkStyle = document.createElement('style');
   wkStyle.textContent = WIKI_CSS;
   document.head.appendChild(wkStyle);
@@ -593,6 +598,21 @@ function buildRecords(season){
     document.documentElement.style.setProperty('--sc',sc);
     document.documentElement.style.setProperty('--sc-glow',sc+'44');
 
+    /* EVERYBODY WHO WON THIS SEASON.
+       `winner{}` holds one person and always has, because until The Traitors
+       every show in the franchise had one. That show splits the pot between
+       whoever is still standing, which leaves the singular field null — and
+       this page read `s.winner.name` straight into the headline, so a split
+       season died on a TypeError before drawing a pixel. Season 8 is the same
+       shape one step less far along: two champions in `placements`, one of
+       them named in `winner`.
+       The registry module is an enhancement on this page rather than a
+       dependency (see the _showsReady race above), so there is a local
+       fallback for the file:// case, exactly as `shows` has. */
+    const _won=(window.seasonWinners?window.seasonWinners(s)
+      :(s.winner?[s.winner]:(s.placements||[]).filter(p=>p.placement===1)))
+      .filter(w=>w&&w.name);
+
     // Hero
     const heroHTML=`<div class="sr-hero">
       <div class="sr-hero-photo" id="sr-hero-photo"></div>
@@ -603,10 +623,10 @@ function buildRecords(season){
         <h1 class="sr-hero-title">${s.title}</h1>
         <p class="sr-hero-sub">${s.subtitle||''}</p>
         <div class="sr-hero-pills">
-          <span class="sr-pill accent">🏆 ${s.winner.name}</span>
+          ${_won.length?`<span class="sr-pill accent">🏆 ${_won.map(w=>w.name).join(" &amp; ")}</span>`:''}
           <span class="sr-pill">👥 ${s.castSize} players</span>
           <span class="sr-pill">📺 ${s.episodeCount} episodes</span>
-          ${s.winner.vote?`<span class="sr-pill">🗳️ ${s.winner.vote}</span>`:''}
+          ${s.winner&&s.winner.vote?`<span class="sr-pill">🗳️ ${s.winner.vote}</span>`:''}
         </div>
       </div>
     </div>`;
@@ -628,24 +648,31 @@ function buildRecords(season){
       }).join('')}
     </div>`:'';
 
+    /* ONE CARD PER WINNER. The season page named `w.name` once, which is the
+       right shape for a show with one winner and a silent lie on a season
+       with four: the other three are champions of a season whose own page
+       does not say their name. The strategy/legacy prose belongs to the
+       singular block, so it is drawn only under the person that block names. */
     const winnerHTML=`<div class="sr-winner">
-      <div class="sr-winner-lbl">👑 Season Winner</div>
-      <div class="sr-winner-row">
+      <div class="sr-winner-lbl">👑 Season Winner${_won.length>1?'s':''}</div>
+      ${_won.map(x=>{
+        const own=w&&(w.playerSlug===x.playerSlug||w.name===x.name)?w:{};
+        return `<div class="sr-winner-row">
         <div class="sr-winner-av">
-          <img src="assets/avatars/${w.playerSlug}.png"
+          <img src="assets/avatars/${x.playerSlug||''}.png"
             style="display:none"
             onload="this.style.display='block';this.nextElementSibling.style.display='none'"
             onerror="this.style.display='none'"/>
           <span>👑</span>
         </div>
         <div class="sr-winner-info">
-          <div class="sr-winner-name">${w.name}</div>
-          <div class="sr-winner-vote">${w.vote||''}${w.runnerUp?' over '+w.runnerUp:''}</div>
-          ${w.keyStats?`<div style="font-size:13px;color:rgba(255,255,255,.75)">${w.keyStats}</div>`:''}
+          <div class="sr-winner-name">${x.name}</div>
+          <div class="sr-winner-vote">${own.vote||''}${own.runnerUp?' over '+own.runnerUp:''}</div>
+          ${own.keyStats?`<div style="font-size:13px;color:rgba(255,255,255,.75)">${own.keyStats}</div>`:''}
+        ${own.strategy?`<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;font-weight:700">Strategy</div><div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.6">${own.strategy}</div></div>`:''}
+        ${own.legacy?`<div style="margin-top:10px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;font-weight:700">Legacy</div><div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.6">${own.legacy}</div></div>`:''}
         </div>
-      </div>
-      ${w.strategy?`<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;font-weight:700">Strategy</div><div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.6">${w.strategy}</div></div>`:''}
-      ${w.legacy?`<div style="margin-top:10px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;font-weight:700">Legacy</div><div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.6">${w.legacy}</div></div>`:''}
+      </div>`;}).join('')}
       ${finalistsHTML}
     </div>`;
 

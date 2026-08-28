@@ -764,3 +764,62 @@ describe('an article says what they did on the other show', () => {
     expect(renderArticle(won, 'total-drama', opts)).toMatch(/finishing as the runner-up/);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// Co-winners in the lead
+// ══════════════════════════════════════════════════════════════════════
+//
+// "The winner of season 8" is a claim about everybody else in it, and season 8
+// had two. The Traitors makes it the normal case: the pot is split between
+// however many are left standing, so a page that says "the winner" over a
+// shared win writes the other champions out of their own season.
+describe('a season more than one person won', () => {
+  const doc = {
+    seasonNumber: 8, format: 'total-drama', title: 'Heroes VS Villains',
+    winner: { name: 'Alejandro', playerSlug: 'alejandro', vote: '4-4', runnerUp: 'Sanders' },
+    placements: [
+      { name: 'Alejandro', playerSlug: 'alejandro', placement: 1 },
+      { name: 'Cameron', playerSlug: 'cameron', placement: 1 },
+      { name: 'Sanders', playerSlug: 'sanders', placement: 3 },
+    ],
+  };
+  const playerNamed = name => ({
+    id: name.toLowerCase(), name,
+    seasonDetails: [{ season: 8, format: 'total-drama', placement: 1, challengeWins: 3 }],
+  });
+  const career = p => careerOf(p, { seasonDocs: [doc] });
+
+  it('counts the winners off the document, not off the singular field', () => {
+    for (const name of ['Alejandro', 'Cameron']) {
+      const s = career(playerNamed(name))[0].seasons[0];
+      expect(s.coWinners, `${name}'s record does not know the win was shared`).toBe(2);
+    }
+    // ...and the tally belongs to the player the winner block names. Cameron
+    // did not beat Sanders 4-4; Alejandro did, and the lead used to say both.
+    expect(career(playerNamed('Alejandro'))[0].seasons[0].finalVote).toBe('4-4');
+    expect(career(playerNamed('Alejandro'))[0].seasons[0].runnerUp).toBe('Sanders');
+    expect(career(playerNamed('Cameron'))[0].seasons[0].finalVote).toBe('');
+    expect(career(playerNamed('Cameron'))[0].seasons[0].runnerUp).toBe('');
+  });
+
+  it('calls each of them a co-winner rather than the winner', () => {
+    for (const name of ['Alejandro', 'Cameron']) {
+      const p = playerNamed(name);
+      const html = renderArticle({ ...p, career: career(p) }, 'total-drama',
+        { root: '.', allShows: ['total-drama'] });
+      expect(html, `${name}'s article claims the season outright`).toContain('a co-winner of');
+      expect(html).not.toContain('the winner of');
+    }
+  });
+
+  it('still says "the winner" when there was one', () => {
+    const solo = { ...doc, placements: doc.placements.filter(p => p.name !== 'Cameron') };
+    const p = playerNamed('Alejandro');
+    const c = careerOf(p, { seasonDocs: [solo] });
+    expect(c[0].seasons[0].coWinners).toBe(1);
+    const html = renderArticle({ ...p, career: c }, 'total-drama',
+      { root: '.', allShows: ['total-drama'] });
+    expect(html).toContain('the winner of');
+    expect(html).not.toContain('a co-winner of');
+  });
+});

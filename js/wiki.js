@@ -23,6 +23,13 @@ import { approvedFor, lineFor as lifeLine, kindOf } from './life-events.js';
 import { airLabel } from './franchise-calendar.js';
 
 import { parseBio } from './bio.js';
+import { seasonWinners } from './records.js';
+
+/** The singular `winner{}` block, but only when it is about this player. */
+function _winnerBlockFor(doc, name) {
+  const w = doc?.winner;
+  return w && w.name === name ? w : null;
+}
 // The registry is the only list of shows. This file kept its own, so a show
 // registered anywhere else headed its section with a raw slug.
 import { DEFAULT_FORMAT, showName } from './shows.js';
@@ -452,8 +459,15 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [], se
       // "in a close final vote, he emerged victorious with a 4 to 3 decision"
       // — which needs the tally and the person they beat. Both are on the
       // season document's winner block and neither was carried through.
-      finalVote: rowFor(d)?.doc?.winner?.vote || '',
-      runnerUp: rowFor(d)?.doc?.winner?.runnerUp || '',
+      // HOW MANY PEOPLE WON THIS SEASON. Not a Traitors-only question: season 8
+      // ended with two champions, and the lead called each of them "the winner",
+      // which is a sentence about the other one. The lead needs the count to
+      // write "a co-winner of" instead, and the count is only on the document.
+      coWinners: seasonWinners(rowFor(d)?.doc).length,
+      // ...and the tally is only theirs if the winner block is about THEM. The
+      // block names one person; on season 8 it names one of two.
+      finalVote: _winnerBlockFor(rowFor(d)?.doc, player.name)?.vote || '',
+      runnerUp: _winnerBlockFor(rowFor(d)?.doc, player.name)?.runnerUp || '',
       showmance: rowFor(d)?.row?.showmance || d.showmance || '',
       // WHO THEY PLAYED WITH, which the infobox lists per season and the
       // measured lead names. The season document is preferred for the same

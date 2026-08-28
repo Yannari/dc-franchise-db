@@ -409,7 +409,14 @@ function lead(dossier, show, root, L) {
   // All-Stars, and later won Heroes VS Villains VS Civilians" — every fact
   // correct and the same three words three times.
   const outcome = s => {
-    if (s.placement === 1) return `the winner of ${link(s)}`;
+    // "THE winner" IS A CLAIM ABOUT EVERYBODY ELSE. Season 8 crowned two, and
+    // The Traitors splits the pot between as many as are left standing — so a
+    // page saying "the winner of" over a shared win is writing one champion
+    // out of their own season. `coWinners` counts the record, and the article
+    // says which kind of win it was rather than picking.
+    if (s.placement === 1) {
+      return `${s.coWinners > 1 ? 'a co-winner of' : 'the winner of'} ${link(s)}`;
+    }
     if (s.placement === 2) return `the runner-up on ${link(s)}`;
     if (s.placement) return `${ordinal(s.placement)} on ${link(s)}`;
     return `a ${showWords(show.format).player} on ${link(s)}`;

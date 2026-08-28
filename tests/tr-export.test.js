@@ -21,6 +21,9 @@ import { playTraitorsSeason } from '../js/tr/headless.js';
 import { SHOWS, DEFAULT_FORMAT, seasonId, formatPrefix, exitVerbs, showWords } from '../js/shows.js';
 import { roundLedger } from '../js/wiki-fill.js';
 import { episodeRecords } from '../js/social/live.js';
+import { episodesOf, eventsForEpisode } from '../js/social/archive.js';
+import { championsIn } from '../js/records.js';
+import { attachRecords } from '../js/wiki-fill-run.js';
 import { _rebuildByShow, _tagSeasonDetail, seasonExporterFor,
   exportTraitorsSeason } from '../js/stats-export.js';
 import {
@@ -423,5 +426,138 @@ describe('the career figures are read, never re-simulated', () => {
     }
     expect(recruits, 'no recruitment happened — the tenure rule is untested')
       .toBeGreaterThan(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// Co-winners, resolved across every reader (spec §10.2)
+// ══════════════════════════════════════════════════════════════════════
+//
+// docs/ADDING-A-SHOW.md §5 requires `winner { name, playerSlug, vote, runnerUp }`
+// — singular — and every page in the repo was written against it. This show
+// ends with the pot SPLIT more often than not, between as many Faithfuls as
+// are still standing, with no ordinal finish separating them and no runner-up
+// in the usual sense. The record says so: co-winners all hold `placement: 1`,
+// `winners[]` names the set, and `winner{}` is populated only where the season
+// genuinely produced one, which here means a lone surviving Traitor.
+//
+// The rule every reader below holds is one sentence: report every winner the
+// record names, or report that you do not know, and NEVER choose one.
+// `winners[0]` is choosing one with an extra step in front of it.
+describe('co-winners, resolved across every reader', () => {
+  // Both endings, from the engine, picked by the SIZE of the split rather than
+  // by seed number — a seed is not a promise, and on a changed engine this has
+  // to fail loudly rather than quietly test the same ending twice.
+  const docs = SEASONS.map((s, i) => buildTraitorsSeasonDocument(s, { seasonNumber: SEEDS[i] }));
+  const split = docs.find(d => d.winners.length === 4);
+  const solo = docs.find(d => d.winners.length === 1);
+
+  it('exports four co-winners with no ordinal and no winner block', () => {
+    expect(split, 'no season in the sample ended in a FOUR-way split').toBeTruthy();
+    expect(split.winners).toHaveLength(4);
+    const firsts = split.placements.filter(p => p.placement === 1);
+    expect(firsts.map(p => p.name).sort()).toEqual(split.winners.map(w => w.name).sort());
+    expect(new Set(firsts.map(p => p.placement)).size,
+      'the takers were given ordinals 1..4 — there is no order between them').toBe(1);
+    for (const p of firsts) expect(p.status).toBe('Winner');
+    // The singular field stays empty rather than nominating one of the four.
+    expect(split.winner).toBe(null);
+    // And nobody finished second to a four-way split.
+    expect(split.placements.some(p => p.placement === 2)).toBe(false);
+  });
+
+  it('fills the winner block only where one player really took it', () => {
+    expect(solo, 'no season ended with a lone taker').toBeTruthy();
+    expect(solo.winners).toHaveLength(1);
+    expect(solo.winner.name).toBe(solo.winners[0].name);
+    // The people at the final table who took nothing ARE the runners-up, and
+    // they are `placement: 2` two fields down. The same fact, in the field the
+    // champion cards and the wiki lead read.
+    const seconds = solo.placements.filter(p => p.placement === 2).map(p => p.name);
+    expect(seconds.length).toBeGreaterThan(0);
+    for (const n of seconds) expect(solo.winner.runnerUp).toContain(n);
+  });
+
+  it('never puts the endgame prose where a jury tally goes', () => {
+    // `winner.vote` is a TALLY. js/social/feed.js reads two numbers in it as a
+    // jury having voted, and the endgame line carries the pot — "all of it to
+    // Bowie" holds 72,233 — so putting the prose there had the feed announcing
+    // a jury verdict on a show that has no jury. That is this project's oldest
+    // bug (one show's words over another show's night) one clause further in.
+    for (const doc of docs) {
+      if (!doc.winner) continue;
+      expect((String(doc.winner.vote).match(/\d+/g) || []).length,
+        'the winner block carries a number that reads as a tally').toBeLessThan(2);
+      expect(doc.endgameLine, 'the line is still on the document, under its own name')
+        .toBeTruthy();
+    }
+    // ...and the reader that would have been fooled agrees.
+    for (const doc of [split, solo]) {
+      const fin = eventsForEpisode(doc, TRAITORS_FORMAT, 1, doc.episodeCount)
+        .find(e => e.kind === 'finale');
+      expect(fin, 'the season has no finale event at all').toBeTruthy();
+      expect(fin.decidedBy, 'a Traitors finale was reported as decided by a jury')
+        .not.toBe('jury');
+    }
+  });
+
+  it('gives a split season its finale night, and no invented winner on it', () => {
+    // The archive gated the finale on `doc.winner`, which a split leaves null,
+    // so the one night the audience was watching for had no page and no post.
+    const eps = episodesOf(split, TRAITORS_FORMAT);
+    const last = eps[eps.length - 1];
+    expect(last.record.isFinale).toBe(true);
+    expect(last.record.winner, 'one of four was named the winner').toBeFalsy();
+    expect((last.record.winners || []).map(w => w.name).sort())
+      .toEqual(split.winners.map(w => w.name).sort());
+
+    const fin = eventsForEpisode(split, TRAITORS_FORMAT, 1, last.episode)
+      .find(e => e.kind === 'finale');
+    // An event has ONE subject and this night had four winners, so it gets
+    // none — the names ride on `subjects`, where a writer that can say "and"
+    // has all of them and a writer that cannot has nothing rather than a guess.
+    expect(fin.subject, 'the finale event named one of four co-winners').toBeFalsy();
+    expect((fin.subjects || []).length).toBe(4);
+    // The lone-winner season still names its winner, or this proves nothing.
+    const soloFin = eventsForEpisode(solo, TRAITORS_FORMAT, 1, solo.episodeCount)
+      .find(e => e.kind === 'finale');
+    expect(String(soloFin.subject || '').length).toBeGreaterThan(0);
+  });
+
+  it('puts every co-winner on the champions board, and none of them twice', () => {
+    // One row per WINNER. The board mapped `s.winner`, of which there is one,
+    // so three of this season's four champions fell between record and page.
+    const db = { seasons: [{ seasonNumber: 1, format: TRAITORS_FORMAT,
+      seasonId: split.seasonId, title: split.title,
+      winner: split.winner, winners: split.winners, placements: split.placements }] };
+    const champs = championsIn(db, TRAITORS_FORMAT);
+    expect(champs.map(c => c.winner).sort()).toEqual(split.winners.map(w => w.name).sort());
+    expect(new Set(champs.map(c => c.winner)).size).toBe(champs.length);
+    for (const c of champs) expect(c.coWinners).toBe(4);
+  });
+
+  it('does not lend one co-winner the other one\'s final vote', () => {
+    // The wiki fill handed EVERY `placement === 1` row the singular block's
+    // tally and runner-up. On Total Drama season 8 — two champions on the
+    // record since the day it published — that wrote Alejandro's 4-4 and
+    // Alejandro's runner-up into Cameron's paragraph: a fact about somebody
+    // else, in the prompt his article is written from.
+    const doc = {
+      seasonNumber: 8, episodeCount: 2,
+      winner: { name: 'Alejandro', playerSlug: 'alejandro', vote: '4-4', runnerUp: 'Sanders' },
+      placements: [
+        { name: 'Alejandro', playerSlug: 'alejandro', placement: 1 },
+        { name: 'Cameron', playerSlug: 'cameron', placement: 1 },
+        { name: 'Sanders', playerSlug: 'sanders', placement: 3 },
+      ],
+      votingHistory: [], episodes: [],
+    };
+    const threads = attachRecords(doc,
+      doc.placements.map(p => ({ name: p.name })), DEFAULT_FORMAT);
+    const rec = n => (threads.find(t => t.name === n) || {}).record || '';
+    expect(rec('Alejandro')).toContain('4-4');
+    expect(rec('Alejandro')).toContain('Sanders');
+    expect(rec('Cameron'), 'Cameron was handed Alejandro\'s final vote').not.toContain('4-4');
+    expect(rec('Cameron'), 'Cameron was handed Alejandro\'s runner-up').not.toContain('Sanders');
   });
 });

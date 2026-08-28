@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   careersIn, careerBoards, seasonsIn, championsIn, milestonesIn,
+  seasonWinners, isSeasonWinner,
   returneesIn, triviaIn, bioOf, compRecords, franchiseRecords,
 } from '../js/records.js';
 
@@ -223,5 +224,149 @@ describe('the whole view the page draws', () => {
     const bb = franchiseRecords({ players, seasonsDb, format: 'big-brother' });
     expect(td.stats.appearances + bb.stats.appearances).toBe(all.stats.appearances);
     expect(td.stats.seasons + bb.stats.seasons).toBe(all.stats.seasons);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// Co-winners
+// ══════════════════════════════════════════════════════════════════════
+//
+// `winner{}` on a season document is SINGULAR, and every reader in the repo
+// was written against that. It stopped being true twice: Total Drama season 8
+// ended with two champions, and The Traitors ends with the pot split between
+// however many are left standing — the engine's own figures put a lone taker
+// at 158 of 400 seasons, so a split is the NORMAL ending, not the exception.
+//
+// The rule these tests hold is one sentence: a reader may report every winner
+// the record names, or report that it does not know, and may never choose one.
+// `winners[0]` is choosing one with an extra step in front of it.
+describe('everybody who won a season', () => {
+  it('reads the plural field, the singular one, or the standings', () => {
+    // Three sources, because three shapes exist in the wild: a Traitors
+    // document declares `winners[]`, every document written before that field
+    // existed has `winner{}`, and a season index row has one of those and no
+    // placements at all. Whichever the caller is holding, it gets the full set.
+    expect(seasonWinners({ winners: [{ name: 'A' }, { name: 'B' }] }).map(w => w.name))
+      .toEqual(['A', 'B']);
+    expect(seasonWinners({ winner: { name: 'A', playerSlug: 'a' } }).map(w => w.name))
+      .toEqual(['A']);
+    expect(seasonWinners({ placements: [
+      { name: 'A', placement: 1 }, { name: 'B', placement: 1 }, { name: 'C', placement: 3 },
+    ] }).map(w => w.name)).toEqual(['A', 'B']);
+    // A bare name is how the archive's older records say it.
+    expect(seasonWinners({ winner: 'A' }).map(w => w.name)).toEqual(['A']);
+    // And a season nobody has finished says nothing rather than guessing.
+    expect(seasonWinners({ placements: [{ name: 'A', placement: 2 }] })).toEqual([]);
+    expect(seasonWinners(null)).toEqual([]);
+    expect(isSeasonWinner({ winners: [{ name: 'B' }] }, 'B')).toBe(true);
+    expect(isSeasonWinner({ winners: [{ name: 'B' }] }, 'A')).toBe(false);
+  });
+
+  it('names BOTH of season 8, off the season document as it is published', () => {
+    // Not a hypothetical and not the new show: this file has been on disk since
+    // season 8 aired, with Alejandro and Cameron both on placement 1 and only
+    // Alejandro in `winner{}`. Every page that asked the document who won has
+    // been answering Cameron's own season with somebody else's name.
+    const doc = j('data/seasons/season8-data.json');
+    const firsts = doc.placements.filter(p => p.placement === 1).map(p => p.name);
+    expect(firsts, 'season 8 is the co-winner fixture; it must stay one')
+      .toEqual(['Alejandro', 'Cameron']);
+    expect(seasonWinners(doc).map(w => w.name)).toEqual(firsts);
+    // The tally and the runner-up belong to the player the block names, and to
+    // nobody else. Cameron did not beat Sanders 4-4; Alejandro did.
+    const [ale, cam] = seasonWinners(doc);
+    expect(ale.vote).toBe(doc.winner.vote);
+    expect(ale.runnerUp).toBe(doc.winner.runnerUp);
+    expect(cam.vote).toBe('');
+    expect(cam.runnerUp).toBe(null);
+  });
+
+  it('gives the champions board one row per WINNER, not per season', () => {
+    // The board mapped `s.winner`, of which there is one, so a co-winner was
+    // dropped on the floor between the record and the page.
+    const db = { seasons: [
+      { seasonNumber: 1, title: 'Solo', winner: { name: 'A', playerSlug: 'a', vote: '4-3' } },
+      { seasonNumber: 2, title: 'Split', winner: null,
+        winners: [{ name: 'B', playerSlug: 'b' }, { name: 'C', playerSlug: 'c' },
+          { name: 'D', playerSlug: 'd' }, { name: 'E', playerSlug: 'e' }] },
+    ] };
+    const champs = championsIn(db, 'all');
+    expect(champs.map(c => c.winner)).toEqual(['A', 'B', 'C', 'D', 'E']);
+    expect(champs.filter(c => c.season === 2).map(c => c.coWinners)).toEqual([4, 4, 4, 4]);
+    expect(champs.find(c => c.winner === 'A').coWinners).toBe(1);
+    // ...and it says so for a real one too.
+    const eight = championsIn(seasonsDb, 'total-drama').filter(c => c.season === 8);
+    expect(eight.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The two pages that read the winner out of a document directly
+// ══════════════════════════════════════════════════════════════════════
+//
+// `season_ref.html` and `voting-analytics.html` are page scripts: they cannot
+// be imported, and the render path wants a fetch and a DOM. So each one's
+// winner-resolution statement is EXTRACTED from the source by its anchor and
+// RUN here against a split season. That is not a text match — the assertions
+// below are about what the code returns — but the anchor doubles as one: if
+// somebody puts `s.winner.name` back, the statement stops existing and this
+// fails on the extraction rather than passing quietly.
+//
+// The bug being held off is a crash, not a wrong word. `season_ref.html` read
+// `s.winner.name` straight into the hero headline, so a season that ended in a
+// split (`winner: null`, four names in `winners[]`) died on a TypeError before
+// the page drew anything at all.
+describe('the pages that read a winner off the document', () => {
+  const SPLIT = {
+    castSize: 20, episodeCount: 9, winner: null,
+    winners: [{ name: 'B', playerSlug: 'b' }, { name: 'C', playerSlug: 'c' },
+      { name: 'D', playerSlug: 'd' }, { name: 'E', playerSlug: 'e' }],
+    placements: [
+      { name: 'B', playerSlug: 'b', placement: 1 }, { name: 'C', playerSlug: 'c', placement: 1 },
+      { name: 'D', playerSlug: 'd', placement: 1 }, { name: 'E', playerSlug: 'e', placement: 1 },
+      { name: 'F', playerSlug: 'f', placement: 5 },
+    ],
+  };
+  /** The statement starting at `anchor`, up to and including its terminator. */
+  const stmt = (src, anchor, end) => {
+    const i = src.indexOf(anchor);
+    expect(i, `${anchor} — the page no longer resolves the winner this way`)
+      .toBeGreaterThan(-1);
+    const j = src.indexOf(end, i);
+    expect(j).toBeGreaterThan(i);
+    return src.slice(i, j + end.length);
+  };
+
+  it('season_ref draws a hero for a season nobody singular won', () => {
+    const src = readFileSync(join(process.cwd(), 'season_ref.html'), 'utf8');
+    const code = stmt(src, 'const _won=', '.filter(w=>w&&w.name);');
+    // Run it with no `window.seasonWinners`, which is the file:// case AND the
+    // harsher one: the page's own fallback has to hold the rule by itself.
+    const won = new Function('s', 'window', `${code} return _won;`)(SPLIT, {});
+    expect(won.map(w => w.name)).toEqual(['B', 'C', 'D', 'E']);
+    // ...and it survives a season with neither field rather than throwing.
+    expect(new Function('s', 'window', `${code} return _won;`)({}, {})).toEqual([]);
+    // The hero and the winner card read that variable and not `s.winner.name`.
+    expect(src).toContain('${_won.map(w=>w.name).join(" &amp; ")}');
+    expect(src).toContain('${_won.map(x=>{');
+    expect(src).not.toContain('accent">🏆 ${s.winner.name}');
+  });
+
+  it('voting-analytics captions every winner, not placements[0]', () => {
+    const src = readFileSync(join(process.cwd(), 'voting-analytics.html'), 'utf8');
+    const code = stmt(src, 'const winners = placements.filter', ".join(' & ');");
+    const run = (placements, data) =>
+      new Function('placements', 'data', `${code} return [winners, winner];`)(placements, data);
+    const [ws, caption] = run(SPLIT.placements, SPLIT);
+    expect(ws).toEqual(['B', 'C', 'D', 'E']);
+    expect(caption).toBe('B & C & D & E');
+    // A season with one winner still reads as one.
+    const [one, solo] = run([{ name: 'A', placement: 1 }, { name: 'Z', placement: 2 }], {});
+    expect(one).toEqual(['A']);
+    expect(solo).toBe('A');
+    // And with no standings at all it falls back to the block, never to the
+    // first row of a list it did not sort for this purpose.
+    expect(run([], { winner: { name: 'A' } })[1]).toBe('A');
+    expect(src).not.toContain("placements[0]?.name");
   });
 });

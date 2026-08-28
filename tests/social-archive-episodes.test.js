@@ -87,6 +87,21 @@ describe('the finale', () => {
     expect(eps.filter(e => e.episode === 26).length).toBe(1);
   });
 
+  it('gives a season that recorded NOTHING but a split its one night', () => {
+    // Seasons 1 to 5 record no individual episode, so they get the finale and
+    // only the finale — and that was gated on `winner`, which is SINGULAR.
+    // A season several people won leaves it null, so the one night it was
+    // allowed to have was the one night it did not get.
+    const doc = { episodeCount: 9, winner: null,
+      winners: [{ name: 'B' }, { name: 'C' }, { name: 'D' }, { name: 'E' }] };
+    const eps = episodesOf(doc, 'total-drama');
+    expect(eps.map(e => e.episode)).toEqual([9]);
+    expect(eps[0].record.isFinale).toBe(true);
+    // ...and it still refuses to name one of the four.
+    expect(eps[0].record.winner).toBeFalsy();
+    expect(eps[0].record.winners.map(w => w.name)).toEqual(['B', 'C', 'D', 'E']);
+  });
+
   it('marks nothing when the season never named a winner', () => {
     const doc = { episodeCount: 5, votingHistory: votes([2, 4]) };
     expect(episodesOf(doc, 'total-drama').some(e => e.record.isFinale)).toBeFalsy();

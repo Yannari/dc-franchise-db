@@ -330,8 +330,21 @@ export function buildTraitorsSeasonDocument(season = {}, { seasonNumber = 1, twi
     endgameWinner: season.endgame?.winner || season.winner || null,
     pot: season.pot ?? null,
     winners,
+    // How the castle emptied, in the show's own words. NOT `winner.vote`:
+    // that field is a TALLY, quoted by the wiki lead and pattern-matched by
+    // js/social/feed.js, which reads two numbers in it as a jury having voted.
+    // The prose line carries the pot — "all of it to Bowie" holds 72,233 — so
+    // putting it there had the feed announcing a jury verdict on a show that
+    // has no jury, which is this project's oldest bug wearing a new hat.
+    // There IS no tally at the end of a Traitors season: the last table is a
+    // banishment like every other, and what follows is a decision, not a vote.
+    endgameLine: season.endgame?.line || '',
     winner: winners.length === 1
-      ? { ...winners[0], vote: season.endgame?.line || '', runnerUp: null,
+      ? { ...winners[0], vote: '',
+          // The people who were at the final table and took nothing. They are
+          // `placement: 2` with status Runner-up two fields down; naming them
+          // here is the same fact, in the field the champion cards read.
+          runnerUp: (season.endgame?.losers || []).join(' & ') || null,
           keyStats: '[AI_FILL]', strategy: '[AI_FILL]', legacy: '[AI_FILL]' }
       : null,
     placements,

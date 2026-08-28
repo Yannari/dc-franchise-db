@@ -2267,7 +2267,15 @@ function showSeason(season) {
 
     const placements = [...(data.placements || [])].sort((a,b)=>(a.placement||99)-(b.placement||99));
     const eps = [...vh].sort((a,b)=>(a.episode||0)-(b.episode||0));
-    const winner = data.winner?.name || placements[0]?.name || '';
+    /* WHO WON, PLURAL — and not "whoever placements happens to list first".
+       `winner{}` names one person and a season can end with several: season 8
+       has two players on placement 1, and The Traitors splits the pot between
+       everybody left, leaving the singular field null. The old fallback then
+       took placements[0], which is one of the co-winners chosen by sort order
+       — a caption naming a winner the record never named. */
+    const winners = placements.filter(p => p.placement === 1).map(p => p.name);
+    const winner = (winners.length ? winners : [data.winner?.name].filter(Boolean))
+      .join(' & ');
 
     let epHead = '', elimHead = '';
     eps.forEach(e => {
@@ -2293,7 +2301,7 @@ function showSeason(season) {
     div.className = 'voting-table';
     div.innerHTML = `
       <h2 style="text-align:center; margin: 20px 0;">📊 Season ${n} Voting Chart</h2>
-      <div class="callout">${esc(data.castSize || placements.length)} players • ${eps.length} voting episodes • Winner: ${esc(winner)}</div>
+      <div class="callout">${esc(data.castSize || placements.length)} players • ${eps.length} voting episodes • Winner${winners.length>1?'s':''}: ${esc(winner)}</div>
       ${note}
       <div class="scroll-hint">⬅️ SCROLL RIGHT TO SEE ALL EPISODES ➡️</div>
       <div class="panel"><div class="table-wrapper"><table class="vote-table">

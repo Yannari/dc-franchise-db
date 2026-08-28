@@ -410,3 +410,77 @@ Also: `notoriety` is created by `initCrowd` rather than declared in `initTraitor
 the one field created outside the file whose job is to declare them, because declaring it there
 would name the ledger. Flagged, not quietly resolved. And the registry's `audience` ratings
 overlay is still marked PROVISIONAL and now has played seasons to be recalibrated against.
+
+## Task 6 done — every count on this show is placement wearing a number
+
+`rankings_tr.json` via `js/ranking-boards.js`; a show with no finished season still
+has no board and `loadRankingBoards()` still skips the 404. **437 tr tests green.**
+
+**THE WEIGHTS WERE MEASURED FIRST, and all three currencies the plan named failed.**
+200 seasons, 4,000 player-seasons, against final placement: ballots cast at the
+table **-0.924** (rounds survived IS placement), finished on the winning side
+-0.686, correct banishments driven -0.635, missions won -0.629, banishment
+accuracy -0.499. **Capping a count makes it WORSE** — correct banishments goes to
+-0.658 at a cap of 2 — because what survives a cap is "did you last long enough to
+see one at all".
+
+Two numbers are independent: **shields won -0.019** and **murder ballots naming
+you +0.014**. The board is Shield 1.6 (this show's veto, priced like one),
+Missions 0.6, Reads 0.8, and the social column is `Wanted` — the ballots that
+named you, 0.9 capped at 4. It is uncorrelated for a REASON: every other count
+grows with nights survived, and this one is cancelled by the fact that being
+wanted dead frequently ends the season. The Dagger is the advantage block, not
+the Shield: a Shield is won and spent inside one night; a Dagger is kept until
+drawn and its commonest ending is leaving the castle still carrying it.
+
+**`gs.tr.notoriety` did NOT get used, and the claim for it did not survive
+measurement.** -0.308 pooled and -0.503 among Faithfuls: an accrual curve, with
+the pooled figure milder than the sub-group one in exactly the way that hid the
+same effect for popularity. `playTraitorsSeason`'s return is unchanged, the
+one-file rule holds, and notoriety stays a fame currency where accrual is the
+point.
+
+**The dead regex is fixed.** It reached RegExp as `S1s+(?:Winner|Pd+)[^]*$` and
+had never stripped anything, so a returning player's auto-line stacked on every
+re-run. Guarded by behaviour and by a `charCodeAt` check on the built pattern.
+
+### Three defects found by RUNNING it, not reading it
+
+- **`loadSeasonData` read every column through `isHouse ? A : B`.** A castle
+  auto-filled from `immunityWins`/`idolsFound`, **every column loaded zero**, and
+  the board ranked on placement alone looking exactly like a working board —
+  the file's own header documents this happening to Big Brother for a season, and
+  it was happening again. Each show declares a `read` now; `traitorsBoardStats`
+  puts the numbers on the placement where the other two shows already keep theirs.
+- **Fame scored 17 of 20 at zero.** `normaliseStatus` knew Winner/Runner-up/
+  Finalist/Jury/Pre-jury and a castle records `Banished` or `Murdered` — its own
+  words, which is the point — so a whole show had no fame in it. Registry-driven
+  now (`exitVerbs` -> Pre-jury), verified against the live database where no exit
+  verb appears as a status, so the two shipped shows are unchanged.
+- **`eventLabel()` and `pollQuestions()` were still one-show ternaries** — the row
+  §9 marked "not fixed". A castle's timeline read "Challenge win" and
+  "Elimination" and its audience was asked who makes the merge. Both are registry
+  fields now and both are off the ratchet.
+
+### A mutation came back GREEN and moved the assertion
+
+Swapping the social column from `wanted` to an accrual count left the independence
+test passing, because the test read `p.tr.wanted` off the EXPORT rather than
+through the rubric — a fact about the export, not a guard on the choice. It reads
+`RU_SHOW.traitors.read(...).social` now and the mutation is RED. **Generalise:
+when a test names a decision, make it read the decision, not the ingredient.**
+
+`tests/rankings-builder.test.js` stopped extracting the scorer from source text and
+`new Function`-ing it. Its `comp3: isHouse ?` assertion is the third instance in
+this plan of a source-text guard that stops matching its own source.
+
+### Carried
+
+- **`js/social/phrasings.js` is not vocabulary-adapted at all.** Fixed data with
+  "that house", "that beach", "the jury" in it: **117 of 1,820 posts (6.4%)** of a
+  real Traitors season carry another show's noun. Pre-existing and cross-show —
+  it says "beach" to Big Brother too — hundreds of strings, its own pass.
+- A Traitors season has no jury boundary, so every departure below the final table
+  shares one fame bucket. Finer resolution needs the endgame flag on the placement.
+- `_ruUseCurrentSeason` still picks between two builders. No live Traitors run
+  loop exists to trip it yet.

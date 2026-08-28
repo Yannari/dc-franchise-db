@@ -910,6 +910,14 @@ that it measures what its name says.** Ask all three.
 - **Stashes are per-repository, not per-worktree.** A `git stash` inside a show's
   worktree reaches into the same stack as the main checkout's uncommitted work.
   Copy files aside, or use a separate temporary worktree.
+- **`git checkout <file>` is `reset --hard` scoped to one file**, and it will
+  eat uncommitted work without asking. A task lost a file's worth of edits
+  reverting a mutation this way. To undo a mutation, apply the inverse edit --
+  never check the file out.
+- **A constant that lives in three files is not a constant.** The 46px nav
+  offset is now written in the mockup, the builder and a comment. Put it in one
+  place the moment you notice the second copy; every duplicate-source drift in
+  this document started as two.
 - **Creating and removing a temporary worktree empties `node_modules/.bin`.**
   `npx` then reports the runner missing while every package is fine. `npm rebuild`
   restores it in seconds. This happened twice.

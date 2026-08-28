@@ -234,7 +234,15 @@ function _night(ep, rng) {
   // choosing from, which is unanswerable once the victim has been removed.
   const livingAtMurder = [...(gs.activePlayers || [])];
   const m = resolveMurder(ep, rng);
+  // THE CONCLAVE'S OWN BALLOT SET, recorded rather than left in the return
+  // value, because the export shape (js/tr/export.js, spec 10.1) models the
+  // murder as a vote only the Traitors cast — and the ballot that matters most
+  // is the OVERRULED one, which no reader can recover from the victim. It has
+  // to be on the round record for the same reason `murderCost` and `variant`
+  // are: this frame is gone by the time anything reads the season back.
+  const murderBallots = _murderBallots(m);
   if (last) {
+    last.murderBallots = murderBallots;
     last.murdered = m.victim;
     last.murderTarget = m.target;
     // murderEvidence reads this NEXT round; it must be on the round record.
@@ -258,7 +266,30 @@ function _night(ep, rng) {
   }
   return { murdered: m.victim, murderTarget: m.target, blocked: m.blocked,
     variant: m.variant || 'standard', secondVictim: m.second || null,
+    // Night one has no round record to write to — there is no table on the
+    // first night — so its ballots reach the export through the log instead.
+    murderBallots,
     recruited: null, executed: null, livingAtMurder };
+}
+
+/**
+ * The conclave, as ballots.
+ *
+ * `argued` is one entry per living Traitor who had a target, and the winner is
+ * the one whose argument carried — so it IS a ballot set, read off the record
+ * rather than reconstructed. The `name-your-own` variant argues nothing (one
+ * Traitor is handed the choice), and there the single ballot is the decider's.
+ */
+function _murderBallots(m) {
+  const d = m?.decision;
+  if (!d) return [];
+  const argued = (d.argued || []).filter(p => p && p.target);
+  if (argued.length) {
+    return argued.map(p => ({ voter: p.traitor, voted: p.target, channel: 'murder' }));
+  }
+  return (d.decidedBy && d.target)
+    ? [{ voter: d.decidedBy, voted: d.target, channel: 'murder' }]
+    : [];
 }
 
 /**

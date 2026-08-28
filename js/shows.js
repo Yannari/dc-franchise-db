@@ -14,6 +14,11 @@
 export const SHOWS = {
   'total-drama': {
     prefix: 'td', name: 'Total Drama', short: 'TD', emoji: '🎬', accent: '#7d4cff',
+    // WHERE A LOADED SEASON KEEPS ITS ROUNDS, as a path on `gs`. Declared here
+    // because the alternative — `format === 'big-brother' ? gs.bb.weeks :
+    // gs.episodeHistory` — is a two-show world, and a third show falls out of
+    // its else branch reading an array that is not its own. See seasonRounds().
+    roundsPath: 'episodeHistory',
     // What this show calls its people, its rounds and leaving. Every page and
     // prompt that describes a season needs these four words, and hardcoding
     // them is how a Total Drama season came to be told it had houseguests who
@@ -57,6 +62,7 @@ export const SHOWS = {
   },
   'big-brother': {
     prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹', accent: '#38bdf8',
+    roundsPath: 'bb.weeks',
     words: { player: 'houseguest', players: 'houseguests', round: 'Week', exit: 'evicted',
       comp: 'competition', comps: 'competition wins', compBeast: 'comp beast', compWon: 'competitions',
       audienceAward: "America's Favourite Houseguest" },
@@ -90,7 +96,14 @@ export const SHOWS = {
   //    seasons. `historyFromLedger` below is that split.
   'traitors': {
     prefix: 'tr', name: 'The Traitors', short: 'TR', emoji: '🗡️', accent: '#b91c3c',
+    roundsPath: 'tr.rounds',
     words: { player: 'player', players: 'players', round: 'Episode', exit: 'banished',
+      // THE SECOND EXIT VERB, and the first one in the registry. `exit` is the
+      // vote, because a vote is what most screens are describing; a murder is
+      // not a vote and must never be printed as one. Every screen that names a
+      // departure reads the ROUND's own exit channel through `exitVerbs()`
+      // below, and falls back to `exit` only where a show has just the one.
+      exitMurder: 'murdered',
       comp: 'mission', comps: 'missions won', compBeast: 'mission asset',
       compWon: 'missions' },
       // audienceAward is deliberately absent: the format has no in-show award
@@ -163,6 +176,33 @@ export function showWords(format) {
   // absence means "we do not know this show", not "this show has no award".
   if (own && !('audienceAward' in own)) delete w.audienceAward;
   return w;
+}
+
+/**
+ * Every way this show has of removing somebody, in the order it uses them.
+ *
+ * One verb for the shows that have one; The Traitors has two, and any sentence
+ * about a departure has to take the one belonging to THAT round rather than
+ * the show's default. Returning a list rather than a flag means a screen loops
+ * over what the show declares instead of asking whether it is the show with
+ * the murder in it.
+ */
+export function exitVerbs(format) {
+  const w = showWords(format);
+  return [w.exit, w.exitMurder].filter(Boolean);
+}
+
+/**
+ * The loaded season's rounds, from whichever field this show keeps them in.
+ *
+ * Reads `roundsPath` off the registry rather than branching: a show that
+ * forgets to declare one gets the default show's field, which is the
+ * bare-integer rule applied to state, and NOT another show's array.
+ */
+export function seasonRounds(gs, format) {
+  const path = SHOWS[format]?.roundsPath || SHOWS[DEFAULT_FORMAT].roundsPath;
+  const list = path.split('.').reduce((o, k) => (o == null ? o : o[k]), gs);
+  return Array.isArray(list) ? list : [];
 }
 
 export function showName(format) {

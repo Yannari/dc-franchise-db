@@ -88,18 +88,19 @@ const PER_SHOW_DATA = {
 // docs/ADDING-A-SHOW.md §13 records thirteen, across seven files. It is a
 // LINE-based grep and every one of the six extra ternaries below is written
 // across two lines, so the manual has never seen them — including the two that
-// matter most for a third show: js/stats-export.js:2874 dispatches the whole
-// season export on `=== 'big-brother'`, and js/social/live.js:30 picks which
-// round array to read the same way. Both send a third show down Total Drama's
-// branch. Neither is Task 1's to fix; both are recorded here so that the next
-// person to touch those files is told.
+// mattered most for a third show: js/stats-export.js dispatched the whole
+// season export on the Big Brother slug, and js/social/live.js picked which
+// round array to read the same way, so a Traitors season was exported as a
+// camp and had no audience reaction to anything. BOTH ARE FIXED (Plan 7 Task
+// 3) — the export dispatches through a registered builder per show, and the
+// round array is read from the registry's `roundsPath` — and their rows are
+// gone from the backlog below, which is a ratchet: neither file may grow one
+// back.
 const TERNARY_BACKLOG = {
   'js/cast-ui.js':                3,
   'js/run-ui.js':                 2,
   'js/social/adapter.js':         4,
   'js/social/events.js':          1,
-  'js/social/live.js':            1,
-  'js/stats-export.js':           1,
   'js/wiki-view.js':              5,
   'player.html':                  1,
   'worker/worker-season-live.js': 1,  // inside a comment describing the bug

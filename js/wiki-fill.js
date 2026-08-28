@@ -239,12 +239,28 @@ export function roundLedger(doc = {}) {
     if (r.tieBreak) facts.push('the vote tied and was broken by the Head of Household');
     const tally = Object.entries(r.votes || {}).map(([name, c]) => `${name} ${c}`);
     if (tally.length) facts.push(`votes: ${tally.join(', ')}`);
-    if (r.evicted) facts.push(`${r.evicted} was evicted`);
+    // ── WHO LEFT, IN THE SHOW'S OWN VERB ──
+    //
+    // A show with ONE way of leaving can be described by the two clauses
+    // below, which is why they were the whole rule for two shows. A show with
+    // TWO — The Traitors banishes at the table and murders at night — cannot:
+    // whichever clause won would print one of its verbs over the other's
+    // departure, which is this repo's oldest bug class wearing a new hat. So a
+    // round may carry its own `exits[]`, each with the verb the REGISTRY gave
+    // that channel (js/tr/export.js, `exitVerbs` in js/shows.js), and when it
+    // does that list is what is rendered. Nothing is guessed here.
+    const exits = Array.isArray(r.exits) ? r.exits.filter(x => x?.name && x?.verb) : [];
+    if (exits.length) for (const x of exits) facts.push(`${x.name} was ${x.verb}`);
+    else if (r.evicted) facts.push(`${r.evicted} was evicted`);
     else if (r.eliminated) facts.push(`${r.eliminated} was eliminated`);
     if (r.quit) facts.push(`${r.quit} quit`);
     if (r.medevac) facts.push(`${r.medevac} was medically evacuated`);
 
-    return { n, word, gone: r.evicted || r.eliminated || null, facts };
+    return { n, word, gone: r.evicted || r.eliminated || exits[0]?.name || null,
+      // Everybody who left this round and how, for a reader that needs more
+      // than one name. `gone` keeps its shape for the readers that have one.
+      ...(exits.length ? { left: exits.map(x => ({ name: x.name, verb: x.verb })) } : {}),
+      facts };
   });
 }
 

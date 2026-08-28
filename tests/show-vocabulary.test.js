@@ -19,7 +19,7 @@
 // output contains another show's vocabulary. A third show gets this coverage by
 // existing in js/shows.js; there is no list here to remember to extend.
 import { describe, expect, it } from 'vitest';
-import { SHOWS, DEFAULT_FORMAT, showWords } from '../js/shows.js';
+import { SHOWS, DEFAULT_FORMAT, showWords, exitVerbs } from '../js/shows.js';
 import { buildDossier } from '../js/wiki.js';
 import { renderArticle } from '../js/wiki-view.js';
 import { roundLedger } from '../js/wiki-fill.js';
@@ -111,6 +111,10 @@ function docFor(format) {
     placements: [
       { placement: 1, name: 'Testcase', playerSlug: 'testcase', story: NEUTRAL_STORY },
       { placement: 2, name: 'Otherperson', playerSlug: 'otherperson' },
+      // A THIRD BODY, because a show may have more than one way of producing
+      // one. The Traitors banishes at the table and murders at night, and a
+      // fixture with two people in it can only ever exercise one of those.
+      { placement: 3, name: 'Thirdperson', playerSlug: 'thirdperson' },
     ],
   };
   if (format === 'big-brother') {
@@ -120,8 +124,17 @@ function docFor(format) {
         haveNots: ['Testcase'], ballots: [{ voter: 'Testcase', evict: 'Otherperson' }] },
     ] };
   }
+  // ONE EXIT PER VERB THE SHOW DECLARES, taken from the registry rather than
+  // written out. A show with one way of leaving gets the row it always had; a
+  // show with two gets both on it, which is the shape js/tr/export.js exports
+  // and the only way a guard can see the second verb at all. See `exits[]` in
+  // roundLedger().
+  const leavers = ['Otherperson', 'Thirdperson'];
+  const exits = exitVerbs(format)
+    .map((verb, i) => (leavers[i] ? { name: leavers[i], slug: leavers[i].toLowerCase(), verb } : null))
+    .filter(Boolean);
   return { ...base, votingHistory: [
-    { episode: 1, eliminated: 'Otherperson',
+    { episode: 1, eliminated: 'Otherperson', exits,
       votes: [{ voter: 'Testcase', target: 'Otherperson' }] },
   ] };
 }
@@ -166,6 +179,26 @@ describe('every registered show is described in its own words', () => {
       expect(rounds.length).toBeGreaterThan(0);
       const text = rounds.flatMap(r => [r.word, ...r.facts]).join(' | ');
       expect(leaks(text, format)).toEqual([]);
+    });
+
+    // EVERY VERB, NOT JUST THE DEFAULT ONE. A show with two ways of leaving
+    // that only ever prints one of them is the empty-section failure mode
+    // wearing a different hat: the guard passes because the second departure
+    // was never drawn, and the day it is drawn it is described in the first
+    // one's words. Asked of the registry, so a fourth show with a second verb
+    // inherits this the moment it declares one.
+    it(`the ${format} round ledger prints every exit verb the show declares`, () => {
+      const rounds = roundLedger(docFor(format));
+      const text = rounds.flatMap(r => r.facts).join(' | ');
+      for (const verb of exitVerbs(format)) {
+        expect(text, `the ${format} ledger never says "${verb}"`).toContain(`was ${verb}`);
+      }
+      // ...and no departure is described in another show's verb.
+      const foreign = FORMATS.filter(f => f !== format).flatMap(f => exitVerbs(f));
+      for (const verb of foreign) {
+        if (exitVerbs(format).includes(verb)) continue;
+        expect(text, `the ${format} ledger says "${verb}"`).not.toContain(`was ${verb}`);
+      }
     });
   }
 

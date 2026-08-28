@@ -1128,8 +1128,15 @@ export function runMission(ep, rng) {
   // it never asked which pool the sentence came out of. The VP will want this
   // field anyway.
   const tier = _tier(quality);
+  // WHICH HALF OF THE ROOM HAD THE BETTER AFTERNOON — recorded here for the
+  // same reason `tier` is, one line up. The money is deliberately not scored
+  // off the winner (see BEST_WEIGHT), but there IS a better team, and a
+  // career's `missionsWon` is a count of the afternoons you were on it. A
+  // reader that re-derived that from `teams[].perf` would be holding its own
+  // copy of the tie rule, and the two would drift the first time either moved.
+  const bestTeam = teams[0].perf >= teams[1].perf ? teams[0].name : teams[1].name;
   const rec = {
-    id: m.id, ep, name: m.name, teams, quality, tier,
+    id: m.id, ep, name: m.name, teams, quality, tier, bestTeam,
     gross, earned, potAfter: gs.tr.pot, sideObjectives,
     summary: _freshPick(rng, m.lines[tier]),
   };

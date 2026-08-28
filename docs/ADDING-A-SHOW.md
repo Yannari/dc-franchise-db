@@ -219,7 +219,15 @@ bearing — fourteen seasons of existing twists have no `format` field.
 
 `js/stats-export.js`. Total Drama and Big Brother have separate document
 builders (`exportAndFillNarratives`, `buildBigBrotherSeasonDocument`), and
-`exportSeason()` picks one on format. Yours joins that switch.
+`exportSeason()` picks one on format. Yours REGISTERS one:
+`registerSeasonExporter('your-slug', build)`, and `seasonExporterFor(format)`
+looks it up. This used to be a single equality against the Big Brother slug, so
+every other show — a third one included — was exported by Total Drama's
+pipeline with no error and no empty result, just a season document in the wrong
+show's shape. A show with no builder registered still falls back to the default
+show, which is the bare-integer rule; register a builder that REFUSES if your
+show cannot be exported yet, because being told nothing is recoverable and
+being told the wrong show is not.
 
 The season document must carry, whatever the show:
 
@@ -237,6 +245,21 @@ ballots, evicted, haveNots). Nothing generic exists. `roundLedger()` in
 `js/wiki-fill.js` normalises both, and the season page's Wiki tab normalises
 both again. **Reuse one of the two shapes if you possibly can** — a third shape
 means editing both of those normalisers plus the voting grid.
+
+The Traitors is the worked example of reusing one. It has TWO votes a round —
+the public banishment everybody casts and the private murder only the Traitors
+cast — and it still exports ONE `votingHistory[]` row per round, with every
+ballot carrying a `channel` (`banishment`, `banishment-revote`, `murder`). A
+reader that wants the public vote filters the channel; a reader that has never
+heard of channels sees a votingHistory row. See `js/tr/export.js`.
+
+It is also the show that broke the one-exit-verb assumption: it BANISHES at the
+table and MURDERS at night. A row may therefore carry `exits[]`, each entry
+naming who left and the verb the REGISTRY gave that channel (`exitVerbs()` in
+`js/shows.js`), and `roundLedger()` renders that list when it is there. If your
+show has more than one way of removing somebody, declare the second verb in the
+registry and put the departures on `exits[]` — do not let one of them be
+printed in the other's words.
 
 Publishing goes through `POST /api/publish-season` on the studio worker, which
 validates the format against the registry and refuses one it does not know. That

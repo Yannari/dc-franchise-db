@@ -141,12 +141,25 @@ function _stripSeasonFromAll(db, seasonNum, format = DEFAULT_FORMAT) {
   }
 }
 
-function _tagSeasonDetail(detail, format = DEFAULT_FORMAT) {
+// Exported for the guard: both of these decide something a sampled assertion
+// on a finished database cannot see. `_rebuildByShow` is where an appearance
+// joins a career, and it is the exact line at which an untagged Traitors
+// appearance would join a Total Drama one.
+export function _tagSeasonDetail(detail, format = DEFAULT_FORMAT) {
   if (!detail) return detail;
-  if (format !== 'big-brother' && detail.bb) {
-    throw new Error(
-      `Season detail for season ${detail.season} carries a Big Brother stat block ` +
-      `but would be tagged "${format}" — refusing to write a split-brain appearance.`);
+  // A per-show stat block lives under that show's own prefix (`bb`, `tr`), so
+  // a detail carrying somebody else's block is an appearance that cannot say
+  // which show it is from. Asked of the registry rather than of Big Brother by
+  // name: the hardcoded version let a `tr` block through onto a Total Drama
+  // appearance, which is the same split brain one show further along.
+  const mine = SHOWS[format]?.prefix;
+  for (const [other, show] of Object.entries(SHOWS)) {
+    if (other === format || show.prefix === mine) continue;
+    if (detail[show.prefix]) {
+      throw new Error(
+        `Season detail for season ${detail.season} carries a ${show.name} stat block ` +
+        `but would be tagged "${format}" — refusing to write a split-brain appearance.`);
+    }
   }
   detail.format = format;
   detail.seasonId = seasonId(format, detail.season);
@@ -164,7 +177,7 @@ function _tagSeasonDetail(detail, format = DEFAULT_FORMAT) {
  * Derived, never authored — recomputed wholesale on every merge, so a
  * correction to a season detail can never leave a stale career total behind.
  */
-function _rebuildByShow(player) {
+export function _rebuildByShow(player) {
   const byShow = {};
   for (const det of player.seasonDetails || []) {
     const format = det.format || DEFAULT_FORMAT;
@@ -172,7 +185,15 @@ function _rebuildByShow(player) {
     bucket.seasons++;
     // A show declares which fields it contributes; see SHOWS in js/shows.js.
     for (const [from, to] of (SHOWS[format]?.careerStats || [])) {
-      const value = from.startsWith('bb.') ? (det.bb || {})[from.slice(3)] : det[from];
+      // A dotted key reads a nested stat block — `bb.hohWins`, `tr.missionsWon`
+      // — and it is walked generically rather than tested against one show's
+      // prefix. It used to read `from.startsWith('bb.') ? … : det[from]`, so
+      // every `tr.*` pair the registry declares looked up a literal key called
+      // "tr.missionsWon", found nothing, and a whole show's career totals came
+      // out as zero with nothing reporting it.
+      const value = from.includes('.')
+        ? from.split('.').reduce((o, k) => (o == null ? o : o[k]), det)
+        : det[from];
       bucket[to] = (bucket[to] || 0) + (value || 0);
     }
   }
@@ -2870,10 +2891,66 @@ async function _resolveLifeAfterExport(onStatus, seasonNum, format) {
   return out;
 }
 
+/**
+ * Which builder exports a season of which show.
+ *
+ * NOT A SHOW LIST AND NOT A BRANCH. This used to be one equality test against
+ * the Big Brother slug, picking that show's builder or the default show's,
+ * which sent every OTHER show — a third one included — down Total Drama's
+ * export unasked: no error, no empty result, just a Traitors season published
+ * as a camp. A third branch would have been
+ * the next show's identical bug, so a show REGISTERS its builder and anything
+ * with no builder registered falls back to the default show, which is the
+ * bare-integer rule stated once more.
+ *
+ * Populated by calls rather than written as a literal, so adding a show is one
+ * registration next to that show's code and nothing here changes.
+ */
+const SEASON_EXPORTERS = new Map();
+
+export function registerSeasonExporter(format, build) {
+  if (!SHOWS[format]) {
+    throw new Error(
+      `cannot register a season exporter for unknown format "${format}" — `
+      + `add it to SHOWS in js/shows.js first (known: ${Object.keys(SHOWS).join(', ')})`);
+  }
+  SEASON_EXPORTERS.set(format, build);
+  return build;
+}
+
+/** The builder for a format, or the default show's. Exported for the guard. */
+export function seasonExporterFor(format) {
+  return SEASON_EXPORTERS.get(format) || exportAndFillNarratives;
+}
+
+/**
+ * The Traitors, and a REFUSAL rather than a wrong export.
+ *
+ * There is no live run loop for this show yet — a season is played headless by
+ * `playTraitorsSeason` and turned into a document by `buildTraitorsSeasonDocument`
+ * in js/tr/export.js — so the simulator has nothing to export from. Before this
+ * registration existed, asking for it exported a CAMP: the dispatch fell through
+ * to the default show, ran the Total Drama pipeline over a castle, and published
+ * it. Refusing by name is the same choice `POST /api/publish-season` makes about
+ * an unregistered format, and for the same reason: being told nothing is
+ * recoverable, being told the wrong show is not.
+ */
+export async function exportTraitorsSeason() {
+  throw new Error(
+    `${SHOWS.traitors.name} has no live export path yet — a season is played headless `
+    + '(playTraitorsSeason) and turned into a document by buildTraitorsSeasonDocument() '
+    + `in js/tr/export.js. Refusing rather than exporting it as ${SHOWS[DEFAULT_FORMAT].name}.`);
+}
+
+// Registered here rather than declared in the registry, so js/shows.js stays a
+// leaf and a show's builder lives next to that show's code. Function
+// declarations hoist, so the order of these lines does not matter.
+registerSeasonExporter(DEFAULT_FORMAT, exportAndFillNarratives);
+registerSeasonExporter('big-brother', exportAndFillBigBrotherSeason);
+registerSeasonExporter('traitors', exportTraitorsSeason);
+
 export async function exportSeason(onStatus) {
-  const out = seasonConfig?.format === 'big-brother'
-    ? await exportAndFillBigBrotherSeason(onStatus)
-    : await exportAndFillNarratives(onStatus);
+  const out = await seasonExporterFor(seasonFormat(seasonConfig) || DEFAULT_FORMAT)(onStatus);
   // The prose comes after the record, because the fill patches the committed
   // document. A failure here never fails the export — the season is already
   // published and the fill can be run again from the Current Season page.

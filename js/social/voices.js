@@ -451,7 +451,12 @@ export const TRAIT_TAKES = {
       ({ s }) => `Everybody on that jury had a reason to be bitter and they voted honestly anyway. That's rarer than the win.`,
       ({ s }) => `I'm happy for ${s}, and I'm happy for the runner-up, and I'm aware that makes me useless as an analyst.`,
       ({ s }) => `${s} won and thanked the people who lost to ${s}. That's how you leave with everything.`,
-      ({ s }) => `Nobody on that jury voted out of spite tonight. After that season. I'm genuinely moved.`,
+      // WAS: "Nobody on that jury voted out of spite tonight." Two shows'
+      // furniture in one clause -- a jury and a vote-out -- printed over a
+      // castle, where the last table is not a jury and nobody is voted out
+      // of anything. Written now about the thing every show has: a ballot,
+      // and whether it was cast bitterly.
+      ({ s, w }) => `Not one bitter ${w.vote} at the end of that. After that season. I'm genuinely moved.`,
       ({ s }) => `Both of them played hard and neither one turned cruel about it. That's rarer than the trophy.`,
       ({ s }) => `${s} deserved it and so did the person who didn't get it. Finales are unfair like that.`,
     ],

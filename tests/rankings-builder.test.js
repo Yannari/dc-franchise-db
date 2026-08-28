@@ -6,6 +6,9 @@
 // been relabelled to HOH and Veto. Every Block Buster in a season scored zero.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { computeScore, scoreTier, placementPct, RU_ADV, RU_ALLY, RU_SHOW }
+  from '../js/rankings-update.js';
+import { SHOWS } from '../js/shows.js';
 import { resolve } from 'node:path';
 
 const SRC = readFileSync(resolve(process.cwd(), 'js/rankings-update.js'), 'utf8');
@@ -24,7 +27,55 @@ describe('the rankings builder knows which show it is ranking', () => {
   });
 
   it('reads it off the house record when a season is loaded', () => {
-    expect(SRC).toMatch(/comp3:\s*isHouse\s*\?\s*\(p\.bb\?\.blockBusterWins/);
+    // Behaviour, not source text. This used to assert the literal
+    // `comp3: isHouse ? (p.bb?.blockBusterWins` — a guard that would have gone
+    // quietly green the moment that ternary was replaced, which is exactly
+    // what happened when a third show arrived and the ternary had to go.
+    const cols = RU_SHOW['big-brother'].read(
+      { bb: { hohWins: 3, vetoWins: 4, blockBusterWins: 2, timesOnBlock: 3, powersWon: 1,
+        powersPlayed: 1, powersWasted: 0, powersHeld: 0 } }, { placement: 10 });
+    expect(cols.comp3, 'arena wins still score nothing').toBe(2);
+    expect(cols.comp1).toBe(3);
+    expect(cols.comp2).toBe(4);
+    // Nominated three times, kept twice: the third is the night that ended it.
+    expect(cols.social).toBe(2);
+  });
+
+  it('gives every registered show a reader of its own', () => {
+    // The rule, over the registry, so a fourth show cannot quietly inherit
+    // Total Drama's field names and auto-fill every column with zero — which
+    // is what an `isHouse ? A : B` did to Big Brother for a whole season and
+    // then to The Traitors.
+    for (const format of Object.keys(SHOWS)) {
+      const rub = RU_SHOW[format];
+      expect(rub, `${format} has no rubric — it will be ranked as Total Drama`).toBeTruthy();
+      expect(typeof rub.read, `${format} declares no reader`).toBe('function');
+      // An empty placement must read as zeroes and never as undefined: an
+      // undefined column reaches the scorer as NaN and poisons the whole score.
+      const empty = rub.read({}, { placement: 5 });
+      for (const [key, value] of Object.entries(empty)) {
+        expect(Number.isFinite(value), `${format}.read().${key} is not a number`).toBe(true);
+      }
+    }
+  });
+
+  it("does not read one show through another show's field names", () => {
+    // A Traitors placement carries `tr`, a house placement carries `bb`, and a
+    // camp writes its numbers at the top level. Handing each reader ANOTHER
+    // show's placement must produce nothing, or the columns are being filled
+    // from whatever happens to be lying around.
+    const houseRow = { bb: { hohWins: 3, vetoWins: 4, blockBusterWins: 2, powersWon: 2 } };
+    const castleRow = { tr: { shieldsWon: 2, missionsWon: 5, reads: 3, wanted: 4, daggersWon: 1 } };
+    const campRow = { immunityWins: 3, rewardWins: 2, idolsFound: 1 };
+    for (const [format, foreign] of [
+      ['total-drama', houseRow], ['total-drama', castleRow],
+      ['big-brother', campRow], ['big-brother', castleRow],
+      ['traitors', campRow], ['traitors', houseRow],
+    ]) {
+      const cols = RU_SHOW[format].read(foreign, { placement: 5 });
+      const scored = cols.comp1 + cols.comp2 + cols.comp3 + cols.advFound + cols.advPlayed;
+      expect(scored, `${format} scored a foreign placement`).toBe(0);
+    }
   });
 
   it('keeps the positional parser aligned with the columns', () => {
@@ -104,17 +155,14 @@ describe('the published house document has what the board fills from', () => {
 // scored below three people above her who had done nothing. These lock the
 // balance so it cannot quietly drift back.
 // ─────────────────────────────────────────────────────────────────────────────
-function loadScorer() {
-  const cut = (a, b) => SRC.slice(SRC.indexOf(a), SRC.indexOf(b, SRC.indexOf(a)));
-  const src = [
-    cut('const RU_ADV = {', 'const RU_SHOW = {'),
-    cut('const RU_SHOW = {', 'function _ruRelabelColumns'),
-    cut('function _ruRubric(format)', '// ── Scoring formula'),
-    cut('function placementPct(', 'function tierColor('),
-    'return { computeScore, scoreTier, placementPct, RU_ADV, RU_ALLY, RU_SHOW };',
-  ].join(String.fromCharCode(10)).replace('RU_SHOW[format || _ruShowFormat()]', 'RU_SHOW[format]');
-  return new Function(src)();
-}
+// THE SCORER, IMPORTED RATHER THAN EXTRACTED.
+//
+// This used to `cut()` four spans out of the source text and `new Function()`
+// them, because the module was a page script. It is importable — the terms it
+// needs are exported now — and the extraction was one more source-text guard
+// that would go quietly green the day somebody renamed a marker. Everything
+// below tests the scorer the site actually runs.
+const S = { computeScore, scoreTier, placementPct, RU_ADV, RU_ALLY, RU_SHOW };
 
 const CAST = 17;
 /** A houseguest who did nothing but finish where they finished. */
@@ -131,8 +179,6 @@ function blank(S, place, over = {}) {
 }
 
 describe('a season of play can move you off your finish', () => {
-  const S = loadScorer();
-
   it('prices one competition win at about one placement position', () => {
     // The law the rest of the formula is tuned against. It used to take more
     // than four Heads of Household to be worth finishing one spot higher.

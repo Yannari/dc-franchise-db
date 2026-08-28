@@ -279,7 +279,7 @@ because none of these files look show-specific from the outside.
 | Season page — Wiki tab | `season_ref.html` | Twists, memory wall, voting grid, competition history, game history, trivia. **All six branch on whether the season has `weeks`.** |
 | Character article | `js/wiki-view.js` | `SHOW_META` (name, short, emoji, accent), the infobox's per-season block, the round grid's cell rules |
 | Career/dossier | `js/wiki.js` | `SHOW_NAMES`, `_weekRowsFromDoc` (the round grid builder — it has a branch per round shape) |
-| Social feed | `js/social/adapter.js` | one `SHOW_WORDS` entry; **components never branch, so this is the only file** |
+| Social feed | `js/social/adapter.js` | one `SHOW_WORDS` entry — including `nominationLabel` and `polls`, which the labels and the poll list are built from; **components never branch, so this is the only file** |
 | Player profile | `player.html` | four separate name/icon maps (see §9) |
 | Run tab / timeline | `js/run-ui.js` | badges, the hub, the episode list |
 | Viewing party | `js/vp-screens.js` | screens filter `episodeHistory` on `format` |
@@ -422,7 +422,7 @@ anything: not every per-format map is a duplicate.
 | `franchise.html` | `SHOW_LABEL` | identity | **collapsed** |
 | `js/alumni.js` | `_SHOW_NAMES` | identity | **collapsed** |
 | `js/social/adapter.js` | `SHOW_WORDS` (~40) | **vocabulary — leave it** | stands |
-| `js/social/adapter.js` | three ternaries in `eventLabel()` (~114–117) | identity leak | **not fixed — see below** |
+| `js/social/adapter.js` | three labels in `eventLabel()` + the in-season poll list | identity leak | **collapsed** (2026-08-27) |
 | `worker/worker-season-live.js` | `SHOW_WORDS` fallback (~716) | **vocabulary — leave it** | stands |
 | `js/settings.js` | venue list per format | data, per show | stands |
 | `js/rankings-update.js` | per-format ranking config | data, per show | stands |
@@ -455,12 +455,19 @@ identity. Anything you find that is not in the table above is another one:
 re-derive with §13 rather than trusting this list.
 
 **`js/social/adapter.js` is BOTH.** `SHOW_WORDS` is genuine per-show vocabulary
-and must stay. But `eventLabel()` (~114–117) decides three labels with
-`format === 'big-brother' ? A : B`, so a third show is told it had a
-"Challenge win" and an "Elimination" by fallthrough — identity smuggled in as a
-ternary. It is deferred with the wiki-view screen work, not fixed, and the
-reason it survived every audit is in §13: the duplicate-hunting grep matches
-map shapes only, and a ternary has no braces in it.
+and must stay. `eventLabel()` and `pollQuestions()` were the other half: three
+labels and the whole in-season poll list were decided by which of two shows was
+in hand, so a third show was told it had a "Challenge win" and an "Elimination"
+by fallthrough and its audience was asked who wins the next challenge and who
+makes the merge — identity smuggled in as a ternary. **Fixed 2026-08-27**: the
+labels are built from the show's own `challenge`/`elimination` words plus a
+`nominationLabel` field, and the questions are a `polls` array on the entry, so
+a fourth show declares both and there is nothing to extend. The reason it
+survived every audit before that is in §13: the duplicate-hunting grep matches
+map shapes only, and a ternary has no braces in it. Note when you write the
+replacement comment: **do not quote the ternary you removed.** The guard counts
+that shape by matching source text, so a comment quoting it keeps the count
+where it was and the ratchet never tightens.
 
 **Both greps in §13 had blind spots that hid three more copies, and the guard
 found all three.** They passed `--include=*.js --include=*.html`, so nothing

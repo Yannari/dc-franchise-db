@@ -196,14 +196,19 @@ export function traitorsPlacements(season = {}, history = traitorsVotingHistory(
   const losers = season.endgame?.losers || [];
   const out = [];
 
+  // The show's own numbers, ON THE PLACEMENT, because that is where the two
+  // existing shows put theirs and where the ranking board looks. See
+  // `traitorsBoardStats`.
+  const stats = name => traitorsBoardStats(season, name, history);
+
   for (const name of takers) {
     out.push({ name, playerSlug: _slug(name), placement: 1, status: 'Winner',
-      exit: null, exitEpisode: null });
+      exit: null, exitEpisode: null, tr: stats(name) });
   }
   const loserPlace = takers.length + 1;
   for (const name of losers) {
     out.push({ name, playerSlug: _slug(name), placement: loserPlace, status: 'Runner-up',
-      exit: null, exitEpisode: null });
+      exit: null, exitEpisode: null, tr: stats(name) });
   }
 
   // Everybody else, best-placed last out. `_departures` is in the order the
@@ -217,6 +222,7 @@ export function traitorsPlacements(season = {}, history = traitorsVotingHistory(
       // show's word for it.
       status: d.verb.charAt(0).toUpperCase() + d.verb.slice(1),
       exit: d.verb, exitEpisode: d.episode,
+      tr: stats(d.name),
     });
   }
   return out.sort((a, b) => a.placement - b.placement);
@@ -269,6 +275,61 @@ export function traitorsCareerStats(season = {}, name) {
 }
 
 /**
+ * The figures a RANKING BOARD reads off one appearance.
+ *
+ * The other two shows put their scoring numbers on the placement itself —
+ * Total Drama writes `immunityWins`/`rewardWins`, Big Brother writes a `bb`
+ * block with `hohWins`, `vetoWins`, `blockBusterWins`, `timesOnBlock` — and
+ * js/rankings-update.js reads them there. A show that writes none of them does
+ * not fail: every column loads as zero and the board comes out ranked on
+ * PLACEMENT ALONE, which is what happened to Big Brother for a whole season
+ * and reads exactly like a working board. So this exists, and the placement
+ * carries it.
+ *
+ * Two of these are not career stats and are here rather than in
+ * `traitorsCareerStats` because nothing else asks for them:
+ *
+ *   `reads`  — banishment ballots you cast that landed on a real Traitor. The
+ *              game, scored. Measured at -0.635 against final placement.
+ *   `wanted` — murder ballots that named YOU. Every night a Traitor stood in
+ *              the turret and argued for your name. Measured at +0.014
+ *              against final placement over 4,000 player-seasons: the only
+ *              number this show produces that is not a restatement of how
+ *              long somebody lasted. See the `traitors` rubric in
+ *              js/rankings-update.js for why the board leans on it.
+ *
+ * The Dagger lifecycle is `won -> played | lost`, and `lost` — the holder left
+ * the castle still carrying it — is the commonest ending it has. There is no
+ * WASTED state: a Dagger cannot be spent to no effect, because it is only
+ * spendable at a table where it changes the count.
+ */
+export function traitorsBoardStats(season = {}, name, history = traitorsVotingHistory(season)) {
+  let reads = 0;
+  let wanted = 0;
+  for (const row of history) {
+    for (const v of row.votes) {
+      if (v.channel === 'murder') { if (v.target === name) wanted++; continue; }
+      // A read is only a read if the table ACTED on it and the body was a
+      // Traitor. `banishedWasTraitor` is read off the round as the engine
+      // wrote it -- re-deriving alignment at season end is this project's
+      // most expensive recurring mistake, because alignment has eras.
+      if (v.voter === name && v.target && v.target === row.eliminated
+          && row.banishedWasTraitor) reads++;
+    }
+  }
+  const mine = (season.daggers || []).filter(d => d.holder === name);
+  return {
+    ...traitorsCareerStats(season, name),
+    reads,
+    wanted,
+    daggersWon: mine.length,
+    daggersPlayed: mine.filter(d => d.outcome === 'played').length,
+    daggersWasted: 0,
+    daggersHeld: mine.filter(d => d.outcome !== 'played').length,
+  };
+}
+
+/**
  * One appearance, for `players_database.json`.
  *
  * `format` IS THE POINT OF THIS FUNCTION. An appearance with no format is
@@ -294,7 +355,7 @@ export function traitorsSeasonDetails(season = {}, seasonNumber = 1) {
     // being voted for at the table is.
     votesReceived: history.reduce((n, row) =>
       n + row.votes.filter(v => v.target === p.name && v.channel !== 'murder').length, 0),
-    tr: traitorsCareerStats(season, p.name),
+    tr: p.tr || traitorsCareerStats(season, p.name),
   }));
 }
 

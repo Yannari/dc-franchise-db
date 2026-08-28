@@ -20,7 +20,7 @@
 // has no side effects — which is what lets the site use it now and the simulator
 // use it later. Markup lives in js/fame-stars.js.
 
-import { formatPrefix, DEFAULT_FORMAT } from './shows.js';
+import { formatPrefix, DEFAULT_FORMAT, SHOWS, exitVerbs } from './shows.js';
 
 /** Score at which each half-star is reached. Ascending; below the first is 0. */
 export const STAR_THRESHOLDS = [
@@ -137,7 +137,31 @@ export const PLACEMENT_BASE = {
  * bug, and that is exactly how it would have survived.
  *
  * `Pre-` is checked before `jur`, or `Pre-Juror` answers to both.
+ *
+ * ── AND A STATUS CAN BE AN EXIT VERB ──
+ *
+ * The Traitors records a departure as `Banished` or `Murdered`, because those
+ * are its two doors and a screen printing the status must print the show's own
+ * word for it. Neither answered to anything above, so `PLACEMENT_BASE` scored
+ * SEVENTEEN OF TWENTY at zero — an entire show with no fame in it, indexed
+ * under "the weights need tuning", which is the same way 226 of 262 season
+ * details survived being scored at nothing the first time.
+ *
+ * Asked of the registry, so a fourth show declaring its own verb inherits
+ * this. Verified against the live database, where the seven statuses in use
+ * are Juror, Pre-Juror, Pre-Merge, Finalist, Winner, Jury and Pre-Jury and no
+ * exit verb appears at all: this changes nothing for the two shipped shows.
+ *
+ * PRE-JURY IS THE HONEST BUCKET, not a placeholder. It means "left before the
+ * end", and on a format with no jury that is everybody who left: nobody
+ * banished from that castle ever votes on anything again. It does mean the
+ * whole cast below the final table shares one bucket, which is a real loss of
+ * resolution and cannot be fixed here — it needs the endgame flag carried onto
+ * the placement, and that is a change to the export shape rather than to this.
  */
+const EXIT_STATUSES = new Set(
+  Object.keys(SHOWS).flatMap(f => exitVerbs(f)).map(v => String(v).toLowerCase()));
+
 export function normaliseStatus(status) {
   const s = String(status || '').trim().toLowerCase();
   if (!s) return null;
@@ -146,6 +170,7 @@ export function normaliseStatus(status) {
   if (s.startsWith('pre')) return 'Pre-jury';       // Pre-Juror, Pre-Merge, Pre-Jury
   if (s === 'finalist') return 'Finalist';
   if (s.includes('jur')) return 'Jury';             // Juror, Jury
+  if (EXIT_STATUSES.has(s)) return 'Pre-jury';      // Banished, Murdered, evicted, voted out
   return null;
 }
 

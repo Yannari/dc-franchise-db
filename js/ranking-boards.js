@@ -36,6 +36,13 @@ import { SHOWS, DEFAULT_FORMAT } from './shows.js';
 export const BOARD_FILES = {
   'total-drama': 'rankings_database.json',
   'big-brother': 'rankings_bb.json',
+  // The Traitors. NOT rankings_database.json — that file says
+  // `metadata.format: "total-drama"` about itself, and the last time a second
+  // show was applied into it the houseguests landed at ranks 13, 26 and 28
+  // among contestants while every correct reader refused to draw them. The
+  // scores are not comparable: js/rankings-update.js prices a Shield against a
+  // murder ballot, which is not a sentence about either other show.
+  traitors: 'rankings_tr.json',
 };
 
 /** The board file for a show, or null if that show does not have one. */

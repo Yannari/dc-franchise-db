@@ -96,10 +96,19 @@ const PER_SHOW_DATA = {
 // round array is read from the registry's `roundsPath` — and their rows are
 // gone from the backlog below, which is a ratchet: neither file may grow one
 // back.
+//
+// js/social/adapter.js is gone from the backlog too (Plan 7 Task 6). Its four
+// were three event LABELS and the in-season POLL QUESTIONS, all decided by
+// which of two shows was in hand — so a castle's timeline was headed
+// "Challenge win" and "Elimination" and its audience was asked who makes the
+// merge. Every one of them is a field on the show's own vocabulary entry now.
+// Its replacement comments deliberately do not quote the shape they replaced:
+// this counter matches source text, and a comment quoting the old ternary
+// keeps the count where it was — which is how the first draft of the Task 3
+// fix nearly let this ratchet pass untightened.
 const TERNARY_BACKLOG = {
   'js/cast-ui.js':                3,
   'js/run-ui.js':                 2,
-  'js/social/adapter.js':         4,
   'js/social/events.js':          1,
   'js/wiki-view.js':              5,
   'player.html':                  1,

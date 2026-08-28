@@ -438,7 +438,15 @@ const partnersBreak = {
     api.popDelta(warm, 3); api.popDelta(cold, 2);
     const sh = (gs.showmances || []).find(s => (s.players || []).includes(warm)
       && (s.players || []).includes(cold));
-    if (sh) { sh.broken = true; sh.phase = 'broken-up'; }
+    if (sh) {
+      sh.broken = true;
+      sh.phase = 'broken-up';
+      // Named, or it reaches the panel as a bare "it ended" and the life layer
+      // has nothing to read. One of them ended it, in the house, out loud.
+      sh.breakupType = 'called-off';
+      sh.breakupEp = (gs.episode || 0) + 1;
+      sh.breakupVoter = cold;
+    }
     for (const n of _others(house, warm, cold).slice(0, 4)) {
       api.remember(n, cold, 'ended-it-in-the-house', 2, { about: warm });
     }

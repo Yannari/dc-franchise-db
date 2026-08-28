@@ -1901,6 +1901,9 @@ export function _resolveAffairExposure(af, ep, epNum, pushEvt, _pick) {
       primarySh.phase = 'broken-up';
       primarySh.breakupEp = epNum;
       primarySh.breakupVoter = cheater;
+      // The most specific ending in the file, and it was the only one with no
+      // name on it — so it arrived at the panel as "it ended".
+      primarySh.breakupType = 'affair';
     }
     pushEvt('affairChoice', _pick([
       `${cheater} chose ${secretPartner}. In front of everyone. ${partner} didn't cry — just nodded slowly, like ${pp.sub} always knew this was coming.`,

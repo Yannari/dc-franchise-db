@@ -17296,7 +17296,7 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
      THE HOUSE. stats-export.js already refuses to read it as an ending; this
      panel should not either. The pair leaves these rows on its own next week,
      when one of them is no longer in the house. */
-  const _endedHere = d => d?.type === 'faded' || d?.type === 'sabotaged';
+  const _endedHere = d => ['faded', 'sabotaged', 'called-off', 'affair'].includes(d?.type);
   const _endedPairs = new Set((ep?.showmanceEnded || [])
     .filter(_endedHere)
     .filter(d => _lastStretch
@@ -17495,6 +17495,8 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
         /* "It just says it ended." There are four ways one of these finishes
            and the row was calling all of them the same thing. */
         const said = d => d.type === 'sabotaged' ? 'somebody in this house engineered it'
+          : d.type === 'affair' ? 'one of them had been seeing somebody else'
+          : d.type === 'called-off' ? 'one of them ended it'
           : d.type === 'faded' ? 'it ran out on its own'
           : 'it ended';
         return `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>

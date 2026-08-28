@@ -1345,17 +1345,27 @@ function _attachRomance(week, rng) {
      recorded — and two of the paths that end a couple never set the field at
      all. */
   const _liveKey = sh => [...(sh.players || [])].sort().join('|');
-  const _before = new Map((gs.showmances || [])
-    .filter(sh => sh.phase !== 'broken-up' && !sh.broken)
-    .map(sh => [_liveKey(sh), sh]));
+  /* Diffed against the START OF THE WEEK, not against the top of this stage.
+     A showmance can be ended by things that never touch the romance pipeline —
+     the kiss trap in social-manipulation.js sets `phase` directly, in a scheme
+     event, hours earlier in the week — and a window that only covers this
+     stage misses them. The couple then left the panel with no row and no line,
+     which is how Priya and Damien disappeared from a Showmances list on the
+     same screen whose feed carried the trap that ended them. */
+  const _before = new Set(week._showmancesAtStart
+    || (gs.showmances || [])
+      .filter(sh => sh.phase !== 'broken-up' && !sh.broken)
+      .map(sh => _liveKey(sh)));
   // These beats are appended to an act whose cap window has already closed,
   // so the bridges' addBond calls were the biggest hole in the fence.
   const beats = _cappedBondWindow(() =>
     [...runHouseRomance(week, rng), ...runHouseMaintenance(week, rng)]);
+  const _already = new Set((week.showmanceEnded || []).map(d => _liveKey(d)));
   for (const sh of gs.showmances || []) {
     const key = _liveKey(sh);
-    if (!_before.has(key)) continue;
+    if (!_before.has(key) || _already.has(key)) continue;
     if (sh.phase !== 'broken-up' && !sh.broken) continue;
+    _already.add(key);
     (week.showmanceEnded ||= []).push({ players: [...(sh.players || [])],
       type: sh.breakupType || null, by: sh.breakupVoter || null });
   }
@@ -1708,6 +1718,14 @@ export function simulateBBWeek(options = {}) {
   // screen shown at the top of an episode reads this, so it cannot show an
   // alliance nobody has formed yet or a target nobody has set.
   week.openingState = _snapshotHouse(true, house);
+  /* The couples that were live when the week began, captured explicitly.
+     `openingState.showmances` came back EMPTY here — measured — so diffing
+     against it silently compared with nothing and every ending went
+     unrecorded. A list this small is worth holding directly rather than
+     depending on what a snapshot happens to carry. */
+  week._showmancesAtStart = (gs.showmances || [])
+    .filter(sh => sh.phase !== 'broken-up' && !sh.broken)
+    .map(sh => [...(sh.players || [])].sort().join('|'));
   // What was promised walking in, so the opening screen cannot show a deal
   // that had not been made yet.
   week.openingDeals = endgameDealSummary(house);

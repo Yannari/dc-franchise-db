@@ -180,3 +180,73 @@ describe('what House Life is allowed to know about a couple ending', () => {
     expect(drawn, 'no in-house ending was drawn either').toBeGreaterThan(0);
   });
 });
+
+describe('no couple leaves the panel without a reason', () => {
+  // "Priya and Damien disappeared from the showmance tab, why?" Because the
+  // thing that ended them was the KISS TRAP — a scheme event in
+  // social-manipulation.js that sets `phase = broken-up` directly, hours
+  // earlier in the week and nowhere near the romance pipeline. The week only
+  // diffed across the romance stage, so it never saw them go.
+  //
+  // Two more were ending anonymously: the house event where one of them calls
+  // it off, and the affair exposure — the most specific ending in the file and
+  // the only one with no name on it, so it reached the screen as "it ended".
+  //
+  // Measured over sixteen seasons after: 56 couples stopped being live during
+  // a week, 56 recorded, and every one carries a type.
+  it('records every ending, wherever in the week it happened', async () => {
+    const { simulateBBEpisode } = await import('../js/bb-run.js');
+    const { threatScore } = await import('../js/players.js');
+    const { ordinal } = await import('../js/finale.js');
+    const { addBond } = await import('../js/bonds.js');
+    const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const spread = n => Object.fromEntries(KEYS.map((k, i) => [k, 1 + ((n * 13 + i * 5) % 10)]));
+    // A scheming cast, so the kiss trap has somebody to run it.
+    const SCHEMERS = ['villain', 'schemer', 'showmancer', 'mastermind', 'schemer',
+      'villain', 'social-butterfly', 'showmancer', 'wildcard', 'showmancer',
+      'villain', 'schemer'];
+    const key = list => [...(list || [])].sort().join('|');
+    let gone = 0, recorded = 0, untyped = 0;
+    const rows = [];
+    for (let s = 0; s < 8; s++) {
+      seedGame(Array.from({ length: 16 }, (_, i) => ({ name: 'P' + i,
+        archetype: SCHEMERS[i % SCHEMERS.length], gender: i % 2 ? 'f' : 'm',
+        sexuality: 'straight', stats: spread(i + 1) })),
+      { episode: 0, eliminated: [], namedAlliances: [] });
+      gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+      gs.popularity = {}; gs.romanticSparks = [];
+      gs.showmances = [
+        { players: ['P0', 'P1'], phase: 'honeymoon', sparkEp: 1, episodesActive: 4, tested: false },
+        { players: ['P2', 'P3'], phase: 'honeymoon', sparkEp: 1, episodesActive: 4, tested: false },
+      ];
+      gs.episodeHistory = []; gs.sideDeals = []; gs.knowledge = {};
+      Object.assign(seasonConfig, { format: 'big-brother', jurySize: 7, bbSafetyMode: 'off',
+        finaleSize: 3, bbHaveNots: 'off', bbDepartures: 'off', setting: 'bb-house',
+        romance: 'enabled', twistSchedule: [] });
+      Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, threatScore,
+        getBond, getPerceivedBond, ordinal });
+      addBond('P0', 'P1', 8); addBond('P2', 'P3', 8);
+      for (let w = 0; w < 8; w++) {
+        const ep = simulateBBEpisode();
+        if (!ep) break;
+        const week = gs.bb.weeks[gs.bb.weeks.length - 1];
+        const before = week?._showmancesAtStart || [];
+        const after = new Set((gs.showmances || [])
+          .filter(sh => sh.phase !== 'broken-up' && !sh.broken).map(sh => key(sh.players)));
+        const said = new Map((ep.showmanceEnded || []).map(d => [key(d.players), d]));
+        for (const k of before) {
+          if (after.has(k)) continue;
+          gone++;
+          const d = said.get(k);
+          if (!d) { rows.push(`${k.replace('|', ' & ')} left with nothing recorded`); continue; }
+          recorded++;
+          if (!d.type) { untyped++; rows.push(`${k.replace('|', ' & ')} recorded with no type`); }
+        }
+      }
+    }
+    expect(gone, 'no couple ever ended, so nothing was tested').toBeGreaterThan(3);
+    expect(recorded, `couples left the panel unrecorded: ${rows.join(' | ')}`).toBe(gone);
+    expect(untyped, `endings with no reason on them: ${rows.join(' | ')}`).toBe(0);
+  });
+});

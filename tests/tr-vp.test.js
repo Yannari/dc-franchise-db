@@ -1376,3 +1376,62 @@ describe('the hall does not borrow the turret\'s lamp', () => {
     expect(rule.exec(table)[0]).toBe(rule.exec(turret)[0]);
   });
 });
+
+// ── THE FIRST PAINT SHOWS WHAT HAS ALREADY BEEN REVEALED ──────────────
+//
+// A beat is `height:0` until its screen's visible class is on it, and that
+// class is added by `_reapplyVisibility`, which only ever runs from a click.
+// A builder that emits the bare class therefore returns a screen with nothing
+// in its stream at all — with the counter under it already saying "1 / 11" —
+// and returns the same empty page to a reader who had revealed nine beats,
+// because the markup is rebuilt on every paint while the reveal state is not.
+// Both screens bake the class in from the state their handlers keep.
+const beatsOf = (html, prefix, suffix) => {
+  const out = [];
+  const re = new RegExp('<div class="(' + prefix + '-beat[^"]*)" id="'
+    + prefix + '-step-' + suffix + '-([0-9]+)"', 'g');
+  let m;
+  while ((m = re.exec(html))) out.push({ cls: m[1], i: Number(m[2]) });
+  return out;
+};
+let _paintN = 900000;
+
+describe('a screen opened and never clicked is not blank', () => {
+  it('the conclave shows its first beat on the first paint', () => {
+    // A fresh episode number, because reveal state is module-level and keyed
+    // by it: an episode some earlier test revealed would pass this for the
+    // wrong reason.
+    const ep = { ...NIGHTS[0].ep, num: ++_paintN };
+    const beats = beatsOf(rpBuildConclave(ep, 'audience'), 'cv', 'conclave');
+    expect(beats.length, 'the conclave rendered no beats at all').toBeGreaterThan(3);
+    expect(beats[0].cls, 'the conclave opens on a collapsed first beat')
+      .toContain('cv-vis');
+    expect(beats.filter(b => b.cls.includes('cv-vis')).length,
+      'a fresh conclave revealed more than the beat it is sitting on').toBe(1);
+  });
+
+  it('and gives a reader who had revealed the night back what they revealed', () => {
+    // The other half, and a different failure: not the opening paint but every
+    // later one. `renderVPScreen` rebuilds this markup on every paint.
+    const ep = { ...NIGHTS[0].ep, num: ++_paintN };
+    const first = rpBuildConclave(ep, 'audience');
+    const m = /trConclaveRevealAll\('conclave',(\d+),(\d+)\)/.exec(first);
+    trConclaveRevealAll('conclave', Number(m[1]), Number(m[2]));
+    const beats = beatsOf(rpBuildConclave(ep, 'audience'), 'cv', 'conclave');
+    // `every` on an empty list is true, and a regex that matched nothing would
+    // hand this arm a free pass — which is exactly how it first shipped.
+    expect(beats.length, 'the conclave rendered no beats at all').toBeGreaterThan(3);
+    expect(beats.every(b => b.cls.includes('cv-vis')),
+      'a fully revealed conclave came back collapsed on the next paint').toBe(true);
+  });
+
+  it('and the Round Table, which is where the pattern comes from', () => {
+    const ep = { ...TABLES[0].ep, num: ++_paintN };
+    const beats = beatsOf(rpBuildRoundTable(ep, 'audience'), 'rt', 'roundtable');
+    expect(beats.length, 'the Round Table rendered no beats at all').toBeGreaterThan(3);
+    expect(beats[0].cls, 'the Round Table opens on a collapsed first beat')
+      .toContain('rt-vis');
+    expect(beats.filter(b => b.cls.includes('rt-vis')).length,
+      'a fresh Round Table revealed more than the beat it is sitting on').toBe(1);
+  });
+});

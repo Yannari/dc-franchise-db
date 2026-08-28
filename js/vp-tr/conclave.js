@@ -1037,8 +1037,20 @@ export function rpBuildConclave(ep, observer = 'audience') {
     + 'Observer: ' + (observer === 'audience' ? 'audience' : _esc(String(observer).slice(7)))
     + ' <em>&mdash; you are being shown what the castle is not</em></div>';
 
+  // THE FIRST PAINT ALREADY SHOWS WHAT HAS BEEN REVEALED.
+  //
+  // `.cv-beat` is `height:0` until `.cv-vis` is on it, and `.cv-vis` is only
+  // ever added by `_reapplyVisibility`, which only ever runs from a click. A
+  // builder emitting the bare class therefore handed back a screen whose entire
+  // stream was collapsed until the reader pressed Continue — with the counter
+  // beneath it already claiming "1 / 11" — and handed back the same blank page
+  // on every later paint to a reader who had already revealed nine beats. The
+  // class is baked in here from the state the handlers keep; they still own it
+  // from the first click onwards. The Round Table does the same thing and this
+  // is the pattern for the screens still to come.
   const stream = beats.map((b, i) =>
-    '<div class="cv-beat" id="cv-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
+    '<div class="cv-beat' + (i <= st.idx ? ' cv-vis' : '')
+    + '" id="cv-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
     + (b.hostSlot ? _hostBand(_pick(HOST_LINES[b.hostSlot],
       'tr|host|' + b.hostSlot + '|' + epNum + '|' + rec.target)) : '')
     // A beat with no castle scene of its own gets an EMPTY gutter cell, not a

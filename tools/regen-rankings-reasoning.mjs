@@ -29,6 +29,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { SHOWS, DEFAULT_FORMAT, parseSeasonRef, showShort, showName as showNameOf }
+  from '../js/shows.js';
 
 const argv = process.argv.slice(2);
 const arg = (name, dflt = null) => {
@@ -56,13 +58,27 @@ const db     = readJson(DB_PATH);
 
 // The show is the season document's to state. Guessing it is how a houseguest
 // ends up described as having survived Tribal.
-const SHOW_NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
-const format   = season.format || (String(season.seasonId || '').startsWith('bb-') ? 'big-brother' : 'total-drama');
-const showName = SHOW_NAMES[format] || 'Total Drama';
-const seasonLabel = format === 'total-drama' ? `S${season.seasonNumber}` : `BB${season.seasonNumber}`;
+//
+// EVERY LINE OF THIS BLOCK USED TO BE A SHOW LIST. A local { slug: name } pair,
+// a startsWith('bb-') guess at the format, an S-or-BB label, and a fallback
+// shape that knew two prefixes. A third show came out of all four as Total
+// Drama — and this is the file that writes the prose the public board shows, so
+// it would have said so in writing. The registry answers all four now.
+const format = season.format
+  || parseSeasonRef(season.seasonId)?.format
+  || DEFAULT_FORMAT;
+const showName = showNameOf(format);
+// The default show keeps its bare "S7", the same rule the rest of the storage
+// layer follows; every other show takes its own short code.
+const seasonLabel = format === DEFAULT_FORMAT
+  ? `S${season.seasonNumber}`
+  : `${showShort(format)}${season.seasonNumber}`;
 
 // A blurb the broken path wrote: "BB1 P16. Narrative override +1.2: fix. ..."
-const FALLBACK_SHAPE = /^(?:S|BB)\d+\s+(?:Winner|P\d+)\./;
+// Built from the registry's short codes so a new show's broken blurbs are
+// detected on the day it ships rather than the day somebody notices.
+const FALLBACK_SHAPE = new RegExp(
+  '^(?:S|' + Object.values(SHOWS).map(s => s.short).join('|') + ')\\d+\\s+(?:Winner|P\\d+)\\.');
 
 // The stat line inside one, which is the only per-season stat record that
 // survives — the rankings database keeps CAREER totals, and a career total is

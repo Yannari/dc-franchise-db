@@ -381,8 +381,20 @@ anything: not every per-format map is a duplicate.
 | `js/quick-setup.js` | the show picker cards | identity | **collapsed** (2026-08-25) |
 | `js/player-trivia.js` | per-format trivia | data, per show | stands, never in this table |
 | `js/ranking-boards.js` | format → board file | data, per show | stands, never in this table |
+| `js/social-page.js` | `?show=` slug/prefix resolver (~95) | identity | **collapsed** (2026-08-27) |
+| `tools/backfill-tiers.mjs` | `BOARD_FILES` copy | identity | **collapsed** (2026-08-27) |
+| `tools/regen-rankings-reasoning.mjs` | `SHOW_NAMES` + label + fallback shape | identity | **collapsed** (2026-08-27) |
 
-Two things that table did not say when it was written, and both cost time:
+**There is a guard now: `tests/show-list-duplication.test.js`.** It states the
+rule over every `.js`/`.mjs`/`.html` file in the tree rather than listing the
+files above, so a NEW copy fails on the day it is written. The known-good
+per-show DATA maps are named in it as exemptions with their reason, and the
+nineteen surviving two-show ternaries are a ratchet: a file may lose one, never
+gain one. That is the file to change when you find a shape neither grep catches
+— add the shape, not the file.
+
+Three things that table did not say when it was written, and all of them cost
+time:
 
 **The collapse missed a ninth list.** `js/quick-setup.js`'s show picker held
 `{ id, name, tag, icon }` per show and was not in the table, so nobody looked at
@@ -400,6 +412,20 @@ and must stay. But `eventLabel()` (~114–117) decides three labels with
 ternary. It is deferred with the wiki-view screen work, not fixed, and the
 reason it survived every audit is in §13: the duplicate-hunting grep matches
 map shapes only, and a ternary has no braces in it.
+
+**Both greps in §13 had blind spots that hid three more copies, and the guard
+found all three.** They passed `--include=*.js --include=*.html`, so nothing
+under `tools/` with an `.mjs` extension was ever searched — which is how
+`tools/regen-rankings-reasoning.mjs` kept a `SHOW_NAMES` map, an
+`startsWith('bb-')` format guess, an `S`-or-`BB` season label and an `/^(?:S|BB)/`
+fallback shape, four show lists in five lines, in the file that writes the prose
+the public ranking board displays. And the ternary grep is line-based, so the
+six two-show ternaries written across two lines were invisible to it —
+including `js/stats-export.js:2874`, which dispatches the ENTIRE season export
+on `=== 'big-brother'`, and `js/social/live.js:30`, which picks which round
+array to read the same way. Both send a third show down Total Drama's branch.
+The `.mjs` copies are collapsed; the six ternaries are recorded in the guard's
+backlog and still stand.
 
 ---
 
@@ -430,6 +456,11 @@ The existing ones that will already catch you:
 - `tests/format-scoped-config.test.js` — a control is shown only where the
   engine reads it
 - `tests/show-switcher.test.js` — the switcher holds no show list
+- `tests/show-list-duplication.test.js` — **NO file holds a show list**, stated
+  as a rule over the whole tree rather than a list of the known offenders (§9),
+  because a list-shaped version of this guard would have passed the day the
+  ninth copy appeared, and it did appear. Per-show DATA maps are exemptions
+  carrying their reason; the surviving two-show ternaries are a ratchet
 - `tests/season-format.test.js` — the export adapter matches the engine's shape
 - `tests/wiki.test.js` — each show's article uses its own vocabulary
 - `tests/ratings.test.js` — every registered show declares an `audience`
@@ -520,6 +551,13 @@ grep -rn "=== 'big-brother' ?" --include=*.js --include=*.html .   | grep -Ev "$
 
 # Neither grep is exhaustive. `!== 'big-brother'`, `?? 'total-drama'` and a
 # switch on the slug are all show lists too. Treat these two as the floor.
+#
+# AND RUN THE GUARD, WHICH IS STRICTLY STRONGER THAN BOTH:
+#     npx vitest run tests/show-list-duplication.test.js
+# It walks .mjs as well as .js/.html and matches across line breaks, which is
+# how it found three copies and six ternaries neither command above can see —
+# both greps were, in the end, list-shaped about extensions and line-shaped
+# about ternaries. Keep the greps for reading; trust the guard for counting.
 
 # Every place the engine or a screen branches on a specific show (§2, §6).
 grep -rn "big-brother" --include=*.js --include=*.html js/ *.html worker/   | grep -Ev "$EX"

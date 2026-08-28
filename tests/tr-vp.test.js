@@ -41,10 +41,11 @@ import { gs, setPlayers, seasonConfig } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { exitVerbs, SHOWS, publicBallots } from '../js/shows.js';
 import { traitorsVotingHistory } from '../js/tr/export.js';
-import { rpBuildConclave, conclaveVisibleTo, trConclaveRevealAll } from '../js/vp-tr/conclave.js';
+import { rpBuildConclave, conclaveVisibleTo, trConclaveRevealAll, _portrait } from '../js/vp-tr/conclave.js';
 import { buildVPScreens } from '../js/vp-screens.js';
 import { HOSTS_BY_FORMAT } from '../js/quick-setup.js';
 import roster from '../franchise_roster.json';
+import { forbiddenFor, foreignWordsIn } from './helpers/show-vocabulary.js';
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
@@ -252,27 +253,34 @@ describe('the conclave must never render as public', () => {
   });
 });
 
-// ── GUARD 2: no other show's vocabulary ───────────────────────────────
+// ── GUARD 2: no other show's vocabulary ─────────────────────
 //
-// The word lists are the ones tests/show-vocabulary.test.js keeps, restated
-// here only as "what the OTHER shows own" — a castle may not say them. If that
-// file's table moves, this one should move with it; both are lists and both
-// are the reason the third show shipped five vocabulary defects at once.
-const FOREIGN = [
-  'tribe', 'tribal council', 'campfire', 'idol', 'immunity challenge',
-  'contestant', 'contestants', 'voted out', 'camper', 'merge', 'marshmallow',
-  'head of household', 'hoh', 'power of veto', 'veto', 'evict', 'evicted',
-  'eviction', 'houseguest', 'houseguests', 'have-not', 'block buster',
-  'nominated', 'nomination', 'nominee', 'on the block', 'jury', 'juror',
-  'slop', 'challenge', 'challenges', 'immunity',
-];
+// ONE LIST, IMPORTED. `forbiddenFor('traitors')` derives from the same `VOCAB`
+// table tests/show-vocabulary.test.js runs on, which now lives in
+// tests/helpers/show-vocabulary.js. This file used to RESTATE that list — two
+// copies of one rule, which is the shape that has quietly stopped four guards
+// in this repo from guarding. Extending the table there now tightens this
+// screen on the same commit, which is the entire point of moving it.
 
-describe('the castle may not be described in another show\'s words', () => {
+describe("the castle may not be described in another show's words", () => {
+  it('the list it checks against is the shared one, and is not empty', () => {
+    // A negative guard on an empty list passes for free. `forbiddenFor` derives
+    // by subtraction, so a typo in the traitors entry could silently empty it.
+    const forbidden = forbiddenFor('traitors');
+    expect(forbidden.length).toBeGreaterThan(20);
+    for (const w of ['tribal council', 'head of household', 'houseguest', 'merge']) {
+      expect(forbidden, `the shared table stopped forbidding "${w}" on the castle`)
+        .toContain(w);
+    }
+    // and the matcher itself fires, or every assertion below is vacuous
+    expect(foreignWordsIn('They met at the tribal council.', 'traitors'))
+      .toContain('tribal council');
+    expect(foreignWordsIn('They met in the turret.', 'traitors')).toEqual([]);
+  });
+
   it('nothing the screen prints belongs to another show', () => {
     for (const { ep } of NIGHTS.slice(0, 12)) {
-      const hay = strip(rpBuildConclave(ep, 'audience')).toLowerCase();
-      const leaks = FOREIGN.filter(w =>
-        new RegExp('\\b' + w.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\b').test(hay));
+      const leaks = foreignWordsIn(strip(rpBuildConclave(ep, 'audience')), 'traitors');
       expect(leaks, `ep ${ep.num} printed another show's vocabulary`).toEqual([]);
     }
   });
@@ -282,12 +290,12 @@ describe('the castle may not be described in another show\'s words', () => {
     const outsider = (night.ep.tr.living || [])
       .find(n => !night.ep.tr.conclave.turret.includes(n));
     expect(outsider).toBeTruthy();
-    const hay = strip(rpBuildConclave(night.ep, `player:${outsider}`)).toLowerCase();
-    const leaks = FOREIGN.filter(w =>
-      new RegExp('\\b' + w.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\b').test(hay));
+    const leaks = foreignWordsIn(
+      strip(rpBuildConclave(night.ep, `player:${outsider}`)), 'traitors');
     expect(leaks).toEqual([]);
   });
 });
+
 
 // ── GUARD 3: every exit word comes from the registry ──────────────────
 describe('the exit verbs come from the registry and nowhere else', () => {
@@ -467,6 +475,195 @@ describe('the reveal machinery has the element ids the pattern requires', () => 
       const html = rpBuildConclave(ep, 'audience');
       expect(/\p{Extended_Pictographic}/u.test(html), `ep ${ep.num} has an emoji in it`)
         .toBe(false);
+    }
+  });
+});
+
+// ── THE SIDEBAR HAS TO STILL BE THERE AT BEAT ELEVEN ──────────────────
+//
+// CLAUDE.md requires a live-updating sidebar: it shows state as the beats
+// reveal and is gated so it never spoils ahead. It is useless if it has left
+// the viewport by the third beat, and it had. `.cv-shell` carried
+// `overflow:hidden` to clip the scenery, which ALSO made the shell a scroll
+// container, which kills `position:sticky` for every descendant. Measured:
+// `.cv-side` computed top -2455 at a page scroll of 3000.
+//
+// This is not a look — it is a layout rule with a measurable answer, and it
+// was equally true of the approved mockup, so both were fixed together.
+describe('the sticky sidebar is not killed by the shell clip', () => {
+  const built = () => rpBuildConclave(NIGHTS[0].ep, 'audience');
+
+  it('the shell does not clip, and a scenery layer does it instead', () => {
+    const html = built();
+    // The shell must not be a scroll container. Anything but `visible` here
+    // (hidden, auto, scroll, clip) re-establishes one and the sidebar goes.
+    const shellRule = /\.cv-shell\{([^}]*)\}/.exec(html)[1];
+    expect(shellRule, 'the shell clips again and the sidebar will not stick')
+      .not.toMatch(/overflow:\s*(hidden|auto|scroll|clip)/);
+    expect(shellRule).toMatch(/overflow:\s*visible/);
+    // and the clip has to live somewhere, or the planes escape
+    expect(html).toContain('.cv-scenery{position:absolute;inset:0;overflow:hidden');
+    // the sidebar still asks to stick, which is the thing being unblocked
+    expect(html).toContain('position:sticky;top:56px');
+  });
+
+  it('the element that sticks is shorter than the column that contains it', () => {
+    // THE OTHER HALF OF THE SAME BUG, and the half the clip fix alone did not
+    // reach. `position:sticky` on .cv-side did nothing even with the shell
+    // unclipped, because the rail is as tall as the grid that contains it
+    // (3946px of both, measured) and sticky needs range to move through. So
+    // the rail keeps the border, the gradient and the full height, and the
+    // sticky element is the inner panel -- which is also the element the
+    // reveal handlers replace by id, so it survives every innerHTML swap.
+    const html = built();
+    const rail = /\.cv-side\{([^}]*)\}/.exec(html)[1];
+    expect(rail, 'the rail is sticky again and has no range to stick through')
+      .not.toMatch(/position:\s*sticky/);
+    const panel = /#cv-sidebar-inner\{([^}]*)\}/.exec(html)[1];
+    expect(panel).toMatch(/position:\s*sticky/);
+    expect(panel).toMatch(/top:56px/);
+    // and it is bounded, or a long sidebar runs off the bottom of the screen
+    // with no way to reach the end of it
+    expect(panel).toMatch(/max-height:/);
+    expect(panel).toMatch(/overflow-y:\s*auto/);
+    // the id has to exist in the markup for any of that to attach to
+    expect(html).toContain('id="cv-sidebar-inner"');
+  });
+
+  it('the scenery layer takes no z-index, or the blend modes change picture', () => {
+    // With z-index:auto it is NOT a stacking context, so .cv-grain still
+    // paints at 9 above .cv-body at 5, and the veil{screen} / vig{multiply}
+    // still blend against the shell background rather than an isolated,
+    // transparent group. A z-index here silently re-grades the whole screen.
+    const rule = /\.cv-scenery\{([^}]*)\}/.exec(built())[1];
+    expect(rule).not.toMatch(/z-index/);
+  });
+
+  it('every plane is inside the clip layer, not loose in the shell', () => {
+    const html = built();
+    for (const cls of ['cv-far', 'cv-mid', 'cv-fore', 'cv-veil', 'cv-vig', 'cv-grain']) {
+      const at = html.indexOf('<div class="' + cls + '"');
+      expect(at, cls + ' is not rendered').toBeGreaterThan(-1);
+      const layer = html.lastIndexOf('<div class="cv-scenery"', at);
+      const body = html.lastIndexOf('<div class="cv-body">', at);
+      expect(layer, cls + ' escaped the clip layer').toBeGreaterThan(-1);
+      expect(layer, cls + ' is drawn after the body, outside the clip')
+        .toBeGreaterThan(body);
+    }
+    // and the withheld render, which is short enough that its planes would
+    // otherwise hang below the bottom of the shell with nothing to cut them
+    const night = NIGHTS[0];
+    const outsider = (night.ep.tr.living || [])
+      .find(n => !night.ep.tr.conclave.turret.includes(n));
+    expect(rpBuildConclave(night.ep, 'player:' + outsider))
+      .toContain('<div class="cv-scenery"');
+  });
+});
+
+// ── THE IRONY GUTTER IS SPARSE, NEVER CYCLED ──────────────────────────
+//
+// It used to wrap — down[i % down.length] — so a quiet round printed its one
+// castle scene against half the cards and two beats four minutes apart said
+// the same sentence. Repetition is the worse failure of the two: it reads as a
+// bug, and seven plans of this project have been spent on it.
+describe('the irony gutter does not repeat itself', () => {
+  const gutterLines = html => (html.match(/<span class="cv-margin-txt">([^<]*)<\/span>/g) || [])
+    .map(m => m.replace(/<[^>]+>/g, '').trim());
+
+  it('no two gutter lines in one night say the same thing', () => {
+    let withAny = 0;
+    for (const { ep } of NIGHTS) {
+      const lines = gutterLines(rpBuildConclave(ep, 'audience'));
+      if (lines.length) withAny++;
+      expect(new Set(lines).size,
+        'ep ' + ep.num + ': the gutter printed the same castle line twice')
+        .toBe(lines.length);
+    }
+    // ...and it does print SOME, or the guard above is a guard on an empty set
+    expect(withAny, 'no night printed a gutter line at all').toBeGreaterThan(10);
+  });
+
+  it('a night with fewer scenes than beats leaves the extra minutes blank', () => {
+    // The honest output, and the one the cycling version could never produce.
+    // A quiet castle IS quiet; an empty minute says so.
+    const quiet = NIGHTS.find(n => {
+      const html = rpBuildConclave(n.ep, 'audience');
+      const beats = (html.match(/id="cv-step-conclave-\d+"/g) || []).length;
+      return gutterLines(html).length < beats;
+    });
+    expect(quiet, 'no night across four seasons had a quiet minute to check')
+      .toBeTruthy();
+    const html = rpBuildConclave(quiet.ep, 'audience');
+    const beats = (html.match(/id="cv-step-conclave-\d+"/g) || []).length;
+    const cells = (html.match(/class="cv-margin[ "]/g) || []).length;
+    // one gutter cell per beat, always: the column's rule never breaks
+    expect(cells).toBe(beats);
+    expect(html).toContain('class="cv-margin cv-margin-quiet"');
+    // no timestamp on a blank minute, because nothing happened in it
+    const stamps = (html.match(/class="cv-margin-time"/g) || []).length;
+    expect(stamps).toBe(gutterLines(html).length);
+  });
+
+  it('a scene is never spent twice even if the castle recorded it twice', () => {
+    // Two threads can put the same line into one evening. A repeat is a repeat
+    // wherever it came from, so the note text is deduped as well as the slot.
+    const ep = NIGHTS[0].ep;
+    const dup = { ...ep, tr: { ...ep.tr, downstairs: [
+      { parties: ['A'], note: 'The same thing, twice.' },
+      { parties: ['B'], note: 'The same thing, twice.' },
+      { parties: ['C'], note: 'A different thing.' },
+    ] } };
+    const lines = gutterLines(rpBuildConclave(dup, 'audience'));
+    expect(lines).toEqual(['The same thing, twice.', 'A different thing.']);
+  });
+});
+
+// ── THE DARKENING BELONGS TO THIS SCREEN, NOT TO THE HELPER ───────────
+//
+// The turret is a dark room lit by one lamp, so its portraits are rim-lit on
+// the lantern side and sunk into shadow on the other. That is right HERE and
+// wrong in all six rooms Tasks 2-5 build: the Round Table, the cold open,
+// house status, the mission, recruitment and the endgame are not this room,
+// and a portrait that arrived pre-darkened would look broken on every one of
+// them. Same principle as the vocabulary coming from the registry — the shared
+// thing stays neutral and each screen opts into its own character.
+describe('the portrait helper is neutral and the conclave lights it itself', () => {
+  it('the shared helper renders no lighting at all', () => {
+    const neutral = _portrait('chef-hatchet', 'Chef Hatchet', 40);
+    expect(neutral).toContain('class="cv-av"');
+    expect(neutral, 'the shared portrait arrived pre-lit').not.toContain('cv-lit');
+    expect(neutral, 'a tone without the lamp means nothing').not.toContain('data-lit');
+    // it is still a portrait: the niche, the initials fallback and the picture
+    expect(neutral).toContain('cv-av-ini');
+    expect(neutral).toContain('assets/avatars/chef-hatchet.png');
+    expect(neutral).toContain('CH');
+  });
+
+  it('every lighting declaration is qualified by .cv-lit', () => {
+    const html = rpBuildConclave(NIGHTS[0].ep, 'audience');
+    // The rim-light, the hood and the graded film are the treatment. If any of
+    // them is declared on bare .cv-av, a neutral portrait on a later screen
+    // inherits the turret whether it wants it or not.
+    expect(html).not.toMatch(/\.cv-av::(before|after)\{/);
+    expect(html).not.toMatch(/\.cv-av img\{[^}]*filter:/);
+    expect(html).not.toMatch(/\.cv-av\[data-lit/);
+    expect(html).toContain('.cv-av.cv-lit::before{');
+    expect(html).toContain('.cv-av.cv-lit::after{');
+    expect(html).toMatch(/\.cv-av\.cv-lit img\{[^}]*filter:/);
+  });
+
+  it('but this screen does ask for the lamp, on every face it draws', () => {
+    for (const { ep } of NIGHTS.slice(0, 6)) {
+      const html = rpBuildConclave(ep, 'audience');
+      // the OPENING tag of a portrait only: `cv-av-ini` is the initials span
+      // inside one and would otherwise be counted as an unlit face.
+      const opens = html.match(/<span class="cv-av(?: cv-lit)?"/g) || [];
+      expect(opens.length, 'ep ' + ep.num + ': the screen drew no portraits')
+        .toBeGreaterThan(4);
+      for (const o of opens) {
+        expect(o, 'ep ' + ep.num + ': a turret portrait is unlit: ' + o)
+          .toContain('cv-lit');
+      }
     }
   });
 });

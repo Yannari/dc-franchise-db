@@ -108,17 +108,41 @@ function _slugOf(name) {
 function _initials(name) {
   return String(name || '?').split(/\s+/).map(w => w.charAt(0)).join('').slice(0, 2).toUpperCase();
 }
-function _portrait(slug, name, size, lit) {
+/**
+ * THE NEUTRAL PORTRAIT. No atmosphere baked in.
+ *
+ * The niche, the picture, and the initials in the same niche when the file is
+ * missing. That is all. The lantern's rim-light, the shadow side and the hood
+ * shading are `cv-lit`, which is the CONCLAVE'S treatment and belongs to the
+ * screen rather than to the helper: the Round Table, the cold open, house
+ * status, the mission, recruitment and the endgame are not a dark room lit by
+ * one lamp, and a portrait that arrived pre-darkened would look broken on all
+ * six of them. Tasks 2-5 call this and light it their own way, or not at all.
+ *
+ * `opts.lit` asks for the turret treatment; `opts.tone` ('dim' | 'hot') grades
+ * it, and only means anything alongside it.
+ */
+export function _portrait(slug, name, size, opts) {
   const s = size || 40;
-  return '<span class="cv-av" style="width:' + s + 'px;height:' + s + 'px"'
-    + (lit ? ' data-lit="' + lit + '"' : '') + '>'
+  const o = opts || {};
+  return '<span class="cv-av' + (o.lit ? ' cv-lit' : '') + '"'
+    + ' style="width:' + s + 'px;height:' + s + 'px"'
+    + (o.lit && o.tone ? ' data-lit="' + o.tone + '"' : '') + '>'
     + '<span class="cv-av-ini" style="font-size:' + Math.max(9, Math.round(s * 0.34)) + 'px">'
     + _esc(_initials(name)) + '</span>'
     + '<img src="assets/avatars/' + _esc(slug) + '.png" alt="" onerror="this.remove()">'
     + '</span>';
 }
-function _av(name, size, lit) { return _portrait(_slugOf(name), name, size, lit); }
-function _hostAv(size) { const h = _host(); return _portrait(h.slug, h.name, size || 46); }
+
+// Everything on THIS screen is standing in the turret, so this screen's own
+// two wrappers ask for the lamp. Nothing else has to.
+function _av(name, size, tone) {
+  return _portrait(_slugOf(name), name, size, { lit: true, tone: tone || null });
+}
+function _hostAv(size) {
+  const h = _host();
+  return _portrait(h.slug, h.name, size || 46, { lit: true });
+}
 
 // ══════════════════════════════════════════════════════════════════════
 // ICONS — objects only, hand-drawn SVG, no emoji
@@ -309,7 +333,7 @@ const OVERRULE_KEPT = [
   'The argument is not withdrawn. That is the thing about this room &mdash; nothing said in it can be taken back, and everything said in it is remembered by the other people who will need it later.',
   'Losing an argument up here is not like losing one downstairs. Downstairs it is forgotten by breakfast. Up here it is filed.',
   'Nobody says the word "overruled". Nobody has to. All of them will be able to date this evening from memory in a fortnight.',
-  'It costs nothing tonight, which is exactly the kind of debt this house specialises in.',
+  'It costs nothing tonight, which is exactly the kind of debt this castle specialises in.',
 ];
 const LEDGER_LOSS = [
   '{L} has now been overruled by {w} and is keeping the count. {W} knows {sub2} is keeping the count, and has decided that is a problem for a later night.',
@@ -349,7 +373,7 @@ const HOST_LINES = {
   open: [
     'The castle is asleep, or believes it is, which for our purposes is the same thing. Some of its guests have found reasons to be elsewhere. I would not dream of interrupting them.',
     'Everybody downstairs has gone up to bed pleased with how the evening went. I do so enjoy the ones who go up smiling.',
-    'There is a room at the top of this house that appears on no plan of it. Three floors below, somebody is banking a fire and thinking about tomorrow.',
+    'There is a room at the top of this castle that appears on no plan of it. Three floors below, somebody is banking a fire and thinking about tomorrow.',
     'You will notice how quietly this is done. That is not fear. That is competence, and competence is what makes the rest of it so difficult to watch.',
   ],
   shortlist: [
@@ -366,7 +390,7 @@ const HOST_LINES = {
   ],
   meanwhile: [
     'Downstairs, somebody spent the whole evening being kind to a person who is upstairs writing their name. That is the programme. I did tell you at the start what it would be, and you watched anyway.',
-    'Two rooms, one house, and only you have been in both of them tonight. Do try to enjoy the advantage.',
+    'Two rooms, one castle, and only you have been in both of them tonight. Do try to enjoy the advantage.',
     'The castle will find out at first light and will be entirely wrong about who did it. It usually is, for a while.',
     'Somewhere below this, a very pleasant evening is finishing. It is the last one of those for somebody.',
   ],
@@ -652,22 +676,44 @@ function _buildBeats(rec, ep) {
       + '</div></div>', 'meanwhile', 'meanwhile');
   }
 
-  // ── the irony gutter: one downstairs line per beat, and a clock ──
+  // ── the irony gutter: the castle's minute, beside the turret's ──
   //
-  // THE POINT OF IT. Every beat in the turret carries, in the left margin, the
-  // face of somebody who was downstairs and what they were doing at that
-  // minute. `_downstairs` (js/tr/headless.js) has already excluded any scene
-  // one of the three was standing in, so a beat here is never an alibi.
+  // THE POINT OF IT. A beat in the turret carries, in the left margin, the face
+  // of somebody who was downstairs and what they were doing at that minute.
+  // `_downstairs` (js/tr/headless.js) has already excluded any scene one of the
+  // three was standing in, so a gutter line is never accidentally an alibi.
+  //
+  // SPARSE, NEVER CYCLED. The first version wrapped — `down[i % down.length]` —
+  // so a quiet round printed its one castle scene against half the cards, and
+  // two beats four minutes apart said the same sentence. Repetition is the
+  // worse failure of the two: it reads as a bug, and this project has spent
+  // seven plans on exactly that.
+  //
+  // So each scene is spent once and the gaps are left standing. An empty gutter
+  // minute is honest — the castle WAS quiet — and a gutter that thins out while
+  // the turret argues says something true about the night. One scene and eleven
+  // beats is one line in the margin, and that is the correct output.
+  //
+  // The note text is deduped as well as the slot. Two castle threads can put
+  // the same line into the same evening, and a repeat is a repeat wherever it
+  // came from.
   const ICONS = ['cards', 'flame', 'chair', 'door', 'lantern'];
+  const seen = new Set();
+  const scenes = down.filter(d => {
+    const n = String((d && d.note) || '');
+    if (!n || seen.has(n)) return false;
+    seen.add(n);
+    return true;
+  });
   beats.forEach((b, i) => {
-    const d = down.length ? down[i % down.length] : null;
+    const d = scenes[i] || null;
     const mins = 40 + i * 4;
-    b.margin = {
+    b.margin = d ? {
       t: (mins >= 60 ? '23:' : '22:') + String(mins % 60).padStart(2, '0'),
       ic: ICONS[i % ICONS.length],
-      who: d ? (d.parties || [])[0] : null,
-      m: d ? _esc(d.note) : 'The long room is quiet. Nobody down there is counting who left it.',
-    };
+      who: (d.parties || [])[0] || null,
+      m: _esc(d.note),
+    } : null;
   });
   return beats;
 }
@@ -903,8 +949,10 @@ function _shutDoor(observer, css) {
   const h = _host();
   return '<div class="cv-root" data-ambient="tense">' + css
     + '<div class="cv-shell" data-phase="gather">'
-    + '<div class="cv-fore" aria-hidden="true">' + _buildFore() + '</div>'
-    + '<div class="cv-vig" aria-hidden="true"></div>'
+    + '<div class="cv-scenery" aria-hidden="true">'
+    + '<div class="cv-fore">' + _buildFore() + '</div>'
+    + '<div class="cv-vig"></div>'
+    + '</div>'
     + '<div class="cv-body">'
     + '<header class="cv-head"><div class="cv-observer">' + _icon('eye', 13)
     + 'Observer: ' + _esc(who || 'a player')
@@ -993,12 +1041,18 @@ export function rpBuildConclave(ep, observer = 'audience') {
     '<div class="cv-beat" id="cv-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
     + (b.hostSlot ? _hostBand(_pick(HOST_LINES[b.hostSlot],
       'tr|host|' + b.hostSlot + '|' + epNum + '|' + rec.target)) : '')
-    + '<div class="cv-margin">'
-    + '<span class="cv-margin-ic">' + _icon(b.margin.ic, 14, 'rgba(143,166,194,.55)') + '</span>'
-    + '<span class="cv-margin-time">' + b.margin.t + '</span>'
-    + (b.margin.who ? '<div class="cv-margin-av">' + _av(b.margin.who, 34, 'dim') + '</div>' : '')
-    + '<span class="cv-margin-txt">' + b.margin.m + '</span>'
-    + '</div><div>' + b.html + '</div></div>').join('');
+    // A beat with no castle scene of its own gets an EMPTY gutter cell, not a
+    // recycled one. The column's rule carries on down the page; the minute is
+    // simply blank, because nothing happened in it worth watching.
+    + (b.margin
+      ? '<div class="cv-margin">'
+        + '<span class="cv-margin-ic">' + _icon(b.margin.ic, 14, 'rgba(143,166,194,.55)') + '</span>'
+        + '<span class="cv-margin-time">' + b.margin.t + '</span>'
+        + (b.margin.who ? '<div class="cv-margin-av">' + _av(b.margin.who, 34, 'dim') + '</div>' : '')
+        + '<span class="cv-margin-txt">' + b.margin.m + '</span>'
+        + '</div>'
+      : '<div class="cv-margin cv-margin-quiet"></div>')
+    + '<div>' + b.html + '</div></div>').join('');
 
   // Inline handlers BAKE their targets — `renderVPScreen` wipes reveal state on
   // every paint and there is no closure to hold them.
@@ -1006,15 +1060,27 @@ export function rpBuildConclave(ep, observer = 'audience') {
 
   return '<div class="cv-root" style="' + vars + '" data-ambient="tense">' + cssOnce
     + '<div class="cv-shell" id="cv-shell-' + suffix + '" data-phase="' + beats[0].phase + '">'
-    + '<div class="cv-far" aria-hidden="true">' + _buildFar() + '</div>'
-    + '<div class="cv-mid" aria-hidden="true">' + _buildMid(epNum + '|' + rec.target) + '</div>'
-    + '<div class="cv-fore" aria-hidden="true">' + _buildFore() + '</div>'
-    + '<div class="cv-veil" aria-hidden="true"></div>'
-    + '<div class="cv-vig" aria-hidden="true"></div>'
-    + '<div class="cv-grain" aria-hidden="true"></div>'
+    // Every plane, the light cone and the dust inside it, and the grain, all
+    // inside ONE layer that carries the clip. The shell used to carry it, and
+    // a shell with `overflow:hidden` is a scroll container, which silently
+    // kills the sticky sidebar it also contains.
+    + '<div class="cv-scenery" aria-hidden="true">'
+    + '<div class="cv-far">' + _buildFar() + '</div>'
+    + '<div class="cv-mid">' + _buildMid(epNum + '|' + rec.target) + '</div>'
+    + '<div class="cv-fore">' + _buildFore() + '</div>'
+    + '<div class="cv-veil"></div>'
+    + '<div class="cv-vig"></div>'
+    + '<div class="cv-grain"></div>'
+    + '</div>'
     + '<div class="cv-body">'
     + '<div class="cv-hero">' + _buildHeroScene((rec.turret || []).length)
     + '<div class="cv-hero-lock">'
+    // TASK 7, WHEN YOU WIRE THE EPISODE HISTORY: this reads "Night 3" rather
+    // than the mockup's "Season I  Night III" because the episode record
+    // carries no season number, and inventing one would be a fact the screen
+    // does not have. If Task 7's `gs.episodeHistory.push` can carry the season
+    // (it is writing every other Traitors field there already), put it on the
+    // record and this line can say it. Until then it stays a night.
     + '<div class="cv-eyebrow">The Traitors &middot; Night ' + (rec.ep || epNum) + '</div>'
     + '<h1 class="cv-title">THE CONCLAVE</h1>'
     + '<div class="cv-title-rule"><i></i>' + _icon('seal', 44, '#8f1a26') + '<i></i></div>'

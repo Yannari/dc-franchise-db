@@ -25,11 +25,12 @@
 // ── WHAT IS AND IS NOT AUTOMATIC ──────────────────────────────────────
 //
 // The WALK is automatic: a newly registered show is rendered and checked the
-// day it appears in js/shows.js. The VOCABULARY IS NOT. `VOCAB` below is a
-// list, and a third show was added to the registry without anybody extending
-// it — which is why five vocabulary defects shipped at once (a castle headed
-// "Total Drama" in its own infobox, "without winning a challenge", "Never made
-// the merge", "as a murdered", a third of its posts signed `@bigjury`). The
+// day it appears in js/shows.js. The VOCABULARY IS NOT. `VOCAB` (now in
+// tests/helpers/show-vocabulary.js) is a list, and a third show was added to
+// the registry without anybody extending it — which is why five vocabulary
+// defects shipped at once (a castle headed "Total Drama" in its own infobox,
+// "without winning a challenge", "Never made the merge", "as a murdered", a
+// third of its posts signed `@bigjury`). The
 // previous version of this header claimed "there is no list here to remember to
 // extend". There was, it was two shows long, and that claim is the reason
 // nobody looked.
@@ -42,68 +43,27 @@ import { buildDossier } from '../js/wiki.js';
 import { renderArticle } from '../js/wiki-view.js';
 import { roundLedger } from '../js/wiki-fill.js';
 import { words as socialWords } from '../js/social/adapter.js';
+import { VOCAB, forbiddenFor, foreignWordsIn } from './helpers/show-vocabulary.js';
 
 const FORMATS = Object.keys(SHOWS);
 
 // ── the vocabularies ──────────────────────────────────────────────────
 //
-// `own` is what a show is ALLOWED to say, and therefore what its rivals are
-// not. A word may belong to more than one show: both a camp and a house have a
-// jury, so "jury" is on both lists and is forbidden only on the castle, which
-// has neither a jury nor a merge.
+// THE TABLE ITSELF LIVES IN `tests/helpers/show-vocabulary.js`, in ONE copy.
+// It used to live here, and `tests/tr-vp.test.js` — which needs the same rule
+// for a rendered VP screen — restated it, because a test file has nothing to
+// import from. Two copies of one rule is the shape that has bitten this repo
+// four times over, and a vocabulary list is the worst thing to hold two of:
+// the bug it catches is itself a copy that drifted.
 //
-// FORBIDDEN IS DERIVED, IN BOTH DIRECTIONS: everything every other show owns,
-// minus everything this one owns. The previous version listed only the two
-// shipped shows, so no Traitors noun was forbidden anywhere — a Total Drama
-// page could have said "banished at the Round Table" and passed.
-const VOCAB = {
-  'big-brother': {
-    own: [
-      'head of household', 'hoh', 'power of veto', 'veto',
-      'evict', 'evicted', 'eviction', 'houseguest', 'houseguests',
-      'have-not', 'block buster', 'nominated', 'nomination', 'nominee',
-      'on the block', 'the block', 'house', 'jury', 'juror', 'slop',
-      'challenge', 'challenges',
-    ],
-    // "Competition" is deliberately NOT here. A mission is a competition and
-    // so is a challenge, so it cannot be true of one show and false of
-    // another — and this table is only for words that can. "Competition
-    // history" is a heading every show's article is entitled to.
-  },
-  'total-drama': {
-    own: [
-      'tribe', 'tribal council', 'campfire', 'idol', 'immunity challenge',
-      'contestant', 'contestants', 'voted out', 'camper', 'camp', 'merge',
-      'marshmallow', 'beach', 'island', 'jury', 'juror',
-      'challenge', 'challenges', 'immunity',
-    ],
-  },
-  traitors: {
-    own: [
-      'traitor', 'traitors', 'faithful', 'faithfuls', 'banish', 'banished',
-      'banishment', 'murder', 'murdered', 'round table', 'conclave', 'castle',
-      'shield', 'dagger', 'mission', 'missions', 'turret', 'final table',
-    ],
-  },
-};
-
-/** Everything a given format is not allowed to say. */
-function forbiddenFor(format) {
-  const mine = new Set((VOCAB[format]?.own || []).map(w => w.toLowerCase()));
-  const others = Object.entries(VOCAB)
-    .filter(([f]) => f !== format)
-    .flatMap(([, v]) => v.own);
-  return [...new Set(others.map(w => w.toLowerCase()))].filter(w => !mine.has(w));
-}
+// `own` is what a show is ALLOWED to say, and therefore what its rivals are
+// not. FORBIDDEN IS DERIVED, IN BOTH DIRECTIONS, by `forbiddenFor()`.
 
 const strip = html => String(html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
 
 /** Which forbidden words appear, so a failure names them rather than just failing. */
 function leaks(text, format) {
-  const hay = strip(text).toLowerCase();
-  return forbiddenFor(format).filter(w =>
-    // Built by concatenation. `\b` inside a template literal is U+0008.
-    new RegExp('\\b' + w.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\b').test(hay));
+  return foreignWordsIn(strip(text), format);
 }
 
 // ── fixtures ──────────────────────────────────────────────────────────

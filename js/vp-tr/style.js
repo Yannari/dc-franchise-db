@@ -8,7 +8,7 @@
 //
 //   * every absolutely-positioned scenery layer starts at `top:46px`, because
 //     the real VP has the 46px `.rp-nav` bar above it and the mockup does not;
-//   * the sticky sidebar sits at `top:56px` for the same reason.
+//   * the sticky sidebar panel sits at `top:56px` for the same reason.
 //
 // TYPE. Display is FRAUNCES 900, WONK 1 — the logotype's serifs are wedges
 // flaring to a point, a Roman trait, not a Didone's flat slabs; the earlier
@@ -57,9 +57,25 @@ export const CONCLAVE_CSS = `
   max-width:1100px;margin:0 auto;
   background:var(--cv-stone);
   box-shadow:0 0 0 1px rgba(224,160,73,.10),0 0 90px rgba(0,0,0,.9),0 0 200px rgba(0,0,0,.7);
-  overflow:hidden;
+  overflow:visible;
   transition:background 1.6s ease;
 }
+
+/* == THE CLIP LIVES HERE, NOT ON THE SHELL ==================================
+   'overflow:hidden' on .cv-shell clipped the scenery correctly and, as a side
+   effect, made the shell a scroll container -- which kills 'position:sticky'
+   for every descendant. The sidebar measured top:-2455 at a page scroll of
+   3000: gone by the third beat, which is not a live-updating sidebar.
+
+   So the clip moves onto a layer of its own. The planes inside it are already
+   absolutely positioned, so none of them needed the shell's clip.
+
+   IT MUST NOT GET A z-index. With 'z-index:auto' this layer is NOT a stacking
+   context, so .cv-grain still paints at 9 (above .cv-body at 5) and the veil's
+   'screen' and the vignette's 'multiply' still blend against the shell's own
+   background rather than against an isolated, transparent group. Giving this
+   rule a z-index changes the picture.                                       */
+.cv-scenery{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 
 /* ── PLANES — z-index is how far away it is. Every layer starts at top:46px
    so nothing is drawn over the .rp-nav bar. ───────────────────────────────── */
@@ -179,31 +195,47 @@ export const CONCLAVE_CSS = `
 .cv-shell[data-phase="meanwhile"]{background:#080c12}
 .cv-shell[data-phase="meanwhile"] .cv-veil{background:radial-gradient(96% 58% at 74% 40%,rgba(255,219,149,.24) 0%,transparent 55%);opacity:.85}
 
-/* ── PORTRAITS, LIT ─────────────────────────────────────────────────────────
-   Every face is rim-lit from the lantern side and sunk into shadow on the
-   other, and the hood shades the top third. The <img> sits over the initials;
-   if the file is absent it removes itself and the initials stay in the same
-   arched niche. The roster is incomplete, so that is the normal path. */
+/* == PORTRAITS: NEUTRAL BY DEFAULT, LIT ONLY IN THE TURRET ==================
+   .cv-av is the SHARED portrait and carries no atmosphere: the arched niche,
+   a thin frame, the picture, and the initials in the same niche when the file
+   is missing (the roster is incomplete, so that is the normal path).
+
+   .cv-av.cv-lit is THE CONCLAVE'S OWN LIGHTING, and nothing else's: rim-light
+   from the lantern side, the far side sunk into shadow, the hood shading the
+   top third. That is right in a dark room lit by one lamp and wrong in every
+   other room this show has. The Round Table, the cold open, house status, the
+   mission, recruitment and the endgame are not the turret, and a portrait that
+   arrived pre-darkened would look broken on all six.
+
+   Same principle as the vocabulary coming from the registry: the shared thing
+   stays neutral, and each screen opts into its own character. A helper that
+   bakes in one screen's atmosphere forces every later screen either to fight
+   it or to inherit a look that does not fit.                                */
 .cv-av{
   position:relative;display:inline-block;overflow:hidden;flex:none;vertical-align:middle;
   border-radius:50% 50% 12% 12% / 44% 44% 9% 9%;
   background:linear-gradient(162deg,#252b37,#080b11);
-  box-shadow:
-    0 0 0 1px rgba(224,160,73,.30),
-    inset 0 -10px 20px rgba(0,0,0,.75),
-    inset 3px 0 12px rgba(255,214,150,.10),
-    0 6px 16px rgba(0,0,0,.65);
+  box-shadow:0 0 0 1px rgba(224,160,73,.30),0 4px 12px rgba(0,0,0,.5);
 }
 .cv-av img{
   width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:2;
-  filter:sepia(.32) saturate(.8) contrast(1.14) brightness(.84);
 }
 .cv-av-ini{
   position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;
   font-family:var(--cv-display);font-weight:900;letter-spacing:.02em;
   color:rgba(224,160,73,.62);
 }
-.cv-av::before{
+
+/* -- the turret's lamp, and only the turret's -- */
+.cv-av.cv-lit{
+  box-shadow:
+    0 0 0 1px rgba(224,160,73,.30),
+    inset 0 -10px 20px rgba(0,0,0,.75),
+    inset 3px 0 12px rgba(255,214,150,.10),
+    0 6px 16px rgba(0,0,0,.65);
+}
+.cv-av.cv-lit img{filter:sepia(.32) saturate(.8) contrast(1.14) brightness(.84)}
+.cv-av.cv-lit::before{
   content:'';position:absolute;inset:0;z-index:3;pointer-events:none;
   background:linear-gradient(101deg,
     rgba(255,224,168,.5) 0%,
@@ -212,17 +244,17 @@ export const CONCLAVE_CSS = `
     rgba(4,5,9,.42) 74%,
     rgba(4,5,9,.8) 100%);
 }
-.cv-av::after{
+.cv-av.cv-lit::after{
   content:'';position:absolute;inset:0;z-index:4;pointer-events:none;
   background:
     radial-gradient(120% 78% at 50% -14%,rgba(2,3,6,.82) 0%,rgba(2,3,6,.3) 44%,transparent 62%),
     linear-gradient(180deg,transparent 62%,rgba(4,5,9,.55));
 }
-.cv-av[data-lit="dim"] img{filter:sepia(.4) saturate(.55) contrast(1.1) brightness(.58)}
-.cv-av[data-lit="dim"]::before{background:linear-gradient(101deg,rgba(190,205,225,.2) 0%,rgba(4,5,9,.5) 55%,rgba(4,5,9,.86) 100%)}
-.cv-av[data-lit="dim"] .cv-av-ini{color:rgba(143,166,194,.45)}
-.cv-av[data-lit="hot"] img{filter:sepia(.24) saturate(.95) contrast(1.16) brightness(1.02)}
-.cv-av[data-lit="hot"]{box-shadow:0 0 0 1px rgba(255,219,149,.5),0 0 26px rgba(224,160,73,.32),inset 0 -10px 20px rgba(0,0,0,.65)}
+.cv-av.cv-lit[data-lit="dim"] img{filter:sepia(.4) saturate(.55) contrast(1.1) brightness(.58)}
+.cv-av.cv-lit[data-lit="dim"]::before{background:linear-gradient(101deg,rgba(190,205,225,.2) 0%,rgba(4,5,9,.5) 55%,rgba(4,5,9,.86) 100%)}
+.cv-av.cv-lit[data-lit="dim"] .cv-av-ini{color:rgba(143,166,194,.45)}
+.cv-av.cv-lit[data-lit="hot"] img{filter:sepia(.24) saturate(.95) contrast(1.16) brightness(1.02)}
+.cv-av.cv-lit[data-lit="hot"]{box-shadow:0 0 0 1px rgba(255,219,149,.5),0 0 26px rgba(224,160,73,.32),inset 0 -10px 20px rgba(0,0,0,.65)}
 
 /* ═══ THE HERO PLATE — a chapter card, not a page header ═══════════════════ */
 .cv-hero{
@@ -289,15 +321,33 @@ export const CONCLAVE_CSS = `
 }
 
 /* ── GRID: stream + sidebar ─────────────────────────────────────────────── */
-.cv-grid{display:grid;grid-template-columns:1fr 292px;gap:0;align-items:start}
+.cv-grid{display:grid;grid-template-columns:1fr 292px;gap:0;align-items:stretch}
 .cv-main{padding:34px 34px 70px;min-width:0}
+
+/* THE RAIL RUNS THE WHOLE COLUMN; THE PANEL INSIDE IT IS WHAT STICKS.
+   'position:sticky' on .cv-side itself did nothing, and measurably: the rail
+   is as tall as the grid that contains it (3946px of both), so there was no
+   range to stick through and it scrolled away like any static box. Sticky
+   needs an element SHORTER than its containing block. So the rail keeps the
+   border, the panel gradient and the column's full height, and the sticky
+   element is the inner panel — which is also the element the reveal handlers
+   already replace by id, so its position survives every innerHTML swap.
+
+   (The other half of the same bug was 'overflow:hidden' on .cv-shell, which
+   made the shell a scroll container and killed sticky for every descendant.
+   Both had to go, and neither alone was enough.) */
 .cv-side{
-  position:sticky;top:56px;align-self:start;
   border-left:1px solid var(--cv-rule);
   background:linear-gradient(180deg,rgba(4,5,8,.86),rgba(4,5,8,.42));
   backdrop-filter:blur(3px);
   padding:26px 20px 44px;min-height:100%;
   box-shadow:inset 22px 0 40px -30px rgba(0,0,0,.9);
+}
+#cv-sidebar-inner{
+  position:sticky;top:56px;
+  max-height:calc(100vh - 88px);
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:rgba(224,160,73,.3) transparent;
 }
 
 /* ── THE IRONY GUTTER — the screen's signature primitive ────────────────────
@@ -325,6 +375,11 @@ export const CONCLAVE_CSS = `
 }
 .cv-margin-ic{position:absolute;right:-11px;top:1px;opacity:.7;background:var(--cv-stone);padding:2px 0;line-height:0;border-radius:50%}
 .cv-margin-av{margin-bottom:9px}
+/* A minute with no castle scene of its own. The rule and the ::after glow carry
+   on down the page so the column never breaks; the cell is simply empty,
+   because the alternative is printing the same downstairs line twice and a
+   repeat reads as a bug where a gap reads as a quiet castle. */
+.cv-margin-quiet{min-height:34px}
 
 /* ── THE HOST LAYER ─────────────────────────────────────────────────────────
    She narrates OVER the footage, so her band breaks out of the card column
@@ -349,7 +404,7 @@ export const CONCLAVE_CSS = `
   border-top:3px solid rgba(2,3,5,.85);border-bottom:3px solid rgba(2,3,5,.85);
 }
 @keyframes cv-sweep{0%{transform:translateX(-60%)}100%{transform:translateX(60%)}}
-.cv-host .cv-av{box-shadow:0 0 0 1px rgba(224,160,73,.65),0 0 24px rgba(224,160,73,.22),inset 0 -8px 18px rgba(0,0,0,.6)}
+.cv-host .cv-av.cv-lit{box-shadow:0 0 0 1px rgba(224,160,73,.65),0 0 24px rgba(224,160,73,.22),inset 0 -8px 18px rgba(0,0,0,.6)}
 .cv-host-name{
   font-family:var(--cv-display);font-weight:700;font-size:10px;letter-spacing:.32em;
   text-transform:uppercase;color:var(--cv-lantern);margin-bottom:7px;
@@ -457,8 +512,8 @@ export const CONCLAVE_CSS = `
   text-transform:uppercase;color:rgba(36,27,17,.6);white-space:nowrap;
   display:flex;align-items:center;gap:9px;
 }
-.cv-slip .cv-av{box-shadow:0 0 0 1px rgba(36,27,17,.42),inset 0 -6px 14px rgba(0,0,0,.4),0 3px 8px rgba(36,27,17,.3)}
-.cv-slip .cv-av::before{background:linear-gradient(101deg,rgba(255,236,196,.4) 0%,rgba(36,27,17,.28) 68%,rgba(36,27,17,.6) 100%)}
+.cv-slip .cv-av.cv-lit{box-shadow:0 0 0 1px rgba(36,27,17,.42),inset 0 -6px 14px rgba(0,0,0,.4),0 3px 8px rgba(36,27,17,.3)}
+.cv-slip .cv-av.cv-lit::before{background:linear-gradient(101deg,rgba(255,236,196,.4) 0%,rgba(36,27,17,.28) 68%,rgba(36,27,17,.6) 100%)}
 .cv-slip-reason{font-family:var(--cv-hand);font-size:18.5px;line-height:1.55;color:rgba(36,27,17,.94)}
 /* what they did NOT say — the audience's privilege, in red ink */
 .cv-unsaid{
@@ -540,8 +595,8 @@ export const CONCLAVE_CSS = `
   opacity:.5;mix-blend-mode:multiply;
 }
 .cv-letter-sheet>*{position:relative;z-index:2}
-.cv-letter-sheet .cv-av{box-shadow:0 0 0 1px rgba(36,27,17,.48),inset 0 -10px 20px rgba(0,0,0,.45),0 6px 14px rgba(36,27,17,.35)}
-.cv-letter-sheet .cv-av::before{background:linear-gradient(101deg,rgba(255,238,200,.42) 0%,rgba(36,27,17,.3) 66%,rgba(36,27,17,.62) 100%)}
+.cv-letter-sheet .cv-av.cv-lit{box-shadow:0 0 0 1px rgba(36,27,17,.48),inset 0 -10px 20px rgba(0,0,0,.45),0 6px 14px rgba(36,27,17,.35)}
+.cv-letter-sheet .cv-av.cv-lit::before{background:linear-gradient(101deg,rgba(255,238,200,.42) 0%,rgba(36,27,17,.3) 66%,rgba(36,27,17,.62) 100%)}
 .cv-letter-hand{font-family:var(--cv-hand);font-size:20px;line-height:1.7}
 .cv-letter-name{font-family:var(--cv-display);font-weight:900;font-size:40px;letter-spacing:-.015em;margin:10px 0 4px}
 .cv-seal-slot{
@@ -754,7 +809,8 @@ export const CONCLAVE_CSS = `
 /* ── RESPONSIVE ─────────────────────────────────────────────────────────── */
 @media(max-width:900px){
   .cv-grid{grid-template-columns:1fr}
-  .cv-side{position:static;border-left:none;border-top:1px solid var(--cv-rule)}
+  .cv-side{border-left:none;border-top:1px solid var(--cv-rule)}
+  #cv-sidebar-inner{position:static;max-height:none;overflow:visible}
   .cv-hero{height:392px}
 }
 @media(max-width:700px){

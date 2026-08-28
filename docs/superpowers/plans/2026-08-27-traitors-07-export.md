@@ -547,3 +547,69 @@ Also carried: a Traitors season has no jury boundary, so every departure shares 
 (needs the endgame flag on the placement); `_ruUseCurrentSeason` still picks between two
 builders; and no `rankings_tr.json` exists yet, which is correct -- a show with no published
 season has no board and `loadRankingBoards()` skips the 404.
+
+---
+
+# PLAN 7 CLOSED — 448 tests, all 20 review findings fixed
+
+## The shape of what went wrong: a channel with two readers
+
+The plan introduced `exits[]` as the second door out -- correct, because Traitors has two --
+and shipped it with **two readers**. Everything downstream still asked "who was eliminated", so
+murdered players never left: they stayed in the wiki grid, counted as still playing on finale
+night, and their articles said they were never voted against.
+
+**Adding a channel is only half the change. The other half is every reader that has to learn it
+exists.** The sweep found **nine** blind readers, not the five the review had rendered.
+`roundExits()` and `publicBallots()` in `js/shows.js` are now the rule rather than the fix.
+
+## Two things I praised were the two that broke
+
+- **Task 4's archive work** held the plan's only live regression: season 8's finale went from
+  naming Alejandro to naming nobody, because a field was replaced with one that **had no reader
+  anywhere**. Now 17 of 27 finale posts name a champion again.
+- **Task 6's dead-regex fix** was worse than the bug: the repaired version ran to `[^]*$` and
+  **truncated every later season's line**. A no-op turned into data loss.
+
+Both passed their mutation tests. Both were honestly reported. Neither was caught until
+something rendered real output and diffed it against before.
+
+## Live Total Drama and Big Brother bugs fixed on the way
+
+- **"Voted to evict" printed over a camp on fourteen published seasons.**
+- **Every non-house show was getting the camp's stat rows under the camp's names** -- and
+  writing the guard for it immediately caught **Big Brother in the same state**.
+- A "JURY VOTES" box drawn over a castle; five finale takes putting a jury on a show with none.
+- `wiki-fill.js` iterating an array with `Object.entries`, emitting
+  `votes: 0 [object Object], ...` into the AI prompt for 14 published seasons.
+
+## The guards were the reason, and four of them were this plan's own
+
+All six defective guards fixed, each with the mutation that had been green.
+
+- **Two Group-B guard mutations came back GREEN first**: asking whether a page contains
+  "murdered" is satisfied by the infobox's own `Status: Murdered`, so **a grid that never draws
+  the cell passed**. The assertion moved onto the cell.
+- **E7's comment-strip needed CRLF normalising before it worked at all** -- `.` does not match a
+  carriage return, so the strip matched nothing. **The same class of bug the strip exists to
+  remove.**
+- `show-vocabulary.test.js`'s `EXCLUSIVE` list had never been extended for the third show while
+  its own header claimed there was no list to extend. It now runs in both directions.
+
+## F1 — `Wanted` was split, and every column reverses at the final table
+
+Reproduced: +0.014 pooled = **-0.171 below the final table and +0.189 at it**, holding in all
+four blocks. It pays nothing at the table -- and the reason generalises: **every column reverses
+across that line** (missions +0.126, reads +0.022). `wanted/round` was measured and is worse.
+Shield's density (**5.4% of player-seasons**) is now written beside its correlation.
+
+## Carried out of Plan 7
+
+- **The board has no genuinely independent currency.** Shield fires for about 1 player in 20.
+- A co-winner finale post can read *"Alejandro and Cameron has..."* -- plural subject, singular
+  verb.
+- **`js/social/phrasings.js` is still untouched and still invisible to the vocabulary guard** --
+  6.4% of a season's posts carry another show's noun. It is the largest remaining instance of
+  this project's central bug class and needs its own pass.
+- Season 8's Champions index row still lacks Cameron; `mergeTraitorsSeason` does not exist;
+  grudges come back empty on the real ledger; evidence source 5 is available and unwired.

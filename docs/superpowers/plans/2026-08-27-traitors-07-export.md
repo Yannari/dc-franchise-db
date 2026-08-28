@@ -343,3 +343,70 @@ four-way split, with the anchor doubling as a staleness guard.
 3. `current-season.html` will throw on a split the day the studio publish path accepts one.
 4. `attachRecords()` was extracted out of `runCharacterFill` to get one reader under test -- it
    was unreachable behind a fetch.
+
+## Task 5 done — two ledgers, and a pooled correlation that hides itself
+
+`js/tr/crowd.js`: a nine-colour table where each colour pays an **affection** number (->
+`gs.popularity`) and a **spectacle** number (-> `gs.tr.notoriety`) SEPARATELY. `masterful` --
+a Traitor doing what a Traitor is there to do, well -- pays `0.5 / 4.0`; `heroic` pays
+`3.0 / 1.0`; `TRAITOR_AFFECTION_DAMPING = 0.25` applies to a Traitor's POSITIVE affection only
+(their cowardice costs what anyone's does; spectacle is never damped).
+
+Measured: mean affection **2.528** for a Faithful's heroic act against **0.093** for a
+masterful one -- a factor of 27 -- with spectacle running the other way. **In 100 seasons out
+of 100 the spectacle leader is not the affection leader.**
+
+Because the ledger is written from ground truth, the price is a hard rule over the SOURCE:
+**nothing under `js/tr/` but `crowd.js` may so much as name either ledger**, so popularity can
+never feed belief.
+
+`js/audience.js` was used as-is and gained one line (`_outOf` also reads `exits[]`) -- the §5
+round shape, and the only channel that can carry a show with two doors out. No award is run;
+`audienceAward` stays absent, per §10.4.
+
+### A pooled correlation can hide the effect it exists to detect
+
+| vs final placement | pooled | Faithfuls only (n=1,608) |
+|---|---|---|
+| `gs.popularity` | **-0.299** | **-0.538** |
+| `audienceStanding` | -0.013 | **-0.160** |
+| `gs.tr.notoriety` | -0.334 | -- |
+
+**The pooled popularity figure is a trap.** -0.299 looks harmless only because the people who
+go furthest on this show are disproportionately the ones whose affection is damped -- two
+accrual curves of OPPOSITE SLOPE averaging into something innocent. Within a faction the
+accrual is exactly what the spec warns about, which is why the test asserts the Faithful arm.
+The Faithful gap is ~15 standard errors, and 70 seasons in 100 put a bottom-half placer into
+the board's top three.
+
+**Generalise: before trusting a pooled statistic, ask whether the population contains groups
+whose relationship to the quantity runs in opposite directions.**
+
+### Two mutations came back GREEN and both changed the work
+
+- Flipping `cowardly` to +2.5 first PASSED, because the sign test **read its expected direction
+  out of the table under test** -- the mirror of "a test must read the value under test, never
+  recompute it": here it recomputed its own EXPECTATION from the thing being tested. It now
+  states what each word means as two literal lists with an exhaustiveness check.
+- Deleting `initCrowd`'s cast seeding changed nothing, because the board reconstructs the cast
+  from other keys. The assertion moved onto the ledger itself.
+
+**One line was DELETED because a mutation proved it dead**: `_recordEpisode` also maintained
+`gs.eliminated`, and removing it changed nothing. Gone, with a comment saying why.
+
+Two live defects found by dumping the per-colour table and READING it: `testing-loyalty-oath`
+was paying six Faithfuls on a villain's ledger (the event does not know who it is watching),
+and 21 of 1,732 `wronged` payments were landing on murdered Traitors via the forced-sacrifice
+variant.
+
+### For Task 6
+
+**`gs.tr.notoriety` has no reader yet** and is deliberately not handed back from
+`playTraitorsSeason` (that would break the one-file rule). It is the natural currency for fame
+or a "most talked about" reading, and **the only number on this show a ranking board could use
+without ranking by how long somebody lasted.**
+
+Also: `notoriety` is created by `initCrowd` rather than declared in `initTraitorsState()` --
+the one field created outside the file whose job is to declare them, because declaring it there
+would name the ledger. Flagged, not quietly resolved. And the registry's `audience` ratings
+overlay is still marked PROVISIONAL and now has played seasons to be recalibrated against.

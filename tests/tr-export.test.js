@@ -459,6 +459,26 @@ describe('the career figures are read, never re-simulated', () => {
         // season and longer than nothing.
         expect(stats.roundsAsTraitor).toBeGreaterThan(0);
       }
+      /* ── AND AN ERA CANNOT OUTLIVE THE PLAYER ────────────────────────
+         The open era ran to the last episode of the SEASON, so a Traitor
+         banished in episode two was credited with wearing the cloak for the
+         whole run — ten rounds, on the article that draws the field. Nobody
+         read it until a screen started printing it. Their own exit closes it. */
+      const hist = traitorsVotingHistory(season);
+      const lastEp = Math.max(...hist.map(r => r.episode));
+      let checkedEarlyExits = 0;
+      for (const row of hist) {
+        for (const x of row.exits) {
+          const stats = traitorsCareerStats(season, x.name);
+          expect(stats.roundsAsTraitor,
+            `${x.name} left in episode ${row.episode} and is credited with `
+            + `${stats.roundsAsTraitor} rounds wearing the cloak`)
+            .toBeLessThanOrEqual(row.episode);
+          if (row.episode < lastEp - 1) checkedEarlyExits++;
+        }
+      }
+      expect(checkedEarlyExits, 'nobody left early enough to test the cap')
+        .toBeGreaterThan(3);
       // A founding Traitor is selected, not recruited.
       for (const name of season.traitors) {
         const first = season.roleHistory.find(r => r.name === name);

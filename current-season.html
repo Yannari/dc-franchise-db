@@ -7342,35 +7342,15 @@ setTimeout(function() {
     return text;
   }
 
-  function buildSeasonReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning) {
-    // Build a structured summary sentence for this season's performance
-    const highlights = [];
-    if (row.immWins > 0) highlights.push(`${row.immWins} immunity win${row.immWins>1?'s':''}`);
-    if (row.rewWins > 0) highlights.push(`${row.rewWins} reward win${row.rewWins>1?'s':''}`);
-    if (row.advPlayed > 0) highlights.push(`played ${row.advPlayed} idol${row.advPlayed>1?'s':''} effectively`);
-    if (row.advWasted > 0) highlights.push(`wasted ${row.advWasted} advantage${row.advWasted>1?'s':''}`);
-    if (row.advHeld > 0) highlights.push(`held ${row.advHeld} idol${row.advHeld>1?'s':''} (unused)`);
-    if (row.alliances > 0) highlights.push(`${row.alliances} alliance${row.alliances>1?'s':''}`);
-    if (row.fanFav) highlights.push('fan favorite');
-    if (row.votesAgainst === 0) highlights.push('never received a vote');
-    else if (row.votesAgainst === 1) highlights.push('voted against once');
-
-    const suffix = highlights.length ? ` ${highlights.join(', ')}.` : '.';
-    const winLabel = isWinner ? 'Winner' : `P${placement}`;
-    const overridePart = row.override ? ` Narrative override ${row.override>0?'+':''}${row.override}: ${row.overrideReason}.` : '';
-
-    const thisSeasonLine = `S${seasonNum} ${winLabel}.${overridePart}${suffix}`;
-
-    if (isNew) {
-      // Brand new player — start fresh
-      return thisSeasonLine;
-    } else {
-      // Returning player — append this season to existing reasoning
-      // Strip any previous "S{num} P{placement}" auto-line for this same season if it exists
-      const stripped = (existingReasoning || '').replace(new RegExp(`S${seasonNum}\s+(?:Winner|P\d+)[^]*$`), '').trim();
-      return (stripped ? stripped + ' ' : '') + thisSeasonLine;
-    }
-  }
+  /* `buildSeasonReasoning` LIVED HERE TOO, uncalled, and byte-identical
+     down to the dead regex: the pattern was built in a TEMPLATE LITERAL, so
+     the escapes were eaten and it reached RegExp as
+     `S1s+(?:Winner|Pd+)[^]*$` -- a pattern matching nothing any writer has
+     ever produced. The live one is exported from js/rankings-update.js: it
+     is fixed, anchored to one season's line rather than running to the end
+     of the string, and under test. A second copy of a function NOBODY CALLS
+     is not a fallback -- it is the version somebody reads when they go
+     looking, and this one was wrong in two ways at once. Deleted. */
   
   // ========================================
   // VOTING ANALYTICS HTML GENERATION

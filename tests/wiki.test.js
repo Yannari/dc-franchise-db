@@ -437,16 +437,26 @@ describe('the lead', () => {
 
   const html = p => renderArticle(buildDossier(p, {}), 'total-drama', { root: '.' });
 
+  /* ── AND WITH NO SEASON DOCUMENT, IT DOES NOT CLAIM THE SEASON ───────
+     These fixtures pass NO `seasonDocs`, which is the state player.html
+     paints in DELIBERATELY before the documents arrive. `coWinners` came out
+     of a lookup that returns nothing then, and `.length` of nothing is 0, so
+     `coWinners > 1` was false and every champion of a shared season was
+     called "the winner of" it on the first paint and corrected a moment
+     later. An unread count is UNKNOWN, not one, and the lead has a phrase
+     that is true either way for it. */
   it('names the season somebody won, and links it', () => {
     const out = html(one);
-    expect(out).toMatch(/<strong>Jade<\/strong> was the winner of/);
+    expect(out).toMatch(/<strong>Jade<\/strong> was a champion of/);
+    expect(out, 'claims the season outright before any document was read')
+      .not.toContain('the winner of');
     expect(out).toMatch(/season_ref\.html\?season=14/);
   });
 
   it('states a whole career in order, the way a returnee page opens', () => {
     const out = html(twice);
     // Won first, came back later — and the later season is the second clause.
-    expect(out).toMatch(/was the winner of[\s\S]*?and returned for[\s\S]*?finishing 5th/);
+    expect(out).toMatch(/was a champion of[\s\S]*?and returned for[\s\S]*?finishing 5th/);
     // Scoped to the LEAD. The infobox links its seasons as well now, newest
     // first, and it is drawn above the paragraph this is about.
     const lead = out.match(/<p class="wk-lead">([\s\S]*?)<\/p>/)?.[1] || '';

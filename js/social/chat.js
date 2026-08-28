@@ -166,7 +166,9 @@ export const LENS_TAKES = {
     ],
     betrayal: [
       ({ s }) => `${s} trusted a promise more than the person making it. That's not loyalty; that's lazy risk assessment.`,
-      ({ s }) => `The betrayal is good. The apology is where they got greedy and tried to keep the jury vote too.`,
+      // Not "the jury vote": a castle has no jury and nobody votes on its
+      // winner. What the apology is really trying to keep is the goodwill.
+      ({ s }) => `The betrayal is good. The apology is where they got greedy and tried to keep the goodwill too.`,
       ({ s }) => `If you cut ${s}, look at ${s} and own it. Shame is only useful to the person you just betrayed.`,
       ({ s }) => `${s} can be angry. The move still worked, and anger doesn't reverse a vote.`,
     ],

@@ -177,3 +177,67 @@ describe('the page does not contradict its own voting grid', () => {
     }
   });
 });
+
+// ══ the winner card, on every season that has ever shipped ════════════
+//
+// The Strategy and Legacy blocks moved INSIDE `sr-winner-info` so that a split
+// season draws them under the person the singular `winner{}` block actually
+// names, instead of under whichever champion came first. That is right, and it
+// silently changed the layout of all fifteen published seasons: `sr-winner-row`
+// is `display:flex; align-items:center`, so a one-line row became a paragraph
+// with a 72px avatar floating in the middle of it. Content preserved is not
+// layout preserved, and nothing had rendered this.
+describe('the winner card of every published season', () => {
+  const winnerCard = () => {
+    const src = fs.readFileSync(PAGE, 'utf8').split('\n');
+    const start = src.findIndex(l => l.includes('const winnerHTML=`<div class="sr-winner">'));
+    expect(start, 'season_ref.html no longer builds a winner card this way')
+      .toBeGreaterThan(-1);
+    const end = src.findIndex((l, i) => i > start && l.trim() === '</div>`;');
+    expect(end).toBeGreaterThan(start);
+    // eslint-disable-next-line no-new-func
+    return new Function('s', '_won', 'w', 'finalistsHTML',
+      `${src.slice(start, end + 1).join('\n')} return winnerHTML;`);
+  };
+
+  /** The page's own resolution rule, so this reads what the page would draw. */
+  const wonOf = doc => (doc.winners && doc.winners.length ? doc.winners
+    : ((doc.placements || []).filter(p => p.placement === 1).length
+      ? (doc.placements || []).filter(p => p.placement === 1)
+      : (doc.winner ? [typeof doc.winner === 'string' ? { name: doc.winner } : doc.winner] : [])))
+    .filter(x => x && x.name);
+
+  const files = fs.readdirSync(join(process.cwd(), 'data/seasons'))
+    .filter(f => f.endsWith('-data.json'));
+
+  it('keeps the prose, and never centres an avatar against a paragraph', () => {
+    expect(files.length, 'no published seasons to render').toBeGreaterThan(10);
+    const fn = winnerCard();
+    let withProse = 0;
+    for (const f of files) {
+      const doc = readDoc(f);
+      const won = wonOf(doc);
+      const html = fn(doc, won, doc.winner, '');
+      // One card per winner, still.
+      expect((html.match(/sr-winner-row/g) || []).length,
+        `${f}: one row per champion`).toBe(won.length);
+      // The prose belongs to the singular block and appears once, under the
+      // person that block names — never copied onto a co-winner.
+      const strategy = (html.match(/>Strategy</g) || []).length;
+      const legacy = (html.match(/>Legacy</g) || []).length;
+      expect(strategy, `${f}: the strategy block was duplicated or lost`)
+        .toBeLessThanOrEqual(1);
+      expect(legacy, `${f}: the legacy block was duplicated or lost`)
+        .toBeLessThanOrEqual(1);
+      if (strategy || legacy) {
+        withProse++;
+        // AND THE ROW HOLDING IT IS TOP-ALIGNED. `align-items:center` against a
+        // paragraph puts the portrait halfway down it.
+        expect(html, `${f}: prose inside a centred row`).toContain('is-tall');
+      }
+    }
+    // Every shipped season carries this prose, so a run that found none would
+    // be checking nothing at all.
+    expect(withProse, 'no published season carries winner prose').toBeGreaterThan(10);
+  });
+});

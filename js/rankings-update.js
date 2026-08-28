@@ -633,6 +633,12 @@ export const RU_SHOW = {
     // ended you. Priced identically at 1.6, and it earns it — r = -0.019 means
     // a Shield says nothing about where you finished, so every point of it is
     // a point the base was not already paying.
+    // DENSITY, not only correlation: a Shield is won by 5.4% of player-seasons
+    // (mean 0.06), so at 1.6 this column contributes about 0.10 points on
+    // average against Missions' 1.72 — the heaviest price on the board, paid
+    // to one player in twenty. The price per Shield is right (it is this
+    // show's veto and is priced like one); what it is NOT is a column that
+    // separates a cast. Repricing it needs its own measurement.
     comp1: { label: 'Shield', weight: 1.6,
       title: '+1.6 per Shield won · won in a mission, blocks one murder' },
     // A team win, priced like a reward. Everyone on the winning side gets
@@ -663,12 +669,37 @@ export const RU_SHOW = {
     // ── WHAT THE CONCLAVE THOUGHT OF YOU ──
     //
     // The number of murder ballots that named you: every night a Traitor stood
-    // in the turret and argued for your name. r = +0.014 pooled and -0.001
-    // among Faithfuls — the ONLY figure this show produces that is genuinely
-    // uncorrelated with where you finished, and it is uncorrelated for a
-    // reason rather than by luck. Every other count grows with nights
-    // survived; this one is cancelled by the fact that being wanted dead
-    // frequently ends your season.
+    // in the turret and argued for your name.
+    //
+    // ── AND THE POOLED FIGURE THAT CHOSE IT WAS TWO EFFECTS CANCELLING ──
+    //
+    // It was priced on r = +0.014 pooled, "the ONLY figure this show produces
+    // that is genuinely uncorrelated with where you finished". It is not. Over
+    // 200 seasons and 4,000 player-seasons, split at the final table:
+    //
+    //     below the final table  (n=3,098, 77%)   r = -0.171
+    //     AT the final table     (n=902,   23%)   r = +0.189
+    //     pooled                                  r = +0.014
+    //
+    // Both arms hold in all four independent blocks of fifty seasons
+    // (endgame +0.144/+0.250/+0.166/+0.215, below -0.171/-0.208/-0.126/-0.171),
+    // so this is not noise: the pooled number is the AVERAGE OF TWO OPPOSITE
+    // SLOPES and means nothing about either. Among the 23% the board most
+    // needs to separate, the raw column paid worse-placed finalists MORE.
+    //
+    // That is the exact trap Task 5 of this plan wrote down — "before trusting
+    // a pooled statistic, ask whether the population contains groups whose
+    // relationship to the quantity runs in opposite directions" — and Task 6
+    // then walked into it, on the same show, one task later.
+    //
+    // SO IT IS SPLIT AT THE BOUNDARY THE REVERSAL SITS ON. Below the final
+    // table the column stands: being wanted is cancelled by the fact that
+    // being wanted dead frequently ends your season, and what survives is a
+    // mild -0.171 rather than the -0.63 every other count carries. At the
+    // final table it pays NOTHING, because placement there is decided by the
+    // endgame itself and every column reverses across that line (missions
+    // +0.126, reads +0.022, against -0.730 and -0.453 below it). A column that
+    // cannot separate a group must not pretend to.
     //
     // And it is a resume line, not a punishment. On this format the murdered
     // are the players the Traitors could not beat at the table, which is the
@@ -683,7 +714,9 @@ export const RU_SHOW = {
     // a cast of 20, one naming is about two-thirds of a place and a full column
     // is two and a half.
     social: { kind: 'survived', label: 'Wanted', weight: 0.9, cap: 4,
-      title: 'Murder ballots naming you · +0.9 each, max 4 · nights a Traitor argued for your name',
+      title: 'Murder ballots naming you before the final table · +0.9 each, max 4 · '
+        + 'nights a Traitor argued for your name. Nobody at the final table scores here: '
+        + 'the column reverses sign across that line and cannot separate them.',
       // The tooltip beside it already had the right words. The blurb the
       // PUBLIC BOARD prints said "survived the block", which is the opposite
       // of the truth about a murder ballot and about a show with no block.
@@ -696,7 +729,11 @@ export const RU_SHOW = {
       comp1: p.tr?.shieldsWon ?? 0,
       comp2: p.tr?.missionsWon ?? 0,
       comp3: p.tr?.reads ?? 0,
-      social: p.tr?.wanted ?? 0,
+      // SPLIT AT THE FINAL TABLE — see the note on `social` above. A
+      // placement with no `exit` is somebody who was still there at the end;
+      // everybody else left by one of the show's two doors and carries the
+      // episode they left on.
+      social: (p.exit === null || p.exitEpisode == null) ? 0 : (p.tr?.wanted ?? 0),
       advFound: p.tr?.daggersWon ?? 0,
       advPlayed: p.tr?.daggersPlayed ?? 0,
       advWasted: p.tr?.daggersWasted ?? 0,
@@ -1326,7 +1363,13 @@ function renderPreview(results, seasonNum, castSize) {
  * entirely.
  */
 function _ruStatParts(row) {
-  const rub  = _ruRubric();
+  /* THE ROW'S OWN SHOW, not whichever one the page happens to be looking at.
+     `_ruRubric()` with no argument falls back to `_ruShowFormat()`, which
+     reads a DOM select — so regenerating a Traitors row from a page left on
+     Big Brother described a castle in the house's column names, and the
+     season LABEL two functions down already reads `row.format` for exactly
+     this reason. */
+  const rub  = _ruRubric(row?.format);
   // The rubric's noun is a column heading -- "idol/advantage" -- and a heading
   // reads as a heading in a sentence. Prose takes the first word of it.
   const noun = ((rub.adv || {}).noun || 'advantage').split('/')[0];

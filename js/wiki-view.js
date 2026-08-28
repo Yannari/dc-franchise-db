@@ -425,6 +425,12 @@ function lead(dossier, show, root, L) {
     // out of their own season. `coWinners` counts the record, and the article
     // says which kind of win it was rather than picking.
     if (s.placement === 1) {
+      // UNKNOWN IS NOT ONE. `coWinners` is null until the season document is
+      // loaded, and the page paints once before that on purpose — so the
+      // first paint used to call a co-winner "the winner". "A champion of" is
+      // true of a shared win and of a sole one, and needs no count; it drops
+      // into the lead's "X was ..." exactly where the others do.
+      if (s.coWinners == null) return `a champion of ${link(s)}`;
       return `${s.coWinners > 1 ? 'a co-winner of' : 'the winner of'} ${link(s)}`;
     }
     if (s.placement === 2) return `the runner-up on ${link(s)}`;

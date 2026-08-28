@@ -23,6 +23,12 @@ const GENERIC = {
   challenge: 'challenge',
   home: 'camp',
   vote: 'vote',
+  // THE BALLOT THAT DECIDES THE SEASON, which is not the weekly one. A
+  // finale take written with `vote` said "not one bitter eviction vote at the
+  // end" about a night decided by a jury -- the right show, the wrong ballot.
+  // Null where a show has no final ballot at all, and a sentence that needs
+  // one must then say something else rather than invent it.
+  finalVote: 'final vote',
   comps: ['challenge'],
   danger: 'the crosshairs',
   Danger: 'The crosshairs',
@@ -66,6 +72,7 @@ const SHOW_WORDS = {
     challenge: 'challenge',
     home: 'camp',
     vote: 'vote',
+    finalVote: 'jury vote',
     comps: ['challenge', 'immunity challenge', 'reward challenge'],
     // ── the danger vocabulary ──
     //
@@ -103,6 +110,7 @@ const SHOW_WORDS = {
     challenge: 'competition',
     home: 'house',
     vote: 'eviction vote',
+    finalVote: 'jury vote',
     comps: ['competition', 'HOH', 'veto'],
     danger: 'the block',
     Danger: 'The block',
@@ -147,6 +155,10 @@ const SHOW_WORDS = {
     challenge: 'mission',
     home: 'castle',
     vote: 'banishment vote',
+    // NO FINAL BALLOT AT ALL. The last table is a banishment like every
+    // other, and what follows it is a decision by the people still sitting
+    // there -- nobody votes on the winner.
+    finalVote: null,
     comps: ['mission'],
     danger: 'suspicion',
     Danger: 'Suspicion',

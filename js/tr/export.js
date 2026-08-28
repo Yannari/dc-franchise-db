@@ -246,10 +246,18 @@ export function traitorsCareerStats(season = {}, name) {
   const flips = (season.roleHistory || []).filter(r => r.name === name)
     .sort((a, b) => a.ep - b.ep);
   const lastEp = history.length ? Math.max(...history.map(r => r.episode)) : 0;
+  /* ── AN ERA ENDS WHEN THEY LEAVE, NOT WHEN THE SEASON DOES ──────────
+     The open era ran to the last episode of the SEASON, so somebody who took
+     the cloak on night one and was banished in episode two was credited with
+     ten rounds wearing it. Nobody read the field until the character article
+     started drawing it, at which point it said so on the page. Their own exit
+     closes the era; a survivor's runs to the end. */
+  const myExit = history.find(r => (r.exits || []).some(x => x.name === name))?.episode;
+  const gone = myExit == null ? lastEp + 1 : myExit;
   let roundsAsTraitor = 0;
   for (let i = 0; i < flips.length; i++) {
     if (flips[i].to !== 'traitor') continue;
-    const until = flips[i + 1]?.ep ?? lastEp + 1;
+    const until = Math.min(flips[i + 1]?.ep ?? lastEp + 1, gone);
     roundsAsTraitor += Math.max(0, until - flips[i].ep);
   }
 

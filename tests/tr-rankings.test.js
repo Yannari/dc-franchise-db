@@ -236,6 +236,11 @@ describe('what the board leans on is not how long somebody lasted', () => {
     return sxy / Math.sqrt(sxx * syy);
   };
 
+  // THE TWO SIDES OF THE FINAL TABLE, filled by the arm below and read by the
+  // one after it — one 120-season run, two questions asked of it.
+  const endPlace = [], endWanted = [], endRaw = [];
+  const lowPlace = [], lowWanted = [], lowRaw = [];
+
   it('the Wanted column is independent of placement and the obvious one is not', () => {
     const place = [], wanted = [], ballots = [];
     for (let seed = 101; seed <= 220; seed++) {
@@ -255,6 +260,12 @@ describe('what the board leans on is not how long somebody lasted', () => {
         // number and is the currency the spec reached for first.
         ballots.push(history.reduce((n, row) =>
           n + row.votes.filter(v => v.voter === p.name && v.channel === 'banishment').length, 0));
+        // A placement with no `exit` is somebody who was still at the table.
+        const bucket = p.exit === null;
+        (bucket ? endPlace : lowPlace).push(p.placement);
+        (bucket ? endWanted : lowWanted).push(
+          RU_SHOW[TRAITORS_FORMAT].read(p, { placement: p.placement }).social);
+        (bucket ? endRaw : lowRaw).push(p.tr?.wanted ?? 0);
       }
     }
     expect(place.length, '120 seasons of twenty').toBeGreaterThan(2000);
@@ -271,6 +282,48 @@ describe('what the board leans on is not how long somebody lasted', () => {
     // not both "things that happened to you during a season".
     expect(rBallots, `ballots cast tracks placement at ${rBallots.toFixed(3)}`)
       .toBeLessThan(-0.8);
+  });
+
+  /* ── AND THE POOLED FIGURE ABOVE IS NOT ENOUGH ON ITS OWN ────────────
+     +0.014 pooled is the AVERAGE OF TWO OPPOSITE SLOPES: -0.171 below the
+     final table and +0.189 at it, both holding across four independent blocks
+     of fifty seasons. The column was chosen on the pooled number, so among
+     the 23% of player-seasons the board most needs to separate it was paying
+     worse-placed finalists MORE. This is the same trap Task 5 of this plan
+     wrote down and Task 6 then walked into, one task later.
+
+     The rubric zeroes the column at the final table. This arm reads it
+     THROUGH THE RUBRIC, so it is a guard on the decision and not on the
+     export -- exactly the correction the social-column test already carries
+     one arm up. */
+  it('does not pay a column that reverses sign at the final table', () => {
+    expect(endPlace.length, 'no finalists in the sample at all').toBeGreaterThan(400);
+    expect(lowPlace.length, 'nobody left before the final table').toBeGreaterThan(1500);
+    // Roughly a quarter of a cast reaches it. If that stops being true the
+    // split is describing a different population and wants re-measuring.
+    const share = endPlace.length / (endPlace.length + lowPlace.length);
+    expect(share, `${(share * 100).toFixed(1)}% of player-seasons reach the final table`)
+      .toBeGreaterThan(0.1);
+
+    // THE RAW COLUMN REVERSES. Measured +0.189 at the table against -0.171
+    // below it; if this stops being true the split is unnecessary and should
+    // be removed rather than left standing on a dead reason.
+    const rEndRaw = corr(endRaw, endPlace);
+    const rLowRaw = corr(lowRaw, lowPlace);
+    expect(rEndRaw, `raw Wanted at the final table: ${rEndRaw.toFixed(3)}`)
+      .toBeGreaterThan(0.08);
+    expect(rLowRaw, `raw Wanted below the final table: ${rLowRaw.toFixed(3)}`)
+      .toBeLessThan(-0.08);
+
+    // AND THE BOARD PAYS NOTHING FOR IT THERE. Not "less" — nothing, because
+    // there is no honest amount to pay for a signal that points the wrong way.
+    expect(endWanted.filter(x => x > 0),
+      'the board still pays the Wanted column at the final table, where more '
+      + 'namings means a WORSE finish').toEqual([]);
+    // ...and still pays it below, or the split has quietly deleted the column.
+    expect(lowWanted.filter(x => x > 0).length,
+      'the Wanted column pays nobody anywhere — it has been deleted, not split')
+      .toBeGreaterThan(200);
   });
 });
 
@@ -327,6 +380,24 @@ describe("a returning player's reasoning does not stack up", () => {
     expect(out).toContain('S1 P7.');
     // And no hole left where the middle used to be.
     expect(out, 'a double space was left where the old line was').not.toMatch(/ {2}/);
+  });
+
+  /* ── AND THE BLURB IS ABOUT THE ROW'S SHOW, NOT THE PAGE'S ───────────
+     `_ruStatParts` asked `_ruRubric()` with no argument, which falls back to
+     reading a DOM select — so regenerating a Traitors row while the page was
+     left on Big Brother described a castle in the house's column names. The
+     season LABEL beside it already read `row.format`, so the same sentence
+     was half right. */
+  it("takes its column names from the row's show, not the page's", () => {
+    const tr = { format: TRAITORS_FORMAT, immWins: 2, rewWins: 1, comp3Wins: 0, socialCol: 0 };
+    const line = buildSeasonReasoning('Someone', 1, 4, tr, false, true, '');
+    expect(line, "a castle row described in another show's columns")
+      .not.toMatch(/immunity win|HOH win|veto win/i);
+    expect(line).toMatch(/Shield win/i);
+    expect(line).toMatch(/^TR1 P4\./);
+    // The house keeps its own, from the same call.
+    const bb = { format: 'big-brother', immWins: 2, rewWins: 1, comp3Wins: 0, socialCol: 0 };
+    expect(buildSeasonReasoning('Someone', 1, 4, bb, false, true, '')).toMatch(/HOH win/);
   });
 
   it('anchors on the registry, so a third show ends a line too', () => {
@@ -423,6 +494,49 @@ describe("the audience talks about this show in this show's words", () => {
     const wrong = lines.filter(([, t]) => leaks(t, TRAITORS_FORMAT).length)
       .map(([where, t]) => `${where}: ${t.slice(0, 80)}`);
     expect(wrong, `${wrong.length} takes speak another show`).toEqual([]);
+  });
+
+  /* ── AND THE BALLOT A TAKE NAMES HAS TO BE THE RIGHT BALLOT ──────────
+     A finale take was rewritten off `w.vote` — the WEEKLY ballot — so a Big
+     Brother finale read "Not one bitter eviction vote at the end of that"
+     about a night decided by the jury. Right show, wrong ballot, and less
+     accurate than the jury sentence it replaced. `w.finalVote` is the ballot
+     that decides the season and is null on a show that has none, where the
+     sentence has to be about the room instead of about a vote nobody cast.
+
+     Rendered for EVERY registered format, because the arm above only ever
+     rendered the castle and this defect was on the house. */
+  it('never names a ballot a finale did not have', () => {
+    for (const format of FORMATS) {
+      const w = words(format);
+      const lines = [];
+      for (const byKind of Object.values(TRAIT_TAKES)) {
+        for (const fn of byKind.finale || []) lines.push(fn({ s: 'Ted', w, k: 'moment' }));
+      }
+      for (const byKind of Object.values(LENS_TAKES)) {
+        for (const fn of byKind.finale || []) lines.push(fn({ s: 'Ted', w, k: 'moment' }));
+      }
+      for (const fn of TAKES.finale || []) lines.push(fn({ s: 'Ted', w, k: 'moment' }));
+      expect(lines.length, `${format} rendered no finale takes at all`).toBeGreaterThan(5);
+      for (const t of lines) {
+        expect(t, `${format}: a finale take rendered an absent word`)
+          .not.toMatch(/undefined|null/);
+        /* The WEEKLY ballot has no business in a finale sentence. Only
+           checked where a show NAMES its weekly ballot distinctively --
+           "eviction vote", "banishment vote". Where the word is the bare
+           "vote" it is a substring of "voted" and of the finale's own
+           sentences, and a check on it would be a check on English. */
+        if (w.vote !== w.finalVote && /\s/.test(String(w.vote))) {
+          expect(t, `${format}: a finale take names the weekly "${w.vote}"`)
+            .not.toContain(w.vote);
+        }
+        // ...and a show with no final ballot names none.
+        if (!w.finalVote) {
+          expect(t, `${format} has no final ballot and a take named one`)
+            .not.toMatch(/jury vote|final vote|final tally/i);
+        }
+      }
+    }
   });
 
   it('builds a feed for every night of a published season', () => {

@@ -1343,14 +1343,29 @@ function renderPlayerCard(ranking, player, format) {
     html +=     '<div class="stat-value">' + player.totalVotesAgainst + ' total' + (player.totalVotesAgainst < 5 ? ' 🔒' : '') + '</div>';
   }
   html +=     '</div>';
+  /* THE SHOW'S OWN WORDS FOR ITS OWN NUMBERS. "CHALLENGE WINS" over a castle
+     is the camp's word for a mission, and "JURY VOTES" is a heading about a
+     body that never met -- the last table there is a decision by the people
+     still sitting at it. Both come off the registry, and the jury box is not
+     drawn at all for a show that has no jury: an empty stat box reads as
+     "never got one" about something that does not exist. */
+  const _meta = (window.showSwitcher && window.showSwitcher.SHOWS
+    && window.showSwitcher.SHOWS[format]) || {};
+  const _compWord = ((_meta.words && _meta.words.comp) || 'challenge').toUpperCase();
   html +=     '<div class="stat-box">';
-  html +=       '<div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div>';
+  html +=       '<div class="stat-label"><span class="stat-icon">💪</span> ' + _compWord + ' WINS</div>';
   html +=       '<div class="stat-value">' + player.totalChallengeWins + ' total</div>';
   html +=     '</div>';
-  html +=     '<div class="stat-box">';
-  html +=       '<div class="stat-label"><span class="stat-icon">🗳️</span> JURY VOTES</div>';
-  html +=       '<div class="stat-value">' + (player.totalJuryVotes || 0) + ' total</div>';
-  html +=     '</div>';
+  // A REGISTERED SHOW MUST DECLARE ITS JURY. Absence means no -- the same
+  // convention `audienceAward` uses -- because a show that has one says so,
+  // and a heading about a body that never met is worse than a missing box.
+  // An UNREGISTERED format keeps the box: being told nothing is recoverable.
+  if (!_meta.words || _meta.hasJury) {
+    html +=   '<div class="stat-box">';
+    html +=     '<div class="stat-label"><span class="stat-icon">🗳️</span> JURY VOTES</div>';
+    html +=     '<div class="stat-value">' + (player.totalJuryVotes || 0) + ' total</div>';
+    html +=   '</div>';
+  }
   html +=     '<div class="stat-box">';
   html +=       '<div class="stat-label"><span class="stat-icon">🏁</span> BEST FINISH</div>';
   html +=       '<div class="stat-value">' + bestLabel + '</div>';

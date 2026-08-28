@@ -495,7 +495,14 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [], se
       // ended with two champions, and the lead called each of them "the winner",
       // which is a sentence about the other one. The lead needs the count to
       // write "a co-winner of" instead, and the count is only on the document.
-      coWinners: seasonWinners(rowFor(d)?.doc).length,
+      // ── AND A COUNT NOBODY COULD READ IS NOT A ONE ────────────────
+      // This is `.length` of a lookup that returns nothing when the season
+      // DOCUMENT is not loaded — and player.html paints once deliberately
+      // before the documents arrive, so on that first paint every champion of
+      // a shared season was called "the winner of" it and then corrected a
+      // moment later. Null means UNKNOWN, and the lead has a sentence that is
+      // true either way for it.
+      coWinners: rowFor(d)?.doc ? seasonWinners(rowFor(d).doc).length : null,
       // ...and the tally is only theirs if the winner block is about THEM. The
       // block names one person; on season 8 it names one of two.
       finalVote: _winnerBlockFor(rowFor(d)?.doc, player.name)?.vote || '',

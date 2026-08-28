@@ -190,7 +190,10 @@ export const TRAIT_TAKES = {
       ({ s }) => `${s} is confused. ${s} was confused a week ago too, quietly.`,
     ],
     finale: [
-      ({ s }) => `${s} won. The jury voted. Those two facts are related, which is more than some finales manage.`,
+      // `w.jury` because a castle has none: its last table is a decision by
+      // the people still sitting at it, and "the jury voted" over one is this
+      // project's oldest bug in a sentence nobody reviewed.
+      ({ s, w }) => `${s} won, and ${w.jury} agreed. Those two facts are related, which is more than some finales manage.`,
       ({ s }) => `Congratulations to ${s}, and my condolences to everybody rehearsing a speech about it.`,
       ({ s }) => `I would've voted the same way. I'm not going to explain why at length.`,
       ({ s }) => `A good finale. Nobody needs me to add anything to it.`,
@@ -454,9 +457,17 @@ export const TRAIT_TAKES = {
       // WAS: "Nobody on that jury voted out of spite tonight." Two shows'
       // furniture in one clause -- a jury and a vote-out -- printed over a
       // castle, where the last table is not a jury and nobody is voted out
-      // of anything. Written now about the thing every show has: a ballot,
-      // and whether it was cast bitterly.
-      ({ s, w }) => `Not one bitter ${w.vote} at the end of that. After that season. I'm genuinely moved.`,
+      // of anything.
+      //
+      // AND THEN `w.vote`, WHICH IS THE WEEKLY BALLOT: "Not one bitter
+      // eviction vote at the end of that" about a night decided by a JURY --
+      // the right show and the wrong ballot, which is less accurate than what
+      // it replaced. `finalVote` is the ballot that decides the season, and
+      // it is null on a show that has none, where the sentence is about the
+      // room rather than about a vote nobody cast.
+      ({ s, w }) => (w.finalVote
+        ? `Not one bitter ${w.finalVote} at the end of that. After that season. I'm genuinely moved.`
+        : `Not one bitter word at the end of that. After that season. I'm genuinely moved.`),
       ({ s }) => `Both of them played hard and neither one turned cruel about it. That's rarer than the trophy.`,
       ({ s }) => `${s} deserved it and so did the person who didn't get it. Finales are unfair like that.`,
     ],
@@ -645,7 +656,10 @@ export const TRAIT_TAKES = {
     finale: [
       ({ s }) => `${s}!!!!! ${s} WON!!!!! i have been saying this since episode one and NOBODY believed me`,
       ({ s }) => `the confetti!! the FACE!! i am crying, real crying, over confetti`,
-      ({ s }) => `that final vote pause took a YEAR off my life and i would pay it again`,
+      // A show with no final ballot has no pause before one to be ruined by.
+      ({ s, w }) => (w.finalVote
+        ? `that ${w.finalVote} pause took a YEAR off my life and i would pay it again`
+        : `that pause before they said it took a YEAR off my life and i would pay it again`),
       ({ s }) => `okay both of them were amazing and i refuse to be normal about either of them`,
       ({ s }) => `${s} did the speech and i just sat here going yes YES yes at a screen`,
       ({ s }) => `best finale in ages and i am already sad it's over, immediately, instantly sad`,
@@ -900,8 +914,8 @@ export const TRAIT_TAKES = {
     ],
     finale: [
       ({ s }) => `${s} was always going to end up there. Not because of the moves — because of the way ${s} carries a room.`,
-      ({ s }) => `That jury voted with something older than reasoning. They will explain it badly for years.`,
-      ({ s }) => `There was peace in ${s} at the end. That's what a jury actually reads.`,
+      ({ s, w }) => `${w.jury} decided with something older than reasoning. They will explain it badly for years.`,
+      ({ s, w }) => `There was peace in ${s} at the end. That's what ${w.jury} actually reads.`,
       ({ s }) => `The runner-up argued. ${s} simply was. One of those wins finales.`,
       ({ s }) => `Something closed cleanly tonight. Not every season gets that.`,
       ({ s }) => `${s} forgave them before they voted. They could feel it. That's the whole speech.`,

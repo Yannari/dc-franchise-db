@@ -23,6 +23,17 @@
     .sr-winner::before { content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:radial-gradient(circle,rgba(245,158,11,.15),transparent 70%); pointer-events:none; }
     .sr-winner-lbl { font-size:10px; font-weight:800; letter-spacing:.15em; text-transform:uppercase; color:#f59e0b; margin-bottom:16px; }
     .sr-winner-row { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+    /* A ROW WITH PROSE IN IT IS NOT A ROW. The Strategy and Legacy blocks moved
+       inside `sr-winner-info` so that a split season draws them under the
+       person the singular block actually names — right, and it turns a
+       one-line row into a paragraph with a 72px avatar floating in the middle
+       of it. Top-aligned only where there is prose, so the fifteen seasons
+       without any keep the centred row they have always had. */
+    .sr-winner-row.is-tall { align-items:flex-start; }
+    .sr-winner-row.is-tall .sr-winner-av { margin-top:4px; }
+    /* And the prose gets room to be prose. `min-width:180px` is a floor for a
+       name and a tally; a paragraph in a 180px column is a ladder. */
+    .sr-winner-row.is-tall .sr-winner-info { min-width:min(100%,320px); }
     .sr-winner-av { width:72px; height:72px; border-radius:50%; flex-shrink:0; border:3px solid rgba(245,158,11,.6); box-shadow:0 0 20px rgba(245,158,11,.3); overflow:hidden; background:rgba(255,255,255,.05); display:flex; align-items:center; justify-content:center; font-size:28px; }
     .sr-winner-av img { width:100%; height:100%; object-fit:cover; display:block; }
     .sr-winner-info { flex:1; min-width:180px; }
@@ -675,7 +686,8 @@ function buildRecords(season){
       <div class="sr-winner-lbl">👑 Season Winner${_won.length>1?'s':''}</div>
       ${_won.map(x=>{
         const own=w&&(w.playerSlug===x.playerSlug||w.name===x.name)?w:{};
-        return `<div class="sr-winner-row">
+        const tall = !!(own.strategy || own.legacy);
+        return `<div class="sr-winner-row${tall ? ' is-tall' : ''}">
         <div class="sr-winner-av">
           <img src="assets/avatars/${x.playerSlug||''}.png"
             style="display:none"
@@ -1530,8 +1542,17 @@ function buildRecords(season){
       const most = arr => arr.slice().sort((a, b) => b.n - a.n)[0];
       /* HOW MANY TIMES THIS PAGE'S OWN GRID SHOWS A NAME BEING WRITTEN DOWN.
          Not `p.votesReceived`, which a document can be published without. */
-      const votesAgainst = p => weeks.reduce((n, w) =>
+      const drawnAgainst = p => weeks.reduce((n, w) =>
         n + (Number((w.votes || {})[p.name]) || 0), 0);
+      /* THE NUMBER STAYS THE SITE'S, THE CLAIM COMES FROM THE PAGE.
+         On season 6 the record says Brody took 26 votes and the exported
+         voting history holds 19 of them -- revotes and unexported rounds are
+         real and the grid cannot show them -- so recomputing the FIGURE off
+         the grid would have quietly changed a published Total Drama number
+         and disagreed with every other page. The figure keeps the record's;
+         the "never" claim below needs BOTH sources to say never, because a
+         claim about zero is the one thing the grid can falsify outright. */
+      const votesAgainst = p => (Number(p.votesReceived) || drawnAgainst(p));
       const comps = cast.map(p => ({ name: p.name, n: hasBlock
         ? (p.bb?.hohWins || 0) + (p.bb?.vetoWins || 0) + (p.bb?.blockBusterWins || 0)
         : (p.challengeWins || 0) + (p.tr?.missionsWon || 0) }));
@@ -1571,7 +1592,7 @@ function buildRecords(season){
          count now comes from the ballots above, so the two cannot disagree. */
       const untouched = hasBlock
         ? cast.filter(p => p.placement <= 5 && !(p.bb?.timesNominated))
-        : cast.filter(p => p.placement <= 5 && !votesAgainst(p));
+        : cast.filter(p => p.placement <= 5 && !votesAgainst(p) && !drawnAgainst(p));
       if (untouched.length) {
         trivia.push(`${untouched.map(p => esc(p.name)).join(', ')} reached the end without ever
           ${hasBlock ? 'being nominated' : 'having a vote cast against them'}.`);

@@ -244,3 +244,56 @@ later task sizing a sample against that figure would be sizing against nothing.
 
 Also: the gate is now a ternary on a two-valued show flag. A future show wanting BOTH semantics
 needs `hasFranchiseHistory(name) || p.isReturnee`. Correct for both current values, flagged.
+
+## Task 3 done — one shape, two channels, and two live bugs
+
+One `votingHistory[]` row per episode; every ballot carries a `channel`
+(`banishment` / `banishment-revote` / `murder`). Murder ballots come off the conclave's own
+`argued` list, recorded as `murderBallots` -- **the overruled Traitor's ballot is unrecoverable
+from the victim, which is the point.** Night one writes no round record, so rounds are joined
+from `log` + `rounds` + `endgame.rounds` by episode number, with a test asserting no hole.
+
+**Two live bugs found and fixed, both §10.3's traps happening for real:**
+- `_rebuildByShow` resolved nested career stats with `startsWith('bb.')`, so all six `tr.*`
+  pairs read a non-existent key and **every Traitors career totalled zero**.
+- `_tagSeasonDetail`'s split-brain guard only knew Big Brother, letting a `tr` block onto a
+  **Total Drama appearance**.
+
+`stats-export.js:2874` and `social/live.js:30` were both still live and are now registry-driven
+-- `SEASON_EXPORTERS` populated by `registerSeasonExporter(format, build)` (not a slug-keyed
+literal, which the duplication guard forbids) and `roundsPath` as a registry field. Both rows
+deleted from `TERNARY_BACKLOG`, so the ratchet tightened.
+
+**It caught itself gaming its own ratchet:** the first draft of the replacement comments quoted
+the old ternary VERBATIM, which kept both counts at 1 and would have let the ratchet pass
+untightened. A guard satisfied by the text of its own fix.
+
+**Both exit verbs are produced and guarded.** `exitVerbs('traitors')` -> `['banished',
+'murdered']` from the registry; nothing writes either as a literal. Over 8 real seasons the
+export yields >40 banishments and >30 murders, and `roundLedger()` prints both and never
+`evicted`/`eliminated`/`voted out`. `show-vocabulary.test.js` gained a REGISTRY-DRIVEN arm
+applying to every registered format -- no list to extend.
+
+### For Plan 8: murder ballots are in `votes[]` and will spoil the conclave
+
+They sit alongside banishment ballots, distinguished only by `channel`. **Any screen that does
+not filter `channel === 'banishment'` displays the conclave publicly** -- the show's central
+secret, rendered to the audience. The observer contract (spec §9.1) is the right place to
+enforce it: what a given player knows, what the Faithfuls believe, what is true.
+
+Also for Plan 8: `exits[]` is unread by the two normalisers inside `season_ref.html`, which
+fall back to the banishment. Under-reporting rather than mislabelling -- an empty section
+waiting to happen.
+
+### Carried
+
+- `rankings_tr.json` deliberately not wired -- Task 6, and `BOARD_FILES`' own comment says a
+  show with no finished season has no board.
+- `AI_ANALYTICS_tr-1` is derived twice, because the canonical builder lives in
+  `current-season.html` and cannot be imported.
+- No `mergeTraitorsSeason` into `players_database.json` yet.
+- **Pre-existing failures, each confirmed by reverting the task's own files to HEAD:**
+  `roster-bio-fields` (known), plus three NOT previously named -- `live-sync-show.test.js` (2),
+  `social-live.test.js` (2), `bb-season-export.test.js` (1, collects only under
+  `vitest.sim.config.js`). `live-sync-show` greps for a source literal absent at base too: **a
+  source-text guard that stopped matching its own source.**

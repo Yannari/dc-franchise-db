@@ -681,3 +681,71 @@ carve-out errs toward over-reserving. **Keep it.**
   sample-size problem, smaller.
 - Task 7's pot figure (63,632) was taken before Task 8 shortened seasons and never re-taken.
   Head is 60,780.
+
+---
+
+# Fix round after the whole-plan review
+
+Eight findings (F1-F8) fixed or justified, each with the literal mutation that
+proves it; the report is at
+`.superpowers/sdd/2026-08-27-traitors-06-missions-powers-endgame/final-fix-report.md`.
+360 -> 365 tests, `npm run audit:tr-castle` 5.
+
+## The methodological rule, applied to this round's own figures
+
+Every number below is taken at 1,200 seasons. Two of them moved a lot against
+the 200-400 season figures the plan already records, and BOTH numbers are kept
+in the tests rather than the newer one silently replacing the older:
+
+- **The late MANDATED pact rate is 11.41% at 200 seasons (n=149) and 20.23% at
+  1,200 (n=865)** -- 2.7 sd apart, and 11.41% is what `tr-calibration.test.js`'s
+  own population reads. Its band is cut under the LOW reading for that reason.
+- **Revote-only betrayals are 3.4% of all turns at 1,200**, not the 8.6% the
+  review measured at 400. Another rare state read high on the smaller sample.
+
+And a third, which is the same lesson in the review's own instrument: the first
+measurement of the revote betrayals in this round called `alignmentAt()` AFTER
+the season loop, scoring every season against the last season's roles, and read
+438 silent ballots instead of 41. **The era trap is not only a hazard for
+tests; it is a hazard for the measurement that decides how big a defect is.**
+
+## F9: the endgame plays an already-decided game half the time — NOT CHANGED
+
+Reproduced exactly at 1,200 seasons (the review's figures were right):
+
+| | 400 seasons | 1,200 seasons |
+|---|---|---|
+| entry field, mean | 5.78 | 5.94 |
+| entry field, max | 15 | 15 |
+| enters at field >= 8 | 24.5% | 26.0% |
+| enters with NO Traitor alive | 50.7% | **51.2%** |
+| further banishments in those seasons, mean | 1.42 | **1.49** |
+| all endgame tables run in a decided game | 54.0% | **54.6%** |
+
+Entry field distribution at 1,200: `3:255 4:198 6:171 5:166 8:67 7:61 10:64
+9:56 12:49 2:37 11:33 13:27 14:9 15:7`.
+
+**Deliberately not changed in this round, for four reasons.**
+
+1. It is the mandated loop's EXIT CONDITION, not the endgame's behaviour. The
+   endgame plays whatever field it is handed and converges (max 6 tables in 400
+   seasons). Nothing in `endgame.js` decides this.
+2. Changing when the mandated loop stops moves EVERY band in Plan 6 -- faithful
+   win, both lifts, hit rate, both pact arms, entry field, pot and payout. The
+   Global Constraints say bands are re-derived only in a task explicitly
+   permitted to, and a fix round is not one.
+3. It is a design decision rather than a defect. Spec §8 does not fix the field
+   at which the mandated phase ends; choosing one is a design act needing its
+   own sweep, the way Task 6's price needed one.
+4. Everything re-cut in this round is measured against the CURRENT entry
+   distribution -- F6's endgame arm at 50.5%, and nine Shield/Dagger floors.
+   Moving the distribution in the same commit that sets them would invalidate
+   them.
+
+**What a task that takes this on has to decide**, recorded so it does not have
+to be rediscovered: at what field the mandated loop should stop (the real show
+is 4-5), and whether the 51.2% of seasons that reach the endgame with the
+Traitors already gone should end there instead of banishing a further 1.49
+Faithfuls out of their share. The second half is the sharper question -- those
+banishments are not wrong by the rules, but they are the show cutting people
+out of a prize the room has already won, and nothing in the phase knows it.

@@ -474,6 +474,22 @@ function _historyFor(name) {
   return out.sort((a, b) => a.seasonNum - b.seasonNum);
 }
 
+// DOES THE LEDGER KNOW THIS PERSON.
+//
+// The half of `isReturnee` that is about REPUTATION, named and derived so it
+// can be read on its own. `isReturnee` keeps the other half — per-season
+// casting state, reset every season (cast-ui.js), and the thing that swaps the
+// portrait (players.js). On Total Drama and Big Brother the two coincide,
+// because a returnee is the only person with a past worth carrying. On a
+// crossover show they come apart in both directions, so the two questions are
+// asked separately rather than through one flag that answers both.
+//
+// Derived, never stored: it follows the appearance ledger, including a season
+// being excluded from meta.
+export function hasFranchiseHistory(name) {
+  return !!name && _historyFor(name).length > 0;
+}
+
 function _resumeLines(name, history) {
   // One line PER SEASON — the season's headline result with notable feats
   // folded in — so a multi-season vet's card references a little of every
@@ -525,9 +541,12 @@ export function buildFranchiseMeta(cast, cfg) {
     // system that can already read the ledger means the day one is missed, that
     // player walks in with no reputation and no grudges and nothing says so.
     //
-    // The line below this one already skips anyone the ledger has nothing for,
-    // so a show that opts in needs no other check.
-    if (!fromLedger && !p.isReturnee) continue;
+    // So the question is asked through TWO predicates, not one overloaded flag:
+    // hasFranchiseHistory() answers "does the ledger know them", isReturnee
+    // answers "were they cast as a returnee". A show that opts in reads the
+    // first; the other two still read the second. Either way the ledger has the
+    // final word — a ticked box over an empty record still yields no profile.
+    if (!(fromLedger ? hasFranchiseHistory(p.name) : p.isReturnee)) continue;
     const history = _historyFor(p.name);
     if (!history.length) continue;
     let wins = 0, finals = 0, bsAuth = 0, chalW = 0, idolsP = 0, idoledOut = 0, blindsided = 0, betrayedCt = 0, caught = 0;

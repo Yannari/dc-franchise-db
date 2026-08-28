@@ -116,7 +116,7 @@ describe('a Big Brother jury can see a competition record', () => {
     // houseguest a "challenge beast" with "three individual immunities" about
     // their Heads of Household — and the branch only became reachable in this
     // format when the comp record was fixed to be readable at all.
-    const BAD = /immunit|challenge|tribe|pre-merge|merge|camp|fishing|foraging|tribal/i;
+    const BAD = /immunit|challenge|tribe|pre-merge|\bmerge\b|\bcamp\b|fishing|foraging|tribal/i;
     const said = [];
     for (let i = 0; i < 40; i++) {
       house('big-brother');

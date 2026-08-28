@@ -304,6 +304,55 @@ describe('js/shows.js is the only show list', () => {
       'nothing under js/bb/ was scanned at all').toBe(true);
   });
 
+  /* ── AND NOTHING IN THE TREE CONTAINS ONE, TEST FILES INCLUDED ────────
+     `\\b` inside a template literal is U+0008, a real backspace character, and
+     it looks perfectly correct in an editor. Four guards in this repo and one
+     production `.replace()` had never once matched because of it. The arm
+     below checks the regexes THIS file builds; this one checks the whole
+     tree, and it includes tests/ because that is where fourteen of them were
+     hiding — including an eaten `\\1` backreference, which reaches RegExp as
+     U+0001 and makes a duplicate-name check unfalsifiable.
+     A source file has no business containing either character. */
+  it('no source file in the tree holds a control character', () => {
+    const all = [];
+    const sweep = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (['node_modules', '.git', 'coverage', 'dist', 'assets',
+          'test-results', 'playwright-report'].includes(entry.name)) continue;
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) sweep(full);
+        else if (/\.(js|mjs|html)$/.test(entry.name)) all.push(full);
+      }
+    };
+    sweep(ROOT);
+    expect(all.length, 'the control-character sweep walked nothing')
+      .toBeGreaterThan(600);
+    const dirty = [];
+    for (const f of all) {
+      const text = fs.readFileSync(f, 'utf8');
+      for (const [i, line] of text.split(/\r?\n/).entries()) {
+        const bad = [...line].filter(c => {
+          const n = c.charCodeAt(0);
+          // Tab is formatting. U+0000 is allowed because there is exactly one
+          // way to write it and it is a deliberate key separator in
+          // js/tr/roundtable.js — a character that cannot appear in a name.
+          // Everything else in this range arrived by accident.
+          return n < 0x20 && n !== 9 && n !== 0;
+        });
+        if (bad.length) {
+          dirty.push(`${path.relative(ROOT, f).split(path.sep).join('/')}:${i + 1}`
+            + ` — U+${bad[0].charCodeAt(0).toString(16).padStart(4, '0')}`);
+        }
+      }
+    }
+    expect(dirty,
+      'A literal control character in source. This is almost always an escape '
+      + 'eaten by a template literal: a word boundary became U+0008 and the '
+      + 'pattern now matches nothing, or a backreference became U+0001 and is '
+      + 'gone. Build patterns by concatenation, never from a template literal.')
+      .toEqual([]);
+  });
+
   it('builds its regexes without the U+0008 trap', () => {
     for (const slug of SLUGS) {
       expect(sourceIsClean(mapKeyRe(slug)), `map regex for ${slug}`).toBe(true);

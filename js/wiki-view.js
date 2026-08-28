@@ -1445,7 +1445,7 @@ export const WIKI_CSS = `
 .wk-thin{ opacity:.65; font-style:italic; }
 /* A season of another show, inside the life timeline — the one line in there
    that is about the game rather than about the life around it. */
-.wk-life-show{ list-style:'B8  '; }
+.wk-life-show{ list-style:'\\25B8  '; }
 .wk-life-show a{ font-weight:700; }
 .wk-list{ margin:8px 0 0; padding-left:20px; }
 .wk-list li{ margin:5px 0; line-height:1.6; font-size:14.5px; }
@@ -1507,7 +1507,7 @@ export const WIKI_CSS = `
 .wk-iv-sum{ cursor:pointer; padding:11px 14px; font-weight:700; font-size:13.5px;
   font-style:italic; list-style:none; display:flex; gap:9px; align-items:center; }
 .wk-iv-sum::-webkit-details-marker{ display:none; }
-.wk-iv-sum::before{ content:'b8'; transition:transform .15s; opacity:.6;
+.wk-iv-sum::before{ content:'\\25b8'; transition:transform .15s; opacity:.6;
   font-style:normal; }
 .wk-iv[open] .wk-iv-sum::before{ transform:rotate(90deg); }
 .wk-iv-body{ margin:0; padding:0 16px 14px; }

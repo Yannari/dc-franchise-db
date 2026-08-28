@@ -29,6 +29,8 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 // not look like anything already in this repo.
 import { rpBuildConclave, trConclaveRevealNext, trConclaveRevealAll } from './vp-tr/conclave.js';
 import { rpBuildRoundTable, trRoundTableRevealNext, trRoundTableRevealAll } from './vp-tr/round-table.js';
+import { rpBuildColdOpen, trColdOpenRevealNext, trColdOpenRevealAll } from './vp-tr/cold-open.js';
+import { rpBuildHouseStatus, trHouseStatusRevealNext, trHouseStatusRevealAll } from './vp-tr/house-status.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -13538,9 +13540,20 @@ export function buildVPScreens(epRecord) {
   // on a default, because the default is the thing a later edit changes.
   if (epRecord.format === 'traitors') {
     const _obs = epRecord.observer || 'audience';
-    // IN THE ORDER THE CASTLE LIVES THEM. The table sits in the evening and
-    // the turret meets afterwards, so the public half comes first and the
-    // private half is what the episode ends on.
+    // IN THE ORDER THE CASTLE LIVES THEM. The morning opens the episode --
+    // and it opens on the PREVIOUS night, because a night runs at the end of
+    // the episode it belongs to and the castle finds out over breakfast. Then
+    // the board, which is where the day starts from. The table sits in the
+    // evening and the turret meets afterwards, so the public half of the night
+    // comes first and the private half is what the episode ends on.
+    if (epRecord.tr && epRecord.tr.dawn) {
+      vpScreens.push({ id: 'tr-cold-open', label: 'Breakfast',
+        html: rpBuildColdOpen(epRecord, _obs) });
+    }
+    if (epRecord.tr && Array.isArray(epRecord.tr.cast) && epRecord.tr.cast.length) {
+      vpScreens.push({ id: 'tr-status', label: 'The Day Book',
+        html: rpBuildHouseStatus(epRecord, _obs) });
+    }
     if (epRecord.tr && epRecord.tr.table) {
       vpScreens.push({ id: 'tr-round-table', label: 'The Round Table',
         html: rpBuildRoundTable(epRecord, _obs) });

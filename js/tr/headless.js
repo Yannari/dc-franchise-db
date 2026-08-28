@@ -15,7 +15,7 @@ import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
 // The ballot array the export builds, used unchanged. See `_tableRecord`.
 import { traitorsRoundBallots, TRAITORS_FORMAT } from './export.js';
 // The show's two exit words, from the registry. Never written as literals.
-import { exitVerbs } from '../shows.js';
+import { exitVerbs, roundExits } from '../shows.js';
 import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence } from './deduction.js';
 import { variantEvidence } from './murder-variants.js';
 import { runRoundTable } from './roundtable.js';
@@ -488,6 +488,66 @@ function _tableRecord(ep, { endgame = false } = {}) {
 }
 
 /**
+ * Everybody who had already left the castle when this episode opened.
+ *
+ * `roundExits()` is the rule and it is asked once per row already written: a
+ * Traitors round removes up to two people through two different doors and
+ * `eliminated` is only ever the public vote. Every entry keeps its verb and
+ * its channel, because "who is gone" and "how they went" are two different
+ * facts and both screens draw both.
+ */
+function _goneThrough() {
+  const out = [];
+  for (const row of gs.episodeHistory || []) {
+    for (const x of roundExits(row, TRAITORS_FORMAT)) out.push({ ...x, ep: row.num });
+  }
+  return out;
+}
+
+/**
+ * The relics, as the board draws them.
+ *
+ * `witnesses` is copied out because it is the only thing that decides what a
+ * given player is allowed to be told, and `visibility` is the tier the engine
+ * ALREADY decided against the room size it was decided in -- re-deriving it
+ * from a witness count at read time would be a second copy of a rule that has
+ * a denominator the castle no longer has.
+ */
+function _powerLedger() {
+  const copy = r => ({ ep: r.ep, holder: r.holder, witnesses: [...(r.witnesses || [])],
+    visibility: r.visibility, outcome: r.outcome, seenLine: r.seenLine || '',
+    playedEp: r.playedEp ?? null, target: r.target ?? null });
+  return {
+    shields: (gs.tr?.shields || []).map(copy),
+    daggers: (gs.tr?.daggers || []).map(copy),
+  };
+}
+
+/**
+ * The morning this episode opens on, which belongs to the night before it.
+ *
+ * `lastNight` is the previous row's `exits[]` handed over RAW, so the screen
+ * runs `roundExits()` on it itself and takes the murder channel out: a
+ * banishment happened in front of the whole room last night and is not news at
+ * breakfast. On episode one there is no previous row and no empty chair -- the
+ * cold open is an arrival instead, and the screen branches on `ofEp` being
+ * null rather than on the episode number.
+ */
+function _morning() {
+  const rows = gs.episodeHistory || [];
+  const prev = rows.length ? rows[rows.length - 1] : null;
+  return {
+    ofEp: prev ? prev.num : null,
+    lastNight: prev ? (prev.exits || []).map(x => ({ ...x })) : [],
+    pot: prev ? (prev.tr?.pot ?? 0) : 0,
+    // THE PACT STRUCK AND NOTHING HAPPENED, and it is the audience's fact
+    // alone. Everybody came down; only the people watching at home know a
+    // name was chosen upstairs and a relic ate it.
+    blocked: !!(prev && prev.tr?.conclave?.blocked),
+  };
+}
+
+/**
  * ONE `episodeHistory` ROW PER EPISODE, and it exists for js/audience.js.
  *
  * That module is show-agnostic by construction: it knows only that a show has
@@ -533,16 +593,61 @@ function _recordEpisode(ep, { banished = null, night = null, endgame = false } =
     // Everything the night's screens read, snapshotted here because `gs` is
     // replaced wholesale by the next season and rebuilt wholesale by a load.
     tr: {
+      // THE EPISODE NUMBER, ON THE RECORD AS WELL AS ON THE ROW. `num` is the
+      // VP's key -- it is what reveal state is stored under and a caller is
+      // free to renumber a copy of a row to get a fresh one. Anything that is
+      // a FACT about the season has to come off the record instead, or a
+      // screen answers "was this relic found tonight?" with the reader's
+      // scroll position.
+      ep,
       conclave,
       // The public half of the same night. `null` on a night with no table --
       // night one holds none, and the screen must not be registered for it.
       table,
       pot: gs.tr?.pot ?? 0,
+      // The pot has a ceiling and the board draws the bar against it. Read off
+      // the state the missions were scored against, never a constant retyped
+      // here -- `runMission` already prefers the state's value over its own.
+      potCeiling: gs.tr?.potCeiling ?? 0,
       living: [...(gs.activePlayers || [])],
       // WHAT THE CASTLE WAS DOING WHILE THE TURRET SAT. Beats written this
       // episode by people who were NOT in the meeting -- the other half of
       // the picture, and the only half the castle itself ever gets.
       downstairs: _downstairs(ep, conclave?.turret || []),
+      // ── WHAT THE MORNING AND THE BOARD READ (Plan 8, Task 3) ────────
+      //
+      // js/vp-tr/ imports no engine state at all -- not `gs`, not the crowd
+      // ledgers, not `gs.tr.pot`. That is the whole of "read it through the
+      // export": a screen is handed a record and cannot reach past it. So
+      // everything the cold open and the house-status board need is
+      // snapshotted here, in the shape they draw it.
+      cast: [...(gs.tr?.castOrder || [])],
+      // EVERYBODY WHO HAD ALREADY LEFT WHEN THIS EPISODE OPENED, with the
+      // door each of them went out by. Built with `roundExits()` -- the
+      // registry's own rule -- rather than off `eliminated`, which is the
+      // public vote alone: Plan 7 found NINE readers asking that field and
+      // counting a player who left by the other door as still standing.
+      //
+      // BEFORE, not through: tonight's own departures are on this row's
+      // `exits[]` already and the board applies `roundExits()` to them
+      // itself. Folding them in here would leave the screen's own call with
+      // nothing to do, and a guard on a filter that cannot change the answer
+      // is a guard that passes for free -- which is a shape this plan has
+      // shipped once per task.
+      goneBefore: _goneThrough(),
+      // The relics, with their WITNESS LISTS, because who saw the award is
+      // the mechanic's entire strategic content and the board has to be able
+      // to withhold a holder from an observer who was not there.
+      powers: _powerLedger(),
+      // ── THE MORNING, WHICH IS LAST NIGHT'S NEWS ─────────────────────
+      //
+      // A night runs at the END of the episode it belongs to; the castle
+      // finds out over breakfast the next day. So episode N's cold open is
+      // about episode N-1's night, and the record carries the previous row's
+      // own `exits[]` rather than the screen reaching back for it. The room
+      // that comes down is `cast` minus `goneBefore`, which is the same list
+      // the board opens on -- one derivation, two screens.
+      dawn: _morning(),
     },
   });
   // NO `gs.eliminated` HERE, AND THE OMISSION WAS MEASURED. Maintaining it

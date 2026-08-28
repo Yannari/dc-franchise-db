@@ -128,6 +128,8 @@ import * as quickSetupMod from './quick-setup.js';
 // attributes, so they have to be on window like every other VP builder's.
 import * as trConclaveMod from './vp-tr/conclave.js';
 import * as trRoundTableMod from './vp-tr/round-table.js';
+import * as trColdOpenMod from './vp-tr/cold-open.js';
+import * as trHouseStatusMod from './vp-tr/house-status.js';
 import * as bbRunMod from './bb-run.js';
 import * as twistContractMod from './bb/twist-contract.js';
 import * as rivalsMod from './bb/rivals.js';
@@ -231,7 +233,7 @@ const extractedModules = [
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, mineOverMatterMod, treasureIslandMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, hauntedHouseMod, hungOutMod, merryGoRoundMod, mazeOfTheFallenMod, demonsPlainerVpMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
   truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, iceIceBabyMod, findersCreepersMod, backstabbersAhoyMod, projectRunawayMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, auctionVpMod, settingsMod, themesMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
-  castUiMod, castRoomMod, studioMod, quickSetupMod, trConclaveMod, trRoundTableMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
+  castUiMod, castRoomMod, studioMod, quickSetupMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
   savestateMod,
   statsExportMod,
   audioMod,

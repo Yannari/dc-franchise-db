@@ -39,10 +39,12 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { gs, setPlayers, seasonConfig } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
-import { exitVerbs, SHOWS, publicBallots } from '../js/shows.js';
+import { exitVerbs, SHOWS, publicBallots, roundExits } from '../js/shows.js';
 import { traitorsVotingHistory } from '../js/tr/export.js';
 import { rpBuildConclave, conclaveVisibleTo, trConclaveRevealAll, _portrait } from '../js/vp-tr/conclave.js';
 import { rpBuildRoundTable, trRoundTableRevealAll } from '../js/vp-tr/round-table.js';
+import { rpBuildColdOpen, trColdOpenRevealAll } from '../js/vp-tr/cold-open.js';
+import { rpBuildHouseStatus, trHouseStatusRevealAll } from '../js/vp-tr/house-status.js';
 import { buildVPScreens } from '../js/vp-screens.js';
 import { HOSTS_BY_FORMAT } from '../js/quick-setup.js';
 import roster from '../franchise_roster.json';
@@ -305,6 +307,8 @@ describe('the exit verbs come from the registry and nowhere else', () => {
     'js/vp-tr/style.js',
     'js/vp-tr/scenery.js',
     'js/vp-tr/round-table.js',
+    'js/vp-tr/cold-open.js',
+    'js/vp-tr/house-status.js',
   ];
 
   it('no source file writes an exit verb as a literal', () => {
@@ -346,7 +350,7 @@ describe('no narration names a host', () => {
     // of four. Comments are stripped, because the file's own header has to be
     // able to explain what it is forbidding.
     for (const f of ['js/vp-tr/conclave.js', 'js/vp-tr/style.js', 'js/vp-tr/scenery.js',
-      'js/vp-tr/round-table.js']) {
+      'js/vp-tr/round-table.js', 'js/vp-tr/cold-open.js', 'js/vp-tr/house-status.js']) {
       const src = readFileSync(new URL('../' + f, import.meta.url), 'utf8')
         .replace(/\/\*[\s\S]*?\*\//g, ' ')
         .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
@@ -1612,6 +1616,556 @@ describe('no two candles in the hall are on the same beat', () => {
           .not.toBe(flare[1]);
       }
       expect(seen, `${what}: no flame declared both clocks`).toBeGreaterThan(1);
+    }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE MORNING AND THE BOARD (Plan 8, Task 3)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Same rule as the rest of this file: the LOOK of these two screens is judged
+// by rendering them, and nothing below asserts anything about CSS. What is
+// guarded here is the three things that are invisible by looking at a
+// beautiful, finished, working screen:
+//
+//   1. THE FIGURE ON THE PAGE IS THE FIGURE ON THE RECORD. A prize fund is a
+//      number, and a number that is wrong looks exactly like a number that is
+//      right. It is also the one thing on either screen a viewer will quote.
+//   2. NOBODY WHO LEFT IS DRAWN AS STILL PLAYING. Plan 7 found NINE readers
+//      asking `eliminated` — which on this show is the public vote alone — and
+//      the result was a murdered player still in the wiki grid and a
+//      two-person finale night counting eleven people alive. A roll of faces
+//      with an extra face in it is a handsome screen.
+//   3. A RELIC DOES NOT NAME ITS HOLDER TO SOMEBODY WHO WAS NOT THERE. Plan 6
+//      built the Shield semi-visibly on purpose and that visibility model IS
+//      the mechanic. A board that names every holder to everybody has deleted
+//      it, and looks identical.
+
+/** Every episode across every seed, with the run it came from. */
+const DAYS = RUNS.flatMap(r => r.episodes.map(e => ({ ep: e, run: r })));
+
+let _trN = 800000;
+/** The cold open once every beat has been revealed, on a fresh reveal state. */
+function morningRevealed(ep, observer = 'audience') {
+  const fresh = { ...ep, num: ++_trN };
+  const first = rpBuildColdOpen(fresh, observer);
+  const m = /trColdOpenRevealAll\('coldopen',(\d+),(\d+)\)/.exec(first);
+  expect(m, 'the cold open did not emit a reveal handler').toBeTruthy();
+  trColdOpenRevealAll('coldopen', Number(m[1]), Number(m[2]));
+  return rpBuildColdOpen(fresh, observer);
+}
+/** The board once every entry has been revealed, on a fresh reveal state. */
+function boardRevealed(ep, observer = 'audience') {
+  const fresh = { ...ep, num: ++_trN };
+  const first = rpBuildHouseStatus(fresh, observer);
+  const m = /trHouseStatusRevealAll\('housestatus',(\d+),(\d+)\)/.exec(first);
+  expect(m, 'the board did not emit a reveal handler').toBeTruthy();
+  trHouseStatusRevealAll('housestatus', Number(m[1]), Number(m[2]));
+  return rpBuildHouseStatus(fresh, observer);
+}
+
+/** Every place setting on the morning's table, with whether it is a gap. */
+function placesOf(html) {
+  const out = [];
+  const re = /<span class="co-place" data-down="(\d)"( data-gap="1")? data-name="([^"]*)"/g;
+  let m;
+  while ((m = re.exec(html))) out.push({ down: m[1] === '1', gap: !!m[2], name: m[3] });
+  return out;
+}
+
+// ── GUARD: THE FUND ───────────────────────────────────────────────────
+describe('the fund the board prints is the fund the record carries', () => {
+  it('the record itself agrees with the season the export publishes', () => {
+    // The chain has two links and this is the far one: the episode row's
+    // snapshot has to be the same quantity the season document ships, or the
+    // screen can be faithful to a record that is faithful to nothing.
+    for (const r of RUNS) {
+      const last = r.episodes[r.episodes.length - 1];
+      expect(last, 'a run recorded no episodes').toBeTruthy();
+      expect(typeof last.tr.pot, 'the row carries no fund at all').toBe('number');
+      expect(last.tr.pot, "the last episode's fund is not the season's")
+        .toBe(r.season.pot);
+    }
+  });
+
+  it('and the figure drawn on the page is that number, unmodified', () => {
+    let seen = 0;
+    for (const { ep } of DAYS.slice(0, 24)) {
+      const html = boardRevealed(ep);
+      // The machine-readable copy and the human-readable one, both checked: a
+      // screen can print the right number in the wrong place, and a screen can
+      // carry the right attribute over a rounded caption.
+      const raw = /<div class="db-fund-n" data-pot="(\d+)">/.exec(html);
+      expect(raw, `ep ${ep.num}: the board drew no fund at all`).toBeTruthy();
+      expect(Number(raw[1]), `ep ${ep.num}: the attribute disagrees with the record`)
+        .toBe(ep.tr.pot);
+      const printed = /<div class="db-fund-n" data-pot="\d+">&pound;([\d,]+)</.exec(html);
+      expect(printed, `ep ${ep.num}: the fund is not printed`).toBeTruthy();
+      expect(Number(printed[1].replace(/,/g, '')),
+        `ep ${ep.num}: the printed fund is not the recorded one`).toBe(ep.tr.pot);
+      seen++;
+    }
+    expect(seen, 'no board was rendered, so nothing above was checked')
+      .toBeGreaterThan(20);
+  });
+
+  it('and no screen in js/vp-tr/ can reach the engine to get it a second way', () => {
+    // THE OTHER HALF OF "READ IT THROUGH THE EXPORT". A screen that imports
+    // `gs` will eventually read the live fund for one number and the record for
+    // another, and the two disagree the moment a season is loaded from disk.
+    // The two crowd ledgers are named here for the same reason Plan 7 §Task 5
+    // confined them: they are separate quantities that look interchangeable
+    // from anywhere outside js/tr/crowd.js.
+    const FILES = ['conclave.js', 'style.js', 'scenery.js', 'round-table.js',
+      'cold-open.js', 'house-status.js'];
+    let scanned = 0;
+    for (const f of FILES) {
+      const src = readFileSync(new URL('../js/vp-tr/' + f, import.meta.url), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+      scanned++;
+      expect(/import\s*\{[^}]*\bgs\b[^}]*\}\s*from/.test(src),
+        `js/vp-tr/${f} imports engine state instead of reading its record`).toBe(false);
+      expect(/\bgs\s*[.?]/.test(src), `js/vp-tr/${f} reaches into gs`).toBe(false);
+      for (const ledger of ['notoriety', 'popularity']) {
+        expect(new RegExp('\\b' + ledger + '\\b').test(src),
+          `js/vp-tr/${f} names the ${ledger} ledger, which lives in js/tr/crowd.js`)
+          .toBe(false);
+      }
+    }
+    expect(scanned, 'no source was scanned').toBe(FILES.length);
+  });
+});
+
+// ── GUARD: NOBODY WHO LEFT IS DRAWN AS STILL PLAYING ──────────────────
+describe('the gone do not appear as living', () => {
+  /** Everybody who had left by the end of this row, by the registry's rule. */
+  function goneThrough(episodes, upTo) {
+    const out = new Set();
+    for (const row of episodes) {
+      if (row.num > upTo) continue;
+      for (const x of roundExits(row, 'traitors')) out.add(x.name);
+    }
+    return out;
+  }
+
+  it('the exits this checks against are real, and both doors are in them', () => {
+    // Everything below is a negative assertion over this set. An empty one
+    // passes the lot for free, and a set containing only the public vote
+    // passes the exact bug this guard exists for.
+    const last = RUNS[0].episodes[RUNS[0].episodes.length - 1];
+    const gone = [...goneThrough(RUNS[0].episodes, last.num)];
+    expect(gone.length, 'no season removed anybody').toBeGreaterThan(6);
+    const verbs = new Set(RUNS[0].episodes.flatMap(r =>
+      roundExits(r, 'traitors').map(x => x.verb)));
+    const [vote, night] = exitVerbs('traitors');
+    expect(verbs.has(vote), 'no public exit was recorded').toBe(true);
+    expect(verbs.has(night), 'no private exit was recorded — the guard below '
+      + 'would then pass on a reader that only knows about the vote').toBe(true);
+  });
+
+  it("the board's standing roll holds nobody who has left, by either door", () => {
+    let seen = 0;
+    let checkedAgainst = 0;
+    for (const r of RUNS) {
+      for (const ep of r.episodes) {
+        const html = boardRevealed(ep);
+        const roll = (html.match(/<span class="db-soul-nm">([^<]*)<\/span>/g) || [])
+          .map(x => /">([^<]*)</.exec(x)[1]);
+        expect(roll.length, `ep ${ep.num}: the board drew an empty roll`)
+          .toBeGreaterThan(1);
+        const gone = goneThrough(r.episodes, ep.num);
+        checkedAgainst += gone.size;
+        for (const n of roll) {
+          expect(gone.has(n),
+            `ep ${ep.num}: ${n} is on the standing roll and has already left`).toBe(false);
+        }
+        // and the arithmetic agrees: the cast, minus everybody gone
+        expect(roll.length, `ep ${ep.num}: the roll is the wrong length`)
+          .toBe(ep.tr.cast.length - gone.size);
+        seen++;
+      }
+    }
+    expect(seen, 'no board was rendered').toBeGreaterThan(30);
+    expect(checkedAgainst, 'every board was checked against an empty gone set')
+      .toBeGreaterThan(100);
+  });
+
+  it('and the breakfast table lays no place for somebody already gone', () => {
+    const [, night] = exitVerbs('traitors');
+    let seen = 0;
+    for (const r of RUNS) {
+      for (const ep of r.episodes) {
+        const html = morningRevealed(ep);
+        const laid = placesOf(html);
+        expect(laid.length, `ep ${ep.num}: the morning laid no places`).toBeGreaterThan(1);
+        // Everybody who had left BEFORE this morning. Last night's own victim
+        // is a place at this table on purpose — that is the whole screen — so
+        // they are excluded from the set this checks against.
+        const gone = goneThrough(r.episodes, ep.num - 1);
+        for (const g of roundExits({ exits: ep.tr.dawn.lastNight }, 'traitors')) {
+          if (g.verb === night) gone.delete(g.name);
+        }
+        for (const place of laid) {
+          expect(gone.has(place.name),
+            `ep ${ep.num}: a place is laid for ${place.name}, who had already left`)
+            .toBe(false);
+        }
+        seen++;
+      }
+    }
+    expect(seen, 'no morning was rendered').toBeGreaterThan(30);
+  });
+
+  it('and the two doors are drawn differently in the struck list', () => {
+    // The one place on either screen where both of this show's exit words are
+    // printed. Printing the wrong one over a departure is the bug class this
+    // directory is guarded for, and here it is the SAME show's two words, one
+    // over the other, which no vocabulary test can see.
+    const [, night] = exitVerbs('traitors');
+    const cap = w => w.charAt(0).toUpperCase() + w.slice(1);
+    let byVote = 0;
+    let byNight = 0;
+    for (const r of RUNS) {
+      const ep = r.episodes[r.episodes.length - 1];
+      const html = boardRevealed(ep);
+      const lines = html.match(/<div class="db-line" data-door="[^"]*" data-name="[^"]*">[\s\S]*?<\/div>/g) || [];
+      expect(lines.length, 'the board drew no struck entries').toBeGreaterThan(4);
+      for (const line of lines) {
+        const door = /data-door="([^"]*)"/.exec(line)[1];
+        const name = /data-name="([^"]*)"/.exec(line)[1];
+        const row = r.episodes.find(x =>
+          roundExits(x, 'traitors').some(y => y.name === name));
+        expect(row, `${name} is on the struck list and left on no recorded round`)
+          .toBeTruthy();
+        const truth = roundExits(row, 'traitors').find(y => y.name === name);
+        const want = truth.verb === night ? 'night' : 'vote';
+        expect(door, `${name} left by "${truth.verb}" and is drawn as ${door}`).toBe(want);
+        expect(line, `${name}'s entry does not carry the registry's word`)
+          .toContain(cap(truth.verb));
+        if (want === 'night') byNight++; else byVote++;
+      }
+    }
+    expect(byVote, 'no public exit was drawn').toBeGreaterThan(3);
+    expect(byNight, 'no private exit was drawn').toBeGreaterThan(3);
+  });
+});
+
+// ── GUARD: A RELIC DOES NOT NAME ITS HOLDER TO A NON-WITNESS ──────────
+describe('a relic does not name its holder to somebody who was not there', () => {
+  /** Every relic on this row's record. */
+  function relicsOf(ep) {
+    const p = (ep.tr && ep.tr.powers) || {};
+    return [...(p.shields || []), ...(p.daggers || [])];
+  }
+  /** Only the relic entry's markup — the roll two entries up is public. */
+  function relicBlocks(html) {
+    return html.match(/<div class="db-relic" [\s\S]*?<\/div><\/div>/g) || [];
+  }
+  /** The relics this row's board will actually draw. */
+  const drawable = ep => relicsOf(ep).filter(r => r.ep === ep.num || r.outcome === 'held');
+
+  const withRelic = DAYS.filter(({ ep }) => drawable(ep).length);
+
+  it('a real season finds relics at all, or every arm below is vacuous', () => {
+    expect(withRelic.length, 'no played season put a relic on any board')
+      .toBeGreaterThan(2);
+    const anyWitnessed = withRelic.some(({ ep }) =>
+      drawable(ep).some(r => (r.witnesses || []).length > 0));
+    expect(anyWitnessed, 'no relic was seen by anybody, so no observer can be '
+      + 'entitled and the positive half below proves nothing').toBe(true);
+    const anyBlind = withRelic.some(({ ep }) => drawable(ep).some(r =>
+      ep.tr.cast.some(n => n !== r.holder && (r.witnesses || []).indexOf(n) < 0)));
+    expect(anyBlind, 'every relic was seen by the whole castle, so the negative '
+      + 'half below proves nothing either').toBe(true);
+  });
+
+  it('the audience is told, and so are the holder and the people who saw it', () => {
+    let told = 0;
+    for (const { ep } of withRelic) {
+      for (const r of drawable(ep)) {
+        const seers = ['audience', 'player:' + r.holder,
+          ...(r.witnesses || []).slice(0, 1).map(w => 'player:' + w)];
+        for (const obs of seers) {
+          const mine = relicBlocks(boardRevealed(ep, obs))
+            .filter(b => b.includes('data-holder="' + r.holder + '"'));
+          expect(mine.length,
+            `ep ${ep.num}: ${obs} was not told who is carrying it`).toBeGreaterThan(0);
+          told++;
+        }
+      }
+    }
+    expect(told, 'nobody entitled was checked').toBeGreaterThan(5);
+  });
+
+  it('and a player who did not see it is told nothing but that it exists', () => {
+    let checked = 0;
+    for (const { ep } of withRelic) {
+      for (const r of drawable(ep)) {
+        const blind = ep.tr.cast.find(n => n !== r.holder
+          && (r.witnesses || []).indexOf(n) < 0);
+        if (!blind) continue;
+        const blocks = relicBlocks(boardRevealed(ep, 'player:' + blind));
+        // The entry is still DRAWN — the castle knows something came back out
+        // of the field. It is the NAME that is missing.
+        expect(blocks.length,
+          `ep ${ep.num}: the relic vanished entirely for ${blind}`).toBeGreaterThan(0);
+        const all = blocks.join('');
+        expect(all.includes('data-holder'),
+          `ep ${ep.num}: the relic carries a holder for ${blind}, who never saw it`)
+          .toBe(false);
+        expect(mentions(all, r.holder),
+          `ep ${ep.num}: ${r.holder} is named on the relic to ${blind}, who never saw it`)
+          .toBe(false);
+        expect(all.includes('data-known="0"'),
+          `ep ${ep.num}: the relic is not marked unattributed for ${blind}`).toBe(true);
+        checked++;
+      }
+    }
+    expect(checked, 'no non-witness was checked, so this guard proved nothing')
+      .toBeGreaterThan(2);
+  });
+});
+
+// ── GUARD: NEITHER SCREEN SPEAKS ANOTHER SHOW'S LANGUAGE ──────────────
+describe("the morning and the book use no other show's words", () => {
+  it('nothing either screen prints belongs to another show', () => {
+    let checked = 0;
+    for (const { ep } of DAYS.slice(0, 20)) {
+      for (const pair of [['the morning', morningRevealed(ep)],
+        ['the book', boardRevealed(ep)]]) {
+        const text = strip(pair[1]);
+        expect(text.length, `${pair[0]}: rendered nothing`).toBeGreaterThan(200);
+        expect(foreignWordsIn(text, 'traitors'),
+          `ep ${ep.num}: ${pair[0]} printed another show's vocabulary`).toEqual([]);
+        checked++;
+      }
+    }
+    expect(checked, 'no screen was scanned').toBeGreaterThan(20);
+  });
+
+  it("and a player observer's render is prose too, so it is checked as well", () => {
+    const { ep } = DAYS[6];
+    const who = ep.tr.cast[0];
+    for (const pair of [['the morning', morningRevealed(ep, 'player:' + who)],
+      ['the book', boardRevealed(ep, 'player:' + who)]]) {
+      expect(strip(pair[1]).length, `${pair[0]}: rendered nothing`).toBeGreaterThan(200);
+      expect(foreignWordsIn(strip(pair[1]), 'traitors'), pair[0]).toEqual([]);
+    }
+  });
+});
+
+// ── GUARD: BOTH SCREENS ARE REACHABLE FROM A PLAYED SEASON ────────────
+//
+// This project's signature bug class. Asked of `buildVPScreens` rather than of
+// the builder, because calling the builder proves it returns HTML, which is
+// exactly what every unreachable screen in this repo also did.
+describe('the morning and the book are reachable from a played season', () => {
+  it('every episode a season records registers both of them', () => {
+    let reached = 0;
+    for (const r of RUNS) {
+      for (const ep of r.episodes) {
+        const screens = buildVPScreens(ep);
+        const co = screens.find(x => x.id === 'tr-cold-open');
+        const db = screens.find(x => x.id === 'tr-status');
+        expect(co, `ep ${ep.num}: the cold open is not reachable`).toBeTruthy();
+        expect(db, `ep ${ep.num}: the board is not reachable`).toBeTruthy();
+        expect(strip(co.html).length, `ep ${ep.num}: the cold open rendered nothing`)
+          .toBeGreaterThan(200);
+        expect(strip(db.html), `ep ${ep.num}: the board does not print the fund`)
+          .toContain(String(ep.tr.pot).replace(/\B(?=(\d{3})+(?!\d))/g, ','));
+        reached++;
+      }
+    }
+    expect(reached, 'no episode reached either screen').toBeGreaterThan(30);
+  });
+
+  it('and the morning opens the episode, before the evening and the night', () => {
+    // The order is the claim: a night runs at the END of the episode it
+    // belongs to and the castle finds out at the next breakfast, so the cold
+    // open is the FIRST screen of the row and the turret is the last.
+    const ep = RUNS[0].episodes[4];
+    const ids = buildVPScreens(ep).map(x => x.id);
+    expect(ids.length, 'the episode registered no screens').toBeGreaterThan(3);
+    expect(ids.indexOf('tr-cold-open')).toBe(0);
+    expect(ids.indexOf('tr-status')).toBe(1);
+    expect(ids.indexOf('tr-round-table')).toBeGreaterThan(ids.indexOf('tr-status'));
+    expect(ids.indexOf('tr-conclave')).toBe(ids.length - 1);
+  });
+
+  it('and the morning it draws is the PREVIOUS night, not this one', () => {
+    // The commonest way to get this screen wrong is to draw the row's own
+    // turret over its own breakfast, which is a whole day early and has the
+    // castle mourning somebody who is sitting at the table.
+    const [, night] = exitVerbs('traitors');
+    const r = RUNS[0];
+    let checked = 0;
+    let withAGap = 0;
+    for (let i = 1; i < r.episodes.length; i++) {
+      const ep = r.episodes[i];
+      const prev = r.episodes[i - 1];
+      expect(ep.tr.dawn.ofEp, `ep ${ep.num}: the morning is about the wrong night`)
+        .toBe(prev.num);
+      const shouldMiss = roundExits(prev, 'traitors')
+        .filter(x => x.verb === night).map(x => x.name).sort();
+      const gaps = placesOf(morningRevealed(ep)).filter(p => p.gap)
+        .map(p => p.name).sort();
+      expect(gaps, `ep ${ep.num}: the empty places are the wrong people`)
+        .toEqual(shouldMiss);
+      checked++;
+      if (gaps.length) withAGap++;
+    }
+    expect(checked, 'no morning was compared with the night before it')
+      .toBeGreaterThan(5);
+    // TWO EMPTY LISTS ARE EQUAL. Without this the arm above passes on a screen
+    // that never draws a gap at all, which is the failure it exists to catch.
+    expect(withAGap, 'not one morning drew an empty place, so the comparison '
+      + 'above was between two empty lists every time').toBeGreaterThan(4);
+    expect(r.episodes[0].tr.dawn.ofEp,
+      'the first morning claims to be about a night before the season').toBe(null);
+  });
+});
+
+// ── GUARD: THE REVEAL CONTRACT, ON BOTH ───────────────────────────────
+describe('the morning and the book honour the reveal pattern', () => {
+  const cases = () => [
+    ['the morning', rpBuildColdOpen({ ...DAYS[5].ep, num: ++_trN }, 'audience'),
+      'co', 'coldopen', 'trColdOpenReveal'],
+    ['the book', rpBuildHouseStatus({ ...DAYS[5].ep, num: ++_trN }, 'audience'),
+      'db', 'housestatus', 'trHouseStatusReveal'],
+  ];
+
+  it('step divs, counter, controls and stage are all addressable by id', () => {
+    for (const c of cases()) {
+      const what = c[0]; const html = c[1]; const p = c[2];
+      const suffix = c[3]; const fn = c[4];
+      expect(html, `${what}: no counter`).toContain('id="' + p + '-counter-' + suffix + '"');
+      expect(html, `${what}: no controls`).toContain('id="' + p + '-controls-' + suffix + '"');
+      expect(html, `${what}: no first step`).toContain('id="' + p + '-step-' + suffix + '-0"');
+      expect(html, `${what}: no stage`).toContain('id="' + p + '-stage-inner"');
+      // Inline handlers BAKE their targets — renderVPScreen wipes reveal state
+      // on every paint and there is no closure left to hold them.
+      expect(html, `${what}: the handlers do not bake their targets`)
+        .toMatch(new RegExp(fn + "Next\\('" + suffix + "',\\d+,\\d+\\)"));
+      expect(html, `${what}: no reveal-all handler`)
+        .toMatch(new RegExp(fn + "All\\('" + suffix + "',\\d+,\\d+\\)"));
+    }
+  });
+
+  it('and a screen opened and never clicked is not blank', () => {
+    // The beats are height:0 until the visible class is on them, and that
+    // class is only ever added by `_reapplyVisibility`, which only runs from a
+    // click. The conclave shipped exactly this defect once.
+    for (const c of cases()) {
+      const what = c[0]; const html = c[1]; const p = c[2];
+      const beats = [];
+      const re = new RegExp('<div class="(' + p + '-beat[^"]*)" id="' + p
+        + '-step-[a-z]+-[0-9]+"', 'g');
+      let m;
+      while ((m = re.exec(html))) beats.push(m[1]);
+      expect(beats.length, `${what}: rendered no beats at all`).toBeGreaterThan(3);
+      expect(beats[0], `${what}: opens on a collapsed first beat`).toContain(p + '-vis');
+      expect(beats.filter(b => b.includes(p + '-vis')).length,
+        `${what}: a fresh screen revealed more than the beat it is sitting on`).toBe(1);
+    }
+  });
+
+  it('and a reader who had revealed it gets back what they revealed', () => {
+    for (const c of [['the morning', morningRevealed(DAYS[5].ep), 'co'],
+      ['the book', boardRevealed(DAYS[5].ep), 'db']]) {
+      const what = c[0]; const html = c[1]; const p = c[2];
+      const beats = [];
+      const re = new RegExp('<div class="(' + p + '-beat[^"]*)" id="' + p
+        + '-step-[a-z]+-[0-9]+"', 'g');
+      let m;
+      while ((m = re.exec(html))) beats.push(m[1]);
+      // `every` on an empty list is true, and a regex that matched nothing
+      // would hand this arm a free pass — which is how it first shipped.
+      expect(beats.length, `${what}: rendered no beats at all`).toBeGreaterThan(3);
+      expect(beats.every(b => b.includes(p + '-vis')),
+        `${what}: a fully revealed screen came back collapsed`).toBe(true);
+    }
+  });
+});
+
+// ── GUARD: THE STICKY STAGE, ON BOTH ──────────────────────────────────
+//
+// The conclave's bug had TWO causes and both are checked: `overflow:hidden` on
+// the shell makes it a scroll container and kills sticky for every descendant,
+// AND the sticky element has to be the inner panel the handlers replace rather
+// than a rail exactly as tall as its own grid. And the clip layer must take no
+// z-index, or it becomes a stacking context and re-grades every blend.
+describe('the sticky stage is not killed by the shell clip, on either screen', () => {
+  const built = () => [
+    ['the morning', rpBuildColdOpen(DAYS[5].ep, 'audience'), 'co'],
+    ['the book', rpBuildHouseStatus(DAYS[5].ep, 'audience'), 'db'],
+  ];
+
+  it('the shell does not clip, and a scenery layer does it instead', () => {
+    for (const c of built()) {
+      const what = c[0]; const html = c[1]; const p = c[2];
+      const shell = new RegExp('\\.' + p + '-shell\\{([^}]*)\\}').exec(html);
+      expect(shell, `${what}: no shell rule`).toBeTruthy();
+      expect(shell[1], `${what}: the shell clips again and the stage will not stick`)
+        .not.toMatch(/overflow:\s*(hidden|auto|scroll|clip)/);
+      expect(shell[1], `${what}: the shell does not declare overflow at all`)
+        .toMatch(/overflow:\s*visible/);
+      expect(html, `${what}: no clip layer`)
+        .toContain('.' + p + '-scenery{position:absolute;inset:0;overflow:hidden');
+    }
+  });
+
+  it('the element that sticks is the one the handlers replace, and it has range', () => {
+    for (const c of built()) {
+      const what = c[0]; const html = c[1]; const p = c[2];
+      const panel = new RegExp('\\.' + p + '-stage\\{([^}]*)\\}').exec(html);
+      expect(panel, `${what}: no stage rule`).toBeTruthy();
+      expect(panel[1], `${what}: the stage does not stick`).toMatch(/position:\s*sticky/);
+      expect(panel[1], `${what}: the stage is drawn over the nav bar`).toMatch(/top:46px/);
+      expect(html, `${what}: the stage is not addressable`)
+        .toContain('id="' + p + '-stage-inner"');
+      const stageAt = html.indexOf('<div class="' + p + '-stage" id="' + p + '-stage-inner">');
+      const mainAt = html.indexOf('<main class="' + p + '-main">');
+      expect(stageAt, `${what}: the stage is not in the markup`).toBeGreaterThan(-1);
+      expect(stageAt, `${what}: the stage is inside the stream it must stay above`)
+        .toBeLessThan(mainAt);
+    }
+  });
+
+  it('the clip layer takes no z-index, or the blend modes change picture', () => {
+    for (const c of built()) {
+      const layer = new RegExp('\\.' + c[2] + '-scenery\\{([^}]*)\\}').exec(c[1]);
+      expect(layer, `${c[0]}: no clip layer rule`).toBeTruthy();
+      expect(layer[1], c[0]).not.toMatch(/z-index/);
+    }
+  });
+});
+
+// ── GUARD: THE FACES ARE NEUTRAL HERE TOO ─────────────────────────────
+describe("neither screen borrows the turret's lamp", () => {
+  it('not one face on the morning or the board is lit', () => {
+    for (const c of [['the morning', morningRevealed(DAYS[5].ep)],
+      ['the book', boardRevealed(DAYS[5].ep)]]) {
+      const opens = c[1].match(/<span class="cv-av(?: cv-lit)?"/g) || [];
+      expect(opens.length, `${c[0]}: drew no portraits`).toBeGreaterThan(4);
+      for (const o of opens) {
+        expect(o, `${c[0]}: a face arrived pre-darkened: ${o}`).not.toContain('cv-lit');
+      }
+      expect(c[1], `${c[0]}: the conclave's lighting followed the helper here`)
+        .not.toContain('.cv-av.cv-lit::before');
+    }
+  });
+
+  it('and the shared portrait rules are one copy, imported, not retyped', () => {
+    const rule = new RegExp('\\n\\.cv-av\\{[^}]*\\}');
+    const turret = rpBuildConclave(NIGHTS[0].ep, 'audience');
+    expect(rule.exec(turret), 'the turret has no portrait rule to compare against')
+      .toBeTruthy();
+    for (const c of [['the morning', rpBuildColdOpen(DAYS[5].ep, 'audience')],
+      ['the book', rpBuildHouseStatus(DAYS[5].ep, 'audience')]]) {
+      expect(rule.exec(c[1]), `${c[0]}: no portrait rule`).toBeTruthy();
+      expect(rule.exec(c[1])[0], c[0]).toBe(rule.exec(turret)[0]);
     }
   });
 });

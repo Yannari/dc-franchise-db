@@ -749,3 +749,57 @@ Traitors already gone should end there instead of banishing a further 1.49
 Faithfuls out of their share. The second half is the sharper question -- those
 banishments are not wrong by the rules, but they are the show cutting people
 out of a prize the room has already won, and nothing in the phase knows it.
+
+---
+
+# PLAN 6 CLOSED — 365 tests, 15 bands, credibility ceiling intact
+
+Missions and a pot never maxed (0/1200, mean 0.51 of ceiling) · knowledge as currency
+(+3.28pp late lift, t=8.90) · Shield (95.9% expire unused) · Dagger (decides a banishment in
+9.3% of seasons) · weighted Traitor betrayal (0% at fields 7-20, 42.5% at 5, 80.8% at 4, 88.6%
+at 3) · the Banish-or-End-Game endgame (Faithfuls win 54.6%) · the Seer (one `observed` belief
+per season) · seven murder variants each leaving evidence the others do not.
+
+**Credibility ceiling verified by sweeping all 15 `learn()` call sites individually: exactly
+three `public` (turret, reveal, recruit) and exactly one `observed` (the Seer).** `learn()`
+DEFAULTS `sourceType='observed'`, and every alignment caller passes it explicitly -- that
+default is the standing risk.
+
+## The three lessons this plan taught
+
+**1. A methodological finding does not reach the other measurements in its own task.** Task 8
+discovered that 400 seasons cannot price a channel firing on ~5% of nights, applied it to its
+z-scores, and then took its band attribution at 200 seasons on a variant firing 47 times. The
+result inverted at scale (105.6% -> 6.8%) and I promoted it into this plan as binding. When you
+establish something about method, sweep your OWN figures against it before reporting any.
+
+**2. The recompute-alignment trap applies to MEASUREMENT, not just tests.** The fix round
+counted revote betrayals with `alignmentAt()` after the season loop and read **438 where the
+truth was 41** -- a defect sized ten times too large. Alignment has eras; recomputing it at
+season end misreads everyone who flipped. This plan already recorded that as a hazard for
+tests. It is equally one for the measurement that sizes a defect, and the review's own 8.6%
+figure was really 3.4% for exactly this reason.
+
+**3. `\b` inside a template literal is U+0008, and the guard can never match.** Found in
+`tr-murder.test.js` (passed on every implementation since it was written), then swept: three
+more in the suite, **and one in PRODUCTION** -- `js/rankings-update.js:1205` builds a regex
+parsing to `...s+(?:Winner|Pd+)...`, so that `.replace()` has never stripped anything on the
+live rankings path. Invisible by inspection; only character codes reveal it.
+
+## Carried out of Plan 6
+
+- **`js/rankings-update.js:1205` is a live production bug** and needs a task that can look at
+  rankings output. Not this plan's.
+- **Assume every pre-Task-8 rare-state figure in this plan is un-re-measured.** Two are already
+  known wrong on the small sample in the same direction (11.41% -> 20.23%, 8.6% -> 3.4%).
+- **F9, deliberately not changed:** 26% of endgames enter at field >=8 (max 15), 51.2% enter
+  with no Traitor alive, and 54.6% of endgame tables run in an already-decided game. Six
+  figures reproduce exactly at 1,200. This is the MANDATED LOOP'S EXIT CONDITION, not the
+  endgame's fault; moving it moves every band in the plan, and the spec does not make the
+  decision. A future task must decide it deliberately.
+- `shield.cost` still has no reader (five tasks). `COMMIT_LINES.kept` in
+  `js/tr/castle/trust.js` is still wrong and still needs a task allowed to move bands.
+- Pre-existing, unrelated, present at base: `tests/roster-bio-fields.test.js` "keeps the
+  paragraph breaks in authored prose" fails.
+- `tr-powers.test.js` is now ~56s (tr suite 81s) -- the price of sizing four arms to their
+  rare states. Correct trade, worth knowing.

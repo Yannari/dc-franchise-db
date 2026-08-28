@@ -40,13 +40,16 @@ import { readFileSync } from 'node:fs';
 import { gs, setPlayers, seasonConfig } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { exitVerbs, SHOWS, publicBallots, roundExits } from '../js/shows.js';
-import { traitorsVotingHistory } from '../js/tr/export.js';
+import { traitorsVotingHistory, buildTraitorsSeasonDocument } from '../js/tr/export.js';
+import { seasonWinners } from '../js/records.js';
+import { _setEndgameWatch } from '../js/tr/endgame.js';
 import { rpBuildConclave, conclaveVisibleTo, trConclaveRevealAll, _portrait } from '../js/vp-tr/conclave.js';
 import { rpBuildRoundTable, trRoundTableRevealAll } from '../js/vp-tr/round-table.js';
 import { rpBuildColdOpen, trColdOpenRevealAll } from '../js/vp-tr/cold-open.js';
 import { rpBuildHouseStatus, trHouseStatusRevealAll } from '../js/vp-tr/house-status.js';
 import { rpBuildMission, trMissionRevealAll } from '../js/vp-tr/mission.js';
 import { rpBuildRecruitment, trRecruitmentRevealAll } from '../js/vp-tr/recruitment.js';
+import { rpBuildEndgame, trEndgameRevealAll } from '../js/vp-tr/endgame.js';
 import { buildVPScreens } from '../js/vp-screens.js';
 import { HOSTS_BY_FORMAT } from '../js/quick-setup.js';
 import roster from '../franchise_roster.json';
@@ -311,6 +314,9 @@ describe('the exit verbs come from the registry and nowhere else', () => {
     'js/vp-tr/round-table.js',
     'js/vp-tr/cold-open.js',
     'js/vp-tr/house-status.js',
+    'js/vp-tr/mission.js',
+    'js/vp-tr/recruitment.js',
+    'js/vp-tr/endgame.js',
   ];
 
   it('no source file writes an exit verb as a literal', () => {
@@ -353,7 +359,7 @@ describe('no narration names a host', () => {
     // able to explain what it is forbidding.
     for (const f of ['js/vp-tr/conclave.js', 'js/vp-tr/style.js', 'js/vp-tr/scenery.js',
       'js/vp-tr/round-table.js', 'js/vp-tr/cold-open.js', 'js/vp-tr/house-status.js',
-      'js/vp-tr/mission.js', 'js/vp-tr/recruitment.js']) {
+      'js/vp-tr/mission.js', 'js/vp-tr/recruitment.js', 'js/vp-tr/endgame.js']) {
       const src = readFileSync(new URL('../' + f, import.meta.url), 'utf8')
         .replace(/\/\*[\s\S]*?\*\//g, ' ')
         .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
@@ -2713,5 +2719,763 @@ describe('the mission and the offer are reachable from a played season', () => {
     expect(ids.indexOf('tr-status'), 'the day book is not registered').toBeGreaterThan(-1);
     expect(ids.indexOf('tr-mission')).toBeGreaterThan(ids.indexOf('tr-status'));
     expect(ids.indexOf('tr-round-table')).toBeGreaterThan(ids.indexOf('tr-mission'));
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE ENDGAME (Plan 8, Task 5)
+// ══════════════════════════════════════════════════════════════════════
+//
+// The last screen, and the one whose whole design is an ABSENCE: spec 8 says
+// there are no reveals at a finale table, so the survivors answer on nerve and
+// the screen has to withhold the payoff every other screen in this set
+// delivers. What is guarded here is what stays invisible on a beautiful,
+// finished, working screen:
+//
+//   1. NO ALIGNMENT IS REVEALED AT ANY ENDGAME TABLE. `endgameChoice` returns
+//      the whole basis of a decision and half of that basis is ground truth --
+//      a `role` read off `alignmentAt`, a `fellows` list that exists on one
+//      side only. A record that spread it would hand the screen every
+//      survivor's alignment at the exact table the format says nothing is
+//      revealed at. Guarded on the RECORD and on the SCREEN, because the two
+//      fail for different reasons.
+//   2. A CO-WINNER ENDING RENDERS ALL WINNERS. Up to four people split this
+//      pot and js/tr/export.js is explicit that picking a main winner out of
+//      `winners[]` is inventing a fact. `seasonWinners()` is the rule.
+//   3. THE POT SPLIT MATCHES THE EXPORT. The money is the one figure a viewer
+//      will quote, and a wrong one looks exactly like a right one.
+//   4. THE OBSERVER CONTRACT, and on this screen it is a secret ballot: the
+//      audience reads every slip, a player reads their own and nobody else's.
+
+/**
+ * A dedicated seed set, sized to the endings rather than to the episodes.
+ *
+ * MEASURED, NOT GUESSED. The shared four seeds produce a lone Traitor twice
+ * and a four-way split of Faithfuls twice, and NEVER a pair of Traitors
+ * dividing the pot -- which is the co-winner case with somebody left standing
+ * beside them to be robbed, and the one the "render all the winners" guard
+ * exists for. Across these twenty it fires, and every branch below asserts its
+ * own count before it asserts anything about the members.
+ */
+const END_SEEDS = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39];
+const END_RUNS = END_SEEDS.map(season);
+/**
+ * The last row of each season, which is where the phase record rides.
+ *
+ * `tr.endgame` is attached to the LAST row rather than to a night of its own,
+ * because the endgame can force six extra tables or none at all -- when the
+ * first ask is unanimous there is no row written for it, so there is no
+ * episode number to key it to.
+ */
+const ENDINGS = END_RUNS.map(r => ({
+  run: r, ep: r.episodes[r.episodes.length - 1], season: r.season,
+})).filter(e => e.ep && e.ep.tr && e.ep.tr.endgame);
+
+/** The endgame once every card has been dealt, on a fresh reveal state. */
+function endgameRevealed(ep, observer = 'audience') {
+  const fresh = { ...ep, num: ++_trN };
+  const first = rpBuildEndgame(fresh, observer);
+  const m = /trEndgameRevealAll\('endgame',(\d+),(\d+)\)/.exec(first);
+  expect(m, 'the endgame did not emit a reveal handler').toBeTruthy();
+  trEndgameRevealAll('endgame', Number(m[1]), Number(m[2]));
+  return rpBuildEndgame(fresh, observer);
+}
+/** Every slip on the screen, as `{ name, choice }`. */
+function slipsOf(html) {
+  const out = [];
+  const re = /<span class="lt-slip" data-choice="([a-z]+)" data-name="([^"]*)">/g;
+  let m;
+  while ((m = re.exec(String(html)))) out.push({ choice: m[1], name: m[2] });
+  return out;
+}
+/**
+ * Everything the screen prints BEFORE the money card is dealt.
+ *
+ * The stylesheet comes off FIRST, and it has to: the CSS names every card
+ * kind, so a search for the money card in raw markup finds the rule that
+ * styles it, three hundred lines above the hero plate, and "before the money"
+ * becomes "the first two hundred bytes of a font import".
+ */
+function beforeTheMoney(html) {
+  const body = String(html).replace(/<style[\s\S]*?<\/style>/gi, ' ');
+  const i = body.indexOf('data-kind="money"');
+  expect(i, 'the screen never dealt a money card').toBeGreaterThan(-1);
+  return body.slice(0, i);
+}
+
+// THE SUBTRACTIVE HELPER, ASSERTED. Every arm that reads it is a NEGATIVE
+// assertion, so a helper that cut too much would pass the lot of them for
+// free -- Task 4's fifth vacuous shape, and this one cuts twice.
+/**
+ * The alignment words in a stretch of the screen, if any.
+ *
+ * THE SHOW'S OWN NAME COMES OUT FIRST. The eyebrow reads "The Traitors -
+ * Night 9" on every screen in this directory, so a bare search for the word
+ * finds the title of the programme on a screen that has revealed nothing at
+ * all -- and a guard nobody can satisfy is a guard somebody deletes.
+ */
+function alignmentWordsIn(text) {
+  // Built by concatenation, so the boundary must be written '\\b'. A bare
+  // '\b' inside a string literal is U+0008 and the regex then matches nothing
+  // whatever. This helper shipped exactly that defect for one run of the
+  // suite -- a heredoc ate a level of escaping on the way into the file --
+  // and the arm below is the only reason it did not stay shipped.
+  const bare = String(text).replace(new RegExp('\\bThe Traitors\\b', 'g'), ' ');
+  return ['Traitor', 'Traitors', 'Faithful', 'Faithfuls']
+    .filter(w => new RegExp('\\b' + w + '\\b', 'i').test(bare));
+}
+
+// AND THE STRIPPER IS ASSERTED, because it is subtractive and every arm that
+// reads it is negative. One that ate the whole sentence would pass all of them.
+describe('the alignment matcher finds a side and not the name of the show', () => {
+  it('drops the title and keeps a real one', () => {
+    expect(alignmentWordsIn('The Traitors &middot; Night 9')).toEqual([]);
+    expect(alignmentWordsIn('The Traitors &middot; Night 9. Bowie was a Traitor.'))
+      .toContain('Traitor');
+    expect(alignmentWordsIn('Nobody here was lying: four Faithfuls.'))
+      .toContain('Faithfuls');
+    expect(alignmentWordsIn('The room sat down and wrote one word each.')).toEqual([]);
+  });
+});
+
+describe('the before-the-money helper keeps the screen and drops the stylesheet', () => {
+  it('cuts at the card and not at the rule that paints it', () => {
+    const html = '<style>.lt-card[data-kind="money"]{color:red}</style>'
+      + '<p>The room sat down.</p><div class="lt-card" data-kind="money">Bowie</div>';
+    const early = beforeTheMoney(html);
+    expect(early, 'the helper cut inside the stylesheet').toContain('The room sat down.');
+    expect(early, 'the money card survived the cut').not.toContain('Bowie');
+    expect(early, 'the stylesheet survived the cut').not.toContain('color:red');
+  });
+});
+
+describe('the endgame record reaches the screen at all', () => {
+  it('every season played writes one, and it holds asks and money', () => {
+    expect(ENDINGS.length, 'no season across twenty seeds recorded an endgame')
+      .toBe(END_SEEDS.length);
+    for (const { ep } of ENDINGS) {
+      const e = ep.tr.endgame;
+      expect(e.asks.length, 'an endgame that never asked anybody').toBeGreaterThan(0);
+      expect(e.takers.length, 'an endgame nobody won').toBeGreaterThan(0);
+      expect(['faithfuls', 'traitors']).toContain(e.winner);
+      // The loop's own rule: it stops when, and only when, nobody asked for
+      // another table. Anything else means the record is holding a phase that
+      // ended for a reason the format does not have.
+      expect(e.asks[e.asks.length - 1].unanimous,
+        'the endgame stopped on an ask somebody wanted another table at').toBe(true);
+      // One table per ask that was not unanimous, and never one more.
+      expect(e.tables.length).toBe(e.asks.filter(a => !a.unanimous).length);
+    }
+  });
+
+  it('and the sample contains all three endings the screen has to draw', () => {
+    // COUNTS FIRST. Every arm below reads one of these three sets, and a set
+    // that came back empty would make its arm pass without rendering a thing.
+    const lone = ENDINGS.filter(e => e.ep.tr.endgame.takers.length === 1);
+    const split = ENDINGS.filter(e => e.ep.tr.endgame.takers.length > 1);
+    const robbed = ENDINGS.filter(e => e.ep.tr.endgame.winner === 'traitors'
+      && e.ep.tr.endgame.losers.length);
+    const clean = ENDINGS.filter(e => e.ep.tr.endgame.winner === 'faithfuls');
+    const pair = split.filter(e => e.ep.tr.endgame.winner === 'traitors');
+    expect(lone.length, 'no season ended on a single taker').toBeGreaterThan(4);
+    expect(split.length, 'no season ended on a split pot').toBeGreaterThan(4);
+    expect(robbed.length, 'no season ended with somebody robbed').toBeGreaterThan(4);
+    expect(clean.length, 'no season ended clean').toBeGreaterThan(4);
+    // The rarest of the four, and the reason this file does not use the shared
+    // four seeds for the endgame: a PAIR of Traitors dividing the pot in front
+    // of the people they took it from fires nowhere in seeds 1, 3, 7 and 11.
+    expect(pair.length, 'no season ended on two cloaks sharing the money')
+      .toBeGreaterThan(0);
+  });
+});
+
+// ── GUARD 1: NO ALIGNMENT IS REVEALED AT AN ENDGAME TABLE ─────────────
+describe('the endgame turns nobody over', () => {
+  it('CONTROL: the engine really does decide this on ground truth', () => {
+    // Without this the record arm below is a guard on fields nothing writes.
+    // `_setEndgameWatch` is the engine's own hook and it hands over the WHOLE
+    // basis of every decision as it is made -- including a `role` read
+    // straight off `alignmentAt`, and a `fellows` list that exists on one side
+    // only. Recomputing `endgameChoice` after the fact would be worse than
+    // useless here: it reads `gs`, and `gs` is replaced wholesale by the next
+    // season, so a late call answers about a castle that no longer exists.
+    const watched = [];
+    const restore = _setEndgameWatch(c => watched.push(c));
+    let run;
+    try { run = season(101); } finally { restore(); }
+    const ep = run.episodes[run.episodes.length - 1];
+    expect(watched.length, 'nobody was asked, so this control proves nothing')
+      .toBeGreaterThan(1);
+    expect(watched.some(c => c.role === 'traitor'),
+      'no watched decision was made by a Traitor').toBe(true);
+    expect(watched.some(c => c.role === 'faithful'),
+      'no watched decision was made by a Faithful').toBe(true);
+    expect(watched.some(c => Array.isArray(c.fellows) && c.fellows.length
+      || c.appetite != null),
+      'endgameChoice stopped returning the Traitor side of the decision').toBe(true);
+    // The record is a PRUNED COPY OF THE SAME DECISION -- same people, same
+    // answers, in the same order -- and not a second calculation that could
+    // drift away from the one the season was actually played on.
+    const recorded = ep.tr.endgame.asks
+      .flatMap(a => a.choices.map(c => c.name + ':' + c.choice));
+    expect(recorded.length).toBe(watched.length);
+    expect(recorded).toEqual(watched.map(c => c.name + ':' + c.choice));
+    // and the ground truth it was decided on is nowhere in that copy
+    for (const a of ep.tr.endgame.asks) {
+      for (const c of a.choices) {
+        expect(c.role, 'a role survived onto the record').toBeUndefined();
+        expect(c.fellows, 'a fellow list survived onto the record').toBeUndefined();
+      }
+    }
+  });
+
+  it('LOCK ONE: the record carries a name and a word, and nothing else', () => {
+    let seen = 0;
+    for (const { ep } of ENDINGS) {
+      for (const a of ep.tr.endgame.asks) {
+        for (const c of a.choices) {
+          expect(Object.keys(c).sort(),
+            `ep ${ep.num}: a finale choice carries more than a name and a word`)
+            .toEqual(['choice', 'name']);
+          seen++;
+        }
+      }
+      // and the tables the asks forced: an episode and a name. `wasTraitor` is
+      // on the round object the engine holds and must not be on this.
+      for (const t of ep.tr.endgame.tables) {
+        expect(Object.keys(t).sort(),
+          `ep ${ep.num}: a finale table carries more than an episode and a name`)
+          .toEqual(['chosen', 'ep']);
+      }
+    }
+    expect(seen, 'no choice was inspected, so this arm asserted nothing')
+      .toBeGreaterThan(40);
+  });
+
+  it('LOCK TWO: the screen says nothing about what anybody was, until the money', () => {
+    // THE HOLE WHERE THE ANSWER GOES. Every other screen in this set ends a
+    // departure with a word; this one ends it with the absence of one, and the
+    // absence is the design. The money card is the season's ONE legitimate
+    // reveal -- the game is over and the cloaks come off -- so the assertion
+    // is on everything dealt BEFORE it.
+    let tables = 0;
+    for (const { ep } of ENDINGS) {
+      const html = endgameRevealed(ep, 'audience');
+      const early = strip(beforeTheMoney(html));
+      expect(alignmentWordsIn(early),
+        `ep ${ep.num}: the screen named a side before the strongbox was opened`)
+        .toEqual([]);
+      for (const t of ep.tr.endgame.tables) {
+        expect(early, `ep ${ep.num}: ${t.chosen} left without the silence being drawn`)
+          .toContain('Nothing Is Turned Over');
+        expect(early).toContain(t.chosen);
+        tables++;
+      }
+    }
+    // and the sample actually contained a table, or the loop above ran zero
+    // times and proved nothing about the thing it is named after
+    expect(tables, 'no endgame forced a table across twenty seeds').toBeGreaterThan(8);
+  });
+
+  it('and the money card, which is the one place it may be said, says it', () => {
+    // The other half of the same rule. If nothing anywhere on the screen ever
+    // named a side, LOCK TWO would be satisfied by a screen that simply never
+    // resolves the season -- which is a different bug wearing the same green.
+    const clean = ENDINGS.find(e => e.ep.tr.endgame.winner === 'faithfuls');
+    const dirty = ENDINGS.find(e => e.ep.tr.endgame.winner === 'traitors');
+    expect(clean && dirty, 'the sample holds only one kind of ending').toBeTruthy();
+    for (const { ep } of [clean, dirty]) {
+      const html = endgameRevealed(ep, 'audience');
+      const money = String(html).slice(String(html).indexOf('data-kind="money"'));
+      expect(strip(money), `ep ${ep.num}: the strongbox opened on nothing`)
+        .toContain(ep.tr.endgame.takers[0]);
+    }
+  });
+
+  it('BOTH LOCKS ARE IN THE SOURCE, because the screen one cannot be caught alone', () => {
+    // AN HONEST NOTE ON WHAT THIS ARM IS FOR, and it is Task 2's note again.
+    // There are two rebuilds -- js/tr/headless.js builds each choice to two
+    // fields, and `_view` builds it to two fields AGAIN off a record it does
+    // not trust -- and the beat builder reads exactly `name` and `choice`, so
+    // deleting the SCREEN's rebuild cannot change a single character of any
+    // render. A mutation on it is green by construction, which is precisely
+    // why it would be deleted one day on the grounds that the suite did not
+    // notice. It is here so that it is noticed.
+    const src = readFileSync(new URL('../' + 'js/vp-tr/endgame.js', import.meta.url), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(new RegExp('(^|[^:])//[^\\n]*', 'g'), '$1 ');
+    expect(src, 'the view stopped rebuilding the choices from scratch')
+      .toContain("choice: c.choice === 'banish' ? 'banish' : 'end',");
+    expect(src, 'the view stopped rebuilding the tables from scratch')
+      .toContain('tables = (rec.tables || []).map(t => ({ ep: t.ep, chosen: t.chosen || null }))');
+    const eng = readFileSync(new URL('../' + 'js/tr/headless.js', import.meta.url), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(new RegExp('(^|[^:])//[^\\n]*', 'g'), '$1 ');
+    expect(eng, 'the record stopped rebuilding the choices and started spreading them')
+      .toContain('.map(c => ({ name: c.name, choice: c.choice }))');
+  });
+});
+
+// ── GUARD 2: EVERY WINNER, AND NEVER THE FIRST OF THEM ────────────────
+describe('a co-winner ending renders all of its winners', () => {
+  /** The winners the screen actually drew. */
+  const drawnWinners = html => (String(html)
+    .match(/<span class="lt-winner" data-name="([^"]*)"/g) || [])
+    .map(s => /data-name="([^"]*)"/.exec(s)[1]);
+
+  it('the matcher finds a winner that is there and none that is not', () => {
+    // Every assertion below counts what this returns, so a matcher that never
+    // matched would fail loudly rather than pass quietly -- but the empty case
+    // has to be checked too, or a matcher that matches EVERYTHING passes.
+    expect(drawnWinners('<span class="lt-winner" data-name="Bowie">')).toEqual(['Bowie']);
+    expect(drawnWinners('<span class="lt-lost-one" data-name="Bowie">')).toEqual([]);
+  });
+
+  it('every taker the season produced is drawn, in the export\'s own list', () => {
+    let splits = 0;
+    for (const { ep, season: s } of ENDINGS) {
+      const doc = buildTraitorsSeasonDocument(s, { seasonNumber: 1 });
+      // `seasonWinners()` IS THE RULE (Plan 7) and it is asked rather than
+      // re-derived: winners[] -> placements[] at 1 -> winner{}. A screen
+      // checked against `takers` alone would agree with a document that had
+      // already lost half of them.
+      const winners = seasonWinners(doc).map(w => w.name);
+      expect(winners.length, `ep ${ep.num}: the document names no winner at all`)
+        .toBeGreaterThan(0);
+      expect(winners.slice().sort()).toEqual(ep.tr.endgame.takers.slice().sort());
+      const drawn = drawnWinners(endgameRevealed(ep, 'audience'));
+      expect(drawn.slice().sort(),
+        `ep ${ep.num}: the screen drew ${drawn.length} of ${winners.length} winners`)
+        .toEqual(winners.slice().sort());
+      if (winners.length > 1) splits++;
+    }
+    expect(splits, 'no season in the sample split the pot, so nothing was proved')
+      .toBeGreaterThan(4);
+  });
+
+  it('and the people who took nothing are drawn as well, and drawn differently', () => {
+    const robbed = ENDINGS.filter(e => e.ep.tr.endgame.losers.length);
+    expect(robbed.length, 'nobody was left empty-handed anywhere in the sample')
+      .toBeGreaterThan(4);
+    for (const { ep } of robbed) {
+      const html = endgameRevealed(ep, 'audience');
+      for (const n of ep.tr.endgame.losers) {
+        expect(html, `ep ${ep.num}: ${n} finished the season and is not on the screen`)
+          .toContain('<span class="lt-lost-one" data-name="' + n + '">');
+        expect(drawnWinners(html), `ep ${ep.num}: ${n} took nothing and is drawn a winner`)
+          .not.toContain(n);
+      }
+    }
+  });
+});
+
+// ── GUARD 3: THE MONEY ON THE PAGE IS THE MONEY IN THE EXPORT ─────────
+//
+// EVERY FIGURE IS READ OUT OF THE ELEMENT THAT STATES IT, and that is not
+// fussiness. The first version of this guard searched the whole screen for the
+// pot and for the share, and BOTH mutations came back green: the pot is also
+// on the opening card as the standing fund and the share is also in the
+// summary row under the winners, so swapping the two figures over on the
+// strongbox and on the winner plates left every number still present
+// somewhere. That is this plan's recurring vacuous shape -- redundancy hiding
+// a dead guard, fourth occurrence -- and the fix is not to delete one of the
+// two legitimate statements of the number but to assert the one under test.
+
+/** The figure on the strongbox, as the strongbox states it. */
+const potFigure = html => {
+  const m = /<span class="lt-pot-n">([^<]*)<\/span>/.exec(String(html));
+  return m ? m[1] : null;
+};
+/** What is written under each winner's face, in order. */
+const winnerShares = html => (String(html)
+  .match(/<span class="lt-winner-sh">([^<]*)<\/span>/g) || [])
+  .map(s => /<span class="lt-winner-sh">([^<]*)<\/span>/.exec(s)[1]);
+
+describe('the pot the screen splits is the pot the export pays', () => {
+  it('the two figure readers find the figures and not each other', () => {
+    // Both are used only in POSITIVE assertions below, so a reader that never
+    // matched would fail loudly -- but one that matched the WRONG element
+    // would pass quietly, which is exactly how the first version went green.
+    const html = '<div class="lt-pot"><span class="lt-pot-n">72,233</span>'
+      + '<span class="lt-pot-k">in the box</span></div>'
+      + '<span class="lt-winner-sh">19,164</span>'
+      + '<span class="lt-winner-sh">takes all of it</span>'
+      + '<span class="lt-sum-v">72,233</span>';
+    expect(potFigure(html)).toBe('72,233');
+    expect(winnerShares(html)).toEqual(['19,164', 'takes all of it']);
+    expect(potFigure('<p>72,233</p>'), 'the pot reader matched loose text').toBeNull();
+    expect(winnerShares('<span class="lt-sum-v">19,164</span>')).toEqual([]);
+  });
+
+  it('the figure, the share and the arithmetic all agree', () => {
+    let checked = 0;
+    for (const { ep, season: s } of ENDINGS) {
+      const doc = buildTraitorsSeasonDocument(s, { seasonNumber: 1 });
+      const e = ep.tr.endgame;
+      const html = endgameRevealed(ep, 'audience');
+      const fmt = n => Number(n).toLocaleString('en-US');
+      expect(doc.pot, `ep ${ep.num}: the document lost the pot`).toBe(e.pot);
+      // THE STRONGBOX, and the strongbox alone.
+      expect(potFigure(html), `ep ${ep.num}: the strongbox does not hold ${fmt(e.pot)}`)
+        .toBe(fmt(e.pot));
+      // Every winner row on the document carries the same share, and it is
+      // the share the screen writes under each face.
+      for (const w of doc.winners) {
+        expect(w.share, `ep ${ep.num}: ${w.name}'s share is missing from the export`)
+          .toBe(e.share);
+      }
+      const shares = winnerShares(html);
+      expect(shares.length, `ep ${ep.num}: no winner was given a figure at all`)
+        .toBe(e.takers.length);
+      if (e.takers.length > 1) {
+        expect(shares, `ep ${ep.num}: a winner was not written ${fmt(e.share)}`)
+          .toEqual(e.takers.map(() => fmt(e.share)));
+        // and it is a figure the box can actually pay out
+        expect(e.share * e.takers.length).toBeLessThanOrEqual(e.pot);
+        expect((e.share + 1) * e.takers.length).toBeGreaterThan(e.pot);
+      } else {
+        expect(e.share, `ep ${ep.num}: a lone taker did not take the lot`).toBe(e.pot);
+        expect(shares[0]).toBe('takes all of it');
+      }
+      checked++;
+    }
+    expect(checked).toBe(ENDINGS.length);
+  });
+
+  it('and the castle adds up: everybody standing, plus both doors, is the cast', () => {
+    // The opening card states three numbers about the same room and they have
+    // to be the same room. `goneBefore` deliberately excludes this row's own
+    // departures and the endgame's own tables take people out of the standing
+    // list, so both corrections are live and both are load-bearing.
+    for (const { ep } of ENDINGS) {
+      const text = strip(endgameRevealed(ep, 'audience'));
+      const [banish, murder] = exitVerbs('traitors');
+      const cap = w => w.charAt(0).toUpperCase() + w.slice(1);
+      const m = new RegExp('Still standing (\\d+) ' + cap(banish) + ' (\\d+) '
+        + cap(murder) + ' (\\d+)').exec(text);
+      expect(m, `ep ${ep.num}: the opening card does not state the room`).toBeTruthy();
+      const sum = Number(m[1]) + Number(m[2]) + Number(m[3]);
+      expect(sum, `ep ${ep.num}: ${m[1]} + ${m[2]} + ${m[3]} is not a cast of `
+        + ep.tr.cast.length).toBe(ep.tr.cast.length);
+      // and the standing figure is the room the question was first put to
+      expect(Number(m[1])).toBe(ep.tr.endgame.asks[0].living.length);
+    }
+  });
+});
+
+// ── GUARD 4: THE OBSERVER CONTRACT, WHICH HERE IS A SECRET BALLOT ─────
+describe('a player reads their own paper and nobody else\'s', () => {
+  it('the audience reads every slip', () => {
+    let slips = 0;
+    for (const { ep } of ENDINGS.slice(0, 10)) {
+      const html = endgameRevealed(ep, 'audience');
+      const drawn = slipsOf(html);
+      const asked = ep.tr.endgame.asks.reduce((n, a) => n + a.choices.length, 0);
+      expect(drawn.length, `ep ${ep.num}: ${drawn.length} slips for ${asked} answers`)
+        .toBe(asked);
+      expect(drawn.filter(s => s.choice === 'sealed'),
+        `ep ${ep.num}: the audience was refused a slip`).toEqual([]);
+      slips += drawn.length;
+    }
+    expect(slips, 'no slip was drawn at all').toBeGreaterThan(40);
+  });
+
+  it('a player in the room reads exactly one slip per ask, and it is theirs', () => {
+    let checked = 0;
+    for (const { ep } of ENDINGS.slice(0, 10)) {
+      const e = ep.tr.endgame;
+      for (const who of e.asks[0].living) {
+        const drawn = slipsOf(endgameRevealed(ep, 'player:' + who));
+        const open = drawn.filter(s => s.choice !== 'sealed');
+        expect(open.length, `ep ${ep.num}: ${who} read ${open.length} slips`)
+          .toBe(e.asks.filter(a => a.choices.some(c => c.name === who)).length);
+        expect(open.every(s => s.name === who),
+          `ep ${ep.num}: ${who} read somebody else's paper`).toBe(true);
+        // and what they read is what they wrote
+        for (const s of open) {
+          const a = e.asks.find(x => x.choices.some(c => c.name === who));
+          expect(['banish', 'end']).toContain(s.choice);
+          expect(a, 'the reader was never asked').toBeTruthy();
+        }
+        checked++;
+      }
+    }
+    expect(checked, 'nobody in any room was checked').toBeGreaterThan(20);
+  });
+
+  it('and somebody who was already out of the castle reads none of them', () => {
+    let checked = 0;
+    for (const { ep } of ENDINGS.slice(0, 10)) {
+      const e = ep.tr.endgame;
+      const room = e.asks[0].living;
+      const out = (ep.tr.cast || []).find(n => !room.includes(n));
+      expect(out, `ep ${ep.num}: nobody had left, so there is no outsider`).toBeTruthy();
+      const html = endgameRevealed(ep, 'player:' + out);
+      const drawn = slipsOf(html);
+      expect(drawn.length, `ep ${ep.num}: the outsider got no screen at all`)
+        .toBeGreaterThan(0);
+      expect(drawn.filter(s => s.choice !== 'sealed'),
+        `ep ${ep.num}: ${out} was not in the room and read a slip anyway`).toEqual([]);
+      // The count and the money ARE public -- the room is told whether it was
+      // unanimous, because that is the fact that forces another table, and the
+      // money is announced to everybody including the people it was taken
+      // from. A layer that hid those would be hiding the wrong thing.
+      expect(strip(html), `ep ${ep.num}: the outsider was not told the money`)
+        .toContain(Number(e.pot).toLocaleString('en-US'));
+      checked++;
+    }
+    expect(checked).toBe(10);
+  });
+});
+
+// ── GUARD 5: no other show's words, and the exit verbs from the registry
+describe("the last table may not be described in another show's words", () => {
+  it('nothing the endgame prints belongs to another show', () => {
+    for (const { ep } of ENDINGS.slice(0, 10)) {
+      const leaks = foreignWordsIn(strip(endgameRevealed(ep, 'audience')), 'traitors');
+      expect(leaks, `ep ${ep.num} printed another show's vocabulary`).toEqual([]);
+    }
+  });
+
+  it('and neither does the layer that reads nothing', () => {
+    const { ep } = ENDINGS[0];
+    const out = (ep.tr.cast || []).find(n => !ep.tr.endgame.asks[0].living.includes(n));
+    expect(out).toBeTruthy();
+    expect(foreignWordsIn(strip(endgameRevealed(ep, 'player:' + out)), 'traitors'))
+      .toEqual([]);
+  });
+
+  it('and the word it uses for a departure is the registry\'s, character for character', () => {
+    const [banish, murder] = exitVerbs('traitors');
+    const cap = w => w.charAt(0).toUpperCase() + w.slice(1);
+    const withTable = ENDINGS.find(e => e.ep.tr.endgame.tables.length);
+    expect(withTable, 'no endgame in the sample forced a table').toBeTruthy();
+    const text = strip(endgameRevealed(withTable.ep, 'audience'));
+    expect(text).toContain(cap(banish));
+    // Both doors, because the opening card counts how the room got this small
+    // and this show is the only one where that question has two answers.
+    expect(text).toContain(cap(murder));
+  });
+});
+
+// ── GUARD 6: reachable from a played season ───────────────────────────
+describe('the endgame is reachable from a played season', () => {
+  it('the last row of every season registers it, and no other row does', () => {
+    let reached = 0, refused = 0;
+    for (const r of END_RUNS.slice(0, 8)) {
+      for (let i = 0; i < r.episodes.length; i++) {
+        const ep = r.episodes[i];
+        const hit = buildVPScreens(ep).find(x => x.id === 'tr-endgame');
+        if (i === r.episodes.length - 1) {
+          expect(hit, `ep ${ep.num}: the endgame is not reachable`).toBeTruthy();
+          expect(hit.label).toBe('The Endgame');
+          expect(strip(hit.html).length, 'the endgame rendered nothing')
+            .toBeGreaterThan(400);
+          reached++;
+        } else {
+          expect(hit, `ep ${ep.num}: an endgame screen on a night in the middle`)
+            .toBeFalsy();
+          refused++;
+        }
+      }
+    }
+    expect(reached).toBe(8);
+    expect(refused, 'every season was one episode long').toBeGreaterThan(40);
+  });
+
+  it('and it is the last screen of the last episode', () => {
+    const r = END_RUNS[0];
+    const ids = buildVPScreens(r.episodes[r.episodes.length - 1]).map(x => x.id);
+    expect(ids[ids.length - 1], 'the endgame is not the end of the episode')
+      .toBe('tr-endgame');
+  });
+});
+
+// ── GUARD 6b: THE ROOM DOES NOT STOP EXISTING ────────────────────────
+//
+// This one is here because the defect SHIPPED and was caught by a human
+// looking at it: "the endgame background is really black and empty". Cold is
+// not the same as empty, and the first version made the mistake in the most
+// literal way available -- the drawn planes ran 1500px, the ground under them
+// was flat near-black, and every phase rule replaced the shell's background
+// outright. A page of five thousand pixels therefore had no room in it below
+// the first screenful, and stopped reading as the end of something and
+// started reading as nothing having rendered.
+//
+// The absence at the endgame belongs to what is WITHHELD -- no alignment, a
+// departure that ends in silence -- and that is guarded above. The PLACE is
+// guarded here, and it is guarded by measurement rather than by looking,
+// because the next person to make this mistake will not be looking.
+describe('the endgame is a room and not a hole', () => {
+  const cssOf = html => /<style>([\s\S]*?)<\/style>/.exec(String(html))[1];
+  /** Every `.lt-shell[data-phase=...]{...}` block, selector ending at the shell. */
+  const phaseBlocks = css => {
+    const out = [];
+    const re = /\.lt-shell\[data-phase="([a-z]+)"\]\s*\{([^}]*)\}/g;
+    let m;
+    while ((m = re.exec(css))) out.push({ phase: m[1], body: m[2] });
+    return out;
+  };
+
+  it('the block reader finds the shell rules and not the ones nested under them', () => {
+    // Positive and negative, because the arm below is a negative assertion
+    // over whatever this returns: a reader that matched nothing would pass it
+    // for free, and one that matched the descendant rules would fail honest
+    // code.
+    const css = '.lt-shell[data-phase="ask"]{--lt-ground:#121924}'
+      + '.lt-shell[data-phase="money"] .lt-wash{background:red}';
+    const blocks = phaseBlocks(css);
+    expect(blocks.map(b => b.phase)).toEqual(['ask']);
+    expect(blocks[0].body).toContain('--lt-ground');
+  });
+
+  it('the ground is painted under the whole page, at every phase', () => {
+    const html = rpBuildEndgame({ ...ENDINGS[0].ep, num: ++_trN }, 'audience');
+    const css = cssOf(html);
+    // the shell itself paints stone, and the phases move a variable rather
+    // than replacing it
+    expect(css).toMatch(/\.lt-shell\{[\s\S]*?--lt-ground:#[0-9a-f]{6}/);
+    const blocks = phaseBlocks(css);
+    expect(blocks.length, 'the screen has no phase atmosphere at all')
+      .toBeGreaterThan(4);
+    for (const b of blocks) {
+      expect(/\bbackground\s*:/.test(b.body),
+        `the "${b.phase}" phase sets the background outright, which throws away `
+        + 'the stone under the whole page — move --lt-ground instead')
+        .toBe(false);
+    }
+  });
+
+  it('and every ground it moves to is lit, not black', () => {
+    // MEASURED. "Cold" is a hue; "empty" is a luminance, and the difference is
+    // the entire note this guard exists for. The brightest channel of every
+    // ground the screen can reach has to clear a floor no near-black clears:
+    // the shipped values run 28-37, and the version that was rejected was
+    // #05070a, whose brightest channel is 10.
+    const css = cssOf(rpBuildEndgame({ ...ENDINGS[0].ep, num: ++_trN }, 'audience'));
+    const grounds = (css.match(/--lt-ground:#[0-9a-f]{6}/g) || [])
+      .map(s => s.slice(-6));
+    expect(grounds.length, 'no ground colour is declared anywhere').toBeGreaterThan(4);
+    for (const g of grounds) {
+      const top = Math.max(parseInt(g.slice(0, 2), 16), parseInt(g.slice(2, 4), 16),
+        parseInt(g.slice(4, 6), 16));
+      expect(top, `#${g} is a hole rather than a cold room`).toBeGreaterThanOrEqual(24);
+    }
+  });
+
+  it('the wall and the air run the full height, not the height of the drawing', () => {
+    // The planes are finite by nature -- a drawn room is 2600px and an endgame
+    // with six asks is twice that -- so the two layers that have to cover
+    // whatever the page turns out to be are declared against `bottom` and not
+    // against a height.
+    const html = rpBuildEndgame({ ...ENDINGS[0].ep, num: ++_trN }, 'audience');
+    const css = cssOf(html);
+    expect(html, 'the wall is not in the markup').toContain('<div class="lt-stone">');
+    expect(html, 'the air is not in the markup').toContain('<div class="lt-air">');
+    expect(css).toMatch(/\.lt-stone\{[^}]*bottom:0/);
+    expect(css).toMatch(/\.lt-air[^{]*\{[^}]*bottom:0/);
+    const motes = (html.match(/class="lt-mote"/g) || []).length;
+    expect(motes, 'the air is empty').toBeGreaterThan(20);
+  });
+
+  it('and the fire has run down rather than gone out — there is one ember', () => {
+    // The set is lit by flame on every other screen. This screen is what is
+    // left of that fire, which is far colder than blackness and is the only
+    // warm thing on it until the strongbox opens.
+    const html = rpBuildEndgame({ ...ENDINGS[0].ep, num: ++_trN }, 'audience');
+    // EVERY ONE OF THEM, NOT "AT LEAST ONE". The hearth carries two coals and
+    // a first version of this arm only asked whether the string appeared
+    // anywhere -- so putting one of the two out changed nothing and the
+    // mutation came back green. Redundancy hiding a dead guard, and this plan
+    // has now shipped it five times.
+    const embers = (String(html)
+      .match(/class="lt-ember" [^>]*fill="#([0-9a-f]{6})"/g) || [])
+      .map(s => /fill="#([0-9a-f]{6})"/.exec(s)[1]);
+    expect(embers.length, 'the hearth has gone cold').toBeGreaterThanOrEqual(2);
+    for (const c of embers) {
+      const r = parseInt(c.slice(0, 2), 16), b = parseInt(c.slice(4, 6), 16);
+      expect(r - b, `#${c} is not a live coal`).toBeGreaterThan(64);
+    }
+    expect(cssOf(html)).toMatch(/@keyframes lt-ember\{/);
+    // and the pot is physically in the room, not only on a card
+    expect(html, 'the strongbox is not in the room').toContain('id="ltEmber"');
+  });
+});
+
+// ── GUARD 7: the reveal contract, and a screen that is not blank ──────
+describe('the endgame honours the reveal pattern', () => {
+  it('step divs, counter and controls are all addressable by id', () => {
+    const html = rpBuildEndgame({ ...ENDINGS[0].ep, num: ++_trN }, 'audience');
+    const m = /trEndgameRevealAll\('endgame',(\d+),(\d+)\)/.exec(html);
+    expect(m, 'no reveal handler was emitted').toBeTruthy();
+    const total = Number(m[1]);
+    expect(total, 'the endgame dealt fewer than four cards').toBeGreaterThan(3);
+    for (let i = 0; i < total; i++) {
+      expect(html, `step ${i} has no id`).toContain('id="lt-step-endgame-' + i + '"');
+    }
+    expect(html).toContain('id="lt-counter-endgame"');
+    expect(html).toContain('id="lt-controls-endgame"');
+    expect(html).toContain('id="lt-shell-endgame"');
+    // the sticky stage the handlers replace by id
+    expect(html).toContain('id="lt-stage-inner"');
+  });
+
+  it('a screen opened and never clicked is not blank', () => {
+    // The conclave shipped exactly this defect: it emitted bare beats and
+    // relied on `_reapplyVisibility` firing from a click, so the screen was
+    // empty until the viewer pressed something. Visibility is baked in from
+    // `st.idx` at emit time instead.
+    const html = rpBuildEndgame({ ...ENDINGS[0].ep, num: ++_trN }, 'audience');
+    const visible = (html.match(/class="lt-beat lt-vis"/g) || []).length;
+    expect(visible, 'the endgame opened on nothing at all').toBeGreaterThan(0);
+    expect(strip(html)).toContain('The Room At The End');
+  });
+
+  it('and the stage does not spoil what has not been dealt', () => {
+    // The chairs are the sidebar on this screen and they are gated by
+    // `_tvState`: at first paint every slip in the room is folded, whatever
+    // is written on it and whoever is reading.
+    const html = rpBuildEndgame({ ...ENDINGS[0].ep, num: ++_trN }, 'audience');
+    const stage = /<div class="lt-stage" id="lt-stage-inner">([\s\S]*?)<\/div><main/.exec(html);
+    expect(stage, 'the stage is not where the handlers look for it').toBeTruthy();
+    expect(stage[1]).toContain('data-state="sealed"');
+    expect(stage[1], 'a chair had already been read at first paint')
+      .not.toContain('data-state="banish"');
+    // and it does not print how many times the question is going to be asked,
+    // which would say at first paint that the early ones were not unanimous
+    const many = ENDINGS.find(e => e.ep.tr.endgame.asks.length > 1);
+    expect(many, 'no endgame in the sample was asked twice').toBeTruthy();
+    const h2 = rpBuildEndgame({ ...many.ep, num: ++_trN }, 'audience');
+    const st2 = /<div class="lt-stage" id="lt-stage-inner">([\s\S]*?)<\/div><main/.exec(h2);
+    expect(strip(st2[1]), 'the stage announced how many asks there would be')
+      .not.toContain('of ' + many.ep.tr.endgame.asks.length);
+  });
+});
+
+// ── GUARD 8: the sticky stage survives the shell clip ─────────────────
+describe('the endgame\'s sticky stage is not killed by the shell clip', () => {
+  it('the clip is on the scenery layer and the sticky element is inside it', () => {
+    // Measured on the conclave and true of every screen since: a shell that
+    // clips is a scroll container and kills `position:sticky` for every
+    // descendant. The clip lives on a dedicated scenery layer that takes no
+    // z-index, and the stage is the element the handlers replace by id.
+    const html = rpBuildEndgame({ ...ENDINGS[0].ep, num: ++_trN }, 'audience');
+    const css = /<style>([\s\S]*?)<\/style>/.exec(html)[1];
+    expect(css).toMatch(/\.lt-shell\{[^}]*overflow:visible/);
+    expect(css).toMatch(/\.lt-scenery\{[^}]*overflow:hidden/);
+    expect(/\.lt-scenery\{[^}]*z-index/.test(css),
+      'the scenery layer took a z-index and became a stacking context').toBe(false);
+    expect(css).toMatch(/\.lt-stage\{position:sticky;top:46px/);
+  });
+
+  it('and the room does not borrow the turret\'s lamp', () => {
+    // `_portrait()` is neutral and `.cv-lit` is the conclave's treatment. This
+    // room has no flame in it at all, which is the whole of its atmosphere.
+    const html = rpBuildEndgame({ ...ENDINGS[0].ep, num: ++_trN }, 'audience');
+    expect(html, 'the endgame lit its portraits with the turret\'s lamp')
+      .not.toContain('cv-lit');
+    const css = /<style>([\s\S]*?)<\/style>/.exec(html)[1];
+    expect(css.includes('@media(prefers-reduced-motion:reduce)'),
+      'the endgame has animations and no reduced-motion fallback').toBe(true);
   });
 });

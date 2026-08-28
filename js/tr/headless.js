@@ -604,6 +604,60 @@ function _recruitmentRecord(night) {
 }
 
 /**
+ * The endgame, in the shape the last screen draws it (`js/vp-tr/endgame.js`).
+ *
+ * ONE RECORD FOR THE WHOLE PHASE, and not one per night, because the endgame
+ * is not a night. It is the question put over and over until the room answers
+ * it with one voice, and the number of times that took is the drama -- a
+ * record split across rows would leave the screen re-assembling a phase out of
+ * episodes and getting a different answer depending on which one was open.
+ * It rides on the LAST row the season wrote, which is where a viewer clicking
+ * forward through the season arrives at the end of it.
+ *
+ * ── AND IT CARRIES NO ALIGNMENT (spec 8) ──────────────────────────────
+ *
+ * `endgameChoice` returns the whole basis of the decision, and half of that
+ * basis is ground truth: `role` is read off `alignmentAt`, and `fellows` and
+ * `appetite` exist only on a Traitor's record and say so by being there. A
+ * record built by spreading a choice would therefore hand the screen every
+ * survivor's alignment at the exact table spec 8 says nothing is revealed at
+ * -- so the choices are REBUILT to two fields rather than copied and pruned,
+ * because a spread that later grows a field grows it silently.
+ *
+ * The tables are the same: a name and an episode. `runRoundTable` is called
+ * with `reveal:false` in the endgame so no exit speech exists to leak, and
+ * `wasTraitor` -- which the round object does carry -- is not copied here.
+ *
+ * The pot IS ground truth and is the one place it is legitimate: the game is
+ * over, the cloaks come off, and `resolvePot` is the reveal. Every field of it
+ * comes from that one function so the money on the screen and the money in the
+ * export cannot come to disagree.
+ */
+function _endgameRecord(e) {
+  if (!e) return null;
+  const asks = (e.ballots || []).map(b => {
+    const choices = (b.choices || []).map(c => ({ name: c.name, choice: c.choice }));
+    const banish = choices.filter(c => c.choice === 'banish').length;
+    return { ep: b.ep, living: [...(b.living || [])], choices, banish,
+      unanimous: banish === 0 };
+  });
+  return {
+    from: asks.length ? asks[0].ep : null,
+    endEp: e.endEp ?? null,
+    asks,
+    tables: (e.rounds || []).map(r => ({ ep: r.ep, chosen: r.banished || null })),
+    winner: e.winner || null,
+    takers: [...(e.takers || [])],
+    losers: [...(e.losers || [])],
+    survivors: [...(e.survivors || [])],
+    pot: e.pot ?? 0,
+    share: e.share ?? 0,
+    line: e.line || '',
+    lineKey: e.lineKey || '',
+  };
+}
+
+/**
  * The morning this episode opens on, which belongs to the night before it.
  *
  * `lastNight` is the previous row's `exits[]` handed over RAW, so the screen
@@ -945,6 +999,13 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   for (const r of endgame.rounds || []) {
     _recordEpisode(r.ep, { banished: r.banished, endgame: true });
   }
+  // THE PHASE, ON THE LAST ROW THE SEASON WROTE. The endgame can force six
+  // extra tables or none at all -- when the first ask is unanimous no row is
+  // written for it -- so there is no episode number this can be attached to.
+  // The last row is where a viewer clicking forward arrives, and it is the
+  // only row that exists in every one of those cases.
+  const _rows = gs.episodeHistory || [];
+  if (_rows.length) _rows[_rows.length - 1].tr.endgame = _endgameRecord(endgame);
 
   return {
     traitors,

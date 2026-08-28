@@ -1,0 +1,1685 @@
+// ══════════════════════════════════════════════════════════════════════
+// vp-tr/endgame.js — banish again, or end it, and nobody is turned over
+// ══════════════════════════════════════════════════════════════════════
+//
+// Built in the language Task 1 approved and Tasks 2-4 extended. SHARED: the
+// type system (Fraunces 900 for display, IM Fell English for anything spoken
+// or written by hand, Cormorant Garamond for body), the neutral `_portrait()`
+// and its stylesheet, `_icon()` for objects that must be the same drawing on
+// every screen, the reveal machinery, the sticky-stage architecture, and the
+// rule that nothing writes a host name or an exit word as a literal.
+//
+// ── AND THE DEPARTURE, WHICH IS AN ABSENCE ────────────────────────────
+//
+// Spec 8. Everywhere else in this show a departure ends in an ANSWER: the
+// host turns a card over, the room finds out what it just did, and the next
+// table is played on the evidence the last one produced. At the end that
+// stops. `runEndgame` calls the table with `reveal:false`, nobody who leaves
+// says what they were, and the survivors carry on with exactly the beliefs
+// they walked in with.
+//
+// So the screen is built around the missing payoff rather than around a new
+// one, and every choice below is the same choice:
+//
+//   THE FIRE IS OUT. The hall is fifty-six candles and a lantern; the turret
+//   is one lamp in the dark; the estate is daylight. This room is the SAME
+//   candles with the light gone -- cold wicks and smoke going up off them, on
+//   coprime periods, because Task 2's flame rules apply just as well to a
+//   flame that is not there. It is the one screen in the set with no fire on
+//   it at all, and that is the whole of "colder than the Round Table".
+//
+//   IT IS NOT THE RING, AND THE REASON IS THE RING'S OWN GRAMMAR. The Round
+//   Table draws everybody at once with the argument crossing the space as
+//   chords from a voter's seat to the seat they named. There are no chords
+//   here: the question is answered in private, in writing, and counted
+//   without being read out. A ring with nothing drawn between the seats is
+//   the Round Table with its content deleted, which reads as a fault rather
+//   than as a decision -- and Task 2 already renders these very tables as a
+//   ring, so reusing it would print the same primitive twice in one episode.
+//   The primitive here is the SEALED SLIP, dealt back out one at a time.
+//
+//   THE CARDS ARE DEALT ACROSS A TABLE. The turret drew them out of the dark,
+//   the hall leant them in, the morning brought them down a stair, the book
+//   wrote them, the estate hauled them in on a rope and the corridor refused
+//   to move at all. These are pushed in from the left, flat, one after the
+//   other, because that is what somebody collecting folded paper and handing
+//   it back does.
+//
+//   THE SCREEN IS GREY UNTIL THE MONEY. There is exactly one warm colour on
+//   it and it arrives on the last card. Everything upstream -- every slip,
+//   every count, every name that leaves -- is ash and slate, because none of
+//   it is ever explained. The pot is the season's one legitimate reveal
+//   (js/tr/endgame.js says so of `resolvePot`: the game is over, the cloaks
+//   come off) and it is the only thing on the screen allowed to be warm.
+//
+// ── AND THE THING THAT MUST NOT HAPPEN ────────────────────────────────
+//
+// `endgameChoice` returns the whole basis of a decision and half of it is
+// ground truth -- a `role` read off `alignmentAt`, and a `fellows` list that
+// exists only on one side. The record in js/tr/headless.js rebuilds each
+// choice to two fields rather than copying and pruning, and `_view` below
+// rebuilds them AGAIN off a record it does not trust. Both locks are
+// individually catchable, which is the point: the record's is caught by
+// reading the record, and the screen's is caught by handing it a forged one.
+import { seasonConfig, players } from '../core.js';
+import { exitVerbs, roundExits } from '../shows.js';
+import { HOSTS_BY_FORMAT } from '../quick-setup.js';
+import { PORTRAIT_CSS } from './style.js';
+import { _noiseTile, _fieldRng } from './scenery.js';
+import { _portrait, _icon } from './conclave.js';
+
+const TR = 'traitors';
+
+/** The show's own words for the two doors. Never written out. */
+function _verbs() {
+  const [vote, night] = exitVerbs(TR);
+  return { vote: vote || 'out', night: night || vote || 'out' };
+}
+const _cap = s => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
+
+// ── deterministic picking ─────────────────────────────────────────────
+function _hash(s) {
+  let h = 2166136261;
+  const str = String(s);
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function _pick(pool, key) {
+  if (!pool || !pool.length) return '';
+  return pool[_hash(key) % pool.length];
+}
+const _esc = s => String(s == null ? '' : s)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function _fill(tpl, subs) {
+  return String(tpl || '').replace(/\{(\w+)\}/g, (m, k) =>
+    (subs && subs[k] != null) ? subs[k] : m);
+}
+const _num = n => Number(n || 0).toLocaleString('en-US');
+/** "A", "A and B", "A, B and C" — a four-way split must not read as a chant. */
+function _listOf(names) {
+  const a = (names || []).filter(Boolean);
+  if (a.length <= 1) return a[0] || '';
+  if (a.length === 2) return a[0] + ' and ' + a[1];
+  return a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+}
+
+// ── the host ──────────────────────────────────────────────────────────
+function _host() {
+  const list = HOSTS_BY_FORMAT[TR] || [];
+  const want = seasonConfig && seasonConfig.host;
+  const hit = list.find(h => h.value === want) || list[0]
+    || { value: 'host', label: 'Your host' };
+  return { name: hit.label, slug: String(hit.value).toLowerCase().replace(/[^a-z0-9]+/g, '-') };
+}
+
+// ── faces ─────────────────────────────────────────────────────────────
+function _slugOf(name) {
+  const p = (players || []).find(x => x && x.name === name);
+  return (p && p.slug) || String(name || '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+/** A face at the last table, and it is NEUTRAL — `.cv-lit` is the turret's. */
+function _av(name, size) {
+  return _portrait(_slugOf(name), name, size || 34);
+}
+function _hostAv(size) {
+  const h = _host();
+  return _portrait(h.slug, h.name, size || 46);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ICONS — this room's own objects, hand-drawn SVG, never emoji
+// ══════════════════════════════════════════════════════════════════════
+//
+// The seal, the eye, the coffer, the chair and the chevron come from
+// `_icon()` in conclave.js and are NOT redrawn: they are the same objects on
+// every screen in this directory. These are the ones only this room needs.
+function _ic(type, size, colour) {
+  const s = size || 16, c = colour || 'currentColor';
+  const open = '<svg class="cv-ic" width="' + s + '" height="' + s
+    + '" viewBox="0 0 24 24" fill="none" aria-hidden="true">';
+  const m = {
+    // A FOLDED SLIP, STILL FOLDED. The whole screen in one drawing.
+    slip: '<path d="M4.4 5.2h15.2v13.6H4.4z" stroke="' + c + '" stroke-width="1.3"/>'
+      + '<path d="M4.4 12h15.2" stroke="' + c + '" stroke-width="1.1" opacity=".8"/>'
+      + '<path d="M8 8.6h8M8 15.4h5.6" stroke="' + c + '" stroke-width="1" opacity=".45"/>',
+    // The same slip, opened out.
+    read: '<path d="M3.4 6.2 12 4l8.6 2.2v13.4L12 17.4 3.4 19.6z" stroke="' + c + '" stroke-width="1.3"/>'
+      + '<path d="M12 4v13.4" stroke="' + c + '" stroke-width="1.1" opacity=".7"/>'
+      + '<path d="M6 9.2h3.4M14.6 9.2H18M6 13h3.4M14.6 13H18" stroke="' + c + '" stroke-width="1" opacity=".5"/>',
+    // A WICK THAT IS OUT, with the thread of smoke off it. The set's only
+    // candle with nothing burning on top of it.
+    cold: '<path d="M8.6 9.4h6.8v11.2H8.6z" stroke="' + c + '" stroke-width="1.3"/>'
+      + '<path d="M8.6 9.4c0-1 6.8-1 6.8 0" stroke="' + c + '" stroke-width="1.1"/>'
+      + '<path d="M12 9.2V7.4" stroke="' + c + '" stroke-width="1.4"/>'
+      + '<path d="M12 6.6c2-1 0-2.2 1.6-3.4M12 6.6c-1.8-.8-.2-1.9-1.4-3" stroke="' + c
+      + '" stroke-width="1" opacity=".6"/>',
+    // Four strokes and a fifth through them: a count nobody read aloud.
+    tally: '<path d="M5 5.6v12.8M9 5.6v12.8M13 5.6v12.8M17 5.6v12.8" stroke="' + c
+      + '" stroke-width="1.4"/><path d="M3.4 15.6 18.8 8.4" stroke="' + c + '" stroke-width="1.4"/>',
+    // A bell rope with nothing on the end of it. The first drawing was a mouth
+    // with a line across it and read unmistakably as a censor bar, which is a
+    // thing a castle does not contain -- found by looking at it.
+    silence: '<path d="M12 2.6v13.2" stroke="' + c + '" stroke-width="1.4"/>'
+      + '<path d="M12 15.8c-2.6 0-4.6 1.6-4.6 3.2h9.2c0-1.6-2-3.2-4.6-3.2z" stroke="' + c
+      + '" stroke-width="1.3"/>'
+      + '<path d="M4.6 21.4h14.8" stroke="' + c + '" stroke-width="1.2" opacity=".55"/>',
+    // Two hands and nothing between them.
+    part: '<path d="M2.6 12h6.2M15.2 12h6.2" stroke="' + c + '" stroke-width="1.5"/>'
+      + '<circle cx="12" cy="12" r="2.4" stroke="' + c + '" stroke-width="1.3"/>'
+      + '<path d="M12 3.4v3.6M12 17v3.6" stroke="' + c + '" stroke-width="1.2" opacity=".55"/>',
+    chevron: '<path d="M9 5.4 16 12l-7 6.6" stroke="' + c + '" stroke-width="1.8" stroke-linecap="round"/>',
+  };
+  return open + (m[type] || '') + '</svg>';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE ROOM AFTER EVERYBODY HAS LEFT IT — three planes, and it IS a place
+// ══════════════════════════════════════════════════════════════════════
+//
+// COLD IS NOT THE SAME AS EMPTY, and the first version of this screen made
+// that mistake in the most literal way available: the scenery ran 1500px, the
+// shell under it was flat near-black, and a page two and a half thousand
+// pixels long therefore had NO ROOM IN IT below the first screenful. It did
+// not read as the end of something. It read as nothing having rendered.
+//
+// The absence at the endgame belongs to what is WITHHELD -- no alignment, a
+// departure that ends in silence, survivors carrying on without ever being
+// told whether they were right. That is carried by the content, and the
+// content is where it stays. The environment is a real place, and it is the
+// SAME CASTLE at the end of it:
+//
+//   * THE ROOM AFTER EVERYBODY HAS LEFT IT. The chairs are pushed back from
+//     the table at the angles people leave them at, not deleted. The long
+//     table is still there with almost nobody at it.
+//   * THE FIRE HAS RUN DOWN. Every other screen in this set is lit by flame --
+//     forty candles in the hall, one lantern in the turret. Here the hearth is
+//     grey ash with ONE EMBER still in it, breathing. That is far colder than
+//     blackness and it is spoken in the language the set already has.
+//   * DAWN, OR THE HOUR BEFORE IT. Cold blue-grey through three tall windows
+//     rather than lantern amber -- the one hour of the day this show has not
+//     used, and the only light in the building.
+//   * THE POT IS PHYSICALLY ON THE TABLE. It is the only thing anybody is
+//     still in the castle for, so it is in the room where they can see it.
+//
+// The planes run 2600px and the shell carries a lit stone gradient the whole
+// way down underneath them, so there is no scroll position at which the place
+// stops existing.
+
+const ROOM_H = 2600;
+
+/** The far plane: the wall, the windows, the hearth, and the dawn. */
+function _roomFar() {
+  return '<svg viewBox="0 0 1100 ' + ROOM_H + '" preserveAspectRatio="xMidYMin slice">'
+    + '<defs>'
+    + '<linearGradient id="ltWall" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#1b232e"/><stop offset="26%" stop-color="#151c26"/>'
+    + '<stop offset="64%" stop-color="#111721"/><stop offset="100%" stop-color="#0d131b"/>'
+    + '</linearGradient>'
+    + '<linearGradient id="ltDawn" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#9fb8d2" stop-opacity=".42"/>'
+    + '<stop offset="100%" stop-color="#9fb8d2" stop-opacity="0"/>'
+    + '</linearGradient>'
+    + '<radialGradient id="ltEmber" cx="50%" cy="50%" r="50%">'
+    + '<stop offset="0%" stop-color="#ff9a4a" stop-opacity=".55"/>'
+    + '<stop offset="100%" stop-color="#ff9a4a" stop-opacity="0"/>'
+    + '</radialGradient>'
+    + '</defs>'
+    + '<rect width="1100" height="' + ROOM_H + '" fill="url(#ltWall)"/>'
+    + _courses()
+    // THE WINDOWS, and the hour before sunrise coming through them. There is
+    // no lamp in this room: the light is the morning, which nobody asked for.
+    + '<path d="M232 168a52 52 0 0 1 104 0v250H232z" fill="#a8c0d8" opacity=".3"/>'
+    + '<path d="M498 132a52 52 0 0 1 104 0v286H498z" fill="#b6cce2" opacity=".38"/>'
+    + '<path d="M764 168a52 52 0 0 1 104 0v250H764z" fill="#a8c0d8" opacity=".3"/>'
+    + '<path d="M232 168a52 52 0 0 1 104 0v250H232zM498 132a52 52 0 0 1 104 0v286H498z'
+    + 'M764 168a52 52 0 0 1 104 0v250H764z" fill="none" stroke="#0a0f16" stroke-width="9"/>'
+    + '<path d="M284 106v312M550 70v348M816 106v312" stroke="#0a0f16" stroke-width="7"/>'
+    + '<rect y="70" width="1100" height="620" fill="url(#ltDawn)"/>'
+    // the shape the windows throw on the far wall, low and cold
+    + '<path d="M170 700 L398 700 L446 980 L136 980 Z" fill="#a8c0d8" opacity=".07"/>'
+    + '<path d="M702 700 L930 700 L964 980 L654 980 Z" fill="#a8c0d8" opacity=".06"/>'
+    + _hearth()
+    + '</svg>';
+}
+
+/** Stone courses down the wall, so it is masonry rather than a gradient. */
+function _courses() {
+  let s = '<g opacity=".5">';
+  for (let y = 120; y < ROOM_H; y += 74) {
+    s += '<path d="M0 ' + y + 'h1100" stroke="#0c1119" stroke-width="2" opacity=".7"/>';
+    const off = ((y / 74) % 2) ? 108 : 0;
+    for (let x = off; x < 1100; x += 216) {
+      s += '<path d="M' + x + ' ' + y + 'v74" stroke="#0c1119" stroke-width="2" opacity=".45"/>';
+    }
+  }
+  return s + '</g>';
+}
+
+/**
+ * The hearth, and it is the whole thesis in one object.
+ *
+ * Grey ash, a burnt-through log, and ONE EMBER still alive in it. Every other
+ * screen in this directory is lit by fire; this is what is left of that fire,
+ * and it is the only warm pixel on the screen until the strongbox opens.
+ */
+function _hearth() {
+  return '<g>'
+    + '<path d="M40 980h250v300H40z" fill="#0a0f16" stroke="#1d2531" stroke-width="6"/>'
+    + '<path d="M40 980a125 60 0 0 1 250 0" fill="#0a0f16" stroke="#1d2531" stroke-width="6"/>'
+    + '<path d="M24 1272h282v26H24z" fill="#222b38"/>'
+    // the ash bed
+    + '<path d="M74 1272c14-56 46-84 91-84s77 28 91 84z" fill="#39414d" opacity=".85"/>'
+    + '<path d="M96 1272c10-38 32-58 69-58s59 20 69 58z" fill="#4a525e" opacity=".7"/>'
+    // a log that burned through and fell in two
+    + '<path d="M108 1246l58-16 10 22-58 16z" fill="#161b23"/>'
+    + '<path d="M178 1240l60 12-6 24-60-12z" fill="#141920"/>'
+    // THE EMBER. One, small, breathing on its own slow period.
+    + '<ellipse class="lt-ember-glow" cx="172" cy="1244" rx="86" ry="52" fill="url(#ltEmber)"/>'
+    + '<ellipse class="lt-ember" cx="172" cy="1244" rx="9" ry="5" fill="#ff8a3c"/>'
+    + '<ellipse class="lt-ember" cx="196" cy="1250" rx="4" ry="2.6" fill="#ffb066"'
+    + ' style="animation-duration:23s"/>'
+    + '</g>';
+}
+
+/** The mid plane: the table, the chairs pushed back, and the pot on it. */
+function _roomMid(seed, wicks) {
+  const rng = _fieldRng('lt|mid|' + seed);
+  const n = Math.max(3, Math.min(9, wicks || 5));
+  let s = '<svg viewBox="0 0 1100 ' + ROOM_H + '" preserveAspectRatio="xMidYMin slice">'
+    + '<defs><linearGradient id="ltTable" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#242c37"/><stop offset="42%" stop-color="#19202a"/>'
+    + '<stop offset="100%" stop-color="#0e141c"/>'
+    + '</linearGradient></defs>'
+    // the table, running away from the viewer and off the bottom of the room
+    + '<path d="M436 588 L664 588 L1006 ' + ROOM_H + ' L94 ' + ROOM_H + ' Z" fill="url(#ltTable)"/>'
+    + '<path d="M436 588 L664 588 L676 616 L424 616 Z" fill="#333c4a"/>'
+    // the grain of it, receding
+    + _tableGrain();
+  // THE CHAIRS ARE PUSHED BACK, NOT ABSENT. Everybody who is gone left one,
+  // and they left it at the angle people leave a chair at when they stand up
+  // and do not come back. The room reads as vacated rather than unfurnished.
+  for (let i = 0; i < 6; i++) {
+    const t = i / 6;
+    const y = 660 + 1500 * (t * t + t) / 2;
+    const w = 54 + 108 * t, h = 88 + 176 * t;
+    const push = 40 + 130 * t;
+    const tilt = [-9, 7, -5, 11, -13, 6][i];
+    for (const [x, dir] of [[330 - 230 * t - push, -1], [770 + 230 * t + push - w, 1]]) {
+      s += '<g transform="rotate(' + (tilt * dir) + ' ' + (x + w / 2).toFixed(0) + ' '
+        + (y + h).toFixed(0) + ')">'
+        + '<path d="M' + x.toFixed(0) + ' ' + (y + h).toFixed(0) + 'V' + y.toFixed(0)
+        + 'h' + w.toFixed(0) + 'v' + h.toFixed(0) + 'z" fill="#111823"'
+        + ' stroke="#28323f" stroke-width="4"/>'
+        + '<path d="M' + (x + 6).toFixed(0) + ' ' + (y + 14).toFixed(0) + 'h'
+        + (w - 12).toFixed(0) + 'v' + (h * 0.42).toFixed(0) + 'h' + (12 - w).toFixed(0)
+        + 'z" fill="#0b111a" opacity=".8"/>'
+        + '</g>';
+    }
+  }
+  // THE POT, ON THE TABLE, WHERE THEY CAN SEE IT. It is the only reason
+  // anybody is still in the building.
+  s += '<g>'
+    + '<ellipse cx="550" cy="742" rx="118" ry="26" fill="#05080d" opacity=".7"/>'
+    + '<path d="M448 636h204v96H448z" fill="#171e28" stroke="#3a4553" stroke-width="5"/>'
+    + '<path d="M448 636c0-40 204-40 204 0" fill="#1b232e" stroke="#3a4553" stroke-width="5"/>'
+    + '<rect x="448" y="672" width="204" height="10" fill="#3a4553"/>'
+    + '<rect x="536" y="666" width="28" height="34" fill="#4a5666"/>'
+    + '<circle cx="550" cy="684" r="5" fill="#0b111a"/>'
+    + '<path d="M470 620h30v-14h-30z" fill="#4a5666" opacity=".8"/>'
+    + '<path d="M600 620h30v-14h-30z" fill="#4a5666" opacity=".8"/>'
+    + '</g>';
+  // THE WICKS, and every one of them is out. Smoke is the only thing on this
+  // screen that moves, and the periods are coprime for the reason Task 2
+  // measured: a shared beat is visible as one.
+  const PERIODS = [13, 17, 19, 23, 29, 31, 37, 41, 43];
+  for (let i = 0; i < n; i++) {
+    const x = 300 + (i - (n - 1) / 2) * 62;
+    const y = 806 + (rng() * 12);
+    const hgt = 44 + rng() * 26;
+    s += '<g>'
+      + '<rect x="' + (x - 8).toFixed(0) + '" y="' + (y - hgt).toFixed(0)
+      + '" width="16" height="' + hgt.toFixed(0) + '" fill="#2b3340"/>'
+      + '<rect x="' + (x - 8).toFixed(0) + '" y="' + (y - hgt).toFixed(0)
+      + '" width="16" height="4" fill="#4b5666"/>'
+      + '<path class="lt-smoke" d="M' + x.toFixed(0) + ' ' + (y - hgt - 2).toFixed(0)
+      + 'c9-16-8-22 2-40c8-14-4-20 1-32" stroke="#a8bccf" stroke-width="2.6" fill="none"'
+      + ' opacity=".26" style="animation-duration:' + PERIODS[i % PERIODS.length]
+      + 's;animation-delay:-' + (i * 3.7).toFixed(1) + 's"/>'
+      + '</g>';
+  }
+  // and the same again on the other side of the pot
+  for (let i = 0; i < Math.max(2, n - 2); i++) {
+    const x = 800 + (i - (n - 3) / 2) * 62;
+    const y = 812 + (rng() * 12);
+    const hgt = 40 + rng() * 26;
+    s += '<g>'
+      + '<rect x="' + (x - 8).toFixed(0) + '" y="' + (y - hgt).toFixed(0)
+      + '" width="16" height="' + hgt.toFixed(0) + '" fill="#2b3340"/>'
+      + '<rect x="' + (x - 8).toFixed(0) + '" y="' + (y - hgt).toFixed(0)
+      + '" width="16" height="4" fill="#4b5666"/>'
+      + '<path class="lt-smoke" d="M' + x.toFixed(0) + ' ' + (y - hgt - 2).toFixed(0)
+      + 'c-8-15 7-21-2-38c-7-13 3-19-1-30" stroke="#a8bccf" stroke-width="2.4" fill="none"'
+      + ' opacity=".22" style="animation-duration:' + PERIODS[(i + 4) % PERIODS.length]
+      + 's;animation-delay:-' + (i * 5.3 + 2).toFixed(1) + 's"/>'
+      + '</g>';
+  }
+  // ash in the air, the whole height of the room
+  for (let i = 0; i < 54; i++) {
+    s += '<circle class="lt-ash" cx="' + (60 + rng() * 980).toFixed(0) + '" cy="'
+      + (200 + rng() * (ROOM_H - 300)).toFixed(0) + '" r="' + (0.9 + rng() * 1.7).toFixed(1)
+      + '" fill="#cfdae6" opacity="' + (0.12 + rng() * 0.24).toFixed(2)
+      + '" style="animation-duration:' + (26 + rng() * 22).toFixed(1)
+      + 's;animation-delay:-' + (rng() * 34).toFixed(1) + 's"/>';
+  }
+  return s + '</svg>';
+}
+
+/** The boards of the table, receding. */
+function _tableGrain() {
+  let s = '<g opacity=".5">';
+  for (let i = 1; i < 5; i++) {
+    const t = i / 5;
+    const xTop = 436 + 228 * t, xBot = 94 + 912 * t;
+    s += '<path d="M' + xTop.toFixed(0) + ' 588 L' + xBot.toFixed(0) + ' ' + ROOM_H
+      + '" stroke="#0d131b" stroke-width="3"/>';
+  }
+  return s + '</g>';
+}
+
+/** The fore plane: the near arch, and the edges of the frame. */
+function _roomFore() {
+  return '<svg viewBox="0 0 1100 ' + ROOM_H + '" preserveAspectRatio="xMidYMin slice">'
+    + '<path d="M0 0h1100v88c-190 38-360 58-550 58S190 126 0 88z" fill="#05080d"/>'
+    + '<path d="M0 0h120v' + ROOM_H + 'H0z" fill="#05080d" opacity=".78"/>'
+    + '<path d="M980 0h120v' + ROOM_H + 'H980z" fill="#05080d" opacity=".78"/>'
+    + '</svg>';
+}
+
+/**
+ * The hero plate: a row of folded slips, face down, on a bare table.
+ *
+ * THE ROOM IN THE TOP, THE PAPER DOWN THE SIDES, AND NOTHING WHERE THE WORDS
+ * GO. Two defects were found by rendering the first version and looking at it,
+ * and they are the same two Task 4 found:
+ *
+ *   * the top two thirds were an empty gradient, so the plate said nothing
+ *     about what room this is. The table now recedes to a strongbox under the
+ *     windows, with the cast's own chairs standing empty either side of it and
+ *     two cold wicks smoking on the cloth -- the screen's whole thesis, drawn.
+ *   * the slips sat UNDER the scrim and read as grey smudges either side of
+ *     the sentence. Paper is the one bright thing in this room, so it is drawn
+ *     ON TOP of the scrim and kept out of the centre 660px, which is where the
+ *     lockup is. The scrim then darkens the room and not the paper.
+ */
+function _heroScene(count) {
+  const n = Math.max(2, Math.min(9, count || 4));
+  let s = '<svg class="lt-hero-scene" viewBox="0 0 1100 456" preserveAspectRatio="xMidYMid slice">'
+    + '<defs><linearGradient id="ltHeroBg" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#0c0f15"/><stop offset="66%" stop-color="#06080c"/>'
+    + '<stop offset="100%" stop-color="#020305"/></linearGradient>'
+    + '<linearGradient id="ltHeroSky" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#8fa2b6" stop-opacity=".3"/>'
+    + '<stop offset="100%" stop-color="#8fa2b6" stop-opacity="0"/></linearGradient>'
+    + '<linearGradient id="ltHeroCloth" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#1b212a"/><stop offset="100%" stop-color="#0a0d13"/>'
+    + '</linearGradient>'
+    + '<linearGradient id="ltHeroScrim" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#020305" stop-opacity="0"/>'
+    + '<stop offset="52%" stop-color="#020305" stop-opacity=".62"/>'
+    + '<stop offset="100%" stop-color="#020305" stop-opacity=".93"/></linearGradient>'
+    + '</defs>'
+    + '<rect width="1100" height="456" fill="url(#ltHeroBg)"/>'
+    + '<rect width="1100" height="250" fill="url(#ltHeroSky)"/>'
+    // three high windows with the morning in them, and no lamp anywhere
+    + '<path d="M300 24a34 34 0 0 1 68 0v128h-68zM516 8a34 34 0 0 1 68 0v144h-68z'
+    + 'M732 24a34 34 0 0 1 68 0v128h-68z" fill="#8fa2b6" opacity=".2"/>'
+    + '<path d="M334 -8v160M550 -24v176M766 -8v160" stroke="#05070a" stroke-width="6"/>'
+    // the strongbox, shut, at the far end of the room
+    + '<path d="M492 96h116v58H492z" fill="#0b0f15" stroke="#242c38" stroke-width="4"/>'
+    + '<path d="M492 96c0-24 116-24 116 0" fill="#0b0f15" stroke="#242c38" stroke-width="4"/>'
+    + '<rect x="492" y="118" width="116" height="6" fill="#242c38"/>'
+    + '<rect x="542" y="114" width="16" height="20" fill="#2f3846"/>'
+    // the table, running away from the viewer, and the chairs down both sides
+    + '<path d="M470 154 L630 154 L1010 456 L90 456 Z" fill="url(#ltHeroCloth)"/>'
+    + '<path d="M470 154 L630 154 L636 168 L464 168 Z" fill="#2a323e"/>'
+    + _heroChairs()
+    + _heroWicks()
+    + '<rect y="120" width="1100" height="336" fill="url(#ltHeroScrim)"/>';
+  // THE SLIPS, ON THE NEAR END OF THE TABLE AND ON TOP OF THE SCRIM.
+  //
+  // Both facts were found by rendering. UNDER the scrim they went grey and
+  // read as smudges -- paper is the one bright thing in this room. And in the
+  // middle of the plate they floated in mid-air like playing cards, because
+  // the table is narrow up there: at this height the cloth runs almost the
+  // full width, so a slip lying at the outer edge is lying ON something. The
+  // centre 640px stays clear, which is where the lockup is.
+  const half = Math.ceil(n / 2);
+  const W = 62, H = 40;
+  for (let i = 0; i < Math.min(n, 6); i++) {
+    const left = i < half;
+    const k = left ? i : i - half;
+    const perSide = Math.max(1, left ? half : n - half);
+    const x = left ? 118 + k * Math.min(58, 150 / perSide)
+      : 1100 - 118 - W - k * Math.min(58, 150 / perSide);
+    const y = 388 + ((i * 29) % 34);
+    const rot = ((i * 37) % 15) - 7;
+    s += '<g transform="rotate(' + rot + ' ' + (x + W / 2) + ' ' + (y + H / 2) + ')">'
+      + '<path d="M' + (x + 3).toFixed(0) + ' ' + (y + H + 2).toFixed(0)
+      + 'h' + W + 'v6h-' + W + 'z" fill="#020305" opacity=".6"/>'
+      + '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + 'h' + W + 'v' + H
+      + 'h-' + W + 'z" fill="#cdd4dc"/>'
+      + '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + 'h' + W + 'v' + H
+      + 'h-' + W + 'z" fill="none" stroke="#7f8791" stroke-width="2"/>'
+      + '<path d="M' + x.toFixed(0) + ' ' + (y + H / 2).toFixed(0) + 'h' + W
+      + '" stroke="#7f8791" stroke-width="2" opacity=".85"/>'
+      + '</g>';
+  }
+  return s + '</svg>';
+}
+
+/** Empty chairs down both sides of the hero's table, receding. */
+function _heroChairs() {
+  let s = '<g>';
+  for (let i = 0; i < 3; i++) {
+    const t = i / 3;
+    const y = 176 + 210 * (t * t + t) / 2;
+    const w = 34 + 58 * t, h = 52 + 92 * t;
+    for (const x of [402 - 190 * t, 698 + 190 * t - w]) {
+      s += '<path d="M' + x.toFixed(0) + ' ' + (y + h).toFixed(0) + 'V' + y.toFixed(0)
+        + 'h' + w.toFixed(0) + 'v' + h.toFixed(0) + 'z" fill="#070a10"'
+        + ' stroke="#1a1f29" stroke-width="3" opacity=".92"/>';
+    }
+  }
+  return s + '</g>';
+}
+
+/** Two candles on the cloth, both out, both still smoking. Coprime periods. */
+function _heroWicks() {
+  let s = '<g>';
+  const at = [[512, 200, 13], [578, 208, 17]];
+  for (const [x, y, per] of at) {
+    s += '<rect x="' + (x - 5) + '" y="' + (y - 34) + '" width="10" height="34" fill="#232a34"/>'
+      + '<rect x="' + (x - 5) + '" y="' + (y - 34) + '" width="10" height="3" fill="#3c4552"/>'
+      + '<path class="lt-smoke" d="M' + x + ' ' + (y - 36)
+      + 'c7-12-6-16 2-30c6-10-3-15 1-24" stroke="#9fb0c2" stroke-width="2" fill="none"'
+      + ' opacity=".2" style="animation-duration:' + per + 's"/>';
+  }
+  return s + '</g>';
+}
+
+/**
+ * Ash in the air, over the WHOLE page rather than over the drawn room.
+ *
+ * The planes are 2600px and an episode with six asks is over five thousand,
+ * so everything the room does stops half way down. These are positioned in
+ * percentages of the shell, which means the bottom of a long episode is still
+ * a room with something moving in it. Simple dots, which is the one thing
+ * this project lets CSS draw.
+ */
+function _air(seed) {
+  const rng = _fieldRng('lt|air|' + seed);
+  let s = '';
+  for (let i = 0; i < 46; i++) {
+    const r = (1 + rng() * 2.2).toFixed(1);
+    s += '<span class="lt-mote" style="left:' + (2 + rng() * 96).toFixed(1)
+      + '%;top:' + (2 + rng() * 96).toFixed(1) + '%;width:' + r + 'px;height:' + r
+      + 'px;opacity:' + (0.1 + rng() * 0.26).toFixed(2)
+      + ';animation-duration:' + (24 + rng() * 26).toFixed(1)
+      + 's;animation-delay:-' + (rng() * 40).toFixed(1) + 's"></span>';
+  }
+  return s;
+}
+
+/** The filter bank. */
+function _filters() {
+  return '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'
+    + '<filter id="ltCrease" x="-4%" y="-4%" width="108%" height="108%">'
+    + '<feTurbulence type="fractalNoise" baseFrequency="0.02 0.07" numOctaves="3" seed="29" result="n"/>'
+    + '<feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>'
+    + '</filter>'
+    + '</defs></svg>';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE VISUAL SYSTEM — ash and slate, and one warm card at the very end
+// ══════════════════════════════════════════════════════════════════════
+const LT_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+
+.lt-root{
+  --lt-ash:#0a0c11;
+  --lt-ash-2:#040508;
+  --lt-slate:#151a22;
+  --lt-cold:#8fa2b6;
+  --lt-bone:#dde3ea;
+  --lt-smoke:#5d6873;
+  --lt-paper:#cdd4dc;
+  --lt-wax:#8e1526;
+  --lt-wax-hot:#c8455a;
+  --lt-brass:#b98f3e;
+  --lt-brass-hot:#f4dda2;
+  --lt-display:'Fraunces',Georgia,'Times New Roman',serif;
+  --lt-hand:'IM Fell English',Georgia,serif;
+  --lt-body:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --cv-display:'Fraunces',Georgia,serif;
+  color:var(--lt-bone);
+  font-family:var(--lt-body);
+  font-size:17px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:104px;
+  background:#000;
+}
+.lt-root *{box-sizing:border-box}
+
+/* THE GROUND IS A LIT WALL, THE WHOLE WAY DOWN. The scenery planes are tall
+   but they are still finite, and the first version put flat near-black under
+   them -- so a page of two and a half thousand pixels stopped being a room
+   after the first screenful and read as a failed render. The shell now paints
+   cold stone under everything, and the phase atmosphere moves --lt-ground
+   rather than replacing the background, so no phase can flatten it again. */
+.lt-shell{
+  position:relative;
+  max-width:1100px;margin:0 auto;
+  --lt-ground:#141b25;
+  background:
+    linear-gradient(180deg,rgba(168,192,216,.1) 0,rgba(168,192,216,0) 460px),
+    linear-gradient(180deg,var(--lt-ground) 0%,#101720 46%,#0d141c 100%);
+  box-shadow:0 0 0 1px rgba(143,162,182,.12),0 0 90px rgba(0,0,0,.94);
+  overflow:visible;
+  transition:background 1.8s ease;
+}
+/* THE CLIP LAYER, AND IT TAKES NO z-index. Measured on the conclave: a shell
+   that clips is a scroll container and kills sticky for every descendant, and
+   a z-index here would make this a stacking context and silently re-grade
+   every blend on the screen. */
+.lt-scenery{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+
+/* THE WALL RUNS THE WHOLE PAGE, AND THE ROOM SITS AT THE TOP OF IT.
+   The drawn planes are 2600px and a long episode is over five thousand, so
+   below the room the second version was still a flat gradient. Masonry is
+   repeating by nature, so it is drawn as a repeat over the FULL height: the
+   room is what you can see of the hall, and the wall is what is behind you
+   for the rest of it. */
+.lt-stone{
+  position:absolute;left:0;right:0;top:46px;bottom:0;z-index:0;pointer-events:none;
+  opacity:.55;
+  background-image:
+    repeating-linear-gradient(180deg,rgba(11,16,23,.85) 0 2px,transparent 2px 74px),
+    repeating-linear-gradient(90deg,rgba(11,16,23,.55) 0 2px,transparent 2px 216px);
+}
+.lt-far,.lt-mid,.lt-fore{
+  position:absolute;left:0;right:0;top:46px;height:2600px;bottom:auto;
+  pointer-events:none;overflow:hidden;
+}
+.lt-air,.lt-wash,.lt-vig,.lt-grain{position:absolute;left:0;right:0;top:46px;bottom:0;pointer-events:none}
+.lt-far svg,.lt-mid svg,.lt-fore svg{position:absolute;inset:0;width:100%;height:100%}
+.lt-far {z-index:1;filter:blur(2.2px) saturate(.62) brightness(1);opacity:.94}
+.lt-mid {z-index:2;filter:blur(.4px) saturate(.68);opacity:.96}
+.lt-fore{z-index:3}
+.lt-air {z-index:4}
+.lt-wash{z-index:5}
+.lt-vig {z-index:6}
+.lt-grain{z-index:9}
+.lt-body{position:relative;z-index:7}
+/* Ash in the air the whole way down, so the lower half of a long episode is
+   still a room somebody is standing in. Simple geometric indicators, which is
+   the one thing CSS is allowed to draw here. */
+.lt-mote{
+  position:absolute;border-radius:50%;background:#cfdae6;
+  animation:lt-settle ease-in-out infinite alternate;
+}
+/* The room dissolves into the wall rather than into black, so the bottom of a
+   long episode is still masonry and not a hole. */
+.lt-far::after,.lt-mid::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:520px;
+  background:linear-gradient(180deg,transparent,rgba(13,20,28,.92));
+}
+.lt-wash{
+  mix-blend-mode:screen;opacity:.5;
+  background:radial-gradient(52% 24% at 50% 7%,rgba(168,192,216,.24) 0%,transparent 68%);
+}
+/* LIGHTER THAN IT WAS, AND DELIBERATELY. The first vignette went to .98 black
+   at the corners and did most of the work of making the screen look unlit. */
+.lt-vig{
+  background:
+    radial-gradient(122% 86% at 50% 18%,transparent 0%,transparent 34%,rgba(4,7,12,.42) 70%,rgba(4,7,12,.8) 100%),
+    linear-gradient(180deg,rgba(4,7,12,.44) 0%,transparent 14%,transparent 86%,rgba(4,7,12,.72) 100%);
+  mix-blend-mode:multiply;
+}
+.lt-grain{
+  opacity:.12;mix-blend-mode:soft-light;
+  background-image:var(--lt-grain-src);background-size:210px 210px;
+}
+
+/* ── AMBIENT — smoke off a wick, and no flame anywhere on the screen ── */
+.lt-smoke{
+  animation:lt-rise ease-in-out infinite alternate;
+  transform-box:fill-box;transform-origin:50% 100%;
+}
+@keyframes lt-rise{
+  0%  {opacity:.08;transform:translateY(0)    skewX(-1.4deg) scaleY(1)}
+  46% {opacity:.2; transform:translateY(-7px) skewX(1.6deg)  scaleY(1.06)}
+  100%{opacity:.05;transform:translateY(-14px) skewX(-.8deg) scaleY(1.12)}
+}
+.lt-ash{animation:lt-settle ease-in-out infinite alternate}
+@keyframes lt-settle{
+  0%  {transform:translate(0,0);opacity:.1}
+  100%{transform:translate(-7px,11px);opacity:.3}
+}
+/* THE ONE EMBER. Every other screen in this set is lit by fire; this is what
+   is left of it, and it is the only warm thing on the page until the
+   strongbox opens. Slow, and on its own period so it shares a beat with
+   nothing. */
+.lt-ember{animation:lt-ember 17s ease-in-out infinite alternate}
+@keyframes lt-ember{
+  0%  {opacity:.42}
+  38% {opacity:.95}
+  71% {opacity:.55}
+  100%{opacity:.8}
+}
+.lt-ember-glow{animation:lt-ember-glow 29s ease-in-out infinite alternate}
+@keyframes lt-ember-glow{
+  0%  {opacity:.36}
+  54% {opacity:.78}
+  100%{opacity:.46}
+}
+
+/* ── PHASE ATMOSPHERE — the hour moves, the room does not go out ────────
+   These move --lt-ground and the washes. They must NEVER set the background
+   shorthand outright again: the first version did, which threw away the stone
+   under the whole page and left flat black behind every card.
+   (And no backtick may appear in a comment in this stylesheet -- it is inside
+   a template literal, so one is a parse error. Task 2 wrote that down and
+   this file rediscovered it anyway.) */
+.lt-shell[data-phase="open"]  {--lt-ground:#141b25}
+.lt-shell[data-phase="ask"]   {--lt-ground:#121924}
+.lt-shell[data-phase="answer"]{--lt-ground:#101722}
+.lt-shell[data-phase="answer"] .lt-wash{opacity:.34}
+.lt-shell[data-phase="count"] {--lt-ground:#111823}
+.lt-shell[data-phase="table"] {--lt-ground:#0e141d}
+.lt-shell[data-phase="table"] .lt-wash{opacity:.22}
+.lt-shell[data-phase="money"] {--lt-ground:#1c1a12}
+.lt-shell[data-phase="money"] .lt-wash{opacity:.85;
+  background:radial-gradient(54% 26% at 50% 12%,rgba(244,221,162,.24) 0%,transparent 64%)}
+
+/* ═══ HERO PLATE ══════════════════════════════════════════════════════ */
+.lt-hero{
+  position:relative;height:456px;overflow:hidden;
+  background:#020305;border-bottom:1px solid rgba(143,162,182,.16);
+}
+.lt-hero svg.lt-hero-scene{position:absolute;inset:0;width:100%;height:100%}
+.lt-hero-lock{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:0 44px 26px;text-align:center}
+.lt-eyebrow{
+  font-family:var(--lt-display);font-weight:600;font-size:10px;letter-spacing:.46em;
+  text-transform:uppercase;color:rgba(221,227,234,.78);
+  text-shadow:0 2px 12px rgba(0,0,0,.95);margin-bottom:2px;
+}
+/* THE LOCKUP. The same one all five earlier screens use: Fraunces 900
+   squeezed to .80 with a 1.3px stroke. Six screens, one logo. */
+.lt-title{
+  display:inline-block;
+  font-family:var(--lt-display);font-weight:900;
+  font-size:clamp(30px,5.2vw,62px);line-height:1.02;padding:0 0 .06em;
+  letter-spacing:-.02em;
+  transform:scaleX(.80);transform-origin:center bottom;
+  -webkit-text-stroke:1.3px currentColor;paint-order:stroke fill;
+  color:#eaeff5;margin:10px 0 0;
+  text-shadow:0 4px 34px rgba(0,0,0,.95);
+}
+.lt-title-rule{display:flex;align-items:center;justify-content:center;gap:14px;margin:12px 0 10px}
+.lt-title-rule i{display:block;height:1px;width:96px;
+  background:linear-gradient(90deg,transparent,rgba(221,227,234,.44))}
+.lt-title-rule i:last-child{background:linear-gradient(270deg,transparent,rgba(221,227,234,.44))}
+.lt-sub{
+  font-family:var(--lt-hand);font-style:italic;font-size:18px;line-height:1.55;
+  color:rgba(221,227,234,.82);max-width:640px;margin:0 auto;
+  text-shadow:0 2px 14px rgba(0,0,0,.95);
+}
+
+/* ── OBSERVER STRIP ─────────────────────────────────────────────────── */
+.lt-head{padding:16px 34px;border-bottom:1px solid rgba(143,162,182,.14);
+  background:linear-gradient(180deg,rgba(2,3,5,.74),transparent)}
+.lt-observer{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--lt-display);font-weight:600;font-size:10px;letter-spacing:.24em;
+  text-transform:uppercase;color:rgba(221,227,234,.72);
+}
+.lt-observer em{font-family:var(--lt-body);font-style:italic;font-size:14px;
+  letter-spacing:0;text-transform:none;color:rgba(221,227,234,.5)}
+
+/* ═══ THE STAGE — the chairs, and what is on the paper in front of each ═══
+   Sticky element AND the element the reveal handlers replace by id. Every
+   chair starts SEALED and stays sealed for anybody the observer is not
+   entitled to read, which is the whole observer contract on this screen. */
+.lt-stage{position:sticky;top:46px;z-index:12;
+  background:rgba(2,3,5,.97);
+  border-bottom:1px solid rgba(143,162,182,.2);
+  padding:11px 20px 12px;backdrop-filter:blur(6px)}
+.lt-stage-row{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.lt-chair{
+  flex:0 1 auto;display:flex;align-items:center;gap:9px;
+  padding:6px 11px 6px 7px;
+  border:1px solid rgba(143,162,182,.2);background:rgba(12,16,22,.86);
+  transition:border-color .3s,background .3s,opacity .3s;
+}
+.lt-chair[data-state="sealed"]{opacity:.72}
+.lt-chair[data-state="end"]   {border-color:rgba(143,162,182,.52);background:rgba(20,27,36,.9)}
+.lt-chair[data-state="banish"]{border-color:rgba(200,69,90,.6);background:rgba(30,9,14,.82)}
+.lt-chair[data-state="gone"]  {opacity:.34;filter:saturate(.1)}
+.lt-chair-nm{
+  font-family:var(--lt-display);font-weight:700;font-size:12px;letter-spacing:.06em;
+  color:rgba(221,227,234,.9);white-space:nowrap;
+}
+.lt-chair-st{
+  display:block;font-family:var(--lt-display);font-weight:700;font-size:8px;
+  letter-spacing:.24em;text-transform:uppercase;color:rgba(143,162,182,.68);margin-top:1px;
+}
+.lt-chair[data-state="banish"] .lt-chair-st{color:var(--lt-wax-hot)}
+.lt-chair[data-state="gone"] .lt-chair-st{color:rgba(221,227,234,.5)}
+.lt-meters{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+.lt-meter{
+  flex:1 1 130px;padding:6px 12px 7px;
+  border:1px solid rgba(143,162,182,.18);background:rgba(9,12,17,.8);
+}
+.lt-meter-k{display:block;font-family:var(--lt-display);font-weight:700;font-size:8px;
+  letter-spacing:.28em;text-transform:uppercase;color:rgba(221,227,234,.48)}
+.lt-meter-v{display:block;font-family:var(--lt-display);font-weight:900;font-size:18px;
+  line-height:1.2;color:#eaeff5;margin-top:2px}
+.lt-meter[data-tone="brass"] .lt-meter-v{color:var(--lt-brass-hot)}
+.lt-meter[data-tone="wax"] .lt-meter-v{color:var(--lt-wax-hot)}
+
+/* ═══ THE COLUMN ══════════════════════════════════════════════════════ */
+.lt-main{position:relative;padding:32px 34px 92px;max-width:900px;margin:0 auto}
+
+.lt-beat{opacity:0;pointer-events:none;height:0;overflow:hidden;margin:0}
+.lt-beat.lt-vis{opacity:1;pointer-events:auto;height:auto;overflow:visible;margin-bottom:22px}
+
+/* DEALT ACROSS A TABLE. Pushed in flat from the left and stopped dead --
+   no rise, no bounce, no light. Somebody is handing folded paper back. */
+.lt-beat.lt-vis .lt-card{animation:lt-deal .62s cubic-bezier(.17,.84,.24,1) both}
+@keyframes lt-deal{
+  0%  {opacity:0;transform:translateX(-44px) rotate(-1.1deg)}
+  70% {opacity:1}
+  100%{opacity:1;transform:none}
+}
+
+/* A LITTLE TRANSLUCENT, NOW THERE IS SOMETHING BEHIND THEM. The cards used to
+   be all but opaque, which was fine over black and is wrong over a room: the
+   table and the chairs read faintly through them, which is what puts the
+   reader in the hall rather than in front of a list. */
+.lt-card{
+  position:relative;
+  background:linear-gradient(172deg,rgba(20,26,35,.9),rgba(8,11,16,.93));
+  border:1px solid rgba(143,162,182,.24);
+  padding:19px 23px 21px;
+  box-shadow:0 18px 46px rgba(0,0,0,.7);
+}
+.lt-card[data-kind="answer"]{margin-left:44px;padding:15px 20px 16px}
+.lt-card[data-kind="count"]{border-color:rgba(143,162,182,.36)}
+.lt-card[data-kind="table"]{
+  border-color:rgba(200,69,90,.4);
+  background:linear-gradient(172deg,rgba(24,14,18,.94),rgba(5,6,10,.96));
+}
+/* THE ONE WARM THING ON THE SCREEN. Everything above it is ash, because
+   nothing above it was ever explained. */
+.lt-card[data-kind="money"]{
+  border-color:rgba(185,143,62,.5);
+  background:linear-gradient(160deg,rgba(46,36,16,.9),rgba(9,8,6,.96));
+  box-shadow:0 22px 60px rgba(0,0,0,.75),inset 0 0 60px -18px rgba(244,221,162,.22);
+  padding:26px 26px 24px;
+}
+.lt-label{
+  display:flex;align-items:center;gap:9px;
+  font-family:var(--lt-display);font-weight:700;font-size:9.5px;letter-spacing:.3em;
+  text-transform:uppercase;color:rgba(143,162,182,.72);margin-bottom:8px;
+}
+.lt-card[data-kind="money"] .lt-label{color:var(--lt-brass-hot)}
+.lt-h{
+  font-family:var(--lt-display);font-weight:900;font-size:23px;line-height:1.16;
+  letter-spacing:-.014em;color:#eaeff5;margin:0 0 10px;
+}
+.lt-card[data-kind="money"] .lt-h{font-size:30px}
+.lt-card p{margin:0 0 10px;color:rgba(221,227,234,.82)}
+.lt-card p:last-child{margin-bottom:0}
+.lt-say{font-family:var(--lt-hand);font-style:italic;font-size:19px;line-height:1.55;
+  color:rgba(234,239,245,.94)}
+
+/* ── AN ANSWER, AND IT IS A PIECE OF PAPER ──────────────────────────── */
+.lt-answer{display:flex;align-items:center;gap:16px}
+.lt-answer-who{display:flex;align-items:center;gap:11px;min-width:190px}
+.lt-answer-nm{font-family:var(--lt-display);font-weight:900;font-size:19px;color:#eaeff5}
+.lt-slip{
+  position:relative;flex:none;width:132px;padding:9px 10px 10px;text-align:center;
+  background:linear-gradient(176deg,var(--lt-paper),#aeb6c0);
+  color:#1b2029;
+  box-shadow:0 8px 20px rgba(0,0,0,.6);
+}
+.lt-slip::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;
+  background:rgba(27,32,41,.28)}
+.lt-slip-w{font-family:var(--lt-display);font-weight:900;font-size:15px;letter-spacing:.1em;
+  text-transform:uppercase;line-height:1.2}
+.lt-slip[data-choice="banish"]{background:linear-gradient(176deg,#e3c8cd,#c39aa2)}
+.lt-slip[data-choice="banish"] .lt-slip-w{color:#5c0c17}
+.lt-slip[data-choice="sealed"]{background:linear-gradient(176deg,#3a424e,#232a34);color:#8fa2b6}
+.lt-slip[data-choice="sealed"] .lt-slip-w{color:rgba(143,162,182,.8);font-size:13px}
+.lt-answer-note{font-family:var(--lt-body);font-style:italic;font-size:15px;
+  color:rgba(221,227,234,.6)}
+
+/* ── A COUNT NOBODY READ OUT ────────────────────────────────────────── */
+.lt-count{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin:4px 0 2px}
+.lt-count-n{font-family:var(--lt-display);font-weight:900;
+  font-size:clamp(34px,6vw,58px);line-height:1;letter-spacing:-.03em;color:#eaeff5}
+.lt-count-n[data-tone="wax"]{color:var(--lt-wax-hot)}
+.lt-count-n[data-tone="cold"]{color:var(--lt-cold)}
+.lt-count-s{font-family:var(--lt-display);font-weight:700;font-size:10px;
+  letter-spacing:.28em;text-transform:uppercase;color:rgba(221,227,234,.6)}
+
+/* ── AND THE HOLE WHERE THE ANSWER GOES ─────────────────────────────── */
+.lt-void{
+  margin:13px 0 2px;padding:15px 18px;text-align:center;
+  border:1px dashed rgba(143,162,182,.34);background:rgba(4,5,8,.6);
+}
+.lt-void-w{font-family:var(--lt-display);font-weight:900;font-size:17px;letter-spacing:.04em;
+  color:rgba(221,227,234,.72)}
+.lt-void-s{font-family:var(--lt-body);font-style:italic;font-size:15px;
+  color:rgba(221,227,234,.52);margin-top:4px}
+
+/* ── THE MONEY, WHICH IS THE ONLY THING TURNED OVER ─────────────────── */
+.lt-pot{
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  margin:6px 0 16px;padding-bottom:14px;
+  border-bottom:1px solid rgba(185,143,62,.3);
+}
+.lt-pot-n{font-family:var(--lt-display);font-weight:900;
+  font-size:clamp(38px,7vw,66px);line-height:1;letter-spacing:-.03em;color:var(--lt-brass-hot);
+  text-shadow:0 0 40px rgba(244,221,162,.28)}
+.lt-pot-k{font-family:var(--lt-display);font-weight:700;font-size:10px;letter-spacing:.3em;
+  text-transform:uppercase;color:rgba(244,221,162,.62)}
+/* EVERY WINNER, AND NEVER THE FIRST OF THEM. Up to four people split this. */
+.lt-winners{display:flex;flex-wrap:wrap;gap:12px;margin:4px 0 14px}
+.lt-winner{
+  display:flex;align-items:center;gap:12px;padding:11px 16px 11px 11px;
+  border:1px solid rgba(185,143,62,.45);background:rgba(30,24,10,.66);
+}
+.lt-winner-nm{font-family:var(--lt-display);font-weight:900;font-size:21px;color:#f7ecd0}
+.lt-winner-sh{display:block;font-family:var(--lt-display);font-weight:700;font-size:9.5px;
+  letter-spacing:.22em;text-transform:uppercase;color:rgba(244,221,162,.72);margin-top:2px}
+.lt-lost{display:flex;flex-wrap:wrap;gap:10px;margin:2px 0 12px}
+.lt-lost-one{display:flex;align-items:center;gap:9px;padding:7px 13px 7px 8px;
+  border:1px solid rgba(143,162,182,.22);background:rgba(8,10,14,.7);opacity:.72}
+.lt-lost-nm{font-family:var(--lt-display);font-weight:700;font-size:15px;
+  color:rgba(221,227,234,.82)}
+
+.lt-sums{display:flex;flex-wrap:wrap;gap:10px 26px;margin:13px 0 2px;padding:12px 0 0;
+  border-top:1px solid rgba(143,162,182,.18)}
+.lt-sum{display:inline-flex;align-items:baseline;gap:9px}
+.lt-sum-k{font-family:var(--lt-display);font-weight:700;font-size:9px;letter-spacing:.26em;
+  text-transform:uppercase;color:rgba(221,227,234,.5)}
+.lt-sum-v{font-family:var(--lt-display);font-weight:900;font-size:20px;color:#eaeff5}
+.lt-sum-v[data-tone="brass"]{color:var(--lt-brass-hot)}
+.lt-sum-v[data-tone="wax"]{color:var(--lt-wax-hot)}
+
+/* ── HOST BAND ──────────────────────────────────────────────────────── */
+.lt-host{
+  position:relative;overflow:hidden;
+  display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;
+  padding:16px 24px;margin-top:18px;
+  background:linear-gradient(100deg,rgba(2,3,5,.96),rgba(40,32,16,.8) 52%,rgba(2,3,5,.96));
+  border-top:1px solid rgba(185,143,62,.42);border-bottom:1px solid rgba(185,143,62,.42);
+  box-shadow:inset 0 0 40px -8px rgba(244,221,162,.14),0 12px 30px rgba(0,0,0,.6);
+}
+.lt-host-name{
+  font-family:var(--lt-display);font-weight:700;font-size:10px;letter-spacing:.32em;
+  text-transform:uppercase;color:var(--lt-brass-hot);margin-bottom:6px;
+  display:flex;align-items:center;gap:8px;
+}
+.lt-host-line{font-family:var(--lt-hand);font-style:italic;font-size:19px;line-height:1.5;
+  color:#f2e2bb}
+
+/* ── STICKY CONTROLS ────────────────────────────────────────────────── */
+.lt-controls{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  background:linear-gradient(180deg,rgba(2,3,5,.1),rgba(2,3,5,.98) 44%);
+  border-top:1px solid rgba(143,162,182,.2);
+  padding:17px 20px;display:flex;gap:15px;justify-content:center;align-items:center;
+  backdrop-filter:blur(7px);
+}
+.lt-btn{
+  font-family:var(--lt-display);font-weight:700;font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;cursor:pointer;
+  background:linear-gradient(170deg,rgba(143,162,182,.16),rgba(143,162,182,.03));
+  color:var(--lt-bone);
+  border:1px solid rgba(143,162,182,.38);padding:12px 26px;
+  transition:background .25s,color .25s,border-color .25s,opacity .25s,box-shadow .25s;
+  display:inline-flex;align-items:center;gap:10px;
+  box-shadow:inset 0 1px 0 rgba(221,227,234,.14);
+}
+.lt-btn:hover{background:rgba(143,162,182,.26);color:#fff;
+  box-shadow:0 0 26px rgba(143,162,182,.22),inset 0 1px 0 rgba(221,227,234,.26)}
+.lt-btn[disabled],.lt-btn.lt-dim{opacity:.3;cursor:default;pointer-events:none}
+.lt-counter{
+  font-family:var(--lt-display);font-weight:700;font-size:11px;letter-spacing:.26em;
+  color:rgba(221,227,234,.44);min-width:86px;text-align:center;
+}
+
+/* ── EMPTY STATE ────────────────────────────────────────────────────── */
+.lt-none{max-width:620px;margin:0 auto;padding:64px 34px 90px;text-align:center}
+.lt-none-h{font-family:var(--lt-display);font-weight:900;font-size:30px;letter-spacing:-.01em;
+  color:#eaeff5;margin:22px 0 16px}
+.lt-none p{font-family:var(--lt-hand);font-size:19px;line-height:1.65;
+  color:rgba(221,227,234,.68);margin:0 auto 14px;max-width:520px}
+
+/* ── RESPONSIVE ─────────────────────────────────────────────────────── */
+@media(max-height:720px){.lt-stage{position:static}}
+@media(max-width:900px){
+  .lt-stage{position:static}
+  .lt-hero{height:392px}
+}
+@media(max-width:700px){
+  .lt-main{padding:24px 16px 60px}
+  .lt-card[data-kind="answer"]{margin-left:0}
+  .lt-answer{flex-direction:column;align-items:flex-start;gap:10px}
+  .lt-answer-who{min-width:0}
+  .lt-head{padding:14px 18px}
+  .lt-hero{height:330px}
+  .lt-hero-lock{padding:0 18px 22px}
+  .lt-host{grid-template-columns:1fr;gap:10px}
+}
+
+/* ── REDUCED MOTION — every animation off ───────────────────────────── */
+@media(prefers-reduced-motion:reduce){
+  .lt-root *,.lt-root *::before,.lt-root *::after{animation:none!important;transition:none!important}
+  .lt-beat.lt-vis .lt-card{opacity:1;transform:none}
+  .lt-smoke{opacity:.2}
+  .lt-ember{opacity:.8}
+  .lt-ember-glow{opacity:.55}
+}
+` + PORTRAIT_CSS;
+
+// ══════════════════════════════════════════════════════════════════════
+// THE WORDS
+// ══════════════════════════════════════════════════════════════════════
+//
+// Four variants minimum everywhere, and the pools are split by the STATE they
+// describe rather than by flavour, for the reason js/tr/endgame.js gives about
+// its own pot lines: a sentence asserting a fact about the room has to agree
+// with the room. "Nobody wrote a name" and "one of them did" are different
+// events and cannot share a pool with a number substituted in.
+
+const OPEN = [
+  'The table is set for a room that used to seat twenty. What is left of the castle sits '
+  + 'down at it and is not asked to accuse anybody. It is asked something else.',
+  'The candles have been let go out. Nobody lit them again, because there is no evening '
+  + 'left to get through -- only a question, put once and then put again.',
+  'They come in and take chairs that no longer have anybody either side of them. The room '
+  + 'is the same room. Everything about the question in it has changed.',
+  'What is left of the cast sits down in a hall built for four times as many. From here '
+  + 'the game stops asking who is lying and starts asking whether anybody wants to keep going.',
+];
+
+const RULE = [
+  'Each of them writes one word, in private, and folds it. One word for another table, '
+  + 'one word for the end of it. A single vote for another table is enough to force one '
+  + '-- the game does not stop until every hand in the room agrees to stop it.',
+  'The question goes to each of them alone and is answered on paper. Anybody can keep the '
+  + 'game running by themselves; nobody can end it by themselves. That asymmetry is the '
+  + 'whole of the last night.',
+  'One word each, folded and handed back. It takes the entire room to finish, and one '
+  + 'person to carry on -- so the quietest player at the table holds the same power as the '
+  + 'loudest one, and neither of them has to explain it.',
+  'They answer in writing and out of sight of each other. Unanimity ends it; anything else '
+  + 'sends them all back to the same chairs tomorrow with one of them missing.',
+];
+
+const ASK_FIRST = [
+  'The question is put for the first time. Nobody in this room has been asked it before, '
+  + 'and nobody knows how anybody else is going to answer.',
+  'The first time of asking. They have spent the whole season reading each other and none '
+  + 'of that reaches across a folded piece of paper.',
+  'It is put to them cold, with no debate before it and no debate allowed after it.',
+  'The first ask. Whatever they decide, they decide it without saying a word to anybody.',
+];
+const ASK_AGAIN = [
+  'The question comes round again, to a room one chair emptier and no wiser than it was. '
+  + 'Nothing was explained in between.',
+  'Asked again. They have lost somebody since the last time and they still do not know '
+  + 'whether losing them helped.',
+  'The same question, the same paper, fewer hands. The last one cost somebody the game and '
+  + 'told the survivors nothing at all.',
+  'Round again. Every previous answer is still folded up in somebody else{apos}s pocket, and '
+  + 'the room has to guess at all of them a second time.',
+];
+
+const SAY_END = [
+  'End it here.', 'Enough. End it.', 'No more names.', 'I am done. End the game.',
+  'Stop.', 'That is enough of this.', 'Not another one.', 'End it. Now.',
+];
+const SAY_BANISH = [
+  'One more.', 'Not yet. One more.', 'There is somebody in here.', 'I want another table.',
+  'Not finished.', 'One of you is lying.', 'We go again.', 'Not yet.',
+];
+
+// EIGHT, NOT FOUR, AND THE COUNT WAS MEASURED. A room of five or six answers
+// this question three times over, which is eighteen of these notes on one
+// screen; at four variants the same sentence appeared under three faces in a
+// row on a real seed, which is the kind of thing that is only ever found by
+// rendering it and reading it.
+const NOTE_END = [
+  'Believes the room is clean, or wants very badly to believe it.',
+  'Would rather take a share than take a risk.',
+  'Has looked at everybody left and cannot make any of them fit.',
+  'Is finished reading people. Wants the doors open.',
+  'Has run out of suspicion and is not going to invent any more.',
+  'Trusts the room, which is either the best or the worst call of the season.',
+  'Would sooner divide it than lose all of it on a hunch.',
+  'Has nothing left to accuse anybody of, and knows how that could look.',
+];
+const NOTE_BANISH = [
+  'Is not finished with somebody in this room.',
+  'Has a name and no way to say it out loud.',
+  'Would rather be wrong tomorrow than robbed tonight.',
+  'Thinks the castle still has a cloak in it and is prepared to spend a table proving it.',
+  'Cannot look at one of these faces without hearing something that did not add up.',
+  'Would rather take one more chance on being right than none on being safe.',
+  'Has been carrying a suspicion since the first week and refuses to put it down.',
+  'Does not believe a room this small got here honestly.',
+];
+const NOTE_SEALED = [
+  'Folded, handed back, and never read out.',
+  'Whatever is written on it stayed written on it.',
+  'One word, in somebody else{apos}s handwriting, on the wrong side of the fold.',
+  'Nobody at this table saw this one and nobody ever will.',
+  'A crease, and a word on the inside of it.',
+  'Handed over face down and counted face down.',
+  'You watched this one get folded and that is the whole of what you know.',
+  'Somebody at this table wrote something here. It was not read to you.',
+];
+
+const COUNT_SPLIT = [
+  'It is not unanimous, so it is not over. The room goes back to the same chairs and one '
+  + 'of them will not be sitting in theirs tomorrow.',
+  'Somebody wants another one. That is all it takes, and the room is not told who.',
+  'The count is short of the room, which means the game continues -- and every person at '
+  + 'this table now knows that at least one of the others is not finished with them.',
+  'Not one voice. So they sit down again, in a room that has just learned somebody in it '
+  + 'is still hunting.',
+];
+const COUNT_ONE_VOICE = [
+  'One voice, and it is the only one this game accepts. Nothing else is written down and '
+  + 'nothing else will be.',
+  'Every hand in the room says the same word. That ends it, and it ends it without a '
+  + 'single explanation.',
+  'Unanimous. The game stops exactly where it stands, whoever happens to be standing in it.',
+  'Nobody asks for another. The castle is finished with them and they are finished with it.',
+];
+
+const TABLE_SILENT = [
+  '{who} goes out of the door with the room no wiser than it was an hour ago. Nothing is '
+  + 'turned over, nothing is read out, and the survivors sit back down carrying exactly '
+  + 'the beliefs they came in with.',
+  'They vote, and {who} leaves. That is all that happens: no card, no answer, no relief '
+  + 'and no horror -- just a chair that is now empty and a room that has to guess what it '
+  + 'has done.',
+  '{who} is gone and the question of what {who} actually was goes with them. The rest of '
+  + 'this game will be played on nerve, because nothing else has been supplied.',
+  'The name is read, {who} stands up, and the room waits for the part where it finds out. '
+  + 'It does not come. It is not going to.',
+];
+
+const MONEY_LEAD = {
+  faithfuls: [
+    'Nobody left in this room was lying, and the money stays where the room put it.',
+    'The cloaks are counted and there are none. Everything the season earned is theirs.',
+    'The castle is clean, and it is clean because these people made it clean.',
+    'The last cloak came off at some table nobody was told about. What is standing here '
+    + 'is exactly what it says it is.',
+  ],
+  traitors: [
+    'And here is what the silence was hiding.',
+    'The room ended the game with somebody in it who was never going to be caught.',
+    'Every table since the first one was played against somebody still in this room.',
+    'They stopped, and the reason they could afford to stop is standing at the table with '
+    + 'them.',
+  ],
+};
+
+const HOST_ASK = [
+  'One word. Fold it. Nobody is going to read these out.',
+  'Write what you want to happen next, and be careful what that is.',
+  'You may end this now, all of you together, or not at all.',
+  'I want a word from each of you and I do not want to hear a single one of them.',
+];
+const HOST_CLOSE = {
+  faithfuls: [
+    'You never found the last one, and it turns out there was not a last one to find. '
+    + 'Take it. All of you.',
+    'You spent weeks accusing each other and you were right at the end of it. That happens '
+    + 'less often than you would like.',
+    'A clean castle. I have watched a great many of these and I do not see that often.',
+    'You stopped at exactly the right moment, and you had no way of knowing that.',
+  ],
+  traitors: [
+    'You were sitting across a table from that for a very long time.',
+    'You ended the game the moment you should have kept going, and there was no way for '
+    + 'you to know it. That is the format working.',
+    'Somebody in that room was never worried, and now you know why.',
+    'You wanted an answer at every table you sat at. Here is the one the castle owed you, '
+    + 'and it is late.',
+  ],
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// THE VIEW — what this observer is entitled to, decided once
+// ══════════════════════════════════════════════════════════════════════
+//
+// TWO THINGS HAPPEN HERE AND THEY ARE DIFFERENT THINGS.
+//
+// 1. THE ALIGNMENT LOCK. Each choice is rebuilt to two fields -- a name and a
+//    word -- rather than copied and pruned. The record in js/tr/headless.js
+//    already does this and this does it AGAIN, deliberately, because the two
+//    locks fail for different reasons and are caught by different tests: the
+//    record's is caught by reading the record, and this one is caught by
+//    handing the screen a record that is holding an alignment. A screen that
+//    trusted its input would render whatever a later edit to the engine put
+//    on it, and the thing spec 8 forbids is precisely a field growing where
+//    nobody is looking.
+//
+// 2. THE READERSHIP. Who is allowed to read whose paper. The audience reads
+//    every slip; a player reads their own and nobody else's, forever, because
+//    that is what a secret ballot IS. What is public in both layers is the
+//    COUNT -- the room is told whether it was unanimous, since that is the
+//    fact that forces another table -- and the money, which is announced to
+//    everybody including the people it is being taken from.
+function _view(ep, observer) {
+  const rec = ep && ep.tr && ep.tr.endgame;
+  if (!rec || !Array.isArray(rec.asks) || !rec.asks.length) return null;
+  const isAudience = observer === 'audience' || !observer;
+  const watcher = isAudience ? null
+    : String(observer).replace(/^player:/, '') || null;
+
+  // THE ALIGNMENT LOCK. Two fields, built from scratch. Nothing else on a
+  // choice record reaches this screen whatever the engine grows.
+  const asks = rec.asks.map(a => {
+    const choices = (a.choices || []).map(c => ({
+      name: c.name,
+      choice: c.choice === 'banish' ? 'banish' : 'end',
+    }));
+    const banish = choices.filter(c => c.choice === 'banish').length;
+    return { ep: a.ep, living: [...(a.living || [])], choices, banish,
+      unanimous: banish === 0 };
+  });
+  // Same lock on the tables: an episode and a name. `wasTraitor` exists on the
+  // round object the engine holds and is not on the record and not here.
+  const tables = (rec.tables || []).map(t => ({ ep: t.ep, chosen: t.chosen || null }));
+
+  const room = [];
+  for (const a of asks) for (const n of a.living) if (!room.includes(n)) room.push(n);
+  const present = !!watcher && room.includes(watcher);
+
+  return {
+    isAudience, watcher, present, room, asks, tables,
+    ep: rec.from || ep.num || 0,
+    // The money. Ground truth, and this is the one place in the format where
+    // that is legitimate -- see `resolvePot`. Read straight off the record so
+    // the figure on the page and the figure in the export cannot disagree.
+    winner: rec.winner || null,
+    takers: [...(rec.takers || [])],
+    losers: [...(rec.losers || [])],
+    pot: rec.pot || 0,
+    share: rec.share || 0,
+    line: rec.line || '',
+    doors: _verbs(),
+    // How the room got this small, for the opening card. Both doors, both
+    // words from the registry.
+    //
+    // `goneBefore` IS EVERYBODY WHO HAD LEFT WHEN THIS EPISODE OPENED and
+    // deliberately excludes this row's own departures -- see the note on it
+    // in js/tr/headless.js. This screen rides on the LAST row of the season,
+    // so those are the two people who left on the night the endgame started,
+    // and leaving them out undercounted the castle by exactly one door's
+    // worth. They come in through `roundExits()`, which is the registry's own
+    // rule for the question and the only place this file is allowed to ask
+    // which door somebody used.
+    //
+    // AND IT IS THE ROOM AS THE LAST QUESTION FOUND IT, not as it was left.
+    // The endgame's own tables take people out of this same list, and the
+    // opening card says how many are standing at the FIRST ask -- printing
+    // "six standing" beside a door count that had already removed two of the
+    // six is a sentence disagreeing with the sentence next to it, which is
+    // the defect js/tr/endgame.js split its own pot pools to make
+    // unrepresentable. Anybody who was in the room when it opened is not
+    // somebody who had already gone, whatever happened to them afterwards.
+    gone: [...((ep.tr && ep.tr.goneBefore) || []), ...roundExits(ep, TR)]
+      .filter(g => g && !room.includes(g.name)),
+    cast: (ep.tr && ep.tr.cast) || [],
+  };
+}
+
+/** May this observer read this person's paper? */
+function _mayRead(v, name) {
+  if (v.isAudience) return true;
+  return !!v.watcher && v.watcher === name;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE BEATS
+// ══════════════════════════════════════════════════════════════════════
+
+function _card(kind, label, icon, inner) {
+  return '<div class="lt-card" data-kind="' + kind + '">'
+    + (label ? '<div class="lt-label">' + _ic(icon || 'slip', 13, 'currentColor')
+      + _esc(label) + '</div>' : '')
+    + inner + '</div>';
+}
+function _sums(rows) {
+  return '<div class="lt-sums">' + rows.map(r =>
+    '<span class="lt-sum"><span class="lt-sum-k">' + _esc(r[0]) + '</span>'
+    + '<span class="lt-sum-v"' + (r[2] ? ' data-tone="' + r[2] + '"' : '') + '>'
+    + r[1] + '</span></span>').join('') + '</div>';
+}
+function _hostBand(line) {
+  const h = _host();
+  return '<div class="lt-host">' + _hostAv(46)
+    + '<div><div class="lt-host-name">' + _icon('seal', 13, '#f4dda2')
+    + _esc(h.name) + '</div>'
+    + '<div class="lt-host-line">&ldquo;' + line + '&rdquo;</div></div></div>';
+}
+/** Curly apostrophes in the pools, without a literal in every string. */
+const _apos = s => String(s).replace(/\{apos\}/g, '&rsquo;');
+
+function _buildBeats(v) {
+  const beats = [];
+  const key = 'lt|' + v.ep + '|' + v.room.join(',');
+  const push = (phase, html, meta) => beats.push({ phase, html, meta: meta || null });
+
+  // ── the room at the end ─────────────────────────────────────────────
+  const byDoor = { vote: 0, night: 0 };
+  for (const g of v.gone) {
+    if (g && g.channel === 'murder') byDoor.night++; else byDoor.vote++;
+  }
+  push('open', _card('open', 'The Room At The End', 'cold',
+    '<h2 class="lt-h">Nobody Is Going To Be Turned Over</h2>'
+    + '<p>' + _apos(_pick(OPEN, key + '|open')) + '</p>'
+    + '<p>' + _apos(_pick(RULE, key + '|rule')) + '</p>'
+    + _sums([
+      ['Still standing', String(v.room.length), null],
+      [_cap(v.doors.vote), String(byDoor.vote), null],
+      [_cap(v.doors.night), String(byDoor.night), 'wax'],
+      ['The fund', _num(v.pot), 'brass'],
+    ])), { kind: 'open' });
+
+  // ── every time the question was put ─────────────────────────────────
+  for (let i = 0; i < v.asks.length; i++) {
+    const a = v.asks[i];
+    const akey = key + '|' + i;
+    push('ask', _card('ask', i === 0 ? 'The Question, For The First Time'
+      : 'The Question, ' + _ordinal(i + 1), 'silence',
+      '<h2 class="lt-h">' + (i === 0 ? 'Banish Again, Or End It'
+        : 'The Same Question, Fewer Hands') + '</h2>'
+      + '<p>' + _apos(_pick(i === 0 ? ASK_FIRST : ASK_AGAIN, akey + '|ask')) + '</p>'
+      + _hostBand(_esc(_pick(HOST_ASK, akey + '|host')))),
+    { kind: 'ask', askIdx: i });
+
+    for (const c of a.choices) {
+      const readable = _mayRead(v, c.name);
+      const word = readable ? (c.choice === 'banish' ? 'Another' : 'End it') : 'Sealed';
+      const said = readable
+        ? _pick(c.choice === 'banish' ? SAY_BANISH : SAY_END, akey + '|' + c.name)
+        : '';
+      const note = readable
+        ? _pick(c.choice === 'banish' ? NOTE_BANISH : NOTE_END, akey + '|n|' + c.name)
+        : _pick(NOTE_SEALED, akey + '|s|' + c.name);
+      push('answer', _card('answer', '', 'slip',
+        '<div class="lt-answer">'
+        + '<span class="lt-answer-who">' + _av(c.name, 40)
+        + '<span class="lt-answer-nm">' + _esc(c.name) + '</span></span>'
+        + '<span class="lt-slip" data-choice="' + (readable ? c.choice : 'sealed') + '"'
+        + ' data-name="' + _esc(c.name) + '">'
+        + '<span class="lt-slip-w">' + _esc(word) + '</span></span>'
+        + '<span class="lt-answer-note">' + _apos(_esc(note))
+        + (said ? ' <em>&ldquo;' + _esc(said) + '&rdquo;</em>' : '') + '</span>'
+        + '</div>'),
+      { kind: 'answer', askIdx: i, name: c.name,
+        shown: readable ? c.choice : 'sealed' });
+    }
+
+    // THE COUNT IS PUBLIC IN BOTH LAYERS, and it has to be: it is the fact
+    // that forces another table, so the room is told it whether or not the
+    // room is told who supplied it.
+    const table = a.unanimous ? null : (v.tables[i] || null);
+    push('count', _card('count', 'The Count', 'tally',
+      '<div class="lt-count">'
+      + '<span class="lt-count-n" data-tone="' + (a.unanimous ? 'cold' : 'wax') + '">'
+      + (a.unanimous ? 'None' : String(a.banish)) + '</span>'
+      + '<span class="lt-count-s">' + (a.unanimous
+        ? 'not one hand asked for another'
+        : (a.banish === 1 ? 'one hand, of ' + a.choices.length
+          : a.banish + ' hands, of ' + a.choices.length)) + '</span></div>'
+      + '<p>' + _apos(_pick(a.unanimous ? COUNT_ONE_VOICE : COUNT_SPLIT, akey + '|count'))
+      + '</p>'),
+    { kind: 'count', askIdx: i, unanimous: a.unanimous, banish: a.banish });
+
+    // ── and the table it forced, which explains nothing ───────────────
+    if (table && table.chosen) {
+      push('table', _card('table', 'What It Cost', 'part',
+        '<h2 class="lt-h">' + _esc(table.chosen) + ' Was ' + _cap(v.doors.vote)
+        + '</h2>'
+        + '<p>' + _esc(_fill(_pick(TABLE_SILENT, akey + '|table'),
+          { who: table.chosen })) + '</p>'
+        + '<div class="lt-void"><div class="lt-void-w">Nothing Is Turned Over</div>'
+        + '<div class="lt-void-s">There is no reveal at a table this late. Whatever '
+        + _esc(table.chosen) + ' was, they took it out of the door with them.</div>'
+        + '</div>'),
+      { kind: 'table', askIdx: i, chosen: table.chosen });
+    }
+  }
+
+  // ── AND THE ONE THING THAT IS TURNED OVER ───────────────────────────
+  //
+  // EVERY TAKER, AND NEVER THE FIRST OF THEM. Up to four people split this
+  // pot, and js/tr/export.js is explicit that picking a main winner out of
+  // `winners[]` is inventing a fact the season does not contain.
+  const solo = v.takers.length === 1;
+  const winnersHtml = v.takers.map(n =>
+    '<span class="lt-winner" data-name="' + _esc(n) + '">' + _av(n, 46)
+    + '<span><span class="lt-winner-nm">' + _esc(n) + '</span>'
+    + '<span class="lt-winner-sh">' + (solo ? 'takes all of it' : _num(v.share)) + '</span>'
+    + '</span></span>').join('');
+  const lostHtml = v.losers.length
+    ? '<div class="lt-lost">' + v.losers.map(n =>
+      '<span class="lt-lost-one" data-name="' + _esc(n) + '">' + _av(n, 30)
+      + '<span class="lt-lost-nm">' + _esc(n) + '</span></span>').join('') + '</div>'
+    : '';
+  // THE POOL IS CHOSEN BY THE RECORD'S OWN WORD, NOT BY A COMPARISON.
+  // `resolvePot` returns 'faithfuls' or 'traitors' and this looks the pool up
+  // under it -- `v.winner === 'traitors' ? ... : ...` was the first draft and
+  // tests/show-list-duplication.test.js caught it, because one of the two
+  // sides of this game is spelled the same as one of the three shows on this
+  // engine and a comparison against a show slug is how a two-show world gets
+  // written. It is a false positive on the meaning and a true one on the
+  // shape, and the shape is the thing the rule is about.
+  const side = MONEY_LEAD[v.winner] ? v.winner : 'faithfuls';
+  push('money', _card('money', 'The Strongbox', 'read',
+    '<div class="lt-pot"><span class="lt-pot-n">' + _num(v.pot) + '</span>'
+    + '<span class="lt-pot-k">in the box</span></div>'
+    + '<h2 class="lt-h">' + (solo ? 'One Of Them Takes It'
+      : v.takers.length + ' Ways') + '</h2>'
+    + '<p>' + _apos(_pick(MONEY_LEAD[side], key + '|lead')) + '</p>'
+    + '<div class="lt-winners">' + winnersHtml + '</div>'
+    + (lostHtml ? '<p class="lt-say">And these were at the same table.</p>' + lostHtml : '')
+    // THE ENGINE'S OWN SENTENCE, not a second copy of it. `resolvePot` picks
+    // its pool off the number of takers and whether anybody is standing
+    // beside them, so a sentence written here would be a second rule that
+    // could come to disagree with the money above it.
+    + '<p class="lt-say">' + _esc(v.line) + '</p>'
+    + _sums([
+      ['Each', solo ? _num(v.pot) : _num(v.share), 'brass'],
+      ['Took nothing', v.losers.length ? _listOf(v.losers) : 'Nobody', null],
+      ['Tables it took', String(v.tables.length), null],
+    ])
+    + _hostBand(_esc(_pick(HOST_CLOSE[side], key + '|close')))),
+  { kind: 'money' });
+
+  return beats;
+}
+
+function _ordinal(n) {
+  const words = ['', 'For The First Time', 'A Second Time', 'A Third Time',
+    'A Fourth Time', 'A Fifth Time', 'A Sixth Time', 'A Seventh Time'];
+  return words[n] || ('A ' + n + 'th Time');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE STAGE — the chairs, replaced by innerHTML on every reveal
+// ══════════════════════════════════════════════════════════════════════
+//
+// Data on `window.__trEndgame`, because a <script> tag inside innerHTML does
+// not execute. GATED BY `_tvState` IN BOTH DIRECTIONS: a chair shows nothing
+// the reveals have not reached, and it also shows nothing the OBSERVER is not
+// allowed to read, so a player watching their own season sees one word of
+// their own and a row of folded paper belonging to everybody else -- which is
+// the same thing they saw in the room.
+
+function _chairState(state, idx) {
+  const v = state.v;
+  const seen = state.stepMeta.slice(0, Math.max(0, idx + 1)).filter(Boolean);
+  // who has already gone, on the beats revealed so far
+  const gone = new Set(seen.filter(m => m.kind === 'table' && m.chosen).map(m => m.chosen));
+  // the ask currently on screen, and the answers read within it
+  const askIdx = seen.reduce((n, m) => (m.askIdx == null ? n : m.askIdx), 0);
+  const answered = {};
+  for (const m of seen) {
+    if (m.kind === 'answer' && m.askIdx === askIdx) answered[m.name] = m.shown;
+  }
+  const living = (v.asks[askIdx] && v.asks[askIdx].living) || v.room;
+  return v.room.map(name => {
+    if (gone.has(name) || !living.includes(name)) return { name, state: 'gone', word: 'Gone' };
+    const a = answered[name];
+    if (!a) return { name, state: 'sealed', word: 'Sealed' };
+    if (a === 'sealed') return { name, state: 'sealed', word: 'Folded' };
+    return { name, state: a, word: a === 'banish' ? 'Another' : 'End it' };
+  });
+}
+
+function _stage(state, idx) {
+  const v = state.v;
+  const seen = state.stepMeta.slice(0, Math.max(0, idx + 1)).filter(Boolean);
+  const chairs = _chairState(state, idx);
+  const askIdx = seen.reduce((n, m) => (m.askIdx == null ? n : m.askIdx), 0);
+  const forced = seen.filter(m => m.kind === 'table' && m.chosen).length;
+  const standing = chairs.filter(c => c.state !== 'gone').length;
+  const money = seen.some(m => m.kind === 'money');
+  return '<div class="lt-stage-row">'
+    + chairs.map(c => '<span class="lt-chair" data-state="' + c.state + '"'
+      + ' data-name="' + _esc(c.name) + '">' + _av(c.name, 28)
+      + '<span><span class="lt-chair-nm">' + _esc(c.name) + '</span>'
+      + '<span class="lt-chair-st">' + _esc(c.word) + '</span></span></span>').join('')
+    + '</div>'
+    + '<div class="lt-meters">'
+    // THE ORDINAL ALONE, NEVER "1 OF 3". The number of times the question
+    // gets asked is the whole shape of the endgame -- printing the total at
+    // first paint tells the viewer, before a single slip is opened, that the
+    // first two asks were not unanimous. The stage is gated by `_tvState` and
+    // this is the one number on it that could reach past the gate.
+    + '<span class="lt-meter"><span class="lt-meter-k">Times asked</span>'
+    + '<span class="lt-meter-v">' + (askIdx + 1) + '</span></span>'
+    + '<span class="lt-meter"><span class="lt-meter-k">Still standing</span>'
+    + '<span class="lt-meter-v">' + standing + '</span></span>'
+    + '<span class="lt-meter" data-tone="wax"><span class="lt-meter-k">Tables forced</span>'
+    + '<span class="lt-meter-v">' + forced + '</span></span>'
+    + '<span class="lt-meter" data-tone="brass"><span class="lt-meter-k">'
+    + (money ? 'Each' : 'In the box') + '</span>'
+    + '<span class="lt-meter-v">'
+    + (money ? (v.takers.length === 1 ? _num(v.pot) : _num(v.share)) : _num(v.pot))
+    + '</span></span>'
+    + '</div>';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// REVEAL MACHINERY — DOM-only, never a rebuild
+// ══════════════════════════════════════════════════════════════════════
+
+const _tvState = {};
+function _key(epNum) { return 'endgame-' + (epNum || 0); }
+function _state(epNum, total) {
+  const k = _key(epNum);
+  if (!_tvState[k]) _tvState[k] = { idx: 0, total };
+  _tvState[k].total = total;
+  return _tvState[k];
+}
+
+function _reapplyVisibility(suffix, upToIdx, total) {
+  const scroller = document.querySelector('.rp-main');
+  const top = scroller ? scroller.scrollTop : 0;
+  for (let i = 0; i < total; i++) {
+    const el = document.getElementById('lt-step-' + suffix + '-' + i);
+    if (!el) continue;
+    if (i <= upToIdx) el.classList.add('lt-vis'); else el.classList.remove('lt-vis');
+  }
+  const counter = document.getElementById('lt-counter-' + suffix);
+  if (counter) counter.textContent = Math.min(upToIdx + 1, total) + ' / ' + total;
+  const controls = document.getElementById('lt-controls-' + suffix);
+  if (controls) {
+    const done = upToIdx >= total - 1;
+    controls.querySelectorAll('.lt-btn').forEach(b => b.classList.toggle('lt-dim', done));
+  }
+  const shell = document.getElementById('lt-shell-' + suffix);
+  const last = document.getElementById('lt-step-' + suffix + '-'
+    + Math.max(0, Math.min(upToIdx, total - 1)));
+  if (shell && last) shell.setAttribute('data-phase',
+    last.getAttribute('data-phase') || 'open');
+  if (scroller) scroller.scrollTop = top;
+}
+
+function _updateStage(epNum, idx) {
+  const el = document.getElementById('lt-stage-inner');
+  const store = (typeof window !== 'undefined' && window.__trEndgame) || {};
+  const state = store[epNum];
+  if (!el || !state) return;
+  el.innerHTML = _stage(state, idx);
+}
+
+/** Bring the new card into view, UNDER the chairs rather than behind them. */
+function _scrollTo(el) {
+  if (!el) return;
+  const scroller = document.querySelector('.rp-main');
+  const stage = document.getElementById('lt-stage-inner');
+  if (!scroller || !scroller.scrollTo || !el.getBoundingClientRect) {
+    if (el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  const gap = (stage ? stage.getBoundingClientRect().height : 0) + 22;
+  const top = el.getBoundingClientRect().top - scroller.getBoundingClientRect().top
+    + scroller.scrollTop - gap;
+  scroller.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+}
+
+export function trEndgameRevealNext(suffix, total, epNum) {
+  const st = _state(epNum, total);
+  if (st.idx >= total - 1) return;
+  st.idx++;
+  _reapplyVisibility(suffix, st.idx, total);
+  _scrollTo(document.getElementById('lt-step-' + suffix + '-' + st.idx));
+  _updateStage(epNum, st.idx);
+}
+
+export function trEndgameRevealAll(suffix, total, epNum) {
+  const st = _state(epNum, total);
+  st.idx = total - 1;
+  _reapplyVisibility(suffix, st.idx, total);
+  _updateStage(epNum, st.idx);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE SCREEN
+// ══════════════════════════════════════════════════════════════════════
+
+/**
+ * `rpBuildEndgame(ep, observer)` — the secret choice, the loop, and the money.
+ *
+ * `ep` is the LAST `episodeHistory` row a Traitors season writes; `tr.endgame`
+ * is attached there by `playTraitorsSeason` in js/tr/headless.js, because the
+ * endgame is a phase rather than a night -- it can force six extra tables or
+ * none at all, and when the first ask is unanimous there is no row for it to
+ * live on. `observer` is `'audience'` or `'player:<Name>'`; see `_view` for
+ * exactly what the difference is.
+ */
+export function rpBuildEndgame(ep, observer = 'audience') {
+  const suffix = 'endgame';
+  const vars = '--lt-grain-src:' + _noiseTile('0.9', 4, 43, 0.3, 210) + ';';
+  const css = '<style>' + LT_CSS + '</style>' + _filters();
+  const v = _view(ep, observer);
+
+  if (!v) {
+    return '<div class="lt-root" style="' + vars + '">' + css
+      + '<div class="lt-shell" data-phase="open">'
+      + '<div class="lt-scenery" aria-hidden="true">'
+      + '<div class="lt-stone"></div>'
+      + '<div class="lt-far">' + _roomFar() + '</div>'
+      + '<div class="lt-air">' + _air('none') + '</div>'
+      + '<div class="lt-vig"></div><div class="lt-grain"></div></div>'
+      + '<div class="lt-body"><div class="lt-none">'
+      + _ic('cold', 84, 'rgba(143,162,182,.34)')
+      + '<div class="lt-none-h">The Game Is Still Running</div>'
+      + '<p>Nobody has been asked the last question yet. The castle still has people in '
+      + 'it who are being accused of things, and the strongbox is still shut.</p>'
+      + '</div></div></div></div>';
+  }
+
+  const beats = _buildBeats(v);
+  const total = beats.length;
+  const epNum = ep.num || v.ep || 0;
+  const st = _state(epNum, total);
+  if (st.idx > total - 1) st.idx = total - 1;
+
+  const state = { v, stepMeta: beats.map(b => b.meta) };
+  if (typeof window !== 'undefined') {
+    window.__trEndgame = window.__trEndgame || {};
+    window.__trEndgame[epNum] = state;
+  }
+
+  const observerBadge = v.isAudience
+    ? '<div class="lt-observer" data-layer="audience">' + _icon('eye', 13)
+      + 'Observer: audience <em>&mdash; every slip, read out to you and to nobody in the '
+      + 'room; not one person at that table can see it like this</em></div>'
+    : '<div class="lt-observer" data-layer="player">' + _icon('eye', 13)
+      + 'Observer: ' + _esc(v.watcher || 'a player')
+      + ' <em>&mdash; ' + (v.present
+        ? 'your own word, and a row of folded paper you will never open'
+        : 'you were already out of the castle; you learn what everybody else learned, '
+          + 'which is the total and the money')
+      + '</em></div>';
+
+  // THE FIRST PAINT ALREADY SHOWS WHAT HAS BEEN REVEALED — the Round Table's
+  // pattern, and the reason the conclave shipped a screen that was blank
+  // until it was clicked.
+  const stream = beats.map((b, i) =>
+    '<div class="lt-beat' + (i <= st.idx ? ' lt-vis' : '')
+    + '" id="lt-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
+    + b.html + '</div>').join('');
+
+  // Inline handlers BAKE their targets — `renderVPScreen` wipes reveal state
+  // on every paint and there is no closure left to hold them.
+  const call = fn => fn + "('" + suffix + "'," + total + ',' + epNum + ')';
+
+  return '<div class="lt-root" style="' + vars + '">' + css
+    + '<div class="lt-shell" id="lt-shell-' + suffix + '"'
+    + ' data-phase="' + beats[0].phase + '">'
+    + '<div class="lt-scenery" aria-hidden="true">'
+    + '<div class="lt-stone"></div>'
+    + '<div class="lt-far">' + _roomFar() + '</div>'
+    + '<div class="lt-mid">' + _roomMid(epNum + '|' + v.room.length, v.room.length) + '</div>'
+    + '<div class="lt-fore">' + _roomFore() + '</div>'
+    + '<div class="lt-air">' + _air(epNum) + '</div>'
+    + '<div class="lt-wash"></div>'
+    + '<div class="lt-vig"></div>'
+    + '<div class="lt-grain"></div>'
+    + '</div>'
+    + '<div class="lt-body">'
+    + '<div class="lt-hero">' + _heroScene(v.room.length)
+    + '<div class="lt-hero-lock">'
+    // TASK 7: "Night 9" and not "Season I - Night IX" — the episode record
+    // carries no season number, and the other five screens say so too.
+    + '<div class="lt-eyebrow">The Traitors &middot; Night ' + (v.ep || epNum)
+    + ' &middot; The Last Question</div>'
+    + '<h1 class="lt-title">THE ENDGAME</h1>'
+    + '<div class="lt-title-rule"><i></i>' + _ic('slip', 34, '#cdd4dc') + '<i></i></div>'
+    + '<p class="lt-sub">One word each, folded and handed back. Every hand in the room has '
+    + 'to agree before it stops &mdash; and from here nobody who leaves is ever turned '
+    + 'over, so whatever is decided is decided blind.</p>'
+    + '</div></div>'
+    + '<header class="lt-head">' + observerBadge + '</header>'
+    // THE CHAIRS, STUCK UNDER THE NAV. Sticky element AND the element the
+    // reveal handlers replace by id.
+    + '<div class="lt-stage" id="lt-stage-inner">' + _stage(state, st.idx) + '</div>'
+    + '<main class="lt-main">' + stream + '</main>'
+    + '</div></div>'
+    + '<div class="lt-controls" id="lt-controls-' + suffix + '">'
+    + '<button class="lt-btn" onclick="' + call('trEndgameRevealNext') + '">'
+    + _ic('chevron', 12) + 'Continue</button>'
+    + '<span class="lt-counter" id="lt-counter-' + suffix + '">'
+    + (st.idx + 1) + ' / ' + total + '</span>'
+    + '<button class="lt-btn" onclick="' + call('trEndgameRevealAll') + '">Reveal all</button>'
+    + '</div></div>';
+}

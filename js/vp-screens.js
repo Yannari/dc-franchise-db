@@ -33,6 +33,7 @@ import { rpBuildColdOpen, trColdOpenRevealNext, trColdOpenRevealAll } from './vp
 import { rpBuildHouseStatus, trHouseStatusRevealNext, trHouseStatusRevealAll } from './vp-tr/house-status.js';
 import { rpBuildMission, trMissionRevealNext, trMissionRevealAll } from './vp-tr/mission.js';
 import { rpBuildRecruitment, trRecruitmentRevealNext, trRecruitmentRevealAll } from './vp-tr/recruitment.js';
+import { rpBuildEndgame, trEndgameRevealNext, trEndgameRevealAll } from './vp-tr/endgame.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -13582,6 +13583,15 @@ export function buildVPScreens(epRecord) {
     if (epRecord.tr && epRecord.tr.recruitment) {
       vpScreens.push({ id: 'tr-recruitment', label: 'The Offer',
         html: rpBuildRecruitment(epRecord, _obs) });
+    }
+    // THE ENDGAME, AND IT IS A PHASE RATHER THAN A NIGHT. It can force six
+    // extra tables or none at all, so it rides on the LAST row the season
+    // wrote and is registered off `tr.endgame` being present -- never off an
+    // episode number, which is a thing a season does not have a fixed count
+    // of. It is last on the last episode because it is the end of the season.
+    if (epRecord.tr && epRecord.tr.endgame) {
+      vpScreens.push({ id: 'tr-endgame', label: 'The Endgame',
+        html: rpBuildEndgame(epRecord, _obs) });
     }
     return vpScreens;
   }

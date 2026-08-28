@@ -297,3 +297,49 @@ waiting to happen.
   `social-live.test.js` (2), `bb-season-export.test.js` (1, collects only under
   `vitest.sim.config.js`). `live-sync-show` greps for a source literal absent at base too: **a
   source-text guard that stopped matching its own source.**
+
+## Task 4 done — and Total Drama already had this bug
+
+**`data/seasons/season8-data.json` has Alejandro AND Cameron at `placement: 1`, with `winner{}`
+naming Alejandro.** Total Drama already ships a co-winner season and every page has been naming
+one of them. Adding a third show did not create this problem; it made an existing one visible.
+
+So the fix is a RULE, not a show branch: **`seasonWinners(season)`** in `js/records.js`, reading
+`winners[]` -> `placements[]` at 1 -> `winner{}`, most complete first.
+
+**What was live and wrong:**
+- `season_ref.html` hero + card **crashed** -- `s.winner.name` on a null winner killed the page.
+- `wiki.js` and `wiki-fill-run.js` handed EVERY placement-1 row the singular block's tally, so
+  **Cameron's article prompt said he "won the final vote 4-4"**.
+- `archive.js` gave a split season **no finale at all**; the finale event now takes no subject
+  and carries all names on `subjects[]`.
+- `voting-analytics.html` fell back to `placements[0]` -- `winners[0]` with a step in front.
+
+**One cross-show bug fixed at source.** `winner.vote` is a TALLY, and this show had the endgame
+PROSE in it -- which carries the pot, so "all of it to Bowie" holds `72,233`. Two numbers, which
+`archive.js` reads as a jury vote and `feed.js` then posts about: **a jury verdict on a show
+with no jury.** Prose moved to `endgameLine`, `vote` left empty, `runnerUp` now names the losers
+at that final table.
+
+**11 readers changed. 9 verified already plural-safe** (franchise-meta backfill, leaderboards,
+D1 `appearances`, `careerIn().wins`, player-trivia, the memory wall, lint/audit, rankings-update's
+`coWinMode`). **4 decided and deliberately not changed** -- D1 `seasons.winner_slug` stays NULL
+on a split, because it has no reader anywhere and filling it would be the forbidden move in the
+database.
+
+Fourteen mutations, all RED. **One came back GREEN** -- reverting the `!known.size` finale gate
+changed nothing, because that arm is unreachable from a show that always has round data -- and
+the TEST was strengthened rather than the mutation excused. The two page scripts cannot be
+imported, so their winner-resolution statement is **extracted by anchor and executed** against a
+four-way split, with the anchor doubling as a staleness guard.
+
+### Carried, and one of these will bite
+
+1. **Season 8's Champions grid still shows one champion.** The season INDEX row genuinely does
+   not contain Cameron's name. Fixing it means the index merge carrying `winners[]`, which
+   rewrites published Total Drama data. `seasonWinners` is ready for it; the data is not.
+2. **`mergeTraitorsSeason` MUST carry `winners[]` and leave `winner` null on a split**, or four
+   pages regress at once.
+3. `current-season.html` will throw on a split the day the studio publish path accepts one.
+4. `attachRecords()` was extracted out of `runCharacterFill` to get one reader under test -- it
+   was unreachable behind a fetch.

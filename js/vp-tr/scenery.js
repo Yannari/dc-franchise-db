@@ -143,8 +143,14 @@ export function _buildMid(seed) {
     + '<path d="M522 202h76v92h-76z" fill="rgba(255,219,149,.14)" stroke="url(#cvBrass)" stroke-width="5"/>'
     + '<path d="M544 202v92M576 202v92" stroke="url(#cvBrass)" stroke-width="3" opacity=".7"/>'
     + '<rect x="510" y="292" width="100" height="14" rx="3" fill="url(#cvBrass)"/>'
-    + '<path class="cv-flame" d="M560 222c13 15 20 24 20 34a20 20 0 0 1-40 0c0-10 7-19 20-34z" fill="#ffe7b7"/>'
-    + '<path class="cv-flame" d="M560 240c7 8 11 13 11 18a11 11 0 0 1-22 0c0-5 4-10 11-18z" fill="#fff8e6"/>'
+    // The body and the white core are TWO flames on two clocks. Sharing one
+    // would make them a single rigid shape moving together, which is the thing
+    // that reads as an object rather than as fire; the core is stiller and
+    // brighter than the body it sits inside, as it is in a real wick.
+    + '<path class="cv-flame" d="M560 222c13 15 20 24 20 34a20 20 0 0 1-40 0c0-10 7-19 20-34z" fill="#ffe7b7"'
+    + ' style="--lick:7.3s;--flare:2.9s"/>'
+    + '<path class="cv-flame" d="M560 240c7 8 11 13 11 18a11 11 0 0 1-22 0c0-5 4-10 11-18z" fill="#fff8e6"'
+    + ' style="--lick:5.9s;--flare:3.7s;animation-delay:-2.1s,-1.3s"/>'
     + '</g></g>';
 
   // the warm cone, the dust inside it, and the embers rising out of it
@@ -250,7 +256,8 @@ export function _buildHeroScene(count) {
     + '<path d="M524 108h52v62h-52z" fill="rgba(255,219,149,.16)" stroke="url(#cvBrass)" stroke-width="4"/>'
     + '<path d="M541 108v62M559 108v62" stroke="url(#cvBrass)" stroke-width="2" opacity=".7"/>'
     + '<rect x="516" y="168" width="68" height="10" rx="2" fill="url(#cvBrass)"/>'
-    + '<path class="cv-flame" d="M550 122c9 11 14 17 14 24a14 14 0 0 1-28 0c0-7 5-13 14-24z" fill="#ffe7b7"/>'
+    + '<path class="cv-flame" d="M550 122c9 11 14 17 14 24a14 14 0 0 1-28 0c0-7 5-13 14-24z" fill="#ffe7b7"'
+    + ' style="--lick:6.7s;--flare:3.1s;animation-delay:-1.7s,-.9s"/>'
     + '</g></g>';
 
   s += '<g filter="url(#cvShaft)" style="mix-blend-mode:screen">'

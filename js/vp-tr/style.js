@@ -185,7 +185,11 @@ export const CONCLAVE_CSS = `
  74%{opacity:.58} 83%{opacity:.75} 88%{opacity:.47} 94%{opacity:.66}
 100%{opacity:.62}
 }
-.cv-bloom{animation:cv-breathe 6.3s linear infinite;transform-origin:center}
+/* The bloom is the lamp's LIGHT and the cone is its shaft, and they must not
+   pulse together — two 6.3s loops on the same beat read as one flashing object
+   rather than as a flame in a glass. 4.7 against 6.3 is 29.6s before they line
+   up again, by which time the eye has stopped counting. */
+.cv-bloom{animation:cv-breathe 4.7s linear infinite;transform-origin:center}
 @keyframes cv-breathe{
   0%,100%{opacity:.85;transform:scale(1)}
   13%{opacity:.6;transform:scale(.96)}
@@ -193,12 +197,46 @@ export const CONCLAVE_CSS = `
   61%{opacity:.55;transform:scale(.93)}
   83%{opacity:.95;transform:scale(1.03)}
 }
-.cv-flame{animation:cv-lick 1.5s ease-in-out infinite;transform-origin:50% 92%}
+/* ── FIRE, AND THE FOUR THINGS THAT WERE WRONG WITH IT ───────────────────
+   1. THE PIVOT WAS NOWHERE NEAR THE WICK. transform-origin on an SVG element
+      resolves against the VIEW BOX unless transform-box:fill-box says
+      otherwise, so 50% 92% on a flame 250 units down a 1600-unit box put the
+      pivot more than a thousand units BELOW it. Every skew then threw the whole
+      shape sideways, which is why it read as a swinging object rather than as
+      fire. This one line is most of the fix.
+   2. IT WAS A PENDULUM. One symmetric ease-in-out loop returning to identity
+      every 1.5s: the eye locks onto that repeat inside two cycles. The shape
+      loop is long and irregular now and the brightness runs on its own clock at
+      a coprime period, so the pair never visibly repeats.
+   3. THE AMPLITUDE WAS ENORMOUS. skewX 5deg and scale .9/1.14 is a flag in a
+      wind. Fire is mostly still; it is the LIGHT that is busy.
+   4. THE MOVEMENT WAS CARRYING THE EFFECT. Most of what reads as flicker is
+      brightness, so the strongest variation is on opacity, out of phase with
+      the shape, and the halo behind it pulses on a third clock again.
+   Both periods are per-flame (--lick / --flare), so no two candles in a
+   room are on the same beat — see the hall's candle ring. */
+.cv-flame{
+  transform-box:fill-box;transform-origin:50% 100%;
+  animation:cv-lick var(--lick,7.3s) linear infinite,
+            cv-flare var(--flare,2.9s) ease-in-out infinite;
+}
 @keyframes cv-lick{
-  0%,100%{transform:scale(1,1) skewX(0deg)}
-  22%{transform:scale(.9,1.14) skewX(-5deg)}
-  47%{transform:scale(1.08,.93) skewX(4deg)}
-  71%{transform:scale(.95,1.06) skewX(-2deg)}
+  0%{transform:skewX(0deg) scale(1,1)}
+  9%{transform:skewX(-1.5deg) scale(.985,1.05)}
+  17%{transform:skewX(.7deg) scale(1.02,.98)}
+  28%{transform:skewX(-2.3deg) scale(.97,1.08)}
+  36%{transform:skewX(-.3deg) scale(1.01,1.01)}
+  47%{transform:skewX(1.8deg) scale(1.03,.96)}
+  55%{transform:skewX(.4deg) scale(.99,1.03)}
+  66%{transform:skewX(-1deg) scale(1.01,1.06)}
+  74%{transform:skewX(2.1deg) scale(1.02,.97)}
+  88%{transform:skewX(-.6deg) scale(.99,1.04)}
+  100%{transform:skewX(0deg) scale(1,1)}
+}
+@keyframes cv-flare{
+  0%{opacity:.9} 12%{opacity:1} 23%{opacity:.78} 31%{opacity:.95}
+  44%{opacity:.84} 58%{opacity:1} 67%{opacity:.72} 79%{opacity:.93}
+  91%{opacity:.86} 100%{opacity:.9}
 }
 .cv-draught{animation:cv-drift 26s ease-in-out infinite}
 @keyframes cv-drift{0%,100%{transform:translateX(0)}50%{transform:translateX(30px)}}

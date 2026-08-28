@@ -242,7 +242,7 @@ body{
  74%{opacity:.58} 83%{opacity:.75} 88%{opacity:.47} 94%{opacity:.66}
 100%{opacity:.62}
 }
-.cv-bloom{animation:cv-breathe 6.3s linear infinite;transform-origin:center}
+.cv-bloom{animation:cv-breathe 4.7s linear infinite;transform-origin:center}
 @keyframes cv-breathe{
   0%,100%{opacity:.85;transform:scale(1)}
   13%{opacity:.6;transform:scale(.96)}
@@ -250,12 +250,34 @@ body{
   61%{opacity:.55;transform:scale(.93)}
   83%{opacity:.95;transform:scale(1.03)}
 }
-.cv-flame{animation:cv-lick 1.5s ease-in-out infinite;transform-origin:50% 92%}
+/* Fire is shape and light, not a swinging object. `transform-box:fill-box` is
+   the load-bearing line: without it an SVG transform-origin resolves against
+   the VIEW BOX, so `50% 92%` pivoted each flame a thousand units below its own
+   wick and every skew threw it sideways. Small amplitude on the shape, the
+   real flicker on opacity at a coprime period, and a per-flame `--lick` /
+   `--flare` so no two candles in a room share a beat. */
+.cv-flame{
+  transform-box:fill-box;transform-origin:50% 100%;
+  animation:cv-lick var(--lick,7.3s) linear infinite,
+            cv-flare var(--flare,2.9s) ease-in-out infinite;
+}
 @keyframes cv-lick{
-  0%,100%{transform:scale(1,1) skewX(0deg)}
-  22%{transform:scale(.9,1.14) skewX(-5deg)}
-  47%{transform:scale(1.08,.93) skewX(4deg)}
-  71%{transform:scale(.95,1.06) skewX(-2deg)}
+  0%{transform:skewX(0deg) scale(1,1)}
+  9%{transform:skewX(-1.5deg) scale(.985,1.05)}
+  17%{transform:skewX(.7deg) scale(1.02,.98)}
+  28%{transform:skewX(-2.3deg) scale(.97,1.08)}
+  36%{transform:skewX(-.3deg) scale(1.01,1.01)}
+  47%{transform:skewX(1.8deg) scale(1.03,.96)}
+  55%{transform:skewX(.4deg) scale(.99,1.03)}
+  66%{transform:skewX(-1deg) scale(1.01,1.06)}
+  74%{transform:skewX(2.1deg) scale(1.02,.97)}
+  88%{transform:skewX(-.6deg) scale(.99,1.04)}
+  100%{transform:skewX(0deg) scale(1,1)}
+}
+@keyframes cv-flare{
+  0%{opacity:.9} 12%{opacity:1} 23%{opacity:.78} 31%{opacity:.95}
+  44%{opacity:.84} 58%{opacity:1} 67%{opacity:.72} 79%{opacity:.93}
+  91%{opacity:.86} 100%{opacity:.9}
 }
 .cv-draught{animation:cv-drift 26s ease-in-out infinite}
 @keyframes cv-drift{0%,100%{transform:translateX(0)}50%{transform:translateX(30px)}}
@@ -1351,8 +1373,8 @@ function _buildMid(){
     +     '<path d="M522 202h76v92h-76z" fill="rgba(255,219,149,.14)" stroke="url(#cvBrass)" stroke-width="5"/>'
     +     '<path d="M544 202v92M576 202v92" stroke="url(#cvBrass)" stroke-width="3" opacity=".7"/>'
     +     '<rect x="510" y="292" width="100" height="14" rx="3" fill="url(#cvBrass)"/>'
-    +     '<path class="cv-flame" d="M560 222c13 15 20 24 20 34a20 20 0 0 1-40 0c0-10 7-19 20-34z" fill="#ffe7b7"/>'
-    +     '<path class="cv-flame" d="M560 240c7 8 11 13 11 18a11 11 0 0 1-22 0c0-5 4-10 11-18z" fill="#fff8e6"/>'
+    +     '<path class="cv-flame" style="--lick:7.3s;--flare:2.9s" d="M560 222c13 15 20 24 20 34a20 20 0 0 1-40 0c0-10 7-19 20-34z" fill="#ffe7b7"/>'
+    +     '<path class="cv-flame" style="--lick:5.9s;--flare:3.7s;animation-delay:-2.1s,-1.3s" d="M560 240c7 8 11 13 11 18a11 11 0 0 1-22 0c0-5 4-10 11-18z" fill="#fff8e6"/>'
     +   '</g>'
     + '</g>';
 
@@ -1431,7 +1453,7 @@ function _buildHeroScene(){
     +     '<path d="M524 108h52v62h-52z" fill="rgba(255,219,149,.16)" stroke="url(#cvBrass)" stroke-width="4"/>'
     +     '<path d="M541 108v62M559 108v62" stroke="url(#cvBrass)" stroke-width="2" opacity=".7"/>'
     +     '<rect x="516" y="168" width="68" height="10" rx="2" fill="url(#cvBrass)"/>'
-    +     '<path class="cv-flame" d="M550 122c9 11 14 17 14 24a14 14 0 0 1-28 0c0-7 5-13 14-24z" fill="#ffe7b7"/>'
+    +     '<path class="cv-flame" style="--lick:6.7s;--flare:3.1s;animation-delay:-1.7s,-.9s" d="M550 122c9 11 14 17 14 24a14 14 0 0 1-28 0c0-7 5-13 14-24z" fill="#ffe7b7"/>'
     +   '</g>'
     + '</g>';
 

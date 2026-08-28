@@ -266,15 +266,26 @@ function _hallMid(seed) {
     const cx = 550 + Math.cos(a) * 248;
     const cy = 248 + Math.sin(a) * 66;
     const h = 30 + rng() * 12;
-    const dur = (1.1 + rng() * 1.1).toFixed(2), del = (-rng() * 3).toFixed(2);
+    // THREE CLOCKS PER CANDLE, none of them shared with its neighbour: the
+    // shape, the brightness, and the light it throws. The negative delays are
+    // what stop the ring guttering in unison, which reads as fake faster than
+    // any curve does. animation-delay takes one value per animation, so the
+    // shape and the flare are phased independently of each other too.
+    const lick = (6.1 + rng() * 2.6).toFixed(2);
+    const flare = (2.3 + rng() * 1.5).toFixed(2);
+    const halo = (4.4 + rng() * 2.2).toFixed(2);
+    const dl = (-rng() * 9).toFixed(2), df = (-rng() * 4).toFixed(2);
+    const dh = (-rng() * 6).toFixed(2);
     s += '<g>'
       + '<rect x="' + (cx - 4).toFixed(1) + '" y="' + (cy - h).toFixed(1)
       + '" width="8" height="' + h.toFixed(1) + '" fill="#f2e8cd" opacity=".92"/>'
       + '<path class="rt-lick" d="M' + cx.toFixed(1) + ' ' + (cy - h - 15).toFixed(1)
       + 'c5 6 8 9.4 8 13a8 8 0 0 1-16 0c0-3.6 3-7 8-13z" fill="#fff3d2"'
-      + ' style="animation-duration:' + dur + 's;animation-delay:' + del + 's"/>'
-      + '<circle cx="' + cx.toFixed(1) + '" cy="' + (cy - h - 8).toFixed(1)
-      + '" r="17" fill="url(#rtGlow)" opacity=".4"/>'
+      + ' style="--lick:' + lick + 's;--flare:' + flare + 's;animation-delay:'
+      + dl + 's,' + df + 's"/>'
+      + '<circle class="rt-halo" cx="' + cx.toFixed(1) + '" cy="' + (cy - h - 8).toFixed(1)
+      + '" r="17" fill="url(#rtGlow)" opacity=".4"'
+      + ' style="--halo:' + halo + 's;animation-delay:' + dh + 's"/>'
       + '</g>';
   }
   s += '</g>';
@@ -367,10 +378,17 @@ function _heroScene(count) {
   for (let i = 0; i < 14; i++) {
     const a = (i / 14) * Math.PI * 2;
     const cx = 550 + Math.cos(a) * 180, cy = 196 + Math.sin(a) * 48;
+    // The chandelier behind the title, staggered off the index rather than the
+    // field — the hero scene takes no seed and fourteen candles on one beat
+    // would be the first motion anybody looking at this screen sees.
     s += '<rect x="' + (cx - 3).toFixed(1) + '" y="' + (cy - 24).toFixed(1)
       + '" width="6" height="24" fill="#f2e8cd" opacity=".9"/>'
       + '<path class="rt-lick" d="M' + cx.toFixed(1) + ' ' + (cy - 36).toFixed(1)
-      + 'c4 5 6 7.4 6 10a6 6 0 0 1-12 0c0-2.6 2-5 6-10z" fill="#fff3d2"/>';
+      + 'c4 5 6 7.4 6 10a6 6 0 0 1-12 0c0-2.6 2-5 6-10z" fill="#fff3d2"'
+      + ' style="--lick:' + (6.3 + (i % 5) * 0.53).toFixed(2)
+      + 's;--flare:' + (2.4 + (i % 7) * 0.19).toFixed(2)
+      + 's;animation-delay:-' + ((i * 1.37) % 8).toFixed(2)
+      + 's,-' + ((i * 0.71) % 4).toFixed(2) + 's"/>';
   }
   s += '<rect y="214" width="1100" height="242" fill="url(#rtHeroFade)"/>';
   return s + '</svg>';
@@ -517,12 +535,51 @@ const RT_CSS = `
 }
 
 /* ── AMBIENT: candles breathe, smoke goes flat, the ring hangs ─────── */
-.rt-lick,.cv-flame{animation:rt-lick 1.4s ease-in-out infinite;transform-origin:50% 92%}
+/* ── FORTY CANDLES, AND NOT ONE OF THEM ON THE SAME BEAT ─────────────
+   The same fix as the turret's lantern, and it matters more here: this room's
+   light is a ring of eighteen flames over the table and a chandelier of
+   fourteen behind the title.
+   * transform-box:fill-box is the whole of why this looked wrong. Without it
+     an SVG transform-origin resolves against the VIEW BOX, so 50% 92% on a
+     candle 200 units down a 1400-unit box pivoted it a thousand units below the
+     wick, and every skew swung the flame bodily sideways. Fire changes shape;
+     it does not travel.
+   * The shape loop is long and asymmetric and the brightness runs at a coprime
+     period, because a symmetric 1.4s loop is a pendulum the eye catches inside
+     two cycles.
+   * Small amplitude on the shape, the real flicker on opacity, and the halo
+     behind each candle breathing on a third clock again.
+   * PER-CANDLE PERIODS AND NEGATIVE DELAYS. Eighteen flames guttering in
+     unison is the other thing that reads as fake instantly, so every candle
+     takes its own --lick, --flare, --halo and phase off the night's own
+     seeded field. */
+.rt-lick,.cv-flame{
+  transform-box:fill-box;transform-origin:50% 100%;
+  animation:rt-lick var(--lick,7.3s) linear infinite,
+            rt-flare var(--flare,2.9s) ease-in-out infinite;
+}
 @keyframes rt-lick{
-  0%,100%{transform:scale(1,1) skewX(0deg)}
-  24%{transform:scale(.9,1.16) skewX(-6deg)}
-  52%{transform:scale(1.1,.92) skewX(5deg)}
-  76%{transform:scale(.94,1.07) skewX(-2deg)}
+  0%{transform:skewX(0deg) scale(1,1)}
+  9%{transform:skewX(-1.5deg) scale(.985,1.05)}
+  17%{transform:skewX(.7deg) scale(1.02,.98)}
+  28%{transform:skewX(-2.3deg) scale(.97,1.08)}
+  36%{transform:skewX(-.3deg) scale(1.01,1.01)}
+  47%{transform:skewX(1.8deg) scale(1.03,.96)}
+  55%{transform:skewX(.4deg) scale(.99,1.03)}
+  66%{transform:skewX(-1deg) scale(1.01,1.06)}
+  74%{transform:skewX(2.1deg) scale(1.02,.97)}
+  88%{transform:skewX(-.6deg) scale(.99,1.04)}
+  100%{transform:skewX(0deg) scale(1,1)}
+}
+@keyframes rt-flare{
+  0%{opacity:.9} 12%{opacity:1} 23%{opacity:.78} 31%{opacity:.95}
+  44%{opacity:.84} 58%{opacity:1} 67%{opacity:.72} 79%{opacity:.93}
+  91%{opacity:.86} 100%{opacity:.9}
+}
+.rt-halo{animation:rt-halo var(--halo,5.3s) ease-in-out infinite}
+@keyframes rt-halo{
+  0%{opacity:.34} 17%{opacity:.46} 29%{opacity:.3} 46%{opacity:.44}
+  61%{opacity:.33} 78%{opacity:.48} 90%{opacity:.36} 100%{opacity:.34}
 }
 .rt-breathe{animation:rt-breathe 7.8s ease-in-out infinite;transform-origin:center}
 @keyframes rt-breathe{

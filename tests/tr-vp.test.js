@@ -1512,3 +1512,106 @@ describe('the ring at the largest cast the show casts', () => {
       + 'the chairs are being spaced by angle, not by arc length').toBeLessThan(1.25);
   });
 });
+
+// ── THE FLAME, WHICH WAS MOVING LIKE AN OBJECT ────────────────────────
+//
+// Fire changes shape; it does not travel. What made both screens' fire read as
+// wrong was that its pivot was nowhere near its wick: `transform-origin` on an
+// SVG element resolves against the VIEW BOX unless `transform-box:fill-box`
+// says otherwise, so `50% 92%` on a candle 200 units down a 1400-unit box put
+// the origin a thousand units BELOW the flame and every skew swung the whole
+// shape sideways. The rest of it — a symmetric 1.4s loop the eye catches in two
+// cycles, a huge amplitude, and eighteen candles guttering in step — is what
+// was left after that.
+//
+// This is the one piece of the visual system worth a hard guard: the plan says
+// no mutation testing on CSS because screen defects are visible, and this one
+// was visible for a fortnight without anybody being able to name it.
+describe('the fire is pinned at the wick', () => {
+  const rules = () => [
+    ['the turret\'s lantern', rpBuildConclave(NIGHTS[0].ep, 'audience'),
+      /\.cv-flame\{([^}]*)\}/],
+    ['the hall\'s candles', rpBuildRoundTable(TABLES[0].ep, 'audience'),
+      /\.rt-lick,\.cv-flame\{([^}]*)\}/],
+  ];
+
+  it('both screens pivot every flame at its own base, not at the view box', () => {
+    for (const [what, html, re] of rules()) {
+      const rule = re.exec(html);
+      expect(rule, `${what}: the flame rule is not in the stylesheet`).toBeTruthy();
+      // WITHOUT THIS the origin below is measured against the whole SVG and the
+      // flame swings bodily instead of licking.
+      expect(rule[1], `${what}: the flame pivots against the view box, not itself`)
+        .toContain('transform-box:fill-box');
+      expect(rule[1], `${what}: the flame is not anchored at the wick`)
+        .toContain('transform-origin:50% 100%');
+    }
+  });
+
+  it('and moves by changing shape, never by moving', () => {
+    // A different failure from the pivot: a flame anchored correctly but given
+    // a translate or a rotate is still an object being waggled.
+    for (const [what, html] of [['the turret', rpBuildConclave(NIGHTS[0].ep, 'audience')],
+      ['the hall', rpBuildRoundTable(TABLES[0].ep, 'audience')]]) {
+      const kf = /@keyframes (?:cv|rt)-lick\{([\s\S]*?)\n\}/.exec(html);
+      expect(kf, `${what}: the flame's shape loop is not in the stylesheet`).toBeTruthy();
+      expect(kf[1], `${what}: the flame travels instead of licking`).not.toMatch(/translate/);
+      expect(kf[1], `${what}: the flame rotates as a rigid body`).not.toMatch(/rotate/);
+      // and it is not a pendulum: a symmetric loop back to identity on one
+      // period is caught by the eye inside two cycles
+      expect((kf[1].match(/%\{/g) || []).length,
+        `${what}: the shape loop has too few stops to stop looking periodic`)
+        .toBeGreaterThan(6);
+    }
+  });
+});
+
+describe('no two candles in the hall are on the same beat', () => {
+  const flames = html => {
+    const out = [];
+    const re = /class="rt-lick"[^>]*style="([^"]*)"/g;
+    let m;
+    while ((m = re.exec(html))) {
+      const lick = /--lick:([^;"]+)/.exec(m[1]);
+      const delay = /animation-delay:([^;"]+)/.exec(m[1]);
+      const flare = /--flare:([^;"]+)/.exec(m[1]);
+      out.push({ lick: lick && lick[1], flare: flare && flare[1], delay: delay && delay[1] });
+    }
+    return out;
+  };
+
+  it('every candle carries its own period and its own phase', () => {
+    const f = flames(rpBuildRoundTable(TABLES[0].ep, 'audience'));
+    // 18 over the table and 14 in the chandelier. The count is asserted first
+    // because every check below is over this list and an empty one passes them
+    // all for free.
+    expect(f.length, 'the hall drew no candles with a clock of their own')
+      .toBeGreaterThan(30);
+    expect(f.every(x => x.lick && x.delay),
+      'a candle fell back to the shared period and will gutter with the others').toBe(true);
+    const beats = new Set(f.map(x => x.lick + '|' + x.delay));
+    expect(beats.size, `${f.length} candles share only ${beats.size} beats between them — `
+      + 'a ring flickering in unison is the thing that reads as fake instantly')
+      .toBeGreaterThan(20);
+  });
+
+  it('and the brightness runs on a different clock from the shape', () => {
+    // The layered pair is the whole reason the loop never visibly repeats: one
+    // period on the shape, a coprime one on the light. Equal periods put them
+    // back in lockstep and the combined cycle is short again.
+    for (const [what, html] of [['the hall', rpBuildRoundTable(TABLES[0].ep, 'audience')],
+      ['the turret', rpBuildConclave(NIGHTS[0].ep, 'audience')]]) {
+      const re = /class="(?:rt-lick|cv-flame)"[^>]*style="([^"]*)"/g;
+      let m, seen = 0;
+      while ((m = re.exec(html))) {
+        const lick = /--lick:([^;"]+)/.exec(m[1]);
+        const flare = /--flare:([^;"]+)/.exec(m[1]);
+        if (!lick || !flare) continue;
+        seen++;
+        expect(lick[1], `${what}: a flame's shape and its light share a period`)
+          .not.toBe(flare[1]);
+      }
+      expect(seen, `${what}: no flame declared both clocks`).toBeGreaterThan(1);
+    }
+  });
+});

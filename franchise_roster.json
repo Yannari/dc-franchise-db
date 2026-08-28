@@ -2399,7 +2399,9 @@
         "temperament": 8
       },
       "voice": "Steady, perceptive, kind. Hates conflict, cautious, rarely shows her hand; sweet indie girl who toughens up when pushed.",
-      "isReturnee": true
+      "isReturnee": true,
+      "sexuality": "straight",
+      "profileSources": {}
     },
     {
       "name": "Thom",

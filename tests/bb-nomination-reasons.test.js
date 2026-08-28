@@ -161,3 +161,64 @@ describe('every line is a whole sentence about the right person', () => {
     }
   });
 });
+
+describe('a chair in a backdoor week', () => {
+  // "Is he a pawn for a backdoor?" — the speech had no idea. It reached for a
+  // grievance and said "I am nominating somebody I did trust, which is a
+  // different thing and a worse one", which is a mood rather than a reason: it
+  // tells a viewer something happened and nothing about what.
+  //
+  // When the plan carries a backdoor target the people on that wall are there
+  // to fill the ceremony until the veto moves somebody, and the real name is
+  // deliberately not on it. That beats any receipt: whatever is between those
+  // two, it is not why the key turned tonight.
+  const backdoor = (nominee, role = 'pawn') => {
+    house(['Hoh', 'Them', 'Other', 'Target', 'D', 'E']);
+    return _bbNomReason('Hoh', nominee, role, { num: 5, acts: [{ type: 'nominations',
+      nominees: ['Them', 'Other'], backdoorTarget: 'Target', grievances: {} }] });
+  };
+
+  it('says it is not about them, and never names the target', () => {
+    const line = backdoor('Them');
+    expect(line).toMatch(/trust me for four days|not about you|chairs filled/i);
+    expect(line, 'the ceremony announced the backdoor').not.toContain('Target');
+  });
+
+  it('beats the generic pawn line, which answers a different question', () => {
+    house(['Hoh', 'Them', 'Other', 'Target', 'D', 'E']);
+    const plain = _bbNomReason('Hoh', 'Them', 'pawn', { num: 5, acts: [{ type: 'nominations',
+      nominees: ['Them', 'Other'], grievances: {} }] });
+    expect(backdoor('Them')).not.toBe(plain);
+  });
+
+  it('does not use it for the person the week is actually about', () => {
+    // The target is not a chair being filled.
+    const line = backdoor('Them', 'target');
+    expect(line).not.toMatch(/trust me for four days/i);
+  });
+});
+
+describe('a grievance it cannot name', () => {
+  it('gives a reason it can stand behind instead of a mood', () => {
+    // The betrayal branch knows several families of memory by name. When the
+    // memory is not one of them it used to fall back to "I am nominating
+    // somebody I did trust" — the house visibly holding a receipt it cannot
+    // read out. It now declines to raise it and uses the competition record,
+    // the numbers, or the game.
+    house(['Hoh', 'Them', 'A', 'B', 'C', 'D']);
+    gs.bb.stats = { Them: { hohWins: 2, vetoWins: 1 } };
+    const line = _bbNomReason('Hoh', 'Them', 'target', { num: 5, acts: [{ type: 'nominations',
+      nominees: ['Them'], grievances: { Them: { kind: 'betrayal', alliance: 'The Engine',
+        memory: { type: 'a-type-nobody-mapped', ep: 3 } } } }] });
+    expect(line).not.toMatch(/somebody I did trust/i);
+    expect(line, 'no reason at all was given').toMatch(/competitions|house likes you|running more of this house|somebody had to go up/i);
+  });
+
+  it('still names the ones it does know', () => {
+    house(['Hoh', 'Them', 'A', 'B', 'C', 'D']);
+    const line = _bbNomReason('Hoh', 'Them', 'target', { num: 5, acts: [{ type: 'nominations',
+      nominees: ['Them'], grievances: { Them: { kind: 'betrayal', alliance: 'The Engine',
+        memory: { type: 'voted-for-me', ep: 3 } } } }] });
+    expect(line).toMatch(/wrote my name down|handwriting/i);
+  });
+});

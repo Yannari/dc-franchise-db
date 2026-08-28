@@ -1293,6 +1293,42 @@ function _snapshotAllianceBoard(roster = null) {
   } catch { return []; }
 }
 
+/**
+ * One conversation per alliance, not one per name on the block.
+ *
+ * The consult is worked out inside the per-nominee loop, so a Head of
+ * Household nominating three people put the same question to the same group
+ * once for each of them — and an alliance holding two of the three appeared
+ * twice on its own ceremony, once refusing and once agreeing. Nobody has that
+ * conversation twice. They walk in and say which of ours is going up.
+ *
+ * Merged strictly: if the room was asked at all, it was asked; and if it
+ * argued against ANY of the names, it said no and the week happened anyway.
+ * The count kept is the hardest sell of them, because that is the number the
+ * card is about.
+ */
+function _mergeConsults(list) {
+  if (!list?.length) return null;
+  const out = new Map();
+  for (const talk of list) {
+    const key = talk?.alliance;
+    if (!key) continue;
+    const seen = out.get(key);
+    if (!seen) {
+      out.set(key, { ...talk, victims: [talk.victim].filter(Boolean) });
+      continue;
+    }
+    if (talk.victim && !seen.victims.includes(talk.victim)) seen.victims.push(talk.victim);
+    const rank = st => (st === 'overruled' ? 3 : st === 'never-asked' ? 2 : 1);
+    // Asked beats never-asked; refused beats agreed.
+    if (seen.stance === 'never-asked' && talk.stance !== 'never-asked') seen.stance = talk.stance;
+    else if (rank(talk.stance) > rank(seen.stance) && talk.stance !== 'never-asked') seen.stance = talk.stance;
+    if ((talk.agrees ?? 99) < (seen.agrees ?? 99)) { seen.agrees = talk.agrees; seen.of = talk.of; }
+    seen.target = seen.target || talk.target;
+  }
+  return [...out.values()];
+}
+
 function _snapshotHouse(full = true, roster = null) {
   const light = {
     bonds: { ...(gs.bonds || {}) },
@@ -4076,7 +4112,7 @@ export function simulateBBWeek(options = {}) {
   }
   if (!chainNoms.length) week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
     grievances: nomGrievances, allianceExits: week.allianceExits || null,
-    allianceConsults: week.allianceConsults || null,
+    allianceConsults: _mergeConsults(week.allianceConsults),
     duo: duoNom, nomFallout: week.nomFallout,
     structure: plan.structure || 'target-pawn', structureWhy: plan.structureWhy || '',
     anonymous: hohSecret,

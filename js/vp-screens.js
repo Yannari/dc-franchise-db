@@ -18131,6 +18131,27 @@ export function _bbNomReason(hoh, name, role, ep) {
   };
   const N = `<strong>${name}</strong>`;
 
+  const _nomAct = (ep?.acts || []).find(a => a.type === 'nominations'
+    && (a.nominees || []).includes(name));
+  const grievance = (_nomAct?.grievances || {})[name] || null;
+
+  /* ── A CHAIR IN A BACKDOOR WEEK IS NOT ABOUT THE PERSON IN IT ──
+     When the plan carries a backdoor target, the people on the block are there
+     to fill the ceremony until the veto moves somebody, and the entire point is
+     that the real name is not on that wall. A speech reaching for a grievance
+     is answering a question nobody asked: the honest line is that this is not
+     about them and they will have to take it on trust for four days. The
+     target is never named, because naming it here is the one thing that would
+     ruin the week.
+     Checked before the grievance, because it beats any receipt — whatever is
+     between these two, it is not why the key turned tonight. */
+  const _backdoor = _nomAct?.backdoorTarget;
+  if (_backdoor && _backdoor !== name && role !== 'target') return say([
+    `"${N}, I am going to ask you to sit in that chair and trust me for four days, and I am not going to explain myself in this room. If I have read this week right, you are not the one who leaves."`,
+    `"${N}, this is not about you, and I am not going to insult you by inventing a reason that it is. Somebody has to sit down for the ceremony to happen at all."`,
+    `"${N}, I need those chairs filled by Thursday and I need you in one of them. That is the whole truth of it, and I know exactly how little it is worth to hear."`,
+  ]);
+
   if (role === 'pawn') {
     if (bond >= 3) return say([
       `"${N}, you are the only person in this house I could ask to do this, and that is exactly why I am asking. You are not the one going home."`,
@@ -18201,9 +18222,7 @@ export function _bbNomReason(hoh, name, role, ep) {
   //
   // `grievances` is captured by the ceremony itself (week.js) rather than
   // recomputed here, so a replay gives the reason that existed that week.
-  const grievance = ((ep?.acts || []).find(a => a.type === 'nominations'
-    && (a.nominees || []).includes(name))?.grievances || {})[name] || null;
-  if (grievance && !(grievance.kind === 'no-grievance' && left <= 5)) {
+  grievance: if (grievance && !(grievance.kind === 'no-grievance' && left <= 5)) {
     const G = grievance.alliance ? `<strong>${grievance.alliance}</strong>` : 'that alliance';
     if (grievance.kind === 'betrayal') {
       // ── NAME THE RECEIPT ──
@@ -18300,11 +18319,17 @@ export function _bbNomReason(hoh, name, role, ep) {
       // somebody of something specific has to be reading something specific;
       // where it is not, it says what it actually knows, which is that this
       // stopped being what it was.
-      return say([
-        `"${N}, I am not nominating somebody I do not trust. I am nominating somebody I did trust, which is a different thing and a worse one."`,
-        `"${N}, something happened between us${when} and neither of us has said it out loud since. I am not going to keep protecting a group that is one conversation we never had."`,
-        `"${N}, everybody in this room thinks ${G} is still a thing. You and I both know which week it stopped being one."`,
-      ]);
+      /* ── AND WHEN IT CANNOT NAME THE THING, IT SHOULD NOT PRETEND TO ──
+         "I am nominating somebody I did trust, which is a different thing and
+         a worse one" is a mood, not a reason: it tells a viewer that something
+         happened and nothing whatsoever about what. That is worse than not
+         raising it, because the house is visibly holding a receipt it cannot
+         read out.
+         So when the memory has no family here, the speech says nothing about
+         it and falls through to the reasons below — the competition record,
+         the numbers, the game — every one of which the speaker can stand
+         behind. */
+      break grievance;
     }
     if (grievance.kind === 'suspicion') return say([
       `"${N}, you have been in a lot of rooms I was not in. I have no proof and I am not going to stand here and invent some — I have one week of power and a bad feeling, and I am spending one on the other."`,
@@ -18712,11 +18737,18 @@ export function rpBuildBBNominations(ep, only = null) {
       const t = step.talk;
       const label = t.stance === 'sanctioned' ? 'THE GROUP SIGNED OFF'
         : t.stance === 'overruled' ? 'TOLD NO, DID IT ANYWAY' : 'NEVER ASKED THEM';
+      // One conversation covers everybody from that group who is going up.
+      const who = (t.victims && t.victims.length ? t.victims : [t.victim])
+        .filter(Boolean).map(_bbEsc);
+      const names = who.length > 1
+        ? `${who.slice(0, -1).join(', ')} and ${who[who.length - 1]}`
+        : (who[0] || 'one of them');
+      const plural = who.length > 1;
       const body = t.stance === 'sanctioned'
-        ? `${_bbEsc(t.hoh)} put it to <strong>${_bbEsc(t.alliance)}</strong> before the ceremony: one of theirs has to sit down, and it has to be ${_bbEsc(t.victim)}. ${t.agrees} of the ${t.of} said yes. Nobody in that room gets to be surprised on Thursday.`
+        ? `${_bbEsc(t.hoh)} put it to <strong>${_bbEsc(t.alliance)}</strong> before the ceremony: ${plural ? 'two of theirs have' : 'one of theirs has'} to sit down, and it has to be ${names}. ${t.agrees} of the ${t.of} said yes. Nobody in that room gets to be surprised on Thursday.`
         : t.stance === 'overruled'
-          ? `${_bbEsc(t.hoh)} did take it to <strong>${_bbEsc(t.alliance)}</strong>, and <strong>${_bbEsc(t.alliance)}</strong> said no — ${t.of - t.agrees} of the ${t.of} argued for ${_bbEsc(t.victim)}. ${_bbEsc(t.hoh)} listened to all of it and used the week exactly as planned.`
-          : `${_bbEsc(t.hoh)} never raised it with <strong>${_bbEsc(t.alliance)}</strong> at all. The first any of them hear that one of their own is going up is when the key turns.`;
+          ? `${_bbEsc(t.hoh)} did take it to <strong>${_bbEsc(t.alliance)}</strong>, and <strong>${_bbEsc(t.alliance)}</strong> said no — ${t.of - t.agrees} of the ${t.of} argued for ${names}. ${_bbEsc(t.hoh)} listened to all of it and used the week exactly as planned.`
+          : `${_bbEsc(t.hoh)} never raised it with <strong>${_bbEsc(t.alliance)}</strong> at all. The first any of them hear that ${plural ? 'two of their own are' : 'one of their own is'} going up is when the ${plural ? 'keys turn' : 'key turns'}.`;
       const cls = t.stance === 'sanctioned' ? 'bbns-signed' : 'bbns-exit';
       return `<div class="bbns-card is-reason">
         <div class="bbns-card-h">${_bbAvatar(t.hoh, 30)}<span class="bbns-pill ${t.stance === 'sanctioned' ? 'green' : 'red'}">${label}</span></div>

@@ -96,8 +96,14 @@ function _ballot(b, channel) {
  * who wanted whom dead from the victim would produce a unanimous conclave every
  * night and erase the entire mechanism — the overruled Traitor's ballot is the
  * one that matters most, and it is the one a recomputation cannot see.
+ *
+ * EXPORTED, because js/tr/headless.js now writes the same array onto the
+ * episode record for the Round Table screen to draw. Two derivations of "which
+ * ballots did this round hold" is precisely the shape that lets one of them
+ * quietly stop carrying the murder channel -- at which point `publicBallots()`
+ * has nothing left to filter and every guard built on it passes for free.
  */
-function _ballotsFor(round) {
+export function traitorsRoundBallots(round) {
   const out = [];
   for (const b of round.ballots || []) out.push(_ballot(b, 'banishment'));
   for (const rv of round.revotes || []) {
@@ -161,7 +167,7 @@ export function traitorsVotingHistory(season = {}) {
       murderBlocked: !!(logged.blocked && !murdered),
       endgame: !!round.endgame,
       exits,
-      votes: _ballotsFor(round),
+      votes: traitorsRoundBallots(round),
     };
   });
 }

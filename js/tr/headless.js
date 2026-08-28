@@ -11,7 +11,11 @@ import { initTraitorsState } from './state.js';
 import { resetKnowledge } from '../knowledge.js';
 import { setBond, getBond } from '../bonds.js';
 import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
-  canRecruit, chooseRecruit, offerRecruitment } from './roles.js';
+  canRecruit, chooseRecruit, offerRecruitment, alignmentAt } from './roles.js';
+// The ballot array the export builds, used unchanged. See `_tableRecord`.
+import { traitorsRoundBallots, TRAITORS_FORMAT } from './export.js';
+// The show's two exit words, from the registry. Never written as literals.
+import { exitVerbs } from '../shows.js';
 import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence } from './deduction.js';
 import { variantEvidence } from './murder-variants.js';
 import { runRoundTable } from './roundtable.js';
@@ -388,6 +392,102 @@ function _conclaveRecord(ep, m, ballots, turret) {
 }
 
 /**
+ * THE ROUND TABLE, in the shape a screen draws it (`js/vp-tr/round-table.js`).
+ *
+ * Read off `gs.tr.rounds` rather than off `runRoundTable`'s return value, and
+ * the difference is not cosmetic: that return value is a SHALLOW SPREAD taken
+ * before the night runs, so `murderBallots` -- which `_night` writes back onto
+ * the same round object minutes later -- is not on it. A record built from the
+ * spread carries no murder channel at all, `publicBallots()` then has nothing
+ * to filter, and the guard that exists to prove the private ballots are
+ * dropped passes without ever dropping one.
+ *
+ * `votes` IS THE EXPORT'S OWN ARRAY, built by the export's own function.
+ * Both channels, revotes carrying their own. The screen filters it through
+ * `publicBallots()` exactly as every other public reader does; nothing here
+ * pre-filters, because a record that arrives already clean is a record whose
+ * filter can never be shown to work.
+ *
+ * ── AND THE ENDGAME CARRIES NO ALIGNMENT (spec 8) ──────────────────────
+ *
+ * There are no reveals at a finale table -- the survivors go on nerve alone,
+ * and that absence is what makes the last votes feel different from every
+ * earlier one. The engine already keeps it: `runEndgame` calls the table with
+ * `reveal:false`, which suppresses `revealCascade` and drops the exit speech
+ * for EVERYBODY rather than only for Traitors, because if Traitors were the
+ * only people who left in silence the silence would itself be the reveal.
+ * The same rule applies to this record. `chosenAlignment`, `truth` and
+ * `betrayals` are all ground truth, and none of the three is written onto a
+ * finale table -- the screen has an explicit branch too, but a branch that
+ * never receives the data cannot leak it whatever a later edit does to the
+ * markup.
+ *
+ * `chosen` rather than the registry's word for it: js/vp-tr/ may not write an
+ * exit verb as a literal (tests/tr-vp.test.js scans the sources), and a field
+ * name is a literal the scan cannot tell from a sentence.
+ */
+function _tableRecord(ep, { endgame = false } = {}) {
+  const round = (gs.tr?.rounds || []).find(r => r.ep === ep);
+  if (!round) return null;
+  const votes = traitorsRoundBallots(round);
+  // Everyone who cast a ballot in the first count is everyone who was at the
+  // table: the format seats the whole castle and every one of them writes a
+  // name. Derived from the ballots rather than snapshotted separately, so the
+  // seating and the vote can never come to disagree.
+  const seated = votes.filter(v => v.channel === 'banishment').map(v => v.voter);
+  // THE WHOLE RING, INCLUDING THE CHAIRS NOBODY IS IN. Everyone who ever sat
+  // down, in the order they sat down, with the door each of the missing left
+  // by. Read off the rows already written — `gs.episodeHistory` at this point
+  // holds every episode BEFORE this one, which is exactly the room as it was
+  // when tonight's table was called — rather than recomputed from the living,
+  // because "who is gone" and "how they went" are two different facts and only
+  // the second one is dramatic.
+  const doorOf = {};
+  for (const row of gs.episodeHistory || []) {
+    for (const x of row.exits || []) if (x && x.name) doorOf[x.name] = x.channel || 'banishment';
+  }
+  const order = (gs.tr?.castOrder || []).length ? gs.tr.castOrder : seated;
+  const ring = order.map(name => ({ name, door: doorOf[name] || null }));
+  const rec = {
+    ep,
+    endgame: !!endgame,
+    votes,
+    seated,
+    ring,
+    // The tied set per revote round, in order, and HOW MANY BALLOTS that round
+    // cast. The ballots themselves are on `votes` under their own channel;
+    // the count is recorded rather than left to the screen to work out
+    // from the tied set: the format's rule -- the tied are the question and do
+    // not answer it -- is the engine's to state, and a screen re-deriving it
+    // would be a second copy of a rule that has already changed once.
+    revotes: (round.revotes || []).map(rv => ({
+      tied: [...(rv.tied || [])], count: (rv.ballots || []).length })),
+    accusations: (round.accusations || []).map(a => ({ ...a })),
+    chosen: round.banished || null,
+    dagger: round.dagger ? { ...round.dagger } : null,
+    speech: round.exitSpeech
+      ? { burns: !!round.exitSpeech.burns, target: round.exitSpeech.target || null,
+        text: round.exitSpeech.text || '' }
+      : null,
+    pot: gs.tr?.pot ?? 0,
+  };
+  if (!endgame) {
+    rec.chosenAlignment = round.banishedWasTraitor == null
+      ? null : (round.banishedWasTraitor ? 'traitor' : 'faithful');
+    // WHAT THE AUDIENCE KNOWS AND THE ROOM DOES NOT. Every seat's real
+    // alignment on this night, which is the whole of the dramatic irony the
+    // format runs on: the screen prints, beside each accusation, whether the
+    // person being accused actually is one. It is the audience's privilege and
+    // nobody else's -- js/vp-tr/round-table.js strips it from the record
+    // before a `player:` observer's screen is built from it.
+    rec.truth = {};
+    for (const n of seated) rec.truth[n] = alignmentAt(n, ep);
+    rec.betrayals = (round.betrayals || []).map(b => ({ ...b }));
+  }
+  return rec;
+}
+
+/**
  * ONE `episodeHistory` ROW PER EPISODE, and it exists for js/audience.js.
  *
  * That module is show-agnostic by construction: it knows only that a show has
@@ -405,10 +505,22 @@ function _conclaveRecord(ep, m, ballots, turret) {
  * vote. A show with two exit channels needs both fields or it credits half its
  * cast with a full season they did not play.
  */
-function _recordEpisode(ep, { banished = null, night = null } = {}) {
-  const exits = [banished, night?.murdered, night?.secondVictim, night?.executed]
-    .filter(Boolean).map(name => ({ name }));
+function _recordEpisode(ep, { banished = null, night = null, endgame = false } = {}) {
+  // THE DOOR, NOT JUST THE NAME. docs/ADDING-A-SHOW.md §5 gives `exits[]` a
+  // `verb` and a `channel` and this row was writing neither, so every reader
+  // of the episode history knew somebody had gone and not which of the show's
+  // two ways they went — and this show is the only one where that question
+  // has an answer. `roundExits()` fills a missing verb from the registry's
+  // default, which is the banishment word, so a murder recorded bare was
+  // being reported as a vote nobody cast.
+  const [banishVerb, murderVerb] = exitVerbs(TRAITORS_FORMAT);
+  const exits = [
+    banished ? { name: banished, verb: banishVerb, channel: 'banishment' } : null,
+    ...[night?.murdered, night?.secondVictim, night?.executed].filter(Boolean)
+      .map(name => ({ name, verb: murderVerb, channel: 'murder' })),
+  ].filter(Boolean);
   const conclave = night?.conclave || null;
+  const table = _tableRecord(ep, { endgame });
   (gs.episodeHistory ||= []).push({
     num: ep,
     // THE FORMAT, ON THE ROW. `buildVPScreens` dispatches on it exactly as it
@@ -422,6 +534,9 @@ function _recordEpisode(ep, { banished = null, night = null } = {}) {
     // replaced wholesale by the next season and rebuilt wholesale by a load.
     tr: {
       conclave,
+      // The public half of the same night. `null` on a night with no table --
+      // night one holds none, and the screen must not be registered for it.
+      table,
       pot: gs.tr?.pot ?? 0,
       living: [...(gs.activePlayers || [])],
       // WHAT THE CASTLE WAS DOING WHILE THE TURRET SAT. Beats written this
@@ -461,6 +576,13 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   setGs({ bonds: {}, activePlayers: [...cast] });
   gs.tr = initTraitorsState();
   gs.tr.potCeiling = POT_CEILING;
+  // THE SEATING PLAN, AND IT NEVER CHANGES. `activePlayers` shrinks every
+  // night, so a screen drawing the room from it re-seats everybody the moment
+  // somebody leaves and the eye can no longer follow a person from one episode
+  // to the next. The Round Table keeps every chair where it was and marks the
+  // empty ones, which is the whole of the format's best recurring image: the
+  // ring visibly thinning while the survivors look at the gaps.
+  gs.tr.castOrder = [...cast];
   // THE TWO AUDIENCE LEDGERS, and the episode record they are read against.
   // `gs.episodeHistory` is what js/audience.js counts rounds off — it is the
   // one thing that module needs from a show and the one thing a headless
@@ -623,7 +745,13 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // rather than from who left: a betrayal the room then failed to carry out
   // was still chosen, and `endgameChoice` is the only place that fact exists.
   scoreEndgame(endgame);
-  for (const r of endgame.rounds || []) _recordEpisode(r.ep, { banished: r.banished });
+  // `endgame: true` is what keeps the alignment off the finale tables' records
+  // -- see `_tableRecord`. It is passed rather than inferred, because the
+  // rounds on `gs.tr.rounds` carry no flag: the copies in `endgame.rounds` are
+  // where `endgame: true` is stamped, and this loop is holding the copies.
+  for (const r of endgame.rounds || []) {
+    _recordEpisode(r.ep, { banished: r.banished, endgame: true });
+  }
 
   return {
     traitors,

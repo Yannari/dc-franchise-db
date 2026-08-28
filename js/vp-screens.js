@@ -28,6 +28,7 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 // in CLAUDE.md is explicit, and the conclave's whole identity is that it does
 // not look like anything already in this repo.
 import { rpBuildConclave, trConclaveRevealNext, trConclaveRevealAll } from './vp-tr/conclave.js';
+import { rpBuildRoundTable, trRoundTableRevealNext, trRoundTableRevealAll } from './vp-tr/round-table.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -13537,6 +13538,13 @@ export function buildVPScreens(epRecord) {
   // on a default, because the default is the thing a later edit changes.
   if (epRecord.format === 'traitors') {
     const _obs = epRecord.observer || 'audience';
+    // IN THE ORDER THE CASTLE LIVES THEM. The table sits in the evening and
+    // the turret meets afterwards, so the public half comes first and the
+    // private half is what the episode ends on.
+    if (epRecord.tr && epRecord.tr.table) {
+      vpScreens.push({ id: 'tr-round-table', label: 'The Round Table',
+        html: rpBuildRoundTable(epRecord, _obs) });
+    }
     if (epRecord.tr && epRecord.tr.conclave) {
       vpScreens.push({ id: 'tr-conclave', label: 'The Conclave',
         html: rpBuildConclave(epRecord, _obs) });

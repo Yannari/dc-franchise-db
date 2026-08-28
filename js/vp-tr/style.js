@@ -21,6 +21,36 @@
 // fibre and a torn deckle edge, wax has a specular dome, brass has wear. All
 // of it is SVG filters, which nothing else in this repo uses.
 
+// THE NEUTRAL PORTRAIT'S OWN RULES, SPLIT OUT SO THERE IS ONE COPY.
+//
+// `_portrait()` (js/vp-tr/conclave.js) is exported for every screen in this
+// directory, and a helper is only shared if its stylesheet is too: the Round
+// Table draws the same faces and does not load the conclave's stylesheet, so
+// without this the base rules would have been retyped into a second file and
+// the two would have drifted the first time a radius changed.
+//
+// The `--cv-*` custom properties it reads are declared by whichever screen is
+// hosting it, which is what lets the same markup be bone-on-green in the hall
+// and amber-on-black in the turret. Nothing here is atmosphere: the lantern's
+// rim-light, the shadow side and the graded film are `.cv-lit`, and `.cv-lit`
+// stays in CONCLAVE_CSS where it belongs.
+export const PORTRAIT_CSS = `
+.cv-av{
+  position:relative;display:inline-block;overflow:hidden;flex:none;vertical-align:middle;
+  border-radius:50% 50% 12% 12% / 44% 44% 9% 9%;
+  background:linear-gradient(162deg,#252b37,#080b11);
+  box-shadow:0 0 0 1px rgba(224,160,73,.30),0 4px 12px rgba(0,0,0,.5);
+}
+.cv-av img{
+  width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:2;
+}
+.cv-av-ini{
+  position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;
+  font-family:var(--cv-display);font-weight:900;letter-spacing:.02em;
+  color:rgba(224,160,73,.62);
+}
+`;
+
 export const CONCLAVE_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap');
 
@@ -211,21 +241,7 @@ export const CONCLAVE_CSS = `
    stays neutral, and each screen opts into its own character. A helper that
    bakes in one screen's atmosphere forces every later screen either to fight
    it or to inherit a look that does not fit.                                */
-.cv-av{
-  position:relative;display:inline-block;overflow:hidden;flex:none;vertical-align:middle;
-  border-radius:50% 50% 12% 12% / 44% 44% 9% 9%;
-  background:linear-gradient(162deg,#252b37,#080b11);
-  box-shadow:0 0 0 1px rgba(224,160,73,.30),0 4px 12px rgba(0,0,0,.5);
-}
-.cv-av img{
-  width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:2;
-}
-.cv-av-ini{
-  position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;
-  font-family:var(--cv-display);font-weight:900;letter-spacing:.02em;
-  color:rgba(224,160,73,.62);
-}
-
+${PORTRAIT_CSS}
 /* -- the turret's lamp, and only the turret's -- */
 .cv-av.cv-lit{
   box-shadow:

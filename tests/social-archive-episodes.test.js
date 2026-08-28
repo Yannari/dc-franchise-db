@@ -14,7 +14,9 @@
 // Reading either one as THE list left holes in a numbered selector, which reads
 // as the feature failing rather than as a source that only ever recorded votes.
 import { describe, expect, it } from 'vitest';
-import { episodesOf } from '../js/social/archive.js';
+import fs from 'node:fs';
+import { episodesOf, eventsForEpisode } from '../js/social/archive.js';
+import { buildEpisodeFeed } from '../js/social/feed.js';
 
 const votes = eps => eps.map(e => ({ episode: e, eliminated: `boot${e}`,
   votes: [{ voter: 'a', target: `boot${e}` }, { voter: 'b', target: `boot${e}` }] }));
@@ -125,5 +127,50 @@ describe('the other show is untouched', () => {
   it('says nothing about a season it was handed nothing for', () => {
     expect(episodesOf(null, 'total-drama')).toEqual([]);
     expect(episodesOf({}, 'total-drama')).toEqual([]);
+  });
+});
+
+// ── `subjects[]` is only a fix if something reads it ────────────────────────
+//
+// A field nothing reads is not a fix. The co-winner work stopped `archive.js`
+// inventing a single champion for a split season -- correct -- and moved the
+// names onto `subjects[]`, which had NO reader anywhere in the tree. On the
+// live season 8 document that turned every finale post that named Alejandro
+// into one that named nobody.
+//
+// This reads the FEED, not the event, because the event was never the thing
+// that broke: the posts were. Deleting the `finEv.subjects` assignment in
+// `archive.js`, or `subjectLabel`'s `subjects` arm in `sampler.js`, is RED here.
+describe('a co-winner finale still names its champions', () => {
+  const doc = JSON.parse(fs.readFileSync('data/seasons/season8-data.json', 'utf8'));
+
+  it('carries both names into the posts of the live split season', () => {
+    const eps = episodesOf(doc, 'total-drama');
+    const last = eps[eps.length - 1];
+    const evs = eventsForEpisode(doc, 'total-drama', 8, last.episode);
+    const fin = evs.find(e => e.kind === 'finale');
+    // Season 8 is the co-winner fixture. If that stops being true this guard
+    // is measuring nothing, so say so here rather than pass vacuously.
+    expect(fin, 'season 8 lost its finale event').toBeTruthy();
+    expect(fin.subject, 'a split season named one of its two champions').toBeFalsy();
+    expect((fin.subjects || []).sort()).toEqual(['alejandro', 'cameron']);
+
+    const posts = buildEpisodeFeed(evs, { seed: 8 }).filter(p => p.kind === 'finale');
+    expect(posts.length, 'no finale posts to read at all').toBeGreaterThan(10);
+    const naming = posts.filter(p => /Alejandro/.test(p.text) && /Cameron/i.test(p.text));
+    // Measured at 17 of 27 with the reader in place and 0 of 27 without it.
+    expect(naming.length,
+      'the finale posts name neither champion — `subjects[]` has lost its reader')
+      .toBeGreaterThan(5);
+  });
+
+  it('still names the sole champion of an ordinary season', () => {
+    // Or the arm above could be satisfied by a sampler that names everybody.
+    const solo = JSON.parse(fs.readFileSync('data/seasons/season7-data.json', 'utf8'));
+    const eps = episodesOf(solo, 'total-drama');
+    const last = eps[eps.length - 1];
+    const fin = eventsForEpisode(solo, 'total-drama', 7, last.episode)
+      .find(e => e.kind === 'finale');
+    expect(String(fin?.subject || '').length).toBeGreaterThan(0);
   });
 });

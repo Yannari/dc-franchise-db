@@ -281,6 +281,34 @@ describe("a returning player's reasoning does not stack up", () => {
     expect(out).toContain('S14 Winner. Ran it.');
   });
 
+  // ── AND IT MUST NOT EAT EVERY LATER SEASON ────────────────────────────
+  //
+  // The repaired pattern ended `[^]*$`. Regenerating an EARLY season deleted
+  // its line AND EVERYTHING AFTER IT, so a veteran regenerated at S1 came back
+  // with one sentence. Nothing above catches this: every one of those fixtures
+  // has the target season LAST. This one puts it first, which is the case the
+  // live board hits every time somebody re-runs an old season.
+  it('keeps every LATER season when an early one is regenerated', () => {
+    const before = 'S1 P12. Went early. S4 Winner. A landslide. TR1 P3. Read the room.';
+    const out = buildSeasonReasoning('Someone', 1, 7, row, false, false, before);
+    expect(out, "S4's line was eaten by the strip").toContain('S4 Winner. A landslide.');
+    expect(out, "the Traitors season's line was eaten by the strip")
+      .toContain('TR1 P3. Read the room.');
+    expect(out, 'the S1 line it was replacing survived').not.toContain('Went early');
+    expect(out).toContain('S1 P7.');
+    // And no hole left where the middle used to be.
+    expect(out, 'a double space was left where the old line was').not.toMatch(/ {2}/);
+  });
+
+  it('anchors on the registry, so a third show ends a line too', () => {
+    // `TR1` is a season label only because `js/shows.js` says its short is TR.
+    // A hand-written `(?:S|BB)` list would run straight through it.
+    const before = 'S2 P4. Early exit. TR1 Winner. Ran the castle.';
+    const out = buildSeasonReasoning('Someone', 2, 9, row, false, false, before);
+    expect(out).toContain('TR1 Winner. Ran the castle.');
+    expect(out).not.toContain('Early exit');
+  });
+
   it('has no U+0008 in the pattern it builds', () => {
     // The character-code check, because an eaten escape looks correct and is
     // not. Read off the function's own source rather than trusted.

@@ -1372,8 +1372,23 @@ export function buildSeasonReasoning(name, seasonNum, placement, row, isWinner, 
   // from the registry's `short`, and one show declaring a `+` or a `.` in it
   // would turn this into a pattern that matches somebody else's season.
   const escaped = String(sLabel).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+  // ── AND IT MUST STOP AT THE END OF ITS OWN SEASON ─────────────────────
+  //
+  // The repaired pattern ended `[^]*$`, which is every character to the end of
+  // the string. Regenerating an EARLY season therefore deleted that season's
+  // line AND EVERY LATER SEASON'S with it: a five-season veteran regenerated at
+  // S1 came back with one sentence. Latent only because the dead pattern above
+  // had never matched a live row, so repairing it turned a no-op into data loss.
+  //
+  // A season's line runs until the next season LABEL, which is `S`/`TD`/`BB`/
+  // `TR` + a number + a placement word -- taken from the registry, never from a
+  // hand-written list, so a fourth show is anchored the day it is registered.
+  const labels = [...new Set(['S', ...Object.values(SHOWS).map(x => x.short).filter(Boolean)])]
+    .map(x => String(x).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'));
+  const nextLine = `(?:${labels.join('|')})\\d+\\s+(?:Winner|P\\d+)`;
   const stripped = (existingReasoning || '')
-    .replace(new RegExp(`${escaped}\\s+(?:Winner|P\\d+)[^]*$`), '').trim();
+    .replace(new RegExp(`${escaped}\\s+(?:Winner|P\\d+)[\\s\\S]*?(?=\\s${nextLine}|$)`), '')
+    .replace(/\s{2,}/g, ' ').trim();
   return (stripped ? stripped + ' ' : '') + thisSeasonLine;
 }
 

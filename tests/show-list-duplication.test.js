@@ -159,7 +159,13 @@ const COMPARISON_BACKLOG = {
   'js/stats-export.js':           5,
   'js/text-backlog.js':           1,
   'js/tr/endgame.js':             1,
-  'js/vp-screens.js':             6,
+  // 6 -> 7 for the castle's screen dispatch (Plan 8, Task 1). `buildVPScreens`
+  // already branches on `format === 'big-brother'` for the same reason and in
+  // the same shape: a show's SCREENS are not a field the registry can declare,
+  // and the alternative — a builder reference in js/shows.js — would put UI
+  // into the identity table this file exists to keep clean. Raised
+  // deliberately, in the commit that spends it, which is what a ratchet is for.
+  'js/vp-screens.js':             7,
   'js/vp-ui.js':                  1,
   'js/wiki-fill-run.js':          1,
   'js/wiki-view.js':              7,

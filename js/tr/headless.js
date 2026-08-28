@@ -206,7 +206,7 @@ function _seedStartingBonds(cast, seed) {
 function _night(ep, rng) {
   if (!livingTraitors(ep).length) {
     return { murdered: null, murderTarget: null, blocked: false, recruited: null,
-      executed: null, livingAtMurder: [] };
+      executed: null, livingAtMurder: [], conclave: null };
   }
   const rounds = gs.tr.rounds;
   const last = rounds.length ? rounds[rounds.length - 1] : null;
@@ -226,8 +226,11 @@ function _night(ep, rng) {
       // A refused ultimatum kills. It is not a `murdered` — see the note on
       // offerRecruitment — but it is a body, and it is on the log and on the
       // round record so that anything counting who left the castle finds it.
+      // A night spent making an offer holds no conclave, so there is no
+      // meeting for the screen to draw. `null` and not an empty meeting:
+      // the two are different nights and the screen says so.
       return { murdered: null, murderTarget: null, blocked: false, recruited,
-        executed: offer.executed || null, livingAtMurder: [] };
+        executed: offer.executed || null, livingAtMurder: [], conclave: null };
     }
   }
 
@@ -236,6 +239,11 @@ function _night(ep, rng) {
   // whether the victim was better connected than the field the conclave was
   // choosing from, which is unanswerable once the victim has been removed.
   const livingAtMurder = [...(gs.activePlayers || [])];
+  // WHO WAS IN THE TURRET, READ BEFORE THE NIGHT RESOLVES. `name-your-own`
+  // takes one of the pact's own, so asking afterwards returns a room with a
+  // chair missing and the screen would draw two cloaks for a meeting three
+  // people attended.
+  const turret = livingTraitors(ep);
   const m = resolveMurder(ep, rng);
   // THE CONCLAVE'S OWN BALLOT SET, recorded rather than left in the return
   // value, because the export shape (js/tr/export.js, spec 10.1) models the
@@ -244,6 +252,7 @@ function _night(ep, rng) {
   // to be on the round record for the same reason `murderCost` and `variant`
   // are: this frame is gone by the time anything reads the season back.
   const murderBallots = _murderBallots(m);
+  const conclave = _conclaveRecord(ep, m, murderBallots, turret);
   scoreNight(ep, { murderTarget: m.target, murdered: m.victim, blocked: m.blocked,
     murderBallots }, { bondOf: getBond });
   if (last) {
@@ -271,6 +280,13 @@ function _night(ep, rng) {
   }
   return { murdered: m.victim, murderTarget: m.target, blocked: m.blocked,
     variant: m.variant || 'standard', secondVictim: m.second || null,
+    // THE MEETING ITSELF, for the screen that draws it. Everything here is
+    // READ off the decision the engine just made -- the argued list, the
+    // overrule, the wax -- rather than re-derived from the victim, for the
+    // reason js/tr/export.js gives about `murderBallots`: a recomputation
+    // sees a unanimous conclave every night and the overruled Traitor, who
+    // is the whole point of the room, disappears from it.
+    conclave,
     // Night one has no round record to write to — there is no table on the
     // first night — so its ballots reach the export through the log instead.
     murderBallots,
@@ -298,6 +314,80 @@ function _murderBallots(m) {
 }
 
 /**
+ * The evening downstairs, for the screen's left margin.
+ *
+ * Read off the castle's own thread beats rather than invented, so the two
+ * columns are the same night: a beat is only downstairs if NOBODY in it was
+ * upstairs. A scene one of the three was standing in is not an alibi and must
+ * never be printed as one.
+ */
+function _downstairs(ep, turret) {
+  const up = new Set(turret || []);
+  const out = [];
+  for (const t of gs.tr?.threads || []) {
+    if ((t.parties || []).some(n => up.has(n))) continue;
+    for (const b of t.beats || []) {
+      if (b.ep !== ep || !b.note) continue;
+      out.push({ who: (t.parties || [])[0] || null, parties: [...(t.parties || [])],
+        kind: t.kind, note: String(b.note).split(String.fromCharCode(10))[0] });
+    }
+  }
+  return out;
+}
+
+/**
+ * The conclave, in the shape a screen draws it (`js/vp-tr/conclave.js`).
+ *
+ * PLAIN DATA ONLY, and every field is read rather than recomputed. It is
+ * written onto the episode record because `gs` is replaced wholesale by the
+ * next season and rebuilt wholesale by a load, and a screen that reached back
+ * into `gs.tr` for the argument would draw the season it is standing in
+ * rather than the episode it is showing.
+ *
+ * `argued` is one entry per Traitor who had a name, including the two the room
+ * did not take. That is the single most important thing on this record: the
+ * ballot that LOST is what makes the turret a room rather than a formality,
+ * and it is the one thing no reader can recover from the body.
+ */
+function _conclaveRecord(ep, m, ballots, turret) {
+  if (!m || !m.target) return null;
+  const d = m.decision || {};
+  const shield = (gs.tr?.shields || []).find(s => s.ep === ep) || null;
+  return {
+    ep,
+    // 'standard' | 'on-trial' | 'face-to-face' | 'dungeon' | 'double' |
+    // 'plain-sight' | 'name-your-own'. Two of those hold no argument at all,
+    // and the screen has to know which night it is drawing.
+    variant: m.variant || 'standard',
+    line: m.variantLine || null,
+    turret: [...(turret || [])],
+    target: m.target,
+    decidedBy: d.decidedBy || null,
+    reason: d.reason || null,
+    blocked: !!m.blocked,
+    victim: m.victim || null,
+    second: m.second || null,
+    argued: (d.argued || []).filter(p => p && p.target).map(p => ({
+      traitor: p.traitor, target: p.target, reason: p.reason,
+      conviction: Math.round((p.conviction || 0) * 100) / 100,
+    })),
+    overruled: (d.overruled || []).map(o => ({
+      winner: o.winner, loser: o.loser, target: o.target,
+      theirTarget: o.theirTarget || null, forced: !!o.forced,
+    })),
+    ballots: (ballots || []).map(b => ({ ...b })),
+    // The named consequence, not a number -- see `murderCost`.
+    cost: m.cost ? { kind: m.cost.kind, blames: [...(m.cost.blames || [])] } : null,
+    pot: gs.tr?.pot ?? 0,
+    // The Shield that was live tonight, if one was, and whether the pact could
+    // see it. Read off the record `awardShield` wrote rather than asked of the
+    // Set, because the Set is spent by the time anything replays this.
+    shield: shield ? { holder: shield.holder, visibility: shield.visibility,
+      pactAware: !!shield.pactAware } : null,
+  };
+}
+
+/**
  * ONE `episodeHistory` ROW PER EPISODE, and it exists for js/audience.js.
  *
  * That module is show-agnostic by construction: it knows only that a show has
@@ -318,7 +408,28 @@ function _murderBallots(m) {
 function _recordEpisode(ep, { banished = null, night = null } = {}) {
   const exits = [banished, night?.murdered, night?.secondVictim, night?.executed]
     .filter(Boolean).map(name => ({ name }));
-  (gs.episodeHistory ||= []).push({ num: ep, eliminated: banished, exits });
+  const conclave = night?.conclave || null;
+  (gs.episodeHistory ||= []).push({
+    num: ep,
+    // THE FORMAT, ON THE ROW. `buildVPScreens` dispatches on it exactly as it
+    // does for the house, and a Traitors row without it is drawn with Total
+    // Drama's screens -- tribes, a challenge record and a Tribal Council over
+    // a castle, which is this project's oldest bug with a new show in it.
+    format: 'traitors',
+    eliminated: banished,
+    exits,
+    // Everything the night's screens read, snapshotted here because `gs` is
+    // replaced wholesale by the next season and rebuilt wholesale by a load.
+    tr: {
+      conclave,
+      pot: gs.tr?.pot ?? 0,
+      living: [...(gs.activePlayers || [])],
+      // WHAT THE CASTLE WAS DOING WHILE THE TURRET SAT. Beats written this
+      // episode by people who were NOT in the meeting -- the other half of
+      // the picture, and the only half the castle itself ever gets.
+      downstairs: _downstairs(ep, conclave?.turret || []),
+    },
+  });
   // NO `gs.eliminated` HERE, AND THE OMISSION WAS MEASURED. Maintaining it
   // looked obviously right — js/audience.js's `_allNames` unions it — and
   // deleting it changed nothing at all, because `initCrowd` seeds a ledger row

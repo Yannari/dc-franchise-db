@@ -23,6 +23,11 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 // Total Drama twist-challenge VP. rpBuildBBComp dispatches on the tag and
 // falls back to the generic board when a builder declines (secret HOH,
 // missing data) or throws.
+// THE THIRD SHOW'S SCREENS. Registered the same way js/vp-bb-sig/ registers
+// Big Brother's, and taking NONE of its visual language: the anti-reuse rule
+// in CLAUDE.md is explicit, and the conclave's whole identity is that it does
+// not look like anything already in this repo.
+import { rpBuildConclave, trConclaveRevealNext, trConclaveRevealAll } from './vp-tr/conclave.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -13516,6 +13521,25 @@ export function buildVPScreens(epRecord) {
            <div style="text-align:center;color:var(--muted);padding:30px">
              This Big Brother week cannot be replayed.<br><small>${String(err && err.message || err)}</small>
            </div></div>` }];
+    }
+    return vpScreens;
+  }
+  // ── THE CASTLE ────────────────────────────────────────────────────
+  //
+  // A Traitors episode is a third show with a third set of screens, and none
+  // of Total Drama's below apply to it: there are no tribes, no challenge
+  // record and no Tribal Council in a castle. Dispatched on the row's own
+  // `format`, which js/tr/headless.js stamps on every episode it records.
+  //
+  // `observer` is the contract every builder in js/vp-tr/ takes (spec §9.1).
+  // The visual player is the AUDIENCE feed — it is the one reader entitled to
+  // see the conclave — so it passes 'audience' explicitly rather than relying
+  // on a default, because the default is the thing a later edit changes.
+  if (epRecord.format === 'traitors') {
+    const _obs = epRecord.observer || 'audience';
+    if (epRecord.tr && epRecord.tr.conclave) {
+      vpScreens.push({ id: 'tr-conclave', label: 'The Conclave',
+        html: rpBuildConclave(epRecord, _obs) });
     }
     return vpScreens;
   }

@@ -751,6 +751,66 @@ function runHouseRomance(week, rng) {
       // to shove past, a reward feast to refuse a seat at, somebody out
       // fishing while the confrontation happened. The beats were never
       // missing. They were set on the wrong show.
+      /* ── THE AFFAIR, IN A HOUSE ──
+         Six beats, none of which had a case here, so every one of them fell to
+         the default and described a beach: wet hair coming back from the
+         shore, a firewood run, slipping out of the shelter after the tribe
+         fell asleep, rice as a bribe. The affair is the loudest thing the
+         romance layer can do and it was the least translated.
+         Each beat carries its own player order, and two of them encode meaning
+         in that order — `affairChoice` names the chosen one second and the one
+         left third — so the text has to respect it rather than assume a
+         couple. */
+      case 'affairSecret':
+        // [cheater, the other one]
+        return romanceLine(e.type, [
+          `${a} is awake at three because ${b} is awake at three. Four nights running now, and the one person in this house who has not noticed is the person who should.`,
+          `${a} and ${b} take the long way round the kitchen and arrive in the same place. There is no version of this house where that is not on camera.`,
+          `${b} makes ${a} a plate without being asked. It is a small thing, and until recently somebody else was the one doing it.`,
+          `${a} laughs at something ${b} says too quietly for the room to hear. Nothing in here is ever that quiet.`,
+          `The lights go down and ${a} and ${b} are still in the storage room. They come out four minutes apart, which is somehow worse than coming out together.`,
+        ], a, b);
+      case 'affairRumor':
+        // [whoever noticed, cheater, ...] — the third name differs between the
+        // two places this fires, so the line stays on the first two.
+        return romanceLine(e.type, [
+          `${a} has started watching ${b} the way you watch somebody you have already made your mind up about. No proof, no name said out loud, just a count that keeps going up.`,
+          `"Has anybody else noticed ${b} lately?" ${a} says it to the kitchen in general, and two people look up far too quickly.`,
+          `${a} cannot sleep in this house, which means ${a} knows exactly what time ${b} came to bed. ${a} has not told anybody that yet.`,
+          `${a} does not have anything anybody would call evidence. ${a} has a sequence of small things in the right order, which in here is worse.`,
+        ], a, b);
+      case 'affairCaught':
+        // [whoever walked in, cheater, the other one]
+        return romanceLine(e.type, [
+          `${a} goes to the storage room for batteries and finds ${b} and ${c} standing much too close and not talking. Nobody says anything for four full seconds.`,
+          `"How long?" ${a} asks it from the doorway. ${b} starts a sentence three times. ${c} does not start one at all.`,
+          `${a} was not looking for them and found them anyway, in the one part of this house where people forget the cameras are also there.`,
+          `${b} and ${c} come apart the moment ${a} turns the corner, which tells ${a} more than either of them says for the rest of the night.`,
+        ], a, b, c);
+      case 'affairExposed':
+        // [whoever told them, the partner, cheater]
+        return romanceLine(e.type, [
+          `${a} sits ${b} down in the bedroom and does it fast, the way you take a plaster off. "You need to hear this about ${c}, and you need to hear it from somebody."`,
+          `"I am not going to be one more person in here who knows and lets you be the last one." ${a} tells ${b} everything, and the house goes quiet in stages as it travels.`,
+          `${a} asks ${b} to come outside. It takes eleven minutes, and ${b} does not sit down again for an hour.`,
+          `${a} says ${c}'s name and then stops, because ${b}'s face has already done the rest of it.`,
+        ], a, b, c);
+      case 'affairSilent':
+        // [whoever knows and is not saying, cheater]
+        return romanceLine(e.type, [
+          `${a} knows. ${b} knows that ${a} knows. Neither of them has said one word about it, and ${b} has started making ${a} coffee in the mornings.`,
+          `${a} is sitting on the loudest thing in this house and doing nothing whatsoever with it, which is the most dangerous way to hold something.`,
+          `"You owe me." ${a} never says it out loud. ${b} behaves for the rest of the week as though it had been said twice.`,
+          `${a} decides to keep it — not for ${b}, and not out of kindness. Information is worth more unspent, and ${a} can afford to wait.`,
+        ], a, b);
+      case 'affairChoice':
+        // [cheater, the one chosen, the one left]
+        return romanceLine(e.type, [
+          `${a} chooses ${b}. "It meant nothing." ${b} does not believe that and stays anyway, and every person in this house watches ${b} decide to.`,
+          `${a} says it in the kitchen with the door open, so it is said in front of everybody: it is ${b}. ${c} hears it from the next room and does not come in.`,
+          `${a} picks ${b}. ${c} says "okay", goes to bed at nine, and the house spends the rest of the night working out what that was.`,
+          `"One chance," ${b} says. "One." ${a} agrees to it far too quickly, and ${c} is still in the room while they arrange it.`,
+        ], a, b, c);
       case 'triangleConfrontation':
         // `a` asks the question, `b` is the centre, `c` is the other one.
         return romanceLine(e.type, [

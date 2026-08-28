@@ -158,3 +158,39 @@ Spec §10.4. `js/fame.js` and the 22 other registry importers need nothing beyon
 ## Ordering
 
 Task 1 first — it is mechanical and removes eight chances to forget the show from every task after it. Task 2 is independent and unlocks evidence source 5. Task 3 gates Task 4 (the export shape must exist before co-winners can be expressed in it). Tasks 5 and 6 follow the export. Task 6 last, because rankings read what everything else wrote.
+
+## Task 1 done — and the eight were already collapsed
+
+**My brief was written from the spec, not the branch.** All eight identity maps were collapsed
+on 2026-08-25 in `f36e495e`, and `docs/ADDING-A-SHOW.md` §9 already marked every row
+"collapsed". The implementer verified each of the eight individually rather than trusting the
+doc, which is the right order. **A spec describes a moment in time; check the branch before
+briefing work from it.**
+
+**Writing the RULE instead of the list found three copies nobody had listed:**
+
+- `tools/regen-rankings-reasoning.mjs` -- `SHOW_NAMES`, a `startsWith('bb-')` format guess, an
+  `S`-or-`BB` label and an `/^(?:S|BB)/` fallback: **four show lists in five lines**, in the
+  file that writes the ranking-board prose **the public site serves**.
+- `tools/backfill-tiers.mjs` -- a copy of `BOARD_FILES` behind a comment claiming the module
+  could not be imported because it fetches. The fetch is inside a function; the import works.
+  **A written justification that did not survive checking.**
+- `js/social-page.js` -- `?show=` resolved by naming two slugs and two prefixes, so
+  **`?show=traitors` silently left you on the previous show.**
+
+`tests/show-list-duplication.test.js` is now a rule over every `.js`/`.mjs`/`.html` in the
+tree, with the seven per-show DATA maps as exemptions carrying written reasons and a staleness
+check so that list can only shrink. Three anti-vacuity arms: a >300-file coverage floor, a
+check the rule can see the registry's own map, and a `charCodeAt` assertion that no regex
+contains U+0008. Its own header says to add the missing SHAPE, not the missing file -- because
+`js/social-page.js` was a real leak neither mutation arm matched.
+
+### Two findings that bind Task 3
+
+Both invisible to the manual's §13 commands because they are written across two lines:
+
+- **`js/stats-export.js:2874` dispatches the ENTIRE season export on `=== 'big-brother'`.**
+- **`js/social/live.js:30` picks the round array the same way.**
+
+**A Traitors season goes down the Total Drama branch in both.** Task 3 must add a
+registry-driven dispatch at 2874 rather than a third branch.

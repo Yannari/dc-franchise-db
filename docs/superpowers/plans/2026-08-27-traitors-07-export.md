@@ -484,3 +484,66 @@ this plan of a source-text guard that stops matching its own source.
   shares one fame bucket. Finer resolution needs the endgame flag on the placement.
 - `_ruUseCurrentSeason` still picks between two builders. No live Traitors run
   loop exists to trip it yet.
+
+---
+
+# PLAN 7 CLOSED — 437 tests
+
+## The ranking currencies I suggested were all placement measured twice
+
+200 headless seasons, 4,000 player-seasons, correlation against final placement:
+
+| currency | pooled |
+|---|---|
+| ballots cast (rounds survived) | **-0.924** -- it IS placement |
+| finished on the winning side | -0.686 |
+| correct banishments driven | -0.635 |
+| missions won | -0.629 |
+| banishment accuracy | -0.499 |
+| **shields won** | **-0.019** |
+| **murder ballots naming you** | **+0.014** |
+
+**Capping a count makes it WORSE** (-0.635 -> -0.658 at cap 2), because what survives a cap is
+"did you last long enough to see one at all".
+
+Shipped: comp1 `Shield` 1.6 (this show's veto, priced like one), comp2 `Missions` 0.6, comp3
+`Reads` 0.8, social **`Wanted`** 0.9 cap 4. `Wanted` is uncorrelated **for a reason**: every
+other count grows with nights survived, and this one is cancelled by the fact that being wanted
+dead ends the season.
+
+**Notoriety did not survive its own promotion.** Task 5 handed it forward as the only number
+that could rank without ranking longevity. Measured: **-0.308 pooled, -0.503 among Faithfuls**
+-- the same accrual curve, with the pooled figure milder than the sub-group one in exactly the
+way that hid the same effect for popularity. Kept off the board; `playTraitorsSeason`'s return
+is unchanged and the one-file rule holds.
+
+## Three live defects found by RUNNING it
+
+- **`loadSeasonData` read every column through `isHouse ? A : B`**, so a castle loaded **every
+  column zero** and ranked on placement alone -- the exact failure that file's own header
+  documents for Big Brother.
+- **`normaliseStatus` scored 17 of 20 at zero**, because Banished and Murdered were unknown to
+  it.
+- `eventLabel` / `pollQuestions` were still one-show ternaries -- the §9 row marked "not fixed".
+
+All registry-driven now, and the replacement comments deliberately do NOT quote the ternary
+they replaced, because that counter matches source text (Task 3 nearly shipped that mistake).
+
+## One mutation came back GREEN
+
+The social-column independence test read `p.tr.wanted` **off the export** rather than through
+the rubric -- **making it a fact about the export instead of a guard on the choice.** It now
+reads `RU_SHOW.traitors.read(...).social` and the same mutation is RED.
+
+## The largest thing still wrong, and it is not Traitors-specific
+
+**`js/social/phrasings.js` is not vocabulary-adapted at all.** 117 of 1,820 posts (**6.4%**) of
+a real Traitors season carry another show's noun -- "that house", "that beach", "the jury".
+Pre-existing, cross-show, hundreds of strings. **It is the largest remaining instance of this
+project's central bug class** -- one show's vocabulary printed over another -- and it needs its
+own pass.
+
+Also carried: a Traitors season has no jury boundary, so every departure shares one fame bucket
+(needs the endgame flag on the placement); `_ruUseCurrentSeason` still picks between two
+builders; and no `rankings_tr.json` exists yet, which is correct -- a show with no published
+season has no board and `loadRankingBoards()` skips the 404.

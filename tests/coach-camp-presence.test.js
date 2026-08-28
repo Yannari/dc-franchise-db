@@ -492,13 +492,20 @@ describe('a redraw never loses anybody', () => {
     let orphans = 0, dissolves = 0, movedTooMany = 0, statusChanged = 0;
     for (let r = 0; r < 3; r++) {
       const { episodes } = await runHeadlessSeason({
-        twist: 'coaches', coachesPerTribe: 2, castSize: 18, mergeAt: 4, teams: 3,
+        twist: 'coaches', coachesPerTribe: 2, castSize: 15, mergeAt: 3, teams: 3,
       });
       for (const e of episodes) {
+        // Both fold paths count: the single-tribe dissolve and the tiny-tribe
+        // distribution. Counting only the first made this assert on a rare
+        // branch and fail whenever a season happened not to reach it.
         if (e.ep.tribeDissolve) {
           dissolves++;
           // A camp folds at two heads, so it can never hand over more than two.
           if ((e.ep.tribeDissolve.players || []).length > 2) movedTooMany++;
+        }
+        for (const d of (e.ep.tribeDissolutions || [])) {
+          dissolves++;
+          if (((d.members || []).length + (d.coaches || []).length) > 2) movedTooMany++;
         }
         const snap = e.ep.gsSnapshot;
         if (!snap?.tribes || !snap?.coaches) continue;

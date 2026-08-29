@@ -87,6 +87,7 @@ export function rpBuildTraitorsDebug(epRecord) {
   const eg = tr.endgame;
   const day = tr.castle;
   const sel = tr.selection;
+  const bel = tr.beliefs;
 
   const exits = (ep.exits || []).length
     ? '<table><tr><th>name</th><th>verb</th><th>channel</th></tr>'
@@ -214,6 +215,32 @@ export function rpBuildTraitorsDebug(epRecord) {
           + '</tr>').join('')
         + '</table>'
       : '<div class="none">the castle wrote nothing down today</div>'}</section>
+
+    <section><h3>What the castle believes</h3>${bel ? _rows([
+      ['the ceiling an inference can never beat', esc(bel.ceiling)],
+      ['candidates', _list(bel.living)],
+      ['flips so far', (bel.flips || []).length
+        ? esc(bel.flips.map(f => `${f.name} (ep ${f.ep}, ${f.via})`).join('; '))
+        : '<span class="none">nobody has been turned</span>'],
+      ['the collective, Faithful observers only', (bel.castle || []).length
+        ? '<table><tr><th>name</th><th>accusers</th><th>weight</th><th>strongest</th>'
+          + '<th>dismissed by</th><th>truth</th></tr>'
+          + bel.castle.map(r => `<tr><td>${esc(r.name)}</td><td>${esc(r.accusers)}</td>`
+            + `<td>${esc(r.weight)}</td><td>${esc(r.top)}</td><td>${esc(r.cleared)}</td>`
+            + `<td>${esc((bel.truth || {})[r.name])}</td></tr>`).join('')
+          + '</table>'
+        : '<span class="none">not one read between them</span>'],
+      ['every board, every entry', (bel.boards || []).length
+        ? '<table><tr><th>observer</th><th>about</th><th>score</th><th>confidence</th>'
+          + '<th>tier</th><th>valence</th><th>learned</th><th>certain</th><th>why</th></tr>'
+          + bel.boards.map(b => b.entries.map(e =>
+            `<tr><td>${esc(b.observer)}</td><td>${esc(e.name)}</td><td>${esc(e.score)}</td>`
+            + `<td>${esc(e.confidence)}</td><td>${esc(e.sourceType)}</td>`
+            + `<td>${esc(e.valence)}</td><td>${esc(e.learnedEp)}</td>`
+            + `<td>${esc(String(!!e.certain))}</td><td>${esc(e.why)}</td></tr>`).join('')).join('')
+          + '</table>'
+        : '<span class="none">nobody holds a belief about anybody</span>'],
+    ]) : '<div class="none">no board on this row — an endgame table reveals nothing</div>'}</section>
 
     <section><h3>The endgame</h3>${eg ? _rows([
       ['from / to', `${esc(eg.from)} → ${esc(eg.endEp)}`],

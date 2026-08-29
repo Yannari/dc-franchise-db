@@ -25,6 +25,7 @@ import { rpBuildRecruitment, trRecruitmentRevealAll } from './recruitment.js';
 import { rpBuildEndgame, trEndgameRevealAll } from './endgame.js';
 import { rpBuildCastleDay, trCastleDayRevealAll } from './castle-day.js';
 import { rpBuildSelection, trSelectionRevealAll } from './selection.js';
+import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
 
 /**
  * IN THE ORDER THE CASTLE LIVES THEM.
@@ -118,6 +119,27 @@ export const TRAITORS_SCREENS = [
       && r.tr.castle.scenes.length),
     build: rpBuildCastleDay, revealAll: trCastleDayRevealAll,
     revealAllName: 'trCastleDayRevealAll' },
+  // -- WHO BELIEVES WHAT, AND HOW WRONG THEY ARE (Plan 8, Task 10) -----
+  //
+  // AFTER THE TABLE, AND THAT IS NOT A PREFERENCE. `tr.beliefs` is snapshotted
+  // at the END of the night, so it already holds tonight's reveal and tonight's
+  // murder evidence; drawn any earlier it would show the room reacting to a
+  // banishment two screens before the banishment -- the same defect Task 6
+  // found by reading a season in sequence and Task 7 fixed by moving the day
+  // book to the foot. It sits after the day and before the book because it is
+  // the LAST thing that is still a story: the book is a ledger, and where the
+  // room's head has got to is not a ledger entry.
+  //
+  // `when` is a non-empty CASTLE board rather than a present record, because on
+  // the first night the Faithfuls have not formed one read between them and a
+  // page reporting that they have not is a page with nothing on it. The pact's
+  // own certainty is already the last beat of the Selection.
+  { id: 'tr-suspicion', label: 'The Suspicion Board', suffix: 'suspicion',
+    badge: { text: 'The Board', color: '#7fa8c9' },
+    when: r => !!(r.tr && r.tr.beliefs && Array.isArray(r.tr.beliefs.castle)
+      && r.tr.beliefs.castle.length),
+    build: rpBuildSuspicion, revealAll: trSuspicionRevealAll,
+    revealAllName: 'trSuspicionRevealAll' },
   { id: 'tr-status', label: 'The Day Book', suffix: 'housestatus',
     when: r => !!(r.tr && Array.isArray(r.tr.cast) && r.tr.cast.length),
     build: rpBuildHouseStatus, revealAll: trHouseStatusRevealAll, revealAllName: 'trHouseStatusRevealAll' },

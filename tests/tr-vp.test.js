@@ -52,6 +52,10 @@ import { rpBuildRecruitment, trRecruitmentRevealAll } from '../js/vp-tr/recruitm
 import { rpBuildEndgame, trEndgameRevealAll } from '../js/vp-tr/endgame.js';
 import { rpBuildCastleDay, trCastleDayRevealAll } from '../js/vp-tr/castle-day.js';
 import { rpBuildSelection, trSelectionRevealAll } from '../js/vp-tr/selection.js';
+import { rpBuildSuspicion, trSuspicionRevealAll } from '../js/vp-tr/suspicion.js';
+// THE CEILING, FROM THE MODULE THAT DECIDES IT. The board's wall is this number
+// and the guards compare against it rather than against a retyped 0.62.
+import { ALIGNMENT_CRED_CEILING } from '../js/knowledge.js';
 import { buildVPScreens } from '../js/vp-screens.js';
 import { TRAITORS_SCREENS, screenNarration } from '../js/vp-tr/screens.js';
 import { TR_NAV_H, TR_NAV_TOP, TR_STICKY_TOP } from '../js/vp-tr/style.js';
@@ -1732,7 +1736,8 @@ describe('the fund the board prints is the fund the record carries', () => {
     // confined them: they are separate quantities that look interchangeable
     // from anywhere outside js/tr/crowd.js.
     const FILES = ['conclave.js', 'style.js', 'scenery.js', 'round-table.js',
-      'cold-open.js', 'house-status.js', 'mission.js', 'recruitment.js'];
+      'cold-open.js', 'house-status.js', 'mission.js', 'recruitment.js',
+      'suspicion.js'];
     let scanned = 0;
     for (const f of FILES) {
       const src = readFileSync(new URL('../js/vp-tr/' + f, import.meta.url), 'utf8')
@@ -4943,9 +4948,9 @@ describe('the selection screen renders the one certainty and cannot manufacture 
     // URL('<literal>', import.meta.url))` is statically rewritten by Vite into
     // an asset URL and throws (Task 8).
     const dir = '../js/vp-tr/';
-    const files = ['selection.js', 'conclave.js', 'round-table.js', 'cold-open.js',
-      'house-status.js', 'mission.js', 'recruitment.js', 'endgame.js', 'castle-day.js',
-      'screens.js', 'style.js', 'scenery.js'];
+    const files = ['selection.js', 'suspicion.js', 'conclave.js', 'round-table.js',
+      'cold-open.js', 'house-status.js', 'mission.js', 'recruitment.js', 'endgame.js',
+      'castle-day.js', 'screens.js', 'style.js', 'scenery.js'];
     let scanned = 0, imported = 0;
     for (const f of files) {
       const src = readFileSync(new URL(dir + f, import.meta.url), 'utf8');
@@ -5063,5 +5068,630 @@ describe('the selection is a place and not a hole', () => {
     // And the drawn planes are the ones that ARE capped, deliberately — the
     // drive is what you can see from the gate, not the whole yard.
     expect(css, 'the drawn planes lost their height').toContain('height:2100px');
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// TASK 10 — THE SUSPICION BOARD (js/vp-tr/suspicion.js)
+// ══════════════════════════════════════════════════════════════════════
+//
+// THE SHOW'S CORE SYSTEM, AND THE FIRST SCREEN THAT RENDERS IT. Plans 1-4 built
+// the whole deduction model and no screen ever drew one line of it; Task 1's
+// "what the castle believes" panel was DROPPED because nothing in the export
+// exposed per-Faithful suspicion. `traitorsBeliefSnapshot` (js/tr/export.js)
+// exposes it now, and everything below is about the two things that are
+// invisible by looking at the page:
+//
+//   1. GROUND TRUTH MUST NEVER REACH A PLAYER LAYER. The record carries the
+//      answer, deliberately, because the audience layer is entitled to it and a
+//      screen can only get what the record hands it. A `player:` observer's
+//      render that leaks it looks IDENTICAL to one that does not.
+//   2. THE NUMBERS ON THE PAGE ARE THE NUMBERS IN THE MODEL. A screen about
+//      confidence that rounds, rescales or re-derives its own is a screen that
+//      has quietly invented precision the engine does not have.
+//
+// AND ONE THAT IS ABOUT THE RECORD RATHER THAN THE SCREEN: ALIGNMENT HAS ERAS.
+// Each snapshot is taken on its own night, so a read formed before a
+// recruitment is scored against the truth as it stood THEN. Recomputing at
+// season end is the trap three tasks in this plan have already hit.
+//
+// EVERY ARM ASSERTS A NON-ZERO COUNT BEFORE IT ASSERTS ANYTHING ABOUT A
+// COLLECTION.
+
+/** Every row that carries a board with something on it. */
+const BOARDS = RUNS.flatMap(r => r.episodes
+  .filter(e => e.tr && e.tr.beliefs && e.tr.beliefs.castle.length)
+  .map(e => ({ ep: e, run: r })));
+
+/** The screen with every beat shown, which is where the whole board is. */
+let _suspKey = 0;
+function suspicionRevealed(ep, observer = 'audience') {
+  // A FRESH REVEAL KEY PER RENDER. Reveal state is module-local and keyed by
+  // episode number, and these arms render the same row on three layers.
+  const fresh = { ...ep, num: -700 - (_suspKey++) };
+  const first = rpBuildSuspicion(fresh, observer);
+  const m = /trSuspicionRevealAll\('suspicion',(\d+),(-?\d+)\)/.exec(first);
+  if (!m) return first;
+  trSuspicionRevealAll('suspicion', Number(m[1]), Number(m[2]));
+  return rpBuildSuspicion(fresh, observer);
+}
+
+/** Every percentage the screen actually printed in a meter. */
+const meterPcts = html => [...String(html)
+  .matchAll(/<div class="sn-meter-n">(\d+)%<\/div>/g)].map(m => Number(m[1]));
+
+/**
+ * THE MARKUP, WITHOUT THE STYLESHEET.
+ *
+ * The first version of the truth gate below tested `/data-truth="/` against the
+ * whole render and failed on every layer including the ones that withhold —
+ * because `.sn-meter[data-truth="traitor"]` is a SELECTOR, twenty kilobytes up,
+ * in a stylesheet every layer carries. A negative guard that matches the CSS is
+ * satisfied by the wrong element, which is this plan's most repeated shape.
+ */
+const noCss = html => String(html || '').replace(/<style>[\s\S]*?<\/style>/g, ' ');
+
+/** Every truth the screen COMMITTED to, which is the verdict strip and nothing else. */
+const verdictTruths = html => [...noCss(html)
+  .matchAll(/class="sn-verdict" data-truth="(traitor|faithful)"/g)].map(m => m[1]);
+
+/** Every reason the screen actually printed, as whole strings. */
+const printedWhy = html => [...noCss(html)
+  .matchAll(/<span class="sn-row-why">(?:\s*&mdash;\s*)?([^<]*)<\/span>/g)]
+  .map(m => m[1].trim()).filter(Boolean);
+
+/**
+ * The screen clamps a reading to the end of the rule, and so does this.
+ *
+ * `suspicion()` is a confidence multiplied by `bondResistance`, which runs to
+ * 1.2 against somebody you dislike — so a Traitor's turret certainty about a
+ * fellow they have fallen out with is 1.06, and the rule has nowhere to put it.
+ * The screen prints 100%; the record keeps 1.06. Both are right and the guard
+ * has to say which it is comparing, or it is asserting that a bar can be longer
+ * than the bar.
+ */
+const onRule = v => Math.min(100, Math.round(v * 100));
+
+describe('the belief record reaches the row at all', () => {
+  it('a real season writes a board on every night that is not an endgame table', () => {
+    let rows = 0, withBoard = 0, endgameRows = 0;
+    for (const r of RUNS) {
+      for (const e of r.episodes) {
+        rows++;
+        const isEndgame = !!(e.tr && e.tr.table && e.tr.table.endgame);
+        if (isEndgame) {
+          endgameRows++;
+          // SPEC §8: the endgame reveals nothing. `_tableRecord` already
+          // withholds `truth` there and a belief block would hand the last
+          // table every survivor's alignment.
+          expect(e.tr.beliefs, `ep ${e.num}: an endgame row carries a board`).toBe(null);
+          continue;
+        }
+        expect(e.tr.beliefs, `ep ${e.num}: no board on an ordinary night`).toBeTruthy();
+        if (e.tr.beliefs.castle.length) withBoard++;
+      }
+    }
+    expect(rows, 'no episode rows at all').toBeGreaterThan(30);
+    expect(endgameRows, 'no endgame row in any seed, so the withholding is unchecked')
+      .toBeGreaterThan(0);
+    expect(withBoard, 'not one night produced a castle board').toBeGreaterThan(20);
+  });
+
+  it('and the numbers on it are the ones the model holds, at the tiers it has', () => {
+    const TIERS = ['public', 'observed', 'told', 'deduced', 'rumor'];
+    let entries = 0, tiersSeen = new Set();
+    for (const { ep } of BOARDS) {
+      const b = ep.tr.beliefs;
+      // The ceiling is READ from js/knowledge.js, never retyped here or there.
+      expect(b.ceiling, `ep ${ep.num}: the record invented its own ceiling`)
+        .toBe(ALIGNMENT_CRED_CEILING);
+      for (const board of b.boards) {
+        for (const e of board.entries) {
+          expect(TIERS, `ep ${ep.num}: ${e.sourceType} is not a credibility tier`)
+            .toContain(e.sourceType);
+          expect(e.confidence).toBeGreaterThanOrEqual(0);
+          expect(e.confidence).toBeLessThanOrEqual(1);
+          // CERTAINTY HAS EXACTLY ONE SOURCE. `knowsAlignmentOf` discriminates
+          // on `public`, which is the closed set of three write sites.
+          if (e.certain) expect(e.sourceType,
+            `ep ${ep.num}: ${board.observer} is certain about ${e.name} off a ${e.sourceType}`)
+            .toBe('public');
+          tiersSeen.add(e.sourceType);
+          entries++;
+        }
+      }
+    }
+    expect(entries, 'not one belief was examined').toBeGreaterThan(200);
+    // AND MORE THAN ONE TIER IS REACHED, or the loop above proves nothing about
+    // a tier table it only ever saw one row of.
+    expect(tiersSeen.size, 'every belief in four seasons arrived the same way')
+      .toBeGreaterThan(2);
+  });
+
+  it('the collective is the FAITHFULS\' read, and pooling the pact in would change it',
+    () => {
+      // WHY THIS IS NOT THE ROOM'S AVERAGE. The Traitors already know; averaging
+      // certainty together with guesswork reports a castle that half-knows the
+      // answer. The same shape Plan 7 measured on the crowd ledgers, where a
+      // pooled figure across two factions on opposite slopes said less than
+      // either half of it.
+      let checked = 0, differs = 0;
+      for (const { ep } of BOARDS) {
+        const b = ep.tr.beliefs;
+        const faithful = b.living.filter(n => b.truth[n] === 'faithful');
+        const agg = new Map();
+        for (const board of b.boards) {
+          if (faithful.indexOf(board.observer) < 0) continue;
+          for (const e of board.entries) {
+            if (!(e.score > 0)) continue;
+            agg.set(e.name, (agg.get(e.name) || 0) + 1);
+          }
+        }
+        for (const row of b.castle) {
+          expect(row.accusers,
+            `ep ${ep.num}: ${row.name}'s accusers are not the Faithfuls who named them`)
+            .toBe(agg.get(row.name) || 0);
+          checked++;
+        }
+        // ...and a pooled count would genuinely differ somewhere, or this arm
+        // is asserting a distinction the data never makes.
+        const pooled = new Map();
+        for (const board of b.boards) {
+          for (const e of board.entries) {
+            if (!(e.score > 0)) continue;
+            pooled.set(e.name, (pooled.get(e.name) || 0) + 1);
+          }
+        }
+        if ([...pooled.keys()].some(n => (pooled.get(n) || 0) !== (agg.get(n) || 0))) differs++;
+      }
+      expect(checked, 'no collective row was examined').toBeGreaterThan(20);
+      expect(differs, 'the pact never held a belief, so Faithful-only is untested')
+        .toBeGreaterThan(0);
+    });
+
+  it('and alignment is the era it was, not the era it became', () => {
+    // NEVER RECOMPUTE ALIGNMENT AT SEASON END. Recruitment mutates ground truth
+    // mid-season, so a read formed in episode three about somebody recruited in
+    // episode eight was CORRECT when it was formed.
+    //
+    // ── AND THE PROPERTY IS UNREACHABLE RATHER THAN GUARDED, WHICH IS WORTH
+    //    SAYING OUT LOUD ─────────────────────────────────────────────────
+    //
+    // Two mutations were written for this arm and both came back GREEN, for
+    // the same reason and correctly: the snapshot is taken INSIDE the round
+    // loop, so at the moment episode four is written `gs.tr.alignment` does not
+    // yet contain the episode-seven recruitment. `alignmentAt(n, 99)` therefore
+    // returns exactly what `alignmentAt(n, 4)` returns, and so would a single
+    // boolean. The era trap cannot be sprung from this code path AT ALL while
+    // the record is written on the night.
+    //
+    // So what is guarded is the thing that MAKES it unreachable: the snapshot
+    // is contemporaneous. A row may not list a flip that has not happened yet,
+    // and a season-end rebuild would put every flip on every row — that is the
+    // shape a regression here would actually take, and it is the assertion
+    // below with the live mutation behind it.
+    let flips = 0, before = 0, after = 0, laterFlips = 0;
+    for (const r of RUNS) {
+      const rows = r.episodes.filter(e => e.tr && e.tr.beliefs);
+      const flipped = new Map();
+      for (const e of rows) for (const f of e.tr.beliefs.flips) flipped.set(f.name, f.ep);
+      for (const [name, at] of flipped) {
+        flips++;
+        for (const e of rows) {
+          if (!e.tr.beliefs.living.includes(name)) continue;
+          if (e.tr.ep < at) {
+            expect(e.tr.beliefs.truth[name],
+              `${name} is reported a Traitor on ep ${e.tr.ep}, before the ep ${at} flip`)
+              .toBe('faithful');
+            before++;
+          } else {
+            expect(e.tr.beliefs.truth[name],
+              `${name} is reported a Faithful on ep ${e.tr.ep}, after the ep ${at} flip`)
+              .toBe('traitor');
+            after++;
+          }
+        }
+      }
+      // A selection entry is not a flip: every player gets one on night one.
+      for (const e of rows) {
+        for (const f of e.tr.beliefs.flips) {
+          expect(['recruitment', 'ultimatum'],
+            `${f.name}'s ${f.via} is being reported as a recruitment`).toContain(f.via);
+          expect(f.ep, `ep ${e.tr.ep} lists a flip from ep ${f.ep}, which had not happened`)
+            .toBeLessThanOrEqual(e.tr.ep);
+        }
+        // ...and somewhere in this season a row is genuinely EARLIER than a
+        // flip, or the assertion above is a loop over rows nothing could have
+        // been wrong about.
+        if ([...flipped.values()].some(at => at > e.tr.ep)) laterFlips++;
+      }
+    }
+    expect(flips, 'no season recruited anybody, so the era rule is unproved')
+      .toBeGreaterThan(0);
+    expect(before, 'no row was examined from before a flip').toBeGreaterThan(0);
+    expect(after, 'no row was examined from after a flip').toBeGreaterThan(0);
+    expect(laterFlips,
+      'no row in any season predates a flip, so the contemporaneity check is vacuous')
+      .toBeGreaterThan(0);
+  });
+});
+
+describe('the suspicion board is reachable from a played season', () => {
+  it('buildVPScreens registers it for every night the castle wrote something down', () => {
+    let seen = 0;
+    for (const r of RUNS) {
+      for (const e of r.episodes) {
+        const want = !!(e.tr && e.tr.beliefs && e.tr.beliefs.castle.length);
+        const ids = buildVPScreens(e).map(s => s.id);
+        expect(ids.includes('tr-suspicion'),
+          `ep ${e.num}: the board is ${want ? 'missing' : 'registered'} when it should not be`)
+          .toBe(want);
+        if (want) seen++;
+      }
+    }
+    expect(seen, 'the board was never registered on any night of four seasons')
+      .toBeGreaterThan(20);
+  });
+
+  it('and it sits after the table, because the record is taken at the end of the night',
+    () => {
+      // The snapshot already holds tonight's reveal and tonight's murder
+      // evidence. Drawn before the Round Table it would print the room reacting
+      // to a banishment three screens before the banishment — the defect Task 6
+      // found by reading a season in sequence.
+      let checked = 0;
+      for (const { ep } of BOARDS) {
+        const ids = buildVPScreens(ep).map(s => s.id);
+        if (!ids.includes('tr-round-table')) continue;
+        expect(ids.indexOf('tr-suspicion'),
+          `ep ${ep.num}: the board is drawn before the table it already knows about`)
+          .toBeGreaterThan(ids.indexOf('tr-round-table'));
+        checked++;
+      }
+      expect(checked, 'no night carried both a table and a board').toBeGreaterThan(15);
+    });
+});
+
+// ── GUARD: GROUND TRUTH NEVER REACHES A PLAYER LAYER, BOTH WAYS ───────
+describe('the truth layer is the audience\'s and nobody else\'s', () => {
+  it('the audience is told what each name really is', () => {
+    let checked = 0, truths = 0;
+    for (const { ep } of BOARDS) {
+      const html = suspicionRevealed(ep, 'audience');
+      const marks = verdictTruths(html);
+      expect(marks.length,
+        `ep ${ep.num}: the audience layer commits to no truth at all, so the gate below is vacuous`)
+        .toBeGreaterThan(0);
+      truths += marks.length;
+      // ...and it is the record's truth, name for name, in board order.
+      const shown = ep.tr.beliefs.castle.slice(0, 6);
+      expect(marks, `ep ${ep.num}: a verdict disagrees with the record`)
+        .toEqual(shown.map(r => ep.tr.beliefs.truth[r.name]));
+      checked++;
+    }
+    expect(checked, 'no audience layer was examined').toBeGreaterThan(20);
+    expect(truths, 'not one truth mark in four seasons').toBeGreaterThan(60);
+  });
+
+  it('and a player is told nothing of the kind, anywhere on the page', () => {
+    let watchers = 0;
+    for (const { ep } of BOARDS) {
+      const b = ep.tr.beliefs;
+      for (const who of b.living) {
+        const html = suspicionRevealed(ep, 'player:' + who);
+        // THE WHOLE STREAM, not one kind of card. Task 9's mutation walked
+        // straight past an arm anchored on the cards labelled "The tap", and
+        // "an assertion satisfied by the wrong element" is this plan's most
+        // repeated shape — six occurrences before this one.
+        expect(/data-truth="/.test(noCss(html)),
+          `${who} is shown what somebody really is`).toBe(false);
+        expect(/class="sn-verdict"/.test(noCss(html)),
+          `${who} is shown the audience's verdict strip`).toBe(false);
+        const said = strip(html);
+        expect(said.length, `${who}'s page is empty — this sweep reads nothing`)
+          .toBeGreaterThan(300);
+        for (const claim of ['is a Faithful', 'is a Traitor', 'really is',
+          'Weight on Traitors', 'Weight on Faithfuls']) {
+          expect(said.indexOf(claim), `${who} is told "${claim}"`).toBe(-1);
+        }
+        watchers++;
+      }
+    }
+    expect(watchers, 'no player layer was examined').toBeGreaterThan(80);
+  });
+
+  it('a player sees their own board and no part of anybody else\'s', () => {
+    let watchers = 0, withOthers = 0;
+    for (const { ep } of BOARDS) {
+      const b = ep.tr.beliefs;
+      for (const board of b.boards) {
+        const who = board.observer;
+        const html = suspicionRevealed(ep, 'player:' + who);
+        const said = strip(html);
+        // EVERY REASON THE PAGE PRINTED IS A REASON OFF THEIR OWN BOARD, and it
+        // is compared as a WHOLE STRING. The first version asked whether any
+        // other observer's reason appeared as a SUBSTRING, and "never once
+        // voted against B" is a substring of "never once voted against
+        // Bridgette" — a subtractive comparison that eats too much, which is
+        // the fifth shape on this plan's vacuous-guard list running backwards.
+        const mineWhy = new Set(board.entries.map(e => e.why).filter(Boolean));
+        const printed = printedWhy(html);
+        for (const w of printed) {
+          expect(mineWhy.has(w),
+            `${who} is shown a reason that is not on their board: "${w}"`).toBe(true);
+        }
+        const others = b.boards.filter(x => x.observer !== who)
+          .flatMap(x => x.entries.map(e => e.why))
+          .filter(w => w && !mineWhy.has(w));
+        if (others.length) withOthers++;
+        // And the collective, which is a compilation of other people's heads
+        // and cannot be handed to anybody standing in the castle.
+        expect(said.indexOf('by weight of opinion'),
+          `${who} is shown the castle's aggregate`).toBe(-1);
+        watchers++;
+      }
+    }
+    expect(watchers, 'no board-holder was examined').toBeGreaterThan(60);
+    expect(withOthers,
+      'nobody else ever held a reason this watcher did not, so the sweep is vacuous')
+      .toBeGreaterThan(30);
+  });
+
+  it('and the two layers are genuinely different pages', () => {
+    let pairs = 0;
+    for (const { ep } of BOARDS) {
+      const who = ep.tr.beliefs.boards[0] && ep.tr.beliefs.boards[0].observer;
+      if (!who) continue;
+      expect(suspicionRevealed(ep, 'audience') === suspicionRevealed(ep, 'player:' + who),
+        `ep ${ep.num}: the audience layer and ${who}'s layer are the same page`).toBe(false);
+      pairs++;
+    }
+    expect(pairs, 'no pair of layers was compared').toBeGreaterThan(20);
+  });
+
+  it('and somebody who has already left the castle is told why there is nothing', () => {
+    let checked = 0;
+    for (const { ep, run } of BOARDS) {
+      const gone = (run.episodes[0].tr.cast || [])
+        .find(n => !ep.tr.beliefs.living.includes(n));
+      if (!gone) continue;
+      const html = suspicionRevealed(ep, 'player:' + gone);
+      expect(html, `${gone} got an empty page rather than an account of it`)
+        .toContain('You Are Not In The Castle');
+      expect(/data-truth="/.test(noCss(html)),
+        `${gone} is shown the truth on their way out`).toBe(false);
+      checked++;
+    }
+    expect(checked, 'nobody had left in any of these rows').toBeGreaterThan(15);
+  });
+});
+
+// ── GUARD: THE NUMBERS SHOWN ARE THE NUMBERS EXPORTED ─────────────────
+describe('the board prints the model\'s numbers and not its own', () => {
+  it('every meter on the audience layer is a figure off the record', () => {
+    let meters = 0;
+    for (const { ep } of BOARDS) {
+      const b = ep.tr.beliefs;
+      const html = suspicionRevealed(ep, 'audience');
+      const want = b.castle.slice(0, 6).map(r => onRule(r.top));
+      const got = meterPcts(html);
+      expect(got.length, `ep ${ep.num}: the audience layer drew no meter`)
+        .toBeGreaterThan(0);
+      // The weighing cards come first and in board order; the reads that follow
+      // draw rows rather than meters.
+      expect(got.slice(0, want.length),
+        `ep ${ep.num}: a meter disagrees with the strongest read on the record`)
+        .toEqual(want);
+      meters += want.length;
+    }
+    expect(meters, 'not one meter was checked').toBeGreaterThan(60);
+  });
+
+  it('and every meter on a player layer is a figure off that player\'s own board', () => {
+    let meters = 0;
+    for (const { ep } of BOARDS) {
+      for (const board of ep.tr.beliefs.boards) {
+        const html = suspicionRevealed(ep, 'player:' + board.observer);
+        const want = board.entries.slice(0, 6).map(e => onRule(e.score));
+        expect(meterPcts(html),
+          `ep ${ep.num}: ${board.observer}'s meters disagree with their own board`)
+          .toEqual(want);
+        meters += want.length;
+      }
+    }
+    expect(meters, 'not one player meter was checked').toBeGreaterThan(80);
+  });
+
+  it('and the wall is the credibility ceiling, read rather than retyped', () => {
+    // COMMENTS STRIPPED FIRST. The file's own header explains what the wall is
+    // and names the number while doing it, which is documentation rather than a
+    // second copy of the rule — the scan is for a literal the CODE could draw.
+    const src = readFileSync(new URL('../js/vp-tr/' + 'suspicion.js', import.meta.url), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+    expect(src.length, 'the screen source is empty').toBeGreaterThan(1000);
+    // 0.62 IS NOT WRITTEN ANYWHERE IN THIS SCREEN'S CODE. It comes off the record,
+    // which comes off `ALIGNMENT_CRED_CEILING`, which is the one place in the
+    // repo that decides what an inference is worth. A hand-copied number is a
+    // channel that silently reprices itself the day the ceiling moves — the
+    // defect js/tr/deduction.js already has a paragraph about.
+    expect(/0\.62/.test(src), 'the screen writes the ceiling as a literal').toBe(false);
+    let checked = 0;
+    for (const { ep } of BOARDS) {
+      const html = suspicionRevealed(ep, 'audience');
+      const pct = Math.round(ALIGNMENT_CRED_CEILING * 100);
+      expect(html, `ep ${ep.num}: the wall is not labelled with the ceiling`)
+        .toContain(pct + '% &mdash; the wall');
+      // AND IT IS DRAWN WHERE IT IS LABELLED. A mutation that moved the barrier
+      // to 45% and left the caption alone walked straight past the first
+      // assertion: a label is a string and a wall is a position, and this
+      // screen's whole argument is that the position means something.
+      const frac = (ALIGNMENT_CRED_CEILING).toFixed(4);
+      expect(html, `ep ${ep.num}: the wall is drawn somewhere other than the ceiling`)
+        .toContain('class="sn-wall" style="left:calc(22px + (100% - 44px) * ' + frac);
+      // ...and the same barrier on every weighing meter.
+      const meterWalls = [...html.matchAll(
+        /class="sn-meter-wall" style="left:calc\(([\d.]+)% - 3px\)"/g)].map(m => Number(m[1]));
+      expect(meterWalls.length, `ep ${ep.num}: no meter drew the wall`).toBeGreaterThan(0);
+      for (const w of meterWalls) {
+        expect(w, `ep ${ep.num}: a meter's wall is not at the ceiling`)
+          .toBeCloseTo(ALIGNMENT_CRED_CEILING * 100, 5);
+      }
+      checked++;
+    }
+    expect(checked, 'the wall was never drawn').toBeGreaterThan(20);
+  });
+
+  it('and the export layer can read a belief but never write one', () => {
+    // THE CREDIBILITY CEILING IS A CLOSED SET OF WRITE SITES — three `public`
+    // alignment writers and exactly one `observed`, swept over the WRITES in
+    // tests/tr-missions.test.js because barely any of a season's beliefs
+    // survive to the end and a store sweep reads the survivors of an
+    // overwriting process. What belongs here is the claim this task makes: a
+    // reporting layer must not become a fifth writer.
+    const src = readFileSync(new URL('../js/tr/' + 'export.js', import.meta.url), 'utf8');
+    expect(src.length, 'the export source is empty').toBeGreaterThan(1000);
+    const specs = [...src.matchAll(/\bfrom\s+'([^']+)';/g)].map(m => m[1]);
+    expect(specs.length, 'the import reader parsed no import at all').toBeGreaterThan(2);
+    const named = [...src.matchAll(/import\s*\{([^}]*)\}\s*from/g)]
+      .flatMap(m => m[1].split(',').map(x => x.trim()));
+    expect(named.length, 'the import reader parsed no named import').toBeGreaterThan(5);
+    for (const writer of ['learn', 'recordFact', 'recordAlignment', 'seedTraitorKnowledge',
+      'revealCascade', 'seerEvidence']) {
+      expect(named.includes(writer),
+        `js/tr/export.js imports ${writer} — the export can write a belief`).toBe(false);
+    }
+    // ...and it does import the readers, or the check above is a list of names
+    // nothing was ever going to contain.
+    for (const reader of ['believes', 'suspicion', 'alignmentAt']) {
+      expect(named.includes(reader), `js/tr/export.js lost its ${reader} reader`).toBe(true);
+    }
+  });
+});
+
+// ── GUARD: NO OTHER SHOW'S WORDS, ON ANY OF THE THREE LAYERS ──────────
+describe('what the castle believes is not described in another show\'s words', () => {
+  it('no forbidden noun survives on any layer of the rendered screen', () => {
+    const banned = forbiddenFor('traitors');
+    expect(banned.length, 'the forbidden list is empty, so this arm checks nothing')
+      .toBeGreaterThan(4);
+    let layers = 0;
+    for (const { ep } of BOARDS) {
+      const b = ep.tr.beliefs;
+      const traitor = b.living.find(n => b.truth[n] === 'traitor');
+      const faithful = b.living.find(n => b.truth[n] === 'faithful');
+      for (const obs of ['audience', 'player:' + traitor, 'player:' + faithful]) {
+        const said = screenNarration(strip(suspicionRevealed(ep, obs)));
+        expect(said.length, `${obs}: nothing was rendered`).toBeGreaterThan(200);
+        expect(foreignWordsIn(said, 'traitors'),
+          `${obs} on ep ${ep.num} borrows another show's vocabulary`).toEqual([]);
+        layers++;
+      }
+    }
+    expect(layers, 'no layer was swept').toBeGreaterThan(60);
+  });
+
+  it('and no pool in the source holds one either, reached or not', () => {
+    // THE POOLS THE FOUR SEEDS NEVER DRAW. Task 9's M12: a word planted in a
+    // branch no seed reaches passes every rendered sweep there is.
+    const src = readFileSync(new URL('../js/vp-tr/' + 'suspicion.js', import.meta.url), 'utf8');
+    const strings = [...src.matchAll(/'([^'\\\n]{18,})'/g)].map(m => m[1]);
+    expect(strings.length, 'no prose was found in the source at all').toBeGreaterThan(60);
+    for (const line of strings) {
+      expect(foreignWordsIn(line, 'traitors'),
+        `a pool in js/vp-tr/suspicion.js holds another show's word: "${line}"`).toEqual([]);
+    }
+  });
+});
+
+// ── GUARD: THE PATTERN, AND THE STAGE THAT MUST NOT SPOIL ─────────────
+describe('the suspicion board honours the reveal pattern', () => {
+  const shell = (obs = 'audience') => rpBuildSuspicion(
+    { ...BOARDS[0].ep, num: -70000 }, obs);
+
+  it('step divs, counter, controls and stage are all addressable by id', () => {
+    const html = shell();
+    expect(/id="sn-step-suspicion-0"/.test(html), 'no step is addressable').toBe(true);
+    expect(/id="sn-counter-suspicion"/.test(html), 'no counter').toBe(true);
+    expect(/id="sn-controls-suspicion"/.test(html), 'no controls').toBe(true);
+    expect(/id="sn-stage-inner"/.test(html), 'no stage').toBe(true);
+    expect(/id="sn-shell-suspicion"/.test(html), 'no shell').toBe(true);
+  });
+
+  it('the counter total matches the number of steps actually rendered', () => {
+    let checked = 0;
+    for (const { ep } of BOARDS) {
+      const html = rpBuildSuspicion({ ...ep, num: -60000 - checked }, 'audience');
+      const steps = [...html.matchAll(/id="sn-step-suspicion-\d+"/g)].length;
+      const m = /trSuspicionRevealAll\('suspicion',(\d+),(-?\d+)\)/.exec(html);
+      expect(m, `ep ${ep.num}: no reveal-all handler`).toBeTruthy();
+      expect(Number(m[1]), `ep ${ep.num}: the counter total is not the step count`)
+        .toBe(steps);
+      expect(steps, `ep ${ep.num}: fewer beats than the board has to say`)
+        .toBeGreaterThan(2);
+      checked++;
+    }
+    expect(checked, 'no screen was counted').toBeGreaterThan(20);
+  });
+
+  it('the stage shows only what has been read, and the first paint is not blank', () => {
+    let checked = 0;
+    for (const { ep } of BOARDS) {
+      // A KEY NO OTHER ARM CAN HAVE TAKEN. `suspicionRevealed` allocates a
+      // fresh negative key per render and this file renders the board a few
+      // hundred times, so a range that looked comfortably out of the way
+      // (-960) was reached, this row was already revealed, and the arm read a
+      // finished stage as a first paint.
+      const fresh = { ...ep, num: -50000 - checked };
+      const first = rpBuildSuspicion(fresh, 'audience');
+      const pinsFirst = [...first.matchAll(/class="sn-pin"/g)].length;
+      const done = suspicionRevealed(ep, 'audience');
+      const pinsDone = [...done.matchAll(/class="sn-pin"/g)].length;
+      expect(pinsDone, `ep ${ep.num}: the finished rule carries no pin at all`)
+        .toBeGreaterThan(0);
+      expect(pinsFirst,
+        `ep ${ep.num}: the rule shows the finished board before a beat is read`)
+        .toBeLessThan(pinsDone);
+      // ...and it is NOT blank: Task 2's first-paint rule, which conclave.js
+      // shipped without and was a white screen until somebody pressed a button.
+      expect(/sn-beat sn-vis/.test(first), 'the first paint reveals nothing').toBe(true);
+      expect(strip(first).length, 'the first paint said nothing').toBeGreaterThan(400);
+      checked++;
+    }
+    expect(checked, 'no stage was examined').toBeGreaterThan(20);
+  });
+
+  it('the shell is 1100px and centred, nothing covers the nav, and there is no emoji', () => {
+    const html = shell();
+    expect(html, 'the shell is not 1100px and centred').toContain('max-width:1100px;margin:0 auto');
+    expect(/top:0;bottom:0;z-index:0;pointer-events:none/.test(html),
+      'a full-height plane starts at the top of the page rather than under the nav')
+      .toBe(false);
+    expect(html).toContain('top:' + TR_NAV_TOP);
+    expect(/@media\(prefers-reduced-motion:reduce\)/.test(html),
+      'an animation with no reduced-motion escape').toBe(true);
+    const emoji = strip(html).match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
+    expect(emoji, 'there is an emoji on the screen').toBe(null);
+  });
+
+  it('and both full-height planes run from the nav to the foot of the page', () => {
+    // MEASURED LIVE AT 3,573px OF A 3,619px SHELL in Task 9 and read out of the
+    // stylesheet here: Task 5's endgame was rejected for "really black and
+    // empty" and Task 8's day stopped at 1500px on a 3,900px page.
+    const css = /<style>([\s\S]*?)<\/style>/.exec(shell())[1];
+    expect(css.length, 'the screen rendered no stylesheet').toBeGreaterThan(2000);
+    let checked = 0;
+    for (const layer of ['.sn-board{', '.sn-hatch{']) {
+      const at = css.indexOf(layer);
+      expect(at, `${layer} is not declared at all`).toBeGreaterThan(-1);
+      const block = css.slice(at, css.indexOf('}', at));
+      expect(block, `${layer} does not start below the nav bar`)
+        .toContain('top:' + TR_NAV_TOP);
+      expect(block, `${layer} stops somewhere rather than running to the foot`)
+        .toContain('bottom:0');
+      expect(/height:\s*\d/.test(block), `${layer} is height-capped`).toBe(false);
+      checked++;
+    }
+    expect(checked).toBe(2);
   });
 });

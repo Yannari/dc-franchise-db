@@ -32,6 +32,12 @@
 // `exits[]` list whose verbs come from the registry (`exitVerbs`), never from
 // a literal here, and `roundLedger()` renders that list rather than guessing.
 import { SHOWS, seasonId, formatPrefix, exitVerbs } from '../shows.js';
+// THE BELIEF SNAPSHOT'S READERS, AND EVERY ONE OF THEM IS A READER. See the
+// section at the foot of this file: `learn` and `recordFact` are deliberately
+// absent, so nothing in the export layer can become a fourth alignment writer.
+import { believes, ALIGNMENT_CRED_CEILING } from '../knowledge.js';
+import { suspicion, knowsAlignmentOf } from './deduction.js';
+import { alignmentFactId, alignmentAt } from './roles.js';
 
 export const TRAITORS_FORMAT = 'traitors';
 
@@ -431,5 +437,164 @@ export function buildTraitorsSeasonDocument(season = {}, { seasonNumber = 1, twi
     // What the show calls a departure, carried on the document so a reader
     // that has the record but not the registry still uses the right verb.
     exitVerbs: exitVerbs(TRAITORS_FORMAT),
+  };
+}
+
+// ── What the castle believes ──────────────────────────────────────────
+//
+// THE ONE FUNCTION IN THIS FILE THAT READS LIVE STATE, AND IT HAS TO.
+//
+// Everything above is pure over a finished `season` object. This is not, and
+// the reason is the thing it reports: a belief is not on the season object and
+// never can be. `gs.knowledge` is an OVERWRITING store — `learn()` keeps the
+// strongest evidence seen and drops the rest — so a reader that walked the
+// store after the credits would be reading the survivors of an overwriting
+// process and calling it "what the castle believed". The only honest place to
+// ask what a room believed on a given night is ON THAT NIGHT, so this is a
+// SNAPSHOT, taken once per round by js/tr/headless.js and written onto the
+// episode record — which is what `js/vp-tr/` means by "read it through the
+// export": a screen is handed a record and cannot reach past it.
+//
+// IT READS AND IT NEVER WRITES. `learn` and `recordFact` are not imported here
+// and must never be: the credibility ceiling is a closed set of write sites —
+// three `public` alignment writers (the turret, a recruit shown the turret, the
+// banishment reveal) and exactly one `observed` (the Seer) — swept over the
+// WRITES in tests/tr-missions.test.js. A reporting layer that could write would
+// be a fourth writer with no price on it.
+//
+// AND IT INVENTS NO PRECISION. Every number below comes out of the model as the
+// model holds it: `effectiveConfidence` after decay, the `sourceType` tier the
+// belief actually arrived on, the `valence` the read roll landed on, and
+// `suspicion()` — which is that confidence AFTER bondResistance, i.e. what the
+// belief is worth to that person at a ballot, and the reason a well-liked
+// Traitor survives a table the evidence should have lost them. `ceiling` is
+// read off js/knowledge.js rather than retyped, because a hand-copied 0.62 is
+// a channel that silently reprices itself the day the ceiling moves.
+
+/**
+ * One person's read of the room, as the model holds it tonight.
+ *
+ * Living candidates only. A `public` belief about somebody who has already been
+ * banished is certainty about a chair, and this board is about the people still
+ * in it — `suspicionBoard()` walks the living for the same reason.
+ *
+ * A ZERO-SCORE ROW IS KEPT AND IT IS NOT NOISE. `suspicion()` returns 0 for a
+ * belief the observer has correctly identified as false, which is the intuition
+ * prior in js/tr/deduction.js clearing an innocent — about a third of all the
+ * suspicion ever aimed at a Faithful is deleted for the sole reason that they
+ * are one. Dropping those rows would report a room that had never considered
+ * the people it had considered and cleared.
+ */
+function _readOf(observer, candidates, ep) {
+  const rows = [];
+  for (const name of candidates) {
+    if (name === observer) continue;
+    const b = believes(observer, alignmentFactId(name), ep);
+    if (!b) continue;
+    rows.push({
+      name,
+      // What it is worth at the ballot: confidence through bondResistance.
+      score: _r3(suspicion(observer, name, ep)),
+      // What the belief itself is worth, before the relationship blunts it.
+      confidence: _r3(b.effectiveConfidence || 0),
+      sourceType: b.sourceType || null,
+      valence: b.valence || null,
+      // WHY THEY THINK IT, in the engine's own words — `learn()`'s `source` is
+      // a sentence the evidence layer wrote ("never once voted against Amy",
+      // "the reveal", "kept X in on the night X was revealed"), and a suspicion
+      // without its reason is a number a screen would have to invent a story
+      // for.
+      why: b.source || null,
+      learnedEp: b.learnedEp == null ? null : b.learnedEp,
+      // Certainty, and there are only ever two ways to hold it about an
+      // alignment: you were in the turret, or you watched somebody's cloak come
+      // off at a banishment. `knowsAlignmentOf` discriminates on `public`,
+      // which is the closed set.
+      certain: !!knowsAlignmentOf(observer, name, ep),
+    });
+  }
+  return rows.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+}
+
+const _r3 = n => Math.round((Number(n) || 0) * 1000) / 1000;
+
+/**
+ * WHAT EACH PERSON BELIEVES, WHAT THE FAITHFULS BELIEVE TOGETHER, AND WHAT IS
+ * TRUE — spec §9.1's three layers, in one record, deliberately.
+ *
+ * The screen's whole subject is the DISTANCE between the second and the third,
+ * and a shape that held them apart would leave the screen joining them itself.
+ *
+ *   `boards`  — layer one, per observer. Every living player's own read.
+ *   `castle`  — layer two, and it is the FAITHFULS' read and not the room's.
+ *               Pooling the Traitors in would average certainty together with
+ *               guesswork and report a castle that half-knows the answer; the
+ *               people doing the deducing are the people who do not know, and
+ *               theirs is the only collective read that is a question. (The
+ *               same trap Plan 7 measured on the crowd ledgers: a pooled figure
+ *               across two factions accruing on opposite slopes says less than
+ *               either half of it.)
+ *   `truth`   — layer three. AUDIENCE ONLY. It is on the record because the
+ *               audience layer is entitled to it and the record is the only
+ *               place a screen can get anything; js/vp-tr/suspicion.js drops it
+ *               before a `player:` observer's screen is built, exactly as
+ *               js/vp-tr/round-table.js drops `table.truth`.
+ *
+ * `flips` IS THE ERA RULE, CARRIED. Recruitment mutates ground truth mid-season,
+ * so a read formed in episode three was CORRECT when it was formed even if
+ * tonight's truth disagrees. Never recompute alignment at season end — three
+ * tasks in this plan have hit that trap. Each snapshot is taken on its own
+ * night, so `truth` here is that night's era BY CONSTRUCTION, and the flips so
+ * far are listed so a screen can say a read was right when it was made.
+ *
+ * NOT WRITTEN ON AN ENDGAME ROW, and the caller is where that is enforced. The
+ * endgame reveals nothing (spec §8) and `_tableRecord` already withholds
+ * `truth` there; a belief block carrying every survivor's alignment would hand
+ * the last table exactly what the format spends it refusing to say.
+ */
+export function traitorsBeliefSnapshot(ep, { living = [], faithfuls = [], flips = [] } = {}) {
+  const candidates = [...living];
+  const boards = [];
+  for (const observer of candidates) {
+    const entries = _readOf(observer, candidates, ep);
+    if (entries.length) boards.push({ observer, entries });
+  }
+
+  // THE COLLECTIVE. Counted over the Faithfuls' boards only, and a name's
+  // weight is the SUM of what it is worth to each of them at the ballot —
+  // which is the quantity the table actually resolves. A mean would report two
+  // people certain and sixteen indifferent as a mild consensus, and a mild
+  // consensus is not what banishes anybody.
+  const agg = new Map();
+  for (const b of boards) {
+    if (faithfuls.indexOf(b.observer) < 0) continue;
+    for (const e of b.entries) {
+      const row = agg.get(e.name)
+        || { name: e.name, accusers: 0, weight: 0, top: 0, cleared: 0 };
+      if (e.score > 0) { row.accusers++; row.weight += e.score; row.top = Math.max(row.top, e.score); }
+      else row.cleared++;
+      agg.set(e.name, row);
+    }
+  }
+  const castle = [...agg.values()]
+    .map(r => ({ ...r, weight: _r3(r.weight), top: _r3(r.top) }))
+    .sort((a, b) => b.weight - a.weight || b.accusers - a.accusers
+      || a.name.localeCompare(b.name));
+
+  const truth = {};
+  for (const n of candidates) truth[n] = alignmentAt(n, ep);
+
+  return {
+    ep,
+    // THE MOST AN INFERENCE IS EVER WORTH IN THIS FORMAT, read from the module
+    // that decides it. The screen draws it as a wall, because that is what it
+    // is: no Faithful can reach certainty about anybody, ever, and everything
+    // past the wall got there by standing in a room with somebody.
+    ceiling: ALIGNMENT_CRED_CEILING,
+    living: candidates,
+    boards,
+    castle,
+    truth,
+    flips: flips.map(f => ({ name: f.name, ep: f.ep, via: f.via || null })),
   };
 }

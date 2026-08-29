@@ -13,7 +13,7 @@ import { setBond, getBond } from '../bonds.js';
 import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
   canRecruit, chooseRecruit, offerRecruitment, alignmentAt } from './roles.js';
 // The ballot array the export builds, used unchanged. See `_tableRecord`.
-import { traitorsRoundBallots, TRAITORS_FORMAT } from './export.js';
+import { traitorsRoundBallots, traitorsBeliefSnapshot, TRAITORS_FORMAT } from './export.js';
 // The show's two exit words, from the registry. Never written as literals.
 import { exitVerbs, roundExits } from '../shows.js';
 import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence } from './deduction.js';
@@ -876,6 +876,34 @@ function _castleRecord(ep, fired) {
   return { ep, windows, scenes };
 }
 
+/**
+ * THE DEDUCTION MODEL, AS IT STANDS TONIGHT (js/vp-tr/suspicion.js).
+ *
+ * The shape lives in `traitorsBeliefSnapshot` (js/tr/export.js) with the rest
+ * of what leaves this engine; what belongs HERE is the three lists it is taken
+ * over, and all three are facts about this night rather than about the season:
+ * who is still in the castle, which of them are Faithfuls -- the only people
+ * whose collective read is a QUESTION, since the others already know -- and
+ * every alignment flip that has happened by now, which is what lets a screen
+ * say a read was correct when it was made.
+ *
+ * `via: 'selection'` IS NOT A FLIP. Every player in the cast gets a selection
+ * entry in `roleHistory` on night one, Faithfuls included, so listing those
+ * would report a twenty-way recruitment on the first evening. Recruitment and
+ * the ultimatum are the two ways ground truth actually changes hands --
+ * `traitorsCareerStats` filters the same pair for the same reason.
+ */
+function _beliefRecord(ep) {
+  const living = [...(gs.activePlayers || [])];
+  return traitorsBeliefSnapshot(ep, {
+    living,
+    faithfuls: living.filter(n => alignmentAt(n, ep) === 'faithful'),
+    flips: (gs.tr?.roleHistory || []).filter(f =>
+      f.to === 'traitor' && (f.via === 'recruitment' || f.via === 'ultimatum')
+      && f.ep <= ep),
+  });
+}
+
 function _recordEpisode(ep, { banished = null, night = null, mission = null,
   castle = null, endgame = false, selection = null } = {}) {
   // THE DOOR, NOT JUST THE NAME. docs/ADDING-A-SHOW.md §5 gives `exits[]` a
@@ -982,6 +1010,25 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // after a recruitment, which is a different question with the same
       // answer for the first few nights.
       selection: selection || null,
+      // -- WHO BELIEVES WHAT, AND HOW WRONG THEY ARE (Plan 8, Task 10) ---
+      //
+      // The deduction model, snapshotted. Plans 1-4 built the whole of it --
+      // facts with a ground truth, per-person beliefs with a confidence and a
+      // tier, decay, second-order knowledge -- and until this line nothing
+      // outside the engine could see any of it, which is why Task 1's "what
+      // the castle believes" panel was dropped rather than faked.
+      //
+      // TAKEN TONIGHT, NOT AT THE END. `gs.knowledge` is an overwriting store
+      // and a season-end walk of it reads the survivors of that overwriting;
+      // it is also where the era trap lives, because the truth block below is
+      // this episode's era by construction and a late recompute would brand a
+      // correct episode-three read as a mistake. See `traitorsBeliefSnapshot`.
+      //
+      // NOT ON AN ENDGAME ROW. The endgame reveals nothing (spec 8) and
+      // `_tableRecord` already withholds its `truth` there; a belief block
+      // carrying every survivor's alignment would hand the last table exactly
+      // what the format spends it refusing to say.
+      beliefs: endgame ? null : _beliefRecord(ep),
     },
   });
   // NO `gs.eliminated` HERE, AND THE OMISSION WAS MEASURED. Maintaining it

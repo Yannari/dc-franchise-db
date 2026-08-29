@@ -275,19 +275,33 @@ function _ic(type, size, colour) {
   const open = '<svg class="cv-ic" width="' + s + '" height="' + s
     + '" viewBox="0 0 24 24" fill="none" aria-hidden="true">';
   const m = {
-    // A SPOOL, on its side, with a tail of thread coming off it.
-    spool: '<path d="M5.2 4.4h13.6M5.2 19.6h13.6" stroke="' + c + '" stroke-width="1.5" stroke-linecap="round"/>'
-      + '<path d="M8.4 4.4v15.2M15.6 4.4v15.2" stroke="' + c + '" stroke-width="1.3"/>'
-      + '<path d="M8.4 8.6h7.2M8.4 12h7.2M8.4 15.4h7.2" stroke="' + c + '" stroke-width="1" opacity=".6"/>'
-      + '<path d="M15.6 12c3 0 3.6 2.4 5.4 3.2" stroke="' + c + '" stroke-width="1.2" stroke-linecap="round"/>',
+    // A SPOOL, standing, with a tail of thread coming off it. DRAWN AS A
+    // SILHOUETTE rather than as six hairlines: this runs at 13px on every
+    // scene card in the stream, and at that size the wound barrel was a
+    // smudge of parallel strokes that read as a tiny grid. A filled barrel
+    // between two flanges survives the size.
+    spool: '<rect x="7.6" y="6.6" width="8.8" height="10.8" rx="1" fill="' + c + '" opacity=".85"/>'
+      + '<path d="M5 4.6h14M5 19.4h14" stroke="' + c + '" stroke-width="2" stroke-linecap="round"/>'
+      + '<path d="M16.4 12.6c3 .4 3.4 2.6 5 3.6" stroke="' + c
+      + '" stroke-width="1.3" stroke-linecap="round"/>',
     // A NEEDLE with the thread through the eye of it.
     needle: '<path d="M4.2 20.2 18.6 5.2" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round"/>'
       + '<path d="M17.2 6.6 20.4 3.4" stroke="' + c + '" stroke-width="2.2" stroke-linecap="round"/>'
       + '<ellipse cx="16.1" cy="7.7" rx="1.5" ry="0.9" transform="rotate(-46 16.1 7.7)" stroke="' + c + '" stroke-width="1"/>'
       + '<path d="M15.2 8.6c-2.8 1.4-3.4 3.6-1.4 5.2" stroke="' + c + '" stroke-width="1.1" stroke-linecap="round" opacity=".8"/>',
-    // A KNOT — an overhand, drawn as two crossings and two tails.
-    knot: '<path d="M3.4 15.6c3.6 0 4-6.6 8-6.6s4.4 6.6 8 6.6" stroke="' + c + '" stroke-width="1.5" stroke-linecap="round"/>'
-      + '<path d="M3.4 8.4c3.6 0 4 6.6 8 6.6s4.4-6.6 8-6.6" stroke="' + c + '" stroke-width="1.5" stroke-linecap="round" opacity=".72"/>',
+    // A BEAD ON A RUNNING CORD, which is what this mark actually MEANS: it
+    // sits on a scene that is one more beat of a thread that was already
+    // going, and the screen's own language for that is a cord entering the
+    // card from above and leaving it below.
+    //
+    // IT WAS AN OVERHAND KNOT TWICE AND NEITHER SURVIVED 13px. The first was
+    // two mirrored sine curves, which read as a small letter X; the second
+    // was a loop with two crossed tails, which — rendered at six times size
+    // and looked at, which is the only way anybody was ever going to see it —
+    // is unmistakably an ankh. A cord and a bead cannot be mistaken for
+    // anything, at any size, and it says the truer thing.
+    knot: '<path d="M12 2.6v18.8" stroke="' + c + '" stroke-width="1.8" stroke-linecap="round"/>'
+      + '<circle cx="12" cy="12" r="3.6" fill="' + c + '"/>',
     // A PAIR OF SHEARS, for a thread that ends tonight.
     shears: '<circle cx="5.6" cy="18.4" r="2.4" stroke="' + c + '" stroke-width="1.3"/>'
       + '<circle cx="14.4" cy="18.4" r="2.4" stroke="' + c + '" stroke-width="1.3"/>'
@@ -313,7 +327,25 @@ function _ic(type, size, colour) {
 // angle, length and colour are driven by `data-phase` on the shell, so the
 // page is visibly at a different time of day under each hour plate.
 
-/** The far plane: piers, three tall windows, the vault above them. */
+/**
+ * The far plane: a graded wall, and three windows cut in it.
+ *
+ * WHAT WAS DELETED HERE AND WHY. The first pass drew a flat black lens for a
+ * vault, four piers a shade off the wall they stood on, and twenty-two ruled
+ * course lines — and `.dy-stone` in the stylesheet ALREADY draws coursed
+ * masonry, over the full page height, at a different pitch. Two grids of
+ * hairlines at two pitches on top of each other is not stonework, it is
+ * moiré, and rendering the plane on its own is what showed it. The wall is
+ * one gradient plus the CSS coursing now, which is what a wall is.
+ *
+ * AND THE WINDOWS HAVE A PROPORTION. They were 150 wide, 540 tall, with a
+ * SEMICIRCLE of their own half-width on top — which at real size reads as a
+ * headstone, not as a window. A lancet is narrow: about five of its own
+ * widths tall, with a POINTED head struck as two arcs whose radius is the
+ * full opening width, meeting about seven-eighths of that width above the
+ * springing. That single ratio is the difference between "castle" and
+ * "shape", and it costs nothing.
+ */
 function _hallFar() {
   return '<svg viewBox="0 0 1100 1500" preserveAspectRatio="xMidYMin slice">'
     + '<defs>'
@@ -322,48 +354,60 @@ function _hallFar() {
     + '<stop offset="100%" stop-color="#141210"/>'
     + '</linearGradient>'
     + '<linearGradient id="dyPane" x1="0" y1="0" x2="0" y2="1">'
-    + '<stop offset="0%" stop-color="#f4e8c6" stop-opacity=".44"/>'
-    + '<stop offset="100%" stop-color="#e2c992" stop-opacity=".12"/>'
+    + '<stop offset="0%" stop-color="#f4e8c6" stop-opacity=".68"/>'
+    + '<stop offset="100%" stop-color="#e2c992" stop-opacity=".18"/>'
     + '</linearGradient>'
     + '</defs>'
     + '<rect width="1100" height="1500" fill="url(#dyWall)"/>'
-    // the vault
-    + '<path d="M0 0h1100v210c-206-96-388-142-550-142S206 114 0 210z" fill="#171410"/>'
-    + '<path d="M0 196c206-92 388-138 550-138s344 46 550 138" fill="none" stroke="#3a3327" stroke-width="4" opacity=".7"/>'
-    // three lancets, and the light is behind them
     + _lancets()
-    // piers
-    + '<path d="M96 208h44v1292H96z" fill="#211d17"/>'
-    + '<path d="M406 208h40v1292h-40z" fill="#1e1a15"/>'
-    + '<path d="M660 208h40v1292h-40z" fill="#1e1a15"/>'
-    + '<path d="M962 208h44v1292h-44z" fill="#211d17"/>'
-    // course lines in the stone
-    + _courses()
     + '</svg>';
 }
+
+/**
+ * Two lancets, and the light is behind them.
+ *
+ * THERE WERE THREE AND THEY WERE ALL DRAWN WHERE NOBODY COULD SEE THEM — the
+ * same finding as the selection screen's castle, and measured the same way,
+ * off the rendered page. What the scene cards leave is a strip down each
+ * SIDE, and a hall lit from its side walls is the more honest room anyway: it
+ * is what makes the shaft rake ACROSS the floor rather than fall straight
+ * down the wall it came through.
+ *
+ * AND THE VIEW BOX IS NOT THE PAGE. This is the part that has to be measured
+ * rather than reasoned about, and getting it wrong put the first attempt at
+ * these two windows off the left-hand edge of the canvas entirely. The plane
+ * is a 1100x1500 view box drawn into a 1100x2200 layer under
+ * `preserveAspectRatio="xMidYMin slice"`, so it is scaled by 2200/1500 and
+ * CENTRED: only view-box x 174 to 925 is on screen at all, and the card
+ * stream covers 284 to 833 of that. The two strips a viewer can actually see
+ * are 174-284 and 833-925, and that is where these are, to the pixel.
+ *
+ * One opening width `w` sets every other number: the arch is struck at radius
+ * `w` from each springing point so the two arcs meet 0.866w above them, the
+ * shaft is 4.2w, the jamb is w/12, the transom sits a third of the way down.
+ * Nothing is a value chosen on its own, which is what stops a window looking
+ * assembled out of rectangles.
+ */
+// AND THE HEAD HAS TO CLEAR THE STICKY LOOM. The arch is the whole reading of
+// the shape and the first placement put it at page y 589, which is under the
+// stage for most of the scroll — so the springing is set to land the apex at
+// about page y 900 and the sill just above the floor line at view-box 1040.
+const DY_WIN = { w: 104, xs: [178, 826], sill: 1030, springing: 672 };
 function _lancets() {
+  const w = DY_WIN.w, sp = DY_WIN.springing, sill = DY_WIN.sill;
+  const apex = sp - w * 0.866;                       // two arcs of radius w meet here
   let s = '<g class="dy-panes">';
-  const xs = [[214, 150], [508, 150], [802, 150]];
-  for (let i = 0; i < xs.length; i++) {
-    const x = xs[i][0], w = xs[i][1];
-    const top = 300, h = 540;
-    s += '<path d="M' + x + ' ' + (top + h) + 'V' + (top + 78)
-      + 'a' + (w / 2) + ' ' + (w / 2) + ' 0 0 1 ' + w + ' 0v' + (h - 78) + 'z" fill="url(#dyPane)"/>';
-    s += '<path d="M' + x + ' ' + (top + h) + 'V' + (top + 78)
-      + 'a' + (w / 2) + ' ' + (w / 2) + ' 0 0 1 ' + w + ' 0v' + (h - 78) + 'z"'
-      + ' fill="none" stroke="#141210" stroke-width="11"/>';
-    // mullion and transoms
-    s += '<path d="M' + (x + w / 2) + ' ' + (top + 24) + 'v' + (h - 24)
-      + 'M' + x + ' ' + (top + 250) + 'h' + w + 'M' + x + ' ' + (top + 400) + 'h' + w
-      + '" stroke="#141210" stroke-width="7"/>';
-  }
-  return s + '</g>';
-}
-function _courses() {
-  let s = '<g opacity=".34">';
-  for (let i = 0; i < 22; i++) {
-    const y = 240 + i * 58;
-    s += '<path d="M0 ' + y + 'h1100" stroke="#3b3327" stroke-width="1.6"/>';
+  for (const x of DY_WIN.xs) {
+    const d = 'M' + x + ' ' + sill + 'V' + sp
+      + 'A' + w + ' ' + w + ' 0 0 1 ' + (x + w / 2) + ' ' + apex.toFixed(1)
+      + 'A' + w + ' ' + w + ' 0 0 1 ' + (x + w) + ' ' + sp
+      + 'V' + sill + 'Z';
+    s += '<path d="' + d + '" fill="url(#dyPane)"/>'
+      + '<path d="' + d + '" fill="none" stroke="#141210" stroke-width="9"/>'
+      // one mullion to the springing, one transom a third of the way down
+      + '<path d="M' + (x + w / 2) + ' ' + sp + 'V' + sill
+      + 'M' + x + ' ' + (sp + (sill - sp) / 3).toFixed(0) + 'h' + w
+      + '" stroke="#141210" stroke-width="6"/>';
   }
   return s + '</g>';
 }
@@ -388,16 +432,25 @@ function _hallMid(seed) {
     + '<linearGradient id="dyFloor" x1="0" y1="0" x2="0" y2="1">'
     + '<stop offset="0%" stop-color="#241f18"/><stop offset="100%" stop-color="#100e0c"/>'
     + '</linearGradient></defs>'
-    + '<path d="M0 1040h1100v460H0z" fill="url(#dyFloor)"/>';
-  for (let i = 0; i < 8; i++) {
-    const y = 1040 + i * 58;
-    s += '<path d="M0 ' + y + 'h1100" stroke="#332c22" stroke-width="1.4" opacity=".6"/>';
-  }
-  // THE SHAFT. One per window, skewed as a group by the phase.
+    // The floor, and ONE line on it: where it meets the wall. The eight ruled
+    // courses that used to be here were the same hairline grid the far plane
+    // was deleted for, laid on a surface seen dead-on — which cannot have
+    // perspective and so read as graph paper rather than as flags.
+    + '<path d="M0 1040h1100v460H0z" fill="url(#dyFloor)"/>'
+    + '<path d="M0 1040h1100" stroke="#443a2c" stroke-width="2" opacity=".55"/>';
+  // THE SHAFT, and it is the one thing on this screen that keeps time. One
+  // per window, skewed as a group by the phase. Now that the windows are in
+  // the side walls the shafts RAKE INWARD — light from a side window lands
+  // across the middle of a floor, it does not fall straight down the wall it
+  // came through — which is also what makes the phase skew read as the sun
+  // moving rather than as the drawing shearing.
   s += '<g class="dy-shaft">';
-  for (const x of [214, 508, 802]) {
-    s += '<path d="M' + x + ' 320 L' + (x + 150) + ' 320 L' + (x + 330) + ' 1500 L'
-      + (x - 180) + ' 1500 Z" fill="url(#dyShaft)"/>';
+  for (const x of DY_WIN.xs) {
+    const inward = x < 550 ? 1 : -1;                 // toward the middle of the room
+    const land = x + DY_WIN.w / 2 + inward * 300;    // where the middle of it falls
+    s += '<path d="M' + x + ' ' + DY_WIN.springing + ' L' + (x + DY_WIN.w) + ' '
+      + DY_WIN.springing + ' L' + (land + 300) + ' 1500 L'
+      + (land - 300) + ' 1500 Z" fill="url(#dyShaft)"/>';
   }
   s += '</g>';
   // dust, and there is a great deal of it, because somebody has been sweeping
@@ -411,33 +464,58 @@ function _hallMid(seed) {
   return s + '</svg>';
 }
 
-/** The fore plane: the near arch, and the loose warp hanging in front of it. */
+/**
+ * The fore plane: the near arch, and nothing else.
+ *
+ * IT HAD TWO THINGS ON IT AND BOTH WERE DUPLICATES OF SOMETHING BETTER.
+ *
+ * The eight SVG cords down the right-hand side were the clearest duplicate on
+ * the screen: `.dy-warpfall` in the stylesheet draws the same eight family
+ * colours down the same strip, for the FULL page height, which is the version
+ * the plane-height invariant needs. The SVG pair stopped at 2200px and ran
+ * out of register with the CSS pair, so the right margin was two sets of
+ * coloured hairlines crossing each other at a slight angle.
+ *
+ * The two side rectangles were flat black at .92 with hard vertical seams at
+ * x=150 and x=950 — visible as seams, which is what the selection screen's
+ * gateposts were deleted for — and `.dy-vig` already lays a radial vignette
+ * over the whole page and does the job properly. They were also the reason
+ * the only two margins a viewer can actually see were painted out, which is
+ * where the windows have just been moved to.
+ */
 function _hallFore() {
-  let s = '<svg viewBox="0 0 1100 1500" preserveAspectRatio="xMidYMin slice">'
+  return '<svg viewBox="0 0 1100 1500" preserveAspectRatio="xMidYMin slice">'
     + '<path d="M0 0h1100v96c-190 40-360 60-550 60S190 136 0 96z" fill="#0d0b09"/>'
-    + '<path d="M0 0h150v1500H0z" fill="#0d0b09" opacity=".92"/>'
-    + '<path d="M950 0h150v1500H950z" fill="#0d0b09" opacity=".92"/>';
-  // THE LOOSE WARP. Eight cords in the eight family colours, hanging down the
-  // right-hand pier, moving very slightly. Nothing else on the screen is this.
-  const cols = ['#8fbf9a', '#d0576b', '#94a0cc', '#d2a44e', '#dc95b4', '#ac8fc8', '#5fb6c0', '#d9834f'];
-  s += '<g class="dy-warp">';
-  for (let i = 0; i < cols.length; i++) {
-    const x = 1006 + i * 10;
-    s += '<path class="dy-cord" d="M' + x + ' 96 q' + (i % 2 ? 8 : -8) + ' 300 0 620 q'
-      + (i % 2 ? -6 : 6) + ' 280 0 540" stroke="' + cols[i]
-      + '" stroke-width="2" fill="none" opacity=".3" style="animation-delay:'
-      + (-i * 1.7).toFixed(1) + 's"/>';
-  }
-  return s + '</g></svg>';
+    + '</svg>';
 }
 
 /**
- * The hero plate: a loom with part-woven cloth on it, in the window light.
+ * The hero plate: a loom in the window light, and nothing else.
  *
  * NOT A ROOM AND NOT A CROWD. Every other hero in this set is a place or a
  * pair of people. This one is an OBJECT, close up, because the screen's claim
  * is about a mechanism — stories that accumulate — and a mechanism is best
  * argued by showing the machine.
+ *
+ * ── WHAT WAS DELETED, AND IT IS MOST OF WHAT WAS HERE ─────────────────
+ *
+ * THE BASKET OF SPOOLS IS GONE. Six flat ellipses with a hole punched in each
+ * sat on a trapezoid, at real size, in the brightest corner of the plate:
+ * doughnuts on a tray. It is the same call the selection screen made on the
+ * door-sized hand — the left third is a graded darkness again, and a graded
+ * darkness beats a badly drawn object every time.
+ *
+ * AND THE CLOTH IS CLOTH NOW. The woven bands used to be eight DIFFERENT
+ * lengths driven off the thread count, ragged down the right-hand side, which
+ * at real size reads as a bar chart with a wooden frame around it — the one
+ * thing a loom must not look like. Weft goes selvedge to selvedge: every
+ * course is the full width of the warp, and what the day's thread count moves
+ * is HOW MUCH cloth there is, which is the honest reading of it anyway.
+ *
+ * WHAT MAKES IT READ AS A LOOM IN A SECOND is one line: the FELL, where the
+ * weaving has got to. Bare warp above it, finished cloth below it, and the
+ * shuttle lying on the fell where it was put down. That is the whole drawing,
+ * and it is also, exactly, what this screen is about.
  */
 function _heroScene(threadCount) {
   const cols = ['#8fbf9a', '#d0576b', '#94a0cc', '#d2a44e', '#dc95b4', '#ac8fc8', '#5fb6c0', '#d9834f'];
@@ -456,65 +534,63 @@ function _heroScene(threadCount) {
     + '<rect width="1100" height="470" fill="url(#dyHeroBg)"/>'
     // light coming in from the upper left, with edges
     + '<path d="M0 0 L340 0 L640 470 L0 470 Z" fill="url(#dyHeroLight)"/>';
-  // THE LOOM, off to the right so the centred lockup has somewhere to sit.
-  // (Task 4's lesson: the first mission hero put its object dead centre and it
-  // read as three faint diagonals behind the title.)
-  s += '<g transform="translate(96,0)">'
-    // uprights and beams
-    + '<path d="M690 40h22v420h-22zM1006 40h22v420h-22z" fill="#2f281e"/>'
-    + '<path d="M676 40h366v20H676zM676 250h366v16H676z" fill="#3a3025"/>';
-  // the warp: vertical threads between the beams
-  for (let i = 0; i < 26; i++) {
-    const x = 700 + i * 13;
-    s += '<path d="M' + x + ' 60v190" stroke="#6a5c46" stroke-width="1.6" opacity=".8"/>';
+
+  // ── THE LOOM ────────────────────────────────────────────────────────
+  // IN THE RIGHT THIRD AND MEASURED OFF THE LOCKUP, not merely "off to the
+  // right". The shell is 1100 wide and the centred title runs to x=792 at its
+  // widest, so the loom starts at 790 — the first version began at 640 and
+  // the cloth was drawn straight through the word DAY. It also used to be
+  // translated 96 further right than a drawing that already ended at x=1042,
+  // so the far upright was sliced off by the frame. Both found by rendering.
+  // Every number below is measured off the frame: uprights at the ends, beams
+  // across them, warp between the beams, cloth from the breast beam up to the
+  // fell.
+  const L = 790, R = 1058, TOP = 64, BREAST = 330;   // the frame
+  const warpL = L + 24, warpR = R - 24;
+  const courses = 4 + (Math.abs(Number(threadCount) || 0) % 4);  // how much cloth
+  const band = 17;
+  const fell = BREAST - courses * band;              // where the weaving got to
+
+  s += '<g>'
+    // uprights, then the two beams across them
+    + '<path d="M' + L + ' ' + TOP + 'h18v' + (452 - TOP) + 'h-18zM' + (R - 18) + ' '
+    + TOP + 'h18v' + (452 - TOP) + 'h-18z" fill="#2f281e"/>'
+    + '<path d="M' + (L - 16) + ' ' + (TOP - 20) + 'h' + (R - L + 32) + 'v24H' + (L - 16) + 'z'
+    + 'M' + (L - 16) + ' ' + BREAST + 'h' + (R - L + 32) + 'v18H' + (L - 16) + 'z" fill="#3a3025"/>';
+
+  // the warp: one even rank of threads, beam to beam
+  for (let x = warpL; x <= warpR; x += 13) {
+    s += '<path d="M' + x + ' ' + (TOP + 4) + 'V' + BREAST
+      + '" stroke="#6a5c46" stroke-width="1.6" opacity=".78"/>';
   }
-  // the woven part: bands of colour, one per family, thickest where the day
-  // actually spent its threads
-  for (let i = 0; i < cols.length; i++) {
-    const y = 60 + i * 22;
-    const w = 60 + ((threadCount + i * 3) % 7) * 38;
-    s += '<path d="M700 ' + y + 'h' + Math.min(w, 336) + 'v14H700z" fill="' + cols[i]
-      + '" opacity="' + (0.5 + (i % 3) * 0.14).toFixed(2) + '"/>';
+  // the cloth: full-width courses, selvedge to selvedge, one colour each
+  for (let i = 0; i < courses; i++) {
+    s += '<rect x="' + warpL + '" y="' + (fell + i * band) + '" width="' + (warpR - warpL)
+      + '" height="' + (band - 2) + '" fill="' + cols[i % cols.length]
+      + '" opacity="' + (0.46 + (i % 3) * 0.1).toFixed(2) + '"/>';
   }
-  // loose ends hanging off the bottom beam
-  for (let i = 0; i < cols.length; i++) {
-    const x = 706 + i * 40;
-    s += '<path class="dy-cord" d="M' + x + ' 266 q' + (i % 2 ? 10 : -10) + ' 90 2 176"'
-      + ' stroke="' + cols[i] + '" stroke-width="2.4" fill="none" opacity=".62"'
-      + ' style="animation-delay:' + (-i * 1.3).toFixed(1) + 's"/>';
+  // THE FELL. One bright line, and it is the whole reading of the drawing.
+  s += '<path d="M' + warpL + ' ' + fell + 'H' + warpR
+    + '" stroke="#f4e8c6" stroke-width="2.4" opacity=".5"/>';
+  // the shuttle, lying on the fell where it was put down: a slender pointed
+  // boat with the quill showing through the throat of it
+  const sx = warpL + 54, sy = fell + 9;
+  s += '<path d="M' + sx + ' ' + sy + 'l30-9h84l30 9-30 9h-84z"'
+    + ' fill="#4a3d2c" stroke="#6d5c42" stroke-width="2" stroke-linejoin="round"/>'
+    + '<rect x="' + (sx + 52) + '" y="' + (sy - 4) + '" width="44" height="8" rx="4"'
+    + ' fill="#d2a44e" opacity=".85"/>';
+  // loose ends falling off the breast beam, three of them
+  for (let i = 0; i < 3; i++) {
+    const x = warpL + 40 + i * 70;
+    s += '<path class="dy-cord" d="M' + x + ' ' + (BREAST + 18) + ' q'
+      + (i % 2 ? 9 : -9) + ' 60 2 128" stroke="' + cols[i * 2]
+      + '" stroke-width="2.4" fill="none" opacity=".6"'
+      + ' style="animation-delay:' + (-i * 1.7).toFixed(1) + 's"/>';
   }
-  // a shuttle resting on the cloth
-  s += '<path d="M712 176 L804 168 L816 186 L804 204 L712 196 Z" fill="#4a3d2c" stroke="#6d5c42" stroke-width="2"/>'
-    + '<path d="M736 178h56v14h-56z" fill="#d2a44e" opacity=".8"/>'
-    + '</g>'
-    // THE LEFT THIRD WAS AN EMPTY GRADIENT. A basket of wound spools on the
-    // flags, low and left, where the centred lockup is not — the same
-    // correction Task 4's mission hero needed after being rendered and looked
-    // at.
-    + '<g transform="translate(60,236)">'
-    + '<path d="M0 122 L24 42 L188 42 L212 122 Z" fill="#3b3025" stroke="#5b4a35" stroke-width="3"/>'
-    + '<path d="M18 60h176M12 82h188M6 104h200" stroke="#5b4a35" stroke-width="2" opacity=".7"/>'
-    + _spools()
-    + '</g>'
+  s += '</g>'
     + '<rect y="150" width="1100" height="320" fill="url(#dyHeroScrim)"/>'
     + '</svg>';
   return s;
-}
-
-/** Wound spools sitting in the basket, one per family. */
-function _spools() {
-  const cols = ['#8fbf9a', '#d0576b', '#94a0cc', '#d2a44e', '#dc95b4', '#ac8fc8'];
-  let s = '<g>';
-  for (let i = 0; i < cols.length; i++) {
-    const x = 26 + (i % 3) * 62 + (i > 2 ? 18 : 0);
-    const y = i > 2 ? 4 : 46;
-    s += '<ellipse cx="' + x + '" cy="' + y + '" rx="26" ry="20" fill="' + cols[i]
-      + '" opacity=".76"/>'
-      + '<ellipse cx="' + x + '" cy="' + (y - 5) + '" rx="26" ry="20" fill="none" stroke="'
-      + cols[i] + '" stroke-width="2" opacity=".5"/>'
-      + '<ellipse cx="' + x + '" cy="' + y + '" rx="8" ry="6" fill="#241f18" opacity=".7"/>';
-  }
-  return s + '</g>';
 }
 
 /** The filter bank. */
@@ -607,10 +683,15 @@ const DY_CSS = `
 }
 .dy-wash,.dy-vig,.dy-grain{position:absolute;left:0;right:0;top:${TR_NAV_TOP};bottom:0;pointer-events:none}
 .dy-far svg,.dy-mid svg,.dy-fore svg{position:absolute;inset:0;width:100%;height:100%}
-/* DARKER AND SOFTER THAN IT WAS. The first pass ran the three lancets at
-   full brightness directly behind the first cards and the top of the page
-   read as fog rather than as a lit room -- found by rendering it. */
-.dy-far {z-index:0;filter:blur(3.2px) saturate(.7) brightness(.6);opacity:.62}
+/* DARKER AND SOFTER THAN IT WAS, BUT NOT AS DARK AS IT BECAME. The first
+   pass ran three lancets at full brightness directly behind the first cards
+   and the top of the page read as fog rather than as a lit room, so it was
+   knocked back to brightness .6 / opacity .62 -- which then took the windows
+   with it once they moved out to the margins, where the vignette is at its
+   strongest and there is nothing to overpower. The fog was the windows being
+   BEHIND THE STREAM, not the plane being bright; with them out at the sides
+   the plane can come back up. Both numbers measured by rendering it. */
+.dy-far {z-index:0;filter:blur(2.6px) saturate(.75) brightness(.78);opacity:.72}
 .dy-mid {z-index:1;filter:blur(.5px) brightness(.8);opacity:.8}
 .dy-fore{z-index:2}
 .dy-wash{z-index:3}
@@ -1627,3 +1708,4 @@ export function rpBuildCastleDay(ep, observer = 'audience') {
     + '<button class="dy-btn" onclick="' + call('trCastleDayRevealAll') + '">Reveal all</button>'
     + '</div></div>';
 }
+

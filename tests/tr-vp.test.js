@@ -53,6 +53,8 @@ import { rpBuildEndgame, trEndgameRevealAll } from '../js/vp-tr/endgame.js';
 import { rpBuildCastleDay, trCastleDayRevealAll } from '../js/vp-tr/castle-day.js';
 import { rpBuildSelection, trSelectionRevealAll } from '../js/vp-tr/selection.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from '../js/vp-tr/suspicion.js';
+import { rpBuildConfessionals, trConfessionalsRevealAll, SPOKEN_POOLS,
+  _hasConfessionals } from '../js/vp-tr/confessionals.js';
 // THE CEILING, FROM THE MODULE THAT DECIDES IT. The board's wall is this number
 // and the guards compare against it rather than against a retyped 0.62.
 import { ALIGNMENT_CRED_CEILING } from '../js/knowledge.js';
@@ -1737,7 +1739,7 @@ describe('the fund the board prints is the fund the record carries', () => {
     // from anywhere outside js/tr/crowd.js.
     const FILES = ['conclave.js', 'style.js', 'scenery.js', 'round-table.js',
       'cold-open.js', 'house-status.js', 'mission.js', 'recruitment.js',
-      'suspicion.js'];
+      'suspicion.js', 'confessionals.js'];
     let scanned = 0;
     for (const f of FILES) {
       const src = readFileSync(new URL('../js/vp-tr/' + f, import.meta.url), 'utf8')
@@ -4948,9 +4950,10 @@ describe('the selection screen renders the one certainty and cannot manufacture 
     // URL('<literal>', import.meta.url))` is statically rewritten by Vite into
     // an asset URL and throws (Task 8).
     const dir = '../js/vp-tr/';
-    const files = ['selection.js', 'suspicion.js', 'conclave.js', 'round-table.js',
-      'cold-open.js', 'house-status.js', 'mission.js', 'recruitment.js', 'endgame.js',
-      'castle-day.js', 'screens.js', 'style.js', 'scenery.js'];
+    const files = ['selection.js', 'suspicion.js', 'confessionals.js', 'conclave.js',
+      'round-table.js', 'cold-open.js', 'house-status.js', 'mission.js',
+      'recruitment.js', 'endgame.js', 'castle-day.js', 'screens.js', 'style.js',
+      'scenery.js'];
     let scanned = 0, imported = 0;
     for (const f of files) {
       const src = readFileSync(new URL(dir + f, import.meta.url), 'utf8');
@@ -5693,5 +5696,735 @@ describe('the suspicion board honours the reveal pattern', () => {
       checked++;
     }
     expect(checked).toBe(2);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// PLAN 8, TASK 11 — THE CONFESSIONALS
+// ══════════════════════════════════════════════════════════════════════
+//
+// This screen is nothing but prose, and prose defects are the one class this
+// plan has never caught with an assertion — twelve of them in Task 10 alone,
+// all found by dumping a season and reading it. So the arms below deliberately
+// do NOT try to judge whether a sentence is good. They guard the four things
+// that are invisible by reading:
+//
+//   1. NOBODY SPEAKS A `certain` BELIEF. About a living person `certain` is
+//      `public` and `public` about an alignment is the turret — the pact
+//      seeing each other, or a recruit being shown it. A confessional that
+//      cited it would be the show's central secret, said out loud, by the
+//      person holding it.
+//   2. THE SPEAKER CITES NO GROUND TRUTH. Every word in a shot is composed out
+//      of the speaker's own board; `truth` is read in one place and drawn
+//      outside the frame. Mutated in BOTH directions.
+//   3. THE OBSERVER CONTRACT. Audience gets the evening; a player gets their
+//      own minute in the chair and nothing else.
+//   4. WHO SPEAKS IS NOT SILENTLY ONE KIND OF PERSON. Task 10's "Inside one
+//      head" was three Traitors every single night and no assertion noticed,
+//      because a ranking rule that always selects the same kind of person
+//      produces perfectly valid output. This one measures the distribution.
+
+/** Every row a confessional screen is registered for. */
+const CHAIRS = RUNS.flatMap(r => r.episodes.filter(e => _hasConfessionals(e))
+  .map(e => ({ ep: e, run: r })));
+
+/**
+ * The screen with every beat shown, on a reveal key nothing else uses.
+ *
+ * Reveal state is module-local and keyed by episode number, and these arms
+ * render the same row on three layers. Task 10 had two of its own arms collide
+ * at -960 and read a finished stage as a first paint, so this range starts far
+ * below every other negative key in this file (the transcript's are -1 down,
+ * the board's -700 down) and the counter only ever grows.
+ */
+let _confKey = 0;
+function confessionalsRevealed(ep, observer = 'audience') {
+  const fresh = { ...ep, num: -2000 - (_confKey++) };
+  const first = rpBuildConfessionals(fresh, observer);
+  const m = /trConfessionalsRevealAll\('confessionals',(\d+),(-?\d+)\)/.exec(first);
+  if (!m) return first;
+  trConfessionalsRevealAll('confessionals', Number(m[1]), Number(m[2]));
+  return rpBuildConfessionals(fresh, observer);
+}
+
+/** One shot's markup, from the frame to the note strip under it. */
+const shotBlocks = html => [...noCss(html)
+  .matchAll(/<div class="al-shot">([\s\S]*?)<div class="al-note">/g)].map(m => m[1]);
+
+/** Who is in this shot, read out of the element that names them. */
+const shotName = block => (/<div class="al-who-nm">([^<]+)<\/div>/.exec(block) || [])[1];
+
+/**
+ * WHAT THEY SAID, AND ONLY WHAT THEY SAID.
+ *
+ * Anchored on `<p class="al-say">` rather than on the shot, because the shot
+ * also holds the speaker's own name and their seat label, and a guard that
+ * searched the whole shot for a name would be satisfied by the caption. That
+ * is an assertion satisfied by the wrong element — this plan's most repeated
+ * shape, eight occurrences before this one.
+ */
+const saidIn = block => [...String(block)
+  .matchAll(/<p class="al-say">([\s\S]*?)<\/p>/g)].map(m => strip(m[1]));
+
+/** Every spoken line on the page, from every chair. */
+const allSaid = html => shotBlocks(html).flatMap(saidIn);
+
+/** What the camera said, which is the only place ground truth is allowed. */
+const cameraLines = html => [...noCss(html)
+  .matchAll(/<div class="al-cam-k">[\s\S]*?<\/div>([\s\S]*?)<\/div>/g)]
+  .map(m => strip(m[1])).filter(Boolean);
+
+/** The call sheet, as `{ name, gave, hit }` per slot. */
+const sheetSlots = html => [...noCss(html)
+  .matchAll(/<div class="al-slot"([^>]*)><span class="al-slot-mk"><\/span><span class="al-slot-t"><span class="al-slot-nm">([^<]+)<\/span><span class="al-slot-said">([^<]*)<\/span>/g)]
+  .map(m => ({
+    empty: / data-empty="1"/.test(m[1]),
+    hit: / data-hit="1"/.test(m[1]) ? true : (/ data-hit="0"/.test(m[1]) ? false : null),
+    name: m[2],
+    gave: /^gave (.+)$/.test(m[3]) && m[3] !== 'gave no name'
+      ? /^gave (.+)$/.exec(m[3])[1] : null,
+  }));
+
+/**
+ * A figure the closing card states, READ OUT OF THE ELEMENT THAT STATES IT.
+ *
+ * Task 5 shipped two green arms because the figure they asserted also appears
+ * legitimately elsewhere on the screen, and Task 10 shipped a `data-truth`
+ * check that matched the stylesheet. The count of names given is also the
+ * number of slots on the call sheet and often the number of chairs, so a
+ * search of the page for the digit could not fail.
+ */
+function sumValue(html, key) {
+  const re = new RegExp('<span class="al-sum-k">' + key
+    + '<\\/span><span class="al-sum-v"[^>]*>(\\d+)<');
+  const m = re.exec(noCss(html));
+  return m ? Number(m[1]) : null;
+}
+
+/** The board entry a speaker holds about a name, or null. */
+function entryOf(ep, observer, name) {
+  const b = (ep.tr.beliefs.boards || []).find(x => x.observer === observer);
+  return b ? (b.entries.find(e => e.name === name) || null) : null;
+}
+
+// ── THE READERS THEMSELVES, ASSERTED ──────────────────────────────────
+//
+// Every arm below is a negative or a comparison built on these four, so a
+// reader that finds nothing makes the whole section green for free. That is
+// the matcher-never-matches trap, and this file has shipped it once.
+describe('the confessional readers find what is there and not what is not', () => {
+  it('a real night yields shots, spoken lines, camera lines and a filled sheet', () => {
+    expect(CHAIRS.length, 'no night in four seeds produced a confessional')
+      .toBeGreaterThan(20);
+    const html = confessionalsRevealed(CHAIRS[0].ep);
+    expect(shotBlocks(html).length, 'no shot was read out of a real render')
+      .toBeGreaterThan(0);
+    expect(allSaid(html).length, 'nobody said anything').toBeGreaterThan(1);
+    expect(cameraLines(html).length, 'the camera said nothing on the audience layer')
+      .toBeGreaterThan(0);
+    const slots = sheetSlots(html);
+    expect(slots.length, 'the call sheet has no slots').toBeGreaterThan(0);
+    expect(slots.filter(s => !s.empty).length,
+      'every slot on a fully revealed sheet is still empty').toBeGreaterThan(0);
+    expect(sumValue(html, 'Names given'), 'the closing figure could not be read')
+      .not.toBe(null);
+    // AND THE NEGATIVE HALF: a reader that matches everything is as useless as
+    // one that matches nothing.
+    expect(shotName('<div class="al-who-nm2">Nobody</div>')).toBe(undefined);
+    expect(saidIn('<p class="al-nope">Nothing</p>')).toEqual([]);
+    expect(sumValue(html, 'Marshmallows Awarded')).toBe(null);
+  });
+});
+
+// ── GUARD 1: THE TURRET IS NEVER SPOKEN ───────────────────────────────
+//
+// MUTATION: drop `!e.certain` from `_speakable()` in js/vp-tr/confessionals.js.
+// RESULT: RED — a Traitor's opening card names a fellow Traitor.
+describe('nobody in that chair says the one thing only the turret could tell them', () => {
+  it('no spoken line names anybody the speaker is certain about', () => {
+    let shots = 0, spokenNames = 0, speakersHoldingCertainty = 0, certainNames = 0;
+    for (const { ep } of CHAIRS) {
+      const html = confessionalsRevealed(ep);
+      for (const block of shotBlocks(html)) {
+        shots++;
+        const who = shotName(block);
+        const said = saidIn(block).join(' ');
+        const board = (ep.tr.beliefs.boards || []).find(x => x.observer === who);
+        const sure = (board ? board.entries : []).filter(e => e.certain);
+        if (sure.length) speakersHoldingCertainty++;
+        for (const e of sure) {
+          certainNames++;
+          expect(mentions(said, e.name),
+            `ep ${ep.num}: ${who} said "${e.name}" out loud and is certain about them`)
+            .toBe(false);
+        }
+        // NON-VACUITY, and it is the half that matters: the arm above is a
+        // negative over a set, so it passes for free if nobody ever speaks a
+        // name at all.
+        for (const n of ep.tr.beliefs.living) {
+          if (n !== who && mentions(said, n)) spokenNames++;
+        }
+      }
+    }
+    expect(shots, 'no shot was examined').toBeGreaterThan(50);
+    expect(spokenNames, 'nobody named anybody, so the negative above is free')
+      .toBeGreaterThan(30);
+    expect(speakersHoldingCertainty,
+      'not one speaker held a certainty, so the filter was never exercised')
+      .toBeGreaterThan(10);
+    expect(certainNames, 'no certainty existed to be withheld').toBeGreaterThan(10);
+  });
+
+  it('and a Traitor in the chair never names the pact, which is the same rule '
+    + 'seen from the inside', () => {
+    let pactSpeakers = 0, pactNamesWithheld = 0, pactSpokeSomebody = 0;
+    for (const { ep } of CHAIRS) {
+      const truth = ep.tr.beliefs.truth || {};
+      const html = confessionalsRevealed(ep);
+      for (const block of shotBlocks(html)) {
+        const who = shotName(block);
+        if (truth[who] !== 'traitor') continue;
+        pactSpeakers++;
+        const said = saidIn(block).join(' ');
+        const board = (ep.tr.beliefs.boards || []).find(x => x.observer === who);
+        for (const e of (board ? board.entries : [])) {
+          if (!e.certain) continue;
+          pactNamesWithheld++;
+          expect(mentions(said, e.name),
+            `ep ${ep.num}: the Traitor ${who} named ${e.name}, who they were shown `
+            + 'in the turret').toBe(false);
+        }
+        if (ep.tr.beliefs.living.some(n => n !== who && mentions(said, n))) {
+          pactSpokeSomebody++;
+        }
+      }
+    }
+    expect(pactSpeakers, 'no Traitor ever sat in the chair').toBeGreaterThan(20);
+    expect(pactNamesWithheld, 'no Traitor held a turret certainty about anybody living')
+      .toBeGreaterThan(10);
+    // AND THEY ARE NOT SIMPLY SILENT. A pact that never speaks would satisfy
+    // every assertion above and would also be a worse screen.
+    expect(pactSpokeSomebody, 'the pact never named anybody at all, so "never names '
+      + 'the pact" is a property of them saying nothing').toBeGreaterThan(5);
+  });
+
+  it('and no spoken POOL can say what its speaker is, whatever a render draws', () => {
+    // SWEPT OVER THE SOURCE, because a line nothing happened to draw is a line
+    // that ships. `SPOKEN_POOLS` is every pool a person's mouth is fed from;
+    // the camera pools are deliberately not in it, being the audience's voice.
+    const BANNED = [
+      /\btraitors?\b/i, /\bfaithfuls?\b/i, /\bthe pact\b/i, /\bthe turret\b/i,
+      /\bmy fellow\b/i, /\bwe (chose|picked|killed|decided|agreed on)\b/i,
+    ];
+    // GUARD ON THE GUARD: every one of those has to be able to fire, or this
+    // arm is six regexes that match nothing.
+    const PLANTED = ['I am a Traitor.', 'I am a Faithful, obviously.',
+      'the pact meets at midnight', 'we went up to the turret',
+      'my fellow will back me', 'we chose him last night'];
+    PLANTED.forEach((p, i) => {
+      expect(BANNED[i].test(p), `banned pattern ${i} does not match its own example`)
+        .toBe(true);
+    });
+    let lines = 0, pools = 0;
+    for (const [name, pool] of Object.entries(SPOKEN_POOLS)) {
+      pools++;
+      expect(Array.isArray(pool) && pool.length >= 4,
+        `${name} is not a pool of four or more`).toBe(true);
+      for (const line of pool) {
+        lines++;
+        for (const re of BANNED) {
+          expect(re.test(line), `${name} puts "${line}" in somebody's mouth, and it `
+            + 'says what they are').toBe(false);
+        }
+      }
+    }
+    expect(pools, 'no spoken pool was swept').toBeGreaterThan(15);
+    expect(lines, 'the pools are empty').toBeGreaterThan(120);
+  });
+});
+
+// ── GUARD 2: THE TRUTH GATE, MUTATED IN BOTH DIRECTIONS ───────────────
+//
+// MUTATION A: `const truthKnown = true;` in `_view()`. RESULT: RED — a player
+//   layer renders every seat and the camera's line under each one.
+// MUTATION B: `const truthKnown = false;`. RESULT: RED — the audience layer
+//   loses the camera entirely and the whole point of the screen with it.
+//
+// A ONE-WAY MUTATION ON A TWO-STATE GATE PROVES HALF OF IT. Task 3's technique,
+// and this is its eighth use in the plan; Task 10 shipped a `truthKnown` that
+// nothing branched on and only direction A found it.
+describe('what the camera knows is the audience’s and nobody else’s', () => {
+  it('the audience gets every seat and a verdict under each one', () => {
+    let checked = 0, verdicts = 0;
+    for (const { ep } of CHAIRS) {
+      const html = confessionalsRevealed(ep, 'audience');
+      const shots = shotBlocks(html);
+      const cams = cameraLines(html);
+      expect(cams.length, `ep ${ep.num}: a verdict is missing from a seat`)
+        .toBe(shots.length);
+      verdicts += cams.length;
+      checked++;
+    }
+    expect(checked, 'no audience render was examined').toBeGreaterThan(20);
+    expect(verdicts, 'the camera never said anything').toBeGreaterThan(50);
+  });
+
+  it('and a player gets their own minute and no verdict at all', () => {
+    let layers = 0, differed = 0;
+    for (const { ep } of CHAIRS) {
+      const aud = confessionalsRevealed(ep, 'audience');
+      const seats = shotBlocks(aud).map(shotName).filter(Boolean);
+      if (!seats.length) continue;
+      for (const who of seats) {
+        const mine = confessionalsRevealed(ep, 'player:' + who);
+        layers++;
+        expect(cameraLines(mine).length,
+          `ep ${ep.num}: ${who} was handed the camera's verdict`).toBe(0);
+        expect(noCss(mine).indexOf('class="al-cam"'),
+          `ep ${ep.num}: ${who} was handed the camera strip`).toBe(-1);
+        const blocks = shotBlocks(mine);
+        expect(blocks.length, `ep ${ep.num}: ${who} was shown ${blocks.length} chairs`)
+          .toBe(1);
+        expect(shotName(blocks[0]), `ep ${ep.num}: ${who} was shown somebody else`)
+          .toBe(who);
+        // AND THE TWO LAYERS MUST ACTUALLY DIFFER SOMEWHERE, or the comparison
+        // proves nothing. Task 6 shipped exactly that: an observer arm that
+        // compared a withheld render against itself.
+        if (strip(noCss(mine)) !== strip(noCss(aud))) differed++;
+      }
+    }
+    expect(layers, 'no player layer was rendered').toBeGreaterThan(40);
+    expect(differed, 'the player layer is identical to the audience layer')
+      .toBe(layers);
+  });
+
+  it('and somebody who was not in the chair is told so rather than shown a blank', () => {
+    let notices = 0;
+    for (const { ep } of CHAIRS) {
+      const aud = confessionalsRevealed(ep, 'audience');
+      const seats = new Set(shotBlocks(aud).map(shotName));
+      const outsider = (ep.tr.beliefs.living || []).find(n => !seats.has(n));
+      if (!outsider) continue;
+      const mine = confessionalsRevealed(ep, 'player:' + outsider);
+      expect(shotBlocks(mine).length,
+        `ep ${ep.num}: ${outsider} was shown a chair they were not in`).toBe(0);
+      expect(strip(mine)).toContain('You Were Not In The Chair');
+      notices++;
+    }
+    expect(notices, 'nobody was ever outside the slate, so the notice is unchecked')
+      .toBeGreaterThan(20);
+  });
+});
+
+// ── GUARD 3: A SPEAKER CITES ONLY WHAT THEY HOLD ──────────────────────
+//
+// MUTATION: pass `v.truth` into `_saidBy` and append the verdict to the spoken
+// lines. RESULT: RED — the alignment words appear inside `<p class="al-say">`.
+describe('a confessional is built out of belief and cannot reach the answer', () => {
+  it('no alignment word is ever inside a spoken line, and every one of them is '
+    + 'inside a camera line', () => {
+    const WORDS = /\b(traitors?|faithfuls?)\b/i;
+    let spoken = 0, camWithWord = 0, cams = 0;
+    for (const { ep } of CHAIRS) {
+      const html = confessionalsRevealed(ep);
+      for (const line of allSaid(html)) {
+        spoken++;
+        expect(WORDS.test(line),
+          `ep ${ep.num}: a confessional said "${line}"`).toBe(false);
+      }
+      for (const line of cameraLines(html)) {
+        cams++;
+        if (WORDS.test(line)) camWithWord++;
+      }
+    }
+    expect(spoken, 'nothing was spoken, so the negative above is free')
+      .toBeGreaterThan(150);
+    expect(cams, 'the camera never spoke').toBeGreaterThan(50);
+    // THE POSITIVE HALF. If the words appear nowhere at all the arm above is a
+    // regex that cannot fire on this page.
+    expect(camWithWord, 'the camera never said what anybody was, so the whole '
+      + 'screen is belief with no answer under it').toBeGreaterThan(30);
+  });
+
+  it('and every name a speaker says is a name they hold a belief about', () => {
+    let named = 0;
+    for (const { ep } of CHAIRS) {
+      const html = confessionalsRevealed(ep);
+      for (const block of shotBlocks(html)) {
+        const who = shotName(block);
+        const said = saidIn(block).join(' ');
+        for (const n of ep.tr.beliefs.living) {
+          if (n === who || !mentions(said, n)) continue;
+          named++;
+          expect(entryOf(ep, who, n),
+            `ep ${ep.num}: ${who} named ${n} and holds no belief about them at all`)
+            .toBeTruthy();
+        }
+      }
+    }
+    expect(named, 'nobody named anybody').toBeGreaterThan(30);
+  });
+});
+
+// ── GUARD 4: WHO SPEAKS IS COMPOSED, NOT RANKED ───────────────────────
+//
+// THE GUARD TASK 10 NEEDED AND DID NOT HAVE. Its "Inside one head" section was
+// three Traitors every single night for nine tasks' worth of seasons, because
+// it sorted every board by its strongest read and a turret belief is worth
+// four times what anybody else holds. Nothing was wrong with the output; the
+// SELECTION was wrong, and only a measurement can see that.
+//
+// MUTATION: `_slate()` replaced by Task 10's own rule — every board, ranked by
+//   its strongest entry, top four. RESULT: RED — the chair becomes the pact.
+// NON-MUTATION, RUN AND DISCARDED: `return ranked;` at the end of `_rotate()`.
+//   GREEN, and correctly: distinct speakers per season move 10.3 -> 9.6 over
+//   twenty seasons, because the accused seat rotates over three names and the
+//   pact seat over three people whatever `_rotate` does. The rotation is a
+//   spread, not the mechanism. The mechanism is the four named seats, so that
+//   is what the mutation above attacks and what the band below measures.
+describe('the chair is not filled by the same kind of person every night', () => {
+  it('both sides of the castle speak, and neither owns the room', () => {
+    let traitor = 0, faithful = 0;
+    const bySeason = RUNS.map(() => new Map());
+    RUNS.forEach((r, si) => {
+      for (const e of r.episodes) {
+        if (!_hasConfessionals(e)) continue;
+        const truth = e.tr.beliefs.truth || {};
+        for (const block of shotBlocks(confessionalsRevealed(e))) {
+          const who = shotName(block);
+          if (truth[who] === 'traitor') traitor++; else faithful++;
+          bySeason[si].set(who, (bySeason[si].get(who) || 0) + 1);
+        }
+      }
+    });
+    const total = traitor + faithful;
+    expect(total, 'nobody sat in the chair in four seasons').toBeGreaterThan(60);
+    // MEASURED over 200 seasons: 41.8% of speakers are Traitors, against a base
+    // rate of about 20% of the living room. That is DELIBERATE and it is the
+    // difference between a composed slate and a ranked one — one of the four
+    // seats is the pact's and says so — but a band is what stops it drifting
+    // to "the pact, every night", which is exactly what Task 10 shipped.
+    const share = traitor / total;
+    expect(share, `Traitors are ${(share * 100).toFixed(1)}% of the chair`)
+      .toBeGreaterThan(0.2);
+    expect(share, `Traitors are ${(share * 100).toFixed(1)}% of the chair`)
+      .toBeLessThan(0.6);
+    // AND NO ONE PERSON OWNS A SEASON. Measured over 200 seasons: 9.9 distinct
+    // speakers a season out of twenty cast, and the worst single person speaks
+    // eight times. Without the rotation the shortlist collapses to its winner.
+    for (const [si, m] of bySeason.entries()) {
+      expect(m.size, `season ${si} put only ${m.size} different people in the chair`)
+        .toBeGreaterThan(5);
+    }
+  });
+});
+
+// ── GUARD 5: THE CALL SHEET DOES NOT KNOW YET ─────────────────────────
+//
+// MUTATION: `_sheet()` reads `state.stepMeta` rather than the slice up to
+// `idx`. RESULT: RED — the first paint knows every name and every verdict.
+describe('the call sheet learns a slot when the reader does', () => {
+  it('the first paint has an empty sheet and the finished one has none', () => {
+    let checked = 0;
+    for (const { ep } of CHAIRS) {
+      const fresh = { ...ep, num: -2000 - (_confKey++) };
+      const first = rpBuildConfessionals(fresh, 'audience');
+      const slots = sheetSlots(first);
+      expect(slots.length, `ep ${ep.num}: the sheet has no slots at all`)
+        .toBeGreaterThan(0);
+      expect(slots.every(s => s.empty),
+        `ep ${ep.num}: the sheet is filled in before anybody has been read`).toBe(true);
+      expect(/ data-hit="/.test(noCss(first)),
+        `ep ${ep.num}: a verdict mark is on the sheet at the first paint`).toBe(false);
+      // AND THE FIRST PAINT IS NOT BLANK, which is the opposite failure and the
+      // one conclave.js actually shipped.
+      expect(/al-beat al-vis/.test(first),
+        `ep ${ep.num}: nothing is visible until the reader clicks`).toBe(true);
+      const done = sheetSlots(confessionalsRevealed(ep));
+      expect(done.some(s => s.empty),
+        `ep ${ep.num}: a slot is still empty on a finished sheet`).toBe(false);
+      checked++;
+    }
+    expect(checked, 'no sheet was examined').toBeGreaterThan(20);
+  });
+});
+
+// ── GUARD 6: THE CLOSING FIGURES ARE THE EVENING'S ────────────────────
+//
+// A SENTENCE ASSERTING A FACT ABOUT THE STATE MUST AGREE WITH THE STATE — three
+// occurrences in Plan 6 and a standing requirement since. The first draft of
+// this screen printed "Not one of those names was right" over an evening in
+// which nobody gave a name, and named somebody as unmentioned who had spent the
+// opening card being asked about it. Both were found by reading the dump; both
+// are pinned here.
+describe('the closing card counts the evening it just showed', () => {
+  it('the names given and the names that landed are the ones on the sheet', () => {
+    let checked = 0, hits = 0;
+    for (const { ep } of CHAIRS) {
+      const html = confessionalsRevealed(ep);
+      const truth = ep.tr.beliefs.truth || {};
+      const gave = sheetSlots(html).map(s => s.gave).filter(Boolean);
+      expect(sumValue(html, 'Names given'),
+        `ep ${ep.num}: the closing card counted a different evening`).toBe(gave.length);
+      const right = gave.filter(n => truth[n] === 'traitor').length;
+      hits += right;
+      expect(sumValue(html, 'Names that were right'),
+        `ep ${ep.num}: the closing card scored a different evening`).toBe(right);
+      checked++;
+    }
+    expect(checked, 'no closing card was read').toBeGreaterThan(20);
+    expect(hits, 'nobody was ever right, so the scoring half is unexercised')
+      .toBeGreaterThan(5);
+  });
+
+  it('and nobody who sat in that room is called unmentioned', () => {
+    let sentences = 0;
+    for (const { ep } of CHAIRS) {
+      const html = confessionalsRevealed(ep);
+      const slots = sheetSlots(html);
+      const onScreen = new Set([...slots.map(s => s.name),
+        ...slots.map(s => s.gave).filter(Boolean)]);
+      // Read out of the closing card, not out of the page: "was not mentioned"
+      // is a phrase, and the names it must avoid are on the page in six other
+      // places.
+      const close = /<div class="al-card" data-tone="[a-z]+"><div class="al-label">[\s\S]*?And The Lamp Goes Off<\/h3>([\s\S]*?)<div class="al-sums">/
+        .exec(noCss(html));
+      if (!close) continue;
+      const text = strip(close[1]);
+      for (const n of onScreen) {
+        if (!mentions(text, n)) continue;
+        // The only name the closing card may carry is the quiet one, and it
+        // may not be anybody who was on screen.
+        expect(false, `ep ${ep.num}: the closing card names ${n}, who was in the room`)
+          .toBe(true);
+      }
+      if (/not mentioned|Nobody said|without being named|did not come up|Not one of them said|Nobody thought of/.test(text)) {
+        sentences++;
+      }
+    }
+    expect(sentences, 'no night ever named a quiet Traitor, so the arm is free')
+      .toBeGreaterThan(5);
+  });
+});
+
+// ── GUARD 7: NO OTHER SHOW'S WORDS ────────────────────────────────────
+//
+// MUTATION A: "houseguests" into a line the seeds draw every night. RESULT: RED.
+// MUTATION B: "since tribal council" into `CLOSE_MINE`, which only the player
+//   layer reaches and which four seeds draw a handful of times. RESULT: RED.
+//
+// TASK 9 SHIPPED "house" THIRTEEN TIMES over a castle and no guard caught it,
+// so this one sweeps BOTH layers and asserts that the word list it is using has
+// actually reached the words on this page.
+describe("nobody in the alcove speaks another show's language", () => {
+  it('not on the audience layer, not on a player layer, and not in the pools', () => {
+    let scanned = 0, chars = 0;
+    for (const { ep } of CHAIRS) {
+      const layers = [confessionalsRevealed(ep, 'audience')];
+      const seats = shotBlocks(layers[0]).map(shotName).filter(Boolean);
+      if (seats[0]) layers.push(confessionalsRevealed(ep, 'player:' + seats[0]));
+      const outsider = (ep.tr.beliefs.living || []).find(n => !seats.includes(n));
+      if (outsider) layers.push(confessionalsRevealed(ep, 'player:' + outsider));
+      for (const html of layers) {
+        const text = strip(screenNarration(html));
+        chars += text.length;
+        expect(foreignWordsIn(text, 'traitors'),
+          `ep ${ep.num}: the alcove used another show's words`).toEqual([]);
+        scanned++;
+      }
+    }
+    expect(scanned, 'no layer was swept').toBeGreaterThan(60);
+    expect(chars, 'the sweep read almost nothing').toBeGreaterThan(100000);
+    // THE WORD LIST HAS TO REACH THIS PAGE. Task 9's thirteen "house"es passed
+    // because the copy of the list that mattered was the weaker one; this
+    // asserts the list being used actually forbids the word that got through.
+    expect(forbiddenFor('traitors')).toContain('house');
+    expect(foreignWordsIn('they went back to the house and waited', 'traitors'))
+      .toEqual(['house']);
+  });
+});
+
+// ── GUARD 8: THE PROSE DOES NOT LOOP ──────────────────────────────────
+//
+// PLAN 5's HARDEST-WON NUMBER, applied to a screen instead of an event pool.
+//
+// MEASURED over 200 seasons, three times, at each stage of the fix:
+//   flat pools, `hash % length`      88% of seasons repeat a line 3x, 27% 4x
+//   flat pools, top-bit index        50% / 8%
+//   paired halves, top-bit index      5.5% / 0%
+//
+// The band below is against the LAST of those and is set the way Plan 5 set its
+// own — a share with room in it rather than a maximum sitting on its own
+// threshold. Twenty-four seasons is a small sample for a 5.5% event, so this
+// arm carries the ABSOLUTE backstop (never four in a season) as its real
+// assertion and the share as a sanity band; the 200-season figure lives in the
+// task report, and the arm below it is the one with teeth on a sample this
+// size.
+describe('a season does not print the same confessional line three times', () => {
+  it('and never four, across every seed this file plays', () => {
+    const worst = [];
+    for (const r of [...RUNS, ...END_RUNS]) {
+      const m = new Map();
+      for (const e of r.episodes) {
+        if (!_hasConfessionals(e)) continue;
+        const html = confessionalsRevealed(e);
+        for (const line of [...allSaid(html), ...cameraLines(html)]) {
+          if (line.length < 25) continue;
+          m.set(line, (m.get(line) || 0) + 1);
+        }
+      }
+      if (m.size) worst.push({ n: Math.max(...m.values()), m });
+    }
+    expect(worst.length, 'no season produced a confessional line at all')
+      .toBeGreaterThan(20);
+    const over = worst.filter(w => w.n >= 4);
+    expect(over.map(w => [...w.m].sort((a, b) => b[1] - a[1])[0].join(' × ')),
+      'a season printed one confessional four times').toEqual([]);
+    const loud = worst.filter(w => w.n >= 3).length;
+    expect(loud / worst.length, `${loud} of ${worst.length} seasons repeated a line `
+      + 'three times — the alcove is looping').toBeLessThan(0.25);
+  });
+
+  it('and the halves genuinely decorrelate, which is what the hash finaliser buys', () => {
+    // THE ARM WITH TEETH, and it exists because the obvious mutation had none.
+    //
+    // Reverting `_idx` to `hash % len` is a NON-mutation while `_hash` carries
+    // its finaliser: 717 distinct spoken lines either way, over twenty seasons.
+    // What the repetition actually rested on is the finaliser itself — raw
+    // FNV-1a puts two keys that differ only in their last character within
+    // about 1/256 of each other, and every line on this screen is a pair drawn
+    // with exactly such a pair of keys, so half B could only ever land on half
+    // A's index. MEASURED, same twenty seasons:
+    //
+    //   with the finaliser      1,162 spoken lines, 717 distinct
+    //   without it              1,183 spoken lines, 417 distinct
+    //
+    // MUTATION: delete the three finalising lines from `_hash`. RESULT: RED.
+    let total = 0;
+    const distinct = new Set();
+    for (const r of [...RUNS, ...END_RUNS]) {
+      for (const e of r.episodes) {
+        if (!_hasConfessionals(e)) continue;
+        for (const line of allSaid(confessionalsRevealed(e))) {
+          total++; distinct.add(line);
+        }
+      }
+    }
+    expect(total, 'nothing was spoken, so the ratio below is undefined')
+      .toBeGreaterThan(1000);
+    expect(distinct.size, `${distinct.size} distinct lines out of ${total} — the two `
+      + 'halves of every sentence are landing on the same index')
+      .toBeGreaterThan(600);
+  });
+
+  it('and every shape it draws from is at least four wide, halves included', () => {
+    // A PROPERTY OF THE SOURCE, not of a sample. Plan 5's variety floor is four
+    // and its pools' median is six; the paired shapes here are eight and eight,
+    // and the arm below is what fails the day somebody collapses one.
+    let pools = 0;
+    for (const [name, pool] of Object.entries(SPOKEN_POOLS)) {
+      expect(pool.length, `${name} says it ${pool.length} way(s)`)
+        .toBeGreaterThanOrEqual(4);
+      expect(new Set(pool).size, `${name} holds a duplicate line`).toBe(pool.length);
+      pools++;
+    }
+    expect(pools, 'no pool was measured').toBeGreaterThan(15);
+  });
+});
+
+// ── GUARD 9: REGISTERED, REACHABLE, AND IN THE RIGHT PLACE ────────────
+//
+// MUTATION A: rename the screen's id in `TRAITORS_SCREENS`. RESULT: RED.
+// MUTATION B: `when: r => !!(r.tr && r.tr.beliefs)`. RESULT: RED — the screen
+//   registers on the first night, when every board in the building is the
+//   turret and there is nothing anybody could say out loud.
+describe('the alcove is registered, reachable, and sits where the night puts it', () => {
+  it('after the board and before the day book, on the nights that have one', () => {
+    const ids = TRAITORS_SCREENS.map(s => s.id);
+    expect(ids, 'the screen is not registered').toContain('tr-confessionals');
+    expect(ids.indexOf('tr-confessionals'),
+      'the alcove is drawn before the board it is the voice of')
+      .toBeGreaterThan(ids.indexOf('tr-suspicion'));
+    expect(ids.indexOf('tr-confessionals'),
+      'the alcove is drawn after the ledger the day is ruled off in')
+      .toBeLessThan(ids.indexOf('tr-status'));
+    const entry = TRAITORS_SCREENS.find(s => s.id === 'tr-confessionals');
+    expect(entry.badge && entry.badge.text, 'no timeline pill').toBeTruthy();
+  });
+
+  it('and a played season really produces it, off buildVPScreens', () => {
+    let seen = 0, firstNights = 0;
+    for (const r of RUNS) {
+      for (const e of r.episodes) {
+        const screens = buildVPScreens(e).filter(s => s.id === 'tr-confessionals');
+        if (_hasConfessionals(e)) {
+          expect(screens.length, `ep ${e.num}: registered and not reachable`).toBe(1);
+          expect(strip(screens[0].html).length,
+            `ep ${e.num}: the screen rendered nothing`).toBeGreaterThan(400);
+          seen++;
+        } else {
+          expect(screens.length, `ep ${e.num}: reachable with nothing to say`).toBe(0);
+          if (e.num === 1) firstNights++;
+        }
+      }
+    }
+    expect(seen, 'no season reached the alcove').toBeGreaterThan(20);
+    // THE NIGHT THE `when` EXISTS FOR. Every board on the first night is the
+    // turret, and the turret is the one thing nobody says to a camera.
+    expect(firstNights, 'every first night produced a confessional, so the gate '
+      + 'is not doing what it says').toBeGreaterThan(2);
+  });
+});
+
+// ── GUARD 10: THE SHELL, THE PLANES AND THE NAV OFFSET ────────────────
+describe('the alcove is a room that runs the whole page', () => {
+  it('1100px and centred, no emoji, a reduced-motion escape, and the nav cleared', () => {
+    const html = confessionalsRevealed(CHAIRS[0].ep);
+    expect(html).toContain('max-width:1100px;margin:0 auto');
+    expect(html).toContain('top:' + TR_NAV_TOP);
+    expect(/@media\(prefers-reduced-motion:reduce\)/.test(html),
+      'an animation with no reduced-motion escape').toBe(true);
+    expect(/transform-box:fill-box/.test(html),
+      'an animated SVG element without transform-box').toBe(true);
+    const emoji = strip(html).match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
+    expect(emoji, 'there is an emoji in the alcove').toBe(null);
+  });
+
+  it('and both full-height layers run from the nav to the foot of the page', () => {
+    // The invariant Tasks 5, 8, 9 and 10 each paid for separately: a plane that
+    // stops leaves a page that is "really black and empty" below the drawing.
+    const css = /<style>([\s\S]*?)<\/style>/.exec(confessionalsRevealed(CHAIRS[0].ep))[1];
+    expect(css.length, 'the screen rendered no stylesheet').toBeGreaterThan(2000);
+    let checked = 0;
+    for (const layer of ['.al-dark{', '.al-drape{']) {
+      const at = css.indexOf(layer);
+      expect(at, `${layer} is not declared at all`).toBeGreaterThan(-1);
+      const block = css.slice(at, css.indexOf('}', at));
+      expect(block, `${layer} does not start below the nav bar`)
+        .toContain('top:' + TR_NAV_TOP);
+      expect(block, `${layer} stops somewhere rather than running to the foot`)
+        .toContain('bottom:0');
+      expect(/height:\s*\d/.test(block), `${layer} is height-capped`).toBe(false);
+      checked++;
+    }
+    expect(checked).toBe(2);
+  });
+
+  it('and the reveal contract holds: a counter that is the step count, and controls', () => {
+    let checked = 0;
+    for (const { ep } of CHAIRS) {
+      const fresh = { ...ep, num: -2000 - (_confKey++) };
+      const html = rpBuildConfessionals(fresh, 'audience');
+      const call = /trConfessionalsRevealAll\('confessionals',(\d+),(-?\d+)\)/.exec(html);
+      expect(call, `ep ${ep.num}: no reveal-all handler`).toBeTruthy();
+      const total = Number(call[1]);
+      const steps = [...html.matchAll(/id="al-step-confessionals-(\d+)"/g)].length;
+      expect(total, `ep ${ep.num}: the counter total is not the step count`).toBe(steps);
+      expect(html).toContain('id="al-counter-confessionals"');
+      expect(html).toContain('id="al-controls-confessionals"');
+      expect(html).toContain('id="al-stage-inner"');
+      checked++;
+    }
+    expect(checked, 'no reveal contract was checked').toBeGreaterThan(20);
   });
 });

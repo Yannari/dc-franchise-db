@@ -26,6 +26,8 @@ import { rpBuildEndgame, trEndgameRevealAll } from './endgame.js';
 import { rpBuildCastleDay, trCastleDayRevealAll } from './castle-day.js';
 import { rpBuildSelection, trSelectionRevealAll } from './selection.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
+import { rpBuildConfessionals, trConfessionalsRevealAll, _hasConfessionals }
+  from './confessionals.js';
 
 /**
  * IN THE ORDER THE CASTLE LIVES THEM.
@@ -140,6 +142,25 @@ export const TRAITORS_SCREENS = [
       && r.tr.beliefs.castle.length),
     build: rpBuildSuspicion, revealAll: trSuspicionRevealAll,
     revealAllName: 'trSuspicionRevealAll' },
+  // -- THE CHAIR, AND WHAT GETS SAID IN IT (Plan 8, Task 11) -----------
+  //
+  // AFTER THE BOARD AND BEFORE THE BOOK, for the reason the board is after the
+  // table: `tr.beliefs` is snapshotted at the END of the night, so a
+  // confessional drawn any earlier would have somebody reacting to a
+  // banishment two screens before the banishment. The board is the measurement
+  // and this is the voice -- the instrument first, then the people, then the
+  // ledger.
+  //
+  // `when` ASKS THE SCREEN'S OWN FILE. On night one the only boards in the
+  // building are the pact's and every entry on them is the turret, which is
+  // the one thing nobody says out loud, so the chair would stand empty. That
+  // condition is a property of what a confessional can be built from, and this
+  // list holds one copy of every rule rather than a second copy of that one.
+  { id: 'tr-confessionals', label: 'The Alcove', suffix: 'confessionals',
+    badge: { text: 'Confessionals', color: '#d08c72' },
+    when: _hasConfessionals,
+    build: rpBuildConfessionals, revealAll: trConfessionalsRevealAll,
+    revealAllName: 'trConfessionalsRevealAll' },
   { id: 'tr-status', label: 'The Day Book', suffix: 'housestatus',
     when: r => !!(r.tr && Array.isArray(r.tr.cast) && r.tr.cast.length),
     build: rpBuildHouseStatus, revealAll: trHouseStatusRevealAll, revealAllName: 'trHouseStatusRevealAll' },

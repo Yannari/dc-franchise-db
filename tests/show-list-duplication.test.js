@@ -152,7 +152,18 @@ const COMPARISON_BACKLOG = {
   'js/quick-setup.js':            7,
   'js/rankings-update.js':        1,
   'js/romance.js':                1,
-  'js/run-ui.js':                 9,
+  // 9 -> 11 for the castle's run wiring (Plan 8, Task 7), and the two are two
+  // DIFFERENT questions rather than one asked twice. `_isCastleRow(ep)` asks
+  // what a stored episode IS, because the timeline, the episode card and the
+  // transcript all draw a history that can outlive the config; `_castle` in
+  // the Season Hub asks what the season being SET UP is. Three copies of the
+  // first were collapsed into the helper before this number was raised, and
+  // that collapse also removed a two-show ternary — the ratchet below is
+  // unchanged. Neither is a vocabulary branch: a castle has no tribes and no
+  // merge, which is a fact about the GAME, and the words on both surfaces come
+  // from exitVerbs()/roundExits(). Raised deliberately, in the commit that
+  // spends it.
+  'js/run-ui.js':                 11,
   'js/social/archive.js':         3,
   'js/social/events.js':          2,
   'js/social/live.js':            1,
@@ -164,6 +175,11 @@ const COMPARISON_BACKLOG = {
   // no Tribal Council -- so there is nothing to branch on inside one function.
   // Raised deliberately, in the commit that spends it.
   'js/text-backlog.js':           2,
+  // The run loop's castle branch (Plan 8, Task 7). One comparison, and it is
+  // the same shape js/bb-run.js's `isBigBrotherSeason` has for the same
+  // reason: which ENGINE a season plays is not a field the registry can
+  // declare, and this module exists precisely to be the one place that asks.
+  'js/tr-run.js':                 1,
   'js/tr/endgame.js':             1,
   // 6 -> 7 for the castle's screen dispatch (Plan 8, Task 1). `buildVPScreens`
   // already branches on `format === 'big-brother'` for the same reason and in

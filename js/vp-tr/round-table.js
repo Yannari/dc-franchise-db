@@ -73,7 +73,7 @@ import { seasonConfig, players } from '../core.js';
 import { pronouns } from '../players.js';
 import { exitVerbs, publicBallots } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../quick-setup.js';
-import { PORTRAIT_CSS } from './style.js';
+import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
@@ -488,10 +488,10 @@ const RT_CSS = `
 }
 .rt-scenery{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .rt-far,.rt-mid,.rt-fore{
-  position:absolute;left:0;right:0;top:46px;height:1460px;bottom:auto;
+  position:absolute;left:0;right:0;top:${TR_NAV_TOP};height:1460px;bottom:auto;
   pointer-events:none;overflow:hidden;
 }
-.rt-wash-l,.rt-vig,.rt-grain{position:absolute;left:0;right:0;top:46px;bottom:0;pointer-events:none}
+.rt-wash-l,.rt-vig,.rt-grain{position:absolute;left:0;right:0;top:${TR_NAV_TOP};bottom:0;pointer-events:none}
 .rt-far{z-index:0}
 .rt-mid{z-index:1}
 .rt-fore{z-index:2}
@@ -712,7 +712,7 @@ const RT_CSS = `
    is .rt-body — the whole page. It is also the element the reveal
    handlers replace by id, so its position survives every innerHTML swap. */
 .rt-stage{
-  position:sticky;top:46px;z-index:20;
+  position:sticky;top:${TR_NAV_TOP};z-index:20;
   padding:10px 16px 14px;
   background:linear-gradient(180deg,rgba(6,11,8,.97) 0%,rgba(9,17,12,.96) 62%,rgba(6,11,8,.9) 100%);
   border-bottom:1px solid var(--rt-rule);

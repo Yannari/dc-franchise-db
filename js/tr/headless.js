@@ -812,7 +812,7 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
  * merely has beliefs. Nothing in the show may ever pass this.
  */
 export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds = 40,
-  evidence = ballotEvidence } = {}) {
+  potCeiling = POT_CEILING, evidence = ballotEvidence } = {}) {
   const rng = rngFor(seed);
   // The narrative layer's OWN stream — see castleRngFor's doc comment for why
   // round budgets (and later, window draws) must never share the game rng.
@@ -822,7 +822,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // gs is null until a season exists (js/core.js), so the harness creates one.
   setGs({ bonds: {}, activePlayers: [...cast] });
   gs.tr = initTraitorsState();
-  gs.tr.potCeiling = POT_CEILING;
+  // The setup screen can move this and `runMission` already prefers the value
+  // on the state to its own constant, so a season played from the UI earns
+  // against the pot the user asked for. Defaulted to the constant, so every
+  // caller that does not pass one — the audits, the calibration, the tests —
+  // plays exactly the season it played before.
+  gs.tr.potCeiling = Number(potCeiling) > 0 ? Number(potCeiling) : POT_CEILING;
   // THE SEATING PLAN, AND IT NEVER CHANGES. `activePlayers` shrinks every
   // night, so a screen drawing the room from it re-seats everybody the moment
   // somebody leaves and the eye can no longer follow a person from one episode

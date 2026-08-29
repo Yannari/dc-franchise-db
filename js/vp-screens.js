@@ -28,6 +28,7 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 // in CLAUDE.md is explicit, and the conclave's whole identity is that it does
 // not look like anything already in this repo.
 import { traitorsScreens } from './vp-tr/screens.js';
+import { rpBuildTraitorsDebug } from './vp-tr/debug.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -13537,6 +13538,16 @@ export function buildVPScreens(epRecord) {
   // transcript quietly stops mentioning a screen.
   if (epRecord.format === 'traitors') {
     vpScreens = traitorsScreens(epRecord, epRecord.observer || 'audience');
+    // The debug tab, behind the same flag Total Drama's sits behind. Pushed
+    // HERE and deliberately not in `TRAITORS_SCREENS`: that list is a night's
+    // running order and the text backlog retranscribes it, so a debug dump
+    // registered there would be printed into the season's prose.
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage.getItem('vp_debug') === 'true') {
+        vpScreens.push({ id: 'tr-debug', label: 'Debug',
+          html: rpBuildTraitorsDebug(epRecord) });
+      }
+    } catch { /* a debug tab must never be able to break the episode */ }
     return vpScreens;
   }
   // Reset vote reveal state — HTML is rebuilt fresh, old state would skip all reveals

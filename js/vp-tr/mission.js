@@ -50,7 +50,7 @@
 // on `_relicCard`.
 import { seasonConfig, players } from '../core.js';
 import { HOSTS_BY_FORMAT } from '../quick-setup.js';
-import { PORTRAIT_CSS } from './style.js';
+import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
@@ -396,10 +396,10 @@ const MI_CSS = `
 .mi-scenery{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 
 .mi-far,.mi-mid,.mi-fore{
-  position:absolute;left:0;right:0;top:46px;height:1500px;bottom:auto;
+  position:absolute;left:0;right:0;top:${TR_NAV_TOP};height:1500px;bottom:auto;
   pointer-events:none;overflow:hidden;
 }
-.mi-rain,.mi-wash,.mi-vig,.mi-grain{position:absolute;left:0;right:0;top:46px;bottom:0;pointer-events:none}
+.mi-rain,.mi-wash,.mi-vig,.mi-grain{position:absolute;left:0;right:0;top:${TR_NAV_TOP};bottom:0;pointer-events:none}
 .mi-far svg,.mi-mid svg,.mi-fore svg{position:absolute;inset:0;width:100%;height:100%}
 .mi-far {z-index:0;filter:blur(3.4px) saturate(.5) brightness(.86);opacity:.7}
 .mi-mid {z-index:1;filter:blur(.5px);opacity:.9}
@@ -502,7 +502,7 @@ const MI_CSS = `
    Not a rack of brass plates and not a ring of chairs: a board nailed to the
    side of the cart. The one number on it counts UP, which no other screen in
    this set has. */
-.mi-stage{position:sticky;top:46px;z-index:12;
+.mi-stage{position:sticky;top:${TR_NAV_TOP};z-index:12;
   background:linear-gradient(180deg,rgba(9,10,9,.97),rgba(9,10,9,.9));
   border-bottom:1px solid rgba(185,143,62,.28);
   padding:12px 22px 15px;backdrop-filter:blur(5px)}

@@ -632,6 +632,40 @@
             </div>
             </div>
 
+            <!-- ── THE CASTLE'S OWN CONTROLS ────────────────────────────
+                 js/quick-setup.js's CONFIG_SCOPE has named these three ids
+                 since the registry entry was written, and until now none of
+                 them existed on the page: the scope hid nothing, the setup
+                 screen offered nothing, and `traitorCount` came back 0 from
+                 every readiness check. That is the same failure as a screen
+                 that is built and never registered — the show was choosable
+                 and not configurable, with every test green. -->
+            <div class="divider" id="sec-tr-divider"></div>
+            <div class="setup-section-label" id="sec-tr-options">CASTLE OPTIONS</div>
+            <div class="bbopt-fixed">
+              <span class="bbopt-fixed-k">Ties</span>
+              <span>The table votes again, and the tied are the question: they do not answer it.</span>
+            </div>
+            <div class="bbopt-fixed">
+              <span class="bbopt-fixed-k">Endgame</span>
+              <span>The room stops banishing and is asked, privately, whether to banish or to end it.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Traitors</label>
+              <select id="cfg-tr-traitor-count" onchange="saveConfig()" class="form-input">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+              <div class="hint hint-tight">Too few and one lucky banishment ends the season early; too many and the Faithfuls cannot help but find one. Two to a quarter of the cast.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">The pot</label>
+              <input type="number" id="cfg-tr-pot" class="form-input" min="1000" max="500000" step="1000" value="120000" onchange="saveConfig()">
+              <div class="hint hint-tight">The ceiling the missions are earning against. Nobody banked a penny of it until somebody walks out with the lot.</div>
+            </div>
+
             <div class="setup-section-label" id="sec-season-options">SEASON OPTIONS</div>
             <!-- Off by default and explicitly switched on, because it is the one
                  setting in this panel that costs money every time a season is

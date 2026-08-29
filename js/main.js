@@ -133,6 +133,12 @@ import * as trHouseStatusMod from './vp-tr/house-status.js';
 import * as trMissionMod from './vp-tr/mission.js';
 import * as trRecruitmentMod from './vp-tr/recruitment.js';
 import * as trEndgameMod from './vp-tr/endgame.js';
+import * as trDebugMod from './vp-tr/debug.js';
+// The run loop's castle branch, and the module that sets window._trRunnable.
+// Importing it is what makes the show startable at all: `formatIsRunnable`
+// reads that flag, and the setup screen, Quick Setup and the run tab all read
+// `formatIsRunnable`. Nothing here is optional.
+import * as trRunMod from './tr-run.js';
 import * as bbRunMod from './bb-run.js';
 import * as twistContractMod from './bb/twist-contract.js';
 import * as rivalsMod from './bb/rivals.js';
@@ -236,7 +242,7 @@ const extractedModules = [
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, mineOverMatterMod, treasureIslandMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, hauntedHouseMod, hungOutMod, merryGoRoundMod, mazeOfTheFallenMod, demonsPlainerVpMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
   truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, iceIceBabyMod, findersCreepersMod, backstabbersAhoyMod, projectRunawayMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, auctionVpMod, settingsMod, themesMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
-  castUiMod, castRoomMod, studioMod, quickSetupMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, trMissionMod, trRecruitmentMod, trEndgameMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
+  castUiMod, castRoomMod, studioMod, quickSetupMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, trMissionMod, trRecruitmentMod, trEndgameMod, trDebugMod, trRunMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
   savestateMod,
   statsExportMod,
   audioMod,

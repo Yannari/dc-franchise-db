@@ -52,6 +52,7 @@ import { rpBuildRecruitment, trRecruitmentRevealAll } from '../js/vp-tr/recruitm
 import { rpBuildEndgame, trEndgameRevealAll } from '../js/vp-tr/endgame.js';
 import { buildVPScreens } from '../js/vp-screens.js';
 import { TRAITORS_SCREENS, screenNarration } from '../js/vp-tr/screens.js';
+import { TR_NAV_H, TR_NAV_TOP, TR_STICKY_TOP } from '../js/vp-tr/style.js';
 import { generateSummaryText, generateTraitorsSummaryText, _vpTextLines } from '../js/text-backlog.js';
 import { HOSTS_BY_FORMAT } from '../js/quick-setup.js';
 import roster from '../franchise_roster.json';
@@ -1992,17 +1993,21 @@ describe('the morning and the book are reachable from a played season', () => {
     expect(reached, 'no episode reached either screen').toBeGreaterThan(30);
   });
 
-  it('and the morning opens the episode, before the evening and the night', () => {
+  it('and the morning opens the episode, with the book ruled off after it', () => {
     // The order is the claim: a night runs at the END of the episode it
     // belongs to and the castle finds out at the next breakfast, so the cold
-    // open is the FIRST screen of the row and the turret is the last.
+    // open is the FIRST screen of the row. The day book is an end-of-day
+    // ledger — it lists tonight's exits — so it is ruled off AFTER the table
+    // and the turret rather than printed before them.
     const ep = RUNS[0].episodes[4];
     const ids = buildVPScreens(ep).map(x => x.id);
     expect(ids.length, 'the episode registered no screens').toBeGreaterThan(3);
     expect(ids.indexOf('tr-cold-open')).toBe(0);
-    expect(ids.indexOf('tr-status')).toBe(1);
-    expect(ids.indexOf('tr-round-table')).toBeGreaterThan(ids.indexOf('tr-status'));
-    expect(ids.indexOf('tr-conclave')).toBe(ids.length - 1);
+    expect(ids.indexOf('tr-status'), 'the day book is not registered').toBeGreaterThan(-1);
+    expect(ids.indexOf('tr-round-table')).toBeGreaterThan(ids.indexOf('tr-cold-open'));
+    expect(ids.indexOf('tr-conclave')).toBeGreaterThan(ids.indexOf('tr-round-table'));
+    expect(ids.indexOf('tr-status'), 'the book was ruled off before the night it records')
+      .toBeGreaterThan(ids.indexOf('tr-conclave'));
   });
 
   it('and the morning it draws is the PREVIOUS night, not this one', () => {
@@ -2712,15 +2717,18 @@ describe('the mission and the offer are reachable from a played season', () => {
     }
   });
 
-  it('and the afternoon sits between the day book and the evening', () => {
-    // The order is the claim: the castle reads the book at breakfast, goes
-    // out on the estate, comes back and sits down at the table.
+  it('and the afternoon sits between the morning and the evening', () => {
+    // The order is the claim: the castle comes down to breakfast, goes out on
+    // the estate, comes back and sits down at the table. The book is written
+    // after all three of those, which is what "ruled off" means.
     const ep = RUNS[0].episodes.find(e => e.tr && e.tr.mission && e.tr.table);
     expect(ep, 'no episode held both an afternoon and an evening').toBeTruthy();
     const ids = buildVPScreens(ep).map(x => x.id);
-    expect(ids.indexOf('tr-status'), 'the day book is not registered').toBeGreaterThan(-1);
-    expect(ids.indexOf('tr-mission')).toBeGreaterThan(ids.indexOf('tr-status'));
+    expect(ids.indexOf('tr-cold-open'), 'the morning is not registered').toBeGreaterThan(-1);
+    expect(ids.indexOf('tr-mission')).toBeGreaterThan(ids.indexOf('tr-cold-open'));
     expect(ids.indexOf('tr-round-table')).toBeGreaterThan(ids.indexOf('tr-mission'));
+    expect(ids.indexOf('tr-status'), 'the day book is not ruled off last')
+      .toBeGreaterThan(ids.indexOf('tr-round-table'));
   });
 });
 
@@ -3860,5 +3868,146 @@ describe('the castle transcript is what a Traitors row actually gets', () => {
       checked++;
     }
     expect(checked).toBe(8);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// TASK 7 — WIRING. Three things that are invisible by looking at a screen.
+// ══════════════════════════════════════════════════════════════════════
+
+// ── GUARD: EVERY SCREEN A PLAYED SEASON PRODUCES IS REACHABLE ─────────
+//
+// The per-screen arms above each prove one screen is registered on one night.
+// This is the sweep: a whole season, every row, asked of `buildVPScreens` —
+// which is what the visual player actually calls — and the answer compared to
+// the list both it and the transcript read. A screen that exists and is never
+// reached is this project's signature bug class, and it has never once been
+// caught by calling the builder directly.
+describe('every castle screen a season produces is reachable from buildVPScreens', () => {
+  it('all seven, across a real season, and nothing extra', () => {
+    const seen = new Map();
+    let rows = 0;
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        rows++;
+        const want = TRAITORS_SCREENS.filter(s => s.when(ep)).map(s => s.id);
+        const got = buildVPScreens(ep).map(s => s.id);
+        // ORDER TOO, not just membership: the running order is the claim the
+        // list makes, and a set comparison cannot see it move.
+        expect(got, `ep ${ep.num}: what the player registers is not what the list says`)
+          .toEqual(want);
+        expect(got.length, `ep ${ep.num}: a castle row produced no screen at all`)
+          .toBeGreaterThan(0);
+        for (const id of got) seen.set(id, (seen.get(id) || 0) + 1);
+      }
+    }
+    expect(rows, 'no season was played').toBeGreaterThan(20);
+    // Every registered screen appeared, or the sweep above never exercised it.
+    for (const s of TRAITORS_SCREENS) {
+      expect(seen.get(s.id) || 0, `${s.id} was never reached by any night of any season`)
+        .toBeGreaterThan(0);
+    }
+    expect([...seen.keys()].sort()).toEqual(TRAITORS_SCREENS.map(s => s.id).sort());
+  });
+
+  it('and the debug tab is behind the flag, and is not one of the seven', () => {
+    // Registered in `buildVPScreens` rather than in `TRAITORS_SCREENS`, on
+    // purpose: that list is a night's running order and the text backlog
+    // retranscribes it, so a debug dump registered there would be printed into
+    // the season's prose.
+    expect(TRAITORS_SCREENS.map(s => s.id), 'the debug dump is in the running order')
+      .not.toContain('tr-debug');
+    const ep = RUNS[0].episodes[3];
+    const before = localStorage.getItem('vp_debug');
+    try {
+      localStorage.setItem('vp_debug', 'false');
+      expect(buildVPScreens(ep).map(s => s.id), 'the debug tab shows with the flag off')
+        .not.toContain('tr-debug');
+      localStorage.setItem('vp_debug', 'true');
+      const on = buildVPScreens(ep);
+      expect(on.map(s => s.id), 'the debug tab is unreachable with the flag on')
+        .toContain('tr-debug');
+      // Last, so it never sits between two screens of the night.
+      expect(on[on.length - 1].id).toBe('tr-debug');
+      // And it says something. A debug tab that renders an empty shell is the
+      // same defect as one that is never registered.
+      const said = strip(on[on.length - 1].html);
+      expect(said.length, 'the debug tab rendered nothing').toBeGreaterThan(200);
+      expect(said).toContain('Castle record');
+      for (const bit of ['format', 'traitors', 'The round table', 'Exits']) {
+        expect(said, `the debug tab does not report ${bit}`).toContain(bit);
+      }
+      // It is the UNWITHHELD view and that is its whole job: the turret is on
+      // it even on a night the conclave screen would refuse to a Faithful.
+      const night = RUNS[0].episodes.find(e => e.tr && e.tr.conclave);
+      const dbg = strip(buildVPScreens(night).find(s => s.id === 'tr-debug').html);
+      expect(mentions(dbg, night.tr.conclave.target),
+        'the debug tab withheld the one thing it exists to show').toBe(true);
+    } finally {
+      if (before == null) localStorage.removeItem('vp_debug');
+      else localStorage.setItem('vp_debug', before);
+    }
+  });
+});
+
+// ── GUARD: THE NAV OFFSET IS ONE CONSTANT ─────────────────────────────
+//
+// The real visual player draws a 46px `.rp-nav` bar and the standalone mockups
+// do not, so every absolutely-positioned scenery layer in js/vp-tr/ starts
+// below it and every sticky stage hangs off it. That number was a bare pixel
+// literal twenty-three times across seven files. A constant written in seven
+// places is not a constant, and every duplicate-source drift in this project
+// started as two.
+describe('the nav offset is declared once and interpolated', () => {
+  const VP_TR = ['conclave.js', 'style.js', 'scenery.js', 'round-table.js', 'cold-open.js',
+    'house-status.js', 'mission.js', 'recruitment.js', 'endgame.js', 'screens.js', 'debug.js'];
+
+  it('no file in js/vp-tr/ writes either offset as a literal', () => {
+    let scanned = 0;
+    for (const f of VP_TR) {
+      const src = readFileSync(new URL('../js/vp-tr/' + f, import.meta.url), 'utf8');
+      expect(src.length, `js/vp-tr/${f} is empty`).toBeGreaterThan(100);
+      expect(/top:\s*46px/.test(src), `js/vp-tr/${f} still types the nav offset by hand`)
+        .toBe(false);
+      expect(/top:\s*56px/.test(src), `js/vp-tr/${f} still types the sticky offset by hand`)
+        .toBe(false);
+      scanned++;
+    }
+    expect(scanned, 'no file was scanned').toBe(VP_TR.length);
+    // The constant exists and is what those files interpolate.
+    expect(TR_NAV_H).toBe(46);
+    expect(TR_NAV_TOP).toBe('46px');
+    expect(TR_STICKY_TOP).toBe('56px');
+  });
+
+  it('and every screen still renders the offset it used to type', () => {
+    // The scan above is satisfied by DELETING the offset, which would drop
+    // every scenery layer behind the nav bar and pass for free. So the
+    // rendered stylesheet is read back: the number has to still be there.
+    const withStyle = [
+      ['conclave', rpBuildConclave, NIGHTS[0].ep],
+      ['round table', rpBuildRoundTable, RUNS[0].episodes.find(e => e.tr.table)],
+      ['cold open', rpBuildColdOpen, RUNS[0].episodes[2]],
+      ['day book', rpBuildHouseStatus, RUNS[0].episodes[2]],
+      ['mission', rpBuildMission, RUNS[0].episodes.find(e => e.tr.mission)],
+      ['recruitment', rpBuildRecruitment,
+        RUNS.flatMap(r => r.episodes).find(e => e.tr.recruitment)],
+      ['endgame', rpBuildEndgame,
+        RUNS[0].episodes[RUNS[0].episodes.length - 1]],
+    ];
+    let checked = 0;
+    for (const [name, build, ep] of withStyle) {
+      expect(ep, `no episode to draw the ${name} from`).toBeTruthy();
+      const css = /<style>([\s\S]*?)<\/style>/.exec(build(ep, 'audience'));
+      expect(css, `the ${name} rendered no stylesheet`).toBeTruthy();
+      const hits = (css[1].match(/top:46px/g) || []).length;
+      expect(hits, `the ${name} lost the nav offset from its scenery layers`)
+        .toBeGreaterThan(0);
+      // and nothing is left interpolating to nothing
+      expect(css[1]).not.toContain('top:undefined');
+      expect(css[1]).not.toContain('top:NaN');
+      checked++;
+    }
+    expect(checked).toBe(withStyle.length);
   });
 });

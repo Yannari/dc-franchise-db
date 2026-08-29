@@ -8,7 +8,30 @@ import { currentTheme, themeState } from './bb/themes.js';
 const VP_VIEW_MODES = new Set(['watch', 'quick', 'deep']);
 let _vpViewMode = 'watch';
 
+// ── THE CASTLE'S OWN GROUPS ───────────────────────────────────────────
+//
+// The rail groups screens into acts and every act name below belongs to Total
+// Drama — Camp, Challenge, Tribal, Aftermath. A Traitors night fell through to
+// the last one, so the breadcrumb over the estate read "CAMP / THE MISSION"
+// and the rail header said CAMP over a castle: one show's vocabulary printed
+// over another's, which is the bug class the show registry exists to stop.
+//
+// Grouped by TIME OF DAY, because that is what js/vp-tr/screens.js's running
+// order already is — the castle comes down, goes out, sits at the table, and
+// the book is ruled off after all three.
+const _TR_PHASES = {
+  'tr-cold-open':   { id:'tr-morning',   label:'Morning',   icon:'☀' },
+  'tr-mission':     { id:'tr-afternoon', label:'Afternoon', icon:'◈' },
+  'tr-round-table': { id:'tr-evening',   label:'The Table', icon:'◍' },
+  'tr-conclave':    { id:'tr-night',     label:'Night',     icon:'☾' },
+  'tr-recruitment': { id:'tr-night',     label:'Night',     icon:'☾' },
+  'tr-status':      { id:'tr-book',      label:'Ruled Off', icon:'▤' },
+  'tr-endgame':     { id:'tr-endgame',   label:'The Endgame', icon:'✦' },
+  'tr-debug':       { id:'debug',        label:'Debug',     icon:'⚙' },
+};
+
 function _vpPhaseForScreen(id = '') {
+  if (_TR_PHASES[id]) return _TR_PHASES[id];
   if (id === 'debug') return { id:'debug', label:'Debug', icon:'⚙' };
   if (id === 'cold-open' || id.includes('previous') || id === 'first-impressions') return { id:'previously', label:'Previously On', icon:'◀' };
   if (id === 'votes' || id.startsWith('votes-') || id === 'jury-vote' || id === 'jury-votes' || id === 'ftc') return { id:'reveal', label:'Vote Reveal', icon:'✦' };

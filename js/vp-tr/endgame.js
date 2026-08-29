@@ -64,7 +64,7 @@
 import { seasonConfig, players } from '../core.js';
 import { exitVerbs, roundExits } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../quick-setup.js';
-import { PORTRAIT_CSS } from './style.js';
+import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
@@ -636,17 +636,17 @@ const LT_CSS = `
    room is what you can see of the hall, and the wall is what is behind you
    for the rest of it. */
 .lt-stone{
-  position:absolute;left:0;right:0;top:46px;bottom:0;z-index:0;pointer-events:none;
+  position:absolute;left:0;right:0;top:${TR_NAV_TOP};bottom:0;z-index:0;pointer-events:none;
   opacity:.55;
   background-image:
     repeating-linear-gradient(180deg,rgba(11,16,23,.85) 0 2px,transparent 2px 74px),
     repeating-linear-gradient(90deg,rgba(11,16,23,.55) 0 2px,transparent 2px 216px);
 }
 .lt-far,.lt-mid,.lt-fore{
-  position:absolute;left:0;right:0;top:46px;height:2600px;bottom:auto;
+  position:absolute;left:0;right:0;top:${TR_NAV_TOP};height:2600px;bottom:auto;
   pointer-events:none;overflow:hidden;
 }
-.lt-air,.lt-wash,.lt-vig,.lt-grain{position:absolute;left:0;right:0;top:46px;bottom:0;pointer-events:none}
+.lt-air,.lt-wash,.lt-vig,.lt-grain{position:absolute;left:0;right:0;top:${TR_NAV_TOP};bottom:0;pointer-events:none}
 .lt-far svg,.lt-mid svg,.lt-fore svg{position:absolute;inset:0;width:100%;height:100%}
 .lt-far {z-index:1;filter:blur(2.2px) saturate(.62) brightness(1);opacity:.94}
 .lt-mid {z-index:2;filter:blur(.4px) saturate(.68);opacity:.96}
@@ -786,7 +786,7 @@ const LT_CSS = `
    Sticky element AND the element the reveal handlers replace by id. Every
    chair starts SEALED and stays sealed for anybody the observer is not
    entitled to read, which is the whole observer contract on this screen. */
-.lt-stage{position:sticky;top:46px;z-index:12;
+.lt-stage{position:sticky;top:${TR_NAV_TOP};z-index:12;
   background:rgba(2,3,5,.97);
   border-bottom:1px solid rgba(143,162,182,.2);
   padding:11px 20px 12px;backdrop-filter:blur(6px)}

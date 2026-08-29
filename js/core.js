@@ -1471,6 +1471,14 @@ export function defaultConfig() {
     aftermayhemReturn: 'disabled',
     host: 'Chris',
     bbHostStyle: 'balanced',
+    // ── THE CASTLE ────────────────────────────────────────────────
+    // js/quick-setup.js's readiness check has asked for `traitorCount`
+    // since the registry entry was written and it was never in this
+    // object, so it read 0 and every castle failed its own check. The pot
+    // is the ceiling the missions earn against (js/tr/missions.js), not a
+    // starting balance -- the castle begins on nothing.
+    traitorCount: 3,
+    trPotCeiling: 120000,
     auctionAwardsImmunity: true,  // Auction twist: when ON the auction awards the only immunity (replaces the challenge); when OFF it's a reward alongside a normal challenge
     setting: 'hosted-camp',   // venue flavor: hosted-camp | survival-island | carnival | film-lot | world-tour
     theme: 'none',            // Big Brother only: the season's premise. See js/bb/themes.js.

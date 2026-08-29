@@ -63,7 +63,7 @@
 import { seasonConfig, players } from '../core.js';
 import { exitVerbs, roundExits } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../quick-setup.js';
-import { PORTRAIT_CSS } from './style.js';
+import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
@@ -363,10 +363,10 @@ const DB_CSS = `
 .db-scenery{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 
 .db-far,.db-mid,.db-fore{
-  position:absolute;left:0;right:0;top:46px;height:1500px;bottom:auto;
+  position:absolute;left:0;right:0;top:${TR_NAV_TOP};height:1500px;bottom:auto;
   pointer-events:none;overflow:hidden;
 }
-.db-wash,.db-vig,.db-grain{position:absolute;left:0;right:0;top:46px;bottom:0;pointer-events:none}
+.db-wash,.db-vig,.db-grain{position:absolute;left:0;right:0;top:${TR_NAV_TOP};bottom:0;pointer-events:none}
 .db-far svg,.db-mid svg,.db-fore svg{position:absolute;inset:0;width:100%;height:100%}
 .db-far {z-index:0;filter:blur(2.8px) saturate(.62) brightness(.7);opacity:.62}
 .db-mid {z-index:1;filter:blur(.4px);opacity:.92}
@@ -475,7 +475,7 @@ const DB_CSS = `
    room; a PAGE sliding half-visibly under a translucent band reads as a
    rendering fault, and the entries under this one are the brightest thing on
    the screen. */
-.db-stage{position:sticky;top:46px;z-index:12;
+.db-stage{position:sticky;top:${TR_NAV_TOP};z-index:12;
   background:rgba(9,6,4,.985);border-bottom:1px solid rgba(185,143,62,.28);
   padding:12px 22px 15px;backdrop-filter:blur(5px)}
 .db-rack{display:flex;flex-wrap:wrap;gap:10px}

@@ -1071,11 +1071,26 @@ const CONFIG_SCOPE = {
     'cfg-bb-departures':     ['big-brother'],
     'f-tribe':               ['total-drama'],  // a house has no tribes to join
     'cfg-finale':            ['total-drama'],  // a house always ends at three
-    // The castle's own controls: how many traitors, how they're picked, and
-    // the pot they're playing for. No other format's engine reads these.
+    // The castle's own controls: how many traitors, and the pot they are
+    // playing for. No other format's engine reads either.
+    //
+    // A THIRD ONE WAS SCOPED HERE AND HAS BEEN REMOVED. `cfg-tr-selection`
+    // ('random' | 'chosen') was named in this map before the control existed,
+    // and when Task 7 came to build it there was nothing on the engine side to
+    // wire it to: `selectTraitors` (js/tr/roles.js) picks NEAR-UNIFORMLY on
+    // purpose, and says why — weighting toward masterminds makes every season
+    // the same season, and the format's best outcomes include a terrible
+    // Traitor. A control that cannot change the answer is worse than no
+    // control, so the scope entry went rather than a dead select being drawn
+    // to satisfy it.
     'cfg-tr-traitor-count':  ['traitors'],
-    'cfg-tr-selection':      ['traitors'],   // random | chosen
     'cfg-tr-pot':            ['traitors'],
+    // A castle has one venue and nothing in js/tr/ reads a setting -- the
+    // castle layer writes its own events and never asks where it is. Left
+    // visible, the picker offered a summer camp and a world tour for a
+    // castle and wrote 'hosted-camp' onto the season, which the Season Hub
+    // then printed across the top of it.
+    'cfg-setting':           ['total-drama', 'big-brother'],
   },
   sections: {
     'sec-season-options':     ['total-drama'],

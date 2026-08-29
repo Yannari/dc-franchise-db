@@ -38,6 +38,10 @@ export function broadcastState(g = gs, cfg = seasonConfig) {
     ? Math.max(0, Math.min(100, Math.round(((originalCount - activeCount) / (originalCount - 1)) * 100)))
     : 0;
   const phase = !hasSeason ? 'Create'
+    // A castle has no tribes and no merge, so it carries its own phase rather
+    // than borrowing one that describes nothing about it. Set by
+    // simulateTraitorsEpisode (js/tr-run.js) on every night but the last.
+    : g.phase === 'castle' ? 'The Castle'
     : g.phase === 'pre-merge' ? 'Pre-Merge'
       : g.phase === 'post-merge' ? 'Post-Merge'
         : g.phase === 'finale' ? 'Finale'

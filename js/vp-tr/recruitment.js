@@ -50,7 +50,7 @@
 import { seasonConfig, players } from '../core.js';
 import { exitVerbs } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../quick-setup.js';
-import { PORTRAIT_CSS } from './style.js';
+import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
@@ -368,10 +368,10 @@ const NT_CSS = `
 .nt-scenery{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 
 .nt-far,.nt-mid,.nt-fore{
-  position:absolute;left:0;right:0;top:46px;height:1500px;bottom:auto;
+  position:absolute;left:0;right:0;top:${TR_NAV_TOP};height:1500px;bottom:auto;
   pointer-events:none;overflow:hidden;
 }
-.nt-wash,.nt-vig,.nt-grain{position:absolute;left:0;right:0;top:46px;bottom:0;pointer-events:none}
+.nt-wash,.nt-vig,.nt-grain{position:absolute;left:0;right:0;top:${TR_NAV_TOP};bottom:0;pointer-events:none}
 .nt-far svg,.nt-mid svg,.nt-fore svg{position:absolute;inset:0;width:100%;height:100%}
 .nt-far {z-index:0;filter:blur(2.2px) saturate(.6) brightness(.9);opacity:.8}
 .nt-mid {z-index:1;filter:blur(.3px);opacity:.95}
@@ -475,7 +475,7 @@ const NT_CSS = `
    Not a rack, not a board, not a ring: four flat facts about what kind of
    conversation this is. The third of them is the whole of spec 6.6 -- what
    happens if the answer is no -- and it is visible before the answer is. */
-.nt-stage{position:sticky;top:46px;z-index:12;
+.nt-stage{position:sticky;top:${TR_NAV_TOP};z-index:12;
   background:rgba(2,3,6,.97);
   border-bottom:1px solid rgba(159,182,210,.2);
   padding:12px 22px 14px;backdrop-filter:blur(6px)}

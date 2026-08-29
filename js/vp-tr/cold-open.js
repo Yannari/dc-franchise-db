@@ -64,7 +64,7 @@ import { seasonConfig, players } from '../core.js';
 import { pronouns } from '../players.js';
 import { exitVerbs, roundExits } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../quick-setup.js';
-import { PORTRAIT_CSS } from './style.js';
+import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
@@ -432,10 +432,10 @@ const CO_CSS = `
 .co-scenery{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 
 .co-far,.co-mid,.co-fore{
-  position:absolute;left:0;right:0;top:46px;height:1500px;bottom:auto;
+  position:absolute;left:0;right:0;top:${TR_NAV_TOP};height:1500px;bottom:auto;
   pointer-events:none;overflow:hidden;
 }
-.co-wash,.co-vig,.co-grain{position:absolute;left:0;right:0;top:46px;bottom:0;pointer-events:none}
+.co-wash,.co-vig,.co-grain{position:absolute;left:0;right:0;top:${TR_NAV_TOP};bottom:0;pointer-events:none}
 .co-far svg,.co-mid svg,.co-fore svg{position:absolute;inset:0;width:100%;height:100%}
 .co-far {z-index:0;filter:blur(2.2px) saturate(.7) brightness(.86);opacity:.7}
 .co-mid {z-index:1;filter:blur(.3px);opacity:.9}
@@ -596,7 +596,7 @@ const CO_CSS = `
   letter-spacing:0;text-transform:none;color:var(--co-mute)}
 
 /* ═══ THE TABLE, LAID — the sticky stage ═════════════════════════════ */
-.co-stage{position:sticky;top:46px;z-index:12;
+.co-stage{position:sticky;top:${TR_NAV_TOP};z-index:12;
   background:linear-gradient(180deg,rgba(8,12,19,.94),rgba(8,12,19,.7) 76%,transparent);
   padding:12px 22px 18px;backdrop-filter:blur(4px)}
 .co-stage-bar{

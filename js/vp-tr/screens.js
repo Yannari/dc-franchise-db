@@ -29,12 +29,34 @@ import { rpBuildEndgame, trEndgameRevealAll } from './endgame.js';
  *
  * The morning opens the episode — and it opens on the PREVIOUS night, because
  * a night runs at the end of the episode it belongs to and the castle finds
- * out over breakfast. Then the board, which is where the day starts from. The
- * afternoon sits between the board and the table because that is where it
- * happens: the castle reads the book over breakfast, goes out on the estate,
- * comes back and sits down. The table sits in the evening and the turret meets
- * afterwards, so the public half of the night comes first and the private half
- * is what the episode ends on.
+ * out over breakfast. Then the estate in the afternoon, then the table in the
+ * evening, then the turret, because the public half of the night comes first
+ * and the private half is what the episode ends on.
+ *
+ * ── AND THE DAY BOOK IS RULED OFF AT THE END OF THE DAY ────────────────
+ *
+ * It used to sit SECOND, on the reasoning that a board is where a day starts
+ * from. It is not: its own heading is "Ruled Off", it lists tonight's exits —
+ * `roundExits()` over this row's own `exits[]`, deliberately, so that call is
+ * load-bearing — and a ledger of the evening printed before the evening tells
+ * the reader who leaves the table three screens before the table sits. Found
+ * by reading a season in sequence rather than by an assertion, which is how
+ * Task 6 found the transcript opening on tonight's murder; the transcript's
+ * own `RULED OFF` section was moved to the foot for exactly this reason and
+ * this is the same move on the same object. Little is lost by it: the cold
+ * open already lays the room — the cast minus everybody gone — and the Round
+ * Table's sidebar already carries the pot, so the day is not entered blind.
+ *
+ * The endgame stays after it, because the endgame is not a day.
+ *
+ * `badge` is OPTIONAL AND LIVES HERE FOR THE REASON EVERYTHING ELSE DOES.
+ * The Run tab's episode timeline draws a coloured pill per night, and every
+ * other show's is a hand-written ternary per twist — eighty of them in
+ * js/run-ui.js, and a new twist gets one by somebody remembering. A castle
+ * badge is the same question this list already answers ("did this row have an
+ * afternoon?"), so the run tab asks the list rather than keeping a second
+ * copy of the conditions. A screen with no badge — the morning and the book,
+ * which every row has — is simply not worth a pill.
  *
  * `when` is why a screen is registered off the RECORD and never off an episode
  * number: a mission needs four people and an endgame round runs none, so plenty
@@ -48,22 +70,27 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-cold-open', label: 'Breakfast', suffix: 'coldopen',
     when: r => !!(r.tr && r.tr.dawn),
     build: rpBuildColdOpen, revealAll: trColdOpenRevealAll, revealAllName: 'trColdOpenRevealAll' },
-  { id: 'tr-status', label: 'The Day Book', suffix: 'housestatus',
-    when: r => !!(r.tr && Array.isArray(r.tr.cast) && r.tr.cast.length),
-    build: rpBuildHouseStatus, revealAll: trHouseStatusRevealAll, revealAllName: 'trHouseStatusRevealAll' },
   { id: 'tr-mission', label: 'The Mission', suffix: 'mission',
+    badge: { text: 'Mission', color: '#c8a24a' },
     when: r => !!(r.tr && r.tr.mission),
     build: rpBuildMission, revealAll: trMissionRevealAll, revealAllName: 'trMissionRevealAll' },
   { id: 'tr-round-table', label: 'The Round Table', suffix: 'roundtable',
+    badge: { text: 'Round Table', color: '#b91c3c' },
     when: r => !!(r.tr && r.tr.table),
     build: rpBuildRoundTable, revealAll: trRoundTableRevealAll, revealAllName: 'trRoundTableRevealAll' },
   { id: 'tr-conclave', label: 'The Conclave', suffix: 'conclave',
+    badge: { text: 'Conclave', color: '#e0a049' },
     when: r => !!(r.tr && r.tr.conclave),
     build: rpBuildConclave, revealAll: trConclaveRevealAll, revealAllName: 'trConclaveRevealAll' },
   { id: 'tr-recruitment', label: 'The Offer', suffix: 'recruitment',
+    badge: { text: 'The Offer', color: '#8b5cf6' },
     when: r => !!(r.tr && r.tr.recruitment),
     build: rpBuildRecruitment, revealAll: trRecruitmentRevealAll, revealAllName: 'trRecruitmentRevealAll' },
+  { id: 'tr-status', label: 'The Day Book', suffix: 'housestatus',
+    when: r => !!(r.tr && Array.isArray(r.tr.cast) && r.tr.cast.length),
+    build: rpBuildHouseStatus, revealAll: trHouseStatusRevealAll, revealAllName: 'trHouseStatusRevealAll' },
   { id: 'tr-endgame', label: 'The Endgame', suffix: 'endgame',
+    badge: { text: 'Endgame', color: '#4cffb3' },
     when: r => !!(r.tr && r.tr.endgame),
     build: rpBuildEndgame, revealAll: trEndgameRevealAll, revealAllName: 'trEndgameRevealAll' },
 ];

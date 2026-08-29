@@ -6,9 +6,9 @@
 // kept in the repo. Two things are DIFFERENT here and both are noted in the
 // mockup's own comments as builder-only corrections:
 //
-//   * every absolutely-positioned scenery layer starts at `top:46px`, because
-//     the real VP has the 46px `.rp-nav` bar above it and the mockup does not;
-//   * the sticky sidebar panel sits at `top:56px` for the same reason.
+//   * every absolutely-positioned scenery layer starts at TR_NAV_TOP, because
+//     the real VP has the nav bar above it and the mockup does not;
+//   * the sticky sidebar panel sits at TR_STICKY_TOP for the same reason.
 //
 // TYPE. Display is FRAUNCES 900, WONK 1 — the logotype's serifs are wedges
 // flaring to a point, a Roman trait, not a Didone's flat slabs; the earlier
@@ -20,6 +20,24 @@
 // MATERIAL, NOT COLOUR. Stone is turbulence-grained and pitted, vellum has
 // fibre and a torn deckle edge, wax has a specular dome, brass has wear. All
 // of it is SVG filters, which nothing else in this repo uses.
+
+// ── THE NAV BAR ABOVE EVERY ONE OF THESE SCREENS, AS ONE NUMBER ───────
+//
+// The real visual player draws a 46px `.rp-nav` bar across the top and the
+// standalone mockups do not, so every absolutely-positioned scenery layer in
+// this directory starts BELOW it and every sticky stage hangs off it. That
+// number was typed as a bare pixel literal twenty-three times across seven
+// files, plus a sticky offset for the sidebar panel that is the same number with
+// the panel's own gap added — and a constant written in seven places is not a
+// constant. Every duplicate-source drift in this project started as two.
+//
+// So it is declared once and interpolated. Nothing in js/vp-tr/ may write
+// either pixel value as a literal, and tests/tr-vp.test.js asserts that.
+export const TR_NAV_H = 46;
+/** Where a full-bleed scenery layer starts: immediately under the nav bar. */
+export const TR_NAV_TOP = `${TR_NAV_H}px`;
+/** Where a sticky panel parks: under the nav bar, with the panel's own gap. */
+export const TR_STICKY_TOP = `${TR_NAV_H + 10}px`;
 
 // THE NEUTRAL PORTRAIT'S OWN RULES, SPLIT OUT SO THERE IS ONE COPY.
 //
@@ -107,11 +125,11 @@ export const CONCLAVE_CSS = `
    rule a z-index changes the picture.                                       */
 .cv-scenery{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 
-/* ── PLANES — z-index is how far away it is. Every layer starts at top:46px
+/* ── PLANES — z-index is how far away it is. Every layer starts at TR_NAV_TOP
    so nothing is drawn over the .rp-nav bar. ───────────────────────────────── */
-.cv-veil,.cv-vig,.cv-grain{position:absolute;left:0;right:0;top:46px;bottom:0;pointer-events:none}
+.cv-veil,.cv-vig,.cv-grain{position:absolute;left:0;right:0;top:${TR_NAV_TOP};bottom:0;pointer-events:none}
 .cv-far,.cv-mid,.cv-fore{
-  position:absolute;left:0;right:0;top:46px;height:1560px;bottom:auto;
+  position:absolute;left:0;right:0;top:${TR_NAV_TOP};height:1560px;bottom:auto;
   pointer-events:none;overflow:hidden;
 }
 .cv-far::after,.cv-mid::after{
@@ -398,7 +416,7 @@ ${PORTRAIT_CSS}
   box-shadow:inset 22px 0 40px -30px rgba(0,0,0,.9);
 }
 #cv-sidebar-inner{
-  position:sticky;top:56px;
+  position:sticky;top:${TR_STICKY_TOP};
   max-height:calc(100vh - 88px);
   overflow-y:auto;overflow-x:hidden;
   scrollbar-width:thin;scrollbar-color:rgba(224,160,73,.3) transparent;

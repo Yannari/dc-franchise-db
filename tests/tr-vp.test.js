@@ -36,7 +36,7 @@
 // pattern from `npm test` and this project has shipped guards into that hole
 // three times. Collection verified with `npx vitest list`.
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { gs, setPlayers, seasonConfig } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { exitVerbs, SHOWS, publicBallots, roundExits } from '../js/shows.js';
@@ -6426,5 +6426,188 @@ describe('the alcove is a room that runs the whole page', () => {
       checked++;
     }
     expect(checked, 'no reveal contract was checked').toBeGreaterThan(20);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE HASH SWEEP — how a hash is turned into a choice, and why the answer
+// is different for `% len` and for `/ 2**32`
+// ══════════════════════════════════════════════════════════════════════
+//
+// Every file in js/vp-tr/ picks its line variants off a hash rather than a
+// draw, because a screen has no rng and `js/tr/castle/lines.js` may not be
+// imported across the directory boundary. They all hash the same way: raw
+// FNV-1a, no finaliser.
+//
+// Task 11 found that raw FNV-1a barely avalanches — two keys differing only in
+// their LAST character come out about 1/256 of the range apart — added a
+// MurmurHash3 finaliser to confessionals.js, and took that screen from 417
+// distinct lines to 717. The finding was then written down as "raw FNV-1a plus
+// `hash % length` collapses", and a sweep was commissioned to apply the same
+// fix to the other ten screens and to `lineFor`.
+//
+// THE SWEEP MEASURED IT AND THE GENERALISATION IS FALSE, which is why this
+// block exists rather than eleven finalisers. The 1/256 fact is true; what it
+// does depends entirely on how the hash becomes a choice:
+//
+//   `h % len`   — IMMUNE, and better than a coin. The gap between two such
+//                 hashes is (delta * 16777619) and 16777619 is prime, so keys
+//                 ending 0,1,2,… walk every slot exactly once before any of
+//                 them repeats. MEASURED, 200 seasons, every `_pick` site in
+//                 the directory: full slot coverage everywhere, and adding the
+//                 finaliser makes the within-season repeat rate WORSE at
+//                 eleven of thirteen sites. The same on `lineFor`: seasons
+//                 printing one sentence three times are 1.60% as it stands and
+//                 1.86% with a finaliser, over 4,200 seasons.
+//   `h / 2**32` — COLLAPSES. A top-bit index or a `< p` threshold cannot see a
+//                 1/256 gap at all, so two such keys decide the same way about
+//                 96% of the time. confessionals.js indexes this way. That is
+//                 why IT needed the finaliser and the others do not.
+//
+// Three arms, and the first is what makes the other two mean anything: a rule
+// about hashing is easy to satisfy with arithmetic rather than with the
+// property, so the property is asserted first, executably.
+describe('a hash is turned into a choice in a way that key shape can stand', () => {
+  /** The exact accumulator every js/vp-tr/ `_hash` uses. */
+  const fnv = (s) => {
+    let h = 2166136261;
+    const t = String(s);
+    for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  };
+  /** MurmurHash3's finaliser, as confessionals.js applies it. */
+  const mix = (h0) => {
+    let h = h0;
+    h ^= h >>> 16; h = Math.imul(h, 2246822507);
+    h ^= h >>> 13; h = Math.imul(h, 3266489909);
+    h ^= h >>> 16;
+    return h >>> 0;
+  };
+
+  it('THE PROPERTY: `% len` decorrelates a trailing character and the top bits do not', () => {
+    const N = 4000;
+    // The sample is asserted before anything is concluded from it — a loop
+    // that ran zero times satisfies every share below.
+    expect(N, 'no key pairs were compared').toBeGreaterThan(1000);
+    let widths = 0;
+    for (const len of [4, 5, 6, 8]) {
+      widths++;
+      let modSame = 0, topSame = 0, mixTopSame = 0;
+      const top = (h) => Math.min(len - 1, Math.floor(h / 4294967296 * len));
+      for (let b = 0; b < N; b++) {
+        const a = 'k' + b + '|a', z = 'k' + b + '|b';
+        if (fnv(a) % len === fnv(z) % len) modSame++;
+        if (top(fnv(a)) === top(fnv(z))) topSame++;
+        if (top(mix(fnv(a))) === top(mix(fnv(z)))) mixTopSame++;
+      }
+      // `%` is not merely as good as chance here, it is PERFECT: the two hashes
+      // differ by exactly 16777619, which is coprime to every one of these
+      // widths, so the two keys can never land on the same slot.
+      expect(modSame, 'pool ' + len + ': `% len` put a trailing-char pair on the same slot')
+        .toBe(0);
+      // The top bits cannot see the gap at all. Measured 93–97%.
+      expect(topSame / N, 'pool ' + len + ': the top-bit index is not collapsing, so nothing '
+        + 'below is about a real defect').toBeGreaterThan(0.9);
+      // …and the finaliser fixes exactly that, back to chance.
+      expect(Math.abs(mixTopSame / N - 1 / len),
+        'pool ' + len + ': the finaliser did not restore the top-bit index to chance')
+        .toBeLessThan(0.03);
+    }
+    expect(widths, 'no pool width was tried').toBe(4);
+  });
+
+  it('a screen that indexes off the top bits carries a mix, and one using `%` need not', () => {
+    // STRUCTURAL, NOT NAME-BASED. The rule is "if you divide a hash by 2**32,
+    // mix it first", and both shapes of mix in this directory are an xor-shift
+    // followed by a multiply — confessionals.js writes it as two statements,
+    // scenery.js as one expression. A pinned list of exempt filenames would go
+    // quietly wrong the day a file is renamed.
+    //
+    // AND THE FILE LIST IS READ OFF THE DISK, not typed. A hand-written list
+    // is the shape this repo has been bitten by at least six times: the new
+    // screen lands, nobody adds it, and the sweep stays green over a file it
+    // has never opened. `screens.js` already keeps the one copy of WHICH
+    // screens exist; this arm is about the whole directory, so it asks the
+    // directory.
+    // `readdirSync` will not take the URL form `readFileSync` takes below --
+    // under vitest `import.meta.url` resolves to something it rejects with
+    // ERR_INVALID_URL_SCHEME -- so the directory is named off the repo root.
+    const FILES = readdirSync('js/vp-tr').filter(f => f.endsWith('.js')).sort();
+    expect(FILES.length, 'js/vp-tr/ came back empty or nearly so').toBeGreaterThan(10);
+    let scanned = 0, topBitFiles = 0;
+    for (const f of FILES) {
+      const src = readFileSync(new URL('../js/vp-tr/' + f, import.meta.url), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+      scanned++;
+      if (!/4294967296/.test(src)) continue;
+      topBitFiles++;
+      const mixed = /h \^= h >>> \d+;\s*h = Math\.imul\(h,/.test(src)
+        || /Math\.imul\(h \^ \(h >>> \d+\)/.test(src);
+      expect(mixed, 'js/vp-tr/' + f + ' divides a hash by 2**32 without mixing it first — two '
+        + 'keys differing in one trailing character then decide the same way 96% of the time')
+        .toBe(true);
+    }
+    expect(scanned, 'the file list is empty, so this arm asserted nothing').toBe(FILES.length);
+    // AND THE DISTINCTION IS REAL. If nothing in the directory took a choice
+    // off the top bits, the rule above would be a regex that cannot fire.
+    expect(topBitFiles, 'no screen divides a hash by 2**32 at all, so the arm above is vacuous')
+      .toBeGreaterThan(0);
+  });
+
+  it('the round table routine-note toggle is a coin and not a metronome', () => {
+    // `% 2` IS THE STRIDE CYCLE AT ITS SHORTEST. The gap between consecutive
+    // keys is always odd, so `_hash(...|i) % 2` alternates forever: a note on
+    // every other slate, on every table, in every season, under a comment that
+    // says "about half" as though it had rolled for it. It is the one site in
+    // the directory whose key ends in a counter and whose pool is two wide.
+    //
+    // THE UNIT IS ADJACENT PAIRS, not tables. The toggle is diluted by the
+    // priority chain above it — a betrayal, a reciprocal or a new leader takes
+    // the slate first — so a per-table statistic is mostly noise: the mean
+    // longest alternating run separates 5.36 from 3.87 over 138 tables, which
+    // is a band sitting on its own threshold, the shape this plan has had to
+    // re-derive twice. Adjacent pairs aggregate over 1,697 observations rather
+    // than 138, and n=1697 at p=0.5 has sd 1.21pp. MEASURED: 59.8% with the
+    // raw hash, 48.2% with the finaliser. The band is 55% — 5.6 sd above the
+    // live value and 4.0 sd below the defect.
+    const SLATE = String.fromCharCode(60) + 'div class="rt-slate" data-voter=';
+    let pairs = 0, flips = 0, slates = 0, notes = 0, tables = 0;
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]) {
+      setPlayers(ROSTER);
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+      for (const ep of (gs.episodeHistory || []).map(e => ({ ...e }))) {
+        if (!(ep.tr && ep.tr.table)) continue;
+        // A fresh reveal key per night, so this arm neither reads a screen
+        // another test revealed nor leaves one revealed behind it.
+        // Revealed HERE rather than through `tableFullyRevealed`, whose regex
+        // reads a POSITIVE episode number out of the handler call and returns
+        // null on the renumbered copy.
+        const fresh = { ...ep, num: -5000 - (tables * 32) - seed };
+        const first = rpBuildRoundTable(fresh, 'audience');
+        const m = /trRoundTableRevealAll\('roundtable',(\d+),(-?\d+)\)/.exec(first);
+        expect(m, 'the round table screen has no reveal-all handler').toBeTruthy();
+        trRoundTableRevealAll('roundtable', Number(m[1]), Number(m[2]));
+        const html = rpBuildRoundTable(fresh, 'audience');
+        const pat = html.split(SLATE).slice(1)
+          .map(p => (/rt-note/.test(p) ? '1' : '0')).join('').slice(0, 20);
+        if (pat.length < 6) continue;
+        tables++;
+        slates += pat.length;
+        notes += [...pat].filter(c => c === '1').length;
+        for (let k = 1; k < pat.length; k++) { pairs++; if (pat[k] !== pat[k - 1]) flips++; }
+      }
+    }
+    // EVERY COUNT ASSERTED BEFORE ANY SHARE IS READ OFF IT.
+    expect(tables, 'no round table was read, so the shares below are 0/0').toBeGreaterThan(80);
+    expect(pairs, 'no adjacent slate pairs were compared').toBeGreaterThan(1000);
+    // AND THE TOGGLE MUST ACTUALLY BE DOING SOMETHING. If no slate carried a
+    // note, or every slate did, the flip share would be a flat 0% or 100% and
+    // would pass or fail for a reason that has nothing to do with the hash.
+    expect(notes / slates, 'no slate carries a routine note at all').toBeGreaterThan(0.25);
+    expect(notes / slates, 'every slate carries a note').toBeLessThan(0.75);
+    expect(flips / pairs, (flips / pairs * 100).toFixed(1) + '% of adjacent slates differ in '
+      + 'whether they carry a note — the toggle is alternating rather than deciding')
+      .toBeLessThan(0.55);
   });
 });

@@ -96,6 +96,26 @@ function _hash(s) {
   // seasons repeated a line three times with the raw hash, and one line five
   // times, on pools whose width predicts a worst case of two. This is
   // MurmurHash3's finaliser and it costs two multiplies.
+  //
+  // AND IT IS NOT OPTIONAL *HERE* FOR A REASON THIS FILE ORIGINALLY GOT
+  // WRONG, which matters because the wrong version of it was carried into a
+  // task brief as a defect present in ten other screens. Being 1/256 apart is
+  // only fatal to an index taken off the TOP BITS, which is what `_idx` below
+  // does. Every other file in js/vp-tr/, and `lineFor` in js/tr/castle/
+  // lines.js, index with `h % pool.length` instead -- and `% len` is IMMUNE to
+  // this, because the gap between the two hashes is (delta * 16777619) and
+  // 16777619 is prime, so a family of keys ending in 0,1,2... walks every slot
+  // exactly once before repeating. Measured both ways, 200 seasons, every
+  // `_pick` site in the directory: raw `% len` reaches every slot at every
+  // site, and ADDING this finaliser to those sites makes their within-season
+  // repeat rate worse, not better. The pairing at the top of this file is what
+  // the other screens do not have and do not need.
+  //
+  // The shape that IS live elsewhere is `_lineHash(k) / 4294967296` used as a
+  // probability -- js/tr/endgame.js, js/tr/powers.js, js/tr/murder-variants.js.
+  // Those are engine decisions on keys ending in the episode number, so they
+  // are frozen across the single-digit episodes of a season; see the guard in
+  // tests/tr-vp.test.js, which pins the list.
   h ^= h >>> 16; h = Math.imul(h, 2246822507);
   h ^= h >>> 13; h = Math.imul(h, 3266489909);
   h ^= h >>> 16;

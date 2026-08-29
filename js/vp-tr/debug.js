@@ -86,6 +86,7 @@ export function rpBuildTraitorsDebug(epRecord) {
   const r = tr.recruitment;
   const eg = tr.endgame;
   const day = tr.castle;
+  const sel = tr.selection;
 
   const exits = (ep.exits || []).length
     ? '<table><tr><th>name</th><th>verb</th><th>channel</th></tr>'
@@ -130,6 +131,14 @@ export function rpBuildTraitorsDebug(epRecord) {
         : '<span class="none">nobody</span>'],
       ['downstairs beats', esc((tr.downstairs || []).length)],
     ])}</section>
+
+    <section><h3>The selection</h3>${sel ? _rows([
+      ['the rank, as it stood', _list(sel.line)],
+      ['chosen, in draw order', _list(sel.chosen)],
+      ['tapped, in walk order', esc((sel.taps || [])
+        .map(t => `${t.name} at ${t.at + 1}`).join(', '))],
+      ['in the turret', _list(sel.turret)],
+    ]) : '<div class="none">not the first night — the rank was formed once</div>'}</section>
 
     <section><h3>Exits</h3>${exits}</section>
 

@@ -588,6 +588,36 @@ function _missionRecord(m) {
  * mode from `livingTraitors` at read time would hold a second copy of that
  * rule and would eventually draw an ultimatum over a night that ran a note.
  */
+/**
+ * THE SELECTION, IN THE SHAPE THE FIRST SCREEN DRAWS IT (js/vp-tr/selection.js).
+ *
+ * Spec 9.2 lists this first and it is the only thing on the record that
+ * happens exactly ONCE. Every other field here answers "what did this night
+ * contain"; this one answers "how did the season start", so it rides on the
+ * episode-one row and no other row ever carries it.
+ *
+ * IT RECORDS THE WALK AND NOT JUST THE ANSWER. `selectTraitors` returns the
+ * three in DRAW order, which is an artefact of how the rng was consumed and
+ * is not a fact about the evening. What the room lived through is the host
+ * going down the rank from one end, so `taps` is the same three in LINE
+ * order with the position each one was standing at -- and `chosen` keeps the
+ * draw order beside it, so a screen that renders the walk cannot be
+ * satisfied by the list it was not drawing.
+ *
+ * `line` is the rank as it stood, which is `castOrder` before anybody has
+ * left. It is copied rather than referenced because the seating plan outlives
+ * the season and a screen must not be able to reach past its own record.
+ */
+function _selectionRecord(ep, cast, traitors) {
+  const line = [...(cast || [])];
+  const chosen = [...(traitors || [])];
+  const taps = chosen
+    .map(name => ({ name, at: line.indexOf(name) }))
+    .filter(t => t.at >= 0)
+    .sort((a, b) => a.at - b.at);
+  return { ep, line, chosen, taps, turret: [...chosen] };
+}
+
 function _recruitmentRecord(night) {
   const r = night && night.recruited;
   if (!r || !r.target) return null;
@@ -847,7 +877,7 @@ function _castleRecord(ep, fired) {
 }
 
 function _recordEpisode(ep, { banished = null, night = null, mission = null,
-  castle = null, endgame = false } = {}) {
+  castle = null, endgame = false, selection = null } = {}) {
   // THE DOOR, NOT JUST THE NAME. docs/ADDING-A-SHOW.md §5 gives `exits[]` a
   // `verb` and a `channel` and this row was writing neither, so every reader
   // of the episode history knew somebody had gone and not which of the show's
@@ -943,6 +973,15 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // belongs to and the earlier days that thread has beats on. See
       // `_castleRecord`.
       castle: _castleRecord(ep, castle),
+      // -- THE BLINDFOLD AND THE TAP (Plan 8, Task 9) -----------------
+      //
+      // Episode one and no other. Built at the top of the season, where
+      // `selectTraitors` runs, and passed down here rather than rebuilt from
+      // `alignment` -- an era list read back at episode one would give the
+      // same three names for the wrong reason and would keep giving them
+      // after a recruitment, which is a different question with the same
+      // answer for the first few nights.
+      selection: selection || null,
     },
   });
   // NO `gs.eliminated` HERE, AND THE OMISSION WAS MEASURED. Maintaining it
@@ -1002,6 +1041,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   traitors.forEach(n => recordAlignment(n, true, 1, 'selection'));
   cast.filter(n => !traitors.includes(n)).forEach(n => recordAlignment(n, false, 1, 'selection'));
   seedTraitorKnowledge(1);
+  // THE ONE MOMENT THREE PEOPLE LEARN EACH OTHER WITH CERTAINTY, kept for the
+  // screen that draws it. `seedTraitorKnowledge` is the first of the engine's
+  // three sanctioned `public` alignment writers (tests/tr-missions.test.js
+  // names the closed set); this line stores no belief and creates no
+  // certainty -- it records who was standing there when that one did.
+  const selection = _selectionRecord(1, cast, traitors);
 
   const log = [];
   let ep = 1;
@@ -1057,7 +1102,8 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   settleDaggers(ep);
   castle1.push(...runWindow('night', ep, castleRng));
   scoreMission(ep, mission1);
-  _recordEpisode(ep, { banished: null, night: n1, mission: mission1, castle: castle1 });
+  _recordEpisode(ep, { banished: null, night: n1, mission: mission1, castle: castle1,
+    selection });
   log.push({ ep, banished: null, wasTraitor: null, ...n1, mission: mission1,
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
 

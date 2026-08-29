@@ -24,6 +24,7 @@ import { rpBuildMission, trMissionRevealAll } from './mission.js';
 import { rpBuildRecruitment, trRecruitmentRevealAll } from './recruitment.js';
 import { rpBuildEndgame, trEndgameRevealAll } from './endgame.js';
 import { rpBuildCastleDay, trCastleDayRevealAll } from './castle-day.js';
+import { rpBuildSelection, trSelectionRevealAll } from './selection.js';
 
 /**
  * IN THE ORDER THE CASTLE LIVES THEM.
@@ -68,6 +69,21 @@ import { rpBuildCastleDay, trCastleDayRevealAll } from './castle-day.js';
  * so it rides on the LAST row the season wrote.
  */
 export const TRAITORS_SCREENS = [
+  // ── THE ONLY SCREEN THAT EXISTS ONCE, AND IT GOES FIRST ─────────────
+  //
+  // Spec 9.2 lists it first. `tr.selection` is written on the episode-one row
+  // and no other, so `when` is the same shape as every other entry here --
+  // registered off the RECORD, never off an episode number -- and the screen
+  // simply does not appear from night two on. It sits above breakfast because
+  // on the first morning there is no previous night to have breakfast about:
+  // the cast arrive, they are chosen, and only then does the castle have a
+  // yesterday.
+  { id: 'tr-selection', label: 'The Selection', suffix: 'selection',
+    badge: { text: 'Selection', color: '#c9c2ac' },
+    when: r => !!(r.tr && r.tr.selection && Array.isArray(r.tr.selection.taps)
+      && r.tr.selection.taps.length),
+    build: rpBuildSelection, revealAll: trSelectionRevealAll,
+    revealAllName: 'trSelectionRevealAll' },
   { id: 'tr-cold-open', label: 'Breakfast', suffix: 'coldopen',
     when: r => !!(r.tr && r.tr.dawn),
     build: rpBuildColdOpen, revealAll: trColdOpenRevealAll, revealAllName: 'trColdOpenRevealAll' },

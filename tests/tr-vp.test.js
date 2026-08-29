@@ -51,6 +51,7 @@ import { rpBuildMission, trMissionRevealAll } from '../js/vp-tr/mission.js';
 import { rpBuildRecruitment, trRecruitmentRevealAll } from '../js/vp-tr/recruitment.js';
 import { rpBuildEndgame, trEndgameRevealAll } from '../js/vp-tr/endgame.js';
 import { rpBuildCastleDay, trCastleDayRevealAll } from '../js/vp-tr/castle-day.js';
+import { rpBuildSelection, trSelectionRevealAll } from '../js/vp-tr/selection.js';
 import { buildVPScreens } from '../js/vp-screens.js';
 import { TRAITORS_SCREENS, screenNarration } from '../js/vp-tr/screens.js';
 import { TR_NAV_H, TR_NAV_TOP, TR_STICKY_TOP } from '../js/vp-tr/style.js';
@@ -3885,7 +3886,7 @@ describe('the castle transcript is what a Traitors row actually gets', () => {
 // reached is this project's signature bug class, and it has never once been
 // caught by calling the builder directly.
 describe('every castle screen a season produces is reachable from buildVPScreens', () => {
-  it('all eight, across a real season, and nothing extra', () => {
+  it('all nine, across a real season, and nothing extra', () => {
     const seen = new Map();
     let rows = 0;
     for (const run of RUNS) {
@@ -3911,7 +3912,7 @@ describe('every castle screen a season produces is reachable from buildVPScreens
     expect([...seen.keys()].sort()).toEqual(TRAITORS_SCREENS.map(s => s.id).sort());
   });
 
-  it('and the debug tab is behind the flag, and is not one of the seven', () => {
+  it('and the debug tab is behind the flag, and is not one of the running order', () => {
     // Registered in `buildVPScreens` rather than in `TRAITORS_SCREENS`, on
     // purpose: that list is a night's running order and the text backlog
     // retranscribes it, so a debug dump registered there would be printed into
@@ -3962,7 +3963,7 @@ describe('every castle screen a season produces is reachable from buildVPScreens
 describe('the nav offset is declared once and interpolated', () => {
   const VP_TR = ['conclave.js', 'style.js', 'scenery.js', 'round-table.js', 'cold-open.js',
     'house-status.js', 'mission.js', 'recruitment.js', 'endgame.js', 'castle-day.js',
-    'screens.js', 'debug.js'];
+    'selection.js', 'screens.js', 'debug.js'];
 
   it('no file in js/vp-tr/ writes either offset as a literal', () => {
     let scanned = 0;
@@ -3998,6 +3999,7 @@ describe('the nav offset is declared once and interpolated', () => {
         RUNS[0].episodes[RUNS[0].episodes.length - 1]],
       ['castle day', rpBuildCastleDay,
         RUNS[0].episodes.find(e => e.tr.castle && e.tr.castle.scenes.length)],
+      ['selection', rpBuildSelection, RUNS[0].episodes[0]],
     ];
     let checked = 0;
     for (const [name, build, ep] of withStyle) {
@@ -4528,5 +4530,538 @@ describe("the castle day is not described in another show's words", () => {
     expect(prose.length, 'no prose was found in the screen source').toBeGreaterThan(4000);
     expect(foreignWordsIn(prose, 'traitors'),
       "the castle day's own writing uses another show's words").toEqual([]);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE SELECTION (Plan 8, Task 9) — the blindfold, the tap, and the turret
+// ══════════════════════════════════════════════════════════════════════
+//
+// Spec §9.2 lists this screen FIRST and seven tasks went by without it. It is
+// the only castle screen that exists ONCE, and the only one whose whole
+// subject is an ASYMMETRY rather than an event: twenty people stand in a rank
+// with cloth over their eyes, three of them feel a hand, and none of the three
+// learns who the other two are until they are standing in a room together.
+//
+// FOUR THINGS ARE INVISIBLE BY LOOKING AT IT AND ARE GUARDED HERE:
+//
+//   1. IT FIRES ON EPISODE ONE AND NOWHERE ELSE. A screen registered off an
+//      episode number rather than off the record is the shape this list has
+//      avoided everywhere else; a selection drawn on night six is a season
+//      that starts again every week.
+//   2. THE BLINDFOLD HOLDS. A `player:<name>` observer who was not tapped must
+//      not learn who was — and the gate is mutated in BOTH directions, because
+//      a gate stuck open and a gate stuck shut each defeat only one arm
+//      (Task 3's technique, sixth use in this plan).
+//   3. THE TURRET IS THE ONE MOMENT THREE PEOPLE LEARN EACH OTHER. It is one
+//      of the engine's three sanctioned `public`-credibility alignment writes,
+//      and the ceiling that reserves certainty to those three is what makes
+//      the format work. The screen RENDERS that moment; it must not create
+//      one, and the property that makes that true is that js/vp-tr/ cannot
+//      reach the knowledge layer at all.
+//   4. THE GROUND IS PAINTED UNDER THE WHOLE PAGE. "Really black and empty"
+//      (Task 5) and "the planes stopped at 1500px on a 3,900px page" (Task 8)
+//      are the same defect twice, and this screen is over three thousand
+//      pixels tall.
+//
+// EVERY ARM ASSERTS A NON-ZERO COUNT BEFORE IT ASSERTS ANYTHING ABOUT A
+// COLLECTION.
+
+/** Every season's first row, which is the only row that has a selection. */
+const OPENINGS = RUNS.map(r => ({ ep: r.episodes[0], run: r }))
+  .filter(x => x.ep && x.ep.tr && x.ep.tr.selection);
+
+/** The screen with every beat shown, which is where the whole afternoon is. */
+function selectionRevealed(ep, observer = 'audience') {
+  const first = rpBuildSelection(ep, observer);
+  const m = /trSelectionRevealAll\('selection',(\d+),(-?\d+)\)/.exec(first);
+  if (!m) return first;
+  trSelectionRevealAll('selection', Number(m[1]), Number(m[2]));
+  return rpBuildSelection(ep, observer);
+}
+
+/**
+ * THE BEATS, AS SEPARATE BLOCKS, AND THIS IS THE WHOLE REASON THE READERS
+ * EXIST. Every cast member's first name is printed on the sticky rank — they
+ * all stood in that line and everybody saw everybody before the cloth went on
+ * — so "the screen does not name the tapped player" searched over the WHOLE
+ * screen is satisfied by the wrong element and stays green with every tap
+ * spelled out. That is Plan 7's finding #3 and it has now been shipped five
+ * times in this plan. Each negative arm below reads out of the card that makes
+ * the claim.
+ */
+function selBeats(html) {
+  const parts = String(html).split(/<div class="tp-beat[^"]*" id="tp-step-selection-\d+"/);
+  return parts.slice(1);
+}
+/** Just the tap cards — the beats that say whose shoulder it was. */
+function tapCards(html) {
+  return selBeats(html).filter(b => /<div class="tp-label">[\s\S]*?The tap</.test(b));
+}
+/** The turret card, or null where the observer never went up. */
+function turretCard(html) {
+  return selBeats(html).find(b => b.indexOf('tp-three-one') >= 0) || null;
+}
+/** The names on the turret roll, read out of the element that states them. */
+function turretNames(html) {
+  const card = turretCard(html);
+  if (!card) return [];
+  return [...card.matchAll(/<div class="tp-three-nm">([^<]*)<\/div>/g)].map(m => m[1]);
+}
+/** The place in the rank a tap card states, read out of its own element. */
+function tapPlaces(html) {
+  return tapCards(html)
+    .map(b => /<div class="tp-place">[\s\S]*?<b>(\d+)<\/b>/.exec(b))
+    .filter(Boolean).map(m => Number(m[1]));
+}
+/**
+ * The names on the sticky rank that carry a hand.
+ *
+ * ENDS ON `</span></div>`, which is a figure's own close and nothing else's:
+ * the portrait inside it also ends on `</span>`, but it is followed by the
+ * band rather than by the figure closing. Task 8 shipped a matcher whose end
+ * anchor was a pair the block did not contain, and it ran past the end and
+ * found one thing where there were two.
+ */
+function rankFigures(html) {
+  return String(html).match(/<div class="tp-fig"[^>]*>[\s\S]*?<\/span><\/div>/g) || [];
+}
+function handMarked(html) {
+  return rankFigures(html)
+    .filter(f => f.indexOf('tp-hand-mark') >= 0)
+    .map(f => (/<span class="tp-fig-nm">([^<]*)<\/span>/.exec(f) || [])[1])
+    .filter(Boolean);
+}
+
+// The readers are what every negative arm counts, so a reader that finds
+// nothing makes the whole set pass for free.
+describe('the selection readers find what is there and not what is not', () => {
+  it('reads beats, tap cards, the turret roll, places and hand marks out of their own elements',
+    () => {
+      const fig = (nm, hand) => '<div class="tp-fig"' + (hand ? ' data-tap="1"' : '') + '>'
+        + (hand ? '<span class="tp-hand-mark">H</span>' : '')
+        + '<span class="cv-av"><span class="cv-av-ini">XY</span><img></span>'
+        + '<span class="tp-band"></span>'
+        + '<span class="tp-fig-nm">' + nm + '</span></div>';
+      const beat = (i, body) => '<div class="tp-beat tp-vis" id="tp-step-selection-' + i
+        + '" data-phase="walk">' + body + '</div>';
+      const html = fig('Axel', true) + fig('Amy', false) + fig('Carrie', true)
+        + beat(0, '<div class="tp-label">The arrival</div>')
+        + beat(1, '<div class="tp-label">The tap</div><div class="tp-place">'
+          + '<span>Standing at </span><b>4</b><span>of 20</span></div>')
+        + beat(2, '<div class="tp-label">The tap</div><div class="tp-place">'
+          + '<span>Standing at </span><b>16</b><span>of 20</span></div>')
+        + beat(3, '<div class="tp-three"><div class="tp-three-one">'
+          + '<div class="tp-three-nm">Axel</div></div>'
+          + '<div class="tp-three-one"><div class="tp-three-nm">Carrie</div></div></div>');
+      expect(selBeats(html).length, 'the beat reader found no beats').toBe(4);
+      expect(tapCards(html).length, 'the tap-card reader found no tap card').toBe(2);
+      expect(tapPlaces(html)).toEqual([4, 16]);
+      expect(turretNames(html)).toEqual(['Axel', 'Carrie']);
+      expect(rankFigures(html).length, 'the figure reader found no figure').toBe(3);
+      expect(handMarked(html)).toEqual(['Axel', 'Carrie']);
+      // and none of them invents one
+      expect(selBeats('<p>a beat</p>').length).toBe(0);
+      expect(tapCards(beat(0, '<div class="tp-label">The arrival</div>')).length).toBe(0);
+      expect(turretCard(beat(0, '<p>The Turret</p>'))).toBe(null);
+      expect(handMarked(fig('Amy', false))).toEqual([]);
+      // AND THE FIGURE READER DOES NOT SWALLOW THE NEXT FIGURE. The portrait
+      // inside a figure also closes on `</span>`, so an end anchor of the
+      // wrong shape runs past the block and reports one where there are three.
+      expect(rankFigures(fig('Axel', true) + fig('Amy', false))[0].indexOf('Amy'))
+        .toBe(-1);
+    });
+});
+
+// ── GUARD: ONE AFTERNOON, ON THE FIRST NIGHT, AND ON NO OTHER ─────────
+describe('the selection happens once and is recorded on the night it happened', () => {
+  it('exactly one row of every season carries it, and it is episode one', () => {
+    expect(OPENINGS.length, 'no season recorded a selection at all')
+      .toBe(RUNS.length);
+    let rows = 0;
+    for (const run of RUNS) {
+      const withSel = run.episodes.filter(e => e.tr && e.tr.selection);
+      expect(withSel.length, 'a season recorded the rank more than once, or not at all')
+        .toBe(1);
+      expect(withSel[0].num, 'the selection is not on the first row').toBe(1);
+      expect(withSel[0].tr.selection.ep, 'the record disagrees with its own row').toBe(1);
+      rows += run.episodes.length;
+    }
+    expect(rows, 'no season was played').toBeGreaterThan(20);
+  });
+
+  it('and the walk it records is the rank it records', () => {
+    for (const { ep } of OPENINGS) {
+      const s = ep.tr.selection;
+      expect(s.line.length, 'a rank with nobody in it').toBeGreaterThan(10);
+      expect(s.taps.length, 'a walk with no taps in it').toBeGreaterThan(0);
+      // Every tapped name is a name that was in the line, at the place stated.
+      for (const t of s.taps) {
+        expect(s.line[t.at], `${t.name} is recorded at a place somebody else was standing`)
+          .toBe(t.name);
+      }
+      // WALK ORDER, NOT DRAW ORDER, and they are genuinely different lists:
+      // `selectTraitors` returns the three in the order the rng happened to
+      // consume them and nobody on that gravel lived through that order.
+      const places = s.taps.map(t => t.at);
+      expect([...places].sort((a, b) => a - b),
+        'the walk is not in the order the host walked it').toEqual(places);
+      expect([...s.taps.map(t => t.name)].sort())
+        .toEqual([...s.chosen].sort());
+      expect([...s.turret].sort()).toEqual([...s.chosen].sort());
+    }
+    // ...and across the seeds the two orders really do disagree somewhere, or
+    // "walk order not draw order" is a claim this sample cannot test.
+    const differ = OPENINGS.filter(({ ep }) =>
+      ep.tr.selection.taps.map(t => t.name).join('|') !== ep.tr.selection.chosen.join('|'));
+    expect(differ.length,
+      'draw order and walk order were identical on every seed — the distinction this record '
+      + 'draws is untested by this sample').toBeGreaterThan(0);
+  });
+});
+
+// ── GUARD: REGISTERED ON EPISODE ONE AND NOWHERE ELSE ─────────────────
+describe('the selection screen is reachable from the first night and from no other', () => {
+  it('buildVPScreens gives it to the opening row of every season and to nothing else', () => {
+    let seen = 0, others = 0;
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        const ids = buildVPScreens(ep).map(s => s.id);
+        if (ep.num === 1) {
+          expect(ids, 'the opening night does not register the selection')
+            .toContain('tr-selection');
+          // AND IT OPENS THE NIGHT. The morning is about the previous night
+          // and on night one there is not one.
+          expect(ids[0], 'the selection is not the first screen of the first night')
+            .toBe('tr-selection');
+          seen++;
+        } else {
+          expect(ids, `ep ${ep.num} registered a selection it did not have`)
+            .not.toContain('tr-selection');
+          others++;
+        }
+      }
+    }
+    expect(seen, 'no opening night was examined').toBe(RUNS.length);
+    expect(others, 'no later night was examined').toBeGreaterThan(20);
+  });
+});
+
+// ── GUARD: THE BLINDFOLD HOLDS, AND THE GATE IS MUTATED BOTH WAYS ─────
+describe('who was tapped is not learnable by having stood in the line', () => {
+  it('the audience is told every shoulder, by name and by place', () => {
+    let checked = 0;
+    for (const { ep } of OPENINGS) {
+      const s = ep.tr.selection;
+      const html = selectionRevealed(ep, 'audience');
+      const cards = tapCards(html);
+      expect(cards.length, 'the audience got no tap cards').toBe(s.taps.length);
+      for (let i = 0; i < s.taps.length; i++) {
+        expect(mentions(screenNarration(cards[i]), s.taps[i].name),
+          `the audience's tap card ${i + 1} does not name who it landed on`).toBe(true);
+      }
+      // THE PLACE READ OUT OF THE ELEMENT THAT STATES IT, not off the page:
+      // "4" and "16" appear all over a screen with twenty people on it.
+      expect(tapPlaces(html), 'the audience is not told where in the rank the hands landed')
+        .toEqual(s.taps.map(t => t.at + 1));
+      expect([...handMarked(html)].sort(),
+        'the rank does not mark the shoulders the audience watched being tapped')
+        .toEqual(s.taps.map(t => String(t.name).split(' ')[0]).sort());
+      checked++;
+    }
+    expect(checked).toBe(OPENINGS.length);
+  });
+
+  it('a player who was not tapped learns no name and no place', () => {
+    let watchers = 0;
+    for (const { ep } of OPENINGS) {
+      const s = ep.tr.selection;
+      const rest = s.line.filter(n => s.chosen.indexOf(n) < 0);
+      expect(rest.length, 'every single person in the rank was tapped').toBeGreaterThan(5);
+      for (const who of rest) {
+        const html = selectionRevealed(ep, 'player:' + who);
+        const cards = tapCards(html);
+        expect(cards.length, `${who} got no tap cards at all`).toBe(s.taps.length);
+        const said = screenNarration(cards.join(' '));
+        for (const name of s.chosen) {
+          expect(mentions(said, name),
+            `${who} was told ${name} was tapped, standing blindfolded in a line`).toBe(false);
+        }
+        // A GAP COUNT IS A POSITION WITH ONE STEP OF ARITHMETIC IN FRONT OF IT.
+        expect(tapPlaces(html), `${who} was told where in the rank a hand landed`)
+          .toEqual([]);
+        expect(handMarked(html), `${who}'s rank marks a shoulder they could not see`)
+          .toEqual([]);
+        // AND THE WHOLE STREAM, NOT JUST THE CARDS THAT SAY "THE TAP".
+        //
+        // This arm read only the tap cards until a mutation walked straight
+        // past it: opening the closing "Both Rooms" beat to a player layer
+        // printed all three names in a card the reader was not looking at,
+        // and every assertion above stayed green. A screen grows beats, and a
+        // negative arm anchored on one KIND of beat is a guard that ages
+        // badly. The rank stage is deliberately NOT in this sweep — everybody
+        // stood in that line and saw each other before the cloth went on, so
+        // the roll of first names is a fact this watcher genuinely has.
+        const stream = screenNarration(selBeats(html).join(' '));
+        expect(stream.length, `${who}'s stream is empty — this sweep reads nothing`)
+          .toBeGreaterThan(500);
+        for (const name of s.chosen) {
+          expect(mentions(stream, name),
+            `${who} is told ${name} was chosen, somewhere on the page`).toBe(false);
+        }
+        watchers++;
+      }
+    }
+    expect(watchers, 'no untapped watcher was examined').toBeGreaterThan(40);
+  });
+
+  it('and one who WAS tapped learns their own shoulder and neither of the others', () => {
+    let watchers = 0;
+    for (const { ep } of OPENINGS) {
+      const s = ep.tr.selection;
+      for (const who of s.chosen) {
+        const html = selectionRevealed(ep, 'player:' + who);
+        const cards = tapCards(html);
+        const mine = cards.filter(c => mentions(screenNarration(c), who));
+        expect(mine.length, `${who} does not see their own shoulder, or sees it twice`).toBe(1);
+        for (const other of s.chosen.filter(n => n !== who)) {
+          expect(mentions(screenNarration(cards.join(' ')), other),
+            `${who} was told ${other} was tapped while both of them were blindfolded`)
+            .toBe(false);
+        }
+        // AND THE OTHER TWO APPEAR IN THE TURRET AND NOWHERE ELSE — the same
+        // shape as the bystander arm's whole-stream sweep, on the layer where
+        // the names are legitimate but only in one room. A beat added later
+        // that names them before the stair is a beat that hands a tapped
+        // player their partners on the gravel, which is the thing the
+        // engine's own write order says does not happen.
+        const turret = turretCard(html) || '';
+        const elsewhere = screenNarration(
+          selBeats(html).filter(b2 => b2 !== turretCard(html)).join(' '));
+        expect(turret.length, `${who} has no turret card to hold the names`)
+          .toBeGreaterThan(100);
+        for (const other of s.chosen.filter(n => n !== who)) {
+          expect(mentions(elsewhere, other),
+            `${who} is told about ${other} somewhere other than the turret`).toBe(false);
+        }
+        // Their own place, and nobody else's.
+        expect(tapPlaces(html), `${who} was shown a place that was not theirs`)
+          .toEqual([s.line.indexOf(who) + 1]);
+        expect(handMarked(html), `${who}'s rank marks a shoulder other than their own`)
+          .toEqual([String(who).split(' ')[0]]);
+        watchers++;
+      }
+    }
+    expect(watchers, 'no tapped watcher was examined').toBeGreaterThan(8);
+  });
+});
+
+// ── GUARD: THE TURRET, THE SECOND GATE, ALSO BOTH WAYS ────────────────
+describe('the turret is where the three of them learn each other and nowhere else', () => {
+  it('the audience and the three see the meeting, with all three names on it', () => {
+    let checked = 0;
+    for (const { ep } of OPENINGS) {
+      const s = ep.tr.selection;
+      for (const obs of ['audience', ...s.chosen.map(n => 'player:' + n)]) {
+        const html = selectionRevealed(ep, obs);
+        expect([...turretNames(html)].sort(),
+          `${obs} was not shown the turret, which is the one certainty in the game`)
+          .toEqual([...s.turret].sort());
+        checked++;
+      }
+    }
+    expect(checked, 'no entitled observer was examined').toBeGreaterThan(12);
+  });
+
+  it('and nobody else sees it at all — not the room, not the roll, not a redaction', () => {
+    let watchers = 0;
+    for (const { ep } of OPENINGS) {
+      const s = ep.tr.selection;
+      for (const who of s.line.filter(n => s.chosen.indexOf(n) < 0)) {
+        const html = selectionRevealed(ep, 'player:' + who);
+        expect(turretCard(html), `${who} was shown the turret`).toBe(null);
+        expect(turretNames(html)).toEqual([]);
+        // The layer that renders nothing renders a NOTICE, not an empty page —
+        // a screen that simply stops looks like a defect.
+        expect(html, `${who} got neither the meeting nor an account of not being at it`)
+          .toContain('You Were Not Called Up');
+        watchers++;
+      }
+      // And the two layers genuinely differ, or the comparison proves nothing
+      // (Task 6's finding: a gate proved on one screen and assumed on six).
+      const aud = selectionRevealed(ep, 'audience');
+      const out = selectionRevealed(ep,
+        'player:' + s.line.find(n => s.chosen.indexOf(n) < 0));
+      expect(aud === out, 'the audience layer and a bystander layer are the same page')
+        .toBe(false);
+    }
+    expect(watchers, 'no excluded watcher was examined').toBeGreaterThan(40);
+  });
+});
+
+// ── GUARD: THE STAGE DOES NOT SHOW THE FINISHED PICTURE ───────────────
+describe('the rank does not show the walk before the walk is read', () => {
+  it('a screen opened and never clicked has no hand on any shoulder', () => {
+    let checked = 0;
+    for (const { ep } of OPENINGS) {
+      // A FRESH REVEAL KEY. Reveal state is module-local and keyed by episode
+      // number, and the arms above have already run this row to the end.
+      const fresh = { ...ep, num: -900 - checked };
+      const html = rpBuildSelection(fresh, 'audience');
+      expect(rankFigures(html).length, 'the rank drew nobody')
+        .toBe(ep.tr.selection.line.length);
+      expect(handMarked(html), 'the stage marked the tapped before a tap was read')
+        .toEqual([]);
+      // ...and it is NOT blank: Task 2's first-paint rule, which conclave.js
+      // shipped without and was a white screen until somebody pressed a button.
+      expect(/tp-beat tp-vis/.test(html), 'the first paint reveals nothing at all')
+        .toBe(true);
+      expect(strip(html).length, 'the first paint said nothing').toBeGreaterThan(400);
+      checked++;
+    }
+    expect(checked).toBe(OPENINGS.length);
+  });
+});
+
+// ── GUARD: THE SCREEN RENDERS CERTAINTY AND DOES NOT CREATE IT ────────
+//
+// The turret meeting is one of the engine's THREE sanctioned `public`
+// alignment writes (`seedTraitorKnowledge`, and the other two are a recruit
+// shown the turret and the banishment reveal). tests/tr-missions.test.js
+// sweeps that closed set over twelve seasons of WRITES — the right sweep,
+// because barely any of a season's beliefs survive to the end and a store
+// sweep reads the survivors of an overwriting process. What belongs HERE is
+// the claim this task makes: drawing the moment must not add a fourth writer.
+//
+// SWEPT OVER THE SOURCE, because js/vp-tr/ importing no engine state is the
+// property that MAKES that true rather than merely observed — a screen that
+// cannot reach the knowledge layer cannot write to it, whatever a sample of
+// renders happens to show.
+describe('the selection screen renders the one certainty and cannot manufacture one', () => {
+  it('nothing in js/vp-tr/ can reach the knowledge layer or the engine state', () => {
+    // The path is a CONCATENATION rather than a literal: `readFileSync(new
+    // URL('<literal>', import.meta.url))` is statically rewritten by Vite into
+    // an asset URL and throws (Task 8).
+    const dir = '../js/vp-tr/';
+    const files = ['selection.js', 'conclave.js', 'round-table.js', 'cold-open.js',
+      'house-status.js', 'mission.js', 'recruitment.js', 'endgame.js', 'castle-day.js',
+      'screens.js', 'style.js', 'scenery.js'];
+    let scanned = 0, imported = 0;
+    for (const f of files) {
+      const src = readFileSync(new URL(dir + f, import.meta.url), 'utf8');
+      expect(src.length, `js/vp-tr/${f} is empty — this scan is reading nothing`)
+        .toBeGreaterThan(100);
+      const specs = [...src.matchAll(/\bfrom\s+'([^']+)';/g)].map(m => m[1]);
+      for (const spec of specs) {
+        expect(/knowledge\.js$/.test(spec),
+          `js/vp-tr/${f} imports the knowledge layer — a screen that can write a belief `
+          + 'can manufacture the certainty it is supposed to be reporting').toBe(false);
+        expect(/\/tr\//.test(spec),
+          `js/vp-tr/${f} imports engine state from ${spec}; a screen is handed a record `
+          + 'and may not reach past it').toBe(false);
+        imported++;
+      }
+      scanned++;
+    }
+    expect(scanned).toBe(files.length);
+    // GUARD ON THE GUARD: the import reader has to be finding imports, or every
+    // assertion above is a loop over an empty list.
+    expect(imported, 'the import reader parsed no import in any of twelve files')
+      .toBeGreaterThan(30);
+  });
+
+  it('and the record it draws carries no confidence, no credibility and no belief', () => {
+    // The record is the whole of what the screen can see, so what it does NOT
+    // contain is what the screen cannot leak. Alignment lives on it as three
+    // names in a turret and nothing else: no source, no tier, no number.
+    let checked = 0;
+    for (const { ep } of OPENINGS) {
+      const s = ep.tr.selection;
+      expect(Object.keys(s).sort()).toEqual(['chosen', 'ep', 'line', 'taps', 'turret']);
+      const flat = JSON.stringify(s);
+      for (const word of ['sourceType', 'confidence', 'credibility', 'public',
+        'observed', 'deduced', 'rumor', 'belief']) {
+        expect(flat.indexOf(word), `the selection record carries "${word}"`).toBe(-1);
+      }
+      checked++;
+    }
+    expect(checked).toBe(OPENINGS.length);
+  });
+});
+
+// ── GUARD: NO OTHER SHOW'S WORDS ──────────────────────────────────────
+describe('the first afternoon is not described in another show\'s words', () => {
+  it('no forbidden noun survives on any of the three rendered layers', () => {
+    let layers = 0;
+    for (const { ep } of OPENINGS) {
+      const s = ep.tr.selection;
+      const outsider = s.line.find(n => s.chosen.indexOf(n) < 0);
+      for (const obs of ['audience', 'player:' + s.chosen[0], 'player:' + outsider]) {
+        const said = strip(selectionRevealed(ep, obs));
+        expect(said.length, `the ${obs} layer rendered nothing`).toBeGreaterThan(600);
+        const bad = foreignWordsIn(said, 'traitors');
+        expect(bad, `the ${obs} layer of the selection says ${bad.join(', ')}`).toEqual([]);
+        layers++;
+      }
+    }
+    expect(layers, 'no layer was read').toBeGreaterThan(9);
+  });
+
+  it('and the pools the seeds never reach are clean at the source', () => {
+    // Four seeds reach four of each pool at most and the file holds a hundred
+    // sentences. Task 8's M16 was a foreign noun in a branch the seeds never
+    // entered, and only the source arm caught it. Comments are included on
+    // purpose: a comment is where the wrong word gets written first, and Task
+    // 1's conclave said "house" three times.
+    const src = readFileSync(new URL('../js/vp-tr/' + 'selection.js', import.meta.url), 'utf8');
+    expect(src.length, 'the source scan is reading nothing').toBeGreaterThan(1000);
+    const bad = foreignWordsIn(src, 'traitors');
+    expect(bad, `js/vp-tr/selection.js writes ${bad.join(', ')} at the source`).toEqual([]);
+  });
+});
+
+// ── GUARD: THE REVEAL PATTERN, AND THE GROUND UNDER THE WHOLE PAGE ────
+describe('the selection is a place and not a hole', () => {
+  const shell = () => rpBuildSelection(OPENINGS[0].ep, 'audience');
+
+  it('step divs, counter and controls are all addressable by id', () => {
+    const html = shell();
+    const total = Number(/trSelectionRevealAll\('selection',(\d+),/.exec(html)[1]);
+    expect(total, 'the screen emitted no beats').toBeGreaterThan(6);
+    for (let i = 0; i < total; i++) {
+      expect(html, `step ${i} has no id for the reveal handler to find`)
+        .toContain('id="tp-step-selection-' + i + '"');
+    }
+    expect(html).toContain('id="tp-counter-selection"');
+    expect(html).toContain('id="tp-controls-selection"');
+    expect(html).toContain('id="tp-shell-selection"');
+    expect(html).toContain('id="tp-stage-inner"');
+  });
+
+  it('the two full-height layers run from the nav bar to the foot of the page', () => {
+    // A busy afternoon is over three thousand pixels and the drawn planes are
+    // 2100. Task 5's endgame was rejected for "really black and empty" and
+    // Task 8's day stopped at 1500px on a 3,900px page; both were a place
+    // stopping rather than a place being dark.
+    const css = /<style>([\s\S]*?)<\/style>/.exec(shell())[1];
+    expect(css.length, 'the screen rendered no stylesheet').toBeGreaterThan(2000);
+    let checked = 0;
+    for (const layer of ['.tp-yard{', '.tp-ashlar{']) {
+      const at = css.indexOf(layer);
+      expect(at, `${layer} is not declared at all`).toBeGreaterThan(-1);
+      const block = css.slice(at, css.indexOf('}', at));
+      expect(block, `${layer} does not start below the nav bar`)
+        .toContain('top:' + TR_NAV_TOP);
+      expect(block, `${layer} stops somewhere rather than running to the foot`)
+        .toContain('bottom:0');
+      // ...and it is not silently height-capped, which is the same defect
+      // wearing the other property.
+      expect(/height:\s*\d/.test(block), `${layer} is height-capped`).toBe(false);
+      checked++;
+    }
+    expect(checked).toBe(2);
+    // And the drawn planes are the ones that ARE capped, deliberately — the
+    // drive is what you can see from the gate, not the whole yard.
+    expect(css, 'the drawn planes lost their height').toContain('height:2100px');
   });
 });

@@ -85,6 +85,7 @@ export function rpBuildTraitorsDebug(epRecord) {
   const m = tr.mission;
   const r = tr.recruitment;
   const eg = tr.endgame;
+  const day = tr.castle;
 
   const exits = (ep.exits || []).length
     ? '<table><tr><th>name</th><th>verb</th><th>channel</th></tr>'
@@ -190,6 +191,20 @@ export function rpBuildTraitorsDebug(epRecord) {
       ['accepted', esc(String(!!r.accepted))],
       ['and if refused', _or(r.executed, 'nothing — a note can be thrown away')],
     ]) : '<div class="none">no offer this night</div>'}</section>
+
+    <section><h3>The castle day</h3>${(day && (day.scenes || []).length)
+      ? '<table><tr><th>hour</th><th>family</th><th>event</th><th>who</th>'
+        + '<th>thread</th><th>beat</th><th>cites</th><th>closed</th></tr>'
+        + day.scenes.map(x => `<tr><td>${esc(x.window)}</td><td>${esc(x.family)}</td>`
+          + `<td>${esc(x.eventId)}${x.branch ? ':' + esc(x.branch) : ''}</td>`
+          + `<td>${esc((x.people || []).join(', ') || (x.actors || []).join(', '))}</td>`
+          + `<td>${esc(x.threadId)}</td>`
+          + `<td>${esc(x.beatNo)}${x.priorDays.length ? ' (days ' + esc(x.priorDays.join(',')) + ')' : ''}</td>`
+          + `<td>${x.citedDays.length ? esc(x.citedDays.join(',')) : '<span class="none">-</span>'}</td>`
+          + `<td>${x.closedNow ? esc(x.outcome + ' [' + x.sense + ']') : '<span class="none">-</span>'}</td>`
+          + '</tr>').join('')
+        + '</table>'
+      : '<div class="none">the castle wrote nothing down today</div>'}</section>
 
     <section><h3>The endgame</h3>${eg ? _rows([
       ['from / to', `${esc(eg.from)} → ${esc(eg.endEp)}`],

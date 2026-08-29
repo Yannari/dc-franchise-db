@@ -195,8 +195,14 @@ function _pairKey(actors) {
  * narrate a thread's parties instead of the convened pair — see the note in
  * `pickEvent`. Unknown shapes yield nothing, which degrades to the old
  * behaviour rather than to a wrong key.
+ *
+ * EXPORTED because the episode record needs the same answer. `_recordEpisode`
+ * (js/tr/headless.js) snapshots the day's scenes for the Castle Day screen,
+ * and the observer contract on that screen turns on WHO WAS IN THE SCENE — a
+ * second derivation of that question in the recorder would drift from the one
+ * the cooldowns key on the first time an event returns a new field shape.
  */
-function _participants(res) {
+export function sceneParticipants(res) {
   const out = new Set();
   for (const k of ['pair', 'actors', 'parties']) {
     if (Array.isArray(res?.[k])) for (const n of res[k]) if (typeof n === 'string') out.add(n);
@@ -420,11 +426,11 @@ export function pickEvent(ctx, rng) {
   // (`some` -> `every`) costs 73% of the romance family's reach and pushes
   // `romance-liability-exposed` under the branch floor; measured, rejected,
   // and written up over `_threadForActors`.
-  for (const p of _participants(consequences)) {
+  for (const p of sceneParticipants(consequences)) {
     if (ctx.actors?.includes(p)) continue;
     cds.player[`${chosen.id}:${p}`] = ctx.ep;
   }
-  const wrote = _participants(consequences);
+  const wrote = sceneParticipants(consequences);
   if (wrote.length >= 2) cds.pair[`${chosen.id}:${_pairKey(wrote)}`] = ctx.ep;
 
   // WHAT THE COUNTRY MADE OF IT (spec 10.4). Declared on the consequences by

@@ -20,7 +20,8 @@ import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence }
 import { variantEvidence } from './murder-variants.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
-import { runWindow, startRoundBudget } from './events.js';
+import { runWindow, startRoundBudget, sceneParticipants, KNOWN_WINDOWS } from './events.js';
+import { outcomeSense } from './threads.js';
 import { runMission, POT_CEILING } from './missions.js';
 import { shieldEvidence, expireShields, settleDaggers } from './powers.js';
 import { runEndgame } from './endgame.js';
@@ -699,8 +700,154 @@ function _morning() {
  * vote. A show with two exit channels needs both fields or it credits half its
  * cast with a full season they did not play.
  */
+// ═══════════════════════════════════════════════════════════════════════
+// THE CASTLE DAY, IN THE SHAPE A SCREEN DRAWS IT (js/vp-tr/castle-day.js)
+// ═══════════════════════════════════════════════════════════════════════
+//
+// Plan 5 built 106 events across eight families and seven windows and
+// nothing ever put one on a screen. What it built was not forty incidents,
+// though — it was THREADS: a story opened by one scene, fed by later ones,
+// and either paid off or let go. `citeMoments` writes the continuity INTO
+// the beat's own sentence ("It went back to day 2 — … — and it did not stop
+// there: day 4"), which is the right thing for a prose dump and the wrong
+// shape for a screen: a citation buried mid-paragraph is invisible AS a
+// citation, and the thread is the thing this screen exists to show.
+//
+// So the record splits the two halves apart again and hands a screen both,
+// along with the days the thread actually has beats on — which is what makes
+// "the citation names a real earlier beat" a checkable claim rather than a
+// sentence nobody can contradict.
+
+/** The seven windows in the order a day runs them. */
+const DAY_WINDOWS = ['dawn', 'morning', 'journey-out', 'journey-back',
+  'evening', 'after-table', 'night'];
+
+/**
+ * The two sentences a citation can start with, straight out of `citeMoments`.
+ * Written here as a pair of literals on purpose: this recorder must fail to
+ * split rather than silently mangle if that function's phrasing ever changes,
+ * and tests/tr-vp.test.js asserts the split against real season beats.
+ */
+const CITATION_HEADS = ['It went back to day ', 'It had been going on since day '];
+
+/**
+ * A beat's note, as the sentence the event wrote plus the continuity the
+ * thread appended. `citation` is '' on a thread's first beat and on any beat
+ * with nothing earlier worth naming, which is the common case: 73.9% of
+ * threads die where they open.
+ *
+ * A SPLIT AND NOT A STRIP. Both halves come back and the two of them
+ * concatenate to the note. A subtractive helper that ate too much would make
+ * every guard downstream of it pass for free -- Plan 8 Task 4's fifth vacuous
+ * shape -- so nothing here is allowed to discard a character.
+ */
+function _splitCitation(note) {
+  const text = String(note || '');
+  let at = -1;
+  for (const head of CITATION_HEADS) {
+    const i = text.indexOf(head);
+    if (i >= 0 && (at < 0 || i < at)) at = i;
+  }
+  if (at < 0) return { line: text.trim(), citation: '' };
+  return { line: text.slice(0, at).trim(), citation: text.slice(at).trim() };
+}
+
+/** Every day number a citation names, in the order it names them. */
+function _daysNamed(citation) {
+  const out = [];
+  const re = /day (\d+)/g;
+  let m;
+  while ((m = re.exec(String(citation || ''))) != null) out.push(Number(m[1]));
+  return out;
+}
+
+/**
+ * The day's scenes, each carrying the thread it belongs to.
+ *
+ * `fired` is the round's `castleEvents`, in the order the windows ran them.
+ * A firing with no beat to its name is DROPPED rather than rendered blank:
+ * `openThread` folds a repeat announcement into the beat that is already
+ * there and writes nothing, so a scene with no sentence is a scene the engine
+ * declined to narrate.
+ *
+ * THE JOIN IS THE ORDER. A fired event reports `threadId` and nothing else
+ * about what it wrote; the sentence lives on the thread's beat log. Both
+ * lists are appended to in the same order within a round, so the Nth firing
+ * naming a thread takes that thread's Nth beat of the round. There is no
+ * other key available: `beat.eventId` is the SEED STRING on an open and the
+ * empty string on an advance (see `openThread` and `advanceThread`), so it
+ * identifies nothing.
+ */
+function _castleRecord(ep, fired) {
+  const threads = gs.tr?.threads || [];
+  const byId = new Map(threads.map(t => [t.id, t]));
+  const taken = new Map();
+  const scenes = [];
+
+  for (const f of (fired || [])) {
+    const c = f && f.consequences;
+    const t = (c && c.threadId) ? byId.get(c.threadId) : null;
+    if (!t) continue;
+    const todays = (t.beats || []).filter(b => b.ep === ep && b.note);
+    const used = taken.get(t.id) || 0;
+    const beat = todays[used];
+    if (!beat) continue;
+    taken.set(t.id, used + 1);
+
+    const idx = (t.beats || []).indexOf(beat);
+    const earlier = (t.beats || []).slice(0, Math.max(0, idx))
+      .filter(b => b.ep < ep && b.note);
+    const priorDays = [...new Set(earlier.map(b => b.ep))];
+    const split = _splitCitation(beat.note);
+    // CLOSED TONIGHT, which is not the same as closed. `closeThread` stamps
+    // `lastEp`, so a thread paid off three rounds ago is not a payoff on this
+    // row and must not be drawn as one.
+    const closedNow = t.state === 'closed' && t.lastEp === ep && !!t.outcome;
+
+    scenes.push({
+      window: f.event.window,
+      family: f.event.family || t.kind,
+      eventId: f.event.id,
+      branch: (c && c.branch) || null,
+      // WHO WAS CONVENED and WHO THE SENTENCE IS ABOUT, both, because they
+      // disagree for thirteen events in the pool and the observer contract
+      // has to honour either claim to having been in the room.
+      actors: [...(f.actors || [])],
+      people: sceneParticipants(c),
+      parties: [...(t.parties || [])],
+      threadId: t.id,
+      kind: t.kind,
+      openedEp: t.openedEp,
+      // Where this beat sits in the whole story, and what came before it.
+      beatNo: idx + 1,
+      opened: idx === 0,
+      priorDays,
+      line: split.line,
+      citation: split.citation,
+      citedDays: _daysNamed(split.citation),
+      closedNow,
+      outcome: closedNow ? t.outcome : null,
+      sense: closedNow ? outcomeSense(t.outcome) : null,
+    });
+  }
+
+  // The windows that actually produced something, in the order a day runs
+  // them. A window with nothing in it is NOT listed: a quiet hour is honest,
+  // and the screen leaves it blank rather than inventing a scene to fill it
+  // (Task 1's sparse irony gutter, for the same reason).
+  const fired7 = new Set(scenes.map(x => x.window));
+  const windows = DAY_WINDOWS.filter(w => fired7.has(w));
+  // Anything the pool ever grows that is not one of the seven would otherwise
+  // vanish silently. `KNOWN_WINDOWS` is registerEvent's own list.
+  for (const x of scenes) {
+    if (!KNOWN_WINDOWS.has(x.window) && !windows.includes(x.window)) windows.push(x.window);
+  }
+
+  return { ep, windows, scenes };
+}
+
 function _recordEpisode(ep, { banished = null, night = null, mission = null,
-  endgame = false } = {}) {
+  castle = null, endgame = false } = {}) {
   // THE DOOR, NOT JUST THE NAME. docs/ADDING-A-SHOW.md §5 gives `exits[]` a
   // `verb` and a `channel` and this row was writing neither, so every reader
   // of the episode history knew somebody had gone and not which of the show's
@@ -790,6 +937,12 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // and the pact spends most nights killing rather than asking.
       mission: _missionRecord(mission),
       recruitment: _recruitmentRecord(night),
+      // -- THE DAY THE CASTLE ACTUALLY SPENT (Plan 8, Task 8) ---------
+      //
+      // Every castle scene this round fired, with the thread each one
+      // belongs to and the earlier days that thread has beats on. See
+      // `_castleRecord`.
+      castle: _castleRecord(ep, castle),
     },
   });
   // NO `gs.eliminated` HERE, AND THE OMISSION WAS MEASURED. Maintaining it
@@ -904,7 +1057,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   settleDaggers(ep);
   castle1.push(...runWindow('night', ep, castleRng));
   scoreMission(ep, mission1);
-  _recordEpisode(ep, { banished: null, night: n1, mission: mission1 });
+  _recordEpisode(ep, { banished: null, night: n1, mission: mission1, castle: castle1 });
   log.push({ ep, banished: null, wasTraitor: null, ...n1, mission: mission1,
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
 
@@ -979,7 +1132,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // bit-identical with the ledgers in place. See js/tr/crowd.js.
     scoreMission(ep, mission);
     scoreTable(ep, r, { bondOf: getBond });
-    _recordEpisode(ep, { banished: r.banished, night, mission });
+    _recordEpisode(ep, { banished: r.banished, night, mission, castle: castleEvents });
     log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...night, mission,
       alive: alive.length, aliveAtVote: alive.length, traitorsAtVote: tr,
       castleEvents, budget: { ...gs.tr.roundBudget } });

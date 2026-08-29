@@ -23,6 +23,7 @@ import { rpBuildHouseStatus, trHouseStatusRevealAll } from './house-status.js';
 import { rpBuildMission, trMissionRevealAll } from './mission.js';
 import { rpBuildRecruitment, trRecruitmentRevealAll } from './recruitment.js';
 import { rpBuildEndgame, trEndgameRevealAll } from './endgame.js';
+import { rpBuildCastleDay, trCastleDayRevealAll } from './castle-day.js';
 
 /**
  * IN THE ORDER THE CASTLE LIVES THEM.
@@ -86,6 +87,21 @@ export const TRAITORS_SCREENS = [
     badge: { text: 'The Offer', color: '#8b5cf6' },
     when: r => !!(r.tr && r.tr.recruitment),
     build: rpBuildRecruitment, revealAll: trRecruitmentRevealAll, revealAllName: 'trRecruitmentRevealAll' },
+  // ── THE DAY, AFTER THE NIGHT IT ENDED ON, AND THAT IS NOT A WHIM ────
+  //
+  // It holds all seven windows, and two of them -- `after-table` and `night`
+  // -- happen AFTER the table sits. Placed anywhere above the Round Table it
+  // would print reactions to a reveal three screens before the reveal, which
+  // is exactly the defect Task 6 found by reading a season in sequence (the
+  // day book was second and listed exits that had not happened yet) and Task 7
+  // fixed by moving that screen to the foot. Same object, same move: the day
+  // is looked back over once the day is done.
+  { id: 'tr-castle-day', label: 'The Castle Day', suffix: 'castleday',
+    badge: { text: 'The Day', color: '#8fbf9a' },
+    when: r => !!(r.tr && r.tr.castle && Array.isArray(r.tr.castle.scenes)
+      && r.tr.castle.scenes.length),
+    build: rpBuildCastleDay, revealAll: trCastleDayRevealAll,
+    revealAllName: 'trCastleDayRevealAll' },
   { id: 'tr-status', label: 'The Day Book', suffix: 'housestatus',
     when: r => !!(r.tr && Array.isArray(r.tr.cast) && r.tr.cast.length),
     build: rpBuildHouseStatus, revealAll: trHouseStatusRevealAll, revealAllName: 'trHouseStatusRevealAll' },

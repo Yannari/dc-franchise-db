@@ -50,6 +50,7 @@ import { rpBuildHouseStatus, trHouseStatusRevealAll } from '../js/vp-tr/house-st
 import { rpBuildMission, trMissionRevealAll } from '../js/vp-tr/mission.js';
 import { rpBuildRecruitment, trRecruitmentRevealAll } from '../js/vp-tr/recruitment.js';
 import { rpBuildEndgame, trEndgameRevealAll } from '../js/vp-tr/endgame.js';
+import { rpBuildCastleDay, trCastleDayRevealAll } from '../js/vp-tr/castle-day.js';
 import { buildVPScreens } from '../js/vp-screens.js';
 import { TRAITORS_SCREENS, screenNarration } from '../js/vp-tr/screens.js';
 import { TR_NAV_H, TR_NAV_TOP, TR_STICKY_TOP } from '../js/vp-tr/style.js';
@@ -3884,7 +3885,7 @@ describe('the castle transcript is what a Traitors row actually gets', () => {
 // reached is this project's signature bug class, and it has never once been
 // caught by calling the builder directly.
 describe('every castle screen a season produces is reachable from buildVPScreens', () => {
-  it('all seven, across a real season, and nothing extra', () => {
+  it('all eight, across a real season, and nothing extra', () => {
     const seen = new Map();
     let rows = 0;
     for (const run of RUNS) {
@@ -3960,7 +3961,8 @@ describe('every castle screen a season produces is reachable from buildVPScreens
 // started as two.
 describe('the nav offset is declared once and interpolated', () => {
   const VP_TR = ['conclave.js', 'style.js', 'scenery.js', 'round-table.js', 'cold-open.js',
-    'house-status.js', 'mission.js', 'recruitment.js', 'endgame.js', 'screens.js', 'debug.js'];
+    'house-status.js', 'mission.js', 'recruitment.js', 'endgame.js', 'castle-day.js',
+    'screens.js', 'debug.js'];
 
   it('no file in js/vp-tr/ writes either offset as a literal', () => {
     let scanned = 0;
@@ -3994,6 +3996,8 @@ describe('the nav offset is declared once and interpolated', () => {
         RUNS.flatMap(r => r.episodes).find(e => e.tr.recruitment)],
       ['endgame', rpBuildEndgame,
         RUNS[0].episodes[RUNS[0].episodes.length - 1]],
+      ['castle day', rpBuildCastleDay,
+        RUNS[0].episodes.find(e => e.tr.castle && e.tr.castle.scenes.length)],
     ];
     let checked = 0;
     for (const [name, build, ep] of withStyle) {
@@ -4009,5 +4013,520 @@ describe('the nav offset is declared once and interpolated', () => {
       checked++;
     }
     expect(checked).toBe(withStyle.length);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE CASTLE DAY (Plan 8, Task 8) — the thread, and who is allowed to see it
+// ══════════════════════════════════════════════════════════════════════
+//
+// Plan 5 built 106 castle events whose whole point was CONTINUATION: stories
+// that accumulate across episodes and cite the earlier day by number. Three
+// things about that are invisible by looking at the screen and are guarded
+// here; the look is judged by rendering it, as everywhere else in this file.
+//
+//   1. EVERY HOUR THAT FIRED APPEARS. A day runs seven windows and a screen
+//      that quietly drops one loses whole scenes with no symptom — the page
+//      still looks like a day.
+//   2. A CITATION NAMES A REAL EARLIER BEAT. `citeMoments` writes "It went
+//      back to day 2" into the beat and the recorder splits it back out; a
+//      screen that named a day the thread has no beat on would be a season
+//      recapping something that never happened, which reads perfectly.
+//   3. THE OBSERVER CONTRACT. A player sees what they were in and what they
+//      could have overheard, and the thing withheld is the THREAD.
+//
+// EVERY ARM ASSERTS A NON-ZERO COUNT BEFORE IT ASSERTS ANYTHING ABOUT THE
+// COLLECTION. This plan's recurring trap is a sweep over an empty list.
+
+/** Every episode of every seed that recorded a castle day with scenes in it. */
+const CASTLE_DAYS = RUNS.flatMap(r => r.episodes
+  .filter(e => e.tr && e.tr.castle && (e.tr.castle.scenes || []).length)
+  .map(e => ({ ep: e, run: r })));
+
+/** The screen with every beat shown, which is where the whole day is. */
+function dayRevealed(ep, observer = 'audience') {
+  const first = rpBuildCastleDay(ep, observer);
+  const m = /trCastleDayRevealAll\('castleday',(\d+),(-?\d+)\)/.exec(first);
+  if (!m) return first;
+  trCastleDayRevealAll('castleday', Number(m[1]), Number(m[2]));
+  return rpBuildCastleDay(ep, observer);
+}
+
+/** The label this screen draws each of the seven windows under. */
+const HOUR_LABEL = {
+  dawn: 'Dawn', morning: 'Morning', 'journey-out': 'The Road Out',
+  'journey-back': 'The Road Back', evening: 'Evening',
+  'after-table': 'After The Table', night: 'Night',
+};
+
+/** Just the hour plates, read out of the elements that state them. */
+function hourPlates(html) {
+  return (String(html).match(/<div class="dy-hour-nm">([^<]*)<\/div>/g) || [])
+    .map(x => x.replace(/<[^>]+>/g, '').trim());
+}
+/**
+ * Just the citation blocks — the element that states a back-reference.
+ *
+ * ENDS ON `</p></div>`, WHICH IS THE ONLY UNAMBIGUOUS CLOSE. The first version
+ * ended on `</div></div>`, and a stitch does not contain that pair: its own
+ * markup closes the tab row, then a paragraph, then itself. So the lazy match
+ * ran PAST the end of the card looking for two adjacent closes and swallowed
+ * whatever came next — which made the reader find one block where there were
+ * two, and a real defect (a thread's earlier days missing from the screen)
+ * surfaced as a reader bug three assertions away. A matcher that matches the
+ * wrong span is the same family as one that matches nothing.
+ */
+function stitches(html) {
+  return String(html).match(/<div class="dy-stitch">[\s\S]*?<\/p><\/div>/g) || [];
+}
+/** The day tabs inside one stitch, as numbers. */
+function stitchDays(block) {
+  // THE CAPTURE GROUP, NOT THE FIRST DIGIT IN THE MATCH. A quoted tab carries
+  // `data-cited="1"`, so re-scanning the matched span for a number finds the
+  // ATTRIBUTE and reports every quoted day as day 1.
+  return [...String(block).matchAll(/<span class="dy-day"[^>]*>Day (\d+)<\/span>/g)]
+    .map(m => Number(m[1]));
+}
+/** The knot bands — a thread being closed off. */
+function knots(html) {
+  return String(html).match(/<div class="dy-knot"[\s\S]*?<\/div><\/div><\/div>/g) || [];
+}
+/** Every scene card on the screen. */
+function sceneCards(html) {
+  return String(html).match(/<div class="dy-scene"[^>]*>[\s\S]*?(?=<div class="dy-scene"|<div class="dy-weave")/g)
+    || [];
+}
+
+// The helpers are SUBTRACTIVE in effect — every negative arm below counts what
+// they return — so they are asserted first. A matcher that finds nothing makes
+// every "the screen does not contain X" guard pass for free, and this repo has
+// shipped that shape at least three times.
+describe('the castle-day readers find what is there and not what is not', () => {
+  it('reads hour plates, citations, day tabs and knots out of their own elements', () => {
+    // ONE TAB CARRIES AN ATTRIBUTE AND ONE DOES NOT, because the screen marks
+    // the day the citation actually quotes and leaves the rest plain. A reader
+    // anchored on `class="dy-day">` sees only the plain ones and reports the
+    // marked ones as missing -- which is the shape this arm caught once.
+    const stitch = (a, b) => '<div class="dy-stitch"><div class="dy-stitch-k">Back to'
+      + '<span class="dy-day" data-cited="1">Day ' + a + '</span>'
+      + '<span class="dy-day">Day ' + b + '</span>'
+      + '</div><p class="dy-stitch-t">It went back to day ' + a + '.</p></div>';
+    const html = '<div class="dy-hour-nm">Dawn</div><div class="dy-hour-nm">Night</div>'
+      + stitch(2, 4)
+      + '<div class="dy-knot" data-sense="walked"><div><div class="dy-knot-w">Walked</div>'
+      + '<div class="dy-knot-s">gloss</div></div></div>'
+      // A SECOND ONE, WITH MARKUP BETWEEN THEM. A reader whose end anchor is
+      // not the block's own close runs past it and finds one where there are
+      // two — which is what the first version of `stitches` did, and it hid a
+      // real defect behind a green helper.
+      + '<div class="dy-scene"><p>something else</p></div>'
+      + stitch(6, 7);
+    expect(hourPlates(html)).toEqual(['Dawn', 'Night']);
+    const st = stitches(html);
+    expect(st.length, 'the citation reader did not find both citations').toBe(2);
+    expect(stitchDays(st[0])).toEqual([2, 4]);
+    expect(stitchDays(st[1])).toEqual([6, 7]);
+    expect(st[0].includes('something else'),
+      'the citation reader swallowed the markup after the block').toBe(false);
+    expect(knots(html).length, 'the knot reader found no knot').toBe(1);
+    // and none of them invents one
+    expect(hourPlates('<p>Dawn</p>')).toEqual([]);
+    expect(stitches('<p>It went back to day 2.</p>').length).toBe(0);
+    expect(knots('<p>Walked away from it</p>').length).toBe(0);
+  });
+});
+
+// ── GUARD: THE RECORD REACHES THE SCREEN ──────────────────────────────
+describe('the castle day is recorded and drawn at all', () => {
+  it('a real season writes castle scenes on nearly every row', () => {
+    const rows = RUNS.flatMap(r => r.episodes);
+    expect(rows.length, 'no season was played').toBeGreaterThan(20);
+    expect(CASTLE_DAYS.length, 'not one row recorded a castle scene — 106 events, no screen')
+      .toBeGreaterThan(20);
+    const scenes = CASTLE_DAYS.reduce((n, d) => n + d.ep.tr.castle.scenes.length, 0);
+    expect(scenes, 'the days are all empty').toBeGreaterThan(100);
+  });
+
+  it('and every scene carries the thread it belongs to', () => {
+    let checked = 0;
+    for (const { ep, run } of CASTLE_DAYS) {
+      const byId = new Map((run.season.threads || []).map(t => [t.id, t]));
+      for (const s of ep.tr.castle.scenes) {
+        expect(s.threadId, `ep ${ep.num}: a scene with no thread`).toBeTruthy();
+        const t = byId.get(s.threadId);
+        expect(t, `ep ${ep.num}: scene names thread ${s.threadId}, which the season has not`)
+          .toBeTruthy();
+        expect(s.line.length, `ep ${ep.num}: a scene with no sentence`).toBeGreaterThan(10);
+        expect(t.kind, 'the scene and the thread disagree about the family')
+          .toBe(s.kind);
+        checked++;
+      }
+    }
+    expect(checked, 'no scene was checked').toBeGreaterThan(100);
+  });
+
+  it('and a continuing thread is a real share of the day, or the screen has nothing to show',
+    () => {
+      const all = CASTLE_DAYS.flatMap(d => d.ep.tr.castle.scenes);
+      expect(all.length).toBeGreaterThan(100);
+      const carried = all.filter(s => !s.opened);
+      // Measured at ~39% across these seeds. The band is wide on purpose — it
+      // is here to catch the join breaking (every scene reading as an opening),
+      // not to pin the engine's tuning, which tr-calibration.test.js owns.
+      expect(carried.length / all.length, 'no scene continues anything — the beat join is broken')
+        .toBeGreaterThan(0.1);
+      const cited = all.filter(s => s.citedDays.length);
+      expect(cited.length, 'not one scene cites an earlier day').toBeGreaterThan(8);
+      const closed = all.filter(s => s.closedNow);
+      expect(closed.length, 'not one thread was ever paid off').toBeGreaterThan(2);
+    });
+});
+
+// ── GUARD 1: EVERY HOUR THAT FIRED APPEARS ────────────────────────────
+describe('every hour the castle actually spent is on the screen', () => {
+  it('each window with a scene in it gets its plate, and no window does without', () => {
+    let daysChecked = 0;
+    let platesChecked = 0;
+    for (const { ep } of CASTLE_DAYS) {
+      const fired = [];
+      for (const s of ep.tr.castle.scenes) if (!fired.includes(s.window)) fired.push(s.window);
+      expect(fired.length, `ep ${ep.num}: a recorded day that fired no window`)
+        .toBeGreaterThan(0);
+      // The record's own list has to agree with its own scenes, or the two
+      // halves of the answer could drift and both look right.
+      expect(ep.tr.castle.windows.slice().sort())
+        .toEqual(fired.slice().sort());
+
+      const plates = hourPlates(dayRevealed(ep, 'audience'));
+      expect(plates.length, `ep ${ep.num}: the day rendered no hour plate at all`)
+        .toBeGreaterThan(0);
+      // ORDER TOO. A day runs dawn to night and a screen that shuffled the
+      // hours would still contain all of them.
+      expect(plates, `ep ${ep.num}: the hours on the screen are not the hours that fired`)
+        .toEqual(fired.map(w => HOUR_LABEL[w]));
+      platesChecked += plates.length;
+      daysChecked++;
+    }
+    expect(daysChecked, 'no day was checked').toBeGreaterThan(20);
+    expect(platesChecked, 'no hour plate was checked').toBeGreaterThan(80);
+  });
+
+  it('and across a season every one of the seven is reached', () => {
+    const seen = new Set();
+    for (const { ep } of CASTLE_DAYS) for (const s of ep.tr.castle.scenes) seen.add(s.window);
+    // Every window the engine knows about fired somewhere across four seasons,
+    // which is what makes the per-day arm above a test of all seven rather
+    // than of the two that happen to be common.
+    for (const w of Object.keys(HOUR_LABEL)) {
+      expect(seen.has(w), `no season ever fired the ${w} window`).toBe(true);
+    }
+    expect(seen.size).toBe(7);
+  });
+});
+
+// ── GUARD 2: A CITATION NAMES A REAL EARLIER BEAT ─────────────────────
+describe('a thread cites a day it actually has a beat on', () => {
+  it('every day named is a day that thread wrote something on, and is earlier', () => {
+    let citations = 0;
+    let daysNamed = 0;
+    for (const { ep, run } of CASTLE_DAYS) {
+      const byId = new Map((run.season.threads || []).map(t => [t.id, t]));
+      for (const s of ep.tr.castle.scenes) {
+        if (!s.citedDays.length) continue;
+        citations++;
+        const t = byId.get(s.threadId);
+        expect(t, 'a citation on a thread the season does not have').toBeTruthy();
+        // THE TRUTH IS THE THREAD'S OWN BEAT LOG, not the record's derived
+        // `priorDays` — asserting the record against itself would be a guard
+        // built from the thing it is guarding.
+        const real = new Set((t.beats || [])
+          .filter(b => b.note && b.ep < ep.tr.castle.ep).map(b => b.ep));
+        expect(real.size, 'a citation on a thread with no earlier beat at all')
+          .toBeGreaterThan(0);
+        for (const d of s.citedDays) {
+          expect(d, `ep ${ep.num}: cited day ${d} is not earlier than the day citing it`)
+            .toBeLessThan(ep.tr.castle.ep);
+          expect(real.has(d),
+            `ep ${ep.num}: cited day ${d}, where thread ${s.threadId} has no beat`).toBe(true);
+          daysNamed++;
+        }
+      }
+    }
+    expect(citations, 'not one citation was checked').toBeGreaterThan(8);
+    expect(daysNamed, 'no day was checked').toBeGreaterThan(8);
+  });
+
+  it('and the day tabs the screen draws are those days and no others', () => {
+    let tabbed = 0;
+    for (const { ep } of CASTLE_DAYS) {
+      const cited = ep.tr.castle.scenes.filter(s => s.citedDays.length);
+      if (!cited.length) continue;
+      const html = dayRevealed(ep, 'audience');
+      const blocks = stitches(html);
+      expect(blocks.length, `ep ${ep.num}: scenes cite earlier days and the screen drew no citation`)
+        .toBeGreaterThan(0);
+      // Read out of the element that states it — the tabs, not the page. A
+      // day number appears all over this screen (the eyebrow, the loom's
+      // "running since day 6", the citation prose), so a search of the whole
+      // render is satisfied by the wrong element, which is Plan 7's finding 3
+      // and has now arrived four times in this plan.
+      const drawn = new Set(blocks.flatMap(stitchDays));
+      // EVERY EARLIER DAY THE THREAD HAS, not only the ones the engine wrote a
+      // sentence about. A continuing thread must SHOW it is continuing, and on
+      // this screen that is the tabs: `citeMoments` only writes prose when it
+      // has something new worth quoting, so the common continuation arrives
+      // with earlier days and no citation and would otherwise be drawn as a
+      // fresh beat.
+      const wanted = new Set([
+        ...cited.flatMap(s => s.citedDays),
+        ...ep.tr.castle.scenes.filter(s => !s.opened).flatMap(s => s.priorDays),
+      ]);
+      for (const d of wanted) {
+        expect(drawn.has(d), `ep ${ep.num}: day ${d} is cited on the record and not on the screen`)
+          .toBe(true);
+        tabbed++;
+      }
+      for (const d of drawn) {
+        expect(d, `ep ${ep.num}: the screen drew a tab for day ${d}, which is not earlier`)
+          .toBeLessThan(ep.tr.castle.ep);
+      }
+    }
+    expect(tabbed, 'no day tab was checked').toBeGreaterThan(8);
+  });
+
+  it('and the split of a beat into sentence and citation loses nothing', () => {
+    // THE SPLITTER, ASSERTED. `_splitCitation` takes a beat's note apart so the
+    // continuity can be drawn as continuity, and a splitter that ate a
+    // character would make the citation guard above pass over prose that had
+    // quietly lost its ending. It is a SPLIT and not a strip: the two halves
+    // have to put the note back together.
+    let rejoined = 0;
+    for (const { ep, run } of CASTLE_DAYS) {
+      const byId = new Map((run.season.threads || []).map(t => [t.id, t]));
+      for (const s of ep.tr.castle.scenes) {
+        const t = byId.get(s.threadId);
+        const notes = (t.beats || []).filter(b => b.ep === ep.tr.castle.ep && b.note)
+          .map(b => String(b.note).trim());
+        expect(notes.length, 'a scene on a thread with no beat in this round')
+          .toBeGreaterThan(0);
+        const whole = s.citation ? (s.line + ' ' + s.citation) : s.line;
+        expect(notes, `ep ${ep.num}: the two halves do not rebuild any beat of this thread`)
+          .toContain(whole);
+        if (s.citation) {
+          expect(/^It (went back to|had been going on since) day \d+/.test(s.citation),
+            `a citation that is not one: ${s.citation.slice(0, 60)}`).toBe(true);
+          rejoined++;
+        }
+      }
+    }
+    expect(rejoined, 'no citation was rebuilt').toBeGreaterThan(8);
+  });
+
+  it('and a thread is knotted off exactly once, on the last scene it has', () => {
+    // The defect this arm exists for was found by dumping a season and reading
+    // it: a thread that closes at dawn and takes another beat on the road home
+    // has `closedNow` on BOTH beats — correct on the record, which is
+    // answering "did this end tonight" — and the screen announced the same
+    // ending twice, four cards apart, with every suite green.
+    let closers = 0;
+    for (const { ep } of CASTLE_DAYS) {
+      const closed = ep.tr.castle.scenes.filter(s => s.closedNow);
+      if (!closed.length) continue;
+      const html = dayRevealed(ep, 'audience');
+      const bands = knots(html);
+      const threads = new Set(closed.map(s => s.threadId));
+      expect(bands.length, `ep ${ep.num}: a thread closed and the screen drew no knot`)
+        .toBe(threads.size);
+      closers += bands.length;
+    }
+    expect(closers, 'no closing thread was checked').toBeGreaterThan(2);
+  });
+});
+
+// ── GUARD 3: THE OBSERVER CONTRACT ────────────────────────────────────
+describe('a player sees the day they were in, and not the one they were not', () => {
+  /** The person with the most scenes on a given day — a reader with a stake. */
+  function busiest(ep) {
+    const n = {};
+    for (const s of ep.tr.castle.scenes) {
+      for (const p of new Set([...s.people, ...s.actors])) n[p] = (n[p] || 0) + 1;
+    }
+    return Object.keys(n).sort((a, b) => n[b] - n[a])[0] || null;
+  }
+
+  it('a scene the watcher was not in never shows them the thread behind it', () => {
+    let watched = 0;
+    let heard = 0;
+    for (const { ep } of CASTLE_DAYS) {
+      const who = busiest(ep);
+      if (!who) continue;
+      const mine = ep.tr.castle.scenes.filter(s =>
+        s.people.includes(who) || s.actors.includes(who));
+      const theirs = ep.tr.castle.scenes.filter(s =>
+        !s.people.includes(who) && !s.actors.includes(who));
+      if (!mine.length || !theirs.length) continue;
+      const html = dayRevealed(ep, 'player:' + who);
+      const cards = sceneCards(html);
+      expect(cards.length, `ep ${ep.num}: ${who} was in scenes and the screen drew none`)
+        .toBeGreaterThan(0);
+
+      // Every card the watcher was NOT in is marked as overheard, and every
+      // overheard card carries no citation, no knot and no day tab.
+      const over = cards.filter(c => /data-heard="1"/.test(c));
+      for (const c of over) {
+        expect(stitches(c).length,
+          `ep ${ep.num}: an overheard scene showed ${who} the thread behind it`).toBe(0);
+        expect(knots(c).length,
+          `ep ${ep.num}: an overheard scene showed ${who} a thread being paid off`).toBe(0);
+        expect(/class="dy-day"/.test(c),
+          `ep ${ep.num}: an overheard scene named an earlier day to ${who}`).toBe(false);
+        heard++;
+      }
+      // And the ones they WERE in are not marked overheard.
+      expect(cards.length - over.length,
+        `ep ${ep.num}: ${who} was in ${mine.length} scenes and every card is hearsay`)
+        .toBeGreaterThan(0);
+      watched++;
+    }
+    expect(watched, 'no player day was checked').toBeGreaterThan(15);
+    expect(heard, 'no overheard scene was ever rendered — the layer is unreachable')
+      .toBeGreaterThan(15);
+  });
+
+  it('a night scene the watcher was not in is not on their screen at all', () => {
+    let nights = 0;
+    for (const { ep } of CASTLE_DAYS) {
+      const who = busiest(ep);
+      if (!who) continue;
+      const shut = ep.tr.castle.scenes.filter(s => s.window === 'night'
+        && !s.people.includes(who) && !s.actors.includes(who));
+      if (!shut.length) continue;
+      const html = dayRevealed(ep, 'player:' + who);
+      const said = narration(html);
+      for (const s of shut) {
+        // The sentence itself, which is the thing that would leak. Compared on
+        // a distinctive slice rather than the whole line, because the render
+        // wraps and escapes.
+        const bit = s.line.replace(/&/g, '&amp;').slice(0, 46);
+        expect(said.includes(bit),
+          `ep ${ep.num}: ${who} was asleep and was told what happened at night`).toBe(false);
+        nights++;
+      }
+    }
+    expect(nights, 'no night scene was ever withheld — the arm is vacuous')
+      .toBeGreaterThan(5);
+  });
+
+  it('and the audience sees strictly more of the day than any one player does', () => {
+    let compared = 0;
+    for (const { ep } of CASTLE_DAYS) {
+      const who = busiest(ep);
+      if (!who) continue;
+      const theirs = ep.tr.castle.scenes.filter(s =>
+        !s.people.includes(who) && !s.actors.includes(who));
+      if (!theirs.length) continue;
+      const audience = dayRevealed(ep, 'audience');
+      const player = dayRevealed(ep, 'player:' + who);
+      // TWO LAYERS THAT ARE THE SAME STRING ARE ONE LAYER. Task 6 shipped a
+      // guard proved on one screen and assumed on six for exactly this reason.
+      expect(player, `ep ${ep.num}: ${who}'s day is byte-identical to the audience's`)
+        .not.toBe(audience);
+      expect(stitches(player).length,
+        `ep ${ep.num}: ${who} sees as many threads as the audience`)
+        .toBeLessThanOrEqual(stitches(audience).length);
+      compared++;
+    }
+    expect(compared, 'no pair of layers was compared').toBeGreaterThan(15);
+  });
+
+  // ── THE "YOU WERE ELSEWHERE" BRANCH, AND IT IS UNREACHABLE ──────────
+  //
+  // MEASURED, NOT ASSUMED: across these four seasons there are 449
+  // living-player days and NOT ONE of them is entirely withheld, because six
+  // of the seven hours happen in shared space and a day that fires at all
+  // almost always fires outside the night. So the branch exists, it is
+  // correct, and a season will not reach it.
+  //
+  // A guard on an unreachable state is a vacuous guard (Task 3's ruling), so
+  // the arm says the unreachability OUT LOUD as its own assertion — if the
+  // layer rule is ever loosened, that first expect goes red and this comment
+  // stops being true in the only place that would notice. The branch itself is
+  // then exercised on a CONSTRUCTED row, which is honest about what it is:
+  // proof the code renders and does not leak, not proof a viewer sees it.
+  it('and the whole-day-withheld state never fires in a played season', () => {
+    let tries = 0;
+    let withheld = 0;
+    for (const { ep } of CASTLE_DAYS) {
+      for (const who of (ep.tr.living || [])) {
+        tries++;
+        const seen = ep.tr.castle.scenes.filter(s => s.window !== 'night'
+          || s.people.includes(who) || s.actors.includes(who));
+        if (!seen.length) withheld++;
+      }
+    }
+    expect(tries, 'no player-day was counted').toBeGreaterThan(300);
+    expect(withheld, 'the whole-day-withheld branch is reachable now and should be guarded '
+      + 'on a real season rather than a constructed row').toBe(0);
+  });
+
+  it('and the branch, on a constructed night-only day, is a notice and not a leak', () => {
+    // The `recruitment.js` precedent: a legitimate nothing is an answer, not
+    // an empty page.
+    const real = CASTLE_DAYS.find(d => d.ep.tr.castle.scenes.some(x => x.window === 'night'));
+    expect(real, 'no season ever fired a night scene').toBeTruthy();
+    const nightOnly = real.ep.tr.castle.scenes.filter(x => x.window === 'night');
+    expect(nightOnly.length, 'the constructed row has nothing in it').toBeGreaterThan(0);
+    const row = { ...real.ep, tr: { ...real.ep.tr,
+      castle: { ...real.ep.tr.castle, windows: ['night'], scenes: nightOnly } } };
+    const who = 'Nobody At All';
+    for (const x of nightOnly) {
+      expect(x.people.includes(who) || x.actors.includes(who),
+        'the constructed reader is in the scene, so the branch is not the one under test')
+        .toBe(false);
+    }
+    const said = strip(rpBuildCastleDay(row, 'player:' + who));
+    expect(said, 'a reader who saw nothing got an empty screen').toContain('You Were Elsewhere');
+    expect(said.length, 'the empty state rendered nothing').toBeGreaterThan(120);
+    for (const x of nightOnly) {
+      expect(said.includes(x.line.slice(0, 40)),
+        'the empty state printed the day it was refusing').toBe(false);
+    }
+    // and the audience still gets the same row in full, or the notice is
+    // coming from the row being broken rather than from the layer.
+    const open = strip(dayRevealed(row, 'audience'));
+    expect(open).not.toContain('You Were Elsewhere');
+    expect(open.includes(nightOnly[0].line.slice(0, 40)),
+      'the audience lost the row too').toBe(true);
+  });
+});
+
+// ── GUARD 4: NO OTHER SHOW'S WORDS ────────────────────────────────────
+describe("the castle day is not described in another show's words", () => {
+  it('no forbidden noun survives on the rendered screen', () => {
+    expect(forbiddenFor('traitors').length, 'the vocabulary table came back empty')
+      .toBeGreaterThan(10);
+    let checked = 0;
+    for (const { ep } of CASTLE_DAYS) {
+      const said = narration(dayRevealed(ep, 'audience'));
+      expect(said.length, `ep ${ep.num}: the castle day rendered no words`).toBeGreaterThan(400);
+      expect(foreignWordsIn(said, 'traitors'),
+        `ep ${ep.num}: the castle day is speaking another show's language`).toEqual([]);
+      checked++;
+    }
+    expect(checked, 'no day was scanned').toBeGreaterThan(20);
+  });
+
+  it('and the fixed furniture of the screen is clean on its own', () => {
+    // The sweep above is over a season's PROSE, which is mostly the engine's.
+    // This one reads the screen's own written matter — the hour plates, the
+    // tags, the empty states, the host lines — out of the source, so a
+    // forbidden word typed into a pool that happens never to be picked by
+    // these four seeds is still caught.
+    const src = readFileSync(new URL('../js/vp-tr/' + 'castle-day.js', import.meta.url), 'utf8');
+    expect(src.length, 'the screen source is empty').toBeGreaterThan(20000);
+    const prose = (src.match(/'[^']{18,}'/g) || []).join(' ');
+    expect(prose.length, 'no prose was found in the screen source').toBeGreaterThan(4000);
+    expect(foreignWordsIn(prose, 'traitors'),
+      "the castle day's own writing uses another show's words").toEqual([]);
   });
 });

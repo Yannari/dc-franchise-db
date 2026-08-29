@@ -88,6 +88,30 @@ function _pick(pool, key) {
   if (!pool || !pool.length) return '';
   return pool[_hash(key) % pool.length];
 }
+/**
+ * THE SAME POOL, TWICE IN ONE SCENE, IS A BUG YOU CAN READ.
+ *
+ * `_pick` hashes a key into a pool, and two different keys land on the same
+ * line often enough that a dumped season had two Traitors arguing for the same
+ * victim in word-for-word the same sentence, and two people at the same table
+ * saying the same thing about their own slip. Different keys are not a
+ * guarantee of different lines — with a pool of eight and five speakers it is
+ * a coin flip that two of them collide.
+ *
+ * So a scene carries a set of what it has already said, and a drawn line that
+ * is already in it walks forward to the next one. Still deterministic, still
+ * seeded off the record, and the pool is never exhausted because it falls back
+ * to the honest first choice.
+ */
+function _pickAway(pool, key, seen) {
+  if (!pool || !pool.length) return '';
+  const start = _hash(key) % pool.length;
+  for (let n = 0; n < pool.length; n++) {
+    const line = pool[(start + n) % pool.length];
+    if (!seen || !seen.has(line)) { if (seen) seen.add(line); return line; }
+  }
+  return pool[start];
+}
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 function _fill(tpl, subs) {
@@ -95,6 +119,16 @@ function _fill(tpl, subs) {
     (subs && subs[k] != null) ? subs[k] : m);
 }
 const _num = n => Number(n || 0).toLocaleString('en-US');
+/**
+ * MONEY, WITH THE SYMBOL ON IT.
+ *
+ * The other four screens print the fund as "&pound;12,111" and this one printed
+ * "12,111" -- the same quantity, in a room whose entire subject is that
+ * quantity, written as if it were a count of chairs. Found by dumping a season
+ * and reading it: the day book, the mission and the transcript all said pounds
+ * and the strongbox said a number.
+ */
+const _money = n => '&pound;' + Number(n || 0).toLocaleString('en-GB');
 /** "A", "A and B", "A, B and C" — a four-way split must not read as a chant. */
 function _listOf(names) {
   const a = (names || []).filter(Boolean);
@@ -1306,7 +1340,7 @@ function _buildBeats(v) {
       ['Still standing', String(v.room.length), null],
       [_cap(v.doors.vote), String(byDoor.vote), null],
       [_cap(v.doors.night), String(byDoor.night), 'wax'],
-      ['The fund', _num(v.pot), 'brass'],
+      ['The fund', _money(v.pot), 'brass'],
     ])), { kind: 'open' });
 
   // ── every time the question was put ─────────────────────────────────
@@ -1321,15 +1355,17 @@ function _buildBeats(v) {
       + _hostBand(_esc(_pick(HOST_ASK, akey + '|host')))),
     { kind: 'ask', askIdx: i });
 
+    // Nobody at this table says what somebody else at it just said.
+    const said = new Set();
     for (const c of a.choices) {
       const readable = _mayRead(v, c.name);
       const word = readable ? (c.choice === 'banish' ? 'Another' : 'End it') : 'Sealed';
-      const said = readable
-        ? _pick(c.choice === 'banish' ? SAY_BANISH : SAY_END, akey + '|' + c.name)
+      const spoke = readable
+        ? _pickAway(c.choice === 'banish' ? SAY_BANISH : SAY_END, akey + '|' + c.name, said)
         : '';
       const note = readable
-        ? _pick(c.choice === 'banish' ? NOTE_BANISH : NOTE_END, akey + '|n|' + c.name)
-        : _pick(NOTE_SEALED, akey + '|s|' + c.name);
+        ? _pickAway(c.choice === 'banish' ? NOTE_BANISH : NOTE_END, akey + '|n|' + c.name, said)
+        : _pickAway(NOTE_SEALED, akey + '|s|' + c.name, said);
       push('answer', _card('answer', '', 'slip',
         '<div class="lt-answer">'
         + '<span class="lt-answer-who">' + _av(c.name, 40)
@@ -1338,7 +1374,7 @@ function _buildBeats(v) {
         + ' data-name="' + _esc(c.name) + '">'
         + '<span class="lt-slip-w">' + _esc(word) + '</span></span>'
         + '<span class="lt-answer-note">' + _apos(_esc(note))
-        + (said ? ' <em>&ldquo;' + _esc(said) + '&rdquo;</em>' : '') + '</span>'
+        + (spoke ? ' <em>&ldquo;' + _esc(spoke) + '&rdquo;</em>' : '') + '</span>'
         + '</div>'),
       { kind: 'answer', askIdx: i, name: c.name,
         shown: readable ? c.choice : 'sealed' });
@@ -1384,7 +1420,7 @@ function _buildBeats(v) {
   const winnersHtml = v.takers.map(n =>
     '<span class="lt-winner" data-name="' + _esc(n) + '">' + _av(n, 46)
     + '<span><span class="lt-winner-nm">' + _esc(n) + '</span>'
-    + '<span class="lt-winner-sh">' + (solo ? 'takes all of it' : _num(v.share)) + '</span>'
+    + '<span class="lt-winner-sh">' + (solo ? 'takes all of it' : _money(v.share)) + '</span>'
     + '</span></span>').join('');
   const lostHtml = v.losers.length
     ? '<div class="lt-lost">' + v.losers.map(n =>
@@ -1401,7 +1437,7 @@ function _buildBeats(v) {
   // shape, and the shape is the thing the rule is about.
   const side = MONEY_LEAD[v.winner] ? v.winner : 'faithfuls';
   push('money', _card('money', 'The Strongbox', 'read',
-    '<div class="lt-pot"><span class="lt-pot-n">' + _num(v.pot) + '</span>'
+    '<div class="lt-pot"><span class="lt-pot-n">' + _money(v.pot) + '</span>'
     + '<span class="lt-pot-k">in the box</span></div>'
     + '<h2 class="lt-h">' + (solo ? 'One Of Them Takes It'
       : v.takers.length + ' Ways') + '</h2>'
@@ -1414,7 +1450,7 @@ function _buildBeats(v) {
     // could come to disagree with the money above it.
     + '<p class="lt-say">' + _esc(v.line) + '</p>'
     + _sums([
-      ['Each', solo ? _num(v.pot) : _num(v.share), 'brass'],
+      ['Each', solo ? _money(v.pot) : _money(v.share), 'brass'],
       ['Took nothing', v.losers.length ? _listOf(v.losers) : 'Nobody', null],
       ['Tables it took', String(v.tables.length), null],
     ])
@@ -1491,7 +1527,7 @@ function _stage(state, idx) {
     + '<span class="lt-meter" data-tone="brass"><span class="lt-meter-k">'
     + (money ? 'Each' : 'In the box') + '</span>'
     + '<span class="lt-meter-v">'
-    + (money ? (v.takers.length === 1 ? _num(v.pot) : _num(v.share)) : _num(v.pot))
+    + (money ? (v.takers.length === 1 ? _money(v.pot) : _money(v.share)) : _money(v.pot))
     + '</span></span>'
     + '</div>';
 }

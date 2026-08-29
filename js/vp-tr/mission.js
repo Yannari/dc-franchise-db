@@ -1262,6 +1262,13 @@ export function rpBuildMission(ep, observer = 'audience') {
   const beats = _buildBeats(v);
   const total = beats.length;
   const epNum = ep.num || v.ep || 0;
+  // THE SEED FOR THE WRITTEN LINES IS THE SEASON'S NUMBER, NOT THE ROW'S KEY.
+  // `num` is the VP's key -- js/tr/headless.js says so where it writes the
+  // number twice, and a caller is free to renumber a COPY of a row to get a
+  // fresh reveal state, which is exactly what the text backlog does. Anything
+  // that decides what the screen SAYS has to come off the record instead, or
+  // the transcript quotes a host line the screen never spoke.
+  const seedEp = v.ep != null ? v.ep : epNum;
   const st = _state(epNum, total);
   if (st.idx > total - 1) st.idx = total - 1;
 
@@ -1295,10 +1302,10 @@ export function rpBuildMission(ep, observer = 'audience') {
     // the box. An opening line introduces something; a closing line has to
     // have something to close.
     + (b.hostSlot === 'open'
-      ? _hostBand(_esc(_pick(HOST_LINES.open, 'mi|host|open|' + epNum))) : '')
+      ? _hostBand(_esc(_pick(HOST_LINES.open, 'mi|host|open|' + seedEp))) : '')
     + b.html
     + (b.hostSlot === 'close'
-      ? _hostBand(_esc(_pick(HOST_LINES.close, 'mi|host|close|' + epNum))) : '')
+      ? _hostBand(_esc(_pick(HOST_LINES.close, 'mi|host|close|' + seedEp))) : '')
     + '</div>').join('');
 
   // Inline handlers BAKE their targets — `renderVPScreen` wipes reveal state

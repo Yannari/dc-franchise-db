@@ -1000,6 +1000,8 @@ const RT_CSS = `
   display:flex;align-items:center;justify-content:center;gap:12px;
   margin-top:16px;padding-top:13px;border-top:1px solid rgba(238,242,236,.14);
 }
+.rt-vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+  clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
 .rt-slate-by-nm{
   font-family:var(--rt-display);font-weight:700;font-size:10.5px;letter-spacing:.24em;
   text-transform:uppercase;color:rgba(238,242,236,.72);
@@ -1581,7 +1583,15 @@ function _slate(b, ord, run) {
     + (b.target
       ? '<div class="rt-slate-name">' + _esc(b.target) + '</div>'
       : '<div class="rt-slate-none">left blank</div>')
+    // "WRITTEN BY", AND IT IS NOT DECORATION EVEN THOUGH IT IS NOT DRAWN.
+    // On the slate the relation is obvious: a name in chalk, a rule under it,
+    // and the face of whoever wrote it. Read back as text -- which is what the
+    // transcript does, and what a screen reader does -- it is two names in a
+    // row, and "Beth Alejandro" does not say which of them wrote the other
+    // down. Found by dumping a season and reading it. Clipped rather than
+    // hidden, because `display:none` is not read out either.
     + '<div class="rt-slate-by">' + _av(b.voter, 30)
+    + '<span class="rt-vh">written by </span>'
     + '<span class="rt-slate-by-nm">' + _esc(b.voter) + '</span></div>'
     + '</div>'
     + (run && run.length ? '<div class="rt-slate-run">' + run + '</div>' : '')
@@ -2464,6 +2474,13 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
   const beats = _buildBeats(v);
   const total = beats.length;
   const epNum = ep.num || v.ep || 0;
+  // THE SEED FOR THE WRITTEN LINES IS THE SEASON'S NUMBER, NOT THE ROW'S KEY.
+  // `num` is the VP's key -- js/tr/headless.js says so where it writes the
+  // number twice, and a caller is free to renumber a COPY of a row to get a
+  // fresh reveal state, which is exactly what the text backlog does. Anything
+  // that decides what the screen SAYS has to come off the record instead, or
+  // the transcript quotes a host line the screen never spoke.
+  const seedEp = v.ep != null ? v.ep : epNum;
   const st = _state(epNum, total);
   if (st.idx > total - 1) st.idx = total - 1;
 
@@ -2506,7 +2523,7 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
     '<div class="rt-beat' + (i <= st.idx ? ' rt-vis' : '')
     + '" id="rt-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
     + (b.hostSlot ? _hostBand(_fill(_pick(HOST_LINES[b.hostSlot],
-      'rt|host|' + b.hostSlot + '|' + epNum + '|' + (v.chosen || '')),
+      'rt|host|' + b.hostSlot + '|' + seedEp + '|' + (v.chosen || '')),
     { Nm: _esc(v.chosen || ''), nm: _esc(v.chosen || ''),
       banish: _esc(_verbs().banish), Banish: _esc(_cap(_verbs().banish)) })) : '')
     + b.html + '</div>').join('');

@@ -81,6 +81,30 @@ function _pick(pool, key) {
   if (!pool || !pool.length) return '';
   return pool[_hash(key) % pool.length];
 }
+/**
+ * THE SAME POOL, TWICE IN ONE SCENE, IS A BUG YOU CAN READ.
+ *
+ * `_pick` hashes a key into a pool, and two different keys land on the same
+ * line often enough that a dumped season had two Traitors arguing for the same
+ * victim in word-for-word the same sentence, and two people at the same table
+ * saying the same thing about their own slip. Different keys are not a
+ * guarantee of different lines — with a pool of eight and five speakers it is
+ * a coin flip that two of them collide.
+ *
+ * So a scene carries a set of what it has already said, and a drawn line that
+ * is already in it walks forward to the next one. Still deterministic, still
+ * seeded off the record, and the pool is never exhausted because it falls back
+ * to the honest first choice.
+ */
+function _pickAway(pool, key, seen) {
+  if (!pool || !pool.length) return '';
+  const start = _hash(key) % pool.length;
+  for (let n = 0; n < pool.length; n++) {
+    const line = pool[(start + n) % pool.length];
+    if (!seen || !seen.has(line)) { if (seen) seen.add(line); return line; }
+  }
+  return pool[start];
+}
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -486,6 +510,8 @@ function _pr(name) {
 function _buildBeats(rec, ep) {
   const beats = [];
   const key = 'tr|' + (rec.ep || 0) + '|' + (rec.target || '');
+  // What this turret has already said tonight. See `_pickAway`.
+  const said = new Set();
   const down = (ep && ep.tr && ep.tr.downstairs) || [];
   const argued = rec.argued || [];
   const overruled = rec.overruled || [];
@@ -512,7 +538,7 @@ function _buildBeats(rec, ep) {
     const tone = _tone(mine ? mine.conviction : 0.45);
     return '<div class="cv-cloak" data-state="' + tone + '">' + _cloakFigure(tone, name)
       + '<div class="cv-cloak-name">' + _esc(String(name).toUpperCase()) + '</div>'
-      + '<div class="cv-cloak-note">' + _esc(_pick(TONE_NOTE[tone], key + '|tone|' + name))
+      + '<div class="cv-cloak-note">' + _esc(_pickAway(TONE_NOTE[tone], key + '|tone|' + name, said))
       + '</div></div>';
   }).join('');
   const chips = '<div class="cv-cost">'
@@ -533,8 +559,8 @@ function _buildBeats(rec, ep) {
   argued.forEach((a, i) => {
     const subs = Object.assign({ t: a.target, T: a.target, a: a.traitor, A: a.traitor },
       _pr(a.target));
-    const reason = _fill(_pick(REASON_LINES[a.reason] || REASON_LINES.convenient,
-      key + '|why|' + a.traitor + '|' + a.target), subs);
+    const reason = _fill(_pickAway(REASON_LINES[a.reason] || REASON_LINES.convenient,
+      key + '|why|' + a.traitor + '|' + a.target, said), subs);
     // The unsaid fires on `onto-me` and only there: that is the one label the
     // engine records where the stated argument and the real motive are
     // genuinely different things, and it is the audience's whole privilege.
@@ -618,7 +644,7 @@ function _buildBeats(rec, ep) {
   }
   push(overruled.length ? 'overrule' : 'seal',
     _card('What It Cost', 'VI. The price', 'hourglass',
-      '<div class="cv-ledger"><span class="cv-ledger-h">What it cost</span>'
+      '<div class="cv-ledger"><span class="cv-ledger-h">The ledger</span>'
       + costLines.map(l => '<p>' + l + '</p>').join('') + '</div>'), null, 'cost');
 
   // ── VII. the name ──
@@ -1014,6 +1040,13 @@ export function rpBuildConclave(ep, observer = 'audience') {
   const epNum = ep.num || rec.ep || 0;
   const st = _state(epNum, total);
   if (st.idx > total - 1) st.idx = total - 1;
+  // THE SEED FOR THE WRITTEN LINES IS THE SEASON'S NUMBER, NOT THE ROW'S KEY.
+  // `num` is the VP's key -- js/tr/headless.js says so where it writes the
+  // number twice, and a caller is free to renumber a COPY of a row to get a
+  // fresh reveal state, which is exactly what the text backlog does. Anything
+  // that decides what the screen SAYS has to come off the record instead, or
+  // the transcript quotes a host line the screen never spoke.
+  const seedEp = rec.ep != null ? rec.ep : epNum;
 
   // Which beat is which, so the sidebar can gate on it without re-deriving the
   // stream. Built from the beats themselves rather than from a second copy of
@@ -1052,7 +1085,7 @@ export function rpBuildConclave(ep, observer = 'audience') {
     '<div class="cv-beat' + (i <= st.idx ? ' cv-vis' : '')
     + '" id="cv-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
     + (b.hostSlot ? _hostBand(_pick(HOST_LINES[b.hostSlot],
-      'tr|host|' + b.hostSlot + '|' + epNum + '|' + rec.target)) : '')
+      'tr|host|' + b.hostSlot + '|' + seedEp + '|' + rec.target)) : '')
     // A beat with no castle scene of its own gets an EMPTY gutter cell, not a
     // recycled one. The column's rule carries on down the page; the minute is
     // simply blank, because nothing happened in it worth watching.

@@ -1180,6 +1180,13 @@ export function rpBuildHouseStatus(ep, observer = 'audience') {
   const beats = _buildBeats(v);
   const total = beats.length;
   const epNum = ep.num || v.ep || 0;
+  // THE SEED FOR THE WRITTEN LINES IS THE SEASON'S NUMBER, NOT THE ROW'S KEY.
+  // `num` is the VP's key -- js/tr/headless.js says so where it writes the
+  // number twice, and a caller is free to renumber a COPY of a row to get a
+  // fresh reveal state, which is exactly what the text backlog does. Anything
+  // that decides what the screen SAYS has to come off the record instead, or
+  // the transcript quotes a host line the screen never spoke.
+  const seedEp = v.ep != null ? v.ep : epNum;
   const st = _state(epNum, total);
   if (st.idx > total - 1) st.idx = total - 1;
 
@@ -1209,7 +1216,7 @@ export function rpBuildHouseStatus(ep, observer = 'audience') {
     '<div class="db-beat' + (i <= st.idx ? ' db-vis' : '')
     + '" id="db-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
     + (b.hostSlot ? _hostBand(_esc(_pick(HOST_LINES[b.hostSlot],
-      'db|host|' + b.hostSlot + '|' + epNum))) : '')
+      'db|host|' + b.hostSlot + '|' + seedEp))) : '')
     + b.html + '</div>').join('');
 
   // Inline handlers BAKE their targets — `renderVPScreen` wipes reveal state

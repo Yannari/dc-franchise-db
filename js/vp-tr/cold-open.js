@@ -90,6 +90,30 @@ function _pick(pool, key) {
   if (!pool || !pool.length) return '';
   return pool[_hash(key) % pool.length];
 }
+/**
+ * THE SAME POOL, TWICE IN ONE SCENE, IS A BUG YOU CAN READ.
+ *
+ * `_pick` hashes a key into a pool, and two different keys land on the same
+ * line often enough that a dumped season had two Traitors arguing for the same
+ * victim in word-for-word the same sentence, and two people at the same table
+ * saying the same thing about their own slip. Different keys are not a
+ * guarantee of different lines — with a pool of eight and five speakers it is
+ * a coin flip that two of them collide.
+ *
+ * So a scene carries a set of what it has already said, and a drawn line that
+ * is already in it walks forward to the next one. Still deterministic, still
+ * seeded off the record, and the pool is never exhausted because it falls back
+ * to the honest first choice.
+ */
+function _pickAway(pool, key, seen) {
+  if (!pool || !pool.length) return '';
+  const start = _hash(key) % pool.length;
+  for (let n = 0; n < pool.length; n++) {
+    const line = pool[(start + n) % pool.length];
+    if (!seen || !seen.has(line)) { if (seen) seen.add(line); return line; }
+  }
+  return pool[start];
+}
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 function _fill(tpl, subs) {
@@ -1104,6 +1128,8 @@ function _arrivalOrder(v) {
 function _buildBeats(v) {
   const beats = [];
   const key = 'co|' + v.ep + '|' + v.missing.map(m => m.name).join(',');
+  // What has already been said at this table this morning. See `_pickAway`.
+  const said = new Set();
   const push = (phase, html, hostSlot, meta) =>
     beats.push({ phase, html, hostSlot: hostSlot || null, meta: meta || null });
   const order = _arrivalOrder(v);
@@ -1136,13 +1162,14 @@ function _buildBeats(v) {
     if (!g.length) return;
     arrivedSoFar.push(...g);
     const who = g[0];
-    const said = _pick(v.arrival ? ARRIVE_SAID : DOWN_SAID, key + '|said|' + gi + '|' + who);
+    const heard = _pickAway(v.arrival ? ARRIVE_SAID : DOWN_SAID,
+      key + '|said|' + gi + '|' + who, said);
     const body = gi === 0
       ? '<p>' + _fill(_pick(DOWN_TEXT, key + '|down|' + who), { who: _esc(who) }) + '</p>'
-        + _said(who, _esc(said))
+        + _said(who, _esc(heard))
       : '<p>' + _pick(DOWN_MORE, key + '|more|' + gi) + '</p>'
         + '<div class="co-arrivals">' + g.map(n => _faceChip(n, 26)).join('') + '</div>'
-        + _said(who, _esc(said));
+        + _said(who, _esc(heard));
     push('down', _card(
       gi === 0 ? (v.arrival ? 'Through The Door' : 'Down First')
         : gi === 1 ? 'And Then The Rest' : 'The Last Of Them',
@@ -1415,6 +1442,13 @@ export function rpBuildColdOpen(ep, observer = 'audience') {
   const beats = _buildBeats(v);
   const total = beats.length;
   const epNum = ep.num || v.ep || 0;
+  // THE SEED FOR THE WRITTEN LINES IS THE SEASON'S NUMBER, NOT THE ROW'S KEY.
+  // `num` is the VP's key -- js/tr/headless.js says so where it writes the
+  // number twice, and a caller is free to renumber a COPY of a row to get a
+  // fresh reveal state, which is exactly what the text backlog does. Anything
+  // that decides what the screen SAYS has to come off the record instead, or
+  // the transcript quotes a host line the screen never spoke.
+  const seedEp = v.ep != null ? v.ep : epNum;
   const st = _state(epNum, total);
   if (st.idx > total - 1) st.idx = total - 1;
 
@@ -1449,7 +1483,7 @@ export function rpBuildColdOpen(ep, observer = 'audience') {
     '<div class="co-beat' + (i <= st.idx ? ' co-vis' : '')
     + '" id="co-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
     + (b.hostSlot ? _hostBand(_esc(_pick(HOST_LINES[b.hostSlot],
-      'co|host|' + b.hostSlot + '|' + epNum))) : '')
+      'co|host|' + b.hostSlot + '|' + seedEp))) : '')
     + b.html + '</div>').join('');
 
   // Inline handlers BAKE their targets — `renderVPScreen` wipes reveal state

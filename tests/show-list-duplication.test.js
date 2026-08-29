@@ -157,7 +157,13 @@ const COMPARISON_BACKLOG = {
   'js/social/events.js':          2,
   'js/social/live.js':            1,
   'js/stats-export.js':           5,
-  'js/text-backlog.js':           1,
+  // 1 -> 2 for the castle's transcript (Plan 8, Task 6). This file already
+  // hands a Big Brother row to its own writer in the same shape and for the
+  // same reason: a show's TRANSCRIPT is not a field the registry can declare,
+  // and a castle shares no structure with a camp -- no tribes, no challenge,
+  // no Tribal Council -- so there is nothing to branch on inside one function.
+  // Raised deliberately, in the commit that spends it.
+  'js/text-backlog.js':           2,
   'js/tr/endgame.js':             1,
   // 6 -> 7 for the castle's screen dispatch (Plan 8, Task 1). `buildVPScreens`
   // already branches on `format === 'big-brother'` for the same reason and in

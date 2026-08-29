@@ -27,13 +27,7 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 // Big Brother's, and taking NONE of its visual language: the anti-reuse rule
 // in CLAUDE.md is explicit, and the conclave's whole identity is that it does
 // not look like anything already in this repo.
-import { rpBuildConclave, trConclaveRevealNext, trConclaveRevealAll } from './vp-tr/conclave.js';
-import { rpBuildRoundTable, trRoundTableRevealNext, trRoundTableRevealAll } from './vp-tr/round-table.js';
-import { rpBuildColdOpen, trColdOpenRevealNext, trColdOpenRevealAll } from './vp-tr/cold-open.js';
-import { rpBuildHouseStatus, trHouseStatusRevealNext, trHouseStatusRevealAll } from './vp-tr/house-status.js';
-import { rpBuildMission, trMissionRevealNext, trMissionRevealAll } from './vp-tr/mission.js';
-import { rpBuildRecruitment, trRecruitmentRevealNext, trRecruitmentRevealAll } from './vp-tr/recruitment.js';
-import { rpBuildEndgame, trEndgameRevealNext, trEndgameRevealAll } from './vp-tr/endgame.js';
+import { traitorsScreens } from './vp-tr/screens.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -13537,62 +13531,12 @@ export function buildVPScreens(epRecord) {
   // record and no Tribal Council in a castle. Dispatched on the row's own
   // `format`, which js/tr/headless.js stamps on every episode it records.
   //
-  // `observer` is the contract every builder in js/vp-tr/ takes (spec §9.1).
-  // The visual player is the AUDIENCE feed — it is the one reader entitled to
-  // see the conclave — so it passes 'audience' explicitly rather than relying
-  // on a default, because the default is the thing a later edit changes.
+  // WHICH screens, in what order, under what label, and the condition each one
+  // rides on all live in `js/vp-tr/screens.js` — one copy, because the text
+  // backlog retranscribes the same list and a second copy of it is how the
+  // transcript quietly stops mentioning a screen.
   if (epRecord.format === 'traitors') {
-    const _obs = epRecord.observer || 'audience';
-    // IN THE ORDER THE CASTLE LIVES THEM. The morning opens the episode --
-    // and it opens on the PREVIOUS night, because a night runs at the end of
-    // the episode it belongs to and the castle finds out over breakfast. Then
-    // the board, which is where the day starts from. The table sits in the
-    // evening and the turret meets afterwards, so the public half of the night
-    // comes first and the private half is what the episode ends on.
-    if (epRecord.tr && epRecord.tr.dawn) {
-      vpScreens.push({ id: 'tr-cold-open', label: 'Breakfast',
-        html: rpBuildColdOpen(epRecord, _obs) });
-    }
-    if (epRecord.tr && Array.isArray(epRecord.tr.cast) && epRecord.tr.cast.length) {
-      vpScreens.push({ id: 'tr-status', label: 'The Day Book',
-        html: rpBuildHouseStatus(epRecord, _obs) });
-    }
-    // THE AFTERNOON, and it sits between the board and the table because
-    // that is where it happens: the castle reads the book over breakfast,
-    // goes out on the estate, comes back and sits down. Registered off the
-    // record rather than off an episode number -- a mission needs four
-    // people and an endgame round runs none, so plenty of rows have no
-    // afternoon and must not get a screen.
-    if (epRecord.tr && epRecord.tr.mission) {
-      vpScreens.push({ id: 'tr-mission', label: 'The Mission',
-        html: rpBuildMission(epRecord, _obs) });
-    }
-    if (epRecord.tr && epRecord.tr.table) {
-      vpScreens.push({ id: 'tr-round-table', label: 'The Round Table',
-        html: rpBuildRoundTable(epRecord, _obs) });
-    }
-    if (epRecord.tr && epRecord.tr.conclave) {
-      vpScreens.push({ id: 'tr-conclave', label: 'The Conclave',
-        html: rpBuildConclave(epRecord, _obs) });
-    }
-    // AND THE OFFER, WHICH IS THE OTHER THING A NIGHT CAN BE. Recruitment and
-    // murder are exclusive -- the pact gets one action a night -- so this
-    // screen and the conclave are never both registered, and most nights
-    // carry neither. It is last for the same reason the conclave is: it is
-    // the private half of the night, after the room has gone to bed.
-    if (epRecord.tr && epRecord.tr.recruitment) {
-      vpScreens.push({ id: 'tr-recruitment', label: 'The Offer',
-        html: rpBuildRecruitment(epRecord, _obs) });
-    }
-    // THE ENDGAME, AND IT IS A PHASE RATHER THAN A NIGHT. It can force six
-    // extra tables or none at all, so it rides on the LAST row the season
-    // wrote and is registered off `tr.endgame` being present -- never off an
-    // episode number, which is a thing a season does not have a fixed count
-    // of. It is last on the last episode because it is the end of the season.
-    if (epRecord.tr && epRecord.tr.endgame) {
-      vpScreens.push({ id: 'tr-endgame', label: 'The Endgame',
-        html: rpBuildEndgame(epRecord, _obs) });
-    }
+    vpScreens = traitorsScreens(epRecord, epRecord.observer || 'audience');
     return vpScreens;
   }
   // Reset vote reveal state — HTML is rebuilt fresh, old state would skip all reveals

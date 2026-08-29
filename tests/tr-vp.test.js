@@ -51,6 +51,8 @@ import { rpBuildMission, trMissionRevealAll } from '../js/vp-tr/mission.js';
 import { rpBuildRecruitment, trRecruitmentRevealAll } from '../js/vp-tr/recruitment.js';
 import { rpBuildEndgame, trEndgameRevealAll } from '../js/vp-tr/endgame.js';
 import { buildVPScreens } from '../js/vp-screens.js';
+import { TRAITORS_SCREENS, screenNarration } from '../js/vp-tr/screens.js';
+import { generateSummaryText, generateTraitorsSummaryText, _vpTextLines } from '../js/text-backlog.js';
 import { HOSTS_BY_FORMAT } from '../js/quick-setup.js';
 import roster from '../franchise_roster.json';
 import { forbiddenFor, foreignWordsIn } from './helpers/show-vocabulary.js';
@@ -3096,15 +3098,15 @@ describe('the pot the screen splits is the pot the export pays', () => {
     // Both are used only in POSITIVE assertions below, so a reader that never
     // matched would fail loudly -- but one that matched the WRONG element
     // would pass quietly, which is exactly how the first version went green.
-    const html = '<div class="lt-pot"><span class="lt-pot-n">72,233</span>'
+    const html = '<div class="lt-pot"><span class="lt-pot-n">&pound;72,233</span>'
       + '<span class="lt-pot-k">in the box</span></div>'
-      + '<span class="lt-winner-sh">19,164</span>'
+      + '<span class="lt-winner-sh">&pound;19,164</span>'
       + '<span class="lt-winner-sh">takes all of it</span>'
-      + '<span class="lt-sum-v">72,233</span>';
-    expect(potFigure(html)).toBe('72,233');
-    expect(winnerShares(html)).toEqual(['19,164', 'takes all of it']);
-    expect(potFigure('<p>72,233</p>'), 'the pot reader matched loose text').toBeNull();
-    expect(winnerShares('<span class="lt-sum-v">19,164</span>')).toEqual([]);
+      + '<span class="lt-sum-v">&pound;72,233</span>';
+    expect(potFigure(html)).toBe('&pound;72,233');
+    expect(winnerShares(html)).toEqual(['&pound;19,164', 'takes all of it']);
+    expect(potFigure('<p>&pound;72,233</p>'), 'the pot reader matched loose text').toBeNull();
+    expect(winnerShares('<span class="lt-sum-v">&pound;19,164</span>')).toEqual([]);
   });
 
   it('the figure, the share and the arithmetic all agree', () => {
@@ -3113,7 +3115,10 @@ describe('the pot the screen splits is the pot the export pays', () => {
       const doc = buildTraitorsSeasonDocument(s, { seasonNumber: 1 });
       const e = ep.tr.endgame;
       const html = endgameRevealed(ep, 'audience');
-      const fmt = n => Number(n).toLocaleString('en-US');
+      // The screen writes money with the symbol on it, as every other castle
+      // screen does; the entity is what is in the markup before a browser
+      // reads it.
+      const fmt = n => '&pound;' + Number(n).toLocaleString('en-GB');
       expect(doc.pot, `ep ${ep.num}: the document lost the pot`).toBe(e.pot);
       // THE STRONGBOX, and the strongbox alone.
       expect(potFigure(html), `ep ${ep.num}: the strongbox does not hold ${fmt(e.pot)}`)
@@ -3477,5 +3482,383 @@ describe('the endgame\'s sticky stage is not killed by the shell clip', () => {
     const css = /<style>([\s\S]*?)<\/style>/.exec(html)[1];
     expect(css.includes('@media(prefers-reduced-motion:reduce)'),
       'the endgame has animations and no reduced-motion fallback').toBe(true);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE TEXT BACKLOG (Plan 8, Task 6)
+// ══════════════════════════════════════════════════════════════════════
+//
+// A transcript is nothing but prose, so most of what is wrong with one is
+// found by dumping a season and reading it — and that is how every prose
+// defect in eight plans was found, and none by an assertion. What is left
+// over, and what these guards are for, is the handful of things about a
+// transcript that are invisible on the page in front of you:
+//
+//   1. A SCREEN THAT IS SIMPLY NOT IN IT. A backlog missing the afternoon
+//      reads perfectly well; you have to know what should have been there.
+//      So this asserts per-screen coverage against the screens a played
+//      season actually produced, never a total length — a length passes with
+//      a whole screen missing.
+//   2. ANOTHER SHOW'S VOCABULARY, which is this project's central bug class
+//      and which reads as ordinary English.
+//   3. THE OBSERVER CONTRACT. An audience backlog may hold the conclave; a
+//      Faithful's may not. It is the same secret the screens protect, and a
+//      transcript that leaks it is worse than a screen that does, because
+//      text is searchable.
+//   4. THE TRANSCRIPT CHANGING THE SCREEN. Reveal state is module-level and
+//      keyed by episode; generating a transcript must not hand the next
+//      reader a screen with its ending already on it.
+
+/**
+ * The screens as the VIEWER finally sees them — every beat revealed, on a
+ * fresh reveal key, through the builders directly.
+ *
+ * DELIBERATELY NOT `traitorsScreensRevealed`. Comparing the transcript to the
+ * function the transcript is built from proves that a function equals itself.
+ * This walks the same list by hand, on a positive episode key of its own, so
+ * the two paths can disagree — and if the words a screen chooses ever depend
+ * on the row's key rather than on the record, they will.
+ */
+function viewerScreens(ep, observer = 'audience') {
+  const fresh = { ...ep, num: ++_trN };
+  return TRAITORS_SCREENS.filter(s => s.when(fresh)).map(s => {
+    const first = s.build(fresh, observer);
+    const m = new RegExp(s.revealAllName + "\\('" + s.suffix + "',(\\d+),(-?\\d+)\\)")
+      .exec(first);
+    if (!m) return { id: s.id, label: s.label, html: first };
+    s.revealAll(s.suffix, Number(m[1]), Number(m[2]));
+    return { id: s.id, label: s.label, html: s.build(fresh, observer) };
+  });
+}
+
+/** One section of a transcript, as its lines, by the heading it sits under. */
+function backlogSection(text, label) {
+  const lines = String(text).split('\n');
+  const head = lines.indexOf(`=== ${label.toUpperCase()} ===`);
+  if (head < 0) return null;
+  const out = [];
+  for (let i = head + 1; i < lines.length; i++) {
+    if (/^=== /.test(lines[i])) break;
+    if (lines[i].trim()) out.push(lines[i].trim());
+  }
+  return out;
+}
+
+// Every played row across both seed sets, so the endgame is in the sample as
+// well as the nights. Counted before anything is asserted about it.
+const BACKLOG_ROWS = [...RUNS, ...END_RUNS].flatMap(r => r.episodes);
+
+// ── THE SUBTRACTIVE HELPERS, ASSERTED ─────────────────────────────────
+//
+// Both guards below read what comes OUT of these two, and both have negative
+// arms. A stripper that ate too much would make every one of them pass for
+// free — the matcher-never-matches trap running backwards, which this plan
+// has already shipped once.
+describe('the transcript helpers take out the furniture and leave the words', () => {
+  it('screenNarration drops the initials glyph and the reveal controls, and nothing else', () => {
+    const html = '<span class="cv-av" style="width:54px"><span class="cv-av-ini" '
+      + 'style="font-size:18px">B</span><img src="assets/avatars/brick.png" alt=""></span>'
+      + '<div class="nt-who-nm">Brick</div><p>Chase refused it.</p>'
+      + '<div class="cv-controls" id="cv-controls-conclave">'
+      + '<button class="cv-btn" onclick="trConclaveRevealNext(\'conclave\',7,3)">Continue</button>'
+      + '<span class="cv-counter" id="cv-counter-conclave">1 / 7</span>'
+      + '<button class="cv-btn">Reveal all</button></div>';
+    const kept = screenNarration(html);
+    expect(kept, 'the initials glyph survived').not.toContain('cv-av-ini');
+    expect(kept, 'the reveal controls survived').not.toContain('cv-controls');
+    expect(kept, 'the counter survived').not.toContain('1 / 7');
+    expect(kept, 'the name was eaten with the glyph').toContain('Brick');
+    expect(kept, 'the narration was eaten').toContain('Chase refused it.');
+    // and the picture itself is still there — only the fallback glyph goes
+    expect(kept).toContain('assets/avatars/brick.png');
+  });
+
+  it('_vpTextLines keeps every sentence, decodes the entities and drops the stylesheet', () => {
+    const lines = _vpTextLines(
+      '<style>.x{content:"THIS IS NOT NARRATION"}</style>'
+      + '<div><p>&ldquo;Come in.&rdquo;</p><p>The fund is &pound;4,288 &middot; 4%</p></div>'
+      + '<span>Standing</span><span>19</span>');
+    expect(lines.length, 'the stripper returned nothing at all').toBeGreaterThan(2);
+    expect(lines.join('\n')).not.toContain('THIS IS NOT NARRATION');
+    expect(lines).toContain('"Come in."');
+    expect(lines).toContain('The fund is £4,288 · 4%');
+    // Two adjacent inline elements are two things said, not one word.
+    expect(lines).toContain('Standing 19');
+  });
+});
+
+// ── GUARD: EVERY SCREEN'S NARRATION IS IN IT ──────────────────────────
+describe('the transcript retranscribes every screen the night produced', () => {
+  it('a played season produces screens at all, and every kind of them', () => {
+    // A coverage assertion over an empty list is the vacuous shape this plan
+    // keeps finding, so the sample is counted first and every screen kind has
+    // to be in it or the arms below cannot see that kind at all.
+    expect(BACKLOG_ROWS.length, 'no season was played').toBeGreaterThan(20);
+    const kinds = new Set();
+    for (const ep of BACKLOG_ROWS) {
+      for (const s of TRAITORS_SCREENS) if (s.when(ep)) kinds.add(s.id);
+    }
+    expect([...kinds].sort(), 'a screen kind never appeared in the sample')
+      .toEqual(TRAITORS_SCREENS.map(s => s.id).sort());
+  });
+
+  it('every screen appears under its own heading, word for word', () => {
+    let sections = 0;
+    for (const ep of BACKLOG_ROWS) {
+      const text = generateTraitorsSummaryText(ep, 'audience');
+      const screens = viewerScreens(ep, 'audience');
+      expect(screens.length, `ep ${ep.num}: a played row produced no screen at all`)
+        .toBeGreaterThan(0);
+      for (const scr of screens) {
+        const body = backlogSection(text, scr.label);
+        expect(body, `ep ${ep.num}: "${scr.label}" is not in the transcript`).toBeTruthy();
+        const said = _vpTextLines(screenNarration(scr.html));
+        expect(said.length, `ep ${ep.num}: ${scr.label} said nothing`).toBeGreaterThan(3);
+        // EVERY LINE, not a sample and not a total: a transcript that drops
+        // the middle of a screen has the right heading and the right length.
+        for (const line of said) {
+          expect(body, `ep ${ep.num}: ${scr.label} says "${line}" and the transcript does not`)
+            .toContain(line);
+        }
+        sections++;
+      }
+    }
+    expect(sections, 'no section was checked').toBeGreaterThan(60);
+  });
+
+  it('and the row itself is named, with both of the show\'s doors', () => {
+    const [banish, murder] = exitVerbs('traitors');
+    let banishings = 0; let murders = 0;
+    for (const ep of BACKLOG_ROWS) {
+      // THE FOOT, and specifically not the whole transcript: a name that
+      // appears on the roll and at the table is in this text a dozen times,
+      // so an assertion over the lot of it is satisfied by the wrong section.
+      const foot = (backlogSection(generateTraitorsSummaryText(ep, 'audience'),
+        'Ruled Off') || []).join(' | ');
+      for (const x of (ep.exits || [])) {
+        expect(foot, `ep ${ep.num}: ${x.name} left and the transcript does not say so`)
+          .toContain(`${x.name} — ${x.verb}`);
+        if (x.verb === banish) banishings++;
+        if (x.verb === murder) murders++;
+      }
+    }
+    // Both doors are used, or the arm above only ever checked one of them.
+    expect(banishings, 'no season banished anybody').toBeGreaterThan(10);
+    expect(murders, 'no season murdered anybody').toBeGreaterThan(10);
+  });
+});
+
+// ── GUARD: NO OTHER SHOW'S WORDS ──────────────────────────────────────
+describe("the transcript may not be written in another show's words", () => {
+  it('nothing in a season of transcripts belongs to another show', () => {
+    // The list and the matcher are asserted where they are first used, at the
+    // top of this file: `forbiddenFor('traitors')` is 20-odd words long and
+    // `foreignWordsIn` fires on "tribal council".
+    let checked = 0;
+    for (const ep of BACKLOG_ROWS) {
+      const leaks = foreignWordsIn(generateTraitorsSummaryText(ep, 'audience'), 'traitors');
+      expect(leaks, `ep ${ep.num}: the transcript printed another show's vocabulary`)
+        .toEqual([]);
+      checked++;
+    }
+    expect(checked).toBe(BACKLOG_ROWS.length);
+  });
+
+  it('and neither does a player\'s copy of one, which is different prose', () => {
+    let checked = 0;
+    for (const ep of BACKLOG_ROWS.slice(0, 12)) {
+      const who = (ep.tr.living || [])[0];
+      if (!who) continue;
+      expect(foreignWordsIn(generateTraitorsSummaryText(ep, `player:${who}`), 'traitors'),
+        `ep ${ep.num}`).toEqual([]);
+      checked++;
+    }
+    expect(checked, 'no player transcript was checked').toBeGreaterThan(8);
+  });
+});
+
+// ── GUARD: THE OBSERVER CONTRACT, IN TEXT ─────────────────────────────
+describe('a transcript is written for its reader, and the conclave is not for everybody', () => {
+  it('the audience transcript holds the conclave', () => {
+    let checked = 0;
+    for (const { ep } of NIGHTS.slice(0, 10)) {
+      const text = generateTraitorsSummaryText(ep, 'audience');
+      expect(text, `ep ${ep.num}: the audience transcript lost the turret`)
+        .toContain('=== THE CONCLAVE ===');
+      // READ OUT OF THE CONCLAVE'S OWN SECTION. The chosen name is at the
+      // table that evening and on the roll in the day book, so a search of
+      // the WHOLE transcript for it is satisfied by the wrong section and
+      // passes with the turret withheld -- which is precisely what it did.
+      const body = (backlogSection(text, 'The Conclave') || []).join('\n');
+      expect(mentions(body, ep.tr.conclave.target),
+        `ep ${ep.num}: the chosen name is not in the audience conclave`).toBe(true);
+      for (const b of ep.tr.conclave.ballots) {
+        expect(mentions(body, b.voter),
+          `ep ${ep.num}: ${b.voter} argued and the audience conclave does not say so`)
+          .toBe(true);
+      }
+      checked++;
+    }
+    expect(checked, 'no night was checked').toBeGreaterThan(8);
+  });
+
+  it('a Faithful\'s transcript holds no ballot, no name and no arguer', () => {
+    let checked = 0;
+    for (const { ep } of NIGHTS) {
+      const c = ep.tr.conclave;
+      // Not somebody on a ballot and not the chosen name: the withheld render
+      // prints the OBSERVER'S OWN name, and their own name is not news to them.
+      const onBallot = new Set(c.ballots.flatMap(b => [b.voter, b.voted]).filter(Boolean));
+      const outsider = (ep.tr.living || [])
+        .find(n => !c.turret.includes(n) && !onBallot.has(n) && n !== c.target);
+      if (!outsider) continue;
+      // THE MORNING TELLS THEM WHO DIED, and it is entitled to: a body at
+      // breakfast is the most public fact this format has. What must not be in
+      // this transcript is who chose it, who argued for whom, and who was in
+      // the room — so the conclave's own section is what is read here, and the
+      // rest of the night is left alone.
+      const text = generateTraitorsSummaryText(ep, `player:${outsider}`);
+      const body = (backlogSection(text, 'The Conclave') || []).join('\n');
+      expect(body, `ep ${ep.num}: a Faithful got no conclave section at all`).toBeTruthy();
+      for (const b of c.ballots) {
+        expect(mentions(body, b.voter),
+          `ep ${ep.num}: ${b.voter} argued in a Faithful's transcript`).toBe(false);
+        expect(mentions(body, b.voted),
+          `ep ${ep.num}: ${b.voted} was named in a Faithful's transcript`).toBe(false);
+      }
+      expect(mentions(body, c.target),
+        `ep ${ep.num}: the chosen name reached a Faithful's transcript`).toBe(false);
+      for (const t of c.turret) {
+        expect(mentions(body, t),
+          `ep ${ep.num}: ${t} was placed in the turret in a Faithful's transcript`).toBe(false);
+      }
+      checked++;
+    }
+    expect(checked, 'no night had anybody outside the turret to check').toBeGreaterThan(10);
+  });
+
+  it('and every other screen in it is that player\'s screen too', () => {
+    // The turret is not the only thing a screen withholds -- a relic names its
+    // holder only to somebody who watched it be found, and an offer is between
+    // two people. A transcript that threads the observer into the FIRST build
+    // of each screen and then rebuilds with 'audience' comes back withheld
+    // wherever the withheld render has no reveal controls (the conclave) and
+    // WIDE OPEN everywhere else, which is a leak with no symptom.
+    let differ = 0; let checked = 0;
+    for (const ep of BACKLOG_ROWS.slice(0, 14)) {
+      const who = (ep.tr.living || [])[0];
+      if (!who) continue;
+      const obs = `player:${who}`;
+      const text = generateTraitorsSummaryText(ep, obs);
+      const mine = viewerScreens(ep, obs);
+      const theirs = viewerScreens(ep, 'audience');
+      expect(mine.length, `ep ${ep.num}: no screens`).toBeGreaterThan(0);
+      for (let i = 0; i < mine.length; i++) {
+        const said = _vpTextLines(screenNarration(mine[i].html));
+        const body = backlogSection(text, mine[i].label);
+        expect(body, `ep ${ep.num}: "${mine[i].label}" is not in ${who}'s transcript`)
+          .toBeTruthy();
+        for (const line of said) {
+          expect(body,
+            `ep ${ep.num}: ${who}'s ${mine[i].label} says "${line}" and their transcript does not`)
+            .toContain(line);
+        }
+        // and it is not simply the audience's copy with a name on it
+        const audience = _vpTextLines(screenNarration(theirs[i].html)).join('\n');
+        if (audience !== said.join('\n')) {
+          differ++;
+          for (const line of _vpTextLines(screenNarration(theirs[i].html))) {
+            if (said.indexOf(line) < 0) {
+              expect(body,
+                `ep ${ep.num}: ${who} was told "${line}", which is not on their screen`)
+                .not.toContain(line);
+            }
+          }
+        }
+        checked++;
+      }
+    }
+    expect(checked, 'no screen was checked').toBeGreaterThan(30);
+    // THE ARM ABOVE IS ONLY WORTH ANYTHING IF THE TWO LAYERS EVER DIFFER.
+    expect(differ, 'no screen rendered differently for a player than for the audience')
+      .toBeGreaterThan(5);
+  });
+});
+
+// ── GUARD: THE TRANSCRIPT DOES NOT TOUCH THE SCREEN ───────────────────
+describe('writing the transcript does not reveal the screen', () => {
+  it('a screen opened after a transcript is written still opens on its first beat', () => {
+    // Reveal state is module-level and keyed by episode number. Generating a
+    // transcript reveals every beat of every screen — on a key of its own, or
+    // the next reader opens the conclave with the name already on it and the
+    // click-to-reveal the whole visual player is built on is gone.
+    let checked = 0;
+    for (const { ep } of NIGHTS.slice(0, 6)) {
+      const fresh = { ...ep, num: ++_trN };
+      // WHAT IS COMPARED IS THE REVEAL STATE, and not the markup around it:
+      // every gradient these icons draw takes an id off a counter that only
+      // goes up, so two builds of one screen are never byte-identical and
+      // never were. The signature is which beats carry the visible class and
+      // what the counter under them says, which is exactly the state a
+      // transcript must not have moved.
+      const sig = h => (String(h).match(/class="cv-beat( cv-vis)?"/g) || []).join('|')
+        + ' :: ' + (/<span class="cv-counter"[^>]*>([^<]*)</.exec(String(h)) || [])[1];
+      const before = sig(rpBuildConclave(fresh, 'audience'));
+      generateTraitorsSummaryText(fresh, 'audience');
+      const after = sig(rpBuildConclave(fresh, 'audience'));
+      expect(after, `ep ${ep.num}: the transcript revealed the viewer's screen`)
+        .toBe(before);
+      // and it really was unrevealed to begin with, or the arm above is
+      // comparing two finished screens and cannot fail
+      const vis = (before.match(/cv-beat cv-vis/g) || []).length;
+      const all = (before.match(/class="cv-beat/g) || []).length;
+      expect(all, `ep ${ep.num}: the screen has no beats`).toBeGreaterThan(3);
+      expect(vis, `ep ${ep.num}: a first paint showed ${vis} of ${all} beats`).toBe(1);
+      expect(before, `ep ${ep.num}: the counter is not in the signature`)
+        .toMatch(/:: 1 \/ \d+$/);
+      checked++;
+    }
+    expect(checked, 'no night was checked').toBeGreaterThan(4);
+  });
+
+  it('and a renumbered copy of a row says exactly the same words', () => {
+    // The transcript renders a RENUMBERED copy to get its own reveal key, so
+    // anything that chooses a sentence off `num` rather than off the record
+    // would make the transcript quote a host line the screen never spoke.
+    let checked = 0;
+    for (const ep of BACKLOG_ROWS.slice(0, 10)) {
+      const a = viewerScreens(ep, 'audience');
+      const b = viewerScreens({ ...ep, num: 90000 + (ep.num || 0) }, 'audience');
+      expect(a.length, `ep ${ep.num}: no screens`).toBeGreaterThan(0);
+      expect(b.length).toBe(a.length);
+      for (let i = 0; i < a.length; i++) {
+        expect(_vpTextLines(screenNarration(b[i].html)).join('\n'),
+          `ep ${ep.num}: ${a[i].label} says something different when the row is renumbered`)
+          .toBe(_vpTextLines(screenNarration(a[i].html)).join('\n'));
+        checked++;
+      }
+    }
+    expect(checked, 'no screen was compared').toBeGreaterThan(20);
+  });
+});
+
+// ── GUARD: THE TRANSCRIPT IS REACHABLE ────────────────────────────────
+describe('the castle transcript is what a Traitors row actually gets', () => {
+  it('generateSummaryText hands a castle row to the castle writer', () => {
+    // A written-and-unreachable transcript is this project's signature bug,
+    // and the failure here is silent and total: a castle row falling through
+    // to Total Drama's writer comes back with tribes and a Tribal Council in
+    // it, which is the bug class this whole show was built to avoid.
+    let checked = 0;
+    for (const ep of BACKLOG_ROWS.slice(0, 8)) {
+      const text = generateSummaryText(ep);
+      expect(text, `ep ${ep.num}: the row did not reach the castle writer`)
+        .toContain(`THE TRAITORS — EPISODE ${ep.tr.ep}`);
+      expect(text).toBe(generateTraitorsSummaryText(ep, 'audience'));
+      expect(foreignWordsIn(text, 'traitors'), `ep ${ep.num}`).toEqual([]);
+      checked++;
+    }
+    expect(checked).toBe(8);
   });
 });

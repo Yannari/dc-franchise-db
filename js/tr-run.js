@@ -67,6 +67,7 @@ function _playWholeSeason() {
     cast,
     traitorCount: Math.max(2, Math.min(5, Number(seasonConfig.traitorCount) || 3)),
     potCeiling: Number(seasonConfig.trPotCeiling) || undefined,
+    endgameSize: Number(seasonConfig.finaleSize) || 3,
     seed: _seed(),
   });
   // `gs` is now the engine's. Take what it wrote and give the UI's back.

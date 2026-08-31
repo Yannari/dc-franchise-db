@@ -282,7 +282,12 @@ export function buildHubAftermath(ep) {
   const votesNegated = (ep.idolPlays || []).reduce((sum, play) => sum + Math.max(0, Number(play.votesNegated || 0)), 0);
   const decidingVoters = [...new Set((ep.votingLog || []).filter(vote => eliminated.includes(vote.voted) && !vote.sitdSacrificed).map(vote => vote.voter))];
   let why = eliminatedLabel ? `${eliminatedLabel} received the highest valid total after the ballots were resolved.` : 'The episode ended without a standard elimination vote.';
-  if (ep.isRockDraw) why = `${eliminatedLabel || 'The eliminated contestant'} drew the losing rock after the vote remained deadlocked.`;
+  if (seasonFormat(ep) === 'traitors') {
+    const exits = roundExits(ep, 'traitors');
+    why = exits.length
+      ? exits.map(x => `${x.name} was ${x.verb}.`).join(' ')
+      : 'The castle closed the night with nobody leaving.';
+  } else if (ep.isRockDraw) why = `${eliminatedLabel || 'The eliminated contestant'} drew the losing rock after the vote remained deadlocked.`;
   else if (ep.tiebreakerResult) why = `${ep.tiebreakerResult.loser || eliminatedLabel} lost the ${ep.tiebreakerResult.challengeLabel || 'tiebreaker'} to ${ep.tiebreakerResult.winner || 'the other tied player'}.`;
   else if (ep.isTie && ep.revoteLog?.length) why = `The first ballot tied. On the revote, the numbers consolidated against ${eliminatedLabel || 'the eliminated contestant'}.`;
   else if (votesNegated > 0) why = `${votesNegated} vote${votesNegated === 1 ? '' : 's'} were erased by protection, leaving ${eliminatedLabel || 'the boot'} with the highest valid total.`;
@@ -366,7 +371,12 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   const catalogEntry = nextScheduled && typeof TWIST_CATALOG !== 'undefined' ? TWIST_CATALOG.find(t => t.id === nextScheduled.type) : null;
   const twistLabel = nextScheduled
     ? nextScheduled.spoilerFree ? 'Production surprise scheduled' : (catalogEntry?.name || String(nextScheduled.type || 'Special episode').replace(/-/g, ' '))
-    : 'Standard episode — no scheduled twist';
+    : _castle ? 'The castle continues — no scheduled twist' : 'Standard episode — no scheduled twist';
+  const latestOutcome = _castle && latest
+    ? roundExits(latest, 'traitors').map(x => `${x.name} was ${x.verb}`).join(' · ')
+    : latest ? (getEpisodeEliminations(latest).length
+      ? `${getEpisodeEliminations(latest).join(' + ')} left the game`
+      : 'The game moved without a vote') : '';
   const _hubHouse = typeof isBigBrotherSeason === 'function' && isBigBrotherSeason();
   const groups = !initialized ? []
     // One castle, from the first breakfast to the last table. No tribes, no
@@ -394,7 +404,7 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   return {
     lifecycle, setting, title: config?.name || 'Untitled Season', seasonNumber: config?.seasonNumber || null,
     phase: displayState.phase || state?.phase || 'setup', episode: Number(latest?.num ?? displayState.episode ?? 0), nextEpisode, remaining, originalCount, progress,
-    active, groups, latest, history, liveEpisode: Number(liveLatest?.num || 0), isHistorical, storylines: [...new Set(storylines)].slice(0, 3), twistLabel,
+    active, groups, latest, history, liveEpisode: Number(liveLatest?.num || 0), isHistorical, storylines: [...new Set(storylines)].slice(0, 3), twistLabel, latestOutcome,
     // `nextEpisode`, not `state.episode + 1`. Two sources for one number, and
     // they disagreed: everything else on this screen reads the last episode in
     // the history, while the button read `gs.episode` — which the Big Brother
@@ -471,7 +481,7 @@ export function renderSeasonHub() {
   const headlineStatus = _spoilerFree && model.latest
     ? `Episode ${model.latest.num} is ready to watch · outcome hidden`
     : model.isHistorical ? `Reviewing Episode ${model.latest.num} · ${model.remaining} contestants remained afterward`
-    : model.lifecycle === 'complete' ? 'The season is complete. The jury has spoken.' : `Episode ${model.nextEpisode} is ready · ${model.remaining} of ${model.originalCount} contestants remain`;
+    : model.lifecycle === 'complete' ? (isTraitorsSeason() ? 'The castle has made its final choice.' : 'The season is complete. The jury has spoken.') : `Episode ${model.nextEpisode} is ready · ${model.remaining} of ${model.originalCount} contestants remain`;
   const publicStorylines = _spoilerFree && model.latest
     ? ['The game state will update here after you reveal the episode outcome.']
     : model.storylines;
@@ -505,7 +515,7 @@ export function renderSeasonHub() {
     <header class="hub-headline"><div><div class="hub-kicker">${model.setting.icon} ${_hubEsc(model.setting.label)} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><div class="hub-headline-right"><button type="button" class="hub-sf${_spoilerFree ? ' is-on' : ''}" role="switch" aria-checked="${_spoilerFree}" onclick="toggleSpoilerFree(${!_spoilerFree})" title="${_spoilerFree ? 'Results are hidden until you watch the episode' : 'Results are shown on this screen as soon as an episode is simulated'}"><span class="hub-sf-track"><span class="hub-sf-knob"></span></span><span class="hub-sf-label">Spoiler-free<small>${_spoilerFree ? 'On · outcomes hidden' : 'Off · outcomes shown'}</small></span></button><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></div></header>
     ${secondaryActions}
     <div class="hub-progress${_spoilerFree && model.latest ? ' hub-progress-hidden' : ''}" role="progressbar" aria-label="${_spoilerFree && model.latest ? 'Season progress hidden' : 'Season progress'}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${_spoilerFree && model.latest ? 0 : model.progress}"><span style="width:${_spoilerFree && model.latest ? 100 : model.progress}%"></span></div>
-    ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : '<span class="hub-no-boot">No elimination</span>'}</div><div class="hub-last-copy"><strong>${_spoilerFree ? 'Outcome hidden until you watch' : latestElim ? `${_hubEsc(latestElim)} left the game` : 'The game moved without a vote'}</strong><span>Episode ${model.latest.num}${!_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${Number(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
+    ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : '<span class="hub-no-boot">No elimination</span>'}</div><div class="hub-last-copy"><strong>${_spoilerFree ? 'Outcome hidden until you watch' : _hubEsc(model.latestOutcome)}</strong><span>Episode ${model.latest.num}${!_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${Number(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
     ${aftermathHtml}
     <div class="hub-grid"><div class="hub-main-column"><div class="hub-section-title"><span>${_spoilerFree && model.latest ? 'Cast after the episode' : 'Cast still in the game'}</span><small>${_spoilerFree && model.latest ? 'Hidden' : `${model.remaining} remaining`}</small></div><div class="hub-tribes">${castHtml}</div></div><aside class="hub-briefing"><div class="hub-section-title"><span>Going forward</span><small>Public context</small></div><div class="hub-next-card"><label>Next episode</label><strong>${_spoilerFree && model.latest ? 'Available after revealing the outcome' : _hubEsc(model.twistLabel)}</strong></div><div class="hub-story-list">${publicStorylines.map((line, index) => `<div><b>${String(index + 1).padStart(2, '0')}</b><span>${_hubEsc(line)}</span></div>`).join('')}</div></aside></div>
   </section>`;
@@ -1151,14 +1161,12 @@ export function viewEpisode(num) {
 }
 
 /**
- * A checkpoint before a Big Brother week runs, exactly like a Total Drama
- * episode takes one before it runs. episode.js saves TD's inside the
- * simulator; the house engine stays headless, so its checkpoint is taken at
- * the UI boundary — which is what makes Re-run This Episode exist for a house
- * at all. Called from BOTH the normal run and the replay re-run, because a
- * replayed week must itself be replayable, the way a TD episode is.
+ * A checkpoint before a headless show advances. Total Drama saves its own
+ * checkpoint inside episode.js; Big Brother and Traitors take theirs at the
+ * UI boundary. Called from both normal play and replay so a replayed episode
+ * remains replayable.
  */
-export function _saveBBCheckpoint() {
+export function _saveEpisodeCheckpoint() {
   // Keyed by the EPISODE the checkpoint belongs to, which is the number the
   // replay button looks it up by — `gsCheckpoints[ep.num]`.
   //
@@ -1177,6 +1185,7 @@ export function _saveBBCheckpoint() {
     _idbPut('cp_' + cpNum, JSON.parse(JSON.stringify(gsCheckpoints[cpNum])));
   } catch { /* a week must never fail on its own undo button */ }
 }
+export const _saveBBCheckpoint = _saveEpisodeCheckpoint;
 
 export function simulateNext() {
   if (!gs) { if (!initGameState()) { alert('Add players to Cast Builder first.'); return; } }
@@ -1220,7 +1229,7 @@ export function simulateNext() {
   // be asked for one. Everything after the call is what the house does:
   // checkpoint, feed, spoiler reveal, render.
   if (isTraitorsSeason()) {
-    _saveBBCheckpoint();
+    _saveEpisodeCheckpoint();
     const trEp = simulateTraitorsEpisode();
     if (!trEp) {
       alert(gs.activePlayers && gs.activePlayers.length
@@ -1246,7 +1255,7 @@ export function simulateNext() {
     // the house's engine stays headless, so its checkpoint is taken here at
     // the same moment — which is what makes Re-run This Episode exist for a
     // house at all. Keyed by the number the coming episode will carry.
-    _saveBBCheckpoint();
+    _saveEpisodeCheckpoint();
     // At the final few the week engine has nothing left to run, so the last
     // night takes over: the three-part Head of Household, the cut, and the jury.
     const bbEp = simulateBBEpisode() || runBBFinale();
@@ -1383,7 +1392,7 @@ export function replayEpisode(epNum) {
     // Re-run this episode — the format decides the engine, exactly as
     // simulateNext does. The replay path only knew Total Drama's two engines,
     // so a house had checkpoints it could never spend.
-    if (isBigBrotherSeason() || isTraitorsSeason()) _saveBBCheckpoint();
+    if (isBigBrotherSeason() || isTraitorsSeason()) _saveEpisodeCheckpoint();
     // The castle re-airs rather than re-plays: the checkpoint carries the
     // queue AND the seed, so shifting the next row off it hands back the same
     // night. That is the correct behaviour and not a limitation — the season

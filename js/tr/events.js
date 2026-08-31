@@ -537,8 +537,8 @@ function _actFor(ep) {
 // has every speaker name their top read, so in a room of nineteen almost
 // everybody is named by somebody - which is why one accuser is not enough and
 // two is the bar.
-const DESPERATE_VOTES = 3;
-const PARANOID_ACCUSERS = 2;
+const DESPERATE_VOTE_SHARE = 0.4;
+const PARANOID_ACCUSER_SHARE = 0.25;
 
 /**
  * How this person is holding up, as of the last Round Table that has happened.
@@ -551,31 +551,16 @@ const PARANOID_ACCUSERS = 2;
  * episode-1. after-table and night run after it and see this one. That is
  * exactly the state each of those windows is about.
  *
- * ── REVOTES ARE DELIBERATELY NOT COUNTED, AND HERE IS THE PRICE ──
+ * ── REVOTES ARE DELIBERATELY NOT COUNTED ──
  *
  * Only `round.ballots` is read. `round.revotes` (roundtable.js) holds the
  * tie-break rounds, and a vote cast there is NOT on the same scale as a
  * first-round vote: the electorate is the room MINUS the tied players and the
- * slate is only the tied players, so a revote concentrates two or three votes
- * onto two or three names by construction. Folding those counts into
- * DESPERATE_VOTES would mean three votes in a four-ballot revote reading
- * exactly as three votes in a nineteen-ballot free choice, which is not the
- * same fact about the same person.
- *
- * THE COST, MEASURED over 200 seasons: 21.7% of rounds go to a revote (1.63 a
- * season), and 0.895 people per season take 3+ votes ONLY in one and therefore
- * read `content` here when the room plainly came for them. That is a real miss
- * and it is not fixed.
- *
- * IT IS NOT FIXED BY ADDING REVOTES, EITHER, and the measurement says why: a
- * tie at the TOP of a first-round count already reads `desperate` through
- * `ballots`, so the 179 cases are ties at a LOW count - two-all in a room of
- * five, late in a season. What that actually exposes is that these thresholds
- * are absolute counts in a room that shrinks from nineteen people to four, so
- * two votes late is a bigger fact than two votes early and nothing here knows
- * it. The honest fix is scaling the thresholds by field size, which is a
- * different change with its own measurement, not a special case bolted on
- * here. Stated plainly and left open.
+ * slate is only the tied players, so it concentrates votes by construction.
+ * First-ballot pressure is instead measured as a share of that ballot's room:
+ * three votes early can be attention while two of five late is desperation.
+ * Accusations use the same proportional rule but retain the two-accuser floor,
+ * because one person naming somebody is ordinary debate noise.
  */
 export function emotionalStateOf(name) {
   const rounds = gs.tr?.rounds || [];
@@ -583,10 +568,12 @@ export function emotionalStateOf(name) {
   if (!last) return 'content';
   let votes = 0;
   for (const b of (last.ballots || [])) if (b.voted === name) votes++;
-  if (votes >= DESPERATE_VOTES) return 'desperate';
+  const voteShare = votes / Math.max(1, (last.ballots || []).length);
+  if (voteShare >= DESPERATE_VOTE_SHARE) return 'desperate';
   let accusers = 0;
   for (const a of (last.accusations || [])) if (a.target === name) accusers++;
-  if (votes >= 1 || accusers >= PARANOID_ACCUSERS) return 'paranoid';
+  const accuserShare = accusers / Math.max(1, (last.accusations || []).length);
+  if (votes >= 1 || (accusers >= 2 && accuserShare >= PARANOID_ACCUSER_SHARE)) return 'paranoid';
   return 'content';
 }
 

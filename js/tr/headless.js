@@ -1051,7 +1051,7 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
  * merely has beliefs. Nothing in the show may ever pass this.
  */
 export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds = 40,
-  potCeiling = POT_CEILING, evidence = ballotEvidence } = {}) {
+  potCeiling = POT_CEILING, endgameSize = 3, evidence = ballotEvidence } = {}) {
   const rng = rngFor(seed);
   // The narrative layer's OWN stream — see castleRngFor's doc comment for why
   // round budgets (and later, window draws) must never share the game rng.
@@ -1154,11 +1154,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   log.push({ ep, banished: null, wasTraitor: null, ...n1, mission: mission1,
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
 
+  const configuredEndgameSize = Math.max(2, Math.min(cast.length, Number(endgameSize) || 3));
   while (ep++ < maxRounds) {
     const alive = gs.activePlayers || [];
     const tr = livingTraitors(ep).length;
     const fa = livingFaithfuls(ep).length;
-    if (!tr || alive.length <= 3 || fa <= tr) break;
+    if (!tr || alive.length <= configuredEndgameSize || fa <= tr) break;
 
     // A fresh 4-8 spending money for this round's seven windows, drawn from
     // the castle layer's own stream (never the game rng — see castleRngFor).

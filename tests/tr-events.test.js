@@ -755,6 +755,22 @@ describe('emotional state reaches ctx (spec 5.3)', () => {
     expect(emotionalStateOf(B)).toBe('content');
   });
 
+  it('scales pressure to the room instead of treating early and late vote counts alike', () => {
+    tableWhere({ [A]: 3 });
+    while (gs.tr.rounds.at(-1).ballots.length < 19) {
+      const i = gs.tr.rounds.at(-1).ballots.length;
+      gs.tr.rounds.at(-1).ballots.push({ voter: `other${i}`, voted: `elsewhere${i}` });
+    }
+    expect(emotionalStateOf(A)).toBe('paranoid');
+    gs.tr.rounds.length = 0;
+    tableWhere({ [A]: 2 });
+    while (gs.tr.rounds.at(-1).ballots.length < 5) {
+      const i = gs.tr.rounds.at(-1).ballots.length;
+      gs.tr.rounds.at(-1).ballots.push({ voter: `late${i}`, voted: `other${i}` });
+    }
+    expect(emotionalStateOf(A)).toBe('desperate');
+  });
+
   it('is content before the first table, rather than throwing or guessing', () => {
     expect(emotionalStateOf(A)).toBe('content');
   });

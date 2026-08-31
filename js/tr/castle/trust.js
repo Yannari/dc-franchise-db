@@ -192,16 +192,16 @@ registerEvent({
 // mutation pass below exercises.
 const COMMIT_LINES = {
   kept: [
-    '{b} looked {a} in the eye and said "count on it" — and meant it enough to actually do it.',
-    'When the moment came, {b} voted exactly the way they told {a} they would.',
-    '{b} gave {a} a name and then wrote that name down, which is rarer here than it sounds.',
-    '{a} did not have to check. {b} had said it, and {b} did it.',
+    '{b} looked {a} in the eye and said "count on it" — with none of the usual room left around the promise.',
+    '{b} gave {a} one name, plainly, and did not hedge when {a} asked a second time.',
+    '{b} made the promise cleanly enough that {a} stopped checking for an exit hidden inside it.',
+    '{a} asked for certainty. {b} answered with the one name they genuinely intended to put down.',
   ],
   broken: [
-    '{b} promised {a} their vote, smiled, and cast it somewhere else entirely.',
-    '{a} believed {b}. The ballot said otherwise.',
-    '{b} said the right name to {a} at lunch and a different one on the slate.',
-    'The promise held right up until the pen, and then it did not.',
+    '{b} promised {a} their vote, smiled, and kept the name they actually intended to write to themselves.',
+    '{a} believed {b}. {b} left the conversation knowing the promise was false.',
+    '{b} said the name {a} needed to hear and privately kept a different one.',
+    'The promise sounded firm. It was already broken in {b}\'s head.',
   ],
   deflected: [
     '{b} never actually said yes — they talked around it until {a} stopped pushing.',

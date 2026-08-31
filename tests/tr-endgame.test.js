@@ -46,6 +46,16 @@ function seasons(n = SEASONS, each = null) {
 // ══════════════════════════════════════════════════════════════════════
 
 describe('one vote to banish forces another Round Table', () => {
+  it('starts at the configured castle endgame size when faction balance does not end the day first', () => {
+    let settingChangedEntry = 0;
+    for (let seed = 1; seed <= 40; seed++) {
+      const base = playTraitorsSeason({ cast: CAST, traitorCount: 1, seed, endgameSize: 3 });
+      const larger = playTraitorsSeason({ cast: CAST, traitorCount: 1, seed, endgameSize: 10 });
+      if (base.endgame.ballots[0]?.living.length !== larger.endgame.ballots[0]?.living.length) settingChangedEntry++;
+    }
+    expect(settingChangedEntry, 'endgameSize was accepted but never controlled the loop').toBeGreaterThan(0);
+  });
+
   it('every ask with a banish in it sits a table; only a unanimous ask ends it', () => {
     // ASSERTED PER ASK, NOT PER SEASON. `endgame.ballots[i]` is the secret
     // choice put to the room before table `i`, and `endgame.rounds[i]` is the

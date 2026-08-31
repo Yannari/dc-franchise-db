@@ -539,6 +539,9 @@ describe('trust: the vote-commitment test forks on a real check, four ways', () 
     const result = ev.fire(ctxFor(4), scriptedRng([ROLL]));
     expect(result.branch).toBe('kept');
     expect(result.bondDelta).toBeGreaterThan(0);
+    const note = gs.tr.threads.find(t => t.id === result.threadId).beats.at(-1).note;
+    expect(note, 'an evening promise claimed the later ballot had already happened')
+      .not.toMatch(/voted|wrote that name down|did it|actually do it/i);
   });
 
   it('BREAKS: the same roll, loyalty 0 and strategic 10 — break 1.00 of 1.69', () => {

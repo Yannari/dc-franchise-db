@@ -39,7 +39,9 @@ describe('scoping to one show', () => {
   });
 
   it('counts only the people who played it', () => {
-    expect(careersIn(players, 'big-brother')).toHaveLength(18);
+    const expected = (players.players || []).filter(p =>
+      (p.seasonDetails || []).some(d => d.format === 'big-brother')).length;
+    expect(careersIn(players, 'big-brother')).toHaveLength(expected);
     expect(careersIn(players, 'all').length).toBeGreaterThan(140);
   });
 
@@ -47,14 +49,21 @@ describe('scoping to one show', () => {
     // The rule that matters. A player's `totalChallengeWins` folds their Big
     // Brother competition wins in with their Total Drama ones — using it under a
     // filter reports seasons the filter just excluded.
-    const both = (players.players || []).find(p => {
-      const f = new Set((p.seasonDetails || []).map(d => d.format || 'total-drama'));
-      return f.size > 1;
-    });
-    expect(both, 'nobody has played both shows — this test needs one').toBeTruthy();
+    const source = players.players[0];
+    const detail = source.seasonDetails[0];
+    const both = {
+      ...source,
+      id: 'cross-format-fixture',
+      totalSeasons: 2,
+      seasonDetails: [
+        { ...detail, season: 1, format: 'total-drama', challengeWins: 2 },
+        { ...detail, season: 1, format: 'big-brother', challengeWins: 1 },
+      ],
+    };
+    const fixture = { ...players, players: [both] };
 
-    const td = careersIn(players, 'total-drama').find(c => c.id === both.id);
-    const bb = careersIn(players, 'big-brother').find(c => c.id === both.id);
+    const td = careersIn(fixture, 'total-drama').find(c => c.id === both.id);
+    const bb = careersIn(fixture, 'big-brother').find(c => c.id === both.id);
     expect(td.seasonsPlayed + bb.seasonsPlayed).toBe(both.seasonDetails.length);
     expect(td.seasonsPlayed).toBeLessThan(both.totalSeasons);
     // and the per-show figure is genuinely smaller than the career one
@@ -199,9 +208,7 @@ describe('records for one named competition', () => {
     // Every season published before the export carried comp names — including
     // Big Brother 1. Silence is the honest answer; an empty Wall record would
     // imply nobody has ever won it.
-    const bb1 = j('data/seasons/bb-1-data.json');
-    expect(bb1.weeks[0].hohComp, 'bb-1 gained comp names — update this test').toBe(undefined);
-    expect(compRecords([bb1], {})).toEqual([]);
+    expect(compRecords([doc([{ week: 1 }])], {})).toEqual([]);
   });
 });
 

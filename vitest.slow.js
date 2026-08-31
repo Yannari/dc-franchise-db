@@ -46,6 +46,20 @@
  * machine is roughly twice as fast.
  */
 export const SLOW_TESTS = [
+  'bb-power-shelf.test.js',               // 1014s (CI 2026-08-31)
+  'bb-nomination-alliance.test.js',        // 493s  (CI 2026-08-31)
+  'bb-saboteur.test.js',                   // 491s  (CI 2026-08-31)
+  'coach-camp-presence.test.js',           // 344s  (CI 2026-08-31)
+  'tr-powers.test.js',                     // 261s  (CI 2026-08-31)
+  'bb-chain-of-safety.test.js',            // 225s  (CI 2026-08-31)
+  'bb-high-rollers-room.test.js',          // 205s  (CI 2026-08-31)
+  'tr-castle-reachability.test.js',        // 186s  (CI 2026-08-31)
+  'bb-jury-house.test.js',                 // 185s  (CI 2026-08-31)
+  'bb-twin-twist.test.js',                 // 176s  (CI 2026-08-31)
+  'vp-big-brother-week.test.js',           //  79s  (CI 2026-08-31)
+  'tr-channel-gate.test.js',               //  71s  (CI 2026-08-31)
+  'bb-theme-high-rollers.test.js',         //  62s  (CI 2026-08-31)
+  'tr-murder.test.js',                     //  62s  (CI 2026-08-31)
   'bb-knowledge.test.js',                  // 534s
   'bb-duos.test.js',                       // 502s
   'bb-broken-promise.test.js',             // 390s

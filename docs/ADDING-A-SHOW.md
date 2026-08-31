@@ -1115,3 +1115,43 @@ that it measures what its name says.** Ask all three.
   briefed against states the branch had already passed — including §9's eight
   maps, collapsed days earlier. Every time, the work was still worth doing,
   because what was missing was the thing that *keeps* the property true.
+
+### 14.14 Every future reality show is an alumni source for The Traitors
+
+The Traitors consumes franchise history when an entrant is classified as an
+**Alumni** contestant. Today the only source shows are **Total Drama** and
+**Big Brother**. That is a fact about the current registry, not a permanent
+allow-list: more reality-show engines will be added, and their contestants must
+become available to The Traitors without adding another hardcoded show list.
+
+When adding a competitive reality show, publish the following fields through
+the shared season/appearance ledger whenever that format genuinely records
+them:
+
+- format slug and display name;
+- season identity;
+- stable player slug and identity mapping;
+- placement and winner/finalist status;
+- competition, challenge or mission record;
+- alliance and relationship history;
+- betrayals or decisive votes; and
+- exit type.
+
+Do not invent fields the show does not have. A show without a jury exports no
+jury record; a show without challenges exports no challenge wins. The Traitors
+must distinguish a missing concept from a zero result.
+
+The entrant's background type decides how the data is read:
+
+- **Alumni** uses both recorded show history **and** the player's personality,
+  archetype, occupation and backstory. History is reputation, not personality.
+- **Celebrity** uses public recognition, career, backstory and personality, but
+  no simulator history is invented.
+- **Civilian** uses occupation, life experience, backstory and personality and
+  is not treated as publicly recognizable.
+
+Casting remains manual. The history ledger supplies context for the people the
+user selected; it does not choose the cast or enforce a ratio between source
+shows. Derive eligible source shows from `js/shows.js` and compatible ledger
+records. Never write `['total-drama', 'big-brother']` into Traitors casting
+logic: that list is true today and stale the day the next show ships.

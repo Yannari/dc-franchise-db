@@ -155,7 +155,7 @@ export function _vpTextLines(html) {
     .replace(/&nbsp;/g, ' ')
     .replace(/&#(\d+);/g, (_m, d) => String.fromCharCode(Number(d)))
     .split('\n')
-    .map(l => l.replace(/\s+/g, ' ').trim())
+    .map(l => l.replace(/\s+/g, ' ').replace(/\s+([,.!?;:])/g, '$1').trim())
     .filter(l => l.length > 0)
     .filter(l => !/^(Investigate|Reveal All|NEXT|SMASH|REVEAL|SHOW ALL|DESTROY ALL|SET COMPLETE|CARPET CLEARED|ROOM DEMOLISHED|SHOW'S OVER|CASE CLOSED|ALL RISE|COLLECTION COMPLETE|INVESTIGATION CLOSED)$/i.test(l) && !/^Next\s*\(/i.test(l) && !/^Skip to results/i.test(l));
 }

@@ -335,7 +335,7 @@ const REASON_LINES = {
 
 /** What the audience gets and the room never does: the motive underneath. */
 const UNSAID = [
-  '{T} has been watching {a} for two days. {A} wants {obj} gone before {sub} says {a}&rsquo;s name out loud, and that reason will never go on a slip.',
+  '{T} has been watching {a} for two days. {A} wants {obj} gone before {sub} can say {a}&rsquo;s name out loud, and that reason will never go on a slip.',
   'The argument {a} just made is a good one. It is not the real one. The real one is that {t} was standing close enough last night to hear something {a} thought had been said quietly.',
   '{A} is not frightened of what {t} knows. {A} is frightened of what {t} is about to work out, and that is not a thing you can say to people who are judging you on your nerve.',
   'Everything {a} said about {t} is true. None of it is why. {A} needs this name to be the one that goes, and needs the others never to ask why it came out so fast.',

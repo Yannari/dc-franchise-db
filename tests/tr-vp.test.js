@@ -3603,6 +3603,14 @@ describe('the transcript helpers take out the furniture and leave the words', ()
     // Two adjacent inline elements are two things said, not one word.
     expect(lines).toContain('Standing 19');
   });
+
+  it('a complete seeded transcript has no raw placeholders, bad singular-they verbs, or tag-spaced punctuation', () => {
+    const run = season(71);
+    const text = run.episodes.map(ep => generateTraitorsSummaryText(ep, 'audience')).join('\n');
+    expect(text).not.toMatch(/\{[A-Za-z]+\}/);
+    expect(text).not.toMatch(/\bthey says\b/i);
+    expect(text).not.toMatch(/\s+[,.!?](?:\s|$)/);
+  });
 });
 
 // ── GUARD: EVERY SCREEN'S NARRATION IS IN IT ──────────────────────────

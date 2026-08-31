@@ -1387,7 +1387,7 @@ const HOST_LINES = {
 
 const ACCUSE_LINES = [
   '{A} keeps coming back to {t}, and will not be talked off it.',
-  'It is {t}, says {A}, and {sub} says it looking straight down the table.',
+  '{A} says it is {t}, looking straight down the table and refusing to look away.',
   '{A} lays out the week and every part of it ends at {t}.',
   '{A} names {t}. No hedging, no softening, and no route back from it afterwards.',
   '{A} asks {t} a question with the answer already written on {pos} face.',

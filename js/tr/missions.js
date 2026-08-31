@@ -1001,6 +1001,7 @@ const _render = (tpl, who, what) => tpl.split('{who}').join(who).split('{what}')
 const _render3 = (tpl, who, pr) => tpl
   .split('{who}').join(who)
   .split('{they}').join(pr.sub)
+  .split('{They}').join(pr.Sub)
   .split('{them}').join(pr.obj)
   .split('{their}').join(pr.posAdj);
 

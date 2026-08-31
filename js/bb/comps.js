@@ -295,6 +295,32 @@ function normalizeResult(comp, raw, participants, context, selection, source) {
   const scores = raw.scores || {};
   if (participants.some(name => !Number.isFinite(Number(scores[name])))) throw new Error(`Big Brother competition ${comp.id} requires a numeric score for every participant.`);
 
+  // Custom competitions are encouraged to model slop inside their own
+  // mechanic, but older bespoke engines predate that contract. Enforce the
+  // score/debug consequence here as a backstop because every competition
+  // crosses this boundary. Keep the fallback inside the existing placement
+  // gap: the custom narration has already been rendered from that order, so a
+  // generic correction must not make its winner card contradict the board.
+  const scoreRows = raw.breakdown || raw.debug?.scoreBreakdown || null;
+  const haveNots = new Set(context?.haveNots || []);
+  if (scoreRows && haveNots.size && !comp.pureChance) {
+    const values = participants.map(name => Number(scores[name]));
+    const spread = Math.max(...values) - Math.min(...values);
+    for (const name of participants) {
+      const row = scoreRows[name];
+      if (!row || typeof row !== 'object' || !haveNots.has(name) || Number(row.haveNotPenalty) > 0) continue;
+      const place = placements.indexOf(name);
+      const below = place >= 0 && place < placements.length - 1 ? Number(scores[placements[place + 1]]) : null;
+      const desired = Math.max((spread || 1) * 0.06, 0.01);
+      const penalty = below == null ? desired : Math.max(0.01, Math.min(desired, Math.max(0.02, (Number(scores[name]) - below) * 0.45)));
+      scores[name] = Number(scores[name]) - penalty;
+      row.haveNot = true;
+      row.haveNotPenalty = Math.round(penalty * 100) / 100 || 0.01;
+      if (Number.isFinite(Number(row.score))) row.score = Number(row.score) - penalty;
+      if (Number.isFinite(Number(row.finalScore))) row.finalScore = Number(row.finalScore) - penalty;
+    }
+  }
+
   // ── somebody got to the yard first ──
   //
   // The Saboteur's rig mission used to be pure narration: the screen said a
@@ -341,7 +367,6 @@ function normalizeResult(comp, raw, participants, context, selection, source) {
   // computable from the stat profile for anybody, and luck is merged from
   // whatever the competition banked, so this holds for every competition rather
   // than the ones that remembered.
-  const scoreRows = raw.breakdown || raw.debug?.scoreBreakdown || null;
   if (scoreRows && comp.stats) {
     for (const name of participants) {
       const row = scoreRows[name];

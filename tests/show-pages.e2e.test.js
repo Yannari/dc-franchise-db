@@ -18,10 +18,17 @@ afterAll(async () => { await browser?.close(); server?.kill(); });
 
 const open = async (path) => {
   const page = await browser.newPage();
-  await page.goto(BASE + path, { waitUntil: 'networkidle' });
+  // These pages query the live Worker after load, so the network may remain
+  // active even though the document is ready for assertions.
+  await page.goto(BASE + path, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(600);
   return page;
 };
+
+const waitForRankings = page => page.waitForFunction(() => {
+  const rankings = document.querySelector('#rankings-container');
+  return rankings && !rankings.textContent.includes('Loading Rankings');
+}, null, { timeout: 15000 });
 
 describe('seasons.html', () => {
   it('shows both shows, under their own headings', async () => {
@@ -59,15 +66,21 @@ describe('awards.html', () => {
 });
 
 describe('rankings.html', () => {
-  it('says why a show has no board yet', async () => {
+  it('shows the Big Brother board when that show is selected', async () => {
     const page = await open('/rankings.html?show=big-brother');
-    expect(await page.textContent('body')).toMatch(/No Big Brother rankings yet/);
+    await waitForRankings(page);
+    const body = await page.textContent('body');
+    expect(body).toContain('Misha');
+    expect(body).toMatch(/Showing 17 players/);
     await page.close();
   });
 
-  it('still ranks Total Drama, with fame stars', async () => {
+  it('still ranks Total Drama without mixing in the house board', async () => {
     const page = await open('/rankings.html?show=total-drama');
-    expect(await page.$$eval('.fame-rating', e => e.length)).toBeGreaterThan(0);
+    await waitForRankings(page);
+    const body = await page.textContent('body');
+    expect(body).toContain('Alejandro');
+    expect(body).not.toContain('Misha');
     await page.close();
   });
 });

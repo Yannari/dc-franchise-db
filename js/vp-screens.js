@@ -18258,7 +18258,19 @@ export function rpBuildBBComp(ep, actType) {
         tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar,
         esc: _bbEsc, cat: _bbcCat, ordinal: _bbOrdinal,
       });
-      if (html) return twoCrowns + html;
+      if (html) {
+        // Every competition screen owes the viewer the field. Signature
+        // builders may provide a themed version of this line; this fallback
+        // keeps newer variants from silently dropping the outgoing HOH.
+        const satOut = (comp?.excluded || []).filter(Boolean);
+        const satOutBanner = satOut.length && !html.includes('Sat out')
+          ? `<div style="max-width:1100px;margin:0 auto 10px;padding:8px 12px;border:1px solid rgba(139,148,158,.28);border-radius:8px;color:#8b949e;font-size:11px;text-align:center">Sat out: ${satOut.map(_bbEsc).join(', ')}${
+              actType === 'hoh' && act?.outgoingHoh
+                ? ` &middot; ${_bbEsc(act.outgoingHoh)} cannot defend the room`
+                : ''}</div>`
+          : '';
+        return twoCrowns + satOutBanner + html;
+      }
     } catch (e) {
       console.warn(`Signature comp screen '${comp.variant}' failed; using the generic board.`, e);
     }

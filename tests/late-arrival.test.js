@@ -298,7 +298,7 @@ describe('keeping the surprise', () => {
     const { arrival } = premiereAndArrival();
     const { rpBuildLateArrival } = await import('../js/vp-screens.js');
     const html = rpBuildLateArrival(arrival);
-    expect(html, 'the row of people was empty').not.toContain('0 PEOPLE WHO HAVE');
+    expect(html, 'the row of people was empty').not.toMatch(/(?:^|>)0 PEOPLE WHO HAVE/);
     const m = html.match(/(\d+) PEOPLE WHO HAVE ALREADY DECIDED/);
     expect(m, 'no count at all').toBeTruthy();
     expect(Number(m[1])).toBeGreaterThan(3);

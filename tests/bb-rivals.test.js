@@ -28,6 +28,7 @@ import { BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { buildVPScreens, _tvState } from '../js/vp-screens.js';
 import { seedGame } from './helpers/setup.js';
+import { seededRandom } from './helpers/rng.js';
 
 const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
   'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -496,9 +497,13 @@ describe('a season with one running', () => {
     let split = 0;
     for (let i = 0; i < 14 && split < 3; i++) {
       house();
-      installRivals(NAMES, { rng: Math.random });
+      // Cover a reproducible spread of ballot nights. This test verifies the
+      // debt once a vote splits; whether fourteen unseeded casts happen to
+      // split is a storyline roll, not part of that contract.
+      const rng = seededRandom(8100 + i);
+      installRivals(NAMES, { rng });
       const act = rivalsChooseHoh(aWeek(), { placements: ['Gus', 'Hicks', 'Iris'], winner: 'Gus' },
-        { rng: Math.random });
+        { rng });
       if (!act) continue;
       const backed = act.ballots.filter(b => b.choice === act.winner).map(b => b.rival);
       const against = act.ballots.filter(b => b.choice !== act.winner).map(b => b.rival);

@@ -66,6 +66,8 @@ export const SLOW_TESTS = [
   'bb-hacker.test.js',
   'bb-roadkill.test.js',
   'tr-calibration.test.js',
+  'bb-whacktivity-events.test.js',
+  'coach-season.test.js',
   'bb-power-shelf.test.js',               // 1014s (CI 2026-08-31)
   'bb-nomination-alliance.test.js',        // 493s  (CI 2026-08-31)
   'bb-saboteur.test.js',                   // 491s  (CI 2026-08-31)

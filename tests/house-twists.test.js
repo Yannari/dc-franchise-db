@@ -85,7 +85,11 @@ describe('house twists', () => {
       return;
     }
     for (const [name, row] of Object.entries(breakdown)) {
-      if (ep.haveNots.includes(name)) expect(row.haveNotPenalty).toBeGreaterThan(0);
+      if (ep.haveNots.includes(name)) {
+        const label = `${veto?.competition?.id || 'unknown competition'} omitted ${name}'s slop penalty`;
+        expect(row.haveNotPenalty, label).toBeDefined();
+        expect(row.haveNotPenalty, label).toBeGreaterThan(0);
+      }
       else expect(row.haveNotPenalty || 0).toBe(0);
     }
   });

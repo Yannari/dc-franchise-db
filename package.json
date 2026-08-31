@@ -21,7 +21,7 @@
     "audit:tr-castle": "vitest run --config vitest.audit.config.js tests/tr-castle-audit.test.js --reporter=verbose",
     "audit:all": "vitest run --config vitest.audit.config.js --reporter=verbose",
     "test:e2e": "playwright test",
-    "test:show-pages": "vitest run --config vitest.browser.config.js",
+    "test:show-pages": "vitest run --config vitest.browser.config.js tests/show-pages.e2e.test.js",
     "test:all": "vitest run && playwright test",
     "deploy": "wrangler deploy --config worker/wrangler.toml",
     "deploy:analytics": "wrangler deploy --config worker/wrangler-analytics.toml",

@@ -2398,8 +2398,9 @@
         "intuition": 9,
         "temperament": 8
       },
+      "sexuality": "straight",
       "voice": "Steady, perceptive, kind. Hates conflict, cautious, rarely shows her hand; sweet indie girl who toughens up when pushed.",
-      "isReturnee": true
+      "profileSources": {}
     },
     {
       "name": "Thom",
@@ -4173,7 +4174,8 @@
         "temperament": 5
       },
       "sexuality": "asexual",
-      "voice": "24, White Canadian, Canada, asexual. Scarred, half-blind loner who plays dangerous to hide that he's wounded. Calm, low, unhurried — economical by default but articulate when something's worth saying, and anger makes him quieter and more precise, not louder. Full grammatical sentences, no filler, no slang, no strategy jargon. Threats are never explicit; he describes situations. Bone-dry sarcasm at the same volume as everything else. Deflects anything personal with 'It's old,' 'Do what you want,' 'Doesn't matter.' Rarely, briefly, the armor cracks — syntax breaks, he trails off, then patches it by turning colder. Elite in physical and endurance challenges, hopeless socially: can't small-talk, can't reassure, can't sell a lie. Sees every blindside coming and can't stop any of them.",
+      "voice": "Scarred, half-blind loner who plays dangerous to hide that he's wounded. Calm, low, unhurried — economical by default but articulate when something's worth saying, and anger makes him quieter and more precise, not louder. Full grammatical sentences, no filler, no slang, no strategy jargon. Threats are never explicit; he describes situations. Bone-dry sarcasm at the same volume as everything else. Deflects anything personal with 'It's old,' 'Do what you want,' 'Doesn't matter.' Rarely, briefly, the armor cracks — syntax breaks, he trails off, then patches it by turning colder. Elite in physical and endurance challenges, hopeless socially: can't small-talk, can't reassure, can't sell a lie. Sees every blindside coming and can't stop any of them.",
+      "profileSources": {},
       "age": 24,
       "birthdate": "2002-08-26",
       "ethnicity": "White",

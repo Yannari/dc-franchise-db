@@ -38,22 +38,31 @@
  * a fifth of the cast. Same principle that unswallowed the lenses: rank by how
  * much a signal actually distinguishes somebody, never by declaration order.
  *
- * Re-measure with `npm run audit:social` after editing any pattern here.
+ * Re-measure with `npm run fix:social-counts`, which rewrites these numbers in
+ * place. Needed after editing a pattern here — AND after editing anybody's
+ * VOICE, which is the case the old note missed and the commoner one by far.
+ * These counts drifted three times in one session without a pattern being
+ * touched: a profile rewritten in the Studio silently adds or removes a match,
+ * and a stale weight misranks the trait for everybody, not just that person.
  */
 export const DELIVERY = {
   // trait: [pattern, profiles matched when last measured]
   mystical: [/mystic|spiritual|new-age|cosmic|aura|zen|hippie|dream|surreal|bizarre/, 5],
-  streetwise: [/tough|street|jersey|scrapp|hardened|delinquent|rebel|punk|criminal|thug/, 7],
+  // `criminal` because a CRIMINAL LAW STUDENT is not streetwise. The
+  // count drifting from 7 to 8 was this and only this: Hasan is composed and
+  // formal, reads as a lawyer because he is training to be one, and the word
+  // that put him in a jersey-tough delivery bucket was his degree.
+  streetwise: [/tough|street|jersey|scrapp|hardened|delinquent|rebel|punk|criminal(?! law)|thug/, 6],
   boastful: [/boast|arrogant|egotis|vain|self-obsessed|narcissis|cocky|braggart|conceited/, 9],
-  excitable: [/excit|hyper|energetic|bubbly|manic|enthusiast|bouncy|eager|giddy/, 12],
-  theatrical: [/dramat|theatric|flamboyan|over-the-top|melodram|diva|showman|grandiose|poetic|opera/, 13],
+  excitable: [/excit|hyper|energetic|bubbly|manic|enthusiast|bouncy|eager|giddy/, 13],
+  theatrical: [/dramat|theatric|flamboyan|over-the-top|melodram|diva|showman|grandiose|poetic|opera/, 14],
   sarcastic: [/sarcas|snark|sardonic|mocking|cynic|smug|smart-alec|wry|ironic/, 15],
   formal: [/formal|articulate|precise|analytic|intellect|scholar|clinical|methodical|polite|proper/, 15],
-  nervous: [/nervous|anxious|timid|shy|stammer|panick|insecure|jitter|worrier|meek|fearful/, 19],
-  deadpan: [/deadpan|dry |monoton|stoic|laconic|unbothered|nonchalant|apathetic|bored|flat /, 19],
-  manipulative: [/manipulat|silky|flatter|charm|schem|slick|smooth|honey|calculat|cunning/, 26],
-  blunt: [/blunt|brash|loud|aggressive|abrasive|no-nonsense|harsh|gruff|confrontational|bossy/, 43],
-  warm: [/kind|sweet|warm|gentle|caring|nurtur|supportive|optimis|cheerful|friendly|earnest/, 82],
+  nervous: [/nervous|anxious|timid|shy|stammer|panick|insecure|jitter|worrier|meek|fearful/, 21],
+  deadpan: [/deadpan|dry |monoton|stoic|laconic|unbothered|nonchalant|apathetic|bored|flat /, 18],
+  manipulative: [/manipulat|silky|flatter|charm|schem|slick|smooth|honey|calculat|cunning/, 27],
+  blunt: [/blunt|brash|loud|aggressive|abrasive|no-nonsense|harsh|gruff|confrontational|bossy/, 45],
+  warm: [/kind|sweet|warm|gentle|caring|nurtur|supportive|optimis|cheerful|friendly|earnest/, 84],
 };
 
 /**

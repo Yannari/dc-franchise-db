@@ -7,6 +7,11 @@
 // `DEMO_LABELS` an object, so reading them off window gave undefined and the
 // ratings section rendered its curve above an empty grid.
 import { DEMOS, DEMO_LABELS } from './ratings.js';
+// Same reason: ADVANTAGES is an array and ADV_SOURCE_LABELS an object, so
+// reading them off window gives undefined and the coach list renders empty.
+import { ADVANTAGES, ADV_SOURCE_LABELS } from './core.js';
+import { COACH_FINDABLE_DEFAULT, coachesOf } from './coaches.js';
+import { coachCanPlay } from './advantages.js';
 
 // The castle's two, imported rather than read off window. Everything else in
 // this file reaches its engine through the globals main.js publishes, and that
@@ -204,12 +209,14 @@ function _hubEsc(value) {
   return String(value ?? '').replace(/[&<>'"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[c]));
 }
 
-function _hubPortrait(name, cast = players, eliminated = false) {
+function _hubPortrait(name, cast = players, eliminated = false, isCoach = false) {
   const player = (cast || []).find(p => p.name === name);
   const slug = player?.slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  return `<span class="hub-player${eliminated ? ' eliminated' : ''}" title="${_hubEsc(name)}">
+  // A coach is on this tribe without being one of its contestants — shown, but
+  // never counted among the players still competing for the placement.
+  return `<span class="hub-player${eliminated ? ' eliminated' : ''}${isCoach ? ' hub-player-coach' : ''}" title="${_hubEsc(name)}${isCoach ? ' — coach' : ''}">
     <span class="hub-player-face"><img src="assets/avatars/${_hubEsc(slug)}.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${_hubEsc(String(name)[0] || '?')}</span></span>
-    <span class="hub-player-name">${_hubEsc(name)}</span>
+    <span class="hub-player-name">${_hubEsc(name)}${isCoach ? '<b style="display:block;font-size:7px;letter-spacing:1px;opacity:.75">COACH</b>' : ''}</span>
   </span>`;
 }
 
@@ -268,6 +275,17 @@ export function getEpisodeEliminations(ep) {
     // deleting. The shapes the other two shows really write, including a
     // Split House week, are pinned in tests/tr-run.test.js instead.
     ...roundExits(ep, ep.format).map(x => x.name),
+    // And a triple's third. Same reason: everything downstream counts the
+    // house off this list, so a name missing here is a houseguest the season
+    // never notices leaving.
+    ...(ep.extraEvictions || []).flatMap(r => [r && r.evicted, r && r.secondEvicted]),
+    // A coach voted out never lands on ep.eliminated — applyCoachElimination
+    // (coach-episode.js) deliberately nulls it, because a coach boot costs
+    // the tribe its coach, not a contestant's game. Without this, every one
+    // of this helper's callers (hub card, season timeline, retrospective
+    // placements) reports "No elimination" on the episode where the tribe
+    // voted its own coach out.
+    ...(ep.coachElimination || []).map(ce => ce.coach),
   ].filter(Boolean);
   return [...new Set(names)];
 }
@@ -387,7 +405,14 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
     : _hubHouse
       ? [{ name: displayState.phase === 'finale' ? 'Finalists' : 'The House', color: setting.accent, members: active }]
       : displayState.phase === 'pre-merge' && (displayState.tribes || []).length
-        ? displayState.tribes.map(t => ({ name: t.name, color: typeof tribeColor === 'function' ? tribeColor(t.name) : setting.accent, members: (t.members || []).filter(n => active.includes(n)) })).filter(t => t.members.length)
+        ? displayState.tribes.map(t => {
+            // `members` is the contestant list and stays the contestant list —
+            // "5 remaining" counts who can still take a placement. Coaches ride
+            // alongside it so the tribe on screen matches the tribe at camp.
+            const _m = (t.members || []).filter(n => active.includes(n));
+            return { name: t.name, color: typeof tribeColor === 'function' ? tribeColor(t.name) : setting.accent,
+              members: _m, coaches: coachesOf(t.name).map(c => c.name) };
+          }).filter(t => t.members.length || t.coaches.length)
         : [{ name: displayState.phase === 'finale' ? 'Finalists' : 'Merged Cast', color: setting.accent, members: active }];
   const storylines = [];
   if (latest?.eliminated) storylines.push(`${latest.eliminated}'s exit changes the numbers going into Episode ${nextEpisode}.`);
@@ -476,7 +501,13 @@ export function renderSeasonHub() {
   const latestPortraits = latestElims.map(name => _hubPortrait(name, players, true)).join('');
   const castHtml = _spoilerFree
     ? '<div class="hub-spoiler-lock"><span>◉</span><div><strong>Updated cast hidden</strong><small>Watch in the Visual Player without spoiling this screen, or turn off Spoiler-free to reveal the current state.</small></div></div>'
-    : model.groups.map(group => `<section class="hub-tribe"><header><span class="hub-tribe-dot" style="background:${_hubEsc(group.color)}"></span><strong>${_hubEsc(group.name)}</strong><small>${group.members.length} remaining</small></header><div class="hub-cast-row">${group.members.map(name => _hubPortrait(name)).join('')}</div></section>`).join('');
+    : model.groups.map(group => {
+        const _co = group.coaches || [];
+        const _count = `${group.members.length} remaining${_co.length ? ` · ${_co.length} coach${_co.length === 1 ? '' : 'es'}` : ''}`;
+        const _faces = [...group.members.map(name => _hubPortrait(name)),
+                        ..._co.map(name => _hubPortrait(name, players, false, true))].join('');
+        return `<section class="hub-tribe"><header><span class="hub-tribe-dot" style="background:${_hubEsc(group.color)}"></span><strong>${_hubEsc(group.name)}</strong><small>${_count}</small></header><div class="hub-cast-row">${_faces}</div></section>`;
+      }).join('');
   const latestVotes = Object.entries(model.latest?.votes || {}).sort(([,a],[,b]) => b-a).slice(0, 3).map(([name, count]) => `<span>${_hubEsc(name)} <b>${count}</b></span>`).join('');
   const headlineStatus = _spoilerFree && model.latest
     ? `Episode ${model.latest.num} is ready to watch · outcome hidden`
@@ -664,7 +695,12 @@ export function renderGameState() {
     html += `<div style="margin-top:8px">`;
     d.tribes.forEach(t => {
       const tc = tribeColor(t.name);
-      html += `<div class="gs-tribe"><div class="gs-tribe-name" style="color:${tc}">${t.name} (${t.members.length})</div><div class="gs-tribe-members">${t.members.join(' \u00b7 ')}</div></div>`;
+      // `t.members` is the contestant list. The coaches living at this camp
+      // are counted separately and named separately, so the number stays
+      // honest about who can compete and the panel stays honest about who is
+      // there — the tenth screen to conflate the two.
+      const _gsCo = coachesOf(t.name).map(c => c.name);
+      html += `<div class="gs-tribe"><div class="gs-tribe-name" style="color:${tc}">${t.name} (${t.members.length}${_gsCo.length ? ` + ${_gsCo.length} coach${_gsCo.length === 1 ? '' : 'es'}` : ''})</div><div class="gs-tribe-members">${[...t.members, ..._gsCo.map(n => `${n} (coach)`)].join(' · ')}</div></div>`;
     });
     html += `</div>`;
   } else {
@@ -1046,6 +1082,9 @@ export function renderEpisodeHistory() {
     }
     const riTag = ep.riChoice==='REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : ep.riChoice==='WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
     const mergeTag = ep.isMerge ? `<span class="ep-hist-tag" style="background:rgba(16,185,129,0.15);color:var(--accent)">MERGE</span>` : '';
+    // Somebody walked IN on this episode, which is the one thing the timeline
+    // has never had to show.
+    const arrivalTag = ep.lateArrival ? `<span class="ep-hist-tag" style="background:rgba(56,189,248,0.15);color:#38bdf8">+ ${ep.lateArrival.name}</span>` : '';
     const finaleTag = ep.isFinale ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">FINALE</span>` : '';
     const slasherTag = ep.isSlasherNight ? `<span class="ep-hist-tag" style="background:rgba(218,54,51,0.15);color:#da3633">Slasher Night</span>` : '';
     const mcTag = ep.isMonsterCash ? `<span class="ep-hist-tag" style="background:rgba(76,175,80,0.15);color:#4caf50">Monster Cash</span>` : '';
@@ -1134,6 +1173,8 @@ export function renderEpisodeHistory() {
     const hdTag = ep.isPicnicHangingDork ? `<span class="ep-hist-tag" style="background:rgba(140,46,10,0.15);color:#e8a04a">Outback</span>` : '';
     const amhTag = ep.isAftermayhem ? `<span class="ep-hist-tag" style="background:rgba(255,209,60,0.15);color:#ffd13c">Aftermayhem</span>` : '';
     const cocTag = ep.isChainOfCommand ? `<span class="ep-hist-tag" style="background:rgba(74,80,40,0.25);color:#b8860b">Chain</span>` : '';
+    const coachTag = ep.isCoaches ? `<span class="ep-hist-tag" style="background:rgba(90,140,220,0.15);color:#5a8cdc">Coaches</span>` : '';
+    const coachBootTag = (ep.coachElimination || []).length ? `<span class="ep-hist-tag" style="background:rgba(220,80,80,0.15);color:#dc5050">Coach Voted Out</span>` : '';
     const rtcTag = ep.isRewardOnly ? `<span class="ep-hist-tag" style="background:rgba(240,165,0,0.15);color:#f0a500">Reward</span>` : '';
     const _hasAuction = (ep.twists || []).some(t => t.type === 'auction');
     const aucTag = _hasAuction ? `<span class="ep-hist-tag" style="background:rgba(233,196,106,0.15);color:#e9c46a">Auction</span>` : '';
@@ -1149,7 +1190,7 @@ export function renderEpisodeHistory() {
         // One source for who left, so a night that removes two people
         // never has to be taught to a second hand-rolled chain of ternaries.
         : (getEpisodeEliminations(ep).join(' + ') || (ep.isFinale ? 'FTC' : '—'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${mnTag}${mgrTag}${mtfTag}${dpTag}${ilTag}${tiTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${tdtTag}${amgTag}${paTag}${talTag}${nocTag}${bcbTag}${scTag}${womTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${hhTag}${hodTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${iibTag}${fcrTag}${baTag}${ptTag}${prwTag}${amhTag}${cocTag}${rtcTag}${aucTag}${ncTag}</div>
+      <div>${riTag}${arrivalTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${mnTag}${mgrTag}${mtfTag}${dpTag}${ilTag}${tiTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${tdtTag}${amgTag}${paTag}${talTag}${nocTag}${bcbTag}${scTag}${womTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${hhTag}${hodTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${iibTag}${fcrTag}${baTag}${ptTag}${prwTag}${amhTag}${cocTag}${coachTag}${coachBootTag}${rtcTag}${aucTag}${ncTag}</div>
     </div>`;
   }).join('');
 }
@@ -1774,6 +1815,70 @@ export function pickSeasonTwistPlayer(key, id, name) {
   if (typeof saveConfig === 'function') saveConfig();
 }
 
+/**
+ * Coaches — a season-long system configured the same way as the Mole
+ * (seasonConfig.coaches: disabled|manual|auto). 'manual' reuses the Cast
+ * Builder's existing per-player Coach checkbox, so there is no picker grid
+ * here to populate — only the per-tribe count control needs to show/hide.
+ */
+/**
+ * Which advantages a coach may find, and from where.
+ *
+ * Mirrors the contestant advantage list deliberately — same row shape, same
+ * source pills — because it is answering the same question about a different
+ * kind of person. The note on each row is the half that differs: finding a
+ * thing and being allowed to use it are separate permissions for a coach.
+ */
+export function buildCoachAdvantageList() {
+  const host = document.getElementById('coach-adv-list');
+  if (!host) return;
+  const cfg = seasonConfig.coachAdvantages || {};
+  host.innerHTML = ADVANTAGES.map(a => {
+    const entry = Object.prototype.hasOwnProperty.call(cfg, a.key)
+      ? cfg[a.key] : COACH_FINDABLE_DEFAULT[a.key];
+    const on = !!entry?.enabled;
+    const sources = entry?.sources || ['camp'];
+    const selfPlay = coachCanPlay(a.key);
+    return `<div class="adv-row" style="align-items:flex-start">
+      <input type="checkbox" id="coach-adv-${a.key}" class="adv-check" ${on ? 'checked' : ''} onchange="updateCoachesUI();saveConfig()">
+      <div style="flex:1">
+        <span style="font-size:13px;color:#e2e8f0;cursor:pointer" onclick="document.getElementById('coach-adv-${a.key}').click()">${a.label}</span>
+        <div style="font-size:10px;color:var(--muted);margin-top:1px">${selfPlay
+          ? 'A coach can play this on themselves.'
+          : 'A coach can hold this but never use it on themselves. It is only worth anything in somebody else’s hands, so a coach who finds one decides which contestant to arm with it.'}</div>
+        <div id="coach-adv-sources-${a.key}" style="display:${on ? 'flex' : 'none'};gap:4px;margin-top:3px;flex-wrap:wrap">
+          ${Object.entries(ADV_SOURCE_LABELS).map(([src, lbl]) => `<label style="font-size:10px;color:var(--muted);display:flex;align-items:center;gap:2px;cursor:pointer;padding:1px 5px;border-radius:3px;border:1px solid var(--border);background:var(--surface2)${src === 'camp' ? '' : ';opacity:.5'}" title="${src === 'camp' ? '' : 'A coach has no journey, auction or exile leg — camp is the only place they can search.'}">
+            <input type="checkbox" id="coach-adv-src-${a.key}-${src}" style="width:11px;height:11px" ${sources.includes(src) ? 'checked' : ''} ${src === 'camp' ? '' : 'disabled'} onchange="saveConfig()">
+            <span>${lbl}</span>
+          </label>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+export function updateCoachesUI() {
+  const mode = document.getElementById('cfg-coaches')?.value || 'disabled';
+  const perTribeGrp = document.getElementById('coaches-per-tribe-group');
+  const manualHint  = document.getElementById('coaches-manual-hint');
+  const desc        = document.getElementById('coaches-desc');
+  const advGrp      = document.getElementById('coaches-adv-group');
+  if (perTribeGrp) perTribeGrp.style.display = mode === 'auto' ? 'block' : 'none';
+  if (manualHint) manualHint.style.display = mode === 'manual' ? 'block' : 'none';
+  if (advGrp) {
+    advGrp.style.display = mode === 'disabled' ? 'none' : 'block';
+    if (mode !== 'disabled') buildCoachAdvantageList();
+  }
+  if (desc) {
+    const text = {
+      'disabled': 'Disabled: No Coaches twist this season.',
+      'manual':   'You choose who coaches by checking "Coach" on a player in the Cast Builder. A coach trains their tribe every pre-merge episode but never competes or votes, and is promoted to a full player at the merge.',
+      'auto':     'Coaches are selected automatically, one to three per tribe — franchise winners and finalists (proxied by Returning Player status until real career fame is wired in).',
+    };
+    desc.textContent = text[mode] || '';
+  }
+}
+
 export function toggleMolePlayer(name) {
   if (!seasonConfig.molePlayers) seasonConfig.molePlayers = [];
   const idx = seasonConfig.molePlayers.indexOf(name);
@@ -1817,7 +1922,20 @@ export function runFanVote() {
 
 // Returns an array of { ep, active, phase, engineType } for every episode in the season
 export function buildEpisodeMap() {
-  const cast    = players.length || 18;
+  // ── SOMEBODY WHO IS NOT THERE YET IS NOT IN THE COUNT ──
+  //
+  // A late arrival is cast normally and held out of the roster until the
+  // episode they walk in on, so the season genuinely starts one player
+  // shorter. Counting them from episode one made the projection run a whole
+  // episode long and every "N left" on the way down was one too many.
+  //
+  // They come back as a `return` on their own episode below, which is what
+  // makes the arrival read the way it does on the schedule: fifteen left
+  // before the vote and fifteen left after it, because one walked out of the
+  // door and one walked in.
+  const _lateArrivals = (seasonConfig.twistSchedule || [])
+    .filter(t => t && t.type === 'late-arrival').length;
+  const cast    = Math.max(2, (players.length || 18) - _lateArrivals);
   // A house ALWAYS ends at three, whatever the slider says.
   //
   // `houseFinaleSize()` returns 3 unconditionally because the last night is a
@@ -1915,6 +2033,7 @@ export function buildEpisodeMap() {
     // the double eviction and the Split House are both listed by name.
     if (_allTypes.includes('bb-no-eviction')) elims = 0;
     if (_allTypes.includes('bb-double-eviction')) elims = Math.max(elims, 2);
+    if (_allTypes.includes('bb-triple-eviction')) elims = Math.max(elims, 3);
     // The Camp Director takes TWO on night one, and this projection was
     // counting one. Hit The Road evicts the slowest of the four banished
     // before a Head of Household has even been crowned, and then the week
@@ -1942,6 +2061,7 @@ export function buildEpisodeMap() {
     if (_allTypes.includes('bb-split-house')
         && active >= 10
         && !_allTypes.includes('bb-double-eviction')
+        && !_allTypes.includes('bb-triple-eviction')
         && !_allTypes.includes('bb-instant-eviction')
         && !(seasonConfig.bbSafetyMode && seasonConfig.bbSafetyMode !== 'off')) {
       elims = Math.max(elims, 2);
@@ -1950,6 +2070,9 @@ export function buildEpisodeMap() {
     if (_allTypes.includes('exile-duel')) elims = 0;
     _totalElimsToHere += elims;
     let returns = _allTypes.includes('second-chance') ? 1 : 0;
+    // The one who was held back walks in on this episode. Counted as a return
+    // because that is exactly what it is to the numbers.
+    if (_allTypes.includes('late-arrival')) returns += 1;
 
     // ── Big Brother sends people back too ──
     //
@@ -2358,17 +2481,82 @@ export function renderTimeline() {
         }
         return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${configHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      // The chain's own two questions, offered wherever a chain can be booked:
+      // on its own, or as the back half of a double or a triple.
+      const _chainSelects = (t2) => {
+        const starts = { 'safety-comp': 'Safety Comp starts it', hoh: 'HOH starts it' };
+        const ends = { canada: 'Canada — house votes', quebec: 'Québec — duel decides' };
+        const sel = (key, opts, cur, title) => {
+          let h = `<select onchange="event.stopPropagation();updateTwist('${t2.id}','${key}',this.value)" onclick="event.stopPropagation()" title="${title}" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
+          Object.entries(opts).forEach(([k, label]) => { h += `<option value="${k}" ${k === cur ? 'selected' : ''}>${label}</option>`; });
+          return h + '</select>';
+        };
+        return sel('chainStart', starts, t2.chainStart || 'safety-comp', 'Who holds the first link')
+          + sel('chainStyle', ends, t2.chainStyle || 'canada', 'How the chain ends');
+      };
+      // WHO walks in, and WHICH camp. Both authored on the scheduled entry,
+      // because a late arrival with neither chosen is a twist that quietly
+      // picks somebody for you.
+      if (t.type === 'late-arrival') {
+        const roster = (players || []).map(p2 => p2.name);
+        const tribes = (gs?.tribes || []).map(x => x.name).filter(Boolean);
+        const who = t.arrival && roster.includes(t.arrival) ? t.arrival : '';
+        const camps = { smallest: 'Smallest tribe', other: 'The tribe they were not cast on', own: 'Their own tribe' };
+        tribes.forEach(n => { camps[n] = n; });
+        const cur = t.arrivalTribe || 'smallest';
+        const box = (key, opts, sel, title, blank) => {
+          let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','${key}',this.value)" onclick="event.stopPropagation()" title="${title}" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
+          if (blank) h += `<option value="" ${sel ? '' : 'selected'}>${blank}</option>`;
+          for (const [k, label] of Object.entries(opts)) {
+            h += `<option value="${k}" ${k === sel ? 'selected' : ''}>${label}</option>`;
+          }
+          return h + '</select>';
+        };
+        const cfg = box('arrival', Object.fromEntries(roster.map(n => [n, n])), who,
+          'Who is held back and walks in later', 'Pick a player')
+          + box('arrivalTribe', camps, cur, 'Which camp they walk into');
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${cfg} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'bb-double-eviction') {
         const styles = {
           'fast-forward': 'Fast-Forward (live hour)',
           'double-vote': 'Double Vote (one vote, two leave)',
           'week-in-one': 'Two Weeks in One',
+          // How Big Brother Canada actually ran its Chain of Safety: as the
+          // second half of a double eviction night.
+          'chain': 'Chain of Safety (second cycle)',
         };
         const cur = t.deStyle || 'fast-forward';
         let styleHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','deStyle',this.value)" onclick="event.stopPropagation()" title="How the double eviction runs" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
         Object.entries(styles).forEach(([k, label]) => { styleHtml += `<option value="${k}" ${k===cur?'selected':''}>${label}</option>`; });
         styleHtml += `</select>`;
+        // Same for a double whose second cycle IS a chain.
+        if (cur === 'chain') styleHtml += _chainSelects(t);
         return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${styleHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
+      // Same control as the double's, because a triple is a shape of night
+      // rather than a bigger number: two fast-forwards is BB22, one live cycle
+      // that takes two is Big Brother Canada's.
+      // Who starts the chain, and how it ends — two different questions, two
+      // documented answers each.
+      if (t.type === 'bb-chain-of-safety') {
+        const cfg = _chainSelects(t);
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${cfg} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
+      if (t.type === 'bb-triple-eviction') {
+        const tStyles = {
+          'fast-forward': 'Two Fast-Forwards (BB22)',
+          'double-vote': 'One Vote, Two Leave (Canada)',
+          'chain': 'Last Cycle is a Chain',
+        };
+        const tCur = t.teStyle || 'fast-forward';
+        let tHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','teStyle',this.value)" onclick="event.stopPropagation()" title="How the triple eviction runs" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
+        Object.entries(tStyles).forEach(([k, label]) => { tHtml += `<option value="${k}" ${k === tCur ? 'selected' : ''}>${label}</option>`; });
+        tHtml += `</select>`;
+        // A night that ENDS on a chain gets the chain's own two questions too,
+        // or there is no way to ask for the Québec ending from in here.
+        if (tCur === 'chain') tHtml += _chainSelects(t);
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${tHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'bb-battle-back') {
         // Two aired shapes plus the competition it is fought on. The comp list
@@ -2883,6 +3071,9 @@ export function assignTwist(twistId) {
     if (twistId === 'bb-whacktivity' || twistId === 'bb-secret-power-comp') entry.doors = 'auto';
     if (twistId === 'bb-americas-nominee') entry.anStyle = 'direct';
     if (twistId === 'bb-double-eviction') entry.deStyle = 'fast-forward';
+    if (twistId === 'bb-triple-eviction') entry.teStyle = 'fast-forward';
+    if (twistId === 'bb-chain-of-safety') { entry.chainStart = 'safety-comp'; entry.chainStyle = 'canada'; }
+    if (twistId === 'late-arrival') { entry.arrival = ''; entry.arrivalTribe = 'smallest'; }
     if (twistId === 'bb-battle-back') { entry.bbStyle = 'gauntlet'; entry.bbComp = ''; }
     seasonConfig.twistSchedule.push(entry);
   });

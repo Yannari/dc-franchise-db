@@ -15,6 +15,9 @@ import { resolveHaltingHex } from './eviction-powers.js';
 import { resolveRewind } from './rewind.js';
 import { runCoinOfDestiny, coinNominations, COIN_PRICE } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
+import { runChainOfSafety, chainSafe, chainFallout } from './chain-of-safety.js';
+import { runAudienceVote } from '../audience.js';
+import { buildAudienceReveal } from './audience-reveal.js';
 import { runWildcard, wildcardSafe } from './wildcard.js';
 import { openRoom, roomGameForNight, ROOM_GAMES } from './high-rollers-room.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
@@ -61,6 +64,7 @@ import { rememberBBStrategy, allyStake } from './shared-strategy.js';
 import { updateAdaptationFromEpisode } from '../adaptation.js';
 import {
   chooseNominationPlan, chooseReplacement, explainReplacement, initialVotePreference,
+  nominationGrievance,
   shouldUseVeto, houseVoteCommitment, applyHouseBandwagon,
   buildHouseVotePlans,
 } from './strategy.js';
@@ -69,10 +73,10 @@ import { campaignArgument } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
 import { runVoteOperation, resolveFinalPleas } from './vote-operation.js';
 import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions, setBBTarget, getBBTarget } from './shared-strategy.js';
-import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan } from './plans.js';
+import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan, housePlan } from './plans.js';
 import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf, sincerityOf } from './deals.js';
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
-import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster } from './blocs.js';
+import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster, withRoster, blocExposure } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge, stableRng } from './knowledge.js';
 import { runCallOutChain } from './white-locust.js';
 import { runCampDirector } from './camp-director.js';
@@ -545,6 +549,18 @@ function runHouseRomance(week, rng) {
   // SAME block, or half the romance (triangles especially) lands in a bucket
   // the harvest never reads.
   if (gs.mergeName && gs.mergeName !== 'merge') ep.campEvents[gs.mergeName] = mergeBlock;
+  /* ── AND THE THIRD NAME, WHICH IS THE ONE THAT WAS LOSING BEATS ──
+     The comment above covers two of the keys the pipeline uses. It also keys
+     off the TRIBE somebody is standing in — `gs.tribes.find(t => t.members
+     .includes(a))?.name` — and a house has exactly one tribe with a name of
+     its own, so those pushes created a bucket nobody harvests. The organic
+     break-up is one of them: measured, 4 of 6 showmances that ended produced
+     no beat at all, which is why a couple could go from "close" to "it ended"
+     between two screens with nothing said in between.
+     Every tribe name points at the same block. */
+  for (const t of (Array.isArray(gs.tribes) ? gs.tribes : [])) {
+    if (t?.name && !ep.campEvents[t.name]) ep.campEvents[t.name] = mergeBlock;
+  }
   // The pipeline is Total Drama code and writes gs.popularity directly, which
   // walks straight past the house's own switch. Snapshot and restore rather
   // than edit a module the other simulator depends on.
@@ -686,6 +702,237 @@ function runHouseRomance(week, rng) {
           `${a} joins ${b} and ${c} in the backyard, but every story has context only the couple understands. ${a} stops trying to enter the conversation.`,
           `${b} promises ${a} they will talk later, then disappears upstairs with ${c}. ${a} waits long enough to realize later is not coming.`,
         ], a, b, c);
+      // ── THE TRIANGLE, IN A HOUSE ──
+      //
+      // The love-triangle stages run in a house — 7 of them across 110 measured
+      // weeks, each producing about ten visible beats — and every stage had a
+      // case here except the one that OPENS it. So the beat that introduces the
+      // triangle fell through to the default, which rewrites "camp" to "house"
+      // and leaves everything else alone, and a Big Brother house was told that
+      // somebody had been "carrying water together, sitting close at fire,
+      // volunteering for the same tasks". The exact bug class this project
+      // keeps a document about: one show's vocabulary printed over the other.
+      //
+      // The two shapes mean different things by the same three names, so the
+      // text has to know which one it is. Dual showmance: `a` is seeing both
+      // `b` and `c`. One-sided: `a` is in a showmance with `b`, and `c` is the
+      // one circling.
+      case 'triangleTension': {
+        // Read off the event, which now carries it. Looking the triangle up in
+        // gs was wrong twice over: one can form and resolve inside a single
+        // week, and two beats about the same trio in the same week both resolve
+        // to whichever triangle the search happens to reach — measured at 4
+        // wrong shapes in 12 beats, dual showmances drawing the line about a
+        // third person circling, which reads as nonsense when the person
+        // circling IS the centre.
+        if ((e.sourceType || 'dual-showmance') === 'dual-showmance') {
+          return romanceLine(e.type, [
+            `${a} spends the night talking to ${b} in the bedroom and the whole of the next morning with ${c} at the kitchen table, and does not appear to notice that both of them are counting.`,
+            `Half this house could tell you ${a} is in two things at once. The only two who have not said it out loud are ${b} and ${c}.`,
+            `${b} and ${c} end up on either side of ${a} at dinner. Nobody says a word about it, and it is the loudest meal of the season.`,
+            `${a} has said the same thing to ${b} and to ${c}, on the same day, in the same words. This is a house with a camera in every room and a very long memory.`,
+          ], a, b, c);
+        }
+        return romanceLine(e.type, [
+          `${c} has started finding reasons to be wherever ${a} is — the storage room, the kitchen at midnight, whichever sofa ${a} sat down on. ${b} has noticed every one of them.`,
+          `${c} laughs half a second too long at ${a}'s jokes. No line has been crossed and nothing has been said out loud, but ${b} has begun keeping count.`,
+          `${b} stops in the bedroom doorway: ${a} and ${c}, heads close, talking too quietly to hear. ${b} turns around before either of them looks up.`,
+          `${a} tells ${c} something ${b} thought was theirs alone. ${b} finds out the way everybody in this house finds out — from somebody else, repeating it back.`,
+        ], a, b, c);
+      }
+      // ── AND THE REST OF THE TRIANGLE, WHICH IS WHERE THE DRAMA WAS ──
+      //
+      // The arc does not stop at somebody noticing. It escalates, a schemer
+      // works it, it becomes a public fight, the centre is forced to CHOOSE,
+      // and whoever was not chosen reacts in their own register with a bond
+      // crash and heat behind it. All of that ran in the house and none of it
+      // had a case here, so every dramatic beat fell through to the default
+      // and described a beach: a fire to make pointed comments at, a shelter
+      // to shove past, a reward feast to refuse a seat at, somebody out
+      // fishing while the confrontation happened. The beats were never
+      // missing. They were set on the wrong show.
+      /* ── THE AFFAIR, IN A HOUSE ──
+         Six beats, none of which had a case here, so every one of them fell to
+         the default and described a beach: wet hair coming back from the
+         shore, a firewood run, slipping out of the shelter after the tribe
+         fell asleep, rice as a bribe. The affair is the loudest thing the
+         romance layer can do and it was the least translated.
+         Each beat carries its own player order, and two of them encode meaning
+         in that order — `affairChoice` names the chosen one second and the one
+         left third — so the text has to respect it rather than assume a
+         couple. */
+      case 'affairSecret':
+        // [cheater, the other one]
+        return romanceLine(e.type, [
+          `${a} is awake at three because ${b} is awake at three. Four nights running now, and the one person in this house who has not noticed is the person who should.`,
+          `${a} and ${b} take the long way round the kitchen and arrive in the same place. There is no version of this house where that is not on camera.`,
+          `${b} makes ${a} a plate without being asked. It is a small thing, and until recently somebody else was the one doing it.`,
+          `${a} laughs at something ${b} says too quietly for the room to hear. Nothing in here is ever that quiet.`,
+          `The lights go down and ${a} and ${b} are still in the storage room. They come out four minutes apart, which is somehow worse than coming out together.`,
+        ], a, b);
+      case 'affairRumor':
+        // [whoever noticed, cheater, ...] — the third name differs between the
+        // two places this fires, so the line stays on the first two.
+        return romanceLine(e.type, [
+          `${a} has started watching ${b} the way you watch somebody you have already made your mind up about. No proof, no name said out loud, just a count that keeps going up.`,
+          `"Has anybody else noticed ${b} lately?" ${a} says it to the kitchen in general, and two people look up far too quickly.`,
+          `${a} cannot sleep in this house, which means ${a} knows exactly what time ${b} came to bed. ${a} has not told anybody that yet.`,
+          `${a} does not have anything anybody would call evidence. ${a} has a sequence of small things in the right order, which in here is worse.`,
+        ], a, b);
+      case 'affairCaught':
+        // [whoever walked in, cheater, the other one]
+        return romanceLine(e.type, [
+          `${a} goes to the storage room for batteries and finds ${b} and ${c} standing much too close and not talking. Nobody says anything for four full seconds.`,
+          `"How long?" ${a} asks it from the doorway. ${b} starts a sentence three times. ${c} does not start one at all.`,
+          `${a} was not looking for them and found them anyway, in the one part of this house where people forget the cameras are also there.`,
+          `${b} and ${c} come apart the moment ${a} turns the corner, which tells ${a} more than either of them says for the rest of the night.`,
+        ], a, b, c);
+      case 'affairExposed':
+        // [whoever told them, the partner, cheater]
+        return romanceLine(e.type, [
+          `${a} sits ${b} down in the bedroom and does it fast, the way you take a plaster off. "You need to hear this about ${c}, and you need to hear it from somebody."`,
+          `"I am not going to be one more person in here who knows and lets you be the last one." ${a} tells ${b} everything, and the house goes quiet in stages as it travels.`,
+          `${a} asks ${b} to come outside. It takes eleven minutes, and ${b} does not sit down again for an hour.`,
+          `${a} says ${c}'s name and then stops, because ${b}'s face has already done the rest of it.`,
+        ], a, b, c);
+      case 'affairSilent':
+        // [whoever knows and is not saying, cheater]
+        return romanceLine(e.type, [
+          `${a} knows. ${b} knows that ${a} knows. Neither of them has said one word about it, and ${b} has started making ${a} coffee in the mornings.`,
+          `${a} is sitting on the loudest thing in this house and doing nothing whatsoever with it, which is the most dangerous way to hold something.`,
+          `"You owe me." ${a} never says it out loud. ${b} behaves for the rest of the week as though it had been said twice.`,
+          `${a} decides to keep it — not for ${b}, and not out of kindness. Information is worth more unspent, and ${a} can afford to wait.`,
+        ], a, b);
+      case 'affairChoice':
+        // [cheater, the one chosen, the one left]
+        return romanceLine(e.type, [
+          `${a} chooses ${b}. "It meant nothing." ${b} does not believe that and stays anyway, and every person in this house watches ${b} decide to.`,
+          `${a} says it in the kitchen with the door open, so it is said in front of everybody: it is ${b}. ${c} hears it from the next room and does not come in.`,
+          `${a} picks ${b}. ${c} says "okay", goes to bed at nine, and the house spends the rest of the night working out what that was.`,
+          `"One chance," ${b} says. "One." ${a} agrees to it far too quickly, and ${c} is still in the room while they arrange it.`,
+        ], a, b, c);
+      case 'triangleConfrontation':
+        // `a` asks the question, `b` is the centre, `c` is the other one.
+        return romanceLine(e.type, [
+          `${a} waits until ${c} is called to the diary room and asks ${b} straight out: "Where do I stand?" ${b} says all the right things. ${a} believes none of them.`,
+          `${a} asks it in the storage room, which everybody in here knows is the one place a private conversation goes public by morning. "I would rather be told than work it out."`,
+          `${a} corners ${b} by the sliding door. "I am not asking you to choose. I am asking you to say what this is." ${b} takes long enough to answer that it becomes the answer.`,
+          `${a} keeps ${pa.posAdj} voice down and ${pa.posAdj} hands still. "I deserve honesty." ${b} says everything is fine, and the word fine does the entire work of a lie.`,
+        ], a, b, c);
+      case 'triangleEscalation':
+        // Four names means somebody is WORKING it: [schemer, suitorA, centre,
+        // suitorC]. Three means the triangle is escalating on its own.
+        if ((e.players || []).length >= 4) {
+          const [sch, s1, mid, s2] = e.players;
+          return romanceLine(e.type, [
+            `${sch} watches the three of them all evening and says it quietly to one ally: "Nobody in that is counting votes. That is three people playing a different game to ours."`,
+            `"${s1} is going to get burned," ${sch} says, "and burned people take the first hand anybody holds out. I intend to be the one holding it."`,
+            `${sch} has been feeding a small doubt to ${s1} and a different small doubt to ${s2}. Neither is big enough to trace. Both are big enough to keep it unstable.`,
+            `${sch} maps it out on the storage room floor for one person: "${mid} picks one of them. The other one comes to us that same night, angry and free."`,
+            `"That is a bomb with three people sitting on it," ${sch} says. "We do not have to build anything. We just have to be on the right side of the room when it goes."`,
+          ], sch, s1, mid, s2);
+        }
+        return romanceLine(e.type, [
+          `${a} and ${c} have stopped pretending. They shared a sofa for an hour tonight without one word between them, and ${b} sat in the middle of it like furniture.`,
+          `${a} has been telling anybody who will listen that ${c} is playing a character in here. Nobody in this house believes that sentence is about the game.`,
+          `${b} tries to have one ordinary conversation with ${a} and ${c} at the kitchen island. Three minutes in, ${b} leaves a full plate where it is and goes to the diary room.`,
+          `${a} says something at dinner about people who cannot make up their minds. ${b} puts a fork down. ${c} does not look up. Nobody asks what that was about, because nobody needs to.`,
+          `${a} will not take the seat beside ${b} in the living room. "Sit with ${c}. That is what you want anyway." Eight people suddenly find something else to look at.`,
+          `${b} asks ${a} for five minutes. "About what? You have been fairly clear." ${a} is in bed by nine, facing the wall, with every light in the room still on.`,
+        ], a, b, c);
+      case 'trianglePublicFight':
+        return romanceLine(e.type, [
+          `It goes off in the kitchen with half the house holding plates. ${a} accuses ${c} of moving in on ${b}; ${c} does not deny it, which is worse. ${b} leaves and does not come back.`,
+          `${a} and ${c} have circled each other for days. It breaks tonight in the bedroom, loud enough that the have-nots come through from the other room to listen to it.`,
+          `${a} calls ${c} a snake. ${c} calls ${a} delusional. ${b} tries to get between them and is shouted down by both of them inside ten seconds.`,
+          `${a} and ${c} start it in the kitchen and finish it in the backyard twenty minutes later, having settled nothing at all except which side of this house everybody is on.`,
+          `"You do not deserve ${b}." ${a} says it across the living room in front of everybody, and ${c} laughs — the kind of laugh that makes the next thirty seconds considerably worse.`,
+          `By the time it burns out, ${b} is sitting on the bathroom floor saying "this is my fault" to somebody who does not disagree quickly enough.`,
+        ], a, b, c);
+      case 'triangleUltimatum':
+        // [centre, chosen, rejected]. The choice is in the data now, so the
+        // house can say who walked away with what instead of retelling a
+        // sentence written for a fire pit.
+        return romanceLine(e.type, [
+          `${a} sits ${b} and ${c} down in the backyard, because it is the only room in here without everybody else already on the sofa. "I cannot keep doing this to both of you."`,
+          `${a} pulls ${b} aside first. "It is you. It has been you for a while." Then ${a} goes to find ${c}, and that conversation takes a great deal longer.`,
+          `"I have made up my mind," ${a} says in the kitchen, to both of them at once, which is either brave or the cruellest available way to do it. The house is split on which.`,
+          `${a} chooses. It is not clean and it is not painless, but it is done: ${b} exhales, and ${c} goes out to the backyard alone and stays there most of the night.`,
+        ], a, b, c);
+      case 'triangleResolved': {
+        // Two different scenes arrive under one type. A triangle that FADED is
+        // not the same as one that ended in a choice — and whoever was not
+        // chosen reacts in their own register, which is the beat that decides
+        // whether this becomes a vote three weeks from now.
+        if (e.kind !== 'chose') {
+          return romanceLine(e.type, [
+            `It ends without anybody saying it has ended. ${a} stops looking for ${c} when ${pa.sub} comes into a room. No fight, no conversation — just distance, arriving daily.`,
+            `${c} works it out first, the way people in here always do: not from anything anybody said, but from where ${a} chooses to sit.`,
+            `${a} and ${c} barely speak now. Whatever it was went out on its own, and ${b} did not have to do one thing to win it.`,
+            `No scene and no ultimatum. ${a} drifts, ${c} notices, and this house is talking about something else entirely by Thursday.`,
+          ], a, b, c);
+        }
+        const arch = (players.find(p => p.name === c) || {}).archetype || '';
+        let st = {};
+        try { st = pStats(c) || {}; } catch { st = {}; }
+        if (['villain', 'schemer', 'mastermind'].includes(arch)) {
+          return romanceLine(e.type, [
+            `${c} takes it with a smile that does not reach anything. "That is fine. I would only say that you made that choice in a house where everybody gets a vote."`,
+            `${c} laughs when ${a} finishes. "Upset? You have just handed me my week back and lost the one person in here who was never coming for you."`,
+            `${c} nods slowly, already somewhere else entirely. "Interesting." ${a} has no idea what ${a} has started, and ${c} has no intention of explaining it.`,
+          ], a, b, c);
+        }
+        if ((st.strategic ?? 5) >= 7 && (st.loyalty ?? 5) <= 4) {
+          return romanceLine(e.type, [
+            `${c} takes about four seconds over it. "I understand." Behind that, every number in this house is being counted again from the top.`,
+            `${c} barely moves. "Game respects game." Then ${c} goes to the storage room and has a very different conversation with somebody else.`,
+            `${c} shakes ${a}'s hand over it, which is the most strategic handshake this house has seen all season.`,
+          ], a, b, c);
+        }
+        return romanceLine(e.type, [
+          `${c} says okay twice and cannot manage a third thing. ${b} tries to give ${c} the room and gets it wrong; the bedroom is full and there is nowhere in this house to go.`,
+          `${c} holds it together for the whole conversation and loses it in the shower, which is the only place in here without a camera pointed at ${pa.posAdj} face.`,
+          `${c} asks one question — "was any of it real?" — and ${a} takes long enough that ${c} stops needing an answer.`,
+        ], a, b, c);
+      }
+      case 'triangleCut': {
+        // ── THE ENDING THE HOUSE ACTUALLY PRODUCES ──
+        //
+        // 85% of triangles end with one of the three being voted out, and that
+        // ending used to be silent — the triangle stopped existing between one
+        // episode and the next with nothing said about it, which is most of
+        // why it never felt like a triangle at all.
+        //
+        // [survivor's side]: `a` is whoever is left in the middle, `b` the one
+        // still standing, `c` the one who went. `byTheirHand` is the question
+        // worth asking in a house: the ballots are right there, and sometimes
+        // the person in the middle wrote the name themselves.
+        if (e.kind === 'center-gone') {
+          return romanceLine(e.type, [
+            `${a} and ${b} spent weeks not speaking to each other over ${c}. Tonight ${c} walked out of the door and left the pair of them in here, holding an argument with nothing in the middle of it.`,
+            `The vote solved it. ${c} is gone, and ${a} and ${b} are still here with a rivalry neither of them has any use for now.`,
+            `${a} and ${b} end up in the same kitchen an hour after ${c} leaves, and neither of them can think of a single reason to keep it up.`,
+          ], a, b, c);
+        }
+        if (e.byTheirHand) {
+          return romanceLine(e.type, [
+            `${c} is gone and ${a} wrote the name. ${b} watched ${a} do it and has not worked out yet whether that was a choice about the two of them or a warning about everybody.`,
+            `${a} had two people in this house and one vote to spend, and spent it. ${c} left knowing exactly whose handwriting it was, and ${b} is the only person in here who gained anything.`,
+            `Nobody had to force a decision in the end: ${a} made it on a piece of card. ${b} says the right things about it and thinks about it all night.`,
+          ], a, b, c);
+        }
+        return romanceLine(e.type, [
+          `${c} is gone, and the thing that had been pulling ${a} in half all month was settled by nine other people in about four seconds.`,
+          `Nobody in that triangle chose. The house did. ${c} walked out, and ${a} and ${b} are a couple now by a vote neither of them controlled.`,
+          `${a} does not get to decide after all. ${c} leaves on a Thursday, and by Friday ${a} and ${b} are the only version of this that is left.`,
+        ], a, b, c);
+      }
+      case 'triangleLonely':
+        return romanceLine(e.type, [
+          `${a} sits in a bedroom with two empty beds in it. Both of them went in the same week, and the thing resolved itself in the one way nobody wanted.`,
+          `The house is loud tonight and ${a} is in none of it. Two people left this week, and ${pa.sub} was in something with both of them.`,
+          `${a} makes tea at two in the morning and does not drink any of it. There is nobody left in here to have the argument with.`,
+        ], a, b, c);
       default:
         return String(e.text || '')
           .replace(/\bThe tribe\b/g, 'The house').replace(/\bthe tribe\b/g, 'the house')
@@ -788,7 +1035,50 @@ function runHouseMaintenance(week, rng = Math.random) {
     }],
     ['perceived bonds', () => checkPerceivedBondTriggers(ep)],
     ['bond recovery', () => recoverBonds(ep)],
-    ['alliance trust', () => decayAllianceTrust(week.num)],
+    /* ── THE OTHER PLACE ALLIANCES DIE ──
+       `decayAllianceTrust` is shared Total Drama code and it ends alliances of
+       its own accord — bonds collapsed, betrayals stacked up — writing them to
+       `gs.allianceDissolutions` and expelled members to `gs._pendingExpulsions`.
+       Both of those stores are read by episode.js and camp-events.js, which a
+       house never calls. So a five-strong alliance could stop existing between
+       one week and the next with nothing anywhere saying so: measured across
+       eight seasons, 15 alliances vanished between weeks with two or more
+       members still in the house, and 5 of them had no explanation on any
+       screen — every one of those five came through here.
+       Harvested onto the week, where the panel already knows how to say it.
+       The expulsions are SPLICED rather than copied: nothing in a house
+       consumes that queue, so it would otherwise grow for the whole season. */
+    ['alliance trust', () => {
+      const dissolvedBefore = (gs.allianceDissolutions || []).length;
+      const expelledBefore = (gs._pendingExpulsions || []).length;
+      decayAllianceTrust(week.num);
+      /* ── AND MARK THEM AS AFTER THE VOTE, BECAUSE THEY ARE ──
+         This maintenance pass runs once the eviction has happened, and these
+         two are read off it: an alliance that "has nobody left in it", or one
+         that threw a member out "for voting against an alliance member". Both
+         sentences tell a viewer how Thursday went. House Life plays BEFORE the
+         vote, so it cannot carry either of them — reported as a spoiler, and
+         it is the same one twice. */
+      /* ── HELD BACK FOR NEXT WEEK, WHICH IS WHERE IT BELONGS ANYWAY ──
+         This pass runs after the eviction, and what it produces — an alliance
+         with nobody left in it, or one that threw a member out for voting
+         against an alliance member — says how Thursday went. Every screen in
+         THIS episode runs before that, so none of them can carry it.
+         It is not a thing to hide, though: it is the house waking up to what
+         the vote did, which is next week's first conversation. So it waits, and
+         plays as fallout in the next episode, where it is no longer a spoiler
+         and where the reaction would actually have happened. */
+      for (const d of (gs.allianceDissolutions || []).slice(dissolvedBefore)) {
+        (gs._bbFalloutQueue ||= []).push({ kind: 'dissolved', from: week.num,
+          name: d.name, reason: d.reason || 'trust-collapsed',
+          members: [...(d.members || [])] });
+      }
+      const fresh = (gs._pendingExpulsions || []).splice(expelledBefore);
+      for (const x of fresh) {
+        (gs._bbFalloutQueue ||= []).push({ kind: 'expelled', from: week.num,
+          player: x.player, alliance: x.alliance, reason: x.reason || 'expelled' });
+      }
+    }],
     ['intentions', () => tickIntentions(ep)],
     ['status effects', () => applySocialStatusEffects(ep)],
     ['social status', () => updateSocialStatus(ep)],
@@ -1035,24 +1325,91 @@ function _attachAllianceFallout(week, house) {
  * walkout/expulsion path — because a week that ended strangely still had
  * alliances in it.
  */
-function _snapshotAllianceBoard() {
+function _snapshotAllianceBoard(roster = null) {
   try {
-    const house = gs.activePlayers || [];
-    return listBlocs()
-      .filter(b => (b.members || []).every(m => house.includes(m)))
-      .map(b => ({
-        ...blocRoster(b),
-        name: b.label || b.name || null,
-        power: Math.round((b.power || 0) * 100) / 100,
-        share: Math.round((b.share || 0) * 100) / 100,
-        exposed: !!b.exposed,
-      }));
+    // Computed over the house as it stood THIS WEEK, not the house that is
+    // left after the vote. The board is taken at the end of the week but the
+    // panels that draw it play from Sunday onwards, and a member with no
+    // number under their face is the one piece of information those screens
+    // must not carry: it named the evictee before the ceremony did.
+    const house = (roster && roster.length ? roster : gs.activePlayers) || [];
+    return withRoster(house, () => 
+      listBlocs()
+        .filter(b => (b.members || []).every(m => house.includes(m)))
+        .map(b => ({
+          ...blocRoster(b),
+          name: b.label || b.name || null,
+          kind: b.kind || 'alliance',
+          power: Math.round((b.power || 0) * 100) / 100,
+          share: Math.round((b.share || 0) * 100) / 100,
+          exposed: !!b.exposed,
+          // How much of the house has worked out this group exists, as a
+          // number rather than a flag: the House Status screen draws it as a
+          // percentage, and without it that screen has to recompute the whole
+          // bloc live — which is what made a replay of week 11 show the
+          // alliances as they stood in week 15.
+          seen: (() => { try { return Math.round(blocExposure(b) * 100) / 100; } catch { return 0; } })(),
+        })));
   } catch { return []; }
 }
 
-function _snapshotHouse(full = true) {
+/**
+ * One conversation per alliance, not one per name on the block.
+ *
+ * The consult is worked out inside the per-nominee loop, so a Head of
+ * Household nominating three people put the same question to the same group
+ * once for each of them — and an alliance holding two of the three appeared
+ * twice on its own ceremony, once refusing and once agreeing. Nobody has that
+ * conversation twice. They walk in and say which of ours is going up.
+ *
+ * Merged strictly: if the room was asked at all, it was asked; and if it
+ * argued against ANY of the names, it said no and the week happened anyway.
+ * The count kept is the hardest sell of them, because that is the number the
+ * card is about.
+ */
+function _mergeConsults(list) {
+  if (!list?.length) return null;
+  const out = new Map();
+  for (const talk of list) {
+    const key = talk?.alliance;
+    if (!key) continue;
+    const seen = out.get(key);
+    if (!seen) {
+      out.set(key, { ...talk, victims: [talk.victim].filter(Boolean) });
+      continue;
+    }
+    if (talk.victim && !seen.victims.includes(talk.victim)) seen.victims.push(talk.victim);
+    const rank = st => (st === 'overruled' ? 3 : st === 'never-asked' ? 2 : 1);
+    // Asked beats never-asked; refused beats agreed.
+    if (seen.stance === 'never-asked' && talk.stance !== 'never-asked') seen.stance = talk.stance;
+    else if (rank(talk.stance) > rank(seen.stance) && talk.stance !== 'never-asked') seen.stance = talk.stance;
+    if ((talk.agrees ?? 99) < (seen.agrees ?? 99)) { seen.agrees = talk.agrees; seen.of = talk.of; }
+    seen.target = seen.target || talk.target;
+  }
+  return [...out.values()];
+}
+
+function _snapshotHouse(full = true, roster = null) {
   const light = {
     bonds: { ...(gs.bonds || {}) },
+    // ── HOW FIRMLY EACH OF THEM WAS HOLDING ON, AT THIS POINT IN THE WEEK ──
+    //
+    // The alliance board was a single per-week number, so the digit under a
+    // face could only ever answer "did this alliance shift since the last
+    // episode". The week where it should visibly move is the week the Head of
+    // Household puts up one of their own — and that happens on Sunday, while
+    // the reading did not change until the following week's House Life.
+    //
+    // Per stretch, the answer becomes "the nomination did that", because the
+    // screen before the ceremony and the screen after it now carry different
+    // numbers. Light on purpose: a name, a reading and the short reason, no
+    // power or share, because this is written several times a week for the
+    // whole season.
+    holds: _snapshotAllianceBoard(roster).map(b => ({
+      name: b.name,
+      members: (b.members || []).map(m => ({ name: m.name, loyalty: m.loyalty, reason: m.reason })),
+      weakest: b.weakest ? b.weakest.name : null,
+    })),
     alliances: (gs.namedAlliances || [])
       .filter(a => a.active !== false && !a.dissolved)
       .map(a => ({ name: a.name, members: [...(a.members || [])], formed: a.formed,
@@ -1089,10 +1446,39 @@ function _snapshotHouse(full = true) {
 }
 
 function _attachRomance(week, rng) {
+  /* ── COUPLES THAT ENDED THIS WEEK ──
+     `_snapshotHouse` filters broken showmances out of every stretch, exactly as
+     it drops a dissolved alliance, so a couple stopped being drawn with nothing
+     said. Recorded by DIFFING across this stage rather than by reading
+     `breakupEp`: the romance pipeline runs after the week's closing snapshot,
+     so a snapshot taken there saw none of it — measured at 14 break-ups and 0
+     recorded — and two of the paths that end a couple never set the field at
+     all. */
+  const _liveKey = sh => [...(sh.players || [])].sort().join('|');
+  /* Diffed against the START OF THE WEEK, not against the top of this stage.
+     A showmance can be ended by things that never touch the romance pipeline —
+     the kiss trap in social-manipulation.js sets `phase` directly, in a scheme
+     event, hours earlier in the week — and a window that only covers this
+     stage misses them. The couple then left the panel with no row and no line,
+     which is how Priya and Damien disappeared from a Showmances list on the
+     same screen whose feed carried the trap that ended them. */
+  const _before = new Set(week._showmancesAtStart
+    || (gs.showmances || [])
+      .filter(sh => sh.phase !== 'broken-up' && !sh.broken)
+      .map(sh => _liveKey(sh)));
   // These beats are appended to an act whose cap window has already closed,
   // so the bridges' addBond calls were the biggest hole in the fence.
   const beats = _cappedBondWindow(() =>
     [...runHouseRomance(week, rng), ...runHouseMaintenance(week, rng)]);
+  const _already = new Set((week.showmanceEnded || []).map(d => _liveKey(d)));
+  for (const sh of gs.showmances || []) {
+    const key = _liveKey(sh);
+    if (!_before.has(key) || _already.has(key)) continue;
+    if (sh.phase !== 'broken-up' && !sh.broken) continue;
+    _already.add(key);
+    (week.showmanceEnded ||= []).push({ players: [...(sh.players || [])],
+      type: sh.breakupType || null, by: sh.breakupVoter || null });
+  }
   // A house showmance forms ORGANICALLY — the shared pipeline stamps it
   // "camp events", which answers nothing. The week knows better: it just
   // aired the scenes. A newly formed showmance gets the last beat this week
@@ -1199,7 +1585,10 @@ export function simulateBBWeek(options = {}) {
    */
   const twists = new Set(options.twists || []);
   const compressed = !!options.compressed;
-  const skipVeto = compressed ? !!options.skipVeto : (twists.has('bb-instant-eviction') || !!options.skipVeto);
+  // `let`, because the Chain of Safety also removes the veto and does not know
+  // it is going to run until the house is big enough for it, two thousand
+  // lines below this.
+  let skipVeto = compressed ? !!options.skipVeto : (twists.has('bb-instant-eviction') || !!options.skipVeto);
   week.twists = [...twists];
   week.compressed = compressed;
   if (options.segment) week.segment = options.segment;
@@ -1427,13 +1816,42 @@ export function simulateBBWeek(options = {}) {
   // arena — the block itself is the twist. Incompatible with a safety mode
   // (that machinery owns the third chair) and needs enough house left for
   // three nominees, an HOH and at least two voters.
-  const doubleVote = !!options.doubleVote && !compressed && !safetyActive && house.length >= 6;
+  // A double-vote cycle is allowed to be a COMPRESSED one now. The `!compressed`
+  // here was never a rule about the mechanic — it was true by construction,
+  // because the only caller put a double vote on the main week. Big Brother
+  // Canada's triple is one live cycle with three nominees where the two highest
+  // evict-getters both walk, so the triple needs exactly this shape at speed.
+  const doubleVote = !!options.doubleVote && !safetyActive && house.length >= 6;
   week.doubleVote = doubleVote;
   const nomineeCount = (safetyActive || doubleVote) ? 3 : 2;
   // The house as it stands before a single thing happens this week. The status
   // screen shown at the top of an episode reads this, so it cannot show an
   // alliance nobody has formed yet or a target nobody has set.
-  week.openingState = _snapshotHouse();
+  week.openingState = _snapshotHouse(true, house);
+  /* The couples that were live when the week began, captured explicitly.
+     `openingState.showmances` came back EMPTY here — measured — so diffing
+     against it silently compared with nothing and every ending went
+     unrecorded. A list this small is worth holding directly rather than
+     depending on what a snapshot happens to carry. */
+  /* Last week's post-vote fallout, arriving in the episode that can show it.
+     Anything queued by a week BEFORE this one is now common knowledge — the
+     vote it followed has been read out — so it is drawn like any other change
+     to the alliance panel. */
+  for (const item of (gs._bbFalloutQueue || [])) {
+    if (item.from >= week.num) continue;
+    if (item.kind === 'dissolved') {
+      (week.allianceDissolved ||= []).push({ name: item.name, reason: item.reason,
+        members: [...(item.members || [])], trust: null, carried: true });
+    } else {
+      (week.allianceDepartures ||= []).push({ player: item.player,
+        alliance: item.alliance, reason: item.reason, carried: true });
+    }
+  }
+  gs._bbFalloutQueue = (gs._bbFalloutQueue || []).filter(item => item.from >= week.num);
+
+  week._showmancesAtStart = (gs.showmances || [])
+    .filter(sh => sh.phase !== 'broken-up' && !sh.broken)
+    .map(sh => [...(sh.players || [])].sort().join('|'));
   // What was promised walking in, so the opening screen cannot show a deal
   // that had not been made yet.
   week.openingDeals = endgameDealSummary(house);
@@ -1644,7 +2062,7 @@ export function simulateBBWeek(options = {}) {
     // finished on — bonds that had not happened yet and alliances nobody had
     // formed on screen. Each stretch carries its own picture now — the light
     // one; only the episode's bookend snapshots carry the heavy stores.
-    act.state = _snapshotHouse(false);
+    act.state = _snapshotHouse(false, week.houseAtStart);
     week.acts.push(act);
     return act;
   };
@@ -1769,14 +2187,35 @@ export function simulateBBWeek(options = {}) {
     // wondering who it is — the safety net is simply gone and everybody in here
     // is standing on it.
     const dread = !paranoid && group.some(a => a?.reactions === 'dread');
+    // WHETHER THERE IS ACTUALLY A VETO THIS WEEK.
+    //
+    // The dread line below used to state flatly that there was not one. It was
+    // written for the Instant Eviction, where that is the rule — but every
+    // twist declaring the same register inherited the sentence, so a Dead Last
+    // Nominee week (which runs an ordinary veto) had the house's best
+    // strategist announcing there was no veto to hide behind, hours before the
+    // veto competition he then played in.
+    const noVetoThisWeek = (group.some(a => a?.twist
+      && ['bb-instant-eviction', 'bb-chain-of-safety'].includes(a.twist)))
+      || compressed;
+    // A twist may supply its own first reaction; see `firstWord` on the
+    // contract's announcement.
+    const fw = group.map(a => a?.firstWord).find(Boolean) || null;
+    const firstWordLine = fw ? (who => fw.replace(/\{who\}/g, who)) : null;
     const schemer = byStat('strategic')[0];
     const bold = byStat('boldness').find(n => n !== schemer) || byStat('boldness')[0];
     if (bold) {
       beats.push({
         text: paranoid
           ? `${bold} breaks the silence first, and does it by looking straight down the sofa: "Well. It's one of you." Half the room laughs. The other half works out where they were sitting.`
-          : dread
-            ? `${bold} breaks the silence first: "So whoever wins that comp gets to end somebody's game before dinner." Nobody laughs, because nobody can think of a reason to.`
+          : (dread && firstWordLine)
+            // The announcement brought its own opening line, because the
+            // generic one below assumes a COMPETITION decides the twist —
+            // true of most of them, and nonsense on a week decided by people
+            // outside the house.
+            ? firstWordLine(bold)
+            : dread
+              ? `${bold} breaks the silence first: "So whoever wins that comp gets to end somebody's game before dinner." Nobody laughs, because nobody can think of a reason to.`
             : `${bold} breaks the silence first: "Good. I hope I win it." Half the room laughs; the other half writes it down.`,
         players: [bold], badgeText: 'FIRST WORD', badgeClass: 'gold',
         eventId: 'twist-announcement-bravado', category: 'ceremonies', location: 'living-room',
@@ -1792,7 +2231,9 @@ export function simulateBBWeek(options = {}) {
         text: paranoid
           ? `${schemer} says nothing at all, and is already doing the only arithmetic that matters: ${house.length - 1} other people, one of them lying, and a whole season to find out which. Nobody in this room is going to be believed about anything again.`
           : dread
-            ? `${schemer} works out the only thing worth working out: there is no afternoon of talking anybody round this week, and no veto to hide behind if it goes wrong. Everything has to be done before that competition ends.`
+            ? (noVetoThisWeek
+              ? `${schemer} works out the only thing worth working out: there is no afternoon of talking anybody round this week, and no veto to hide behind if it goes wrong. Everything has to be done before that competition ends.`
+              : `${schemer} works out the only thing worth working out: the rule does the damage before anybody gets a say in it. Whatever this costs, it will already have cost it by the time the house is allowed to start talking.`)
             : `${schemer} says nothing at all, which from ${schemer} is the loudest possible reaction. The rule has already been taken apart and reassembled twice behind those eyes.`,
         players: [schemer], badgeText: paranoid ? 'COUNTING THE ROOM' : dread ? 'NO TIME TO WORK' : 'RECALCULATING', badgeClass: 'grey',
         eventId: 'twist-announcement-recalc', category: 'ceremonies', location: 'living-room',
@@ -2557,6 +2998,85 @@ export function simulateBBWeek(options = {}) {
     } catch { week.safetySuite = null; }
   }
 
+  // ── THE CHAIN OF SAFETY: the block is what is left over ──
+  //
+  // Runs in the safety-suite slot — after the Head of Household is crowned,
+  // before anybody nominates — because the chain REPLACES the ceremony. Its
+  // two losers are the nominees, so by the time the nomination code below runs
+  // there is nothing left for it to decide.
+  //
+  // Allowed on a compressed cycle: a chain is exactly what Big Brother Canada
+  // ran as its double eviction, and `deStyle: 'chain'` books it that way.
+  if (twists.has('bb-chain-of-safety')) {
+    try {
+      const chainStyle = options.chainStyle === 'quebec' ? 'quebec' : 'canada';
+      week.chainOfSafety = runChainOfSafety({ week, house, hoh, rng,
+        variant: options.chainStart || 'safety-comp', style: chainStyle });
+      // ── QUÉBEC RUNS IT TWICE ──
+      //
+      // The first chain leaves one person unchosen and that is a nominee. Then
+      // the whole thing happens AGAIN among everybody else, and whoever is left
+      // over the second time is the other nominee. The house never votes: the
+      // two of them settle it in a duel.
+      if (week.chainOfSafety && chainStyle === 'quebec') {
+        const first = week.chainOfSafety.nominees[0];
+        // Started by whoever was holding the chain when the first one stopped.
+        // See `startWith` — the same starter replayed the same chain.
+        const handover = (week.chainOfSafety.order || []).slice(-1)[0] || null;
+        const second = runChainOfSafety({ week, house, hoh, rng,
+          variant: options.chainStart || 'safety-comp', style: 'quebec',
+          skip: [first].filter(Boolean), startWith: handover });
+        if (second) {
+          week.chainOfSafety.secondChain = second;
+          week.chainOfSafety.nominees = [first, ...second.nominees].filter(Boolean);
+          // The board draws `leftover` as the people the chain never reached.
+          // On a Québec week that is BOTH of them — one from each run — and
+          // showing only the first chain's left the second nominee off the
+          // diagram entirely while the cards were narrating how they got there.
+          week.chainOfSafety.leftover = [...week.chainOfSafety.nominees];
+          week.chainOfSafety.beats = [
+            ...(week.chainOfSafety.beats || []),
+            { text: `${first} is on the block, and the house is told to do the whole thing again.`,
+              players: [first], badgeText: 'AND AGAIN', badgeClass: 'red' },
+            ...(second.beats || []),
+          ];
+          week.chainOfSafety.slights = [
+            ...(week.chainOfSafety.slights || []), ...(second.slights || [])];
+        }
+      }
+      if (week.chainOfSafety) {
+        skipVeto = true;
+        // ── AND THE BLOCK BUSTER DOES NOT RUN EITHER ──
+        //
+        // They are the same idea twice. The Block Buster puts a third person
+        // on the block and gives the three of them a competition where the
+        // winner comes off it; the chain ends by leaving three people over and
+        // giving them a competition where the winner comes off it. The chain
+        // owns that, and it runs its own.
+        //
+        // The mode was already being skipped in practice — the chain fixes the
+        // block at the two it left over, so there was never a third chair for
+        // the arena to play for — but the week went on RECORDING
+        // `safetyMode: 'block-buster'` for a competition that never happened,
+        // which is a fact about the week that is not true.
+        week.safetyMode = null;
+        week.safetyWinner = null;
+        week.blockBeforeSafety = [];
+        week.acts.push(addBeats(week.chainOfSafety,
+          { players: [...(week.chainOfSafety.nominees || [])] }));
+        // And what the house says about it afterwards. Eleven people made a
+        // public choice about each other; a week that carried straight on from
+        // that would be the one thing a house would never do.
+        //
+        // HELD, NOT PUSHED. Pushing it here made it its own `house` act, and
+        // the week's real house-life act follows immediately after — so the
+        // viewing party drew two House Life screens back to back with nothing
+        // between them. It is merged into the next one instead, below.
+        week._chainFallout = chainFallout(week.chainOfSafety, { rng });
+      }
+    } catch { week.chainOfSafety = null; }
+  }
+
   // ── THE WILDCARD: three names out of a hat, and a price on the safety ──
   //
   // Sits beside the Safety Suite because both are pre-nomination safety, and is
@@ -2850,7 +3370,7 @@ export function simulateBBWeek(options = {}) {
   let teamSafe = [];
   try { teamSafe = teamImmune(week, hoh); } catch { teamSafe = []; }
   const untouchable = [hoh, week.botbActive ? coHoh : null, week.cloud?.holder,
-    carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite),
+    carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...chainSafe(week.chainOfSafety),
     ...wildcardSafe(week.wildcard),
     ...rivalsSafe, ...keySafe, ...duoCrownSafe, ...teamSafe].filter(Boolean);
 
@@ -2975,25 +3495,74 @@ export function simulateBBWeek(options = {}) {
         curseAct.cursed ? { nominees: [curseAct.cursed] } : {}));
     }
   }
+  // ── DEAD LAST: the competition fills a chair before anybody nominates ──
+  //
+  // Same mechanism as the curse above — it RESERVES a seat rather than adding
+  // one, so the block stays the size the season says it is and the Head of
+  // Household simply has one fewer name to give.
+  //
+  // Read off the Head of Household competition's own placements, so it is the
+  // real result and not a re-roll. A week with no competition (a pre-crowned
+  // Head of Household, a Battle of the Block) has no last place to take, and
+  // anybody already holding safety is skipped upward: safety won earlier in
+  // the week beats a rule about a competition, or the twist would quietly
+  // cancel every protection in the house.
+  let deadLastSeat = null;
+  if (twists.has('bb-dead-last-nominee') && hohCompetition?.placements?.length > 1) {
+    const order = [...hohCompetition.placements].reverse();
+    deadLastSeat = order.find(name => name !== hoh && house.includes(name)
+      && !untouchable.includes(name)) || null;
+    if (deadLastSeat) {
+      week.deadLastNominee = deadLastSeat;
+      const place = hohCompetition.placements.indexOf(deadLastSeat) + 1;
+      const threw = !!hohCompetition.debug?.scoreBreakdown?.[deadLastSeat]?.threw;
+      week.acts.push(addBeats({
+        type: 'dead-last', nominee: deadLastSeat, hoh,
+        place, of: hohCompetition.placements.length,
+        competition: hohCompetition.name || '', threw,
+        beats: [{
+          text: threw
+            ? `${deadLastSeat} threw it. ${deadLastSeat} threw it in the one week in this house where `
+              + `coming last puts you on the block, and the whole room watched ${pronouns(deadLastSeat).obj} do it.`
+            : `${deadLastSeat} finishes last of ${hohCompetition.placements.length} and is nominated for it `
+              + `before ${hoh} has said a single name.`,
+          players: [deadLastSeat], badgeText: 'DEAD LAST', badgeClass: 'red',
+        }],
+      }, { nominees: [deadLastSeat] }));
+    }
+  }
+
   // How many the Head of Household actually gets to name.
-  const hohSeats = Math.max(1, nomineeCount - (curseSeat ? 1 : 0));
+  const hohSeats = Math.max(1, nomineeCount
+    - (curseSeat ? 1 : 0) - (deadLastSeat ? 1 : 0));
 
   // `duoBlock` already guarantees both halves are in the house and neither is
   // protected, so this no longer re-filters the pair — that filter is exactly
   // what used to leave half a duo on the block beside a stranger.
-  let nominees = duoWeekNoms ? [...duoWeekNoms]
-    : duoPair ? [...duoPair]
-      : [...new Set(plan.nominees)]
+  // THE CHAIN'S LEFTOVERS ARE THE BLOCK.
+  //
+  // First in the chain, ahead of every other way a name reaches the block,
+  // because the chain is not a competing source of nominees — it is the whole
+  // ceremony. The Head of Household's plan still exists (the vote reads it for
+  // who wanted whom out), it simply does not get to fill a chair.
+  const chainNoms = (week.chainOfSafety?.nominees || []).filter(n => house.includes(n));
+  let nominees = chainNoms.length ? [...chainNoms]
+    : duoWeekNoms ? [...duoWeekNoms]
+      : duoPair ? [...duoPair]
+        : [...new Set(plan.nominees)]
         .filter(name => house.includes(name) && !untouchable.includes(name)
-          && name !== curseSeat).slice(0, hohSeats);
+          && name !== curseSeat && name !== deadLastSeat).slice(0, hohSeats);
   if (duoWeekNoms) week.duoWeekNominees = [...duoWeekNoms];
   if (duoPair && nominees.length === duoPair.length) {
     week.duoNomination = [...nominees];
     if (duoPairs) week.duoBlocks = duoPairs.map(p => [...p]);
   }
-  while (nominees.length < hohSeats) {
+  // A three-nominee season does NOT top the chain's block up to three: the
+  // chain produced exactly the two people it left over, and padding it would
+  // put somebody on the block that the house had already made safe.
+  while (!chainNoms.length && nominees.length < hohSeats) {
     const extra = chooseReplacement(hoh, house,
-      [...untouchable, ...nominees, curseSeat].filter(Boolean), plan, rng);
+      [...untouchable, ...nominees, curseSeat, deadLastSeat].filter(Boolean), plan, rng);
     if (!extra || nominees.includes(extra) || untouchable.includes(extra)) break;
     nominees.push(extra);
   }
@@ -3029,13 +3598,14 @@ export function simulateBBWeek(options = {}) {
   // another target rather than a name out of a hat.
   while ((safetyActive || doubleVote) && nominees.length < hohSeats) {
     const third = chooseReplacement(hoh, house,
-      [...untouchable, ...nominees, curseSeat].filter(Boolean), plan, rng);
+      [...untouchable, ...nominees, curseSeat, deadLastSeat].filter(Boolean), plan, rng);
     if (!third || nominees.includes(third)) break;
     nominees.push(third);
   }
   // And the reserved chair, last, so the block reads as the Head of
   // Household's names plus the one that is not theirs.
   if (curseSeat && !nominees.includes(curseSeat)) nominees.push(curseSeat);
+  if (deadLastSeat && !nominees.includes(deadLastSeat)) nominees.push(deadLastSeat);
   // ── BB ROADKILL: the third key nobody's hand is on ──
   //
   // Everybody plays, one at a time and out of sight of the rest, and only the
@@ -3319,6 +3889,12 @@ export function simulateBBWeek(options = {}) {
   const askedPawn = week.pawnAsk?.pawn || null;
   for (const nominee of nominees) {
     if (!nominee || nominee === hoh) continue;
+    // NOBODY PUT THEM UP. On a chain week the Head of Household did not choose
+    // this block — the house did, by choosing everybody else — so charging the
+    // crown for a betrayal it did not commit would bill the wrong person for
+    // the most public act of the week. The chain prices its own fallout, on
+    // the houseguests who actually passed them over.
+    if (chainNoms.length) continue;
     // A broken promise already cost more than this, and worse.
     if ((week.brokenPromises || []).some(b => b.victim === nominee)) continue;
     // The pawn's conversation was already priced. See above.
@@ -3345,6 +3921,206 @@ export function simulateBBWeek(options = {}) {
     // whole week is spent resenting them for it.
     const blamed = week.hohPublic || hoh;
     try { _cappedBondWindow(() => addBond(nominee, blamed, hit)); } catch { /* no bond, no grievance */ }
+
+    /* AND THE ROOM THEY BOTH BELONG TO WATCHED IT HAPPEN.
+       Turning on your own alliance cost exactly one relationship — the person
+       in the chair — and the other four members of the group felt nothing at
+       all, which is the opposite of what the act is for. Everybody in that
+       room has just watched the crown go through one of their own and is
+       working out whether they are next.
+
+       Bonds, deliberately, and nothing binary: it is small per member, it
+       scales with how much that member actually cares about the person who
+       went up and with their own loyalty, and it reaches everything downstream
+       on its own — `memberLoyalty` reads these bonds for its inward term, and
+       a group whose bonds collapse dissolves through the route that already
+       exists. So it CAN break the alliance and is nowhere near guaranteed to.
+
+       Not written to `alliance.betrayals`: that list drives expulsion, and two
+       entries would eject the Head of Household from their own group
+       automatically. The history line keeps it on the record for the jury and
+       the finale without deciding anything. */
+    const ownGroups = (gs.namedAlliances || []).filter(a => a.active !== false
+      && (a.members || []).includes(hoh) && (a.members || []).includes(nominee));
+    for (const group of ownGroups) {
+      /* ── DID THE GROUP AGREE, OR DID ONE OF THEM GO ROGUE? ──
+         These are two different weeks and they were being priced identically.
+         If the rest of the alliance also wants this person gone, the Head of
+         Household is carrying out the group's decision: the one in the chair
+         has been sold out by everybody, and the person who said it out loud is
+         not the problem. If nobody else was pointed at them, the same act is
+         somebody using the alliance's own week on the alliance's own member
+         without asking — and then it is the NOMINATOR who is outside the
+         group, not the nominee.
+
+         Consent is read from what the others actually want, which the house
+         already tracks: their standing target and their own plan. */
+      const others = (group.members || []).filter(n =>
+        n !== hoh && n !== nominee && (gs.activePlayers || []).includes(n));
+      /* ── DID THEY TALK TO ANYBODY FIRST? ──
+         Consent was being read passively: whether the rest of the group
+         already happened to want this person gone. That made 47 of 74
+         ally-nominations "rogue", and an alliance being blindsided by its own
+         Head of Household is not something that should happen in two weeks out
+         of three. The reason it did is that the house had no way to ASK. There
+         is a pawn conversation, and nothing at all for "I need to put one of
+         ours up".
+         So there are three answers now, not two. They asked and the room
+         agreed. They never asked. Or they asked, were told no, and did it
+         anyway — which is the worst of the three and the only one that is
+         genuinely a betrayal of the group rather than a failure to consult.
+         Whether somebody thinks to have the conversation is character:
+         strategic enough to know the nomination is cheaper if it is sold
+         first, loyal enough to feel owed, and not so bold that asking feels
+         like permission. */
+      const alreadyWants = n => {
+        try { if (getBBTarget(n) === nominee) return true; } catch { /* no target */ }
+        try { return (housePlan(n)?.targets || []).includes(nominee); } catch { return false; }
+      };
+      const hStats = (() => { try { return pStats(hoh) || {}; } catch { return {}; } })();
+      let hArch = '';
+      try { hArch = (players.find(pp => pp.name === hoh) || {}).archetype || ''; } catch { hArch = ''; }
+      // 0.58 rather than 0.42: at the lower number half of all Heads of
+      // Household put one of their own people up without mentioning it to
+      // anybody, and being blindsided by your own alliance should be a move
+      // somebody chose, not the default behaviour of the format.
+      const talkOdds = Math.max(0.05, Math.min(0.92,
+        0.58
+        + ((hStats.strategic ?? 5) - 5) * 0.05
+        + ((hStats.loyalty ?? 5) - 5) * 0.05
+        + ((hStats.social ?? 5) - 5) * 0.02
+        - ((hStats.boldness ?? 5) - 5) * 0.025
+        - (['villain', 'mastermind', 'schemer'].includes(hArch) ? 0.14 : 0)));
+      const asked = others.length > 0 && rng() < talkOdds;
+      // What the room says when it is asked. Somebody who already wants the
+      // nominee gone says yes; so does somebody who does not much like them.
+      // Anybody close to them argues against it.
+      /* What the room says depends enormously on WHICH chair is being asked
+         for. "One of us has to sit as a pawn" is a formality every alliance in
+         this format agrees to; "one of us is the person I am trying to evict"
+         is a fight. Measured without that distinction, a third of all
+         ally-nominations came back as the Head of Household being told no and
+         going ahead regardless, because members of a tight group have warm
+         bonds with each other and were objecting to a pawn the same way they
+         objected to a target. And somebody who can sell it, sells it. */
+      const persuasion = ((hStats.social ?? 5) - 5) * 0.45 + ((hStats.strategic ?? 5) - 5) * 0.3;
+      const acceptsAt = (isTarget ? 1.5 : 5.5) + persuasion;
+      const agrees = others.filter(n => {
+        if (alreadyWants(n)) return true;
+        let bond = 0;
+        try { bond = getBond(n, nominee) || 0; } catch { bond = 0; }
+        return bond <= acceptsAt;
+      }).length;
+      const roomAgrees = others.length ? agrees * 2 >= others.length : false;
+      const stance = !others.length ? 'alone'
+        : !asked ? 'never-asked'
+          : roomAgrees ? 'sanctioned' : 'overruled';
+      const consented = stance === 'sanctioned';
+      if (stance !== 'alone') {
+        (week.allianceConsults ||= []).push({ alliance: group.name, hoh, victim: nominee,
+          stance, target: isTarget, agrees, of: others.length });
+      }
+
+      for (const member of others) {
+        let care = 0, loyal = 5;
+        try { care = Math.max(0, getBond(member, nominee)) / 10; } catch { care = 0; }
+        try { loyal = pStats(member)?.loyalty ?? 5; } catch { loyal = 5; }
+        // Nobody resents a decision they were part of. The trust only moves
+        // when the week was spent without asking them.
+        if (consented) continue;
+        const watched = -(isTarget ? 0.34 : 0.18) * (0.35 + care) * (0.5 + loyal / 10);
+        try { _cappedBondWindow(() => addBond(member, blamed, watched)); } catch { /* texture */ }
+      }
+      group.history ||= [];
+      group.history.push({ week: week.num, type: 'nominated-own',
+        player: hoh, victim: nominee, target: isTarget, consented, stance });
+
+      /* ── AND EITHER WAY, SOMEBODY MAY NOT BE IN THIS ALLIANCE BY FRIDAY ──
+         Not guaranteed, and it should not be: most of these are survived and
+         held against somebody instead. Proportional to how bad it was, to how
+         much the person leaving cares about the word, and — for an expulsion —
+         to whether there is anybody left to do the expelling. */
+      const live = (group.members || []).filter(n => (gs.activePlayers || []).includes(n));
+      if (live.length < 3) continue;
+      const leaverName = consented ? nominee : hoh;
+      let lStats = {};
+      try { lStats = pStats(leaverName) || {}; } catch { lStats = {}; }
+      const loyalty = lStats.loyalty ?? 5;
+      const bold = lStats.boldness ?? 5;
+      const chance = Math.max(0, Math.min(0.38,
+        (isTarget ? 0.16 : 0.06)
+        + (5 - loyalty) * 0.022
+        + (bold - 5) * 0.012
+        // Asked and ignored the answer is the one a group actually removes
+        // somebody for. Never asking is careless; being told no and doing it
+        // anyway is a decision about them.
+        // Measured at 0.05 for both, which said that never asking costs a
+        // group exactly what asking and being told yes costs it. Not asking is
+        // careless and should mostly cost trust; being told no and going ahead
+        // is the one an alliance actually removes somebody for.
+        + (stance === 'overruled' ? 0.17 : stance === 'never-asked' ? 0.07 : 0.04)));
+      if (!(rng() < chance)) continue;
+
+      /* ── AND THE BETTER VERSION OF LEAVING, WHICH IS NOT LEAVING ──
+         Walking out of an alliance tells everybody in it what you are going to
+         do next, and the whole value of knowing you are finished with somebody
+         is that they do not know it. So a break has two shapes: the open one,
+         where a name comes off the list, and the quiet one, where it stays on
+         the list and the person behind it starts counting the days.
+
+         Both directions get it. Somebody the group put up can stay sworn to
+         them and take the shot when it is worth the most; a group that has
+         just watched one of its own spend their week on a member can decline
+         to throw them out for exactly the same reason.
+
+         Who chooses which is character, not chance: this is the play of
+         somebody strategic enough to see the value and disloyal enough to
+         spend it, and the archetypes that never scheme never take it. */
+      const quiet = (() => {
+        let st = {};
+        try { st = pStats(leaverName) || {}; } catch { st = {}; }
+        let arch = '';
+        try { arch = (players.find(pp => pp.name === leaverName) || {}).archetype || ''; } catch { arch = ''; }
+        if (['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(arch)) return false;
+        const scheming = ['villain', 'mastermind', 'schemer'].includes(arch);
+        const odds = Math.max(0, Math.min(0.85,
+          (scheming ? 0.45 : 0.15)
+          + ((st.strategic ?? 5) - 5) * 0.05
+          + (5 - (st.loyalty ?? 5)) * 0.045));
+        return rng() < odds;
+      })();
+
+      week.allianceExits ||= [];
+      if (quiet) {
+        // Nothing moves on the list. What moves is the intention, and the
+        // reading under the face — a member sitting at nearly zero while still
+        // being drawn inside the group is the one the docstring above is
+        // about: already gone in everything but the announcement.
+        group.hidden ||= [];
+        if (!group.hidden.some(h => h.player === leaverName)) {
+          group.hidden.push({ player: leaverName, since: week.num,
+            aim: consented ? hoh : nominee,
+            reason: consented ? 'they all wanted me in that chair' : 'spent our week on one of us' });
+        }
+        try {
+          setBBTarget(leaverName, consented ? hoh : nominee,
+            consented ? 'put me up and expected me to stay sworn to them'
+              : 'used our alliance on one of our own', { week });
+        } catch { /* the intention still stands */ }
+        week.allianceExits.push({ player: leaverName, alliance: group.name,
+          kind: 'hidden', victim: nominee, hoh, target: isTarget, consented });
+        continue;
+      }
+      group.members = (group.members || []).filter(n => n !== leaverName);
+      group.quits ||= [];
+      group.quits.push({ player: leaverName, ep: week.num,
+        reason: consented ? 'the group put me up' : 'used our week on one of us' });
+      if ((group.members || []).filter(n => (gs.activePlayers || []).includes(n)).length < 2) {
+        group.active = false;
+      }
+      week.allianceExits.push({ player: leaverName, alliance: group.name,
+        kind: consented ? 'quit' : 'expelled', victim: nominee, hoh, target: isTarget, consented });
+    }
 
     /* AND THE PART THAT ONLY EXISTS IN THIS SEASON.
        You are on that block because of who you walked in with. Somebody wears
@@ -3380,7 +4156,23 @@ export function simulateBBWeek(options = {}) {
     week.nomFallout.push({ nominee, hoh, hit, treason, kind: isTarget ? 'target' : 'nominee' });
   }
 
-  week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
+  // NO CEREMONY ON A CHAIN WEEK. The chain act already showed the house
+  // arriving at this block; drawing a nomination ceremony on top of it would
+  // have a Head of Household turning keys on two people they never chose.
+  // ── WHY THEIR OWN PEOPLE WENT UP, RECORDED WHILE IT IS STILL TRUE ──
+  //
+  // Suspicion and strategic memory keep moving all season, so this cannot be
+  // recomputed when the screen paints — a replay would explain a week-three
+  // nomination with a betrayal from week nine. Empty for any nominee who is
+  // not in a live alliance with the person nominating them.
+  const nomGrievances = {};
+  for (const name of nominees) {
+    const g = nominationGrievance(week.hoh, name);
+    if (g) nomGrievances[name] = g;
+  }
+  if (!chainNoms.length) week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
+    grievances: nomGrievances, allianceExits: week.allianceExits || null,
+    allianceConsults: _mergeConsults(week.allianceConsults),
     duo: duoNom, nomFallout: week.nomFallout,
     structure: plan.structure || 'target-pawn', structureWhy: plan.structureWhy || '',
     anonymous: hohSecret,
@@ -3394,9 +4186,16 @@ export function simulateBBWeek(options = {}) {
     // the ceremony is not the HOH's to claim: without this the script says "it
     // is my responsibility to nominate THREE people" and turns three keys for
     // somebody the HOH never chose.
-    hohNominees: nominees.filter(n => n !== week.temptationChair && n !== week.roadkill?.nominee),
+    // A chair filled by a curse, a secret nomination competition or the
+    // week's own scoreboard is on the block, but it is not the Head of
+    // Household's to claim — without this the ceremony script says "it is my
+    // responsibility to nominate TWO people" and turns two keys for a block
+    // the Head of Household only chose half of.
+    hohNominees: nominees.filter(n => n !== week.temptationChair
+      && n !== week.roadkill?.nominee && n !== week.deadLastNominee),
     curseChair: week.temptationChair || null,
     roadkillChair: week.roadkill?.nominee || null,
+    deadLastChair: week.deadLastNominee || null,
     brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
   revise('noms', { hoh, nominees: [...nominees] });
 
@@ -4040,10 +4839,17 @@ export function simulateBBWeek(options = {}) {
     if (overheard) week.sequestered.overheard = overheard;
     if (regret) week.sequestered.regret = regret;
 
-    week.acts.push(addBeats(
-      { type: 'instant-eviction', nominees: [...nominees], hoh,
-        sequestered: week.sequestered || null, overheard, regret },
-      { nominees: [...nominees] }));
+    // NOT ON A CHAIN WEEK. The chain also removes the veto, but it is not an
+    // Instant Eviction and must not be announced as one — the screen and the
+    // transcript would both tell the house the Head of Household's nominations
+    // are standing, on a week where the Head of Household never made any. The
+    // chain act already said what happened instead.
+    if (!chainNoms.length) {
+      week.acts.push(addBeats(
+        { type: 'instant-eviction', nominees: [...nominees], hoh,
+          sequestered: week.sequestered || null, overheard, regret },
+        { nominees: [...nominees] }));
+    }
   }
 
   if (!skipVeto) {
@@ -4664,7 +5470,7 @@ export function simulateBBWeek(options = {}) {
       // holder is. Without it `chooseReplacement` can hand the holder the pen
       // and have them write their own name — and the dethroned HOH stays in the
       // list too, because canon leaves them safe for the week they lost.
-      const protectedNames = [hoh, coinChair, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...(week.rouletteSafe || []), ...(week.derbySafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...wildcardSafe(week.wildcard), ...keySafe, ...duoCrownSafe, ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
+      const protectedNames = [hoh, coinChair, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...(week.rouletteSafe || []), ...(week.derbySafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...chainSafe(week.chainOfSafety), ...wildcardSafe(week.wildcard), ...keySafe, ...duoCrownSafe, ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
       // The chooser reasons from their OWN plan. An HOH follows the week's
       // nomination plan; a diamond holder follows their own read of the house,
       // which is what makes the twist a hijacking rather than a formality.
@@ -4887,7 +5693,7 @@ export function simulateBBWeek(options = {}) {
       && !pw.used && !pw.disposed && week.num <= pw.expiresAfterWeek
       && house.includes(pw.holder));
     if (coup) {
-      const protectedNow = [hoh, vetoWinner, coup.holder, carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...wildcardSafe(week.wildcard)].filter(Boolean);
+      const protectedNow = [hoh, vetoWinner, coup.holder, carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...chainSafe(week.chainOfSafety), ...wildcardSafe(week.wildcard)].filter(Boolean);
       const eligible = house.filter(n => !protectedNow.includes(n));
       // ── whether, before who ──
       //
@@ -5263,7 +6069,7 @@ export function simulateBBWeek(options = {}) {
       const protectedNames = [hoh, vetoWinner, extra.holder, dec.save, ...keySafe, ...duoCrownSafe, ...savedThisWeek,
         ...(week.rouletteSafe || []), ...(week.derbySafe || []),
         ...(week.botbSafe || []), carePackageProtects(week.carePackage),
-        ...safetySuiteSafe(week.safetySuite),
+        ...safetySuiteSafe(week.safetySuite), ...chainSafe(week.chainOfSafety),
         ...wildcardSafe(week.wildcard),
         ...nominees.filter(n => n !== dec.save)].filter(Boolean);
       const secondRep = chooseReplacement(authority, house, protectedNames, plan, rng);
@@ -5569,8 +6375,8 @@ export function simulateBBWeek(options = {}) {
   week.endgameDeals = endgameDealSummary(gs.activePlayers || []);
   week.housePlans = Object.fromEntries((gs.activePlayers || [])
     .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
-  week.closingState = _snapshotHouse();
-  week.allianceBoard = _snapshotAllianceBoard();
+  week.closingState = _snapshotHouse(true, week.houseAtStart);
+  week.allianceBoard = _snapshotAllianceBoard(week.houseAtStart);
     week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
     _attachRomance(week, rng);
     // How they wore it, judged on what the week actually achieved rather than on
@@ -5599,8 +6405,42 @@ export function simulateBBWeek(options = {}) {
     return week;
   }
 
+  // ── THE DUEL, ON A QUÉBEC CHAIN ──
+  //
+  // The house does not vote on this week. It decided who was safe, twice, and
+  // the two people it forgot settle what is left between them head to head.
+  // The loser is evicted; there are no ballots at all, which is why `voters`
+  // is emptied below rather than the result being overridden afterwards — a
+  // week that records ballots nobody cast is a week that lies to the jury,
+  // the alliance ledger and the knowledge store all at once.
+  if (week.chainOfSafety?.style === 'quebec' && nominees.length === 2) {
+    try {
+      const duel = runBBCompetition({ type: 'tiebreaker', participants: [...nominees],
+        excluded: house.filter(n => !nominees.includes(n)), house, week, rng,
+        library: competitionLibrary, seed: options.seed, allowThrowing: false });
+      const loser = duel?.placements?.[duel.placements.length - 1]
+        || nominees[nominees.length - 1];
+      week.chainDuel = { competition: duel, winner: duel?.winner || null, loser };
+      week.acts.push(addBeats({
+        type: 'chain-duel', nominees: [...nominees], competition: duel,
+        winner: duel?.winner || null, loser,
+        beats: [{
+          text: `No vote. ${nominees.join(' and ')} are the two people this house went past, `
+            + `and the only thing left is which of them is better at one competition.`,
+          players: [...nominees], badgeText: 'HEAD TO HEAD', badgeClass: 'red',
+        }, {
+          text: `${duel?.winner || 'One of them'} wins it and stays. ${loser} is evicted, `
+            + 'and not one houseguest had to put their name to it.',
+          players: [duel?.winner, loser].filter(Boolean), badgeText: 'DECIDED', badgeClass: 'gold',
+        }],
+      }, { nominees: [...nominees] }));
+    } catch { week.chainDuel = null; }
+  }
+
   // Days 5–6 — votes begin from bonds, then campaigning can visibly move them.
-  let voters = house.filter(name => name !== hoh && !nominees.includes(name));
+  // A duel week has no voters: see the block above.
+  let voters = week.chainDuel ? []
+    : house.filter(name => name !== hoh && !nominees.includes(name));
   voters = hook(hooks, 'voteEligibility', voters, { week, house, hoh, nominees: [...nominees] }) || voters;
   voters = [...new Set(voters)].filter(name => house.includes(name) && name !== hoh && !nominees.includes(name));
   // Step 1 of the operation: everybody's own starting position, kept on the
@@ -5673,6 +6513,17 @@ export function simulateBBWeek(options = {}) {
       pitches:campaign.pitches, pitchIntel:campaign.intel,
       counterplay:campaign.counterplay, voteChanges:campaign.changed,
       votesAfterAct:tally(ballots, nominees),
+      /* ── THE CAMPAIGN DAYS ARE A STRETCH OF HOUSE LIFE TOO ──
+         The campaign is drawn as a House Life screen, and only `house` acts
+         were carrying a snapshot — so that one screen had no state of its own
+         and the panels silently fell back to the episode's end-of-week
+         picture. Every alliance change a viewer could see between two
+         consecutive House Life screens landed on that one transition: the
+         fourth screen showed the week, the fifth showed the aftermath, and a
+         seven-strong alliance appeared to lose four people and vanish with
+         nothing said about it. Measured at 15 of them across six seasons, all
+         on screen 4 -> 5. */
+      state: _snapshotHouse(false, week.houseAtStart),
     }, { nominees:[...visibleBlock], ballots });
 
     // The pitches were structured data rendered only by a screen of their own.
@@ -6147,10 +6998,55 @@ export function simulateBBWeek(options = {}) {
 
   // Eviction act; HOH breaks a tie.
   const votes = tally(ballots, nominees);
+
+  // ── AMERICA'S EVICTION VOTE ──
+  //
+  // BBOTT's shape: the audience casts an ADDITIONAL vote alongside the house's
+  // ballots, in the same tally, and it is announced with them.
+  //
+  // Deliberately NOT pushed into `ballots`. Everything that reads that array
+  // reads it as houseguests — the knowledge store writes a "how they voted"
+  // fact per voter, the alliance ledger looks for who flipped, the vote
+  // operation counts a majority out of it — so a ballot signed "America" would
+  // have the house detecting a betrayal by somebody who is not in it. It is
+  // counted here and carried separately, which is also how the show put it on
+  // screen.
+  if (twists.has('bb-americas-eviction-vote') && nominees.length >= 2) {
+    try {
+      // `scale: -1` inverts the audience model: the further ABOVE the field
+      // somebody's standing sits, the less likely a vote is to land on them.
+      // A popularity vote and an eviction vote are the same machine pointed in
+      // opposite directions, so this is one model rather than two.
+      const av = runAudienceVote({ eligible: [...nominees], rng, blocks: 900, scale: -1 });
+      if (av?.winner) {
+        const weight = Math.max(1, Math.min(3, Number(options.avWeight) || 1));
+        votes[av.winner] = (votes[av.winner] || 0) + weight;
+        // THE SUSPENSE IS DATA, NOT DECORATION.
+        //
+        // A result read out flat is the same sentence every week. What makes a
+        // public vote worth watching is the SHAPE of it — whether the house
+        // has been told something it already suspected or something it has no
+        // answer for — so the shape is computed here and both the transcript
+        // and the screen build their reveal out of it.
+        const board = buildAudienceReveal({
+          tally: av.tally, target: av.winner, verb: 'evict', weight,
+        });
+        week.americasVote = { target: av.winner, tally: av.tally, weight,
+          nominees: [...nominees], ...board };
+        week.acts.push(addBeats({
+          type: 'americas-eviction-vote', target: av.winner, tally: av.tally,
+          weight, nominees: [...nominees], ...board,
+        }, { nominees: [av.winner] }));
+      }
+    } catch { week.americasVote = null; }
+  }
   let evicted;
   let secondEvicted = null;
   let tieBreak = null;
-  if (doubleVote && nominees.length >= 3) {
+  if (week.chainDuel) {
+    // Decided in the yard, not in the Diary Room.
+    evicted = week.chainDuel.loser;
+  } else if (doubleVote && nominees.length >= 3) {
     // One vote, three chairs, two walks. The two highest evict-getters both
     // leave; the only tie that matters is the BOUNDARY — second place versus
     // the survivor — and the HOH's preference settles it, exactly like an
@@ -6400,6 +7296,13 @@ export function simulateBBWeek(options = {}) {
 
   week.acts.push(addBeats(
     { type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted,
+      // THE PUBLIC'S BALLOT, WHERE THE BALLOTS ARE READ.
+      //
+      // It is counted into `votes` but it is not in `ballots`, so the eviction
+      // night printed eight names and a total of nine: a reader counting the
+      // room got a different number from the one on the board. It travels with
+      // the act now and is read out with the rest.
+      americasVote: week.americasVote || null,
       secondEvicted, doubleVote,
       // The night the room watched each other vote.
       publicVote: !!week.publicVote,
@@ -6770,8 +7673,8 @@ export function simulateBBWeek(options = {}) {
   week.endgameDeals = endgameDealSummary(gs.activePlayers || []);
   week.housePlans = Object.fromEntries((gs.activePlayers || [])
     .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
-  week.closingState = _snapshotHouse();
-  week.allianceBoard = _snapshotAllianceBoard();
+  week.closingState = _snapshotHouse(true, week.houseAtStart);
+  week.allianceBoard = _snapshotAllianceBoard(week.houseAtStart);
   week.perceptionChanges = updateBBPerceptions({ house:gs.activePlayers, week, rng });
   _attachRomance(week, rng);
   // How they wore it, judged on what the week actually achieved rather than on
@@ -6799,6 +7702,43 @@ export function simulateBBWeek(options = {}) {
   // bump made the counter jump 4 -> 6 and every episode after it was misnumbered
   // for the rest of the season. The second segment is the same night.
   if (Number(options.segment || 1) <= 1) gs.episode = (gs.episode || 0) + 1;
+  // ── the chain's aftermath belongs to the next stretch of house life ──
+  //
+  // Held back at the chain rather than pushed, because it is a conversation
+  // the house has afterwards, not a separate segment. Merged into the first
+  // house act that follows the chain so there is one House Life screen, and
+  // put at the FRONT of it: this is the first thing anybody says once the
+  // room breaks up.
+  if (week._chainFallout) {
+    const chainAt = week.acts.findIndex(a => a && a.type === 'chain-of-safety');
+    const nextHouse = chainAt >= 0
+      ? week.acts.findIndex((a, i) => i > chainAt && a && a.type === 'house') : -1;
+    if (nextHouse >= 0) {
+      const host = week.acts[nextHouse];
+      host.socialBeats = [...(week._chainFallout.socialBeats || []),
+        ...(host.socialBeats || [])];
+      host.chainFallout = true;
+    } else if (chainAt >= 0) {
+      // No house life left to fold into — a compressed cycle has none. It gets
+      // its own act, INSERTED directly after the chain rather than appended:
+      // pushed to the end it landed after the eviction and the evictee's
+      // interview, so the night finished on a stretch of house life that had
+      // happened hours earlier.
+      week.acts.splice(chainAt + 1, 0, week._chainFallout);
+    } else {
+      week.acts.push(week._chainFallout);
+    }
+    delete week._chainFallout;
+  }
+
+  // Two stretches of house life with nothing between them is a RENDERING
+  // question, and it is answered in js/vp-screens.js where the folding
+  // machinery already lives. Collapsing the acts here instead looked simpler
+  // and was not: a house act is not only its beats, and twists flag the
+  // stretch they caused. Merging two of them carried `hackerBlame` onto the
+  // real post-noms stretch, the viewing party's existing fold suppressed it
+  // as a stub, and the whole stretch vanished from the week.
+
   return week;
 }
 

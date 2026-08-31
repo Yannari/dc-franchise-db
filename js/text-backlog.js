@@ -98,6 +98,7 @@ import { rpBuildClownTitleCard, rpBuildClownStalk, rpBuildClownRun } from './cha
 import { rpBuildBashTitleCard, rpBuildBashArena, rpBuildBashResults } from './chal/bumper-car-bash.js';
 import { rpBuildCheeseTitleCard, rpBuildCheeseDrop, rpBuildCheeseResults } from './chal/say-cheese.js';
 import { rpBuildWheelTitleCard, rpBuildWheelPhase1, rpBuildWheelPhase2, rpBuildWheelPhase3, rpBuildWheelResults } from './chal/wheel-of-misfortune.js';
+import { rpBuildCoachBoard } from './vp-coaches.js';
 import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish, rpBuildJuryVotes, rpBuildJuryLife } from './vp-finale.js';
 import { traitorsScreensRevealed, screenNarration } from './vp-tr/screens.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
@@ -1179,7 +1180,12 @@ export function _textVotingPlans(ep, ln, sec) {
   if (ep.votePitches?.length) {
     ln('FLIP NEGOTIATIONS:');
     ep.votePitches.forEach(p => {
-      ln(`  ${p.pitcher} pitched ${p.pitchTarget}, claiming ${p.claimedSupport} possible votes${p.liedAboutNumbers ? ' (exaggerated)' : ''}.`);
+      // A coach pitching is a different fact from a contestant pitching: they
+      // hold no ballot, so everything they get is persuasion and the listener
+      // pays nothing for ignoring them.
+      ln(p.coachPitch
+        ? `  ${p.pitcher} (coach — no vote) worked the tribe against ${p.pitchTarget}${p.coachCornered ? ', with ' + p.pitcher + "'s own name in the pile" : ''}. ${(p.coachProteges || []).length ? `${(p.coachProteges || []).join(', ')} owe ${p.pitcher} training time.` : 'Nobody on this tribe owes them anything.'}`
+        : `  ${p.pitcher} pitched ${p.pitchTarget}, claiming ${p.claimedSupport} possible votes${p.liedAboutNumbers ? ' (exaggerated)' : ''}.`);
       ln(`    Confirmed coalition: ${p.confirmedCoalition?.join(', ') || 'none'}. Accepted: ${p.flipped?.join(', ') || 'none'}.`);
       if (p.resolution === 'dissolved-after-conflict-check') ln('    Resolution: dissolved after overlapping promises were reconciled; those voters chose another coalition.');
       const rejected = (p.responses || []).filter(r => !r.accepted);
@@ -1838,12 +1844,166 @@ export function _textTheVotes(ep, ln, sec) {
     });
     if (ep.multiTribalElims?.length > 1) ln(`\nTotal eliminated: ${ep.multiTribalElims.join(', ')}`);
   }
+  // ── WHY THE PLAN DID OR DID NOT HOLD ─────────────────────────────────
+  // Roughly half of tribals end on a name the plans did not forecast. Every
+  // deviation carries a reason on its own line above, but nothing said the
+  // PLAN had collapsed — so a reader diffing the two sections concluded the
+  // target changed for no reason. The VP says it; the transcript did not.
+  {
+    const _fc = {};
+    (ep.voteCommitmentDiagnostics || []).forEach(r => {
+      const b = r.predictedBallot || r.committedTarget;
+      if (b) _fc[b] = (_fc[b] || 0) + 1;
+    });
+    const _forecast = Object.entries(_fc).sort(([, a], [, b]) => b - a)[0]?.[0] || null;
+    const _ac = {};
+    (ep.votingLog || []).forEach(v => { if (v.voted && v.voter !== 'THE GAME') _ac[v.voted] = (_ac[v.voted] || 0) + 1; });
+    const _actual = Object.entries(_ac).sort(([, a], [, b]) => b - a)[0]?.[0] || null;
+    if (_forecast && _actual) {
+      const _strayed = (ep.votingLog || []).filter(v => v.voter !== 'THE GAME' && v.voted
+        && v.voted !== _forecast && v.voter !== _forecast);
+      const _specific = [];
+      let _diffuse = 0;
+      _strayed.forEach(v => {
+        const r = String(v.reason || '');
+        if (/\[MISCOMMUNICATION\]/i.test(r)) _specific.push(`${v.voter} wrote the wrong name trying to follow it`);
+        else if (/\[LATE PITCH\]|\[LIVE COALITION\]/i.test(r)) _specific.push(`a late pitch moved ${v.voter}`);
+        else if (/self-preservation|struck before/i.test(r)) _specific.push(`${v.voter} saw their own name coming and struck first`);
+        else if (v.planBreak || /broke own bloc/i.test(r)) _specific.push(`${v.voter} broke the bloc they helped build`);
+        else _diffuse++;
+      });
+      const _causes = _specific.slice(0, 3);
+      if (_diffuse >= 3) _causes.push(`${_diffuse} more moved without ever saying so out loud`);
+      else if (_diffuse && !_specific.length) _causes.push('the name moved late, and quietly');
+      ln('');
+      if (_forecast === _actual) {
+        ln(`THE PLAN HELD — the room went into this on ${_forecast}, and ${_strayed.length ? `${_strayed.length} ballot${_strayed.length === 1 ? '' : 's'} strayed without changing the result` : 'not one ballot strayed'}.`);
+      } else {
+        ln(`THE PLAN COLLAPSED — the room went into this on ${_forecast} and came out on ${_actual}.`);
+        if (_causes.length) ln(`  ${_causes.join('; ').replace(/^./, m => m.toUpperCase())}.`);
+      }
+    }
+  }
+}
+
+// ── COACH VOTED OUT ──
+// A coach boot is discarded by `applyCoachElimination` before contestant
+// elimination machinery ever sees it — `result.eliminated` is nulled and the
+// real event lives on `ep.coachElimination` instead (coach-episode.js). This
+// is the twist's largest emotional beat (grief/relief/unsettled reactions
+// computed by `eliminateCoach`) and it must read as a real vote-out, not
+// silence.
+function _textCoachElimination(ce, ln) {
+  ln(`${ce.coach} was voted out. The tribe cut its own coach.`);
+  if (ce.tribe) ln(`  Tribe: ${ce.tribe}`);
+  const lostEntries = Object.entries(ce.lost || {})
+    .map(([name, stats]) => ({ name, total: Object.values(stats || {}).reduce((a, b) => a + (Number(b) || 0), 0) }))
+    .filter(e => e.total !== 0);
+  if (lostEntries.length) {
+    ln(`  Banked training revoked, effective immediately: ${lostEntries.map(e => `${e.name} (${e.total >= 0 ? '-' : '+'}${Math.abs(e.total).toFixed(2)})`).join(', ')}`);
+  } else {
+    ln(`  No banked training to revoke.`);
+  }
+  const reactions = ce.reactions || [];
+  const grief = reactions.filter(r => r.kind === 'grief').map(r => r.contestant);
+  const relief = reactions.filter(r => r.kind === 'relief').map(r => r.contestant);
+  const unsettled = reactions.filter(r => r.kind === 'unsettled').map(r => r.contestant);
+  if (grief.length) ln(`  Grief: ${grief.join(', ')} — genuinely torn up about it.`);
+  if (relief.length) ln(`  Relief: ${relief.join(', ')} — glad to see him go.`);
+  if (unsettled.length) ln(`  Unsettled: ${unsettled.join(', ')} — not sure how to feel.`);
 }
 
 // ── WHY THIS VOTE HAPPENED ──
 export function _textWhyVote(ep, ln, sec) {
   sec('WHY THIS VOTE HAPPENED');
   const elim = ep.eliminated;
+
+  // ── SAVE CARD ──
+  // A save card firing rewrites `result.eliminated` to the coach's chosen
+  // replacement BEFORE this function ever sees it (`maybeSaveCoach` /
+  // `offerSaveCard` in coach-episode.js) — the replacement then reads as an
+  // ordinary vote-out below unless this says otherwise first. Without this,
+  // the twist's biggest beat (a tribe unanimously protecting its coach, who
+  // then names who dies in his place) would vanish into silence.
+  // ── THE SIGNATURES, READ OUT ──────────────────────────────────────────
+  // The VP reads each peer's sealed verdict one at a time with the reason
+  // underneath; the backlog had only the summary line, so the one moment where
+  // the coach-vs-coach relationship settles in public existed on screen and
+  // nowhere in the transcript.
+  const _sigWhy = {
+    'costs-my-protege': 'it would have cost them their own protege',
+    'returning-the-favour': 'they were refused once, and remember it',
+    'pact-already-broken': 'the pact between them was already broken',
+    'bad-blood': 'there was never going to be a favour here',
+    'rival-outbuilding': 'the coach they were asked to save has built more of this tribe',
+    'strategic': 'the arithmetic did not come out in their favour',
+    'unconvinced': 'they were not convinced',
+    'debt': 'they owed this one, and paid it',
+    'pact': 'a pact between them is still standing',
+    'allied': 'they run together',
+    'friendship': 'they are friends, and it was never in doubt',
+    'decency': 'no reason beyond the plain one',
+  };
+  (ep.coachCardCommits || []).forEach(cm => {
+    if (!(cm.votes || []).length) {
+      ln(`THE SIGNATURES — ${cm.calledBy || cm.coach} played the card with no other coach left to sign. It carries.`);
+      return;
+    }
+    ln(`THE SIGNATURES — ${cm.calledBy || cm.coach} calls for the save card. It covers ${(cm.covers || [cm.coach]).join(' and ')} — whichever of them the votes come for. Sealed before a single vote was read.`);
+    cm.votes.forEach(v => {
+      ln(`  ${v.coach}: ${v.consents ? 'SIGNED' : 'REFUSED'} — ${_sigWhy[v.reason] || 'no reason given'}.`);
+    });
+    ln(cm.signed
+      ? `  Unanimous. The card is live for ${(cm.covers || [cm.coach]).join(' and ')}.`
+      : `  Not unanimous. It does not carry tonight — but it was refused, not played, so the card is still on the tribe for whoever is left to ask again.`);
+  });
+
+  // Coaches whose tribe folded under them.
+  (ep.coachTribeCollapse || []).forEach(c => {
+    ln(`${c.from} is gone and had nobody left to compete for it. ${(c.coaches || []).join(' and ')} move to ${c.to} — a staff without a tribe cannot lose a challenge, and cannot be voted out of one either.`);
+  });
+
+  (ep.coachSaves || []).forEach(save => {
+    const _svP = pronouns(save.coach);
+    // THE SIGNATURES above already read every signer out one at a time; this
+    // is the outcome, not a second recital of the same names.
+    ln(`SAVE CARD PLAYED — the votes were for ${save.coach}, and ${save.coach} stays.`);
+    ln(`  ${save.coach} named the replacement: ${save.replacement || '???'} goes home in ${_svP.posAdj} place.`);
+  });
+
+  // The staff joining the game. The only thing a coach was playing for, and
+  // the backlog said nothing about it either.
+  (ep.coachPromotions || []).forEach(p => {
+    const surviving = p.surviving || [];
+    ln(`PROMOTED — ${p.name} reached the merge and is a full player from tonight.`);
+    ln(surviving.length
+      ? `  ${surviving.length} of ${p.name}'s protégés are still standing (${surviving.join(', ')}). ${p.name} banks +${(Number(p.stake) || 0).toFixed(2)} strategic for it — the only training ${p.name} has on themselves.`
+      : `  ${p.name} arrives with nothing banked. Every session went into somebody else, and none of them are still here.`);
+  });
+
+  // Committed before the votes and not needed, or never committed at all —
+  // both only exist because the card is played like an idol.
+  (ep.coachCardCommits || []).forEach(cm => {
+    if ((ep.coachSaves || []).some(v => v.coach === cm.coach)) return;
+    if ((ep.coachSaveRefusals || []).some(v => v.coach === cm.coach)) return;
+    ln(`SAVE CARD BURNED — ${cm.calledBy || cm.coach} committed the card before the votes were read and it covered ${(cm.covers || [cm.coach]).join(' and ')}. The votes went to a contestant instead. It is gone.`);
+  });
+  (ep.coachCardNotPlayed || []).forEach(np => {
+    if (!np.held) return;
+    ln(`SAVE CARD NOT USED — ${np.coach} goes home holding it. The card had to be committed before the votes were read.`);
+  });
+
+  // The refusal is the louder half. A coach goes home because one colleague
+  // would not sign, and the reason is on the record.
+  (ep.coachSaveRefusals || []).forEach(rf => {
+    ln(`THE CARD IS NOT SIGNED — ${rf.refusedBy} refused to save ${rf.coach}.`);
+    if (rf.reason === 'costs-my-protege' && rf.doomed) {
+      ln(`  Signing would have cost ${rf.refusedBy} their own protégé: ${rf.doomed} was the name on the card.`);
+    } else if (rf.reason === 'returning-the-favour') {
+      ln(`  ${rf.refusedBy} was refused once before, and remembers it.`);
+    }
+    ln(`  The card only works if every coach on the team signs it. ${rf.coach} goes home.`);
+  });
 
   // Multi-tribal summaries
   if (ep.multiTribalResults?.length) {
@@ -2058,6 +2218,13 @@ export function _textWhyVote(ep, ln, sec) {
   } else if (ep.tribeDissolve) {
     const _td = ep.tribeDissolve;
     ln(`No vote this episode. ${_td.fromTribe} dissolved. ${_td.player} is now on ${_td.toTribe}.`);
+  } else if (ep.coachElimination?.length) {
+    // A coach boot never sets ep.eliminated — applyCoachElimination
+    // (coach-episode.js) deliberately nulls it, because the tribe loses its
+    // coach, not a contestant's game. Without this branch every reader saw
+    // "No elimination this episode" on a night the tribe voted 6-1 to cut
+    // its coach.
+    ep.coachElimination.forEach(ce => _textCoachElimination(ce, ln));
   } else {
     ln('No elimination this episode.');
   }
@@ -2170,6 +2337,7 @@ export function _textWhyVote(ep, ln, sec) {
   else if (ep.isTripleDogDare && ep.tripleDogDare?.eliminated) ln(ep.tripleDogDare.eliminated + ' — Triple Dog Dare (failed dare)');
   else if (ep.lastChance) ln(`${ep.lastChance.loser} — Last Chance Challenge (lost to ${ep.lastChance.winner})`);
   else if (elim) { ln(elim); if (cfg.ri) ln(`Chose: ${ep.riChoice || 'N/A'}`); }
+  else if (ep.coachElimination?.length) ln(ep.coachElimination.map(ce => `${ce.coach} — Coach Voted Out`).join(', '));
   else ln('No elimination.');
 }
 
@@ -3227,6 +3395,20 @@ export function _textVolunteerDuel(ep, ln, sec) {
 }
 
 export function _textDockArrivals(ep, ln, sec) {
+  // ── THE ONE WHO WAS NOT ON THE DOCK ──
+  //
+  // Written before the dock arrivals return below, because a late arrival
+  // happens on an episode that has no dock arrivals at all — so the early
+  // return would have dropped the single most important thing that happened
+  // in that episode.
+  if (ep.lateArrival) {
+    sec('SOMEBODY ARRIVES');
+    ln(`  ${ep.lateArrival.name} was not here when this season started.`);
+    ln(`  ${ep.lateArrival.name} joins ${ep.lateArrival.tribe}`
+      + `${ep.lateArrival.fromOtherSide ? ' — the camp they were not cast on' : ''}.`);
+    ln('  No bonds, no alliance, no challenge record. Everybody else has had days.');
+    ln('');
+  }
   if (!ep.dockArrivals?.length) return;
   sec('THE ARRIVAL');
   const host = seasonConfig.host || 'Chris';
@@ -3839,6 +4021,10 @@ export function generateSummaryText(ep) {
     _textTwistChallenge(ep, ln, sec, 'wheelOfMisfortune', 'WHEEL OF MISFORTUNE', [rpBuildWheelTitleCard, rpBuildWheelPhase1, rpBuildWheelPhase2, rpBuildWheelPhase3, rpBuildWheelResults]);
   }
 
+  if (ep.coachData) {
+    _textTwistChallenge(ep, ln, sec, 'coachData', 'COACHING', [rpBuildCoachBoard]);
+  }
+
   // ── CHAIN OF COMMAND ──
   _textChainOfCommand(ep, ln, sec);
 
@@ -4345,6 +4531,35 @@ const _BB_PHASE_TITLE = {
  * `skip` drops sections the transcript already prints under its own headings,
  * so the two do not say the same thing twice a few lines apart.
  */
+/**
+ * The number of keys a Head of Household is about to turn, in words.
+ *
+ * `Math.max(0, n - 2)` used to floor this, so a ceremony with ONE name of its
+ * own announced "it is my responsibility to nominate TWO people", promised two
+ * keys and then turned one. It only happens when something else has already
+ * filled a chair — a curse, a secret nomination competition, a dead-last rule
+ * — which is exactly when the script is most worth getting right, because the
+ * whole point of those weeks is that the Head of Household did not choose the
+ * whole block.
+ */
+const NUMWORD = n => ['one', 'two', 'three', 'four', 'five'][n - 1] || `${n}`;
+
+/**
+ * The vote work belonging to the cycle an act was played in.
+ *
+ * The first cycle's war room must not be printed over a later one: the
+ * operation, the commitments and the counts all belong to the half of the
+ * night that produced them. Returns null for the main week, so callers fall
+ * back to the episode's own fields.
+ */
+function _bbSegRecord(ep, act) {
+  const seg = act?.segment || 1;
+  if (seg < 2) return null;
+  const list = (ep.extraEvictions || []).length
+    ? ep.extraEvictions : (ep.doubleEviction ? [ep.doubleEviction] : []);
+  return list.find(r => (r.segment || 2) === seg) || list[seg - 2] || null;
+}
+
 function _textBBHouseStatus(ep, phase, ln, sec, { skip = [] } = {}) {
   let html = '';
   try { html = rpBuildBBOverview(ep, phase) || ''; } catch { return; }
@@ -4585,15 +4800,34 @@ export function generateBBSummaryText(ep) {
       + `${d.lopsided ? '  — one of them means it considerably more than the other' : ''}`));
   }
 
-  let announcedSecond = false;
+  // Which extra cycles have already been announced. A double runs the week
+  // twice in one episode and a triple runs it three times; without a banner
+  // per cycle the transcript reads as one confusing week with three Heads of
+  // Household. Tracked as a SET rather than a flag, because the flag version
+  // announced the second cycle and let the third arrive unmarked.
+  const announcedSegs = new Set();
+  // COUNTED IN PEOPLE, NOT IN CYCLES.
+  //
+  // Big Brother Canada's triple takes three houseguests out in TWO cycles —
+  // the second one has three nominees and two of them walk — so counting
+  // cycles had the banner announcing a double over a night that evicted three.
+  const totalOut = 1 + (ep.extraEvictions || []).reduce(
+    (n, r) => n + (r.evicted ? 1 : 0) + (r.secondEvicted ? 1 : 0),
+    (ep.extraEvictions || []).length ? 0 : (ep.doubleEviction ? 1 : 0));
+  const totalSegs = 1 + ((ep.extraEvictions || []).length
+    || (ep.doubleEviction ? 1 : 0));
   for (const act of ep.acts || []) {
-    // A double eviction runs the whole week twice in one episode. Without this
-    // the transcript reads as one confusing week with two Heads of Household.
-    if (act.segment === 2 && !announcedSecond) {
-      announcedSecond = true;
+    const seg = act.segment || 1;
+    if (seg >= 2 && !announcedSegs.has(seg)) {
+      announcedSegs.add(seg);
+      const title = totalSegs >= 3
+        ? `TRIPLE EVICTION — CYCLE ${seg} OF ${totalSegs}, LIVE`
+        : totalOut >= 3
+          ? 'TRIPLE EVICTION — ONE LIVE CYCLE, TWO WALK'
+          : 'DOUBLE EVICTION — THE SECOND CYCLE, LIVE';
       ln('');
       ln('═'.repeat(46));
-      ln('DOUBLE EVICTION — THE SECOND CYCLE, LIVE');
+      ln(title);
       ln('═'.repeat(46));
     }
     switch (act.type) {
@@ -5058,7 +5292,7 @@ export function generateBBSummaryText(ep) {
           // this transcript may put the real name next to it.
           const anonOwn = (act.hohNominees && act.hohNominees.length)
             ? act.hohNominees.filter(Boolean) : nomNames;
-          const anonWord = ['two', 'three', 'four', 'five'][Math.max(0, anonOwn.length - 2)] || `${anonOwn.length}`;
+          const anonWord = NUMWORD(anonOwn.length);
           ln('  The chair at the head of the table stays empty. The wall screen speaks:');
           ln(`  "This week's Head of Household is invisible. Big Brother will now turn ${anonWord} keys on their behalf."`);
           ln('');
@@ -5077,13 +5311,20 @@ export function generateBBSummaryText(ep) {
           (act.socialBeats || []).forEach(b => ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
           break;
         }
-        const nomHoh = ep.hoh || act.hoh || 'The Head of Household';
+        // THE ACT'S OWN HEAD OF HOUSEHOLD, not the episode's.
+        //
+        // Read the other way round, and on any night that runs a second cycle
+        // the ceremony was hosted by the FIRST cycle's Head of Household — who
+        // by then is frequently a nominee, so the transcript had them turning a
+        // key on their own photograph. `ep.hoh` stays as the fallback for the
+        // ordinary week, where the act does not always carry the name.
+        const nomHoh = act.hoh || ep.hoh || 'The Head of Household';
         // The chairs the HOH actually filled. A cursed self-nomination or a
         // Roadkill winner's pick is on the block but was never theirs to claim,
         // and the ceremony must not count it among the keys in their box.
         const ownNames = (act.hohNominees && act.hohNominees.length)
           ? act.hohNominees.filter(Boolean) : nomNames;
-        const ownWord = ['two', 'three', 'four', 'five'][Math.max(0, ownNames.length - 2)] || `${ownNames.length}`;
+        const ownWord = NUMWORD(ownNames.length);
         if (act.duo?.pair?.length === 2) {
           ln(`  ${nomHoh}: "This is the nomination ceremony. It is my responsibility as Head of`);
           ln('    Household to nominate a DUO for eviction — not two houseguests, two houseguests');
@@ -5091,9 +5332,17 @@ export function generateBBSummaryText(ep) {
           ln(`    ${act.duo.pair.join(' and ')}${act.duo.kin ? ` — ${act.duo.kin.toLowerCase()}` : ''}.`);
         } else
         ln(`  ${nomHoh}: "This is the nomination ceremony. It is my responsibility as Head of`);
-        ln(`  Household to nominate ${ownWord} people for eviction. In my nomination box are the keys`);
-        ln(`  of the houseguests I am nominating. I will turn ${ownWord} keys to lock in my`);
-        ln('  nominations, and their faces will appear on the memory wall."');
+        // Every noun in this speech has to agree with how many chairs are
+        // actually the Head of Household's, which on a curse, Roadkill or
+        // dead-last week is ONE — and the fixed plurals had them promising
+        // "two people" and "two keys" before turning a single key.
+        const one = ownNames.length === 1;
+        ln(`  Household to nominate ${ownWord} ${one ? 'person' : 'people'} for eviction. `
+          + `In my nomination box ${one ? 'is the key' : 'are the keys'}`);
+        ln(`  of the ${one ? 'houseguest' : 'houseguests'} I am nominating. I will turn `
+          + `${ownWord} ${one ? 'key' : 'keys'} to lock in my`);
+        ln(`  ${one ? 'nomination, and their face' : 'nominations, and their faces'} `
+          + `will appear on the memory wall."`);
         ln('');
         ownNames.forEach((name, i) => {
           const which = ['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`;
@@ -5123,7 +5372,7 @@ export function generateBBSummaryText(ep) {
         }
         ln(`  ${nomHoh}: "${ownNames.join(', ')} — I have nominated you for eviction. This is the`);
         ln('  nomination ceremony. Nominations are complete."');
-        if (act.curseChair || act.roadkillChair) {
+        if (act.curseChair || act.roadkillChair || act.deadLastChair) {
           ln(`  The block is ${nomNames.join(', ')}. Only ${ownNames.length} of those names belong to`);
           ln(`  ${nomHoh}, and everybody in the room can count.`);
         }
@@ -5510,6 +5759,92 @@ export function generateBBSummaryText(ep) {
           ln(`  ${act.winner} refuses. No safety and no punishment — and a statement, made`);
           ln('  in front of the whole house, about not needing either.');
         }
+        break;
+      }
+      case 'americas-eviction-vote': {
+        sec("THE PUBLIC VOTE");
+        // Read out in the order the room heard it — lines closed, what they
+        // were asked, the stall, then the numbers from the lowest upward with
+        // the name last. A transcript that opened with the result would be
+        // telling the reader the answer and then narrating the suspense.
+        if (act.closing) ln(`  "${act.closing}"`);
+        if (act.address) { ln(''); ln(`  "${act.address}"`); }
+        if (act.tease) { ln(''); ln(`  "${act.tease}"`); }
+        ln('');
+        const order = act.reveal
+          || [...(act.tally || [])].sort((a, b) => (a.share || 0) - (b.share || 0));
+        for (const r of order) {
+          ln(r.name === act.target
+            ? `  "${act.resultLine || `${r.name} — ${r.share}%.`}"`
+            : `    ${r.name} — ${r.share}%.`);
+        }
+        if (act.shape === 'knife-edge' || act.shape === 'close') {
+          ln('');
+          ln(`  ${act.margin} points between them.`);
+        }
+        ln('');
+        ln(`  It goes into the tally with the house’s${act.weight > 1
+          ? `, ${act.weight} times` : ''}. Nobody in that room had a say in it.`);
+        beats(act);
+        break;
+      }
+      case 'dead-last': {
+        sec('DEAD LAST');
+        ln(`  ${act.nominee} finished ${act.place} of ${act.of}`
+          + `${act.competition ? ` in ${act.competition}` : ''}.`);
+        ln(act.threw
+          ? `  ${act.nominee} threw it, in the one week where that fills a chair.`
+          : `  Last place takes the first chair. ${act.hoh} has one name left to give.`);
+        beats(act);
+        break;
+      }
+      case 'chain-duel': {
+        sec('THE DUEL');
+        ln(`  No vote. ${(act.nominees || []).join(' and ')} settle it head to head`
+          + `${act.competition?.name ? ` in ${act.competition.name}` : ''}.`);
+        if (act.winner) ln(`  ${act.winner} wins and stays.`);
+        ln(`  ${act.loser} is evicted, and not one houseguest had to put a name to it.`);
+        beats(act);
+        break;
+      }
+      case 'chain-of-safety': {
+        sec('THE CHAIN OF SAFETY');
+        ln(act.variant === 'hoh'
+          ? '  The Head of Household starts the chain. No nomination ceremony, no veto.'
+          : '  A safety competition crowns the first link. No nomination ceremony, no veto.');
+        ln('');
+        if (act.openingComp?.placements?.length) {
+          ln(`  Safety competition: ${act.openingComp.placements.slice(0, 3).join(', ')} — `
+            + `${act.starter} wins the first link.`);
+          ln('');
+        }
+        // THE PICK ORDER IS THE DOCUMENT. Everything else this week is a
+        // consequence of it, so it is printed in full, numbered, with who
+        // owed the pick to whom — a reader who only saw the block would have
+        // no idea how the house arrived at it.
+        ln(`  The chain, in order:`);
+        ln(`     1. ${act.starter}${act.variant === 'hoh' ? ' (Head of Household)' : ' (won safety)'}`);
+        (act.links || []).forEach((l, i) => {
+          ln(`    ${String(i + 2).padStart(2)}. ${l.chosen} — chosen by ${l.picker}`);
+        });
+        ln('');
+        // Why the list stops one short of the room: the chain ends at three
+        // because those three have to compete, so the last name called is
+        // handed a link with nowhere to send it.
+        const holder = (act.order || [])[(act.order || []).length - 1];
+        if (holder) {
+          ln(`  ${holder} is the last name called, and the chain stops there — three left means`);
+          ln('  there is a competition to run, so nobody gets to save anybody else.');
+          ln('');
+        }
+        ln(`  Chosen by nobody: ${(act.leftover || []).join(', ')}.`);
+        if (act.safetyWinner) {
+          ln(`  Second safety competition: ${act.safetyWinner} wins it and is safe.`);
+        }
+        if ((act.nominees || []).length) {
+          ln(`  ${act.nominees.join(' and ')} are the nominees. No ceremony, no veto.`);
+        }
+        beats(act);
         break;
       }
       case 'safety-suite': {
@@ -6221,8 +6556,7 @@ export function generateBBSummaryText(ep) {
         // The SECOND cycle's eviction must not carry the first cycle's war
         // room — same leak the screens had: ep.voteOperation belongs to the
         // first half of the night, and the double's record carries its own.
-        const op = ((act.segment || 1) === 2
-          ? ep.doubleEviction?.voteOperation : ep.voteOperation) || null;
+        const op = (_bbSegRecord(ep, act)?.voteOperation ?? ep.voteOperation) || null;
         const voters = (act.ballots || []).map(b => b.voter);
         const majority = Math.floor(voters.length / 2) + 1;
         sec('VOTING PLANS');
@@ -6295,11 +6629,21 @@ export function generateBBSummaryText(ep) {
           if (b.pleaMove) chain.push(`moved by ${b.movedBy}'s plea`);
           ln(`  ${b.voter}: "I vote to evict ${b.evict}."${chain.length ? `  (${chain.join(' · ')})` : ''}`);
         });
+        // AND THE PUBLIC'S, read with the rest of them. It is counted into the
+        // totals below, so leaving it out of the list printed a room of eight
+        // and a board that added up to nine.
+        if (act.americasVote?.target) {
+          const av = act.americasVote;
+          const share = (av.tally || []).find(t => t.name === av.target)?.share;
+          ln(`  The public: "We vote to evict ${av.target}."`
+            + `  (${share != null ? `${share}% of the public vote` : 'the public vote'}`
+            + `${av.weight > 1 ? ` × ${av.weight}` : ''})`);
+        }
 
         // HOW THE PLANS CHANGED — the same reasons the screen gives, so the
         // transcript is not a thinner account of the same night.
-        const commitments = new Map((((act.segment || 1) === 2
-          ? ep.doubleEviction?.voteCommitments : ep.voteCommitments) || []).map(c => [c.voter, c]));
+        const commitments = new Map(((_bbSegRecord(ep, act)?.voteCommitments
+          ?? ep.voteCommitments) || []).map(c => [c.voter, c]));
         const reasons = (act.ballots || []).map(b => {
           const c = commitments.get(b.voter);
           const moved = b.stated && b.stated !== b.evict;
@@ -6337,8 +6681,8 @@ export function generateBBSummaryText(ep) {
         // The second cycle's arithmetic, not the first's — the last of the
         // four fields that leaked across the double's seam (operation,
         // commitments, pleas, and this).
-        const wrong = ((((act.segment || 1) === 2
-          ? ep.doubleEviction?.votePlans : ep.votePlans)) || []).filter(pl => pl.wrong);
+        const wrong = ((_bbSegRecord(ep, act)?.votePlans ?? ep.votePlans) || [])
+          .filter(pl => pl.wrong);
         if (wrong.length) {
           ln('');
           ln('  Who had it wrong:');
@@ -6404,9 +6748,13 @@ export function generateBBSummaryText(ep) {
   for (const [heading, iv] of [
     ['THE EVICTEE INTERVIEW', ep.evictionInterview],
     ['THE SECOND EVICTEE INTERVIEW', ep.secondEvictionInterview],
+    ['THE THIRD EVICTEE INTERVIEW', ep.thirdEvictionInterview],
   ]) {
     if (!iv) continue;
     sec(heading);
+    // Who was on the other side of the door. Printed FIRST because it is the
+    // walk-out — it happens before the host has asked anything.
+    if (iv.homecoming) ln(`  ${iv.homecoming.line}`);
     iv.questions.forEach(q => {
       ln(`  ${iv.host}: ${q.q}`);
       ln(`  ${iv.evictee}: ${q.a}${q.wrong ? '   (wrong)' : ''}`);

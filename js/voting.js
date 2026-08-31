@@ -14,6 +14,7 @@ import { currentCampAccessEpisode, findConversationAccess } from './camp-access.
 import { hasSocialRole, perceivedRoles } from './social-status.js';
 import { pitchInitiationModifier, approachBudgetModifier, lieChanceModifier, verificationModifier, learnedCaution } from './adaptation.js';
 import { META_WEIGHTS } from './franchise-meta.js';
+import { isCoach, coachVoteReason } from './coaches.js';
 
 // Alliance-trust belief-reading: a voter is "out of the loop" if the target plan
 // is circulating (someone knows it) but THEY don't hold a (non-dismissed) belief
@@ -305,7 +306,7 @@ export function applyResolvedPitchesToForecast(pitches = [], records = []) {
 // A grievance can break alliance discipline, but only when the voter believes a
 // counter-plan has enough support. Low temperament lowers the proof required;
 // it never invents supporters who are not present in the planning network.
-export function evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes = [], immunePlayers = [], emotional = 'comfortable', roll = Math.random, diagnostics = null) {
+export function evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes = [], immunePlayers = [], emotional = 'comfortable', roll = Math.random, diagnostics = null, extraTargets = []) {
   if (!allianceTarget) return null;
   const s = pStats(voter);
   const immune = immunePlayers instanceof Set ? immunePlayers : new Set(immunePlayers || []);
@@ -313,8 +314,11 @@ export function evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers,
   const majority = Math.floor(eligibleVoters.length / 2) + 1;
   const volatility = Math.max(0, Math.min(1, (10 - s.temperament) / 9));
   const currentEp = (gs.episode || 0) + 1;
+  // Anyone who can RECEIVE this revenge vote — tribalPlayers plus any
+  // non-voting targets (coaches). eligibleVoters above stays tribalPlayers-only.
+  const votableSubjects = [...tribalPlayers, ...extraTargets];
 
-  const candidates = tribalPlayers.filter(subject => subject !== voter && subject !== allianceTarget && !immune.has(subject))
+  const candidates = votableSubjects.filter(subject => subject !== voter && subject !== allianceTarget && !immune.has(subject))
     .map(subject => {
       const memoryScore = strategicMemoryScore(voter, subject, currentEp);
       const memory = strongestStrategicMemory(voter, subject, currentEp);
@@ -794,6 +798,13 @@ export function buildVoteReason(voter, target, type, ctx = {}) {
 export function ensureVoteReasonMatchesTarget(voter, target, reason, lateTrigger = null, roster = []) {
   const text = String(reason || '').trim();
   if (!target || !text) return text || 'strategic read';
+  // A coach on the block gets explained as a coach. Contestant prose about
+  // "the room settling on a name" is true but says nothing about the one fact
+  // that makes this vote cheap — the target has no ballot and no idol to run.
+  if (isCoach(target) && !/coach/i.test(text)) {
+    const _cr = coachVoteReason(target, voter);
+    if (_cr) return _cr;
+  }
   const lower = text.toLowerCase();
   if (lower.includes(String(target).toLowerCase())) return text;
   const mentioned = (roster || []).filter(name => name !== voter && name !== target
@@ -814,7 +825,13 @@ export function ensureVoteReasonMatchesTarget(voter, target, reason, lateTrigger
   return _moved[(voter.length * 3 + target.length * 2 + other.length) % _moved.length];
 }
 
-export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], openVote = false) {
+/**
+ * @param extraTargets names that may RECEIVE votes but never cast one.
+ *   Coaches. The voter pool is built from `tribalPlayers` alone; only the
+ *   candidate pool is widened. Adding a coach to `tribalPlayers` instead would
+ *   hand them a ballot, which the twist forbids.
+ */
+export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], openVote = false, extraTargets = []) {
   // immuneName may be a string or an array — normalise to a Set for O(1) lookup
   const _immArr = Array.isArray(immuneName) ? immuneName : immuneName ? [immuneName] : [];
   const _immSet = new Set(_immArr);
@@ -826,6 +843,9 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
     return pair ? (pair.a === voter ? pair.b : pair.a) : null;
   };
   const _tdBlocked = (voter, target) => _tdPartnerOf(voter) === target;
+  // Anyone who can RECEIVE a vote — the voter pool (tribalPlayers) plus any
+  // non-voting targets (coaches). Never used to build a voter/eligible list.
+  const votablePlayers = [...tribalPlayers, ...extraTargets];
 
   const votes = {}, log = [], defections = [], provisionalBallots = [];
   const emotionalDefectionDiagnostics = [];
@@ -841,7 +861,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
   let _voteMiscommunications = null;
 
   // Penalty vote: a pre-cast vote against the penalty target (if they're at this tribal)
-  if (gs.penaltyVoteThisEp && tribalPlayers.includes(gs.penaltyVoteThisEp) && !isImmune(gs.penaltyVoteThisEp)) {
+  if (gs.penaltyVoteThisEp && votablePlayers.includes(gs.penaltyVoteThisEp) && !isImmune(gs.penaltyVoteThisEp)) {
     votes[gs.penaltyVoteThisEp] = (votes[gs.penaltyVoteThisEp] || 0) + 1;
     const _pvBv = gs._activeBlackVote || null;
     const _pvReason = _pvBv ? `Black Vote from ${_pvBv.from} — ${_pvBv.reason || 'parting shot'}` : 'penalty vote — pre-cast by the twist';
@@ -851,7 +871,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
   // ── BLACK VOTE: direct injection if penalty vote didn't fire (target on different tribe) ──
   // Check gs.blackVotes for any pending classic vote whose target is at THIS tribal
   if (gs.blackVotes?.length) {
-    const _bvDirect = gs.blackVotes.find(bv => bv.type === 'classic' && tribalPlayers.includes(bv.target) && !isImmune(bv.target) && bv.target !== gs.penaltyVoteThisEp);
+    const _bvDirect = gs.blackVotes.find(bv => bv.type === 'classic' && votablePlayers.includes(bv.target) && !isImmune(bv.target) && bv.target !== gs.penaltyVoteThisEp);
     if (_bvDirect) {
       votes[_bvDirect.target] = (votes[_bvDirect.target] || 0) + 1;
       log.push({ voter: _bvDirect.from, voted: _bvDirect.target, reason: `Black Vote from ${_bvDirect.from} — ${_bvDirect.reason || 'parting shot'}`, isBlackVote: true });
@@ -878,7 +898,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       const myAlliance = alliances.find(a => a.members.includes(pitcher));
       const myTarget = myAlliance?.target;
       // Pick who the pitcher wants out instead
-      const pitchVictims = tribalPlayers.filter(p => p !== pitcher && !_immSet.has(p) && p !== myTarget);
+      const pitchVictims = votablePlayers.filter(p => p !== pitcher && !_immSet.has(p) && p !== myTarget);
       if (!pitchVictims.length) return;
       const pitchTarget = wRandom(pitchVictims, v =>
         Math.max(0.1, threatScore(v) * 0.4 + (-getPerceivedBond(pitcher, v)) * 0.3
@@ -945,6 +965,101 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       _pitchCount++;
     });
   }
+  // ── COACH INFLUENCE ───────────────────────────────────────────────────
+  // A coach casts no ballot and is not therefore powerless. Their leverage is
+  // exactly what the twist says it is: the training they have handed out and
+  // the standing that comes with it. They work the same pitch pipeline every
+  // contestant uses — responses, flips, leaks, counterplay — so a coach can
+  // argue for a name, and can argue for their own life when the room turns on
+  // them. Coaches are pitchers only: never in `_pitchCandidates`, which
+  // doubles as the recipient pool and the eligible-voter count.
+  // `_pitchCandidates` above is block-scoped; this is the same set — the
+  // contestants who can still be talked to and can still cast a ballot.
+  const _coachAudience = tribalPlayers.filter(p => !lostVotes.includes(p));
+  for (const coach of extraTargets) {
+    if (_votePitches.filter(v => v.coachPitch).length >= 2) break;
+    const cS = pStats(coach);
+    const banked = gs.coachTraining?.[coach] || {};
+    const proteges = Object.keys(banked).filter(n => tribalPlayers.includes(n));
+    const stars = (gs.coaches || []).find(c => c.name === coach)?.stars ?? 4.5;
+
+    // Cornered coaches fight. Anything else is a coach who watches their own
+    // elimination without opening their mouth, which is the thing the twist
+    // was accused of being.
+    const aimedAtMe = _forecastCounts[coach] || 0;
+    const cornered = aimedAtMe >= 1;
+    const weight = cS.social * 0.05 + cS.strategic * 0.035 + stars * 0.02 + proteges.length * 0.03;
+    const chance = cornered ? Math.min(0.92, 0.5 + weight) : Math.min(0.35, weight * 0.45);
+    if (Math.random() >= chance) continue;
+
+    // Who they argue for. Cornered, it is anybody but themselves — the
+    // biggest forecast pile that is not the coach. Otherwise they protect
+    // what they have built: whoever their protégés' votes are landing on.
+    const _notMe = tribalPlayers.filter(n => n !== coach && !lostVotes.includes(n));
+    if (!_notMe.length) continue;
+    // Never spend a protégé while somebody else is available. A coach arguing
+    // for the elimination of the player they have been building all season
+    // reads as nonsense and destroys the relationship the influence runs on —
+    // and a coach who has trained the whole tribe has genuinely run out of
+    // other names, which is its own kind of trapped.
+    const _outsiders = _notMe.filter(n => !proteges.includes(n));
+    const _pool = _outsiders.length ? _outsiders : _notMe;
+    const pitchTarget = cornered
+      ? _pool.slice().sort((a, b) =>
+          (_forecastCounts[b] || 0) - (_forecastCounts[a] || 0)
+          || getBond(coach, a) - getBond(coach, b))[0]
+      : _pool.slice().sort((a, b) => getBond(coach, a) - getBond(coach, b))[0];
+    if (!pitchTarget) continue;
+
+    const _flipped = [], _responses = [], _leaks = [];
+    // Protégés first — that is what the sessions bought.
+    const _recipients = _coachAudience
+      .filter(v => v !== pitchTarget)
+      .sort((a, b) => (proteges.includes(b) ? 1 : 0) - (proteges.includes(a) ? 1 : 0)
+        || getBond(coach, b) - getBond(coach, a))
+      .slice(0, Math.max(2, Math.min(6, 2 + Math.round((cS.social + cS.strategic) / 6))));
+
+    for (const voter of _recipients) {
+      const vS = pStats(voter);
+      const _voterRead = observedCommitments.find(read => read.voter === voter);
+      // The leverage, quantified: hours banked into this person, the bond, and
+      // how far above them the coach's career sits.
+      const bankedHere = Object.values(banked[voter] || {}).reduce((t, n) => t + Math.max(0, n), 0);
+      // The sessions ARE the leverage, so they have to be worth something. A
+      // banked total sits around 0.3-1.5 per protégé, which multiplied thinly
+      // produced a coach who could talk all week and move nobody — the twist's
+      // whole premise failing quietly. Fame carries the rest: a five-star
+      // career gets listened to by people who grew up watching it.
+      const trust = Math.max(-3, Math.min(6,
+        getBond(coach, voter) * 0.45
+        + bankedHere * 2.6
+        + (proteges.includes(voter) ? 0.8 : 0)
+        + (stars - 3) * 0.45
+        + cS.social * 0.06));
+      const response = evaluatePitchResponse({ trust, tacticalCredibility: 0.5, loyalty: vS.loyalty,
+        targetBond: targetProtection(voter, pitchTarget), claimedSupport: Math.max(1, _flipped.length + 1),
+        eligibleVoters: _coachAudience.length, confirmedSupport: _flipped.length + 1,
+        strategic: vS.strategic, intuition: vS.intuition, emotional: getPlayerState(voter).emotional,
+        liar: false, selfTargeted: (_forecastCounts[voter] || 0) >= 2,
+        competingSupport: _forecastCounts[voter] || 0,
+        commitmentStrength: _voterRead?.commitmentStrength || 0,
+        reputationMod: 0, verificationMod: verificationModifier(voter), learnedCaution: learnedCaution(voter),
+        leakMod: 0,
+        majority: _voterRead?.majority || Math.floor(_coachAudience.length / 2) + 1 });
+      _responses.push({ voter, ...response });
+      if (response.accepted) _flipped.push(voter);
+      if (response.leaked) _leaks.push(voter);
+    }
+
+    _votePitches.push({ pitcher: coach, pitchTarget, originalTarget: null,
+      claimedSupport: Math.max(1, _flipped.length), liedAboutNumbers: false,
+      existingSupporters: [], responses: _responses, flipped: _flipped,
+      confirmedCoalition: _flipped, leaks: _leaks, overheardBy: [],
+      approachBudget: _recipients.length, attemptedContacts: _recipients.length,
+      success: _flipped.length > 0,
+      coachPitch: true, coachCornered: cornered, coachProteges: proteges });
+  }
+
   resolveCompetingPitches(_votePitches, observedCommitments);
   recordPitchKnowledge(_votePitches);
   const _knowledgeEvents = spreadKnowledgeForRound(tribalPlayers);
@@ -1109,7 +1224,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
     }
 
     const _acceptedPitch = _acceptedPitchByVoter.get(voter);
-    if (!target && _acceptedPitch?.pitchTarget && tribalPlayers.includes(_acceptedPitch.pitchTarget)
+    if (!target && _acceptedPitch?.pitchTarget && votablePlayers.includes(_acceptedPitch.pitchTarget)
       && !isImmune(_acceptedPitch.pitchTarget)) {
       target = _acceptedPitch.pitchTarget;
       const _confirmed = _acceptedPitch.confirmedCoalition.length;
@@ -1149,7 +1264,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
     // This is not a blind revenge roll. The voter must see a plausible coalition,
     // with volatile players merely accepting shakier numbers than calm players.
     if (_inNamedAlliance && allianceTarget && !target) {
-      const revenge = evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes, _immSet, emotional, Math.random, emotionalDefectionDiagnostics);
+      const revenge = evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers, alliances, lostVotes, _immSet, emotional, Math.random, emotionalDefectionDiagnostics, extraTargets);
       if (revenge) {
         target = revenge.target;
         const base = strategicMemoryReason(voter, target) || `${voter} has unfinished business with ${target}`;
@@ -1209,7 +1324,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
         const _miscChance = (10 - s.mental) * 0.008 + (10 - s.social) * 0.006;
         if (Math.random() < _miscChance) {
           // Wrong target: alliance's secondary (if split), or 2nd-highest-heat player, or personal grudge
-          const _miscCandidates = tribalPlayers.filter(p => p !== voter && p !== target && !isImmune(p));
+          const _miscCandidates = votablePlayers.filter(p => p !== voter && p !== target && !isImmune(p));
           let _miscTarget = null;
           // If split vote exists, vote the wrong half
           if (myAlliance.splitTarget && target === allianceTarget) _miscTarget = myAlliance.splitTarget;
@@ -1305,7 +1420,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
           const _pArch = players.find(pl => pl.name === p)?.archetype;
           return _pArch === 'villain' && s.boldness * 0.1 < Math.random(); // bold 3 = 70% avoid, bold 7 = 30% avoid, bold 10 = never avoid
         };
-        const candidates = tribalPlayers.filter(p => p !== voter && !isImmune(p)
+        const candidates = votablePlayers.filter(p => p !== voter && !isImmune(p)
           && (!resistsBond || p !== allianceTarget)
           && (!showmanceResist || p !== showmancePartner)
           && getPerceivedBond(voter, p) < 5 // won't freely target someone they genuinely like
@@ -1380,7 +1495,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
           if (allianceTarget && !isImmune(allianceTarget)) {
             target = allianceTarget;
           } else {
-            const _fallbackCandidates = tribalPlayers.filter(p => p !== voter && !isImmune(p));
+            const _fallbackCandidates = votablePlayers.filter(p => p !== voter && !isImmune(p));
             target = _fallbackCandidates.length ? _fallbackCandidates[Math.floor(Math.random() * _fallbackCandidates.length)] : null;
           }
           reason = 'no other options';
@@ -1393,7 +1508,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
     // Only fires if the Mole is actually at this tribal (tribalPlayers check is implicit — voter is from tribalPlayers)
     if (gs._moleVoteDisruption?.includes(voter) && tribalPlayers.includes(voter) && target && allianceTarget) {
       // Mole votes off-plan: pick someone other than alliance target
-      const _roguePool = tribalPlayers.filter(p =>
+      const _roguePool = votablePlayers.filter(p =>
         p !== voter && p !== allianceTarget && !isImmune(p)
       );
       if (_roguePool.length) {
@@ -1444,7 +1559,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
         tribalPlayers.includes(mp) && mp !== voter && getBond(voter, mp) >= 1
       );
       if (_molePitcher && Math.random() < 0.25) { // 25% chance per eligible voter
-        const _badPool = tribalPlayers.filter(p =>
+        const _badPool = votablePlayers.filter(p =>
           p !== voter && p !== _molePitcher && p !== target && !isImmune(p)
         );
         if (_badPool.length) {
@@ -1480,13 +1595,13 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
     let _forcedTargetRule = null;
     // Tied Destinies: can't vote for your partner — redirect to next best target
     if (target && _tdBlocked(voter, target)) {
-      const _altTargets = tribalPlayers.filter(p => p !== voter && p !== target && !isImmune(p) && !_tdBlocked(voter, p));
+      const _altTargets = votablePlayers.filter(p => p !== voter && p !== target && !isImmune(p) && !_tdBlocked(voter, p));
       target = _altTargets.length ? _altTargets.sort((a, b) => (computeHeat(b, tribalPlayers, alliances) || 0) - (computeHeat(a, tribalPlayers, alliances) || 0))[0] : null;
       _forcedTargetRule = 'tied-destinies-redirect';
     }
     // Final safety: NEVER vote for an immune player regardless of how target was selected
     if (target && isImmune(target)) {
-      const _safetyFallback = tribalPlayers.filter(p => p !== voter && !isImmune(p));
+      const _safetyFallback = votablePlayers.filter(p => p !== voter && !isImmune(p));
       target = _safetyFallback.length ? _safetyFallback[Math.floor(Math.random() * _safetyFallback.length)] : null;
       _forcedTargetRule = 'immunity-redirect';
     }

@@ -2,6 +2,7 @@
 import { gs, seasonConfig, players, TWIST_CATALOG } from './core.js';
 import { pStats, pronouns, getPlayerState } from './players.js';
 import { getBond, addBond, floorBondsInvolving } from './bonds.js';
+import { reassignCoaches } from './coaches.js';
 import { wRandom, computeHeat, formAlliances, nameNewAlliance } from './alliances.js';
 import { runAuction } from './auction.js';
 import { simulateDisadvantageVote } from './disadvantage-vote.js';
@@ -524,7 +525,15 @@ export function generateDockArrivals(ep) {
     return choice;
   };
   const host = seasonConfig.host || 'Chris';
-  const allPlayers = [...players];
+  // ── NOT THE ONE WHO IS NOT THERE YET ──
+  //
+  // The dock reads the CAST, and a late arrival is cast normally — so they
+  // walked down the dock in the cold open of episode one, with a host line and
+  // a résumé, weeks before they were due. The whole point of holding somebody
+  // back is that the house does not know they are coming, and the premiere was
+  // introducing them by name.
+  const _held = gs._lateArrival && !gs._lateArrival.seated ? gs._lateArrival.name : null;
+  const allPlayers = [...players].filter(p => p.name !== _held);
   if (!allPlayers.length) return;
 
   // ── Step 1: Group players by energy tier ──
@@ -1220,6 +1229,16 @@ export function applyTwist(ep, twist, isPrimary = true) {
   if (isPrimary) ep.twist = twistObj; // backward compat for engine checks
   const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
+  // The arrival itself is handled in episode.js, which owns the roster and the
+  // camp events — this only marks the episode so the screens, the transcript
+  // and the scheduler know which one it was. Nothing here mutates tribes:
+  // doing it at twist time would run BEFORE the episode snapshots the camp,
+  // and the wall would show somebody standing in a tribe they have not walked
+  // into yet.
+  if (engineType === 'late-arrival') {
+    ep.isLateArrival = true;
+  }
+
   // ── TEAM DYNAMICS ──────────────────────────────────────────────────
   if (engineType === 'tribe-swap') {
     if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;
@@ -1235,6 +1254,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
       members: allActive.slice(i * perTribe, i === tribeNames.length - 1 ? allActive.length : (i+1)*perTribe),
     }));
     if (seasonConfig.advantages?.idol?.enabled) tribeNames.forEach(n => { gs.idolSlots[n] = seasonConfig.idolsPerTribe || 1; });
+    twistObj.coachMoves = reassignCoaches(gs.tribes);
     gs.sitOutHistory = {}; // back-to-back rule resets after a tribe swap
     twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
 
@@ -1257,6 +1277,10 @@ export function applyTwist(ep, twist, isPrimary = true) {
     }));
     if (seasonConfig.advantages?.idol?.enabled) keptNames.forEach(n => { gs.idolSlots[n] = seasonConfig.idolsPerTribe || 1; });
     gs.sitOutHistory = {};
+    // The redraw was built from gs.activePlayers, which has no coaches in
+    // it, so the dissolved camp's staff would still be pointing at a name
+    // that no longer exists on the board.
+    twistObj.coachMoves = reassignCoaches(gs.tribes);
     twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
     twistObj.dissolvedTribe = dissolvedName;
 
@@ -1277,6 +1301,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
       name,
       members: allActive.slice(i * perTribe, i === numTribes - 1 ? allActive.length : (i+1) * perTribe),
     }));
+    reassignCoaches(gs.tribes);   // a new tribe is a new board; nobody may be left off it
     if (seasonConfig.advantages?.idol?.enabled) gs.tribes.forEach(t => { gs.idolSlots[t.name] = seasonConfig.idolsPerTribe || 1; });
     twistObj.newTribes  = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
     twistObj.expansion  = true;
@@ -1423,6 +1448,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
 
     // Assign tribes
     gs.tribes = tribeNames.map((name, i) => ({ name, members: [...teams[i]] }));
+    reassignCoaches(gs.tribes);   // picked teams are a redraw too
 
     // Handle exile — wire into exile island system for advantage search + VP screen
     if (exiled) {

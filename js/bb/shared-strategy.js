@@ -411,6 +411,80 @@ export function bbThreat(name) {
   return bbThreatProfile(name).total;
 }
 
+/**
+ * What it costs to take a shot and miss.
+ *
+ * Three things have to be true at once for a nomination to come back on
+ * somebody, and the product of them is the whole mechanic:
+ *
+ *   1. THEY SURVIVE IT. A nomination that ends somebody's game cannot be
+ *      avenged. So this is weighted by how likely they are to still be here —
+ *      competition record (they take themselves off the block) and social
+ *      standing (the votes are there).
+ *   2. THEY GET POWER. Surviving angry is not dangerous on its own; surviving
+ *      angry and then winning the next Head of Household is. Read off what the
+ *      house has actually watched them win, not off their stat sheet.
+ *   3. THE OBSERVER IS EXPOSED. This is the part that makes it Big Brother
+ *      rather than a general fear of consequences: an outgoing Head of
+ *      Household cannot play in the next competition. The person taking the
+ *      shot this week is the one person who cannot defend themselves next
+ *      week, which is exactly why the real house talks about this constantly.
+ *
+ * Personality decides how loudly it is heard. Boldness discounts it; intuition
+ * and temperament — seeing it coming, and caring — raise it. It never reaches
+ * zero and it never dominates: a houseguest who lets this stop them every time
+ * would simply never nominate the best player, which is the failure mode this
+ * has to avoid rather than the goal.
+ */
+function blowbackRisk(observer, candidate) {
+  if (!observer || !candidate || observer === candidate) return 0;
+  const rec = gs.bb?.stats?.[candidate] || {};
+  const st = pStats(candidate) || {};
+  const me = pStats(observer) || {};
+
+  // 1. How likely they are to still be here. A veto win is the loudest
+  // evidence that a nomination does not stick to this person.
+  const comps = (rec.vetoWins || 0) * 0.9 + (rec.hohWins || 0) * 0.5
+    + (rec.blockBusterWins || 0) * 0.6;
+  const others = (gs.activePlayers || []).filter(n => n !== candidate);
+  const support = others.length
+    ? others.filter(n => { try { return getBond(candidate, n) >= 3; } catch { return false; } }).length
+      / others.length : 0;
+  const survives = clamp(0.25 + comps * 0.14 + support * 0.5, 0, 1);
+
+  // 2. How likely they are to be holding the next one. Half what the house has
+  // watched them win, half what they are plainly capable of.
+  const watched = clamp(((rec.hohWins || 0) + (rec.vetoWins || 0)) * 0.22, 0, 0.55);
+  const able = clamp((Math.max(st.physical || 5, st.mental || 5, st.endurance || 5) - 5) * 0.06, 0, 0.35);
+  const takesPower = clamp(watched + able, 0, 0.8);
+
+  // 3. Whether the person doing it can defend themselves next week. The
+  // outgoing Head of Household cannot compete, which is the whole reason this
+  // thought exists in the format.
+  const exposed = gs.bb?.hoh === observer ? 1 : 0.35;
+
+  // ── AND WHETHER THERE IS A NEXT WEEK TO BE AFRAID OF ──
+  //
+  // The whole thought is "they will be running things and I will not", which
+  // needs a week for that to happen in. At the final three there is no next
+  // Head of Household to lose to — the last competition decides it and the
+  // rest is a jury vote — so somebody weighing this at the final cut is
+  // weighing a consequence that cannot arrive. It broke the final-two deal
+  // test by quietly changing who somebody chose to sit beside.
+  //
+  // Faded rather than switched off, because it should also matter LESS at
+  // seven than at fourteen: there is less season left for it to happen in.
+  const left = (gs.activePlayers || []).length;
+  const horizon = clamp((left - 4) / 5, 0, 1);
+  if (horizon <= 0) return 0;
+
+  // How loudly they hear it.
+  const nerveDiscount = clamp(1 - ((me.boldness || 5) - 5) * 0.11, 0.45, 1.5);
+  const seesItComing = clamp(1 + (((me.intuition || 5) + (me.temperament || 5)) / 2 - 5) * 0.06, 0.7, 1.4);
+
+  return survives * takesPower * exposed * nerveDiscount * seesItComing * horizon * 6.5;
+}
+
 export function bbHeat(observer, candidate) {
   const target = getBBTarget(observer) === candidate ? 4 : 0;
   const suspicion = gs.bb?.house?.suspicion?.[`${observer}→${candidate}`] || 0;
@@ -447,11 +521,36 @@ export function bbHeat(observer, candidate) {
   const nerve = (pStats(observer).boldness - 5) * 0.09;
   const components = {
     threat: bbThreat(candidate), relationship: -relationship * 0.85,
-    alliance: -alliance * 2.2, target, suspicion: suspicion * 0.45,
+    // ── WHAT AN ALLIANCE IS WORTH DEPENDS ON WHO IS HOLDING IT ──
+    //
+    // This was a flat 2.2, so a loyalty-9 soldier and a loyalty-1 schemer
+    // priced the same alliance identically and the only thing separating them
+    // was noise. Loyal people follow their alliance; that is most of what the
+    // stat is for, and nomination — the one week you can act — is where it
+    // should show.
+    //
+    // Written as a spread around the old number rather than a buff: loyalty 5
+    // reproduces 2.2 exactly, so an average houseguest behaves as before while
+    // the ends pull apart (1.1 at zero, 3.3 at ten).
+    alliance: -alliance * 2.2 * (0.5 + (pStats(observer).loyalty ?? 5) / 10),
+    target, suspicion: suspicion * 0.45,
     memory: clamp(memory, -4, 6) * 0.65, familiar, reign,
     fear: dims.fear * nerve,
     respect: Math.max(0, dims.strategicRespect) * 0.3,
     debt: -Math.max(0, dims.obligation) * 0.4,
+    // ── AND WHAT HAPPENS IF IT DOES NOT WORK ──
+    //
+    // The house had no version of the most ordinary thought in this game: if I
+    // put them up and they are still here on Friday, they will be running the
+    // week and I will not. `fear` above is the personality read — a bold
+    // houseguest takes the shot, a timid one flinches — and it is about the
+    // person. This is about the ARITHMETIC, and a bold houseguest can do it
+    // too.
+    //
+    // Deliberately a term among nine and not a gate. It is a consideration,
+    // the way it is in the house: usually outweighed, occasionally the whole
+    // reason a name comes off the list.
+    blowback: -blowbackRisk(observer, candidate),
   };
   return { components, total: Object.values(components).reduce((sum, value) => sum + value, 0) };
 }
@@ -620,7 +719,7 @@ function memberSetIsViable(members) {
  * Keep the standing alliances honest each week: recompute their internal trust,
  * and dissolve the ones that have lost their people or lost faith in each other.
  */
-function reconcileAlliances(house, weekNum) {
+function reconcileAlliances(house, weekNum, week = null, postVote = false) {
   const live = new Set(house);
   for (const alliance of allianceStore()) {
     if (alliance.active === false || alliance.dissolved) continue;
@@ -634,6 +733,28 @@ function reconcileAlliances(house, weekNum) {
       alliance.active = false;
       alliance.dissolved = weekNum;
       alliance.dissolutionReason = activeMembers.length <= 1 ? 'insufficient-live-members' : 'trust-collapsed';
+      /* ── AND SAY SO ──
+         A group the viewer has been watching for ten weeks was disappearing
+         from the alliance panel between one screen and the next, with the
+         reason computed on the line above and read by nobody. Reported from a
+         real week: The Safety Net was in the panel before the veto ceremony
+         and simply gone after it. */
+      /* After the vote, this is the same fallout week.js queues: it says the
+         group ran out of people, which says who left. It waits for the next
+         episode, where the house is allowed to know. */
+      if (postVote) {
+        (gs._bbFalloutQueue ||= []).push({ kind: 'dissolved', from: weekNum,
+          name: alliance.name || alliance.label || 'an alliance',
+          reason: alliance.dissolutionReason,
+          members: [...activeMembers] });
+      } else if (week) {
+        (week.allianceDissolved ||= []).push({
+          name: alliance.name || alliance.label || 'an alliance',
+          reason: alliance.dissolutionReason,
+          members: [...activeMembers],
+          trust: Number.isFinite(alliance.trust) ? Math.round(alliance.trust * 100) / 100 : null,
+        });
+      }
     }
   }
 }
@@ -781,7 +902,7 @@ function formationTriggers(house, week, rng) {
 
 export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.activePlayers || [], week = null, rng = Math.random } = {}) {
   const weekNum = currentRound(week);
-  reconcileAlliances(house, weekNum);
+  reconcileAlliances(house, weekNum, week);
   if (phase !== 'opening' || house.length < 3) return { formed:null, alliances:allianceStore() };
 
   // Scales with the house, as on the island: a full house supports several
@@ -1077,7 +1198,7 @@ export function settleBBAllianceWeek(week, rng = Math.random) {
       incidents.push({ alliance:alliance.name, ...incident, repair });
     }
   }
-  reconcileAlliances(gs.activePlayers || [], week.num);
+  reconcileAlliances(gs.activePlayers || [], week.num, week, true);
   return incidents;
 }
 

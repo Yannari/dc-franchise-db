@@ -140,8 +140,14 @@ describe('the player page renders it without inventing anything', () => {
   it('computes age from the birthdate rather than trusting a stored one', () => {
     const box = page.slice(page.indexOf('// ── THE BIO'), page.indexOf('// ── WHY TIER'));
     expect(box.length, 'the bio block is missing from player.html').toBeGreaterThan(200);
-    expect(box, 'age is not derived from birthdate').toMatch(/getUTCFullYear/);
+    // Derived, and derived on the FRANCHISE'S clock. This pinned
+    // `getUTCFullYear`, which was the old inline sum against `new Date()` —
+    // real time advances whether or not a season airs, so everybody quietly
+    // gained a year when the real calendar turned. ageNow() counts to the last
+    // season aired instead, and there is now exactly one of it.
+    expect(box, 'age is not derived from the birthdate').toMatch(/ageNow\(rp\.birthdate\)/);
     expect(box, 'the stored age is not used as a fallback').toMatch(/rp\.age/);
+    expect(box, 'a second clock came back').not.toMatch(/new Date\(\)/);
   });
 
   it('escapes the authored text', () => {
@@ -164,7 +170,7 @@ describe('the published roster stays readable by the simulator', () => {
     const allowed = new Set(['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats',
       // The casting interview travels as one JSON string; js/casting-interview.js
       // owns its shape and nothing between here and the page unpacks it.
-      'isReturnee', 'castingInterview', ...BIO_FIELDS]);
+      'isReturnee', 'castingInterview', 'voice', 'profileSources', ...BIO_FIELDS]);
     const strays = new Set();
     for (const p of players) for (const k of Object.keys(p)) if (!allowed.has(k)) strays.add(k);
     expect([...strays], 'an unexpected key reached the published roster').toEqual([]);
@@ -346,8 +352,19 @@ describe('the wiki article reads the authored bio', () => {
   });
 
   it('keeps the paragraph breaks in authored prose', () => {
-    expect(view, 'multi-paragraph backstory would render as one block')
-      .toContain('.map(par => `<p>${esc(par.trim())}</p>`)');
+    // Pinned to the BEHAVIOUR, not to which escaper performs it. This asserted
+    // the literal `${esc(par.trim())}` and went red when the body moved to
+    // `L.text()` — which escapes on every branch exactly as esc does, and
+    // linkifies known names as well. The render got better and the guard
+    // called it a regression. What must stay true is the split and the <p>.
+    const body = view.slice(view.indexOf('if (dossier.backstory)'));
+    // A fixed window, not up to the first '}': the very thing being matched
+    // contains ${...}, so slicing at the first brace cut the render in half.
+    const render = body.slice(0, 600);
+    expect(render, 'a multi-paragraph backstory must not render as one block')
+      .toMatch(/String\(dossier\.backstory\)\s*\.split\(/);
+    expect(render, 'each paragraph gets its own <p>, however it is escaped')
+      .toMatch(/\.map\(par => `<p>\$\{(?:esc|L\.text)\(par\.trim\(\)\)\}<\/p>`\)/);
   });
 });
 
@@ -458,5 +475,77 @@ describe('the contents box matches the sections that survived', () => {
     // Empty listing AND a failed fetch; the second was the one that still
     // called .remove() directly.
     expect((view.match(/dropSection\(host, box\);/g) || []).length).toBe(2);
+  });
+});
+
+describe('the roster owns voice and profile provenance', () => {
+  const schema = read('worker/roster_schema.sql');
+  const migration = read('worker/roster_migration_profile_sources.sql');
+  const worker = read('worker/worker-studio.js');
+  const studio = read('js/studio.js');
+
+  it('stores provenance in a dedicated nullable column', () => {
+    expect(schema).toMatch(/^\s*profile_sources\s+TEXT/m);
+    expect(migration).toMatch(/ADD COLUMN\s+profile_sources\s+TEXT/i);
+    expect(migration).not.toMatch(/ADD COLUMN\s+voice\b/i);
+  });
+
+  it('publishes raw roster voice and field-keyed sources', () => {
+    expect(worker).toMatch(/out\.voice\s*=\s*r\.voice/);
+    expect(worker).toMatch(/out\.profileSources\s*=/);
+    expect(worker).toMatch(/profile_sources=excluded\.profile_sources/);
+  });
+
+  it('carries both fields through the Studio draft and save entry', () => {
+    expect(studio).toMatch(/import\s*\{[^}]*selectProfileVoice[^}]*\}\s*from\s*['"]\.\/profile-import\.js['"]/);
+    expect(studio).toMatch(/profileSources:\s*\{\}/);
+    expect(studio).toMatch(/voice:\s*d\.voice/);
+    expect(studio).toMatch(/profileSources:\s*d\.profileSources/);
+  });
+
+  it('derives compatibility voices from migrated roster rows on export', () => {
+    const exportFn = studio.slice(studio.indexOf('async function _exportRepo()'));
+    expect(exportFn).toMatch(/for \(const p of _roster\(\)\)/);
+    expect(exportFn).toMatch(/if \(p\.voice/);
+    expect(exportFn).toMatch(/base\.profiles\[p\.name\]/);
+  });
+});
+
+describe('the roster profile upsert bind shape', () => {
+  // Counted rather than spelled as a magic number. The literal version read
+  // `(?:\?,){13}\?` and had to be hand-edited every time a column was added —
+  // which means the day somebody adds a column and DOESN'T update it, the
+  // failure looks identical to the bug the test is for. Comparing the two
+  // sides of the statement to each other checks the actual invariant and needs
+  // no maintenance.
+  it('has one placeholder for every column bound after the nine stats', () => {
+    const worker = read('worker/worker-studio.js');
+    const insert = worker.slice(worker.indexOf('INSERT INTO roster'));
+    const stmt = insert.slice(0, insert.indexOf('ON CONFLICT'));
+
+    const columnList = stmt.slice(stmt.indexOf('(') + 1, stmt.indexOf('VALUES'));
+    const columns = columnList
+      .slice(columnList.indexOf('${STAT_KEYS.join(\',\')}') + '${STAT_KEYS.join(\',\')}'.length)
+      // The last column carries the statement's closing paren; strip it rather
+      // than dropping the entry, which silently loses updated_at.
+      .split(',').map(s => s.trim().replace(/\)+$/, '')).filter(Boolean);
+
+    const valuesTail = stmt.slice(stmt.indexOf('VALUES'));
+    const afterStats = valuesTail.slice(valuesTail.indexOf("join(',')}") + "join(',')}".length);
+    const placeholders = (afterStats.match(/\?/g) || []).length;
+
+    // updated_at is the one column filled by SQL rather than by a bind.
+    expect(columns).toContain('updated_at');
+    expect(placeholders, `columns after the stats: ${columns.join(', ')}`)
+      .toBe(columns.length - 1);
+  });
+});
+
+describe('direct character writes preserve authored profile fields', () => {
+  it('allows raw voice and provenance through the roster cleaner', () => {
+    const worker = read('worker/worker-studio.js');
+    const fields = worker.slice(worker.indexOf('const ROSTER_FIELDS'), worker.indexOf('export default'));
+    expect(fields).toContain("'voice'");
+    expect(fields).toContain("'profileSources'");
   });
 });

@@ -49,7 +49,13 @@ describe('the floor pays every week', () => {
     withSeededRandom(7, () => {
       house();
       simulateBBEpisode();
-      expect(NAMES.every(n => balance(n) >= FLOOR.amount)).toBe(true);
+      // WHAT THEY WERE PAID, not what they still hold. This asserted the
+      // closing balance, which a houseguest is free to spend below the floor
+      // the same week -- the prize exchange is the whole point of a currency --
+      // so the theme working correctly failed the test.
+      const paid = bucksActs().flatMap(a => a.payouts || []);
+      expect(paid.map(p => p.name).sort()).toEqual([...NAMES].sort());
+      expect(Math.min(...paid.map(p => p.amount))).toBe(FLOOR.amount);
     });
   });
 
@@ -113,11 +119,19 @@ describe('the floor pays once a week, however many cycles the week runs', () => 
   // else on the floor. It catches BOTH failure modes at once — paying twice
   // doubles every balance off the tier amounts entirely, and paying per side
   // draws two complete tier sets, so six people hold the top amount.
+  // ONE SET OF TIERS, READ OFF THE PAYOUTS.
+  //
+  // This read closing balances, so it broke the moment anybody spent -- and on
+  // a currency season somebody always does. The payout act is the record of
+  // what the audience paid and is immune to what the house did with it after.
   const expectExactlyOneTierSet = names => {
-    const paid = names.map(n => balance(n));
-    expect(paid.filter(b => b === TOP.amount)).toHaveLength(TOP.count);
-    expect(paid.filter(b => b === MID.amount)).toHaveLength(MID.count);
-    expect(paid.filter(b => b === FLOOR.amount))
+    const paid = bucksActs().flatMap(a => a.payouts || []);
+    expect(paid.map(p => p.name).sort(), 'not exactly one payment each')
+      .toEqual([...names].sort());
+    const amounts = paid.map(p => p.amount);
+    expect(amounts.filter(a => a === TOP.amount)).toHaveLength(TOP.count);
+    expect(amounts.filter(a => a === MID.amount)).toHaveLength(MID.count);
+    expect(amounts.filter(a => a === FLOOR.amount))
       .toHaveLength(names.length - TOP.count - MID.count);
   };
 
@@ -313,10 +327,21 @@ describe('the floor has a schedule', () => {
     // their stamped weeks exactly. Measuring with `walk` alone made both
     // invisible and reported a six-week hole that is not there — so take the
     // fixed cards from the stamped schedule and the anchored ones from the walk.
-    const FIXED = 'bb-prizes-and-punishments';
+    // EVERY fixed-week card, not one of them. This named a single twist, so
+    // the `every: 2` wildcard cadence -- which exists precisely to fill the
+    // front of the season -- was invisible to the measurement. At a cast of
+    // sixteen the arc stamps weeks 1, 2, 4, 6, 7, 8, 9, 10, 12 and its longest
+    // gap is two; the test could see only 1 and 12 of those and reported a
+    // five-week hole that was never in the season.
+    //
+    // Derived from the arc rather than listed, so a card added to the cadence
+    // later is counted without anybody remembering to come back here.
+    const fixedBooks = new Set(theme().arc
+      .filter(a => a.book && (a.every || a.at?.week != null))
+      .map(a => a.book));
     for (const cast of [12, 14, 16, 18, 20]) {
       const schedule = stamp(cast);
-      const fixedWeeks = schedule.filter(e => e.type === FIXED).map(e => Number(e.episode));
+      const fixedWeeks = schedule.filter(e => fixedBooks.has(e.type)).map(e => Number(e.episode));
       const anchoredWeeks = walk(cast).map(f => f.ep);
       const weeks = [...new Set([...fixedWeeks, ...anchoredWeeks])].sort((a, b) => a - b);
       expect(weeks.length, `cast ${cast} fires nothing`).toBeGreaterThan(0);

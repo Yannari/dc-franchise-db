@@ -40,6 +40,22 @@ export default {
       // as `social` for living here: this worker already holds the key and
       // already dispatches creative writing by mode.
       return await generateCastingInterview(body, env);
+    } else if (mode === "continuity-read") {
+      // What a career MEANS. The opposite of casting-interview directly above:
+      // that one must never see a season, this one may see nothing else.
+      return await generateContinuityRead(body, env);
+    } else if (mode === "wiki-resolve") {
+      // Which wiki page is this character? Search only — no model, no cost.
+      // Split from `wiki-profile` so the browser can ask "who do you mean?"
+      // before anything is spent, and so a wrong guess costs one more search
+      // rather than one more generation.
+      return await resolveWikiPage(body, env);
+    } else if (mode === "wiki-profile") {
+      // A wiki page turned into a profile the Studio can preview. Lives here
+      // for the same reason as `social` and `casting-interview`: the key is
+      // already here. The FETCH has to be server-side regardless — fandom.com
+      // sends no CORS headers, so the browser cannot read a page directly.
+      return await generateWikiProfile(body, env);
     } else if (mode === "rankings-reasoning") {
       // The franchise rankings blurb. Same reason as the two above for living
       // here: this worker already holds OPENAI_API_KEY and already dispatches
@@ -2256,6 +2272,83 @@ async function callAnthropicText(system, userText, env, model, maxTokens = 1600)
   return (data.content || []).map(b => b.text || "").join("").trim();
 }
 
+/**
+ * One short structured call, on whichever provider will actually answer.
+ *
+ * OPENAI IS FIRST HERE ON PURPOSE, and it is the one place in this worker that
+ * is true — every other creative path prefers Claude. The Anthropic key on
+ * this worker is unfunded and fails at the API with "credit balance is too
+ * low", which made both of these features dead on arrival rather than
+ * degraded. A feature that cannot run until somebody visits a billing page is
+ * not shipped.
+ *
+ * Flip it back with PREFER_MODEL="anthropic" in wrangler-analytics.toml — a
+ * config edit, not a code change, so restoring the project's intended default
+ * costs one line the day that key has credit again.
+ *
+ * Whichever answers is reported back. A profile written by a different model
+ * than the one you expected, with no way to tell, gets debugged twice.
+ */
+async function callShortModel(system, userText, env, { maxTokens = 2000, model } = {}) {
+  const preferAnthropic = String(env.PREFER_MODEL || "openai").toLowerCase() === "anthropic";
+
+  const tryAnthropic = async () => {
+    if (!env.ANTHROPIC_API_KEY) throw new Error("no ANTHROPIC_API_KEY");
+    const text = await callAnthropicText(system, userText, env, model || MODELS.creative, maxTokens);
+    if (!text) throw new Error("empty response");
+    return { text, provider: "anthropic" };
+  };
+
+  const tryOpenAI = async () => {
+    if (!env.OPENAI_API_KEY) throw new Error("no OPENAI_API_KEY");
+    const res = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-5.5",
+        instructions: system,
+        // The reminder is not redundant: json_object mode is REFUSED unless the
+        // word "json" appears in the INPUT, and saying it in `instructions`
+        // does not count. Both callers parse JSON out of the answer, so asking
+        // for it explicitly is cheaper than a retry when the model wraps it in
+        // prose.
+        input: `${userText}
+
+Answer with a single JSON object.`,
+        max_output_tokens: maxTokens * 2,
+        text: { format: { type: "json_object" } },
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(`openai ${res.status}: ${(data?.error?.message || "").slice(0, 160)}`);
+    }
+    const text = typeof data?.output_text === "string" ? data.output_text
+      : Array.isArray(data?.output)
+        ? data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("")
+        : "";
+    if (!text) throw new Error("openai returned nothing");
+    return { text, provider: "openai" };
+  };
+
+  const [first, second] = preferAnthropic ? [tryAnthropic, tryOpenAI] : [tryOpenAI, tryAnthropic];
+  let firstError = "";
+  try {
+    return await first();
+  } catch (e) {
+    firstError = e.message;
+  }
+  try {
+    const out = await second();
+    return { ...out, fellBackFrom: firstError };
+  } catch (e) {
+    throw new Error(`both providers refused — ${firstError}; ${e.message}`);
+  }
+}
+
 // FINAL PASS — DE-CLEVER. Reads the finished episode and rewrites ONLY the lines that use the
 // model's "clever" tics (personified objects, neat antithesis/before-after parallelism, poetic
 // metaphors, fortune-cookie one-liners) into plain human speech — everything else is left
@@ -3412,6 +3505,29 @@ function socialUsable(text, packet) {
  * edited by hand; docs/ADDING-A-SHOW.md §13 exists because eight files each
  * kept their own copy of the show list.
  */
+/**
+ * Ethnicity and nationality as ONE description, never the same word twice.
+ *
+ * A hand-copy of `joinOrigin` in js/bio.js, which owns the rule. This file is a
+ * standalone Worker script with no imports — it cannot reach js/, and calling
+ * the browser's copy from here is what made every casting interview fail: a
+ * ReferenceError inside the handler, which Cloudflare answers with a bare 1101
+ * page carrying no CORS header, so the Studio only ever saw "NetworkError".
+ * Keep the two in step; the shared behaviour is asserted in
+ * tests/casting-interview.test.js.
+ */
+function joinOrigin(ethnicity, nationality) {
+  const e = String(ethnicity || "").trim();
+  const n = String(nationality || "").trim();
+  if (!e) return n;
+  if (!n) return e;
+  const le = e.toLowerCase(), ln = n.toLowerCase();
+  if (le === ln) return e;
+  if (ln.startsWith(le + " ")) return n;
+  if (le.startsWith(ln + " ")) return e;
+  return `${e} ${n}`;
+}
+
 async function generateCastingInterview(body, env) {
   const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
   const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
@@ -3433,7 +3549,7 @@ async function generateCastingInterview(body, env) {
     p.age && `Age ${p.age}`,
     p.occupation && `Occupation: ${p.occupation}`,
     p.hometown && `From: ${p.hometown}`,
-    [p.ethnicity, p.nationality].filter(Boolean).join(" "),
+    joinOrigin(p.ethnicity, p.nationality),
     p.gender === "f" ? "Female" : p.gender === "m" ? "Male" : "",
     // Stated because one of the eleven questions asks it outright.
     p.sexuality && p.sexuality !== "straight" ? `Sexuality: ${p.sexuality}` : "",
@@ -3753,4 +3869,609 @@ async function generateRankingsReasoning(body, env) {
   } catch (e) {
     return json({ error: `openai: ${e.message}` }, 502);
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+ * WIKI PROFILE IMPORT — a character's canon, read off a fandom wiki.
+ *
+ * The continuity design document ruled this out ("Live wiki scraping or
+ * automatic acceptance of community-edited facts" was a non-goal) on the
+ * grounds that layouts break and community edits are not trustworthy. Both
+ * objections are real; neither is answered by making a person copy-paste the
+ * same page by hand. So the fetch happens, and the TRUST is handled instead:
+ *
+ *   - Nothing is applied. The answer goes into the Studio's existing
+ *     published-profile preview, where every field is a checkbox and a field
+ *     the user already wrote arrives unticked.
+ *   - Nothing claims to be canon on the model's say-so. A field marked
+ *     `source-canon` must carry a verbatim quote from the page that was
+ *     actually fetched, and this function CHECKS that the quote is present.
+ *     A claim that fails the check is demoted to `interpretation` rather than
+ *     dropped, because a plausible invented occupation is often what you want
+ *     — it just must not be labelled as sourced.
+ *
+ * It reads the MediaWiki API, never the rendered page: fandom.com answers HTTP
+ * 402 to plain page fetches (and to ?action=raw) but leaves api.php open.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+// Only these hosts, and only their API. An allowlist rather than a URL
+// parameter: the caller names a character, not an address, so there is no
+// route through this worker to an arbitrary host.
+const WIKI_HOSTS = {
+  "total-drama": { host: "totaldrama.fandom.com", label: "Total Drama Wiki" },
+  "disventure-camp": { host: "disventure-camp.fandom.com", label: "Disventure Camp Wiki" },
+  "big-brother": { host: "bigbrother.fandom.com", label: "Big Brother Wiki" },
+};
+
+async function wikiApi(host, params) {
+  const qs = new URLSearchParams({ ...params, format: "json" }).toString();
+  const res = await fetch(`https://${host}/api.php?${qs}`, {
+    headers: { "User-Agent": "dc-franchise-studio/1.0" },
+  });
+  if (!res.ok) throw new Error(`${host} said ${res.status}`);
+  return res.json();
+}
+
+/** Does this exact title exist on this wiki? */
+async function wikiHasTitle(host, title) {
+  const data = await wikiApi(host, { action: "query", titles: title });
+  const pages = data?.query?.pages || {};
+  const page = Object.values(pages)[0];
+  return page && !("missing" in page) ? page.title : null;
+}
+
+/**
+ * Which wiki page is this character?
+ *
+ * Confidence comes from exact title matches, which turns out to separate the
+ * three real cases cleanly:
+ *   Bowie  -> Total Drama only            -> certain
+ *   Tom    -> on BOTH wikis               -> ambiguous, the user picks
+ *   Thom   -> on NEITHER (he is "Tom")    -> not found, the user retypes
+ * A spelling that differs from the roster name is the common case, so the
+ * retry takes a NAME. Nobody should have to go and find a URL.
+ */
+async function resolveWikiPage(body, env) {
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
+
+  const name = String(body.name || "").trim();
+  if (!name) return json({ ok: false, error: "name is required" }, 400);
+
+  const hits = [];
+  for (const [format, w] of Object.entries(WIKI_HOSTS)) {
+    try {
+      const title = await wikiHasTitle(w.host, name);
+      if (title) {
+        hits.push({
+          format, host: w.host, label: w.label, title,
+          url: `https://${w.host}/wiki/${encodeURIComponent(title)}`,
+        });
+      }
+    } catch { /* one wiki being down must not hide the other */ }
+  }
+
+  if (!hits.length) {
+    // Offer near-misses so the retry is a click rather than a guess.
+    const suggestions = [];
+    for (const [format, w] of Object.entries(WIKI_HOSTS)) {
+      try {
+        const data = await wikiApi(w.host, {
+          action: "query", list: "search", srsearch: name, srlimit: 4,
+        });
+        for (const s of (data?.query?.search || [])) {
+          // Sub-pages ("Jade/Interactions") and pair articles are not people.
+          if (s.title.includes("/") || / and /i.test(s.title)) continue;
+          suggestions.push({ format, host: w.host, label: w.label, title: s.title });
+        }
+      } catch { /* ignore */ }
+    }
+    return json({ ok: true, status: "not-found", name, suggestions: suggestions.slice(0, 6) });
+  }
+  if (hits.length > 1) return json({ ok: true, status: "ambiguous", name, candidates: hits });
+  return json({ ok: true, status: "found", name, page: hits[0] });
+}
+
+/**
+ * Wikitext, flattened to prose.
+ *
+ * A character article is mostly episode-by-episode recap wrapped in templates,
+ * and the model reads better from sentences. The trimming is deliberately
+ * crude — it only has to leave sentences intact enough to QUOTE from, because
+ * quoting is what the verification below depends on.
+ */
+/**
+ * The infobox, flattened into lines instead of deleted.
+ *
+ * Running a real article through the first version of this showed the
+ * character infobox surviving as raw markup — and reading it showed that
+ * deleting it would have been the worse bug. It is the densest profile source
+ * on the page: `label` is the epithet the show itself uses, and `family`,
+ * `relationship`, `friends` and `enemies` are stated facts in a form the rest
+ * of the article only implies over seven thousand words.
+ *
+ * Flattened to "key: value" so the model can read it AND quote from it — a
+ * fact that cannot be quoted cannot be marked canon, so anything left as
+ * markup here silently becomes an interpretation later.
+ */
+function flattenInfobox(block) {
+  const inner = block.replace(/^\{\{/, "").replace(/\}\}$/, "");
+  const parts = inner.split(/\n\s*\|/);
+  const name = (parts.shift() || "").trim();
+  const lines = [];
+  for (const part of parts) {
+    const eq = part.indexOf("=");
+    if (eq === -1) continue;
+    const key = part.slice(0, eq).trim();
+    const value = part.slice(eq + 1).replace(/\s*\n\s*/g, ", ").trim();
+    // An empty field ("tdi team = ") is not a fact about anybody.
+    if (!key || !value) continue;
+    if (/^(image|file|images?\d*|caption|voice)$/i.test(key)) continue;
+    lines.push(`${key}: ${value}`);
+  }
+  return lines.length ? `${name.replace(/^Infobox\s*/i, "")} details:\n${lines.join("\n")}\n` : " ";
+}
+
+export function wikitextToProse(wikitext) {
+  let text = String(wikitext || "")
+    .replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi, " ")
+    .replace(/<[^>]+>/g, " ");
+
+  // The infobox first, while its structure is still intact. Read by counting
+  // braces rather than by pattern: it ENDS "...Novie Edwards]]}}" — closing
+  // braces on the same line as content — and a regex looking for a newline
+  // before them silently matched nothing, which is how the densest block on
+  // the page came to be deleted instead of kept.
+  if (text.trimStart().startsWith("{{")) {
+    const start = text.indexOf("{{");
+    let depth = 0, end = -1;
+    for (let i = start; i < text.length - 1; i++) {
+      if (text[i] === "{" && text[i + 1] === "{") { depth++; i++; }
+      else if (text[i] === "}" && text[i + 1] === "}") { depth--; i++; if (!depth) { end = i + 1; break; } }
+    }
+    if (end > start) text = flattenInfobox(text.slice(start, end)) + text.slice(end);
+  }
+
+  // Then the rest of the templates. Looped rather than single-pass: a template
+  // nested inside another leaves its parent's braces behind.
+  //
+  // A parameterised template keeps its LAST parameter, because on these wikis
+  // that is the readable half — {{teamicon|gophers}} is the team's name and
+  // {{S|1}} is a season. Dropping them whole left "was a camper on , where she
+  // was a member of the ." in the lead, and a sentence with holes in it cannot
+  // be quoted, so every fact drawn from one would fail its citation check.
+  for (let i = 0; i < 6; i++) {
+    const next = text.replace(/\{\{([^{}]*)\}\}/g, (m, inner) => {
+      const params = inner.split("|").map(s => s.trim()).filter(Boolean);
+      if (params.length < 2) return " ";
+      const last = params[params.length - 1];
+      // "name=value" params are metadata, not prose.
+      return last.includes("=") ? " " : ` ${last} `;
+    });
+    if (next === text) break;
+    text = next;
+  }
+
+  return text
+    .replace(/\{\|[\s\S]*?\|\}/g, " ")                  // tables
+    .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, "$1")   // links keep their text
+    .replace(/'''?/g, "")
+    // Keep what a list SAYS, drop only its bullet. Deleting the whole line
+    // emptied the Trivia section, which is entirely bulleted and is where a
+    // wiki states the facts an infobox has no row for — a birthday, a
+    // hometown, a sibling. Those fields were coming back blank because the
+    // sentences stating them had already been thrown away here.
+    .replace(/^\s*[*#:;]+\s?/gm, "")
+    .replace(/={2,}\s*([^=]+?)\s*={2,}/g, "\n\n$1:\n")
+    .replace(/\[\S+\s+([^\]]+)\]/g, "$1")
+    // Any table row or template fragment the passes above could not pair up.
+    .replace(/^\s*[|}{].*$/gm, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/** Normalised for quote-checking: quotes and dashes vary between renderings. */
+function flattenForQuoteCheck(s) {
+  return String(s || "").toLowerCase()
+    .replace(/[‘’ʼ]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/[‐-―]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// birthdate is NOT here. A wiki states an AGE — "Leshawna is sixteen" — which
+// is a fact about the moment she debuted, not about today. Turning that into a
+// date needs this franchise's calendar, which lives in js/franchise-calendar.js
+// and has no business being duplicated in a worker. So the model reports the
+// age it READ (quotable, checkable) and the browser does the arithmetic.
+const WIKI_PROFILE_FIELDS = ["occupation", "hometown", "ethnicity",
+  "nationality", "descriptor", "sexuality", "voice", "personality", "backstory"];
+
+/**
+ * Fields that are a VALUE, not a sentence — and the length that proves it.
+ *
+ * These feed the composed bio lead, the "Canadian, Former spy and police
+ * officer. " prefix in front of a voice profile. A real fetch came back with
+ * occupation = "Volunteer focused on helping disadvantaged teenagers; she
+ * hopes to open a community center someday." and sexuality = "Appears straight
+ * or primarily attracted to men, based on her romantic interest in..." — both
+ * defensible as prose and both ruinous in a one-line lead.
+ *
+ * Over the cap the field is DROPPED rather than truncated. A value cut off
+ * mid-clause is worse than an absent one: it looks authored, and the rule here
+ * has always been that a blank beats a bad fill.
+ */
+const SHORT_FIELDS = {
+  occupation: 48, hometown: 48, descriptor: 48,
+  ethnicity: 32, nationality: 32, sexuality: 24,
+};
+
+/**
+ * The check that makes `source-canon` mean something.
+ *
+ * Every claim the model marked as canon is looked for IN THE TEXT THAT WAS
+ * ACTUALLY FETCHED. A quote that is not there is not evidence, whatever the
+ * model believed when it wrote it, so the field survives as `interpretation`
+ * instead of as a sourced fact.
+ *
+ * Demotion rather than deletion, deliberately. An invented hometown is often
+ * exactly what you want for a character the wiki is silent about — the harm
+ * was never the invention, it was the invention wearing a citation. The
+ * preview shows which is which, and nothing applies without a tick.
+ *
+ * Exported for the test: this is the one function in the wiki path whose
+ * failure is silent and expensive, because a wrong label survives into the
+ * roster and reads as researched forever after.
+ */
+export function buildVerifiedProfile(parsed, prose, { url, label, title, only } = {}) {
+  const flatProse = flattenForQuoteCheck(prose);
+  const fields = {}, profileSources = {}, demoted = [], overlong = [];
+  for (const key of (only || WIKI_PROFILE_FIELDS)) {
+    const entry = parsed?.fields?.[key];
+    if (!entry || typeof entry !== "object") continue;
+    const value = typeof entry.value === "string" ? entry.value.trim() : "";
+    if (!value) continue;
+    // An unparseable date is dropped, not demoted: the Studio validates the
+    // format and would refuse the whole profile over it.
+    if (key === "birthdate" && !/^\d{4}-\d{2}-\d{2}$/.test(value)) continue;
+    // A value that turned into a sentence is not the value that was asked for.
+    if (SHORT_FIELDS[key] && (value.length > SHORT_FIELDS[key] || /[.;]\s/.test(value))) {
+      overlong.push(key);
+      continue;
+    }
+
+    let kind = entry.kind === "source-canon" ? "source-canon" : "interpretation";
+    const quote = typeof entry.quote === "string" ? entry.quote.trim() : "";
+    if (kind === "source-canon") {
+      // The length floor stops a two-word quote ("she is") matching almost any
+      // article by accident and laundering a guess into a citation.
+      const verified = quote.length >= 12 && flatProse.includes(flattenForQuoteCheck(quote));
+      if (!verified) { kind = "interpretation"; demoted.push(key); }
+    }
+
+    fields[key] = value;
+    profileSources[key] = kind === "source-canon"
+      ? [{ label: `${label} - ${title}`, url, kind: "source-canon", quote }]
+      : [{ label: "Read from the wiki article, not stated in it", kind: "interpretation" }];
+  }
+  return { fields, profileSources, demoted, overlong };
+}
+
+/**
+ * The parts of an article that describe a PERSON, not a season.
+ *
+ * Measured on a real page: 34,481 characters of prose, of which the infobox
+ * and Personality — the only two sections this job actually reads from — are
+ * the first 2,825. Characters 2,825 to 21,102 are episode-by-episode recap of
+ * three seasons, and the tail is a gallery of image filenames. Sending a flat
+ * 24,000-character slice paid for roughly eight times what it used, and paid
+ * it in the one content that must NOT reach a biography: the per-episode
+ * recap is precisely what "backstory is pre-show only" exists to keep out.
+ *
+ * So sections are chosen rather than truncated. Anything whose heading names a
+ * season is dropped wholesale, along with the gallery and references; what is
+ * left is who they are, plus Trivia, which is where a wiki puts the facts the
+ * infobox has no row for.
+ */
+export function profileRelevantExcerpt(prose, limit = 12000) {
+  const DROP = /^(gallery|references?|appearances?|video log|audition tape|see also|navigation|overall)\b/i;
+  // A heading that names a season or an episode list is recap, whatever the
+  // wiki calls it — "Total Drama Island", "Big Brother 3", "Season 2".
+  const RECAP = /(season\s*\d|^total drama|^big brother|^disventure|\bepisodes?\b)/i;
+
+  const parts = prose.split(/\n\n(?=[A-Z][^\n:]{2,40}:\n)/);
+  const kept = [];
+  for (const part of parts) {
+    const heading = (part.match(/^([^\n:]{2,40}):\n/) || [])[1] || "";
+    if (heading && (DROP.test(heading) || RECAP.test(heading))) continue;
+    kept.push(part);
+  }
+  // Never send nothing: an article whose headings are ALL unfamiliar falls
+  // back to the whole thing rather than to an empty prompt.
+  //
+  // The condition is "kept nothing", not "kept under 200 characters". The
+  // length floor looked like the same guard and was not: an article whose
+  // useful sections are genuinely brief tripped it and got sent whole, which
+  // is the behaviour this function exists to stop. The caller already refuses
+  // a page under 200 characters before excerpting.
+  const out = kept.join("\n\n").trim();
+  return (out ? out : prose).slice(0, limit);
+}
+
+async function generateWikiProfile(body, env) {
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
+
+  if (!env.ANTHROPIC_API_KEY) {
+    return json({ ok: false, error: "Wiki profiles need ANTHROPIC_API_KEY on this worker." }, 500);
+  }
+  const host = String(body.host || "");
+  const title = String(body.title || "").trim();
+  const slug = String(body.slug || "").trim();
+  if (!Object.values(WIKI_HOSTS).some(w => w.host === host)) {
+    return json({ ok: false, error: "unknown wiki" }, 400);
+  }
+  if (!title || !slug) return json({ ok: false, error: "title and slug are required" }, 400);
+
+  // Fields the caller has already written. Not asked for, because the preview
+  // would arrive with them unticked anyway — proposing a rival for prose
+  // somebody wrote is output paid for and thrown away. Measured on a real
+  // page, voice + personality + backstory are 79% of the reply, so skipping
+  // those three when they exist is most of what there is to save. The input
+  // cannot shrink: the article still has to be read to answer anything.
+  const skip = new Set(Array.isArray(body.skip) ? body.skip.filter(f => typeof f === "string") : []);
+  const wanted = WIKI_PROFILE_FIELDS.filter(f => !skip.has(f));
+  if (!wanted.length && skip.has("__age")) {
+    return json({ ok: false, error: "everything is already written — nothing to ask for" }, 422);
+  }
+
+  let prose = "";
+  try {
+    const data = await wikiApi(host, { action: "parse", page: title, prop: "wikitext" });
+    prose = wikitextToProse(data?.parse?.wikitext?.["*"] || "");
+  } catch (e) {
+    return json({ ok: false, error: `could not read the wiki: ${e.message}` }, 502);
+  }
+  if (prose.length < 200) return json({ ok: false, error: "that page has almost no text on it" }, 422);
+
+  const url = `https://${host}/wiki/${encodeURIComponent(title)}`;
+  const label = (Object.values(WIKI_HOSTS).find(w => w.host === host) || {}).label || host;
+  const excerpt = profileRelevantExcerpt(prose);
+
+  const system = [
+    "You turn a wiki article about a reality-competition character into a cast profile.",
+    "",
+    "Answer with ONE JSON object and nothing else:",
+    '{"fields":{"<field>":{"value":"...","kind":"source-canon|interpretation","quote":"..."}}}',
+    "",
+    `Fields you may fill: ${wanted.join(", ")}.`,
+    skip.size ? `Do NOT return: ${[...skip].filter(f => f !== "__age").join(", ")} — already written, and anything you say about them is discarded.` : "",
+    "Propose EVERY field. Where the article states something, use it and quote",
+    "  it. Where it does not, give your most plausible reading and mark it",
+    "  interpretation — a blank helps nobody, and an interpretation is offered",
+    "  to a person who can untick it. Omit a field only when you have no basis",
+    "  for a guess at all.",
+    "",
+    "kind is the whole point of this job:",
+    "  source-canon   - the article states it. You MUST include `quote`: a short",
+    "                   VERBATIM span copied from the article that shows it. Do",
+    "                   not paraphrase the quote, do not stitch two sentences",
+    "                   together, do not quote a section heading.",
+    "  interpretation - your inference, or a reasonable invention where the",
+    "                   article is silent. No quote. This is allowed and wanted;",
+    "                   what is forbidden is calling it source-canon.",
+    "",
+    "voice: 2-4 sentences on HOW THEY TALK - rhythm, vocabulary, what they do",
+    "  in an argument. Not their biography.",
+    "personality: a paragraph on behaviour under pressure, loyalty, and what",
+    "  they will and will not do.",
+    "backstory: PRE-SHOW life ONLY - family, job, where they grew up. This is",
+    "  the rule that matters most and the one the article fights you on, since",
+    "  most of it is episode recap. No alliance, elimination, placement, season",
+    "  or competition may appear in backstory.",
+    "descriptor: the short epithet the show itself uses, if it has one.",
+    "",
+    "occupation, hometown, descriptor, ethnicity, nationality and sexuality are",
+    "  VALUES, not sentences. A few words at most: \"Hair stylist\", \"Toronto,",
+    "  Ontario\", \"straight\". No explaining, no hedging, no reasoning about why",
+    "  — those fields are printed in a one-line biography lead and a sentence",
+    "  there ruins it. If you cannot say it in a few words, omit the field.",
+    "",
+    "Two extra keys, OUTSIDE `fields`, both about age:",
+    '  "canonicalAge": {"value": 16, "kind": "...", "quote": "..."}',
+    "     The age the character IS in the source material, at their first",
+    "     appearance. Quote the article if it says so. If it does not, estimate",
+    "     from context and mark it interpretation. This is not their age today —",
+    "     the caller works that out from when their first season aired.",
+    '  "birthday": "MM-DD"',
+    "     Month and day only, no year. Use the article's if it gives one;",
+    "     otherwise pick a plausible one. The YEAR is not yours to choose.",
+  ].join("\n");
+
+  const user = `Character: ${title}\nArticle (${label}):\n\n${excerpt}`;
+
+  let raw = "", provider = "";
+  try {
+    const out = await callShortModel(system, user, env, { maxTokens: 3000, model: claudeModel("creative", body, env) });
+    raw = out.text; provider = out.provider;
+  } catch (e) {
+    return json({ ok: false, error: `model: ${e.message}` }, 502);
+  }
+
+  let parsed = null;
+  try {
+    const m = raw.match(/\{[\s\S]*\}/);
+    parsed = JSON.parse(m ? m[0] : raw);
+  } catch {
+    return json({ ok: false, error: "the model did not return usable JSON" }, 502);
+  }
+
+  const { fields, profileSources, demoted, overlong } =
+    buildVerifiedProfile(parsed, prose, { url, label, title, only: wanted });
+
+  if (!Object.keys(fields).length) {
+    return json({ ok: false, error: "nothing usable came back from that page" }, 422);
+  }
+
+  return json({
+    ok: true,
+    // Shaped as a published profile so the Studio's existing preview can take
+    // it unchanged - same diff, same checkboxes, same "your writing wins".
+    profile: { slug, ...fields, profileSources },
+    source: { host, title, url, label },
+    provider,
+    // Handed back raw. The caller owns the calendar and therefore owns the
+    // sum; this only reports what the article said the age was.
+    canonicalAge: skip.has("__age") ? null : parsed?.canonicalAge && Number.isFinite(Number(parsed.canonicalAge.value))
+      ? {
+        value: Number(parsed.canonicalAge.value),
+        kind: parsed.canonicalAge.kind === "source-canon"
+          && typeof parsed.canonicalAge.quote === "string"
+          && parsed.canonicalAge.quote.trim().length >= 12
+          && flattenForQuoteCheck(prose).includes(flattenForQuoteCheck(parsed.canonicalAge.quote))
+          ? "source-canon" : "interpretation",
+        quote: typeof parsed.canonicalAge.quote === "string" ? parsed.canonicalAge.quote.trim() : "",
+      }
+      : null,
+    birthday: /^\d{2}-\d{2}$/.test(String(parsed?.birthday || "")) ? parsed.birthday : null,
+    // Surfaced rather than hidden: "3 of these are guesses" is the single most
+    // useful sentence this endpoint can say.
+    demoted,
+    overlong,
+    counts: {
+      total: Object.keys(fields).length,
+      canon: Object.values(profileSources).filter(s => s[0].kind === "source-canon").length,
+    },
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+ * CONTINUITY READ — what their seasons MEAN.
+ *
+ * The mirror of `casting-interview`, and the opposite rule. That one must
+ * never see a season, because a tape recorded at casting cannot know how the
+ * game went. This one may see nothing else: it is the read of a career that
+ * has already happened, and every sentence has to be answerable from the
+ * record it is handed.
+ *
+ * It writes the three sections the hand-authored continuity bible has that
+ * `js/continuity.js` cannot derive. The chronology is transcription — the
+ * archive already holds gameplayStyle, keyMoments, alliances and rivalries,
+ * so asking a model for it would be paying to have facts re-typed, with a
+ * chance of them coming back wrong. What the archive does NOT hold is
+ * judgement:
+ *
+ *   evolution  — how two seasons differ, and what the second proved or cost.
+ *   motivation — what they want now, given how the last one ended.
+ *   hooks      — the unresolved threads a writer can actually pull on.
+ *
+ * VOCABULARY IS NOT DECORATION HERE. The caller sends each appearance with the
+ * words of its own show already attached, and the prompt forbids borrowing
+ * across them. This project's recurring bug is one show's language printed
+ * over the other — "never nominated" over a camp season — and a paragraph
+ * about a career spanning both shows is precisely where that happens.
+ * ═══════════════════════════════════════════════════════════════════════ */
+async function generateContinuityRead(body, env) {
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
+
+  if (!env.ANTHROPIC_API_KEY) {
+    return json({ ok: false, error: "The continuity read needs ANTHROPIC_API_KEY on this worker." }, 500);
+  }
+  const person = body.person || {};
+  const appearances = Array.isArray(body.appearances) ? body.appearances : [];
+  if (!person.name) return json({ ok: false, error: "person.name is required" }, 400);
+  if (!appearances.length) {
+    // A character who has not played has no continuity, and inventing one is
+    // the failure this whole feature is trying to avoid.
+    return json({ ok: false, error: `${person.name} has not finished a season yet.` }, 422);
+  }
+
+  const record = appearances.map(a => {
+    const lines = [
+      `${a.show} ${a.seasonId} — ${a.title}`,
+      `  Finished: ${a.placement}${a.outcome ? ` (${a.outcome})` : ""}`,
+      a.gameplayStyle ? `  Style: ${a.gameplayStyle}` : "",
+      a.stats?.length ? `  Record: ${a.stats.map(s => `${s.value} ${s.label}`).join(", ")}` : "",
+      a.keyMoments?.length ? `  What happened:\n${a.keyMoments.map(m => `    - ${m}`).join("\n")}` : "",
+      a.alliances?.length ? `  Alliances: ${a.alliances.join(", ")}` : "",
+      a.rivalries?.length ? `  Rivalries: ${a.rivalries.join(", ")}` : "",
+      // The show's own words travel WITH the season, so a mixed career cannot
+      // be written in one show's language by accident.
+      `  On this show people are ${a.exitWord}, and a round is called a ${a.roundWord}.`,
+    ];
+    return lines.filter(Boolean).join("\n");
+  }).join("\n\n");
+
+  const who = [
+    person.archetype ? `Archetype: ${person.archetype}` : "",
+    person.voice ? `Voice: ${person.voice}` : "",
+    person.personality ? `Personality: ${person.personality}` : "",
+  ].filter(Boolean).join("\n");
+
+  const system = [
+    "You read a competition career and say what it means. You are writing notes",
+    "for whoever books this person's next season.",
+    "",
+    "Answer with ONE JSON object and nothing else:",
+    '{"evolution":"...","motivation":"...","hooks":"..."}',
+    "",
+    "evolution  — 2-3 sentences. How the later seasons differ from the earlier",
+    "             ones, and what each result proved or cost. If there is only",
+    "             one season, say what that season established and leave the",
+    "             comparison out rather than inventing a second.",
+    "motivation — 2-3 sentences. What they want going in NOW, given how the",
+    "             last one ended. Not a wish; something that would make them",
+    "             act differently at a vote.",
+    "hooks      — 2-3 sentences. Unresolved threads a writer can pull on —",
+    "             a debt, a rematch, a question the record left open. Name the",
+    "             other people involved.",
+    "",
+    "HARD RULES",
+    "- Every claim must be answerable from the record below. No invented",
+    "  seasons, placements, alliances, betrayals or relationships.",
+    "- Use each show's own words for that show's season, exactly as the record",
+    "  states them. Never describe a Total Drama season with Big Brother terms",
+    "  (nominated, evicted, Head of Household, veto) or a Big Brother season",
+    "  with Total Drama terms (voted out, tribal council, idol, immunity).",
+    "- Write about the person, not the format. No recapping the chronology —",
+    "  whoever reads this already has it on the same screen.",
+    "- Plain prose. No headings, no bullet points, no second person.",
+  ].join("\n");
+
+  const user = `${person.name}\n${who}\n\nThe record:\n\n${record}`;
+
+  let raw = "", provider = "";
+  try {
+    const out = await callShortModel(system, user, env, { maxTokens: 1400, model: claudeModel("creative", body, env) });
+    raw = out.text; provider = out.provider;
+  } catch (e) {
+    return json({ ok: false, error: `model: ${e.message}` }, 502);
+  }
+
+  let parsed = null;
+  try {
+    const m = raw.match(/\{[\s\S]*\}/);
+    parsed = JSON.parse(m ? m[0] : raw);
+  } catch {
+    return json({ ok: false, error: "the model did not return usable JSON" }, 502);
+  }
+
+  const clean = k => (typeof parsed?.[k] === "string" ? parsed[k].trim() : "");
+  const evolution = clean("evolution"), motivation = clean("motivation"), hooks = clean("hooks");
+  if (!evolution && !motivation && !hooks) {
+    return json({ ok: false, error: "nothing usable came back" }, 502);
+  }
+
+  // Assembled here rather than in the browser so the stored note and the
+  // preview are the same string — the Studio saves what it showed.
+  const note = [
+    evolution && `Evolution. ${evolution}`,
+    motivation && `Going in now. ${motivation}`,
+    hooks && `Open threads. ${hooks}`,
+  ].filter(Boolean).join("\n\n");
+
+  return json({ ok: true, note, provider, sections: { evolution, motivation, hooks } });
 }

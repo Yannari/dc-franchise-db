@@ -9,7 +9,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-  "test:sim": "vitest run --config vitest.sim.config.js --reporter=verbose",
+    "test:sim": "vitest run --config vitest.sim.config.js --reporter=verbose",
     "calibrate:voting": "vitest run tests/emotional-defection-calibration.test.js --reporter=verbose",
     "audit:realism": "vitest run --config vitest.audit.config.js tests/voting-realism-audit.test.js --reporter=verbose",
     "audit:season": "vitest run --config vitest.audit.config.js tests/full-season-audit.test.js --reporter=verbose",
@@ -26,7 +26,9 @@
     "deploy:analytics": "wrangler deploy --config worker/wrangler-analytics.toml",
     "deploy:seasons": "wrangler deploy --config worker/wrangler-season.toml",
     "deploy:all": "npm run deploy && npm run deploy:analytics && npm run deploy:seasons",
-    "preview": "wrangler dev --config worker/wrangler.toml"
+    "preview": "wrangler dev --config worker/wrangler.toml",
+    "build:favorites-context": "node scripts/build-favorites-context.mjs",
+    "fix:social-counts": "node scripts/fix-social-counts.mjs"
   },
   "repository": {
     "type": "git",

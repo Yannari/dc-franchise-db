@@ -85,6 +85,24 @@ export const CAPTIONS = {
     plain: ['we got married', 'married', 'that\'s that'],
     loud: ['MARRIEDDDD', 'WE DID IT', 'MY WIFE. MY ACTUAL WIFE.'],
   },
+  // -- THE ONE NOBODY POSTS HAPPILY --
+  //
+  // Without its own bank this fell through to FALLBACK.major, so a houseguest
+  // whose infidelity had just aired captioned it "big news 🤍" and
+  // "something has changed and it’s good". Every line here is written as
+  // what a person actually posts once this is already public and they know it:
+  // damage control, a non-apology, or a refusal. Nobody announces it.
+  cheated: {
+    warm: ['i know. i’m not going to pretend i don’t. i’m sorry, and i’m saying it here because they deserve to hear it somewhere.',
+      'i hurt someone who did not deserve it. that’s the whole post.',
+      'no excuses, and no version of this where i come out of it well.'],
+    sharp: ['you all watched it. i am not narrating it for you as well.',
+      'there is a version of this you did not see. i am not obliged to give it to you.',
+      'comments off, obviously.'],
+    plain: ['i’m not discussing this here', 'that’s between me and them', 'no statement'],
+    loud: ['SAY IT TO MY FACE THEN', 'you do not know one single thing about my life',
+      'i am not doing this today'],
+  },
   'broke-up': {
     warm: ['we\'ve gone our separate ways. please be kind to them.',
       'this one hurts. that\'s all i\'ll say.', 'no bad guy here. just an ending.'],
@@ -375,6 +393,14 @@ export const COMMENTS = {
 
 /** Comments that only make sense for one kind. Checked before the generic bank. */
 export const KIND_COMMENTS = {
+  // The one post where a close friend does not automatically take your side.
+  cheated: {
+    close: ['i love you and you were wrong. both of those.',
+      'call me. not to defend it. just call me.'],
+    friend: ['no comment from me on this one', 'i hope they’re okay'],
+    rival: ['everybody saw exactly what happened.',
+      'and we are all meant to pretend we did not watch that'],
+  },
   wedding: { close: ['the speech RUINED me', 'best wedding i have ever been to and i am counting my own'],
     friend: ['what a day! congratulations to you both'], rival: ['it was a nice day. it was.'] },
   birth: { close: ['auntie duties begin immediately', 'she is PERFECT'],
@@ -433,6 +459,48 @@ export function captionFor(event, { archetype = '', names = {}, season = '' } = 
  * made of people who actually know them. `ties` is [{slug, weight}] — positive
  * is a friend, strongly positive is close, negative is a rival.
  */
+/**
+ * Kinds the generic comment bank must never be blended into.
+ *
+ * COMMENTS is written for good news — "delighted for you both", "oh this is
+ * wonderful", "YES. finally. YES." — and it was merged into EVERY kind for
+ * variety. Under a bereavement the room said "so happy for you both i could
+ * scream". Under an arrest, "YES. finally. YES." Under an illness, "been
+ * waiting years for this one".
+ *
+ * So hard news borrows from SUPPORT instead, which says the same amount and
+ * means the opposite. Listed by key rather than by track because a track is
+ * not a mood: `health` holds both a bereavement and getting in shape, and
+ * `relationship` holds both a wedding and the end of one.
+ */
+const HARD_NEWS = new Set([
+  'separated', 'divorced', 'cheated', 'broke-up', 'quietly-ended', 'estranged',
+  'illness', 'injury', 'bereavement', 'death', 'relapse', 'rehab', 'burnout', 'surgery',
+  'lawsuit', 'arrested', 'charges-dropped', 'scandal', 'cancelled',
+  'lost-money', 'bankruptcy', 'bad-investment',
+  'laid-off', 'business-folded', 'dropped-out', 'production-fallout', 'feud',
+]);
+
+/** The generic bank for a room that has just read bad news. */
+const SUPPORT = {
+  close: {
+    major: ['calling you tonight.', 'whatever you need. i mean it.',
+      'i’m so sorry. i’m here.', 'on my way. do not argue.'],
+    notable: ['thinking of you 🤍', 'you know where i am.', 'here if you want to talk.'],
+    minor: ['🤍', 'here.'],
+  },
+  friend: {
+    major: ['so sorry to hear this', 'sending love 🤍', 'thinking of you both'],
+    notable: ['hope you’re okay', 'sorry to hear it', 'take care of yourself'],
+    minor: ['🤍', 'hope you are alright'],
+  },
+  rival: {
+    major: ['very sorry to hear this.', 'genuinely, i am sorry.'],
+    notable: ['sorry to hear that.', 'that’s rough.'],
+    minor: [''],
+  },
+};
+
 export function commentsFor(event, { ties = [], names = {}, max = 4 } = {}) {
   const sig = event?._sig || 'notable';
   const seedBase = `${event?.player}|${event?.kind}|${event?.afterSeason}|${event?.seq}`;
@@ -453,9 +521,12 @@ export function commentsFor(event, { ties = [], names = {}, max = 4 } = {}) {
     // Lindsay's graduation all said "FOUR YEARS. you did it." Merging keeps the
     // specific flavour and borrows the generic bank's variety, so a thin kind
     // reads as a room rather than a chorus.
+    const generic = HARD_NEWS.has(event?.kind)
+      ? (SUPPORT[relation]?.[sig] || SUPPORT[relation]?.notable || [])
+      : (COMMENTS[relation]?.[sig] || []);
     const bank = [
       ...(KIND_COMMENTS[event?.kind]?.[relation] || []),
-      ...(COMMENTS[relation]?.[sig] || []),
+      ...generic,
     ].filter(Boolean);
     const text = pickFrom(bank, `${seedBase}|${t.slug}`);
     if (!text) continue;

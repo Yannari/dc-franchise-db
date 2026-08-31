@@ -1,0 +1,173 @@
+# Coaches Twist — what is left
+
+> **Status 2026-08-27.** Items 1, 3, 5, 7 and the coach-vs-coach half of 6 are
+> DONE. Item 4 is measured. What genuinely remains is at the bottom under
+> "Still open".
+
+The engine is built, reviewed and measured across 20 headless seasons. This is
+what a final whole-branch review found still open, in the order it must be done.
+
+## 1. There is no way to create a coach — RESOLVED (2026-08-26)
+
+This item also uncovered a deeper design error: Coaches was built as an
+EPISODE twist (`TWIST_CATALOG` entry, `phase:'pre-merge'`, scheduled on the
+timeline) when it is actually a SEASON-LONG system — a coach spans the whole
+pre-merge phase, exactly like the Mole. Scheduling it on one night meant
+`ep.isCoaches` (which `promoteCoaches` reads to know the merge happened) was
+only ever true on the scheduled episode; any season that did not schedule
+Coaches on the exact merge episode stranded every surviving coach outside
+`gs.activePlayers` for good.
+
+Fixed by making Coaches `seasonConfig.coaches` (`disabled`|`manual`|`auto`,
+plus `seasonConfig.coachesPerTribe`), wired in `initGameState` the same way as
+`seasonConfig.mole`, with `ep.isCoaches` now DERIVED each episode from
+`gs.coaches.length` rather than set by `applyTwist()`. See the "Correction"
+section at the top of the design doc.
+
+- **manual** — the Cast Builder's per-player Coach checkbox (already built;
+  now gated on this mode instead of always reading `p.isCoach`).
+- **auto** — `coachesPerTribe` coaches per tribe, selected using `isReturnee`
+  as the casting proxy for "franchise winner or finalist" (see item 6 below —
+  real `js/fame.js` output still isn't reachable at init).
+
+A coach's name never appears in `tribe.members` in either mode — the
+exclusion happens before tribes are built, same as it did for the old
+checkbox-only path.
+
+## 2. Manual verification never done — no longer blocked
+
+Both were impossible until item 1 existed; item 1 is now resolved (a real
+season with `seasonConfig.coaches` set produces coaches through
+`initGameState`), but a browser render still hasn't been done.
+
+- **Render the Coaches' Board in a browser.** This repository has shipped VP
+  screens that were written, wired, tested and drew nothing.
+- **Dump a real episode backlog and read it.** Two prose bugs on this branch
+  were found exactly that way and none by a test.
+- Confirm a coach boot does not render as "nobody went home". `ep.eliminated`
+  is deliberately null on those nights; the fact lives on `ep.coachElimination`
+  and is now persisted, but nothing has been seen on screen.
+
+## 3. Awe's positive half is still unimplemented
+
+Pre-flight ruling 1 split the fame mechanic in two. The negative half shipped —
+the strategic archetypes read a famous coach as a résumé and target him sooner.
+The positive half, *"awe reduces willingness to target that coach"*, was
+deferred and never landed, so targeting is one-sided toward booting.
+
+This matters for the balance question below: the 55% first-boot rate was
+measured with only the pressure to boot wired, and none of the deference.
+
+## 4. The balance question — measured, and probably fine
+
+Across five fixed seeds, twenty seasons each, run in separate processes
+(a hundred seasons in one process exhausts the heap):
+
+    777001  6/20    777003 14/20    777005 12/20
+    777002  9/20    777004  8/20
+
+    mean 9.8/20 = 49%,  observed range 6-14
+
+**Every earlier figure for this was unseeded** — the test ran twenty fresh
+seasons on each invocation and the assertion sat at `toBeLessThan(14)`, inside
+a noise band spanning 6 to 14. So it passed or failed by dice roll, and the
+"11 of 20" reported during the build was one draw, not a measurement.
+
+49% is roughly double the 20-25% a purely random first boot would give for a
+field this size. That reads as the twist working: a coach is a proven threat
+and gets hunted, but a coalition still declines to cut one more often than not.
+The training cost, the favouritism and the fame deference are all biting.
+
+The test is now seeded per-test and deterministic (8/20 every run), with the
+threshold at 18 — clear of the observed maximum, so it catches a real
+behavioural regression rather than sampling noise.
+
+If you do want to move it, the levers in preference order are `sessionGain`
+(make training worth more), `AWE_BIAS` for the receptive archetypes (make
+newbies defer more), `sessionsFor` (reduce scarcity), and
+`_coachTargetDanger` in `js/alliances.js` (reduce how threatening a coach
+reads).
+
+## 5. Inert by design, awaiting item 1
+
+The save card and the advantage law are built, tested and unreachable:
+`offerSaveCard` is never offered at a tribal, and `coachCanPlay` /
+`giveAdvantage` never guard a real play. Coaches are also outside
+`gs.activePlayers`, so they cannot *find* an advantage — Team Switch, The Loan
+and Second Opinion are not in the advantage catalog at all.
+
+## 6. Smaller things
+
+- Coach-vs-coach deals (non-aggression, trades, taking the fall) were scoped
+  out of the plan and never built. Poaching works.
+- The pre-challenge "read" and the coach-named reaction beat during a challenge
+  were scoped out; the training bonus itself does reach challenge scoring.
+- `js/alliances.js` `formAlliances` matches on the joined label on a
+  double-tribal night, so a coach cannot be the majority's PRIMARY pick there.
+  Reachable via secondary paths. Accepted limitation.
+- Fame uses a two-tier `isReturnee` proxy (newbie 0, returning vet 2.0) rather
+  than real career stars, because `js/fame.js` needs season data an episode
+  cannot reach. Replaceable once item 1 plumbs it.
+
+## 7. Seed the season test's RNG — DONE — DONE
+
+`tests/coach-season.test.js` — "promotes whoever survived to the merge" — was
+flaky. It used an unseeded `Math.random()`, and a promoted coach can
+legitimately be voted out in the same merge episode they join, so the
+assertion sometimes found them already gone.
+
+That is the twist behaving correctly and the test being unable to tell. This
+repo already has the rule: a bare `Math.random()` breaks replay guards, use a
+stable seeded generator. All five tests in this file are now seeded with a
+fixed LCG, including "does not let coaches be booted every single time
+either" (see item 4 above) — every test asserts against a fixed, reproducible
+season rather than re-rolling one.
+
+
+---
+
+# Still open
+
+## A human has not looked at the board
+
+Everything else has been verified by reading real generated text. The VP screen
+has only ever been rendered to stripped text and static-checked. No browser
+automation was available in the session that built this.
+
+`coaches-board-preview.html` in the worktree root is a standalone render of a
+real board — two tribes, a damaging session, and a passed-over ledger — with a
+fake nav bar at the top so you can confirm the atmosphere layer does not cover
+it. Open it in a browser. Reveals will not work (they need the app), but layout,
+colour, spacing and the damaged-session styling will.
+
+Nine static checks pass on it: no emoji, cb- prefix throughout, atmosphere at
+top:46px, real reduced-motion block, max-width 1100, negative gains rendering
+with a minus rather than `+-`, damaged sessions styled distinctly, no
+undefined/NaN, no cross-show vocabulary.
+
+## The pre-challenge read
+
+The spec's Challenge section has two halves. The training bonus reaching
+challenge scoring is built. The other half — a coach spending a session on a
+read that gives their proteges an edge if they guess the discipline right — was
+scoped out of the plan and never built.
+
+## Fame is still a two-tier proxy
+
+`coach.stars` defaults to 4.5 and a contestant is 0 or 2.0 depending on
+`isReturnee`. Real career fame lives in `js/fame.js` but needs season data an
+episode cannot reach. Now that coaches are created at `initGameState`, that IS
+a place the databases are reachable — compute real stars there and store them
+on the coach record.
+
+## Deal events have no VP card style
+
+The three coach-vs-coach event types render through the generic camp-event
+fallback, the same as `coachFallout`'s events. Fine, but a truce or a betrayal
+between two finalists deserves its own card.
+
+## The double-tribal primary pick
+
+`formAlliances` matches on the joined label, so a coach cannot be the majority
+alliance's PRIMARY target on a double-tribal night. Reachable via secondary
+paths. Accepted limitation, recorded rather than fixed.

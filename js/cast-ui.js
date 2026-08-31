@@ -163,6 +163,7 @@ export function submitPlayer() {
     sexuality: sexuality !== 'straight' ? sexuality : undefined,
     archetype: document.getElementById('f-archetype').value, stats: getStats(),
     isReturnee: document.getElementById('f-returnee')?.checked || false,
+    isCoach: document.getElementById('f-coach')?.checked || false,
   };
   applyAvatarSlug(player); // set effective .slug from base + returnee state
   if (editingId) { const i = players.findIndex(p=>p.id===editingId); if(i!==-1) players[i]=player; cancelEdit(); }
@@ -181,6 +182,7 @@ export function editPlayer(id) {
   document.getElementById('f-archetype').value = p.archetype||'';
   document.getElementById('archetype-desc').textContent = ARCHETYPES[p.archetype]?.desc||'';
   const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = p.isReturnee || false;
+  const coachEl = document.getElementById('f-coach'); if (coachEl) coachEl.checked = p.isCoach || false;
   _updateReturneeArtHint();
   putStats(p.stats);
   document.getElementById('form-title').textContent = 'Edit \u2014 '+p.name;
@@ -209,6 +211,7 @@ export function resetForm() {
   setGender('nb');
   document.getElementById('f-archetype').value='';
   const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = false;
+  const coachEl = document.getElementById('f-coach'); if (coachEl) coachEl.checked = false;
   document.getElementById('archetype-desc').textContent='';
   STATS.forEach(s => setSlider(s.key, 5, false));
 }
@@ -265,6 +268,7 @@ export function fillFromRoster(p) {
   if (p.stats) putStats(p.stats);
   // Always default to non-returnee when adding from roster — set per-season in cast builder
   const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = false;
+  const coachEl = document.getElementById('f-coach'); if (coachEl) coachEl.checked = false;
   _updateReturneeArtHint();
 }
 
@@ -773,6 +777,7 @@ export function renderCard(p) {
             ? `<span class="tribe-badge" style="background:${tc}22;color:${tc}">${p.tribe}</span>` : ''}
           <span class="archetype-tag">${ARCHETYPE_NAMES[p.archetype]||'Custom'}</span>
           ${p.isReturnee ? '<span class="archetype-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Returning</span>' : ''}
+          ${p.isCoach ? '<span class="archetype-tag" title="Trains this tribe — never competes, never votes" style="background:rgba(59,130,246,0.15);color:#3b82f6">Coach</span>' : ''}
           ${showingRet
     ? '<span class="archetype-tag" title="Drawn with this character&apos;s returnee portrait" style="background:rgba(139,92,246,0.16);color:#a78bfa">Returnee art</span>'
     : retArt && !p.isReturnee
@@ -1018,6 +1023,15 @@ export function saveConfig() {
     mole:        g('cfg-mole')?.value || 'disabled',
     molePlayers: seasonConfig.molePlayers || [],
     moleCoordination: g('cfg-mole-coordination')?.value || 'independent',
+    coaches:     g('cfg-coaches')?.value || 'disabled',
+    coachesPerTribe: parseInt(g('cfg-coaches-per-tribe')?.value) || 1,
+    // What a coach may find, and from where. Separate from `advantages` above:
+    // that governs contestants, and a coach is not one.
+    coachAdvantages: Object.fromEntries(ADVANTAGES.map(a => {
+      const enabled = !!g('coach-adv-' + a.key)?.checked;
+      const sources = Object.keys(ADV_SOURCE_LABELS).filter(src => g('coach-adv-src-' + a.key + '-' + src)?.checked);
+      return [a.key, { enabled, sources: sources.length ? sources : ['camp'] }];
+    })),
     romance:     g('cfg-romance')?.value || 'enabled',
     autoRewardChallenges: g('cfg-auto-reward')?.checked ?? false,
     replacementOnMedevac: g('cfg-replacement')?.checked ?? false,
@@ -1212,6 +1226,13 @@ export function renderConfig() {
   set('cfg-mole', seasonConfig.mole || 'disabled');
   set('cfg-mole-coordination', seasonConfig.moleCoordination || 'independent');
   updateMoleUI();
+  // Coaches — season-long system, configured like the Mole (see
+  // docs/superpowers/specs/2026-08-26-coaches-twist-design.md)
+  set('cfg-coaches', seasonConfig.coaches || 'disabled');
+  set('cfg-coaches-per-tribe', seasonConfig.coachesPerTribe || 1);
+  // Drawn after the mode is set, so the list reflects the saved season.
+  if (typeof buildCoachAdvantageList === 'function') buildCoachAdvantageList();
+  updateCoachesUI();
   // Romance
   set('cfg-romance', seasonConfig.romance || 'enabled');
   // Sync slider displays

@@ -18,6 +18,15 @@ the other. "Reached the end without ever being nominated" over a Total Drama
 season (no nominations); "was evicted" over a camp (it votes people out). Any
 generated sentence must take its words from that show's registry entry.
 
+**§11.5 of that document is worth reading before touching ANY simulation
+feature, not only when adding a show.** It is the catalogue of bug classes found
+by playing seasons and reading the output — a system that runs and reaches no
+screen, a screen showing live state on a replayed episode, a speech that knows
+what the character does not, an average that hides the one event it should
+show, a constant calibrated for a different season length, and three ways a
+test has passed against the bug it was written for. Each entry carries the
+measurement that found it.
+
 ## Architecture
 - `simulator.html` — CSS + HTML shell (no JS, loads `js/main.js`)
 - `js/main.js` — entry point, imports all modules, exposes on window for onclick handlers
@@ -356,7 +365,7 @@ Init: `active` (filter exileDuelPlayer), `campKey`, `campEvents`, `chalMemberSco
 - **Romance hooks**: Pass `null` for phases/phaseKey params or they crash trying to push to nonexistent array.
 - **Pre-merge: NO `ep.immunityWinner`** — tribe wins, not individual. Only post-merge sets this.
 - **Generic challenge skip**: Add to BOTH skip conditions in episode.js (dispatch + updateChalRecord guard).
-- **Tribe property**: `tribeName` not `name`. Episode number: `gs.episodeHistory.length` not `+1`.
+- **Tribe property**: `gs.tribes` objects (built by `initGameState()`/`cast-ui.js`) carry `.name`, never `.tribeName` — `episode.js`, `alliances.js`, `camp-events.js`, `romance.js`, `advantages.js`, and `auction.js` all read `.name` (several with an explicit `t.tribeName || t.name` fallback). Read a tribe's name as `tribe.name ?? tribe.tribeName` if a call site must also tolerate the older shape; do not write new code that reads `tribeName` alone. Episode number: `gs.episodeHistory.length` not `+1`.
 - **Reveals after screen switch**: `_reapplyVisibility()` loops 0→idx on every click. Isolate sidebar/map updates in separate try-catch blocks so reapply always runs first.
 - **Reward Twist compatibility**: (1) Add ID to `reward-twist-challenge` incompatible list in core.js. (2) Add engine ID + flag to `_engineFlagMap` in twists.js.
 - **VP atmosphere**: Use `top:46px` not `top:0` — don't cover the 46px `.rp-nav` bar.

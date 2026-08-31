@@ -46,6 +46,8 @@ import { rpBuildBBRivalsOpen, rpBuildBBRivalsHoh, rpBuildBBRivalsWeek,
 import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
 import { rpBuildBBHidden } from './vp-bb-hidden.js';
 import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
+import { rpBuildBBChainOfSafety } from './vp-bb-chain.js';
+import { rpBuildBBAudienceVote } from './vp-bb-audience-vote.js';
 import { rpBuildBBWildcard } from './vp-bb-wildcard.js';
 import { rpBuildBBCampDirector } from './vp-bb-camp-director.js';
 import { rpBuildBBNightmare } from './vp-bb-nightmare.js';
@@ -173,6 +175,8 @@ import { rpBuildNMTitleCard, rpBuildNMSecurity, rpBuildNMGallery, rpBuildNMAssem
 import { rpBuildTlsTitleCard, rpBuildTlsRounds, rpBuildTlsResults, tlsRevealNext, tlsRevealAll } from './chal/truth-or-shark.js';
 import { rpBuildRTDTitleCard, rpBuildRTDSwim, rpBuildRTDRelay, rpBuildRTDResults, rockTheDockRevealNext, rockTheDockRevealAll } from './chal/rock-the-dock.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
+import { rpBuildCoachBoard, rpBuildCoachPromotion, rpBuildCoachSignatures } from './vp-coaches.js';
+import { coachesOf } from './coaches.js';
 import { rpBuildTTTitleCard, rpBuildTTCaptainDraft, rpBuildTTCliffDive, rpBuildTTChainHunt, rpBuildTTLongboardRace, rpBuildTTResults, ttRevealNext, ttRevealAll } from './chal/tropical-takedown.js';
 import { rpBuildMMTitleCard, rpBuildMMGuardStrip, rpBuildMMRack, rpBuildMMManhunt, rpBuildMMResults, mmRevealNext, mmRevealAll } from './chal/midnight-manhunt.js';
 import { rpBuildGPTitleCard, rpBuildGPMaze, rpBuildGPWrestling, rpBuildGPHurdles, rpBuildGPIcarus, rpBuildGPResults, gpRevealNext, gpRevealAll } from './chal/greeces-pieces.js';
@@ -787,9 +791,19 @@ export function rpBuildColdOpen(ep) {
   const elimAtStart = new Set(prevSnap.eliminated || []);
   const riAtStart   = new Set(prevSnap.riPlayers  || []);
   const exilePlayer = prevSnap.exileDuelPlayer || null;
+  // Coaches are at camp and in the game. `tribes[].members` answers "who
+  // competes and votes" and they are correctly absent from it, so this screen
+  // showed a tribe of four when five people were living there — and a coach
+  // who had been voted out appeared in neither the tribe nor the out-list,
+  // which is to say vanished from the season entirely.
+  const _rosterCoaches = (prevSnap.coaches || []).filter(c => !c.promoted);
+  const _coachByTribe = {};
+  for (const c of _rosterCoaches) (_coachByTribe[c.tribe] ||= []).push(c.name);
+  const _coachOut = (prevSnap.coachesEliminated || []).map(c => c.coach);
+
   const activeAtStart = tribesAtStart
-    ? new Set(tribesAtStart.flatMap(t => t.members))
-    : new Set(allPlayers.filter(n => !elimAtStart.has(n) && !riAtStart.has(n)));
+    ? new Set([...tribesAtStart.flatMap(t => t.members), ..._rosterCoaches.map(c => c.name)])
+    : new Set(allPlayers.filter(n => !elimAtStart.has(n) && !riAtStart.has(n) && !_coachOut.includes(n)));
 
   const countActive = activeAtStart.size;
   const phaseLabel  = ep.isMerge ? 'Merge Episode'
@@ -811,7 +825,7 @@ export function rpBuildColdOpen(ep) {
       html += `<div class="rp-tribe">
         <div class="rp-tribe-head" style="color:${tc};border-color:${tc}">
           ${tribe.name}
-          <span class="rp-tribe-count">${tribe.members.length} left</span>
+          <span class="rp-tribe-count">${tribe.members.length} left${(_coachByTribe[tribe.name] || []).length ? ` · ${(_coachByTribe[tribe.name] || []).length} coach${(_coachByTribe[tribe.name] || []).length === 1 ? '' : 'es'}` : ''}</span>
         </div>
         <div class="rp-portrait-row">
           ${tribe.members.map(name => {
@@ -819,6 +833,7 @@ export function rpBuildColdOpen(ep) {
             const cls   = name === exilePlayer ? 'sitd' : '';
             return rpPortrait(name, cls, badge);
           }).join('')}
+          ${(_coachByTribe[tribe.name] || []).map(name => rpPortrait(name, '', 'Coach')).join('')}
         </div>
       </div>`;
     });
@@ -830,7 +845,7 @@ export function rpBuildColdOpen(ep) {
   }
 
   // ── Eliminated players ──
-  const elimList = allPlayers.filter(n => elimAtStart.has(n) || riAtStart.has(n));
+  const elimList = allPlayers.filter(n => elimAtStart.has(n) || riAtStart.has(n) || _coachOut.includes(n));
   if (elimList.length) {
     html += `<div class="rp-co-divider"></div>
     <div class="rp-co-elim-head">Out of the game</div>
@@ -4040,6 +4055,149 @@ export function rpBuildFirstImpressions(ep, twistObj) {
 }
 
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
+/**
+ * The one episode all season where the cast gets BIGGER.
+ *
+ * Built around the two facts that matter and nothing else: which camp they
+ * walked into, and how far behind they are. The camp is drawn as it stands at
+ * that moment with the newcomer set apart from it, because the picture is the
+ * point — everybody else has been standing together for days.
+ */
+/**
+ * The introduction they never got.
+ *
+ * A late arrival is skipped by the dock in the premiere on purpose — walking
+ * them down it weeks early tells the audience somebody is coming and throws
+ * away the only surprise the twist has. So the words happen HERE instead, on
+ * the episode they actually arrive: who they are, and what the house is about
+ * to find out about them.
+ */
+function _laIntro(name) {
+  let s = {};
+  try { s = pStats(name) || {}; } catch { s = {}; }
+  const arch = (players.find(p => p.name === name) || {}).archetype || '';
+  // The two things they are loudest at, which is what a room clocks first.
+  const top = Object.entries(s)
+    .filter(([k]) => k !== 'temperament')
+    .sort((a, b) => b[1] - a[1]).slice(0, 2)
+    .map(([k, v]) => `${k} ${v}`);
+  const resume = [];
+  try {
+    const meta = gs.franchiseMeta?.profiles?.[name]?.resume || [];
+    resume.push(...meta.slice(0, 3));
+  } catch { /* no franchise history */ }
+  if (!top.length && !resume.length && !arch) return '';
+  return `<div class="la-intro">
+    <div class="la-intro-h">WHAT THEY ARE WALKING IN WITH</div>
+    ${arch ? `<div class="la-arch">${_bbEsc(String(arch).replace(/-/g, ' '))}</div>` : ''}
+    ${top.length ? `<div class="la-chips">${top.map(t =>
+    `<span class="la-chip">${_bbEsc(t)}</span>`).join('')}</div>` : ''}
+    ${resume.length ? `<div class="la-resume">${resume.map(r =>
+    `<div>${_bbEsc(r)}</div>`).join('')}</div>` : ''}
+  </div>`;
+}
+
+export function rpBuildLateArrival(ep) {
+  const a = ep.lateArrival;
+  if (!a?.name) return '';
+  // ── WHO WAS ALREADY HERE ──
+  //
+  // The tribe they joined, when there is one. A season with no tribes at all —
+  // an individual format, or one already merged — has no camp to look up, and
+  // reading `tribesAtStart` alone produced "0 PEOPLE WHO HAVE ALREADY DECIDED
+  // WHO THEY TRUST" printed over an empty row, which is both wrong and the
+  // opposite of what the screen is for. Everybody who was playing when the
+  // episode began is the right answer in that case, and it is the honest one:
+  // in a tribeless season the whole game is the room they walked into.
+  const camp = (ep.tribesAtStart || []).find(t => t.name === a.tribe) || null;
+  // The arrival record carries the room it walked into, captured at the moment
+  // of seating. Deriving it here instead meant guessing from whatever the
+  // stored episode happened to hold, and every candidate is empty on some kind
+  // of episode. The rest is kept as a fallback for records written before the
+  // field existed.
+  const already = (a.alreadyHere && a.alreadyHere.length ? a.alreadyHere
+    : camp ? (camp.members || [])
+      : (ep.activeAtStart || ep.tribalPlayers || []))
+    .filter(n => n !== a.name);
+  const walkIn = (ep.campEvents?.[a.tribe]?.pre || []).find(e => e.type === 'lateArrival');
+
+  return `<div class="rp-page" style="max-width:1100px;margin:0 auto;padding:26px 18px">
+    <style>
+      .la-wrap{max-width:640px;margin:0 auto}
+      .la-eyebrow{font-family:var(--font-mono,ui-monospace,monospace);font-size:10px;
+        letter-spacing:4px;color:#38bdf8;text-align:center}
+      .la-title{font-family:var(--font-display,Georgia,serif);font-size:30px;letter-spacing:3px;
+        text-align:center;color:#e6edf3;margin:8px 0 4px}
+      .la-sub{text-align:center;font-size:12px;color:var(--muted,#8b949e);margin-bottom:22px}
+      .la-stage{position:relative;padding:22px 16px;border-radius:12px;overflow:hidden;
+        background:radial-gradient(120% 80% at 50% -10%,rgba(56,189,248,.12),rgba(8,12,18,.97) 62%);
+        border:1px solid rgba(56,189,248,.22)}
+      .la-new{display:flex;justify-content:center;margin:0 auto 6px;position:relative}
+      .la-new .la-ring{width:88px;height:88px;border-radius:50%;overflow:hidden;flex:none;
+        display:flex;align-items:center;justify-content:center;
+        border:2px solid #38bdf8;box-shadow:0 0 0 4px rgba(56,189,248,.14),0 0 30px -4px rgba(56,189,248,.9)}
+      /* rpPortrait nests a sized box inside a sized box: .rp-portrait wraps
+         .rp-portrait-img which carries its OWN fixed dimensions. Sizing only
+         the outer one left a 72px image inside a 44px tile, and because the
+         tile clips, the visible crop sat fifteen pixels right of centre — the
+         art looked off-centre while every container measured dead centre. */
+      .la-new img,.la-new .rp-portrait,.la-new .rp-portrait-img{
+        width:100%!important;height:100%!important;object-fit:cover;
+        display:block;margin:0;left:auto;top:auto}
+      .la-name{text-align:center;font-size:15px;font-weight:700;color:#e6edf3;margin-top:8px}
+      .la-tag{text-align:center;font-family:var(--font-mono,monospace);font-size:9px;
+        letter-spacing:2px;color:#38bdf8;margin-top:3px}
+      .la-gap{height:1px;background:repeating-linear-gradient(90deg,rgba(148,163,184,.4) 0 6px,transparent 6px 12px);
+        margin:22px 0 16px}
+      .la-them{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+      .la-one{width:52px;text-align:center;opacity:.85}
+      .la-face{width:44px;height:44px;margin:0 auto;border-radius:4px;overflow:hidden;
+        border:1px solid rgba(148,163,184,.35);background:#0b1017}
+      .la-face img,.la-face .rp-portrait,.la-face .rp-portrait-img{
+        width:100%!important;height:100%!important;object-fit:cover;
+        display:block;margin:0;left:auto;top:auto}
+      .la-who{font-size:8.5px;color:#c9d3e6;margin-top:3px;overflow:hidden;
+        text-overflow:ellipsis;white-space:nowrap}
+      .la-legend{text-align:center;font-size:9px;letter-spacing:1.4px;color:#64748b;margin-top:14px}
+      .la-copy{margin:20px auto 0;max-width:560px;font-size:13px;line-height:1.7;color:#c9d3e6}
+      .la-intro{margin:18px auto 0;max-width:560px;padding:14px 16px;border-radius:10px;
+        border:1px solid rgba(56,189,248,.2);background:rgba(56,189,248,.05)}
+      .la-intro-h{font-family:var(--font-mono,monospace);font-size:9px;letter-spacing:2px;
+        color:#38bdf8;margin-bottom:8px}
+      .la-arch{font-size:13px;color:#e6edf3;font-weight:600;text-transform:capitalize}
+      .la-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+      .la-chip{font-family:var(--font-mono,monospace);font-size:9.5px;letter-spacing:1px;
+        color:#c9d3e6;background:rgba(148,163,184,.14);border-radius:3px;padding:3px 7px;
+        text-transform:uppercase}
+      .la-resume{margin-top:10px;font-size:11.5px;line-height:1.6;color:#94a3b8}
+    </style>
+    <div class="la-wrap">
+      <div class="la-eyebrow">EPISODE ${Number(ep.num) || ''}</div>
+      <div class="la-title">A NEW ARRIVAL</div>
+      <div class="la-sub">${_bbEsc(a.name)} was not here when this season started.</div>
+      <div class="la-stage">
+        <div class="la-new"><div class="la-ring">${rpPortrait(a.name, 'lg')}</div></div>
+        <div class="la-name">${_bbEsc(a.name)}</div>
+        <div class="la-tag">${a.fromOtherSide ? 'NOT THE CAMP THEY WERE CAST ON'
+    : camp ? 'JOINING ' + _bbEsc(String(a.tribe || '').toUpperCase())
+      : 'INTO A GAME ALREADY IN PROGRESS'}</div>
+        <div class="la-gap"></div>
+        <div class="la-them">${already.map(n => `
+          <div class="la-one" title="${_bbEsc(n)}">
+            <div class="la-face">${rpPortrait(n, 'sm')}</div>
+            <div class="la-who">${_bbEsc(n)}</div>
+          </div>`).join('')}</div>
+        <div class="la-legend">${already.length
+    ? `${already.length} PEOPLE WHO HAVE ALREADY DECIDED WHO THEY TRUST`
+    : 'AND NOBODY HERE WAS EXPECTING ANYBODY'}</div>
+      </div>
+      <div class="la-copy">${walkIn ? _bbEsc(walkIn.text)
+    : `${_bbEsc(a.name)} joins ${_bbEsc(a.tribe)} with no bonds, no alliance and no challenge record.`}</div>
+      ${_laIntro(a.name)}
+    </div>
+  </div>`;
+}
+
 export function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
     .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt' && t.type !== 'hells-kitchen' && t.type !== 'trust-challenge' && t.type !== 'hide-and-be-sneaky' && t.type !== 'off-the-chain' && t.type !== 'auction'); // shown in dedicated screens
@@ -7512,7 +7670,19 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
   const isMerge = tribeName === 'merge' || tribeName === (gs.mergeName || 'merged');
   const displayName = isMerge ? (gs.mergeName || 'Merged Tribe') : tribeName;
   const safeId = tribeName.replace(/\W/g, '') + phase + ep.num;
-  const portraitMembers = members.filter(n => n);
+  // Coaches live at this camp without ever being in tribe.members — that array
+  // answers "who competes and votes", and using it as the camp roster is what
+  // made a coach invisible on their own tribe's screen.
+  // From the EPISODE, not live gs. `coachesOf` answers who is a coach TODAY,
+  // so replaying episode 1 after a coach was voted out in episode 2 redrew
+  // episode 1's camp without them — the screen quietly rewriting history every
+  // time the roster changed. ep.coachData is the snapshot taken that night.
+  const _epCoachList = ep.coachData?.[tribeName]?.coaches;
+  const _coachNames = isMerge ? []
+    : (_epCoachList || coachesOf(tribeName).map(c => c.name));
+  const _liveMembers = members.filter(n => n);
+  const portraitMembers = isMerge ? _liveMembers
+    : [..._liveMembers, ..._coachNames.filter(n => !_liveMembers.includes(n))];
   // Extended search pool: union of episode-snapshot tribe members (end-of-ep state)
   // so players who swapped INTO this tribe this episode can still get icons matched.
   const snapTribeMembers = (ep.gsSnapshot?.tribes || []).find(t => t.name === tribeName)?.members
@@ -7527,7 +7697,9 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
   // Full tribe portrait row
   if (portraitMembers.length) {
     html += `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:28px;flex-wrap:wrap">
-      ${portraitMembers.map(n => rpPortrait(n)).join('')}
+      ${portraitMembers.map(n => _coachNames.includes(n)
+        ? `<div style="position:relative;display:inline-block">${rpPortrait(n)}<div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:${tc};color:#0b0b0b;font-size:8px;font-weight:800;letter-spacing:1px;padding:1px 5px;border-radius:3px;white-space:nowrap">COACH</div></div>`
+        : rpPortrait(n)).join('')}
     </div>`;
   }
 
@@ -7544,7 +7716,8 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
     : null;
   // Use portrait members (who's actually at camp) for both phases
   const _advMembers = portraitMembers.length ? portraitMembers : _snapMembers;
-  const advLines = getTribeAdvantageStatus(tribeName, isMerge, _snapAdvantages, _advMembers);
+  const advLines = getTribeAdvantageStatus(tribeName, isMerge, _snapAdvantages, _advMembers,
+    ep.coachData?.[tribeName] || null);
   html += `<div class="rp-camp-toggle-section">
     <button class="rp-camp-toggle-btn" style="border-color:${tc};color:${tc}" onclick="vpToggleSection('adv-${safeId}')">
       SECRET ADVANTAGES <span class="rp-toggle-arrow">\u25b2</span>
@@ -7552,11 +7725,19 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
     <div id="adv-${safeId}" class="rp-camp-toggle-body">`;
   if (advLines.length) {
     advLines.forEach(line => {
-      const mentioned = matchPool.find(n => line.includes(n)) || matchPool.find(n => line.includes(n.split(' ')[0]));
+      // The save card belongs to every coach on the tribe at once, so it gets
+      // every one of their faces rather than whichever name happened to match
+      // first — a shared thing shown as one person's is the display saying the
+      // opposite of the rule underneath it.
+      const _cardLine = line.includes("Coach's Save Card");
+      const _allMentioned = _cardLine
+        ? matchPool.filter(n => line.includes(n))
+        : [matchPool.find(n => line.includes(n)) || matchPool.find(n => line.includes(n.split(' ')[0]))].filter(Boolean);
       html += `<div class="rp-brant-entry">`;
-      if (mentioned) html += `<div class="rp-brant-portraits">${rpPortrait(mentioned)}</div>`;
+      if (_allMentioned.length) html += `<div class="rp-brant-portraits">${_allMentioned.map(n => rpPortrait(n)).join('')}</div>`;
+      const _isCard = line.includes("Coach's Save Card");
       html += `<div class="rp-brant-text">${line}</div>
-        <span class="rp-brant-badge gold">ADVANTAGE</span>
+        <span class="rp-brant-badge ${_isCard ? (line.includes('has been spent') ? 'red' : 'gold') : 'gold'}">${_isCard ? 'SAVE CARD' : 'ADVANTAGE'}</span>
       </div>`;
     });
   } else {
@@ -9486,7 +9667,30 @@ export function rpBuildVotingPlans(ep) {
   const _isMerged = _phase !== 'pre-merge';
 
   // Derive a meaningful WHY phrase from the target's actual stats + voter-target bond
+  // Every coach who was on this episode's tribal tribe, taken from the episode
+  // snapshot. Live gs is wrong for a replay: a promoted or eliminated coach is
+  // no longer in `activeCoaches()`, so anything reading it renders a past
+  // tribal as though no coach had ever been there.
+  const _epCoachNames = new Set(Object.values(ep.coachData || {})
+    .flatMap(t => t?.coaches || []));
+
   const targetWhyPhrase = (targetName, voterName) => {
+    // A coach on the block is a different vote from a contestant on the block,
+    // and every line below this was written about contestants. Voting one out
+    // costs nothing — they cannot hit you back next week, because they never
+    // get a ballot — and none of the ordinary rationales can say that.
+    if (_epCoachNames.has(targetName)) {
+      const _trainedMe = Object.keys(gs.coachTraining?.[targetName] || {}).includes(voterName);
+      const _built = Object.keys(gs.coachTraining?.[targetName] || {}).length;
+      return _hp([
+        `${targetName} cannot vote. That is the whole calculation — there is no revenge coming, no ballot with my name on it next week. It is the cheapest shot in this game and everybody can see it.`,
+        `${_built ? `${targetName} has made ${_built} of us better and every one of those people is somebody I have to beat later.` : `${targetName} is the most decorated person on this beach.`} You cut the coach before the coach becomes a player at the merge.`,
+        _trainedMe
+          ? `${targetName} worked with me. I am still writing the name down, because a coach costs nothing to lose and everyone else here costs me an enemy.`
+          : `${targetName} picked favourites all week and I was not one of them. There is no loyalty owed in either direction.`,
+        `Nobody wants to take a swing at a player who can swing back. ${targetName} cannot. That is why the name keeps coming back to ${targetName}.`,
+      ], voterName, targetName);
+    }
     const ts = pStats(targetName);
     const bond = getBond(voterName, targetName);
     const arch = ts.archetype || '';
@@ -9818,8 +10022,14 @@ export function rpBuildVotingPlans(ep) {
       <div class="rp-vp-plans-row">`;
     namedAlliances.forEach((a, aIdx) => {
       const spear = allianceSpear(a.members);
-      const membersAtTribal = a.members.filter(m => tribalPlayers.includes(m));
-      const canVote = membersAtTribal.filter(m => !_vpLostVoteSet.has(m));
+      // A coach in this alliance is standing right there and holds no ballot.
+      // Filtering by tribalPlayers (the VOTER list) dropped them silently, so
+      // a camp event could announce an alliance of four and the plan below it
+      // would show three — the coach erased from a group they are genuinely
+      // in. They are listed, and marked, and never counted as a vote.
+      const _allianceCoaches = a.members.filter(m => _epCoachNames.has(m) && !tribalPlayers.includes(m));
+      const membersAtTribal = [...a.members.filter(m => tribalPlayers.includes(m)), ..._allianceCoaches];
+      const canVote = membersAtTribal.filter(m => !_vpLostVoteSet.has(m) && !_allianceCoaches.includes(m));
       const cat = a.target ? targetCategory(a.target) : { label: 'No Target', color: '#484f58' };
       const splitPlan = (ep.splitVotePlans || []).find(sp => sp.alliance === a.label);
       const _reliability = (() => {
@@ -9910,12 +10120,13 @@ export function rpBuildVotingPlans(ep) {
       membersAtTribal.forEach(member => {
         const isSpear = member === spear;
         const isConflicted = _seenConflicted.has(member);
-        const isNoVote = _vpLostVoteSet.has(member);
+        const isAllianceCoach = _allianceCoaches.includes(member);
+        const isNoVote = _vpLostVoteSet.has(member) || isAllianceCoach;
         const opacity = isNoVote ? 'opacity:0.4;' : '';
         ph += `<div class="rp-vp-member-row" style="${opacity}">
           ${rpPortrait(member, isNoVote ? '' : 'sm')}
           <div class="rp-vp-member-info">
-            <div class="rp-vp-member-name">${member}${isSpear ? ` <span class="rp-vp-spear-badge">Spearheader</span>` : ''}${isConflicted ? ` <span style="font-size:11px;color:#d29922">\u26A0</span>` : ''}${isNoVote ? ` <span style="font-size:9px;color:#f85149;font-weight:600">NO VOTE</span>` : ''}</div>
+            <div class="rp-vp-member-name">${member}${isAllianceCoach ? ` <span class="rp-vp-spear-badge" style="background:rgba(232,135,58,0.18);color:#e8873a">Coach · no vote</span>` : ''}${isSpear ? ` <span class="rp-vp-spear-badge">Spearheader</span>` : ''}${isConflicted ? ` <span style="font-size:11px;color:#d29922">\u26A0</span>` : ''}${isNoVote ? ` <span style="font-size:9px;color:#f85149;font-weight:600">NO VOTE</span>` : ''}</div>
           </div>
         </div>`;
       });
@@ -10088,9 +10299,12 @@ export function rpBuildVotingPlans(ep) {
           return `<div style="margin-top:4px"><strong style="color:#c9d1d9">📍 ${group.location} · ${group.window}</strong><br>${group.people.join(', ')} could be approached · ${exposure}${group.nearby.size ? ` · other players were nearby` : ''}</div>`;
         }).join('');
         return `<div style="padding:10px 11px;background:rgba(56,139,253,.04);border:1px solid rgba(56,139,253,.16);border-radius:8px">
-          <div style="font-size:10px;font-weight:800;color:#79c0ff">${p.pitcher} tried to build a vote against ${p.pitchTarget}</div>
-          <div style="font-size:10px;color:#8b949e;margin-top:3px">Reached ${contacts.length} of a possible ${p.approachBudget || contacts.length} direct conversations. Other players may still hear the name through allies, leaks, or their own plans.</div>
-          ${accessRows || `<div style="font-size:10px;color:#8b949e;margin-top:4px">No shared post-challenge window was available.</div>`}
+          <div style="font-size:10px;font-weight:800;color:${p.coachPitch ? '#e8873a' : '#79c0ff'}">${p.coachPitch
+            ? `${p.pitcher} <span style="opacity:.8">(coach — no vote)</span> worked the tribe against ${p.pitchTarget}${p.coachCornered ? ` — with ${p.pitcher}'s own name in the pile` : ''}`
+            : `${p.pitcher} tried to build a vote against ${p.pitchTarget}`}</div>
+          ${p.coachPitch ? `<div style="font-size:10px;color:#8b949e;margin-top:3px">A coach cannot vote. What they can do is spend what the sessions bought${(p.coachProteges || []).length ? `: ${p.coachProteges.join(', ')} owe ${p.pitcher} training time` : ''}. ${(p.flipped || []).length ? `${p.flipped.join(', ')} moved.` : 'Nobody moved.'}</div>` : ''}
+          ${p.coachPitch ? '' : `<div style="font-size:10px;color:#8b949e;margin-top:3px">Reached ${contacts.length} of a possible ${p.approachBudget || contacts.length} direct conversations. Other players may still hear the name through allies, leaks, or their own plans.</div>
+          ${accessRows || `<div style="font-size:10px;color:#8b949e;margin-top:4px">No shared post-challenge window was available.</div>`}`}
         </div>`;
       }).join('')}</div>`;
     html += `<div class="rp-vp-section-label">FLIP NEGOTIATIONS</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:8px;margin-bottom:14px">${ep.votePitches.map(p => {
@@ -10246,8 +10460,82 @@ export function rpBuildVotingPlans(ep) {
   }
 
   // ── ADVANTAGES IN PLAY ──────────────────────────────────────────────────────
+  // The save card belongs in this section: it is a power somebody is holding
+  // into this tribal and deciding whether to spend, which is exactly what the
+  // idol reads below are about. What it must NOT say is whether the card was
+  // committed or how the peers signed — that is The Signatures' reveal, and
+  // printing it here would give the ending away on the screen before it.
+  const _cardReads = [];
+  {
+    const _crTribe = ep.tribalTribe || ep.loser?.name || '';
+    const _crData = ep.coachData?.[_crTribe] || {};
+    const _crCoaches = _crData.coaches || [];
+    const _blocs = (ep.alliances || []).map(a => a.target).filter(Boolean);
+    if ((_crData.card ?? 'unused') === 'unused') {
+      const _aimedAt = Object.fromEntries(_crCoaches.map(n => [n, _blocs.filter(t => t === n).length]));
+      const _exposed = _crCoaches.filter(n => _aimedAt[n] > 0);
+      // TWO NAMES, ONE CARD. Rendering this as a paragraph each produced the
+      // same sentence twice with the names swapped, when it is the sharpest
+      // thing the shared card does: each of them has to decide whether to
+      // spend the staff's only card on themselves, knowing the other needs it
+      // and has to sign for it.
+      if (_exposed.length > 1) {
+        _cardReads.push({ contested: _exposed, aimedAt: _aimedAt });
+      } else {
+        for (const coachName of _crCoaches) {
+          const aimed = _aimedAt[coachName];
+          if (!aimed && _crCoaches.length > 1) continue;   // only the exposed one is a story
+          _cardReads.push({ coachName, aimed, peers: _crCoaches.filter(n => n !== coachName) });
+        }
+      }
+    }
+  }
+  if (_cardReads.length) {
+    html += `<div class="rp-vp-section-label">SAVE CARD DEBATE</div>
+      <div style="font-size:10px;color:#8b949e;margin:-5px 0 8px">A coach can only play the card before the votes are read, and only if every other coach on the tribe signs it. What they decided, and what the others signed, stays sealed until Tribal.</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-bottom:14px">${_cardReads.map(r => {
+        if (r.contested) {
+          // Who the room is leaning on hardest, and how the two of them get on
+          // — a staff that likes each other is facing a sacrifice, a staff that
+          // does not is facing a race.
+          const ranked = r.contested.slice().sort((a, b) => r.aimedAt[b] - r.aimedAt[a]);
+          const [first, second] = ranked;
+          const gap = r.aimedAt[first] - r.aimedAt[second];
+          const bond = getBond(first, second);
+          // The card covers the whole staff, so this is not a race for it —
+          // it is a decision about WHEN. Spend it tonight and whoever falls is
+          // saved; spend it tonight and neither of them has anything for the
+          // rest of the season.
+          const between = bond >= 2
+            ? `${first} and ${second} get on, so the argument is not about who deserves it — it is about whether tonight is really the night to spend the only protection either of them will ever have.`
+            : bond <= -2
+              ? `${first} and ${second} do not get on, which is the problem: signing costs each of them their own safety net as much as it buys the other's, and neither trusts the other to be worth it.`
+              : `Nothing much has passed between ${first} and ${second} either way, so it comes down to which of them believes the room, and whether the other believes them.`;
+          const shape = gap > 0
+            ? `The room is leaning harder on ${first} (${r.aimedAt[first]} bloc${r.aimedAt[first] === 1 ? '' : 's'}) than on ${second} (${r.aimedAt[second]}).`
+            : `The room is split evenly between them — ${r.aimedAt[first]} bloc${r.aimedAt[first] === 1 ? '' : 's'} each.`;
+          return `<div style="padding:9px 10px;background:rgba(248,81,73,.06);border:1px solid rgba(248,81,73,.25);border-radius:8px;grid-column:1/-1">
+            <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#f85149">${ranked.join(' AND ')} · BOTH ON THE BOARD, ONE CARD</div>
+            <div style="font-size:11px;color:#c9d1d9;margin-top:3px">Both of them are named tonight and there is one card between them. It covers both — whichever of them the votes come for is the one it saves — but it can only be spent once, and spending it leaves the survivor with nothing for the rest of the season. ${shape} ${between}</div>
+          </div>`;
+        }
+        const label = r.aimed >= 2 ? 'CORNERED' : r.aimed === 1 ? 'A NAME ON THE BOARD' : 'HOLDING, FOR NOW';
+        const colour = r.aimed >= 2 ? '#f85149' : r.aimed === 1 ? '#d29922' : '#8b949e';
+        const detail = !r.peers.length
+          ? `${r.coachName} is the only coach left on this tribe, so there is nobody who can refuse. The card is ${r.coachName}'s alone to spend — and spending it wrong wastes the only one the staff had.`
+          : r.aimed >= 2
+            ? `${r.aimed} blocs have named ${r.coachName}. Playing the card means spending it before knowing it was needed; not playing it means going home holding it. ${r.peers.join(' and ')} would have to sign, and ${r.peers.length === 1 ? 'has' : 'have'} not said either way.`
+            : r.aimed === 1
+              ? `One bloc is on ${r.coachName}. Not enough to be certain, more than enough to lose sleep over — and the card is only worth anything if it goes down before the votes are read.`
+              : `Nobody has named ${r.coachName} out loud. The card stays in the pocket, which is the cheapest place for it and the most useless.`;
+        return `<div style="padding:9px 10px;background:rgba(232,135,58,.05);border:1px solid rgba(232,135,58,.18);border-radius:8px">
+          <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:${colour}">${r.coachName} · ${label}</div>
+          <div style="font-size:11px;color:#c9d1d9;margin-top:3px">${detail}</div>
+        </div>`;
+      }).join('')}</div>`;
+  }
   if (ep.idolExposureReads?.length) {
-    html += `<div class="rp-vp-section-label">IDOL HOLDER READS</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-bottom:12px">${ep.idolExposureReads.map(read => {
+    html += `<div class="rp-vp-section-label">ADVANTAGE HOLDER READS</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-bottom:12px">${ep.idolExposureReads.map(read => {
       const label = read.mode === 'countermove' ? 'READS THE LEAK' : read.mode === 'panic' ? 'PARANOID FALSE ALARM' : read.mode === 'unaware' ? 'MISSES THE EXPOSURE' : read.mode === 'defensive' ? 'SENSES DANGER' : 'FEELS SAFE';
       const detail = read.mode === 'countermove' ? `${read.holder} believes ${read.counterTarget} knows and may strike back or prepare the idol.`
         : read.mode === 'panic' ? `${read.holder} thinks the idol is exposed even though no credible leak is recorded.`
@@ -10304,6 +10592,26 @@ export function rpBuildVotingPlans(ep) {
     const soloA = soloAlliances.find(a => a.members.includes(player));
     if (soloA?.target) confCast.push({ name: player, role: 'independent', target: soloA.target });
   });
+  // ── COACHES ───────────────────────────────────────────────────────────
+  // A coach could be the unanimous target of a tribal and not say one word
+  // about it, because every source above draws from voting blocs and a coach
+  // is in none of them. The two that matter: the one being hunted, and the
+  // one who spent the week lobbying with no ballot of their own.
+  {
+    // From the EPISODE, never from live gs. `coachesOf` filters on
+    // `!promoted`, and by the time anybody replays this episode every coach
+    // has been promoted at the merge or voted out — so the live lookup comes
+    // back empty and the coach silently drops off their own tribal.
+    const _planTribe = ep.tribalTribe || ep.loser?.name || '';
+    const _planCoaches = (ep.coachData?.[_planTribe]?.coaches || []).map(name => ({ name }));
+    const _targets = new Set(namedAlliances.map(a => a.target).filter(Boolean));
+    for (const c of _planCoaches) {
+      if (_targets.has(c.name)) { confCast.push({ name: c.name, role: 'coach-hunted', target: null }); continue; }
+      const _pitch = (ep.votePitches || []).find(v => v.coachPitch && v.pitcher === c.name);
+      if (_pitch) confCast.push({ name: c.name, role: 'coach-lobby', target: _pitch.pitchTarget });
+    }
+  }
+
   // Dedupe
   const _confSeen = new Set();
   const confCastUnique = confCast.filter(c => {
@@ -10343,6 +10651,24 @@ export function rpBuildVotingPlans(ep) {
             `The plan is ${bondTarget}. The relationship says otherwise. One wins tonight — I'm not sure which.`,
           ], name, bondTarget) : null;
         }
+      } else if (role === 'coach-hunted') {
+        // From the episode, for the same reason as everything else here: the
+        // live record says whether the card is spent TODAY, not that night.
+        const _planTribeName = ep.tribalTribe || ep.loser?.name || '';
+        const _cardLive = (ep.coachData?.[_planTribeName]?.card ?? 'unused') === 'unused';
+        line = _hp([
+          `They have all worked out that I am the cheapest vote on this beach. No idol I am allowed to play, no ballot to hit them back with. ${_cardLive ? 'What I have is one card and the wrong person has to sign it.' : 'And I have nothing left to stop it.'}`,
+          `I trained half of them. That is the part nobody says out loud — the reason I am going is that I was good at the job.`,
+          `I do not get a vote tonight. I get a conversation, and then I get whatever they decide. ${_cardLive ? 'Unless the card holds.' : 'That is the whole of it.'}`,
+          `Every one of them is playing to win this. I am playing to still be here on merge day. They know that, and they know it makes me easy.`,
+        ], name);
+      } else if (role === 'coach-lobby' && target) {
+        line = _hp([
+          `I cannot vote. What I can do is remind four people who spent all week making them better, and then say the name ${target} out loud and let it sit.`,
+          `The sessions were not charity. I am not owed a ballot but I am owed a hearing, and tonight I am collecting on it against ${target}.`,
+          `I have no vote and no immunity and no way to make anybody do anything. I have their attention. Tonight that has to be enough to move ${target}.`,
+          `They can ignore me and nothing happens to them. That is the whole problem with being a coach — and it is why I have said ${target}'s name to every single one of them.`,
+        ], name);
       } else if (role === 'independent' && target) {
         line = targetWhyPhrase(target, name);
       }
@@ -10357,7 +10683,11 @@ export function rpBuildVotingPlans(ep) {
         ? `<span class="rp-vp-conf-role">Spearheader</span>`
         : role === 'conflicted'
           ? `<span class="rp-vp-conf-role swing">Conflicted</span>`
-          : `<span class="rp-vp-conf-role" style="color:#388bfd">Independent</span>`;
+          : role === 'coach-hunted'
+            ? `<span class="rp-vp-conf-role" style="color:#f85149">Coach · targeted</span>`
+            : role === 'coach-lobby'
+              ? `<span class="rp-vp-conf-role" style="color:#e8873a">Coach · no vote</span>`
+              : `<span class="rp-vp-conf-role" style="color:#388bfd">Independent</span>`;
       html += `<div class="rp-vp-conf-entry">
         ${rpPortrait(name)}
         <div class="rp-vp-conf-body">
@@ -10745,18 +11075,47 @@ export function rpBuildTribal(ep) {
   const tc = tribeColor(tribalTribeName);
   const vlog = ep.votingLog || [];
 
-  // Vote counts for danger board
+  // ── WHAT THE CAMP THINKS, NOT WHAT THE CAMP DID ──────────────────────
+  // This board was built from `votingLog` — the ballots that were actually
+  // cast — and it renders on the Tribal Council screen, which comes BEFORE
+  // the vote reveal. So it quietly printed the result one screen early, and
+  // it disagreed with the Voting Plans three sections above it, because the
+  // plans show the forecast and this showed the outcome. Two systems, one
+  // screen, opposite answers, and the wrong one spoiled the episode.
+  //
+  // It reads the forecast now: who the room BELIEVES the vote is on. When the
+  // plan holds these agree, and when it collapses the divergence is the story
+  // rather than a contradiction the viewer has to referee.
+  // A coach can be the name the whole camp is on, and is not in tribalPlayers.
+  const _epCoachNamesTribal = new Set(Object.values(ep.coachData || {})
+    .flatMap(t => t?.coaches || []));
+  const _forecastReads = buildViewerVoteCommitments(ep.voteCommitmentDiagnostics || []);
   const voteCounts = {};
-  vlog.forEach(({ voted }) => { if (voted) voteCounts[voted] = (voteCounts[voted]||0)+1; });
+  _forecastReads.forEach(r => { if (r.predictedBallot) voteCounts[r.predictedBallot] = (voteCounts[r.predictedBallot] || 0) + 1; });
+  // Older episodes carry no diagnostics. Falling back to the ballots keeps
+  // them rendering, and by then the votes are already public anyway.
+  if (!Object.keys(voteCounts).length) {
+    vlog.forEach(({ voted }) => { if (voted) voteCounts[voted] = (voteCounts[voted]||0)+1; });
+  }
   const dangerSorted = Object.entries(voteCounts)
-    .filter(([n]) => tribal.includes(n))
+    .filter(([n]) => tribal.includes(n) || _epCoachNamesTribal.has(n))
     .sort(([,a],[,b]) => b-a)
     .slice(0, 3);
 
   const dangerRankLabels = ['#1 TARGET', '#2 TARGET', '#3 WATCH'];
   const dangerColors = ['#f85149', '#d29922', '#8b949e'];
 
-  const seatPlayers = tribal;
+  // ep.tribalPlayers is the BALLOT list. A coach casts no vote and is still
+  // sat at this fire, still on the block, and still the person who can be
+  // sent home tonight — seating them from the ballot list meant a coach could
+  // be voted out at a council they never appeared at.
+  // tribalTribe is null on two of the three episode-history paths, so fall
+  // back to the tribe that actually lost and went to this council.
+  const _tribalTribeName = ep.tribalTribe || ep.loser?.name || null;
+  const _tribalCoaches = _tribalTribeName
+    ? coachesOf(_tribalTribeName).map(c => c.name).filter(n => !tribal.includes(n))
+    : [];
+  const seatPlayers = [...tribal, ..._tribalCoaches];
   let html = `<div class="rp-page tod-night" style="position:relative;overflow:hidden">`;
   html += `<div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%, rgba(232,135,58,0.15), transparent 70%);pointer-events:none;animation:torchFlicker 3.5s ease-in-out infinite alternate"></div>`;
   html += `<div class="rp-eyebrow">Episode ${ep.num}</div>`;
@@ -10767,8 +11126,10 @@ export function rpBuildTribal(ep) {
         ${seatPlayers.map((n, i) => {
           const isOuter = i === 0 || i === 1 || i === seatPlayers.length - 1 || i === seatPlayers.length - 2;
           const arcOffset = isOuter ? 'transform:translateY(6px)' : '';
+          const _isCoach = _tribalCoaches.includes(n);
           return `<div class="vp-stump-wrap" style="${arcOffset};animation:staggerIn 0.4s var(--ease-broadcast) ${i * 60}ms both">
             ${rpPortrait(n)}
+            ${_isCoach ? '<div style="text-align:center;font-size:8px;font-weight:800;letter-spacing:1px;color:#e8873a;margin-top:-2px">COACH · NO VOTE</div>' : ''}
             <div class="vp-stump"></div>
           </div>`;
         }).join('')}
@@ -11477,6 +11838,7 @@ export function rpBuildVotes(ep) {
   // Super Idol plays AFTER votes are read — exclude from pre-vote section
   const _voteIdolPlays = (ep.idolPlays1 || ep.idolPlays || []).filter(p => !p.superIdol);
   let _advHtml = '';
+
   _voteIdolPlays.forEach((play) => {
     const { player, votesNegated, type, playedFor, target, stolenFrom } = play;
     if (type === 'legacy') {
@@ -12018,7 +12380,10 @@ export function rpBuildVotes(ep) {
   const _hasFireMaking = !!ep.fireMaking;
   const _hasSuperIdol = !!ep.superIdolPlayed;
   // Revote tie: first vote was a tie → went to revote (or rocks). Don't mark anyone eliminated in first-vote tally.
-  const _hasRevoteTie = !ep.firstEliminated && _initialTallyTie && !_hasTiebreaker;
+  // A revote that produced a name settled the tribal. Treating any initial
+  // tie as a standing one printed every tied player as TIE with nobody
+  // eliminated, over a revote that had already resolved it.
+  const _hasRevoteTie = !ep.firstEliminated && _initialTallyTie && !_hasTiebreaker && !ep.revoteResolved;
   const _tallyVotes = _hasSuperIdol && ep.votesBeforeSuperIdol ? ep.votesBeforeSuperIdol : votes;
   const _tallySorted = Object.entries(_tallyVotes).sort(([,a],[,b]) => b-a);
   const _tallyTotal = Object.values(_tallyVotes).reduce((a,b) => a+b, 0);
@@ -12062,6 +12427,140 @@ export function rpBuildVotes(ep) {
     });
     html += `</div>`;
   }
+
+  // ── WHY THE PLAN DID OR DID NOT HOLD ─────────────────────────────────
+  // Roughly half of all tribals end on a name other than the one the plans
+  // screen forecast. Every deviation already had a reason attached to its own
+  // ballot, but they arrived as disconnected lines with nothing saying the
+  // plan had collapsed — the viewer was left to diff two screens themselves
+  // and conclude the target "changed for no reason".
+  {
+    const _fReads = buildViewerVoteCommitments(ep.voteCommitmentDiagnostics || []);
+    const _fCounts = {};
+    _fReads.forEach(r => { if (r.predictedBallot) _fCounts[r.predictedBallot] = (_fCounts[r.predictedBallot] || 0) + 1; });
+    const _forecastName = Object.entries(_fCounts).sort(([,a],[,b]) => b - a)[0]?.[0] || null;
+    const _actual = {};
+    vlog.forEach(v => { if (v.voted && v.voter !== 'THE GAME') _actual[v.voted] = (_actual[v.voted] || 0) + 1; });
+    const _actualName = Object.entries(_actual).sort(([,a],[,b]) => b - a)[0]?.[0] || null;
+
+    if (_forecastName && _actualName) {
+      // The forecast target is excluded: somebody declining to vote for
+      // themselves is not a defection, and counting it made the target the
+      // loudest name in the list of people who broke the plan.
+      const _strayed = vlog.filter(v => v.voter !== 'THE GAME' && v.voted
+        && v.voted !== _forecastName && v.voter !== _forecastName);
+      // Named causes first, and only named causes. A hard collapse strays
+      // every ballot at once, and listing seven people who "went their own
+      // way" is not an explanation — it is the absence of one, printed seven
+      // times. Where the reasons are genuinely diffuse, say that instead.
+      const _specific = [];
+      let _diffuse = 0;
+      for (const v of _strayed) {
+        const r = String(v.reason || '');
+        if (/\[MISCOMMUNICATION\]/i.test(r)) _specific.push(`${v.voter} wrote the wrong name trying to follow it`);
+        else if (/\[LATE PITCH\]|\[LIVE COALITION\]/i.test(r)) _specific.push(`a late pitch moved ${v.voter}`);
+        else if (/self-preservation|struck before/i.test(r)) _specific.push(`${v.voter} saw their own name coming and struck first`);
+        else if (v.planBreak || /broke own bloc/i.test(r)) _specific.push(`${v.voter} broke the bloc they helped build`);
+        else _diffuse++;
+      }
+      const _causes = _specific.slice(0, 3);
+      if (_diffuse >= 3) _causes.push(`${_diffuse} more moved without ever saying so out loud`);
+      else if (_diffuse && !_specific.length) _causes.push('the name moved late, and quietly');
+      const held = _forecastName === _actualName;
+      html += `<div style="margin:16px 0 4px;padding:12px 14px;background:${held ? 'rgba(63,185,80,.05)' : 'rgba(248,81,73,.05)'};border:1px solid ${held ? 'rgba(63,185,80,.22)' : 'rgba(248,81,73,.25)'};border-radius:10px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:${held ? '#3fb950' : '#f85149'};margin-bottom:4px">${held ? 'THE PLAN HELD' : 'THE PLAN COLLAPSED'}</div>
+        <div style="font-size:12px;color:#c9d1d9;line-height:1.55">${held
+          ? `The room went into this on <strong>${_forecastName}</strong>, and ${_strayed.length ? `${_strayed.length} ballot${_strayed.length === 1 ? '' : 's'} strayed without changing the result` : 'not one ballot strayed'}.`
+          : `The room went into this on <strong>${_forecastName}</strong> and came out on <strong>${_actualName}</strong>. ${_causes.length ? _causes.join('; ').replace(/^./, m => m.toUpperCase()) + '.' : 'The names moved late and quietly.'}`}</div>
+      </div>`;
+    }
+  }
+
+  // ── THE COACH'S SAVE CARD — RESOLVED AFTER THE VOTES ──
+  // These lived in the pre-vote advantage block, which announced the whole
+  // result above the ballots: "X is eliminated and the save card was USED"
+  // printed before a single vote was read, giving away the boot, the save
+  // and the replacement in one line. An idol is PLAYED before the votes;
+  // this card is RESOLVED after them, and the screen must follow that.
+  let _coachCardHtml = '';
+  // ── THE COACH'S SAVE CARD ──────────────────────────────────────────────
+  // It settles a life at this council and looked like nothing: no card, no
+  // play, no screen. It reads as an advantage play because that is what it
+  // is — with the difference that this one names somebody to go instead, and
+  // the peers who signed knew who before they agreed.
+  for (const _sv of (ep.coachSaves || [])) {
+    const _signers = (_sv.votes || []).map(v => v.coach);
+    _coachCardHtml += `<div class="tv-advantage-play" style="border-color:rgba(232,135,58,0.45)">
+      <div class="tv-advantage-play-left">
+        ${rpPortrait(_sv.coach)}
+      </div>
+      <div class="tv-advantage-play-body">
+        <div class="tv-advantage-play-badge" style="color:#e8873a;background:rgba(232,135,58,0.12);border-color:rgba(232,135,58,0.3)">COACH'S SAVE CARD</div>
+        <div class="tv-advantage-play-title">${_sv.coach} is eliminated — and the save card was <span style="color:#3fb950">USED</span></div>
+        <div class="tv-advantage-play-desc">The votes were for ${_sv.coach}. The staff's card covered every coach on this tribe, and ${_signers.length
+          ? `${_signers.join(' and ')} signed for it${_sv.calledBy && _sv.calledBy !== _sv.coach ? ` after ${_sv.calledBy} called for it` : ''}.`
+          : 'it was played with nobody left to refuse.'} ${_sv.coach} stays.</div>
+        ${_sv.replacement ? `<div class="tv-advantage-play-result">It is not free: ${_sv.coach} names ${_sv.replacement}, who leaves instead.</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  // Held, and never played. The card was in their pocket and they did not
+  // read the room in time — the other half of committing before the votes.
+  for (const _np of (ep.coachCardNotPlayed || [])) {
+    if (!_np.held) continue;
+    _coachCardHtml += `<div class="tv-advantage-play" style="border-color:rgba(139,148,158,0.35)">
+      <div class="tv-advantage-play-left">${rpPortrait(_np.coach)}</div>
+      <div class="tv-advantage-play-body">
+        <div class="tv-advantage-play-badge" style="color:#8b949e;background:rgba(139,148,158,0.1);border-color:rgba(139,148,158,0.25)">SAVE CARD NOT USED</div>
+        <div class="tv-advantage-play-title">${_np.coach} is eliminated — and the save card was <span style="color:#8b949e">NOT USED</span></div>
+        <div class="tv-advantage-play-desc">The card had to be committed before the votes were read. ${_np.coach} did not see it coming, and goes home holding it.</div>
+      </div>
+    </div>`;
+  }
+
+  // Played and not needed. Only possible because the card commits before the
+  // votes are read: the coach read the room wrong and spent it on a night
+  // nobody was coming for them. This is what stops the card being unloseable.
+  for (const _cm of (ep.coachCardCommits || [])) {
+    const _wasSaved = (ep.coachSaves || []).some(v => v.coach === _cm.coach);
+    const _wasRefused = (ep.coachSaveRefusals || []).some(v => v.coach === _cm.coach);
+    if (_wasSaved || _wasRefused) continue;
+    _coachCardHtml += `<div class="tv-advantage-play" style="border-color:rgba(139,148,158,0.35)">
+      <div class="tv-advantage-play-left">${rpPortrait(_cm.coach)}</div>
+      <div class="tv-advantage-play-body">
+        <div class="tv-advantage-play-badge" style="color:#8b949e;background:rgba(139,148,158,0.1);border-color:rgba(139,148,158,0.25)">SAVE CARD BURNED</div>
+        <div class="tv-advantage-play-title">The card was played and nobody needed it</div>
+        <div class="tv-advantage-play-desc">${_cm.calledBy || _cm.coach} read the room as coming for the staff and committed the card before a vote was read. It covered ${(_cm.covers || [_cm.coach]).join(' and ')}, and the votes went to a contestant instead.</div>
+        <div class="tv-advantage-play-result">The card is gone. ${(_cm.covers || [_cm.coach]).join(' and ')} have no protection left.</div>
+      </div>
+    </div>`;
+  }
+
+  // A refusal is the louder beat — a coach goes home because one colleague
+  // would not sign, and the reason is on the record.
+  for (const _rf of (ep.coachSaveRefusals || [])) {
+    const _why = {
+      'costs-my-protege': `signing would have cost ${_rf.refusedBy} their own protégé${_rf.doomed ? ` — ${_rf.doomed} was the name on the card` : ''}`,
+      'returning-the-favour': `${_rf.refusedBy} was refused once, and remembers it`,
+      'pact-already-broken': `whatever ${_rf.coach} and ${_rf.refusedBy} agreed, it was already broken`,
+      'bad-blood': `${_rf.refusedBy} and ${_rf.coach} were never going to do each other favours`,
+      'rival-outbuilding': `${_rf.coach} has more of this tribe built than ${_rf.refusedBy} does`,
+      'strategic': `${_rf.refusedBy} did the arithmetic and it did not come out in ${_rf.coach}'s favour`,
+    }[_rf.reason] || `${_rf.refusedBy} would not sign`;
+    _coachCardHtml += `<div class="tv-advantage-play" style="border-color:rgba(248,81,73,0.45)">
+      <div class="tv-advantage-play-left">
+        ${rpPortrait(_rf.refusedBy)}
+      </div>
+      <div class="tv-advantage-play-body">
+        <div class="tv-advantage-play-badge" style="color:#f85149;background:rgba(248,81,73,0.12);border-color:rgba(248,81,73,0.3)">THE CARD IS NOT SIGNED</div>
+        <div class="tv-advantage-play-title">${_rf.coach} is eliminated — the card was played, and <span style="color:#f85149">NOT SIGNED</span></div>
+        <div class="tv-advantage-play-desc">The card only works if every coach on the team signs it. ${_rf.refusedBy} does not — ${_why}.</div>
+        <div class="tv-advantage-play-result">${_rf.coach} goes home.</div>
+      </div>
+    </div>`;
+  }
+  if (_coachCardHtml) html += _coachCardHtml;
 
   // ── SUPER IDOL play banner — appears AFTER votes are read ──
   if (ep.superIdolPlayed) {
@@ -13642,6 +14141,17 @@ export function buildVPScreens(epRecord) {
   const _preTwistHtml = rpBuildPreTwist(ep);
   if (_preTwistHtml) vpScreens.push({ id:'twist', label:'Twists', html: _preTwistHtml });
 
+  // ── 3b. A LATE ARRIVAL ──
+  //
+  // Placed straight after the twist card, because it IS the twist of that
+  // episode. It renders as a camp event too — the walk-in is a thing that
+  // happens in a camp — but a card in the middle of a camp feed is not the
+  // right weight for the only episode all season where somebody joins.
+  if (ep.lateArrival) {
+    const _laHtml = rpBuildLateArrival(ep);
+    if (_laHtml) vpScreens.push({ id: 'late-arrival', label: 'A New Arrival', html: _laHtml });
+  }
+
   // ── 3c. Schoolyard Pick (dedicated click-to-reveal draft screen) ──
   if (ep.schoolyardPick?.picks?.length) {
     const _sypHtml = rpBuildSchoolyardPick(ep);
@@ -13687,6 +14197,17 @@ export function buildVPScreens(epRecord) {
   // ── 3b. Tied Destinies announcement (before camp — pairing is revealed at episode start) ──
   const _tdAnnounceHtml = rpBuildTiedDestinies(ep);
   if (_tdAnnounceHtml) vpScreens.push({ id:'tied-destinies', label:'Tied Destinies', html: _tdAnnounceHtml });
+
+  // The staff joins the game. Placed with the merge beats, before the camp
+  // screens that will show them as ordinary players for the first time.
+  if ((ep.coachPromotions || []).length) {
+    vpScreens.push({ id:'cb-promo', label:'Coaches Promoted', html: rpBuildCoachPromotion(ep) });
+  }
+
+  // ── 3c. The Coaches' Board (coaching twist, before camp events) ──
+  if (ep.isCoaches && ep.coachData) {
+    vpScreens.push({ id:'cb-board', label:'Coaches', html: rpBuildCoachBoard(ep) });
+  }
 
   // ── 4. Pre-Challenge Camp — one screen per tribe ──
   vpTribeGroups.forEach(tribe => {
@@ -14818,6 +15339,12 @@ export function buildVPScreens(epRecord) {
       if (_evScoutHtml) vpScreens.push({ id:'emissary-scouting', label:'The Emissary', html: _evScoutHtml });
     }
     vpScreens.push({ id:'tribal', label:'Tribal Council', html: rpBuildTribal(ep) });
+    // Read BEFORE the votes. The signatures were sealed before a ballot was
+    // cast, and the coach they were played for does not know what is in them —
+    // reading them after the result would give away the ending twice.
+    if ((ep.coachCardCommits || []).length) {
+      vpScreens.push({ id:'cb-sigs', label:'The Signatures', html: rpBuildCoachSignatures(ep) });
+    }
     vpScreens.push({ id:'votes',  label:'The Votes',      html: rpBuildVotes(ep) });
     // (Standalone "The Web" + "Who Knew What" viewer screens removed — both are
     // now in the player-centric "The Web" debug tab. Per-episode snapshots are
@@ -15496,7 +16023,7 @@ export function getTribeRelationshipHighlights(members, snapshot) {
   return notable.slice(0, cap);
 }
 
-export function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snapMembers) {
+export function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snapMembers, coachCards = null) {
   const lines = [];
   const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet', teamSwap:'Team Swap', voteBlock:'Vote Block', safetyNoPower:'Safety Without Power', soleVote:'Sole Vote' };
   const members = snapMembers || (isMerge ? gs.activePlayers : (gs.tribes.find(t => t.name === tribeName)?.members || []));
@@ -15581,6 +16108,22 @@ export function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snap
       lines.push(`${adv.holder} has the ${label} (found ep.${adv.foundEp}).`);
     }
   });
+  // The save card belongs here for the same reason the idol does: it decides
+  // a life at tribal and the viewer has no other way to know whether it is
+  // still out there. Read from the episode's snapshot, never from live gs —
+  // a replay would otherwise report today's answer over an old camp.
+  if (coachCards && !isMerge) {
+    const _names = coachCards.coaches || [];
+    const _who = _names.length > 1
+      ? `${_names.slice(0, -1).join(', ')} and ${_names[_names.length - 1]}`
+      : (_names[0] || 'The coach');
+    if (_names.length) {
+      lines.push(coachCards.card === 'unused'
+        ? `${_who} ${_names.length > 1 ? 'share one' : 'holds the'} Coach's Save Card${_names.length > 1 ? ' between them' : ''}. It saves whichever of them the tribe votes out${_names.length > 1 ? ', every other coach on the tribe has to sign it' : ''}, and it has to be played before the votes are read.`
+        : `The Coach's Save Card is spent. ${_names.length > 1 ? `Nothing stands between ${_who} and the next vote.` : `Nothing stands between ${_who} and the next vote.`}`);
+    }
+  }
+
   return lines;
 }
 
@@ -15868,6 +16411,17 @@ function _bbSceneScreen(ep, { eyebrow, title, subtitle, accent = 'var(--bbx-note
 }
 
 const _bbBeats = act => (act?.socialBeats || []).map(b =>
+  ({ text: b.text, players: b.players, badgeText: b.badgeText, badgeClass: b.badgeClass }));
+/**
+ * The same, for an act that carries its narration on `beats`.
+ *
+ * Both field names are in use: house life and ceremonies hang their prose on
+ * `socialBeats`, while a twist act built by its own engine module writes
+ * `beats`. Reaching for the wrong one is silent — the screen renders, the
+ * scenes are simply empty — which is precisely the failure
+ * bb-vp-render-completeness exists to catch, and did.
+ */
+const _bbOwnBeats = act => (act?.beats || []).map(b =>
   ({ text: b.text, players: b.players, badgeText: b.badgeText, badgeClass: b.badgeClass }));
 
 // ── Cold open ─────────────────────────────────────────────────────────
@@ -17016,21 +17570,49 @@ function _bbfBondLabel(v) {
  * Falls back to the bare avatar when the week has no board (old saves, and any
  * cycle that ended before the snapshot was taken), so nothing breaks on replay.
  */
-function _bbfHold(name, members, boardFor, away = false) {
+function _bbfHold(name, members, boardFor, away = false, wasBoardFor = null, bar = 1.5) {
   const board = typeof boardFor === 'function' ? boardFor(members) : null;
   const row = board?.members?.find(m => m.name === name);
   // Behind the wall: no hold is shown, because on a split week nobody on this
   // side knows how that person is holding up. Present, unreachable, greyed.
   if (away) {
     return `<span class="bbf-hold is-away" title="${_bbEsc(name)} — on the other side of the wall">
-      ${_bbAvatar(name, 22)}<b>·</b></span>`;
+      <span class="bbf-hold-face">${_bbAvatar(name, 34)}</span><b>·</b></span>`;
   }
-  if (!row) return _bbAvatar(name, 22);
+  // No board row means no reading to show. A `.bbf-hold` wrapper here would
+  // draw an empty holder where a digit belongs.
+  if (!row) return _bbAvatar(name, 34);
   const v = row.loyalty;
   const tone = v >= 7 ? '#3fb950' : v >= 5 ? '#57a6e8' : v >= 3.5 ? '#d29922' : '#f47067';
   const weak = board.weakest?.name === name;
-  return `<span class="bbf-hold ${weak ? 'is-weak' : ''}" title="${_bbEsc(name)} — ${_bbEsc(row.reason)}">
-    ${_bbAvatar(name, 22)}<b style="color:${tone}">${v.toFixed(1)}</b></span>`;
+  // ── AND WHETHER IT MOVED ──
+  //
+  // The pair rows beside this one have carried arrows since they existed, and
+  // the hold digit never has — so a week where the Head of Household put one
+  // of their own people up, and every member of that alliance lost a little
+  // trust for it, looked identical to a week where nothing happened. A number
+  // with no history is not a reading, it is a decoration.
+  const before = typeof wasBoardFor === 'function'
+    ? wasBoardFor(members)?.members?.find(m => m.name === name)?.loyalty : undefined;
+  const delta = typeof before === 'number' ? v - before : 0;
+  // Measured, not picked, and it depends on WHICH gap is being reported —
+  // a week is a much bigger span than one stretch of a week, so a single bar
+  // would either flood the weekly view or say nothing on the hourly one.
+  // Across six seasons: week to week, 85% of digits move by 0.3 and 76% by
+  // 0.5, so the bar is 1.5 and about a third of faces carry an arrow. Stretch
+  // to stretch only 17% move by 0.8 — and 28 of the 37 alliances whose own
+  // Head of Household nominated a member cross it inside that week, which is
+  // exactly the movement this is for.
+  const moved = Math.abs(delta) >= bar;
+  const arrow = moved
+    ? `<i class="bbf-hold-d ${delta > 0 ? 'up' : 'down'}">${delta > 0 ? '▲' : '▼'}${Math.abs(delta).toFixed(1)}</i>`
+    : '';
+  const why = moved
+    ? ` — ${delta > 0 ? 'up' : 'down'} ${Math.abs(delta).toFixed(1)} since ${bar < 1.5 ? 'the last feed' : 'last week'}`
+    : '';
+  return `<span class="bbf-hold ${weak ? 'is-weak' : ''}${moved ? ' has-moved' : ''}" title="${_bbEsc(name)} — ${_bbEsc(row.reason)}${why}">
+    <span class="bbf-hold-face">${_bbAvatar(name, 34)}</span>
+    <b style="color:${tone}">${v.toFixed(1)}</b>${arrow}</span>`;
 }
 
 /**
@@ -17044,7 +17626,17 @@ function _bbfHold(name, members, boardFor, away = false) {
  */
 function _bbHoldDetail(bloc) {
   let roster = null;
-  try { roster = typeof blocRoster === 'function' ? blocRoster(bloc) : null; } catch { roster = null; }
+  // Prefer the readings recorded WITH the week. Recomputing them here reads
+  // today's bonds, so a replayed episode explained its own numbers using
+  // relationships that had not happened yet.
+  if (Array.isArray(bloc?.holds) && bloc.holds.length && typeof bloc.holds[0] === 'object') {
+    const rows = [...bloc.holds].sort((a, b) => b.loyalty - a.loyalty);
+    const weak = typeof bloc.weakest === 'string'
+      ? rows.find(r => r.name === bloc.weakest) : bloc.weakest;
+    roster = { members: rows, weakest: weak || null,
+      average: rows.reduce((sum, r) => sum + r.loyalty, 0) / rows.length };
+  }
+  try { roster = roster || (typeof blocRoster === 'function' ? blocRoster(bloc) : null); } catch { roster = roster || null; }
   if (!roster?.members?.length) return '';
   const tone = v => v >= 7 ? '#3fb950' : v >= 5 ? '#57a6e8' : v >= 3.5 ? '#d29922' : '#f47067';
   const rows = roster.members.map(m => `<div class="bbb-hold-row">
@@ -17067,6 +17659,16 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
   // the first screen of a week showed numbers that had not happened yet and
   // alliances nobody had formed on screen.
   const here = act?.state || null;
+  /* ── WHERE IN THE WEEK THIS SCREEN SITS ──
+     Something that ends is greyed from the stretch it is actually gone from,
+     and on the last screen of the week for the ones that die in the
+     maintenance pass after the final snapshot — which is most of them. Greying
+     it on EVERY screen of the week put "it ended" at the top of week one over a
+     feed that then showed the couple getting together. */
+  const _lastStretch = act?.type === 'campaign'
+    || (houseActs.length ? houseActs.indexOf(act) === houseActs.length - 1 : true);
+  const _stillHere = (list, has) => (list || []).some(has);
+
   const snap = ep.gsSnapshot || {};
   const bonds = here?.bonds || snap.bonds || (typeof gs !== 'undefined' && gs.bonds) || {};
   const inHouse = new Set(house);
@@ -17098,13 +17700,53 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
     best.names.forEach(n => seen.add(n));
   }
 
+  const _pairKey = list => [...(list || [])].sort().join('|');
+  /* ── ONLY THE ENDINGS THAT HAPPENED IN THE HOUSE ──
+     House Life runs BEFORE the vote. An ending caused by the eviction — the
+     partner writing their name down, or simply being the one who left — is not
+     known to anybody on these screens, and drawing it here tells the viewer who
+     is going home and how the vote went before the ceremony does. It is a
+     spoiler in the same shape as the missing hold digit was.
+     And `separated` is not a break-up at all. romance.js says so where it sets
+     the type — "not betrayal, relationship intact, just physically apart" — it
+     keeps the bond high on purpose because it is grief rather than anger, and
+     `phase` only goes to broken-up because the couple is no longer a couple IN
+     THE HOUSE. stats-export.js already refuses to read it as an ending; this
+     panel should not either. The pair leaves these rows on its own next week,
+     when one of them is no longer in the house. */
+  const _endedHere = d => ['faded', 'sabotaged', 'called-off', 'affair'].includes(d?.type);
+  const _endedPairs = new Set((ep?.showmanceEnded || [])
+    .filter(_endedHere)
+    .filter(d => _lastStretch
+      || !_stillHere(here?.showmances, sh => _pairKey(sh.players) === _pairKey(d.players)))
+    .map(d => _pairKey(d.players)));
   const showmances = (here?.showmances || snap.showmances || (typeof gs !== 'undefined' && gs.showmances) || [])
+    .filter(sh => !_endedPairs.has([...(sh.players || [])].sort().join('|')))
     .filter(sh => sh.phase !== 'broken-up' && !sh.broken && (sh.players || []).every(n => inHouse.has(n)));
   const isShowmance = (a, b) => showmances.some(sh =>
     (sh.players || []).includes(a) && (sh.players || []).includes(b));
 
+  /* ── A GROUP THE WEEK HAS ALREADY BURIED IS NOT IN PLAY ──
+     Most alliances die in the maintenance pass that runs AFTER the last stretch
+     is snapshotted, so they are still listed in every screen of the week they
+     ended in and then simply absent from the next episode. Measured: only 4 of
+     22 dissolutions ever reached a screen that could show them as over. They
+     come out of the live list here and are drawn once, greyed, at the bottom —
+     which is also what stops one screen showing a group as in play and finished
+     at the same time. */
+  /* Everything that reaches a week is something the house already knows: it
+     either happened before the vote, or it is last week's post-vote fallout
+     arriving in the episode that can show it (week.js queues those rather than
+     printing them on screens that all run before the eviction). The guard
+     stays as a floor in case anything starts tagging itself again. */
+  const _knownNow = d => !d?.postVote;
+  const _endedNames = new Set((ep?.allianceDissolved || [])
+    .filter(_knownNow)
+    .filter(d => _lastStretch
+      || !_stillHere(here?.alliances, a => a.name === d.name))
+    .map(d => d.name));
   const alliances = (here?.alliances || snap.namedAlliances || (typeof gs !== 'undefined' && gs.namedAlliances) || [])
-    .filter(a => a.active !== false)
+    .filter(a => a.active !== false && !_endedNames.has(a.name))
     .map(a => ({ ...a, members: (a.members || []).filter(m => inHouse.has(m)) }))
     .filter(a => a.members.length >= 2)
     .slice(0, 5);
@@ -17133,16 +17775,41 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
     ? new Set(ep.splitHouse.sides[wallSide]) : null;
   const away = n => !!onThisSide && !onThisSide.has(n);
 
-  const boardFor = members => {
+  // ── THE BOARD AS IT STOOD AT THIS STRETCH, NOT AT THE END OF THE WEEK ──
+  //
+  // The week-level board could only answer "did this alliance shift since the
+  // last episode". The stretch snapshots carry their own `holds`, so the
+  // screen before the nomination ceremony and the screen after it hold
+  // different numbers and the arrow points at the thing that actually caused
+  // it. The week board stays as the fallback for records saved before stretch
+  // holds existed, and for the bookend screens that have no stretch.
+  //
+  // Two shapes to accept: the compact stretch hold (weakest is a name) and the
+  // week board (weakest is a row). Normalised here so `_bbfHold` sees one.
+  const pickBoard = (source, members) => {
     const want = new Set(members || []);
     if (want.size < 2) return null;
     let best = null, bestShared = 1;
-    for (const b of ep?.allianceBoard || []) {
+    for (const b of source || []) {
       const shared = (b.members || []).filter(m => want.has(m.name)).length;
       if (shared > bestShared) { best = b; bestShared = shared; }
     }
-    return best;
+    if (!best) return null;
+    const weakest = typeof best.weakest === 'string' ? { name: best.weakest } : best.weakest;
+    return { ...best, weakest };
   };
+  const boardFor = members =>
+    pickBoard(here?.holds, members) || pickBoard(ep?.allianceBoard, members);
+  // What it read on the previous screen of this same week where there is one,
+  // and last week's closing board otherwise — the same rule `sinceLabel` above
+  // already states to the viewer.
+  // 0.8 when the comparison is against the previous screen of this week, 1.5
+  // when it is against last week. See the note in `_bbfHold`.
+  const holdBar = priorAct?.state?.holds ? 0.8 : 1.5;
+  const wasBoardFor = members =>
+    pickBoard(priorAct?.state?.holds, members)
+    || pickBoard(prior?.closingState?.holds, members)
+    || pickBoard(prior?.allianceBoard, members);
 
   const row = p => {
     const [a, b] = p.names;
@@ -17151,7 +17818,7 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
     const moved = Math.abs(delta) >= 0.4;
     const pct = Math.min(100, Math.abs(p.v) * 10);
     return `<div class="bbf-rel">
-      <span class="bbf-rel-faces">${_bbAvatar(a, 24)}${_bbAvatar(b, 24)}</span>
+      <span class="bbf-rel-faces">${_bbAvatar(a, 34)}${_bbAvatar(b, 34)}</span>
       <span class="bbf-rel-who">${a} &amp; ${b}</span>
       <span class="bbf-rel-mid">
         <span class="bbf-rel-lab" style="color:${lab.color}">${lab.word}${
@@ -17206,16 +17873,75 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
       <div class="bbf-panel-h">Alliances in play<small>${alliances.length || 'none'}</small></div>
       ${alliances.length ? alliances.map(a => `<div class="bbf-ally">
           <span class="bbf-ally-n">${a.name}</span>
-          <span class="bbf-ally-m">${a.members.map(m => _bbfHold(m, a.members, boardFor, away(m))).join('')}</span>
+          <span class="bbf-ally-m">${a.members.map(m => _bbfHold(m, a.members, boardFor, away(m), wasBoardFor, holdBar)).join('')}</span>
           <span class="bbf-ally-c">${onThisSide
             ? `${a.members.filter(m => !away(m)).length}/${a.members.length}` : a.members.length}</span>
         </div>`).join('')
         : `<div style="font-size:11px;color:#484f58">Nothing anybody has been willing to name.</div>`}
-      ${showmances.length ? `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
+      ${(() => {
+        /* ── A GROUP THAT ENDED STAYS IN THE LIST, GREYED, UNTIL THE WEEK IS OVER ──
+           It used to be a sentence UNDER the panel while the alliance was still
+           drawn above it in full colour, so one screen said a group was in play
+           and finished at the same time. Now it keeps its row — the same faces,
+           the same holds — greyed out with the reason where the member count
+           was, from the stretch it actually died in. Earlier screens of the
+           same week still show it alive, because it was; the next episode
+           drops it entirely, because `allianceDissolved` is per week. */
+        const _snapAll = here?.alliances || snap.namedAlliances || [];
+        const gone = (ep?.allianceDissolved || [])
+          .filter(d => _knownNow(d) && _endedNames.has(d.name)).map(d => ({
+          ...d,
+          // Prefer the roster the week itself was drawing.
+          members: ((_snapAll.find(a => a.name === d.name)?.members) || d.members || [])
+            .filter(m => inHouse.has(m)),
+        }));
+        // A carried dissolution can arrive with nobody left to draw — the group
+        // ran out of members because they were evicted, which is the whole
+        // reason it ended. It still gets its row and its sentence; it just has
+        // no faces in it.
+        
+        const why = d => d.reason === 'insufficient-live-members' ? 'nobody left in it'
+          : d.reason === 'betrayal' ? 'betrayed from the inside'
+          : 'nobody left trusts anybody';
+        const rows = gone.map(d => `<div class="bbf-ally is-over">
+          <span class="bbf-ally-n">${_bbEsc(d.name)}</span>
+          <span class="bbf-ally-m">${(d.members || []).map(m =>
+            `<span class="bbf-hold"><span class="bbf-hold-face">${_bbAvatar(m, 34)}</span><b>·</b></span>`).join('')}</span>
+          <span class="bbf-ally-c">${why(d)}</span>
+        </div>`).join('');
+        const thrown = (ep?.allianceDepartures || []).filter(_knownNow).map(d => `<div class="bbf-gone-row">
+          <b>${_bbEsc(d.alliance || 'The alliance')}</b> has thrown ${_bbEsc(d.player)} out — ${_bbEsc(d.reason || 'expelled')}.
+        </div>`).join('');
+        return rows + (thrown ? `<div class="bbf-gone">${thrown}</div>` : '');
+      })()}
+      ${(() => {
+        /* A couple that ended keeps its row for the rest of the episode, greyed,
+           with what happened where the holds were — the same treatment a
+           dissolved alliance gets, and for the same reason: a pair that simply
+           stops being drawn reads as a bug rather than as a break-up. */
+        const overNow = (ep?.showmanceEnded || [])
+          .filter(d => _endedHere(d) && _endedPairs.has(_pairKey(d.players))
+            && (d.players || []).every(n => inHouse.has(n)));
+        if (!showmances.length && !overNow.length) return '';
+        /* "It just says it ended." There are four ways one of these finishes
+           and the row was calling all of them the same thing. */
+        const said = d => d.type === 'sabotaged' ? 'somebody in this house engineered it'
+          : d.type === 'affair' ? 'one of them had been seeing somebody else'
+          : d.type === 'called-off' ? 'one of them ended it'
+          : d.type === 'faded' ? 'it ran out on its own'
+          : 'it ended';
+        return `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
         ${showmances.map(sh => `<div class="bbf-ally">
           <span class="bbf-ally-n" style="color:#ff7b72">${(sh.players || []).join(' &amp; ')}</span>
-          <span class="bbf-ally-m">${(sh.players || []).map(m => _bbfHold(m, sh.players || [], boardFor, away(m))).join('')}</span>
-        </div>`).join('')}` : ''}
+          <span class="bbf-ally-m">${(sh.players || []).map(m => _bbfHold(m, sh.players || [], boardFor, away(m), wasBoardFor, holdBar)).join('')}</span>
+        </div>`).join('')}
+        ${overNow.map(d => `<div class="bbf-ally is-over">
+          <span class="bbf-ally-n" style="color:#ff7b72">${(d.players || []).join(' &amp; ')}</span>
+          <span class="bbf-ally-m">${(d.players || []).map(m =>
+            `<span class="bbf-hold"><span class="bbf-hold-face">${_bbAvatar(m, 34)}</span><b>·</b></span>`).join('')}</span>
+          <span class="bbf-ally-c">${said(d)}</span>
+        </div>`).join('')}`;
+      })()}
     </div>
   </div>`;
 }
@@ -17783,7 +18509,7 @@ function _bbOrdinal(n) {
  * Which reason gets used is whichever is most TRUE of that houseguest, so the
  * same nominee does not get the same speech twice in a season.
  */
-function _bbNomReason(hoh, name, role, ep) {
+export function _bbNomReason(hoh, name, role, ep) {
   const rec = (typeof gs !== 'undefined' && gs.bb?.stats?.[name]) || {};
   // Block Buster wins count. Somebody who has fought their way off the block
   // twice is a competitor the house has watched win under the most pressure
@@ -17793,6 +18519,12 @@ function _bbNomReason(hoh, name, role, ep) {
   const bond = typeof getPerceivedBond === 'function' ? getPerceivedBond(hoh, name) : 0;
   const allies = ((typeof gs !== 'undefined' && gs.namedAlliances) || [])
     .filter(a => a.active !== false && (a.members || []).includes(name) && !(a.members || []).includes(hoh));
+  const together = ((typeof gs !== 'undefined' && gs.namedAlliances) || [])
+    .some(a => a.active !== false && (a.members || []).includes(name) && (a.members || []).includes(hoh));
+  const showmance = ((typeof gs !== 'undefined' && gs.showmances) || [])
+    .some(sh => sh && sh.phase !== 'broken-up' && !sh.broken
+      && (sh.players || []).includes(hoh) && (sh.players || []).includes(name));
+  const left = ((typeof gs !== 'undefined' && gs.activePlayers) || []).length;
   const plan = (typeof gs !== 'undefined' && gs.intentions?.[hoh]) || {};
   const grudge = (plan.revenge || []).includes(name);
   const weekNumber = Math.max(1, Number(ep?.num) || Number(gs?.episode) || 1);
@@ -17802,33 +18534,299 @@ function _bbNomReason(hoh, name, role, ep) {
       ? 'for two weeks'
       : `for ${weekNumber} weeks`;
 
+  // ── ONE LINE PER BRANCH WAS THE OTHER HALF OF THE PROBLEM ──
+  //
+  // Every reason returned a single fixed sentence, so the same nomination
+  // speech ran word for word every time the same condition came up — and the
+  // conditions that fire most are the ones a viewer therefore hears most.
+  // Seeded on the pair and the week, so a replay says what it said the first
+  // time rather than rerolling the ceremony.
+  const say = list => {
+    const seed = `${hoh}|${name}|${weekNumber}`;
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+    return list[h % list.length];
+  };
+  const N = `<strong>${name}</strong>`;
+
+  const _nomAct = (ep?.acts || []).find(a => a.type === 'nominations'
+    && (a.nominees || []).includes(name));
+  const grievance = (_nomAct?.grievances || {})[name] || null;
+
+  /* ── A CHAIR IN A BACKDOOR WEEK IS NOT ABOUT THE PERSON IN IT ──
+     When the plan carries a backdoor target, the people on the block are there
+     to fill the ceremony until the veto moves somebody, and the entire point is
+     that the real name is not on that wall. A speech reaching for a grievance
+     is answering a question nobody asked: the honest line is that this is not
+     about them and they will have to take it on trust for four days. The
+     target is never named, because naming it here is the one thing that would
+     ruin the week.
+     Checked before the grievance, because it beats any receipt — whatever is
+     between these two, it is not why the key turned tonight. */
+  const _backdoor = _nomAct?.backdoorTarget;
+  if (_backdoor && _backdoor !== name && role !== 'target') return say([
+    `"${N}, I am going to ask you to sit in that chair and trust me for four days, and I am not going to explain myself in this room. If I have read this week right, you are not the one who leaves."`,
+    `"${N}, this is not about you, and I am not going to insult you by inventing a reason that it is. Somebody has to sit down for the ceremony to happen at all."`,
+    `"${N}, I need those chairs filled by Thursday and I need you in one of them. That is the whole truth of it, and I know exactly how little it is worth to hear."`,
+  ]);
+
   if (role === 'pawn') {
-    if (bond >= 3) return `"<strong>${name}</strong>, you are the only person in this house I could ask to do this, and that is exactly why I am asking. You are not the one going home."`;
-    if ((st.social ?? 5) >= 7) return `"<strong>${name}</strong>, you can talk to anybody in here. Give you time before the vote and you will find the numbers."`;
-    return `"<strong>${name}</strong>, I need a second chair filled and I picked the person least likely to hold it against me. I hope I picked right."`;
+    if (bond >= 3) return say([
+      `"${N}, you are the only person in this house I could ask to do this, and that is exactly why I am asking. You are not the one going home."`,
+      `"${N}, I need somebody in that chair who will still talk to me on Friday. That is you, and I am sorry it is you."`,
+      `"${N}, this is a formality, and I need you to hear me say that out loud, in front of everybody, before you sit down."`,
+    ]);
+    if ((st.social ?? 5) >= 7) return say([
+      `"${N}, you can talk to anybody in here. Give you time before the vote and you will find the numbers."`,
+      `"${N}, I am not worried about you and neither should you be. You will have talked half this room round by Thursday."`,
+    ]);
+    return say([
+      `"${N}, I need a second chair filled and I picked the person least likely to hold it against me. I hope I picked right."`,
+      `"${N}, somebody has to sit there. I have no reason beyond that and I am not going to pretend I do."`,
+    ]);
   }
 
-  if (grudge) {
-    return `"<strong>${name}</strong>, this is personal and I am not going to insult you by saying it is not. You know what you did and so does everybody in this room."`;
+  // ── THE RELATIONSHIP IS READ BEFORE THE PLAN IS ──
+  //
+  // Every branch below used to sit behind `grudge`, which comes off the plan
+  // and knows nothing about how these two actually get on. So a Head of
+  // Household nominated the person they were in a showmance with and told
+  // them "this is personal and you know what you did" — to somebody they were
+  // inseparable from, in a house of four where everybody left was a friend.
+  //
+  // A nomination that costs the person making it is the most interesting one
+  // the format produces, and it was being written as the coldest.
+  // ── AND SAY WHICH OF THE TWO REASONS IT IS ──
+  //
+  // There are exactly two, they are not the same reason, and which one is true
+  // depends on how many people are left. Writing one vague line for both gave
+  // the ceremony "I would rather be the one who does this than let somebody
+  // else decide it for both of us" — a sentence shaped like an argument with
+  // no argument inside it, since at four the Head of Household IS the somebody
+  // else. A viewer cannot disagree with a reason they cannot follow.
+  if (showmance) {
+    // THE ONE VOTE. Two of three go up, so there IS a choice at four — the
+    // draft claimed their name was unavoidable, and it was not; the Head of
+    // Household picked who to leave OFF. And leaving somebody off is the whole
+    // decision, because `voters` excludes the Head of Household and both
+    // nominees: at four exactly one person votes, and it is the one not
+    // sitting down. Nobody is choosing who goes home. They are choosing who
+    // decides, and that is a far better reason than the arithmetic that is not
+    // even true.
+    if (left <= 4) return say([
+      `"${N}, there is one vote this week and it belongs to whoever I leave off this block. I have picked who holds it. That was the only decision I got and I have made it."`,
+      `"${N}, two of the three of you were always sitting down. I chose which one did not, and that choice was about who I can predict on Thursday and nothing else."`,
+      `"${N}, at four, going up is not the same as going home — one person votes and the rest of us play for that veto. I would rather you were fighting for it than trusting somebody else to save you."`,
+    ]);
+    // THE PAIR. The house prices a showmance as one player holding two votes,
+    // which makes both of them the same target — so the only thing left to
+    // decide is which week it happens in, and who is holding the power when
+    // it does.
+    return say([
+      `"${N}, this house counts the two of us as one person with two votes. Whoever comes for me comes for you, and I would rather that happened in a week I am running than one I am not."`,
+      `"${N}, every single person in here has been waiting to find out whether I could put you up. They have been building their weeks around the answer being no, and I need that to stop being worth anything."`,
+      `"${N}, if I spend this week on somebody else, we are both sitting up there the day I lose this room. I am doing it now, while it is still mine to do."`,
+    ]);
   }
-  if (comps >= 2) {
-    return `"<strong>${name}</strong>, you have won ${comps} competitions. I cannot beat you at the end and I am not going to wait around and hope somebody else takes the shot."`;
+  // ── TURNING ON YOUR OWN ALLIANCE, WITH THE REASON SAID OUT LOUD ──
+  //
+  // Measured over twenty seasons: of the 23 ceremonies where a Head of
+  // Household targeted a live ally with three or more outsiders available, 22
+  // had a real grievance behind them — a betrayal the strategic memory still
+  // holds, a suspicion, or a bond that soured weeks ago. The decision was
+  // never arbitrary. The SPEECH was, because no branch here knew the nominee
+  // was in the nominator's own alliance, so the most dramatic thing this
+  // format does came out as a line about competition wins.
+  //
+  // `grievances` is captured by the ceremony itself (week.js) rather than
+  // recomputed here, so a replay gives the reason that existed that week.
+  grievance: if (grievance && !(grievance.kind === 'no-grievance' && left <= 5)) {
+    const G = grievance.alliance ? `<strong>${grievance.alliance}</strong>` : 'that alliance';
+    if (grievance.kind === 'betrayal') {
+      // ── NAME THE RECEIPT ──
+      //
+      // The house stores WHICH thing it is holding against somebody, and
+      // `consequence-arcs.js` already groups those types into families — the
+      // lie, the promise, the vote, the ally, the block. A speech that says
+      // "you did not keep your word" while the specific act is sitting in
+      // `strategicMemories` is choosing the vaguer of two available sentences,
+      // and it is the one the viewer cannot check against anything they
+      // watched.
+      const mem = grievance.memory || {};
+      const t = mem.type || '';
+      const when = mem.ep ? ` in week ${mem.ep}` : '';
+      // Some of these lines describe a state rather than a moment, and " in
+      // week 4" lands inside the clause instead of after it — "I have tried to
+      // tell you things in week 4" is not a sentence anybody says.
+      const since = mem.ep ? ` since week ${mem.ep}` : '';
+      const LIE = ['deceit', 'lied-to-my-face', 'made-it-up', 'sold-me-something',
+        'swore-it-was-not-them', 'went-behind-my-back', 'playing-with-two-bodies',
+        'exposed-alliance-pitch', 'knows-what-they-said-about-them', 'said-it-out-loud',
+        'lie-confirmed', 'leaked-information', 'endgame-deal-discovered',
+        'two-versions-of-the-same-plan', 'two-faced', 'denied-the-stray-vote'];
+      const PROMISE = ['broke-a-promise', 'broken-promise', 'broke-a-final-two',
+        'broken-final-two', 'final-two', 'promised-and-did-not', 'promised-me-a-seat',
+        'alliance-betrayal', 'crossed-me', 'rogue-vote', 'broke-word-found-out',
+        'final-three', ];
+      const ALLY = ['eliminated-ally', 'took-my-ally', 'chose-them-over-me'];
+      const BLOCK = ['renomination', 'forced-me-up', 'refused-to-sit', 'made-me-the-pawn',
+        'block-rewritten', 'passed-me-over-in-the-chain', 'left-me-out',
+        'renominated-me', 'humiliation', 'decided-without-me', 'named-on-the-way-out'];
+
+      if (t === 'voted-for-me') return say([
+        `"${N}, you wrote my name down${when}. Everybody in ${G} watched you do it and then watched me let it go. I am finished letting it go."`,
+        `"${N}, my name came out of that box${when} in your handwriting. I have been gracious about it for long enough."`,
+      ]);
+      if (t === 'overcommitted') return say([
+        `"${N}, you have promised the end of this game to more people than it has room for. I worked out this week that I am one of them, and not the one you meant."`,
+        `"${N}, everybody I speak to thinks they are sitting beside you at the end. They cannot all be right, and I stopped assuming I was the exception."`,
+      ]);
+      if (ALLY.includes(t)) return say(mem.ally ? [
+        `"${N}, you helped send <strong>${_bbEsc(mem.ally)}</strong> home${when}, and then sat in ${G} with me as though it had not happened. This is that conversation, finally."`,
+        `"${N}, <strong>${_bbEsc(mem.ally)}</strong> is not in this house because of a vote you were part of${when}. I have not forgotten one day of it."`,
+      ] : [
+        `"${N}, you helped take somebody out of this house who was mine${when}, and then carried on as though we were fine. We have not been fine since."`,
+        `"${N}, I lost somebody I needed${when} and you were on the other side of that. I have been counting the weeks since."`,
+      ]);
+      if (PROMISE.includes(t)) return say([
+        `"${N}, you promised me something about the end of this game${when} and then made sure it could not happen. A promise that only holds while it costs you nothing was never a promise."`,
+        `"${N}, we agreed how this was supposed to finish${when}. You changed your mind and did not tell me, and that second part is what I actually mind."`,
+      ]);
+      if (LIE.includes(t)) return say([
+        `"${N}, you have been running ${G} in one room and something else in another, and I have known${since}. I would rather be wrong about that in public than right about it on my way out of the door."`,
+        `"${N}, I found out what you say when I am not in the room${when}. You are extremely good at it. That is precisely the problem."`,
+      ]);
+      if (BLOCK.includes(t)) return say([
+        `"${N}, when it was your week, I was the one sitting in this chair${when}. I am not going to pretend I have forgotten what that felt like."`,
+        `"${N}, you had this power once and you spent it on me${when}. Now I have it, and I am spending it the same way."`,
+      ]);
+      if (t === 'called-the-vote-on-me') return say([
+        `"${N}, you went round this house counting votes against me${when}, in the week I thought we were counting them together."`,
+        `"${N}, the vote that nearly took me out${when} was yours. Not the house's, not anybody else's — you called it."`,
+      ]);
+      if (t === 'planning-the-cut') return say([
+        `"${N}, I know what you were planning for the two of us${when}, because it got back to me the way everything in this house gets back to everybody. You were going to do this. I am just earlier."`,
+        `"${N}, you had already decided where this ended for me${when}. I would rather be the one who says it out loud first."`,
+      ]);
+      if (t === 'bought-a-vote') return say([
+        `"${N}, you paid somebody for a vote${when}. Everything since has been you telling me we were doing this together."`,
+        `"${N}, there is a vote in this house that you bought${when}. I have never once been able to get that out of my head."`,
+      ]);
+      if (t === 'blamed-me-for-a-vote-i-did-not-cast') return say([
+        `"${N}, you told this house I cast a vote I did not cast${when}. I have spent every week since being the person you said I was."`,
+        `"${N}, you needed somebody to blame${when} and you chose the person sitting next to you in ${G}. That is the whole reason."`,
+      ]);
+      if (['they-are-a-pair', 'house-picked-sides', 'bloc-threat',
+        'an-alliance-inside-the-alliance', 'is-protecting-somebody'].includes(t)) return say([
+        `"${N}, you are in ${G} with me and you are in something else with somebody else, and when this house split${when} I found out which one you counted."`,
+        `"${N}, we are supposed to be the group. You have a second one, and I am not in it."`,
+      ]);
+      if (t === 'cannot-be-told-anything') return say([
+        `"${N}, I have been trying to tell you things${since} and you do not hear any of them. I cannot play a game with somebody I cannot talk to."`,
+        `"${N}, I have brought you every piece of this week and you have done what you were going to do anyway. That is not an alliance, it is an audience."`,
+      ]);
+      if (t === 'accuser-confronted') return say([
+        `"${N}, you stood in front of this house and accused me${when}. You may even have believed it. It does not change where you are sitting now."`,
+        `"${N}, when this house needed somebody to point at, you pointed${when}. I am not going to pretend I have forgotten which way your arm went."`,
+      ]);
+      // ── AND WHEN THE HOUSE CANNOT NAME IT, IT MUST NOT INVENT ONE ──
+      //
+      // This used to say "you gave me your word and then you did not keep it"
+      // for ANY memory that was not in one of the families above — including
+      // types that are not a broken promise at all. A speech that accuses
+      // somebody of something specific has to be reading something specific;
+      // where it is not, it says what it actually knows, which is that this
+      // stopped being what it was.
+      /* ── AND WHEN IT CANNOT NAME THE THING, IT SHOULD NOT PRETEND TO ──
+         "I am nominating somebody I did trust, which is a different thing and
+         a worse one" is a mood, not a reason: it tells a viewer that something
+         happened and nothing whatsoever about what. That is worse than not
+         raising it, because the house is visibly holding a receipt it cannot
+         read out.
+         So when the memory has no family here, the speech says nothing about
+         it and falls through to the reasons below — the competition record,
+         the numbers, the game — every one of which the speaker can stand
+         behind. */
+      break grievance;
+    }
+    if (grievance.kind === 'suspicion') return say([
+      `"${N}, you have been in a lot of rooms I was not in. I have no proof and I am not going to stand here and invent some — I have one week of power and a bad feeling, and I am spending one on the other."`,
+      `"${N}, every time this house moves lately you have already spoken to somebody about it. That is either remarkable luck or a second alliance, and I cannot afford to guess which."`,
+      `"${N}, we are supposed to be on the same side, and I am always the last person in ${G} to hear anything. I would rather find out like this than on my way out of the door."`,
+    ]);
+    if (grievance.kind === 'soured') return say([
+      `"${N}, we have not been on the same side of a conversation in weeks. The name of the group is still there. Nothing else about it is."`,
+      `"${N}, whatever we had in the first month is gone, and I am not going to keep protecting something that only exists on paper."`,
+      `"${N}, ${G} is two people being polite to each other in a kitchen. I am not losing this game to a formality."`,
+    ]);
+    // Nothing has gone wrong between them at all — the rarest case, and it must
+    // not borrow one of the grievances above.
+    return say([
+      `"${N}, you have not done one thing to me, and that is the whole problem. You are the best player in ${G}, and if I do not do this now then one of us does it to the other later."`,
+      `"${N}, nobody in this house has been better to me than you. You are also the person I cannot beat, and this is the only week where that is my decision to make."`,
+      `"${N}, I have no complaint and no story. I have a week of power and an alliance I am not going to be able to win from."`,
+    ]);
   }
-  if (allies.length) {
-    return `"<strong>${name}</strong>, there is a group in this house that does not include me, and you are in it. That is the whole reason. Nothing about you personally."`;
-  }
-  if (bond <= -3) {
-    return `"<strong>${name}</strong>, we have not been able to have a straight conversation ${frictionTime}. I would rather do this than keep pretending we are fine."`;
-  }
-  if ((st.social ?? 5) >= 7) {
-    return `"<strong>${name}</strong>, everybody in this house likes you. That is a résumé, and it beats mine, and I only get one week where I can do anything about it."`;
-  }
-  if ((st.strategic ?? 5) >= 7) {
-    return `"<strong>${name}</strong>, you are running more of this house than you let on. I would rather take the shot now than wait until everybody else sees it too."`;
-  }
-  return `"<strong>${name}</strong>, somebody had to go up and there was no version of this week where it was going to feel fair. I am sorry it is you."`;
+  if (bond >= 6) return say([
+    `"${N}, you are the last person in this house I wanted to put up, and everybody in here knows it. I am not going to insult you by pretending this was a hard week for anybody but us."`,
+    `"${N}, I have nothing to accuse you of. That is what makes this the worst thing I have had to do since I walked in."`,
+    `"${N}, if there had been anybody else I could sit down, I would have. There was not, and you would have done the same."`,
+  ]);
+  // The honest endgame reason, and the one the house actually gives.
+  if (left <= 5 && (bond >= 2 || together)) return say([
+    `"${N}, there is nobody left in this house who is not a friend. That is what this week is. Somebody I like is going up, and it is you."`,
+    `"${N}, we have run out of other people. I am not going to insult you with a reason that is really just arithmetic."`,
+    `"${N}, this late there is no such thing as a safe nomination or a fair one. You are up because somebody had to be."`,
+  ]);
+
+  if (grudge && bond < 3) return say([
+    `"${N}, this is personal and I am not going to insult you by saying it is not. You know what you did and so does everybody in this room."`,
+    `"${N}, I have been waiting for this since the week you decided I was somebody you could use. Here it is."`,
+    `"${N}, I do not have a strategic reason and I am not going to invent one. This is about you and me."`,
+  ]);
+  if (comps >= 2) return say([
+    `"${N}, you have won ${comps} competitions. I cannot beat you at the end and I am not going to wait around and hope somebody else takes the shot."`,
+    `"${N}, ${comps} wins. Anybody sitting next to you at the end loses, and everybody in this room can count."`,
+  ]);
+  /* ── ONLY IF THEY ACTUALLY KNOW ABOUT IT ──
+     This read `gs.namedAlliances` directly, which is the truth of the house
+     rather than anything the Head of Household has worked out — so somebody
+     with no idea a group existed announced its existence at their own
+     ceremony. The house already tracks who has noticed what, per person, on a
+     0..1 scale; this now asks.
+     Three answers, because "I know" and "I suspect" are different sentences
+     and neither of them is "I have no idea": above 0.55 they can say it as a
+     fact, between 0.25 and 0.55 they can only say what they have noticed, and
+     below that this branch has nothing to offer and the speech falls through
+     to a reason they can actually stand behind. */
+  const _sees = allies.reduce((most, a) => {
+    try { return Math.max(most, knowledgeOf(hoh, `a:${a.name}`)); } catch { return most; }
+  }, 0);
+  if (allies.length && bond < 3 && _sees >= 0.55) return say([
+    `"${N}, there is a group in this house that does not include me, and you are in it. That is the whole reason. Nothing about you personally."`,
+    `"${N}, you have numbers and I am not one of them. I would rather do something about that this week than next."`,
+  ]);
+  if (allies.length && bond < 3 && _sees >= 0.25) return say([
+    `"${N}, I cannot prove any of this, and I am not going to stand here and pretend I can. The same names keep coming out of the same rooms, and yours is one of them."`,
+    `"${N}, either you are in something or you are the luckiest person in this house. I have to pick one of those to believe, and I have one week to be wrong in."`,
+  ]);
+  if (bond <= -3) return say([
+    `"${N}, we have not been able to have a straight conversation ${frictionTime}. I would rather do this than keep pretending we are fine."`,
+    `"${N}, neither of us has been pretending to like the other one ${frictionTime}. This is not going to surprise you."`,
+  ]);
+  if ((st.social ?? 5) >= 7) return say([
+    `"${N}, everybody in this house likes you. That is a résumé, it beats mine, and I only get one week where I can do anything about it."`,
+    `"${N}, you have not made an enemy in here yet. That is a better game than mine, and it is exactly why you are up."`,
+  ]);
+  if ((st.strategic ?? 5) >= 7) return say([
+    `"${N}, you are running more of this house than you let on. I would rather take the shot now than wait until everybody else sees it too."`,
+    `"${N}, every conversation in this house seems to go through you. I only get one week to do anything about that."`,
+  ]);
+  return say([
+    `"${N}, somebody had to go up and there was no version of this week where it was going to feel fair. I am sorry it is you."`,
+    `"${N}, I do not have a speech for this. Somebody had to sit there, and I made a choice I have to live with."`,
+  ]);
 }
-
 /**
  * The nomination ceremony.
  *
@@ -17889,6 +18887,16 @@ export function rpBuildBBNominations(ep, only = null) {
     && duoBlocks.flat().length === noms.length;
 
   const steps = [{ kind: 'open' }];
+  /* ── WHETHER THEY TOOK IT TO THE GROUP FIRST ──
+     An alliance being blindsided by its own Head of Household was happening in
+     two weeks out of three, and the reason was that the house had no way to
+     ask: there is a pawn conversation and nothing at all for "I need to put
+     one of ours up". This is that conversation, and it is the difference
+     between a week the group signed off on, one they were never told about,
+     and one where they said no and it happened anyway. */
+  for (const talk of act?.allianceConsults || []) {
+    if (talk) steps.push({ kind: 'consult', talk });
+  }
   if (duoCeremony) {
     duoBlocks.forEach((pair, i) => {
       const target = act.duo.targets?.[i] || pair[0];
@@ -17912,6 +18920,18 @@ export function rpBuildBBNominations(ep, only = null) {
     steps.push({ kind: 'shape' });
   }
   steps.push({ kind: 'complete' });
+  /* ── AND WHO IS NOT IN THAT ALLIANCE ANY MORE ──
+     These were being drawn inside the nominee's own card, keyed on the
+     nominee's name — which works for somebody who quit after the group put
+     them up, and renders NOTHING for the far more common case, where the
+     person who leaves is the Head of Household being thrown out for spending
+     the alliance's week on one of its own. The Head of Household has no card
+     on this screen. Reported from a real week: Priya nominated a member of
+     The Shield Wall, disappeared from it, and the ceremony said nothing at
+     all about it. */
+  for (const exit of act?.allianceExits || []) {
+    if (exit) steps.push({ kind: 'exit', exit });
+  }
   reactions.forEach(b => steps.push({ kind: 'beat', beat: b }));
 
   const done = state.idx >= steps.length - 1;
@@ -18092,7 +19112,85 @@ export function rpBuildBBNominations(ep, only = null) {
                 broke.sincere < 0.5 ? ' and never meant a word of it' : ''}. ${_bbEsc(step.name)} is on the wall anyway.`
             : `${_bbEsc(hoh)} and ${_bbEsc(step.name)} shook on the end together. This is not a pawn — ${
                 _bbEsc(step.name)} is the name ${_bbEsc(hoh)} came for.`}
-        </div>` : ''}</div>`;
+        </div>` : ''}
+        ${(() => {
+          /* ── AND WHETHER SOMEBODY IS STILL IN THAT ALLIANCE ON FRIDAY ──
+             Nominating one of your own has two shapes, and the house prices
+             them differently: if the rest of the group also wanted it, the
+             person in the chair was sold out by everybody and may walk away
+             from them; if nobody else was pointed at them, the Head of
+             Household spent the alliance's week on the alliance's own member
+             without asking, and it is the NOMINATOR the group throws out. Both
+             happen and neither is guaranteed — measured at 8 departures across
+             176 weeks. This card exists because the mechanic was otherwise
+             only visible as a name quietly missing from a panel. */
+          const exits = (act?.allianceExits || []).filter(x =>
+            x && (x.victim === step.name || x.player === step.name));
+          if (!exits.length) return '';
+          return exits.map(x => {
+            /* The third outcome, and the best one: nothing comes off the list.
+               Telling an alliance you are finished with them tells them what
+               you will do next, and the entire value of being finished with
+               somebody is that they do not know it. The house cannot see this
+               — that is the point of doing it this way — so the audience is
+               the only party who can, which is what a diary room is for. */
+            if (x.kind === 'hidden') {
+              return `<div class="bbns-broke bbns-quiet">
+                <span>SAYS NOTHING</span>
+                ${x.consented
+                  ? `${_bbEsc(x.player)} does not leave <strong>${_bbEsc(x.alliance)}</strong>, does not raise it, and does not let one thing show. Every person in that room wanted this chair filled, ${_bbEsc(x.player)} is the one sitting in it, and the only version of this worth anything is the one they never see coming.`
+                  : `<strong>${_bbEsc(x.alliance)}</strong> does not throw ${_bbEsc(x.player)} out, and it is not forgiveness. They keep ${_bbEsc(x.player)} exactly where they can see ${_bbEsc(x.player)}, sworn to a group that has already decided how this ends.`}
+              </div>`;
+            }
+            return `<div class="bbns-broke bbns-exit">
+              <span>${x.kind === 'quit' ? 'WALKED AWAY FROM THEM' : 'THROWN OUT BY THEM'}</span>
+              ${x.kind === 'quit'
+                ? `${_bbEsc(x.player)} has left <strong>${_bbEsc(x.alliance)}</strong>. Every one of them wanted this chair filled, and ${_bbEsc(x.player)} is the one who had to sit in it.`
+                : `<strong>${_bbEsc(x.alliance)}</strong> has removed ${_bbEsc(x.player)}. Nobody else in that room was pointed at ${_bbEsc(x.victim)}, and the week got spent on ${_bbEsc(x.victim)} anyway.`}
+            </div>`;
+          }).join('');
+        })()}</div>`;
+    }
+    if (step.kind === 'consult') {
+      const t = step.talk;
+      const label = t.stance === 'sanctioned' ? 'THE GROUP SIGNED OFF'
+        : t.stance === 'overruled' ? 'TOLD NO, DID IT ANYWAY' : 'NEVER ASKED THEM';
+      // One conversation covers everybody from that group who is going up.
+      const who = (t.victims && t.victims.length ? t.victims : [t.victim])
+        .filter(Boolean).map(_bbEsc);
+      const names = who.length > 1
+        ? `${who.slice(0, -1).join(', ')} and ${who[who.length - 1]}`
+        : (who[0] || 'one of them');
+      const plural = who.length > 1;
+      const body = t.stance === 'sanctioned'
+        ? `${_bbEsc(t.hoh)} put it to <strong>${_bbEsc(t.alliance)}</strong> before the ceremony: ${plural ? 'two of theirs have' : 'one of theirs has'} to sit down, and it has to be ${names}. ${t.agrees} of the ${t.of} said yes. Nobody in that room gets to be surprised on Thursday.`
+        : t.stance === 'overruled'
+          ? `${_bbEsc(t.hoh)} did take it to <strong>${_bbEsc(t.alliance)}</strong>, and <strong>${_bbEsc(t.alliance)}</strong> said no — ${t.of - t.agrees} of the ${t.of} argued for ${names}. ${_bbEsc(t.hoh)} listened to all of it and used the week exactly as planned.`
+          : `${_bbEsc(t.hoh)} never raised it with <strong>${_bbEsc(t.alliance)}</strong> at all. The first any of them hear that ${plural ? 'two of their own are' : 'one of their own is'} going up is when the ${plural ? 'keys turn' : 'key turns'}.`;
+      const cls = t.stance === 'sanctioned' ? 'bbns-signed' : 'bbns-exit';
+      return `<div class="bbns-card is-reason">
+        <div class="bbns-card-h">${_bbAvatar(t.hoh, 30)}<span class="bbns-pill ${t.stance === 'sanctioned' ? 'green' : 'red'}">${label}</span></div>
+        <div class="bbns-card-b"><div class="bbns-broke ${cls}" style="margin-top:0">
+          <span>${_bbEsc(t.alliance)}</span>${body}
+        </div></div></div>`;
+    }
+    if (step.kind === 'exit') {
+      const x = step.exit;
+      const label = x.kind === 'quit' ? 'WALKED AWAY FROM THEM'
+        : x.kind === 'hidden' ? 'SAYS NOTHING' : 'THROWN OUT BY THEM';
+      const body = x.kind === 'quit'
+        ? `${_bbEsc(x.player)} has left <strong>${_bbEsc(x.alliance)}</strong>. Every one of them wanted that chair filled, and ${_bbEsc(x.player)} is the one who had to sit in it.`
+        : x.kind === 'hidden'
+          ? (x.consented
+            ? `${_bbEsc(x.player)} does not leave <strong>${_bbEsc(x.alliance)}</strong>, does not raise it, and does not let one thing show. Every person in that room wanted the chair filled and ${_bbEsc(x.player)} is the one in it — and the only version of this worth anything is the one they never see coming.`
+            : `<strong>${_bbEsc(x.alliance)}</strong> does not throw ${_bbEsc(x.player)} out, and it is not forgiveness. They keep ${_bbEsc(x.player)} exactly where they can see ${_bbEsc(x.player)}, sworn to a group that has already decided how this ends.`)
+          : `<strong>${_bbEsc(x.alliance)}</strong> has removed ${_bbEsc(x.player)}. Nobody else in that room was pointed at ${_bbEsc(x.victim)}, and the week got spent on ${_bbEsc(x.victim)} anyway.`;
+      const cls = x.kind === 'hidden' ? 'bbns-quiet' : 'bbns-exit';
+      return `<div class="bbns-card is-reason">
+        <div class="bbns-card-h">${_bbAvatar(x.player, 30)}<span class="bbns-pill ${x.kind === 'hidden' ? 'blue' : 'red'}">${label}</span></div>
+        <div class="bbns-card-b"><div class="bbns-broke ${cls}" style="margin-top:0">
+          <span>${_bbEsc(x.alliance)}</span>${body}
+        </div></div></div>`;
     }
     if (step.kind === 'shape') {
       // A non-classic structure said out loud — two real targets, a split
@@ -20914,6 +22012,29 @@ export function rpBuildBBCeremony(ep) {
       `“You did not put me here to lose me.” ${name} directs the sentence at the Head of Household, but the veto belongs to ${holder}.`,
       `${name} asks why the house should gamble on a pawn surviving when the medallion can guarantee it.`,
     ], name, holder, 'pawn');
+    // ── A PLEA IS AIMED AT ONE PERSON, SO READ THAT PERSON FIRST ──
+    //
+    // Threat and repeat-block are facts about the NOMINEE. Warmth is the only
+    // fact here about the two people in the room, and it was checked after
+    // both of them — so somebody begging their closest ally for the medallion
+    // pitched themselves as a useful shield to a person they had been in an
+    // alliance with for six weeks. Same fault as the nomination speech: the
+    // relationship is the most relevant thing in the room and it was queued
+    // behind a stat line.
+    if (warmth >= 4 || (profile.alliance && profile.allies.includes(holder))) return vvar([
+      `"You know me. You know what we've talked about in this house. I'm not going to stand here and pretend that doesn't count for something." ${name} looks straight at ${holder} the whole time.`,
+      `${name} does not make a speech so much as a reminder: "Everything I've said to you, I meant. Do with that what you want." ${holder} does not look away, which everybody notices.`,
+      `"I could list reasons. You already know all of them." ${name} sits back down, and it is somehow the strongest pitch of the day.`,
+      `${name} reminds ${holder} of the vote they planned together and the promise that came with it. “If that still means something, use it.”`,
+      `“I have trusted you with my game,” ${name} tells ${holder}. “I'm asking you to trust me with yours.” The room hears how personal the decision already is.`,
+      `${name} looks at ${holder}, not the rest of the house. “You know what I would do if our places were reversed.” ${holder} has to sit with that answer in public.`,
+      `“You have heard every version of my plan because I trusted you with it.” ${name} turns to ${holder}. “Please don't make that the reason I leave.”`,
+      `${name} reminds ${holder} of the night they promised to protect each other. Nobody else knows the whole conversation, but everybody recognizes a promise being collected.`,
+      `“I am not asking as a nominee. I am asking as your ally.” ${name} sits down before the relationship can be explained away as strategy.`,
+      `${name} tells ${holder}, “If I stay up, you lose somebody who was never coming after you.” The word “was” hangs over the rest of the plea.`,
+      `“You told me I mattered to your game.” ${name} keeps ${p.posAdj} voice steady. “This is where I find out whether that was true.”`,
+      `${name} offers no new deal. ${p.Sub} simply repeats the one ${holder} already accepted and asks whether it survives contact with power.`,
+    ], name, 'ally');
     if (profile.threat >= 7 || profile.comps >= 2) return vvar([
       `${name} does not deny being dangerous. “That is exactly why keeping me helps you. Let the house aim at me before it aims at you.”`,
       `“You know I can win,” ${name} tells ${holder}. “Use the veto and the next competition can belong to both of us.”`,
@@ -20930,20 +22051,6 @@ export function rpBuildBBCeremony(ep) {
       `${name} asks ${holder} to end the cycle instead of trusting the same uncertain numbers that put ${p.obj} here before.`,
       `${name} counts ${profile.blockCount} nominations and one available veto. “Eventually somebody has to decide I am worth more off the block.”`,
     ], name, holder, profile.blockCount, 'repeat-block');
-    if (warmth >= 4 || (profile.alliance && profile.allies.includes(holder))) return vvar([
-      `"You know me. You know what we've talked about in this house. I'm not going to stand here and pretend that doesn't count for something." ${name} looks straight at ${holder} the whole time.`,
-      `${name} does not make a speech so much as a reminder: "Everything I've said to you, I meant. Do with that what you want." ${holder} does not look away, which everybody notices.`,
-      `"I could list reasons. You already know all of them." ${name} sits back down, and it is somehow the strongest pitch of the day.`,
-      `${name} reminds ${holder} of the vote they planned together and the promise that came with it. “If that still means something, use it.”`,
-      `“I have trusted you with my game,” ${name} tells ${holder}. “I'm asking you to trust me with yours.” The room hears how personal the decision already is.`,
-      `${name} looks at ${holder}, not the rest of the house. “You know what I would do if our places were reversed.” ${holder} has to sit with that answer in public.`,
-      `“You have heard every version of my plan because I trusted you with it.” ${name} turns to ${holder}. “Please don't make that the reason I leave.”`,
-      `${name} reminds ${holder} of the night they promised to protect each other. Nobody else knows the whole conversation, but everybody recognizes a promise being collected.`,
-      `“I am not asking as a nominee. I am asking as your ally.” ${name} sits down before the relationship can be explained away as strategy.`,
-      `${name} tells ${holder}, “If I stay up, you lose somebody who was never coming after you.” The word “was” hangs over the rest of the plea.`,
-      `“You told me I mattered to your game.” ${name} keeps ${p.posAdj} voice steady. “This is where I find out whether that was true.”`,
-      `${name} offers no new deal. ${p.Sub} simply repeats the one ${holder} already accepted and asks whether it survives contact with power.`,
-    ], name, 'ally');
     if (['challenge-beast', 'hothead', 'chaos-agent', 'villain'].includes(profile.arch)
       || (stats.boldness || 5) >= 7) return vvar([
       `${name} stands up like it is a competition. "Use it on me and I'll win my way through this house. Leave me up here and I'll do it anyway — but you'll have made an enemy doing it." Half the room admires it. The other half writes it down.`,
@@ -21022,7 +22129,21 @@ export function rpBuildBBCeremony(ep) {
         `${holder} sees danger on both sides of the decision and chooses the version that requires no new enemy tonight.`,
       ],
     };
-    return vvar(lines[act?.reason] || [act?.why || 'The decision follows the relationships and promises already in the house.'], holder, saved, act?.reason || 'reason');
+    // ── THE ENGINE ALREADY WROTE THIS, AND THE SCREEN THREW IT AWAY ──
+    //
+    // `shouldUseVeto` returns a `why` for every branch it can take, and it is
+    // the specific one: it names the tier of the deal being honoured, whether
+    // the replacement pool was down to a single name — "there is only one
+    // person left who can take the chair, so nobody can even call it a move" —
+    // and which of the two enemies the holder decided to buy. The ceremony
+    // read `lines[act.reason]` first and only fell through to it when the
+    // reason was missing from the table, which never happens, so the whole
+    // calculation was computed weekly and printed by nobody.
+    //
+    // The generic pool stays as the fallback: the second ceremony of a double
+    // and a few twist paths build the act without running the decision.
+    if (act?.why) return _bbEsc(act.why);
+    return vvar(lines[act?.reason] || ['The decision follows the relationships and promises already in the house.'], holder, saved, act?.reason || 'reason');
   };
 
   // ── the steps ──
@@ -22608,6 +23729,12 @@ export function rpBuildBBEviction(ep) {
     ...noms.map(name => ({ kind: 'plea', name })),
     { kind: 'tovote' },
     ...ballots.map(b => ({ kind: 'ballot', b })),
+    // THE PUBLIC'S BALLOT SITS WITH THE OTHERS.
+    //
+    // It is counted into the totals but it is not a houseguest, so the board
+    // showed eight names voting and a verdict built on nine votes. Read here,
+    // last, the way the show reads it.
+    ...(act?.americasVote?.target ? [{ kind: 'publicballot' }] : []),
     // Before the verdict, because it IS the verdict's reasoning: with two duos
     // up, the votes are added by pair and the loudest half of the losing pair
     // goes. Without this the right name is called for reasons the screen never
@@ -22696,6 +23823,19 @@ export function rpBuildBBEviction(ep) {
         return `<div class="bbns-card is-open">
           <div class="bbns-card-h"><span class="bbns-pill grey">THE HOUSE VOTES</span></div>
           <div class="bbns-card-b">One at a time, the voters cross the living room to the Diary Room. The vote is secret from the house — only the audience hears it — and ${hoh ? `<strong>${_bbEsc(hoh)}</strong> and the nominees do not vote at all` : 'the nominees do not vote'}.</div></div>`;
+      case 'publicballot': {
+        const av = act.americasVote;
+        const share = (av.tally || []).find(t => t.name === av.target)?.share;
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h"><span class="bbns-pill red">THE PUBLIC VOTE</span></div>
+          <div class="bbns-card-b">${_bbAvatar(av.target, 26)}
+            <strong>The public:</strong> “We vote to evict ${_bbEsc(av.target)}.”
+            <div style="margin-top:6px;font-size:11px;color:var(--muted)">${share != null
+    ? `${share}% of the public vote` : 'the public vote'}${av.weight > 1
+    ? `, counted ${av.weight} times` : ''} — cast by people nobody in that room
+            could campaign to, and counted with the ballots above.</div>
+          </div></div>`;
+      }
       case 'ballot': {
         const b = step.b;
         const c = commitment.get(b.voter);
@@ -23647,16 +24787,31 @@ export function rpBuildBBInstantEviction(ep) {
 }
 
 /** The break between a double eviction's two halves. */
-function _bbDoubleBreak(ep) {
-  const d = ep.doubleEviction || {};
+function _bbDoubleBreak(ep, cycle = 0) {
+  const d = (ep.extraEvictions || [])[cycle] || ep.doubleEviction || {};
+  // A triple's third break is not the second one again. The card counts the
+  // night's cycles and says which one is starting — and takes its own reveal
+  // state, because two breaks sharing `bb_dbl_${ep.num}` meant opening the
+  // third replayed the second's progress and showed nothing new.
+  const total = 1 + (ep.extraEvictions || []).reduce(
+    (n, r) => n + (r.evicted ? 1 : 0) + (r.secondEvicted ? 1 : 0),
+    (ep.extraEvictions || []).length ? 0 : (ep.doubleEviction ? 1 : 0));
+  const triple = total >= 3;
+  const nth = cycle === 0 ? 'second' : 'third';
   return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num}`, title: 'AND WE ARE NOT DONE', accent: 'var(--bbx-note)', room: 'bb-live',
+    eyebrow: `Week ${ep.num}`,
+    title: triple && cycle > 0 ? 'STILL NOT DONE' : 'AND WE ARE NOT DONE',
+    accent: 'var(--bbx-note)', room: 'bb-live',
     subtitle: 'The front door has not finished closing.',
-    stateKey: `bb_dbl_${ep.num}`,
+    stateKey: `bb_dbl_${ep.num}_${cycle + 2}`,
     scenes: [
-      { text: `The house is told to sit back down. There will be a second eviction tonight, and it starts now.`,
-        players: [], badgeText: 'DOUBLE EVICTION', badgeClass: 'red' },
-      { text: `A whole week — competition, nominations, veto, vote — in the time it usually takes to argue about one.`,
+      { text: triple && cycle > 0
+        ? `Nobody has sat down. The house is told there will be a THIRD eviction tonight, and that it starts now.`
+        : `The house is told to sit back down. There will be a ${nth} eviction tonight, and it starts now.`,
+        players: [], badgeText: triple ? 'TRIPLE EVICTION' : 'DOUBLE EVICTION', badgeClass: 'red' },
+      { text: triple && cycle > 0
+        ? `Another whole week — competition, nominations, veto, vote — run by a house that has just watched two people walk out of it.`
+        : `A whole week — competition, nominations, veto, vote — in the time it usually takes to argue about one.`,
         players: [...(d.houseAtStart || [])].slice(0, 6), badgeText: 'LIVE', badgeClass: 'gold' },
     ],
   });
@@ -23665,6 +24820,11 @@ function _bbDoubleBreak(ep) {
 /** The acts of one cycle, in the order they happened. */
 function _bbCycleScreens(view, screens, suffix = '') {
   let houseSlot = 0, campaignIdx = 0;
+  // The most recent House Life screen, and where it sits. A week that removes
+  // the veto leaves the post-block stretch and the campaign days with nothing
+  // between them, and both draw as House Life — two identical stops back to
+  // back in the navigator.
+  let lastHouse = null;
   // Screens that are built when their act comes up but shown later.
   const deferred = [];
   const id = base => `${base}${suffix}`;
@@ -23702,7 +24862,28 @@ function _bbCycleScreens(view, screens, suffix = '') {
           ? { ...act, socialBeats: [...pendingBeats, ...(act.socialBeats || [])] }
           : act;
         pendingBeats = [];
+        // NOTHING BETWEEN THEM MEANS IT IS ONE STRETCH.
+        //
+        // House life is punctuated by ceremonies. A week that removes one —
+        // a Chain of Safety takes the nomination ceremony AND the veto —
+        // leaves two stretches back to back, and both draw as House Life, so
+        // the navigator shows the same stop twice with nothing between them.
+        //
+        // Folded at RENDER time rather than by merging the acts, because an
+        // act is not only its beats: twists flag the stretch they caused and
+        // this file's own machinery reads those flags.
+        if (lastHouse && lastHouse.at === screens.length - 1) {
+          const joined = { ...lastHouse.act, ...merged,
+            socialBeats: [...(lastHouse.act.socialBeats || []), ...(merged.socialBeats || [])] };
+          screens[lastHouse.at] = { id: id(`bb-house-${lastHouse.slot}`), label: 'House Life',
+            html: rpBuildBBHouseLife(view, joined, lastHouse.slot) };
+          lastHouse = { ...lastHouse, act: joined };
+          break;
+        }
         screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life', html: rpBuildBBHouseLife(view, merged, houseSlot) });
+        // Remembered so the next stretch can fold into it when nothing
+        // separates the two. See the 'campaign' case.
+        lastHouse = { at: screens.length - 1, act: merged, slot: houseSlot };
         break;
       }
       case 'have-nots':
@@ -24073,6 +25254,63 @@ function _bbCycleScreens(view, screens, suffix = '') {
           html: rpBuildBBWildcard(view, act, wcDeps) });
         break;
       }
+      case 'americas-eviction-vote': {
+        const avDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id('bb-avote'), label: "America's Vote",
+          html: rpBuildBBAudienceVote(view, act, avDeps, {
+            title: 'AMERICA HAS VOTED',
+            sub: 'Seven days of voting, read out in one sentence.',
+          }) });
+        break;
+      }
+      case 'dead-last': {
+        // The scoreboard put somebody on the block, so the card is the
+        // scoreboard's — it belongs beside the competition it came out of
+        // rather than pretending to be a ceremony.
+        screens.push({ id: id('bb-deadlast'), label: 'Dead Last',
+          html: _bbSceneScreen(view, {
+            eyebrow: `Week ${view.num}`, title: 'LAST PLACE TAKES A CHAIR',
+            accent: 'var(--bbx-bad)', room: 'bb-comp',
+            subtitle: act.threw
+              ? 'Thrown, in the one week where that costs something.'
+              : 'Nobody had to nominate them. The scoreboard did it.',
+            stateKey: `bb_dl_${view.num}${view?._seg ? `_s${view._seg}` : ''}`,
+            scenes: [
+              { text: `${act.nominee} finishes ${act.place} of ${act.of}`
+                + `${act.competition ? ` in ${act.competition}` : ''}, and that is the whole nomination. `
+                + `No speech, no keys, no reasons — one of the two chairs was filled by the scoreboard `
+                + `before ${act.hoh} was allowed to think about it.`,
+              players: [act.nominee], badgeText: 'DEAD LAST', badgeClass: 'red' },
+              ..._bbOwnBeats(act),
+            ],
+          }) });
+        break;
+      }
+      case 'chain-duel': {
+        // A real competition, so it gets the competition board every other
+        // comp in the house gets rather than a bespoke card.
+        const duelView = { ...view, acts: [{ ...act, type: 'veto',
+          participants: act.nominees || [],
+          competition: act.competition,
+          results: (act.competition?.placements || []).map(name =>
+            ({ name, score: act.competition?.scores?.[name] })) }] };
+        const board = rpBuildBBComp(duelView, 'veto');
+        screens.push({ id: id('bb-chainduel'), label: 'The Duel',
+          html: board || _bbSceneScreen(view, {
+            eyebrow: `Week ${view.num}`, title: 'HEAD TO HEAD',
+            accent: 'var(--bbx-bad)', room: 'bb-comp',
+            subtitle: 'No vote. The two the house went past settle it themselves.',
+            stateKey: `bb_duel_${view.num}${view?._seg ? `_s${view._seg}` : ''}`,
+            scenes: _bbOwnBeats(act),
+          }) });
+        break;
+      }
+      case 'chain-of-safety': {
+        const chDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id('bb-chain'), label: 'Chain of Safety',
+          html: rpBuildBBChainOfSafety(view, act, chDeps) });
+        break;
+      }
       case 'safety-suite': {
         const ssDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-safetysuite'), label: 'Safety Suite',
@@ -24260,13 +25498,67 @@ function _bbCycleScreens(view, screens, suffix = '') {
           phase: 'campaign',
           socialBeats: campaignActs.flatMap(a => a.socialBeats || []),
         };
+        // NOTHING BETWEEN THEM MEANS IT IS ONE STRETCH.
+        //
+        // On an ordinary week the Veto and the Veto Ceremony sit between the
+        // post-block days and the campaign days. A week that removes the veto
+        // — a Chain of Safety, an Instant Eviction — leaves two House Life
+        // screens adjacent, which reads as the same screen drawn twice. When
+        // the previous screen IS that stretch, the campaign is folded into it
+        // and the one screen covers all of the days.
+        if (lastHouse && lastHouse.at === screens.length - 1) {
+          const joined = { ...merged,
+            socialBeats: [...(lastHouse.act.socialBeats || []), ...(merged.socialBeats || [])] };
+          screens[lastHouse.at] = { id: id(`bb-house-${lastHouse.slot}`), label: 'House Life',
+            html: rpBuildBBHouseLife(view, joined, lastHouse.slot) };
+          lastHouse = { ...lastHouse, act: joined };
+          break;
+        }
         screens.push({
           id: id(`bb-house-${++houseSlot}`), label: 'House Life',
           html: rpBuildBBHouseLife(view, merged, houseSlot),
         });
+        lastHouse = { at: screens.length - 1, act: merged, slot: houseSlot };
         break;
       }
       case 'eviction':
+        // ── ANYTHING STILL WAITING FOR A STRETCH OF HOUSE LIFE GETS ONE HERE ──
+        //
+        // Beats displaced from a competition wait for the next House Life act
+        // to fold into. A COMPRESSED cycle has no house life at all, so on the
+        // back half of a double they waited for a stretch that never came and
+        // were flushed at the very end of the cycle instead — which put a
+        // House Life screen AFTER the second evictee's interview, at the end
+        // of the night, in the navigator.
+        //
+        // They came out of this cycle's competitions, so they belong before
+        // its vote. Flushed here, where a full week would have had its
+        // post-veto stretch.
+        if (pendingBeats.length) {
+          // PHASE 'campaign', NOT NONE. `rpBuildBBHouseLife` reads
+          // `act.phase || 'pre-hoh'`, so a phaseless stretch prints "Before
+          // anybody has power" — which on the back half of a triple appeared
+          // after the Head of Household, the veto, both ceremonies and the
+          // campaign, announcing that nobody had power yet on a night that had
+          // already crowned two people.
+          //
+          // These are the hours before the vote, which is what 'campaign'
+          // means, and it is the phase the same stretch carries on a full week.
+          const flushed = { type: 'house', phase: 'campaign', socialBeats: pendingBeats };
+          if (lastHouse && lastHouse.at === screens.length - 1) {
+            // The campaign screen is usually right there. One stretch, not two.
+            const joined = { ...lastHouse.act, ...flushed,
+              socialBeats: [...(lastHouse.act.socialBeats || []), ...pendingBeats] };
+            screens[lastHouse.at] = { id: id(`bb-house-${lastHouse.slot}`), label: 'House Life',
+              html: rpBuildBBHouseLife(view, joined, lastHouse.slot) };
+            lastHouse = { ...lastHouse, act: joined };
+          } else {
+            screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life',
+              html: rpBuildBBHouseLife(view, flushed, houseSlot) });
+            lastHouse = { at: screens.length - 1, act: flushed, slot: houseSlot };
+          }
+          pendingBeats = [];
+        }
         // The Block Buster first, if there was one: it is the last thing that
         // happens before the vote.
         screens.push(...deferred.splice(0, deferred.length));
@@ -24276,7 +25568,15 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // The reads first, then the show. Voting Plans is the house counting —
         // Total Drama's plans screen for a house — and Eviction Night is the
         // live hour, so the intentions and the result stop sharing a page.
-        screens.push({ id: id('bb-plans'), label: 'Voting Plans', html: rpBuildBBVotingPlans(view) });
+        // NO PLANS ON A WEEK WITH NO VOTE.
+        //
+        // A Québec chain is settled by a duel and nobody casts a ballot, so the
+        // plans screen drew a war room for a vote that never happens — "every
+        // ballot this week belongs to a person, not a plan" over a week with no
+        // ballots in it. The Duel screen is where this week is decided.
+        if (!view.chainDuel) {
+          screens.push({ id: id('bb-plans'), label: 'Voting Plans', html: rpBuildBBVotingPlans(view) });
+        }
         // The Sanctum sits BETWEEN the plans and the result, because that is
         // where it happens: the room is called down, the votes are cast in
         // front of each other one at a time, and only then does the night
@@ -24286,7 +25586,28 @@ function _bbCycleScreens(view, screens, suffix = '') {
         if ((view.acts || []).some(a => a.type === 'eviction' && a.publicVote)) {
           screens.push({ id: id('bb-sanctum'), label: 'The Sanctum', html: rpBuildBBSanctum(view) });
         }
-        screens.push({ id: id('bb-evict'), label: 'Eviction Night', html: rpBuildBBEviction(view) });
+        // The eviction board counts ballots. On a duel week there are none, so
+        // it drew both nominees on nought votes and offered the Head of
+        // Household a tie to break. The duel already showed the result; this
+        // screen is the walk-out, so it is titled as one.
+        if (view.chainDuel) {
+          screens.push({ id: id('bb-evict'), label: 'The Front Door',
+            html: _bbSceneScreen(view, {
+              eyebrow: `Week ${view.num}`, title: 'THE FRONT DOOR',
+              accent: 'var(--bbx-bad)', room: 'bb-live',
+              subtitle: 'Decided in the yard. Nobody voted.',
+              stateKey: `bb_frontdoor_${view.num}${view?._seg ? `_s${view._seg}` : ''}`,
+              scenes: [{
+                text: `${view.chainDuel.loser} loses the duel and is evicted. There was no vote `
+                  + `this week — the house chose who was safe, twice, and ${view.chainDuel.loser} `
+                  + `and ${view.chainDuel.winner} were the two it went past.`,
+                players: [view.chainDuel.loser, view.chainDuel.winner].filter(Boolean),
+                badgeText: 'EVICTED', badgeClass: 'red',
+              }],
+            }) });
+        } else {
+          screens.push({ id: id('bb-evict'), label: 'Eviction Night', html: rpBuildBBEviction(view) });
+        }
         // No separate Vote screen: Eviction Night reads every ballot from the
         // Diary Room itself, so a second page repeating the same nine votes was
         // the night told twice.
@@ -24316,20 +25637,26 @@ function _bbCycleScreens(view, screens, suffix = '') {
           // A two-cycle week draws this block once per cycle, and the second
           // interview belongs to the LAST cycle — rendering it in both put the
           // same evictee in two chairs. The first cycle draws only its own.
-          const twoCycle = !!view.doubleEviction;
-          const drawSecond = !twoCycle || view._seg === 2;
+          const twoCycle = !!view.doubleEviction || !!(view.extraEvictions || []).length;
+          const drawSecond = !twoCycle || (view._seg || 1) >= 2;
+          // Each extra cycle sits its OWN evictee down. On a triple the third
+          // cycle must reach for the third chair, or the person it evicted
+          // walks out of the house without ever being asked about it.
+          const ivKey = (view._seg || 1) >= 3
+            ? 'thirdEvictionInterview' : 'secondEvictionInterview';
           const label1 = split && sideOf(firstOut)
             ? `Evictee · ${sideOf(firstOut)}'s side` : 'Evictee Interview';
           const label2 = split && sideOf(secondOut)
-            ? `Evictee · ${sideOf(secondOut)}'s side` : 'Second Evictee';
+            ? `Evictee · ${sideOf(secondOut)}'s side`
+            : (view._seg || 1) >= 3 ? 'Third Evictee' : 'Second Evictee';
 
           const iv = rpBuildBBEvictionInterview(view);
           if (iv && iv.trim()) screens.push({ id: id('bb-interview'), label: label1, html: iv });
           // Two evictions, two chairs. The second evictee of a split or a
           // double had an interview written for them and no screen to sit in.
-          const iv2 = drawSecond
-            ? rpBuildBBEvictionInterview(view, 'secondEvictionInterview') : '';
+          const iv2 = drawSecond ? rpBuildBBEvictionInterview(view, ivKey) : '';
           if (iv2 && iv2.trim()) {
+            // `id()` already stamps the cycle on, so the base stays fixed.
             screens.push({ id: id('bb-interview-2'), label: label2, html: iv2 });
           }
         } catch { /* no interview, no screen */ }
@@ -24353,8 +25680,10 @@ function _bbCycleScreens(view, screens, suffix = '') {
   // Life stretch to fold displaced competition beats into. Rather than lose
   // them, they get the one extra screen this path used to create every week.
   if (pendingBeats.length) {
+    // Same reason as the flush in the eviction case: phaseless reads as
+    // "Before anybody has power", which is never true this late.
     screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life',
-      html: rpBuildBBHouseLife(view, { type: 'house', socialBeats: pendingBeats }, houseSlot) });
+      html: rpBuildBBHouseLife(view, { type: 'house', phase: 'campaign', socialBeats: pendingBeats }, houseSlot) });
     pendingBeats = [];
   }
   // A week that never held a ceremony (an instant eviction, a cycle that fell
@@ -24375,11 +25704,14 @@ function _bbCycleScreens(view, screens, suffix = '') {
  * them about segments they are handed a view of the episode in which the
  * second cycle IS the week. `_seg` keeps the reveal states apart.
  */
-function _bbSecondCycleView(ep) {
-  const d = ep.doubleEviction || {};
+function _bbSecondCycleView(ep, cycle = 0) {
+  // `extraEvictions` is the list; `doubleEviction` is its first entry, kept
+  // under the old name for every reader written before the triple existed.
+  const d = (ep.extraEvictions || [])[cycle] || (cycle === 0 ? ep.doubleEviction : null) || {};
+  const seg = d.segment || cycle + 2;
   return {
-    ...ep, _seg: 2,
-    acts: (ep.acts || []).filter(a => (a.segment || 1) === 2),
+    ...ep, _seg: seg,
+    acts: (ep.acts || []).filter(a => (a.segment || 1) === seg),
     hoh: d.hoh || null,
     immunityWinner: d.hoh || null,
     initialNominees: [...(d.nominees || [])],
@@ -24388,7 +25720,7 @@ function _bbSecondCycleView(ep) {
     eliminated: d.evicted || null,
     votes: { ...(d.votes || {}) },
     houseAtStart: [...(d.houseAtStart || ep.houseAtStart || [])],
-    votingLog: (ep.votingLog || []).filter(v => v.segment === 2),
+    votingLog: (ep.votingLog || []).filter(v => v.segment === seg),
     // ── THE FIRST CYCLE'S WAR ROOM MUST NOT LEAK ──
     //
     // `...ep` above carries voteOperation and voteCommitments from the first
@@ -24432,7 +25764,7 @@ export function buildBBWeekScreens(ep) {
   // first cycle is rendered from a view holding only its own acts and the
   // second gets a view where it IS the week. Without the split, every builder
   // would find the first 'hoh' act twice and draw the same screen again.
-  const hasSecond = !!ep.doubleEviction;
+  const hasSecond = !!ep.doubleEviction || !!(ep.extraEvictions || []).length;
   const firstView = hasSecond
     ? { ...ep, acts: (ep.acts || []).filter(a => (a.segment || 1) === 1) }
     : ep;
@@ -24553,10 +25885,27 @@ export function buildBBWeekScreens(ep) {
             own — their own nominations, their own veto, their own vote.
           </p>
         </div>` });
+      _bbCycleScreens(_bbSecondCycleView(ep, 0), screens, '-2');
     } else {
-      screens.push({ id: 'bb-double', label: 'Double Eviction', html: _bbDoubleBreak(ep) });
+      // One extra cycle or two, drawn by the same loop. A triple's third
+      // cycle is a full set of screens, not a footnote on the second.
+      const cycles = (ep.extraEvictions || []).length
+        || (ep.doubleEviction ? 1 : 0);
+      // How many people leave, which is not how many cycles run: Canada's
+      // triple takes two out of a single live cycle.
+      const outTotal = 1 + (ep.extraEvictions || []).reduce(
+        (n, r) => n + (r.evicted ? 1 : 0) + (r.secondEvicted ? 1 : 0),
+        (ep.extraEvictions || []).length ? 0 : (ep.doubleEviction ? 1 : 0));
+      for (let c = 0; c < cycles; c++) {
+        screens.push({
+          id: c === 0 ? 'bb-double' : `bb-double-${c + 2}`,
+          label: cycles > 1 ? `Eviction ${c + 2}`
+            : outTotal >= 3 ? 'Triple Eviction' : 'Double Eviction',
+          html: _bbDoubleBreak(ep, c),
+        });
+        _bbCycleScreens(_bbSecondCycleView(ep, c), screens, `-${c + 2}`);
+      }
     }
-    _bbCycleScreens(_bbSecondCycleView(ep), screens, '-2');
   }
 
   // And after it: the same screen, once everything has actually happened.
@@ -25396,14 +26745,54 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
   // people have worked out it exists — was invisible. A secret four and a four
   // the whole house has been shouting about looked identical on this screen and
   // behaved identically in the threat model.
+  /* ── THE ALLIANCES OF THAT WEEK, NOT OF RIGHT NOW ──
+     This built its rows from `listBlocs()`, which reads the live game state.
+     Watching a season straight through, live and this week are the same thing.
+     Reloading a single old episode, they are not — and the two screens of one
+     week then disagreed in both directions at once: House Status drew The
+     Majority with the four members it ended up with while the House Life panel
+     beside it drew the two it was founded with, and drew The Shield Wall with
+     the two it was reduced to while the panel had all four. Reported as an
+     alliance that "doesn't appear every time and loses members for no reason".
+     The episode's own board is the right source: it is snapshotted at the end
+     of that week and it is what every other panel on the screen already reads. */
+  /* ── WHO THIS ALLIANCE THREW OUT, ON THE SCREEN THAT COMES AFTER THE VOTE ──
+     House Life cannot carry these: "voted against an alliance member" says how
+     Thursday went and that screen plays before it. This one is drawn once the
+     week is over, so the member stays in the row with their face struck
+     through and the group says what it did — rather than the name simply not
+     being there next episode with no explanation anywhere. If they are taken
+     back in, the row is just a row again. */
+  const _thrownOut = new Map();
+  const _thrownWhy = new Map();
+  for (const d of (ep?.allianceDepartures || [])) {
+    if (!d?.alliance || !d?.player) continue;
+    if (!_thrownOut.has(d.alliance)) _thrownOut.set(d.alliance, []);
+    _thrownOut.get(d.alliance).push(d.player);
+    _thrownWhy.set(d.alliance, d.reason || 'expelled');
+  }
+
   let blocRows = [];
-  try {
-    blocRows = (typeof listBlocs === 'function' ? listBlocs() : [])
-      .filter(b => (b.members || []).every(m => stillIn.includes(m)));
-  } catch { blocRows = []; }
+  const _boardRows = (ep?.allianceBoard || []).filter(b =>
+    (b.members || []).every(m => stillIn.includes(typeof m === 'string' ? m : m.name)));
+  if (_boardRows.length) {
+    blocRows = _boardRows.map(b => ({
+      id: b.id, label: b.name, name: b.name, kind: b.kind || 'alliance',
+      members: (b.members || []).map(m => (typeof m === 'string' ? m : m.name)),
+      share: b.share || 0, power: b.power || 0, seen: b.seen,
+      holds: b.members || [], weakest: b.weakest || null,
+    }));
+  } else {
+    try {
+      blocRows = (typeof listBlocs === 'function' ? listBlocs() : [])
+        .filter(b => (b.members || []).every(m => stillIn.includes(m)));
+    } catch { blocRows = []; }
+  }
 
   const blocBody = blocRows.length ? blocRows.map(b => {
-    const seen = (() => { try { return blocExposure(b); } catch { return 0; } })();
+    const seen = typeof b.seen === 'number'
+      ? b.seen
+      : (() => { try { return blocExposure(b); } catch { return 0; } })();
     const pct = Math.round(seen * 100);
     const state = seen >= 0.8 ? { label: 'EVERYBODY KNOWS', color: '#f85149' }
       : seen >= 0.5 ? { label: 'AN OPEN SECRET', color: '#d29922' }
@@ -25433,8 +26822,14 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
         <strong>${_bbEsc(b.label)}</strong>
         <span class="bbb-state" style="color:${state.color}">${state.label}</span>
       </div>
-      <div class="bbb-faces">${b.members.map(m => _bbAvatar(m, 22)).join('')}
+      <div class="bbb-faces">${b.members.map(m => (_thrownOut.get(b.label || b.name) || []).includes(m)
+        ? `<span class="bbb-out" title="${_bbEsc(m)} — thrown out of ${_bbEsc(b.label || b.name)}">${_bbAvatar(m, 22)}</span>`
+        : _bbAvatar(m, 22)).join('')}
         <span class="bbb-votes">${b.members.length} members &middot; up to ${b.members.length} votes &middot; ${Math.round(b.share * 100)}% of the house</span></div>
+      ${(_thrownOut.get(b.label || b.name) || []).length ? `<div class="bbb-out-note">${
+        (_thrownOut.get(b.label || b.name) || []).map(_bbEsc).join(' and ')} ${
+        (_thrownOut.get(b.label || b.name) || []).length > 1 ? 'are' : 'is'} out of it — ${
+        _bbEsc(_thrownWhy.get(b.label || b.name) || 'expelled')}.</div>` : ''}
       <div class="bbb-bar"><i style="width:${pct}%;background:${state.color}"></i>
         <span>Average suspicion among non-members: ${pct}%<br>${awarenessText}</span></div>
       ${_bbHoldDetail(b)}
@@ -26136,13 +27531,18 @@ export function rpBuildBBEvictionInterview(ep, which = null) {
   // generated and never drawn.
   const iv = which ? ep[which] : ep.evictionInterview;
   if (!iv) return '';
-  const stateKey = `bb_iv_${ep.num}${which === 'secondEvictionInterview' ? '_2' : ''}`;
+  // A distinct reveal state per chair. Two interviews sharing one key meant
+  // opening the second replayed the first's progress; three would be worse.
+  const stateKey = `bb_iv_${ep.num}${which === 'secondEvictionInterview' ? '_2'
+    : which === 'thirdEvictionInterview' ? '_3' : ''}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
   const p = (n => { try { return pronouns(n); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } })(iv.evictee);
 
   const steps = [
     { kind: 'walkout' },
+    // Straight after the doors open, because that is when it happens.
+    ...(iv.homecoming ? [{ kind: 'homecoming' }] : []),
     ...iv.questions.map(q => ({ kind: 'q', ...q })),
     ...(iv.truth ? [{ kind: 'truth' }] : []),
     ...(iv.goodbyes?.length ? [{ kind: 'byes-intro' }] : []),
@@ -26177,6 +27577,11 @@ export function rpBuildBBEvictionInterview(ep, which = null) {
   const card = (step, i) => {
     if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
     switch (step.kind) {
+      case 'homecoming':
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h"><span class="bbns-pill ${iv.homecoming.strayed ? 'red' : 'gold'}">${
+  iv.homecoming.strayed ? 'THE SEAT AT THE BACK' : 'WAITING AT THE DOOR'}</span></div>
+          <div class="bbns-card-b">${_bbEsc(iv.homecoming.line)}</div></div>`;
       case 'walkout':
         return `<div class="bbns-card is-open">
           <div class="bbns-card-h">${_bbAvatar(iv.evictee, 30)}<span class="bbns-pill red">THE WALK</span></div>

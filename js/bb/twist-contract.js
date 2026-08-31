@@ -30,6 +30,10 @@ export const BASE_WEEK_RULES = Object.freeze({
   publicVote: false,        // the ballot is secret unless a twist opens it
   addSlots: [],             // extra competition slots ('safety', 'return', ...)
   secondCycle: false,       // a compressed second eviction cycle after the first
+  extraCycles: 0,           // HOW MANY of them: 1 is a double, 2 is a triple
+  chainOfSafety: false,     // the block is what the chain left over, not a ceremony
+  deadLastNominee: false,   // last in the HOH competition takes a chair automatically
+  audienceBallot: false,    // the audience casts a vote in the eviction tally
 });
 
 /**
@@ -316,7 +320,65 @@ export const BB_TWIST_CONTRACTS = {
   'bb-double-eviction': {
     id: 'bb-double-eviction', layer: 'scheduled', category: 'week-structure',
     timing: 'week', duration: { weeks: 1 },
-    rules: { secondCycle: true },
+    rules: { secondCycle: true, extraCycles: 1 },
+  },
+  // Declares the SAME rule as the double, because it is the same rule staged
+  // one more time: an extra compressed cycle after the vote. `extraCycles`
+  // says how many, and the double is the case where that number is one.
+  'bb-triple-eviction': {
+    id: 'bb-triple-eviction', layer: 'scheduled', category: 'week-structure',
+    timing: 'week', duration: { weeks: 1 },
+    rules: { secondCycle: true, extraCycles: 2 },
+    acquisition: { channel: 'production', secrecy: 'public' },
+    announcement: {
+      name: 'Triple Eviction',
+      reactions: 'dread',
+      rule: 'Tonight is not one eviction and it is not two. When that front door closes you will play for Head of Household again, nominate again, play a veto again and vote again — and when THAT door closes, you are going to do all of it a third time. There will be no time to talk to anybody. There will be no time to count.',
+      sting: 'Three of you are sleeping somewhere else tonight.',
+    },
+  },
+  // Declares what it TAKES AWAY: the veto never happens, and the nomination
+  // ceremony is replaced by the chain rather than run alongside it.
+  'bb-chain-of-safety': {
+    id: 'bb-chain-of-safety', layer: 'scheduled', category: 'week-structure',
+    timing: 'week', duration: { weeks: 1 },
+    rules: { vetoCount: 0, chainOfSafety: true },
+    acquisition: { channel: 'production', secrecy: 'public' },
+    announcement: {
+      name: 'Chain of Safety',
+      reactions: 'dread',
+      rule: 'There will be no nomination ceremony this week. One of you will be made safe, and then YOU will choose who is safe next, and that person will choose after you — out loud, in this room, in front of everybody you do not choose. When three of you are left, those three will compete. One will win safety. The other two are nominated, and there is no veto to take them down.',
+      sting: 'Nobody is going to put you on that block. Everybody is just going to keep choosing somebody else.',
+    },
+  },
+  // Fills a chair rather than adding one: the block is the same size, the Head
+  // of Household simply gets one fewer name on it.
+  'bb-dead-last-nominee': {
+    id: 'bb-dead-last-nominee', layer: 'scheduled', category: 'week-structure',
+    timing: 'week', duration: { weeks: 1 },
+    rules: { deadLastNominee: true },
+    acquisition: { channel: 'production', secrecy: 'public' },
+    announcement: {
+      name: 'Dead Last Nominee',
+      reactions: 'dread',
+      rule: 'One of the two chairs at this week’s nomination ceremony has already been filled, and it will be filled by whoever finishes LAST in the Head of Household competition. Your Head of Household will only have one name to give. The other one you are going to give yourselves.',
+      sting: 'Nobody in this house gets to be bad at a competition for free this week.',
+    },
+  },
+  'bb-americas-eviction-vote': {
+    id: 'bb-americas-eviction-vote', layer: 'scheduled', category: 'week-structure',
+    timing: 'week', duration: { weeks: 1 },
+    rules: { audienceBallot: true },
+    acquisition: { channel: 'production', secrecy: 'public' },
+    announcement: {
+      name: "America's Eviction Vote",
+      reactions: 'dread',
+      rule: 'This week the audience votes with you. All week the public will be voting for which of the nominees they want to see walk out of that door, and on Thursday their vote will be read out alongside yours — in the same tally, worth the same as any one of you.',
+      sting: 'You cannot campaign to them. You cannot count them. And you have no idea what they think of you.',
+      // The generic dread opener has somebody joking about winning a
+      // competition. Nobody wins this one.
+      firstWord: '{who} breaks the silence first, and does it looking straight at a camera: "Hi. Please do not do this to me." Half the room laughs. The other half is working out how it has come across on television for six weeks.',
+    },
   },
   'bb-instant-eviction': {
     id: 'bb-instant-eviction', layer: 'scheduled', category: 'week-structure',

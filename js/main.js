@@ -4,6 +4,8 @@
 
 import * as core from './core.js';
 import * as playersMod from './players.js';
+import * as coachEpisodeMod from './coach-episode.js';
+import * as coachStatusMod from './coach-status-events.js';
 import * as alumniMod from './alumni.js';
 import * as bondsMod from './bonds.js';
 import * as alliancesMod from './alliances.js';
@@ -150,6 +152,7 @@ import * as runUiMod from './run-ui.js';
 import * as vpScreensMod from './vp-screens.js';
 import * as vpFinaleMod from './vp-finale.js';
 import * as vpUiMod from './vp-ui.js';
+import * as vpCoachesMod from './vp-coaches.js';
 import * as savestateMod from './savestate.js';
 import * as statsExportMod from './stats-export.js';
 import * as audioMod from './audio.js';
@@ -238,7 +241,7 @@ for (const name of functions) {
 
 // ── Expose extracted module functions on window ──
 const extractedModules = [
-  playersMod, alumniMod, bondsMod, alliancesMod, votingMod, adaptationMod, socialStatusMod, editLayerMod, ratingsMod, ratingsBackfillMod, vpKitMod,
+  playersMod, coachEpisodeMod, coachStatusMod, alumniMod, bondsMod, alliancesMod, votingMod, adaptationMod, socialStatusMod, editLayerMod, ratingsMod, ratingsBackfillMod, vpKitMod,
   advantagesMod, romanceMod, challengesCoreMod,
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, truthOrDareTrainMod, aMazeInGripMod, polesApartMod, tusksLaddersMod, tusksLaddersVpMod, killerClownMod, killerClownVpMod, bumperCarBashMod, bumperCarBashVpMod, sayCheeseMod, sayCheeseVpMod, wheelOfMisfortuneMod, wheelOfMisfortuneVpMod, rescueMissionMod, disadvantageVoteMod, paintballHuntMod, hellsKitchenMod,
@@ -246,7 +249,7 @@ const extractedModules = [
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, mineOverMatterMod, treasureIslandMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, hauntedHouseMod, hungOutMod, merryGoRoundMod, mazeOfTheFallenMod, demonsPlainerVpMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
   truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, iceIceBabyMod, findersCreepersMod, backstabbersAhoyMod, projectRunawayMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, auctionVpMod, settingsMod, themesMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
-  castUiMod, castRoomMod, studioMod, quickSetupMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, trMissionMod, trRecruitmentMod, trEndgameMod, trCastleDayMod, trSelectionMod, trSuspicionMod, trConfessionalsMod, trDebugMod, trRunMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
+  castUiMod, castRoomMod, studioMod, quickSetupMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, trMissionMod, trRecruitmentMod, trEndgameMod, trCastleDayMod, trSelectionMod, trSuspicionMod, trConfessionalsMod, trDebugMod, trRunMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod, vpCoachesMod,
   savestateMod,
   statsExportMod,
   audioMod,

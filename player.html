@@ -708,18 +708,17 @@ async function renderDebutProfile(id) {
 
   let age = null;
   if (rp && rp.birthdate && /^\d{4}-\d{2}-\d{2}$/.test(rp.birthdate)) {
-    const b = new Date(`${rp.birthdate}T00:00:00Z`), now = new Date();
-    let a = now.getUTCFullYear() - b.getUTCFullYear();
-    const m = now.getUTCMonth() - b.getUTCMonth();
-    if (m < 0 || (m === 0 && now.getUTCDate() < b.getUTCDate())) a--;
-    if (a >= 0 && a < 130) age = a;
+    // The FRANCHISE's present, not the real one. Time here advances because a
+    // season aired, not because a clock ran.
+    const a = ageNow(rp.birthdate);
+    if (a != null) age = a;
   }
   if (age == null && rp && Number(rp.age) > 0) age = Math.round(Number(rp.age));
 
   const facts = [
     ['Occupation', rp && rp.occupation], ['Hometown', rp && rp.hometown],
     ['Nationality', rp && rp.nationality], ['Ethnicity', rp && rp.ethnicity],
-    ['Age', age != null ? String(age) : ''], ['Also', rp && rp.descriptor],
+    ['Age', age != null ? String(age) : ''], ['Label', rp && rp.descriptor],
   ].filter(([, v]) => v);
 
   const inGame = lp && lp.status === 'in';
@@ -1654,11 +1653,9 @@ function renderPlayerProfile(fullPlayer) {
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     let age = null;
     if (rp.birthdate && /^\d{4}-\d{2}-\d{2}$/.test(rp.birthdate)) {
-      const b = new Date(`${rp.birthdate}T00:00:00Z`), now = new Date();
-      let a = now.getUTCFullYear() - b.getUTCFullYear();
-      const m = now.getUTCMonth() - b.getUTCMonth();
-      if (m < 0 || (m === 0 && now.getUTCDate() < b.getUTCDate())) a--;
-      if (a >= 0 && a < 130) age = a;
+      // The FRANCHISE's present, not the real one — same reason as above.
+      const a = ageNow(rp.birthdate);
+      if (a != null) age = a;
     }
     if (age == null && Number(rp.age) > 0) age = Math.round(Number(rp.age));
     const born = rp.birthdate
@@ -1671,7 +1668,7 @@ function renderPlayerProfile(fullPlayer) {
       ['Nationality', rp.nationality],
       ['Ethnicity', rp.ethnicity],
       ['Age', age != null ? (born ? `${age} <span style="opacity:.6">(born ${born})</span>` : String(age)) : ''],
-      ['Also', rp.descriptor],
+      ['Label', rp.descriptor],
     ].filter(([, v]) => v);
     if (!rows.length && !rp.backstory) return '';
     return `<div class="pp-bio">
@@ -3085,6 +3082,7 @@ document.addEventListener('keydown', e => {
   // of when you ask rather than of the player's own record.
   import { computeFame } from './js/fame.js';
   import { SHOWS } from './js/shows.js';
+  import { ageNow, setFranchiseNow } from './js/franchise-calendar.js';
   import { loadRankingBoards } from './js/ranking-boards.js';
   // The same engine franchise.html draws its per-show boards from, so the two
   // pages cannot come to disagree about somebody's record.
@@ -3122,6 +3120,9 @@ document.addEventListener('keydown', e => {
       // no Life section, the same way a character with no bio has no Biography.
       fetch('life_events.json').then(r => r.json()).catch(() => ({ events: [] })),
     ]);
+    // One clock. Everything that renders an age asks the calendar, and this is
+    // the moment the season list first exists on this page.
+    setFranchiseNow(seasonsDb.seasons || []);
     window.__voices = voices.profiles || {};
     window.__roster = roster;
     window.__seasonTitles = new Map([

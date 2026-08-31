@@ -44,6 +44,7 @@ import { installTwinTwist, twinState, repairTwinStats } from './bb/twin-twist.js
 import { installDuos } from './bb/duos.js';
 import { installRivals, rivalsState } from './bb/rivals.js';
 import { installTheme, reanchorThemeArc } from './bb/themes.js';
+import { resolveWeekTwistState } from './bb/twist-contract.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
 export { BB_POWER_DEFINITIONS } from './bb/powers.js';
@@ -130,12 +131,22 @@ export function houseStructure(config = {}, castSize = 0) {
   // projection than it does in play.
   const twoAtOnce = (config.twistSchedule || [])
     .filter(t => t && (t.type === 'bb-double-eviction' || t.type === 'bb-split-house'
-      || t.type === 'bb-duo-week'));
-  const doubles = twoAtOnce.length;
+      || t.type === 'bb-duo-week' || t.type === 'bb-triple-eviction'));
+  // Counted by how many people the night removes BEYOND the ordinary one, so a
+  // triple saves the calendar two weeks and a double one. Counting nights
+  // rather than evictions had the projection run a season a week long.
+  const doubles = twoAtOnce
+    .reduce((n, t) => n + (t.type === 'bb-triple-eviction' ? 2 : 1), 0);
   const splits = twoAtOnce.filter(t => t.type === 'bb-split-house').length;
   const weeks = Math.max(0, evictions - Math.min(doubles, Math.max(0, evictions - 1)));
-  const doubleLabel = doubles
-    ? ` (${doubles} double${splits ? `, ${splits} of them a split` : ''})` : '';
+  // NIGHTS, not evictions — `doubles` above is how many extra people leave,
+  // which is the right number for the calendar and the wrong one for a label
+  // that says "double".
+  const triples = twoAtOnce.filter(t => t.type === 'bb-triple-eviction').length;
+  const nights = twoAtOnce.length;
+  const doubleLabel = nights
+    ? ` (${nights} double${triples ? `, ${triples} of them a triple`
+      : splits ? `, ${splits} of them a split` : ''})` : '';
   segs.push({
     label: `${weeks} week${weeks === 1 ? '' : 's'}${doubleLabel}`,
     ok: weeks >= 1,
@@ -212,6 +223,15 @@ export function weekToEpisode(week) {
     // The alliance board as it stood this week — who is in what, how firmly,
     // and which member is the crack.
     allianceBoard: (week.allianceBoard || []).map(b => ({ ...b, members: (b.members || []).map(m => ({ ...m })) })),
+    // Groups that ENDED this week. Without this the panel simply stops drawing
+    // them and the viewer is left to work out on their own that a five-week
+    // alliance is over.
+    allianceDissolved: (week.allianceDissolved || []).map(d => ({ ...d, members: [...(d.members || [])] })),
+    // Members an alliance threw out on its own, from the shared trust decay.
+    allianceDepartures: (week.allianceDepartures || []).map(d => ({ ...d })),
+    // Couples that ended this week, so the panel can grey the row instead of
+    // simply not drawing it any more.
+    showmanceEnded: (week.showmanceEnded || []).map(d => ({ ...d, players: [...(d.players || [])] })),
     // The Battle of the Block's own fields. `botbStoodDown` records WHY a
     // scheduled battle did not happen, so a week that quietly ran as an
     // ordinary one can still say so on the debug screen instead of looking
@@ -940,6 +960,26 @@ export function simulateBBEpisode() {
   const deEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-double-eviction');
   const deStyle = deEntry?.deStyle || 'fast-forward';
+  // Which end of the chain the house starts from, authored on the scheduled
+  // entry the same way the double's style is: 'safety-comp' is BBCan10 (a
+  // competition crowns the first link) and 'hoh' is BBCan11 (the reigning
+  // Head of Household starts it).
+  const chainEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-chain-of-safety');
+  const chainStart = chainEntry?.chainStart || 'safety-comp';
+  // How it ENDS: 'canada' stops at three and the house votes; 'quebec' runs the
+  // chain twice and the two people it forgot settle it in a duel.
+  const chainStyle = chainEntry?.chainStyle === 'quebec' ? 'quebec' : 'canada';
+  // The triple has shapes too, and they are different NIGHTS rather than
+  // different flavour:
+  //   'fast-forward'  BB22 — two compressed cycles after the ordinary week.
+  //   'double-vote'   Big Brother Canada — ONE live cycle with three nominees
+  //                   in which the two highest evict-getters both walk, so the
+  //                   night still removes three people in two cycles.
+  //   'chain'         the last cycle of the night is a Chain of Safety.
+  const teEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-triple-eviction');
+  const teStyle = teEntry?.teStyle || 'fast-forward';
   // The Battle Back's shape and its competition are both authored on the
   // scheduled instance, the same way Pandora's cargo and the double's style
   // are — so one season can run the BB18 gauntlet and the next the Showdown.
@@ -1024,6 +1064,12 @@ export function simulateBBEpisode() {
     appStoreShelf: ((seasonConfig.twistSchedule || [])
       .find(t => t && Number(t.episode) === epNum && t.type === 'bb-app-store')?.shelf) || undefined,
     doubleVote: twists.includes('bb-double-eviction') && deStyle === 'double-vote',
+    chainStart,
+    chainStyle,
+    // How many houseguests America's ballot is worth. One is BBOTT's rule and
+    // the default; the designer can lean on it harder.
+    avWeight: Number((seasonConfig.twistSchedule || [])
+      .find(t => t && Number(t.episode) === epNum && t.type === 'bb-americas-eviction-vote')?.avWeight) || 1,
     // Season modes that put a third houseguest on the block every week.
     safetyMode: seasonConfig.bbSafetyMode || 'off',
     safetyStopsAt: Number.isFinite(Number(seasonConfig.bbSafetyStopsAt))
@@ -1039,6 +1085,7 @@ export function simulateBBEpisode() {
   ep.instantEviction = twists.includes('bb-instant-eviction');
   ep.safetyMode = week.safetyMode || null;
   ep.safetyWinner = week.safetyWinner || null;
+  ep.chainDuel = week.chainDuel || null;
   ep.blockBeforeSafety = week.blockBeforeSafety ? [...week.blockBeforeSafety] : [];
   ep.departure = week.departure ? { ...week.departure } : null;
   ep.maintenanceErrors = [...(week.maintenanceErrors || [])];
@@ -1054,28 +1101,80 @@ export function simulateBBEpisode() {
     ep.alsoEliminated = week.secondEvicted;
     ep.doubleEvictionStyle = 'double-vote';
   }
-  // Held outside the block so the second evictee's interview can be written
+  // Held outside the block so a later evictee's interview can be written
   // against the cycle that actually removed them.
   let secondWeek = null;
-  if (twists.includes('bb-double-eviction') && deStyle !== 'double-vote'
-    && (gs.activePlayers || []).length > Math.max(4, houseFinaleSize())) {
+  // Every extra cycle's own week record, so each evictee is interviewed
+  // against the cycle that removed them rather than the first one.
+  const extraWeeks = [];
+  // ONE EXTRA CYCLE OR TWO, run by the same code.
+  //
+  // A triple eviction is not a different night from a double — it is the same
+  // compressed cycle staged one more time, which is exactly how the house ran
+  // it. Written as a loop rather than a second block, so the third cycle
+  // reaches the transcript, the viewing party and the stats through the paths
+  // the second one already proved, instead of being written and unreachable.
+  // Read off the CONTRACT, not off the twist id, so the number of cycles is
+  // stated in one place. A double-vote night removes two people from a single
+  // cycle, so it runs none of these.
+  let extraCycles = deStyle === 'double-vote' ? 0
+    : (resolveWeekTwistState(twists).rules.extraCycles || 0);
+  // Canada's triple gets there in ONE extra cycle, because that cycle takes
+  // two people. Counting it as two would evict four.
+  const tripleDoubleVote = twists.includes('bb-triple-eviction') && teStyle === 'double-vote';
+  if (tripleDoubleVote) extraCycles = 1;
+  for (let c = 0; c < extraCycles; c++) {
+    // Re-checked EVERY cycle, not once for the night. The house shrinks by one
+    // each time round, and a triple booked a week too late would otherwise run
+    // its third cycle into a house with nobody left to vote.
+    if ((gs.activePlayers || []).length <= Math.max(4, houseFinaleSize())) break;
+    const segment = c + 2;
     const second = simulateBBWeek({
       houseEvents: HOUSE_EVENTS,
       competitions: BB_COMPETITIONS,
       // The week-in-one runs the second cycle at FULL length — house life,
       // real campaigning — inside the same episode; the fast-forward keeps
-      // the live-hour compression.
-      compressed: deStyle !== 'week-in-one',
-      segment: 2,
+      // the live-hour compression. A triple is always the live hour: there is
+      // no room in one night for two unhurried weeks.
+      compressed: extraCycles > 1 ? true : (deStyle !== 'week-in-one'),
+      segment,
+      // THE SECOND CYCLE RUNS AS A CHAIN.
+      //
+      // Big Brother Canada staged its Chain of Safety as exactly this — the
+      // back half of a double eviction night — so booking it that way is a
+      // style on the double rather than a second twist to schedule. The
+      // compressed cycle already skips the veto; the chain also replaces the
+      // ceremony, which is the part that needs saying here.
+      // Canada's shape: three chairs and two of them empty by the end of it.
+      ...(tripleDoubleVote ? { doubleVote: true } : {}),
+      // The night's LAST cycle run as a chain. `runChainOfSafety` returns null
+      // in a house too small for one, and the cycle then plays as an ordinary
+      // fast-forward rather than half a twist.
+      ...((teStyle === 'chain' && c === extraCycles - 1) ? {
+        twists: ['bb-chain-of-safety'],
+        chainStart: teEntry?.chainStart || 'hoh',
+        // Which ENDING the chain uses, authored on the triple's own entry.
+        // Without this it silently ran Canada's every time and there was no
+        // way to ask for Québec's from inside a multi-cycle night.
+        chainStyle: teEntry?.chainStyle === 'quebec' ? 'quebec' : 'canada',
+      } : {}),
+      ...(deStyle === 'chain' ? {
+        twists: ['bb-chain-of-safety'],
+        // Authored on the DOUBLE's entry when it is booked that way; the
+        // standalone twist's entry is not on the schedule at all here.
+        chainStart: deEntry?.chainStart || chainEntry?.chainStart || 'hoh',
+        chainStyle: (deEntry?.chainStyle || chainEntry?.chainStyle) === 'quebec'
+          ? 'quebec' : 'canada',
+      } : {}),
       // A three-nominee season is a three-nominee season, including the half
       // of the night that runs live.
       safetyMode: seasonConfig.bbSafetyMode || 'off',
       safetyStopsAt: Number.isFinite(Number(seasonConfig.bbSafetyStopsAt))
         ? Number(seasonConfig.bbSafetyStopsAt) : undefined,
     });
-    // The second cycle's OWN vote work. Without these, the second half of the
-    // night rendered the FIRST cycle's alliance plans and commitments — a war
-    // room organizing against nominees who were already off the block.
+    // The cycle's OWN vote work. Without these, the later half of the night
+    // rendered the FIRST cycle's alliance plans and commitments — a war room
+    // organizing against nominees who were already off the block.
     const leanOp2 = second.voteOperation ? {
       majority: second.voteOperation.majority,
       plans: (second.voteOperation.plans || []).map(p => ({
@@ -1087,9 +1186,10 @@ export function simulateBBEpisode() {
       independents: (second.voteOperation.independents || []).map(v => ({ ...v })),
       moves: (second.voteOperation.moves || []).map(m => ({ ...m })),
     } : null;
-    ep.doubleEviction = {
+    const record = {
+      segment,
       voteOperation: leanOp2,
-      voteCommitments: (second.voteCommitments || []).map(c => ({ ...c })),
+      voteCommitments: (second.voteCommitments || []).map(c2 => ({ ...c2 })),
       votePlans: (second.votePlans || []).map(v => ({ ...v })),
       hoh: second.hoh,
       nominees: [...(second.finalNominees || [])],
@@ -1104,21 +1204,34 @@ export function simulateBBEpisode() {
         vetoSavedAll: [...(second.vetoSavedAll || [])],
       } : {}),
       evicted: second.evicted,
+      // A double-vote cycle removes TWO. Without this the second walk-out is
+      // simulated, taken out of the house, and then never recorded on the
+      // episode — which is how a night quietly evicts somebody the timeline,
+      // the transcript and the stats all still think is playing.
+      secondEvicted: second.secondEvicted || null,
+      doubleVote: !!second.doubleVote,
       votes: { ...(second.votes || {}) },
       houseAtStart: [...(second.houseAtStart || [])],
     };
-    ep.alsoEliminated = second.evicted;
-    ep.doubleEvictionStyle = deStyle;
-    ep.acts = [...(ep.acts || []), ...(second.acts || []).map(a => ({ ...a, segment: 2 }))];
+    ep.extraEvictions = [...(ep.extraEvictions || []), record];
+    // `doubleEviction` stays the FIRST extra cycle, because a dozen readers
+    // across three files already know that name and a double is still a double.
+    if (c === 0) {
+      ep.doubleEviction = record;
+      ep.alsoEliminated = second.evicted;
+      secondWeek = second;
+    }
+    ep.doubleEvictionStyle = extraCycles > 1 ? 'triple' : deStyle;
+    ep.acts = [...(ep.acts || []), ...(second.acts || []).map(a => ({ ...a, segment }))];
     ep.votingLog = [
       ...(ep.votingLog || []),
-      ...(second.ballots || []).map(b => ({ voter: b.voter, voted: b.evict, changed: !!b.changed, segment: 2 })),
+      ...(second.ballots || []).map(b => ({ voter: b.voter, voted: b.evict, changed: !!b.changed, segment })),
     ];
-    // Same as the main week below: the second cycle's bookend snapshots are
-    // never read back off the ledger.
+    // Same as the main week below: the cycle's bookend snapshots are never
+    // read back off the ledger.
     delete second.openingState;
     delete second.closingState;
-    secondWeek = second;
+    extraWeeks.push(second);
   }
   // The aftermath of a Big Brother week is one person, interviewed on the way
   // out, finding out what was actually happening around them.
@@ -1130,6 +1243,19 @@ export function simulateBBEpisode() {
   if (ep.alsoEliminated) {
     ep.secondEvictionInterview = generateBBEvictionInterview(
       ep, secondWeek || week, Math.random, ep.alsoEliminated);
+  }
+  // A triple sits a third person in the same chair. Same rule: interviewed
+  // against the cycle that took them out.
+  //
+  // On Canada's shape there is no third CYCLE — there is a second cycle that
+  // took two people — so the third chair belongs to that cycle's second
+  // walk-out, and it is interviewed against the week that removed them.
+  const thirdOut = (ep.extraEvictions || [])[1]?.evicted
+    || (ep.extraEvictions || [])[0]?.secondEvicted || null;
+  if (thirdOut) {
+    const against = (ep.extraEvictions || [])[1] ? extraWeeks[1] : extraWeeks[0];
+    ep.thirdEvictionInterview = generateBBEvictionInterview(
+      ep, against || week, Math.random, thirdOut);
   }
   carryGoodbyesToJury(ep, week.num);
   // The shared text backlog owns transcripts for both shows, so a Big Brother
@@ -1440,6 +1566,46 @@ export function summariseWeek(week) {
         if (act.punished?.length) {
           line(`  Punishments: ${act.punished.map(p => `${p.name} (${p.punishment})`).join(', ')}.`);
         }
+        break;
+      }
+      case 'chain-duel': {
+        line('');
+        line('THE DUEL');
+        line(`  ${(act.nominees || []).join(' v ')}`
+          + `${act.competition?.name ? ` — ${act.competition.name}` : ''}.`);
+        line(`  ${act.loser} is evicted. No vote.`);
+        break;
+      }
+      case 'chain-of-safety': {
+        line('');
+        line('THE CHAIN OF SAFETY');
+        line(act.variant === 'hoh'
+          ? `  ${act.starter} starts the chain as Head of Household. No ceremony, no veto.`
+          : `  ${act.starter} wins the first link. No ceremony, no veto.`);
+        (act.links || []).forEach((l, i) => line(`  ${i + 2}. ${l.chosen} — chosen by ${l.picker}`));
+        line(`  Chosen by nobody: ${(act.leftover || []).join(', ')}.`);
+        if (act.safetyWinner) line(`  ${act.safetyWinner} wins safety.`);
+        if ((act.nominees || []).length) line(`  Nominees: ${act.nominees.join(' and ')}.`);
+        break;
+      }
+      case 'dead-last': {
+        line('');
+        line('DEAD LAST');
+        line(`  ${act.nominee} finished ${act.place} of ${act.of}`
+          + `${act.competition ? ` in ${act.competition}` : ''} and is nominated for it.`);
+        if (act.threw) line(`  ${act.nominee} threw it.`);
+        break;
+      }
+      case 'americas-eviction-vote': {
+        line('');
+        line('THE PUBLIC VOTE');
+        if (act.closing) line(`  "${act.closing}"`);
+        const avOrder = act.reveal
+          || [...(act.tally || [])].sort((a, b) => (a.share || 0) - (b.share || 0));
+        avOrder.forEach(t => line(t.name === act.target
+          ? `  ${act.resultLine || `${t.name} — ${t.share}%.`}`
+          : `    ${t.name} — ${t.share}%.`));
+        if (act.weight > 1) line(`  Worth ${act.weight} ballots.`);
         break;
       }
       case 'safety-suite': {

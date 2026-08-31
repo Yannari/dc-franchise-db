@@ -130,7 +130,7 @@ Implement these first because together they exercise every important hook.
 | `bb-invisible-hoh` | Invisible HOH | scheduled | HOH result and nominations are hidden; knowledge and suspicion track guesses rather than granting omniscience. |
 | `bb-co-hoh` | Co-HOH | scheduled | Two winners divide or negotiate nomination authority; disagreement has a deterministic resolution rule. |
 | `bb-third-nominee` | Secret Third Nominee | scheduled/power | A holder anonymously adds a third nominee. Unlike arena modes, nobody automatically competes for safety. |
-| `bb-dead-last-nominee` | Dead Last Nominee | scheduled | Last place in the stated competition is automatically nominated beside the HOH's choices. |
+| `bb-dead-last-nominee` | Dead Last Nominee | scheduled | Last place in the stated competition is automatically nominated beside the HOH's choices. **BUILT 2026-08-25** — reserves a chair the way the curse does. |
 | `bb-hacker` | Hacker | scheduled/power | Anonymous winner may replace a nominee, choose a veto participant and cancel one eviction vote. Each option is recorded separately. |
 | `bb-veto-redraw` | Veto Player Redraw | scheduled/power | Discards selected veto players and performs a valid redraw. |
 | `bb-veto-replacement` | Veto Replacement | scheduled/power | An eligible non-player replaces one selected veto participant. |
@@ -149,13 +149,15 @@ of Veto](https://bigbrother.fandom.com/wiki/Secret_Power_of_Veto)
 
 | id | name | layer | mechanic |
 |---|---|---|---|
-| `bb-triple-eviction` | Triple Eviction | scheduled | Produces three evictions through a documented accelerated structure; never silently removes the bottom three vote-getters. |
+| `bb-triple-eviction` | Triple Eviction | scheduled | Produces three evictions through a documented accelerated structure; never silently removes the bottom three vote-getters. **BUILT 2026-08-25** — two fast-forward cycles, BB22 shape. |
 | `bb-split-house` | Split House | scheduled | Splits the cast into isolated groups, each with its own HOH, nominees, veto, campaigning and eviction. Cross-group communication is disabled. |
-| `bb-chain-of-safety` | Chain of Safety Eviction | scheduled | Players save one another sequentially; the final unsafe players compete or face an immediate vote according to the chosen variant. |
-| `bb-backwards-week` | Backwards Week | scheduled | House nominations occur first, veto resolves next, and the final HOH becomes the sole voter rather than selecting the original nominees. |
+| `bb-chain-of-safety` | Chain of Safety Eviction | scheduled | Players save one another sequentially; the final unsafe players compete or face an immediate vote according to the chosen variant. **BUILT 2026-08-25** — both BBCan variants + `deStyle: chain` on the double. |
+| `bb-backwards-week` | Backwards Week | scheduled | House nominations occur first, veto resolves next, and the final HOH becomes the sole voter rather than selecting the original nominees. **NOT BUILT — see below.** |
+
+> **Backwards Week is a restructure, not a flag.** The twist's premise is that no Head of Household exists until after the veto: the house nominates, the veto plays, and only then is an HOH crowned (excluding the outgoing HOH and both nominees) to cast the sole vote. `simulateBBWeek` reads `hoh` 125 times between crowning and the veto block, spread across ~14 independent subsystems — nomination pricing, broken promises, the crown usurp, the pawn ask, the Cloud, the Coin — each with its own idea of who is safe, who is blamed and who broke a promise. Running that half of the week with no HOH means giving all of them an answer, and the failure mode is wrong attribution: the house resenting somebody who made no decision. Do it as its own piece of work, by lifting the HOH-competition block into a function that can be called at either end of the week.
 | `bb-face-to-face-nominations` | Face-to-Face Nominations | scheduled | Nomination choices are made publicly in sequence, immediately changing relationships and knowledge. |
 | `bb-premiere-danger` | Premiere Danger / Hit the Road | scheduled | Opening competition or audience result creates an at-risk pool; safety rounds reduce it to the first nominees. |
-| `bb-americas-eviction-vote` | Audience Eviction Vote | scheduled | Configurable audience model replaces or supplements house ballots. Popularity drives probability, not certainty. |
+| `bb-americas-eviction-vote` | Audience Eviction Vote | scheduled | Configurable audience model replaces or supplements house ballots. Popularity drives probability, not certainty. **BUILT 2026-08-25** — BBOTT's extra ballot, on js/audience.js inverted. |
 
 Split House must truly isolate knowledge stores and event pools. Its historical
 version ran two simultaneous groups of five with separate HOHs and evictions.

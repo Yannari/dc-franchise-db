@@ -96,6 +96,19 @@ export const KINDS = [
     line: (n, w) => `${n} and ${w} separated.` },
   { key: 'divorced', track: 'relationship', sig: 'major', whom: true, stage: 'single',
     line: (n, w) => `${n} and ${w} divorced.` },
+  // ── WHAT BEING CAST DID TO SOMEBODY'S RELATIONSHIP ──
+  //
+  // A houseguest who walks in attached and starts a showmance has done a
+  // specific thing, and the log had no word for it. The relationship simply
+  // became likelier to end, and then ended as "quietly stopped seeing each
+  // other" — the most public infidelity in the format, recorded as a shrug.
+  //
+  // `stage` is deliberately absent. Being unfaithful is not a relationship
+  // status: it does not move anybody to `single` on its own, because the
+  // break-up that usually follows is its own row and sometimes does not come
+  // at all. This is the reason; the next row is the consequence.
+  { key: 'cheated', track: 'relationship', sig: 'major', whom: true,
+    line: (n, w) => `${n} was unfaithful to ${w} on the show.` },
   // A breakup is not a divorce and the page must not say it is.
   { key: 'broke-up', track: 'relationship', sig: 'notable', whom: true, stage: 'single',
     line: (n, w) => `${n} and ${w} broke up.` },

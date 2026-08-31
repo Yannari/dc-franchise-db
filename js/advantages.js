@@ -8,6 +8,7 @@ import { assessIdolExposure } from './advantage-intel.js';
 import { reputationModifier } from './reputation.js';
 import { getIntentions, intendsToProtect } from './intentions.js';
 import { META_WEIGHTS } from './franchise-meta.js';
+import { coachCanFind, coachesOf, coachRecord, isCoach } from './coaches.js';
 
 export function handleAdvantageInheritance(eliminatedName, ep) {
   if (!eliminatedName || !gs.advantages?.length) return;
@@ -58,7 +59,15 @@ export function findAdvantages(ep) {
       const maxIdols = cfg.advantages.idol.count || 2;
       if (currentIdolCount >= maxIdols) return;
 
-      const shuffled = [...tribe.members].sort(() => Math.random() - 0.5);
+      // A coach cannot compete for the idol slot the way a contestant does —
+      // there is no challenge leg or camp search assigned to them — but they
+      // are still a body at camp who can stumble onto a hidden idol. Coaches
+      // are pulled in from `coachesOf`, never from `gs.activePlayers`: they
+      // must never enter that list before promotion. Skipped on the merge
+      // slot because every coach is already promoted (or gone) by then.
+      const _tribeCoaches = isMergeSlot || !coachCanFind('idol', 'camp')
+        ? [] : coachesOf(tribe.name).map(c => c.name);
+      const shuffled = [...tribe.members, ..._tribeCoaches].sort(() => Math.random() - 0.5);
       for (const name of shuffled) {
         const s = pStats(name);
         // ep1: ~0.6% per player → ~3.5% tribe (6p). ep5: ~1.4% → ~8%. Idols typically ep 4–7.
@@ -128,7 +137,17 @@ export function findAdvantages(ep) {
     if (typeCfg.oncePer === 'season' && (gs.advantagesFoundThisSeason?.[key] || 0) >= max) return;
     if (typeCfg.oncePer === 'phase' && (gs.advantagesFoundThisPhase?.[key] || 0) >= max) return;
 
-    const pool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer && !_advFoundThisEp.has(p)).sort(() => Math.random() - 0.5);
+    // `gs.activePlayers` excludes coaches, so every non-idol advantage was
+    // unreachable to them — which is why the coach-findable powers the design
+    // asked for never worked. They join the pool only for the types a season
+    // has allowed them, and only from camp: there is no journey, auction or
+    // exile leg assigned to a coach.
+    const _findingCoaches = gs.isMerged ? [] : (gs.coaches || [])
+      .filter(c => !c.promoted && coachCanFind(key, 'camp'))
+      .map(c => c.name);
+    const pool = [...gs.activePlayers, ..._findingCoaches]
+      .filter(p => p !== gs.exileDuelPlayer && !_advFoundThisEp.has(p))
+      .sort(() => Math.random() - 0.5);
     for (const name of pool) {
       const s = pStats(name);
       const epScale = Math.min(ep.num * 0.001, epScaleCap);
@@ -259,7 +278,12 @@ export function findAdvantages(ep) {
 }
 
 export function checkIdolPreTribal(ep, tribalPlayers) {
-  const holdersAtTribal = gs.advantages.filter(a => a.type === 'idol' && tribalPlayers.includes(a.holder));
+  // ONE LAW: a coach never plays a self-directed advantage. `tribalPlayers`
+  // is drawn from `gs.activePlayers` so an un-promoted coach is never in it
+  // anyway — this is the belt on top of that suspenders, so the rule holds
+  // even if a caller ever seeds `tribalPlayers` incorrectly.
+  const holdersAtTribal = gs.advantages.filter(a => a.type === 'idol' && tribalPlayers.includes(a.holder)
+    && (!isCoach(a.holder) || coachCanPlay('idol')));
   if (!holdersAtTribal.length) return;
   ep.idolShares = ep.idolShares || [];
   ep.idolFlushPlanted = ep.idolFlushPlanted || [];
@@ -413,7 +437,8 @@ export function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
 
   // ── KiP fires FIRST (before any idol plays) ──
   // KiP holder picks a target and asks "Do you have an idol?" — if they're wrong, KiP is wasted
-  const kip = gs.advantages.find(a => a.type === 'kip' && tribalPlayers.includes(a.holder));
+  const kip = gs.advantages.find(a => a.type === 'kip' && tribalPlayers.includes(a.holder)
+    && (!isCoach(a.holder) || coachCanPlay('kip')));
   if (kip) {
     const _kipHolder = kip.holder;
     const _kipS = pStats(_kipHolder);
@@ -488,7 +513,8 @@ export function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
   }
 
   // ── LEGACY ADVANTAGE: auto-activates when player count matches activatesAt ──
-  const _legacyAdvs = gs.advantages.filter(a => a.type === 'legacy' && tribalPlayers.includes(a.holder));
+  const _legacyAdvs = gs.advantages.filter(a => a.type === 'legacy' && tribalPlayers.includes(a.holder)
+    && (!isCoach(a.holder) || coachCanPlay('legacy')));
   _legacyAdvs.forEach(adv => {
     if (!adv.activatesAt?.includes(gs.activePlayers.length)) return;
     // Legacy fires — grants immunity like an idol
@@ -513,6 +539,10 @@ export function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     const idolIdx = gs.advantages.findIndex(a => a.holder === name && !a.superIdol && (a.type === 'idol' || (a.type === 'amulet' && a.amuletPower === 'idol')));
     if (idolIdx === -1) continue;
     const _idolAdv = gs.advantages[idolIdx];
+    // ONE LAW: idol/amulet-as-idol are self-directed, so a coach never plays
+    // one at their own tribal — inert in their hands, still holdable, and
+    // playable the moment they're promoted (at which point isCoach is false).
+    if (isCoach(name) && !coachCanPlay(_idolAdv.type)) continue;
 
     // ── FAKE IDOL CHECK — played at tribal, revealed as fake ──
     if (_idolAdv.fake) {
@@ -818,7 +848,8 @@ export function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = 
   const _svSkip = ep._soleVoteHolder || null;
 
   // ── Extra Vote ──
-  const _evAdvs = gs.advantages.filter(a => a.type === 'extraVote' && tribalPlayers.includes(a.holder));
+  const _evAdvs = gs.advantages.filter(a => a.type === 'extraVote' && tribalPlayers.includes(a.holder)
+    && (!isCoach(a.holder) || coachCanPlay('extraVote')));
   for (const _adv of _evAdvs) {
     const _holder = _adv.holder;
     if (_holder === _svSkip) continue; // sole vote makes extra vote redundant
@@ -873,7 +904,8 @@ export function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = 
   }
 
   // ── Vote Steal ──
-  const _vsAdvs = gs.advantages.filter(a => a.type === 'voteSteal' && tribalPlayers.includes(a.holder));
+  const _vsAdvs = gs.advantages.filter(a => a.type === 'voteSteal' && tribalPlayers.includes(a.holder)
+    && (!isCoach(a.holder) || coachCanPlay('voteSteal')));
   for (const _adv of _vsAdvs) {
     const _holder = _adv.holder;
     if (_holder === _svSkip) continue; // sole vote makes vote steal redundant
@@ -974,7 +1006,8 @@ export function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = 
   }
 
   // ── Vote Block: holder blocks one player's vote this tribal ──
-  const _vbAdvs = gs.advantages.filter(a => a.type === 'voteBlock' && tribalPlayers.includes(a.holder));
+  const _vbAdvs = gs.advantages.filter(a => a.type === 'voteBlock' && tribalPlayers.includes(a.holder)
+    && (!isCoach(a.holder) || coachCanPlay('vote-stopper')));
   for (const _vbAdv of _vbAdvs) {
     const _vbHolder = _vbAdv.holder;
     const _vbS = pStats(_vbHolder);
@@ -1022,7 +1055,8 @@ export function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = 
   }
 
   // ── Sole Vote: holder casts the ONLY vote — all others silenced ──
-  const _svAdvs = gs.advantages.filter(a => a.type === 'soleVote' && tribalPlayers.includes(a.holder));
+  const _svAdvs = gs.advantages.filter(a => a.type === 'soleVote' && tribalPlayers.includes(a.holder)
+    && (!isCoach(a.holder) || coachCanPlay('sole-vote')));
   for (const _svAdv of _svAdvs) {
     const _svHolder = _svAdv.holder;
     const _svS = pStats(_svHolder);
@@ -1167,5 +1201,50 @@ export function pickNomineeWithDrama(pool, weightFn) {
   }
 
   return { nominee, dramaEvent };
+}
+
+/**
+ * ONE LAW: a coach's power always has a target other than the coach.
+ *
+ * No list is needed for the usual cases — anything self-directed is inert —
+ * but two are named explicitly. Vote Stopper targets somebody else and is
+ * still refused, because "coaches never touch the ballot" is a cleaner promise
+ * than the targeting rule and a hidden hand in a pre-merge vote makes the vote
+ * unreadable.
+ */
+// Real advantage types only. This set previously named 'team-switch', 'loan'
+// and 'second-opinion' — none of which are ever created anywhere, and the
+// catalog's key is `teamSwap`, so even the first would never have matched. A
+// permission list naming three things that do not exist grants nothing; the
+// two real entries were carrying the whole rule by themselves.
+const COACH_PLAYABLE = new Set(['kip', 'fake-idol', 'teamSwap']);
+
+export function coachCanPlay(type) {
+  return COACH_PLAYABLE.has(type);
+}
+
+/**
+ * Hand an advantage to a contestant.
+ *
+ * This used to cost the coach their save card, and that never made sense: the
+ * card is a life-or-death consensus between the coaches of a tribe, and
+ * pricing an idol transfer in it linked two mechanics that have nothing to do
+ * with each other. It also made the transfer nearly impossible — the card is
+ * usually the only thing keeping the coach alive, so nobody would ever pay it,
+ * and the "coaches can arm their protégés" rule was dead on arrival.
+ *
+ * The cost of giving an advantage away is giving the advantage away. A coach
+ * loses a thing they found, permanently, to a player who will use it in a game
+ * the coach is not yet allowed to win. `givenBy` records where it came from so
+ * the debt is legible to everything downstream.
+ */
+export function giveAdvantage(coachName, contestant, advantage) {
+  const record = coachRecord(coachName);
+  if (!record) return false;
+  if (!advantage || advantage.holder !== coachName) return false;
+  advantage.holder = contestant;
+  advantage.givenBy = coachName;
+  advantage.givenEp = gs.episode || 0;
+  return true;
 }
 

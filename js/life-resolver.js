@@ -81,6 +81,34 @@ const ADVANCE_KIND = {
 };
 
 /**
+ * The rung a couple lands on when they take the stairs two at a time.
+ *
+ * ── WHY SKIPPING EXISTS ──
+ *
+ * The ladder had six rungs and every one of them cost an off-season, so
+ * reaching a wedding took roughly twenty-three of them and about three per
+ * cent of relationships involving somebody who was cast ever got there. The
+ * franchise had produced no weddings at all, which is not a rare outcome of
+ * those numbers — it is the expected one.
+ *
+ * Raising every rate would have kept the same march and just sped it up.
+ * Real couples do not march: they move in without ever having "gone public",
+ * or get engaged straight off living together. So a couple with momentum
+ * skips a rung instead, which shortens the climb without making any single
+ * step cheap, and leaves the RARITY where it belongs — in reaching the
+ * engagement rather than in the wedding that follows it.
+ *
+ * Nothing skips INTO a wedding. Getting married is always its own decision.
+ */
+const SKIP_KIND = {
+  dating: 'moved-in',        // straight past going public
+  public: 'engaged',         // engaged without ever living together
+  'living-together': 'engaged',
+};
+/** How often a couple with momentum takes two rungs at once. */
+const SKIP_CHANCE = 0.22;
+
+/**
  * Everything tunable, in one table.
  *
  * Read as "chance per off-season". Tune against played output — the comment at
@@ -109,8 +137,30 @@ export const RATES = {
     showmance: 0.75,
     dating: 0.34,
     public: 0.22,
-    'living-together': 0.14,
-    engaged: 0.40,
+    // THE TWO SLOWEST RUNGS, AND THE BOTTLENECK.
+    //
+    // At 0.14 a couple spent about seven off-seasons living together before
+    // anybody proposed, which is most of a franchise. Between that and the six
+    // rungs of the ladder, reaching a wedding took roughly twenty-three
+    // off-seasons and about three per cent of relationships involving somebody
+    // who had been cast ever got there — so the franchise had produced no
+    // weddings at all, which was the expected result rather than bad luck.
+    //
+    // Raised alongside the rung-skipping above. `engaged` is raised furthest
+    // on purpose and it is what the note at the top of this block already
+    // said: people who get engaged usually do marry, so the rarity belongs in
+    // reaching the engagement, not in the wedding after it.
+    //
+    // Measured against the resolver itself, not against a model of it, and
+    // TUNED DOWN twice after measuring: the first pass put the calmest run at
+    // 43% and the second at 34%, and life-resolver.test.js already holds a
+    // ceiling of 30% for exactly this — "it reads like a soap". Every couple
+    // who is never cast again counts as having momentum, so the rung-skipping
+    // reaches far more of the franchise than the cast-once case it was aimed
+    // at. Divorce is untouched and stays rare, which is correct: marriages
+    // mostly last.
+    'living-together': 0.17,
+    engaged: 0.44,
   },
   // Ending it. `quietly-ended` and `broke-up` for the unmarried, `separated`
   // then `divorced` for the married — a breakup is not a divorce.
@@ -291,7 +341,7 @@ export function fameOf(career) {
  *           correct: the resolver should not invent a couple out of nothing.
  */
 export function resolveOffSeason({
-  season, careers = [], events = [], cast = [], pairs = [], seedSalt = '',
+  season, careers = [], events = [], cast = [], pairs = [], brokenPairs = [], seedSalt = '',
   // Who knows whom. Built once by the caller and passed in, since it is the
   // same for every player in one resolution.
   graph = null,
@@ -316,6 +366,17 @@ export function resolveOffSeason({
     const p = pairs.find(x => x[0] === slug || x[1] === slug);
     return p ? (p[0] === slug ? p[1] : p[0]) : null;
   };
+  // Couples who walked out of this season together. They are the ones allowed
+  // to take the stairs two at a time — see SKIP_KIND.
+  //
+  // The key is built inline rather than through `pairKey`, which is declared
+  // forty lines below this and would be in its temporal dead zone here.
+  const fromSeasonPair = new Set(pairs.map(x => [x[0], x[1]].sort().join('|')));
+  // Couples the audience watched break up. `pairs` deliberately excludes them,
+  // which is right for proposing NEW couples and wrong for the ones who were
+  // already together: without this the off-season rolled the ordinary odds on
+  // a relationship the season had already ended on screen.
+  const endedOnScreen = new Set((brokenPairs || []).map(x => [x[0], x[1]].sort().join('|')));
   // Handled once per couple: a relationship is ONE event, so resolving it from
   // both sides would either duplicate it or, worse, move it two stages.
   const settled = new Set();
@@ -502,17 +563,51 @@ export function resolveOffSeason({
       const strain = aIn && bIn ? RATES.test.castTogether
         : (aIn || bIn) ? RATES.test.castAlone
         : RATES.test.neitherCast;
-      const endChance = (RATES.end[stage] || 0) * strain;
+      let endChance = (RATES.end[stage] || 0) * strain;
 
-      if (r() < endChance) {
+      // ── THEY WALKED IN ATTACHED AND STARTED SOMETHING ANYWAY ──
+      //
+      // The simulator already records this: a showmance carries `overlapping`
+      // when either side had somebody at home. Nothing has ever read it, so
+      // the most public infidelity the format can produce resolved as the
+      // relationship quietly becoming likelier to end, and then ending with no
+      // reason attached to it.
+      //
+      // Derived here from the two things the resolver already holds — who they
+      // were with walking in, and who they had a showmance with — rather than
+      // from the flag, so it works on seasons exported before the flag existed.
+      const inHouseWith = pairFor(slug);
+      const strayed = inHouseWith && inHouseWith !== partner;
+      if (strayed) {
+        emit(slug, 'cheated', { whom: partner });
+        // It does not automatically end it. People forgive this, and a
+        // relationship that survives it is a better story than one that never
+        // had to — but it is now the likeliest thing in this couple's year.
+        endChance = Math.max(endChance, 0.72);
+      }
+
+      // What the audience watched is not a probability. If this couple's
+      // showmance ended on screen this season, the relationship ended; the only
+      // thing left to decide is what it is called.
+      const brokeOnScreen = endedOnScreen.has(pairKey(slug, partner));
+      if (brokeOnScreen || r() < endChance) {
         // A marriage separates before it divorces; anything else just ends, and
         // how loudly depends on how public it was.
         const kind = stage === 'married' ? 'separated'
           : stage === 'engaged' || stage === 'living-together' ? 'broke-up'
-          : (r() < 0.5 ? 'quietly-ended' : 'broke-up');
+          // Nothing that follows an affair "quietly ended", and nothing that
+          // happened in front of a camera crew did either. The row above says
+          // what happened; this one must not contradict it by shrugging.
+          : (!strayed && !brokeOnScreen && r() < 0.5) ? 'quietly-ended' : 'broke-up';
         emit(slug, kind, { whom: partner });
       } else if (r() < (RATES.advance[stage] || 0)) {
-        const kind = ADVANCE_KIND[stage];
+        // A couple that came out of a season together, or has already been
+        // through one apart and survived it, has momentum. They are the ones
+        // who skip a rung.
+        const momentum = fromSeasonPair.has(pairKey(slug, partner)) || !(aIn || bIn);
+        const skip = momentum && SKIP_KIND[stage] && r() < SKIP_CHANCE
+          ? SKIP_KIND[stage] : null;
+        const kind = skip || ADVANCE_KIND[stage];
         if (kind) emit(slug, kind, { whom: partner });
       } else if (['living-together', 'engaged', 'married'].includes(stage)
         && r() < RATES.birth) {

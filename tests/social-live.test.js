@@ -79,7 +79,13 @@ describe('bringing the feed up to date', () => {
     // for seasons begun after it shipped.
     const gs = playedHouse();
     const { built, posts } = ensureFeeds(gs, bb);
-    expect(built).toHaveLength(season.weeks.length);
+    // ONE FEED PER NIGHT, not per week RECORD. Big Brother 1 ran a double
+    // eviction in week 13, and two week records for one night is correct and
+    // deliberate — the stats, the jury and the comp history all need to see two
+    // Heads of Household. The audience saw one episode, so the feed builds
+    // sixteen for seventeen rows, and counting rows called that a missing week.
+    const nights = new Set(season.weeks.map(w => w.week));
+    expect(built).toHaveLength(nights.size);
     expect(posts).toBeGreaterThan(1000);
   });
 });
@@ -123,8 +129,16 @@ describe('what the audience reacts to', () => {
   });
 
   it('uses the real popularity the simulator has been writing all along', () => {
+    // ON A WEEK WITH PEOPLE IN IT. This read `weeks[0]`, and Big Brother 1
+    // opened on a no-eviction premiere with no Head of Household either — so
+    // the map it built was `{ x: -100, undefined: 100 }`, naming nobody who
+    // exists. The crowd was therefore identical to the untouched one and the
+    // engagement matched to the point, which the test read as popularity not
+    // reaching the page.
+    const ran = season.weeks.find(w => w.evicted && w.hoh);
+    expect(ran, 'no week of this season ran a full cycle').toBeTruthy();
     const hated = playedHouse(2);
-    hated.popularity = { [season.weeks[0].evicted || 'x']: -100, [season.weeks[0].hoh]: 100 };
+    hated.popularity = { [ran.evicted]: -100, [ran.hoh]: 100 };
     ensureFeeds(hated, bb);
     const plain = playedHouse(2);
     ensureFeeds(plain, bb);

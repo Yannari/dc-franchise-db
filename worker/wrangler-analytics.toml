@@ -30,3 +30,13 @@
 name = "dc-analytics"
 main = "worker-episode-live.js"
 compatibility_date = "2024-11-01"
+
+# Which provider the two short structured modes (wiki-profile, continuity-read)
+# ask first. Every other creative path in this worker prefers Claude; these two
+# do not, because the Anthropic key here is unfunded and returns "credit
+# balance is too low" — which made both features dead rather than degraded.
+#
+# Set this to "anthropic" the day that key has credit. One line, no code change,
+# and the other provider stays as the fallback either way.
+[vars]
+PREFER_MODEL = "openai"

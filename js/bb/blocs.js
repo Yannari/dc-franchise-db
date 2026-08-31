@@ -38,7 +38,28 @@ import { pStats } from '../players.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-const live = () => (gs.activePlayers || []).filter(Boolean);
+// ── WHO COUNTS AS IN THE HOUSE, FOR ONE CALCULATION ──
+//
+// Everything here reads the live roster, which is correct all season and
+// wrong at exactly one moment: the alliance board is snapshotted AFTER the
+// eviction has been applied, so the person who just left is missing from
+// every bloc — and the House Life panels that draw that board play BEFORE
+// the vote. The result was that one face in the alliance rows had no number
+// under it, every week, and it was always the person about to go home.
+//
+// `withRoster` lets a caller compute the board over the house as it stood
+// during the week. The cache is keyed off house state, so it is dropped on
+// the way in and on the way out rather than serving an overridden answer to
+// somebody who did not ask for one.
+let _rosterOverride = null;
+const live = () => _rosterOverride || (gs.activePlayers || []).filter(Boolean);
+
+export function withRoster(names, fn) {
+  const prev = _rosterOverride;
+  _rosterOverride = Array.isArray(names) && names.length ? [...new Set(names.filter(Boolean))] : prev;
+  _cache = {};
+  try { return fn(); } finally { _rosterOverride = prev; _cache = {}; }
+}
 const archetypeOf = name => players.find(p => p.name === name)?.archetype || '';
 
 function ensure() {
@@ -193,25 +214,125 @@ export function memberLoyalty(name, bloc) {
   const stat = pStats(name).loyalty ?? 5;
   const outsiders = live().filter(n => n !== name && !bloc.members.includes(n));
   const outward = outsiders.length ? Math.max(...outsiders.map(n => getBond(name, n))) : -10;
-  const elsewhere = blocsWith(name)
-    .filter(b => b.id !== bloc.id)
-    .reduce((sum, b) => sum + b.power, 0);
+  // ── A COMPETING HOME IS A COMPARISON, NOT A HEADCOUNT ──
+  //
+  // This summed the ABSOLUTE power of every other bloc and subtracted 0.16 of
+  // it from a score capped at 1.0. But `power` is `share x cohesion x size` —
+  // a six in a house of twelve is about 1.8, and it climbs as the house
+  // shrinks — so the term was never on the scale the coefficient was written
+  // for. Measured over eight seasons: with no other bloc the mean reading is
+  // 7.2 and nobody sits at zero; with three, the mean is 0.6 and 75% of
+  // members read exactly 0.0; with four, all of them do. Being in more rooms
+  // zeroed you even when THIS was the strongest room you were in — and 0.0 is
+  // documented above as somebody already gone in everything but the
+  // announcement, which is not what a well-connected houseguest is.
+  //
+  // The reason string this function prints has always said "has a second home
+  // that is doing better than this one". That is the right idea and the code
+  // never did it. It does now: the strongest rival home, measured against this
+  // one, so a member of the best bloc in the house is not punished for also
+  // being in a weak side deal.
+  const rivals = blocsWith(name).filter(b => b.id !== bloc.id);
+  const here = Number(bloc?.power) || 0;
+  const rival = rivals.length ? Math.max(...rivals.map(b => Number(b.power) || 0)) : 0;
+  // Unmeasured bloc (no power on it) — there is nothing to compare against, so
+  // the term stays out rather than dividing by a fallback and inventing one.
+  const elsewhere = here > 0 ? clamp((rival - here) / Math.max(here, 0.5), 0, 1) : 0;
+  // Belonging to several rooms still dilutes a little, because attention is
+  // finite — but it is worth a few tenths, not the whole reading.
+  const spread = Math.min(0.12, Math.max(0, rivals.length - 1) * 0.05);
 
   // A better relationship outside only counts for the amount it BEATS the
   // group by — a well-liked houseguest with friends everywhere is not
   // disloyal, they are just popular.
   const pullAway = Math.max(0, outward - inward);
 
+  // ── THE ONE THING THIS GROUP CAN DO TO YOU, WHICH THE MEAN CANNOT SEE ──
+  //
+  // `inward` averages your bonds with everybody else in the room, and the most
+  // important event that can happen inside an alliance lands on exactly ONE of
+  // those bonds: the Head of Household you are sworn to puts you on the block.
+  // Measured over 14 seasons, the reading of the person who was put up moved
+  // by a mean of -0.06 across the week it happened, and in a seven-strong
+  // alliance it went UP as often as down — because a -1.4 hit on one pair
+  // moves the mean of six by -0.23, which this score multiplies by 0.045 and
+  // turns into a tenth of a point. The bigger the group, the more completely
+  // the betrayal disappears into the average.
+  //
+  // So it is read as an event, from the ledger the ceremony writes, and it
+  // fades over two weeks the way the house's own grievances do. Being the
+  // TARGET is most of it; a pawn is a smaller thing and an ASKED pawn never
+  // reaches the ledger at all, because that conversation was consensual.
+  const _board = (gs.namedAlliances || []).find(a => a.name === (bloc?.label || bloc?.name));
+  const _now = Math.max(0, ...((gs.bb?.weeks || []).map(w => Number(w?.num) || 0)));
+  // ── AND WHOSE NUMBER MOVES DEPENDS ON WHETHER THE GROUP AGREED ──
+  //
+  // Two different weeks were being priced identically. If the rest of the
+  // alliance also wanted this person gone, the Head of Household carried out
+  // the group's decision: the one in the chair has been sold out by everybody
+  // and takes all of it, while the person who said it out loud was doing the
+  // job. If nobody else was pointed at them, the same act is somebody spending
+  // the alliance's week on the alliance's own member without asking — and then
+  // it is the NOMINATOR who is standing outside the group, and the nominee
+  // still has four people who did not agree to it.
+  const putUp = (_board?.history || []).reduce((worst, h) => {
+    if (h?.type !== 'nominated-own') return worst;
+    const isVictim = h.victim === name;
+    const wentRogue = h.consented === false && h.player === name;
+    if (!isVictim && !wentRogue) return worst;
+    // A week is only appended to gs.bb.weeks once it is over, so an entry
+    // written during the week in progress reads as one week in the FUTURE.
+    // Guarding that out meant the drop never appeared on the screens inside
+    // the week it happened, which is precisely where a viewer looks for it.
+    const age = Math.max(0, _now - (Number(h.week) || 0));
+    if (age > 2) return worst;
+    const fade = age === 0 ? 1 : age === 1 ? 0.55 : 0.25;
+    // Never asking is careless. Asking, being told no, and doing it anyway is
+    // a decision about the people who said no — and the group prices those
+    // very differently.
+    const overruled = h.stance === 'overruled';
+    const size = isVictim
+      ? (h.target ? 0.24 : 0.11) * (h.consented === false ? 0.6 : 1)
+      : (h.target ? 0.20 : 0.09) * (overruled ? 1.35 : 0.8);
+    return Math.max(worst, size * fade);
+  }, 0);
+
+  // ── STILL ON THE LIST, GONE IN EVERY OTHER SENSE ──
+  //
+  // Somebody who decided to stay sworn to a group precisely so they can take
+  // the shot from inside it is exactly what 0 means at the top of this file:
+  // already gone in everything but the announcement. The membership list
+  // cannot show it — that is the entire point of doing it this way — so the
+  // number under the face is the only place a viewer can see it at all.
+  const _hidden = (_board?.hidden || []).some(h => h?.player === name);
+
   const score = clamp(
     0.42
+    - (_hidden ? 0.5 : 0)
     + inward * 0.045
     + stat * 0.030
     - pullAway * 0.035
-    - elsewhere * 0.16,
+    - elsewhere * 0.30
+    - spread
+    - putUp,
     0, 1);
 
   // Whichever term is doing the most work, said in words.
-  const reason = elsewhere > 0.5
+  const _rogue = (_board?.history || []).some(h => h?.type === 'nominated-own'
+    && h.consented === false && h.player === name
+    && Math.max(0, _now - (Number(h.week) || 0)) <= 2);
+  const _overruled = (_board?.history || []).some(h => h?.type === 'nominated-own'
+    && h.stance === 'overruled' && h.player === name
+    && Math.max(0, _now - (Number(h.week) || 0)) <= 2);
+  const reason = _hidden
+    ? `is in this on paper and has already decided how it ends`
+    : _overruled
+      ? `was told no by this group and went ahead anyway`
+    : putUp > 0
+    ? (_rogue
+      ? `spent this group's week on one of its own without asking`
+      : `was put on the block by ${_board?.name || 'this group'}'s own Head of Household`)
+    : elsewhere > 0.3
     ? `has a second home that is doing better than this one`
     : pullAway > 3
       ? `is closer to somebody outside this than to anybody in it`

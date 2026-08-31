@@ -1,0 +1,334 @@
+// The save card is a deal between the coaches of ONE TEAM, not a poll of the
+// tribe. Contestants already had their say — at the vote. Every other coach on
+// that tribe has to agree, so refusing is the cheapest kill in the game: you
+// never need the numbers at tribal, you need one peer who would rather not.
+import { beforeEach, describe, expect, it } from 'vitest';
+import { gs, setGs, setPlayers } from '../js/core.js';
+import { addBond } from '../js/bonds.js';
+import { addCoach, coachRecord, tribeCardState } from '../js/coaches.js';
+import { commitSaveCards, maybeSaveCoach, offerSaveCard, predictedReplacement, saveCardVerdict } from '../js/coach-episode.js';
+
+const stats = (o = {}) => ({ physical:5,endurance:5,mental:5,social:5,strategic:5,
+  loyalty:5,boldness:5,intuition:5,temperament:5, ...o });
+
+const tribe = { name: 'Red', members: ['Evie', 'Finn'] };
+
+// Julia is on the block. Wayne is the peer who decides.
+function setup({ juliaArch = 'floater', wayneArch = 'hero', wayneStats = {} } = {}) {
+  setPlayers([
+    { name: 'Julia', archetype: juliaArch, stats: stats() },
+    { name: 'Wayne', archetype: wayneArch, stats: stats(wayneStats) },
+    { name: 'Evie', archetype: 'goat', stats: stats() },
+    { name: 'Finn', archetype: 'hero', stats: stats() },
+  ]);
+  setGs({ activePlayers: ['Evie', 'Finn'], coaches: [], coachTraining: {},
+    bonds: {}, namedAlliances: [], coachDeals: [], coachSaveLedger: [], coachCards: {},
+    tribes: [{ name: 'Red', members: ['Evie', 'Finn'] }], episode: 6 });
+  addCoach({ name: 'Julia', tribe: 'Red' });
+  addCoach({ name: 'Wayne', tribe: 'Red' });
+}
+
+describe('who gets a say', () => {
+  it('asks the other coach on the team, not the contestants', () => {
+    setup({ wayneArch: 'villain', wayneStats: { strategic: 10, loyalty: 1 } });
+    // The contestants adore her. It is not their card.
+    addBond('Julia', 'Evie', 10);
+    addBond('Julia', 'Finn', 10);
+    addBond('Julia', 'Wayne', -8);
+    const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
+    expect(out.played, 'a rival coach refusing must end it regardless of the tribe').toBe(false);
+    expect(out.reason).toBe('refused:Wayne');
+  });
+
+  // Unanimity means every peer signs. With no peers there is nobody to
+  // withhold a signature, so it carries vacuously. The rule was the other way
+  // round and the measurement killed it: coaches are voted out constantly, so
+  // "no peers, no card" meant the first coach boot disarmed the card for the
+  // rest of the season — a bloc named a coach 29 times across four seasons and
+  // 15 of those the coach was the last one on their tribe.
+  it('a lone coach plays it alone — there is nobody left to refuse', () => {
+    setup();
+    setGs({ ...gs, coaches: [], coachCards: {} });
+    addCoach({ name: 'Julia', tribe: 'Red' });
+    addBond('Julia', 'Finn', -4);
+    const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
+    expect(out.played, 'the last coach standing was left with no net at all').toBe(true);
+    expect(out.votes, 'nobody was asked, because there was nobody to ask').toEqual([]);
+    expect(out.replacement).toBe('Finn');
+  });
+
+  it('ignores a coach on a different team', () => {
+    setup({ wayneArch: 'villain', wayneStats: { strategic: 10, loyalty: 1 } });
+    coachRecord('Wayne').tribe = 'Blue';
+    const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
+    expect(out.votes, 'Blue’s coach was asked about Red’s card').toEqual([]);
+    expect(out.played, 'with no peer on her own tribe, it carries').toBe(true);
+  });
+});
+
+describe('the decision is strategic, and scales with who is making it', () => {
+  it('is easy for a friendly peer who runs with them', () => {
+    setup({ wayneArch: 'loyal-soldier', wayneStats: { loyalty: 9, strategic: 2 } });
+    addBond('Julia', 'Wayne', 7);
+    expect(saveCardVerdict('Wayne', 'Julia').consents).toBe(true);
+  });
+
+  it('is hard for a strategic peer who does not get on with them', () => {
+    setup({ wayneArch: 'mastermind', wayneStats: { strategic: 9, loyalty: 2 } });
+    addBond('Julia', 'Wayne', -5);
+    const v = saveCardVerdict('Wayne', 'Julia');
+    expect(v.consents).toBe(false);
+    expect(v.reason).toBe('bad-blood');
+  });
+
+  it('an alliance between the two coaches moves the decision toward yes', () => {
+    setup({ wayneArch: 'floater', wayneStats: { strategic: 6, loyalty: 5 } });
+    const bare = saveCardVerdict('Wayne', 'Julia').score;
+    gs.namedAlliances = [{ active: true, members: ['Wayne', 'Julia'], name: 'The Staff' }];
+    expect(saveCardVerdict('Wayne', 'Julia').score).toBeGreaterThan(bare);
+  });
+
+  it('a peer whose colleague has built more of the tribe is likelier to let them go', () => {
+    setup({ wayneArch: 'floater', wayneStats: { strategic: 6, loyalty: 5 } });
+    const bare = saveCardVerdict('Wayne', 'Julia').score;
+    gs.coachTraining = { Julia: { Evie: { social: 1 }, Finn: { mental: 1 } }, Wayne: {} };
+    const rivalled = saveCardVerdict('Wayne', 'Julia');
+    expect(rivalled.score).toBeLessThan(bare);
+  });
+});
+
+describe('when it does fire', () => {
+  it('names a contestant to go instead, never another coach', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 8);
+    addBond('Julia', 'Evie', 6);
+    addBond('Julia', 'Finn', -2);   // the one she likes least pays
+    const ep = { num: 6 };
+    const out = offerSaveCard(ep, 'Julia', tribe);
+    expect(out.played).toBe(true);
+    expect(out.replacement).toBe('Finn');
+    expect(ep.coachSaves[0].coach).toBe('Julia');
+  });
+
+  it('cannot be played twice', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 8);
+    expect(offerSaveCard({ num: 6 }, 'Julia', tribe).played).toBe(true);
+    expect(offerSaveCard({ num: 7 }, 'Julia', tribe).reason).toBe('already-used');
+  });
+
+  it('records the refusal so the season can talk about it', () => {
+    setup({ wayneArch: 'villain', wayneStats: { strategic: 10, loyalty: 1 } });
+    addBond('Julia', 'Wayne', -9);
+    const ep = { num: 6 };
+    offerSaveCard(ep, 'Julia', tribe);
+    expect(ep.coachSaveRefusals[0].refusedBy).toBe('Wayne');
+    expect(ep.coachSaveRefusals[0].coach).toBe('Julia');
+  });
+});
+
+// The factor that makes it strategy rather than a popularity contest: the card
+// does not save a coach for free. It names a CONTESTANT to die instead, chosen
+// by the coach being saved — and that can be the protégé the peer has spent
+// the whole season building.
+describe('the price of signing', () => {
+  it('a peer refuses when the card would kill their own protégé', () => {
+    setup({ wayneArch: 'loyal-soldier', wayneStats: { loyalty: 9, strategic: 2 } });
+    addBond('Julia', 'Wayne', 6);                 // they get on fine
+    addBond('Julia', 'Finn', -9);                 // Finn is who Julia would name
+    addBond('Julia', 'Evie', 5);
+    const friendly = saveCardVerdict('Wayne', 'Julia');
+    expect(friendly.consents, 'a friendly peer with no stake signs').toBe(true);
+
+    gs.coachTraining = { Wayne: { Finn: { physical: 2 } } };   // Finn is Wayne's
+    const costly = saveCardVerdict('Wayne', 'Julia');
+    expect(costly.doomed).toBe('Finn');
+    expect(costly.costsMine).toBe(true);
+    expect(costly.score).toBeLessThan(friendly.score);
+  });
+
+  it('honours a live non-aggression pact and remembers a broken one', () => {
+    setup({ wayneArch: 'floater', wayneStats: { strategic: 6, loyalty: 5 } });
+    const bare = saveCardVerdict('Wayne', 'Julia').score;
+    gs.coachDeals = [{ players: ['Wayne', 'Julia'], type: 'non-aggression', active: true, broken: false }];
+    expect(saveCardVerdict('Wayne', 'Julia').score).toBeGreaterThan(bare);
+    gs.coachDeals = [{ players: ['Wayne', 'Julia'], type: 'non-aggression', active: false, broken: true }];
+    expect(saveCardVerdict('Wayne', 'Julia').score).toBeLessThan(bare);
+  });
+
+  it('repays a signature, and repays a refusal', () => {
+    setup({ wayneArch: 'floater', wayneStats: { strategic: 6, loyalty: 5 } });
+    const bare = saveCardVerdict('Wayne', 'Julia').score;
+    gs.coachSaveLedger = [{ signer: 'Julia', saved: 'Wayne', ep: 3 }];
+    expect(saveCardVerdict('Wayne', 'Julia').reason).toBe('debt');
+    gs.coachSaveLedger = [{ refuser: 'Julia', saved: 'Wayne', ep: 3 }];
+    const spurned = saveCardVerdict('Wayne', 'Julia');
+    expect(spurned.score).toBeLessThan(bare);
+    expect(spurned.reason).toBe('returning-the-favour');
+  });
+
+  it('names the same contestant the peers were shown when they agreed', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 8);
+    addBond('Julia', 'Finn', -4);
+    const shown = saveCardVerdict('Wayne', 'Julia').doomed;
+    const out = offerSaveCard({ num: 6 }, 'Julia', tribe);
+    expect(out.replacement, 'signing for one price and charging another').toBe(shown);
+  });
+});
+
+// Committed before the votes are read, like an idol — so it can be wasted,
+// which is the only reason holding one is a decision and the threat of one is
+// worth respecting.
+describe('the card is played, not triggered', () => {
+  it('is spent on commitment whether or not it was needed', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 8);
+    const ep = { num: 6 };
+    // Two blocs have named her, and she is bold and reads the room well.
+    setPlayers([{ name: 'Julia', archetype: 'floater', stats: stats({ intuition: 10, boldness: 10 }) },
+      ...['Wayne', 'Evie', 'Finn'].map(n => ({ name: n, archetype: 'hero', stats: stats() }))]);
+    const alliances = [{ members: ['Evie'], target: 'Julia' }, { members: ['Finn'], target: 'Julia' }];
+    commitSaveCards(ep, 'Red', alliances, () => 0);
+    expect(ep.coachCardCommits?.length, 'a coach staring at two blocs never reached for it').toBe(1);
+    expect(tribeCardState('Red'), 'the card must be gone the moment it is played').toBe('used');
+  });
+
+  it('never commits when no bloc has named them', () => {
+    setup();
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Finn' }], () => 0);
+    expect(ep.coachCardCommits).toBeUndefined();
+    expect(tribeCardState('Red')).toBe('unused');
+  });
+
+  it('cannot be reached for after the votes — an uncommitted coach goes home', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 9);
+    const ep = { num: 6 };
+    const result = { eliminated: 'Julia' };
+    expect(maybeSaveCoach(ep, result), 'the card fired without ever being played').toBe(false);
+    expect(result.eliminated).toBe('Julia');
+    expect(ep.coachCardNotPlayed[0].held, 'she went home holding it').toBe(true);
+  });
+
+  it('resolves a committed, signed card into a replacement', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 9);
+    addBond('Julia', 'Finn', -6);
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' },
+      { members: ['Finn'], target: 'Julia' }, { members: ['Wayne'], target: 'Julia' }], () => 0);
+    const result = { eliminated: 'Julia' };
+    expect(maybeSaveCoach(ep, result)).toBe(true);
+    expect(result.eliminated).toBe('Finn');
+  });
+});
+
+// The Millie case: a sole coach committed the card, an empty votes array read
+// as "not unanimous", and The Signatures reported a refusal from a person who
+// did not exist. The card now carries vacuously instead — nobody to ask means
+// nobody to refuse — but it must still actually commit and still be spent.
+describe('a coach with nobody to ask', () => {
+  it('commits the card and it carries, with no signatures to read', () => {
+    setup();
+    setGs({ ...gs, coaches: [], coachCards: {} });
+    addCoach({ name: 'Julia', tribe: 'Red' });
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [
+      { members: ['Evie'], target: 'Julia' },
+      { members: ['Finn'], target: 'Julia' },
+    ], () => 0);
+    expect(ep.coachCardCommits?.length, 'a lone coach could not reach for it at all').toBe(1);
+    expect(ep.coachCardCommits[0].signed,
+      'an empty signature list must read as unanimous, not as a refusal').toBe(true);
+    expect(ep.coachCardCommits[0].refusedBy).toBe(null);
+    expect(tribeCardState('Red'), 'played means spent').toBe('used');
+  });
+
+  it('still asks the peer when there is one', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 8);
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' }], () => 0);
+    expect(ep.coachCardCommits?.length).toBe(1);
+    expect(ep.coachCardCommits[0].votes.length, 'the peer has to actually be asked').toBe(1);
+  });
+});
+
+// A refused card was never played. Burning it on a refusal let a rival destroy
+// the staff's only card just by declining — on top of already killing the
+// coach who reached for it — and the camp panel then reported "spent" over a
+// card nobody had used.
+describe('a refusal does not consume the card', () => {
+  it('leaves the card on the tribe when a peer will not sign', () => {
+    setup({ wayneArch: 'villain', wayneStats: { strategic: 10, loyalty: 1 } });
+    addBond('Julia', 'Wayne', -9);
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [
+      { members: ['Evie'], target: 'Julia' },
+      { members: ['Finn'], target: 'Julia' },
+    ], () => 0);
+    expect(ep.coachCardCommits?.length, 'she never reached for it').toBe(1);
+    expect(ep.coachCardCommits[0].signed).toBe(false);
+    expect(tribeCardState('Red'),
+      'a rival destroyed the card by declining to sign it').toBe('unused');
+  });
+
+  it('still burns a card that carried but was not needed', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 9);
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' }], () => 0);
+    expect(ep.coachCardCommits[0].signed).toBe(true);
+    expect(tribeCardState('Red'),
+      'the idol risk is the whole reason it commits before the votes').toBe('used');
+  });
+});
+
+// THE CARD COVERS THE STAFF, NOT THE COACH WHO PLAYED IT. That is the whole
+// reason it needs every signature: each of them is protected by it, so each of
+// them gets a say in spending it.
+//
+// It was built to save only whoever reached for it, so a tribe could play the
+// card, have it signed unanimously — "the card is live for Caleb" — and then
+// watch Millie get voted out with a live card sitting in the staff's pocket.
+describe('the card covers every coach on the tribe', () => {
+  it('names the whole staff as covered, not just the coach who called for it', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 9);
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' }], () => 0);
+    const cm = ep.coachCardCommits?.[0];
+    expect(cm, 'nobody reached for it').toBeTruthy();
+    expect(cm.covers.sort()).toEqual(['Julia', 'Wayne']);
+    expect(cm.calledBy).toBe('Julia');
+  });
+
+  it('saves the OTHER coach when the votes go to them instead', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 9);
+    addBond('Wayne', 'Finn', -6);       // who Wayne would name
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' }], () => 0);
+    expect(ep.coachCardCommits[0].signed).toBe(true);
+
+    // Julia called for it. Wayne is the one the room actually sent home.
+    const result = { eliminated: 'Wayne' };
+    expect(maybeSaveCoach(ep, result),
+      'a live signed card sat in the pocket while the other coach went home').toBe(true);
+    expect(result.eliminated, 'the saved coach names their own replacement').toBe('Finn');
+    expect(ep.coachSaves[0].coach).toBe('Wayne');
+    expect(ep.coachSaves[0].calledBy).toBe('Julia');
+  });
+
+  it('is still spent only once, whichever of them it ends up saving', () => {
+    setup({ wayneArch: 'hero', wayneStats: { loyalty: 10, strategic: 1 } });
+    addBond('Julia', 'Wayne', 9);
+    const ep = { num: 6 };
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Julia' }], () => 0);
+    expect(tribeCardState('Red')).toBe('used');
+    commitSaveCards(ep, 'Red', [{ members: ['Evie'], target: 'Wayne' }], () => 0);
+    expect(ep.coachCardCommits.length, 'the staff played a card it no longer had').toBe(1);
+  });
+});

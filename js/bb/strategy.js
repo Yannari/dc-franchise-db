@@ -6,6 +6,7 @@ import { getBond, getPerceivedBond } from '../bonds.js';
 import { getRelationshipDimension, relationshipDecisionProfile, targetProtection } from '../relationships.js';
 import { bbAllianceStrength, bbHeat, bbThreat, getBBTarget } from './shared-strategy.js';
 import { housePlan } from './plans.js';
+import { strongestStrategicMemory } from '../strategy-memory.js';
 import { dealBetween, sincerityOf, tierOf } from './deals.js';
 import { believesDeal } from './knowledge.js';
 import { duoPartnerFor } from './duos.js';
@@ -63,7 +64,7 @@ export function nominationScore(hoh, candidate, rng = Math.random) {
   const revenge = Math.max(0, -(getBond(hoh, candidate) || 0));
   const heat = bbHeat(hoh, candidate);
   const threatAdjustment = heat.components.threat * (stats.strategic * 0.045 - 0.35);
-  const score = heat.total + threatAdjustment + revenge * 0.75
+  let score = heat.total + threatAdjustment + revenge * 0.75
     + nominationPlanPull(hoh, candidate) + duoNominationPull(hoh, candidate) + noise(rng, 1.6);
   // A promise about the end discounts EVERYTHING above, proportionally. This
   // used to be a flat additive pull inside the plan weight, which lost twice:
@@ -75,9 +76,44 @@ export function nominationScore(hoh, candidate, rng = Math.random) {
   // kept promise cancels about half of it. Insincere deals barely register.
   const deal = dealBetween(hoh, candidate);
   if (deal && score > 0) {
-    return score * (1 - (tierOf(deal) === 'final-two' ? 0.55 : 0.35) * sincerityOf(deal, hoh));
+    score = score * (1 - (tierOf(deal) === 'final-two' ? 0.55 : 0.35) * sincerityOf(deal, hoh));
   }
-  return score;
+  return score * allianceLoyaltyDiscount(hoh, candidate, heat, score);
+}
+
+/**
+ * How much being in the same alliance is worth, to THIS person.
+ *
+ * `bbHeat` already carries an alliance term and it is additive, which is the
+ * same trap the shield discount above documents: whatever the reasons to
+ * nominate somebody add up to, a constant cannot keep up with the pile, and
+ * the pile is largest for exactly the players an alliance most wants to keep.
+ * Measured across twenty seasons, being sworn to the Head of Household moved
+ * the odds of going up from 28% to 18% — real, but not what an alliance means.
+ *
+ * Two things decide the size of it, and the second is what stops this becoming
+ * a shield that makes alliances unbreakable:
+ *
+ *   LOYALTY. Loyal people follow their alliance; that is most of what the stat
+ *   is for, and the one week you hold power is where it should be visible. At
+ *   ten it takes half the reason to nominate away, at five a quarter, at zero
+ *   nothing at all — a schemer is in an alliance for what it does for them.
+ *
+ *   WHETHER THEY HAVE BEEN WRONGED. Loyalty is not obligation to somebody who
+ *   has already broken it. A remembered betrayal or a live suspicion cancels
+ *   the discount in proportion, which is why the loyal Head of Household still
+ *   turns on their own people — with a reason, and the ceremony now says which
+ *   reason it was.
+ */
+function allianceLoyaltyDiscount(hoh, candidate, heat, score) {
+  if (score <= 0) return 1;
+  const strength = bbAllianceStrength(hoh, candidate);
+  if (!strength) return 1;
+  const c = heat?.components || {};
+  const wronged = clamp(Math.max(0, c.memory || 0) / 2.5
+    + Math.max(0, c.suspicion || 0) / 2, 0, 1);
+  const loyalty = clamp((pStats(hoh).loyalty ?? 5) / 10, 0, 1);
+  return 1 - 0.5 * loyalty * (1 - wronged) * clamp(strength / 1.6, 0, 1);
 }
 
 /**
@@ -623,7 +659,7 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
       : bbAllianceStrength(holder, best.name) > 0
         ? `${best.name} is one of ${holder}'s people. ${forced >= 1
             ? `With one name left to replace them this costs ${holder} almost nothing.`
-            : `It makes an enemy of ${hoh || 'the Head of Household'}, and ${holder} would rather have that than explain themselves later.`}`
+            : `It makes an enemy of ${hoh || 'the Head of Household'}, and ${holder} would rather have that than explain ${pronouns(holder).ref} later.`}`
         : `${holder} would rather have ${best.name} in this house than not${forced >= 0.55
             ? `, and with the replacement all but chosen there is barely a decision here.` : '.'}`;
     return { use: true, save: best.name, reason: 'relationship', why,
@@ -632,16 +668,75 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
 
   const closest = best.name;
   const why = forced >= 1
-    ? `${holder} could take ${closest} down, but there is only one houseguest left to put up in their `
+    ? `${holder} could take ${closest} down, but there is only one houseguest left to put up in ${pronouns(closest).posAdj} `
       + `place and everybody in the room can count. It would change the block without changing the week.`
     : arch === 'goat'
       ? `${holder} does not want to be part of this. Using it makes an enemy of `
         + `${hoh || 'the Head of Household'}; not using it makes an enemy of whoever stays up. `
         + `${holder} picks the enemy who is leaving.`
       : `Taking ${closest} down makes an enemy of ${hoh || 'the Head of Household'} and puts somebody `
-        + `else up who will know exactly who did it. ${holder} decides the block is not their problem.`;
+        + `else up who will know exactly who did it. ${holder} decides the block is not ${pronouns(holder).posAdj} problem.`;
   return { use: false, save: null, reason: 'leave-nominations', why,
     blood: Number((best.cost).toFixed(2)), keep: Number((best.keep).toFixed(2)) };
+}
+
+/**
+ * Why somebody put their OWN alliance on the block.
+ *
+ * ── WHAT THE MEASUREMENT SAID ──
+ *
+ * Twenty seasons, every ceremony where the Head of Household targeted a live
+ * ally while three or more people outside the alliance were available: 23 of
+ * them, and 22 had a real grievance behind them — suspicion, a betrayal the
+ * strategic memory still holds, or a bond that had gone sour weeks earlier.
+ * The house was not disrespecting its alliances. It had a reason every time
+ * and the ceremony never said one, so the only thing a viewer could see was a
+ * name going up for no reason anybody had mentioned.
+ *
+ * Captured HERE, at the ceremony, and not read off `bbHeat` when the screen
+ * paints: suspicion and memory keep moving all season, so a replay would
+ * justify a week-three nomination with something that happened in week nine.
+ * Same reason the veto stores its own `why`.
+ *
+ * Returns null for anybody who is not in a live alliance with the nominator —
+ * an ordinary nomination is not a betrayal and must not be narrated as one.
+ */
+export function nominationGrievance(hoh, name) {
+  if (!hoh || !name || hoh === name) return null;
+  const shared = (gs.namedAlliances || []).filter(a => a.active !== false
+    && (a.members || []).includes(hoh) && (a.members || []).includes(name));
+  if (!shared.length) return null;
+  let heat;
+  try { heat = bbHeat(hoh, name); } catch { return null; }
+  const c = heat.components || {};
+  const alliance = shared.sort((a, b) => (b.members || []).length - (a.members || []).length)[0];
+  const live = (alliance.members || []).filter(n => (gs.activePlayers || []).includes(n));
+  const base = { alliance: alliance.name || null, size: live.length,
+    threat: Number((c.threat || 0).toFixed(2)) };
+  // Ordered by how much the house would say it out loud. A remembered betrayal
+  // outranks a suspicion, which outranks two people who simply cooled off.
+  // 1.5, not 0.5: at the low threshold five in six grievances came back as
+  // 'betrayal', and that line has the Head of Household say out loud that a
+  // promise was broken. A faint strategic memory does not support the claim —
+  // it supports the suspicion line one step down, which says the speaker has
+  // no proof.
+  if ((c.memory || 0) > 1.5) {
+    // WHICH betrayal, by name. `strongestStrategicMemory` holds the single
+    // thing most held against somebody — the vote, the ally they helped send
+    // home, the promise — and a speech that says "you know what you did" when
+    // the house is holding the receipt is choosing the weaker line.
+    let mem = null;
+    try { mem = strongestStrategicMemory(hoh, name); } catch { mem = null; }
+    return { ...base, kind: 'betrayal',
+      memory: mem ? { type: mem.type, ep: mem.ep || null,
+        ally: mem.details?.ally || null } : null };
+  }
+  if ((c.suspicion || 0) > 0.3) return { ...base, kind: 'suspicion' };
+  if ((c.relationship || 0) > 0) return { ...base, kind: 'soured' };
+  // The honest remainder: nothing has gone wrong between them at all and the
+  // nomination is arithmetic about who wins this game. One in twenty-three,
+  // and it must not borrow one of the grievances above.
+  return { ...base, kind: 'no-grievance' };
 }
 
 /**
@@ -653,21 +748,49 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
  * exactly one legal name — at which point the ceremony is not a decision at
  * all, and pretending otherwise is what makes a house feel fake.
  */
-export function explainReplacement(hoh, name, pool, plan, nominees = []) {
+/**
+ * Why this replacement, in the chooser's own read.
+ *
+ * `as` RENAMES THE CHOOSER FOR THE SENTENCE ONLY. A secret nominator — the
+ * Hacker, and Roadkill if it ever prints this — is the whole twist: the house
+ * is told a chair changed and never told who changed it. The transcript said
+ * "with nobody's name attached to it" and then, one line later, printed this
+ * reasoning with the hacker's name in it. Two of the variants below reach for
+ * the chooser's PRONOUN as well, so swapping the name in the finished string
+ * would have left the gender behind.
+ *
+ * The bond and plan reads still use the real `hoh`, so the reasoning is the
+ * reasoning that actually happened; only the person saying it goes unnamed.
+ */
+export function explainReplacement(hoh, name, pool, plan, nominees = [], opts = {}) {
+  const txt = _explainReplacement(hoh, name, pool, plan, nominees, opts);
+  // The label lands at the start of a sentence in some variants and mid-clause
+  // in others -- "for the hacker to name" is right and ". the hacker chooses"
+  // is not -- so it is written lower case and capitalised where it belongs.
+  if (!opts.as || !txt) return txt;
+  const cap = opts.as.charAt(0).toUpperCase() + opts.as.slice(1);
+  let out = txt.startsWith(opts.as) ? cap + txt.slice(opts.as.length) : txt;
+  for (const stop of ['. ', '! ', '? ']) out = out.split(stop + opts.as).join(stop + cap);
+  return out;
+}
+
+function _explainReplacement(hoh, name, pool, plan, nominees = [], { as = null } = {}) {
+  const who = as || hoh;
+  const whoP = as ? { sub: 'they', obj: 'them', posAdj: 'their', pos: 'theirs', Sub: 'They', Obj: 'Them' } : pronouns(hoh);
   if (!name) return '';
   const options = (pool || []).filter(n => n !== name);
   if (!options.length) {
     return strategyText([
-      `${hoh} has only one eligible replacement. ${name}'s nomination is forced before the speech begins.`,
-      `Once the immune names and the remaining nominee are removed, only ${name} is left for ${hoh} to name.`,
-      `There is no second option for ${hoh}. The rules put ${name} in the empty chair.`,
+      `${who} has only one eligible replacement. ${name}'s nomination is forced before the speech begins.`,
+      `Once the immune names and the remaining nominee are removed, only ${name} is left for ${who} to name.`,
+      `There is no second option for ${who}. The rules put ${name} in the empty chair.`,
     ], hoh, name, 'replacement-forced');
   }
   if (plan?.backdoorTarget === name) {
     return strategyText([
-      `${hoh} kept ${name} away from the opening block and the veto draw. The empty chair is the final step of that plan.`,
-      `${name} was never the backup. ${hoh} built the week around naming ${pronouns(name).obj} only after the veto could no longer be won.`,
-      `The original nominations created the opening; ${name} was always meant to fill it. ${hoh} finally says the real target aloud.`,
+      `${who} kept ${name} away from the opening block and the veto draw. The empty chair is the final step of that plan.`,
+      `${name} was never the backup. ${who} built the week around naming ${pronouns(name).obj} only after the veto could no longer be won.`,
+      `The original nominations created the opening; ${name} was always meant to fill it. ${who} finally says the real target aloud.`,
     ], hoh, name, 'replacement-backdoor');
   }
   const st = pStats(name);
@@ -676,36 +799,36 @@ export function explainReplacement(hoh, name, pool, plan, nominees = []) {
   const plan2 = housePlan(hoh);
   if ((plan2?.targets || []).includes(name)) {
     return strategyText([
-      `${hoh} wanted ${name} on the block from the start. The veto finally supplies an open chair.`,
-      `${name} was already on ${hoh}'s target list. The replacement decision turns that private plan into a public move.`,
-      `${hoh} does not need to invent a new target under pressure. ${name}'s name was waiting in the plan.`,
+      `${who} wanted ${name} on the block from the start. The veto finally supplies an open chair.`,
+      `${name} was already on ${who}'s target list. The replacement decision turns that private plan into a public move.`,
+      `${who} does not need to invent a new target under pressure. ${name}'s name was waiting in the plan.`,
     ], hoh, name, 'replacement-target');
   }
   if (comps >= 2) {
     return strategyText([
-      `${name} has already won ${comps} competitions. ${hoh} uses the rare moment when somebody else holds the veto to put that record on the block.`,
-      `${hoh} sees ${comps} competition wins beside ${name}'s name and decides the empty chair may not come again.`,
-      `${name}'s ${comps} wins make the replacement less about convenience than opportunity. ${hoh} takes the shot while it is available.`,
+      `${name} has already won ${comps} competitions. ${who} uses the rare moment when somebody else holds the veto to put that record on the block.`,
+      `${who} sees ${comps} competition wins beside ${name}'s name and decides the empty chair may not come again.`,
+      `${name}'s ${comps} wins make the replacement less about convenience than opportunity. ${who} takes the shot while it is available.`,
     ], hoh, name, comps, 'replacement-comps');
   }
   if (getPerceivedBond(hoh, name) >= 3) {
     return strategyText([
-      `${hoh} has run out of distant names. Putting up ${name} damages a real relationship, but every remaining option costs even more.`,
-      `${name} is close to ${hoh}; that no longer makes ${pronouns(name).obj} safe when the eligible pool is this small.`,
-      `${hoh} chooses ${name} despite their relationship and makes clear the decision came from the shrinking list, not a new target.`,
+      `${who} has run out of distant names. Putting up ${name} damages a real relationship, but every remaining option costs even more.`,
+      `${name} is close to ${who}; that no longer makes ${pronouns(name).obj} safe when the eligible pool is this small.`,
+      `${who} chooses ${name} despite their relationship and makes clear the decision came from the shrinking list, not a new target.`,
     ], hoh, name, 'replacement-close');
   }
   if (options.length <= 2) {
     return strategyText([
-      `${hoh} has almost no room left to choose. Between the available names, ${name} is the relationship ${pronouns(hoh).sub} believes can survive the nomination.`,
-      `The eligible pool is down to ${name} and ${options.join(' and ')}. ${hoh} chooses the person least likely to turn the chair into a permanent war.`,
-      `${hoh} is choosing damage, not safety. ${name} is the option ${pronouns(hoh).sub} expects to cost less after the ceremony.`,
+      `${who} has almost no room left to choose. Between the available names, ${name} is the relationship ${whoP.sub} believes can survive the nomination.`,
+      `The eligible pool is down to ${name} and ${options.join(' and ')}. ${who} chooses the person least likely to turn the chair into a permanent war.`,
+      `${who} is choosing damage, not safety. ${name} is the option ${whoP.sub} expects to cost less after the ceremony.`,
     ], hoh, name, ...options, 'replacement-small-pool');
   }
   return strategyText([
-    `${name} has fewer people ready to object than the other eligible names. ${hoh} chooses the replacement the house is least likely to fight over.`,
-    `${hoh} does not need ${name} to be the biggest threat—only the name that creates the smallest counterattack.`,
-    `${name} has stayed outside the center of the week. That makes ${pronouns(name).obj} easier for ${hoh} to nominate without breaking a larger structure.`,
+    `${name} has fewer people ready to object than the other eligible names. ${who} chooses the replacement the house is least likely to fight over.`,
+    `${who} does not need ${name} to be the biggest threat—only the name that creates the smallest counterattack.`,
+    `${name} has stayed outside the center of the week. That makes ${pronouns(name).obj} easier for ${who} to nominate without breaking a larger structure.`,
   ], hoh, name, 'replacement-default');
 }
 

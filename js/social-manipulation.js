@@ -322,7 +322,18 @@ export function _generateKissTrap(schemer, target, group, ep, _rp) {
   const currentBond = getBond(witness, kissTarget);
   if (currentBond <= 0) {
     const shm = gs.showmances?.find(s => s.players.includes(witness) && s.players.includes(kissTarget) && s.phase !== 'broken-up');
-    if (shm) shm.phase = 'broken-up';
+    if (shm) {
+      shm.phase = 'broken-up';
+      /* Ending a showmance without naming HOW leaves every reader of this to
+         guess. Everything downstream keys off the type — the panel says which
+         of the four endings it was, and the life layer decides from it whether
+         these two walked out of the season as a couple — so a break-up with no
+         type on it simply vanished from the alliance panel with no line, which
+         is exactly what a kiss trap should be loudest about. */
+      shm.breakupType = 'sabotaged';
+      shm.breakupEp = (gs.episode || 0) + 1;
+      shm.breakupVoter = null;
+    }
     gs.popularity[schemer] = (gs.popularity[schemer] || 0) - 1;
     results.push({
       type: 'kissTrap', players: [witness, kissTarget],

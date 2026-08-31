@@ -524,6 +524,15 @@ The existing ones that will already catch you:
 - `tests/ratings-distribution.test.js` — re-measures the `CALIBRATION` bands
   against played seasons, so a signal that drifts out of the range the table
   claims fails loudly instead of quietly contributing a fraction of its weight
+- `tests/bb-nomination-alliance.test.js` — the alliance ledger, the hold
+  reading, consent stances, departures, replay agreement between the status
+  screen and the panel, and that nothing leaves the panel unexplained
+- `tests/bb-nomination-reasons.test.js` — a speech reads the relationship
+  before the plan, and never claims knowledge the speaker does not have
+- `tests/bb-love-triangle.test.js` — every triangle beat has a case in the
+  house's own words, and the arc reaches its back half
+- `tests/bb-showmance-rate.test.js` — the couple ceiling scales with the cast,
+  counts only what formed in the house, and the archetype matters
 
 **The vocabulary guard, added 2026-08-12** — the one this section used to say
 was missing:
@@ -551,6 +560,187 @@ write the next guard:
 3. **`` `${w}` `` in a template literal is a backspace character**, not a
    word boundary. The pattern matched nothing and the test passed against a page
    saying "was evicted" over a Total Drama season.
+
+---
+
+## 11.5 The bug classes, and what a third show inherits
+
+Everything below was found by playing seasons and reading the output, not by
+reading the code. They are grouped by the underlying mistake rather than by the
+feature they happened to, because every one of them is reachable again the
+moment a third show exists. The numbers are the measurements that found them.
+
+### A. Written, run, and shown to nobody
+
+The most common failure in this codebase by a distance. A system works, mutates
+state every week, and reaches no screen — so it reads as "the simulator doesn't
+do that" when the simulator has been doing it all along.
+
+- **The love triangle.** Ran in a house all along: 7 formed across 110 weeks,
+  both shapes, ~10 beats each. Only the OPENING beat had a case in the house's
+  romance harvest, so the escalation, the schemer working it for votes, the
+  public fight and the choice all fell through to a default that rewrites
+  "camp" to "house" and leaves the rest — a Big Brother house was told somebody
+  had been "carrying water together, sitting close at fire".
+- **The veto's own reasoning.** `shouldUseVeto` returns a specific `why` for
+  every branch — the tier of the deal, whether the replacement pool was down to
+  one name. The screen read a table of three fixed sentences first and only
+  fell through to it when the reason was missing from the table, which never
+  happens. Computed weekly, printed never.
+- **Two stores for one event.** An alliance can die in TWO places: the show's
+  own `reconcileAlliances`, and the shared `decayAllianceTrust`, which writes to
+  `gs.allianceDissolutions` and expels members into `gs._pendingExpulsions`.
+  Both of those are drained by `episode.js` and `camp-events.js` — Total Drama
+  files a house never calls. 15 alliances vanished between weeks with members
+  still in the house; 5 had no explanation anywhere, all through that path, and
+  the expulsion queue grew untouched for the whole season.
+- **The ending nobody wrote.** 85% of love triangles end by one corner being
+  voted out, and that ending produced no scene at all.
+
+> **For a new show:** every store the shared Total Drama code writes to needs a
+> consumer in YOUR engine, or it is a leak with no output. `gs._pendingDepartures`,
+> `gs._pendingExpulsions` and `gs.allianceDissolutions` are the three known ones.
+> Grep for what writes them and check who reads them under your format.
+
+### B. A screen showing now instead of then
+
+Any screen that can be reopened after the season has moved on must read the
+episode's own snapshot. Reading live state is invisible while you watch a
+season straight through and wrong the moment anybody reloads one episode.
+
+- House Status built its alliance rows from `listBlocs()` — live. Replaying
+  week 11 drew The Majority with the four members it ended up with while the
+  panel beside it drew the two it was founded with. **25 of 25 alliances on
+  replayed episodes disagreed with their own week**, most by not being drawn at
+  all, because the live list is filtered to who is still in the house NOW.
+- The hold readings under each face were recomputed at paint time, so a
+  replayed episode explained its numbers with relationships that had not
+  happened yet.
+- **A stretch with no snapshot silently borrows a global one.** House Life
+  panels read `act.state`; the campaign act had none, so that one screen fell
+  back to the episode's end-of-week picture. Every visible mid-week alliance
+  change landed on that single transition — screen 4 to screen 5.
+
+> **For a new show:** if a screen has a "previous/next" control, it is a
+> historical screen. Snapshot per stretch, not per episode, and make every panel
+> read the same source.
+
+### C. One show's words in another show's mouth
+
+The reason this document exists (§0), and it survives in places the vocabulary
+guard cannot see, because the guard walks generated articles and ledgers rather
+than every beat pool.
+
+- Triangle beats set on a beach: shelters, fires, fishing, reward feasts.
+- The default rewrite maps `tribe`→`house` and `camp`→`house` and nothing else,
+  so it launders the obvious words and passes the furniture through.
+
+> **For a new show:** a `default:` branch that does string replacement is not
+> coverage. Every event type that can fire under your format needs its own case,
+> and the way to find the gaps is to dump a season's beats and read them.
+
+### D. A character who knows more than they should
+
+- The nomination speech announced an alliance the Head of Household had never
+  noticed: it read `gs.namedAlliances` — the truth of the house — rather than
+  the per-person knowledge layer the house has always tracked. **6 of 12 such
+  speeches came from somebody whose knowledge of that group was zero.**
+- The same speech read the *plan* (`intentions.revenge`) before any
+  relationship, so a Head of Household told the person they were in a showmance
+  with "this is personal, you know what you did".
+
+> **For a new show:** anything a character SAYS must be sourced from what that
+> character can see. Relationship before plan; knowledge before both.
+
+### E. A mean that hides the event
+
+`memberLoyalty` averages a member's bonds with everybody else in the group. The
+most important thing that can happen inside an alliance — its own Head of
+Household putting you on the block — lands on exactly one of those bonds. In a
+seven-strong group a −1.4 hit moves the mean by −0.23, which the score
+multiplies by 0.045: **a tenth of a point.** Measured, the person put up moved
+−0.06 across the week and went UP as often as down.
+
+> **For a new show:** if a displayed number is an average, ask what single event
+> it is supposed to be able to show. Read those as events off a ledger.
+
+### F. A constant written for a different shape of season
+
+- The showmance cap was a flat 4 for any cast — so a house of 14 ran three
+  couples while a 22-person beach cast ran the same number.
+- The love triangle's phase clock was 3 episodes to escalate and 5 to the
+  ultimatum, which assumes three specific people survive that long. A house
+  evicts somebody weekly: mean triangle life 2.3 weeks, **55% never left the
+  first phase and 10% ever reached the choice.**
+- The `elsewhere` term in `memberLoyalty` subtracted the ABSOLUTE power of every
+  other bloc from a score capped at 1.0, but power is `share × cohesion × size`.
+  Being in more rooms emptied you: with three other blocs, **75% of members read
+  exactly 0.0** — the value documented as "already gone in everything but the
+  announcement".
+
+> **For a new show:** every threshold and cap in shared code was calibrated
+> against one show's episode count and cast size. Re-measure them under yours.
+
+### G. The stat that turned out not to matter
+
+- Alliance value in `bbHeat` was a flat term, so a loyalty-9 soldier and a
+  loyalty-1 schemer priced the same alliance identically.
+- The showmance first move needed spark intensity 0.5 for a showmancer against
+  0.8 for everybody else — not a difference. A cast containing **no showmancer
+  at all** still produced 31 showmances in 12 seasons.
+- Additive terms lose to big piles. The file's own shield-discount comment says
+  so; the fix is proportional discounting, scaled by the stat.
+
+### H. Omniscience where the format has a conversation
+
+Nominating a member of your own alliance was classified by whether the others
+already happened to want them gone — because the house had no way to ASK. There
+is a pawn conversation and nothing at all for "I need to put one of ours up", so
+**47 of 74 ally-nominations came back as blindsiding the group**. Consent is a
+scene, not a query.
+
+### I. Timing: the week is not filed yet
+
+Two of the same shape, and both returned a confident wrong answer:
+
+- `gs.bb.weeks` only gets the week appended once it is OVER, so an entry written
+  during the week in progress reads as one week in the FUTURE. A guard against
+  negative ages threw it away and the consequence never appeared inside the week
+  it happened.
+- A romance stage notices an eviction the week AFTER it happens, when the
+  current ballots are a fresh empty set — so "did the person in the middle write
+  the name?" came back false every single time until it read the week that
+  actually took them out.
+
+### J. Guards that pass against the bug
+
+Three ways a test has lied in this repo, all worth checking for in a new one:
+
+1. **Asserting on presence in a whole page.** A replay test checked that the
+   alliance's name and members appeared somewhere in the HTML — every houseguest
+   is on that screen several times over. It passed against the bug. Read the
+   value out of the specific row.
+2. **Gating the check on data the probe cannot see.** A triangle probe counted
+   transcript hits only when `ep.triangleEvents` was non-empty — a field that
+   lives on an internal shim and is never returned. It could only ever report
+   zero.
+3. **Not verifying the guard fails.** Every fix in this session was checked by
+   reverting the code and watching the test fail. 25 of 25, 6 of 12, 15 of 15 —
+   the "before" number is the evidence the test works.
+
+### What a third show inherits from this work
+
+Wire these up rather than rebuilding them:
+
+| Thing | Where | What it gives you |
+|---|---|---|
+| Per-stretch state snapshots | `_snapshotHouse(full, roster)` | panels that are correct on replay, and arrows that point at the cause |
+| `withRoster(names, fn)` | `js/bb/blocs.js` | compute a board over a past roster without mutating live state — fixes the evictee-shaped hole that spoiled the vote |
+| The alliance ledger | `alliance.history` | `nominated-own` with `target`, `consented` and `stance`; read by the reading, the speech and the screen |
+| Consent stances | `week.allianceConsults` | signed off / never asked / told no and did it anyway, priced differently |
+| Departures | `week.allianceExits` | quit, thrown out, and the concealed one that stays on the list |
+| Dissolution reporting | `week.allianceDissolved`, `week.allianceDepartures` | nothing leaves the panel without a sentence |
+| Life-layer carry | `brokenPairs` in `life-hook.js` | a break-up the audience watched ends the relationship in the log |
 
 ---
 

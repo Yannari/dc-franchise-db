@@ -27,6 +27,7 @@
 
 import { parseInterview } from './casting-interview.js';
 import { airLabel, ageAt, airKey } from './franchise-calendar.js';
+import { joinOrigin } from './bio.js';
 
 import { SHOWS, DEFAULT_FORMAT, seasonId, showName, showShort, showIcon, showAccent, showWords, exitVerbs }
   from './shows.js';
@@ -238,9 +239,17 @@ function infobox(dossier, show, root, L) {
     ['Hometown', bio.hometown],
     ['Occupation', bio.occupation],
     ['Gender', bio.gender === 'f' ? 'Female' : bio.gender === 'm' ? 'Male' : bio.gender ? 'Non-binary' : ''],
-    ['Nationality', [bio.ethnicity, bio.nationality].filter(Boolean).join(' ')],
-    ['Label', bio.archetype],
-    ['Also', bio.descriptor],
+    ['Nationality', joinOrigin(bio.ethnicity, bio.nationality)],
+    // "Label" is the epithet, everywhere this franchise draws from: the source
+    // infobox writes `|label = The Lively`, and a Big Brother article writes
+    // `Label / The Activist`. It was holding the ARCHETYPE — a gameplay tag
+    // this project invented — while the actual epithet sat in a row of its
+    // own further down, so the one row a reader recognises had the wrong
+    // thing in it.
+    ['Label', bio.descriptor],
+    // Named for what it is instead of borrowing the epithet's row. It is not
+    // canon and does not pretend to be: it is how the simulator plays them.
+    ['Archetype', bio.archetype],
     // Blank rather than "0 (Total Drama)" for somebody who has not finished
     // one; rowsOf drops an empty value, so the row simply is not there.
     ['Seasons', show.count ? `${show.count} (${m.name})` : ''],
@@ -343,6 +352,22 @@ function infobox(dossier, show, root, L) {
   return `
   <aside class="wk-infobox" style="--wk-accent:${m.accent}">
     <div class="wk-ib-title">${esc(dossier.name)}</div>
+    ${/*
+      WHICH SHOW'S ARTICLE THIS IS.
+
+      A character's Big Brother article and their Total Drama article are
+      different articles, and nothing on the page said which one you were
+      reading — the sections are headed with the SEASON'S name, so "Champions vs
+      Contenders" tells you only if you already know. The stylesheet has carried
+      a `.wk-ib-show` rule for exactly this band the whole time and nothing ever
+      emitted the element.
+
+      Omitted rather than guessed when there is no season on record: with no
+      career here, `format` is the page's default, and printing "TOTAL DRAMA"
+      over an empty article states as a fact something nobody knows. Same rule
+      the profile head below already follows.
+    */ ''}
+    ${show.count ? `<div class="wk-ib-show">${m.icon ? `${m.icon} ` : ''}${esc(m.name || m.short || '')}</div>` : ''}
     ${tabs}
     <img class="wk-ib-portrait" src="${root}/assets/avatars/${esc(dossier.id)}.png" alt=""
          onerror="this.style.display='none'">

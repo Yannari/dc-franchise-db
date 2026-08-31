@@ -19,6 +19,9 @@ const STAT_KEYS = ['physical','endurance','mental','social','strategic','loyalty
 const STAT_ABBR = { physical:'PHY', endurance:'END', mental:'MEN', social:'SOC', strategic:'STR', loyalty:'LOY', boldness:'BLD', intuition:'INT', temperament:'TMP' };
 
 import { composeVoice, stripBioLead, parseBio, splitOrigin } from './bio.js';
+import { PROFILE_GROUPS, validatePublishedProfile, selectProfileVoice, diffProfileCandidates, applyCandidateSelection } from './profile-import.js';
+import { appearancesFor, ageAnchor, birthFromCanonAge, continuityIndex, continuitySummary, continuityTies } from './continuity.js';
+import { ageNow, franchiseNow } from './franchise-calendar.js';
 import { INTERVIEW_QUESTIONS, parseInterview, serializeInterview }
   from './casting-interview.js';
 // The endpoint resolver, not a second hardcoded URL — it already handles the
@@ -138,9 +141,10 @@ function _blankChar() {
     // The bio. `birthdate` is authoritative over `age` when both are present —
     // an age is a number that silently rots, a date does not.
     birthdate:'', hometown:'', occupation:'', backstory:'', personality:'',
+    continuityNote:'',
     // The casting interview, held as { key: answer } while it is being edited
     // and serialised on save. See js/casting-interview.js.
-    interview: {},
+    interview: {}, profileSources:{},
     voice:'', avatarDataUri:'', returneeDataUri:'', stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
   };
 }
@@ -325,12 +329,12 @@ async function _rosterPull() {
 /** Upsert one character into D1. Throws on failure so callers can report it.
  *  The error carries the HTTP status — a silent failure here once caused a
  *  character to be published away, so make it diagnosable. */
-async function _rosterPush(entry, voiceText) {
+async function _rosterPush(entry) {
   let r, body;
   try {
     r = await fetch(_apiUrl('/api/roster'), {
       method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ ...entry, voice: voiceText || '' }),
+      body: JSON.stringify(entry),
     });
   } catch (netErr) {
     throw new Error(`network error reaching /api/roster (${netErr.message})`);
@@ -1081,7 +1085,12 @@ async function _editBySlug(slug) {
   const rich = await _idbGet('characters', slug);
   // Studio record wins; otherwise fall back to the existing voice-profiles.json
   // entry so editing a canon/hand-added character shows their real voice.
-  const voice = (rich && rich.voice) || await _existingVoice(base.name);
+  const legacyVoice = await _existingVoice(base.name);
+  const voice = selectProfileVoice({
+    localVoice: rich?.voice || '',
+    rosterVoice: base.voice || '',
+    legacyVoice,
+  });
 
   // WHERE THE BIO COMES FROM, in order of how much it can be trusted:
   //
@@ -1112,6 +1121,7 @@ async function _editBySlug(slug) {
     occupation: pick(base.occupation, rich && rich.occupation),
     backstory: pick(base.backstory, rich && rich.backstory),
     personality: pick(base.personality, rich && rich.personality),
+    profileSources: pick(rich && rich.profileSources, base.profileSources, {}),
     interview: Object.fromEntries(parseInterview(
       pick(base.castingInterview, rich && rich.castingInterview)).map(r => [r.key, r.a])),
     // The prose alone. The lead-in is rebuilt from the fields on save, so
@@ -1135,7 +1145,176 @@ async function _editBySlug(slug) {
   document.getElementById('st-editor')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// ── the character sheet ─────────────────────────────────────────────────
+// ── published profile import ──────────────────────────────────────────────
+const _profileValue = value => value == null || value === '' ? '—' : typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
+function _profileSnapshot(d) { return { ...d, castingInterview: serializeInterview(d.interview || {}) }; }
+function _invalidProfileKeys(errors) {
+  const keys = new Set();
+  for (const error of errors) {
+    const source = /^profileSources\.([^.[ ]+)/.exec(error);
+    if (source) keys.add(source[1]);
+    if (error.startsWith('birthdate ')) keys.add('birthdate');
+    if (error.startsWith('Unknown stat:') || error.startsWith('Missing stat:') || STAT_KEYS.some(key => error.startsWith(`${key} `))) keys.add('stats');
+  }
+  return keys;
+}
+/**
+ * One preview, however many sources are offering.
+ *
+ * There used to be two buttons — "Load published profile" and "Fetch profile
+ * from wiki" — and comparing their field lists showed the wiki could offer
+ * nothing the saved roster could not. So the choice was never about coverage.
+ * It was about where a value came from, and that is a property of a ROW.
+ *
+ * Sources can arrive late. The saved roster is local and instant; the wiki
+ * costs a call and a model. Rather than make the reader wait on the slow one
+ * to see the fast one, the dialog opens on whatever is ready and re-renders
+ * when the rest lands, keeping every tick and every choice already made.
+ */
+export function _openProfileFillPreview(currentDraft, options = {}) {
+  if (!currentDraft) return null;
+  const current = options.current ? currentDraft : _profileSnapshot(currentDraft);
+  const sources = [];
+  // key -> the value string the reader picked, so a re-render cannot undo a
+  // choice they already made.
+  const picked = new Map();
+  const ticked = new Map();
+
+  document.getElementById('st-profile-import')?.remove();
+  const dialog = document.createElement('dialog');
+  dialog.id = 'st-profile-import';
+  dialog.className = 'st-profile-dialog';
+  dialog.innerHTML = `<form method="dialog" class="st-profile-card">
+    <header><div><h2>Fill in this profile</h2>
+      <p>Every row says where it came from. Anything you have already written arrives unticked. Nothing is saved until you press Save character.</p></div>
+      <button class="st-profile-x" value="cancel" aria-label="Close">&times;</button></header>
+    <div id="st-profile-status" class="st-profile-status"></div>
+    <div id="st-profile-errors" class="st-profile-errors" hidden></div>
+    <div class="st-profile-groups" id="st-profile-groups"></div>
+    <footer><button type="button" class="st-btn" id="st-profile-blanks">Fill blanks</button><button type="button" class="st-btn" id="st-profile-all">Select all</button><span></span><button type="button" class="st-btn" id="st-profile-cancel">Cancel</button><button type="button" class="st-btn st-primary" id="st-profile-apply">Apply selected</button></footer>
+  </form>`;
+  document.body.appendChild(dialog);
+
+  const groupsEl = dialog.querySelector('#st-profile-groups');
+  const statusEl = dialog.querySelector('#st-profile-status');
+  const errorsEl = dialog.querySelector('#st-profile-errors');
+  let rows = [];
+
+  const remember = () => {
+    for (const box of dialog.querySelectorAll('[data-profile-key]')) {
+      ticked.set(box.dataset.profileKey, box.checked);
+    }
+    for (const radio of dialog.querySelectorAll('input[type=radio]:checked')) {
+      picked.set(radio.name.replace(/^pick-/, ''), radio.value);
+    }
+  };
+
+  const render = () => {
+    rows = diffProfileCandidates(current, sources);
+
+    // Validation runs per source: a bad stat block from one must not condemn
+    // the other's perfectly good hometown.
+    const invalidKeys = new Set();
+    const errors = [];
+    for (const source of sources) {
+      const v = validatePublishedProfile(source.profile);
+      if (!v.valid) {
+        errors.push(...v.errors.map(e => `${source.label}: ${e}`));
+        for (const k of _invalidProfileKeys(v.errors)) invalidKeys.add(k);
+      }
+    }
+    errorsEl.hidden = !errors.length;
+    errorsEl.innerHTML = errors.map(e => `<p>${_esc(e)}</p>`).join('');
+
+    groupsEl.innerHTML = Object.keys(PROFILE_GROUPS).map(group => {
+      const groupRows = rows.filter(r => r.group === group);
+      if (!groupRows.length) return '';
+      return `<section class="st-profile-group"><h3>${_esc(group)}</h3>${groupRows.map(row => {
+        const unsafe = invalidKeys.has(row.key);
+        const isTicked = ticked.has(row.key) ? ticked.get(row.key) : row.selected;
+        const chosen = picked.get(row.key);
+        const choiceIdx = Math.max(0, row.candidates.findIndex(c => _profileValue(c.value) === chosen));
+
+        // One candidate reads as it always did. Two or more become a choice,
+        // because preferring the reviewed one or the fresh one is a judgement
+        // this code has no way to make for somebody else.
+        const offer = row.candidates.length === 1
+          ? `<span><b>${_esc(row.candidates[0].label)}</b><code>${_esc(_profileValue(row.candidates[0].value))}</code>
+               ${_sourceChips(row.candidates[0].sources)}</span>`
+          : row.candidates.map((c, i) => `<label class="st-profile-pick">
+               <input type="radio" name="pick-${_esc(row.key)}" value="${_esc(_profileValue(c.value))}" ${i === choiceIdx ? 'checked' : ''}>
+               <b>${_esc(c.label)}</b><code>${_esc(_profileValue(c.value))}</code>
+               ${_sourceChips(c.sources)}</label>`).join('');
+
+        return `<label class="st-profile-row${unsafe ? ' is-invalid' : ''}${row.candidates.length > 1 ? ' has-choice' : ''}">
+          <input type="checkbox" data-profile-key="${_esc(row.key)}" ${isTicked && !unsafe ? 'checked' : ''} ${unsafe ? 'disabled' : ''}>
+          <span class="st-profile-field">${_esc(row.key)}</span>
+          <span class="st-profile-values"><span><b>Current</b><code>${_esc(_profileValue(row.current))}</code></span>${offer}</span>
+        </label>`;
+      }).join('')}</section>`;
+    }).join('') || '<p class="st-empty">Nothing to add — this draft already has everything the sources offer.</p>';
+  };
+
+  const checks = () => [...dialog.querySelectorAll('[data-profile-key]:not(:disabled)')];
+  dialog.querySelector('#st-profile-blanks').addEventListener('click', () => {
+    const defaults = new Map(rows.map(r => [r.key, r.selected]));
+    checks().forEach(box => { box.checked = !!defaults.get(box.dataset.profileKey); });
+  });
+  dialog.querySelector('#st-profile-all').addEventListener('click', () =>
+    checks().forEach(box => { box.checked = true; }));
+
+  const close = () => { if (typeof dialog.close === 'function') dialog.close(); dialog.remove(); };
+  dialog.querySelector('#st-profile-cancel').addEventListener('click', close);
+  dialog.addEventListener('cancel', e => { e.preventDefault(); close(); });
+  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+
+  dialog.querySelector('#st-profile-apply').addEventListener('click', () => {
+    remember();
+    const picks = [];
+    for (const box of checks()) {
+      if (!box.checked) continue;
+      const row = rows.find(r => r.key === box.dataset.profileKey);
+      if (!row) continue;
+      const want = picked.get(row.key);
+      const candidate = row.candidates.find(c => _profileValue(c.value) === want) || row.candidates[0];
+      picks.push({ key: row.key, value: candidate.value, sources: candidate.sources });
+    }
+    const applied = applyCandidateSelection(current, picks);
+    if (options.onApply) options.onApply(applied);
+    else {
+      _draft = { ...currentDraft, ...applied };
+      if (Object.hasOwn(applied, 'castingInterview')) {
+        _draft.interview = Object.fromEntries(
+          parseInterview(applied.castingInterview).map(r => [r.key, r.a]));
+        delete _draft.castingInterview;
+      }
+      renderStudio();
+    }
+    close();
+  });
+
+  render();
+  if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', '');
+
+  return {
+    dialog,
+    /** Merge another source in, without losing anything already chosen. */
+    addSource(source) {
+      if (!source?.profile || !dialog.isConnected) return;
+      remember();
+      sources.push(source);
+      render();
+    },
+    say(text) { if (statusEl) statusEl.textContent = text || ''; },
+  };
+}
+
+function _sourceChips(sources) {
+  if (!Array.isArray(sources) || !sources.length) return '';
+  return `<span class="st-profile-sources">${sources.map(s =>
+    `<span class="st-profile-source" data-kind="${_esc(s.kind)}" ${s.quote ? `title="${_esc(s.quote)}"` : ''}>${_esc(s.label)}</span>`).join('')}</span>`;
+}
+
 function _renderEditor() {
   const ed = document.getElementById('st-editor');
   if (!ed) return;
@@ -1151,7 +1330,7 @@ function _renderEditor() {
           <label class="st-l">Name<input class="st-input" id="st-f-name" value="${_esc(d.name)}" placeholder="Character name"></label>
           <div class="st-row2">
             <label class="st-l">Slug<input class="st-input" id="st-f-slug" value="${_esc(d.slug)}" placeholder="auto"></label>
-            <label class="st-l">Age<input class="st-input" id="st-f-age" value="${_esc(d.age)}" placeholder="—" inputmode="numeric"></label>
+            <label class="st-l">Age <span class="st-hint" id="st-age-hint"></span><input class="st-input" id="st-f-age" value="${_esc(d.age)}" placeholder="&mdash;" inputmode="numeric"></label>
           </div>
         </div>
       </div>
@@ -1222,8 +1401,8 @@ function _renderEditor() {
         <label class="st-l">Nationality <span class="st-hint">queryable</span>
           <input class="st-input" id="st-f-nationality" value="${_esc(d.nationality)}" placeholder="e.g. Canadian">
         </label>
-        <label class="st-l">Anything else <span class="st-hint">kept as written</span>
-          <input class="st-input" id="st-f-descriptor" value="${_esc(d.descriptor)}" placeholder="e.g. Scouse">
+        <label class="st-l">Descriptor <span class="st-hint">shown as <b>Label</b></span>
+          <input class="st-input" id="st-f-descriptor" value="${_esc(d.descriptor)}" placeholder="e.g. The Lively">
         </label>
       </div>
       <div class="st-row3">
@@ -1265,7 +1444,36 @@ function _renderEditor() {
         </div>
       </details>
 
+      <!-- CONTINUITY — what they already did, read back out of the archive.
+           The mirror image of the casting interview above it: that tape was
+           recorded before the door shut and may not mention a season, this one
+           is nothing but seasons. Starts hidden and reveals itself only if the
+           archive has them, so a debut character never sees an empty box.
+           Folded state is remembered because a three-season veteran's history
+           is longer than the form it sits under. -->
+      <details class="st-cont" id="st-cont" hidden>
+        <summary class="st-cont-sum">Continuity
+          <span class="st-hint" id="st-cont-count">reading the archive&hellip;</span>
+        </summary>
+        <div class="st-cont-body" id="st-cont-body"></div>
+        <!-- The read. Everything above it is transcribed from the archive and
+             read-only because it is already true; this is the judgement about
+             it, which is authored and therefore yours to edit. -->
+        <div class="st-cont-read">
+          <label class="st-l">Continuity read
+            <span class="st-hint">what the seasons above MEAN — drafted from them, then yours</span>
+            <textarea class="st-input st-area" id="st-f-continuity" rows="6"
+              placeholder="Evolution, what they want going in now, and the threads left open. Draft it from their record, then edit.">${_esc(d.continuityNote || '')}</textarea>
+          </label>
+          <div class="st-cont-gen">
+            <button type="button" class="st-btn" id="st-cont-write">Draft from their record</button>
+            <span class="st-hint" id="st-cont-note"></span>
+          </div>
+        </div>
+      </details>
+
       <div class="st-actions">
+        ${d.name ? '<button type="button" class="st-btn st-lg" id="st-fill-profile">Fill in this profile</button><span class="st-hint" id="st-fill-note"></span>' : ''}
         <button type="button" class="st-btn st-primary st-lg" id="st-save">Save character</button>
         ${(() => {
           const active = _casts.find(c => c.id === _activeCast);
@@ -1296,7 +1504,36 @@ function _renderEditor() {
   ed.querySelector('#st-f-descriptor').addEventListener('input', e => d.descriptor = e.target.value);
   ed.querySelector('#st-f-occupation').addEventListener('input', e => d.occupation = e.target.value);
   ed.querySelector('#st-f-hometown').addEventListener('input', e => d.hometown = e.target.value);
-  ed.querySelector('#st-f-birthdate').addEventListener('input', e => d.birthdate = e.target.value);
+  // ── the age follows the birthdate, on the franchise's clock ──
+  //
+  // Not the real one. Time here advances because a season aired, so somebody
+  // born in 2004 is 22 for as long as the present is fall 2026, however many
+  // real months pass. Age is still editable — a value typed by hand wins and
+  // is not overwritten on the next keystroke.
+  const syncAge = () => {
+    const ageEl = ed.querySelector('#st-f-age');
+    const now = franchiseNow();
+    const hint = ed.querySelector('#st-age-hint');
+    if (hint) hint.textContent = (now && d.birthdate) ? `at ${now.airSlot} ${now.airYear}` : '';
+    const derived = ageNow(d.birthdate);
+    if (derived == null || !ageEl) return;
+    ageEl.value = String(derived);
+    d.age = String(derived);
+  };
+  // Both events: a date input fires `input` while typing and `change` when the
+  // picker commits, and which one arrives first is browser-dependent.
+  for (const evt of ['input', 'change']) {
+    ed.querySelector('#st-f-birthdate').addEventListener(evt, e => {
+      d.birthdate = e.target.value;
+      syncAge();
+    });
+  }
+  // And once more when the calendar finishes loading. The archive is fetched
+  // asynchronously, so a birthdate typed in the first moment after the editor
+  // opens — or one already saved on the character — was being counted against
+  // a present that did not exist yet: ageNow returned null, the box stayed
+  // empty, and only the hint appeared later to say it should not have.
+  ed._syncAge = syncAge;
   ed.querySelector('#st-f-backstory').addEventListener('input', e => d.backstory = e.target.value);
   ed.querySelector('#st-f-personality').addEventListener('input', e => d.personality = e.target.value);
   INTERVIEW_QUESTIONS.forEach(x => {
@@ -1445,7 +1682,18 @@ function _renderEditor() {
     probe.src = _avatarSrc(`${d.slug}-returnee`);
   }
 
-  // save / delete
+  _fillContinuity(ed, d.slug);
+  ed.querySelector('#st-f-continuity')?.addEventListener('input', e => { d.continuityNote = e.target.value; });
+  ed.querySelector('#st-cont-write')?.addEventListener('click', () => {
+    const note = ed.querySelector('#st-cont-note');
+    _draftContinuityRead(ed, d, t => { if (note) note.textContent = t; });
+  });
+
+  // load / save / delete
+  ed.querySelector('#st-fill-profile')?.addEventListener('click', () => {
+    const note = ed.querySelector('#st-fill-note');
+    _fillProfileFrom(ed, d, t => { if (note) note.textContent = t; });
+  });
   ed.querySelector('#st-save').addEventListener('click', _save);
   ed.querySelector('#st-del')?.addEventListener('click', _delete);
   // add/remove the selected character from the active cast, right from the editor
@@ -1453,6 +1701,368 @@ function _renderEditor() {
 
   _drawRadar();
   _updateRead();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// FETCH FROM WIKI — canon, proposed rather than applied.
+//
+// Two round trips on purpose. The first is a search and costs nothing, so a
+// name that is spelled differently on the wiki than on the roster (Thom is
+// "Tom" there) is corrected before any generation is paid for. The second
+// reads the page and writes the profile.
+//
+// The result lands in the SAME preview as a published profile: every field a
+// checkbox, anything already written arriving unticked. Nothing here can
+// overwrite prose silently, which is the entire reason the fetch is allowed to
+// invent a hometown at all — an invention that must be ticked is a suggestion,
+// and it is labelled as one.
+// ═══════════════════════════════════════════════════════════════════════
+
+/** Ask a small question with a text field. Resolves to a string or null. */
+function _askName(message, initial) {
+  // eslint-disable-next-line no-alert
+  const answer = window.prompt(message, initial || '');
+  const trimmed = (answer || '').trim();
+  return trimmed || null;
+}
+
+/** Ask which of several wikis. Resolves to a candidate or null. */
+function _askWhichWiki(name, candidates) {
+  const lines = candidates.map((c, i) => `${i + 1}. ${c.label} — ${c.title}`).join('\n');
+  // eslint-disable-next-line no-alert
+  const answer = window.prompt(
+    `"${name}" exists on more than one wiki. Which one is this character?\n\n${lines}\n\nType a number:`, '1');
+  const idx = Number.parseInt(answer, 10);
+  return Number.isInteger(idx) && candidates[idx - 1] ? candidates[idx - 1] : null;
+}
+
+async function _wikiCall(payload) {
+  const res = await fetch(writerEndpoint(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json().catch(() => null);
+  if (!res.ok || !json?.ok) throw new Error(json?.error || `worker ${res.status}`);
+  return json;
+}
+
+/**
+ * Find the page for this character, asking only when genuinely unsure.
+ *
+ * Exact-title matching is the confidence test, and it happens to separate the
+ * three real cases: a name on one wiki is certain, a name on two is a
+ * question, a name on none is a spelling the user can fix in one field.
+ */
+async function _resolveWikiPage(name) {
+  let query = name;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const out = await _wikiCall({ mode: 'wiki-resolve', name: query });
+
+    if (out.status === 'found') return out.page;
+
+    if (out.status === 'ambiguous') {
+      const picked = _askWhichWiki(query, out.candidates);
+      if (!picked) return null;
+      return picked;
+    }
+
+    // Not found. Near-misses become the suggestion in the retry box, because
+    // the answer is usually one letter away and typing it is faster than
+    // going to look the article up.
+    const hint = out.suggestions?.length
+      ? `\n\nClosest pages found:\n${out.suggestions.map(s => `· ${s.title} (${s.label})`).join('\n')}`
+      : '';
+    query = _askName(
+      `No wiki page called "${query}".${hint}\n\nWhat name is this character filed under?`,
+      out.suggestions?.[0]?.title || query);
+    if (!query) return null;
+  }
+  return null;
+}
+
+/**
+ * One button, two sources, one preview.
+ *
+ * The saved roster is local and instant. The wiki costs a call and a model and
+ * can take ten seconds. Waiting on the slow one to show the fast one would
+ * make a free lookup feel like an expensive one, so the dialog opens on the
+ * roster immediately and the wiki merges in when it arrives — every tick and
+ * every choice already made survives the re-render.
+ *
+ * The wiki half is allowed to fail quietly. A network error, a missing page, a
+ * refusal: the reader still has the saved profile in front of them, and a
+ * status line says what happened rather than an alert taking the dialog away.
+ */
+async function _fillProfileFrom(ed, d, say) {
+  const btn = ed.querySelector('#st-fill-profile');
+  const slug = d.slug || _slugify(d.name);
+
+  const published = _roster().find(p => p.slug === slug);
+  const preview = _openProfileFillPreview(d);
+  if (!preview) return;
+  if (published) preview.addSource({ origin: 'roster', label: 'Saved profile', profile: published });
+
+  preview.say('searching the wiki…');
+  if (btn) btn.disabled = true;
+  try {
+    const page = await _resolveWikiPage(d.name);
+    if (!page) { preview.say(published ? 'Saved profile only — no wiki page chosen.' : 'No wiki page chosen.'); return; }
+
+    // ── don't pay to be told what you already wrote ──
+    //
+    // The preview unticks a field you have written anyway, so proposing a
+    // rival for it is output bought and thrown away. voice, personality and
+    // backstory are 79% of a reply between them, so skipping those three when
+    // they exist is most of the saving there is. The input cannot shrink —
+    // the article still has to be read to answer anything at all.
+    const already = ['occupation', 'hometown', 'ethnicity', 'nationality',
+      'descriptor', 'sexuality', 'voice', 'personality', 'backstory']
+      .filter(f => String(d[f] || '').trim());
+    // The age pass is separate: it is worth asking for unless a birthdate is
+    // already on the record.
+    const skip = [...already, ...(String(d.birthdate || '').trim() ? ['__age'] : [])];
+
+    // Nothing left to ask about is a reason not to spend, not a reason to send
+    // an empty request. The saved profile is already in the preview behind
+    // this, so the dialog is not empty either.
+    if (already.length === 9 && skip.includes('__age')) {
+      preview.say('Every field is already written — nothing worth asking the wiki. '
+        + 'Clear a field and press again to get a proposal for it.');
+      return;
+    }
+
+    preview.say(`reading ${page.title} on the ${page.label}…`);
+    const [out, appearances] = await Promise.all([
+      _wikiCall({ mode: 'wiki-profile', host: page.host, title: page.title, slug, skip }),
+      // Their career, for the age anchor below. Cached after the first call,
+      // and usually already warm because the continuity box asked for it when
+      // the editor opened.
+      appearancesFor(slug).catch(() => []),
+    ]);
+
+    // ── the age, translated into this franchise's time ──
+    //
+    // A wiki freezes a character at the age they were written: Leshawna is
+    // sixteen. That is true of the moment she debuted, not of now. Anchored on
+    // when her first season actually aired and carried forward to the season
+    // currently airing, sixteen in spring 2020 is twenty-two in fall 2026.
+    //
+    // Split provenance on purpose: the AGE can be quoted from the article, the
+    // BIRTHDATE cannot — it is this calendar's arithmetic on top of it — and
+    // the day of the month is nobody's fact at all.
+    const anchor = ageAnchor(appearances);
+    const profile = { ...out.profile };
+    if (out.canonicalAge && anchor) {
+      const born = birthFromCanonAge(out.canonicalAge.value, anchor, out.birthday);
+      if (born) {
+        const dated = `${out.canonicalAge.value} at ${anchor.debut.title || anchor.debut.seasonId}`
+          + ` (${anchor.debut.airSlot} ${anchor.debut.airYear})`;
+        profile.profileSources = { ...(profile.profileSources || {}) };
+        if (born.birthdate) {
+          profile.birthdate = born.birthdate;
+          profile.profileSources.birthdate = [{
+            label: `${dated}, so born ${born.birthYear}`,
+            kind: 'simulator-continuity',
+          }, ...(out.canonicalAge.kind === 'source-canon'
+            ? [{ label: `${out.source.label} — ${out.source.title}`, url: out.source.url,
+              kind: 'source-canon', quote: out.canonicalAge.quote }]
+            : [])];
+        }
+        if (born.ageNow != null) {
+          profile.age = born.ageNow;
+          profile.profileSources.age = [{
+            label: `${dated}, and it is ${anchor.now.airSlot} ${anchor.now.airYear} now`,
+            kind: 'simulator-continuity',
+          }];
+        }
+      }
+    }
+    preview.addSource({ origin: 'wiki', label: page.label, profile });
+    const { total, canon } = out.counts;
+    const guessed = total - canon;
+    // Say what was dropped. A cap that bins a field silently reads as "the
+    // wiki had nothing to say about that", which is a different fact.
+    const dropped = (out.overlong || []).length
+      ? ` Skipped ${out.overlong.join(', ')} — came back as prose, not a value.`
+      : '';
+    // Said out loud for the same reason: a field missing from the preview
+    // because nobody asked for it looks identical to one the wiki had nothing
+    // to say about, and they are very different facts.
+    const saved = already.length
+      ? ` Did not ask about ${already.length} field${already.length === 1 ? '' : 's'} you have already written.`
+      : '';
+    preview.say(`${page.title} on the ${page.label}: ${canon} of ${total} field${total === 1 ? '' : 's'} quote the article`
+      + `${guessed ? `, ${guessed} ${guessed === 1 ? 'is a reading' : 'are readings'} of it` : ''}.${dropped}${saved}`);
+  } catch (e) {
+    preview.say(`The wiki lookup failed: ${e.message}`);
+    if (say) say('');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// CONTINUITY — the seasons they already played, in that show's words.
+//
+// Nothing here is written or generated: every line is transcribed out of the
+// season documents, which is where the hand-authored continuity bible got its
+// chronology too. So it costs one read of the archive and it is never stale —
+// play another season and it is in here the next time the editor opens.
+//
+// The show tag on every row is the point. This project's recurring bug is one
+// show's vocabulary printed over the other, and a career panel that lists a
+// Big Brother week next to a Total Drama episode with no marking is exactly
+// how that starts. The words come from the registry, per appearance.
+// ═══════════════════════════════════════════════════════════════════════
+
+const CONT_OPEN_KEY = 'st_continuity_open';
+
+/**
+ * Fill (and reveal) the continuity box for one character.
+ *
+ * Exported under the same underscore convention as the profile preview: a
+ * panel that renders nothing is this project's favourite way to ship broken,
+ * so the test drives the real function against a real DOM rather than
+ * asserting that a builder returned a string.
+ */
+export async function _fillContinuity(ed, slug) {
+  // Loading the archive is also what tells the calendar what year it is, so
+  // this runs for a debut character too — they have no seasons, but the age
+  // box still needs a present to count to.
+  try {
+    await continuityIndex();
+    ed._syncAge?.();
+  } catch { /* an age box with no hint is fine; a broken editor is not */ }
+
+  const box = ed.querySelector('#st-cont');
+  const body = ed.querySelector('#st-cont-body');
+  const count = ed.querySelector('#st-cont-count');
+  if (!box || !body) return;
+
+  let apps = [];
+  try { apps = await appearancesFor(slug); } catch { apps = []; }
+  // The editor may have moved to another character while the archive loaded.
+  if (!box.isConnected) return;
+
+  const sum = continuitySummary(apps);
+  if (!sum) { box.hidden = true; return; }   // debut character — no box at all
+
+  const showList = sum.shows.join(' &amp; ');
+  // "1 win · best 1st" says the same thing twice. A winner's headline is the
+  // win; only a player who never won needs their best finish spelled out.
+  const tail = sum.wins
+    ? ` &middot; ${sum.wins} win${sum.wins > 1 ? 's' : ''}`
+    : ` &middot; best ${_ordinal(sum.best.placement)}`;
+  if (count) {
+    count.innerHTML = `${sum.seasons} season${sum.seasons > 1 ? 's' : ''} on ${showList}${tail}`;
+  }
+
+  const ties = continuityTies(apps);
+  body.innerHTML = apps.map(a => _contSeasonHtml(a)).join('')
+    + _contTiesHtml(ties);
+
+  box.hidden = false;
+  // Remembered across characters and sessions: a three-season veteran's
+  // history is taller than the form above it, and re-folding it every time is
+  // the thing that makes a panel like this get ignored.
+  try { box.open = localStorage.getItem(CONT_OPEN_KEY) === '1'; } catch { /* private mode */ }
+  box.addEventListener('toggle', () => {
+    try { localStorage.setItem(CONT_OPEN_KEY, box.open ? '1' : '0'); } catch { /* ignore */ }
+  });
+}
+
+function _ordinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+/**
+ * Draft the read from the record the box is already showing.
+ *
+ * The appearances go up with the request rather than being looked up again on
+ * the worker: the browser has just derived them, they carry each season's own
+ * vocabulary, and a second copy of that derivation living server-side is how
+ * this project ends up with two versions of the same fact. The worker holds
+ * the key; it does not need to hold the archive.
+ *
+ * Overwriting is confirmed, never silent. A drafted note that quietly replaced
+ * a paragraph somebody wrote would be the same failure as a Publish wiping a
+ * profile, in miniature.
+ */
+async function _draftContinuityRead(ed, d, say) {
+  const btn = ed.querySelector('#st-cont-write');
+  const field = ed.querySelector('#st-f-continuity');
+  const existing = (field?.value || '').trim();
+  // eslint-disable-next-line no-alert
+  if (existing && !window.confirm('There is already a continuity read here.\n\nReplace it?')) return;
+
+  if (btn) btn.disabled = true;
+  say('reading their record…');
+  try {
+    const appearances = await appearancesFor(d.slug);
+    if (!appearances.length) { say(`${d.name} has not finished a season yet.`); return; }
+
+    const res = await fetch(writerEndpoint(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'continuity-read',
+        person: {
+          name: d.name, archetype: d.archetype,
+          voice: d.voice, personality: d.personality,
+        },
+        appearances,
+      }),
+    });
+    const json = await res.json().catch(() => null);
+    if (!res.ok || !json?.ok) throw new Error(json?.error || `worker ${res.status}`);
+
+    d.continuityNote = json.note;
+    if (field) field.value = json.note;
+    const seasons = appearances.length;
+    say(`drafted from ${seasons} season${seasons > 1 ? 's' : ''} — edit it freely`);
+  } catch (e) {
+    say(`failed: ${e.message}`);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+/** One season's row. */
+function _contSeasonHtml(a) {
+  const place = a.placement === 1 ? 'Winner' : _ordinal(a.placement);
+  const outcome = a.outcome && a.outcome !== 'Winner' ? ` <span class="st-cont-title">(${_esc(a.outcome)})</span>` : '';
+  const stats = a.stats.length
+    ? `<div class="st-cont-stats">${a.stats.map(s => `${_esc(String(s.value))} ${_esc(s.label)}`).join(' &middot; ')}</div>` : '';
+  // Season 1's title IS "Total Drama", so the show tag beside it printed the
+  // same words twice. The tag is the one that has to stay.
+  const title = a.title && a.title !== a.show
+    ? `<span class="st-cont-title">${_esc(a.title)}</span>` : '';
+  const style = a.gameplayStyle
+    ? `<div class="st-cont-style">${_esc(a.gameplayStyle)}</div>` : '';
+  const moments = a.keyMoments.length
+    ? `<ul class="st-cont-moments">${a.keyMoments.map(m => `<li>${_esc(m)}</li>`).join('')}</ul>`
+    // Season 1 and 2 documents predate keyMoments. Saying so is better than a
+    // silent gap that reads as "nothing happened to them".
+    : `<div class="st-cont-thin">no episode beats recorded for this season</div>`;
+  return `<div class="st-cont-season">
+    <div class="st-cont-head">
+      <span class="st-cont-show">${_esc(a.show)}</span>
+      <span class="st-cont-place">${_esc(a.seasonId)} &middot; ${place}</span>${outcome}
+      ${title}
+    </div>
+    ${style}${stats}${moments}
+  </div>`;
+}
+
+/** Who they keep running into, across the whole career. */
+function _contTiesHtml(ties) {
+  const line = (label, list) => list.length
+    ? `<div><strong>${label}:</strong> ${list.map(t => _esc(t.name) + (t.count > 1 ? ` &times;${t.count}` : '')).join(', ')}</div>`
+    : '';
+  const html = line('Alliances', ties.alliances) + line('Rivalries', ties.rivalries);
+  return html ? `<div class="st-cont-ties">${html}</div>` : '';
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1878,7 +2488,11 @@ async function _save() {
   // read by hand.
   const bio = {};
   for (const k of ['age', 'birthdate', 'ethnicity', 'nationality',
-    'hometown', 'occupation', 'descriptor', 'backstory', 'personality']) {
+    'hometown', 'occupation', 'descriptor', 'backstory', 'personality',
+    // Rides with the bio because it must reach D1 for the same reason the bio
+    // does: Publish rebuilds franchise_roster.json from that table, so a field
+    // the database never sees is deleted the next time the button is pressed.
+    'continuityNote']) {
     const v = (d[k] ?? '').toString().trim();
     if (v) bio[k] = v;
   }
@@ -1889,7 +2503,8 @@ async function _save() {
   const iv = serializeInterview(d.interview || {});
   if (iv) bio.castingInterview = iv;
   const entry = { name: d.name, slug: d.slug, gender: d.gender, sexuality: d.sexuality,
-    archetype: d.archetype, stats: { ...d.stats }, ...bio };
+    archetype: d.archetype, stats: { ...d.stats }, voice: d.voice,
+    profileSources: d.profileSources, ...bio };
 
   // 1) live projection into the roster the Cast Builder reads
   const arr = _roster().slice();
@@ -1903,7 +2518,8 @@ async function _save() {
     ethnicity: d.ethnicity, nationality: d.nationality, descriptor: d.descriptor,
     birthdate: d.birthdate, hometown: d.hometown,
     occupation: d.occupation, backstory: d.backstory, personality: d.personality,
-    castingInterview: iv,
+    continuityNote: d.continuityNote,
+    castingInterview: iv, profileSources: d.profileSources,
     voice: d.voice, avatarDataUri: d.avatarDataUri || '',
     returneeDataUri: d.returneeDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}
@@ -1926,7 +2542,7 @@ async function _save() {
   let savedToDb = false;
   if (_serverUp) {
     try {
-      await _rosterPush(entry, composedVoice);
+      await _rosterPush(entry);
       savedToDb = true;
     } catch (e) { _toast('Saved locally, but the database write failed: ' + e.message, 'warn'); }
 
@@ -2125,7 +2741,18 @@ async function _exportRepo() {
   try { base = await (await fetch('voice-profiles.json', { cache: 'no-store' })).json(); } catch {}
   if (!base.profiles) base.profiles = {};
   const chars = await _idbAll('characters');
-  chars.forEach(c => { const v = _composeVoice(c); if (v) base.profiles[c.name] = v; });
+  const rosterVoiceNames = new Set();
+  for (const p of _roster()) {
+    if (p.voice && String(p.voice).trim()) {
+      base.profiles[p.name] = composeVoice(p, stripBioLead(p.voice));
+      rosterVoiceNames.add(p.name);
+    }
+  }
+  chars.forEach(c => {
+    if (rosterVoiceNames.has(c.name)) return;
+    const v = _composeVoice(c);
+    if (v) base.profiles[c.name] = v;
+  });
   _dl('voice-profiles.json', JSON.stringify(base, null, 2) + '\n');
   // 3) avatar PNGs for studio-created characters
   let n = 0;
@@ -2343,6 +2970,12 @@ function _injectCSS() {
   .st-l-txt{font-size:12px;color:var(--muted,#9a9);font-weight:600}
   .st-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .st-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  /* The inputs line up even when one label carries a hint and its neighbour
+     does not. Each .st-l is a flex column filling its grid cell, so without
+     this the labelled one pushes its own input down and sits low. Both row
+     widths need it — fixing only .st-row3 left Slug/Age crooked. */
+  .st-row2 > .st-l > .st-input,
+  .st-row3 > .st-l > .st-input{margin-top:auto}
   @media(max-width:720px){ .st-row3{grid-template-columns:1fr} }
   .st-hint{font-weight:400;font-style:italic;opacity:.8}
   .st-avatar-ctrls{display:flex;gap:8px;flex-wrap:wrap}
@@ -2404,6 +3037,28 @@ function _injectCSS() {
   .st-iv-body{padding:0 14px 12px;display:grid;gap:10px}
   .st-iv-gen{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:2px}
   .st-iv-body .st-l{font-size:12.5px;font-weight:600;line-height:1.45}
+  .st-cont{margin:14px 0;border:1px solid var(--st-stroke,rgba(255,255,255,.12));border-radius:10px;background:rgba(255,255,255,.02)}
+  .st-cont-sum{cursor:pointer;padding:11px 14px;font-weight:700;list-style:none;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .st-cont-sum::-webkit-details-marker{display:none}
+  .st-cont-sum::before{content:'▸';display:inline-block;transition:transform .15s;opacity:.6}
+  .st-cont[open] .st-cont-sum::before{transform:rotate(90deg)}
+  .st-cont-body{padding:0 14px 12px;display:grid;gap:12px}
+  .st-cont-season{border-left:2px solid var(--st-stroke,rgba(255,255,255,.14));padding:2px 0 2px 11px;display:grid;gap:5px}
+  .st-cont-head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-weight:700;font-size:13px}
+  /* The show tag is the whole point of the box being show-aware: a Big Brother
+     row and a Total Drama row must never be mistakable for one another. */
+  .st-cont-show{font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+    padding:1px 6px;border-radius:999px;border:1px solid var(--st-stroke,rgba(255,255,255,.18));opacity:.85}
+  .st-cont-place{font-variant-numeric:tabular-nums}
+  .st-cont-title{font-weight:500;opacity:.7;font-size:12px}
+  .st-cont-style{font-size:12px;opacity:.85;font-style:italic}
+  .st-cont-stats{font-size:11.5px;opacity:.75;font-variant-numeric:tabular-nums}
+  .st-cont-moments{margin:0;padding-left:16px;display:grid;gap:3px;font-size:12px;line-height:1.45;opacity:.9}
+  .st-cont-ties{font-size:11.5px;opacity:.8;display:grid;gap:2px}
+  .st-cont-thin{font-size:11.5px;opacity:.6;font-style:italic}
+  .st-cont-sum-line{font-size:12px;opacity:.8;padding-bottom:2px}
+  .st-cont-read{border-top:1px dashed var(--st-stroke,rgba(255,255,255,.14));padding-top:11px;display:grid;gap:9px}
+  .st-cont-gen{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .st-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
   .st-btn{background:var(--surface,#26262e);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font:inherit;font-size:12px;padding:8px 12px;cursor:pointer}
   .st-btn:hover{border-color:var(--accent,#f4b23e)}
@@ -2413,6 +3068,32 @@ function _injectCSS() {
   .st-danger{color:#e5484d;border-color:#e5484d55}
   .st-save-note{font-size:12px;font-family:ui-monospace,monospace}
   .st-save-note.ok{color:#46b17b}.st-save-note.err{color:#e5484d}
+  .st-profile-dialog{width:min(960px,calc(100vw - 32px));max-height:calc(100vh - 32px);padding:0;border:1px solid var(--border,#333);border-radius:16px;background:var(--surface,#1c1c22);color:inherit;box-shadow:0 24px 80px rgba(0,0,0,.65)}
+  .st-profile-dialog::backdrop{background:rgba(5,5,10,.72);backdrop-filter:blur(3px)}
+  .st-profile-card{display:flex;flex-direction:column;max-height:calc(100vh - 32px)}
+  .st-profile-card>header{display:flex;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border,#333)}
+  .st-profile-card h2,.st-profile-card p{margin:0}.st-profile-card header p{margin-top:4px;color:var(--muted,#9a9);font-size:12px}
+  .st-profile-x{border:0;background:none;color:inherit;font:inherit;font-size:24px;cursor:pointer;border-radius:6px}
+  .st-profile-groups{padding:16px 20px;overflow:auto}.st-profile-group+ .st-profile-group{margin-top:18px}.st-profile-group h3{margin:0 0 7px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent,#f4b23e)}
+  .st-profile-row{display:grid;grid-template-columns:22px 110px minmax(0,1fr);gap:9px 10px;align-items:start;padding:10px 0;border-top:1px solid var(--border,#333)}
+  .st-profile-row>input{margin-top:4px;accent-color:var(--accent,#f4b23e)}.st-profile-field{font-weight:700;font-size:12px;padding-top:3px}
+  .st-profile-values{display:grid;grid-template-columns:1fr 1fr;gap:8px}.st-profile-values>span{min-width:0;padding:8px;border-radius:8px;background:rgba(255,255,255,.035)}
+  .st-profile-values b{display:block;margin-bottom:5px;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted,#9a9)}.st-profile-values code{display:block;white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.45 ui-monospace,monospace}
+  /* A row offering more than one answer stacks them: with two sources the
+     side-by-side grid would put "Current" beside the first option and hide the
+     second below it, which reads as one choice rather than two. */
+  .st-profile-row.has-choice .st-profile-values{grid-template-columns:1fr}
+  .st-profile-pick{display:grid;grid-template-columns:18px auto minmax(0,1fr);gap:6px 9px;align-items:start;
+    padding:8px;border-radius:8px;background:rgba(255,255,255,.035);cursor:pointer}
+  .st-profile-pick:has(input:checked){outline:1px solid var(--accent,#f4b23e);background:rgba(244,178,62,.07)}
+  .st-profile-pick .st-profile-sources{grid-column:3}
+  .st-profile-status{font-size:11.5px;color:var(--muted,#9a9);padding:0 0 8px;min-height:16px;line-height:1.45}
+  .st-profile-sources{grid-column:3;display:flex;gap:5px;flex-wrap:wrap}.st-profile-source{font-size:9px;padding:2px 7px;border:1px solid var(--border,#333);border-radius:999px;color:var(--muted,#9a9)}
+  .st-profile-row.is-invalid{opacity:.6}.st-profile-errors{margin:12px 20px 0;padding:9px 12px;border:1px solid #e5484d88;border-radius:8px;color:#ff9b9e;background:#e5484d12;font-size:11px}.st-profile-errors p+p{margin-top:4px}
+  .st-profile-card>footer{display:grid;grid-template-columns:auto auto 1fr auto auto;gap:8px;padding:13px 20px;border-top:1px solid var(--border,#333);background:var(--surface,#1c1c22)}
+  .st-profile-dialog :focus-visible{outline:2px solid var(--accent,#f4b23e);outline-offset:2px}
+  @media(max-width:720px){.st-profile-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.st-profile-row{grid-template-columns:22px 1fr}.st-profile-field{grid-column:2}.st-profile-values,.st-profile-sources{grid-column:2}.st-profile-values{grid-template-columns:1fr}.st-profile-card>footer{grid-template-columns:1fr 1fr}.st-profile-card>footer span{display:none}}
+  @media(prefers-reduced-motion:reduce){.st-profile-dialog::backdrop{backdrop-filter:none}.st-profile-dialog *{scroll-behavior:auto!important;transition:none!important}}
   .st-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--surface,#26262e);border:1px solid var(--border,#333);border-radius:10px;padding:11px 16px;font-size:13px;box-shadow:0 12px 40px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:.22s;z-index:9999;max-width:80vw}
   .st-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .st-toast.st-ok{border-left:3px solid #46b17b}.st-toast.st-err{border-left:3px solid #e5484d}.st-toast.st-warn{border-left:3px solid #e5843e}

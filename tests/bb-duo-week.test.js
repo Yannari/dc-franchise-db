@@ -245,7 +245,18 @@ describe('a season with the week scheduled', () => {
       for (const w of gs.bb.weeks || []) {
         if (!w.duoWeek) continue;
         weeksSeen++;
-        if ((w.finalNominees || []).length === 4) fourUp++;
+        // THE CEREMONY SEATS FOUR. This counted the FINAL block, which is a
+        // different number by design: the veto in a duo week takes a partner
+        // down with the houseguest it saves (`vetoSavedAll`) and the
+        // replacement brings partners of its own, so a real week reads
+        // G,J,I,K at the ceremony and F,I,K,E,H by eviction night. Four was
+        // never going to be there, and "no week ever seated four nominees" was
+        // measuring the wrong end of the week.
+        if ((w.initialNominees || []).length === 4) fourUp++;
+        // And the block never quietly shrinks back to an ordinary two.
+        expect((w.finalNominees || []).length,
+          `week ${w.num}: the duo block collapsed to ${(w.finalNominees || []).length}`)
+          .toBeGreaterThanOrEqual(4);
         if (w.duoWeekTaken) {
           doubles++;
           expect(w.secondEvicted, 'the partner was not actually removed').toBe(w.duoWeekTaken.taken);

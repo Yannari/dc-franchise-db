@@ -20,9 +20,9 @@
 //
 // Pure: documents in, a dossier out. No fetch, no DOM.
 import { approvedFor, lineFor as lifeLine, kindOf } from './life-events.js';
-import { airLabel } from './franchise-calendar.js';
+import { airLabel, ageNow } from './franchise-calendar.js';
 
-import { parseBio } from './bio.js';
+import { parseBio, joinOrigin } from './bio.js';
 import { seasonWinners } from './records.js';
 
 /** The singular `winner{}` block, but only when it is about this player. */
@@ -54,16 +54,16 @@ export const _slug = n => String(n || '').toLowerCase().trim().replace(/[^a-z0-9
  * a wall with duplicated titles; split, it becomes a section per season that can
  * sit beside that season's placement.
  */
-/** Age from an ISO birthdate, or null. Never stored — see the note in bio. */
+/**
+ * Age from an ISO birthdate, at the FRANCHISE'S present. Never stored.
+ *
+ * This used `new Date()`. Real time advances whether or not a season airs, so
+ * everybody quietly gained a year when the real calendar turned while the
+ * franchise stayed where it was — and the calendar module's whole first
+ * section is about there being only one clock.
+ */
 export function _ageFrom(birthdate) {
-  if (!birthdate || !/^\d{4}-\d{2}-\d{2}$/.test(birthdate)) return null;
-  const b = new Date(`${birthdate}T00:00:00Z`);
-  if (Number.isNaN(b.getTime())) return null;
-  const now = new Date();
-  let a = now.getUTCFullYear() - b.getUTCFullYear();
-  const m = now.getUTCMonth() - b.getUTCMonth();
-  if (m < 0 || (m === 0 && now.getUTCDate() < b.getUTCDate())) a--;
-  return a >= 0 && a < 130 ? a : null;
+  return ageNow(birthdate);
 }
 
 export function splitStory(story) {
@@ -670,7 +670,7 @@ export function buildDossier(player, {
     // line rather than printing an empty one.
     bioLine: [
       bio.age ? `${bio.age}` : '',
-      [bio.ethnicity, bio.nationality].filter(Boolean).join(' '),
+      joinOrigin(bio.ethnicity, bio.nationality),
       bio.sexuality && bio.sexuality !== 'straight' ? bio.sexuality : '',
       // The two the encyclopedia entries lead with, and the two this line was
       // missing entirely.

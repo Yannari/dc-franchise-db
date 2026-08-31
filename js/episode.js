@@ -11,6 +11,7 @@ import { rollDeparture, departureText } from './departures.js';
 import { checkIdolPlays, checkIdolPreTribal, checkNonIdolAdvantageUse, findAdvantages, handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, simulateLastChance } from './challenges-core.js';
 import { applyTwist, generateTwistScenes, generateDockArrivals, simulateJourney, applyRewardSocialEffects } from './twists.js';
+import { holdOutLateArrival, lateArrivalDue, seatLateArrival } from './late-arrival.js';
 import { applyDisadvantagePenalty } from './disadvantage-vote.js';
 import { updateStrategicReputations } from './reputation.js';
 import { applyObservedStrategicRespect, applySocialStatusEffects } from './relationship-events.js';
@@ -37,6 +38,10 @@ import { retrofitFranchiseMeta } from './franchise-meta.js';
 import { survivalFlavor, fillVocab } from './settings.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
+import { applyCoachElimination, coachCardTalk, coachFallout, commitSaveCards, maybeSaveCoach, promoteCoaches, runCoachingBlock } from './coach-episode.js';
+import { coachStatusEvents } from './coach-status-events.js';
+import { activeCoaches, coachesOf, coachRecord as coachRecordFn, reassignCoaches, tribeHeadcount } from './coaches.js';
+import { runCoachDealBlock } from './coach-deals.js';
 
 // Challenge simulate functions
 import { simulateCliffDive } from './chal/cliff-dive.js';
@@ -701,7 +706,7 @@ export function generateSurvivalEvents(ep) {
               } else if (_rS.loyalty >= 7 || _rS.social >= 7) {
                 // Grateful/humble — rebuilds bonds
                 _returnText = _pick([
-                  `${_replacement} comes back with tears in ${_rPr.pos} eyes. "I didn't think I'd get this chance. I'm not wasting it." ${_rPr.Sub} hugs the first person ${_rPr.sub} ${_rPr.sub==='they'?'see':'sees'}. The tribe is shaken — but there's something genuine about the gratitude.`,
+                  `${_replacement} comes back with tears in ${_rPr.posAdj} eyes. "I didn't think I'd get this chance. I'm not wasting it." ${_rPr.Sub} hugs the first person ${_rPr.sub} ${_rPr.sub==='they'?'see':'sees'}. The tribe is shaken — but there's something genuine about the gratitude.`,
                   `"I know I was voted out. I know why. And I'm not holding grudges," ${_replacement} says. "I just want to play. Whatever happened before — clean slate." Some believe ${_rPr.obj}. Some don't.`,
                 ], _replacement + 'grateful');
                 gs.activePlayers.filter(p => p !== _replacement).forEach(p => addBond(_replacement, p, 0.3));
@@ -1167,10 +1172,27 @@ export function simulateEpisode() {
   const cfg = seasonConfig;
   // Fire-making / Koh-Lanta force F4 finale — override every episode start
   if ((cfg.firemaking || cfg.finaleFormat === 'fire-making' || cfg.finaleFormat === 'koh-lanta') && cfg.finaleSize < 4) cfg.finaleSize = 4;
+  // ── SOMEBODY IS NOT HERE YET ──
+  //
+  // Held out BEFORE the episode object is built, because `tribesAtStart` and
+  // `activeAtStart` are snapshotted three lines below and every screen in the
+  // viewing party draws the camp off them. Lifted out afterwards, the wall
+  // would show a player standing in a tribe they have not walked into yet —
+  // the same class of bug the Rivals' `_preArrival` flag exists for.
+  if ((gs.episode || 0) === 0) { try { holdOutLateArrival(); } catch { /* season plays as cast */ } }
   const epNum = gs.episode + 1;
   const ep = { num: epNum, bondChanges: [], riDuel: null, isRIReentry: false, isMerge: false,
                 idolFinds: [], idolPlays: [], idolRehide: false, journey: null, twist: null, twists: [], campEvents: {},
                 revoteVotes: null, revoteLog: null, isRockDraw: false,
+                // Coaches are a SEASON-LONG system (seasonConfig.coaches, like the
+                // Mole), not something scheduled on one night — they train a tribe
+                // every pre-merge episode. DERIVED here from whether the season has
+                // any, not set by applyTwist(): a twist scheduled for only some
+                // episodes previously left `ep.isCoaches` false on the others (and,
+                // worse, false on whichever episode actually crossed the merge —
+                // stranding every surviving coach outside gs.activePlayers for the
+                // rest of the season, since promoteCoaches() was gated on it).
+                isCoaches: !!(gs.coaches?.length),
                 tribesAtStart: gs.tribes.map(t => ({ name: t.name, members: [...t.members] })),
                 activeAtStart: [...gs.activePlayers],
                 exileDuelPlayerAtStart: gs.exileDuelPlayer || null };
@@ -1296,7 +1318,7 @@ export function simulateEpisode() {
     ep.twistNarrativeEvents = ep.twistNarrativeEvents || {};
     const _amNarrKey = gs.isMerged ? 'merge' : _amTribe;
     ep.twistNarrativeEvents[_amNarrKey] = { type: 'rumor', players: [_amW], text:
-      `The tribe looks up. ${_amW} is walking into camp. ${_amPr.Sub} won the Aftermayhem — fought through traps, board games, and brutal challenges to earn ${_amPr.pos} way back. Some faces light up. Others go very, very still. The game just changed.` };
+      `The tribe looks up. ${_amW} is walking into camp. ${_amPr.Sub} won the Aftermayhem — fought through traps, board games, and brutal challenges to earn ${_amPr.posAdj} way back. Some faces light up. Others go very, very still. The game just changed.` };
     if (!ep.campEvents) ep.campEvents = {};
     const _amCampKey = gs.isMerged ? (gs.mergeName || 'merge') : _amTribe;
     if (!ep.campEvents[_amCampKey]) ep.campEvents[_amCampKey] = { pre: [], post: [] };
@@ -1348,7 +1370,13 @@ export function simulateEpisode() {
   if (!gs.blowupHeatNextEp) gs.blowupHeatNextEp = new Set();
   // Beware holders lose their vote each tribal until all tribes have found their beware
   // Skip if this is a merge episode — bewares activate at merge and votes are restored
-  const _willMerge = !gs.isMerged && gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
+  // Coaches count toward the merge. They are not in `gs.activePlayers` —
+  // that array means "competes and votes" — but they are people still in the
+  // game, and every one of them becomes a full player the moment the merge
+  // fires. Counting only contestants meant a mergeAt of 12 triggered with
+  // sixteen people at camp, and then promoted four more into a merge that was
+  // supposed to have twelve.
+  const _willMerge = !gs.isMerged && (gs.activePlayers.length + activeCoaches().length) <= (seasonConfig.mergeAt || 12);
   if (gs.bewares && seasonConfig.advantages?.beware?.enabled && !_willMerge) {
     Object.values(gs.bewares).forEach(b => {
       if (b.holder && !b.activated && gs.activePlayers.includes(b.holder)) {
@@ -1573,7 +1601,7 @@ export function simulateEpisode() {
   // the pre-return count.
   // Subtract this episode's actual returnee count (a rescue return can bring back >1) so the
   // "merging this episode?" flag matches the merge check below and the format designer's projection.
-  gs._mergingThisEp = !gs.isMerged && (gs.activePlayers.length - (isReentry ? (ep.riReentrants?.length || 1) : 0)) <= cfg.mergeAt;
+  gs._mergingThisEp = !gs.isMerged && (gs.activePlayers.length + activeCoaches().length - (isReentry ? (ep.riReentrants?.length || 1) : 0)) <= cfg.mergeAt;
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));
   // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)
   const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction','first-impressions','schoolyard-pick'];
@@ -1617,9 +1645,10 @@ export function simulateEpisode() {
   // and pushed the merge later than the format designer projected (it counts every returnee).
   const _reentryCount = isReentry ? (ep.riReentrants?.length || 1) : 0;
   const _preReturnActive = gs.activePlayers.length - _reentryCount - _twistReturns;
-  const isMerge = !gs.isMerged && _preReturnActive <= cfg.mergeAt;
+  const isMerge = !gs.isMerged && (_preReturnActive + activeCoaches().length) <= cfg.mergeAt;
   if (isMerge) {
     ep.isMerge = true; gs.isMerged = true; gs.phase = 'post-merge'; gs.tribes = [];
+    if (gs.coaches?.length) promoteCoaches(ep);
     gs.sitOutHistory = {}; // sit-out back-to-back rule doesn't carry into individual game
     gs.advantagesFoundThisPhase = {}; // reset per-phase advantage caps (e.g., KiP 1 pre + 1 post)
     if (cfg.advantages?.idol?.enabled) gs.mergeIdolHidden = cfg.idolsAtMerge ?? 1;
@@ -1675,7 +1704,8 @@ export function simulateEpisode() {
     // Unified story-driven generator for both venues (survival camp / furnished motel).
     generateInterludeLife(ep);
     gs.episode = epNum;
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+        lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
       challengeType: null, isMerge: false,
       isInterlude: true, interludeMode: ep.interludeMode,
@@ -1744,7 +1774,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
 
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
       num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: 'slasher-night', isMerge: ep.isMerge,
@@ -1790,6 +1820,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stSN = generateSummaryText(ep);
@@ -2103,7 +2138,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
 
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
       num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
       immunityWinner: null,
       challengeType: 'triple-dog-dare', isMerge: ep.isMerge,
@@ -2150,6 +2185,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stTDD = generateSummaryText(ep);
@@ -2234,7 +2274,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
       num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: 'individual', challengeLabel: ep.challengeLabel,
@@ -2272,6 +2312,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState()
     });
     const stSD = generateSummaryText(ep);
@@ -2288,7 +2333,69 @@ export function simulateEpisode() {
   if (gs._shieldActivations) ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
   // Generate dock arrivals for Episode 1 (if not already generated by first-impressions twist)
   if ((gs.episode || 0) === 0 && !ep.dockArrivals) generateDockArrivals(ep);
+  // ── AND THE ONE WHO WAS NOT ON THE DOCK ──
+  //
+  // Seated BEFORE camp events run, so their first day in that camp is a day
+  // they are actually in — alliances forming, people sizing them up. Seated
+  // after, they would spend their own arrival episode invisible to every
+  // conversation happening around them.
+  if (lateArrivalDue(epNum)) {
+    try {
+      const walkIn = seatLateArrival(ep);
+      if (walkIn) {
+        ep.lateArrival = { name: walkIn.arrival, tribe: walkIn.tribe,
+          fromOtherSide: walkIn.fromOtherSide,
+          // The room as it stood the moment before they walked into it.
+          alreadyHere: [...(walkIn.alreadyHere || [])] };
+        const camp = walkIn.tribe;
+        if (!ep.campEvents) ep.campEvents = {};
+        if (!ep.campEvents[camp]) ep.campEvents[camp] = { pre: [], post: [] };
+        ep.campEvents[camp].pre.unshift(walkIn);
+      }
+    } catch { /* the season carries on without them */ }
+  }
   generateCampEvents(ep, 'pre');
+  // Coaches: pre-merge only — the tribes stop existing at the merge and every
+  // surviving coach is promoted there instead (see the ── MERGE CHECK ── block).
+  if (ep.isCoaches && !gs.isMerged) {
+    (gs.tribes || []).forEach(tribe => {
+      const tribeKey = tribe.name ?? tribe.tribeName;
+      // Deterministic per-tribe/per-episode PRNG (mulberry32) — a bare
+      // Math.random() here would break the season's replay guards, and
+      // the injection seam (`roll` param) already exists on both callees.
+      let _seed = (ep.num || 0) * 2654435761 >>> 0;
+      for (const ch of String(tribeKey || '')) _seed = (_seed + ch.charCodeAt(0) * 16777619) >>> 0;
+      const roll = () => {
+        _seed |= 0; _seed = (_seed + 0x6D2B79F5) | 0;
+        let t = Math.imul(_seed ^ (_seed >>> 15), 1 | _seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+      const blockResult = runCoachingBlock(ep, tribe, roll);
+      const falloutEvents = coachFallout(ep, tribe, blockResult, roll);
+      // Coach Against Coach: only meaningful once a tribe carries two coaches
+      // competing for the same pool. `runCoachDealBlock` is itself a no-op
+      // below that, so it is safe to call on every tribe every episode.
+      const dealEvents = runCoachDealBlock(ep, tribe, roll);
+      // The card gets discussed before it ever has to be played — otherwise a
+      // refusal at tribal arrives with no build-up and no explanation.
+      const cardEvents = coachCardTalk(ep, tribe, roll);
+      // Being a coach, rather than doing the coaching. Fame, the missing
+      // ballot, the card in the room, and a merge nobody else is playing for.
+      const statusEvents = coachStatusEvents(ep, tribe, roll);
+      const coachEvents = [...falloutEvents, ...dealEvents, ...cardEvents, ...statusEvents];
+      if (coachEvents.length) {
+        if (!ep.campEvents) ep.campEvents = {};
+        if (!ep.campEvents[tribeKey]) ep.campEvents[tribeKey] = { pre: [], post: [] };
+        // Consequence, not cause: these events narrate what the coaching
+        // block (rendered later, in the === COACHING === section) just did.
+        // `_textCampPre` prints long before that section — pushing here into
+        // `.pre` puts the fallout ("the drill worked") a full section ahead
+        // of the drill it's describing. `.post` prints after COACHING.
+        ep.campEvents[tribeKey].post.push(...coachEvents);
+      }
+    });
+  }
   checkMoleSabotage(ep); // The Mole: bond sabotage, laying low events, exposure checks
   checkVolunteerExileDuel(ep); // Volunteer Exile Duel: bold player asks to be voted out
   updatePerceivedBonds(ep); // close perception gaps before tribal decisions
@@ -2304,7 +2411,7 @@ export function simulateEpisode() {
       const texts = [
         `${r.name} comes back from the Journey empty-handed — and without a vote. ${p.Sub} say${p.sub==='they'?'':'s'} nothing about what happened. The tribe notices the silence.`,
         `${r.name} returns from the Journey. ${p.Sub} lost. No advantage, no vote at the next tribal. ${p.Sub} sit${p.sub==='they'?'':'s'} by the fire and stare${p.sub==='they'?'':'s'} at the flames.`,
-        `${r.name} walks back into camp with nothing. The Journey cost ${p.obj} ${p.pos} vote. The tribe reads it on ${p.pos} face before ${p.sub} say${p.sub==='they'?'':'s'} a word.`,
+        `${r.name} walks back into camp with nothing. The Journey cost ${p.obj} ${p.posAdj} vote. The tribe reads it on ${p.posAdj} face before ${p.sub} say${p.sub==='they'?'':'s'} a word.`,
       ];
       const text = texts[([...r.name].reduce((s,c) => s + c.charCodeAt(0), 0) + ep.num) % texts.length];
       evts.unshift({ type: 'journeyLoss', players: [r.name], text });
@@ -2794,7 +2901,7 @@ export function simulateEpisode() {
       gs.episode = epNum;
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
-      gs.episodeHistory.push({
+      gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
         num: epNum, eliminated: ep.eliminated || _sdLastPlace, riChoice: ep.riChoice || null,
         immunityWinner: ep.immunityWinner || null,
         challengeType: ep.challengeType || 'individual',
@@ -2836,6 +2943,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
         summaryText: '',
         gsSnapshot: window.snapshotGameState(),
       });
@@ -2891,7 +3003,7 @@ export function simulateEpisode() {
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
       num: epNum, eliminated: _ytElim || null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: ep.challengeType || 'individual',
@@ -2934,6 +3046,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stYT = generateSummaryText(ep);
@@ -3182,7 +3299,8 @@ export function simulateEpisode() {
       gs.episode = epNum;
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
 
-      gs.episodeHistory.push({
+      gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+        lateArrival: ep.lateArrival || null,
         num: epNum, eliminated: _sdLastPlace, riChoice: ep.riChoice || null,
         immunityWinner: ep.immunityWinner || null,
         challengeType: ep.challengeType || 'individual',
@@ -3248,6 +3366,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
         summaryText: '',
         gsSnapshot: window.snapshotGameState(),
       });
@@ -3363,7 +3486,7 @@ export function simulateEpisode() {
             ? _pick([
               `${detector} pulls ${ct.thrower} aside after the challenge. "You threw that." ${ct.thrower} starts to deny it. ${detector}: "Don't. I watched you. You're better than that performance and we both know it." The accusation hangs in the air.`,
               `"Interesting performance out there, ${ct.thrower}," ${detector} says at camp. The sarcasm is barely concealed. "Funny how someone with ${tS.physical >= 7 ? 'your physical ability' : 'your track record'} suddenly can't keep up." ${ct.thrower}'s jaw tightens.`,
-              `${detector} to confessional: "I've seen ${ct.thrower} compete. That was not ${tPr.pos} best. That was ${tPr.pos} worst — on purpose. ${tPr.Sub} ${tPr.sub==='they'?'think':'thinks'} nobody noticed. I noticed."`,
+              `${detector} to confessional: "I've seen ${ct.thrower} compete. That was not ${tPr.posAdj} best. That was ${tPr.posAdj} worst — on purpose. ${tPr.Sub} ${tPr.sub==='they'?'think':'thinks'} nobody noticed. I noticed."`,
             ])
             : _pick([
               `${detector} doesn't say anything to ${ct.thrower} directly. But at camp, ${dPr.sub} ${dPr.sub==='they'?'mention':'mentions'} to someone: "Did that challenge look off to you? ${ct.thrower} just... stopped trying." The seed is planted.`,
@@ -3510,11 +3633,11 @@ export function simulateEpisode() {
     const _postArr = Array.isArray(_ce) ? _ce : (_ce.post = _ce.post || []);
     const _sp = pronouns(sharedTw.sharedWith);
     _postArr.unshift({ type: 'bond', players: [ep.immunityWinner, sharedTw.sharedWith],
-      text: `${ep.immunityWinner} walks over to ${sharedTw.sharedWith} and places the necklace around ${_sp.pos} neck. No words needed. The tribe watches in silence.` });
+      text: `${ep.immunityWinner} walks over to ${sharedTw.sharedWith} and places the necklace around ${_sp.posAdj} neck. No words needed. The tribe watches in silence.` });
     if (sharedTw.snubbed) {
       const _snP = pronouns(sharedTw.snubbed);
       _postArr.push({ type: 'doubt', players: [sharedTw.snubbed, ep.immunityWinner],
-        text: `${sharedTw.snubbed} stares at the ground. ${_snP.Sub} thought that necklace was coming ${_snP.pos} way. It didn't. That changes things.` });
+        text: `${sharedTw.snubbed} stares at the ground. ${_snP.Sub} thought that necklace was coming ${_snP.posAdj} way. It didn't. That changes things.` });
     }
   }
   if (dblSafeTw?.secondImmune && _mergeCampKey && ep.campEvents?.[_mergeCampKey]) {
@@ -3661,7 +3784,7 @@ export function simulateEpisode() {
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
-    gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null, immunityWinner: null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null, num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null, immunityWinner: null,
       challengeType: ep.challengeType, isMerge: ep.isMerge, votes: {}, alliances: [],
       lastChance: true, riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
       advantagesPreTribal: ep.advantagesPreTribal || null,
@@ -3689,15 +3812,64 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState() });
     const stLC = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stLC; ep.summaryText = stLC;
     window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
   }
 
+  // ── A TRIBE OF NOTHING BUT COACHES ───────────────────────────────────
+  // Reachable now that coaches keep a tribe alive: one contestant and two
+  // coaches goes to tribal, the contestant is voted out, and what is left
+  // cannot compete in a challenge, cannot lose one, and can never be sent to
+  // another tribal. The staff moves somewhere they can still be played
+  // against rather than sitting on an empty beach for the rest of the season.
+  for (const _emptyTribe of [...(gs.tribes || [])]) {
+    const _tName = _emptyTribe.name ?? _emptyTribe.tribeName;
+    const _left = (_emptyTribe.members || []).filter(m => gs.activePlayers.includes(m));
+    const _stranded = coachesOf(_tName);
+    if (_left.length || !_stranded.length) continue;
+    const _dest = (gs.tribes || []).find(t => (t.name ?? t.tribeName) !== _tName
+      && (t.members || []).filter(m => gs.activePlayers.includes(m)).length >= 1);
+    if (!_dest) continue;
+    const _destName = _dest.name ?? _dest.tribeName;
+    for (const _sc of _stranded) {
+      const _rec = coachRecordFn(_sc.name);
+      if (_rec) _rec.tribe = _destName;
+    }
+    if (gs.coachCards?.[_tName] && !gs.coachCards[_destName]) gs.coachCards[_destName] = gs.coachCards[_tName];
+    if (gs.coachCards) delete gs.coachCards[_tName];
+    gs.tribes = gs.tribes.filter(t => (t.name ?? t.tribeName) !== _tName);
+    ep.coachTribeCollapse = [...(ep.coachTribeCollapse || []),
+      { from: _tName, to: _destName, coaches: _stranded.map(c => c.name) }];
+  }
+
   // ── TRIBE DISSOLUTION: if the losing tribe has only 1 player left, dissolve it ──
-  if (ep.tribalPlayers?.length === 1 && ep.challengeType === 'tribe') {
-    const _soloP = ep.tribalPlayers[0];
+  // "One player left" has to mean one PERSON left. `ep.tribalPlayers` is the
+  // ballot list, so a tribe of one contestant and two coaches counted as a
+  // tribe of one and was dissolved with three people living in it — and the
+  // rebuild below moved only the contestant, leaving both coaches attached to
+  // a tribe that no longer existed. They did not leave the game; they stopped
+  // being anywhere in it.
+  // A camp folds when there are two people left in it, coaches included. It
+  // used to fold at one CONTESTANT and ignore the coaches entirely, which both
+  // fired late for a coach-free tribe and fired on a camp of five where three
+  // of them happened not to hold a ballot.
+  const _dissolveCoaches = ep.loser?.name ? coachesOf(ep.loser.name) : [];
+  const _dissolveHeads = (ep.tribalPlayers?.length || 0) + _dissolveCoaches.length;
+  // At least one contestant: a camp of nothing but coaches is folded by the
+  // block above, and everything below here reads _soloP for bonds and pronouns.
+  if ((ep.tribalPlayers?.length || 0) >= 1 && _dissolveHeads <= 2 && ep.challengeType === 'tribe') {
+    // Everybody left moves, not just a lone survivor — and everybody keeps
+    // what they are. A contestant arrives a contestant; a coach arrives a
+    // coach, still unable to compete or vote, at whatever camp takes them.
+    const _movers = [...(ep.tribalPlayers || [])];
+    const _soloP = _movers[0];
     const _fromName = ep.loser.name;
     const _candTribes = gs.tribes.filter(t => t.name !== _fromName && t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
     if (_candTribes.length) {
@@ -3707,11 +3879,23 @@ export function simulateEpisode() {
         const bB = b.members.reduce((s, m) => s + getBond(_soloP, m), 0) / (b.members.length || 1);
         return bB - bA;
       })[0];
-      ep.tribeDissolve = { player: _soloP, fromTribe: _fromName, toTribe: _destTribe.name };
-      // Rebuild tribe list: remove dissolved tribe, add player to destination
+      ep.tribeDissolve = { player: _soloP, players: _movers, fromTribe: _fromName, toTribe: _destTribe.name };
+      // Rebuild tribe list: remove dissolved tribe, add the survivors
       gs.tribes = gs.tribes
         .filter(t => t.name !== _fromName)
-        .map(t => t.name === _destTribe.name ? { ...t, members: [...t.members, _soloP] } : t);
+        .map(t => t.name === _destTribe.name ? { ...t, members: [...t.members, ..._movers] } : t);
+      // Any coach on the dissolved tribe travels with it. `coach.tribe` is how
+      // coachesOf finds them, and a stale name there is a coach who exists in
+      // gs.coaches and belongs to no tribe on the board.
+      for (const _dc of coachesOf(_fromName)) {
+        const _rec = coachRecordFn(_dc.name);
+        if (_rec) _rec.tribe = _destTribe.name;
+      }
+      // The card travels too: it belongs to a staff, not to a camp.
+      if (gs.coachCards?.[_fromName] && !gs.coachCards[_destTribe.name]) {
+        gs.coachCards[_destTribe.name] = gs.coachCards[_fromName];
+      }
+      if (gs.coachCards) delete gs.coachCards[_fromName];
       ep.tribalPlayers = [];
       ep.noTribal = true;
       // Generate post events — destination tribe now includes the arrival
@@ -3734,7 +3918,7 @@ export function simulateEpisode() {
       updateSurvival(ep);
       if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
       gs.episode = epNum;
-      gs.episodeHistory.push({ num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
+      gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null, num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
         challengeType: ep.challengeType, isMerge: ep.isMerge, votes: {}, alliances: [],
         riDuel: ep.riDuel || null, riPlayersPreDuel: ep.riPlayersPreDuel || null, riLifeEvents: ep.riLifeEvents || [], riReentry: ep.riReentry || null, rescueIslandEvents: ep.rescueIslandEvents || [], rescueReturnChallenge: ep.rescueReturnChallenge || null, rescueReturn: ep.rescueReturn || null, riArrival: ep.riArrival || null, riQuit: ep.riQuit || null,
         advantagesPreTribal: ep.advantagesPreTribal || null,
@@ -3762,6 +3946,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
         summaryText: '', gsSnapshot: window.snapshotGameState() });
       const stTD = generateSummaryText(ep);
       gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stTD; ep.summaryText = stTD;
@@ -3903,7 +4092,8 @@ export function simulateEpisode() {
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
-    gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated || null, riChoice: null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null, num: epNum, eliminated: ep.eliminated || null, riChoice: null,
+        lateArrival: ep.lateArrival || null,
       departure: ep.departure || null,
       immunityWinner: ep.immunityWinner || null, challengeType: ep.challengeType || null,
       isMerge: ep.isMerge, votes: {}, alliances: [], noTribal: true,
@@ -3967,6 +4157,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       isRewardOnly: ep.isRewardOnly || false, rewardChalData: ep.rewardChalData || null,
       summaryText: '', gsSnapshot: window.snapshotGameState() });
     const stNT = generateSummaryText(ep);
@@ -4037,7 +4232,15 @@ export function simulateEpisode() {
   }
 
   // Helper: run one full vote + idol + resolve (with revote on tie)
-  function runTribal(tribalPlayers, immuneName, allianceSet) {
+  // coachTargets: names of coaches eligible to be voted for at THIS tribal.
+  // Defaults to coachesOf(tribeLabel) — correct for the ordinary single-tribe
+  // vote (both the main tribal and the double-boot second vote reuse the same
+  // tribe). Callers voting a DIFFERENT roster than the outer `tribeLabel`
+  // closure variable describes (a double-tribal merged council spanning
+  // several tribes, or one tribe inside a multi-tribal loop) must pass the
+  // right list explicitly — otherwise every coach on that roster is silently
+  // unreachable as a vote target.
+  function runTribal(tribalPlayers, immuneName, allianceSet, coachTargets = coachesOf(tribeLabel).map(c => c.name)) {
     prepareIntentionsForVote(ep);
     // Read-of-the-room must never include fallout caused by the ballot it
     // appears before. Preserve the relationship cause trail at this boundary.
@@ -4223,7 +4426,11 @@ export function simulateEpisode() {
     // Snapshot bonds before vote — triggers need pre-vote bond values
     ep._preVoteBondSnapshot = { ...gs.bonds };
 
-    const { votes, log, defections, voteMiscommunications, votePitches: _vpResult, pitchIntel:_pitchIntelResult, pitchCounterplay:_pitchCounterplayResult, knowledgeEvents:_knowledgeEventsResult, emotionalDefectionDiagnostics, voteCommitmentDiagnostics } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
+    // The save card commits HERE — before a single vote is read, like an idol.
+    // A coach reads the blocs aiming at them and decides; the peers' signatures
+    // are cast privately and stay sealed until tribal.
+    commitSaveCards(ep, tribeLabel, allianceSet);
+    const { votes, log, defections, voteMiscommunications, votePitches: _vpResult, pitchIntel:_pitchIntelResult, pitchCounterplay:_pitchCounterplayResult, knowledgeEvents:_knowledgeEventsResult, emotionalDefectionDiagnostics, voteCommitmentDiagnostics } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote, coachTargets);
     if (emotionalDefectionDiagnostics?.length) ep.emotionalDefectionDiagnostics = emotionalDefectionDiagnostics;
     if (voteCommitmentDiagnostics?.length) ep.voteCommitmentDiagnostics = voteCommitmentDiagnostics;
     if (_vpResult) ep.votePitches = _vpResult;
@@ -4677,11 +4884,26 @@ export function simulateEpisode() {
         ep.tiebreakerResult = { ...ep.tiebreakerResult, type: 'challenge', winner: _nonImmune.find(p => p !== loser), loser, participants: _nonImmune };
         return { votes, log, eliminated: loser, isTie: true, tiedPlayers: _nonImmune };
       }
-      // Survivor mode: revote, then rocks
-      const rv = simulateVotes(tribalPlayers, [...tribalImmune, ...(ep.idolPlays||[]).map(p => p.player)], allianceSet, gs.lostVotes, ep.openVote);
+      // Survivor mode: revote, then rocks.
+      //
+      // The tied players do not vote in a revote — the screen has always said
+      // so ("X and Y cannot vote") while the simulation let them cast ballots
+      // anyway, because only `gs.lostVotes` was passed. A four-way tie between
+      // four voters then re-ran as the same four-way tie and went to rocks
+      // every time, and the only person entitled to break it was outvoted by
+      // the people the rule exists to silence.
+      const _revoteSilenced = [...new Set([...(gs.lostVotes || []), ..._nonImmune])];
+      const rv = simulateVotes(tribalPlayers, [...tribalImmune, ...(ep.idolPlays||[]).map(p => p.player)], allianceSet, _revoteSilenced, ep.openVote, coachTargets);
       ep.revoteVotes = rv.votes; ep.revoteLog = rv.log;
+      ep.revoteSilenced = _nonImmune;
       const res2 = resolveVotes(rv.votes);
-      if (res2.eliminated) return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _nonImmune };
+      // A revote that produced a name is not a tie any more. Reporting one
+      // made the final tally render every tied player as TIE with nobody
+      // eliminated, over a revote that had just settled it.
+      if (res2.eliminated) {
+        ep.revoteResolved = res2.eliminated;
+        return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _nonImmune, revoteResolved: res2.eliminated };
+      }
       if (res2.isTie) {
         const rockElim = rockDraw(res2.tiedPlayers?.length ? res2.tiedPlayers : _nonImmune);
         ep.isRockDraw = true;
@@ -4691,7 +4913,7 @@ export function simulateEpisode() {
 
     // Votes wiped (SitD + idol both fired) — run a fresh open vote with all immune players excluded
     if (!res.eliminated && !res.isTie && ep.shotInDark?.safe) {
-      const rv2 = simulateVotes(tribalPlayers, tribalImmune, allianceSet, gs.lostVotes, ep.openVote);
+      const rv2 = simulateVotes(tribalPlayers, tribalImmune, allianceSet, gs.lostVotes, ep.openVote, coachTargets);
       ep.revoteVotes = rv2.votes; ep.revoteLog = rv2.log;
       ep.sidFreshVote = true;
       const res2 = resolveVotes(rv2.votes);
@@ -4730,7 +4952,7 @@ export function simulateEpisode() {
       const eligibleRevoters = tribalPlayers.filter(p => !res.tiedPlayers.includes(p) && !gs.lostVotes.includes(p));
       if (!eligibleRevoters.length) {
         ep.isFullDeadlock = true;
-        const fdRv = simulateVotes(tribalPlayers, tribalImmune.length ? tribalImmune : immuneName, allianceSet, gs.lostVotes, ep.openVote);
+        const fdRv = simulateVotes(tribalPlayers, tribalImmune.length ? tribalImmune : immuneName, allianceSet, gs.lostVotes, ep.openVote, coachTargets);
         ep.revoteVotes = fdRv.votes; ep.revoteLog = fdRv.log;
         const fdRes = resolveVotes(fdRv.votes);
         if (fdRes.eliminated) return { votes, log, eliminated: fdRes.eliminated, isTie: true, tiedPlayers: res.tiedPlayers };
@@ -4755,6 +4977,10 @@ export function simulateEpisode() {
         const rockElim = rockDraw(res2.tiedPlayers);
         return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res2.tiedPlayers };
       }
+      // The revote produced a name, so the tribal is settled. Without this
+       // the final tally rendered every tied player as TIE with nobody
+       // eliminated, over a revote that had already decided it.
+      ep.revoteResolved = res2.eliminated;
       return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: res.tiedPlayers };
     }
     // Safety net: if resolveVotes returned an elimination but the top 2 vote counts are actually tied,
@@ -4782,6 +5008,7 @@ export function simulateEpisode() {
             const rockElim = rockDraw(res2.tiedPlayers);
             return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res2.tiedPlayers };
           }
+          ep.revoteResolved = res2.eliminated;
           return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _lateTied };
         }
       }
@@ -4805,6 +5032,7 @@ export function simulateEpisode() {
             const rockElim = rockDraw(res2.tiedPlayers);
             return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res2.tiedPlayers };
           }
+          ep.revoteResolved = res2.eliminated;
           return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _fcTied };
         }
       }
@@ -4852,7 +5080,14 @@ export function simulateEpisode() {
     ep.alliances = _dtAlliances;
     // Pre-tribal idol mechanics
     checkIdolPreTribal(ep, _dtMembers);
-    const _dtResult = runTribal(_dtMembers, null, _dtAlliances);
+    // The merged council spans every losing tribe, not the single tribe the
+    // outer `tribeLabel` closure variable describes (it's null here — this
+    // isn't ep.challengeType === 'tribe') — collect coaches from ALL of them
+    // so none are silently unreachable as a vote target on a double-tribal night.
+    const _dtCoachTargets = _dtLosingTribes.flatMap(t => coachesOf(t.name).map(c => c.name));
+    const _dtResult = runTribal(_dtMembers, null, _dtAlliances, _dtCoachTargets);
+    maybeSaveCoach(ep, _dtResult); // offer the coach's save card before the elimination gate reads .eliminated
+    applyCoachElimination(ep, _dtResult); // see applyCoachElimination's header — must run before _dtResult.eliminated is read below
     ep.votes = _dtResult.votes; ep.votingLog = _dtResult.log;
     ep.isTie = _dtResult.isTie; ep.tiedPlayers = _dtResult.tiedPlayers;
     // Second Life twist/amulet checks
@@ -4906,14 +5141,15 @@ export function simulateEpisode() {
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
-    gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null, num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
+        lateArrival: ep.lateArrival || null,
       immunityWinner: null, challengeType: 'double-tribal', isMerge: ep.isMerge,
       challengeLabel: ep.challengeLabel || null, challengeCategory: ep.challengeCategory || null,
       challengeDesc: ep.challengeDesc || '', challengePlacements: ep.challengePlacements || null,
       chalMemberScores: ep.chalMemberScores || null, chalSitOuts: ep.chalSitOuts || null,
       votes: ep.votes, alliances: (ep.alliances||[]).map(a=>({...a})),
       votingLog: ep.votingLog || [],
-      revoteLog: ep.revoteLog || [], revoteVotes: ep.revoteVotes || null,
+      revoteLog: ep.revoteLog || [], revoteVotes: ep.revoteVotes || null, revoteResolved: ep.revoteResolved || null, revoteSilenced: ep.revoteSilenced || null,
       isTie: ep.isTie || false, tiedPlayers: ep.tiedPlayers ? [...ep.tiedPlayers] : null, isRockDraw: ep.isRockDraw || false,
       sidFreshVote: ep.sidFreshVote || false,
       tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
@@ -4988,6 +5224,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stDT = generateSummaryText(ep);
@@ -5004,7 +5245,13 @@ export function simulateEpisode() {
       // Pre-tribal idol mechanics per tribe
       checkIdolPreTribal(ep, tribe.members);
       const tAlliances = formAlliances(tribe.members, tribe.name, ep.challengeCategory);
-      const tResult = runTribal(tribe.members, null, tAlliances);
+      // Each losing tribe votes independently — the outer `tribeLabel` closure
+      // variable is null here (this isn't ep.challengeType === 'tribe'), so
+      // without an explicit list this tribe's coaches would be silently
+      // unreachable as a vote target.
+      const tResult = runTribal(tribe.members, null, tAlliances, coachesOf(tribe.name).map(c => c.name));
+      maybeSaveCoach(ep, tResult); // offer the coach's save card before the elimination gate reads .eliminated
+      applyCoachElimination(ep, tResult); // see applyCoachElimination's header — must run before tResult.eliminated is read below
       // Capture idol plays that fired for THIS tribe
       const _tribeIdolPlays = (ep.idolPlays || []).slice(_preIdolCount);
 
@@ -5082,7 +5329,7 @@ export function simulateEpisode() {
         idolPlays: _tribeIdolPlays,
         shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null, tribalDisruption: ep.tribalDisruption || null, feastEvents: ep.feastEvents || null, idolWagerResults: ep.idolWagerResults || null,
         tiebreakerResult: ep.tiebreakerResult || null,
-        revoteVotes: ep.revoteVotes || null, revoteLog: ep.revoteLog || null,
+        revoteVotes: ep.revoteVotes || null, revoteLog: ep.revoteLog || null, revoteResolved: ep.revoteResolved || null, revoteSilenced: ep.revoteSilenced || null,
         sidFreshVote: ep.sidFreshVote || false,
         isRockDraw: ep.isRockDraw || false,
       });
@@ -5151,7 +5398,8 @@ export function simulateEpisode() {
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+        lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
       immunityWinner: null, challengeType: 'multi-tribal', isMerge: ep.isMerge,
       challengeLabel: ep.challengeLabel || null, challengeCategory: ep.challengeCategory || null,
@@ -5200,7 +5448,7 @@ export function simulateEpisode() {
       isBasicStraining: ep.isBasicStraining || false, basicStraining: ep.basicStraining || null,
       isTreasureIsland: ep.isTreasureIsland || false, treasureIsland: ep.treasureIsland || null,
       votingLog: ep.votingLog || [],
-      revoteLog: ep.revoteLog || [], revoteVotes: ep.revoteVotes || null,
+      revoteLog: ep.revoteLog || [], revoteVotes: ep.revoteVotes || null, revoteResolved: ep.revoteResolved || null, revoteSilenced: ep.revoteSilenced || null,
       isTie: ep.isTie || false, tiedPlayers: ep.tiedPlayers ? [...ep.tiedPlayers] : null, isRockDraw: ep.isRockDraw || false,
       sidFreshVote: ep.sidFreshVote || false,
       bewareLostVotes: ep.bewareLostVotes || [],
@@ -5231,6 +5479,11 @@ export function simulateEpisode() {
         isMidnightManhunt: ep.isMidnightManhunt || false, midnightManhunt: ep.midnightManhunt || null,
         isGreecesPieces: ep.isGreecesPieces || false, greecesPieces: ep.challengeData || null,
         isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null, isAftermayhem: ep.isAftermayhem || false, isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       summaryText: '', gsSnapshot: window.snapshotGameState(),
     });
     const stMT = generateSummaryText(ep);
@@ -5557,7 +5810,8 @@ function simulateJuryRoundtable(ep) {
         generateRIPostDuelEvents(ep);
       }
     }
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+        lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated || null, firstEliminated: null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: ep.challengeType || 'individual', isMerge: ep.isMerge,
@@ -5673,6 +5927,11 @@ function simulateJuryRoundtable(ep) {
       isHangarBlack: ep.isHangarBlack || false, hangarBlack: ep.challengeData || null,
       isAftermayhem: ep.isAftermayhem || false,
       isChainOfCommand: ep.isChainOfCommand || false, chainOfCommand: ep.chainOfCommand || null,
+        // Somebody walked IN on this episode. Stored on EVERY push, because a
+        // field missing from one of them is a season that forgets the arrival
+        // happened the moment it is replayed — the bug class this file keeps a
+        // list about.
+        lateArrival: ep.lateArrival || null,
       isRewardOnly: ep.isRewardOnly || false, rewardChalData: ep.rewardChalData || null,
       noChallenge: ep.noChallenge || false,
     });
@@ -5873,7 +6132,8 @@ function simulateJuryRoundtable(ep) {
       }
     }
 
-    gs.episodeHistory.push({
+    gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+        lateArrival: ep.lateArrival || null,
       num: epNum, eliminated: ep.eliminated || null, firstEliminated: null, riChoice: ep.riChoice || null,
       immunityWinner: ep.immunityWinner || null,
       challengeType: ep.challengeType || 'individual', isMerge: ep.isMerge,
@@ -5915,6 +6175,8 @@ function simulateJuryRoundtable(ep) {
 
   // ── VOTE ──
   const r1 = runTribal(ep.tribalPlayers, ep.immunityWinner||null, alliances);
+  maybeSaveCoach(ep, r1); // offer the coach's save card before the elimination gate reads .eliminated
+  applyCoachElimination(ep, r1); // see applyCoachElimination's header — must run before r1.eliminated is read below
   // The initial tally is authoritative. In particular, Extra Votes already
   // mutate r1.votes before resolution. Preserve tie metadata even if a legacy
   // or special resolution path returned an eliminated player without it; the
@@ -6220,6 +6482,8 @@ function simulateJuryRoundtable(ep) {
       ep.shotInDark1 = ep.shotInDark || null;
       ep.shotInDark = null;
       const r2 = runTribal(remaining, ep.immunityWinner2, alliances2);
+      maybeSaveCoach(ep, r2); // offer the coach's save card before the elimination gate reads .eliminated
+      applyCoachElimination(ep, r2); // see applyCoachElimination's header — must run before r2.eliminated is read below
       ep.votes2 = r2.votes; ep.votingLog2 = r2.log;
       ep.isTie = r2.isTie; ep.tiedPlayers = r2.tiedPlayers;
 
@@ -6851,10 +7115,15 @@ function simulateJuryRoundtable(ep) {
   if (!gs.isMerged && !ep.isMerge && gs.tribes.length >= 3) {
     const _activeTribes = gs.tribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
     if (_activeTribes.length >= 3) {
-      const _tinyTribes = _activeTribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length <= 2);
+      // A camp of two is two PEOPLE. `gs.activePlayers` holds contestants, so a
+      // tribe of two contestants and two coaches counted as two and was folded
+      // with four people living on it — the coaches then had nowhere to be,
+      // because the distribution below only moves contestants.
+      const _headsOf = t => tribeHeadcount(t, gs.activePlayers);
+      const _tinyTribes = _activeTribes.filter(t => _headsOf(t) <= 2);
       _tinyTribes.forEach(_tinyTribe => {
         const _tinyMembers = _tinyTribe.members.filter(m => gs.activePlayers.includes(m));
-        if (_tinyMembers.length === 0 || _tinyMembers.length > 2) return;
+        if (_headsOf(_tinyTribe) === 0 || _headsOf(_tinyTribe) > 2) return;
         // Only dissolve if there are still 3+ tribes after removal
         const _remainingTribes = gs.tribes.filter(t => t.name !== _tinyTribe.name && t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
         if (_remainingTribes.length < 2) return;
@@ -6877,9 +7146,23 @@ function simulateJuryRoundtable(ep) {
         if (_dissolved.length) {
           // Remove the empty tribe
           gs.tribes = gs.tribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
+          // The distribution above moves contestants only, so the folded camp's
+          // coaches were left pointing at a tribe that had just been removed.
+          // They keep coach status; they simply need a camp that exists.
+          const _coachMoves = reassignCoaches(gs.tribes);
           // Store dissolution data
           if (!ep.tribeDissolutions) ep.tribeDissolutions = [];
-          ep.tribeDissolutions.push({ tribe: _tinyTribe.name, members: _dissolved });
+          ep.tribeDissolutions.push({ tribe: _tinyTribe.name, members: _dissolved, coaches: _coachMoves });
+          _coachMoves.forEach(m => {
+            if (!ep.campEvents) ep.campEvents = {};
+            if (!ep.campEvents[m.to]) ep.campEvents[m.to] = { pre: [], post: [] };
+            if (!ep.campEvents[m.to].post) ep.campEvents[m.to].post = [];
+            ep.campEvents[m.to].post.push({
+              type: 'tribeArrival', players: [m.coach],
+              text: `${m.from} is gone, and ${m.coach} arrives at ${m.to} still holding a clipboard and still holding no vote. ${m.followed ? `${m.followed} of ${m.coach}'s protégés came here too.` : `Not one of ${m.coach}'s protégés is on this beach.`}`,
+              badgeText: 'COACH REASSIGNED', badgeClass: 'red'
+            });
+          });
           // Camp events for arrivals
           _dissolved.forEach(d => {
             const pr = pronouns(d.player);
@@ -6930,7 +7213,8 @@ function simulateJuryRoundtable(ep) {
 
   // ── INCREMENT & SAVE ──
   gs.episode = epNum;
-  gs.episodeHistory.push({
+  gs.episodeHistory.push({ coachData: ep.coachData || null, isCoaches: ep.isCoaches || false, coachCardCommits: ep.coachCardCommits || null, coachSaveRefusals: ep.coachSaveRefusals || null, coachCardNotPlayed: ep.coachCardNotPlayed || null, coachElimination: ep.coachElimination || null, coachPromotions: ep.coachPromotions || null, coachSaves: ep.coachSaves || null,
+        lateArrival: ep.lateArrival || null,
     num: epNum, eliminated: ep.eliminated, firstEliminated: ep.firstEliminated || null, riChoice: ep.riChoice,
     immunityWinner: ep.challengeType === 'tribe' ? null : (ep.immunityWinner || null),
     challengeType: ep.challengeType, isMerge: ep.isMerge,

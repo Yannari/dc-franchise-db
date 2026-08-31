@@ -41,7 +41,15 @@ export default defineConfig({
     // `tests/unrun-assertions.test.js` runs on every `npm test`, MEASURES what
     // this config actually collects, and fails if an excluded file asserts
     // without a named runner. If you add an exclusion here, it stays covered.
-    exclude: [...defaultExclude, 'tests/**/*-audit.test.js', ...SLOW_GLOBS],
+    exclude: [
+      ...defaultExclude,
+      'tests/**/*-audit.test.js',
+      // Launches Chromium directly. It has its own CI job where the browser is
+      // installed; collecting it in a generic Vitest shard fails before a
+      // single page assertion can run.
+      'tests/show-pages.e2e.test.js',
+      ...SLOW_GLOBS,
+    ],
     environment: 'jsdom',
     // Several suites here play whole seasons rather than asserting on a
     // fixture — the season audits, and the Big Brother libraries, which are

@@ -46,6 +46,26 @@
  * machine is roughly twice as fast.
  */
 export const SLOW_TESTS = [
+  // Re-measured from PR run 33417681177 after the first split. These files
+  // timed out or dominated a shard because they simulate repeated weeks or
+  // whole seasons; they belong beside the same sweeps below.
+  'bb-americas-nominee-style.test.js',
+  'bb-diamond-veto.test.js',
+  'bb-safety-suite.test.js',
+  'bb-showmance-rate.test.js',
+  'events-big-brother-volume.test.js',
+  'bb-love-triangle.test.js',
+  'bb-plain-text.test.js',
+  'bb-power-expiry.test.js',
+  'bb-temptation.test.js',
+  'bb-veto-protection.test.js',
+  'competition-big-brother-library.test.js',
+  'bb-act-coverage.test.js',
+  'bb-care-package.test.js',
+  'bb-coin-of-destiny.test.js',            // 87s local, 2026-08-31
+  'bb-hacker.test.js',
+  'bb-roadkill.test.js',
+  'tr-calibration.test.js',
   'bb-power-shelf.test.js',               // 1014s (CI 2026-08-31)
   'bb-nomination-alliance.test.js',        // 493s  (CI 2026-08-31)
   'bb-saboteur.test.js',                   // 491s  (CI 2026-08-31)

@@ -126,7 +126,8 @@ describe('the cast can author it', () => {
     initGameState();
     expect(getBond('Gus', 'Iris')).toBe(-4);
     expect(feelsFor('Gus', 'Iris')).toBe(3);
-    expect(feelsFor('Iris', 'Gus')).toBe(-4);
+    // An omitted ex lean receives the stable cold-side kinship default.
+    expect(feelsFor('Iris', 'Gus')).toBe(-5.4);
     setRelationships([]);
   });
 

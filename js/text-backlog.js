@@ -4580,7 +4580,7 @@ function _textBBHouseStatus(ep, phase, ln, sec, { skip = [] } = {}) {
     // the hunting. The avatar now carries the name in its alt text — which the
     // screen reader wanted anyway — so take it from there and drop the initial
     // that used to stand in for it.
-    .replace(/<span class="bb-av"[^>]*>.*?alt="([^"]*)".*?<\/span>/gi,
+    .replace(/<span class="bb-av"[^>]*>[\s\S]*?alt="([^"]*)"[\s\S]*?<\/span>/gi,
       (_, name) => (name ? `${name} · ` : ''))
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/div>/gi, '\n')
@@ -4625,10 +4625,13 @@ function _textBBHouseStatus(ep, phase, ln, sec, { skip = [] } = {}) {
     // nothing later on that line names Bowie.
     .map(l => {
       const cells = l.split(' · ');
-      const namesIn = s => s.split(/[^A-Za-z'-]+/).filter(Boolean);
       return cells.filter((c, i) => {
         if (!/^[A-Z][A-Za-z'-]*$/.test(c)) return true;
-        return !cells.slice(i + 1).some(later => namesIn(later).includes(c));
+        // Only discard a portrait name when a later cell repeats that name as
+        // its own label. A reason may mention the hunter again ("promised me
+        // Dawn"), and treating prose as a duplicate erases the sentence's
+        // subject.
+        return !cells.slice(i + 1).some(later => later === c);
       }).join(' · ')
         // A pairing is one phrase, not two cells: "Nichelle vs Jo".
         .replace(/ (vs|&) · /g, ' $1 ');

@@ -15,8 +15,10 @@ const worker = readFileSync('worker/worker-studio.js', 'utf8');
 
 describe('the airing season knows which show it is', () => {
   it('stamps the format onto the snapshot the site receives', () => {
-    expect(client, 'the live snapshot still carries only a season number')
-      .toMatch(/format: seasonFormat\(typeof seasonConfig !== 'undefined' \? seasonConfig : null\)/);
+    expect(client, 'the live snapshot never resolves the loaded season format')
+      .toMatch(/const format = seasonFormat\(typeof seasonConfig !== 'undefined' \? seasonConfig : null\)/);
+    expect(client, 'the resolved format never reaches the snapshot')
+      .toMatch(/return \{[\s\S]*?\bformat,/);
   });
 
   it('takes it from the season, not from a constant', () => {
@@ -25,7 +27,8 @@ describe('the airing season knows which show it is', () => {
     // show. The LIVE sync has no such split: one function, either show.
     const snapshot = client.slice(client.indexOf('export function extractLiveSeasonSnapshot'),
       client.indexOf('export async function syncLiveEpisode'));
-    expect(snapshot).toMatch(/format: seasonFormat\(/);
+    expect(snapshot).toMatch(/const format = seasonFormat\(/);
+    expect(snapshot).toMatch(/return \{[\s\S]*?\bformat,/);
     expect(snapshot, 'the airing season is pinned to one show').not.toMatch(/format: DEFAULT_FORMAT/);
     expect(snapshot).not.toMatch(/format: 'big-brother'/);
   });

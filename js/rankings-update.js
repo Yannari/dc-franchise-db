@@ -12,7 +12,7 @@
 // Rendered into the Legacy tab by renderRankingsUpdate().
 
 import { extractSeasonTemplate, buildBigBrotherSeasonDocument } from './stats-export.js';
-import { SHOWS } from './shows.js';
+import { SHOWS, parseSeasonRef } from './shows.js';
 import { boardFile } from './ranking-boards.js';
 
 // The tool was written against current-season.html, whose .btn is white-on-dark.
@@ -428,7 +428,7 @@ let rowCount       = 0;
 // These lived as literals in FOUR places — the scorer, the column titles, the
 // legend and the preview breakdown — which is the drift this file already got
 // bitten by once with the competition columns. One copy, everything reads it.
-const RU_ADV = { found: 0.8, played: 2.4, wasted: 2.4, held: 2.4 };
+export const RU_ADV = { found: 0.8, played: 2.4, wasted: 2.4, held: 2.4 };
 
 // Alliances are a participation trophy, priced like one.
 //
@@ -438,9 +438,9 @@ const RU_ADV = { found: 0.8, played: 2.4, wasted: 2.4, held: 2.4 };
 // socially present — and it was enough to put a houseguest whose entire
 // resume was "in four alliances" above one who won three competitions and
 // played a power. It is a tiebreaker now, not a term.
-const RU_ALLY = { weight: 0.25, cap: 4 };
+export const RU_ALLY = { weight: 0.25, cap: 4 };
 
-const RU_SHOW = {
+export const RU_SHOW = {
   'total-drama': {
     comp1: { label: 'Imm',  weight: 1.6, title: '+1.6 per individual immunity win' },
     comp2: { label: 'Rew',  weight: 0.6, title: '+0.6 per reward win' },
@@ -453,7 +453,28 @@ const RU_SHOW = {
     strat: { weight: 0.12, scale: 35 },
     // Votes against, on a curve around the cast average.
     social: { kind: 'votes', label: 'Votes vs',
-      title: 'Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below' },
+      title: 'Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below',
+      // HOW THIS COLUMN IS SAID IN A SENTENCE. It used to be worked out from
+      // `kind`, which is a two-valued flag, so the third show -- whose column
+      // is murder ballots -- came out as "survived the block 3 times", the
+      // exact opposite of what being named means there.
+      prose: { zero: 'never received a vote', one: 'voted against once',
+        many: n => `${n} votes against` } },
+    // WHERE THIS SHOW KEEPS ITS NUMBERS on a published placement. See `read`
+    // on the house's entry below for why this is a function per show and not
+    // a ternary in the loader.
+    read: (p) => ({
+      comp1: p.immunityWins || p.imm || 0,
+      comp2: p.rewardWins != null ? p.rewardWins
+        : (p.rew != null ? p.rew : Math.max(0, (p.challengeWins || 0) - (p.immunityWins || 0))),
+      comp3: 0,
+      social: p.votesAgainst || p.votes_against || p.votesReceived || 0,
+      advFound: p.idolsFound ?? p.advFound ?? 0,
+      advPlayed: p.advPlayed ?? 0,
+      advWasted: p.advWasted ?? 0,
+      advHeld: p.advHeld ?? 0,
+      strategicScore: p.strategicScore ?? 0,
+    }),
   },
   'big-brother': {
     comp1: { label: 'HOH',  weight: 1.2, title: '+1.2 per Head of Household — power, and a target' },
@@ -534,7 +555,192 @@ const RU_SHOW = {
     // 1.0 and 1.5 — it only sets how far apart the board spaces them — so this
     // is a statement about what surviving is worth, not a tiebreak.
     social: { kind: 'survived', label: 'Survived', weight: 1.0, cap: 4,
-      title: 'Eviction nights survived ON THE BLOCK · +1.0 each, max 4 · nominated, voted on, and kept' },
+      title: 'Eviction nights survived ON THE BLOCK · +1.0 each, max 4 · nominated, voted on, and kept',
+      prose: { zero: '', one: 'survived the block once',
+        many: n => `survived the block ${n} times` } },
+    // ── WHERE THIS SHOW KEEPS ITS NUMBERS ──
+    //
+    // `loadSeasonData` used to read these through `isHouse ? A : B` — nine
+    // ternaries on one show, whose else branch is always Total Drama. A third
+    // show therefore auto-filled from `immunityWins`, `rewardWins` and
+    // `idolsFound`, which a castle does not have, so EVERY COLUMN LOADED ZERO
+    // and the board came out ranked on placement alone. That is precisely what
+    // happened to Big Brother for a season, it is what the comments two blocks
+    // up are about, and it looks exactly like a working board. A show declares
+    // where its own numbers live; the loader reads whatever it is given.
+    read: (p, { placement } = {}) => ({
+      comp1: p.bb?.hohWins ?? p.hohWins ?? 0,
+      comp2: p.bb?.vetoWins ?? p.vetoWins ?? 0,
+      comp3: p.bb?.blockBusterWins ?? p.blockBusterWins ?? 0,
+      // `timesOnBlock` counts reaching eviction night still nominated, so for
+      // everybody but the final two one of those nights is the one that ended
+      // their game and is not a survival.
+      social: Math.max(0, (p.bb?.timesOnBlock ?? 0) - (Number(placement) <= 2 ? 0 : 1)),
+      advFound: p.bb?.powersWon ?? 0,
+      advPlayed: p.bb?.powersPlayed ?? 0,
+      advWasted: p.bb?.powersWasted ?? 0,
+      advHeld: p.bb?.powersHeld ?? 0,
+      // The computed figure is preferred and the AI's `strategicRank` is the
+      // fallback, NOT the other way round: measured against S1 it tracks
+      // finish position at -0.927.
+      strategicScore: p.strategicScore ?? p.strategicRank ?? 0,
+    }),
+  },
+  // ══ THE TRAITORS ══════════════════════════════════════════════════
+  //
+  // MEASURED BEFORE IT WAS WRITTEN, over 200 headless seasons and 4,000
+  // player-seasons, as a correlation against final placement. The rule the
+  // house board established is that a term correlating with finish is
+  // re-weighting placement rather than adding anything, and the base already
+  // spends 26 points on placement:
+  //
+  //     ballots cast at the table    -0.924   <- rounds survived. IS placement.
+  //     finished on the winning side -0.686
+  //     correct banishments driven   -0.635   (capped at 2 it gets WORSE: -0.658)
+  //     missions won                 -0.629
+  //     banishment accuracy (a rate) -0.499
+  //     shields won                  -0.019
+  //     murder ballots naming you    +0.014
+  //
+  // THE BRIEF'S THREE OBVIOUS CURRENCIES ARE ALL PLACEMENT. Rounds survived is
+  // placement outright; correct banishments and missions are counts of nights
+  // you were present for, and CAPPING THEM MAKES THEM WORSE, because what
+  // survives a cap is "did you last long enough to see one at all". They are
+  // scored, at competition prices, because they are what a player does on this
+  // show — but nothing here pretends they are independent of finishing.
+  //
+  // Two numbers on this show are genuinely independent of how long you lasted,
+  // and both of them are about being the person somebody could not beat.
+  //
+  // ── AND WHAT IS DELIBERATELY NOT HERE ──
+  //
+  // `gs.tr.notoriety` — the spectacle ledger from js/tr/crowd.js — was offered
+  // as "the only number on this show a ranking board could use without ranking
+  // by how long somebody lasted". It is not. Measured the same way, it tracks
+  // placement at -0.308 pooled and -0.503 among Faithfuls: an accrual curve,
+  // paid out per round, exactly the objection that bars `gs.popularity` from
+  // ranking anybody. The pooled figure looking milder than the Faithful one is
+  // the same trap that hid it for popularity — a population containing groups
+  // whose relationship to the quantity runs in opposite directions.
+  //
+  // So no ledger touches this board. Notoriety remains what it was built to be:
+  // a currency for fame and for a "most talked about" reading, where the fact
+  // that it accrues is the point rather than the defect. Nothing here reaches
+  // for it, and `playTraitorsSeason` still does not hand it back.
+  'traitors': {
+    // THE SHIELD IS THIS SHOW'S VETO, in the only sense a board cares about:
+    // won in a mission, spent to survive a night that would otherwise have
+    // ended you. Priced identically at 1.6, and it earns it — r = -0.019 means
+    // a Shield says nothing about where you finished, so every point of it is
+    // a point the base was not already paying.
+    // DENSITY, not only correlation: a Shield is won by 5.4% of player-seasons
+    // (mean 0.06), so at 1.6 this column contributes about 0.10 points on
+    // average against Missions' 1.72 — the heaviest price on the board, paid
+    // to one player in twenty. The price per Shield is right (it is this
+    // show's veto and is priced like one); what it is NOT is a column that
+    // separates a cast. Repricing it needs its own measurement.
+    comp1: { label: 'Shield', weight: 1.6,
+      title: '+1.6 per Shield won · won in a mission, blocks one murder' },
+    // A team win, priced like a reward. Everyone on the winning side gets
+    // credited for it and you cannot win one on a night you were not there
+    // (r = -0.629), which is most of what the number is.
+    comp2: { label: 'Missions', weight: 0.6, title: '+0.6 per mission won with your team' },
+    // Reading the room correctly: a banishment ballot you cast that landed on
+    // somebody who really was a Traitor. It is the game, so it scores; it runs
+    // at -0.635 against placement, so it scores LESS than a Shield.
+    comp3: { label: 'Reads', weight: 0.8,
+      title: '+0.8 per correct banishment driven · your ballot, on a real Traitor' },
+    // The Dagger, not the Shield: a Shield is won and spent inside one night
+    // (it is comp1, above), while a Dagger is kept until its holder draws it
+    // and the commonest ending it has is leaving the castle still carrying it.
+    // That is an advantage lifecycle; a Shield is a competition prize.
+    adv: { group: 'DAGGERS', noun: 'Dagger',
+      found: 'Won', played: 'Played', wasted: 'Wasted', held: 'Held' },
+    // PROVISIONAL AND UNFED. Nothing exports a strategic figure for this show,
+    // and an empty column contributes exactly nothing rather than a penalty —
+    // so this is what a hand-typed number is worth until an exporter writes
+    // one. The natural feed is BANISHMENT ACCURACY (correct ballots over
+    // ballots cast), which measured -0.499 pooled and -0.534 among Faithfuls:
+    // more independent than any raw count on this show and still not
+    // independent, which is why the weight is small. FLAT, not centred: the
+    // house centres on 5 because a played season's median was measured there,
+    // and there is no measured median here to centre on.
+    strat: { weight: 0.25, scale: 10 },
+    // ── WHAT THE CONCLAVE THOUGHT OF YOU ──
+    //
+    // The number of murder ballots that named you: every night a Traitor stood
+    // in the turret and argued for your name.
+    //
+    // ── AND THE POOLED FIGURE THAT CHOSE IT WAS TWO EFFECTS CANCELLING ──
+    //
+    // It was priced on r = +0.014 pooled, "the ONLY figure this show produces
+    // that is genuinely uncorrelated with where you finished". It is not. Over
+    // 200 seasons and 4,000 player-seasons, split at the final table:
+    //
+    //     below the final table  (n=3,098, 77%)   r = -0.171
+    //     AT the final table     (n=902,   23%)   r = +0.189
+    //     pooled                                  r = +0.014
+    //
+    // Both arms hold in all four independent blocks of fifty seasons
+    // (endgame +0.144/+0.250/+0.166/+0.215, below -0.171/-0.208/-0.126/-0.171),
+    // so this is not noise: the pooled number is the AVERAGE OF TWO OPPOSITE
+    // SLOPES and means nothing about either. Among the 23% the board most
+    // needs to separate, the raw column paid worse-placed finalists MORE.
+    //
+    // That is the exact trap Task 5 of this plan wrote down — "before trusting
+    // a pooled statistic, ask whether the population contains groups whose
+    // relationship to the quantity runs in opposite directions" — and Task 6
+    // then walked into it, on the same show, one task later.
+    //
+    // SO IT IS SPLIT AT THE BOUNDARY THE REVERSAL SITS ON. Below the final
+    // table the column stands: being wanted is cancelled by the fact that
+    // being wanted dead frequently ends your season, and what survives is a
+    // mild -0.171 rather than the -0.63 every other count carries. At the
+    // final table it pays NOTHING, because placement there is decided by the
+    // endgame itself and every column reverses across that line (missions
+    // +0.126, reads +0.022, against -0.730 and -0.453 below it). A column that
+    // cannot separate a group must not pretend to.
+    //
+    // And it is a resume line, not a punishment. On this format the murdered
+    // are the players the Traitors could not beat at the table, which is the
+    // whole fiction of the conclave: they kill the ones who would have caught
+    // them. Being named there is the castle's own verdict on how dangerous you
+    // were, cast by the only people with nothing to gain from flattering you.
+    //
+    // Capped at 4 and priced at 0.9, both for the house's reasons: past four
+    // it describes a conclave with one idea rather than a player with a
+    // record, and it is somebody else's opinion of you, so it must not pay
+    // like a Shield you won yourself. At 1.37 points per placement position in
+    // a cast of 20, one naming is about two-thirds of a place and a full column
+    // is two and a half.
+    social: { kind: 'survived', label: 'Wanted', weight: 0.9, cap: 4,
+      title: 'Murder ballots naming you before the final table · +0.9 each, max 4 · '
+        + 'nights a Traitor argued for your name. Nobody at the final table scores here: '
+        + 'the column reverses sign across that line and cannot separate them.',
+      // The tooltip beside it already had the right words. The blurb the
+      // PUBLIC BOARD prints said "survived the block", which is the opposite
+      // of the truth about a murder ballot and about a show with no block.
+      prose: { zero: 'no Traitor ever argued for their name',
+        one: 'a Traitor argued for their name once',
+        many: n => `a Traitor argued for their name on ${n} nights` } },
+    // Written onto the placement by `traitorsBoardStats` in js/tr/export.js,
+    // in the same place the other two shows keep theirs.
+    read: (p) => ({
+      comp1: p.tr?.shieldsWon ?? 0,
+      comp2: p.tr?.missionsWon ?? 0,
+      comp3: p.tr?.reads ?? 0,
+      // SPLIT AT THE FINAL TABLE — see the note on `social` above. A
+      // placement with no `exit` is somebody who was still there at the end;
+      // everybody else left by one of the show's two doors and carries the
+      // episode they left on.
+      social: (p.exit === null || p.exitEpisode == null) ? 0 : (p.tr?.wanted ?? 0),
+      advFound: p.tr?.daggersWon ?? 0,
+      advPlayed: p.tr?.daggersPlayed ?? 0,
+      advWasted: p.tr?.daggersWasted ?? 0,
+      advHeld: p.tr?.daggersHeld ?? 0,
+      // No exporter writes one. An empty column contributes nothing.
+      strategicScore: p.strategicScore ?? 0,
+    }),
   },
 };
 
@@ -657,7 +863,12 @@ function _ruShowFormat() {
 /** What show a season document is from, however it arrived. */
 function _ruFormatOfDoc(json) {
   if (json?.format) return json.format;
-  if (typeof json?.seasonId === 'string' && json.seasonId.startsWith('bb-')) return 'big-brother';
+  /* THE PREFIX, ASKED OF THE REGISTRY. `startsWith('bb-')` is a show list one
+     character wide: `tr-1` fell straight past it and was ranked as a Total
+     Drama season. `parseSeasonRef` already resolves any registered prefix and
+     returns null rather than guessing. */
+  const ref = parseSeasonRef(json?.seasonId);
+  if (ref?.format) return ref.format;
   // A document with weeks and no episodes is a house, whatever it forgot to say.
   if (Array.isArray(json?.weeks) && json.weeks.length) return 'big-brother';
   return 'total-drama';
@@ -668,12 +879,12 @@ function _ruSocialIsVotes(format) {
   return (_ruRubric(format).social || {}).kind !== 'survived';
 }
 
-function _ruRubric(format) {
+export function _ruRubric(format) {
   return RU_SHOW[format || _ruShowFormat()] || RU_SHOW['total-drama'];
 }
 
 // ── Scoring formula ──────────────────────────────────────
-function placementPct(placement, castSize) {
+export function placementPct(placement, castSize) {
   return (castSize - placement) / (castSize - 1) * 100;
 }
 
@@ -705,7 +916,7 @@ function _stratAdj(value, rub) {
   return spec.center != null ? (v - spec.center) * spec.weight : v * spec.weight;
 }
 
-function computeScore(p) {
+export function computeScore(p) {
   const cp   = careerPct(p.allPcts);
   // Base 42 → 68: placement is still the spine, but a shorter one.
   //
@@ -785,7 +996,7 @@ function computeScore(p) {
   return Math.round(Math.min(Math.max(raw, 0), 100) * 10) / 10;
 }
 
-function scoreTier(s) {
+export function scoreTier(s) {
   if (s >= 90) return 'S+';
   if (s >= 80) return 'S';
   if (s >= 71) return 'A';
@@ -1152,7 +1363,13 @@ function renderPreview(results, seasonNum, castSize) {
  * entirely.
  */
 function _ruStatParts(row) {
-  const rub  = _ruRubric();
+  /* THE ROW'S OWN SHOW, not whichever one the page happens to be looking at.
+     `_ruRubric()` with no argument falls back to `_ruShowFormat()`, which
+     reads a DOM select — so regenerating a Traitors row from a page left on
+     Big Brother described a castle in the house's column names, and the
+     season LABEL two functions down already reads `row.format` for exactly
+     this reason. */
+  const rub  = _ruRubric(row?.format);
   // The rubric's noun is a column heading -- "idol/advantage" -- and a heading
   // reads as a heading in a sentence. Prose takes the first word of it.
   const noun = ((rub.adv || {}).noun || 'advantage').split('/')[0];
@@ -1172,13 +1389,18 @@ function _ruStatParts(row) {
   if (row.alliances > 0) parts.push(`${row.alliances} alliance${row.alliances>1?'s':''}`);
   if (row.fanFav)        parts.push('fan favorite');
   if (row.quit)          parts.push('quit the game');
-  // The one column that means opposite things on the two shows.
-  if ((rub.social || {}).kind === 'survived') {
-    if (row.socialCol === 1)     parts.push('survived the block once');
-    else if (row.socialCol > 1)  parts.push(`survived the block ${row.socialCol} times`);
-  } else if (row.socialCol === 0) parts.push('never received a vote');
-  else if (row.socialCol === 1)   parts.push('voted against once');
-  else                            parts.push(`${row.socialCol} votes against`);
+  /* THE ONE COLUMN THAT MEANS A DIFFERENT THING ON EVERY SHOW, so it says
+     what its own rubric says it says. A two-branch `kind` check gave the
+     castle the house's sentence -- "survived the block 3 times" about murder
+     ballots, on 9 of 20 blurbs the public board prints.
+     An ABSENT number is not a zero either: with no column loaded this printed
+     "undefined votes against". */
+  const n = Number(row.socialCol);
+  const say = (rub.social || {}).prose;
+  if (say && Number.isFinite(n)) {
+    const line = n === 0 ? say.zero : n === 1 ? say.one : say.many(n);
+    if (line) parts.push(line);
+  }
   return parts;
 }
 
@@ -1187,12 +1409,12 @@ function _ruSeasonLabel(seasonNum, format) {
   return fmt === 'total-drama' ? `S${seasonNum}` : `${(SHOWS[fmt] || {}).short || 'S'}${seasonNum}`;
 }
 
-function buildSeasonReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning) {
+export function buildSeasonReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning) {
   const highlights = _ruStatParts(row);
 
   const suffix   = highlights.length ? ` ${highlights.join(', ')}.` : '';
   const winLabel = isWinner ? 'Winner' : `P${placement}`;
-  const sLabel   = _ruSeasonLabel(seasonNum);
+  const sLabel   = _ruSeasonLabel(seasonNum, row?.format);
   const overridePart = row.override
     ? ` Narrative override ${row.override>0?'+':''}${row.override}: ${row.overrideReason}.` : '';
 
@@ -1201,8 +1423,39 @@ function buildSeasonReasoning(name, seasonNum, placement, row, isWinner, isNew, 
 
   // Returning player -- append, having first dropped any auto-line already
   // written for this same season so a re-run does not stack duplicates.
+  //
+  // ── THIS REPLACE HAD NEVER STRIPPED ANYTHING ──────────────────────────
+  //
+  // The pattern was built inside a TEMPLATE LITERAL, where `\s` is the letter
+  // s and `\d` is the letter d — the string reached RegExp as
+  // `S1s+(?:Winner|Pd+)[^]*$` and matched no reasoning any writer has ever
+  // produced. So a returning player's line was appended on every re-run and
+  // the duplicate this code exists to prevent was shipping the whole time.
+  // Four test guards in this repo carried the identical mistake (see
+  // tests/show-list-duplication.test.js, which asserts by CHARACTER CODE that
+  // no regex in the tree contains U+0008).
+  //
+  // The label is escaped as well: it is `S14` or `TR1` today, but it is built
+  // from the registry's `short`, and one show declaring a `+` or a `.` in it
+  // would turn this into a pattern that matches somebody else's season.
+  const escaped = String(sLabel).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+  // ── AND IT MUST STOP AT THE END OF ITS OWN SEASON ─────────────────────
+  //
+  // The repaired pattern ended `[^]*$`, which is every character to the end of
+  // the string. Regenerating an EARLY season therefore deleted that season's
+  // line AND EVERY LATER SEASON'S with it: a five-season veteran regenerated at
+  // S1 came back with one sentence. Latent only because the dead pattern above
+  // had never matched a live row, so repairing it turned a no-op into data loss.
+  //
+  // A season's line runs until the next season LABEL, which is `S`/`TD`/`BB`/
+  // `TR` + a number + a placement word -- taken from the registry, never from a
+  // hand-written list, so a fourth show is anchored the day it is registered.
+  const labels = [...new Set(['S', ...Object.values(SHOWS).map(x => x.short).filter(Boolean)])]
+    .map(x => String(x).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'));
+  const nextLine = `(?:${labels.join('|')})\\d+\\s+(?:Winner|P\\d+)`;
   const stripped = (existingReasoning || '')
-    .replace(new RegExp(`${sLabel}\s+(?:Winner|P\d+)[^]*$`), '').trim();
+    .replace(new RegExp(`${escaped}\\s+(?:Winner|P\\d+)[\\s\\S]*?(?=\\s${nextLine}|$)`), '')
+    .replace(/\s{2,}/g, ' ').trim();
   return (stripped ? stripped + ' ' : '') + thisSeasonLine;
 }
 
@@ -1421,8 +1674,12 @@ function loadSeasonData(json) {
   /* Remember what kind of season this is BEFORE filling anything: it decides
      which competition each of the two columns holds, and what they are called. */
   _ruLoadedFormat = _ruFormatOfDoc(json);
-  const isHouse = _ruLoadedFormat === 'big-brother';
   _ruRelabelColumns();
+  // WHERE THIS SHOW KEEPS ITS NUMBERS, asked of the show. This block was nine
+  // `isHouse ? A : B` ternaries whose else branch is Total Drama, so a third
+  // show auto-filled every column from field names a castle does not have and
+  // the board ranked on placement alone. See `read` in RU_SHOW.
+  const _read = _ruRubric(_ruLoadedFormat).read || RU_SHOW['total-drama'].read;
 
   const sorted=[...placements].sort((a,b)=>(a.placement||99)-(b.placement||99));
   sorted.forEach(p=>{
@@ -1433,46 +1690,18 @@ function loadSeasonData(json) {
     const allianceCount = Array.isArray(p.alliances) ? p.alliances.length
                         : (typeof p.alliances === 'number' ? p.alliances
                         : (p.allianceCount ?? p.namedAlliances?.length ?? 0));
+    const cols = _read(p, { placement });
     const stats={
       juryVotes:   p.juryVotes||p.jury_votes||0,
-      /* THE SOCIAL COLUMN, per show. A house fills it with eviction nights
-         survived on the block rather than votes against — see RU_SHOW.
-         `timesOnBlock` counts only reaching eviction night still nominated, so
-         one of them is the night that ended the game for everyone who did not
-         reach the final two, and the rest are the ones the house kept them. */
-      social:      isHouse
-        ? Math.max(0, (p.bb?.timesOnBlock ?? 0) - (placement <= 2 ? 0 : 1))
-        : (p.votesAgainst||p.votes_against||p.votesReceived||0),
-      /* THE ADVANTAGE COLUMNS, per show. A house does not find idols — it is
-         handed powers, plays them, lets them lapse, or ends the season still
-         holding one. Those four states are what `bb.powersWon/Played/Wasted/
-         Held` count, and reading only the Total Drama field names left all
-         four columns empty on every Big Brother season. */
-      advFound:    isHouse ? (p.bb?.powersWon ?? 0) : (p.idolsFound ?? p.advFound ?? 0),
-      advPlayed:   isHouse ? (p.bb?.powersPlayed ?? 0) : (p.advPlayed ?? 0),
-      advWasted:   isHouse ? (p.bb?.powersWasted ?? 0) : (p.advWasted ?? 0),
-      advHeld:     isHouse ? (p.bb?.powersHeld ?? 0) : (p.advHeld ?? 0),
-      /* The house writes this one under a different name — `strategicRank` —
-         so the column sat empty while the number it wanted was right there.
-         The computed figure is preferred and the AI's is the fallback, NOT the
-         other way round: measured against S1, `strategicRank` tracks finish
-         position at -0.927 and is very nearly a restatement of it. See the
-         `strat` note in RU_SHOW. */
-      strategicScore: p.strategicScore ?? (isHouse ? (p.strategicRank ?? 0) : 0),
-      /* THE TWO COMPETITION COLUMNS, per show.
-         A Big Brother placement carries its own tallies in `bb` — hohWins,
-         vetoWins, timesNominated — and this read immunityWins and rewardWins,
-         which a house does not have. Every Big Brother player auto-filled as
-         zero and zero, so the two competition terms scored nothing for
-         everybody and the board came out ranked on placement alone. */
-      imm:         isHouse ? (p.bb?.hohWins ?? p.hohWins ?? 0)
-                           : (p.immunityWins||p.imm||0),
-      rew:         isHouse ? (p.bb?.vetoWins ?? p.vetoWins ?? 0)
-                           : (p.rewardWins!=null ? p.rewardWins
-                              : (p.rew!=null ? p.rew : Math.max(0, (p.challengeWins||0)-(p.immunityWins||0)))),
-      /* The third competition, which only a house has. Block Buster and
-         arena wins were being read by nothing at all. */
-      comp3:       isHouse ? (p.bb?.blockBusterWins ?? p.blockBusterWins ?? 0) : 0,
+      social:      cols.social,
+      advFound:    cols.advFound,
+      advPlayed:   cols.advPlayed,
+      advWasted:   cols.advWasted,
+      advHeld:     cols.advHeld,
+      strategicScore: cols.strategicScore,
+      imm:         cols.comp1,
+      rew:         cols.comp2,
+      comp3:       cols.comp3,
       alliances:   allianceCount,
       fanFav:      !!fanFavKey && norm(name) === fanFavKey,
       quit:        p.eliminated==='quit'||p.quit||false,

@@ -17,19 +17,25 @@ import { extractEvents } from './events.js';
 import { buildEpisodeFeed } from './feed.js';
 import { addEpisodePosts, hasEpisode, keepOnlyEpisodes, storeOf, postsForEpisode } from './store.js';
 import { rewriteEpisode } from './writer.js';
+import { seasonRounds } from '../shows.js';
 
 /**
  * Every episode of the loaded season, in the shape extractEvents reads.
  *
- * The two shows keep their episodes in different places and number them with
- * different fields: Total Drama writes `gs.episodeHistory[].num`, Big Brother
+ * Every show keeps its episodes in a different place and numbers them with a
+ * different field: Total Drama writes `gs.episodeHistory[].num`, Big Brother
  * writes `gs.bb.weeks[].num` (the published season document renames that to
- * `week`, which is why both are accepted).
+ * `week`, which is why both are accepted), The Traitors writes `gs.tr.rounds`.
+ *
+ * WHICH ARRAY IS A FACT ABOUT THE SHOW, so the registry holds it (`roundsPath`
+ * in js/shows.js) and this asks. It used to be one equality test against the
+ * Big Brother slug picking that show's array or the default show's, which is a
+ * two-show world: a third show falls out of the else branch reading Total
+ * Drama's array, finds it empty, and its whole season silently has no audience
+ * reaction to anything.
  */
 export function episodeRecords(gs, format) {
-  const list = format === 'big-brother'
-    ? (gs?.bb?.weeks || [])
-    : (gs?.episodeHistory || []);
+  const list = seasonRounds(gs, format);
   const out = list
     .map((record, i) => ({ record, episode: Number(record?.num ?? record?.week ?? i + 1) }))
     .filter(r => r.record && Number.isFinite(r.episode));

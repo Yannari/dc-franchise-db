@@ -166,3 +166,66 @@ describe('house venues', () => {
       expect.arrayContaining(VENUE_EVENTS.filter(e => e.category === 'house-life')));
   });
 });
+
+describe('the castle shows only its own controls', () => {
+  it('hides every mechanic The Traitors does not have', () => {
+    const tr = configScopeFor('traitors');
+    for (const gone of ['tiebreaker', 'ri', 'sid', 'blackvote', 'aftermathshow',
+                        'journey', 'exile', 'fan', 'idol', 'advantages', 'qem',
+                        'survival', 'mole']) {
+      expect(tr.accordions, `${gone} still shown in a castle`).not.toContain(gone);
+    }
+    for (const gone of ['cfg-days', 'cfg-teams', 'cfg-merge', 'cfg-finale-format',
+                        'cfg-finale-assistants', 'cfg-finale', 'f-tribe']) {
+      expect(tr.fields, `${gone} still shown in a castle`).not.toContain(gone);
+    }
+    expect(tr.sections).not.toContain('sec-tribes');
+    expect(tr.sections).not.toContain('sec-season-options');
+  });
+
+  it('hides Big Brother\'s house furniture too', () => {
+    const tr = configScopeFor('traitors');
+    for (const gone of ['cfg-bb-havenots', 'cfg-bb-safety', 'cfg-bb-safety-stops',
+                        'cfg-bb-havenot-count', 'cfg-bb-departures', 'cfg-bb-interview',
+                        'cfg-theme']) {
+      expect(tr.fields, `${gone} leaked from the house into the castle`).not.toContain(gone);
+    }
+    expect(tr.sections).not.toContain('sec-bb-options');
+    expect(tr.sections).not.toContain('bb-options-body');
+  });
+
+  it('keeps the audience, which every show has', () => {
+    expect(configScopeFor('traitors').accordions).toContain('popularity');
+    expect(configScopeFor('traitors').sections).toContain('sec-settings-mechanics');
+  });
+
+  it('shows its own controls, and every one of them exists on the page', () => {
+    const tr = configScopeFor('traitors');
+    expect(tr.sections).toContain('sec-tr-options');
+    expect(tr.fields).toContain('cfg-tr-traitor-count');
+    expect(tr.fields).toContain('cfg-tr-pot');
+    // `cfg-tr-selection` was here and has gone with the control: the engine
+    // picks the Traitors near-uniformly ON PURPOSE (js/tr/roles.js says why),
+    // so nothing could have read it. See the note in CONFIG_SCOPE.
+    expect(tr.fields).not.toContain('cfg-tr-selection');
+    // ...and those must not appear on the other two shows.
+    expect(configScopeFor('total-drama').fields).not.toContain('cfg-tr-traitor-count');
+    expect(configScopeFor('big-brother').sections).not.toContain('sec-tr-options');
+  });
+
+  it('and a castle is not asked which summer camp it is in', () => {
+    // js/settings.js lists no venue for this show and nothing in js/tr/ reads
+    // one, so the picker was offering Total Drama's five and writing
+    // 'hosted-camp' onto the season — which the Season Hub then printed.
+    expect(configScopeFor('traitors').fields).not.toContain('cfg-setting');
+    expect(configScopeFor('total-drama').fields).toContain('cfg-setting');
+    expect(configScopeFor('big-brother').fields).toContain('cfg-setting');
+  });
+
+  it('offers the castle its own host, and not the other shows\' hosts', () => {
+    const tr = hostOptionsForFormat('traitors');
+    expect(tr.length).toBeGreaterThan(0);
+    expect(tr.map(h => h.value)).not.toContain('Chris');
+    expect(tr.map(h => h.value)).not.toContain('Don');
+  });
+});

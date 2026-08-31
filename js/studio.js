@@ -3032,7 +3032,7 @@ function _injectCSS() {
   .st-iv{margin:14px 0;border:1px solid var(--st-stroke,rgba(255,255,255,.12));border-radius:10px;background:rgba(255,255,255,.02)}
   .st-iv-sum{cursor:pointer;padding:11px 14px;font-weight:700;list-style:none;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
   .st-iv-sum::-webkit-details-marker{display:none}
-  .st-iv-sum::before{content:'b8';display:inline-block;transition:transform .15s;opacity:.6}
+  .st-iv-sum::before{content:'\\25b8';display:inline-block;transition:transform .15s;opacity:.6}
   .st-iv[open] .st-iv-sum::before{transform:rotate(90deg)}
   .st-iv-body{padding:0 14px 12px;display:grid;gap:10px}
   .st-iv-gen{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:2px}

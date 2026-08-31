@@ -451,9 +451,9 @@ describe('why the number moved', () => {
     expect(seen.length, 'nothing was said all season').toBeGreaterThan(20);
     for (const line of seen) {
       expect(line, `unfilled placeholder: ${line}`).not.toMatch(/\{[a-zA-Z]+\}/);
-      expect(line, `wrong article: ${line}`).not.toMatch(/a (episode|hour|arrival)/);
+      expect(line, `wrong article: ${line}`).not.toMatch(/\ba (episode|hour|arrival)\b/);
       expect(line, `empty name slot: ${line}`).not.toMatch(/\s{2,}|\s,|,\s*and it was\s*,/);
-      const dup = line.match(/([A-Z][a-z0-9]+).*and it was /);
+      const dup = line.match(/\b([A-Z][a-z0-9]+)\b.*\band it was \1\b/);
       expect(dup, `names the same person twice: ${line}`).toBe(null);
     }
   });
@@ -464,8 +464,8 @@ describe('why the number moved', () => {
     // coming back on.
     const [w1, w2] = twoWeeks({ beats: ['ALLIANCE'] }, { flipped: true });
     const all = f => DEMOS.map(d => demoNote(d, w2, w1, f)).filter(Boolean).map(n => n.text).join(' | ');
-    expect(all('total-drama')).not.toMatch(/week/i);
-    expect(all('big-brother')).not.toMatch(/episode/i);
+    expect(all('total-drama')).not.toMatch(/\bweek\b/i);
+    expect(all('big-brother')).not.toMatch(/\bepisode\b/i);
     expect(all('total-drama') + all('big-brother')).not.toMatch(/\{round\}|\{exit\}/);
   });
 });

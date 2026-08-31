@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Traitors — display type, judged against the logotype</title>
+<!--
+  ============================================================================
+  SPECIMEN SHEET — the display face for The Traitors' VP screens.
+  Companion to mockup-tr-conclave.html.
+
+  WHAT THE PREVIOUS PASS GOT WRONG
+  --------------------------------
+  It was briefed to find a DIDONE — flat, unbracketed, hairline serifs — and
+  picked Bodoni Moda. That brief was wrong. The logotype's serifs are WEDGES:
+  they flare out of the stem and terminate in a point. That is a Roman/Latin
+  trait, the same one the Cinzel family has, and it is the exact opposite of a
+  Didone's flat slab. Bodoni is therefore not close; it is the wrong genus.
+
+  What was actually wrong with the original Cinzel choice was WEIGHT and WIDTH,
+  not serif shape.
+
+  THE THREE ATTRIBUTES, IN PRIORITY ORDER
+  ---------------------------------------
+    1. HEAVY     — black stems. Not elegant, not editorial. Ink on the page.
+    2. CONDENSED — tall and close-set. The logo's counters are narrow slots.
+    3. WEDGE     — serifs flaring from the stem to a sharp point. Look at the
+                   T crossbar, the E arms, the R leg.
+
+  The real face is Spirits Sharp Medium, which is not free. Nothing on Google
+  Fonts has all three. This sheet exists to find the least-wrong one and to be
+  honest about which attribute is being surrendered.
+
+  HOW TO READ IT
+  --------------
+  Every specimen is normalised to the SAME CAP HEIGHT as the logotype by
+  measurement, not by eye — see _capRatio() at the bottom. The logo strip is
+  sticky, so it stays on screen while you scroll the candidates past it.
+  Section 2 blows up "TER" so the serif shape can actually be seen. Section 3
+  puts the shortlist on the conclave's own ground at real usage sizes.
+  ============================================================================
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Cinzel+Decorative:wght@400;700;900&family=Playfair+Display:wght@400;700;800;900&family=Rozha+One&family=Yeseva+One&family=Abril+Fatface&family=Bodoni+Moda:wght@400;700;900&family=Fraunces:opsz,wght,SOFT,WONK@9..144,900,0,1&family=Eczar:wght@600;800&family=Trirong:wght@700;900&family=Vollkorn:wght@800;900&family=Petrona:wght@700;900&family=Newsreader:opsz,wght@6..72,700;6..72,800&family=Marcellus&family=Bevan&family=Instrument+Serif&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#07080b; --stone:#12151c; --lantern:#e0a049; --lantern-hot:#ffdb95;
+  --vellum:#e6dbbf; --moon:#8fa6c2; --mute:#6a7484; --rule:rgba(224,160,73,.22);
+  --wax:#a8202c; --paper:#f4f1ea; --ink:#0a0a0a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--void);color:var(--vellum);
+  font-family:'Cormorant Garamond',Georgia,serif;font-size:17px;line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin:0 auto;background:var(--stone);
+  border-left:1px solid rgba(224,160,73,.08);border-right:1px solid rgba(224,160,73,.08)}
+
+/* ── masthead ─────────────────────────────────────────────────────────── */
+.hd{padding:40px 40px 30px;border-bottom:1px solid var(--rule)}
+.hd h1{font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:32px;
+  letter-spacing:.01em;margin:0 0 14px;color:var(--lantern-hot)}
+.hd p{margin:0 0 10px;color:rgba(230,219,191,.78);max-width:790px}
+.hd b{color:var(--lantern)}
+.hd .kill{color:#d9707a}
+.crit{display:flex;gap:0;margin-top:22px;border:1px solid var(--rule)}
+.crit div{flex:1;padding:14px 18px;border-right:1px solid var(--rule)}
+.crit div:last-child{border-right:none}
+.crit h4{margin:0 0 5px;font-family:'Fraunces',serif;font-weight:700;font-size:10px;
+  letter-spacing:.26em;text-transform:uppercase;color:var(--lantern)}
+.crit p{margin:0;font-size:15px;color:var(--mute);font-style:italic}
+
+/* ── section headings ─────────────────────────────────────────────────── */
+.sec-h{padding:32px 40px 4px}
+.sec-h h2{font-family:'Fraunces',serif;font-weight:900;font-size:19px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--lantern-hot);margin:0 0 6px}
+.sec-h p{margin:0;color:var(--mute);font-style:italic;max-width:790px}
+
+/* ── section 1: the wall, on the logotype's own ground ────────────────── */
+.wall{background:var(--paper);color:var(--ink);padding:0 0 22px;margin-top:18px}
+.anchor{position:sticky;top:0;z-index:5;background:var(--paper);
+  padding:18px 40px 15px;border-bottom:2px solid var(--ink);
+  box-shadow:0 12px 20px -14px rgba(0,0,0,.6)}
+.anchor img{display:block;height:64px;width:auto}
+.anchor .lab{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:10px;
+  letter-spacing:.34em;text-transform:uppercase;color:#8a8577;margin-bottom:9px}
+.cand{padding:20px 40px 16px;border-bottom:1px solid rgba(10,10,10,.1);position:relative}
+.cand .nm{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:10px;
+  letter-spacing:.3em;text-transform:uppercase;color:#8a8577;margin-bottom:9px;
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;max-width:640px}
+.cand .nm i{font-style:italic;letter-spacing:0;text-transform:none;font-size:14px;color:#a09a89}
+.spec{white-space:nowrap;color:var(--ink);line-height:1;display:block}
+.marks{position:absolute;right:40px;top:18px;display:flex;gap:6px}
+.mk{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:9px;letter-spacing:.16em;
+  text-transform:uppercase;padding:3px 8px;border:1px solid rgba(10,10,10,.22);color:#6b6558}
+.mk[data-v="y"]{background:#1d4429;border-color:#1d4429;color:#e8f0e6}
+.mk[data-v="p"]{background:#8a6a12;border-color:#8a6a12;color:#fbf3dd}
+.mk[data-v="n"]{background:#7d1420;border-color:#7d1420;color:#ffe6e6}
+.cand .vd{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;
+  color:#5a5449;max-width:840px;margin-top:12px;padding-left:13px;
+  border-left:2px solid rgba(10,10,10,.2)}
+.cand[data-pick="1"]{background:rgba(224,160,73,.17);box-shadow:inset 4px 0 0 #8a6a12}
+.cand[data-dead="1"]{opacity:.5}
+
+/* ── section 2: the serif, blown up ───────────────────────────────────── */
+.zoom{background:var(--paper);color:var(--ink);padding:24px 40px 34px;margin-top:18px}
+.zgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px 24px}
+.zc{border:1px solid rgba(10,10,10,.14);padding:12px 14px 10px;background:#fbf9f4;overflow:hidden}
+.zc .zn{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:9.5px;letter-spacing:.24em;
+  text-transform:uppercase;color:#8a8577;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zc .zs{white-space:nowrap;line-height:1;color:var(--ink);display:block}
+.zc[data-ref="1"]{border:2px solid var(--ink);background:#fff}
+.zc[data-ref="1"] .zn{color:var(--ink)}
+.zwin{height:88px;overflow:hidden;position:relative}
+.zwin img{position:absolute;left:-6px;top:0;height:88px;width:auto;max-width:none}
+
+/* ── section 3: on the conclave's ground, at real sizes ───────────────── */
+.situ{padding:26px 40px 30px}
+.card{border:1px solid rgba(224,160,73,.16);padding:26px 28px 22px;margin-bottom:20px;
+  background:linear-gradient(160deg,rgba(29,34,44,.94),rgba(12,15,21,.94));position:relative}
+.card .cn{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:10px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--lantern);margin-bottom:18px}
+.card .eyebrow{font-size:10px;letter-spacing:.42em;text-transform:uppercase;color:var(--moon);opacity:.8;margin-bottom:12px}
+.card .title{font-size:54px;line-height:.94;color:var(--lantern-hot);
+  text-shadow:0 0 40px rgba(224,160,73,.42),0 2px 0 rgba(0,0,0,.7);margin-bottom:16px}
+.card .row{display:flex;gap:32px;align-items:baseline;flex-wrap:wrap;margin-bottom:10px}
+.card .slipname{font-size:26px;letter-spacing:.04em;color:var(--vellum)}
+.card .micro{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--lantern);opacity:.9}
+.card .ctitle{font-size:21px;letter-spacing:.04em;color:var(--vellum)}
+.card .body{font-family:'Cormorant Garamond',Georgia,serif;font-size:17px;color:rgba(230,219,191,.8);max-width:740px;margin-top:10px}
+.card .vt{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:var(--mute);
+  margin-top:14px;padding-left:14px;border-left:2px solid rgba(224,160,73,.28)}
+.card[data-pick="1"]{box-shadow:inset 4px 0 0 var(--lantern);background:rgba(224,160,73,.055)}
+
+/* ── the verdict ──────────────────────────────────────────────────────── */
+.final{margin:8px 40px 46px;border:1px solid rgba(224,160,73,.4);padding:26px 28px;
+  background:linear-gradient(150deg,rgba(224,160,73,.09),rgba(7,8,11,.6))}
+.final h3{font-family:'Fraunces',serif;font-weight:900;font-size:17px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--lantern-hot);margin:0 0 14px}
+.final p{margin:0 0 11px;color:rgba(230,219,191,.86)}
+.final p:last-child{margin-bottom:0}
+.final b{color:var(--lantern)}
+.final .no{color:#d9707a}
+
+/* ── the body pairing, unchanged in substance ─────────────────────────── */
+.pairs{padding:0 40px 50px}
+.pairs h2{font-family:'Fraunces',serif;font-weight:900;font-size:17px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--lantern-hot);margin:0 0 6px}
+.pairs .lede{color:var(--mute);font-style:italic;margin:0 0 20px;max-width:790px}
+.pair{border:1px solid rgba(224,160,73,.14);padding:22px 24px;margin-bottom:16px;
+  background:linear-gradient(160deg,rgba(29,34,44,.9),rgba(12,15,21,.9))}
+.pair .pl{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:10px;
+  letter-spacing:.3em;text-transform:uppercase;color:var(--lantern);margin-bottom:12px}
+.pair .pt{font-family:'Fraunces',serif;font-weight:900;font-size:20px;letter-spacing:.01em;color:var(--vellum);margin-bottom:10px}
+.pair p{margin:0 0 8px}
+.pair .vt{font-style:italic;color:var(--mute);font-size:15px;margin-top:12px}
+.b-cormorant p{font-family:'Cormorant Garamond',Georgia,serif;font-size:17px}
+.b-ebgaramond p{font-family:'EB Garamond',Georgia,serif;font-size:16px}
+.b-spectral p{font-family:'Spectral',Georgia,serif;font-size:15.5px}
+.pair[data-pick="1"]{box-shadow:inset 3px 0 0 var(--lantern);background:rgba(224,160,73,.05)}
+
+@media(max-width:820px){
+  .zgrid{grid-template-columns:1fr 1fr}
+  .marks{position:static;margin-bottom:10px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hd">
+  <h1>The display face</h1>
+  <p>The previous pass was briefed to find a <b>Didone</b> and picked <b>Bodoni Moda</b>. <span class="kill">That brief was wrong.</span> The logotype's serifs are <b>wedges</b> — they flare out of the stem and end in a point, a Roman/Latin trait. A Didone's serifs are flat, unbracketed slabs. Bodoni is not a near miss; it is the wrong genus.</p>
+  <p>What was actually wrong with the first draft's <b>Cinzel</b> was weight and width. So Cinzel is not disqualified — it is <i>under-tested</i>. The heaviest weight it ships, 900, had never been put on the page.</p>
+  <p>Every specimen below is normalised to the logotype's cap height <b>by measurement</b>, not by eye. The logo strip is sticky: it stays on screen while the candidates scroll past it.</p>
+  <div class="crit">
+    <div><h4>1 &middot; Heavy</h4><p>Black stems. Ink, not elegance.</p></div>
+    <div><h4>2 &middot; Condensed</h4><p>Tall, close-set, narrow counters.</p></div>
+    <div><h4>3 &middot; Wedge</h4><p>Serifs flaring from the stem to a point.</p></div>
+  </div>
+</header>
+
+<div class="sec-h">
+  <h2>1 &middot; The wall</h2>
+  <p>Same word, same cap height, same ink, same ground as the logotype. Scroll: the reference stays pinned above.</p>
+</div>
+
+<div class="wall">
+  <div class="anchor">
+    <div class="lab">The logotype &middot; Spirits Sharp Medium &middot; not free</div>
+    <img id="logo-anchor" alt="THE TRAITORS logotype">
+  </div>
+  <div id="cands"></div>
+</div>
+
+<div class="sec-h">
+  <h2>2 &middot; The serif, at four times the size</h2>
+  <p>&ldquo;TER&rdquo; is where the argument is settled — the T crossbar, the E arms, the R leg. The reference is the first cell.</p>
+</div>
+<div class="zoom"><div class="zgrid" id="zgrid"></div></div>
+
+<div class="sec-h">
+  <h2>2.5 &middot; The squeeze, tuned rather than guessed</h2>
+  <p>The winning face is semi-condensed; the logotype is more condensed than that. This ladder is how 0.80 was chosen &mdash; the reference sits at the top and every rung below it is the same face at the same cap height.</p>
+</div>
+<div class="wall" style="padding-bottom:22px">
+  <div class="anchor">
+    <div class="lab">The logotype</div>
+    <img id="logo-ladder" alt="THE TRAITORS logotype">
+  </div>
+  <div id="ladder"></div>
+</div>
+
+<div class="sec-h">
+  <h2>3 &middot; On the conclave's ground</h2>
+  <p>The shortlist, at the sizes the screen actually uses: hero title, card title, slip name, micro-label.</p>
+</div>
+<div class="situ" id="situ"></div>
+
+<div class="sec-h"><h2>4 &middot; The verdict</h2><p>Stated without overselling anything.</p></div>
+<div class="final" id="final"></div>
+
+<div class="pairs">
+  <h2>The body pairing, unchanged</h2>
+  <p class="lede">IM Fell English keeps the vellum slips and the spoken lines whatever wins above — it is doing the handwriting. The display decision does not touch it, and Cormorant Garamond still carries ordinary narration. Recorded here so the whole type system sits in one file.</p>
+  <div class="pair b-cormorant" data-pick="1">
+    <div class="pl">Display + Cormorant Garamond</div>
+    <div class="pt">What It Costs</div>
+    <p>Chef Hatchet has now been overruled twice by the same man on consecutive nights. He is keeping the count. Bowie knows he is keeping the count, and has decided that is a problem for a later night.</p>
+    <p>The west stair is forty-one steps and none of them are even. At the top there is a door that has no lock and does not need one, because nobody in the castle has ever had a reason to open it.</p>
+    <div class="vt">Kept. A heavy Roman above an old-style body is a stronger contrast than a Didone above it was — the display line now does all the hardness, and the body is free to stay candlelit. Hold it at 17px and no lower.</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* ===========================================================================
+   The logotype, cropped to its ink bounding box so its rendered height IS its
+   cap height. Embedded so the sheet is self-contained and survives the source
+   image leaving anyone's Downloads folder.
+   =========================================================================== */
+var LOGO = 'data:image/webp;base64,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';
+document.getElementById('logo-anchor').src = LOGO;
+document.getElementById('logo-ladder').src = LOGO;
+
+/* ---------------------------------------------------------------------------
+   THE CANDIDATES.
+     fam/wt  — what to load
+     sq      — synthetic horizontal squeeze, where one is being proposed
+     stroke  — synthetic weight gain, where one is being proposed
+     marks   — [serif, weight, width] as y (yes) / p (partial) / n (no)
+   --------------------------------------------------------------------------- */
+var C = [
+  { key:'cinzel900', fam:"'Cinzel',Georgia,serif", wt:900, ls:'.02em',
+    nm:'Cinzel 900', sub:'the weight nobody tested',
+    marks:['y','p','n'],
+    vd:'The serifs are right, and nothing else on this page is as right. They flare off the stem and come to a genuine point &mdash; the T crossbar and the R leg are the logo&rsquo;s own gesture. What it is not is condensed: Cinzel is an inscriptional Roman and its proportions are monumental, so the word sits about a fifth too wide and the counters are round where the logo&rsquo;s are slots. At 900 the stems finally have enough ink to hold a hero title, though still a shade lighter than the reference.' },
+
+  { key:'cinzel900sq', fam:"'Cinzel',Georgia,serif", wt:900, ls:'-.02em', sq:.80, stroke:1.3,
+    nm:'Cinzel 900, condensed 0.80 + 1.3px stroke', sub:'the first attempt at a fix &mdash; beaten',
+    marks:['y','p','p'],
+    vd:'Squeezing Cinzel was my first proposal and it is not the answer. It buys the width, but Cinzel&rsquo;s stroke contrast is low by design &mdash; it is a carved Roman &mdash; so however much stroke you paint on, the word stays even-coloured where the logotype is thick-stem-against-hairline. Set it under Fraunces below and the difference is not subtle. Kept on the sheet because it is the honest record of a rejected idea.' },
+
+  { key:'cinzeldec700', fam:"'Cinzel Decorative',Georgia,serif", wt:700, ls:'.02em',
+    nm:'Cinzel Decorative 700', sub:'user suggestion',
+    marks:['p','p','n'],
+    vd:'The same skeleton as Cinzel with swelling added at the terminals &mdash; the serifs go bulbous rather than sharp, which is the one attribute Cinzel was winning on. It reads engraved-invitation. Wider than plain Cinzel, not narrower.' },
+
+  { key:'cinzeldec900', fam:"'Cinzel Decorative',Georgia,serif", wt:900, ls:'.01em',
+    nm:'Cinzel Decorative 900', sub:'user suggestion',
+    marks:['p','y','n'],
+    vd:'Heavy enough, finally &mdash; but the weight arrives as swelling in the curves and the serif points are blunted into knobs. Wide. A ballroom, not a castle.' },
+
+  { key:'playfair900', fam:"'Playfair Display',Georgia,serif", wt:900, ls:'.005em',
+    nm:'Playfair Display 900', sub:'user suggestion &mdash; the no-distortion fallback',
+    marks:['n','y','p'],
+    vd:'The best-behaved face on the page and the wrong one. Weight: yes, genuinely black. Width: better than Cinzel, if not narrow. Serifs: bracketed and flat-ended &mdash; they meet the stem on a curve and stop square. Set it beside the reference and the whole word reads editorial masthead where the logo reads carved. If the human would rather ship no synthetic distortion at all, this is the face to take, and the serif is what they are paying for it.' },
+
+  { key:'rozha', fam:"'Rozha One',Georgia,serif", wt:400, ls:'0',
+    nm:'Rozha One', sub:'user suggestion',
+    marks:['n','y','n'],
+    vd:'Enormous contrast, hairlines that vanish at small sizes, flat serifs. A fatface Didone with a Devanagari companion. Loud, but loud in the wrong dialect.' },
+
+  { key:'yeseva', fam:"'Yeseva One',Georgia,serif", wt:400, ls:'.01em',
+    nm:'Yeseva One', sub:'user suggestion',
+    marks:['p','y','n'],
+    vd:'Flared, heavy, and it does have a wedge instinct &mdash; but the flare curls rather than points, the curves bulge asymmetrically, and it is wide. Distinctive to the point of being someone else&rsquo;s brand.' },
+
+  { key:'abril', fam:"'Abril Fatface',Georgia,serif", wt:400, ls:'0',
+    nm:'Abril Fatface', sub:'user suggestion',
+    marks:['n','y','p'],
+    vd:'A textbook Didone fatface: unbracketed slab serifs, ball terminals, extreme contrast. Exactly the genus this sheet is ruling out.' },
+
+  { key:'bodoni900', fam:"'Bodoni Moda',Didot,serif", wt:900, ls:'.04em',
+    nm:'Bodoni Moda 900', sub:'the incumbent &mdash; what is being replaced', dead:1,
+    marks:['n','p','n'],
+    vd:'Flat unbracketed serifs, hairline crossbars, and at 900 it is still an editorial weight rather than a black one. Against the reference it is not a near miss; it is a different kind of letter.' },
+
+  { key:'fraunces', fam:"'Fraunces',Georgia,serif", wt:900, ls:'0',
+    nm:'Fraunces 900 (WONK 1)', sub:'my own addition &mdash; the surprise',
+    marks:['y','y','p'],
+    vd:'I came to this sheet expecting Fraunces to be too warm and faintly comic, which is what it is at text weights. At 900, in caps, it is not that at all: the stems go genuinely black, the hairlines go genuinely thin, and the serifs flare off the stem into sharp downward points &mdash; the T crossbar and the E arms make the same gesture the logotype makes, with more contrast behind them than Cinzel can manage. It is also semi-condensed out of the box, so it is the only face here that scores on all three attributes before anything synthetic is done to it. It carries a real weight axis (100&ndash;900) too, so micro-labels and card titles come out of the same family instead of a second one.' },
+
+  { key:'frauncesSq', fam:"'Fraunces',Georgia,serif", wt:900, ls:'-.02em', sq:.80, stroke:1.3,
+    nm:'Fraunces 900, condensed 0.80 + 1.3px stroke', sub:'THE PICK &mdash; hero title only',
+    pick:1, marks:['y','y','y'],
+    vd:'Fraunces 900 squeezed to 80% with a 1.3px stroke and &minus;0.02em tracking. The squeeze was tuned against the logotype rather than guessed &mdash; the ladder in section 2.5 shows 1.0, 0.90, 0.86, 0.80 and 0.75 side by side, and 0.80 is where the width, the colour and the counters all land at once. Below the hero line, plain unsqueezed Fraunces does card titles, slip names and micro-labels, so exactly one line per screen carries any distortion at all.' },
+
+  { key:'eczar', fam:"'Eczar',Georgia,serif", wt:800, ls:'0',
+    nm:'Eczar 800', sub:'my own addition',
+    marks:['p','y','y'],
+    vd:'Genuinely condensed, genuinely heavy, and the serifs are flared triangles &mdash; on paper the closest structural match after Cinzel. In practice the flare is soft and the face carries a calligraphic lean that reads warm and literary. Worth the human&rsquo;s eye: it wins the attribute Cinzel loses.' },
+
+  { key:'trirong', fam:"'Trirong',Georgia,serif", wt:900, ls:'0',
+    nm:'Trirong 900', sub:'my own addition',
+    marks:['p','y','y'],
+    vd:'Condensed and black, with sharp triangular serifs that come closer to a point than most. Slightly mechanical, and the caps look compressed rather than drawn narrow &mdash; but this is the strongest non-Cinzel candidate on weight plus width, with no synthetic distortion in it.' },
+
+  { key:'vollkorn', fam:"'Vollkorn',Georgia,serif", wt:900, ls:'0',
+    nm:'Vollkorn 900', sub:'my own addition',
+    marks:['n','y','p'],
+    vd:'Sturdy, dark, bracketed. A good body face pressed into a job it was not drawn for.' },
+
+  { key:'petrona', fam:"'Petrona',Georgia,serif", wt:900, ls:'0',
+    nm:'Petrona 900', sub:'my own addition',
+    marks:['n','y','y'],
+    vd:'Narrow and heavy, which is two of three &mdash; but the serifs are stubby rectangles. Reads newspaper, not castle.' },
+
+  { key:'newsreader', fam:"'Newsreader',Georgia,serif", wt:800, ls:'0',
+    nm:'Newsreader 800', sub:'my own addition',
+    marks:['n','p','y'],
+    vd:'Condensed and clean; serifs bracketed and blunt; not black enough. A well-made face with no drama in it.' },
+
+  { key:'marcellus', fam:"'Marcellus',Georgia,serif", wt:400, ls:'.03em',
+    nm:'Marcellus', sub:'my own addition &mdash; instructive failure',
+    marks:['y','n','n'],
+    vd:'The purest wedge serif on the page, sharper points than Cinzel even. It ships one weight and that weight is light, and there is no heavier cut to reach for. Included because it proves the serif shape is achievable in a free face; the problem is always the weight.' },
+
+  { key:'bevan', fam:"'Bevan',Georgia,serif", wt:400, ls:'0',
+    nm:'Bevan', sub:'my own addition &mdash; instructive failure',
+    marks:['n','y','n'],
+    vd:'A slab. Wooden-poster weight with square, unflared serifs. Wrong in a way that is at least useful: this is what &ldquo;heavy&rdquo; looks like when the serif shape is abandoned entirely.' },
+
+  { key:'instrument', fam:"'Instrument Serif',Georgia,serif", wt:400, ls:'0',
+    nm:'Instrument Serif', sub:'my own addition',
+    marks:['p','n','y'],
+    vd:'The most condensed thing here, high contrast, with a slight flare to the serifs. One light weight. Everything right except the single attribute that matters most.' }
+];
+
+/* ---------------------------------------------------------------------------
+   Cap-height normalisation. Measure "H" at 200px in the real face, then scale
+   the font-size so the drawn cap height equals the target exactly.
+   --------------------------------------------------------------------------- */
+var TARGET = 64;      /* matches .anchor img height */
+var ZOOM_TARGET = 88; /* matches .zwin img height */
+var _cv = document.createElement('canvas').getContext('2d');
+function _capRatio(fam, wt){
+  _cv.font = wt + ' 200px ' + fam;
+  var m = _cv.measureText('H');
+  var cap = m.actualBoundingBoxAscent;
+  return (cap && cap > 20 && cap < 400) ? cap / 200 : 0.70;   /* 0.70 = sane serif default */
+}
+function _style(c, target){
+  var fs = target / _capRatio(c.fam, c.wt);
+  var s = 'font-family:' + c.fam + ';font-weight:' + c.wt
+        + ';font-size:' + fs.toFixed(1) + 'px;letter-spacing:' + (c.ls || 0) + ';';
+  if (c.sq) s += 'display:inline-block;transform:scaleX(' + c.sq + ');transform-origin:left center;';
+  if (c.stroke) s += '-webkit-text-stroke:' + c.stroke + 'px currentColor;paint-order:stroke fill;';
+  return s;
+}
+
+function _draw(){
+  /* section 1 — the wall */
+  document.getElementById('cands').innerHTML = C.map(function(c){
+    var mk = ['Serif','Weight','Width'].map(function(l,i){
+      return '<span class="mk" data-v="' + c.marks[i] + '">' + l + '</span>';
+    }).join('');
+    return '<div class="cand"' + (c.pick ? ' data-pick="1"' : '') + (c.dead ? ' data-dead="1"' : '') + '>'
+      + '<div class="marks">' + mk + '</div>'
+      + '<div class="nm">' + c.nm + ' <i>' + c.sub + '</i></div>'
+      + '<span class="spec" style="' + _style(c, TARGET) + '">THE TRAITORS</span>'
+      + '<div class="vd">' + c.vd + '</div>'
+      + '</div>';
+  }).join('');
+
+  /* section 2 — the serif at four times the size. The reference cell shows the
+     logotype's own "TR" through a fixed window; the rest set "TER". */
+  var z = '<div class="zc" data-ref="1"><div class="zn">The logotype</div>'
+        + '<div class="zwin"><img src="' + LOGO + '" alt=""></div></div>';
+  z += C.filter(function(c){ return !c.dead && !c.sq; }).map(function(c){
+    return '<div class="zc"><div class="zn">' + c.nm + '</div>'
+      + '<div class="zwin"><span class="zs" style="' + _style(c, ZOOM_TARGET) + '">TER</span></div></div>';
+  }).join('');
+  document.getElementById('zgrid').innerHTML = z;
+
+  /* section 2.5 — the squeeze ladder */
+  var RUNGS = [
+    { sq:1,   ls:'0',      st:0,   n:'unsqueezed', v:'Correct serif and colour already. Wider than the reference; the word sprawls where the logotype grips.' },
+    { sq:.90, ls:'-.01em', st:.6,  n:'0.90',       v:'Closer. Still reads as a face that happens to be narrowish rather than one that was drawn narrow.' },
+    { sq:.86, ls:'-.015em',st:.9,  n:'0.86',       v:'The counters start to turn into slots. Nothing has visibly distorted yet.' },
+    { sq:.80, ls:'-.02em', st:1.3, n:'0.80 &mdash; the pick', pick:1, v:'Width, colour and counter shape all land together. Held up beside the reference this is as near as free type gets. Below about 24px the verticals would start to look thin, which is why it never leaves the hero line.' },
+    { sq:.75, ls:'-.025em',st:1.7, n:'0.75',       v:'Past it. The O goes oval, the stroke compensation starts to fill the counters, and the distortion becomes legible as distortion.' }
+  ];
+  document.getElementById('ladder').innerHTML = RUNGS.map(function(r){
+    var st = 'font-family:Fraunces,Georgia,serif;font-weight:900;font-size:'
+      + (TARGET / _capRatio("Fraunces,Georgia,serif", 900)).toFixed(1) + 'px;letter-spacing:' + r.ls + ';'
+      + 'display:inline-block;transform:scaleX(' + r.sq + ');transform-origin:left center;'
+      + (r.st ? '-webkit-text-stroke:' + r.st + 'px currentColor;paint-order:stroke fill;' : '');
+    return '<div class="cand"' + (r.pick ? ' data-pick="1"' : '') + '>'
+      + '<div class="nm">Fraunces 900 &mdash; squeeze ' + r.n + ' <i>stroke ' + r.st + 'px &middot; tracking ' + r.ls + '</i></div>'
+      + '<span class="spec" style="' + st + '">THE TRAITORS</span>'
+      + '<div class="vd">' + r.v + '</div></div>';
+  }).join('');
+
+  /* section 3 — the shortlist in situ */
+  var SHORT = ['frauncesSq','fraunces','cinzel900sq','playfair900','trirong'];
+  document.getElementById('situ').innerHTML = SHORT.map(function(k){
+    var c = C.filter(function(x){ return x.key === k; })[0];
+    var f = 'font-family:' + c.fam + ';font-weight:' + c.wt + ';';
+    var hero = f + 'letter-spacing:' + (c.ls || 0) + ';'
+             + (c.sq ? 'display:inline-block;transform:scaleX(' + c.sq + ');transform-origin:left center;' : '')
+             + (c.stroke ? '-webkit-text-stroke:' + c.stroke + 'px currentColor;paint-order:stroke fill;' : '');
+    return '<div class="card"' + (c.pick ? ' data-pick="1"' : '') + '>'
+      + '<div class="cn">' + c.nm + '</div>'
+      + '<div class="eyebrow" style="' + f + '">The Traitors &middot; Season I &middot; Night III</div>'
+      + '<div class="title" style="' + hero + '">The Conclave</div>'
+      + '<div class="row">'
+      +   '<span class="ctitle" style="' + f + '">The Shortlist Opens</span>'
+      +   '<span class="slipname" style="' + f + 'font-weight:' + Math.max(700, c.wt) + '">BRICK</span>'
+      +   '<span class="micro" style="' + f + '">III &middot; The argument</span>'
+      + '</div>'
+      + '<div class="body">The lantern goes in the middle of the table because it has to go somewhere and nobody wants to be the one holding it. Three names get said out loud tonight. Two of them will still be at breakfast.</div>'
+      + '<div class="vt">' + (c.pick
+          ? 'The distortion is on the hero line only. Everything smaller runs unsqueezed Fraunces 900 &mdash; same family, real weight axis, no transform anywhere near it.'
+          : 'Shown unmodified. No synthetic squeeze, no stroke.') + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+document.getElementById('final').innerHTML =
+  '<h3>Which face, and how close it actually gets</h3>'
++ '<p><b>The pick: Fraunces 900, WONK 1</b> &mdash; plain for every display role on the screen, and squeezed to 0.80 with a 1.3px stroke on the hero title alone.</p>'
++ '<p><b>This is not the face I expected to land on, and the sheet records the reversal honestly.</b> I came in assuming Cinzel would win on serif shape and lose on weight and width, and that squeezing it was the fix. Rendered side by side that turned out to be wrong: Cinzel&rsquo;s contrast is low by design, so however much it is squeezed and stroked the word stays evenly grey, where the logotype is black stems against real hairlines. Fraunces 900 has that contrast natively, flares its serifs to genuine downward points, and arrives semi-condensed &mdash; the only face on this page that scores on all three attributes before anything synthetic happens to it.</p>'
++ '<p><b>How close, without overselling it: about 85%.</b> At the hero size, against the reference, the difference is a shade more roundness in the O and a slightly warmer temperature in the curves &mdash; Fraunces is a contemporary display face with a deliberate quirk axis, and the logotype is drawn colder than that. Everything the brief asked for is present: heavy, condensed, wedge serifs terminating in points. Nothing free gets all three at once without the squeeze, and no free face gets to 100% at all; Spirits Sharp is doing something none of these were drawn to do.</p>'
++ '<p><b>The honest cost:</b> the 0.80 squeeze is a synthetic distortion. It was tuned against the logotype, not guessed &mdash; see the ladder in section 2.5 &mdash; and at 50px and up it is invisible. Below roughly 24px it would show as thin verticals, which is why it never leaves the hero line. Everything smaller runs unmodified.</p>'
++ '<p><b>If the human wants nothing synthetic at all:</b> take <b>Fraunces 900 unsqueezed</b>. It is still the best face here; the word just sits wider than the logotype does. That is a one-line change and costs nothing else.</p>'
++ '<p><b>Runners-up worth a look before ruling:</b> <b>Trirong 900</b> &mdash; condensed, black, sharp triangular serifs, slightly mechanical. <b>Playfair Display 900</b> &mdash; the safe answer, right weight and <span class="no">wrong serif</span>; its serifs are bracketed and stop square where the logotype&rsquo;s flare to a point. <b>Cinzel 900</b> &mdash; the truest wedge on the page and the flattest colour.</p>'
++ '<p><b>Ruled out and not close:</b> Bodoni Moda (the incumbent), Abril Fatface and Rozha One &mdash; all Didones, all flat unbracketed serifs, the wrong genus entirely. Cinzel Decorative in both weights: the decoration blunts the exact point the logotype sharpens.</p>';
+
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(_draw);
+else window.addEventListener('load', _draw);
+_draw();
+</script>
+</body>
+</html>

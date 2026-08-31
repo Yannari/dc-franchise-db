@@ -20,6 +20,10 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     # A SLOW SUITE MUST NOT BLOCK DEPLOYMENTS.
     #
     # On 2026-08-18 nothing reached the site for an hour and a half. Nothing was
@@ -45,7 +49,23 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm test
+      # One runner could no longer finish the growing fast suite inside the
+      # 30-minute backstop. Each shard gets its own runner; the slow season
+      # simulations remain in nightly.yml and are not weakened or skipped.
+      - run: npm test -- --shard=${{ matrix.shard }}/4
+
+  show-pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:show-pages

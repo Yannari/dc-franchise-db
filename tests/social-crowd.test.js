@@ -186,3 +186,64 @@ describe('what reach may and may not do', () => {
     expect(assignCrowd([{ id: 'a', stream: 'timeline' }], {})).toEqual([{ id: 'a', stream: 'timeline' }]);
   });
 });
+
+// ══ a fan of THIS show ════════════════════════════════════════════════
+//
+// The middle of an invented handle is the one part that names a show, and the
+// word bank it came from was fixed and held two shows' jargon in one array. On
+// a Traitors night that signed 470 of 1,426 posts `@campfireapologist`,
+// `@bigjury`, `@antitribal32`, and of 698 distinct handles NOT ONE contained a
+// word from the show being watched.
+describe('the long tail sounds like it watches this show', () => {
+  const seeded = seed => {
+    let s = (seed >>> 0) || 1;
+    return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
+  };
+
+  /** 400 handles for one format, so a rate is a rate and not one sample. */
+  const handlesFor = format => {
+    const rng = seeded(11);
+    return Array.from({ length: 400 }, () => oneOffAccount(rng, 'lurker', format).handle);
+  };
+
+  const WORDS = {
+    traitors: /traitor|faithful|banishment|murder|castle|conclave|roundtable|shield|dagger|mission|turret/,
+    'big-brother': /veto|nomination|eviction|houseguest|block|hoh|jury|feeds|slop|havenot/,
+    'total-drama': /tribal|idol|merge|campfire|marshmallow|immunity|challenge|tribe|postmerge/,
+  };
+
+  for (const [format, mine] of Object.entries(WORDS)) {
+    it(`${format} handles are built from ${format}'s own nouns`, () => {
+      const handles = handlesFor(format);
+      const ours = handles.filter(h => mine.test(h)).length;
+      // Roughly half of a handle's shapes take a show noun, so a third of the
+      // pool is a comfortable floor and zero is the measured bug.
+      expect(ours / handles.length,
+        `${format} viewers are posting under another show's vocabulary`)
+        .toBeGreaterThan(0.2);
+
+      for (const [other, theirs] of Object.entries(WORDS)) {
+        if (other === format) continue;
+        const strays = handles.filter(h => theirs.test(h) && !mine.test(h));
+        expect(strays.slice(0, 5),
+          `${format} handles carrying ${other}'s words`).toEqual([]);
+      }
+    });
+  }
+
+  it('hands a post the vocabulary of the show that post is about', () => {
+    // The account is chosen inside assignCrowd, which is handed posts and not
+    // a format — so the format has to travel ON the post. It did not, and the
+    // registry lookup above would have been correct and never reached.
+    const posts = Array.from({ length: 60 }, (_, i) => ({
+      id: `p${i}`, stream: 'timeline', format: 'traitors', handle: '@x', subject: 'a',
+      likes: 1, tomatoes: 0,
+    }));
+    const out = assignCrowd(posts, { rng: seeded(3), personas: PERSONAS, currentSeason: 1 });
+    const invented = out.filter(p => !p.recurring).map(p => p.handle);
+    expect(invented.length, 'every post went to a recurring account').toBeGreaterThan(10);
+    expect(invented.some(h => WORDS.traitors.test(h)),
+      'not one invented account on a Traitors night sounds like it watches it')
+      .toBe(true);
+  });
+});

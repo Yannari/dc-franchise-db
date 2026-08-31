@@ -161,35 +161,14 @@ export function timelineFor(doc, name) {
 }
 
 /**
- * THE CHARACTER FILL — personality, quotes and trivia for the whole cast.
+ * THE RECORD, ATTACHED TO EACH THREAD.
  *
- * One request for everybody rather than one each: a model that can see the
- * whole cast writes them apart, and asked about eighteen people separately it
- * has no way to know it has already called four of them the quiet strategist.
+ * Split out of runCharacterFill so it can be tested without a worker, a fetch
+ * or a season on disk: what a co-winner's paragraph is told about their own
+ * season is exactly the kind of thing that is wrong for a year in a function
+ * nothing can call.
  */
-export async function runCharacterFill({ season, format, root = '', onStatus = () => {} } = {}) {
-  const { file, doc } = await loadDoc(season, format, root);
-  if (!doc || !Array.isArray(doc.placements)) {
-    return { ok: false, reason: `no season document at data/seasons/${file} — export the season first` };
-  }
-  const cast = doc.placements.map(p => p.name).filter(Boolean);
-
-  onStatus('Reading episode transcripts…');
-  const episodes = await listEpisodes(season, format);
-  if (!episodes.length) {
-    return { ok: false, reason: 'no episode transcripts are saved for this season' };
-  }
-
-  const base = writerUrl();
-  onStatus('Checking the worker…');
-  if (!await workerHasMode(base, 'wiki-fill', 'threads')) {
-    return { ok: false, reason: `${base} does not have the wiki-fill mode `
-      + '(usually the episode worker rather than the season one, or the season worker '
-      + 'has not been deployed since the mode was added)' };
-  }
-
-  const threads = sliceCastThreads(episodes, cast);
-
+export function attachRecords(doc, threads, format) {
   // ── THE RECORD GOES WITH THE THREAD ────────────────────────────────
   //
   // The lead paragraph is about what somebody DID; a screenplay only shows what
@@ -254,8 +233,16 @@ export async function runCharacterFill({ season, format, root = '', onStatus = (
     if (partner) bits.push(`showmance with ${partner}`);
     if (row.rivalries?.length) bits.push(`rivals: ${row.rivalries.slice(0, 4).join(', ')}`);
     if (row.gameplayStyle) bits.push(`style: ${row.gameplayStyle}`);
-    if (row.placement === 1 && doc.winner?.vote) bits.push(`won the final vote ${doc.winner.vote}`);
-    if (row.placement === 1 && doc.winner?.runnerUp) bits.push(`beat ${doc.winner.runnerUp}`);
+    // THE TALLY BELONGS TO THE PERSON THE WINNER BLOCK NAMES.
+    //
+    // `winner{}` is singular and `placement === 1` is not: season 8 ended with
+    // Alejandro and Cameron both on 1, and this handed Cameron's paragraph
+    // Alejandro's final vote and Alejandro's runner-up to write about. A
+    // co-winner's win is real; the other one's tally is not a fact about them.
+    const mine = doc.winner && (doc.winner.playerSlug === row.playerSlug
+      || doc.winner.name === row.name) ? doc.winner : null;
+    if (row.placement === 1 && mine?.vote) bits.push(`won the final vote ${mine.vote}`);
+    if (row.placement === 1 && mine?.runnerUp) bits.push(`beat ${mine.runnerUp}`);
     t.record = bits.join('; ');
 
     // The turning points, listed separately because they are events rather
@@ -270,6 +257,41 @@ export async function runCharacterFill({ season, format, root = '', onStatus = (
     if (row.keyMoments?.length) t.moments = row.keyMoments.slice(0, 8);
     t.timeline = timelineFor(doc, t.name);
   }
+
+  return threads;
+}
+
+/**
+ * THE CHARACTER FILL — personality, quotes and trivia for the whole cast.
+ *
+ * One request for everybody rather than one each: a model that can see the
+ * whole cast writes them apart, and asked about eighteen people separately it
+ * has no way to know it has already called four of them the quiet strategist.
+ */
+export async function runCharacterFill({ season, format, root = '', onStatus = () => {} } = {}) {
+  const { file, doc } = await loadDoc(season, format, root);
+  if (!doc || !Array.isArray(doc.placements)) {
+    return { ok: false, reason: `no season document at data/seasons/${file} — export the season first` };
+  }
+  const cast = doc.placements.map(p => p.name).filter(Boolean);
+
+  onStatus('Reading episode transcripts…');
+  const episodes = await listEpisodes(season, format);
+  if (!episodes.length) {
+    return { ok: false, reason: 'no episode transcripts are saved for this season' };
+  }
+
+  const base = writerUrl();
+  onStatus('Checking the worker…');
+  if (!await workerHasMode(base, 'wiki-fill', 'threads')) {
+    return { ok: false, reason: `${base} does not have the wiki-fill mode `
+      + '(usually the episode worker rather than the season one, or the season worker '
+      + 'has not been deployed since the mode was added)' };
+  }
+
+  const threads = sliceCastThreads(episodes, cast);
+
+  attachRecords(doc, threads, format);
 
   const spoken = threads.filter(t => t.totals.confessionals + t.totals.lines > 0).length;
   onStatus(`${episodes.length} episodes · ${cast.length} in the cast · ${spoken} speak on camera. Asking the writer…`);

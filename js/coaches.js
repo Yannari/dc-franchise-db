@@ -10,7 +10,7 @@ import { gs, seasonConfig } from './core.js';
 
 /** Every coach still standing. */
 export function activeCoaches() {
-  return (gs.coaches || []).filter(c => !c.promoted);
+  return (gs?.coaches || []).filter(c => !c.promoted);
 }
 
 export function isCoach(name) {

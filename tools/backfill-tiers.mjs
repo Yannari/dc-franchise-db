@@ -21,16 +21,18 @@
 //   node tools/backfill-tiers.mjs --write
 
 import fs from 'node:fs';
+import { BOARD_FILES } from '../js/ranking-boards.js';
+import { DEFAULT_FORMAT } from '../js/shows.js';
 
 const WRITE = process.argv.includes('--write');
 const PDB = 'players_database.json';
 
-// Mirrors js/ranking-boards.js. Kept as data rather than imported because that
-// module fetches over HTTP for the browser; change one and change the other.
-const BOARD_FILES = {
-  'total-drama': 'rankings_database.json',
-  'big-brother': 'rankings_bb.json',
-};
+// BOARD_FILES IS IMPORTED, NOT MIRRORED. It used to be copied here with a note
+// saying "change one and change the other", on the grounds that the module
+// fetches over HTTP — but the fetch lives in a function nobody calls by
+// importing the constant, so the copy bought nothing and cost a show: a board
+// added to js/ranking-boards.js and not to the copy is a show this tool
+// silently skips, leaving every one of its players on a blank tier.
 
 const TIER_ORDER = ['S+', 'S', 'A', 'B', 'C', 'D'];
 const rankOfTier = t => {
@@ -51,7 +53,7 @@ let changed = 0, missing = 0;
 for (const p of pdb.players) {
   // Which shows this player actually played. An absent format is Total Drama,
   // the same rule the rest of the repo uses.
-  const formats = new Set((p.seasonDetails || []).map(d => d.format || 'total-drama'));
+  const formats = new Set((p.seasonDetails || []).map(d => d.format || DEFAULT_FORMAT));
   if (!formats.size) continue;
 
   let best = null;

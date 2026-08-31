@@ -17,7 +17,7 @@
 //      visit.
 //   3. neither — an honest empty state that says WHY, rather than an empty feed
 //      that reads as a broken page.
-import { parseSeasonRef, seasonId, DEFAULT_FORMAT } from './shows.js';
+import { SHOWS, parseSeasonRef, seasonId, DEFAULT_FORMAT } from './shows.js';
 import { words, eventLabel, contextLabel, pollQuestions } from './social/adapter.js';
 import { loadSeasonDoc, episodeFeed, episodesOf, trendsFrom, audiencePulse, crowdFromRankings, stillIn }
   from './social/archive.js';
@@ -92,8 +92,15 @@ function readUrl() {
   const showRef = q.get('show');
   if (showRef) {
     const ref = parseSeasonRef(showRef) || null;
-    S.format = (ref && ref.format) || (showRef === 'big-brother' || showRef === 'bb'
-      ? 'big-brother' : showRef === 'total-drama' || showRef === 'td' ? 'total-drama' : S.format);
+    // ?show= takes either a slug or a prefix. This resolved both by naming the
+    // two shows that existed, so ?show=traitors and ?show=tr both fell through
+    // to whatever the feed was already on — the page silently kept showing you
+    // the wrong show rather than saying it did not know that one. Both forms
+    // come off the registry now, so a show is addressable the day it registers.
+    S.format = (ref && ref.format)
+      || (SHOWS[showRef] ? showRef : null)
+      || Object.keys(SHOWS).find(f => SHOWS[f].prefix === showRef)
+      || S.format;
   }
   const season = Number(q.get('season'));
   if (season > 0) S.season = season;

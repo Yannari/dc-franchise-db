@@ -6,7 +6,7 @@
 // it matched the seasons_database row on `seasonNumber` alone and OVERWROTE
 // Total Drama 14, and the delete sweep filtered on `_s14_`, which is a
 // substring of exactly the other show's keys.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { SHOWS, DEFAULT_FORMAT, seasonId } from '../js/shows.js';
 
@@ -14,17 +14,39 @@ const html = readFileSync('current-season.html', 'utf8');
 
 /** Lift the page's own key builder out and run it. */
 function keyBuilder() {
-  const body = html.match(/const CS_SHOWS[\s\S]*?function _csGet/)[0].replace(/function _csGet$/, '');
-  const prev = { d: globalThis.document, l: globalThis.localStorage, w: globalThis.window };
+  // Anchored on CS_DEFAULT_FORMAT, not on the CS_SHOWS literal this branch
+  // deleted: the page no longer holds its own show list, it reads the one the
+  // module block publishes on window.__SHOWS. A regex anchored on a deleted
+  // constant threw before any assertion ran, which is a green-looking way to
+  // stop testing the thing.
+  const match = html.match(/const CS_DEFAULT_FORMAT[\s\S]*?function _csGet/);
+  expect(match, 'key builder block not found in current-season.html').toBeTruthy();
+  const body = match[0].replace(/function _csGet$/, '');
+  const prev = { d: globalThis.document, l: globalThis.localStorage };
   globalThis.document = { getElementById: () => null };
   globalThis.localStorage = { getItem: () => null };
-  globalThis.window = {};
   try {
     return new Function(`${body}\n return { _sKey };`)()._sKey;
   } finally {
-    globalThis.document = prev.d; globalThis.localStorage = prev.l; globalThis.window = prev.w;
+    globalThis.document = prev.d; globalThis.localStorage = prev.l;
   }
 }
+
+// The page reads its prefixes off window.__SHOWS at CALL time now, not off a
+// literal captured when the block is evaluated, so the stub has to outlive
+// keyBuilder() or every key comes back "undefined-14" -- precisely the
+// corruption the publish guard exists to stop.
+let _prevWindow;
+beforeAll(() => {
+  _prevWindow = globalThis.window;
+  // Stands in for the page's module block. Derived from the registry, never a
+  // literal list: a hardcoded one here is the defect the collapse removed.
+  globalThis.window = { __SHOWS: {
+    prefixes: Object.fromEntries(Object.entries(SHOWS).map(([f, sh]) => [f, sh.prefix])),
+    default: DEFAULT_FORMAT, current: null,
+  } };
+});
+afterAll(() => { globalThis.window = _prevWindow; });
 
 describe('a season is a show and a number', () => {
   it('leaves every Total Drama key exactly where it already is', () => {

@@ -250,12 +250,17 @@ describe('the Coin costs money', () => {
         ['summariseWeek', summariseWeek(week)],
         ['generateSummaryText', generateSummaryText(ep)],
       ]) {
+        // Privacy belongs to the Coin surface. The rest of a full-week
+        // transcript may independently say "asked by Scary" or similar about
+        // an ordinary campaign without identifying the Coin holder.
+        const start = text.indexOf('THE COIN OF DESTINY');
+        const surface = start < 0 ? text : text.slice(start).split(/\n\s*\n[A-Z][A-Z —'-]+\n/)[0];
         for (const claim of [
           `by ${week.coinAuthority}`,
           `${week.coinAuthority} names`,
           `${week.coinAuthority} is named as the replacement`,
         ]) {
-          expect(text, `${label} named the holder: "${claim}"`).not.toContain(claim);
+          expect(surface, `${label} named the holder: "${claim}"`).not.toContain(claim);
         }
       }
     }

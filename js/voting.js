@@ -801,7 +801,7 @@ export function ensureVoteReasonMatchesTarget(voter, target, reason, lateTrigger
   // A coach on the block gets explained as a coach. Contestant prose about
   // "the room settling on a name" is true but says nothing about the one fact
   // that makes this vote cheap — the target has no ballot and no idol to run.
-  if (isCoach(target) && !/coach/i.test(text)) {
+  if (isCoach(target) && !/\bcoach\b/i.test(text)) {
     const _cr = coachVoteReason(target, voter);
     if (_cr) return _cr;
   }

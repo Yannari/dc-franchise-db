@@ -23,6 +23,17 @@
     .sr-winner::before { content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:radial-gradient(circle,rgba(245,158,11,.15),transparent 70%); pointer-events:none; }
     .sr-winner-lbl { font-size:10px; font-weight:800; letter-spacing:.15em; text-transform:uppercase; color:#f59e0b; margin-bottom:16px; }
     .sr-winner-row { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+    /* A ROW WITH PROSE IN IT IS NOT A ROW. The Strategy and Legacy blocks moved
+       inside `sr-winner-info` so that a split season draws them under the
+       person the singular block actually names — right, and it turns a
+       one-line row into a paragraph with a 72px avatar floating in the middle
+       of it. Top-aligned only where there is prose, so the fifteen seasons
+       without any keep the centred row they have always had. */
+    .sr-winner-row.is-tall { align-items:flex-start; }
+    .sr-winner-row.is-tall .sr-winner-av { margin-top:4px; }
+    /* And the prose gets room to be prose. `min-width:180px` is a floor for a
+       name and a tally; a paragraph in a 180px column is a ladder. */
+    .sr-winner-row.is-tall .sr-winner-info { min-width:min(100%,320px); }
     .sr-winner-av { width:72px; height:72px; border-radius:50%; flex-shrink:0; border:3px solid rgba(245,158,11,.6); box-shadow:0 0 20px rgba(245,158,11,.3); overflow:hidden; background:rgba(255,255,255,.05); display:flex; align-items:center; justify-content:center; font-size:28px; }
     .sr-winner-av img { width:100%; height:100%; object-fit:cover; display:block; }
     .sr-winner-info { flex:1; min-width:180px; }
@@ -437,13 +448,25 @@
 window._showsReady = new Promise(resolve => { window._showsResolve = resolve; });
 </script>
 <script type="module">
-  import { parseSeasonRef, seasonId, DEFAULT_FORMAT } from './js/shows.js';
-  window.shows = { parseSeasonRef, seasonId, DEFAULT_FORMAT };
+  /* `showWords`/`exitVerbs`/`roundExits`/`publicBallots` come through with the
+     rest because this page WRITES SENTENCES ABOUT A SEASON, and every one of
+     them was taking its words from a two-way ternary: "Voted out" over a
+     banishment, "Total Drama" in a Traitors infobox, and the murdered never
+     leaving the wall at all, because `evicted` is the vote and only the vote. */
+  import { parseSeasonRef, seasonId, showName, DEFAULT_FORMAT,
+    showWords, exitVerbs, roundExits, publicBallots } from './js/shows.js';
+  window.shows = { parseSeasonRef, seasonId, showName, DEFAULT_FORMAT,
+    showWords, exitVerbs, roundExits, publicBallots };
   /* The wiki tab is an ARTICLE, and the site already has an article
      stylesheet — the one the character pages use. Borrowing it rather than
      writing a second one is the whole reason the two read as the same
      encyclopaedia rather than as a dashboard with a wiki-shaped tab in it. */
   import { WIKI_CSS } from './js/wiki-view.js';
+  /* Who won, however many of them there were. `winner{}` is singular and a
+     season that ended in a split leaves it null, so reading it directly threw
+     on the hero line before the page drew anything at all. */
+  import { seasonWinners } from './js/records.js';
+  window.seasonWinners = seasonWinners;
   const wkStyle = document.createElement('style');
   wkStyle.textContent = WIKI_CSS;
   document.head.appendChild(wkStyle);
@@ -451,9 +474,8 @@ window._showsReady = new Promise(resolve => { window._showsResolve = resolve; })
 </script>
 
 <script>
-/* The registry is handed to this classic script as a narrow surface; these are
-   the display names it needs and nothing more. */
-const SHOW_NAMES={'total-drama':'Total Drama','big-brother':'Big Brother'};
+/* Display names come through window.shows above. The copy that used to sit
+   here headed an unlisted show's page with its slug. */
 const SEASON_COLORS=['#60a5fa','#a78bfa','#34d399','#f59e0b','#fb923c','#f472b6','#38bdf8','#fbbf24','#e879f9'];
 
 function slugify(n){return(n||'').toLowerCase().replace(/[^a-z0-9]/g,'-');}
@@ -566,7 +588,7 @@ function buildRecords(season){
        Drama keeps the bare form every bookmark and heading already uses. */
     const isDefaultShow = !ref.format || ref.format === shows.DEFAULT_FORMAT;
     const showPrefix = isDefaultShow ? 'S' : shows.seasonId(ref.format, sn).split('-')[0].toUpperCase();
-    const seasonLabel = isDefaultShow ? `Season ${sn}` : `${SHOW_NAMES[ref.format] || ref.format} ${sn}`;
+    const seasonLabel = isDefaultShow ? `Season ${sn}` : `${shows.showName(ref.format)} ${sn}`;
     document.title = showPrefix + sn + ' — ' + s.title;
     document.getElementById('footer-sub').textContent=s.title+' • '+s.castSize+' players';
 
@@ -594,6 +616,32 @@ function buildRecords(season){
     document.documentElement.style.setProperty('--sc',sc);
     document.documentElement.style.setProperty('--sc-glow',sc+'44');
 
+    /* EVERYBODY WHO WON THIS SEASON.
+       `winner{}` holds one person and always has, because until The Traitors
+       every show in the franchise had one. That show splits the pot between
+       whoever is still standing, which leaves the singular field null — and
+       this page read `s.winner.name` straight into the headline, so a split
+       season died on a TypeError before drawing a pixel. Season 8 is the same
+       shape one step less far along: two champions in `placements`, one of
+       them named in `winner`.
+       The registry module is an enhancement on this page rather than a
+       dependency (see the _showsReady race above), so there is a local
+       fallback for the file:// case, exactly as `shows` has.
+
+       AND THE FALLBACK HOLDS THE SAME PRECEDENCE, which it did not: it read
+       the singular `winner` FIRST and the placements only if that was empty,
+       which is the rule inverted. On season 8 -- Alejandro named in `winner`,
+       Alejandro AND Cameron at placement 1 -- this path showed Alejandro
+       alone, so the page was correct with the module loaded and wrong without
+       it. Most complete first: `winners[]`, then the placements at 1, then the
+       singular block. */
+    const _won=(window.seasonWinners?window.seasonWinners(s)
+      :((s.winners&&s.winners.length?s.winners
+        :((s.placements||[]).filter(p=>p.placement===1).length
+          ?(s.placements||[]).filter(p=>p.placement===1)
+          :(s.winner?[typeof s.winner==='string'?{name:s.winner}:s.winner]:[])))))
+      .filter(w=>w&&w.name);
+
     // Hero
     const heroHTML=`<div class="sr-hero">
       <div class="sr-hero-photo" id="sr-hero-photo"></div>
@@ -604,10 +652,10 @@ function buildRecords(season){
         <h1 class="sr-hero-title">${s.title}</h1>
         <p class="sr-hero-sub">${s.subtitle||''}</p>
         <div class="sr-hero-pills">
-          <span class="sr-pill accent">🏆 ${s.winner.name}</span>
+          ${_won.length?`<span class="sr-pill accent">🏆 ${_won.map(w=>w.name).join(" &amp; ")}</span>`:''}
           <span class="sr-pill">👥 ${s.castSize} players</span>
           <span class="sr-pill">📺 ${s.episodeCount} episodes</span>
-          ${s.winner.vote?`<span class="sr-pill">🗳️ ${s.winner.vote}</span>`:''}
+          ${s.winner&&s.winner.vote?`<span class="sr-pill">🗳️ ${s.winner.vote}</span>`:''}
         </div>
       </div>
     </div>`;
@@ -629,24 +677,32 @@ function buildRecords(season){
       }).join('')}
     </div>`:'';
 
+    /* ONE CARD PER WINNER. The season page named `w.name` once, which is the
+       right shape for a show with one winner and a silent lie on a season
+       with four: the other three are champions of a season whose own page
+       does not say their name. The strategy/legacy prose belongs to the
+       singular block, so it is drawn only under the person that block names. */
     const winnerHTML=`<div class="sr-winner">
-      <div class="sr-winner-lbl">👑 Season Winner</div>
-      <div class="sr-winner-row">
+      <div class="sr-winner-lbl">👑 Season Winner${_won.length>1?'s':''}</div>
+      ${_won.map(x=>{
+        const own=w&&(w.playerSlug===x.playerSlug||w.name===x.name)?w:{};
+        const tall = !!(own.strategy || own.legacy);
+        return `<div class="sr-winner-row${tall ? ' is-tall' : ''}">
         <div class="sr-winner-av">
-          <img src="assets/avatars/${w.playerSlug}.png"
+          <img src="assets/avatars/${x.playerSlug||''}.png"
             style="display:none"
             onload="this.style.display='block';this.nextElementSibling.style.display='none'"
             onerror="this.style.display='none'"/>
           <span>👑</span>
         </div>
         <div class="sr-winner-info">
-          <div class="sr-winner-name">${w.name}</div>
-          <div class="sr-winner-vote">${w.vote||''}${w.runnerUp?' over '+w.runnerUp:''}</div>
-          ${w.keyStats?`<div style="font-size:13px;color:rgba(255,255,255,.75)">${w.keyStats}</div>`:''}
+          <div class="sr-winner-name">${x.name}</div>
+          <div class="sr-winner-vote">${own.vote||''}${own.runnerUp?' over '+own.runnerUp:''}</div>
+          ${own.keyStats?`<div style="font-size:13px;color:rgba(255,255,255,.75)">${own.keyStats}</div>`:''}
+        ${own.strategy?`<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;font-weight:700">Strategy</div><div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.6">${own.strategy}</div></div>`:''}
+        ${own.legacy?`<div style="margin-top:10px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;font-weight:700">Legacy</div><div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.6">${own.legacy}</div></div>`:''}
         </div>
-      </div>
-      ${w.strategy?`<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;font-weight:700">Strategy</div><div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.6">${w.strategy}</div></div>`:''}
-      ${w.legacy?`<div style="margin-top:10px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;font-weight:700">Legacy</div><div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.6">${w.legacy}</div></div>`:''}
+      </div>`;}).join('')}
       ${finalistsHTML}
     </div>`;
 
@@ -770,23 +826,50 @@ function buildRecords(season){
          So both are normalised to ROUNDS, and each section then asks for
          what it needs: the voting grid works from either, the competition
          grid needs a block and a veto and says so when there is not one. */
+      /* ── WHOSE SHOW THIS IS ────────────────────────────────────────
+         Taken from the document, then the reference, then the bare-integer
+         rule — never from `bbWeeks.length`, which is a two-way answer to a
+         question that now has three. Every word below comes from here. */
+      const fmt = s.format || shows.DEFAULT_FORMAT;
+      const W = shows.showWords(fmt);
+      const VERBS = shows.exitVerbs(fmt);
+      const cap = t => String(t || '').replace(/^./, c => c.toUpperCase());
       const bbWeeks = Array.isArray(s.weeks) ? s.weeks : [];
-      const tdRounds = (Array.isArray(s.votingHistory) ? s.votingHistory : []).map(ep => ({
-        week: ep.episode,
-        evicted: ep.eliminated,
-        ballots: (ep.votes || []).map(v => ({ voter: v.voter, evict: v.target })),
-        votes: (ep.votes || []).reduce((acc, v) => {
-          if (v.target) acc[v.target] = (acc[v.target] || 0) + 1;
-          return acc;
-        }, {}),
-        winner: ep.winner || ep.challengeWinner || '',
-        immunityWinner: ep.immunityWinner || '',
-        initialNominees: [], finalNominees: [],
-      }));
+      const tdRounds = (Array.isArray(s.votingHistory) ? s.votingHistory : []).map(ep => {
+        /* THE BALLOTS THE AUDIENCE SAW. A show with a second, secret ballot
+           keeps both on `votes[]`, and this page is the public record of the
+           season — counting the conclave's names into the room's tally would
+           print the show's central secret as an eviction margin. */
+        const seen = shows.publicBallots(ep, fmt);
+        return {
+          week: ep.episode,
+          /* `eliminated` is the VOTE and only the vote, which is why a
+             Traitors season rendered with half its cast never leaving.
+             `exits` is everybody who left this round, each with the verb that
+             removed them; `evicted` stays the first of them so every reader
+             written for a one-door show keeps working unchanged. */
+          exits: shows.roundExits(ep, fmt),
+          evicted: shows.roundExits(ep, fmt)[0]?.name || ep.eliminated || '',
+          ballots: seen.map(v => ({ voter: v.voter, evict: v.target })),
+          votes: seen.reduce((acc, v) => {
+            if (v.target) acc[v.target] = (acc[v.target] || 0) + 1;
+            return acc;
+          }, {}),
+          winner: ep.winner || ep.challengeWinner || '',
+          immunityWinner: ep.immunityWinner || '',
+          initialNominees: [], finalNominees: [],
+        };
+      });
       const weeks = bbWeeks.length ? bbWeeks : tdRounds;
-      // What the round is CALLED. A Total Drama season has episodes.
-      const roundWord = bbWeeks.length ? 'Week' : 'Episode';
+      // What the round is CALLED — the registry's word, not the house's.
+      const roundWord = W.round || 'Episode';
       const hasBlock = bbWeeks.length > 0;
+      /* Everybody who left a round, in the one shape. A Big Brother week has
+         no `exits[]`, so it is normalised here the same way `roundExits`
+         normalises a round: one entry, the show's own verb. */
+      const exitsOf = w => (Array.isArray(w?.exits) && w.exits.length
+        ? w.exits
+        : (w?.evicted ? [{ name: w.evicted, verb: W.exit, channel: 'vote' }] : []));
       const cast = (s.placements || []).slice().sort((a, b) => a.placement - b.placement);
       if (!cast.length) return '<p class="sr-thin">No cast recorded for this season.</p>';
 
@@ -812,6 +895,11 @@ function buildRecords(season){
          facts table. The name is what this section wants; the rest of it is
          the Overview tab's job. */
       const winnerName = typeof s.winner === 'string' ? s.winner : (s.winner?.name || '');
+      /* Everybody who finished first, and the best-placed person who did not.
+         Read off the placements, which is the only record that holds more
+         than one of either. */
+      const champions = cast.filter(p => Number(p.placement) === 1);
+      const runnerUp = cast.find(p => Number(p.placement) > 1) || null;
 
       /* A FINALIST IS NEVER EVICTED, whatever the last round says.
          Total Drama's final vote is recorded like any other — a round with an
@@ -848,21 +936,30 @@ function buildRecords(season){
       const outAt = {};        // name -> index of their last exit
       const exits = {};        // name -> every week number they left on
       const exitIdx = {};      // name -> every index they left at
+      /* EVERY DOOR OUT. This walked `w.evicted`, so on a show with a second
+         way out the people who left by it were never recorded as leaving at
+         all: they stayed lit on the wall, unfaded in the grid, and their card
+         read a placement with no exit under it. */
+      const exitVerbOf = {};   // name -> the word for the door THEY left by
       weeks.forEach((w, i) => {
+        for (const x of exitsOf(w)) _recordExit(w, i, x);
+      });
+      function _recordExit(w, i, x) {
         // A finalist is never "evicted" — except at the finale, where third
         // place is cut and that IS their exit. Only the two who sat in the
         // final vote are protected.
-        const protectedName = finalists.has(w.evicted)
-          && (cast.find(p => p.name === w.evicted)?.placement || 99) <= 2;
-        if (w.evicted && !protectedName) {
-          outWeek[w.evicted] = w.week;
-          outAt[w.evicted] = i;
-          (exits[w.evicted] = exits[w.evicted] || []).push(w.week);
-          (exitIdx[w.evicted] = exitIdx[w.evicted] || []).push(i);
+        const protectedName = finalists.has(x.name)
+          && (cast.find(p => p.name === x.name)?.placement || 99) <= 2;
+        if (x.name && !protectedName) {
+          exitVerbOf[x.name] = x.verb || W.exit;
+          outWeek[x.name] = w.week;
+          outAt[x.name] = i;
+          (exits[x.name] = exits[x.name] || []).push(w.week);
+          (exitIdx[x.name] = exitIdx[x.name] || []).push(i);
         }
-      });
+      }
       const inWeek = (name, w) => w.hoh === name || w.vetoWinner === name
-        || w.safetyWinner === name || w.evicted === name
+        || w.safetyWinner === name || exitsOf(w).some(x => x.name === name)
         || (w.ballots || []).some(b => b.voter === name)
         || (w.votes || {})[name] != null
         || (w.initialNominees || []).includes(name)
@@ -905,7 +1002,9 @@ function buildRecords(season){
 
       /* ── 1. the facts ── */
       const facts = [
-        ['Cast', `${s.castSize || cast.length} ${hasBlock ? 'houseguests' : 'contestants'}`],
+        // The registry's word for the people on this show. A two-way ternary
+        // here counted a castle in contestants.
+        ['Cast', `${s.castSize || cast.length} ${W.players}`],
         ['Episodes', s.episodeCount || weeks.length || '—'],
         /* DISTINCT week numbers, not records. A double eviction is one night
            with two of them, so counting rows said this season ran seventeen
@@ -913,8 +1012,15 @@ function buildRecords(season){
         [bbWeeks.length ? 'Weeks' : 'Rounds',
           new Set(weeks.map(w => Number(w.week))).size || '—'],
         s.jurySize ? ['Jury', `${s.jurySize} members`] : null,
-        winnerName ? ['Winner', esc(winnerName)] : null,
-        cast[1] ? ['Runner-up', esc(cast[1].name)] : null,
+        /* HOWEVER MANY WON. `winner{}` is singular and a split season leaves
+           it null, so the row that exists to say who won said nothing on the
+           one season where that is the interesting fact. And the runner-up
+           was `cast[1]` — the SECOND ROW, which on a split is another
+           champion: season 8's box named Cameron the runner-up on a page
+           whose own wall gives him first place. */
+        champions.length ? [champions.length > 1 ? 'Winners' : 'Winner',
+          champions.map(p => esc(p.name)).join(', ')] : null,
+        runnerUp ? ['Runner-up', esc(runnerUp.name)] : null,
       ].filter(Boolean);
 
       /* ── 2. twists ──
@@ -1009,7 +1115,12 @@ function buildRecords(season){
           return { text: juryFor[p.name] ? `Jury: ${juryFor[p.name]}` : 'Jury', cls: 'is-jury' };
         }
         if (p.placement <= (s.finalists || []).length) return { text: 'Finalist', cls: 'is-runner' };
-        return { text: hasBlock ? 'Evicted' : 'Voted out', cls: 'is-gone' };
+        /* THE WORD FOR THE DOOR THIS PERSON LEFT BY. A two-way ternary put
+           "Voted out" on all fifteen departures of a Traitors season, seven
+           of which were murders, and the word "banished" appeared on the page
+           zero times. There is no binary here: `exitVerbOf` is what the round
+           itself recorded, and the show's default is the fallback. */
+        return { text: cap(exitVerbOf[p.name] || W.exit), cls: 'is-gone' };
       };
       const ranked = cast.slice().sort((a, b) => a.placement - b.placement);
       const fateOf = p => {
@@ -1019,8 +1130,9 @@ function buildRecords(season){
       };
       const tipOf = p => {
         const back = (exits[p.name] || []).length > 1;
+        const verb = cap(exitVerbOf[p.name] || W.exit);
         return esc(back
-          ? `${p.name} — ${ord(p.placement)}. Evicted ${roundWord.toLowerCase()} ${
+          ? `${p.name} — ${ord(p.placement)}. ${verb} ${roundWord.toLowerCase()} ${
             exits[p.name][0]}, came back, out again ${roundWord.toLowerCase()} ${outWeek[p.name]}.`
           : `${p.name} — ${ord(p.placement)}${outWeek[p.name]
             ? `, out in ${roundWord.toLowerCase()} ${outWeek[p.name]}` : ''}`);
@@ -1140,7 +1252,7 @@ function buildRecords(season){
                 <th>${hasBlock ? 'Head of Household' : 'Immunity'}</th>
                 ${anyArena ? '<th>Block Buster</th>' : ''}
                 ${hasBlock ? '<th>Power of Veto</th><th>On the block</th>' : ''}
-                <th>${hasBlock ? 'Evicted' : 'Voted out'}</th>
+                <th>${VERBS.map(cap).join(' / ')}</th>
               </tr></thead>
               <tbody>${weeks.map(w => (cancelled(w)
                 /* THE WEEK WHERE NOBODY GOES HOME. Drawn as one wide cell
@@ -1164,7 +1276,7 @@ function buildRecords(season){
                 <td>${chip(w.hoh || w.immunityWinner || w.winner, 'hoh', hasBlock ? 'H' : 'I')}</td>
                 ${anyArena ? `<td>${chip(w.safetyWinner, 'arena', 'B')}</td>` : ''}
                 ${hasBlock ? `<td>${chip(w.vetoWinner, 'veto', 'V')}</td><td>${nomFaces(w)}</td>` : ''}
-                <td>${chip(w.evicted, 'out', '✕')}</td>
+                <td>${exitsOf(w).map(x => chip(x.name, 'out', '✕')).join('') || chip('', 'out', '✕')}</td>
               </tr>`)).join('')}</tbody>
             </table>
           </div>
@@ -1289,14 +1401,16 @@ function buildRecords(season){
             ballot.stated ? `said ${ballot.stated}` : (ballot.changed ? 'changed their mind' : ''),
             byName[ballot.evict]];
         }
-        if (w.evicted === name) return ['OUT', 'is-out', 'evicted', null];
+        const mine = exitsOf(w).find(x => x.name === name);
+        if (mine) return ['OUT', 'is-out', mine.verb || W.exit, null];
         if (up) return ['NOM', 'is-nom', 'on the block, could not vote', null];
         return ['', '', '', null];
       };
       const votingHistory = hasBallots ? `
         <div class="wk-scroll">
           <table class="wk-table wk-weeks sr-grid sr-votes">
-            <thead><tr><th>Voted to evict</th>${weeks.map(colHead).join('')}</tr></thead>
+            <thead><tr><th>Voted to ${W.exitAction}</th>${
+              weeks.map(colHead).join('')}</tr></thead>
             <tbody>${cast.map(p => {
               const gone = outWeek[p.name];
               return `<tr>
@@ -1318,8 +1432,7 @@ function buildRecords(season){
           </table>
         </div>
         <p class="sr-thin">
-          Each cell is who that ${hasBlock ? 'houseguest' : 'contestant'} voted
-          ${hasBlock ? 'to evict' : 'out'}.
+          Each cell is who that ${esc(W.player)} voted to ${esc(W.exitAction)}.
           ${hasBlock ? `<span class="sr-key is-hoh">HOH</span> held the power and did not vote ·
             <span class="sr-key is-nom">NOM</span> was on the block ·
             <span class="sr-key is-changed">name</span> moved their vote after the plans were laid ·
@@ -1363,11 +1476,18 @@ function buildRecords(season){
         if (w.finale && w.evicted) {
           bits.push(`<b>${esc(w.hoh || 'They')}</b> cast the only vote and evicted
             <b>${esc(w.evicted)}</b>.`);
-        } else if (w.evicted) {
+        } else if (exitsOf(w).length) {
           const tally = Object.entries(w.votes || {}).map(([n, c]) => `${c}`).sort((a, b) => b - a);
-          // A house evicts; a camp votes somebody out.
-          bits.push(`<b>${esc(w.evicted)}</b> was ${hasBlock ? 'evicted' : 'voted out'}${tally.length > 1
-            ? `, ${tally[0]}-${tally[1]}` : ''}.`);
+          /* ONE SENTENCE PER DOOR. This was `hasBlock ? 'evicted' : 'voted
+             out'` — a two-way answer that printed "was voted out" over seven
+             murders and named only the banished, because it read `w.evicted`.
+             The verb is the ROUND's, and only the ballot's exit quotes a
+             margin: nobody voted on the other one. */
+          for (const x of exitsOf(w)) {
+            const margin = x.channel !== 'murder' && tally.length > 1
+              ? `, ${tally[0]}-${tally[1]}` : '';
+            bits.push(`<b>${esc(x.name)}</b> was ${esc(x.verb || W.exit)}${margin}.`);
+          }
         }
         /* ── WRITTEN PROSE THAT NAMES NOBODY FROM THIS WEEK IS NOT ABOUT
               THIS WEEK. ──
@@ -1388,7 +1508,8 @@ function buildRecords(season){
         if (w.finale && w.juryVote) bits.push(`The jury voted: <b>${esc(w.juryVote)}</b>.`);
         const w2raw = written.get(Number(w.week));
         const knownNames = [w.hoh, w.winner, w.immunityWinner, w.vetoWinner, w.safetyWinner,
-          w.evicted, ...(w.initialNominees || []), ...(w.blockBeforeSafety || []),
+          ...exitsOf(w).map(x => x.name),
+          ...(w.initialNominees || []), ...(w.blockBeforeSafety || []),
           ...(w.finalNominees || [])].filter(Boolean);
         const aboutThisWeek = w2raw && (!knownNames.length || knownNames.some(n =>
           new RegExp(`\\b${String(n).replace(/[^A-Za-z0-9 ]/g, c => String.fromCharCode(92) + c)}\\b`)
@@ -1419,12 +1540,28 @@ function buildRecords(season){
          camp counts challenge wins. */
       const trivia = [];
       const most = arr => arr.slice().sort((a, b) => b.n - a.n)[0];
+      /* HOW MANY TIMES THIS PAGE'S OWN GRID SHOWS A NAME BEING WRITTEN DOWN.
+         Not `p.votesReceived`, which a document can be published without. */
+      const drawnAgainst = p => weeks.reduce((n, w) =>
+        n + (Number((w.votes || {})[p.name]) || 0), 0);
+      /* THE NUMBER STAYS THE SITE'S, THE CLAIM COMES FROM THE PAGE.
+         On season 6 the record says Brody took 26 votes and the exported
+         voting history holds 19 of them -- revotes and unexported rounds are
+         real and the grid cannot show them -- so recomputing the FIGURE off
+         the grid would have quietly changed a published Total Drama number
+         and disagreed with every other page. The figure keeps the record's;
+         the "never" claim below needs BOTH sources to say never, because a
+         claim about zero is the one thing the grid can falsify outright. */
+      const votesAgainst = p => (Number(p.votesReceived) || drawnAgainst(p));
       const comps = cast.map(p => ({ name: p.name, n: hasBlock
         ? (p.bb?.hohWins || 0) + (p.bb?.vetoWins || 0) + (p.bb?.blockBusterWins || 0)
-        : (p.challengeWins || 0) }));
+        : (p.challengeWins || 0) + (p.tr?.missionsWon || 0) }));
       const topComp = most(comps);
       if (topComp?.n) {
-        trivia.push(`${esc(topComp.name)} won the most ${hasBlock ? 'competitions' : 'challenges'} this season (${topComp.n}).`);
+        // "challenges" over a castle is the same leak as "nominated" over a
+        // camp. The word is the registry's; the two shipped shows are
+        // unchanged by it ("challenges", "competitions").
+        trivia.push(`${esc(topComp.name)} won the most ${esc(W.comp)}s this season (${topComp.n}).`);
       }
       if (hasBlock) {
         const noms = cast.map(p => ({ name: p.name, n: p.bb?.timesNominated || 0 }));
@@ -1436,17 +1573,26 @@ function buildRecords(season){
           trivia.push(`${esc(topArena.name)} won their way off the block ${topArena.n} times.`);
         }
       } else {
-        const got = cast.map(p => ({ name: p.name, n: p.votesReceived || 0 }));
+        const got = cast.map(p => ({ name: p.name, n: votesAgainst(p) }));
         const topVotes = most(got);
         if (topVotes?.n) {
           trivia.push(`${esc(topVotes.name)} had more votes cast against them than anybody else (${topVotes.n}).`);
         }
       }
       /* Reaching the end untouched. In a house that is never being put on the
-         block; in a camp it is never having a name written down against you. */
+         block; in a camp it is never having a name written down against you.
+
+         ── AND IT IS READ OFF THE BALLOTS THIS PAGE IS ALREADY DRAWING ──
+         This trusted `p.votesReceived`, a field a season document can simply
+         not carry, and an absent number is not a zero. So the page printed
+         "reached the end without ever having a vote cast against them" about
+         five people while, two sections higher, its own voting grid showed
+         one of them taking votes in episode two — the canonical bug sentence
+         from CLAUDE.md, contradicted by the same page that printed it. The
+         count now comes from the ballots above, so the two cannot disagree. */
       const untouched = hasBlock
         ? cast.filter(p => p.placement <= 5 && !(p.bb?.timesNominated))
-        : cast.filter(p => p.placement <= 5 && !(p.votesReceived));
+        : cast.filter(p => p.placement <= 5 && !votesAgainst(p) && !drawnAgainst(p));
       if (untouched.length) {
         trivia.push(`${untouched.map(p => esc(p.name)).join(', ')} reached the end without ever
           ${hasBlock ? 'being nominated' : 'having a vote cast against them'}.`);
@@ -1457,9 +1603,13 @@ function buildRecords(season){
           trivia.push(`${esc(winnerName)} won with ${w.bb.hohWins || 0} HOH
             and ${w.bb.vetoWins || 0} veto wins.`);
         } else if (w) {
-          trivia.push(`${esc(winnerName)} won with ${w.challengeWins || 0} challenge
-            win${(w.challengeWins || 0) === 1 ? '' : 's'} and ${w.votesReceived || 0}
-            vote${(w.votesReceived || 0) === 1 ? '' : 's'} cast against them.`);
+          // The show's own word for what they won, and this page's own count
+          // of what was written against them.
+          const wins = (w.challengeWins || 0) + (w.tr?.missionsWon || 0);
+          const vs = votesAgainst(w);
+          trivia.push(`${esc(winnerName)} won with ${wins} ${esc(W.comp)}
+            win${wins === 1 ? '' : 's'} and ${vs}
+            vote${vs === 1 ? '' : 's'} cast against them.`);
         }
       }
 
@@ -1478,7 +1628,11 @@ function buildRecords(season){
           ${body}</section>`;
       };
 
-      const showLabel = hasBlock ? 'Big Brother' : 'Total Drama';
+      /* WHOSE SHOW THIS IS, in the box whose entire job is to say so. A
+         two-way ternary printed "Total Drama" over a Traitors season -- in an
+         infobox, under a heading, on the page about that season. `showName`
+         was already imported and already used correctly forty lines up. */
+      const showLabel = shows.showName(fmt);
       const infobox = `<aside class="wk-infobox">
         <div class="wk-ib-title">${esc(s.title || (roundWord + ' season'))}</div>
         <div class="wk-ib-show">${showLabel}</div>
@@ -1493,9 +1647,9 @@ function buildRecords(season){
           ? `<dl class="sr-twists">${twists.map(([t, d]) =>
               `<dt>${t}</dt><dd>${d}</dd>`).join('')}</dl>`
           : `<p class="sr-thin">Nothing in this season's record identifies a twist. Seasons
-             exported before a twist was tracked do not carry it — the weeks below are still
-             complete.</p>`)}
-        ${sec(hasBlock ? 'Houseguests' : 'Contestants', wall,
+             exported before a twist was tracked do not carry it — the ${
+               roundWord.toLowerCase()}s below are still complete.</p>`)}
+        ${sec(W.players.replace(/^./, c => c.toUpperCase()), wall,
           `${cast.length} · winner first`)}
         ${sec('The power', power, hasPower ? `who ran each ${roundWord.toLowerCase()}` : '')}
         ${sec('Voting history', votingHistory, hasBallots ? 'who voted for whom' : '')}

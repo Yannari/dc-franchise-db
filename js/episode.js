@@ -6795,7 +6795,11 @@ function simulateJuryRoundtable(ep) {
       const _tdPair = ep.tiedDestinies.pairs.find(p => p.a === ep.eliminated || p.b === ep.eliminated);
       if (_tdPair) {
         const _tdPartner = _tdPair.a === ep.eliminated ? _tdPair.b : _tdPair.a;
-        if (gs.activePlayers.includes(_tdPartner)) {
+        // Pair immunity is still immunity. A pair-aware challenge can protect
+        // both names through `immunityWinner` + `extraImmune`; Tied Destinies
+        // must not re-eliminate one of those winners as collateral.
+        const _tdImmune = new Set([ep.immunityWinner, ...(ep.extraImmune || [])].filter(Boolean));
+        if (gs.activePlayers.includes(_tdPartner) && !_tdImmune.has(_tdPartner)) {
           ep.tiedDestinies.eliminatedTarget = ep.eliminated;
           ep.tiedDestinies.eliminatedPartner = _tdPartner;
           // Handle partner elimination — same flow as main elimination

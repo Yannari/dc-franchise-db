@@ -192,7 +192,28 @@
 </footer>
 <!-- SITE FOOTER END -->
 
+<!-- js/shows.js is the only list of shows. The page script below is a classic
+     script and cannot import, so it is handed the registry here. It kept five
+     copies of its own — names, icons, filename prefixes, and a two-element
+     array of every show that exists — and not one of them errored on a show it
+     had not been told about. -->
+<script type="module">
+  import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
+  window.__SHOWS = { SHOWS, DEFAULT_FORMAT };
+</script>
+
 <script>
+/* Show identity, asked of the registry rather than answered locally. Called
+   from render functions, which run after the module tag above has resolved. */
+const _showEntry   = f => (window.__SHOWS?.SHOWS || {})[f];
+const _showFormats = () => Object.keys(window.__SHOWS?.SHOWS || {});
+const _showNameOf  = f => _showEntry(f)?.name || f;
+/* A television, not a clapperboard: an unlisted show gets a generic icon
+   rather than being drawn as the default one. */
+const _showIconOf  = f => _showEntry(f)?.emoji || '📺';
+const _showPrefixOf = f => _showEntry(f)?.prefix
+  || String(f).split('-').map(w => w[0]).join('');
+
 /* ============================================
    PLAYER STORY FORMATTER
    ============================================ */
@@ -867,7 +888,6 @@ function _wireViewTabs(player) {
  */
 async function _loadSeasonDocs(player) {
   if (window.__seasonDocs) return window.__seasonDocs;
-  const SHOW_PREFIX = { 'total-drama': '', 'big-brother': 'bb' };
   const wanted = new Map();
   for (const d of player.seasonDetails || []) {
     const n = Number(d.season);
@@ -875,7 +895,7 @@ async function _loadSeasonDocs(player) {
     const fmt = d.format || 'total-drama';
     // Total Drama keeps the bare filename; every other show is namespaced.
     // Same rule the export and the studio worker use.
-    const pre = SHOW_PREFIX[fmt] ?? fmt.split('-').map(w => w[0]).join('');
+    const pre = fmt === 'total-drama' ? '' : _showPrefixOf(fmt);
     wanted.set(`${fmt}:${n}`, { fmt, n, file: pre ? `${pre}-${n}-data.json` : `season${n}-data.json` });
   }
   const docs = await Promise.all([...wanted.values()].map(async ({ fmt, n, file }) => {
@@ -918,7 +938,9 @@ function _renderWiki(player) {
   if (!dossier) return;
 
   const played = (dossier.career || []).map(c => c.format);
-  const all = [...new Set([...played, 'total-drama', 'big-brother'])];
+  // Every registered show gets a tab, played or not, so the article can say
+  // "no career here yet" instead of the show simply being absent from the page.
+  const all = [...new Set([...played, ..._showFormats()])];
   const chosen = window.showSwitcher?.currentShow?.();
   /* "All shows" is not an article — an encyclopaedia entry is about one show.
      Default to the one they played most, which is the article somebody landing
@@ -983,18 +1005,16 @@ function _scopeToShow(player, show) {
 
 /** A show this player has never been on. Said, rather than quietly ignored. */
 function _neverPlayedHtml(player, show) {
-  const NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
-  const ICONS = { 'total-drama': '🎬', 'big-brother': '📹' };
-  const name = NAMES[show] || show;
+  const name = _showNameOf(show);
   const played = [...new Set((player.seasonDetails || []).map(d => d.format || 'total-drama'))];
   return `<div class="wk-empty">
-    <div class="wk-empty-icon">${ICONS[show] || '📺'}</div>
+    <div class="wk-empty-icon">${_showIconOf(show)}</div>
     <h2>No ${name} career</h2>
     <p>${player.name} has never played ${name}. This page fills itself in the
        moment they do.</p>
     <div class="wk-empty-actions">
       ${played.map(f => `<button type="button" class="wk-btn" data-goto-show="${f}">${
-        ICONS[f] || '📺'} See their ${NAMES[f] || f} career</button>`).join('')}
+        _showIconOf(f)} See their ${_showNameOf(f)} career</button>`).join('')}
     </div>
   </div>`;
 }
@@ -1497,8 +1517,7 @@ function renderPlayerProfile(fullPlayer) {
       o.noms += b.timesNominated || 0;
       return o;
     }, { hoh: 0, veto: 0, arena: 0, noms: 0 });
-  const SHOW_NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
-  const showName = f => SHOW_NAMES[f] || f;
+  const showName = _showNameOf;
 
   const showCounts = (() => {
     const by = player.byShow || {};
@@ -1506,10 +1525,9 @@ function renderPlayerProfile(fullPlayer) {
       .map(([fmt, v]) => ({ fmt, n: Number(v?.seasons) || 0 }))
       .filter(r => r.n > 0);
     if (rows.length < 2) return null;
-    const NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
     return rows
       .sort((a, b) => b.n - a.n)
-      .map(r => `${r.n} ${NAMES[r.fmt] || r.fmt}`)
+      .map(r => `${r.n} ${_showNameOf(r.fmt)}`)
       .join(' &nbsp;•&nbsp; ');
   })();
   const seasonsLabel = showCounts
@@ -1565,9 +1583,9 @@ function renderPlayerProfile(fullPlayer) {
   const _ringR = 46, _ringC = +(2 * Math.PI * _ringR).toFixed(2);
   const _scoreNum = typeof score === 'number' ? score : 0;
   /* Named, so the gap explains itself: "No Big Brother ranking yet" rather than
-     an empty dial somebody has to work out. */
-  const _boardShowName = _show === 'big-brother' ? 'Big Brother'
-    : _show === 'total-drama' ? 'Total Drama' : '';
+     an empty dial somebody has to work out. Blank for 'all', which is not a
+     show and has no board. */
+  const _boardShowName = _showEntry(_show)?.name || '';
   const _dashOffset = +(_ringC * (1 - _scoreNum / 100)).toFixed(2);
 
   html += `<div class="pp-hero" id="pp-hero">
@@ -1920,7 +1938,7 @@ function renderPlayerProfile(fullPlayer) {
     html += `<div class="pp-mini-chips pp-reveal">`;
     for (const fmt of _showList) {
       html += `<div class="pp-chip"><div class="v">${_careers[fmt].seasonsPlayed}</div><div class="l">${
-        (SHOW_NAMES[fmt] || fmt).replace(' ', '<br>')}</div></div>`;
+        _showNameOf(fmt).replace(' ', '<br>')}</div></div>`;
     }
     if (player.winRate != null) {
       html += `<div class="pp-chip"><div class="v">${player.winRate}%</div><div class="l">Win Rate<br>(all shows)</div></div>`;
@@ -3063,6 +3081,7 @@ document.addEventListener('keydown', e => {
   // databases — nothing stores a fame field, because decay makes it a function
   // of when you ask rather than of the player's own record.
   import { computeFame } from './js/fame.js';
+  import { SHOWS } from './js/shows.js';
   import { ageNow, setFranchiseNow } from './js/franchise-calendar.js';
   import { loadRankingBoards } from './js/ranking-boards.js';
   // The same engine franchise.html draws its per-show boards from, so the two
@@ -3117,13 +3136,16 @@ document.addEventListener('keydown', e => {
       ...(seasonsDb.seasons || []).map(x => [x.seasonId, x]),
       ...(seasonsDb.seasons || []).map(x => [x.seasonNumber, x]),
     ]);
-    window.__milestones = Object.fromEntries(['total-drama', 'big-brother'].map(f =>
+    // Every registered show. The literal list this replaced would have left a
+    // third show with no milestones and no trivia, and an empty section is not
+    // distinguishable from a player who has none.
+    window.__milestones = Object.fromEntries(Object.keys(SHOWS).map(f =>
       [f, franchiseRecords({ players: playersDb, seasonsDb, format: f }).milestones]));
     // Computed trivia, per show. Worked out for the WHOLE field once rather
     // than per player, because "the fourth contestant to win" is only knowable
     // by looking at everybody — asking it one player at a time would rebuild
     // the same comparison for each of them.
-    window.__playerTrivia = Object.fromEntries(['total-drama', 'big-brother'].map(f =>
+    window.__playerTrivia = Object.fromEntries(Object.keys(SHOWS).map(f =>
       [f, allPlayerTrivia(careersIn(playersDb, f), f, {
         // The life log, so the trivia can say who married a castmate and who
         // has been together longest — the most trivia-shaped facts the

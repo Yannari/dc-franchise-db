@@ -23,6 +23,12 @@ const GENERIC = {
   challenge: 'challenge',
   home: 'camp',
   vote: 'vote',
+  // THE BALLOT THAT DECIDES THE SEASON, which is not the weekly one. A
+  // finale take written with `vote` said "not one bitter eviction vote at the
+  // end" about a night decided by a jury -- the right show, the wrong ballot.
+  // Null where a show has no final ballot at all, and a sentence that needs
+  // one must then say something else rather than invent it.
+  finalVote: 'final vote',
   comps: ['challenge'],
   danger: 'the crosshairs',
   Danger: 'The crosshairs',
@@ -35,6 +41,23 @@ const GENERIC = {
   ceremony: 'the ceremony',
   jury: 'the jury',
   safe: 'safe',
+  // ── the two fields that used to be a ternary on one show ──
+  //
+  // `nominationLabel` heads the timeline row for somebody the room decided
+  // about and did not remove; `polls` are the questions this show can honestly
+  // ask while a season is running. Both used to be a ternary testing the
+  // second show's slug — a two-answer question in a file that exists because
+  // there will be more than two shows — so a third show asked its audience who
+  // wins the next challenge and who makes the merge, over a format with
+  // neither. The literal is deliberately NOT quoted here: the duplication
+  // guard counts that shape by matching source text, and a comment quoting the
+  // thing it replaced keeps the count where it was and lets the ratchet pass
+  // untightened. That has already happened once in this repo.
+  nominationLabel: 'Votes against',
+  polls: [
+    { id: 'boot', text: 'Who goes home tonight?' },
+    { id: 'immunity', text: 'Who wins the next challenge?' },
+  ],
 };
 
 const SHOW_WORDS = {
@@ -49,6 +72,7 @@ const SHOW_WORDS = {
     challenge: 'challenge',
     home: 'camp',
     vote: 'vote',
+    finalVote: 'jury vote',
     comps: ['challenge', 'immunity challenge', 'reward challenge'],
     // ── the danger vocabulary ──
     //
@@ -68,6 +92,12 @@ const SHOW_WORDS = {
     ceremony: 'the ceremony',
     jury: 'the jury',
     safe: 'safe',
+    nominationLabel: 'Votes against',
+    polls: [
+      { id: 'boot', text: 'Who goes home tonight?' },
+      { id: 'immunity', text: 'Who wins the next challenge?' },
+      { id: 'merge', text: 'Who makes the merge?' },
+    ],
   },
   'big-brother': {
     name: 'Big Brother',
@@ -80,6 +110,7 @@ const SHOW_WORDS = {
     challenge: 'competition',
     home: 'house',
     vote: 'eviction vote',
+    finalVote: 'jury vote',
     comps: ['competition', 'HOH', 'veto'],
     danger: 'the block',
     Danger: 'The block',
@@ -92,6 +123,67 @@ const SHOW_WORDS = {
     ceremony: 'the nomination ceremony',
     jury: 'the jury',
     safe: 'safe',
+    nominationLabel: 'Nomination',
+    polls: [
+      { id: 'evicted', text: 'Who gets evicted this week?' },
+      { id: 'hoh', text: 'Who wins the next HOH?' },
+      { id: 'veto', text: 'Does the veto get used?' },
+    ],
+  },
+  // ── The Traitors ──
+  //
+  // A show with two exit verbs, and only one of them belongs in `eliminated`.
+  // `elimination`/`eliminated` are the words the room uses about the VOTE —
+  // the banishment — because every take that reaches for them is reacting to
+  // a decision the room made. A murder is not a decision the room made and is
+  // not describable in these words at all, which is why `exit`/`exitMurder`
+  // live on the registry (`exitVerbs`) and a screen naming a departure reads
+  // the round's own channel. Nothing here may be used to describe a murder.
+  //
+  // There is no block, no nomination and no ceremony. The Round Table is a
+  // room where the castle accuses each other out loud and then votes, so the
+  // danger vocabulary is about SUSPICION rather than about a position on a
+  // board: you are not put somewhere, you are talked about.
+  traitors: {
+    name: 'The Traitors',
+    short: 'TR',
+    episode: 'episode',
+    Episode: 'Episode',
+    episodeShort: 'Ep',
+    elimination: 'banishment',
+    eliminated: 'banished',
+    challenge: 'mission',
+    home: 'castle',
+    vote: 'banishment vote',
+    // NO FINAL BALLOT AT ALL. The last table is a banishment like every
+    // other, and what follows it is a decision by the people still sitting
+    // there -- nobody votes on the winner.
+    finalVote: null,
+    comps: ['mission'],
+    danger: 'suspicion',
+    Danger: 'Suspicion',
+    onDanger: 'under suspicion',
+    nominated: 'was accused',
+    Pawn: 'A safe name',
+    Ceremony: 'The Round Table',
+    nominee: 'the accused',
+    pawn: 'a safe name',
+    ceremony: 'the Round Table',
+    // NOT 'the jury'. Nobody who leaves this castle ever votes again — the
+    // last table is a banishment like every other and what follows it is a
+    // decision by the people still sitting there.
+    jury: 'the final table',
+    safe: 'safe',
+    nominationLabel: 'Accusation',
+    // NOT "who gets murdered tonight?" — the conclave is the show's secret and
+    // a poll naming it would tell the audience there are Traitors deciding,
+    // which is the one thing a viewer is meant to be guessing at. Everything
+    // askable here is askable from the outside of the castle.
+    polls: [
+      { id: 'banished', text: 'Who gets banished tonight?' },
+      { id: 'traitor', text: 'Who is a Traitor?' },
+      { id: 'survive', text: 'Who is still here in the morning?' },
+    ],
   },
 };
 
@@ -99,6 +191,8 @@ const SHOW_WORDS = {
 export function words(format) {
   return SHOW_WORDS[format] || GENERIC;
 }
+
+const _cap = s => String(s || '').replace(/^./, c => c.toUpperCase());
 
 /**
  * What to call one canonical event, in this show's language.
@@ -111,10 +205,19 @@ export function eventLabel(kind, format) {
   const w = words(format);
   const map = {
     'episode-aired': `${w.Episode} aired`,
-    'comp-win': format === 'big-brother' ? 'Competition win' : 'Challenge win',
-    nomination: format === 'big-brother' ? 'Nomination' : 'Votes against',
+    // ── THREE LABELS THAT USED TO BE A TERNARY ON ONE SHOW'S SLUG ──
+    //
+    // A ternary on one show has exactly two answers, and the second of them is
+    // whatever Total Drama says. So a third show's timeline was headed
+    // "Challenge win", "Votes against" and "Elimination" over a castle that
+    // runs missions and banishes people — the file whose entire job is to stop
+    // that, doing it. Built from the show's own vocabulary now: a fourth show
+    // gets its labels by declaring `challenge`, `nominated` and `elimination`,
+    // and there is nothing here to remember to extend.
+    'comp-win': `${_cap(w.challenge)} win`,
+    nomination: w.nominationLabel,
     'veto-used': 'Veto used',
-    eviction: format === 'big-brother' ? 'Eviction' : 'Elimination',
+    eviction: _cap(w.elimination),
     blindside: 'Blindside',
     betrayal: 'Betrayal',
     'alliance-formed': 'Alliance',
@@ -153,18 +256,8 @@ export function pollQuestions(format, { preseason = false } = {}) {
   ];
   if (preseason) return always;
 
-  const inSeason = format === 'big-brother'
-    ? [
-        { id: 'evicted', text: 'Who gets evicted this week?' },
-        { id: 'hoh', text: 'Who wins the next HOH?' },
-        { id: 'veto', text: 'Does the veto get used?' },
-      ]
-    : [
-        { id: 'boot', text: 'Who goes home tonight?' },
-        { id: 'immunity', text: 'Who wins the next challenge?' },
-        { id: 'merge', text: 'Who makes the merge?' },
-      ];
-  return [...inSeason, ...always];
+  // Declared by the show, not chosen by a ternary. See `polls` in SHOW_WORDS.
+  return [...(w.polls || GENERIC.polls), ...always];
 }
 
 /**

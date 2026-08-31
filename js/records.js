@@ -27,6 +27,8 @@ import { parseBio } from './bio.js';
 const DEFAULT_FORMAT = 'total-drama';
 const fmtOf = d => d?.format || DEFAULT_FORMAT;
 const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
+/** The slug rule the export layer uses, character for character. */
+const _slug = n => String(n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 /** Every season detail that belongs to this show. `all` keeps both. */
 function detailsOf(player, format) {
@@ -106,22 +108,94 @@ export function seasonsIn(seasonsDb, format = 'all') {
     .sort((a, b) => a.seasonNumber - b.seasonNumber);
 }
 
-/** Who won each season of this show. Derived, so it cannot fall out of step. */
+/**
+ * EVERYBODY WHO WON A SEASON — one name or several, never a chosen one.
+ *
+ * `winner{}` on a season document is SINGULAR, and it was singular because
+ * every show in the franchise had exactly one winner until The Traitors, which
+ * ends with the pot SPLIT more often than not: the surviving Faithfuls take it
+ * between them, with no ordinal finish separating them and no runner-up in the
+ * usual sense. docs/ADDING-A-SHOW.md §5 still requires the singular field, so
+ * a split season carries `winners[]` and leaves `winner` null rather than
+ * nominating one of four people as the real one.
+ *
+ * This is NOT only a Traitors problem, which is the reason it lives here and
+ * not in js/tr/. Total Drama season 8 ended with Alejandro and Cameron both at
+ * placement 1, and its document names Alejandro in `winner{}` — so every
+ * reader that asked the document who won has been answering Cameron's own
+ * season with somebody else's name.
+ *
+ * Three sources, in order of how COMPLETE each one can be:
+ *   1. `winners[]` — the document declaring the set outright.
+ *   2. `placements[]` at placement 1 — the standings, which have always been
+ *      able to express a tie. On season 8 this is the ONLY place the second
+ *      champion appears, which is why it outranks the singular block rather
+ *      than backing it up: a document carrying both is a document whose
+ *      `winner{}` is a subset of its own standings.
+ *   3. `winner{}` — a season index row has this and no placements at all.
+ * Reading them in this order means a caller with any of the three shapes in
+ * its hand gets every winner that shape can support, and never a subset.
+ *
+ * Takes the singular block's tally/runner-up prose along ONLY when that block
+ * is about that player, because on season 8 it is not.
+ */
+export function seasonWinners(season) {
+  if (!season) return [];
+  // `winner` is a block on a published document and a BARE NAME on some of the
+  // older records the archive reads back. Both of them say the same thing.
+  const raw = typeof season.winner === 'string' ? { name: season.winner } : season.winner;
+  const w = raw && typeof raw === 'object' ? raw : null;
+  const firsts = (season.placements || []).filter(p => p?.placement === 1);
+  const named = Array.isArray(season.winners) && season.winners.length ? season.winners
+    : (firsts.length ? firsts : (w?.name ? [w] : []));
+  return named.filter(p => p?.name).map(p => {
+    const slug = p.playerSlug || _slug(p.name);
+    // The singular block's prose belongs to the person it names and nobody else.
+    const mine = w && (w.playerSlug === slug || w.name === p.name) ? w : {};
+    return {
+      name: p.name,
+      playerSlug: slug,
+      vote: p.vote || mine.vote || '',
+      runnerUp: p.runnerUp || mine.runnerUp || null,
+      keyStats: p.keyStats || mine.keyStats || '',
+    };
+  });
+}
+
+/** The name every winner of a season shares. Handy for a class or a filter. */
+export function isSeasonWinner(season, name) {
+  return seasonWinners(season).some(w => w.name === name);
+}
+
+/**
+ * Who won each season of this show, one row per WINNER rather than per season.
+ *
+ * A co-winner used to be dropped on the floor here: the map took `s.winner`
+ * and there is only one of those, so the Champions grid has been showing one
+ * of season 8's two champions since the day it was published. `coWinners`
+ * rides along so a card can say which kind of win it was without counting.
+ */
 export function championsIn(seasonsDb, format = 'all') {
-  return seasonsIn(seasonsDb, format)
-    .filter(s => s.winner)
-    .map(s => ({
-      season: s.seasonNumber,
-      seasonId: s.seasonId,
-      format: s.format || DEFAULT_FORMAT,
-      seasonTitle: s.title,
-      emoji: s.emoji,
-      winner: s.winner.name,
-      playerSlug: s.winner.playerSlug,
-      finalVote: s.winner.vote || '—',
-      runnerUp: s.winner.runnerUp || null,
-      keyStats: s.winner.keyStats,
-    }));
+  const out = [];
+  for (const s of seasonsIn(seasonsDb, format)) {
+    const winners = seasonWinners(s);
+    for (const w of winners) {
+      out.push({
+        season: s.seasonNumber,
+        seasonId: s.seasonId,
+        format: s.format || DEFAULT_FORMAT,
+        seasonTitle: s.title,
+        emoji: s.emoji,
+        winner: w.name,
+        playerSlug: w.playerSlug,
+        finalVote: w.vote || '—',
+        runnerUp: w.runnerUp || null,
+        keyStats: w.keyStats,
+        coWinners: winners.length,
+      });
+    }
+  }
+  return out;
 }
 
 /**

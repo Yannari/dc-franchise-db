@@ -28,6 +28,8 @@
 // Pure and seeded: the same night produces the same crowd, so a reader who
 // scrolls away and comes back finds the same people.
 
+import { showWords, DEFAULT_FORMAT } from '../shows.js';
+
 /**
  * The pieces a handle is built from.
  *
@@ -44,12 +46,24 @@ const HEAD = [
   'pro', 'ex', 'big', 'small', 'real', 'fake', 'soft', 'hard', 'late', 'early',
 ];
 
-const BODY = [
-  'confessional', 'tribal', 'idol', 'blindside', 'merge', 'jury', 'edit',
-  'preseason', 'postmerge', 'rewatch', 'liveblog', 'recap', 'bracket', 'boot',
-  'alliance', 'showmance', 'veto', 'nomination', 'eviction', 'houseguest',
-  'campfire', 'marshmallow', 'challenge', 'immunity', 'finale', 'reunion',
+/* ── THE MIDDLE OF A HANDLE IS THE ONE PART THAT NAMES A SHOW ──────────
+   This list was fixed, and it was two shows' jargon in one array. So a
+   Traitors night signed 470 of its 1,426 posts `@campfireapologist`,
+   `@bigjury`, `@antitribal32` -- 33% -- and of 698 distinct handles, not one
+   contained a word from the show being watched. The generic half stays
+   shared, because "rewatch" and "liveblog" are true of any of them; the show's
+   own nouns come off the registry, so a fourth show's fans sound like its
+   fans the day it declares them. */
+const BODY_GENERAL = [
+  'confessional', 'edit', 'preseason', 'rewatch', 'liveblog', 'recap',
+  'bracket', 'boot', 'alliance', 'showmance', 'blindside', 'finale', 'reunion',
 ];
+
+/** The handle vocabulary for one show: the shared half plus its own nouns. */
+function bodyFor(format) {
+  const own = showWords(format).fanWords;
+  return Array.isArray(own) && own.length ? [...BODY_GENERAL, ...own] : BODY_GENERAL;
+}
 
 const TAIL = [
   'truther', 'apologist', 'defender', 'hater', 'enjoyer', 'watcher', 'poster',
@@ -119,8 +133,9 @@ function followersOfOneOff(handle) {
  * `archetype` is inherited from whichever persona's words it is speaking, so a
  * stan's post is not suddenly attributed to somebody who reads as an analyst.
  */
-export function oneOffAccount(rng, archetype = 'lurker') {
+export function oneOffAccount(rng, archetype = 'lurker', format = DEFAULT_FORMAT) {
   const pick = arr => arr[Math.floor(rng() * arr.length)];
+  const BODY = bodyFor(format);
   const shape = rng();
   let handle;
   if (shape < 0.45) handle = `@${pick(HEAD)}${pick(BODY)}`;
@@ -197,7 +212,10 @@ export function assignCrowd(posts, {
       post.recurring = true;
     } else {
       const persona = personas.find(p => p.handle === post.handle);
-      const account = oneOffAccount(rng, persona?.archetype || 'lurker');
+      // The show this post is about decides which nouns its author is made
+      // of. A post carries its own format; the season's is the fallback.
+      const account = oneOffAccount(rng, persona?.archetype || 'lurker',
+        post.format || DEFAULT_FORMAT);
       post.handle = account.handle;
       post.name = account.name;
       post.followers = account.followers;

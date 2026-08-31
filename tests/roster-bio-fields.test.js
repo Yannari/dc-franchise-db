@@ -261,7 +261,11 @@ describe('the long-form personality', () => {
     expect(migration).toMatch(/ADD COLUMN\s+personality\b/);
     for (const f of BIO_FIELDS.filter(x => x !== 'personality')) {
       expect(migration, `${f} already exists — an ALTER for it aborts the batch`)
-        .not.toMatch(new RegExp(`ADD COLUMN\s+${f}\b`));
+        // ESCAPES DOUBLED. `\s`/`\b` inside a template literal are eaten by the
+        // string parser (`\b` becomes U+0008), which made this negative
+        // assertion structurally incapable of matching — green on every input.
+        // Lines 52 and 57 of this same file already write `\\s`/`\\b`.
+        .not.toMatch(new RegExp(`ADD COLUMN\\s+${f}\\b`));
     }
   });
 
@@ -288,7 +292,9 @@ describe('the wiki article reads the authored bio', () => {
     const fn = wiki.slice(wiki.indexOf('export function buildDossier'));
     for (const f of ['birthdate', 'hometown', 'occupation', 'descriptor']) {
       expect(fn, `${f} never reaches the article`)
-        .toMatch(new RegExp(`rosterRow\.${f}`));
+        // `\.` is eaten by the template-literal parser and the dot then matches
+        // ANY character, so `rosterRowXhometown` satisfied this. Doubled.
+        .toMatch(new RegExp(`rosterRow\\.${f}`));
     }
     expect(fn, 'backstory is not returned').toMatch(/backstory,/);
   });

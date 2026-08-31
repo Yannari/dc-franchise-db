@@ -100,11 +100,66 @@ import { rpBuildCheeseTitleCard, rpBuildCheeseDrop, rpBuildCheeseResults } from 
 import { rpBuildWheelTitleCard, rpBuildWheelPhase1, rpBuildWheelPhase2, rpBuildWheelPhase3, rpBuildWheelResults } from './chal/wheel-of-misfortune.js';
 import { rpBuildCoachBoard } from './vp-coaches.js';
 import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish, rpBuildJuryVotes, rpBuildJuryLife } from './vp-finale.js';
+import { traitorsScreensRevealed, screenNarration } from './vp-tr/screens.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 // rpBuildAftermath is read off window (not statically imported) — aftermath.js already imports from
 // this module, so a static import here would create a circular dependency.
 
 export function _textStripHtml(s) { return s ? s.replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<[^>]+>/g, '') : ''; }
+
+/**
+ * A RENDERED VP SCREEN, AS THE LINES IT SAYS.
+ *
+ * One copy, because both callers strip the same things: the twist-challenge
+ * route below and the castle's transcript further down. A backlog is a
+ * retranscription of a screen, so the moment there are two strippers one of
+ * them starts keeping a stylesheet or eating a sentence, and only one
+ * transcript changes.
+ *
+ * THIS IS A SUBTRACTIVE HELPER AND IT IS ASSERTED IN THE TESTS. Every guard
+ * that says "the backlog does not contain X" reads what comes out of here, so a
+ * stripper that removed too much would make the lot of them pass for free.
+ */
+export function _vpTextLines(html) {
+  return String(html || '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    // A SPACE, NOT NOTHING. Two adjacent inline elements are two separate
+    // things said, and closing one up against the next produced lines like
+    // "AAlejandroAAmyAMAnne Maria" and "Morning1Everybody is downDown20 / 20".
+    // The collapse below puts the runs back to single spaces.
+    .replace(/<[^>]+>/g, ' ')
+    // The entities a screen actually writes. A transcript that prints
+    // "&ldquo;" has not retranscribed the quotation mark, it has retranscribed
+    // the markup — and every one of these was found by dumping a season and
+    // reading it, not by an assertion.
+    .replace(/&middot;/g, '·')
+    .replace(/&mdash;/g, '—')
+    .replace(/&ndash;/g, '–')
+    .replace(/&ldquo;/g, '"')
+    .replace(/&rdquo;/g, '"')
+    .replace(/&lsquo;/g, "'")
+    .replace(/&rsquo;/g, "'")
+    .replace(/&hellip;/g, '…')
+    .replace(/&pound;/g, '£')
+    .replace(/&euro;/g, '€')
+    .replace(/&times;/g, '×')
+    .replace(/&deg;/g, '°')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, (_m, d) => String.fromCharCode(Number(d)))
+    .split('\n')
+    .map(l => l.replace(/\s+/g, ' ').replace(/\s+([,.!?;:])/g, '$1').trim())
+    .filter(l => l.length > 0)
+    .filter(l => !/^(Investigate|Reveal All|NEXT|SMASH|REVEAL|SHOW ALL|DESTROY ALL|SET COMPLETE|CARPET CLEARED|ROOM DEMOLISHED|SHOW'S OVER|CASE CLOSED|ALL RISE|COLLECTION COMPLETE|INVESTIGATION CLOSED)$/i.test(l) && !/^Next\s*\(/i.test(l) && !/^Skip to results/i.test(l));
+}
 
 // ══════════════════════════════════════════════════════════════
 // GENERIC TWIST CHALLENGE TEXT — renders VP screens as plain text
@@ -133,30 +188,7 @@ export function _textTwistChallenge(ep, ln, sec, dataKey, label, vpBuilders) {
       // Set reveal state to show all steps
       const html = builder(ep);
       if (!html) continue;
-      // Strip HTML tags, collapse whitespace, split into lines
-      const text = html
-        .replace(/<style[\s\S]*?<\/style>/gi, '')
-        .replace(/<script[\s\S]*?<\/script>/gi, '')
-        .replace(/<br\s*\/?>/gi, '\n')
-        .replace(/<\/div>/gi, '\n')
-        .replace(/<\/p>/gi, '\n')
-        .replace(/<[^>]+>/g, '')
-        .replace(/&middot;/g, '·')
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&nbsp;/g, ' ')
-        // A stripped self-closing tag (e.g. an avatar <img>) leaves whatever
-        // literal spaces surrounded it in the template behind, adjacent to
-        // each other — "walks  P1 through" instead of "walks P1 through".
-        // Collapse runs of spaces/tabs (never newlines) down to one.
-        .replace(/[ \t]{2,}/g, ' ')
-        .split('\n')
-        .map(l => l.trim())
-        .filter(l => l.length > 0)
-        .filter(l => !/^(Investigate|Reveal All|NEXT|SMASH|REVEAL|SHOW ALL|DESTROY ALL|SET COMPLETE|CARPET CLEARED|ROOM DEMOLISHED|SHOW'S OVER|CASE CLOSED|ALL RISE|COLLECTION COMPLETE|INVESTIGATION CLOSED)$/i.test(l) && !/^Next\s*\(/i.test(l) && !/^Skip to results/i.test(l));
+      const text = _vpTextLines(html);
 
       for (const line of text) {
         ln(`  ${line}`);
@@ -3602,6 +3634,65 @@ export const TEXT_BACKLOG_V = 2;
 // AFTERMATH SHOW — generates all segment data from game state
 // ══════════════════════════════════════════════════════════════════════════════
 
+/**
+ * THE CASTLE'S TRANSCRIPT — every word of every screen the night produced.
+ *
+ * A complete retranscription, not a summary: the screens are rendered and read
+ * back, so a fix to a host's line or an argument's phrasing reaches the page
+ * and the transcript in the same edit. A hand-written second account of the
+ * same night is a second copy of the prose, and this project has been bitten
+ * by two-copies-of-one-rule at least six times — the act names, the pool-shape
+ * figures, the tier cuts, the show lists, the vocabulary word list, and the
+ * tier re-derivation. This is not the seventh.
+ *
+ * WHICH screens the row produced comes from `js/vp-tr/screens.js`, which is the
+ * same list `buildVPScreens()` registers from. Nothing here decides what a
+ * night contains.
+ *
+ * `observer` IS LOAD-BEARING AND NOT DECORATION. The audience is entitled to
+ * the conclave; a Faithful is not, and the screens already refuse it. A backlog
+ * that leaked it would be worse than a screen that did, because text is
+ * searchable — so this passes the observer down rather than rendering the true
+ * layer and hoping nobody reads it.
+ */
+export function generateTraitorsSummaryText(ep, observer = 'audience') {
+  const L = [];
+  const ln = s => L.push(s);
+  const sec = t => { ln(''); ln(`=== ${t} ===`); };
+
+  // The night the CASTLE lived, off the record, never off `num` — `num` is the
+  // VP's key and a copy of a row is free to carry a different one.
+  const night = ep.tr && ep.tr.ep != null ? ep.tr.ep : ep.num;
+  ln(`THE TRAITORS — EPISODE ${night}`);
+  ln('═'.repeat(46));
+  ln(`Observer: ${observer === 'audience' ? 'audience — the whole truth of the night' : String(observer).replace(/^player:/, '') + ' — only what they were in the room for'}`);
+
+  const screens = traitorsScreensRevealed(ep, observer);
+  for (const scr of screens) {
+    sec(scr.label.toUpperCase());
+    for (const line of _vpTextLines(screenNarration(scr.html))) ln(`  ${line}`);
+  }
+  // ── RULED OFF, AND IT GOES AT THE END ────────────────────
+  //
+  // This block used to sit in the header, where it told the reader who was
+  // murdered tonight three hundred lines before the turret was shown choosing
+  // them -- a transcript that opens by spoiling itself. Found by dumping a
+  // season and reading it. The book is ruled off after the day it describes,
+  // which is what the day book on screen does as well.
+  sec('RULED OFF');
+  for (const x of (ep.exits || [])) {
+    // The verb comes off the row, which took it from the registry. This show
+    // has two doors out and is the only one that does; naming either of them
+    // here would be a word a registry change cannot reach.
+    ln(`  ${x.name} — ${x.verb}.`);
+  }
+  if ((ep.tr?.living || []).length) {
+    ln(`  ${ep.tr.living.length} still in the castle: ${ep.tr.living.join(', ')}`);
+  }
+  ln('');
+  return L.join('\n');
+}
+
 export function generateSummaryText(ep) {
   // A Big Brother week is a different show and shares none of the structure
   // below — no tribes, no challenge, no Tribal Council. It gets its own
@@ -3609,6 +3700,17 @@ export function generateSummaryText(ep) {
   // never drift apart.
   if (ep.format === 'big-brother' || ep.isBigBrother) {
     return generateBBSummaryText(ep);
+  }
+  // A castle is a third show and shares even less of the structure below than
+  // the house does: no tribes, no challenge, no Tribal Council, no camp. It
+  // gets its own transcript, retranscribed from the very screens the visual
+  // player draws, so the two can never drift apart.
+  //
+  // The observer travels with the row for the same reason it travels into
+  // `buildVPScreens`: a transcript is a reader's account of a night, and this
+  // show's whole design is that two readers were told different things.
+  if (ep.format === 'traitors') {
+    return generateTraitorsSummaryText(ep, ep.observer || 'audience');
   }
 
   // Generate aftermath data before building text (aftermath is created in patchEpisodeHistory,
@@ -4478,7 +4580,7 @@ function _textBBHouseStatus(ep, phase, ln, sec, { skip = [] } = {}) {
     // the hunting. The avatar now carries the name in its alt text — which the
     // screen reader wanted anyway — so take it from there and drop the initial
     // that used to stand in for it.
-    .replace(/<span class="bb-av"[^>]*>.*?alt="([^"]*)".*?<\/span>/gi,
+    .replace(/<span class="bb-av"[^>]*>[\s\S]*?alt="([^"]*)"[\s\S]*?<\/span>/gi,
       (_, name) => (name ? `${name} · ` : ''))
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/div>/gi, '\n')
@@ -4523,10 +4625,13 @@ function _textBBHouseStatus(ep, phase, ln, sec, { skip = [] } = {}) {
     // nothing later on that line names Bowie.
     .map(l => {
       const cells = l.split(' · ');
-      const namesIn = s => s.split(/[^A-Za-z'-]+/).filter(Boolean);
       return cells.filter((c, i) => {
         if (!/^[A-Z][A-Za-z'-]*$/.test(c)) return true;
-        return !cells.slice(i + 1).some(later => namesIn(later).includes(c));
+        // Only discard a portrait name when a later cell repeats that name as
+        // its own label. A reason may mention the hunter again ("promised me
+        // Dawn"), and treating prose as a duplicate erases the sentence's
+        // subject.
+        return !cells.slice(i + 1).some(later => later === c);
       }).join(' · ')
         // A pairing is one phrase, not two cells: "Nichelle vs Jo".
         .replace(/ (vs|&) · /g, ' $1 ');

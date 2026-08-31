@@ -429,7 +429,12 @@ describe('reading a filled season', () => {
     // Under the season's own heading now, with the round word the camp uses.
     expect(html).toMatch(/Voting History/);
     expect(html).toMatch(/<th>Episode<\/th>/);
-    expect(html).toMatch(/Voted to evict/);
+    /* AND THE HEADER IS NOT THE HOUSE'S EITHER. This line asserted "Voted to
+       evict" over a CAMP — two lines above its own comment saying Big
+       Brother's vocabulary must not appear on this grid. A camp eliminates;
+       the word comes from the registry. */
+    expect(html).toMatch(/Voted to eliminate/);
+    expect(html).not.toMatch(/Voted to evict/);
     expect(html).toMatch(/A clown attacked me/);
     // Big Brother's vocabulary must not appear on a camp's grid.
     expect(html).not.toMatch(/Head of Household|Power of Veto/);
@@ -451,16 +456,26 @@ describe('the lead', () => {
 
   const html = p => renderArticle(buildDossier(p, {}), 'total-drama', { root: '.' });
 
+  /* ── AND WITH NO SEASON DOCUMENT, IT DOES NOT CLAIM THE SEASON ───────
+     These fixtures pass NO `seasonDocs`, which is the state player.html
+     paints in DELIBERATELY before the documents arrive. `coWinners` came out
+     of a lookup that returns nothing then, and `.length` of nothing is 0, so
+     `coWinners > 1` was false and every champion of a shared season was
+     called "the winner of" it on the first paint and corrected a moment
+     later. An unread count is UNKNOWN, not one, and the lead has a phrase
+     that is true either way for it. */
   it('names the season somebody won, and links it', () => {
     const out = html(one);
-    expect(out).toMatch(/<strong>Jade<\/strong> was the winner of/);
+    expect(out).toMatch(/<strong>Jade<\/strong> was a champion of/);
+    expect(out, 'claims the season outright before any document was read')
+      .not.toContain('the winner of');
     expect(out).toMatch(/season_ref\.html\?season=14/);
   });
 
   it('states a whole career in order, the way a returnee page opens', () => {
     const out = html(twice);
     // Won first, came back later — and the later season is the second clause.
-    expect(out).toMatch(/was the winner of[\s\S]*?and returned for[\s\S]*?finishing 5th/);
+    expect(out).toMatch(/was a champion of[\s\S]*?and returned for[\s\S]*?finishing 5th/);
     // Scoped to the LEAD. The infobox links its seasons as well now, newest
     // first, and it is drawn above the paragraph this is about.
     const lead = out.match(/<p class="wk-lead">([\s\S]*?)<\/p>/)?.[1] || '';
@@ -781,5 +796,64 @@ describe('an article says what they did on the other show', () => {
     expect(renderArticle(won, 'total-drama', opts)).toMatch(/winning the season/);
     won.career[1].seasons[0].placement = 2;
     expect(renderArticle(won, 'total-drama', opts)).toMatch(/finishing as the runner-up/);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// Co-winners in the lead
+// ══════════════════════════════════════════════════════════════════════
+//
+// "The winner of season 8" is a claim about everybody else in it, and season 8
+// had two. The Traitors makes it the normal case: the pot is split between
+// however many are left standing, so a page that says "the winner" over a
+// shared win writes the other champions out of their own season.
+describe('a season more than one person won', () => {
+  const doc = {
+    seasonNumber: 8, format: 'total-drama', title: 'Heroes VS Villains',
+    winner: { name: 'Alejandro', playerSlug: 'alejandro', vote: '4-4', runnerUp: 'Sanders' },
+    placements: [
+      { name: 'Alejandro', playerSlug: 'alejandro', placement: 1 },
+      { name: 'Cameron', playerSlug: 'cameron', placement: 1 },
+      { name: 'Sanders', playerSlug: 'sanders', placement: 3 },
+    ],
+  };
+  const playerNamed = name => ({
+    id: name.toLowerCase(), name,
+    seasonDetails: [{ season: 8, format: 'total-drama', placement: 1, challengeWins: 3 }],
+  });
+  const career = p => careerOf(p, { seasonDocs: [doc] });
+
+  it('counts the winners off the document, not off the singular field', () => {
+    for (const name of ['Alejandro', 'Cameron']) {
+      const s = career(playerNamed(name))[0].seasons[0];
+      expect(s.coWinners, `${name}'s record does not know the win was shared`).toBe(2);
+    }
+    // ...and the tally belongs to the player the winner block names. Cameron
+    // did not beat Sanders 4-4; Alejandro did, and the lead used to say both.
+    expect(career(playerNamed('Alejandro'))[0].seasons[0].finalVote).toBe('4-4');
+    expect(career(playerNamed('Alejandro'))[0].seasons[0].runnerUp).toBe('Sanders');
+    expect(career(playerNamed('Cameron'))[0].seasons[0].finalVote).toBe('');
+    expect(career(playerNamed('Cameron'))[0].seasons[0].runnerUp).toBe('');
+  });
+
+  it('calls each of them a co-winner rather than the winner', () => {
+    for (const name of ['Alejandro', 'Cameron']) {
+      const p = playerNamed(name);
+      const html = renderArticle({ ...p, career: career(p) }, 'total-drama',
+        { root: '.', allShows: ['total-drama'] });
+      expect(html, `${name}'s article claims the season outright`).toContain('a co-winner of');
+      expect(html).not.toContain('the winner of');
+    }
+  });
+
+  it('still says "the winner" when there was one', () => {
+    const solo = { ...doc, placements: doc.placements.filter(p => p.name !== 'Cameron') };
+    const p = playerNamed('Alejandro');
+    const c = careerOf(p, { seasonDocs: [solo] });
+    expect(c[0].seasons[0].coWinners).toBe(1);
+    const html = renderArticle({ ...p, career: c }, 'total-drama',
+      { root: '.', allShows: ['total-drama'] });
+    expect(html).toContain('the winner of');
+    expect(html).not.toContain('a co-winner of');
   });
 });

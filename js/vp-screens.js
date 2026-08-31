@@ -23,6 +23,12 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 // Total Drama twist-challenge VP. rpBuildBBComp dispatches on the tag and
 // falls back to the generic board when a builder declines (secret HOH,
 // missing data) or throws.
+// THE THIRD SHOW'S SCREENS. Registered the same way js/vp-bb-sig/ registers
+// Big Brother's, and taking NONE of its visual language: the anti-reuse rule
+// in CLAUDE.md is explicit, and the conclave's whole identity is that it does
+// not look like anything already in this repo.
+import { traitorsScreens } from './vp-tr/screens.js';
+import { rpBuildTraitorsDebug } from './vp-tr/debug.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -14018,6 +14024,31 @@ export function buildVPScreens(epRecord) {
     }
     return vpScreens;
   }
+  // ── THE CASTLE ────────────────────────────────────────────────────
+  //
+  // A Traitors episode is a third show with a third set of screens, and none
+  // of Total Drama's below apply to it: there are no tribes, no challenge
+  // record and no Tribal Council in a castle. Dispatched on the row's own
+  // `format`, which js/tr/headless.js stamps on every episode it records.
+  //
+  // WHICH screens, in what order, under what label, and the condition each one
+  // rides on all live in `js/vp-tr/screens.js` — one copy, because the text
+  // backlog retranscribes the same list and a second copy of it is how the
+  // transcript quietly stops mentioning a screen.
+  if (epRecord.format === 'traitors') {
+    vpScreens = traitorsScreens(epRecord, epRecord.observer || 'audience');
+    // The debug tab, behind the same flag Total Drama's sits behind. Pushed
+    // HERE and deliberately not in `TRAITORS_SCREENS`: that list is a night's
+    // running order and the text backlog retranscribes it, so a debug dump
+    // registered there would be printed into the season's prose.
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage.getItem('vp_debug') === 'true') {
+        vpScreens.push({ id: 'tr-debug', label: 'Debug',
+          html: rpBuildTraitorsDebug(epRecord) });
+      }
+    } catch { /* a debug tab must never be able to break the episode */ }
+    return vpScreens;
+  }
   // Reset vote reveal state — HTML is rebuilt fresh, old state would skip all reveals
   delete _tvState[vpEpNum];
   delete _tvState[String(vpEpNum) + '_v2']; // vote-2 reveal state (surprise double boot)
@@ -18227,7 +18258,19 @@ export function rpBuildBBComp(ep, actType) {
         tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar,
         esc: _bbEsc, cat: _bbcCat, ordinal: _bbOrdinal,
       });
-      if (html) return twoCrowns + html;
+      if (html) {
+        // Every competition screen owes the viewer the field. Signature
+        // builders may provide a themed version of this line; this fallback
+        // keeps newer variants from silently dropping the outgoing HOH.
+        const satOut = (comp?.excluded || []).filter(Boolean);
+        const satOutBanner = satOut.length && !html.includes('Sat out')
+          ? `<div style="max-width:1100px;margin:0 auto 10px;padding:8px 12px;border:1px solid rgba(139,148,158,.28);border-radius:8px;color:#8b949e;font-size:11px;text-align:center">Sat out: ${satOut.map(_bbEsc).join(', ')}${
+              actType === 'hoh' && act?.outgoingHoh
+                ? ` &middot; ${_bbEsc(act.outgoingHoh)} cannot defend the room`
+                : ''}</div>`
+          : '';
+        return twoCrowns + satOutBanner + html;
+      }
     } catch (e) {
       console.warn(`Signature comp screen '${comp.variant}' failed; using the generic board.`, e);
     }

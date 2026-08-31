@@ -873,12 +873,13 @@ Owen: This is going to be amazing!"
   // always had and needs no migration whatsoever, and every other show gets its
   // own prefix — `AI_ANALYTICS_bb-14`, and `_sv-14` the day a third exists.
   // Nothing to convert, nothing to lose, and one entry in shows.js to add a show.
-  const CS_SHOWS = { 'total-drama': 'td', 'big-brother': 'bb' };
   const CS_DEFAULT_FORMAT = 'total-drama';
-  // Filled from js/shows.js as soon as the module graph loads — see the module
-  // tag at the end of the page. The literal above is only what this page can
-  // answer before that resolves; it is never the source of truth.
-  function _csShows() { return (window.__SHOWS && window.__SHOWS.prefixes) || CS_SHOWS; }
+  // Filled from js/shows.js by the module tag at the end of the page. There is
+  // no literal fallback: the module runs before DOMContentLoaded and everything
+  // that asks this runs after, and the copy that used to sit here is what a
+  // third show would have been missing from — silently, since a show absent
+  // from a PREFIX map reads as the default one, which is a real season.
+  function _csShows() { return (window.__SHOWS && window.__SHOWS.prefixes) || {}; }
 
   /**
    * The show the page is currently looking at.
@@ -6426,8 +6427,15 @@ setTimeout(function() {
       seasonNumber: seasonData.seasonNumber,
       // Stamped, so the row can never again be found by number alone.
       format: _pubFormat,
+      // `|| _pubFormat` is the same guard _epKey() carries, and it is here for
+      // the same reason: _csShows() is empty until the module block at the foot
+      // of this page loads, and this is the one site that WRITES. Without it a
+      // publish that beat the module wrote seasonId "undefined-14" into
+      // seasons_database.json — persisted corruption of the row every page
+      // looks a season up by, from a lookup that fails silently.
       seasonId: _pubFormat === CS_DEFAULT_FORMAT
-        ? `td-${seasonData.seasonNumber}` : `${_csShows()[_pubFormat]}-${seasonData.seasonNumber}`,
+        ? `td-${seasonData.seasonNumber}`
+        : `${_csShows()[_pubFormat] || _pubFormat}-${seasonData.seasonNumber}`,
       title: seasonData.title,
       subtitle: seasonData.subtitle,
       castSize: seasonData.castSize,
@@ -7334,35 +7342,15 @@ setTimeout(function() {
     return text;
   }
 
-  function buildSeasonReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning) {
-    // Build a structured summary sentence for this season's performance
-    const highlights = [];
-    if (row.immWins > 0) highlights.push(`${row.immWins} immunity win${row.immWins>1?'s':''}`);
-    if (row.rewWins > 0) highlights.push(`${row.rewWins} reward win${row.rewWins>1?'s':''}`);
-    if (row.advPlayed > 0) highlights.push(`played ${row.advPlayed} idol${row.advPlayed>1?'s':''} effectively`);
-    if (row.advWasted > 0) highlights.push(`wasted ${row.advWasted} advantage${row.advWasted>1?'s':''}`);
-    if (row.advHeld > 0) highlights.push(`held ${row.advHeld} idol${row.advHeld>1?'s':''} (unused)`);
-    if (row.alliances > 0) highlights.push(`${row.alliances} alliance${row.alliances>1?'s':''}`);
-    if (row.fanFav) highlights.push('fan favorite');
-    if (row.votesAgainst === 0) highlights.push('never received a vote');
-    else if (row.votesAgainst === 1) highlights.push('voted against once');
-
-    const suffix = highlights.length ? ` ${highlights.join(', ')}.` : '.';
-    const winLabel = isWinner ? 'Winner' : `P${placement}`;
-    const overridePart = row.override ? ` Narrative override ${row.override>0?'+':''}${row.override}: ${row.overrideReason}.` : '';
-
-    const thisSeasonLine = `S${seasonNum} ${winLabel}.${overridePart}${suffix}`;
-
-    if (isNew) {
-      // Brand new player — start fresh
-      return thisSeasonLine;
-    } else {
-      // Returning player — append this season to existing reasoning
-      // Strip any previous "S{num} P{placement}" auto-line for this same season if it exists
-      const stripped = (existingReasoning || '').replace(new RegExp(`S${seasonNum}\s+(?:Winner|P\d+)[^]*$`), '').trim();
-      return (stripped ? stripped + ' ' : '') + thisSeasonLine;
-    }
-  }
+  /* `buildSeasonReasoning` LIVED HERE TOO, uncalled, and byte-identical
+     down to the dead regex: the pattern was built in a TEMPLATE LITERAL, so
+     the escapes were eaten and it reached RegExp as
+     `S1s+(?:Winner|Pd+)[^]*$` -- a pattern matching nothing any writer has
+     ever produced. The live one is exported from js/rankings-update.js: it
+     is fixed, anchored to one season's line rather than running to the end
+     of the string, and under test. A second copy of a function NOBODY CALLS
+     is not a fallback -- it is the version somebody reads when they go
+     looking, and this one was wrong in two ways at once. Deleted. */
   
   // ========================================
   // VOTING ANALYTICS HTML GENERATION

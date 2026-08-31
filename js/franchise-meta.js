@@ -1,12 +1,12 @@
 // Franchise meta — persistent cross-season history (ledger) + season-start
 // meta profiles. IMPORT RULE: this module imports ONLY core.js; bonds.js and
 // savestate.js import US, so importing them back would create a cycle.
-import { gs, players, seasonConfig } from './core.js';
+import { gs, players, seasonConfig, seasonFormat, formatIsRunnable } from './core.js';
 import { lifeSeeds as _lifeSeeds } from './life-cast.js';
 // SAFE UNDER THE IMPORT RULE ABOVE: ratings.js imports core.js, tone.js and
 // shows.js, all of which are leaves, and nothing imports us back through it.
 import { ratingsForSeason as _ratingsForSeason } from './ratings.js';
-import { SHOWS, DEFAULT_FORMAT, formatPrefix } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT, formatPrefix, showWords } from './shows.js';
 
 // Must match bKey() in bonds.js (can't import it — cycle via players.js).
 export function metaBondKey(a, b) { return [a, b].sort().join('||'); }
@@ -474,6 +474,22 @@ function _historyFor(name) {
   return out.sort((a, b) => a.seasonNum - b.seasonNum);
 }
 
+// DOES THE LEDGER KNOW THIS PERSON.
+//
+// The half of `isReturnee` that is about REPUTATION, named and derived so it
+// can be read on its own. `isReturnee` keeps the other half — per-season
+// casting state, reset every season (cast-ui.js), and the thing that swaps the
+// portrait (players.js). On Total Drama and Big Brother the two coincide,
+// because a returnee is the only person with a past worth carrying. On a
+// crossover show they come apart in both directions, so the two questions are
+// asked separately rather than through one flag that answers both.
+//
+// Derived, never stored: it follows the appearance ledger, including a season
+// being excluded from meta.
+export function hasFranchiseHistory(name) {
+  return !!name && _historyFor(name).length > 0;
+}
+
 function _resumeLines(name, history) {
   // One line PER SEASON — the season's headline result with notable feats
   // folded in — so a multi-season vet's card references a little of every
@@ -501,8 +517,36 @@ export function buildFranchiseMeta(cast, cfg) {
   if (cfg?.franchiseMeta === false) return null;
   const W = META_WEIGHTS;
   const profiles = {};
+  // OPTED IN *AND* ACTUALLY RUNNING. A format is set on seasonConfig long
+  // before its engine exists, and the run loop falls through to the Total Drama
+  // engine for anything it does not recognise. So a season stamped 'traitors'
+  // and pressed Run is a TOTAL DRAMA season — and reading the ledger on the
+  // strength of the stamp alone gave every veteran in it reputation, grudges and
+  // seeded bond deltas that no Returning checkbox had asked for, with nothing on
+  // screen reporting it. formatIsRunnable() is the same fact the setup screen
+  // uses, so the two cannot drift, and this switches itself on the day the
+  // engine ships rather than needing a show name added here.
+  const fromLedger = !!SHOWS[seasonFormat(cfg)]?.historyFromLedger
+    && formatIsRunnable(cfg);
   for (const p of cast) {
-    if (!p.isReturnee) continue;
+    // WHO CARRIES HISTORY INTO THIS SEASON.
+    //
+    // On Total Drama and Big Brother that is the returnees, and the checkbox is
+    // the right answer: coming back to the same show is what makes a past
+    // season relevant, and casting a player who happens to have played before
+    // does not make them a returnee here.
+    //
+    // On a crossover show the two come apart. Everyone has history, nobody is
+    // returning to THIS show, and requiring twenty ticked boxes to switch on a
+    // system that can already read the ledger means the day one is missed, that
+    // player walks in with no reputation and no grudges and nothing says so.
+    //
+    // So the question is asked through TWO predicates, not one overloaded flag:
+    // hasFranchiseHistory() answers "does the ledger know them", isReturnee
+    // answers "were they cast as a returnee". A show that opts in reads the
+    // first; the other two still read the second. Either way the ledger has the
+    // final word — a ticked box over an empty record still yields no profile.
+    if (!(fromLedger ? hasFranchiseHistory(p.name) : p.isReturnee)) continue;
     const history = _historyFor(p.name);
     if (!history.length) continue;
     let wins = 0, finals = 0, bsAuth = 0, chalW = 0, idolsP = 0, idoledOut = 0, blindsided = 0, betrayedCt = 0, caught = 0;
@@ -730,6 +774,20 @@ function _castSizeOf(seasonNum, format = null) {
   if (!s) return 0;
   return s.castSize || Object.keys(s.players || {}).length || 0;
 }
+/**
+ * The late-game boundary this CAREER can be said to have missed.
+ *
+ * One show's word over another show's career is this project's central bug:
+ * "Never made the merge" was printed over a house that has no merge, and then,
+ * once fixed for the house, over a castle that has neither. The registry
+ * declares each show's own word. A career spanning two shows names NO show's
+ * milestone, because there is no single boundary both of them have.
+ */
+function _milestoneFor(seasons) {
+  const fmts = new Set((seasons || []).map(s => s.format || DEFAULT_FORMAT));
+  if (fmts.size === 1) return showWords([...fmts][0]).milestone || 'the late game';
+  return 'the late game';
+}
 // The "merge-ish" mark: made it past the halfway cut. When cast size is known we
 // use castSize/2; otherwise fall back to placement ≤ 9 (top-9-ish is the merge in
 // a typical field). Returns true when the player reached/beat that mark.
@@ -932,10 +990,13 @@ export function returneePools() {
     if (c.seasons.length && c.seasons.every(s => !_madeMergeMark(s.placement, _castSizeOf(s.seasonNum)))) {
       const worst = c.seasons.reduce((a, s) => s.placement > (a?.placement || 0) ? s : a, null);
       scored.redemption.push({ name, slug,
-        // A house has no merge -- it has a jury. Said in one show's word over
-        // a career made of the other's, this told houseguests they never
-        // reached a milestone their season does not contain.
-        why: `Never made ${c.seasons.every(s => s.format === 'big-brother') ? 'jury' : 'the merge'}`
+        // A house has no merge -- it has a jury, and a castle has neither.
+        // Said in one show's word over a career made of another's, this told
+        // houseguests they never reached a milestone their season does not
+        // contain -- and then, three lines under that comment, told a
+        // Traitors career exactly the same thing. The word is the registry's,
+        // and a career spanning two shows names no show's milestone at all.
+        why: `Never made ${_milestoneFor(c.seasons)}`
           + ` — best ${_ordinal(c.totals.bestPlacement || (worst ? worst.placement : 0))} in ${c.totals.seasons} run${c.totals.seasons === 1 ? '' : 's'}`,
         rel: c.totals.seasons * 10 + (worst ? worst.placement : 0) });
       claimed.add(name); continue;

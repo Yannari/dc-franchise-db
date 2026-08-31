@@ -76,6 +76,26 @@ export function displayName(slug) {
     .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
+/**
+ * The name a post uses for the event's subject.
+ *
+ * THE READER `subjects[]` EXISTS FOR. A season with co-winners has no single
+ * subject, and `js/social/archive.js` deliberately refuses to invent one --
+ * `won[0]` is the alphabetically first name, which is not a fact about
+ * anything -- so it leaves `subject` unset and carries the whole set on
+ * `subjects`. Shipping that field with nothing reading it cost the live
+ * Total Drama season 8 every finale post that named a champion: 54 of 54 had
+ * a subject before, 0 of 54 after, and 25 posts that named Alejandro named
+ * nobody. This is the writer that can say "and".
+ */
+export function subjectLabel(event) {
+  if (event?.subject) return displayName(event.subject);
+  const many = (event?.subjects || []).filter(Boolean).map(displayName);
+  if (!many.length) return '';
+  if (many.length === 1) return many[0];
+  return `${many.slice(0, -1).join(', ')} and ${many[many.length - 1]}`;
+}
+
 /** The event kinds a topic may match for this event. */
 function kindsFor(event) {
   const set = new Set([event.kind, ...(IMPLIED_KINDS[event.kind] || []), 'episode-aired']);
@@ -102,7 +122,7 @@ export const SLOT_NAMES = ['subject', 'actor', 'season', 'episode', 'receipt'];
  */
 function fillSlots(template, event) {
   const slots = {
-    subject: displayName(event.subject),
+    subject: subjectLabel(event),
     actor: displayName(event.actor),
     season: String(event.season ?? ''),
     episode: String(event.episode ?? ''),
@@ -231,7 +251,10 @@ function poolFor(topicId, shape, stream, event) {
   const byShape = PHRASINGS[topicId] || {};
   const byStream = byShape[shape] || {};
   const pool = byStream[stream] || byStream.timeline || [];
-  const missing = SLOT_NAMES.filter(k => event[k] == null || event[k] === '');
+  // `subject` is asked of `subjectLabel`, not of the field, so a co-winner
+  // finale keeps the phrasings that name somebody instead of losing them all.
+  const has = k => (k === 'subject' ? !!subjectLabel(event) : !(event[k] == null || event[k] === ''));
+  const missing = SLOT_NAMES.filter(k => !has(k));
   if (!missing.length) return pool;
   return pool.filter(t => !missing.some(k => t.includes(`{${k}}`)));
 }

@@ -20,6 +20,7 @@
 // EMPTY and the twist does not fire — which is the correct answer to "who has
 // played a season" in a franchise with no record of anybody having played one.
 // Falling back to the roster is what produced the bug.
+import { SHOWS } from './shows.js';
 
 let _db = null;
 
@@ -103,7 +104,9 @@ export function alumniPool({ exclude = [], format = null, minNative = 6 } = {}) 
   return [...native, ...all.filter(a => !a.native)];
 }
 
-const _SHOW_NAMES = { 'big-brother': 'Big Brother', 'total-drama': 'Total Drama' };
+// 'Season' rather than showName()'s Total Drama fallback: this word is printed
+// immediately before a season number, so naming the wrong show reads as fact.
+// shows.js imports nothing, so reading it here keeps this file a leaf.
 function _showName(format) {
-  return _SHOW_NAMES[format] || 'Season';
+  return SHOWS[format]?.name || 'Season';
 }

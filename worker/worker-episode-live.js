@@ -3775,8 +3775,20 @@ async function generateRankingsReasoning(body, env) {
       'Good example (non-winner): "S9\'s most complete non-winner. Millie converted a Beware package into the Red Idol, used it at F8 to nullify a five-vote strike, and held her alliances together through one of the season\'s messiest post-merges. Her game had everything a winning résumé needs — she just ran into Bowie."',
       'Good example (early boot): "S9\'s unluckiest exit. Nichelle was on the wrong end of the Ep2 rock draw through no fault of her own, then burned Shot in the Dark in Ep3 and lost — going 3-0 as both she and Ripper burned their advantages simultaneously."',
     ],
+    "The Traitors": [
+      'Good example (winner): "TR1\'s most controlled Traitor. Bowie took the cloak on the first night and spent nine of them steering the table onto other people\'s names — he argued for two murders he had no stomach for, sat through a Round Table that all but had him, and walked out of the endgame with the pot because the last Faithful still believed him."',
+      'Good example (non-winner): "The best read of the season, and it came a night late. Millie called the Traitor correctly in episode six and could not get a second voice behind her; they murdered her before she could try again, and the room banished her name two rounds later off nothing but her own argument."',
+      'Good example (early boot): "Gone before she could be wrong about anybody. Nichelle was the first name the conclave agreed on — not for what she had seen, but for how quickly the room listened to her."',
+    ],
   };
-  const examples = EXAMPLES[showName] || EXAMPLES["Total Drama"];
+  /* NO FALLBACK TO ANOTHER SHOW'S EXAMPLES.
+     The examples ARE the tone specification, and this line answered a
+     Traitors prompt with Total Drama's -- idols, Tribal, fire-making --
+     directly under the instruction "Do not import words from another format",
+     for prose the public site serves. A show with no examples written yet gets
+     NONE, and the instruction alone; being told nothing is recoverable, being
+     shown the wrong show is not. */
+  const examples = EXAMPLES[showName] || [];
 
   const context = isNew
     ? `This is ${name}'s first season (${seasonLabel}). They finished ${placeLabel}. Stats: ${statLine}.`
@@ -3817,10 +3829,12 @@ async function generateRankingsReasoning(body, env) {
     `Use ${showName}'s own vocabulary and nothing else. Do not import words from`,
     `another format — and never invent a moment that is not in the ${seasonFacts ? "record" : "stats"} above.`,
     "",
-    "Match the tone of these examples:",
-    "",
-    ...examples,
-    "",
+    ...(examples.length ? [
+      "Match the tone of these examples:",
+      "",
+      ...examples,
+      "",
+    ] : []),
     "Return ONLY the reasoning text: no labels, no quotes, no markdown.",
   ].join("\n");
 

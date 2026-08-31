@@ -13,6 +13,16 @@ import { ADVANTAGES, ADV_SOURCE_LABELS } from './core.js';
 import { COACH_FINDABLE_DEFAULT, coachesOf } from './coaches.js';
 import { coachCanPlay } from './advantages.js';
 
+// The castle's two, imported rather than read off window. Everything else in
+// this file reaches its engine through the globals main.js publishes, and that
+// works — but a show that is unreachable from the run loop is precisely the
+// bug this wiring exists to close, and an import fails loudly at load time
+// where a missing global fails silently at the moment somebody presses Play.
+import { isTraitorsSeason, simulateTraitorsEpisode } from './tr-run.js';
+import { roundExits, exitVerbs } from './shows.js';
+import { seasonFormat } from './core.js';
+import { TRAITORS_SCREENS } from './vp-tr/screens.js';
+
 /**
  * A dry-run switch for the export, sitting under the button that needs it.
  *
@@ -85,6 +95,24 @@ function _addPublishToggle(exportBtn) {
  */
 function _freshTranscript(epRecord) {
   try {
+    // ── AND THE CASTLE, WHICH STORES NOTHING TO BE STALE ──────────────
+    //
+    // This was Big-Brother-only, and nothing on the castle path ever writes
+    // `ep.summaryText`: a Traitors row therefore returned '' and the whole
+    // transcript Plan 8 Task 6 built had no screen to appear on. It is
+    // regenerated for the same reason a stale house week is — the text is
+    // derived from the record, so deriving it again is always safe — and for
+    // one more: a castle transcript is a rendering of the screens, so it is
+    // never older than the screens it retranscribes.
+    const _regen = epRecord && typeof window.generateSummaryText === 'function'
+      && (_isCastleRow(epRecord)
+        ? !epRecord.summaryText || (epRecord.textV || 0) < (window.TEXT_BACKLOG_V || 1)
+        : false);
+    if (_regen) {
+      epRecord.summaryText = window.generateSummaryText(epRecord);
+      epRecord.textV = window.TEXT_BACKLOG_V;
+      try { window.saveGameState?.(); } catch { /* view still shows it */ }
+    }
     if (epRecord && epRecord.format === 'big-brother'
       && typeof window.generateSummaryText === 'function'
       && (epRecord.textV || 0) < (window.TEXT_BACKLOG_V || 1)) {
@@ -169,6 +197,12 @@ const _HUB_SETTING_META = {
   'bb-compound': { label: 'The Compound', icon: '🏭', accent: '#8b949e' },
   'bb-resort': { label: 'The Resort', icon: '🌴', accent: '#3fb950' },
   'bb-manor': { label: 'The Manor', icon: '🕯️', accent: '#d29922' },
+  // The castle has one venue and js/settings.js does not list it, because
+  // nothing in js/tr/ reads a setting -- the castle layer writes its own
+  // events and never asks where it is. Keyed by FORMAT below rather than by
+  // `config.setting`, which on a castle still says whatever the season was
+  // built as and printed "HOSTED CAMP" across the top of a Traitors hub.
+  'tr-castle': { label: 'The Castle', icon: '🗡️', accent: '#b91c3c' },
 };
 
 function _hubEsc(value) {
@@ -193,6 +227,18 @@ function _hubRailFace(name, cast = players) {
   return `<span class="hub-rail-face"><img src="assets/avatars/${_hubEsc(slug)}.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${_hubEsc(String(name)[0] || '?')}</span></span>`;
 }
 
+/**
+ * Is this episode record a castle night?
+ *
+ * ONE PLACE ASKS. `isTraitorsSeason()` answers a question about the SEASON on
+ * the setup screen; this answers one about the ROW, which is a different fact:
+ * a history can hold a show the config has since been switched away from, and
+ * the timeline, the episode card and the transcript all have to draw what the
+ * row IS. Three copies of `ep.format === 'traitors'` is a show list three
+ * lines long — see tests/show-list-duplication.test.js.
+ */
+const _isCastleRow = ep => !!ep && ep.format === 'traitors';
+
 export function getEpisodeEliminations(ep) {
   if (!ep) return [];
   if (ep.multiTribalElims?.length) return [...new Set(ep.multiTribalElims.filter(Boolean))];
@@ -208,6 +254,27 @@ export function getEpisodeEliminations(ep) {
     // this helper (the hub card, the season timeline, the episode trail)
     // silently lost a houseguest, which is why the count never went 16 -> 14.
     ep.alsoEliminated,
+    // ── AND EVERY DOOR THE SHOW HAS ──────────────────────────────────
+    //
+    // `roundExits()` is the registry's own rule and it is the only reader
+    // that knows a show can have more than one way out. The castle has two —
+    // banished and murdered — and only the banishment is ever on
+    // `eliminated`, so without this the episode timeline reported one name on
+    // a night that removed two and the cast count went 20 -> 19 -> 18 while
+    // four people were gone. Exactly the defect `alsoEliminated` above was
+    // added for, one show later.
+    //
+    // UNGATED, AND THAT WAS CHECKED RATHER THAN ASSUMED. `roundExits()` falls
+    // back to `evicted || eliminated` on a row with no `exits[]`, and the
+    // worry was the SHAPE of the field it falls back to: `evicted` is a name
+    // on a house week and a map of HOH-to-evictee under `splitHouse`, and a
+    // name that came back as an object would print as [object Object] in the
+    // timeline. A gate was written for it and then removed, because the
+    // object is nested and the fallback never reaches it — the guard on the
+    // gate came back green, which is this plan's definition of a gate worth
+    // deleting. The shapes the other two shows really write, including a
+    // Split House week, are pinned in tests/tr-run.test.js instead.
+    ...roundExits(ep, ep.format).map(x => x.name),
     // And a triple's third. Same reason: everything downstream counts the
     // house off this list, so a name missing here is a houseguest the season
     // never notices leaving.
@@ -233,7 +300,12 @@ export function buildHubAftermath(ep) {
   const votesNegated = (ep.idolPlays || []).reduce((sum, play) => sum + Math.max(0, Number(play.votesNegated || 0)), 0);
   const decidingVoters = [...new Set((ep.votingLog || []).filter(vote => eliminated.includes(vote.voted) && !vote.sitdSacrificed).map(vote => vote.voter))];
   let why = eliminatedLabel ? `${eliminatedLabel} received the highest valid total after the ballots were resolved.` : 'The episode ended without a standard elimination vote.';
-  if (ep.isRockDraw) why = `${eliminatedLabel || 'The eliminated contestant'} drew the losing rock after the vote remained deadlocked.`;
+  if (seasonFormat(ep) === 'traitors') {
+    const exits = roundExits(ep, 'traitors');
+    why = exits.length
+      ? exits.map(x => `${x.name} was ${x.verb}.`).join(' ')
+      : 'The castle closed the night with nobody leaving.';
+  } else if (ep.isRockDraw) why = `${eliminatedLabel || 'The eliminated contestant'} drew the losing rock after the vote remained deadlocked.`;
   else if (ep.tiebreakerResult) why = `${ep.tiebreakerResult.loser || eliminatedLabel} lost the ${ep.tiebreakerResult.challengeLabel || 'tiebreaker'} to ${ep.tiebreakerResult.winner || 'the other tied player'}.`;
   else if (ep.isTie && ep.revoteLog?.length) why = `The first ballot tied. On the revote, the numbers consolidated against ${eliminatedLabel || 'the eliminated contestant'}.`;
   else if (votesNegated > 0) why = `${votesNegated} vote${votesNegated === 1 ? '' : 's'} were erased by protection, leaving ${eliminatedLabel || 'the boot'} with the highest valid total.`;
@@ -296,7 +368,9 @@ export function buildHubAftermath(ep) {
 }
 
 export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = players, viewedEpisodeNum = null) {
-  const setting = _HUB_SETTING_META[config?.setting] || _HUB_SETTING_META['hosted-camp'];
+  const _castle = seasonFormat(config) === 'traitors';
+  const setting = _castle ? _HUB_SETTING_META['tr-castle']
+    : (_HUB_SETTING_META[config?.setting] || _HUB_SETTING_META['hosted-camp']);
   const initialized = !!state?.initialized;
   const history = initialized ? (state.episodeHistory || []) : [];
   const liveLatest = history[history.length - 1] || null;
@@ -315,9 +389,18 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   const catalogEntry = nextScheduled && typeof TWIST_CATALOG !== 'undefined' ? TWIST_CATALOG.find(t => t.id === nextScheduled.type) : null;
   const twistLabel = nextScheduled
     ? nextScheduled.spoilerFree ? 'Production surprise scheduled' : (catalogEntry?.name || String(nextScheduled.type || 'Special episode').replace(/-/g, ' '))
-    : 'Standard episode — no scheduled twist';
+    : _castle ? 'The castle continues — no scheduled twist' : 'Standard episode — no scheduled twist';
+  const latestOutcome = _castle && latest
+    ? roundExits(latest, 'traitors').map(x => `${x.name} was ${x.verb}`).join(' · ')
+    : latest ? (getEpisodeEliminations(latest).length
+      ? `${getEpisodeEliminations(latest).join(' + ')} left the game`
+      : 'The game moved without a vote') : '';
   const _hubHouse = typeof isBigBrotherSeason === 'function' && isBigBrotherSeason();
   const groups = !initialized ? []
+    // One castle, from the first breakfast to the last table. No tribes, no
+    // merge, and therefore never "Merged Cast" — which is what it said.
+    : _castle
+      ? [{ name: 'The Castle', color: setting.accent, members: active }]
     // One house, from the first day to the last. There is nothing to split.
     : _hubHouse
       ? [{ name: displayState.phase === 'finale' ? 'Finalists' : 'The House', color: setting.accent, members: active }]
@@ -346,7 +429,7 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   return {
     lifecycle, setting, title: config?.name || 'Untitled Season', seasonNumber: config?.seasonNumber || null,
     phase: displayState.phase || state?.phase || 'setup', episode: Number(latest?.num ?? displayState.episode ?? 0), nextEpisode, remaining, originalCount, progress,
-    active, groups, latest, history, liveEpisode: Number(liveLatest?.num || 0), isHistorical, storylines: [...new Set(storylines)].slice(0, 3), twistLabel,
+    active, groups, latest, history, liveEpisode: Number(liveLatest?.num || 0), isHistorical, storylines: [...new Set(storylines)].slice(0, 3), twistLabel, latestOutcome,
     // `nextEpisode`, not `state.episode + 1`. Two sources for one number, and
     // they disagreed: everything else on this screen reads the last episode in
     // the history, while the button read `gs.episode` — which the Big Brother
@@ -367,7 +450,9 @@ export function renderSeasonHub() {
   // A house has no tribes and no merge, so Total Drama's phase names describe
   // nothing about it. What it has is a number of people left.
   const _bbSeason = isBigBrotherSeason();
-  const phaseLabel = _bbSeason
+  // A castle has no tribes and no merge either, so Total Drama's phase names
+  // describe nothing about it. What it has is a number of people left.
+  const phaseLabel = (_bbSeason || isTraitorsSeason())
     ? (model.phase === 'complete' ? 'Complete' : model.remaining ? 'Final ' + model.remaining : 'Setup')
     : model.phase === 'pre-merge' ? 'Pre-Merge' : model.phase === 'post-merge' ? 'Post-Merge' : model.phase === 'finale' ? 'Finale' : model.phase === 'complete' ? 'Complete' : 'Setup';
   const primaryClick = model.primaryAction === 'results' ? "showTab('results')" : model.primaryAction === 'current' ? `viewEpisode(${model.liveEpisode})` : 'simulateNext()';
@@ -427,7 +512,7 @@ export function renderSeasonHub() {
   const headlineStatus = _spoilerFree && model.latest
     ? `Episode ${model.latest.num} is ready to watch · outcome hidden`
     : model.isHistorical ? `Reviewing Episode ${model.latest.num} · ${model.remaining} contestants remained afterward`
-    : model.lifecycle === 'complete' ? 'The season is complete. The jury has spoken.' : `Episode ${model.nextEpisode} is ready · ${model.remaining} of ${model.originalCount} contestants remain`;
+    : model.lifecycle === 'complete' ? (isTraitorsSeason() ? 'The castle has made its final choice.' : 'The season is complete. The jury has spoken.') : `Episode ${model.nextEpisode} is ready · ${model.remaining} of ${model.originalCount} contestants remain`;
   const publicStorylines = _spoilerFree && model.latest
     ? ['The game state will update here after you reveal the episode outcome.']
     : model.storylines;
@@ -461,7 +546,7 @@ export function renderSeasonHub() {
     <header class="hub-headline"><div><div class="hub-kicker">${model.setting.icon} ${_hubEsc(model.setting.label)} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><div class="hub-headline-right"><button type="button" class="hub-sf${_spoilerFree ? ' is-on' : ''}" role="switch" aria-checked="${_spoilerFree}" onclick="toggleSpoilerFree(${!_spoilerFree})" title="${_spoilerFree ? 'Results are hidden until you watch the episode' : 'Results are shown on this screen as soon as an episode is simulated'}"><span class="hub-sf-track"><span class="hub-sf-knob"></span></span><span class="hub-sf-label">Spoiler-free<small>${_spoilerFree ? 'On · outcomes hidden' : 'Off · outcomes shown'}</small></span></button><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></div></header>
     ${secondaryActions}
     <div class="hub-progress${_spoilerFree && model.latest ? ' hub-progress-hidden' : ''}" role="progressbar" aria-label="${_spoilerFree && model.latest ? 'Season progress hidden' : 'Season progress'}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${_spoilerFree && model.latest ? 0 : model.progress}"><span style="width:${_spoilerFree && model.latest ? 100 : model.progress}%"></span></div>
-    ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : '<span class="hub-no-boot">No elimination</span>'}</div><div class="hub-last-copy"><strong>${_spoilerFree ? 'Outcome hidden until you watch' : latestElim ? `${_hubEsc(latestElim)} left the game` : 'The game moved without a vote'}</strong><span>Episode ${model.latest.num}${!_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${Number(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
+    ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : '<span class="hub-no-boot">No elimination</span>'}</div><div class="hub-last-copy"><strong>${_spoilerFree ? 'Outcome hidden until you watch' : _hubEsc(model.latestOutcome)}</strong><span>Episode ${model.latest.num}${!_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${Number(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
     ${aftermathHtml}
     <div class="hub-grid"><div class="hub-main-column"><div class="hub-section-title"><span>${_spoilerFree && model.latest ? 'Cast after the episode' : 'Cast still in the game'}</span><small>${_spoilerFree && model.latest ? 'Hidden' : `${model.remaining} remaining`}</small></div><div class="hub-tribes">${castHtml}</div></div><aside class="hub-briefing"><div class="hub-section-title"><span>Going forward</span><small>Public context</small></div><div class="hub-next-card"><label>Next episode</label><strong>${_spoilerFree && model.latest ? 'Available after revealing the outcome' : _hubEsc(model.twistLabel)}</strong></div><div class="hub-story-list">${publicStorylines.map((line, index) => `<div><b>${String(index + 1).padStart(2, '0')}</b><span>${_hubEsc(line)}</span></div>`).join('')}</div></aside></div>
   </section>`;
@@ -604,7 +689,8 @@ export function renderGameState() {
 
   // Same rule as the hub: a house never splits, whatever the cast was built
   // with or what phase the state object still says.
-  const _gsHouse = typeof isBigBrotherSeason === 'function' && isBigBrotherSeason();
+  const _gsHouse = (typeof isBigBrotherSeason === 'function' && isBigBrotherSeason())
+    || isTraitorsSeason();   // same rule, third show: a castle never splits
   if (!_gsHouse && d.phase === 'pre-merge' && d.tribes.length) {
     html += `<div style="margin-top:8px">`;
     d.tribes.forEach(t => {
@@ -739,6 +825,43 @@ export function renderGameState() {
 
 export function renderEpisodeView(epRecord) {
   const card = document.getElementById('ep-result-card');
+  // ── THE CASTLE'S CARD ─────────────────────────────────────────────
+  //
+  // Total Drama's card below asks for Immunity, Tribal and a vote breakdown.
+  // A castle has none of the three, and drawn over a Traitors row it printed
+  // "Immunity —", "All vote" and "0 cast" — one show's vocabulary over
+  // another's night, which is the recurring bug the show registry exists to
+  // stop. Every word here comes from `exitVerbs()` and every name from
+  // `roundExits()`, so a registry change reaches both.
+  if (_isCastleRow(epRecord)) {
+    const [banishWord, murderWord] = exitVerbs('traitors');
+    const exits = roundExits(epRecord, 'traitors');
+    const said = ch => exits.filter(x => x.channel === ch).map(x => x.name).join(' + ') || '—';
+    const tr = epRecord.tr || {};
+    const cap = w => w.charAt(0).toUpperCase() + w.slice(1);
+    card.innerHTML = `<div class="ep-result">
+      <div class="ep-result-header">
+        <span class="ep-result-num">Episode ${epRecord.num}</span>
+        <span class="ep-result-phase" style="color:#b91c3c">${
+          tr.endgame ? 'THE ENDGAME' : tr.table ? 'ROUND TABLE' : 'ARRIVAL'}</span>
+      </div>
+      <div class="ep-facts">
+        <div class="ep-fact ep-eliminated"><label>${cap(banishWord)}</label><span>${
+          _spoilerFree ? '???' : said('banishment')}</span></div>
+        <div class="ep-fact ep-eliminated"><label>${cap(murderWord)}</label><span>${
+          _spoilerFree ? '???' : said('murder')}</span></div>
+        <div class="ep-fact"><label>Still in the castle</label><span>${
+          (tr.living || []).length}</span></div>
+        <div class="ep-fact"><label>The pot</label><span>${
+          _spoilerFree ? '???' : Number(tr.pot || 0).toLocaleString('en-GB')}</span></div>
+      </div>
+      ${_spoilerFree ? `<div style="margin-top:8px;font-size:11px;color:var(--muted);font-style:italic;text-align:center">Spoiler-free mode — open Visual Player to watch the episode</div>` : ''}
+    </div>`;
+    const _tEl = document.getElementById('ep-output-text');
+    _tEl.value = _spoilerFree ? '' : _freshTranscript(epRecord);
+    _tEl.style.display = '';
+    return;
+  }
   const tc = epRecord.isFinale ? '#f59e0b' : epRecord.isMerge ? '#10b981' : epRecord.challengeType==='tribe' ? tribeColor(epRecord.immunityWinner||'') : '#6366f1';
   const phaseTag = epRecord.isFinale ? 'FINALE' : epRecord.isMerge ? 'MERGE' : epRecord.challengeType==='tribe' ? 'Pre-merge' : 'Post-merge';
   const riTag = epRecord.riChoice === 'REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : epRecord.riChoice === 'WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
@@ -903,6 +1026,39 @@ export function toggleSpoilerFree(next) {
   renderSeasonHub();
 }
 
+/**
+ * The castle's pills for one night of the episode timeline.
+ *
+ * ASKED OF `TRAITORS_SCREENS`, not of a second list of conditions. Every other
+ * show's badges in this file are eighty hand-written ternaries, one per twist,
+ * each repeating a flag the engine already set — and a new twist gets one by
+ * somebody remembering. The castle already has exactly one list of what a
+ * night contained, `js/vp-tr/screens.js`, which the visual player and the text
+ * backlog both read; this is the third reader of it rather than the first copy
+ * of it. Add a screen there and its pill appears here.
+ *
+ * The murder pill is the exception and is NOT a screen: it is a fact about the
+ * row, read through `roundExits()` because this is the only show with two
+ * doors and the timeline must never report a murder as a vote.
+ */
+function _traitorsBadges(ep) {
+  const pill = (text, color) => `<span class="ep-hist-tag" `
+    + `style="background:${color}22;color:${color}">${text}</span>`;
+  let out = '';
+  for (const scr of TRAITORS_SCREENS) {
+    if (!scr.badge) continue;
+    let on = false;
+    try { on = !!scr.when(ep); } catch { on = false; }
+    if (on) out += pill(scr.badge.text, scr.badge.color);
+  }
+  const [, murderWord] = exitVerbs('traitors');
+  const murdered = roundExits(ep, 'traitors').filter(x => x.channel === 'murder');
+  if (murdered.length) {
+    out += pill(murderWord.charAt(0).toUpperCase() + murderWord.slice(1), '#f85149');
+  }
+  return out;
+}
+
 export function renderEpisodeHistory() {
   const grid = document.getElementById('ep-history-grid');
   const history = gs.episodeHistory;
@@ -910,6 +1066,20 @@ export function renderEpisodeHistory() {
 
   const currentNum = viewingEpNum || history[history.length-1].num;
   grid.innerHTML = history.map(ep => {
+    // A castle night shares none of Total Drama's eighty flags, and running
+    // them over it would be eighty reads of fields that do not exist on the
+    // row. It gets its own card, with the show's own two doors on it.
+    if (_isCastleRow(ep)) {
+      const hasCp = !!gsCheckpoints[ep.num];
+      const gone = _spoilerFree ? '???'
+        : (roundExits(ep, 'traitors').map(x => x.name).join(' + ') || '—');
+      return `<div class="ep-hist-card ${ep.num === currentNum ? 'active' : ''}" onclick="viewEpisode(${ep.num})">
+        <div class="ep-hist-ep">Episode ${ep.num}${hasCp
+          ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>` : ''}</div>
+        <div class="ep-hist-elim">${gone}</div>
+        <div>${_spoilerFree ? '' : _traitorsBadges(ep)}</div>
+      </div>`;
+    }
     const riTag = ep.riChoice==='REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : ep.riChoice==='WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
     const mergeTag = ep.isMerge ? `<span class="ep-hist-tag" style="background:rgba(16,185,129,0.15);color:var(--accent)">MERGE</span>` : '';
     // Somebody walked IN on this episode, which is the one thing the timeline
@@ -1032,14 +1202,12 @@ export function viewEpisode(num) {
 }
 
 /**
- * A checkpoint before a Big Brother week runs, exactly like a Total Drama
- * episode takes one before it runs. episode.js saves TD's inside the
- * simulator; the house engine stays headless, so its checkpoint is taken at
- * the UI boundary — which is what makes Re-run This Episode exist for a house
- * at all. Called from BOTH the normal run and the replay re-run, because a
- * replayed week must itself be replayable, the way a TD episode is.
+ * A checkpoint before a headless show advances. Total Drama saves its own
+ * checkpoint inside episode.js; Big Brother and Traitors take theirs at the
+ * UI boundary. Called from both normal play and replay so a replayed episode
+ * remains replayable.
  */
-export function _saveBBCheckpoint() {
+export function _saveEpisodeCheckpoint() {
   // Keyed by the EPISODE the checkpoint belongs to, which is the number the
   // replay button looks it up by — `gsCheckpoints[ep.num]`.
   //
@@ -1058,6 +1226,7 @@ export function _saveBBCheckpoint() {
     _idbPut('cp_' + cpNum, JSON.parse(JSON.stringify(gsCheckpoints[cpNum])));
   } catch { /* a week must never fail on its own undo button */ }
 }
+export const _saveBBCheckpoint = _saveEpisodeCheckpoint;
 
 export function simulateNext() {
   if (!gs) { if (!initGameState()) { alert('Add players to Cast Builder first.'); return; } }
@@ -1090,13 +1259,44 @@ export function simulateNext() {
   // reached its final few, and since gs.phase is never 'finale' in a Big
   // Brother season, that meant running simulateEpisode — tribes, a challenge,
   // Tribal Council — on three houseguests.
+  // ── THE CASTLE ────────────────────────────────────────────────────
+  //
+  // Third engine, third branch, and it turns on the FORMAT alone for the
+  // reason the house's does: falling through to episode.js at the final few
+  // would run tribes and a Tribal Council over a castle.
+  //
+  // The whole season is played on the first press and the rows are queued —
+  // see js/tr-run.js for why an engine with no per-night entry point cannot
+  // be asked for one. Everything after the call is what the house does:
+  // checkpoint, feed, spoiler reveal, render.
+  if (isTraitorsSeason()) {
+    _saveEpisodeCheckpoint();
+    const trEp = simulateTraitorsEpisode();
+    if (!trEp) {
+      alert(gs.activePlayers && gs.activePlayers.length
+        ? 'This castle season is already complete.'
+        : 'Add players to Cast Builder first.');
+      return;
+    }
+    // POPULARITY IS NOT UPDATED HERE, AND THE OMISSION IS THE POINT.
+    // `updatePopularity` reads a Total Drama episode — challenges, idols, a
+    // tribal — and this show has none of them. The castle keeps its own two
+    // ledgers in js/tr/crowd.js and the engine has already written them.
+    _refreshFeed();
+    _autoRevealSpoiler(trEp.num);
+    viewingEpNum = trEp.num;
+    renderRunTab();
+    document.getElementById('run-main').scrollTop = 0;
+    return;
+  }
+
   if (isBigBrotherSeason()) {
     // A checkpoint before the week runs, exactly like a Total Drama episode
     // takes one before it runs. episode.js saves TD's inside the simulator;
     // the house's engine stays headless, so its checkpoint is taken here at
     // the same moment — which is what makes Re-run This Episode exist for a
     // house at all. Keyed by the number the coming episode will carry.
-    _saveBBCheckpoint();
+    _saveEpisodeCheckpoint();
     // At the final few the week engine has nothing left to run, so the last
     // night takes over: the three-part Head of Household, the cut, and the jury.
     const bbEp = simulateBBEpisode() || runBBFinale();
@@ -1176,14 +1376,23 @@ export function simulateMultipleEpisodes(count) {
     // finale size, which would be the genuine loop.
     const bbFinalePlayed = (gs.episodeHistory || []).some(e => e?.isFinale);
     const bbDone = isBigBrotherSeason() && houseIsAtFinale() && bbFinalePlayed;
-    if (ran >= max || bbDone || gs.phase === 'complete' || gs.activePlayers.length <= 1) {
+    // A castle ends when its queue is empty and not when the room is small:
+    // the endgame runs on three people and can force several more tables, so
+    // `activePlayers.length <= 1` would stop Sim All several nights early and
+    // leave the money undecided. `gs.phase` is set to 'complete' by
+    // simulateTraitorsEpisode on the last row, which the condition already
+    // stops on — so the castle only needs the small-room test disarmed.
+    const castleRunning = isTraitorsSeason() && gs.phase !== 'complete';
+    if (ran >= max || bbDone || gs.phase === 'complete'
+      || (!castleRunning && gs.activePlayers.length <= 1)) {
       renderRunTab();
       document.getElementById('run-main').scrollTop = 0;
       return;
     }
     simulateNext();
     ran++;
-    if (gs.phase !== 'complete' && gs.activePlayers.length > 1 && ran < max) {
+    if (gs.phase !== 'complete'
+      && (isTraitorsSeason() || gs.activePlayers.length > 1) && ran < max) {
       setTimeout(runOne, 0);
     } else {
       // already rendered by simulateNext on last call
@@ -1224,10 +1433,18 @@ export function replayEpisode(epNum) {
     // Re-run this episode — the format decides the engine, exactly as
     // simulateNext does. The replay path only knew Total Drama's two engines,
     // so a house had checkpoints it could never spend.
-    if (isBigBrotherSeason()) _saveBBCheckpoint();
-    ep = isBigBrotherSeason()
-      ? (simulateBBEpisode() || runBBFinale())
-      : (gs.phase === 'finale' ? simulateFinale() : simulateEpisode());
+    if (isBigBrotherSeason() || isTraitorsSeason()) _saveEpisodeCheckpoint();
+    // The castle re-airs rather than re-plays: the checkpoint carries the
+    // queue AND the seed, so shifting the next row off it hands back the same
+    // night. That is the correct behaviour and not a limitation — the season
+    // was decided in one call and re-deciding it from episode 3 would rewrite
+    // the ending, which is the thing the endgame's placement already warns
+    // about.
+    ep = isTraitorsSeason()
+      ? simulateTraitorsEpisode()
+      : isBigBrotherSeason()
+        ? (simulateBBEpisode() || runBBFinale())
+        : (gs.phase === 'finale' ? simulateFinale() : simulateEpisode());
   } catch (e) {
     failure = e;
   }
@@ -1250,7 +1467,11 @@ export function replayEpisode(epNum) {
   for (const k of droppedKeys) {
     if (Number(k) > ep.num) { delete gsCheckpoints[k]; _idbDelete('cp_' + k); }
   }
-  if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
+  // Same rule as simulateNext: the castle has no Total Drama episode for
+  // `updatePopularity` to read, and keeps its own ledgers.
+  if (seasonConfig.popularityEnabled !== false && !isTraitorsSeason()) {
+    updatePopularity(ep); saveGameState();
+  }
   // A replayed episode kept its number but is a different night, so its feed is
   // rewritten rather than left alone — and the episodes it replaced lose theirs.
   _refreshFeed({ rebuild: true });

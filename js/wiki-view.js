@@ -29,15 +29,22 @@ import { parseInterview } from './casting-interview.js';
 import { airLabel, ageAt, airKey } from './franchise-calendar.js';
 import { joinOrigin } from './bio.js';
 
-// `short` is the tab label — "TD14", "BB1" — and matches the code js/shows.js
-// already declares for each show, so a third show is named consistently
-// wherever it appears rather than getting a second abbreviation here.
-const SHOW_META = {
-  'total-drama': { name: 'Total Drama', short: 'TD', icon: '🎬', accent: '#7d4cff' },
-  'big-brother': { name: 'Big Brother', short: 'BB', icon: '📹', accent: '#38bdf8' },
-};
-const meta = f => SHOW_META[f]
-  || { name: f, short: String(f).slice(0, 2).toUpperCase(), icon: '📺', accent: '#7d4cff' };
+import { SHOWS, DEFAULT_FORMAT, seasonId, showName, showShort, showIcon, showAccent, showWords, exitVerbs }
+  from './shows.js';
+
+// `short` is the tab label — "TD14", "BB1". These came out of a copy of the
+// show list kept here; they now come from js/shows.js, so a show is named,
+// abbreviated and coloured the same wherever it appears.
+//
+// The unregistered case still draws something rather than nothing, because a
+// blank tab is unclickable — but it is deliberately generic, not the default
+// show's clapperboard.
+const meta = f => ({
+  name: showName(f),
+  short: showShort(f) || String(f).slice(0, 2).toUpperCase(),
+  icon: showIcon(f) || '📺',
+  accent: showAccent(f),
+});
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -269,9 +276,18 @@ function infobox(dossier, show, root, L) {
     }
     careerPairs.push(['Times nominated', t.timesNominated ? String(t.timesNominated) : '']);
   } else {
-    careerPairs.push(['Challenge wins', t.challengeWins ? String(t.challengeWins) : '']);
+    // NOT "the camp's rows". The rows this SHOW declares — the else branch of
+    // a two-show ternary is a particular show, and every third show got the
+    // camp's numbers under the camp's names.
+    for (const [label, v] of _statRows(show.format, 'career', t)) {
+      careerPairs.push([label, v ? String(v) : '']);
+    }
   }
-  careerPairs.push(['Jury votes', t.juryVotes ? String(t.juryVotes) : '']);
+  // A jury votes only where there is one. A castle's last table is a decision
+  // by the people still sitting at it.
+  if (SHOWS[show.format]?.hasJury) {
+    careerPairs.push(['Jury votes', t.juryVotes ? String(t.juryVotes) : '']);
+  }
   const career = rowsOf(careerPairs);
 
   // ── one block per season, newest first ──
@@ -297,7 +313,8 @@ function infobox(dossier, show, root, L) {
       ['Status', s.status ? esc(s.status) : ''],
       ['Place', s.placement ? ordinal(s.placement) : ''],
       ['Votes against', rec.votesReceived ? String(rec.votesReceived) : ''],
-      ['Votes to win', rec.juryVotes ? String(rec.juryVotes) : ''],
+      ...(SHOWS[show.format]?.hasJury
+        ? [['Votes to win', rec.juryVotes ? String(rec.juryVotes) : '']] : []),
     ];
     // Each show counts its own competitions, and neither one's words fit the
     // other: a camp has no veto and a house has no immunity idol.
@@ -307,9 +324,9 @@ function infobox(dossier, show, root, L) {
       pairs.push(['Block Buster wins', bb.blockBusterWins ? String(bb.blockBusterWins) : '']);
       pairs.push(['Times nominated', bb.timesNominated ? String(bb.timesNominated) : '']);
     } else {
-      pairs.push(['Challenge wins', rec.challengeWins ? String(rec.challengeWins) : '']);
-      pairs.push(['Immunity wins', rec.immunityWins ? String(rec.immunityWins) : '']);
-      pairs.push(['Idols found', rec.idolsFound ? String(rec.idolsFound) : '']);
+      for (const [label, v] of _statRows(show.format, 'season', rec)) {
+        pairs.push([label, v ? String(v) : '']);
+      }
       pairs.push(['Team', s.tribe ? esc(s.tribe) : '']);
     }
     // The three rows that are nothing but other people's names, and the three
@@ -410,8 +427,13 @@ function _finalTally(vote, winnerName) {
 function lead(dossier, show, root, L) {
   const m = meta(show.format);
   const seasons = show.seasons.slice().sort((a, b) => a.season - b.season);
-  const link = s => `<a href="${root}/season_ref.html?season=${
-    show.format === 'big-brother' ? `bb-${s.season}` : s.season}"><em>${
+  // A bare integer is Total Drama and stays one, because every bookmark on the
+  // site is `?season=7`. Every other show is prefixed — and it was the `=== 'big-
+  // brother'` test here that would have linked a third show's season 5 straight
+  // at Total Drama 5, an existing page, so nothing would have looked wrong.
+  const ref = s => show.format === DEFAULT_FORMAT
+    ? String(s.season) : seasonId(show.format, s.season);
+  const link = s => `<a href="${root}/season_ref.html?season=${ref(s)}"><em>${
     esc(s.title || `${m.name} ${s.season}`)}</em></a>`;
 
   // ── 1. the record ──
@@ -422,10 +444,23 @@ function lead(dossier, show, root, L) {
   // All-Stars, and later won Heroes VS Villains VS Civilians" — every fact
   // correct and the same three words three times.
   const outcome = s => {
-    if (s.placement === 1) return `the winner of ${link(s)}`;
+    // "THE winner" IS A CLAIM ABOUT EVERYBODY ELSE. Season 8 crowned two, and
+    // The Traitors splits the pot between as many as are left standing — so a
+    // page saying "the winner of" over a shared win is writing one champion
+    // out of their own season. `coWinners` counts the record, and the article
+    // says which kind of win it was rather than picking.
+    if (s.placement === 1) {
+      // UNKNOWN IS NOT ONE. `coWinners` is null until the season document is
+      // loaded, and the page paints once before that on purpose — so the
+      // first paint used to call a co-winner "the winner". "A champion of" is
+      // true of a shared win and of a sole one, and needs no count; it drops
+      // into the lead's "X was ..." exactly where the others do.
+      if (s.coWinners == null) return `a champion of ${link(s)}`;
+      return `${s.coWinners > 1 ? 'a co-winner of' : 'the winner of'} ${link(s)}`;
+    }
     if (s.placement === 2) return `the runner-up on ${link(s)}`;
     if (s.placement) return `${ordinal(s.placement)} on ${link(s)}`;
-    return `a contestant on ${link(s)}`;
+    return `a ${showWords(show.format).player} on ${link(s)}`;
   };
   /** "a, b, and c" — with the serial comma the reference pages use. */
   const joinList = xs => {
@@ -541,8 +576,12 @@ function lead(dossier, show, root, L) {
 
     const comps = show.format === 'big-brother'
       ? (bb.hohWins || 0) + (bb.vetoWins || 0) + (bb.blockBusterWins || 0)
-      : (rec.challengeWins || 0);
-    const compWord = show.format === 'big-brother' ? 'competition' : 'challenge';
+      : (rec.challengeWins || 0) + (rec.tr?.missionsWon || 0);
+    /* THE SHOW'S OWN WORD, not the other-of-two. A two-way ternary had every
+       Traitors lead reading "played The Traitors 1 without winning a
+       challenge" about somebody who won four missions. `showWords` is already
+       imported by this file and used for every other word on the page. */
+    const compWord = showWords(show.format).comp;
     // Spelled out to nine, the way prose does it and a scoreboard does not.
     const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
     const num = n => (n < WORDS.length ? WORDS[n] : String(n));
@@ -612,8 +651,19 @@ function lead(dossier, show, root, L) {
     } else if (notable.placement === 2) {
       sentences.push(`${Cap(P.sub)} reached the end and finished as the runner-up.`);
     } else if (notable.placement) {
-      sentences.push(`${Cap(P.sub)} finished ${ordinal(notable.placement)}${
-        notable.status ? ` as ${/^[aeiou]/i.test(notable.status) ? 'an' : 'a'} ${esc(String(notable.status).toLowerCase())}` : ''}.`);
+      /* ── A STATUS IS NOT ALWAYS A NOUN ─────────────────────────────
+         This sentence assumes one: "finished 5th as a juror", "as a
+         finalist". A show whose statuses are its exit VERBS -- Banished,
+         Murdered, which is exactly what makes them right on that show --
+         produced "He finished 5th as a murdered." The registry knows which
+         words are verbs, so the sentence is built to fit the word instead of
+         the word being forced into the sentence. */
+      const st = String(notable.status || '').trim();
+      const isVerb = exitVerbs(show.format).some(v => v.toLowerCase() === st.toLowerCase());
+      sentences.push(isVerb
+        ? `${Cap(P.sub)} ${was} ${esc(st.toLowerCase())} and finished ${ordinal(notable.placement)}.`
+        : `${Cap(P.sub)} finished ${ordinal(notable.placement)}${
+          st ? ` as ${/^[aeiou]/i.test(st) ? 'an' : 'a'} ${esc(st.toLowerCase())}` : ''}.`);
     }
 
     // The rest of a career, so the paragraph is about the person and not only
@@ -659,6 +709,24 @@ function lead(dossier, show, root, L) {
  * same reason that one exists: a `<script>` inside injected innerHTML never
  * runs, so behaviour is attached from outside or not at all.
  */
+/**
+ * A number off a record, by the dotted path the registry names it with.
+ *
+ * `bb.hohWins` and `tr.missionsWon` live in a per-show block; `challengeWins`
+ * sits at the top. One reader for all of them, so a show declares WHERE its
+ * numbers are instead of a screen knowing.
+ */
+function _statAt(obj, path) {
+  return String(path).split('.').reduce((o, k) => (o == null ? o : o[k]), obj);
+}
+
+/** The rows this show's article shows, in the section asked for. */
+function _statRows(format, section, source) {
+  const spec = SHOWS[format]?.articleStats?.[section]
+    || SHOWS[DEFAULT_FORMAT].articleStats[section];
+  return spec.map(([path, label]) => [label, _statAt(source, path)]);
+}
+
 export function hydrateInfobox(host) {
   const box = host?.querySelector('.wk-infobox');
   if (!box) return;
@@ -883,7 +951,22 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   // everything about that season underneath it. A returnee gets one of these
   // per season, so their two games are never interleaved.
   const isHouse = show.format === 'big-brother';
-  const roundWord = isHouse ? 'Week' : 'Episode';
+  // `isHouse` still gates the BIG BROTHER-ONLY columns below — have-nots, the
+  // HOH/veto totals row — which are features of that game and not vocabulary.
+  // Words are a different question, and answering it with the same boolean is
+  // what printed "Voted out" over a banishment: everything that was not Big
+  // Brother got Total Drama's noun.
+  const words = showWords(show.format);
+  const roundWord = words.round;
+  const _cap = t => String(t || '').replace(/^./, c => c.toUpperCase());
+  /* ── ONE WORD PER SHOW IS ONE WORD TOO FEW ─────────────────────────
+     `words.exit` is the show's DEFAULT verb -- the vote -- and a season with
+     a second door has rounds this is simply not true of. A single `exitWord`
+     over every cell reads "Banished" on the night somebody was murdered,
+     which is the exact bug this file's own comment three lines up is about.
+     The row carries the verb the ROUND recorded (js/wiki.js), and the default
+     is what a one-door show falls back to. */
+  const exitWord = w => _cap(w?.exitVerb || words.exit);
 
   for (const s2 of show.seasons) {
     // The reference wiki writes "The Mad House 7" because its season titles are
@@ -943,7 +1026,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
       // off says how, and a week that was both (HOH one week, block the next)
       // can no longer hide half of itself.
       const cell = w => {
-        if (w.evicted) return { label: isHouse ? 'Evicted' : 'Voted out', cls: 'wk-c-out', marks: [] };
+        if (w.evicted) return { label: exitWord(w), cls: 'wk-c-out', marks: [] };
         // Out of the house between two evictions, and the week nobody went
         // home: two states that are not "safe" and were both drawn as blank.
         if (w.notYet) return { label: 'Not in', cls: 'wk-c-away', marks: [] };
@@ -986,7 +1069,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
                 `<td class="${c.cls}">${c.marks.length ? `<span class="wk-marks">${c.marks.map(([ch, tip]) =>
                   `<i class="wk-m wk-m-${ch}" title="${esc(tip)}">${ch}</i>`).join('')}</span>` : ''}${
                   c.label ? `<span class="wk-cell-l">${esc(c.label)}</span>` : ''}</td>`).join('')}</tr>` : ''}
-              ${votedAny ? `<tr class="wk-weeks-sub"><th>Voted to evict</th>${rows.map(w =>
+              ${votedAny ? `<tr class="wk-weeks-sub"><th>Voted to ${esc(words.exitAction)}</th>${rows.map(w =>
                 // WITH THE FACE. A grid of thirteen names is a grid a reader
                 // has to read; a row of faces is one they can scan, which is
                 // the whole reason the reference pages carry portraits here.
@@ -1023,8 +1106,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
       ? [['HOH wins', b.hohWins], ['Veto wins', b.vetoWins],
          ['Block Buster wins', b.blockBusterWins], ['Times nominated', b.timesNominated],
          ['Times on the block', b.timesOnBlock], ['Saved by the veto', b.timesSaved]]
-      : [['Challenge wins', r.challengeWins], ['Immunity wins', r.immunityWins],
-         ['Reward wins', r.rewardWins], ['Idols found', r.idolsFound]];
+      : _statRows(show.format, 'comps', r);
     const compRows = comp.filter(([, v]) => v);
     if (compRows.length) {
       sub(node, `s${s2.season}-comps`, 'Competition history', `
@@ -1056,7 +1138,12 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
     const t = show.totals || {};
     const head = isHouse
       ? ['Season', 'HOH', 'Veto', 'Block Buster', 'Nominated', 'Votes against']
-      : ['Season', 'Challenge wins', 'Votes against', 'Jury votes'];
+      // The show's own word for what they won, and a jury column only where
+      // the show HAS a jury -- a castle's last table is a decision by the
+      // people still sitting at it, and a "Jury votes" column over it is a
+      // heading about a body that never met.
+      : ['Season', `${_cap(words.comp)} wins`, 'Votes against',
+        ...(SHOWS[show.format]?.hasJury ? ['Jury votes'] : [])];
     const n = v => (v ? String(v) : '—');
     const rows = show.seasons.map(x => {
       const rr = x.record || {};
@@ -1074,13 +1161,15 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
         ? `<tr><td>${label}</td><td>${n(bb.hohWins)}</td><td>${n(bb.vetoWins)}</td>
              <td>${arena}</td><td>${n(bb.timesNominated)}</td>
              <td>${n(rr.votesReceived)}</td></tr>`
-        : `<tr><td>${label}</td><td>${n(rr.challengeWins)}</td>
-             <td>${n(rr.votesReceived)}</td><td>${n(rr.juryVotes)}</td></tr>`;
+        : `<tr><td>${label}</td><td>${n((rr.challengeWins || 0) + (rr.tr?.missionsWon || 0))}</td>
+             <td>${n(rr.votesReceived)}</td>${
+               SHOWS[show.format]?.hasJury ? `<td>${n(rr.juryVotes)}</td>` : ''}</tr>`;
     });
     const totalRow = isHouse
       ? `<tr class="wk-total"><td>Total</td><td>${t.hohWins || 0}</td><td>${t.vetoWins || 0}</td>
          <td>${t.blockBusterWins || 0}</td><td>${t.timesNominated || 0}</td><td></td></tr>`
-      : `<tr class="wk-total"><td>Total</td><td>${t.challengeWins || 0}</td><td></td><td>${t.juryVotes || 0}</td></tr>`;
+      : `<tr class="wk-total"><td>Total</td><td>${(t.challengeWins || 0) + (t.missionsWon || 0)}</td><td></td>${
+        SHOWS[show.format]?.hasJury ? `<td>${t.juryVotes || 0}</td>` : ''}</tr>`;
     section('competition', 'Competition history', `
       <table class="wk-table wk-comp">
         <thead><tr>${head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead>
@@ -1381,7 +1470,7 @@ export const WIKI_CSS = `
 .wk-thin{ opacity:.65; font-style:italic; }
 /* A season of another show, inside the life timeline — the one line in there
    that is about the game rather than about the life around it. */
-.wk-life-show{ list-style:'B8  '; }
+.wk-life-show{ list-style:'\\25B8  '; }
 .wk-life-show a{ font-weight:700; }
 .wk-list{ margin:8px 0 0; padding-left:20px; }
 .wk-list li{ margin:5px 0; line-height:1.6; font-size:14.5px; }
@@ -1443,7 +1532,7 @@ export const WIKI_CSS = `
 .wk-iv-sum{ cursor:pointer; padding:11px 14px; font-weight:700; font-size:13.5px;
   font-style:italic; list-style:none; display:flex; gap:9px; align-items:center; }
 .wk-iv-sum::-webkit-details-marker{ display:none; }
-.wk-iv-sum::before{ content:'b8'; transition:transform .15s; opacity:.6;
+.wk-iv-sum::before{ content:'\\25b8'; transition:transform .15s; opacity:.6;
   font-style:normal; }
 .wk-iv[open] .wk-iv-sum::before{ transform:rotate(90deg); }
 .wk-iv-body{ margin:0; padding:0 16px 14px; }

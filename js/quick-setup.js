@@ -20,6 +20,7 @@
 
 import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
+import { SHOWS as SHOW_REGISTRY, showName, showIcon } from './shows.js';
 import { houseStructure } from './bb-run.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
@@ -48,6 +49,7 @@ export function blueprintFor(config = {}, castSize = 0) {
   const fmt = config.finaleFormat || 'traditional';
   const N = Number(castSize) || 0;
   const house = seasonFormat(config) === 'big-brother';
+  const castle = seasonFormat(config) === 'traitors';
   const segs = [];
 
   segs.push({
@@ -55,6 +57,28 @@ export function blueprintFor(config = {}, castSize = 0) {
     ok: N >= 4,
     why: N >= 4 ? undefined : `Cast at least 4 ${house ? 'houseguests' : 'players'}`,
   });
+
+  // A castle has no tribes, no merge and no jury. What it does have is a
+  // ratio: too few Traitors and one lucky banishment ends the season in
+  // episode four, too many and the Faithfuls cannot help but find one.
+  if (castle) {
+    const asked = Number(config.traitorCount) || 0;
+    const max = Math.max(2, Math.min(5, Math.round(N * 0.25)));
+    const countOk = asked >= 2 && asked <= max;
+    segs.push({ label: 'one castle', ok: true });
+    segs.push({
+      label: `${asked} traitor${asked === 1 ? '' : 's'}`,
+      ok: countOk,
+      why: countOk ? undefined : `A cast of ${N} supports 2 to ${max} traitors`,
+    });
+    const endOk = finaleSize >= 2 && finaleSize < N;
+    segs.push({
+      label: `endgame at ${finaleSize}`,
+      ok: endOk,
+      why: endOk ? undefined : `The endgame must start at 2+ and below ${N}`,
+    });
+    return segs;
+  }
 
   // A house has no tribes and no merge: everybody is in from day one.
   if (house) {
@@ -420,10 +444,21 @@ function _preset() {
 // flavour of rules *within* Total Drama, while this picks which game is being
 // played at all. Keeping them apart is what lets the franchise add Traitors,
 // Drag Race and the rest without the preset row becoming nonsense.
-const SHOWS = [
-  { id: 'total-drama', name: 'Total Drama', tag: 'Tribes, challenges, tribal council', icon: '🎬' },
-  { id: 'big-brother', name: 'Big Brother', tag: 'One house, HOH, veto, live eviction', icon: '🏠' },
-];
+// Derived from js/shows.js rather than listed here. This array WAS a ninth
+// hardcoded show list -- the eight the collapse removed, plus this one it
+// missed -- and it had already drifted: Big Brother's icon was a house here and
+// a camera in the registry, so the same show wore two faces on two screens and
+// nothing errored. Name and icon are identity and belong to the registry; `tag`
+// stays local because it is this picker's own sales copy, not a fact about the
+// show, and a fourth show added to the registry appears here without an edit.
+const SHOW_TAGS = {
+  'total-drama': 'Tribes, challenges, tribal council',
+  'big-brother': 'One house, HOH, veto, live eviction',
+  'traitors':    'A castle, a round table, a murder every night',
+};
+export const SHOWS = Object.keys(SHOW_REGISTRY).map(id => ({
+  id, name: showName(id), icon: showIcon(id), tag: SHOW_TAGS[id] || '',
+}));
 
 function _format() {
   const el = _g('cfg-format');
@@ -921,6 +956,16 @@ export const HOSTS_BY_FORMAT = {
     { value: 'Julie Chen Moonves', label: 'Julie Chen Moonves' },
     { value: 'Arisa Cox', label: 'Arisa Cox' },
   ],
+  'traitors': [
+    // Valeria is the default host and the show's voice: Julie Chen's studio
+    // authority with Blaineley's arch self-regard. Her portrait is
+    // assets/avatars/valeria.png, resolved the same way a player's is, so a
+    // screen never hardcodes a host name -- swapping the host must swap every
+    // line she speaks. See ADDING-A-SHOW.md §14.10 for the bug class.
+    { value: 'Valeria',  label: 'Valeria Sandoval' },
+    { value: 'Alistair', label: 'Alistair Crane' },
+    { value: 'Claudia',  label: 'Claudia Winterbourne' },
+  ],
 };
 
 export function hostOptionsForFormat(fmt) {
@@ -1003,7 +1048,7 @@ const CONFIG_SCOPE = {
     idol:       ['total-drama'],
     advantages: ['total-drama'],
     qem:        ['total-drama'],
-    popularity: ['total-drama', 'big-brother'],  // a house has an audience too
+    popularity: ['total-drama', 'big-brother', 'traitors'],  // a castle has an audience too
     survival:   ['total-drama'],
     mole:       ['total-drama'],
   },
@@ -1026,10 +1071,30 @@ const CONFIG_SCOPE = {
     'cfg-bb-departures':     ['big-brother'],
     'f-tribe':               ['total-drama'],  // a house has no tribes to join
     'cfg-finale':            ['total-drama'],  // a house always ends at three
+    // The castle's own controls: how many traitors, and the pot they are
+    // playing for. No other format's engine reads either.
+    //
+    // A THIRD ONE WAS SCOPED HERE AND HAS BEEN REMOVED. `cfg-tr-selection`
+    // ('random' | 'chosen') was named in this map before the control existed,
+    // and when Task 7 came to build it there was nothing on the engine side to
+    // wire it to: `selectTraitors` (js/tr/roles.js) picks NEAR-UNIFORMLY on
+    // purpose, and says why — weighting toward masterminds makes every season
+    // the same season, and the format's best outcomes include a terrible
+    // Traitor. A control that cannot change the answer is worse than no
+    // control, so the scope entry went rather than a dead select being drawn
+    // to satisfy it.
+    'cfg-tr-traitor-count':  ['traitors'],
+    'cfg-tr-pot':            ['traitors'],
+    // A castle has one venue and nothing in js/tr/ reads a setting -- the
+    // castle layer writes its own events and never asks where it is. Left
+    // visible, the picker offered a summer camp and a world tour for a
+    // castle and wrote 'hosted-camp' onto the season, which the Season Hub
+    // then printed across the top of it.
+    'cfg-setting':           ['total-drama', 'big-brother'],
   },
   sections: {
     'sec-season-options':     ['total-drama'],
-    'sec-settings-mechanics': ['total-drama', 'big-brother'],  // popularity lives here
+    'sec-settings-mechanics': ['total-drama', 'big-brother', 'traitors'],  // popularity lives here
     'sec-bb-options':         ['big-brother'],
     'sec-bb-divider':         ['big-brother'],
     // The container, not just its heading. The fixed-rule lines inside it are
@@ -1039,6 +1104,9 @@ const CONFIG_SCOPE = {
     'sec-tribes':             ['total-drama'],
     'sec-formats-twists':          ['total-drama'],
     'sec-formats-twists-divider':  ['total-drama'],
+    // The castle's traitor-count/selection/pot controls and their heading.
+    'sec-tr-options':        ['traitors'],
+    'sec-tr-divider':        ['traitors'],
   },
 };
 

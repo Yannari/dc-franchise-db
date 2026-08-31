@@ -78,6 +78,38 @@ describe('Season Hub view model', () => {
     expect(aftermath.why).toContain('deadlocked');
   });
 
+  it('describes both castle exits without Total Drama ballot language', () => {
+    const aftermath = buildHubAftermath({
+      num: 5, format: 'traitors',
+      exits: [
+        { name: 'Julia', channel: 'banishment', verb: 'banished' },
+        { name: 'MK', channel: 'murder', verb: 'murdered' },
+      ],
+      eliminated: 'Julia', votes: { Julia: 6, Bowie: 2 },
+    });
+    expect(aftermath.why).toContain('Julia was banished');
+    expect(aftermath.why).toContain('MK was murdered');
+    expect(aftermath.why).not.toMatch(/highest valid total|standard elimination vote/i);
+  });
+
+  it('does not advertise a nonexistent twist catalogue over a castle', () => {
+    const model = buildSeasonHubModel(state(), { ...config, format: 'traitors', twistSchedule: [] }, cast);
+    expect(model.twistLabel).toBe('The castle continues — no scheduled twist');
+  });
+
+  it('gives the Hub a castle-specific latest outcome instead of saying everyone left the game', () => {
+    const latest = {
+      num: 5, format: 'traitors', eliminated: 'Julia',
+      exits: [
+        { name: 'Julia', channel: 'banishment', verb: 'banished' },
+        { name: 'MK', channel: 'murder', verb: 'murdered' },
+      ],
+    };
+    const model = buildSeasonHubModel(state({ episode: 5, activePlayers: ['Bowie', 'Priya'],
+      episodeHistory: [latest] }), { ...config, format: 'traitors', twistSchedule: [] }, cast);
+    expect(model.latestOutcome).toBe('Julia was banished · MK was murdered');
+  });
+
   it('builds objective midseason totals while keeping power ranking interpretive', () => {
     const overview = buildSeasonOverviewModel({
       episode: 2,

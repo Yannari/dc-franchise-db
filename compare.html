@@ -836,7 +836,9 @@ function scopedStats(player) {
   };
 }
 
-const CMP_SHOW_LABEL = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
+/* The registry the module block above hands this script, rather than a second
+   copy of the show list that would name a new show by its slug. */
+const cmpShowLabel = s => window.showSwitcher?.SHOWS?.[s]?.name || s;
 
 function renderStatsTable(playersIn) {
   const show = window.showSwitcher?.currentShow?.() || 'all';
@@ -851,7 +853,7 @@ function renderStatsTable(playersIn) {
     document.getElementById('statsTable').innerHTML =
       '<tbody><tr><td style="opacity:.7;padding:22px 2px">'
       + missing.join(' and ') + ' never played '
-      + (CMP_SHOW_LABEL[show] || show)
+      + cmpShowLabel(show)
       + ', so there is nothing to compare. Switch shows, or pick somebody who did.'
       + '</td></tr></tbody>';
     return;
@@ -937,7 +939,7 @@ function renderStatsTable(playersIn) {
       + 'Career totals across every show. Pick a show above to compare within one.</td></tr>'
     : '<tr><td class="stat-label-col" colspan="' + (n + 1) + '" '
       + 'style="opacity:.55;font-size:12px;padding-top:10px">'
-      + (CMP_SHOW_LABEL[show] || show) + ' only.</td></tr>';
+      + cmpShowLabel(show) + ' only.</td></tr>';
 
   document.getElementById('statsTable').innerHTML =
     `<thead><tr>${headerCols}</tr></thead><tbody>${rows}${note}</tbody>`;

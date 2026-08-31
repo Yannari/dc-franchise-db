@@ -766,10 +766,17 @@ export const drinkOrBluff = {
     }
 
     participants.forEach(name => {
+      // Slop costs concentration at the table just as it costs stamina in the
+      // yard. Apply it before placements so the narration and winner agree
+      // with the finished board, and report it with every other competition's
+      // shared debug contract.
+      const haveNot = (context.haveNots || []).includes(name);
+      const haveNotPenalty = haveNot ? round2(0.5 + rng() * 0.5) : 0;
+      score[name] = round2(score[name] - haveNotPenalty);
       breakdown[name] = {
         points: score[name], falselyAccused: falselyAccused[name] || 0,
         bluffsHeld: played.filter(r => r.poisoned === name && r.held).length,
-        score: round2(score[name]), threw: false,
+        haveNot, haveNotPenalty, score: round2(score[name]), threw: false,
       };
     });
 

@@ -23,10 +23,17 @@ import { approvedFor, lineFor as lifeLine, kindOf } from './life-events.js';
 import { airLabel, ageNow } from './franchise-calendar.js';
 
 import { parseBio, joinOrigin } from './bio.js';
+import { seasonWinners } from './records.js';
 
-const DEFAULT_FORMAT = 'total-drama';
-const SHOW_NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
-const showName = f => SHOW_NAMES[f] || f;
+/** The singular `winner{}` block, but only when it is about this player. */
+function _winnerBlockFor(doc, name) {
+  const w = doc?.winner;
+  return w && w.name === name ? w : null;
+}
+// The registry is the only list of shows. This file kept its own, so a show
+// registered anywhere else headed its section with a raw slug.
+import { SHOWS, DEFAULT_FORMAT, showName, roundExits } from './shows.js';
+
 const fmtOf = d => d?.format || DEFAULT_FORMAT;
 
 /**
@@ -193,7 +200,7 @@ function _withLoyalties(career, relationships) {
     for (const s of show.seasons) {
       s.loyalties = bonds
         .filter(b => (b.seasons || []).some(x =>
-          Number(x.season) === Number(s.season) && (x.format || 'total-drama') === show.format))
+          Number(x.season) === Number(s.season) && (x.format || DEFAULT_FORMAT) === show.format))
         .map(b => b.name);
     }
   }
@@ -339,20 +346,47 @@ function _weekRowsFromDoc(found, name) {
   if (!rounds.length) return null;
 
   const rows = [];
+  const format = fmtOf(found.doc);
   let gone = false;
   for (const r of rounds) {
     if (gone) break;
     const ballots = Array.isArray(r.votes) ? r.votes : [];
-    const mine = ballots.find(v => v.voter === name);
-    const against = ballots.filter(v => v.target === name).length;
-    const out = r.eliminated === name;
+    /* ── THE VOTE THE GRID IS ABOUT IS THE PUBLIC ONE ──────────────────
+       A show with a second, private ballot puts both on `votes[]`,
+       distinguished only by `channel`. `find` took whichever came first, so a
+       Traitor's grid could report the name they whispered at the conclave as
+       the name they said out loud at the table — two different statements,
+       one of which they never made in the room. The public ballot is what the
+       column has always meant. A one-door show has no `channel` at all and
+       every ballot passes. */
+    const isPublic = v => !v.channel || v.channel !== 'murder';
+    const mine = ballots.filter(isPublic).find(v => v.voter === name);
+    const against = ballots.filter(v => isPublic(v) && v.target === name).length;
+    /* ── EVERY DOOR OUT, NOT JUST THE VOTE ─────────────────────────────
+       `r.eliminated` is the BANISHMENT and only the banishment — export.js
+       says so in its own comment. Reading it as "who left" gave every
+       murdered player `evicted: false` on every round of the season, so they
+       never left the grid and their article read "3 episodes played · never
+       had a vote cast against them". `roundExits` asks the round which doors
+       it has. */
+    const exits = roundExits(r, format);
+    const mineOut = exits.find(x => x.name === name) || null;
+    const out = !!mineOut;
     rows.push({
       week: Number(r.episode),
       evicted: out,
+      // The word for the door THIS player left by, so the cell can say
+      // "Murdered" where the round murdered them and "Banished" where it
+      // banished them. One `exitWord` per season is how a murder came to be
+      // labelled with the vote's verb.
+      exitVerb: mineOut?.verb || '',
+      exitChannel: mineOut?.channel || '',
       votesAgainst: against,
       votedFor: mine?.target || '',
       votedForSlug: mine?.targetSlug || _slug(mine?.target),
-      evictedName: r.eliminated || '',
+      // Who left this round, all of them — a night can take two people.
+      evictedName: exits.map(x => x.name).join(', '),
+      exits: exits.map(x => ({ name: x.name, verb: x.verb, channel: x.channel })),
     });
     if (out) gone = true;
   }
@@ -431,6 +465,11 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [], se
         votesReceived: d.votesReceived || 0,
         juryVotes: d.juryVotes || 0,
         ...(d.bb ? { bb: { ...d.bb } } : {}),
+        // The castle's numbers, the same way the house's arrive. Without
+        // this a Traitors lead read "without winning a challenge" about
+        // somebody who won four missions: the word was wrong AND the count
+        // was never carried.
+        ...(d.tr ? { tr: { ...d.tr } } : {}),
       },
       // The per-week row, when the season document was reachable. Absent is a
       // normal state — a season nobody has published yet still gets an
@@ -452,8 +491,22 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [], se
       // "in a close final vote, he emerged victorious with a 4 to 3 decision"
       // — which needs the tally and the person they beat. Both are on the
       // season document's winner block and neither was carried through.
-      finalVote: rowFor(d)?.doc?.winner?.vote || '',
-      runnerUp: rowFor(d)?.doc?.winner?.runnerUp || '',
+      // HOW MANY PEOPLE WON THIS SEASON. Not a Traitors-only question: season 8
+      // ended with two champions, and the lead called each of them "the winner",
+      // which is a sentence about the other one. The lead needs the count to
+      // write "a co-winner of" instead, and the count is only on the document.
+      // ── AND A COUNT NOBODY COULD READ IS NOT A ONE ────────────────
+      // This is `.length` of a lookup that returns nothing when the season
+      // DOCUMENT is not loaded — and player.html paints once deliberately
+      // before the documents arrive, so on that first paint every champion of
+      // a shared season was called "the winner of" it and then corrected a
+      // moment later. Null means UNKNOWN, and the lead has a sentence that is
+      // true either way for it.
+      coWinners: rowFor(d)?.doc ? seasonWinners(rowFor(d).doc).length : null,
+      // ...and the tally is only theirs if the winner block is about THEM. The
+      // block names one person; on season 8 it names one of two.
+      finalVote: _winnerBlockFor(rowFor(d)?.doc, player.name)?.vote || '',
+      runnerUp: _winnerBlockFor(rowFor(d)?.doc, player.name)?.runnerUp || '',
       showmance: rowFor(d)?.row?.showmance || d.showmance || '',
       // WHO THEY PLAYED WITH, which the infobox lists per season and the
       // measured lead names. The season document is preferred for the same
@@ -485,12 +538,17 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [], se
     // Career totals for the infobox, summed from the same rows the table draws
     // so the two can never disagree.
     const sum = pick => entry.seasons.reduce((n, s) => n + (pick(s.record || {}) || 0), 0);
+    /* WHICH NUMBERS A CAREER TOTALS UP is the show's own question. This was a
+       fixed map of two shows' keys, so a third show's career totalled nothing
+       it had actually done. The paths come off the registry's `articleStats`;
+       each total is keyed by the LAST segment, which is what the article
+       already reads (`t.hohWins`, `t.challengeWins`). */
+    const at = (o, path) => String(path).split('.').reduce((x, k) => (x == null ? x : x[k]), o);
+    const spec = SHOWS[entry.format]?.articleStats?.season
+      || SHOWS[DEFAULT_FORMAT].articleStats.season;
     entry.totals = {
-      challengeWins: sum(r => r.challengeWins),
-      hohWins: sum(r => r.bb?.hohWins),
-      vetoWins: sum(r => r.bb?.vetoWins),
-      blockBusterWins: sum(r => r.bb?.blockBusterWins),
-      timesNominated: sum(r => r.bb?.timesNominated),
+      ...Object.fromEntries(spec.map(([path]) =>
+        [path.split('.').pop(), sum(r => at(r, path))])),
       juryVotes: sum(r => r.juryVotes),
       // A best, not a sum — a run does not carry across seasons.
       bestBlockBusterStreak: entry.seasons.reduce(

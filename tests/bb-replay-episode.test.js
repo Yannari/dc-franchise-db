@@ -16,7 +16,7 @@ import { gs as gsRef, players, seasonConfig, relationships, TWIST_CATALOG,
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, isBigBrotherSeason } from '../js/bb-run.js';
-import { replayEpisode, _saveBBCheckpoint } from '../js/run-ui.js';
+import { replayEpisode, _saveBBCheckpoint, _saveEpisodeCheckpoint } from '../js/run-ui.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -26,6 +26,10 @@ const CAST = NAMES.map((name, i) => ({
   name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight',
   archetype: ['mastermind', 'social-butterfly', 'hero', 'showmancer'][i % 4],
 }));
+
+it('keeps the old Big Brother checkpoint export as a compatibility alias', () => {
+  expect(_saveBBCheckpoint).toBe(_saveEpisodeCheckpoint);
+});
 
 function house() {
   for (const k of STUBBED) {

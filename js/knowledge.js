@@ -24,9 +24,35 @@ function clamp01(v) { return Math.max(0, Math.min(1, v)); }
 export function factId(type, subject, object) { return object !== null && object !== undefined ? `${type}:${subject}:${object}` : `${type}:${subject}`; }
 
 // how many episodes a fact stays "current" before beliefs go stale
-const VALIDITY = { target: 1, pitch: 2, 'bond-read': 4, idol: 99, advantage: 99, alliance: 99, betrayal: 99, throw: 99 };
+const VALIDITY = {
+  target: 1, pitch: 2, 'bond-read': 4, idol: 99, advantage: 99, alliance: 99, betrayal: 99, throw: 99,
+  // Alignment never goes stale. A vote or a pitch describes one round and
+  // rightly fades; who somebody IS does not, and a read formed in episode two
+  // is still evidence in episode nine. This is the only fact type whose ground
+  // truth can CHANGE mid-season (recruitment), which eras handle in tr/roles.js
+  // rather than by expiring the fact.
+  alignment: 99,
+};
 // base credibility by how the belief arrived
 const SOURCE_CRED = { public: 1.0, observed: 0.9, told: 0.7, deduced: 0.62, rumor: 0.45 };
+// The one fact type nobody in a Traitors castle can ever witness. Every tier
+// table in this file can be sidestepped by passing an explicit `confidence`,
+// which is correct for a pitch or a bond-read where the caller knows how loud
+// the evidence was — and fatal for alignment, where an inference must never be
+// allowed to out-rank the `deduced` tier. Today the largest override any caller
+// passes is 0.544 and the ceiling holds by arithmetic across four call sites;
+// this makes it hold by rule, so a fifth caller writing
+// `{ sourceType: 'deduced', confidence: 0.95 }` cannot hand a Faithful
+// certainty about who somebody IS. Certainty is reserved for the two places
+// that pass no confidence at all: the turret, and the reveal.
+// EXPORTED because js/tr/deduction.js prices its murder channel AT this
+// ceiling and used to say so with a hand-copied `0.62` and a comment reading
+// "if that ceiling ever moves, this channel is silently repriced" — which is
+// a defect written down rather than fixed (whole-plan review, finding 10).
+// Nothing outside this module may WRITE it; importing it is how a caller
+// says "the most an inference is ever worth", in the one place that decides
+// what that is.
+export const ALIGNMENT_CRED_CEILING = SOURCE_CRED.deduced;   // 0.62
 
 // ── ground-truth facts ────────────────────────────────────────────────
 export function recordFact({ type, subject, object = null, payload = null, truth = true, ep = null } = {}) {
@@ -84,12 +110,40 @@ function _assess(knower, cred, truth, rng) {
 export function learn(knower, id, { source = 'observation', sourceType = 'observed', confidence = null, ep = null, from = null, rng = Math.random } = {}) {
   const fact = store()[id];
   if (!fact || !knower) return null;
-  const cred = confidence != null ? clamp01(confidence) : (SOURCE_CRED[sourceType] ?? 0.5);
+  let cred = confidence != null ? clamp01(confidence) : (SOURCE_CRED[sourceType] ?? 0.5);
+  // THE ALIGNMENT CEILING IS STRUCTURAL, NOT CONVENTIONAL.
+  //
+  // The clamp used to be conditional on `confidence != null`, which held only
+  // because every alignment caller that wanted to beat the ceiling happened to
+  // pass one. A caller writing `{ sourceType: 'told' }` with NO confidence
+  // would have been handed SOURCE_CRED.told = 0.70, over the 0.62 ceiling, and
+  // nothing here would have stopped it — the same hole a second time, in the
+  // shape the guard did not cover. There is no such caller today; the point is
+  // that there cannot be one tomorrow either. The exemption is by sourceType,
+  // named explicitly, and it is the one the docstring above already sanctions:
+  // `public` — the turret and the reveal, where people are looking at each
+  // other rather than inferring.
+  if (fact.type === 'alignment' && sourceType !== 'public') cred = Math.min(cred, ALIGNMENT_CRED_CEILING);
   // Witnessing an action or hearing a public announcement is knowledge, not a
   // persuasion roll. Interpretation may later be wrong; occurrence is known.
   const direct = sourceType === 'public' || sourceType === 'observed';
+  // The same rule, applied to the floor the direct branch installs: `observed`
+  // would otherwise force 0.9 onto an alignment and walk straight over the
+  // ceiling without ever touching `cred`.
+  //
+  // EXACTLY ONE CALLER OBSERVES AN ALIGNMENT and there may never be a second:
+  // the Seer (js/tr/deduction.js `seerEvidence`, spec 7.3), once per game, in
+  // the endgame, to one person about one person. It lands HERE, at the ceiling
+  // — the same number the sharpest deduction in the game writes — because what
+  // `observed` buys it is not confidence but the `direct` branch above:
+  // unconditional acceptance and a valence taken from ground truth instead of
+  // from an intuition roll. That is the entire difference, and it is what stops
+  // the one certain thing in the format from being louder than a suspicion when
+  // it is repeated. Inert for every other fact type.
+  const directFloor = sourceType === 'public' ? 1
+    : (fact.type === 'alignment' ? ALIGNMENT_CRED_CEILING : 0.9);
   const res = direct
-    ? { accept: true, confidence: Math.max(cred, sourceType === 'public' ? 1 : 0.9), valence: fact.truth ? 'accurate' : 'false' }
+    ? { accept: true, confidence: Math.max(cred, directFloor), valence: fact.truth ? 'accurate' : 'false' }
     : _assess(knower, cred, fact.truth, rng);
   if (!res.accept) return null;
 
@@ -146,6 +200,14 @@ export function whoKnows(id, ep = null) {
 // a planted lie counts as accurate.
 export function isAccurate(knower, id, ep = null) {
   const fact = store()[id]; if (!fact) return null;
+  // Alignment facts are mutated in place by recordFact/recordAlignment on a
+  // recruitment flip (`existing.truth = truth`), so `fact.truth` here is the
+  // CURRENT truth, not the truth as of `ep`. Scoring a pre-flip belief against
+  // it would retroactively brand a correct episode-3 read as wrong the moment
+  // somebody is recruited in episode 8 — exactly the mistake the era model
+  // (tr/roles.js: alignmentAt / truthAtLearn) exists to prevent. Route any
+  // alignment accuracy check through truthAtLearn(name, learnedEp) instead.
+  if (fact.type === 'alignment') return null;
   const b = believes(knower, id, ep); if (!b) return null;
   if (fact.truth === false) return b.valence === 'false';
   return (b.valence === 'accurate') && b.effectiveConfidence >= 0.4;
@@ -189,6 +251,16 @@ export function propagate(ep = null, { contacts = defaultContacts, rng = Math.ra
   for (const id of Object.keys(s)) {
     const fact = s[id];
     if (_isStale(fact, e)) continue;   // nobody bothers passing around old news
+    // Alignment never goes through generic gossip. propagate()'s hop formula
+    // (effectiveConfidence * 0.85 * trustMultiplier) does not pass through
+    // SOURCE_CRED at all — it hands learn() an explicit confidence override.
+    // A Traitor's `public` (~1.0) belief about their ally would survive one
+    // high-trust hop at up to ~0.9, laundering a Traitor's certainty straight
+    // into a Faithful's head and blowing through the 0.62/0.45 ceiling that
+    // is the entire point of the alignment fact type. An accusation is a
+    // deliberate public act (broadcast(), a later task), not a random hop
+    // between two people who happened to talk.
+    if (fact.type === 'alignment') continue;
     // Vote-round facts about someone already voted out are dead news: a target
     // fact stays time-valid into the next episode, but nobody "quietly brings
     // Zaid's name" to camp after Zaid's torch is snuffed. (Permanent facts —

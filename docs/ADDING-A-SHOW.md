@@ -15,7 +15,7 @@ what the command prints, the command is right and this file is stale — fix the
 file in the same commit as whatever moved.
 
 **The one-line summary:** the registry in `js/shows.js` is the source of truth,
-23 modules already read it and need nothing from you, and everything
+35 modules already read it and need nothing from you, and everything
 that still holds its own copy of the show list is listed in §9. Adding a show is
 a registry entry plus an engine; the work in between is making sure no screen
 falls back to the default show's vocabulary.
@@ -45,15 +45,20 @@ Write both answers down. §6 is a checklist against them.
 ## 1. The registry — `js/shows.js`
 
 One entry. This is the only file that knows slugs, prefixes, display names and
-vocabulary. Twenty-three non-test files import it today:
+vocabulary. **Thirty-five** non-test files import it today, up from the
+twenty-three this document was written against — the growth is the identity
+collapse in §9 landing, and it is the number moving in the right direction:
 
 `awards.html`, `compare.html`, `current-season.html`, `devotees.html`,
-`franchise.html`, `js/core.js`, `js/episode-store.js`, `js/fame.js`,
-`js/show-switcher.js`, `js/site-header.js`, `js/social-page.js`,
-`js/social/adapter.js`, `js/stats-export.js`, `js/wiki-fill-run.js`,
-`js/wiki-view.js`, `leaderboards.html`, `rankings.html`,
-`season-awards_ref.html`, `season_ref.html`, `seasons.html`, `timeline.html`,
-`worker/worker-studio.js`.
+`franchise.html`, `js/alumni.js`, `js/core.js`, `js/episode-store.js`,
+`js/episode.js`, `js/fame.js`, `js/finale.js`, `js/franchise-meta.js`,
+`js/franchise-ui.js`, `js/kristal.js`, `js/quick-setup.js`,
+`js/ranking-boards.js`, `js/rankings-update.js`, `js/ratings-backfill.js`,
+`js/ratings.js`, `js/show-switcher.js`, `js/site-header.js`,
+`js/social-page.js`, `js/social/adapter.js`, `js/stats-export.js`,
+`js/wiki-fill-run.js`, `js/wiki-view.js`, `js/wiki.js`, `leaderboards.html`,
+`player.html`, `rankings.html`, `season-awards_ref.html`, `season_ref.html`,
+`seasons.html`, `timeline.html`, `worker/worker-studio.js`.
 
 Every one of those needs **nothing** from you beyond the entry.
 
@@ -214,7 +219,15 @@ bearing — fourteen seasons of existing twists have no `format` field.
 
 `js/stats-export.js`. Total Drama and Big Brother have separate document
 builders (`exportAndFillNarratives`, `buildBigBrotherSeasonDocument`), and
-`exportSeason()` picks one on format. Yours joins that switch.
+`exportSeason()` picks one on format. Yours REGISTERS one:
+`registerSeasonExporter('your-slug', build)`, and `seasonExporterFor(format)`
+looks it up. This used to be a single equality against the Big Brother slug, so
+every other show — a third one included — was exported by Total Drama's
+pipeline with no error and no empty result, just a season document in the wrong
+show's shape. A show with no builder registered still falls back to the default
+show, which is the bare-integer rule; register a builder that REFUSES if your
+show cannot be exported yet, because being told nothing is recoverable and
+being told the wrong show is not.
 
 The season document must carry, whatever the show:
 
@@ -232,6 +245,21 @@ ballots, evicted, haveNots). Nothing generic exists. `roundLedger()` in
 `js/wiki-fill.js` normalises both, and the season page's Wiki tab normalises
 both again. **Reuse one of the two shapes if you possibly can** — a third shape
 means editing both of those normalisers plus the voting grid.
+
+The Traitors is the worked example of reusing one. It has TWO votes a round —
+the public banishment everybody casts and the private murder only the Traitors
+cast — and it still exports ONE `votingHistory[]` row per round, with every
+ballot carrying a `channel` (`banishment`, `banishment-revote`, `murder`). A
+reader that wants the public vote filters the channel; a reader that has never
+heard of channels sees a votingHistory row. See `js/tr/export.js`.
+
+It is also the show that broke the one-exit-verb assumption: it BANISHES at the
+table and MURDERS at night. A row may therefore carry `exits[]`, each entry
+naming who left and the verb the REGISTRY gave that channel (`exitVerbs()` in
+`js/shows.js`), and `roundLedger()` renders that list when it is there. If your
+show has more than one way of removing somebody, declare the second verb in the
+registry and put the departures on `exits[]` — do not let one of them be
+printed in the other's words.
 
 Publishing goes through `POST /api/publish-season` on the studio worker, which
 validates the format against the registry and refuses one it does not know. That
@@ -251,7 +279,7 @@ because none of these files look show-specific from the outside.
 | Season page — Wiki tab | `season_ref.html` | Twists, memory wall, voting grid, competition history, game history, trivia. **All six branch on whether the season has `weeks`.** |
 | Character article | `js/wiki-view.js` | `SHOW_META` (name, short, emoji, accent), the infobox's per-season block, the round grid's cell rules |
 | Career/dossier | `js/wiki.js` | `SHOW_NAMES`, `_weekRowsFromDoc` (the round grid builder — it has a branch per round shape) |
-| Social feed | `js/social/adapter.js` | one `SHOW_WORDS` entry; **components never branch, so this is the only file** |
+| Social feed | `js/social/adapter.js` | one `SHOW_WORDS` entry — including `nominationLabel` and `polls`, which the labels and the poll list are built from; **components never branch, so this is the only file** |
 | Player profile | `player.html` | four separate name/icon maps (see §9) |
 | Run tab / timeline | `js/run-ui.js` | badges, the hub, the episode list |
 | Viewing party | `js/vp-screens.js` | screens filter `episodeHistory` on `format` |
@@ -331,7 +359,33 @@ stops a two-round cameo topping the board on one good moment, and
 
 The only part that is yours is the NAME: `words.audienceAward` in the registry
 entry ("Fan Favorite", "America's Favourite Houseguest"). If your show has no
-such award, leave it out and call nothing.
+such award, leave it out and call nothing. The Traitors does exactly that.
+
+**Your show has to WRITE `episodeHistory`, or none of the above works.** That is
+the one thing `js/audience.js` needs from a format and the one thing a headless
+season loop is most likely not to have: with no history, `roundsPresent` falls
+back to the whole season for everybody and `audienceStanding` degrades into the
+accrued total divided by a constant — the −0.952 bug restored under a new name,
+passing every test you have. Write one row per round: `{ num, eliminated, exits }`.
+
+**If your show has more than one way out, the second one goes on `exits[]`.**
+`eliminated` is the VOTE — every existing reader of that field means the vote —
+so The Traitors puts the banished there and the murdered on `exits`, which is
+the §5 round shape anyway. Get this wrong and half your cast is credited with a
+full season they did not play.
+
+**If your audience knows something the cast does not, popularity has to say so.**
+The Traitors' viewers have known who is in a cloak since night one, so a Traitor
+playing brilliantly is *entertaining* and not *admirable*, and paying both into
+one column turns `gs.popularity` into a competence score for whichever villain
+the crowd enjoyed most. `js/tr/crowd.js` is the worked example: one colour table
+with an `affection` number and a `spectacle` number, affection into
+`gs.popularity` and spectacle into a second ledger, and positive affection damped
+for anybody the audience knows is lying. Measured, a Faithful's heroism pays 27x
+what a Traitor's best move does in affection, and about a quarter of it in
+spectacle. **And nothing in the engine may read either ledger back** — they are
+written from ground truth, so a read is alignment reaching the cast through a
+side door.
 
 The board is the same trap one level up. A ranking is a position on a board and
 a board ranks ONE show, because the scores are not comparable across shows —
@@ -350,35 +404,84 @@ skips a 404 so a new show does not break the pages before it has been ranked.
 
 ## 9. The duplication you will hit
 
-These files each hold their own copy of the show list. Every one of them is a
-place a third show can be forgotten, and none of them will error — they will
-just describe your show as Total Drama.
+**The eight identity maps in this table are gone.** They were collapsed into
+`js/shows.js` on the Traitors branch (2026-08-25), which is why §1 now counts
+thirty-five importers instead of twenty-three. The table is kept because the
+identifiers are still the fastest way to understand what was there, and because
+the row that says "leave it" is the one worth reading before you delete
+anything: not every per-format map is a duplicate.
 
-| File | Identifier | Kind |
-|---|---|---|
-| `player.html` | `SHOW_PREFIX` (~681), `NAMES` (~792), `ICONS` (~793), `SHOW_NAMES` (~909, ~918), and a literal `['total-drama', 'big-brother']` (~727) | identity |
-| `js/wiki.js` | `SHOW_NAMES` (~25) | identity |
-| `js/wiki-view.js` | `SHOW_META` — name, short, emoji, accent (~28) | identity + styling |
-| `season_ref.html` | `SHOW_NAMES` (~320) | identity |
-| `current-season.html` | `CS_SHOWS` prefix map (~870) | identity |
-| `compare.html` | `CMP_SHOW_LABEL` (~832) | identity |
-| `franchise.html` | `SHOW_LABEL` (~705) | identity |
-| `js/alumni.js` | `_SHOW_NAMES` (~106) | identity |
-| `js/social/adapter.js` | `SHOW_WORDS` (~40) | **vocabulary — leave it** |
-| `worker/worker-season-live.js` | `SHOW_WORDS` fallback (~716) | **vocabulary — leave it** |
-| `js/settings.js` | venue list per format (~26) | data, per show |
-| `js/rankings-update.js` | per-format ranking config (~360) | data, per show |
-| `js/quick-setup.js` | `CONFIG_SCOPE` + the show picker | data, per show |
+| File | Identifier | Kind | Status |
+|---|---|---|---|
+| `player.html` | `SHOW_PREFIX`, `NAMES`, `ICONS`, `SHOW_NAMES`, and a literal `['total-drama', 'big-brother']` | identity | **collapsed** |
+| `js/wiki.js` | `SHOW_NAMES` | identity | **collapsed** |
+| `js/wiki-view.js` | `SHOW_META` — name, short, emoji, accent | identity + styling | **collapsed** |
+| `season_ref.html` | `SHOW_NAMES` | identity | **collapsed** |
+| `current-season.html` | `CS_SHOWS` prefix map | identity | **collapsed** (reads `window.__SHOWS`) |
+| `compare.html` | `CMP_SHOW_LABEL` | identity | **collapsed** |
+| `franchise.html` | `SHOW_LABEL` | identity | **collapsed** |
+| `js/alumni.js` | `_SHOW_NAMES` | identity | **collapsed** |
+| `js/social/adapter.js` | `SHOW_WORDS` (~40) | **vocabulary — leave it** | stands |
+| `js/social/adapter.js` | three labels in `eventLabel()` + the in-season poll list | identity leak | **collapsed** (2026-08-27) |
+| `worker/worker-season-live.js` | `SHOW_WORDS` fallback (~716) | **vocabulary — leave it** | stands |
+| `js/settings.js` | venue list per format | data, per show | stands |
+| `js/rankings-update.js` | per-format ranking config | data, per show | stands |
+| `js/quick-setup.js` | `CONFIG_SCOPE` | data, per show | stands |
+| `js/quick-setup.js` | the show picker cards | identity | **collapsed** (2026-08-25) |
+| `js/player-trivia.js` | per-format trivia | data, per show | stands, never in this table |
+| `js/ranking-boards.js` | format → board file | data, per show | stands, never in this table |
+| `js/social-page.js` | `?show=` slug/prefix resolver (~95) | identity | **collapsed** (2026-08-27) |
+| `tools/backfill-tiers.mjs` | `BOARD_FILES` copy | identity | **collapsed** (2026-08-27) |
+| `tools/regen-rankings-reasoning.mjs` | `SHOW_NAMES` + label + fallback shape | identity | **collapsed** (2026-08-27) |
 
-Eight of those are pure identity — a name, an icon, a prefix — and belong in the
-registry. The rest are per-show DATA and are right where they are: a show's
-venues, its ranking weights, its vocabulary and its config scope are not
-identity and do not collapse.
+**There is a guard now: `tests/show-list-duplication.test.js`.** It states the
+rule over every `.js`/`.mjs`/`.html` file in the tree rather than listing the
+files above, so a NEW copy fails on the day it is written. The known-good
+per-show DATA maps are named in it as exemptions with their reason, and the
+nineteen surviving two-show ternaries are a ratchet: a file may lose one, never
+gain one. That is the file to change when you find a shape neither grep catches
+— add the shape, not the file.
 
-**Recommended before you start:** collapse the eight identity maps into
-`js/shows.js` and import them. Roughly an hour, mechanical, and it converts
-eight chances to forget your show into zero. Keep the vocabulary and per-show
-data maps where they are.
+Three things that table did not say when it was written, and all of them cost
+time:
+
+**The collapse missed a ninth list.** `js/quick-setup.js`'s show picker held
+`{ id, name, tag, icon }` per show and was not in the table, so nobody looked at
+it — and it had already drifted: Big Brother's icon was 🏠 there and 📹 in the
+registry, so the same show wore two faces on two screens and nothing errored.
+That is the whole failure mode in one line. It now derives `name` and `icon`
+from the registry; `tag` stays local because a picker's sales copy is not
+identity. Anything you find that is not in the table above is another one:
+re-derive with §13 rather than trusting this list.
+
+**`js/social/adapter.js` is BOTH.** `SHOW_WORDS` is genuine per-show vocabulary
+and must stay. `eventLabel()` and `pollQuestions()` were the other half: three
+labels and the whole in-season poll list were decided by which of two shows was
+in hand, so a third show was told it had a "Challenge win" and an "Elimination"
+by fallthrough and its audience was asked who wins the next challenge and who
+makes the merge — identity smuggled in as a ternary. **Fixed 2026-08-27**: the
+labels are built from the show's own `challenge`/`elimination` words plus a
+`nominationLabel` field, and the questions are a `polls` array on the entry, so
+a fourth show declares both and there is nothing to extend. The reason it
+survived every audit before that is in §13: the duplicate-hunting grep matches
+map shapes only, and a ternary has no braces in it. Note when you write the
+replacement comment: **do not quote the ternary you removed.** The guard counts
+that shape by matching source text, so a comment quoting it keeps the count
+where it was and the ratchet never tightens.
+
+**Both greps in §13 had blind spots that hid three more copies, and the guard
+found all three.** They passed `--include=*.js --include=*.html`, so nothing
+under `tools/` with an `.mjs` extension was ever searched — which is how
+`tools/regen-rankings-reasoning.mjs` kept a `SHOW_NAMES` map, an
+`startsWith('bb-')` format guess, an `S`-or-`BB` season label and an `/^(?:S|BB)/`
+fallback shape, four show lists in five lines, in the file that writes the prose
+the public ranking board displays. And the ternary grep is line-based, so the
+six two-show ternaries written across two lines were invisible to it —
+including `js/stats-export.js:2874`, which dispatches the ENTIRE season export
+on `=== 'big-brother'`, and `js/social/live.js:30`, which picks which round
+array to read the same way. Both send a third show down Total Drama's branch.
+The `.mjs` copies are collapsed; the six ternaries are recorded in the guard's
+backlog and still stand.
 
 ---
 
@@ -387,9 +490,10 @@ data maps where they are.
 Each step leaves the site working.
 
 1. **Registry entry** (§1). Nothing uses it yet; the switcher already lists it.
-2. **Collapse the identity duplicates** (§9) while the new show is still a
-   registry entry with no data — the diff is small and the failure mode is
-   obvious.
+2. **Collapse any identity duplicate you find** (§9) while the new show is
+   still a registry entry with no data — the diff is small and the failure mode
+   is obvious. The eight in the table are already done; run §13's two greps to
+   find the ones that appeared since.
 3. **Setup scope map** (§3), so the show can be configured but not run.
 4. **Engine** (§2) behind the runnable flag, dispatched in both places.
 5. **Export** (§5) — reuse `weeks` or `votingHistory` if the format allows.
@@ -408,6 +512,11 @@ The existing ones that will already catch you:
 - `tests/format-scoped-config.test.js` — a control is shown only where the
   engine reads it
 - `tests/show-switcher.test.js` — the switcher holds no show list
+- `tests/show-list-duplication.test.js` — **NO file holds a show list**, stated
+  as a rule over the whole tree rather than a list of the known offenders (§9),
+  because a list-shaped version of this guard would have passed the day the
+  ninth copy appeared, and it did appear. Per-show DATA maps are exemptions
+  carrying their reason; the surviving two-show ternaries are a ratchet
 - `tests/season-format.test.js` — the export adapter matches the engine's shape
 - `tests/wiki.test.js` — each show's article uses its own vocabulary
 - `tests/ratings.test.js` — every registered show declares an `audience`
@@ -661,12 +770,40 @@ built from, so a difference means the code moved and this file did not.
 # Ignore vendored and worktree copies in all of these, or the counts inflate.
 EX='node_modules|\.claude/'
 
-# Everything that imports the registry (§1). Expect 23 non-test files.
+# Everything that imports the registry (§1). Expect 36 lines — 35 non-test
+# files plus js/shows.js itself.
 grep -rln "shows\.js" --include=*.js --include=*.html .   | grep -Ev "$EX" | grep -v "^./tests" | sort
 
-# Everything holding its own show map (§9). Expect the 13 files in that table;
-# anything else is a new duplicate that will silently mis-label a third show.
+# MAP-SHAPED duplicates (§9). Expect exactly these 7 files, all of them per-show
+# DATA that is right where it is:
+#   js/player-trivia.js  js/quick-setup.js  js/ranking-boards.js
+#   js/rankings-update.js  js/settings.js  js/social/adapter.js
+#   worker/worker-season-live.js
+# Anything else is a new duplicate that will silently mis-label a third show.
+# Two of those seven — js/player-trivia.js and js/ranking-boards.js — were
+# never in §9's table at all, which is the point of running the command.
 grep -rn "'total-drama'" --include=*.html --include=*.js .   | grep -Ev "$EX" | grep -v "^./tests/"   | grep -E "\{ ?'total-drama'|'total-drama':" | grep -v "js/shows.js"   | awk -F: '{print $1}' | sort -u
+
+# TERNARY-SHAPED duplicates. ONE GREP IS NOT ENOUGH: the command above matches
+# an object literal keyed by slug, and a show list hidden in
+# `x === 'big-brother' ? A : B` has no braces and no colon-after-slug, so it is
+# invisible to it. Every such ternary is a two-show world that calls a third
+# show by the default show's name — which is exactly how js/social/session.js
+# came to generate an entire season's social feed in Total Drama's words while
+# passing every audit in this document. Expect 13 hits across 7 files:
+#   js/wiki-view.js (4)  js/social/adapter.js (3)  js/cast-ui.js (2)
+#   js/run-ui.js  js/social/events.js  player.html  worker/worker-season-live.js
+grep -rn "=== 'big-brother' ?" --include=*.js --include=*.html .   | grep -Ev "$EX" | grep -v "^./tests/"
+
+# Neither grep is exhaustive. `!== 'big-brother'`, `?? 'total-drama'` and a
+# switch on the slug are all show lists too. Treat these two as the floor.
+#
+# AND RUN THE GUARD, WHICH IS STRICTLY STRONGER THAN BOTH:
+#     npx vitest run tests/show-list-duplication.test.js
+# It walks .mjs as well as .js/.html and matches across line breaks, which is
+# how it found three copies and six ternaries neither command above can see —
+# both greps were, in the end, list-shaped about extensions and line-shaped
+# about ternaries. Keep the greps for reading; trust the guard for counting.
 
 # Every place the engine or a screen branches on a specific show (§2, §6).
 grep -rn "big-brother" --include=*.js --include=*.html js/ *.html worker/   | grep -Ev "$EX"
@@ -678,8 +815,303 @@ grep -rc "big-brother" --include=*.js --include=*.html .   | grep -Ev "$EX" | gr
 ls tests | grep -E "format|show|season-format"
 ```
 
-**Counts as of this writing:** 46 non-test files mention `big-brother`; the
-heaviest are `js/core.js` (31 — the twist catalog), `js/quick-setup.js` (22),
-`js/stats-export.js` (18), `js/bb/week.js` (16). The first and last are
-expected — a catalog and a show's own engine. The middle two are the ones worth
-watching: if they grow, per-show behaviour is leaking into shared code.
+**Counts, re-derived 2026-08-25 on the Traitors branch:** 47 non-test files
+mention `big-brother`; the heaviest are `js/core.js` (35 — the twist catalog),
+`js/quick-setup.js` (22), `js/stats-export.js` (21), `js/bb/week.js` (16). The
+first and last are expected — a catalog and a show's own engine.
+
+The two this document told you to watch **both grew unnoticed**: `js/core.js`
+31 → 35 and `js/stats-export.js` 18 → 21, between Big Brother shipping and a
+third show being registered, with nothing reporting it. The instruction to watch
+them is only worth as much as the re-run, so re-run the command and write the
+new number into this paragraph in the same commit — that is what makes the next
+reader's comparison mean anything.
+
+(46 → 47 rather than 48: `js/social/session.js` dropped off the list when its
+two-way `=== 'big-brother'` ternary was replaced with `seasonFormat()`, and
+`js/quick-setup.js` joined §1's importer list when its picker started reading
+the registry. A count going DOWN here is usually a duplicate being removed.)
+
+## 14. What the third show actually found
+
+Everything in §§0–13 was written from the first two shows. This section is what
+registering a third one turned up that those two had got away with. **Most of it
+was not a new-show bug.** It was existing code that had been wrong since Big
+Brother shipped and could not be seen until something arrived that the binary
+did not describe.
+
+Read this section before §10's order, not after.
+
+### 14.1 A channel is only half a change
+
+The Traitors has two doors out — banished and murdered — so the export grew a
+second exit channel, `exits[]`, alongside `eliminated`.
+
+**It shipped with two readers.** Nine were blind to it. The visible result: a
+murdered player never left. They stayed in the wiki's voting grid, `stillIn()`
+counted eleven people alive on a finale night with two, and their article read
+*"3 episodes played · never had a vote cast against them."*
+
+The fix is not nine fixes. `roundExits()` and `publicBallots()` in `js/shows.js`
+are the rule, and every reader goes through them.
+
+**If your show has a second anything — a second exit, a second ballot, a second
+kind of round — the change is not the field. The change is every reader that has
+to learn the field exists.** Sweep for readers of the thing you are adding
+beside, not for the thing you added.
+
+### 14.2 Ballots on a channel will be rendered publicly unless something stops them
+
+Murder ballots live in `votingHistory[].votes` beside banishment ballots,
+distinguished only by `channel`. That is the right shape (§5) and it is a loaded
+gun: **any consumer that iterates the ballots without filtering renders the
+show's central secret.**
+
+`js/social/archive.js` did exactly this — the private conclave became public
+"Accusation" events on 5 of 9 episodes, and one fabricated accusation generated
+18 posts — while `js/social/adapter.js` four files away was explicitly refusing
+to write a poll that would reveal the same thing.
+
+Add the guard when you add the channel. There was no assertion anywhere that a
+public surface filters to public ballots.
+
+### 14.3 The rule beats the list, every time
+
+§9's eight identity maps were collapsed on 2026-08-25. Writing a **rule** that
+fails when any file holds its own show list — rather than trusting the list —
+immediately found three more nobody had recorded:
+
+- `tools/regen-rankings-reasoning.mjs` — four show lists in five lines, in the
+  tool that writes the ranking-board prose the public site serves
+- `tools/backfill-tiers.mjs` — a `BOARD_FILES` copy behind a comment claiming
+  the module could not be imported. The claim was false; the import works
+- `js/social-page.js` — `?show=` resolved by naming two slugs, so
+  `?show=<third-show>` silently left you on the previous show
+
+`tests/show-list-duplication.test.js` is that rule. It walks every `.js`,
+`.mjs` and `.html` in the tree, exempts the per-show **data** maps with a written
+reason each, and ratchets the surviving two-show ternaries downward.
+
+**A guard that enumerates known-bad cases passes the moment a ninth appears.**
+
+### 14.4 The shapes §13's grep cannot see
+
+§13's commands find `'big-brother'` on a line. These were all invisible to it,
+and all of them mattered:
+
+| Shape | Where it bit | Effect |
+|---|---|---|
+| a ternary split across two lines | `js/stats-export.js` (~2874) | **the entire season export** dispatched to the wrong branch |
+| the same | `js/social/live.js` (~30) | the round array picked from the wrong show |
+| a hoisted boolean | `season_ref.html` (`hasBlock = bbWeeks.length > 0`) | the whole wiki tab, and a **"Total Drama" label printed in a third show's infobox** |
+| `if/else` rather than `?:` | 27 sites | not counted by the ratchet |
+| `startsWith('bb-') ?` | `_ruFormatOfDoc` | format guessed by prefix, not read |
+
+Thirteen hoisted two-show booleans and 81 usages remain in production. When you
+grep, grep for the **decision**, not the string: any place the code chooses
+between exactly two shows is a place a third one is wrong.
+
+### 14.5 Three things that were already broken for the shipped shows
+
+None of these were caused by adding a show. All three were found by adding one.
+
+- **`_rebuildByShow` resolved nested career stats with `startsWith('bb.')`**, so
+  a third show's six `careerStats` pairs read a key that did not exist and
+  **every career totalled zero**.
+- **`_tagSeasonDetail`'s split-brain guard only knew Big Brother**, so a third
+  show's block could land on a **Total Drama** appearance — the exact silent
+  career-merge §8 warns about.
+- **`loadSeasonData` read every ranking column through `isHouse ? A : B`**, so a
+  third show loaded **zero on every column** and its board was a strictly
+  monotone restatement of placement. That file's own header documents this
+  failure for Big Brother; it happened again anyway.
+
+Also live and pre-existing: `js/wiki-fill.js` iterated an **array** with
+`Object.entries`, so every Total Drama round had been emitting
+`votes: 0 [object Object], 1 [object Object], …` into the AI wiki-fill prompt for
+fourteen published seasons.
+
+**Adding a show is the cheapest audit of the previous ones you will ever run.**
+Budget time for fixing what it finds.
+
+### 14.6 Co-winners, and a field that is a tally
+
+`docs/ADDING-A-SHOW.md` §5 asks for `winner { name, playerSlug, vote, runnerUp }`
+— singular — and an ordinal `placement`.
+
+**Total Drama season 8 already had two winners.** `season8-data.json` has
+Alejandro *and* Cameron at `placement: 1`, with `winner{}` naming Alejandro. Every
+page named one of them; `season_ref.html` **crashed** on a null winner; and the
+wiki prompt told the AI that Cameron *"won the final vote 4-4"* — a vote he did
+not win alone.
+
+The rule is `seasonWinners(season)` in `js/records.js`: `winners[]` →
+`placements[]` at 1 → `winner{}`, most complete first. Co-winners all take
+`placement: 1` and `status: 'winner'`; `winner{}` is populated **only** where a
+season genuinely has one. Eleven readers were wrong, nine were already
+plural-safe, four were decided and deliberately left — including D1's
+`seasons.winner_slug`, which stays NULL on a split because filling it would
+invent a fact.
+
+**Do not pick a "main" winner to satisfy the schema.** Taking `winners[0]` is the
+same thing with an extra step.
+
+Separately: **`winner.vote` is a TALLY**, not prose. A show whose finale has no
+jury put its endgame sentence there, which carries the pot — so *"all of it to
+Bowie"* contains `72,233`, `js/social/archive.js` read two numbers as a jury
+vote, and the feed posted about **a jury verdict on a show with no jury**. Prose
+belongs in its own field.
+
+### 14.7 `isReturnee` is two things, and your show may split them
+
+`isReturnee` drives **art** (`js/players.js` swaps to the `<slug>-returnee`
+portrait) and **reputation** (`js/franchise-meta.js` gates the entire profile,
+reputation, instincts and callback build on it).
+
+On Total Drama and Big Brother these coincide. On an all-alumni show **every
+player has history and nobody is returning to this show**, so the flag says no
+and the truth says yes — and franchise-meta priors are an evidence source.
+Without the split, twenty checkboxes must be hand-ticked every season, and the
+day one is missed that player walks in with no reputation and nothing reports it.
+
+`hasFranchiseHistory(name)`, derived from the appearance ledger, is the
+predicate; `isReturnee` keeps its per-season casting meaning. Measured: 20/20 of
+an all-alumni cast get a profile under the derived predicate against 0/20 under
+the flag, with **0 of 262 Total Drama and 0 of 17 Big Brother** classifications
+changing.
+
+**Known and unfixed:** grudges come back **empty** on the real ledger under
+either predicate. `backfillFromSeasonData` writes placement, winner, finalist and
+chalWins and never writes `betrayed`/`allies`/`showmances`/`blindsidedBy`, which
+is what `seededPairs` is built from. Every test passes because the fixture seeds
+those fields. **The grudge system currently runs on no data, on all shows.**
+
+### 14.8 Popularity, and the pooled statistic that hides itself
+
+§8 already says `gs.popularity` must never rank anybody. Two additions.
+
+**A show where the audience knows a secret needs two ledgers, not one number.**
+When the crowd knows who the villains are, a villain playing brilliantly is
+*entertaining*, not *admirable*. Keeping one number makes popularity a competence
+score for whoever the crowd enjoys. The Traitors keeps `affection` and
+`spectacle` separately, priced per event; in 100 seasons of 100, the spectacle
+leader is not the affection leader.
+
+**And check your correlations within each group, not pooled.** Popularity against
+placement reads a harmless **−0.299 pooled** and **−0.538 among Faithfuls** —
+because the players who last longest are the ones whose affection is damped, so
+two accrual curves of opposite slope average into innocence. The same trap caught
+`notoriety` (−0.308 / −0.503) and `audienceStanding` (−0.013 / −0.186 / +0.233).
+
+**Before trusting any pooled statistic, ask whether the population contains
+groups whose relationship to the quantity runs in opposite directions.**
+
+### 14.9 The ranking currencies that look right are placement measured twice
+
+Measured over 4,000 player-seasons, correlation against final placement:
+
+| currency | r |
+|---|---|
+| rounds survived | **−0.924** — it *is* placement |
+| finished on the winning side | −0.686 |
+| correct eliminations driven | −0.635 |
+| missions/comps won | −0.629 |
+| a power won late | **−0.019** |
+| being targeted | **+0.014** |
+
+**Capping a count makes it worse** (−0.635 → −0.658 at cap 2), because what
+survives a cap is "did you last long enough to see one at all".
+
+The currencies that survive are the ones a longer run does **not** accumulate.
+And check the split that matters for your show: the one column that looked
+independent (`Wanted`) turned out to be **−0.171 below the final table and +0.189
+at it** — every column reverses across that line. Report a column's **density**
+beside its correlation: the heaviest weight on the Traitors board fires for about
+1 player in 20.
+
+### 14.10 The vocabulary guard needed extending, and had no reverse
+
+`tests/show-vocabulary.test.js`'s header says there is no list in it to extend.
+**There was**, and it had not been: `EXCLUSIVE` lacked `jury`, `merge`, `house`,
+`beach`, `challenge` and the stem `evict` — which is why every one of these
+shipped:
+
+> *"Voted to evict"* over a camp (on **fourteen published seasons**) · *"played
+> The Traitors 1 without winning a challenge"* (they won four missions) ·
+> *"Never made the merge"* on a show with no merge · *"He finished 5th as a
+> murdered."* · *"enjoy the jury house"* on a show with no jury · 33% of social
+> handles signed `@@bigjury`, `@@campfireapologist`, `@@antitribal32`
+
+**There was also no reverse-leak arm at all** — no third-show noun was forbidden
+on a Total Drama or Big Brother page. Both directions now run.
+
+Two more vocabulary sources worth knowing: `worker/worker-episode-live.js` falls
+back to Total Drama's tone examples for an unknown show, directly under its own
+instruction *"Do not import words from another format"*; and
+**`js/social/phrasings.js` is not vocabulary-adapted at all** — 6.4% of a
+season's posts carry another show's noun, it is invisible to the guard, and it
+needs its own pass.
+
+### 14.11 `\b` inside a template literal is U+0008
+
+```js
+new RegExp(`\b${name}\b`)   // backspace, backspace — matches nothing, ever
+new RegExp(`\\b${name}\\b`) // word boundary
+```
+
+**Four test guards in this repo had never once matched**, and one production
+`.replace()` in `js/rankings-update.js` had never stripped anything. It is
+invisible by inspection — check `charCodeAt`, not appearance. `ratings.test.js`
+additionally carries an eaten backreference (`\1` as U+0001), so that guard is
+doubly inert.
+
+And when you fix one, check what the fixed version now does: the repaired
+rankings regex ran to `[^]*$` and **truncated every later season's line**. A dead
+no-op became data loss.
+
+### 14.12 Guards that pass for the wrong reason
+
+Found by mutation, in guards this project wrote:
+
+- **A guard satisfied by the text of its own fix.** A source-text ratchet counts
+  occurrences in source, so a replacement comment quoting the old ternary kept
+  the count unchanged.
+- **A coverage floor set below the real population.** Floor 300 against 532 files;
+  capping the walk at depth 2 hid 232 files *and a planted three-show map*.
+- **An exemption list that can only shrink — but not one that stops it growing.**
+  A planted identity map plus a bogus exemption ("looks fine to me") passed; the
+  reason string was never read.
+- **A test that recomputes its own expectation from the thing under test.** Flip
+  the table's value and the expectation flips with it.
+- **An assertion satisfied by the wrong element.** "Does the page contain
+  'murdered'?" is satisfied by the infobox's own `Status: Murdered`, so a grid
+  that never draws the cell passed.
+- **A source-text guard that stopped matching its own source** and went quietly
+  green (`live-sync-show.test.js` does this today).
+- **A comment-stripping regex that stripped nothing**, because `.` does not match
+  a carriage return and the file had CRLF endings — the same class of bug the
+  strip exists to remove.
+
+**A mutation proves a guard can fail. It does not prove the margin is right, nor
+that it measures what its name says.** Ask all three.
+
+### 14.13 Operational
+
+- **Stashes are per-repository, not per-worktree.** A `git stash` inside a show's
+  worktree reaches into the same stack as the main checkout's uncommitted work.
+  Copy files aside, or use a separate temporary worktree.
+- **`git checkout <file>` is `reset --hard` scoped to one file**, and it will
+  eat uncommitted work without asking. A task lost a file's worth of edits
+  reverting a mutation this way. To undo a mutation, apply the inverse edit --
+  never check the file out.
+- **A constant that lives in three files is not a constant.** The 46px nav
+  offset is now written in the mockup, the builder and a comment. Put it in one
+  place the moment you notice the second copy; every duplicate-source drift in
+  this document started as two.
+- **Creating and removing a temporary worktree empties `node_modules/.bin`.**
+  `npx` then reports the runner missing while every package is fine. `npm rebuild`
+  restores it in seconds. This happened twice.
+- **Brief from the branch, not from a document.** Three tasks in one plan were
+  briefed against states the branch had already passed — including §9's eight
+  maps, collapsed days earlier. Every time, the work was still worth doing,
+  because what was missing was the thing that *keeps* the property true.

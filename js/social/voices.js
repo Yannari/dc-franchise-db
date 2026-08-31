@@ -47,22 +47,22 @@
  */
 export const DELIVERY = {
   // trait: [pattern, profiles matched when last measured]
-  mystical: [/mystic|spiritual|new-age|cosmic|aura|zen|hippie|dream|surreal|bizarre/, 5],
+  mystical: [/mystic|spiritual|new-age|cosmic|aura|zen|hippie|dream|surreal|bizarre/, 6],
   // `criminal` because a CRIMINAL LAW STUDENT is not streetwise. The
   // count drifting from 7 to 8 was this and only this: Hasan is composed and
   // formal, reads as a lawyer because he is training to be one, and the word
   // that put him in a jersey-tough delivery bucket was his degree.
   streetwise: [/tough|street|jersey|scrapp|hardened|delinquent|rebel|punk|criminal(?! law)|thug/, 6],
-  boastful: [/boast|arrogant|egotis|vain|self-obsessed|narcissis|cocky|braggart|conceited/, 9],
-  excitable: [/excit|hyper|energetic|bubbly|manic|enthusiast|bouncy|eager|giddy/, 13],
-  theatrical: [/dramat|theatric|flamboyan|over-the-top|melodram|diva|showman|grandiose|poetic|opera/, 14],
-  sarcastic: [/sarcas|snark|sardonic|mocking|cynic|smug|smart-alec|wry|ironic/, 15],
-  formal: [/formal|articulate|precise|analytic|intellect|scholar|clinical|methodical|polite|proper/, 15],
-  nervous: [/nervous|anxious|timid|shy|stammer|panick|insecure|jitter|worrier|meek|fearful/, 21],
-  deadpan: [/deadpan|dry |monoton|stoic|laconic|unbothered|nonchalant|apathetic|bored|flat /, 18],
-  manipulative: [/manipulat|silky|flatter|charm|schem|slick|smooth|honey|calculat|cunning/, 27],
-  blunt: [/blunt|brash|loud|aggressive|abrasive|no-nonsense|harsh|gruff|confrontational|bossy/, 45],
-  warm: [/kind|sweet|warm|gentle|caring|nurtur|supportive|optimis|cheerful|friendly|earnest/, 84],
+  boastful: [/boast|arrogant|egotis|vain|self-obsessed|narcissis|cocky|braggart|conceited/, 10],
+  excitable: [/excit|hyper|energetic|bubbly|manic|enthusiast|bouncy|eager|giddy/, 14],
+  theatrical: [/dramat|theatric|flamboyan|over-the-top|melodram|diva|showman|grandiose|poetic|opera/, 17],
+  sarcastic: [/sarcas|snark|sardonic|mocking|cynic|smug|smart-alec|wry|ironic/, 16],
+  formal: [/formal|articulate|precise|analytic|intellect|scholar|clinical|methodical|polite|proper/, 17],
+  nervous: [/nervous|anxious|timid|shy|stammer|panick|insecure|jitter|worrier|meek|fearful/, 23],
+  deadpan: [/deadpan|dry |monoton|stoic|laconic|unbothered|nonchalant|apathetic|bored|flat /, 19],
+  manipulative: [/manipulat|silky|flatter|charm|schem|slick|smooth|honey|calculat|cunning/, 30],
+  blunt: [/blunt|brash|loud|aggressive|abrasive|no-nonsense|harsh|gruff|confrontational|bossy/, 48],
+  warm: [/kind|sweet|warm|gentle|caring|nurtur|supportive|optimis|cheerful|friendly|earnest/, 85],
 };
 
 /**
@@ -199,7 +199,10 @@ export const TRAIT_TAKES = {
       ({ s }) => `${s} is confused. ${s} was confused a week ago too, quietly.`,
     ],
     finale: [
-      ({ s }) => `${s} won. The jury voted. Those two facts are related, which is more than some finales manage.`,
+      // `w.jury` because a castle has none: its last table is a decision by
+      // the people still sitting at it, and "the jury voted" over one is this
+      // project's oldest bug in a sentence nobody reviewed.
+      ({ s, w }) => `${s} won, and ${w.jury} agreed. Those two facts are related, which is more than some finales manage.`,
       ({ s }) => `Congratulations to ${s}, and my condolences to everybody rehearsing a speech about it.`,
       ({ s }) => `I would've voted the same way. I'm not going to explain why at length.`,
       ({ s }) => `A good finale. Nobody needs me to add anything to it.`,
@@ -460,7 +463,20 @@ export const TRAIT_TAKES = {
       ({ s }) => `Everybody on that jury had a reason to be bitter and they voted honestly anyway. That's rarer than the win.`,
       ({ s }) => `I'm happy for ${s}, and I'm happy for the runner-up, and I'm aware that makes me useless as an analyst.`,
       ({ s }) => `${s} won and thanked the people who lost to ${s}. That's how you leave with everything.`,
-      ({ s }) => `Nobody on that jury voted out of spite tonight. After that season. I'm genuinely moved.`,
+      // WAS: "Nobody on that jury voted out of spite tonight." Two shows'
+      // furniture in one clause -- a jury and a vote-out -- printed over a
+      // castle, where the last table is not a jury and nobody is voted out
+      // of anything.
+      //
+      // AND THEN `w.vote`, WHICH IS THE WEEKLY BALLOT: "Not one bitter
+      // eviction vote at the end of that" about a night decided by a JURY --
+      // the right show and the wrong ballot, which is less accurate than what
+      // it replaced. `finalVote` is the ballot that decides the season, and
+      // it is null on a show that has none, where the sentence is about the
+      // room rather than about a vote nobody cast.
+      ({ s, w }) => (w.finalVote
+        ? `Not one bitter ${w.finalVote} at the end of that. After that season. I'm genuinely moved.`
+        : `Not one bitter word at the end of that. After that season. I'm genuinely moved.`),
       ({ s }) => `Both of them played hard and neither one turned cruel about it. That's rarer than the trophy.`,
       ({ s }) => `${s} deserved it and so did the person who didn't get it. Finales are unfair like that.`,
     ],
@@ -649,7 +665,10 @@ export const TRAIT_TAKES = {
     finale: [
       ({ s }) => `${s}!!!!! ${s} WON!!!!! i have been saying this since episode one and NOBODY believed me`,
       ({ s }) => `the confetti!! the FACE!! i am crying, real crying, over confetti`,
-      ({ s }) => `that final vote pause took a YEAR off my life and i would pay it again`,
+      // A show with no final ballot has no pause before one to be ruined by.
+      ({ s, w }) => (w.finalVote
+        ? `that ${w.finalVote} pause took a YEAR off my life and i would pay it again`
+        : `that pause before they said it took a YEAR off my life and i would pay it again`),
       ({ s }) => `okay both of them were amazing and i refuse to be normal about either of them`,
       ({ s }) => `${s} did the speech and i just sat here going yes YES yes at a screen`,
       ({ s }) => `best finale in ages and i am already sad it's over, immediately, instantly sad`,
@@ -904,8 +923,8 @@ export const TRAIT_TAKES = {
     ],
     finale: [
       ({ s }) => `${s} was always going to end up there. Not because of the moves — because of the way ${s} carries a room.`,
-      ({ s }) => `That jury voted with something older than reasoning. They will explain it badly for years.`,
-      ({ s }) => `There was peace in ${s} at the end. That's what a jury actually reads.`,
+      ({ s, w }) => `${w.jury} decided with something older than reasoning. They will explain it badly for years.`,
+      ({ s, w }) => `There was peace in ${s} at the end. That's what ${w.jury} actually reads.`,
       ({ s }) => `The runner-up argued. ${s} simply was. One of those wins finales.`,
       ({ s }) => `Something closed cleanly tonight. Not every season gets that.`,
       ({ s }) => `${s} forgave them before they voted. They could feel it. That's the whole speech.`,

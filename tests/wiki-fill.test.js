@@ -174,7 +174,14 @@ describe('cutting an episode down to a week', () => {
 });
 
 describe('the round ledger', () => {
-  const BB = { weeks: [{ week: 1, hoh: 'Caleb', initialNominees: ['Joel', 'Ireland'],
+  /* WITH ITS FORMAT ON IT, the way every published document carries one.
+     `roundLedger` used to name the round by SNIFFING WHICH ARRAY IT FOUND —
+     `weeks ? 'Week' : 'Episode'` — which makes any third show that also
+     exports `votingHistory` a Total Drama season. It asks the registry now,
+     and a fixture that leaves the format off is asserting the bare-integer
+     rule (no format means Total Drama), not Big Brother. */
+  const BB = { format: 'big-brother',
+    weeks: [{ week: 1, hoh: 'Caleb', initialNominees: ['Joel', 'Ireland'],
     vetoWinner: 'Ireland', finalNominees: ['Joel', 'Wayne'],
     votes: { Joel: 6, Wayne: 3 }, evicted: 'Joel' }] };
   const TD = { votingHistory: [{ episode: 1, winner: 'Riya', eliminated: 'Dylan',

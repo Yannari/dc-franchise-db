@@ -992,6 +992,11 @@ export function saveConfig() {
     franchiseMeta: g('cfg-franchise-meta')?.checked !== false,
     franchiseMetaAutoRecord: g('cfg-franchise-meta-autorecord')?.checked !== false,
     jurySize:    parseInt(g('cfg-jury')?.value) || 9,
+    // The castle's two, and the only two the engine reads. Clamped where
+    // the engine clamps: `selectTraitors` refuses to make the whole cast a
+    // Traitor, and a pot of nothing is a season with no reason to play it.
+    traitorCount: Math.max(2, Math.min(5, parseInt(g('cfg-tr-traitor-count')?.value) || 3)),
+    trPotCeiling: Math.max(1000, parseInt(g('cfg-tr-pot')?.value) || 120000),
     ri:          g('cfg-ri')?.checked || false,
     riReentryAt: parseInt(g('cfg-ri-reentry')?.value) || 12,
     riFormat:    g('cfg-ri-format')?.value || 'redemption',
@@ -1119,6 +1124,8 @@ export function renderConfig() {
   if (g('cfg-franchise-meta')) g('cfg-franchise-meta').checked = seasonConfig.franchiseMeta !== false;
   if (g('cfg-franchise-meta-autorecord')) g('cfg-franchise-meta-autorecord').checked = seasonConfig.franchiseMetaAutoRecord !== false;
   set('cfg-jury',    seasonConfig.jurySize || 9);
+  set('cfg-tr-traitor-count', seasonConfig.traitorCount || 3);
+  set('cfg-tr-pot', seasonConfig.trPotCeiling || 120000);
   chk('cfg-ri',        seasonConfig.ri);
   set('cfg-ri-reentry', seasonConfig.riReentryAt);
   set('cfg-ri-format', seasonConfig.riFormat || 'redemption');

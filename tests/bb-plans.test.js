@@ -383,12 +383,10 @@ describe('the final cut', () => {
       const hoh = base.finalHoh;
       partner = house.find(n => n !== hoh && n !== base.projected);
       if (!partner) return;
-      soloPromise(hoh, partner, 0);
-      // Somebody who would not keep it for its own sake. Loyalty is the floor
-      // in honoursDeal(), so a loyal player keeps even an insincere deal when
-      // keeping it is free — which is correct, and not what we are testing.
-      const p = players.find(x => x.name === hoh);
-      if (p?.stats) p.stats.loyalty = 0;
+      // Unambiguously insincere without changing a competition stat before
+      // the final HOH is played. Mutating loyalty here could crown somebody
+      // else and leave this test comparing the cut to the wrong player's deal.
+      soloPromise(hoh, partner, -1);
     });
     if (!partner) return;
     expect(cut.betrayal, 'an insincere final two survived the final cut').toBeTruthy();

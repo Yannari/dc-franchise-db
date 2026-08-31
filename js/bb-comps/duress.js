@@ -76,6 +76,8 @@ export const punchSlapKick = {
     const survived = {};
     for (const name of participants) {
       const p = pronouns(name);
+      const haveNot = (context.haveNots || []).includes(name);
+      const haveNotPenalty = haveNot ? round2(0.6 + rng() * 0.6) : 0;
       // Recall under a beating. Temperament is not a flavour term here — a
       // houseguest who rattles loses the sequence they already had.
       // The declared profile, read straight off the competition — through
@@ -84,7 +86,7 @@ export const punchSlapKick = {
       // re-rolled nerve average out to nothing across a field: the sequence
       // everybody reaches was falling out in strict order of the stat line and
       // the best in the yard was taking this 45% of the time.
-      const apt = aptitude(name, punchSlapKick.stats) + nightForm(rng, 1.6);
+      const apt = aptitude(name, punchSlapKick.stats) + nightForm(rng, 1.6) - haveNotPenalty;
       const recall = stat(name, 'mental') * 0.55 + stat(name, 'intuition') * 0.15;
       const composure = stat(name, 'endurance') * 0.55 + stat(name, 'boldness') * 0.45;
       let round = 0;
@@ -111,7 +113,7 @@ export const punchSlapKick = {
       survived[name] = round - 1;
       breakdown[name] = {
         sequence: survived[name], recall: round2(recall), composure: round2(composure),
-        score: round2(survived[name]), threw: false,
+        haveNot, haveNotPenalty, score: round2(survived[name]), threw: false,
       };
       beats.push(beat(
         `${name} takes ${hitPick(HITS)}, then another, then another. `
@@ -193,12 +195,14 @@ export const blackBox = {
     const times = {};
     for (const name of participants) {
       const p = pronouns(name);
+      const haveNot = (context.haveNots || []).includes(name);
+      const haveNotPenalty = haveNot ? round2(0.6 + rng() * 0.6) : 0;
       // Same two corrections as Punch, Slap, Kick above: read the declared
       // profile through aptitude() instead of a hand-summed copy, and roll the
       // night once. Five attempts of independent nerve cancel out, which is why
       // widening them (see the note below) never moved this — what decides the
       // box is whether a houseguest can map it at all tonight.
-      const feel = aptitude(name, blackBox.stats) + nightForm(rng, 1.5);
+      const feel = aptitude(name, blackBox.stats) + nightForm(rng, 1.5) - haveNotPenalty;
       let placed = 0;
       let seconds = 0;
       const attempts = 5;
@@ -221,7 +225,7 @@ export const blackBox = {
       }
       found[name] = placed;
       times[name] = Math.round(seconds);
-      breakdown[name] = { placed, seconds: times[name], feel: round2(feel), score: round2(placed), threw: false };
+      breakdown[name] = { placed, seconds: times[name], feel: round2(feel), haveNot, haveNotPenalty, score: round2(placed), threw: false };
       const item = items(BOX_ITEMS);
       beats.push(beat(
         `The door shuts on ${name} and the box goes properly black. `

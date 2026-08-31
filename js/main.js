@@ -126,6 +126,25 @@ import * as castUiMod from './cast-ui.js';
 import * as castRoomMod from './cast-room.js';
 import * as studioMod from './studio.js';
 import * as quickSetupMod from './quick-setup.js';
+// The castle's screens. Their reveal handlers are called from inline onclick
+// attributes, so they have to be on window like every other VP builder's.
+import * as trConclaveMod from './vp-tr/conclave.js';
+import * as trRoundTableMod from './vp-tr/round-table.js';
+import * as trColdOpenMod from './vp-tr/cold-open.js';
+import * as trHouseStatusMod from './vp-tr/house-status.js';
+import * as trMissionMod from './vp-tr/mission.js';
+import * as trRecruitmentMod from './vp-tr/recruitment.js';
+import * as trEndgameMod from './vp-tr/endgame.js';
+import * as trCastleDayMod from './vp-tr/castle-day.js';
+import * as trSelectionMod from './vp-tr/selection.js';
+import * as trSuspicionMod from './vp-tr/suspicion.js';
+import * as trConfessionalsMod from './vp-tr/confessionals.js';
+import * as trDebugMod from './vp-tr/debug.js';
+// The run loop's castle branch, and the module that sets window._trRunnable.
+// Importing it is what makes the show startable at all: `formatIsRunnable`
+// reads that flag, and the setup screen, Quick Setup and the run tab all read
+// `formatIsRunnable`. Nothing here is optional.
+import * as trRunMod from './tr-run.js';
 import * as bbRunMod from './bb-run.js';
 import * as twistContractMod from './bb/twist-contract.js';
 import * as rivalsMod from './bb/rivals.js';
@@ -230,7 +249,7 @@ const extractedModules = [
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, mineOverMatterMod, treasureIslandMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, hauntedHouseMod, hungOutMod, merryGoRoundMod, mazeOfTheFallenMod, demonsPlainerVpMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
   truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, iceIceBabyMod, findersCreepersMod, backstabbersAhoyMod, projectRunawayMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, auctionVpMod, settingsMod, themesMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
-  castUiMod, castRoomMod, studioMod, quickSetupMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod, vpCoachesMod,
+  castUiMod, castRoomMod, studioMod, quickSetupMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, trMissionMod, trRecruitmentMod, trEndgameMod, trCastleDayMod, trSelectionMod, trSuspicionMod, trConfessionalsMod, trDebugMod, trRunMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod, vpCoachesMod,
   savestateMod,
   statsExportMod,
   audioMod,

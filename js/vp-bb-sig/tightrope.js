@@ -137,6 +137,13 @@ export function rpBuildSigTightrope(ep, actType, u = {}) {
   const done = at >= total - 1;
 
   const length = comp.detail?.length || 12;
+  const satOut = (comp.excluded || []).filter(Boolean);
+  const satOutLine = satOut.length
+    ? `<div class="tr-sub">Sat out: ${satOut.map(esc).join(', ')}${
+        actType === 'hoh' && act.outgoingHoh
+          ? ` &middot; ${esc(act.outgoingHoh)} cannot defend the room`
+          : ''}</div>`
+    : '';
   // Pegs are stacked slightly so two houseguests who stopped at the same metre
   // are both readable — the map is useless if markers sit on top of each other.
   // Eight markers, not eighteen: a rope with a full house on it is a row of
@@ -180,7 +187,8 @@ export function rpBuildSigTightrope(ep, actType, u = {}) {
       <div class="tr-head">
         <div class="tr-eyebrow">Week ${esc(ep?.num || '')} &middot; ${actType === 'hoh' ? 'Head of Household' : 'Competition'}</div>
         <div class="tr-title">Tightrope</div>
-        <div class="tr-sub">One rope, one crossing, and a net that sends you back to the beginning.</div>
+         <div class="tr-sub">One rope, one crossing, and a net that sends you back to the beginning.</div>
+         ${satOutLine}
         ${(() => {
     // What the competition reads, on the page, so a result can be checked
     // against the profile behind it. The swing stat is drawn apart: it widens

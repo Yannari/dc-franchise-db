@@ -15,9 +15,11 @@
 // actually produced, engagement and all, and regenerating over it would quietly
 // replace real numbers with computed ones.
 import { extractEvents, socialEvent } from './events.js';
+import { seasonWinners } from '../records.js';
 import { buildEpisodeFeed } from './feed.js';
 import { seasonDataFile } from './adapter.js';
 import { feedSeed } from './live.js';
+import { roundExits, publicBallots, SHOWS } from '../shows.js';
 
 /**
  * Episodes of a published season.
@@ -75,9 +77,15 @@ export function episodesOf(doc, format) {
   // episode nobody has a single fact for. They do name a winner, and that is
   // worth a feed, so they get the finale and only the finale.
   const end = Number(doc.episodeCount) || 0;
+  // WHO WON, PLURAL. `doc.winner` is singular and is null on a season that
+  // ended in a split — which on The Traitors is most of them — so gating the
+  // finale on it gave a co-winner season no finale night and no post about the
+  // one thing the audience was watching for. `seasonWinners` reads whichever
+  // of the three fields the document in hand actually carries.
+  const won = seasonWinners(doc);
   const out = [];
   if (!known.size) {
-    if (doc.winner && end) out.push({ episode: end, record: { episode: end } });
+    if (won.length && end) out.push({ episode: end, record: { episode: end } });
   } else {
     const total = Math.max(end, Math.max(...known.keys()));
     for (let n = 1; n <= total; n++) {
@@ -95,9 +103,13 @@ export function episodesOf(doc, format) {
   // finale reaction used to land on the wrong night and the actual finale had
   // no page at all. It is in the run now; this is what makes it the finale.
   const last = out[out.length - 1];
-  if (doc.winner && last) {
+  if (won.length && last) {
     last.record.isFinale = true;
-    last.record.winner = last.record.winner || doc.winner;
+    // A split has no single winner to hand the record, and naming one of four
+    // would be inventing the fact. The night is still the finale, and the set
+    // rides alongside so a reader that can say "and" has it.
+    if (doc.winner) last.record.winner = last.record.winner || doc.winner;
+    last.record.winners = last.record.winners || won;
   }
   return out;
 }
@@ -117,7 +129,14 @@ export function episodesOf(doc, format) {
  * failure this project already fixed once on the played path.
  */
 function tribalEvents(vote, meta) {
-  const ballots = vote?.votes || [];
+  /* ── THE CONCLAVE IS NOT A ROOM THE AUDIENCE IS IN ─────────────────
+     This read `vote.votes` whole. On a show whose second ballot is SECRET
+     that turned the conclave into public "Accusation" events on five nights
+     of nine — one of them a name nobody had accused of anything, which then
+     generated eighteen posts. `js/social/adapter.js` refuses to write a poll
+     that would reveal this; the archive was revealing it regardless.
+     `publicBallots` takes the private channels off the registry. */
+  const ballots = publicBallots(vote, meta?.format);
   if (ballots.length < 3 || !vote.eliminated) return [];
 
   const targets = new Map();
@@ -194,14 +213,26 @@ export function eventsForEpisode(doc, format, season, episode) {
   // entry synthesised above, or the last one for a show whose finale IS a vote.
   const isFinale = found.record?.isFinale
     || (found === all[all.length - 1] && format === 'big-brother');
-  if (isFinale && doc?.winner) {
+  // Who won, plural, on this side of the file too — `episodesOf` computes its
+  // own and neither can borrow the other's.
+  const won = seasonWinners(doc);
+  if (isFinale && won.length) {
     // extractEvents already emits a finale for a record flagged as one — but
     // without a subject, because a live episode record does not name a winner.
     // Pushing a second was two Finale rows in the rail, one of them nameless.
+    //
+    // A SPLIT GETS THE ROW AND NO SUBJECT. An event has one subject, and on a
+    // season four people won there is no honest way to fill it — `won[0]` is
+    // the alphabetically first Faithful, which is not a fact about anything.
+    // The set is carried on `subjects` so a writer that can say "and" has the
+    // names, and the nameless finale is the truthful one until it does.
     const existing = events.find(e => e.kind === 'finale');
-    const winner = doc.winner.name || doc.winner;
-    if (existing) existing.subject = String(winner).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    else events.push(socialEvent('finale', { ...meta, subject: winner }));
+    const slug = n => String(n).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const winner = won.length === 1 ? won[0].name : null;
+    if (existing) { if (winner) existing.subject = slug(winner); }
+    else events.push(socialEvent('finale', { ...meta, ...(winner ? { subject: winner } : {}) }));
+    const finEv = events.find(e => e.kind === 'finale');
+    if (finEv) finEv.subjects = won.map(w => slug(w.name));
 
     /* HOW THE SEASON WAS ACTUALLY DECIDED.
        Season 14 ended on a challenge — its document says so outright:
@@ -211,17 +242,27 @@ export function eventsForEpisode(doc, format, season, episode) {
        badly written; it is about a thing that did not happen.
        Carried on the event so the feed can refuse posts that contradict it. */
     const ftc = doc.finalTribalCouncil || {};
-    const tally = String(doc.winner.vote || '').trim();
+    // The tally belongs to the singular block, which a split does not have.
+    const tally = String(doc.winner?.vote || '').trim();
     /* A tally is not always "4-3". Big Brother 1 records it as
        "Wayne 4 — Priya 3 — Zee 0", so a pattern expecting two numbers either
        side of a dash read a real jury vote as a challenge finish — the same
        class of mistake, in the code meant to catch it. Two numbers anywhere is
        the honest test. */
-    const jury = (ftc.votes || []).length > 0
-      || (tally.match(/\d+/g) || []).length >= 2;
+    const jury = SHOWS[format]?.hasJury
+      && ((ftc.votes || []).length > 0 || (tally.match(/\d+/g) || []).length >= 2);
     const fin = events.find(e => e.kind === 'finale');
     if (fin) {
-      fin.decidedBy = jury ? 'jury' : 'challenge';
+      /* ── "NOT A JURY" IS NOT THE SAME AS "A CHALLENGE" ────────────────
+         This was a two-way flag, so a Traitors finale -- decided by the
+         people still sitting at the last table, with no jury and no final
+         comp -- came out stamped `challenge`, and js/social/feed.js then
+         PERMITTED "final challenge" and "fire-making" posts about it. The
+         guard against invented finale mechanics was licensing them.
+         A show the registry says has no jury gets `endgame`: a decision that
+         is neither, and about which neither claim family may be written. */
+      fin.decidedBy = jury ? 'jury'
+        : (SHOWS[format]?.hasJury ? 'challenge' : 'endgame');
       if (tally) fin.tally = tally;
       if (ftc.note) fin.note = ftc.note;
     }
@@ -338,8 +379,17 @@ export function stillIn(doc, format, episode) {
   const gone = new Set();
   for (const v of doc?.votingHistory || []) {
     const when = Number(v?.episode) || 0;
-    const who = v?.eliminatedSlug || v?.eliminated;
-    if (who && when && when <= ep) gone.add(String(who).toLowerCase());
+    if (!when || when > ep) continue;
+    /* ── EVERY DOOR OUT ────────────────────────────────────────────────
+       This read `eliminatedSlug || eliminated`, which on a show with two ways
+       out is the VOTE and only the vote. On a Traitors finale night with two
+       people alive it returned ELEVEN, nine of them murdered — exactly the
+       leak this function exists to prevent, wearing the other show's clothes.
+       `roundExits` asks the round which doors it has. */
+    for (const x of roundExits(v, format)) {
+      gone.add(String(x.slug || x.name).toLowerCase());
+      gone.add(String(x.name).toLowerCase());
+    }
   }
   const left = cast.filter(p =>
     !gone.has(p.slug.toLowerCase()) && !gone.has(p.name.toLowerCase()));

@@ -90,10 +90,11 @@ describe('two duos on the block', () => {
   it('names four, in two pairs', () => {
     const week = aWeek();
     openDuoWeek(week, { house: NAMES, hoh: 'A', rng: Math.random });
-    const noms = duoWeekNominees(week, { plan: { target: 'G', nominees: ['G'] }, house: NAMES, untouchable: ['A'], hoh: 'A' });
+    const target = duoWeekPairs(week)[0][0];
+    const noms = duoWeekNominees(week, { plan: { target, nominees: [target] }, house: NAMES, untouchable: ['A'], hoh: 'A' });
     expect(noms).toHaveLength(4);
     expect(new Set(noms).size, 'somebody was nominated twice').toBe(4);
-    expect(noms).toContain('G');
+    expect(noms).toContain(target);
     // And each of the four is on the block WITH the person they are chained to.
     for (const n of noms) expect(noms).toContain(duoWeekPartner(week, n, NAMES));
   });

@@ -67,6 +67,81 @@ Julia let their voice go once, briefly, and then got it back.
 ```
 
 The good version names the room, question, answer, contradiction, reaction, and usable consequence. Do not copy the names or sentence; copy the completeness.
+## Causal writing contract
+
+Every event must happen for a recorded reason. Before writing a claim, the event must point to the exact source record that makes it true. Personality may change how somebody interprets a fact; it may not invent the fact.
+
+```text
+stored fact → eligible reaction → scene cites the fact → consequence cites the scene
+```
+
+Acceptable sources include mission phase results, player scores, observed actions, public ballots, spoken accusations, stored claims, shield decisions, known prior-season history, witnessed conversations, relationships, and observer-safe knowledge. Raw alignment is not a source available to a Faithful.
+
+### Mission blame
+
+Correct:
+
+```text
+MISSION RECORD: Manu missed checkpoint 3, costing the team a two-minute penalty.
+EVENT: Finn lays the route map on the table. “We lost two minutes when Manu missed checkpoint three.” Manu says the direction marker had fallen. Gabby agrees about the delay but questions whether one mistake proves anything.
+```
+
+Forbidden: `Finn says Manu failed the mission.` This is invalid if Manu did not fail a recorded phase. Even when he did, the scene must say what happened and allow competing interpretations.
+
+### Contradictions
+
+Correct:
+
+```text
+CLAIM A: Julia told Gabby she went directly upstairs after dinner.
+CLAIM B: Alec recorded seeing Julia beside the library after dinner.
+EVENT: Gabby compares the accounts with Alec, then asks Julia which version is true. Julia explains, denies, or stumbles according to her behavior.
+```
+
+Forbidden: `Gabby catches Julia changing her story.` Two incompatible stored claims must exist, and Gabby must know both.
+
+### Shield fallout
+
+Correct:
+
+```text
+MISSION RECORD: Fiore left the carry phase, pursued a shield, won it, and her team lost £4,000 after finishing one crate short.
+EVENT: Ellie confronts Fiore about leaving. Fiore defends the shield. Teammates blame her only if they witnessed the choice or learned it from a named source.
+```
+
+Forbidden: `Everyone is angry that Fiore chose herself over the team.` This is invalid when the team lost no money, Fiore never left, the choice was secret, or everyone did not learn it.
+
+### Alumni history
+
+Correct:
+
+```text
+HISTORY RECORD: Julia voted against Gabby in Total Drama 2 after promising safety.
+EVENT: Gabby says, “You promised I was safe last time, and then you voted me out.” Julia's response uses her current personality; the claim stays exactly what the ledger supports.
+```
+
+Forbidden: `Gabby remembers Julia betraying her before.` A low bond can motivate distrust, but it cannot manufacture an incident missing from the ledger.
+
+### Round Table and murder fallout
+
+Correct:
+
+```text
+Finn cites Manu's recorded checkpoint penalty. Gabby cites the fallen marker she witnessed. Alec changes his vote because Finn dismisses corroborated context—not because the writer needs a vote flip.
+
+Miriam is absent at breakfast. Bowie grieves because his stored bond with Miriam was high. Priya comforts him after witnessing the reaction. Nobody claims to know why Miriam was chosen without evidence or a Traitor confession.
+```
+
+Forbidden: `Finn says Manu acted suspiciously, so Alec suddenly changes his vote.` “Suspiciously” must resolve to named behavior, and a vote moves only after a stored argument, relationship, belief, deal, or fact moves it.
+
+For every generated scene, tests must answer:
+
+1. Which record made the event eligible?
+2. Which participants know that record?
+3. Which sentence states or demonstrates the cause?
+4. Which stored consequence follows from the scene?
+
+If any answer is missing, the event is disconnected and must not render.
 
 ---
 

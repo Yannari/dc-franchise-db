@@ -512,8 +512,30 @@ describe('co-winners, resolved across every reader', () => {
   // by seed number — a seed is not a promise, and on a changed engine this has
   // to fail loudly rather than quietly test the same ending twice.
   const docs = SEASONS.map((s, i) => buildTraitorsSeasonDocument(s, { seasonNumber: SEEDS[i] }));
-  const split = docs.find(d => d.winners.length === 4);
-  const solo = docs.find(d => d.winners.length === 1);
+
+  // A four-way split is rare (roughly one season in fifteen with this cast
+  // and traitor count) so the fixed 8-seed sample the rest of this file
+  // shares is not big enough to promise one — and a scheduling change that
+  // shifts the rng stream (as happened at b2a7db61) can rotate the split
+  // clean out of any small, fixed window of seeds. Rather than pin the seeds
+  // that happen to work today, search outward from where the shared sample
+  // leaves off until the season the assertions need actually turns up. This
+  // stays cheap (a season is ~15ms and a plain winner is common — the search
+  // for `solo` below stops almost immediately) while keeping the loud
+  // failure above if the outcome becomes unreachable altogether, which is
+  // the signal that would mean the engine itself changed what "won" means.
+  const findByWinnerCount = (count, maxSeed = 500) => {
+    for (const doc of docs) if (doc.winners.length === count) return doc;
+    for (let seed = SEEDS.length + 1; seed <= maxSeed; seed++) {
+      setPlayers(ROSTER);
+      const season = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+      const doc = buildTraitorsSeasonDocument(season, { seasonNumber: seed });
+      if (doc.winners.length === count) return doc;
+    }
+    return undefined;
+  };
+  const split = findByWinnerCount(4);
+  const solo = findByWinnerCount(1);
 
   it('exports four co-winners with no ordinal and no winner block', () => {
     expect(split, 'no season in the sample ended in a FOUR-way split').toBeTruthy();

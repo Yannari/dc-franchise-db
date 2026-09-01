@@ -326,42 +326,55 @@ const ESTABLISH_PAIR = {
     'First light. {a} comes down to {loc} and finds {b} already standing there.',
     'Nobody else is down yet. {a} and {b} are at {loc} with the whole building quiet behind them.',
     'The morning is about ten minutes old. {a} catches {b} at {loc}, before anybody else comes down.',
+    '{a} and {b} are the first two down, and they are at {loc}, and neither says why.',
+    'The kettle has not gone on yet. {a} and {b} are at {loc} with the day still ahead of them.',
   ],
   morning: [
     'Mid-morning at {loc}, with the work half done, and {a} and {b} are the only two there.',
     'The castle is busy everywhere except {loc}, which is where {a} and {b} are.',
     'An hour after breakfast, {a} steers {b} towards {loc} and lets the door swing shut.',
     '{a} and {b} end up at {loc} together, with a job between them that neither is really doing.',
+    'There is work going on everywhere this morning. At {loc} there is {a}, and {b}, and no work.',
+    '{a} carries something to {loc} that did not need carrying, because {b} is at {loc}.',
   ],
   'journey-out': [
     'The walk out has strung them along the track, and {a} and {b} are at the back of it, near {loc}.',
     'Twenty minutes out from the gates, {a} falls into step with {b} at {loc}.',
     'Out at {loc}, with the castle behind them and nothing else to look at, {a} and {b} are talking.',
     '{a} and {b} take {loc} slowly on purpose, and let the others get ahead of them.',
+    'The line thins out along the track. By {loc} it is {a} and {b} and a lot of open ground.',
+    '{a} waits at {loc} until {b} catches up, and makes it look like stopping for breath.',
   ],
   'journey-back': [
     'On the way back, at {loc}, {a} and {b} are the last two in the line.',
     'The afternoon is gone and so is most of the talking. {a} and {b} are at {loc}, walking it out.',
     'Coming home past {loc}, tired enough to be honest, {a} drops back to {b}.',
     '{a} and {b} do the last stretch — {loc} — side by side and in no particular hurry.',
+    'The rest of them are well ahead by {loc}. {a} and {b} are not hurrying to catch up.',
+    'By {loc}, {a} and {b} have stopped walking and started having a conversation.',
   ],
   evening: [
     'An hour before they sit down. {a} and {b} are at {loc}, and neither is there by accident.',
     'The light is going. {a} finds {b} at {loc}, which is where {a} was hoping to find them.',
     'At {loc}, before the Round Table, {a} and {b} have a few minutes and they both know it.',
     '{a} and {b} are at {loc} with the evening in front of them and a name to settle on.',
+    'There is an hour left and a decision in it. {a} and {b} spend some of the hour at {loc}.',
+    '{a} has been waiting at {loc} for a while before {b} comes past, and {a} does not say so.',
+    'The evening is closing in on a name. At {loc}, {a} and {b} are working out whose.',
   ],
   'after-table': [
     'The doors have just shut. {a} and {b} are at {loc}, standing the way they were standing.',
     'Straight afterwards, at {loc}, {a} and {b} find each other before anybody else does.',
     'The Round Table is over and nobody has moved much yet. {a} and {b} are at {loc}.',
     'At {loc}, minutes after the table, {a} says {b}’s name and {b} stops walking.',
+    'People are drifting off. {a} and {b} are still at {loc}, and neither has moved yet.',
   ],
   night: [
     'After lights out, at {loc}, {a} and {b} are the only two still up.',
     'The building has gone quiet. {a} and {b} are at {loc}, talking low.',
     'Late, at {loc}, {a} waits until the corridor is empty before saying anything at all to {b}.',
     'The rest of the doors are shut. {a} and {b} are at {loc}, and nobody knows they are.',
+    'It is late enough that the building has stopped creaking. {a} and {b} are at {loc}.',
   ],
 };
 /** Nobody else in the room, which is a scene in its own right and not a fault. */
@@ -622,174 +635,616 @@ const REACT_SOLO = {
 };
 
 /**
+ * WHEN IT WENT BADLY, IT MUST NOT BE ANSWERED AS THOUGH IT WENT WELL.
+ *
+ * FIX ROUND 1, C2. The record carries `branch` (js/tr/headless.js) and the
+ * castle pools fork on it — `testing-night-scores-it` returns `failed`,
+ * `cover-alibi-crumbles` returns `collapses` — and the first version of this
+ * screen keyed only on the FAMILY. So a scene whose branch was `failed` and
+ * whose stored outcome was `failed-maliciously` was answered with "doesn't
+ * think twice about it, which is either the truth or a very good habit" and
+ * then closed with "It was failed on purpose, and both of them know that as
+ * well." The card said the opposite of the card under it.
+ *
+ * The tone comes off the stored outcome first (it is the harder fact) and off
+ * the branch second. The branch list is not a guess: it is every branch string
+ * five real seasons produced, read and sorted by hand. Anything unlisted is
+ * `smooth`, which is what this screen already did, so a branch added next year
+ * degrades to the old behaviour rather than crashing.
+ */
+const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', 'exposed',
+  'broken-up', 'confessed-unrelated']);
+const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
+  'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
+const ADVERSE_BRANCHES = new Set([
+  // the story did not survive contact
+  'awkward', 'broke', 'collapses', 'frayed', 'overcooked', 'slip', 'suspicious',
+  'tell', 'wobbles', 'nearly', 'sleepless', 'sacrificed-ally',
+  // the mourning turned into an accusation, or into paranoia
+  'blamed-room', 'wrongly-suspected-irony', 'awake-paranoid', 'opportunistic',
+  // it went wrong, and in public
+  'broke-up', 'confronts', 'exposes', 'jealousy', 'showmance-fight', 'called-strategic',
+  // the doubt got sharper rather than softer
+  'caught', 'cracks', 'confess', 'crosschecked', 'hardened', 'denyWeak',
+  'misread-nervy', 'revived', 'tracked', 'turned', 'redirects', 'overheard',
+  // they failed it, or worked out that it was one
+  'caughtTest', 'failed', 'malicious', 'got-rattled', 'inconsistent', 'refused',
+  'refuses', 'reluctant', 'chased',
+  // it did not hold
+  'broken', 'deflected', 'dropped', 'leakedAccident', 'leakedDeliberate', 'soured',
+]);
+function _tone(s) {
+  if (s.closedNow && ADVERSE_OUTCOMES.has(s.outcome)) return 'adverse';
+  if (s.closedNow && SMOOTH_OUTCOMES.has(s.outcome)) return 'smooth';
+  return ADVERSE_BRANCHES.has(String(s.branch || '')) ? 'adverse' : 'smooth';
+}
+
+/**
+ * The same seven scene classes, for a branch the record says went badly.
+ *
+ * TWO PER SLOT rather than four: a specific (class, voice, adverse) triple is
+ * drawn far less often in one day than a consequence pool is, and the verbatim
+ * repeats the review measured were all in the consequence pools, which are
+ * four-wide below.
+ */
+const REACT_ADVERSE = {
+  pressure: {
+    blunt: [
+      '{b} stops pretending to be reasonable about it. “Fine. Say it at the table and see who backs you.”',
+      '“You have been building up to this all day,” {b} says, and it comes out louder than {b} meant it to.',
+    ],
+    sharp: [
+      '{b} hears the trap half a second late and spends the rest of it sounding like somebody who had not.',
+      '“That is not what I said,” {b} says. It is very close to what {b} said, and both of them know it.',
+    ],
+    warm: [
+      '{b} goes quiet, which from {b} is worse than shouting, and does not finish the sentence {b} started.',
+      '“I do not know how to answer that in a way you would believe,” {b} says, and stops trying to.',
+    ],
+    guarded: [
+      '{b} gives an answer that does not fit the one {b} gave this morning, and hears it not fit.',
+      '{b} looks for a way out of the conversation, finds none, and says nothing at all instead.',
+    ],
+  },
+  tested: {
+    blunt: [
+      '“Is this a test?” {b} says, far too late, and the way {b} says it answers {a} on its own.',
+      '{b} fails it loudly, argues about having failed it, and makes a worse job of the arguing.',
+    ],
+    sharp: [
+      '{b} works out mid-sentence that {b} is being measured, and the correction gives away more than the slip.',
+      '{b} gives two versions inside a minute and cannot make the second one square with the first.',
+    ],
+    warm: [
+      '{b} gets it wrong and knows it instantly, and the apology arrives before {a} has said anything.',
+      '{b} stumbles, laughs at having stumbled, and the laugh does not land the way {b} wanted.',
+    ],
+    guarded: [
+      '{b} hesitates in the wrong place, and the hesitation is the only answer {a} needed.',
+      '{b} shuts down completely, which tells {a} a good deal more than an answer would have.',
+    ],
+  },
+  covered: {
+    blunt: [
+      '{b} does not buy it, says so flatly, and does not soften it afterwards.',
+      '“That is not what you told me last night,” {b} says, and will not let {a} move past it.',
+    ],
+    sharp: [
+      '{b} takes the version apart out loud, a piece at a time, without ever raising {b}’s voice.',
+      '“Say it again,” {b} says. {a} says it again. It is not quite the same, and {b} lets that sit.',
+    ],
+    warm: [
+      '{b} wants to believe it and cannot make it fit, and the disappointment is the part that lands.',
+      '“I am not calling you a liar,” {b} says, in a way that leaves the word in the room regardless.',
+    ],
+    guarded: [
+      '{b} accepts it out loud and does not sit near {a} again for the rest of the day.',
+      '{b} says nothing, and starts checking the story against somebody else inside the hour.',
+    ],
+  },
+  bond: {
+    blunt: [
+      '“Do not do that again,” {b} says. It is not quite a threat and it is not far off one.',
+      '{b} is not interested in the explanation and says so before {a} has finished offering it.',
+    ],
+    sharp: [
+      '{b} takes the apology, does not accept it, and remembers precisely what it was for.',
+      '“We are still fine,” {b} says, and it is the first sentence today {b} has not meant.',
+    ],
+    warm: [
+      '{b} is hurt and does not hide it, which is harder on {a} than being shouted at would be.',
+      '“I would not have done that to you,” {b} says, and there is nothing {a} can say back.',
+    ],
+    guarded: [
+      '{b} says it is fine, twice, and the second one is the one to worry about.',
+      '{b} steps back from it without a word, and the distance is the whole of the answer.',
+    ],
+  },
+  loss: {
+    blunt: [
+      '“Do not stand there being sad at me,” {b} says. “One of you did this.”',
+      '{b} turns the grief straight into a name, and says the name out loud to {a}.',
+    ],
+    sharp: [
+      '{b} watches who is upset and by how much, hates doing it, and does it anyway.',
+      '“We can be sad about it tomorrow,” {b} says. “Tonight it is information.”',
+    ],
+    warm: [
+      '{b} cannot make the comfort come out right, and hears it not come out right.',
+      '{b} says the wrong thing, badly, and then has to sit in it with {a}.',
+    ],
+    guarded: [
+      '{b} takes it as a warning rather than as a loss, and stops talking about it.',
+      '{b} says nothing and changes seats, and that is the whole of the reaction.',
+    ],
+  },
+  past: {
+    blunt: [
+      '“You brought that here,” {b} says. “That is on you. It is not on me.”',
+      '{b} refuses to have the old argument again, and then has it anyway, at volume.',
+    ],
+    sharp: [
+      '{b} corrects the record and makes it worse, because the corrected version is not better.',
+      '“You are telling that story because it helps you tonight,” {b} says. “Not because it is true.”',
+    ],
+    warm: [
+      '{b} had thought this was finished, says so, and cannot get the sentence to come out calm.',
+      '{b} does not defend the old version. {b} only looks tired of being asked about it.',
+    ],
+    guarded: [
+      '{b} lets it stand, unanswered, and it costs {b} more than answering would have.',
+      '{b} leaves the conversation rather than finish it, and {a} is left holding the end of it.',
+    ],
+  },
+  road: {
+    blunt: [
+      '{b} walks faster, which is the politest way {b} has of ending a conversation.',
+      '“Save it for the table,” {b} says, and puts twenty yards between them.',
+    ],
+    sharp: [
+      '{b} answers pleasantly, and rearranges who {b} intends to walk back with.',
+      '“That was a great many questions for one walk,” {b} says, and smiles, and it is not a nice smile.',
+    ],
+    warm: [
+      '{b} is quiet for the rest of it, and the quiet is not the comfortable kind it was on the way out.',
+      '{b} says that it is fine and drops back to walk with somebody else.',
+    ],
+    guarded: [
+      '{b} gives less than {b} gave yesterday, and the difference is the whole message.',
+      '{b} stops offering anything and lets {a} carry the conversation on {a}’s own.',
+    ],
+  },
+};
+
+/**
  * WHAT IS DIFFERENT NOW — said as behaviour, never as a number.
  *
  * The consequence card is the one the old screen did not have at all, and it
  * is the reason a card can be checked against the season instead of taken on
- * trust. Keyed on the family and on whether this beat STARTED the story or
- * CONTINUED it; the ending has its own pools below, because "it is over" is a
- * different sentence from "it goes on".
+ * trust. Keyed on the family, on whether this beat STARTED the story or
+ * CONTINUED it, and — fix round 1, C2 — on whether the recorded branch says it
+ * went well or badly. The ending has its own pools further down, because "it is
+ * over" is a different sentence from "it goes on".
+ *
+ * FOUR ENTRIES PER SLOT, MINIMUM, and that is a measurement rather than a
+ * preference. The review rendered 42 episodes and counted 48 verbatim repeats
+ * of a composed card INSIDE a single episode; every one of them came from a
+ * pool of two being drawn three or more times in one day. Four is the floor
+ * this file's own comment already stated for the engine's pools, and these are
+ * held to it.
  */
 const CONSEQ = {
   suspicion: {
-    opened: [
-      '{a} says nothing more about it and doesn’t stop thinking about it either. {b} has a place in {a}’s head now that {b} did not have this morning.',
-      'Nothing is decided. But {a} is going to watch where {b} stands tonight, and {b} has no idea that is happening.',
-      '{a} lets it go for now and does not forget it. {b} walks away thinking the conversation went fine.',
-    ],
-    carried: [
-      'That is twice. {a} stops calling it a feeling and starts treating it as something to prove.',
-      '{a} sets it beside what {a} already had. It is not proof yet, and it is getting harder for {b} to explain away.',
-      'It stops being a thing {a} noticed and becomes a thing {a} is prepared to say out loud in front of people.',
-    ],
+    opened: {
+      smooth: [
+        '{a} says nothing more about it and doesn’t stop thinking about it either. {b} has a place in {a}’s head now that {b} did not have this morning.',
+        'Nothing is decided. But {a} is going to watch where {b} stands tonight, and {b} has no idea that is happening.',
+        '{a} lets it go for now and does not forget it. {b} walks away thinking the conversation went fine.',
+        '{a} keeps it to {a}’s self, which is the most useful thing {a} can do with it today.',
+      ],
+      adverse: [
+        '{a} has a reason now, and it is a specific one, and {a} can say it in a sentence in front of people.',
+        'That is not a feeling any more. {a} leaves with something {a} would be willing to repeat at the table.',
+        '{b} did not talk {a} out of it. {b} made {a} more certain, which is the opposite of what {b} was trying to do.',
+        '{a} has stopped wondering. What {a} does about it is the only question left.',
+      ],
+    },
+    carried: {
+      smooth: [
+        'That is twice. {a} stops calling it a feeling and starts treating it as something to prove.',
+        '{a} sets it beside what {a} already had. It is not proof yet, and it is getting harder for {b} to explain away.',
+        'It stops being a thing {a} noticed and becomes a thing {a} is prepared to say out loud in front of people.',
+        '{a} adds it to the pile and says nothing, and the pile is now big enough to be worth mentioning.',
+      ],
+      adverse: [
+        'Two of these now, and the second one is worse than the first. {a} is no longer looking for reasons to be wrong.',
+        '{a} has enough of it to be dangerous with, and {b} has just handed over the piece {a} was missing.',
+        'The doubt does not need any more evidence. It needs an audience, and {a} knows where to find one tonight.',
+        '{a} stops giving {b} the benefit of it. That is the change, and it does not go back.',
+      ],
+    },
   },
   testing: {
-    opened: [
-      '{a} came away with an answer, and the answer is worth more to {a} than {b} would like it to be.',
-      'It was a small thing to ask and {a} was never really asking it. {a} has what {a} came for either way.',
-      '{b} passes it without ever knowing there was anything to pass. {a} knows, and that is the whole point of it.',
-    ],
-    carried: [
-      '{a} has set this up twice now, and {b} still does not know that either time was a test.',
-      'Two goes, two results, and {a} is beginning to trust the pattern more than the person.',
-      '{a} does it again and gets the same answer again, which is either reassuring or very well rehearsed.',
-    ],
+    opened: {
+      smooth: [
+        '{a} came away with an answer, and the answer is worth more to {a} than {b} would like it to be.',
+        'It was a small thing to ask and {a} was never really asking it. {a} has what {a} came for either way.',
+        '{b} passes it without ever knowing there was anything to pass. {a} knows, and that is the whole point of it.',
+        '{a} puts {b} a little higher on the list of people worth keeping, and never says why.',
+      ],
+      adverse: [
+        '{b} fails it, and {a} does not say so. {a} simply stops planning tomorrow around {b}.',
+        '{a} got the answer {a} was afraid of. {b} has no idea a question was asked, let alone answered badly.',
+        'That is the last favour {b} gets from {a} for a while, and {b} will not be told why.',
+        '{a} was hoping to be wrong about {b} and is not. It moves {b} up a list {b} cannot see.',
+      ],
+    },
+    carried: {
+      smooth: [
+        '{a} has set this up twice now, and {b} still does not know that either time was a test.',
+        'Two goes, two results, and {a} is beginning to trust the pattern more than the person.',
+        '{a} does it again and gets the same answer again, which is either reassuring or very well rehearsed.',
+        '{a} stops testing {b}. Whatever {a} was checking for, {a} has stopped expecting to find it.',
+      ],
+      adverse: [
+        'Twice now, and {b} has failed both. {a} stops calling it bad luck.',
+        '{a} does not need a third. {b} has answered the same question two different ways and not noticed.',
+        'The pattern holds and it is the wrong pattern. {a} starts working out who else has seen it.',
+        '{a} was giving {b} a chance to come out of this well. {b} has now used the last of them.',
+      ],
+    },
   },
   cover: {
-    opened: [
-      '{a} gets away with it. Nobody asks a second question, which is precisely what {a} needed today.',
-      'It holds. {a} walks away from it looking like somebody who had nothing to walk away from.',
-      'Nothing about {a} looked wrong to {b}, and {a} spends the rest of the day quietly grateful for that.',
-    ],
-    carried: [
-      '{a} tells it the same way again. Nobody has yet noticed that it is always exactly the same way.',
-      'It survives another day, and every day it survives makes it harder for {a} to change any part of it.',
-      '{a} gets through another one. The version {a} is telling has not moved a word since the first time.',
-    ],
+    opened: {
+      smooth: [
+        '{a} gets away with it. Nobody asks a second question, which is precisely what {a} needed today.',
+        'It holds. {a} walks away from it looking like somebody who had nothing to walk away from.',
+        'Nothing about {a} looked wrong to {b}, and {a} spends the rest of the day quietly grateful for that.',
+        '{a} banks it. One more ordinary hour on the record, and ordinary is the whole strategy.',
+      ],
+      adverse: [
+        'It does not hold. {a} leaves knowing exactly which sentence gave way, and cannot take it back.',
+        '{a} has to remember the new version now as well as the old one, and there is no writing either of them down.',
+        'Something in it did not sit right with {b}, and {a} watched it not sit right, and could do nothing.',
+        '{a} came out of that with a hole in the story and a person who has noticed the hole.',
+      ],
+    },
+    carried: {
+      smooth: [
+        '{a} tells it the same way again. Nobody has yet noticed that it is always exactly the same way.',
+        'It survives another day, and every day it survives makes it harder for {a} to change any part of it.',
+        '{a} gets through another one. The version {a} is telling has not moved a word since the first time.',
+        'Another day of ordinary. {a} is getting very good at ordinary, and that is its own kind of risk.',
+      ],
+      adverse: [
+        'The version is coming apart at the edges now, and {a} is patching it in front of the person who noticed.',
+        '{a} has told it too many times and it has started to sound told. {b} heard that, whatever {b} said.',
+        'It does not survive this one intact. What {a} has left is a story with a repair in it.',
+        '{a} spends the rest of the day working out who {b} is going to repeat that to.',
+      ],
+    },
   },
   trust: {
-    opened: [
-      'Something gets agreed here that neither of them writes down. {a} and {b} go into tonight on the same side.',
-      'It is a small thing to have decided and it is decided. {a} would defend {b} now, out loud, in front of people.',
-      'Neither of them calls it an arrangement. {a} and {b} both leave behaving as though one had been made.',
-    ],
-    carried: [
-      'It holds again. {a} and {b} have built something the rest of the castle has not been shown.',
-      'Whatever this is, it survived today as well. That is starting to be worth something to both of them.',
-      '{a} and {b} keep choosing each other, and it is beginning to be the thing they are known for.',
-    ],
+    opened: {
+      smooth: [
+        'Something gets agreed here that neither of them writes down. {a} and {b} go into tonight on the same side.',
+        'It is a small thing to have decided and it is decided. {a} would defend {b} now, out loud, in front of people.',
+        'Neither of them calls it an arrangement. {a} and {b} both leave behaving as though one had been made.',
+        '{a} and {b} have a name they will not write, and they have it in common, which is the whole of it.',
+      ],
+      adverse: [
+        '{a} offered something and did not get it back. {a} will remember which way that went.',
+        'Whatever {a} thought was there is not there, and {a} leaves having said more than {b} did.',
+        'It does not take. {a} and {b} are politer with each other afterwards than they were before, which is worse.',
+        '{a} has learned where the edge of this is, and it is closer in than {a} had assumed.',
+      ],
+    },
+    carried: {
+      smooth: [
+        'It holds again. {a} and {b} have built something the rest of the castle has not been shown.',
+        'Whatever this is, it survived today as well. That is starting to be worth something to both of them.',
+        '{a} and {b} keep choosing each other, and it is beginning to be the thing they are known for.',
+        'Neither of them tests it any more. That is either the safest thing either of them has, or the most expensive.',
+      ],
+      adverse: [
+        'It bends, and both of them feel it bend. Neither of them says so, which is how it stays bent.',
+        '{a} stops assuming {b} will be there tonight, and starts making a second plan.',
+        'Something they had is smaller after this than it was before it, and neither can point at what.',
+        '{a} and {b} are still allies out loud. Out loud is now the only place it is true.',
+      ],
+    },
   },
   romance: {
-    opened: [
-      'Neither of them mentions it afterwards, which is its own way of mentioning it.',
-      'It is not nothing. {a} and {b} both notice that it is not nothing, and both decide to leave it there.',
-    ],
-    carried: [
-      'It happens again, and neither of them is being especially careful about who is nearby any more.',
-      '{a} and {b} spend another hour together that they did not have to spend together.',
-    ],
+    opened: {
+      smooth: [
+        'Neither of them mentions it afterwards, which is its own way of mentioning it.',
+        'It is not nothing. {a} and {b} both notice that it is not nothing, and both decide to leave it there.',
+        '{a} and {b} spend an hour together that neither of them needed to spend, and both of them noticed the hour.',
+        'Nothing is said about it out loud. Both of them go to bed having thought about it.',
+      ],
+      adverse: [
+        'Whatever this was, it just became a thing {a} and {b} have to manage in front of people.',
+        'It goes wrong in a way neither of them planned, and the room is going to have opinions by morning.',
+        '{a} and {b} are further apart at the end of it than they were at the start, and both are surprised by that.',
+        'It stops being sweet and starts being a liability, in the space of about a minute.',
+      ],
+    },
+    carried: {
+      smooth: [
+        'It happens again, and neither of them is being especially careful about who is nearby any more.',
+        '{a} and {b} spend another hour together that they did not have to spend together.',
+        'It is not a secret so much as a thing nobody has said aloud yet. That will not last the week.',
+        '{a} and {b} stop pretending to be surprised when they end up in the same room.',
+      ],
+      adverse: [
+        'Twice now it has gone badly, and {a} and {b} are running out of ways to call it nothing.',
+        'What was easy about it yesterday is not easy today, and both of them are working at it.',
+        '{a} and {b} have an argument they have already had once, and it goes further this time.',
+        'It is costing both of them something now, and neither is sure it is still worth what it costs.',
+      ],
+    },
   },
   grief: {
-    opened: [
-      'Nothing is fixed by it. But {a} and {b} got through the morning next to each other instead of alone.',
-      'It goes nowhere useful, and it is not supposed to. It is a bad morning being had out loud.',
-    ],
-    carried: [
-      'The same weight, a day later, and it has not got any lighter for either of them.',
-      '{a} and {b} keep coming back to it, because there is nowhere else for it to go.',
-    ],
+    opened: {
+      smooth: [
+        'Nothing is fixed by it. But {a} and {b} got through the morning next to each other instead of alone.',
+        'It goes nowhere useful, and it is not supposed to. It is a bad morning being had out loud.',
+        '{a} and {b} do not talk about the game once, which neither of them manages twice in a week.',
+        'Nobody feels better. {a} and {b} feel slightly less alone about it, which is a different thing and it counts.',
+      ],
+      adverse: [
+        'The grief turns into a question halfway through, and the question has a name in it.',
+        '{a} came for comfort and left with a suspicion, which is not what {a} came for.',
+        'It stops being about the person who is gone and starts being about who is still here.',
+        '{a} and {b} both say the kind thing and both hear the other one working out the arithmetic underneath.',
+      ],
+    },
+    carried: {
+      smooth: [
+        'The same weight, a day later, and it has not got any lighter for either of them.',
+        '{a} and {b} keep coming back to it, because there is nowhere else for it to go.',
+        'They do this most mornings now. Neither has said out loud that it has become a habit.',
+        'Nothing changes. {a} and {b} sit with it again, and sitting with it is the whole of what there is.',
+      ],
+      adverse: [
+        'It curdles this time. What was shared yesterday is being counted today.',
+        '{a} says the wrong name out loud and cannot get it back, and {b} heard it.',
+        'The mourning has turned into a shortlist, and both of them can feel it turn.',
+        'They have done this once too often, and this is the morning it goes sour.',
+      ],
+    },
   },
   callback: {
-    opened: [
-      'Something from before this place is now inside this place, and {a} and {b} are the only two who have the whole of it.',
-      'The old story is out. It changes how {a} looks at {b} tonight, and it does not go back in.',
-    ],
-    carried: [
-      'It comes up again, which means it was never really settled the first time.',
-      '{a} and {b} are still arguing about something that happened long before either of them saw this castle.',
-    ],
+    opened: {
+      smooth: [
+        'Something from before this place is now inside this place, and {a} and {b} are the only two who have the whole of it.',
+        'The old story is out. It changes how {a} looks at {b} tonight, and it does not go back in.',
+        '{a} and {b} settle something that has been sitting between them since long before the castle.',
+        'They get through it, which neither of them entirely expected to. Whatever it was, it is smaller now.',
+      ],
+      adverse: [
+        'The old argument arrives intact, and it is exactly as bad as it was the first time.',
+        '{a} says a thing about the old season that {b} is not going to be able to leave alone.',
+        'Whatever was buried is not buried. {a} and {b} have to be in a castle together with it out.',
+        'It does not stay between them. By tonight somebody else has the shape of it.',
+      ],
+    },
+    carried: {
+      smooth: [
+        'It comes up again, which means it was never really settled the first time.',
+        '{a} and {b} are still arguing about something that happened long before either of them saw this castle.',
+        'The old story gets another airing, and it is a little less sharp than it was yesterday.',
+        'They have reached the part where it is a shared joke rather than a shared wound. Nearly.',
+      ],
+      adverse: [
+        'It is worse this time. Whatever {a} and {b} did not say last time gets said now.',
+        'The old wound is doing new damage, and both of them can see it doing the damage.',
+        '{a} and {b} have now had this argument twice in a castle, and the second one was public.',
+        'It stops being history and becomes a reason, which is exactly what it should never have become.',
+      ],
+    },
   },
   journey: {
-    opened: [
-      'By the time the doors are in sight, {a} and {b} have an understanding they did not set out with.',
-      'The road did what the road does. {a} and {b} said things out there they would not have said indoors.',
-    ],
-    carried: [
-      'Another hour of walking, another hour of talking, and it goes a little further than last time.',
-      '{a} and {b} have made this walk together before. This one moves it on.',
-    ],
+    opened: {
+      smooth: [
+        'By the time the doors are in sight, {a} and {b} have an understanding they did not set out with.',
+        'The road did what the road does. {a} and {b} said things out there they would not have said indoors.',
+        'They come back through the gates walking together, which is not how they went out.',
+        'An hour of it and no walls. {a} and {b} both got something they could not have got at the table.',
+      ],
+      adverse: [
+        'They come back through the gates not walking together, and several people notice that.',
+        'The road was the wrong place for it, and {a} and {b} both worked that out about a mile too late.',
+        'Something got said out there that cannot be unsaid indoors, and now they are indoors.',
+        '{a} pushed it further than the walk could carry, and {b} spent the last mile silent.',
+      ],
+    },
+    carried: {
+      smooth: [
+        'Another hour of walking, another hour of talking, and it goes a little further than last time.',
+        '{a} and {b} have made this walk together before. This one moves it on.',
+        'The walk is becoming the place they do this, and both of them are starting to rely on it.',
+        'Same road, same pair, a little more said each time. That is how these get built.',
+      ],
+      adverse: [
+        '{a} and {b} have had this conversation on this road before, and it went better the first time.',
+        'The walk is no longer the safe place it was. Neither of them will suggest it tomorrow.',
+        'They run out of road before they run out of argument, which is the worst way to end one.',
+        'It gets worse over the distance rather than better, which is not what walking usually does.',
+      ],
+    },
   },
   unspun: {
-    opened: [
-      'It is a small thing and it is not nothing. {a} and {b} both leave with a slightly different read of the other.',
-      'Nothing is settled by it. Something is nudged by it, and neither of them could say exactly what.',
-    ],
-    carried: [
-      'It comes round again, the way things in a building this size come round again.',
-      '{a} and {b} pick it up where they left it and put it down about where they picked it up.',
-    ],
+    opened: {
+      smooth: [
+        'It is a small thing and it is not nothing. {a} and {b} both leave with a slightly different read of the other.',
+        'Nothing is settled by it. Something is nudged by it, and neither of them could say exactly what.',
+        'Neither of them will remember this on Friday. Both of them are slightly changed by it tonight.',
+        'It is the sort of exchange a castle is made of: no consequence anybody can name, and a consequence all the same.',
+      ],
+      adverse: [
+        'It goes slightly wrong, in a way neither of them will mention and both of them will remember.',
+        '{a} and {b} leave it a little colder than they arrived at it, and neither is sure why.',
+        'Something small gets broken here, and small things are what a fortnight is made of.',
+        'Nothing happens, exactly. {a} and {b} are simply worse with each other afterwards.',
+      ],
+    },
+    carried: {
+      smooth: [
+        'It comes round again, the way things in a building this size come round again.',
+        '{a} and {b} pick it up where they left it and put it down about where they picked it up.',
+        'Twice now, and it still has not turned into anything. It may not need to.',
+        'The same exchange, a day older. It is becoming the thing {a} and {b} do instead of talking.',
+      ],
+      adverse: [
+        'It comes round again and it is thinner than it was. {a} and {b} are running out of it.',
+        'The second go is worse than the first, and neither of them has the energy to fix it.',
+        'Whatever this was, it is souring by repetition, and both of them can hear it souring.',
+        'They do it again and it does not work again, and that is now the pattern.',
+      ],
+    },
   },
 };
+
 /**
- * The same card when nobody else was in the room.
+ * ONE PERSON IN THE SENTENCE IS NOT THE SAME AS ONE PERSON IN THE ROOM.
  *
- * KEYED ON THE FAMILY TOO, because "it costs {a} nothing today and it is going
- * to cost {a} something eventually" is a true sentence about somebody holding
- * a lie and a nonsense sentence about somebody who walked a road on their own
- * thinking about the arithmetic — which is what it was printed over, on the
- * first day this screen produced. Anything without its own pool falls to
- * `unspun`, which claims nothing beyond the fact that nobody else saw it.
+ * FIX ROUND 1, C1, and it is the most serious thing this screen got wrong.
+ * `people` is who the sentence is ABOUT — this file's own comment says so — and
+ * the first version read `people.length === 1` as "alone" and then wrote cards
+ * that ASSERT solitude: "There is nobody at the terrace steps but Caleb",
+ * "there is finally nobody in the room to manage". Over an action card reading
+ * "Caleb checked what frightened looked like on the two people nearest them".
+ *
+ * MEASURED over five real seasons, 528 scenes:
+ *
+ *   people-based "alone":            152 scenes, 86 of them (57%) have an
+ *                                    action line naming another player
+ *   actors ∪ people "alone":         113 scenes, 66 of them (58%) do
+ *
+ * So `actors ∪ people` does NOT fix it either, and THERE IS NO FIELD ON THE
+ * RECORD THAT MEANS "ALONE". Solitude is a claim about who witnessed the
+ * scene, everything downstream depends on it, and the engine does not record
+ * it.
+ *
+ * What this screen can do without an engine change is REFUSE TO CLAIM IT
+ * unless the evidence is there. Presence is `actors ∪ people` — the record's
+ * own claim, never widened by names the sentence merely mentions, because a
+ * third party who was talked about was not in the room either. On top of that,
+ * the solitude pools are refused whenever the engine's own sentence names
+ * anybody else, or uses one of the address words below, the scene falls back to
+ * SINGLE — one named subject, others may well have been there, and not one card
+ * says otherwise.
+ *
+ * The refusal list is read off the corpus, not guessed: every one of these appears
+ * in a line that five seasons composed as "alone" and that plainly was not.
  */
-const CONSEQ_SOLO = {
-  cover: {
-    opened: [
-      'Nobody else was there for it, so nobody else has to be managed about it. {a} keeps it.',
-      'It costs {a} nothing today, and it is going to cost {a} something eventually.',
-      '{a} is the only person alive who knows this happened, and {a} means to keep it that way.',
+const COMPANY_WORDS = /\b(ask\w*|answer\w*|told|replied|tells|in front of|everyone|everybody|anyone else|anybody|somebody|someone|the room|the table|unprompted|a second time|the first person)\b/i;
+
+function _mode(s, cast) {
+  const present = [...new Set([...(s.actors || []), ...(s.people || [])].filter(Boolean))];
+  const roll = present.length ? present
+    : [...new Set((s.parties || []).filter(Boolean))];
+  if (roll.length >= 3) return { mode: 'group', roll };
+  if (roll.length === 2) return { mode: 'pair', roll };
+  const line = String(s.line || '');
+  const named = (cast || []).some(n => n && !roll.includes(n) && line.includes(n));
+  if (named || COMPANY_WORDS.test(line)) return { mode: 'single', roll };
+  return { mode: 'solo', roll };
+}
+
+/**
+ * ONE NAMED SUBJECT, AND NO CLAIM ABOUT WHO ELSE WAS THERE.
+ *
+ * These are what a scene gets when the record names one person and the sentence
+ * will not support "alone". They put the reader in a room with somebody without
+ * emptying it, which is the only honest thing to say when the evidence stops
+ * where it does.
+ */
+const ESTABLISH_SINGLE = [
+  '{loc}, {when}, and the person worth watching in it is {a}.',
+  '{when}, at {loc}, and whatever is going on with {a} is going on quietly.',
+  '{a} is at {loc}, {when}, and not making much of being there.',
+  'At {loc}, {when}. {a} is in the middle of something and not advertising it.',
+  '{when}. {a} is at {loc}, doing the thing people here do with their hands while they think.',
+];
+const REACT_SINGLE = {
+  blunt: [
+    '{a} does not soften it for whoever is within earshot, and does not check who is.',
+    '{a} lets it show for exactly as long as it takes and then puts it away again.',
+    'Whatever {a} feels about it, {a} feels it at full volume for about a second.',
+    '{a} makes no attempt to be gracious about it, and is not sorry afterwards either.',
+  ],
+  sharp: [
+    '{a} runs it through again, looking for the place it comes apart, and finds one.',
+    '{a} files it the way {a} files everything, and rearranges tomorrow around it.',
+    '{a} does not react at all, which for {a} is a decision rather than an absence.',
+    '{a} works out, standing there, exactly what that is going to be worth on Thursday.',
+  ],
+  warm: [
+    'It gets to {a} more than {a} would like, and it takes {a} a moment to be all right again.',
+    '{a} takes it hard and takes it quietly, which is not how {a} usually takes anything.',
+    '{a} is fine about it, right up until the moment {a} has to say something, and then is fine again.',
+    '{a} does the kind thing before {a} has finished deciding whether it was deserved.',
+  ],
+  guarded: [
+    'Nothing shows. {a} has had a great deal of practice at nothing showing.',
+    '{a} puts it back where it was and goes to find somebody to be normal in front of.',
+    '{a} gives it about a second and a half and then stops giving it anything.',
+    '{a} agrees with whatever was nearest and lets the moment go past unremarked.',
+  ],
+};
+const CONSEQ_SINGLE = {
+  opened: {
+    smooth: [
+      '{a} does nothing about it today. {a} will do something about it, and not yet.',
+      'It changes nothing anybody could point at, and it changes what {a} intends to do tomorrow.',
+      '{a} keeps it. Whoever was near enough to see it did not know what they were looking at.',
+      'Nothing is decided by it, and {a} is carrying one more thing into tonight than {a} was this morning.',
     ],
-    carried: [
-      'The same again. Whatever {a} is holding, {a} has now held it a day longer than yesterday.',
-      'It is getting heavier. {a} has nowhere to set it down and nobody to set it down in front of.',
-      '{a} does it again, alone, and is a little worse at it than the last time.',
+    adverse: [
+      'That is going to cost {a} something, and {a} knew it was going to as it was happening.',
+      '{a} cannot take it back and spends the rest of the hour working out who saw.',
+      'It gets away from {a}, briefly, and briefly is all it takes in a building this size.',
+      '{a} has made tonight harder for {a}, and has nobody to blame for it.',
     ],
   },
-  grief: {
-    opened: [
-      'Nothing is decided by it and nothing needs to be. {a} came down here to not be in a room with people.',
-      '{a} tells nobody about this, and by breakfast tomorrow {a} will be fine again in front of them.',
-      'It does not help. {a} does it anyway, because the alternative is doing it in company.',
+  carried: {
+    smooth: [
+      'The same again, a day later, and {a} is a little better at it than yesterday.',
+      '{a} does it again and it costs about what it cost last time, which is manageable.',
+      'It repeats, quietly, and nothing about it has got any easier or any worse.',
+      'Another day of it. {a} has stopped noticing that {a} is doing it at all.',
     ],
-    carried: [
-      '{a} has done this once already this week, in about this spot, and it is not getting easier.',
-      'Same hour, same place, same weight. {a} is starting to think it simply does not go away.',
-      'It comes back the way it came back yesterday, and {a} has stopped expecting it not to.',
-    ],
-  },
-  journey: {
-    opened: [
-      'By the gates {a} has decided something, and nobody walking behind {a} knows what it was.',
-      'The road gave {a} an hour of nobody watching, and {a} spent all of it on one question.',
-      '{a} gets back with a plan {a} did not set out with, and does not mention having one.',
-    ],
-    carried: [
-      '{a} walks it out again and gets a little further with it than the last time.',
-      'Another hour on the road and the same question, and {a} is no nearer finished with it.',
-      '{a} has taken this exact walk before. It ends the same way and {a} keeps taking it.',
-    ],
-  },
-  unspun: {
-    opened: [
-      'Nobody saw it, so nobody has to be handled about it. {a} keeps it and goes back in.',
-      'It is a small thing, and {a} is the only person who will ever know that it happened.',
-      '{a} does nothing with it today. {a} will do something with it, and not yet.',
-    ],
-    carried: [
-      'The same again, a day later, and {a} still has nobody to say any of it to.',
-      '{a} is getting practised at this, which is not at all the same as being all right.',
-      'It repeats, quietly, with no audience, exactly the way it did yesterday.',
+    adverse: [
+      'It is getting heavier. {a} has nowhere to set it down and nobody safe to set it down in front of.',
+      '{a} does it again, and is worse at it than the last time, and can tell.',
+      'The second one is harder than the first, and {a} has no reason to think the third will not be harder still.',
+      '{a} is running out of room to do this in, and there is a week of it left.',
     ],
   },
 };
+
+/**
+ * WHAT SOMEBODY ACROSS THE ROOM SEES A PAIR DOING.
+ *
+ * FIX ROUND 1, I2. The public stream was three cards, two of them authored and
+ * ONE COPIED: for every pair scene the establishing card was the audience's,
+ * verbatim — so a watcher standing in the corridor was handed "{a} and {b} are
+ * at {loc}, and nobody knows they are" and "{a} waits until the corridor is
+ * empty before saying anything at all to {b}". Lines written for a private
+ * scene, given to somebody who was in it. The same contradiction class as C1,
+ * left standing for pairs.
+ */
+const PUBLIC_ESTABLISH_PAIR = [
+  'You are at {loc} too, {when}, and {a} and {b} are already in the middle of something.',
+  '{a} and {b} are at {loc} when you get there, {when}, standing closer together than the room needs.',
+  '{when}, at {loc}, and you are not the first one there: {a} and {b} are.',
+  'There are two people at {loc} already, {when}, and they are {a} and {b}.',
+  'You come into {loc}, {when}, and stop, because {a} and {b} are talking and it is not general talk.',
+  '{a} and {b} have {loc} between them, {when}, and you are the third person in it.',
+];
+
 /**
  * AND WHEN THE STORY ACTUALLY ENDS.
  *
@@ -864,9 +1319,26 @@ const RECALL_LEAD_DAYS_SOLO = [
 ];
 const RECALL_LEAD_TODAY_SOLO = [
   '{a} has already been here once today, and here {a} is again.',
-  'The second time since breakfast, and nobody has seen either of them.',
+  'The second time since breakfast, and nobody has seen {a} do it once.',
   'It did not keep. {a} is back at it before the day is out.',
   '{a} could not leave it alone for the length of an afternoon.',
+];
+/**
+ * And again for three or more, because "both of them know exactly when it did"
+ * printed over a scene with three people in it — found by rendering a day and
+ * counting the names against the sentence.
+ */
+const RECALL_LEAD_DAYS_GROUP = [
+  'None of them has to say which day this goes back to. All of them could.',
+  'This has been running for days, and everybody standing here is part of why.',
+  'It did not start this morning, and not one of them is hearing it for the first time.',
+  'They have all been carrying some part of this since well before today.',
+];
+const RECALL_LEAD_TODAY_GROUP = [
+  'This has already come up once today, and it has picked up people since.',
+  'The second time today, and there are more of them in it than there were this morning.',
+  'It did not keep, and it did not stay between the two who started it.',
+  'They are back on it before the day is out, and the room is bigger this time.',
 ];
 const RECALL_LEAD_TODAY = [
   'Neither of them has left it alone for more than a couple of hours.',
@@ -1888,9 +2360,19 @@ function _view(ep, observer) {
     for (const st of row.steps) if (st !== last) scenes[st].closedNow = false;
   }
 
+  // EVERY NAME THE DAY COULD BE ABOUT. `_mode` needs it to tell a scene with
+  // one person in it from a scene with one person in the SENTENCE, and the
+  // record's own cast list is the only place to get it without importing the
+  // engine. Falls back to the living list, then to the scenes themselves.
+  const cast = [...new Set([
+    ...((ep.tr && ep.tr.cast) || []),
+    ...((ep.tr && ep.tr.living) || []),
+    ...all.flatMap(x => [...(x.actors || []), ...(x.people || []), ...(x.parties || [])]),
+  ].filter(Boolean))];
+
   return {
     ep: c.ep != null ? c.ep : (ep.tr && ep.tr.ep) || ep.num || 0,
-    isAudience, watcher, scenes, order, rows, missedInTheDark,
+    isAudience, watcher, scenes, order, rows, missedInTheDark, cast,
     total: all.length,
   };
 }
@@ -2064,10 +2546,13 @@ const PUBLIC_ACTION_SOLO = [
  * no idea how long this has been going on" cannot be produced by hiding a
  * paragraph.
  */
-function _composeScene(s, key, used) {
-  const roll = _roll(s);
+function _composeScene(s, key, used, cast) {
+  const shape = _mode(s, cast);
+  const roll = _order(s, shape.roll);
+  const mode = shape.mode;
   const a = roll[0] || 'Somebody';
-  const b = roll[1] || null;
+  const b = mode === 'pair' || mode === 'group' ? roll[1] : null;
+  const tone = _tone(s);
   // BUCKETED BY HOUR, and that is not decoration. Four rooms appear in two
   // hours' lists — the front hall and the kitchen are both a dawn room and an
   // after-table room — so a shared set had the morning's picks quietly
@@ -2083,14 +2568,14 @@ function _composeScene(s, key, used) {
     d: String(s.openedEp), n: String([...new Set(s.priorDays || [])].length),
   };
 
-  const establish = _cap(_fill(roll.length >= 3
-    ? _pickUnique(ESTABLISH_GROUP, key + '|est', used)
-    : (b ? _pickUnique(ESTABLISH_PAIR[s.window] || ESTABLISH_PAIR.morning, key + '|est', used)
-      : _pickUnique(ESTABLISH_SOLO, key + '|est', used)), subs));
+  const estPool = mode === 'group' ? ESTABLISH_GROUP
+    : mode === 'pair' ? (ESTABLISH_PAIR[s.window] || ESTABLISH_PAIR.morning)
+      : mode === 'solo' ? ESTABLISH_SOLO : ESTABLISH_SINGLE;
+  const establish = _cap(_fill(_pickUnique(estPool, key + '|est', used), subs));
 
   const audience = [
-    { kind: 'establish', text: establish },
-    { kind: 'action', text: String(s.line || '').trim() },
+    { kind: 'establish', text: establish, tone: 'neutral' },
+    { kind: 'action', text: String(s.line || '').trim(), tone: 'neutral' },
   ];
   const carried = !s.opened;
   if (carried) {
@@ -2098,11 +2583,13 @@ function _composeScene(s, key, used) {
     // places — the lead as narration, the tail inside the element carrying
     // the day tabs — and the transcript has to read back the whole sentence.
     const tail = _recallTail(s, key, used);
-    // A SOLO SCENE HAS NO "BOTH OF THEM". The pair leads printed "both of them
-    // know precisely how much older" over one person alone in a corridor —
+    // A ONE-PERSON SCENE HAS NO "BOTH OF THEM". The pair leads printed "both of
+    // them know precisely how much older" over one person in a corridor —
     // found by dumping a day and reading it, same as everything else here.
-    const leads = b ? (tail.days ? RECALL_LEAD_DAYS : RECALL_LEAD_TODAY)
-      : (tail.days ? RECALL_LEAD_DAYS_SOLO : RECALL_LEAD_TODAY_SOLO);
+    const leads = mode === 'group'
+      ? (tail.days ? RECALL_LEAD_DAYS_GROUP : RECALL_LEAD_TODAY_GROUP)
+      : (b ? (tail.days ? RECALL_LEAD_DAYS : RECALL_LEAD_TODAY)
+        : (tail.days ? RECALL_LEAD_DAYS_SOLO : RECALL_LEAD_TODAY_SOLO));
     const lead = _fill(_pickUnique(leads, key + '|lead', used), subs);
     // FILLED, and this line is why the placeholder guard in tests/tr-vp.test.js
     // exists: `UNSPOKEN` carries a `{d}` and an earlier draft of this function
@@ -2110,21 +2597,23 @@ function _composeScene(s, key, used) {
     // the screen printed "it has been running since day {d}".
     const tailText = _fill(tail.text, subs);
     audience.push({ kind: 'action', role: 'recall', lead, tail: tailText,
-      text: lead + ' ' + tailText });
+      text: lead + ' ' + tailText, tone: 'neutral' });
   }
   const voice = _voice(b || a);
-  audience.push({ kind: 'reaction',
-    text: _fill(b ? _pickUnique(REACT[_reactClass(s)][voice], key + '|react', used)
-      : _pickUnique(REACT_SOLO[voice], key + '|react', used), subs) });
-  audience.push({ kind: 'consequence', ..._consequenceText(s, subs, key, used) });
+  const reactPool = b
+    ? (tone === 'adverse' ? REACT_ADVERSE : REACT)[_reactClass(s)][voice]
+    : (mode === 'solo' ? REACT_SOLO[voice] : REACT_SINGLE[voice]);
+  audience.push({ kind: 'reaction', tone: b ? tone : 'neutral',
+    text: _fill(_pickUnique(reactPool, key + '|react', used), subs) });
+  audience.push({ kind: 'consequence', ..._consequenceText(s, subs, key, used, mode, tone) });
 
   const publicStream = [
-    { kind: 'establish',
-      text: b ? establish
-        : _cap(_fill(_pick(PUBLIC_ESTABLISH_SOLO, key + '|pubest'), subs)) },
-    { kind: 'action',
+    { kind: 'establish', tone: 'neutral',
+      text: _cap(_fill(_pickUnique(
+        b ? PUBLIC_ESTABLISH_PAIR : PUBLIC_ESTABLISH_SOLO, key + '|pubest', used), subs)) },
+    { kind: 'action', tone: 'neutral',
       text: _fill(_pick(b ? PUBLIC_ACTION : PUBLIC_ACTION_SOLO, key + '|pub'), subs) },
-    { kind: 'reaction',
+    { kind: 'reaction', tone: 'neutral',
       text: _fill(_pick(b ? PUBLIC_CLOSE : PUBLIC_CLOSE_SOLO, key + '|pubclose'), subs) },
   ];
 
@@ -2138,55 +2627,44 @@ function _composeScene(s, key, used) {
     heading: loc.replace(/^the /, 'THE ').toUpperCase() + ' · '
       + (WHEN_HEAD[s.window] || 'DURING THE DAY'),
     participants: roll,
-    observerText: { audience, public: publicStream },
+    // WHAT THE SCREEN DECIDED, ON THE RECORD, so a guard can check the prose
+    // against the reasons for it rather than against itself. `mode` is how many
+    // people this screen is willing to claim were there; `tone` is whether the
+    // stored branch says it went well or badly; `layer` is which observer this
+    // record was composed for.
+    mode, tone,
+    layer: s.layer === 'heard' ? 'heard' : 'full',
+    observerText: s.layer === 'heard'
+      ? { public: publicStream }
+      : { audience, public: publicStream },
   };
 }
 
 /**
- * WHO IS IN THE ROOM, AND WHICH OF THEM SPOKE FIRST.
+ * WHO ANSWERED, READ OFF THE SENTENCE ITSELF.
  *
- * The record answers those two questions with two different lists and they
- * disagree. `people` is who the sentence is ABOUT — `cover-alone-with-it`
- * convenes two and its sentence has one person alone in an empty room, so
- * presence has to come from here. `actors` is who the scheduler CONVENED, in
- * the order it convened them, which is the only signal for who is doing the
- * thing rather than having it done to them.
+ * The record cannot say. `actors` is the order the scheduler convened them in,
+ * and the authored line is free to put either of them first — trust.js's
+ * `trust-trade-reads` convenes [Chase, Brody] and writes "Brody asked, and
+ * Chase answered". Ordering off `actors` therefore had the reaction card
+ * answering in the questioner's voice, which a reader sees immediately: Bowie
+ * asked a question and Bowie replied to it. Found by dumping a day.
  *
- * So presence is `people`, and the ORDER is the actors' order restricted to
- * the people actually in the scene, with anybody left over appended. Before
- * this, the reaction card answered in the wrong person's voice whenever the
- * record listed the respondent first — found by reading a day, where a
- * question Bowie asked was answered, in the next card, by Bowie.
+ * English puts the person a thing is done TO last, so the last name in the
+ * sentence is the respondent. It is a heuristic and it is written down as one:
+ * a two-clause line that names the same person twice ("Chet gave Beardo one
+ * name ... when Beardo asked again") can still put the wrong one last. It is
+ * right far more often than convening order is, and the alternative — a
+ * reaction that names nobody — would cost the voice contract entirely.
  */
-function _roll(s) {
-  const present = [...new Set((((s.people && s.people.length) ? s.people : s.actors) || [])
-    .filter(Boolean))];
-  const roll = present.length ? present
-    : [...new Set((s.parties || []).filter(Boolean))];
+function _order(s, roll) {
   if (roll.length < 2) return roll;
-
-  // WHO ANSWERED, READ OFF THE SENTENCE ITSELF.
-  //
-  // The record cannot say. `actors` is the order the scheduler convened them
-  // in, and the authored line is free to put either of them first — trust.js's
-  // `trust-trade-reads` convenes [Chase, Brody] and writes "Brody asked, and
-  // Chase answered". Ordering off `actors` therefore had the reaction card
-  // answering in the questioner's voice, which a reader sees immediately:
-  // Bowie asked a question and Bowie replied to it. Found by dumping a day.
-  //
-  // English puts the person a thing is done TO last, so the last name in the
-  // sentence is the respondent. It is a heuristic and it is written down as
-  // one: a two-clause line that names the same person twice ("Chet gave Beardo
-  // one name ... when Beardo asked again") can still put the wrong one last.
-  // It is right far more often than convening order is, and the alternative —
-  // a reaction that names nobody — would cost the voice contract entirely.
   const named = roll
     .map(n => ({ n, at: String(s.line || '').lastIndexOf(n) }))
     .filter(x => x.at >= 0);
   if (named.length >= 2) {
     named.sort((x, y) => x.at - y.at);
-    const order = named.map(x => x.n);
-    return [...new Set([...order, ...roll])];
+    return [...new Set([...named.map(x => x.n), ...roll])];
   }
   const lead = (s.actors || []).filter(n => roll.includes(n));
   return [...new Set([...lead, ...roll])];
@@ -2230,7 +2708,7 @@ function _recallTail(s, key, used) {
 }
 
 /** What is different now — an ending if it ended, a direction if it did not. */
-function _consequenceText(s, subs, key, used) {
+function _consequenceText(s, subs, key, used, mode, tone) {
   if (s.closedNow) {
     const sense = CLOSE_BY_SENSE[s.sense] ? s.sense : 'walked';
     // THE MARK CARRIES THE OUTCOME, and it used to carry a slogan. The band
@@ -2241,16 +2719,16 @@ function _consequenceText(s, subs, key, used) {
     // what goes in the mark.
     const clause = OUTCOME_CLAUSE[s.outcome] || 'And that is where it finishes.';
     const say = _fill(_pickUnique(CLOSE_BY_SENSE[sense], key + '|close', used), subs);
-    return { text: say + ' ' + clause, say, mark: clause };
+    return { text: say + ' ' + clause, say, mark: clause, tone };
   }
   const dir = s.opened ? 'opened' : 'carried';
   const famKey = (s.family === 'romance-spark' || s.kind === 'romance-spark') ? 'romance'
     : (CONSEQ[s.family] ? s.family : (CONSEQ[s.kind] ? s.kind : 'unspun'));
-  const pool = (!subs.b || subs.b === subs.a)
-    ? (CONSEQ_SOLO[famKey] || CONSEQ_SOLO.unspun)[dir]
-    : CONSEQ[famKey][dir];
+  const pool = (mode === 'pair' || mode === 'group')
+    ? CONSEQ[famKey][dir][tone]
+    : CONSEQ_SINGLE[dir][tone];
   const say = _fill(_pickUnique(pool, key + '|conseq', used), subs);
-  return { text: say, say, mark: null };
+  return { text: say, say, mark: null, tone };
 }
 
 /**
@@ -2383,10 +2861,12 @@ function _buildBeats(v) {
   for (let i = 0; i < v.scenes.length; i++) {
     const raw = v.scenes[i];
     const skey = key + '|' + i + '|' + raw.eventId;
-    const composed = _composeScene({ ...raw, epNum: v.ep }, skey, used);
+    const composed = _composeScene({ ...raw, epNum: v.ep }, skey, used, v.cast);
     const s = { ...raw, heading: composed.heading, participants: composed.participants };
-    const stream = raw.layer === 'heard'
-      ? composed.observerText.public : composed.observerText.audience;
+    // OFF THE COMPOSED RECORD, never re-derived: `_composeScene` has already
+    // decided which stream this observer is entitled to, and a second copy of
+    // that decision here is the drift this directory keeps one list to avoid.
+    const stream = composed.observerText.audience || composed.observerText.public;
 
     let lead = '';
     if (raw.phaseId && raw.phaseId !== band) {
@@ -2723,5 +3203,5 @@ export function castleDayScenes(ep, observer = 'audience') {
   const key = 'dy|' + v.ep;
   const used = new Set();
   return v.scenes.map((raw, i) =>
-    _composeScene({ ...raw, epNum: v.ep }, key + '|' + i + '|' + raw.eventId, used));
+    _composeScene({ ...raw, epNum: v.ep }, key + '|' + i + '|' + raw.eventId, used, v.cast));
 }

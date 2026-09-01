@@ -523,47 +523,208 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     expect(BANNED.test('Everyone turns against Manu after the mission.')).toBe(true);
   });
 
-  it('composes the filtered stream separately instead of hiding the full one', () => {
-    let compared = 0;
+  it('composes the filtered stream out of different sentences, not the same ones', () => {
+    // THIS ARM USED TO BE UNFAILABLE. It compared `pub.length < audience.length`
+    // — a constant 3 against a constant 4 or 5 — so it could not go red for any
+    // input, and it `continue`d past `kind === 'establish'`, which exempted the
+    // one card that WAS being copied: for every pair scene the public
+    // establishing card was the audience's, verbatim, so a watcher in the
+    // corridor was handed "{a} and {b} are at {loc}, and nobody knows they are".
+    // What is asserted now is the property that actually matters and that a
+    // regression can break: NO sentence composed for the audience may appear in
+    // the stream composed for somebody who was only in the room.
+    let compared = 0, cards = 0;
     for (const ep of TASK6_ROWS) {
       for (const scene of allScenes(ep)) {
         const pub = scene.observerText.public;
         expect(Array.isArray(pub), scene.id + ' has no public stream').toBe(true);
-        expect(pub.length, scene.id + ': the public stream is as long as the audience stream')
-          .toBeLessThan(scene.observerText.audience.length);
         expect(pub.length).toBeGreaterThanOrEqual(2);
-        // and it is not the same words with a class on it
-        const a = scene.observerText.audience.map(b => b.text).join(' ');
+        const aud = scene.observerText.audience.map(b => b.text);
         for (const b of pub) {
-          if (b.kind === 'establish') continue;
-          expect(a.includes(b.text), scene.id + ': the public stream reuses the audience ' + b.kind)
+          expect(aud.includes(b.text),
+            scene.id + ': the public ' + b.kind + ' is the audience card verbatim')
             .toBe(false);
+          // and it may not carry the continuity the layer exists to withhold
+          expect(b.text, scene.id + ': the public stream cites a day').not.toMatch(/\bday \d+/i);
+          cards++;
         }
         compared++;
       }
     }
     expect(compared).toBeGreaterThan(20);
+    expect(cards).toBeGreaterThan(60);
   });
 
-  it('and every card the screen composes says something concrete', () => {
-    // The "incomplete because the label was removed" failure: a sentence that
-    // is under about forty characters is a fragment that used to lean on a
-    // heading for its meaning.
+  it('and every card that puts people in a room names them', () => {
+    // THIS ARM USED TO BE UNFAILABLE. "at least 38 characters and ends in a full
+    // stop" cannot fail on any authored pool line, so it proved nothing about
+    // fragments. What it is asserting now is the property the removed category
+    // headings used to carry: the ESTABLISHING card has to say who is there and
+    // the REACTION card has to say who is reacting, because those are the two
+    // cards a reader cannot resolve from anywhere else. It goes red today on any
+    // pool line that loses its `{a}` — it found two while being written.
+    //
+    // It deliberately does NOT extend to the consequence card. "Neither of them
+    // will suggest it tomorrow" is resolved by the establishing card two above
+    // it and is better prose than repeating both names a fourth time; requiring
+    // a name there would be requiring worse writing.
     let checked = 0;
     for (const ep of TASK6_ROWS) {
       for (const scene of allScenes(ep)) {
         for (const beat of scene.observerText.audience) {
-          expect(beat.text.length,
-            scene.id + '/' + beat.kind + ' is a fragment: "' + beat.text + '"')
-            .toBeGreaterThan(38);
-          expect(/[.!?"”']$/.test(beat.text.trim()),
-            scene.id + '/' + beat.kind + ' does not finish a sentence: "' + beat.text + '"')
-            .toBe(true);
+          if (beat.kind !== 'establish' && beat.kind !== 'reaction') continue;
+          expect(scene.participants.some(n => beat.text.includes(n)),
+            scene.id + '/' + beat.kind + ' names nobody: "' + beat.text + '"').toBe(true);
           checked++;
         }
       }
     }
-    expect(checked).toBeGreaterThan(80);
+    expect(checked).toBeGreaterThan(40);
+  });
+
+  it('and does not print the same composed card twice in one episode', () => {
+    // FIX ROUND 1, I3. Five rendered seasons of the first version produced 48
+    // verbatim repeats of a composed card INSIDE one episode — every one of
+    // them a pool of two drawn three or more times in a day. The consequence
+    // pools are four-wide now and split by tone, and the same scan measures 6.
+    //
+    // TWO ARMS, because they fail for different reasons. Three of the same card
+    // in one episode is a pool that has collapsed and it is a hard zero. Two is
+    // the tail of a finite pool and is a SHARE, measured at 6 across 45 days;
+    // the ceiling is 15, which is 2.5x the live value and far below the 48 this
+    // replaced.
+    let twice = 0, thrice = [];
+    let episodes = 0;
+    for (const ep of TASK6_ROWS) {
+      const seen = new Map();
+      for (const scene of allScenes(ep)) {
+        for (const beat of scene.observerText.audience) {
+          if (beat.kind === 'action') continue;      // the engine's own pools
+          seen.set(beat.text, (seen.get(beat.text) || 0) + 1);
+        }
+      }
+      for (const [text, n] of seen) {
+        if (n >= 3) thrice.push('x' + n + ' "' + text.slice(0, 70) + '"');
+        else if (n === 2) twice++;
+      }
+      episodes++;
+    }
+    expect(episodes).toBeGreaterThan(4);
+    expect(thrice, 'a composed card printed three times in one episode — a pool has collapsed')
+      .toEqual([]);
+    expect(twice, 'composed cards are repeating inside single episodes').toBeLessThan(15);
+  });
+
+  it('never claims a room was empty when the scene says otherwise', () => {
+    // FIX ROUND 1, C1 — and this is the arm that would have caught it. `people`
+    // is who the SENTENCE is about, and reading it as "who was there" made the
+    // screen assert solitude over an action card that named other players: 69
+    // scenes in five rendered seasons, 13% of everything. Solitude is a claim
+    // about who witnessed the scene and everything downstream depends on it.
+    //
+    // The rule: a scene the screen composed as `solo` — the only mode whose
+    // pools assert that nobody else was there — must have an action sentence
+    // that names nobody outside its own participants.
+    let solo = 0, single = 0, pair = 0;
+    for (const ep of TASK6_ROWS) {
+      for (const scene of allScenes(ep)) {
+        const action = scene.observerText.audience.find(b => b.kind === 'action').text;
+        if (scene.mode === 'solo') {
+          const others = CAST.filter(n => !scene.participants.includes(n) && action.includes(n));
+          expect(others, scene.id + ': composed as alone, and the action names ' + others.join(', ')
+            + ' — "' + action + '"').toEqual([]);
+          solo++;
+        }
+        if (scene.mode === 'single') single++;
+        if (scene.mode === 'pair') pair++;
+      }
+    }
+    // ALL THREE MODES HAVE TO BE REACHED or the rule above is a rule about
+    // nothing. `single` is the mode that exists because the record cannot say
+    // who was present; if it ever went to zero, every one-person scene would be
+    // claiming solitude again and this arm would still be green.
+    expect(pair, 'no pair scene was composed').toBeGreaterThan(20);
+    expect(single, 'the one-subject mode is unreachable, so C1 has silently returned')
+      .toBeGreaterThan(0);
+    expect(solo, 'no scene was ever composed as alone, so the rule above asserted nothing')
+      .toBeGreaterThan(0);
+  });
+
+  it('answers a scene that went badly as a scene that went badly', () => {
+    // FIX ROUND 1, C2 — the other arm that would have caught a shipped defect.
+    // The record carries `branch`, the castle pools fork four ways on it, and
+    // the screen keyed only on the family: so `testing-night-scores-it` on
+    // branch `failed`, outcome `failed-maliciously`, rendered "doesn't think
+    // twice about it, which is either the truth or a very good habit" directly
+    // above "It was failed on purpose, and both of them know that as well."
+    let adverse = 0, smooth = 0, closedAdverse = 0;
+    for (const ep of TASK6_ROWS) {
+      const record = new Map(ep.tr.castle.scenes.map(x => [x.eventId + '|' + x.beatNo, x]));
+      for (const scene of allScenes(ep)) {
+        const raw = record.get(scene.eventId + '|' + scene.id.split('-').pop());
+        const react = scene.observerText.audience.find(b => b.kind === 'reaction');
+        const conseq = scene.observerText.audience.find(b => b.kind === 'consequence');
+        if (scene.tone === 'adverse') {
+          adverse++;
+          expect(conseq.tone, scene.id + ': the consequence was drawn from the wrong pool')
+            .toBe('adverse');
+          if (scene.mode === 'pair' || scene.mode === 'group') {
+            expect(react.tone, scene.id + ': a scene that went badly got a smooth reaction')
+              .toBe('adverse');
+          }
+        } else { smooth++; }
+        // and the tone is the RECORD's, not the screen's own opinion of it
+        if (raw && raw.closedNow && ['test-exposed', 'failed-maliciously', 'exposed',
+          'broken-up', 'confessed-unrelated'].includes(raw.outcome)) {
+          expect(scene.tone, scene.id + ': outcome ' + raw.outcome + ' rendered as smooth')
+            .toBe('adverse');
+          closedAdverse++;
+        }
+      }
+    }
+    expect(smooth, 'nothing rendered smooth').toBeGreaterThan(20);
+    expect(adverse, 'no scene ever rendered as having gone badly — the branch is being ignored '
+      + 'again, which is exactly the defect').toBeGreaterThan(10);
+    expect(closedAdverse, 'no closed scene with an adverse stored outcome was checked')
+      .toBeGreaterThan(0);
+  });
+
+  it('gives a player only the layer they are entitled to, and says which it is', () => {
+    // FIX ROUND 1, I1. `castleDayScenes` took an `observer` and ignored it for
+    // CONTENT: it handed back the full audience stream for scenes the player
+    // was never in, and the record carried no `layer`, so no caller could tell.
+    // There is no production consumer today, which is precisely why it had to
+    // be fixed: the next one would have leaked in silence.
+    let full = 0, heard = 0, checked = 0;
+    for (const ep of TASK6_ROWS) {
+      const n = {};
+      for (const s of ep.tr.castle.scenes) {
+        for (const p of new Set([...s.people, ...s.actors])) n[p] = (n[p] || 0) + 1;
+      }
+      const who = Object.keys(n).sort((a, b) => n[b] - n[a])[0];
+      if (!who) continue;
+      for (const scene of castleDayScenes(ep, 'player:' + who)) {
+        const mine = scene.participants.includes(who);
+        if (scene.layer === 'full') {
+          expect(mine, scene.id + ': ' + who + ' got the full layer for a scene they were not in')
+            .toBe(true);
+          expect(Array.isArray(scene.observerText.audience)).toBe(true);
+          full++;
+        } else {
+          expect(scene.layer, scene.id + ': a scene with no layer on it').toBe('heard');
+          expect(scene.observerText.audience,
+            scene.id + ': an overheard scene carried the audience stream anyway').toBeUndefined();
+          expect(Array.isArray(scene.observerText.public)).toBe(true);
+          heard++;
+        }
+        expect(scene.window === 'night' && !mine,
+          scene.id + ': ' + who + ' was asleep and got a night scene').toBe(false);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(20);
+    expect(full, 'the watcher was in nothing, so the full branch is untested').toBeGreaterThan(0);
+    expect(heard, 'nothing was ever withheld, so the layer is unreachable').toBeGreaterThan(10);
   });
 
   it('draws the overflow part of the day, marked, instead of dropping it', () => {

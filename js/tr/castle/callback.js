@@ -90,13 +90,17 @@ function sharedHistory(a, b) {
  * or it is asserting something true of the entire room. See F2 on
  * `callback-no-history-envy`.
  */
+// EXPORTED for js/tr/castle/mission-fallout.js, which needs the same
+// "have these two got a story, or were they merely cast together" filter and
+// must not carry a second copy of it — a duplicate would drift from this one
+// the first time a relation is added to the ledger's derived shape.
 const STORY_RELATIONS = new Set(['allies', 'betrayed-them', 'betrayed-by-them', 'showmance', 'rivals']);
-function storyWith(a, b) {
+export function storyWith(a, b) {
   return sharedHistory(a, b).filter(h => STORY_RELATIONS.has(h.relation));
 }
 
 /** The single strongest signal across every shared season, positive or negative. */
-function strongestRelation(history) {
+export function strongestRelation(history) {
   const priority = ['betrayed-by-them', 'betrayed-them', 'rivals', 'showmance', 'allies', 'costars'];
   for (const rel of priority) {
     const hit = history.find(h => h.relation === rel);

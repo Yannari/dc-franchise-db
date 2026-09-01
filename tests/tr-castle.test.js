@@ -39,6 +39,7 @@ import '../js/tr/castle/romance.js';
 import '../js/tr/castle/callback.js';
 import '../js/tr/castle/testing.js';
 import '../js/tr/castle/journey.js';
+import '../js/tr/castle/mission-fallout.js';
 
 const BASE_CAST = roster.players.slice(0, 6).map(p => p.name);
 
@@ -1233,7 +1234,16 @@ describe('events cite residue: episode 7 names episode 2', () => {
     // which A and B are constructed to fail. [D, B] is the same world seen
     // from somebody it did not happen to. A sweep that can only convene one
     // pair can only ever exercise events about that pair.
-    const SCENES = [[A, B], [D, B]];
+    // A THIRD SCENE, ADDED IN TASK 7 STAGE 3: one person on their own. The
+    // `journey-back` window's yield problem was measured to be partly that the
+    // scene sampler draws a SINGLE actor about 40% of the time and almost
+    // nothing in that window would take one, so four of the events written for
+    // it are solo-capable and one (`mission-the-long-walk`) is solo-ONLY. A
+    // sweep that can only convene pairs cannot reach those, which is the same
+    // "can only exercise events about that pair" gap the [D, B] scene was added
+    // for. Tried LAST, so no event that was previously exercised on [A, B] or
+    // [D, B] changes which scene it is exercised on.
+    const SCENES = [[A, B], [D, B], [A]];
     const ctx = () => ({ ep: PROBE_EP, window: 'evening', act: 'middle',
       living: [...PROBE_CAST], actors: [A, B] });
 

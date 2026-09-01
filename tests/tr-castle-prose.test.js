@@ -67,6 +67,7 @@ import '../js/tr/castle/romance.js';
 import '../js/tr/castle/callback.js';
 import '../js/tr/castle/testing.js';
 import '../js/tr/castle/journey.js';
+import '../js/tr/castle/mission-fallout.js';
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
@@ -760,11 +761,37 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     }
     expect(seen, 'no annotated event fired in this season, so nothing was checked')
       .toBeGreaterThan(0);
-    // and an UNannotated event still records nothing, so the fallback is live
+    // ── THE FALLBACK IS STILL LIVE, AND THE SECOND WAY OF DECLARING ───────
+    //
+    // `every(... === null)` was right while `roles: 'initiator-first'` was the
+    // only way to say which way a scene runs. It is not: `sceneSpeakers`
+    // (js/tr/events.js) documents TWO, and the second — `speaker`/`respondent`
+    // on the `fire()` result — is the one it tells new events to use, "whenever
+    // a branch can hand the scene the other way round". Task 7 stage 3's
+    // mission-fallout library uses it, including on two events that could not
+    // use `roles` at all because they also fire solo and a one-person scene has
+    // no respondent to name.
+    //
+    // So the claim is split into the two things it was really making, and both
+    // are kept: SOME unannotated scene still records nothing (the heuristic
+    // fallback in js/vp-tr/castle-day.js is reachable, which is what this line
+    // was for), and EVERY unannotated scene that does record a direction
+    // records a valid one. The second half is new and is strictly more than
+    // was checked before.
     const quiet = TASK6_ROWS.flatMap(e => e.tr.castle.scenes)
       .filter(x => !declared.has(x.eventId));
     expect(quiet.length).toBeGreaterThan(0);
-    expect(quiet.every(x => x.speaker === null && x.respondent === null)).toBe(true);
+    expect(quiet.some(x => x.speaker === null && x.respondent === null),
+      'every scene in the season names a speaker, so the heuristic fallback on the '
+      + 'screen is unreachable and untested').toBe(true);
+    for (const x of quiet) {
+      if (x.speaker === null && x.respondent === null) continue;
+      expect(x.speaker, `${x.eventId} recorded a respondent and no speaker`).toBeTruthy();
+      expect(x.respondent, `${x.eventId} recorded a speaker and no respondent`).toBeTruthy();
+      expect(x.speaker).not.toBe(x.respondent);
+      expect(x.people).toContain(x.speaker);
+      expect(x.people).toContain(x.respondent);
+    }
   });
 
   it('and classifies every branch it can see as adverse or as harmless', () => {
@@ -804,9 +831,64 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     // branch `failed`, outcome `failed-maliciously`, rendered "doesn't think
     // twice about it, which is either the truth or a very good habit" directly
     // above "It was failed on purpose, and both of them know that as well."
+    // ── AND A SEASON THAT ACTUALLY CONTAINS THE CASE (Task 7 stage 3) ────
+    //
+    // The `closedAdverse` floor at the foot of this arm is its anti-vacuity
+    // check, and it is a check on a REACHABILITY: a story that closes tonight
+    // on `exposed` / `failed-maliciously` / `test-exposed` / `broken-up` /
+    // `confessed-unrelated`. That is not a common night, and seed 20260901 —
+    // the one season the whole Task-6 block reads — stopped containing one
+    // when the castle's scene scheduling moved. The floor then failed for a
+    // reason that has nothing to do with what the arm is testing, which is the
+    // same fixture fragility this plan already hit once in tr-export.test.js's
+    // co-winner block, and the fix is the same one: WIDEN THE SEARCH rather
+    // than pin a seed. A pinned seed rotates out of the case on the next
+    // scheduling change; a search reads as "look for the case", and a total
+    // miss across the whole range still fails loudly at the foot of the arm.
+    //
+    // The shared rows are read first and are almost always enough for the tone
+    // assertions themselves; the extra seasons are only walked until one
+    // adverse payoff turns up.
+    const hasAdversePayoff = rows => rows.some(ep => (ep.tr.castle.scenes || [])
+      .some(x => x.closedNow && ['test-exposed', 'failed-maliciously', 'exposed',
+        'broken-up', 'confessed-unrelated'].includes(x.outcome)));
+    const ROWS = [...TASK6_ROWS];
+    for (let seed = 1; seed <= 60 && !hasAdversePayoff(ROWS); seed++) {
+      setPlayers(ROSTER);
+      seedFranchiseHistory(CAST);
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 900000 + seed });
+      ROWS.push(...(gs.episodeHistory || []).map(e => ({ ...e }))
+        .filter(e => e.tr && e.tr.castle && (e.tr.castle.scenes || []).length));
+    }
+
     let adverse = 0, smooth = 0, closedAdverse = 0;
-    for (const ep of TASK6_ROWS) {
+    for (const ep of ROWS) {
       const record = new Map(ep.tr.castle.scenes.map(x => [x.eventId + '|' + x.beatNo, x]));
+      // ── WHICH BEAT OF A STORY IS ALLOWED TO BE ITS ENDING (Task 7 stage 3) ──
+      //
+      // `_castleRecord` (js/tr/headless.js) stamps `closedNow` on EVERY beat a
+      // closed story took tonight, because it is answering "did this end
+      // tonight". `castleDayScenes` deliberately clears it on all but the LAST
+      // of them, and says why in its own comment: a story that announces its
+      // ending at dawn, runs two more scenes and announces the same ending on
+      // the road home reads as a rendering fault. That was found by dumping a
+      // transcript and reading it.
+      //
+      // This arm was reading the RECORD's un-cleared flag, so it demanded an
+      // adverse tone from beats the screen had deliberately un-closed — the
+      // dawn beat of a story that would not end until the evening. It passed
+      // for as long as a story taking two beats in one day was rare; the
+      // mission-fallout window going from 0.70 scenes an episode to 4.36 made
+      // it ordinary, and the arm went red on `testing-cold-read-check`, whose
+      // own branch is `cold-read` and whose own firing closed nothing.
+      //
+      // So it is scoped to the same population the screen scopes itself to:
+      // the last beat that story took today. That is a NARROWING of what the
+      // arm asks about, not of what it demands — the `closedAdverse` floor
+      // below still has to be cleared, so an implementation that stopped
+      // rendering real payoffs adversely still fails here.
+      const lastBeatOfThread = new Map();
+      for (const x of ep.tr.castle.scenes) lastBeatOfThread.set(x.threadId, x.beatNo);
       for (const scene of allScenes(ep)) {
         const raw = record.get(scene.eventId + '|' + scene.id.split('-').pop());
         const react = scene.observerText.audience.find(b => b.kind === 'reaction');
@@ -821,8 +903,9 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
           }
         } else { smooth++; }
         // and the tone is the RECORD's, not the screen's own opinion of it
-        if (raw && raw.closedNow && ['test-exposed', 'failed-maliciously', 'exposed',
-          'broken-up', 'confessed-unrelated'].includes(raw.outcome)) {
+        if (raw && raw.closedNow && lastBeatOfThread.get(raw.threadId) === raw.beatNo
+          && ['test-exposed', 'failed-maliciously', 'exposed',
+            'broken-up', 'confessed-unrelated'].includes(raw.outcome)) {
           expect(scene.tone, scene.id + ': outcome ' + raw.outcome + ' rendered as smooth')
             .toBe('adverse');
           closedAdverse++;

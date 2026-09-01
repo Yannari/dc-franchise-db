@@ -405,7 +405,19 @@ registerEvent({
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
-    return t && heatAt(t, ctx.ep) > 0 ? 2 : 0;
+    // TWO PARTIES, BECAUSE `fire()` DESTRUCTURES THEM (Task 7 stage 3). This
+    // is a two-person scene that reads its people off the arc rather than off
+    // the draw, so a ONE-party `trust` arc hands `fire()` `b === undefined`
+    // and the scene API refuses the bond outright — a thrown season, not a
+    // skipped scene. The pool held no one-party trust arc when this was
+    // written, so the guard is inert today and this is exactly why it is
+    // cheap: the first event anywhere to open one would otherwise take the
+    // window down, and it would take it down in whichever season happened to
+    // draw the pair. Measured as a real crash while widening
+    // `mission-what-the-day-was-worth` to solo, which is why that widening was
+    // withdrawn and this line added instead.
+    if (!t || t.parties.length < 2) return 0;
+    return heatAt(t, ctx.ep) > 0 ? 2 : 0;
   },
   fire(ctx) {
     const api = sceneApi(ctx, 'trust-late-checkin');
@@ -558,7 +570,10 @@ registerEvent({
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
-    return t && heatAt(t, ctx.ep) >= 1 ? 1.5 : 0;
+    // Two parties, same reason as `trust-late-checkin` above: `fire()` reads
+    // `[a, b] = t.parties` and a one-party arc would throw rather than skip.
+    if (!t || t.parties.length < 2) return 0;
+    return heatAt(t, ctx.ep) >= 1 ? 1.5 : 0;
   },
   fire(ctx) {
     const api = sceneApi(ctx, 'trust-vow-of-silence');

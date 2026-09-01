@@ -84,6 +84,7 @@ import '../js/tr/castle/romance.js';
 import '../js/tr/castle/callback.js';
 import '../js/tr/castle/testing.js';
 import '../js/tr/castle/journey.js';
+import '../js/tr/castle/mission-fallout.js';
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
@@ -537,11 +538,26 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // `journey-back` or `night` — windows holding five or six events each —
     // and never in `morning` or `evening`, which is where ten declarations
     // once starved `romance-shared-alibi` from 12 firings to 2.
-    expect(EVENTS.length).toBe(98);
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(39);
+    // MOVED AGAIN BY TASK 7 STAGE 3: 98 -> 112 events, 39 -> 53 advancers,
+    // 33 -> 47 citers. All fourteen are the `journey-back` library
+    // (js/tr/castle/mission-fallout.js), and all fourteen declare both flags.
+    //
+    // WHY A DECLARATION IS SAFE IN THIS WINDOW WHEN IT WAS NOT IN `morning`.
+    // The paragraph above is the reason the flag is treated as a weight change
+    // rather than a label: guard 1 multiplies a declared advancer by 4x-9x
+    // inside its own window, so ten declarations in `morning` starved
+    // `romance-shared-alibi` from 12 firings to 2. `journey-back` is the
+    // opposite case. It was the emptiest window in the game — six events,
+    // 0.70 scenes an episode against a 4-6 phase budget — so the multiplier is
+    // being applied inside a window whose problem was that it had nothing to
+    // draw, and the sweep below confirms the result: the rarest branch in the
+    // whole pool is unchanged at `grief-nobody-sleeps:awake-desperate`, and
+    // the window's own pre-existing six all still clear the branch floor.
+    expect(EVENTS.length).toBe(112);
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(53);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
-    expect(EVENTS.filter(e => e.citesResidue).length).toBe(33);
+    expect(EVENTS.filter(e => e.citesResidue).length).toBe(47);
   });
 
   it('45 non-empty family x window cells: 18 with no advancer, 17 with one, 10 with two or more', () => {
@@ -564,12 +580,22 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // of the same kind and parties whether or not anything is declared; with
     // guard 1 flattened, seasons before and after a re-declaration pass were
     // bit-identical). This table exists to catch silent drift, and that is all.
-    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(45);
+    // MOVED BY TASK 7 STAGE 3: 45 -> 47 cells, and the interesting number is
+    // the one that did NOT move. `zero` is still 18 and `zeroNames` below is
+    // still the same eighteen strings: the fourteen new events opened two new
+    // cells (`callback|journey-back` and `testing|journey-back`) and every one
+    // of them landed in a cell that already had, or now has, an advancer. So
+    // the count that changed is `one` -> `many` (17/10 -> 14/15), which is the
+    // direction this ledger has always wanted and has never been able to
+    // assert as a bar — six `journey-back` cells went from one advancer to two
+    // or more, and a thread living in that window is no longer limited to one
+    // advance every five rounds by the pair cooldown on a single event.
+    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(47);
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
       + 'can never be continued here, whatever either continuation lever is set to').toBe(18);
     expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
-      + 'living here can be advanced at most once every five rounds').toBe(17);
-    expect(many, 'cells with two or more advancers').toBe(10);
+      + 'living here can be advanced at most once every five rounds').toBe(14);
+    expect(many, 'cells with two or more advancers').toBe(15);
     // Named, not just counted: a change that swapped one zero cell for another
     // would keep every total above and still be a different game.
     // SEVEN, AND THE SHAPE OF THE LIST IS THE FINDING. Six of them are the
@@ -1082,9 +1108,19 @@ describe('THE WINDOW SWEEP: every window spec 5.6 names is a window the show use
 // event's `passed-clean` closures go to zero while its firings, and its
 // `exposed` closures, do not.
 const CLOSING_BRANCHES = [
+  // MOVED BY TASK 7 STAGE 3: 13 -> 17. Two of the four are
+  // `mission-back-through-the-gate` (js/tr/castle/mission-fallout.js), the one
+  // closer in the new `journey-back` library, which resolves whichever open
+  // arc these two people are actually in at the gate; the third and fourth are
+  // `grief-castle-in-view:turned-back`, a terminal outcome added when that
+  // event was rewritten from two branches to four. Nothing left the list.
   'cover-story-survived-the-day:exposed',
   'cover-story-survived-the-day:passed-clean',
   'grief-castle-in-view:buried',
+  'grief-castle-in-view:turned-back',
+  'mission-back-through-the-gate:buried',
+  'mission-back-through-the-gate:passed-clean',
+  'mission-back-through-the-gate:turned-back',
   'romance-showmance-on-the-way-back:became-showmance',
   'susp-let-it-go-on-the-road-back:confessed-unrelated',
   'susp-let-it-go-on-the-road-back:denied-convincingly',
@@ -1196,6 +1232,11 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // and `nervy` (paranoid OR desperate) reads 59. The rarest of the six new cells
 // is 59 per 400. A repeat-detecting label is not worth a knife-edge band.
 const BRANCHES = [
+  // MOVED BY TASK 7 STAGE 3: 168 -> 236. Sixty-eight new (event, branch) keys:
+  // fourteen new events at four branches each (with three of them carrying a
+  // fifth for a solo draw), plus the six branches added by the three
+  // `journey-back` rewrites the audit put on the REWRITE list. Nothing left
+  // the list — every branch that fired before still fires.
   'callback-competitive-history:rivalry-carried-over',
   'callback-different-show-different-person:disappointment',
   'callback-different-show-different-person:dissonance',
@@ -1241,6 +1282,8 @@ const BRANCHES = [
   'grief-blame-the-room:blamed-room',
   'grief-castle-in-view:buried',
   'grief-castle-in-view:carried',
+  'grief-castle-in-view:talked-past-it',
+  'grief-castle-in-view:turned-sharp',
   'grief-empty-chair:empty-chair',
   'grief-headcount:headcount-pair',
   'grief-headcount:headcount-solo',
@@ -1263,6 +1306,66 @@ const BRANCHES = [
   'grief-suspicion-of-timing:timing',
   'grief-toast-to-them:toasted',
   'grief-wrongly-suspected-irony:wrongly-suspected-irony',
+  'mission-a-body-short:angry',
+  'mission-a-body-short:did-not-mention-it',
+  'mission-a-body-short:named-them',
+  'mission-a-body-short:on-their-own',
+  'mission-a-body-short:useful',
+  'mission-a-name-by-the-time-were-back:agreed',
+  'mission-a-name-by-the-time-were-back:agreed-for-different-reasons',
+  'mission-a-name-by-the-time-were-back:alone',
+  'mission-a-name-by-the-time-were-back:kept-it-back',
+  'mission-a-name-by-the-time-were-back:split',
+  'mission-back-through-the-gate:carried-inside',
+  'mission-back-through-the-gate:ended-badly',
+  'mission-back-through-the-gate:quietly-dropped',
+  'mission-back-through-the-gate:settled-it',
+  'mission-same-side:closed-ranks',
+  'mission-same-side:divided-it',
+  'mission-same-side:one-sided',
+  'mission-same-side:professional',
+  'mission-the-hour-they-went-missing:counted-the-cost',
+  'mission-the-hour-they-went-missing:defended-the-hour',
+  'mission-the-hour-they-went-missing:let-it-alone',
+  'mission-the-hour-they-went-missing:saw-it-happen',
+  'mission-the-long-walk:caught-up-with-it',
+  'mission-the-long-walk:nothing-doing',
+  'mission-the-long-walk:sorting-it',
+  'mission-the-long-walk:straight-through',
+  'mission-the-other-half:boasted',
+  'mission-the-other-half:compared-clean',
+  'mission-the-other-half:gap',
+  'mission-the-other-half:shrugged-off',
+  'mission-the-other-half:traded',
+  'mission-took-the-extra:credited',
+  'mission-took-the-extra:suspicious-of-eager',
+  'mission-took-the-extra:unimpressed',
+  'mission-took-the-extra:used-it',
+  'mission-weve-done-this-before:not-that-person',
+  'mission-weve-done-this-before:old-account',
+  'mission-weve-done-this-before:same-page',
+  'mission-weve-done-this-before:still-that-person',
+  'mission-what-cost-us:alone',
+  'mission-what-cost-us:defended',
+  'mission-what-cost-us:pinned',
+  'mission-what-cost-us:redirected',
+  'mission-what-cost-us:shrugged',
+  'mission-what-the-day-was-worth:already-past-it',
+  'mission-what-the-day-was-worth:bitter',
+  'mission-what-the-day-was-worth:counted-it',
+  'mission-what-the-day-was-worth:joked',
+  'mission-what-they-can-ask-me:overtold',
+  'mission-what-they-can-ask-me:solid',
+  'mission-what-they-can-ask-me:thin',
+  'mission-what-they-can-ask-me:unasked',
+  'mission-what-you-saw-out-there:answered',
+  'mission-what-you-saw-out-there:blank',
+  'mission-what-you-saw-out-there:caught',
+  'mission-what-you-saw-out-there:turned',
+  'mission-who-was-where:asked-back',
+  'mission-who-was-where:refused-it',
+  'mission-who-was-where:straight-answer',
+  'mission-who-was-where:thin-answer',
   'romance-comfort-after-loss-sparks:grief-spark',
   'romance-jealousy-third-party:jealousy',
   'romance-liability-exposed:confronts',
@@ -1276,10 +1379,16 @@ const BRANCHES = [
   'romance-showmance-breakup:broke-up',
   'romance-showmance-fight:showmance-fight',
   'romance-showmance-forms:showmance-formed',
-  'romance-showmance-on-the-way-back:showmance-on-the-road',
+  'romance-showmance-on-the-way-back:agreed-quietly',
+  'romance-showmance-on-the-way-back:not-yet',
+  'romance-showmance-on-the-way-back:told-them',
+  'romance-showmance-on-the-way-back:walked-in-holding',
   'romance-spark:sparked',
   'romance-strategic-optics:called-strategic',
-  'romance-walked-back-together:walked-back-together',
+  'romance-walked-back-together:easy',
+  'romance-walked-back-together:said-out-loud',
+  'romance-walked-back-together:strained',
+  'romance-walked-back-together:watched',
   'susp-alliance-shape-guess:shape-guessed',
   'susp-alliance-shape-guess:shape-redrawn',
   'susp-body-language-read:body-read',

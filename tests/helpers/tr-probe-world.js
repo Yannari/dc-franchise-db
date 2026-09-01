@@ -85,6 +85,54 @@ export function probeWorld({ aTraitor, bTraitor, turret }) {
   // precondition and never an alignment signal: the weight is 1.5 whether or
   // not A is a Traitor.
   gs.tr.loyaltyDebt.push({ recruiter: A, recruit: PROBE_CAST[2], ep: PROBE_EP - 1 });
+  // ── AN AFTERNOON ON THE RECORD (Task 7 stage 3) ───────────────────────
+  //
+  // WHY THIS IS HERE. The `journey-back` window is the whole of the
+  // mission-fallout phase, and every event in js/tr/castle/mission-fallout.js
+  // opens with `lastMission(gs, ep)` — deliberately, because that is the one
+  // fact a road-home scene can be causally built on. Without a record in this
+  // world all fourteen of them weight 0 and, worse, `fire()` throws when the
+  // sweeps that execute the whole pool call it anyway: the three guards that
+  // claim to look inside every event would have been looking inside nothing
+  // for a seventh of the library. Same fix, and the same reasoning, as the
+  // declined recruitment seeded above for `cover-decline-recruit-offer-story`:
+  // the world gains a precondition, never an alignment signal.
+  //
+  // NEUTRAL BY CONSTRUCTION. Nothing on this record reads or reveals anybody's
+  // role, so it is byte-identical in both arms of the ground-truth probes and
+  // of the belief gate, and cannot move what those measure.
+  //
+  // THE SPLIT IS DELIBERATE AND IS WHAT MAKES THE POOL REACHABLE. A and B are
+  // on the SAME half (the same-team events: `mission-same-side`,
+  // `mission-what-you-saw-out-there`) and D is on the OTHER half, so the
+  // sweeps that convene [D, B] reach the different-team events
+  // (`mission-the-other-half`, `mission-who-was-where`). One pair cannot
+  // satisfy both, and an event nothing convenes is an event nothing checks.
+  // C is named for a solo task and MISSED it (`mission-what-cost-us`); D is
+  // named for one and made it (`mission-took-the-extra`) and is also the
+  // searcher on the relic block (`mission-the-hour-they-went-missing`),
+  // neither of which is A or B, which is what those two events require.
+  gs.tr.missions.push({
+    id: 'coffin-dig', ep: PROBE_EP, name: 'The Sunken Coffins',
+    teams: [
+      { name: 'Ravens', members: [A, B, PROBE_CAST[2]], perf: 0.62 },
+      { name: 'Hounds', members: [PROBE_CAST[3], PROBE_CAST[4]], perf: 0.48 },
+    ],
+    quality: 0.5, tier: 'solid', bestTeam: 'Ravens',
+    gross: 4200, earned: 4200, potAfter: 4200,
+    sideObjectives: [
+      { id: 'deepest-box', player: PROBE_CAST[2], stat: 'physical', achieved: false,
+        bonus: 0, line: `${PROBE_CAST[2]} tried to bring up the deepest coffin alone and did not get there.` },
+      { id: 'read-the-tide', player: PROBE_CAST[3], stat: 'intuition', achieved: true,
+        bonus: 200, line: `${PROBE_CAST[3]} broke off to call the tide before it turned, and pulled it off.` },
+    ],
+    summary: 'They worked the tide instead of racing it, and came up the cliff path with time to spare.',
+    shield: {
+      searcher: PROBE_CAST[3], found: true, cost: 900,
+      holder: PROBE_CAST[3], witnesses: [A, PROBE_CAST[3]], visibility: 'seen',
+      lines: ['Somebody went down the stair and came back up with something that was not a reliquary.'],
+    },
+  });
   const THREAD_KINDS = ['trust', 'suspicion', 'cover', 'callback', 'testing', 'grief',
     'romance', 'romance-spark', 'romance-showmance'];
   for (const parties of [[A, B], [A], [B]]) {

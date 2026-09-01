@@ -701,6 +701,43 @@ const ADVERSE_BRANCHES = new Set([
   // callback-history-confrontation and by nothing else in the pool, so the move
   // is confined to that event.
   'strategic',
+  // ── TASK 7 STAGE 3: THE `journey-back` LIBRARY, CLASSIFIED BY READING ──
+  //
+  // The mission-fallout window went from six events to twenty and from 0.70
+  // scenes an episode to 4.36, so this list and the one below grew by 67
+  // branches at once. Every one was read — its authored lines AND its bond
+  // delta — and sorted by ONE question, which is the question `_tone` is
+  // actually asking: IS THE PERSON ANSWERING THIS SCENE BEING LEANED ON? A
+  // branch is adverse when the respondent is under pressure, refuses the
+  // conversation, is caught short, or when the scene leaves the two of them
+  // worse off. Everything else is smooth. The bond delta is the corroborating
+  // evidence rather than the rule — which is the lesson `strategic` above
+  // taught, in the other direction.
+  //
+  // The refusals and the stonewalls (the respondent will not have the
+  // conversation, and the asker leaves with nothing):
+  'kept-it-back', 'let-it-alone', 'one-sided', 'refused-it', 'shrugged',
+  'shrugged-off', 'talked-past-it', 'thin-answer', 'unimpressed',
+  // The account did not survive being asked about, or was volunteered at
+  // somebody's own expense:
+  'blank', 'gap', 'thin', 'overtold',
+  // It became an argument, and the two of them came home worse off:
+  'angry', 'bitter', 'divided-it', 'ended-badly', 'split', 'strained',
+  'turned-sharp', 'boasted',
+  // The past was used as a weapon, or answered as one:
+  'defended-the-hour', 'old-account', 'not-that-person', 'still-that-person',
+  'used-it',
+  // `useful` is `mission-a-body-short`'s branch where the missing person is
+  // brought up in order to get at somebody who is still here. Its own last
+  // line is "{b} noticed that {a} only ever mentioned the dead when {a} wanted
+  // something from the living", and it writes a bond of -1. The respondent is
+  // being worked on.
+  'useful',
+  // Nobody else there, and it landed badly anyway. `caught-up-with-it` is the
+  // solo road-home branch where the day catches up with somebody — it also
+  // writes `setEmotionalState(..., 'paranoid')`, so a smooth register here
+  // would contradict the state the same firing recorded.
+  'caught-up-with-it',
 ]);
 /**
  * AND EVERY OTHER BRANCH, SAID OUT LOUD.
@@ -738,6 +775,21 @@ const BENIGN_BRANCHES = new Set([
   // and the ones the coverage arm surfaced on its first run
   'alliance-reformed', 'alumni-bond', 'buries', 'defended-by-history', 'recognized',
   'reconciles', 'redemption', 'reunion-spark', 'sincere', 'synchronized',
+  // ── TASK 7 STAGE 3: THE `journey-back` LIBRARY (see the note above) ────
+  //
+  // Two people agreed, or worked something out, or simply had a decent hour of
+  // it. Nobody in these is being leaned on.
+  'agreed', 'agreed-for-different-reasons', 'agreed-quietly', 'already-past-it',
+  'answered', 'asked-back', 'carried-inside', 'closed-ranks', 'compared-clean',
+  'counted-it', 'counted-the-cost', 'credited', 'did-not-mention-it', 'easy',
+  'joked', 'named-them', 'not-yet', 'pinned', 'professional', 'quietly-dropped',
+  'redirected', 'said-out-loud', 'same-page', 'saw-it-happen', 'settled-it',
+  'solid', 'straight-answer', 'suspicious-of-eager', 'told-them', 'traded',
+  'unasked', 'walked-in-holding', 'watched',
+  // And the solo road-home branches, where there is nobody to be leaned on by.
+  // `on-their-own` is private grief and sits beside `cried-alone` above for
+  // exactly the same reason: grief landing is not a scene going badly.
+  'alone', 'nothing-doing', 'on-their-own', 'sorting-it', 'straight-through',
 ]);
 
 /** Both lists, for the coverage arm. Nothing else reads them. */

@@ -51,6 +51,7 @@ import '../js/tr/castle/romance.js';
 import '../js/tr/castle/callback.js';
 import '../js/tr/castle/testing.js';
 import '../js/tr/castle/journey.js';
+import '../js/tr/castle/mission-fallout.js';
 
 const CASTLE_DIR = path.join(process.cwd(), 'js', 'tr', 'castle');
 

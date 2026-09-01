@@ -595,6 +595,32 @@ const ARCHETYPES = [
   },
 ];
 
+/**
+ * WHAT THE SOLO TASK ACTUALLY WAS, by objective id.
+ *
+ * A mission record's `sideObjectives[]` carries `{ id, player, stat, achieved,
+ * bonus, line }` — everything except the human phrase the id stands for, which
+ * lives on the archetype's `side` spec and is baked into `line` as prose. A
+ * `journey-back` castle scene arguing about the afternoon needs the phrase as a
+ * BARE INFINITIVE ("take the ford first and alone") so it can be dropped into a
+ * sentence the event writes itself, and the alternative — regexing it back out
+ * of `line`, which has four different templates wrapped around it — is a parser
+ * over prose, which this project has already replaced once (see `sceneSpeakers`
+ * in js/tr/events.js).
+ *
+ * A pure read over the catalogue. It adds no field to the record and takes no
+ * draw, so nothing about a played season moves.
+ */
+export const SIDE_OBJECTIVE_LABELS = Object.freeze(ARCHETYPES.reduce((out, m) => {
+  for (const spec of m.side) out[spec.id] = spec.label;
+  return out;
+}, {}));
+
+/** The infinitive phrase for a recorded side objective, or null if unknown. */
+export function sideObjectiveLabel(id) {
+  return SIDE_OBJECTIVE_LABELS[id] ?? null;
+}
+
 /** Every archetype id, for tests and for anything enumerating the catalogue. */
 export const MISSION_IDS = ARCHETYPES.map(m => m.id);
 

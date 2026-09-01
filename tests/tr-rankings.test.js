@@ -175,12 +175,34 @@ describe('the rubric the board scores this show on', () => {
     // board. It happened to Big Brother for a whole season.
     const filled = { comp1: 0, comp2: 0, comp3: 0, social: 0, advFound: 0 };
     let rows = 0;
-    for (const doc of DOCS) {
+    const count = (doc) => {
       for (const p of doc.placements) {
         const cols = RU_SHOW[TRAITORS_FORMAT].read(p, { placement: p.placement });
         rows++;
         for (const key of Object.keys(filled)) if (cols[key] > 0) filled[key]++;
       }
+    };
+    for (const doc of DOCS) count(doc);
+    // ── AND THEN AS FAR AS IT TAKES TO SEE THE RAREST COLUMN ─────────────
+    //
+    // `advFound` reads `p.tr.daggersWon`, and a Dagger needs three things to
+    // line up in one afternoon: a Reliquary mission (about two a season),
+    // somebody breaking away to search it, and the season having decided that
+    // afternoon's relic is a Dagger rather than a Shield. Eight seasons expect
+    // two or three and can honestly see none, which is what happened the first
+    // time this stage's castle content moved the seeded streams — the arm went
+    // red without a single reader changing.
+    //
+    // Same fixture fragility, same fix, as the co-winner block in
+    // tr-export.test.js, and for the reason that block records: a pinned seed
+    // rotates out of the case on the next scheduling change, a search reads as
+    // "look for the case", and a total miss across the whole range still fails
+    // loudly on the assertion below. The extra seasons only ever ADD rows, so
+    // the two share bands underneath are measured on more evidence, not less.
+    for (let seed = 9; seed <= 120 && filled.advFound === 0; seed++) {
+      setPlayers(ROSTER);
+      count(buildTraitorsSeasonDocument(
+        playTraitorsSeason({ cast: CAST, traitorCount: 3, seed }), { seasonNumber: 1 }));
     }
     expect(rows).toBeGreaterThan(150);
     for (const [key, n] of Object.entries(filled)) {

@@ -144,6 +144,7 @@ import { runMission, POT_CEILING, MISSION_IDS, _setMissionsEnabled,
   _setKnowledgeMissionEnabled, _setShieldMissionEnabled } from '../js/tr/missions.js';
 import { allFacts } from '../js/knowledge.js';
 import { _setPactPotBlind } from '../js/tr/deduction.js';
+import { _setMissionFalloutEnabled } from '../js/tr/castle/mission-fallout.js';
 import { gs as _gs } from '../js/core.js';
 import roster from '../franchise_roster.json';
 
@@ -335,6 +336,29 @@ describe('a mission grants NOTHING but money', () => {
     // is holding something real out; without it this is a hole, not a
     // narrowing.
     //
+    // THE FOURTH NARROWING, FOR TASK 7 STAGE 3 — AND IT IS NOT AN ARCHETYPE
+    // OR A NUMBER, IT IS A CASTLE WINDOW.
+    //
+    // `journey-back` IS the mission-fallout phase (js/tr/castle/phases.js), and
+    // until Task 7 it held six thread-gated events and produced 0.70 scenes an
+    // episode against a 4-6 budget — 17% of its own minimum. The fourteen
+    // events in js/tr/castle/mission-fallout.js fixed that by doing the one
+    // thing the window is for: reading the afternoon the castle has just had.
+    // So with missions switched off they weight 0, the window draws something
+    // else, and the `castleEvents` column of the projection below parts
+    // company between the arms.
+    //
+    // HELD OUT OF BOTH ARMS, in this file's own idiom, rather than by deleting
+    // that column — which would be exactly the "mostly identical" softening the
+    // paragraph below refuses. What survives intact is every claim that matters
+    // for immunity: a mission still shields nobody, saves nobody at a table,
+    // nudges no ballot, writes no belief, and displaces no draw in the other
+    // six castle windows. What it now does is give the road home something to
+    // be about, which is an advantage to nobody.
+    //
+    // The hold-out's own arm is the next test but one: switched back ON, the
+    // arms diverge. Without that, this is a hole rather than a narrowing.
+    //
     // THE PREVIOUS NARROWING, BY EXACTLY ONE ARCHETYPE, FOR TASK 2.
     //
     // If a money mission could shield anybody from a murder, save anybody at a
@@ -359,6 +383,7 @@ describe('a mission grants NOTHING but money', () => {
     try {
       _setKnowledgeMissionEnabled(false);
       _setShieldMissionEnabled(false);
+      _setMissionFalloutEnabled(false);
       on = seasons(40).map(project);
       _setMissionsEnabled(false);
       off = seasons(40).map(project);
@@ -366,6 +391,7 @@ describe('a mission grants NOTHING but money', () => {
       _setMissionsEnabled(true);
       _setKnowledgeMissionEnabled(true);
       _setShieldMissionEnabled(true);
+      _setMissionFalloutEnabled(true);
       unblind();
     }
     for (let i = 0; i < on.length; i++) {
@@ -379,6 +405,7 @@ describe('a mission grants NOTHING but money', () => {
     try {
       _setKnowledgeMissionEnabled(false);
       _setShieldMissionEnabled(false);
+      _setMissionFalloutEnabled(false);
       potsOn = seasons(5).map(s => s.pot);
       _setMissionsEnabled(false);
       expect(seasons(5).map(s => s.pot)).toEqual([0, 0, 0, 0, 0]);
@@ -386,9 +413,49 @@ describe('a mission grants NOTHING but money', () => {
       _setMissionsEnabled(true);
       _setKnowledgeMissionEnabled(true);
       _setShieldMissionEnabled(true);
+      _setMissionFalloutEnabled(true);
       unblind2();
     }
     expect(potsOn.every(p => p > 0)).toBe(true);
+  });
+
+  it('and the FOURTH hold-out is holding something real out: the road home', () => {
+    // THE ARM THAT MAKES THE FOURTH NARROWING A NARROWING AND NOT A HOLE, and
+    // it is the same shape as the Chess and Shield arms beside it: switch the
+    // held-out thing back ON in both arms and the equivalence above must FAIL.
+    // If this ever goes green, either the mission-fallout window has stopped
+    // reading the afternoon — which is the whole of its causality — or the
+    // hold-out above is switching nothing off and the guard it narrows is
+    // narrower than it says it is.
+    //
+    // The projection is deliberately the SAME one, so the only difference
+    // between this arm and the one above is the flag.
+    const project = (s) => s.log.map(r => [
+      r.ep, r.banished, r.wasTraitor, r.murdered, r.murderTarget, r.blocked,
+      r.executed, r.recruited?.target ?? null, r.recruited?.accepted ?? null,
+      (r.castleEvents || []).map(e => e.id).join(','),
+    ].join('|')).join('\n') + `\n${s.winner}|${s.survivors.join(',')}`;
+
+    let on, off;
+    const unblind = _setPactPotBlind(true);
+    try {
+      _setKnowledgeMissionEnabled(false);
+      _setShieldMissionEnabled(false);
+      // NOT held out this time. That is the mutation.
+      on = seasons(8).map(project);
+      _setMissionsEnabled(false);
+      off = seasons(8).map(project);
+    } finally {
+      _setMissionsEnabled(true);
+      _setKnowledgeMissionEnabled(true);
+      _setShieldMissionEnabled(true);
+      unblind();
+    }
+    const diverged = on.filter((v, i) => v !== off[i]).length;
+    expect(diverged, 'switching the mission-fallout window back on changed nothing across '
+      + 'eight seasons, so the hold-out above is holding nothing out and the equivalence '
+      + 'guard is quietly wider than it claims')
+      .toBeGreaterThan(0);
   });
 
   it('and the POT is precisely what the third hold-out holds out', () => {

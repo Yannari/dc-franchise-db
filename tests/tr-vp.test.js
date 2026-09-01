@@ -2884,11 +2884,35 @@ describe('the endgame record reaches the screen at all', () => {
       expect(e.asks.length, 'an endgame that never asked anybody').toBeGreaterThan(0);
       expect(e.takers.length, 'an endgame nobody won').toBeGreaterThan(0);
       expect(['faithfuls', 'traitors']).toContain(e.winner);
-      // The loop's own rule: it stops when, and only when, nobody asked for
-      // another table. Anything else means the record is holding a phase that
-      // ended for a reason the format does not have.
-      expect(e.asks[e.asks.length - 1].unanimous,
-        'the endgame stopped on an ask somebody wanted another table at').toBe(true);
+      // ── THE LOOP HAS TWO EXITS, NOT ONE (corrected, Task 7 stage 3) ────
+      //
+      // This used to assert flatly that the last ask is unanimous — "it stops
+      // when, and only when, nobody asked for another table". `runEndgame`
+      // (js/tr/endgame.js) has a SECOND exit and documents it at the top of
+      // its own loop: `if (living.length < 2) break;`, with the comment "One
+      // person cannot banish anybody, so the question has only one answer."
+      // Reaching it means the last ask was answered `banish`, the table
+      // happened, and it emptied the room — a legal ending the assertion
+      // called impossible.
+      //
+      // It went unnoticed because it needs a specific season: four
+      // consecutive non-unanimous asks taking a room down to one. Found when
+      // this stage's castle content moved the seeded streams and seed 21
+      // produced exactly that (asks=4, tables=4, survivors=1) — the same
+      // fixture-reachability shape as the co-winner block in
+      // tr-export.test.js, and the same lesson: an assertion that has only
+      // ever seen one of two exits is describing the sample, not the engine.
+      //
+      // So the rule is stated as the engine states it, and the second exit is
+      // not a free pass — it has to be accompanied by the room it claims
+      // emptied. That is a STRONGER assertion than the one it replaces on
+      // every season that ends the usual way, and a real one on the season
+      // that does not.
+      const lastAsk = e.asks[e.asks.length - 1];
+      const emptied = (e.survivors || []).length < 2;
+      expect(lastAsk.unanimous || emptied,
+        'the endgame stopped on an ask somebody wanted another table at, and the room '
+        + 'it was asked in still had two people in it').toBe(true);
       // One table per ask that was not unanimous, and never one more.
       expect(e.tables.length).toBe(e.asks.filter(a => !a.unanimous).length);
     }

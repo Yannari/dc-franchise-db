@@ -258,6 +258,30 @@ export function murderCount(g) {
   return Math.max(0, peopleLost(g) - banished);
 }
 
+/**
+ * TONIGHT'S AFTERNOON, or nothing — never yesterday's.
+ *
+ * WHY THIS IS A FUNCTION AND NOT `gs.tr.missions.at(-1)` AT FOURTEEN CALL
+ * SITES. An endgame round runs no mission at all (`runMission` returns null
+ * below `MIN_PLAYERS`), so the last element of the log is the PREVIOUS
+ * episode's afternoon on those rounds. A `journey-back` event reading the tail
+ * of the array without checking would narrate yesterday's mission over
+ * tonight's road — a sentence that is wrong about the game and that no test
+ * currently looks for, printed on the one night the window is least likely to
+ * be watched carefully. Task 7 stage 2 measured 721 `journey-back` firings and
+ * found 100% same-episode, but only because the window never fired on an
+ * endgame round in that sample; the shape is reachable and the check belongs
+ * in one place.
+ *
+ * Returns the record for `ep` exactly, or null. Callers gate on the null.
+ */
+export function lastMission(g, ep) {
+  const log = g?.tr?.missions;
+  if (!Array.isArray(log) || !log.length) return null;
+  const last = log[log.length - 1];
+  return last && last.ep === ep ? last : null;
+}
+
 /** Field names on gs.tr that hold Sets and need flattening before a save. */
 const TR_SETS = ['shieldedThisRound'];
 

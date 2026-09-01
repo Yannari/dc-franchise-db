@@ -520,6 +520,15 @@ registerEvent({
   acts: { early: 0.7, late: 1.5 },
   advancesThread: true,
   citesResidue: true,
+  // The direction is a property of the event on every branch: {a} brings it
+  // and {b} is the one whose stats decide what happens to it. Annotated in
+  // Task 7 stage 3, alongside the axes.
+  roles: 'initiator-first',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'temperament', 'strategic', 'boldness'],
+    relationship: ['close-ally', 'neutral', 'rival'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     // There has to be something to settle. No open trust story, no scene.
@@ -592,6 +601,15 @@ registerEvent({
   window: 'journey-back',
   advancesThread: true,
   citesResidue: true,
+  // {a} is the doubter and {b} is the one being asked about all the way home
+  // - the direction is the event's, on all three branches.
+  roles: 'initiator-first',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous'],
+    voice: ['temperament', 'social', 'mental'],
+    knowledge: ['witnessed', 'incomplete'],
+    alignment: ['faithful', 'original-traitor', 'recruited-traitor'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return findOpenThread('suspicion', ctx.actors) ? 3 : 0;
@@ -661,6 +679,11 @@ registerEvent({
   threadScope: 'solo',
   advancesThread: true,
   citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'backfire'],
+    voice: ['strategic', 'temperament', 'mental'],
+    alignment: ['original-traitor', 'recruited-traitor'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
@@ -715,6 +738,26 @@ const CASTLE_IN_VIEW_LINES = {
     '{a} and {b} had a good day, right up until the towers came over the hill.',
     'The walk home was fine. The last two hundred yards of it were not, for either of them.',
   ],
+  // ── TWO BRANCHES ADDED (Task 7 stage 3) ──────────────────────────────
+  //
+  // The audit's verdict on this event was REWRITE for a specific reason: two
+  // branches is short of four materially different paths, and the two it had
+  // were the same scene with the volume turned up and down (they put it down,
+  // or they did not). The two below are different ACTIONS, which is the bar:
+  // one of them refuses to have the conversation at all, and one of them ends
+  // it by turning it into an argument about who is left.
+  'talked-past-it': [
+    '{a} started on the ones who were gone and {b} put the conversation somewhere else entirely, twice, before the last bend.',
+    '{b} did not want the dead on this road and steered {a} off them without ever saying so out loud.',
+    'Every time it came near, {b} found something about tomorrow to say instead, and {a} let {b} have it.',
+    '{a} and {b} spent the last mile talking about the food at the castle, which was neither of their subjects.',
+  ],
+  'turned-sharp': [
+    'It stopped being about the ones who were gone somewhere near the gate and started being about who was still here.',
+    '“You keep saying we,” {b} said, on the last stretch. “Somebody in this castle did that.” After which the walk was quiet.',
+    '{a} was still mourning and {b} had moved on to arithmetic, and the two of them found that out with the towers already up.',
+    '{a} and {b} came back through the gate having turned a conversation about the dead into a disagreement about the living.',
+  ],
 };
 
 registerEvent({
@@ -726,6 +769,16 @@ registerEvent({
   acts: { early: 0.6, late: 1.5 },
   advancesThread: true,
   citesResidue: true,
+  // The direction is a property of the event: {a} is the one carrying it and
+  // {b} is the one who has to answer that. Annotated as part of the stage-3
+  // rewrite, which is when the direction became a decision rather than an
+  // accident of which name the sentence happened to end on.
+  roles: 'initiator-first',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['temperament', 'loyalty', 'social', 'strategic'],
+    relationship: ['close-ally', 'neutral', 'rival'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return findOpenThread('grief', ctx.actors) ? 2.5 : 0;
@@ -735,31 +788,75 @@ registerEvent({
     const sceneWhy = 'the castle came back into view';
     const [a, b] = ctx.actors;
     const st = pStats(a);
+    const stB = pStats(b);
     // Whether a person can put a death down is temperament and how much of it
-    // they were carrying to begin with.
+    // they were carrying to begin with. The two branches added in stage 3 fork
+    // on the OTHER person instead, because both of them are things {b} does to
+    // the conversation rather than things {a} feels about it.
     const buryScore = (st.temperament / 10) * 0.6 + 0.2;
     const carryScore = (st.loyalty / 10) * 0.5 + (1 - st.temperament / 10) * 0.5;
-    const roll = rng() * (buryScore + carryScore);
-    const branch = roll < buryScore ? 'buried' : 'carried';
+    const deflectScore = (1 - stB.social / 10) * 0.4 + (stB.temperament / 10) * 0.3;
+    const sharpScore = (stB.strategic / 10) * 0.4 + (1 - stB.loyalty / 10) * 0.3;
+    const total = buryScore + carryScore + deflectScore + sharpScore;
+    let roll = rng() * total;
+    let branch;
+    if (roll < buryScore) branch = 'buried';
+    else if (roll < buryScore + carryScore) branch = 'carried';
+    else if (roll < buryScore + carryScore + deflectScore) branch = 'talked-past-it';
+    else branch = 'turned-sharp';
 
     const line = pick(rng, CASTLE_IN_VIEW_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const thread = findOpenThread('grief', [a, b]);
-    const bondDelta = branch === 'buried' ? 1.5 : 1;
+    const bondDelta = branch === 'buried' ? 1.5
+      : branch === 'carried' ? 1 : branch === 'talked-past-it' ? -0.5 : -1.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const { note, cited } = arcAdvanceCiting(api, thread, ctx.ep, line, { source: sceneWhy });
-    if (branch === 'buried') api.resolveArc(thread.id, 'buried', { source: sceneWhy });
-    return { branch, pair: [a, b], threadId: thread.id, cited, note,
-      outcome: branch === 'buried' ? 'buried' : null, bondDelta };
+    // TWO TERMINAL OUTCOMES NOW, NOT ONE. `buried` is the story put down
+    // together; `turned-sharp` ends it the other way — the mourning stops
+    // being mourning and the arc is closed as one that turned back on itself,
+    // which is a resolution and not a reconciliation. The middle two carry on.
+    const outcome = branch === 'buried' ? 'buried'
+      : branch === 'turned-sharp' ? 'turned-back' : null;
+    if (outcome) api.resolveArc(thread.id, outcome, { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      threadId: thread.id, cited, note, outcome, bondDelta };
   },
 });
 
-const WALKED_BACK_LINES = [
-  '{a} and {b} were the last two through the gate, and neither of them had been walking fast.',
-  'The road back took {a} and {b} longer than it took anybody else, and nobody said anything about it.',
-  '{a} and {b} came in from the road still talking, hours after they had run out of things to say.',
-  'Somebody held the gate for {a} and {b} for rather longer than they had expected to have to.',
-  '{a} and {b} stopped twice on the way back for no reason either of them offered.',
-];
+// FOUR BRANCHES, REWRITTEN IN TASK 7 STAGE 3. The audit's verdict was
+// REWRITE and the reason was exact: this event had ONE branch
+// (`walked-back-together`) and its fork was entirely in the wording, so five
+// sentences described the same unchanging beat and the couple's story could
+// only ever get warmer. What a long walk actually does to two people who are
+// in something is not one thing — it is easy, or it is watched, or it gets
+// said out loud, or the day puts something between them — and those are four
+// different actions with four different consequences.
+const WALKED_BACK_LINES = {
+  easy: [
+    '{a} and {b} were the last two through the gate, and neither of them had been walking fast.',
+    'The road back took {a} and {b} longer than it took anybody else, and nobody said anything about it.',
+    '{a} and {b} came in from the road still talking, hours after they had run out of things to say.',
+    '{a} and {b} stopped twice on the way back for no reason either of them offered.',
+  ],
+  watched: [
+    'Somebody held the gate for {a} and {b} for rather longer than they had expected to have to.',
+    '{a} and {b} walked back together and were aware, the entire way, of exactly who was looking.',
+    'It was a long road and there was nowhere on it for {a} and {b} to be out of sight, and both of them felt that.',
+    '{a} and {b} came up the path apart, which fooled precisely nobody who had watched them set off.',
+  ],
+  'said-out-loud': [
+    'Somewhere on the road home one of them said the thing, and by the gate {a} and {b} had stopped calling it nothing.',
+    '{a} put it into words on the walk back rather than leaving it to be inferred, and {b} did not laugh it off.',
+    '{a} and {b} spent the last mile agreeing what this actually was, out loud, in sentences.',
+    '“So what are we doing?” {b} asked, on the road. It took the rest of the walk, and they answered it.',
+  ],
+  strained: [
+    'The road home did {a} and {b} no favours at all, and by the gate they were walking a yard further apart than they had set off.',
+    'Something about the day got in between {a} and {b} on the walk back, and neither of them could name it in time.',
+    '{a} wanted the walk to fix it and {b} wanted the walk to be over, and those are not the same walk.',
+    '{a} and {b} ran out of conversation about two miles from the castle and had to do the rest of it in silence.',
+  ],
+};
 
 // RARE, AND DECLARED (spec §5.4.1). The precondition is a spark that already
 // exists, and the pool holds very few — an event gated on a rare state and
@@ -784,26 +881,84 @@ registerEvent({
     return _threadForActors('romance-showmance', ctx.actors)
       || _threadForActors('romance-spark', ctx.actors) ? 2 : 0;
   },
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected'],
+    voice: ['social', 'boldness', 'temperament', 'loyalty'],
+    relationship: ['romance'],
+  },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-walked-back-together');
     const sceneWhy = 'walked back together';
     const kind = _threadForActors('romance-showmance', ctx.actors) ? 'romance-showmance' : 'romance-spark';
     const thread = _threadForActors(kind, ctx.actors);
     const [a, b] = thread.parties;
-    api.addBond(a, b, 2, { source: sceneWhy });
-    const line = pick(rng, WALKED_BACK_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const st = pStats(b);
+    // A pair still hiding it is watched; a pair who have stopped hiding it can
+    // say it. So the branch weights read the arc's own kind as well as the
+    // person — which is the relationship axis doing mechanical work rather
+    // than choosing an adjective.
+    const declared = kind === 'romance-showmance';
+    const easyScore = (st.social / 10) * 0.4 + (st.loyalty / 10) * 0.3;
+    const watchedScore = (1 - st.boldness / 10) * 0.4 + (declared ? 0.05 : 0.35);
+    const saidScore = (st.boldness / 10) * 0.4 + (declared ? 0.3 : 0.1);
+    const strainScore = (1 - st.temperament / 10) * 0.4 + 0.1;
+    const total = easyScore + watchedScore + saidScore + strainScore;
+    let roll = rng() * total;
+    let branch;
+    if (roll < easyScore) branch = 'easy';
+    else if (roll < easyScore + watchedScore) branch = 'watched';
+    else if (roll < easyScore + watchedScore + saidScore) branch = 'said-out-loud';
+    else branch = 'strained';
+
+    const bondDelta = branch === 'easy' ? 2
+      : branch === 'said-out-loud' ? 2.5 : branch === 'watched' ? 0.5 : -1.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const line = pick(rng, WALKED_BACK_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const advanced = api.advanceArc(thread.id, line, { source: sceneWhy });
-    return { branch: 'walked-back-together', pair: [a, b], kind,
-      threadId: advanced?.id ?? thread.id, bondDelta: 2 };
+    return { branch, pair: [a, b], kind,
+      threadId: advanced?.id ?? thread.id, bondDelta };
   },
 });
 
-const CAME_BACK_HOLDING_LINES = [
-  '{a} and {b} came back through the gate close enough together that nobody in the courtyard had to ask.',
-  'Whatever the road did to {a} and {b}, they walked back in as a pair and stopped pretending otherwise.',
-  'They were the last two in off the road, and by the time {a} and {b} reached the gate it was not a secret any more.',
-  '{a} and {b} did not announce it. They did not have to; the whole castle watched them come back up the path.',
-];
+// FOUR BRANCHES, REWRITTEN IN TASK 7 STAGE 3, AND THREE OF THEM STILL
+// ESCALATE. The audit's verdict was REWRITE for the usual reason - one branch,
+// with the fork in the wording - but this event has a job the others do not
+// (see the note below: it is the second door a spark has to become a
+// showmance, and every downstream romance event is a function of how often
+// that door opens). So the rewrite is deliberately asymmetric: `told-them`,
+// `walked-in-holding` and `agreed-quietly` are three genuinely different
+// actions that all end the spark and open a showmance, and `not-yet` is the
+// fourth, which is what it looks like when the road nearly does it and does
+// not. `not-yet` is weighted as the minority branch on purpose - turning a
+// quarter of this event's firings into non-escalations would cost
+// `romance-liability-exposed` the state it needs, which is the exact
+// starvation this event was built to undo.
+const CAME_BACK_HOLDING_LINES = {
+  'walked-in-holding': [
+    '{a} and {b} came back through the gate close enough together that nobody in the courtyard had to ask.',
+    'They were the last two in off the road, and by the time {a} and {b} reached the gate it was not a secret any more.',
+    '{a} and {b} did not announce it. They did not have to; the courtyard watched them come back up the path.',
+    'Whatever the road did to {a} and {b}, they walked back in as a pair and stopped pretending otherwise.',
+  ],
+  'told-them': [
+    '{a} told somebody on the road back, in as many words, and by the time {a} and {b} reached the gate three other people knew.',
+    '{b} said it out loud to the person walking beside {b}, and did not ask them to keep it, which was the decision.',
+    'It got out on the road rather than at the castle: {a} answered a direct question honestly and that was that.',
+    'Somebody asked {b} straight out on the walk home whether it was what it looked like, and {b} said yes.',
+  ],
+  'agreed-quietly': [
+    '{a} and {b} settled it between them on the last mile - not for anybody else, just so the two of them had said it.',
+    'By the gate {a} and {b} had agreed what they were, quietly, and agreed to let the castle work it out on its own.',
+    '{a} and {b} came in separately and had, an hour earlier, stopped calling it nothing at all.',
+    'Nobody saw it happen. {a} and {b} walked in ten minutes apart and were something they had not been that morning.',
+  ],
+  'not-yet': [
+    '{a} and {b} got most of the way to saying it on the road home and put it down again at the gate.',
+    'There was a moment on the last hill where it nearly happened, and then the castle came into view and it did not.',
+    '{a} started the sentence twice on the walk back and finished it neither time, with {b} waiting both times.',
+    '{a} and {b} came back through the gate exactly as they had left it, which took more effort than either had expected.',
+  ],
+};
 
 // THE SECOND DOOR ON ESCALATION, and the fix for R2's worst casualty.
 //
@@ -846,17 +1001,51 @@ registerEvent({
     // see F7 on the twin in romance.js.
     return t && ctx.ep > t.openedEp && heatAt(t, ctx.ep) > 0 ? 2.5 : 0;
   },
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected'],
+    voice: ['boldness', 'social', 'temperament', 'loyalty'],
+    relationship: ['romance'],
+  },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-showmance-on-the-way-back');
     const sceneWhy = 'stopped hiding it on the road back';
     const spark = _threadForActors('romance-spark', ctx.actors);
     const [a, b] = spark.parties;
+    const st = pStats(a);
+    const stB = pStats(b);
+    // HOW two people stop hiding it: the loud one walks in holding on, the
+    // sociable one tells somebody, the private pair settle it between
+    // themselves, and the one who cannot get the sentence out does not.
+    const holdScore = (st.boldness / 10) * 0.5 + (stB.boldness / 10) * 0.3;
+    const tellScore = (st.social / 10) * 0.5 + (stB.social / 10) * 0.25;
+    const quietScore = (1 - st.social / 10) * 0.45 + (st.loyalty / 10) * 0.3;
+    // The minority branch, deliberately capped low - see the note above the
+    // line pools. At these weights it takes roughly one firing in eight.
+    const notYetScore = (1 - st.boldness / 10) * 0.22 + 0.05;
+    const total = holdScore + tellScore + quietScore + notYetScore;
+    let roll = rng() * total;
+    let branch;
+    if (roll < holdScore) branch = 'walked-in-holding';
+    else if (roll < holdScore + tellScore) branch = 'told-them';
+    else if (roll < holdScore + tellScore + quietScore) branch = 'agreed-quietly';
+    else branch = 'not-yet';
+
+    const note = pick(rng, CAME_BACK_HOLDING_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    if (branch === 'not-yet') {
+      // The spark survives, one beat warmer and no further along. This is the
+      // event's only non-escalating path and it writes a real beat, so the
+      // silence floor is satisfied and the story is still open tomorrow.
+      const advanced = api.advanceArc(spark.id, note, { source: sceneWhy });
+      api.addBond(a, b, 0.5, { source: sceneWhy });
+      return { branch, pair: [a, b], threadId: advanced?.id ?? spark.id,
+        outcome: null, bondDelta: 0.5 };
+    }
     api.resolveArc(spark.id, 'became-showmance', { source: sceneWhy });
-    api.addBond(a, b, 2, { source: sceneWhy });
-    const note = pick(rng, CAME_BACK_HOLDING_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const bondDelta = branch === 'agreed-quietly' ? 1.5 : 2;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const t = api.openArc('romance-showmance', [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'showmance-on-the-road', pair: [a, b], threadId: t?.id,
-      outcome: 'became-showmance', bondDelta: 2 };
+    return { branch, pair: [a, b], threadId: t?.id,
+      outcome: 'became-showmance', bondDelta };
   },
 });
 

@@ -12,7 +12,8 @@ import { gs, setGs, players, seasonConfig } from '../core.js';
 // gender off a roster entry this file already has in hand. js/tr/state.js
 // resolves the same clauses off the same table for the same reason.
 import { pronounsOf } from '../pronouns-of.js';
-import { initTraitorsState, snapshotTraitorsBackgrounds, receiptsForEp } from './state.js';
+import { initTraitorsState, snapshotTraitorsBackgrounds, receiptsForEp,
+  trimRecordedReceipts } from './state.js';
 import { resetKnowledge } from '../knowledge.js';
 import { setBond, getBond } from '../bonds.js';
 import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
@@ -1486,6 +1487,11 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
   ].filter(Boolean);
   const conclave = night?.conclave || null;
   const table = _tableRecord(ep, { endgame });
+  // HOISTED SO IT CAN BE TRIMMED, and the order below is the whole contract:
+  // the row is written FIRST and the buffer is trimmed SECOND, against the
+  // very array the row took. Inverting those two lines deletes receipts that
+  // were never snapshotted anywhere, silently.
+  const receiptsTonight = receiptsForEp(gs, ep);
   (gs.episodeHistory ||= []).push({
     num: ep,
     // THE FORMAT, ON THE ROW. `buildVPScreens` dispatches on it exactly as it
@@ -1613,9 +1619,11 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // from the runner, because a receipt can be written by any of the seven
       // windows, the table or the night, and a parameter would have to be
       // threaded through all of them to catch the same set this filter does.
-      receipts: receiptsForEp(gs, ep),
+      receipts: receiptsTonight,
     },
   });
+  // NOW, and only now, the buffer may let them go. See `trimRecordedReceipts`.
+  trimRecordedReceipts(gs, receiptsTonight);
   // NO `gs.eliminated` HERE, AND THE OMISSION WAS MEASURED. Maintaining it
   // looked obviously right — js/audience.js's `_allNames` unions it — and
   // deleting it changed nothing at all, because `initCrowd` seeds a ledger row

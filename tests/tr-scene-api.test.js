@@ -23,6 +23,10 @@ import { chooseBanishmentVote, suspicion, seedTraitorKnowledge,
   seerEvidence } from '../js/tr/deduction.js';
 import { formPreference } from '../js/tr/murder.js';
 import { rpBuildTraitorsDebug } from '../js/vp-tr/debug.js';
+import { playTraitorsSeason } from '../js/tr/headless.js';
+import { ballotEvidence } from '../js/tr/deduction.js';
+import { prepGsForSave, repairGsSets } from '../js/core.js';
+import roster from '../franchise_roster.json';
 import { createTraitorsSceneApi, claimsKnownTo, contradictionsKnownTo,
   seasonReceipts, EMOTIONAL_STATES } from '../js/tr/scene-api.js';
 import { sceneEvidenceThreshold } from '../js/tr/deduction.js';
@@ -620,5 +624,102 @@ describe('receipts render in Debug and nowhere else', () => {
     }
     expect(offenders, `viewer screens reading the debug ledger: ${offenders.join(', ')}`)
       .toEqual([]);
+  });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════
+// THE RECEIPT BUFFER DOES NOT GROW ALL SEASON
+// ══════════════════════════════════════════════════════════════════════
+//
+// `gs` serializes wholesale (js/savestate.js has no special case for `gs.tr`),
+// so an append-only `gs.tr.receipts` puts every receipt in the save file TWICE:
+// once in the buffer and once more spread across the per-episode snapshots on
+// `episodeHistory`. That is the Big Brother 19MB leak shape — season data
+// copied per-episode with the original kept alive beside it — and ~210 events
+// land on this in Task 7.
+//
+// The rows are the copy that is kept: they are the only thing anything reads,
+// and their union reconstructs the season losslessly.
+describe('the season buffer is trimmed as each episode is recorded', () => {
+  // A REAL SEASON, not a hand-built ledger. `evidence` is playTraitorsSeason's
+  // test-only injection point and it is called once per round, so wrapping it
+  // writes a receipt through the real API in the middle of a real episode and
+  // lets the real `_recordEpisode` snapshot it. A fabricated `gs.tr.receipts`
+  // would never exercise the ordering this whole guard is about.
+  function seasonWithReceipts() {
+    const cast = roster.players.slice(0, 14);
+    setPlayers(cast);
+    const names = cast.map(p => p.name);
+    const wrote = new Map();          // ep -> [source, ...]
+    const probe = (ep, rng) => {
+      const living = gs.activePlayers || [];
+      if (living.length >= 2) {
+        const source = `ep ${ep} receipt probe`;
+        createTraitorsSceneApi({ ep, eventId: 'probe' })
+          .addBond(living[0], living[1], 1, { source });
+        wrote.set(ep, [...(wrote.get(ep) || []), source]);
+      }
+      return ballotEvidence(ep, rng);
+    };
+    const out = playTraitorsSeason({ cast: names, traitorCount: 3, seed: 7, evidence: probe });
+    return { wrote, out };
+  }
+
+  it('keeps every receipt on its own row, and lets the buffer go afterwards', () => {
+    const { wrote } = seasonWithReceipts();
+    expect(wrote.size, 'the probe never fired, so this whole file proves nothing')
+      .toBeGreaterThan(3);
+
+    // (b) THE ONE THAT MATTERS. Everything written during episode N is still
+    // on episode N's row afterwards. If the trim ever runs BEFORE the
+    // snapshot, these rows come back empty and this assertion names the
+    // episode it lost.
+    for (const [ep, sources] of wrote) {
+      const row = (gs.episodeHistory || []).find(r => r.num === ep);
+      expect(row, `no row was recorded for episode ${ep}`).toBeTruthy();
+      const onRow = (row.tr.receipts || []).map(r => r.source);
+      for (const src of sources) {
+        expect(onRow, `episode ${ep} lost a receipt before it was snapshotted`)
+          .toContain(src);
+      }
+    }
+
+    // (a) AND THE BUFFER DID NOT GROW ALL SEASON. It holds at most the
+    // episode currently in progress — which, after the last row is written,
+    // is nothing at all.
+    const total = [...wrote.values()].reduce((n, l) => n + l.length, 0);
+    expect(total).toBeGreaterThan(3);
+    expect(gs.tr.receipts.length,
+      `the buffer kept all ${total} receipts instead of letting the rows hold them`)
+      .toBeLessThan(total);
+
+    // (c) AND THE SEASON IS STILL READABLE END TO END, across the boundaries
+    // the trim just created.
+    const all = seasonReceipts().map(r => r.source);
+    for (const [ep, sources] of wrote) {
+      for (const src of sources) {
+        expect(all, `seasonReceipts() cannot see episode ${ep} any more`).toContain(src);
+      }
+    }
+    expect(seasonReceipts(3).every(r => r.ep === 3)).toBe(true);
+  });
+
+  it('a mid-season save still round-trips through prepGsForSave/repairGsSets', () => {
+    const { wrote } = seasonWithReceipts();
+    const someEp = [...wrote.keys()][0];
+
+    prepGsForSave(gs);
+    const revived = JSON.parse(JSON.stringify(gs));
+    repairGsSets(revived);
+
+    // The Set that Task 1 wired into these helpers still survives...
+    expect(revived.tr.shieldedThisRound instanceof Set).toBe(true);
+    // ...and so does every receipt, on the row that owns it. Receipts are
+    // frozen plain values by construction, so nothing here needs repairing —
+    // which is the point of asserting it rather than assuming it.
+    const row = revived.episodeHistory.find(r => r.num === someEp);
+    expect((row.tr.receipts || []).map(r => r.source))
+      .toContain(wrote.get(someEp)[0]);
   });
 });

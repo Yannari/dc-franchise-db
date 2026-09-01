@@ -93,7 +93,7 @@ import { sceneEvidence, sceneDoubt, sceneEvidenceThreshold } from './deduction.j
 import { crowdMoment, CROWD_COLOURS } from './crowd.js';
 import { openThread, advanceThread, closeThread, knownOutcomes } from './threads.js';
 import { voteIntentFor as _voteIntentFor, murderPreferenceFor as _murderPrefFor,
-  receiptsForEp } from './state.js';
+  recordedReceipts } from './state.js';
 
 /** The three states `emotionalStateOf` (js/tr/events.js) knows about. */
 export const EMOTIONAL_STATES = ['content', 'paranoid', 'desperate'];
@@ -836,8 +836,16 @@ export function contradictionsKnownTo(knower, about = null) {
 // derivation lives there, once, because deduction.js and murder.js consume the
 // same answers and importing this file from either would close a cycle.
 
-/** Every receipt the season has recorded, optionally narrowed to one episode. */
-export function seasonReceipts(ep = null) { return receiptsForEp(gs, ep); }
+/**
+ * Every receipt the season has recorded, optionally narrowed to one episode.
+ *
+ * READS THE EPISODE ROWS, NOT THE LIVE BUFFER. `gs.tr.receipts` is trimmed as
+ * each episode is recorded (see `trimRecordedReceipts` in js/tr/state.js), so a
+ * reader still pointed at it would quietly answer "this episode" to a question
+ * about the season. Re-sourced here rather than later because this function has
+ * no production caller yet — only tests — and it will never be cheaper to move.
+ */
+export function seasonReceipts(ep = null) { return recordedReceipts(gs, ep); }
 
 /** What `voter` last said they meant to do, this episode. Null when nothing was said. */
 export function voteIntentFor(voter, ep) { return _voteIntentFor(gs, voter, ep); }

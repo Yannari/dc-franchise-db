@@ -595,8 +595,81 @@ export function emotionalOverrideFor(g, name, ep) {
   return o.ep >= ep ? o : null;
 }
 
-/** Every receipt the season holds, or only the ones written on one episode. */
+/**
+ * The receipts still sitting in the LIVE BUFFER, or only this episode's.
+ *
+ * The buffer is deliberately short-lived — see `trimRecordedReceipts` — so this
+ * answers "what has not been snapshotted onto a row yet", which is exactly what
+ * `_recordEpisode` needs and almost never what anybody else does. For the
+ * season's whole history, use `recordedReceipts`.
+ */
 export function receiptsForEp(g, ep = null) {
   const all = g?.tr?.receipts || [];
   return (ep == null ? all : all.filter(r => r.ep === ep)).slice();
+}
+
+/**
+ * DROP THE RECEIPTS THAT ARE NOW SAFELY ON A ROW.
+ *
+ * ── WHY THE BUFFER IS TRIMMED AT ALL ─────────────────────────────────────
+ *
+ * `gs.tr.receipts` used to be append-only for a whole season, and `gs`
+ * serializes wholesale (js/savestate.js has no special case for `gs.tr`), so a
+ * save carried every receipt TWICE: once in the never-trimmed buffer and once
+ * more spread across the per-episode snapshots on `episodeHistory`. That is the
+ * Big Brother 19MB leak shape exactly — season data copied per-episode with the
+ * original kept alive beside it — and with ~210 events about to be authored it
+ * multiplies rather than adds.
+ *
+ * The per-episode rows are the copy that is KEPT: they are the only thing
+ * anything reads (js/vp-tr/debug.js), and their union is a lossless
+ * reconstruction of the season, so trimming the buffer loses nothing.
+ *
+ * ── TRIMS BY IDENTITY, NOT BY EPISODE NUMBER ────────────────────────────
+ *
+ * `taken` is the very array that was just written onto the row, and only those
+ * objects are dropped. Filtering on `r.ep === ep` would be equivalent today and
+ * would stop being equivalent the moment anything writes a receipt after
+ * `_recordEpisode` has run — at which point it would delete a receipt that was
+ * never snapshotted, and the loss would be invisible.
+ *
+ * ── AND IT CHECKS THE ROW BEFORE IT LETS ANYTHING GO ────────────────────
+ *
+ * A receipt is dropped only if it is ACTUALLY FOUND on a recorded row. That
+ * makes the caller's ordering — snapshot first, trim second — safe rather than
+ * merely conventional: call this before the row is pushed and it finds nothing
+ * on a row, drops nothing, and the buffer is left intact for the real trim. The
+ * failure mode it forecloses is the expensive one, because a trim that ran too
+ * early would delete receipts that exist nowhere else and no reader would ever
+ * know what was missing.
+ *
+ * It is a membership test over the rows, not a re-derivation of them, so it
+ * cannot disagree with what was snapshotted: the row holds the same objects.
+ */
+export function trimRecordedReceipts(g, taken) {
+  if (!g?.tr?.receipts || !taken?.length) return g;
+  const onRows = new Set();
+  for (const row of (g.episodeHistory || [])) {
+    for (const r of (row?.tr?.receipts || [])) onRows.add(r);
+  }
+  const gone = new Set(taken);
+  g.tr.receipts = g.tr.receipts.filter(r => !(gone.has(r) && onRows.has(r)));
+  return g;
+}
+
+/**
+ * EVERY RECEIPT THE SEASON HAS WRITTEN, across episode boundaries.
+ *
+ * The rows first, in order, then whatever is still in the live buffer — which
+ * is the episode currently in progress, and is why a scene can still read back
+ * what it did tonight. The two sets are disjoint by construction, because
+ * `trimRecordedReceipts` removes from the buffer exactly what the row took.
+ */
+export function recordedReceipts(g, ep = null) {
+  const out = [];
+  for (const row of (g?.episodeHistory || [])) {
+    for (const r of (row?.tr?.receipts || [])) out.push(r);
+  }
+  out.push(...(g?.tr?.receipts || []));
+  return ep == null ? out : out.filter(r => r.ep === ep);
 }

@@ -672,7 +672,55 @@ const ADVERSE_BRANCHES = new Set([
   'refuses', 'reluctant', 'chased',
   // it did not hold
   'broken', 'deflected', 'dropped', 'leakedAccident', 'leakedDeliberate', 'soured',
+  // FIX ROUND 2 — the six the coverage arm below was built to surface, plus one
+  // more found while classifying: an evasive answer is an answer that went badly
+  // for the person giving it.
+  'awake-desperate', 'grudge-resurfaced', 'dissonance', 'slipped', 'unresolved',
+  'overcorrected', 'hedged',
+  // and the ones the coverage arm surfaced on its first run
+  'disappointment', 'grudge', 'left-out', 'rivalry-carried-over', 'warned',
 ]);
+/**
+ * AND EVERY OTHER BRANCH, SAID OUT LOUD.
+ *
+ * FIX ROUND 2, and it is the fix my own round-1 concern asked for. `_tone`
+ * treats anything not on the adverse list as smooth, which means an unknown
+ * branch and a known-harmless branch are indistinguishable — the design could
+ * not tell "we have looked at this and it is fine" from "we have never seen
+ * this". Measured: five seasons produce over 130 distinct branch strings; the
+ * adverse list held 44 and every one of them was hit, so it was not stale, but
+ * 90-odd fell through in silence and six of those were genuinely adverse.
+ *
+ * So the fallback is noisy now. This is a DENYLIST rather than a heuristic:
+ * every branch the castle can produce must appear on one list or the other, and
+ * `tests/tr-castle-prose.test.js` fails on any that appears on neither. Task 7
+ * adds branches, and the day it does, that arm goes red and somebody classifies
+ * them — which is the whole point.
+ */
+const BENIGN_BRANCHES = new Set([
+  'agreed', 'airtight', 'alibi-built', 'awake-content', 'blended-in', 'body-read',
+  'buried', 'carried', 'checked-in', 'checks-out', 'circle', 'cleared', 'cold-read',
+  'complied', 'confided', 'confirmed', 'consistent', 'convincing', 'cried-alone',
+  'defended', 'denies', 'double-bluffed', 'empty-chair', 'favor-returned',
+  'feigned-fear', 'flattered', 'followed-through', 'grief-spark', 'headcount-pair',
+  'headcount-solo', 'heard', 'held', 'holds', 'huddled', 'imagined', 'inconclusive',
+  'innocent', 'invited-in', 'keepsake', 'kept', 'keptQuiet', 'let-it-go',
+  'misread-calm', 'mourn', 'noticed', 'numb', 'oblivious', 'pact', 'pair-again',
+  'pair-first', 'planted', 'probed', 'protected', 'quiet', 'reassured',
+  'recruit-story-covered', 'rehearsed', 'reseated', 'road-spark', 'serviceable',
+  'shape-guessed', 'shape-redrawn', 'shared-alibi', 'shared-mourning',
+  'shared-suspicion', 'shield-pact', 'showmance-formed', 'showmance-on-the-road',
+  'solo-again', 'solo-first', 'sparked', 'stayed-calm', 'steady', 'stoic', 'sworn',
+  'timing', 'toasted', 'tracked-since', 'traded-reads', 'transactional',
+  'vowed-silence', 'walked-back-together', 'wary', 'whispered',
+  // and the ones the coverage arm surfaced on its first run
+  'alliance-reformed', 'alumni-bond', 'buries', 'defended-by-history', 'recognized',
+  'reconciles', 'redemption', 'reunion-spark', 'sincere', 'strategic', 'synchronized',
+]);
+
+/** Both lists, for the coverage arm. Nothing else reads them. */
+export const BRANCH_TONES = { adverse: ADVERSE_BRANCHES, benign: BENIGN_BRANCHES };
+
 function _tone(s) {
   if (s.closedNow && ADVERSE_OUTCOMES.has(s.outcome)) return 'adverse';
   if (s.closedNow && SMOOTH_OUTCOMES.has(s.outcome)) return 'smooth';
@@ -1139,7 +1187,36 @@ const CONSEQ = {
  * The refusal list is read off the corpus, not guessed: every one of these appears
  * in a line that five seasons composed as "alone" and that plainly was not.
  */
-const COMPANY_WORDS = /\b(ask\w*|answer\w*|told|replied|tells|in front of|everyone|everybody|anyone else|anybody|somebody|someone|the room|the table|unprompted|a second time|the first person)\b/i;
+// A REGEX LITERAL, NEVER A BUILT STRING. A '\b' typed inside a JS string
+// literal is U+0008, not a word boundary, and the whole matcher then matches
+// nothing at all — a detector that silently approves everything. This file's
+// sibling guards have shipped that exact trap once already, so the list is
+// written as one literal and the arm in tests/tr-castle-prose.test.js proves
+// the matcher can still match.
+//
+// FIX ROUND 2 — THE SECOND HALF OF THE LIST. The first version modelled only
+// ADDRESS (asked, told, in front of), and the review found the same defect
+// surviving in a class it could not see: company referred to by QUANTITY or by
+// a COLLECTIVE noun. "checked what frightened looked like on the two people
+// nearest them" and "The column out of the gate got shorter every time" both
+// composed as solitary, because neither names anybody and neither asks anybody
+// anything. Every phrase below is lifted from a line ten real seasons actually
+// composed as alone and that plainly was not.
+/**
+ * AND NOBODY IS EVER ALONE ON THE ROAD.
+ *
+ * Reading the corpus a second time turned up a whole class the phrase list can
+ * only ever chase one sentence at a time: "looked at how few of them were on the
+ * road now", "went over their story on the walk", "rehearsed the story so many
+ * times on the way out". Every one of those composed as solitary, and every one
+ * of them happens while the entire castle is walking in a line. The journey is
+ * not a room somebody can be the only person in — that is a fact about the
+ * format, not a pattern in a sentence — so solitude is simply not claimable
+ * there, and a structural rule beats another regex.
+ */
+const NEVER_ALONE_WINDOWS = new Set(['journey-out', 'journey-back']);
+
+const COMPANY_WORDS = /\b(?:ask\w*|questions?|answer\w*|told|tells|replied|agree\w*|volunteer\w*|unprompted|a second time|mid-sentence|read as|(?:one|two|three|four|a few|several) (?:person|people)|the column|the only one|in the open|caught|at breakfast|in front of|everyone|everybody|anyone else|anybody|somebody|someone|the room|the table|nobody at the table|the first person|named a room)\b/i;
 
 function _mode(s, cast) {
   const present = [...new Set([...(s.actors || []), ...(s.people || [])].filter(Boolean))];
@@ -1150,6 +1227,7 @@ function _mode(s, cast) {
   const line = String(s.line || '');
   const named = (cast || []).some(n => n && !roll.includes(n) && line.includes(n));
   if (named || COMPANY_WORDS.test(line)) return { mode: 'single', roll };
+  if (NEVER_ALONE_WINDOWS.has(s.window)) return { mode: 'single', roll };
   return { mode: 'solo', roll };
 }
 
@@ -2693,6 +2771,15 @@ function _pickUnique(pool, key, used, bucket) {
       const tag = (bucket || '') + ' | ' + v;
       if (!used.has(tag)) { used.add(tag); return v; }
     }
+    // EXHAUSTED, SO START THE POOL AGAIN rather than fall back on the hash.
+    // The hash fallback let a busy day draw the same line a third time while
+    // three others sat unused — a three-peat the review reproduced on seed 99.
+    // Clearing this pool's own tags makes an exhausted pool round-robin, which
+    // caps repeats at ceil(draws / pool size) instead of leaving it to chance.
+    for (const v of pool) used.delete((bucket || '') + ' | ' + v);
+    const v = pool[start];
+    used.add((bucket || '') + ' | ' + v);
+    return v;
   }
   return pool[start];
 }

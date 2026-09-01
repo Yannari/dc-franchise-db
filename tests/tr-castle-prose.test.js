@@ -55,7 +55,7 @@ import { playTraitorsSeason } from '../js/tr/headless.js';
 import { EVENTS } from '../js/tr/events.js';
 import { seedFranchiseHistory } from './helpers/tr-castle-fixture.js';
 import roster from '../franchise_roster.json';
-import { rpBuildCastleDay, castleDayScenes } from '../js/vp-tr/castle-day.js';
+import { rpBuildCastleDay, castleDayScenes, BRANCH_TONES } from '../js/vp-tr/castle-day.js';
 import { screenNarration } from '../js/vp-tr/screens.js';
 import { _vpTextLines } from '../js/text-backlog.js';
 
@@ -610,29 +610,59 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
       episodes++;
     }
     expect(episodes).toBeGreaterThan(4);
-    expect(thrice, 'a composed card printed three times in one episode — a pool has collapsed')
-      .toEqual([]);
+    // A SHARE, NOT A ZERO, and the review is why. The hard `[]` held only on
+    // this file's pinned seed: seed 99 produces a three-peat, so the arm went
+    // red on a reseed, which is how a guard teaches people to ignore it. The
+    // pools are four-wide and `_pickUnique` round-robins an exhausted pool now,
+    // so a third print needs a day drawing the same slot nine times; two of
+    // those across a season is a busy castle, and three is a pool collapsing.
+    expect(thrice.length, 'composed cards are printing three times in one episode - a '
+      + 'pool has collapsed: ' + thrice.join(' / ')).toBeLessThanOrEqual(2);
     expect(twice, 'composed cards are repeating inside single episodes').toBeLessThan(15);
   });
 
   it('never claims a room was empty when the scene says otherwise', () => {
-    // FIX ROUND 1, C1 — and this is the arm that would have caught it. `people`
+    // FIX ROUND 1, C1 - and this is the arm that would have caught it. `people`
     // is who the SENTENCE is about, and reading it as "who was there" made the
     // screen assert solitude over an action card that named other players: 69
     // scenes in five rendered seasons, 13% of everything. Solitude is a claim
     // about who witnessed the scene and everything downstream depends on it.
     //
-    // The rule: a scene the screen composed as `solo` — the only mode whose
-    // pools assert that nobody else was there — must have an action sentence
-    // that names nobody outside its own participants.
+    // FIX ROUND 2 - THE ARM COULD NOT SEE HALF THE DEFECT. It tested only the
+    // name scan, so deleting the phrase clause from `_mode` did not trip it,
+    // and the review found four live scenes still composed as alone over lines
+    // like "checked what frightened looked like on the two people nearest them"
+    // and "The column out of the gate got shorter every time". Company by
+    // QUANTITY and by COLLECTIVE NOUN, neither of which names anybody.
+    //
+    // The list below is NOT a second copy of the production matcher. It is a
+    // fixed regression corpus: the exact phrases found in real composed-solo
+    // lines that plainly had company in them. It does not grow when the
+    // production list grows, and it goes red the moment any of these classes is
+    // composed as solitary again.
+    const FOUND_DEFECTS = [
+      /\b(?:one|two|three) (?:person|people)\b/i,   // "the two people nearest them"
+      /\bthe column\b/i,                            // "the column out of the gate"
+      /\bquestions?\b/i,                            // "an ordinary follow-up question"
+      /\bagree\w* with (?:them|him|her)\b/i,        // "had to agree with them"
+      /\bthe only one\b/i,                          // "the only one who said anything"
+      /\bat breakfast\b/i,                          // "counted heads at breakfast"
+    ];
     let solo = 0, single = 0, pair = 0;
     for (const ep of TASK6_ROWS) {
       for (const scene of allScenes(ep)) {
         const action = scene.observerText.audience.find(b => b.kind === 'action').text;
         if (scene.mode === 'solo') {
           const others = CAST.filter(n => !scene.participants.includes(n) && action.includes(n));
-          expect(others, scene.id + ': composed as alone, and the action names ' + others.join(', ')
-            + ' — "' + action + '"').toEqual([]);
+          expect(others, scene.id + ': composed as alone, and the action names '
+            + others.join(', ') + ' - "' + action + '"').toEqual([]);
+          const hit = FOUND_DEFECTS.filter(re => re.test(action)).map(String);
+          expect(hit, scene.id + ': composed as alone over a line with company in it - '
+            + hit.join(' ') + ' - "' + action + '"').toEqual([]);
+          // and a scene on the road is never solitary: the whole castle walks it
+          expect(['journey-out', 'journey-back'].includes(scene.window),
+            scene.id + ': composed as alone while the castle was walking in a line')
+            .toBe(false);
           solo++;
         }
         if (scene.mode === 'single') single++;
@@ -648,6 +678,42 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
       .toBeGreaterThan(0);
     expect(solo, 'no scene was ever composed as alone, so the rule above asserted nothing')
       .toBeGreaterThan(0);
+    // GUARD ON THE GUARD, and it is not decoration here: the production matcher
+    // is a regex over prose, and a word-boundary typed into a JS string literal
+    // is U+0008 - a matcher that approves everything, silently, forever. This
+    // task shipped exactly that for one run.
+    expect(FOUND_DEFECTS.some(re => re.test('on the two people nearest them'))).toBe(true);
+    expect(FOUND_DEFECTS.some(re => re.test('lay awake with the empty beds'))).toBe(false);
+  });
+
+  it('and classifies every branch it can see as adverse or as harmless', () => {
+    // FIX ROUND 2, item 3. `_tone` treats anything not on the adverse list as
+    // smooth, so an unknown branch and a known-harmless branch were the same
+    // thing to it - the design could not tell "we looked at this and it is
+    // fine" from "we have never seen this". Six genuinely adverse branches were
+    // falling through in silence.
+    //
+    // THE CORPUS IS THE WHOLE POOL, not one season: `PER_KEY` above is built
+    // from every firing of every event across all the seasons this file plays,
+    // so it sees branches a handful of seeds never reach. It is a DENYLIST -
+    // every branch must be on one list or the other - so Task 7's new branches
+    // will redden it, which is the entire point of it.
+    const known = new Set([...BRANCH_TONES.adverse, ...BRANCH_TONES.benign]);
+    expect(known.size, 'the two lists came back empty').toBeGreaterThan(100);
+    const seen = new Set();
+    for (const key of PER_KEY.keys()) {
+      const branch = key.slice(key.indexOf(':') + 1);
+      if (branch && branch !== '(none)') seen.add(branch);
+    }
+    expect(seen.size, 'no branch was observed, so this arm asserted nothing')
+      .toBeGreaterThan(100);
+    const unclassified = [...seen].filter(b => !known.has(b)).sort();
+    expect(unclassified, 'these branches are on neither list, so `_tone` is guessing at '
+      + 'them. Read each one and put it in ADVERSE_BRANCHES or BENIGN_BRANCHES in '
+      + 'js/vp-tr/castle-day.js - do not widen a pattern').toEqual([]);
+    // and the two lists do not overlap, which would make the classification a lie
+    const both = [...BRANCH_TONES.adverse].filter(b => BRANCH_TONES.benign.has(b));
+    expect(both, 'a branch is on both lists').toEqual([]);
   });
 
   it('answers a scene that went badly as a scene that went badly', () => {

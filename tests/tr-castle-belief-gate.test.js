@@ -66,7 +66,11 @@ vi.mock('../js/knowledge.js', async (importOriginal) => {
   };
 });
 
-import { setPlayers } from '../js/core.js';
+import { gs, setGs, setPlayers } from '../js/core.js';
+import { resetKnowledge } from '../js/knowledge.js';
+import { initTraitorsState } from '../js/tr/state.js';
+import { recordAlignment } from '../js/tr/roles.js';
+import { createTraitorsSceneApi } from '../js/tr/scene-api.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { EVENTS } from '../js/tr/events.js';
 import { seedFranchiseHistory } from './helpers/tr-castle-fixture.js';
@@ -92,6 +96,12 @@ const GUARD_SEASONS = 20;
 const BACKSLASH = String.fromCharCode(92);
 function hasCastleFrame(stack) {
   return stack.split(BACKSLASH).join('/').includes('/js/tr/castle/');
+}
+
+/** Line comments only — every file below discusses learn() in its own prose. */
+function _stripComments(src) {
+  return src.split(String.fromCharCode(10))
+    .filter(l => !l.trim().startsWith('//')).join(String.fromCharCode(10));
 }
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -183,6 +193,66 @@ describe('CASTLE EVENTS WRITE ZERO BELIEFS (the plan\'s #1 constraint)', () => {
     expect(fromCastle.length,
       fromCastle.length + ' learn() calls came from a castle event while executing the whole pool:' + sample)
       .toBe(0);
+  });
+
+  // ── ARM 4: THE SANCTIONED WRITE PATH IS A CLOSED SET ────────────────
+  //
+  // Plan 10 Task 4 gives a castle scene a way to move a belief that it did not
+  // have before: `createTraitorsSceneApi(...).addBelief`, which delegates to
+  // `sceneEvidence` in deduction.js — the file whose channels have been
+  // measured against a control — and leaves a receipt naming the cause.
+  //
+  // That does not relax the three arms above and this arm is why. The three
+  // arms forbid a castle FRAME from reaching learn(); this one forbids the
+  // laundering route around them, which is a NEW importer of learn() appearing
+  // anywhere under js/tr/. The set is closed and small, and js/tr/scene-api.js
+  // is deliberately NOT in it: the write path a scene uses does not hold the
+  // primitive, it asks the priced channel for one.
+  const LEARN_IMPORTERS = ['deduction.js', 'murder-variants.js', 'powers.js',
+    'roles.js', 'roundtable.js'];
+
+  it('only the priced channels import learn(), and the scene API is not one of them', () => {
+    const TR_DIR = path.join(HERE, '..', 'js', 'tr');
+    const found = [];
+    (function walk(dir) {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) { walk(full); continue; }
+        if (!e.name.endsWith('.js')) continue;
+        const src = _stripComments(fs.readFileSync(full, 'utf8'));
+        // The IMPORT, not the word: these files discuss learn() in prose.
+        if (/import\s*\{[^}]*\blearn\b[^}]*\}\s*from\s*['"][^'"]*knowledge\.js['"]/.test(src)) {
+          found.push(path.relative(TR_DIR, full).split(BACKSLASH).join('/'));
+        }
+      }
+    })(TR_DIR);
+    expect(found.sort(), 'the set of files holding the belief primitive changed')
+      .toEqual([...LEARN_IMPORTERS].sort());
+    expect(found, 'the scene API must reach beliefs through the priced channel, not hold the primitive')
+      .not.toContain('scene-api.js');
+  });
+
+  it('every belief the scene API writes leaves a receipt naming its cause', () => {
+    setPlayers(ROSTER);
+    setGs({ bonds: {}, activePlayers: CAST.slice(0, 5) });
+    gs.tr = initTraitorsState();
+    resetKnowledge();
+    for (const n of CAST.slice(0, 5)) recordAlignment(n, false, 1, 'selection');
+
+    learnStacks.length = 0;
+    const api = createTraitorsSceneApi({ ep: 3 });
+    api.addBelief(CAST[0], CAST[1], 0.5, { source: 'contradicted her dinner timeline' });
+
+    // GUARD ON THE GUARD, again: if the write silently stopped happening this
+    // assertion would pass on an empty sample.
+    expect(learnStacks.length, 'the scene API wrote no belief at all').toBe(1);
+    const written = (gs.tr.receipts || []).filter(r => r.kind === 'belief');
+    expect(written.length, 'a belief was written with no receipt behind it').toBe(1);
+    expect(written[0].source).toBe('contradicted her dinner timeline');
+    // And the receipt cannot be forged: there is no way to record one without
+    // performing the write, because the read surface has no writer on it.
+    expect(typeof api.receipts).toBe('function');
+    expect(Object.keys(api)).not.toContain('record');
   });
 
   it('no file under js/tr/castle/ imports js/knowledge.js', () => {

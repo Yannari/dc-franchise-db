@@ -45,6 +45,8 @@ const DBG_CSS = `
 .trdbg .ch-murder{color:#f85149}
 .trdbg .ch-banishment{color:#58a6ff}
 .trdbg .ch-banishment-revote{color:#79c0ff}
+.trdbg .rcpt{color:#7ee787}
+.trdbg .rcpt-off{color:#6e7681;text-decoration:line-through}
 `;
 
 /** A `key: value` block. Values are markup and are escaped by the caller. */
@@ -76,6 +78,49 @@ function _ballots(list) {
     + '</table>';
 }
 
+/**
+ * EVERY STATE WRITE A SCENE MADE TONIGHT, AND WHAT CAUSED IT.
+ *
+ * THIS IS THE ONLY PLACE A RECEIPT IS EVER RENDERED, and the constraint is not
+ * stylistic. A receipt's sentence is machine vocabulary — `belief`, `+0.7`,
+ * `source:` — and the whole point of a consequence is that the viewer meets it
+ * as behaviour: Gabby raises the contradiction at the Round Table, and the
+ * audience works out why. A viewer card reading
+ *
+ *   Gabby leaves with a contradiction she can repeat at the Round Table.
+ *
+ * has the same receipt behind it as the row printed here:
+ *
+ *   belief · Gabby → Julia +0.7 · source: contradicted her dinner timeline
+ *
+ * A row whose `applied` is false is a write the engine REFUSED — an observer
+ * who did not accept the read, an arc id that was already closed, a fact on
+ * the audience-only channel that reaches no contestant. Those are struck
+ * through rather than hidden: a consequence the scene believed it had and did
+ * not get is exactly the defect a debug tab exists to surface.
+ */
+function _receipts(list) {
+  if (!list || !list.length) return '<div class="none">no scene changed anything on this row</div>';
+  return '<table><tr><th>kind</th><th>who</th><th>amount</th><th>source</th>'
+    + '<th>scene</th></tr>'
+    + list.map(r => {
+      const who = (r.players && r.players.length >= 2)
+        ? `${r.players[0]} + ${r.players[1]}`
+        : (r.observer && r.subject) ? `${r.observer} → ${r.subject}`
+          : (r.observer || r.subject || '—');
+      const amount = r.belief != null
+        ? `${r.belief}${r.confidence != null ? ` (landed ${r.confidence})` : ''}`
+        : r.delta != null ? String(r.delta)
+          : r.value != null ? String(r.value) : '';
+      const cls = r.applied === false ? 'rcpt-off' : 'rcpt';
+      return `<tr class="${cls}"><td>${esc(r.kind)}</td><td>${esc(who)}</td>`
+        + `<td>${esc(amount)}</td><td>${esc(r.source)}`
+        + (r.applied === false ? ` <span class="none">— refused: ${esc(r.blockedBy)}</span>` : '')
+        + `</td><td>${_or(r.eventId || r.sceneId, 'unattributed')}</td></tr>`;
+    }).join('')
+    + '</table>';
+}
+
 /** The debug screen for one castle row. */
 export function rpBuildTraitorsDebug(epRecord) {
   const ep = epRecord || {};
@@ -88,6 +133,7 @@ export function rpBuildTraitorsDebug(epRecord) {
   const day = tr.castle;
   const sel = tr.selection;
   const bel = tr.beliefs;
+  const receipts = tr.receipts;
 
   const exits = (ep.exits || []).length
     ? '<table><tr><th>name</th><th>verb</th><th>channel</th></tr>'
@@ -201,6 +247,8 @@ export function rpBuildTraitorsDebug(epRecord) {
       ['accepted', esc(String(!!r.accepted))],
       ['and if refused', _or(r.executed, 'nothing — a note can be thrown away')],
     ]) : '<div class="none">no offer this night</div>'}</section>
+
+    <section><h3>Why anything is different — the scene receipts</h3>${_receipts(receipts)}</section>
 
     <section><h3>The castle day</h3>${(day && (day.scenes || []).length)
       ? '<table><tr><th>hour</th><th>family</th><th>event</th><th>who</th>'

@@ -161,6 +161,53 @@ export function initTraitorsState() {
     // whatever remains, instead of the earliest windows racing to spend the
     // whole pot before the rest get a turn). Null between rounds.
     roundBudget: null,
+
+    // ── WHAT THE SCENES DID, AND WHY (Plan 10, Task 4) ─────────────────
+    //
+    // Every one of these is written through js/tr/scene-api.js and through
+    // nothing else. That is the point of them: a castle scene that says a
+    // thing happened leaves the thing AND a receipt saying what caused it, so
+    // "which scene made Gabby suspect Julia" is a lookup rather than an
+    // investigation over two hundred event files.
+
+    // The receipts themselves: one per state write, in the order they
+    // happened. `{ kind, ep, sceneId, eventId, observer, subject, players,
+    // belief, delta, confidence, value, truthStatus, source, applied,
+    // debugLine }`. DEBUG-ONLY — `debugLine` is rendered by js/vp-tr/debug.js
+    // and may never reach viewer prose, which is why the vocabulary it uses
+    // (`belief`, `source:`) is banned everywhere else.
+    receipts: [],
+
+    // Things people SAID: `{ id, ep, speaker, about, claim, truthStatus,
+    // channel, listeners, source }`. A contradiction is not a mood — the
+    // causal contract requires two incompatible stored claims and an observer
+    // who knows both before anybody may be said to have caught anybody out.
+    // This is where the first of the two gets written down at the time.
+    claims: [],
+
+    // How a fact travelled: `{ factId, from, to, channel, ep, sceneId }`.
+    // The reaction radius is the union of witnesses and named recipients, and
+    // "the whole castle knows" is false until these receipts say otherwise.
+    propagation: [],
+
+    // Who somebody left a scene meaning to write down:
+    // `{ voter, target, strength, ep, sceneId, source }`. An INTENT, read by
+    // chooseBanishmentVote as one term beside suspicion and noise — a corridor
+    // conversation can move a ballot and can never own one.
+    voteIntents: [],
+
+    // What a scene did to a Traitor's private shortlist:
+    // `{ traitor, target, delta, ep, sceneId, source }`. Read by
+    // formPreference (js/tr/murder.js), so the conclave argues from something
+    // that happened in the castle rather than from nowhere. Negative deltas
+    // are the interesting half.
+    murderPrefs: [],
+
+    // name -> { state, ep, sceneId, source }. `emotionalStateOf` DERIVES how
+    // somebody is holding up from the last Round Table; this is the one
+    // sanctioned override, and it expires at the next table. A conversation
+    // can rattle somebody for a day; only the room can decide what they are.
+    emotionOverrides: {},
   };
 }
 
@@ -498,4 +545,58 @@ export function traitorsBackgroundBlockers(backgrounds = {}) {
     for (const w of (bg?.warnings || [])) if (w?.blocking) out.push(w);
   }
   return out;
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+// READING BACK WHAT THE SCENES WROTE
+// ══════════════════════════════════════════════════════════════════════
+//
+// These live here rather than in js/tr/scene-api.js for one structural
+// reason: the engine modules that CONSUME a scene's output — deduction.js at
+// the ballot, murder.js at the conclave, events.js at the state map — would
+// otherwise have to import the scene API, and the scene API imports
+// deduction.js. A cycle, and this project does not have one. So the writer
+// imports the readers, never the other way round, and there is exactly one
+// derivation of each question.
+//
+// Every one takes `g` (the game state) explicitly, like `castSize` and
+// `peopleLost` above, so this file stays free of a `gs` import.
+
+/** What `voter` last said, this episode, they meant to do. Null when nothing was said. */
+export function voteIntentFor(g, voter, ep) {
+  const list = g?.tr?.voteIntents || [];
+  for (let i = list.length - 1; i >= 0; i--) {
+    if (list[i].voter === voter && list[i].ep === ep) return { ...list[i] };
+  }
+  return null;
+}
+
+/** Net push the day's scenes gave `traitor` toward (or away from) `target`. */
+export function murderPreferenceFor(g, traitor, target, ep) {
+  let sum = 0;
+  for (const p of (g?.tr?.murderPrefs || [])) {
+    if (p.traitor === traitor && p.target === target && p.ep === ep) sum += p.delta;
+  }
+  return sum;
+}
+
+/**
+ * A scene-set emotional state, if one is still live at `ep`.
+ *
+ * The lifetime is deliberately one round: an override written in episode N is
+ * live for every window of episode N and is superseded by episode N's own
+ * Round Table verdict, because that verdict is a louder fact about the same
+ * person than a corridor conversation was.
+ */
+export function emotionalOverrideFor(g, name, ep) {
+  const o = g?.tr?.emotionOverrides?.[name];
+  if (!o || o.ep == null || ep == null) return null;
+  return o.ep >= ep ? o : null;
+}
+
+/** Every receipt the season holds, or only the ones written on one episode. */
+export function receiptsForEp(g, ep = null) {
+  const all = g?.tr?.receipts || [];
+  return (ep == null ? all : all.filter(r => r.ep === ep)).slice();
 }

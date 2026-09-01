@@ -28,6 +28,7 @@
 import { gs } from '../core.js';
 import { findOpenThread, heatAt, openThreads, actFor } from './threads.js';
 import { applyEventCrowd } from './crowd.js';
+import { emotionalOverrideFor } from './state.js';
 import { weightedPick } from '../event-scheduler.js';
 
 /** Windows a round is built from (spec §5.6) — registerEvent rejects any other. */
@@ -563,8 +564,26 @@ const PARANOID_ACCUSER_SHARE = 0.25;
  * Accusations use the same proportional rule but retain the two-accuser floor,
  * because one person naming somebody is ordinary debate noise.
  */
-export function emotionalStateOf(name) {
+export function emotionalStateOf(name, ep = null) {
   const rounds = gs.tr?.rounds || [];
+  // ── WHAT A SCENE SAID, WHERE A SCENE HAS SAID SOMETHING ────────────
+  //
+  // The derivation below is the room's verdict and it is right almost always.
+  // It cannot, however, know that somebody spent the afternoon being taken
+  // apart in a corridor by a person whose name was never on a ballot. A scene
+  // may override it through `setEmotionalState` (js/tr/scene-api.js) and
+  // through nothing else — `ctx.state` stays frozen, and a castle event
+  // assigning to it still throws.
+  //
+  // ONE ROUND, AND THEN THE ROOM DECIDES AGAIN. The override is live for the
+  // episode it was written in and is superseded by that episode's own Round
+  // Table, because a table is a louder fact about the same person than a
+  // conversation was. `ep` defaults to the episode currently in progress —
+  // rounds already recorded, plus the one being played.
+  const at = ep ?? (rounds.length + 1);
+  const override = emotionalOverrideFor(gs, name, at);
+  if (override) return override.state;
+
   const last = rounds[rounds.length - 1];
   if (!last) return 'content';
   let votes = 0;

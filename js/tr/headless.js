@@ -12,7 +12,7 @@ import { gs, setGs, players, seasonConfig } from '../core.js';
 // gender off a roster entry this file already has in hand. js/tr/state.js
 // resolves the same clauses off the same table for the same reason.
 import { pronounsOf } from '../pronouns-of.js';
-import { initTraitorsState, snapshotTraitorsBackgrounds } from './state.js';
+import { initTraitorsState, snapshotTraitorsBackgrounds, receiptsForEp } from './state.js';
 import { resetKnowledge } from '../knowledge.js';
 import { setBond, getBond } from '../bonds.js';
 import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
@@ -1602,6 +1602,18 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // carrying every survivor's alignment would hand the last table exactly
       // what the format spends it refusing to say.
       beliefs: endgame ? null : _beliefRecord(ep),
+      // -- WHY ANYTHING ON THIS ROW IS DIFFERENT (Plan 10, Task 4) -----
+      //
+      // Every state write a scene performed tonight, with the cause that
+      // produced it. DEBUG-ONLY: `rpBuildTraitorsDebug` renders it and no
+      // viewer screen may, which is why the vocabulary in `debugLine` is
+      // banned from prose everywhere else.
+      //
+      // Snapshotted PER EPISODE off the season ledger rather than handed down
+      // from the runner, because a receipt can be written by any of the seven
+      // windows, the table or the night, and a parameter would have to be
+      // threaded through all of them to catch the same set this filter does.
+      receipts: receiptsForEp(gs, ep),
     },
   });
   // NO `gs.eliminated` HERE, AND THE OMISSION WAS MEASURED. Maintaining it

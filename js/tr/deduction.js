@@ -28,9 +28,10 @@
 // path. The rumour tier caps only the callers that pass no confidence; the
 // ceiling in learn() is what actually bounds the format.
 import { gs } from '../core.js';
-import { recordFact, learn, believes, ALIGNMENT_CRED_CEILING } from '../knowledge.js';
+import { recordFact, getFact, learn, believes, ALIGNMENT_CRED_CEILING } from '../knowledge.js';
 import { alignmentFactId, livingTraitors, alignmentAt } from './roles.js';
 import { getBond } from '../bonds.js';
+import { voteIntentFor } from './state.js';
 import { _lineHash } from './castle/lines.js';
 
 export { alignmentFactId };
@@ -464,13 +465,30 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
   // a room of Traitors only has Traitors to write down.
   const reluctance = (fellows.length && fellows.length < pool.length) ? pactReluctance() : 0;
 
+  // WHAT THEY SAID THEY WOULD DO, IN THE CASTLE, EARLIER TODAY.
+  //
+  // A scene can promise a vote — "I'm bringing it up tonight" — and the
+  // promise has to be worth something at the table or the scene was
+  // decoration. It is a TERM and not an instruction: `strength` is added
+  // beside suspicion and noise, so a firm promise loses to a strong read and
+  // beats an indifferent one, which is what makes a broken promise a story
+  // rather than an impossibility. Written only through
+  // `setVoteIntent` (js/tr/scene-api.js), so every one of these has a receipt
+  // naming the conversation that produced it.
+  //
+  // NO DRAW IS TAKEN HERE, deliberately: `voteIntentFor` is a lookup, so a
+  // season with intents in it consumes exactly the same rng stream as one
+  // without and cannot drift the murder/ballot draws that follow.
+  const intent = voteIntentFor(gs, voter, ep);
+
   const scored = pool.map(name => {
     const priced = reluctance > 0 && fellows.includes(name);
     return {
       name,
       score: suspicion(voter, name, ep) * _voteSuspicionMult
         + (priced ? pactNoise(voter, name, ep) : rng() * 0.35)
-        - (priced ? reluctance : 0),
+        - (priced ? reluctance : 0)
+        + (intent && intent.target === name ? (intent.strength || 0) : 0),
     };
   }).sort((a, b) => b.score - a.score);
   const chosen = scored[0].name;
@@ -1060,4 +1078,66 @@ export function seerClaimEvidence(claimant, accused, listeners, ep, tag = 'claim
     if (b) heard.push(l);
   }
   return heard;
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+// THE SEVENTH EVIDENCE CHANNEL: A SCENE
+// ══════════════════════════════════════════════════════════════════════
+//
+// The six channels above are all MECHANICAL — a ballot, a murder, a mission
+// result, the Seer. A castle scene is the seventh, and until now it had none:
+// the belief gate (tests/tr-castle-belief-gate.test.js) forbids a castle event
+// from touching `learn()` at all, because a channel nobody has priced is a
+// channel that silently retunes every calibration band in the suite.
+//
+// This is that channel, and it lands HERE rather than in the castle for the
+// reason the gate's own header gives: belief writes belong to the file whose
+// channels have been measured. Castle events reach it through
+// `createTraitorsSceneApi` (js/tr/scene-api.js), which is the only caller,
+// and every write it performs leaves a receipt naming its cause.
+//
+// WHAT IT DOES NOT CHANGE. It is `deduced`, always, so
+// `ALIGNMENT_CRED_CEILING` still bounds it and no Faithful can ever reach
+// certainty about anybody through a conversation. It never passes `public` or
+// `observed`; the closed set of three writers of a certain alignment (the
+// turret, the reveal, the Seer) stays closed.
+
+/**
+ * `observer` came out of a scene reading `subject` differently.
+ *
+ * `strength` is what the scene decided the evidence was worth, 0..1, before
+ * the ceiling. `source` is the sentence a LATER scene can cite — "contradicted
+ * her dinner timeline", not an event id — and it is required, because a belief
+ * whose cause cannot be repeated out loud is a belief no later scene can use.
+ *
+ * `rng` is injected without exception. The scene has already rolled its own
+ * outcome; see `_commitStream` in js/tr/scene-api.js for why the ordinary path
+ * hands this a deterministic stream rather than re-rolling acceptance, and why
+ * a knowingly false plant is the one case that does take a live draw.
+ */
+export function sceneEvidence(observer, subject, strength, { source, truthStatus = 'unknown',
+  ep = null, rng } = {}) {
+  if (!observer || !subject || observer === subject) return null;
+  if (typeof source !== 'string' || !source.trim()) {
+    throw new Error('sceneEvidence: a belief needs a human-readable source a later scene can cite');
+  }
+  if (typeof rng !== 'function') {
+    throw new Error('sceneEvidence: rng must be injected — never Math.random, the '
+      + 'seeded-replay guards depend on it');
+  }
+  const id = alignmentFactId(subject);
+  // The fact may not exist yet in a world that has not run a selection. Record
+  // it at the CURRENT era's truth and never re-record it: `recordFact`
+  // overwrites `truth` on an existing fact, and re-deriving ground truth from
+  // a scene is exactly the sort of side door roles.js's era model exists to
+  // keep shut.
+  if (!getFact(id)) {
+    recordFact({ type: 'alignment', subject, truth: alignmentAt(subject, ep) === 'traitor', ep });
+  }
+  return learn(observer, id, {
+    source, sourceType: 'deduced',
+    confidence: Math.max(0, Math.min(1, Number(strength) || 0)),
+    ep, rng,
+  });
 }

@@ -14,6 +14,7 @@ import { gs } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond } from '../bonds.js';
 import { livingTraitors, livingFaithfuls } from './roles.js';
+import { murderPreferenceFor } from './state.js';
 import { shieldSeenBy, daggerSeenBy } from './powers.js';
 import { pickVariant, buildDeathList, dinnerNeighbours, chapelPlea, dungeonCompanion,
   dungeonVoice, chooseSacrifice, variantLine, PLAIN_SIGHT_METHODS } from './murder-variants.js';
@@ -141,6 +142,21 @@ export function formPreference(traitor, ep, rng = Math.random) {
     // read-quality multiply, so a Traitor who reads the room badly cannot
     // scale away a thing they SAW.
     if (name === knownDagger) score += KNOWN_DAGGER_BONUS;
+
+    // WHAT HAPPENED IN THE CASTLE TODAY. A scene can push this Traitor toward
+    // a name ("she has been saying mine all afternoon") or away from one
+    // ("the room would connect it to me by breakfast"), and without this term
+    // the conclave argues from stats and last night's ballots alone — the
+    // format's most-quoted murders come out of the day, not the spreadsheet.
+    //
+    // Written only through `addMurderPreference` (js/tr/scene-api.js), so
+    // every push has a receipt naming the scene that produced it. Applied at
+    // the same point and for the same reason as the two relic terms: after the
+    // read-quality multiply, so a Traitor who reads the room badly cannot
+    // scale away a thing that actually happened to them. It is a LOOKUP and
+    // takes no draw, so a season with preferences in it consumes exactly the
+    // rng stream a season without them does.
+    score += murderPreferenceFor(gs, traitor, name, ep);
 
     // Carry the raw terms alongside the score so _reasonFor can read what
     // actually drove THIS pick instead of recomputing it — a recompute can

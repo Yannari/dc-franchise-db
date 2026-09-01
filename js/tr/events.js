@@ -28,6 +28,7 @@
 import { gs } from '../core.js';
 import { findOpenThread, heatAt, openThreads, actFor } from './threads.js';
 import { applyEventCrowd } from './crowd.js';
+import { weightedPick } from '../event-scheduler.js';
 
 /** Windows a round is built from (spec §5.6) — registerEvent rejects any other. */
 export const KNOWN_WINDOWS = new Set([
@@ -353,13 +354,13 @@ export function pickEvent(ctx, rng) {
   const scored = eligible(ctx);
   if (!scored.length) return null;
 
-  const total = scored.reduce((s, e) => s + e.score, 0);
-  let roll = rng() * total;
-  let chosen = scored[scored.length - 1];
-  for (const ev of scored) {
-    roll -= ev.score;
-    if (roll <= 0) { chosen = ev; break; }
-  }
+  // The weighted-random draw itself — one rng() call, proportional to score
+  // — is the exact same primitive Big Brother's house scheduler uses to pick
+  // a beat (js/event-scheduler.js). Shared here rather than duplicated so the
+  // two formats' selection math cannot silently drift apart; everything
+  // AROUND the draw (guards, cooldown scopes, thread continuation) stays
+  // here because it needs Traitors vocabulary the kernel does not know.
+  const chosen = weightedPick(scored, rng, e => e.score) || scored.at(-1);
 
   const cds = gs.tr.cooldowns;
   cds.event[chosen.id] = ctx.ep;

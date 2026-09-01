@@ -6,6 +6,7 @@ import {
 } from './shared-strategy.js';
 import { makeEndgameDeal, makeJuryPact, breakDeal, exposeDeal, tierOf } from './deals.js';
 import { isDrinksNight, nightModifier } from '../bb-events/drinks-night.js';
+import { scheduleWeightedEvents } from '../event-scheduler.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -293,17 +294,6 @@ function recordBeat(entry) {
   }
 }
 
-function weightedPick(eligible, rng) {
-  const total = eligible.reduce((sum, entry) => sum + entry.weight, 0);
-  if (total <= 0) return null;
-  let roll = rng() * total;
-  for (const entry of eligible) {
-    roll -= entry.weight;
-    if (roll <= 0) return entry.event;
-  }
-  return eligible.at(-1)?.event || null;
-}
-
 /**
  * Where in the house a beat happens.
  *
@@ -402,72 +392,87 @@ function _nightFactor(ctx, event) {
   } catch { return 1; }
 }
 
+/**
+ * Where a beat's context comes from, given only which beat index it is.
+ *
+ * A Battle of the Block week seats TWO Heads of Household, and roughly a
+ * hundred events read `ctx.hoh` as "the person with the power". Handing them
+ * one name meant half the power in the house could not be written about at
+ * all: the co-HOH was never the subject of a reign event, never called the
+ * house meeting, never had anybody sucking up to them. Rather than teach
+ * every event to count, the beats alternate between the two — so across an
+ * act both of them are seen holding it.
+ *
+ * Pulled out to its own function because the kernel scores an event against
+ * this exact per-beat context and then, once selection has finished,
+ * `scheduleHouseBeats` needs the SAME context back to actually fire the
+ * winner — a beat's context must not silently differ between why an event
+ * was picked and what it saw when it ran.
+ */
+function _beatCtxFor(ctx, beat) {
+  const beatCtx = { ...ctx, beat };
+  if ((ctx.hohs || []).length === 2) beatCtx.hoh = ctx.hohs[beat % 2];
+  return beatCtx;
+}
+
 export function scheduleHouseBeats(events, house, ctx, options = {}) {
   if (!Array.isArray(events) || !events.length) return [];
+  // The kernel (js/event-scheduler.js) never falls back to Math.random —
+  // that default lives here, preserved from before the extraction, so this
+  // function's own public behaviour is unchanged for a caller that omits
+  // `options.rng`.
   const rng = options.rng || Math.random;
-  const min = Math.max(0, options.min ?? 1);
-  const max = Math.max(min, options.max ?? 3);
-  const desired = Math.min(max, min + Math.floor(rng() * (max - min + 1)));
-  const fired = [];
-  // Uses per event, not a used/unused flag.
-  //
-  // Excluding an event outright once it had fired capped an act at however
-  // many events happened to be eligible for that phase, so asking for more
-  // beats than that silently returned fewer and the house looked empty. A
-  // second airing is allowed but heavily penalised, and a third never happens
-  // — and because the beat index feeds each event's text variant, the second
-  // airing picks different words and different people.
-  const uses = new Map();
   const api = createHouseEventApi(ctx);
 
-  for (let beat = 0; beat < desired; beat++) {
-    const beatCtx = { ...ctx, beat };
-    // A Battle of the Block week seats TWO Heads of Household, and roughly a
-    // hundred events read `ctx.hoh` as "the person with the power". Handing
-    // them one name meant half the power in the house could not be written
-    // about at all: the co-HOH was never the subject of a reign event, never
-    // called the house meeting, never had anybody sucking up to them. Rather
-    // than teach every event to count, the beats alternate between the two —
-    // so across an act both of them are seen holding it.
-    if ((ctx.hohs || []).length === 2) beatCtx.hoh = ctx.hohs[beat % 2];
-    const usable = events.filter(event => event?.id && typeof event.weight === 'function' && typeof event.fire === 'function')
-      .map(event => ({
-        event, uses: uses.get(event.id) || 0,
-        // ── THE NIGHT CHANGES THE ODDS, NOT THE CATALOGUE ──
-        //
-        // A drinks night written as one more card would add a pleasant evening
-        // and change nothing. What alcohol actually does to a house is make the
-        // events that were already sitting under the threshold fire: the row
-        // that had been coming all week, the thing somebody had decided not to
-        // say. So it multiplies what is already here — arguments and confessions
-        // up, careful vote-counting down — and adds only the few beats that need
-        // the drink to make sense.
-        weight: Math.max(0, Number(event.weight(house, beatCtx)) || 0)
-          * _nightFactor(beatCtx, event),
-      }))
-      .filter(entry => entry.weight > 0);
-    // Fresh events are not merely preferred, they are exhausted first. Only
-    // once nothing new is eligible does an event get a second airing, so a
-    // longer act never costs variety it could have had.
-    const fresh = usable.filter(entry => entry.uses === 0);
-    const eligible = fresh.length ? fresh : usable.filter(entry => entry.uses < 2);
-    const event = weightedPick(eligible, rng);
-    if (!event) break;
-    uses.set(event.id, (uses.get(event.id) || 0) + 1);
-    // Events are handed the seeded rng as a fourth argument. Without it they had
-    // to derive any text variety from a hash of the context, because reaching
-    // for Math.random would stop a seeded season reproducing. Passing the rng
-    // keeps reproducibility and lets an event simply roll.
-    // Drained per beat, so each card carries only what ITS event changed
-    // rather than everything that has happened in the act so far.
-    api._drainLedger();
-    const worldBefore = _worldBefore();
-    const result = validateBeat(event, event.fire(house, beatCtx, api, rng), beatCtx);
-    result.effects = [...api._drainLedger(), ..._worldMoved(worldBefore)];
-    fired.push(result);
-    recordBeat({ week: ctx.week?.num || 0, act: ctx.act, eventId: event.id, players: [...result.players] });
-  }
-  return fired;
+  // The kernel scores and fires ONE beat at a time, in order, so a later
+  // beat's weight() call sees whatever the previous beat's fire() just
+  // changed — several events (e.g. js/bb-events/social.js's alliance-pair
+  // events) depend on that: they read live alliance/bond state in both
+  // weight() and fire(), and an earlier beat firing can dissolve exactly the
+  // pair a later beat's weight() saw as eligible. Scoring every beat up front
+  // against a frozen snapshot and firing them all afterwards crashes on
+  // exactly that case — see the note in js/event-scheduler.js.
+  //
+  // Big Brother's own per-beat context (the beat index, HOH alternation) and
+  // its drinks-night weight modifier are folded in through `scoreEvent`
+  // rather than taught to the kernel, because both need Big Brother
+  // vocabulary (`ctx.hohs`, `isDrinksNight`) the kernel must not know about.
+  // `fireEvent` adapts the kernel's generic `(context, meta, rng)` call into
+  // Big Brother's real `fire(house, beatCtx, api, rng)` shape and does
+  // everything a firing beat has always done: drain the ledger, diff the
+  // world, validate the returned beat, and record it.
+  const results = scheduleWeightedEvents(events, ctx, {
+    rng, min: options.min, max: options.max, maxUses: 2,
+    scoreEvent: (event, _context, meta) => {
+      const beatCtx = _beatCtxFor(ctx, meta.index);
+      // ── THE NIGHT CHANGES THE ODDS, NOT THE CATALOGUE ──
+      //
+      // A drinks night written as one more card would add a pleasant evening
+      // and change nothing. What alcohol actually does to a house is make the
+      // events that were already sitting under the threshold fire: the row
+      // that had been coming all week, the thing somebody had decided not to
+      // say. So it multiplies what is already here — arguments and confessions
+      // up, careful vote-counting down — and adds only the few beats that need
+      // the drink to make sense.
+      return Math.max(0, Number(event.weight(house, beatCtx)) || 0) * _nightFactor(beatCtx, event);
+    },
+    fireEvent: (event, _context, meta, rngArg) => {
+      const beatCtx = _beatCtxFor(ctx, meta.index);
+      // Events are handed the seeded rng as a fourth argument. Without it they had
+      // to derive any text variety from a hash of the context, because reaching
+      // for Math.random would stop a seeded season reproducing. Passing the rng
+      // keeps reproducibility and lets an event simply roll.
+      // Drained per beat, so each card carries only what ITS event changed
+      // rather than everything that has happened in the act so far.
+      api._drainLedger();
+      const worldBefore = _worldBefore();
+      const result = validateBeat(event, event.fire(house, beatCtx, api, rngArg), beatCtx);
+      result.effects = [...api._drainLedger(), ..._worldMoved(worldBefore)];
+      recordBeat({ week: ctx.week?.num || 0, act: ctx.act, eventId: event.id, players: [...result.players] });
+      return result;
+    },
+  });
+  return results.map(pick => pick.result);
 }
 
 export function houseEventState() {

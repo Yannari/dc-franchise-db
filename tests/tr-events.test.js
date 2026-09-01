@@ -5,6 +5,8 @@
 // stops a season looping is not more events — it is that a live story beats a
 // fresh one, that the same pair cannot repeat themselves, and that the castle
 // in episode 9 does not sound like the castle in episode 2.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it, beforeEach } from 'vitest';
 import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
@@ -37,6 +39,24 @@ beforeEach(() => {
   setGs({ bonds: {}, activePlayers: [...CAST] });
   gs.tr = initTraitorsState();
   _resetRegistry();
+});
+
+// Task 3 (shared weighted scene scheduler): pickEvent's draw now delegates to
+// the same weightedPick primitive Big Brother's house scheduler uses
+// (js/event-scheduler.js), so the two formats' selection math cannot
+// silently drift apart. What must NOT happen is the reverse — Traitors
+// reaching into Big Brother's event catalogue or state to get it. This is a
+// static check on the source rather than a behavioural one because the
+// behavioural surface (every test in this file) is exactly what would still
+// pass if that boundary were violated in a way that happened not to change
+// an output.
+describe('kernel delegation boundary (Task 3)', () => {
+  it('delegates the weighted draw to the shared kernel without importing Big Brother event data', () => {
+    const src = readFileSync(join(process.cwd(), 'js/tr/events.js'), 'utf8');
+    expect(src, 'should delegate to the shared scheduler kernel').toMatch(/from ['"]\.\.\/event-scheduler\.js['"]/);
+    expect(src, 'must not import Big Brother\'s house event catalogue').not.toMatch(/HOUSE_EVENTS/);
+    expect(src, 'must not touch Big Brother state').not.toMatch(/gs\.bb\b/);
+  });
 });
 
 describe('the contract', () => {

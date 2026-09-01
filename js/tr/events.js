@@ -632,6 +632,19 @@ function _stateFor(actors) {
  */
 export function startRoundBudget(rng, windowCount = 7) {
   const total = ROUND_BUDGET_MIN + Math.floor(rng() * (ROUND_BUDGET_MAX - ROUND_BUDGET_MIN + 1));
+  return startBudget(total, windowCount);
+}
+
+/**
+ * The general form `startRoundBudget` is a thin wrapper over: install a
+ * budget of exactly `total` scenes on `gs.tr`, to be spent fair-share across
+ * `windowCount` `runWindow` calls. `startRoundBudget` draws `total` itself
+ * from the flat 4-8 range; Task 5's phase budgets
+ * (js/tr/castle/phases.js) already know their own `total` — drawn from a
+ * per-phase range, not the old per-round one — and only need the setter,
+ * not a second copy of the draw.
+ */
+export function startBudget(total, windowCount = 1) {
   gs.tr.roundBudget = { total, used: 0, windowsLeft: windowCount };
   return gs.tr.roundBudget;
 }

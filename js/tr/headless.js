@@ -26,7 +26,11 @@ import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence }
 import { variantEvidence } from './murder-variants.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
-import { runWindow, startRoundBudget, sceneParticipants, KNOWN_WINDOWS } from './events.js';
+import { sceneParticipants, KNOWN_WINDOWS } from './events.js';
+// TASK 5: the day is scheduled in six chronological phases, each with its
+// own scene-count budget, replacing the old flat 4-8-per-round total split
+// fair-share across all seven windows. See js/tr/castle/phases.js.
+import { runCastlePhase, castlePhaseRecord } from './castle/phases.js';
 import { outcomeSense } from './threads.js';
 import { runMission, POT_CEILING } from './missions.js';
 import { shieldEvidence, expireShields, settleDaggers } from './powers.js';
@@ -986,7 +990,15 @@ function _castleRecord(ep, fired) {
     if (!KNOWN_WINDOWS.has(x.window) && !windows.includes(x.window)) windows.push(x.window);
   }
 
-  return { ep, windows, scenes };
+  // TASK 5: the same scenes, regrouped into the six chronological Castle Day
+  // phases (js/tr/castle/phases.js). Unlike `windows` above, every phase
+  // appears even when it produced nothing — see `castlePhaseRecord`'s doc
+  // comment for why a screen walking six phases in order needs the shape to
+  // be there on the one night two of them (private-strategy,
+  // roundtable-scramble) are empty.
+  const phases = castlePhaseRecord(scenes);
+
+  return { ep, windows, scenes, phases };
 }
 
 /**
@@ -1732,11 +1744,13 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // that does not happen) and after-table (which reacts to a reveal cascade
   // that did not run) are skipped; night runs after the conclave same as
   // always.
-  startRoundBudget(castleRng, 5); // 5 windows this round: no evening/after-table without a table
+  // TASK 5: phase-scoped budgets, not the old flat `startRoundBudget(castleRng,
+  // 5)`. No table on night one, so `private-strategy` and `roundtable-scramble`
+  // — which campaign for and react to a table that isn't happening — are never
+  // called at all; that is this round's version of the old "5 windows, not 7".
   const castle1 = [
-    ...runWindow('dawn', ep, castleRng),
-    ...runWindow('morning', ep, castleRng),
-    ...runWindow('journey-out', ep, castleRng),
+    ...runCastlePhase('breakfast-fallout', ep, castleRng), // dawn
+    ...runCastlePhase('morning-life', ep, castleRng),      // morning + journey-out
   ];
   // The mission sits BETWEEN the two journey windows because that is what the
   // journey is: out to the mission, and back from it. Night one has one too —
@@ -1749,7 +1763,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // stream, so it displaces no game draw either. What it does change is what
   // the room believes, which is the point of it.
   missionEvidence(ep, missionRng);
-  castle1.push(...runWindow('journey-back', ep, castleRng));
+  castle1.push(...runCastlePhase('mission-fallout', ep, castleRng)); // journey-back
   const n1 = _night(ep, rng);
   // THE SHIELD IS RESOLVED THE MOMENT THE NIGHT IS, and in this order for two
   // reasons. `shieldEvidence` has to run while the Shield is still live —
@@ -1768,7 +1782,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // still standing". It runs after the night rather than after the table
   // because a round takes two people and this has to catch both.
   settleDaggers(ep);
-  castle1.push(...runWindow('night', ep, castleRng));
+  castle1.push(...runCastlePhase('post-banishment', ep, castleRng)); // night
   scoreMission(ep, mission1);
   _recordEpisode(ep, { banished: null, night: n1, mission: mission1, castle: castle1,
     selection, arrival });
@@ -1782,15 +1796,14 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     const fa = livingFaithfuls(ep).length;
     if (!tr || alive.length <= configuredEndgameSize || fa <= tr) break;
 
-    // A fresh 4-8 spending money for this round's seven windows, drawn from
-    // the castle layer's own stream (never the game rng — see castleRngFor).
-    // Windows slot around the evidence/table/night contract below WITHOUT
-    // disturbing it — see that comment for why the three calls it wraps
-    // cannot reorder.
-    startRoundBudget(castleRng, 7);
+    // TASK 5: each of the six Castle Day phases draws its OWN scene-count
+    // budget from its own range (js/tr/castle/phases.js), spending it
+    // fair-share across the window(s) that phase owns — replacing the old
+    // flat 4-8 total shared across all seven windows. Phases slot around the
+    // evidence/table/night contract below WITHOUT disturbing it — see that
+    // comment for why the three calls it wraps cannot reorder.
     const castleEvents = [
-      ...runWindow('dawn', ep, castleRng),
-      ...runWindow('morning', ep, castleRng),
+      ...runCastlePhase('breakfast-fallout', ep, castleRng), // dawn
     ];
 
     // ORDER IS THE CONTRACT. Both evidence sources read the round that just
@@ -1814,25 +1827,31 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // it sits inside the order contract above without disturbing a single one
     // of the game rng's draws — the evidence/table/night sequence either side
     // of it is bit-identical whether missions run or not, which is what
-    // tests/tr-missions.test.js asserts directly.
-    castleEvents.push(...runWindow('journey-out', ep, castleRng));
+    // tests/tr-missions.test.js asserts directly. `morning-life` (dawn's
+    // successor phase) covers `journey-out` too — see the note atop
+    // js/tr/castle/phases.js for why bundling it here, rather than at
+    // `morning`'s old position right after dawn, is safe: evidence/
+    // murderEvidence/variantEvidence write `gs.knowledge`, which no castle
+    // event may read, so running this phase before or after them changes
+    // nothing about what it draws.
+    castleEvents.push(...runCastlePhase('morning-life', ep, castleRng)); // morning + journey-out
     const mission = runMission(ep, missionRng);
     // Source 4. Same round as the mission it reads, before the table it feeds.
     missionEvidence(ep, missionRng);
-    castleEvents.push(...runWindow('journey-back', ep, castleRng));
-    castleEvents.push(...runWindow('evening', ep, castleRng));
+    castleEvents.push(...runCastlePhase('mission-fallout', ep, castleRng)); // journey-back
+    castleEvents.push(...runCastlePhase('private-strategy', ep, castleRng)); // evening
     const r = runRoundTable(ep, rng);
     if (!r) break;   // an empty castle: nothing left to banish
     // The reveal cascade has already run inside runRoundTable by the time
     // after-table fires — that is the whole point of the window: someone
     // was just revealed.
-    castleEvents.push(...runWindow('after-table', ep, castleRng));
+    castleEvents.push(...runCastlePhase('roundtable-scramble', ep, castleRng)); // after-table
     const night = _night(ep, rng);
     // Same pair, same order, same stream — see the note on night one.
     shieldEvidence(ep, missionRng, night);
     expireShields(ep);
     settleDaggers(ep);   // see night one: the banished and the murdered, both
-    castleEvents.push(...runWindow('night', ep, castleRng));
+    castleEvents.push(...runCastlePhase('post-banishment', ep, castleRng)); // night
     // aliveAtVote/traitorsAtVote are the population as it stood when the ballots
     // were cast, and they are DATA, not behaviour — nothing in the engine reads
     // them. They exist because the null hypothesis for a banishment is not a

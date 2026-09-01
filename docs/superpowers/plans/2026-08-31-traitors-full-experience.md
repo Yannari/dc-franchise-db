@@ -409,6 +409,168 @@ Repetition controls:
 
 Tests must compare the confessional with its source scene and prove that it adds a new fact, intention, interpretation, emotional turn, history citation, or distinct character beat. A confessional failing that comparison must not render and must not count toward the 100–140-card target.
 
+## Episode editing and continuity contract
+
+The scene scheduler supplies eligible material; an episode editor shapes it into a coherent television episode. It selects a small number of stories, orders their beats, reserves space for ordinary life and humour, and prevents every card from having identical dramatic weight.
+
+The saved edit record is:
+
+```js
+{
+  primaryStories: [{ arcId, premise, plannedBeats, payoff }],
+  secondaryStories: [{ arcId, premise, plannedBeats, payoff }],
+  textureSlots: [{ purpose, phase }],
+  toneLedger: { suspense:0, strategy:0, conflict:0, warmth:0, humour:0, grief:0 },
+  promises: [{ id, sourceSceneId, promisedAction, owner, status, resolutionSceneId, abandonmentReason }],
+}
+```
+
+A standard episode normally carries 2–3 primary stories, 2–4 secondary stories, and 3–6 texture scenes. The editor may use fewer late in the game. It does not invent events to complete an outline; it selects among causally eligible events and records when a promised action cannot happen.
+
+### Scene-to-scene chaining
+
+A scene that announces a future action creates a promise. The promise must become `attempted`, `resolved`, or `abandoned` with a recorded reason.
+
+Correct chain:
+
+```text
+SCENE 1: Gabby decides to check Julia's timeline with Alec.
+SCENE 2: Gabby asks Alec what he witnessed.
+SCENE 3: Their accounts conflict, so Gabby raises the discrepancy privately or at the Round Table.
+PAYOFF: Julia explains it, fails to explain it, or redirects the suspicion.
+```
+
+Valid abandonment:
+
+```text
+Gabby plans to confront Julia, but the mission teams separate them. After the mission, Manu's public argument becomes the urgent story. The promise is stored as postponed, not silently forgotten.
+```
+
+Forbidden: a confessional says “I'm checking that story” and nobody checks, postpones, or explains why it was dropped.
+
+### Story resolution
+
+Every opened arc has a concrete subject and stakes. By season end it must be resolved, transformed, transferred after an exit, or explicitly abandoned. Resolution does not require reconciliation: a rivalry can end with permanent distrust, a murdered participant, or a decisive vote.
+
+Tests fail when a promise or arc disappears from the record without a terminal status. They also fail when a payoff cites no earlier setup.
+
+## Knowledge propagation and reaction radius
+
+Information spreads through named receipts:
+
+```js
+{ factId, from, to, channel:'witnessed|conversation|public-ceremony|confessional-audience-only', ep, sceneId }
+```
+
+- A witness can state what they saw.
+- A listener names or preserves the source unless the source was deliberately concealed.
+- A public ceremony can inform everyone present.
+- An audience-only confessional informs no contestant.
+- A rumor can mutate only through a stored retelling; the original fact remains separate.
+
+Major events may trigger wider reactions, but the reaction radius is the union of witnesses, named recipients, and people informed publicly. Do not select arbitrary active players merely to make the event feel important.
+
+Correct spread:
+
+```text
+Ellie witnesses Fiore leave for the shield. She tells Gabby and Alec in the van. At the castle, Alec repeats it to Miriam and names Ellie as the source. Five people now know; “everyone knows” is still false.
+```
+
+“The whole castle knows” becomes legal only after a public statement or propagation receipts reach the configured consensus floor.
+
+## Modern individual voice contract
+
+Castle atmosphere may be gothic; contestant speech remains contemporary. Narration is clear modern reality-TV prose. The host is polished and theatrical. Contestants use contractions, interruptions, jokes, fragments and vocabulary appropriate to their individual personality.
+
+Voice derives from current emotion, archetype, stats, background, relationship and personal history. No contestant is reduced to one catchphrase, and no archetype receives behavior forbidden by `AGENTS.md`.
+
+Overwritten and forbidden:
+
+```text
+“I find your account most troubling, and I shall carry this doubt with me to the Round Table.”
+```
+
+Natural:
+
+```text
+“That story doesn't add up. I'm bringing it up tonight.”
+```
+
+Distinct reactions to the same accusation:
+
+```text
+HOTHEAD: “You've been waiting all day to say that. Just say you want me gone.”
+PERCEPTIVE PLAYER: “Your first version had you upstairs. This one has you in the library. Which is it?”
+SOCIAL BUTTERFLY: “Can we slow down? I want to hear the answer before everybody picks a side.”
+MASTERMIND: “The timeline matters, but so does who benefits from making it tonight's only question.”
+```
+
+Corpus tests compare normalized sentence structure, not only exact strings, and reject a cast whose dialogue remains interchangeable after names are removed.
+
+## Tone and pacing contract
+
+The editor balances suspense, strategy, conflict, warmth, humour, grief and ordinary life. It enforces:
+
+- no more than three high-conflict scenes consecutively;
+- no more than two scenes consecutively with the same family, location or central pair;
+- at least one warmth, humour or ordinary-life scene before the Round Table in a standard episode;
+- breathing room after a murder reveal, major confrontation and banishment;
+- escalating density toward the Round Table without making every earlier scene an accusation;
+- no comic interruption inside a grief beat unless the participants' recorded behavior supports it.
+
+Tone slots do not authorize filler. A humorous scene still changes a relationship, reputation, emotional state or information path.
+
+## Evidence for group consensus
+
+Words such as `everyone`, `the whole room`, `the group agrees`, `the castle turns`, and `nobody trusts` require evidence.
+
+Valid consensus sources:
+
+- a public vote or ceremony;
+- named reactions from the configured share of living players;
+- knowledge propagation receipts reaching that share;
+- a stored public show of hands or group declaration.
+
+Otherwise use precise language: `three players`, `most of Fiore's team`, `the people in the van`, or named contestants.
+
+Forbidden:
+
+```text
+Everyone turns against Manu after the mission.
+```
+
+Correct:
+
+```text
+Finn blames Manu for the checkpoint penalty. Ellie agrees. Gabby defends him, while Alec says nothing and writes Manu's name on his shortlist. The room is divided, not settled.
+```
+
+## Mission mockup approval contract
+
+Before implementing any bespoke mission VP builder:
+
+1. Create `mockup-tr-<mission-id>.html` with the complete visual layout, phase identities, host briefing, reveal controls, progressive sidebar, accessibility behavior and representative data.
+2. Open it for user review.
+3. Record explicit approval in the task/commit notes.
+4. Implement the mission builder to reproduce the approved mockup.
+5. Compare the real VP against the mockup in a browser and keep the mockup in the repository.
+
+Simulation mechanics and failing tests may be built before visual approval. VP builder implementation may not.
+
+## Transcript review rubric
+
+Automated counts are necessary but insufficient. Review at least six complete seasons and score every scene from 0–2 on:
+
+- clarity: who, where, and what happened;
+- causality: the source record and resulting consequence are identifiable;
+- continuity: setup, follow-up and payoff connect;
+- voice: dialogue sounds contemporary and character-specific;
+- knowledge safety: speakers know what they claim;
+- novelty: it does not repeat the preceding scene or confessional;
+- pacing: it serves the episode's story hierarchy and tone;
+- payoff: promised actions resolve or have a stored reason not to.
+
+Any zero is a blocking writing defect. A season passes only when every scene scores at least 1 on every axis and the average is at least 1.6. Save the rubric output as a test artifact or deterministic audit report so the review can be repeated after changes.
 ---
 
 ### Task 1: Contestant background types and history snapshots
@@ -829,12 +991,103 @@ git add js/tr/castle js/tr/events.js tests/tr-castle-library.test.js tests/tr-ca
 git commit -m "feat(traitors): build core castle scene library"
 ```
 
+### Task 7A: Episode editor, continuity, knowledge spread, voice, and tone
+
+**Files:**
+- Create: `js/tr/episode-editor.js`
+- Create: `js/tr/knowledge-flow.js`
+- Create: `js/tr/castle/voice.js`
+- Modify: `js/tr/headless.js`
+- Modify: `js/tr/events.js`
+- Modify: `js/tr/threads.js`
+- Test: `tests/tr-episode-editor.test.js`
+- Test: `tests/tr-knowledge-flow.test.js`
+- Test: `tests/tr-voice.test.js`
+- Test: `tests/tr-story-payoff.test.js`
+
+**Interfaces:**
+- Produces `buildEpisodeEdit(eligibleScenes, ctx, rng): TraitorsEpisodeEdit`.
+- Produces `recordPromise(sceneId, owner, action)` and `settlePromise(id, status, detail)`.
+- Produces `shareFact({ factId, from, to, channel, ep, sceneId })` and `knowersOf(factId, ep)`.
+- Produces `lineInVoice(name, purpose, facts, ctx): string` without changing the supplied facts.
+
+- [ ] **Step 1: Write failing story hierarchy, chaining, tone, and consensus tests**
+
+```js
+it('pays off or explicitly settles every promised action', () => {
+  const edit = buildEpisodeEdit(eligibleScenes, ctx, rngFor(7));
+  for (const promise of edit.promises) {
+    expect(['resolved','attempted','postponed','abandoned']).toContain(promise.status);
+    if (promise.status === 'abandoned') expect(promise.abandonmentReason).toBeTruthy();
+  }
+});
+
+it('does not schedule an unbroken wall of conflict', () => {
+  const edit = buildEpisodeEdit(conflictHeavyScenes, ctx, rngFor(3));
+  expect(longestRun(edit.scenes, scene => scene.tone === 'conflict')).toBeLessThanOrEqual(3);
+  expect(edit.scenes.some(scene => ['warmth','humour','ordinary-life'].includes(scene.tone))).toBe(true);
+});
+
+it('does not call a minority everyone', () => {
+  const phrase = consensusPhrase({ agreeing:['A','B','C'], living:12 });
+  expect(phrase).not.toMatch(/everyone|whole castle|the group agrees/i);
+});
+```
+
+- [ ] **Step 2: Write failing knowledge and reaction-radius tests**
+
+```js
+shareFact({ factId:'fiore-left', from:'Ellie', to:'Gabby', channel:'conversation', ep:3, sceneId:'van-1' });
+expect(knowersOf('fiore-left', 3)).toEqual(expect.arrayContaining(['Ellie','Gabby']));
+expect(knowersOf('fiore-left', 3)).not.toContain('Miriam');
+expect(eligibleReactors('fiore-left', 3)).not.toContain('Miriam');
+```
+
+- [ ] **Step 3: Write failing modern-voice differentiation tests**
+
+```js
+const lines = CAST.map(name => stripName(lineInVoice(name, 'challenge-accusation', FACTS, ctx)));
+expect(new Set(lines).size).toBeGreaterThan(CAST.length * 0.65);
+expect(lines.join(' ')).not.toMatch(/\b(?:I shall|most troubling|I find your account|henceforth)\b/i);
+expect(lineInVoice('Hero', 'admit-fault', FACTS, ctx)).toMatch(/my fault|that's on me|I got it wrong/i);
+expect(lineInVoice('Hothead', 'answer-accusation', FACTS, ctx)).toMatch(/you|come on|just say/i);
+```
+
+- [ ] **Step 4: Run RED**
+
+Run: `npx vitest run tests/tr-episode-editor.test.js tests/tr-knowledge-flow.test.js tests/tr-voice.test.js tests/tr-story-payoff.test.js`
+
+- [ ] **Step 5: Implement the minimal editor and wire it before episode records are finalized**
+
+Select from already eligible scenes. Do not synthesize facts to satisfy story quotas. Keep 2–3 primary stories, 2–4 secondary stories and 3–6 texture slots for a standard cast, then scale proportionally. Store every promise, propagation receipt, selected tone and consensus basis.
+
+- [ ] **Step 6: Verify complete causal chains with readable output**
+
+```text
+SETUP: Gabby says she will check Julia's timeline.
+FOLLOW-UP: Gabby asks Alec what he saw.
+COMPLICATION: Alec's account conflicts with Julia's.
+PAYOFF: Gabby raises the exact discrepancy; Julia answers; the answer produces a recorded belief change or accuser backfire.
+```
+
+Reject a generated transcript containing the setup without one of the permitted promise statuses.
+
+- [ ] **Step 7: Run the focused suites and commit**
+
+Run: `npx vitest run tests/tr-episode-editor.test.js tests/tr-knowledge-flow.test.js tests/tr-voice.test.js tests/tr-story-payoff.test.js tests/tr-castle-prose.test.js`
+
+```bash
+git add js/tr/episode-editor.js js/tr/knowledge-flow.js js/tr/castle/voice.js js/tr/headless.js js/tr/events.js js/tr/threads.js tests/tr-episode-editor.test.js tests/tr-knowledge-flow.test.js tests/tr-voice.test.js tests/tr-story-payoff.test.js
+git commit -m "feat(traitors): edit connected television episodes"
+```
+
 ### Task 8: Bespoke mission contract and first four missions
 
 **Files:**
 - Create: `js/tr/missions/contract.js`
 - Create: `js/tr/missions/index.js`
 - Create: `js/tr/missions/<mission-id>.js` for four approved missions
+- Create: `mockup-tr-<mission-id>.html` for each of the four missions
 - Modify: `js/tr/missions.js`
 - Modify: `js/tr/headless.js`
 - Modify: `js/vp-tr/mission.js`
@@ -863,7 +1116,11 @@ for (const mission of TRAITORS_MISSIONS) {
 
 Run: `npx vitest run tests/tr-mission-contract.test.js tests/tr-missions.test.js`
 
-- [ ] **Step 3: Implement four missions one at a time with full host explanations**
+- [ ] **Step 3: Create and approve each standalone mission mockup before its VP builder**
+
+Each `mockup-tr-<mission-id>.html` is a complete, browser-openable visual target with the mission briefing, phase layout, progressive player/team state, pot movement, shield state, reveal controls, responsive layout and reduced-motion behavior. Open the mockup in the browser and obtain user approval before implementing that mission's `js/vp-tr/mission.js` path. Keep every approved mockup in the repository as the source of truth; if the builder differs, change the builder or request approval for the mockup change.
+
+- [ ] **Step 4: Implement four missions one at a time with full host explanations**
 
 Correct briefing format:
 
@@ -877,12 +1134,16 @@ Correct action format:
 At the second checkpoint, Gabby solves the substitution key while Alec holds the rain-blurred map flat. Julia calls for a guess; Gabby refuses, takes twelve more seconds, and opens the lock without the two-minute penalty. The team gains time, and Julia resents losing control of the decision.
 ```
 
-- [ ] **Step 4: Verify per-player records, consequences, VP/text parity, and commit**
+- [ ] **Step 5: Compare every VP mission against its approved mockup**
+
+For each mission, open the standalone mockup and the generated VP screen at the same viewport. Verify the grid, typography, palette, controls, sidebar fields, phase transitions, responsive state and reduced-motion state. Record the comparison in the task notes; visual approval is a release requirement, not an optional polish pass.
+
+- [ ] **Step 6: Verify per-player records, consequences, VP/text parity, and commit**
 
 Run: `npx vitest run tests/tr-mission-contract.test.js tests/tr-missions-bespoke.test.js tests/tr-vp.test.js`
 
 ```bash
-git add js/tr/missions js/tr/missions.js js/tr/headless.js js/vp-tr/mission.js js/text-backlog.js tests/tr-mission-contract.test.js tests/tr-missions-bespoke.test.js
+git add js/tr/missions js/tr/missions.js js/tr/headless.js js/vp-tr/mission.js js/text-backlog.js mockup-tr-*.html tests/tr-mission-contract.test.js tests/tr-missions-bespoke.test.js
 git commit -m "feat(traitors): add bespoke mission framework"
 ```
 
@@ -1135,14 +1396,30 @@ Expected: PASS for all default shards locally supported.
 Run: `git diff --check`
 Expected: no output.
 
-- [ ] **Step 4: Read generated seasons instead of trusting counts alone**
+- [ ] **Step 4: Score generated seasons with the transcript-review rubric**
 
-Inspect at least six full transcripts. Reject and fix any scene where the reader cannot answer who, where, what happened, why it mattered, and what changed. Confirm host explanations precede mechanics, alumni references are accurate, pronouns read naturally, and no cast member disappears from the edit without a game reason.
+Inspect at least six full transcripts, including early-, middle- and late-game casts. Score every episode from 0–2 for clarity, causality, continuity, individual voice, knowledge safety, novelty, pacing and payoff using the global rubric. Store the completed scorecard as `docs/qa/traitors-transcript-review.md`, including seed, episode, dimension scores, quoted problem excerpt of at most two sentences, and the resulting fix or explicit pass. Any dimension scored `0`, or any transcript average below `1.6`, blocks release and must be fixed and regenerated before proceeding.
 
-- [ ] **Step 5: Commit the release gate**
+Reject and fix any scene where the reader cannot answer who, where, what happened, why it mattered, and what changed. Confirm host explanations precede mechanics, alumni references are accurate, pronouns read naturally, cast-wide claims name their evidence base, and no cast member disappears from the edit without a game reason.
+
+- [ ] **Step 5: Add an automated audit for machine-checkable rubric failures**
+
+```js
+for (const ep of run.episodes) {
+  expect(unsettledPromises(ep.tr.edit)).toEqual([]);
+  expect(knowledgeViolations(ep)).toEqual([]);
+  expect(longestConflictRun(ep.tr.edit.scenes)).toBeLessThanOrEqual(3);
+  expect(hasUnsupportedConsensus(ep)).toBe(false);
+}
+```
+
+Run: `npx vitest run tests/tr-full-experience.test.js`
+Expected: PASS for all acceptance seeds.
+
+- [ ] **Step 6: Commit the release gate**
 
 ```bash
-git add tests/tr-calibration.test.js tests/tr-vp.test.js tests/tr-full-experience.test.js docs/ADDING-A-SHOW.md docs/superpowers/specs/2026-08-31-traitors-full-experience-design.md
+git add tests/tr-calibration.test.js tests/tr-vp.test.js tests/tr-full-experience.test.js docs/qa/traitors-transcript-review.md docs/ADDING-A-SHOW.md docs/superpowers/specs/2026-08-31-traitors-full-experience-design.md
 git commit -m "test(traitors): gate the full simulator experience"
 ```
 

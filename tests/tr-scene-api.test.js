@@ -19,7 +19,8 @@ import { recordAlignment } from '../js/tr/roles.js';
 import { getBond } from '../js/bonds.js';
 import { openThread } from '../js/tr/threads.js';
 import { emotionalStateOf } from '../js/tr/events.js';
-import { chooseBanishmentVote, suspicion, seedTraitorKnowledge } from '../js/tr/deduction.js';
+import { chooseBanishmentVote, suspicion, seedTraitorKnowledge,
+  seerEvidence } from '../js/tr/deduction.js';
 import { formPreference } from '../js/tr/murder.js';
 import { rpBuildTraitorsDebug } from '../js/vp-tr/debug.js';
 import { createTraitorsSceneApi, claimsKnownTo, contradictionsKnownTo,
@@ -247,6 +248,24 @@ describe('the scene consequence API', () => {
     expect(contradictionsKnownTo('Finn', 'Julia')).toEqual([]);
   });
 
+  it('mints unique claim ids and accepts its own contradictions with no season', () => {
+    // BOTH REGRESSIONS FROM THE PREVIOUS ROUND, IN ONE ARM. The id fallback
+    // keyed on a listener count and a name length, so two claims that matched
+    // on both collided; and `contradicts` validated against `gs.tr.claims`,
+    // which does not exist here, so every declaration threw.
+    setGs({ bonds: {}, activePlayers: [] });
+    const api = createTraitorsSceneApi({ ep: 3 });
+    const a = api.recordClaim('Gabby', 'went upstairs', { about: 'Julia', source: 'asked' });
+    const b = api.recordClaim('Alec', 'saw her downstairs',
+      { about: 'Julia', contradicts: [a.id], source: 'asked' });
+    expect(a.id).not.toBe(b.id);
+    expect(b.contradicts).toEqual([a.id]);
+    // Two claims with the SAME listener count and speaker-name length — the
+    // exact pair the old fallback could not tell apart.
+    const c = api.recordClaim('Finn', 'said nothing at all', { about: 'Julia', source: 'asked' });
+    expect(new Set([a.id, b.id, c.id]).size).toBe(3);
+  });
+
   it('a claim cannot contradict an account that is not on the record', () => {
     const api = createTraitorsSceneApi({ ep: 3, participants: ['Alec'] });
     expect(() => api.recordClaim('Alec', 'saw Julia beside the library',
@@ -396,6 +415,25 @@ describe('the scene consequence API', () => {
     expect(suspicion('Julia', 'Finn', 3)).toBe(before);
   });
 
+  it('a cover story cannot talk somebody out of a Seer reading either', () => {
+    // THE CLOSED SET IS THREE, NOT TWO. The turret and the reveal write
+    // `public`; the Seer writes `observed` (SEER_CRED), the one caller in the
+    // engine allowed to. A guard naming only `public` left the single certain
+    // thing the format ever hands out doubtable, while the docblock beside it
+    // promised otherwise.
+    world({ traitors: ['Julia'] });
+    const written = seerEvidence('Gabby', 'Julia', 3);
+    expect(written, 'the Seer wrote nothing, so this arm proves nothing').toBeTruthy();
+    const before = suspicion('Gabby', 'Julia', 3);
+    expect(before).toBeGreaterThan(0);
+
+    const r = createTraitorsSceneApi({ ep: 3 })
+      .lowerBelief('Gabby', 'Julia', 0.9, { source: 'Julia explained the whole evening' });
+    expect(r.applied).toBe(false);
+    expect(r.blockedBy).toMatch(/certainty/);
+    expect(suspicion('Gabby', 'Julia', 3)).toBe(before);
+  });
+
   it('lowering a read nobody holds is refused, not invented', () => {
     const r = createTraitorsSceneApi({ ep: 3 })
       .lowerBelief('Gabby', 'Manu', 0.3, { source: 'he explained the whole afternoon' });
@@ -428,17 +466,49 @@ describe('the scene consequence API', () => {
     expect(api.receipts()).toEqual([]);
   });
 
-  it('a missing name, a self-reference and a zero delta all throw', () => {
+  it('a missing name, a self-reference and a junk delta all throw', () => {
     const api = createTraitorsSceneApi({ ep: 3 });
     expect(() => api.addBond(null, 'Julia', 1, { source: 'x' })).toThrow(/must be a player name/);
     expect(() => api.addBond('Gabby', 'Gabby', 1, { source: 'x' })).toThrow(/same person/);
     expect(() => api.addBelief('Gabby', 'Gabby', 0.5, { source: 'x' })).toThrow(/same person/);
-    expect(() => api.addBond('Gabby', 'Julia', 0, { source: 'x' }))
-      .toThrow(/not a consequence/);
+    // NaN and Infinity are never a branch decision — they are a computation
+    // that went wrong, so they keep the throw that zero has now lost.
     expect(() => api.addMurderPreference('Julia', 'Gabby', NaN, { source: 'x' }))
-      .toThrow(/non-zero finite/);
+      .toThrow(/finite number/);
+    expect(() => api.addBond('Gabby', 'Julia', Infinity, { source: 'x' }))
+      .toThrow(/finite number/);
     expect(() => api.popDelta('Gabby', 3, { source: 'x' }))
       .toThrow(/not a crowd colour/);
+    // And the direction of a doubt is an author error, not a branch.
+    expect(() => api.lowerBelief('Gabby', 'Julia', -0.3, { source: 'x' }))
+      .toThrow(/use addBelief to raise a read/);
+  });
+
+  // ── ZERO IS A BRANCH THAT PAID NOTHING, NOT AN AUTHORING ERROR ────────
+  it('a zero delta records a no-op receipt and writes nothing', () => {
+    // THE HOUSE IDIOM THIS PROTECTS, verbatim in shape from
+    // js/tr/castle/callback.js: a sentinel that two branches may or may not
+    // set, passed straight to the API. Under a throw this crashes a season
+    // from a branch that fired correctly — the worst failure mode there is for
+    // the one API two hundred files depend on.
+    let bondDelta = 0;
+    const api = createTraitorsSceneApi({ ep: 3 });
+    const r = api.addBond('Gabby', 'Julia', bondDelta, { source: 'neither of them moved' });
+    expect(r.applied).toBe(false);
+    expect(r.blockedBy).toMatch(/no-op/);
+    expect(getBond('Gabby', 'Julia'), 'a no-op still moved the bond').toBe(0);
+
+    // Same for the other two deltas, and each still leaves a receipt — which
+    // is what makes "how many scenes decided to do nothing" a season-wide
+    // question a throw could never answer, because a throw stops at the first.
+    expect(api.addMurderPreference('Julia', 'Gabby', 0, { source: 'she was torn' }).applied)
+      .toBe(false);
+    expect(api.lowerBelief('Gabby', 'Julia', 0, { source: 'the story neither helped nor hurt' })
+      .applied).toBe(false);
+    expect(gs.tr.murderPrefs, 'a no-op reached the season ledger').toEqual([]);
+    expect(api.receipts().filter(r2 => r2.blockedBy && r2.blockedBy.startsWith('no-op')).length)
+      .toBe(3);
+    expect(api.effects(), 'a no-op reached the canonical effects array').toEqual([]);
   });
 
   // ── THE AUDIENCE LEDGERS STAY SINGLE-PATH ─────────────────────────────

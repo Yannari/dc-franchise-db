@@ -1265,9 +1265,18 @@ export function sceneEvidence(observer, subject, strength, { source, truthStatus
  *   2. The BELIEF record, even at zero confidence. `learnedEp`, `valence` and
  *      `source` all stay, so "Gabby used to think this, and why" is still
  *      answerable — a cover buries a read, it does not unremember it.
- *   3. CERTAINTY. A `public` belief — the turret, the banishment reveal, the
- *      Seer, the closed set of three — is refused outright. No cover story
- *      talks somebody out of something they watched happen.
+ *   3. CERTAINTY. The closed set of three — the turret, the banishment reveal
+ *      and the Seer — is refused outright. No cover story talks somebody out
+ *      of something they watched happen.
+ *
+ *      TWO SOURCE TIERS, NOT ONE, and this guard used to name only the first.
+ *      The turret and the reveal write `public`; the Seer writes `observed`
+ *      (`SEER_CRED` above, and the ceiling note in js/knowledge.js explains
+ *      why it is the one caller that may). So a cover story could talk
+ *      somebody out of the single certain thing this format ever hands out,
+ *      while the comment three lines above promised it could not. The comment
+ *      is the contract two hundred events will be authored against, so the
+ *      code moved to meet it rather than the other way round.
  *
  * `amount` is subtracted from the belief as it stands TODAY (its effective
  * confidence, decay included), and `learnedEp` moves to `ep`, because what the
@@ -1277,6 +1286,8 @@ export function sceneEvidence(observer, subject, strength, { source, truthStatus
  *
  * Returns `{ belief, before, after, refused }`.
  */
+const CERTAIN_TIERS = ['public', SEER_CRED];
+
 export function sceneDoubt(observer, subject, amount, { source, ep = null } = {}) {
   if (!observer || !subject || observer === subject) return null;
   if (typeof source !== 'string' || !source.trim()) {
@@ -1286,7 +1297,7 @@ export function sceneDoubt(observer, subject, amount, { source, ep = null } = {}
   const b = fact?.beliefs?.[observer];
   if (!b) return { belief: null, before: 0, after: 0, refused: true };
   // Certainty is not doubtable. See guard 3 above.
-  if (b.sourceType === 'public') {
+  if (CERTAIN_TIERS.includes(b.sourceType)) {
     return { belief: b, before: b.confidence, after: b.confidence, refused: true };
   }
   const before = effectiveConfidence(fact, b, ep);

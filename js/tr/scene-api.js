@@ -110,6 +110,21 @@ export const KNOWLEDGE_CHANNELS = [
  */
 const AUDIENCE_ONLY = 'confessional-audience-only';
 
+/**
+ * The counter that keeps claim ids unique when there is NO SEASON.
+ *
+ * With a season the id is derived from `gs.tr.claims.length`, which is state,
+ * so a replay mints the same ids in the same order. A season-less harness has
+ * no such counter, and the previous fallback (`0`, plus a listener count and a
+ * speaker-name length) collided the moment two claims in one harness matched on
+ * both — which the docblock calling it collision-free did not say.
+ *
+ * Ids are labels, never inputs to a decision, so a process-local counter on the
+ * season-less path costs no determinism: nothing replays a harness that has no
+ * season to replay.
+ */
+let _looseClaimSeq = 0;
+
 function _tr() { return gs?.tr || null; }
 
 function _round2(n) { return Math.round(n * 100) / 100; }
@@ -251,15 +266,38 @@ function _pair(a, b, what) {
   }
 }
 
-/** A delta of zero is not a consequence, and neither is NaN. */
+/**
+ * A delta that is not a number at all is an author error and throws. A delta
+ * of ZERO is not.
+ *
+ * THE DISTINCTION IS THE ONE THIS FILE ALREADY STATES ELSEWHERE: a throw is
+ * right for something the AUTHOR got wrong, a refused receipt for something the
+ * ENGINE decided. Zero-as-branch-sentinel is the house idiom under
+ * js/tr/castle/ — `let bondDelta = 0;` followed by two branches that may or may
+ * not set it (callback.js, cover.js) — so a zero arriving here is a branch that
+ * fired CORRECTLY and simply had nothing to pay. Throwing on it would make
+ * every one of those existing `if (delta)` guards load-bearing, and an author
+ * writing the natural unguarded call would crash a season in episode nine from
+ * code that passed every test.
+ *
+ * So zero returns zero, and the caller records `blockedBy` NO_OP instead of
+ * writing. That also buys something a throw structurally cannot: a season-wide
+ * count of scenes that decided to do nothing, since a throw stops at the first.
+ *
+ * NaN, Infinity and junk still throw. Those are never a branch decision; they
+ * are a computation that went wrong.
+ */
 function _delta(d, what) {
   const v = Number(d);
-  if (!Number.isFinite(v) || v === 0) {
-    throw new Error(`scene-api ${what}: delta must be a non-zero finite number, `
-      + `got ${JSON.stringify(d)} — a state write of zero is not a consequence`);
+  if (!Number.isFinite(v)) {
+    throw new Error(`scene-api ${what}: delta must be a finite number, `
+      + `got ${JSON.stringify(d)}`);
   }
   return v;
 }
+
+/** The receipt for a write a scene declined to make. See `_delta`. */
+const NO_OP = 'no-op — the branch fired and had nothing to pay';
 
 /**
  * The scene consequence API.
@@ -279,6 +317,9 @@ export function createTraitorsSceneApi(ctx = {}) {
   const eventId = ctx.eventId ?? null;
   const participants = Array.isArray(ctx.participants) ? [...ctx.participants] : null;
   const receipts = [];
+  // The claims this scene has minted, so `contradicts` can name one of them
+  // before the season ledger exists to hold it. See `recordClaim`.
+  const _minted = new Map();
 
   function _require(source, what) {
     if (typeof source !== 'string' || !source.trim()) {
@@ -338,6 +379,10 @@ export function createTraitorsSceneApi(ctx = {}) {
     _require(source, 'addBond');
     _pair(a, b, 'addBond');
     const d = _delta(delta, 'addBond');
+    if (d === 0) {
+      return _push({ kind: 'bond', players: [a, b], delta: 0, source,
+        applied: false, blockedBy: NO_OP });
+    }
     _addBond(a, b, d);
     return _push({ kind: 'bond', players: [a, b], delta: d, source });
   }
@@ -357,6 +402,13 @@ export function createTraitorsSceneApi(ctx = {}) {
    *   'false'    the scene is PLANTING something. Seeing through a plant is a
    *              real mechanic, so this branch REQUIRES the scene's own rng
    *              and takes a live detection roll rather than committing.
+   *
+   * FOR THE AUTHOR OF A CAUGHT LIE: a DETECTED plant writes no state at all.
+   * `sawThrough` on the receipt is enough to narrate "Gabby caught Julia
+   * planting", but it is not queryable from the belief store, so nothing later
+   * in the season can find it. If a caught liar is supposed to have a
+   * consequence, the scene must say so itself — a second `addBelief` on the
+   * PLANTER, with its own source — and nothing here enforces that.
    */
   function addBelief(observer, subject, belief, { source, truthStatus = 'unknown', rng = null } = {}) {
     _require(source, 'addBelief');
@@ -400,8 +452,8 @@ export function createTraitorsSceneApi(ctx = {}) {
    * otherwise have had to invent for itself, as a second belief write path,
    * inside the castle. Delegates to `sceneDoubt` (js/tr/deduction.js), which
    * holds the three guards that stop a successful cover from ERASING a known
-   * fact: the fact record survives, the belief record survives at zero, and a
-   * `public` certainty is refused outright.
+   * fact: the fact record survives, the belief record survives at zero, and
+   * certainty — the turret, the reveal and the Seer — is refused outright.
    *
    * `amount` is how much doubt the explanation bought, subtracted from the
    * read as it stands today. It cannot go below zero — this is doubt, not
@@ -412,9 +464,15 @@ export function createTraitorsSceneApi(ctx = {}) {
     _pair(observer, subject, 'lowerBelief');
     _inRoom(observer, 'lowerBelief');
     const a = _delta(amount, 'lowerBelief');
+    // A NEGATIVE amount is not a branch that paid nothing — it is a caller who
+    // has the direction backwards, so it keeps its throw.
     if (a < 0) {
       throw new Error('scene-api lowerBelief: amount is how much doubt was bought and is '
         + 'positive — use addBelief to raise a read');
+    }
+    if (a === 0) {
+      return _push({ kind: 'doubt', observer, subject, delta: 0, source,
+        applied: false, blockedBy: NO_OP });
     }
     const res = sceneDoubt(observer, subject, a, { source, ep });
     return _push({
@@ -450,9 +508,12 @@ export function createTraitorsSceneApi(ctx = {}) {
     const tr = _tr();
     const heard = [...new Set(listeners.filter(n => n && n !== speaker))];
     for (const h of heard) _name(h, 'recordClaim', 'listener');
-    // A COLLISION-FREE ID. Keyed on the season ledger's own length so two
-    // scenes in the same episode cannot mint the same id.
-    const id = `claim-${ep}-${(tr?.claims?.length ?? 0)}-${heard.length}${speaker.length}`;
+    // A COLLISION-FREE ID, IN BOTH WORLDS. Keyed on the season ledger's own
+    // length so two scenes in the same episode cannot mint the same id, and on
+    // `_looseClaimSeq` when there is no ledger to key on.
+    const id = tr
+      ? `claim-${ep}-${tr.claims?.length ?? 0}`
+      : `claim-${ep}-loose-${_looseClaimSeq++}`;
     // WHICH EARLIER CLAIMS THIS ONE IS INCOMPATIBLE WITH, DECLARED.
     // Never inferred. Only the author of two claims knows whether "upstairs"
     // and "beside the library" describe the same hour, and a rule that treats
@@ -460,7 +521,11 @@ export function createTraitorsSceneApi(ctx = {}) {
     // every pair of unrelated remarks read as caught-in-a-lie.
     const against = (Array.isArray(contradicts) ? contradicts : [contradicts])
       .filter(x => typeof x === 'string' && x);
-    const known = new Set((tr?.claims || []).map(c => c.id));
+    // WHAT COUNTS AS ON THE RECORD: the season ledger, plus the claims THIS
+    // scene has already minted. Without the second half a season-less harness
+    // rejected every `contradicts` naming a claim it had just created itself,
+    // because nothing it wrote had anywhere to be stored.
+    const known = new Set([...(tr?.claims || []).map(c => c.id), ..._minted.keys()]);
     for (const cid of against) {
       if (!known.has(cid)) {
         throw new Error(`scene-api recordClaim: contradicts "${cid}", which is not a `
@@ -470,6 +535,7 @@ export function createTraitorsSceneApi(ctx = {}) {
     const rec = { id, ep, sceneId, eventId, speaker, about: subject,
       claim, truthStatus, channel, listeners: heard, contradicts: against, source };
     if (tr) (tr.claims ||= []).push(rec);
+    _minted.set(id, rec);
     const r = _push({ kind: 'claim', observer: speaker, subject,
       value: claim, truthStatus, source });
     for (const to of heard) propagate(id, speaker, to, { channel, source });
@@ -537,6 +603,10 @@ export function createTraitorsSceneApi(ctx = {}) {
     _require(source, 'addMurderPreference');
     _pair(traitor, target, 'addMurderPreference');
     const d = _delta(delta, 'addMurderPreference');
+    if (d === 0) {
+      return _push({ kind: 'murder-preference', observer: traitor, subject: target,
+        delta: 0, source, applied: false, blockedBy: NO_OP });
+    }
     const tr = _tr();
     if (tr) (tr.murderPrefs ||= []).push({ traitor, target, delta: d, ep, sceneId, source });
     return _push({ kind: 'murder-preference', observer: traitor, subject: target, delta: d, source });
@@ -699,6 +769,12 @@ export function createTraitorsSceneApi(ctx = {}) {
 // These are how a LATER scene cites an earlier one, which is the second half
 // of the causal chain (`scene cites the fact`). They are read-only by
 // construction — nothing here returns a live reference into `gs.tr`.
+
+// THE THREE READERS BELOW REQUIRE A SEASON. They read `gs.tr.claims`, which is
+// where a claim is STORED; a season-less harness keeps its claims only on the
+// API instance that minted them (see `_minted`), so these return empty there.
+// That is the honest answer rather than a defect: "who is entitled to cite
+// this" is a question about a castle, and there is no castle.
 
 /** Every claim `name` has made, oldest first. */
 export function claimsBy(name) {

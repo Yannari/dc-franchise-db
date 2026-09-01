@@ -32,7 +32,8 @@
 //   propagate            gs.tr.propagation         who learned it, and how
 //   setVoteIntent        gs.tr.voteIntents         who they mean to write down
 //   addMurderPreference  gs.tr.murderPrefs         who a Traitor wants gone
-//   popDelta             gs.popularity             how the country took it
+//   lowerBelief          deduction.sceneDoubt      a cover story that worked
+//   popDelta             crowd.crowdMoment         how the country took it
 //   setEmotionalState    gs.tr.emotionOverrides    how they are holding up
 //   openArc/advanceArc/resolveArc   threads.js     the story it belongs to
 //
@@ -53,8 +54,19 @@
 //     not one of them — see the ceiling note in js/knowledge.js. Every belief
 //     a scene writes is `deduced` and capped, so no scene can ever hand a
 //     Faithful certainty about anybody.
-//   * touch the cooldowns, the round budget or the crowd ledgers. Those belong
-//     to the scheduler and to `applyEventCrowd`, which are already single-path.
+//   * touch the cooldowns or the round budget. Those belong to the scheduler.
+//   * touch either audience ledger DIRECTLY. js/tr/crowd.js is the only file
+//     under js/tr/ permitted to so much as NAME them — a source rule enforced
+//     by tests/tr-audience.test.js, which is why this comment does not name
+//     them either. The reason is structural: crowd.js writes the affection
+//     ledger from GROUND TRUTH, because the audience has known since night
+//     one, so a second writer is alignment reaching the castle through a
+//     channel the belief gate does not watch. `popDelta` therefore takes a
+//     COLOUR, not a number, and hands it to `crowdMoment` — which is also what
+//     keeps the affection/spectacle pairing intact. An earlier draft of this
+//     file wrote the affection ledger itself, and was a second write path into
+//     something the codebase had already made single-path: the exact defect
+//     this task exists to prevent, committed by one of its own writers.
 //
 // ── RECEIPTS ARE DEBUG-ONLY ───────────────────────────────────────────
 //
@@ -77,7 +89,8 @@
 // deterministic COMMIT STREAM instead. See `_commitStream`.
 import { gs } from '../core.js';
 import { addBond as _addBond } from '../bonds.js';
-import { sceneEvidence } from './deduction.js';
+import { sceneEvidence, sceneDoubt, sceneEvidenceThreshold } from './deduction.js';
+import { crowdMoment, CROWD_COLOURS } from './crowd.js';
 import { openThread, advanceThread, closeThread, knownOutcomes } from './threads.js';
 import { voteIntentFor as _voteIntentFor, murderPreferenceFor as _murderPrefFor,
   receiptsForEp } from './state.js';
@@ -124,6 +137,14 @@ function _debugLine(e) {
   const amount = e.belief != null ? _signed(e.belief)
     : e.delta != null ? _signed(e.delta)
       : e.value != null ? String(e.value) : '';
+  // A crowd moment is a COLOUR that also moved a number; both belong on the
+  // row, because "cruel -3" and "selfish -1.5" are different things to have
+  // done and the number alone cannot tell them apart.
+  if (e.kind === 'crowd' && e.value) {
+    return e.applied === false
+      ? `crowd · ${who} ${e.value} · source: ${e.source} · NOT APPLIED (${e.blockedBy || 'refused'})`
+      : `crowd · ${who} ${e.value} ${amount} · source: ${e.source}`;
+  }
 
   const head = amount ? `${e.kind} · ${who} ${amount}` : `${e.kind} · ${who}`;
   return e.applied === false
@@ -148,19 +169,96 @@ function _debugLine(e) {
  * alignment ceiling, the decay, the era rules, the strongest-evidence-wins
  * merge. The positions, in the order `_assess` consumes them:
  *
- *   0    acceptance. `acceptP` is never below 0.1, so 0 always accepts.
+ *   0    acceptance, WHEREVER ACCEPTANCE IS POSSIBLE AT ALL.
  *   0.5  the confidence jitter, `(rng() - 0.5) * 0.1`. Exactly zero.
  *   1    the lie-detection / exaggeration roll. 1 is above every probability
  *        either branch can produce, so neither fires.
  *
+ * THE FIRST POSITION HAS A LIMIT AND THIS DOCBLOCK USED TO DENY IT. It said
+ * `acceptP` never drops below 0.1, so a 0 always accepts. `_assess` computes
+ * `clamp01(0.1 + cred*0.75 + readSkill*(cred - 0.55)*0.9)`, and below
+ * `cred = 0.55` the read-skill term is negative — so for weak evidence the
+ * clamp takes `acceptP` to exactly 0 and `rng() >= 0` rejects every time. Small
+ * nudges are the commonest scene-scale evidence there is, and they were being
+ * dropped in silence, most often for the sharpest observers. That floor is now
+ * computed and reported rather than discovered: see `sceneEvidenceThreshold`
+ * (js/tr/deduction.js), which `addBelief` consults so the receipt says
+ * `applied:false` with the number, instead of returning an unexplained null.
+ *
  * A scene planting something it KNOWS to be false does not get this stream —
- * see `addBelief`'s `truthStatus: 'false'` branch. Seeing through a plant is a
- * real mechanic and it needs a real draw, from the scene's own rng.
+ * see `addBelief`'s `truthStatus: 'false'` branch and `sceneEvidence`'s note
+ * on why that roll cannot live inside `learn()`.
  */
 function _commitStream() {
   const seq = [0, 0.5, 1];
   let i = 0;
   return () => seq[Math.min(i++, seq.length - 1)];
+}
+
+/**
+ * EVERYBODY THIS SEASON HAS EVER HAD, living or not.
+ *
+ * `gs.activePlayers` alone is the wrong set: a grief scene is about somebody
+ * who is gone, and a callback names a person banished four episodes ago. The
+ * alignment ledger receives one entry per player at selection and is never
+ * pruned, so it is the census — the same source `castSize` uses.
+ *
+ * Returns null when there is no season at all (a unit test holding this API on
+ * its own), and validation is then skipped rather than failing everything.
+ */
+function _census() {
+  const tr = _tr();
+  const eras = tr?.alignment ? Object.keys(tr.alignment) : [];
+  const living = gs?.activePlayers || [];
+  if (!eras.length && !living.length) return null;
+  return new Set([...eras, ...living]);
+}
+
+/**
+ * A NAME THAT IS NOT IN THE SEASON IS AN AUTHORING BUG, AND IT THROWS.
+ *
+ * This used to be a silent `return null`: a typo in one of two hundred event
+ * files either did nothing at all — leaving a card claiming a consequence that
+ * never happened, the defect this file exists for — or wrote a belief about a
+ * person who does not exist, because `sceneEvidence` will happily `recordFact`
+ * for them. Neither failure has a symptom until somebody reads a transcript.
+ *
+ * A throw is chosen over a `blockedBy:'unknown player'` receipt deliberately.
+ * A refused receipt is the right answer for something the ENGINE decided (an
+ * observer who did not accept a read, a cover story that failed); a misspelt
+ * name is not a thing the castle decided, it is a thing the author got wrong,
+ * and it should stop the test that touches it rather than accumulate quietly
+ * in a debug table nobody opens.
+ */
+function _name(n, what, role = 'player') {
+  if (typeof n !== 'string' || !n.trim()) {
+    throw new Error(`scene-api ${what}: ${role} must be a player name, got ${JSON.stringify(n)}`);
+  }
+  const census = _census();
+  if (census && !census.has(n)) {
+    throw new Error(`scene-api ${what}: "${n}" is not in this season. `
+      + 'A name that is not in the cast is a typo, not a consequence.');
+  }
+  return n;
+}
+
+/** Two names that must be two different people. */
+function _pair(a, b, what) {
+  _name(a, what, 'first player');
+  _name(b, what, 'second player');
+  if (a === b) {
+    throw new Error(`scene-api ${what}: "${a}" and "${b}" are the same person`);
+  }
+}
+
+/** A delta of zero is not a consequence, and neither is NaN. */
+function _delta(d, what) {
+  const v = Number(d);
+  if (!Number.isFinite(v) || v === 0) {
+    throw new Error(`scene-api ${what}: delta must be a non-zero finite number, `
+      + `got ${JSON.stringify(d)} — a state write of zero is not a consequence`);
+  }
+  return v;
 }
 
 /**
@@ -238,9 +336,10 @@ export function createTraitorsSceneApi(ctx = {}) {
   /** Two people's bond moved, and a later scene can say what moved it. */
   function addBond(a, b, delta, { source } = {}) {
     _require(source, 'addBond');
-    if (!a || !b || a === b || !delta) return null;
-    _addBond(a, b, delta);
-    return _push({ kind: 'bond', players: [a, b], delta, source });
+    _pair(a, b, 'addBond');
+    const d = _delta(delta, 'addBond');
+    _addBond(a, b, d);
+    return _push({ kind: 'bond', players: [a, b], delta: d, source });
   }
 
   // ── WHAT SOMEBODY THINKS SOMEBODY IS ─────────────────────────────────
@@ -261,7 +360,7 @@ export function createTraitorsSceneApi(ctx = {}) {
    */
   function addBelief(observer, subject, belief, { source, truthStatus = 'unknown', rng = null } = {}) {
     _require(source, 'addBelief');
-    if (!observer || !subject || observer === subject) return null;
+    _pair(observer, subject, 'addBelief');
     _inRoom(observer, 'addBelief');
     const draws = rng || ctx.rng || null;
     if (truthStatus === 'false' && !draws) {
@@ -269,15 +368,62 @@ export function createTraitorsSceneApi(ctx = {}) {
         + 'rolled against the observer\'s read, so it needs the scene\'s rng — '
         + 'pass { rng } (or ctx.rng). Never Math.random.');
     }
-    const landed = sceneEvidence(observer, subject, belief, {
+    const res = sceneEvidence(observer, subject, belief, {
       source, truthStatus, ep,
       rng: truthStatus === 'false' ? draws : _commitStream(),
     });
+    // THREE DIFFERENT WAYS TO WRITE NOTHING, AND THE RECEIPT SAYS WHICH.
+    // A caller that cannot tell "they saw through it" from "that was too small
+    // to register" from "they did not buy it" cannot put an honest sentence on
+    // a card, and the old single null could not tell any of them apart.
+    const blockedBy = res.sawThrough
+      ? 'saw through the plant'
+      : res.refused
+        ? (belief <= sceneEvidenceThreshold(observer)
+          ? `below ${observer}'s notice (strength ${_round2(belief)}, `
+            + `threshold ${_round2(sceneEvidenceThreshold(observer))})`
+          : 'the observer did not accept it')
+        : null;
     return _push({
       kind: 'belief', observer, subject, belief, truthStatus, source,
-      confidence: landed ? _round2(landed.confidence) : null,
-      applied: !!landed,
-      blockedBy: landed ? null : 'the observer did not accept it',
+      confidence: res.confidence != null ? _round2(res.confidence) : null,
+      applied: !!res.belief,
+      blockedBy,
+    });
+  }
+
+  /**
+   * A COVER STORY THAT WORKED. `observer` suspects `subject` less than before.
+   *
+   * The counterpart `learn()` structurally cannot provide — it merges upward
+   * with `Math.max` — and therefore the primitive the whole cover family would
+   * otherwise have had to invent for itself, as a second belief write path,
+   * inside the castle. Delegates to `sceneDoubt` (js/tr/deduction.js), which
+   * holds the three guards that stop a successful cover from ERASING a known
+   * fact: the fact record survives, the belief record survives at zero, and a
+   * `public` certainty is refused outright.
+   *
+   * `amount` is how much doubt the explanation bought, subtracted from the
+   * read as it stands today. It cannot go below zero — this is doubt, not
+   * evidence of innocence, and the format has no such thing.
+   */
+  function lowerBelief(observer, subject, amount, { source } = {}) {
+    _require(source, 'lowerBelief');
+    _pair(observer, subject, 'lowerBelief');
+    _inRoom(observer, 'lowerBelief');
+    const a = _delta(amount, 'lowerBelief');
+    if (a < 0) {
+      throw new Error('scene-api lowerBelief: amount is how much doubt was bought and is '
+        + 'positive — use addBelief to raise a read');
+    }
+    const res = sceneDoubt(observer, subject, a, { source, ep });
+    return _push({
+      kind: 'doubt', observer, subject, delta: -a, source,
+      confidence: res && res.after != null ? _round2(res.after) : null,
+      applied: !!(res && !res.refused),
+      blockedBy: !res || !res.belief
+        ? 'no read to lower'
+        : res.refused ? 'certainty is not doubtable — they watched it happen' : null,
     });
   }
 
@@ -292,17 +438,39 @@ export function createTraitorsSceneApi(ctx = {}) {
    * is the reaction radius: nobody outside it may ever cite this.
    */
   function recordClaim(speaker, claim, { about = null, listeners = [], truthStatus = 'unknown',
-    channel = 'conversation', source } = {}) {
+    channel = 'conversation', contradicts = [], source } = {}) {
     _require(source, 'recordClaim');
-    if (!speaker || !claim) return null;
+    _name(speaker, 'recordClaim', 'speaker');
+    if (typeof claim !== 'string' || !claim.trim()) {
+      throw new Error('scene-api recordClaim: a claim is the sentence somebody said');
+    }
     _inRoom(speaker, 'recordClaim');
+    const subject = about || speaker;
+    _name(subject, 'recordClaim', 'subject');
     const tr = _tr();
-    const id = `claim-${ep}-${(tr?.claims?.length ?? receipts.length)}`;
     const heard = [...new Set(listeners.filter(n => n && n !== speaker))];
-    const rec = { id, ep, sceneId, eventId, speaker, about: about || speaker,
-      claim, truthStatus, channel, listeners: heard, source };
+    for (const h of heard) _name(h, 'recordClaim', 'listener');
+    // A COLLISION-FREE ID. Keyed on the season ledger's own length so two
+    // scenes in the same episode cannot mint the same id.
+    const id = `claim-${ep}-${(tr?.claims?.length ?? 0)}-${heard.length}${speaker.length}`;
+    // WHICH EARLIER CLAIMS THIS ONE IS INCOMPATIBLE WITH, DECLARED.
+    // Never inferred. Only the author of two claims knows whether "upstairs"
+    // and "beside the library" describe the same hour, and a rule that treats
+    // any two different sentences about a person as a contradiction would make
+    // every pair of unrelated remarks read as caught-in-a-lie.
+    const against = (Array.isArray(contradicts) ? contradicts : [contradicts])
+      .filter(x => typeof x === 'string' && x);
+    const known = new Set((tr?.claims || []).map(c => c.id));
+    for (const cid of against) {
+      if (!known.has(cid)) {
+        throw new Error(`scene-api recordClaim: contradicts "${cid}", which is not a `
+          + 'stored claim. A contradiction needs both accounts on the record.');
+      }
+    }
+    const rec = { id, ep, sceneId, eventId, speaker, about: subject,
+      claim, truthStatus, channel, listeners: heard, contradicts: against, source };
     if (tr) (tr.claims ||= []).push(rec);
-    const r = _push({ kind: 'claim', observer: speaker, subject: about || speaker,
+    const r = _push({ kind: 'claim', observer: speaker, subject,
       value: claim, truthStatus, source });
     for (const to of heard) propagate(id, speaker, to, { channel, source });
     return { ...rec, receipt: r };
@@ -344,7 +512,7 @@ export function createTraitorsSceneApi(ctx = {}) {
    */
   function setVoteIntent(voter, target, { source, strength = 0.35 } = {}) {
     _require(source, 'setVoteIntent');
-    if (!voter || !target || voter === target) return null;
+    _pair(voter, target, 'setVoteIntent');
     _inRoom(voter, 'setVoteIntent');
     const tr = _tr();
     if (tr) {
@@ -367,20 +535,51 @@ export function createTraitorsSceneApi(ctx = {}) {
    */
   function addMurderPreference(traitor, target, delta, { source } = {}) {
     _require(source, 'addMurderPreference');
-    if (!traitor || !target || traitor === target || !delta) return null;
+    _pair(traitor, target, 'addMurderPreference');
+    const d = _delta(delta, 'addMurderPreference');
     const tr = _tr();
-    if (tr) (tr.murderPrefs ||= []).push({ traitor, target, delta, ep, sceneId, source });
-    return _push({ kind: 'murder-preference', observer: traitor, subject: target, delta, source });
+    if (tr) (tr.murderPrefs ||= []).push({ traitor, target, delta: d, ep, sceneId, source });
+    return _push({ kind: 'murder-preference', observer: traitor, subject: target, delta: d, source });
   }
 
   // ── HOW THE COUNTRY TOOK IT, AND HOW THEY ARE HOLDING UP ─────────────
-  /** Reputation with the audience. Same ledger every other show writes. */
-  function popDelta(name, delta, { source } = {}) {
+  /**
+   * One thing the country watched somebody do.
+   *
+   * TAKES A COLOUR, NOT A NUMBER, and delegates to `crowdMoment`
+   * (js/tr/crowd.js). Three reasons, and the first alone is decisive:
+   *
+   *   1. js/tr/crowd.js is the ONLY file under js/tr/ allowed to name either
+   *      audience ledger — a source rule enforced by tests/tr-audience.test.js
+   *      over the raw source, comments included, which is why this docblock
+   *      says "the ledgers" and never their keys. They are written from ground
+   *      truth, so a second writer is alignment reaching the castle through an
+   *      unwatched channel. A raw `+= delta` on the affection ledger here was
+   *      a second write path into something this codebase had already made
+   *      single-path, in the one task whose whole point is that there is one.
+   *   2. There are TWO ledgers, not one. Affection and spectacle are different
+   *      feelings and a bare number cannot say which moved: a masterful murder
+   *      is almost all spectacle, a selfless act almost all affection. Passing
+   *      a colour keeps the pairing that separation depends on.
+   *   3. A Traitor's kindness is damped and their cowardice is not. That rule
+   *      lives in `crowdMoment` and applies for free here.
+   *
+   * `mult` scales the moment, not the colour — the same knob every other crowd
+   * caller uses. The valid colours are `crowd.js`'s own table, so an unknown
+   * one throws here rather than silently scoring nothing.
+   */
+  function popDelta(name, colour, { source, mult = 1 } = {}) {
     _require(source, 'popDelta');
-    if (!name || !delta) return null;
-    if (!gs.popularity) gs.popularity = {};
-    gs.popularity[name] = (gs.popularity[name] || 0) + delta;
-    return _push({ kind: 'popularity', observer: name, delta, source });
+    _name(name, 'popDelta');
+    if (!CROWD_COLOURS[colour]) {
+      throw new Error(`scene-api popDelta: "${colour}" is not a crowd colour. `
+        + 'This takes a colour, not a number — one of: '
+        + Object.keys(CROWD_COLOURS).join(', '));
+    }
+    const rec = crowdMoment(name, colour, ep, { mult, reason: source });
+    return _push({ kind: 'crowd', observer: name, value: colour,
+      delta: rec ? _round2(rec.affection) : null, source,
+      applied: !!rec, blockedBy: rec ? null : 'no season to score against' });
   }
 
   /**
@@ -396,7 +595,7 @@ export function createTraitorsSceneApi(ctx = {}) {
    */
   function setEmotionalState(name, state, { source } = {}) {
     _require(source, 'setEmotionalState');
-    if (!name) return null;
+    _name(name, 'setEmotionalState');
     if (!EMOTIONAL_STATES.includes(state)) {
       throw new Error(`scene-api setEmotionalState: "${state}" is not one of `
         + EMOTIONAL_STATES.join(', '));
@@ -410,6 +609,10 @@ export function createTraitorsSceneApi(ctx = {}) {
   /** Open (or re-announce) the arc this scene starts. */
   function openArc(kind, parties, { source, seed = '' } = {}) {
     _require(source, 'openArc');
+    if (!Array.isArray(parties) || !parties.length) {
+      throw new Error('scene-api openArc: an arc is about somebody — parties must be a name list');
+    }
+    for (const n of parties) _name(n, 'openArc', 'party');
     const t = openThread(kind, parties, ep, seed || source);
     _push({ kind: 'arc-open', players: parties, value: t ? t.id : null, source });
     return t;
@@ -485,8 +688,8 @@ export function createTraitorsSceneApi(ctx = {}) {
 
   return {
     ep, sceneId, eventId,
-    addBond, addBelief, recordClaim, propagate, setVoteIntent, addMurderPreference,
-    popDelta, setEmotionalState, openArc, advanceArc, resolveArc,
+    addBond, addBelief, lowerBelief, recordClaim, propagate, setVoteIntent,
+    addMurderPreference, popDelta, setEmotionalState, openArc, advanceArc, resolveArc,
     receipt, receipts: allReceipts, effects,
   };
 }
@@ -521,22 +724,33 @@ export function claimsKnownTo(knower, about = null) {
 /**
  * The pairs of claims `knower` can hold up against each other.
  *
- * The contract forbids "Gabby catches Julia changing her story" unless two
- * incompatible stored claims exist AND Gabby knows both. This returns exactly
- * that set, so an event's `weight()` can gate on it instead of asserting it.
- * Incompatibility is declared by the claims themselves — a claim carries a
- * `claim` string and an optional `contradicts` tag — because only the author
- * of the two claims knows whether "upstairs" and "beside the library" are the
- * same hour.
+ * INCOMPATIBILITY IS DECLARED, NEVER INFERRED. A claim names the earlier
+ * claims it contradicts (`recordClaim`'s `contradicts` option, validated
+ * against the store at write time), because only the author of two accounts
+ * knows whether "upstairs" and "beside the library" describe the same hour.
+ * An earlier draft of this function treated ANY two different sentences about
+ * the same person as a contradiction, which would have made every pair of
+ * unrelated remarks read as somebody caught in a lie — and events are meant to
+ * gate `weight()` on this.
+ *
+ * The KNOWLEDGE half is the other requirement the contract states: the pair is
+ * returned only when `knower` is entitled to cite BOTH accounts. Gabby holding
+ * one of them and having heard about the other second-hand is not a
+ * contradiction she can raise.
  */
-export function contradictionsKnownTo(knower, about) {
+export function contradictionsKnownTo(knower, about = null) {
   const known = claimsKnownTo(knower, about);
+  const byId = new Map(known.map(c => [c.id, c]));
   const out = [];
-  for (let i = 0; i < known.length; i++) {
-    for (let j = i + 1; j < known.length; j++) {
-      const a = known[i], b = known[j];
-      if (a.speaker === b.speaker && a.claim === b.claim) continue;
-      if (a.claim !== b.claim) out.push([a, b]);
+  const seen = new Set();
+  for (const later of known) {
+    for (const id of (later.contradicts || [])) {
+      const earlier = byId.get(id);
+      if (!earlier) continue;               // knower does not know the other half
+      const key = [earlier.id, later.id].sort().join('|');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push([earlier, later]);
     }
   }
   return out;

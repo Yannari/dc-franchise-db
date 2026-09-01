@@ -108,10 +108,18 @@ function _receipts(list) {
         ? `${r.players[0]} + ${r.players[1]}`
         : (r.observer && r.subject) ? `${r.observer} → ${r.subject}`
           : (r.observer || r.subject || '—');
-      const amount = r.belief != null
-        ? `${r.belief}${r.confidence != null ? ` (landed ${r.confidence})` : ''}`
-        : r.delta != null ? String(r.delta)
-          : r.value != null ? String(r.value) : '';
+      // A crowd moment carries BOTH a colour and the affection it paid, and
+      // the two are not recoverable from each other: `cruel` and `selfish` are
+      // different things to have done. A belief carries what the scene said it
+      // was worth AND what the store actually took, which also differ on
+      // almost every row.
+      const amount = r.kind === 'crowd'
+        ? `${r.value}${r.delta != null ? ` (${r.delta} affection)` : ''}`
+        : r.belief != null
+          ? `${r.belief}${r.confidence != null ? ` (landed ${r.confidence})` : ''}`
+          : r.delta != null
+            ? `${r.delta}${r.kind === 'doubt' && r.confidence != null ? ` (now ${r.confidence})` : ''}`
+            : r.value != null ? String(r.value) : '';
       const cls = r.applied === false ? 'rcpt-off' : 'rcpt';
       return `<tr class="${cls}"><td>${esc(r.kind)}</td><td>${esc(who)}</td>`
         + `<td>${esc(amount)}</td><td>${esc(r.source)}`

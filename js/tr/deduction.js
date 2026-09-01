@@ -28,9 +28,11 @@
 // path. The rumour tier caps only the callers that pass no confidence; the
 // ceiling in learn() is what actually bounds the format.
 import { gs } from '../core.js';
-import { recordFact, getFact, learn, believes, ALIGNMENT_CRED_CEILING } from '../knowledge.js';
+import { recordFact, getFact, learn, believes, effectiveConfidence,
+  ALIGNMENT_CRED_CEILING } from '../knowledge.js';
 import { alignmentFactId, livingTraitors, alignmentAt } from './roles.js';
 import { getBond } from '../bonds.js';
+import { pStats } from '../players.js';
 import { voteIntentFor } from './state.js';
 import { _lineHash } from './castle/lines.js';
 
@@ -1104,6 +1106,65 @@ export function seerClaimEvidence(claimant, accused, listeners, ep, tag = 'claim
 // turret, the reveal, the Seer) stays closed.
 
 /**
+ * The deterministic three-position stream `learn()` is fed once a scene has
+ * already decided its own outcome. The full argument for it lives on
+ * `_commitStream` in js/tr/scene-api.js, which is the ordinary path; this copy
+ * exists because a plant that survives detection has to be committed on the
+ * same terms and must not take a second acceptance draw here.
+ */
+function _commitDraws() {
+  const seq = [0, 0.5, 1];
+  let i = 0;
+  return () => seq[Math.min(i++, seq.length - 1)];
+}
+
+/**
+ * HOW SHARPLY THIS PERSON READS A ROOM. `_assess`'s own formula, deliberately.
+ *
+ * Duplicated rather than imported because js/knowledge.js does not export it,
+ * and a re-guessed weighting here would make the scene channel disagree with
+ * every other channel about who is hard to fool. If that formula moves, this
+ * one has to move with it, which is what the threshold test in
+ * tests/tr-scene-api.test.js is for.
+ */
+function _readSkill(name) {
+  const st = pStats(name) || {};
+  const v = ((st.mental || 5) * 0.6 + (st.intuition || 5) * 0.4) / 10;
+  return Math.max(0, Math.min(1, v));
+}
+
+/**
+ * THE STRENGTH BELOW WHICH THIS OBSERVER SIMPLY DOES NOT REGISTER A NUDGE.
+ *
+ * `_assess` (js/knowledge.js) accepts a claim with probability
+ * `0.1 + cred*0.75 + readSkill*(cred - 0.55)*0.9`, clamped to 0..1. Below
+ * `cred = 0.55` the read-skill term is NEGATIVE, so the sharper the reader the
+ * more decisively they dismiss weak evidence — which is `_assess`'s design and
+ * is right for the `deduced` tier a scene writes in. A passing remark does not
+ * make a good reader suspicious; it makes them note it and move on.
+ *
+ * THE DOCBLOCK THAT USED TO SIT ON `_commitStream` SAID THE OPPOSITE — that
+ * `acceptP` never drops below 0.1 so a commit always commits. It does drop:
+ * the clamp takes it to exactly 0 for weak evidence, and `rng() >= 0` then
+ * rejects every time. Small nudges are the commonest scene-scale evidence
+ * there is, so the drop was both real and invisible.
+ *
+ * It is EXPORTED so an author can ask before writing a card that assumes a
+ * read landed, and `addBelief` now reports it on the receipt (`applied:false`,
+ * with the threshold in `blockedBy`) instead of returning a silent null.
+ *
+ * At the average stat line (mental 5, intuition 5) it is ~0.12; at mental and
+ * intuition 8 it is ~0.20. The sharpest readers are the hardest to nudge.
+ */
+export function sceneEvidenceThreshold(observer) {
+  const rs = _readSkill(observer);
+  // Solve 0.1 + c*0.75 + rs*(c - 0.55)*0.9 > 0 for c.
+  const denom = 0.75 + rs * 0.9;
+  const c = (rs * 0.55 * 0.9 - 0.1) / denom;
+  return Math.max(0, c);
+}
+
+/**
  * `observer` came out of a scene reading `subject` differently.
  *
  * `strength` is what the scene decided the evidence was worth, 0..1, before
@@ -1113,8 +1174,23 @@ export function seerClaimEvidence(claimant, accused, listeners, ep, tag = 'claim
  *
  * `rng` is injected without exception. The scene has already rolled its own
  * outcome; see `_commitStream` in js/tr/scene-api.js for why the ordinary path
- * hands this a deterministic stream rather than re-rolling acceptance, and why
- * a knowingly false plant is the one case that does take a live draw.
+ * hands this a deterministic stream rather than re-rolling acceptance.
+ *
+ * ── WHY THE PLANT IS DETECTED HERE AND NOT INSIDE learn() ──────────────
+ *
+ * `_assess` decides whether a claim is seen through by branching on
+ * `fact.truth` — GROUND TRUTH. That is correct for a rumour about an idol and
+ * wrong for this channel, because what a scene plants is false about the
+ * CLAIM, not necessarily about the person: a Traitor framing somebody who
+ * happens genuinely to be a Traitor has still lied, and `_assess` would give
+ * the listener no chance to catch them, because the fact it consults is true.
+ * Whether a plant can be seen through has to follow the `truthStatus` the
+ * scene DECLARED, so the roll lives here, above learn(), and uses `_assess`'s
+ * own detection formula so the two layers agree about who is hard to fool.
+ *
+ * Returns `{ belief, confidence, sawThrough, refused }` — never a bare belief,
+ * because "nothing was written" has three different causes here and a caller
+ * that cannot tell them apart cannot put an honest sentence on a receipt.
  */
 export function sceneEvidence(observer, subject, strength, { source, truthStatus = 'unknown',
   ep = null, rng } = {}) {
@@ -1126,6 +1202,35 @@ export function sceneEvidence(observer, subject, strength, { source, truthStatus
     throw new Error('sceneEvidence: rng must be injected — never Math.random, the '
       + 'seeded-replay guards depend on it');
   }
+  const cred = Math.max(0, Math.min(1, Number(strength) || 0));
+
+  // ── THE PLANT, ROLLED AGAINST THE DECLARED TRUTH ────────────────────
+  //
+  // ONE ROLL DECIDES IT, and the roll is this one. Letting `_assess` take a
+  // second, independent acceptance draw afterwards would be asking the same
+  // question twice — "did they catch the lie" and "did they buy it" are one
+  // question about a plant — and would make a plant that survived detection
+  // fail anyway on a draw nobody in the scene took. So the caller's rng buys
+  // the detection check, and whatever survives it is committed on the same
+  // deterministic stream an honest observation gets.
+  let stream = rng;
+  if (truthStatus === 'false') {
+    const rs = _readSkill(observer);
+    // `_assess`'s own detection probability, at the credibility the plant is
+    // being sold at: a confident lie is harder to catch than a weak one, and a
+    // sharp reader catches both more often.
+    const detectP = Math.max(0, Math.min(1, rs * 0.8 + (0.4 - cred) * 0.5));
+    if (rng() < detectP) {
+      return { belief: null, confidence: null, sawThrough: true, refused: false };
+    }
+    stream = _commitDraws();
+  }
+
+  // ── THE STRENGTH FLOOR, MADE EXPLICIT ───────────────────────────────
+  if (cred <= sceneEvidenceThreshold(observer)) {
+    return { belief: null, confidence: null, sawThrough: false, refused: true };
+  }
+
   const id = alignmentFactId(subject);
   // The fact may not exist yet in a world that has not run a selection. Record
   // it at the CURRENT era's truth and never re-record it: `recordFact`
@@ -1135,9 +1240,61 @@ export function sceneEvidence(observer, subject, strength, { source, truthStatus
   if (!getFact(id)) {
     recordFact({ type: 'alignment', subject, truth: alignmentAt(subject, ep) === 'traitor', ep });
   }
-  return learn(observer, id, {
-    source, sourceType: 'deduced',
-    confidence: Math.max(0, Math.min(1, Number(strength) || 0)),
-    ep, rng,
-  });
+  const b = learn(observer, id, { source, sourceType: 'deduced', confidence: cred, ep,
+    rng: stream });
+  return { belief: b, confidence: b ? b.confidence : null, sawThrough: false, refused: !b };
+}
+
+/**
+ * A COVER STORY THAT WORKED: `observer` suspects `subject` LESS than they did.
+ *
+ * THE ONE THING learn() CANNOT DO. It merges with `Math.max`, deliberately —
+ * evidence accumulates and the strongest source wins — so every belief write
+ * in this engine is monotonic upward. The format's most-used social move is
+ * the opposite of that: a cover story, an alibi that holds, a friend vouching
+ * for somebody. Without this primitive the cover family would have to reach
+ * into `gs.knowledge` itself, which is the second belief write path this whole
+ * layer exists to prevent.
+ *
+ * ── WHAT IT MAY NOT DO: ERASE A KNOWN FACT ──────────────────────────────
+ *
+ * Three things survive a successful cover, and each is a separate guard:
+ *
+ *   1. The FACT record. Never deleted, never re-truthed. Whatever was recorded
+ *      about the night still happened and can still be cited by a later scene.
+ *   2. The BELIEF record, even at zero confidence. `learnedEp`, `valence` and
+ *      `source` all stay, so "Gabby used to think this, and why" is still
+ *      answerable — a cover buries a read, it does not unremember it.
+ *   3. CERTAINTY. A `public` belief — the turret, the banishment reveal, the
+ *      Seer, the closed set of three — is refused outright. No cover story
+ *      talks somebody out of something they watched happen.
+ *
+ * `amount` is subtracted from the belief as it stands TODAY (its effective
+ * confidence, decay included), and `learnedEp` moves to `ep`, because what the
+ * observer now holds is a read formed this episode out of the old evidence and
+ * the new explanation. Floors at 0 and never goes negative: this is doubt, not
+ * evidence of innocence, and there is no such thing in the format.
+ *
+ * Returns `{ belief, before, after, refused }`.
+ */
+export function sceneDoubt(observer, subject, amount, { source, ep = null } = {}) {
+  if (!observer || !subject || observer === subject) return null;
+  if (typeof source !== 'string' || !source.trim()) {
+    throw new Error('sceneDoubt: lowering a belief needs a human-readable source too');
+  }
+  const fact = getFact(alignmentFactId(subject));
+  const b = fact?.beliefs?.[observer];
+  if (!b) return { belief: null, before: 0, after: 0, refused: true };
+  // Certainty is not doubtable. See guard 3 above.
+  if (b.sourceType === 'public') {
+    return { belief: b, before: b.confidence, after: b.confidence, refused: true };
+  }
+  const before = effectiveConfidence(fact, b, ep);
+  const after = Math.max(0, before - Math.max(0, Number(amount) || 0));
+  b.confidence = after;
+  b.learnedEp = ep ?? b.learnedEp;
+  // `valence`, `source` and `sourceType` are deliberately untouched: the read
+  // is quieter, not different, and the reason it was ever formed is still on
+  // the record.
+  return { belief: b, before, after, refused: false };
 }

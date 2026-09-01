@@ -16,6 +16,7 @@
 //
 // This module imports no engine state, exactly as every other file in
 // `js/vp-tr/` does not: a screen is handed a record and cannot reach past it.
+import { rpBuildArrival, trArrivalRevealAll } from './arrival.js';
 import { rpBuildConclave, trConclaveRevealAll } from './conclave.js';
 import { rpBuildRoundTable, trRoundTableRevealAll } from './round-table.js';
 import { rpBuildColdOpen, trColdOpenRevealAll } from './cold-open.js';
@@ -72,7 +73,24 @@ import { rpBuildConfessionals, trConfessionalsRevealAll, _hasConfessionals }
  * so it rides on the LAST row the season wrote.
  */
 export const TRAITORS_SCREENS = [
-  // ── THE ONLY SCREEN THAT EXISTS ONCE, AND IT GOES FIRST ─────────────
+  // ── BEFORE ANY OF THEM IS ANYTHING (Plan 9, Task 2) ────────────────
+  //
+  // ABOVE THE SELECTION, and that is the whole of the task. Spec §2.2 runs
+  // episode one as an arrival, a briefing and then the rank; the list began at
+  // the rank, so the first thing a viewer ever saw was twenty strangers already
+  // blindfolded and a hand landing on three of them. A room the viewer has not
+  // met is not a room, and the format's product is watching a room fail.
+  //
+  // `when` is the record, never the episode number — same rule as everything
+  // below it. `tr.arrival` is written on the episode-one row and no other, so
+  // the screen simply stops appearing from night two on.
+  { id: 'tr-arrival', label: 'The Arrival', suffix: 'arrival',
+    badge: { text: 'Arrival', color: '#e7b978' },
+    when: r => !!(r.tr && r.tr.arrival && Array.isArray(r.tr.arrival.introductions)
+      && r.tr.arrival.introductions.length),
+    build: rpBuildArrival, revealAll: trArrivalRevealAll,
+    revealAllName: 'trArrivalRevealAll' },
+  // ── THE ONLY OTHER SCREEN THAT EXISTS ONCE ────────────────────
   //
   // Spec 9.2 lists it first. `tr.selection` is written on the episode-one row
   // and no other, so `when` is the same shape as every other entry here --

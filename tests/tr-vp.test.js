@@ -52,6 +52,7 @@ import { rpBuildRecruitment, trRecruitmentRevealAll } from '../js/vp-tr/recruitm
 import { rpBuildEndgame, trEndgameRevealAll } from '../js/vp-tr/endgame.js';
 import { rpBuildCastleDay, trCastleDayRevealAll } from '../js/vp-tr/castle-day.js';
 import { rpBuildSelection, trSelectionRevealAll } from '../js/vp-tr/selection.js';
+import { rpBuildArrival, trArrivalRevealAll } from '../js/vp-tr/arrival.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from '../js/vp-tr/suspicion.js';
 import { rpBuildConfessionals, trConfessionalsRevealAll, SPOKEN_POOLS,
   _hasConfessionals } from '../js/vp-tr/confessionals.js';
@@ -368,9 +369,15 @@ describe('no narration names a host', () => {
     // draw -- with four lines per slot, a hardcoded name hides three times out
     // of four. Comments are stripped, because the file's own header has to be
     // able to explain what it is forbidding.
+    // js/tr/headless.js IS ON THIS LIST AND IT IS NOT A SCREEN. Plan 9 put the
+    // two premiere ceremonies on the RECORD as spoken lines, which moves the
+    // whole of what the host says out of the screens and into the engine -- so
+    // the rule that no file writes a host's name follows it there, or the one
+    // place a name could now be typed is the one place nothing checks.
     for (const f of ['js/vp-tr/conclave.js', 'js/vp-tr/style.js', 'js/vp-tr/scenery.js',
       'js/vp-tr/round-table.js', 'js/vp-tr/cold-open.js', 'js/vp-tr/house-status.js',
-      'js/vp-tr/mission.js', 'js/vp-tr/recruitment.js', 'js/vp-tr/endgame.js']) {
+      'js/vp-tr/mission.js', 'js/vp-tr/recruitment.js', 'js/vp-tr/endgame.js',
+      'js/vp-tr/selection.js', 'js/vp-tr/arrival.js', 'js/tr/headless.js']) {
       const src = readFileSync(new URL('../' + f, import.meta.url), 'utf8')
         .replace(/\/\*[\s\S]*?\*\//g, ' ')
         .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
@@ -3978,7 +3985,7 @@ describe('every castle screen a season produces is reachable from buildVPScreens
 describe('the nav offset is declared once and interpolated', () => {
   const VP_TR = ['conclave.js', 'style.js', 'scenery.js', 'round-table.js', 'cold-open.js',
     'house-status.js', 'mission.js', 'recruitment.js', 'endgame.js', 'castle-day.js',
-    'selection.js', 'screens.js', 'debug.js'];
+    'selection.js', 'arrival.js', 'screens.js', 'debug.js'];
 
   it('no file in js/vp-tr/ writes either offset as a literal', () => {
     let scanned = 0;
@@ -4015,6 +4022,7 @@ describe('the nav offset is declared once and interpolated', () => {
       ['castle day', rpBuildCastleDay,
         RUNS[0].episodes.find(e => e.tr.castle && e.tr.castle.scenes.length)],
       ['selection', rpBuildSelection, RUNS[0].episodes[0]],
+      ['arrival', rpBuildArrival, RUNS[0].episodes[0]],
     ];
     let checked = 0;
     for (const [name, build, ep] of withStyle) {
@@ -4745,10 +4753,14 @@ describe('the selection screen is reachable from the first night and from no oth
         if (ep.num === 1) {
           expect(ids, 'the opening night does not register the selection')
             .toContain('tr-selection');
-          // AND IT OPENS THE NIGHT. The morning is about the previous night
-          // and on night one there is not one.
-          expect(ids[0], 'the selection is not the first screen of the first night')
-            .toBe('tr-selection');
+          // AND IT OPENS THE NIGHT, SECOND. Spec §2.2 runs episode one as an
+          // arrival, a briefing and then the rank, so the premiere sits above
+          // it; the morning is about the previous night and on night one there
+          // is not one. Asserted as the PAIR rather than as one index, because
+          // "the selection is second" is satisfied by anything at all being
+          // first and this list has exactly one correct answer.
+          expect(ids.slice(0, 2), 'the first night does not open on the arrival and the rank')
+            .toEqual(['tr-arrival', 'tr-selection']);
           seen++;
         } else {
           expect(ids, `ep ${ep.num} registered a selection it did not have`)
@@ -4958,8 +4970,8 @@ describe('the selection screen renders the one certainty and cannot manufacture 
     // URL('<literal>', import.meta.url))` is statically rewritten by Vite into
     // an asset URL and throws (Task 8).
     const dir = '../js/vp-tr/';
-    const files = ['selection.js', 'suspicion.js', 'confessionals.js', 'conclave.js',
-      'round-table.js', 'cold-open.js', 'house-status.js', 'mission.js',
+    const files = ['selection.js', 'arrival.js', 'suspicion.js', 'confessionals.js',
+      'conclave.js', 'round-table.js', 'cold-open.js', 'house-status.js', 'mission.js',
       'recruitment.js', 'endgame.js', 'castle-day.js', 'screens.js', 'style.js',
       'scenery.js'];
     let scanned = 0, imported = 0;
@@ -4993,7 +5005,15 @@ describe('the selection screen renders the one certainty and cannot manufacture 
     let checked = 0;
     for (const { ep } of OPENINGS) {
       const s = ep.tr.selection;
-      expect(Object.keys(s).sort()).toEqual(['chosen', 'ep', 'line', 'taps', 'turret']);
+      // THE CEREMONY IS ON IT NOW (Plan 9, Task 2) and this list stays
+      // EXHAUSTIVE, which is the whole of its value: a field arriving without
+      // being named here is a field nobody decided was safe to hand a screen.
+      // Every one of the six additions is prose spoken aloud to a rank of
+      // blindfolded people and names nobody — the word sweep below is what
+      // holds that, and it is unchanged.
+      expect(Object.keys(s).sort()).toEqual(['ceremonyId', 'chosen', 'contestantBeats',
+        'ep', 'hostBeats', 'line', 'reminder', 'revealBeats', 'rulePoints', 'staging',
+        'taps', 'turret']);
       const flat = JSON.stringify(s);
       for (const word of ['sourceType', 'confidence', 'credibility', 'public',
         'observed', 'deduced', 'rumor', 'belief']) {
@@ -6617,5 +6637,339 @@ describe('a hash is turned into a choice in a way that key shape can stand', () 
     expect(flips / pairs, (flips / pairs * 100).toFixed(1) + '% of adjacent slates differ in '
       + 'whether they carry a note — the toggle is alternating rather than deciding')
       .toBeLessThan(0.55);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// PLAN 9, TASK 2 — THE ARRIVAL (js/vp-tr/arrival.js)
+// ══════════════════════════════════════════════════════════════════════
+//
+// The premiere is the one screen in the set whose defect is INVISIBLE by
+// looking at it, because a premiere that is missing looks exactly like a
+// season that starts at the blindfolds — which is what this show did for nine
+// tasks. Four things are guarded here and the look is judged by rendering it,
+// as everywhere else in this file:
+//
+//   1. IT IS REACHABLE, ON EPISODE ONE, ABOVE THE RANK. A screen that exists
+//      and is never registered is this project's signature bug class, and the
+//      ORDER is the claim this one makes: people before roles.
+//   2. IT REVEALS NOTHING. Nobody has been chosen when this screen is drawn,
+//      so the three observer layers must be the same page apart from who is
+//      reading it. A layer that differed would be a layer that had been told
+//      something, twenty minutes before anybody was told anything.
+//   3. THE HOST'S CEREMONY IS ON THE PAGE AND NOT ONLY ON THE RECORD. Both
+//      ceremonies are stored as spoken lines; a record written and never
+//      rendered is the same defect as a screen never registered, wearing the
+//      other hat.
+//   4. THE PLACE IS PAINTED UNDER THE WHOLE PAGE. A full cast makes this the
+//      longest screen in the set, and "really black and empty" is a defect
+//      this plan has now shipped twice.
+//
+// EVERY ARM ASSERTS A NON-ZERO COUNT BEFORE IT ASSERTS ANYTHING ABOUT A
+// COLLECTION.
+
+/** Every season's first row, which is the only row that has an arrival. */
+const PREMIERES = RUNS.map(r => ({ ep: r.episodes[0], run: r }))
+  .filter(x => x.ep && x.ep.tr && x.ep.tr.arrival);
+
+/** The screen with every beat shown, which is where the whole afternoon is. */
+function arrivalRevealed(ep, observer = 'audience') {
+  const first = rpBuildArrival(ep, observer);
+  const m = /trArrivalRevealAll\('arrival',(\d+),(-?\d+)\)/.exec(first);
+  if (!m) return first;
+  trArrivalRevealAll('arrival', Number(m[1]), Number(m[2]));
+  return rpBuildArrival(ep, observer);
+}
+
+describe('the premiere is reachable, and it is the first thing a season shows', () => {
+  it('buildVPScreens gives it to the opening row of every season and to nothing else', () => {
+    expect(PREMIERES.length, 'no season recorded an arrival at all').toBe(RUNS.length);
+    let seen = 0, others = 0;
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        const ids = buildVPScreens(ep).map(s => s.id);
+        if (ep.num === 1) {
+          // THE PAIR, IN ORDER. "It is registered" is satisfied by it being
+          // last, which would put the introductions after the blindfolds.
+          expect(ids.slice(0, 2), 'the opening night does not open on the drive')
+            .toEqual(['tr-arrival', 'tr-selection']);
+          seen++;
+        } else {
+          expect(ids, `ep ${ep.num} registered an arrival it did not have`)
+            .not.toContain('tr-arrival');
+          others++;
+        }
+      }
+    }
+    expect(seen, 'no opening night was examined').toBe(RUNS.length);
+    expect(others, 'no later night was examined').toBeGreaterThan(20);
+  });
+
+  it('and every one of the cast is on it, with a billing the ledger supports', () => {
+    let checked = 0;
+    for (const { ep } of PREMIERES) {
+      const said = strip(arrivalRevealed(ep, 'audience'));
+      expect(said.length, 'the premiere rendered nothing').toBeGreaterThan(2000);
+      for (const name of ep.tr.cast) {
+        expect(mentions(said, name), `${name} came up the drive and was never introduced`)
+          .toBe(true);
+      }
+      // AND NOBODY IS GIVEN A SEASON THEY DID NOT PLAY. The introductions
+      // carry the appearances the snapshot holds and no others, so a Civilian
+      // billing with a placement on it is a screen inventing a career.
+      for (const intro of ep.tr.arrival.introductions) {
+        if (intro.type !== 'alumni') {
+          expect(intro.appearances, `${intro.name} is billed ${intro.type} with a season on it`)
+            .toEqual([]);
+          expect(intro.sourceShows).toEqual([]);
+        }
+      }
+      checked++;
+    }
+    expect(checked).toBe(PREMIERES.length);
+  });
+});
+
+// ── GUARD: NOBODY IS ANYTHING YET, SO NO LAYER KNOWS ANYTHING ─────────
+describe('the arrival cannot leak a role, because it is drawn before there is one', () => {
+  it('the audience, a chosen player and an untapped player get the same afternoon', () => {
+    let compared = 0;
+    for (const { ep } of PREMIERES) {
+      const s = ep.tr.selection;
+      const outsider = s.line.find(n => s.chosen.indexOf(n) < 0);
+      expect(outsider, 'every single person in the rank was chosen').toBeTruthy();
+      // THE STREAM, WITHOUT THE HEAD. The badge names the reader and the
+      // register marks their own line, which is the only legitimate
+      // difference; everything below the header must be identical, or some
+      // layer has been handed a fact twenty minutes before the fact exists.
+      const streamOf = obs => {
+        const html = arrivalRevealed(ep, obs);
+        const at = html.indexOf('<main class="ar-main">');
+        expect(at, 'the arrival rendered no stream').toBeGreaterThan(-1);
+        return html.slice(at)
+          // the one mark a player layer legitimately adds to their own entry
+          .replace(/ &middot; You/g, '')
+          .replace(/You are in that rank[\s\S]*?your eyes\./g, '')
+          .replace(/That rank is the last moment[\s\S]*?four minutes\./g, '');
+      };
+      const aud = streamOf('audience');
+      expect(streamOf('player:' + s.chosen[0]),
+        'a player who is about to be chosen was shown a different drive').toBe(aud);
+      expect(streamOf('player:' + outsider),
+        'a player who is not about to be chosen was shown a different drive').toBe(aud);
+      compared++;
+    }
+    expect(compared, 'no premiere was compared').toBeGreaterThan(2);
+  });
+
+  it('and the record it draws carries no alignment, no tap and no turret', () => {
+    let checked = 0;
+    for (const { ep } of PREMIERES) {
+      const a = ep.tr.arrival;
+      expect(Object.keys(a).sort()).toEqual(['ceremonyId', 'ep', 'groups', 'host',
+        'introductions', 'recognitions', 'rules']);
+      const flat = JSON.stringify(a);
+      // The BRIEFING is allowed to say the words, because saying them is the
+      // whole of what a briefing is. What must not be on the record is the
+      // answer: a name attached to one of them.
+      for (const who of ep.tr.selection.chosen) {
+        const claim = new RegExp('"(alignment|role|truth|traitor)"\\s*:\\s*"?' + who);
+        expect(claim.test(flat), `the arrival record marks ${who}`).toBe(false);
+      }
+      for (const word of ['alignment', 'isTraitor', 'chosen', 'taps', 'turret',
+        'confidence', 'credibility']) {
+        expect(flat.indexOf('"' + word + '"'),
+          `the arrival record carries a "${word}" field`).toBe(-1);
+      }
+      checked++;
+    }
+    expect(checked).toBe(PREMIERES.length);
+  });
+});
+
+// ── GUARD: A CEREMONY WRITTEN AND NEVER RENDERED IS A CEREMONY MISSING ─
+describe('both premiere ceremonies reach a screen, line for line', () => {
+  it('every rule the host is recorded saying is printed on the arrival', () => {
+    let beats = 0;
+    for (const { ep } of PREMIERES) {
+      const said = strip(arrivalRevealed(ep, 'audience'));
+      const rules = ep.tr.arrival.rules;
+      expect(rules.hostBeats.length, 'the briefing has no beats').toBeGreaterThanOrEqual(8);
+      for (const b of rules.hostBeats) {
+        // A DISTINCTIVE RUN OF THE SENTENCE, not the whole of it: the screen
+        // wraps spoken lines in quotation marks and the stripper collapses
+        // runs of space, so an exact-string compare would fail on furniture
+        // rather than on a missing rule.
+        const needle = b.text.replace(/[‘’]/g, "'").slice(0, 46)
+          .replace(/\s+/g, ' ');
+        expect(said.replace(/[‘’]/g, "'").replace(/\s+/g, ' '),
+          `a recorded rule never reached the screen: "${needle}"`).toContain(needle);
+        beats++;
+      }
+      // AND EVERY RULE POINT LANDS ON A BEAT THAT ACTUALLY SAYS IT.
+      for (const rp of rules.rulePoints) {
+        const b = rules.hostBeats[rp.explainedByBeat];
+        expect(b, `rule ${rp.id} points at beat ${rp.explainedByBeat}, which is not there`)
+          .toBeTruthy();
+        expect(b.ruleId, `rule ${rp.id} points at a beat that explains ${b && b.ruleId}`)
+          .toBe(rp.id);
+      }
+    }
+    expect(beats, 'no host beat was read').toBeGreaterThan(20);
+  });
+
+  it('and every line of the Selection ceremony is printed to all three layers', () => {
+    let layers = 0;
+    for (const { ep } of PREMIERES) {
+      const s = ep.tr.selection;
+      const outsider = s.line.find(n => s.chosen.indexOf(n) < 0);
+      for (const obs of ['audience', 'player:' + s.chosen[0], 'player:' + outsider]) {
+        const said = strip(selectionRevealed(ep, obs))
+          .replace(/[‘’]/g, "'").replace(/\s+/g, ' ');
+        for (const b of s.hostBeats) {
+          const needle = b.text.replace(/[‘’]/g, "'").replace(/\s+/g, ' ').slice(0, 46);
+          expect(said, `${obs} was not told: "${needle}"`).toContain(needle);
+        }
+        layers++;
+      }
+    }
+    expect(layers, 'no layer was read').toBeGreaterThan(8);
+    // AND THE SPEECH COMES BEFORE THE HAND. The rule that a tap means
+    // something has to be on the page above the first tap card, or the
+    // ceremony has been re-cut into an explanation after the fact.
+    for (const { ep } of PREMIERES) {
+      const html = selectionRevealed(ep, 'audience');
+      const rule = ep.tr.selection.hostBeats
+        .find(b => b.ruleId === 'tap-means-traitor').text.slice(0, 40);
+      const at = html.indexOf(rule.slice(0, 30));
+      const firstTap = html.indexOf('First Shoulder');
+      expect(at, 'the rule that a hand means something is not on the page')
+        .toBeGreaterThan(-1);
+      expect(at, 'the first hand lands before anybody is told what one means')
+        .toBeLessThan(firstTap);
+    }
+  });
+});
+
+// ── GUARD: NO OTHER SHOW'S WORDS, ON THE PAGE AND AT THE SOURCE ───────
+describe('the premiere is not described in another show\'s words', () => {
+  it('no forbidden noun survives on any rendered layer of the arrival', () => {
+    let layers = 0;
+    for (const { ep } of PREMIERES) {
+      const s = ep.tr.selection;
+      const outsider = s.line.find(n => s.chosen.indexOf(n) < 0);
+      for (const obs of ['audience', 'player:' + s.chosen[0], 'player:' + outsider]) {
+        const said = strip(arrivalRevealed(ep, obs));
+        expect(said.length, `the ${obs} layer rendered nothing`).toBeGreaterThan(1000);
+        const bad = foreignWordsIn(said, 'traitors');
+        expect(bad, `the ${obs} layer of the arrival says ${bad.join(', ')}`).toEqual([]);
+        layers++;
+      }
+    }
+    expect(layers, 'no layer was read').toBeGreaterThan(8);
+  });
+
+  it('and the pools the seeds never reach are clean at the source', () => {
+    for (const f of ['arrival.js']) {
+      const src = readFileSync(new URL('../js/vp-tr/' + f, import.meta.url), 'utf8');
+      expect(src.length, 'the source scan is reading nothing').toBeGreaterThan(1000);
+      const bad = foreignWordsIn(src, 'traitors');
+      expect(bad, `js/vp-tr/${f} writes ${bad.join(', ')} at the source`).toEqual([]);
+    }
+  });
+});
+
+// ── GUARD: THE REVEAL PATTERN, AND THE GROUND UNDER THE WHOLE PAGE ────
+describe('the arrival is a place and not a hole', () => {
+  const shell = () => rpBuildArrival(PREMIERES[0].ep, 'audience');
+
+  it('step divs, counter and controls are all addressable by id', () => {
+    const html = shell();
+    const total = Number(/trArrivalRevealAll\('arrival',(\d+),/.exec(html)[1]);
+    expect(total, 'the screen emitted no beats').toBeGreaterThan(20);
+    for (let i = 0; i < total; i++) {
+      expect(html, `step ${i} has no id for the reveal handler to find`)
+        .toContain('id="ar-step-arrival-' + i + '"');
+    }
+    expect(html).toContain('id="ar-counter-arrival"');
+    expect(html).toContain('id="ar-controls-arrival"');
+    expect(html).toContain('id="ar-shell-arrival"');
+    expect(html).toContain('id="ar-stage-inner"');
+    // Task 2's first-paint rule: a screen that is blank until somebody presses
+    // a button is a screen that looks broken.
+    expect(/ar-beat ar-vis/.test(html), 'the first paint reveals nothing at all').toBe(true);
+    expect(strip(html).length, 'the first paint said nothing').toBeGreaterThan(400);
+  });
+
+  it('the register does not write anybody in before their own card is read', () => {
+    // A FRESH REVEAL KEY. Reveal state is module-local and keyed by episode
+    // number, and the arms above have already run this row to the end.
+    const ep = PREMIERES[0].ep;
+    const html = rpBuildArrival({ ...ep, num: -820 }, 'audience');
+    // READ OUT OF THE STAGE AND NOT OFF THE PAGE. The stylesheet declares
+    // `.ar-tick[data-said="1"]` and a whole-page search for that attribute
+    // finds the RULE rather than a lit lamp -- which is the wrong-element trap
+    // this file has caught five times, and it caught it a sixth time here.
+    const from = html.indexOf('id="ar-stage-inner"');
+    expect(from, 'the arrival drew no register').toBeGreaterThan(-1);
+    const stage = html.slice(from, html.indexOf('<main class="ar-main">'));
+    expect(stage, 'the register is full before a single car has arrived')
+      .toContain('Nobody through the arch yet');
+    // AND THE TICKER IS DARK. It has to be DRAWN on the first paint -- a stage
+    // that appears halfway through looks broken -- and not one of its lamps
+    // may be lit, so both halves are asserted.
+    expect(stage.indexOf('class="ar-tick"'),
+      'the rules ticker is not drawn at all').toBeGreaterThan(-1);
+    expect(stage.indexOf('data-said="1"'),
+      'the ticker lights a rule the host has not said yet').toBe(-1);
+  });
+
+  it('the two full-height layers run from the nav bar to the foot of the page', () => {
+    const css = /<style>([\s\S]*?)<\/style>/.exec(shell())[1];
+    expect(css.length, 'the screen rendered no stylesheet').toBeGreaterThan(2000);
+    let checked = 0;
+    for (const layer of ['.ar-yard{', '.ar-wall{']) {
+      const at = css.indexOf(layer);
+      expect(at, `${layer} is not declared at all`).toBeGreaterThan(-1);
+      const block = css.slice(at, css.indexOf('}', at));
+      expect(block, `${layer} does not start below the nav bar`).toContain('top:' + TR_NAV_TOP);
+      expect(block, `${layer} stops somewhere rather than running to the foot`)
+        .toContain('bottom:0');
+      expect(/height:\s*\d/.test(block), `${layer} is height-capped`).toBe(false);
+      checked++;
+    }
+    expect(checked).toBe(2);
+    expect(css, 'the drawn planes lost their height').toContain('height:2100px');
+    // AND THE MOTION HAS A WAY OUT. Every animation on this screen is
+    // atmosphere, so a reader who has asked for none loses nothing by it.
+    expect(css, 'the arrival animates with no reduced-motion fallback')
+      .toContain('@media (prefers-reduced-motion:reduce)');
+  });
+});
+
+// ── GUARD: THE TRANSCRIPT SAYS WHAT THE SCREEN SAYS ───────────────────
+describe('the premiere is retranscribed into the text backlog', () => {
+  it('the arrival section carries every name and every rule', () => {
+    let checked = 0;
+    for (const { ep } of PREMIERES) {
+      const txt = generateTraitorsSummaryText(ep, 'audience');
+      expect(txt, 'the transcript has no arrival section at all')
+        .toContain('=== THE ARRIVAL ===');
+      // AND IT COMES FIRST. A transcript that introduces the cast after they
+      // have been divided is the same defect the screen order fixes.
+      expect(txt.indexOf('=== THE ARRIVAL ==='))
+        .toBeLessThan(txt.indexOf('=== THE SELECTION ==='));
+      const flat = txt.replace(/[‘’]/g, "'").replace(/\s+/g, ' ');
+      for (const name of ep.tr.cast) {
+        expect(mentions(flat, name), `${name} is missing from the transcript's premiere`)
+          .toBe(true);
+      }
+      for (const b of ep.tr.arrival.rules.hostBeats) {
+        const needle = b.text.replace(/[‘’]/g, "'").replace(/\s+/g, ' ').slice(0, 46);
+        expect(flat, `the transcript dropped a rule: "${needle}"`).toContain(needle);
+      }
+      checked++;
+    }
+    expect(checked).toBe(PREMIERES.length);
   });
 });

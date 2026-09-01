@@ -903,6 +903,29 @@ const ARRIVAL = [
   'A grey afternoon, a great deal of luggage, and {C} people shaking hands on a drive '
   + 'while the windows of the castle stayed dark above them.',
 ];
+// ── AND THE SAME AFTERNOON, ONCE THE PREMIERE HAS ALREADY DRAWN IT ───
+//
+// Plan 9 put an ARRIVAL screen above this one: the cars, the introductions and
+// the whole rules briefing. Read in sequence, this screen then opened by
+// narrating the drive a second time and summarising it as "Told anything:
+// Nobody" -- which by that point was flatly false, because they had just been
+// told all of it. Found by dumping the premiere and reading it, exactly as the
+// day book's out-of-order exits were found in Task 6.
+//
+// So when the record carries an arrival, the opening card PICKS UP rather than
+// starts again. The pool is registered off the record, never off an episode
+// number, which is the rule this whole file is built on.
+const RESUME = [
+  'The bags are still where they were left. What is different is that everybody on the '
+  + 'flags now knows exactly what this castle does, and not one of them knows who it is '
+  + 'about to do it to.',
+  'Ten minutes of rules, and then the same {c} people back out on the same gravel, being '
+  + 'very slightly quieter with each other than they were on the way up.',
+  'They come back out into the light in the order they happened to be standing, which '
+  + 'nobody chooses and nobody will get to change.',
+  'Nothing has happened yet. Everybody has been told everything and given nothing, which '
+  + 'is the most uncomfortable a courtyard has ever been.',
+];
 const GREET = [
   'Welcome. Some of you are about to be told something the rest of you will spend weeks '
   + 'trying to work out.',
@@ -1183,12 +1206,66 @@ function _view(ep, observer) {
     tapCount: s.taps.length,
     // The turret's roll, and it is null rather than empty where it is withheld.
     turret: turretKnown ? [...(s.turret || chosen)] : null,
+    // -- THE CEREMONY, AND IT IS THE SAME FOR EVERY READER (Plan 9, Task 2)
+    //
+    // Not behind either gate, and it must never be put behind one. Every line
+    // here was said out loud to a rank of people with cloth over every face,
+    // and it names nobody: the record's own writer is forbidden from putting a
+    // name in a beat for exactly this reason. What separates the three layers
+    // is who felt a hand, not who heard a sentence, and a speech withheld from
+    // a layer would be a layer that never learns the rules of the game it is
+    // about to be played by.
+    // Did the premiere already draw the drive and the briefing? Read off the
+    // RECORD, never off the episode number.
+    afterBriefing: !!(ep && ep.tr && ep.tr.arrival
+      && Array.isArray(ep.tr.arrival.introductions) && ep.tr.arrival.introductions.length),
+    staging: s.staging || '',
+    hostBeats: (s.hostBeats || []).map(b => ({ ...b })),
+    contestantBeats: (s.contestantBeats || []).map(b => ({ ...b })),
   };
 }
 
 // ══════════════════════════════════════════════════════════════════════
 // THE BEATS
 // ══════════════════════════════════════════════════════════════════════
+
+/**
+ * THE HOST'S WORDS, WHICH ARE ON THE RECORD AND NOT IN THIS FILE.
+ *
+ * Every pool above is NARRATION -- what the afternoon looked like -- and none
+ * of it is a rule. The rules are a ceremony, they are written once by
+ * `_selectionRecord` in js/tr/headless.js, and this draws them: complete
+ * spoken lines, one card each, with the staging under them.
+ *
+ * ONE CARD PER BEAT AND NOT ONE CARD FOR THE SPEECH. A ceremony is a sequence
+ * of actions and the tension in it comes from being made to wait between two
+ * of them; the whole address in a single oversized card is a paragraph, and a
+ * paragraph is what the writing contract calls the shortcut by name.
+ *
+ * `group` is `null` before any hand lands, a tap ORDER for the lines spoken
+ * between hands, and 'final' for the two at the front of the rank at the end.
+ * The record clamps those orders to the taps that actually exist, because
+ * `traitorCount` is configurable and a line pinned to the second hand of a
+ * one-Traitor season is a line nothing ever reaches.
+ */
+function _same(a, b) {
+  if (a == null && b == null) return true;
+  return a === b;
+}
+function _pushCeremony(v, group, phase, push) {
+  const spoken = (v.hostBeats || []).filter(b => _same(b.afterTap, group));
+  if (!spoken.length) return;
+  const reacts = (v.contestantBeats || []).filter(b => _same(b.afterTap, group));
+  spoken.forEach((b, i) => {
+    const last = i === spoken.length - 1;
+    push(phase, _card('', b.ruleId ? 'The rules, said out loud' : 'On the gravel',
+      'chevron',
+      _hostBand(_esc(b.text))
+      + (b.action ? '<p class="tp-quiet">' + _esc(b.action) + '</p>' : '')
+      + (last ? reacts.map(r => '<p class="tp-quiet">' + _esc(r.text) + '</p>').join('') : '')),
+    { kind: 'rules', ruleId: b.ruleId || null });
+  });
+}
 
 function _buildBeats(v) {
   const beats = [];
@@ -1209,11 +1286,24 @@ function _buildBeats(v) {
     c: _word(n), C: _Word(n),
   };
 
-  // ── the drive ───────────────────────────────────────────────────────
-  push('arrival', _card('Up The Drive', 'The arrival', 'trunk',
-    '<p>' + _fill(_pick(ARRIVAL, key + '|arrive'), S) + '</p>'
-    + _sums([['In the rank', String(n), null], ['Told anything', 'Nobody', 'cold']])
-    + _hostBand(_esc(_pick(GREET, key + '|greet')))),
+  // ── the drive, or the ten minutes after it ──────────────────────────
+  //
+  // The host band is dropped on a record that has an arrival on it: she has
+  // already welcomed this cast, at length, one screen earlier. A second
+  // welcome from the same person in the same hour is the format's host
+  // introducing herself twice.
+  push('arrival', v.afterBriefing
+    ? _card('Back Out Onto The Gravel', 'The arrival', 'trunk',
+      '<p>' + _fill(_pick(RESUME, key + '|resume'), S) + '</p>'
+      + _sums([
+        ['In the rank', String(n), null],
+        ['Told the rules', 'All of them', null],
+        ['Told who', 'Nobody', 'cold'],
+      ]))
+    : _card('Up The Drive', 'The arrival', 'trunk',
+      '<p>' + _fill(_pick(ARRIVAL, key + '|arrive'), S) + '</p>'
+      + _sums([['In the rank', String(n), null], ['Told anything', 'Nobody', 'cold']])
+      + _hostBand(_esc(_pick(GREET, key + '|greet')))),
   { kind: 'arrival' });
 
   // ── the cloth ───────────────────────────────────────────────────────
@@ -1238,6 +1328,12 @@ function _buildBeats(v) {
           + 'stop being about that.'))
     + '</p>'),
   { kind: 'walk' });
+
+  // ── what the host says before a single hand has moved ───────────────
+  //
+  // BEFORE, and that ordering is the ceremony's whole claim: nobody may feel a
+  // hand on a shoulder without already having been told what one means.
+  _pushCeremony(v, null, 'walk', push);
 
   // ── the three taps ──────────────────────────────────────────────────
   //
@@ -1276,7 +1372,11 @@ function _buildBeats(v) {
     }
     push('walk', _card(_ord(t.order).charAt(0).toUpperCase() + _ord(t.order).slice(1)
       + ' Shoulder', 'The tap', 'tap', inner, tone), { kind: 'tap', order: t.order });
+    _pushCeremony(v, t.order, 'walk', push);
   }
+
+  // ── the last of it, at the front of the rank ────────────────────────
+  _pushCeremony(v, 'final', 'unmask', push);
 
   // ── the cloth comes off ─────────────────────────────────────────────
   push('unmask', _card('The Bands Come Off', 'Afterwards', 'band',

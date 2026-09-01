@@ -6,7 +6,7 @@
 // every unit test it has and still produce a room that never works anything
 // out, because "did the belief update" and "did the room find the Traitors" are
 // different questions and only the second one matters.
-import { gs, setGs } from '../core.js';
+import { gs, setGs, players, seasonConfig } from '../core.js';
 import { initTraitorsState, snapshotTraitorsBackgrounds } from './state.js';
 import { resetKnowledge } from '../knowledge.js';
 import { setBond, getBond } from '../bonds.js';
@@ -589,33 +589,140 @@ function _missionRecord(m) {
  * rule and would eventually draw an ultimatum over a night that ran a note.
  */
 /**
- * THE SELECTION, IN THE SHAPE THE FIRST SCREEN DRAWS IT (js/vp-tr/selection.js).
+ * THE SELECTION CEREMONY, PERFORMED RATHER THAN SUMMARISED.
  *
- * Spec 9.2 lists this first and it is the only thing on the record that
- * happens exactly ONCE. Every other field here answers "what did this night
- * contain"; this one answers "how did the season start", so it rides on the
- * episode-one row and no other row ever carries it.
+ * `line`, `chosen`, `taps` and `turret` are the FACTS of the walk and were
+ * here first. What is added is the EVENING: the speech, the staging, the rule
+ * points and the reveal steps, stored as four separate lists because they are
+ * withheld and re-cut separately. A ceremony whose staging lives inside its
+ * narration is a ceremony a screen can only print in one order, and this is
+ * the one evening in the format that has three different orders — the
+ * audience's, a tapped player's and everybody else's.
  *
- * IT RECORDS THE WALK AND NOT JUST THE ANSWER. `selectTraitors` returns the
- * three in DRAW order, which is an artefact of how the rng was consumed and
- * is not a fact about the evening. What the room lived through is the host
- * going down the rank from one end, so `taps` is the same three in LINE
- * order with the position each one was standing at -- and `chosen` keeps the
- * draw order beside it, so a screen that renders the walk cannot be
- * satisfied by the list it was not drawing.
+ * `afterTap` IS THE ONLY ORDERING THIS RECORD ASSERTS, and it is the ordering
+ * the contract cares about: the host says what a hand on the shoulder means
+ * BEFORE any hand lands (`afterTap: null`), and the rest of the speech is
+ * pinned to the tap it follows. It is CLAMPED to the taps that exist, because
+ * `traitorCount` is configurable and a beat pinned to the second hand of a
+ * one-Traitor season is a beat nothing ever reaches.
  *
- * `line` is the rank as it stood, which is `castOrder` before anybody has
- * left. It is copied rather than referenced because the seating plan outlives
- * the season and a screen must not be able to reach past its own record.
+ * ── AND NOT ONE WORD OF IT NAMES ANYBODY ──────────────────────────────
+ *
+ * Every beat here is spoken to the whole rank with cloth over every face. The
+ * names on this record live where they already lived — `taps`, `chosen`,
+ * `turret` — behind the two gates `_view()` in js/vp-tr/selection.js keeps. A
+ * speech that named a shoulder would be a speech the untapped layer could not
+ * be shown at all, and the untapped layer is the one the format is about.
+ *
+ * ── THE COUNT IS NOT GIVEN AWAY ───────────────────────────────────────
+ *
+ * The writing contract allows the host to state how many were chosen ONLY
+ * where the format configuration makes that count public knowledge, and the
+ * default is that it does not. `announceCount` is that switch and it is off
+ * unless a season asks; the audience record knowing the number is not a reason
+ * to let the host say it on the gravel.
  */
-function _selectionRecord(ep, cast, traitors) {
+function _selectionRecord(ep, cast, traitors, { announceCount = false } = {}) {
   const line = [...(cast || [])];
   const chosen = [...(traitors || [])];
   const taps = chosen
     .map(name => ({ name, at: line.indexOf(name) }))
     .filter(t => t.at >= 0)
     .sort((a, b) => a.at - b.at);
-  return { ep, line, chosen, taps, turret: [...chosen] };
+  const last = Math.max(0, taps.length - 1);
+  // Pin a beat to a hand that actually landed. A one-Traitor season has one.
+  const after = n => Math.min(n, last);
+
+  const hostBeats = [
+    { kind: 'open', visibility: 'all', afterTap: null,
+      action: 'The host steps off the front of the rank and walks to one end of it.',
+      text: 'In a moment I am going to walk behind every one of you. You will hear exactly '
+        + 'where I am. You will have no idea who I am standing behind.' },
+    // THE LINE THE WHOLE EVENING TURNS ON, AND IT IS SAID FIRST.
+    { kind: 'rule', visibility: 'all', afterTap: null, ruleId: 'tap-means-traitor',
+      action: 'The footsteps start along the gravel behind the rank.',
+      text: 'If you feel my hand on your shoulder, you have been chosen as a Traitor.' },
+    { kind: 'rule', visibility: 'all', afterTap: null,
+      action: 'The footsteps carry on without stopping.',
+      text: 'You will lie to the people standing beside you. You will eat breakfast with '
+        + 'them, agree with them, comfort them, and help them decide which one of them to '
+        + 'send home.' },
+    { kind: 'rule', visibility: 'all', afterTap: after(0), ruleId: 'traitors-murder',
+      action: 'The walk resumes.',
+      text: 'And every night, once this castle is asleep, you will meet in secret and '
+        + 'choose one of them to murder.' },
+    { kind: 'rule', visibility: 'all', afterTap: after(0), ruleId: 'faithfuls-banish',
+      action: 'The host turns at the end of the rank and starts back.',
+      text: 'If you feel nothing at all, you are a Faithful, and your task is very easy to '
+        + 'say and extremely hard to do. Find the Traitors. Banish every single one of them '
+        + 'before they have finished with you.' },
+    { kind: 'rule', visibility: 'all', afterTap: after(1), ruleId: 'do-not-react',
+      action: 'The hand lifts and the footsteps do not hurry.',
+      text: 'Do not speak. Do not move. Nobody standing next to you may know what has just '
+        + 'happened to you.' },
+    { kind: 'rule', visibility: 'all', afterTap: after(2),
+      action: 'The host stops walking.',
+      text: 'From this minute, every friendship in this castle may be real and every one of '
+        + 'them may be work, and none of you will be told which is which.' },
+    { kind: 'close', visibility: 'all', afterTap: 'final',
+      action: 'The host returns to the front of the rank.',
+      text: 'When I tell you to take the blindfolds off, look very carefully at the people '
+        + 'around you. Some of them have just been handed an excellent reason to lie to '
+        + 'your face.' },
+    { kind: 'close', visibility: 'all', afterTap: 'final',
+      action: 'A pause, long enough to be uncomfortable.',
+      text: 'Take them off.' },
+  ];
+  if (announceCount) {
+    // ONLY WHERE THE CONFIGURATION SAYS THE ROOM IS TOLD. Inserted after the
+    // rule it qualifies rather than appended, so it is heard as part of it.
+    hostBeats.splice(2, 0, { kind: 'rule', visibility: 'all', afterTap: null,
+      action: 'She says the number once and does not repeat it.',
+      text: 'There will be ' + taps.length + ' of them. That is the only thing about them '
+        + 'this castle is ever going to be told for nothing.' });
+  }
+  const rulePoints = hostBeats
+    .map((b, i) => (b.ruleId ? { id: b.ruleId, explainedByBeat: i } : null))
+    .filter(Boolean);
+
+  return {
+    ep, line, chosen, taps, turret: [...chosen],
+    ceremonyId: 'selection',
+    staging: 'The whole cast in one rank across the gravel with their blindfolds tied and '
+      + 'their bags still on the flags behind them. The host waits until the drive is '
+      + 'completely silent before saying anything at all.',
+    hostBeats,
+    // NAME-FREE BY CONSTRUCTION. These are what the RANK did, collectively,
+    // and a rank that cannot see is the only witness any of them has.
+    contestantBeats: [
+      { kind: 'reaction', participants: [], visibility: 'all', afterTap: null,
+        text: 'Nobody in the rank moves. Two of them are visibly counting the footsteps and '
+          + 'both of them lose count.' },
+      { kind: 'reaction', participants: [], visibility: 'all', afterTap: after(0),
+        text: 'The gravel stops somewhere along the line and starts again. Every head in '
+          + 'the rank stays facing exactly forward.' },
+      { kind: 'reaction', participants: [], visibility: 'all', afterTap: 'final',
+        text: 'The bands come off and the drive is instantly full of people being extremely '
+          + 'normal at each other.' },
+    ],
+    rulePoints,
+    // ONE STEP PER ACTION, in the order the evening ran them. A tap step
+    // carries its ORDER and not its name: the names are on `taps`, behind the
+    // gate that already withholds them.
+    revealBeats: [
+      { kind: 'rank', text: 'The cast are put shoulder to shoulder in the order they '
+        + 'happened to be standing.' },
+      { kind: 'blindfold', text: 'The bands go on and are tied at the back.' },
+      { kind: 'silence', text: 'The drive goes quiet enough to hear the weather.' },
+      { kind: 'footsteps', text: 'The host begins to walk the line.' },
+      ...taps.map((t, i) => ({ kind: 'tap', order: i,
+        text: 'A hand goes down on one shoulder and stays there.' })),
+      { kind: 'unmask', text: 'The blindfolds come off.' },
+      { kind: 'turret', text: 'After dark, the chosen are called up separately and arrive '
+        + 'in the same room.' },
+    ],
+    reminder: 'The hand on the shoulder made a Traitor. Nothing about that ever changes.',
+  };
 }
 
 function _recruitmentRecord(night) {
@@ -904,8 +1011,385 @@ function _beliefRecord(ep) {
   });
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// THE PREMIERE — the drive, the introductions, and the rules said aloud
+// ══════════════════════════════════════════════════════════════════════
+//
+// Episode one is the only night of a season that has to introduce anybody,
+// and until this record existed it did not: the first screen a viewer saw was
+// twenty blindfolded strangers being divided. The format's product is watching
+// a room fail to work something out, and a room the viewer has never met is
+// not a room — it is a list of names with a hand landing on three of them.
+//
+// TWO CEREMONIES LIVE HERE AND THEY ARE DIFFERENT OBJECTS. The arrival is
+// people; the briefing is rules. They are stored separately because they are
+// withheld separately later on — a returning viewer needs the rules again and
+// does not need the introductions, which is exactly what `reminder` is for.
+//
+// ── EVERYTHING HERE IS WRITTEN OUT, AND THAT IS THE WHOLE POINT ───────
+//
+// "The host explains how the game works" is a production note, not a
+// premiere. A screen handed that sentence can only print that sentence, and a
+// transcript retranscribing the screen prints it twice. So the record carries
+// the SENTENCES: complete spoken lines, the staging around them, the reaction
+// each line earned, and one reveal step per action. Nothing downstream has to
+// invent a single word, and nothing downstream is able to.
+//
+// ── AND NOT ONE FACT IS INVENTED ──────────────────────────────────────
+//
+// Every claim an introduction makes comes off `gs.tr.backgrounds`, which is
+// the frozen per-season snapshot Task 1 wrote — never re-resolved from the
+// live database, because a replay that re-resolves rewrites its own premiere
+// the next time somebody corrects a placement. An alumni billing quotes the
+// season labels the ledger recorded, composed by `alumniAppearances` out of
+// `SHOWS[format].name`; a Celebrity or a Civilian is given no season, no
+// finish and no franchise past whatsoever, because they have none.
+//
+// ── THE HOST IS NEVER NAMED ON THIS RECORD ────────────────────────────
+//
+// `host` is the CONFIGURED key and nothing else, and no beat on either
+// ceremony says a host's name out loud. The screen resolves the label out of
+// the registry at draw time, exactly as `js/vp-tr/selection.js` already does,
+// so swapping the host in the setup screen swaps every line she speaks
+// (docs/ADDING-A-SHOW.md §14.10 is the bug class). A name written into a beat
+// here would be a name no configuration change could reach.
+//
+// ── AND IT COSTS THE SEASON NOTHING ───────────────────────────────────
+//
+// Not one draw from any of the three rng streams. Variation comes off an FNV
+// hash of the season's own cast, exactly as `gs.tr.backgrounds` does, so a
+// season played with a premiere is bit-identical to one played without and
+// every calibration band this engine has is undisturbed.
+
+/** FNV-1a. The premiere's only source of variation, and it takes no draw. */
+function _pHash(s) {
+  let h = 2166136261;
+  const t = String(s);
+  for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+/**
+ * The same pool, without saying the same thing twice on one drive.
+ *
+ * AND WHEN IT RUNS OUT IT STARTS AGAIN RATHER THAN REPEATING ONE LINE. Twenty
+ * arrivals across four stances puts eight people through one pool of seven,
+ * and the first version returned `pool[start]` on exhaustion -- which printed
+ * the identical sentence for two arrivals standing next to each other. Found
+ * by dumping the premiere and reading it. Clearing the pool's own marks lets
+ * the hash choose freshly on the second lap instead.
+ */
+function _pPickUnique(pool, key, used) {
+  if (!pool || !pool.length) return '';
+  if (pool.every(l => used.has(l))) for (const l of pool) used.delete(l);
+  const start = _pHash(key) % pool.length;
+  for (let i = 0; i < pool.length; i++) {
+    const line = pool[(start + i) % pool.length];
+    if (!used.has(line)) { used.add(line); return line; }
+  }
+  return pool[start];
+}
+function _pFill(tpl, subs) {
+  return String(tpl || '').replace(/\{(\w+)\}/g, (m, k) =>
+    (subs && subs[k] != null) ? subs[k] : m);
+}
+const _CARS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh',
+  'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth'];
+const _carWord = i => _CARS[i] || `${i + 1}th`;
+
+/**
+ * HOW SOMEBODY GETS OUT OF A CAR, by the behaviour their archetype is allowed.
+ *
+ * FOUR STANCES AND NOT FIFTEEN, and the grouping is AGENTS.md's own: villain
+ * archetypes may be sharp, nice archetypes may not scheme or needle, and the
+ * neutrals sit between. A second fifteen-row archetype table would be a second
+ * copy of the one in `js/tr/state.js` — which is the shape this repo has been
+ * bitten by six times — so this asks a coarser question that already has a
+ * written answer, and the FINE-GRAINED voice stays where it lives: the `now`
+ * clause on the background, quoted verbatim by every introduction below.
+ */
+function _stance(archetype) {
+  const a = String(archetype || '');
+  if (['villain', 'mastermind', 'schemer'].includes(a)) return 'sharp';
+  if (['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']
+    .includes(a)) return 'warm';
+  if (['hothead', 'chaos-agent', 'wildcard'].includes(a)) return 'loud';
+  return 'measured';
+}
+
+// NOT ONE OF THESE OPENS ON "THE {car} CAR", and that is a correction rather
+// than a preference: the card is HEADED with the car, so a sentence that opens
+// on it renders as "The first car The first car unloads onto the flags". Found
+// by dumping the premiere and reading it.
+const _ARRIVE_GROUP = [
+  'It comes up the drive slowly, because the drive is gravel and nobody in it wants to be '
+  + 'the one who arrives badly.',
+  'Doors, and then the noise of {n} people deciding at exactly the same moment to be '
+  + 'delighted.',
+  'It stops short of the steps. Whoever is driving does not get out, and neither does '
+  + 'anybody else for a second and a half.',
+  'Bags onto the flags first, then the {n} of them, then a long pause while everybody '
+  + 'looks up at how much building there is.',
+  'Nobody in it says anything on the last hundred yards, and all {n} of them are talking '
+  + 'before the doors are shut.',
+  'Gravel, brake lights, and {n} people getting out into a silence none of them expected '
+  + 'to be this loud.',
+  'It arrives with the windows down and every one of the {n} of them looking straight up.',
+];
+const _ARRIVE_ONE = {
+  sharp: [
+    '{name} is out first and shakes every hand on the flags before the bags are down.',
+    '{name} takes the steps at a walk, counts the doors, and only then says hello to anybody.',
+    '{name} arrives asking questions that sound like small talk and are not.',
+    '{name} gets out, looks hard at who is already standing there, and files it.',
+    '{name} lets everybody else go up first and watches the order they choose to go in.',
+    '{name} is warm with the driver, warm with the door, and has not once stopped working '
+    + 'out who is worth knowing.',
+    '{name} says almost nothing on the flags and has still managed to be at the front of '
+    + 'the group by the time the doors open.',
+  ],
+  warm: [
+    '{name} is hugging somebody before the boot is open.',
+    '{name} gets out apologising for nothing at all and is instantly popular for it.',
+    '{name} learns four names on the flags and uses every one of them twice.',
+    '{name} carries somebody else’s case up the steps without being asked.',
+    '{name} finds the one person standing on their own and goes over.',
+    '{name} is laughing at the size of the building within about four seconds and takes '
+    + 'three other people with them.',
+    '{name} shakes hands with everybody in reach and means every one of them.',
+  ],
+  loud: [
+    '{name} is out of the car before it has properly stopped, talking already.',
+    '{name} announces the castle to the castle, loudly, and gets a laugh out of half the flags.',
+    '{name} arrives at volume and does not come down from it.',
+    '{name} drops a bag, swears, laughs about it, and has told three people the story by the steps.',
+    '{name} has an opinion about the drive, the gravel and the weather before reaching the steps.',
+    '{name} shouts a hello up at the windows, which do not answer, which {name} finds funny.',
+    '{name} arrives mid-sentence and nobody is entirely sure who the first half was for.',
+  ],
+  measured: [
+    '{name} gets out last, unhurried, and stands slightly apart from the rest of the car.',
+    '{name} says very little on the flags and watches everybody who does.',
+    '{name} shakes hands neatly, gives a name and an occupation, and stops there.',
+    '{name} is polite, brief and entirely unreadable, which nobody notices yet.',
+    '{name} puts a case down, looks at the building properly, and only then turns round '
+    + 'to the people.',
+    '{name} answers everything asked and volunteers nothing at all.',
+    '{name} counts the group on the flags without appearing to.',
+  ],
+};
+const _MEET_NEUTRAL = [
+  '{a} and {b} introduce themselves twice inside a minute, which is what happens on a drive '
+  + 'where nobody has anything to go on yet.',
+  '{a} asks {b} how the journey was. It is not a question about travel and both of them know it.',
+  '{b} laughs at something {a} says. Neither of them will remember what it was by the evening.',
+  '{a} and {b} end up carrying the same case up the steps and decide they get on.',
+];
+const _MEET_RECOGNISED = [
+  '{a} places {b} on the flags and says so out loud, which puts a number on {b} before '
+  + 'anybody has spoken to {b} properly.',
+  '{a} recognises {b} straight away. {b} takes it well and has just become the most '
+  + 'carefully watched person on the drive.',
+  '&ldquo;I know exactly who you are,&rdquo; {a} tells {b}, and the two people nearest them '
+  + 'both turn round.',
+  '{a} does not pretend not to know {b}, which is the more generous of the two options '
+  + 'and the more expensive one for {b}.',
+];
+const _MEET_SHARED = [
+  '&ldquo;{season},&rdquo; {a} says to {b}, and does not need to say anything else. They '
+  + 'played that one together.',
+  '{a} and {b} have done this before &mdash; {season} &mdash; and the handshake takes '
+  + 'slightly too long.',
+  '{b} sees {a} on the flags and stops. {season}. Everybody standing near them works out '
+  + 'that there is history without being told what it is.',
+  '{a} gets to {b} last, deliberately. &ldquo;{season}.&rdquo; {b} says, &ldquo;I remember.&rdquo;',
+];
+
+/**
+ * WHO WALKED IN, IN THE CARS THEY WALKED IN WITH.
+ *
+ * @param cast        the seating plan, in order
+ * @param backgrounds `gs.tr.backgrounds` — the FROZEN snapshot, never the database
+ * @param host        the CONFIGURED host key, or null. Never a name in prose.
+ */
+export function buildArrivalRecord(cast, backgrounds = {}, host = null) {
+  const line = [...(cast || [])].filter(Boolean);
+  if (!line.length) return null;
+  const bgOf = n => (backgrounds && backgrounds[n]) || null;
+  const seed = 'tr|arrival|' + line.length + '|' + (line[0] || '');
+  const used = new Set();
+
+  // ── the cars ────────────────────────────────────────────────────────
+  //
+  // Two to four a car, which is what a car holds, drawn off the hash so a
+  // season's drive is its own and a replay of it is the same drive.
+  const groups = [];
+  for (let i = 0, g = 0; i < line.length; g++) {
+    const size = Math.min(line.length - i, 2 + (_pHash(seed + '|car|' + g) % 3));
+    groups.push({
+      id: 'car-' + (g + 1),
+      order: g,
+      label: 'The ' + _carWord(g) + ' car',
+      arrivals: line.slice(i, i + size),
+      text: _pFill(_pPickUnique(_ARRIVE_GROUP, seed + '|grp|' + g, used),
+        { car: _carWord(g), n: String(size) }),
+    });
+    i += size;
+  }
+
+  // ── the people ──────────────────────────────────────────────────────
+  const introductions = [];
+  const recognitions = [];
+  for (const group of groups) {
+    for (const name of group.arrivals) {
+      const bg = bgOf(name);
+      const person = (players || []).find(p => p && p.name === name) || null;
+      const stance = _stance(person && person.archetype);
+      const lines = [];
+      // ESTABLISH: what this person physically did on the flags. Personality
+      // may pick the action; it may not add a fact.
+      lines.push({ kind: 'establish',
+        text: _pFill(_pPickUnique(_ARRIVE_ONE[stance], seed + '|one|' + name, used),
+          { name, car: _carWord(group.order) }) });
+      // RECORD: Task 1's authored billing, quoted rather than rebuilt. It is
+      // the only sentence on this record allowed to state a past, and it
+      // states one only where the ledger holds one.
+      if (bg && bg.summary) lines.push({ kind: 'record', text: bg.summary });
+      introductions.push({
+        name,
+        order: introductions.length,
+        group: group.id,
+        type: (bg && bg.type) || 'civilian',
+        recognized: !!(bg && bg.recognized),
+        sourceShows: [...((bg && bg.sourceShows) || [])],
+        appearances: ((bg && bg.appearances) || []).map(a => ({ ...a })),
+        lines,
+      });
+    }
+    // REACTION: how the car met each other. The pair is two arrivals standing
+    // next to each other, the claim is whatever the SNAPSHOT supports, and
+    // where it supports nothing the line claims nothing.
+    for (let i = 1; i < group.arrivals.length; i++) {
+      const a = group.arrivals[i - 1], b = group.arrivals[i];
+      const ba = bgOf(a), bb = bgOf(b);
+      const shared = ((ba && ba.appearances) || []).find(x =>
+        ((bb && bb.appearances) || []).some(y => y.format === x.format && y.season === x.season));
+      let text, basis;
+      if (shared) {
+        basis = 'both are recorded on ' + shared.seasonLabel;
+        text = _pFill(_pPickUnique(_MEET_SHARED, seed + '|shared|' + a + '|' + b, used),
+          { a, b, season: shared.seasonLabel });
+      } else if (bb && bb.recognized) {
+        basis = b + ' arrives recognised (' + bb.type + ')';
+        text = _pFill(_pPickUnique(_MEET_RECOGNISED, seed + '|rec|' + a + '|' + b, used),
+          { a, b });
+      } else {
+        basis = null;
+        text = _pFill(_pPickUnique(_MEET_NEUTRAL, seed + '|meet|' + a + '|' + b, used),
+          { a, b });
+      }
+      const intro = introductions.find(x => x.name === b);
+      if (intro) intro.lines.push({ kind: 'reaction', text });
+      if (basis) recognitions.push({ by: a, of: b, basis, text });
+    }
+  }
+
+  return {
+    ceremonyId: 'premiere-rules',
+    ep: 1,
+    // THE KEY, NOT THE LABEL. See the header note: a name written here is a
+    // name the setup screen can no longer change.
+    host: host || null,
+    groups,
+    introductions,
+    recognitions,
+    rules: _premiereRules(line.length),
+  };
+}
+
+/**
+ * THE BRIEFING, AS SPOKEN LINES.
+ *
+ * Every rule this format has, said out loud, in the order a night runs them —
+ * murder, mission, pot, shield, table, banishment, payout — before a single
+ * one of them has happened to anybody. `rulePoints` maps each rule to the beat
+ * that actually says it, so a screen or a test can ask "where was the shield
+ * explained?" and get an index rather than a search.
+ *
+ * NO COUNT IS STATED. How many of them there are is the season's first and
+ * best-kept secret, and the host does not give it away here; the Selection has
+ * its own configurable answer to that question.
+ */
+function _premiereRules(castSize) {
+  const hostBeats = [
+    { kind: 'welcome', visibility: 'all',
+      action: 'The host comes down the steps and stops with the whole drive in front of her.',
+      text: 'Welcome to the castle. There are ' + castSize + ' of you standing on these '
+        + 'flags and every one of you arrived here exactly the same way. That stops being '
+        + 'true in about ten minutes, so I would like you to hear the rules while you all '
+        + 'still trust each other.' },
+    { kind: 'rule', visibility: 'all', ruleId: 'faithfuls-and-traitors',
+      action: 'She waits for the drive to go quiet.',
+      text: 'Most of you will play this game as Faithfuls. Hidden among you, chosen by me '
+        + 'and known only to each other, will be Traitors.' },
+    { kind: 'rule', visibility: 'all', ruleId: 'traitors-murder',
+      action: 'She looks along the front of the group while she says it.',
+      text: 'Every night, while the rest of you are asleep, the Traitors will meet in '
+        + 'secret and choose one of you to murder. In the morning that person will simply '
+        + 'not come down to breakfast, and nobody is going to explain it to you.' },
+    { kind: 'rule', visibility: 'all', ruleId: 'missions-build-the-pot',
+      action: 'She turns and points back down the drive.',
+      text: 'Every day you will leave this castle and work for money. Each mission you '
+        + 'finish adds to the prize pot, and that pot is the only thing in this building '
+        + 'that belongs to all of you at once.' },
+    { kind: 'rule', visibility: 'all', ruleId: 'shield-blocks-a-murder',
+      action: 'She holds a hand up before anybody can look pleased about that.',
+      text: 'Some missions will put a shield on the table. Win one and you cannot be '
+        + 'murdered that night. Understand what else it does: everybody who watched you '
+        + 'take it now knows you are safe, and safe is a very interesting thing to be.' },
+    { kind: 'rule', visibility: 'all', ruleId: 'round-table-banishment',
+      action: 'She indicates the doors behind her.',
+      text: 'Every evening you will sit at the Round Table. You will make your accusations '
+        + 'to each other’s faces, and then each of you will write down one name. '
+        + 'Whoever the room names goes out by banishment, and tells you exactly what they '
+        + 'were on the way through that door.' },
+    { kind: 'rule', visibility: 'all', ruleId: 'endgame-payout',
+      action: 'She lets that sit.',
+      text: 'Banish every Traitor and the Faithfuls still standing split the prize pot '
+        + 'between them. Leave one Traitor at that last table and the Traitors take all of '
+        + 'it, and the rest of you go home with a very good story and nothing else.' },
+    { kind: 'charge', visibility: 'all',
+      action: 'She starts back up the steps.',
+      text: 'So there it is. Find them, or be one of them, and be trusted either way.' },
+    { kind: 'transition', visibility: 'all',
+      action: 'She stops at the top and turns round.',
+      text: 'One more thing, and then you can unpack. I need all of you in a line, facing '
+        + 'me, and I need you to stop looking at each other. That part of this is over.' },
+  ];
+  const rulePoints = hostBeats
+    .map((b, i) => (b.ruleId ? { id: b.ruleId, explainedByBeat: i } : null))
+    .filter(Boolean);
+  return {
+    staging: 'The whole cast on the courtyard flags at the top of the drive, luggage still '
+      + 'at their feet, the host on the steps above them with the doors shut behind her.',
+    hostBeats,
+    rulePoints,
+    // ONE REVEAL STEP PER ACTION, stored apart from the speech, because a
+    // ceremony that folds its staging into its narration cannot be re-cut.
+    revealBeats: [
+      { kind: 'gather', text: 'The cars are sent back down the drive empty.' },
+      { kind: 'briefing', text: 'The host reads the rules to the flags, start to finish, '
+        + 'without being interrupted once.' },
+      { kind: 'form-line', text: 'The bags are left where they are and the cast form one '
+        + 'rank across the front of the castle.' },
+    ],
+    reminder: 'Missions pay into the prize pot. The Round Table banishes one player a '
+      + 'night. The Traitors murder one after dark. Remove every Traitor and the Faithfuls '
+      + 'split the pot; leave one and the Traitors take it.',
+  };
+}
+
 function _recordEpisode(ep, { banished = null, night = null, mission = null,
-  castle = null, endgame = false, selection = null } = {}) {
+  castle = null, endgame = false, selection = null, arrival = null } = {}) {
   // THE DOOR, NOT JUST THE NAME. docs/ADDING-A-SHOW.md §5 gives `exits[]` a
   // `verb` and a `channel` and this row was writing neither, so every reader
   // of the episode history knew somebody had gone and not which of the show's
@@ -1009,6 +1493,14 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // same three names for the wrong reason and would keep giving them
       // after a recruitment, which is a different question with the same
       // answer for the first few nights.
+      // -- WHO WALKED IN, AND WHAT THEY WERE TOLD (Plan 9, Task 2) ---
+      //
+      // Episode one and no other, exactly as the selection is, and registered
+      // off this field rather than off an episode number. It sits ABOVE the
+      // selection on the record for the same reason its screen does: the cast
+      // are people before they are anything else, and a premiere that opens on
+      // the blindfolds is a premiere whose viewer has met nobody.
+      arrival: arrival || null,
       selection: selection || null,
       // -- WHO BELIEVES WHAT, AND HOW WRONG THEY ARE (Plan 8, Task 10) ---
       //
@@ -1052,7 +1544,8 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
  */
 export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds = 40,
   potCeiling = POT_CEILING, endgameSize = 3, evidence = ballotEvidence,
-  backgrounds = null, database = null } = {}) {
+  backgrounds = null, database = null, host = null,
+  announceTraitorCount = false } = {}) {
   const rng = rngFor(seed);
   // The narrative layer's OWN stream — see castleRngFor's doc comment for why
   // round budgets (and later, window draws) must never share the game rng.
@@ -1084,7 +1577,15 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // bit-identical to one played without.
   gs.tr.backgrounds = (backgrounds && typeof backgrounds === 'object' && !Array.isArray(backgrounds))
     ? backgrounds
-    : snapshotTraitorsBackgrounds(cast, database);
+    : snapshotTraitorsBackgrounds(
+      // THE WHOLE CAST ENTRY AND NOT THE NAME. `resolveTraitorsBackground`
+      // takes its personality clause off `p.archetype` and its occupation off
+      // `p.occupation`; handed a bare string it has neither, falls to the
+      // fallback voice, and bills every alumnus in the season with the same
+      // two clauses. Found by dumping a premiere and reading it, which is how
+      // every prose defect in ten plans has been found.
+      cast.map(n => (players || []).find(p => p && p.name === n) || { name: n }),
+      database);
   // THE TWO AUDIENCE LEDGERS, and the episode record they are read against.
   // `gs.episodeHistory` is what js/audience.js counts rounds off — it is the
   // one thing that module needs from a show and the one thing a headless
@@ -1104,7 +1605,15 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // three sanctioned `public` alignment writers (tests/tr-missions.test.js
   // names the closed set); this line stores no belief and creates no
   // certainty -- it records who was standing there when that one did.
-  const selection = _selectionRecord(1, cast, traitors);
+  const selection = _selectionRecord(1, cast, traitors,
+    { announceCount: !!announceTraitorCount });
+  // THE DRIVE, AND IT IS BUILT OFF THE SNAPSHOT RATHER THAN OFF THE DATABASE.
+  // `gs.tr.backgrounds` was frozen twenty lines above; re-resolving here would
+  // give a replayed season a different premiere every time somebody corrected a
+  // placement, which is the exact failure the snapshot exists to prevent. The
+  // host travels as the CONFIGURED KEY and is never named on the record.
+  const arrival = buildArrivalRecord(cast, gs.tr.backgrounds,
+    host || (seasonConfig && seasonConfig.host) || null);
 
   const log = [];
   let ep = 1;
@@ -1161,7 +1670,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   castle1.push(...runWindow('night', ep, castleRng));
   scoreMission(ep, mission1);
   _recordEpisode(ep, { banished: null, night: n1, mission: mission1, castle: castle1,
-    selection });
+    selection, arrival });
   log.push({ ep, banished: null, wasTraitor: null, ...n1, mission: mission1,
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
 

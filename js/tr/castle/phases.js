@@ -121,9 +121,31 @@ export function runCastlePhase(phase, ep, rng) {
  */
 export function castlePhaseRecord(scenes) {
   const byPhase = new Map(CASTLE_PHASE_ORDER.map(id => [id, []]));
+  // FALLBACK BUCKETS, KEYED BY WINDOW, FOR ANYTHING NOT IN `WINDOW_TO_PHASE`.
+  // Mirrors the guard the sibling `windows` list already carries in
+  // `_castleRecord` (js/tr/headless.js): "Anything the pool ever grows that
+  // is not one of the seven would otherwise vanish silently." Every window
+  // in `KNOWN_WINDOWS` maps to a phase today, so this is inert now — but
+  // Task 7 adds ~110 events, and an author registering a scene under a new
+  // window without also updating `WINDOW_TO_PHASE` must not have it
+  // disappear with nothing to show for it.
+  const overflow = new Map();
   for (const s of (scenes || [])) {
     const phaseId = WINDOW_TO_PHASE[s.window];
-    if (phaseId && byPhase.has(phaseId)) byPhase.get(phaseId).push(s);
+    if (phaseId && byPhase.has(phaseId)) {
+      byPhase.get(phaseId).push(s);
+      continue;
+    }
+    const key = s.window || '(unknown window)';
+    if (!overflow.has(key)) overflow.set(key, []);
+    overflow.get(key).push(s);
   }
-  return CASTLE_PHASE_ORDER.map(id => ({ id, label: _byId.get(id).label, scenes: byPhase.get(id) }));
+  const known = CASTLE_PHASE_ORDER.map(id => ({ id, label: _byId.get(id).label, scenes: byPhase.get(id) }));
+  // Appended AFTER the six known phases, never in place of one — a caller
+  // asserting the exact six ids on a normal day sees no difference, and a
+  // caller that walks the whole array still finds the orphaned scenes rather
+  // than losing them.
+  const unmapped = [...overflow.entries()].map(([window, sc]) =>
+    ({ id: `unmapped:${window}`, label: `Unmapped window: ${window}`, scenes: sc }));
+  return [...known, ...unmapped];
 }

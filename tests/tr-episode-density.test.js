@@ -21,7 +21,7 @@
 import { describe, expect, it } from 'vitest';
 import { gs, setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
-import { CASTLE_PHASE_BUDGETS, CASTLE_PHASE_ORDER } from '../js/tr/castle/phases.js';
+import { CASTLE_PHASE_BUDGETS, CASTLE_PHASE_ORDER, castlePhaseRecord } from '../js/tr/castle/phases.js';
 import roster from '../franchise_roster.json';
 
 // Side-effect imports: the real event pool, exactly as tr-castle.test.js
@@ -52,6 +52,40 @@ function tableRows(castSize, seed) {
   return (gs.episodeHistory || []).filter(r => r.num > 1 && r.tr?.castle?.phases);
 }
 
+describe('castlePhaseRecord: no silent scene loss on an unmapped window', () => {
+  // Fix round 1, Important finding 1: `castlePhaseRecord` used to drop any
+  // scene whose `.window` wasn't in `WINDOW_TO_PHASE`, with no fallback and
+  // no signal — the exact silent-data-loss class the sibling `windows` list
+  // in `_castleRecord` (js/tr/headless.js) already guards, with a comment
+  // saying so. Harmless today (all seven `KNOWN_WINDOWS` map to a phase),
+  // but Task 7 adds ~110 events and a new window tag introduced there
+  // without a matching `WINDOW_TO_PHASE` entry must not vanish quietly.
+  it('a scene under a real, mapped window lands in exactly one known phase', () => {
+    const scenes = [{ window: 'evening', eventId: 'x' }];
+    const phases = castlePhaseRecord(scenes);
+    expect(phases.map(p => p.id)).toEqual(CASTLE_PHASE_ORDER);
+    const withIt = phases.filter(p => p.scenes.includes(scenes[0]));
+    expect(withIt.map(p => p.id)).toEqual(['private-strategy']);
+  });
+
+  it('a scene under an UNMAPPED window is preserved, not dropped', () => {
+    const orphan = { window: 'some-future-window', eventId: 'y' };
+    const scenes = [{ window: 'dawn', eventId: 'x' }, orphan];
+    const phases = castlePhaseRecord(scenes);
+    // The six known phases are unchanged in id, order and count...
+    expect(phases.slice(0, CASTLE_PHASE_ORDER.length).map(p => p.id)).toEqual(CASTLE_PHASE_ORDER);
+    // ...and the orphaned scene is findable SOMEWHERE in the record, not lost.
+    const allScenes = phases.flatMap(p => p.scenes);
+    expect(allScenes).toContain(orphan);
+    // It must not have been silently folded into one of the six known
+    // phases either — that would hide the bug just as effectively as
+    // dropping it outright.
+    for (const known of phases.slice(0, CASTLE_PHASE_ORDER.length)) {
+      expect(known.scenes).not.toContain(orphan);
+    }
+  });
+});
+
 describe('phase budgets: arithmetic sanity', () => {
   it('the six phases are exactly the brief\'s ids, in the brief\'s order', () => {
     expect(CASTLE_PHASE_ORDER).toEqual(['breakfast-fallout', 'morning-life',
@@ -79,10 +113,24 @@ describe('measured scene counts (a standard 18-person episode)', () => {
   // unspent in the thin windows. See task-5-report.md for the full
   // arithmetic and why this is Task 7's gap to close, not a Task 5 retune.
   //
-  // What IS asserted: the mechanism reaches a full >=25-scene day SOMEWHERE
-  // in this scan — proof the phase-budget scheduler itself is not the
-  // limiting factor — without claiming every episode does.
-  it('the schedule reaches a 25-scene day somewhere in the scan', () => {
+  // What IS asserted, precisely: across the WHOLE scan below (14 seeds x 3
+  // cast sizes, n=112+ table episodes) the fired count touched >=25 exactly
+  // ONCE. That is a single boundary-exact hit, not a comfortable margin —
+  // fix round 1 corrected earlier wording ("demonstrably capable") that
+  // overstated this as proof of reliable capability. The honest claim this
+  // assertion makes is narrower: the scheduler is not STRUCTURALLY incapable
+  // of a 25-scene day, so a red result here means something changed, not
+  // that the ceiling was always out of reach.
+  //
+  // RE-BASELINING, NOT REGRESSION, IS THE FIRST HYPOTHESIS. Because the one
+  // passing sample sits exactly on the boundary, this arm is sensitive to
+  // Task 7 harmlessly adding even one or two events to a thin window
+  // (`journey-back` at 6, `night` at 7) and nudging that single case either
+  // side of 25. Whoever lands Task 7 should expect this test to need
+  // re-baselining as the library grows — a red result here should be
+  // investigated as "did the boundary case move" before being treated as a
+  // regression.
+  it('the schedule touches a 25-scene day at least once in the scan', () => {
     let sawFullDay = false;
     for (const seed of SEEDS) {
       for (const row of tableRows(18, seed)) {
@@ -90,9 +138,12 @@ describe('measured scene counts (a standard 18-person episode)', () => {
         if (total >= 25) sawFullDay = true;
       }
     }
-    expect(sawFullDay, 'no episode in this scan reached a 25-scene day at all — '
-      + 'that would mean the phase-budget mechanism itself is broken, not just '
-      + 'pool-limited').toBe(true);
+    expect(sawFullDay, 'not one episode in this scan touched a 25-scene day — '
+      + 'that would mean the phase-budget scheduler itself is structurally '
+      + 'incapable of it, not just pool-limited (see the header comment above: '
+      + 'the passing case is a single boundary-exact hit, and this arm is '
+      + 'expected to need re-baselining as Task 7 changes the pool)')
+      .toBe(true);
   });
 
   it('reports the measured min/mean/max scene count across seeds and cast sizes', () => {

@@ -1776,10 +1776,18 @@ describe('the Castle Day is scheduled in six chronological phases', () => {
     // pool, not a Task 5 retune.
     //
     // What IS asserted, over every representative seed: EVERY table episode
-    // of EVERY season is chronologically correct (all six phases, in order),
-    // and across the full scan the mechanism is DEMONSTRABLY CAPABLE of a
-    // >=25-scene day once the pool cooperates — at least one episode,
-    // somewhere in the scan, actually reaches it.
+    // of EVERY season is chronologically correct (all six phases, in order).
+    // For the count: across this whole scan the mechanism touched a
+    // 25-scene day exactly ONCE (seed 3, episode 4 — a single boundary-exact
+    // hit, not a comfortable margin). That is deliberately the weakest claim
+    // this test makes — not "capable of 25 reliably," just "has reached 25
+    // at least once, so the scheduler itself is not structurally incapable
+    // of it." Fix round 1 corrected this wording after review found the
+    // original "demonstrably capable" language overstated a single knife-edge
+    // sample. See task-5-report.md's fix-round-1 note: this assertion is
+    // EXPECTED to need re-baselining once Task 7 changes the pool — a red
+    // result here should first be checked as a possible re-baseline, not
+    // assumed to be a regression.
     let sawFullDay = false;
     for (const seed of SEEDS) {
       for (const ep of tableRowsFor(seed)) {
@@ -1789,9 +1797,11 @@ describe('the Castle Day is scheduled in six chronological phases', () => {
         if (total >= 25) sawFullDay = true;
       }
     }
-    expect(sawFullDay, 'no episode in any representative seed reached a '
-      + '25-scene day at all — that would mean the phase-budget mechanism '
-      + 'itself is broken, not just pool-limited').toBe(true);
+    expect(sawFullDay, 'not one episode in any representative seed touched a '
+      + '25-scene day — that would mean the phase-budget scheduler itself is '
+      + 'broken, not just pool-limited (see the header comment above: this '
+      + 'is a single boundary-exact hit, not a margin, and is expected to '
+      + 'need re-baselining as Task 7 changes the pool)').toBe(true);
   });
 
   it('every phase carries its own label and a scenes array, even when empty', () => {

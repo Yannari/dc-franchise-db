@@ -238,6 +238,118 @@ For each complete event, tests must prove:
 8. No branch produces identical normalized text under every declared axis.
 
 Use seeded fixtures that force each declared branch. An axis with no test demonstrating a changed scene is decorative metadata and must be removed or implemented.
+## Full ceremony and host-speech contract
+
+A major ceremony is a staged scene, not an informational paragraph. On its first appearance, the saved episode record must carry the complete host speech, physical staging, pauses, contestant reactions, observer-safe reveal steps, and the transition into the action. Later appearances may use a concise reminder unless a rule changes.
+
+Every first-use ceremony record contains:
+
+```js
+{
+  ceremonyId,
+  staging,
+  hostBeats: [{ kind, text, action, visibility }],
+  contestantBeats: [{ kind, text, participants, visibility }],
+  rulePoints: [{ id, explainedByBeat }],
+  revealBeats,
+  reminder,
+}
+```
+
+Required ceremonies include the premiere rules, Selection, every mission briefing, first Round Table, first conclave visible to entitled observers, recruitment, ultimatum, blocked murder, shield or special power, tie/revote, and endgame.
+
+### Selection reference scene
+
+This is the quality and completeness floor. Adapt the configured host's voice, cast size, Traitor count, observer and staging; do not reduce it to one card or copy the exact wording into every season.
+
+```text
+THE SELECTION
+
+The cast stands in a line outside the castle. Their blindfolds are secured. The host waits until the courtyard is completely silent.
+
+“In a moment, I will walk behind each of you.”
+
+The host steps away. Footsteps begin moving slowly along the line.
+
+“If you feel my hand touch your shoulder, you have been chosen as a Traitor.”
+
+Nobody moves.
+
+“You will lie to the people standing beside you. You will earn their trust, sit beside them at breakfast, and help decide who should be banished.”
+
+The footsteps stop behind one contestant, then continue.
+
+“Each night, you will meet in secret and choose one Faithful to murder.”
+
+The host turns at the end of the line.
+
+“If you do not feel my touch, you are a Faithful. Your task is simple to explain—and considerably harder to achieve.”
+
+The host begins the return walk.
+
+“Find the Traitors. Banish every one of them before they take control of the game.”
+
+A hand settles on the first chosen shoulder.
+
+“Do not speak. Do not react. Nobody beside you can know what just happened.”
+
+The host moves to the next chosen player.
+
+“From this moment on, every friendship may be real, every accusation may be useful, and every promise may be a lie.”
+
+After the final tap, the host returns to the front of the line.
+
+“When I tell you to remove your blindfolds, look at the people around you carefully. Some of them have just been given a reason to deceive you.”
+
+A pause.
+
+“Remove your blindfolds.”
+```
+
+The next beats depend on the observer:
+
+- **Audience:** sees every named shoulder tap, the chosen players' controlled reactions, and the first turret meeting.
+- **Tapped contestant:** experiences their own tap, hears the other footsteps without names, then learns the other Traitors in the turret.
+- **Untapped contestant:** hears footsteps, stops and pauses but sees no tap identity and receives no turret scene.
+
+The host may refer to the chosen count only when the format configuration makes that count public. Do not leak it merely because the audience record knows it.
+
+### Theatrical writing requirements
+
+- Put rules inside complete spoken lines rather than labels or summaries.
+- Show the host moving through the physical space.
+- Use silence, pauses, footsteps, props, doors, envelopes, fire, shields, or ballots when the ceremony actually has them.
+- Let tension come from delayed information, not vague adjectives such as “dramatic” or “ominous.”
+- Store one reveal beat per meaningful action; do not place the entire speech in one oversized card.
+- The host explains what contestants must do, what failure means, what can be won or lost, and what happens next.
+- Reactions occur only after the stimulus each contestant witnessed.
+- Use the configured host's vocabulary and cadence while keeping rules identical in meaning.
+
+Forbidden shortcuts:
+
+```text
+The host explains how the Selection works.
+The Traitors are chosen.
+Everyone removes their blindfolds.
+```
+
+```text
+The host gives a dramatic speech about trust and betrayal.
+```
+
+Those sentences describe production work instead of performing it for the reader.
+
+### Ceremony tests
+
+For every first-use ceremony, tests must prove:
+
+1. Every required rule point maps to a specific host beat.
+2. The host speech appears before the action governed by it.
+3. Staging actions and reveal steps are stored separately from narration summaries.
+4. Audience, tapped-player and untapped-player Selection views expose the correct information.
+5. The first ceremony is complete; recurring reminders are shorter.
+6. A changed rule forces a new full explanation.
+7. No host name or show vocabulary is hardcoded outside the registry/configuration path.
 
 ---
 
@@ -349,6 +461,17 @@ it('introduces every contestant before the Selection', () => {
     expect(prose.toLowerCase()).toContain(phrase.toLowerCase());
   }
 });
+
+it('stages the complete Selection before revealing a role', () => {
+  const selection = firstEpisode.tr.selection;
+  expect(selection.hostBeats.length).toBeGreaterThanOrEqual(8);
+  for (const rule of ['tap-means-traitor','traitors-murder','faithfuls-banish','do-not-react']) {
+    expect(selection.rulePoints.some(point => point.id === rule && Number.isInteger(point.explainedByBeat))).toBe(true);
+  }
+  expect(selection.hostBeats.findIndex(beat => /feel my .*shoulder/i.test(beat.text)))
+    .toBeLessThan(selection.revealBeats.findIndex(beat => beat.kind === 'tap'));
+  expect(selection.reminder.length).toBeLessThan(selection.hostBeats.map(beat => beat.text).join(' ').length);
+});
 ```
 
 - [ ] **Step 2: Run the test and confirm RED**
@@ -361,7 +484,10 @@ Expected: FAIL because `tr-arrival` is absent.
 Good alumni introduction:
 
 ```text
-The next car brings Julia, fourth on Total Drama 2. Gabby recognizes the careful smile before Julia reaches the steps: they have played together before, and neither remembers that season as unfinished friendship. Julia greets her warmly anyway. “New castle,” she says. “Clean slate.” Gabby does not answer quickly enough for it to sound true.
+The next car brings Julia, fourth on Total Drama 2. Gabby's smile drops as soon
+as Julia steps out. They played together before, and it did not end well. Julia
+hugs her anyway. “We're good now, right?” Gabby laughs. “Sure. Let's go with
+that.”
 ```
 
 Good host rule explanation:

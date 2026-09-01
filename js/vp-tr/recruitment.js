@@ -33,7 +33,7 @@
 //   THE HOST IS NOT IN THE ROOM. Four screens open on a host band; this one
 //   has exactly one host line and it is the LAST thing on the screen, after
 //   the answer, addressed to the audience about a scene the host was not at.
-//   Opening on him would put a third person in a corridor that has two.
+//   Opening on the host would put a third person in a corridor that has two.
 //
 // AND THE MECHANIC THE WHOLE SCREEN EXISTS TO DRAW (spec 6.6). There are two
 // ways to make the offer and they differ MECHANICALLY, not in flavour:
@@ -604,7 +604,7 @@ const NT_CSS = `
 .nt-sum-v{font-family:var(--nt-display);font-weight:900;font-size:20px;color:#e9eef6}
 .nt-sum-v[data-tone="wax"]{color:var(--nt-wax-hot)}
 
-/* ── HOST BAND — one, at the very end, and he was not in the corridor ── */
+/* ── HOST BAND — one, at the very end, and the host was not in the corridor ── */
 .nt-host{
   position:relative;overflow:hidden;
   display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;
@@ -688,7 +688,7 @@ const NT_CSS = `
 //
 // EVERY POOL BELOW IS SPLIT BY MODE, and that is the discipline this screen
 // needs most: a note and an ultimatum are different events, and a shared pool
-// with a name swapped into it is exactly how "they had seen his face" ends up
+// with a name swapped into it is exactly how "they had seen that face" ends up
 // printed over an anonymous sheet of paper pushed under a door. The pools
 // cannot contradict the record because the record chooses which pool exists.
 
@@ -1042,7 +1042,7 @@ function _buildBeats(v) {
     'Afterwards', v.executed ? 'hush' : 'threshold',
     '<p>' + _esc(_fill(_pick(AFTER[outcome], key + '|after'), { who: v.target })) + '</p>'
     + _sums(sums)
-    // THE ONE HOST LINE, and it is the LAST thing on the screen. He was not
+    // THE ONE HOST LINE, and it is the LAST thing on the screen. The host was not
     // in the corridor -- four screens open on a host band and this one is
     // deliberately not one of them.
     + _hostBand(_esc(_pick(HOST_CLOSE[outcome], key + '|host')))),

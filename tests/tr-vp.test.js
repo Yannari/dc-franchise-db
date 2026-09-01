@@ -6973,3 +6973,230 @@ describe('the premiere is retranscribed into the text backlog', () => {
     expect(checked).toBe(PREMIERES.length);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// THE HOST IS NOT A WOMAN, AND IS NOT A MAN (Plan 9, Task 2 round 1)
+// ══════════════════════════════════════════════════════════════════════
+//
+// `HOSTS_BY_FORMAT.traitors` holds two women and a man and `renderHostOptions()`
+// swaps them at runtime, so a third of playable configurations get whichever
+// pronoun the prose assumed. Task 2 shipped eleven feminine staging lines into
+// js/tr/headless.js while js/vp-tr/selection.js was already narrating the same
+// host as "he" one screen later — so a single premiere called one person "she"
+// nine times on the arrival and "he" a few cards into the Selection.
+//
+// The rule for the rest of this plan is that TRAITORS HOST PROSE IS
+// GENDER-NEUTRAL, and it is a rule rather than an interim because a guard
+// cannot go stale when a fourth host is added, whereas per-host pronoun
+// metadata has to be maintained by whoever adds one.
+//
+// TWO ARMS, because they fail in different places. The literal scan catches a
+// pool no seed reaches — which is where the last one hid, three of the eleven
+// being on beats a one-Traitor season never renders. The render arm catches
+// what a word list cannot: prose that is neutral word-by-word and still
+// assumes a host, and any future path that bakes a name or a face in.
+describe('no host prose assumes which host is on', () => {
+  // Every file that writes or describes a Traitors host line. `js/tr/` is on
+  // it because Plan 9 moved the host's whole speech onto the RECORD, which is
+  // engine code — the guard has to follow the prose.
+  const HOST_PROSE = ['js/vp-tr/conclave.js', 'js/vp-tr/style.js', 'js/vp-tr/scenery.js',
+    'js/vp-tr/round-table.js', 'js/vp-tr/cold-open.js', 'js/vp-tr/house-status.js',
+    'js/vp-tr/mission.js', 'js/vp-tr/recruitment.js', 'js/vp-tr/endgame.js',
+    'js/vp-tr/selection.js', 'js/vp-tr/arrival.js', 'js/tr/headless.js', 'js/tr/state.js'];
+  const GENDERED = /\b(she|her|hers|herself|he|him|his|himself)\b/i;
+
+  it('no source file writes a gendered pronoun into host prose', () => {
+    // COMMENTS ARE STRIPPED, on the same reasoning the host-name scan above
+    // gives: a file has to be able to explain in prose what it is forbidding,
+    // and js/quick-setup.js's traitors list quotes the exact phrasing that
+    // seeded this defect. What is scanned is what can be RENDERED.
+    let scanned = 0, chars = 0;
+    for (const f of HOST_PROSE) {
+      const src = readFileSync(new URL('../' + f, import.meta.url), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+      expect(src.length, `${f} stripped to nothing — this scan is reading no code`)
+        .toBeGreaterThan(400);
+      const hits = [...src.matchAll(new RegExp(GENDERED.source, 'gi'))]
+        .map(m => src.slice(Math.max(0, m.index - 60), m.index + 60).replace(/\s+/g, ' '));
+      expect(hits, `${f} writes a gendered pronoun into prose the host may speak: `
+        + hits.join(' || ')).toEqual([]);
+      scanned++;
+      chars += src.length;
+    }
+    expect(scanned).toBe(HOST_PROSE.length);
+    expect(chars, 'the scan read almost nothing').toBeGreaterThan(200000);
+    // GUARD ON THE GUARD. Every assertion above is negative, so a matcher that
+    // cannot match makes the lot of them pass for free — the '\b'-is-U+0008
+    // trap this file has already shipped once, in the other direction.
+    expect(GENDERED.test('She waits for the drive to go quiet.')).toBe(true);
+    expect(GENDERED.test('He walks the line.')).toBe(true);
+    expect(GENDERED.test('The host waits for the drive to go quiet.')).toBe(false);
+    // ...and it does not fire on words that merely contain one.
+    for (const ok of ['shed', 'usher', 'theme', 'this', 'history', 'shell']) {
+      expect(GENDERED.test(ok), `the matcher fires on "${ok}"`).toBe(false);
+    }
+  });
+
+  it('and the premiere renders identically whichever host is configured', () => {
+    // THE ARM A WORD LIST CANNOT DO. Swap the host on the record and the two
+    // premiere screens must differ by the NAME AND THE FACE and by nothing
+    // else: no pronoun, no register, no beat that only makes sense for one of
+    // them. It also catches a name or a slug baked in anywhere, which is the
+    // failure the host-name scan only catches at the source.
+    const hosts = HOSTS_BY_FORMAT.traitors;
+    expect(hosts.length, 'this format has one host — the comparison is vacuous')
+      .toBeGreaterThan(2);
+    const base = RUNS[0].episodes[0];
+    // ONE KEY FOR ALL THREE, and it is load-bearing. The scenery layers seed
+    // their field rng off the episode number (`_mid(epNum + '|' + n)`), so
+    // renumbering each host's row to a fresh key moved the length of the
+    // shadows on the gravel and the arm failed on its own fixture rather than
+    // on the prose. Reusing one key is safe here because every render below
+    // reveals to the end before it is read.
+    const KEY = -401;
+    // THE FOUR THINGS THAT MOVE FOR REASONS THAT ARE NOT THE HOST'S GENDER:
+    // the name, the avatar file, the initials glyph inside the avatar, and the
+    // SVG gradient ids, which come off a module counter that increments on
+    // every icon drawn anywhere. Normalising them is what makes the rest of
+    // the page comparable at all; the vacuity check below proves it does not
+    // normalise the host away entirely.
+    const shape = (page, h) => page
+      .split(h.label).join('{HOST}')
+      .split(String(h.value).toLowerCase().replace(/[^a-z0-9]+/g, '-')).join('{SLUG}')
+      .replace(/<span class="cv-av-ini"[^>]*>[\s\S]*?<\/span>/g, '{INI}')
+      .replace(/(sd|sp)x\d+/g, '$1{UID}')
+      .replace(/cvClk\d+/g, 'cvClk{UID}')
+      // the reveal handlers carry the renumbered key, which is not the host
+      .replace(/,-\d+\)/g, ',{KEY})');
+    const shapes = hosts.map(h => {
+      const row = { ...base, num: KEY,
+        tr: { ...base.tr, arrival: { ...base.tr.arrival, host: h.value } } };
+      return shape(arrivalRevealed(row, 'audience') + selectionRevealed(row, 'audience'), h);
+    });
+    for (let i = 1; i < shapes.length; i++) {
+      // THE FAILURE NAMES THE SENTENCE. A boolean here would report only that
+      // two 60KB pages differ, which is the least useful thing it could say.
+      let at = 0;
+      while (at < shapes[i].length && shapes[i][at] === shapes[0][at]) at++;
+      const near = x => JSON.stringify(x.slice(Math.max(0, at - 90), at + 110));
+      expect(shapes[i] === shapes[0],
+        `the premiere renders differently for ${hosts[i].label} than for ${hosts[0].label}`
+        + ' — something on it is written for one particular host. '
+        + `${hosts[0].label}: ${near(shapes[0])} / ${hosts[i].label}: ${near(shapes[i])}`)
+        .toBe(true);
+    }
+    // AND THE COMPARISON IS NOT VACUOUS. Two ways it could pass for free: the
+    // record key never reaches the screen (so nothing ever differs), or the
+    // normaliser above eats so much that two different pages look the same.
+    // Both are checked, because this is the arm that is supposed to catch the
+    // thing the word list cannot.
+    const raws = hosts.map(h => {
+      const row = { ...base, num: KEY,
+        tr: { ...base.tr, arrival: { ...base.tr.arrival, host: h.value } } };
+      return arrivalRevealed(row, 'audience');
+    });
+    expect(raws[0] === raws[1], 'swapping the host changed nothing at all — the record key '
+      + 'is not reaching the screen').toBe(false);
+    expect(shape(raws[0], hosts[0]).indexOf('{HOST}'),
+      'the normaliser found no host name to replace').toBeGreaterThan(-1);
+    // A page with one word genuinely changed must NOT normalise to the same
+    // shape, or every assertion above passes on a stripper rather than on the
+    // prose.
+    expect(shape(raws[0].replace('The arrival register', 'The register of arrivals'), hosts[0])
+      === shape(raws[0], hosts[0]),
+      'the normaliser swallowed a real difference').toBe(false);
+  });
+});
+
+// ── GUARD: ONE HOST RULE, NOT TWO ─────────────────────────────────────
+describe('both premiere screens name the same host', () => {
+  it('a replay reads the host off the record, not off whatever setup now says', () => {
+    const hosts = HOSTS_BY_FORMAT.traitors;
+    const played = hosts[1], nowConfigured = hosts[2];
+    expect(played.value).not.toBe(nowConfigured.value);
+    const before = seasonConfig.host;
+    try {
+      // Play a season presented by one host...
+      setPlayers(ROSTER);
+      seasonConfig.host = played.value;
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 21 });
+      const ep = { ...gs.episodeHistory[0], num: -510 };
+      expect(ep.tr.arrival.host, 'the season did not record which host presented it')
+        .toBe(played.value);
+      // ...then change the setup screen for the NEXT one and replay this one.
+      seasonConfig.host = nowConfigured.value;
+      const arrival = strip(arrivalRevealed(ep, 'audience'));
+      const selection = strip(selectionRevealed(ep, 'audience'));
+      for (const [what, said] of [['arrival', arrival], ['selection', selection]]) {
+        expect(said, `the ${what} forgot who presented this season`).toContain(played.label);
+        expect(said, `the ${what} re-resolved and printed the host of a season that has `
+          + 'not been played yet').not.toContain(nowConfigured.label);
+      }
+      // AND THE TWO SCREENS AGREE, which is the defect this closes: they read
+      // the host from two different places and disagreed the moment one of
+      // them learned about the record.
+      expect(arrival.includes(played.label) && selection.includes(played.label)).toBe(true);
+    } finally {
+      seasonConfig.host = before;
+    }
+  });
+
+  it('and a row written before the host was recorded still draws one', () => {
+    // The fallback half of the rule. A season saved by an earlier build has no
+    // key on it; a screen that answered "nobody" would render a nameless band.
+    const base = RUNS[0].episodes[0];
+    const legacy = { ...base, num: -520,
+      tr: { ...base.tr, arrival: { ...base.tr.arrival, host: null } } };
+    const before = seasonConfig.host;
+    try {
+      seasonConfig.host = HOSTS_BY_FORMAT.traitors[2].value;
+      const said = strip(arrivalRevealed(legacy, 'audience'));
+      expect(said, 'a record with no host key rendered no host')
+        .toContain(HOSTS_BY_FORMAT.traitors[2].label);
+    } finally {
+      seasonConfig.host = before;
+    }
+  });
+});
+
+// ── GUARD: NINE RULES LAND ON TWENTY PEOPLE AND SOMEBODY REACTS ───────
+describe('the briefing is a scene and not an announcement', () => {
+  it('every reaction is pinned to the line that caused it, and reaches the page', () => {
+    let pinned = 0;
+    for (const { ep } of PREMIERES) {
+      const rules = ep.tr.arrival.rules;
+      expect(rules.contestantBeats.length,
+        'nine rules landed on the whole cast and nobody reacted to any of them')
+        .toBeGreaterThanOrEqual(3);
+      const said = strip(arrivalRevealed(ep, 'audience'));
+      for (const b of rules.contestantBeats) {
+        // A REACTION TO NOTHING IS NOT A REACTION. The pin has to name a beat
+        // that exists, and the beat has to come first.
+        expect(Number.isInteger(b.afterHostBeat),
+          'a reaction floats free of the line that caused it').toBe(true);
+        expect(rules.hostBeats[b.afterHostBeat],
+          `a reaction is pinned to beat ${b.afterHostBeat}, which is not there`).toBeTruthy();
+        const needle = b.text.replace(/[‘’]/g, "'").replace(/\s+/g, ' ').slice(0, 44);
+        const flat = said.replace(/[‘’]/g, "'").replace(/\s+/g, ' ');
+        expect(flat, `a recorded reaction never reached the screen: "${needle}"`)
+          .toContain(needle);
+        // AND IT IS DRAWN AFTER ITS STIMULUS, not somewhere else on the page.
+        const stim = rules.hostBeats[b.afterHostBeat].text.replace(/[‘’]/g, "'")
+          .replace(/\s+/g, ' ').slice(0, 40);
+        expect(flat.indexOf(needle),
+          'a reaction is printed before the line it is reacting to')
+          .toBeGreaterThan(flat.indexOf(stim));
+        pinned++;
+      }
+      // NAME-FREE, exactly as the Selection's are: nothing has happened to
+      // anybody in particular yet, so a named reaction would be invented.
+      const flat = rules.contestantBeats.map(b => b.text).join(' ');
+      for (const name of ep.tr.cast) {
+        expect(mentions(flat, name),
+          `the briefing records ${name} reacting, with no record that they did`).toBe(false);
+      }
+    }
+    expect(pinned, 'no reaction was examined').toBeGreaterThan(9);
+  });
+});

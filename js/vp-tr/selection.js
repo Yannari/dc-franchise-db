@@ -58,8 +58,7 @@
 // all and cannot reach the knowledge layer. The certainty on the page is
 // certainty the engine already granted.
 import { seasonConfig, players } from '../core.js';
-import { HOSTS_BY_FORMAT } from '../quick-setup.js';
-import { PORTRAIT_CSS, TR_NAV_TOP, TR_STICKY_TOP } from './style.js';
+import { PORTRAIT_CSS, TR_NAV_TOP, TR_STICKY_TOP, trHost } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
@@ -125,13 +124,13 @@ const _ord = n => ['first', 'second', 'third', 'fourth', 'fifth'][n] || (n + 1) 
 const _Word = n => { const w = _word(n); return w.charAt(0).toUpperCase() + w.slice(1); };
 
 // ── the host ──────────────────────────────────────────────────────────
-function _host() {
-  const list = HOSTS_BY_FORMAT[TR] || [];
-  const want = seasonConfig && seasonConfig.host;
-  const hit = list.find(h => h.value === want) || list[0]
-    || { value: 'host', label: 'Your host' };
-  return { name: hit.label, slug: String(hit.value).toLowerCase().replace(/[^a-z0-9]+/g, '-') };
-}
+//
+// `trHost` lives in js/vp-tr/style.js and BOTH premiere screens call it. This
+// file used to read `seasonConfig` live with no record fallback while
+// js/vp-tr/arrival.js preferred the frozen key, so changing the host in setup
+// and replaying episode one printed two different names on two consecutive
+// screens of the same evening. One rule, one copy, written down where the
+// shared offsets are.
 
 // ── faces ─────────────────────────────────────────────────────────────
 function _slugOf(name) {
@@ -147,8 +146,8 @@ function _av(name, size) {
 function _avLit(name, size, tone) {
   return _portrait(_slugOf(name), name, size || 34, { lit: true, tone: tone || null });
 }
-function _hostAv(size, lit) {
-  const h = _host();
+function _hostAv(host, size, lit) {
+  const h = host || trHost(null);
   return _portrait(h.slug, h.name, size || 46, lit ? { lit: true } : undefined);
 }
 
@@ -711,7 +710,7 @@ const TP_CSS = `
 }
 @keyframes tp-land{0%{transform:translate(-50%,-16px);opacity:0}100%{transform:translate(-50%,0);opacity:1}}
 /* THE HOST'S POSITION. A caret under the rank that walks along it — drawn for
-   the audience only, because where he had got to is a thing you can only know
+   the audience only, because where the host had got to is something you can only know
    with your eyes open. */
 .tp-walker{
   position:relative;height:16px;margin-top:5px;
@@ -961,8 +960,8 @@ const WALK = [
   + 'expect them to and they do not stop where you want them to.',
   'The only sound on the whole drive is one set of shoes moving from one end of the rank to '
   + 'the other, at a pace chosen entirely to be unbearable.',
-  'He walks the line the way somebody walks a line when the whole point is that everybody '
-  + 'can hear exactly where he is and nobody can see it.',
+  'The host walks the line the way somebody walks a line when the whole point is that '
+  + 'everybody can hear exactly where the footsteps are and nobody can see them.',
   'Behind them, the footsteps. Everybody in the rank is doing the same arithmetic about how '
   + 'close they are and everybody is getting it wrong.',
 ];
@@ -1104,9 +1103,10 @@ function _card(title, label, ic, inner, tone) {
     + (title ? '<h3 class="tp-h">' + _esc(title) + '</h3>' : '')
     + inner + '</div>';
 }
-function _hostBand(line, lit) {
-  return '<div class="tp-host">' + _hostAv(52, lit)
-    + '<div><div class="tp-host-name">' + _ic('drive', 12) + _esc(_host().name) + '</div>'
+function _hostBand(host, line, lit) {
+  return '<div class="tp-host">' + _hostAv(host, 52, lit)
+    + '<div><div class="tp-host-name">' + _ic('drive', 12)
+    + _esc((host || trHost(null)).name) + '</div>'
     + '<div class="tp-host-line">&ldquo;' + line + '&rdquo;</div></div></div>';
 }
 function _sums(bits) {
@@ -1219,6 +1219,9 @@ function _view(ep, observer) {
     // RECORD, never off the episode number.
     afterBriefing: !!(ep && ep.tr && ep.tr.arrival
       && Array.isArray(ep.tr.arrival.introductions) && ep.tr.arrival.introductions.length),
+    // The host, resolved ONCE per render and carried on the view, because the
+    // resolution now reads the record and the record is only reachable here.
+    host: trHost(ep),
     staging: s.staging || '',
     hostBeats: (s.hostBeats || []).map(b => ({ ...b })),
     contestantBeats: (s.contestantBeats || []).map(b => ({ ...b })),
@@ -1260,7 +1263,7 @@ function _pushCeremony(v, group, phase, push) {
     const last = i === spoken.length - 1;
     push(phase, _card('', b.ruleId ? 'The rules, said out loud' : 'On the gravel',
       'chevron',
-      _hostBand(_esc(b.text))
+      _hostBand(v.host, _esc(b.text))
       + (b.action ? '<p class="tp-quiet">' + _esc(b.action) + '</p>' : '')
       + (last ? reacts.map(r => '<p class="tp-quiet">' + _esc(r.text) + '</p>').join('') : '')),
     { kind: 'rules', ruleId: b.ruleId || null });
@@ -1288,10 +1291,10 @@ function _buildBeats(v) {
 
   // ── the drive, or the ten minutes after it ──────────────────────────
   //
-  // The host band is dropped on a record that has an arrival on it: she has
-  // already welcomed this cast, at length, one screen earlier. A second
+  // The host band is dropped on a record that has an arrival on it: the host
+  // has already welcomed this cast, at length, one screen earlier. A second
   // welcome from the same person in the same hour is the format's host
-  // introducing herself twice.
+  // introducing themselves twice.
   push('arrival', v.afterBriefing
     ? _card('Back Out Onto The Gravel', 'The arrival', 'trunk',
       '<p>' + _fill(_pick(RESUME, key + '|resume'), S) + '</p>'
@@ -1303,7 +1306,7 @@ function _buildBeats(v) {
     : _card('Up The Drive', 'The arrival', 'trunk',
       '<p>' + _fill(_pick(ARRIVAL, key + '|arrive'), S) + '</p>'
       + _sums([['In the rank', String(n), null], ['Told anything', 'Nobody', 'cold']])
-      + _hostBand(_esc(_pick(GREET, key + '|greet')))),
+      + _hostBand(v.host, _esc(_pick(GREET, key + '|greet')))),
   { kind: 'arrival' });
 
   // ── the cloth ───────────────────────────────────────────────────────
@@ -1469,7 +1472,7 @@ function _buildBeats(v) {
     : (v.wasTapped ? HOST_CLOSE.chosen : HOST_CLOSE.rest);
   push(v.turretKnown ? 'turret' : 'unmask',
     _card('', 'And that is the twist', 'chevron',
-      _hostBand(_esc(_fill(_pick(closePool, key + '|close'), S)),
+      _hostBand(v.host, _esc(_fill(_pick(closePool, key + '|close'), S)),
         v.turretKnown),
       v.turretKnown ? 'lamp' : null),
     { kind: 'close' });
@@ -1496,7 +1499,7 @@ function _rank(state, idx) {
   const off = kinds.has('unmask');
 
   // Where the host has got to, as a percentage along the rank. Audience only —
-  // where he had reached is a thing you can only know with your eyes open.
+  // where the host had reached is something you can only know with your eyes open.
   let walkPct = 0;
   if (v.isAudience && kinds.has('walk')) {
     const done = v.taps.filter(t => tapsRead.has(t.order) && t.at != null);

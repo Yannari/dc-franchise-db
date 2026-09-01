@@ -44,16 +44,14 @@
 // That is the whole of "read it through the export": js/vp-tr/ imports no
 // engine state, so a screen cannot invent a past for somebody who has none,
 // and the transcript retranscribing this screen prints the same words.
-import { seasonConfig, players } from '../core.js';
-import { HOSTS_BY_FORMAT } from '../quick-setup.js';
-import { PORTRAIT_CSS, TR_NAV_TOP, TR_STICKY_TOP } from './style.js';
+import { players } from '../core.js';
+import { PORTRAIT_CSS, TR_NAV_TOP, TR_STICKY_TOP, trHost } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
 // NO EXIT VERB IS IMPORTED, for the reason selection.js gives: this is the
 // other screen in the set where nobody leaves, and a word held and never said
 // is a field written and never read.
-const TR = 'traitors';
 
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -67,18 +65,10 @@ const _line = s => String(s == null ? '' : s).replace(/</g, '&lt;').replace(/>/g
 
 // ── the host, out of the registry and never out of a literal ──────────
 //
-// Same resolution `js/vp-tr/selection.js` uses, and for the same reason
-// (docs/ADDING-A-SHOW.md §14.10): a host name typed into a screen is a name
-// swapping the host in the setup screen cannot reach. The record carries the
-// configured KEY; the label is looked up here, at draw time.
-function _host(ep) {
-  const list = HOSTS_BY_FORMAT[TR] || [];
-  const want = (ep && ep.tr && ep.tr.arrival && ep.tr.arrival.host)
-    || (seasonConfig && seasonConfig.host);
-  const hit = list.find(h => h.value === want) || list[0]
-    || { value: 'host', label: 'Your host' };
-  return { name: hit.label, slug: String(hit.value).toLowerCase().replace(/[^a-z0-9]+/g, '-') };
-}
+// `trHost` lives in js/vp-tr/style.js and BOTH premiere screens call it,
+// because this file and js/vp-tr/selection.js each held their own copy and the
+// copies disagreed the moment one of them learned about the record. See that
+// function for the freeze-on-the-record rule and why it is the one that holds.
 
 // ── faces ─────────────────────────────────────────────────────────────
 function _slugOf(name) {
@@ -88,7 +78,7 @@ function _slugOf(name) {
 }
 function _av(name, size) { return _portrait(_slugOf(name), name, size || 34); }
 function _hostAv(ep, size) {
-  const h = _host(ep);
+  const h = trHost(ep);
   return _portrait(h.slug, h.name, size || 48);
 }
 
@@ -606,6 +596,7 @@ function _view(ep, observer) {
     staging: rules.staging || '',
     hostBeats: (rules.hostBeats || []).map(b => ({ ...b })),
     rulePoints: (rules.rulePoints || []).map(r => ({ ...r })),
+    contestantBeats: (rules.contestantBeats || []).map(b => ({ ...b })),
     revealBeats: (rules.revealBeats || []).map(b => ({ ...b })),
     reminder: rules.reminder || '',
   };
@@ -637,7 +628,7 @@ function _card(title, label, ic, inner, tone) {
 }
 function _hostBand(ep, line, action) {
   return '<div class="ar-host">' + _hostAv(ep, 52)
-    + '<div><div class="ar-host-name">' + _ic('gate', 12) + _esc(_host(ep).name) + '</div>'
+    + '<div><div class="ar-host-name">' + _ic('gate', 12) + _esc(trHost(ep).name) + '</div>'
     + '<div class="ar-host-line">&ldquo;' + _line(line) + '&rdquo;</div>'
     + (action ? '<div class="ar-host-do">' + _line(action) + '</div>' : '')
     + '</div></div>';
@@ -719,9 +710,18 @@ function _buildBeats(v, ep) {
   // shortcut the ceremony contract names by name: a ceremony is a sequence of
   // actions, and a reader who cannot stop between two of them is reading a
   // paragraph rather than watching an evening.
+  //
+  // AND EACH BEAT CARRIES WHAT IT DID TO THE FLAGS. A reaction is rendered
+  // inside the card of the line that caused it -- `afterHostBeat` is the
+  // causal pin the record stores -- because a reaction printed on its own,
+  // away from its stimulus, is a reaction to nothing.
   v.hostBeats.forEach((b, i) => {
+    const reacts = v.contestantBeats.filter(r => r.afterHostBeat === i);
     push('briefing', _card('', b.ruleId ? (_RULE_LABEL[b.ruleId] || 'The rules') : 'The host',
-      'chevron', _hostBand(ep, b.text, b.action), b.ruleId ? 'sun' : null),
+      'chevron',
+      _hostBand(ep, b.text, b.action)
+      + reacts.map(r => '<p class="ar-quiet">' + _line(r.text) + '</p>').join(''),
+      b.ruleId ? 'sun' : null),
     { kind: 'rule', beat: i, ruleId: b.ruleId || null });
   });
 

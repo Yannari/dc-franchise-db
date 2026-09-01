@@ -958,10 +958,21 @@ export const HOSTS_BY_FORMAT = {
   ],
   'traitors': [
     // Valeria is the default host and the show's voice: Julie Chen's studio
-    // authority with Blaineley's arch self-regard. Her portrait is
+    // authority with Blaineley's arch self-regard. The portrait is
     // assets/avatars/valeria.png, resolved the same way a player's is, so a
     // screen never hardcodes a host name -- swapping the host must swap every
-    // line she speaks. See ADDING-A-SHOW.md §14.10 for the bug class.
+    // line the host speaks. See ADDING-A-SHOW.md §14.10 for the bug class.
+    //
+    // AND EVERY LINE A TRAITORS HOST SPEAKS IS GENDER-NEUTRAL. This list holds
+    // two women and a man, they are swapped at runtime by renderHostOptions(),
+    // and nothing generating host prose may assume which one is on. The
+    // phrasing of this comment is where the assumption started -- it said
+    // "every line she speaks" -- and eleven feminine staging lines were written
+    // against it in js/tr/headless.js while js/vp-tr/selection.js was already
+    // narrating the same host as "he" one screen later. Neutrality is a RULE
+    // and not an interim: a guard cannot go stale when a fourth host is added,
+    // whereas per-host pronoun metadata has to be maintained. Enforced over
+    // every file that writes host prose by tests/tr-vp.test.js.
     { value: 'Valeria',  label: 'Valeria Sandoval' },
     { value: 'Alistair', label: 'Alistair Crane' },
     { value: 'Claudia',  label: 'Claudia Winterbourne' },

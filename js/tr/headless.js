@@ -7,6 +7,11 @@
 // out, because "did the belief update" and "did the room find the Traitors" are
 // different questions and only the second one matters.
 import { gs, setGs, players, seasonConfig } from '../core.js';
+// THE LEAF TABLE, not `pronouns()` in js/players.js. They are the same rule --
+// `pronouns()` is `pronounsOf(p.gender)` and nothing else -- and this takes the
+// gender off a roster entry this file already has in hand. js/tr/state.js
+// resolves the same clauses off the same table for the same reason.
+import { pronounsOf } from '../pronouns-of.js';
 import { initTraitorsState, snapshotTraitorsBackgrounds } from './state.js';
 import { resetKnowledge } from '../knowledge.js';
 import { setBond, getBond } from '../bonds.js';
@@ -677,7 +682,7 @@ function _selectionRecord(ep, cast, traitors, { announceCount = false } = {}) {
     // ONLY WHERE THE CONFIGURATION SAYS THE ROOM IS TOLD. Inserted after the
     // rule it qualifies rather than appended, so it is heard as part of it.
     hostBeats.splice(2, 0, { kind: 'rule', visibility: 'all', afterTap: null,
-      action: 'She says the number once and does not repeat it.',
+      action: 'The number is said once and not repeated.',
       text: 'There will be ' + taps.length + ' of them. That is the only thing about them '
         + 'this castle is ever going to be told for nothing.' });
   }
@@ -1050,7 +1055,7 @@ function _beliefRecord(ep) {
 // `host` is the CONFIGURED key and nothing else, and no beat on either
 // ceremony says a host's name out loud. The screen resolves the label out of
 // the registry at draw time, exactly as `js/vp-tr/selection.js` already does,
-// so swapping the host in the setup screen swaps every line she speaks
+// so swapping the host in the setup screen swaps every line the host speaks
 // (docs/ADDING-A-SHOW.md §14.10 is the bug class). A name written into a beat
 // here would be a name no configuration change could reach.
 //
@@ -1154,7 +1159,7 @@ const _ARRIVE_ONE = {
     '{name} carries somebody else’s case up the steps without being asked.',
     '{name} finds the one person standing on their own and goes over.',
     '{name} is laughing at the size of the building within about four seconds and takes '
-    + 'three other people with them.',
+    + 'three other people with {obj}.',
     '{name} shakes hands with everybody in reach and means every one of them.',
   ],
   loud: [
@@ -1237,8 +1242,17 @@ export function buildArrivalRecord(cast, backgrounds = {}, host = null) {
   }
 
   // ── the people ──────────────────────────────────────────────────────
+  //
+  // EVERYBODY ALREADY OUT OF A CAR, IN ARRIVAL ORDER, and the reason this list
+  // exists is a defect the first version shipped: reactions were paired inside
+  // a car (`for i = 1; i < group.arrivals.length`), so two alumni recorded on
+  // the same season generated no callback whatsoever unless the car assignment
+  // happened to put them next to each other. The ledger's single best piece of
+  // material was being discarded by a hash. Nobody leaves the flags once they
+  // are on them, so anybody already standing there is eligible.
   const introductions = [];
   const recognitions = [];
+  const onTheFlags = [];
   for (const group of groups) {
     for (const name of group.arrivals) {
       const bg = bgOf(name);
@@ -1247,14 +1261,20 @@ export function buildArrivalRecord(cast, backgrounds = {}, host = null) {
       const lines = [];
       // ESTABLISH: what this person physically did on the flags. Personality
       // may pick the action; it may not add a fact.
+      // `{obj}` and `{posAdj}` come off the ROSTER'S OWN GENDER, through the
+      // same table `pronouns()` delegates to. Singular "them" over somebody
+      // the roster says is a woman is the defect js/pronouns-of.js was written
+      // for, and a premiere is the worst possible place to print it.
+      const pr = pronounsOf(person && person.gender);
       lines.push({ kind: 'establish',
         text: _pFill(_pPickUnique(_ARRIVE_ONE[stance], seed + '|one|' + name, used),
-          { name, car: _carWord(group.order) }) });
+          { name, car: _carWord(group.order), obj: pr.obj, posAdj: pr.posAdj,
+            sub: pr.sub, ref: pr.ref }) });
       // RECORD: Task 1's authored billing, quoted rather than rebuilt. It is
       // the only sentence on this record allowed to state a past, and it
       // states one only where the ledger holds one.
       if (bg && bg.summary) lines.push({ kind: 'record', text: bg.summary });
-      introductions.push({
+      const intro = {
         name,
         order: introductions.length,
         group: group.id,
@@ -1263,33 +1283,55 @@ export function buildArrivalRecord(cast, backgrounds = {}, host = null) {
         sourceShows: [...((bg && bg.sourceShows) || [])],
         appearances: ((bg && bg.appearances) || []).map(a => ({ ...a })),
         lines,
-      });
-    }
-    // REACTION: how the car met each other. The pair is two arrivals standing
-    // next to each other, the claim is whatever the SNAPSHOT supports, and
-    // where it supports nothing the line claims nothing.
-    for (let i = 1; i < group.arrivals.length; i++) {
-      const a = group.arrivals[i - 1], b = group.arrivals[i];
-      const ba = bgOf(a), bb = bgOf(b);
-      const shared = ((ba && ba.appearances) || []).find(x =>
-        ((bb && bb.appearances) || []).some(y => y.format === x.format && y.season === x.season));
-      let text, basis;
-      if (shared) {
-        basis = 'both are recorded on ' + shared.seasonLabel;
-        text = _pFill(_pPickUnique(_MEET_SHARED, seed + '|shared|' + a + '|' + b, used),
-          { a, b, season: shared.seasonLabel });
-      } else if (bb && bb.recognized) {
-        basis = b + ' arrives recognised (' + bb.type + ')';
-        text = _pFill(_pPickUnique(_MEET_RECOGNISED, seed + '|rec|' + a + '|' + b, used),
-          { a, b });
-      } else {
-        basis = null;
-        text = _pFill(_pPickUnique(_MEET_NEUTRAL, seed + '|meet|' + a + '|' + b, used),
-          { a, b });
+      };
+      introductions.push(intro);
+
+      // ── REACTION: who, out of everybody already standing there, has a
+      //    reason to say something, and what the record lets them say ──────
+      //
+      // Three tiers, strongest first, and every one of them is a fact off the
+      // SNAPSHOT. Nothing here may invent a history, an incident, or a grudge:
+      // a shared season is two ledger rows agreeing, a recognition is the
+      // snapshot's own `recognized` flag, and where neither holds, the line
+      // says two strangers met and claims nothing else.
+      if (onTheFlags.length) {
+        // NEAREST TO HAND: whoever got out of a car last is who a new arrival
+        // physically walks into.
+        const nearest = onTheFlags[onTheFlags.length - 1];
+        let by = null, basis = null, pool = null, subs = null;
+        // 1. A SEASON THE LEDGER RECORDS THEM BOTH ON, searched over the whole
+        //    of the flags rather than over one car. Backwards, so the callback
+        //    lands with the one nearest rather than the one who arrived first.
+        for (let i = onTheFlags.length - 1; i >= 0 && !by; i--) {
+          const earlier = onTheFlags[i];
+          const be = bgOf(earlier);
+          const shared = ((be && be.appearances) || []).find(x =>
+            ((bg && bg.appearances) || []).some(y =>
+              y.format === x.format && y.season === x.season));
+          if (!shared) continue;
+          by = earlier;
+          basis = 'both are recorded on ' + shared.seasonLabel;
+          pool = _MEET_SHARED;
+          subs = { a: earlier, b: name, season: shared.seasonLabel };
+        }
+        // 2. RECOGNISED ON ARRIVAL -- alumni or celebrity, off the snapshot.
+        if (!by && bg && bg.recognized) {
+          by = nearest;
+          basis = name + ' arrives recognised (' + bg.type + ')';
+          pool = _MEET_RECOGNISED;
+          subs = { a: nearest, b: name };
+        }
+        // 3. NOTHING ON THE RECORD, SO NOTHING IS CLAIMED.
+        if (!by) {
+          by = nearest;
+          pool = _MEET_NEUTRAL;
+          subs = { a: nearest, b: name };
+        }
+        const text = _pFill(_pPickUnique(pool, seed + '|meet|' + by + '|' + name, used), subs);
+        lines.push({ kind: 'reaction', text });
+        if (basis) recognitions.push({ by, of: name, basis, text });
       }
-      const intro = introductions.find(x => x.name === b);
-      if (intro) intro.lines.push({ kind: 'reaction', text });
-      if (basis) recognitions.push({ by: a, of: b, basis, text });
+      onTheFlags.push(name);
     }
   }
 
@@ -1322,46 +1364,47 @@ export function buildArrivalRecord(cast, backgrounds = {}, host = null) {
 function _premiereRules(castSize) {
   const hostBeats = [
     { kind: 'welcome', visibility: 'all',
-      action: 'The host comes down the steps and stops with the whole drive in front of her.',
+      action: 'The host comes down the steps and stops at the bottom of them, with the '
+        + 'whole drive facing up.',
       text: 'Welcome to the castle. There are ' + castSize + ' of you standing on these '
         + 'flags and every one of you arrived here exactly the same way. That stops being '
         + 'true in about ten minutes, so I would like you to hear the rules while you all '
         + 'still trust each other.' },
     { kind: 'rule', visibility: 'all', ruleId: 'faithfuls-and-traitors',
-      action: 'She waits for the drive to go quiet.',
+      action: 'The host waits for the drive to go quiet.',
       text: 'Most of you will play this game as Faithfuls. Hidden among you, chosen by me '
         + 'and known only to each other, will be Traitors.' },
     { kind: 'rule', visibility: 'all', ruleId: 'traitors-murder',
-      action: 'She looks along the front of the group while she says it.',
+      action: 'The host looks along the front of the group while saying it.',
       text: 'Every night, while the rest of you are asleep, the Traitors will meet in '
         + 'secret and choose one of you to murder. In the morning that person will simply '
         + 'not come down to breakfast, and nobody is going to explain it to you.' },
     { kind: 'rule', visibility: 'all', ruleId: 'missions-build-the-pot',
-      action: 'She turns and points back down the drive.',
+      action: 'The host turns and points back down the drive.',
       text: 'Every day you will leave this castle and work for money. Each mission you '
         + 'finish adds to the prize pot, and that pot is the only thing in this building '
         + 'that belongs to all of you at once.' },
     { kind: 'rule', visibility: 'all', ruleId: 'shield-blocks-a-murder',
-      action: 'She holds a hand up before anybody can look pleased about that.',
+      action: 'A hand goes up before anybody can look pleased about that.',
       text: 'Some missions will put a shield on the table. Win one and you cannot be '
         + 'murdered that night. Understand what else it does: everybody who watched you '
         + 'take it now knows you are safe, and safe is a very interesting thing to be.' },
     { kind: 'rule', visibility: 'all', ruleId: 'round-table-banishment',
-      action: 'She indicates the doors behind her.',
+      action: 'The host indicates the doors at the top of the steps.',
       text: 'Every evening you will sit at the Round Table. You will make your accusations '
         + 'to each other’s faces, and then each of you will write down one name. '
         + 'Whoever the room names goes out by banishment, and tells you exactly what they '
         + 'were on the way through that door.' },
     { kind: 'rule', visibility: 'all', ruleId: 'endgame-payout',
-      action: 'She lets that sit.',
+      action: 'The host lets that sit.',
       text: 'Banish every Traitor and the Faithfuls still standing split the prize pot '
         + 'between them. Leave one Traitor at that last table and the Traitors take all of '
         + 'it, and the rest of you go home with a very good story and nothing else.' },
     { kind: 'charge', visibility: 'all',
-      action: 'She starts back up the steps.',
+      action: 'The host starts back up the steps.',
       text: 'So there it is. Find them, or be one of them, and be trusted either way.' },
     { kind: 'transition', visibility: 'all',
-      action: 'She stops at the top and turns round.',
+      action: 'The host stops at the top and turns round.',
       text: 'One more thing, and then you can unpack. I need all of you in a line, facing '
         + 'me, and I need you to stop looking at each other. That part of this is over.' },
   ];
@@ -1370,8 +1413,46 @@ function _premiereRules(castSize) {
     .filter(Boolean);
   return {
     staging: 'The whole cast on the courtyard flags at the top of the drive, luggage still '
-      + 'at their feet, the host on the steps above them with the doors shut behind her.',
+      + 'at their feet, and the host on the steps above them with the doors shut.',
     hostBeats,
+    // ── AND WHAT NINE RULES DO TO TWENTY PEOPLE ────────────────────────
+    //
+    // The first version of this record had none, which made the briefing an
+    // announcement rather than a scene: the host said everything and nobody on
+    // the flags visibly heard any of it. The ceremony contract asks for
+    // `contestantBeats` and the global rule asks every scene for a REACTION
+    // between the action and the consequence; a rules ceremony is where that
+    // matters most, because the reaction is the only measure a viewer gets of
+    // what the rules cost.
+    //
+    // COLLECTIVE AND NAME-FREE, exactly as the Selection's are. Nothing has
+    // happened to anybody in particular yet, so a beat that named somebody
+    // would be inventing a reaction with no record behind it -- and "the whole
+    // room goes quiet" is the consensus claim the evidence contract forbids,
+    // so these say "somebody", "one or two", "two of them" and mean it.
+    //
+    // `afterHostBeat` pins each one to the line that caused it. That is the
+    // causal link the screen renders on: a reaction that floats free of its
+    // stimulus is a reaction to nothing.
+    contestantBeats: [
+      { kind: 'reaction', participants: [], visibility: 'all', afterHostBeat: 1,
+        text: 'Nobody on the flags moves. One or two look at the person standing beside '
+          + 'them anyway, which is the last time anybody in this castle will do that '
+          + 'without meaning something by it.' },
+      { kind: 'reaction', participants: [], visibility: 'all', afterHostBeat: 2,
+        text: 'Somebody laughs at the word murder, hears exactly how it landed on a silent '
+          + 'courtyard, and stops.' },
+      { kind: 'reaction', participants: [], visibility: 'all', afterHostBeat: 4,
+        text: 'Two of them ask at the same moment whether a shield is announced. Neither '
+          + 'gets an answer, which is itself an answer and lands as one.' },
+      { kind: 'reaction', participants: [], visibility: 'all', afterHostBeat: 5,
+        text: 'Banishment gets a small noise out of the back of the group. Several people '
+          + 'work out at the same time that the vote is public and that they will have to '
+          + 'say a name to a face.' },
+      { kind: 'reaction', participants: [], visibility: 'all', afterHostBeat: 8,
+        text: 'Everybody looks down at luggage they have just been told they are not going '
+          + 'to be allowed to pick up.' },
+    ],
     rulePoints,
     // ONE REVEAL STEP PER ACTION, stored apart from the speech, because a
     // ceremony that folds its staging into its narration cannot be re-cut.

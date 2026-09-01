@@ -20,7 +20,8 @@
 //      in the same arched niche: the roster is incomplete, so that is the
 //      normal path and not the error path.
 //   2. THE HOST IS A VARIABLE. Not one narration string in this file contains
-//      a host's name. Every line she speaks and the face she wears resolve
+//      a host's name. Every line the host speaks and the face that goes with
+//      it resolve
 //      from `_host()`, which reads `seasonConfig.host` against
 //      HOSTS_BY_FORMAT['traitors'] (js/quick-setup.js). Hardcoding a host name
 //      into copy is this project's central bug class.
@@ -390,9 +391,13 @@ const PLAIN_SIGHT_TEXT = [
   'Nobody is overruled tonight because nobody is consulted. It costs the pact nothing, and that is exactly what is wrong with it.',
 ];
 
-/** Her register: studio authority with a private, arch self-regard. Composed,
+/** The host's register: studio authority with a private, arch self-regard. It is
+ *  gender-neutral by rule and not by accident -- the three configured hosts are
+ *  not all the same gender (see the traitors list in js/quick-setup.js), so a
+ *  pronoun written into one of these pools is wrong a third of the time.
+ *  Composed,
  *  precise, plainly delighted by how good this footage is, and never once
- *  unprofessional about it. NOT ONE OF THESE STRINGS NAMES HER. */
+ *  unprofessional about it. NOT ONE OF THESE STRINGS NAMES THE HOST. */
 const HOST_LINES = {
   open: [
     'The castle is asleep, or believes it is, which for our purposes is the same thing. Some of its guests have found reasons to be elsewhere. I would not dream of interrupting them.',

@@ -21,6 +21,43 @@
 // fibre and a torn deckle edge, wax has a specular dome, brass has wear. All
 // of it is SVG filters, which nothing else in this repo uses.
 
+import { seasonConfig } from '../core.js';
+import { HOSTS_BY_FORMAT } from '../quick-setup.js';
+
+// ── WHICH HOST, AND THE ANSWER IS THE SAME ON EVERY SCREEN ────────────
+//
+// Two files resolved this independently and drifted the moment one of them
+// learned about the record: `arrival.js` preferred the frozen key on
+// `ep.tr.arrival`, `selection.js` read live `seasonConfig` with no fallback,
+// and changing the host in setup then replayed episode one with two different
+// names on two consecutive screens of the same evening. Two copies of one rule
+// is the shape this repo has been bitten by at least seven times, so there is
+// one copy and it lives here, beside the other constant every screen shares.
+//
+// THE RULE IS: FREEZE ON THE RECORD, FALL BACK TO THE CONFIGURATION.
+//
+// A season is a historical record. Who presented it is a fact about the night
+// it was played, exactly as `gs.tr.backgrounds` is a fact about who walked in,
+// and for the identical reason: a replay that re-resolves rewrites its own
+// premiere every time somebody changes a setting for the NEXT season. The live
+// value is the fallback and not the answer, so rows written before the key
+// existed still draw a host instead of drawing nothing.
+//
+// `arrival` is asked first because that is where the key is written -- the
+// premiere is one continuous evening and its host is recorded once, at the top
+// of it. `selection` is in the chain so a later task may freeze the key there
+// too without every screen needing to learn a second rule.
+const TR_FORMAT = 'traitors';
+export function trHost(ep) {
+  const list = HOSTS_BY_FORMAT[TR_FORMAT] || [];
+  const want = (ep && ep.tr && ep.tr.arrival && ep.tr.arrival.host)
+    || (ep && ep.tr && ep.tr.selection && ep.tr.selection.host)
+    || (seasonConfig && seasonConfig.host);
+  const hit = list.find(h => h.value === want) || list[0]
+    || { value: 'host', label: 'Your host' };
+  return { name: hit.label, slug: String(hit.value).toLowerCase().replace(/[^a-z0-9]+/g, '-') };
+}
+
 // ── THE NAV BAR ABOVE EVERY ONE OF THESE SCREENS, AS ONE NUMBER ───────
 //
 // The real visual player draws a 46px `.rp-nav` bar across the top and the
@@ -454,9 +491,15 @@ ${PORTRAIT_CSS}
 .cv-margin-quiet{min-height:34px}
 
 /* ── THE HOST LAYER ─────────────────────────────────────────────────────────
-   She narrates OVER the footage, so her band breaks out of the card column
-   and spans the gutter too — a different layer of the picture, letterboxed
-   top and bottom. She is not a caption, and she is not the subject. */
+   The host narrates OVER the footage, so the band breaks out of the card
+   column and spans the gutter too — a different layer of the picture,
+   letterboxed top and bottom. It is not a caption, and not the subject.
+
+   Written without a pronoun on purpose: the three configured Traitors hosts
+   are not all the same gender, and nothing that describes or generates host
+   prose in this directory may assume which one is on. The rule, and why it
+   is a rule rather than an interim, is on the traitors list in
+   js/quick-setup.js. */
 .cv-host{
   grid-column:1/-1;position:relative;overflow:hidden;
   display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;

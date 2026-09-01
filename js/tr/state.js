@@ -12,6 +12,13 @@
 // before it is prose: `backgrounds` below is a snapshot, and the resolver that
 // fills it has to live beside the field it fills or the two drift.
 import { alumniRecord, alumniAppearances } from '../alumni.js';
+// THE LEAF PRONOUN TABLE. `pronouns()` in js/players.js is `pronounsOf(gender)`
+// and nothing else, but it pulls in core.js and therefore the whole engine --
+// which is the exact reason js/pronouns-of.js was split out, and the reason the
+// life layer wrote 25 canon events in singular they before it existed. Same
+// rule, same table, no dependency. js/tr/headless.js resolves the premiere's
+// own clauses off it too, so the two files cannot disagree about a player.
+import { pronounsOf } from '../pronouns-of.js';
 
 /** A season's Traitors state, empty. */
 export function initTraitorsState() {
@@ -251,6 +258,11 @@ export const TR_BACKGROUND_TYPES = ['alumni', 'celebrity', 'civilian'];
 /**
  * What the room already knows, and what it still has to find out.
  *
+ * `{obj}` and `{posAdj}` IN THESE CLAUSES ARE FILLED FROM THE ROSTER'S GENDER
+ * (see `_voice`). They used to be a literal "them", which printed singular they
+ * over players the roster says are men and women -- the defect js/pronouns-of.js
+ * exists for, printed on the show's opening screen twenty times in a row.
+ *
  * Two clauses per archetype, because a background that printed only the first
  * would be a résumé card: `rep` is what a reputation MEANS to the people
  * reading it, `now` is how this person actually behaves once the door shuts.
@@ -279,11 +291,11 @@ const _ARCHETYPE_VOICE = {
                          now: 'keeps every door open and commits to nothing until the vote is called' },
   'underdog':          { rep: 'for lasting far longer than anybody had allowed for',
                          now: 'gets written off early and is still there on the nights that decide things' },
-  'hero':              { rep: 'for taking the straight line even when it cost them',
+  'hero':              { rep: 'for taking the straight line even when it cost {obj}',
                          now: 'says the uncomfortable thing to a face rather than behind a back' },
   'villain':           { rep: 'for playing ugly and refusing to apologise afterwards',
-                         now: 'plays for the result and lets the room dislike them for it' },
-  'goat':              { rep: 'for being kept around because keeping them was convenient',
+                         now: 'plays for the result and lets the room dislike {obj} for it' },
+  'goat':              { rep: 'for being kept around because keeping {obj} around was convenient',
                          now: 'is underestimated in every room, which is the only advantage on offer' },
   'perceptive-player': { rep: 'for noticing the thing the rest of the room walked straight past',
                          now: 'watches far more than it talks, and keeps the notes' },
@@ -295,9 +307,29 @@ const _VOICE_FALLBACK = {
   now: 'gives the castle very little to read on the first morning',
 };
 
-function _voice(archetype) {
-  return _ARCHETYPE_VOICE[archetype] || _VOICE_FALLBACK;
+function _voice(archetype, pr) {
+  const v = _ARCHETYPE_VOICE[archetype] || _VOICE_FALLBACK;
+  const fill = t => String(t).replace(/\{(\w+)\}/g, (m, k) => (pr && pr[k] != null) ? pr[k] : m);
+  return { rep: fill(v.rep), now: fill(v.now) };
 }
+
+/**
+ * FNV-1a over the name, and it chooses which SENTENCE this billing is in.
+ *
+ * One frame for every player in the cast is what the first version had, and a
+ * premiere prints twenty of them consecutively on the show's opening screen --
+ * so the frame, not the clause, was what the reader saw, and every alumnus was
+ * introduced with the identical two sentences. Four frames a type, chosen off
+ * the NAME so a replay of a season bills everybody exactly as it billed them
+ * before: this is a snapshot, and a snapshot that reshuffles is not one.
+ */
+function _bHash(s) {
+  let h = 2166136261;
+  const t = String(s);
+  for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+const _frame = (pool, key) => pool[_bHash(key) % pool.length];
 
 function _ordinal(n) {
   const v = Number(n);
@@ -361,7 +393,8 @@ export function resolveTraitorsBackground(player, database = null) {
   const type = chosen || fallback;
 
   const occupation = _field(p, row, 'occupation');
-  const voice = _voice(p.archetype || row?.archetype);
+  const pr = pronounsOf(p.gender || row?.gender);
+  const voice = _voice(p.archetype || row?.archetype, pr);
   const opener = occupation ? `${name}, ${occupation}.` : `${name}.`;
   const warnings = [];
 
@@ -375,12 +408,16 @@ export function resolveTraitorsBackground(player, database = null) {
     // how little the half it knew was worth.
     appearances = recorded;
     recognized = true;
-    summary = [
-      opener,
-      `${recorded.map(_appearanceLine).join(' · ')}.`,
-      `The castle already knows ${name} ${voice.rep}, and half the room walked in with that read formed.`,
-      `Here ${name} ${voice.now}.`,
-    ].join(' ');
+    const record = `${recorded.map(_appearanceLine).join(' · ')}.`;
+    // EVERY FRAME CARRIES THE RECORD AND THE PERSON, in that order, because
+    // that is the order the room gets them in. What varies is the sentence
+    // around them, never the claim inside them.
+    summary = [opener, record, _frame([
+      `The castle already knows ${name} ${voice.rep}, and half the room walked in with that read formed. Here ${name} ${voice.now}.`,
+      `That is the version of ${name} this room arrived holding — a player remembered ${voice.rep}. Whatever the record says about ${pr.obj}, inside these walls ${name} ${voice.now}.`,
+      `A reputation ${voice.rep} came up the drive ahead of ${pr.posAdj} luggage. What it does not cover is that ${name} ${voice.now}.`,
+      `The franchise files ${name} ${voice.rep}, which is a useful thing to be known for right up until somebody has to trust you. Here ${name} ${voice.now}.`,
+    ], `alumni|${name}`)].join(' ');
   } else if (type === 'alumni') {
     // THE BLOCKING CASE. No record, so no record is printed — the summary
     // names the gap instead of filling it in, and the warning stops the season
@@ -401,20 +438,20 @@ export function resolveTraitorsBackground(player, database = null) {
     ].join(' ');
   } else if (type === 'celebrity') {
     recognized = true;
-    summary = [
-      opener,
-      `The castle places ${name} before the introductions have finished; the recognition buys social `
-        + 'access and asks a question about threat in the same breath.',
-      `Here ${name} ${voice.now}.`,
-    ].join(' ');
+    summary = [opener, _frame([
+      `The castle places ${name} before the introductions have finished; the recognition buys social access and asks a question about threat in the same breath. Here ${name} ${voice.now}.`,
+      `Two people on the flags knew the face before they knew the name, which is worth something and costs something. Here ${name} ${voice.now}.`,
+      `${name} is placed on the drive, and being placed is an advantage right up to the evening somebody decides it makes ${pr.obj} worth removing. Here ${name} ${voice.now}.`,
+      `The room puts ${name} somewhere inside a minute and spends the rest of the afternoon deciding what to do about it. Here ${name} ${voice.now}.`,
+    ], `celebrity|${name}`)].join(' ');
   } else {
     recognized = false;
-    summary = [
-      opener,
-      `Nobody arrives with a television version of ${name} already in mind — composure and life `
-        + 'experience are the whole of the résumé this room can read.',
-      `Here ${name} ${voice.now}.`,
-    ].join(' ');
+    summary = [opener, _frame([
+      `Nobody arrives with a television version of ${name} already in mind — composure and life experience are the whole of the résumé this room can read. Here ${name} ${voice.now}.`,
+      `No face to place, nothing to look up, and no reputation doing any of the work for ${pr.obj}. Here ${name} ${voice.now}.`,
+      `The castle gets ${name} with nothing attached, which is either the cleanest start available on these flags or the quietest. Here ${name} ${voice.now}.`,
+      `What this room can read about ${name} is what ${pr.posAdj} face does over the next fortnight and not one thing before it. Here ${name} ${voice.now}.`,
+    ], `civilian|${name}`)].join(' ');
   }
 
   return {

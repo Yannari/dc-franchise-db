@@ -119,7 +119,14 @@ const DB = [
   { name: 'Ireland', occupation: 'Chef', archetype: 'mastermind',
     seasonDetails: [{ format: 'big-brother', season: 1, placement: 2, status: 'Runner-up' }] },
 ];
-const MIXED = ['Julia', 'Gabby', 'Ireland', 'Manu', 'Fiore', 'Alec'];
+// JULIA AND GABBY ARE DELIBERATELY NOT ADJACENT. The first version of
+// `buildArrivalRecord` paired reactions inside a car, so the one callback the
+// ledger actually supports — two players recorded on the same season — was
+// generated or discarded by where the car boundaries happened to fall. The
+// fixture hid it by putting the pair side by side. Three arrivals now sit
+// between them, and `recognises somebody only where the ledger gives a reason
+// to` asserts the separation before it asserts the callback.
+const MIXED = ['Julia', 'Manu', 'Fiore', 'Alec', 'Gabby', 'Ireland'];
 
 function mixedArrival() {
   const bg = snapshotTraitorsBackgrounds(
@@ -177,6 +184,13 @@ describe('an introduction quotes the record and invents nothing', () => {
 
   it('recognises somebody only where the ledger gives a reason to', () => {
     const { rec } = mixedArrival();
+    // THE PAIR IS NOT ADJACENT, ASSERTED FIRST. Without this the arm below
+    // passes on a fixture that never exercises the search it is testing —
+    // which is exactly how the seating-accident defect survived round one.
+    const order = rec.introductions.map(i => i.name);
+    expect(Math.abs(order.indexOf('Gabby') - order.indexOf('Julia')),
+      'the shared-season pair arrived next to each other — this arm proves nothing')
+      .toBeGreaterThan(2);
     // Julia and Gabby are both recorded on the same season, which is the one
     // basis on this record that is a FACT rather than a mood.
     const shared = rec.recognitions.find(r => r.of === 'Gabby' && r.by === 'Julia');
@@ -251,8 +265,15 @@ describe('a first-use ceremony is performed, not summarised', () => {
     const all = [rules(), RUNS[0].episodes[0].tr.selection];
     let scanned = 0;
     for (const c of all) {
+      // NOT `(c.contestantBeats || [])`. Written that way, this arm tolerated
+      // a ceremony with no reactions at all — and the premiere briefing shipped
+      // without any, so nine rules landed on twenty people and the record said
+      // nobody moved. A guard that shrugs at the absence of the thing it is
+      // reading is not reading anything.
+      expect(Array.isArray(c.contestantBeats) && c.contestantBeats.length,
+        'a first-use ceremony records no reaction from anybody in it').toBeTruthy();
       const flat = [...c.hostBeats.map(b => b.text), ...c.hostBeats.map(b => b.action),
-        ...(c.contestantBeats || []).map(b => b.text)].join(' ');
+        ...c.contestantBeats.map(b => b.text)].join(' ');
       expect(flat.length).toBeGreaterThan(400);
       for (const bad of [/the host explains/i, /the traitors are chosen/i,
         /gives a dramatic speech/i, /explains how the .* works/i,
@@ -279,7 +300,7 @@ describe('a first-use ceremony is performed, not summarised', () => {
     const quietSel = (gs.episodeHistory || [])[0].tr.selection;
     const quietSaid = quietSel.hostBeats.map(b => b.text).join(' ');
     expect(/there will be \d/i.test(quietSaid),
-      'the host gave away the count with nothing configuring her to').toBe(false);
+      'the host gave away the count with nothing configuring the season to').toBe(false);
     expect(quietSaid).not.toMatch(/\bthree of them\b/i);
 
     setPlayers(ROSTER);

@@ -44,10 +44,12 @@
 // bonds, threads and residue and nothing else.
 import { gs } from '../../core.js';
 import { pStats, romanticCompat } from '../../players.js';
-import { addBond, getBond } from '../../bonds.js';
+// getBond is a PURE READ and the one bonds.js name a castle file may still
+// hold; every WRITE goes through the scene API (see ./effects.js).
+import { getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, closeThread, findOpenThread, continueThread,
-  advanceCiting, heatAt } from '../threads.js';
+import { sceneApi, arcAdvanceCiting, arcContinue } from './effects.js';
+import { findOpenThread, heatAt } from '../threads.js';
 import { alignmentAt } from '../roles.js';
 import { MAX_ACTIVE_ROMANCES, _activeRomanceCount, _threadForActors } from './romance.js';
 import { _sentenceCase } from './cover.js';
@@ -113,6 +115,8 @@ registerEvent({
     return getBond(a, b) >= 0 ? 2.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'trust-fall-into-step');
+    const sceneWhy = 'fell into step on the road out';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const confideScore = (st.loyalty / 10) * 0.5 + (st.social / 10) * 0.5;
@@ -126,9 +130,9 @@ registerEvent({
     else branch = 'quiet';
 
     const bondDelta = branch === 'confided' ? 2 : branch === 'probed' ? -0.5 : 0.5;
-    addBond(a, b, bondDelta);
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = pick(rng, STEP_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
-    const { thread, cited } = continueThread('trust', [a, b], ctx.ep, line);
+    const { thread, cited } = arcContinue(api, 'trust', [a, b], ctx.ep, line, { source: sceneWhy });
     return { branch, pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -174,6 +178,8 @@ registerEvent({
     return getBond(a, b) >= 1 ? 2.5 : 1;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'susp-out-of-earshot');
+    const sceneWhy = 'talked about somebody out of their earshot on the road';
     const [a, b] = ctx.actors;
     const others = (ctx.living || []).filter(n => n !== a && n !== b);
     const target = pick(rng, others.length ? others : ctx.living);
@@ -192,12 +198,12 @@ registerEvent({
     else branch = 'defended';
 
     const bondDelta = branch === 'agreed' ? 1.5 : branch === 'hedged' ? 0 : -1;
-    if (bondDelta) addBond(a, b, bondDelta);
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = pick(rng, EARSHOT_LINES[branch])
       .replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
     // The thread is the PAIR's — what these two now share is that one of them
     // said a name to the other, which is a fact about the two of them.
-    const { thread, cited } = continueThread('suspicion', [a, b], ctx.ep, line);
+    const { thread, cited } = arcContinue(api, 'suspicion', [a, b], ctx.ep, line, { source: sceneWhy });
     return { branch, pair: [a, b], about: target, threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -243,6 +249,8 @@ registerEvent({
     return ctx.actors.some(n => isTraitor(n, ctx.ep)) ? 2 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'cover-road-rehearsal');
+    const sceneWhy = 'ran through their account of the night on the road';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const st = pStats(actor);
     // Competence, not permission: the role already granted the scene.
@@ -257,7 +265,7 @@ registerEvent({
     else branch = 'overcooked';
 
     const line = pick(rng, ROAD_REHEARSAL_LINES[branch]).replace(/\{a\}/g, actor);
-    const { thread, cited } = continueThread('cover', [actor], ctx.ep, line);
+    const { thread, cited } = arcContinue(api, 'cover', [actor], ctx.ep, line, { source: sceneWhy });
     return { branch, actor, threadId: thread?.id, cited };
   },
 });
@@ -305,6 +313,8 @@ registerEvent({
     return 2;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'testing-who-you-walk-with');
+    const sceneWhy = 'who they chose to walk beside';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const flatterScore = (st.social / 10) * 0.5 + (st.loyalty / 10) * 0.5;
@@ -318,9 +328,9 @@ registerEvent({
     else branch = 'transactional';
 
     const bondDelta = branch === 'flattered' ? 2 : branch === 'wary' ? -0.5 : 0.5;
-    addBond(a, b, bondDelta);
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = pick(rng, WALK_PICK_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
-    const t = openThread('testing', [a, b], ctx.ep, line);
+    const t = api.openArc('testing', [a, b], { source: sceneWhy, seed: line });
     return { branch, pair: [a, b], threadId: t?.id, bondDelta };
   },
 });
@@ -388,14 +398,16 @@ registerEvent({
     return _deaths() >= 1 ? 2 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'grief-shorter-column');
+    const sceneWhy = 'the column that set out was shorter than the last one';
     const [a, b] = ctx.actors;
     const deaths = _deaths();
     const branch = `${b ? 'pair' : 'solo'}-${deaths >= 2 ? 'again' : 'first'}`;
     const line = _sentenceCase(pick(rng, SHORT_COLUMN_LINES[branch])
       .replace(/\{a\}/g, a).replace(/\{b\}/g, b || 'somebody'));
-    if (b) addBond(a, b, 1);
+    if (b) api.addBond(a, b, 1, { source: sceneWhy });
     const parties = b ? [a, b] : [a];
-    const t = openThread('grief', parties, ctx.ep, line);
+    const t = api.openArc('grief', parties, { source: sceneWhy, seed: line });
     return { branch, actors: [...ctx.actors], deaths,
       threadId: t?.id, bondDelta: b ? 1 : 0 };
   },
@@ -446,10 +458,12 @@ registerEvent({
     return bond >= 0 ? 1.2 + bond * 0.25 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'romance-road-spark');
+    const sceneWhy = 'something started on the road out';
     const [a, b] = ctx.actors;
-    addBond(a, b, 1);
+    api.addBond(a, b, 1, { source: sceneWhy });
     const note = pick(rng, ROAD_SPARK_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
-    const t = openThread('romance-spark', [a, b], ctx.ep, note);
+    const t = api.openArc('romance-spark', [a, b], { source: sceneWhy, seed: note });
     return { branch: 'road-spark', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -512,6 +526,8 @@ registerEvent({
     return findOpenThread('trust', ctx.actors) ? 3 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'trust-settled-on-the-way-back');
+    const sceneWhy = 'settled it between them on the road back';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const bond = getBond(a, b);
@@ -530,18 +546,18 @@ registerEvent({
     const line = pick(rng, SETTLED_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const thread = findOpenThread('trust', [a, b]);
     const bondDelta = branch === 'held' ? 2 : branch === 'soured' ? -2 : branch === 'dropped' ? 0.5 : 0;
-    if (bondDelta) addBond(a, b, bondDelta);
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
 
     // The unresolved branch is a real beat and writes one; the other three end
     // the story. `advanceCiting` first, THEN close: the citation has to be
     // written into the last beat or the payoff carries no memory of what it is
     // paying off.
-    const { note, cited } = advanceCiting(thread, ctx.ep, line);
+    const { note, cited } = arcAdvanceCiting(api, thread, ctx.ep, line, { source: sceneWhy });
     let outcome = null;
     if (branch === 'held') outcome = 'passed-clean';
     else if (branch === 'dropped') outcome = 'buried';
     else if (branch === 'soured') outcome = 'turned-back';
-    if (outcome) closeThread(thread.id, ctx.ep, outcome);
+    if (outcome) api.resolveArc(thread.id, outcome, { source: sceneWhy });
     return { branch, pair: [a, b], threadId: thread.id, cited, note, outcome, bondDelta };
   },
 });
@@ -581,6 +597,8 @@ registerEvent({
     return findOpenThread('suspicion', ctx.actors) ? 3 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'susp-let-it-go-on-the-road-back');
+    const sceneWhy = 'let a suspicion go on the road back';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     // The SUSPECTED player is the one under test — how well they hold up over
@@ -598,11 +616,11 @@ registerEvent({
     const line = pick(rng, LET_IT_GO_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const thread = findOpenThread('suspicion', [a, b]);
     const bondDelta = branch === 'cleared' ? 2 : branch === 'slipped' ? -2 : -1;
-    addBond(a, b, bondDelta);
-    const { note, cited } = advanceCiting(thread, ctx.ep, line);
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { note, cited } = arcAdvanceCiting(api, thread, ctx.ep, line, { source: sceneWhy });
     const outcome = branch === 'cleared' ? 'denied-convincingly'
       : branch === 'slipped' ? 'confessed-unrelated' : null;
-    if (outcome) closeThread(thread.id, ctx.ep, outcome);
+    if (outcome) api.resolveArc(thread.id, outcome, { source: sceneWhy });
     return { branch, pair: [a, b], threadId: thread.id, cited, note, outcome, bondDelta };
   },
 });
@@ -650,6 +668,8 @@ registerEvent({
     return findOpenThread('cover', [actor]) ? 3 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'cover-story-survived-the-day');
+    const sceneWhy = 'their account of the night lasted the whole day';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const st = pStats(actor);
     const holdScore = (st.strategic / 10) * 0.5 + (st.temperament / 10) * 0.5;
@@ -664,17 +684,18 @@ registerEvent({
 
     const line = pick(rng, STORY_SURVIVED_LINES[branch]).replace(/\{a\}/g, actor);
     const thread = findOpenThread('cover', [actor]);
-    const { note, cited } = advanceCiting(thread, ctx.ep, line);
+    const { note, cited } = arcAdvanceCiting(api, thread, ctx.ep, line, { source: sceneWhy });
     // A cover story that held is retired clean; one that came apart in front
     // of people is `exposed`, which reads as `cracked` to anything downstream.
     const outcome = branch === 'held' ? 'passed-clean' : branch === 'broke' ? 'exposed' : null;
-    if (outcome) closeThread(thread.id, ctx.ep, outcome);
+    if (outcome) api.resolveArc(thread.id, outcome, { source: sceneWhy });
     // The Traitor whose story broke in the open loses standing with whoever
     // walked back beside them — the one observable consequence available here
     // without touching a belief.
     let bondDelta = 0;
     const witness = ctx.actors.find(n => n !== actor);
-    if (witness && branch === 'broke') { bondDelta = -1.5; addBond(actor, witness, bondDelta); }
+    if (witness && branch === 'broke') { bondDelta = -1.5; api.addBond(actor, witness, bondDelta,
+      { source: sceneWhy }); }
     return { branch, actor, threadId: thread.id, cited, note, outcome, witness: witness || null, bondDelta };
   },
 });
@@ -710,6 +731,8 @@ registerEvent({
     return findOpenThread('grief', ctx.actors) ? 2.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'grief-castle-in-view');
+    const sceneWhy = 'the castle came back into view';
     const [a, b] = ctx.actors;
     const st = pStats(a);
     // Whether a person can put a death down is temperament and how much of it
@@ -722,9 +745,9 @@ registerEvent({
     const line = pick(rng, CASTLE_IN_VIEW_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const thread = findOpenThread('grief', [a, b]);
     const bondDelta = branch === 'buried' ? 1.5 : 1;
-    addBond(a, b, bondDelta);
-    const { note, cited } = advanceCiting(thread, ctx.ep, line);
-    if (branch === 'buried') closeThread(thread.id, ctx.ep, 'buried');
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { note, cited } = arcAdvanceCiting(api, thread, ctx.ep, line, { source: sceneWhy });
+    if (branch === 'buried') api.resolveArc(thread.id, 'buried', { source: sceneWhy });
     return { branch, pair: [a, b], threadId: thread.id, cited, note,
       outcome: branch === 'buried' ? 'buried' : null, bondDelta };
   },
@@ -762,12 +785,14 @@ registerEvent({
       || _threadForActors('romance-spark', ctx.actors) ? 2 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'romance-walked-back-together');
+    const sceneWhy = 'walked back together';
     const kind = _threadForActors('romance-showmance', ctx.actors) ? 'romance-showmance' : 'romance-spark';
     const thread = _threadForActors(kind, ctx.actors);
     const [a, b] = thread.parties;
-    addBond(a, b, 2);
+    api.addBond(a, b, 2, { source: sceneWhy });
     const line = pick(rng, WALKED_BACK_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
-    const advanced = advanceThread(thread.id, ctx.ep, line);
+    const advanced = api.advanceArc(thread.id, line, { source: sceneWhy });
     return { branch: 'walked-back-together', pair: [a, b], kind,
       threadId: advanced?.id ?? thread.id, bondDelta: 2 };
   },
@@ -822,12 +847,14 @@ registerEvent({
     return t && ctx.ep > t.openedEp && heatAt(t, ctx.ep) > 0 ? 2.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'romance-showmance-on-the-way-back');
+    const sceneWhy = 'stopped hiding it on the road back';
     const spark = _threadForActors('romance-spark', ctx.actors);
     const [a, b] = spark.parties;
-    closeThread(spark.id, ctx.ep, 'became-showmance');
-    addBond(a, b, 2);
+    api.resolveArc(spark.id, 'became-showmance', { source: sceneWhy });
+    api.addBond(a, b, 2, { source: sceneWhy });
     const note = pick(rng, CAME_BACK_HOLDING_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
-    const t = openThread('romance-showmance', [a, b], ctx.ep, note);
+    const t = api.openArc('romance-showmance', [a, b], { source: sceneWhy, seed: note });
     return { branch: 'showmance-on-the-road', pair: [a, b], threadId: t?.id,
       outcome: 'became-showmance', bondDelta: 2 };
   },

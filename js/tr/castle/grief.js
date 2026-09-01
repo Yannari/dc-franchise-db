@@ -14,10 +14,13 @@
 // exists at all) belongs to suspicion.js or deduction.js, not here.
 import { gs, players } from '../../core.js';
 import { pStats } from '../../players.js';
-import { addBond, getBond } from '../../bonds.js';
+// getBond is a PURE READ and the one bonds.js name a castle file may still
+// hold; every WRITE goes through the scene API (see ./effects.js).
+import { getBond } from '../../bonds.js';
 import { registerEvent, isNervy } from '../events.js';
+import { sceneApi, arcContinue } from './effects.js';
 import { _sentenceCase } from './cover.js';
-import { openThread, advanceThread, findOpenThread, continueThread } from '../threads.js';
+import { findOpenThread } from '../threads.js';
 import { alignmentAt } from '../roles.js';
 import { lineFor } from './lines.js';
 import { peopleLost, murderCount } from '../state.js';
@@ -52,11 +55,13 @@ registerEvent({
     return _victimLastNight(ctx.ep) ? 3 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'grief-empty-chair');
+    const sceneWhy = 'the missing person\'s place at the table';
     const [a, b] = ctx.actors;
     const v = _victimLastNight(ctx.ep);
-    addBond(a, b, 1);
+    api.addBond(a, b, 1, { source: sceneWhy });
     const note = pick(rng, EMPTY_CHAIR_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{v\}/g, v);
-    const t = openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'empty-chair', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -99,14 +104,16 @@ registerEvent({
     return _victimLastNight(ctx.ep) ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'grief-headcount');
+    const sceneWhy = 'counted the room and found it shorter';
     const actors = ctx.actors;
     const remaining = (ctx.living || []).length;
     const v = _victimLastNight(ctx.ep);
     const shape = actors.length === 2 ? 'pair' : 'solo';
     const note = lineFor(HEADCOUNT_LINES[shape], `grief-headcount|${ctx.ep}|${remaining}`,
       { a: actors[0], b: actors[1] || 'somebody', n: String(remaining) });
-    const t = openThread(FAMILY, actors, ctx.ep, note);
-    if (actors.length === 2) addBond(actors[0], actors[1], 1);
+    const t = api.openArc(FAMILY, actors, { source: sceneWhy, seed: note });
+    if (actors.length === 2) api.addBond(actors[0], actors[1], 1, { source: sceneWhy });
     // THE BRANCH CARRIES THE SHAPE. One person counting alone and two people
     // arriving at the same number are different scenes, and the (id, branch)
     // table read 56 firings per 400 seasons as one.
@@ -136,10 +143,12 @@ registerEvent({
     return _victimLastNight(ctx.ep) ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'grief-seating-shift');
+    const sceneWhy = 'the seats moved around the gap';
     const [a, b] = ctx.actors;
-    addBond(a, b, 1);
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      lineFor(RESEATED_LINES, `grief-seating-shift|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 1, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(RESEATED_LINES, `grief-seating-shift|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
     return { branch: 'reseated', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1 };
   },
 });
@@ -164,11 +173,15 @@ registerEvent({
     return getBond(a, b) >= 3 ? 2.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'grief-shared-mourning-bond');
+    const sceneWhy = 'mourned the same person together';
     const [a, b] = ctx.actors;
-    addBond(a, b, 2);
+    api.addBond(a, b, 2, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, [a, b]);
     const note = lineFor(SHARED_MOURNING_LINES, `grief-shared-mourning-bond|${ctx.ep}`, { a, b });
-    const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'shared-mourning', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
@@ -195,11 +208,13 @@ registerEvent({
     return _victimLastNight(ctx.ep) ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'grief-suspicion-of-timing');
+    const sceneWhy = 'read something into who was taken and when';
     const [a, b] = ctx.actors;
     const v = _victimLastNight(ctx.ep);
-    addBond(a, b, 1);
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      lineFor(TIMING_LINES, `grief-suspicion-of-timing|${ctx.ep}`, { a, b, v }));
+    api.addBond(a, b, 1, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(TIMING_LINES, `grief-suspicion-of-timing|${ctx.ep}`, { a, b, v }),
+      { source: sceneWhy });
     return { branch: 'timing', pair: [a, b], victim: v, threadId: thread?.id, cited, bondDelta: 1 };
   },
 });
@@ -271,6 +286,8 @@ registerEvent({
     return _victimLastNight(ctx.ep) ? 3 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'grief-morning-reaction');
+    const sceneWhy = 'how they took the news at breakfast';
     const reactor = ctx.actors[0];
     const partner = ctx.actors[1] || null;
     const victim = _victimLastNight(ctx.ep);
@@ -327,8 +344,8 @@ registerEvent({
     // 'suspicious' and 'stoic' write no bond delta on purpose — a theory
     // being floated, or a withdrawal, is not itself a change in how two
     // people feel about each other. Both still open the thread below.
-    if (bondDelta) addBond(reactor, partner, bondDelta);
-    const threadId = openThread(FAMILY, parties, ctx.ep, line)?.id;
+    if (bondDelta) api.addBond(reactor, partner, bondDelta, { source: sceneWhy });
+    const threadId = api.openArc(FAMILY, parties, { source: sceneWhy, seed: line })?.id;
 
     return { branch, reactor, partner, victim, isTraitor, archetype, threadId, bondDelta };
   },
@@ -353,10 +370,12 @@ registerEvent({
     return _victimLastNight(ctx.ep) ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'grief-keepsake');
+    const sceneWhy = 'kept something of the person who was taken';
     const actor = ctx.actors[0];
     const v = _victimLastNight(ctx.ep);
-    const t = openThread(FAMILY, [actor], ctx.ep,
-      lineFor(KEEPSAKE_LINES, `grief-keepsake|${ctx.ep}`, { a: actor, v }));
+    const t = api.openArc(FAMILY, [actor],
+      { source: sceneWhy, seed: lineFor(KEEPSAKE_LINES, `grief-keepsake|${ctx.ep}`, { a: actor, v }) });
     return { branch: 'keepsake', actor, victim: v, threadId: t?.id };
   },
 });
@@ -378,11 +397,13 @@ registerEvent({
     return _victimLastNight(ctx.ep) ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'grief-blame-the-room');
+    const sceneWhy = 'blamed the room out loud for the death';
     const [a, b] = ctx.actors;
-    addBond(a, b, -0.5);
+    api.addBond(a, b, -0.5, { source: sceneWhy });
     const v = _victimLastNight(ctx.ep);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(BLAME_ROOM_LINES, `grief-blame-the-room|${ctx.ep}`, { a, b, v }));
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(BLAME_ROOM_LINES, `grief-blame-the-room|${ctx.ep}`, { a, b, v }) });
     return { branch: 'blamed-room', pair: [a, b], victim: v, threadId: t?.id, bondDelta: -0.5 };
   },
 });
@@ -417,10 +438,12 @@ registerEvent({
     return deaths >= 2 ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'grief-toast-to-them');
+    const sceneWhy = 'raised a glass to the person who was taken';
     const [a, b] = ctx.actors;
-    addBond(a, b, 2);
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      lineFor(TOAST_LINES, `grief-toast-to-them|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 2, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(TOAST_LINES, `grief-toast-to-them|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
     return { branch: 'toasted', pair: [a, b], threadId: thread?.id, cited, bondDelta: 2,
       crowd: [{ name: a, colour: 'kind', mult: 0.5 }, { name: b, colour: 'kind', mult: 0.5 }] };
   },
@@ -473,10 +496,12 @@ registerEvent({
     return deaths >= 2 && _victimLastNight(ctx.ep) ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'grief-numb-to-it-now');
+    const sceneWhy = 'stopped feeling the mornings';
     const [a, b] = ctx.actors;
     const v = _victimLastNight(ctx.ep);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(NUMB_LINES, `grief-numb-to-it-now|${ctx.ep}`, { a, b }));
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(NUMB_LINES, `grief-numb-to-it-now|${ctx.ep}`, { a, b }) });
     // No bond move — the point of this one IS the absence of a felt reaction.
     return { branch: 'numb', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 0 };
   },
@@ -503,6 +528,8 @@ registerEvent({
     return isNervy(ctx.state?.[ctx.actors[0]]) ? 2.5 : 1;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'grief-someone-cries-alone');
+    const sceneWhy = 'was found grieving away from the room';
     const actor = ctx.actors[0];
     const state = ctx.state?.[actor];
     const why = state === 'desperate'
@@ -512,7 +539,7 @@ registerEvent({
         : '';
     const line = lineFor(CRIES_ALONE_LINES, `grief-someone-cries-alone|${ctx.ep}|${state || 'content'}`,
       { a: actor });
-    const t = openThread(FAMILY, [actor], ctx.ep, `${line}${why}`);
+    const t = api.openArc(FAMILY, [actor], { source: sceneWhy, seed: `${line}${why}` });
     return { branch: 'cried-alone', actor, threadId: t?.id, state: state || 'content' };
   },
 });
@@ -552,11 +579,13 @@ registerEvent({
     return threads.some(t => t.kind === 'suspicion' && t.parties.includes(v)) ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'grief-wrongly-suspected-irony');
+    const sceneWhy = 'had suspected the person who was killed';
     const [a, b] = ctx.actors;
     const v = _victimLastNight(ctx.ep);
-    addBond(a, b, 1);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(WRONGLY_SUSPECTED_LINES, `grief-wrongly-suspected-irony|${ctx.ep}`, { a, b, v }));
+    api.addBond(a, b, 1, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(WRONGLY_SUSPECTED_LINES, `grief-wrongly-suspected-irony|${ctx.ep}`, { a, b, v }) });
     return { branch: 'wrongly-suspected-irony', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -642,6 +671,8 @@ registerEvent({
     return isNervy(ctx.state?.[ctx.actors[0]]) ? 2.5 : 1.2;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'grief-nobody-sleeps');
+    const sceneWhy = 'the castle did not sleep';
     const actor = ctx.actors[0];
     const state = ctx.state?.[actor] || 'content';
     // EVERY empty bed, not only the murdered ones. The weight above needs a
@@ -658,7 +689,7 @@ registerEvent({
     const line = pick(rng, NIGHT_AWAKE_LINES[state] || NIGHT_AWAKE_LINES.content)
       .replace(/\{a\}/g, actor);
     const tail = gone === 1 ? 'One empty bed, so far.' : `${gone} empty beds, so far.`;
-    const t = openThread(FAMILY, [actor], ctx.ep, `${line} ${tail}`);
+    const t = api.openArc(FAMILY, [actor], { source: sceneWhy, seed: `${line} ${tail}` });
     // THE BRANCH IS THE STATE. Returning a constant label made the audit's
     // (id, branch) table read this as one outcome fired five times in a
     // season when it is three genuinely different scenes chosen by the last

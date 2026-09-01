@@ -17,9 +17,12 @@
 // deduction.js question, earned through gateChannel(), not decided here.
 import { gs, players } from '../../core.js';
 import { pStats } from '../../players.js';
-import { addBond, getBond } from '../../bonds.js';
+// getBond is a PURE READ and the one bonds.js name a castle file may still
+// hold; every WRITE goes through the scene API (see ./effects.js).
+import { getBond } from '../../bonds.js';
 import { registerEvent, isNervy } from '../events.js';
-import { openThread, advanceThread, findOpenThread, continueThread, advanceCiting } from '../threads.js';
+import { sceneApi, arcAdvanceCiting, arcContinue } from './effects.js';
+import { findOpenThread } from '../threads.js';
 import { alignmentAt, livingFaithfuls } from '../roles.js';
 import { knowsAlignmentOf } from '../deduction.js';
 
@@ -88,9 +91,11 @@ registerEvent({
     return actor ? 1.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'cover-preemptive-alibi');
+    const sceneWhy = 'had an account of the night ready before anybody asked';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
-    const { thread, cited } = continueThread(FAMILY, [actor], ctx.ep,
-      lineFor(PREEMPTIVE_LINES, `cover-preemptive-alibi|${ctx.ep}`, { a: actor }));
+    const { thread, cited } = arcContinue(api, FAMILY, [actor], ctx.ep, lineFor(PREEMPTIVE_LINES, `cover-preemptive-alibi|${ctx.ep}`, { a: actor }),
+      { source: sceneWhy });
     return { branch: 'alibi-built', actor, threadId: thread?.id, cited };
   },
 });
@@ -125,13 +130,15 @@ registerEvent({
     return isTraitor(a, ctx.ep) && knowsAlignmentOf(a, b, ctx.ep) ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'cover-suspect-own-ally');
+    const sceneWhy = 'pointed the room at their own ally';
     const [a, b] = ctx.actors;
     // The misdirection is real strategy, but the FRICTION it creates is real
     // too — publicly turning on your own ally costs something even when it
     // is staged, which is why this still moves the bond down.
-    addBond(a, b, -1);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(SACRIFICE_ALLY_LINES, `cover-suspect-own-ally|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, -1, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(SACRIFICE_ALLY_LINES, `cover-suspect-own-ally|${ctx.ep}`, { a, b }) });
     return { branch: 'sacrificed-ally', pair: [a, b], threadId: t?.id, bondDelta: -1 };
   },
 });
@@ -155,6 +162,8 @@ registerEvent({
     return actor && livingFaithfuls(ctx.ep).length ? 1.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'cover-plant-a-name');
+    const sceneWhy = 'put somebody else\'s name into the room';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const pool = livingFaithfuls(ctx.ep).filter(n => n !== actor);
     const target = pick(rng, pool.length ? pool : livingFaithfuls(ctx.ep));
@@ -162,8 +171,8 @@ registerEvent({
     // event can pick up on ("why does everyone keep saying that name?"); the
     // plant itself proves nothing and must not read as evidence of anything
     // to the deduction layer.
-    const t = openThread(FAMILY, [actor], ctx.ep,
-      lineFor(PLANT_NAME_LINES, `cover-plant-a-name|${ctx.ep}`, { a: actor, c: target }));
+    const t = api.openArc(FAMILY, [actor],
+      { source: sceneWhy, seed: lineFor(PLANT_NAME_LINES, `cover-plant-a-name|${ctx.ep}`, { a: actor, c: target }) });
     // A Traitor putting an innocent name in the room's mouth. `cruel` for what
     // it does to the target and `masterful` for how well it is done — the two
     // ledgers are the only way to say both at once. See js/tr/crowd.js.
@@ -201,10 +210,12 @@ registerEvent({
     return findOpenThread(FAMILY, [actor]) ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'cover-rehearsed-story-advance');
+    const sceneWhy = 'went over their account of the night again';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const t = findOpenThread(FAMILY, [actor]);
-    const { thread, cited } = advanceCiting(t, ctx.ep,
-      lineFor(REHEARSED_LINES, `cover-rehearsed-story-advance|${ctx.ep}`, { a: actor }));
+    const { thread, cited } = arcAdvanceCiting(api, t, ctx.ep, lineFor(REHEARSED_LINES, `cover-rehearsed-story-advance|${ctx.ep}`, { a: actor }),
+      { source: sceneWhy });
     return { branch: 'rehearsed', actor, threadId: thread?.id, cited };
   },
 });
@@ -243,11 +254,13 @@ registerEvent({
     return ctx.state?.[actor] === 'desperate' ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'cover-cold-sweat-tell');
+    const sceneWhy = 'gave something away while being asked about the night';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const pressed = isNervy(ctx.state?.[actor]);
     const note = lineFor(COLD_SWEAT_LINES[pressed ? 'pressed' : 'calm'],
       `cover-cold-sweat-tell|${ctx.ep}|${pressed}`, { a: actor });
-    const t = openThread(FAMILY, [actor], ctx.ep, note);
+    const t = api.openArc(FAMILY, [actor], { source: sceneWhy, seed: note });
     return { branch: 'tell', actor, threadId: t?.id, underPressure: pressed };
   },
 });
@@ -313,6 +326,8 @@ registerEvent({
     return actor ? 2.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'cover-story-check');
+    const sceneWhy = 'had their account of the night checked';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const partner = ctx.actors.find(n => n !== actor) || null;
     const st = pStats(actor);
@@ -352,9 +367,9 @@ registerEvent({
     if (branch === 'convincing' && partner) bondDelta = 1;       // sold it together
     else if (branch === 'suspicious' && partner) bondDelta = -1; // partner half-clocked it
     else if (branch === 'slip' && partner) bondDelta = -2;       // partner had to watch it fall apart
-    if (bondDelta) addBond(actor, partner, bondDelta);
+    if (bondDelta) api.addBond(actor, partner, bondDelta, { source: sceneWhy });
 
-    const { thread, cited } = continueThread(FAMILY, parties, ctx.ep, line);
+    const { thread, cited } = arcContinue(api, FAMILY, parties, ctx.ep, line, { source: sceneWhy });
     return { branch, actor, partner, archetype, isNiceButTraitor: NICE_ARCHETYPES.includes(archetype),
       competence, threadId: thread?.id, cited, bondDelta };
   },
@@ -391,11 +406,13 @@ registerEvent({
     return b && !knowsAlignmentOf(a, b, ctx.ep) ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'cover-double-bluff');
+    const sceneWhy = 'raised the suspicion about themselves first';
     const a = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const b = ctx.actors.find(n => n !== a);
-    addBond(a, b, 1);
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      lineFor(DOUBLE_BLUFF_LINES, `cover-double-bluff|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 1, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(DOUBLE_BLUFF_LINES, `cover-double-bluff|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
     return { branch: 'double-bluffed', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1,
       crowd: { name: a, colour: 'masterful' } };
   },
@@ -420,10 +437,12 @@ registerEvent({
     return actor ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'cover-decline-recruit-offer-story');
+    const sceneWhy = 'explained away the night they were approached';
     const debts = gs.tr?.loyaltyDebt || [];
     const actor = ctx.actors.find(n => debts.some(d => d.recruiter === n));
-    const t = openThread(FAMILY, [actor], ctx.ep,
-      lineFor(RECRUIT_COVER_LINES, `cover-decline-recruit-offer-story|${ctx.ep}`, { a: actor }));
+    const t = api.openArc(FAMILY, [actor],
+      { source: sceneWhy, seed: lineFor(RECRUIT_COVER_LINES, `cover-decline-recruit-offer-story|${ctx.ep}`, { a: actor }) });
     return { branch: 'recruit-story-covered', actor, threadId: t?.id };
   },
 });
@@ -465,6 +484,8 @@ registerEvent({
     return t ? 2 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'cover-alibi-crumbles');
+    const sceneWhy = 'their account of the night stopped holding';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const partner = ctx.actors.find(n => n !== actor) || null;
     const st = pStats(actor);
@@ -482,10 +503,12 @@ registerEvent({
     let bondDelta = 0;
     if (partner) {
       bondDelta = branch === 'holds' ? 0.5 : branch === 'wobbles' ? -0.5 : -2;
-      if (bondDelta) addBond(actor, partner, bondDelta);
+      if (bondDelta) api.addBond(actor, partner, bondDelta, { source: sceneWhy });
     }
     const t = findOpenThread(FAMILY, [actor]);
-    const advanced = t ? advanceThread(t.id, ctx.ep, line) : openThread(FAMILY, [actor], ctx.ep, line);
+    const advanced = t
+      ? api.advanceArc(t.id, line, { source: sceneWhy })
+      : api.openArc(FAMILY, [actor], { source: sceneWhy, seed: line });
     // THE BRANCH IS THE MOMENT. A story that holds is the villain being good
     // at this; one that collapses is the villain sweating, which the crowd
     // enjoys more and warms to slightly. A wobble is neither.
@@ -519,11 +542,13 @@ registerEvent({
     return gs?.tr?.rounds?.some(r => r.ep === ctx.ep - 1 && r.murdered) ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'cover-blend-with-victims-friends');
+    const sceneWhy = 'sat in with the people who had lost somebody';
     const a = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const b = ctx.actors.find(n => n !== a);
-    addBond(a, b, 1);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(BLEND_LINES, `cover-blend-with-victims-friends|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 1, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(BLEND_LINES, `cover-blend-with-victims-friends|${ctx.ep}`, { a, b }) });
     return { branch: 'blended-in', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -548,9 +573,11 @@ registerEvent({
     return actor && livingFaithfuls(ctx.ep).length ? 1 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'cover-feign-fear');
+    const sceneWhy = 'performed being frightened for the room';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
-    const { thread, cited } = continueThread(FAMILY, [actor], ctx.ep,
-      lineFor(FEIGN_FEAR_LINES, `cover-feign-fear|${ctx.ep}`, { a: actor }));
+    const { thread, cited } = arcContinue(api, FAMILY, [actor], ctx.ep, lineFor(FEIGN_FEAR_LINES, `cover-feign-fear|${ctx.ep}`, { a: actor }),
+      { source: sceneWhy });
     return { branch: 'feigned-fear', actor, threadId: thread?.id, cited };
   },
 });
@@ -587,11 +614,15 @@ registerEvent({
     return isTraitor(a, ctx.ep) && knowsAlignmentOf(a, b, ctx.ep) ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'cover-swap-story-with-partner');
+    const sceneWhy = 'synchronised an account with somebody else';
     const [a, b] = ctx.actors;
-    addBond(a, b, 1);
+    api.addBond(a, b, 1, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, [a, b]);
     const note = lineFor(SWAP_STORY_LINES, `cover-swap-story-with-partner|${ctx.ep}`, { a, b });
-    const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'synchronized', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -649,6 +680,8 @@ registerEvent({
     return isNervy(ctx.state?.[actor]) ? 3 : 2;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'cover-alone-with-it');
+    const sceneWhy = 'sat alone with what they had done';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const st = pStats(actor);
     // Competence at carrying it, not permission to have it.
@@ -663,7 +696,7 @@ registerEvent({
     else branch = 'nearly';
 
     const line = pick(rng, ALONE_LINES[branch]).replace(/\{a\}/g, actor);
-    const { thread, cited } = continueThread(FAMILY, [actor], ctx.ep, line);
+    const { thread, cited } = arcContinue(api, FAMILY, [actor], ctx.ep, line, { source: sceneWhy });
     return { branch, actor, threadId: thread?.id, cited, state: ctx.state?.[actor] || 'content' };
   },
 });

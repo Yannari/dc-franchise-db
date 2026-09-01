@@ -30,6 +30,7 @@ import { findOpenThread, heatAt, openThreads, actFor } from './threads.js';
 import { applyEventCrowd } from './crowd.js';
 import { emotionalOverrideFor } from './state.js';
 import { weightedPick } from '../event-scheduler.js';
+import { createTraitorsSceneApi } from './scene-api.js';
 
 /** Windows a round is built from (spec §5.6) — registerEvent rejects any other. */
 export const KNOWN_WINDOWS = new Set([
@@ -464,7 +465,23 @@ export function pickEvent(ctx, rng) {
   const continued = !!(chosen.advancesThread && ctx.actors?.length
     && _threadThisEventWouldAdvance(chosen, ctx));
 
-  const consequences = chosen.fire(ctx, rng);
+  // ── THE SCENE'S ONE WRITE PATH, MINTED HERE ────────────────────────────
+  //
+  // Every consequence a castle event applies goes through js/tr/scene-api.js
+  // so it leaves a receipt naming the scene that caused it, and the identity
+  // on that receipt has to be the SCENE's, not the event file's — otherwise
+  // two events firing in the same window are indistinguishable in the debug
+  // ledger. So the API is made here, where the episode and the chosen event
+  // are both known, and handed to `fire()` on the ctx.
+  //
+  // Creating it takes no rng draw and writes nothing on its own, so a season
+  // played with receipts is bit-identical to one played without: the API is
+  // inert until an event calls a method on it. `sceneApi` (js/tr/castle/
+  // effects.js) falls back to minting its own when there is no runner — which
+  // is what keeps `validateRegistry` and the frozen-map probes working.
+  const sceneCtx = ctx.api ? ctx : { ...ctx, api: createTraitorsSceneApi({
+    ep: ctx.ep, eventId: chosen.id, sceneId: `${ctx.ep}:${ctx.window}:${chosen.id}` }) };
+  const consequences = chosen.fire(sceneCtx, rng);
 
   // ── WHO WAS ACTUALLY IN THE SCENE (whole-plan review, F4) ──────────────
   //

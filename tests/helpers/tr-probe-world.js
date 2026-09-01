@@ -72,6 +72,19 @@ export function probeWorld({ aTraitor, bTraitor, turret }) {
   //     stone cold by PROBE_EP and invisible (`trust-late-checkin`,
   //     `trust-vow-of-silence`). Seeding the same thread again one round later
   //     advances it instead of duplicating it, which leaves it warm.
+  // A RECRUITMENT THAT WAS DECLINED, seeded for A in BOTH arms.
+  //
+  // `cover-decline-recruit-offer-story` is the one event in the pool gated on
+  // `gs.tr.loyaltyDebt`, and without a debt in the world its `fire()` used to
+  // run anyway — `ctx.actors.find(...)` returned undefined and the old direct
+  // `openThread` call happily opened a story whose only party was `undefined`.
+  // The belief gate counted that as coverage, so the arm that claims to look
+  // inside every event was, for this one, looking inside a firing that could
+  // not happen in a season. The scene API refuses an unknown name outright,
+  // which is what surfaced it. Seeded for A in both arms, so it adds a
+  // precondition and never an alignment signal: the weight is 1.5 whether or
+  // not A is a Traitor.
+  gs.tr.loyaltyDebt.push({ recruiter: A, recruit: PROBE_CAST[2], ep: PROBE_EP - 1 });
   const THREAD_KINDS = ['trust', 'suspicion', 'cover', 'callback', 'testing', 'grief',
     'romance', 'romance-spark', 'romance-showmance'];
   for (const parties of [[A, B], [A], [B]]) {

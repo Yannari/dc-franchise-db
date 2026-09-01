@@ -17,10 +17,14 @@
 // thread's state, or "four outcomes" is really one outcome wearing masks.
 import { gs } from '../../core.js';
 import { pStats } from '../../players.js';
-import { addBond, getBond } from '../../bonds.js';
+// getBond is a PURE READ and the one bonds.js name a castle file may still
+// hold; every WRITE goes through the scene API (see ./effects.js).
+import { getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, closeThread, findOpenThread, openThreadsFor, heatAt,
-  advanceCiting, lastClosedThread, outcomeSense } from '../threads.js';
+import { sceneApi, arcAdvanceCiting } from './effects.js';
+import {
+  findOpenThread, openThreadsFor, heatAt, lastClosedThread, outcomeSense,
+} from '../threads.js';
 
 import { lineFor } from './lines.js';
 
@@ -79,10 +83,12 @@ registerEvent({
     return 2 + Math.min(3, bond / 3);
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'trust-confide-fear');
+    const sceneWhy = 'confided a real fear';
     const [a, b] = ctx.actors;
-    addBond(a, b, 1);
+    api.addBond(a, b, 1, { source: sceneWhy });
     const note = pick(rng, CONFIDE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
-    const t = openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'confided', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -108,10 +114,12 @@ registerEvent({
     return getBond(a, b) >= 0 ? 2 : 0.5;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'trust-trade-reads');
+    const sceneWhy = 'traded honest reads on somebody';
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others);
-    addBond(a, b, 1);
+    api.addBond(a, b, 1, { source: sceneWhy });
     let note = pick(rng, TRADE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
     // SPEC 5.5, BRANCHING ON A CLOSED THREAD'S OUTCOME. An honest read on
     // somebody is mostly a memory of how the last thing about them ended, and
@@ -123,7 +131,7 @@ registerEvent({
     if (sense === 'walked') note += ` Both of them remembered ${target} being asked once, and coming out of it clean.`;
     else if (sense === 'cracked') note += ` Neither of them had forgotten what came out of ${target} the last time.`;
     else if (sense === 'coupled') note += ` Whatever ${target} was doing, it had stopped being a secret a while ago.`;
-    const t = openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'traded-reads', pair: [a, b], about: target, threadId: t?.id,
       priorOutcome: prior?.outcome ?? null };
   },
@@ -158,10 +166,12 @@ registerEvent({
     return getBond(a, b) >= 4 ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'trust-circle-forms');
+    const sceneWhy = 'became a unit without saying so';
     const [a, b] = ctx.actors;
-    addBond(a, b, 2);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(CIRCLE_LINES, `trust-circle-forms|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 2, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(CIRCLE_LINES, `trust-circle-forms|${ctx.ep}`, { a, b }) });
     return { branch: 'circle', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
@@ -230,6 +240,8 @@ registerEvent({
     return getBond(a, b) >= 1 ? 2.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'trust-vote-commitment-test');
+    const sceneWhy = 'asked for a vote to their face';
     const [asker, asked] = ctx.actors;
     const st = pStats(asked);
     const bond = getBond(asker, asked);
@@ -256,8 +268,10 @@ registerEvent({
     let thread;
     if (branch === 'kept' || branch === 'broken' || branch === 'deflected') {
       bondDelta = branch === 'kept' ? 2 : branch === 'broken' ? -3 : 0;
-      if (bondDelta) addBond(asker, asked, bondDelta);
-      thread = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, [asker, asked], ctx.ep, line);
+      if (bondDelta) api.addBond(asker, asked, bondDelta, { source: sceneWhy });
+      thread = existing
+        ? api.advanceArc(existing.id, line, { source: sceneWhy })
+        : api.openArc(FAMILY, [asker, asked], { source: sceneWhy, seed: line });
     } else {
       // STRUCTURAL reversal, not a narration-only one: any prior commitment
       // thread for this pair is CLOSED (a real state transition, matching
@@ -273,9 +287,9 @@ registerEvent({
       // prose claimed a reversal; that claim was false and nothing
       // downstream could have told the two cases apart.
       bondDelta = -1;
-      addBond(asker, asked, bondDelta);
-      if (existing) closeThread(existing.id, ctx.ep, 'turned-back');
-      thread = openThread(FAMILY, [asked, asker], ctx.ep, line);
+      api.addBond(asker, asked, bondDelta, { source: sceneWhy });
+      if (existing) api.resolveArc(existing.id, 'turned-back', { source: sceneWhy });
+      thread = api.openArc(FAMILY, [asked, asker], { source: sceneWhy, seed: line });
     }
     return { branch, pair: [asker, asked], onTheSpot: branch === 'turned' ? asker : asked,
       threadId: thread?.id, bondDelta };
@@ -301,10 +315,12 @@ registerEvent({
     return _sawMurderLastNight(ctx) ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'trust-post-murder-huddle');
+    const sceneWhy = 'huddled after the news';
     const [a, b] = ctx.actors;
-    addBond(a, b, 2);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(HUDDLE_LINES, `trust-post-murder-huddle|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 2, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(HUDDLE_LINES, `trust-post-murder-huddle|${ctx.ep}`, { a, b }) });
     return { branch: 'huddled', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
@@ -329,11 +345,15 @@ registerEvent({
     return findOpenThread(FAMILY, [a, b]) ? 3 : 1;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'trust-protect-pact');
+    const sceneWhy = 'agreed to protect each other';
     const [a, b] = ctx.actors;
-    addBond(a, b, 1);
+    api.addBond(a, b, 1, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, [a, b]);
     const note = lineFor(PACT_LINES, `trust-protect-pact|${ctx.ep}`, { a, b });
-    const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'pact', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -388,11 +408,13 @@ registerEvent({
     return t && heatAt(t, ctx.ep) > 0 ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'trust-late-checkin');
+    const sceneWhy = 'checked in before the day started';
     const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    addBond(a, b, 1);
-    const { thread, cited } = advanceCiting(t, ctx.ep,
-      lineFor(CHECKIN_LINES, `trust-late-checkin|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 1, { source: sceneWhy });
+    const { thread, cited } = arcAdvanceCiting(api, t, ctx.ep, lineFor(CHECKIN_LINES, `trust-late-checkin|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
     return { branch: 'checked-in', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1 };
   },
 });
@@ -435,13 +457,17 @@ registerEvent({
     return getBond(a, b) >= 2 ? 2 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'trust-share-suspicion-honestly');
+    const sceneWhy = 'shared a suspicion honestly';
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others.length ? others : [b]);
-    addBond(a, b, 1);
+    api.addBond(a, b, 1, { source: sceneWhy });
     const note = pick(rng, SHARE_SUSPICION_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
     const existing = findOpenThread(FAMILY, [a, b]);
-    const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'shared-suspicion', pair: [a, b], about: target, threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -468,10 +494,12 @@ registerEvent({
     return getBond(a, b) >= 5 ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'trust-inner-circle-invite');
+    const sceneWhy = 'was brought inside';
     const [a, b] = ctx.actors;
-    addBond(a, b, 1);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(INVITE_LINES, `trust-inner-circle-invite|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 1, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(INVITE_LINES, `trust-inner-circle-invite|${ctx.ep}`, { a, b }) });
     return { branch: 'invited-in', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -495,11 +523,15 @@ registerEvent({
     return findOpenThread(FAMILY, [a, b]) ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'trust-return-favor');
+    const sceneWhy = 'returned a favour';
     const [a, b] = ctx.actors;
     const existing = findOpenThread(FAMILY, [a, b]);
-    addBond(a, b, 1);
+    api.addBond(a, b, 1, { source: sceneWhy });
     const note = lineFor(FAVOR_LINES, `trust-return-favor|${ctx.ep}`, { a, b });
-    const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'favor-returned', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -529,11 +561,13 @@ registerEvent({
     return t && heatAt(t, ctx.ep) >= 1 ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'trust-vow-of-silence');
+    const sceneWhy = 'agreed to keep it between them';
     const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    const advanced = advanceThread(t.id, ctx.ep,
-      lineFor(VOW_LINES, `trust-vow-of-silence|${ctx.ep}`, { a, b }));
-    addBond(a, b, 0.5);
+    const advanced = api.advanceArc(t.id, lineFor(VOW_LINES, `trust-vow-of-silence|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
+    api.addBond(a, b, 0.5, { source: sceneWhy });
     return { branch: 'vowed-silence', pair: [a, b], threadId: advanced?.id, bondDelta: 0.5 };
   },
 });
@@ -560,10 +594,12 @@ registerEvent({
     return threads.some(t => t.state === 'open' && t.kind === 'suspicion' && t.parties.includes(b)) ? 2.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'trust-defend-in-absentia');
+    const sceneWhy = 'defended somebody who was not there';
     const [a, b] = ctx.actors;
-    addBond(a, b, 2);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(DEFEND_LINES, `trust-defend-in-absentia|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 2, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(DEFEND_LINES, `trust-defend-in-absentia|${ctx.ep}`, { a, b }) });
     // Spending capital on somebody who is not in the room to see it done, and
     // will never be told. The country is watching and that is the whole point.
     return { branch: 'defended', pair: [a, b], threadId: t?.id, bondDelta: 2,
@@ -616,6 +652,8 @@ registerEvent({
     return getBond(a, b) >= 1 ? 2 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'trust-secret-swap');
+    const sceneWhy = 'traded something they had not told anyone';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const keepScore = (st.loyalty / 10) * 0.6 + (st.temperament / 10) * 0.4;
@@ -630,9 +668,11 @@ registerEvent({
 
     const line = pick(rng, SECRET_SWAP_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     let bondDelta = branch === 'kept' ? 1 : branch === 'leakedAccident' ? -1 : -3;
-    addBond(a, b, bondDelta);
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, [a, b]);
-    const t = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, [a, b], ctx.ep, line);
+    const t = existing
+      ? api.advanceArc(existing.id, line, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line });
     return { branch, pair: [a, b], threadId: t?.id, bondDelta };
   },
 });
@@ -687,6 +727,8 @@ registerEvent({
     return findOpenThread(FAMILY, ctx.actors) ? 3 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'trust-last-word-before-lights-out');
+    const sceneWhy = 'the last thing said before lights out';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const bond = getBond(a, b);
@@ -706,13 +748,13 @@ registerEvent({
     const line = pick(rng, LAST_WORD_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const thread = findOpenThread(FAMILY, [a, b]);
     const bondDelta = branch === 'sworn' ? 3 : branch === 'hedged' ? 0 : -2;
-    if (bondDelta) addBond(a, b, bondDelta);
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     // Write the beat FIRST so the payoff carries the story it is paying off,
     // then resolve. `hedged` is the branch that leaves it open, and it has to
     // exist or this becomes an event that ends every trust story it touches.
-    const { note, cited } = advanceCiting(thread, ctx.ep, line);
+    const { note, cited } = arcAdvanceCiting(api, thread, ctx.ep, line, { source: sceneWhy });
     const outcome = branch === 'sworn' ? 'passed-clean' : branch === 'broken' ? 'turned-back' : null;
-    if (outcome) closeThread(thread.id, ctx.ep, outcome);
+    if (outcome) api.resolveArc(thread.id, outcome, { source: sceneWhy });
     return { branch, pair: [a, b], threadId: thread.id, cited, note, outcome, bondDelta };
   },
 });

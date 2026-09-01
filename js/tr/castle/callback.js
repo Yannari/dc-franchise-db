@@ -42,9 +42,12 @@
 // instead of the ledger), not a loosening of what this family checks now.
 import { gs } from '../../core.js';
 import { pStats } from '../../players.js';
-import { addBond, getBond } from '../../bonds.js';
+// getBond is a PURE READ and the one bonds.js name a castle file may still
+// hold; every WRITE goes through the scene API (see ./effects.js).
+import { getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, closeThread, findOpenThread, continueThread } from '../threads.js';
+import { sceneApi, arcContinue } from './effects.js';
+import { findOpenThread } from '../threads.js';
 import { activeSeasons } from '../../franchise-meta.js';
 
 import { lineFor } from './lines.js';
@@ -128,10 +131,12 @@ registerEvent({
     return sharedHistory(a, b).length ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'callback-recognized');
+    const sceneWhy = 'recognised each other from a season they both played';
     const [a, b] = ctx.actors;
     const strongest = strongestRelation(sharedHistory(a, b));
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(RECOGNIZED_LINES, `callback-recognized|${ctx.ep}|${strongest?.relation || 'none'}`, { a, b }));
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(RECOGNIZED_LINES, `callback-recognized|${ctx.ep}|${strongest?.relation || 'none'}`, { a, b }) });
     return { branch: 'recognized', pair: [a, b], relation: strongest?.relation, threadId: t?.id };
   },
 });
@@ -156,11 +161,15 @@ registerEvent({
     return sharedHistory(a, b).some(h => h.relation === 'allies') ? 2.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'callback-old-alliance-reforms');
+    const sceneWhy = 'picked an old alliance back up';
     const [a, b] = ctx.actors;
-    addBond(a, b, 2);
+    api.addBond(a, b, 2, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, [a, b]);
     const note = lineFor(REFORM_LINES, `callback-old-alliance-reforms|${ctx.ep}`, { a, b });
-    const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'alliance-reformed', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
@@ -184,10 +193,12 @@ registerEvent({
     return sharedHistory(a, b).some(h => h.relation === 'betrayed-by-them') ? 2.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'callback-grudge-resurfaces');
+    const sceneWhy = 'an old grudge came back up';
     const [a, b] = ctx.actors;
-    addBond(a, b, -2);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(GRUDGE_LINES, `callback-grudge-resurfaces|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, -2, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(GRUDGE_LINES, `callback-grudge-resurfaces|${ctx.ep}`, { a, b }) });
     return { branch: 'grudge-resurfaced', pair: [a, b], threadId: t?.id, bondDelta: -2 };
   },
 });
@@ -214,10 +225,12 @@ registerEvent({
     return sharedHistory(a, b).some(h => h.relation === 'showmance') ? 3.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'callback-showmance-reunion-spark');
+    const sceneWhy = 'an old romance flickered again';
     const [a, b] = ctx.actors;
-    addBond(a, b, 2);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(REUNION_LINES, `callback-showmance-reunion-spark|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 2, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(REUNION_LINES, `callback-showmance-reunion-spark|${ctx.ep}`, { a, b }) });
     return { branch: 'reunion-spark', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
@@ -240,10 +253,12 @@ registerEvent({
     return sharedHistory(a, b).some(h => h.relation === 'rivals') ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'callback-competitive-history');
+    const sceneWhy = 'carried a rivalry over from a previous season';
     const [a, b] = ctx.actors;
-    addBond(a, b, -1);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(RIVALRY_LINES, `callback-competitive-history|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, -1, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(RIVALRY_LINES, `callback-competitive-history|${ctx.ep}`, { a, b }) });
     return { branch: 'rivalry-carried-over', pair: [a, b], threadId: t?.id, bondDelta: -1 };
   },
 });
@@ -280,16 +295,18 @@ registerEvent({
     return threads.some(t => t.state === 'open' && t.kind === 'suspicion' && (t.parties.includes(a) || t.parties.includes(b))) ? 3 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'callback-protects-old-ally-from-vote');
+    const sceneWhy = 'vouched for an old ally under scrutiny';
     const [x, y] = ctx.actors;
     const threads = gs.tr?.threads || [];
     const susp = threads.find(t => t.state === 'open' && t.kind === 'suspicion' && (t.parties.includes(x) || t.parties.includes(y)));
     const defended = susp.parties.includes(x) ? x : y;
     const defender = defended === x ? y : x;
-    addBond(defender, defended, 2);
-    closeThread(susp.id, ctx.ep, 'defended-by-history');
-    const t = openThread(FAMILY, [defender, defended], ctx.ep,
-      lineFor(DEFEND_HISTORY_LINES, `callback-protects-old-ally-from-vote|${ctx.ep}`,
-        { a: defender, b: defended }));
+    api.addBond(defender, defended, 2, { source: sceneWhy });
+    api.resolveArc(susp.id, 'defended-by-history', { source: sceneWhy });
+    const t = api.openArc(FAMILY, [defender, defended],
+      { source: sceneWhy, seed: lineFor(DEFEND_HISTORY_LINES, `callback-protects-old-ally-from-vote|${ctx.ep}`,
+        { a: defender, b: defended }) });
     return { branch: 'defended-by-history', pair: [defender, defended], threadId: t?.id,
       bondDelta: 2, crowd: { name: defender, colour: 'selfless', mult: 0.75 } };
   },
@@ -323,13 +340,15 @@ registerEvent({
     return sharedHistory(a, b).some(h => h.relation === 'betrayed-by-them') ? 1.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'callback-warns-newbies');
+    const sceneWhy = 'warned a first-timer about somebody they had played with';
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const c = pick(rng, others.length ? others : [a]);
-    addBond(a, c, 0.5);
-    addBond(a, b, -1);
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      lineFor(WARN_LINES, `callback-warns-newbies|${ctx.ep}`, { a, b, c }));
+    api.addBond(a, c, 0.5, { source: sceneWhy });
+    api.addBond(a, b, -1, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(WARN_LINES, `callback-warns-newbies|${ctx.ep}`, { a, b, c }),
+      { source: sceneWhy });
     return { branch: 'warned', actor: a, about: b, warned: c, threadId: thread?.id, cited, bondDelta: -1 };
   },
 });
@@ -391,6 +410,8 @@ registerEvent({
     return sharedHistory(a, b).length ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'callback-different-show-different-person');
+    const sceneWhy = 'compared who they had been on a different show';
     const [a, b] = ctx.actors;
     const strongest = strongestRelation(sharedHistory(a, b));
     const negative = strongest && ['betrayed-by-them', 'betrayed-them', 'rivals'].includes(strongest.relation);
@@ -402,8 +423,8 @@ registerEvent({
     else branch = 'dissonance';
     const note = lineFor(DIFFERENT_PERSON_LINES[branch],
       `callback-different-show-different-person|${ctx.ep}|${branch}`, { a, b });
-    if (bondDelta) addBond(a, b, bondDelta);
-    const t = openThread(FAMILY, [a, b], ctx.ep, note);
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch, pair: [a, b], threadId: t?.id, bondDelta };
   },
 });
@@ -459,10 +480,12 @@ registerEvent({
     return others.some(n => storyWith(insider, n).length && !storyWith(outsider, n).length) ? 1 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'callback-no-history-envy');
+    const sceneWhy = 'was left out of a conversation about a season they never played';
     const [outsider, insider] = ctx.actors;
-    addBond(outsider, insider, -0.5);
-    const { thread, cited } = continueThread(FAMILY, [outsider, insider], ctx.ep,
-      lineFor(ENVY_LINES, `callback-no-history-envy|${ctx.ep}`, { a: outsider, b: insider }));
+    api.addBond(outsider, insider, -0.5, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [outsider, insider], ctx.ep, lineFor(ENVY_LINES, `callback-no-history-envy|${ctx.ep}`, { a: outsider, b: insider }),
+      { source: sceneWhy });
     return { branch: 'left-out', pair: [outsider, insider], threadId: thread?.id, cited, bondDelta: -0.5 };
   },
 });
@@ -486,10 +509,12 @@ registerEvent({
     return sharedHistory(a, b).some(h => h.bothFinalists) ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'callback-shared-alumni-status');
+    const sceneWhy = 'two returnees clocked each other';
     const [a, b] = ctx.actors;
-    addBond(a, b, 3);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(ALUMNI_LINES, `callback-shared-alumni-status|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 3, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(ALUMNI_LINES, `callback-shared-alumni-status|${ctx.ep}`, { a, b }) });
     return { branch: 'alumni-bond', pair: [a, b], threadId: t?.id, bondDelta: 3 };
   },
 });
@@ -560,6 +585,8 @@ registerEvent({
     return sharedHistory(a, b).length ? 3 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'callback-history-confrontation');
+    const sceneWhy = 'was confronted with what they did in a previous season';
     const [a, b] = ctx.actors;
     const st = pStats(a);
     const strongest = strongestRelation(sharedHistory(a, b));
@@ -584,18 +611,24 @@ registerEvent({
     let threadId = existing?.id ?? null;
     if (branch === 'reconciles') {
       bondDelta = 3;
-      addBond(a, b, bondDelta);
-      const t = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, [a, b], ctx.ep, line);
+      api.addBond(a, b, bondDelta, { source: sceneWhy });
+      const t = existing
+        ? api.advanceArc(existing.id, line, { source: sceneWhy })
+        : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line });
       threadId = t?.id ?? threadId;
     } else if (branch === 'grudge') {
       bondDelta = -3;
-      addBond(a, b, bondDelta);
-      const t = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, [a, b], ctx.ep, line);
+      api.addBond(a, b, bondDelta, { source: sceneWhy });
+      const t = existing
+        ? api.advanceArc(existing.id, line, { source: sceneWhy })
+        : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line });
       threadId = t?.id ?? threadId;
     } else if (branch === 'strategic') {
       bondDelta = -1;
-      addBond(a, b, bondDelta);
-      const t = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, [a, b], ctx.ep, line);
+      api.addBond(a, b, bondDelta, { source: sceneWhy });
+      const t = existing
+        ? api.advanceArc(existing.id, line, { source: sceneWhy })
+        : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line });
       threadId = t?.id ?? threadId;
     } else {
       // WRITE THE BEAT, THEN CLOSE (whole-plan review, F3). `closeThread` sets
@@ -604,9 +637,9 @@ registerEvent({
       // all. This is the payoff scene of the story it is closing; it has to say
       // what happened before it says it is over.
       if (existing) {
-        advanceThread(existing.id, ctx.ep, line);
-        closeThread(existing.id, ctx.ep, 'buried');
-      } else threadId = openThread(FAMILY, [a, b], ctx.ep, line)?.id;
+        api.advanceArc(existing.id, line, { source: sceneWhy });
+        api.resolveArc(existing.id, 'buried', { source: sceneWhy });
+      } else threadId = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line })?.id;
     }
     return { branch, pair: [a, b], relation: strongest?.relation, threadId, bondDelta };
   },

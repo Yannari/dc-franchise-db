@@ -21,11 +21,13 @@
 // what the room WANTS it to measure is the whole reason this family reads
 // as "frequently wrong" rather than as free evidence.
 import { pStats } from '../../players.js';
-import { addBond, getBond } from '../../bonds.js';
+// getBond is a PURE READ and the one bonds.js name a castle file may still
+// hold; every WRITE goes through the scene API (see ./effects.js).
+import { getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
+import { sceneApi, arcAdvanceCiting, arcContinue } from './effects.js';
 import { lineFor } from './lines.js';
-import { openThread, advanceThread, closeThread, findOpenThread, continueThread,
-  advanceCiting } from '../threads.js';
+import { findOpenThread } from '../threads.js';
 
 const FAMILY = 'testing';
 
@@ -181,14 +183,16 @@ registerEvent({
     return getBond(a, b) >= 1 ? 1.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'testing-small-dare');
+    const sceneWhy = 'set a small test to see if it would be taken';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const compliant = rng() < Math.max(0.1, Math.min(0.9, st.loyalty / 10));
     const bondDelta = compliant ? 0.5 : -0.5;
-    addBond(a, b, bondDelta);
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = lineFor(DARE_LINES[compliant ? 'complied' : 'refused'],
       `testing-small-dare|${ctx.ep}|${compliant}`, { a, b });
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, line, { source: sceneWhy });
     return { branch: compliant ? 'complied' : 'refused', pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -217,14 +221,16 @@ registerEvent({
     return 1.5;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'testing-ask-for-alibi-check');
+    const sceneWhy = 'took somebody\'s account of the night to a third party';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const checksOut = rng() < Math.max(0.15, Math.min(0.9, st.temperament / 10));
     const bondDelta = checksOut ? 0.5 : -1;
-    addBond(a, b, bondDelta);
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = lineFor(ALIBI_CHECK_LINES[checksOut ? 'ok' : 'bad'],
       `testing-ask-for-alibi-check|${ctx.ep}|${checksOut}`, { a, b });
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, line, { source: sceneWhy });
     return { branch: checksOut ? 'checks-out' : 'inconsistent', pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -245,6 +251,8 @@ registerEvent({
     return getBond(a, b) >= 2 ? 2 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'testing-loyalty-oath');
+    const sceneWhy = 'asked for it out loud';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const sincereScore = (st.loyalty / 10) * 0.5 + (st.boldness / 10) * 0.3 + 0.1;
@@ -259,9 +267,11 @@ registerEvent({
 
     const line = lineFor(OATH_LINES[branch], `testing-loyalty-oath|${ctx.ep}|${branch}`, { a, b });
     const bondDelta = branch === 'sincere' ? 2 : branch === 'reluctant' ? 0 : -2;
-    if (bondDelta) addBond(a, b, bondDelta);
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, [a, b]);
-    const t = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, [a, b], ctx.ep, line);
+    const t = existing
+      ? api.advanceArc(existing.id, line, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line });
     // THE EVENT DOES NOT KNOW WHO IT IS WATCHING and must not pretend to. An
     // oath sworn sincerely reads as `kind` whoever swears it — and a Traitor
     // swearing one has their affection damped to a quarter by crowd.js anyway,
@@ -292,14 +302,16 @@ registerEvent({
     return getBond(a, b) >= 0 ? 1.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'testing-reverse-psychology');
+    const sceneWhy = 'argued the opposite to see what came back';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const staysCalm = rng() < Math.max(0.1, Math.min(0.9, st.temperament / 10));
     const bondDelta = staysCalm ? 0.5 : -1;
-    addBond(a, b, bondDelta);
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = lineFor(REVERSE_PSYCH_LINES[staysCalm ? 'calm' : 'rattled'],
       `testing-reverse-psychology|${ctx.ep}|${staysCalm}`, { a, b });
-    const t = openThread(FAMILY, [a, b], ctx.ep, line);
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line });
     return { branch: staysCalm ? 'stayed-calm' : 'got-rattled', pair: [a, b], threadId: t?.id, bondDelta };
   },
 });
@@ -318,14 +330,16 @@ registerEvent({
     return 1.5;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'testing-hypothetical-loyalty-question');
+    const sceneWhy = 'asked a hypothetical and watched the answer';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const reassures = rng() < Math.max(0.15, Math.min(0.9, st.loyalty / 10));
     const bondDelta = reassures ? 1 : -0.5;
-    addBond(a, b, bondDelta);
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = lineFor(HYPOTHETICAL_LINES[reassures ? 'reassured' : 'hedged'],
       `testing-hypothetical-loyalty-question|${ctx.ep}|${reassures}`, { a, b });
-    const t = openThread(FAMILY, [a, b], ctx.ep, line);
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line });
     return { branch: reassures ? 'reassured' : 'hedged', pair: [a, b], threadId: t?.id, bondDelta };
   },
 });
@@ -351,14 +365,16 @@ registerEvent({
     return 1;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'testing-double-check-story');
+    const sceneWhy = 'checked one account against another';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const consistent = rng() < Math.max(0.15, Math.min(0.9, st.temperament / 10 * 0.6 + 0.3));
     const bondDelta = consistent ? 0 : -1;
-    if (bondDelta) addBond(a, b, bondDelta);
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = lineFor(DOUBLE_CHECK_LINES[consistent ? 'consistent' : 'inconsistent'],
       `testing-double-check-story|${ctx.ep}|${consistent}`, { a, b });
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, line, { source: sceneWhy });
     return { branch: consistent ? 'consistent' : 'inconsistent', pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -381,14 +397,16 @@ registerEvent({
     return getBond(a, b) >= 1 ? 1.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'testing-silence-test');
+    const sceneWhy = 'left a silence to see who filled it';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const chases = rng() < Math.max(0.1, Math.min(0.9, st.social / 10 * 0.5 + st.loyalty / 10 * 0.4));
     const bondDelta = chases ? 1 : -1;
-    addBond(a, b, bondDelta);
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = lineFor(SILENCE_LINES[chases ? 'chased' : 'letgo'],
       `testing-silence-test|${ctx.ep}|${chases}`, { a, b });
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, line, { source: sceneWhy });
     return { branch: chases ? 'chased' : 'let-it-go', pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -408,12 +426,14 @@ registerEvent({
     return pStats(a).intuition >= 7 ? 1.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'testing-cold-read-check');
+    const sceneWhy = 'read them cold and said nothing about it';
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others.length ? others : [b]);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(COLD_READ_LINES, `testing-cold-read-check|${ctx.ep}`, { a, b, c: target }));
-    addBond(a, b, 0);
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(COLD_READ_LINES, `testing-cold-read-check|${ctx.ep}`, { a, b, c: target }) });
+    api.addBond(a, b, 0, { source: sceneWhy });
     return { branch: 'cold-read', pair: [a, b], target, threadId: t?.id };
   },
 });
@@ -436,11 +456,13 @@ registerEvent({
     return findOpenThread(FAMILY, [a, b]) ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'testing-follow-through-check');
+    const sceneWhy = 'checked whether a promise was kept';
     const [a, b] = ctx.actors;
     const t = findOpenThread(FAMILY, [a, b]);
-    addBond(a, b, 0.5);
-    const { thread, cited } = advanceCiting(t, ctx.ep,
-      lineFor(FOLLOW_THROUGH_LINES, `testing-follow-through-check|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 0.5, { source: sceneWhy });
+    const { thread, cited } = arcAdvanceCiting(api, t, ctx.ep, lineFor(FOLLOW_THROUGH_LINES, `testing-follow-through-check|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
     return { branch: 'followed-through', pair: [a, b], threadId: thread?.id, cited, bondDelta: 0.5 };
   },
 });
@@ -515,6 +537,8 @@ registerEvent({
     return getBond(a, b) >= 0 ? 2.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'testing-decoy-secret');
+    const sceneWhy = 'planted a secret to see where it travelled';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const keptScore = (st.loyalty / 10) * 0.5 + (st.temperament / 10) * 0.3 + 0.1;
@@ -535,48 +559,50 @@ registerEvent({
     let threadId;
     if (branch === 'keptQuiet') {
       bondDelta = 2;
-      addBond(a, b, bondDelta);
+      api.addBond(a, b, bondDelta, { source: sceneWhy });
       // WRITE THE BEAT, THEN CLOSE (whole-plan review, F3). `closeThread` sets
       // state and outcome and writes NOTHING — no beat, no residue — so a
       // branch that computed a line and went straight to it printed nothing at
       // all. This is the payoff scene of the story it is closing; it has to say
       // what happened before it says it is over.
       if (existing) {
-        advanceThread(existing.id, ctx.ep, line);
-        closeThread(existing.id, ctx.ep, 'passed-clean');
+        api.advanceArc(existing.id, line, { source: sceneWhy });
+        api.resolveArc(existing.id, 'passed-clean', { source: sceneWhy });
         threadId = existing.id;
-      } else threadId = openThread(FAMILY, [a, b], ctx.ep, line)?.id;
+      } else threadId = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line })?.id;
     } else if (branch === 'innocent') {
       bondDelta = -1;
-      addBond(a, b, bondDelta);
-      const t = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, [a, b], ctx.ep, line);
+      api.addBond(a, b, bondDelta, { source: sceneWhy });
+      const t = existing
+        ? api.advanceArc(existing.id, line, { source: sceneWhy })
+        : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line });
       threadId = t?.id;
     } else if (branch === 'malicious') {
       bondDelta = -3;
-      addBond(a, b, bondDelta);
+      api.addBond(a, b, bondDelta, { source: sceneWhy });
       // WRITE THE BEAT, THEN CLOSE (whole-plan review, F3). `closeThread` sets
       // state and outcome and writes NOTHING — no beat, no residue — so a
       // branch that computed a line and went straight to it printed nothing at
       // all. This is the payoff scene of the story it is closing; it has to say
       // what happened before it says it is over.
       if (existing) {
-        advanceThread(existing.id, ctx.ep, line);
-        closeThread(existing.id, ctx.ep, 'failed-maliciously');
+        api.advanceArc(existing.id, line, { source: sceneWhy });
+        api.resolveArc(existing.id, 'failed-maliciously', { source: sceneWhy });
         threadId = existing.id;
-      } else threadId = openThread(FAMILY, [a, b], ctx.ep, line)?.id;
+      } else threadId = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line })?.id;
     } else {
       bondDelta = -1;
-      addBond(a, b, bondDelta);
+      api.addBond(a, b, bondDelta, { source: sceneWhy });
       // WRITE THE BEAT, THEN CLOSE (whole-plan review, F3). `closeThread` sets
       // state and outcome and writes NOTHING — no beat, no residue — so a
       // branch that computed a line and went straight to it printed nothing at
       // all. This is the payoff scene of the story it is closing; it has to say
       // what happened before it says it is over.
       if (existing) {
-        advanceThread(existing.id, ctx.ep, line);
-        closeThread(existing.id, ctx.ep, 'test-exposed');
+        api.advanceArc(existing.id, line, { source: sceneWhy });
+        api.resolveArc(existing.id, 'test-exposed', { source: sceneWhy });
         threadId = existing.id;
-      } else threadId = openThread(FAMILY, [a, b], ctx.ep, line)?.id;
+      } else threadId = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line })?.id;
     }
     return { branch, pair: [a, b], threadId, bondDelta };
   },
@@ -626,6 +652,8 @@ registerEvent({
     return findOpenThread(FAMILY, ctx.actors) ? 3 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'testing-night-scores-it');
+    const sceneWhy = 'the night settled what the test proved';
     const [a, b] = ctx.actors;
     const sa = pStats(a);
     const sb = pStats(b);
@@ -645,11 +673,11 @@ registerEvent({
     const line = pick(rng, NIGHT_CHECK_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const thread = findOpenThread(FAMILY, [a, b]);
     const bondDelta = branch === 'confirmed' ? 2 : branch === 'failed' ? -2.5 : 0;
-    if (bondDelta) addBond(a, b, bondDelta);
-    const { note, cited } = advanceCiting(thread, ctx.ep, line);
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { note, cited } = arcAdvanceCiting(api, thread, ctx.ep, line, { source: sceneWhy });
     const outcome = branch === 'confirmed' ? 'passed-clean'
       : branch === 'failed' ? 'failed-maliciously' : null;
-    if (outcome) closeThread(thread.id, ctx.ep, outcome);
+    if (outcome) api.resolveArc(thread.id, outcome, { source: sceneWhy });
     return { branch, pair: [a, b], threadId: thread.id, cited, note, outcome, bondDelta };
   },
 });

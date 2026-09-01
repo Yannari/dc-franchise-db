@@ -12,10 +12,14 @@
 // emissions with a durable edge. Nothing here has been measured, so nothing
 // here calls learn().
 import { pStats } from '../../players.js';
-import { addBond, getBond } from '../../bonds.js';
+// getBond is a PURE READ and the one bonds.js name a castle file may still
+// hold; every WRITE goes through the scene API (see ./effects.js).
+import { getBond } from '../../bonds.js';
 import { registerEvent, isNervy } from '../events.js';
-import { openThread, advanceThread, closeThread, findOpenThread, heatAt, continueThread,
-  advanceCiting, actPhrase, lastClosedThread, outcomeSense } from '../threads.js';
+import { sceneApi, arcAdvanceCiting, arcContinue } from './effects.js';
+import {
+  findOpenThread, heatAt, actPhrase, lastClosedThread, outcomeSense,
+} from '../threads.js';
 import { suspicion } from '../deduction.js';
 import { lineFor } from './lines.js';
 
@@ -54,8 +58,10 @@ registerEvent({
       ? base * 1.5 : base;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'susp-noticed-inconsistency');
+    const sceneWhy = 'noticed something that did not line up';
     const [a, b] = ctx.actors;
-    addBond(a, b, -1);
+    api.addBond(a, b, -1, { source: sceneWhy });
     let note = pick(rng, NOTICE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const prior = lastClosedThread(b, { beforeEp: ctx.ep });
     const sense = outcomeSense(prior?.outcome);
@@ -71,7 +77,7 @@ registerEvent({
     // these lines doing exactly that, which is the guard working.
     if (sense === 'walked') note += ` ${b} had been asked about something before, and had walked out of it clean.`;
     else if (sense === 'cracked') note += ` The last time anybody leaned on ${b}, something came out.`;
-    const t = openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'noticed', pair: [a, b], threadId: t?.id, bondDelta: -1,
       priorOutcome: prior?.outcome ?? null };
   },
@@ -96,16 +102,18 @@ registerEvent({
     return 1.5;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'susp-overheard-conversation');
+    const sceneWhy = 'overheard a conversation they were not in';
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const i = Math.floor(rng() * others.length);
     let j = Math.floor(rng() * others.length);
     while (j === i && others.length > 1) j = Math.floor(rng() * others.length);
     const c = others[i], d = others[j] ?? others[i];
-    addBond(a, b, 1); // bonded over shared unease, not over the pair they watched
+    api.addBond(a, b, 1, { source: sceneWhy }); // bonded over shared unease, not over the pair they watched
     const note = pick(rng, OVERHEARD_LINES)
       .replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, c).replace(/\{d\}/g, d);
-    const t = openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'overheard', observers: [a, b], observed: [c, d], threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -141,9 +149,11 @@ registerEvent({
     return isNervy(ctx.state?.[a]) ? 4.5 : 3;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'susp-pattern-tracking');
+    const sceneWhy = 'tracked a pattern across several days';
     const [a, b] = ctx.actors;
     const t = findOpenThread(FAMILY, [a, b]);
-    addBond(a, b, -0.5);
+    api.addBond(a, b, -0.5, { source: sceneWhy });
     // SPEC 5.2, THE THREAD'S OWN ACT. A tally that started in a different part
     // of the season is a different sentence from one started this morning.
     const since = t.act && t.act !== ctx.act ? `, started back in ${actPhrase(t.act)},` : '';
@@ -154,7 +164,7 @@ registerEvent({
     // not see a repeat inside it. Same reasoning as `grief-nobody-sleeps`.
     const note = lineFor(TALLY_LINES, `susp-pattern-tracking|${ctx.ep}|${!!since}`,
       { a, b, since });
-    const { thread, cited } = advanceCiting(t, ctx.ep, note);
+    const { thread, cited } = arcAdvanceCiting(api, t, ctx.ep, note, { source: sceneWhy });
     return { branch: since ? 'tracked-since' : 'tracked', pair: [a, b], threadId: thread?.id, cited, bondDelta: -0.5,
       acrossActs: !!since };
   },
@@ -200,13 +210,15 @@ registerEvent({
     return t.act && t.act !== ctx.act ? 6 : 4;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'susp-cold-case-revival');
+    const sceneWhy = 'brought an old suspicion back up';
     const [a, b] = ctx.actors;
     const t = findOpenThread(FAMILY, [a, b]);
     const since = t.act && t.act !== ctx.act
       ? ` It had been sitting open since ${actPhrase(t.act)}.` : '';
-    const { thread, cited } = advanceCiting(t, ctx.ep,
-      `${lineFor(COLD_CASE_LINES, `susp-cold-case-revival|${ctx.ep}`, { a, b })}${since}`);
-    addBond(a, b, -1);
+    const { thread, cited } = arcAdvanceCiting(api, t, ctx.ep, `${lineFor(COLD_CASE_LINES, `susp-cold-case-revival|${ctx.ep}`, { a, b })}${since}`,
+      { source: sceneWhy });
+    api.addBond(a, b, -1, { source: sceneWhy });
     return { branch: 'revived', pair: [a, b], threadId: thread?.id, cited, bondDelta: -1,
       acrossActs: !!since };
   },
@@ -236,10 +248,12 @@ registerEvent({
     return getBond(a, b) >= 0 ? 1.5 : 0.5;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'susp-whisper-about-absent');
+    const sceneWhy = 'talked about somebody who was not in the room';
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others);
-    addBond(a, b, 1);
+    api.addBond(a, b, 1, { source: sceneWhy });
     let note = pick(rng, WHISPER_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
     // SPEC 5.5. Comparing notes on somebody IS remembering how the last story
     // about them ended. No day number here either - see the note in
@@ -249,7 +263,7 @@ registerEvent({
     if (sense === 'walked') note += ` The last time somebody put ${target} on the spot, ${target} had walked away from it, and that was most of what there was to say.`;
     else if (sense === 'cracked') note += ` They kept coming back to the thing that had already come out of ${target} once.`;
     else if (sense === 'coupled') note += ` Half of it was really about who ${target} had been spending their evenings with.`;
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, note);
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
     return { branch: 'whispered', pair: [a, b], about: target, threadId: thread?.id, cited, bondDelta: 1,
       crowd: { name: a, colour: 'cowardly', mult: 0.4 },
       priorOutcome: prior?.outcome ?? null };
@@ -325,6 +339,8 @@ registerEvent({
     return t ? 3 : 1.5;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'susp-private-accusation');
+    const sceneWhy = 'said it to their face, privately';
     const [accuser, accused] = ctx.actors;
     const st = pStats(accused);
     const denyScore = (st.temperament / 10) * 0.6 + (st.social / 10) * 0.4;
@@ -352,35 +368,37 @@ registerEvent({
       // all. This is the payoff scene of the story it is closing; it has to say
       // what happened before it says it is over.
       if (existing) {
-        advanceThread(existing.id, ctx.ep, line);
-        closeThread(existing.id, ctx.ep, 'denied-convincingly');
-      } else threadId = openThread(FAMILY, [accuser, accused], ctx.ep, line)?.id;
+        api.advanceArc(existing.id, line, { source: sceneWhy });
+        api.resolveArc(existing.id, 'denied-convincingly', { source: sceneWhy });
+      } else threadId = api.openArc(FAMILY, [accuser, accused], { source: sceneWhy, seed: line })?.id;
     } else if (branch === 'denyWeak') {
       bondDelta = -1;
-      addBond(accuser, accused, bondDelta);
-      const t = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, [accuser, accused], ctx.ep, line);
+      api.addBond(accuser, accused, bondDelta, { source: sceneWhy });
+      const t = existing
+        ? api.advanceArc(existing.id, line, { source: sceneWhy })
+        : api.openArc(FAMILY, [accuser, accused], { source: sceneWhy, seed: line });
       threadId = t?.id ?? threadId;
     } else if (branch === 'turned') {
       bondDelta = -2;
-      addBond(accuser, accused, bondDelta);
+      api.addBond(accuser, accused, bondDelta, { source: sceneWhy });
       // Same party-set, but the note is what carries the reversal — the next
       // reader (a future accusation event, in a later task) has to read the
       // note text to know whose move it is, exactly as trust's "turned"
       // branch does.
-      const t = openThread(FAMILY, [accuser, accused], ctx.ep, line);
+      const t = api.openArc(FAMILY, [accuser, accused], { source: sceneWhy, seed: line });
       threadId = t?.id ?? threadId;
     } else {
       bondDelta = 1;
-      addBond(accuser, accused, bondDelta);
+      api.addBond(accuser, accused, bondDelta, { source: sceneWhy });
       // WRITE THE BEAT, THEN CLOSE (whole-plan review, F3). `closeThread` sets
       // state and outcome and writes NOTHING — no beat, no residue — so a
       // branch that computed a line and went straight to it printed nothing at
       // all. This is the payoff scene of the story it is closing; it has to say
       // what happened before it says it is over.
       if (existing) {
-        advanceThread(existing.id, ctx.ep, line);
-        closeThread(existing.id, ctx.ep, 'confessed-unrelated');
-      } else threadId = openThread(FAMILY, [accuser, accused], ctx.ep, line)?.id;
+        api.advanceArc(existing.id, line, { source: sceneWhy });
+        api.resolveArc(existing.id, 'confessed-unrelated', { source: sceneWhy });
+      } else threadId = api.openArc(FAMILY, [accuser, accused], { source: sceneWhy, seed: line })?.id;
     }
     return { branch, pair: [accuser, accused], threadId, bondDelta };
   },
@@ -408,12 +426,14 @@ registerEvent({
     return getBond(a, b) <= 2 ? 1.5 : 0.5;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'susp-timeline-crosscheck');
+    const sceneWhy = 'crosschecked where people said they were';
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others);
-    addBond(a, b, 0.5);
+    api.addBond(a, b, 0.5, { source: sceneWhy });
     const note = pick(rng, TIMELINE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
-    const t = openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'crosschecked', pair: [a, b], about: target, threadId: t?.id, bondDelta: 0.5 };
   },
 });
@@ -444,8 +464,10 @@ registerEvent({
     return pStats(a).intuition >= 6 ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'susp-body-language-read');
+    const sceneWhy = 'read something in how somebody was sitting';
     const [a, b] = ctx.actors;
-    addBond(a, b, -0.5);
+    api.addBond(a, b, -0.5, { source: sceneWhy });
     // SPEC 5.5. What `a` is watching FOR depends on how the last story about
     // `b` ended: a person who came apart once is watched for the next crack.
     const prior = lastClosedThread(b, { beforeEp: ctx.ep });
@@ -456,7 +478,7 @@ registerEvent({
         ? ` Whatever ${b} did the last time somebody asked had worked, and ${a} wanted to know how.`
         : '';
     const note = lineFor(BODY_READ_LINES, `susp-body-language-read|${ctx.ep}|${sense}`, { a, b });
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, `${note}${because}`);
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, `${note}${because}`, { source: sceneWhy });
     // THE BRANCH STAYS CONSTANT HERE, DELIBERATELY. Splitting it on `sense`
     // measured 162 / 3 / 17 per 400 seasons against a branch floor of 3 —
     // two new cells at or beside the floor, on counts the resampling finding
@@ -490,11 +512,15 @@ registerEvent({
     return 1.5;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'susp-alliance-shape-guess');
+    const sceneWhy = 'guessed at the shape of the room';
     const [a, b] = ctx.actors;
-    addBond(a, b, 0.5);
+    api.addBond(a, b, 0.5, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, [a, b]);
     const note = lineFor(SHAPE_GUESS_LINES, `susp-alliance-shape-guess|${ctx.ep}|${!!existing}`, { a, b });
-    const t = existing ? advanceThread(existing.id, ctx.ep, note) : openThread(FAMILY, [a, b], ctx.ep, note);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     // THE BRANCH CARRIES THE STATE: two people drawing the map for the first
     // time and two people redrawing one they already have are not one scene.
     return { branch: existing ? 'shape-redrawn' : 'shape-guessed', pair: [a, b], threadId: t?.id, bondDelta: 0.5 };
@@ -535,10 +561,12 @@ registerEvent({
     return pStats(b).temperament <= 4 ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'susp-defensive-overcorrect');
+    const sceneWhy = 'defended themselves harder than the question needed';
     const [a, b] = ctx.actors;
-    addBond(a, b, -1);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(OVERCORRECT_LINES, `susp-defensive-overcorrect|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, -1, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(OVERCORRECT_LINES, `susp-defensive-overcorrect|${ctx.ep}`, { a, b }) });
     return { branch: 'overcorrected', pair: [a, b], threadId: t?.id, bondDelta: -1 };
   },
 });
@@ -578,6 +606,8 @@ registerEvent({
     return t ? 2 : 0.75;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'susp-group-pressure-crack');
+    const sceneWhy = 'was leaned on by the room';
     const [a, b] = ctx.actors;
     const st = pStats(b);
     const holdsScore = (st.temperament / 10) * 0.5 + (st.boldness / 10) * 0.3 + 0.1;
@@ -592,9 +622,11 @@ registerEvent({
 
     const line = pick(rng, GROUP_PRESSURE_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     let bondDelta = branch === 'holds' ? 0.5 : branch === 'cracks' ? -2 : -1;
-    addBond(a, b, bondDelta);
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, ctx.actors);
-    const t = existing ? advanceThread(existing.id, ctx.ep, line) : openThread(FAMILY, ctx.actors, ctx.ep, line);
+    const t = existing
+      ? api.advanceArc(existing.id, line, { source: sceneWhy })
+      : api.openArc(FAMILY, ctx.actors, { source: sceneWhy, seed: line });
     return { branch, pair: [a, b], threadId: t?.id, bondDelta };
   },
 });
@@ -652,6 +684,8 @@ registerEvent({
     return 1.5;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'susp-misread-tell');
+    const sceneWhy = 'read a tell that may not have been one';
     const [a, b] = ctx.actors;
     const state = ctx.state?.[a] || 'content';
     // NERVY, not the raw state: `desperate` on its own reads 6 firings per 400
@@ -660,9 +694,9 @@ registerEvent({
     // room came for last night, inventing evidence — and that is the split
     // worth labelling. The raw state still varies the sentence.
     const nervy = isNervy(state);
-    addBond(a, b, -0.5);
-    const t = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(MISREAD_LINES, `susp-misread-tell|${ctx.ep}|${state}`, { a, b }));
+    api.addBond(a, b, -0.5, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(MISREAD_LINES, `susp-misread-tell|${ctx.ep}|${state}`, { a, b }) });
     // THE BRANCH CARRIES THE STATE. Somebody the room came for last night
     // inventing a tell is a different scene from somebody comfortable doing
     // it, and the (id, branch) table could not tell them apart before.
@@ -730,6 +764,8 @@ registerEvent({
     return isNervy(ctx.state?.[a]) ? 3 : 1.5;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'susp-heard-in-the-corridor');
+    const sceneWhy = 'heard something in the corridor after lights out';
     const [a, b] = ctx.actors;
     const sa = pStats(a);
     const sb = pStats(b);
@@ -747,8 +783,8 @@ registerEvent({
 
     const line = pick(rng, DOOR_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const bondDelta = branch === 'caught' ? -1.5 : -0.5;
-    addBond(a, b, bondDelta);
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep, line);
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, line, { source: sceneWhy });
     return { branch, pair: [a, b], threadId: thread?.id, cited, bondDelta,
       state: ctx.state?.[a] || 'content' };
   },

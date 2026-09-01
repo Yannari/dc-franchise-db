@@ -83,9 +83,12 @@
 // tests/tr-castle-reachability.test.js for where that number comes from.
 import { gs } from '../../core.js';
 import { pStats, romanticCompat } from '../../players.js';
-import { addBond, getBond } from '../../bonds.js';
+// getBond is a PURE READ and the one bonds.js name a castle file may still
+// hold; every WRITE goes through the scene API (see ./effects.js).
+import { getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
-import { openThread, advanceThread, closeThread, findOpenThread, heatAt, continueThread } from '../threads.js';
+import { sceneApi, arcContinue } from './effects.js';
+import { findOpenThread, heatAt } from '../threads.js';
 import { suspicion } from '../deduction.js';
 
 import { lineFor } from './lines.js';
@@ -209,10 +212,12 @@ registerEvent({
     return bond >= 0 ? 1.2 + bond * 0.25 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'romance-spark');
+    const sceneWhy = 'something started between them';
     const [a, b] = ctx.actors;
-    addBond(a, b, 1);
+    api.addBond(a, b, 1, { source: sceneWhy });
     const note = pick(rng, SPARK_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
-    const t = openThread(SPARK_KIND, [a, b], ctx.ep, note);
+    const t = api.openArc(SPARK_KIND, [a, b], { source: sceneWhy, seed: note });
     return { branch: 'sparked', pair: [a, b], threadId: t?.id, bondDelta: 1 };
   },
 });
@@ -245,12 +250,14 @@ registerEvent({
     return 6 + heatAt(t, ctx.ep) * 6;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'romance-showmance-forms');
+    const sceneWhy = 'they stopped pretending it was nothing';
     const spark = _threadForActors(SPARK_KIND, ctx.actors, ctx.ep);
     const [a, b] = spark.parties;
-    closeThread(spark.id, ctx.ep, 'became-showmance');
-    addBond(a, b, 2);
-    const t = openThread(SHOWMANCE_KIND, [a, b], ctx.ep,
-      lineFor(SHOWMANCE_FORM_LINES, `romance-showmance-forms|${ctx.ep}`, { a, b }));
+    api.resolveArc(spark.id, 'became-showmance', { source: sceneWhy });
+    api.addBond(a, b, 2, { source: sceneWhy });
+    const t = api.openArc(SHOWMANCE_KIND, [a, b],
+      { source: sceneWhy, seed: lineFor(SHOWMANCE_FORM_LINES, `romance-showmance-forms|${ctx.ep}`, { a, b }) });
     return { branch: 'showmance-formed', pair: [a, b], threadId: t?.id, bondDelta: 2 };
   },
 });
@@ -277,11 +284,13 @@ registerEvent({
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'romance-protection-instinct');
+    const sceneWhy = 'put themselves between somebody and the room';
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    addBond(a, b, 1);
-    const advanced = advanceThread(t.id, ctx.ep,
-      lineFor(PROTECT_LINES, `romance-protection-instinct|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 1, { source: sceneWhy });
+    const advanced = api.advanceArc(t.id, lineFor(PROTECT_LINES, `romance-protection-instinct|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
     return { branch: 'protected', pair: [a, b], threadId: advanced?.id, bondDelta: 1,
       crowd: { name: a, colour: 'kind' } };
   },
@@ -306,13 +315,15 @@ registerEvent({
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 1.5 : 0;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'romance-jealousy-third-party');
+    const sceneWhy = 'a third person came between them';
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const third = pick(rng, others.length ? others : [a]);
-    addBond(a, b, -1);
-    const openedT = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(JEALOUSY_LINES, `romance-jealousy-third-party|${ctx.ep}`, { a, b, c: third }));
+    api.addBond(a, b, -1, { source: sceneWhy });
+    const openedT = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(JEALOUSY_LINES, `romance-jealousy-third-party|${ctx.ep}`, { a, b, c: third }) });
     return { branch: 'jealousy', pair: [a, b], third, threadId: openedT?.id, bondDelta: -1 };
   },
 });
@@ -351,12 +362,14 @@ registerEvent({
     return getBond(...t.parties) < 5 ? 2 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'romance-showmance-breakup');
+    const sceneWhy = 'it ended between them';
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    closeThread(t.id, ctx.ep, 'broken-up');
-    addBond(a, b, -2);
-    const residueThread = openThread(FAMILY, [a, b], ctx.ep,
-      lineFor(BREAKUP_LINES, `romance-showmance-breakup|${ctx.ep}`, { a, b }));
+    api.resolveArc(t.id, 'broken-up', { source: sceneWhy });
+    api.addBond(a, b, -2, { source: sceneWhy });
+    const residueThread = api.openArc(FAMILY, [a, b],
+      { source: sceneWhy, seed: lineFor(BREAKUP_LINES, `romance-showmance-breakup|${ctx.ep}`, { a, b }) });
     return { branch: 'broke-up', pair: [a, b], threadId: residueThread?.id, bondDelta: -2 };
   },
 });
@@ -380,11 +393,13 @@ registerEvent({
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'romance-shields-target-together');
+    const sceneWhy = 'agreed to take the pressure off each other';
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    addBond(a, b, 1);
-    const advanced = advanceThread(t.id, ctx.ep,
-      lineFor(SHIELD_LINES, `romance-shields-target-together|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 1, { source: sceneWhy });
+    const advanced = api.advanceArc(t.id, lineFor(SHIELD_LINES, `romance-shields-target-together|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
     return { branch: 'shield-pact', pair: [a, b], threadId: advanced?.id, bondDelta: 1 };
   },
 });
@@ -412,11 +427,13 @@ registerEvent({
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'romance-shared-alibi');
+    const sceneWhy = 'a couple gave the same account of the night';
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    addBond(a, b, 0.5);
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      lineFor(SHARED_ALIBI_LINES, `romance-shared-alibi|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 0.5, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(SHARED_ALIBI_LINES, `romance-shared-alibi|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
     return { branch: 'shared-alibi', pair: [a, b], threadId: thread?.id, cited, bondDelta: 0.5 };
   },
 });
@@ -550,6 +567,8 @@ registerEvent({
     return 3;
   },
   fire(ctx, rng) {
+    const api = sceneApi(ctx, 'romance-liability-exposed');
+    const sceneWhy = 'the room priced what the couple was worth to it';
     const showmance0 = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [x, y] = showmance0.parties;
     const doubter = suspicion(x, y, ctx.ep) >= suspicion(y, x, ctx.ep) ? x : y;  // the doubter
@@ -575,26 +594,30 @@ registerEvent({
 
     if (branch === 'oblivious') {
       bondDelta = 1;
-      addBond(doubter, suspected, bondDelta);
-      const advanced = showmance ? advanceThread(showmance.id, ctx.ep, line) : openThread(SHOWMANCE_KIND, [x, y], ctx.ep, line);
+      api.addBond(doubter, suspected, bondDelta, { source: sceneWhy });
+      const advanced = showmance
+        ? api.advanceArc(showmance.id, line, { source: sceneWhy })
+        : api.openArc(SHOWMANCE_KIND, [x, y], { source: sceneWhy, seed: line });
       threadId = advanced?.id ?? threadId;
     } else if (branch === 'suspicious') {
       // No bond move — nothing has been SAID. Residue lands as a suspicion
       // thread on the suspected partner, readable by suspicion.js's own events.
-      const susp = openThread('suspicion', [doubter, suspected], ctx.ep, line);
+      const susp = api.openArc('suspicion', [doubter, suspected], { source: sceneWhy, seed: line });
       threadId = susp?.id ?? threadId;
     } else if (branch === 'confronts') {
       bondDelta = -2;
-      addBond(doubter, suspected, bondDelta);
-      const advanced = showmance ? advanceThread(showmance.id, ctx.ep, line) : openThread(SHOWMANCE_KIND, [x, y], ctx.ep, line);
+      api.addBond(doubter, suspected, bondDelta, { source: sceneWhy });
+      const advanced = showmance
+        ? api.advanceArc(showmance.id, line, { source: sceneWhy })
+        : api.openArc(SHOWMANCE_KIND, [x, y], { source: sceneWhy, seed: line });
       threadId = advanced?.id ?? threadId;
     } else {
       bondDelta = -4;
-      addBond(doubter, suspected, bondDelta);
-      if (showmance) closeThread(showmance.id, ctx.ep, 'exposed');
-      const coverThread = openThread('cover', [suspected], ctx.ep,
-        `${line} ${lineFor(EXPOSED_AFTERMATH_LINES, `romance-liability-exposed|exposes|${ctx.ep}`,
-          { a: doubter, b: suspected })}`);
+      api.addBond(doubter, suspected, bondDelta, { source: sceneWhy });
+      if (showmance) api.resolveArc(showmance.id, 'exposed', { source: sceneWhy });
+      const coverThread = api.openArc('cover', [suspected],
+        { source: sceneWhy, seed: `${line} ${lineFor(EXPOSED_AFTERMATH_LINES, `romance-liability-exposed|exposes|${ctx.ep}`,
+          { a: doubter, b: suspected })}` });
       threadId = coverThread?.id ?? threadId;
     }
     return { branch, doubter, suspected, threadId, bondDelta };
@@ -620,11 +643,13 @@ registerEvent({
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'romance-showmance-fight');
+    const sceneWhy = 'they had it out in front of people';
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    addBond(a, b, -1.5);
-    const advanced = advanceThread(t.id, ctx.ep,
-      lineFor(FIGHT_LINES, `romance-showmance-fight|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, -1.5, { source: sceneWhy });
+    const advanced = api.advanceArc(t.id, lineFor(FIGHT_LINES, `romance-showmance-fight|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
     return { branch: 'showmance-fight', pair: [a, b], threadId: advanced?.id, bondDelta: -1.5 };
   },
 });
@@ -652,10 +677,12 @@ registerEvent({
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'romance-strategic-optics');
+    const sceneWhy = 'the room read the couple as a strategy';
     const showmance = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = showmance.parties;
-    const { thread, cited } = continueThread(FAMILY, [a, b], ctx.ep,
-      lineFor(OPTICS_LINES, `romance-strategic-optics|${ctx.ep}`, { a, b }));
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(OPTICS_LINES, `romance-strategic-optics|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
     return { branch: 'called-strategic', pair: [a, b], threadId: thread?.id, cited };
   },
 });
@@ -703,10 +730,12 @@ registerEvent({
     return rounds.some(r => r.ep === ctx.ep - 1 && r.murdered) && getBond(a, b) >= 1 ? 1.5 : 0;
   },
   fire(ctx) {
+    const api = sceneApi(ctx, 'romance-comfort-after-loss-sparks');
+    const sceneWhy = 'comfort after a death turned into something else';
     const [a, b] = ctx.actors;
-    addBond(a, b, 1.5);
-    const t = openThread(SPARK_KIND, [a, b], ctx.ep,
-      lineFor(GRIEF_SPARK_LINES, `romance-comfort-after-loss-sparks|${ctx.ep}`, { a, b }));
+    api.addBond(a, b, 1.5, { source: sceneWhy });
+    const t = api.openArc(SPARK_KIND, [a, b],
+      { source: sceneWhy, seed: lineFor(GRIEF_SPARK_LINES, `romance-comfort-after-loss-sparks|${ctx.ep}`, { a, b }) });
     return { branch: 'grief-spark', pair: [a, b], threadId: t?.id, bondDelta: 1.5 };
   },
 });

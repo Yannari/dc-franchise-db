@@ -1,4 +1,9 @@
 import { SHOWS, showName, DEFAULT_FORMAT } from './shows.js';
+// The castle's own state module. `js/tr/state.js` imports js/alumni.js, which
+// imports js/shows.js — both leaves — so this adds no cycle and core stays
+// importable from anywhere. It is here so that the ONE pair of functions every
+// save path in the simulator calls also handles a Traitors season.
+import { prepTrForSave, repairTrSets } from './tr/state.js';
 // ══════════════════════════════════════════════════════════════════════
 // core.js — Constants, state, and serialization (extracted from simulator.html)
 // ══════════════════════════════════════════════════════════════════════
@@ -1593,6 +1598,14 @@ export function repairGsSets(g) {
     if (Array.isArray(g[f])) { g[f] = new Set(g[f]); return; } // saved as array — restore
     g[f] = new Set();
   });
+  // A Traitors season keeps its own Sets on `gs.tr`, declared and repaired in
+  // js/tr/state.js. They were reachable from the headless harness and from
+  // nowhere else: every real save path in the simulator goes through THESE two
+  // functions, so a castle saved from the UI came back with `shieldedThisRound`
+  // as a bare array and the first `.has()` after a load threw. The background
+  // snapshot rides the same path — it is the only record of what the room was
+  // told about a player, and it has to survive a save.
+  repairTrSets(g);
 }
 // Pre-save: convert Sets to arrays so JSON.stringify preserves them
 export function prepGsForSave(g) {
@@ -1602,6 +1615,7 @@ export function prepGsForSave(g) {
                       'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
                       'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders', 'shotInDarkUsed', '_volunteerExileUsed'];
   SET_FIELDS.forEach(f => { if (g[f] instanceof Set) g[f] = [...g[f]]; });
+  prepTrForSave(g);   // gs.tr keeps its own Sets — see repairGsSets above
   return g;
 }
 

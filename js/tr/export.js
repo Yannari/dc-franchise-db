@@ -362,6 +362,7 @@ export function traitorsBoardStats(season = {}, name, history = traitorsVotingHi
  */
 export function traitorsSeasonDetails(season = {}, seasonNumber = 1) {
   const history = traitorsVotingHistory(season);
+  const backgrounds = season.backgrounds || {};
   return traitorsPlacements(season, history).map(p => ({
     season: Number(seasonNumber),
     format: TRAITORS_FORMAT,
@@ -375,6 +376,14 @@ export function traitorsSeasonDetails(season = {}, seasonNumber = 1) {
     // being voted for at the table is.
     votesReceived: history.reduce((n, row) =>
       n + row.votes.filter(v => v.target === p.name && v.channel !== 'murder').length, 0),
+    // ALUMNI / CELEBRITY / CIVILIAN, from the snapshot the season took at
+    // setup — never re-resolved here. This layer is read on replay, long after
+    // the database it was resolved from has been edited, and re-deriving it
+    // would let a later correction rewrite what the premiere said.
+    // `null` for a season that predates the field, which is honest: it is not
+    // that nobody was an alumnus, it is that nobody wrote it down.
+    backgroundType: backgrounds[p.name]?.type || null,
+    background: backgrounds[p.name] || null,
     tr: p.tr || traitorsCareerStats(season, p.name),
   }));
 }
@@ -437,6 +446,10 @@ export function buildTraitorsSeasonDocument(season = {}, { seasonNumber = 1, twi
     // What the show calls a departure, carried on the document so a reader
     // that has the record but not the registry still uses the right verb.
     exitVerbs: exitVerbs(TRAITORS_FORMAT),
+    // Who walked in, and what the room already knew about each of them. The
+    // SNAPSHOT, published verbatim: an alumnus's appearances are the ones that
+    // were on the record the night the season was cast, not the ones on it now.
+    backgrounds: season.backgrounds || {},
   };
 }
 

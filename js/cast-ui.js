@@ -12,6 +12,11 @@ import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug, resolveAvatarS
 import { activeSeasons, franchiseHistorySummary,
   clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta, healLedgerRecord } from './franchise-meta.js';
 import { persistFranchiseLedger, applyPreAlliances } from './savestate.js';
+// The career record, and the resolver that reads it. `js/tr/state.js` owns the
+// Alumni/Celebrity/Civilian decision; this file only draws it.
+import { alumniDatabase, setAlumniDatabase } from './alumni.js';
+import { TR_BACKGROUND_TYPES, resolveTraitorsBackground, snapshotTraitorsBackgrounds,
+  traitorsBackgroundBlockers } from './tr/state.js';
 
 export function showTab(name) {
   audio.sfx('tab-swoosh');
@@ -164,6 +169,12 @@ export function submitPlayer() {
     archetype: document.getElementById('f-archetype').value, stats: getStats(),
     isReturnee: document.getElementById('f-returnee')?.checked || false,
     isCoach: document.getElementById('f-coach')?.checked || false,
+    // Alumni / Celebrity / Civilian — stored ONLY when the user overrode the
+    // default. An empty select means "whatever the record says", and writing
+    // the resolved answer here instead would freeze today's record into the
+    // cast list where a later correction could never reach it.
+    backgroundType: TR_BACKGROUND_TYPES.includes(document.getElementById('f-background')?.value)
+      ? document.getElementById('f-background').value : undefined,
   };
   applyAvatarSlug(player); // set effective .slug from base + returnee state
   if (editingId) { const i = players.findIndex(p=>p.id===editingId); if(i!==-1) players[i]=player; cancelEdit(); }
@@ -183,7 +194,9 @@ export function editPlayer(id) {
   document.getElementById('archetype-desc').textContent = ARCHETYPES[p.archetype]?.desc||'';
   const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = p.isReturnee || false;
   const coachEl = document.getElementById('f-coach'); if (coachEl) coachEl.checked = p.isCoach || false;
+  const bgEl = document.getElementById('f-background'); if (bgEl) bgEl.value = p.backgroundType || '';
   _updateReturneeArtHint();
+  updateBackgroundPreview();
   putStats(p.stats);
   document.getElementById('form-title').textContent = 'Edit \u2014 '+p.name;
   document.getElementById('submit-btn').textContent = 'Update Player';
@@ -212,6 +225,8 @@ export function resetForm() {
   document.getElementById('f-archetype').value='';
   const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = false;
   const coachEl = document.getElementById('f-coach'); if (coachEl) coachEl.checked = false;
+  const bgEl = document.getElementById('f-background'); if (bgEl) bgEl.value = '';
+  const bgPrev = document.getElementById('f-background-preview'); if (bgPrev) bgPrev.innerHTML = '';
   document.getElementById('archetype-desc').textContent='';
   STATS.forEach(s => setSlider(s.key, 5, false));
 }
@@ -745,6 +760,7 @@ export function renderCast() {
   players.forEach(p => { const t=p.tribe||'No Tribe'; tribes[t]=(tribes[t]||0)+1; });
   document.getElementById('cast-tribe-summary').textContent = '\u2014 '+Object.entries(tribes).map(([t,c])=>`${t} (${c})`).join(' \u00b7 ');
   renderFranchiseHistoryPanel();
+  renderBackgroundPanel();
   window.renderHouseStructure?.();
   try { window.renderCastRoom?.(); } catch {}   // Visual Casting Room (additive; legacy UI is the fallback)
 }
@@ -778,6 +794,7 @@ export function renderCard(p) {
           <span class="archetype-tag">${ARCHETYPE_NAMES[p.archetype]||'Custom'}</span>
           ${p.isReturnee ? '<span class="archetype-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Returning</span>' : ''}
           ${p.isCoach ? '<span class="archetype-tag" title="Trains this tribe — never competes, never votes" style="background:rgba(59,130,246,0.15);color:#3b82f6">Coach</span>' : ''}
+          ${p.backgroundType ? `<span class="archetype-tag" title="Background type — how the castle recognises this contestant" style="background:rgba(148,163,184,0.15);color:#94a3b8">${p.backgroundType[0].toUpperCase()}${p.backgroundType.slice(1)}</span>` : ''}
           ${showingRet
     ? '<span class="archetype-tag" title="Drawn with this character&apos;s returnee portrait" style="background:rgba(139,92,246,0.16);color:#a78bfa">Returnee art</span>'
     : retArt && !p.isReturnee
@@ -1607,4 +1624,127 @@ export function renderAllianceList() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// BACKGROUND TYPES — WHO THE ROOM RECOGNISES, AND WHY
+// ══════════════════════════════════════════════════════════════════════
+//
+// The Traitors is cast by hand and its contestants are not all the same kind
+// of person: an ALUMNUS carries a recorded franchise past the room can quote at
+// them, a CELEBRITY is known for something that is not a reality competition,
+// and a CIVILIAN is not known at all. The resolver lives in js/tr/state.js —
+// this is only the screen that shows what it decided and refuses to start a
+// season the screen knows would print a lie.
+//
+// The select is deliberately three options plus AUTO, and Auto is the default:
+// the record already answers this question for almost everybody, and a
+// required dropdown on a twenty-person cast is twenty chances to mis-set it.
+
+const BACKGROUND_LABELS = { alumni: 'Alumni', celebrity: 'Celebrity', civilian: 'Civilian' };
+const BACKGROUND_COLORS = { alumni: '#f59e0b', celebrity: '#a78bfa', civilian: '#38bdf8' };
+
+// The career record is fetched by run-ui on load. The cast tab can be looked at
+// before that resolves, and a background resolved against a missing database
+// says "Civilian" about a four-time finalist — so ask for it here too, once,
+// and redraw when it lands. Silent on failure: no record, no recognition.
+let _bgDbRequested = false;
+function _ensureAlumniDatabase() {
+  if (alumniDatabase() || _bgDbRequested || typeof fetch !== 'function') return;
+  _bgDbRequested = true;
+  fetch('players_database.json')
+    .then(r => r.json())
+    .then(data => {
+      setAlumniDatabase(data);
+      try { updateBackgroundPreview(); renderBackgroundPanel(); } catch {}
+    })
+    .catch(() => {});
+}
+
+/** The roster row for a name, for the profile fields the cast form has no box for. */
+function _rosterProfile(name) {
+  const want = String(name || '').trim().toLowerCase();
+  if (!want) return null;
+  return FRANCHISE_ROSTER.find(r => String(r?.name || '').trim().toLowerCase() === want) || null;
+}
+
+/** One cast member, with the profile fields the roster holds folded in. */
+function _backgroundSubject(p) {
+  const row = _rosterProfile(p?.name);
+  return { ...(row || {}), ...(p || {}) };
+}
+
+/**
+ * The whole cast's backgrounds, resolved and ready to be frozen onto a season.
+ *
+ * THE SEASON TAKES THIS ONCE. Everything downstream reads `gs.tr.backgrounds`,
+ * never this function, because the database behind it is edited between seasons
+ * and a replay that re-resolved would rewrite its own premiere.
+ */
+export function castBackgrounds() {
+  _ensureAlumniDatabase();
+  return snapshotTraitorsBackgrounds(players.map(_backgroundSubject));
+}
+
+/** Every reason this cast cannot start a castle yet. Empty means go. */
+export function castBackgroundBlockers() {
+  return traitorsBackgroundBlockers(castBackgrounds());
+}
+
+/**
+ * The preview under the selector: what this contestant's introduction will say.
+ *
+ * Drawn from the SAME resolver the season uses, so the sentence on this screen
+ * is the sentence the castle gets. A preview written separately is a preview
+ * that drifts, and the drift is invisible until somebody reads an episode.
+ */
+export function updateBackgroundPreview() {
+  const el = document.getElementById('f-background-preview');
+  if (!el) return;
+  _ensureAlumniDatabase();
+  const name = (document.getElementById('f-name')?.value || '').trim();
+  if (!name) { el.innerHTML = ''; return; }
+  const chosen = document.getElementById('f-background')?.value || '';
+  const subject = _backgroundSubject({
+    name,
+    archetype: document.getElementById('f-archetype')?.value || '',
+    backgroundType: chosen || undefined,
+  });
+  const bg = resolveTraitorsBackground(subject);
+  const colour = BACKGROUND_COLORS[bg.type] || 'var(--muted)';
+  // The asterisk in the plan's writing examples marks a background that came
+  // from a CHOICE rather than from the record — worth seeing at a glance,
+  // because that is the one a mis-click can get wrong.
+  const star = chosen ? '*' : '';
+  const blocked = bg.warnings.filter(w => w.blocking);
+  el.innerHTML =
+    `<div style="margin-top:6px;font-size:11px;line-height:1.5;color:var(--muted)">
+      <b style="color:${colour};letter-spacing:.6px">${(BACKGROUND_LABELS[bg.type] || bg.type).toUpperCase()}${star}</b>
+      <span style="opacity:.7"> — ${_esc(name)}</span>
+      <div style="margin-top:3px">${_esc(bg.summary)}</div>
+      ${blocked.map(w => `<div style="margin-top:4px;color:#f87171">⚠ ${_esc(w.message)}</div>`).join('')}
+    </div>`;
+}
+
+/** The cast-wide banner: the split, and anything that will stop a season. */
+export function renderBackgroundPanel() {
+  const el = document.getElementById('background-panel');
+  if (!el) return;
+  const map = castBackgrounds();
+  const entries = Object.values(map);
+  if (!entries.length) { el.innerHTML = ''; return; }
+  const counts = TR_BACKGROUND_TYPES.map(t => {
+    const n = entries.filter(b => b.type === t).length;
+    return n ? `<span style="color:${BACKGROUND_COLORS[t]}">${BACKGROUND_LABELS[t]} ${n}</span>` : '';
+  }).filter(Boolean).join(' · ');
+  const blockers = traitorsBackgroundBlockers(map);
+  el.innerHTML =
+    `<div style="font-size:11px;opacity:.85">${counts}</div>` +
+    blockers.map(w =>
+      `<div style="font-size:11px;color:#f87171;margin-top:3px">⚠ ${_esc(w.message)}</div>`).join('');
+}
+
+function _esc(s) {
+  return String(s ?? '').replace(/[&<>"]/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }

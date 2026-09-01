@@ -61,7 +61,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Name</label>
-          <input type="text" id="f-name" class="form-input" placeholder="Player name">
+          <input type="text" id="f-name" class="form-input" placeholder="Player name" oninput="updateBackgroundPreview()">
         </div>
         <div class="form-group">
           <label class="form-label">Avatar slug <span class="hint">(optional)</span></label>
@@ -118,6 +118,18 @@
             <span style="font-size:12px;color:var(--muted)">Returning Player</span>
             <span id="f-returnee-art" style="font-size:10px;letter-spacing:.4px"></span>
           </label>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Background <span style="font-weight:400;color:var(--muted);font-size:10px">(The Traitors)</span></label>
+          <select id="f-background" class="form-select" onchange="updateBackgroundPreview()" title="How the castle recognises this contestant. Auto reads the franchise record: anyone with a recorded appearance is Alumni, anyone without is Civilian unless their profile marks them publicly known.">
+            <option value="">Auto — from the franchise record</option>
+            <option value="alumni">Alumni — recorded reality-TV past</option>
+            <option value="celebrity">Celebrity — known outside reality TV</option>
+            <option value="civilian">Civilian — not publicly recognised</option>
+          </select>
+          <div id="f-background-preview"></div>
+        </div>
+        <div class="form-group">
           <label style="display:flex;align-items:center;gap:6px;margin-top:8px;cursor:pointer" title="Trains their tribe from the sideline — never competes, never votes, cannot be eliminated by a challenge loss. Only takes effect when the Coaches setting (Season Twists) is set to Choose Coaches.">
             <input type="checkbox" id="f-coach" style="width:14px;height:14px">
             <span style="font-size:12px;color:var(--muted)">Coach</span>
@@ -156,6 +168,7 @@
         <div class="divider"></div>
         <div class="u-field-note">Franchise History</div>
         <div id="franchise-history-panel" style="font-size:11px;margin-bottom:6px"></div>
+        <div id="background-panel" style="font-size:11px;margin-bottom:6px"></div>
         <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Import, record &amp; manage seasons in the <b>🏆 Franchise</b> tab.</div>
         <div class="btn-row">
           <button class="btn btn-secondary" onclick="applyFranchiseMetaMidSeason()" title="Apply returnee reputation/instincts to the in-progress season">Apply to Current Season</button>

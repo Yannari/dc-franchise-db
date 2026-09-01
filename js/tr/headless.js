@@ -7,7 +7,7 @@
 // out, because "did the belief update" and "did the room find the Traitors" are
 // different questions and only the second one matters.
 import { gs, setGs } from '../core.js';
-import { initTraitorsState } from './state.js';
+import { initTraitorsState, snapshotTraitorsBackgrounds } from './state.js';
 import { resetKnowledge } from '../knowledge.js';
 import { setBond, getBond } from '../bonds.js';
 import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
@@ -1051,7 +1051,8 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
  * merely has beliefs. Nothing in the show may ever pass this.
  */
 export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds = 40,
-  potCeiling = POT_CEILING, endgameSize = 3, evidence = ballotEvidence } = {}) {
+  potCeiling = POT_CEILING, endgameSize = 3, evidence = ballotEvidence,
+  backgrounds = null, database = null } = {}) {
   const rng = rngFor(seed);
   // The narrative layer's OWN stream — see castleRngFor's doc comment for why
   // round budgets (and later, window draws) must never share the game rng.
@@ -1074,6 +1075,16 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // empty ones, which is the whole of the format's best recurring image: the
   // ring visibly thinning while the survivors look at the gaps.
   gs.tr.castOrder = [...cast];
+  // WHO EACH OF THEM WAS BEFORE THE DOOR, TAKEN ONCE AND NEVER RE-TAKEN.
+  // The setup screen resolves these against the cast it holds and hands them
+  // down; a harness that has only names resolves them here. Either way the
+  // season keeps the ANSWER rather than the question — see gs.tr.backgrounds
+  // for why re-resolving on replay would rewrite a premiere. This takes no
+  // draw from any of the three streams, so a season played with backgrounds is
+  // bit-identical to one played without.
+  gs.tr.backgrounds = (backgrounds && typeof backgrounds === 'object' && !Array.isArray(backgrounds))
+    ? backgrounds
+    : snapshotTraitorsBackgrounds(cast, database);
   // THE TWO AUDIENCE LEDGERS, and the episode record they are read against.
   // `gs.episodeHistory` is what js/audience.js counts rounds off — it is the
   // one thing that module needs from a show and the one thing a headless
@@ -1262,6 +1273,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   return {
     traitors,
     log,
+    // Alumni / Celebrity / Civilian, as resolved at setup. Copied out for the
+    // same reason `rounds` and `missions` are: the next season replaces gs
+    // wholesale, and this is what the export layer publishes.
+    backgrounds: { ...(gs.tr.backgrounds || {}) },
     // THE MANDATED SEASON'S ROUNDS, and the slice is deliberate. The endgame's
     // tables are Round Tables and are recorded on `gs.tr.rounds` like any
     // other, but they are a different game — three or four people, no reveal

@@ -20,7 +20,7 @@
 // EMPTY and the twist does not fire — which is the correct answer to "who has
 // played a season" in a franchise with no record of anybody having played one.
 // Falling back to the roster is what produced the bug.
-import { SHOWS } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT } from './shows.js';
 
 let _db = null;
 
@@ -109,4 +109,64 @@ export function alumniPool({ exclude = [], format = null, minNative = 6 } = {}) 
 // shows.js imports nothing, so reading it here keeps this file a leaf.
 function _showName(format) {
   return SHOWS[format]?.name || 'Season';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ONE PERSON'S RECORD, RATHER THAN A POOL TO DRAW FROM
+// ══════════════════════════════════════════════════════════════════════
+//
+// `alumniPool` answers "who could walk back through the door". The Traitors
+// asks a different question of the same file: this named person is already in
+// the castle -- what has the franchise actually recorded about them?
+//
+// The two must not be the same call. The pool filters, ranks and tops itself
+// up from the other show; a background summary needs the record UNMODIFIED,
+// because everything it prints is asserted to the viewer as fact and the one
+// thing it may never do is invent an appearance. So this returns exactly what
+// is written down, in the order it is written down, and nothing at all when
+// nothing is written down.
+
+/** The database row for `name`, or null. Case- and whitespace-insensitive. */
+export function alumniRecord(name, database = null) {
+  const db = Array.isArray(database) ? database
+    : (Array.isArray(database?.players) ? database.players : alumniDatabase());
+  if (!Array.isArray(db)) return null;
+  const want = String(name || '').trim().toLowerCase();
+  if (!want) return null;
+  return db.find(p => String(p?.name || '').trim().toLowerCase() === want) || null;
+}
+
+/**
+ * Every recorded appearance for `name`, normalised.
+ *
+ * `seasonLabel` is composed HERE, from the registry's display name and the
+ * season number, because it is the string a screen prints. A caller that built
+ * it itself would be a caller holding its own copy of the show list, which is
+ * the defect docs/ADDING-A-SHOW.md exists to prevent -- and this file is one of
+ * the eight that already held one.
+ *
+ * An appearance with no `format` predates formats, and the bare-integer rule
+ * says every one of those is the default show. Absent, not unknown.
+ */
+export function alumniAppearances(name, database = null) {
+  const row = alumniRecord(name, database);
+  const details = Array.isArray(row?.seasonDetails) ? row.seasonDetails : [];
+  const out = [];
+  for (const d of details) {
+    const season = Number(d?.season) || null;
+    if (!season) continue;               // an appearance with no season is not one
+    const format = d.format || DEFAULT_FORMAT;
+    const placement = Number(d.placement) || null;
+    out.push({
+      format,
+      season,
+      showName: _showName(format),
+      seasonLabel: `${_showName(format)} ${season}`,
+      placement,
+      status: d.status || null,
+      winner: placement === 1,
+      finalist: placement != null && placement <= 3,
+    });
+  }
+  return out;
 }

@@ -7,10 +7,26 @@
 // survive JSON.stringify and neither do Sets, so anything set-shaped is
 // declared here and repaired here rather than discovered missing after a
 // season is saved.
+//
+// It is also where a background is RESOLVED, because a background is state
+// before it is prose: `backgrounds` below is a snapshot, and the resolver that
+// fills it has to live beside the field it fills or the two drift.
+import { alumniRecord, alumniAppearances } from '../alumni.js';
 
 /** A season's Traitors state, empty. */
 export function initTraitorsState() {
   return {
+    // WHO EACH PLAYER WAS BEFORE THE DOOR, FROZEN AT SETUP.
+    //   name -> { type, sourceShows, appearances, summary, recognized, warnings }
+    //
+    // A SNAPSHOT, and that is the whole point of it. `players_database.json`
+    // is edited between seasons -- a placement gets corrected, an occupation
+    // gets filled in -- and a replay that re-resolved from the live database
+    // would quietly rewrite its own premiere every time somebody tidied the
+    // record. What the castle was told on the night is a fact about the night.
+    // Plain values only, so it survives JSON.stringify with the rest of this.
+    backgrounds: {},
+
     // name -> [{ truth, sinceEp }], oldest first. NOT a single value: alignment
     // is a property of a person AND a round, because recruitment changes it
     // mid-season and a belief formed before a flip was correct when it was
@@ -207,4 +223,242 @@ export function repairTrSets(g) {
     if (!(g.tr[key] instanceof Set)) g.tr[key] = new Set(g.tr[key] || []);
   }
   return g;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THREE KINDS OF PERSON, AND THE ONE THING NONE OF THEM MAY DO
+// ══════════════════════════════════════════════════════════════════════
+//
+// The castle is cast by hand out of ALUMNI (a recorded franchise past the room
+// can quote at them), CELEBRITIES (recognised for something that is not a
+// reality competition) and CIVILIANS (not recognised at all). Celebrity and
+// Civilian read the same profile fields; what separates them is whether the
+// room knows the face, and whether public reputation can move opening threat.
+//
+// THE FAILURE MODE THIS FILE IS SHAPED AROUND is prose that knows a fact
+// nobody recorded. A celebrity has no placement. A civilian has no finish. A
+// summary that hands either of them one is not colour — it is the screen
+// asserting a run of television that never aired, on a show whose whole
+// premise is that the audience can trust what it is shown and the room cannot.
+// So a background prints only from what is written down, and choosing Alumni
+// for somebody with nothing written down produces a BLOCKING WARNING rather
+// than a plausible sentence. That contestant is still castable; they are just
+// not an alumnus.
+
+/** The only three values that are ever stored. Lowercase, exactly these. */
+export const TR_BACKGROUND_TYPES = ['alumni', 'celebrity', 'civilian'];
+
+/**
+ * What the room already knows, and what it still has to find out.
+ *
+ * Two clauses per archetype, because a background that printed only the first
+ * would be a résumé card: `rep` is what a reputation MEANS to the people
+ * reading it, `now` is how this person actually behaves once the door shuts.
+ * History controls the first; personality controls the second; new castle
+ * behaviour can overturn either. Alumni get both. Celebrity and Civilian get
+ * `now` alone, because there is no recorded past for `rep` to describe.
+ */
+const _ARCHETYPE_VOICE = {
+  'mastermind':        { rep: 'for running a room from the quiet end of the table',
+                         now: 'plans in silence and explains nothing until arguing is pointless' },
+  'schemer':           { rep: 'for redirecting a vote so calmly nobody noticed being steered',
+                         now: 'finds the softest place in a conversation and leans on exactly that' },
+  'hothead':           { rep: 'for detonating in public and taking somebody down with the blast',
+                         now: 'says out loud the accusation everybody else is still weighing' },
+  'challenge-beast':   { rep: 'for carrying a team through the parts of the day that hurt',
+                         now: 'wants the castle earning, and measures people by what they do on the day' },
+  'social-butterfly':  { rep: 'for knowing everybody else’s business inside a week',
+                         now: 'collects confidences faster than the room can track who told what to whom' },
+  'loyal-soldier':     { rep: 'for staying with a side long after it stopped paying',
+                         now: 'picks a person early and defends them past the point of comfort' },
+  'wildcard':          { rep: 'for doing the one thing nobody had planned around',
+                         now: 'changes direction without warning, which makes a plan hard to build' },
+  'chaos-agent':       { rep: 'for lighting a fire and then standing in the smoke',
+                         now: 'prefers a loud messy table to a quiet correct one' },
+  'floater':           { rep: 'for surviving nights that took out better players',
+                         now: 'keeps every door open and commits to nothing until the vote is called' },
+  'underdog':          { rep: 'for lasting far longer than anybody had allowed for',
+                         now: 'gets written off early and is still there on the nights that decide things' },
+  'hero':              { rep: 'for taking the straight line even when it cost them',
+                         now: 'says the uncomfortable thing to a face rather than behind a back' },
+  'villain':           { rep: 'for playing ugly and refusing to apologise afterwards',
+                         now: 'plays for the result and lets the room dislike them for it' },
+  'goat':              { rep: 'for being kept around because keeping them was convenient',
+                         now: 'is underestimated in every room, which is the only advantage on offer' },
+  'perceptive-player': { rep: 'for noticing the thing the rest of the room walked straight past',
+                         now: 'watches far more than it talks, and keeps the notes' },
+  'showmancer':        { rep: 'for playing the whole game through whoever was sitting closest',
+                         now: 'builds a game out of one close attachment at a time' },
+};
+const _VOICE_FALLBACK = {
+  rep: 'for a game the franchise remembers only in pieces',
+  now: 'gives the castle very little to read on the first morning',
+};
+
+function _voice(archetype) {
+  return _ARCHETYPE_VOICE[archetype] || _VOICE_FALLBACK;
+}
+
+function _ordinal(n) {
+  const v = Number(n);
+  if (!Number.isFinite(v) || v <= 0) return null;
+  const tens = v % 100;
+  if (tens >= 11 && tens <= 13) return `${v}th`;
+  return `${v}${['th', 'st', 'nd', 'rd'][v % 10] || 'th'}`;
+}
+
+/** "Total Drama 2 · 4th place" — the show name is the REGISTRY's, never a literal. */
+function _appearanceLine(app) {
+  const ord = _ordinal(app.placement);
+  const finish = app.status || (ord ? `${ord} place` : null);
+  return finish ? `${app.seasonLabel} · ${finish}` : app.seasonLabel;
+}
+
+/**
+ * Does anything on the profile SAY this person is publicly known?
+ *
+ * Explicit metadata only. The temptation is to read an occupation and decide
+ * that an actor must be famous and a nurse must not, which is the resolver
+ * inventing the one kind of fact this whole feature refuses to invent. If
+ * nobody wrote it down the answer is Civilian, and the user overrides it in
+ * one click.
+ */
+function _claimsFame(player, row) {
+  for (const src of [player, row]) {
+    if (!src) continue;
+    if (src.publicFigure === true || src.celebrity === true) return true;
+    if (src.fame) return true;
+  }
+  return false;
+}
+
+function _field(player, row, key) {
+  const a = player?.[key];
+  if (a != null && String(a).trim() !== '') return String(a).trim();
+  const b = row?.[key];
+  if (b != null && String(b).trim() !== '') return String(b).trim();
+  return '';
+}
+
+/**
+ * Who this contestant is, as the castle will be told it.
+ *
+ * @param player   the cast entry: { name, backgroundType?, archetype?, occupation?, ... }
+ * @param database players_database.json (array or { players }), or null for the loaded one
+ * @returns { type, sourceShows, appearances, summary, recognized, warnings }
+ */
+export function resolveTraitorsBackground(player, database = null) {
+  const p = typeof player === 'string' ? { name: player } : (player || {});
+  const name = String(p.name || '').trim();
+  const row = alumniRecord(name, database);
+  const recorded = alumniAppearances(name, database);
+
+  const chosen = TR_BACKGROUND_TYPES.includes(p.backgroundType) ? p.backgroundType : null;
+  // The default is the record, and with no record it is Civilian — the only
+  // one of the three that asserts nothing whatsoever about a person.
+  const fallback = recorded.length ? 'alumni'
+    : (_claimsFame(p, row) ? 'celebrity' : 'civilian');
+  const type = chosen || fallback;
+
+  const occupation = _field(p, row, 'occupation');
+  const voice = _voice(p.archetype || row?.archetype);
+  const opener = occupation ? `${name}, ${occupation}.` : `${name}.`;
+  const warnings = [];
+
+  let appearances = [];
+  let summary = '';
+  let recognized = false;
+
+  if (type === 'alumni' && recorded.length) {
+    // The record and the person, in that order, because that is the order the
+    // room gets them in: a face it half-knows, then a fortnight of finding out
+    // how little the half it knew was worth.
+    appearances = recorded;
+    recognized = true;
+    summary = [
+      opener,
+      `${recorded.map(_appearanceLine).join(' · ')}.`,
+      `The castle already knows ${name} ${voice.rep}, and half the room walked in with that read formed.`,
+      `Here ${name} ${voice.now}.`,
+    ].join(' ');
+  } else if (type === 'alumni') {
+    // THE BLOCKING CASE. No record, so no record is printed — the summary
+    // names the gap instead of filling it in, and the warning stops the season
+    // rather than being a note nobody reads.
+    recognized = false;
+    warnings.push({
+      code: 'alumni-without-history',
+      blocking: true,
+      player: name,
+      message: `${name} is classified Alumni, but the franchise has no recorded appearance for them. `
+        + 'Record the show they played, or reclassify them as Celebrity or Civilian — the castle '
+        + 'will not be handed a past that was never played.',
+    });
+    summary = [
+      opener,
+      `Nothing in the franchise record backs an Alumni billing, so the castle has nothing to recognise ${name} for.`,
+      `Here ${name} ${voice.now}.`,
+    ].join(' ');
+  } else if (type === 'celebrity') {
+    recognized = true;
+    summary = [
+      opener,
+      `The castle places ${name} before the introductions have finished; the recognition buys social `
+        + 'access and asks a question about threat in the same breath.',
+      `Here ${name} ${voice.now}.`,
+    ].join(' ');
+  } else {
+    recognized = false;
+    summary = [
+      opener,
+      `Nobody arrives with a television version of ${name} already in mind — composure and life `
+        + 'experience are the whole of the résumé this room can read.',
+      `Here ${name} ${voice.now}.`,
+    ].join(' ');
+  }
+
+  return {
+    type,
+    // Derived from the appearances, which take their format from the ledger —
+    // never an allow-list here, so a fourth show becomes an alumni source the
+    // day it starts recording seasons.
+    sourceShows: [...new Set(appearances.map(a => a.format))],
+    appearances,
+    summary,
+    recognized,
+    warnings,
+  };
+}
+
+/**
+ * The whole cast's backgrounds, keyed by name, ready to be frozen onto `gs.tr`.
+ *
+ * Takes names or cast objects, because the setup screen holds objects and the
+ * headless harness holds a list of names, and both have to be able to take the
+ * snapshot.
+ */
+export function snapshotTraitorsBackgrounds(cast = [], database = null) {
+  const out = {};
+  for (const entry of (cast || [])) {
+    const p = typeof entry === 'string' ? { name: entry } : (entry || {});
+    const name = String(p.name || '').trim();
+    if (!name) continue;
+    out[name] = resolveTraitorsBackground(p, database);
+  }
+  return out;
+}
+
+/**
+ * Every warning that has to be cleared before a season can start.
+ *
+ * Non-blocking warnings exist to be read; these exist to stop the button. The
+ * setup screen asks this rather than `.warnings.length`, so the difference
+ * between "worth knowing" and "will print a lie" lives in one place.
+ */
+export function traitorsBackgroundBlockers(backgrounds = {}) {
+  const out = [];
+  for (const bg of Object.values(backgrounds || {})) {
+    for (const w of (bg?.warnings || [])) if (w?.blocking) out.push(w);
+  }
+  return out;
 }

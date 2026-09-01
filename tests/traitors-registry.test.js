@@ -9,7 +9,8 @@ import { buildFranchiseMeta, setFranchiseLedger, activeSeasons }
 import { formatIsRunnable, seasonConfig } from '../js/core.js';
 import { currentFormat } from '../js/social/session.js';
 import { SHOWS as QS_SHOWS } from '../js/quick-setup.js';
-import { initTraitorsState, prepTrForSave, repairTrSets } from '../js/tr/state.js';
+import { initTraitorsState, prepTrForSave, repairTrSets,
+  TR_BACKGROUND_TYPES, snapshotTraitorsBackgrounds } from '../js/tr/state.js';
 
 describe('the traitors registry entry', () => {
   it('is registered with the prefix every filename depends on', () => {
@@ -232,6 +233,30 @@ describe('traitors state survives a round trip through JSON', () => {
     expect(tr.pot).toBe(0);
     expect(tr.threads).toEqual([]);
     expect(tr.conclaveTension).toEqual([]);
+  });
+
+  // A background is a SNAPSHOT taken at setup. Declared on the empty state for
+  // the same reason every other field here is: a field added ad hoc during a
+  // build is a field that quietly fails to serialize, and this one is the only
+  // record of what the room was told about a player on the night.
+  it('declares the background snapshot rather than growing one later', () => {
+    expect(initTraitorsState().backgrounds).toEqual({});
+  });
+
+  it('carries the background snapshot through a save and back', () => {
+    const g = { tr: initTraitorsState() };
+    g.tr.backgrounds = snapshotTraitorsBackgrounds([
+      { name: 'Gwen', occupation: 'Artist' },
+    ], [{ name: 'Gwen', seasonDetails: [{ format: 'total-drama', season: 2, placement: 4 }] }]);
+    const revived = repairTrSets(JSON.parse(JSON.stringify(prepTrForSave(g))));
+    expect(revived.tr.backgrounds.Gwen.type).toBe('alumni');
+    // R5: the show's display name is the REGISTRY's, composed with the number.
+    expect(revived.tr.backgrounds.Gwen.summary)
+      .toContain(`${SHOWS['total-drama'].name} 2`);
+  });
+
+  it('stores exactly the three background types, and no fourth', () => {
+    expect(TR_BACKGROUND_TYPES).toEqual(['alumni', 'celebrity', 'civilian']);
   });
 
   it('restores Sets that JSON.stringify would have flattened', () => {

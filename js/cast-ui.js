@@ -1644,21 +1644,77 @@ export function renderAllianceList() {
 const BACKGROUND_LABELS = { alumni: 'Alumni', celebrity: 'Celebrity', civilian: 'Civilian' };
 const BACKGROUND_COLORS = { alumni: '#f59e0b', celebrity: '#a78bfa', civilian: '#38bdf8' };
 
-// The career record is fetched by run-ui on load. The cast tab can be looked at
-// before that resolves, and a background resolved against a missing database
-// says "Civilian" about a four-time finalist — so ask for it here too, once,
-// and redraw when it lands. Silent on failure: no record, no recognition.
-let _bgDbRequested = false;
+// ── THE RECORD EITHER ARRIVED OR IT DID NOT, AND THAT IS NOT A DETAIL ──
+//
+// `alumniAppearances` returns an empty list for two completely different
+// facts: this person never played, and the file that would have said so never
+// loaded. `resolveTraitorsBackground` cannot tell them apart — nothing can,
+// from inside — so a failed fetch quietly recasts a room of four-time
+// finalists as civilians, and the only symptom is a badge that is not there.
+// That is precisely the failure this whole feature exists to prevent, one
+// layer down: history silently missing and nobody notices.
+//
+// So the load carries a STATE; a failure is printed where the background
+// warnings are already printed; and it is attached to every resolved
+// background as a BLOCKING warning, because a cast resolved against a record
+// that never arrived is not a cast anybody should start a season on. It is
+// deliberately not a retry: one honest "this did not load, reload the page"
+// beats a spinner that hides the same hole.
+//
+// The record is also fetched by run-ui on page load. This second ask exists
+// because the cast tab can be looked at before that one resolves.
+let _bgDbState = 'idle';       // 'idle' | 'loading' | 'ready' | 'failed'
+let _bgDbError = '';
+
+/** Where the franchise record stands: 'idle' | 'loading' | 'ready' | 'failed'. */
+export function alumniRecordLoadState() {
+  return alumniDatabase() ? 'ready' : _bgDbState;
+}
+
+/**
+ * The warning a missing record deserves, or null when it is fine.
+ *
+ * Shaped exactly like the resolver's own warnings — same `code`/`blocking`/
+ * `player`/`message` — so one renderer and one blocker check draw both, and
+ * nothing has to learn about a second kind of problem.
+ */
+export function alumniRecordWarning() {
+  if (alumniRecordLoadState() !== 'failed') return null;
+  return {
+    code: 'alumni-record-unavailable',
+    blocking: true,
+    player: null,
+    message: 'The franchise record (players_database.json) could not be loaded'
+      + (_bgDbError ? ` — ${_bgDbError}` : '')
+      + '. Every contestant is resolving as if they had never played, so an Alumni '
+      + 'past cannot be told from a Civilian one. Reload the page before casting.',
+  };
+}
+
+/** Test seam: forget a previous load attempt. Nothing in the app calls this. */
+export function _resetAlumniRecordLoad() {
+  _bgDbState = 'idle';
+  _bgDbError = '';
+}
+
+function _bgDbFailed(why) {
+  _bgDbState = 'failed';
+  _bgDbError = String(why || '').slice(0, 120);
+  try { updateBackgroundPreview(); renderBackgroundPanel(); } catch {}
+}
+
 function _ensureAlumniDatabase() {
-  if (alumniDatabase() || _bgDbRequested || typeof fetch !== 'function') return;
-  _bgDbRequested = true;
-  fetch('players_database.json')
-    .then(r => r.json())
+  if (alumniDatabase() || _bgDbState !== 'idle') return;
+  if (typeof fetch !== 'function') { _bgDbFailed('this page has no fetch'); return; }
+  _bgDbState = 'loading';
+  return fetch('players_database.json')
+    .then(r => (r && r.ok === false) ? Promise.reject(new Error(`HTTP ${r.status}`)) : r.json())
     .then(data => {
-      setAlumniDatabase(data);
+      if (!setAlumniDatabase(data)) return Promise.reject(new Error('the file held no player list'));
+      _bgDbState = 'ready';
       try { updateBackgroundPreview(); renderBackgroundPanel(); } catch {}
     })
-    .catch(() => {});
+    .catch(e => _bgDbFailed(e?.message || e));
 }
 
 /** The roster row for a name, for the profile fields the cast form has no box for. */
@@ -1683,7 +1739,13 @@ function _backgroundSubject(p) {
  */
 export function castBackgrounds() {
   _ensureAlumniDatabase();
-  return snapshotTraitorsBackgrounds(players.map(_backgroundSubject));
+  const map = snapshotTraitorsBackgrounds((players || []).map(_backgroundSubject));
+  // A record that never arrived rides on EVERY background rather than sitting
+  // beside them, so that no reader can hold one of these and mistake a resolved
+  // 'civilian' for a person whose past was checked and found empty.
+  const missing = alumniRecordWarning();
+  if (missing) for (const bg of Object.values(map)) bg.warnings = [...bg.warnings, missing];
+  return map;
 }
 
 /** Every reason this cast cannot start a castle yet. Empty means go. */
@@ -1716,7 +1778,8 @@ export function updateBackgroundPreview() {
   // from a CHOICE rather than from the record — worth seeing at a glance,
   // because that is the one a mis-click can get wrong.
   const star = chosen ? '*' : '';
-  const blocked = bg.warnings.filter(w => w.blocking);
+  const missing = alumniRecordWarning();
+  const blocked = [...bg.warnings.filter(w => w.blocking), ...(missing ? [missing] : [])];
   el.innerHTML =
     `<div style="margin-top:6px;font-size:11px;line-height:1.5;color:var(--muted)">
       <b style="color:${colour};letter-spacing:.6px">${(BACKGROUND_LABELS[bg.type] || bg.type).toUpperCase()}${star}</b>
@@ -1732,14 +1795,22 @@ export function renderBackgroundPanel() {
   if (!el) return;
   const map = castBackgrounds();
   const entries = Object.values(map);
-  if (!entries.length) { el.innerHTML = ''; return; }
-  const counts = TR_BACKGROUND_TYPES.map(t => {
+  // NOT an early return on an empty cast any more: a record that failed to load
+  // is a fact about the page and not about the cast, and the moment it is most
+  // worth saying is before anybody has typed a name in.
+  const counts = entries.length ? TR_BACKGROUND_TYPES.map(t => {
     const n = entries.filter(b => b.type === t).length;
     return n ? `<span style="color:${BACKGROUND_COLORS[t]}">${BACKGROUND_LABELS[t]} ${n}</span>` : '';
-  }).filter(Boolean).join(' · ');
-  const blockers = traitorsBackgroundBlockers(map);
+  }).filter(Boolean).join(' · ') : '';
+  // One line per PROBLEM, not per player: the missing-record warning is carried
+  // by every background and would otherwise print twenty identical times.
+  const seen = new Set();
+  const missing = alumniRecordWarning();
+  const blockers = [...traitorsBackgroundBlockers(map), ...(missing ? [missing] : [])]
+    .filter(w => { const k = `${w.code}|${w.player || ''}`; if (seen.has(k)) return false; seen.add(k); return true; });
+  if (!counts && !blockers.length) { el.innerHTML = ''; return; }
   el.innerHTML =
-    `<div style="font-size:11px;opacity:.85">${counts}</div>` +
+    (counts ? `<div style="font-size:11px;opacity:.85">${counts}</div>` : '') +
     blockers.map(w =>
       `<div style="font-size:11px;color:#f87171;margin-top:3px">⚠ ${_esc(w.message)}</div>`).join('');
 }

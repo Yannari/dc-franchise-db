@@ -203,3 +203,75 @@ describe('the snapshot is a snapshot', () => {
     expect(stored.Julia.summary).toContain('Total Drama 2');
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// THE RECORD THAT NEVER ARRIVED
+// ══════════════════════════════════════════════════════════════════════
+//
+// `alumniAppearances` returns [] both for "never played" and for "the file that
+// would have said so did not load", and the resolver cannot tell those apart.
+// The cast screen fetches that file; when the fetch was swallowed, a whole room
+// of four-time finalists resolved as Civilians and the only symptom was a badge
+// that was not drawn. This is the guard on the failed path — it fails if the
+// catch ever goes quiet again.
+describe('a franchise record that failed to load', () => {
+  it('says so out loud, and never passes for "this player has no past"', async () => {
+    const castUi = await import('../js/cast-ui.js');
+    const realFetch = globalThis.fetch;
+    globalThis.players = [{ name: 'Julia', archetype: 'schemer' }];
+    document.body.innerHTML = '<div id="background-panel"></div>';
+    castUi._resetAlumniRecordLoad();
+    globalThis.fetch = () => Promise.reject(new Error('offline'));
+    try {
+      castUi.castBackgrounds();                       // kicks the load
+      await new Promise(r => setTimeout(r, 0));
+      await new Promise(r => setTimeout(r, 0));
+
+      // 1. The failure is a STATE, not a swallowed exception.
+      expect(castUi.alumniRecordLoadState()).toBe('failed');
+      const warn = castUi.alumniRecordWarning();
+      expect(warn).toBeTruthy();
+      expect(warn.blocking).toBe(true);
+      expect(warn.code).toBe('alumni-record-unavailable');
+
+      // 2. It is on screen, on the surface the other warnings already use.
+      expect(document.getElementById('background-panel').textContent)
+        .toMatch(/could not be loaded/i);
+
+      // 3. And it is on the DATA, so no reader can mistake this Civilian for
+      //    somebody whose past was checked and found empty.
+      const map = castUi.castBackgrounds();
+      expect(map.Julia.warnings.some(w => w.code === 'alumni-record-unavailable')).toBe(true);
+      expect(castUi.castBackgroundBlockers().some(w => w.code === 'alumni-record-unavailable'))
+        .toBe(true);
+    } finally {
+      if (realFetch) globalThis.fetch = realFetch; else delete globalThis.fetch;
+      castUi._resetAlumniRecordLoad();
+      delete globalThis.players;
+      document.body.innerHTML = '';
+    }
+  });
+
+  it('is silent while the record is fine — the warning is not decoration', async () => {
+    const castUi = await import('../js/cast-ui.js');
+    const realFetch = globalThis.fetch;
+    globalThis.players = [];
+    document.body.innerHTML = '<div id="background-panel"></div>';
+    castUi._resetAlumniRecordLoad();
+    globalThis.fetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve({ players: DB }) });
+    try {
+      castUi.castBackgrounds();
+      await new Promise(r => setTimeout(r, 0));
+      await new Promise(r => setTimeout(r, 0));
+      expect(castUi.alumniRecordLoadState()).toBe('ready');
+      expect(castUi.alumniRecordWarning()).toBeNull();
+      expect(document.getElementById('background-panel').textContent)
+        .not.toMatch(/could not be loaded/i);
+    } finally {
+      if (realFetch) globalThis.fetch = realFetch; else delete globalThis.fetch;
+      castUi._resetAlumniRecordLoad();
+      delete globalThis.players;
+      document.body.innerHTML = '';
+    }
+  });
+});

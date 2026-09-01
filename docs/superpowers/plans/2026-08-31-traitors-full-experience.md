@@ -350,6 +350,64 @@ For every first-use ceremony, tests must prove:
 5. The first ceremony is complete; recurring reminders are shorter.
 6. A changed rule forces a new full explanation.
 7. No host name or show vocabulary is hardcoded outside the registry/configuration path.
+## Selective confessional contract
+
+Confessionals are not mandatory after every scene. They render only when they add information, strategy, emotion, history, deception, or personality that the public action does not already communicate.
+
+A candidate confessional must satisfy at least one stored purpose:
+
+- `hidden-intent`: explains a private plan or target;
+- `audience-lie`: confirms to the audience that the speaker lied publicly;
+- `belief-change`: explains why a specific fact changed the speaker's suspicion;
+- `vote-change`: cites the argument, relationship, deal, or fact that moved a vote;
+- `traitor-reasoning`: explains cover, distancing, murder, or recruitment strategy;
+- `history-context`: connects the moment to a recorded alumni incident;
+- `emotional-turn`: adds an internal reaction not already visible;
+- `character`: delivers distinct humour or personality that cannot fit naturally in the scene.
+
+The scheduler rejects a confessional when removing it loses no new information. It also rejects one whose normalized meaning merely paraphrases the immediately preceding scene.
+
+Correct after a timeline conversation:
+
+```text
+“Julia gave me her entire night before I'd even finished the question. Maybe she's nervous. Maybe she rehearsed it. Either way, I'm checking.”
+```
+
+This adds Gabby's interpretation and next action.
+
+Repetitive and forbidden:
+
+```text
+“I asked Julia where she was, and Julia told me where she was.”
+```
+
+Correct Traitor confessional:
+
+```text
+“I answered too fast. Gabby noticed, so now I need somebody else to confirm enough of that story that she stops pulling at it.”
+```
+
+This is audience-only and records a cover follow-up. A Faithful observer cannot receive it.
+
+Budget guidance:
+
+- routine castle-life scene: normally 0;
+- important social scene: 0–1;
+- major confrontation: 1–2 total, from opposing perspectives only when they differ;
+- mission phase: 2–4 across the whole phase, not per action;
+- Round Table: 2–4 at actual belief or vote turns;
+- Selection: 3–5 after the ceremony, sampled across tapped and untapped players;
+- conclave/recruitment/endgame: only speakers with private reasoning the ceremony did not already state.
+
+Repetition controls:
+
+1. Penalize a contestant who received a recent confessional in the same episode.
+2. Do not select the same purpose for the same contestant twice in one episode.
+3. Do not repeat the same causal source unless the contestant's interpretation changed.
+4. Balance season-long confessional share without forcing empty commentary.
+5. Require at least four voice variants for each confessional purpose used by a generator.
+
+Tests must compare the confessional with its source scene and prove that it adds a new fact, intention, interpretation, emotional turn, history citation, or distinct character beat. A confessional failing that comparison must not render and must not count toward the 100–140-card target.
 
 ---
 

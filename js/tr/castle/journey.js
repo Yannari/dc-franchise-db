@@ -290,6 +290,13 @@ const WALK_PICK_LINES = {
 // itself says something, and what they do with it says more.
 registerEvent({
   id: 'testing-who-you-walk-with',
+  // The direction is a property of THIS event, not of the sentence it happens
+  // to draw: the pair is [the one who picked, the one who was picked], and the
+  // comment above says so — "the test is on the person picked". Four of this
+  // event's fifteen lines name {a} last, which is precisely where the screen's
+  // fallback heuristic answers in the picker's voice.
+  // See `sceneSpeakers` in js/tr/events.js.
+  roles: 'initiator-first',
   family: 'testing',
   window: 'journey-out',
   weight(ctx) {

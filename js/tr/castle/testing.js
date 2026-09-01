@@ -167,6 +167,10 @@ const FOLLOW_THROUGH_LINES = [
 
 registerEvent({
   id: 'testing-small-dare',
+  // The direction is a property of THIS event, not of the sentence it happens
+  // to draw: the pair is [the one running the test, the one being tested].
+  // See `sceneSpeakers` in js/tr/events.js.
+  roles: 'initiator-first',
   family: FAMILY,
   window: 'morning',
   // The second advancer in `testing|morning`.
@@ -191,6 +195,10 @@ registerEvent({
 
 registerEvent({
   id: 'testing-ask-for-alibi-check',
+  // The direction is a property of THIS event, not of the sentence it happens
+  // to draw: the pair is [the one running the test, the one being tested].
+  // See `sceneSpeakers` in js/tr/events.js.
+  roles: 'initiator-first',
   family: FAMILY,
   window: 'dawn',
   // ACT: TESTING. Asking somebody to vouch for a night presumes there are
@@ -223,6 +231,10 @@ registerEvent({
 
 registerEvent({
   id: 'testing-loyalty-oath',
+  // The direction is a property of THIS event, not of the sentence it happens
+  // to draw: the pair is [the one running the test, the one being tested].
+  // See `sceneSpeakers` in js/tr/events.js.
+  roles: 'initiator-first',
   family: FAMILY,
   window: 'evening',
   advancesThread: true,
@@ -264,6 +276,10 @@ registerEvent({
 
 registerEvent({
   id: 'testing-reverse-psychology',
+  // The direction is a property of THIS event, not of the sentence it happens
+  // to draw: the pair is [the one running the test, the one being tested].
+  // See `sceneSpeakers` in js/tr/events.js.
+  roles: 'initiator-first',
   family: FAMILY,
   window: 'after-table',
   // ACT: TESTING. Baiting somebody to watch their face is a mid-season move:
@@ -290,6 +306,10 @@ registerEvent({
 
 registerEvent({
   id: 'testing-hypothetical-loyalty-question',
+  // The direction is a property of THIS event, not of the sentence it happens
+  // to draw: the pair is [the one running the test, the one being tested].
+  // See `sceneSpeakers` in js/tr/events.js.
+  roles: 'initiator-first',
   family: FAMILY,
   window: 'evening',
   weight(ctx) {
@@ -312,6 +332,10 @@ registerEvent({
 
 registerEvent({
   id: 'testing-double-check-story',
+  // The direction is a property of THIS event, not of the sentence it happens
+  // to draw: the pair is [the one running the test, the one being tested].
+  // See `sceneSpeakers` in js/tr/events.js.
+  roles: 'initiator-first',
   family: FAMILY,
   window: 'morning',
   // ACT: TESTING. Going back over a story you were already told is the
@@ -341,6 +365,10 @@ registerEvent({
 
 registerEvent({
   id: 'testing-silence-test',
+  // The direction is a property of THIS event, not of the sentence it happens
+  // to draw: the pair is [the one running the test, the one being tested].
+  // See `sceneSpeakers` in js/tr/events.js.
+  roles: 'initiator-first',
   family: FAMILY,
   window: 'dawn',
   // The second advancer in `testing|dawn` — see the note on the pair cooldown
@@ -367,6 +395,10 @@ registerEvent({
 
 registerEvent({
   id: 'testing-cold-read-check',
+  // The direction is a property of THIS event, not of the sentence it happens
+  // to draw: the pair is [the one running the test, the one being tested].
+  // See `sceneSpeakers` in js/tr/events.js.
+  roles: 'initiator-first',
   family: FAMILY,
   window: 'evening',
   rare: true,
@@ -388,6 +420,10 @@ registerEvent({
 
 registerEvent({
   id: 'testing-follow-through-check',
+  // The direction is a property of THIS event, not of the sentence it happens
+  // to draw: the pair is [the one running the test, the one being tested].
+  // See `sceneSpeakers` in js/tr/events.js.
+  roles: 'initiator-first',
   family: FAMILY,
   window: 'after-table',
   advancesThread: true,
@@ -466,6 +502,10 @@ const DECOY_LINES = {
 
 registerEvent({
   id: 'testing-decoy-secret',
+  // The direction is a property of THIS event, not of the sentence it happens
+  // to draw: the pair is [the one running the test, the one being tested].
+  // See `sceneSpeakers` in js/tr/events.js.
+  roles: 'initiator-first',
   family: FAMILY,
   window: 'evening',
   advancesThread: true,
@@ -573,6 +613,10 @@ const NIGHT_CHECK_LINES = {
 
 registerEvent({
   id: 'testing-night-scores-it',
+  // The direction is a property of THIS event, not of the sentence it happens
+  // to draw: the pair is [the one running the test, the one being tested].
+  // See `sceneSpeakers` in js/tr/events.js.
+  roles: 'initiator-first',
   family: FAMILY,
   window: 'night',
   advancesThread: true,

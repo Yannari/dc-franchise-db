@@ -163,6 +163,9 @@ export function registerEvent(def) {
   if (!KNOWN_WINDOWS.has(def.window)) {
     throw new Error(`registerEvent(${def.id}): unknown window "${def.window}"`);
   }
+  if (def.roles != null && !KNOWN_SCENE_ROLES.has(def.roles)) {
+    throw new Error(`registerEvent(${def.id}): unknown roles "${def.roles}"`);
+  }
   _seenIds.add(def.id);
   EVENTS.push(def);
   return def;
@@ -213,6 +216,65 @@ export function sceneParticipants(res) {
     if (typeof res?.[k] === 'string') out.add(res[k]);
   }
   return [...out];
+}
+
+/**
+ * WHO DROVE THE SCENE, AND WHO ANSWERED — AS A FIELD, NOT AS A GUESS.
+ *
+ * THE DEFECT THIS REPLACES. `js/vp-tr/castle-day.js`'s `_order` worked out who
+ * replied by reading the authored sentence: English puts the person a thing is
+ * done TO last, so it took the LAST name in the line as the respondent and gave
+ * that person the reaction card's voice. It is right most of the time and
+ * inverts the scene when it is wrong — the interrogator is rendered as the
+ * stonewalled party, across three consecutive cards, because every card after
+ * the action is keyed off that one decision. Two reviewers landed on the same
+ * conclusion independently: a heuristic over prose cannot be made correct by
+ * more patterns, because the information simply is not in the sentence.
+ *
+ * IT IS IN THE ENGINE, THOUGH. `testing-*` is (its own header) "run BY one
+ * player ON another"; `susp-private-accusation` returns `pair: [accuser,
+ * accused]`. The event knows. It had nowhere to say so.
+ *
+ * MEASURED, so the size of the problem is on the record rather than asserted:
+ * 455 authored lines in the castle pool carry both `{a}` and `{b}`, and 139 of
+ * them (30.5%) put `{a}` last — "Two people put {b} in the same place at the
+ * same time, and {a} had asked them separately" is one, and the reviewer's
+ * rendered example is exactly that line. Those are the lines where the
+ * heuristic answers in the asker's voice. It is not the SCENE inversion rate
+ * (many of the 139 are lines where `{a}` really is the one being answered),
+ * but it is the population the field has to cover, and no regex over it can.
+ *
+ * TWO WAYS TO SAY IT, and both are the event's word rather than the screen's:
+ *
+ *   1. `roles: 'initiator-first'` on the definition, when the direction is a
+ *      property of the EVENT — the pair it returns is [driver, answerer] on
+ *      every branch. One line, no `fire()` edit, no rng draw, so annotating an
+ *      existing event cannot reroute a season.
+ *   2. `speaker` / `respondent` on the `fire()` result, when the direction is a
+ *      property of the BRANCH. Takes precedence, and is what new events should
+ *      use whenever a branch can hand the scene the other way round.
+ *
+ * VALIDATED, NOT TRUSTED: two distinct names, both of whom the firing itself
+ * says were in the scene. Anything else returns null and the screen falls back
+ * to the heuristic, which is what it did before this existed.
+ */
+export const KNOWN_SCENE_ROLES = new Set(['initiator-first']);
+
+export function sceneSpeakers(event, res) {
+  let speaker = typeof res?.speaker === 'string' ? res.speaker : null;
+  let respondent = typeof res?.respondent === 'string' ? res.respondent : null;
+  if (!speaker && !respondent && event?.roles === 'initiator-first') {
+    const pair = Array.isArray(res?.pair) ? res.pair : null;
+    if (pair && pair.length === 2
+      && typeof pair[0] === 'string' && typeof pair[1] === 'string') {
+      speaker = pair[0];
+      respondent = pair[1];
+    }
+  }
+  if (!speaker || !respondent || speaker === respondent) return null;
+  const people = sceneParticipants(res);
+  if (!people.includes(speaker) || !people.includes(respondent)) return null;
+  return { speaker, respondent };
 }
 
 /**

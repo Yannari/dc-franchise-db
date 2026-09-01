@@ -26,7 +26,7 @@ import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence }
 import { variantEvidence } from './murder-variants.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
-import { sceneParticipants, KNOWN_WINDOWS } from './events.js';
+import { sceneParticipants, sceneSpeakers, KNOWN_WINDOWS } from './events.js';
 // TASK 5: the day is scheduled in six chronological phases, each with its
 // own scene-count budget, replacing the old flat 4-8-per-round total split
 // fair-share across all seven windows. See js/tr/castle/phases.js.
@@ -950,6 +950,7 @@ function _castleRecord(ep, fired) {
     // `lastEp`, so a thread paid off three rounds ago is not a payoff on this
     // row and must not be drawn as one.
     const closedNow = t.state === 'closed' && t.lastEp === ep && !!t.outcome;
+    const voices = sceneSpeakers(f.event, c);
 
     scenes.push({
       window: f.event.window,
@@ -961,6 +962,12 @@ function _castleRecord(ep, fired) {
       // has to honour either claim to having been in the room.
       actors: [...(f.actors || [])],
       people: sceneParticipants(c),
+      // WHO DROVE IT AND WHO ANSWERED, when the event says so. Null when it
+      // does not, and the screen then falls back to reading the sentence —
+      // see `sceneSpeakers` (js/tr/events.js) for why that fallback exists and
+      // what it gets wrong.
+      speaker: voices?.speaker ?? null,
+      respondent: voices?.respondent ?? null,
       parties: [...(t.parties || [])],
       threadId: t.id,
       kind: t.kind,

@@ -679,6 +679,28 @@ const ADVERSE_BRANCHES = new Set([
   'overcorrected', 'hedged',
   // and the ones the coverage arm surfaced on its first run
   'disappointment', 'grudge', 'left-out', 'rivalry-carried-over', 'warned',
+  // ── TASK 7 STAGE 1: RE-READ AND MOVED OFF THE BENIGN LIST ──
+  //
+  // `strategic` (callback-history-confrontation) was classified benign in fix
+  // round 2 on the strength of its NAME. Reading the branch says otherwise, and
+  // both halves of the evidence point the same way:
+  //
+  //   - it writes `bondDelta = -1`. It is the only branch on the benign list
+  //     that moves a bond DOWN. A scene the screen answers as smooth while the
+  //     engine records a relationship getting worse is the exact card-contradicts-
+  //     the-card-under-it defect ADVERSE_BRANCHES was introduced for.
+  //   - all four of its authored lines are veiled threats, not neutral
+  //     strategy: "the history between them was a card {a} could play whenever
+  //     they wanted", "treated the whole thing like leverage, and {b} clocked
+  //     exactly what was happening", "{a} simply mentioned that they remembered
+  //     it well", "People here don't know that story yet ... and left it
+  //     hanging."
+  //
+  // The respondent is being leaned on. REACT_ADVERSE is the register that
+  // answers that, so this belongs here. `strategic` is produced by
+  // callback-history-confrontation and by nothing else in the pool, so the move
+  // is confined to that event.
+  'strategic',
 ]);
 /**
  * AND EVERY OTHER BRANCH, SAID OUT LOUD.
@@ -715,7 +737,7 @@ const BENIGN_BRANCHES = new Set([
   'vowed-silence', 'walked-back-together', 'wary', 'whispered',
   // and the ones the coverage arm surfaced on its first run
   'alliance-reformed', 'alumni-bond', 'buries', 'defended-by-history', 'recognized',
-  'reconciles', 'redemption', 'reunion-spark', 'sincere', 'strategic', 'synchronized',
+  'reconciles', 'redemption', 'reunion-spark', 'sincere', 'synchronized',
 ]);
 
 /** Both lists, for the coverage arm. Nothing else reads them. */
@@ -2719,9 +2741,19 @@ function _composeScene(s, key, used, cast) {
 }
 
 /**
- * WHO ANSWERED, READ OFF THE SENTENCE ITSELF.
+ * WHO ANSWERED — THE RECORD FIRST, THE SENTENCE ONLY IF THE RECORD IS SILENT.
  *
- * The record cannot say. `actors` is the order the scheduler convened them in,
+ * THE FIELD WINS. `speaker`/`respondent` are written by `_castleRecord`
+ * (js/tr/headless.js) from what the EVENT declared, and an event that declares
+ * it is never second-guessed here: the paragraph below describes a heuristic
+ * that inverts the scene in a small share of cases, and once the engine has
+ * said which way round it goes there is nothing left for a heuristic to add.
+ * The fallback stays because most of the pool has not been annotated yet — a
+ * silent record is the common case today, not the exception.
+ *
+ * ── AND THE FALLBACK, WHICH IS STILL A HEURISTIC ──
+ *
+ * The record could not say. `actors` is the order the scheduler convened them in,
  * and the authored line is free to put either of them first — trust.js's
  * `trust-trade-reads` convenes [Chase, Brody] and writes "Brody asked, and
  * Chase answered". Ordering off `actors` therefore had the reaction card
@@ -2737,6 +2769,11 @@ function _composeScene(s, key, used, cast) {
  */
 function _order(s, roll) {
   if (roll.length < 2) return roll;
+  if (typeof s.speaker === 'string' && typeof s.respondent === 'string'
+    && s.speaker !== s.respondent
+    && roll.includes(s.speaker) && roll.includes(s.respondent)) {
+    return [...new Set([s.speaker, s.respondent, ...roll])];
+  }
   const named = roll
     .map(n => ({ n, at: String(s.line || '').lastIndexOf(n) }))
     .filter(x => x.at >= 0);

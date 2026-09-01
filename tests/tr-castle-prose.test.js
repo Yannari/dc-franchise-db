@@ -686,6 +686,87 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     expect(FOUND_DEFECTS.some(re => re.test('lay awake with the empty beds'))).toBe(false);
   });
 
+  it('takes who answered off the record when the record says, not off the sentence', () => {
+    // PLAN 10 TASK 7, CARRY-FORWARD FROM TASK 6. `_order` used to work out who
+    // replied by reading the authored line and taking the LAST name in it as
+    // the respondent. It inverts the scene when it is wrong, and it is wrong on
+    // a whole class of two-clause sentences - the reviewer's rendered example
+    // was "Two people put Beardo in the same place at the same time, and
+    // Alejandro had asked them separately", which handed the reply to the
+    // asker, across three consecutive cards.
+    //
+    // The fix is a FIELD (`speaker`/`respondent`, js/tr/events.js
+    // `sceneSpeakers`), and this arm exists to prove the field WINS - i.e. that
+    // it is not shadowed by the heuristic that is still there for records that
+    // do not carry it.
+    //
+    // THE FIXTURE IS BUILT SO THE TWO ANSWERS DISAGREE. The line names Ondine
+    // last, so the heuristic makes Ondine the respondent; the record says the
+    // respondent is Marek. If `_order` ignored the field this assertion could
+    // not pass, which is checked directly below by deleting it.
+    const line = 'Two people put Marek in the same place at the same time, '
+      + 'and Ondine had asked them separately.';
+    const scene = {
+      window: 'evening', family: 'testing', eventId: 'testing-ask-for-alibi-check',
+      branch: 'checks-out', actors: ['Ondine', 'Marek'], people: ['Ondine', 'Marek'],
+      parties: ['Ondine', 'Marek'], threadId: 't1', kind: 'testing', openedEp: 3,
+      beatNo: 1, opened: true, priorDays: [], line, citation: null, citedDays: [],
+      closedNow: false, outcome: null, sense: null,
+      speaker: 'Ondine', respondent: 'Marek',
+    };
+    const row = ep => ({ ep: 3, tr: { castle: { ep: 3, scenes: [ep], windows: ['evening'],
+      phases: [{ id: 'private-strategy', label: 'Private Strategy', scenes: [ep] }] } } });
+
+    const withField = castleDayScenes(row(scene), 'audience');
+    expect(withField.length, 'the fixture composed no scene').toBe(1);
+    expect(withField[0].participants.slice(0, 2)).toEqual(['Ondine', 'Marek']);
+
+    // AND THE MUTATION: strip the field and the heuristic answers the other way
+    // round. Without this half the arm would still pass if `_order` ignored the
+    // record entirely and simply happened to agree - the failure mode the whole
+    // fix is about.
+    const { speaker, respondent, ...silent } = scene;
+    const withoutField = castleDayScenes(row(silent), 'audience');
+    expect(withoutField[0].participants.slice(0, 2)).toEqual(['Marek', 'Ondine']);
+
+    // A record that names somebody who was not in the scene is not trusted:
+    // `sceneSpeakers` returns null for it and the screen falls back.
+    const bogus = castleDayScenes(row({ ...scene, respondent: 'Nobody' }), 'audience');
+    expect(bogus[0].participants.slice(0, 2)).toEqual(['Marek', 'Ondine']);
+  });
+
+  it('and the engine actually writes that field on the events that declare it', () => {
+    // The arm above proves the SCREEN honours the field. This one proves the
+    // ENGINE produces it, on a real season, for the thirteen events annotated
+    // `roles: 'initiator-first'` - otherwise the fix is a code path nothing
+    // reaches, which is the defect class this repo's own notes call
+    // "written-but-unreachable".
+    const declared = new Set(EVENTS.filter(e => e.roles === 'initiator-first').map(e => e.id));
+    expect(declared.size, 'no event declares its direction, so this arm is vacuous')
+      .toBeGreaterThanOrEqual(13);
+    let seen = 0;
+    for (const ep of TASK6_ROWS) {
+      for (const raw of ep.tr.castle.scenes) {
+        if (!declared.has(raw.eventId)) continue;
+        expect(raw.speaker, `${raw.eventId} declares its direction and recorded no speaker`)
+          .toBeTruthy();
+        expect(raw.respondent).toBeTruthy();
+        expect(raw.speaker).not.toBe(raw.respondent);
+        // and it is the pair the event returned, in the order it returned it
+        expect(raw.people).toContain(raw.speaker);
+        expect(raw.people).toContain(raw.respondent);
+        seen++;
+      }
+    }
+    expect(seen, 'no annotated event fired in this season, so nothing was checked')
+      .toBeGreaterThan(0);
+    // and an UNannotated event still records nothing, so the fallback is live
+    const quiet = TASK6_ROWS.flatMap(e => e.tr.castle.scenes)
+      .filter(x => !declared.has(x.eventId));
+    expect(quiet.length).toBeGreaterThan(0);
+    expect(quiet.every(x => x.speaker === null && x.respondent === null)).toBe(true);
+  });
+
   it('and classifies every branch it can see as adverse or as harmless', () => {
     // FIX ROUND 2, item 3. `_tone` treats anything not on the adverse list as
     // smooth, so an unknown branch and a known-harmless branch were the same

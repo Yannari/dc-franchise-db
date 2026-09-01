@@ -509,7 +509,7 @@ const LIABILITY_LINES = {
 const EXPOSED_AFTERMATH_LINES = [
   '{b}\'s own showmance just stood up and named them in front of the room. Damage control starts now.',
   'The person who slept next to {b} has just told the castle what they think {b} is. There is no version of tomorrow where {b} is not answering for that.',
-  'Whatever cover {b} had, it was mostly {a}, and {a} has just spent it in public.',
+  'Whatever protection {b} had, it was mostly {a}, and {a} has just spent it in public.',
   '{b} now has to explain, to everybody, why the one person who knows them best said that out loud.',
   'By breakfast the whole castle will have it. {b} has until breakfast.',
 ];

@@ -145,27 +145,25 @@ function _hostAv(size) {
 // threads of kind `romance-spark`. An unknown key falls to `unspun`, which is
 // a real colour and not a crash — a screen that throws on a family somebody
 // adds next year is a screen that gets deleted.
+// AND THEY ARE COLOURS AND NOTHING ELSE NOW. Each entry used to carry a LABEL
+// and a GLOSS, and the card printed them: "Cover — somebody spent the day being
+// ordinary on purpose". That is a category and its own footnote above a
+// sentence, which is a state report rather than an episode — and one of those
+// labels was a word the machine uses and prose may not (see js/tr/scene-api.js).
+// The colour survives because it does the one job a label cannot: it makes the
+// cord on this card recognisably the cord on that one, four hours apart, with
+// the text unread.
 const FAMILIES = {
-  trust: { label: 'Trust', colour: '#8fbf9a',
-    gloss: 'somebody decided to put weight on somebody else' },
-  suspicion: { label: 'Suspicion', colour: '#d0576b',
-    gloss: 'somebody started keeping a list' },
-  grief: { label: 'Grief', colour: '#94a0cc',
-    gloss: 'the room counted itself and did not like the answer' },
-  cover: { label: 'Cover', colour: '#d2a44e',
-    gloss: 'somebody spent the day being ordinary on purpose' },
-  romance: { label: 'Romance', colour: '#dc95b4',
-    gloss: 'two people found the day easier than it was' },
-  'romance-spark': { label: 'Romance', colour: '#dc95b4',
-    gloss: 'two people found the day easier than it was' },
-  callback: { label: 'History', colour: '#ac8fc8',
-    gloss: 'something from before this place walked back in' },
-  testing: { label: 'Testing', colour: '#5fb6c0',
-    gloss: 'somebody set a small trap and watched it' },
-  journey: { label: 'The Road', colour: '#d9834f',
-    gloss: 'an hour of walking with nothing to do but talk' },
-  unspun: { label: 'The Castle', colour: '#b6ac96',
-    gloss: 'a thing that happened, in a place where things happen' },
+  trust: { colour: '#8fbf9a' },
+  suspicion: { colour: '#d0576b' },
+  grief: { colour: '#94a0cc' },
+  cover: { colour: '#d2a44e' },
+  romance: { colour: '#dc95b4' },
+  'romance-spark': { colour: '#dc95b4' },
+  callback: { colour: '#ac8fc8' },
+  testing: { colour: '#5fb6c0' },
+  journey: { colour: '#d9834f' },
+  unspun: { colour: '#b6ac96' },
 };
 function _fam(scene) {
   return FAMILIES[scene.family] || FAMILIES[scene.kind] || FAMILIES.unspun;
@@ -188,7 +186,7 @@ const HOURS = {
   ] },
   morning: { label: 'Morning', sun: 'morning', lines: [
     'The castle at work — bread, water, wood — and everything anybody says over the top of it.',
-    'Chores, and the excellent cover chores give a conversation nobody wants overheard.',
+    'Chores, and the excellent excuse a chore gives a conversation nobody wants overheard.',
     'A working morning. Nobody is idle and nobody is only doing what they look like they are doing.',
     'The long stretch before the road, spent in twos, in doorways, over jobs.',
   ] },
@@ -228,39 +226,700 @@ function _hour(w) {
     lines: ['An hour of the day, and the castle spent it the way it spends them.'] };
 }
 
-// ── how a beat's position gets said out loud ──────────────────────────
-const OPENING_TAG = ['A new thread', 'Cast on', 'Something starts', 'First knot'];
-const CARRIED_TAG = ['Still running', 'Picked back up', 'The same thread', 'Carried over'];
-const CLOSING_TAG = ['Knotted off', 'The end of it', 'Paid off', 'Cut'];
+// ══════════════════════════════════════════════════════════════════════
+// A SCENE, WRITTEN OUT  (Plan 10, Task 6)
+// ══════════════════════════════════════════════════════════════════════
+//
+// WHAT WAS HERE BEFORE. Three arrays of category labels — `OPENING_TAG`,
+// `CARRIED_TAG`, `CLOSING_TAG` — printed above every card, so the screen said
+//
+//     Suspicion — Cast on
+//     Chef Hatchet clocked a completely harmless habit of Bowie's.
+//
+// and then moved on. That is a state report with a serif font on it. The
+// viewer is told a category, a sentence and nothing else: not where anybody
+// was, not what was said, not how the other person took it, and above all not
+// what is different afterwards. A card that says a thing happened and never
+// says what it cost is exactly the disconnected-event shape this plan exists
+// to remove.
+//
+// WHAT REPLACES IT. Every recorded scene is composed into a full television
+// scene of four or five CARDS before any markup exists:
+//
+//     establish    where, when, and who is standing there
+//     action       what concretely happens — the engine's own authored
+//                  sentence, which is the one fact on the card
+//     recall       (only when the story is older than today) what it goes
+//                  back to, with the days it has beats on
+//     reaction     how the other person takes it, in their own voice, out
+//                  loud where dialogue is the honest way to carry it
+//     consequence  what is different now, said as behaviour rather than as a
+//                  number
+//
+// EVERY WORD OF IT COMES OFF THE RECORD. The action is the engine's sentence
+// verbatim. The recall is the engine's citation, or the days the thread
+// actually has beats on. The consequence is keyed on whether this beat opened
+// the story, continued it, or ended it, and on the outcome the engine stored.
+// The only thing composed here that the record does not literally hold is the
+// ROOM — and a room is staging, not a claim: a scene has to happen somewhere
+// or the reader cannot see it. Nothing here asserts a fact about the game that
+// the record does not already carry.
+//
+// THE VOICE IS THE CONTESTANT'S. The reaction is picked on the responder's
+// archetype, which is what makes a hothead and a mastermind answer the same
+// question differently instead of interchangeably. Speech is contemporary —
+// contractions, interruptions, short sentences — because the castle is gothic
+// and the people in it are not.
+//
+// AND THE WORDS THE MACHINE USES ARE NOT ON THE PAGE. `cover`, `thread`,
+// `heat`, `opened today` and `The Loom` are debug vocabulary (see the header
+// of js/tr/scene-api.js) and appear nowhere a viewer can read them, including
+// as a heading. Where a label used to carry the meaning, the sentence now
+// carries it.
 
-/** What a closed thread's outcome MEANS, in the show's own terms. */
-const SENSE_WORDS = {
-  walked: { word: 'Walked away from it',
-    gloss: 'the scrutiny arrived and they came out the other side of it' },
-  cracked: { word: 'Something came out',
-    gloss: 'the scrutiny arrived and it got something out of them' },
-  coupled: { word: 'Settled, one way or the other',
-    gloss: 'it was a romance and it resolved as one' },
+/**
+ * WHERE IT HAPPENED. The record stores an hour and not a room, and a scene
+ * with no room in it is a scene the reader cannot picture. Picked
+ * deterministically off the scene's own key, so the same day always happens in
+ * the same places and the transcript and the screen agree.
+ */
+const PLACES = {
+  dawn: ['the kitchen', 'the long table', 'the bottom of the stairs', 'the front hall',
+    'the corridor outside the bedrooms'],
+  morning: ['the library', 'the courtyard', 'the woodpile', 'the drawing room',
+    'the scullery', 'the terrace steps'],
+  'journey-out': ['the drive', 'the track below the gates', 'the minibus', 'the lane',
+    'the top of the hill'],
+  'journey-back': ['the lane home', 'the minibus', 'the last field before the gates',
+    'the gravel outside the doors', 'the boot room'],
+  evening: ['the library', 'the landing', 'the billiard room', 'the window seat on the stairs',
+    'the fire in the great hall'],
+  'after-table': ['the front hall', 'the stairs', 'the kitchen', 'the landing',
+    'the far end of the long table'],
+  night: ['the upstairs corridor', 'the bedroom under the eaves', 'the back stairs',
+    'the window at the end of the passage', 'the linen store'],
 };
-/** The eleven outcome strings, in words a viewer has any use for. */
-// THE SUBJECT IS ALWAYS "THEY", so every phrase here is PLURAL. The first
-// version was written third-person singular and the screen printed "They
-// denied it, and was believed" — found by rendering a day and reading it,
-// which is how every prose defect in eight plans has been found and none by
-// an assertion.
-const OUTCOME_WORDS = {
-  'denied-convincingly': 'denied it, and were believed',
-  'passed-clean': 'came through it with nothing on them',
-  'defended-by-history': 'were vouched for by somebody who knew them before all this',
-  'turned-back': 'turned it round on whoever started it',
-  buried: 'buried it, and it stayed buried',
-  'confessed-unrelated': 'admitted to something else entirely',
-  'test-exposed': 'failed the test in front of the person setting it',
-  'failed-maliciously': 'failed it, and meant to',
-  exposed: 'were found out',
-  'became-showmance': 'stopped pretending it was nothing',
-  'broken-up': 'ended it, badly',
+/** The half of the heading that is a clock, in the words a viewer uses. */
+const WHEN_HEAD = {
+  dawn: 'BEFORE ANYONE IS UP', morning: 'MID-MORNING',
+  'journey-out': 'ON THE WAY OUT', 'journey-back': 'ON THE WAY BACK',
+  evening: 'BEFORE THE ROUND TABLE', 'after-table': 'AFTER THE ROUND TABLE',
+  night: 'AFTER LIGHTS OUT',
 };
+/** The same clock, in a clause a sentence can end on. */
+const WHEN_SAID = {
+  dawn: 'before the castle is properly awake', morning: 'in the middle of the morning',
+  'journey-out': 'on the way out', 'journey-back': 'on the way back',
+  evening: 'an hour before the Round Table', 'after-table': 'minutes after the Round Table',
+  night: 'after lights out',
+};
+
+/**
+ * THE ESTABLISHING CARD, per hour. Four each, because on a busy day three
+ * scenes land in one hour and one sentence printed three times reads exactly
+ * like a fault — the finding the variety floor in tests/tr-castle-prose.js was
+ * written for, arriving on the screen side.
+ */
+const ESTABLISH_PAIR = {
+  dawn: [
+    'It is barely light yet, and {a} and {b} have {loc} to themselves.',
+    'First light. {a} comes down to {loc} and finds {b} already standing there.',
+    'Nobody else is down yet. {a} and {b} are at {loc} with the whole building quiet behind them.',
+    'The morning is about ten minutes old. {a} catches {b} at {loc}, before anybody else comes down.',
+  ],
+  morning: [
+    'Mid-morning at {loc}, with the work half done, and {a} and {b} are the only two there.',
+    'The castle is busy everywhere except {loc}, which is where {a} and {b} are.',
+    'An hour after breakfast, {a} steers {b} towards {loc} and lets the door swing shut.',
+    '{a} and {b} end up at {loc} together, with a job between them that neither is really doing.',
+  ],
+  'journey-out': [
+    'The walk out has strung them along the track, and {a} and {b} are at the back of it, near {loc}.',
+    'Twenty minutes out from the gates, {a} falls into step with {b} at {loc}.',
+    'Out at {loc}, with the castle behind them and nothing else to look at, {a} and {b} are talking.',
+    '{a} and {b} take {loc} slowly on purpose, and let the others get ahead of them.',
+  ],
+  'journey-back': [
+    'On the way back, at {loc}, {a} and {b} are the last two in the line.',
+    'The afternoon is gone and so is most of the talking. {a} and {b} are at {loc}, walking it out.',
+    'Coming home past {loc}, tired enough to be honest, {a} drops back to {b}.',
+    '{a} and {b} do the last stretch — {loc} — side by side and in no particular hurry.',
+  ],
+  evening: [
+    'An hour before they sit down. {a} and {b} are at {loc}, and neither is there by accident.',
+    'The light is going. {a} finds {b} at {loc}, which is where {a} was hoping to find them.',
+    'At {loc}, before the Round Table, {a} and {b} have a few minutes and they both know it.',
+    '{a} and {b} are at {loc} with the evening in front of them and a name to settle on.',
+  ],
+  'after-table': [
+    'The doors have just shut. {a} and {b} are at {loc}, standing the way they were standing.',
+    'Straight afterwards, at {loc}, {a} and {b} find each other before anybody else does.',
+    'The Round Table is over and nobody has moved much yet. {a} and {b} are at {loc}.',
+    'At {loc}, minutes after the table, {a} says {b}’s name and {b} stops walking.',
+  ],
+  night: [
+    'After lights out, at {loc}, {a} and {b} are the only two still up.',
+    'The building has gone quiet. {a} and {b} are at {loc}, talking low.',
+    'Late, at {loc}, {a} waits until the corridor is empty before saying anything at all to {b}.',
+    'The rest of the doors are shut. {a} and {b} are at {loc}, and nobody knows they are.',
+  ],
+};
+/** Nobody else in the room, which is a scene in its own right and not a fault. */
+const ESTABLISH_SOLO = [
+  'There is nobody at {loc} but {a}, {when}.',
+  '{a} has {loc} to themselves, {when}, and nobody to perform for.',
+  '{when}, {a} stops at {loc} on their own and stays there.',
+  'Nobody else is at {loc}. {a} is there alone, {when}.',
+  '{a} is at {loc} with the door shut and nobody on the other side of it, {when}.',
+];
+/** Three or more, which the pair templates cannot honestly describe. */
+const ESTABLISH_GROUP = [
+  '{names} are at {loc} together, {when}.',
+  '{when}, {loc} has {names} in it and nobody else.',
+  '{names} end up at {loc} at the same time, {when}, which none of them planned.',
+  'At {loc}, {when}, it is {names} — and it stays {names} for as long as this takes.',
+];
+
+/**
+ * WHICH VOICE SOMEBODY ANSWERS IN.
+ *
+ * Four classes rather than fifteen, because the thing being selected is
+ * DELIVERY and fifteen archetypes do not have fifteen deliveries. Every name
+ * below is a valid archetype (AGENTS.md), and the behaviour rules hold: no
+ * class here scripts a nice archetype into scheming.
+ *
+ * The fallback is PROPORTIONAL and never a gameplay threshold — this is text
+ * selection, which is the one thing AGENTS.md permits a cut on. Somebody with
+ * no archetype on their row answers in the register their stats are loudest in.
+ */
+const VOICE_BY_ARCHETYPE = {
+  hothead: 'blunt', villain: 'blunt', 'challenge-beast': 'blunt', 'chaos-agent': 'blunt',
+  mastermind: 'sharp', schemer: 'sharp', 'perceptive-player': 'sharp',
+  'social-butterfly': 'warm', hero: 'warm', showmancer: 'warm', 'loyal-soldier': 'warm',
+  floater: 'guarded', goat: 'guarded', underdog: 'guarded', wildcard: 'guarded',
+};
+function _voice(name) {
+  const p = (players || []).find(x => x && x.name === name);
+  const a = p && p.archetype;
+  if (a && VOICE_BY_ARCHETYPE[a]) return VOICE_BY_ARCHETYPE[a];
+  const s = (p && p.stats) || {};
+  const n = k => Number(s[k]) || 5;
+  const bid = {
+    blunt: n('boldness') + (10 - n('temperament')),
+    sharp: n('strategic') + n('intuition'),
+    warm: n('social') + n('loyalty'),
+    guarded: (10 - n('boldness')) + (10 - n('social')),
+  };
+  return Object.keys(bid).sort((x, y) => bid[y] - bid[x])[0];
+}
+
+/** Which kind of scene this is, for the purpose of how somebody answers. */
+function _reactClass(scene) {
+  const f = scene.family || scene.kind;
+  if (f === 'trust' || f === 'romance' || f === 'romance-spark') return 'bond';
+  if (f === 'grief') return 'loss';
+  if (f === 'callback') return 'past';
+  if (f === 'journey') return 'road';
+  // TESTED AND COVERED ARE NOT PRESSED, and running them through the pressure
+  // pools was the first defect found by reading a real day: a card that said
+  // "Beardo planted a fake secret with Chet and it never went anywhere" was
+  // answered by Chet asking Beardo whether Beardo was all right — a reaction to
+  // a confrontation that never happened. A test only works while the other
+  // person does not know it is one, and somebody being lied to smoothly is not
+  // being questioned. Two different scenes, two different sets of answers.
+  if (f === 'testing') return 'tested';
+  if (f === 'cover') return 'covered';
+  return 'pressure';
+}
+
+/**
+ * HOW THE OTHER PERSON TAKES IT, and it is the card that carries the dialogue.
+ *
+ * Keyed on what the scene IS and on who is answering, so the same recorded
+ * fact gets a different answer out of a hothead and out of a mastermind. These
+ * are not interchangeable quote pools: the blunt branch escalates, the sharp
+ * branch turns the question over, the warm branch slows it down, the guarded
+ * branch answers less than it was asked.
+ */
+const REACT = {
+  pressure: {
+    blunt: [
+      '“Say what you actually mean,” {b} says. “You’ve been circling it since this morning.”',
+      '{b} doesn’t soften it. “If you think I did something, put my name up tonight and stop asking me questions.”',
+      '“Ask me properly or drop it,” {b} says, and doesn’t look away while {a} decides which.',
+    ],
+    sharp: [
+      '{b} answers it, then asks {a} the same question back, word for word, to hear how it sounds coming the other way.',
+      '“You’ve asked me that twice now,” {b} says. “The second time wasn’t for your benefit.”',
+      '{b} gives {a} the answer and watches what {a} does with it, which is the part {b} actually came for.',
+    ],
+    warm: [
+      '“Can we slow down?” {b} says. “I’d rather answer it properly than win it.”',
+      '{b} takes it better than {a} expected — answers straight, and then asks whether {a} is all right.',
+      '“I’m not going to be weird about this,” {b} says, and means it, and answers anyway.',
+    ],
+    guarded: [
+      '{b} gives {a} an answer that is true and about half as long as it could have been.',
+      '“Sure,” {b} says, and nothing else, and lets the silence do the rest of the work.',
+      '{b} laughs it off, agrees with {a} about something next to it, and never answers the question asked.',
+    ],
+  },
+  bond: {
+    blunt: [
+      '“Don’t make me regret this,” {b} says, which from {b} is as close to warm as it gets.',
+      '{b} says it back plainly, no hedging. {a} is on the short list of people {b} intends to keep.',
+      '“Good,” {b} says. “Then we stop wasting each other’s time and start counting the same way.”',
+    ],
+    sharp: [
+      '{b} agrees, and privately works out exactly what {a} has handed over and what it is worth.',
+      '“That helps me,” {b} says, and it is a true sentence doing two jobs at once.',
+      '{b} takes the offer, keeps a little back, and lets {a} believe the whole of it changed hands.',
+    ],
+    warm: [
+      '{b} is visibly relieved. “I’ve been carrying that on my own since we got here.”',
+      '“I know,” {b} says. “I’ve known since the first night. I was waiting for you to say it.”',
+      '{b} doesn’t make a speech about it. {b} moves closer and stays there, which is the answer.',
+    ],
+    guarded: [
+      '{b} says yes, carefully, in a way that could be walked back tomorrow if it has to be.',
+      '“All right,” {b} says. It isn’t much, and coming from {b} it is a great deal.',
+      '{b} accepts it without promising anything back, and both of them notice the gap.',
+    ],
+  },
+  loss: {
+    blunt: [
+      '“I’m not doing the sad voice,” {b} says. “I want to know who sat there and picked.”',
+      '{b} is angry rather than sad, says so, and doesn’t apologise for the difference.',
+      '“People are going to be very kind today,” {b} says. “One of them did it.”',
+    ],
+    sharp: [
+      '{b} lets {a} finish, then asks who is better off for the empty chair — which is not a kind question and is the right one.',
+      '“I liked them too,” {b} says. “And I’m still going to think about what it means that it was them.”',
+      '{b} grieves for about a minute and then starts working, because {b} doesn’t know another way to do it.',
+    ],
+    warm: [
+      '{b} doesn’t try to fix it. {b} sits down beside {a} and stays until {a} has stopped.',
+      '“You’re allowed to be upset,” {b} says. “You don’t have to be useful this morning.”',
+      '{b} cries too, which {a} was not expecting, and it helps more than anything either of them says.',
+    ],
+    guarded: [
+      '{b} says the right things in the right order and none of it reaches {b}’s face.',
+      '“Yeah,” {b} says, and looks at the floor, and that is the whole of what {b} has today.',
+      '{b} holds it together in front of {a}, then goes somewhere else to not hold it together.',
+    ],
+  },
+  past: {
+    blunt: [
+      '“That was a different game and you know it,” {b} says. “Bring it up again and I’ll bring up yours.”',
+      '{b} denies none of it. “I did that. I’d probably do it again. Ask me something harder.”',
+      '“You’ve been waiting a week to say that,” {b} says. “Feel better?”',
+    ],
+    sharp: [
+      '{b} corrects one detail of {a}’s version, precisely, and lets the correction do the arguing.',
+      '“You’re remembering the part that suits you,” {b} says. “Tell them what you did the round before.”',
+      '{b} agrees with the facts and disagrees with the conclusion, out loud, so {a} has to defend the conclusion.',
+    ],
+    warm: [
+      '“I’ve thought about that a lot since,” {b} says. “I’m not going to pretend it didn’t happen.”',
+      '{b} apologises for it properly and without conditions, which is not what {a} came for and lands anyway.',
+      '“We were different people then,” {b} says. “I’d quite like to find out whether that’s true.”',
+    ],
+    guarded: [
+      '{b} laughs, changes the subject twice, and never once says the old season out loud.',
+      '“Long time ago,” {b} says, in the voice people use when they would like it to stay a long time ago.',
+      '{b} lets {a} tell the story and adds nothing at all to it, which {a} notices.',
+    ],
+  },
+  tested: {
+    blunt: [
+      '{b} answers it the way {b} answers everything — fast, loud, and without once wondering why it was asked.',
+      '“Why do you want to know that?” {b} says, and then answers it anyway, at length.',
+      '{b} doesn’t think twice about it, which is either the truth or a very good habit.',
+    ],
+    sharp: [
+      '{b} answers, and half a beat later works out that the question had a shape to it.',
+      '“That’s a strange thing to want to know,” {b} says, evenly, and gives {a} rather less than {a} asked for.',
+      '{b} answers, then asks {a} a question of {b}’s own, which was not part of what {a} came here to do.',
+    ],
+    warm: [
+      '{b} answers openly and never once considers that {b} is being measured.',
+      '“Course,” {b} says, and helps, and it does not occur to {b} to wonder why.',
+      '{b} takes it entirely at face value, which tells {a} something {b} did not mean to say.',
+    ],
+    guarded: [
+      '{b} answers with the smallest true thing available and waits to see what happens next.',
+      '{b} hesitates for exactly as long as it takes to decide how much of it to hand over.',
+      '“Depends who’s asking,” {b} says, lightly, and it is not entirely a joke.',
+    ],
+  },
+  covered: {
+    blunt: [
+      '{b} buys it without blinking, because {a} said it the way people say true things.',
+      '“Fine,” {b} says, already talking about something else, which is the best {a} could have hoped for.',
+      '{b} doesn’t push. {b} isn’t interested enough today to push.',
+    ],
+    sharp: [
+      '{b} nods along and privately notes that the answer arrived a little too complete.',
+      '“Right,” {b} says, and keeps the version {a} has just given, in case there is another one later.',
+      '{b} accepts it out loud and does not accept it, and {a} cannot tell which.',
+    ],
+    warm: [
+      '{b} believes {a} completely and says so, which is the part {a} will think about tonight.',
+      '“I never thought otherwise,” {b} says, and means it, and {a} has to hold {b}’s eye for it.',
+      '{b} is kind about it, which somehow costs {a} more than being doubted would have.',
+    ],
+    guarded: [
+      '{b} says very little and lets it go, and neither of them mentions it again.',
+      '{b} takes it, keeps it, and gives no sign at all of what {b} means to do with it.',
+      '“Mm,” {b} says, and the subject changes, and {a} lets it change.',
+    ],
+  },
+  road: {
+    blunt: [
+      '“You’re not walking with me for the view,” {b} says. “Go on, then.”',
+      '{b} goes straight past the small talk and asks {a} what {a} actually wants out here.',
+      '“We’ve got twenty minutes and nobody can hear us,” {b} says. “Use them.”',
+    ],
+    sharp: [
+      '{b} keeps it light for the first hundred yards and asks the real question when the road bends.',
+      '“Interesting time to fall into step with me,” {b} says, pleasantly, and keeps walking.',
+      '{b} answers everything {a} asks and gives away nothing {a} did not already have.',
+    ],
+    warm: [
+      '{b} is glad of the company and says so, and for a while it is just two people walking.',
+      '“This is the only hour of the day I like,” {b} says, and the talking gets easier after that.',
+      '{b} makes {a} laugh about something with nothing to do with any of it, and both of them needed it.',
+    ],
+    guarded: [
+      '{b} matches {a}’s pace and says about a third of what {b} is actually thinking.',
+      '“Mm,” {b} says, at the parts that matter, and something longer at the parts that don’t.',
+      '{b} lets the conversation happen and steers it, gently, away from anything expensive.',
+    ],
+  },
+};
+/** Nobody there to react, so the reaction is the one they do not have to hide. */
+const REACT_SOLO = {
+  blunt: [
+    'There is nobody to perform for, so {a} doesn’t, and what is on {a}’s face now was not on it at breakfast.',
+    '{a} swears once, quietly, at nobody in particular, and that is the whole of it.',
+    '{a} stands there long enough that it stops being a pause and turns into a decision.',
+  ],
+  sharp: [
+    '{a} runs it through again from the start, looking for the place it comes apart, and finds one.',
+    'Nobody sees it. {a} spends the next minute working out who would have, if anyone had been standing there.',
+    '{a} files it away the way {a} files everything, and rearranges tomorrow around it.',
+  ],
+  warm: [
+    '{a} lets it show, for as long as it takes, because there is finally nobody in the room to manage.',
+    'There is no audience for it, so {a} stops being fine for a minute and then starts again.',
+    '{a} says something out loud to an empty room, which is the nearest {a} has come to saying it at all.',
+  ],
+  guarded: [
+    '{a} takes the moment, puts it back where it was, and goes to find somebody to be normal in front of.',
+    'Nothing shows. {a} has had a great deal of practice at nothing showing.',
+    '{a} waits until the corridor is quiet again and leaves it exactly where it fell.',
+  ],
+};
+
+/**
+ * WHAT IS DIFFERENT NOW — said as behaviour, never as a number.
+ *
+ * The consequence card is the one the old screen did not have at all, and it
+ * is the reason a card can be checked against the season instead of taken on
+ * trust. Keyed on the family and on whether this beat STARTED the story or
+ * CONTINUED it; the ending has its own pools below, because "it is over" is a
+ * different sentence from "it goes on".
+ */
+const CONSEQ = {
+  suspicion: {
+    opened: [
+      '{a} says nothing more about it and doesn’t stop thinking about it either. {b} has a place in {a}’s head now that {b} did not have this morning.',
+      'Nothing is decided. But {a} is going to watch where {b} stands tonight, and {b} has no idea that is happening.',
+      '{a} lets it go for now and does not forget it. {b} walks away thinking the conversation went fine.',
+    ],
+    carried: [
+      'That is twice. {a} stops calling it a feeling and starts treating it as something to prove.',
+      '{a} sets it beside what {a} already had. It is not proof yet, and it is getting harder for {b} to explain away.',
+      'It stops being a thing {a} noticed and becomes a thing {a} is prepared to say out loud in front of people.',
+    ],
+  },
+  testing: {
+    opened: [
+      '{a} came away with an answer, and the answer is worth more to {a} than {b} would like it to be.',
+      'It was a small thing to ask and {a} was never really asking it. {a} has what {a} came for either way.',
+      '{b} passes it without ever knowing there was anything to pass. {a} knows, and that is the whole point of it.',
+    ],
+    carried: [
+      '{a} has set this up twice now, and {b} still does not know that either time was a test.',
+      'Two goes, two results, and {a} is beginning to trust the pattern more than the person.',
+      '{a} does it again and gets the same answer again, which is either reassuring or very well rehearsed.',
+    ],
+  },
+  cover: {
+    opened: [
+      '{a} gets away with it. Nobody asks a second question, which is precisely what {a} needed today.',
+      'It holds. {a} walks away from it looking like somebody who had nothing to walk away from.',
+      'Nothing about {a} looked wrong to {b}, and {a} spends the rest of the day quietly grateful for that.',
+    ],
+    carried: [
+      '{a} tells it the same way again. Nobody has yet noticed that it is always exactly the same way.',
+      'It survives another day, and every day it survives makes it harder for {a} to change any part of it.',
+      '{a} gets through another one. The version {a} is telling has not moved a word since the first time.',
+    ],
+  },
+  trust: {
+    opened: [
+      'Something gets agreed here that neither of them writes down. {a} and {b} go into tonight on the same side.',
+      'It is a small thing to have decided and it is decided. {a} would defend {b} now, out loud, in front of people.',
+      'Neither of them calls it an arrangement. {a} and {b} both leave behaving as though one had been made.',
+    ],
+    carried: [
+      'It holds again. {a} and {b} have built something the rest of the castle has not been shown.',
+      'Whatever this is, it survived today as well. That is starting to be worth something to both of them.',
+      '{a} and {b} keep choosing each other, and it is beginning to be the thing they are known for.',
+    ],
+  },
+  romance: {
+    opened: [
+      'Neither of them mentions it afterwards, which is its own way of mentioning it.',
+      'It is not nothing. {a} and {b} both notice that it is not nothing, and both decide to leave it there.',
+    ],
+    carried: [
+      'It happens again, and neither of them is being especially careful about who is nearby any more.',
+      '{a} and {b} spend another hour together that they did not have to spend together.',
+    ],
+  },
+  grief: {
+    opened: [
+      'Nothing is fixed by it. But {a} and {b} got through the morning next to each other instead of alone.',
+      'It goes nowhere useful, and it is not supposed to. It is a bad morning being had out loud.',
+    ],
+    carried: [
+      'The same weight, a day later, and it has not got any lighter for either of them.',
+      '{a} and {b} keep coming back to it, because there is nowhere else for it to go.',
+    ],
+  },
+  callback: {
+    opened: [
+      'Something from before this place is now inside this place, and {a} and {b} are the only two who have the whole of it.',
+      'The old story is out. It changes how {a} looks at {b} tonight, and it does not go back in.',
+    ],
+    carried: [
+      'It comes up again, which means it was never really settled the first time.',
+      '{a} and {b} are still arguing about something that happened long before either of them saw this castle.',
+    ],
+  },
+  journey: {
+    opened: [
+      'By the time the doors are in sight, {a} and {b} have an understanding they did not set out with.',
+      'The road did what the road does. {a} and {b} said things out there they would not have said indoors.',
+    ],
+    carried: [
+      'Another hour of walking, another hour of talking, and it goes a little further than last time.',
+      '{a} and {b} have made this walk together before. This one moves it on.',
+    ],
+  },
+  unspun: {
+    opened: [
+      'It is a small thing and it is not nothing. {a} and {b} both leave with a slightly different read of the other.',
+      'Nothing is settled by it. Something is nudged by it, and neither of them could say exactly what.',
+    ],
+    carried: [
+      'It comes round again, the way things in a building this size come round again.',
+      '{a} and {b} pick it up where they left it and put it down about where they picked it up.',
+    ],
+  },
+};
+/**
+ * The same card when nobody else was in the room.
+ *
+ * KEYED ON THE FAMILY TOO, because "it costs {a} nothing today and it is going
+ * to cost {a} something eventually" is a true sentence about somebody holding
+ * a lie and a nonsense sentence about somebody who walked a road on their own
+ * thinking about the arithmetic — which is what it was printed over, on the
+ * first day this screen produced. Anything without its own pool falls to
+ * `unspun`, which claims nothing beyond the fact that nobody else saw it.
+ */
+const CONSEQ_SOLO = {
+  cover: {
+    opened: [
+      'Nobody else was there for it, so nobody else has to be managed about it. {a} keeps it.',
+      'It costs {a} nothing today, and it is going to cost {a} something eventually.',
+      '{a} is the only person alive who knows this happened, and {a} means to keep it that way.',
+    ],
+    carried: [
+      'The same again. Whatever {a} is holding, {a} has now held it a day longer than yesterday.',
+      'It is getting heavier. {a} has nowhere to set it down and nobody to set it down in front of.',
+      '{a} does it again, alone, and is a little worse at it than the last time.',
+    ],
+  },
+  grief: {
+    opened: [
+      'Nothing is decided by it and nothing needs to be. {a} came down here to not be in a room with people.',
+      '{a} tells nobody about this, and by breakfast tomorrow {a} will be fine again in front of them.',
+      'It does not help. {a} does it anyway, because the alternative is doing it in company.',
+    ],
+    carried: [
+      '{a} has done this once already this week, in about this spot, and it is not getting easier.',
+      'Same hour, same place, same weight. {a} is starting to think it simply does not go away.',
+      'It comes back the way it came back yesterday, and {a} has stopped expecting it not to.',
+    ],
+  },
+  journey: {
+    opened: [
+      'By the gates {a} has decided something, and nobody walking behind {a} knows what it was.',
+      'The road gave {a} an hour of nobody watching, and {a} spent all of it on one question.',
+      '{a} gets back with a plan {a} did not set out with, and does not mention having one.',
+    ],
+    carried: [
+      '{a} walks it out again and gets a little further with it than the last time.',
+      'Another hour on the road and the same question, and {a} is no nearer finished with it.',
+      '{a} has taken this exact walk before. It ends the same way and {a} keeps taking it.',
+    ],
+  },
+  unspun: {
+    opened: [
+      'Nobody saw it, so nobody has to be handled about it. {a} keeps it and goes back in.',
+      'It is a small thing, and {a} is the only person who will ever know that it happened.',
+      '{a} does nothing with it today. {a} will do something with it, and not yet.',
+    ],
+    carried: [
+      'The same again, a day later, and {a} still has nobody to say any of it to.',
+      '{a} is getting practised at this, which is not at all the same as being all right.',
+      'It repeats, quietly, with no audience, exactly the way it did yesterday.',
+    ],
+  },
+};
+/**
+ * AND WHEN THE STORY ACTUALLY ENDS.
+ *
+ * Keyed on the SENSE the engine stored rather than on the family, because "it
+ * finished" and "it broke" are different endings and the family is not what
+ * decides which. Written with a `For {names},` opening so the same sentence is
+ * true of one person or of four — the plural-verb trap this file has already
+ * shipped once, in the other direction ("They denied it, and was believed").
+ */
+const CLOSE_BY_SENSE = {
+  walked: [
+    'For {names}, that is the end of it: it does not travel any further than the people standing there.',
+    'For {names}, it closes here, and it closes quietly. None of it is going to the Round Table tonight.',
+    'For {names}, it stops — not resolved, which would take longer, but finished, which only takes somebody deciding.',
+  ],
+  cracked: [
+    'For {names}, it does not end quietly: something came out that was not meant to, and it is not going back in.',
+    'For {names}, that is the end of it, and the end is worse than the middle was. This one gets repeated.',
+    'For {names}, it breaks rather than finishes. Whatever was being held together here is not being held together now.',
+  ],
+  coupled: [
+    'For {names}, that settles it. By tomorrow morning it will not be a private matter.',
+    'For {names}, it is not an open question any more, and neither of them is going to pretend that it is.',
+    'For {names}, it resolves — and the rest of the castle will work out which way on its own schedule.',
+  ],
+};
+/**
+ * THE ELEVEN STORED OUTCOMES, as a sentence a viewer has a use for.
+ *
+ * SUBJECT-FREE, every one of them. The previous version of this table wrote
+ * them as verb phrases hung off a pronoun, which printed "They denied it, and
+ * was believed" the moment the subject was one person — found by rendering a
+ * day and reading it, which is how every prose defect on this project has been
+ * found and none of them by an assertion. A sentence that needs no subject
+ * cannot get the subject wrong.
+ */
+const OUTCOME_CLAUSE = {
+  'denied-convincingly': 'The denial held.',
+  'passed-clean': 'Nothing stuck to anybody.',
+  'defended-by-history': 'Somebody who knew them before this place spoke up, and that was what settled it.',
+  'turned-back': 'The question came back the other way and stayed there.',
+  buried: 'It got buried, deliberately, by the people who were standing there.',
+  'confessed-unrelated': 'Something got admitted to. It was not the thing being asked about.',
+  'test-exposed': 'It came apart in front of the person who set it up.',
+  'failed-maliciously': 'It was failed on purpose, and both of them know that as well.',
+  exposed: 'It came out in front of the one person it was being kept from.',
+  'became-showmance': 'Neither of them is calling it nothing any more.',
+  'broken-up': 'It ended, and it ended badly.',
+};
+
+/**
+ * The lead-in on the card that says how far back this goes — and there are TWO
+ * pools, because there are two answers.
+ *
+ * The first version had one pool, and printed "the argument arrives already
+ * halfway through, because it started days ago" directly above a line saying
+ * the conversation had come up once this morning. A lead that contradicts its
+ * own tail is worse than no lead. Found by dumping a day and reading it.
+ */
+const RECALL_LEAD_DAYS = [
+  'This did not start this morning, and both of them know exactly when it did.',
+  'This is not the first time these two have stood somewhere and had this exact conversation.',
+  'It is older than today, and both of them know precisely how much older.',
+  'The argument arrives already halfway through, because it started days ago.',
+];
+/** The same two, for a scene with nobody in it to be the other half of "both". */
+const RECALL_LEAD_DAYS_SOLO = [
+  'This did not start this morning, and {a} could name the day it did.',
+  '{a} has done a version of this before, and not long ago.',
+  'It is older than today, and {a} knows exactly how much older.',
+  'Whatever this is, {a} has been carrying it since well before this morning.',
+];
+const RECALL_LEAD_TODAY_SOLO = [
+  '{a} has already been here once today, and here {a} is again.',
+  'The second time since breakfast, and nobody has seen either of them.',
+  'It did not keep. {a} is back at it before the day is out.',
+  '{a} could not leave it alone for the length of an afternoon.',
+];
+const RECALL_LEAD_TODAY = [
+  'Neither of them has left it alone for more than a couple of hours.',
+  'It was not going to wait until tomorrow, and neither of them tried to make it.',
+  'They are back at it, and the second go is shorter and a good deal sharper.',
+  'Whatever was settled the first time did not stay settled for long.',
+];
+
+/**
+ * WHAT SOMEBODY ACROSS THE ROOM GETS, and it is WRITTEN, not hidden.
+ *
+ * The observer contract is not a CSS class over the audience's prose. A
+ * watcher who was in the room but not in the conversation gets three cards
+ * composed for them, and the thing withheld is the CONTINUITY: you saw two
+ * people talking and you have no way of knowing whether it started this
+ * morning or has been running all week. That is the most Traitors sentence
+ * this screen can make its layers say.
+ */
+const PUBLIC_ACTION = [
+  'From where you are standing it is two people talking low, and stopping when you get closer.',
+  'You get about one word in five. None of the five is worth anything on its own.',
+  'You can see that it is not small talk. That is the whole of what you can see.',
+  'Whatever is being said is being said quietly, and it is being said carefully.',
+];
+/**
+ * AND THE ROOM, WHEN THE SCENE HAD ONE PERSON IN IT.
+ *
+ * The audience's establishing card for a scene with nobody else in it says so
+ * — "nobody to perform for", "the door shut and nobody on the other side of
+ * it" — and handing that same card to somebody who then reads "you come round
+ * the corner" is a card contradicting the card under it. Found by rendering a
+ * player's day and reading it.
+ */
+const PUBLIC_ESTABLISH_SOLO = [
+  'You pass {loc}, {when}, and {a} is there.',
+  '{a} is at {loc} on your way past, {when}.',
+  'There is one person at {loc} when you get there, {when}, and it is {a}.',
+  'You were not looking for anybody when you came to {loc}, {when}, and {a} is in it.',
+];
+
+/** The same, when the person across the room was on their own. */
+const PUBLIC_CLOSE_SOLO = [
+  '{a} notices you and is perfectly normal about it, immediately.',
+  'By the time you say anything, {a} is talking about something else entirely.',
+  '{a} does not explain what {a} was doing, and you do not ask.',
+  'Whatever that was, it is over, and {a} is already halfway down the corridor.',
+];
+const PUBLIC_CLOSE = [
+  'It ends when {a} looks up, and after that it is small talk, and you are included in the small talk.',
+  'They finish before you get there, and then there are three of you standing about talking of nothing.',
+  'Neither of them tells you what it was about, and neither pretends there was nothing to tell.',
+  'The conversation is over by the time you are close enough to be part of it.',
+];
 
 // ══════════════════════════════════════════════════════════════════════
 // ICONS — this room's own objects, hand-drawn, never emoji
@@ -824,39 +1483,31 @@ const DY_CSS = `
   background:rgba(16,14,12,.97);
   border-bottom:1px solid rgba(255,238,196,.2);
   padding:11px 20px 13px;backdrop-filter:blur(6px)}
-.dy-loom-h{
+.dy-panel-h{
   display:flex;align-items:baseline;gap:12px;margin-bottom:9px;
   font-family:var(--dy-display);font-weight:700;font-size:9px;letter-spacing:.32em;
   text-transform:uppercase;color:rgba(236,227,208,.5);
 }
-.dy-loom-h b{font-family:var(--dy-display);font-weight:900;font-size:15px;
-  letter-spacing:0;color:var(--dy-brass-hot)}
-.dy-warps{display:flex;flex-wrap:wrap;gap:8px}
-.dy-warp-row{
-  position:relative;flex:1 1 190px;min-width:170px;
-  padding:7px 11px 8px 15px;
-  border:1px solid rgba(255,238,196,.16);background:rgba(30,26,21,.82);
+.dy-panel-h b{font-family:var(--dy-display);font-weight:900;font-size:14px;
+  letter-spacing:0;text-transform:none;color:var(--dy-brass-hot)}
+.dy-parts{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px}
+.dy-part{
+  display:inline-flex;align-items:baseline;gap:8px;
+  padding:5px 11px;border:1px solid rgba(255,238,196,.16);
+  background:rgba(30,26,21,.82);
+  font-family:var(--dy-display);font-weight:700;font-size:12px;color:rgba(236,227,208,.6);
 }
-.dy-warp-row::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
-  background:var(--dy-thread,#b6ac96);
-}
-.dy-warp-row[data-done="1"]{filter:saturate(.5) brightness(.82)}
-.dy-warp-k{
-  display:flex;align-items:center;gap:7px;
-  font-family:var(--dy-display);font-weight:700;font-size:8px;letter-spacing:.28em;
-  text-transform:uppercase;color:var(--dy-thread,#b6ac96);
-}
-.dy-warp-nm{font-family:var(--dy-display);font-weight:900;font-size:14.5px;line-height:1.22;
-  color:#f6eeda;margin-top:2px}
-.dy-beads{display:flex;align-items:center;gap:4px;margin-top:5px}
-.dy-bead{width:8px;height:8px;border-radius:50%;border:1px solid var(--dy-thread,#b6ac96);
-  opacity:.42}
-.dy-bead[data-on="1"]{background:var(--dy-thread,#b6ac96);opacity:1}
-.dy-bead[data-old="1"]{border-radius:1px;opacity:.62;background:none}
-.dy-warp-note{font-family:var(--dy-body);font-style:italic;font-size:12px;
-  color:rgba(236,227,208,.46);margin-top:2px}
-.dy-loom-empty{font-family:var(--dy-body);font-style:italic;font-size:14px;
+.dy-part[data-here="1"]{border-color:var(--dy-brass);color:#f6eeda;
+  background:rgba(200,162,74,.14)}
+.dy-part-n{font-family:var(--dy-body);font-size:12px;color:rgba(236,227,208,.45)}
+.dy-whos{display:flex;flex-wrap:wrap;gap:6px}
+.dy-who{display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--dy-display);font-weight:700;font-size:11.5px;
+  color:rgba(236,227,208,.68);padding:3px 8px 3px 3px;
+  border:1px solid rgba(255,238,196,.12)}
+.dy-who[data-busy="1"]{border-color:rgba(200,162,74,.5);color:#f6eeda}
+.dy-who b{font-family:var(--dy-body);font-size:11px;color:var(--dy-brass-hot)}
+.dy-panel-empty{font-family:var(--dy-body);font-style:italic;font-size:14px;
   color:rgba(236,227,208,.42)}
 
 /* ═══ THE DAY ═════════════════════════════════════════════════════════ */
@@ -916,23 +1567,35 @@ const DY_CSS = `
 }
 .dy-scene{transform-origin:0 0}
 
-.dy-scene-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px}
-.dy-fam{
-  display:inline-flex;align-items:center;gap:7px;
-  font-family:var(--dy-display);font-weight:700;font-size:9px;letter-spacing:.3em;
-  text-transform:uppercase;color:var(--dy-thread,#b6ac96);
+/* ── THE CARDS OF ONE SCENE ─────────────────────────────────────────
+   A scene is four or five cards and they have to read as ONE scene. The
+   establishing card carries the room and opens a gap above itself; the cards
+   after it sit tight underneath, share the cord, and are progressively
+   quieter, so the eye runs down a scene and stops at the next room heading. */
+.dy-beat.dy-vis .dy-scene[data-beat="establish"]{margin-top:14px}
+.dy-scene[data-beat="action"],
+.dy-scene[data-beat="reaction"],
+.dy-scene[data-beat="consequence"]{border-top:none}
+.dy-scene[data-beat="reaction"] .dy-say{font-family:var(--dy-hand);font-size:19.5px}
+.dy-scene[data-beat="consequence"]{
+  background:linear-gradient(168deg,rgba(40,35,27,.94),rgba(20,18,14,.96));
 }
-.dy-tag{
-  font-family:var(--dy-display);font-weight:700;font-size:8.5px;letter-spacing:.26em;
-  text-transform:uppercase;padding:3px 8px;
-  border:1px solid rgba(255,238,196,.24);color:rgba(236,227,208,.7);
+.dy-scene[data-beat="consequence"] .dy-say{font-size:17.5px;
+  color:rgba(240,232,214,.8)}
+/* THE ROOM AND THE HOUR, which is the only heading a scene gets. */
+.dy-place{
+  font-family:var(--dy-display);font-weight:700;font-size:9.5px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--dy-thread,#b6ac96);margin-bottom:9px;
 }
-.dy-tag[data-kind="open"]{border-color:var(--dy-thread,#b6ac96);color:var(--dy-thread,#b6ac96)}
-.dy-tag[data-kind="carry"]{border-color:rgba(200,162,74,.6);color:var(--dy-brass-hot);
-  background:rgba(200,162,74,.1)}
-.dy-tag[data-kind="close"]{border-color:rgba(246,238,218,.7);color:#f6eeda;
-  background:rgba(246,238,218,.12)}
-.dy-tag[data-kind="hearsay"]{border-style:dashed;color:rgba(236,227,208,.5)}
+/* AN HOUR THE RUNNING ORDER DOES NOT HAVE. Marked, never blended in. */
+.dy-unsched{
+  margin:30px 0 8px 26px;padding:12px 16px;
+  border:1px dashed rgba(255,238,196,.4);background:rgba(200,162,74,.08);
+}
+.dy-unsched-k{font-family:var(--dy-display);font-weight:700;font-size:9px;
+  letter-spacing:.3em;text-transform:uppercase;color:var(--dy-brass-hot)}
+.dy-unsched p{font-family:var(--dy-body);font-style:italic;font-size:15px;
+  color:rgba(236,227,208,.72);margin:5px 0 0}
 
 .dy-say{font-family:var(--dy-body);font-size:19px;line-height:1.56;
   color:rgba(240,232,214,.94);margin:0}
@@ -967,15 +1630,13 @@ const DY_CSS = `
 
 /* ── THE KNOT: a thread that ends tonight ───────────────────────────── */
 .dy-knot{
-  display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:center;
+  display:flex;gap:11px;align-items:center;
   margin:14px 0 0;padding:11px 15px;
   border:1px solid rgba(246,238,218,.28);
   background:linear-gradient(96deg,rgba(246,238,218,.08),rgba(16,14,12,.42));
 }
-.dy-knot-w{font-family:var(--dy-display);font-weight:900;font-size:17px;line-height:1.2;
+.dy-knot-w{font-family:var(--dy-display);font-weight:900;font-size:15.5px;line-height:1.2;
   color:#f6eeda}
-.dy-knot-s{font-family:var(--dy-body);font-style:italic;font-size:14px;
-  color:rgba(236,227,208,.6);margin-top:1px}
 .dy-knot[data-sense="cracked"]{border-color:rgba(208,87,107,.5);
   background:linear-gradient(96deg,rgba(208,87,107,.14),rgba(16,14,12,.42))}
 .dy-knot[data-sense="coupled"]{border-color:rgba(220,149,180,.5);
@@ -1137,12 +1798,44 @@ function _view(ep, observer) {
   const watcher = obs.indexOf('player:') === 0 ? obs.slice('player:'.length) : null;
 
   const all = Array.isArray(c.scenes) ? c.scenes : [];
+
+  // ── THE DAY IN THE ORDER TASK 5 PUT IT IN ───────────────────────────
+  //
+  // `c.phases` is the chronological Castle Day (js/tr/castle/phases.js): six
+  // named parts, always all six, in fixed order, with an OVERFLOW BUCKET
+  // (`unmapped:<window>`) appended when a scene arrives under a window the
+  // running order has never heard of. That bucket exists so a scene can never
+  // be silently dropped, and a screen that ignored it would put the loss back
+  // — so it is walked like the rest and MARKED when it is drawn.
+  //
+  // A ROW MAY NOT HAVE IT. `tests/tr-vp.test.js` constructs a night-only row
+  // by hand to reach the withheld-day branch, and that row carries `scenes`
+  // and no `phases`; so does any record written before Task 5. The fallback is
+  // the scenes in the order they fired, which is the same order on every real
+  // day anyway — the phases are chronological by construction.
+  const phaseOf = new Map();
+  const bands = [];
+  for (const ph of (Array.isArray(c.phases) ? c.phases : [])) {
+    bands.push(ph);
+    for (const s of (ph.scenes || [])) phaseOf.set(s, ph);
+  }
+  const ordered = bands.length
+    ? bands.flatMap(ph => (ph.scenes || []).filter(s => all.includes(s)))
+    : all.slice();
+  // Anything the record holds and no phase claimed still gets drawn. Same rule
+  // as the overflow bucket itself, one level up.
+  for (const s of all) if (!ordered.includes(s)) ordered.push(s);
+
   const scenes = [];
   let missedInTheDark = 0;
-  for (const s of all) {
+  for (const s of ordered) {
     const layer = _sceneFor(s, watcher);
     if (layer === 'none') { missedInTheDark++; continue; }
-    scenes.push({ ...s, layer });
+    const ph = phaseOf.get(s) || null;
+    scenes.push({ ...s, layer,
+      phaseId: ph ? ph.id : null,
+      phaseLabel: ph ? ph.label : null,
+      unscheduled: !!(ph && String(ph.id).indexOf('unmapped:') === 0) });
   }
 
   // The hours that produced something THIS READER CAN SEE, in the order the
@@ -1164,7 +1857,7 @@ function _view(ep, observer) {
     let row = rowBy.get(s.threadId);
     if (!row) {
       const fam = _fam(s);
-      row = { threadId: s.threadId, colour: fam.colour, label: fam.label,
+      row = { threadId: s.threadId, colour: fam.colour,
         parties: s.parties.length ? s.parties : (s.people.length ? s.people : s.actors),
         openedEp: s.openedEp, priorDays: s.priorDays.slice(),
         firstStep: i, beatsToday: 0, steps: [], closed: false, outcome: null, sense: null };
@@ -1226,7 +1919,7 @@ const HOST_CLOSE = {
     'Three or four of those were the same story, and only some of them know it.',
     'Look at what carried over. Look very hard at who it carried over onto.',
     'Stories in this place are not events. They are debts, and they come due.',
-    'Every one of those threads goes somewhere. One of them goes somewhere tonight.',
+    'Every one of those stories goes somewhere. One of them goes somewhere tonight.',
   ],
 };
 
@@ -1261,16 +1954,12 @@ const SAME_DAY = [
   'The second time today, and about exactly the same thing.',
   'Twice in one day. Whatever this is, it did not keep until tomorrow.',
   'This had already come up once this morning.',
-  'The same thread, picked back up before the day was out.',
+  'The same conversation, picked back up before the day was out.',
 ];
 
 function _fill(tpl, subs) {
   return String(tpl || '').replace(/\{(\w+)\}/g, (m, k) =>
     (subs && subs[k] != null) ? subs[k] : m);
-}
-
-function _tag(kind, text) {
-  return '<span class="dy-tag" data-kind="' + kind + '">' + _esc(text) + '</span>';
 }
 
 function _faces(names) {
@@ -1307,7 +1996,7 @@ function _tabs(s) {
     + (cited.has(d) ? ' data-cited="1"' : '') + '>Day ' + d + '</span>').join('');
 }
 
-function _stitch(s, key) {
+function _stitch(s, tail) {
   if (s.citation) {
     return '<div class="dy-stitch">'
       + '<div class="dy-stitch-k">' + _ic('needle', 12) + 'Back to' + _tabs(s)
@@ -1317,71 +2006,300 @@ function _stitch(s, key) {
   const prior = [...new Set(s.priorDays || [])].sort((a, b) => a - b);
   if (prior.length) {
     return '<div class="dy-stitch">'
-      + '<div class="dy-stitch-k">' + _ic('needle', 12) + 'The same thread on' + _tabs(s)
+      + '<div class="dy-stitch-k">' + _ic('needle', 12) + 'The same story on' + _tabs(s)
       + '</div>'
-      + '<p class="dy-stitch-t">'
-      + _esc(_fill(_pick(UNSPOKEN, key + '|unspoken'),
-        { d: String(s.openedEp), n: String(prior.length) }))
-      + '</p></div>';
+      + '<p class="dy-stitch-t">' + _esc(tail) + '</p></div>';
   }
   return '<div class="dy-stitch">'
     + '<div class="dy-stitch-k">' + _ic('needle', 12) + 'Later the same day</div>'
-    + '<p class="dy-stitch-t">' + _esc(_pick(SAME_DAY, key + '|sameday'))
-    + '</p></div>';
+    + '<p class="dy-stitch-t">' + _esc(tail) + '</p></div>';
 }
 
-function _knot(s) {
-  const sense = SENSE_WORDS[s.sense] || { word: 'It ended here',
-    gloss: 'the story stopped, one way or another' };
-  const how = OUTCOME_WORDS[s.outcome] || 'came to an end';
+/**
+ * A CARD STARTS WITH A CAPITAL LETTER.
+ *
+ * Several establishing templates open on the hour rather than on a person —
+ * "{when}, {a} stops at {loc}" — and `{when}` is a clause written for the
+ * middle of a sentence, so the screen printed "after lights out, Chris McLean
+ * stops at the window". Found by dumping a day and reading it; the alternative
+ * (a second, capitalised copy of every hour phrase) is two copies of one
+ * string, which is this repo's most-repeated bug.
+ */
+function _cap(t) {
+  const v = String(t || '');
+  return v.charAt(0).toUpperCase() + v.slice(1);
+}
+
+/** Names as a person would say them: one, a pair, or a list. */
+function _namesPhrase(list) {
+  const l = [...new Set((list || []).filter(Boolean))];
+  if (!l.length) return 'the two of them';
+  if (l.length === 1) return l[0];
+  if (l.length === 2) return l[0] + ' and ' + l[1];
+  return l.slice(0, -1).join(', ') + ' and ' + l[l.length - 1];
+}
+
+/** Somebody alone, seen from across a room, is not two people talking. */
+const PUBLIC_ACTION_SOLO = [
+  'You come round the corner and {a} is already leaving, which is all you get of it.',
+  'From the doorway it is one person standing still for slightly too long.',
+  '{a} is on their own and stops being on their own the moment you are in the room.',
+  'Whatever {a} was doing, {a} had finished doing it before you saw any of it.',
+];
+
+/**
+ * ONE RECORDED SCENE, WRITTEN OUT AS A SCENE.
+ *
+ * Four cards, or five when the story is older than today. Every card's fact
+ * comes off the record: the ACTION is the engine's own authored sentence, the
+ * RECALL is the engine's citation or the days the story actually has beats on,
+ * and the CONSEQUENCE is keyed on whether this beat started it, continued it
+ * or ended it, plus the outcome the engine stored. Only the ROOM is composed
+ * here, and a room is staging rather than a claim about the game.
+ *
+ * THE OBSERVER SPLIT HAPPENS HERE, BEFORE ANY MARKUP EXISTS. `audience` is the
+ * whole scene. `public` is what somebody standing across the room got, and it
+ * is written separately rather than being the same sentences with a class on
+ * them — the thing withheld is the CONTINUITY, and prose that says "you have
+ * no idea how long this has been going on" cannot be produced by hiding a
+ * paragraph.
+ */
+function _composeScene(s, key, used) {
+  const roll = _roll(s);
+  const a = roll[0] || 'Somebody';
+  const b = roll[1] || null;
+  // BUCKETED BY HOUR, and that is not decoration. Four rooms appear in two
+  // hours' lists — the front hall and the kitchen are both a dawn room and an
+  // after-table room — so a shared set had the morning's picks quietly
+  // exhausting the evening's pool, and the third scene after the table fell
+  // through to a repeat. Two consecutive scenes in the same room, which the
+  // pacing contract forbids outright. Found by dumping a day and reading it.
+  const loc = _pickUnique(PLACES[s.window] || PLACES.morning, key + '|loc', used,
+    'loc|' + s.window);
+  const subs = {
+    a, b: b || a, loc,
+    when: WHEN_SAID[s.window] || 'somewhere in the middle of the day',
+    names: _namesPhrase(roll),
+    d: String(s.openedEp), n: String([...new Set(s.priorDays || [])].length),
+  };
+
+  const establish = _cap(_fill(roll.length >= 3
+    ? _pickUnique(ESTABLISH_GROUP, key + '|est', used)
+    : (b ? _pickUnique(ESTABLISH_PAIR[s.window] || ESTABLISH_PAIR.morning, key + '|est', used)
+      : _pickUnique(ESTABLISH_SOLO, key + '|est', used)), subs));
+
+  const audience = [
+    { kind: 'establish', text: establish },
+    { kind: 'action', text: String(s.line || '').trim() },
+  ];
+  const carried = !s.opened;
+  if (carried) {
+    // THE LEAD AND THE TAIL ARE SEPARATE because the card draws them in two
+    // places — the lead as narration, the tail inside the element carrying
+    // the day tabs — and the transcript has to read back the whole sentence.
+    const tail = _recallTail(s, key, used);
+    // A SOLO SCENE HAS NO "BOTH OF THEM". The pair leads printed "both of them
+    // know precisely how much older" over one person alone in a corridor —
+    // found by dumping a day and reading it, same as everything else here.
+    const leads = b ? (tail.days ? RECALL_LEAD_DAYS : RECALL_LEAD_TODAY)
+      : (tail.days ? RECALL_LEAD_DAYS_SOLO : RECALL_LEAD_TODAY_SOLO);
+    const lead = _fill(_pickUnique(leads, key + '|lead', used), subs);
+    // FILLED, and this line is why the placeholder guard in tests/tr-vp.test.js
+    // exists: `UNSPOKEN` carries a `{d}` and an earlier draft of this function
+    // dropped the `_fill` when the tail became a record instead of a string, so
+    // the screen printed "it has been running since day {d}".
+    const tailText = _fill(tail.text, subs);
+    audience.push({ kind: 'action', role: 'recall', lead, tail: tailText,
+      text: lead + ' ' + tailText });
+  }
+  const voice = _voice(b || a);
+  audience.push({ kind: 'reaction',
+    text: _fill(b ? _pickUnique(REACT[_reactClass(s)][voice], key + '|react', used)
+      : _pickUnique(REACT_SOLO[voice], key + '|react', used), subs) });
+  audience.push({ kind: 'consequence', ..._consequenceText(s, subs, key, used) });
+
+  const publicStream = [
+    { kind: 'establish',
+      text: b ? establish
+        : _cap(_fill(_pick(PUBLIC_ESTABLISH_SOLO, key + '|pubest'), subs)) },
+    { kind: 'action',
+      text: _fill(_pick(b ? PUBLIC_ACTION : PUBLIC_ACTION_SOLO, key + '|pub'), subs) },
+    { kind: 'reaction',
+      text: _fill(_pick(b ? PUBLIC_CLOSE : PUBLIC_CLOSE_SOLO, key + '|pubclose'), subs) },
+  ];
+
+  return {
+    id: 'ep' + (s.epNum || 0) + '-' + s.window + '-' + s.eventId + '-' + s.beatNo,
+    eventId: s.eventId,
+    phase: s.phaseId || ('window:' + s.window),
+    window: s.window,
+    location: loc,
+    when: WHEN_HEAD[s.window] || 'DURING THE DAY',
+    heading: loc.replace(/^the /, 'THE ').toUpperCase() + ' · '
+      + (WHEN_HEAD[s.window] || 'DURING THE DAY'),
+    participants: roll,
+    observerText: { audience, public: publicStream },
+  };
+}
+
+/**
+ * WHO IS IN THE ROOM, AND WHICH OF THEM SPOKE FIRST.
+ *
+ * The record answers those two questions with two different lists and they
+ * disagree. `people` is who the sentence is ABOUT — `cover-alone-with-it`
+ * convenes two and its sentence has one person alone in an empty room, so
+ * presence has to come from here. `actors` is who the scheduler CONVENED, in
+ * the order it convened them, which is the only signal for who is doing the
+ * thing rather than having it done to them.
+ *
+ * So presence is `people`, and the ORDER is the actors' order restricted to
+ * the people actually in the scene, with anybody left over appended. Before
+ * this, the reaction card answered in the wrong person's voice whenever the
+ * record listed the respondent first — found by reading a day, where a
+ * question Bowie asked was answered, in the next card, by Bowie.
+ */
+function _roll(s) {
+  const present = [...new Set((((s.people && s.people.length) ? s.people : s.actors) || [])
+    .filter(Boolean))];
+  const roll = present.length ? present
+    : [...new Set((s.parties || []).filter(Boolean))];
+  if (roll.length < 2) return roll;
+
+  // WHO ANSWERED, READ OFF THE SENTENCE ITSELF.
+  //
+  // The record cannot say. `actors` is the order the scheduler convened them
+  // in, and the authored line is free to put either of them first — trust.js's
+  // `trust-trade-reads` convenes [Chase, Brody] and writes "Brody asked, and
+  // Chase answered". Ordering off `actors` therefore had the reaction card
+  // answering in the questioner's voice, which a reader sees immediately:
+  // Bowie asked a question and Bowie replied to it. Found by dumping a day.
+  //
+  // English puts the person a thing is done TO last, so the last name in the
+  // sentence is the respondent. It is a heuristic and it is written down as
+  // one: a two-clause line that names the same person twice ("Chet gave Beardo
+  // one name ... when Beardo asked again") can still put the wrong one last.
+  // It is right far more often than convening order is, and the alternative —
+  // a reaction that names nobody — would cost the voice contract entirely.
+  const named = roll
+    .map(n => ({ n, at: String(s.line || '').lastIndexOf(n) }))
+    .filter(x => x.at >= 0);
+  if (named.length >= 2) {
+    named.sort((x, y) => x.at - y.at);
+    const order = named.map(x => x.n);
+    return [...new Set([...order, ...roll])];
+  }
+  const lead = (s.actors || []).filter(n => roll.includes(n));
+  return [...new Set([...lead, ...roll])];
+}
+
+/**
+ * PICK, AND DO NOT PICK THE SAME SENTENCE TWICE IN ONE DAY.
+ *
+ * A pool of three read four times in one evening prints one of them twice, and
+ * a reader notices that immediately — the same finding the engine-side variety
+ * floor was written for, arriving on the screen. `used` is a per-day set, so
+ * the walk steps to the next unused element and only falls back to repeating
+ * when the day has genuinely exhausted the pool.
+ *
+ * DETERMINISTIC IN BOTH CALLERS. The set is built fresh per day and filled in
+ * scene order, and `castleDayScenes` and `_buildBeats` walk the same scenes in
+ * the same order — so the records and the page cannot disagree.
+ */
+function _pickUnique(pool, key, used, bucket) {
+  if (!pool || !pool.length) return '';
+  const n = pool.length;
+  const start = _hash(key) % n;
+  if (used) {
+    for (let i = 0; i < n; i++) {
+      const v = pool[(start + i) % n];
+      const tag = (bucket || '') + ' | ' + v;
+      if (!used.has(tag)) { used.add(tag); return v; }
+    }
+  }
+  return pool[start];
+}
+
+/** The half of the recall card that says what it goes back to. */
+function _recallTail(s, key, used) {
+  if (s.citation) return { days: true, text: String(s.citation).trim() };
+  const prior = [...new Set(s.priorDays || [])];
+  if (prior.length) {
+    return { days: true, text: _pickUnique(UNSPOKEN, key + '|unspoken', used) };
+  }
+  return { days: false, text: _pickUnique(SAME_DAY, key + '|sameday', used) };
+}
+
+/** What is different now — an ending if it ended, a direction if it did not. */
+function _consequenceText(s, subs, key, used) {
+  if (s.closedNow) {
+    const sense = CLOSE_BY_SENSE[s.sense] ? s.sense : 'walked';
+    // THE MARK CARRIES THE OUTCOME, and it used to carry a slogan. The band
+    // said "And that is where it finishes." immediately under a sentence that
+    // had just said the story was over — a line that repeated its neighbour
+    // and added nothing. The one thing the record holds that the sentence
+    // above cannot say is WHICH of the eleven endings this was, so that is
+    // what goes in the mark.
+    const clause = OUTCOME_CLAUSE[s.outcome] || 'And that is where it finishes.';
+    const say = _fill(_pickUnique(CLOSE_BY_SENSE[sense], key + '|close', used), subs);
+    return { text: say + ' ' + clause, say, mark: clause };
+  }
+  const dir = s.opened ? 'opened' : 'carried';
+  const famKey = (s.family === 'romance-spark' || s.kind === 'romance-spark') ? 'romance'
+    : (CONSEQ[s.family] ? s.family : (CONSEQ[s.kind] ? s.kind : 'unspun'));
+  const pool = (!subs.b || subs.b === subs.a)
+    ? (CONSEQ_SOLO[famKey] || CONSEQ_SOLO.unspun)[dir]
+    : CONSEQ[famKey][dir];
+  const say = _fill(_pickUnique(pool, key + '|conseq', used), subs);
+  return { text: say, say, mark: null };
+}
+
+/**
+ * The knot — a story ending, drawn once, on the card that says it ended.
+ *
+ * IT NO LONGER PRINTS A CATEGORY AND A GLOSS. The old band said
+ * "Walked away from it — the scrutiny arrived and they came out the other side
+ * of it", which is a label and its own footnote. What is drawn now is the
+ * sentence the consequence card is already making, marked as the end of it.
+ */
+function _knotMark(s, mark) {
   return '<div class="dy-knot" data-sense="' + _esc(s.sense || 'walked') + '">'
-    + _ic('shears', 26, '#f6eeda')
-    + '<div><div class="dy-knot-w">' + _esc(sense.word) + '</div>'
-    + '<div class="dy-knot-s">They ' + _esc(how) + ' &mdash; ' + _esc(sense.gloss) + '.</div>'
+    + _ic('shears', 22, '#f6eeda')
+    + '<div class="dy-knot-w">' + _esc(mark || 'And that is where it finishes.')
     + '</div></div>';
 }
 
-function _sceneCard(s, key) {
+/**
+ * ONE CARD. The unit the reveal steps through, and the unit the transcript
+ * retranscribes.
+ *
+ * The heading, the faces and the room ride on the ESTABLISH card, because that
+ * is the card whose job is to put the reader in the room. The recall card
+ * carries the day tabs. The consequence card carries the ending mark. Nothing
+ * carries a category name.
+ */
+function _beatCard(s, beat, key) {
   const fam = _fam(s);
-  const carried = !s.opened;
   const heard = s.layer === 'heard';
-  const tags = [];
-  if (heard) {
-    tags.push(_tag('hearsay', 'Overheard'));
-  } else if (s.closedNow) {
-    tags.push(_tag('close', _pick(CLOSING_TAG, key + '|close')));
-  } else if (carried) {
-    tags.push(_tag('carry', _pick(CARRIED_TAG, key + '|carry')));
-  } else {
-    tags.push(_tag('open', _pick(OPENING_TAG, key + '|open')));
+  const carried = !s.opened;
+  let body = '';
+  if (beat.kind === 'establish') {
+    body += '<div class="dy-place">' + _esc(s.heading) + '</div>';
   }
-
-  let body = '<p class="dy-say">' + _esc(s.line) + '</p>';
-  if (heard) {
-    body += _faces((s.people && s.people.length ? s.people : s.actors));
-    // NO CLAIM ABOUT THE AGE OF IT. The first version said "it did not start
-    // today", which is a fact about the thread -- exactly the fact this layer
-    // exists to withhold -- and it is not even reliably true: plenty of
-    // overheard scenes are a story's first beat. Found by rendering a player's
-    // day and reading it.
-    body += '<p class="dy-heard">You were in the room and you were not in the '
-      + 'conversation. Two people talking about something, and no way at all to '
-      + 'know whether it started this morning or has been running all week.</p>';
-  } else {
-    body += _faces(s.parties.length ? s.parties
-      : (s.people.length ? s.people : s.actors));
-    if (carried) body += _stitch(s, key);
-    if (s.closedNow) body += _knot(s);
+  body += '<p class="dy-say">'
+    + _esc(beat.role === 'recall' ? beat.lead : (beat.say || beat.text)) + '</p>';
+  if (beat.kind === 'establish') {
+    body += _faces(s.participants);
+  }
+  if (!heard && beat.role === 'recall') body += _stitch(s, beat.tail);
+  if (!heard && beat.kind === 'consequence' && s.closedNow) {
+    body += _knotMark(s, beat.mark);
   }
 
   return '<div class="dy-scene" data-carried="' + (carried && !heard ? '1' : '0') + '"'
+    + ' data-beat="' + _esc(beat.kind) + '"'
     + (heard ? ' data-heard="1"' : '')
     + ' style="--dy-thread:' + fam.colour + '">'
-    + '<div class="dy-scene-top">'
-    + '<span class="dy-fam">' + _ic(carried && !heard ? 'knot' : 'spool', 13, fam.colour)
-    + _esc(fam.label) + '</span>'
-    + tags.join('')
-    + '</div>' + body + '</div>';
+    + body + '</div>';
 }
 
 function _hourPlate(w, key) {
@@ -1402,30 +2320,92 @@ function _hostBand(line) {
 }
 
 /**
- * Every step of the day, in the order the day ran it.
+ * THE PARTS OF THE DAY, in the words a viewer would use for them.
  *
- * A step is ONE SCENE, and the hour plate rides on the first scene of its
- * hour rather than taking a step of its own. That is deliberate: a heading
- * with nothing under it yet is a promise the reveal has not kept, and the
- * guard that every fired hour appears would then be satisfiable by a page
- * that shows seven headings and no castle.
+ * `js/tr/castle/phases.js` names its six parts for the engine — the labels on
+ * the record are working names, and a working name on a screen is the same
+ * defect as a category label above a card. These are the same six parts said
+ * out loud.
+ */
+const BAND_NAME = {
+  'breakfast-fallout': 'First light',
+  'morning-life': 'The morning',
+  'mission-fallout': 'The way back',
+  'private-strategy': 'Before the Round Table',
+  'roundtable-scramble': 'After the Round Table',
+  'post-banishment': 'After lights out',
+};
+function _bandName(id, window) {
+  if (BAND_NAME[id]) return BAND_NAME[id];
+  if (id && String(id).indexOf('unmapped:') === 0) {
+    return 'Unscheduled — ' + String(id).slice('unmapped:'.length);
+  }
+  return _hour(window).label;
+}
+
+/**
+ * THE OVERFLOW BAND, AND IT IS DRAWN LOUDLY ON PURPOSE.
+ *
+ * `castlePhaseRecord` appends an `unmapped:<window>` bucket for any scene
+ * whose hour the running order has never heard of, so that a scene can never
+ * vanish in silence. A screen that drew it as ordinary programming would put
+ * the silence back in a different place — the reader would be shown material
+ * from an hour the day does not have and would have no way to know. So it is
+ * banded, named, and says what it is.
+ */
+function _unscheduledBand(id) {
+  return '<div class="dy-unsched">'
+    + '<div class="dy-unsched-k">Outside the running order</div>'
+    + '<p>This happened in an hour the day does not have a place for &mdash; '
+    + _esc(String(id).slice('unmapped:'.length))
+    + '. It is here because it happened, and not because anything scheduled it.</p>'
+    + '</div>';
+}
+
+/**
+ * Every card of the day, in the order Task 5's phases put them in.
+ *
+ * A STEP IS ONE CARD, NOT ONE SCENE. That is the whole change: a scene is four
+ * or five cards and the reveal walks them, so the reader arrives in the room,
+ * watches the thing happen, hears the answer and is told what it cost, one
+ * click at a time — which is what watching an episode is.
+ *
+ * The hour plate and the part-of-the-day band ride on the FIRST CARD of their
+ * run rather than taking a step of their own: a heading with nothing under it
+ * yet is a promise the reveal has not kept.
  */
 function _buildBeats(v) {
   const beats = [];
   const key = 'dy|' + v.ep;
+  const used = new Set();
   let hour = null;
+  let band = null;
   for (let i = 0; i < v.scenes.length; i++) {
-    const s = v.scenes[i];
-    const plate = s.window !== hour ? _hourPlate(s.window, key) : '';
-    hour = s.window;
-    beats.push({
-      phase: _hour(s.window).sun,
-      html: plate + _sceneCard(s, key + '|' + i + '|' + s.eventId),
-      meta: { kind: 'scene', idx: i, window: s.window },
-    });
+    const raw = v.scenes[i];
+    const skey = key + '|' + i + '|' + raw.eventId;
+    const composed = _composeScene({ ...raw, epNum: v.ep }, skey, used);
+    const s = { ...raw, heading: composed.heading, participants: composed.participants };
+    const stream = raw.layer === 'heard'
+      ? composed.observerText.public : composed.observerText.audience;
+
+    let lead = '';
+    if (raw.phaseId && raw.phaseId !== band) {
+      band = raw.phaseId;
+      if (raw.unscheduled) lead += _unscheduledBand(raw.phaseId);
+    }
+    if (raw.window !== hour) { lead += _hourPlate(raw.window, key); hour = raw.window; }
+
+    for (let j = 0; j < stream.length; j++) {
+      beats.push({
+        phase: _hour(raw.window).sun,
+        html: (j === 0 ? lead : '') + _beatCard(s, stream[j], skey),
+        meta: { kind: 'card', beat: stream[j].kind, scene: i, window: raw.window,
+          band: _bandName(raw.phaseId, raw.window), who: composed.participants },
+      });
+    }
   }
 
-  // THE WEAVE — the day summed, and the only card that counts anything.
+  // THE LAST CARD — the day added up, and the only card that counts anything.
   const carried = v.rows.filter(r => r.priorDays.length).length;
   const closed = v.rows.filter(r => r.closed).length;
   const stories = v.rows.length;
@@ -1442,66 +2422,81 @@ function _buildBeats(v) {
   beats.push({
     phase: 'night',
     html: '<div class="dy-weave">'
-      + '<h3>The Day, Woven</h3>'
+      + '<h3>The Day, Added Up</h3>'
       + '<p>' + _esc(_pick(WEAVE_LEAD, key + '|weave')) + '</p>'
       + '<div class="dy-sums">' + sums.map(b =>
         '<span class="dy-sum"><span class="dy-sum-k">' + _esc(b[0]) + '</span>'
         + '<span class="dy-sum-v"' + (b[2] ? ' data-tone="' + b[2] + '"' : '') + '>'
         + _esc(b[1]) + '</span></span>').join('')
       + '</div></div>'
-      // THE ONE HOST LINE, LAST. He walked through none of this — six of the
-      // seven hours happen with nobody presenting them — so he arrives only
-      // once the day is over, exactly as he does in the corridor.
+      // THE ONE HOST LINE, LAST. The host walked through none of this — six
+      // of the seven hours happen with nobody presenting them — so the host
+      // arrives only once the day is over, exactly as in the corridor.
       + _hostBand(_pick(HOST_CLOSE[mood], key + '|host')),
-    meta: { kind: 'weave' },
+    meta: { kind: 'sum' },
   });
   return beats;
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// THE LOOM — the sticky stage, replaced by innerHTML on every reveal
+// THE DAY SO FAR — the sticky stage, replaced by innerHTML on every reveal
 // ══════════════════════════════════════════════════════════════════════
 //
+// WHAT WAS HERE BEFORE was a panel called The Loom whose rows read
+// "Cover · Brody · opened today" — a category, a machine word and a debug
+// phrase, in a box, on a television screen. It also spoiled its own page: a
+// row named the family of a story before the card that told the story.
+//
+// WHAT IT DOES NOW is the one thing a viewer actually loses track of on a long
+// day, which is WHERE IN THE DAY THEY ARE and WHO IT HAS BEEN ABOUT. Both are
+// read off the cards already revealed and nothing else, so it can never run
+// ahead of the page.
+//
 // Data on `window.__trCastleDay`, because a <script> tag inside innerHTML does
-// not execute. GATED ON `idx` IN BOTH DIRECTIONS: a row does not appear until
-// the scene that opened it has been revealed, and its beads fill one at a time
-// as the day runs. A loom that showed the finished cloth on the first click
-// would be the sidebar spoiling the screen, which is the failure every sticky
-// stage in this directory is written against.
+// not execute.
 
-function _loom(state, idx) {
-  const v = state.v;
-  const live = v.rows.filter(r => r.firstStep <= idx);
-  if (!live.length) {
-    return '<div class="dy-loom-h">' + _ic('spool', 13) + 'The Loom</div>'
-      + '<div class="dy-loom-empty">Nothing on it yet. Every story the castle is '
-      + 'running today gets a cord here as it starts.</div>';
+function _dayPanel(state, idx) {
+  const meta = (state.stepMeta || []).slice(0, Math.max(0, idx + 1))
+    .filter(m => m && m.kind === 'card');
+  if (!meta.length) {
+    return '<div class="dy-panel-h">' + _ic('sun', 13) + 'The day so far</div>'
+      + '<div class="dy-panel-empty">Nothing yet. The castle has been awake for '
+      + 'about ten minutes.</div>';
   }
-  const rows = live.map((r) => {
-    const shown = r.steps.filter(st => st <= idx).length;
-    const done = r.closed && r.steps[r.steps.length - 1] <= idx;
-    // Earlier days first, drawn as squares rather than beads: they are not
-    // part of today and must not read as progress in it.
-    const old = r.priorDays.map(() => '<span class="dy-bead" data-old="1"></span>').join('');
-    const today = r.steps.map((st, i) =>
-      '<span class="dy-bead" data-on="' + (st <= idx ? '1' : '0') + '"'
-      + ' title="beat ' + (i + 1) + '"></span>').join('');
-    const note = done
-      ? 'finished tonight'
-      : (r.priorDays.length ? 'running since day ' + r.openedEp
-        : (shown > 1 ? 'twice today' : 'opened today'));
-    return '<div class="dy-warp-row" data-done="' + (done ? '1' : '0') + '"'
-      + ' style="--dy-thread:' + r.colour + '">'
-      + '<div class="dy-warp-k">' + _ic(done ? 'shears' : 'knot', 11, r.colour)
-      + _esc(r.label) + '</div>'
-      + '<div class="dy-warp-nm">' + _esc(r.parties.join(' & ')) + '</div>'
-      + '<div class="dy-beads">' + old + today + '</div>'
-      + '<div class="dy-warp-note">' + _esc(note) + '</div>'
-      + '</div>';
-  }).join('');
-  return '<div class="dy-loom-h">' + _ic('spool', 13) + 'The Loom'
-    + '<b>' + live.length + '</b> ' + (live.length === 1 ? 'story' : 'stories')
-    + '</div><div class="dy-warps">' + rows + '</div>';
+  // Where in the day the reader has got to, and how much of each part they
+  // have seen. Only parts already reached — a running order printed in full
+  // would tell the reader how much of the evening is still coming.
+  const parts = [];
+  const byPart = new Map();
+  for (const m of meta) {
+    if (!byPart.has(m.band)) { byPart.set(m.band, 0); parts.push(m.band); }
+    // SCENES, NOT CARDS. "The morning 16" is a number about the rendering; a
+    // viewer counts rooms they have been in, and there is one establishing
+    // card per room.
+    if (m.beat === 'establish') byPart.set(m.band, byPart.get(m.band) + 1);
+  }
+  const here = parts[parts.length - 1];
+  const rows = parts.map(p =>
+    '<div class="dy-part" data-here="' + (p === here ? '1' : '0') + '">'
+    + '<span class="dy-part-nm">' + _esc(p) + '</span>'
+    + '<span class="dy-part-n">' + byPart.get(p) + '</span></div>').join('');
+
+  // And who the day has actually been about, biggest first. Names, never a
+  // count of "the castle" — the evidence rule, on a sidebar.
+  const seen = new Map();
+  for (const m of meta) {
+    if (m.beat !== 'establish') continue;
+    for (const n of (m.who || [])) seen.set(n, (seen.get(n) || 0) + 1);
+  }
+  const who = [...seen].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8);
+  const faces = who.map(([n, c]) =>
+    '<span class="dy-who"' + (c > 1 ? ' data-busy="1"' : '') + '>' + _av(n, 24)
+    + _esc(n) + (c > 1 ? '<b>&times;' + c + '</b>' : '') + '</span>').join('');
+
+  return '<div class="dy-panel-h">' + _ic('sun', 13) + 'The day so far'
+    + '<b>' + _esc(here) + '</b></div>'
+    + '<div class="dy-parts">' + rows + '</div>'
+    + (faces ? '<div class="dy-whos">' + faces + '</div>' : '');
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1542,19 +2537,19 @@ function _reapplyVisibility(suffix, upToIdx, total) {
   if (scroller) scroller.scrollTop = top;
 }
 
-function _updateLoom(epNum, idx) {
-  const el = document.getElementById('dy-loom-inner');
+function _updatePanel(epNum, idx) {
+  const el = document.getElementById('dy-panel-inner');
   const store = (typeof window !== 'undefined' && window.__trCastleDay) || {};
   const state = store[epNum];
   if (!el || !state) return;
-  el.innerHTML = _loom(state, idx);
+  el.innerHTML = _dayPanel(state, idx);
 }
 
 /** Bring the new card into view, UNDER the loom rather than behind it. */
 function _scrollTo(el) {
   if (!el) return;
   const scroller = document.querySelector('.rp-main');
-  const stage = document.getElementById('dy-loom-inner');
+  const stage = document.getElementById('dy-panel-inner');
   if (!scroller || !scroller.scrollTo || !el.getBoundingClientRect) {
     if (el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
@@ -1571,14 +2566,14 @@ export function trCastleDayRevealNext(suffix, total, epNum) {
   st.idx++;
   _reapplyVisibility(suffix, st.idx, total);
   _scrollTo(document.getElementById('dy-step-' + suffix + '-' + st.idx));
-  _updateLoom(epNum, st.idx);
+  _updatePanel(epNum, st.idx);
 }
 
 export function trCastleDayRevealAll(suffix, total, epNum) {
   const st = _state(epNum, total);
   st.idx = total - 1;
   _reapplyVisibility(suffix, st.idx, total);
-  _updateLoom(epNum, st.idx);
+  _updatePanel(epNum, st.idx);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1697,7 +2692,7 @@ export function rpBuildCastleDay(ep, observer = 'audience') {
         + 'starts here. Not one of these stories has a yesterday yet.') + '</p>'
     + '</div></div>'
     + '<header class="dy-head">' + observerBadge + '</header>'
-    + '<div class="dy-stage" id="dy-loom-inner">' + _loom(state, st.idx) + '</div>'
+    + '<div class="dy-stage" id="dy-panel-inner">' + _dayPanel(state, st.idx) + '</div>'
     + '<main class="dy-main">' + stream + '</main>'
     + '</div></div>'
     + '<div class="dy-controls" id="dy-controls-' + suffix + '">'
@@ -1709,3 +2704,24 @@ export function rpBuildCastleDay(ep, observer = 'audience') {
     + '</div></div>';
 }
 
+/**
+ * `castleDayScenes(ep, observer)` — the day as SCENES rather than as markup.
+ *
+ * The same composition the screen draws, handed back as records: every scene
+ * with its heading, its room, who was in it, and its per-observer streams. It
+ * exists because the composition is the thing worth checking — a guard that
+ * reads the HTML is reading a rendering of the answer, and this plan's whole
+ * argument is that the ANSWER is the deliverable.
+ *
+ * Keyed identically to `_buildBeats`, so a scene's cards here are the exact
+ * cards on the page and in the transcript. Three copies of a day that can
+ * drift apart is the shape js/vp-tr/screens.js exists to prevent, one level up.
+ */
+export function castleDayScenes(ep, observer = 'audience') {
+  const v = _view(ep, observer);
+  if (!v) return [];
+  const key = 'dy|' + v.ep;
+  const used = new Set();
+  return v.scenes.map((raw, i) =>
+    _composeScene({ ...raw, epNum: v.ep }, key + '|' + i + '|' + raw.eventId, used));
+}

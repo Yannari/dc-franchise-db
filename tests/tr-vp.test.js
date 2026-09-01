@@ -7002,7 +7002,8 @@ describe('no host prose assumes which host is on', () => {
   const HOST_PROSE = ['js/vp-tr/conclave.js', 'js/vp-tr/style.js', 'js/vp-tr/scenery.js',
     'js/vp-tr/round-table.js', 'js/vp-tr/cold-open.js', 'js/vp-tr/house-status.js',
     'js/vp-tr/mission.js', 'js/vp-tr/recruitment.js', 'js/vp-tr/endgame.js',
-    'js/vp-tr/selection.js', 'js/vp-tr/arrival.js', 'js/tr/headless.js', 'js/tr/state.js'];
+    'js/vp-tr/selection.js', 'js/vp-tr/arrival.js', 'js/vp-tr/castle-day.js',
+    'js/tr/headless.js', 'js/tr/state.js'];
   const GENDERED = /\b(she|her|hers|herself|he|him|his|himself)\b/i;
 
   it('no source file writes a gendered pronoun into host prose', () => {

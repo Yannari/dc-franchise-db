@@ -55,6 +55,9 @@ import { playTraitorsSeason } from '../js/tr/headless.js';
 import { EVENTS } from '../js/tr/events.js';
 import { seedFranchiseHistory } from './helpers/tr-castle-fixture.js';
 import roster from '../franchise_roster.json';
+import { rpBuildCastleDay, castleDayScenes } from '../js/vp-tr/castle-day.js';
+import { screenNarration } from '../js/vp-tr/screens.js';
+import { _vpTextLines } from '../js/text-backlog.js';
 
 import '../js/tr/castle/trust.js';
 import '../js/tr/castle/suspicion.js';
@@ -386,5 +389,226 @@ describe('THE NUMBER RULE: a printed count must be true of the season it is prin
       .toBeGreaterThan(1000);
     expect([...bad].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${k} x${v}`),
       'these sentences printed a number the season state cannot justify').toEqual([]);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// PLAN 10 TASK 6 — THE CASTLE DAY IS AN EDITED EPISODE, NOT A STATE REPORT
+// ══════════════════════════════════════════════════════════════════════
+//
+// Everything above measures the ENGINE's sentence pools. These arms measure
+// what the SCREEN makes of them, which is a different failure surface and had
+// no guard at all: the screen used to print an internal category label above
+// every card ("Suspicion — Cast on"), a sidebar called The Loom whose rows
+// said "opened today", and one card per scene carrying one sentence. A viewer
+// reading that is reading a state report with a serif font on it.
+//
+// FOUR RULES, and each one is a shape rather than a list of known cases:
+//
+//   A. NO ENGINE VOCABULARY ON THE PAGE. `cover`, `thread`, `heat`,
+//      `opened today` and `The Loom` are the debug words scene-api.js names
+//      in its own header, and a screen that prints one of them is showing the
+//      machine instead of the show.
+//   B. EVERY SCENE IS A COMPLETE SCENE. The audience stream of a scene must
+//      carry all four beat kinds — establish, action, reaction, consequence —
+//      because a card that says a thing happened and never says what it cost
+//      is the disconnected-event shape the whole plan is written against.
+//   C. THE FILTERED STREAMS ARE AUTHORED, NOT HIDDEN. A watcher who was not
+//      in the room gets a SHORTER, DIFFERENT stream, composed before any
+//      markup exists — not the same prose behind a CSS class.
+//   D. WHAT THE COMPOSER WRITES IS WHAT THE SCREEN PRINTS, and what the
+//      transcript prints. Three copies of the day that can drift apart is the
+//      shape js/vp-tr/screens.js exists to prevent, one level down.
+//
+// The seasons above leave `gs` holding the last one played, so this block
+// plays its own and snapshots the rows. It runs AFTER the module-level
+// statistics above are computed, so the extra firings it produces cannot
+// reach them.
+setPlayers(ROSTER);
+seedFranchiseHistory(CAST);
+playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 20260901 });
+const TASK6_ROWS = (gs.episodeHistory || []).map(e => ({ ...e }))
+  .filter(e => e.tr && e.tr.castle && (e.tr.castle.scenes || []).length);
+
+/** Every composed scene of every day, as the screen composed it. */
+function allScenes(ep) {
+  return castleDayScenes(ep, 'audience');
+}
+
+describe('THE CASTLE DAY READS AS TELEVISION', () => {
+  it('has days to read at all', () => {
+    expect(TASK6_ROWS.length, 'the season recorded no castle day — every arm below is vacuous')
+      .toBeGreaterThan(4);
+    expect(TASK6_ROWS.reduce((n, e) => n + allScenes(e).length, 0),
+      'no scene was composed').toBeGreaterThan(20);
+  });
+
+  it('never presents engine vocabulary as story', () => {
+    let checked = 0;
+    for (const ep of TASK6_ROWS) {
+      // THE WORDS, NOT THE MARKUP. `screenNarration` takes the furniture out
+      // and `_vpTextLines` takes the stylesheet and the tags out; a scan of the
+      // raw string is a scan of 20KB of CSS, where `--dy-thread` is a variable
+      // name and not something the castle said.
+      const text = _vpTextLines(screenNarration(rpBuildCastleDay(ep, 'audience'))).join('\n');
+      expect(text.length, 'the day rendered nothing').toBeGreaterThan(400);
+      expect(text).not.toMatch(/\b(?:cover|thread|heat|opened today|the loom)\b/i);
+      checked++;
+    }
+    expect(checked, 'no day was scanned').toBeGreaterThan(4);
+    // GUARD ON THE GUARD: the matcher has to be able to match.
+    expect(/\b(?:cover|thread|heat|opened today|the loom)\b/i.test('Cover — Something starts'))
+      .toBe(true);
+  });
+
+  it('every scene establishes action and consequence', () => {
+    let checked = 0;
+    for (const ep of TASK6_ROWS) {
+      for (const scene of allScenes(ep)) {
+        expect(scene.observerText.audience.map(x => x.kind))
+          .toEqual(expect.arrayContaining(['establish', 'action', 'reaction', 'consequence']));
+        checked++;
+      }
+    }
+    expect(checked, 'no scene was checked').toBeGreaterThan(20);
+  });
+
+  it('and an audience scene is four or five cards, never one', () => {
+    const sizes = new Set();
+    let checked = 0;
+    for (const ep of TASK6_ROWS) {
+      for (const scene of allScenes(ep)) {
+        const n = scene.observerText.audience.length;
+        expect(n, scene.id + ' is ' + n + ' cards').toBeGreaterThanOrEqual(4);
+        expect(n, scene.id + ' is ' + n + ' cards').toBeLessThanOrEqual(5);
+        sizes.add(n);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(20);
+    expect(sizes.size, 'every scene is exactly the same length — nothing varies').toBeGreaterThan(1);
+  });
+
+  it('gives every scene a natural time-and-place heading and no category label', () => {
+    let checked = 0;
+    for (const ep of TASK6_ROWS) {
+      for (const scene of allScenes(ep)) {
+        expect(scene.heading, scene.id + ' has no heading').toMatch(/^[A-Z][^·]+ · [A-Z].+$/);
+        expect(scene.heading.toLowerCase())
+          .not.toMatch(/suspicion|testing|callback|romance|grief|trust|journey/);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(20);
+  });
+
+  it('names people instead of claiming the castle agrees', () => {
+    // The evidence-for-consensus contract: a screen-composed sentence may not
+    // say `everyone`/`the whole castle`/`the group agrees` without a public
+    // ballot behind it, and this screen renders no ballot. The engine's own
+    // authored `action` sentence is not this screen's to rewrite, so the rule
+    // is applied to the beats the SCREEN composes, which is where it belongs.
+    const BANNED = /\b(everyone|the whole castle|the group agrees|the castle turns|nobody trusts|the whole room)\b/i;
+    let checked = 0;
+    for (const ep of TASK6_ROWS) {
+      for (const scene of allScenes(ep)) {
+        for (const beat of scene.observerText.audience) {
+          if (beat.kind === 'action') continue;
+          expect(beat.text, scene.id + '/' + beat.kind + ': ' + beat.text).not.toMatch(BANNED);
+          checked++;
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(60);
+    expect(BANNED.test('Everyone turns against Manu after the mission.')).toBe(true);
+  });
+
+  it('composes the filtered stream separately instead of hiding the full one', () => {
+    let compared = 0;
+    for (const ep of TASK6_ROWS) {
+      for (const scene of allScenes(ep)) {
+        const pub = scene.observerText.public;
+        expect(Array.isArray(pub), scene.id + ' has no public stream').toBe(true);
+        expect(pub.length, scene.id + ': the public stream is as long as the audience stream')
+          .toBeLessThan(scene.observerText.audience.length);
+        expect(pub.length).toBeGreaterThanOrEqual(2);
+        // and it is not the same words with a class on it
+        const a = scene.observerText.audience.map(b => b.text).join(' ');
+        for (const b of pub) {
+          if (b.kind === 'establish') continue;
+          expect(a.includes(b.text), scene.id + ': the public stream reuses the audience ' + b.kind)
+            .toBe(false);
+        }
+        compared++;
+      }
+    }
+    expect(compared).toBeGreaterThan(20);
+  });
+
+  it('and every card the screen composes says something concrete', () => {
+    // The "incomplete because the label was removed" failure: a sentence that
+    // is under about forty characters is a fragment that used to lean on a
+    // heading for its meaning.
+    let checked = 0;
+    for (const ep of TASK6_ROWS) {
+      for (const scene of allScenes(ep)) {
+        for (const beat of scene.observerText.audience) {
+          expect(beat.text.length,
+            scene.id + '/' + beat.kind + ' is a fragment: "' + beat.text + '"')
+            .toBeGreaterThan(38);
+          expect(/[.!?"”']$/.test(beat.text.trim()),
+            scene.id + '/' + beat.kind + ' does not finish a sentence: "' + beat.text + '"')
+            .toBe(true);
+          checked++;
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(80);
+  });
+
+  it('draws the overflow part of the day, marked, instead of dropping it', () => {
+    // TASK 5'S OVERFLOW BUCKET, ON A CONSTRUCTED ROW, AND IT SAYS SO.
+    // `castlePhaseRecord` appends an `unmapped:<window>` part for a scene whose
+    // hour the running order has never heard of, so nothing can vanish in
+    // silence. No played season reaches it — all seven windows map — so this is
+    // proof the branch RENDERS and is marked, not proof a viewer will see it.
+    const real = TASK6_ROWS.find(e => e.tr.castle.scenes.length > 3);
+    expect(real, 'no day had enough scenes to build the case on').toBeTruthy();
+    const c = real.tr.castle;
+    const last = c.scenes[c.scenes.length - 1];
+    const odd = { ...last, window: 'some-future-window' };
+    const row = { ...real, tr: { ...real.tr, castle: { ...c,
+      scenes: [...c.scenes.slice(0, -1), odd],
+      phases: [
+        ...c.phases.map(ph => ({ ...ph, scenes: ph.scenes.filter(x => x !== last) })),
+        { id: 'unmapped:some-future-window',
+          label: 'Unmapped window: some-future-window', scenes: [odd] },
+      ] } } };
+    const html = rpBuildCastleDay(row, 'audience');
+    expect(html, 'the overflow part was drawn as ordinary programming')
+      .toContain('Outside the running order');
+    expect(html).toContain('some-future-window');
+    const scenes = castleDayScenes(row, 'audience');
+    expect(scenes.length, 'a scene was dropped on the way to the screen')
+      .toBe(c.scenes.length);
+    expect(scenes.some(x => x.phase === 'unmapped:some-future-window'),
+      'the composed record lost which part of the day it came from').toBe(true);
+  });
+
+  it('and the transcript retranscribes the screen exactly', () => {
+    let checked = 0;
+    for (const ep of TASK6_ROWS) {
+      const shown = _vpTextLines(screenNarration(rpBuildCastleDay(ep, 'audience')));
+      for (const scene of allScenes(ep)) {
+        for (const beat of scene.observerText.audience) {
+          const want = beat.text.replace(/\s+/g, ' ').trim().slice(0, 44);
+          expect(shown.some(l => l.includes(want)),
+            'the screen never printed ' + scene.id + '/' + beat.kind + ': "' + want + '"')
+            .toBe(true);
+          checked++;
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(80);
   });
 });

@@ -274,7 +274,7 @@ const OUTCOME_LINES = {
   awkward: [
     '{a}\'s story had a wobble in it. Nobody happened to be listening closely enough to catch it.',
     'It wasn\'t {a}\'s best work, but it got through.',
-    '{a} lost the thread for half a sentence and found it again before anybody looked up.',
+    '{a} lost the shape of it for half a sentence and found it again before anybody looked up.',
     'There was a seam in it, and {a} talked straight over the seam.',
   ],
   suspicious: [
@@ -402,7 +402,7 @@ registerEvent({
 });
 
 const RECRUIT_COVER_LINES = [
-  '{a} had a whole cover story ready for where they\'d been the night they made that offer. Nobody had even asked.',
+  '{a} had a whole account ready for where they\'d been the night they made that offer. Nobody had even asked.',
   '{a} has an account of that night ready to go, polished, unrequested, and gathering dust.',
   'Somewhere in {a}\'s head is a very good explanation for a conversation nobody knows happened.',
   '{a} keeps almost bringing up that night and then not bringing it up.',
@@ -430,7 +430,7 @@ registerEvent({
 
 const ALIBI_CRUMBLE_LINES = {
   holds: [
-    '{a}\'s cover story took a real question and shrugged it off without a wobble.',
+    '{a}\'s account took a real question and shrugged it off without a wobble.',
     'Somebody tried to pull at {a}\'s alibi. It didn\'t give.',
     'Two people came at {a}\'s account from two directions and it was the same account both times.',
     '{a} invited them to check it, which is the last thing anybody does with a story that will not hold.',
@@ -442,7 +442,7 @@ const ALIBI_CRUMBLE_LINES = {
     'The alibi held, but {a} had to hold it, and holding it was visible work.',
   ],
   collapses: [
-    '{a}\'s cover story came apart the moment someone actually pushed on it.',
+    '{a}\'s account came apart the moment someone actually pushed on it.',
     'The alibi didn\'t survive contact — {a} had to abandon it mid-sentence.',
     'Somebody had been in that corridor too, and said so, and there was nothing left of {a}\'s version.',
     '{a} tried a third variant, in front of everybody, and it was worse than the second.',

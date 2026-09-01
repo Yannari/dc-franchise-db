@@ -534,7 +534,7 @@ const ARCHETYPES = [
       scraped: [
         'One line of the record came back, and it came back late, and it came back from one person.',
         'The board stayed mostly empty. What went back on it went back on the strength of a single stubborn reading.',
-        'They lost the thread in the opening and spent the rest of the hour failing to find it again.',
+        'They lost the shape of it in the opening and spent the rest of the hour failing to find it again.',
         'Almost nothing reconstructed, and the little that was is not worth the walk back up the hall.',
       ],
       failed: [

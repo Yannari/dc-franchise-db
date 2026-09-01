@@ -152,7 +152,7 @@ const EARSHOT_LINES = {
     '{a} said {c}\'s name out on the road and {b} shut it down flat.',
     '{b} would not have a word said about {c}, not even out here where nobody was listening.',
     '{a} learned something on that walk, and it was about {b}, not about {c}.',
-    '{b} told {a} to leave {c} alone, out on the road, with more heat than the question had.',
+    '{b} told {a} to leave {c} alone, out on the road, and much harder than the question deserved.',
     '{a} had picked the one name {b} would not hear, and found that out a mile from the castle.',
   ],
 };

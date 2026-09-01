@@ -142,6 +142,102 @@ For every generated scene, tests must answer:
 4. Which stored consequence follows from the scene?
 
 If any answer is missing, the event is disconnected and must not render.
+## Event variation contract
+
+The approximately 210 events are base definitions, not the total number of scenes they can produce. Every event must declare the contextual axes that can materially change its casting, dialogue, interpretation, outcome, or consequences.
+
+Required event metadata:
+
+```js
+variationAxes: {
+  voice: ['archetype', 'social', 'strategic', 'intuition', 'temperament', 'loyalty', 'boldness'],
+  relationship: ['close-ally', 'neutral', 'rival', 'romance', 'prior-history'],
+  knowledge: ['witnessed', 'heard-with-source', 'incomplete', 'misinformed'],
+  alignment: ['faithful', 'original-traitor', 'recruited-traitor'],
+  outcome: ['accepted', 'rejected', 'backfire', 'ambiguous'],
+  phase: ['early', 'middle', 'late'],
+}
+```
+
+An event lists only relevant axes, but `outcome` and at least one of `voice`, `relationship`, `knowledge`, or `alignment` are required. A quiet grief event may not need alignment; a Traitor slip does.
+
+### Voice and stats
+
+Archetype and stats change how a contestant speaks and reacts, not the underlying fact. Gameplay remains proportional and noisy; narrative thresholds may select text only after the mechanical outcome is known.
+
+For the same recorded selfish shield decision:
+
+```text
+HERO: “I thought I could get back in time. I couldn't, and that cost all of you. That's on me.”
+
+MASTERMIND: “A shield keeps me in the game, and keeping strong players here helps us find the Traitors. You can dislike the choice without pretending it had no logic.”
+
+HOTHEAD: “Oh, come on. Half of you would've taken it too. You're angry because I got there first.”
+
+UNDERDOG: “Nobody here was going to protect me. I saw one chance to protect myself.”
+
+VILLAIN: “I have the shield. We still have a mission tomorrow. I'm comfortable with my choice.”
+```
+
+These are not interchangeable quote pools. The Hero branch must support accountability; the Mastermind branch must cite strategic value; the Hothead branch must escalate; the Underdog branch must be eligible only when their social position supports feeling unprotected.
+
+### Relationships
+
+The relationship determines the emotional stakes and delivery:
+
+```text
+CLOSE ALLY: Ellie waits until they are alone. “I defended you all day. Tell me why you left us at that checkpoint.”
+
+RIVAL: Ellie raises it in front of the room. “Fiore got her shield. The rest of us got a four-thousand-pound hole in the pot.”
+
+ROMANTIC PARTNER: Ellie is quieter than Fiore expected. “I understand why you wanted safety. I don't understand why you didn't tell me.”
+
+NEUTRAL: Ellie asks what happened before deciding whether the choice matters.
+```
+
+Do not use an intimate betrayal line for neutral strangers or a public attack for a loyal ally without a recorded reason for escalation.
+
+### Knowledge and alignment
+
+A witness may state what they saw. A second-hand speaker names the source. A misinformed speaker states a belief, not objective truth. A Faithful cannot narrate Traitor-only information.
+
+```text
+WITNESS: “I watched Fiore leave the crate and take the shield path.”
+
+HEARD WITH SOURCE: “Ellie says Fiore left the team for the shield. I wasn't on that checkpoint, so I'm asking.”
+
+INCOMPLETE: “Fiore disappeared for part of the mission. I don't know where she went.”
+
+MISINFORMED: “I heard Fiore cost us the money.” The scene records this as a claim and can later correct it.
+```
+
+An original Traitor may have practiced cover habits. A newly recruited Traitor may contradict behavior from the previous day, hesitate in the turret, or overcorrect. That difference requires a stored recruitment episode; it cannot be inferred from current alignment alone.
+
+### Outcomes
+
+Every event has at least two mechanically different outcomes. Four rewritten versions of the same result do not count as four variants.
+
+```text
+ACCEPTED: the explanation reduces suspicion and repairs some trust.
+REJECTED: suspicion rises and the claim is carried toward the Round Table.
+BACKFIRE: the accuser overstates the evidence and loses credibility.
+AMBIGUOUS: both accounts remain plausible; the relationship worsens without a clear belief shift.
+```
+
+### Required variation tests
+
+For each complete event, tests must prove:
+
+1. `variationAxes.outcome` contains at least two reachable outcomes.
+2. At least four materially different authored prose paths are reachable.
+3. Relevant relationship states change stakes or delivery, not only one adjective.
+4. Knowledge state changes what the speaker is allowed to assert.
+5. Voice branches reflect valid archetype behavior and proportional stat influence.
+6. Original and recruited Traitors differ when the event declares the alignment axis.
+7. Different paths retain the same recorded causal fact unless the outcome changes it.
+8. No branch produces identical normalized text under every declared axis.
+
+Use seeded fixtures that force each declared branch. An axis with no test demonstrating a changed scene is decorative metadata and must be removed or implemented.
 
 ---
 
@@ -785,7 +881,14 @@ git commit -m "feat(traitors): add full-experience controls and debug"
 expect(TRAITORS_MISSIONS.length).toBeGreaterThanOrEqual(12);
 expect(TRAITORS_MISSIONS.length).toBeLessThanOrEqual(16);
 expect(EVENTS.filter(isCompleteSceneEvent).length).toBeGreaterThanOrEqual(200);
-for (const event of EVENTS) expect(event.variants.length).toBeGreaterThanOrEqual(4);
+for (const event of EVENTS) {
+  expect(event.variants.length).toBeGreaterThanOrEqual(4);
+  expect(event.variationAxes.outcome.length).toBeGreaterThanOrEqual(2);
+  expect(Object.keys(event.variationAxes).some(key =>
+    ['voice','relationship','knowledge','alignment'].includes(key))).toBe(true);
+  expect(forceDeclaredBranches(event).normalizedTexts.size).toBeGreaterThanOrEqual(4);
+  expect(forceDeclaredBranches(event).causalSourceIds.every(Boolean)).toBe(true);
+}
 ```
 
 - [ ] **Step 2: Add history/relationship/consequence events to approximately 170**

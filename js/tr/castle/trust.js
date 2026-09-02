@@ -20,7 +20,7 @@ import { pStats } from '../../players.js';
 // getBond is a PURE READ and the one bonds.js name a castle file may still
 // hold; every WRITE goes through the scene API (see ./effects.js).
 import { getBond } from '../../bonds.js';
-import { registerEvent } from '../events.js';
+import { registerEvent, isNervy, emotionalStateOf } from '../events.js';
 import { sceneApi, arcAdvanceCiting } from './effects.js';
 import {
   findOpenThread, openThreadsFor, heatAt, lastClosedThread, outcomeSense,
@@ -63,22 +63,114 @@ function _threadForActors(kind, actors, ep) {
   return null;
 }
 
-const CONFIDE_LINES = [
-  '{a} told {b} something they hadn\'t said out loud to anyone else in the castle.',
-  '{a} let their guard down with {b} for a minute, and meant it.',
-  'Over cold coffee, {a} admitted to {b} how frightened they actually were.',
-  '{a} confided a real fear to {b}, not a strategic one — a personal one.',
-];
+// ── REWRITE (Task 7 stage 5), AND THE AUDIT'S TWO MERGES FOLDED IN ────
+//
+// The audit's verdict here was REWRITE ("one branch — the fork is in the
+// wording, not in the game"), and its verdict on `trust-circle-forms` and
+// `trust-inner-circle-invite` was MERGE INTO THIS ONE: all three were the
+// same premise, warmth quietly becoming a unit, told three times. Neither of
+// those two events is deleted — an `evening` scene is worth more than a tidy
+// registry — but the premise they were duplicating now lives here as a real
+// branch, so the three of them stop being interchangeable.
+//
+// AND THIS EVENT BECAME THE LOUDEST IN THE CASTLE THE MOMENT THE WINDOW
+// OPENED UP. `runWindow`'s barren-draw fix took `evening` from 1.98 scenes an
+// episode to 4.58; this fired proportionally more, out of a four-line pool,
+// and went to the top of the blame table at 21 of 287 loud seasons.
+//
+// FIVE THINGS THAT HAPPEN WHEN SOMEBODY TELLS YOU A REAL ONE. The fork is
+// `{b}`'s, because the person doing the confiding has already decided; what
+// is undecided is what the room's other half does with it.
+//
+//   confided        — it is taken the way it was meant, and nothing is asked
+//                     for in return.
+//   traded-it       — {b} answers with one of their own, which is the only
+//                     way this ever becomes mutual.
+//   invited-them-in — the confidence turns into an offer: not a feeling any
+//                     more, an arrangement. This is the merged premise.
+//   regretted-it    — {a} hears themselves, watches {b} file it, and cannot
+//                     take it back.
+//   nearly-said-it  — THE SOLO BRANCH, and it is the widening the yield
+//                     measurement asked for rather than a new event. Measured
+//                     over 60 seasons, a solo draw in `evening` faced 0.51
+//                     eligible events against a pair draw's 8.49, which is
+//                     why that window was starving. Somebody carrying a thing
+//                     they cannot say, going as far as the door of the room
+//                     the person is in, is the same premise with the second
+//                     half withheld.
+const CONFIDE_LINES = {
+  confided: [
+    '{a} told {b} something they had not said out loud to anyone else in the castle.',
+    '{a} let their guard down with {b} for a minute, and meant it.',
+    'Over cold coffee, {a} admitted to {b} how frightened they actually were.',
+    '{a} confided a real fear to {b} — not a strategic one, a personal one.',
+    '{a} said the true version out loud to {b} and {b} did not make {a} pay for it.',
+    'It took {a} two goes to get it out. {b} waited through both of them.',
+  ],
+  'traded-it': [
+    '{a} said a real thing to {b}, and {b} put one down next to it.',
+    '{a} went first. {b} went second, and {b} went further, which had not been the deal.',
+    'By the end of it neither {a} nor {b} could have used what they had without losing what they had.',
+    'They ended up telling each other the two worst nights of the season, {a} and {b}, in the wrong order.',
+    '{a} confided and {b} confided back, and the balance came out level, which is rarer here than it sounds.',
+    '{b} answered a real thing with a real thing, and that is the whole of what happened.',
+  ],
+  'invited-them-in': [
+    'It stopped being a confession halfway through and turned into an offer. {b} said yes.',
+    '{a} told {b} the frightening version and then told {b} what they were going to do about it, and made it "we".',
+    '"So it is us, then," {b} said, when {a} had finished, and {a} had not been going to put it that plainly.',
+    '{a} meant to say one true thing to {b}. What {a} and {b} came out of that room with was an arrangement.',
+    'What began as {a} being honest ended with {a} and {b} agreeing who they were, out loud, for the first time.',
+    '{b} heard {a} out and then did the thing nobody does here, which was to commit to something.',
+  ],
+  'regretted-it': [
+    '{a} heard themselves saying it and could not stop, and watched {b}’s face while it came out.',
+    '{a} said one thing too many to {b} and knew it before the sentence had finished.',
+    '{b} did not react at all, which is how {a} knew {b} had kept it.',
+    '{a} gave {b} something real and spent the rest of the evening working out what {b} would do with it.',
+    'It was too much. {a} could see it landing as too much, and there is no unsaying a thing like that.',
+    '{b} said the right words back and had already filed it, and {a} caught the filing.',
+  ],
+  'nearly-said-it': [
+    '{a} got as far as the door of the room {a} had been going to say it in, and then went to bed.',
+    'There is one person in this castle {a} could have told, and {a} spent the evening not going to find them.',
+    '{a} rehearsed it, the whole true version, and then said something about the weather instead.',
+    'It sat in {a} all evening, and {a} took it upstairs still sitting there.',
+    '{a} decided that there is nobody here you can say that to, and was not entirely sure that was true.',
+    '{a} nearly said it twice and got as far as the first word once.',
+    'The thing about a castle is that a real sentence costs more than it is worth, and {a} did the sum and kept quiet.',
+    'Nobody asked {a} how {a} was, which was a relief, and was not.',
+    '{a} wrote none of it down, said none of it, and carried all of it up the stairs.',
+    'It would have taken nine words. {a} could not find a night to spend them in.',
+    '{a} said a version of it to the mirror, which is not the same and is what {a} had.',
+    'The person {a} wanted to tell is the person it is about, which is the whole trouble with it.',
+    '{a} started the sentence three times in {a}’s head and could not get past the second word.',
+    'It is not that {a} does not trust anybody. It is that trusting anybody costs more this week.',
+    '{a} looked round the room at dinner and did the sum on each of them and got no for all of them.',
+    'There was a moment in the corridor when {a} could have, and {a} said goodnight instead.',
+    '{a} put it away again, carefully, the way you put away a thing you intend to get out later.',
+    'Everyone else seemed to have somebody. {a} noticed that, which did not help.',
+  ],
+};
 
 registerEvent({
   id: 'trust-confide-fear',
   family: FAMILY,
   window: 'evening',
   advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'social', 'strategic', 'temperament'],
+    relationship: ['close-ally', 'neutral'],
+  },
   // Confiding needs SOME warmth already, or it reads as a stranger
   // oversharing — that is a different, worse event than the one intended.
+  // WIDENED TO A SOLO DRAW (Task 7 stage 5): the solo branch needs no warmth
+  // to gate on, because there is nobody to be warm with, and `evening` needs
+  // every solo-capable event it can get. See the header.
   weight(ctx) {
-    if (ctx.actors?.length !== 2) return 0;
+    if (!ctx.actors?.length || ctx.actors.length > 2) return 0;
+    if (ctx.actors.length === 1) return 1.5;
     const [a, b] = ctx.actors;
     const bond = getBond(a, b);
     if (bond < 1) return 0;
@@ -86,12 +178,34 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'trust-confide-fear');
-    const sceneWhy = 'confided a real fear';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const note = pick(rng, CONFIDE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    if (!b) {
+      const soloWhy = 'carried something all evening and did not say it';
+      const t = api.openArc(FAMILY, [a], { source: soloWhy,
+        seed: lineFor(CONFIDE_LINES['nearly-said-it'], `trust-confide-fear|nearly-said-it|${ctx.ep}`, { a }) });
+      return { branch: 'nearly-said-it', actor: a, threadId: t?.id, bondDelta: 0 };
+    }
+    const st = pStats(b);
+    const scores = {
+      confided: (st.loyalty / 10) * 0.45 + (st.temperament / 10) * 0.3 + 0.2,
+      'traded-it': (st.social / 10) * 0.45 + Math.max(0, getBond(a, b)) / 10 * 0.35,
+      'invited-them-in': (st.boldness / 10) * 0.35 + Math.max(0, getBond(a, b) - 4) / 10 * 0.6,
+      'regretted-it': (st.strategic / 10) * 0.4 + (1 - st.loyalty / 10) * 0.35,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'traded-it' ? 'answered a real thing with a real thing'
+      : branch === 'invited-them-in' ? 'turned a confidence into an arrangement'
+        : branch === 'regretted-it' ? 'said one thing too many and could not take it back'
+          : 'confided a real fear';
+    const bondDelta = branch === 'confided' ? 1.5
+      : branch === 'traded-it' ? 2 : branch === 'invited-them-in' ? 2.5 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const note = lineFor(CONFIDE_LINES[branch], `trust-confide-fear|${branch}|${ctx.ep}`, { a, b });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'confided', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
 
@@ -147,6 +261,23 @@ const TRADE_LINES = {
     '{a} put {c} up and {b} took it apart, and something between them was slightly colder afterwards.',
     'It was supposed to be two people helping each other. It turned into {a} defending {c} to {b}.',
   ],
+  // ── TASK 7 STAGE 5: THE SOLO BRANCH SPLIT IN TWO, AND BOTH WIDENED ────
+  //
+  // `read-the-room` was the loudest single source of within-season repetition
+  // left in the castle after this stage's first batch — 13 of the 134 seasons
+  // that printed a sentence three times, measured over 800. The cause is
+  // structural rather than a bad pool: this is the ONLY branch this event has
+  // on a solo draw, so every one of its solo firings in a season came out of
+  // one eight-line pool, and a three-way collision over eight runs at about
+  // 6% per triple of firings.
+  //
+  // Both terms of that get attacked. The pool is a SECOND SOLO ACTION rather
+  // than eight more sentences for the same one: ranking the whole room is one
+  // scene, and going back over one specific person the castle has already
+  // resolved something about is a different one. `lastClosedThread` on that
+  // person is the record the second branch is built on — how the last story
+  // about them ENDED, which the whole castle watched being made — and it is
+  // the same record the paired branches already cite.
   'read-the-room': [
     '{a} went through the room, name by name, and worked out which of them {a} would actually stand next to.',
     'Nobody to trade with, so {a} did it alone: the whole list, in order, ranked by nothing {a} could prove.',
@@ -156,6 +287,26 @@ const TRADE_LINES = {
     '{a} had reads on all of them and evidence for none, and knew exactly which of those two matters.',
     'On {a}’s own, the list came out different from the one {a} would have said out loud, which was the point.',
     '{a} did the whole room from memory and stopped, twice, at the same name, and could not say why.',
+    '{a} sorted the castle into people {a} would tell something to and people {a} would not, and the second pile was most of it.',
+    'It took {a} about four minutes to rank the room and the rest of the hour to stop rearranging the top of it.',
+    '{a} started the list from the person {a} trusted most and got about three names in before it stopped being easy.',
+    '{a} did it the other way round for once — worst first — and found the answer came out faster.',
+    'Alone on the landing, {a} put the whole room in order and then took the order apart again.',
+    '{a} could have asked somebody. {a} did not want the answer contaminated by somebody else wanting something.',
+  ],
+  'went-back-over-one': [
+    '{a} did not do the whole room tonight. {a} did {c}, twice, from the beginning.',
+    'Everybody else had moved on from {c}. {a} sat on the stairs and went through it again.',
+    'There was one name {a} could not leave where the castle had left it, and it was {c}’s.',
+    '{a} spent the hour on a single person, which is either thorough or a symptom, and {a} was not sure which.',
+    '{a} went back over every conversation {a} had ever had with {c} looking for the one that did not fit.',
+    'The room had made its mind up about {c}. {a} unmade it, privately, and put it back together differently.',
+    '{a} kept starting at the beginning with {c} and arriving somewhere slightly worse each time.',
+    'One name, all evening. {a} would have been embarrassed to admit how much of the night went on {c}.',
+    '{a} tried very hard to be finished with {c} and got to the top of the stairs and turned round.',
+    '{a} wrote nothing down about {c}, because writing it down would have made it a thing {a} had done.',
+    'It is possible {a} was wrong about {c}. {a} spent an hour finding out and came back no surer.',
+    '{a} went over {c} again the way you press a bruise, deliberately, and for no useful reason.',
   ],
 };
 
@@ -190,11 +341,25 @@ registerEvent({
     const prior = lastClosedThread(target, { beforeEp: ctx.ep });
     const sense = outcomeSense(prior?.outcome);
     if (!b) {
-      const soloNote = lineFor(TRADE_LINES['read-the-room'],
-        `trust-trade-reads|read-the-room|${ctx.ep}`, { a });
+      // TWO SOLO SCENES, AND THE RECORD DECIDES WHICH IS AVAILABLE. Going back
+      // over one person needs the castle to have already closed a story about
+      // them; without one there is nothing to go back over, and the branch
+      // scores zero rather than inventing a history for `{c}`.
+      const sa = pStats(a);
+      const canRevisit = !!prior;
+      const wide = (sa.strategic / 10) * 0.45 + (sa.mental / 10) * 0.3 + 0.2;
+      const deep = canRevisit ? (sa.intuition / 10) * 0.55 + (sa.temperament / 10) * 0.2 : 0;
+      const soloBranch = rng() * (wide + deep) < wide ? 'read-the-room' : 'went-back-over-one';
+      let soloNote = lineFor(TRADE_LINES[soloBranch],
+        `trust-trade-reads|${soloBranch}|${ctx.ep}`, { a, c: target });
+      if (soloBranch === 'went-back-over-one') {
+        if (sense === 'walked') soloNote += ` ${target} had been asked once and had come out of it clean, and that was the part ${a} kept returning to.`;
+        else if (sense === 'cracked') soloNote += ` Something had come out of ${target} once already, and ${a} could not make it mean nothing.`;
+        else if (sense === 'coupled') soloNote += ` Most of what ${a} had on ${target} was really about who ${target} had been spending the evenings with.`;
+      }
       const t = api.openArc(FAMILY, [a], { source: sceneWhy, seed: soloNote });
-      return { branch: 'read-the-room', actor: a, threadId: t?.id, bondDelta: 0,
-        priorOutcome: prior?.outcome ?? null };
+      return { branch: soloBranch, actor: a, subject: soloBranch === 'went-back-over-one' ? target : undefined,
+        threadId: t?.id, bondDelta: 0, priorOutcome: prior?.outcome ?? null };
     }
     // WHAT THE TWO OF THEM ALREADY THINK decides the last two branches, so
     // `same-name` is a real convergence and `disagreed` is a real difference.
@@ -442,13 +607,69 @@ registerEvent({
   },
 });
 
-const CHECKIN_LINES = [
-  '{a} checked in with {b} — the arrangement was still holding.',
-  '{a} caught {b} on the stairs, asked nothing in particular, and got the answer they wanted.',
-  'Neither of them named it. {a} asked if they were still good and {b} said they were.',
-  '{a} wanted to hear it out loud again this morning, and {b} said it again without complaint.',
-  'It took four words at the door, and {a} went into the day steadier for them.',
-];
+// ── REWRITE (Task 7 stage 5). `trust-late-checkin:checked-in` was the
+// second-loudest repeat in the castle (16 of 144 loud seasons over 800),
+// and for the same reason as `grief-keepsake`: one branch, a five-line pool,
+// and a dawn event that fires several times a season.
+//
+// THE PREMISE IS RIGHT AND THE FORK WAS MISSING. Checking in on an
+// arrangement is what people in a castle actually do at dawn — but a
+// check-in has an ANSWER, and the answer is the scene. Four of them, and
+// they are four different mornings rather than four wordings of one:
+//
+//   still-good        — the arrangement holds and both of them said so.
+//   asked-for-a-name  — one of them wants it made concrete tonight, and
+//                       being asked for a name is not the same as being
+//                       asked if you are still good.
+//   air-in-the-answer — the words were right and the delivery was not, and
+//                       the person who asked walked away knowing it.
+//   checked-on-them   — not about the arrangement at all. GATED ON THE
+//                       PUBLIC RECORD: reachable only when the other party
+//                       took a ballot at the last Round Table, which the
+//                       whole castle watched being read out. A knowledge
+//                       axis with a fact behind it, not a mood.
+const CHECKIN_LINES = {
+  'still-good': [
+    '{a} checked in with {b}. The arrangement was still holding.',
+    '{a} caught {b} on the stairs, asked nothing in particular, and got the answer they wanted.',
+    'Neither of them named it. {a} asked if they were still good and {b} said they were.',
+    '{a} wanted to hear it out loud again this morning, and {b} said it again without complaint.',
+    'It took four words at the door, and {a} went into the day steadier for them.',
+    '{b} saw {a} coming and answered the question before {a} had asked it.',
+    'It was over in the time it takes to pour two coffees, and both of them felt better for it.',
+    '{a} did not need reassuring and took the reassurance anyway, and {b} did not make anything of that.',
+  ],
+  'asked-for-a-name': [
+    '{a} did not want to know if they were still good. {a} wanted a name for tonight, and asked for one.',
+    '"Fine," {a} said, "but who." {b} had not expected the morning to start there.',
+    '{a} pushed past the pleasantries at the bottom of the stairs and asked {b} to commit to somebody.',
+    'The check-in lasted about a minute before {a} turned it into a question with a name in it.',
+    '{b} came down expecting the usual two words and got asked to pick.',
+    '{a} said they would go first if {b} would go second, and then said a name to prove it.',
+    'It stopped being a check-in the moment {a} said "so who are we writing".',
+    '{a} wanted the arrangement to mean something today rather than in general, and said so.',
+  ],
+  'air-in-the-answer': [
+    '{b} said all the right words to {a} and left a gap in the middle of them.',
+    '{a} asked if they were still good and {b} said "of course", and {a} spent the morning on the "of course".',
+    'The answer came a beat late. It was the right answer. {a} noticed the beat.',
+    '{b} agreed with everything {a} said and did not add a single thing to any of it.',
+    '{a} went looking for reassurance and got the shape of it without the weight.',
+    '{b} would not look up from the toast for the whole of it, and {a} counted that.',
+    'Nothing {b} said was wrong. {a} came away from it worse than before asking, all the same.',
+    '"We\'re good," {b} said, and then said it again, which was one time too many.',
+  ],
+  'checked-on-them': [
+    '{a} did not mention the arrangement at all. {a} asked {b} how they were after last night, and waited for a real answer.',
+    'Half the room had said {b}\'s name at that table. {a} came and sat down next to {b} at breakfast and asked nothing about strategy.',
+    '{b} had taken votes last night and had not slept. {a} did not need telling and turned up anyway.',
+    '{a} found {b} first thing and made it clear the visit was not about tonight.',
+    '"Not asking you for anything," {a} said, and then did not ask {b} for anything, which {b} had not expected.',
+    '{a} let the arrangement go unmentioned for one morning, because {b} had had their name read out and that was the bigger thing.',
+    '{b} had been braced for a strategy conversation. {a} brought tea and sat down and talked about nothing.',
+    'It was the first thing anybody had said to {b} since the table that was not about the table.',
+  ],
+};
 
 registerEvent({
   id: 'trust-late-checkin',
@@ -459,6 +680,12 @@ registerEvent({
   family: FAMILY,
   window: 'dawn',
   advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous'],
+    voice: ['loyalty', 'boldness', 'temperament', 'social'],
+    knowledge: ['witnessed', 'incomplete'],
+    relationship: ['close-ally', 'neutral'],
+  },
   // ACT: CLOSING. Widened from `{ late: 1.5 }` into a full profile by Plan 5
   // Task 5: a quiet check-in on somebody after the table reads as ordinary
   // manners in week one and as a survival move at final six, so the early
@@ -466,26 +693,26 @@ registerEvent({
   acts: { early: 0.6, late: 1.5 },
   // DECISION (round 1 fix): originally gated on `heatAt >= 1`. Heat starts at
   // 1 on open and decays 0.5 per round of silence, and this window (dawn)
-  // only ever sees a trust thread AFTER at least one full round has elapsed
+  // only ever sees a trust arc AFTER at least one full round has elapsed
   // since it last moved — most of these windows run before that same
-  // thread's own evening/after-table slot has fired again. So `>= 1`
-  // required the thread to have already been ADVANCED at least once
+  // arc's own evening/after-table slot has fired again. So `>= 1`
+  // required the arc to have already been ADVANCED at least once
   // (heat 2 -> 1.5 after one round of decay) before this could ever be
   // eligible — a conjunction measured at 0.2% of trust firings over 250
   // seasons, which is the dead-content failure rare-state amplification
   // exists to prevent, not a deliberately rare beat (nothing about "checking
   // in" is meant to be rarer than the pact it follows up on). Loosened to
-  // `> 0`: any trust thread that hasn't fully gone cold yet, which a plain
-  // single-open thread (heat 1) still satisfies one round later (0.5 > 0).
+  // `> 0`: any trust arc that hasn't fully gone cold yet, which a plain
+  // single-open arc (heat 1) still satisfies one round later (0.5 > 0).
   // `rare: true` was considered and rejected — that flag amplifies a weight
   // that is ALREADY positive when eligibility is rolled; it does nothing for
   // an event whose real problem is that eligibility itself almost never
   // triggers, which is what was happening here.
   // ROUND 2 FIX: see `_threadForActors` above — this used to require the
   // exact original pair to be the scene, which measured ZERO firings across
-  // 60 real seasons. Now any open trust thread involving either actor
+  // 60 real seasons. Now any open trust arc involving either actor
   // drawn into the scene qualifies, and the real partner is read off the
-  // thread's own `parties`.
+  // arc's own `parties`.
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
@@ -503,15 +730,42 @@ registerEvent({
     if (!t || t.parties.length < 2) return 0;
     return heatAt(t, ctx.ep) > 0 ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'trust-late-checkin');
-    const sceneWhy = 'checked in before the day started';
     const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const { thread, cited } = arcAdvanceCiting(api, t, ctx.ep, lineFor(CHECKIN_LINES, `trust-late-checkin|${ctx.ep}`, { a, b }),
-      { source: sceneWhy });
-    return { branch: 'checked-in', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1 };
+    const st = pStats(b);
+    // THE PUBLIC RECORD DECIDES WHETHER THE FOURTH BRANCH EXISTS. `ctx.state`
+    // is a frozen read of the last Round Table's ballots and accusations —
+    // every one of which was read out in front of the room — so an event
+    // gated on it is gated on something both people in this scene watched.
+    // `ctx.state` is keyed on the CONVENED actors, and this event reads its
+    // people off the arc instead, so the state is taken from the source
+    // rather than from the map when the arc's partner was not convened.
+    const bState = ctx.state?.[b] ?? emotionalStateOf(b, ctx.ep);
+    const scores = {
+      'still-good': (st.loyalty / 10) * 0.5 + (st.temperament / 10) * 0.3 + 0.2,
+      'asked-for-a-name': (pStats(a).boldness / 10) * 0.45 + (pStats(a).strategic / 10) * 0.35,
+      'air-in-the-answer': (1 - st.loyalty / 10) * 0.5 + (1 - st.social / 10) * 0.25,
+      'checked-on-them': isNervy(bState) ? (pStats(a).social / 10) * 0.5 + Math.max(0, getBond(a, b)) / 10 * 0.5 : 0,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'asked-for-a-name' ? 'wanted the arrangement to name somebody tonight'
+      : branch === 'air-in-the-answer' ? 'got the right words and not much behind them'
+        : branch === 'checked-on-them' ? 'checked on somebody the room had voted for'
+          : 'checked in before the day started';
+    const bondDelta = branch === 'still-good' ? 1
+      : branch === 'asked-for-a-name' ? 0.5
+        : branch === 'air-in-the-answer' ? -0.5 : 1.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const note = lineFor(CHECKIN_LINES[branch], `trust-late-checkin|${branch}|${ctx.ep}`, { a, b });
+    const { thread, cited } = arcAdvanceCiting(api, t, ctx.ep, note, { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      threadId: thread?.id, cited, bondDelta, state: bState };
   },
 });
 
@@ -692,23 +946,74 @@ registerEvent({
   },
 });
 
-const VOW_LINES = [
-  '{a} and {b} agreed: whatever was said between them stays between them.',
-  '{a} asked {b} never to repeat it, and {b} said they would not, and both of them believed it.',
-  'They drew a line around the conversation, {a} and {b}, and agreed nothing crossed it.',
-  '{b} promised {a} that nobody else would ever hear a word of it, including the parts that were nothing.',
-  'It was a small agreement about a small thing, and {a} and {b} both understood it was not.',
-];
+// ── REWRITE (Task 7 stage 5). Top of the blame table after the `evening`
+// batch: one branch over a five-line pool, on a `rare`-amplified dawn event.
+// The audit's verdict was MERGE (into `trust-late-checkin`); it is rewritten
+// in place instead, because deleting an event costs `dawn` scenes it does not
+// have to spare, and because once BOTH have a real fork they stop being the
+// same scene — a check-in is about whether the arrangement holds, and this is
+// about what the two of them will say if asked.
+//
+// FOUR VOWS, and the interesting ones are the two where the agreement has a
+// shape to it rather than being a handshake:
+//
+//   vowed-silence      — the plain version: nothing leaves the room.
+//   agreed-a-version   — they do not agree to say nothing, they agree what to
+//                        say, which is a much more useful and much more
+//                        incriminating kind of pact.
+//   one-sided-vow      — {a} asks, {b} agrees, and {b} does not ask for the
+//                        same back. The asymmetry is the scene.
+//   would-not-promise  — {b} will not give the promise, and gives a reason,
+//                        and the reason is the good part.
+const VOW_LINES = {
+  'vowed-silence': [
+    '{a} and {b} agreed: whatever was said between them stays between them.',
+    '{a} asked {b} never to repeat it, and {b} said they would not, and both of them believed it.',
+    'They drew a line around the conversation, {a} and {b}, and agreed nothing crossed it.',
+    '{b} promised {a} that nobody else would ever hear a word of it, including the parts that were nothing.',
+    'It was a small agreement about a small thing, and {a} and {b} both understood it was not.',
+    'Neither {a} nor {b} used the word promise. Both of them made one.',
+  ],
+  'agreed-a-version': [
+    '{a} and {b} did not agree to say nothing. {a} and {b} agreed what to say, which is a different animal.',
+    'They worked out, between them, the version of last night that both of them would give if asked.',
+    '"If it comes up," {b} said, "we were in the kitchen." {a} had been about to suggest the same thing.',
+    '{a} and {b} settled on one account and rehearsed the dull half of it twice.',
+    'It stopped being a promise to keep quiet somewhere in the middle and became a script.',
+    '{a} and {b} came out of that conversation with the same story and a slightly worse opinion of themselves.',
+  ],
+  'one-sided-vow': [
+    '{a} asked {b} to keep it. {b} agreed, and did not ask {a} for anything back, and {a} noticed.',
+    '{b} gave the promise easily and would not take one, which {a} could not decide the meaning of.',
+    '"You don’t need to promise me anything," {b} said, which is either generous or a decision {b} has already made.',
+    '{a} came away holding {b}’s word and nothing of {a}’s in {b}’s hands.',
+    'It was meant to be mutual. Only one half of it got said out loud.',
+    '{b} said yes before {a} finished asking, and did not put a single condition on it.',
+  ],
+  'would-not-promise': [
+    '{a} asked {b} to keep it between them and {b} said no, and said why, which was worse than a yes.',
+    '"I’m not promising that," {b} said. "I’m not going to lie to you about what I’d do."',
+    '{b} would not give {a} the sentence {a} came for, and was completely honest about not giving it.',
+    '{a} asked for silence and got an explanation of the circumstances under which {b} would break it.',
+    '{b} refused, kindly, and {a} spent the rest of the day rating the kindness against the refusal.',
+    '"Ask me a smaller thing," {b} said, and {a} did not have a smaller thing.',
+  ],
+};
 
 registerEvent({
   id: 'trust-vow-of-silence',
   // `rare: true` (whole-plan review, finding 5): this gates on a state that is
-  // rare by design, and events.js's guard 2 exists precisely so such an event
+  // rare by design, and events.js’s guard 2 exists precisely so such an event
   // is amplified rather than buried. It was not declared, so it was buried.
   rare: true,
   family: FAMILY,
   window: 'dawn',
   advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous'],
+    voice: ['loyalty', 'strategic', 'boldness'],
+    relationship: ['close-ally', 'neutral'],
+  },
   // ROUND 2 FIX: see `_threadForActors` — this measured ZERO firings across
   // 60 real seasons under the exact-pair gate. Same fix as late-checkin.
   weight(ctx) {
@@ -719,15 +1024,33 @@ registerEvent({
     if (!t || t.parties.length < 2) return 0;
     return heatAt(t, ctx.ep) >= 1 ? 1.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'trust-vow-of-silence');
-    const sceneWhy = 'agreed to keep it between them';
     const t = _threadForActors(FAMILY, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    const advanced = api.advanceArc(t.id, lineFor(VOW_LINES, `trust-vow-of-silence|${ctx.ep}`, { a, b }),
+    const st = pStats(b);
+    const scores = {
+      'vowed-silence': (st.loyalty / 10) * 0.5 + 0.2,
+      'agreed-a-version': (st.strategic / 10) * 0.45 + (st.mental / 10) * 0.2,
+      'one-sided-vow': (st.social / 10) * 0.3 + (1 - st.strategic / 10) * 0.25,
+      'would-not-promise': (st.boldness / 10) * 0.35 + (1 - st.social / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'agreed-a-version' ? 'agreed what the two of them would say if asked'
+      : branch === 'one-sided-vow' ? 'gave a promise and did not take one'
+        : branch === 'would-not-promise' ? 'would not promise to keep it'
+          : 'agreed to keep it between them';
+    const bondDelta = branch === 'vowed-silence' ? 0.5
+      : branch === 'agreed-a-version' ? 1.5 : branch === 'one-sided-vow' ? 1 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const advanced = api.advanceArc(t.id,
+      lineFor(VOW_LINES[branch], `trust-vow-of-silence|${branch}|${ctx.ep}`, { a, b }),
       { source: sceneWhy });
-    api.addBond(a, b, 0.5, { source: sceneWhy });
-    return { branch: 'vowed-silence', pair: [a, b], threadId: advanced?.id, bondDelta: 0.5 };
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      threadId: advanced?.id, bondDelta };
   },
 });
 

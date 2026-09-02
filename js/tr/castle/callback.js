@@ -109,16 +109,75 @@ export function strongestRelation(history) {
   return history[0] || null;
 }
 
-const RECOGNIZED_LINES = [
-  '{a} and {b} clocked each other from a previous season before either one said a word about it.',
-  '{a} knew exactly who {b} was the moment they walked in, and said nothing, and so did {b}.',
-  'Neither {a} nor {b} needed an introduction, and both of them sat through one anyway.',
-  'It took {a} half a second to place {b}, and about the same for {b} to notice being placed.',
-  '{a} and {b} shook hands like strangers in front of a room that had no idea.',
-  'There was a look between {a} and {b} at the door that was several seasons long.',
-  '{a} said "hello" to {b} in a tone that had a whole season folded into it.',
-  '{b} clocked {a} across the hall and went back to their conversation a beat too smoothly.',
-];
+// ── REWRITE (Task 7 stage 5). `callback-recognized:recognized` was on the
+// audit's REWRITE list and seventh on stage 4's blame table. One branch, one
+// pool, on the most-fired event in the callback family.
+//
+// THE RECORD ALREADY DECIDES THE SCENE AND THE OLD VERSION ONLY LET IT
+// DECIDE THE HASH KEY. `strongestRelation(sharedHistory(a, b))` returns what
+// the franchise ledger says these two were to each other — allies, rivals, a
+// showmance, one of them put the other out — and two people who won a season
+// together do not clock each other across a hall the same way two people who
+// ended one badly do. So the ledger chooses the branch SET (the stage-4 rule:
+// the record picks the set, the stats pick within it) and nothing invents an
+// incident the ledger does not carry.
+//
+//   WARM LEDGER (allies / showmance / costars):
+//     picked-it-back-up      — they let it show, and it costs them nothing yet.
+//     left-it-at-the-door    — they agree, silently, to be strangers here.
+//   COLD LEDGER (rivals / a betrayal in either direction):
+//     still-owed             — the recognition is a debt, and both of them know
+//                              which way round it runs.
+//     left-it-at-the-door    — reachable from both, because pretending not to
+//                              know somebody is the one move available to
+//                              anybody who has history of any temperature.
+//   EITHER, ONCE THE ROOM IS INVOLVED:
+//     said-it-to-the-room    — one of them tells the castle they have played
+//                              together, which makes it everybody's fact.
+const RECOGNIZED_LINES = {
+  'picked-it-back-up': [
+    '{a} and {b} clocked each other from a season they both played and neither of them bothered pretending otherwise.',
+    '{a} knew exactly who {b} was the moment they walked in, and said so, and {b} laughed.',
+    'It took {a} half a second to place {b}, and about the same for {b} to be pleased about it.',
+    'There was a look between {a} and {b} at the door that was several seasons long, and a good several.',
+    '{a} and {b} were talking like people who had done this before within about four minutes, because they had.',
+    '{b} said {a}\'s name the way you say the name of somebody you have shared a bad night with.',
+    '{a} got to {b} before anybody else in the castle did, and {b} had been counting on that.',
+    '{a} and {b} did not have to build anything this morning. It was already there and both of them used it.',
+  ],
+  'left-it-at-the-door': [
+    '{a} and {b} shook hands like strangers in front of a room that had no idea.',
+    'Neither {a} nor {b} needed an introduction, and both of them sat through one anyway.',
+    '{b} clocked {a} across the hall and went back to their conversation a beat too smoothly.',
+    '{a} said "hello" to {b} in a tone with nothing at all folded into it, which took work.',
+    '{a} and {b} agreed without a word that the castle did not need to be told what they were to each other.',
+    'Somebody asked whether {a} and {b} had met. Both of them said not really, at the same time.',
+    '{a} and {b} spent the whole of breakfast being carefully unfamiliar with one another.',
+    'It would have cost them nothing to say it. They did not say it, and both of them noticed the other not saying it.',
+  ],
+  'still-owed': [
+    '{a} recognised {b} across the hall and went very still, and it was not a happy stillness.',
+    '{b} knew what {a} was before {a} opened their mouth, and had known since the coach.',
+    '{a} and {b} had unfinished business from a season nobody else in this castle watched, and it walked in with them.',
+    'There is a way of saying somebody\'s name that is not a greeting. {a} used it on {b}.',
+    '{b} smiled at {a} and did not mean any part of it, and {a} understood the whole message.',
+    '{a} looked at {b} for slightly too long, and {b} let them.',
+    'Whatever {a} and {b} had settled last time, it turned out not to be settled.',
+    '{a} said nothing to {b} at all this morning, which was louder than anything {a} could have said.',
+  ],
+  'said-it-to-the-room': [
+    '{a} told the whole table they had played a season with {b}, and watched the room do the arithmetic.',
+    '"We\'ve done this before, {b} and me," {a} said, to everybody, and {b} had not been consulted.',
+    '{a} put the history on the table at breakfast rather than let somebody else find it later.',
+    '{b} would have preferred it kept quiet. {a} said it out loud on the first morning instead.',
+    '{a} announced the connection cheerfully and completely, and made it everybody\'s problem including their own.',
+    'It came out over the toast: {a} and {b}, a whole season, and the room went briefly very interested.',
+    '{a} decided the castle was going to find out anyway and chose the hour it found out in.',
+    '{a} named the season out loud. {b} confirmed it, because there was nothing else to do with it.',
+  ],
+};
+
+const _WARM_RELATIONS = new Set(['allies', 'showmance', 'costars']);
 
 registerEvent({
   id: 'callback-recognized',
@@ -128,20 +187,59 @@ registerEvent({
   // Clocking somebody from a previous season happens before either of them has
   // said a word in THIS one. By the back half everybody has been re-met.
   acts: { early: 1.6, late: 0.5 },
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous'],
+    relationship: ['close-ally', 'rival', 'prior-history', 'romance'],
+    voice: ['boldness', 'social', 'temperament'],
+    knowledge: ['witnessed'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
     if (findOpenThread(FAMILY, [a, b])) return 0;
     return sharedHistory(a, b).length ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'callback-recognized');
-    const sceneWhy = 'recognised each other from a season they both played';
     const [a, b] = ctx.actors;
     const strongest = strongestRelation(sharedHistory(a, b));
-    const t = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(RECOGNIZED_LINES, `callback-recognized|${ctx.ep}|${strongest?.relation || 'none'}`, { a, b }) });
-    return { branch: 'recognized', pair: [a, b], relation: strongest?.relation, threadId: t?.id };
+    const relation = strongest?.relation || 'costars';
+    const warm = _WARM_RELATIONS.has(relation);
+    const st = pStats(a);
+    // THE LEDGER PICKS THE SET. `still-owed` is unreachable off a warm record
+    // and `picked-it-back-up` is unreachable off a cold one — neither person
+    // can be owed something the ledger does not say happened, and neither can
+    // pick up an alliance that was a rivalry.
+    const scores = {
+      'picked-it-back-up': warm ? (st.social / 10) * 0.5 + (st.loyalty / 10) * 0.3 : 0,
+      'still-owed': warm ? 0 : (st.temperament / 10) * 0.2 + 0.5,
+      'left-it-at-the-door': (1 - st.boldness / 10) * 0.5 + (st.strategic / 10) * 0.3,
+      'said-it-to-the-room': (st.boldness / 10) * 0.45 + (st.social / 10) * 0.25,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'still-owed' ? 'recognised somebody they had unfinished business with'
+      : branch === 'left-it-at-the-door' ? 'agreed to pretend they had never met'
+        : branch === 'said-it-to-the-room' ? 'told the room they had played a season together'
+          : 'recognised each other from a season they both played';
+    const bondDelta = branch === 'picked-it-back-up' ? 2
+      : branch === 'still-owed' ? -1.5
+        : branch === 'left-it-at-the-door' ? 0.5 : 0;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy,
+      seed: lineFor(RECOGNIZED_LINES[branch], `callback-recognized|${branch}|${ctx.ep}|${relation}`, { a, b }) });
+    const out = { branch, pair: [a, b], speaker: a, respondent: b,
+      relation: strongest?.relation, threadId: t?.id, bondDelta };
+    // NO CROWD MOMENT ON `said-it-to-the-room`, deliberately. The obvious
+    // colour is `masterful`, and `masterful` is reserved in js/tr/crowd.js
+    // for "a Traitor doing precisely what a Traitor is there to do" — a
+    // Faithful reaches this branch just as often, and paying the same ledger
+    // for both would make that colour's own ledger mean two different things.
+    // The consequence this scene has is the arc and the bond.
+    return out;
   },
 });
 

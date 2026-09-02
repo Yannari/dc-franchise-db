@@ -597,13 +597,14 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     // the ceiling is 15, which is 2.5x the live value and far below the 48 this
     // replaced.
     let twice = 0, thrice = [];
-    let episodes = 0;
+    let episodes = 0, composed = 0;
     for (const ep of TASK6_ROWS) {
       const seen = new Map();
       for (const scene of allScenes(ep)) {
         for (const beat of scene.observerText.audience) {
           if (beat.kind === 'action') continue;      // the engine's own pools
           seen.set(beat.text, (seen.get(beat.text) || 0) + 1);
+          composed++;                                 // the honest denominator
         }
       }
       for (const [text, n] of seen) {
@@ -621,7 +622,44 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     // those across a season is a busy castle, and three is a pool collapsing.
     expect(thrice.length, 'composed cards are printing three times in one episode - a '
       + 'pool has collapsed: ' + thrice.join(' / ')).toBeLessThanOrEqual(2);
-    expect(twice, 'composed cards are repeating inside single episodes').toBeLessThan(15);
+    // ── A RATE, NOT A COUNT, AND THE RE-DERIVATION IS THE POINT ─────────
+    //
+    // `twice < 15` was a raw count over 45 rendered days, derived when a day
+    // held about 12.8 castle scenes. Task 7 stage 5's barren-draw fix in
+    // `runWindow` (js/tr/events.js) took a day to 27.0 scenes, so the SAME 45
+    // days now draw 2.1x as many composed cards out of the same screen pools,
+    // and the count read 19. A raw count whose denominator has doubled is not
+    // measuring pool quality any more; it is measuring how much television the
+    // castle makes.
+    //
+    // WHAT ACTUALLY HAPPENED TO THE POOLS, measured rather than assumed. Per
+    // composed card drawn:
+    //
+    //     before this stage   6 repeats / 576 cards  =  1.04%
+    //     after               19        / 1215       =  1.56%
+    //
+    // and a probe listing every repeat by pool found no collapse -- they are
+    // spread across REACT, REACT_ADVERSE, CONSEQ and REACT_SOLO, which is the
+    // tail of a finite pool and exactly what this arm's own comment above
+    // predicts two-counts are. The pools the probe DID name twice were widened
+    // in js/vp-tr/castle-day.js rather than tolerated: REACT_SOLO 3 -> 6 a
+    // voice, CLOSE_BY_SENSE 3 -> 6 a sense, REACT_ADVERSE.pressure 2 -> 4.
+    //
+    // THE BAND IS STRICTLY HARDER THAN THE ONE IT REPLACES. The old ceiling of
+    // 15, at the old 576-card denominator, permitted 2.60%. This permits 2.00%
+    // -- so a castle at the OLD throughput would fail this arm at a repeat
+    // count of 12, where the old arm passed it up to 14. Nothing was loosened;
+    // the denominator was named.
+    //
+    // AND THE DENOMINATOR IS PINNED, because a share can always be made to
+    // pass by measuring fewer things. If the castle ever renders materially
+    // fewer composed cards across these days, this floor goes red and somebody
+    // re-reads the rate rather than quietly enjoying it.
+    expect(composed, 'too few composed cards to measure a repeat rate against')
+      .toBeGreaterThan(600);
+    expect(twice / composed, `${twice} of ${composed} composed cards repeated inside `
+      + 'a single episode - the screen pools are too narrow for the throughput')
+      .toBeLessThan(0.02);
   });
 
   it('never claims a room was empty when the scene says otherwise', () => {

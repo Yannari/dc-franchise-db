@@ -390,6 +390,14 @@ const GOT_IT_WRONG = {
     'The corridor was empty and {a} stayed in it, because the alternative was going in and being asked about it.',
     '{a} kept coming back to the same thing: {a} had been certain, and certainty had cost somebody the game.',
     'Nobody was going to ask {a} how {a} felt about it, which was the only mercy the evening had offered.',
+    '{a} had been so sure at six o\u2019clock that it had not occurred to {a} to be careful about it.',
+    'Somewhere between the table and the stairs {a} stopped being certain, and there was nothing left to be certain at.',
+    'It is a strange thing to be told you were wrong by somebody who has already left the building.',
+    '{a} thought about the face {gone} had made and decided not to think about it again, and then did.',
+    'The room had voted. {a} had voted. {a} kept trying to make those two facts feel like different sizes.',
+    '{a} counted how many of them had put {gone}\u2019s name down and stopped counting at a number {a} was in.',
+    'There was nobody to apologise to, which {a} found was not the relief it should have been.',
+    '{a} washed a cup that did not need washing for about four minutes, which is a way of not going upstairs.',
   ],
 };
 
@@ -502,6 +510,14 @@ const GOT_IT_RIGHT = {
     'Being right is not the same as being safe, and {a} spent a quiet ten minutes on the difference.',
     '{a} went back over the week with one fact in it that was now certain, and it changed the shape of the rest.',
     'There was nobody in the corridor, which suited {a}, who had a good deal of rearranging to do.',
+    '{a} had been carrying a theory all week and the castle had just handed {a} the proof of it.',
+    'One name off the board and a great many things behind it now made sense, and {a} wanted an hour with that.',
+    '{a} did not celebrate. {a} sat on the stairs and went through the week again with the answer already in it.',
+    'It is a quiet sort of pleasure, being right, and {a} took it somewhere nobody would see it.',
+    '{a} thought about every person who had argued for {gone} and put a small mark against each of them.',
+    'Nothing about the castle had changed and everything about {a}\u2019s map of it had.',
+    '{a} said nothing to anybody, because the moment {a} said it out loud somebody would want the reasoning.',
+    'The reveal made a week of small things line up, and {a} spent the corridor lining them up again to be sure.',
   ],
 };
 
@@ -723,6 +739,14 @@ const LAST_THING = {
     'It is one sentence from somebody who is already gone. {named} could not make it weigh nothing.',
     '{named} counted the faces that had been looking at {gone} and the faces that had turned to look at {named}.',
     'Alone, {named} finally let it land, which is not the same as letting it go.',
+    'A person on their way out the door has nothing left to lose, and {named} kept coming back to that.',
+    '{named} tried out four different reasons {gone} might have picked {named}, and did not like the simplest one.',
+    'It would have been easier if {gone} had been angry. {gone} had not been angry, and that was the problem.',
+    '{named} did the sum that nobody says out loud: how much of tomorrow that one sentence had already spent.',
+    'By the time the corridor lights went off {named} had a plan for the morning and no confidence in it.',
+    '{named} wanted very badly to have said something back, and had not, and now could not.',
+    'There is no answering somebody who has already gone through the door, and {named} tried anyway, out loud, alone.',
+    '{named} went upstairs deciding whether to raise it first thing or let the room forget, and got no further.',
   ],
 };
 
@@ -949,6 +973,14 @@ const EMPTY_SEAT = {
     'It is easier to be sad about somebody when there is nobody there asking what it means.',
     '{a} did not say {gone}’s name to anybody all evening and said it once, alone, on the stairs.',
     'The castle was noisy. {a} found the one corridor that was not and stayed in it.',
+    '{a} kept expecting {gone} to come round the corner, and kept being wrong about it.',
+    'They had been the two who did the washing up. {a} did it alone tonight and took a long time over it.',
+    '{a} sat in the chair next to the one nobody would be in tomorrow and stayed there a while.',
+    'It is a particular kind of tired, losing the one person in a building you did not have to explain yourself to.',
+    '{a} caught themselves about to go and tell {gone} something, twice, in the same hour.',
+    'Nobody in this castle knew what {gone} had been to {a}, and {a} was not about to start telling them.',
+    '{a} had a good four things to be strategic about and could not make any of them matter tonight.',
+    'The room {gone} had slept in had the door shut, and {a} walked past it twice without opening it.',
   ],
 };
 
@@ -1160,6 +1192,14 @@ const GOES_TONIGHT = {
     'Somebody in this building is not coming down tomorrow. {a} could not stop doing the arithmetic on it.',
     '{a} said goodnight to a corridor with nobody in it, out of habit, and heard how it sounded.',
     'There was nothing to decide and nothing to do, so {a} went up, which took longer than it should have.',
+    '{a} brushed their teeth for a very long time, because the alternative was lying down.',
+    'Everybody in this building went to bed knowing one of them would not get up, and {a} thought about that on the landing.',
+    '{a} counted the doors on the way past and could not stop putting odds on each of them.',
+    'The last hour before lights out is the honest one, and {a} spent it not being honest with anybody, including {a}.',
+    '{a} left the landing light on, which nobody does for a reason they would admit to.',
+    'There is a version of this where {a} is the one, and {a} looked at that version for a while before turning over.',
+    '{a} listened for a door and heard nothing at all, which was somehow worse than hearing one.',
+    '{a} had said goodnight to everybody as normally as possible, and that had taken a real effort.',
   ],
 };
 
@@ -1281,6 +1321,14 @@ const WHAT_I_SAID = {
     '{a} could still hear {a}’s own voice saying {them}’s name, which is not a comfortable thing to carry upstairs.',
     'There is a version of that sentence that would have landed better, and {a} found it about an hour late.',
     '{a} counted who had looked up when {a} said it, and could not make the count come out the same twice.',
+    '{a} had gone into that room with three sentences and had used the wrong one.',
+    'It had sounded reasonable in {a}\u2019s head all afternoon and had come out of {a}\u2019s mouth as an accusation.',
+    '{a} kept hearing the pause after it, which had been about a second and had felt like a minute.',
+    'Whatever {them} thought of {a} before tonight, {a} had just changed it, and not in a direction {a} had chosen.',
+    '{a} worked out, too late, exactly which word had done the damage.',
+    'There is a difference between naming somebody and going after them, and {a} was no longer sure which {a} had done.',
+    'Half the room would have forgotten it by morning. {a} could not get past the other half.',
+    '{a} drafted an apology to {them} on the stairs and decided an apology would make it larger.',
   ],
 };
 

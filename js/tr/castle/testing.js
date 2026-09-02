@@ -57,6 +57,12 @@ const ALIBI_CHECK_LINES = {
     'Two people put {b} in the same place at the same time, and {a} had asked them separately.',
     '{a} went looking for a hole in {b}\'s evening and did not find one.',
     '{a} asked around about {b} without ever saying they were asking, and everything came back fine.',
+    'Two separate accounts of {b}’s evening, both dull, both the same, and {a} believed both.',
+    '{a} took the long way round to check {b} and got the boring answer at the end of it.',
+    'There was nothing to find. {a} looked properly and there was nothing to find.',
+    'Somebody put {b} exactly where {b} had said, without being told what {b} had said.',
+    '{a} came back from checking {b} slightly disappointed and rather more comfortable.',
+    'The account survived a person who wanted it not to, which is the strongest kind there is.',
   ],
   bad: [
     '{a} quietly cross-checked {b}\'s story with a third person. It didn\'t quite match.',
@@ -64,6 +70,12 @@ const ALIBI_CHECK_LINES = {
     'The times were nearly right. Nearly was the problem, and {a} noticed it.',
     '{b}\'s version had one person in it who did not remember being there, and {a} had asked them first.',
     'Somebody else put {b} somewhere {b} had not mentioned, and {a} did not point that out.',
+    'The two accounts of {b}’s evening agreed about everything except the part {a} cared about.',
+    '{a} got a different room out of the third person and kept both rooms.',
+    'It was a small gap. {a} has learned that they are all small gaps.',
+    'Nobody could put {b} anywhere for about forty minutes, and {b} had been very specific about those forty minutes.',
+    '{a} asked twice, in two different ways, and got two different evenings.',
+    'The third person hesitated before answering about {b}, and {a} counted the hesitation as well.',
   ],
 };
 
@@ -125,16 +137,36 @@ const REVERSE_PSYCH_LINES = {
 
 const HYPOTHETICAL_LINES = {
   reassured: [
-    '{a} asked {b} what they\'d do if {a} got banished next. {b}\'s answer landed as sincere.',
-    '"If it\'s me tomorrow," said {a}, and {b} answered the whole question, properly.',
+    '{a} asked {b} what they would do if {a} got banished next. {b}’s answer landed as sincere.',
+    '"If it’s me tomorrow," said {a}, and {b} answered the whole question, properly.',
     '{a} put the worst version of tomorrow to {b}, and {b} did not flinch from it.',
     '{b} told {a} exactly who they would go after, and it was believable.',
+    '{a} asked the frightening question and {b} answered it like it was an ordinary one.',
+    '{b} did not need the hypothetical explained twice, and gave {a} a name inside a minute.',
   ],
   hedged: [
-    '{a} asked {b} what they\'d do if {a} got banished next. {b} hedged, and {a} noticed the hedge.',
+    '{a} asked {b} what they would do if {a} got banished next. {b} hedged, and {a} noticed the hedge.',
     '{a} asked a direct question about tomorrow and got a paragraph about today.',
     '{b} said it would not come to that, twice, and did not say what they would do if it did.',
     '{b} answered around the edges of it, and {a} let them, and remembered.',
+    '{a} got a very warm answer with no information anywhere in it.',
+    '{b} agreed with the premise, agreed with the stakes, and would not finish the sentence.',
+  ],
+  'asked-it-back': [
+    '{a} asked {b} what {b} would do. {b} asked {a} the same thing, first, and waited.',
+    '"You go," {b} said. "You tell me what you’d do, and then I’ll tell you." {a} had not planned for that.',
+    '{b} recognised the shape of the question and handed it straight back across the table.',
+    '{a} ended the conversation having answered more of it than {b} had.',
+    '{b} would not be measured without measuring {a} at the same time, and said so pleasantly.',
+    'It stopped being a test about halfway through and turned into two people testing each other.',
+  ],
+  'made-a-condition': [
+    '{b} said yes, and then said what it would take, and {a} had not expected a price.',
+    '"I would," {b} said. "If you’d told me about the other thing first." {a} took that in.',
+    '{b} answered {a}’s hypothetical with a real one, and there were terms in it.',
+    '{a} got a commitment out of {b} with a condition bolted onto the end of it.',
+    '{b} would do it. {b} named exactly what {a} would owe for it, out loud, without embarrassment.',
+    'It was not a no. It was a yes with a number attached, and {a} spent the evening on the number.',
   ],
 };
 
@@ -145,6 +177,12 @@ const DOUBLE_CHECK_LINES = {
     'Second telling, same order, same details. {a} had been hoping for otherwise.',
     '{b} retold it with a shrug and got every hour of it right.',
     '{a} asked for it again out of order and {b} reassembled it without a wobble.',
+    '{b} told it the second time slightly more briefly and did not lose a single thing out of it.',
+    '{a} was hoping for a seam. {b} does not appear to have any.',
+    'Same hours, same order, same shrug at the end. {a} put the question away.',
+    '{b} answered a question {b} had already answered without once pointing out that {b} had.',
+    'It came out identically, which either means it is true or means {b} is very good.',
+    '{a} listened for the rehearsed bit and could not hear one.',
   ],
   inconsistent: [
     '{a} asked {b} to walk through their morning again, and it came out different the second time.',
@@ -152,6 +190,12 @@ const DOUBLE_CHECK_LINES = {
     '{b} moved half an hour around between the two tellings and did not notice doing it.',
     '{a} asked again and got a tidier story, which is worse than a messier one.',
     'The second version was missing the one detail {a} had actually been listening for.',
+    '{b} added something the second time that had not been there, and did not notice adding it.',
+    'The first telling had a person in it. The second one did not, and {a} had been waiting for that person.',
+    '{b} got the order wrong and corrected it, twice, and the correction was the interesting part.',
+    'It was a better story the second time, which is not what happens to true ones.',
+    '{a} asked for it out of order and {b} could not reassemble it, and both of them heard that.',
+    '{b} said that {a} had already asked, which is true and is also not an answer.',
   ],
 };
 
@@ -170,13 +214,40 @@ const SILENCE_LINES = {
   ],
 };
 
-const COLD_READ_LINES = [
-  '{a} dropped a leading line about {c} into the conversation, purely to watch what crossed {b}\'s face.',
-  '{a} said something almost true about {c} and spent the whole sentence watching {b} instead.',
-  '{a} put {c}\'s name down in front of {b} like a card, face up, and waited.',
-  '{a} pretended to have heard something about {c}. {b}\'s reaction was the information {a} was after.',
-  '{a} mentioned {c} in the wrong context on purpose, and read {b} instead of listening to them.',
-];
+const COLD_READ_LINES = {
+  'read-it-right': [
+    '{a} dropped a leading line about {c} into the conversation purely to watch what crossed {b}’s face, and something did.',
+    '{a} said something almost true about {c}, watched {b} instead of listening, and got exactly what {a} came for.',
+    '{a} put {c}’s name down in front of {b} like a card, face up, and {b} looked at it a beat too long.',
+    '{a} pretended to have heard something about {c}. {b}’s reaction was the information, and it was good information.',
+    '{a} guessed at what {b} thought of {c} and said it as a statement, and {b} agreed before thinking about why {a} knew.',
+    '{a} mentioned {c} in the wrong context on purpose and read {b} instead of listening to them, and read {b} correctly.',
+  ],
+  'read-it-wrong': [
+    '{a} dropped {c}’s name in front of {b} to see what happened, and what happened was nothing at all.',
+    '{a} was certain {b} had a problem with {c}. {b} does not have a problem with {c}, and did not say so.',
+    '{a} read the pause as meaning something. The pause meant {b} was thinking about the washing up.',
+    '{a} came away from that conversation with a read on {b} and {c} that was confidently the wrong way round.',
+    '{a} watched {b} very carefully and drew a conclusion, and nobody in this castle is ever going to correct it.',
+    '{b} gave {a} a completely ordinary reaction and {a} decided it was not one.',
+  ],
+  'said-it-aloud': [
+    '{a} did the read on {b} about {c} and then, rather than keep it, told {b} what {a} had just done.',
+    '"I was watching you, just then," {a} admitted, which is not how this is supposed to work.',
+    '{a} got the information and immediately handed it back, because {a} could not do the other thing to {b}.',
+    '{a} explained the trick to {b} halfway through performing it, and both of them found that funny.',
+    '{a} said {c}’s name to read {b} and then told {b} that was why, and {b} respected it.',
+    'It stopped being a test the moment {a} said out loud that it was one, and {a} said so on purpose.',
+  ],
+  'kept-it': [
+    '{a} read {b} on {c}, got a clear answer, and gave {b} absolutely nothing back.',
+    '{b} answered a question {b} had not realised was a question, and {a} moved the conversation on.',
+    '{a} put {c}’s name in front of {b}, took what came off {b}’s face, and thanked {b} for nothing.',
+    '{b} came out of that conversation feeling vaguely used and unable to point at the moment.',
+    '{a} took the read upstairs, unshared, and {b} noticed the not-sharing without noticing the read.',
+    '{a} paid nothing for what {a} got, and {b} worked out later that {a} had not.',
+  ],
+};
 
 // -- TASK 7 STAGE 4: REWRITTEN OFF THE AUDIT'S REWRITE LIST ------------
 //
@@ -394,6 +465,16 @@ registerEvent({
 });
 
 registerEvent({
+  // ── REWRITE (Task 7 stage 5) ────────────────────────────────────────
+  //
+  // Two branches, `reassured` and `hedged`, chosen by one coin against
+  // loyalty — the audit’s "2 branches, short of four materially different
+  // paths" — and between them 17 of 287 loud seasons once `evening` opened up.
+  //
+  // FOUR ANSWERS TO A HYPOTHETICAL, and the two new ones are the two a real
+  // person actually gives: they ask it back, or they answer it with a price
+  // on it. Both are refusals of the frame, and neither is the same scene as
+  // agreeing or waffling.
   id: 'testing-hypothetical-loyalty-question',
   // The direction is a property of THIS event, not of the sentence it happens
   // to draw: the pair is [the one running the test, the one being tested].
@@ -401,6 +482,11 @@ registerEvent({
   roles: 'initiator-first',
   family: FAMILY,
   window: 'evening',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'strategic', 'boldness'],
+    relationship: ['close-ally', 'neutral'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -408,19 +494,37 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'testing-hypothetical-loyalty-question');
-    const sceneWhy = 'asked a hypothetical and watched the answer';
     const [a, b] = ctx.actors;
     const st = pStats(b);
-    const reassures = rng() < Math.max(0.15, Math.min(0.9, st.loyalty / 10));
-    const bondDelta = reassures ? 1 : -0.5;
-    api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = lineFor(HYPOTHETICAL_LINES[reassures ? 'reassured' : 'hedged'],
-      `testing-hypothetical-loyalty-question|${ctx.ep}|${reassures}`, { a, b });
+    const scores = {
+      reassured: (st.loyalty / 10) * 0.6 + 0.1,
+      hedged: (1 - st.loyalty / 10) * 0.4 + (1 - st.boldness / 10) * 0.25,
+      'asked-it-back': (st.boldness / 10) * 0.4 + (st.intuition / 10) * 0.3,
+      'made-a-condition': (st.strategic / 10) * 0.45 + (st.mental / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'asked-it-back' ? 'answered a hypothetical with the same hypothetical'
+      : branch === 'made-a-condition' ? 'answered a hypothetical with a price on it'
+        : 'asked a hypothetical and watched the answer';
+    const bondDelta = branch === 'reassured' ? 1
+      : branch === 'hedged' ? -0.5 : branch === 'asked-it-back' ? 0 : 0.5;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const line = lineFor(HYPOTHETICAL_LINES[branch],
+      `testing-hypothetical-loyalty-question|${branch}|${ctx.ep}`, { a, b });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line });
-    return { branch: reassures ? 'reassured' : 'hedged', pair: [a, b], threadId: t?.id, bondDelta };
+    // ON `asked-it-back` THE ANSWERER TAKES THE SCENE OVER, and the
+    // `roles: 'initiator-first'` declaration above would hand the reaction
+    // card to the wrong one. `speaker`/`respondent` on the result takes
+    // precedence — see `sceneSpeakers`, js/tr/events.js, and the identical
+    // note on `testing-reverse-psychology` above.
+    const bTakesIt = branch === 'asked-it-back';
+    return { branch, pair: [a, b], speaker: bTakesIt ? b : a, respondent: bTakesIt ? a : b,
+      threadId: t?.id, bondDelta };
   },
 });
-
 registerEvent({
   id: 'testing-double-check-story',
   // The direction is a property of THIS event, not of the sentence it happens
@@ -489,6 +593,32 @@ registerEvent({
 });
 
 registerEvent({
+  // ── REWRITE (Task 7 stage 5) ────────────────────────────────────────
+  //
+  // The audit’s verdict was REWRITE, and there were two things wrong rather
+  // than one. The fork was in the wording — one branch, `cold-read`, over one
+  // pool — and the effect was `api.addBond(a, b, 0)`, a delta of exactly
+  // zero, which the scene API refuses with a `blockedBy: 'no-op'` receipt. So
+  // this event fired, printed a sentence, and changed nothing about the
+  // season at all.
+  //
+  // FOUR OUTCOMES, AND A COLD READ IS THE ONE MOVE IN THE POOL THAT CAN BE
+  // WRONG WITHOUT ANYBODY FINDING OUT. That asymmetry is the event:
+  //
+  //   read-it-right  — {a} says the thing about {c} that {b} had not said,
+  //                    and {b} confirms it. {a} has a real read now.
+  //   read-it-wrong  — {a} does the same and is simply wrong, and {b} does not
+  //                    correct it, which is worse for {a} than being corrected.
+  //   said-it-aloud  — {a} tells {b} what {a} has just done, which turns a
+  //                    private read into a shared one and costs {a} the edge.
+  //   kept-it        — {a} gets the read and gives {b} nothing, and {b} feels
+  //                    the giving-nothing.
+  //
+  // NOTHING HERE READS ALIGNMENT. `suspicion(a, c)` is what {a} already
+  // thinks, which is the same pure read `trust-trade-reads` makes, and
+  // `read-it-right` is scored on {a}’s intuition rather than on whether {c}
+  // is in fact a Traitor. Being right about somebody’s MOOD is not being
+  // right about their role, and this event claims only the first.
   id: 'testing-cold-read-check',
   // The direction is a property of THIS event, not of the sentence it happens
   // to draw: the pair is [the one running the test, the one being tested].
@@ -497,6 +627,11 @@ registerEvent({
   family: FAMILY,
   window: 'evening',
   rare: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['intuition', 'social', 'strategic'],
+    knowledge: ['incomplete', 'misinformed', 'witnessed'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a] = ctx.actors;
@@ -504,17 +639,37 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'testing-cold-read-check');
-    const sceneWhy = 'read them cold and said nothing about it';
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others.length ? others : [b]);
-    const t = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(COLD_READ_LINES, `testing-cold-read-check|${ctx.ep}`, { a, b, c: target }) });
-    api.addBond(a, b, 0, { source: sceneWhy });
-    return { branch: 'cold-read', pair: [a, b], target, threadId: t?.id };
+    const sa = pStats(a);
+    const scores = {
+      'read-it-right': (sa.intuition / 10) * 0.6 + (sa.social / 10) * 0.2,
+      'read-it-wrong': (1 - sa.intuition / 10) * 0.5 + 0.2,
+      'said-it-aloud': (sa.social / 10) * 0.4 + Math.max(0, getBond(a, b)) / 10 * 0.3,
+      'kept-it': (sa.strategic / 10) * 0.45 + (1 - sa.social / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'read-it-wrong' ? 'read them cold and got it wrong'
+      : branch === 'said-it-aloud' ? 'said the read out loud instead of keeping it'
+        : branch === 'kept-it' ? 'took a read and gave nothing back for it'
+          : 'read them cold and said nothing about it';
+    // EVERY BRANCH MOVES SOMETHING NOW. The old version’s zero delta was
+    // refused by the scene API outright, so the event had no consequence at
+    // all; these are small on purpose, because a cold read is a small move.
+    const bondDelta = branch === 'read-it-right' ? 0.5
+      : branch === 'read-it-wrong' ? -0.5 : branch === 'said-it-aloud' ? 1 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy,
+      seed: lineFor(COLD_READ_LINES[branch], `testing-cold-read-check|${branch}|${ctx.ep}`,
+        { a, b, c: target }) });
+    return { branch, pair: [a, b], speaker: a, respondent: b, target,
+      threadId: t?.id, bondDelta };
   },
 });
-
 registerEvent({
   id: 'testing-follow-through-check',
   // The direction is a property of THIS event, not of the sentence it happens

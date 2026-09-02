@@ -222,24 +222,79 @@ registerEvent({
   },
 });
 
-const SHOWMANCE_FORM_LINES = [
-  '{a} and {b} stopped pretending it was nothing. The castle has a showmance now.',
-  'By breakfast everybody knew about {a} and {b}, and {a} and {b} had stopped minding.',
-  '{a} and {b} arrived together and left together and did not explain either.',
-  'It stopped being deniable somewhere last night. {a} and {b} are a thing the castle has to plan around now.',
-  'Nobody announced anything. {a} and {b} simply stopped sitting apart.',
-];
+// ── REWRITE (Task 7 stage 5). The audit’s verdict was REWRITE ("one branch
+// — the fork is in the wording"), and once `evening` opened up it went to
+// second on the blame table at 19 of 271 loud seasons.
+//
+// A SHOWMANCE BECOMING PUBLIC IS AN EVENT WITH A ROOM IN IT, and the room is
+// where the fork belongs. Four ways a castle finds out, and they cost the
+// couple four different amounts:
+//
+//   stopped-hiding-it  — they simply stop sitting apart, and the castle
+//                        absorbs it over a morning.
+//   the-room-said-it   — somebody else says it out loud first, at the table,
+//                        and the two of them are answering rather than telling.
+//   told-one-person    — they choose who finds out first, which is a strategic
+//                        act as much as a romantic one.
+//   agreed-to-hide-it  — it is a showmance and they decide the castle does not
+//                        get to know, which is the version that costs the most
+//                        to maintain.
+//
+// EVERY BRANCH STILL CLOSES THE SPARK AND OPENS THE SHOWMANCE. The fork is in
+// how the castle learns, never in whether the thing happened — an event that
+// sometimes declines to do what it is named for is the silent-branch defect
+// the prose suite has a rule about, and the sibling break-up event carries the
+// same note for the same reason.
+const SHOWMANCE_FORM_LINES = {
+  'stopped-hiding-it': [
+    '{a} and {b} stopped pretending it was nothing. The castle has a showmance now.',
+    'By breakfast everybody knew about {a} and {b}, and {a} and {b} had stopped minding.',
+    '{a} and {b} arrived together and left together and did not explain either.',
+    'It stopped being deniable somewhere last night. {a} and {b} are a thing the castle has to plan around now.',
+    'Nobody announced anything. {a} and {b} simply stopped sitting apart.',
+    'There was no moment. There was a week of moments, and this was the one after which nobody bothered asking.',
+  ],
+  'the-room-said-it': [
+    'Somebody said it out loud at the table before {a} or {b} had, and both of them went red and neither denied it.',
+    '"So how long has that been going on," somebody asked the room, cheerfully, and {a} and {b} had to answer it.',
+    '{a} and {b} did not get to choose the hour. The castle chose it, over dinner, in front of everybody.',
+    'It was announced for them. {b} laughed. {a} did not, quite, and the room noticed which.',
+    'The joke went round the table twice before {a} and {b} realised it had stopped being a joke.',
+    '{a} and {b} had a plan for telling people and the room got there first.',
+  ],
+  'told-one-person': [
+    '{a} and {b} picked one person to tell first, and picked carefully, and told them together.',
+    'Before it got out on its own, {a} and {b} decided who was going to hear it from them.',
+    'It is a strategic decision as much as anything else, and {a} and {b} made it like one.',
+    '{a} and {b} chose the one person in this castle it would be useful to have known first.',
+    'They told one person and asked them to keep it, which is the same as telling four.',
+    '{a} and {b} worked out who they could afford to have know, and went and found them.',
+  ],
+  'agreed-to-hide-it': [
+    '{a} and {b} agreed it was real and agreed the castle was not going to be told, and shook on the second part.',
+    'It became a thing that night, and it became a secret in the same conversation.',
+    '{a} said the room would use it. {b} agreed, and so they arranged to be strangers in daylight.',
+    '{a} and {b} decided that whatever this was, it was going to cost less if nobody knew.',
+    'They have a showmance and a rule about it, and the rule is that there is no showmance.',
+    '{a} and {b} started sitting further apart than they had before, deliberately, which fools nobody for long.',
+  ],
+};
 
 registerEvent({
   id: 'romance-showmance-forms',
   family: FAMILY,
   window: 'evening',
   rare: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'backfire'],
+    voice: ['boldness', 'strategic', 'social'],
+    relationship: ['romance'],
+  },
   // NOT THE SAME DAY (whole-plan review, F7). Every band in this plan measures
-  // a thread's length in BEATS and none in EPISODES, so a spark that becomes a
+  // an arc’s length in BEATS and none in EPISODES, so a spark that becomes a
   // showmance in the same evening it was struck reads as healthy accumulation
   // - two beats - while being an arc with no time in it. 28.6% of escalations
-  // were same-day. A castle where people are in each other's company all day
+  // were same-day. A castle where people are in each other’s company all day
   // can move fast, but it cannot move from "neither of them planned it that
   // way" to a thing the castle has to plan around between two draws of the same
   // window.
@@ -249,16 +304,32 @@ registerEvent({
     if (!t || ctx.ep <= t.openedEp) return 0;
     return 6 + heatAt(t, ctx.ep) * 6;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-showmance-forms');
-    const sceneWhy = 'they stopped pretending it was nothing';
     const spark = _threadForActors(SPARK_KIND, ctx.actors, ctx.ep);
     const [a, b] = spark.parties;
+    const sa = pStats(a), sb = pStats(b);
+    const scores = {
+      'stopped-hiding-it': (sa.boldness / 10) * 0.3 + (sb.boldness / 10) * 0.3 + 0.2,
+      'the-room-said-it': (sa.social / 10) * 0.3 + (sb.social / 10) * 0.3,
+      'told-one-person': (sa.strategic / 10) * 0.35 + (sb.social / 10) * 0.2,
+      'agreed-to-hide-it': (sa.strategic / 10) * 0.25 + (1 - sb.boldness / 10) * 0.35,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'the-room-said-it' ? 'had the room say it out loud before they did'
+      : branch === 'told-one-person' ? 'chose who found out about them first'
+        : branch === 'agreed-to-hide-it' ? 'agreed the castle was not going to be told'
+          : 'they stopped pretending it was nothing';
     api.resolveArc(spark.id, 'became-showmance', { source: sceneWhy });
-    api.addBond(a, b, 2, { source: sceneWhy });
-    const t = api.openArc(SHOWMANCE_KIND, [a, b],
-      { source: sceneWhy, seed: lineFor(SHOWMANCE_FORM_LINES, `romance-showmance-forms|${ctx.ep}`, { a, b }) });
-    return { branch: 'showmance-formed', pair: [a, b], threadId: t?.id, bondDelta: 2 };
+    const bondDelta = branch === 'agreed-to-hide-it' ? 2.5
+      : branch === 'the-room-said-it' ? 1 : 2;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(SHOWMANCE_KIND, [a, b], { source: sceneWhy,
+      seed: lineFor(SHOWMANCE_FORM_LINES[branch], `romance-showmance-forms|${branch}|${ctx.ep}`, { a, b }) });
+    return { branch, pair: [a, b], threadId: t?.id, bondDelta };
   },
 });
 
@@ -296,19 +367,68 @@ registerEvent({
   },
 });
 
-const JEALOUSY_LINES = [
-  '{a} didn\'t love how much time {b} was spending with {c}, and said so.',
-  '{a} asked what {b} and {c} had been talking about for that long, and did not like being the kind of person who asks.',
-  '{b} came back from a conversation with {c} to find {a} had been counting the minutes.',
-  '{a} made a joke about {c} that was not a joke, and {b} heard which one it was.',
-  'It was not about {c} at all, and both {a} and {b} knew that, and they had the row anyway.',
-];
+const JEALOUSY_LINES = {
+  'said-it-out-loud': [
+    '{a} did not love how much time {b} was spending with {c}, and said so.',
+    '{a} asked what {b} and {c} had been talking about for that long, and did not like being the kind of person who asks.',
+    '{b} came back from a conversation with {c} to find {a} had been counting the minutes, and being told so.',
+    'It was not about {c} at all, and both {a} and {b} knew that, and they had the row anyway.',
+    '"I’m going to say it badly," {a} said, and did, and {b} let {a} finish.',
+    '{a} put it plainly to {b}: not jealous, exactly, but not comfortable, and here is why.',
+  ],
+  'swallowed-it': [
+    '{a} watched {b} and {c} for most of an evening and said nothing at all about it.',
+    '{a} decided that saying it would be worse than thinking it, and thought it for three hours.',
+    '{b} had no idea. {a} intended to keep it that way and was already failing.',
+    '{a} made a joke about {c} that was not a joke, and {b} did not hear which one it was.',
+    'It sat in {a} all evening and {a} took it to bed rather than to {b}.',
+    '{a} was perfectly pleasant to {b} about {c} and was not, underneath, in the slightest.',
+  ],
+  'made-it-strategy': [
+    '{a} told {b} that {c} was worth watching, and about a third of that was strategy.',
+    '{a} turned an evening of watching {b} and {c} into a very persuasive case against {c}.',
+    'It came out as a read, complete with reasons, and {b} could not tell where the read ended.',
+    '{a} would not say "I did not like that". {a} said "{c} is playing you", which is a different sentence.',
+    '{a} made {c} into a problem for the two of them rather than a problem for {a}, which is neater and worse.',
+    '{b} agreed that {c} was worth keeping an eye on, and never found out why {a} had raised it.',
+  ],
+  'went-to-them': [
+    '{a} did not take it to {b}. {a} took it to {c}, in a corridor, and it did not go well.',
+    '{a} asked {c} directly what {c} thought {c} was doing, which {c} had not been expecting.',
+    'It was {c} who got the conversation, not {b}, and {c} had done nothing to earn it.',
+    '{a} went round {b} entirely and had it out with {c}, and now three people have a problem.',
+    '"Just so we understand each other," {a} said to {c}, and {c} understood rather more than {a} meant.',
+    '{c} came away from that corridor with something about {a} that {c} had not had an hour before.',
+  ],
+};
 
 registerEvent({
+  // ── REWRITE (Task 7 stage 5). One branch, one pool, fifth on the blame
+  // table. The premise is right and the outcome was fixed: somebody was
+  // always jealous and the bond always went down by one.
+  //
+  // FOUR THINGS THAT HAPPEN WHEN A THIRD PERSON GETS BETWEEN A COUPLE IN A
+  // CASTLE, and only one of them is a row. The fork is the WATCHER’s, because
+  // the person being watched has not done anything yet:
+  //
+  //   said-it-out-loud — it becomes a conversation, and conversations about
+  //                      this cost something even when they go well.
+  //   swallowed-it     — nothing is said, and it is still there in the morning.
+  //   made-it-strategy — the jealousy is real and gets dressed up as a read on
+  //                      the third person, which is the castle’s favourite
+  //                      way of not saying a thing.
+  //   went-to-them     — the watcher goes to the THIRD person rather than the
+  //                      partner, which is a different scene entirely and the
+  //                      one most likely to end badly for everybody.
   id: 'romance-jealousy-third-party',
   family: FAMILY,
   window: 'evening',
   rare: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['boldness', 'temperament', 'strategic'],
+    relationship: ['romance', 'rival'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -316,18 +436,42 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-jealousy-third-party');
-    const sceneWhy = 'a third person came between them';
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const third = pick(rng, others.length ? others : [a]);
-    api.addBond(a, b, -1, { source: sceneWhy });
-    const openedT = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(JEALOUSY_LINES, `romance-jealousy-third-party|${ctx.ep}`, { a, b, c: third }) });
-    return { branch: 'jealousy', pair: [a, b], third, threadId: openedT?.id, bondDelta: -1 };
+    const sa = pStats(a);
+    const scores = {
+      'said-it-out-loud': (sa.boldness / 10) * 0.45 + (sa.social / 10) * 0.2,
+      'swallowed-it': (1 - sa.boldness / 10) * 0.45 + (sa.temperament / 10) * 0.2,
+      'made-it-strategy': (sa.strategic / 10) * 0.5 + (sa.mental / 10) * 0.15,
+      'went-to-them': (sa.boldness / 10) * 0.3 + (1 - sa.temperament / 10) * 0.35,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'swallowed-it' ? 'said nothing about it and did not stop noticing'
+      : branch === 'made-it-strategy' ? 'turned being jealous into a read on somebody'
+        : branch === 'went-to-them' ? 'took it to the third person instead of the partner'
+          : 'a third person came between them';
+    // `went-to-them` is the one branch whose cost lands somewhere other than
+    // the couple, so it is the one that moves a different pair’s bond.
+    const bondDelta = branch === 'said-it-out-loud' ? -1
+      : branch === 'swallowed-it' ? -0.5 : branch === 'made-it-strategy' ? -1.5 : -0.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    let thirdDelta = 0;
+    if (branch === 'went-to-them') {
+      thirdDelta = -2;
+      api.addBond(a, third, thirdDelta, { source: sceneWhy });
+    }
+    const openedT = api.openArc(FAMILY, [a, b], { source: sceneWhy,
+      seed: lineFor(JEALOUSY_LINES[branch], `romance-jealousy-third-party|${branch}|${ctx.ep}`,
+        { a, b, c: third }) });
+    return { branch, pair: [a, b], speaker: a, respondent: b, third,
+      threadId: openedT?.id, bondDelta, thirdDelta };
   },
 });
-
 // -- TASK 7 STAGE 4: REWRITTEN OFF THE AUDIT'S REWRITE LIST ------------
 //
 // One branch (`broke-up`), and every one of its five lines was the SAME

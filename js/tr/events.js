@@ -557,6 +557,12 @@ export function pickEvent(ctx, rng) {
 // still runs out before the last few windows get a turn — that is the
 // budget being small, not the rule being unfair, and it happens on a
 // minority of rounds since the total is redrawn 4-8 every round.
+/**
+ * How many draws in a row must find nothing before a window is treated as
+ * finished. See the long note in `runWindow`, which carries the measurement.
+ */
+const BARREN_DRAWS_BEFORE_DONE = 3;
+
 const ROUND_BUDGET_MIN = 4;
 const ROUND_BUDGET_MAX = 8; // inclusive
 
@@ -799,13 +805,70 @@ export function runWindow(window, ep, rng) {
   budget.windowsLeft = Math.max(0, (budget.windowsLeft ?? windowsLeft) - 1);
 
   let drawnHere = 0;
+  // ── A BARREN DRAW IS NOT AN EXHAUSTED WINDOW (Task 7 stage 5) ─────────
+  //
+  // This loop used to `break` the moment one draw found nothing eligible,
+  // which conflates two different statements: "the people this draw convened
+  // have nothing to do in this window" and "this window is finished". They
+  // come apart because `_sceneActors` convenes ONE person about 40% of the
+  // time and most of the pool is written for two, so a single solo draw threw
+  // away the whole rest of the window's budget.
+  //
+  // MEASURED, per (window, draw shape), over 60 seasons — the mean number of
+  // events with a positive weight facing one draw:
+  //
+  //     window          solo    pair
+  //     dawn            2.02    6.52
+  //     morning         0.94    7.49
+  //     journey-out     0.64    5.02
+  //     journey-back    2.53    6.81
+  //     evening         0.51    8.49     <- worst, and the largest budget
+  //     after-table     2.31    8.07
+  //     night           3.30    2.78
+  //
+  // `evening` owns the whole of the `private-strategy` phase (js/tr/castle/
+  // phases.js), so its cap is that phase's entire 6-9 budget — and it was
+  // delivering 1.98 scenes an episode, because the first solo draw ended it.
+  // The other five windows lost budget the same way in smaller amounts.
+  //
+  // So a barren draw is SKIPPED and the window carries on. The counter is
+  // what keeps "finished" reachable: three consecutive barren draws is real
+  // evidence there is nothing left for anybody, and it also guarantees
+  // termination, since each retry consumes rng and nothing else would stop
+  // the loop on a genuinely empty window.
+  //
+  // WHAT IT IS WORTH, measured on 150 seeded seasons of the 20-player
+  // reachability fixture, with no content change of any kind:
+  //
+  //     break (before)          19.107 scenes/episode
+  //     skip, limit 2           24.111
+  //     skip, limit 3           25.515   <- shipped
+  //     skip, limit 5           28.104
+  //     skip, limit 8           27.919   (the phase budgets bind; it saturates)
+  //
+  // THREE AND NOT FIVE, DELIBERATELY. Five lands nearer stage 1's 28.5 target
+  // and inside the same band, and it costs more: every extra scene an episode
+  // is another chance for a narrow line pool to repeat inside a season, which
+  // is the defect tests/tr-castle-prose.test.js measures and the one this
+  // stage exists to reduce. Three clears the design's >=25 floor with margin
+  // and leaves the rest of the distance to be bought with content, where it
+  // does not have to be paid for twice.
+  //
+  // It takes no draw of the GAME rng — `runWindow` is handed the castle
+  // layer's own stream (see `runCastlePhase`, js/tr/castle/phases.js) — so no
+  // murder, ballot or mission draw moves because of it.
+  let barren = 0;
   while (drawnHere < cap && budget.used < budget.total) {
     // A fresh ctx (and fresh actors) per draw, not one shared ctx for the
     // whole window — see _sceneActors.
     const actors = _sceneActors(living, rng, ep);
     const ctx = { ep, window, act, living, actors, state: _stateFor(actors) };
     const result = pickEvent(ctx, rng);
-    if (!result) break; // nothing eligible left for this window right now
+    if (!result) {
+      if (++barren >= BARREN_DRAWS_BEFORE_DONE) break;
+      continue;
+    }
+    barren = 0;
     fired.push(result);
     budget.used++;
     drawnHere++;

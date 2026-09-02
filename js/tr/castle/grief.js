@@ -66,11 +66,21 @@ registerEvent({
   },
 });
 
-// Two SHAPES here, pair and solo, and each had exactly one sentence in it.
-// `{n}` is how many are left, which is the only thing the beat is about.
+// ── REWRITE (Task 7 stage 5). `grief-headcount` had two branches and they
+// were SHAPES, not outcomes: `headcount-pair` and `headcount-solo` are the
+// same beat with a different number of people watching it. `headcount-solo`
+// was the ninth-loudest repeat in the pool. So the shape stays (a solo draw
+// still gets a solo scene) and a real fork goes on top of it: what somebody
+// does once they have the number.
+//
+// THE RECORD IS THE NUMBER ITSELF — `ctx.living.length`, which every person
+// in the castle can arrive at by looking round the table, and which is the
+// only fact any branch here asserts. What varies is whether it gets said out
+// loud, refused, turned into a list of who is left that they would trust, or
+// counted against the number they started with.
 const HEADCOUNT_LINES = {
-  pair: [
-    '{a} said it out loud so {b} didn\'t have to: {n} of them left.',
+  'said-the-number': [
+    '{a} said it out loud so {b} did not have to: {n} of them left.',
     '{a} got to {n} and stopped. {b} had got there first and had not wanted to be the one to say it.',
     '"{n}," said {a}, to nobody in particular, and {b} did not correct them.',
     '{b} watched {a} count the room on their fingers and get to {n} both times.',
@@ -79,15 +89,37 @@ const HEADCOUNT_LINES = {
     'Neither {a} nor {b} needed to count. Both of them did, and both of them got {n}.',
     '{a} started to say how many were left, stopped, and {b} finished it: {n}.',
   ],
-  solo: [
+  'left-it-unsaid': [
+    '{b} asked {a} how many were left and {a} would not answer, which was its own answer.',
+    '{a} began to count out loud and {b} put a hand up and stopped them at four.',
+    '"Don\'t," {b} said, before {a} had got the number out, and {a} did not.',
+    '{a} knew the number and {b} knew the number and neither of them was going to be the one to say {n}.',
+    '{b} changed the subject twice to stop {a} getting to the end of the table.',
+    'They spent breakfast very carefully not counting, {a} and {b}, and both of them noticed the other doing it.',
+    '{a} asked, and {b} said they had stopped keeping track, which was not true and both of them knew it.',
+    '{b} would not have the number said at the table. {a} let them have that.',
+  ],
+  'counted-the-chairs': [
+    '{a} counted the chairs instead of the people, which came to the same thing.',
     '{a} counted the castle twice, like the number might change.',
     '{a} counted the room, got {n}, and counted it again to be sure of something.',
     'There were {n} of them. {a} had known that before counting and counted anyway.',
     '{a} did the arithmetic without meaning to, the way you check a pocket for keys.',
     '{a} counted heads at breakfast and could not stop doing it for the rest of the morning.',
     '{a} had known it was {n} before counting, and had counted three times since getting up anyway.',
-    '{a} counted the chairs instead of the people, which came to the same thing.',
     'Somewhere between the stairs and the table {a} had done the sum again without deciding to.',
+    '{a} counted the cups on the drainer, which is a slower way to get to {n} and gave the same answer.',
+    '{a} got to {n} and then started again from the other end of the table to see if it came out different.',
+  ],
+  'counted-the-useful-ones': [
+    '{a} was not counting people this morning. {a} was counting which of the {n} would still be standing next to them next week.',
+    '{n} left, and {a} could name the four who mattered and did, silently, twice.',
+    '{a} went round the table working out not how many were left but how many were any use.',
+    'It was not a headcount so much as an inventory, and {a} did not enjoy how short the useful half was.',
+    'There are {n} people in this castle and {a} spent breakfast sorting them into two piles.',
+    '{a} did the sum, and then did the more frightening sum underneath it.',
+    '{n} of them, and {a} had a number for the ones who would take a bullet and it was very much smaller.',
+    '{a} counted the room and then counted it again with most of the room left out.',
   ],
 };
 
@@ -99,25 +131,47 @@ registerEvent({
   // counting arguments'). Counting the castle twice like the number might
   // change is a different scene at six people than at eighteen.
   acts: { early: 0.5, late: 1.7 },
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous'],
+    voice: ['strategic', 'social', 'temperament'],
+    relationship: ['close-ally', 'neutral'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _victimLastNight(ctx.ep) ? 1.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-headcount');
-    const sceneWhy = 'counted the room and found it shorter';
     const actors = ctx.actors;
     const remaining = (ctx.living || []).length;
     const v = _victimLastNight(ctx.ep);
-    const shape = actors.length === 2 ? 'pair' : 'solo';
-    const note = lineFor(HEADCOUNT_LINES[shape], `grief-headcount|${ctx.ep}|${remaining}`,
+    const st = pStats(actors[0]);
+    // THE SHAPE STILL DECIDES THE BRANCH SET — two people can refuse a number
+    // to each other and one person alone cannot — and the stats choose within
+    // it. Same rule the stage-4 library uses: the record picks the set.
+    let branch;
+    if (actors.length === 2) {
+      const say = (st.social / 10) * 0.5 + (st.boldness / 10) * 0.4 + 0.15;
+      const wont = (1 - st.boldness / 10) * 0.5 + (st.loyalty / 10) * 0.3;
+      branch = rng() * (say + wont) < say ? 'said-the-number' : 'left-it-unsaid';
+    } else {
+      const chairs = (st.temperament / 10) * 0.4 + 0.3;
+      const useful = (st.strategic / 10) * 0.5 + (st.intuition / 10) * 0.3;
+      branch = rng() * (chairs + useful) < chairs ? 'counted-the-chairs' : 'counted-the-useful-ones';
+    }
+    const sceneWhy = branch === 'left-it-unsaid' ? 'would not say the number out loud'
+      : branch === 'counted-the-useful-ones' ? 'counted who was left that was any use to them'
+        : 'counted the room and found it shorter';
+    const note = lineFor(HEADCOUNT_LINES[branch], `grief-headcount|${branch}|${ctx.ep}|${remaining}`,
       { a: actors[0], b: actors[1] || 'somebody', n: String(remaining) });
     const t = api.openArc(FAMILY, actors, { source: sceneWhy, seed: note });
-    if (actors.length === 2) api.addBond(actors[0], actors[1], 1, { source: sceneWhy });
-    // THE BRANCH CARRIES THE SHAPE. One person counting alone and two people
-    // arriving at the same number are different scenes, and the (id, branch)
-    // table read 56 firings per 400 seasons as one.
-    return { branch: `headcount-${shape}`, actors, victim: v, remaining, threadId: t?.id };
+    let bondDelta = 0;
+    if (branch === 'said-the-number') bondDelta = 1;
+    else if (branch === 'left-it-unsaid') bondDelta = 0.5;
+    if (bondDelta) api.addBond(actors[0], actors[1], bondDelta, { source: sceneWhy });
+    const out = { branch, actors, victim: v, remaining, threadId: t?.id, bondDelta };
+    if (actors.length === 2) { out.pair = [actors[0], actors[1]]; }
+    return out;
   },
 });
 
@@ -353,30 +407,131 @@ registerEvent({
 
 // ── Task 6 additions ────────────────────────────────────────────────────
 
-const KEEPSAKE_LINES = [
-  '{a} quietly kept something small of {v}\'s — nobody asked, and {a} didn\'t offer an explanation.',
-  'Something of {v}\'s went missing from the room. {a} knew exactly where it was.',
-  '{a} took one thing off {v}\'s side of the room before anybody else went in, and never said what.',
-  'It was not worth anything. {a} put it in a pocket anyway and kept checking it was still there.',
-  '{a} folded {v}\'s jumper properly before leaving it, which nobody had asked anybody to do.',
-];
+// ── REWRITE (Task 7 stage 5). `grief-keepsake:keepsake` was the single
+// loudest source of within-season repetition in the whole castle — 18 of the
+// 144 seasons that printed a sentence three times, measured over 800, more
+// than any other (event, branch) key in the pool. It was one branch over a
+// five-line pool on a dawn event that draws several times a season, which is
+// the arithmetic: with F firings over a pool of P, a triple runs at about
+// C(F,3)/P-squared, so the fix has to attack BOTH terms — split F across
+// branches, and widen P.
+//
+// FOUR THINGS A PERSON ACTUALLY DOES WITH A DEAD PERSON'S BELONGINGS, and
+// they are four different scenes rather than four wordings of one: keep it,
+// give it to whoever will want it most, put it back, or set it out where the
+// room has to look at it. The record that makes each true is the same one the
+// old version read — somebody was taken last night — plus the stored bond
+// between the person doing it and the person who is gone, which is what
+// decides whether this is theirs to keep at all.
+const KEEPSAKE_LINES = {
+  pocketed: [
+    '{a} took one thing off {v}\'s side of the room before anybody else went in, and never said what.',
+    'It was not worth anything. {a} put it in a pocket anyway and kept checking it was still there.',
+    'Something of {v}\'s went missing from the room before breakfast. {a} knew exactly where it was.',
+    '{a} quietly kept something small of {v}\'s. Nobody asked, and {a} did not offer.',
+    'Whatever {a} lifted from {v}\'s bedside, it was small enough to close a hand around, and {a} did, all morning.',
+    '{a} went up before the others were awake and came down with one of {v}\'s things and a very ordinary face.',
+    'There was a thing of {v}\'s that {a} did not want the castle to divide up, so {a} took it first.',
+    '{a} kept one thing and left the rest, and could not have told anybody why that thing.',
+    'By the time the room was opened up again the only thing missing was small, and {a} had it.',
+    '{a} did not think of it as taking. {a} thought of it as not leaving it there.',
+  ],
+  'handed-it-over': [
+    '{a} found something of {v}\'s and put it straight into {c}\'s hands, because {c} was the one who would want it.',
+    '{a} did not keep it. {a} gave it to {c}, who had been closer to {v} than anybody, and said nothing else about it.',
+    '"This should be yours," {a} said, and {c} did not trust themselves to answer.',
+    '{a} carried one of {v}\'s things down the stairs, found {c}, and handed it over without a speech.',
+    '{a} could have kept it. {a} gave it to {c} instead, and {c} noticed which of those {a} had chosen.',
+    'It took {a} about a minute to decide the thing belonged with {c}, and about ten seconds to say so.',
+    '{a} put it down in front of {c} at breakfast and went to get the tea, which was the kindest way to do it.',
+    '{c} had not asked for anything of {v}\'s. {a} brought it anyway.',
+  ],
+  'put-it-back': [
+    '{a} took one of {v}\'s things, held it for a while, and then went back up and put it exactly where it had been.',
+    'It felt wrong in {a}\'s pocket by about nine o\'clock, and it was back on the shelf by ten.',
+    '{a} got as far as the stairs with it and then turned round.',
+    '{a} decided the room could keep what was in it, and left {v}\'s side of it untouched after all.',
+    'Whatever {a} had meant to keep, {a} put it back, and did not tell anybody either half of that.',
+    '{a} squared {v}\'s things up neatly on the shelf and took none of them, which took longer than taking one would have.',
+    'For about an hour {a} owned something of {v}\'s. Then {a} did not, and the shelf looked the same as before.',
+    '{a} folded {v}\'s jumper properly, put it where it went, and shut the door on it.',
+  ],
+  'set-it-out': [
+    '{a} put one of {v}\'s things on the table at breakfast, in the empty place, and dared the room to move it.',
+    'Nobody had asked for a memorial. {a} made a small one out of a book and a mug and left it where everyone ate.',
+    '{a} set something of {v}\'s down in front of the empty chair and sat back down without explaining it.',
+    'It was on the table by the time the rest of them came down: one of {v}\'s things, exactly where {v} had sat.',
+    '{a} would not let the morning happen as though yesterday had not, and put something of {v}\'s in the middle of it.',
+    '{a} laid it out where the whole room would have to walk past it, which was the point.',
+    'Half the castle pretended not to see what {a} had put on the table. The other half could not stop looking at it.',
+    '{a} said nothing at all, put {v}\'s cup back on the table, and let that be the sentence.',
+  ],
+};
 
 registerEvent({
   id: 'grief-keepsake',
   family: FAMILY,
   window: 'dawn',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous'],
+    voice: ['loyalty', 'social', 'temperament', 'boldness'],
+    relationship: ['close-ally', 'neutral'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _victimLastNight(ctx.ep) ? 1.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-keepsake');
-    const sceneWhy = 'kept something of the person who was taken';
     const actor = ctx.actors[0];
     const v = _victimLastNight(ctx.ep);
-    const t = api.openArc(FAMILY, [actor],
-      { source: sceneWhy, seed: lineFor(KEEPSAKE_LINES, `grief-keepsake|${ctx.ep}`, { a: actor, v }) });
-    return { branch: 'keepsake', actor, victim: v, threadId: t?.id };
+    const st = pStats(actor);
+    // WHO ELSE WANTED IT. The person still living with the strongest stored
+    // bond to the person who is gone — a record the castle made over the
+    // whole season, not an assertion invented for the scene. Without one, the
+    // giving branch has nobody to give to and is scored at zero.
+    let keeper = null, keeperBond = 0;
+    for (const n of (ctx.living || [])) {
+      if (n === actor || n === v) continue;
+      const bnd = getBond(n, v);
+      if (bnd > keeperBond) { keeper = n; keeperBond = bnd; }
+    }
+    const mine = getBond(actor, v);
+    const scores = {
+      pocketed: (st.loyalty / 10) * 0.5 + Math.max(0, mine) / 10 * 0.5 + 0.15,
+      'handed-it-over': keeper ? (st.social / 10) * 0.5 + Math.max(0, keeperBond - mine) / 10 * 0.5 : 0,
+      'put-it-back': (st.temperament / 10) * 0.5 + Math.max(0, -mine) / 10 * 0.3 + 0.1,
+      'set-it-out': (st.boldness / 10) * 0.45 + (st.social / 10) * 0.25,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((t, k) => t + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'handed-it-over'
+      ? 'gave away something belonging to the person who was taken'
+      : branch === 'put-it-back' ? 'could not keep anything of the person who was taken'
+        : branch === 'set-it-out' ? 'put the missing person\'s things where the room had to see them'
+          : 'kept something of the person who was taken';
+    const parties = branch === 'handed-it-over' ? [actor, keeper] : [actor];
+    const note = lineFor(KEEPSAKE_LINES[branch], `grief-keepsake|${branch}|${ctx.ep}`,
+      { a: actor, v, c: keeper || 'somebody' });
+    const t = api.openArc(FAMILY, parties, { source: sceneWhy, seed: note });
+    let bondDelta = 0;
+    if (branch === 'handed-it-over') {
+      bondDelta = 2;
+      api.addBond(actor, keeper, bondDelta, { source: sceneWhy });
+    }
+    // TERMINAL. Putting it back is the one branch with no next beat in it:
+    // the thing is where it was and nobody knows either half happened. The
+    // arc is opened so the scene PRINTS (a branch that writes no beat prints
+    // nothing — see the silence floor in tests/tr-castle-prose.test.js) and
+    // then closed as `buried`, which is what that outcome means.
+    if (branch === 'put-it-back' && t) api.resolveArc(t.id, 'buried', { source: sceneWhy });
+    const out = { branch, actor, victim: v, threadId: t?.id, bondDelta };
+    if (branch === 'handed-it-over') { out.pair = [actor, keeper]; out.speaker = actor; out.respondent = keeper; }
+    if (branch === 'set-it-out') out.crowd = { name: actor, colour: 'kind', mult: 0.4 };
+    return out;
   },
 });
 
@@ -408,16 +563,76 @@ registerEvent({
   },
 });
 
-const TOAST_LINES = [
-  '{a} and {b} raised a glass, quietly, to everyone the castle had already lost.',
-  '{a} poured two, handed one to {b}, and neither of them said what it was for.',
-  'They went through the names, {a} and {b}, in order, and drank once at the end of the list.',
-  '{a} lifted a glass to the empty end of the table and {b} lifted one back.',
-  '{b} started to make a toast, could not finish it, and {a} finished it for them.',
-  '{a} and {b} drank to the ones who went first, which by now was most of the people they came in with.',
-  'It was not a ceremony. {a} said a name, {b} said a name, and they both drank.',
-  '{a} left a glass on the table for nobody, and {b} did not move it.',
-];
+// ── REWRITE (Task 7 stage 5). Third on the blame table once `runWindow`’s
+// barren-draw fix opened `evening` up: one branch over an eight-line pool, on
+// the only grief event in the window.
+//
+// A TOAST IS A THING THAT CAN GO WRONG, and the old version could not. Four
+// ways it goes, and the fork is the room’s as much as the pair’s:
+//
+//   named-them-all   — they get through the whole list, in order, and it is
+//                      the ceremony it was meant to be.
+//   could-not-finish — the list is too long now, and one of them stops.
+//   turned-into-a-vow— it stops being about the dead and becomes a promise
+//                      about the living, which is what a castle does to
+//                      mourning by about week three.
+//   nobody-joined-in — they raise it and the room carries on eating, which is
+//                      its own fact about where the castle has got to.
+//   poured-two       — THE SOLO BRANCH. One glass, one name, nobody watching.
+//                      Widening rather than a new event: measured over 60
+//                      seasons, a solo draw in `evening` faced 0.51 eligible
+//                      events against a pair draw’s 8.49.
+//
+// THE RECORD IS `murderCount(gs)` AND `peopleLost(gs)` — how many the castle
+// has actually lost, which is a number every person in the building can count
+// off the empty chairs, and it is the only quantity any of these lines
+// asserts.
+const TOAST_LINES = {
+  'named-them-all': [
+    '{a} and {b} raised a glass, quietly, to everyone the castle had already lost.',
+    'They went through the names, {a} and {b}, in order, and drank once at the end of the list.',
+    '{a} poured two, handed one to {b}, and they got through all {n} of them without stopping.',
+    'It was not a ceremony. {a} said a name, {b} said a name, and they went on until there were none left to say.',
+    '{a} lifted a glass to the empty end of the table and {b} lifted one back, and then they did it properly, name by name.',
+    '{a} and {b} drank to the ones who went first, which by now was most of the people they came in with.',
+  ],
+  'could-not-finish': [
+    '{b} started to make a toast, could not finish it, and {a} did not finish it either.',
+    'They got four names in and {a} put the glass down, and neither of them picked it back up.',
+    '{a} had not realised how long the list had got until {a} was halfway through saying it out loud.',
+    'The toast stopped somewhere in the middle. {b} said it was fine. It was not especially fine.',
+    '{a} and {b} meant to do all {n} of them and managed about half before it turned into something else.',
+    'It is harder than it sounds to say that many names in a row, and {a} found that out in front of {b}.',
+  ],
+  'turned-into-a-vow': [
+    'It started as a toast to the dead and ended as {a} and {b} promising something to each other about tomorrow.',
+    '{a} raised a glass to the ones who had gone and then, in the same breath, to the two of them getting further.',
+    '"To them," {b} said. "And to us not joining them," said {a}, and they drank on it like an agreement.',
+    'By the end of it {a} and {b} were not really talking about the dead any more, and both of them knew when it had turned.',
+    'The names ran out and what was left was {a} and {b} deciding, out loud, that they were in this together.',
+    '{a} and {b} started the evening mourning and finished it with an arrangement, which is what this place does.',
+  ],
+  'nobody-joined-in': [
+    '{a} and {b} raised a glass to the dead and the rest of the room carried on eating.',
+    'Nobody else stood up. {a} and {b} drank anyway, and felt every second of the room not joining in.',
+    '{a} said the names loudly enough for the table to hear and the table did not hear them.',
+    'It was meant to be for everybody. It ended up being for {a} and {b}, in front of everybody.',
+    '{b} looked round for somebody else to lift a glass and could not find one.',
+    'The castle has got good at going on with its dinner, and {a} and {b} found that out with two glasses in the air.',
+  ],
+  'poured-two': [
+    '{a} poured two and drank one, and left the other where it was.',
+    'Nobody was there for it. {a} said one name out loud and drank to it alone.',
+    '{a} did the whole list under their breath, all {n} of them, standing at the sink.',
+    'There was no ceremony in it. {a} raised a glass to an empty kitchen and put it down again.',
+    '{a} had meant to find somebody to do this with and had not, and did it anyway.',
+    'It is a small thing to do on your own and {a} did it every night now.',
+    '{a} left a full glass on the table for nobody and went up.',
+    '{a} got as far as saying two of the names and decided that was enough for tonight.',
+    'The castle was noisy in the other room. {a} stayed where it was quiet and drank to {n} people.',
+    'Nobody needed to see {a} do it, and that was rather the point of doing it there.',
+  ],
+};
 
 registerEvent({
   id: 'grief-toast-to-them',
@@ -429,22 +644,54 @@ registerEvent({
   // toast is for.
   advancesThread: true,
   citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'backfire'],
+    voice: ['social', 'temperament', 'loyalty'],
+    relationship: ['close-ally', 'neutral'],
+  },
   weight(ctx) {
-    if (ctx.actors?.length !== 2) return 0;
+    // WIDENED TO A SOLO DRAW (Task 7 stage 5) — see the header.
+    if (!ctx.actors?.length || ctx.actors.length > 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
     // Reachable, uncommon state: the castle has lost more than one person —
     // by the second death, a ritual like this has grounds to exist.
     const deaths = murderCount(gs);
     return deaths >= 2 ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-toast-to-them');
-    const sceneWhy = 'raised a glass to the person who was taken';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 2, { source: sceneWhy });
-    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(TOAST_LINES, `grief-toast-to-them|${ctx.ep}`, { a, b }),
-      { source: sceneWhy });
-    return { branch: 'toasted', pair: [a, b], threadId: thread?.id, cited, bondDelta: 2,
+    const gone = peopleLost(gs);
+    if (!b) {
+      const soloWhy = 'drank to the ones who had gone, alone';
+      const note = lineFor(TOAST_LINES['poured-two'], `grief-toast-to-them|poured-two|${ctx.ep}|${gone}`,
+        { a, n: String(gone) });
+      const solo = arcContinue(api, FAMILY, [a], ctx.ep, note, { source: soloWhy });
+      return { branch: 'poured-two', actor: a, gone, threadId: solo.thread?.id,
+        cited: solo.cited, bondDelta: 0 };
+    }
+    const st = pStats(b);
+    const scores = {
+      'named-them-all': (st.temperament / 10) * 0.45 + (st.loyalty / 10) * 0.3,
+      'could-not-finish': (1 - st.temperament / 10) * 0.45 + Math.min(0.4, gone / 12),
+      'turned-into-a-vow': (st.strategic / 10) * 0.4 + Math.max(0, getBond(a, b)) / 10 * 0.35,
+      'nobody-joined-in': (1 - st.social / 10) * 0.35 + 0.15,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'could-not-finish' ? 'could not get to the end of the list of names'
+      : branch === 'turned-into-a-vow' ? 'turned a toast to the dead into a promise about tomorrow'
+        : branch === 'nobody-joined-in' ? 'raised a glass the room did not join'
+          : 'raised a glass to the people who had been taken';
+    const bondDelta = branch === 'named-them-all' ? 2
+      : branch === 'could-not-finish' ? 1.5 : branch === 'turned-into-a-vow' ? 2.5 : 1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const note = lineFor(TOAST_LINES[branch], `grief-toast-to-them|${branch}|${ctx.ep}|${gone}`,
+      { a, b, n: String(gone) });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
+    return { branch, pair: [a, b], gone, threadId: thread?.id, cited, bondDelta,
       crowd: [{ name: a, colour: 'kind', mult: 0.5 }, { name: b, colour: 'kind', mult: 0.5 }] };
   },
 });
@@ -507,18 +754,75 @@ registerEvent({
   },
 });
 
-const CRIES_ALONE_LINES = [
-  '{a} found somewhere nobody could see them and let it out, alone, before breakfast.',
-  '{a} went to the far end of the corridor to do it where the walls were thick enough.',
-  'Nobody saw {a} between the bell and breakfast, and {a} came down with a very carefully arranged face.',
-  '{a} cried in the one room of the castle with no window in the door, and then washed their face and went down.',
-  'It came out of {a} all at once, in private, and was finished and put away before anybody else was up.',
-];
+// ── REWRITE (Task 7 stage 5). `grief-someone-cries-alone:cried-alone` was the
+// fourth-loudest repeat in the pool (8 of 144 loud seasons over 800). It is a
+// SOLO event, which is the structural half of the problem: a solo branch is
+// the only branch its event has on a solo draw, so every one of that event's
+// firings in a season came out of one five-line pool.
+//
+// The fix is the same one the whole stage is built on — the person going off
+// on their own to fall apart is the premise, and what happens NEXT is where
+// the fork belongs. Four different mornings: it is finished and put away
+// before anybody is up; somebody finds them; they do not come down at all and
+// the room notices; or it comes back down the stairs as anger rather than
+// grief. The record underneath is unchanged and is the one the old version
+// read — somebody was taken last night — plus `ctx.state`, the public ballots
+// of the last Round Table, which is what says whether this person was already
+// carrying something before the empty chair was there.
+const CRIES_ALONE_LINES = {
+  'put-it-away': [
+    '{a} found somewhere nobody could see them and let it out, alone, before breakfast.',
+    '{a} went to the far end of the corridor to do it where the walls were thick enough.',
+    '{a} cried in the one room of the castle with no window in the door, then washed their face and went down.',
+    'It came out of {a} all at once, in private, and was finished and put away before anybody else was up.',
+    'Nobody saw {a} between the bell and breakfast, and {a} came down with a very carefully arranged face.',
+    '{a} gave it four minutes in the boot room and then gave it nothing else all day.',
+    'Whatever happened to {a} upstairs was over by the time the stairs creaked under anybody else.',
+    '{a} ran a tap for longer than washing takes, and came down with the same face as everybody.',
+    'It took {a} about as long as it takes to make a bed, and {a} made the bed afterwards too.',
+    '{a} did it standing up, quickly, the way you do a thing you have decided to be finished with.',
+  ],
+  'was-found': [
+    '{c} went looking for a coat and found {a} instead, and did not say a word about it to anybody.',
+    '{a} did not hear {c} come in. {c} sat down on the floor beside them and stayed until it stopped.',
+    '{c} found {a} in the stairwell, said nothing at all, and put a hand on their shoulder for a long time.',
+    'It was {c} who found {a}, and {c} who decided the rest of the castle did not need to know.',
+    '{a} was very embarrassed to be found. {c} said the only correct thing, which was nothing.',
+    '{c} came round the corner at the wrong moment and made it the right one by staying.',
+    'Somebody was always going to walk in. It was {c}, and {c} shut the door behind them.',
+    '{a} apologised to {c} twice for it. {c} would not accept either one.',
+  ],
+  'did-not-come-down': [
+    '{a} did not come down for breakfast, and the castle worked out why without anybody saying it.',
+    'There was a plate laid for {a} and it stayed laid. Nobody moved it and nobody mentioned it.',
+    '{a} stayed upstairs through the whole meal, and the room got quieter the longer it went on.',
+    'Two people went up to knock on {a}\'s door and both of them came back down alone.',
+    'The castle ate breakfast one person shorter than it had to be, and everybody knew which one.',
+    '{a} could not make themselves do the stairs this morning, and the room downstairs heard the not-doing.',
+    'Somebody asked where {a} was. Nobody answered, and the question did not get asked twice.',
+    'By the time {a} came down it was the middle of the morning and the plate had been cleared.',
+  ],
+  'came-down-angry': [
+    'Whatever {a} did upstairs, it came back down as temper, and the first person to speak to {a} got the end of it.',
+    '{a} came down dry-eyed and furious, which is a thing grief does and nobody in the room had a name for.',
+    'It turned somewhere on the stairs. {a} arrived at breakfast looking for an argument and found one.',
+    '{a} had cried it out and come down hard, and spent the morning being sharp with people who had not earned it.',
+    'Nobody could work out what they had done to {a}. Nobody had done anything to {a}.',
+    '{a} snapped at the room over the milk, of all things, and then stood there hearing how it had sounded.',
+    'The grief went in one end of {a} and came out the other as something with edges on it.',
+    'By nine o\'clock {a} was not sad any more, which was worse for everybody standing near {a}.',
+  ],
+};
 
 registerEvent({
   id: 'grief-someone-cries-alone',
   family: FAMILY,
   window: 'dawn',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'backfire'],
+    voice: ['temperament', 'social', 'boldness'],
+    knowledge: ['witnessed', 'incomplete'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 1) return 0;
     if (!_victimLastNight(ctx.ep)) return 0;
@@ -527,20 +831,63 @@ registerEvent({
     // ctx.state is READ-ONLY here: a frozen view of the round record.
     return isNervy(ctx.state?.[ctx.actors[0]]) ? 2.5 : 1;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-someone-cries-alone');
-    const sceneWhy = 'was found grieving away from the room';
     const actor = ctx.actors[0];
     const state = ctx.state?.[actor];
+    const st = pStats(actor);
+    // WHO WOULD HAVE FOUND THEM. The living player with the strongest stored
+    // bond to this one — the person most likely to be looking. No bond, no
+    // finder, and the branch scores zero rather than inventing a witness.
+    let finder = null, best = 0;
+    for (const n of (ctx.living || [])) {
+      if (n === actor) continue;
+      const bnd = getBond(actor, n);
+      if (bnd > best) { finder = n; best = bnd; }
+    }
+    const scores = {
+      'put-it-away': (st.temperament / 10) * 0.6 + 0.2,
+      'was-found': finder ? (st.social / 10) * 0.4 + Math.max(0, best) / 10 * 0.5 : 0,
+      'did-not-come-down': (1 - st.temperament / 10) * 0.5 + (state === 'desperate' ? 0.4 : 0),
+      'came-down-angry': (st.boldness / 10) * 0.4 + (state === 'paranoid' ? 0.3 : 0),
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((t, k) => t + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'was-found' ? 'was found grieving away from the room'
+      : branch === 'did-not-come-down' ? 'did not come down to breakfast at all'
+        : branch === 'came-down-angry' ? 'came back down from it angry'
+          : 'grieved away from the room and put it away again';
+    // WHAT THE ROOM KNEW, AND WHY, said in the scene rather than asserted.
+    // Both clauses cite the public ballots of the last Round Table — the thing
+    // the whole castle watched happen — and neither reads anybody's role.
     const why = state === 'desperate'
       ? ` It was not really about the empty chair; ${actor} had watched the room write their own name down and was still counting.`
       : state === 'paranoid'
         ? ` Somebody had said ${actor}'s name at that table, and it had not stopped ringing since.`
         : '';
-    const line = lineFor(CRIES_ALONE_LINES, `grief-someone-cries-alone|${ctx.ep}|${state || 'content'}`,
-      { a: actor });
-    const t = api.openArc(FAMILY, [actor], { source: sceneWhy, seed: `${line}${why}` });
-    return { branch: 'cried-alone', actor, threadId: t?.id, state: state || 'content' };
+    const line = lineFor(CRIES_ALONE_LINES[branch],
+      `grief-someone-cries-alone|${branch}|${ctx.ep}|${state || 'content'}`,
+      { a: actor, c: finder || 'somebody' });
+    const parties = branch === 'was-found' ? [actor, finder] : [actor];
+    const t = api.openArc(FAMILY, parties, { source: sceneWhy, seed: `${line}${why}` });
+    const out = { branch, actor, threadId: t?.id, state: state || 'content', bondDelta: 0 };
+    if (branch === 'was-found') {
+      out.bondDelta = 2;
+      api.addBond(actor, finder, 2, { source: sceneWhy });
+      out.pair = [finder, actor];
+      out.speaker = finder;
+      out.respondent = actor;
+    }
+    if (branch === 'came-down-angry') {
+      // The scene is louder than the ballot that caused it, and the override
+      // is the one channel a castle scene has for saying so (see
+      // `emotionalStateOf`, js/tr/events.js). Live for this episode only.
+      api.setEmotionalState(actor, 'paranoid', { source: sceneWhy });
+    }
+    return out;
   },
 });
 

@@ -687,21 +687,33 @@ const REACT_SOLO = {
     'There is nobody to perform for, so {a} doesn’t, and what is on {a}’s face now was not on it at breakfast.',
     '{a} swears once, quietly, at nobody in particular, and that is the whole of it.',
     '{a} stands there long enough that it stops being a pause and turns into a decision.',
+    '{a} says the short version of it out loud, to the wall, and does not soften a word.',
+    'No audience, so no manners. {a} calls it what it is and goes to bed.',
+    '{a} does not dress it up. There is nobody standing there to dress it up for.',
   ],
   sharp: [
     '{a} runs it through again from the start, looking for the place it comes apart, and finds one.',
     'Nobody sees it. {a} spends the next minute working out who would have, if anyone had been standing there.',
     '{a} files it away the way {a} files everything, and rearranges tomorrow around it.',
+    '{a} does the arithmetic twice and gets a slightly different answer the second time.',
+    'Alone, {a} takes it apart properly, which is not something {a} would do where it could be watched.',
+    '{a} works out what it changes and what it does not, and the second list is shorter than {a} expected.',
   ],
   warm: [
     '{a} lets it show, for as long as it takes, because there is finally nobody in the room to manage.',
     'There is no audience for it, so {a} stops being fine for a minute and then starts again.',
     '{a} says something out loud to an empty room, which is the nearest {a} has come to saying it at all.',
+    '{a} sits down on the nearest thing that will take the weight and stays there a while.',
+    'It gets to {a} properly, in private, and {a} lets it, because letting it is cheaper here than anywhere else.',
+    '{a} would have said all of this to somebody, if there had been a somebody in the room.',
   ],
   guarded: [
     '{a} takes the moment, puts it back where it was, and goes to find somebody to be normal in front of.',
     'Nothing shows. {a} has had a great deal of practice at nothing showing.',
     '{a} waits until the corridor is quiet again and leaves it exactly where it fell.',
+    '{a} arranges a face for the next room before there is anybody in the next room.',
+    'It gets about a second of {a}’s attention and then gets put where {a} puts things.',
+    '{a} checks, out of habit, that the corridor is empty, and then does not use the empty corridor for anything.',
   ],
 };
 
@@ -853,6 +865,60 @@ const ADVERSE_BRANCHES = new Set([
   // sits beside `hedged` above, which is the identical move in the identical
   // hour, and writes a bond delta of exactly zero for the same reason.
   'conditional',
+  // ── TASK 7 STAGE 5: `defended` MOVED OFF THE BENIGN LIST ──────────────
+  //
+  // Stage 4 checked this branch, agreed the argument for moving it was good,
+  // and left it because the two events that produce it are in windows stage 4
+  // did not own and it had no measurement of them. This stage owns
+  // `journey-out` and has one, so the decision is made rather than deferred.
+  //
+  // THREE THINGS, ALL POINTING THE SAME WAY:
+  //
+  //   1. IT IS INCOHERENT WITH ITS OWN EVENT. `mission-what-cost-us` produces
+  //      both `shrugged` and `defended`. `shrugged` -- the respondent declines
+  //      to be drawn, bond delta -0.5 -- is already adverse. `defended` is the
+  //      same refusal delivered harder, at a bond delta of -1. A screen that
+  //      answers the softer refusal in the adverse register and the harder one
+  //      smoothly is saying two different things about one scale.
+  //   2. THE BOND DELTA. Both producing events write -1. That is the criterion
+  //      stage 1 used to move `strategic` off this list, and it is the only
+  //      branch left on it that moves a bond down by a whole point.
+  //   3. THE AUTHORED LINES ARE A DOOR CLOSED ON THE PERSON ASKING:
+  //      "{b} shut it down flat"; "{b} told {a} to leave {c} alone ... much
+  //      harder than the question deserved"; "You want to hang somebody for
+  //      that?"; "Go on, then. Tell me you would have managed it."
+  //
+  // Produced by `susp-out-of-earshot` (journey-out) and `mission-what-cost-us`
+  // (journey-back) and by nothing else in the pool, so the move is confined to
+  // those two.
+  'defended',
+  // ── TASK 7 STAGE 5: THE REWRITE BATCHES ──────────────────────────────
+  //
+  // Seventy-five branches at once, from twenty-one events rewritten off the
+  // audit's REWRITE list plus the six solo branches this stage added to widen
+  // starving windows. Every one was read -- its authored lines AND its bond
+  // delta -- and sorted on the same single question stages 3 and 4 used, which
+  // is the question `_tone` is actually asking: IS THE PERSON ANSWERING THIS
+  // SCENE BEING LEANED ON? The bond delta is corroborating evidence and not
+  // the rule.
+  //
+  // The answer was hollow, or had air in it, or was a price:
+  'air-in-the-answer', 'asked-for-a-name', 'asked-it-back',
+  // A refusal, or a door closed on the person asking:
+  'would-not-join-in', 'would-not-promise', 'did-not-take', 'walked-it-off',
+  // It became an argument, or one of them was caught inside their own answer:
+  'argued-about-it', 'one-of-us-was-there', 'put-each-other-on-it',
+  // The respondent was worked on, taken from, or made a subject of:
+  'came-back-round', 'took-it-away', 'kept-it', 'made-it-strategy',
+  'told-somebody-else', 'went-to-them', 'asked-for-it',
+  // The move was seen to be a move, which is the worst outcome it has:
+  'too-obvious', 'too-specific', 'read-it-wrong',
+  // The two of them came away worse off, or something old was reopened cold:
+  'regretted-it', 'still-owed',
+  // Nobody there to be leaned on, and it wrote `setEmotionalState(...,
+  // 'paranoid')` in the same firing -- the rule `rattled` and `counted-them`
+  // are on this list for.
+  'came-down-angry',
 ]);
 /**
  * AND EVERY OTHER BRANCH, SAID OUT LOUD.
@@ -875,7 +941,7 @@ const BENIGN_BRANCHES = new Set([
   'agreed', 'airtight', 'alibi-built', 'awake-content', 'blended-in', 'body-read',
   'buried', 'carried', 'checked-in', 'checks-out', 'circle', 'cleared', 'cold-read',
   'complied', 'confided', 'confirmed', 'consistent', 'convincing', 'cried-alone',
-  'defended', 'denies', 'double-bluffed', 'empty-chair', 'favor-returned',
+  'denies', 'double-bluffed', 'empty-chair', 'favor-returned',
   'feigned-fear', 'flattered', 'followed-through', 'grief-spark', 'headcount-pair',
   'headcount-solo', 'heard', 'held', 'holds', 'huddled', 'imagined', 'inconclusive',
   'innocent', 'invited-in', 'keepsake', 'kept', 'keptQuiet', 'let-it-go',
@@ -938,6 +1004,38 @@ const BENIGN_BRANCHES = new Set([
   // contradict — the two that do are on the adverse list above.
   'alone-with-it', 'read-the-room', 'filed-it', 'awake-with-it',
   'checked-the-door', 'rehearsing',
+  // ── TASK 7 STAGE 5: THE REWRITE BATCHES (see the note on the adverse
+  // list above for the rule these were sorted by) ──────────────────────
+  //
+  // Two people agreed something, or worked something out, or one of them was
+  // simply honest and it was taken that way:
+  'agreed-a-version', 'agreed-the-map', 'agreed-to-hide-it', 'agreed-what-it-was',
+  'compared-notes', 'invited-them-in', 'traded-it', 'still-good', 'checked-out',
+  'named-somebody-else', 'redrew-it', 'could-not-place-one', 'did-not-line-up',
+  'lost-the-hour', 'went-and-asked', 'one-sided-vow', 'left-it-unsaid',
+  // A kindness, or grief that landed and did not turn into anything else:
+  'handed-it-over', 'was-found', 'checked-on-them', 'said-the-number',
+  'named-them-all', 'could-not-finish', 'turned-into-a-vow', 'nobody-joined-in',
+  'set-it-out', 'did-not-come-down',
+  // A relationship became public, or was recognised, and nobody was pressed:
+  'picked-it-back-up', 'left-it-at-the-door', 'said-it-to-the-room',
+  'stopped-hiding-it', 'the-room-said-it', 'told-one-person', 'named-it',
+  'somebody-saw',
+  // The move worked, or was not made, and the respondent experienced neither
+  // as pressure. `it-took`, `overpaid-for-it`, `pitched-it-right` and
+  // `borrowed-it` sit here for the reason `feigned-fear` and `performed-it`
+  // do: what the RESPONDENT experiences is an ordinary person having an
+  // ordinary conversation, and the screen has no business telling the viewer
+  // otherwise just because the audience knows more than they do.
+  'it-took', 'overpaid-for-it', 'pitched-it-right', 'borrowed-it',
+  'thought-better-of-it', 'held-it-back', 'could-not-today', 'read-it-right',
+  'said-it-aloud',
+  // The solo branches. There is nobody to be leaned on by, and none of these
+  // writes an emotional state the smooth register would contradict -- the one
+  // that does is `came-down-angry`, on the adverse list above.
+  'nearly-said-it', 'saw-it-alone', 'drew-it-alone', 'went-back-over-one',
+  'poured-two', 'pocketed', 'put-it-back', 'put-it-away', 'counted-the-chairs',
+  'counted-the-useful-ones',
 ]);
 
 /** Both lists, for the coverage arm. Nothing else reads them. */
@@ -979,24 +1077,39 @@ function _tone(s) {
 /**
  * The same seven scene classes, for a branch the record says went badly.
  *
- * TWO PER SLOT rather than four: a specific (class, voice, adverse) triple is
- * drawn far less often in one day than a consequence pool is, and the verbatim
- * repeats the review measured were all in the consequence pools, which are
- * four-wide below.
+ * TWO PER SLOT rather than four WAS the calibration, on the reasoning that a
+ * specific (class, voice, adverse) triple is drawn far less often in one day
+ * than a consequence pool is, and that the verbatim repeats the review
+ * measured were all in the consequence pools.
+ *
+ * TASK 7 STAGE 5 MADE THAT REASONING FALSE FOR ONE CLASS AND MEASURED IT.
+ * `runWindow`'s barren-draw fix took the castle from 12.8 scenes an episode to
+ * 27.0, so every slot here is drawn about 2.1x as often, and a probe listing
+ * every verbatim repeat inside a rendered day named `pressure` twice -- the
+ * only slot in this table to appear at all. `pressure` is now four wide, like
+ * the consequence pools. The other six classes are left at two, because the
+ * same probe found none of them repeating and widening a pool nothing is
+ * hitting is decoration.
  */
 const REACT_ADVERSE = {
   pressure: {
     blunt: [
       '{b} stops pretending to be reasonable about it. “Fine. Say it at the table and see who backs you.”',
       '“You have been building up to this all day,” {b} says, and it comes out louder than {b} meant it to.',
+      '“Just ask me the actual question,” {b} says, and does not wait for it to be asked.',
+      '{b} answers with a question of {b}’s own, and it is not a friendly one.',
     ],
     sharp: [
       '{b} hears the trap half a second late and spends the rest of it sounding like somebody who had not.',
       '“That is not what I said,” {b} says. It is very close to what {b} said, and both of them know it.',
+      '{b} corrects one small detail very precisely and lets the large one stand, and hears how that lands.',
+      '{b} works out mid-sentence where this is going and cannot make the sentence go somewhere else.',
     ],
     warm: [
       '{b} goes quiet, which from {b} is worse than shouting, and does not finish the sentence {b} started.',
       '“I do not know how to answer that in a way you would believe,” {b} says, and stops trying to.',
+      '{b} looks genuinely wounded by it, and the being wounded is not doing {b} any good here.',
+      '{b} apologises for something {b} has not been accused of, which makes the room worse rather than better.',
     ],
     guarded: [
       '{b} gives an answer that does not fit the one {b} gave this morning, and hears it not fit.',
@@ -1639,16 +1752,25 @@ const CLOSE_BY_SENSE = {
     'For {names}, that is the end of it: it does not travel any further than the people standing there.',
     'For {names}, it closes here, and it closes quietly. None of it is going to the Round Table tonight.',
     'For {names}, it stops — not resolved, which would take longer, but finished, which only takes somebody deciding.',
+    'For {names}, that is where it ends, and it ends without anybody having to be told it has.',
+    'For {names}, it is over, and it is over in the useful way: nobody owes anybody an account of it.',
+    'For {names}, it goes no further. Whatever it was going to cost, it has finished costing.',
   ],
   cracked: [
     'For {names}, it does not end quietly: something came out that was not meant to, and it is not going back in.',
     'For {names}, that is the end of it, and the end is worse than the middle was. This one gets repeated.',
     'For {names}, it breaks rather than finishes. Whatever was being held together here is not being held together now.',
+    'For {names}, it ends loudly enough that it is somebody else’s business by the morning.',
+    'For {names}, the end of it is the part that gets repeated, which is the worst way for a thing to end here.',
+    'For {names}, it does not close so much as give way, and there is no version where it stays between them.',
   ],
   coupled: [
     'For {names}, that settles it. By tomorrow morning it will not be a private matter.',
     'For {names}, it is not an open question any more, and neither of them is going to pretend that it is.',
     'For {names}, it resolves — and the rest of the castle will work out which way on its own schedule.',
+    'For {names}, the question is answered, and the answer is the sort a castle notices without being told.',
+    'For {names}, that is decided. What the room does with it is a separate problem and it starts tomorrow.',
+    'For {names}, it stops being a thing they are working out and starts being a thing they are.',
   ],
 };
 /**

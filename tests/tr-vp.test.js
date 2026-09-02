@@ -2265,8 +2265,25 @@ describe("neither screen borrows the turret's lamp", () => {
  * the four seeds the rest of this file uses. One is not a population. At
  * twelve seeds it fires three times and every other branch fires at least
  * seven, and every count is asserted before anything is asserted about it.
+ *
+ * TWENTY, RAISED FROM TWELVE BY TASK 7 STAGE 5, AND BY THE SAME ARGUMENT.
+ * That stage roughly doubled the castle's scene count, and a castle scene
+ * moves bonds -- which is an input to who gets approached and to whether the
+ * approach is taken. The population did not become unreachable; it became
+ * smaller, back to ONE refused ultimatum across the twelve, which is the
+ * number this comment already calls not a population.
+ *
+ * The response is the one the paragraph above records: MORE SEEDS. Not a
+ * smaller number in the assertion -- the arm still demands more than one
+ * refused ultimatum, more than three refused notes, more than five of each
+ * mode, and it now demands them out of a larger sample, which is strictly
+ * more evidence for the same claim. If this ever has to be raised again, raise
+ * the seeds again; the day a refused ultimatum cannot be found in any number
+ * of seasons is the day the mode is genuinely unreachable and this file should
+ * say so loudly rather than quietly asking for less.
  */
-const OFFER_SEEDS = [1, 3, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41];
+const OFFER_SEEDS = [1, 3, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
+  43, 47, 53, 59, 61, 67, 71, 73];
 const OFFER_RUNS = OFFER_SEEDS.map(season);
 /** Every episode across every offer seed that recorded an approach. */
 const OFFERS = OFFER_RUNS.flatMap(r => r.episodes.filter(e => e.tr && e.tr.recruitment)

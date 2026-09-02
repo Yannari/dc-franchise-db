@@ -306,6 +306,14 @@ const SEAT_THEY_HAD = {
     'It is easier at night to admit that {a} is not entirely sure {a} did the right thing about {gone}.',
     '{a} slept badly in a room that had got quieter, and could not have told anybody which part did it.',
     'Alone, {a} finally let it be sad rather than strategic, for about ten minutes, and then stopped.',
+    '{a} had voted, and the vote had worked, and {a} lay there discovering those were separate feelings.',
+    'The castle is a different building at night with {gone} out of it, and {a} could not say how.',
+    '{a} kept the light off and did the whole thing in the dark, which made it shorter.',
+    'Somebody had left one of {gone}’s cups on the side. {a} thought about that cup for longer than a cup deserves.',
+    '{a} rehearsed what {a} would say about {gone} tomorrow and hated every version of it.',
+    'It is one thing to want somebody gone and another to lie in a quiet building afterwards.',
+    '{a} tried to remember the last ordinary thing {gone} had said to {a} and could not get it exactly.',
+    'There was nobody to be honest with, so {a} was honest with the ceiling for a while.',
   ],
 };
 

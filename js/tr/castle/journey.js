@@ -54,6 +54,7 @@ import { alignmentAt } from '../roles.js';
 import { MAX_ACTIVE_ROMANCES, _activeRomanceCount, _threadForActors } from './romance.js';
 import { _sentenceCase } from './cover.js';
 import { murderCount } from '../state.js';
+import { lineFor } from './lines.js';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 function isTraitor(name, ep) { return alignmentAt(name, ep) === 'traitor'; }
@@ -414,28 +415,63 @@ registerEvent({
 });
 
 
-const ROAD_SPARK_LINES = [
-  '{a} and {b} walked the whole road out beside each other and neither of them had planned it that way.',
-  'Out of the castle and away from everybody, {a} and {b} talked about nothing in particular for two hours.',
-  'Somewhere on the road out {a} said something small and stupid and {b} laughed longer than it deserved.',
-  '{a} and {b} fell behind the group by about fifty yards and stayed exactly fifty yards behind it.',
-  'Neither {a} nor {b} could have told you what they talked about on the road out, only that it went quickly.',
-];
+// ── REWRITE (Task 7 stage 5). Third on the blame table, and the only romance
+// event in `journey-out` — so every road-out spark in a season came out of one
+// pool with one label on it.
+//
+// FOUR WALKS, and the fork is what the two of them do with an hour of being
+// next to each other where nobody can hear:
+//
+//   road-spark      — it starts, quietly, and neither of them names it.
+//   named-it        — one of them says the thing out loud on the road, which
+//                     is a much larger act than letting it happen.
+//   somebody-saw    — a third person on that road watched the whole thing,
+//                     which makes it the castle’s business before it is
+//                     theirs.
+//   walked-it-off   — it nearly happened and one of them stepped away from it,
+//                     for a reason they could give if asked.
+//
+// EVERY BRANCH STILL OPENS THE SPARK ARC except `walked-it-off`, which is the
+// one that does not — and that branch resolves nothing and opens nothing on
+// the romance side, so it writes an ordinary `trust` beat instead. An event
+// that sometimes declines to do what it is named for has to say so somewhere
+// the record can see, and the branch label is that.
+const ROAD_SPARK_LINES = {
+  'road-spark': [
+    'Something happened on that walk between {a} and {b} that had not been happening in the castle.',
+    'It was a long road and {a} and {b} walked all of it together, and neither of them planned that.',
+    '{a} and {b} fell into step near the front and did not swap out once the whole way.',
+    'Whatever this is, it started somewhere between the gate and the vans, and both of them noticed.',
+    'They talked about nothing for four miles, {a} and {b}, and arrived slightly different.',
+    '{b} laughed at something {a} said and {a} spent the next mile trying to do it again.',
+  ],
+  'named-it': [
+    'Halfway to the vans {a} said the thing out loud, which is not what people do here, and {b} did not run.',
+    '"This is going to be a problem," {b} said, on the road, and {a} said yes, and that was the naming of it.',
+    '{a} decided somewhere on that walk that pretending was more work than saying it, and said it.',
+    'It got named on the road out, plainly, by {b}, and {a} had about a second to decide what to do with that.',
+    'Neither of them was going to say it in the castle. On the road, {a} did.',
+    '{a} and {b} agreed out loud that something was happening, which makes it a fact rather than a feeling.',
+  ],
+  'somebody-saw': [
+    '{a} and {b} walked out together and half the column watched them do it.',
+    'It would have been private if the road had not had eleven other people on it.',
+    'Somebody two places back saw the whole of it, and the castle had it before the mission did.',
+    '{a} and {b} thought they were at the back. They were not at the back.',
+    'Whatever started on that walk started in front of witnesses, which is not the same thing at all.',
+    'The road out is the worst place in this format to have a private moment, and {a} and {b} had one there.',
+  ],
+  'walked-it-off': [
+    '{a} felt it coming and dropped back to walk with somebody else, and could have told you exactly why.',
+    'It nearly happened on that road, and {b} put a stop to it before it did.',
+    '{a} thought about the rest of the season and walked the last mile with the wrong person on purpose.',
+    '"Not here," {b} said, and meant not ever, or meant not yet, and did not clarify which.',
+    '{a} decided that a showmance is a target with two people in it, and sped up.',
+    'It was there and both of them left it on the road, and neither mentioned it at the mission.',
+  ],
+};
 
-// A SECOND ENTRY POINT FOR ROMANCE, AND IT IS A FIX, NOT A FLOURISH.
-//
-// `romance-spark` (romance.js, `evening`) is the ONLY door into this family:
-// every escalation, reaction and payoff downstream is gated on a spark or
-// showmance thread that only it can open. That made the whole family a
-// function of how many draws `evening` gets — and populating three empty
-// windows takes draws away from `evening`, because the round budget is 4-8
-// for the WHOLE round and journey-out/journey-back/night were previously
-// giving their share back. Measured on 200 seasons: adding the rest of this
-// file dropped romance from 202 firings to 128 and pushed
-// `romance-jealousy-third-party` to 2 firings per 400 seasons, under the
-// reachability floor. A single door in the most contested window is the
-// actual fragility; a second door in an uncontested one is the fix.
-//
+
 // The gates are `romance-spark`'s own, deliberately identical: not already
 // paired, romantically compatible (CLAUDE.md's rule), and under the castle's
 // local 4-active cap - IMPORTED from romance.js (round 2, R7), not copied.
@@ -448,27 +484,53 @@ registerEvent({
   family: 'romance',
   window: 'journey-out',
   rare: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['boldness', 'social', 'strategic'],
+    relationship: ['romance', 'neutral'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
-    if (findOpenThread('romance-spark', [a, b]) || findOpenThread('romance-showmance', [a, b])) return 0;
     if (!romanticCompat(a, b)) return 0;
+    if (findOpenThread('romance-spark', [a, b]) || findOpenThread('romance-showmance', [a, b])) return 0;
     if (_activeRomanceCount() >= MAX_ACTIVE_ROMANCES) return 0;
     const bond = getBond(a, b);
     return bond >= 0 ? 1.2 + bond * 0.25 : 0;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-road-spark');
-    const sceneWhy = 'something started on the road out';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const note = pick(rng, ROAD_SPARK_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
-    const t = api.openArc('romance-spark', [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'road-spark', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+    const sa = pStats(a), sb = pStats(b);
+    const scores = {
+      'road-spark': (sa.social / 10) * 0.3 + (sb.social / 10) * 0.3 + 0.2,
+      'named-it': (sa.boldness / 10) * 0.4 + (sb.boldness / 10) * 0.2,
+      'somebody-saw': Math.min(0.5, (ctx.living || []).length / 24) + (sa.social / 10) * 0.2,
+      'walked-it-off': (sa.strategic / 10) * 0.3 + (1 - sb.boldness / 10) * 0.3,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'named-it' ? 'said it out loud on the road'
+      : branch === 'somebody-saw' ? 'started something on the road with the column watching'
+        : branch === 'walked-it-off' ? 'left it on the road rather than pick it up'
+          : 'something started between them on the road out';
+    const bondDelta = branch === 'named-it' ? 2
+      : branch === 'somebody-saw' ? 1 : branch === 'walked-it-off' ? 0.5 : 1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    // `walked-it-off` opens a TRUST arc rather than a spark, because nothing
+    // romantic started and an arc that says one did would be read as one by
+    // every romance event downstream. What these two now have is that one of
+    // them stepped away from something in front of the other.
+    const t = api.openArc(branch === 'walked-it-off' ? 'trust' : 'romance-spark', [a, b],
+      { source: sceneWhy,
+        seed: lineFor(ROAD_SPARK_LINES[branch], `romance-road-spark|${branch}|${ctx.ep}`, { a, b }) });
+    return { branch, pair: [a, b], threadId: t?.id, bondDelta };
   },
 });
 
-// ══════════════════════════════════════════════════════════════════════
+
 // journey-back — the walk home, and the castle getting bigger
 // ══════════════════════════════════════════════════════════════════════
 //

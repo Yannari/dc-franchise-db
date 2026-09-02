@@ -66,25 +66,78 @@ const NICE_ARCHETYPES = ['hero', 'loyal-soldier', 'social-butterfly', 'showmance
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 function isTraitor(name, ep) { return alignmentAt(name, ep) === 'traitor'; }
 
-const PREEMPTIVE_LINES = [
-  '{a} had an answer ready for a question nobody had asked yet.',
-  '{a} mentioned, unprompted, where they had been last night, and then had to sit with having mentioned it.',
-  'Nobody had raised it. {a} raised it themselves, cleared it up, and moved the conversation along.',
-  '{a} worked out overnight what the awkward question was going to be, and had the boring answer waiting for it.',
-  '{a} volunteered a detail so small nobody would ever have thought to check it, which was the whole point.',
-  'The story {a} told at breakfast was answering something, and nobody at the table could have said what.',
-];
+// ── REWRITE (Task 7 stage 5). Fourth on the blame table. The audit's verdict
+// was MERGE (into `cover-rehearsed-story-advance`) and also recorded that it
+// "writes NO effects at all"; both are fixed here rather than by deletion,
+// because `morning` is one of the windows this stage owes events to and the
+// two premises fork differently once either of them has a fork.
+//
+// ANSWERING A QUESTION NOBODY ASKED IS A RISK, and the old version treated it
+// as free. Four outcomes, scored the way cover.js scores everything else:
+//
+//   alibi-built   — the detail is small, dull and unanswerable, and it lands
+//                   as nothing at all.
+//   asked-for-it  — nobody had raised it. Raising it yourself makes it a
+//                   subject, and now somebody in the room is holding it.
+//   too-specific  — the account has a time in it that nobody needed, and a
+//                   time is a thing that can be checked.
+//   held-it-back  — {a} had the account ready and read the room and did not
+//                   use it, which is the branch that costs nothing and is
+//                   therefore the hardest to choose.
+//
+// OBSERVER SAFETY IS UNCHANGED: the gate reads the ACTING PLAYER'S OWN role,
+// no belief is written, and `{b}` on the two branches that have one is drawn
+// from the living room rather than from the pact.
+const PREEMPTIVE_LINES = {
+  'alibi-built': [
+    '{a} had an answer ready for a question nobody had asked yet.',
+    'Nobody had raised it. {a} raised it themselves, cleared it up, and moved the conversation along.',
+    '{a} worked out overnight what the awkward question was going to be, and had the boring answer waiting for it.',
+    '{a} volunteered a detail so small nobody would ever have thought to check it, which was the whole point.',
+    'The story {a} told at breakfast was answering something, and nobody at the table could have said what.',
+    '{a} put one dull fact into the room early and never had to put another one in after it.',
+  ],
+  'asked-for-it': [
+    '{a} answered a question nobody had asked, and {b} spent the rest of the morning wondering who had been going to ask it.',
+    '{a} mentioned, unprompted, where they had been last night, and then had to sit with having mentioned it.',
+    'Nobody was thinking about last night until {a} explained about last night.',
+    '{b} had not been curious. {b} is now, and could not tell you what made the difference.',
+    '{a} cleared something up that had not been cloudy, and {b} noticed the shape of the cleaning.',
+    'It is a strange thing to be told where somebody was. {b} thought so at the time and again later.',
+  ],
+  'too-specific': [
+    '{a} put a time on it, which nobody had asked for, and a time is a thing that can be checked.',
+    'The account had a clock in it. {b} did not need the clock and remembered it anyway.',
+    '{a} gave three details where one would have done, and the third one had a name in it.',
+    '{a} said "about half nine" with more confidence than anybody has about half nine.',
+    'It was too good. {b} could not have said why it was too good, and could have said that it was.',
+    '{a} answered the unasked question completely, which is not how people answer questions they have not been asked.',
+  ],
+  'held-it-back': [
+    '{a} had the whole account ready at breakfast and did not use a word of it.',
+    '{a} came down with an answer and found the room was talking about something else, and let it.',
+    'The moment to volunteer it came and went twice, and {a} let it go both times, deliberately.',
+    '{a} decided that an unasked question is not a question, and ate breakfast.',
+    'It took some doing. {a} had spent an hour on that account and left all of it upstairs.',
+    '{a} watched the conversation come within a sentence of it and said nothing at all.',
+  ],
+};
 
 registerEvent({
   id: 'cover-preemptive-alibi',
   family: FAMILY,
   window: 'morning',
-  // ADVANCES AND CITES (Plan 5 Task 2). `cover|morning` held no advancer. A
-  // cover story is the one thing in the castle that is EXPLICITLY cumulative
+  // ADVANCES AND CITES (Plan 5 Task 2). `cover|morning` held no advancer. An
+  // account is the one thing in the castle that is EXPLICITLY cumulative
   // — its whole risk is that it has to keep matching what was already said —
   // so a Traitor building the next layer of one names the day they laid the
-  // last. This is a solo thread: the party set is the Traitor alone.
-    citesResidue: true,
+  // last. This is a solo arc: the party set is the Traitor alone.
+  citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'backfire', 'ambiguous'],
+    voice: ['social', 'strategic', 'intuition'],
+    alignment: ['original-traitor', 'recruited-traitor'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
@@ -92,11 +145,38 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-preemptive-alibi');
-    const sceneWhy = 'had an account of the night ready before anybody asked';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
-    const { thread, cited } = arcContinue(api, FAMILY, [actor], ctx.ep, lineFor(PREEMPTIVE_LINES, `cover-preemptive-alibi|${ctx.ep}`, { a: actor }),
-      { source: sceneWhy });
-    return { branch: 'alibi-built', actor, threadId: thread?.id, cited };
+    const room = (ctx.living || []).filter(n => n !== actor);
+    const other = room.length ? pick(rng, room) : null;
+    const st = pStats(actor);
+    const archetype = players.find(p => p.name === actor)?.archetype || 'floater';
+    const clumsy = NICE_ARCHETYPES.includes(archetype);
+    const scores = {
+      'alibi-built': (st.social / 10) * 0.4 + (st.strategic / 10) * 0.3 + (clumsy ? -0.12 : 0.1),
+      'asked-for-it': other ? (1 - st.social / 10) * 0.35 + (clumsy ? 0.25 : 0.05) : 0,
+      'too-specific': other ? (1 - st.temperament / 10) * 0.35 + (st.mental / 10) * 0.15 : 0,
+      'held-it-back': (st.intuition / 10) * 0.4 + (st.temperament / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'asked-for-it' ? 'made a subject of something nobody had raised'
+      : branch === 'too-specific' ? 'put a time on it that nobody had asked for'
+        : branch === 'held-it-back' ? 'had the account ready and did not use it'
+          : 'had an account of the night ready before anybody asked';
+    const { thread, cited } = arcContinue(api, FAMILY, [actor], ctx.ep,
+      lineFor(PREEMPTIVE_LINES[branch], `cover-preemptive-alibi|${branch}|${ctx.ep}`,
+        { a: actor, b: other || 'somebody' }), { source: sceneWhy });
+    let bondDelta = 0;
+    if ((branch === 'asked-for-it' || branch === 'too-specific') && other) {
+      bondDelta = branch === 'too-specific' ? -1 : -0.5;
+      api.addBond(actor, other, bondDelta, { source: sceneWhy });
+    }
+    const out = { branch, actor, threadId: thread?.id, cited, bondDelta };
+    if (other && bondDelta) { out.pair = [actor, other]; out.speaker = actor; out.respondent = other; }
+    if (branch === 'too-specific') out.crowd = { name: actor, colour: 'exposed', mult: 0.4 };
+    return out;
   },
 });
 
@@ -143,19 +223,73 @@ registerEvent({
   },
 });
 
-const PLANT_NAME_LINES = [
-  '{a} found three separate ways to work {c}\'s name into casual conversation today.',
-  'By the evening, four different people had heard {c}\'s name from {a} and none of them noticed where it came from.',
-  '{a} never accused {c} of anything. {a} just kept putting {c} in sentences.',
-  '{a} asked two people, separately, whether they had seen {c} last night. Neither had. Both remembered being asked.',
-  '{a} said {c}\'s name once at breakfast, once on the stairs and once at the door, and let the room do the rest.',
-  '{a} defended {c}, warmly, to somebody who had not attacked them, and left the name hanging in the air.',
-];
+// ── REWRITE (Task 7 stage 5). Ninth on the blame table. The audit’s verdict
+// was REWRITE ("one branch — the fork is in the wording"), and the reason it
+// mattered is that this is the Traitor’s signature evening move and it always
+// worked. A move that always works is not a move.
+//
+// FOUR OUTCOMES, SCORED THE WAY cover.js SCORES A LIE — social and strategic
+// against noise, with a nice archetype dragged into the role paying for it:
+//
+//   it-took            — the name is in the room by bedtime and nobody can
+//                        say where it came from.
+//   too-obvious        — three mentions in one evening is three mentions, and
+//                        {b} noticed the count rather than the name.
+//   came-back-round    — it worked so well it came back to {a} from somebody
+//                        else, which is a Traitor’s favourite hour and also
+//                        the moment the story stops being controllable.
+//   thought-better-of-it — {a} set it up, looked at the room, and did not
+//                        spend it tonight.
+//
+// OBSERVER SAFETY IS UNCHANGED. The gate reads the ACTING PLAYER’S OWN
+// alignment and nothing else, the target is drawn from `livingFaithfuls` as
+// before, and NO BELIEF IS WRITTEN by any branch: the plant proves nothing and
+// must not read to the deduction layer as evidence of anything. `{b}` on the
+// two branches that have one is drawn from the living room, not from the pact.
+const PLANT_NAME_LINES = {
+  'it-took': [
+    '{a} found three separate ways to work {c}’s name into casual conversation today.',
+    'By the evening, four different people had heard {c}’s name from {a} and none of them noticed where it came from.',
+    '{a} never accused {c} of anything. {a} just kept putting {c} in sentences.',
+    '{a} asked two people, separately, whether they had seen {c} last night. Neither had. Both remembered being asked.',
+    '{a} said {c}’s name once at breakfast, once on the stairs and once at the door, and let the room do the rest.',
+    '{a} defended {c}, warmly, to somebody who had not attacked them, and left the name hanging in the air.',
+  ],
+  'too-obvious': [
+    '{a} got {c}’s name into the conversation three times, and {b} noticed the three rather than the name.',
+    '"You keep saying that," {b} said, and {a} had not realised {b} had been counting.',
+    '{a} worked {c} into a conversation {c} had nothing to do with, and {b} watched the seam show.',
+    'It was one mention too many. {b} could not have said what was wrong with it and knew the number.',
+    '{b} came away from that conversation thinking less about {c} than about how often {a} had said {c}.',
+    '{a} pushed it, slightly, and {b} went quiet in the way people do when they have decided something.',
+  ],
+  'came-back-round': [
+    'By nine o’clock somebody was telling {a} about {c}, in almost {a}’s own words, and believing every one of them.',
+    '{a} got {c}’s name back from {b} an hour after putting it out, improved, and had to look pleased about it.',
+    'It worked. It worked well enough that {a} could no longer take it back if {a} wanted to.',
+    '{b} arrived with a theory about {c} that {a} recognised as {a}’s own, and {a} agreed with it warmly.',
+    'The name had gone round the whole castle and come home to {a} wearing somebody else’s clothes.',
+    '{a} listened to {b} explain {c} to {a}, and understood that the thing was now out of anybody’s hands.',
+  ],
+  'thought-better-of-it': [
+    '{a} had {c}’s name ready all evening and did not spend it.',
+    '{a} looked at the shape of the room, decided tonight was not the night, and talked about the food.',
+    'It was set up and it was easy and {a} left it alone, which took more nerve than doing it would have.',
+    '{a} got as far as the first mention and then steered the conversation somewhere harmless.',
+    'The room was already looking at somebody. {a} decided not to give it a second name to look at.',
+    '{a} kept {c} in reserve, which is a decision, and a slightly frightening one to have made calmly.',
+  ],
+};
 
 registerEvent({
   id: 'cover-plant-a-name',
   family: FAMILY,
   window: 'evening',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'backfire', 'ambiguous'],
+    voice: ['social', 'strategic', 'boldness'],
+    alignment: ['original-traitor', 'recruited-traitor'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
@@ -163,22 +297,58 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-plant-a-name');
-    const sceneWhy = 'put somebody else\'s name into the room';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const pool = livingFaithfuls(ctx.ep).filter(n => n !== actor);
     const target = pick(rng, pool.length ? pool : livingFaithfuls(ctx.ep));
+    const room = (ctx.living || []).filter(n => n !== actor && n !== target);
+    const other = room.length ? pick(rng, room) : null;
+    const st = pStats(actor);
+    const archetype = players.find(p => p.name === actor)?.archetype || 'floater';
+    const clumsy = NICE_ARCHETYPES.includes(archetype);
+    const scores = {
+      'it-took': (st.social / 10) * 0.45 + (st.strategic / 10) * 0.35 + (clumsy ? -0.15 : 0.1),
+      'too-obvious': other ? (1 - st.social / 10) * 0.4 + (clumsy ? 0.3 : 0.05) : 0,
+      'came-back-round': other ? (st.social / 10) * 0.4 + (st.boldness / 10) * 0.2 : 0,
+      'thought-better-of-it': (st.intuition / 10) * 0.35 + (1 - st.boldness / 10) * 0.3,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'too-obvious' ? 'said one name once too often'
+      : branch === 'came-back-round' ? 'had the name come back from somebody else'
+        : branch === 'thought-better-of-it' ? 'had the name ready and did not use it'
+          : 'put somebody else’s name into the room';
     // Residue only — NOT a belief. This is the setup a later suspicion.js
     // event can pick up on ("why does everyone keep saying that name?"); the
     // plant itself proves nothing and must not read as evidence of anything
     // to the deduction layer.
-    const t = api.openArc(FAMILY, [actor],
-      { source: sceneWhy, seed: lineFor(PLANT_NAME_LINES, `cover-plant-a-name|${ctx.ep}`, { a: actor, c: target }) });
-    // A Traitor putting an innocent name in the room's mouth. `cruel` for what
+    const t = api.openArc(FAMILY, [actor], { source: sceneWhy,
+      seed: lineFor(PLANT_NAME_LINES[branch], `cover-plant-a-name|${branch}|${ctx.ep}`,
+        { a: actor, b: other || 'somebody', c: target }) });
+    let bondDelta = 0;
+    if (branch === 'too-obvious' && other) {
+      bondDelta = -1;
+      api.addBond(actor, other, bondDelta, { source: sceneWhy });
+    } else if (branch === 'came-back-round' && other) {
+      bondDelta = 0.5;
+      api.addBond(actor, other, bondDelta, { source: sceneWhy });
+    }
+    const out = { branch, actor, target, threadId: t?.id, bondDelta };
+    if (other && bondDelta) { out.pair = [actor, other]; out.speaker = actor; out.respondent = other; }
+    // A Traitor putting an innocent name in the room’s mouth. `cruel` for what
     // it does to the target and `masterful` for how well it is done — the two
     // ledgers are the only way to say both at once. See js/tr/crowd.js.
-    return { branch: 'planted', actor, target, threadId: t?.id,
-      crowd: [{ name: actor, colour: 'cruel', mult: 0.5 },
-        { name: actor, colour: 'masterful' }] };
+    // NEITHER IS PAID ON THE TWO BRANCHES WHERE IT DID NOT LAND: nothing
+    // happened to the target on `thought-better-of-it`, and `too-obvious` is
+    // the opposite of masterful, so it takes `exposed` instead.
+    if (branch === 'it-took' || branch === 'came-back-round') {
+      out.crowd = [{ name: actor, colour: 'cruel', mult: 0.5 },
+        { name: actor, colour: 'masterful' }];
+    } else if (branch === 'too-obvious') {
+      out.crowd = { name: actor, colour: 'exposed', mult: 0.5 };
+    }
+    return out;
   },
 });
 
@@ -426,26 +596,68 @@ registerEvent({
 
 // ── Task 6 additions ────────────────────────────────────────────────────
 
-const DOUBLE_BLUFF_LINES = [
-  '{a} floated a suspicion about a fellow Traitor to {b} — genuine-sounding enough that {b} took it as proof {a} couldn\'t be one.',
-  '{a} handed {b} a real name off the turret and let {b} think they had found it themselves.',
-  'The safest thing {a} said all day was the truth, aimed at somebody {a} could afford to lose.',
-  '{a} told {b} they were frightened of one of the Traitors by name, and {b} filed {a} under the frightened.',
-  'Nobody suspects the person doing the suspecting. {a} spent the evening making sure {b} understood that about {a}.',
-];
+const DOUBLE_BLUFF_LINES = {
+  'double-bluffed': [
+    '{a} floated a suspicion about a fellow Traitor to {b} — genuine-sounding enough that {b} took it as proof {a} could not be one.',
+    '{a} handed {b} a real name off the turret and let {b} think they had found it themselves.',
+    'The safest thing {a} said all day was the truth, aimed at somebody {a} could afford to lose.',
+    '{a} told {b} they were frightened of one of the Traitors by name, and {b} filed {a} under the frightened.',
+    'Nobody suspects the person doing the suspecting. {a} spent the evening making sure {b} understood that about {a}.',
+    '{a} gave {b} something true and expensive, and got a great deal more back for it.',
+  ],
+  'overpaid-for-it': [
+    '{a} gave {b} a real name and watched {b} do rather more with it than {a} had intended.',
+    'It worked, and it worked so well that {b} was still on the name at bedtime and {a} could not steer it off.',
+    '{a} spent a partner to buy an evening and found out by nine that the price had been the wrong way round.',
+    '{b} took the name and ran with it, and {a} had to spend the rest of the night keeping up.',
+    'The bluff landed. What it bought {a} was a room now looking hard at somebody {a} needed.',
+    '{a} said a true thing to look innocent and made a problem that will still be here on Thursday.',
+  ],
+  'asked-back': [
+    '{a} named somebody frightening to {b}, and {b} asked {a} why {a} had picked that name.',
+    '"And why them?" {b} said, and it was a fair question, and {a} had not prepared an answer to it.',
+    '{b} did not take the name. {b} took an interest in {a} offering it.',
+    '{a} performed being frightened of a Traitor and {b} wanted to know what had made {a} frightened, exactly, and when.',
+    'It is a good move that only works if nobody asks the next question. {b} asked the next question.',
+    '{b} agreed the name was worth watching and kept looking at {a} while saying so.',
+  ],
+  'did-not-take': [
+    '{a} put a real name in front of {b} and {b} did not want it.',
+    '{b} said they had been thinking about somebody else entirely, and would not be moved.',
+    'It was true and it was frightening and {b} shrugged at it, which {a} had not planned for.',
+    '{a} spent a genuine name for nothing at all, which is the worst outcome this move has.',
+    '{b} nodded along and did not change a single thing about how {b} was going to vote.',
+    '{a} gave away a partner’s name and did not even get to look innocent for it.',
+  ],
+};
 
 registerEvent({
+  // ── REWRITE (Task 7 stage 5). One branch on the Traitor’s cleverest
+  // evening move, and the branch was always that it worked. Four now, and
+  // three of them are ways a true statement costs more than it buys:
+  // overpaying, being asked the next question, and simply not being taken.
+  //
+  // OBSERVER SAFETY IS UNCHANGED, and it is the reason the gate looks the way
+  // it does. `{a}` is read for `{a}`’s OWN role; `{b}` is admitted by
+  // `knowsAlignmentOf(a, b)` — what {a} KNOWS, not what {b} is — which is the
+  // read probes A/B/C in tests/tr-castle.test.js allow. No belief is written
+  // by any branch.
   id: 'cover-double-bluff',
   family: FAMILY,
   window: 'evening',
   // The second advancer in `cover|evening`.
   advancesThread: true,
   citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'backfire', 'ambiguous'],
+    voice: ['social', 'strategic', 'intuition'],
+    alignment: ['original-traitor', 'recruited-traitor'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     // Needs a Traitor in the scene and somebody they know is NOT in the pact
-    // to sell it to. Two things this does NOT do: read `b`'s hidden alignment
-    // (it reads `a`'s own knowledge of the turret instead), and require that
+    // to sell it to. Two things this does NOT do: read `b`’s hidden alignment
+    // (it reads `a`’s own knowledge of the turret instead), and require that
     // the Traitor happened to be drawn FIRST. The scene sampler orders actors
     // at random, so a positional requirement silently halved this event for
     // no reason anybody could state.
@@ -454,16 +666,43 @@ registerEvent({
     const b = ctx.actors.find(n => n !== a);
     return b && !knowsAlignmentOf(a, b, ctx.ep) ? 1.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-double-bluff');
-    const sceneWhy = 'raised the suspicion about themselves first';
     const a = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const b = ctx.actors.find(n => n !== a);
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(DOUBLE_BLUFF_LINES, `cover-double-bluff|${ctx.ep}`, { a, b }),
+    const sa = pStats(a), sb = pStats(b);
+    const scores = {
+      'double-bluffed': (sa.social / 10) * 0.45 + (sa.strategic / 10) * 0.3,
+      'overpaid-for-it': (sb.boldness / 10) * 0.35 + (sa.boldness / 10) * 0.2,
+      'asked-back': (sb.intuition / 10) * 0.5 + (sb.mental / 10) * 0.2,
+      'did-not-take': (1 - sa.social / 10) * 0.35 + (sb.temperament / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'overpaid-for-it' ? 'spent a real name and could not steer what it started'
+      : branch === 'asked-back' ? 'was asked why that name, and had not prepared one'
+        : branch === 'did-not-take' ? 'offered a real name and had it declined'
+          : 'raised the suspicion about themselves first';
+    const bondDelta = branch === 'double-bluffed' ? 1
+      : branch === 'overpaid-for-it' ? 0.5 : branch === 'asked-back' ? -1 : -0.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep,
+      lineFor(DOUBLE_BLUFF_LINES[branch], `cover-double-bluff|${branch}|${ctx.ep}`, { a, b }),
       { source: sceneWhy });
-    return { branch: 'double-bluffed', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1,
-      crowd: { name: a, colour: 'masterful' } };
+    const out = { branch, pair: [a, b], speaker: a, respondent: b,
+      threadId: thread?.id, cited, bondDelta };
+    // `masterful` only where it was. A move that got asked the next question,
+    // or was declined outright, is not a Traitor doing the thing well — and
+    // `asked-back` is the one the country enjoys watching go wrong, which is
+    // what `exposed` is for. See js/tr/crowd.js.
+    if (branch === 'double-bluffed' || branch === 'overpaid-for-it') {
+      out.crowd = { name: a, colour: 'masterful' };
+    } else if (branch === 'asked-back') {
+      out.crowd = { name: a, colour: 'exposed', mult: 0.5 };
+    }
+    return out;
   },
 });
 
@@ -654,32 +893,167 @@ registerEvent({
   },
 });
 
-const FEIGN_FEAR_LINES = [
-  '{a} performed the exact right amount of fear at breakfast — no more, no less than anyone else.',
-  '{a} was frightened at precisely the average volume of the room, which took some doing.',
-  '{a} let their voice go once, briefly, and then got it back, and everybody saw both halves.',
-  '{a} checked what frightened looked like on the two people nearest them, and did that.',
-  'The trick is not looking calm. {a} knows that, and spent breakfast not looking calm.',
-];
+// ── REWRITE (Task 7 stage 5). `cover-feign-fear:feigned-fear` was twelfth on
+// stage 4's blame table and on the audit's list (the audit's verdict was
+// MERGE, into the rehearsal event; it is rewritten in place instead, because
+// deleting an event costs the `morning` window scenes it does not have to
+// spare and the two premises turn out to fork differently once either of them
+// has a fork at all).
+//
+// PERFORMING FEAR IS A SKILL AND SKILLS ARE PASSED OR FAILED. The old version
+// asserted the performance worked, every time, in five sentences. Four
+// outcomes now, scored off the performer's own social and temperament against
+// noise, exactly the way cover.js scores a lie:
+//
+//   pitched-it-right   — the room saw somebody as frightened as they were.
+//   borrowed-it        — could not find it alone, so copied the nearest
+//                        person's reaction beat for beat. Works, and leaves
+//                        a habit of watching that person.
+//   overdid-it         — too much, too early, and somebody clocked the size
+//                        of it. NO BELIEF IS WRITTEN: what the witness has is
+//                        that this person was odd at breakfast, which is a
+//                        fact about the morning and not about anybody's role.
+//   could-not-today    — did not perform at all, and being the one person in
+//                        the room with a normal face is its own exposure.
+//
+// OBSERVER SAFETY. The gate reads the ACTING PLAYER'S OWN alignment and
+// nothing else — the same read `cover-suspect-own-ally` makes and the only
+// one probes A/B/C in tests/tr-castle.test.js allow. The witness on
+// `overdid-it` is drawn from the living room and learns nothing about
+// anybody's role; the scene records a bond and an arc, and no belief.
+const FEIGN_FEAR_LINES = {
+  'pitched-it-right': [
+    '{a} performed the exact right amount of fear at breakfast — no more, no less than anyone else.',
+    '{a} was frightened at precisely the average volume of the room, which took some doing.',
+    '{a} let their voice go once, briefly, and then got it back, and everybody saw both halves.',
+    'The trick is not looking calm. {a} knows that, and spent breakfast not looking calm.',
+    '{a} put their cup down a little too hard at the right moment and did not draw attention to having done it.',
+    'Whatever {a} was actually feeling, what the room got was an ordinary frightened person having an ordinary bad morning.',
+    '{a} asked the same two questions everybody else was asking, in the same order, and got no more attention for it.',
+    '{a} did not have to try. That is the part {a} thought about afterwards.',
+  ],
+  'borrowed-it': [
+    '{a} checked what frightened looked like on {b} and did that, about four seconds later, all morning.',
+    '{a} could not find it on their own, so {a} took it off {b} — the pause, the hand, the not finishing the sentence.',
+    '{b} reacted to the news and {a} reacted to {b}, which is a slower way to be frightened but a reliable one.',
+    'Every time {a} did not know what face to have, {a} looked at {b} and borrowed theirs.',
+    '{a} spent breakfast about half a beat behind {b}, and nobody in the room measured the half beat.',
+    '{a} let {b} set the volume for the whole table and stayed just underneath it.',
+    'It is easier to copy than to invent. {a} copied {b}, carefully, for an hour.',
+    '{a} would not have got through the morning without {b} in the room, and knew it.',
+  ],
+  'overdid-it': [
+    '{a} was rather more devastated than anybody else at that table, and {b} noticed the size of it.',
+    '{a} reached for it too early and too hard, and {b} watched the whole reach.',
+    'It was a lot. {b} could not have said what was wrong with it, only that there had been a lot of it.',
+    '{a} said the dead person\'s name three times before anybody else had said it once, and {b} counted.',
+    '{b} came away from breakfast unable to explain why {a} had bothered them, and unable to stop being bothered.',
+    'Nobody grieves wrong, exactly. {b} still thought {a} had grieved oddly.',
+    '{a} performed the fear of somebody who had not slept, and had rather obviously slept.',
+    '{b} did not say anything about it. {b} did not stop thinking about it either.',
+  ],
+  'could-not-today': [
+    '{a} could not make themselves do it this morning, and sat through breakfast with a completely ordinary face.',
+    'Everybody at that table was frightened. {a} was not, and could not find a way to look it.',
+    '{a} tried to summon something on the stairs and arrived downstairs with nothing, so {a} ate quietly instead.',
+    'There was no performance in {a} today. {a} decided that being quiet was safer than being bad at it.',
+    '{a} spent the meal looking at the plate, because the plate did not require a face.',
+    'The room was in pieces and {a} was hungry, and the gap between those two things frightened {a} more than the news had.',
+    '{a} could not get near it, so {a} did the washing up and stayed out of the room.',
+    'Some mornings the trick will not come. {a} sat very still and hoped the stillness read as shock.',
+  ],
+};
 
 registerEvent({
   id: 'cover-feign-fear',
   family: FAMILY,
   window: 'morning',
   // The second advancer in `cover|morning`.
-    citesResidue: true,
+  citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['social', 'temperament', 'boldness'],
+    alignment: ['original-traitor', 'recruited-traitor'],
+    relationship: ['neutral', 'close-ally'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     return actor && livingFaithfuls(ctx.ep).length ? 1 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-feign-fear');
-    const sceneWhy = 'performed being frightened for the room';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
-    const { thread, cited } = arcContinue(api, FAMILY, [actor], ctx.ep, lineFor(FEIGN_FEAR_LINES, `cover-feign-fear|${ctx.ep}`, { a: actor }),
-      { source: sceneWhy });
-    return { branch: 'feigned-fear', actor, threadId: thread?.id, cited };
+    const st = pStats(actor);
+    // THE ONE OTHER PERSON IN THE SCENE, and the room they are drawn from is
+    // the living cast, not the pact — this event says nothing about anybody's
+    // role and the witness must not be selected by one.
+    const room = (ctx.living || []).filter(n => n !== actor);
+    const other = room.length ? pick(rng, room) : null;
+    const archetype = players.find(p => p.name === actor)?.archetype || 'floater';
+    // A NICE ARCHETYPE WHO TOOK THE RECRUITMENT IS WORSE AT THIS, which is the
+    // same competence gap grief-morning-reaction's `opportunistic` branch
+    // reads, and for the same reason: the role gate grants the branch, the
+    // archetype decides how well it goes.
+    const niceButTraitor = NICE_ARCHETYPES.includes(archetype);
+    const scores = {
+      'pitched-it-right': (st.social / 10) * 0.45 + (st.temperament / 10) * 0.35 + (niceButTraitor ? -0.15 : 0.1),
+      'borrowed-it': other ? (st.intuition / 10) * 0.4 + (1 - st.boldness / 10) * 0.3 : 0,
+      'overdid-it': other ? (st.boldness / 10) * 0.35 + (niceButTraitor ? 0.3 : 0.05) : 0,
+      'could-not-today': (1 - st.social / 10) * 0.4 + (1 - st.temperament / 10) * 0.25,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'borrowed-it' ? 'copied somebody else\'s reaction to the news'
+      : branch === 'overdid-it' ? 'grieved a size too large for the room'
+        : branch === 'could-not-today' ? 'could not produce a reaction at all this morning'
+          : 'performed being frightened for the room';
+    const note = lineFor(FEIGN_FEAR_LINES[branch], `cover-feign-fear|${branch}|${ctx.ep}`,
+      { a: actor, b: other || 'somebody' });
+    // SOLO ARC. A story about an account is a story about ONE person — the
+    // party set is the performer, exactly as it was, so `threadScope: 'solo'`
+    // in the cover family keeps working.
+    const { thread, cited } = arcContinue(api, FAMILY, [actor], ctx.ep, note, { source: sceneWhy });
+    let bondDelta = 0;
+    if (branch === 'borrowed-it' && other) {
+      bondDelta = 0.5;
+      api.addBond(actor, other, bondDelta, { source: sceneWhy });
+    } else if (branch === 'overdid-it' && other) {
+      bondDelta = -1;
+      api.addBond(actor, other, bondDelta, { source: sceneWhy });
+    }
+    const out = { branch, actor, threadId: thread?.id, cited, bondDelta };
+    // WHO WAS ACTUALLY IN THE SCENE (found by reading a rendered day, and the
+    // first fix was not enough).
+    //
+    // `overdid-it` is a two-person scene: the other person watched the size of
+    // it and came away bothered, so they are a participant and the respondent,
+    // and the screen may answer in their voice.
+    //
+    // `borrowed-it` IS NOT. The whole branch is that the other person is
+    // copied WITHOUT KNOWING, so there is no exchange and nobody to answer.
+    // Returning the pair gave them a reaction card that read as somebody being
+    // handed something -- "Beardo takes it, keeps it, and gives no sign at all
+    // of what Beardo means to do with it" -- and dropping only the
+    // speaker/respondent did not help, because the screen's fallback heuristic
+    // then took the last name in the line and arrived at the same person. The
+    // scene is one person's, so it reports one person, and the screen composes
+    // it with the solo pools, which is what it is.
+    //
+    // The bond still lands -- the Traitor really did end the morning closer to
+    // the person they leaned on -- it simply no longer claims that person was
+    // in a scene. The same shape as any event that moves a bond with a named
+    // third party.
+    if (branch === 'overdid-it' && other) {
+      out.pair = [actor, other];
+      out.speaker = actor;
+      out.respondent = other;
+    }
+    if (branch === 'overdid-it') out.crowd = { name: actor, colour: 'exposed', mult: 0.3 };
+    return out;
   },
 });
 

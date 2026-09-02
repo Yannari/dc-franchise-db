@@ -145,38 +145,130 @@ registerEvent({
   },
 });
 
-const OVERHEARD_LINES = [
-  '{a} and {b} both clocked {c} and {d} deep in a conversation that stopped the second anyone got close.',
-  'Nobody heard a word of it, but {a} and {b} agreed: {c} and {d} were talking about SOMETHING.',
-  '{c} and {d} broke apart the moment {a} rounded the corner, and {b} had seen it too.',
-  '{a} pointed {b} at the pair of them without pointing at all — just a look, and {b} understood it.',
-  'It was the standing too close that did it. {a} and {b} both noticed how little air there was between {c} and {d}.',
-  '{c} laughed at something {d} said and neither of them looked comfortable doing it. {a} and {b} filed that away together.',
-];
+// ── REWRITE (Task 7 stage 5). Top of the blame table at 26 of 287 loud
+// seasons once `runWindow`'s barren-draw fix tripled `evening`'s throughput:
+// one branch, one six-line pool, on a broadly-gated event.
+//
+// SEEING TWO PEOPLE STOP TALKING IS NOT THE SCENE. What the two watchers do
+// about it is, and there are four things and they are not interchangeable —
+// agree what it was, argue about whether it was anything, go and ask, or take
+// it to somebody else. The fact underneath every one of them is the same and
+// is the only thing any branch asserts: {c} and {d} were talking and stopped.
+// Nobody in this scene claims to know what about.
+//
+// AND A SOLO BRANCH, for the reason the window needed one: a solo draw in
+// `evening` faced 0.51 eligible events against a pair draw's 8.49. One person
+// seeing it with nobody to confirm it is a worse position than two, which is
+// the whole point of the branch.
+const OVERHEARD_LINES = {
+  'agreed-what-it-was': [
+    '{a} and {b} both clocked {c} and {d} deep in a conversation that stopped the second anyone got close.',
+    'Nobody heard a word of it, but {a} and {b} agreed: {c} and {d} were talking about something.',
+    '{c} and {d} broke apart the moment {a} rounded the corner, and {b} had seen it too.',
+    '{a} pointed {b} at the pair of them without pointing at all — just a look, and {b} understood it.',
+    'It was the standing too close that did it. {a} and {b} both noticed how little air there was between {c} and {d}.',
+    '{c} laughed at something {d} said and neither of them looked comfortable doing it. {a} and {b} filed that away together.',
+  ],
+  'argued-about-it': [
+    '{a} thought {c} and {d} breaking apart like that meant something. {b} thought {a} needed to sit down.',
+    '"They were talking. People talk." {b} would not have it, and {a} could not make {b} see it.',
+    '{a} had watched {c} and {d} stop mid-sentence and {b} had watched two friends have a chat, and neither budged.',
+    '{b} pointed out that {a} had been walking past a lot of doors lately, and {a} did not enjoy that.',
+    'The argument stopped being about {c} and {d} and started being about how {a} was spending the evenings.',
+    '{a} wanted {b} to have seen what {a} saw. {b} had been standing right there and had seen nothing.',
+  ],
+  'went-and-asked': [
+    '{a} and {b} did the unusual thing and simply went and asked {c} what that had been about.',
+    'Rather than sit on it, {a} walked straight over to {c} and {d} with {b} half a step behind.',
+    '"What are we talking about?" {a} said, cheerfully, arriving. {c} answered. {d} answered slightly differently.',
+    '{a} and {b} asked {c} outright, and got an answer so ordinary that it was hard to know what to do with.',
+    '{b} would not let {a} theorise about it for an hour, so the two of them went and got the answer instead.',
+    'They asked. {c} explained. {a} believed it and {b} did not, and that was the end of the evening.',
+  ],
+  'told-somebody-else': [
+    '{a} and {b} did not keep what they had seen. By bedtime a third person had it, with the corner and the timing in it.',
+    'What {a} and {b} saw was in somebody else’s hands within the hour, and neither of them had decided to do that.',
+    '{a} told it once, to one person, carefully. {b} told it once, to another, less carefully.',
+    'It went round the castle in the shape {a} and {b} had put it in, which was not quite the shape it had happened in.',
+    '{b} said it should stay between them. It stayed between them and two other people.',
+    '{a} and {b} agreed not to make anything of it and then both made something of it separately.',
+  ],
+  'saw-it-alone': [
+    '{a} saw {c} and {d} stop talking and had nobody at all to check it against.',
+    'There was no witness. {a} came round the corner alone, saw two people go quiet, and carried on walking.',
+    '{a} would have liked somebody else to have seen it, because seeing a thing on your own is worth almost nothing here.',
+    '{c} and {d} stopped mid-sentence when {a} appeared, and {a} spent the rest of the evening deciding whether that was true.',
+    'By the time {a} got somewhere to think about it, {a} was no longer certain what {a} had actually seen.',
+    'It is a thin thing to hold on your own: two people, a corner, a silence.',
+    '{a} did not say anything about it to anybody, because there is no way to say it that does not sound like nothing.',
+    '{a} kept it, and kept turning it over, and it did not get any bigger for the turning.',
+    'Nobody else was in that corridor. {a} has learned what a fact with one witness is worth.',
+    '{a} went back past the same corner twenty minutes later, which is not a thing {a} would have admitted to.',
+    'By morning {a} had talked {a}’self out of it entirely, and by lunch back into it.',
+    '{a} tried saying it in {a}’s head and heard how it would sound out loud, and stopped.',
+    'Two people stopping talking is not evidence of anything, and {a} knew that, and could not let it go.',
+    '{a} has now watched that corner three times this week and has nothing to show for any of it.',
+    'It might have been nothing. Most things are nothing. {a} could not make this one be nothing.',
+    '{a} decided to mention it to somebody and then spent the evening auditioning who.',
+    'What {a} actually saw was a pause. What {a} was carrying by bedtime was rather larger than a pause.',
+    '{a} would have felt better if somebody else had been there and worse if they had disagreed.',
+  ],
+};
 
 registerEvent({
   id: 'susp-overheard-conversation',
   family: FAMILY,
   window: 'evening',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['intuition', 'boldness', 'temperament', 'social'],
+    knowledge: ['witnessed', 'incomplete'],
+    relationship: ['close-ally', 'neutral'],
+  },
   weight(ctx) {
-    if (ctx.actors?.length !== 2) return 0;
+    // WIDENED TO A SOLO DRAW (Task 7 stage 5) — see the header.
+    if (!ctx.actors?.length || ctx.actors.length > 2) return 0;
     if ((ctx.living || []).length < 4) return 0;
-    return 1.5;
+    return ctx.actors.length === 1 ? 1.2 : 1.5;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'susp-overheard-conversation');
-    const sceneWhy = 'overheard a conversation they were not in';
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
-    const i = Math.floor(rng() * others.length);
-    let j = Math.floor(rng() * others.length);
-    while (j === i && others.length > 1) j = Math.floor(rng() * others.length);
-    const c = others[i], d = others[j] ?? others[i];
-    api.addBond(a, b, 1, { source: sceneWhy }); // bonded over shared unease, not over the pair they watched
-    const note = pick(rng, OVERHEARD_LINES)
-      .replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, c).replace(/\{d\}/g, d);
+    const i2 = Math.floor(rng() * others.length);
+    let j2 = Math.floor(rng() * others.length);
+    while (j2 === i2 && others.length > 1) j2 = Math.floor(rng() * others.length);
+    const c = others[i2], d = others[j2] ?? others[i2];
+    if (!b) {
+      const soloWhy = 'saw two people stop talking, with nobody to confirm it';
+      const t = api.openArc(FAMILY, [a], { source: soloWhy,
+        seed: lineFor(OVERHEARD_LINES['saw-it-alone'], `susp-overheard-conversation|saw-it-alone|${ctx.ep}`,
+          { a, c, d }) });
+      return { branch: 'saw-it-alone', actor: a, observed: [c, d], threadId: t?.id, bondDelta: 0 };
+    }
+    const st = pStats(b);
+    const scores = {
+      'agreed-what-it-was': (st.intuition / 10) * 0.5 + Math.max(0, getBond(a, b)) / 10 * 0.35,
+      'argued-about-it': (st.temperament / 10) * 0.35 + Math.max(0, getBond(b, c)) / 10 * 0.4,
+      'went-and-asked': (st.boldness / 10) * 0.5 + (st.social / 10) * 0.25,
+      'told-somebody-else': (st.social / 10) * 0.4 + (1 - st.loyalty / 10) * 0.3,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s2, k) => s2 + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'argued-about-it' ? 'could not agree that they had seen the same thing'
+      : branch === 'went-and-asked' ? 'went and asked the two of them directly'
+        : branch === 'told-somebody-else' ? 'passed on what they had seen'
+          : 'overheard a conversation they were not in';
+    const bondDelta = branch === 'agreed-what-it-was' ? 1
+      : branch === 'argued-about-it' ? -1 : branch === 'went-and-asked' ? 0.5 : -0.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const note = lineFor(OVERHEARD_LINES[branch], `susp-overheard-conversation|${branch}|${ctx.ep}`,
+      { a, b, c, d });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'overheard', observers: [a, b], observed: [c, d], threadId: t?.id, bondDelta: 1 };
+    return { branch, pair: [a, b], speaker: a, respondent: b, observers: [a, b],
+      observed: [c, d], threadId: t?.id, bondDelta };
   },
 });
 
@@ -286,14 +378,55 @@ registerEvent({
   },
 });
 
-const WHISPER_LINES = [
-  '{a} and {b} spent breakfast quietly comparing notes on {c}, who had no idea.',
-  'Out of earshot of {c}, {a} told {b} exactly what they thought was going on there.',
-  '{a} waited until {c} was out of the room before finishing the sentence, and {b} understood why.',
-  '{a} and {b} kept their voices under the noise of the kitchen and said {c}\'s name in it twice.',
-  'Neither {a} nor {b} would have said any of it to {c}\'s face, which was rather the point of saying it here.',
-  '{b} asked what {a} made of {c}, and got a much longer answer than the question deserved.',
-];
+// ── REWRITE (Task 7 stage 5). `susp-whisper-about-absent:whispered` was on
+// the audit's REWRITE list ("one branch — the fork is in the wording, not in
+// the game") and on stage 4's blame table for the repetition ceiling. Both
+// complaints have one cause and one fix.
+//
+// SAYING A NAME TO SOMEBODY IS AN OFFER, AND THE OTHER PERSON ANSWERS IT.
+// Four answers, four different mornings, and the fork is `{b}`'s — a sharp
+// player agrees and adds to it, a strategic one puts a different name back
+// across the table, a loyal one will not talk about somebody who is not in
+// the room, and an ambitious one takes the read away to use tonight.
+//
+// The fact underneath every branch is unchanged, and is the one the old
+// version cited: `lastClosedThread` on the absent person — how the last
+// story about them ENDED, which is a record both people in this kitchen
+// watched being made.
+const WHISPER_LINES = {
+  'compared-notes': [
+    '{a} and {b} spent breakfast quietly comparing notes on {c}, who had no idea.',
+    'Out of earshot of {c}, {a} told {b} exactly what they thought was going on there, and {b} had the same list.',
+    '{a} waited until {c} was out of the room before finishing the sentence, and {b} finished it with them.',
+    '{a} and {b} kept their voices under the noise of the kitchen and said {c}\'s name in it twice.',
+    '{b} asked what {a} made of {c}, and got a much longer answer than the question deserved, and agreed with all of it.',
+    'Neither {a} nor {b} would have said any of it to {c}\'s face, which was rather the point of saying it here.',
+  ],
+  'named-somebody-else': [
+    '{a} said {c}. {b} heard it out, and then said a different name entirely, and made the case for it.',
+    '"Not {c}," {b} said. "{c} is loud. Loud is not the same thing." And then {b} said who.',
+    '{a} brought {c} to the table and {b} took the conversation somewhere else and would not bring it back.',
+    '{b} let {a} finish about {c} and then spent twice as long on somebody {a} had not been watching at all.',
+    '{a} and {b} came out of that kitchen with two names between them and no agreement about either.',
+    '{b} did not argue that {c} was clean. {b} argued that {c} was not the interesting one.',
+  ],
+  'would-not-join-in': [
+    '{a} started on {c} and {b} would not have it — not while {c} was on the other side of a door.',
+    '"Say it to them or don\'t say it," {b} told {a}, and went to get the milk.',
+    '{b} listened to about half of what {a} had to say about {c} and then asked {a} to stop.',
+    '{a} learned this morning that {b} does not talk about people who are not in the room, and that {b} minds when others do.',
+    '{b} did not defend {c}. {b} simply refused to be somebody {a} said that sort of thing to.',
+    '{a} got nothing back, and the nothing was pointed enough that {a} did not try again.',
+  ],
+  'took-it-away': [
+    '{b} agreed with every word {a} said about {c}, wrote none of it down, and had all of it by lunchtime.',
+    '{a} handed {b} a read on {c} for free. {b} took it, thanked them, and did not offer one back.',
+    '{b} said "leave it with me" about {c}, which {a} decided afterwards had not been an agreement at all.',
+    '{a} gave {b} the case against {c} and {b} was repeating a tidier version of it to somebody else within the hour.',
+    'Whatever {a} thought they were doing, {b} came out of that kitchen with something to spend.',
+    '{b} asked two more questions about {c} than the conversation needed and then closed it down.',
+  ],
+};
 
 registerEvent({
   id: 'susp-whisper-about-absent',
@@ -302,7 +435,13 @@ registerEvent({
   // The second advancer in `suspicion|morning`. One is not enough on its own:
   // the pair cooldown is five episodes, so a cell with a single advancer can
   // continue a given pair's story at most once every five rounds.
-    citesResidue: true,
+  citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['intuition', 'strategic', 'loyalty', 'social'],
+    knowledge: ['heard-with-source', 'incomplete'],
+    relationship: ['close-ally', 'neutral', 'rival'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -311,12 +450,31 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'susp-whisper-about-absent');
-    const sceneWhy = 'talked about somebody who was not in the room';
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others);
-    api.addBond(a, b, 1, { source: sceneWhy });
-    let note = pick(rng, WHISPER_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
+    const st = pStats(b);
+    const scores = {
+      'compared-notes': (st.intuition / 10) * 0.5 + Math.max(0, getBond(a, b)) / 10 * 0.4,
+      'named-somebody-else': (st.mental / 10) * 0.4 + (st.strategic / 10) * 0.35,
+      'would-not-join-in': (st.loyalty / 10) * 0.5 + Math.max(0, getBond(b, target)) / 10 * 0.4,
+      'took-it-away': (st.strategic / 10) * 0.45 + (1 - st.loyalty / 10) * 0.3,
+    };
+    const keys = Object.keys(scores);
+    const totalScore = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * totalScore, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'named-somebody-else' ? 'answered a name with a different name'
+      : branch === 'would-not-join-in' ? 'refused to talk about somebody who was not in the room'
+        : branch === 'took-it-away' ? 'took a read away without paying for it'
+          : 'talked about somebody who was not in the room';
+    const bondDelta = branch === 'compared-notes' ? 1.5
+      : branch === 'named-somebody-else' ? 0.5
+        : branch === 'would-not-join-in' ? -0.5 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    let note = lineFor(WHISPER_LINES[branch], `susp-whisper-about-absent|${branch}|${ctx.ep}`,
+      { a, b, c: target });
     // SPEC 5.5. Comparing notes on somebody IS remembering how the last story
     // about them ended. No day number here either - see the note in
     // susp-noticed-inconsistency.
@@ -326,7 +484,8 @@ registerEvent({
     else if (sense === 'cracked') note += ` They kept coming back to the thing that had already come out of ${target} once.`;
     else if (sense === 'coupled') note += ` Half of it was really about who ${target} had been spending their evenings with.`;
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
-    return { branch: 'whispered', pair: [a, b], about: target, threadId: thread?.id, cited, bondDelta: 1,
+    return { branch, pair: [a, b], speaker: a, respondent: b, about: target,
+      threadId: thread?.id, cited, bondDelta,
       crowd: { name: a, colour: 'cowardly', mult: 0.4 },
       priorOutcome: prior?.outcome ?? null };
   },
@@ -468,19 +627,59 @@ registerEvent({
 
 // ── Task 6 additions ────────────────────────────────────────────────────
 
-const TIMELINE_LINES = [
-  '{a} and {b} laid out {c}\'s account side by side, and it didn\'t line up cleanly.',
-  'Neither {a} nor {b} could quite make {c}\'s morning add up the way {c} told it.',
-  '{a} remembered {c} in the kitchen, {b} remembered {c} nowhere near it, and both of them were sure.',
-  'Between them, {a} and {b} could account for every hour of {c}\'s day except the one that mattered.',
-  '{b} walked {a} through where {c} said they had been, and it took two attempts to get to the end of it.',
-  '{a} counted it out on their fingers for {b}. The hours were there; {c} was not in all of them.',
-];
+const TIMELINE_LINES = {
+  'did-not-line-up': [
+    '{a} and {b} laid out {c}’s account side by side, and it did not line up cleanly.',
+    'Neither {a} nor {b} could quite make {c}’s morning add up the way {c} told it.',
+    '{a} remembered {c} in the kitchen, {b} remembered {c} nowhere near it, and both of them were sure.',
+    'Between them, {a} and {b} could account for every hour of {c}’s day except the one that mattered.',
+    '{b} walked {a} through where {c} said they had been, and it took two attempts to get to the end of it.',
+    '{a} counted it out on their fingers for {b}. The hours were there; {c} was not in all of them.',
+  ],
+  'checked-out': [
+    '{a} and {b} put {c}’s day together hour by hour and every one of them had somebody in it.',
+    'It held. {a} had wanted it not to hold, and said so to {b}, and {b} said the same.',
+    '{a} and {b} went looking for a gap in {c}’s evening and came out the other end with nothing at all.',
+    'Two people crosschecked {c} properly and had to admit, to each other, that {c} was where {c} said.',
+    'The account was dull and complete, which {b} pointed out is exactly what an account should be.',
+    '{a} and {b} cleared {c} between them and neither of them enjoyed it much.',
+  ],
+  'lost-the-hour': [
+    '{a} and {b} could not agree on what time any of it had been, and gave up on {c} entirely.',
+    'It turned out {a} and {b} did not have the same evening, never mind {c}’s.',
+    'Halfway through {b} realised {b} could not account for {b}’s own hour, which ended the exercise.',
+    '{a} and {b} set out to check {c} and spent twenty minutes establishing where the two of THEM had been.',
+    'Nobody in this castle wears a watch. {a} and {b} rediscovered that about {c}’s Tuesday.',
+    'The whole thing came apart on the question of when dinner had been.',
+  ],
+  'one-of-us-was-there': [
+    '{a} and {b} were checking {c}’s hour when {b} realised {b} had been in it.',
+    'It stopped being about {c} the moment {a} worked out that {b} had been in the same corridor.',
+    '{a} asked where {c} had been and {b} answered, and then had to explain how {b} knew.',
+    'The crosscheck on {c} put {b} somewhere {b} had not previously mentioned being, and {a} noticed.',
+    '{b} vouched for {c} rather more precisely than a person who was elsewhere could have.',
+    'Two people set out to place {c} and placed {b} instead, and only one of them was pleased about that.',
+  ],
+};
 
 registerEvent({
+  // ── REWRITE (Task 7 stage 5). One branch and one pool, on a broad dawn
+  // event: sixth on the blame table. The premise assumed its own answer — the
+  // account NEVER lined up — so the event could not report the ordinary case,
+  // which is that a crosscheck clears somebody.
+  //
+  // FOUR OUTCOMES, and the fourth is the one this premise was always going to
+  // reach: two people reconstructing a third person’s evening keep putting
+  // THEMSELVES into it.
   id: 'susp-timeline-crosscheck',
   family: FAMILY,
   window: 'dawn',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['mental', 'intuition', 'temperament'],
+    knowledge: ['witnessed', 'incomplete'],
+    relationship: ['neutral', 'rival'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -489,14 +688,32 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'susp-timeline-crosscheck');
-    const sceneWhy = 'crosschecked where people said they were';
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others);
-    api.addBond(a, b, 0.5, { source: sceneWhy });
-    const note = pick(rng, TIMELINE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
+    const sa = pStats(a), sb = pStats(b);
+    const scores = {
+      'did-not-line-up': (sa.intuition / 10) * 0.4 + (1 - Math.max(0, getBond(a, target)) / 10) * 0.3,
+      'checked-out': (sa.mental / 10) * 0.35 + Math.max(0, getBond(a, target)) / 10 * 0.35,
+      'lost-the-hour': (1 - sa.mental / 10) * 0.35 + (1 - sb.mental / 10) * 0.25,
+      'one-of-us-was-there': (sa.intuition / 10) * 0.3 + (1 - sb.temperament / 10) * 0.25,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'checked-out' ? 'crosschecked somebody and cleared them'
+      : branch === 'lost-the-hour' ? 'could not agree what time any of it had been'
+        : branch === 'one-of-us-was-there' ? 'found one of themselves inside the hour they were checking'
+          : 'crosschecked where people said they were';
+    const bondDelta = branch === 'did-not-line-up' ? 0.5
+      : branch === 'checked-out' ? 1 : branch === 'lost-the-hour' ? 0 : -1.5;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const note = lineFor(TIMELINE_LINES[branch], `susp-timeline-crosscheck|${branch}|${ctx.ep}`,
+      { a, b, c: target });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'crosschecked', pair: [a, b], about: target, threadId: t?.id, bondDelta: 0.5 };
+    return { branch, pair: [a, b], speaker: a, respondent: b, about: target,
+      threadId: t?.id, bondDelta };
   },
 });
 
@@ -554,38 +771,142 @@ registerEvent({
   },
 });
 
-const SHAPE_GUESS_LINES = [
-  '{a} and {b} sketched out, in whispers, who they thought was actually working together.',
-  '{a} named three people to {b} and drew a line between two of them, and {b} moved the line.',
-  'They agreed on the shape of it, {a} and {b} — a middle, an outside, and one person they could not place.',
-  '{a} asked {b} who they would put in a room together if they wanted to hear something true.',
-  'Between them, {a} and {b} built a map of the castle out of who sat where at breakfast.',
-  '{b} said a name. {a} said a second one and did not have to explain the connection.',
-];
+// ── REWRITE (Task 7 stage 5). Fourth on the blame table. It had two branch
+// LABELS — `shape-guessed` and `shape-redrawn` — but one scene: whether an
+// arc already existed changed the word on the record and nothing a viewer
+// could see. The pool was one six-line list serving both.
+//
+// FOUR THINGS THAT HAPPEN WHEN TWO PEOPLE DRAW THE ROOM, and one of them is
+// the one this event was always going to have to reach eventually: the map
+// has the person you are drawing it with on it.
+//
+//   agreed-the-map    — they get to one shape and both believe it.
+//   could-not-place-one — the map works except for one person, and the
+//                       exception is the interesting part.
+//   put-each-other-on-it — {b} works out that {a} has drawn {b} into a group
+//                       {b} is not in, and says so. This is where the scene
+//                       turns.
+//   redrew-it         — they already had a map and this one is different,
+//                       which is only possible when the arc exists.
+//   drew-it-alone     — THE SOLO BRANCH, for the window’s 0.51-per-solo-draw
+//                       problem. One person drawing the room has nobody to
+//                       move the lines, which is exactly what is wrong with it.
+const SHAPE_GUESS_LINES = {
+  'agreed-the-map': [
+    '{a} and {b} sketched out, in whispers, who they thought was actually working together.',
+    'They agreed on the shape of it, {a} and {b} — a middle, an outside, and no argument about either.',
+    '{a} asked {b} who they would put in a room together if they wanted to hear something true, and got the same three names {a} had.',
+    'Between them, {a} and {b} built a map of the castle out of who sat where at breakfast, and it held up.',
+    '{b} said a name. {a} said a second one and did not have to explain the connection.',
+    '{a} named three people to {b} and drew a line between two of them, and {b} agreed with the line.',
+  ],
+  'could-not-place-one': [
+    '{a} and {b} got the whole castle onto the map except one person, and stopped there for an hour.',
+    'Everybody fitted somewhere. One name would not sit anywhere {a} or {b} put it.',
+    '"Where does that leave them, then," {b} said, and {a} did not have an answer, and neither did {b}.',
+    'The map {a} and {b} built had a hole in it exactly one person wide.',
+    '{a} and {b} agreed on every group in the room and could not agree which one contained the one that mattered.',
+    'It was a good map. {b} kept coming back to the single name that was not on it.',
+  ],
+  'put-each-other-on-it': [
+    '{a} drew the room for {b} and put {b} in a group {b} is not in, and {b} said so.',
+    '"You’ve got me with them," {b} said, quietly. "Is that where you actually have me?"',
+    '{a} was three names into the map before {a} realised {b} had gone very still about one of them.',
+    '{b} let {a} finish the whole shape and then asked, pleasantly, which part of it {b} was in.',
+    'The map had {b} on it, and {a} had not thought about how that was going to sound out loud.',
+    '{a} found out this evening that {b} does not enjoy being drawn.',
+  ],
+  'redrew-it': [
+    '{a} and {b} had a shape for the castle a week ago and spent tonight taking it apart.',
+    'The map {a} and {b} had built did not survive this week, and they built another one.',
+    '"That was before," {b} said, moving two names, and {a} could not argue with either move.',
+    '{a} and {b} started from the old shape and finished somewhere that did not look like it at all.',
+    'Two people who had already agreed once found out they no longer did, and redrew it rather than fight about it.',
+    'It took {a} and {b} about ten minutes to establish that the room had changed underneath their map.',
+  ],
+  'drew-it-alone': [
+    '{a} drew the whole room in {a}’s head, with nobody there to move a single line.',
+    'Nobody to check it against, so {a} built the map alone and had to believe all of it.',
+    '{a} worked out who was with whom and got a shape {a} could not test on anybody.',
+    'It is easy to be certain about a room when there is nobody in it to disagree with you, and {a} was certain.',
+    '{a} put the castle into three groups and spent the rest of the evening moving one name between two of them.',
+    '{a} had a map by the end of the evening and no idea whether any of it was true.',
+    'The trouble with drawing it alone is that {a} could not tell which lines {a} had put there because they were there.',
+    '{a} went through the room in pairs, in {a}’s head, and found more pairs than the castle probably has.',
+    'By bedtime {a} had a whole architecture of the place, built out of who had said good morning to whom.',
+    '{a} would have liked somebody to argue with about it and could not think of anybody safe to ask.',
+    '{a} drew it once quickly and once slowly and got two different castles out of it.',
+    'Every group {a} came up with had one person in it who did not belong there.',
+    '{a} kept putting the same two names together and could not remember what for.',
+    'The map got smaller every time {a} did it, which {a} decided was either clarity or exhaustion.',
+    '{a} tried building it from the outside in for a change, and the middle came out empty.',
+    'By the end {a} had four groups and eleven people and no idea where {a} was in it.',
+    '{a} thought about writing it down and remembered what a written-down thing is worth here.',
+    'It is the sort of thing that is obvious at eleven at night and gone by breakfast, and it was.',
+  ],
+};
 
 registerEvent({
   id: 'susp-alliance-shape-guess',
   family: FAMILY,
   window: 'evening',
   advancesThread: true,
-  weight(ctx) {
-    if (ctx.actors?.length !== 2) return 0;
-    if ((ctx.living || []).length < 4) return 0;
-    return 1.5;
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous'],
+    voice: ['strategic', 'intuition', 'temperament'],
+    relationship: ['close-ally', 'neutral', 'rival'],
+    knowledge: ['incomplete', 'witnessed'],
   },
-  fire(ctx) {
+  weight(ctx) {
+    // WIDENED TO A SOLO DRAW (Task 7 stage 5) — see the header.
+    if (!ctx.actors?.length || ctx.actors.length > 2) return 0;
+    if ((ctx.living || []).length < 4) return 0;
+    return ctx.actors.length === 1 ? 1.2 : 1.5;
+  },
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'susp-alliance-shape-guess');
-    const sceneWhy = 'guessed at the shape of the room';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 0.5, { source: sceneWhy });
+    if (!b) {
+      const soloWhy = 'drew the shape of the room with nobody to check it';
+      const t = api.openArc(FAMILY, [a], { source: soloWhy,
+        seed: lineFor(SHAPE_GUESS_LINES['drew-it-alone'], `susp-alliance-shape-guess|drew-it-alone|${ctx.ep}`, { a }) });
+      return { branch: 'drew-it-alone', actor: a, threadId: t?.id, bondDelta: 0 };
+    }
     const existing = findOpenThread(FAMILY, [a, b]);
-    const note = lineFor(SHAPE_GUESS_LINES, `susp-alliance-shape-guess|${ctx.ep}|${!!existing}`, { a, b });
+    const st = pStats(b);
+    // THE ARC DECIDES WHETHER `redrew-it` EXISTS — two people cannot redraw a
+    // map they have never drawn — and the stats decide among the rest. Same
+    // rule the stage-4 library uses: the record picks the set.
+    const scores = {
+      'agreed-the-map': (st.strategic / 10) * 0.4 + Math.max(0, getBond(a, b)) / 10 * 0.35,
+      'could-not-place-one': (st.intuition / 10) * 0.45 + 0.15,
+      'put-each-other-on-it': (st.temperament / 10) * 0.2 + (1 - Math.max(0, getBond(a, b)) / 10) * 0.4,
+      'redrew-it': existing ? (st.mental / 10) * 0.4 + 0.4 : 0,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = keys[keys.length - 1];
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'could-not-place-one' ? 'could not fit one person onto the map'
+      : branch === 'put-each-other-on-it' ? 'drew the other one into a group they say they are not in'
+        : branch === 'redrew-it' ? 'took a map they had already agreed and rebuilt it'
+          : 'guessed at the shape of the room';
+    const bondDelta = branch === 'agreed-the-map' ? 1
+      : branch === 'could-not-place-one' ? 0.5 : branch === 'put-each-other-on-it' ? -1.5 : 0.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const note = lineFor(SHAPE_GUESS_LINES[branch], `susp-alliance-shape-guess|${branch}|${ctx.ep}`, { a, b });
     const t = existing
       ? api.advanceArc(existing.id, note, { source: sceneWhy })
       : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    // THE BRANCH CARRIES THE STATE: two people drawing the map for the first
-    // time and two people redrawing one they already have are not one scene.
-    return { branch: existing ? 'shape-redrawn' : 'shape-guessed', pair: [a, b], threadId: t?.id, bondDelta: 0.5 };
+    // ON `put-each-other-on-it` THE ANSWERER TAKES THE SCENE OVER, and the
+    // blanket [a, b] direction handed the reaction card to the wrong one.
+    // Found by reading a rendered day: {b} objects to having been drawn into a
+    // group, which makes {a} -- who drew the map -- the person now answering
+    // for it, and the screen was giving the defensive line to {b}. Same shape,
+    // and same fix, as `saw-through-it` in js/tr/castle/testing.js.
+    const bTakesIt = branch === 'put-each-other-on-it';
+    return { branch, pair: [a, b], speaker: bTakesIt ? b : a, respondent: bTakesIt ? a : b,
+      threadId: t?.id, bondDelta };
   },
 });
 

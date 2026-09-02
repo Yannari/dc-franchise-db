@@ -3971,7 +3971,7 @@ export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
     + '<div class="dy-grain"></div>'
     + '</div>'
     + '<div class="dy-body">'
-    + '<div class="dy-hero">' + _heroScene(stories)
+    + '<div class="dy-hero">' + '' /* loom hero removed — user found it out of place */
     + '<div class="dy-hero-lock">'
     + '<div class="dy-eyebrow">The Traitors &middot; Day ' + (v.ep || epNum)
     + ' &middot; ' + (segment ? SEGMENT_META[segment].eyebrow : 'Dawn To Dark') + '</div>'

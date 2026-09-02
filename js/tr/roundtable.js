@@ -20,7 +20,8 @@ import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getBond } from '../bonds.js';
 import { resolveVotes } from '../voting.js';
-import { learn } from '../knowledge.js';
+import { learn, believes } from '../knowledge.js';
+import { knowersOf } from './knowledge-flow.js';
 import { alignmentAt } from './roles.js';
 import { alignmentFactId, suspicionBoard, chooseBanishmentVote, recordRound, revealCascade } from './deduction.js';
 import { exitSpeech } from './exit.js';
@@ -78,6 +79,109 @@ function debate(ep, rng) {
   }
   for (const a of accusations) broadcast(a.accuser, a.target, ep, rng);
   return accusations;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// SPEECHES — a claim, the evidence behind it, and who it moved
+// ══════════════════════════════════════════════════════════════════════
+//
+// The debate above produces ACCUSATIONS — a name pointed at a name. A SPEECH
+// is the same act with its provenance attached: what the speaker actually
+// knows that makes the claim sayable, and which listeners the claim moved.
+//
+// THE OBSERVER-SAFETY LOAD IS HERE. A speech's `sources` are derived from the
+// speaker's OWN stored belief about the target, so by construction a speaker
+// can only cite a record they hold — a Faithful cannot cite Traitor-only
+// knowledge because a Faithful never holds a Traitor-only belief. Two rules
+// are applied on top, both of which make a mutant bite:
+//
+//   1. A `public`-tier alignment belief is NEVER a table source. `public` is
+//      the closed set of things a player KNOWS rather than suspects — the
+//      turret seeding, the banishment reveal, a recruit shown the turret. None
+//      of those is a fresh accusation; airing one would put certain-alignment
+//      knowledge into the debate record, which is the exact leak spec §8 and
+//      the deduction ceiling exist to prevent. The debate never routes a
+//      Traitor to accuse a fellow, so a turret source cannot reach here on the
+//      live path — but the filter is what proves that, not the routing.
+//   2. A belief the speaker has themselves marked FALSE (the intuition prior
+//      that clears an innocent) or that has gone STALE is not a source: the
+//      speaker no longer believes it, so citing it would be putting words in
+//      their mouth.
+//
+// A speaker with no knowable, non-public, live suspicion of their top read
+// gets NO speech — the show would rather say nothing than invent a reason. So
+// `speeches` is a subset of `accusations`, never larger.
+
+/**
+ * Does `speaker` actually hold `source` as of `ep`? True when they carry the
+ * belief the source is drawn from, or are a recorded knower of its fact.
+ *
+ * EXPORTED because it is the test's gate on every speech (spec: a Faithful may
+ * never cite Traitor-only information) and the one function that answers "may
+ * this speaker say this" without the caller reaching into the belief store.
+ */
+export function knows(speaker, source, ep) {
+  if (!speaker || !source || !source.factId) return false;
+  if (believes(speaker, source.factId, ep)) return true;
+  return knowersOf(source.factId, ep).includes(speaker);
+}
+
+// A belief whose only provenance is another player's accusation at the table
+// is not a REASON the speaker can cite — it is "somebody else said so". The
+// broadcast writes its source as `${accuser} at the Round Table` (see
+// `broadcast` above), so a speech built on one would cite the rumour rather
+// than any evidence. A speaker with nothing but this gets no speech; the room
+// suspecting a name it cannot justify is a real thing the format does, and it
+// belongs in the bare-accusation path, not dressed up as a cited claim.
+const _BROADCAST_SOURCE = / at the Round Table$/;
+
+/** The evidence `speaker` may cite against `target`, or [] if none is sayable. */
+function _sourcesFor(speaker, target, ep) {
+  const b = believes(speaker, alignmentFactId(target), ep);
+  if (!b) return [];
+  if (b.valence === 'false' || b.valence === 'stale') return [];
+  if (b.sourceType === 'public') return [];
+  if ((b.effectiveConfidence || 0) <= 0) return [];
+  if (typeof b.source === 'string' && _BROADCAST_SOURCE.test(b.source)) return [];
+  return [{
+    factId: alignmentFactId(target),
+    subject: target,
+    kind: b.sourceType,                       // 'deduced' | 'rumor'
+    text: b.source || 'a read they could not fully place',
+  }];
+}
+
+/**
+ * Turn the round's accusations into speeches, dropping any the speaker cannot
+ * back with a record they hold. Reads only — the debate already broadcast, so
+ * this takes no rng draw and writes no belief; a season is bit-identical with
+ * or without it being called.
+ *
+ * `swayed` is every listener whose belief about the target now carries this
+ * speaker as its source — the broadcast reached them and they accepted it.
+ * `mindChanges` narrows that to the listeners the speech moved to the TOP of
+ * their board: people who would now write this name, and did so because of
+ * something that was said, not because the writer needed a flip.
+ */
+export function speechesFrom(accusations, ep) {
+  const living = gs.activePlayers || [];
+  const speeches = [];
+  for (const a of accusations) {
+    const sources = _sourcesFor(a.accuser, a.target, ep);
+    if (!sources.length) continue;
+    const room = living.filter(n => n !== a.accuser && n !== a.target);
+    const swayed = room.filter(l => {
+      const lb = believes(l, alignmentFactId(a.target), ep);
+      return lb && typeof lb.source === 'string' && lb.source.indexOf(a.accuser) >= 0
+        && lb.valence !== 'false' && (lb.effectiveConfidence || 0) > 0;
+    });
+    const mindChanges = swayed.filter(l => {
+      const board = suspicionBoard(l, ep, living);
+      return board[0] && board[0].name === a.target && board[0].score > 0;
+    });
+    speeches.push({ speaker: a.accuser, target: a.target, sources, swayed, mindChanges });
+  }
+  return speeches;
 }
 
 /**
@@ -299,7 +403,12 @@ export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
   const round = { ep, banished, banishedWasTraitor: wasTraitor, murdered: null,
     // THE WHOLE TABLE, revotes included — see the note on `betrayals`. By this
     // line the tie loop has finished, so `revotes` is complete.
-    ballots, revotes, accusations, betrayals: betrayals({ ballots, revotes }, ep) };
+    ballots, revotes, accusations, betrayals: betrayals({ ballots, revotes }, ep),
+    // The accusations with their provenance and reach attached. A pure read of
+    // beliefs the debate already formed — see `speechesFrom`. Every speech
+    // cites a source the speaker holds; the VP renders claim/response/
+    // mind-change beats off it.
+    speeches: speechesFrom(accusations, ep) };
   if (daggerHolder) {
     // Recorded on the round, because the room watched it happen: the draw is
     // public even though the win was not. `votes` is read off the exported

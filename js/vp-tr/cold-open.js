@@ -65,6 +65,7 @@ import { pronouns } from '../players.js';
 import { exitVerbs, roundExits } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../quick-setup.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
+import { portraitWall, PORTRAIT_WALL_CSS, WALL_MURDERED, WALL_BANISHED } from './portrait-wall.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 
@@ -814,7 +815,27 @@ const CO_CSS = `
   .co-place{width:52px}
 }
 
-/* ── REDUCED MOTION — every animation off ───────────────────────────── */
+/* ── THE HOLD, THE REACTIONS, THE WALL ──────────────────────────────── */
+.co-hold{display:flex;align-items:center;gap:18px;margin-top:12px;
+  padding:14px 16px;border:1px solid rgba(201,40,60,.28);border-radius:6px;
+  background:linear-gradient(180deg,rgba(142,21,38,.08),rgba(8,12,19,.2))}
+.co-hold-n{font-family:var(--co-display);font-weight:900;font-size:44px;line-height:1;
+  color:var(--co-wax-hot);flex:none}
+.co-hold-t{font-family:var(--co-body);font-size:14px;color:rgba(233,240,245,.7);line-height:1.4}
+.co-react{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.co-react-row{display:flex;align-items:center;gap:12px}
+.co-react-row .cv-av{flex:none}
+.co-react-tx{font-family:var(--co-body);font-size:13.5px;color:rgba(233,240,245,.78);line-height:1.42}
+.co-react-tx b{color:var(--co-frost);font-weight:600}
+.co-eyes{margin-top:12px;padding:13px 15px;border-left:2px solid rgba(201,40,60,.5);
+  background:rgba(142,21,38,.06);border-radius:0 5px 5px 0}
+.co-eyes-h{font-family:var(--co-display);font-weight:700;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--co-wax-hot);margin-bottom:6px}
+.co-eyes-faces{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.co-wall-wrap{margin-top:14px}
+
+/* ── RESPONSIVE (cont) & REDUCED MOTION — every animation off ───────── */
+@media(max-width:700px){.co-hold{flex-direction:column;text-align:center}}
 @media(prefers-reduced-motion:reduce){
   .co-root *,.co-root *::before,.co-root *::after{animation:none!important;transition:none!important}
   .co-beat.co-vis .co-card,.co-beat.co-vis .co-host{opacity:1;transform:none;filter:none}
@@ -822,7 +843,7 @@ const CO_CSS = `
      put the end state back or nobody ever comes down */
   .co-place[data-down="1"] .cv-av{opacity:1;transform:none}
 }
-` + PORTRAIT_CSS;
+` + PORTRAIT_CSS + PORTRAIT_WALL_CSS;
 
 // ══════════════════════════════════════════════════════════════════════
 // THE WORDS — four variants minimum per slot, picked off a hash of the facts
@@ -996,6 +1017,79 @@ const DAY_TEXT = [
   + 'morning.',
 ];
 
+// ── the hold: down to the last places, the room watching the door ──────
+const HOLD_TEXT = [
+  'It comes down to the last places, and the counting stops being quiet. The room is '
+  + 'watching the foot of the stair now, openly, the way you watch a door you are not sure '
+  + 'is going to open.',
+  'Two settings left, and the whole table has found the same two chairs. Nobody is pretending '
+  + 'to eat. The stair is the only thing anybody is listening to.',
+  'The morning narrows to the places still empty. Every head is half-turned toward the door, '
+  + 'and the silence has weight to it now — the good kind of quiet has gone.',
+  'And then the arithmetic runs out of easy answers. A couple of places, no more, and the '
+  + 'room holds there, watching, because a last empty chair only ever means one thing.',
+];
+const HOLD_SAID = [
+  'Come on. Come on, come down.',
+  'Two more. We are waiting on two.',
+  'Please just be slow. Please just be slow this morning.',
+  'Do not make me count again.',
+];
+// ── the relief that leaves one place as the only answer ────────────────
+const RELIEF_TEXT = [
+  '{who} comes down, and the breath the room lets out is loud enough to hear. Relief — real, '
+  + 'ugly relief — and it lasts exactly as long as it takes everyone to see that one place '
+  + 'is still empty.',
+  'The stair gives up {who}, and half the table sags with the relief of it. Then the other '
+  + 'half does the sum that is left, and the relief curdles: there is still a setting nobody '
+  + 'is sitting at.',
+  'Then {who}, at last, and the room nearly cheers before it remembers itself — because {who} '
+  + 'coming down does not fill the place everyone is really watching.',
+  '{who} arrives to a room that almost laughs with relief, and the laugh dies in the same '
+  + 'second, because the arithmetic only has one answer left in it now.',
+];
+// ── grief, gated on a real stored bond ─────────────────────────────────
+const GRIEF_TEXT = [
+  '{who} does not do it quietly. {Sub} was close to {vic} — it showed all week — and there is '
+  + 'no version of this morning where {sub} holds that in.',
+  'It lands hardest on {who}. {Sub} and {vic} had something real, and {sub} is not going to '
+  + 'pretend otherwise for the benefit of the table.',
+  '{who} goes very still, then not still at all. {Sub} counted {vic} a friend and the room '
+  + 'watches {obj} lose the fight to keep {pos} face steady.',
+  '{who} says {vic}’s name once, cracks on it, and stops trying. Whatever else is true in '
+  + 'this room, that grief is not a performance — the two of them were close and the table '
+  + 'knew.',
+];
+const GRIEF_SAID = [
+  'Not {vic}. Anyone but {vic}.',
+  'I said goodnight to {obj}. I said see you in the morning.',
+  'We had a plan for today. {Sub} and me. We had a plan.',
+  'They picked the one person in here I actually trusted.',
+];
+// ── composed: the cold-bonded, who lose nothing ───────────────────────
+const COMPOSED_TEXT = [
+  'Not everyone is undone. {names} keep their faces level — no bond with {vic} to break, and '
+  + 'a morning like this is when the room learns exactly who was close to whom.',
+  '{names} take it standing, dry-eyed. It is not coldness so much as distance: {vic} was never '
+  + 'theirs to lose, and the grief map of the room is being drawn in real time.',
+  'A few of them — {names} — do not flinch. The table reads that too. Who breaks and who does '
+  + 'not is its own kind of information this morning.',
+];
+// ── the eyes turn: pushedThenDied, shown never stated ──────────────────
+const EYES_TEXT = [
+  'And then the room does the other thing it does now. {vic} was the name {who} spent last '
+  + 'night pushing at the table — and {vic} is the name the night took. Nobody says it. '
+  + 'Everybody thinks it, and the looks that find {who} across the toast are not friendly ones.',
+  'Somebody remembers out loud who wanted {vic} gone yesterday. It was {who}. And now {vic} '
+  + 'is a turned-over cup, and {who} is a person the room is suddenly reading very carefully.',
+  'There is a colder arithmetic underneath the grief. {who} argued hardest against {vic} last '
+  + 'night; this morning {vic} is dead. It does not prove anything. It does not have to — the '
+  + 'eyes are already moving.',
+  'The table has a long memory and a short fuse this morning. {who} pushed {vic} at the Round '
+  + 'Table, {vic} did not come down, and the room has quietly filed that away where it files '
+  + 'the things it means to use.',
+];
+
 const MURMUR = [
   'the pipes ticking as the building warms',
   'somebody laughing in the corridor and stopping',
@@ -1106,6 +1200,17 @@ function _view(ep, observer) {
     missing,
     // AUDIENCE ONLY — see the note above.
     blocked: isAudience ? !!dawn.blocked : false,
+    // THE REACTIONS THE MORNING EARNS, computed in js/tr/headless.js off bonds
+    // and last night's public ballots — never a raw alignment. Faithful-safe
+    // on every layer, so it is not stripped. `null` on episode one and on any
+    // morning with no record.
+    breakfast: (dawn.breakfast && missing.length) ? {
+      victims: [...(dawn.breakfast.victims || [])],
+      pushed: dawn.breakfast.pushed || {},
+      grief: (dawn.breakfast.grief || []).map(g => ({ ...g })),
+      composed: [...(dawn.breakfast.composed || [])],
+      namer: dawn.breakfast.namer || null,
+    } : null,
   };
 }
 
@@ -1123,6 +1228,43 @@ function _view(ep, observer) {
 function _arrivalOrder(v) {
   return [...v.room].sort((a, b) =>
     _hash('co|stair|' + v.ep + '|' + a) - _hash('co|stair|' + v.ep + '|' + b));
+}
+
+/** Join a name list into a phrase: "A", "A and B", "A, B and C". */
+function _names(list) {
+  const l = list.filter(Boolean).map(_esc);
+  if (!l.length) return '';
+  if (l.length === 1) return l[0];
+  if (l.length === 2) return l[0] + ' and ' + l[1];
+  return l.slice(0, -1).join(', ') + ' and ' + l[l.length - 1];
+}
+
+// HOW THE MORNING COMES DOWN, and it is not the same rhythm every episode.
+//
+// A roll call reads identically every night; a real breakfast has a shape, and
+// the shape is different each time — a crowd that arrives together, a tense
+// front-loaded rush, a slow trickle down to the last stragglers. Chosen by a
+// hash of the morning so it is stable on replay and DIFFERS across episodes,
+// never rolled. It only decides how the arrivals are CLUSTERED into beats; the
+// last person is always held out separately (see `_buildBeats`) so the hold at
+// the final places can breathe.
+function _groupsFor(list, shape) {
+  const n = list.length;
+  if (n <= 1) return n ? [list] : [];
+  if (n === 2) return [[list[0]], [list[1]]];
+  if (shape === 1) {                    // a crowd comes down together, then a few
+    const c = Math.ceil(n * 0.62);
+    return [list.slice(0, c), list.slice(c)].filter(g => g.length);
+  }
+  if (shape === 2) {                    // front-loaded: singles, then the bulk
+    return [list.slice(0, 1), list.slice(1, 2), list.slice(2)].filter(g => g.length);
+  }
+  if (shape === 3) {                    // the bulk early, then a slow trickle
+    const c = Math.max(1, n - 2);
+    return [list.slice(0, c), list.slice(c, c + 1), list.slice(c + 1)].filter(g => g.length);
+  }
+  const t = Math.ceil(n / 3);           // steady thirds
+  return [list.slice(0, t), list.slice(t, 2 * t), list.slice(2 * t)].filter(g => g.length);
 }
 
 function _buildBeats(v) {
@@ -1147,16 +1289,17 @@ function _buildBeats(v) {
 
   // ── the castle comes down ───────────────────────────────────────────
   //
-  // Three arrival beats regardless of the size of the room, so the rhythm of
-  // the morning is the same on night one and at a table of four. The GROUPS
-  // change size, not the number of beats — a screen whose length tracks the
-  // cast reads as long early and abrupt late, which is backwards.
-  const groups = [];
-  if (order.length) {
-    const rest = order.slice(1);
-    const half = Math.ceil(rest.length / 2);
-    groups.push(order.slice(0, 1), rest.slice(0, half), rest.slice(half));
-  }
+  // The SHAPE of the arrivals varies with the morning (see `_groupsFor`), so
+  // no two breakfasts run the identical roll call — but the last person down
+  // is always held out of the groups, because the tension the format lives on
+  // is the last places, and it needs a beat of its own to breathe.
+  const hasGap = v.missing.length > 0;
+  const holdOut = hasGap && order.length >= 2;
+  const early = holdOut ? order.slice(0, -1) : order;
+  const lastOne = holdOut ? order[order.length - 1] : null;
+  const shape = _hash('co|shape|' + key) % 4;
+  const groups = _groupsFor(early, shape);
+
   const arrivedSoFar = [];
   groups.forEach((g, gi) => {
     if (!g.length) return;
@@ -1164,7 +1307,7 @@ function _buildBeats(v) {
     const who = g[0];
     const heard = _pickAway(v.arrival ? ARRIVE_SAID : DOWN_SAID,
       key + '|said|' + gi + '|' + who, said);
-    const body = gi === 0
+    const body = (gi === 0 && g.length === 1)
       ? '<p>' + _fill(_pick(DOWN_TEXT, key + '|down|' + who), { who: _esc(who) }) + '</p>'
         + _said(who, _esc(heard))
       : '<p>' + _pick(DOWN_MORE, key + '|more|' + gi) + '</p>'
@@ -1172,7 +1315,7 @@ function _buildBeats(v) {
         + _said(who, _esc(heard));
     push('down', _card(
       gi === 0 ? (v.arrival ? 'Through The Door' : 'Down First')
-        : gi === 1 ? 'And Then The Rest' : 'The Last Of Them',
+        : gi === groups.length - 1 ? 'And The Rest' : 'They Keep Coming',
       gi === 0 ? 'The stair' : 'Arrivals', gi === 0 ? 'stair' : 'head', body),
     gi === 0 ? (v.arrival ? 'arrive' : 'open') : null,
     { kind: 'down', down: [...arrivedSoFar] });
@@ -1180,7 +1323,7 @@ function _buildBeats(v) {
 
   // ── the room counts itself ──────────────────────────────────────────
   const seatBits = [
-    ['At the table', String(v.room.length)],
+    ['At the table', String(arrivedSoFar.length)],
     ['Places laid', String(v.room.length + v.missing.length)],
   ];
   if (!v.arrival) seatBits.push(['Chairs back', String(v.gone.length), true]);
@@ -1188,38 +1331,121 @@ function _buildBeats(v) {
     v.arrival ? 'Strangers, And One Secret' : 'The Room Counts Itself',
     'The count', 'plate',
     '<p>' + _pick(COUNT_TEXT, key + '|count') + '</p>' + _countStrip(seatBits)),
-  null, { kind: 'count', down: [...v.room] });
+  null, { kind: 'count', down: [...arrivedSoFar] });
 
   // ── the gap, or the absence of one ──────────────────────────────────
-  if (v.missing.length) {
+  if (hasGap) {
+    const bf = v.breakfast;
+    const V = _verbs();
+
+    // ── THE HOLD, at the last places. Only when someone was held out. ──
+    if (holdOut) {
+      const remaining = (v.room.length - arrivedSoFar.length) + v.missing.length;
+      push('count', _card('Down To The Last Places', 'The wait', 'plate',
+        '<p>' + _pick(HOLD_TEXT, key + '|hold') + '</p>'
+        + '<div class="co-hold"><span class="co-hold-n">' + remaining + '</span>'
+        + '<span class="co-hold-t">places still empty, and the room is done pretending '
+        + 'to look anywhere but the stair.</span></div>'
+        + _said(order[0] || lastOne, _esc(_pick(HOLD_SAID, key + '|holdsaid')))),
+      null, { kind: 'hold', down: [...arrivedSoFar] });
+
+      // ── THE RELIEF, that leaves the murdered place as the only answer ──
+      push('down', _card('And Then One More', 'The stair', 'stair',
+        '<p>' + _fill(_pick(RELIEF_TEXT, key + '|relief'), { who: _esc(lastOne) }) + '</p>'),
+      null, { kind: 'relief', down: [...v.room] });
+    }
+
+    // ── THE REVEAL — a cup turned over, and the wall answers who ───────
     const m = v.missing[0];
     const pr = _pr(m.name);
+    // The whole cast as a wall, the murdered struck through and lit — this is
+    // Task 9's consumer of the shared portrait-wall component.
+    const wallState = {};
+    for (const g of v.gone) {
+      wallState[g.name] = (g.channel === 'murder' || g.verb === V.night)
+        ? WALL_MURDERED : WALL_BANISHED;
+    }
+    for (const x of v.missing) wallState[x.name] = WALL_MURDERED;
+    const wall = portraitWall({ names: v.cast, state: wallState,
+      highlight: v.missing.map(x => x.name), size: 46 });
     let inner = '<p>' + _pick(GAP_TEXT, key + '|gap') + '</p>'
       + '<div class="co-gap"><span class="co-gap-cup">'
       + _ic('cupdown', 52, 'rgba(201,40,60,.85)') + '</span>'
       + '<div><div class="co-gap-nm">' + _esc(m.name) + '</div>'
       + '<div class="co-gap-verb">' + _esc(_cap(m.verb)) + ' &middot; overnight</div></div></div>';
     if (v.missing.length > 1) {
-      inner += '<p>' + _pick(GAP_DOUBLE, key + '|dbl') + '</p>'
-        + '<div class="co-arrivals">'
-        + v.missing.slice(1).map(x => _faceChip(x.name, 26)).join('') + '</div>';
+      inner += '<p>' + _pick(GAP_DOUBLE, key + '|dbl') + '</p>';
     }
     inner += _said(order[Math.min(1, order.length - 1)] || order[0] || m.name,
-      _fill(_pick(GAP_SAID, key + '|gapsaid'), { them: _esc(pr.obj) }));
+      _fill(_pick(GAP_SAID, key + '|gapsaid'), { them: _esc(pr.obj) }))
+      + '<div class="co-wall-wrap">' + wall + '</div>';
     push('gap', _card('The Cup Is Turned Over', 'The gap', 'cupdown', inner),
       'gap', { kind: 'gap', down: [...v.room], gap: v.missing.map(x => x.name) });
 
-    push('told', _card('Said Out Loud, Once', 'Confirmed', 'bell',
-      '<p>' + _fill(_pick(TOLD_TEXT, key + '|told'),
-        { Nm: _esc(m.name) + ' was ' + _esc(m.verb) }) + '</p>'
-      + (v.missing.length > 1
-        ? '<p>And then the second name, in the same three words, and the room hears that one '
-          + 'from a long way off.</p>'
-        : '')
-      + _countStrip([['Standing', String(v.room.length)],
-        ['Chairs back', String(v.gone.length), true]])),
-    null, { kind: 'told', down: [...v.room], gap: v.missing.map(x => x.name) });
+    // ── GRIEF, and only where a real bond backs it ────────────────────
+    if (bf && bf.grief && bf.grief.length) {
+      const g0 = bf.grief[0];
+      const gpr = _pr(g0.mourner);
+      let ginner = '<p>' + _fill(_pick(GRIEF_TEXT, key + '|grief'),
+        { who: _esc(g0.mourner), vic: _esc(g0.victim), sub: gpr.sub, Sub: gpr.Sub,
+          obj: gpr.obj, pos: gpr.pos }) + '</p>'
+        + '<div class="co-react">';
+      for (const g of bf.grief.slice(0, 3)) {
+        const p2 = _pr(g.mourner);
+        ginner += '<div class="co-react-row">' + _av(g.mourner, 40)
+          + '<span class="co-react-tx"><b>' + _esc(g.mourner) + '</b> '
+          + _fill(_pick(GRIEF_SAID, key + '|gs|' + g.mourner),
+            { vic: _esc(g.victim), obj: _pr(g.victim).obj, Sub: p2.Sub, sub: p2.sub })
+          + '</span></div>';
+      }
+      ginner += '</div>';
+      push('told', _card('The Ones Who Felt It', 'Grief', 'cup', ginner),
+        null, { kind: 'grief', down: [...v.room], gap: v.missing.map(x => x.name) });
+    }
 
+    // ── SAID OUT LOUD, ONCE — and who did not flinch ──────────────────
+    let tinner = '<p>' + _fill(_pick(TOLD_TEXT, key + '|told'),
+      { Nm: _esc(m.name) + ' was ' + _esc(m.verb) }) + '</p>';
+    if (v.missing.length > 1) {
+      tinner += '<p>And then the second name, in the same three words, and the room hears '
+        + 'that one from a long way off.</p>';
+    }
+    if (bf && bf.composed && bf.composed.length) {
+      tinner += '<p>' + _fill(_pick(COMPOSED_TEXT, key + '|comp'),
+        { names: _names(bf.composed.slice(0, 3)), vic: _esc(m.name) }) + '</p>';
+    }
+    tinner += _countStrip([['Standing', String(v.room.length)],
+      ['Chairs back', String(v.gone.length), true]]);
+    push('told', _card('Said Out Loud, Once', 'Confirmed', 'bell', tinner),
+      null, { kind: 'told', down: [...v.room], gap: v.missing.map(x => x.name) });
+
+    // ── THE EYES TURN — the read the engine already formed ────────────
+    //
+    // Only when somebody who pushed the victim at the table last night is still
+    // in the room. `murderEvidence` (js/tr/deduction.js) has already made them
+    // look worse; this SHOWS it — the eyes moving, never a number. Nobody is
+    // named a Traitor, and nobody is cleared: the format's murder does not
+    // exonerate the dead (an engine gap noted for a later pass).
+    const pushers = [];
+    for (const vic of (bf ? bf.victims : [])) {
+      for (const p of ((bf.pushed || {})[vic] || [])) {
+        if (v.room.indexOf(p) >= 0) pushers.push({ pusher: p, vic });
+      }
+    }
+    if (pushers.length) {
+      const p0 = pushers[0];
+      push('told', _card('And The Room Remembers', 'Suspicion', 'cupdown',
+        '<div class="co-eyes"><div class="co-eyes-h">'
+        + _ic('cupdown', 12, 'rgba(201,40,60,.85)') + 'Who wanted them gone</div>'
+        + '<p>' + _fill(_pick(EYES_TEXT, key + '|eyes'),
+          { who: _esc(p0.pusher), vic: _esc(p0.vic) }) + '</p>'
+        + '<div class="co-eyes-faces">'
+        + [...new Set(pushers.map(p => p.pusher))].slice(0, 6)
+          .map(n => _faceChip(n, 26)).join('') + '</div></div>'),
+      null, { kind: 'eyes', down: [...v.room], gap: v.missing.map(x => x.name) });
+    }
+
+    // ── WHAT A ROOM DOES WITH IT ──────────────────────────────────────
     push('told', _card('What A Room Does With It', 'After', 'cup',
       '<p>' + _pick(AFTER_TEXT, key + '|after') + '</p>' + _murmur(key + '|m1')),
     null, { kind: 'after', down: [...v.room], gap: v.missing.map(x => x.name) });

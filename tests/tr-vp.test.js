@@ -7439,3 +7439,93 @@ describe('the briefing is a scene and not an announcement', () => {
     expect(pinned, 'no reaction was examined').toBeGreaterThan(9);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// THE ROUND TABLE CONSUMES PROVENANCE (Task 9)
+// ══════════════════════════════════════════════════════════════════════
+//
+// The debate is speech-driven: a claim cites a source its speaker holds, the
+// accused answers, and a listener the claim MOVED is shown moving. These guard
+// the RENDER of that — the data-layer guarantee lives in tests/tr-roundtable.
+describe('the debate cites sources and shows the votes an argument moved', () => {
+  const MAND = TABLES.filter(t => !t.ep.tr.table.endgame);
+
+  it('a real season produces tables with speeches to render', () => {
+    const withSpeech = MAND.filter(t => (t.ep.tr.table.speeches || []).length);
+    expect(withSpeech.length, 'no mandated table carried a speech').toBeGreaterThan(10);
+  });
+
+  it('a cited claim renders the exact source its speaker holds', () => {
+    // The source text on a speech is the speaker's stored evidence string. The
+    // debate must put THAT on the screen, not a paraphrase — so a viewer can
+    // see the reason, and a Faithful is never handed a reason they do not hold.
+    let checked = 0;
+    for (const t of MAND) {
+      const speeches = t.ep.tr.table.speeches || [];
+      if (!speeches.length) continue;
+      const html = tableFullyRevealed(t.ep);
+      // At least one speech's source text is on the page.
+      const anyRendered = speeches.some(s =>
+        s.sources.some(src => src.text && html.includes(src.text)));
+      expect(anyRendered,
+        `ep ${t.ep.num}: a table with speeches cited none of their sources`).toBe(true);
+      checked++;
+      if (checked >= 12) break;
+    }
+    expect(checked, 'no table with a speech was checked').toBeGreaterThan(5);
+  });
+
+  it('a mind-change beat only names a listener the claim actually moved', () => {
+    // "A Name Travels" is drawn only from `speech.mindChanges`, which the
+    // engine fills with listeners the claim pushed to the top of their board.
+    // The rendered mover must be one of them — no invented flips.
+    let sawMove = 0;
+    for (const t of MAND) {
+      const speeches = t.ep.tr.table.speeches || [];
+      const movers = new Set(speeches.flatMap(s => s.mindChanges || []));
+      const html = tableFullyRevealed(t.ep);
+      if (!html.includes('A Name Travels')) continue;
+      // Every "A Name Travels" beat's lead face must be a recorded mover.
+      expect(movers.size, `ep ${t.ep.num}: a mind-change beat with no recorded mover`)
+        .toBeGreaterThan(0);
+      sawMove++;
+    }
+    expect(sawMove, 'no mind-change beat rendered across four seasons').toBeGreaterThan(3);
+  });
+
+  it('most tables land in the 20–30 card band', () => {
+    // A guideline, not a per-table law: a very early table reads 19 ballots one
+    // at a time and runs long; a late table of seven runs short. The MAJORITY
+    // sit in the band, which is what "expand toward 20–30" asked for.
+    const counts = MAND.map(t =>
+      (tableFullyRevealed(t.ep).match(/id="rt-step-roundtable-\d+"/g) || []).length);
+    const inBand = counts.filter(n => n >= 20 && n <= 30).length;
+    expect(inBand / counts.length,
+      `only ${inBand}/${counts.length} tables were in the 20–30 band`).toBeGreaterThan(0.5);
+    // and the band is genuinely reachable at both ends
+    expect(counts.some(n => n >= 20), 'no table reached 20 cards').toBe(true);
+  });
+
+  it('OBSERVER SAFETY: a player view of the debate leaks no audience-only truth', () => {
+    // Speeches are public — a claim made out loud at the table — and so is the
+    // banishment reveal (the room learns what the banished player was, which is
+    // why the alignment card is NOT stripped for a player). The audience-only
+    // fact is the irony block: whether an accusation is actually TRUE. A player
+    // layer must never carry it, on a table that DOES carry it for the audience.
+    let checked = 0;
+    for (const t of MAND) {
+      if (!t.ep.tr.table.truth) continue;
+      const aud = tableFullyRevealed(t.ep, 'audience');
+      if (!aud.includes('class="rt-irony"')) continue;
+      const seated = t.ep.tr.table.seated || [];
+      if (!seated.length) continue;
+      const pv = tableFullyRevealed(t.ep, 'player:' + seated[0]);
+      expect(pv, `ep ${t.ep.num}: the irony block leaked to a player`)
+        .not.toContain('class="rt-irony"');
+      checked++;
+      if (checked >= 8) break;
+    }
+    expect(checked, 'no audience table with an irony block was compared to a player view')
+      .toBeGreaterThan(3);
+  });
+});

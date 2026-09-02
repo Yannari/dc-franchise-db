@@ -213,3 +213,156 @@ describe('the banishment', () => {
     expect(a.banished).toBe(b.banished);
   });
 });
+
+
+// ══════════════════════════════════════════════════════════════════════
+// SPEECHES CONSUME PROVENANCE (Task 9)
+// ══════════════════════════════════════════════════════════════════════
+//
+// A speech is an accusation with its evidence attached. The contract: every
+// claim a speaker makes cites a source, and the speaker must actually KNOW
+// that source. This is the observer-safety seam of the Round Table — the one
+// place a Faithful could be handed Traitor-only knowledge — so it is proven in
+// the DATA, not by reading a rendered screen.
+//
+// This isolated harness seeds only the turret, so a Faithful walks in with an
+// empty board and most speakers have nothing to cite — which is the correct
+// silence, not a bug (a full season accumulates mission/murder/ballot reads
+// and speeches become common; tests/tr-vp.test.js exercises that volume). To
+// give the sweep real speeches to check, `_plantReads` lays down deduced
+// suspicions the way an evidence source would.
+import { speechesFrom, knows } from '../js/tr/roundtable.js';
+import { believes, learn } from '../js/knowledge.js';
+import { alignmentFactId } from '../js/tr/deduction.js';
+import { recordAlignment as _recA } from '../js/tr/roles.js';
+
+function _rebuild() {
+  setGs({ bonds: {}, activePlayers: [...CAST] });
+  gs.tr = initTraitorsState();
+  resetKnowledge();
+  _recA('Gwen', true, 1, 'selection');
+  _recA('Duncan', true, 1, 'selection');
+  CAST.filter(n => !['Gwen', 'Duncan'].includes(n))
+    .forEach(n => _recA(n, false, 1, 'selection'));
+  seedTraitorKnowledge(1);
+}
+
+// A deduced read from everyone onto a rotating set of targets — the shape a
+// mission/ballot/murder evidence source leaves behind. Deduced, never public.
+function _plantReads(ep = 2) {
+  CAST.forEach((observer, i) => {
+    const target = CAST[(i + 2) % CAST.length];
+    if (observer === target) return;
+    learn(observer, alignmentFactId(target), {
+      source: `read ${target} across the hall`, sourceType: 'deduced',
+      confidence: 0.5, ep, rng: () => 0 });
+  });
+}
+
+describe('every Round Table speech cites a source its speaker knows', () => {
+  it('holds across a seed sweep, and speeches actually occur', () => {
+    let sawSpeech = 0, checkedSources = 0;
+    for (let seed = 1; seed <= 60; seed++) {
+      _rebuild();
+      _plantReads(2);
+      runRoundTable(2, seededRng(seed));
+      const round = gs.tr.rounds[gs.tr.rounds.length - 1];
+      for (const s of round.speeches || []) {
+        expect(s.sources.length,
+          `seed ${seed}: ${s.speaker} spoke with no source`).toBeGreaterThan(0);
+        for (const source of s.sources) {
+          expect(knows(s.speaker, source, 2),
+            `seed ${seed}: ${s.speaker} cited a source they do not know`).toBe(true);
+          checkedSources++;
+        }
+        sawSpeech++;
+      }
+    }
+    expect(sawSpeech, 'no table across 60 seeds produced a speech').toBeGreaterThan(20);
+    expect(checkedSources, 'no source was ever checked').toBeGreaterThan(20);
+  });
+
+  // THE MUTANT, PROVEN DIRECTLY. Force a speaker to hold a `public`-tier
+  // (turret) belief about the person they are about to accuse — the exact
+  // shape a leak of Traitor-only knowledge would take — and speechesFrom must
+  // refuse to make it a source. Deleting `if (b.sourceType === 'public')
+  // return [];` in _sourcesFor turns this green speech red: the public belief
+  // becomes a cited source. Verified by hand: with the filter removed this
+  // returns a speech whose source.kind === 'public'.
+  it('a public-tier belief about the target never becomes a speech', () => {
+    _rebuild();
+    // Gwen and Duncan are both Traitors, so Gwen's turret belief about Duncan
+    // is ACCURATE and high-confidence — the false-valence and zero-confidence
+    // guards do NOT catch it, isolating the `public`-tier filter as the only
+    // thing standing between turret knowledge and a table accusation. (The
+    // debate never routes a Traitor to name a fellow; this proves that even if
+    // it did, the turret fact could not be cited.) Deleting `if (b.sourceType
+    // === 'public') return [];` in _sourcesFor makes this return one speech
+    // whose source.kind === 'public'.
+    const s = believes('Gwen', alignmentFactId('Duncan'), 2);
+    expect(s && s.sourceType, 'the turret belief is not public — precondition failed')
+      .toBe('public');
+    expect(s.valence, 'the turret belief is not accurate — precondition failed')
+      .toBe('accurate');
+    const speeches = speechesFrom([{ accuser: 'Gwen', target: 'Duncan' }], 2);
+    expect(speeches.length, 'a public-tier belief became a table speech').toBe(0);
+  });
+
+  // And across a real sweep no cited source is ever public-tier, so the guard
+  // is not merely reachable in the constructed case above.
+  it('no cited source across a sweep is public-tier', () => {
+    let checked = 0;
+    for (let seed = 1; seed <= 60; seed++) {
+      _rebuild();
+      _plantReads(2);
+      runRoundTable(2, seededRng(seed));
+      const round = gs.tr.rounds[gs.tr.rounds.length - 1];
+      for (const s of round.speeches || []) {
+        for (const source of s.sources) {
+          // The captured kind is the tier at the moment the claim was made —
+          // never re-read `believes` here: a target who is then banished has
+          // their belief overwritten to `public` by the reveal cascade, which
+          // is correct and has nothing to do with what was said at the table.
+          expect(source.kind, `seed ${seed}: public-tier source cited`).not.toBe('public');
+          checked++;
+        }
+      }
+    }
+    expect(checked, 'no source checked for a public leak').toBeGreaterThan(20);
+  });
+
+  // A speech records who it MOVED. A mind-change is a listener the claim
+  // pushed to the top of their board — caused by a belief the debate formed,
+  // never by the writer needing a flip.
+  it('every recorded mind-change is a swayed listener now topped by that name', () => {
+    let sawMove = 0;
+    for (let seed = 1; seed <= 80; seed++) {
+      _rebuild();
+      _plantReads(2);
+      runRoundTable(2, seededRng(seed));
+      const round = gs.tr.rounds[gs.tr.rounds.length - 1];
+      for (const s of round.speeches || []) {
+        for (const mover of s.mindChanges || []) {
+          expect(s.swayed, `seed ${seed}: a mind-change was not among the swayed`)
+            .toContain(mover);
+          const b = believes(mover, s.sources[0].factId, 2);
+          expect(b, `seed ${seed}: ${mover} moved with no belief`).toBeTruthy();
+          sawMove++;
+        }
+      }
+    }
+    expect(sawMove, 'no speech moved anybody in 80 seeds').toBeGreaterThan(0);
+  });
+
+  it('speechesFrom invents nothing: every speech is a real accusation pairing', () => {
+    _rebuild();
+    _plantReads(2);
+    runRoundTable(2, seededRng(7));
+    const round = gs.tr.rounds[gs.tr.rounds.length - 1];
+    const accusers = new Set((round.accusations || []).map(a => a.accuser + '>' + a.target));
+    for (const s of round.speeches || []) {
+      expect(accusers.has(s.speaker + '>' + s.target),
+        'a speech named a pairing nobody accused').toBe(true);
+    }
+  });
+});

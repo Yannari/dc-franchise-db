@@ -1417,6 +1417,35 @@ const ACCUSED_REPLY = [
   '{T} says nothing at all, and lets the accusation sit there getting older.',
   '{T} turns it round and asks who put the idea in {a}’s head.',
 ];
+// HOW A SPEAKER PUTS THEIR EVIDENCE ON THE TABLE. `{src}` is the exact reason
+// their belief carries — drawn from the stored source, never invented — so the
+// claim is never "{A} finds {t} suspicious" but a thing that actually happened.
+// The framing lets the source phrase stand as the reason.
+const CLAIM_SOURCE = [
+  '{A} does not leave it at a feeling. There is a reason, and {sub} says it out loud: {src}.',
+  'And {A} has something concrete for it — {src} — which is more than most names at this table come with.',
+  '{A} puts the reason on the wood where everyone can see it: {src}.',
+  'It is not a hunch. {A} points to the thing itself: {src}.',
+];
+// A LISTENER MOVED. Not because the writer needed a flip — because the claim
+// reached them and it now sits at the top of what they believe. `{who}` is the
+// mover, `{t}` the name they have moved onto.
+const MINDCHANGE_TEXT = [
+  '{who} had a different name in mind an hour ago. Not any more — {who} is writing {t} now, and '
+  + 'says so before the chalk is even out.',
+  'It lands on {who}. You can see it land: {who} was undecided, and now {who} is not, and the '
+  + 'name {sub} has settled on is {t}.',
+  'Across the table {who} changes {pos} mind in real time — not talked into it, walked into it, '
+  + 'and {t} is where {sub} ends up.',
+  '{who} nods slowly, the way people do when an argument has actually moved them. {t}. That is '
+  + 'where {who} is now.',
+];
+const MINDCHANGE_MORE = [
+  'And {who} is not the only one the argument turned.',
+  'A couple of others shift with {obj}, quietly, without putting a hand up.',
+  'The name travels; it does not stop at one slate.',
+];
+
 // THE AUDIENCE'S PRIVILEGE, and nobody else's. Stripped off the record in
 // `_view` before a player observer's screen is built, and never written at a
 // finale table.
@@ -1774,6 +1803,13 @@ function _view(rec, observer) {
     first,
     rounds,
     accusations: (rec.accusations || []).filter(a => a && a.accuser && a.target),
+    // THE SPEECHES, with their provenance. Public on every layer — a claim
+    // made out loud at the table, its `sources` drawn from the speaker's own
+    // suspicion (never a `public`-tier turret belief; see roundtable.js's
+    // `speechesFrom`). `swayed`/`mindChanges` are the listeners it reached and
+    // moved. Nothing here is a fact a player at the table could not have heard.
+    speeches: (rec.speeches || []).filter(s => s && s.speaker && s.target
+      && (s.sources || []).length),
     chosen: rec.chosen || null,
     chosenAlignment: endgame ? null : (rec.chosenAlignment || null),
     truth: (isAudience && !endgame) ? (rec.truth || {}) : null,
@@ -1814,6 +1850,13 @@ function _buildBeats(v) {
     + _murmur(key + '|m0')), 'open', { kind: 'gather' });
 
   // ── the debate ──────────────────────────────────────────────────────
+  //
+  // SPEECH-DRIVEN when the debate produced speeches with provenance (see
+  // roundtable.js `speechesFrom`): each claim cites a source its speaker
+  // actually knows, the accused answers, and any listener the claim MOVED is
+  // shown moving — a mind-change caused by an argument, never by the writer
+  // needing a flip. When no speech carries a source (an early table where
+  // nobody has a read yet), the room says so rather than inventing reasons.
   const byTarget = new Map();
   for (const a of v.accusations) {
     if (!byTarget.has(a.target)) byTarget.set(a.target, []);
@@ -1824,6 +1867,16 @@ function _buildBeats(v) {
     .sort((x, y) => y.acc.length - x.acc.length || String(x.t).localeCompare(String(y.t)))
     .slice(0, 5);
 
+  // The speech (with provenance) backing each accused, if the debate produced
+  // one. A target with a speech gets its source CITED and its mind-changes
+  // shown; a target with only a bare accusation renders as before — the room
+  // suspecting a name it cannot fully justify is a real thing the format does.
+  const speechFor = new Map();
+  for (const s of v.speeches) {
+    if (!speechFor.has(s.target)) speechFor.set(s.target, []);
+    speechFor.get(s.target).push(s);
+  }
+
   if (!clusters.length) {
     push('debate', _card('Nobody Has A Name', 'The debate', 'hand',
       '<p>Nothing has happened yet that anybody can point at. They talk round the table '
@@ -1832,16 +1885,22 @@ function _buildBeats(v) {
       + _murmur(key + '|m1')), 'debate', { kind: 'debate' });
   }
   clusters.forEach((c, ci) => {
+    const speeches = speechFor.get(c.t) || [];
+    const src = speeches.length ? speeches[0].sources[0] : null;
+    const movers = [...new Set(speeches.flatMap(s => s.mindChanges || []))]
+      .filter(n => n !== c.t);
     const lead = c.acc[0];
     const pr = _pr(c.t);
     const subs = { A: lead, a: lead, T: c.t, t: c.t, sub: pr.sub, Sub: pr.Sub,
-      obj: pr.obj, pos: pr.pos };
+      obj: pr.obj, pos: pr.pos, src: src ? _esc(src.text) : '' };
     let inner = '<div class="rt-accused">' + _av(c.t, 54)
       + '<span class="rt-accused-nm">' + _esc(c.t) + '</span>'
       + '<span class="rt-accused-ct">' + c.acc.length
       + (c.acc.length === 1 ? ' voice' : ' voices') + '<br>at this name</span></div>';
     inner += '<p>' + _fill(_pick(ACCUSE_LINES, key + '|acc|' + c.t), subs) + '</p>';
     inner += _said(lead, _fill(_pick(ACCUSE_SAID, key + '|say|' + c.t), subs));
+    // THE SOURCE, CITED — only when the speaker actually holds one.
+    if (src) inner += '<p>' + _fill(_pick(CLAIM_SOURCE, key + '|src|' + c.t), subs) + '</p>';
     if (c.acc.length > 1) {
       inner += '<div class="rt-faces">'
         + c.acc.slice(0, 8).map(n => _faceChip(n, 26)).join('') + '</div>';
@@ -1857,10 +1916,30 @@ function _buildBeats(v) {
       inner += '<div class="rt-irony"><b>What the room cannot see</b><span>'
         + _pick(pool, key + '|iro|' + c.t) + '</span></div>';
     }
-    if (ci === clusters.length - 1) inner += _murmur(key + '|m2|' + c.t);
+    if (ci === clusters.length - 1 && !movers.length) inner += _murmur(key + '|m2|' + c.t);
     push('debate', _card(null, 'The debate', 'hand', inner),
       ci === 0 ? 'debate' : null,
       { kind: 'debate', target: c.t, accusers: [...c.acc] });
+
+    // ── THE MIND CHANGE — a separate beat, only when the claim MOVED ──
+    // somebody. A vote turns because an argument moved it, never because the
+    // writer needed a flip. It is what makes a late table (reads accumulated)
+    // longer and sharper than an early one.
+    if (movers.length) {
+      const mv = movers[0];
+      const mpr = _pr(mv);
+      const msubs = { who: _esc(mv), t: c.t, sub: mpr.sub, Sub: mpr.Sub,
+        obj: mpr.obj, pos: mpr.pos };
+      let mi = '<p>' + _fill(_pick(MINDCHANGE_TEXT, key + '|mc|' + c.t + '|' + mv), msubs) + '</p>';
+      if (movers.length > 1) {
+        mi += '<div class="rt-faces">'
+          + movers.slice(0, 8).map(n => _faceChip(n, 26)).join('') + '</div>'
+          + '<p>' + _fill(_pick(MINDCHANGE_MORE, key + '|mcm|' + c.t), msubs) + '</p>';
+      }
+      if (ci === clusters.length - 1) mi += _murmur(key + '|m2|' + c.t);
+      push('debate', _card('A Name Travels', 'The debate', 'hand', mi),
+        null, { kind: 'debate', target: c.t, accusers: [...movers] });
+    }
   });
 
   // ── the slates ──────────────────────────────────────────────────────

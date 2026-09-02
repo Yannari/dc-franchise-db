@@ -482,6 +482,16 @@ function _tableRecord(ep, { endgame = false } = {}) {
     revotes: (round.revotes || []).map(rv => ({
       tied: [...(rv.tied || [])], count: (rv.ballots || []).length })),
     accusations: (round.accusations || []).map(a => ({ ...a })),
+    // THE ACCUSATIONS WITH THEIR PROVENANCE. Public on every layer: a speech
+    // is a claim made out loud at the table, and its `sources` are drawn from
+    // the speaker's own suspicion (never a `public`-tier turret belief — see
+    // `speechesFrom`), so nothing here is a fact a player at the table could
+    // not have heard said. `swayed`/`mindChanges` are the listeners the claim
+    // reached and moved, both derived from beliefs the debate already formed.
+    speeches: (round.speeches || []).map(s => ({
+      speaker: s.speaker, target: s.target,
+      sources: (s.sources || []).map(src => ({ ...src })),
+      swayed: [...(s.swayed || [])], mindChanges: [...(s.mindChanges || [])] })),
     chosen: round.banished || null,
     dagger: round.dagger ? { ...round.dagger } : null,
     speech: round.exitSpeech
@@ -869,7 +879,82 @@ function _morning() {
     // alone. Everybody came down; only the people watching at home know a
     // name was chosen upstairs and a relic ate it.
     blocked: !!(prev && prev.tr?.conclave?.blocked),
+    // ── WHAT THE ROOM DOES WITH THE EMPTY PLACE (Plan 9, Task 9) ────────
+    //
+    // The morning is not a roll call. It has reactions, and every one of them
+    // has to be CAUSED — a mourner grieves because of a stored bond with the
+    // person who is gone, and the room's eyes turn to a survivor because that
+    // survivor pushed the victim's name at the table the night before they
+    // died. Both are computed here, from records the engine has already
+    // written, because a VP screen may read none of them. All of it is
+    // Faithful-safe: a bond and a public accusation are things anybody at the
+    // table saw. No alignment is read.
+    breakfast: prev ? _breakfast(prev) : null,
   };
+}
+
+// How warm a bond has to be before an absence reads as grief rather than
+// merely a missing face. A held threshold, not tuned — a friend, not an
+// acquaintance.
+const GRIEF_BOND = 3;
+
+/**
+ * The reactions the empty place earns, keyed to the previous night.
+ *
+ * `prev` is last night's episode row. Its `exits[]` carries who went out the
+ * murder door; `gs.tr.rounds` carries the table those victims sat at hours
+ * before they died. The living are `gs.activePlayers` as they stand this
+ * morning — the victim already removed.
+ */
+function _breakfast(prev) {
+  const V = exitVerbs(TRAITORS_FORMAT);
+  const murderVerb = V[1] || V[0];
+  const victims = roundExits({ exits: prev.exits || [] }, TRAITORS_FORMAT)
+    .filter(x => x.verb === murderVerb).map(x => x.name);
+  const living = (gs.activePlayers || []).filter(Boolean);
+  const round = (gs.tr?.rounds || []).find(r => r.ep === prev.num) || null;
+
+  // WHO PUSHED THE VICTIM, and it is the read the engine already formed. Every
+  // living player who accused the victim at the table or wrote their name on a
+  // slate — and then the Traitors came for that same person. `murderEvidence`
+  // (js/tr/deduction.js) has already made each of them look worse for it; this
+  // records WHO so the morning can show the eyes turning, never the number.
+  const pushed = {};
+  for (const victim of victims) {
+    if (!round) { pushed[victim] = []; continue; }
+    const set = new Set([
+      ...(round.accusations || []).filter(a => a.target === victim).map(a => a.accuser),
+      ...(round.ballots || []).filter(b => b.channel === 'banishment' && b.voted === victim)
+        .map(b => b.voter),
+    ]);
+    pushed[victim] = [...set].filter(n => living.includes(n));
+  }
+
+  // WHO GRIEVES, gated on a real stored bond. Sorted by how close they were,
+  // capped so the morning names a few mourners rather than a census.
+  const grief = [];
+  const composed = [];
+  for (const victim of victims) {
+    const ranked = living
+      .map(n => ({ mourner: n, victim, bond: getBond(n, victim) }))
+      .sort((a, b) => b.bond - a.bond);
+    for (const r of ranked) {
+      if (r.bond >= GRIEF_BOND && grief.length < 4) grief.push(r);
+    }
+    // The people who lose nothing here: a flat or cold bond with the victim.
+    // Not a suspicion — an emotional fact, and it is what makes the grievers
+    // legible by contrast.
+    for (const r of ranked) {
+      if (r.bond <= 0 && composed.length < 3) composed.push(r.mourner);
+    }
+  }
+
+  // WHO SAYS THE NAME. The closest living mourner if there is one — grief is
+  // who reaches for it first — otherwise nobody is nominated and the screen
+  // lets the room find the name on its own.
+  const namer = grief.length ? grief[0].mourner : null;
+
+  return { victims, pushed, grief, composed: [...new Set(composed)], namer };
 }
 
 /**

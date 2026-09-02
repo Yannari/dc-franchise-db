@@ -125,7 +125,11 @@ function _host() {
 }
 
 // ── portraits ─────────────────────────────────────────────────────────
-function _slugOf(name) {
+// EXPORTED so js/vp-tr/portrait-wall.js can resolve a slug the same way this
+// screen does — there is one avatar pattern in this directory (the `assets/
+// avatars/<slug>.png` file with an initials fallback), and the wall reuses it
+// rather than inventing a second.
+export function _slugOf(name) {
   const p = (players || []).find(x => x && x.name === name);
   return (p && p.slug) || String(name || '').toLowerCase()
     .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');

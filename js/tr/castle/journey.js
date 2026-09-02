@@ -981,6 +981,26 @@ registerEvent({
     const thread = findOpenThread('suspicion', [a, b]);
     const bondDelta = branch === 'cleared' ? 2 : branch === 'slipped' ? -2 : -1;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
+    // ── TWO STORED ACCOUNTS, OR NOBODY CONTRADICTED ANYBODY ─────────────
+    //
+    // "The walk back went on long enough that {b} contradicted themselves, and
+    // {a} was still listening" is the causal contract's named forbidden case:
+    // `Gabby catches Julia changing her story` is invalid unless two
+    // incompatible stored claims exist and the observer knows both. This branch
+    // asserted it off `pStats(b).temperament` alone and wrote nothing.
+    //
+    // Both accounts are minted HERE because here is where both were spoken —
+    // the whole branch is one long conversation in which `b` gives an account
+    // and then gives a different one. `contradicts` is DECLARED (scene-api
+    // refuses an id that is not on the record), and `a` is the listener on
+    // both, so `a` is the only person entitled to cite either.
+    if (branch === 'slipped') {
+      const first = api.recordClaim(b, `${b}'s account of the afternoon, given early on the road`,
+        { listeners: [a], channel: 'conversation', source: sceneWhy });
+      api.recordClaim(b, `${b}'s account of the afternoon, given again nearer the gate`,
+        { listeners: [a], channel: 'conversation', contradicts: [first.id],
+          source: `${b} gave two accounts of the same hours on one walk` });
+    }
     const { note, cited } = arcAdvanceCiting(api, thread, ctx.ep, line, { source: sceneWhy });
     const outcome = branch === 'cleared' ? 'denied-convincingly'
       : branch === 'slipped' ? 'confessed-unrelated' : null;
@@ -1053,6 +1073,24 @@ registerEvent({
 
     const line = pick(rng, STORY_SURVIVED_LINES[branch]).replace(/\{a\}/g, actor);
     const thread = findOpenThread('cover', [actor]);
+    // ── "AN ANSWER THAT MATCHED THE LAST ONE" NEEDS A LAST ONE ──────────
+    //
+    // The `broke` branch's own words are "Somebody asked the one question on
+    // the road back, and {a} did not have an answer that matched the last one."
+    // The last one was stored nowhere, so nothing in the season could say what
+    // it had been or who had heard it. Both accounts are now on the record with
+    // the second declared incompatible with the first, and the person walking
+    // beside them is the listener — which is also who the bond penalty below
+    // is applied to, so the sentence, the receipt and the consequence all name
+    // the same person.
+    const heardIt = ctx.actors.find(n => n !== actor);
+    if (branch === 'broke' && heardIt) {
+      const first = api.recordClaim(actor, `${actor}'s account of the night, as first given`,
+        { listeners: [heardIt], channel: 'conversation', source: sceneWhy });
+      api.recordClaim(actor, `${actor}'s account of the night, as given again on the road back`,
+        { listeners: [heardIt], channel: 'conversation', contradicts: [first.id],
+          source: `${actor} could not repeat their own account the same way twice` });
+    }
     const { note, cited } = arcAdvanceCiting(api, thread, ctx.ep, line, { source: sceneWhy });
     // A cover story that held is retired clean; one that came apart in front
     // of people is `exposed`, which reads as `cracked` to anything downstream.

@@ -32,6 +32,11 @@ import { sceneParticipants, sceneSpeakers, KNOWN_WINDOWS } from './events.js';
 // fair-share across all seven windows. See js/tr/castle/phases.js.
 import { runCastlePhase, castlePhaseRecord } from './castle/phases.js';
 import { outcomeSense } from './threads.js';
+// TASK 7A: the day is EDITED before it is filed — stories ranked, beats
+// ordered inside their phase, promises answered. See js/tr/episode-editor.js
+// for what it may and may not do (controller ruling R1: it orders and shapes,
+// and it spends none of the scene throughput Task 7 bought).
+import { buildEpisodeEdit } from './episode-editor.js';
 import { runMission, POT_CEILING } from './missions.js';
 import { shieldEvidence, expireShields, settleDaggers } from './powers.js';
 import { runEndgame } from './endgame.js';
@@ -1006,9 +1011,29 @@ function _castleRecord(ep, fired) {
   // comment for why a screen walking six phases in order needs the shape to
   // be there on the one night two of them (private-strategy,
   // roundtable-scramble) are empty.
-  const phases = castlePhaseRecord(scenes);
+  // ── TASK 7A: THE CUT, TAKEN BEFORE THE ROW IS WRITTEN ────────────────
+  //
+  // `scenes` above is the day in the order the seven windows happened to draw
+  // it. That is a day and not an episode: nothing says which two or three
+  // stories tonight is about, nothing stops four accusations landing in a row,
+  // and — the defect that matters most — a scene that opened a story had
+  // nowhere to record that it had promised one.
+  //
+  // The editor returns a PERMUTATION of exactly these scenes (it drops
+  // nothing; see its header for why that is a ruling rather than a choice)
+  // with the tone stamped on each, plus the story hierarchy, the tone ledger
+  // and every promise answered. `phases` is rebuilt from the edited order, so
+  // the six-phase record the Castle Day screen walks and the edit record agree
+  // about what happened when.
+  //
+  // HERE AND NOT IN THE RUNNER, because this is the last point at which the
+  // whole day exists in one place and nothing downstream has read it yet. It
+  // takes no rng draw, so a season played with the editor is bit-identical in
+  // its murders, ballots and missions to one played without.
+  const edit = buildEpisodeEdit(scenes, { ep, living: [...(gs.activePlayers || [])] });
+  const phases = castlePhaseRecord(edit.scenes);
 
-  return { ep, windows, scenes, phases };
+  return { ep, windows, scenes: edit.scenes, phases, edit };
 }
 
 /**

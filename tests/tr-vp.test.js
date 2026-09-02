@@ -5084,7 +5084,57 @@ describe('the rank does not show the walk before the walk is read', () => {
 // property that MAKES that true rather than merely observed — a screen that
 // cannot reach the knowledge layer cannot write to it, whatever a sample of
 // renders happens to show.
+// ── ONE NARROWING, WITH THE ARM THAT MAKES IT SAFE (Task 7A) ──────────
+//
+// The rule below is a path test — "nothing under js/tr/" — standing in for the
+// property that actually matters: a screen is handed a record and cannot reach
+// engine state. Task 7A produced one module for which the path test and the
+// property disagree. `js/tr/castle/voice.js` holds the branch/outcome tone
+// classification (four `Set`s, 560 lines of hand-sorted reading) that decides
+// whether a scene went badly for the person answering it, plus the contestant
+// voice pools. It lived inside castle-day.js, and the episode editor
+// (js/tr/episode-editor.js) needs the identical answer one layer down, where an
+// engine module cannot import a VP file. Copying a 130-branch denylist into two
+// places is the drift this repository has a name for.
+//
+// SO THE EXCEPTION IS NAMED, AND ITS PURITY IS ASSERTED RATHER THAN ASSUMED.
+// The arm below reads voice.js and requires that it reach no engine state
+// itself — no `gs`, no knowledge layer, no thread or belief store — which is a
+// STRONGER statement than the path test it replaces for this one file, because
+// the path test never looked inside anything.
+const SHARED_CONTENT = new Set(['../tr/castle/voice.js']);
+
 describe('the selection screen renders the one certainty and cannot manufacture one', () => {
+  it('the one shared-content exception reaches no engine state itself', () => {
+    // GUARD ON THE EXCEPTION. If voice.js ever grows a `gs` read, the
+    // narrowing above stops being safe and this goes red — which is the arm a
+    // narrowing without one would be missing.
+    expect(SHARED_CONTENT.size, 'the shared-content allowlist has grown; each entry '
+      + 'needs its own purity arm before it may be added').toBe(1);
+    // CONCATENATED, not a literal — Vite statically rewrites a literal
+    // `new URL(..., import.meta.url)` into an asset URL and it throws. Same
+    // reason as the `dir` variable in the arm below.
+    const voicePath = '../js/tr/castle/' + 'voice.js';
+    const src = readFileSync(new URL(voicePath, import.meta.url), 'utf8');
+    expect(src.length).toBeGreaterThan(1000);
+    const specs = [...src.matchAll(/\bfrom\s+'([^']+)';/g)].map(m => m[1]);
+    expect(specs, 'voice.js imports something other than core.js').toEqual(['../../core.js']);
+    // And it reads no season state through any other door.
+    expect(/\bgs\s*[.?[]/.test(src), 'voice.js reads gs').toBe(false);
+    expect(/\bimport\b[^\n]*knowledge/.test(src)).toBe(false);
+    // THE PAIRED ARM: the narrowed predicate must still catch a real reach.
+    // Applied to the imports a screen must never have, with the allowlist in
+    // place, it flags every one of them — so the exception is an exception and
+    // not a hole.
+    const forbidden = ['../tr/state.js', '../tr/knowledge-flow.js', '../tr/deduction.js',
+      '../knowledge.js'];
+    for (const spec of forbidden) {
+      const allowed = SHARED_CONTENT.has(spec);
+      const flagged = !allowed && (/\/tr\//.test(spec) || /knowledge\.js$/.test(spec));
+      expect(flagged, `${spec} would pass the narrowed rule`).toBe(true);
+    }
+  });
+
   it('nothing in js/vp-tr/ can reach the knowledge layer or the engine state', () => {
     // The path is a CONCATENATION rather than a literal: `readFileSync(new
     // URL('<literal>', import.meta.url))` is statically rewritten by Vite into
@@ -5104,6 +5154,7 @@ describe('the selection screen renders the one certainty and cannot manufacture 
         expect(/knowledge\.js$/.test(spec),
           `js/vp-tr/${f} imports the knowledge layer — a screen that can write a belief `
           + 'can manufacture the certainty it is supposed to be reporting').toBe(false);
+        if (SHARED_CONTENT.has(spec)) { imported++; continue; }
         expect(/\/tr\//.test(spec),
           `js/vp-tr/${f} imports engine state from ${spec}; a screen is handed a record `
           + 'and may not reach past it').toBe(false);

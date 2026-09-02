@@ -94,21 +94,27 @@ import { crowdMoment, CROWD_COLOURS } from './crowd.js';
 import { openThread, advanceThread, closeThread, knownOutcomes } from './threads.js';
 import { voteIntentFor as _voteIntentFor, murderPreferenceFor as _murderPrefFor,
   recordedReceipts } from './state.js';
+import { KNOWLEDGE_CHANNELS, AUDIENCE_ONLY, shareFact } from './knowledge-flow.js';
 
 /** The three states `emotionalStateOf` (js/tr/events.js) knows about. */
 export const EMOTIONAL_STATES = ['content', 'paranoid', 'desperate'];
 
-/** How a fact can travel. The contract's four channels, and no fifth. */
-export const KNOWLEDGE_CHANNELS = [
-  'witnessed', 'conversation', 'public-ceremony', 'confessional-audience-only',
-];
-
 /**
+ * How a fact can travel. The contract's four channels, and no fifth.
+ *
+ * DECLARED IN js/tr/knowledge-flow.js AND RE-EXPORTED HERE, unchanged, because
+ * this is where every existing caller imports it from. That file owns the
+ * propagation LEDGER — it has the read side (`knowersOf`, `eligibleReactors`)
+ * that nothing had before Task 7A — and `propagate` below now writes through
+ * its `shareFact`, so there is exactly one function appending to
+ * `gs.tr.propagation`.
+ *
  * A fact whose channel is `confessional-audience-only` reaches NO contestant.
  * That is the whole of observer safety at this layer, stated as a rule rather
- * than left to each of two hundred events to remember.
+ * than left to each of two hundred events to remember, and it is enforced in
+ * `shareFact` so the second front door cannot get it wrong.
  */
-const AUDIENCE_ONLY = 'confessional-audience-only';
+export { KNOWLEDGE_CHANNELS, AUDIENCE_ONLY } from './knowledge-flow.js';
 
 /**
  * The counter that keeps claim ids unique when there is NO SEASON.
@@ -553,17 +559,18 @@ export function createTraitorsSceneApi(ctx = {}) {
    */
   function propagate(factId, from, to, { channel = 'conversation', source } = {}) {
     _require(source, 'propagate');
-    if (!KNOWLEDGE_CHANNELS.includes(channel)) {
-      throw new Error(`scene-api propagate: unknown channel "${channel}"`);
-    }
-    if (channel === AUDIENCE_ONLY) {
-      return _push({ kind: 'propagation', observer: from, subject: to, value: factId,
-        source, applied: false, blockedBy: 'audience-only: no contestant learns this' });
-    }
     if (!factId || !from || !to || from === to) return null;
-    const tr = _tr();
-    const rec = { factId, from, to, channel, ep, sceneId };
-    if (tr) (tr.propagation ||= []).push(rec);
+    // THE LEDGER WRITE ITSELF LIVES IN js/tr/knowledge-flow.js. This function
+    // keeps the receipt, the source sentence and the scene identity, which are
+    // the things `shareFact` has no business knowing about; `shareFact` keeps
+    // the channel validation, the audience-only rule and the already-knew
+    // check, which are the things that must be identical whichever door a
+    // caller came in by.
+    const r = shareFact({ factId, from, to, channel, ep, sceneId });
+    if (r && r.applied === false) {
+      return _push({ kind: 'propagation', observer: from, subject: to, value: factId,
+        source, applied: false, blockedBy: r.blockedBy });
+    }
     return _push({ kind: 'propagation', observer: from, subject: to, value: factId, source });
   }
 

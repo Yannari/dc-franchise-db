@@ -76,7 +76,7 @@ import { sceneApi, arcContinue, arcAdvanceCiting } from './effects.js';
 import { alignmentAt } from '../roles.js';
 import { lastMission, murderCount } from '../state.js';
 import { sideObjectiveLabel } from '../missions.js';
-import { lineFor } from './lines.js';
+import { lineFor, whoTheyTold, namesPhrase, countWord } from './lines.js';
 import { findOpenThread } from '../threads.js';
 // The SAME "have these two got a story, or were they merely cast together"
 // filter callback.js applies, imported rather than copied — a second copy
@@ -893,7 +893,7 @@ const AUDIT_LINES = {
     '{a} kept arriving at the same twenty minutes of {mission} and kept not liking them.',
   ],
   overtold: [
-    '{a} told three separate people about {mission} on the road back without being asked once, and heard it happening.',
+    '{a} told {who} about {mission} on the road back without being asked once, and heard it happening.',
     '{a} volunteered rather more of the afternoon than anybody had wanted, and then spent the last mile regretting the extra.',
     '“I was on {team} the whole time,” {a} said, twice, to somebody who had not asked either time.',
     '{a} put the whole day in front of people who were not looking for it, which is its own kind of answer.',
@@ -938,9 +938,27 @@ registerEvent({
       overtold: (st.social / 10) * 0.35 + (1 - st.temperament / 10) * 0.3,
       unasked: 0.4,
     });
+    // ── OVERTELLING IS PROPAGATION, AND IT NOW LEAVES RECEIPTS ──────────
+    //
+    // The `overtold` branch's whole content is that the actor volunteered their
+    // afternoon to people who had not asked. It said "three separate people"
+    // and named none, so nothing in the castle actually learned anything and no
+    // later scene could cite it. The listeners are chosen by who this person
+    // talks to (`whoTheyTold`, js/tr/castle/lines.js — no rng draw), the
+    // sentence is filled from the list that was actually reached, and the
+    // account is stored as a claim they heard.
+    const told = branch === 'overtold'
+      ? whoTheyTold(actor, ctx.actors || [actor], ctx.living, 3)
+      : [];
     const note = line(AUDIT_LINES[branch], 'mission-what-they-can-ask-me', branch, ctx.ep, {
       a: actor, mission: m.name, team: team.name,
+      who: namesPhrase(told), n: countWord(told.length),
     });
+    if (told.length) {
+      api.recordClaim(actor, `${actor} gave an unprompted account of ${m.name}`,
+        { listeners: told, channel: 'conversation',
+          source: 'volunteered the afternoon to people who had not asked' });
+    }
     const { thread, cited } = arcContinue(api, 'cover', [actor], ctx.ep, note, { source: sceneWhy });
     // The one observable consequence available without touching a belief: a
     // person who talked too much on the road spent something with whoever was

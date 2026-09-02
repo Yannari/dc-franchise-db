@@ -956,6 +956,30 @@ registerEvent({
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     const note = lineFor(TIMELINE_LINES[branch], `susp-timeline-crosscheck|${branch}|${ctx.ep}`,
       { a, b, c: target });
+    // ── "IT DID NOT LINE UP" IS A CLAIM ABOUT TWO ACCOUNTS ──────────────
+    //
+    // This branch is the causal contract's worked example almost word for word
+    // — "CLAIM A: Julia told Gabby she went directly upstairs. CLAIM B: Alec
+    // recorded seeing Julia beside the library" — and it was writing neither.
+    // The two accounts are the ones `a` and `b` are physically laying side by
+    // side in the scene, so they are minted here, about `target`, with both of
+    // the people doing the crosschecking as listeners: they are the two the
+    // sentence says know both halves, and the reaction radius must be exactly
+    // that pair.
+    //
+    // `checked-out` gets ONE claim and no contradiction, because in that branch
+    // the accounts agreed — a second stored claim declaring incompatibility
+    // would be the engine writing down something the scene says did not happen.
+    if (branch === 'did-not-line-up' || branch === 'one-of-us-was-there') {
+      const first = api.recordClaim(target, `${target}'s account of the hour, as ${a} has it`,
+        { about: target, listeners: [a, b], channel: 'conversation', source: sceneWhy });
+      api.recordClaim(target, `${target}'s account of the hour, as ${b} has it`,
+        { about: target, listeners: [a, b], channel: 'conversation', contradicts: [first.id],
+          source: `${a} and ${b} hold two accounts of ${target}'s hour that cannot both be true` });
+    } else if (branch === 'checked-out') {
+      api.recordClaim(target, `${target}'s account of the hour, crosschecked and consistent`,
+        { about: target, listeners: [a, b], channel: 'conversation', source: sceneWhy });
+    }
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch, pair: [a, b], speaker: a, respondent: b, about: target,
       threadId: t?.id, bondDelta };

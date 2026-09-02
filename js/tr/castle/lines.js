@@ -32,6 +32,7 @@
 // Use that when the event has a pool; use `lineFor` when it has none.
 
 import { gs } from '../../core.js';
+import { getBond } from '../../bonds.js';
 
 /**
  * FNV-1a. Small, stable across runs and platforms, and no dependency.
@@ -231,3 +232,64 @@ export function _setDrawRule(on) { const was = _drawRule; _drawRule = !!on; retu
 
 /** Exposed for the guard, which walks every pool in the pool. */
 export { _hash as _lineHash };
+
+
+// ══════════════════════════════════════════════════════════════════════
+// WHO THEY TOLD — NAMES, NOT A NUMBER
+// ══════════════════════════════════════════════════════════════════════
+//
+// Two shipped lines asserted propagation and wrote none:
+//
+//   trust-secret-swap:leakedAccident   "It arrived back at {a} by three
+//                                       separate routes before lunch."
+//   mission-what-they-can-ask-me:overtold
+//                                      "{a} told three separate people about
+//                                       {mission} on the road back."
+//
+// Both wrote a bond and nothing else. "Three separate people" named nobody, so
+// no later scene could cite it, no Faithful actually learned anything, and the
+// knowledge contract's reaction radius had no receipts to be the union of.
+// This picks the people, and the event then propagates to them through the
+// scene API so each hop leaves a `{ factId, from, to, channel, ep, sceneId }`
+// row (js/tr/knowledge-flow.js).
+//
+// BY BOND, AND DELIBERATELY NOT AT RANDOM. writing-contracts.md: "Do not select
+// arbitrary active players merely to make the event feel important." A thing
+// said carelessly goes to the people the teller actually talks to, which is a
+// causal criterion the season already stores. Ties break on name so the choice
+// is reproducible.
+//
+// AND IT CONSUMES NO RNG, for the reason this whole file exists: `fire()` is
+// handed the castle's own stream, and one extra draw inside one event shifts
+// every draw after it.
+
+/**
+ * The people `teller` would repeat something to, best-connected first.
+ *
+ * `exclude` is everybody already in the scene. Returns FEWER than `n` when the
+ * castle is small — the caller must fill its sentence from the length of this
+ * list rather than from the number it asked for, which is the whole difference
+ * between "told three people" being true and being decorative.
+ */
+export function whoTheyTold(teller, exclude, living, n = 3) {
+  const out = (living || gs?.activePlayers || [])
+    .filter(x => x && x !== teller && !(exclude || []).includes(x));
+  out.sort((x, y) => {
+    const d = getBond(teller, y) - getBond(teller, x);
+    return d !== 0 ? d : String(x).localeCompare(String(y));
+  });
+  return out.slice(0, Math.max(0, n));
+}
+
+/** `['A']` -> "A"; `['A','B']` -> "A and B"; `['A','B','C']` -> "A, B and C". */
+export function namesPhrase(list) {
+  const l = (list || []).filter(Boolean);
+  if (!l.length) return 'nobody';
+  if (l.length === 1) return l[0];
+  if (l.length === 2) return `${l[0]} and ${l[1]}`;
+  return `${l.slice(0, -1).join(', ')} and ${l[l.length - 1]}`;
+}
+
+const COUNT_WORDS = ['nobody', 'one', 'two', 'three', 'four', 'five', 'six'];
+/** "three", for a sentence that wants to say how many rather than which. */
+export function countWord(n) { return COUNT_WORDS[n] || String(n); }

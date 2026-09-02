@@ -28,7 +28,7 @@ import {
 // A PURE READ of what somebody already thinks — the same import
 // js/tr/castle/suspicion.js holds, and it writes nothing.
 import { suspicion } from '../deduction.js';
-import { lineFor } from './lines.js';
+import { lineFor, whoTheyTold, namesPhrase, countWord } from './lines.js';
 
 const FAMILY = 'trust';
 
@@ -1568,7 +1568,7 @@ const SECRET_SWAP_LINES = {
     '{b} assumed everyone already knew, said so out loud, and discovered they had not.',
     'It came out of {b} as an aside, in a room {a} was not in, and never went back in.',
     '{b} used it to make a point about something else entirely and did not notice using it.',
-    'It arrived back at {a} by three separate routes before lunch, which is one route too many.',
+    'It came back to {a} from {who} before lunch, which is {n} routes too many.',
     '{b} said it while thinking about something else, which is how most of these go.',
     '{b} apologised the moment {b} realised, which did not put any of it back.',
     'Nobody meant any harm. There is a great deal of harm about anyway.',
@@ -1577,7 +1577,7 @@ const SECRET_SWAP_LINES = {
   leakedDeliberate: [
     '{b} traded {a}\'s secret to somebody else for something better.',
     '{b} decided {a}\'s secret was worth more spent than kept.',
-    '{b} waited until it would do the most good — for {b} — and then told the right person.',
+    '{b} waited until it would do the most good — for {b} — and then told {who}.',
     '{b} did the arithmetic on {a}\'s secret and sold at the top.',
     '{b} held it for two days, which is not carelessness, and then spent it in one sentence.',
     'It bought {b} exactly one favour, and {b} had checked the price beforehand.',
@@ -1622,9 +1622,39 @@ registerEvent({
     else if (roll < keepScore + accidentScore) branch = 'leakedAccident';
     else branch = 'leakedDeliberate';
 
-    const line = pick(rng, SECRET_SWAP_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    // ── THE SECRET IS A STORED CLAIM BEFORE IT IS A LEAK ────────────────
+    //
+    // The causal contract needs the thing that travelled to exist on the record
+    // before anybody can be said to have repeated it. `a` telling `b` in
+    // confidence is the claim; `b` telling anybody else is a propagation hop
+    // with a named recipient and a receipt. Before this, the leak branches
+    // wrote a bond and nothing else, so "it arrived back at {a} by three
+    // separate routes" named nobody, informed nobody, and could not be cited by
+    // any later scene — the exact shape the knowledge contract forbids.
+    const leaked = branch !== 'kept';
+    // Deliberate is ONE person, chosen; accidental spreads. Neither draws rng
+    // (see `whoTheyTold`), so this cannot reroute a season.
+    const heard = leaked
+      ? whoTheyTold(b, [a, b], ctx.living, branch === 'leakedDeliberate' ? 1 : 3)
+      : [];
+    // STILL `pick(rng, ...)`, AND THAT IS LOAD-BEARING. Swapping it for the
+    // hashed `lineFor` would remove an rng draw from the castle stream and
+    // reroute every draw after it — see the header of js/tr/castle/lines.js,
+    // which measured that at -2.9% firings on one event. The pool is the same
+    // length it was; only two of its sentences now carry substitutions.
+    const line = pick(rng, SECRET_SWAP_LINES[branch])
+      .replace(/\{a\}/g, a).replace(/\{b\}/g, b)
+      .replace(/\{who\}/g, namesPhrase(heard)).replace(/\{n\}/g, countWord(heard.length));
     let bondDelta = branch === 'kept' ? 1 : branch === 'leakedAccident' ? -1 : -3;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
+    if (leaked && heard.length) {
+      const claim = api.recordClaim(a, `${a} told ${b} something ${a} had told nobody else`,
+        { listeners: [b], channel: 'conversation', source: sceneWhy });
+      for (const to of heard) {
+        api.propagate(claim.id, b, to,
+          { channel: 'conversation', source: `${b} repeated what ${a} said in confidence` });
+      }
+    }
     const existing = findOpenThread(FAMILY, [a, b]);
     const t = existing
       ? api.advanceArc(existing.id, line, { source: sceneWhy })

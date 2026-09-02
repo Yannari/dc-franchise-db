@@ -196,6 +196,15 @@ export function initTraitorsState() {
     // conversation can move a ballot and can never own one.
     voteIntents: [],
 
+    // What somebody said they were GOING to do, and what became of it:
+    // `{ id, sourceSceneId, promisedAction, owner, ep, threadId, status,
+    // resolutionSceneId, abandonmentReason, detail }`. Written and settled by
+    // js/tr/episode-editor.js, which will not let an episode be filed with one
+    // still `open` — "a confessional says I'm checking that story and nobody
+    // checks, postpones, or explains why it was dropped" is the forbidden case
+    // this ledger exists to make unspellable.
+    promises: [],
+
     // What a scene did to a Traitor's private shortlist:
     // `{ traitor, target, delta, ep, sceneId, source }`. Read by
     // formPreference (js/tr/murder.js), so the conclave argues from something
